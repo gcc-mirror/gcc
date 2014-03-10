@@ -811,9 +811,10 @@ operators bound to a type.
 @item Abstract interfaces and type extension with the possibility to
 override type-bound procedures or to have deferred binding.
 
-@item Polymorphic entities (``@code{CLASS}'') for derived types -- including
-@code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE} for
-scalars and arrays, including unlimited polymorphism.
+@item Polymorphic entities (``@code{CLASS}'') for derived types and unlimited
+polymorphism (``@code{CLASS(*)}'') -- including @code{SAME_TYPE_AS},
+@code{EXTENDS_TYPE_OF} and @code{SELECT TYPE} for scalars and arrays and
+finalization.
 
 @item Generic interface names, which have the same name as derived types,
 are now supported. This allows one to write constructor functions.  Note
@@ -838,6 +839,10 @@ used, an allocatable variable on the left-hand side is automatically allocated
 (if unallocated) or reallocated (if the shape is different). Currently, scalar
 deferred character length left-hand sides are correctly handled but arrays
 are not yet fully implemented.
+
+@item Deferred-length character variables and scalar deferred-length character
+components of derived types are supported. (Note that array-valued compoents
+are not yet implemented.)
 
 @item Transferring of allocations via @code{MOVE_ALLOC}.
 
@@ -919,9 +924,10 @@ allowing I/O without any record structure.
 @item
 Namelist input/output for internal files.
 
-@item Further I/O extensions: Rounding during formatted output, using of
+@item Minor I/O features: Rounding during formatted output, using of
 a decimal comma instead of a decimal point, setting whether a plus sign
-should appear for positive numbers.
+should appear for positive numbers. On system where @code{strtod} honours
+the rounding mode, the rounding mode is also supported for input.
 
 @item
 @cindex @code{PROTECTED} statement
@@ -1035,7 +1041,8 @@ flag.
 @item The @code{BLOCK} construct is supported.
 
 @item The @code{STOP} and the new @code{ERROR STOP} statements now
-support all constant expressions.
+support all constant expressions. Both show the signals which were signaling
+at termination.
 
 @item Support for the @code{CONTIGUOUS} attribute.
 

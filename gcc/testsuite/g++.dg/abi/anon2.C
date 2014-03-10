@@ -6,9 +6,9 @@ namespace N1 {
     typedef enum { X, Y } A;
     typedef struct { } B;
     struct C {
-      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N11D1C3fn1ENS0_1BE" } }
+      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N11D1C3fn1ENS0_1BE" { target c++11 } } }
       static void fn1 (B) { }
-      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N11D1C3fn2ES1_" } }
+      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N11D1C3fn2ES1_" { target c++11 } } }
       static void fn2 (C) { }
     };
   } D;
@@ -22,10 +22,10 @@ namespace N2 {
     typedef enum { X, Y } A;
     typedef struct { } B;
     struct C {
-      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N23._31C3fn1ENS0_1BE" } }
-      static void fn1 (B) { } // { dg-error "no linkage" "" { target c++98 } }
-      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N23._31C3fn2ES1_" } }
-      static void fn2 (C) { } // { dg-error "no linkage" "" { target c++98 } }
+      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N23._31C3fn1ENS0_1BE" { target c++11 } } }
+      static void fn1 (B) { } // { dg-error "no linkage" "" { target { ! c++11 } } }
+      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N23._31C3fn2ES1_" { target c++11 } } }
+      static void fn2 (C) { } // { dg-error "no linkage" "" { target { ! c++11 } } }
     };
   } const D;
 
@@ -38,9 +38,9 @@ namespace N3 {
     typedef enum { X, Y } A;
     typedef struct { } B;
     template <class T> struct C {
-      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N31D1CIiE3fn1ENS0_1BE" } }
+      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N31D1CIiE3fn1ENS0_1BE" { target c++11 } } }
       static void fn1 (B) { }
-      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N31D1CIiE3fn2ES2_" } }
+      // { dg-final { scan-assembler ".weak\(_definition\)?\[ \t\]_?_ZN2N31D1CIiE3fn2ES2_" { target c++11 } } }
       static void fn2 (C) { }
     };
   } D;
@@ -54,10 +54,10 @@ namespace N4 {
     typedef enum { X, Y } A;
     typedef struct { } B;
     template <class T> struct C {
-      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N43._91CIiE3fn1ENS0_1BE" } }
-      static void fn1 (B) { } // { not-dg-error "no linkage" "" { target c++98 } }
-      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N43._91CIiE3fn2ES2_" } }
-      static void fn2 (C) { } // { not-dg-error "no linkage" "" { target c++98 } }
+      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N43._91CIiE3fn1ENS0_1BE" { target c++11 } } }
+      static void fn1 (B) { } // { not-dg-error "no linkage" "" { target { ! c++11 } } }
+      // { dg-final { scan-assembler-not ".weak\(_definition\)?\[ \t\]_?_ZN2N43._91CIiE3fn2ES2_" { target c++11 } } }
+      static void fn2 (C) { } // { not-dg-error "no linkage" "" { target { ! c++11 } } }
     };
   } const D;
 

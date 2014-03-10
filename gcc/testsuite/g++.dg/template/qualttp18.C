@@ -14,7 +14,7 @@ template <template <class> class TT> struct X
 
 struct C
 {
-	X<A::template B> x;  // { dg-error "template" "" { target c++98 } }
+	X<A::template B> x;  // { dg-error "template" "" { target { ! c++11 } } }
 };
 
 int main()

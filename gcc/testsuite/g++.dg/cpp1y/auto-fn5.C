@@ -1,5 +1,4 @@
-// { dg-options -std=c++1y }
-// { dg-do run }
+// { dg-do run { target c++1y } }
 
 int i;
 auto& f() { return i; }

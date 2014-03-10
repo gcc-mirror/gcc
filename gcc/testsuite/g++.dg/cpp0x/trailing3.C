@@ -1,5 +1,6 @@
 // More auto/decltype mangling tests.
-// { dg-options "-std=c++11 -fabi-version=0" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fabi-version=0" }
 
 template <class T>
 struct B

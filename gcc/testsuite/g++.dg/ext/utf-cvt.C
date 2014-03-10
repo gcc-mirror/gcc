@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test the char16_t and char32_t promotion rules. */
-/* { dg-do compile } */
-/* { dg-options "-std=c++0x -Wall -Wconversion -Wsign-conversion -Wsign-promo" } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-options "-Wall -Wconversion -Wsign-conversion -Wsign-promo" } */
 
 extern void f_c (char);
 extern void fsc (signed char);

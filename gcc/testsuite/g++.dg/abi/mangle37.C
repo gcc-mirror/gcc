@@ -1,5 +1,5 @@
 // Testcase for mangling of expressions involving operator names.
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler "_Z1fI1AEDTclonplfp_fp_EET_" } }
 // { dg-final { scan-assembler "_Z1gI1AEDTclonplIT_Efp_fp_EES1_" } }
 // { dg-final { scan-assembler "_Z1hI1AEDTcldtfp_miEET_" } }

@@ -1,6 +1,7 @@
 /* { dg-options "-fcilkplus" } */
 /* { dg-do run { target i?86-*-* x86_64-*-* arm*-*-* } } */
-/* { dg-options "-std=c++11 -fcilkplus -lcilkrts" { target { i?86-*-* x86_64-*-* arm*-*-* } } } */
+// { dg-require-effective-target c++11 }
+/* { dg-options "-fcilkplus -lcilkrts" { target { i?86-*-* x86_64-*-* arm*-*-* } } } */
 #define FIRST_NUMBER 5
 #define SECOND_NUMBER 3
 #define HAVE_IO 0

@@ -3,49 +3,49 @@
 
 struct A1		  // { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const j; // { dg-message "should be initialized" "" { target c++98 } }
+  int const j; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct A2		  // { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const volatile i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const volatile i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct A3		  // { dg-error "uninitialized" "" { target c++11 } }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct A4		  // { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int const& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct A5		  // { dg-error "uninitialized" "" { target c++11 } }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
+  int const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 template <class T> struct S1 // { dg-error "uninitialized" "" { target c++11 } }
 {
-  T const i; // { dg-message "should be initialized" "" { target c++98 } }
+  T const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 template <class T> struct S2 // { dg-error "uninitialized" "" { target c++11 } }
 {
-  T const volatile i; // { dg-message "should be initialized" "" { target c++98 } }
+  T const volatile i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 template <class T> struct S3 // { dg-error "uninitialized" "" { target c++11 } }
 {
-  T& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  T& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 template <class T> struct S4 // { dg-error "uninitialized" "" { target c++11 } }
 {
-  T const i; // { dg-message "should be initialized" "" { target c++98 } }
-  T& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  T const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
+  T& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct X
@@ -57,7 +57,7 @@ struct X
 
 struct Y11		  // { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct Y1		  // { dg-error "deleted" "" { target c++11 } }
@@ -67,7 +67,7 @@ struct Y1		  // { dg-error "deleted" "" { target c++11 } }
 
 struct Y22	       // { dg-error "uninitialized" "" { target c++11 } }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct Y2		      // { dg-error "deleted" "" { target c++11 } }
@@ -77,22 +77,22 @@ struct Y2		      // { dg-error "deleted" "" { target c++11 } }
 
 struct Z1		// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct Z2		// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct Z3		// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct Z4		// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct Z5
@@ -111,7 +111,7 @@ struct Z		// { dg-error "deleted" "" { target c++11 } }
 
 union U			// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 

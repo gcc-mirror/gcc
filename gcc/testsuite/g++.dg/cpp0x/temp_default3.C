@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template<typename T, typename U = typename T::value_type>
 void f(T);

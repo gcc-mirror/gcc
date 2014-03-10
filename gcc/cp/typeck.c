@@ -1150,6 +1150,11 @@ comp_template_parms_position (tree t1, tree t2)
 	  != TEMPLATE_PARM_PARAMETER_PACK (index2)))
     return false;
 
+  /* In C++14 we can end up comparing 'auto' to a normal template
+     parameter.  Don't confuse them.  */
+  if (cxx_dialect >= cxx1y && (is_auto (t1) || is_auto (t2)))
+    return TYPE_IDENTIFIER (t1) == TYPE_IDENTIFIER (t2);
+
   return true;
 }
 
@@ -1552,7 +1557,8 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       return value;
     }
 
-  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+      && (flag_iso || warn_vla > 0))
     {
       if (complain & tf_warning_or_error)
 	pedwarn (input_location, OPT_Wvla,
@@ -5471,7 +5477,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
   if (argtype != error_mark_node)
     {
-      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (argtype))
+      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (argtype)
+	  && (flag_iso || warn_vla > 0))
 	{
 	  if (complain & tf_warning_or_error)
 	    pedwarn (input_location, OPT_Wvla,
@@ -6289,7 +6296,10 @@ maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
   if (warn_useless_cast
       && complain & tf_warning)
     {
-      if (REFERENCE_REF_P (expr))
+      /* In C++14 mode, this interacts badly with force_paren_expr.  And it
+	 isn't necessary in any mode, because the code below handles
+	 glvalues properly.  For 4.9, just skip it in C++14 mode.  */
+      if (cxx_dialect < cxx1y && REFERENCE_REF_P (expr))
 	expr = TREE_OPERAND (expr, 0);
 
       if ((TREE_CODE (type) == REFERENCE_TYPE
@@ -8332,7 +8342,7 @@ check_return_expr (tree retval, bool *no_warning)
 
   *no_warning = false;
 
-  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && contains_cilk_spawn_stmt (retval))
     {
       error_at (EXPR_LOCATION (retval), "use of %<_Cilk_spawn%> in a return "
 		"statement is not allowed");

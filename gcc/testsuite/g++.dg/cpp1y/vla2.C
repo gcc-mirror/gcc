@@ -1,6 +1,5 @@
 // N3639 allows initialization and capture of VLAs
-// { dg-options -std=c++1y }
-// { dg-do run }
+// { dg-do run { target c++1y } }
 
 void f(int n)
 {

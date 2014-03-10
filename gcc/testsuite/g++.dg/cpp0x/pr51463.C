@@ -1,6 +1,5 @@
 // PR c++/51463
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 struct A
 {

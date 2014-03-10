@@ -7,5 +7,5 @@ struct A {
 int main ()
 {
   A a;
-  return a.template f (0); // { dg-error "template" "" { target c++98 } }
+  return a.template f (0); // { dg-error "template" "" { target { ! c++11 } } }
 }

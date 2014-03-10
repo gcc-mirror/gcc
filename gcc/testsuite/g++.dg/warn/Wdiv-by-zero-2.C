@@ -1,6 +1,7 @@
 // PR c++/56607
 // { dg-do compile { target { { lp64 || ilp32 } || llp64 } } }
-// { dg-options "-O2 -Wdiv-by-zero -std=c++11" }
+// { dg-require-effective-target c++11 }
+// { dg-options "-O2 -Wdiv-by-zero" }
 
 constexpr int sc () { return sizeof (char); }
 constexpr int si () { return sizeof (int); }

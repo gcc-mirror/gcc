@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template<typename _Tp>
   _Tp&& forward(_Tp&& __t) { return __t; } // { dg-message "note" }

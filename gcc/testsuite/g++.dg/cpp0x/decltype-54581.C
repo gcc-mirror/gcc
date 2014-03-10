@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-std=gnu++11 -Wall" } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-options "-Wall" } */
 
 typedef float v4f __attribute__((vector_size(4*sizeof(float))));
 

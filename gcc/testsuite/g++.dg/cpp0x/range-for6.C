@@ -1,8 +1,7 @@
 // Test for range-based for loop
 // Test the loop with an initializer_list
 
-// { dg-do run }
-// { dg-options "-std=c++11" }
+// { dg-do run { target c++11 } }
 
 #include <initializer_list>
 

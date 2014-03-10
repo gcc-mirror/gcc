@@ -1,5 +1,5 @@
 // Negative examples from N3092 (FCD)
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 // OK: declaration
 constexpr int square(int x);	// { dg-message "never defined" }

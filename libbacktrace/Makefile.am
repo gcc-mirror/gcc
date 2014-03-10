@@ -46,6 +46,7 @@ libbacktrace_la_SOURCES = \
 	internal.h \
 	posix.c \
 	print.c \
+	sort.c \
 	state.c
 
 BACKTRACE_FILES = \
@@ -92,6 +93,11 @@ btest_CFLAGS = $(AM_CFLAGS) -g -O
 btest_LDADD = libbacktrace.la
 
 check_PROGRAMS += btest
+
+stest_SOURCES = stest.c
+stest_LDADD = libbacktrace.la
+
+check_PROGRAMS += stest
 
 endif NATIVE
 

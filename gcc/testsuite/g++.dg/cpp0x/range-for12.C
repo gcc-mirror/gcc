@@ -1,8 +1,7 @@
 // Test for range-based for loop with templates
 // and begin/end as member functions
 
-// { dg-do run }
-// { dg-options "-std=c++11" }
+// { dg-do run { target c++11 } }
 
 /* Preliminary declarations */
 namespace pre

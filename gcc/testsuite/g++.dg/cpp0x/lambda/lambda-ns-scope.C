@@ -1,5 +1,4 @@
-// { dg-options -std=c++0x }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 auto f = [](int i) { return i+1; };
 

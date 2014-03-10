@@ -1,3 +1,15 @@
+2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-decl.c (c_decl_attributes): Use
+	lang_hooks.types.omp_mappable_type.
+	* c-typeck.c (c_finish_omp_clauses): Likewise.
+
+2014-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60197
+	* c-typeck.c (c_finish_return): Call contains_cilk_spawn_stmt instead
+	of checking tree code.
+
 2014-02-19  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
 	* c-parser.c (c_parser_declspecs): Replace call to error by error_at.

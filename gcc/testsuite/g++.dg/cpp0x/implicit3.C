@@ -1,6 +1,5 @@
 // Basic runtime test for implicit move constructor
-// { dg-do run }
-// { dg-options -std=c++11 }
+// { dg-do run { target c++11 } }
 
 int m;
 

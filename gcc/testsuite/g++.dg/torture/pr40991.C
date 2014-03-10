@@ -1,4 +1,4 @@
-/* { dg-options "-std=gnu++0x" } */
+// { dg-do compile { target c++11 } }
 
 typedef __SIZE_TYPE__ size_t;
 namespace std __attribute__ ((__visibility__ ("default"))) {

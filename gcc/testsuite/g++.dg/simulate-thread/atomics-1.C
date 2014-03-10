@@ -1,5 +1,4 @@
-/* { dg-do link } */
-/* { dg-options "-std=c++0x" } */
+/* { dg-do link { target c++11 } } */
 /* { dg-final { simulate-thread } } */
 /* { dg-require-effective-target sync_char_short } */
 /* { dg-require-effective-target sync_int_long } */

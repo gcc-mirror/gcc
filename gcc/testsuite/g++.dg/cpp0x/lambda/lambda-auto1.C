@@ -1,5 +1,5 @@
 // PR c++/50437
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 template <typename T>
 void f()

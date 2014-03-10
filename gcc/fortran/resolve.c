@@ -12105,14 +12105,6 @@ resolve_fl_derived0 (gfc_symbol *sym)
       if (c->attr.artificial)
 	continue;
 
-      /* See PRs 51550, 47545, 48654, 49050, 51075 - and 45170.  */
-      if (c->ts.type == BT_CHARACTER && c->ts.deferred && !c->attr.function)
-	{
-	  gfc_error ("Deferred-length character component '%s' at %L is not "
-		     "yet supported", c->name, &c->loc);
-	  return false;
-	}
-
       /* F2008, C442.  */
       if ((!sym->attr.is_class || c != sym->components)
 	  && c->attr.codimension
@@ -12362,6 +12354,25 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		     "length must be a POINTER or ALLOCATABLE",
 		     c->name, sym->name, &c->loc);
 	  return false;
+	}
+
+      /* Add the hidden deferred length field.  */
+      if (c->ts.type == BT_CHARACTER && c->ts.deferred && !c->attr.function
+	  && !sym->attr.is_class)
+	{
+	  char name[GFC_MAX_SYMBOL_LEN+9];
+	  gfc_component *strlen;
+	  sprintf (name, "_%s_length", c->name);
+	  strlen = gfc_find_component (sym, name, true, true);
+	  if (strlen == NULL)
+	    {
+	      if (!gfc_add_component (sym, name, &strlen))
+		return false;
+	      strlen->ts.type = BT_INTEGER;
+	      strlen->ts.kind = gfc_charlen_int_kind;
+	      strlen->attr.access = ACCESS_PRIVATE;
+	      strlen->attr.deferred_parameter = 1;
+	    }
 	}
 
       if (c->ts.type == BT_DERIVED

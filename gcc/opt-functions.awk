@@ -97,6 +97,7 @@ function switch_flags (flags)
 	result = result \
 	  test_flag("Common", flags, " | CL_COMMON") \
 	  test_flag("Target", flags, " | CL_TARGET") \
+	  test_flag("PchIgnore", flags, " | CL_PCH_IGNORE") \
 	  test_flag("Driver", flags, " | CL_DRIVER") \
 	  test_flag("Joined", flags, " | CL_JOINED") \
 	  test_flag("JoinedOrMissing", flags, " | CL_JOINED") \

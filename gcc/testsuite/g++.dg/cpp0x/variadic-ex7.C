@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 template<typename...> struct Tuple { };
 template<typename... Types>              char& g(Tuple<Types...>);       // #1
 template<typename T1, typename... Types> short& g(Tuple<T1, Types...>);   // #2

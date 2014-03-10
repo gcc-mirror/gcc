@@ -6,5 +6,5 @@
 void
 test (int a)
 {
-  new (char[a]); // { dg-warning "variable-length array" }
+  new (char[a]); // { dg-warning "parentheses" }
 }

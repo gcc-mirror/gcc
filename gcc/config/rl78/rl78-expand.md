@@ -237,9 +237,9 @@
 )
 
 (define_expand "ashlsi3"
-  [(parallel [(set (match_operand:SI               0 "nonimmediate_operand")
-	(ashift:SI (match_operand:SI  1 "nonimmediate_operand")
-		      (match_operand:SI 2 "nonmemory_operand")))
+  [(parallel [(set (match_operand:SI            0 "nonimmediate_operand")
+		   (ashift:SI (match_operand:SI 1 "nonimmediate_operand")
+			      (match_operand:SI 2 "nonmemory_operand")))
 	      (clobber (reg:HI X_REG))])
    ]
   ""

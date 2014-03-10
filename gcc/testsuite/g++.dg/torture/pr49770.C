@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-options "-std=c++0x -fno-tree-forwprop" } */
+/* { dg-do run { target c++11 } } */
+/* { dg-options "-fno-tree-forwprop" } */
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -9398,7 +9398,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  return error_mark_node;
 	}
     }
-  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && contains_cilk_spawn_stmt (retval))
     {
       error_at (loc, "use of %<_Cilk_spawn%> in a return statement is not "
 		"allowed");
@@ -12334,7 +12334,7 @@ c_finish_omp_clauses (tree clauses)
 	      else
 		{
 		  t = OMP_CLAUSE_DECL (c);
-		  if (!COMPLETE_TYPE_P (TREE_TYPE (t)))
+		  if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
 		    {
 		      error_at (OMP_CLAUSE_LOCATION (c),
 				"array section does not have mappable type "
@@ -12363,9 +12363,9 @@ c_finish_omp_clauses (tree clauses)
 	    }
 	  else if (!c_mark_addressable (t))
 	    remove = true;
-	  else if (!COMPLETE_TYPE_P (TREE_TYPE (t))
-		   && !(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-			&& OMP_CLAUSE_MAP_KIND (c) == OMP_CLAUSE_MAP_POINTER))
+	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		     && OMP_CLAUSE_MAP_KIND (c) == OMP_CLAUSE_MAP_POINTER)
+		   && !lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,

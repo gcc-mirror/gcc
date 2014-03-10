@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template <class T, class U = double> 
 void f(T t = 0, U u = 0); 	// { dg-message "note" }

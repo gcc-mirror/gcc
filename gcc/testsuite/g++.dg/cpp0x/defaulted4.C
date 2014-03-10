@@ -1,7 +1,6 @@
 // PR c++/37208: SFINAE and deleted functions.
 
-// { dg-options "-std=c++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 template<int> struct A { };
 
 template<typename T>

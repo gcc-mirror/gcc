@@ -1,6 +1,6 @@
 // PR c++/56481
 // Non-linearity in potential_constant_expression_1
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct S
 {

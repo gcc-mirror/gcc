@@ -1,3 +1,108 @@
+2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60033
+	* pt.c (tsubst_copy): When retrieving a capture pack from a generic
+	lambda, remove the lambda's own template argument list prior to fetching
+	the specialization.
+
+	PR c++/60393
+	* parser.c (cp_parser_parameter_declaration_clause): Move generic
+	function template unwinding on error into a more general location, ...
+	(cp_parser_skip_to_end_of_statement): ... here.
+
+2014-03-07  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (check_g++_parallelize): Split dg.exp.
+
+	* parser.c (cp_parser_type_id_1): Only allow 'auto' in C++1y if
+	we're in a trailing return type.
+
+	* typeck.c (comp_template_parms_position): 'auto' and
+	'decltype(auto)' are different from real template parms.
+
+	* parser.c (cp_parser_using_declaration): Consume the semicolon
+	after bare parameter pack error.
+
+	* cp-tree.h (REF_PARENTHESIZED_P): New.
+	* semantics.c (force_paren_expr): Set it.
+	* pt.c (do_auto_deduction): Check it.
+	(tsubst) [COMPONENT_REF]: Copy it.
+	* typeck.c (maybe_warn_about_useless_cast): Don't strip dereference.
+
+	* decl.c (create_array_type_for_decl): Only warn about invalid
+	C++1y VLA if flag_iso or warn_vla>0.
+	(grokdeclarator): Likewise.
+	* pt.c (tsubst): Likewise.
+	* semantics.c (finish_decltype_type): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	* init.c (build_new_1): Improve diagnostics.
+
+2014-03-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58609
+	* decl.c (check_initializer): Return NULL_TREE after error;
+	consistently use inform.
+
+2014-03-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_initializer): Remove dead code.
+
+2014-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60197
+	* typeck.c (check_return_expr): Call contains_cilk_spawn_stmt instead
+	of checking tree code.
+
+2014-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_lexer_set_source_position): New.
+	(cp_parser_mem_initializer): Use it.
+    	(cp_parser_postfix_open_square_expression): Likewise.
+    	(cp_parser_parenthesized_expression_list): Likewise.
+    	(cp_parser_new_initializer): Likewise.
+    	(cp_parser_jump_statement): Likewise.
+    	(cp_parser_initializer): Likewise.
+    	(cp_parser_functional_cast): Likewise.
+
+2014-03-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60409
+	* semantics.c (force_paren_expr): Only add a PAREN_EXPR to a
+	dependent expression.
+
+	PR c++/60361
+	* parser.c (cp_parser_template_id): Don't set up a CPP_TEMPLATE_ID
+	if re-parsing might succeed.
+	* semantics.c (finish_id_expression): Use of a parameter outside
+	the function body is a parse error.
+
+	* parser.c (cp_parser_mem_initializer): Set input_location
+	properly for init-list warning.
+	(cp_parser_postfix_open_square_expression): Likewise.
+	(cp_parser_parenthesized_expression_list): Likewise.
+	(cp_parser_new_initializer): Likewise.
+	(cp_parser_jump_statement): Likewise.
+	(cp_parser_initializer): Likewise.
+	(cp_parser_functional_cast): Likewise.
+
+2014-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60417
+	* typeck2.c (process_init_constructor_record): Set
+	CONSTRUCTOR_IS_DIRECT_INIT on {} for omitted initializers.
+
+	PR c++/60415
+	PR c++/54359
+	* parser.c (cp_parser_direct_declarator): Set declarator to
+	cp_error_declarator on invalid qualified-id.
+
+2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60376
+	* parser.c (cp_parser_using_declaration): Early return when
+	cp_parser_nested_name_specifier errors out.
+
 2014-03-01  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60377

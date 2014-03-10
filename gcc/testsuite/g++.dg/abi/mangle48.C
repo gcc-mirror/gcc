@@ -1,5 +1,5 @@
 // Testcase for 'this' mangling
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 struct B
 {

@@ -1722,14 +1722,12 @@ C++ code.
 
 @item c++11
 @itemx c++0x
-The 2011 ISO C++ standard plus amendments.  Support for C++11 is still
-experimental, and may change in incompatible ways in future releases.
+The 2011 ISO C++ standard plus amendments.
 The name @samp{c++0x} is deprecated.
 
 @item gnu++11
 @itemx gnu++0x
-GNU dialect of @option{-std=c++11}. Support for C++11 is still
-experimental, and may change in incompatible ways in future releases.
+GNU dialect of @option{-std=c++11}.
 The name @samp{gnu++0x} is deprecated.
 
 @item c++1y
@@ -1891,12 +1889,11 @@ are ignored.
 Enable the usage of Cilk Plus language extension features for C/C++.
 When the option @option{-fcilkplus} is specified, enable the usage of
 the Cilk Plus Language extension features for C/C++.  The present
-implementation follows ABI version 0.9.  This is an experimental
+implementation follows ABI version 1.2.  This is an experimental
 feature that is only partially complete, and whose interface may
 change in future versions of GCC as the official specification
-changes.  Currently only the array notation feature of the language
-specification has been implemented.  More features will be implemented
-in subsequent release cycles.
+changes.  Currently, all features but @code{_Cilk_for} have been
+implemented.
 
 @item -fgnu-tm
 @opindex fgnu-tm
@@ -18167,18 +18164,25 @@ post- fixed with @code{__}.  This in turn will be used by the
 @code{msp430.h} header file to select an MCU specific supplimentary
 header file.
 
-In addition two scripts will be added to the linker command line:
-@code{memory.ld} and @code{peripherals.ld}, with a search path based
-upon the MCU name.
+The option also sets the ISA to use.  If the MCU name is one that is
+known to only support the 430 ISA then that is selected, otherwise the
+430X ISA is selected.  A generic MCU name of @code{msp430} can also be
+used to select the 430 ISA.  Similarly the generic @code{msp430x} MCU
+name will select the 430X ISA.
+
+In addition an MCU specific linker script will be added to the linker
+command line.  The script's name is the name of the MCU with
+@code{.ld} appended.  Thus specifying @option{-mmcu=xxx} on the gcc
+command line will define the C preprocessor symbol @code{__XXX__} and
+cause the linker to search for a script called @file{xxx.ld}.
 
 This option is also passed on to the assembler.
 
 @item -mcpu=
 @opindex -mcpu=
-Specific the ISA to use.  Accepted values are @code{msp430},
-@code{msp430x} and @code{msp430xv2}.  This option is needed in order
-to ensure that the correct instructions are generated and that the
-correct libraries are linked in.
+Specifies the ISA to use.  Accepted values are @code{msp430},
+@code{msp430x} and @code{msp430xv2}.  This option is deprecated.  The
+@option{-mmcu=} option should be used to select the ISA.
 
 @item -msim
 @opindex msim

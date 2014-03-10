@@ -1,6 +1,6 @@
 // PR c++/42059
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
+// { dg-options "" { target { ! c++1y } } }
 
 void
 foo (int i)

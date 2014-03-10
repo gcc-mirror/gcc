@@ -1,5 +1,5 @@
-// { dg-options "-std=c++11 -Wunused -pedantic-errors" }
-// { dg-do compile }
+// { dg-options "-Wunused -pedantic-errors" }
+// { dg-do compile { target c++11 } }
 // Test for syntax support of various attribute permutations.
 
 int

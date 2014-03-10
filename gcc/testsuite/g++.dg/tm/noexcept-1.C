@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-fgnu-tm -O -std=c++0x -fdump-tree-tmmark -fdump-tree-tmlower" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fgnu-tm -O -fdump-tree-tmmark -fdump-tree-tmlower" }
 
 struct TrueFalse
 {

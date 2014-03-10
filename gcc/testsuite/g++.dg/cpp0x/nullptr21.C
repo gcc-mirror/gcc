@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=c++11" }
+// { dg-do run { target c++11 } }
 
 // Test throw and catch
 

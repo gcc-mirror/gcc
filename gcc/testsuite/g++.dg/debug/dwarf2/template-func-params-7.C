@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/30161
-// { dg-options "-g -dA -std=c++0x -fno-merge-debug-strings" }
-// { dg-do compile }
+// { dg-options "-g -dA -fno-merge-debug-strings" }
+// { dg-do compile { target c++11 } }
 
 // There must be 5 subprograms generated:
 // printf(const char*), printf<int, char, int>,

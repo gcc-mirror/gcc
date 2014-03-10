@@ -1,5 +1,5 @@
 // PR c++/44870
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 void foo(int&& data);
 

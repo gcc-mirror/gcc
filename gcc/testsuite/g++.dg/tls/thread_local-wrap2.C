@@ -2,7 +2,7 @@
 // unit, we build a wrapper but don't bother with an init function.
 
 // { dg-require-effective-target tls }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler "_ZTW1i" } }
 // { dg-final { scan-assembler-not "_ZTH1i" } }
 

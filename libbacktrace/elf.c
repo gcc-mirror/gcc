@@ -407,8 +407,8 @@ elf_initialize_syminfo (struct backtrace_state *state,
       ++j;
     }
 
-  qsort (elf_symbols, elf_symbol_count, sizeof (struct elf_symbol),
-	 elf_symbol_compare);
+  backtrace_qsort (elf_symbols, elf_symbol_count, sizeof (struct elf_symbol),
+		   elf_symbol_compare);
 
   sdata->next = NULL;
   sdata->symbols = elf_symbols;

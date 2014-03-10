@@ -1,5 +1,5 @@
 // PR c++/46736
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct U {
   U();

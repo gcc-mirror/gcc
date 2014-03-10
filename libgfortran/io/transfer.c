@@ -2670,16 +2670,21 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	= !(cf & IOPARM_DT_HAS_DELIM) ? DELIM_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->delim, dtp->delim_len,
 	  delim_opt, "Bad DELIM parameter in data transfer statement");
-  
+
   if (dtp->u.p.current_unit->delim_status == DELIM_UNSPECIFIED)
-    dtp->u.p.current_unit->delim_status = dtp->u.p.current_unit->flags.delim;
+    {
+      if (ionml && dtp->u.p.current_unit->flags.delim == DELIM_UNSPECIFIED)
+	dtp->u.p.current_unit->delim_status = DELIM_QUOTE;
+      else
+	dtp->u.p.current_unit->delim_status = dtp->u.p.current_unit->flags.delim;
+    }
 
   /* Check the pad mode.  */
   dtp->u.p.current_unit->pad_status
 	= !(cf & IOPARM_DT_HAS_PAD) ? PAD_UNSPECIFIED :
 	  find_option (&dtp->common, dtp->pad, dtp->pad_len, pad_opt,
 			"Bad PAD parameter in data transfer statement");
-  
+
   if (dtp->u.p.current_unit->pad_status == PAD_UNSPECIFIED)
 	dtp->u.p.current_unit->pad_status = dtp->u.p.current_unit->flags.pad;
 

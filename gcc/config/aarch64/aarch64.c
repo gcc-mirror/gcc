@@ -217,7 +217,7 @@ __extension__
 #endif
 static const struct tune_params generic_tunings =
 {
-  &generic_extra_costs,
+  &cortexa57_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
   &generic_vector_cost,

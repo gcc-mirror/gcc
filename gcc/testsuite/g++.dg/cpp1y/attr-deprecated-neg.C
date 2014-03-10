@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11_only } }
 
 class [[deprecated]] A // { dg-warning "attribute directive ignored" }
 {

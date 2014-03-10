@@ -1,5 +1,5 @@
 // PR c++/55149
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 template<unsigned int TA>
  struct SA

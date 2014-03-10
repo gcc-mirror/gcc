@@ -1,5 +1,5 @@
 // PR c++/50930
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct nmc {
  nmc() = default;

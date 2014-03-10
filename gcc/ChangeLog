@@ -1,3 +1,229 @@
+2014-03-08  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/vms/vms.opt (vms_float_format): New variable.
+
+2014-03-08  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fcilkplus): Update implementation
+	status.
+
+2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* lto-wrapper.c (merge_and_complain): Ensure -fshort-double is used
+	consistently accross all TUs.
+	(run_gcc): Enable -fshort-double automatically at link at link-time
+	and disallow override.
+
+2014-03-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/58271
+	* config/mips/mips.c (mips_option_override): Promote -mpaired-single
+	warning to an error.  Disable TARGET_PAIRED_SINGLE and TARGET_MIPS3D
+	if they can't be used.
+
+2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (HAVE_AS_IX86_TLSLDMPLT): Improve test for Solaris
+	11/x86 ld.
+	* configure: Regenerate.
+
+2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (TLS_SECTION_ASM_FLAG): Save as tls_section_flag.
+	(LIB_TLS_SPEC): Save as ld_tls_libs.
+	(HAVE_AS_IX86_TLSLDMPLT): Define as 1/0.
+	(HAVE_AS_IX86_TLSLDM): New test.
+	* configure, config.in: Regenerate.
+	* config/i386/i386.c (legitimize_tls_address): Fall back to
+	TLS_MODEL_GLOBAL_DYNAMIC on 32-bit Solaris/x86 if tool chain
+	cannot support TLS_MODEL_LOCAL_DYNAMIC.
+	* config/i386/i386.md (*tls_local_dynamic_base_32_gnu): Use if
+	instead of #ifdef in HAVE_AS_IX86_TLSLDMPLT test.
+
+2014-03-07  Paulo Matos  <paulo@matos-sorge.com>
+
+	* common.opt (fira-loop-pressure): Mark as optimization.
+
+2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* langhooks.c (lhd_omp_mappable_type): The error_mark_node is not
+	an OpenMP mappable type.
+
+2014-03-06  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (s-mlib): Only pass MULTIARCH_DIRNAME if
+	MULTILIB_OSDIRNAMES is not defined.
+
+2014-03-06  Jakub Jelinek  <jakub@redhat.com>
+	    Meador Inge  <meadori@codesourcery.com>
+
+	PR target/58595
+	* config/arm/arm.c (arm_tls_symbol_p): Remove.
+	(arm_legitimize_address): Call legitimize_tls_address for any
+	arm_tls_referenced_p expression, handle constant addend.  Call it
+	before testing for !TARGET_ARM.
+	(thumb_legitimize_address): Don't handle arm_tls_symbol_p here.
+
+2014-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60445
+	PR lto/60424
+	PR lto/60427
+	Revert
+	2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+        * tree-streamer.c (record_common_node): Assert we don't record
+        nodes with type double.
+        (preload_common_node): Skip type double, complex double and
+        double pointer since it is now frontend dependent due to
+        fshort-double option.
+
+2014-03-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.c (PLUGIN_COND): Always enable unless -fno-use-linker-plugin
+	or -fno-lto is specified and the linker has full plugin support.
+	* collect2.c (lto_mode): Default to LTO_MODE_WHOPR if LTO is
+	enabled.
+	(main): Remove -flto processing, adjust lto_mode using
+	use_plugin late.
+	* lto-wrapper.c (merge_and_complain): Merge compile-time
+	optimization levels.
+	(run_gcc): And pass it through to the link options.
+
+2014-03-06  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/60381
+	Revert:
+	2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+	PR debug/59992
+	* cselib.c (remove_useless_values): Skip to avoid quadratic
+	behavior if the condition moved from...
+	(cselib_process_insn): ... here holds.
+
+2014-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/59335
+	* Makefile.in (PLUGIN_HEADERS): Add tree-phinodes.h, stor-layout.h,
+	ssa-iterators.h, $(RESOURCE_H) and tree-cfgcleanup.h.
+
+	PR plugins/59335
+	* config/i386/t-i386 (OPTIONS_H_EXTRA): Add stringop.def.
+	(TM_H): Add x86-tune.def.
+
+2014-03-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (generic_tunings):
+	Use cortexa57_extra_costs.
+
+2014-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/60404
+	* cfgexpand.c (expand_used_vars): Do not assume all SSA_NAMEs
+	of PARM/RESULT_DECLs must be coalesced with optimize && in_lto_p.
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Use MUST_COALESCE_COST - 1
+	cost for in_lto_p.
+
+2014-03-04  Heiher  <r@hev.cc>
+
+	* config/mips/mips-cpus.def (loongson3a): Mark as a MIPS64r2 processor.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Adjust accordingly.
+
+2014-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (const2356_operand): Change to ...
+	(const2367_operand): ... this.
+	* config/i386/sse.md (avx512pf_scatterpf<mode>sf): Use
+	const2367_operand.
+	(*avx512pf_scatterpf<mode>sf_mask): Ditto.
+	(*avx512pf_scatterpf<mode>sf): Ditto.
+	(avx512pf_scatterpf<mode>df): Ditto.
+	(*avx512pf_scatterpf<mode>df_mask): Ditto.
+	(*avx512pf_scatterpf<mode>df): Ditto.
+	* config/i386/i386.c (ix86_expand_builtin): Update
+	incorrect hint operand error message.
+
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
+	* lto-section-in.c (lto_get_section_data): Fix const cast.
+
+2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+        * tree-streamer.c (record_common_node): Assert we don't record
+        nodes with type double.
+        (preload_common_node): Skip type double, complex double and
+        double pointer since it is now frontend dependent due to
+        fshort-double option.
+
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60405
+	* lto-streamer-in.c (lto_read_body): Remove LTO bytecode version check.
+	(lto_input_toplevel_asms): Likewise.
+	* lto-section-in.c (lto_get_section_data): Instead do it here
+	for every section.
+
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60382
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Do not consider
+	dead PHIs a reduction.
+
+2014-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/xmmintrin.h (enum _mm_hint) <_MM_HINT_ET0>: Correct
+	hint value.
+	(_mm_prefetch): Move out of GCC target("sse") pragma.
+	* config/i386/prfchwintrin.h (_m_prefetchw): Move out of
+	GCC target("prfchw") pragma.
+	* config/i386/i386.md (prefetch): Emit prefetchwt1 only
+	for locality <= 2.
+	* config/i386/i386.c (ix86_option_override_internal): Enable
+	-mprfchw with -mprefetchwt1.
+
+2014-03-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.md (casesi_load) <length attribute alternative 0>:
+	Mark as varying.
+
+2014-03-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* opts.h (CL_PCH_IGNORE): Define.
+	* targhooks.c (option_affects_pch_p):
+	Return false for options that have CL_PCH_IGNORE set.
+	* opt-functions.awk: Process PchIgnore.
+	* doc/options.texi: Document PchIgnore.
+
+	* config/arc/arc.opt (misize): Add PchIgnore property.
+
+2014-03-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_preferred_reload_class): Disallow
+	reload of PLUS rtx's outside of GENERAL_REGS or BASE_REGS; relax
+	constraint on constants to permit them being loaded into
+	GENERAL_REGS or BASE_REGS.
+
+2014-03-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-real.md (cbranchsi4_real_signed): Add
+	anti-cacnonical alternatives.
+	(negandhi3_real): New pattern.
+	* config/rl78/rl78-virt.md (negandhi3_virt): New pattern.
+
+2014-03-03  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr-mcus.def: Remove atxmega16x1.
+	* config/avr/avr-tables.opt: Regenerate.
+	* config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2014-03-03  Tobias Grosser  <tobias@grosser.es>
+	    Mircea Namolaru  <mircea.namolaru@inria.fr>
+
+	PR tree-optimization/58028
+	* graphite-clast-to-gimple.c (set_cloog_options): Don't remove
+	scalar dimensions.
+
 2014-03-03  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/neon.md (*movmisalign<mode>): Legitimize addresses
@@ -22,7 +248,7 @@
 	group, also set all symbols to local.
 
 2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
-	
+
 	PR ipa/60306
 
 	Revert:
@@ -37,9 +263,9 @@
 	PR bootstrap/52466
 	PR target/46898
 	* config/lm32/lm32.c (lm32_legitimate_constant_p): Remove, as incorrect.
-	  (TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.  
+	  (TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.
 	* config/lm32/lm32.md (movsi_insn): Add 32-bit immediate support.
-	(simple_return, *simple_return): New patterns     
+	(simple_return, *simple_return): New patterns
 	* config/lm32/predicates.md (movsi_rhs_operand): Remove as obsolete.
 	* configure.ac (force_sjlj_exceptions): Force sjlj exceptions for lm32.
 

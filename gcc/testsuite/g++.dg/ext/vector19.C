@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-options "-std=c++11" } */
+/* { dg-do compile { target c++11 } } */
 
 typedef double vec __attribute__((vector_size(2*sizeof(double))));
 typedef signed char vec2 __attribute__((vector_size(16)));

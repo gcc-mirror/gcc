@@ -3,7 +3,7 @@
 
 // { dg-require-alias "" }
 // { dg-require-effective-target tls }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler "_ZTW1i" } }
 // { dg-final { scan-assembler "_ZTH1i" } }
 

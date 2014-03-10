@@ -2486,12 +2486,15 @@ gfc_get_derived_type (gfc_symbol * derived)
         field_type = c->ts.u.derived->backend_decl;
       else
 	{
-	  if (c->ts.type == BT_CHARACTER)
+	  if (c->ts.type == BT_CHARACTER && !c->ts.deferred)
 	    {
 	      /* Evaluate the string length.  */
 	      gfc_conv_const_charlen (c->ts.u.cl);
 	      gcc_assert (c->ts.u.cl->backend_decl);
 	    }
+	  else if (c->ts.type == BT_CHARACTER)
+	    c->ts.u.cl->backend_decl
+			= build_int_cst (gfc_charlen_type_node, 0);
 
 	  field_type = gfc_typenode_for_spec (&c->ts);
 	}

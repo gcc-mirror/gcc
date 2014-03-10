@@ -3,7 +3,7 @@
 
 struct S		// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 class C
@@ -15,7 +15,7 @@ public:
 
 struct S2		// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int& ref;   // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref;   // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 class C2
@@ -35,7 +35,7 @@ class C3
 
 struct S4		// { dg-error "uninitialized" "" { target c++11 } }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 struct C4

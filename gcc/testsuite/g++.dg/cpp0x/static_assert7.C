@@ -1,5 +1,6 @@
 // PR c++/53166
-// { dg-options "-std=c++11 -Waddress" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Waddress" }
 
 template <typename X, X a>
 struct A

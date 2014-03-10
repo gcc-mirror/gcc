@@ -2,7 +2,7 @@
 // work properly for variadics.  Make sure that we can still use the lambda
 // normally.
 
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 void f()
 {

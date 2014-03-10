@@ -1,7 +1,6 @@
 // Test for errors in range-based for loops
 
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 struct container
 {

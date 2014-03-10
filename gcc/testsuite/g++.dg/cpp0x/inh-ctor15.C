@@ -1,7 +1,7 @@
 // Discussions on the core reflector indicate that not inheriting base copy
 // constructors was a deliberate choice.
 
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct A { A(int); };
 struct B: public A

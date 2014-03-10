@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 // [basic.types]/10:
 // Scalar types, trivial class types (Clause 9), arrays of such types and
@@ -18,10 +18,10 @@
 #define TRY(expr) static_assert (expr, #expr)
 #define YES(type) TRY(std::is_trivial<type>::value); \
   TRY(std::is_trivial<type[]>::value); \
-  TRY(std::is_trivial<const volatile type>::value);
+  TRY(std::is_trivial<const volatile type>::value)
 #define NO(type) TRY(!std::is_trivial<type>::value); \
   TRY(!std::is_trivial<type[]>::value); \
-  TRY(!std::is_trivial<const volatile type>::value);
+  TRY(!std::is_trivial<const volatile type>::value)
 
 struct A;
 

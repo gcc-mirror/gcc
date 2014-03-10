@@ -1312,6 +1312,9 @@ process_init_constructor_record (tree type, tree init,
 	     for us, so build up TARGET_EXPRs.  If the type in question is
 	     a class, just build one up; if it's an array, recurse.  */
 	  next = build_constructor (init_list_type_node, NULL);
+	  /* Call this direct-initialization pending DR 1518 resolution so
+	     that explicit default ctors don't break valid C++03 code.  */
+	  CONSTRUCTOR_IS_DIRECT_INIT (next) = true;
 	  next = massage_init_elt (TREE_TYPE (field), next, complain);
 
 	  /* Warn when some struct elements are implicitly initialized.  */

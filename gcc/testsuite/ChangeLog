@@ -1,4 +1,158 @@
+2014-03-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/cpp0x/alias-decl-debug-0.C: Move dg-skip after dg-do.
+
+2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
+
+	* gcc.dg/lto/pr55113_0.c: New testcase.
+
+2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60033
+	* g++.dg/cpp1y/pr60033.C: New testcase.
+
+	PR c++/60393
+	* g++.dg/cpp1y/pr60393.C: New testcase.
+
+2014-03-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/60128
+	* gfortran.dg/fmt_en.f90: New test.
+
+2014-03-07  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Run tests in C++1y mode, too.
+	* lib/target-supports.exp (check_effective_target_c++11): Now
+	means C++11 and up.
+	(check_effective_target_c++11_only): New.
+	(check_effective_target_c++11_down): New.
+	(check_effective_target_c++1y): New.
+	(check_effective_target_c++1y_only): New.
+	(check_effective_target_c++98_only): Rename from
+	check_effective_target_c++98.
+	* g++.dg/*: Use { target c++11 } instead of -std=c++11.
+
+2014-03-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58609
+	* g++.dg/cpp0x/constexpr-ice12.C: New.
+
+2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/map-1.c: Extend.
+
+2014-03-06  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51976
+	* gfortran.dg/deferred_type_component_1.f90 : New test.
+	* gfortran.dg/deferred_type_component_2.f90 : New test.
+
+2014-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60197
+	* c-c++-common/cilk-plus/CK/pr60197.c: New test.
+	* c-c++-common/cilk-plus/CK/pr60197-2.c: New test.
+
+2014-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58595
+	* gcc.dg/tls/pr58595.c: New test.
+
+2014-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60445
+	PR lto/60424
+	PR lto/60427
+	Revert
+	2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+	* gcc.dg/lto/pr55113_0.c: New testcase.
+
+2014-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/59308
+	* gcc.dg/pr46309.c: Don't compile on logical_op_short_circuit targets
+	other than mips/avr.  Use -mbranch-cost=2 even for i?86/x86_64.
+	* gcc.dg/tree-ssa/reassoc-32.c: Use -mbranch-cost=2 even for
+	s390*/i?86/x86_64.
+	* gcc.dg/tree-ssa/reassoc-33.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Don't compile on
+	logical_op_short_circuit targets other than avr.  Use -mbranch-cost=2
+	even for mips*/s390*/i?86/x86_64.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+
+	PR lto/60404
+	* gcc.dg/lto/pr60404_0.c: New test.
+	* gcc.dg/lto/pr60404_1.c: New file.
+	* gcc.dg/lto/pr60404_2.c: New file.
+
+2014-03-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/extract-vsx.c: Replace "vector long" with "vector
+	long long" throughout.
+	* gcc.dg/vmx/extract-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/insert-vsx.c: Likewise.
+	* gcc.dg/vmx/insert-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ld-vsx.c: Likewise.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-vsx.c: Likewise.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/st-vsx.c: Likewise.
+	* gcc.dg/vmx/st-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/stl-vsx.c: Likewise.
+	* gcc.dg/vmx/stl-vsx-be-order.c: Likewise.
+
+2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+	* gcc.dg/lto/pr55113_0.c: New testcase.
+
+2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60376
+	* g++.dg/cpp1y/pr60376.C: New.
+
+2014-03-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/abi/anon2.C: Don't scan assembler for c++98.
+
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60382
+	* gcc.dg/vect/pr60382.c: New testcase.
+
+2014-03-03  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/60148
+	* gfortran.dg/namelist_84.f90: New test.
+
+2014-03-03  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx512er-vexp2ps-2.c: Decrease exponent
+	argument to avoid inf values.
+	* gcc.target/i386/avx512f-vdivps-2.c: Compare results with
+	UNION_FP_CHECK machinery.
+
+2014-03-03  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/aarch64/aapcs64/validate_memory.h: Move f32in64 and
+	i32in128 cases outside special big-endian processing block.
+
 2014-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/60400
+	* c-c++-common/cpp/pr60400.c: New test.
+	* c-c++-common/cpp/pr60400-1.h: New file.
+	* c-c++-common/cpp/pr60400-2.h: New file.
 
 	PR objc++/60398
 	* obj-c++.dg/invalid-method-2.mm: Adjust dg-error regexps.
@@ -74,7 +228,7 @@
 	* gcc.c-torture/compile/pr52714.c: New test.
 
 2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	 PR rtl-optimization/49847
 	 * g++.dg/pr49847.C: New test.

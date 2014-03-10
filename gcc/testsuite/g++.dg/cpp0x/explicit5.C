@@ -1,6 +1,5 @@
 // test for extension of DR 899 to handle template ctors
-// { dg-options "-std=c++11" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 int r = 1;
 

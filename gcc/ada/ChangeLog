@@ -1,3 +1,10 @@
+2014-03-07  Doug Rupp  <rupp@adacore.com>
+
+	PR ada/60411
+	* system-linux-armel.ads (Backend_Overflow_Checks): Set to True.
+	(Support_64_Bit_Divides): Removed, no longer used.
+	(ZCX_By_Default): Enabled.
+
 2014-02-25  Doug Rupp  <rupp@adacore.com>
 
 	* gcc-interface/Makefile.in (arm-linux):

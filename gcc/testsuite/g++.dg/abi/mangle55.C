@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 struct A { int i; };
 // { dg-final { scan-assembler "_Z2f1Ii1AEDTdsfp_fp0_ET0_MS2_T_" } }

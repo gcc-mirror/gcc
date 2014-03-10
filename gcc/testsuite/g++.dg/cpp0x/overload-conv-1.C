@@ -1,5 +1,4 @@
-// { dg-options "--std=c++11" }
-// { dg-do link }
+// { dg-do link { target c++11 } }
 
 struct S {};
 

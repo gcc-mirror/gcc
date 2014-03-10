@@ -1,4 +1,5 @@
-// { dg-options "-std=c++11 -fcompare-debug" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fcompare-debug" }
 
 typedef long unsigned size_t;
 namespace

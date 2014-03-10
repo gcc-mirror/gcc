@@ -1,5 +1,5 @@
 // PR c++/60312
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 template<typename> struct A;
 

@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-fcilkplus -std=c++11 " } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-options "-fcilkplus" } */
 
 int main (void)
 {

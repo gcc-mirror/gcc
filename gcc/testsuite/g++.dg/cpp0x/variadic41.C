@@ -1,5 +1,5 @@
 // A function parameter pack is only deduced if it's at the end
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 template<typename... Args>
 void f(const Args&... args, int oops);
 

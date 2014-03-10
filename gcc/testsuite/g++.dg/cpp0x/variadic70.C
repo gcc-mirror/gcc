@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 template <typename T, T... Args> struct bomb;
 
 template <typename T>

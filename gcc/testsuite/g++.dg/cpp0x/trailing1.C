@@ -1,5 +1,6 @@
 // Tests for late-specified return type.
-// { dg-options "-std=c++11 -fabi-version=5" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fabi-version=5" }
 
 auto f() -> int
 {

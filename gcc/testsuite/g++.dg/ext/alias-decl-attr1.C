@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 template <unsigned Len, unsigned Align>
 struct aligned_storage

@@ -196,6 +196,11 @@ extern int backtrace_close (int descriptor,
 			    backtrace_error_callback error_callback,
 			    void *data);
 
+/* Sort without using memory.  */
+
+extern void backtrace_qsort (void *base, size_t count, size_t size,
+			     int (*compar) (const void *, const void *));
+
 /* Allocate memory.  This is like malloc.  */
 
 extern void *backtrace_alloc (struct backtrace_state *state, size_t size,

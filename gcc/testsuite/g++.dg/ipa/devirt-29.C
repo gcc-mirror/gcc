@@ -1,7 +1,7 @@
-/* { dg-do run } */
+/* { dg-do run { target c++11 } } */
 /* There is a devirtualizable call. In PR60306 we deduced wrong target to cxa_pure_virtual.
    For gcc 4.10 we temporarily disable the devirtualization.  */
-/* { dg-options "-O3 -std=c++11"  } */
+/* { dg-options "-O3"  } */
 
 #include <vector>
 

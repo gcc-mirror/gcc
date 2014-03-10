@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-O -fipa-cp -std=gnu++0x -fno-early-inlining -fipa-cp-clone --param=ipa-cp-eval-threshold=1" } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-options "-O -fipa-cp -fno-early-inlining -fipa-cp-clone --param=ipa-cp-eval-threshold=1" } */
 
 void bar (void *, void *);
 

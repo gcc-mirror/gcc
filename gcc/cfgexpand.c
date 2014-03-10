@@ -1652,10 +1652,12 @@ expand_used_vars (void)
 	 debug info, there is no need to do so if optimization is disabled
 	 because all the SSA_NAMEs based on these DECLs have been coalesced
 	 into a single partition, which is thus assigned the canonical RTL
-	 location of the DECLs.  */
+	 location of the DECLs.  If in_lto_p, we can't rely on optimize,
+	 a function could be compiled with -O1 -flto first and only the
+	 link performed at -O0.  */
       if (TREE_CODE (SSA_NAME_VAR (var)) == VAR_DECL)
 	expand_one_var (var, true, true);
-      else if (DECL_IGNORED_P (SSA_NAME_VAR (var)) || optimize)
+      else if (DECL_IGNORED_P (SSA_NAME_VAR (var)) || optimize || in_lto_p)
 	{
 	  /* This is a PARM_DECL or RESULT_DECL.  For those partitions that
 	     contain the default def (representing the parm or result itself)

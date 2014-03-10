@@ -1,7 +1,7 @@
 // Test for CSE of the wrapper function: we should only call it once
 // for the two references to ir.
-// { dg-do run }
-// { dg-options "-std=c++11 -O -fno-inline -save-temps" }
+// { dg-do run { target c++11 } }
+// { dg-options "-O -fno-inline -save-temps" }
 // { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
 // { dg-final { scan-assembler-times "call *_ZTW2ir" 1 { xfail *-*-* } } }

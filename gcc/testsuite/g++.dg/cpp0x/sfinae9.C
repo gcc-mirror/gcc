@@ -1,9 +1,9 @@
 // PR c++/48450
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 namespace std {
   template <class T> T&& declval();
-};
+}
 
 template<class To, class From,
   class = decltype(static_cast<To>(std::declval<From>()))

@@ -1,5 +1,5 @@
 // PR c++/50870
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 struct impl
 {

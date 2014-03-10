@@ -283,9 +283,21 @@ not in any particular release.
     </row>
 
     <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3793.html">
-	  N3672
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3783.pdf">
+	  N3783
+	</link>
+      </entry>
+      <entry>Network byte order conversion</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3793.html">
+	  N3793
 	</link>
       </entry>
       <entry>A proposal to add a utility class to represent optional objects</entry>
@@ -294,9 +306,93 @@ not in any particular release.
     </row>
 
     <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3762.html">
-	  N3762
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2013/n3804.html">
+	  N3804
+	</link>
+      </entry>
+      <entry>Any library proposal</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2014/n3843.pdf">
+	  N3843
+	</link>
+      </entry>
+      <entry>A SFINAE-Friendly std::common_type (option 2 was approved)</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2014/n3866.html">
+	  N3866
+	</link>
+      </entry>
+      <entry>Invocation type traits, but dropping function_call_operator.</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="">
+	  N3905
+	</link>
+      </entry>
+      <entry>Faster string searching (Boyer-Moore et al.)</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3915.pdf">
+	  N3915
+	</link>
+      </entry>
+      <entry>apply() call a function with arguments from a tuple</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3916.pdf">
+	  N3916
+	</link>
+      </entry>
+      <entry>Polymorphic memory resources</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3920.html">
+	  N3920
+	</link>
+      </entry>
+      <entry>Extending shared_ptr to support arrays</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3921.html">
+	  N3921
 	</link>
       </entry>
       <entry><code>string_view</code>: a non-owning reference to a string</entry>
@@ -305,10 +401,46 @@ not in any particular release.
     </row>
 
     <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3923.pdf">
+	  N3923
+	</link>
+      </entry>
+      <entry>A SFINAE-Friendly std::iterator_traits</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3925.pdf">
+	  N3925
+	</link>
+      </entry>
+      <entry>A sample proposal</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3932.htm">
+	  N3932
+	</link>
+      </entry>
+      <entry>Variable Templates For Type Traits</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals TS</entry>
+    </row>
+
+    <row>
       <?dbhtml bgcolor="#C8C8B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3790.html">
-	  N3790
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3932.htm">
+	  N3940
 	</link>
       </entry>
       <entry>File System</entry>

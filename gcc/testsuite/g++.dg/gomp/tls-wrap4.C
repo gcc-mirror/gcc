@@ -2,7 +2,8 @@
 // copy per shared object.
 
 // { dg-require-effective-target tls }
-// { dg-options "-std=c++11 -fPIC" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fPIC" }
 // { dg-final { scan-assembler-not "_ZTW1i@PLT" { target i?86-*-* x86_64-*-* } } }
 
 extern thread_local int i;

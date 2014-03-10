@@ -179,7 +179,7 @@ Target RejectNegative Joined UInteger Var(arc_size_opt_level) Init(-1)
 size optimization level: 0:none 1:opportunistic 2: regalloc 3:drop align, -Os
 
 misize
-Target Report Var(TARGET_DUMPISIZE)
+Target Report PchIgnore Var(TARGET_DUMPISIZE)
 Annotate assembler instructions with estimated addresses
 
 mmultcost=

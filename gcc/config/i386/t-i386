@@ -16,10 +16,12 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+OPTIONS_H_EXTRA += $(srcdir)/config/i386/stringop.def
+TM_H += $(srcdir)/config/i386/x86-tune.def
+
 i386-c.o: $(srcdir)/config/i386/i386-c.c i386-builtin-types.inc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
-
 
 i386-builtin-types.inc: s-i386-bt ; @true
 s-i386-bt: $(srcdir)/config/i386/i386-builtin-types.awk \
