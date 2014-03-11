@@ -5682,11 +5682,6 @@ cse_insn (rtx insn)
 	  invalidate (XEXP (dest, 0), GET_MODE (dest));
       }
 
-  /* A volatile ASM or an UNSPEC_VOLATILE invalidates everything.  */
-  if (NONJUMP_INSN_P (insn)
-      && volatile_insn_p (PATTERN (insn)))
-    flush_hash_table ();
-
   /* Don't cse over a call to setjmp; on some machines (eg VAX)
      the regs restored by the longjmp come from a later time
      than the setjmp.  */

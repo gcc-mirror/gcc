@@ -2470,16 +2470,6 @@ scan_insn (bb_info_t bb_info, rtx insn)
       return;
     }
 
-  /* Cselib clears the table for this case, so we have to essentially
-     do the same.  */
-  if (NONJUMP_INSN_P (insn)
-      && volatile_insn_p (PATTERN (insn)))
-    {
-      add_wild_read (bb_info);
-      insn_info->cannot_delete = true;
-      return;
-    }
-
   /* Look at all of the uses in the insn.  */
   note_uses (&PATTERN (insn), check_mem_read_use, bb_info);
 
