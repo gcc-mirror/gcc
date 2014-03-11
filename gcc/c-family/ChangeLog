@@ -1,3 +1,8 @@
+2014-03-11  Ian Bolton  <ian.bolton@arm.com>
+
+	* c-opts.c (c_common_post_options): Don't override
+	-ffp-contract=fast if unsafe-math-optimizations is on.
+
 2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
 
     * c.opt: Enable LTO FE for fshort-double.
