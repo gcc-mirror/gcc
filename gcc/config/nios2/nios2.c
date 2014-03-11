@@ -81,8 +81,10 @@ struct GTY (()) machine_function
   int args_size;
   /* Number of bytes needed to store registers in frame.  */
   int save_reg_size;
-   /* Offset from new stack pointer to store registers.  */
+  /* Offset from new stack pointer to store registers.  */
   int save_regs_offset;
+  /* Offset from save_regs_offset to store frame pointer register.  */
+  int fp_save_offset;
   /* != 0 if frame layout already calculated.  */
   int initialized;
 };
@@ -390,6 +392,17 @@ nios2_compute_frame_layout (void)
 	  }
     }
 
+  cfun->machine->fp_save_offset = 0;
+  if (save_mask & (1 << HARD_FRAME_POINTER_REGNUM))
+    {
+      int fp_save_offset = 0;
+      for (regno = 0; regno < HARD_FRAME_POINTER_REGNUM; regno++)
+	if (save_mask & (1 << regno))
+	  fp_save_offset += 4;
+
+      cfun->machine->fp_save_offset = fp_save_offset;
+    }
+
   save_reg_size = NIOS2_STACK_ALIGN (save_reg_size);
   total_size += save_reg_size;
   total_size += NIOS2_STACK_ALIGN (crtl->args.pretend_args_size);
@@ -450,8 +463,8 @@ nios2_expand_prologue (void)
 {
   unsigned int regno;
   int total_frame_size, save_offset;
-  int sp_offset; /* offset from base_reg to final stack value.  */
-  int fp_offset; /* offset from base_reg to final fp value.  */
+  int sp_offset;      /* offset from base_reg to final stack value.  */
+  int save_regs_base; /* offset from base_reg to register save area.  */
   rtx insn;
 
   total_frame_size = nios2_compute_frame_layout ();
@@ -468,8 +481,7 @@ nios2_expand_prologue (void)
 			gen_int_mode (cfun->machine->save_regs_offset
 				      - total_frame_size, Pmode)));
       RTX_FRAME_RELATED_P (insn) = 1;
-
-      fp_offset = 0;
+      save_regs_base = 0;
       sp_offset = -cfun->machine->save_regs_offset;
     }
   else if (total_frame_size)
@@ -478,16 +490,16 @@ nios2_expand_prologue (void)
 				       gen_int_mode (-total_frame_size,
 						     Pmode)));
       RTX_FRAME_RELATED_P (insn) = 1;
-      fp_offset = cfun->machine->save_regs_offset;
+      save_regs_base = cfun->machine->save_regs_offset;
       sp_offset = 0;
     }
   else
-    fp_offset = sp_offset = 0;
+    save_regs_base = sp_offset = 0;
 
   if (crtl->limit_stack)
     nios2_emit_stack_limit_check ();
 
-  save_offset = fp_offset + cfun->machine->save_reg_size;
+  save_offset = save_regs_base + cfun->machine->save_reg_size;
 
   for (regno = LAST_GP_REG; regno > 0; regno--)
     if (cfun->machine->save_mask & (1 << regno))
@@ -498,9 +510,10 @@ nios2_expand_prologue (void)
 
   if (frame_pointer_needed)
     {
+      int fp_save_offset = save_regs_base + cfun->machine->fp_save_offset;
       insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
 				       stack_pointer_rtx,
-				       gen_int_mode (fp_offset, Pmode)));
+				       gen_int_mode (fp_save_offset, Pmode)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -555,7 +568,9 @@ nios2_expand_epilogue (bool sibcall_p)
   if (frame_pointer_needed)
     {
       /* Recover the stack pointer.  */
-      insn = emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
+      insn = emit_insn (gen_add3_insn
+			(stack_pointer_rtx, hard_frame_pointer_rtx,
+			 gen_int_mode (-cfun->machine->fp_save_offset, Pmode)));
       cfa_adj = plus_constant (Pmode, stack_pointer_rtx,
 			       (total_frame_size
 				- cfun->machine->save_regs_offset));
@@ -772,7 +787,8 @@ nios2_initial_elimination_offset (int from, int to)
     /* If we are asked for the frame pointer offset, then adjust OFFSET
        by the offset from the frame pointer to the stack pointer.  */
   if (to == HARD_FRAME_POINTER_REGNUM)
-    offset -= cfun->machine->save_regs_offset;
+    offset -= (cfun->machine->save_regs_offset
+	       + cfun->machine->fp_save_offset); 
 
   return offset;
 }
