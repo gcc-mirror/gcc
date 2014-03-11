@@ -1,6 +1,14 @@
 2014-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline.
+	2014-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59680
+	* src/c++11/thread.cc (__sleep_for): Fix call to ::sleep.
+
+2014-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline.
 	2014-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59215
