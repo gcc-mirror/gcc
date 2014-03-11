@@ -3095,7 +3095,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
       if (c.type == ADDRESSOF
 	  /* If this varinfo represents a full variable just use it.  */
 	  && curr->is_full_var)
-	c.offset = 0;
+	;
       else if (c.type == ADDRESSOF
 	       /* If we do not know the offset add all subfields.  */
 	       && rhsoffset == UNKNOWN_OFFSET)
@@ -3143,8 +3143,14 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	      temp = vi_next (temp);
 	    }
 	}
+      else if (c.type == SCALAR)
+	{
+	  gcc_assert (c.offset == 0);
+	  c.offset = rhsoffset;
+	}
       else
-	c.offset = rhsoffset;
+	/* We shouldn't get any DEREFs here.  */
+	gcc_unreachable ();
 
       (*results)[j] = c;
     }
