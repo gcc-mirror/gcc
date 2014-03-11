@@ -1,3 +1,8 @@
+2014-03-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60389
+	* g++.dg/cpp0x/inh-ctor19.C: New.
+
 2014-03-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60429
