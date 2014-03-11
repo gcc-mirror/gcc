@@ -1,6 +1,16 @@
 2014-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline.
+	2014-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59215
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base<_S_atomic>::_M_add_ref_lock()): Use relaxed atomic
+	load.
+
+2014-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline.
 
 	2014-01-09  Jonathan Wakely  <jwakely@redhat.com>
 

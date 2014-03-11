@@ -233,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_add_ref_lock()
     {
       // Perform lock-free add-if-not-zero operation.
-      _Atomic_word __count = _M_use_count;
+      _Atomic_word __count = _M_get_use_count();
       do
 	{
 	  if (__count == 0)
