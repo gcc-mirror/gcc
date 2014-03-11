@@ -1,5 +1,10 @@
 2014-03-11  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset):
+	Add asserts to guard possible wrong-code bugs.
+
+2014-03-11  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/60429
 	PR tree-optimization/60485
 	* tree-ssa-structalias.c (set_union_with_increment): Properly
