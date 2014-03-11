@@ -1,3 +1,7 @@
+2014-03-11  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -std=gnu++14.
+
 2014-03-11  Ian Bolton  <ian.bolton@arm.com>
 
 	* c-opts.c (c_common_post_options): Don't override
