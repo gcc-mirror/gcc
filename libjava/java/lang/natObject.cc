@@ -929,7 +929,7 @@ retry:
 	  // only be held by other threads waiting for conversion, and
 	  // they, like us, drop it quickly without blocking.
 	  _Jv_MutexLock(&(hl->si.mutex));
-	  JvAssert(he -> address == address | LOCKED );
+	  JvAssert(he -> address == (address | LOCKED));
 	  release_set(&(he -> address), (address | REQUEST_CONVERSION | HEAVY));
 				// release lock on he
 	  LOG(REQ_CONV, (address | REQUEST_CONVERSION | HEAVY), self);
@@ -961,7 +961,7 @@ retry:
     }
   obj_addr_t was_heavy = (address & HEAVY);
   if ((address & LOCKED) ||
-      !compare_and_swap(&(he -> address), address, (address | LOCKED )))
+      !compare_and_swap(&(he -> address), address, address | LOCKED ))
     {
       wait_unlocked(he);
       goto retry;
