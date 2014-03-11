@@ -1,3 +1,15 @@
+2014-03-11  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/nios2.c (machine_function): Add fp_save_offset field.
+	(nios2_compute_frame_layout):
+	Add calculation of cfun->machine->fp_save_offset.
+	(nios2_expand_prologue): Correct setting of frame pointer register
+	in prologue.
+	(nios2_expand_epilogue): Update recovery of stack pointer from
+	frame pointer accordingly.
+	(nios2_initial_elimination_offset): Update calculation of offset
+	for eliminating to HARD_FRAME_POINTER_REGNUM.
+
 2014-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/60457
