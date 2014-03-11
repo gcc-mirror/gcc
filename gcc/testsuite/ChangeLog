@@ -1,3 +1,10 @@
+2014-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60429
+	PR tree-optimization/60485
+	* gcc.dg/pr60485-1.c: New testcase.
+	* gcc.dg/pr60485-2.c: Likewise.
+
 2014-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/60457
