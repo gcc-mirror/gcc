@@ -776,10 +776,14 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == (TARGET_BIG_ENDIAN ? 58 : 59)")))
 
+; Unfortunately, we can not allow a const_int_operand before reload, because
+; reload needs a non-void mode to guide it how to reload the inside of a
+; {sign_}extend.
 (define_predicate "extend_operand"
-  (ior (match_test "register_operand (op, mode)")
-       (and (match_test "immediate_operand (op, mode)")
-	    (not (match_test "const_int_operand (op, mode)")))))
+  (ior (match_operand 0 "register_operand")
+       (and (match_operand 0 "immediate_operand")
+	    (ior (not (match_operand 0 "const_int_operand"))
+		 (match_test "reload_in_progress || reload_completed")))))
 
 (define_predicate "millicode_store_operation"
   (match_code "parallel")
