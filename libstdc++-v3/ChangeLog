@@ -1,3 +1,30 @@
+2014-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60499
+	* include/debug/forward_list (forward_list::operator=(forward_list&&)):
+	Uglify name.
+	* include/debug/map (map::operator=(map&&)): Likewise.
+	* include/debug/multimap (multimap::operator=(multimap&&)): Likewise.
+	* include/debug/multiset (multiset::operator=(multiset&&)): Likewise.
+	* include/debug/set (set::operator=(set&&)): Likewise.
+	* include/debug/unordered_map
+	(unordered_map::operator=(unordered_map&&)): Likewise.
+	(unordered_multimap::operator=(unordered_multimap&&)): Likewise.
+	* include/debug/unordered_set
+	(unordered_set::operator=(unordered_set&&)): Likewise.
+	(unordered_multiset::operator=(unordered_multiset&&)): Likewise.
+	* include/debug/vector (vector::operator=(vector&&)): Likewise.
+	* testsuite/23_containers/forward_list/debug/60499.cc: New
+	* testsuite/23_containers/map/debug/60499.cc: New
+	* testsuite/23_containers/multimap/debug/60499.cc: New
+	* testsuite/23_containers/multiset/debug/60499.cc: New
+	* testsuite/23_containers/set/debug/60499.cc: New
+	* testsuite/23_containers/unordered_map/debug/60499.cc: New
+	* testsuite/23_containers/unordered_multimap/debug/60499.cc: New
+	* testsuite/23_containers/unordered_multiset/debug/60499.cc: New
+	* testsuite/23_containers/unordered_set/debug/60499.cc: New
+	* testsuite/23_containers/vector/debug/60499.cc: New
+
 2014-03-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* doc/xml/manual/status_cxx2014.xml: Add new items and latest papers
