@@ -8171,6 +8171,50 @@ arc_get_ccfsm_cond (struct arc_ccfsm *statep, bool reverse)
 			 copy_rtx (XEXP (cond, 0)), copy_rtx (XEXP (cond, 1)));
 }
 
+/* Return version of PAT conditionalized with COND, which is part of INSN.
+   ANNULLED indicates if INSN is an annulled delay-slot insn.
+   Register further changes if necessary.  */
+static rtx
+conditionalize_nonjump (rtx pat, rtx cond, rtx insn, bool annulled)
+{
+  /* For commutative operators, we generally prefer to have
+     the first source match the destination.  */
+  if (GET_CODE (pat) == SET)
+    {
+      rtx src = SET_SRC (pat);
+
+      if (COMMUTATIVE_P (src))
+	{
+	  rtx src0 = XEXP (src, 0);
+	  rtx src1 = XEXP (src, 1);
+	  rtx dst = SET_DEST (pat);
+
+	  if (rtx_equal_p (src1, dst) && !rtx_equal_p (src0, dst)
+	      /* Leave add_n alone - the canonical form is to
+		 have the complex summand first.  */
+	      && REG_P (src0))
+	    pat = gen_rtx_SET (VOIDmode, dst,
+			       gen_rtx_fmt_ee (GET_CODE (src), GET_MODE (src),
+					       src1, src0));
+	}
+    }
+
+  /* dwarf2out.c:dwarf2out_frame_debug_expr doesn't know
+     what to do with COND_EXEC.  */
+  if (RTX_FRAME_RELATED_P (insn))
+    {
+      /* If this is the delay slot insn of an anulled branch,
+	 dwarf2out.c:scan_trace understands the anulling semantics
+	 without the COND_EXEC.  */
+      gcc_assert (annulled);
+      rtx note = alloc_reg_note (REG_FRAME_RELATED_EXPR, pat,
+				 REG_NOTES (insn));
+      validate_change (insn, &REG_NOTES (insn), note, 1);
+    }
+  pat = gen_rtx_COND_EXEC (VOIDmode, cond, pat);
+  return pat;
+}
+
 /* Use the ccfsm machinery to do if conversion.  */
 
 static unsigned
@@ -8255,6 +8299,7 @@ arc_ifcvt (void)
 	  /* Conditionalized insn.  */
 
 	  rtx prev, pprev, *patp, pat, cond;
+	  bool annulled; annulled = false;
 
 	  /* If this is a delay slot insn in a non-annulled branch,
 	     don't conditionalize it.  N.B., this should be fine for
@@ -8264,9 +8309,12 @@ arc_ifcvt (void)
 	  prev = PREV_INSN (insn);
 	  pprev = PREV_INSN (prev);
 	  if (pprev && NEXT_INSN (NEXT_INSN (pprev)) == NEXT_INSN (insn)
-	      && JUMP_P (prev) && get_attr_cond (prev) == COND_USE
-	      && !INSN_ANNULLED_BRANCH_P (prev))
-	    break;
+	      && JUMP_P (prev) && get_attr_cond (prev) == COND_USE)
+	    {
+	      if (!INSN_ANNULLED_BRANCH_P (prev))
+		break;
+	      annulled = true;
+	    }
 
 	  patp = &PATTERN (insn);
 	  pat = *patp;
@@ -8276,45 +8324,7 @@ arc_ifcvt (void)
 	      /* ??? don't conditionalize if all side effects are dead
 		 in the not-execute case.  */
 
-	      /* For commutative operators, we generally prefer to have
-		 the first source match the destination.  */
-	      if (GET_CODE (pat) == SET)
-		{
-		  rtx src = SET_SRC (pat);
-
-		  if (COMMUTATIVE_P (src))
-		    {
-		      rtx src0 = XEXP (src, 0);
-		      rtx src1 = XEXP (src, 1);
-		      rtx dst = SET_DEST (pat);
-
-		      if (rtx_equal_p (src1, dst) && !rtx_equal_p (src0, dst)
-			  /* Leave add_n alone - the canonical form is to
-			     have the complex summand first.  */
-			  && REG_P (src0))
-			pat = gen_rtx_SET (VOIDmode, dst,
-					   gen_rtx_fmt_ee (GET_CODE (src),
-							   GET_MODE (src),
-							   src1, src0));
-		    }
-		}
-
-	      /* dwarf2out.c:dwarf2out_frame_debug_expr doesn't know
-		 what to do with COND_EXEC.  */
-	      if (RTX_FRAME_RELATED_P (insn))
-		{
-		  /* If this is the delay slot insn of an anulled branch,
-		     dwarf2out.c:scan_trace understands the anulling semantics
-		     without the COND_EXEC.  */
-		  gcc_assert
-		   (pprev && NEXT_INSN (NEXT_INSN (pprev)) == NEXT_INSN (insn)
-		    && JUMP_P (prev) && get_attr_cond (prev) == COND_USE
-		    && INSN_ANNULLED_BRANCH_P (prev));
-		  rtx note = alloc_reg_note (REG_FRAME_RELATED_EXPR, pat,
-					     REG_NOTES (insn));
-		  validate_change (insn, &REG_NOTES (insn), note, 1);
-		}
-	      pat = gen_rtx_COND_EXEC (VOIDmode, cond, pat);
+	      pat = conditionalize_nonjump (pat, cond, insn, annulled);
 	    }
 	  else if (simplejump_p (insn))
 	    {
@@ -8397,18 +8407,7 @@ arc_predicate_delay_insns (void)
 	cond = copy_rtx (cond);
       patp = &PATTERN (dlay);
       pat = *patp;
-      /* dwarf2out.c:dwarf2out_frame_debug_expr doesn't know
-	 what to do with COND_EXEC.  */
-      if (RTX_FRAME_RELATED_P (dlay))
-	{
-	  /* As this is the delay slot insn of an anulled branch,
-	     dwarf2out.c:scan_trace understands the anulling semantics
-	     without the COND_EXEC.  */
-	  rtx note = alloc_reg_note (REG_FRAME_RELATED_EXPR, pat,
-				     REG_NOTES (dlay));
-	  validate_change (dlay, &REG_NOTES (dlay), note, 1);
-	}
-      pat = gen_rtx_COND_EXEC (VOIDmode, cond, pat);
+      pat = conditionalize_nonjump (pat, cond, insn, true);
       validate_change (dlay, patp, pat, 1);
       if (!apply_change_group ())
 	gcc_unreachable ();
