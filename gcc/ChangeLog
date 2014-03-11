@@ -1,3 +1,11 @@
+2014-03-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* builtins.c (expand_builtin_setjmp_receiver): Use and clobber
+	hard_frame_pointer_rtx.
+	* cse.c (cse_insn): Remove volatile check.
+	* cselib.c (cselib_process_insn): Likewise.
+	* dse.c (scan_insn): Likewise.
+
 2014-03-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (conditionalize_nonjump): New function, broken

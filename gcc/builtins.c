@@ -910,18 +910,27 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 #ifdef HAVE_nonlocal_goto
   if (! HAVE_nonlocal_goto)
 #endif
-    /* First adjust our frame pointer to its actual value.  It was
-       previously set to the start of the virtual area corresponding to
-       the stacked variables when we branched here and now needs to be
-       adjusted to the actual hardware fp value.
+    {
+      /* First adjust our frame pointer to its actual value.  It was
+	 previously set to the start of the virtual area corresponding to
+	 the stacked variables when we branched here and now needs to be
+	 adjusted to the actual hardware fp value.
 
-       Assignments to virtual registers are converted by
-       instantiate_virtual_regs into the corresponding assignment
-       to the underlying register (fp in this case) that makes
-       the original assignment true.
-       So the following insn will actually be decrementing fp by
-       STARTING_FRAME_OFFSET.  */
-    emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+	 Assignments to virtual registers are converted by
+	 instantiate_virtual_regs into the corresponding assignment
+	 to the underlying register (fp in this case) that makes
+	 the original assignment true.
+	 So the following insn will actually be decrementing fp by
+	 STARTING_FRAME_OFFSET.  */
+      emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+
+      /* Restoring the frame pointer also modifies the hard frame pointer.
+	 Mark it used (so that the previous assignment remains live once
+	 the frame pointer is eliminated) and clobbered (to represent the
+	 implicit update from the assignment).  */
+      emit_use (hard_frame_pointer_rtx);
+      emit_clobber (hard_frame_pointer_rtx);
+    }
 
 #if !HARD_FRAME_POINTER_IS_ARG_POINTER
   if (fixed_regs[ARG_POINTER_REGNUM])
@@ -965,8 +974,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 
   /* We must not allow the code we just generated to be reordered by
      scheduling.  Specifically, the update of the frame pointer must
-     happen immediately, not later.  Similarly, we must block
-     (frame-related) register values to be used across this code.  */
+     happen immediately, not later.  */
   emit_insn (gen_blockage ());
 }
 
