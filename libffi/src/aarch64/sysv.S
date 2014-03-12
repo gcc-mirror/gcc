@@ -231,13 +231,13 @@ ffi_closure_SYSV:
         cfi_rel_offset (x30, 8)
 
         mov     x29, sp
+        cfi_def_cfa_register (x29)
 
         sub     sp, sp, #ffi_closure_SYSV_FS
-	cfi_adjust_cfa_offset (ffi_closure_SYSV_FS)
 
         stp     x21, x22, [x29, #-16]
-        cfi_rel_offset (x21, 0)
-        cfi_rel_offset (x22, 8)
+        cfi_rel_offset (x21, -16)
+        cfi_rel_offset (x22, -8)
 
         /* Load x21 with &call_context.  */
         mov     x21, sp
@@ -295,7 +295,7 @@ ffi_closure_SYSV:
         cfi_restore (x22)
 
         mov     sp, x29
-	cfi_adjust_cfa_offset (-ffi_closure_SYSV_FS)
+        cfi_def_cfa_register (sp)
 
         ldp     x29, x30, [sp], #16
 	cfi_adjust_cfa_offset (-16)
