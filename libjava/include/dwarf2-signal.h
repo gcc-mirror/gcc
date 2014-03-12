@@ -1,6 +1,6 @@
 // dwarf2-signal.h - Catch runtime signals and turn them into exceptions.
 
-/* Copyright (C) 2000, 2001, 2009, 2011  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2009, 2011, 2014  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,10 +20,9 @@ details.  */
 #define HANDLE_SEGV 1
 #undef HANDLE_FPE
 
-#define SIGNAL_HANDLER(_name)	\
-static void _Jv_##_name (int, siginfo_t *_sip, void *_p)
-
-class java::lang::Throwable;
+#define SIGNAL_HANDLER(_name)					\
+static void _Jv_##_name (int, siginfo_t *,			\
+			 void *_p __attribute__ ((__unused__)))
 
 // Unwind the stack to the point at which the signal was generated and
 // then throw an exception.  With the dwarf2 unwinder we don't usually
@@ -47,12 +46,7 @@ do									\
 while (0)
 
 #else
-#define MAKE_THROW_FRAME(_exception)		\
-do						\
-{						\
-  (void)_p;					\
-}						\
-while (0)
+#define MAKE_THROW_FRAME(_exception)
 #endif
 
 #if defined(__sparc__)
