@@ -410,9 +410,9 @@ assert_unreachable_fallthru_edge_p (edge e)
 	  if (gsi_end_p (gsi))
 	    return false;
 	  stmt = gsi_stmt (gsi);
-	  if (is_gimple_debug (stmt))
+	  while (is_gimple_debug (stmt) || gimple_clobber_p (stmt))
 	    {
-	      gsi_next_nondebug (&gsi);
+	      gsi_next (&gsi);
 	      if (gsi_end_p (gsi))
 		return false;
 	      stmt = gsi_stmt (gsi);
