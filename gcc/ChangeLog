@@ -1,3 +1,11 @@
+2014-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config.gcc (aarch64*-*-*): Use ISA flags from aarch64-arches.def.
+	Do not define target_cpu_default2 to generic.
+	* config/aarch64/aarch64.h (TARGET_CPU_DEFAULT): Use generic cpu.
+	* config/aarch64/aarch64.c (aarch64_override_options): Update comment.
+	* config/aarch64/aarch64-arches.def (armv8-a): Use generic cpu.
+
 2014-03-12  Jakub Jelinek  <jakub@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 

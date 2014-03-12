@@ -3396,6 +3396,11 @@ case "${target}" in
 				  ${srcdir}/config/aarch64/$def | \
 				  sed -e 's/^[^,]*,[ 	]*//' | \
 				  sed -e 's/,.*$//'`
+				# Extract the architecture flags from aarch64-arches.def
+				ext_mask=`grep "^$pattern(\"$base_val\"," \
+				   ${srcdir}/config/aarch64/$def | \
+				   sed -e 's/)$//' | \
+				   sed -e 's/^.*,//'`
 			  else
 				base_id=`grep "^$pattern(\"$base_val\"," \
 				  ${srcdir}/config/aarch64/$def | \
@@ -4057,10 +4062,8 @@ esac
 target_cpu_default2=
 case ${target} in
 	aarch64*-*-*)
-		if test x$target_cpu_cname = x
+		if test x"$target_cpu_cname" != x
 		then
-			target_cpu_default2=TARGET_CPU_generic
-		else
 			target_cpu_default2=$target_cpu_cname
 		fi
 		;;
