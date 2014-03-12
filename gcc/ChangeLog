@@ -1,3 +1,8 @@
+2014-03-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/60454
+	* tree-ssa-math-opts.c (find_bswap_1): Fix bswap detection.
+
 2014-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config.gcc (aarch64*-*-*): Use ISA flags from aarch64-arches.def.
