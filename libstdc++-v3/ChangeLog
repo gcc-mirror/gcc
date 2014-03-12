@@ -1,3 +1,12 @@
+2014-03-12  Roland McGrath  <mcgrathr@google.com>
+	    Mark Seaborn  <mseaborn@google.com>
+
+	PR libstdc++/59392
+	* libsupc++/eh_call.cc (__cxa_call_unexpected): Call __do_catch with
+	the address of a null pointer, not with a null pointer to pointer.
+	Copy comment for this case from eh_personality.cc:__cxa_call_unexpected.
+	* testsuite/18_support/bad_exception/59392.cc: New file.
+
 2014-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60499
