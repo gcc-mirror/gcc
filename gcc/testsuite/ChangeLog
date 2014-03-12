@@ -1,3 +1,8 @@
+2014-03-12  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* lib/profopt.exp (profopt-execute): Use $testcase in
+	unsupported.
+
 2014-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-ifcombine-12.c: New test.

@@ -277,7 +277,7 @@ proc profopt-execute { src } {
 	set dg-do-what [list "run" "" P]
 	set extra_flags [profopt-get-options $src]
 	if { [lindex ${dg-do-what} 1 ] == "N" } {
-	    unsupported "$src"
+	    unsupported "$testcase"
 	    unset testname_with_flags
 	    verbose "$src not supported on this target, skipping it" 3
 	    return
