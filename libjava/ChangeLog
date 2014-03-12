@@ -1,3 +1,11 @@
+2014-03-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* include/dwarf2-signal.h: Update copyright year.
+	(SIGNAL_HANDLER): Remove _sip argument.  Mark _p argument with
+	__attribute__ ((__unused__)).
+	(class java::lang::Throwable): Remove declaration.
+	(MAKE_THROW_FRAME) [!__ia64__]: Define as empty definition.
+
 2014-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* java/lang/natObject.cc (_Jv_MonitorEnter): Add missing parenthesis
