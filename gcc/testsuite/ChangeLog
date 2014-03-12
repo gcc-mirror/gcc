@@ -1,3 +1,8 @@
+2014-03-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/60454
+	* gcc.c-torture/execute/pr60454.c: New test.
+
 2014-03-12  Jakub Jelinek  <jakub@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
