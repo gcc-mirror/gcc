@@ -1,3 +1,8 @@
+2014-03-12  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/60264
+	* gcc.target/arm/pr60264.c
+
 2014-03-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/60454

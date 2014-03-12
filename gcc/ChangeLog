@@ -1,3 +1,11 @@
+2014-03-12  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/60264
+	* config/arm/arm.c (arm_emit_vfp_multi_reg_pop): Emit a	REG_CFA_DEF_CFA
+	note.
+	(arm_expand_epilogue_apcs_frame): call arm_add_cfa_adjust_cfa_note.
+	(arm_unwind_emit): Allow REG_CFA_DEF_CFA.
+
 2014-03-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/60454
