@@ -806,8 +806,7 @@ eliminate_not_pairs (enum tree_code opcode,
 	  if (opcode == BIT_AND_EXPR)
 	    oe->op = build_zero_cst (TREE_TYPE (oe->op));
 	  else if (opcode == BIT_IOR_EXPR)
-	    oe->op = build_low_bits_mask (TREE_TYPE (oe->op),
-					  TYPE_PRECISION (TREE_TYPE (oe->op)));
+	    oe->op = build_all_ones_cst (TREE_TYPE (oe->op));
 
 	  reassociate_stats.ops_eliminated += ops->length () - 1;
 	  ops->truncate (0);
