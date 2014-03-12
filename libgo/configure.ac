@@ -620,6 +620,8 @@ CFLAGS=$CFLAGS_hold])
 MATH_FLAG=
 if test "$libgo_cv_c_fancymath" = yes; then
   MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
+else
+  MATH_FLAG="-ffp-contract=off"
 fi
 AC_SUBST(MATH_FLAG)
 
