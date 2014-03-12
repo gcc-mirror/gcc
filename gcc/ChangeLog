@@ -1,3 +1,12 @@
+2014-03-12  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Add BUILT_IN_LFLOORF,
+	BUILT_IN_LLFLOOR, BUILT_IN_LCEILF and BUILT_IN_LLCEIL.
+	* config/aarch64/arm_neon.h (vcvtaq_u64_f64): Call __builtin_llfloor
+	instead of __builtin_lfloor.
+	(vcvtnq_u64_f64): Call __builtin_llceil instead of __builtin_lceil.
+
 2014-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-ifcombine.c (forwarder_block_to): New function.
