@@ -1,4 +1,11 @@
 2014-03-12  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/60502
+	* tree-ssa-reassoc.c (eliminate_not_pairs): Use build_all_ones_cst
+	instead of build_low_bits_mask.
+
+2014-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/60482
 	* tree-vrp.c (register_edge_assert_for_1): Don't add assert
