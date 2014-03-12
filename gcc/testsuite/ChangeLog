@@ -1,3 +1,11 @@
+2014-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-ifcombine-12.c: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-2.c: Pass -mbranch-cost=1 if
+	possible, only test for exactly one if if -mbranch-cost=1
+	has been passed.
+
 2014-03-12  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/60264

@@ -1,3 +1,11 @@
+2014-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-ifcombine.c (forwarder_block_to): New function.
+	(tree_ssa_ifcombine_bb_1): New function.
+	(tree_ssa_ifcombine_bb): Use it.  Handle also cases where else_bb
+	is an empty forwarder block to then_bb or vice versa and then_bb
+	and else_bb are effectively swapped.
+
 2014-03-12  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/60264
