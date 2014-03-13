@@ -1,3 +1,9 @@
+2014-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* regex.c (bzero) [!_LIBC]: Define without coma expression.
+	(regerror): Cast the call to memcpy to (void) to avoid unused
+	value warnings.
+
 2014-01-28  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cp-demangle.c (d_demangle_callback): Put an abort call in place,
