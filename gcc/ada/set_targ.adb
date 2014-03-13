@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2013, Free Software Foundation, Inc.            --
+--          Copyright (C) 2013-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,6 +140,7 @@ package body Set_Targ is
       Complex   : Boolean;
       Count     : Natural;
       Float_Rep : Float_Rep_Kind;
+      Precision : Positive;
       Size      : Positive;
       Alignment : Natural);
    pragma Convention (C, Register_Float_Type);
@@ -151,7 +152,8 @@ package body Set_Targ is
    --  non-zero if the type has real and imaginary parts (also ignored during
    --  registration). Count is the number of elements in a vector type (zero =
    --  not a vector, registration ignores vectors). Float_Rep shows the kind of
-   --  floating-point type, and Size/Alignment are the size/alignment in bits.
+   --  floating-point type, and Precision, Size and Alignment are the precision
+   --  size and alignment in bits.
    --
    --  So to summarize, the only types that are actually registered have Digs
    --  non-zero, Complex zero (false), and Count zero (not a vector).
@@ -179,6 +181,7 @@ package body Set_Targ is
       Complex   : Boolean;
       Count     : Natural;
       Float_Rep : Float_Rep_Kind;
+      Precision : Positive;
       Size      : Positive;
       Alignment : Natural)
    is
@@ -244,13 +247,24 @@ package body Set_Targ is
 
          else
             Write_Str ("mod 2**");
-            Write_Int (Int (Size / Positive'Max (1, Count)));
+            Write_Int (Int (Precision / Positive'Max (1, Count)));
             Write_Line (";");
          end if;
 
-         Write_Str ("for " & T (1 .. Last) & "'Size use ");
-         Write_Int (Int (Size));
-         Write_Line (";");
+         if Precision = Size then
+            Write_Str ("for " & T (1 .. Last) & "'Size use ");
+            Write_Int (Int (Size));
+            Write_Line (";");
+
+         else
+            Write_Str ("for " & T (1 .. Last) & "'Value_Size use ");
+            Write_Int (Int (Precision));
+            Write_Line (";");
+
+            Write_Str ("for " & T (1 .. Last) & "'Object_Size use ");
+            Write_Int (Int (Size));
+            Write_Line (";");
+         end if;
 
          Write_Str ("for " & T (1 .. Last) & "'Alignment use ");
          Write_Int (Int (Alignment / 8));
@@ -286,6 +300,7 @@ package body Set_Targ is
            (NAME      => new String'(T (1 .. Last)),
             DIGS      => Digs,
             FLOAT_REP => Float_Rep,
+            PRECISION => Precision,
             SIZE      => Size,
             ALIGNMENT => Alignment);
       end if;
@@ -448,7 +463,7 @@ package body Set_Targ is
 
             AddC (' ');
 
-            AddN (E.SIZE);
+            AddN (E.PRECISION);
             AddC (' ');
 
             AddN (E.ALIGNMENT);
@@ -826,7 +841,7 @@ begin
                N := N + 1;
                Check_Spaces;
 
-               E.SIZE := Get_Nat;
+               E.PRECISION := Get_Nat;
                Check_Spaces;
 
                E.ALIGNMENT := Get_Nat;
@@ -834,6 +849,11 @@ begin
                if Buffer (N) /= ASCII.LF then
                   FailN ("junk at end of line for");
                end if;
+
+               --  ??? We do not read E.SIZE, see Write_Target_Dependent_Values
+
+               E.SIZE :=
+                 (E.PRECISION + E.ALIGNMENT - 1) / E.ALIGNMENT * E.ALIGNMENT;
 
                N := N + 1;
             end;
