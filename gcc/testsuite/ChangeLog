@@ -1,3 +1,11 @@
+2014-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36282
+	* c-c++-common/pr36282-1.c: New test.
+	* c-c++-common/pr36282-2.c: New test.
+	* c-c++-common/pr36282-3.c: New test.
+	* c-c++-common/pr36282-4.c: New test.
+
 2014-03-13  Richard Henderson  <rth@redhat.com>
 
 	PR debug/60438

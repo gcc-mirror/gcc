@@ -1,3 +1,15 @@
+2014-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36282
+	* c-pragma.c (apply_pragma_weak): Only look at
+	TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) if
+	DECL_ASSEMBLER_NAME_SET_P (decl).
+	(maybe_apply_pending_pragma_weaks): Exit early if
+	vec_safe_is_empty (pending_weaks) rather than only when
+	!pending_weaks.
+	(maybe_apply_pragma_weak): Likewise.  If !DECL_ASSEMBLER_NAME_SET_P,
+	set assembler name back to NULL afterwards.
+
 2014-03-11  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -std=gnu++14.
