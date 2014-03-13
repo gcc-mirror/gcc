@@ -55,6 +55,7 @@ package Back_End is
       Complex   : Boolean;  -- True iff type has real and imaginary parts
       Count     : Natural;  -- Number of elements in vector, 0 otherwise
       Float_Rep : Float_Rep_Kind; -- Representation used for fpt type
+      Precision : Positive; -- Precision of representation in bits
       Size      : Positive; -- Size of representation in bits
       Alignment : Natural); -- Required alignment in bits
    pragma Convention (C, Register_Type_Proc);
