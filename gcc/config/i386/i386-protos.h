@@ -154,13 +154,11 @@ extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 extern rtx ix86_libcall_value (enum machine_mode);
 extern bool ix86_function_arg_regno_p (int);
 extern void ix86_asm_output_function_label (FILE *, const char *, tree);
-extern rtx ix86_force_to_memory (enum machine_mode, rtx);
-extern void ix86_free_from_memory (enum machine_mode);
 extern void ix86_call_abi_override (const_tree);
 extern int ix86_reg_parm_stack_space (const_tree);
 
 extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
-				  rtx, rtx, rtx, rtx);
+				  rtx, rtx, rtx);
 extern bool ix86_hard_regno_mode_ok (int, enum machine_mode);
 extern bool ix86_modes_tieable_p (enum machine_mode, enum machine_mode);
 extern bool ix86_secondary_memory_needed (enum reg_class, enum reg_class,

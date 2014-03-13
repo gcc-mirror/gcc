@@ -19993,7 +19993,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 /* Split branch based on floating point condition.  */
 void
 ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
-		      rtx target1, rtx target2, rtx tmp, rtx pushed)
+		      rtx target1, rtx target2, rtx tmp)
 {
   rtx condition;
   rtx i;
@@ -20008,10 +20008,6 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
 
   condition = ix86_expand_fp_compare (code, op1, op2,
 				      tmp);
-
-  /* Remove pushed operand from stack.  */
-  if (pushed)
-    ix86_free_from_memory (GET_MODE (pushed));
 
   i = emit_jump_insn (gen_rtx_SET
 		      (VOIDmode, pc_rtx,
@@ -36994,105 +36990,6 @@ avx_vperm2f128_parallel (rtx par, enum machine_mode mode)
   return mask + 1;
 }
 
-/* Store OPERAND to the memory after reload is completed.  This means
-   that we can't easily use assign_stack_local.  */
-rtx
-ix86_force_to_memory (enum machine_mode mode, rtx operand)
-{
-  rtx result;
-
-  gcc_assert (reload_completed);
-  if (ix86_using_red_zone ())
-    {
-      result = gen_rtx_MEM (mode,
-			    gen_rtx_PLUS (Pmode,
-					  stack_pointer_rtx,
-					  GEN_INT (-RED_ZONE_SIZE)));
-      emit_move_insn (result, operand);
-    }
-  else if (TARGET_64BIT)
-    {
-      switch (mode)
-	{
-	case HImode:
-	case SImode:
-	  operand = gen_lowpart (DImode, operand);
-	  /* FALLTHRU */
-	case DImode:
-	  emit_insn (
-		      gen_rtx_SET (VOIDmode,
-				   gen_rtx_MEM (DImode,
-						gen_rtx_PRE_DEC (DImode,
-							stack_pointer_rtx)),
-				   operand));
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-      result = gen_rtx_MEM (mode, stack_pointer_rtx);
-    }
-  else
-    {
-      switch (mode)
-	{
-	case DImode:
-	  {
-	    rtx operands[2];
-	    split_double_mode (mode, &operand, 1, operands, operands + 1);
-	    emit_insn (
-			gen_rtx_SET (VOIDmode,
-				     gen_rtx_MEM (SImode,
-						  gen_rtx_PRE_DEC (Pmode,
-							stack_pointer_rtx)),
-				     operands[1]));
-	    emit_insn (
-			gen_rtx_SET (VOIDmode,
-				     gen_rtx_MEM (SImode,
-						  gen_rtx_PRE_DEC (Pmode,
-							stack_pointer_rtx)),
-				     operands[0]));
-	  }
-	  break;
-	case HImode:
-	  /* Store HImodes as SImodes.  */
-	  operand = gen_lowpart (SImode, operand);
-	  /* FALLTHRU */
-	case SImode:
-	  emit_insn (
-		      gen_rtx_SET (VOIDmode,
-				   gen_rtx_MEM (GET_MODE (operand),
-						gen_rtx_PRE_DEC (SImode,
-							stack_pointer_rtx)),
-				   operand));
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-      result = gen_rtx_MEM (mode, stack_pointer_rtx);
-    }
-  return result;
-}
-
-/* Free operand from the memory.  */
-void
-ix86_free_from_memory (enum machine_mode mode)
-{
-  if (!ix86_using_red_zone ())
-    {
-      int size;
-
-      if (mode == DImode || TARGET_64BIT)
-	size = 8;
-      else
-	size = 4;
-      /* Use LEA to deallocate stack space.  In peephole2 it will be converted
-         to pop or add instruction if registers are available.  */
-      emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					    GEN_INT (size))));
-    }
-}
-
 /* Return a register priority for hard reg REGNO.  */
 static int
 ix86_register_priority (int hard_regno)

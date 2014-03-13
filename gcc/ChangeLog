@@ -1,3 +1,26 @@
+2014-03-13  Richard Henderson  <rth@redhat.com>
+
+	PR debug/60438
+	* config/i386/i386.c (ix86_split_fp_branch): Remove pushed argument.
+	(ix86_force_to_memory, ix86_free_from_memory): Remove.
+	* config/i386/i386-protos.h: Likewise.
+	* config/i386/i386.md (floathi<X87MODEF>2): Use assign_386_stack_local
+	in the expander instead of a splitter.
+	(float<SWI48x><X87MODEF>2): Use assign_386_stack_local if there is
+	any possibility of requiring a memory.
+	(*floatsi<MODEF>2_vector_mixed): Remove, and the splitters.
+	(*floatsi<MODEF>2_vector_sse): Remove, and the splitters.
+	(fp branch splitters): Update for ix86_split_fp_branch.
+	(*jcc<X87MODEF>_<SWI24>_i387): Remove r/f alternative.
+	(*jcc<X87MODEF>_<SWI24>_r_i387): Likewise.
+	(splitter for jcc<X87MODEF>_<SWI24>_i387 r/f): Remove.
+	(*fop_<MODEF>_2_i387): Remove f/r alternative.
+	(*fop_<MODEF>_3_i387): Likewise.
+	(*fop_xf_2_i387, *fop_xf_3_i387): Likewise.
+	(splitters for the fop_* register patterns): Remove.
+	(fscalexf4_i387): Rename from *fscalexf4_i387.
+	(ldexpxf3): Use gen_floatsixf2 and gen_fscalexf4_i387.
+	
 2014-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59779
