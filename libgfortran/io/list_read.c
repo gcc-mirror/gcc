@@ -2104,11 +2104,14 @@ finish_list_read (st_parameter_dt *dtp)
       return;
     }
 
-  err = eat_line (dtp);
-  if (err == LIBERROR_END)
+  if (!is_internal_unit (dtp))
     {
-      free_line (dtp);
-      hit_eof (dtp);
+      err = eat_line (dtp);
+      if (err == LIBERROR_END)
+	{
+	  free_line (dtp);
+	  hit_eof (dtp);
+	}
     }
 }
 
