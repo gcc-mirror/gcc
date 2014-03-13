@@ -246,7 +246,7 @@ maybe_unlink_file (const char *file)
 	  && errno != ENOENT)
 	fatal_perror ("deleting LTRANS file %s", file);
     }
-  else
+  else if (verbose)
     fprintf (stderr, "[Leaving LTRANS %s]\n", file);
 }
 
