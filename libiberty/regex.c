@@ -151,7 +151,7 @@ char *realloc ();
 #    include <string.h>
 #    ifndef bzero
 #     ifndef _LIBC
-#      define bzero(s, n)	memset (s, '\0', n)
+#      define bzero(s, n)	((void) memset (s, '\0', n))
 #     else
 #      define bzero(s, n)	__bzero (s, n)
 #     endif
