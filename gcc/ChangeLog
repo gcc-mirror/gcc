@@ -1,3 +1,8 @@
+2014-03-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Record
+	BB's single pred and update the father loop's latch info later.
+
 2014-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vector.md (VEC_L): Add V1TI mode to vector types.
