@@ -559,11 +559,11 @@ proc lto-execute { src1 sid } {
 	    verbose "Running dg-final tests." 3
 	    verbose "dg-final-proc:\n[info body dg-final-proc]" 4
 	    if [catch "dg-final-proc $src1" errmsg] {
-		perror "$name: error executing dg-final: $errmsg"
+		perror "$src1: error executing dg-final: $errmsg"
 		# ??? The call to unresolved here is necessary to clear
 		# `errcnt'.  What we really need is a proc like perror that
 		# doesn't set errcnt.  It should also set exit_status to 1.
-		unresolved "$name: error executing dg-final: $errmsg"
+		unresolved "$src1: error executing dg-final: $errmsg"
 	    }
 	}
 
