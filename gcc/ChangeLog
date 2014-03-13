@@ -1,3 +1,9 @@
+2014-03-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/57320
+	* function.c (rest_of_handle_thread_prologue_and_epilogue): Cleanup
+	the CFG after thread_prologue_and_epilogue_insns.
+
 2014-03-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57189
