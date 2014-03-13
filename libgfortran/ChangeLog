@@ -1,3 +1,16 @@
+2014-03-12  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/38199
+	* io/read.c (read_decimal): Quickly skip spaces to avoid calls
+	to next_char.
+	* io/unit.c (is_trim_ok): New helper function to check various
+	conditions to see if its OK to trim the internal unit string.
+	(get_internal_unit): Use LEN_TRIM to shorten selected internal
+	unit strings for optimizing READ. Enable this optimization for
+	formatted READ.
+	* io/list_read.c (finish_list_read): Don't call eat_line for
+	internal units.
+	 
 2014-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/38199
