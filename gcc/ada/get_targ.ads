@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,8 +28,8 @@
 --  exp_dbug and the elaboration of ttypes, via the Set_Targs package.
 --  It also contains the routine for registering floating-point types.
 
---  NOTE:  Any changes in this package must be reflected in jgettarg.ads
---  and aa_getta.ads and any other versions of this package.
+--  NOTE: Any changes in this package must be reflected in aa_getta.adb
+--  and any other version in the various back ends.
 
 --  Note that all these values return sizes of C types with corresponding
 --  names. This allows GNAT to define the corresponding Ada types to have
@@ -134,6 +134,7 @@ package Get_Targ is
       Complex   : Boolean;        -- True iff type has real and imaginary parts
       Count     : Natural;        -- Number of elements in vector, 0 otherwise
       Float_Rep : Float_Rep_Kind; -- Representation used for fpt type
+      Precision : Positive;       -- Precision of representation in bits
       Size      : Positive;       -- Size of representation in bits
       Alignment : Natural);       -- Required alignment in bits
    pragma Convention (C, Register_Type_Proc);

@@ -1,3 +1,21 @@
+2014-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/51483
+	* cstand.adb (Register_Float_Type): Add 'precision' parameter and use
+	it to set the RM size.  Use directly 'size' for the Esize.
+	(Create_Back_End_Float_Types): Adjust call to above.
+	* get_targ.ads (Register_Type_Proc): Add 'precision' parameter.
+	* set_targ.ads (FPT_Mode_Entry): Add 'precision' component.
+	(Write_Target_Dependent_Values): Adjust comment.
+	* set_targ.adb (Register_Float_Type): Add 'precision' parameter and
+	deal with it.
+	(Write_Target_Dependent_Values): Write the precision in lieu of size.
+	(Initialization): Read the precision in lieu of size and compute the
+	size from the precision and the alignment.
+	* gcc-interface/gigi.h (enumerate_modes): Add integer parameter.
+	* gcc-interface/misc.c (enumerate_modes): Likewise.  Do not register
+	types for vector modes, pass the size in addition to the precision.
+
 2014-03-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (ADA_DEPFILES): Fix typo.
