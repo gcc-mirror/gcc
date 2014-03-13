@@ -151,6 +151,7 @@ package body CStand is
       Complex   : Boolean;  -- True iff type has real and imaginary parts
       Count     : Natural;  -- Number of elements in vector, 0 otherwise
       Float_Rep : Float_Rep_Kind; -- Representation used for fpt type
+      Precision : Positive; -- Precision of representation in bits
       Size      : Positive; -- Size of representation in bits
       Alignment : Natural); -- Required alignment in bits
    pragma Convention (C, Register_Float_Type);
@@ -2014,6 +2015,7 @@ package body CStand is
       Complex   : Boolean;
       Count     : Natural;
       Float_Rep : Float_Rep_Kind;
+      Precision : Positive;
       Size      : Positive;
       Alignment : Natural)
    is
@@ -2063,13 +2065,24 @@ package body CStand is
 
          else
             Write_Str ("mod 2**");
-            Write_Int (Int (Size / Positive'Max (1, Count)));
+            Write_Int (Int (Precision / Positive'Max (1, Count)));
             Write_Line (";");
          end if;
 
-         Write_Str ("for " & T & "'Size use ");
-         Write_Int (Int (Size));
-         Write_Line (";");
+         if Precision = Size then
+            Write_Str ("for " & T (1 .. Last) & "'Size use ");
+            Write_Int (Int (Size));
+            Write_Line (";");
+
+         else
+            Write_Str ("for " & T (1 .. Last) & "'Value_Size use ");
+            Write_Int (Int (Precision));
+            Write_Line (";");
+
+            Write_Str ("for " & T (1 .. Last) & "'Object_Size use ");
+            Write_Int (Int (Size));
+            Write_Line (";");
+         end if;
 
          Write_Str ("for " & T & "'Alignment use ");
          Write_Int (Int (Alignment / 8));
@@ -2092,15 +2105,13 @@ package body CStand is
       if Digs > 0 and then not Complex and then Count = 0 then
          declare
             Ent   : constant Entity_Id := New_Standard_Entity;
-            Esize : constant Pos := Pos ((Size + Alignment - 1)
-                                           / Alignment * Alignment);
          begin
             Set_Defining_Identifier
               (New_Node (N_Full_Type_Declaration, Stloc), Ent);
             Make_Name (Ent, T (1 .. Last));
             Set_Scope (Ent, Standard_Standard);
-            Build_Float_Type (Ent, Esize, Float_Rep, Pos (Digs));
-            Set_RM_Size (Ent, UI_From_Int (Int (Size)));
+            Build_Float_Type (Ent, Int (Size), Float_Rep, Pos (Digs));
+            Set_RM_Size (Ent, UI_From_Int (Int (Precision)));
             Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
 
             if No (Back_End_Float_Types) then
