@@ -1,3 +1,8 @@
+2014-03-13  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* lto-wrapper.c (maybe_unlink_file): Suppress diagnostic
+	messages.
+
 2014-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59025
