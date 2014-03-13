@@ -219,6 +219,7 @@ static struct pointer_map_t *operand_rank;
 
 /* Forward decls.  */
 static long get_rank (tree);
+static bool reassoc_stmt_dominates_stmt_p (gimple, gimple);
 
 
 /* Bias amount for loop-carried phis.  We want this to be larger than
@@ -506,11 +507,37 @@ sort_by_operand_rank (const void *pa, const void *pb)
     }
 
   /* Lastly, make sure the versions that are the same go next to each
-     other.  We use SSA_NAME_VERSION because it's stable.  */
+     other.  */
   if ((oeb->rank - oea->rank == 0)
       && TREE_CODE (oea->op) == SSA_NAME
       && TREE_CODE (oeb->op) == SSA_NAME)
     {
+      /* As SSA_NAME_VERSION is assigned pretty randomly, because we reuse
+	 versions of removed SSA_NAMEs, so if possible, prefer to sort
+	 based on basic block and gimple_uid of the SSA_NAME_DEF_STMT.
+	 See PR60418.  */
+      if (!SSA_NAME_IS_DEFAULT_DEF (oea->op)
+	  && !SSA_NAME_IS_DEFAULT_DEF (oeb->op)
+	  && SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
+	{
+	  gimple stmta = SSA_NAME_DEF_STMT (oea->op);
+	  gimple stmtb = SSA_NAME_DEF_STMT (oeb->op);
+	  basic_block bba = gimple_bb (stmta);
+	  basic_block bbb = gimple_bb (stmtb);
+	  if (bbb != bba)
+	    {
+	      if (bb_rank[bbb->index] != bb_rank[bba->index])
+		return bb_rank[bbb->index] - bb_rank[bba->index];
+	    }
+	  else
+	    {
+	      bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
+	      bool db = reassoc_stmt_dominates_stmt_p (stmtb, stmta);
+	      if (da != db)
+		return da ? 1 : -1;
+	    }
+	}
+
       if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
 	return SSA_NAME_VERSION (oeb->op) - SSA_NAME_VERSION (oea->op);
       else
