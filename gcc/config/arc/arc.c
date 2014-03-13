@@ -8407,7 +8407,7 @@ arc_predicate_delay_insns (void)
 	cond = copy_rtx (cond);
       patp = &PATTERN (dlay);
       pat = *patp;
-      pat = conditionalize_nonjump (pat, cond, insn, true);
+      pat = conditionalize_nonjump (pat, cond, dlay, true);
       validate_change (dlay, patp, pat, 1);
       if (!apply_change_group ())
 	gcc_unreachable ();
