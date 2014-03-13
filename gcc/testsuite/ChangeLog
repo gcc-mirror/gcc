@@ -1,3 +1,8 @@
+2014-03-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57189
+	* gcc.target/i386/pr57189.c: New.
+
 2014-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60254

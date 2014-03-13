@@ -1,3 +1,9 @@
+2014-03-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57189
+	* lra-constraints.c (process_alt_operands): Disfavor spilling
+	vector pseudos.
+
 2014-03-13  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* lto-wrapper.c (maybe_unlink_file): Suppress diagnostic
