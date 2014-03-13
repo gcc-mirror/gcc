@@ -1,3 +1,9 @@
+2014-03-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/60486
+	* config/avr/avr.c (avr_out_plus): Swap cc_plus and cc_minus in
+	calls of avr_out_plus_1.
+
 2014-03-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Record

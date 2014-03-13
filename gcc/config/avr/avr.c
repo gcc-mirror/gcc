@@ -6812,8 +6812,8 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
 
   /* Work out the shortest sequence.  */
 
-  avr_out_plus_1 (op, &len_minus, MINUS, &cc_plus, code_sat, sign, out_label);
-  avr_out_plus_1 (op, &len_plus, PLUS, &cc_minus, code_sat, sign, out_label);
+  avr_out_plus_1 (op, &len_minus, MINUS, &cc_minus, code_sat, sign, out_label);
+  avr_out_plus_1 (op, &len_plus, PLUS, &cc_plus, code_sat, sign, out_label);
 
   if (plen)
     {
