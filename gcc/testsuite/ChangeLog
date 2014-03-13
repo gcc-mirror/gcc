@@ -1,3 +1,10 @@
+2014-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60254
+	* g++.dg/cpp0x/static_assert10.C: New.
+	* g++.dg/cpp0x/static_assert11.C: Likewise.
+	* g++.dg/cpp0x/static_assert3.C: Adjust.
+
 2014-03-13  Richard Biener  <rguenther@suse.de>
 
 	* lib/lto.exp (lto-execute): Fix error catching for dg-final.
