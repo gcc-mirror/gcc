@@ -6991,6 +6991,10 @@ rest_of_handle_thread_prologue_and_epilogue (void)
      scheduling to operate in the epilogue.  */
   thread_prologue_and_epilogue_insns ();
 
+  /* Shrink-wrapping can result in unreachable edges in the epilogue,
+     see PR57320.  */
+  cleanup_cfg (0);
+
   /* The stack usage info is finalized during prologue expansion.  */
   if (flag_stack_usage_info)
     output_stack_usage ();
