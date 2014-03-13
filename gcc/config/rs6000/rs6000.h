@@ -529,6 +529,7 @@ extern int rs6000_vector_align[];
 
 #define TARGET_XSCVDPSPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
 #define TARGET_XSCVSPDPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
+#define TARGET_VADDUQM		(TARGET_P8_VECTOR && TARGET_POWERPC64)
 
 /* Byte/char syncs were added as phased in for ISA 2.06B, but are not present
    in power7, so conditionalize them on p8 features.  TImode syncs need quad
@@ -1194,7 +1195,7 @@ enum data_align { align_abi, align_opt, align_both };
 
 #define ALTIVEC_OR_VSX_VECTOR_MODE(MODE)				\
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
-   || (MODE) == V2DImode)
+   || (MODE) == V2DImode || (MODE) == V1TImode)
 
 #define SPE_VECTOR_MODE(MODE)		\
 	((MODE) == V4HImode          	\
@@ -2577,6 +2578,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_opaque_p_V2SI,
   RS6000_BTI_opaque_V4SI,
   RS6000_BTI_V16QI,
+  RS6000_BTI_V1TI,
   RS6000_BTI_V2SI,
   RS6000_BTI_V2SF,
   RS6000_BTI_V2DI,
@@ -2586,6 +2588,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_V4SF,
   RS6000_BTI_V8HI,
   RS6000_BTI_unsigned_V16QI,
+  RS6000_BTI_unsigned_V1TI,
   RS6000_BTI_unsigned_V8HI,
   RS6000_BTI_unsigned_V4SI,
   RS6000_BTI_unsigned_V2DI,
@@ -2611,6 +2614,8 @@ enum rs6000_builtin_type_index
   RS6000_BTI_UINTSI,		 /* unsigned_intSI_type_node */
   RS6000_BTI_INTDI,		 /* intDI_type_node */
   RS6000_BTI_UINTDI,		 /* unsigned_intDI_type_node */
+  RS6000_BTI_INTTI,		 /* intTI_type_node */
+  RS6000_BTI_UINTTI,		 /* unsigned_intTI_type_node */
   RS6000_BTI_float,	         /* float_type_node */
   RS6000_BTI_double,	         /* double_type_node */
   RS6000_BTI_void,	         /* void_type_node */
@@ -2623,6 +2628,7 @@ enum rs6000_builtin_type_index
 #define opaque_p_V2SI_type_node       (rs6000_builtin_types[RS6000_BTI_opaque_p_V2SI])
 #define opaque_V4SI_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V4SI])
 #define V16QI_type_node               (rs6000_builtin_types[RS6000_BTI_V16QI])
+#define V1TI_type_node                (rs6000_builtin_types[RS6000_BTI_V1TI])
 #define V2DI_type_node                (rs6000_builtin_types[RS6000_BTI_V2DI])
 #define V2DF_type_node                (rs6000_builtin_types[RS6000_BTI_V2DF])
 #define V2SI_type_node                (rs6000_builtin_types[RS6000_BTI_V2SI])
@@ -2632,6 +2638,7 @@ enum rs6000_builtin_type_index
 #define V4SF_type_node                (rs6000_builtin_types[RS6000_BTI_V4SF])
 #define V8HI_type_node                (rs6000_builtin_types[RS6000_BTI_V8HI])
 #define unsigned_V16QI_type_node      (rs6000_builtin_types[RS6000_BTI_unsigned_V16QI])
+#define unsigned_V1TI_type_node       (rs6000_builtin_types[RS6000_BTI_unsigned_V1TI])
 #define unsigned_V8HI_type_node       (rs6000_builtin_types[RS6000_BTI_unsigned_V8HI])
 #define unsigned_V4SI_type_node       (rs6000_builtin_types[RS6000_BTI_unsigned_V4SI])
 #define unsigned_V2DI_type_node       (rs6000_builtin_types[RS6000_BTI_unsigned_V2DI])
@@ -2658,6 +2665,8 @@ enum rs6000_builtin_type_index
 #define uintSI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_UINTSI])
 #define intDI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_INTDI])
 #define uintDI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_UINTDI])
+#define intTI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_INTTI])
+#define uintTI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_UINTTI])
 #define float_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_float])
 #define double_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_double])
 #define void_type_internal_node		 (rs6000_builtin_types[RS6000_BTI_void])

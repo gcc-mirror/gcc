@@ -15127,6 +15127,51 @@ vector long long vec_vupklsw (vector int);
 vector unsigned long long vec_vupklsw (vector int);
 @end smallexample
 
+If the ISA 2.07 additions to the vector/scalar (power8-vector)
+instruction set is available, the following additional functions are
+available for 64-bit targets.  New vector types
+(@var{vector __int128_t} and @var{vector __uint128_t}) are available
+to hold the @var{__int128_t} and @var{__uint128_t} types to use these
+builtins.
+
+The normal vector extract, and set operations work on
+@var{vector __int128_t} and @var{vector __uint128_t} types,
+but the index value must be 0.
+
+@smallexample
+vector __int128_t vec_vaddcuq (vector __int128_t, vector __int128_t);
+vector __uint128_t vec_vaddcuq (vector __uint128_t, vector __uint128_t);
+
+vector __int128_t vec_vadduqm (vector __int128_t, vector __int128_t);
+vector __uint128_t vec_vadduqm (vector __uint128_t, vector __uint128_t);
+
+vector __int128_t vec_vaddecuq (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t, 
+                                 vector __uint128_t);
+
+vector __int128_t vec_vaddeuqm (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t, 
+                                 vector __uint128_t);
+
+vector __int128_t vec_vsubecuq (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t, 
+                                 vector __uint128_t);
+
+vector __int128_t vec_vsubeuqm (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vsubeuqm (vector __uint128_t, vector __uint128_t,
+                                 vector __uint128_t);
+
+vector __int128_t vec_vsubcuq (vector __int128_t, vector __int128_t);
+vector __uint128_t vec_vsubcuq (vector __uint128_t, vector __uint128_t);
+
+__int128_t vec_vsubuqm (__int128_t, __int128_t);
+__uint128_t vec_vsubuqm (__uint128_t, __uint128_t);
+@end smallexample
+
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
 
