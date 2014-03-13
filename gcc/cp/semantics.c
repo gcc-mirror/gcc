@@ -6860,7 +6860,8 @@ finish_static_assert (tree condition, tree message, location_t location,
       else if (condition && condition != error_mark_node)
 	{
 	  error ("non-constant condition for static assertion");
-	  cxx_constant_value (condition);
+	  if (require_potential_rvalue_constant_expression (condition))
+	    cxx_constant_value (condition);
 	}
       input_location = saved_loc;
     }
