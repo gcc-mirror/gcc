@@ -1,3 +1,11 @@
+2014-03-13  Joey Ye  <joey.ye@arm.com>
+
+	Backport from mainline
+	2014-03-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/60454
+	* gcc.c-torture/execute/pr60454.c: New test.
+
 2014-03-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60450

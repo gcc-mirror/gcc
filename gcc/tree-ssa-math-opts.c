@@ -1718,7 +1718,9 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 
   if (rhs_class == GIMPLE_BINARY_RHS)
     {
+      int i;
       struct symbolic_number n1, n2;
+      unsigned HOST_WIDEST_INT mask;
       tree source_expr2;
 
       if (code != BIT_IOR_EXPR)
@@ -1744,6 +1746,15 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    return NULL_TREE;
 
 	  n->size = n1.size;
+	  for (i = 0, mask = 0xff; i < n->size; i++, mask <<= BITS_PER_UNIT)
+	    {
+	      unsigned HOST_WIDEST_INT masked1, masked2;
+
+	      masked1 = n1.n & mask;
+	      masked2 = n2.n & mask;
+	      if (masked1 && masked2 && masked1 != masked2)
+		return NULL_TREE;
+	    }
 	  n->n = n1.n | n2.n;
 
 	  if (!verify_symbolic_number_p (n, stmt))
