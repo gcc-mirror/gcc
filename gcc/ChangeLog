@@ -1,3 +1,175 @@
+2014-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (VEC_L): Add V1TI mode to vector types.
+	(VEC_M): Likewise.
+	(VEC_N): Likewise.
+	(VEC_R): Likewise.
+	(VEC_base): Likewise.
+	(mov<MODE>, VEC_M modes): If we are loading TImode into VSX
+	registers, we need to swap double words in little endian mode.
+
+	* config/rs6000/rs6000-modes.def (V1TImode): Add new vector mode
+	to be a container mode for 128-bit integer operations added in ISA
+	2.07.  Unlike TImode and PTImode, the preferred register set is
+	the Altivec/VMX registers for the 128-bit operations.
+
+	* config/rs6000/rs6000-protos.h (rs6000_move_128bit_ok_p): Add
+	declarations.
+	(rs6000_split_128bit_ok_p): Likewise.
+
+	* config/rs6000/rs6000-builtin.def (BU_P8V_AV_3): Add new support
+	macros for creating ISA 2.07 normal and overloaded builtin
+	functions with 3 arguments.
+	(BU_P8V_OVERLOAD_3): Likewise.
+	(VPERM_1T): Add support for V1TImode in 128-bit vector operations
+	for use as overloaded functions.
+	(VPERM_1TI_UNS): Likewise.
+	(VSEL_1TI): Likewise.
+	(VSEL_1TI_UNS): Likewise.
+	(ST_INTERNAL_1ti): Likewise.
+	(LD_INTERNAL_1ti): Likewise.
+	(XXSEL_1TI): Likewise.
+	(XXSEL_1TI_UNS): Likewise.
+	(VPERM_1TI): Likewise.
+	(VPERM_1TI_UNS): Likewise.
+	(XXPERMDI_1TI): Likewise.
+	(SET_1TI): Likewise.
+	(LXVD2X_V1TI): Likewise.
+	(STXVD2X_V1TI): Likewise.
+	(VEC_INIT_V1TI): Likewise.
+	(VEC_SET_V1TI): Likewise.
+	(VEC_EXT_V1TI): Likewise.
+	(EQV_V1TI): Likewise.
+	(NAND_V1TI): Likewise.
+	(ORC_V1TI): Likewise.
+	(VADDCUQ): Add support for 128-bit integer arithmetic instructions
+	added in ISA 2.07.  Add both normal 'altivec' builtins, and the
+	overloaded builtin.
+	(VADDUQM): Likewise.
+	(VSUBCUQ): Likewise.
+	(VADDEUQM): Likewise.
+	(VADDECUQ): Likewise.
+	(VSUBEUQM): Likewise.
+	(VSUBECUQ): Likewise.
+
+	* config/rs6000/rs6000-c.c (__int128_type): New static to hold
+	__int128_t and __uint128_t types.
+	(__uint128_type): Likewise.
+	(altivec_categorize_keyword): Add support for vector __int128_t,
+	vector __uint128_t, vector __int128, and vector unsigned __int128
+	as a container type for TImode operations that need to be done in
+	VSX/Altivec registers.
+	(rs6000_macro_to_expand): Likewise.
+	(altivec_overloaded_builtins): Add ISA 2.07 overloaded functions
+	to support 128-bit integer instructions vaddcuq, vadduqm,
+	vaddecuq, vaddeuqm, vsubcuq, vsubuqm, vsubecuq, vsubeuqm.
+	(altivec_resolve_overloaded_builtin): Add support for V1TImode.
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Add support
+	for V1TImode, and set up preferences to use VSX/Altivec
+	registers.  Setup VSX reload handlers.
+	(rs6000_debug_reg_global): Likewise.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_preferred_simd_mode): Likewise.
+	(vspltis_constant): Do not allow V1TImode as easy altivec
+	constants.
+	(easy_altivec_constant): Likewise.
+	(output_vec_const_move): Likewise.
+	(rs6000_expand_vector_set): Convert V1TImode set and extract to
+	simple move.
+	(rs6000_expand_vector_extract): Likewise.
+	(reg_offset_addressing_ok_p): Setup V1TImode to use VSX reg+reg
+	addressing.
+	(rs6000_const_vec): Add support for V1TImode.
+	(rs6000_emit_le_vsx_load): Swap double words when loading or
+	storing TImode/V1TImode.
+	(rs6000_emit_le_vsx_store): Likewise.
+	(rs6000_emit_le_vsx_move): Likewise.
+	(rs6000_emit_move): Add support for V1TImode.
+	(altivec_expand_ld_builtin): Likewise.
+	(altivec_expand_st_builtin): Likewise.
+	(altivec_expand_vec_init_builtin): Likewise.
+	(altivec_expand_builtin): Likewise.
+	(rs6000_init_builtins): Add support for V1TImode type.  Add
+	support for ISA 2.07 128-bit integer builtins.  Define type names
+	for the VSX/Altivec vector types.
+	(altivec_init_builtins): Add support for overloaded vector
+	functions with V1TImode type.
+	(rs6000_preferred_reload_class): Prefer Altivec registers for
+	V1TImode.
+	(rs6000_move_128bit_ok_p): Move 128-bit move/split validation to
+	external function.
+	(rs6000_split_128bit_ok_p): Likewise.
+	(rs6000_handle_altivec_attribute): Create V1TImode from vector
+	__int128_t and vector __uint128_t.
+
+	* config/rs6000/vsx.md (VSX_L): Add V1TImode to vector iterators
+	and mode attributes.
+	(VSX_M): Likewise.
+	(VSX_M2): Likewise.
+	(VSm): Likewise.
+	(VSs): Likewise.
+	(VSr): Likewise.
+	(VSv): Likewise.
+	(VS_scalar): Likewise.
+	(VS_double): Likewise.
+	(vsx_set_v1ti): New builtin function to create V1TImode from
+	TImode.
+
+	* config/rs6000/rs6000.h (TARGET_VADDUQM): New macro to say
+	whether we support the ISA 2.07 128-bit integer arithmetic
+	instructions.
+	(ALTIVEC_OR_VSX_VECTOR_MODE): Add V1TImode.
+	(enum rs6000_builtin_type_index): Add fields to hold V1TImode
+	and TImode types for use with the builtin functions.
+	(V1TI_type_node): Likewise.
+	(unsigned_V1TI_type_node): Likewise.
+	(intTI_type_internal_node): Likewise.
+	(uintTI_type_internal_node): Likewise.
+
+	* config/rs6000/altivec.md (UNSPEC_VADDCUQ): New unspecs for ISA
+	2.07 128-bit builtin functions.
+	(UNSPEC_VADDEUQM): Likewise.
+	(UNSPEC_VADDECUQ): Likewise.
+	(UNSPEC_VSUBCUQ): Likewise.
+	(UNSPEC_VSUBEUQM): Likewise.
+	(UNSPEC_VSUBECUQ): Likewise.
+	(VM): Add V1TImode to vector mode iterators.
+	(VM2): Likewise.
+	(VI_unit): Likewise.
+	(altivec_vadduqm): Add ISA 2.07 128-bit binary builtins.
+	(altivec_vaddcuq): Likewise.
+	(altivec_vsubuqm): Likewise.
+	(altivec_vsubcuq): Likewise.
+	(altivec_vaddeuqm): Likewise.
+	(altivec_vaddecuq): Likewise.
+	(altivec_vsubeuqm): Likewise.
+	(altivec_vsubecuq): Likewise.
+
+	* config/rs6000/rs6000.md (FMOVE128_GPR): Add V1TImode to vector
+	mode iterators.
+	(BOOL_128): Likewise.
+	(BOOL_REGS_OUTPUT): Likewise.
+	(BOOL_REGS_OP1): Likewise.
+	(BOOL_REGS_OP2): Likewise.
+	(BOOL_REGS_UNARY): Likewise.
+	(BOOL_REGS_AND_CR0): Likewise.
+
+	* config/rs6000/altivec.h (vec_vaddcuq): Add support for ISA 2.07
+	128-bit integer builtin support.
+	(vec_vadduqm): Likewise.
+	(vec_vaddecuq): Likewise.
+	(vec_vaddeuqm): Likewise.
+	(vec_vsubecuq): Likewise.
+	(vec_vsubeuqm): Likewise.
+	(vec_vsubcuq): Likewise.
+	(vec_vsubuqm): Likewise.
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document vec_vaddcuq, vec_vadduqm, vec_vaddecuq, vec_vaddeuqm,
+	vec_subecuq, vec_subeuqm, vec_vsubcuq, vec_vsubeqm builtins adding
+	128-bit integer add/subtract to ISA 2.07.
+
 2014-03-12  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.c (arc_predicate_delay_insns):

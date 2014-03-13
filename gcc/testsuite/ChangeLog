@@ -1,3 +1,16 @@
+2014-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-int128-1.c: New test to test ISA
+	2.07 128-bit arithmetic.
+	* gcc.target/powerpc/p8vector-int128-2.c: Likewise.
+
+	* gcc.target/powerpc/timode_off.c: Restrict cpu type to power5,
+	due to when TImode is allowed in VSX registers, the allowable
+	address modes for TImode is just a single indirect address in
+	order for the value to be loaded and store in either GPR or VSX
+	registers.  This affects the generated code, and it would cause
+	this test to fail, when such an option is used.
+
 2014-03-12  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* lib/profopt.exp (profopt-execute): Use $testcase in
