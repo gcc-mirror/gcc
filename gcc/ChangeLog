@@ -1,3 +1,9 @@
+2014-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59779
+	* tree-dfa.c (get_ref_base_and_extent): Use double_int
+	type for bitsize and maxsize instead of HOST_WIDE_INT.
+
 2014-03-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/57320
