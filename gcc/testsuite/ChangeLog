@@ -13,16 +13,14 @@
 
 2014-03-12  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
-	* lib/profopt.exp (profopt-execute): Use $testcase in
-	unsupported.
+	* lib/profopt.exp (profopt-execute): Use $testcase in unsupported.
 
 2014-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-ifcombine-12.c: New test.
 	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: New test.
-	* gcc.dg/tree-ssa/phi-opt-2.c: Pass -mbranch-cost=1 if
-	possible, only test for exactly one if if -mbranch-cost=1
-	has been passed.
+	* gcc.dg/tree-ssa/phi-opt-2.c: Pass -mbranch-cost=1 if possible,
+	only test for exactly one if if -mbranch-cost=1 has been passed.
 
 2014-03-12  Christian Bruel  <christian.bruel@st.com>
 
@@ -299,8 +297,8 @@
 2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
 	    Jeff Law  <law@redhat.com>
 
-	 PR rtl-optimization/49847
-	 * g++.dg/pr49847.C: New test.
+	PR rtl-optimization/49847
+	* g++.dg/pr49847.C: New test.
 
 2014-02-27  Marek Polacek  <polacek@redhat.com>
 

@@ -71,13 +71,12 @@
 	(altivec_resolve_overloaded_builtin): Add support for V1TImode.
 
 	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Add support
-	for V1TImode, and set up preferences to use VSX/Altivec
-	registers.  Setup VSX reload handlers.
+	for V1TImode, and set up preferences to use VSX/Altivec registers.
+	Setup VSX reload handlers.
 	(rs6000_debug_reg_global): Likewise.
 	(rs6000_init_hard_regno_mode_ok): Likewise.
 	(rs6000_preferred_simd_mode): Likewise.
-	(vspltis_constant): Do not allow V1TImode as easy altivec
-	constants.
+	(vspltis_constant): Do not allow V1TImode as easy altivec constants.
 	(easy_altivec_constant): Likewise.
 	(output_vec_const_move): Likewise.
 	(rs6000_expand_vector_set): Convert V1TImode set and extract to
@@ -100,8 +99,7 @@
 	for the VSX/Altivec vector types.
 	(altivec_init_builtins): Add support for overloaded vector
 	functions with V1TImode type.
-	(rs6000_preferred_reload_class): Prefer Altivec registers for
-	V1TImode.
+	(rs6000_preferred_reload_class): Prefer Altivec registers for V1TImode.
 	(rs6000_move_128bit_ok_p): Move 128-bit move/split validation to
 	external function.
 	(rs6000_split_128bit_ok_p): Likewise.
@@ -118,12 +116,10 @@
 	(VSv): Likewise.
 	(VS_scalar): Likewise.
 	(VS_double): Likewise.
-	(vsx_set_v1ti): New builtin function to create V1TImode from
-	TImode.
+	(vsx_set_v1ti): New builtin function to create V1TImode from TImode.
 
-	* config/rs6000/rs6000.h (TARGET_VADDUQM): New macro to say
-	whether we support the ISA 2.07 128-bit integer arithmetic
-	instructions.
+	* config/rs6000/rs6000.h (TARGET_VADDUQM): New macro to say whether
+	we support the ISA 2.07 128-bit integer arithmetic instructions.
 	(ALTIVEC_OR_VSX_VECTOR_MODE): Add V1TImode.
 	(enum rs6000_builtin_type_index): Add fields to hold V1TImode
 	and TImode types for use with the builtin functions.
@@ -132,8 +128,8 @@
 	(intTI_type_internal_node): Likewise.
 	(uintTI_type_internal_node): Likewise.
 
-	* config/rs6000/altivec.md (UNSPEC_VADDCUQ): New unspecs for ISA
-	2.07 128-bit builtin functions.
+	* config/rs6000/altivec.md (UNSPEC_VADDCUQ): New unspecs for ISA 2.07
+	128-bit builtin functions.
 	(UNSPEC_VADDEUQM): Likewise.
 	(UNSPEC_VADDECUQ): Likewise.
 	(UNSPEC_VSUBCUQ): Likewise.
@@ -200,8 +196,8 @@
 2014-03-12  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/60264
-	* config/arm/arm.c (arm_emit_vfp_multi_reg_pop): Emit a	REG_CFA_DEF_CFA
-	note.
+	* config/arm/arm.c (arm_emit_vfp_multi_reg_pop): Emit a
+	REG_CFA_DEF_CFA note.
 	(arm_expand_epilogue_apcs_frame): call arm_add_cfa_adjust_cfa_note.
 	(arm_unwind_emit): Allow REG_CFA_DEF_CFA.
 
@@ -243,9 +239,9 @@
 
 2014-03-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
-	* config/arc/arc.c (conditionalize_nonjump): New function, broken
-	out of:
-	(arc_ifcvt) .
+	* config/arc/arc.c (conditionalize_nonjump): New function,
+	broken out of ...
+	(arc_ifcvt): ... this.
 	(arc_predicate_delay_insns): Use it.
 
 2014-03-11  Joern Rennecke  <joern.rennecke@embecosm.com>
@@ -302,8 +298,7 @@
 
 2014-03-08  Tobias Burnus  <burnus@net-b.de>
 
-	* doc/invoke.texi (-fcilkplus): Update implementation
-	status.
+	* doc/invoke.texi (-fcilkplus): Update implementation status.
 
 2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
 	    Richard Biener  <rguenther@suse.de>
@@ -322,8 +317,8 @@
 
 2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* configure.ac (HAVE_AS_IX86_TLSLDMPLT): Improve test for Solaris
-	11/x86 ld.
+	* configure.ac (HAVE_AS_IX86_TLSLDMPLT): Improve test
+	for Solaris 11/x86 ld.
 	* configure: Regenerate.
 
 2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
@@ -371,20 +366,17 @@
 	Revert
 	2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
 
-        * tree-streamer.c (record_common_node): Assert we don't record
-        nodes with type double.
-        (preload_common_node): Skip type double, complex double and
-        double pointer since it is now frontend dependent due to
-        fshort-double option.
+	* tree-streamer.c (record_common_node): Assert we don't record
+	nodes with type double.
+	(preload_common_node): Skip type double, complex double and double
+	pointer since it is now frontend dependent due to fshort-double option.
 
 2014-03-06  Richard Biener  <rguenther@suse.de>
 
 	* gcc.c (PLUGIN_COND): Always enable unless -fno-use-linker-plugin
 	or -fno-lto is specified and the linker has full plugin support.
-	* collect2.c (lto_mode): Default to LTO_MODE_WHOPR if LTO is
-	enabled.
-	(main): Remove -flto processing, adjust lto_mode using
-	use_plugin late.
+	* collect2.c (lto_mode): Default to LTO_MODE_WHOPR if LTO is enabled.
+	(main): Remove -flto processing, adjust lto_mode using use_plugin late.
 	* lto-wrapper.c (merge_and_complain): Merge compile-time
 	optimization levels.
 	(run_gcc): And pass it through to the link options.
@@ -447,11 +439,10 @@
 
 2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
 
-        * tree-streamer.c (record_common_node): Assert we don't record
-        nodes with type double.
-        (preload_common_node): Skip type double, complex double and
-        double pointer since it is now frontend dependent due to
-        fshort-double option.
+	* tree-streamer.c (record_common_node): Assert we don't record
+	nodes with type double.
+	(preload_common_node): Skip type double, complex double and double
+	pointer since it is now frontend dependent due to fshort-double option.
 
 2014-03-04  Richard Biener  <rguenther@suse.de>
 
@@ -551,8 +542,8 @@
 
 	Revert:
 	2013-12-14   Jan Hubicka  <jh@suse.cz>
-        PR middle-end/58477
-        * ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers.
+	PR middle-end/58477
+	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers.
 
 2014-03-02  Jon Beniston  <jon@beniston.com>
 
