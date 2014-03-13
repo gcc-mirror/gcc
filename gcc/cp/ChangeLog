@@ -1,5 +1,11 @@
 2014-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/60383
+	* pt.c (maybe_process_partial_specialization): Check return value
+	of check_specialization_namespace.
+
+2014-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/60254
 	* semantics.c (finish_static_assert): Call cxx_constant_value only
 	if require_potential_rvalue_constant_expression returns true.

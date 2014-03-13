@@ -1,3 +1,9 @@
+2014-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60383
+	* g++.dg/template/crash118.C: New.
+	* g++.dg/template/crash95.C: Adjust.
+
 2014-03-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57189
