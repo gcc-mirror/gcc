@@ -211,6 +211,10 @@ bool flag_opts_finished
 Variable
 unsigned int flag_sanitize
 
+; Flag whether a prefix has been added to dump_base_name
+Variable
+bool dump_base_name_prefixed = false
+
 ###
 Driver
 
