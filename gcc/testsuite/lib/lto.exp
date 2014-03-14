@@ -413,7 +413,8 @@ proc lto-execute { src1 sid } {
     global dg-suppress-ld-options
     global LTO_OPTIONS
     global dg-final-code
-
+    global testname_with_flags
+    
     # Get extra flags for this test from the primary source file, and
     # process other dg-* options that this suite supports.  Warn about
     # unsupported flags.
@@ -577,6 +578,22 @@ proc lto-execute { src1 sid } {
 	    }
 	}
 
+	# Clean up after -save-temps.  The LTO tests don't use dg-test, so
+	# testname-for-summary needs to be defined explicitly for each
+	# file that needs to be removed.
+	set testname_with_flags $execname
+
+	eval "cleanup-saved-temps"
+
+	for {set i 0} {$i < $num_srcs} {incr i} {
+	    set testname_with_flags "${base}_${i}"
+	    eval "cleanup-saved-temps"
+	    set testname_with_flags "${sid}_${base}_${i}"
+	    eval "cleanup-saved-temps"
+	}
+	
+	unset testname_with_flags
+	
 	if { ![string compare "run" $compile_type] \
 	     || ![string compare "link" $compile_type] } {
 	    file_on_host delete $execname
