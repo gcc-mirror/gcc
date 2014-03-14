@@ -1,3 +1,12 @@
+2014-03-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2014-03-14 trunk r208562.
+
+	PR target/59396
+	* config/avr/avr.c (avr_set_current_function): Pass function name
+	through default_strip_name_encoding before sanity checking instead
+	of skipping the first char of the assembler name.
+
 2014-02-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_move_double): Don't valididate when
