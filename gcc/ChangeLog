@@ -1,3 +1,11 @@
+2014-03-14  Jakub Jelinek  <jakub@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/60484
+	* common.opt (dump_base_name_prefixed): New Variable.
+	* opts.c (finish_options): Don't prepend directory to x_dump_base_name
+	if x_dump_base_name_prefixed is already set, set it at the end.
+
 2014-03-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60508
