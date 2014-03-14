@@ -510,9 +510,13 @@ split_block (basic_block bb, void *i)
 
   if (current_loops != NULL)
     {
+      edge_iterator ei;
+      edge e;
       add_bb_to_loop (new_bb, bb->loop_father);
-      if (bb->loop_father->latch == bb)
-	bb->loop_father->latch = new_bb;
+      /* Identify all loops bb may have been the latch of and adjust them.  */
+      FOR_EACH_EDGE (e, ei, new_bb->succs)
+	if (e->dest->loop_father->latch == bb)
+	  e->dest->loop_father->latch = new_bb;
     }
 
   res = make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
