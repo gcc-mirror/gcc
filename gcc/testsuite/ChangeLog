@@ -1,3 +1,9 @@
+2014-03-14  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* lib/gcc-dg.exp (cleanup-saved-temps): Handle LTO temporaries.
+	* lib/lto.exp (lto-execute): Cleanup LTO temporaries.
+	* gcc.dg/lto/save-temps_0.c: New testcase.
+
 2014-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36282
