@@ -1,3 +1,9 @@
+2014-03-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60392
+	* trans-array.c (gfc_conv_array_parameter): Don't reuse the descriptor
+	if it has transposed dimensions.
+
 2014-03-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60447
