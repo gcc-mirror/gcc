@@ -1,3 +1,9 @@
+2014-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58678
+	* search.c (dfs_get_pure_virtuals): Treat the destructor of an
+	abstract class as pure.
+
 2014-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60383
