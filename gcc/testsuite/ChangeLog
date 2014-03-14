@@ -1,3 +1,8 @@
+2014-03-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/60461
+	* gcc.dg/lto/pr60461_0.c: New test.
+
 2014-03-14  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* lib/gcc-dg.exp (cleanup-saved-temps): Handle LTO temporaries.

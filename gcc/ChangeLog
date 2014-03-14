@@ -1,3 +1,9 @@
+2014-03-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/60461
+	* ipa-prop.c (ipa_modify_call_arguments): Fix iteration condition
+	and simplify it.
+
 2014-03-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/59396
