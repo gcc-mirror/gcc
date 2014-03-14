@@ -1,3 +1,9 @@
+2014-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR ipa/58721
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.11): Remove unused pattern for
+	_ZNSt12system_errorC* symbols which are not exported on any target.
+
 2014-03-12  Roland McGrath  <mcgrathr@google.com>
 	    Mark Seaborn  <mseaborn@google.com>
 

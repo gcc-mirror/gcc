@@ -1056,12 +1056,6 @@ GLIBCXX_3.4.11 {
     _ZTISt12system_error;
     _ZTVSt12system_error;
     _ZNSt12system_errorD*Ev;
-    # Those template instantiations weren't exported on Solaris in GCC 4.6
-    # and aren't necessary for correct operation, so don't emit them now
-    # (PR libstdc++/54872).
-#if !defined(__sun__) && !defined(__svr4__)
-    _ZNSt12system_errorC*;
-#endif
 
     _ZNKSt4hashISt10error_codeEclES0_;
 
