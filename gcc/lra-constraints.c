@@ -439,14 +439,16 @@ init_curr_insn_input_reloads (void)
 }
 
 /* Create a new pseudo using MODE, RCLASS, ORIGINAL or reuse already
-   created input reload pseudo (only if TYPE is not OP_OUT).  The
-   result pseudo is returned through RESULT_REG.  Return TRUE if we
-   created a new pseudo, FALSE if we reused the already created input
-   reload pseudo.  Use TITLE to describe new registers for debug
-   purposes.  */
+   created input reload pseudo (only if TYPE is not OP_OUT).  Don't
+   reuse pseudo if IN_SUBREG_P is true and the reused pseudo should be
+   wrapped up in SUBREG.  The result pseudo is returned through
+   RESULT_REG.  Return TRUE if we created a new pseudo, FALSE if we
+   reused the already created input reload pseudo.  Use TITLE to
+   describe new registers for debug purposes.  */
 static bool
 get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
-		enum reg_class rclass, const char *title, rtx *result_reg)
+		enum reg_class rclass, bool in_subreg_p,
+		const char *title, rtx *result_reg)
 {
   int i, regno;
   enum reg_class new_class;
@@ -471,6 +473,8 @@ get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
 	     Ensure we don't return *result_reg with wrong mode.  */
 	  if (GET_MODE (reg) != mode)
 	    {
+	      if (in_subreg_p)
+		continue;
 	      if (GET_MODE_SIZE (GET_MODE (reg)) < GET_MODE_SIZE (mode))
 		continue;
 	      reg = lowpart_subreg (mode, reg, GET_MODE (reg));
@@ -1139,9 +1143,11 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
   rtx reg;
   rtx new_reg;
   enum machine_mode mode;
-  bool before_p = false;
+  bool subreg_p, before_p = false;
 
-  loc = strip_subreg (loc);
+  subreg_p = GET_CODE (*loc) == SUBREG;
+  if (subreg_p)
+    loc = &SUBREG_REG (*loc);
   reg = *loc;
   mode = GET_MODE (reg);
   if (! REG_P (reg))
@@ -1171,7 +1177,7 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
 	{
 	  reg = *loc;
 	  if (get_reload_reg (after == NULL ? OP_IN : OP_INOUT,
-			      mode, reg, cl, "address", &new_reg))
+			      mode, reg, cl, subreg_p, "address", &new_reg))
 	    before_p = true;
 	}
       else if (new_class != NO_REGS && rclass != new_class)
@@ -1304,7 +1310,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 	  = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 
       if (get_reload_reg (curr_static_id->operand[nop].type, reg_mode, reg,
-			  rclass, "subreg reg", &new_reg))
+			  rclass, TRUE, "subreg reg", &new_reg))
 	{
 	  bool insert_before, insert_after;
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
@@ -1365,7 +1371,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 
       if (get_reload_reg (curr_static_id->operand[nop].type, mode, reg,
-                          rclass, "paradoxical subreg", &new_reg))
+                          rclass, TRUE, "paradoxical subreg", &new_reg))
         {
 	  rtx subreg;
 	  bool insert_before, insert_after;
@@ -3573,7 +3579,7 @@ curr_insn_transform (void)
 	    new_reg = emit_inc (rclass, *loc, *loc,
 				/* This value does not matter for MODIFY.  */
 				GET_MODE_SIZE (GET_MODE (op)));
-	  else if (get_reload_reg (OP_IN, Pmode, *loc, rclass,
+	  else if (get_reload_reg (OP_IN, Pmode, *loc, rclass, FALSE,
 				   "offsetable address", &new_reg))
 	    lra_emit_move (new_reg, *loc);
 	  before = get_insns ();
@@ -3615,7 +3621,8 @@ curr_insn_transform (void)
 		}
 	    }
 	  old = *loc;
-	  if (get_reload_reg (type, mode, old, goal_alt[i], "", &new_reg)
+	  if (get_reload_reg (type, mode, old, goal_alt[i],
+			      loc != curr_id->operand_loc[i], "", &new_reg)
 	      && type != OP_OUT)
 	    {
 	      push_to_sequence (before);
