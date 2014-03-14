@@ -1,3 +1,10 @@
+2014-03-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/59396
+	* config/avr/avr.c (avr_set_current_function): Pass function name
+	through default_strip_name_encoding before sanity checking instead
+	of skipping the first char of the assembler name.
+
 2014-03-13  Richard Henderson  <rth@redhat.com>
 
 	PR debug/60438
