@@ -3900,8 +3900,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
       ipa_record_stmt_references (current_node, gsi_stmt (gsi));
       gsi_prev (&gsi);
     }
-  while ((gsi_end_p (prev_gsi) && !gsi_end_p (gsi))
-	 || (!gsi_end_p (prev_gsi) && gsi_stmt (gsi) == gsi_stmt (prev_gsi)));
+  while (gsi_stmt (gsi) != gsi_stmt (prev_gsi));
 }
 
 /* If the expression *EXPR should be replaced by a reduction of a parameter, do
