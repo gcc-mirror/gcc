@@ -1,3 +1,8 @@
+2014-03-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60508
+	* gcc.target/i386/pr60508.c: New.
+
 2014-03-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60518
