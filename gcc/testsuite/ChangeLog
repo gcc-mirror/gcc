@@ -1,4 +1,9 @@
-2014-03-13  Martin Jambor  <mjambor@suse.cz>
+2014-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60518
+	* g++.dg/pr60518.C: New testcase.
+
+2014-03-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/60461
 	* gcc.dg/lto/pr60461_0.c: New test.
