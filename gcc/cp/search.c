@@ -2096,22 +2096,6 @@ dfs_get_pure_virtuals (tree binfo, void *data)
 	if (DECL_PURE_VIRTUAL_P (BV_FN (virtuals)))
 	  vec_safe_push (CLASSTYPE_PURE_VIRTUALS (type), BV_FN (virtuals));
     }
-  /* Treat a virtual destructor in an abstract class as pure even if it
-     isn't declared as pure; there is no way it would be called through the
-     vtable except during construction, which causes undefined behavior.  */
-  if (binfo == TYPE_BINFO (type)
-      && CLASSTYPE_PURE_VIRTUALS (type)
-      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-    {
-      tree dtor = CLASSTYPE_DESTRUCTORS (type);
-      if (DECL_VIRTUAL_P (dtor) && !DECL_PURE_VIRTUAL_P (dtor))
-	{
-	  tree clone;
-	  DECL_PURE_VIRTUAL_P (dtor) = true;
-	  FOR_EACH_CLONE (clone, dtor)
-	    DECL_PURE_VIRTUAL_P (clone) = true;
-	}
-    }
 
   return NULL_TREE;
 }
@@ -2131,6 +2115,22 @@ get_pure_virtuals (tree type)
      which it is a primary base will contain vtable entries for the
      pure virtuals in the base class.  */
   dfs_walk_once (TYPE_BINFO (type), NULL, dfs_get_pure_virtuals, type);
+
+  /* Treat a virtual destructor in an abstract class as pure even if it
+     isn't declared as pure; there is no way it would be called through the
+     vtable except during construction, which causes undefined behavior.  */
+  if (CLASSTYPE_PURE_VIRTUALS (type)
+      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+    {
+      tree dtor = CLASSTYPE_DESTRUCTORS (type);
+      if (dtor && DECL_VIRTUAL_P (dtor) && !DECL_PURE_VIRTUAL_P (dtor))
+	{
+	  tree clone;
+	  DECL_PURE_VIRTUAL_P (dtor) = true;
+	  FOR_EACH_CLONE (clone, dtor)
+	    DECL_PURE_VIRTUAL_P (clone) = true;
+	}
+    }
 }
 
 /* Debug info for C++ classes can get very large; try to avoid

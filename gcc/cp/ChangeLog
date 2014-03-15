@@ -1,5 +1,10 @@
 2014-03-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60532
+	PR c++/58678
+	* search.c (get_pure_virtuals): Handle abstract dtor here.
+	(dfs_get_pure_virtuals): Not here.
+
 	PR c++/58678
 	* search.c (dfs_get_pure_virtuals): Treat the destructor of an
 	abstract class as pure.
