@@ -1,3 +1,15 @@
+2014-03-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55207
+	* gfortran.dg/assumed_rank_7.f90: Explicitly deallocate variables.
+	* gfortran.dg/c_ptr_tests_16.f90: Put into subroutine.
+	* gfortran.dg/inline_sum_bounds_check_1.f90: Add
+	-Wno-aggressive-loop-optimizations and remove an unused variable.
+	* gfortran.dg/intent_optimize_1.f90: Put into subroutine.
+	* gfortran.dg/pointer_init_9.f90: New.
+	* gfortran.dg/volatile4.f90: Put into subroutine.
+	* gfortran.dg/volatile6.f90: Ditto.
+
 2014-03-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60392

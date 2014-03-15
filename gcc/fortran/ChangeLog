@@ -1,3 +1,9 @@
+2014-03-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55207
+	* decl.c (match_attr_spec): Variables in the main program implicitly
+	get the SAVE attribute in Fortran 2008.
+
 2014-03-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60392
