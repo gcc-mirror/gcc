@@ -3381,9 +3381,12 @@ emit_cbcond_nop (rtx insn)
 /* Return nonzero if TRIAL can go into the call delay slot.  */
 
 int
-tls_call_delay (rtx trial)
+eligible_for_call_delay (rtx trial)
 {
   rtx pat;
+
+  if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
+    return 0;
 
   /* Binutils allows
        call __tls_get_addr, %tgd_call (foo)
@@ -3466,11 +3469,7 @@ eligible_for_restore_insn (rtx trial, bool return_p)
 
   /* If we have the 'return' instruction, anything that does not use
      local or output registers and can go into a delay slot wins.  */
-  else if (return_p
-	   && TARGET_V9
-	   && !epilogue_renumber (&pat, 1)
-	   && get_attr_in_uncond_branch_delay (trial)
-	       == IN_UNCOND_BRANCH_DELAY_TRUE)
+  else if (return_p && TARGET_V9 && !epilogue_renumber (&pat, 1))
     return 1;
 
   /* The 'restore src1,src2,dest' pattern for SImode.  */
@@ -3513,21 +3512,20 @@ eligible_for_return_delay (rtx trial)
   int regno;
   rtx pat;
 
-  if (! NONJUMP_INSN_P (trial))
-    return 0;
-
-  if (get_attr_length (trial) != 1)
-    return 0;
-
   /* If the function uses __builtin_eh_return, the eh_return machinery
      occupies the delay slot.  */
   if (crtl->calls_eh_return)
     return 0;
 
+  if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
+    return 0;
+
   /* In the case of a leaf or flat function, anything can go into the slot.  */
   if (sparc_leaf_function_p || TARGET_FLAT)
-    return
-      get_attr_in_uncond_branch_delay (trial) == IN_UNCOND_BRANCH_DELAY_TRUE;
+    return 1;
+
+  if (!NONJUMP_INSN_P (trial))
+    return 0;
 
   pat = PATTERN (trial);
   if (GET_CODE (pat) == PARALLEL)
@@ -3547,9 +3545,7 @@ eligible_for_return_delay (rtx trial)
 	  if (regno >= 8 && regno < 24)
 	    return 0;
 	}
-      return !epilogue_renumber (&pat, 1)
-	&& (get_attr_in_uncond_branch_delay (trial)
-	    == IN_UNCOND_BRANCH_DELAY_TRUE);
+      return !epilogue_renumber (&pat, 1);
     }
 
   if (GET_CODE (pat) != SET)
@@ -3569,10 +3565,7 @@ eligible_for_return_delay (rtx trial)
      instruction, it can probably go in.  But restore will not work
      with FP_REGS.  */
   if (! SPARC_INT_REG_P (regno))
-    return (TARGET_V9
-	    && !epilogue_renumber (&pat, 1)
-	    && get_attr_in_uncond_branch_delay (trial)
-	       == IN_UNCOND_BRANCH_DELAY_TRUE);
+    return TARGET_V9 && !epilogue_renumber (&pat, 1);
 
   return eligible_for_restore_insn (trial, true);
 }
@@ -3584,10 +3577,10 @@ eligible_for_sibcall_delay (rtx trial)
 {
   rtx pat;
 
-  if (! NONJUMP_INSN_P (trial) || GET_CODE (PATTERN (trial)) != SET)
+  if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
     return 0;
 
-  if (get_attr_length (trial) != 1)
+  if (!NONJUMP_INSN_P (trial))
     return 0;
 
   pat = PATTERN (trial);
@@ -3605,6 +3598,9 @@ eligible_for_sibcall_delay (rtx trial)
 
       return 1;
     }
+
+  if (GET_CODE (pat) != SET)
+    return 0;
 
   /* Otherwise, only operations which can be done in tandem with
      a `restore' insn can go into the delay slot.  */

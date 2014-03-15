@@ -1,3 +1,26 @@
+2014-03-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (tls_call_delay): Delete.
+	(eligible_for_call_delay): New prototype.
+	* config/sparc/sparc.c (tls_call_delay): Rename into...
+	(eligible_for_call_delay): ...this.  Return false if the instruction
+	cannot be put in the delay slot of a branch.
+	(eligible_for_restore_insn): Simplify.
+	(eligible_for_return_delay): Return false if the instruction cannot be
+	put in the delay slot of a branch and simplify.
+	(eligible_for_sibcall_delay): Return false if the instruction cannot be
+	put in the delay slot of a branch.
+	* config/sparc/sparc.md (fix_ut699): New attribute.
+	(tls_call_delay): Delete.
+	(in_call_delay): Reimplement.
+	(eligible_for_sibcall_delay): Rename into...
+	(in_sibcall_delay): ...this.
+	(eligible_for_return_delay): Rename into...
+	(in_return_delay): ...this.
+	(in_branch_delay): Reimplement.
+	(in_uncond_branch_delay): Delete.
+	(in_annul_branch_delay): Delete.
+
 2014-03-14  Richard Henderson  <rth@redhat.com>
 
 	PR target/60525
