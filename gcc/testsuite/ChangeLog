@@ -1,3 +1,8 @@
+2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/58324
+	* gfortran.dg/list_read_12.f90: New test.
+
 2014-03-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55207
