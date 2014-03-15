@@ -1,3 +1,12 @@
+2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/58324
+	* io/list_read.c (finish_list_read): Read one character to check
+	for the end of the file.  If it is the end, then issue the file
+	end error message.  If not, use eat_line to reach the end
+	without giving error.  The next attempt to read will then
+	issue the error as described above.
+
 2014-03-12  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/38199
@@ -10,7 +19,7 @@
 	formatted READ.
 	* io/list_read.c (finish_list_read): Don't call eat_line for
 	internal units.
-	 
+
 2014-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/38199
