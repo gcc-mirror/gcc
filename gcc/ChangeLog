@@ -1,3 +1,30 @@
+2014-03-14  Richard Henderson  <rth@redhat.com>
+
+	PR target/60525
+	* config/i386/i386.md (floathi<X87MODEF>2): Delete expander; rename
+	define_insn from *floathi<X87MODEF>2_i387; allow nonimmediate_operand.
+	(*floathi<X87MODEF>2_i387_with_temp): Remove.
+	(floathi splitters): Remove.
+	(float<SWI48x>xf2): New pattern.
+	(float<SWI48><MODEF>2): Rename from float<SWI48x><X87MODEF>2.  Drop
+	code that tried to handle DImode for 32-bit, but which was excluded
+	by the pattern's condition.  Drop allocation of stack temporary.
+	(*floatsi<MODEF>2_vector_mixed_with_temp): Remove.
+	(*float<SWI48><MODEF>2_mixed_with_temp): Remove.
+	(*float<SWI48><MODEF>2_mixed_interunit): Remove.
+	(*float<SWI48><MODEF>2_mixed_nointerunit): Remove.
+	(*floatsi<MODEF>2_vector_sse_with_temp): Remove.
+	(*float<SWI48><MODEF>2_sse_with_temp): Remove.
+	(*float<SWI48><MODEF>2_sse_interunit): Remove.
+	(*float<SWI48><MODEF>2_sse_nointerunit): Remove.
+	(*float<SWI48x><X87MODEF>2_i387_with_temp): Remove.
+	(*float<SWI48x><X87MODEF>2_i387): Remove.
+	(all float _with_temp splitters): Remove.
+	(*float<SWI48x><MODEF>2_i387): New pattern.
+	(*float<SWI48><MODEF>2_sse): New pattern.
+	(float TARGET_USE_VECTOR_CONVERTS splitters): Merge them.
+	(float TARGET_SSE_PARTIAL_REG_DEPENDENCY splitters): Merge them.
+
 2014-03-14  Jakub Jelinek  <jakub@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
