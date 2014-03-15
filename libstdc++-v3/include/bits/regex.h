@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   /**
-   * @brief Class regex_traits. Describes aspects of a regular expression.
+   * @brief Describes aspects of a regular expression.
    *
    * A regular expression traits class that satisfies the requirements of
    * section [28.7].
@@ -2098,8 +2098,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // [7.11.3] Function template regex_search
   /**
    * Searches for a regular expression within a range.
-   * @param __first [IN]  The start of the string to search.
-   * @param __last  [IN]  One-past-the-end of the string to search.
+   * @param __s     [IN]  The start of the string to search.
+   * @param __e     [IN]  One-past-the-end of the string to search.
    * @param __m     [OUT] The match results.
    * @param __re    [IN]  The regular expression to search for.
    * @param __flags [IN]  Search policy flags.
