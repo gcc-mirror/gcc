@@ -2,6 +2,8 @@
 ! { dg-options "-O2 -fdump-tree-optimized" }
 ! Tests whether volatile really works for arrays
 ! PR fortran/29601
+
+subroutine sub
 logical, allocatable, volatile :: t1(:)
 logical, allocatable :: t2(:)
 integer :: i

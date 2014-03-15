@@ -24,6 +24,8 @@ call bar(ac)
 call bar(at)
 if (i /= 12) call abort()
 
+deallocate(ac,at)
+
 contains
   subroutine bar(x)
     type(t) :: x(..)
