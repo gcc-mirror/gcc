@@ -1,3 +1,11 @@
+2014-03-15  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h: Add/modify comments.
+	* include/bits/regex_compiler.h: Likewise.
+	* include/bits/regex_executor.h: Likewise.
+	* include/bits/regex_executor.tcc: Likewise.
+	* include/bits/regex_scanner.h: Likewise.
+
 2014-03-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR ipa/58721

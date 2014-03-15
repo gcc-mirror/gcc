@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // TODO: This approach is exponentially slow for certain input.
   //       Try to compile the NFA to a DFA.
   //
-  // Time complexity: o(match_length), O(2^(_M_nfa.size()))
+  // Time complexity: \Omega(match_length), O(2^(_M_nfa.size()))
   // Space complexity: \theta(match_results.size() + match_length)
   //
   // ------------------------------------------------------------
@@ -82,8 +82,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Russ Cox's article (http://swtch.com/~rsc/regexp/regexp1.html)
   // explained this algorithm clearly.
   //
-  // It first computes epsilon closure for every state that's still matching,
-  // using the same DFS algorithm, but doesn't reenter states (set true in
+  // It first computes epsilon closure (states that can be achieved without
+  // consuming characters) for every state that's still matching,
+  // using the same DFS algorithm, but doesn't re-enter states (find a true in
   // _M_visited), nor follows _S_opcode_match.
   //
   // Then apply DFS using every _S_opcode_match (in _M_match_queue) as the start
@@ -92,9 +93,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // It significantly reduces potential duplicate states, so has a better
   // upper bound; but it requires more overhead.
   //
-  // Time complexity: o(match_length * match_results.size())
+  // Time complexity: \Omega(match_length * match_results.size())
   //                  O(match_length * _M_nfa.size() * match_results.size())
-  // Space complexity: o(_M_nfa.size() + match_results.size())
+  // Space complexity: \Omega(_M_nfa.size() + match_results.size())
   //                   O(_M_nfa.size() * match_results.size())
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>

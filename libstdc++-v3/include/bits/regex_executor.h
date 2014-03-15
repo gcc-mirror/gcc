@@ -41,6 +41,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+  /**
+   * @brief Takes a regex and an input string in and
+   * do the matching.
+   *
+   * The %_Executor class has two modes: DFS mode and BFS mode, controlled
+   * by the template parameter %__dfs_mode.
+   */
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
 	   bool __dfs_mode>
     class _Executor
