@@ -1985,8 +1985,6 @@ list_formatted_read (st_parameter_dt *dtp, bt type, void *p, int kind,
 void
 finish_list_read (st_parameter_dt *dtp)
 {
-  int err;
-
   free_saved (dtp);
 
   fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
@@ -1997,9 +1995,22 @@ finish_list_read (st_parameter_dt *dtp)
       return;
     }
 
-  err = eat_line (dtp);
-  if (err == LIBERROR_END)
-    hit_eof (dtp);
+  if (!is_internal_unit (dtp))
+    {
+      int c;
+      c = next_char (dtp);
+      if (c == EOF)
+	{
+	  free_line (dtp);
+	  hit_eof (dtp);
+	  return;
+	}
+      if (c != '\n')
+	eat_line (dtp);
+    }
+
+  free_line (dtp);
+
 }
 
 /*			NAMELIST INPUT

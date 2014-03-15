@@ -788,6 +788,13 @@ internal_proto(fstrcpy);
 extern gfc_charlen_type cf_strcpy (char *, gfc_charlen_type, const char *);
 internal_proto(cf_strcpy);
 
+extern gfc_charlen_type string_len_trim (gfc_charlen_type, const char *);
+export_proto(string_len_trim);
+
+extern gfc_charlen_type string_len_trim_char4 (gfc_charlen_type,
+					       const gfc_char4_t *);
+export_proto(string_len_trim_char4);
+
 /* io/intrinsics.c */
 
 extern void flush_all_units (void);
