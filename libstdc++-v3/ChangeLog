@@ -1,3 +1,7 @@
+2014-03-15  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: New file.
+
 2014-03-15  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h: Add/modify comments.
