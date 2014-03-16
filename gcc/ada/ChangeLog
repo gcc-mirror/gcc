@@ -1,3 +1,9 @@
+2014-03-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR ada/39172
+	* gcc-interface/Makefile.in (target_cpu_default): Revert
+	2013-10-11 change.
+
 2014-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/51483
