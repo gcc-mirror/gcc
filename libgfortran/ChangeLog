@@ -1,3 +1,11 @@
+2014-03-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	Backport from mainline
+	PR libgfortran/60128
+	* io/write_float.def (output_float): Remove unused variable
+	nzero_real. Replace a double space with a single one.
+	(determine_en_precision): Fix wrong handling of the EN format.
+
 2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	Backport from mainline

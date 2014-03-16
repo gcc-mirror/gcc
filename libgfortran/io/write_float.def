@@ -125,8 +125,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   int nzero;
   /* Number of digits after the decimal point.  */
   int nafter;
-  /* Number of zeros after the decimal point, whatever the precision.  */
-  int nzero_real;
   int leadzero;
   int nblanks;
   int ndigits, edigits;
@@ -138,7 +136,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   p = dtp->u.p.scale_factor;
 
   rchar = '5';
-  nzero_real = -1;
 
   /* We should always know the field width and precision.  */
   if (d < 0)
@@ -191,7 +188,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	      if (nafter < 0)
 		nafter = 0;
 	      nafter = d;
-	      nzero = nzero_real = 0;
+	      nzero = 0;
 	    }
 	  else /* p < 0  */
 	    {
@@ -211,14 +208,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 		  nafter = d + nbefore;
 		  nbefore = 0;
 		}
-	      nzero_real = nzero;
 	      if (nzero > d)
 		nzero = d;
 	    }
 	}
       else
 	{
-	  nzero = nzero_real = 0;
+	  nzero = 0;
 	  nafter = d;
 	}
 
@@ -373,7 +369,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   updown:
 
   rchar = '0';
-  if  (ft != FMT_F && w > 0 && d == 0 && p == 0)
+  if (ft != FMT_F && w > 0 && d == 0 && p == 0)
     nbefore = 1;
   /* Scan for trailing zeros to see if we really need to round it.  */
   for(i = nbefore + nafter; i < ndigits; i++)
@@ -1125,14 +1121,36 @@ OUTPUT_FLOAT_FMT_G(16,L)
 /* EN format is tricky since the number of significant digits depends
    on the magnitude.  Solve it by first printing a temporary value and
    figure out the number of significant digits from the printed
-   exponent.  */
+   exponent.  Values y, 0.95*10.0**e <= y <10.0**e, are rounded to
+   10.0**e even when the final result will not be rounded to 10.0**e.
+   For these values the exponent returned by atoi has to be decremented
+   by one. The values y in the ranges
+       (1000.0-0.5*10.0**(-d))*10.0**(3*n) <= y < 10.0*(3*(n+1))  
+        (100.0-0.5*10.0**(-d))*10.0**(3*n) <= y < 10.0*(3*n+2)
+         (10.0-0.5*10.0**(-d))*10.0**(3*n) <= y < 10.0*(3*n+1)
+   are correctly rounded respectively to 1.0...0*10.0*(3*(n+1)),
+   100.0...0*10.0*(3*n), and 10.0...0*10.0*(3*n), where 0...0
+   represents d zeroes, by the lines 279 to 297. */
 
 #define EN_PREC(x,y)\
 {\
-    GFC_REAL_ ## x tmp;				\
-    tmp = * (GFC_REAL_ ## x *)source;				\
+    volatile GFC_REAL_ ## x tmp, one = 1.0;\
+    tmp = * (GFC_REAL_ ## x *)source;\
     if (isfinite (tmp))						\
-      nprinted = DTOA(y,0,tmp);					\
+      {\
+	nprinted = DTOA(y,0,tmp);\
+	int e = atoi (&buffer[4]);\
+	if (buffer[1] == '1')\
+	  {\
+	    tmp = (calculate_exp_ ## x (-e)) * tmp;\
+	    tmp = one - (tmp < 0 ? -tmp : tmp);	\
+	    if (tmp > 0)\
+	      e = e - 1;\
+	  }\
+	nbefore = e%3;\
+	if (nbefore < 0)\
+	  nbefore = 3 + nbefore;\
+      }\
     else\
       nprinted = -1;\
 }\
@@ -1144,6 +1162,7 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
   int nprinted;
   char buffer[10];
   const size_t size = 10;
+  int nbefore; /* digits before decimal point - 1.  */
 
   switch (len)
     {
@@ -1176,16 +1195,6 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
   if (nprinted == -1)
     return -1;
 
-  int e = atoi (&buffer[5]);
-  int nbefore; /* digits before decimal point - 1.  */
-  if (e >= 0)
-    nbefore = e % 3;
-  else
-    {
-      nbefore = (-e) % 3;
-      if (nbefore != 0)
-	nbefore = 3 - nbefore;
-    }
   int prec = f->u.real.d + nbefore;
   if (dtp->u.p.current_unit->round_status != ROUND_UNSPECIFIED
       && dtp->u.p.current_unit->round_status != ROUND_PROCDEFINED)
