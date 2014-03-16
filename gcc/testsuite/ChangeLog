@@ -1,3 +1,9 @@
+2014-03-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	Backport from mainline
+	PR libfortran/60128
+	* gfortran.dg/fmt_en.f90: New test.
+	
 2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	Backport from mainline
