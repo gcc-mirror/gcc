@@ -2929,6 +2929,7 @@ omp_max_vf (void)
 {
   if (!optimize
       || optimize_debug
+      || !flag_tree_loop_optimize
       || (!flag_tree_loop_vectorize
 	  && (global_options_set.x_flag_tree_loop_vectorize
               || global_options_set.x_flag_tree_vectorize)))
@@ -6839,6 +6840,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       if ((flag_tree_loop_vectorize
 	   || (!global_options_set.x_flag_tree_loop_vectorize
                && !global_options_set.x_flag_tree_vectorize))
+	  && flag_tree_loop_optimize
 	  && loop->safelen > 1)
 	{
 	  loop->force_vect = true;
