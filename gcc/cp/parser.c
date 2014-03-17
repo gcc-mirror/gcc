@@ -20527,8 +20527,13 @@ cp_parser_member_declaration (cp_parser* parser)
 	      decl = grokfield (declarator, &decl_specifiers,
 				initializer, /*init_const_expr_p=*/true,
 				asm_specification, attributes);
-		if (parser->fully_implicit_function_template_p)
-		  decl = finish_fully_implicit_template (parser, decl);
+	      if (parser->fully_implicit_function_template_p)
+		{
+		  if (friend_p)
+		    finish_fully_implicit_template (parser, 0);
+		  else
+		    decl = finish_fully_implicit_template (parser, decl);
+		}
 	    }
 
 	  cp_finalize_omp_declare_simd (parser, decl);
@@ -31982,13 +31987,32 @@ synthesize_implicit_template_parm  (cp_parser *parser)
 	  parent_scope = scope;
 	  scope = scope->level_chain;
 	}
-      if (current_class_type && !LAMBDA_TYPE_P (current_class_type)
-	  && parser->num_classes_being_defined == 0)
-	while (scope->kind == sk_class)
-	  {
-	    parent_scope = scope;
-	    scope = scope->level_chain;
-	  }
+      if (current_class_type && !LAMBDA_TYPE_P (current_class_type))
+	{
+	  /* If not defining a class, then any class scope is a scope level in
+	     an out-of-line member definition.  In this case simply wind back
+	     beyond the first such scope to inject the template argument list.
+	     Otherwise wind back to the class being defined.  The latter can
+	     occur in class member friend declarations such as:
+
+	       class A {
+		 void foo (auto);
+	       };
+	       class B {
+		 friend void A::foo (auto);
+	       };
+
+	    The template argument list synthesized for the friend declaration
+	    must be injected in the scope of 'B', just beyond the scope of 'A'
+	    introduced by 'A::'.  */
+
+	  while (scope->kind == sk_class
+		 && !TYPE_BEING_DEFINED (scope->this_entity))
+	    {
+	      parent_scope = scope;
+	      scope = scope->level_chain;
+	    }
+	}
 
       current_binding_level = scope;
 

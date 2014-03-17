@@ -1,5 +1,13 @@
 2014-03-17  Adam Butcher  <adam@jessamine.co.uk>
 
+	PR c++/60390
+	* parser.c (cp_parser_member_declaration): Don't allow
+	finish_fully_implicit_template to consider friend declarations to be
+	class member templates.
+	(synthesize_implicit_template_parm): Handling winding back through class
+	scope to the class being defined in order to inject a template argument
+	list.
+
 	PR c++/60391
 	* parser.c (cp_parser_skip_to_end_of_block_or_statement): Unwind generic
 	function scope as per cp_parser_skip_to_end_of_statement.
