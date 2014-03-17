@@ -1,3 +1,9 @@
+2014-03-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR testsuite/58851
+	* gfortran.dg/unlimited_polymorphic_13.f90: Properly compute
+	storage size.
+
 2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/58324
