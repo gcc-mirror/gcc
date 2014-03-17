@@ -1,3 +1,10 @@
+2014-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/60534
+	* omp-low.c (omp_max_vf): Treat -fno-tree-loop-optimize the same
+	as -fno-tree-loop-vectorize.
+	(expand_omp_simd): Likewise.
+
 2014-03-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (tls_call_delay): Delete.
