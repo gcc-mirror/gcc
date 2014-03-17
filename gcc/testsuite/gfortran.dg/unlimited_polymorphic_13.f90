@@ -23,18 +23,24 @@ contains
     integer :: k
     integer :: sz
 
+    sz = 0
     select case (k)
      case (4)
       sz = storage_size(r1)*2
+    end select
+    select case (k)
      case (8)
       sz = storage_size(r2)*2
-     case (10)
-      sz = storage_size(r3)*2
-     case (16)
-      sz = storage_size(r4)*2
-     case default
-       call abort()
     end select
+    select case (k)
+     case (real_kinds(size(real_kinds)-1))
+      sz = storage_size(r3)*2
+    end select
+    select case (k)
+     case (real_kinds(size(real_kinds)))
+      sz = storage_size(r4)*2
+    end select
+    if (sz .eq. 0) call abort()
 
     if (storage_size(o) /= sz) call abort()
 
