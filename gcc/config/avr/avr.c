@@ -600,9 +600,13 @@ avr_set_current_function (tree decl)
       const char *name;
 
       name = DECL_ASSEMBLER_NAME_SET_P (decl)
-        /* Remove the leading '*' added in set_user_assembler_name.  */
-        ? 1 + IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))
+        ? IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))
         : IDENTIFIER_POINTER (DECL_NAME (decl));
+
+      /* Skip a leading '*' that might still prefix the assembler name,
+         e.g. in non-LTO runs.  */
+
+      name = default_strip_name_encoding (name);
 
       /* Silently ignore 'signal' if 'interrupt' is present.  AVR-LibC startet
          using this when it switched from SIGNAL and INTERRUPT to ISR.  */
@@ -6812,8 +6816,8 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
 
   /* Work out the shortest sequence.  */
 
-  avr_out_plus_1 (op, &len_minus, MINUS, &cc_plus, code_sat, sign, out_label);
-  avr_out_plus_1 (op, &len_plus, PLUS, &cc_minus, code_sat, sign, out_label);
+  avr_out_plus_1 (op, &len_minus, MINUS, &cc_minus, code_sat, sign, out_label);
+  avr_out_plus_1 (op, &len_plus, PLUS, &cc_plus, code_sat, sign, out_label);
 
   if (plen)
     {

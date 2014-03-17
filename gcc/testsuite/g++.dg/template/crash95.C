@@ -8,4 +8,4 @@ template < typename > struct S
   };
 };
 
-S < int > s(0); // { dg-error "incomplete type" }
+S < int > s(0); // { dg-error "no matching" }

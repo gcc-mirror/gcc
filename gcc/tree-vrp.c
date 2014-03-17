@@ -5423,12 +5423,9 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
     return false;
 
   /* We know that OP will have a zero or nonzero value.  If OP is used
-     more than once go ahead and register an assert for OP.
-
-     The FOUND_IN_SUBGRAPH support is not helpful in this situation as
-     it will always be set for OP (because OP is used in a COND_EXPR in
-     the subgraph).  */
-  if (!has_single_use (op))
+     more than once go ahead and register an assert for OP.  */
+  if (live_on_edge (e, op)
+      && !has_single_use (op))
     {
       val = build_int_cst (TREE_TYPE (op), 0);
       register_new_assert_for (op, op, code, val, NULL, e, bsi);

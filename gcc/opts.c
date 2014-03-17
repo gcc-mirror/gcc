@@ -496,7 +496,6 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fipa_sem_equality, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths_dereference, NULL, 1 },
 
     /* -O3 optimizations.  */
@@ -645,7 +644,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 {
   enum unwind_info_type ui_except;
 
-  if (opts->x_dump_base_name && ! IS_ABSOLUTE_PATH (opts->x_dump_base_name))
+  if (opts->x_dump_base_name
+      && ! IS_ABSOLUTE_PATH (opts->x_dump_base_name)
+      && ! opts->x_dump_base_name_prefixed)
     {
       /* First try to make OPTS->X_DUMP_BASE_NAME relative to the
 	 OPTS->X_DUMP_DIR_NAME directory.  Then try to make
@@ -675,6 +676,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	      opts->x_dump_base_name = new_dump_base_name;
 	    }
 	}
+	opts->x_dump_base_name_prefixed = true;
     }
 
   /* Handle related options for unit-at-a-time, toplevel-reorder, and

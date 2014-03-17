@@ -7227,7 +7227,50 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
       else
 	{
 	  tmp = build_fold_indirect_ref_loc (input_location, desc);
-	  gfc_conv_descriptor_data_set (&se->pre, tmp, ptr);
+
+	  gfc_ss * ss = gfc_walk_expr (expr);
+	  if (!transposed_dims (ss))
+	    gfc_conv_descriptor_data_set (&se->pre, tmp, ptr);
+	  else
+	    {
+	      tree old_field, new_field;
+
+	      /* The original descriptor has transposed dims so we can't reuse
+		 it directly; we have to create a new one.  */
+	      tree old_desc = tmp;
+	      tree new_desc = gfc_create_var (TREE_TYPE (old_desc), "arg_desc");
+
+	      old_field = gfc_conv_descriptor_dtype (old_desc);
+	      new_field = gfc_conv_descriptor_dtype (new_desc);
+	      gfc_add_modify (&se->pre, new_field, old_field);
+
+	      old_field = gfc_conv_descriptor_offset (old_desc);
+	      new_field = gfc_conv_descriptor_offset (new_desc);
+	      gfc_add_modify (&se->pre, new_field, old_field);
+
+	      for (int i = 0; i < expr->rank; i++)
+		{
+		  old_field = gfc_conv_descriptor_dimension (old_desc,
+			gfc_rank_cst[get_array_ref_dim_for_loop_dim (ss, i)]);
+		  new_field = gfc_conv_descriptor_dimension (new_desc,
+			gfc_rank_cst[i]);
+		  gfc_add_modify (&se->pre, new_field, old_field);
+		}
+
+	      if (gfc_option.coarray == GFC_FCOARRAY_LIB
+		  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (old_desc))
+		  && GFC_TYPE_ARRAY_AKIND (TREE_TYPE (old_desc))
+		     == GFC_ARRAY_ALLOCATABLE)
+		{
+		  old_field = gfc_conv_descriptor_token (old_desc);
+		  new_field = gfc_conv_descriptor_token (new_desc);
+		  gfc_add_modify (&se->pre, new_field, old_field);
+		}
+
+	      gfc_conv_descriptor_data_set (&se->pre, new_desc, ptr);
+	      se->expr = gfc_build_addr_expr (NULL_TREE, new_desc);
+	    }
+	  gfc_free_ss (ss);
 	}
 
       if (gfc_option.rtcheck & GFC_RTCHECK_ARRAY_TEMPS)

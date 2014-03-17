@@ -143,10 +143,10 @@ namespace __debug
       noexcept(_Alloc_traits::_S_nothrow_move())
       {
 	__glibcxx_check_self_move_assign(__x);
-	bool xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
+	bool __xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
 	    || __x.get_allocator() == this->get_allocator();
 	_M_base() = std::move(__x._M_base());	
-	if (xfer_memory)
+	if (__xfer_memory)
 	  this->_M_swap(__x);
 	else
 	  this->_M_invalidate_all();
@@ -599,10 +599,10 @@ namespace __debug
       noexcept(_Alloc_traits::_S_nothrow_move())
       {
 	__glibcxx_check_self_move_assign(__x);
-	bool xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
+	bool __xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
 	    || __x.get_allocator() == this->get_allocator();
 	_M_base() = std::move(__x._M_base());
-	if (xfer_memory)
+	if (__xfer_memory)
 	  this->_M_swap(__x);
 	else
 	  this->_M_invalidate_all();

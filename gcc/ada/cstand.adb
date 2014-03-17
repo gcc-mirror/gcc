@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,6 +158,7 @@ package body CStand is
      (Name      : String;
       Digs      : Positive;
       Float_Rep : Float_Rep_Kind;
+      Precision : Positive;
       Size      : Positive;
       Alignment : Natural);
    --  Registers a single back end floating-point type (from FPT_Mode_Table in
@@ -167,7 +168,8 @@ package body CStand is
    --  as a normal format (non-null-terminated) string. Digs is the number of
    --  digits, which is always non-zero, since non-floating-point types were
    --  filtered out earlier. Float_Rep indicates the kind of floating-point
-   --  type, and Size and Alignment are the size and alignment in bits.
+   --  type, and Precision, Size and Alignment are the precision, size and
+   --  alignment in bits.
 
    procedure Set_Integer_Bounds
      (Id  : Entity_Id;
@@ -480,7 +482,8 @@ package body CStand is
                E : FPT_Mode_Entry renames FPT_Mode_Table (J);
             begin
                Register_Float_Type
-                 (E.NAME.all, E.DIGS, E.FLOAT_REP, E.SIZE, E.ALIGNMENT);
+                 (E.NAME.all, E.DIGS, E.FLOAT_REP, E.PRECISION, E.SIZE,
+                  E.ALIGNMENT);
             end;
          end loop;
       end Create_Back_End_Float_Types;
@@ -2083,19 +2086,18 @@ package body CStand is
      (Name      : String;
       Digs      : Positive;
       Float_Rep : Float_Rep_Kind;
+      Precision : Positive;
       Size      : Positive;
       Alignment : Natural)
    is
-      Ent   : constant Entity_Id := New_Standard_Entity;
-      Esize : constant Pos :=
-                Pos ((Size + Alignment - 1) / Alignment * Alignment);
+      Ent : constant Entity_Id := New_Standard_Entity;
 
    begin
       Set_Defining_Identifier (New_Node (N_Full_Type_Declaration, Stloc), Ent);
       Make_Name (Ent, Name);
       Set_Scope (Ent, Standard_Standard);
-      Build_Float_Type (Ent, Esize, Float_Rep, Pos (Digs));
-      Set_RM_Size (Ent, UI_From_Int (Int (Size)));
+      Build_Float_Type (Ent, Int (Size), Float_Rep, Pos (Digs));
+      Set_RM_Size (Ent, UI_From_Int (Int (Precision)));
       Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
 
       if No (Back_End_Float_Types) then

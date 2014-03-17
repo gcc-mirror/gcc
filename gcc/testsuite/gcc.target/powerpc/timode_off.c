@@ -1,5 +1,5 @@
 /* { dg-do assemble { target { lp64 } } } */
-/* { dg-options "-O2 -fno-align-functions -mtraceback=no -save-temps" } */
+/* { dg-options "-O2 -fno-align-functions -mtraceback=no -save-temps -mcpu=power5" } */
 
 typedef int TImode __attribute__ ((mode (TI)));
 
@@ -46,6 +46,12 @@ TImode r19 (void *x) { return *(TImode *) (x + 32749); }
 TImode r20 (void *x) { return *(TImode *) (x + 32748); }
 
 /* test should really be == 616, see pr54110 */
+/* When TImode is allowed in VSX registers, the allowable address modes for
+   TImode is just a single indirect address in order for the value to be loaded
+   and store in either GPR or VSX registers.  This affects the generated code,
+   and it would cause this test to fail, when such an option is used.  Fall
+   back to power5 to test the code.  */
+
 /* { dg-final { object-size text <= 700 } } */
 /* { dg-final { scan-assembler-not "(st|l)fd" } } */
 /* { dg-final { cleanup-saved-temps "timode_off" } } */

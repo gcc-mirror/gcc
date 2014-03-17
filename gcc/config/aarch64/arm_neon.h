@@ -17693,7 +17693,7 @@ vcvtaq_u64_f64 (float64x2_t __a)
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vcvtmd_s64_f64 (float64_t __a)
 {
-  return __builtin_lfloor (__a);
+  return __builtin_llfloor (__a);
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
@@ -17829,7 +17829,7 @@ vcvtnq_u64_f64 (float64x2_t __a)
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vcvtpd_s64_f64 (float64_t __a)
 {
-  return __builtin_lceil (__a);
+  return __builtin_llceil (__a);
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))

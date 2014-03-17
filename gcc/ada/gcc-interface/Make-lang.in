@@ -1004,7 +1004,7 @@ ada_generated_files = ada/sinfo.h ada/einfo.h ada/nmake.adb ada/nmake.ads \
 $(GNAT1_ADA_OBJS) $(GNATBIND_OBJS): | $(ada_generated_files)
 
 # Manually include the auto-generated dependencies for the Ada host objects.
-ADA_DEPFILES = $(foreach obj,(GNAT1_ADA_OBJS) $(GNATBIND_OBJS),\
+ADA_DEPFILES = $(foreach obj,$(GNAT1_ADA_OBJS) $(GNATBIND_OBJS),\
 		 $(dir $(obj))/$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $(obj))))
 -include $(ADA_DEPFILES)
 

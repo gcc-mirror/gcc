@@ -820,6 +820,12 @@ remove_forwarder_block_with_phi (basic_block bb)
       && DECL_NONLOCAL (gimple_label_label (label)))
     return false;
 
+  /* Record BB's single pred in case we need to update the father
+     loop's latch information later.  */
+  basic_block pred = NULL;
+  if (single_pred_p (bb))
+    pred = single_pred (bb);
+
   /* Redirect each incoming edge to BB to DEST.  */
   while (EDGE_COUNT (bb->preds) > 0)
     {
@@ -903,6 +909,11 @@ remove_forwarder_block_with_phi (basic_block bb)
     dom = nearest_common_dominator (CDI_DOMINATORS, domdest, dombb);
 
   set_immediate_dominator (CDI_DOMINATORS, dest, dom);
+
+  /* Adjust latch infomation of BB's parent loop as otherwise
+     the cfg hook has a hard time not to kill the loop.  */
+  if (current_loops && bb->loop_father->latch == bb)
+    bb->loop_father->latch = pred;
 
   /* Remove BB since all of BB's incoming edges have been redirected
      to DEST.  */

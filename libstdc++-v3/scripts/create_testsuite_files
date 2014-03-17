@@ -32,7 +32,7 @@ cd $srcdir
 # This is the ugly version of "everything but the current directory".  It's
 # what has to happen when find(1) doesn't support -mindepth, or -xtype.
 dlist=`echo [0-9][0-9]*`
-dlist="$dlist abi backward ext performance tr1 tr2 decimal"
+dlist="$dlist abi backward ext performance tr1 tr2 decimal experimental"
 find $dlist "(" -type f -o -type l ")" -name "*.cc" -print > $tmp.01
 find $dlist "(" -type f -o -type l ")" -name "*.c" -print > $tmp.02
 cat  $tmp.01 $tmp.02 | sort > $tmp.1

@@ -1,3 +1,8 @@
+2014-03-12  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* src/aarch64/sysv.S (ffi_closure_SYSV): Use x29 as the
+	main CFA reg; update cfi_rel_offset.
+
 2014-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR libffi/60073

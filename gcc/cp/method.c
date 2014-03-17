@@ -971,6 +971,25 @@ get_copy_assign (tree type)
   return fn;
 }
 
+/* Locate the inherited constructor of constructor CTOR.  */
+
+tree
+get_inherited_ctor (tree ctor)
+{
+  gcc_assert (DECL_INHERITED_CTOR_BASE (ctor));
+
+  push_deferring_access_checks (dk_no_check);
+  tree fn = locate_fn_flags (DECL_INHERITED_CTOR_BASE (ctor),
+			     complete_ctor_identifier,
+			     FUNCTION_FIRST_USER_PARMTYPE (ctor),
+			     LOOKUP_NORMAL|LOOKUP_SPECULATIVE,
+			     tf_none);
+  pop_deferring_access_checks ();
+  if (fn == error_mark_node)
+    return NULL_TREE;
+  return fn;
+}
+
 /* Subroutine of synthesized_method_walk.  Update SPEC_P, TRIVIAL_P and
    DELETED_P or give an error message MSG with argument ARG.  */
 
