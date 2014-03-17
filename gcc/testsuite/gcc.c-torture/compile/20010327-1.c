@@ -1,4 +1,4 @@
-/* { dg-require-effective-target ptr32plus } */
+/* { dg-do compile { target { ptr32plus && { ! llp64 } } } } */
 
 /* This testcase tests whether GCC can produce static initialized data
    that references addresses of size 'unsigned long', even if that's not
