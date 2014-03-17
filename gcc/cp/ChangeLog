@@ -1,3 +1,9 @@
+2014-03-17  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60391
+	* parser.c (cp_parser_skip_to_end_of_block_or_statement): Unwind generic
+	function scope as per cp_parser_skip_to_end_of_statement.
+
 2014-03-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59571

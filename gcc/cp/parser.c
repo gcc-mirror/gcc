@@ -3225,6 +3225,10 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 {
   int nesting_depth = 0;
 
+  /* Unwind generic function template scope if necessary.  */
+  if (parser->fully_implicit_function_template_p)
+    finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+
   while (nesting_depth >= 0)
     {
       cp_token *token = cp_lexer_peek_token (parser->lexer);
