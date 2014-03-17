@@ -1,3 +1,31 @@
+2014-03-17  Mikael Pettersson  <mikpelinux@gmail.com>
+	    Committed by Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline:
+
+	2013-06-20  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57425
+	PR rtl-optimization/57569
+	* alias.c (write_dependence_p): Remove parameters mem_mode and
+	canon_mem_addr.  Add parameters x_mode, x_addr and x_canonicalized.
+	Changed all callers.
+	(canon_anti_dependence): Get comments and semantics in sync.
+	Add parameter mem_canonicalized.  Changed all callers.
+	* rtl.h (canon_anti_dependence): Update prototype.
+
+	2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57425
+	PR rtl-optimization/57569
+	* alias.c (write_dependence_p): Add new parameters mem_mode,
+	canon_mem_addr and mem_canonicalized.  Change type of writep to bool.
+	Changed all callers.
+	(canon_anti_dependence): New function.
+	* cse.c (check_dependence): Use canon_anti_dependence.
+	* cselib.c (cselib_invalidate_mem): Likewise.
+	* rtl.h (canon_anti_dependence): Declare.
+
 2014-03-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

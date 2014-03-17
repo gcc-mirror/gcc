@@ -1,3 +1,15 @@
+2014-03-17  Mikael Pettersson  <mikpelinux@gmail.com>
+	    Committed by Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline:
+
+	2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57425
+	PR rtl-optimization/57569
+	* gcc.dg/torture/pr57425-1.c, gcc.dg/torture/pr57425-2.c: New files.
+	* gcc.dg/torture/pr57425-3.c, gcc.dg/torture/pr57569.c: Likewise.
+
 2014-03-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
@@ -13,7 +25,7 @@
 	Backport from mainline
 	PR libfortran/60128
 	* gfortran.dg/fmt_en.f90: New test.
-	
+
 2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	Backport from mainline

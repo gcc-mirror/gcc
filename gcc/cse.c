@@ -1824,7 +1824,7 @@ flush_hash_table (void)
       }
 }
 
-/* Function called for each rtx to check whether true dependence exist.  */
+/* Function called for each rtx to check whether an anti dependence exist.  */
 struct check_dependence_data
 {
   enum machine_mode mode;
@@ -1837,7 +1837,7 @@ check_dependence (rtx *x, void *data)
 {
   struct check_dependence_data *d = (struct check_dependence_data *) data;
   if (*x && MEM_P (*x))
-    return canon_true_dependence (d->exp, d->mode, d->addr, *x, NULL_RTX);
+    return canon_anti_dependence (*x, true, d->exp, d->mode, d->addr);
   else
     return 0;
 }
