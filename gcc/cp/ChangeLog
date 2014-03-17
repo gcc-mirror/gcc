@@ -1,3 +1,8 @@
+2014-03-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59571
+	* typeck2.c (check_narrowing): Use fold_non_dependent_expr_sfinae.
+
 2014-03-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60532
