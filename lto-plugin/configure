@@ -622,6 +622,7 @@ EGREP
 GREP
 SED
 LIBTOOL
+ac_lto_plugin_ldflags
 ac_lto_plugin_warn_cflags
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
@@ -4085,6 +4086,9 @@ $as_echo "$ac_res" >&6; }
 fi
   done
 CFLAGS="$save_CFLAGS"
+
+# Need -Wc to get it through libtool.
+if test "x$GCC" = xyes; then ac_lto_plugin_ldflags="-Wc,-static-libgcc"; fi
 
 case `pwd` in
   *\ * | *\	*)
@@ -10558,7 +10562,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10561 "configure"
+#line 10565 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10664,7 +10668,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10667 "configure"
+#line 10671 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
