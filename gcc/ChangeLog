@@ -1,3 +1,16 @@
+2014-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60429
+	PR tree-optimization/60485
+	* tree-ssa-structalias.c (set_union_with_increment): Properly
+	take into account all fields that overlap the shifted vars.
+	(do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+	(get_constraint_for_ptr_offset): Likewise.
+
 2014-03-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (tls_call_delay): Delete.

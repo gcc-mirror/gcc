@@ -1,3 +1,13 @@
+2014-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60429
+	PR tree-optimization/60485
+	* gcc.dg/pr60485-1.c: New testcase.
+	* gcc.dg/pr60485-2.c: Likewise.
+
 2014-03-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	Backport from mainline

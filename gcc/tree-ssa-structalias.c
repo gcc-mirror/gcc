@@ -949,24 +949,27 @@ solution_set_add (bitmap set, HOST_WIDE_INT offset)
 	bitmap_set_bit (result, i);
       else
 	{
-	  unsigned HOST_WIDE_INT fieldoffset = vi->offset + offset;
+	  HOST_WIDE_INT fieldoffset = vi->offset + offset;
+	  unsigned HOST_WIDE_INT size = vi->size;
 
 	  /* If the offset makes the pointer point to before the
 	     variable use offset zero for the field lookup.  */
-	  if (offset < 0
-	      && fieldoffset > vi->offset)
-	    fieldoffset = 0;
-
-	  if (offset != 0)
+	  if (fieldoffset < 0)
+	    vi = lookup_vi_for_tree (vi->decl);
+	  else
 	    vi = first_or_preceding_vi_for_offset (vi, fieldoffset);
 
-	  bitmap_set_bit (result, vi->id);
-	  /* If the result is not exactly at fieldoffset include the next
-	     field as well.  See get_constraint_for_ptr_offset for more
-	     rationale.  */
-	  if (vi->offset != fieldoffset
-	      && vi->next != NULL)
-	    bitmap_set_bit (result, vi->next->id);
+	  do
+	    {
+	      bitmap_set_bit (result, vi->id);
+	      if (!vi->next)
+		break;
+
+	      /* We have to include all fields that overlap the current field
+		 shifted by offset.  */
+	      vi = vi->next;
+	    }
+	  while (vi->offset < fieldoffset + size);
 	}
     }
 
@@ -1607,16 +1610,21 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
     {
       varinfo_t v = get_varinfo (j);
       HOST_WIDE_INT fieldoffset = v->offset + roffset;
+      unsigned HOST_WIDE_INT size = v->size;
       unsigned int t;
 
       if (v->is_full_var)
-	fieldoffset = v->offset;
+	;
       else if (roffset != 0)
-	v = first_vi_for_offset (v, fieldoffset);
-      /* If the access is outside of the variable we can ignore it.  */
-      if (!v)
-	continue;
+	{
+	  if (fieldoffset < 0)
+	    v = lookup_vi_for_tree (v->decl);
+	  else
+	    v = first_or_preceding_vi_for_offset (v, fieldoffset);
+	}
 
+      /* We have to include all fields that overlap the current field
+	 shifted by roffset.  */
       do
 	{
 	  t = find (v->id);
@@ -1633,16 +1641,13 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 		   && add_graph_edge (graph, lhs, t))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 
-	  /* If the variable is not exactly at the requested offset
-	     we have to include the next one.  */
-	  if (v->offset == (unsigned HOST_WIDE_INT)fieldoffset
+	  if (v->is_full_var
 	      || v->next == NULL)
 	    break;
 
 	  v = v->next;
-	  fieldoffset = v->offset;
 	}
-      while (1);
+      while (v->offset < fieldoffset + size);
     }
 
 done:
@@ -1705,15 +1710,20 @@ do_ds_constraint (constraint_t c, bitmap delta)
       varinfo_t v = get_varinfo (j);
       unsigned int t;
       HOST_WIDE_INT fieldoffset = v->offset + loff;
+      unsigned HOST_WIDE_INT size = v->size;
 
       if (v->is_full_var)
-	fieldoffset = v->offset;
+	;
       else if (loff != 0)
-	v = first_vi_for_offset (v, fieldoffset);
-      /* If the access is outside of the variable we can ignore it.  */
-      if (!v)
-	continue;
+	{
+	  if (fieldoffset < 0)
+	    v = lookup_vi_for_tree (v->decl);
+	  else
+	    v = first_or_preceding_vi_for_offset (v, fieldoffset);
+	}
 
+      /* We have to include all fields that overlap the current field
+	 shifted by loff.  */
       do
 	{
 	  if (v->may_have_pointers)
@@ -1739,16 +1749,13 @@ do_ds_constraint (constraint_t c, bitmap delta)
 		bitmap_set_bit (changed, t);
 	    }
 
-	  /* If the variable is not exactly at the requested offset
-	     we have to include the next one.  */
-	  if (v->offset == (unsigned HOST_WIDE_INT)fieldoffset
+	  if (v->is_full_var
 	      || v->next == NULL)
 	    break;
 
 	  v = v->next;
-	  fieldoffset = v->offset;
 	}
-      while (1);
+      while (v->offset < fieldoffset + size);
     }
 }
 
@@ -2997,35 +3004,31 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	  varinfo_t temp;
 	  unsigned HOST_WIDE_INT offset = curr->offset + rhsoffset;
 
-	  /* Search the sub-field which overlaps with the
-	     pointed-to offset.  If the result is outside of the variable
-	     we have to provide a conservative result, as the variable is
-	     still reachable from the resulting pointer (even though it
-	     technically cannot point to anything).  The last and first
-	     sub-fields are such conservative results.
-	     ???  If we always had a sub-field for &object + 1 then
-	     we could represent this in a more precise way.  */
+	  /* If curr->offset + rhsoffset is less than zero adjust it.  */
 	  if (rhsoffset < 0
 	      && curr->offset < offset)
 	    offset = 0;
-	  temp = first_or_preceding_vi_for_offset (curr, offset);
 
-	  /* If the found variable is not exactly at the pointed to
-	     result, we have to include the next variable in the
-	     solution as well.  Otherwise two increments by offset / 2
-	     do not result in the same or a conservative superset
-	     solution.  */
-	  if (temp->offset != offset
-	      && temp->next != NULL)
+	  /* We have to include all fields that overlap the current
+	     field shifted by rhsoffset.  And we include at least
+	     the last or the first field of the variable to represent
+	     reachability of off-bound addresses, in particular &object + 1,
+	     conservatively correct.  */
+	  temp = first_or_preceding_vi_for_offset (curr, offset);
+	  temp = first_or_preceding_vi_for_offset (curr, offset);
+	  c.var = temp->id;
+	  c.offset = 0;
+	  temp = temp->next;
+	  while (temp
+		 && temp->offset < offset + curr->size)
 	    {
 	      struct constraint_expr c2;
-	      c2.var = temp->next->id;
+	      c2.var = temp->id;
 	      c2.type = ADDRESSOF;
 	      c2.offset = 0;
 	      results->safe_push (c2);
+	      temp = temp->next;
 	    }
-	  c.var = temp->id;
-	  c.offset = 0;
 	}
       else
 	c.offset = rhsoffset;
