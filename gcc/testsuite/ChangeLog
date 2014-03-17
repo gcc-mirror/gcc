@@ -1,3 +1,7 @@
+2014-03-17  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.c-torture/compile/20010327-1.c: Disable test for LLP64 targets.
+
 2014-03-17  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR testsuite/58851
