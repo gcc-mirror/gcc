@@ -1,3 +1,21 @@
+2014-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57303
+	* gcc.dg/torture/pr57303.c: New testcase.
+
+	2013-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59139
+	* gcc.dg/torture/pr59139.c: New testcase.
+
+	2014-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60183
+	* gcc.dg/torture/pr60183.c: New testcase.
+
 2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	Backport from mainline

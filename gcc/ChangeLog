@@ -1,3 +1,26 @@
+2014-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57303
+	* tree-ssa-sink.c (statement_sink_location): Properly handle
+	self-assignments.
+
+	2013-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59139
+	* tree-ssa-loop-niter.c (chain_of_csts_start): Properly match
+	code in get_val_for.
+	(get_val_for): Use gcc_checking_asserts.
+
+	2014-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60183
+	* tree-ssa-phiprop.c (propagate_with_phi): Avoid speculating
+	loads.
+	(tree_ssa_phiprop): Calculate and free post-dominators.
+
 2014-03-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2014-03-14 trunk r208562.
