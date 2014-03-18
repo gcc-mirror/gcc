@@ -1,3 +1,10 @@
+2014-03-18  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Added case when
+	gimple call statement is update.
+	* gimple-fold.c (gimple_fold_call): Changed order for GIMPLE_ASSIGN and
+	GIMPLE_CALL, where gsi iterator still points to GIMPLE CALL.
+
 2014-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60557
