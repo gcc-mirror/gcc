@@ -2117,7 +2117,11 @@ combinable_refs_p (dref r1, dref r2,
 
   stmt = find_common_use_stmt (&name1, &name2);
 
-  if (!stmt)
+  if (!stmt
+      /* A simple post-dominance check - make sure the combination
+         is executed under the same condition as the references.  */
+      || (gimple_bb (stmt) != gimple_bb (r1->stmt)
+	  && gimple_bb (stmt) != gimple_bb (r2->stmt)))
     return false;
 
   acode = gimple_assign_rhs_code (stmt);

@@ -1,3 +1,22 @@
+2014-03-18  Richard Biener  <rguenther@suse.de>
+ 
+	Backport from mainline
+	2013-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57521
+	* gcc.dg/torture/pr57521.c: New testcase.
+
+	2013-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57656
+	* gcc.dg/torture/pr57656.c: New testcase.
+
+	2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57517
+	* gfortran.fortran-torture/compile/pr57517.f90: New testcase.
+	* gcc.dg/torture/pr57517.c: Likewise.
+
 2014-03-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

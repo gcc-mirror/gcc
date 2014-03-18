@@ -758,20 +758,6 @@ if_convertible_stmt_p (gimple stmt, VEC (data_reference_p, heap) *refs)
   return true;
 }
 
-/* Return true when BB post-dominates all its predecessors.  */
-
-static bool
-bb_postdominates_preds (basic_block bb)
-{
-  unsigned i;
-
-  for (i = 0; i < EDGE_COUNT (bb->preds); i++)
-    if (!dominated_by_p (CDI_POST_DOMINATORS, EDGE_PRED (bb, i)->src, bb))
-      return false;
-
-  return true;
-}
-
 /* Return true when BB is if-convertible.  This routine does not check
    basic block's statements and phis.
 
@@ -830,10 +816,23 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
 	return false;
       }
 
-  if (EDGE_COUNT (bb->preds) == 2
-      && bb != loop->header
-      && !bb_postdominates_preds (bb))
-    return false;
+  /* At least one incoming edge has to be non-critical as otherwise edge
+     predicates are not equal to basic-block predicates of the edge
+     source.  */
+  if (EDGE_COUNT (bb->preds) > 1
+      && bb != loop->header)
+    {
+      bool found = false;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (EDGE_COUNT (e->src->succs) == 1)
+	  found = true;
+      if (!found)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "only critical predecessors\n");
+	  return false;
+	}
+    }
 
   return true;
 }
@@ -1048,7 +1047,6 @@ if_convertible_loop_p_1 (struct loop *loop,
     return false;
 
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   /* Allow statements that can be handled during if-conversion.  */
   ifc_bbs = get_loop_body_in_if_conv_order (loop);
@@ -1184,8 +1182,7 @@ if_convertible_loop_p (struct loop *loop)
    if-conversion.  */
 
 static basic_block
-find_phi_replacement_condition (struct loop *loop,
-				basic_block bb, tree *cond,
+find_phi_replacement_condition (basic_block bb, tree *cond,
 				gimple_stmt_iterator *gsi)
 {
   edge first_edge, second_edge;
@@ -1195,34 +1192,10 @@ find_phi_replacement_condition (struct loop *loop,
   first_edge = EDGE_PRED (bb, 0);
   second_edge = EDGE_PRED (bb, 1);
 
-  /* Use condition based on following criteria:
-     1)
-       S1: x = !c ? a : b;
-
-       S2: x = c ? b : a;
-
-       S2 is preferred over S1. Make 'b' first_bb and use its condition.
-
-     2) Do not make loop header first_bb.
-
-     3)
-       S1: x = !(c == d)? a : b;
-
-       S21: t1 = c == d;
-       S22: x = t1 ? b : a;
-
-       S3: x = (c == d) ? b : a;
-
-       S3 is preferred over S1 and S2*, Make 'b' first_bb and use
-       its condition.
-
-     4) If  pred B is dominated by pred A then use pred B's condition.
-        See PR23115.  */
-
-  /* Select condition that is not TRUTH_NOT_EXPR.  */
+  /* Prefer an edge with a not negated predicate.
+     ???  That's a very weak cost model.  */
   tmp_cond = bb_predicate (first_edge->src);
   gcc_assert (tmp_cond);
-
   if (TREE_CODE (tmp_cond) == TRUTH_NOT_EXPR)
     {
       edge tmp_edge;
@@ -1232,11 +1205,9 @@ find_phi_replacement_condition (struct loop *loop,
       second_edge = tmp_edge;
     }
 
-  /* Check if FIRST_BB is loop header or not and make sure that
-     FIRST_BB does not dominate SECOND_BB.  */
-  if (first_edge->src == loop->header
-      || dominated_by_p (CDI_DOMINATORS,
-			 second_edge->src, first_edge->src))
+  /* Check if the edge we take the condition from is not critical.
+     We know that at least one non-critical edge exists.  */
+  if (EDGE_COUNT (first_edge->src->succs) > 1)
     {
       *cond = bb_predicate (second_edge->src);
 
@@ -1311,9 +1282,6 @@ predicate_scalar_phi (gimple phi, tree cond,
 	  arg_1 = gimple_phi_arg_def (phi, 1);
 	}
 
-      gcc_checking_assert (bb == bb->loop_father->header
-			   || bb_postdominates_preds (bb));
-
       /* Build new RHS using selected condition and arguments.  */
       rhs = build3 (COND_EXPR, TREE_TYPE (res),
 		    unshare_expr (cond), arg_0, arg_1);
@@ -1359,7 +1327,7 @@ predicate_all_scalar_phis (struct loop *loop)
       /* BB has two predecessors.  Using predecessor's aux field, set
 	 appropriate condition for the PHI node replacement.  */
       gsi = gsi_after_labels (bb);
-      true_bb = find_phi_replacement_condition (loop, bb, &cond, &gsi);
+      true_bb = find_phi_replacement_condition (bb, &cond, &gsi);
 
       while (!gsi_end_p (phi_gsi))
 	{
@@ -1790,8 +1758,6 @@ main_tree_if_conversion (void)
 
   if (changed && flag_tree_loop_if_convert_stores)
     todo |= TODO_update_ssa_only_virtuals;
-
-  free_dominance_info (CDI_POST_DOMINATORS);
 
   return todo;
 }
