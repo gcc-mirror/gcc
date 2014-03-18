@@ -1,9 +1,9 @@
 ! { dg-do run }
-! { dg-options "-fbounds-check -Wno-aggressive-loop-optimizations" }
+! { dg-options "-fbounds-check" }
 
       integer, parameter :: nx = 3, ny = 4
 
-      integer :: i, too_big
+      integer :: i, j, too_big
 
       integer, parameter, dimension(nx,ny) :: p = &
         reshape((/ (i*i, i=1,size(p)) /), shape(p))
