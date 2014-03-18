@@ -4855,7 +4855,7 @@ handle_warn_cast_qual (location_t loc, tree type, tree otype)
     /* There are qualifiers present in IN_OTYPE that are not present
        in IN_TYPE.  */
     warning_at (loc, OPT_Wcast_qual,
-		"cast discards %q#v qualifier from pointer target type",
+		"cast discards %qv qualifier from pointer target type",
 		discarded);
 
   if (added || discarded)

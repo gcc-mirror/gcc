@@ -1,3 +1,8 @@
+2014-03-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/55383
+	* c-typeck.c: Use correct format string in cast-qual warning
+
 2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-decl.c (c_decl_attributes): Use
