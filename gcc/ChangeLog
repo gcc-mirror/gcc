@@ -1,3 +1,8 @@
+2014-03-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/60562
+	* config/i386/i386.md (*float<SWI48x><MODEF>2_i387): Move down to
+	be shadowed by *float<SWI48><MODEF>2_sse.  Test X87_ENABLE_FLOAT.
 
 2014-03-18  Basile Starynkevitch  <basile@starynkevitch.net>
 
