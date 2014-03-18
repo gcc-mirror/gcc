@@ -1,6 +1,6 @@
 2014-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
-	PR libfortran/58324
+	PR libfortran/48600
 	* io/list_read.c (list_formatted_read_scalar): Do not use
 	eat_separator. Explicitly set the comma and end-of-line flags.
 	Check for END condition from finish_separator.
