@@ -1,3 +1,8 @@
+2014-03-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Speed up and use
+	proper constant for the store mode.
+
 2014-03-17  Mikael Pettersson  <mikpelinux@gmail.com>
 	    Committed by Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
