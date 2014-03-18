@@ -1,3 +1,8 @@
+2014-03-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (lower_rec_input_clauses) <build_omp_barrier>: Restore
+	check for GF_OMP_FOR_KIND_FOR.
+
 2013-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.h (ADDITIONAL_REGISTER_NAMES): Add
