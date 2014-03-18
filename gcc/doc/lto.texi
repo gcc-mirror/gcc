@@ -586,4 +586,10 @@ optimizes an object and produces the final assembly.
 This option specifies a file to which the names of LTRANS output
 files are written.  This option is only meaningful in conjunction
 with @option{-fwpa}.
+
+@item -fresolution=@var{file}
+@opindex fresolution
+This option specifies the linker resolution file.  This option is
+only meaningful in conjunction with @option{-fwpa} and as option
+to pass through to the LTO linker pluign.
 @end itemize
