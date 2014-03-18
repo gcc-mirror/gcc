@@ -25,7 +25,6 @@ variable analysis and number of iterations analysis).
 * loop-iv::                     Induction variables on RTL.
 * Number of iterations::        Number of iterations analysis.
 * Dependency analysis::         Data dependency analysis.
-* Lambda::                      Linear loop transformations framework.
 * Omega::                       A solver for linear programming problems.
 @end menu
 
@@ -37,10 +36,13 @@ variable analysis and number of iterations analysis).
 This chapter describes the representation of loops in GCC, and functions
 that can be used to build, modify and analyze this representation.  Most
 of the interfaces and data structures are declared in @file{cfgloop.h}.
-At the moment, loop structures are analyzed and this information is
-updated only by the optimization passes that deal with loops, but some
-efforts are being made to make it available throughout most of the
-optimization passes.
+Loop structures are analyzed and this information disposed or updated
+at the discretion of individual passes.  Still most of the generic
+CFG manipulation routines are aware of loop structures and try to
+keep them up-to-date.  By this means an increasing part of the
+compilation pipeline is setup to maintain loop structure across
+passes to allow attaching meta information to individual loops
+for consumption by later passes.
 
 In general, a natural loop has one entry block (header) and possibly
 several back edges (latches) leading to the header from the inside of
@@ -139,15 +141,23 @@ recorded.
 These properties may also be computed/enforced later, using functions
 @code{create_preheaders}, @code{force_single_succ_latches},
 @code{mark_irreducible_loops} and @code{record_loop_exits}.
+The properties can be queried using @code{loops_state_satisfies_p}.
 
 The memory occupied by the loops structures should be freed with
-@code{loop_optimizer_finalize} function.
+@code{loop_optimizer_finalize} function.  When loop structures are
+setup to be preserved across passes this function reduces the
+information to be kept up-to-date to a minimum (only
+@code{LOOPS_MAY_HAVE_MULTIPLE_LATCHES} set).
 
 The CFG manipulation functions in general do not update loop structures.
 Specialized versions that additionally do so are provided for the most
 common tasks.  On GIMPLE, @code{cleanup_tree_cfg_loop} function can be
 used to cleanup CFG while updating the loops structures if
 @code{current_loops} is set.
+
+At the moment loop structure is preserved from the start of GIMPLE
+loop optimizations until the end of RTL loop optimizations.  During
+this time a loop can be tracked by its @code{struct loop} and number.
 
 @node Loop querying
 @section Loop querying
@@ -592,37 +602,6 @@ maximum verbosity the details of a data dependence relations array,
 direction vectors for a data dependence relations array, and
 @code{dump_data_references} prints the details of the data references
 contained in a data reference array.
-
-@node Lambda
-@section Linear loop transformations framework
-@cindex Linear loop transformations framework
-
-Lambda is a framework that allows transformations of loops using
-non-singular matrix based transformations of the iteration space and
-loop bounds. This allows compositions of skewing, scaling, interchange,
-and reversal transformations.  These transformations are often used to
-improve cache behavior or remove inner loop dependencies to allow
-parallelization and vectorization to take place.
-
-To perform these transformations, Lambda requires that the loopnest be
-converted into an internal form that can be matrix transformed easily.
-To do this conversion, the function
-@code{gcc_loopnest_to_lambda_loopnest} is provided.  If the loop cannot
-be transformed using lambda, this function will return NULL.
-
-Once a @code{lambda_loopnest} is obtained from the conversion function,
-it can be transformed by using @code{lambda_loopnest_transform}, which
-takes a transformation matrix to apply.  Note that it is up to the
-caller to verify that the transformation matrix is legal to apply to the
-loop (dependence respecting, etc).  Lambda simply applies whatever
-matrix it is told to provide.  It can be extended to make legal matrices
-out of any non-singular matrix, but this is not currently implemented.
-Legality of a matrix for a given loopnest can be verified using
-@code{lambda_transform_legal_p}.
-
-Given a transformed loopnest, conversion back into gcc IR is done by
-@code{lambda_loopnest_to_gcc_loopnest}.  This function will modify the
-loops so that they match the transformed loopnest.
 
 
 @node Omega

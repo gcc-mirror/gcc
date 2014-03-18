@@ -1,5 +1,10 @@
 2014-03-18  Richard Biener  <rguenther@suse.de>
 
+	* doc/loop.texi: Remove section on the removed lambda framework.
+	Update loop docs with recent changes in preserving loop structure.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
 	* doc/lto.texi (-fresolution): Document.
 
 2014-03-18  Richard Biener  <rguenther@suse.de>
