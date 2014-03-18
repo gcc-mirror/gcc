@@ -1994,18 +1994,21 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT offset,
 	|  callee-allocated save area   |
 	|  for register varargs         |
 	|                               |
-	+-------------------------------+
+	+-------------------------------+ <-- frame_pointer_rtx
 	|                               |
 	|  local variables              |
 	|                               |
-	+-------------------------------+ <-- frame_pointer_rtx
-	|                               |
-	|  callee-saved registers       |
-	|                               |
 	+-------------------------------+
-	|  LR'                          |
-	+-------------------------------+
-	|  FP'                          |
+	|  padding0                     | \
+	+-------------------------------+  |
+	|                               |  |
+	|                               |  |
+	|  callee-saved registers       |  | frame.saved_regs_size
+	|                               |  |
+	+-------------------------------+  |
+	|  LR'                          |  |
+	+-------------------------------+  |
+	|  FP'                          | /
       P +-------------------------------+ <-- hard_frame_pointer_rtx
 	|  dynamic allocation           |
 	+-------------------------------+
