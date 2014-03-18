@@ -1077,7 +1077,7 @@ static void __attribute__ ((unused))
 set_close_on_exec (int fd __attribute__ ((unused)))
 {
   /* Mingw does not define F_SETFD.  */
-#if defined(F_SETFD) && defined(FD_CLOEXEC)
+#if defined(HAVE_FCNTL) && defined(F_SETFD) && defined(FD_CLOEXEC)
   if (fd >= 0)
     fcntl(fd, F_SETFD, FD_CLOEXEC);
 #endif
