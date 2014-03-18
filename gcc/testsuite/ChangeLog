@@ -1,3 +1,7 @@
+2014-03-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tls/pr58595.c: Add tls options.
+
 2014-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx-additional-reg-names.c: New.
