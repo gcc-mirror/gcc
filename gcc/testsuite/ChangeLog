@@ -1,3 +1,13 @@
+2014-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60305
+	* g++.dg/cpp0x/constexpr-ice14.C: New.
+
+2014-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54250
+	* g++.dg/cpp0x/lambda/lambda-ice12.C: New.
+
 2014-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60535
