@@ -2,8 +2,6 @@
 ! { dg-options "-O2 -fdump-tree-optimized" }
 ! Tests whether volatile really works
 ! PR fortran/29601
-
-subroutine sub
 logical, volatile :: t1
 logical :: t2
 integer :: i

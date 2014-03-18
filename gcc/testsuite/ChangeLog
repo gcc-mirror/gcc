@@ -1,3 +1,15 @@
+2014-03-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55207
+	PR fortran/60549
+	* gfortran.dg/assumed_rank_7.f90: Revert r208590.
+	* gfortran.dg/c_ptr_tests_16.f90: Ditto.
+	* gfortran.dg/inline_sum_bounds_check_1.f90: Ditto.
+	* gfortran.dg/intent_optimize_1.f90: Ditto.
+	* gfortran.dg/pointer_init_9.f90: Ditto.
+	* gfortran.dg/volatile4.f90: Ditto.
+	* gfortran.dg/volatile6.f90: Ditto.
+
 2014-03-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/55383
