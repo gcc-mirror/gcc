@@ -1,3 +1,8 @@
+2013-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/i386.h (ADDITIONAL_REGISTER_NAMES): Add
+	ymm and zmm register names.
+
 2014-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60516
