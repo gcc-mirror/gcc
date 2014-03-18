@@ -1,3 +1,12 @@
+2014-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60564
+	* include/std/future (__future_base::_Task_state<>): Change
+	constructors to template functions using perfect forwarding.
+	(__create_task_state): Use decayed type as stored task.
+	(packaged_task::packaged_task(_Fn&&)): Forward instead of moving.
+	* testsuite/30_threads/packaged_task/60564.cc: New.
+
 2014-03-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	* scripts/create_testsuite_files: Add testsuite/experimental in
