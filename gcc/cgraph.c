@@ -1519,7 +1519,10 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 		{
 		  if (callee->decl == new_call
 		      || callee->former_clone_of == new_call)
-		    return;
+		    {
+		      cgraph_set_call_stmt (e, new_stmt);
+		      return;
+		    }
 		  callee = callee->clone_of;
 		}
 	    }
