@@ -492,7 +492,7 @@ change_decl_assembler_name (tree decl, tree name)
       if (alias)
 	{
 	  IDENTIFIER_TRANSPARENT_ALIAS (name) = 1;
-	  TREE_CHAIN (DECL_ASSEMBLER_NAME (name)) = alias;
+	  TREE_CHAIN (name) = alias;
 	}
       if (node)
 	insert_to_assembler_name_hash (node, true);
