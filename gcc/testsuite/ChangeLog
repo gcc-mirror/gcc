@@ -1,3 +1,11 @@
+2014-03-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/55383
+	* gcc.dg/cast-qual-3.c: New.
+	Revert:
+	2014-03-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	* c-c++-common/Wcast-qual-1.c: More precise match text.
+
 2014-03-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55207
