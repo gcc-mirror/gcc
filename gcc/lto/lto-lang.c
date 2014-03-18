@@ -1222,6 +1222,11 @@ lto_init (void)
   NAME_TYPE (long_double_type_node, "long double");
   NAME_TYPE (void_type_node, "void");
   NAME_TYPE (boolean_type_node, "bool");
+  NAME_TYPE (complex_float_type_node, "complex float");
+  NAME_TYPE (complex_double_type_node, "complex double");
+  NAME_TYPE (complex_long_double_type_node, "complex long double");
+  if (int128_integer_type_node)
+    NAME_TYPE (int128_integer_type_node, "__int128");
 #undef NAME_TYPE
 
   /* Initialize LTO-specific data structures.  */

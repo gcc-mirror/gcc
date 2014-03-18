@@ -1,7 +1,6 @@
 // PR sanitizer/59250
 // { dg-do compile }
 // { dg-options "-fsanitize=undefined" }
-// { dg-skip-if "" { *-*-* } { "-flto" } { "" } }
 
 struct E {
  int i;

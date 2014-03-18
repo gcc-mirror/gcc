@@ -1,6 +1,5 @@
 // { dg-do compile }
 // { dg-options "-fsanitize=undefined" }
-// { dg-skip-if "" { *-*-* } { "-flto" } { "" } }
 
 class A {
   void bar (void (A::*) (int));

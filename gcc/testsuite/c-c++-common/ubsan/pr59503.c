@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=signed-integer-overflow" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 int
 main (void)
