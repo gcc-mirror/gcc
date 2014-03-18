@@ -1,3 +1,8 @@
+2014-03-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* symtab.c (change_decl_assembler_name): Fix transparent alias
+	chain construction.
+
 2014-03-16  Renlin Li  <Renlin.Li@arm.com>
 
 	* config/aarch64/aarch64.c: Correct the comments about the
