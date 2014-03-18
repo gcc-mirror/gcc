@@ -1,3 +1,16 @@
+
+2014-03-18  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * plugin.def: Improve comment for PLUGIN_INCLUDE_FILE.
+        * doc/plugins.texi (Plugin callbacks): Mention
+        PLUGIN_INCLUDE_FILE.
+        Italicize plugin event names in description.  Explain that
+        PLUGIN_PRAGMAS has no sense for lto1. Explain
+        PLUGIN_INCLUDE_FILE.
+        Remind that no GCC functions should be called after
+        PLUGIN_FINISH.
+        Explain what pragmas with expansion are.
+
 2014-03-18  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Added case when

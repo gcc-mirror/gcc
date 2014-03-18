@@ -92,8 +92,8 @@ DEFEVENT (PLUGIN_EARLY_GIMPLE_PASSES_END)
 /* Called when a pass is first instantiated.  */
 DEFEVENT (PLUGIN_NEW_PASS)
 
-/* Called when a file is #include-d or given thru #line directive.
-   Could happen many times.  The event data is the included file path,
+/* Called when a file is #include-d or given via the #line directive.
+   this could happen many times.  The event data is the included file path,
    as a const char* pointer.  */
 DEFEVENT (PLUGIN_INCLUDE_FILE)
 
