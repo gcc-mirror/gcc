@@ -512,6 +512,7 @@ ubsan_create_data (const char *name, location_t loc,
 tree
 ubsan_instrument_unreachable (location_t loc)
 {
+  initialize_sanitizer_builtins ();
   tree data = ubsan_create_data ("__ubsan_unreachable_data", loc, NULL,
 				 NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
@@ -846,6 +847,8 @@ ubsan_pass (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
+
+  initialize_sanitizer_builtins ();
 
   FOR_EACH_BB_FN (bb, cfun)
     {

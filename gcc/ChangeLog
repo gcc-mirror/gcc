@@ -1,5 +1,10 @@
 2014-03-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/60557
+	* ubsan.c (ubsan_instrument_unreachable): Call
+	initialize_sanitizer_builtins.
+	(ubsan_pass): Likewise.
+
 	PR sanitizer/60535
 	* ubsan.c (ubsan_type_descriptor, ubsan_create_data): Call
 	varpool_finalize_decl instead of rest_of_decl_compilation.
