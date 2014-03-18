@@ -1,3 +1,42 @@
+2014-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/58721
+	* internal-fn.c: Include diagnostic-core.h.
+	(expand_BUILTIN_EXPECT): New function.
+	* gimplify.c (gimplify_call_expr): Use false instead of FALSE.
+	(gimplify_modify_expr): Gimplify 3 argument __builtin_expect into
+	IFN_BUILTIN_EXPECT call instead of __builtin_expect builtin call.
+	* ipa-inline-analysis.c (find_foldable_builtin_expect): Handle
+	IFN_BUILTIN_EXPECT.
+	* predict.c (expr_expected_value_1): Handle IFN_BUILTIN_EXPECT.
+	Revert 3 argument __builtin_expect code.
+	(strip_predict_hints): Handle IFN_BUILTIN_EXPECT.
+	* gimple-fold.c (gimple_fold_call): Likewise.
+	* tree.h (fold_builtin_expect): New prototype.
+	* builtins.c (build_builtin_expect_predicate): Add predictor
+	argument, if non-NULL, create 3 argument __builtin_expect.
+	(fold_builtin_expect): No longer static.  Add ARG2 argument,
+	pass it through to build_builtin_expect_predicate.
+	(fold_builtin_2): Adjust caller.
+	(fold_builtin_3): Handle BUILT_IN_EXPECT.
+	* internal-fn.def (BUILTIN_EXPECT): New.
+
+2014-03-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR ipa/58721
+	* predict.def (PRED_FORTRAN_OVERFLOW, PRED_FORTRAN_FAIL_ALLOC,
+	PRED_FORTRAN_FAIL_IO, PRED_FORTRAN_WARN_ONCE, PRED_FORTRAN_SIZE_ZERO,
+	PRED_FORTRAN_INVALID_BOUND, PRED_FORTRAN_ABSENT_DUMMY): Add.
+
+2014-03-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/58721
+	* predict.c (combine_predictions_for_bb): Fix up formatting.
+	(expr_expected_value_1, expr_expected_value): Add predictor argument,
+	fill what it points to if non-NULL.
+	(tree_predict_by_opcode): Adjust caller, use the predictor.
+	* predict.def (PRED_COMPARE_AND_SWAP): Add.
+
 2014-03-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Speed up and use

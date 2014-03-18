@@ -4099,7 +4099,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      parmse.expr
 		= fold_build3_loc (input_location, COND_EXPR,
 				   TREE_TYPE (parmse.expr),
-				   gfc_unlikely (tmp),
+				   gfc_unlikely (tmp, PRED_FORTRAN_ABSENT_DUMMY),
 				   fold_convert (TREE_TYPE (parmse.expr),
 						 null_pointer_node),
 				   parmse.expr);

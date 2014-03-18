@@ -1196,8 +1196,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 				       boolean_type_node, invalid_bound, cond);
     }
 
-  invalid_bound = gfc_unlikely (invalid_bound);
-
+  invalid_bound = gfc_unlikely (invalid_bound, PRED_FORTRAN_INVALID_BOUND);
 
   /* See Fortran 2008, C.10 for the following algorithm.  */
 

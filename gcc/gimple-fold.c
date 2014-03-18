@@ -1181,6 +1181,20 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
       else if (gimple_call_builtin_p (stmt, BUILT_IN_MD))
 	changed |= targetm.gimple_fold_builtin (gsi);
     }
+  else if (gimple_call_internal_p (stmt)
+	   && gimple_call_internal_fn (stmt) == IFN_BUILTIN_EXPECT)
+    {
+      tree result = fold_builtin_expect (gimple_location (stmt),
+					 gimple_call_arg (stmt, 0),
+					 gimple_call_arg (stmt, 1),
+					 gimple_call_arg (stmt, 2));
+      if (result)
+	{
+	  if (!update_call_from_tree (gsi, result))
+	    gimplify_and_update_call_from_tree (gsi, result);
+	  changed = true;
+	}
+    }
 
   return changed;
 }
