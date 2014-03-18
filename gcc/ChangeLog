@@ -1,3 +1,10 @@
+2014-03-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR rtl-optimization/56356
+	* sdbout.c (sdbout_parms): Verify that parms'
+	incoming argument is valid.
+	(sdbout_reg_parms): Likewise.
+
 2014-03-18  Richard Henderson  <rth@redhat.com>
 
 	PR target/60562
