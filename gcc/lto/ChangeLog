@@ -1,7 +1,13 @@
+2014-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60535
+	* lto-lang.c (lto_init): Add NAME_TYPE for int128_integer_type_node
+	and complex_{float,{,long_}double}_type_node.
+
 2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
 
-    * lto-lang.c (lto_init): Pass flag_short_double to
-    build_common_tree_nodes.
+	* lto-lang.c (lto_init): Pass flag_short_double to
+	build_common_tree_nodes.
 
 2014-02-14  Jan Hubicka  <hubicka@ucw.cz>
 

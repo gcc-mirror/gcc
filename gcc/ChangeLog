@@ -1,3 +1,9 @@
+2014-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60535
+	* ubsan.c (ubsan_type_descriptor, ubsan_create_data): Call
+	varpool_finalize_decl instead of rest_of_decl_compilation.
+
 2014-03-18  Richard Biener  <rguenther@suse.de>
 
 	* df-problems.c (df_rd_confluence_n): Avoid bitmap_copy

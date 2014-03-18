@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 #define SCHAR_MIN (-__SCHAR_MAX__ - 1)
 #define SHRT_MIN (-__SHRT_MAX__ - 1)

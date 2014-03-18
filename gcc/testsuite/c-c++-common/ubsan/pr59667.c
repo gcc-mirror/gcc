@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=undefined" } */
 /* { dg-shouldfail "ubsan" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 int
 main (void)

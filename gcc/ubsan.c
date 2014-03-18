@@ -390,7 +390,7 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
   TREE_CONSTANT (ctor) = 1;
   TREE_STATIC (ctor) = 1;
   DECL_INITIAL (decl) = ctor;
-  rest_of_decl_compilation (decl, 1, 0);
+  varpool_finalize_decl (decl);
 
   /* Save the VAR_DECL into the hash table.  */
   decl_for_type_insert (type, decl);
@@ -501,7 +501,7 @@ ubsan_create_data (const char *name, location_t loc,
   TREE_CONSTANT (ctor) = 1;
   TREE_STATIC (ctor) = 1;
   DECL_INITIAL (var) = ctor;
-  rest_of_decl_compilation (var, 1, 0);
+  varpool_finalize_decl (var);
 
   return var;
 }
