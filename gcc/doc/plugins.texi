@@ -209,6 +209,10 @@ enum plugin_event
   PLUGIN_EARLY_GIMPLE_PASSES_END,
   /* Called when a pass is first instantiated.  */
   PLUGIN_NEW_PASS,
+/* Called when a file is #include-d or given via the #line directive.
+   This could happen many times.  The event data is the included file path,
+   as a const char* pointer.  */
+  PLUGIN_INCLUDE_FILE,
 
   PLUGIN_EVENT_FIRST_DYNAMIC    /* Dummy event used for indexing callback
                                    array.  */
@@ -229,14 +233,26 @@ the arguments:
 @item @code{void *user_data}: Pointer to plugin-specific data.
 @end itemize
 
-For the PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, PLUGIN_REGISTER_GGC_ROOTS
-and PLUGIN_REGISTER_GGC_CACHES pseudo-events the @code{callback} should be
-null, and the @code{user_data} is specific.
+For the @i{PLUGIN_PASS_MANAGER_SETUP}, @i{PLUGIN_INFO},
+@i{PLUGIN_REGISTER_GGC_ROOTS} and @i{PLUGIN_REGISTER_GGC_CACHES}
+pseudo-events the @code{callback} should be null, and the
+@code{user_data} is specific.
 
-When the PLUGIN_PRAGMAS event is triggered (with a null
-pointer as data from GCC), plugins may register their own pragmas
-using functions like @code{c_register_pragma} or
-@code{c_register_pragma_with_expansion}.
+When the @i{PLUGIN_PRAGMAS} event is triggered (with a null pointer as
+data from GCC), plugins may register their own pragmas.  Notice that
+pragmas are not available from @file{lto1}, so plugins used with
+@code{-flto} option to GCC during link-time optimization cannot use
+pragmas and do not even see functions like @code{c_register_pragma} or
+@code{pragma_lex}.
+
+The @i{PLUGIN_INCLUDE_FILE} event, with a @code{const char*} file path as
+GCC data, is triggered for processing of @code{#include} or
+@code{#line} directives.
+
+The @i{PLUGIN_FINISH} event is the last time that plugins can call GCC
+functions, notably emit diagnostics with @code{warning}, @code{error}
+etc.
+
 
 @node Plugins pass
 @section Interacting with the pass manager
@@ -376,10 +392,13 @@ register_attributes (void *event_data, void *data)
 @end smallexample
 
 
-The @code{PLUGIN_PRAGMAS} callback is called during pragmas
-registration. Use the @code{c_register_pragma} or
-@code{c_register_pragma_with_expansion} functions to register custom
-pragmas.
+The @i{PLUGIN_PRAGMAS} callback is called once during pragmas
+registration. Use the @code{c_register_pragma},
+@code{c_register_pragma_with_data},
+@code{c_register_pragma_with_expansion},
+@code{c_register_pragma_with_expansion_and_data} functions to register
+custom pragmas and their handlers (which often want to call
+@code{pragma_lex}) from @file{c-family/c-pragma.h}.
 
 @smallexample
 /* Plugin callback called during pragmas registration. Registered with
@@ -397,6 +416,14 @@ register_my_pragma (void *event_data, void *data)
 It is suggested to pass @code{"GCCPLUGIN"} (or a short name identifying
 your plugin) as the ``space'' argument of your pragma.
 
+Pragmas registered with @code{c_register_pragma_with_expansion} or
+@code{c_register_pragma_with_expansion_and_data} support
+preprocessor expansions. For example:
+
+@smallexample
+#define NUMBER 10
+#pragma GCCPLUGIN foothreshold (NUMBER)
+@end smallexample
 
 @node Plugins recording
 @section Recording information about pass execution
