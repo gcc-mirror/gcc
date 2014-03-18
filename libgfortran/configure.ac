@@ -282,7 +282,7 @@ if test "x${with_newlib}" = "xyes"; then
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
-   alarm access fork execl wait setmode execve pipe dup2 close \
+   alarm access fork execl wait setmode execve pipe dup2 close fcntl \
    strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    readlink getgid getpid getppid getuid geteuid umask getegid \

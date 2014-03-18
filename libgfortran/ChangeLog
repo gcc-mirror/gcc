@@ -1,3 +1,10 @@
+2014-03-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* configure.ac: Check for presence of fcntl.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* io/unix.c (set_close_on_exec): Check for HAVE_FCNTL.
+
 2014-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/48600
