@@ -1,3 +1,8 @@
+2014-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx-additional-reg-names.c: New.
+	* gcc.target/i386/avx512f-additional-reg-names.c: Ditto.
+
 2014-03-17  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60390
