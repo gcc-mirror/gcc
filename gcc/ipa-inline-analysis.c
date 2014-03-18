@@ -2306,7 +2306,10 @@ find_foldable_builtin_expect (basic_block bb)
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
       gimple stmt = gsi_stmt (bsi);
-      if (gimple_call_builtin_p (stmt, BUILT_IN_EXPECT))
+      if (gimple_call_builtin_p (stmt, BUILT_IN_EXPECT)
+	  || (is_gimple_call (stmt)
+	      && gimple_call_internal_p (stmt)
+	      && gimple_call_internal_fn (stmt) == IFN_BUILTIN_EXPECT))
         {
           tree var = gimple_call_lhs (stmt);
           tree arg = gimple_call_arg (stmt, 0);

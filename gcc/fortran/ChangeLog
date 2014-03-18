@@ -1,3 +1,26 @@
+2014-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/58721
+	* trans.c (gfc_unlikely, gfc_likely): Don't add __builtin_expect
+	if !optimize.
+
+2014-03-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR ipa/58721
+	* trans.h (gfc_unlikely, gfc_likely): Add predictor as argument.
+	(gfc_trans_io_runtime_check): Remove.
+	* trans-io.c (gfc_trans_io_runtime_check): Make static; add has_iostat
+	as argument, add predictor to block.
+	(set_parameter_value, gfc_trans_open, gfc_trans_close, build_filepos,
+	gfc_trans_inquire, gfc_trans_wait, build_dt): Update calls.
+	* trans.c (gfc_unlikely, gfc_likely): Add predictor as argument.
+	(gfc_trans_runtime_check, gfc_allocate_using_malloc,
+	gfc_allocate_allocatable, gfc_deallocate_with_status): Set explicitly
+	branch predictor.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+	* trans-array.c (gfc_array_init_size, gfc_array_allocate): Ditto.
+
 2014-03-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55207

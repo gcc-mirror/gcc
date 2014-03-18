@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_TRANS_H
 #define GFC_TRANS_H
 
+#include "predict.h"  /* For enum br_predictor and PRED_*.  */
+
 /* Mangled symbols take the form __module__name.  */
 #define GFC_MAX_MANGLED_SYMBOL_LEN  (GFC_MAX_SYMBOL_LEN*2+4)
 
@@ -580,8 +582,8 @@ void gfc_generate_constructors (void);
 bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor_base, tree *);
 
 /* Mark a condition as likely or unlikely.  */
-tree gfc_likely (tree);
-tree gfc_unlikely (tree);
+tree gfc_likely (tree, enum br_predictor);
+tree gfc_unlikely (tree, enum br_predictor);
 
 /* Return the string length of a deferred character length component.  */
 bool gfc_deferred_strlen (gfc_component *, tree *);
@@ -630,7 +632,6 @@ tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
 /* Initialize function decls for library functions.  */
 void gfc_build_intrinsic_lib_fndecls (void);
 /* Create function decls for IO library functions.  */
-void gfc_trans_io_runtime_check (tree, tree, int, const char *, stmtblock_t *);
 void gfc_build_io_library_fndecls (void);
 /* Build a function decl for a library function.  */
 tree gfc_build_library_function_decl (tree, tree, int, ...);

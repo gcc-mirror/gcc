@@ -140,7 +140,6 @@ static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
 static rtx expand_builtin_expect (tree, rtx);
 static tree fold_builtin_constant_p (tree);
-static tree fold_builtin_expect (location_t, tree, tree);
 static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (location_t, tree, tree);
 static tree fold_builtin_inf (location_t, tree, int);
@@ -6978,7 +6977,8 @@ fold_builtin_constant_p (tree arg)
    return it as a truthvalue.  */
 
 static tree
-build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
+build_builtin_expect_predicate (location_t loc, tree pred, tree expected,
+				tree predictor)
 {
   tree fn, arg_types, pred_type, expected_type, call_expr, ret_type;
 
@@ -6990,7 +6990,8 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
 
   pred = fold_convert_loc (loc, pred_type, pred);
   expected = fold_convert_loc (loc, expected_type, expected);
-  call_expr = build_call_expr_loc (loc, fn, 2, pred, expected);
+  call_expr = build_call_expr_loc (loc, fn, predictor ? 3 : 2, pred, expected,
+				   predictor);
 
   return build2 (NE_EXPR, TREE_TYPE (pred), call_expr,
 		 build_int_cst (ret_type, 0));
@@ -6999,8 +7000,8 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
 /* Fold a call to builtin_expect with arguments ARG0 and ARG1.  Return
    NULL_TREE if no simplification is possible.  */
 
-static tree
-fold_builtin_expect (location_t loc, tree arg0, tree arg1)
+tree
+fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
 {
   tree inner, fndecl, inner_arg0;
   enum tree_code code;
@@ -7035,8 +7036,8 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1)
       tree op0 = TREE_OPERAND (inner, 0);
       tree op1 = TREE_OPERAND (inner, 1);
 
-      op0 = build_builtin_expect_predicate (loc, op0, arg1);
-      op1 = build_builtin_expect_predicate (loc, op1, arg1);
+      op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2);
+      op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2);
       inner = build2 (code, TREE_TYPE (inner), op0, op1);
 
       return fold_convert_loc (loc, TREE_TYPE (arg0), inner);
@@ -10852,7 +10853,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
       return fold_builtin_strpbrk (loc, arg0, arg1, type);
 
     case BUILT_IN_EXPECT:
-      return fold_builtin_expect (loc, arg0, arg1);
+      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE);
 
     CASE_FLT_FN (BUILT_IN_POW):
       return fold_builtin_pow (loc, fndecl, arg0, arg1, type);
@@ -11031,6 +11032,9 @@ fold_builtin_3 (location_t loc, tree fndecl,
       else
 	return fold_builtin_fprintf (loc, fndecl, arg0, arg2, NULL_TREE,
 				     ignore, fcode);
+
+    case BUILT_IN_EXPECT:
+      return fold_builtin_expect (loc, arg0, arg1, arg2);
 
     default:
       break;

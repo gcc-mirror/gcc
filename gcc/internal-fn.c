@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "diagnostic-core.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -863,6 +864,23 @@ expand_MASK_STORE (gimple stmt)
 static void
 expand_ABNORMAL_DISPATCHER (gimple)
 {
+}
+
+static void
+expand_BUILTIN_EXPECT (gimple stmt)
+{
+  /* When guessing was done, the hints should be already stripped away.  */
+  gcc_assert (!flag_guess_branch_prob || optimize == 0 || seen_error ());
+
+  rtx target;
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs)
+    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  else
+    target = const0_rtx;
+  rtx val = expand_expr (gimple_call_arg (stmt, 0), target, VOIDmode, EXPAND_NORMAL);
+  if (lhs && val != target)
+    emit_move_insn (target, val);
 }
 
 /* Routines to expand each internal function, indexed by function number.

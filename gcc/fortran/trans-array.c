@@ -4993,12 +4993,14 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 					   TYPE_MAX_VALUE (gfc_array_index_type)),
 					   size);
       cond = gfc_unlikely (fold_build2_loc (input_location, LT_EXPR,
-					    boolean_type_node, tmp, stride));
+					    boolean_type_node, tmp, stride),
+			   PRED_FORTRAN_OVERFLOW);
       tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
 			     integer_one_node, integer_zero_node);
       cond = gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
 					    boolean_type_node, size,
-					    gfc_index_zero_node));
+					    gfc_index_zero_node),
+			   PRED_FORTRAN_SIZE_ZERO);
       tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
 			     integer_zero_node, tmp);
       tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
@@ -5095,12 +5097,14 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 			 size_type_node,
 			 TYPE_MAX_VALUE (size_type_node), element_size);
   cond = gfc_unlikely (fold_build2_loc (input_location, LT_EXPR,
-					boolean_type_node, tmp, stride));
+					boolean_type_node, tmp, stride),
+		       PRED_FORTRAN_OVERFLOW);
   tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
 			 integer_one_node, integer_zero_node);
   cond = gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
 					boolean_type_node, element_size,
-					build_int_cst (size_type_node, 0)));
+					build_int_cst (size_type_node, 0)),
+		       PRED_FORTRAN_SIZE_ZERO);
   tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
 			 integer_zero_node, tmp);
   tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
@@ -5282,7 +5286,8 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   if (dimension)
     {
       cond = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
-			   boolean_type_node, var_overflow, integer_zero_node));
+			   boolean_type_node, var_overflow, integer_zero_node),
+			   PRED_FORTRAN_OVERFLOW);
       tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond,
 			     error, gfc_finish_block (&elseblock));
     }
@@ -5303,7 +5308,8 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			  build_int_cst (TREE_TYPE (status), 0));
       gfc_add_expr_to_block (&se->pre,
 		 fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				  gfc_likely (cond), set_descriptor,
+				  gfc_likely (cond, PRED_FORTRAN_FAIL_ALLOC),
+				  set_descriptor,
 				  build_empty_stmt (input_location)));
     }
   else
