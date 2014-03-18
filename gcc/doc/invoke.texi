@@ -8524,8 +8524,9 @@ file.  When the object files are linked together, all the function
 bodies are read from these ELF sections and instantiated as if they
 had been part of the same translation unit.
 
-To use the link-time optimizer, @option{-flto} needs to be specified at
-compile time and during the final link.  For example:
+To use the link-time optimizer, @option{-flto} and optimization
+options should be specified at compile time and during the final link.
+For example:
 
 @smallexample
 gcc -c -O2 -flto foo.c
@@ -8555,8 +8556,15 @@ merges them together into a single GIMPLE representation and optimizes
 them as usual to produce @file{myprog}.
 
 The only important thing to keep in mind is that to enable link-time
-optimizations the @option{-flto} flag needs to be passed to both the
-compile and the link commands.
+optimizations you need to use the GCC driver to perform the link-step.
+GCC then automatically performs link-time optimization if any of the
+objects involved were compiled with the @option{-flto}.  You generally
+should specify the optimization options to be used for link-time
+optimization though GCC will try to be clever at guessing an
+optimization level to use from the options used at compile-time
+if you fail to specify one at link-time.  You can always override
+the automatic decision to do link-time optimization at link-time
+by passing @option{-fno-lto} to the link command.
 
 To make whole program optimization effective, it is necessary to make
 certain whole program assumptions.  The compiler needs to know
@@ -8568,28 +8576,31 @@ the linker plugin is not available, @option{-fwhole-program} should be
 used to allow the compiler to make these assumptions, which leads
 to more aggressive optimization decisions.
 
-Note that when a file is compiled with @option{-flto}, the generated
-object file is larger than a regular object file because it 
-contains GIMPLE bytecodes and the usual final code.  This means that
+When @option{-fuse-linker-plugin} is not enabled then, when a file is
+compiled with @option{-flto}, the generated object file is larger than
+a regular object file because it contains GIMPLE bytecodes and the usual
+final code (see @option{-ffat-lto-objects}.  This means that
 object files with LTO information can be linked as normal object
-files; if @option{-flto} is not passed to the linker, no
-interprocedural optimizations are applied.
+files; if @option{-fno-lto} is passed to the linker, no
+interprocedural optimizations are applied.  Note that when
+@option{-fno-fat-lto-objects} is enabled the compile-stage is faster
+but you cannot perform a regular, non-LTO link on them.
 
 Additionally, the optimization flags used to compile individual files
 are not necessarily related to those used at link time.  For instance,
 
 @smallexample
-gcc -c -O0 -flto foo.c
-gcc -c -O0 -flto bar.c
-gcc -o myprog -flto -O3 foo.o bar.o
+gcc -c -O0 -ffat-lto-objects -flto foo.c
+gcc -c -O0 -ffat-lto-objects -flto bar.c
+gcc -o myprog -O3 foo.o bar.o
 @end smallexample
 
 This produces individual object files with unoptimized assembler
 code, but the resulting binary @file{myprog} is optimized at
-@option{-O3}.  If, instead, the final binary is generated without
-@option{-flto}, then @file{myprog} is not optimized.
+@option{-O3}.  If, instead, the final binary is generated with
+@option{-fno-lto}, then @file{myprog} is not optimized.
 
-When producing the final binary with @option{-flto}, GCC only
+When producing the final binary, GCC only
 applies link-time optimizations to those files that contain bytecode.
 Therefore, you can mix and match object files and libraries with
 GIMPLE bytecodes and final object code.  GCC automatically selects
@@ -8598,28 +8609,45 @@ further processing.
 
 There are some code generation flags preserved by GCC when
 generating bytecodes, as they need to be used during the final link
-stage.  Currently, the following options are saved into the GIMPLE
-bytecode files: @option{-fPIC}, @option{-fcommon} and all the
-@option{-m} target flags.
+stage.  Generally options specified at link-time override those
+specified at compile-time.
 
-At link time, these options are read in and reapplied.  Note that the
-current implementation makes no attempt to recognize conflicting
-values for these options.  If different files have conflicting option
-values (e.g., one file is compiled with @option{-fPIC} and another
-isn't), the compiler simply uses the last value read from the
-bytecode files.  It is recommended, then, that you compile all the files
-participating in the same link with the same options.
+If you do not specify an optimization level option @option{-O} at
+link-time then GCC will compute one based on the optimization levels
+used when compiling the object files.  The highest optimization
+level will win here.
+
+Currently, the following options and their setting are take from
+the first object file that explicitely specified it: 
+@option{-fPIC}, @option{-fpic}, @option{-fpie}, @option{-fcommon},
+@option{-fexceptions}, @option{-fnon-call-exceptions}, @option{-fgnu-tm}
+and all the @option{-m} target flags.
+
+Certain ABI changing flags are required to match in all compilation-units
+and trying to override this at link-time with a conflicting value
+is ignored.  This includes options such as @option{-freg-struct-return}
+and @option{-fpcc-struct-return}. 
+
+Other options such as @option{-ffp-contract}, @option{-fno-strict-overflow},
+@option{-fwrapv}, @option{-fno-trapv} or @option{-fno-strict-aliasing}
+are passed through to the link stage and merged conservatively for
+conflicting translation units.  Specifically
+@option{-fno-strict-overflow}, @option{-fwrapv} and @option{-fno-trapv} take
+precedence and for example @option{-ffp-contract=off} takes precedence
+over @option{-ffp-contract=fast}.  You can override them at linke-time.
+
+It is recommended that you compile all the files participating in the
+same link with the same options and also specify those options at
+link time.
 
 If LTO encounters objects with C linkage declared with incompatible
 types in separate translation units to be linked together (undefined
 behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
-issued.  The behavior is still undefined at run time.
+issued.  The behavior is still undefined at run time.  Similar
+diagnostics may be raised for other languages.
 
 Another feature of LTO is that it is possible to apply interprocedural
-optimizations on files written in different languages.  This requires
-support in the language front end.  Currently, the C, C++ and
-Fortran front ends are capable of emitting GIMPLE bytecodes, so
-something like this should work:
+optimizations on files written in different languages:
 
 @smallexample
 gcc -c -flto foo.c
@@ -8632,8 +8660,7 @@ Notice that the final link is done with @command{g++} to get the C++
 runtime libraries and @option{-lgfortran} is added to get the Fortran
 runtime libraries.  In general, when mixing languages in LTO mode, you
 should use the same link command options as when mixing languages in a
-regular (non-LTO) compilation; all you need to add is @option{-flto} to
-all the compile and link commands.
+regular (non-LTO) compilation.
 
 If object files containing GIMPLE bytecode are stored in a library archive, say
 @file{libfoo.a}, it is possible to extract and use them in an LTO link if you
@@ -8665,11 +8692,11 @@ The current implementation of LTO makes no
 attempt to generate bytecode that is portable between different
 types of hosts.  The bytecode files are versioned and there is a
 strict version check, so bytecode files generated in one version of
-GCC will not work with an older/newer version of GCC@.
+GCC will not work with an older or newer version of GCC.
 
 Link-time optimization does not work well with generation of debugging
 information.  Combining @option{-flto} with
-@option{-g} is currently experimental and expected to produce wrong
+@option{-g} is currently experimental and expected to produce unexpected
 results.
 
 If you specify the optional @var{n}, the optimization and code
@@ -8684,8 +8711,6 @@ is useful when the Makefile calling GCC is already executing in parallel.
 You must prepend a @samp{+} to the command recipe in the parent Makefile
 for this to work.  This option likely only works if @env{MAKE} is
 GNU make.
-
-This option is disabled by default.
 
 @item -flto-partition=@var{alg}
 @opindex flto-partition
