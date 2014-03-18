@@ -76,7 +76,7 @@ void upc_atomic_relaxed (upc_atomicdomain_t * domain,
 			 const void *restrict operand2);
 
 /* Atomics query function for expected performance.  */
-int upc_atomic_query (upc_type_t type, upc_op_t ops, shared void *addr);
+int upc_atomic_isfast (upc_type_t type, upc_op_t ops, shared void *addr);
 /* Expected performance return value.  */
 #define UPC_ATOMIC_PERFORMANCE_NOT_FAST 0
 #define UPC_ATOMIC_PERFORMANCE_FAST 1

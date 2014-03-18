@@ -1,6 +1,6 @@
 /* Process the definitions file with autogen to produce upc_atomic.upc:
 
-   autogen -L .. upc_atomic.def
+   autogen -L ../include upc_atomic.def
 
    Copyright (C) 2013-2014 Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
@@ -1834,9 +1834,9 @@ upc_all_atomicdomain_free (upc_atomicdomain_t * domain)
  * @ingroup UPCATOMIC UPC Atomic Functions
  */
 int
-upc_atomic_query (__attribute__((unused)) upc_type_t optype,
-	 	  __attribute__((unused)) upc_op_t ops,
-		  __attribute__((unused)) shared void *addr)
+upc_atomic_isfast (__attribute__((unused)) upc_type_t optype,
+	 	   __attribute__((unused)) upc_op_t ops,
+		   __attribute__((unused)) shared void *addr)
 {
   /* We could make the distinction that only operations
      directly supported by the builtin atomics are "fast",

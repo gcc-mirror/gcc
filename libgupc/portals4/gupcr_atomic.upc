@@ -587,9 +587,9 @@ upc_all_atomicdomain_free (upc_atomicdomain_t * domain)
  * @retval Expected performance
  */
 int
-upc_atomic_query (upc_type_t type __attribute__ ((unused)),
-		  upc_op_t ops __attribute__ ((unused)),
-		  shared void *addr __attribute__ ((unused)))
+upc_atomic_isfast (upc_type_t type __attribute__ ((unused)),
+		   upc_op_t ops __attribute__ ((unused)),
+		   shared void *addr __attribute__ ((unused)))
 {
   if (type == UPC_PTS)
     return UPC_ATOMIC_PERFORMANCE_NOT_FAST;

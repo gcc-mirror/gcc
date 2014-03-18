@@ -1,3 +1,14 @@
+2014-03-18 Nenad Vukicevic  <nenad@intrepid.com>
+
+	As per UPC spec 1.3 query function is upc_atomic_isfast().
+	* include/upc_atomic.h (upc_atomic_query): Rename to
+	upc_atomic_isfast().
+	* portals4/gupcr_atomic.upc (upc_atomic_query): Rename to                    
+	upc_atomic_isfast().
+	* smp/upc_atomic.tpl (upc_atomic_query): Rename to                    
+	upc_atomic_isfast().
+	* smp/upc_atomic.upc: Regenerate.
+
 2014-01-17 Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/upc_barrier.upc: Remove unnecessary include.
