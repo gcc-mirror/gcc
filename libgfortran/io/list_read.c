@@ -1923,17 +1923,31 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	}
       if (is_separator (c))
 	{
-	  /* Found a null value.  */
-	  eat_separator (dtp);
+	  /* Found a null value. Do not use eat_separator here otherwise
+	     we will do an extra read from stdin.  */
 	  dtp->u.p.repeat_count = 0;
 
-	  /* eat_separator sets this flag if the separator was a comma.  */
-	  if (dtp->u.p.comma_flag)
-	    goto cleanup;
+	  /* Set comma_flag.  */
+	  if ((c == ';' 
+	      && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
+	      ||
+	      (c == ','
+	      && dtp->u.p.current_unit->decimal_status == DECIMAL_POINT))
+	    {
+	      dtp->u.p.comma_flag = 1;
+	      goto cleanup;
+	    }
 
-	  /* eat_separator sets this flag if the separator was a \n or \r.  */
-	  if (dtp->u.p.at_eol)
-	    finish_separator (dtp);
+	  /* Set end-of-line flag.  */
+	  if (c == '\n' || c == '\r')
+	    {
+	      dtp->u.p.at_eol = 1;
+	      if (finish_separator (dtp) == LIBERROR_END)
+		{
+		  err = LIBERROR_END;
+		  goto cleanup;
+		}
+	    }
 	  else
 	    goto cleanup;
 	}
