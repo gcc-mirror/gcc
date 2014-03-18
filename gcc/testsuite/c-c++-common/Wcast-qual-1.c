@@ -85,11 +85,11 @@ f3 (void ***bar)
 void
 f4 (void * const **bar)
 {
-  const void ***p9 = (const void ***) bar; /* { dg-warning "cast discards .const. qualifier " } */
+  const void ***p9 = (const void ***) bar; /* { dg-warning "cast" } */
   void * const **p11 = (void * const **) bar;
   void ** const *p13 = (void ** const *) bar; /* { dg-warning "cast" } */
   const void * const **p15 = (const void * const **) bar; /* { dg-warning "cast" } */
-  const void ** const *p17 = (const void ** const *) bar; /* { dg-warning "cast discards .const. qualifier" } */
+  const void ** const *p17 = (const void ** const *) bar; /* { dg-warning "cast" } */
   void * const * const * p19 = (void * const * const *) bar;
   const void * const * const *p21 = (const void * const * const *) bar;
 }
