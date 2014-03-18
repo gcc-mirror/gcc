@@ -1,3 +1,7 @@
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	* doc/contrib.texi: Adjust my name.
+
 2014-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/58721
