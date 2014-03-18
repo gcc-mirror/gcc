@@ -1,5 +1,11 @@
 2014-03-18  Richard Biener  <rguenther@suse.de>
 
+	* df-problems.c (df_rd_confluence_n): Avoid bitmap_copy
+	by using bitmap_and_compl instead of bitmap_and_compl_into.
+	(df_rd_transfer_function): Likewise.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
 	* doc/lto.texi (fresolution): Fix typo.
 
 2014-03-18  Richard Biener  <rguenther@suse.de>

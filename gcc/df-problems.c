@@ -479,8 +479,7 @@ df_rd_confluence_n (edge e)
       bitmap_head tmp;
 
       bitmap_initialize (&tmp, &df_bitmap_obstack);
-      bitmap_copy (&tmp, op2);
-      bitmap_and_compl_into (&tmp, dense_invalidated);
+      bitmap_and_compl (&tmp, op2, dense_invalidated);
 
       EXECUTE_IF_SET_IN_BITMAP (sparse_invalidated, 0, regno, bi)
  	{
@@ -524,14 +523,13 @@ df_rd_transfer_function (int bb_index)
       problem_data = (struct df_rd_problem_data *) df_rd->problem_data;
       bitmap_initialize (&tmp, &problem_data->rd_bitmaps);
 
-      bitmap_copy (&tmp, in);
+      bitmap_and_compl (&tmp, in, kill);
       EXECUTE_IF_SET_IN_BITMAP (sparse_kill, 0, regno, bi)
 	{
 	  bitmap_clear_range (&tmp,
 			      DF_DEFS_BEGIN (regno),
 			      DF_DEFS_COUNT (regno));
 	}
-      bitmap_and_compl_into (&tmp, kill);
       bitmap_ior_into (&tmp, gen);
       changed = !bitmap_equal_p (&tmp, out);
       if (changed)
