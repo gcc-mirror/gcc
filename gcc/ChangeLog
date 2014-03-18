@@ -1,4 +1,25 @@
 2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58941
+	* tree-dfa.c (get_ref_base_and_extent): Merge common code
+	in MEM_REF and TARGET_MEM_REF handling.  Make sure to
+	process trailing array detection before diving into the
+	view-converted object (and possibly apply some extra offset).
+
+	2012-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-dfa.c (get_ref_base_and_extent) <ARRAY_REF>: Do the offset
+	computation using the precision of the index type.
+
+	2012-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-dfa.c (get_ref_base_and_extent): Compute the offset using
+	double ints throughout.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
  
 	Backport from mainline
 	2013-08-27  Richard Biener  <rguenther@suse.de>

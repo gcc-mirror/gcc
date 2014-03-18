@@ -713,9 +713,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   HOST_WIDE_INT bitsize = -1;
   HOST_WIDE_INT maxsize = -1;
   tree size_tree = NULL_TREE;
-  HOST_WIDE_INT bit_offset = 0;
+  double_int bit_offset = double_int_zero;
+  HOST_WIDE_INT hbit_offset;
   bool seen_variable_array_ref = false;
-  tree base_type;
 
   /* First get the final access size from just the outermost expression.  */
   if (TREE_CODE (exp) == COMPONENT_REF)
@@ -746,12 +746,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
      and find the ultimate containing object.  */
   while (1)
     {
-      base_type = TREE_TYPE (exp);
-
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += TREE_INT_CST_LOW (TREE_OPERAND (exp, 2));
+	  bit_offset
+	    = double_int_add (bit_offset,
+			      tree_to_double_int (TREE_OPERAND (exp, 2)));
 	  break;
 
 	case COMPONENT_REF:
@@ -759,22 +759,23 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	    tree field = TREE_OPERAND (exp, 1);
 	    tree this_offset = component_ref_field_offset (exp);
 
-	    if (this_offset
-		&& TREE_CODE (this_offset) == INTEGER_CST
-		&& host_integerp (this_offset, 0))
+	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
-		HOST_WIDE_INT hthis_offset = TREE_INT_CST_LOW (this_offset);
-		hthis_offset *= BITS_PER_UNIT;
-		hthis_offset
-		  += TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field));
-		bit_offset += hthis_offset;
+		double_int doffset = tree_to_double_int (this_offset);
+		doffset = double_int_lshift (doffset,
+					     BITS_PER_UNIT == 8
+					     ? 3 : exact_log2 (BITS_PER_UNIT),
+					     HOST_BITS_PER_DOUBLE_INT, true);
+		doffset = double_int_add (doffset,
+					  tree_to_double_int
+					  (DECL_FIELD_BIT_OFFSET (field)));
+		bit_offset = double_int_add (bit_offset, doffset);
 
 		/* If we had seen a variable array ref already and we just
 		   referenced the last field of a struct or a union member
 		   then we have to adjust maxsize by the padding at the end
 		   of our field.  */
-		if (seen_variable_array_ref
-		    && maxsize != -1)
+		if (seen_variable_array_ref && maxsize != -1)
 		  {
 		    tree stype = TREE_TYPE (TREE_OPERAND (exp, 0));
 		    tree next = DECL_CHAIN (field);
@@ -786,10 +787,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			tree fsize = DECL_SIZE_UNIT (field);
 			tree ssize = TYPE_SIZE_UNIT (stype);
 			if (host_integerp (fsize, 0)
-			    && host_integerp (ssize, 0))
+			    && host_integerp (ssize, 0)
+			    && double_int_fits_in_shwi_p (doffset))
 			  maxsize += ((TREE_INT_CST_LOW (ssize)
 				       - TREE_INT_CST_LOW (fsize))
-				      * BITS_PER_UNIT - hthis_offset);
+				      * BITS_PER_UNIT
+					- double_int_to_shwi (doffset));
 			else
 			  maxsize = -1;
 		      }
@@ -801,8 +804,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		/* We need to adjust maxsize to the whole structure bitsize.
 		   But we can subtract any constant offset seen so far,
 		   because that would get us out of the structure otherwise.  */
-		if (maxsize != -1 && csize && host_integerp (csize, 1))
-		  maxsize = TREE_INT_CST_LOW (csize) - bit_offset;
+		if (maxsize != -1
+		    && csize
+		    && host_integerp (csize, 1)
+		    && double_int_fits_in_shwi_p (bit_offset))
+		  maxsize = TREE_INT_CST_LOW (csize)
+			    - double_int_to_shwi (bit_offset);
 		else
 		  maxsize = -1;
 	      }
@@ -817,18 +824,23 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
 	    /* If the resulting bit-offset is constant, track it.  */
 	    if (TREE_CODE (index) == INTEGER_CST
-		&& host_integerp (index, 0)
 		&& (low_bound = array_ref_low_bound (exp),
-		    host_integerp (low_bound, 0))
+ 		    TREE_CODE (low_bound) == INTEGER_CST)
 		&& (unit_size = array_ref_element_size (exp),
-		    host_integerp (unit_size, 1)))
+		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		HOST_WIDE_INT hindex = TREE_INT_CST_LOW (index);
-
-		hindex -= TREE_INT_CST_LOW (low_bound);
-		hindex *= TREE_INT_CST_LOW (unit_size);
-		hindex *= BITS_PER_UNIT;
-		bit_offset += hindex;
+		double_int doffset
+		  = double_int_sext
+		    (double_int_sub (TREE_INT_CST (index),
+				     TREE_INT_CST (low_bound)),
+		     TYPE_PRECISION (TREE_TYPE (index)));
+		doffset = double_int_mul (doffset,
+					  tree_to_double_int (unit_size));
+		doffset = double_int_lshift (doffset,
+					     BITS_PER_UNIT == 8
+					     ? 3 : exact_log2 (BITS_PER_UNIT),
+					     HOST_BITS_PER_DOUBLE_INT, true);
+		bit_offset = double_int_add (bit_offset, doffset);
 
 		/* An array ref with a constant index up in the structure
 		   hierarchy will constrain the size of any variable array ref
@@ -841,8 +853,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		/* We need to adjust maxsize to the whole array bitsize.
 		   But we can subtract any constant offset seen so far,
 		   because that would get us outside of the array otherwise.  */
-		if (maxsize != -1 && asize && host_integerp (asize, 1))
-		  maxsize = TREE_INT_CST_LOW (asize) - bit_offset;
+		if (maxsize != -1
+		    && asize
+		    && host_integerp (asize, 1)
+		    && double_int_fits_in_shwi_p (bit_offset))
+		  maxsize = TREE_INT_CST_LOW (asize)
+			    - double_int_to_shwi (bit_offset);
 		else
 		  maxsize = -1;
 
@@ -857,13 +873,45 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	  break;
 
 	case IMAGPART_EXPR:
-	  bit_offset += bitsize;
+	  bit_offset
+	    = double_int_add (bit_offset, uhwi_to_double_int (bitsize));
 	  break;
 
 	case VIEW_CONVERT_EXPR:
 	  break;
 
+	case TARGET_MEM_REF:
+	  /* Via the variable index or index2 we can reach the
+	     whole object.  Still hand back the decl here.  */
+	  if (TREE_CODE (TMR_BASE (exp)) == ADDR_EXPR
+	      && (TMR_INDEX (exp) || TMR_INDEX2 (exp)))
+	    {
+	      exp = TREE_OPERAND (TMR_BASE (exp), 0);
+	      bit_offset = double_int_zero;
+	      maxsize = -1;
+	      goto done;
+	    }
+	  /* Fallthru.  */
 	case MEM_REF:
+	  /* We need to deal with variable arrays ending structures such as
+	     struct { int length; int a[1]; } x;           x.a[d]
+	     struct { struct { int a; int b; } a[1]; } x;  x.a[d].a
+	     struct { struct { int a[1]; } a[1]; } x;      x.a[0][d], x.a[d][0]
+	     struct { int len; union { int a[1]; struct X x; } u; } x; x.u.a[d]
+	     where we do not know maxsize for variable index accesses to
+	     the array.  The simplest way to conservatively deal with this
+	     is to punt in the case that offset + maxsize reaches the
+	     base type boundary.  This needs to include possible trailing
+	     padding that is there for alignment purposes.  */
+	  if (seen_variable_array_ref
+	      && maxsize != -1
+	      && (!double_int_fits_in_shwi_p (bit_offset)
+		  || !host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
+		  || (double_int_to_shwi (bit_offset) + maxsize
+		      == (HOST_WIDE_INT) TREE_INT_CST_LOW
+		            (TYPE_SIZE (TREE_TYPE (exp))))))
+	    maxsize = -1;
+
 	  /* Hand back the decl for MEM[&decl, off].  */
 	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR)
 	    {
@@ -876,43 +924,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 					   BITS_PER_UNIT == 8
 					   ? 3 : exact_log2 (BITS_PER_UNIT),
 					   HOST_BITS_PER_DOUBLE_INT, true);
-		  off = double_int_add (off, shwi_to_double_int (bit_offset));
+		  off = double_int_add (off, bit_offset);
 		  if (double_int_fits_in_shwi_p (off))
 		    {
-		      bit_offset = double_int_to_shwi (off);
+		      bit_offset = off;
 		      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-		    }
-		}
-	    }
-	  goto done;
-
-	case TARGET_MEM_REF:
-	  /* Hand back the decl for MEM[&decl, off].  */
-	  if (TREE_CODE (TMR_BASE (exp)) == ADDR_EXPR)
-	    {
-	      /* Via the variable index or index2 we can reach the
-		 whole object.  */
-	      if (TMR_INDEX (exp) || TMR_INDEX2 (exp))
-		{
-		  exp = TREE_OPERAND (TMR_BASE (exp), 0);
-		  bit_offset = 0;
-		  maxsize = -1;
-		  goto done;
-		}
-	      if (integer_zerop (TMR_OFFSET (exp)))
-		exp = TREE_OPERAND (TMR_BASE (exp), 0);
-	      else
-		{
-		  double_int off = mem_ref_offset (exp);
-		  off = double_int_lshift (off,
-					   BITS_PER_UNIT == 8
-					   ? 3 : exact_log2 (BITS_PER_UNIT),
-					   HOST_BITS_PER_DOUBLE_INT, true);
-		  off = double_int_add (off, shwi_to_double_int (bit_offset));
-		  if (double_int_fits_in_shwi_p (off))
-		    {
-		      bit_offset = double_int_to_shwi (off);
-		      exp = TREE_OPERAND (TMR_BASE (exp), 0);
 		    }
 		}
 	    }
@@ -924,25 +940,28 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
       exp = TREE_OPERAND (exp, 0);
     }
- done:
 
-  /* We need to deal with variable arrays ending structures such as
-       struct { int length; int a[1]; } x;           x.a[d]
-       struct { struct { int a; int b; } a[1]; } x;  x.a[d].a
-       struct { struct { int a[1]; } a[1]; } x;      x.a[0][d], x.a[d][0]
-       struct { int len; union { int a[1]; struct X x; } u; } x; x.u.a[d]
-     where we do not know maxsize for variable index accesses to
-     the array.  The simplest way to conservatively deal with this
-     is to punt in the case that offset + maxsize reaches the
-     base type boundary.  This needs to include possible trailing padding
-     that is there for alignment purposes.  */
-
+  /* We need to deal with variable arrays ending structures.  */
   if (seen_variable_array_ref
       && maxsize != -1
-      && (!host_integerp (TYPE_SIZE (base_type), 1)
-	  || (bit_offset + maxsize
-	      == (signed) TREE_INT_CST_LOW (TYPE_SIZE (base_type)))))
+      && (!double_int_fits_in_shwi_p (bit_offset)
+	  || !host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
+	  || (double_int_to_shwi (bit_offset) + maxsize
+	      == (HOST_WIDE_INT)
+		   TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))))))
     maxsize = -1;
+
+ done:
+  if (!double_int_fits_in_shwi_p (bit_offset))
+    {
+      *poffset = 0;
+      *psize = bitsize;
+      *pmax_size = -1;
+
+      return exp;
+    }
+
+  hbit_offset = double_int_to_shwi (bit_offset);
 
   /* In case of a decl or constant base object we can do better.  */
 
@@ -952,7 +971,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
          base decl.  */
       if (maxsize == -1
 	  && host_integerp (DECL_SIZE (exp), 1))
-	maxsize = TREE_INT_CST_LOW (DECL_SIZE (exp)) - bit_offset;
+	maxsize = TREE_INT_CST_LOW (DECL_SIZE (exp)) - hbit_offset;
     }
   else if (CONSTANT_CLASS_P (exp))
     {
@@ -960,13 +979,13 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
          base type constant.  */
       if (maxsize == -1
 	  && host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1))
-	maxsize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))) - bit_offset;
+	maxsize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))) - hbit_offset;
     }
 
   /* ???  Due to negative offsets in ARRAY_REF we can end up with
      negative bit_offset here.  We might want to store a zero offset
      in this case.  */
-  *poffset = bit_offset;
+  *poffset = hbit_offset;
   *psize = bitsize;
   *pmax_size = maxsize;
 

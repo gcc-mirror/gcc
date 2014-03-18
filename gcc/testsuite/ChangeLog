@@ -1,4 +1,12 @@
 2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58941
+	* gcc.dg/torture/pr58941.c: New testcase.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
  
 	Backport from mainline
 	2013-08-27  Richard Biener  <rguenther@suse.de>
