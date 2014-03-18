@@ -1226,7 +1226,10 @@ static void
 sdbout_parms (tree parms)
 {
   for (; parms; parms = TREE_CHAIN (parms))
-    if (DECL_NAME (parms))
+    if (DECL_NAME (parms)
+	&& TREE_TYPE (parms) != error_mark_node
+	&& DECL_RTL_SET_P (parms)
+	&& DECL_INCOMING_RTL (parms))
       {
 	int current_sym_value = 0;
 	const char *name = IDENTIFIER_POINTER (DECL_NAME (parms));
@@ -1358,7 +1361,10 @@ static void
 sdbout_reg_parms (tree parms)
 {
   for (; parms; parms = TREE_CHAIN (parms))
-    if (DECL_NAME (parms))
+    if (DECL_NAME (parms)
+        && TREE_TYPE (parms) != error_mark_node
+        && DECL_RTL_SET_P (parms)
+        && DECL_INCOMING_RTL (parms))
       {
 	const char *name = IDENTIFIER_POINTER (DECL_NAME (parms));
 
