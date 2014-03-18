@@ -591,5 +591,5 @@ with @option{-fwpa}.
 @opindex fresolution
 This option specifies the linker resolution file.  This option is
 only meaningful in conjunction with @option{-fwpa} and as option
-to pass through to the LTO linker pluign.
+to pass through to the LTO linker plugin.
 @end itemize

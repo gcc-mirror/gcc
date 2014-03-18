@@ -1,5 +1,9 @@
 2014-03-18  Richard Biener  <rguenther@suse.de>
 
+	* doc/lto.texi (fresolution): Fix typo.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
 	* doc/invoke.texi (flto): Update for changes in 4.9.
 
 2014-03-18  Richard Biener  <rguenther@suse.de>
