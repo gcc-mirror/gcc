@@ -907,15 +907,15 @@ sparc_do_work_around_errata (void)
 	  && REGNO (SET_DEST (set)) % 2 != 0)
 	{
 	  /* The wrong dependency is on the enclosing double register.  */
-	  unsigned int x = REGNO (SET_DEST (set)) - 1;
+	  const unsigned int x = REGNO (SET_DEST (set)) - 1;
 	  unsigned int src1, src2, dest;
 	  int code;
 
-	  /* If the insn has a delay slot, then it cannot be problematic.  */
 	  next = next_active_insn (insn);
 	  if (!next)
 	    break;
-	  if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
+	  /* If the insn is a branch, then it cannot be problematic.  */
+	  if (!NONJUMP_INSN_P (next) || GET_CODE (PATTERN (next)) == SEQUENCE)
 	    continue;
 
 	  extract_insn (next);
@@ -979,11 +979,11 @@ sparc_do_work_around_errata (void)
 	     dependency on the first single-cycle load.  */
 	  rtx x = SET_DEST (set);
 
-	  /* If the insn has a delay slot, then it cannot be problematic.  */
 	  next = next_active_insn (insn);
 	  if (!next)
 	    break;
-	  if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
+	  /* If the insn is a branch, then it cannot be problematic.  */
+	  if (!NONJUMP_INSN_P (next) || GET_CODE (PATTERN (next)) == SEQUENCE)
 	    continue;
 
 	  /* Look for a second memory access to/from an integer register.  */
@@ -1001,13 +1001,13 @@ sparc_do_work_around_errata (void)
 		insert_nop = true;
 
 	      /* STD is *not* affected.  */
-	      else if ((mem = mem_ref (dest)) != NULL_RTX
-		       && GET_MODE_SIZE (GET_MODE (mem)) <= 4
-		       && (src == const0_rtx
+	      else if (MEM_P (dest)
+		       && GET_MODE_SIZE (GET_MODE (dest)) <= 4
+		       && (src == CONST0_RTX (GET_MODE (dest))
 			   || (REG_P (src)
 			       && REGNO (src) < 32
 			       && REGNO (src) != REGNO (x)))
-		       && !reg_mentioned_p (x, XEXP (mem, 0)))
+		       && !reg_mentioned_p (x, XEXP (dest, 0)))
 		insert_nop = true;
 	    }
 	}
