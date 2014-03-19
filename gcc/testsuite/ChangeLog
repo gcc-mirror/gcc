@@ -1,3 +1,8 @@
+2014-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60332
+	* g++.dg/cpp1y/pr60332.C: New.
+
 2014-03-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/60569
