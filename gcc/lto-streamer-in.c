@@ -988,7 +988,7 @@ input_function (tree fn_decl, struct data_in *data_in,
 	     We can't remove them earlier because this would cause uid
 	     mismatches in fixups, but we can do it at this point, as
 	     long as debug stmts don't require fixups.  */
-	  if (!MAY_HAVE_DEBUG_STMTS && is_gimple_debug (stmt))
+	  if (!MAY_HAVE_DEBUG_STMTS && !flag_wpa && is_gimple_debug (stmt))
 	    {
 	      gimple_stmt_iterator gsi = bsi;
 	      gsi_next (&bsi);

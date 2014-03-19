@@ -1,3 +1,9 @@
+2014-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59543
+	* lto-streamer-in.c (input_function): In WPA stage do not drop
+	debug stmts.
+
 2014-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60559
