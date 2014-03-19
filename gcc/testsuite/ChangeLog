@@ -1,3 +1,9 @@
+2014-03-18  Ian Lance Taylor  <iant@google.com>
+
+	PR target/60563
+	* g++.dg/ext/sync-4.C (int32_t): Remove typedef.
+	(ditype): Rename typedef from int64_t.
+
 2014-03-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/55383
