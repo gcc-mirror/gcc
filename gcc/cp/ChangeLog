@@ -1,3 +1,9 @@
+2014-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51474
+	* call.c (build_new_method_call_1): Handle pure virtuals called by
+	NSDMIs too.
+
 2014-03-17  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60390
