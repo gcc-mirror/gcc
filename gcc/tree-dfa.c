@@ -825,7 +825,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	    /* If the resulting bit-offset is constant, track it.  */
 	    if (TREE_CODE (index) == INTEGER_CST
 		&& (low_bound = array_ref_low_bound (exp),
- 		    TREE_CODE (low_bound) == INTEGER_CST)
+		    TREE_CODE (low_bound) == INTEGER_CST)
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {

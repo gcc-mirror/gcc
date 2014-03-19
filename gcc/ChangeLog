@@ -1,3 +1,7 @@
+2014-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-dfa.c (get_ref_base_and_extent) <ARRAY_REF>: Remove space.
+
 2014-03-18  Kai Tietz  <ktietz@redhat.com>
 
 	PR rtl-optimization/56356
