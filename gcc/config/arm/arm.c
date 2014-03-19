@@ -9594,7 +9594,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	    {
 	      /* UXTA[BH] or SXTA[BH].  */
 	      if (speed_p)
-		*cost += extra_cost->alu.extnd_arith;
+		*cost += extra_cost->alu.extend_arith;
 	      *cost += (rtx_cost (XEXP (XEXP (x, 0), 0), ZERO_EXTEND, 0,
 				  speed_p)
 			+ rtx_cost (XEXP (x, 1), PLUS, 0, speed_p));
@@ -10311,7 +10311,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  *cost = COSTS_N_INSNS (1);
 	  *cost += rtx_cost (XEXP (x, 0), code, 0, speed_p);
 	  if (speed_p)
-	    *cost += extra_cost->alu.extnd;
+	    *cost += extra_cost->alu.extend;
 	}
       else if (GET_MODE (XEXP (x, 0)) != SImode)
 	{
@@ -10364,7 +10364,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  *cost = COSTS_N_INSNS (1);
 	  *cost += rtx_cost (XEXP (x, 0), code, 0, speed_p);
 	  if (speed_p)
-	    *cost += extra_cost->alu.extnd;
+	    *cost += extra_cost->alu.extend;
 	}
       else if (GET_MODE (XEXP (x, 0)) != SImode)
 	{
