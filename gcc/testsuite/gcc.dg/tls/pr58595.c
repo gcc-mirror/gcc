@@ -3,7 +3,7 @@
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-fpic" { target fpic } } */
 /* { dg-add-options tls } */
-/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target tls_runtime } */
 /* { dg-require-effective-target sync_int_long } */
 
 struct S { unsigned long a, b; };
