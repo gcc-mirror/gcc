@@ -1,3 +1,10 @@
+2014-03-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/60590
+	* lib/target-libpath.exp (set_ld_library_path_env_vars): Log
+	LD_LIBRARY_PATH, LD_RUN_PATH, SHLIB_PATH, LD_LIBRARY_PATH_32,
+	LD_LIBRARY_PATH_64 and DYLD_LIBRARY_PATH.
+
 2014-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60332
