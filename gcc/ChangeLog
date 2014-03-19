@@ -1,3 +1,9 @@
+2014-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60559
+	* vectorizable_mask_load_store): Replace scalar MASK_LOAD
+	with build_zero_cst assignment.
+
 2014-03-18  Kai Tietz  <ktietz@redhat.com>
 
 	PR rtl-optimization/56356

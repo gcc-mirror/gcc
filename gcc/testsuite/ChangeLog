@@ -1,3 +1,8 @@
+2014-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60559
+	* g++.dg/vect/pr60559.cc: New test.
+
 2014-03-18  Ian Lance Taylor  <iant@google.com>
 
 	PR target/60563
