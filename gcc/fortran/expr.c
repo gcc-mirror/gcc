@@ -3704,8 +3704,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     }
 
   if (is_implicit_pure && gfc_impure_variable (rvalue->symtree->n.sym))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
-
+    gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   if (gfc_has_vector_index (rvalue))
     {
