@@ -318,7 +318,7 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
     {
       if (TREE_CODE (TYPE_NAME (type2)) == IDENTIFIER_NODE)
 	tname = IDENTIFIER_POINTER (TYPE_NAME (type2));
-      else
+      else if (DECL_NAME (TYPE_NAME (type2)) != NULL)
 	tname = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type2)));
     }
 

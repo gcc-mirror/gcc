@@ -1,3 +1,9 @@
+2014-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/60569
+	* ubsan.c (ubsan_type_descriptor): Check that DECL_NAME is nonnull
+	before accessing it.
+
 2014-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR lto/59543
