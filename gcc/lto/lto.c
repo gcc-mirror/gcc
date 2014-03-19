@@ -2476,7 +2476,10 @@ wait_for_child ()
   int status;
   do
     {
-      int w = waitpid(0, &status, WUNTRACED | WCONTINUED);
+#ifndef WCONTINUED
+#define WCONTINUED 0
+#endif
+      int w = waitpid (0, &status, WUNTRACED | WCONTINUED);
       if (w == -1)
 	fatal_error ("waitpid failed");
 
@@ -2485,7 +2488,7 @@ wait_for_child ()
       else if (WIFSIGNALED (status))
 	fatal_error ("streaming subprocess was killed by signal");
     }
-  while (!WIFEXITED(status) && !WIFSIGNALED(status));
+  while (!WIFEXITED (status) && !WIFSIGNALED (status));
 }
 #endif
 
