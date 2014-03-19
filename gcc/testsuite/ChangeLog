@@ -1,3 +1,8 @@
+2014-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/60569
+	* g++.dg/ubsan/pr60569.C: New test.
+
 2014-03-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/tls/pr58595.c: Require tls_runtime instead of tls.
