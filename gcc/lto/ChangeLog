@@ -1,5 +1,11 @@
 2014-03-19  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/60553
+	* lto-tree.h (lang_tree_node): For types use TYPE_NEXT_VARIANT 
+	instead of TREE_CHAIN as chain_next.
+
+2014-03-19  Richard Biener  <rguenther@suse.de>
+
 	* lto.c (lto_wpa_write_files): Move call to
 	lto_promote_cross_file_statics ...
 	(do_whole_program_analysis): ... here, into the partitioning
