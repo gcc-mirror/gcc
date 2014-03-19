@@ -1,3 +1,11 @@
+2014-03-19  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (lto_wpa_write_files): Move call to
+	lto_promote_cross_file_statics ...
+	(do_whole_program_analysis): ... here, into the partitioning
+	block.  Do not ggc_collect after lto_wpa_write_files but
+	for a last time before it.
+
 2014-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/60571
