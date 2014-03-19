@@ -1,3 +1,9 @@
+2014-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60553
+	* tree-core.h (tree_type_common): Re-order pointer members
+	to reduce recursion depth during GC walks.
+
 2014-03-19  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/60569
