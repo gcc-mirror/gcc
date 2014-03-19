@@ -1,3 +1,9 @@
+2014-03-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/aarch-common-protos.h
+	(alu_cost_table): Fix spelling of "extend".
+	* config/arm/arm.c (arm_new_rtx_costs): Fix spelling of "extend".
+
 2014-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60553
