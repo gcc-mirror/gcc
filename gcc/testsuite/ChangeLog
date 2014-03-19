@@ -1,3 +1,7 @@
+2014-03-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tls/pr58595.c: Require tls_runtime instead of tls.
+
 2014-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60559
