@@ -1,3 +1,9 @@
+2014-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/60571
+	* lto.c (wait_for_child): Define WCONTINUED if not defined to 0.
+	Fix formatting.
+
 2014-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60535
