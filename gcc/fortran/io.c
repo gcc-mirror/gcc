@@ -3259,9 +3259,8 @@ if (condition) \
 		     "an internal file in a PURE procedure",
 		     io_kind_name (k));
 
-      if (gfc_implicit_pure (NULL) && (k == M_READ || k == M_WRITE))
-	gfc_current_ns->proc_name->attr.implicit_pure = 0;
-
+      if (k == M_READ || k == M_WRITE)
+	gfc_unset_implicit_pure (NULL);
     }
 
   if (k != M_READ)

@@ -1,3 +1,9 @@
+2014-03-19  Tobias Burnus  <burnus@net-b.>
+
+	PR fortran/60543
+	* io.c (check_io_constraints): Use gfc_unset_implicit_pure.
+	* resolve.c (resolve_ordinary_assign): Ditto.
+
 2014-03-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60543

@@ -9165,7 +9165,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       if (lhs->expr_type == EXPR_VARIABLE
 	    && lhs->symtree->n.sym != gfc_current_ns->proc_name
 	    && lhs->symtree->n.sym->ns != gfc_current_ns)
-	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+	gfc_unset_implicit_pure (NULL);
 
       if (lhs->ts.type == BT_DERIVED
 	    && lhs->expr_type == EXPR_VARIABLE
@@ -9173,11 +9173,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	    && rhs->expr_type == EXPR_VARIABLE
 	    && (gfc_impure_variable (rhs->symtree->n.sym)
 		|| gfc_is_coindexed (rhs)))
-	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+	gfc_unset_implicit_pure (NULL);
 
       /* Fortran 2008, C1283.  */
       if (gfc_is_coindexed (lhs))
-	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+	gfc_unset_implicit_pure (NULL);
     }
 
   /* F2008, 7.2.1.2.  */
