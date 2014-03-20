@@ -1,3 +1,7 @@
+2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1): Remove outdated comment.
+
 2014-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/60597
