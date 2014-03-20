@@ -1,3 +1,9 @@
+2014-03-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60599
+	* lib/gcc-dg.exp (scan-module): Uncompress .mod files for
+	reading.
+
 2014-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/60597
