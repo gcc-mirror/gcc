@@ -1012,6 +1012,106 @@ sparc_do_work_around_errata (void)
 	    }
 	}
 
+      /* Look for a single-word load/operation into an FP register.  */
+      else if (sparc_fix_ut699
+	       && NONJUMP_INSN_P (insn)
+	       && (set = single_set (insn)) != NULL_RTX
+	       && GET_MODE_SIZE (GET_MODE (SET_SRC (set))) == 4
+	       && REG_P (SET_DEST (set))
+	       && REGNO (SET_DEST (set)) > 31)
+	{
+	  /* Number of instructions in the problematic window.  */
+	  const int n_insns = 4;
+	  /* The problematic combination is with the sibling FP register.  */
+	  const unsigned int x = REGNO (SET_DEST (set));
+	  const unsigned int y = x ^ 1;
+	  rtx after;
+	  int i;
+
+	  next = next_active_insn (insn);
+	  if (!next)
+	    break;
+	  /* If the insn is a branch, then it cannot be problematic.  */
+	  if (!NONJUMP_INSN_P (next) || GET_CODE (PATTERN (next)) == SEQUENCE)
+	    continue;
+
+	  /* Look for a second load/operation into the sibling FP register.  */
+	  if (!((set = single_set (next)) != NULL_RTX
+		&& GET_MODE_SIZE (GET_MODE (SET_SRC (set))) == 4
+		&& REG_P (SET_DEST (set))
+		&& REGNO (SET_DEST (set)) == y))
+	    continue;
+
+	  /* Look for a (possible) store from the FP register in the next N
+	     instructions, but bail out if it is again modified or if there
+	     is a store from the sibling FP register before this store.  */
+	  for (after = next, i = 0; i < n_insns; i++)
+	    {
+	      bool branch_p;
+
+	      after = next_active_insn (after);
+	      if (!after)
+		break;
+
+	      /* This is a branch with an empty delay slot.  */
+	      if (!NONJUMP_INSN_P (after))
+		{
+		  if (++i == n_insns)
+		    break;
+		  branch_p = true;
+		  after = NULL_RTX;
+		}
+	      /* This is a branch with a filled delay slot.  */
+	      else if (GET_CODE (PATTERN (after)) == SEQUENCE)
+		{
+		  if (++i == n_insns)
+		    break;
+		  branch_p = true;
+		  after = XVECEXP (PATTERN (after), 0, 1);
+		}
+	      /* This is a regular instruction.  */
+	      else
+		branch_p = false;
+
+	      if (after && (set = single_set (after)) != NULL_RTX)
+		{
+		  const rtx src = SET_SRC (set);
+		  const rtx dest = SET_DEST (set);
+		  const unsigned int size = GET_MODE_SIZE (GET_MODE (dest));
+
+		  /* If the FP register is again modified before the store,
+		     then the store isn't affected.  */
+		  if (REG_P (dest)
+		      && (REGNO (dest) == x
+			  || (REGNO (dest) == y && size == 8)))
+		    break;
+
+		  if (MEM_P (dest) && REG_P (src))
+		    {
+		      /* If there is a store from the sibling FP register
+			 before the store, then the store is not affected.  */
+		      if (REGNO (src) == y || (REGNO (src) == x && size == 8))
+			break;
+
+		      /* Otherwise, the store is affected.  */
+		      if (REGNO (src) == x && size == 4)
+			{
+			  insert_nop = true;
+			  break;
+			}
+		    }
+		}
+
+	      /* If we have a branch in the first M instructions, then we
+		 cannot see the (M+2)th instruction so we play safe.  */
+	      if (branch_p && i <= (n_insns - 2))
+		{
+		  insert_nop = true;
+		  break;
+		}
+	    }
+	}
+
       else
 	next = NEXT_INSN (insn);
 
