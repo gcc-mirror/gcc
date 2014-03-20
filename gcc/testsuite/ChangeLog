@@ -1,3 +1,9 @@
+2014-03-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60543
+	PR fortran/60283
+	* gfortran.dg/implicit_pure_4.f90: New.
+
 2014-03-17  Mikael Pettersson  <mikpelinux@gmail.com>
 	    Committed by Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

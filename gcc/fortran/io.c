@@ -1309,7 +1309,8 @@ match_vtag (const io_tag *tag, gfc_expr **v)
       return MATCH_ERROR;
     }
 
-  if (gfc_pure (NULL) && gfc_impure_variable (result->symtree->n.sym))
+  bool impure = gfc_impure_variable (result->symtree->n.sym);
+  if (impure && gfc_pure (NULL))
     {
       gfc_error ("Variable %s cannot be assigned in PURE procedure at %C",
 		 tag->name);
@@ -1317,8 +1318,8 @@ match_vtag (const io_tag *tag, gfc_expr **v)
       return MATCH_ERROR;
     }
 
-  if (gfc_implicit_pure (NULL) && gfc_impure_variable (result->symtree->n.sym))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  if (impure)
+    gfc_unset_implicit_pure (NULL);
 
   *v = result;
   return MATCH_YES;
@@ -1838,8 +1839,7 @@ gfc_match_open (void)
       goto cleanup;
     }
 
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (NULL);
 
   warn = (open->err || open->iostat) ? true : false;
 
@@ -2251,8 +2251,7 @@ gfc_match_close (void)
       goto cleanup;
     }
 
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (NULL);
 
   warn = (close->iostat || close->err) ? true : false;
 
@@ -2419,8 +2418,7 @@ done:
       goto cleanup;
     }
 
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (NULL);
 
   new_st.op = op;
   new_st.ext.filepos = fp;
@@ -3276,9 +3274,8 @@ if (condition) \
 		     "an internal file in a PURE procedure",
 		     io_kind_name (k));
 
-      if (gfc_implicit_pure (NULL) && (k == M_READ || k == M_WRITE))
-	gfc_current_ns->proc_name->attr.implicit_pure = 0;
-
+      if (k == M_READ || k == M_WRITE)
+	gfc_unset_implicit_pure (NULL);
     }
 
   if (k != M_READ)
@@ -3809,8 +3806,7 @@ gfc_match_print (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (NULL);
 
   return MATCH_YES;
 }
@@ -3969,8 +3965,7 @@ gfc_match_inquire (void)
 	  return MATCH_ERROR;
 	}
 
-      if (gfc_implicit_pure (NULL))
-	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+      gfc_unset_implicit_pure (NULL);
 
       new_st.block = gfc_get_code ();
       new_st.block->op = EXEC_IOLENGTH;
@@ -4023,8 +4018,7 @@ gfc_match_inquire (void)
       goto cleanup;
     }
 
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (NULL);
   
   if (inquire->id != NULL && inquire->pending == NULL)
     {
@@ -4212,8 +4206,7 @@ gfc_match_wait (void)
       goto cleanup;
     }
 
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (NULL);
 
   new_st.op = EXEC_WAIT;
   new_st.ext.wait = wait;

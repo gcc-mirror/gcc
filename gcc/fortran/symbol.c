@@ -1110,8 +1110,8 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
       return FAILURE;
     }
 
-  if (s == SAVE_EXPLICIT && gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  if (s == SAVE_EXPLICIT)
+    gfc_unset_implicit_pure (NULL);
 
   if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT)
     {
