@@ -1,3 +1,8 @@
+2014-03-20  Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+	* config.host (v850*-*-*): Add to tmake_file instead of resetting
+	it. This was removing the v850*-*-rtems* settings.
+
 2014-03-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libgcc/60472
