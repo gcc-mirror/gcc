@@ -1,3 +1,7 @@
+2014-03-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (MEMORY_MOVE_COST): Delete.
+
 2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Implement work
