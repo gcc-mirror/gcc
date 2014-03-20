@@ -1,3 +1,8 @@
+2014-03-20  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/arm.c (arm_dwarf_register_span): Update the element number
+	of parts.
+
 2014-03-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/60039

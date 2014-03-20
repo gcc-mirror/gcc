@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-O" } */
+/* { dg-options "-O -g" } */
 /* { dg-add-options arm_neon } */
 
 #include <arm_neon.h>

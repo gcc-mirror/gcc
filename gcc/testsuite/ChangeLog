@@ -1,3 +1,7 @@
+2014-03-20  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/neon-modes-3.c: Add "-g" option.
+
 2014-03-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60543

@@ -28692,7 +28692,7 @@ arm_dwarf_register_span (rtx rtl)
 {
   enum machine_mode mode;
   unsigned regno;
-  rtx parts[8];
+  rtx parts[16];
   int nregs;
   int i;
 
