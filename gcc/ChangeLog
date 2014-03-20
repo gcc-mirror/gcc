@@ -1,3 +1,11 @@
+2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* calls.c (store_one_arg): Remove incorrect const qualification on the
+	type of the temporary.
+	* cfgexpand.c (expand_return): Likewise.
+	* expr.c (expand_constructor): Likewise.
+	(expand_expr_real_1): Likewise.
+
 2014-03-20  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* config/arm/arm.c (arm_dwarf_register_span): Update the element number
