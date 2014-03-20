@@ -462,6 +462,10 @@
 	   (const_string "false")
 	 (and (eq_attr "fix_ut699" "true") (eq_attr "type" "load,sload"))
 	   (const_string "false")
+	 (and (eq_attr "fix_ut699" "true")
+	      (and (eq_attr "type" "fpload,fp,fpmove,fpmul,fpdivs,fpsqrts")
+		   (eq_attr "fptype" "single")))
+	   (const_string "false")
 	 (eq_attr "length" "1")
 	   (const_string "true")
 	] (const_string "false")))
@@ -5513,7 +5517,7 @@
 		(match_operand:TF 2 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fdivq\t%1, %2, %0"
-  [(set_attr "type" "fpdivd")])
+  [(set_attr "type" "fpdivs")])
 
 (define_expand "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=e")
@@ -5744,7 +5748,7 @@
 	(sqrt:TF (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fsqrtq\t%1, %0"
-  [(set_attr "type" "fpsqrtd")])
+  [(set_attr "type" "fpsqrts")])
 
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=e")
