@@ -1,3 +1,10 @@
+2014-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60568
+	* config/i386/i386.c (x86_output_mi_thunk): Surround UNSPEC_GOT
+	into CONST, put pic register as first operand of PLUS.  Use
+	gen_const_mem for both 32-bit and 64-bit PIC got loads.
+
 2014-03-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.c (MEMORY_MOVE_COST): Delete.
