@@ -7867,11 +7867,7 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
       if (avoid_temp_mem)
 	return NULL_RTX;
 
-      target
-	= assign_temp (build_qualified_type (type, (TYPE_QUALS (type)
-						    | (TREE_READONLY (exp)
-						       * TYPE_QUAL_CONST))),
-		       TREE_ADDRESSABLE (exp), 1);
+      target = assign_temp (type, TREE_ADDRESSABLE (exp), 1);
     }
 
   store_constructor (exp, target, 0, int_expr_size (exp));
@@ -10088,10 +10084,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	   and need be, put it there.  */
 	else if (CONSTANT_P (op0) || (!MEM_P (op0) && must_force_mem))
 	  {
-	    tree nt = build_qualified_type (TREE_TYPE (tem),
-					    (TYPE_QUALS (TREE_TYPE (tem))
-					     | TYPE_QUAL_CONST));
-	    memloc = assign_temp (nt, 1, 1);
+	    memloc = assign_temp (TREE_TYPE (tem), 1, 1);
 	    emit_move_insn (memloc, op0);
 	    op0 = memloc;
 	    mem_attrs_from_type = true;

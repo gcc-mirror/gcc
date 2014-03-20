@@ -3105,15 +3105,11 @@ expand_return (tree retval)
 	   && (REG_P (result_rtl)
 	       || (GET_CODE (result_rtl) == PARALLEL)))
     {
-      /* Calculate the return value into a temporary (usually a pseudo
-         reg).  */
-      tree ot = TREE_TYPE (DECL_RESULT (current_function_decl));
-      tree nt = build_qualified_type (ot, TYPE_QUALS (ot) | TYPE_QUAL_CONST);
-
-      val = assign_temp (nt, 0, 1);
+      /* Compute the return value into a temporary (usually a pseudo reg).  */
+      val
+	= assign_temp (TREE_TYPE (DECL_RESULT (current_function_decl)), 0, 1);
       val = expand_expr (retval_rhs, val, GET_MODE (val), EXPAND_NORMAL);
       val = force_not_mem (val);
-      /* Return the calculated value.  */
       expand_value_return (val);
     }
   else
