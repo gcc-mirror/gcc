@@ -1,3 +1,8 @@
+2014-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60572
+	* g++.dg/init/pr60572.C: New test.
+
 2014-03-20  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.target/arm/neon-modes-3.c: Add "-g" option.
