@@ -1,5 +1,10 @@
 2014-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/60597
+	* ira.c (adjust_cleared_regs): Call copy_rtx on
+	*reg_equiv[REGNO (loc)].src_p before passing it to
+	simplify_replace_fn_rtx.
+
 	PR target/60568
 	* config/i386/i386.c (x86_output_mi_thunk): Surround UNSPEC_GOT
 	into CONST, put pic register as first operand of PLUS.  Use
