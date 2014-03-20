@@ -509,9 +509,7 @@ match_old_style_init (const char *name)
       free (newdata);
       return MATCH_ERROR;
     }
-
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   /* Mark the variable as having appeared in a data statement.  */
   if (gfc_add_data (&sym->attr, sym->name, &sym->declared_at) == FAILURE)
@@ -570,9 +568,7 @@ gfc_match_data (void)
       gfc_error ("DATA statement at %C is not allowed in a PURE procedure");
       return MATCH_ERROR;
     }
-
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   return MATCH_YES;
 
@@ -1730,6 +1726,7 @@ match_pointer_init (gfc_expr **init, int procptr)
       gfc_error ("Error in pointer initialization at %C");
       return MATCH_ERROR;
     }
+  gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   if (!procptr)
     gfc_resolve_expr (*init);
@@ -2014,6 +2011,10 @@ variable_decl (int elem)
 			 "a PURE procedure");
 	      m = MATCH_ERROR;
 	    }
+
+	  if (current_attr.flavor != FL_PARAMETER
+	      && gfc_state_stack->state != COMP_DERIVED)
+	    gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
 	  if (m != MATCH_YES)
 	    goto cleanup;

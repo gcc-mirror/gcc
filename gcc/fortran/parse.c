@@ -545,8 +545,7 @@ decode_omp_directive (void)
       return ST_NONE;
     }
 
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (NULL);
 
   old_locus = gfc_current_locus;
 
