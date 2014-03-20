@@ -1085,7 +1085,7 @@ tilepro-*-linux*)
 	md_unwind_header=tilepro/linux-unwind.h
         ;;
 v850*-*-*)
-	tmake_file="v850/t-v850 t-fdpbit"
+	tmake_file="${tmake_file} v850/t-v850 t-fdpbit"
 	;;
 vax-*-linux*)
 	tmake_file="$tmake_file vax/t-linux"
