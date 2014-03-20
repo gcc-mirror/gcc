@@ -1,3 +1,9 @@
+2014-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60572
+	* init.c (build_zero_init_1): Ignore fields with error_mark_node
+	type.
+
 2014-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51474
