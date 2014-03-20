@@ -1,3 +1,12 @@
+2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Implement work
+	around for store forwarding issue in the FPU on the UT699.
+	* config/sparc/sparc.md (in_branch_delay): Return false for single FP
+	loads and operations if -mfix-ut699 is specified.
+	(divtf3_hq): Tweak attribute.
+	(sqrttf2_hq): Likewise.
+
 2014-03-18  Kai Tietz  <ktietz@redhat.com>
 
 	PR rtl-optimization/56356
