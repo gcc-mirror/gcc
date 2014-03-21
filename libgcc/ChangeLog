@@ -2,7 +2,7 @@
 
 	* config.host (v850*-*-*): Add to tmake_file instead of resetting it.
 
-014-02-28  Joey Ye  <joey.ye@arm.com>
+2014-02-28  Joey Ye  <joey.ye@arm.com>
 
 	Backport from mainline r208229
 	2014-02-28  Joey Ye  <joey.ye@arm.com>
