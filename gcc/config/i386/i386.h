@@ -284,10 +284,13 @@ extern const struct processor_costs ix86_size_cost;
 #else
 #ifndef TARGET_BI_ARCH
 #undef TARGET_64BIT
+#undef TARGET_64BIT_P
 #if TARGET_64BIT_DEFAULT
 #define TARGET_64BIT 1
+#define TARGET_64BIT_P(x) 1
 #else
 #define TARGET_64BIT 0
+#define TARGET_64BIT_P(x) 0
 #endif
 #endif
 #endif
