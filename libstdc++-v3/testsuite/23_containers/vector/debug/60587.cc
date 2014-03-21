@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,21 +16,20 @@
 // <http://www.gnu.org/licenses/>.
 //
 // { dg-require-debug-mode "" }
-// { dg-do run { xfail *-*-* } }
+
+// PR libstdc++/60587
 
 #include <vector>
 
-void test01()
-{
-  std::vector<int> v;
-  for (int i = 0; i != 10; ++i)
-    v.push_back(i);
+int main() {
+    std::vector<int> a, b;
+    a.push_back(1);
+    a.insert(a.end(), b.begin(), b.end());
+    b.push_back(1L);
+    a.insert(a.end(), b.begin(), b.end());
 
-  v.insert(v.begin(), v.data() + 1, v.data() + 5); // Expected failure
-}
-
-int main()
-{
-  test01();
-  return 0;
+    std::vector<long> c;
+    a.insert(a.end(), c.begin(), c.end());
+    c.push_back(1L);
+    a.insert(a.end(), c.begin(), c.end());
 }
