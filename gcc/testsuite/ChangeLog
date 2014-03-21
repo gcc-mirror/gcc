@@ -1,3 +1,8 @@
+2014-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60577
+	* gcc.dg/tree-ssa/ssa-lim-11.c: New testcase.
+
 2014-03-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60599
