@@ -2441,6 +2441,10 @@ extern void decl_fini_priority_insert (tree, priority_type);
 #define DECL_NONLOCAL_FRAME(NODE)  \
   (VAR_DECL_CHECK (NODE)->base.default_def_flag)
 
+/* In a VAR_DECL, nonzero if this variable is not aliased by any pointer.  */
+#define DECL_NONALIASED(NODE) \
+  (VAR_DECL_CHECK (NODE)->base.nothrow_flag)
+
 /* This field is used to reference anything in decl.result and is meant only
    for use by the garbage collector.  */
 #define DECL_RESULT_FLD(NODE) \
@@ -4462,12 +4466,14 @@ static inline bool
 may_be_aliased (const_tree var)
 {
   return (TREE_CODE (var) != CONST_DECL
-	  && !((TREE_STATIC (var) || TREE_PUBLIC (var) || DECL_EXTERNAL (var))
-	       && TREE_READONLY (var)
-	       && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
 	  && (TREE_PUBLIC (var)
 	      || DECL_EXTERNAL (var)
-	      || TREE_ADDRESSABLE (var)));
+	      || TREE_ADDRESSABLE (var))
+	  && !((TREE_STATIC (var) || TREE_PUBLIC (var) || DECL_EXTERNAL (var))
+	       && ((TREE_READONLY (var)
+		    && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
+		   || (TREE_CODE (var) == VAR_DECL
+		       && DECL_NONALIASED (var)))));
 }
 
 /* Return pointer to optimization flags of FNDECL.  */

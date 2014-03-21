@@ -1,3 +1,12 @@
+2014-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60577
+	* tree-core.h (struct tree_base): Document nothrow_flag use
+	in VAR_DECL_NONALIASED.
+	* tree.h (VAR_DECL_NONALIASED): New.
+	(may_be_aliased): Adjust.
+	* coverage.c (build_var): Set VAR_DECL_NONALIASED.
+
 2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1): Remove outdated comment.
