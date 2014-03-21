@@ -2674,7 +2674,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   if (dtp->u.p.current_unit->delim_status == DELIM_UNSPECIFIED)
     {
       if (ionml && dtp->u.p.current_unit->flags.delim == DELIM_UNSPECIFIED)
-	dtp->u.p.current_unit->delim_status = DELIM_QUOTE;
+	dtp->u.p.current_unit->delim_status =
+	  compile_options.allow_std & GFC_STD_GNU ? DELIM_QUOTE : DELIM_NONE;
       else
 	dtp->u.p.current_unit->delim_status = dtp->u.p.current_unit->flags.delim;
     }
