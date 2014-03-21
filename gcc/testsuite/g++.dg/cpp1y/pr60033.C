@@ -1,5 +1,5 @@
 // PR c++/60033
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 template <typename... T>
 auto f(T&&... ts)
