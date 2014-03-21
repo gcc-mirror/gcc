@@ -601,6 +601,8 @@ dump_symtab_base (FILE *f, symtab_node *node)
 	     ? IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME
 				     (node->alias_target))
 	     : IDENTIFIER_POINTER (node->alias_target));
+  if (node->body_removed)
+    fprintf (f, "\n  Body removed by symtab_remove_unreachable_nodes");
   fprintf (f, "\n  Visibility:");
   if (node->in_other_partition)
     fprintf (f, " in_other_partition");

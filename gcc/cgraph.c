@@ -2604,8 +2604,13 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
   node = cgraph_get_node (decl);
 
   /* We do not know if a node from a different partition is an alias or what it
-     aliases and therefore cannot do the former_clone_of check reliably.  */
-  if (!node || node->in_other_partition || e->callee->in_other_partition)
+     aliases and therefore cannot do the former_clone_of check reliably.  When
+     body_removed is set, we have lost all information about what was alias or
+     thunk of and also cannot proceed.  */
+  if (!node
+      || node->body_removed
+      || node->in_other_partition
+      || e->callee->in_other_partition)
     return false;
   node = cgraph_function_or_thunk_node (node, NULL);
 

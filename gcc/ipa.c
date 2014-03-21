@@ -484,6 +484,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      if (file)
 		fprintf (file, " %s", node->name ());
+	      node->body_removed = true;
 	      node->analyzed = false;
 	      node->definition = false;
 	      node->cpp_implicit_alias = false;
@@ -543,6 +544,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		fprintf (file, " %s", vnode->name ());
 	      changed = true;
 	    }
+	  vnode->body_removed = true;
 	  vnode->definition = false;
 	  vnode->analyzed = false;
 	  vnode->aux = NULL;

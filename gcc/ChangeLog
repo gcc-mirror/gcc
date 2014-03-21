@@ -1,5 +1,15 @@
 2014-03-21  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/59176
+	* cgraph.h (symtab_node): New flag body_removed.
+	* ipa.c (symtab_remove_unreachable_nodes): Set body_removed flag
+	when removing bodies.
+	* symtab.c (dump_symtab_base): Dump body_removed flag.
+	* cgraph.c (verify_edge_corresponds_to_fndecl): Skip nodes which
+	had their bodies removed.
+
+2014-03-21  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/60419
 	* ipa.c (symtab_remove_unreachable_nodes): Clear thunk flag of nodes
 	in the border.
