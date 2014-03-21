@@ -5633,12 +5633,10 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
   else 
     {
       /* Invert selector.  */
-      rtx splat = gen_rtx_VEC_DUPLICATE (V16QImode,
-					 gen_rtx_CONST_INT (QImode, -1));
+      rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
+      rtx andx = gen_rtx_AND (V16QImode, notx, notx);
       rtx tmp = gen_reg_rtx (V16QImode);
-      emit_move_insn (tmp, splat);
-      x = gen_rtx_MINUS (V16QImode, tmp, force_reg (V16QImode, x));
-      emit_move_insn (tmp, x);
+      emit_move_insn (tmp, andx);
 
       /* Permute with operands reversed and adjusted selector.  */
       x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
@@ -30211,18 +30209,18 @@ altivec_expand_vec_perm_const_le (rtx operands[4])
 
 /* Similarly to altivec_expand_vec_perm_const_le, we must adjust the
    permute control vector.  But here it's not a constant, so we must
-   generate a vector splat/subtract to do the adjustment.  */
+   generate a vector NOR to do the adjustment.  */
 
 void
 altivec_expand_vec_perm_le (rtx operands[4])
 {
-  rtx splat, unspec;
+  rtx notx, andx, unspec;
   rtx target = operands[0];
   rtx op0 = operands[1];
   rtx op1 = operands[2];
   rtx sel = operands[3];
   rtx tmp = target;
-  rtx splatreg = gen_reg_rtx (V16QImode);
+  rtx norreg = gen_reg_rtx (V16QImode);
   enum machine_mode mode = GET_MODE (target);
 
   /* Get everything in regs so the pattern matches.  */
@@ -30235,18 +30233,14 @@ altivec_expand_vec_perm_le (rtx operands[4])
   if (!REG_P (target))
     tmp = gen_reg_rtx (mode);
 
-  /* SEL = splat(31) - SEL.  */
-  /* We want to subtract from 31, but we can't vspltisb 31 since
-     it's out of range.  -1 works as well because only the low-order
-     five bits of the permute control vector elements are used.  */
-  splat = gen_rtx_VEC_DUPLICATE (V16QImode,
-				 gen_rtx_CONST_INT (QImode, -1));
-  emit_move_insn (splatreg, splat);
-  sel = gen_rtx_MINUS (V16QImode, splatreg, sel);
-  emit_move_insn (splatreg, sel);
+  /* Invert the selector with a VNOR.  */
+  notx = gen_rtx_NOT (V16QImode, sel);
+  andx = gen_rtx_AND (V16QImode, notx, notx);
+  emit_move_insn (norreg, andx);
 
   /* Permute with operands reversed and adjusted selector.  */
-  unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op0, splatreg), UNSPEC_VPERM);
+  unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op0, norreg),
+			   UNSPEC_VPERM);
 
   /* Copy into target, possibly by way of a register.  */
   if (!REG_P (target))
