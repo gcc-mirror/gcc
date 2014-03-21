@@ -1,3 +1,11 @@
+2014-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60610
+	* config/i386/i386.h (TARGET_64BIT_P): If not TARGET_BI_ARCH,
+	redefine to 1 or 0.
+	* config/i386/darwin.h (TARGET_64BIT_P): Redefine to
+	TARGET_ISA_64BIT_P(x).
+
 2014-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Generate a
