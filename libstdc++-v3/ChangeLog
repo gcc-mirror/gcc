@@ -1,3 +1,27 @@
+2014-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60587
+	* include/debug/functions.h (_Is_contiguous_sequence): Define.
+	(__foreign_iterator): Accept additional iterator. Do not dispatch on
+	iterator category.
+	(__foreign_iterator_aux2): Likewise. Add overload for iterators
+	from different types of debug container. Use _Is_contiguous_sequence
+	instead of is_lvalue_reference.
+	(__foreign_iterator_aux3): Accept additional iterator. Avoid
+	dereferencing past-the-end iterator.
+	(__foreign_iterator_aux4): Use const value_type* instead of
+	potentially user-defined const_pointer type.
+	* include/debug/macros.h (__glibcxx_check_insert_range): Fix comment
+	and pass end iterator to __gnu_debug::__foreign_iterator.
+	(__glibcxx_check_insert_range_after): Likewise.
+	(__glibcxx_check_max_load_factor): Fix comment.
+	* include/debug/vector (_Is_contiguous_sequence): Define partial
+	specializations.
+	* testsuite/23_containers/vector/debug/57779_neg.cc: Remove
+	-std=gnu++11 option and unused header.
+	* testsuite/23_containers/vector/debug/60587.cc: New.
+	* testsuite/23_containers/vector/debug/60587_neg.cc: New.
+
 2014-03-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* crossconfig.m4: Support spu-*-elf* targets.

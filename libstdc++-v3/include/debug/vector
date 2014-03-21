@@ -718,4 +718,17 @@ namespace __debug
 
 } // namespace std
 
+namespace __gnu_debug
+{
+  template<typename _Tp, typename _Alloc>
+    struct _Is_contiguous_sequence<std::__debug::vector<_Tp, _Alloc> >
+    : std::__true_type
+    { };
+
+  template<typename _Alloc>
+    struct _Is_contiguous_sequence<std::__debug::vector<bool, _Alloc> >
+    : std::__false_type
+    { };
+}
+
 #endif
