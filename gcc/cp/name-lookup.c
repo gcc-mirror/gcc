@@ -3115,6 +3115,13 @@ push_class_level_binding_1 (tree name, tree x)
   if (name == error_mark_node)
     return false;
 
+  /* Can happen for an erroneous declaration (c++/60384).  */
+  if (!identifier_p (name))
+    {
+      gcc_assert (errorcount || sorrycount);
+      return false;
+    }
+
   /* Check for invalid member names.  But don't worry about a default
      argument-scope lambda being pushed after the class is complete.  */
   gcc_assert (TYPE_BEING_DEFINED (current_class_type)
