@@ -1,3 +1,8 @@
+2014-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60598
+	* gcc.dg/pr60598.c: New test.
+
 2014-03-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/59176
