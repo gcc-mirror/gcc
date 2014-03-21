@@ -1,5 +1,6 @@
 // PR c++/60393
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
+// { dg-options "" }
 
 void (*f)(auto) + 0; // { dg-error "expected" }
 

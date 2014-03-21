@@ -1,5 +1,10 @@
 2014-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.dg/cpp1y/pr60033.C: Use target c++1y.
+	* g++.dg/cpp1y/pr60393.C: Likewise.
+
+2014-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/60384
 	* g++.dg/cpp1y/pr60384.C: New.
 
