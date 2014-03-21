@@ -1,3 +1,8 @@
+2014-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/60148
+	* gfortran.texi: Add description of namelist DELIM= behavior.
+
 2014-03-19  Tobias Burnus  <burnus@net-b.>
 
 	PR fortran/60543
