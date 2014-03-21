@@ -1,3 +1,9 @@
+2014-03-21  Richard Henderson  <rth@twiddle.net>
+
+	PR target/60598
+	* ifcvt.c (dead_or_predicable): Return FALSE if there are any frame
+	related insns after epilogue_completed.
+
 2014-03-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/59176
