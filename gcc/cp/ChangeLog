@@ -1,3 +1,9 @@
+2014-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60384
+	* name-lookup.c (push_class_level_binding_1): Check identifier_p
+	on the name argument.
+
 2014-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60572

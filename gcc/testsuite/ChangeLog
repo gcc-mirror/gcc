@@ -1,3 +1,8 @@
+2014-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60384
+	* g++.dg/cpp1y/pr60384.C: New.
+
 2014-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60598
