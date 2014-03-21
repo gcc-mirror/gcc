@@ -1,3 +1,9 @@
+2014-03-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60419
+	* ipa.c (symtab_remove_unreachable_nodes): Clear thunk flag of nodes
+	in the border.
+
 2014-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60577
