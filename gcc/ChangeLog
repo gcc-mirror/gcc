@@ -1,3 +1,9 @@
+2014-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Generate a
+	pattern for vector nor instead of subtract from splat(-1).
+	(altivec_expand_vec_perm_const_le): Likewise.
+
 2014-03-21  Richard Henderson  <rth@twiddle.net>
 
 	PR target/60598
