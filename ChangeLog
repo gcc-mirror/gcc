@@ -1,3 +1,13 @@
+2014-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Move BUILD_CONFIG set up earlier.  Add
+	--enable-vtable-verify option parsing.  Don't add
+	target-libsanitizer to bootstrap_target_libs unless
+	--with-build-config=bootstrap-asan or
+	--with-build-config=bootstrap-ubsan.  Don't add target-libvtv
+	to bootstrap_target_libs unless --enable-vtable-verify.
+	* configure: Regenerated.
+
 2014-03-10  Anatoly Sokolov <aesok@post.ru>
 
 	* MAINTAINERS (Write After Approval): Add myself.
