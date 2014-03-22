@@ -1,3 +1,9 @@
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/60603
+	* cpp.c (gfc_cpp_init): Restore cb_change_file call to
+	<built-in>.
+
 2014-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/60148
