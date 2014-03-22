@@ -1,3 +1,7 @@
+2014-03-22  Matthias Klose  <doko@ubuntu.com>
+
+	* g++.dg/cpp0x/regress: Remove empty directory.
+
 2014-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/60603
@@ -21,7 +25,7 @@
 2014-03-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/59176
-        * g++.dg/torture/pr59176.C: New test.
+	* g++.dg/torture/pr59176.C: New test.
 
 2014-03-21  Martin Jambor  <mjambor@suse.cz>
 
