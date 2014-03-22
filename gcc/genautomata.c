@@ -3494,7 +3494,7 @@ reserv_sets_hash_value (reserv_sets_t reservs)
     {
       reservs_num--;
       hash_value += ((*reserv_ptr >> i)
-		     | (*reserv_ptr << ((sizeof (set_el_t) * CHAR_BIT) & -i)));
+		     | (*reserv_ptr << (((sizeof (set_el_t) * CHAR_BIT) - 1) & -i)));
       i++;
       if (i == sizeof (set_el_t) * CHAR_BIT)
 	i = 0;
