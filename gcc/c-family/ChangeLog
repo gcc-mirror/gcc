@@ -1,3 +1,9 @@
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/60603
+	* c-opts.c (c_finish_options): Restore cb_file_change call to
+	<built-in>.
+
 2014-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36282
