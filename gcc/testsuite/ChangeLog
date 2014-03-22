@@ -1,3 +1,9 @@
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60613
+	* c-c++-common/ubsan/pr60613-1.c: New test.
+	* c-c++-common/ubsan/pr60613-2.c: New test.
+
 2014-03-22  Matthias Klose  <doko@ubuntu.com>
 
 	* g++.dg/cpp0x/regress: Remove empty directory.

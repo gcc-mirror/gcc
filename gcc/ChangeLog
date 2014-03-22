@@ -1,5 +1,9 @@
 2014-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/60613
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): For
+	code == MINUS_EXPR, never swap op0 with op1.
+
 	* toplev.c (init_local_tick): Avoid signed integer multiplication
 	overflow.
 	* genautomata.c (reserv_sets_hash_value): Fix rotate idiom, avoid
