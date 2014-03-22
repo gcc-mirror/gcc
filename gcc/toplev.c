@@ -261,7 +261,7 @@ init_local_tick (void)
 	struct timeval tv;
 
 	gettimeofday (&tv, NULL);
-	local_tick = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	local_tick = (unsigned) tv.tv_sec * 1000 + tv.tv_usec / 1000;
       }
 #else
       {

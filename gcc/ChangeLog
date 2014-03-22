@@ -1,3 +1,10 @@
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* toplev.c (init_local_tick): Avoid signed integer multiplication
+	overflow.
+	* genautomata.c (reserv_sets_hash_value): Fix rotate idiom, avoid
+	shift by first operand's bitsize.
+
 2014-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60610
