@@ -221,14 +221,15 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
       res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
 			  op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
 
-      /* If we can prove one of the arguments is always non-negative
-	 or always negative, we can do just one comparison and
-	 conditional jump instead of 2 at runtime, 3 present in the
+      /* If we can prove one of the arguments (for MINUS_EXPR only
+	 the second operand, as subtraction is not commutative) is always
+	 non-negative or always negative, we can do just one comparison
+	 and conditional jump instead of 2 at runtime, 3 present in the
 	 emitted code.  If one of the arguments is CONST_INT, all we
 	 need is to make sure it is op1, then the first
 	 emit_cmp_and_jump_insns will be just folded.  Otherwise try
 	 to use range info if available.  */
-      if (CONST_INT_P (op0))
+      if (code == PLUS_EXPR && CONST_INT_P (op0))
 	{
 	  rtx tem = op0;
 	  op0 = op1;
@@ -236,7 +237,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 	}
       else if (CONST_INT_P (op1))
 	;
-      else if (TREE_CODE (arg0) == SSA_NAME)
+      else if (code == PLUS_EXPR && TREE_CODE (arg0) == SSA_NAME)
 	{
 	  double_int arg0_min, arg0_max;
 	  if (get_range_info (arg0, &arg0_min, &arg0_max) == VR_RANGE)
