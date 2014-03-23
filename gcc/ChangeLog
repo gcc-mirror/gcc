@@ -1,3 +1,10 @@
+2014-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/60601
+	* bb-reorder.c (fix_up_fall_thru_edges): Test EDGE_FALLTHRU everywhere.
+
+	* gcc.c (eval_spec_function): Initialize save_growing_value.
+
 2014-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60613
