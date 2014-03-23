@@ -1685,9 +1685,8 @@ fix_up_fall_thru_edges (void)
 	  edge e;
 	  edge_iterator ei;
 
-	  /* Find EDGE_CAN_FALLTHRU edge.  */
 	  FOR_EACH_EDGE (e, ei, cur_bb->succs)
-	    if (e->flags & EDGE_CAN_FALLTHRU)
+	    if (e->flags & EDGE_FALLTHRU)
 	      {
 		fall_thru = e;
 		break;

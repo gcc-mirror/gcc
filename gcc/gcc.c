@@ -5441,7 +5441,7 @@ eval_spec_function (const char *func, const char *args)
   const char *save_suffix_subst;
 
   int save_growing_size;
-  void *save_growing_value;
+  void *save_growing_value = NULL;
 
   sf = lookup_spec_function (func);
   if (sf == NULL)
