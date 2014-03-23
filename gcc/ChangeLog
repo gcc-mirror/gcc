@@ -1,3 +1,7 @@
+2014-03-23  Teresa Johnson  <tejohnson@google.com>
+
+	* ipa-utils.c (ipa_print_order): Use specified dump file.
+
 2014-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/60601
