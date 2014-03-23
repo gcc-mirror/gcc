@@ -372,9 +372,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Use delegating constructors.
       explicit
       _Hashtable(const allocator_type& __a)
-	: _Hashtable(10, _H1(), __detail::_Mod_range_hashing(),
-		     __detail::_Default_ranged_hash(), key_equal(),
-		     __key_extract(), __a)
+      : _Hashtable(10, _H1(), _H2(), _Hash(), key_equal(),
+		   __key_extract(), __a)
       { }
 
       explicit
@@ -382,8 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const _H1& __hf = _H1(),
 		 const key_equal& __eql = key_equal(),
 		 const allocator_type& __a = allocator_type())
-      : _Hashtable(__n, __hf, __detail::_Mod_range_hashing(),
-		   __detail::_Default_ranged_hash(), __eql,
+      : _Hashtable(__n, __hf, _H2(), _Hash(), __eql,
 		   __key_extract(), __a)
       { }
 
@@ -393,8 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   const _H1& __hf = _H1(),
 		   const key_equal& __eql = key_equal(),
 		   const allocator_type& __a = allocator_type())
-	: _Hashtable(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
-		     __detail::_Default_ranged_hash(), __eql,
+	: _Hashtable(__f, __l, __n, __hf, _H2(), _Hash(), __eql,
 		     __key_extract(), __a)
 	{ }
 
@@ -403,9 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const _H1& __hf = _H1(),
 		 const key_equal& __eql = key_equal(),
 		 const allocator_type& __a = allocator_type())
-      : _Hashtable(__l.begin(), __l.end(), __n, __hf,
-		   __detail::_Mod_range_hashing(),
-		   __detail::_Default_ranged_hash(), __eql,
+      : _Hashtable(__l.begin(), __l.end(), __n, __hf, _H2(), _Hash(), __eql,
 		   __key_extract(), __a)
       { }
 

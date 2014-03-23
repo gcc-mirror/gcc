@@ -1,3 +1,13 @@
+2014-03-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (_Hashtable(allocator_type)): Fix call
+	to delegated constructor.
+	(_Hashtable(size_type, _H1, key_equal, allocator_type)): Likewise.
+	(_Hashtable<_It>(_It, _It, size_type, _H1, key_equal, allocator_type)):
+	Likewise.
+	(_Hashtable(
+	initializer_list, size_type, _H1, key_equal, allocator_type)): Likewise.
+
 2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libstdc++/60623
