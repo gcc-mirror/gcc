@@ -1,3 +1,8 @@
+2014-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/60601
+	* bb-reorder.c (fix_up_fall_thru_edges): Test EDGE_FALLTHRU everywhere.
+
 2014-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60568
