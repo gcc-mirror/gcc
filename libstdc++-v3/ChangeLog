@@ -1,3 +1,8 @@
+2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libstdc++/60623
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
 2014-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60587
