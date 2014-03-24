@@ -2,8 +2,40 @@
 ! PR60128 Invalid outputs with EN descriptors
 ! Test case provided by Walt Brainerd.
 program pr60128
-implicit none
+use ISO_FORTRAN_ENV
+    implicit none
+    integer, parameter :: j(size(real_kinds)+4)=[REAL_KINDS, [4, 4, 4, 4]]
+    logical :: l_skip(4) = .false.
+    integer :: i
     integer :: n_tst = 0, n_cnt = 0
+    character(len=20) :: s
+
+    open (unit = 10, file = 'fmt_en.res')
+!   Check that the default rounding mode is to nearest and to even on tie.
+    do i=1,size(real_kinds)
+      if (i == 1) then
+        write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(1)), &
+                                  real(9.49999905,kind=j(1)),  &
+                                  real(9.5,kind=j(1)), real(8.5,kind=j(1))
+      else if (i == 2) then
+        write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(2)), &
+                                  real(9.49999905,kind=j(2)),  &
+                                  real(9.5,kind=j(2)), real(8.5,kind=j(2))
+      else if (i == 3) then
+        write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(3)), &
+                                  real(9.49999905,kind=j(3)),  &
+                                  real(9.5,kind=j(3)), real(8.5,kind=j(3))
+      else if (i == 4) then
+        write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(4)), &
+                                  real(9.49999905,kind=j(4)),  &
+                                  real(9.5,kind=j(4)), real(8.5,kind=j(4))
+      end if
+      if (s /= '-9.5 9.5 10.  8.') then
+        l_skip(i) = .true.
+        print "('Unsupported rounding for real(',i0,')')", j(i)
+      end if
+    end do
+        
 
 ! Original test.
     call checkfmt("(en15.2)", -.44444,    "    -444.44E-03")
@@ -109,18 +141,18 @@ implicit none
 
     !print *, n_tst, n_cnt
     if (n_cnt /= 0) call abort
+    if (all(.not. l_skip)) write (10, *) "All kinds rounded to nearest"
+    close (10)
 
 contains
     subroutine checkfmt(fmt, x, cmp)
-        use ISO_FORTRAN_ENV
         implicit none
-        integer, parameter :: j(size(real_kinds)+4)=[REAL_KINDS, [4, 4, 4, 4]]
         integer :: i
         character(len=*), intent(in) :: fmt
         real, intent(in) :: x
         character(len=*), intent(in) :: cmp
-        character(len=20) :: s
         do i=1,size(real_kinds)
+          if (l_skip(i)) cycle
           if (i == 1) then
             write(s, fmt) real(x,kind=j(1))
           else if (i == 2) then
@@ -139,3 +171,5 @@ contains
         
     end subroutine
 end program
+! { dg-final { scan-file fmt_en.res "All kinds rounded to nearest" { xfail i?86-*-solaris2.9* } } }
+! { dg-final { cleanup-saved-temps } }
