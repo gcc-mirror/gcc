@@ -1,3 +1,7 @@
+2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/23_containers/bitset/45713.cc: Skip compile on hppa*64*-*-*.
+
 2014-03-23  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable.h (_Hashtable(allocator_type)): Fix call

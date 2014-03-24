@@ -18,7 +18,7 @@
 // The testcase requires bitsizetype to be wider than sizetype,
 // otherwise types/vars with (e.g. for 32-bit sizetype) 0x20000000
 // bytes or larger can't be used.  See http://gcc.gnu.org/PR54897
-// { dg-do compile { target { ! { avr*-*-* cris*-*-* h8300*-*-* mcore*-*-* moxie*-*-* mmix-*-* } } } }
+// { dg-do compile { target { ! { avr*-*-* cris*-*-* h8300*-*-* hppa*64*-*-* mcore*-*-* moxie*-*-* mmix-*-* } } } }
 
 #include <bitset>
 
