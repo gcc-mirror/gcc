@@ -1,3 +1,10 @@
+2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libfortran/59313
+	PR libfortran/58015
+	* gfortran.dg/erf_3.F90: Skip on hppa*-*-hpux*.
+	* gfortran.dg/round_4.f90: Likewise.
+
 2014-03-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR libfortran/60128
