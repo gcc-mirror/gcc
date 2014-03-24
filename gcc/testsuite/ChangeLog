@@ -1,3 +1,11 @@
+2014-03-24  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-abs.c (dg-options): Add -std=c99.
+	(LONG_LONG): Use LLONG.
+	(set_rvector_long): Explicitly return void.
+	(set_vector_long): Likewise.
+	(check_vector_long): Likewise.
+
 2014-03-24  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/div-by-zero-4.c: Don't include limits.h.  Define
