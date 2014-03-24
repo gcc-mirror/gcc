@@ -1,3 +1,17 @@
+2014-03-24  Ulrich Drepper  <drepper@gmail.com>
+
+	* config/i386/avxintrin.h (_mm256_undefined_si256): Define.
+	(_mm256_undefined_ps): Define.
+	(_mm256_undefined_pd): Define.
+	* config/i386/emmintrin.h (_mm_undefined_si128): Define.
+	(_mm_undefined_pd): Define.
+	* config/i386/xmmintrin.h (_mm_undefined_ps): Define.
+	* config/i386/avx512fintrin.h (_mm512_undefined_si512): Define.
+	(_mm512_undefined_ps): Define.
+	(_mm512_undefined_pd): Define.
+	Use _mm*_undefined_*.
+	* config/i386/avx2intrin.h: Use _mm*_undefined_*.
+
 2014-03-24  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (lshr): DI mode excluded.

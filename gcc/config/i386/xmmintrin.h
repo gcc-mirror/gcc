@@ -102,6 +102,14 @@ typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 #define _MM_FLUSH_ZERO_ON     0x8000
 #define _MM_FLUSH_ZERO_OFF    0x0000
 
+/* Create an undefined vector.  */
+extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_undefined_ps (void)
+{
+  __m128 __Y = __Y;
+  return __Y;
+}
+
 /* Create a vector of zeros.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_setzero_ps (void)
