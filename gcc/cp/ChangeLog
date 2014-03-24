@@ -1,3 +1,10 @@
+2014-03-24  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60627
+	* parser.c (cp_parser_parameter_declaration_clause): Prevent 'auto' from
+	introducing an implicit function template parameter within an explicit
+	instantiation.
+
 2014-03-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60574
