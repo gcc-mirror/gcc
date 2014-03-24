@@ -2653,7 +2653,7 @@ install-gcc-tooldir:
 	$(mkinstalldirs) $(DESTDIR)$(gcc_tooldir)
 
 macro_list: s-macro_list; @true
-s-macro_list : $(GCC_PASSES)
+s-macro_list : $(GCC_PASSES) cc1$(exeext)
 	echo | $(GCC_FOR_TARGET) -E -dM - | \
 	  sed -n -e 's/^#define \([^_][a-zA-Z0-9_]*\).*/\1/p' \
 		 -e 's/^#define \(_[^_A-Z][a-zA-Z0-9_]*\).*/\1/p' | \
