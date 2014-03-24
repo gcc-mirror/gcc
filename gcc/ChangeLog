@@ -1,3 +1,8 @@
+2014-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-flto): Expand section about
+	using static libraries with LTO.
+
 2014-03-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR rtl-optimization/60501
