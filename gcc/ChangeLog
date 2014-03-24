@@ -1,5 +1,8 @@
 2014-03-24  Ulrich Drepper  <drepper@gmail.com>
 
+	* config/i386/avx512fintrin.h: Define _mm512_set1_ps and
+	_mm512_set1_pd.
+
 	* config/i386/avxintrin.h (_mm256_undefined_si256): Define.
 	(_mm256_undefined_ps): Define.
 	(_mm256_undefined_pd): Define.

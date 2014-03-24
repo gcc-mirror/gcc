@@ -130,6 +130,28 @@ _mm512_undefined_si512 (void)
   return __Y;
 }
 
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set1_pd (double __A)
+{
+  return (__m512d) __builtin_ia32_broadcastsd512 (__extension__
+						  (__v2df) { __A, },
+						  (__v8df)
+						  _mm512_undefined_pd (),
+						  (__mmask8) -1);
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set1_ps (float __A)
+{
+  return (__m512) __builtin_ia32_broadcastss512 (__extension__
+						 (__v4sf) { __A, },
+						 (__v16sf)
+						 _mm512_undefined_ps (),
+						 (__mmask16) -1);
+}
+
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_setzero_ps (void)
