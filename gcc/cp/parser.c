@@ -18207,7 +18207,9 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
 
   (void) cleanup;
 
-  if (!processing_specialization && !processing_template_parmlist)
+  if (!processing_specialization
+      && !processing_template_parmlist
+      && !processing_explicit_instantiation)
     if (!current_function_decl
 	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
       parser->auto_is_implicit_function_template_parm_p = true;
