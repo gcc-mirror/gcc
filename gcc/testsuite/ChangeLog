@@ -1,3 +1,9 @@
+2014-03-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/60128
+	* gfortran.dg/fmt_en.f90: Update test. XFAIL for
+	i?86-*-solaris2.9*.
+
 2014-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60613
