@@ -1,3 +1,15 @@
+2014-03-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR rtl-optimization/60501
+	* optabs.def (addptr3_optab): New optab.
+	* optabs.c (gen_addptr3_insn, have_addptr3_insn): New function.
+	* doc/md.texi ("addptrm3"): Document new RTL standard expander.
+	* expr.h (gen_addptr3_insn, have_addptr3_insn): Add prototypes.
+
+	* lra.c (emit_add3_insn): Use the addptr pattern if available.
+
+	* config/s390/s390.md ("addptrdi3", "addptrsi3"): New expanders.
+
 2014-03-24  Ulrich Drepper  <drepper@gmail.com>
 
 	* config/i386/avx512fintrin.h: Define _mm512_set1_ps and
