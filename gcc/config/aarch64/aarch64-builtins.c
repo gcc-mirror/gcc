@@ -183,6 +183,10 @@ aarch64_types_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_GETLANE (aarch64_types_getlane_qualifiers)
 #define TYPES_SHIFTIMM (aarch64_types_getlane_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate };
+#define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_setlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
 #define TYPES_SETLANE (aarch64_types_setlane_qualifiers)

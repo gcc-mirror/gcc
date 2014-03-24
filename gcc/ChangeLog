@@ -1,3 +1,13 @@
+2014-03-24  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (lshr): DI mode excluded.
+	(lshr_simd): DI mode added.
+	* config/aarch64/aarch64-simd.md (aarch64_lshr_simddi): New pattern.
+	(aarch64_ushr_simddi): Likewise.
+	* config/aarch64/aarch64.md (UNSPEC_USHR64): New unspec.
+	* config/aarch64/arm_neon.h (vshr_n_u64): Intrinsic fixed.
+	(vshrd_n_u64): Likewise.
+
 2014-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (s-macro_list): Depend on cc1.
