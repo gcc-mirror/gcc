@@ -1,5 +1,8 @@
 2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/tree-prof/pr59003.c: Add -fno-common to dg-options on
+	hppa*-*-hpux*.
+
 	* gcc.dg/torture/pr60092.c: Skip on 32-bit hpux.
 
 	PR libfortran/59313
