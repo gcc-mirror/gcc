@@ -1,5 +1,7 @@
 2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/torture/pr60092.c: Skip on 32-bit hpux.
+
 	PR libfortran/59313
 	PR libfortran/58015
 	* gfortran.dg/erf_3.F90: Skip on hppa*-*-hpux*.
