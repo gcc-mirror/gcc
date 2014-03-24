@@ -1,3 +1,25 @@
+2014-03-24  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/div-by-zero-4.c: Don't include limits.h.  Define
+	INT_MIN.
+	* c-c++-common/ubsan/overflow-1.c: Check for unwanted output.
+	* c-c++-common/ubsan/overflow-add-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-1.c: Likewise.
+	* c-c++-common/ubsan/pr59503.c: Likewise.
+	* c-c++-common/ubsan/pr60613-1.c: Likewise.
+	* c-c++-common/ubsan/save-expr-1.c: Likewise.
+	* c-c++-common/ubsan/shift-3.c: Likewise.
+	* c-c++-common/ubsan/shift-6.c: Likewise.
+	* c-c++-common/ubsan/undefined-1.c: Likewise.
+	* c-c++-common/ubsan/vla-2.c: Likewise.
+	* c-c++-common/ubsan/vla-3.c: Likewise.
+	* c-c++-common/ubsan/vla-4.c: Likewise.
+	* g++.dg/ubsan/cxx11-shift-1.C: Likewise.
+	* g++.dg/ubsan/return-2.C: Likewise.
+
 2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/tree-prof/pr59003.c: Add -fno-common to dg-options on
