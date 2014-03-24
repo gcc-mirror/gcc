@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=signed-integer-overflow" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 #ifndef ASM1
 # define ASM1(a) /* Nothing */

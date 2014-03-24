@@ -656,7 +656,7 @@ proc scan-module { args } {
 # Argument 1 is the regexp to match
 proc scan-module-absence { args } {
     set modfilename [string tolower [lindex $args 0]].mod
-    set fd [open $modfilename r]
+    set fd [open [list | gzip -dc $modfilename] r]
     set text [read $fd]
     close $fd
 

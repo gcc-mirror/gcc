@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 #define INT_MAX __INT_MAX__
 #define INT_MIN (-__INT_MAX__ - 1)

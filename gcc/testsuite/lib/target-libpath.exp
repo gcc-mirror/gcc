@@ -155,7 +155,12 @@ proc set_ld_library_path_env_vars { } {
     setenv DYLD_LIBRARY_PATH "$ld_library_path"
   }
 
-  verbose -log "set_ld_library_path_env_vars: ld_library_path=$ld_library_path"
+  verbose -log "LD_LIBRARY_PATH=[getenv LD_LIBRARY_PATH]"
+  verbose -log "LD_RUN_PATH=[getenv LD_RUN_PATH]"
+  verbose -log "SHLIB_PATH=[getenv SHLIB_PATH]"
+  verbose -log "LD_LIBRARY_PATH_32=[getenv LD_LIBRARY_PATH_32]"
+  verbose -log "LD_LIBRARY_PATH_64=[getenv LD_LIBRARY_PATH_64]"
+  verbose -log "DYLD_LIBRARY_PATH=[getenv DYLD_LIBRARY_PATH]"
 }
 
 #######################################

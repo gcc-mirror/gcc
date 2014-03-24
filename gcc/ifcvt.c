@@ -4144,6 +4144,21 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	end = PREV_INSN (end);
     }
 
+  /* Don't move frame-related insn across the conditional branch.  This
+     can lead to one of the paths of the branch having wrong unwind info.  */
+  if (epilogue_completed)
+    {
+      rtx insn = head;
+      while (1)
+	{
+	  if (INSN_P (insn) && RTX_FRAME_RELATED_P (insn))
+	    return FALSE;
+	  if (insn == end)
+	    break;
+	  insn = NEXT_INSN (insn);
+	}
+    }
+
   /* Disable handling dead code by conditional execution if the machine needs
      to do anything funny with the tests, etc.  */
 #ifndef IFCVT_MODIFY_TESTS

@@ -1,3 +1,295 @@
+2014-03-23  Teresa Johnson  <tejohnson@google.com>
+
+	* ipa-utils.c (ipa_print_order): Use specified dump file.
+
+2014-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/60601
+	* bb-reorder.c (fix_up_fall_thru_edges): Test EDGE_FALLTHRU everywhere.
+
+	* gcc.c (eval_spec_function): Initialize save_growing_value.
+
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60613
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): For
+	code == MINUS_EXPR, never swap op0 with op1.
+
+	* toplev.c (init_local_tick): Avoid signed integer multiplication
+	overflow.
+	* genautomata.c (reserv_sets_hash_value): Fix rotate idiom, avoid
+	shift by first operand's bitsize.
+
+2014-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60610
+	* config/i386/i386.h (TARGET_64BIT_P): If not TARGET_BI_ARCH,
+	redefine to 1 or 0.
+	* config/i386/darwin.h (TARGET_64BIT_P): Redefine to
+	TARGET_ISA_64BIT_P(x).
+
+2014-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Generate a
+	pattern for vector nor instead of subtract from splat(-1).
+	(altivec_expand_vec_perm_const_le): Likewise.
+
+2014-03-21  Richard Henderson  <rth@twiddle.net>
+
+	PR target/60598
+	* ifcvt.c (dead_or_predicable): Return FALSE if there are any frame
+	related insns after epilogue_completed.
+
+2014-03-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59176
+	* cgraph.h (symtab_node): New flag body_removed.
+	* ipa.c (symtab_remove_unreachable_nodes): Set body_removed flag
+	when removing bodies.
+	* symtab.c (dump_symtab_base): Dump body_removed flag.
+	* cgraph.c (verify_edge_corresponds_to_fndecl): Skip nodes which
+	had their bodies removed.
+
+2014-03-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60419
+	* ipa.c (symtab_remove_unreachable_nodes): Clear thunk flag of nodes
+	in the border.
+
+2014-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60577
+	* tree-core.h (struct tree_base): Document nothrow_flag use
+	in VAR_DECL_NONALIASED.
+	* tree.h (VAR_DECL_NONALIASED): New.
+	(may_be_aliased): Adjust.
+	* coverage.c (build_var): Set VAR_DECL_NONALIASED.
+
+2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1): Remove outdated comment.
+
+2014-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60597
+	* ira.c (adjust_cleared_regs): Call copy_rtx on
+	*reg_equiv[REGNO (loc)].src_p before passing it to
+	simplify_replace_fn_rtx.
+
+	PR target/60568
+	* config/i386/i386.c (x86_output_mi_thunk): Surround UNSPEC_GOT
+	into CONST, put pic register as first operand of PLUS.  Use
+	gen_const_mem for both 32-bit and 64-bit PIC got loads.
+
+2014-03-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (MEMORY_MOVE_COST): Delete.
+
+2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Implement work
+	around for store forwarding issue in the FPU on the UT699.
+	* config/sparc/sparc.md (in_branch_delay): Return false for single FP
+	loads and operations if -mfix-ut699 is specified.
+	(divtf3_hq): Tweak attribute.
+	(sqrttf2_hq): Likewise.
+
+2014-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* calls.c (store_one_arg): Remove incorrect const qualification on the
+	type of the temporary.
+	* cfgexpand.c (expand_return): Likewise.
+	* expr.c (expand_constructor): Likewise.
+	(expand_expr_real_1): Likewise.
+
+2014-03-20  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/arm.c (arm_dwarf_register_span): Update the element number
+	of parts.
+
+2014-03-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/60039
+	* config/sh/sh.md (udivsi3_i1): Clobber R1 register.
+
+2014-03-19  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/aarch-common-protos.h
+	(alu_cost_table): Fix spelling of "extend".
+	* config/arm/arm.c (arm_new_rtx_costs): Fix spelling of "extend".
+
+2014-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60553
+	* tree-core.h (tree_type_common): Re-order pointer members
+	to reduce recursion depth during GC walks.
+
+2014-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/60569
+	* ubsan.c (ubsan_type_descriptor): Check that DECL_NAME is nonnull
+	before accessing it.
+
+2014-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59543
+	* lto-streamer-in.c (input_function): In WPA stage do not drop
+	debug stmts.
+
+2014-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60559
+	* vectorizable_mask_load_store): Replace scalar MASK_LOAD
+	with build_zero_cst assignment.
+
+2014-03-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR rtl-optimization/56356
+	* sdbout.c (sdbout_parms): Verify that parms'
+	incoming argument is valid.
+	(sdbout_reg_parms): Likewise.
+
+2014-03-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/60562
+	* config/i386/i386.md (*float<SWI48x><MODEF>2_i387): Move down to
+	be shadowed by *float<SWI48><MODEF>2_sse.  Test X87_ENABLE_FLOAT.
+	(*float<SWI48><MODEF>2_sse): Check X87_ENABLE_FLOAT for alternative 0.
+
+2014-03-18  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * plugin.def: Improve comment for PLUGIN_INCLUDE_FILE.
+        * doc/plugins.texi (Plugin callbacks): Mention
+        PLUGIN_INCLUDE_FILE.
+        Italicize plugin event names in description.  Explain that
+        PLUGIN_PRAGMAS has no sense for lto1. Explain
+        PLUGIN_INCLUDE_FILE.
+        Remind that no GCC functions should be called after
+        PLUGIN_FINISH.
+        Explain what pragmas with expansion are.
+
+2014-03-18  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Added case when
+	gimple call statement is update.
+	* gimple-fold.c (gimple_fold_call): Changed order for GIMPLE_ASSIGN and
+	GIMPLE_CALL, where gsi iterator still points to GIMPLE CALL.
+
+2014-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60557
+	* ubsan.c (ubsan_instrument_unreachable): Call
+	initialize_sanitizer_builtins.
+	(ubsan_pass): Likewise.
+
+	PR sanitizer/60535
+	* ubsan.c (ubsan_type_descriptor, ubsan_create_data): Call
+	varpool_finalize_decl instead of rest_of_decl_compilation.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	* df-problems.c (df_rd_confluence_n): Avoid bitmap_copy
+	by using bitmap_and_compl instead of bitmap_and_compl_into.
+	(df_rd_transfer_function): Likewise.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	* doc/lto.texi (fresolution): Fix typo.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (flto): Update for changes in 4.9.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	* doc/loop.texi: Remove section on the removed lambda framework.
+	Update loop docs with recent changes in preserving loop structure.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	* doc/lto.texi (-fresolution): Document.
+
+2014-03-18  Richard Biener  <rguenther@suse.de>
+
+	* doc/contrib.texi: Adjust my name.
+
+2014-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/58721
+	* internal-fn.c: Include diagnostic-core.h.
+	(expand_BUILTIN_EXPECT): New function.
+	* gimplify.c (gimplify_call_expr): Use false instead of FALSE.
+	(gimplify_modify_expr): Gimplify 3 argument __builtin_expect into
+	IFN_BUILTIN_EXPECT call instead of __builtin_expect builtin call.
+	* ipa-inline-analysis.c (find_foldable_builtin_expect): Handle
+	IFN_BUILTIN_EXPECT.
+	* predict.c (expr_expected_value_1): Handle IFN_BUILTIN_EXPECT.
+	Revert 3 argument __builtin_expect code.
+	(strip_predict_hints): Handle IFN_BUILTIN_EXPECT.
+	* gimple-fold.c (gimple_fold_call): Likewise.
+	* tree.h (fold_builtin_expect): New prototype.
+	* builtins.c (build_builtin_expect_predicate): Add predictor
+	argument, if non-NULL, create 3 argument __builtin_expect.
+	(fold_builtin_expect): No longer static.  Add ARG2 argument,
+	pass it through to build_builtin_expect_predicate.
+	(fold_builtin_2): Adjust caller.
+	(fold_builtin_3): Handle BUILT_IN_EXPECT.
+	* internal-fn.def (BUILTIN_EXPECT): New.
+
+2014-03-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR ipa/58721
+	* predict.def (PRED_FORTRAN_OVERFLOW, PRED_FORTRAN_FAIL_ALLOC,
+	PRED_FORTRAN_FAIL_IO, PRED_FORTRAN_WARN_ONCE, PRED_FORTRAN_SIZE_ZERO,
+	PRED_FORTRAN_INVALID_BOUND, PRED_FORTRAN_ABSENT_DUMMY): Add.
+
+2014-03-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/58721
+	* predict.c (combine_predictions_for_bb): Fix up formatting.
+	(expr_expected_value_1, expr_expected_value): Add predictor argument,
+	fill what it points to if non-NULL.
+	(tree_predict_by_opcode): Adjust caller, use the predictor.
+	* predict.def (PRED_COMPARE_AND_SWAP): Add.
+
+2014-03-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Speed up and use
+	proper constant for the store mode.
+
+2014-03-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* symtab.c (change_decl_assembler_name): Fix transparent alias
+	chain construction.
+
+2014-03-16  Renlin Li  <Renlin.Li@arm.com>
+
+	* config/aarch64/aarch64.c: Correct the comments about the
+	aarch64 stack layout.
+
+2014-03-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (lower_rec_input_clauses) <build_omp_barrier>: Restore
+	check for GF_OMP_FOR_KIND_FOR.
+
+2013-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/i386.h (ADDITIONAL_REGISTER_NAMES): Add
+	ymm and zmm register names.
+
+2014-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60516
+	* config/i386/i386.c (ix86_expand_epilogue): Adjust REG_CFA_ADJUST_CFA
+	note creation for the 2010-08-31 changes.
+
+2014-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/60534
+	* omp-low.c (omp_max_vf): Treat -fno-tree-loop-optimize the same
+	as -fno-tree-loop-vectorize.
+	(expand_omp_simd): Likewise.
+
 2014-03-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (tls_call_delay): Delete.

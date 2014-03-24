@@ -48,8 +48,8 @@ struct alu_cost_table
   const int arith_shift_reg;	/* ... and when the shift is by a reg.  */
   const int log_shift;		/* Additional when logic also shifts...  */
   const int log_shift_reg;	/* ... and when the shift is by a reg.  */
-  const int extnd;		/* Zero/sign extension.  */
-  const int extnd_arith;	/* Extend and arith.  */
+  const int extend;		/* Zero/sign extension.  */
+  const int extend_arith;	/* Extend and arith.  */
   const int bfi;		/* Bit-field insert.  */
   const int bfx;		/* Bit-field extraction.  */
   const int clz;		/* Count Leading Zeros.  */

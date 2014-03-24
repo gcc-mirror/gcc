@@ -1,3 +1,60 @@
+2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/23_containers/bitset/45713.cc: Skip compile on hppa*64*-*-*.
+
+2014-03-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (_Hashtable(allocator_type)): Fix call
+	to delegated constructor.
+	(_Hashtable(size_type, _H1, key_equal, allocator_type)): Likewise.
+	(_Hashtable<_It>(_It, _It, size_type, _H1, key_equal, allocator_type)):
+	Likewise.
+	(_Hashtable(
+	initializer_list, size_type, _H1, key_equal, allocator_type)): Likewise.
+
+2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libstdc++/60623
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2014-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60587
+	* include/debug/functions.h (_Is_contiguous_sequence): Define.
+	(__foreign_iterator): Accept additional iterator. Do not dispatch on
+	iterator category.
+	(__foreign_iterator_aux2): Likewise. Add overload for iterators
+	from different types of debug container. Use _Is_contiguous_sequence
+	instead of is_lvalue_reference.
+	(__foreign_iterator_aux3): Accept additional iterator. Avoid
+	dereferencing past-the-end iterator.
+	(__foreign_iterator_aux4): Use const value_type* instead of
+	potentially user-defined const_pointer type.
+	* include/debug/macros.h (__glibcxx_check_insert_range): Fix comment
+	and pass end iterator to __gnu_debug::__foreign_iterator.
+	(__glibcxx_check_insert_range_after): Likewise.
+	(__glibcxx_check_max_load_factor): Fix comment.
+	* include/debug/vector (_Is_contiguous_sequence): Define partial
+	specializations.
+	* testsuite/23_containers/vector/debug/57779_neg.cc: Remove
+	-std=gnu++11 option and unused header.
+	* testsuite/23_containers/vector/debug/60587.cc: New.
+	* testsuite/23_containers/vector/debug/60587_neg.cc: New.
+
+2014-03-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* crossconfig.m4: Support spu-*-elf* targets.
+	* configure: Regenerate.
+
+2014-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60564
+	* include/std/future (__future_base::_Task_state<>): Change
+	constructors to template functions using perfect forwarding.
+	(__create_task_state): Use decayed type as stored task.
+	(packaged_task::packaged_task(_Fn&&)): Forward instead of moving.
+	* testsuite/30_threads/packaged_task/60564.cc: New.
+
 2014-03-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	* scripts/create_testsuite_files: Add testsuite/experimental in

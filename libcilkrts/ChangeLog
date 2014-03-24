@@ -1,3 +1,14 @@
+2014-03-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/60589
+
+	Reverted:
+	2014-03-09  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.am: Install cilk.h.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2014-03-09  Tobias Burnus  <burnus@net-b.de>
 
 	* Makefile.am: Install cilk.h.

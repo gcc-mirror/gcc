@@ -318,7 +318,7 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
     {
       if (TREE_CODE (TYPE_NAME (type2)) == IDENTIFIER_NODE)
 	tname = IDENTIFIER_POINTER (TYPE_NAME (type2));
-      else
+      else if (DECL_NAME (TYPE_NAME (type2)) != NULL)
 	tname = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type2)));
     }
 
@@ -390,7 +390,7 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
   TREE_CONSTANT (ctor) = 1;
   TREE_STATIC (ctor) = 1;
   DECL_INITIAL (decl) = ctor;
-  rest_of_decl_compilation (decl, 1, 0);
+  varpool_finalize_decl (decl);
 
   /* Save the VAR_DECL into the hash table.  */
   decl_for_type_insert (type, decl);
@@ -501,7 +501,7 @@ ubsan_create_data (const char *name, location_t loc,
   TREE_CONSTANT (ctor) = 1;
   TREE_STATIC (ctor) = 1;
   DECL_INITIAL (var) = ctor;
-  rest_of_decl_compilation (var, 1, 0);
+  varpool_finalize_decl (var);
 
   return var;
 }
@@ -512,6 +512,7 @@ ubsan_create_data (const char *name, location_t loc,
 tree
 ubsan_instrument_unreachable (location_t loc)
 {
+  initialize_sanitizer_builtins ();
   tree data = ubsan_create_data ("__ubsan_unreachable_data", loc, NULL,
 				 NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
@@ -846,6 +847,8 @@ ubsan_pass (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
+
+  initialize_sanitizer_builtins ();
 
   FOR_EACH_BB_FN (bb, cfun)
     {

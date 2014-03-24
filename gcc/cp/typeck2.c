@@ -861,7 +861,7 @@ check_narrowing (tree type, tree init)
       return;
     }
 
-  init = maybe_constant_value (init);
+  init = maybe_constant_value (fold_non_dependent_expr_sfinae (init, tf_none));
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && TREE_CODE (ftype) == REAL_TYPE)

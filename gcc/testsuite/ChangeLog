@@ -1,3 +1,238 @@
+2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/tree-prof/pr59003.c: Add -fno-common to dg-options on
+	hppa*-*-hpux*.
+
+	* gcc.dg/torture/pr60092.c: Skip on 32-bit hpux.
+
+	PR libfortran/59313
+	PR libfortran/58015
+	* gfortran.dg/erf_3.F90: Skip on hppa*-*-hpux*.
+	* gfortran.dg/round_4.f90: Likewise.
+
+2014-03-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/60128
+	* gfortran.dg/fmt_en.f90: Update test. XFAIL for
+	i?86-*-solaris2.9*.
+
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60613
+	* c-c++-common/ubsan/pr60613-1.c: New test.
+	* c-c++-common/ubsan/pr60613-2.c: New test.
+
+2014-03-22  Matthias Klose  <doko@ubuntu.com>
+
+	* g++.dg/cpp0x/regress: Remove empty directory.
+
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/60603
+	* gcc.dg/debug/dwarf2/dwarf2-macro2.c: New test.
+
+2014-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/pr60033.C: Use target c++1y.
+	* g++.dg/cpp1y/pr60393.C: Likewise.
+
+2014-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60384
+	* g++.dg/cpp1y/pr60384.C: New.
+
+2014-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60598
+	* gcc.dg/pr60598.c: New test.
+
+2014-03-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59176
+	* g++.dg/torture/pr59176.C: New test.
+
+2014-03-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60419
+	* g++.dg/ipa/pr60419.C: New test.
+
+2014-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60577
+	* gcc.dg/tree-ssa/ssa-lim-11.c: New testcase.
+
+2014-03-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60599
+	* lib/gcc-dg.exp (scan-module): Uncompress .mod files for
+	reading.
+
+2014-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60597
+	* g++.dg/opt/pr60597.C: New test.
+
+	PR c++/60572
+	* g++.dg/init/pr60572.C: New test.
+
+2014-03-20  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/neon-modes-3.c: Add "-g" option.
+
+2014-03-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60543
+	PR fortran/60283
+	* gfortran.dg/implicit_pure_4.f90: New.
+
+2014-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51474
+	* g++.dg/cpp0x/nsdmi-virtual2.C: New.
+
+2014-03-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/60590
+	* lib/target-libpath.exp (set_ld_library_path_env_vars): Log
+	LD_LIBRARY_PATH, LD_RUN_PATH, SHLIB_PATH, LD_LIBRARY_PATH_32,
+	LD_LIBRARY_PATH_64 and DYLD_LIBRARY_PATH.
+
+2014-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60332
+	* g++.dg/cpp1y/pr60332.C: New.
+
+2014-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/60569
+	* g++.dg/ubsan/pr60569.C: New test.
+
+2014-03-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tls/pr58595.c: Require tls_runtime instead of tls.
+
+2014-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60559
+	* g++.dg/vect/pr60559.cc: New test.
+
+2014-03-18  Ian Lance Taylor  <iant@google.com>
+
+	PR target/60563
+	* g++.dg/ext/sync-4.C (int32_t): Remove typedef.
+	(ditype): Rename typedef from int64_t.
+
+2014-03-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/55383
+	* gcc.dg/cast-qual-3.c: New.
+	Revert:
+	2014-03-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	* c-c++-common/Wcast-qual-1.c: More precise match text.
+
+2014-03-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55207
+	PR fortran/60549
+	* gfortran.dg/assumed_rank_7.f90: Revert r208590.
+	* gfortran.dg/c_ptr_tests_16.f90: Ditto.
+	* gfortran.dg/inline_sum_bounds_check_1.f90: Ditto.
+	* gfortran.dg/intent_optimize_1.f90: Ditto.
+	* gfortran.dg/pointer_init_9.f90: Ditto.
+	* gfortran.dg/volatile4.f90: Ditto.
+	* gfortran.dg/volatile6.f90: Ditto.
+
+2014-03-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/55383
+	* c-c++-common/Wcast-qual-1.c: More precise match text.
+
+2014-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60305
+	* g++.dg/cpp0x/constexpr-ice14.C: New.
+
+2014-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54250
+	* g++.dg/cpp0x/lambda/lambda-ice12.C: New.
+
+2014-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60535
+	* c-c++-common/ubsan/null-1.c: Don't skip if -flto.
+	* c-c++-common/ubsan/null-2.c: Likewise.
+	* c-c++-common/ubsan/null-3.c: Likewise.
+	* c-c++-common/ubsan/null-4.c: Likewise.
+	* c-c++-common/ubsan/null-5.c: Likewise.
+	* c-c++-common/ubsan/null-6.c: Likewise.
+	* c-c++-common/ubsan/null-7.c: Likewise.
+	* c-c++-common/ubsan/null-8.c: Likewise.
+	* c-c++-common/ubsan/null-9.c: Likewise.
+	* c-c++-common/ubsan/null-10.c: Likewise.
+	* c-c++-common/ubsan/null-11.c: Likewise.
+	* c-c++-common/ubsan/overflow-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-int128.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-4.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-2.c: Likewise.
+	* c-c++-common/ubsan/pr59333.c: Likewise.
+	* c-c++-common/ubsan/pr59503.c: Likewise.
+	* c-c++-common/ubsan/pr59667.c: Likewise.
+	* c-c++-common/ubsan/undefined-1.c: Likewise.
+	* g++.dg/ubsan/pr59250.C: Likewise.
+	* g++.dg/ubsan/pr59306.C: Likewise.
+
+2014-03-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tls/pr58595.c: Add tls options.
+
+2014-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx-additional-reg-names.c: New.
+	* gcc.target/i386/avx512f-additional-reg-names.c: Ditto.
+
+2014-03-17  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60390
+	* g++.dg/cpp1y/pr60390.C: New testcase.
+
+	PR c++/60391
+	* g++.dg/cpp1y/pr60391.C: New testcase.
+
+2014-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60516
+	* gcc.target/i386/pr60516.c: New test.
+
+2014-03-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59571
+	* g++.dg/cpp0x/constexpr-ice13.C: New.
+
+2014-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/60534
+	* gcc.dg/gomp/pr60534.c: New test.
+
+2014-03-17  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.c-torture/compile/20010327-1.c: Disable test for LLP64 targets.
+
+2014-03-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR testsuite/58851
+	* gfortran.dg/unlimited_polymorphic_13.f90: Properly compute
+	storage size.
+
 2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/58324

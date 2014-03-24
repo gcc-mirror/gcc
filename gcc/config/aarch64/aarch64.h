@@ -763,10 +763,6 @@ do {									     \
 /* Put trampolines in the text section so that mapping symbols work
    correctly.  */
 #define TRAMPOLINE_SECTION text_section
-
-/* Costs, etc.  */
-#define MEMORY_MOVE_COST(M, CLASS, IN) \
-  (GET_MODE_SIZE (M) < 8 ? 8 : GET_MODE_SIZE (M))
 
 /* To start with.  */
 #define BRANCH_COST(SPEED_P, PREDICTABLE_P) 2

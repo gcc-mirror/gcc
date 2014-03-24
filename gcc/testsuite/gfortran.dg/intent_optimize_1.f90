@@ -6,10 +6,7 @@
 ! honoured.
 !
 ! PR fortran/43665
-
-
-subroutine test
-
+!
 interface
   subroutine foo(x)
     integer, intent(in) :: x

@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=undefined" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 long long int __attribute__ ((noinline, noclone))
 foo (long long int i, long long int j)

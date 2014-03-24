@@ -1494,6 +1494,12 @@ elements will be given the values 1.00 and 2.00.
 /
 @end smallexample
 
+When writing a namelist, if no @code{DELIM=} is specified, by default a
+double quote is used to delimit character strings. If -std=F95, F2003,
+or F2008, etc, the delim status is set to 'none'.  Defaulting to
+quotes ensures that namelists with character strings can be subsequently
+read back in accurately.
+
 @node X format descriptor without count field
 @subsection @code{X} format descriptor without count field
 

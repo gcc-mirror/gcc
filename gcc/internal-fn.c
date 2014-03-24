@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "diagnostic-core.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -220,14 +221,15 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
       res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
 			  op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
 
-      /* If we can prove one of the arguments is always non-negative
-	 or always negative, we can do just one comparison and
-	 conditional jump instead of 2 at runtime, 3 present in the
+      /* If we can prove one of the arguments (for MINUS_EXPR only
+	 the second operand, as subtraction is not commutative) is always
+	 non-negative or always negative, we can do just one comparison
+	 and conditional jump instead of 2 at runtime, 3 present in the
 	 emitted code.  If one of the arguments is CONST_INT, all we
 	 need is to make sure it is op1, then the first
 	 emit_cmp_and_jump_insns will be just folded.  Otherwise try
 	 to use range info if available.  */
-      if (CONST_INT_P (op0))
+      if (code == PLUS_EXPR && CONST_INT_P (op0))
 	{
 	  rtx tem = op0;
 	  op0 = op1;
@@ -235,7 +237,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 	}
       else if (CONST_INT_P (op1))
 	;
-      else if (TREE_CODE (arg0) == SSA_NAME)
+      else if (code == PLUS_EXPR && TREE_CODE (arg0) == SSA_NAME)
 	{
 	  double_int arg0_min, arg0_max;
 	  if (get_range_info (arg0, &arg0_min, &arg0_max) == VR_RANGE)
@@ -863,6 +865,23 @@ expand_MASK_STORE (gimple stmt)
 static void
 expand_ABNORMAL_DISPATCHER (gimple)
 {
+}
+
+static void
+expand_BUILTIN_EXPECT (gimple stmt)
+{
+  /* When guessing was done, the hints should be already stripped away.  */
+  gcc_assert (!flag_guess_branch_prob || optimize == 0 || seen_error ());
+
+  rtx target;
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs)
+    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  else
+    target = const0_rtx;
+  rtx val = expand_expr (gimple_call_arg (stmt, 0), target, VOIDmode, EXPAND_NORMAL);
+  if (lhs && val != target)
+    emit_move_insn (target, val);
 }
 
 /* Routines to expand each internal function, indexed by function number.

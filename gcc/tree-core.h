@@ -1010,6 +1010,9 @@ struct GTY(()) tree_base {
        SSA_NAME_IN_FREELIST in
           SSA_NAME
 
+       VAR_DECL_NONALIASED in
+	  VAR_DECL
+
    deprecated_flag:
 
        TREE_DEPRECATED in
@@ -1288,11 +1291,11 @@ struct GTY((user)) tree_type_common {
     const char *pointer;
     struct die_struct *die;
   } symtab;
-  tree name;
+  tree canonical;
   tree next_variant;
   tree main_variant;
   tree context;
-  tree canonical;
+  tree name;
 };
 
 /* Garbage collection and PCH support for tree_type_common.  */

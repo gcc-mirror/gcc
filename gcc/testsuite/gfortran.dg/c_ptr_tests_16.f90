@@ -3,7 +3,7 @@
 !
 ! PR fortran/46974
 
-subroutine test
+program test
   use ISO_C_BINDING
   implicit none
   type(c_ptr) :: m
@@ -15,7 +15,7 @@ subroutine test
      .and. int(z'41424345') /= a  &
      .and. int(z'4142434500000000',kind=8) /= a) &
     call i_do_not_exist()
-end subroutine
+end program test
 
 ! Examples contributed by Steve Kargl and James Van Buskirk
 

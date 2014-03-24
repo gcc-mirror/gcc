@@ -2929,6 +2929,7 @@ omp_max_vf (void)
 {
   if (!optimize
       || optimize_debug
+      || !flag_tree_loop_optimize
       || (!flag_tree_loop_vectorize
 	  && (global_options_set.x_flag_tree_loop_vectorize
               || global_options_set.x_flag_tree_vectorize)))
@@ -3671,7 +3672,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       /* Don't add any barrier for #pragma omp simd or
 	 #pragma omp distribute.  */
       if (gimple_code (ctx->stmt) != GIMPLE_OMP_FOR
-	  || gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_FOR)
+	  || gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_FOR)
 	gimple_seq_add_stmt (ilist, build_omp_barrier (NULL_TREE));
     }
 
@@ -6839,6 +6840,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       if ((flag_tree_loop_vectorize
 	   || (!global_options_set.x_flag_tree_loop_vectorize
                && !global_options_set.x_flag_tree_vectorize))
+	  && flag_tree_loop_optimize
 	  && loop->safelen > 1)
 	{
 	  loop->force_vect = true;

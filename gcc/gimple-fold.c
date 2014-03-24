@@ -1153,8 +1153,13 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		    {
 		      tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
 		      tree def = get_or_create_ssa_default_def (cfun, var);
-		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+
+		      /* To satisfy condition for
+			 cgraph_update_edges_for_call_stmt_node,
+			 we need to preserve GIMPLE_CALL statement
+			 at position of GSI iterator.  */
 		      update_call_from_tree (gsi, def);
+		      gsi_insert_before (gsi, new_stmt, GSI_NEW_STMT);
 		    }
 		  else
 		    gsi_replace (gsi, new_stmt, true);
@@ -1180,6 +1185,20 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	}
       else if (gimple_call_builtin_p (stmt, BUILT_IN_MD))
 	changed |= targetm.gimple_fold_builtin (gsi);
+    }
+  else if (gimple_call_internal_p (stmt)
+	   && gimple_call_internal_fn (stmt) == IFN_BUILTIN_EXPECT)
+    {
+      tree result = fold_builtin_expect (gimple_location (stmt),
+					 gimple_call_arg (stmt, 0),
+					 gimple_call_arg (stmt, 1),
+					 gimple_call_arg (stmt, 2));
+      if (result)
+	{
+	  if (!update_call_from_tree (gsi, result))
+	    gimplify_and_update_call_from_tree (gsi, result);
+	  changed = true;
+	}
     }
 
   return changed;

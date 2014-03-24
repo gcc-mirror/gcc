@@ -5107,8 +5107,8 @@ gfc_trans_allocate (gfc_code * code)
 				  boolean_type_node, stat,
 				  build_int_cst (TREE_TYPE (stat), 0));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 gfc_unlikely (parm), tmp,
-				     build_empty_stmt (input_location));
+				 gfc_unlikely (parm, PRED_FORTRAN_FAIL_ALLOC),
+				 tmp, build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
@@ -5501,7 +5501,7 @@ gfc_trans_deallocate (gfc_code *code)
 	  cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, stat,
 				  build_int_cst (TREE_TYPE (stat), 0));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 gfc_unlikely (cond),
+				 gfc_unlikely (cond, PRED_FORTRAN_FAIL_ALLOC),
 				 build1_v (GOTO_EXPR, label_errmsg),
 				 build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&se.pre, tmp);
@@ -5541,7 +5541,7 @@ gfc_trans_deallocate (gfc_code *code)
       cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, stat,
 			     build_int_cst (TREE_TYPE (stat), 0));
       tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			     gfc_unlikely (cond), tmp,
+			     gfc_unlikely (cond, PRED_FORTRAN_FAIL_ALLOC), tmp,
 			     build_empty_stmt (input_location));
 
       gfc_add_expr_to_block (&block, tmp);
