@@ -1,3 +1,9 @@
+2014-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60574
+	* decl.c (grokdeclarator): Change permerror about 'virtual auto'
+	to error.
+
 2014-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60384
