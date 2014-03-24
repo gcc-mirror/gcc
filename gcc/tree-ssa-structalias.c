@@ -3015,7 +3015,6 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	     reachability of off-bound addresses, in particular &object + 1,
 	     conservatively correct.  */
 	  temp = first_or_preceding_vi_for_offset (curr, offset);
-	  temp = first_or_preceding_vi_for_offset (curr, offset);
 	  c.var = temp->id;
 	  c.offset = 0;
 	  temp = temp->next;

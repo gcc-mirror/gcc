@@ -1,3 +1,9 @@
+2014-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60429
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Remove
+	duplicated line.
+
 2014-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/60601
