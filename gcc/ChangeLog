@@ -1,3 +1,7 @@
+2014-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (s-macro_list): Depend on cc1.
+
 2014-03-23  Teresa Johnson  <tejohnson@google.com>
 
 	* ipa-utils.c (ipa_print_order): Use specified dump file.
