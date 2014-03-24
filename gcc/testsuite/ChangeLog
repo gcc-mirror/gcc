@@ -1,3 +1,7 @@
+2014-03-24  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/ushr64_1.c: New.
+
 2014-03-24  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect-abs.c (dg-options): Add -std=c99.
