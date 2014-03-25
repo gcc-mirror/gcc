@@ -1,3 +1,8 @@
+2014-03-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60628
+	* decl.c (create_array_type_for_decl): Complain about array of auto.
+
 2014-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60331
