@@ -1,5 +1,9 @@
 2014-03-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60375
+	* parser.c (cp_parser_lambda_expression): Don't parse the body of
+	a lambda in unevaluated context.
+
 	PR c++/60628
 	* decl.c (create_array_type_for_decl): Complain about array of auto.
 
