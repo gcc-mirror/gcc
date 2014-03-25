@@ -1,3 +1,9 @@
+2014-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60600
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Redirect type
+	inconsistent devirtualizations to __builtin_unreachable.
+
 2014-03-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/35449
