@@ -1,3 +1,8 @@
+2014-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/35449
+	* doc/extend.texi (Example of asm with clobbered asm reg): Fix typo.
+
 2014-03-25  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Reverse
