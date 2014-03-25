@@ -406,6 +406,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  /* Fallthru.  */
 	case OPT_fPIC:
 	case OPT_fpic:
+	case OPT_fPIE:
 	case OPT_fpie:
 	case OPT_fcommon:
 	case OPT_fexceptions:
@@ -671,6 +672,7 @@ run_gcc (unsigned argc, char *argv[])
 	{
 	case OPT_fPIC:
 	case OPT_fpic:
+	case OPT_fPIE:
 	case OPT_fpie:
 	case OPT_fcommon:
 	case OPT_fexceptions:

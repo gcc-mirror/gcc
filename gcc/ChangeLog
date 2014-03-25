@@ -1,3 +1,9 @@
+2014-03-25  Richard Biener  <rguenther@suse.de>
+
+	* lto-wrapper.c (merge_and_complain): Handle OPT_fPIE like
+	OPT_fpie.
+	(run_gcc): Likewise.
+
 2014-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (simplify_compare_const): Add MODE argument.
