@@ -1,3 +1,10 @@
+2014-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60658
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::is_lock_free()):
+	Use sizeof pointer type not the element type.
+	* testsuite/29_atomics/atomic/60658.cc: New.
+
 2014-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
