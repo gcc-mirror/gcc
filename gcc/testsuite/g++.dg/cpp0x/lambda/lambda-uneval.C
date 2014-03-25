@@ -5,3 +5,5 @@ template <class T>
 struct A { };
 A<decltype([]{ return 1; }())> a; // { dg-error "lambda.*unevaluated context" }
 
+// { dg-prune-output "template argument" }
+// { dg-prune-output "invalid type" }

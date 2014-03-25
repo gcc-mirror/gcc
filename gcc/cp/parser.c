@@ -8718,14 +8718,17 @@ cp_parser_lambda_expression (cp_parser* parser)
 {
   tree lambda_expr = build_lambda_expr ();
   tree type;
-  bool ok;
+  bool ok = true;
 
   LAMBDA_EXPR_LOCATION (lambda_expr)
     = cp_lexer_peek_token (parser->lexer)->location;
 
   if (cp_unevaluated_operand)
-    error_at (LAMBDA_EXPR_LOCATION (lambda_expr),
-	      "lambda-expression in unevaluated context");
+    {
+      error_at (LAMBDA_EXPR_LOCATION (lambda_expr),
+		"lambda-expression in unevaluated context");
+      ok = false;
+    }
 
   /* We may be in the middle of deferred access check.  Disable
      it now.  */
@@ -8770,12 +8773,15 @@ cp_parser_lambda_expression (cp_parser* parser)
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
-    ok = cp_parser_lambda_declarator_opt (parser, lambda_expr);
+    ok &= cp_parser_lambda_declarator_opt (parser, lambda_expr);
 
     if (ok)
       cp_parser_lambda_body (parser, lambda_expr);
     else if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
-      cp_parser_skip_to_end_of_block_or_statement (parser);
+      {
+	if (cp_parser_skip_to_closing_brace (parser))
+	  cp_lexer_consume_token (parser->lexer);
+      }
 
     /* The capture list was built up in reverse order; fix that now.  */
     LAMBDA_EXPR_CAPTURE_LIST (lambda_expr)
