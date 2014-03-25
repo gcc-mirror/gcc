@@ -220,6 +220,13 @@
 ;; We use W prefix to denote any number of
 ;; constant-or-symbol-reference constraints
 
+(define_constraint "We"
+  "32-bit signed integer constant, or a symbolic reference known
+   to fit that range (for sign-extending conversion operations that
+   require non-VOIDmode immediate operands)."
+  (and (match_operand 0 "x86_64_immediate_operand")
+       (match_test "GET_MODE (op) != VOIDmode")))
+
 (define_constraint "Wz"
   "32-bit unsigned integer constant, or a symbolic reference known
    to fit that range (for zero-extending conversion operations that
