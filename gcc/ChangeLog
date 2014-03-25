@@ -1,5 +1,9 @@
 2014-03-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* combine.c (simplify_compare_const): Add MODE argument.
+	Handle mode_width 0 as very large mode_width.
+	(try_combine, simplify_comparison): Adjust callers.
+
 	* cselib.c (cselib_hash_rtx): Perform addition in unsigned
 	type to avoid signed integer overflow.
 	* explow.c (plus_constant): Likewise.
