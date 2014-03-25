@@ -1,3 +1,7 @@
+2014-03-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* doc/generic.texi: Correct typos.
+
 2014-03-24  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-flto): Expand section about
