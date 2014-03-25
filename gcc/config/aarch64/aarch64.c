@@ -6566,7 +6566,9 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, bool inverse,
   /* Splat vector constant out into a byte vector.  */
   for (i = 0; i < n_elts; i++)
     {
-      rtx el = CONST_VECTOR_ELT (op, i);
+      /* The vector is provided in gcc endian-neutral fashion.  For aarch64_be,
+         it must be laid out in the vector register in reverse order.  */
+      rtx el = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? (n_elts - 1 - i) : i);
       unsigned HOST_WIDE_INT elpart;
       unsigned int part, parts;
 
