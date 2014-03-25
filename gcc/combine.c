@@ -446,7 +446,8 @@ static rtx simplify_shift_const (rtx, enum rtx_code, enum machine_mode, rtx,
 				 int);
 static int recog_for_combine (rtx *, rtx, rtx *);
 static rtx gen_lowpart_for_combine (enum machine_mode, rtx);
-static enum rtx_code simplify_compare_const (enum rtx_code, rtx, rtx *);
+static enum rtx_code simplify_compare_const (enum rtx_code, enum machine_mode,
+					     rtx, rtx *);
 static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
 static void update_table_tick (rtx);
 static void record_value_for_reg (rtx, rtx, rtx);
@@ -2949,7 +2950,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	{
 	  compare_code = orig_compare_code = GET_CODE (*cc_use_loc);
 	  compare_code = simplify_compare_const (compare_code,
-						 op0, &op1);
+						 GET_MODE (i2dest), op0, &op1);
 	  target_canonicalize_comparison (&compare_code, &op0, &op1, 1);
 	}
 
@@ -10817,9 +10818,9 @@ gen_lowpart_for_combine (enum machine_mode omode, rtx x)
    *POP1 may be updated.  */
 
 static enum rtx_code
-simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
+simplify_compare_const (enum rtx_code code, enum machine_mode mode,
+			rtx op0, rtx *pop1)
 {
-  enum machine_mode mode = GET_MODE (op0);
   unsigned int mode_width = GET_MODE_PRECISION (mode);
   HOST_WIDE_INT const_op = INTVAL (*pop1);
 
@@ -10835,7 +10836,7 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
   if (const_op
       && (code == EQ || code == NE || code == GE || code == GEU
 	  || code == LT || code == LTU)
-      && mode_width <= HOST_BITS_PER_WIDE_INT
+      && mode_width - 1 < HOST_BITS_PER_WIDE_INT
       && exact_log2 (const_op & GET_MODE_MASK (mode)) >= 0
       && (nonzero_bits (op0, mode)
 	  == (unsigned HOST_WIDE_INT) (const_op & GET_MODE_MASK (mode))))
@@ -10882,7 +10883,7 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
       /* If we are doing a <= 0 comparison on a value known to have
 	 a zero sign bit, we can replace this with == 0.  */
       else if (const_op == 0
-	       && mode_width <= HOST_BITS_PER_WIDE_INT
+	       && mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (nonzero_bits (op0, mode)
 		   & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
 	       == 0)
@@ -10911,7 +10912,7 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
       /* If we are doing a > 0 comparison on a value known to have
 	 a zero sign bit, we can replace this with != 0.  */
       else if (const_op == 0
-	       && mode_width <= HOST_BITS_PER_WIDE_INT
+	       && mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (nonzero_bits (op0, mode)
 		   & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
 	       == 0)
@@ -10927,7 +10928,7 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
 	  /* ... fall through ...  */
 	}
       /* (unsigned) < 0x80000000 is equivalent to >= 0.  */
-      else if (mode_width <= HOST_BITS_PER_WIDE_INT
+      else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
 	       == (unsigned HOST_WIDE_INT) 1 << (mode_width - 1))
 	{
@@ -10943,7 +10944,7 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
       if (const_op == 0)
 	code = EQ;
       /* (unsigned) <= 0x7fffffff is equivalent to >= 0.  */
-      else if (mode_width <= HOST_BITS_PER_WIDE_INT
+      else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
 	       == ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)) - 1)
 	{
@@ -10962,7 +10963,7 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
 	}
 
       /* (unsigned) >= 0x80000000 is equivalent to < 0.  */
-      else if (mode_width <= HOST_BITS_PER_WIDE_INT
+      else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
 	       == (unsigned HOST_WIDE_INT) 1 << (mode_width - 1))
 	{
@@ -10978,7 +10979,7 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
       if (const_op == 0)
 	code = NE;
       /* (unsigned) > 0x7fffffff is equivalent to < 0.  */
-      else if (mode_width <= HOST_BITS_PER_WIDE_INT
+      else if (mode_width - 1 < HOST_BITS_PER_WIDE_INT
 	       && (unsigned HOST_WIDE_INT) const_op
 	       == ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)) - 1)
 	{
@@ -11185,7 +11186,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
       /* Try to simplify the compare to constant, possibly changing the
 	 comparison op, and/or changing op1 to zero.  */
-      code = simplify_compare_const (code, op0, &op1);
+      code = simplify_compare_const (code, mode, op0, &op1);
       const_op = INTVAL (op1);
 
       /* Compute some predicates to simplify code below.  */
