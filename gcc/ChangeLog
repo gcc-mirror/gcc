@@ -1,3 +1,8 @@
+2014-03-25  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Reverse
+	order of elements for big-endian.
+
 2014-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60635
