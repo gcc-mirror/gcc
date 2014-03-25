@@ -1,3 +1,9 @@
+2014-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* cselib.c (cselib_hash_rtx): Perform addition in unsigned
+	type to avoid signed integer overflow.
+	* explow.c (plus_constant): Likewise.
+
 2014-03-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* doc/generic.texi: Correct typos.

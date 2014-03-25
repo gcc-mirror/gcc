@@ -110,7 +110,7 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 	  return immed_double_int_const (v, mode);
 	}
 
-      return gen_int_mode (INTVAL (x) + c, mode);
+      return gen_int_mode (UINTVAL (x) + c, mode);
 
     case CONST_DOUBLE:
       {
