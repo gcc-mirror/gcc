@@ -1,3 +1,9 @@
+2014-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60331
+	* semantics.c (potential_constant_expression_1): Handle
+	DECL_EXPR.
+
 2014-03-24  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60627
