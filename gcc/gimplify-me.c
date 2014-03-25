@@ -315,6 +315,8 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
     gsi_insert_after (gsi_p, post_stmt, GSI_NEW_STMT);
 
   pop_gimplify_context (NULL);
+
+  update_stmt (stmt);
 }
 
 

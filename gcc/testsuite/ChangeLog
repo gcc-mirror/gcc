@@ -1,3 +1,9 @@
+2014-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60635
+	* gfortran.dg/lto/pr60635_0.f90: New testcase.
+	* gfortran.dg/lto/pr60635_1.c: Likewise.
+
 2014-03-24  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60627

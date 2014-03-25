@@ -1,3 +1,9 @@
+2014-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60635
+	* gimplify-me.c (gimple_regimplify_operands): Update the
+	re-gimplifed stmt.
+
 2014-03-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/59176
