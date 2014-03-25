@@ -1,3 +1,11 @@
+2014-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59176
+	* lto-cgraph.c (lto_output_node): Stream body_removed flag.
+	(lto_output_varpool_node): Likewise.
+	(input_overwrite_node): Likewise.
+	(input_varpool_node): Likewise.
+
 2014-03-25  Richard Biener  <rguenther@suse.de>
 
 	* lto-wrapper.c (merge_and_complain): Handle OPT_fPIE like
