@@ -1,3 +1,8 @@
+2014-03-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/58013
+	* g++.dg/opt/pr56999.C: Pop hidden visibility.
+
 2014-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60635
