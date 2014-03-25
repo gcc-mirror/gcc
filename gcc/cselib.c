@@ -1137,7 +1137,7 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       return hash ? hash : (unsigned int) ENTRY_VALUE;
 
     case CONST_INT:
-      hash += ((unsigned) CONST_INT << 7) + INTVAL (x);
+      hash += ((unsigned) CONST_INT << 7) + UINTVAL (x);
       return hash ? hash : (unsigned int) CONST_INT;
 
     case CONST_DOUBLE:
