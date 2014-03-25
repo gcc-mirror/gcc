@@ -1,3 +1,8 @@
+2014-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60600
+	* g++.dg/ipa/pr60600.C: New test.
+
 2014-03-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/58013

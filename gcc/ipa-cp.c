@@ -1639,11 +1639,18 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	return NULL_TREE;
       target = gimple_get_virt_method_for_binfo (token, binfo);
     }
-#ifdef ENABLE_CHECKING
-  if (target)
-    gcc_assert (possible_polymorphic_call_target_p
-		 (ie, cgraph_get_node (target)));
-#endif
+
+  if (target && !possible_polymorphic_call_target_p (ie,
+						     cgraph_get_node (target)))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Type inconsident devirtualization: %s/%i->%s\n",
+		 ie->caller->name (), ie->caller->order,
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
+      target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+      cgraph_get_create_node (target);
+    }
 
   return target;
 }
