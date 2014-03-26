@@ -1,3 +1,7 @@
+2014-03-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* libitm.texi (Index): Rename to Library Index.
+
 2014-01-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libitm/53113
