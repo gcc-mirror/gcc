@@ -112,8 +112,8 @@ target_triplet = @target@
 DIST_COMMON = $(srcdir)/include/internal/rev.mk README ChangeLog \
 	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/../mkinstalldirs $(srcdir)/../depcomp \
-	$(cilkinclude_HEADERS)
+	$(srcdir)/../mkinstalldirs $(srcdir)/libcilkrts.spec.in \
+	$(srcdir)/../depcomp
 
 # If we're building on Linux, use the Linux version script
 @LINUX_LINKER_SCRIPT_TRUE@am__append_1 = -Wl,--version-script,$(srcdir)/runtime/linux-symbols.ver
@@ -122,10 +122,8 @@ DIST_COMMON = $(srcdir)/include/internal/rev.mk README ChangeLog \
 @MAC_LINKER_SCRIPT_TRUE@am__append_2 = -Wl,-exported_symbols_list,$(srcdir)/runtime/mac-symbols.txt
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
-	$(top_srcdir)/../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
-	$(top_srcdir)/../config/libstdc++-raw-cxx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
@@ -136,7 +134,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = libcilkrts.spec
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -160,7 +158,7 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(cilkincludedir)"
+	"$(DESTDIR)$(cilkincludedir)" "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libcilkrts_la_LIBADD =
 am_libcilkrts_la_OBJECTS = cilk-abi-vla.lo os-unix-sysdep.lo bug.lo \
@@ -204,7 +202,7 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-HEADERS = $(cilkinclude_HEADERS)
+HEADERS = $(nodist_cilkinclude_HEADERS) $(nodist_toolexeclib_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 ACLOCAL = @ACLOCAL@
@@ -245,8 +243,6 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
-LIBSTDCXX_RAW_CXX_CXXFLAGS = @LIBSTDCXX_RAW_CXX_CXXFLAGS@
-LIBSTDCXX_RAW_CXX_LDFLAGS = @LIBSTDCXX_RAW_CXX_LDFLAGS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -310,6 +306,7 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+link_cilkrts = @link_cilkrts@
 localedir = @localedir@
 localstatedir = @localstatedir@
 lt_cv_dlopen_libs = @lt_cv_dlopen_libs@
@@ -328,7 +325,6 @@ sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
 target_cpu = @target_cpu@
-target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
@@ -356,6 +352,7 @@ AM_LDFLAGS = -lpthread
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 # Target list.
+nodist_toolexeclib_HEADERS = libcilkrts.spec
 toolexeclib_LTLIBRARIES = libcilkrts.la
 libcilkrts_la_SOURCES = \
   runtime/config/$(config_dir)/cilk-abi-vla.c           \
@@ -403,7 +400,7 @@ libcilkrts_la_LDFLAGS = -version-info 5:0:0 -lpthread \
 # C/C++ header files for Cilk.
 # cilkincludedir = $(includedir)/cilk
 cilkincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include/cilk
-cilkinclude_HEADERS = \
+nodist_cilkinclude_HEADERS = \
   include/cilk/cilk_api.h          \
   include/cilk/cilk_api_linux.h    \
   include/cilk/cilk.h              \
@@ -505,6 +502,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
+libcilkrts.spec: $(top_builddir)/config.status $(srcdir)/libcilkrts.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
@@ -853,10 +852,10 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
-install-cilkincludeHEADERS: $(cilkinclude_HEADERS)
+install-nodist_cilkincludeHEADERS: $(nodist_cilkinclude_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(cilkincludedir)" || $(MKDIR_P) "$(DESTDIR)$(cilkincludedir)"
-	@list='$(cilkinclude_HEADERS)'; test -n "$(cilkincludedir)" || list=; \
+	@list='$(nodist_cilkinclude_HEADERS)'; test -n "$(cilkincludedir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
@@ -866,13 +865,33 @@ install-cilkincludeHEADERS: $(cilkinclude_HEADERS)
 	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(cilkincludedir)" || exit $$?; \
 	done
 
-uninstall-cilkincludeHEADERS:
+uninstall-nodist_cilkincludeHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(cilkinclude_HEADERS)'; test -n "$(cilkincludedir)" || list=; \
+	@list='$(nodist_cilkinclude_HEADERS)'; test -n "$(cilkincludedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(cilkincludedir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(cilkincludedir)" && rm -f $$files
+install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-nodist_toolexeclibHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibdir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -929,7 +948,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) all-multi $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(cilkincludedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(cilkincludedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -981,13 +1000,14 @@ info: info-am
 
 info-am:
 
-install-data-am: install-cilkincludeHEADERS
+install-data-am: install-nodist_cilkincludeHEADERS
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-multi install-toolexeclibLTLIBRARIES
+install-exec-am: install-multi install-nodist_toolexeclibHEADERS \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -1029,7 +1049,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-cilkincludeHEADERS \
+uninstall-am: uninstall-nodist_cilkincludeHEADERS \
+	uninstall-nodist_toolexeclibHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: all-multi clean-multi distclean-multi install-am install-multi \
@@ -1040,17 +1061,20 @@ uninstall-am: uninstall-cilkincludeHEADERS \
 	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-multi \
 	distclean-tags dvi dvi-am html html-am info info-am install \
-	install-am install-cilkincludeHEADERS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-multi install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
+	install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-multi install-nodist_cilkincludeHEADERS \
+	install-nodist_toolexeclibHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	maintainer-clean-multi mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
 	pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-cilkincludeHEADERS uninstall-toolexeclibLTLIBRARIES
+	uninstall-nodist_cilkincludeHEADERS \
+	uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
