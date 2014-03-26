@@ -1,3 +1,9 @@
+2014-03-26  Martin Jambor  <mjambor@suse.cz>
+
+      PR ipa/60419
+      * ipa.c (symtab_remove_unreachable_nodes): Clear thunk and
+      alias flags of nodes in the border.
+
 2014-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/60452

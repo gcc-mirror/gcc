@@ -359,6 +359,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      if (file)
 		fprintf (file, " %s", cgraph_node_name (node));
+	      node->alias = false;
+	      node->thunk.thunk_p = false;
 	      cgraph_node_remove_callees (node);
 	      ipa_remove_all_references (&node->symbol.ref_list);
 	      changed = true;
