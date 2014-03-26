@@ -1,3 +1,15 @@
+2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
+
+        PR c++/52369
+        * g++.dg/init/const10.C: New.
+	* g++.dg/init/const11.C: New.
+	* g++.dg/init/pr25811.C: Adjust.
+	* g++.dg/init/pr29043.C: Likewise.
+	* g++.dg/init/pr43719.C: Likewise.
+	* g++.dg/init/pr44086.C: Likewise.
+	* g++.dg/init/ctor8.C: Likewise.
+	* g++.dg/init/uninitialized1.C: Likewise.
+
 2014-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60636
