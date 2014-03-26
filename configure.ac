@@ -2532,6 +2532,7 @@ AC_MSG_RESULT($enable_vtable_verify)
 # build configuration in Makefile.
 target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
 build_configdirs=`echo "${build_configdirs}" | sed -e 's/build-//g'`
+bootstrap_fixincludes=no
 
 # If we are building libgomp, bootstrap it.
 if echo " ${target_configdirs} " | grep " libgomp " > /dev/null 2>&1 ; then
@@ -2544,6 +2545,7 @@ if echo " ${target_configdirs} " | grep " libsanitizer " > /dev/null 2>&1; then
   case "$BUILD_CONFIG" in
     *bootstrap-asan* | *bootstrap-ubsan* )
       bootstrap_target_libs=${bootstrap_target_libs}target-libsanitizer,
+      bootstrap_fixincludes=yes
       ;;
   esac
 fi
@@ -2626,11 +2628,15 @@ for module in ${configdirs} ; do
       fi
     done
   fi
+  case ${module},${bootstrap_fixincludes} in
+    fixincludes,no) host_bootstrap_suffix=no-bootstrap ;;
+    *) host_bootstrap_suffix=$bootstrap_suffix ;;
+  esac
   extrasub_host="$extrasub_host
 /^@if $module\$/d
 /^@endif $module\$/d
-/^@if $module-$bootstrap_suffix\$/d
-/^@endif $module-$bootstrap_suffix\$/d"
+/^@if $module-$host_bootstrap_suffix\$/d
+/^@endif $module-$host_bootstrap_suffix\$/d"
 done
 extrasub_target=
 for module in ${target_configdirs} ; do

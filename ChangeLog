@@ -1,3 +1,12 @@
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56781
+	* Makefile.def: Set bootstrap=true; for host fixincludes.
+	* configure.ac: Don't bootstrap host fixincludes unless
+	--with-build-config=bootstrap-{a,ub}san.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
 2014-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Move BUILD_CONFIG set up earlier.  Add
