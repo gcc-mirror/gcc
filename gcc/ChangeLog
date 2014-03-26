@@ -1,5 +1,25 @@
 2014-03-25  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/60315
+	* cif-code.def (UNREACHABLE) New code.
+	* ipa-inline.c (inline_small_functions): Skip edges to __builtlin_unreachable.
+	(estimate_edge_growth): Allow edges to __builtlin_unreachable.
+	* ipa-inline-analysis.c (edge_set_predicate): Redirect edges with false
+	predicate to __bulitin_unreachable.
+	(set_cond_stmt_execution_predicate): Fix issue when invert_tree_comparison
+	returns ERROR_MARK.
+	* ipa-pure-const.c (propagate_pure_const, propagate_nothrow): Do not
+	propagate to inline clones.
+	* cgraph.c (verify_edge_corresponds_to_fndecl): Allow redirection
+	to unreachable.
+	* ipa-cp.c (create_specialized_node): Be ready for new node to appear.
+	* cgraphclones.c (cgraph_clone_node): If call destination is already
+	ureachable, do not redirect it back.
+	* tree-inline.c (fold_marked_statements): Hanlde calls becoming
+	unreachable.
+
+2014-03-25  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-pure-const.c (propagate_pure_const, propagate_nothrow):
 	Do not modify inline clones.
 

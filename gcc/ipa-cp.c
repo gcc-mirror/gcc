@@ -2811,9 +2811,7 @@ create_specialized_node (struct cgraph_node *node,
       if (aggvals)
 	ipa_dump_agg_replacement_values (dump_file, aggvals);
     }
-  gcc_checking_assert (ipa_node_params_vector.exists ()
-		       && (ipa_node_params_vector.length ()
-			   > (unsigned) cgraph_max_uid));
+  ipa_check_create_node_params ();
   update_profiling_info (node, new_node);
   new_info = IPA_NODE_REF (new_node);
   new_info->ipcp_orig_node = node;

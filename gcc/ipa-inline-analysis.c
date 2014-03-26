@@ -746,6 +746,20 @@ static void
 edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
 {
   struct inline_edge_summary *es = inline_edge_summary (e);
+
+  /* If the edge is determined to be never executed, redirect it
+     to BUILTIN_UNREACHABLE to save inliner from inlining into it.  */
+  if (predicate && false_predicate_p (predicate) && e->callee)
+    {
+      struct cgraph_node *callee = !e->inline_failed ? e->callee : NULL;
+
+      cgraph_redirect_edge_callee (e,
+				   cgraph_get_create_node
+				     (builtin_decl_implicit (BUILT_IN_UNREACHABLE)));
+      e->inline_failed = CIF_UNREACHABLE;
+      if (callee)
+	cgraph_remove_node_and_inline_clones (callee, NULL);
+    }
   if (predicate && !true_predicate_p (predicate))
     {
       if (!es->predicate)
@@ -1724,12 +1738,20 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  struct predicate p = add_condition (summary, index, &aggpos,
-					      e->flags & EDGE_TRUE_VALUE
-					      ? code : inverted_code,
-					      gimple_cond_rhs (last));
-	  e->aux = pool_alloc (edge_predicate_pool);
-	  *(struct predicate *) e->aux = p;
+	  enum tree_code this_code = (e->flags & EDGE_TRUE_VALUE
+				      ? code : inverted_code);
+	  /* invert_tree_comparison will return ERROR_MARK on FP
+	     comparsions that are not EQ/NE instead of returning proper
+	     unordered one.  Be sure it is not confused with NON_CONSTANT.  */
+	  if (this_code != ERROR_MARK)
+	    {
+	      struct predicate p = add_condition (summary, index, &aggpos,
+						  e->flags & EDGE_TRUE_VALUE
+						  ? code : inverted_code,
+						  gimple_cond_rhs (last));
+	      e->aux = pool_alloc (edge_predicate_pool);
+	      *(struct predicate *) e->aux = p;
+	    }
 	}
     }
 

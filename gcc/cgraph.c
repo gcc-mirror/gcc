@@ -2612,6 +2612,12 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
       || node->in_other_partition
       || e->callee->in_other_partition)
     return false;
+
+  /* Optimizers can redirect unreachable calls or calls triggering undefined
+     behaviour to builtin_unreachable.  */
+  if (DECL_BUILT_IN_CLASS (e->callee->decl) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (e->callee->decl) == BUILT_IN_UNREACHABLE)
+    return false;
   node = cgraph_function_or_thunk_node (node, NULL);
 
   if (e->callee->former_clone_of != node->decl
