@@ -1,5 +1,11 @@
 2014-03-26  Marek Polacek  <polacek@redhat.com>
 
+	PR c/37428
+	* doc/extend.texi (C Extensions): Mention variable-length arrays in
+	a structure/union.
+
+2014-03-26  Marek Polacek  <polacek@redhat.com>
+
 	PR c/39525
 	* doc/extend.texi (Designated Inits): Describe what happens to omitted
 	field members.

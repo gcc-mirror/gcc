@@ -1592,6 +1592,18 @@ Jumping or breaking out of the scope of the array name deallocates the
 storage.  Jumping into the scope is not allowed; you get an error
 message for it.
 
+@cindex variable-length array in a structure
+As an extension, GCC accepts variable-length arrays as a member of
+a structure or a union.  For example:
+
+@smallexample
+void
+foo (int n)
+@{
+  struct S @{ int x[n]; @};
+@}
+@end smallexample
+
 @cindex @code{alloca} vs variable-length arrays
 You can use the function @code{alloca} to get an effect much like
 variable-length arrays.  The function @code{alloca} is available in
