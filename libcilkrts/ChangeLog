@@ -1,3 +1,12 @@
+2014-03-26  Tobias Burnus  <burnus@net-b.de>
+
+	* libcilkrts.spec.in: New.
+	* Makefile.am: Handle libcilkrts.spec.
+	* configure.ac: Determine link options for libcilkrts.spec.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2014-03-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/60589

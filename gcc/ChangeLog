@@ -1,3 +1,9 @@
+2014-03-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gcc.c (LINK_COMMAND_SPEC): Use libcilkrts.spec for -fcilkplus.
+	(CILK_SELF_SPECS): New define.
+	(driver_self_specs): Use it.
+
 2014-03-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-pretty-print.c (percent_K_format): Implement special
