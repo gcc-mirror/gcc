@@ -1,3 +1,10 @@
+2014-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59548
+	* include/debug/safe_unordered_base.h (_Safe_unordered_container_base):
+	Define copy and move constructors that handle iterators correctly.
+	* testsuite/23_containers/unordered_map/59548.cc: New.
+
 2014-03-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60658
