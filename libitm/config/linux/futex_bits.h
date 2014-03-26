@@ -31,9 +31,13 @@
 
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <errno.h>
 
 static inline long
 sys_futex0 (std::atomic<int> *addr, long op, long val)
 {
-  return syscall (SYS_futex, (int*) addr, op, val, 0);
+  long res = syscall (SYS_futex, (int*) addr, op, val, 0);
+  if (__builtin_expect (res == -1, 0))
+    return -errno;
+  return res;
 }
