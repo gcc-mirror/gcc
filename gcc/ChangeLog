@@ -1,3 +1,9 @@
+2014-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/60452
+	* rtlanal.c (rtx_addr_can_trap_p_1): Fix head comment.
+	<case REG>: Return 1 for invalid offsets from the frame pointer.
+
 2014-03-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/37428
