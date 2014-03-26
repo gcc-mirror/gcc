@@ -1,3 +1,7 @@
+2014-03-26  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/torture/pr60315.C: Remove duplication.
+
 2014-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20140326-1.c: New test.
@@ -5,7 +9,7 @@
 2014-03-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60315
-	* testsuite/g++.dg/torture/pr60315.C: New testcase.
+	* g++.dg/torture/pr60315.C: New testcase.
 
 2014-03-25  Martin Jambor  <mjambor@suse.cz>
 
