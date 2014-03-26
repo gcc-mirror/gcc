@@ -73,7 +73,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op0, t);
   tree data = ubsan_create_data ("__ubsan_overflow_data",
-				 loc, NULL,
+				 &loc, NULL,
 				 ubsan_type_descriptor (type, false),
 				 NULL_TREE);
   data = build_fold_addr_expr_loc (loc, data);
@@ -142,7 +142,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op0, t);
   tree data = ubsan_create_data ("__ubsan_shift_data",
-				 loc, NULL,
+				 &loc, NULL,
 				 ubsan_type_descriptor (type0, false),
 				 ubsan_type_descriptor (type1, false),
 				 NULL_TREE);
@@ -169,7 +169,7 @@ ubsan_instrument_vla (location_t loc, tree size)
 
   t = fold_build2 (LE_EXPR, boolean_type_node, size, build_int_cst (type, 0));
   tree data = ubsan_create_data ("__ubsan_vla_data",
-				 loc, NULL,
+				 &loc, NULL,
 				 ubsan_type_descriptor (type, false),
 				 NULL_TREE);
   data = build_fold_addr_expr_loc (loc, data);
@@ -185,7 +185,7 @@ ubsan_instrument_vla (location_t loc, tree size)
 tree
 ubsan_instrument_return (location_t loc)
 {
-  tree data = ubsan_create_data ("__ubsan_missing_return_data", loc,
+  tree data = ubsan_create_data ("__ubsan_missing_return_data", &loc,
 				 NULL, NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_MISSING_RETURN);
   return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));

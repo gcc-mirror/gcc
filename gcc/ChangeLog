@@ -1,5 +1,15 @@
 2014-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* ubsan.h (ubsan_create_data): Change second argument's type
+	to const location_t *.
+	* ubsan.c (ubsan_source_location): If xloc.file is NULL, set it to
+	_("<unknown>").
+	(ubsan_create_data): Change second argument to const location_t *PLOC.
+	Create Loc field whenever PLOC is non-NULL.
+	(ubsan_instrument_unreachable, ubsan_expand_null_ifn,
+	ubsan_build_overflow_builtin, instrument_bool_enum_load): Adjust
+	callers.
+
 	PR other/59545
 	* real.c (real_to_integer2): Change type of low to UHWI.
 

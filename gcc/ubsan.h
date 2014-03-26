@@ -38,7 +38,7 @@ struct ubsan_mismatch_data {
 
 extern void ubsan_expand_null_ifn (gimple_stmt_iterator);
 extern tree ubsan_instrument_unreachable (location_t);
-extern tree ubsan_create_data (const char *, location_t,
+extern tree ubsan_create_data (const char *, const location_t *,
 			       const struct ubsan_mismatch_data *, ...);
 extern tree ubsan_type_descriptor (tree, bool);
 extern tree ubsan_encode_value (tree, bool = false);

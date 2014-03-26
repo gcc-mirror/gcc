@@ -1,3 +1,9 @@
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla, ubsan_instrument_return): Adjust
+	ubsan_create_data callers.
+
 2014-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/60603
