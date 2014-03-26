@@ -1003,7 +1003,9 @@ all-host: maybe-all-cgen
 all-host: maybe-all-dejagnu
 all-host: maybe-all-etc
 all-host: maybe-all-fastjar
+@if fixincludes-no-bootstrap
 all-host: maybe-all-fixincludes
+@endif fixincludes-no-bootstrap
 all-host: maybe-all-flex
 @if gas-no-bootstrap
 all-host: maybe-all-gas
@@ -7807,7 +7809,6 @@ configure-fixincludes: stage_current
 @if fixincludes
 maybe-configure-fixincludes: configure-fixincludes
 configure-fixincludes: 
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
@@ -7830,6 +7831,204 @@ configure-fixincludes:
 
 
 
+.PHONY: configure-stage1-fixincludes maybe-configure-stage1-fixincludes
+maybe-configure-stage1-fixincludes:
+@if fixincludes-bootstrap
+maybe-configure-stage1-fixincludes: configure-stage1-fixincludes
+configure-stage1-fixincludes:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/fixincludes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes ; \
+	cd $(HOST_SUBDIR)/fixincludes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
+	libsrcdir="$$s/fixincludes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif fixincludes-bootstrap
+
+.PHONY: configure-stage2-fixincludes maybe-configure-stage2-fixincludes
+maybe-configure-stage2-fixincludes:
+@if fixincludes-bootstrap
+maybe-configure-stage2-fixincludes: configure-stage2-fixincludes
+configure-stage2-fixincludes:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/fixincludes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes ; \
+	cd $(HOST_SUBDIR)/fixincludes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
+	libsrcdir="$$s/fixincludes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif fixincludes-bootstrap
+
+.PHONY: configure-stage3-fixincludes maybe-configure-stage3-fixincludes
+maybe-configure-stage3-fixincludes:
+@if fixincludes-bootstrap
+maybe-configure-stage3-fixincludes: configure-stage3-fixincludes
+configure-stage3-fixincludes:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/fixincludes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes ; \
+	cd $(HOST_SUBDIR)/fixincludes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
+	libsrcdir="$$s/fixincludes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif fixincludes-bootstrap
+
+.PHONY: configure-stage4-fixincludes maybe-configure-stage4-fixincludes
+maybe-configure-stage4-fixincludes:
+@if fixincludes-bootstrap
+maybe-configure-stage4-fixincludes: configure-stage4-fixincludes
+configure-stage4-fixincludes:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/fixincludes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes ; \
+	cd $(HOST_SUBDIR)/fixincludes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
+	libsrcdir="$$s/fixincludes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif fixincludes-bootstrap
+
+.PHONY: configure-stageprofile-fixincludes maybe-configure-stageprofile-fixincludes
+maybe-configure-stageprofile-fixincludes:
+@if fixincludes-bootstrap
+maybe-configure-stageprofile-fixincludes: configure-stageprofile-fixincludes
+configure-stageprofile-fixincludes:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(HOST_SUBDIR)/fixincludes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes ; \
+	cd $(HOST_SUBDIR)/fixincludes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
+	libsrcdir="$$s/fixincludes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif fixincludes-bootstrap
+
+.PHONY: configure-stagefeedback-fixincludes maybe-configure-stagefeedback-fixincludes
+maybe-configure-stagefeedback-fixincludes:
+@if fixincludes-bootstrap
+maybe-configure-stagefeedback-fixincludes: configure-stagefeedback-fixincludes
+configure-stagefeedback-fixincludes:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/fixincludes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/fixincludes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/fixincludes ; \
+	cd $(HOST_SUBDIR)/fixincludes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
+	libsrcdir="$$s/fixincludes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif fixincludes-bootstrap
+
+
+
 
 
 .PHONY: all-fixincludes maybe-all-fixincludes
@@ -7841,7 +8040,6 @@ all-fixincludes: stage_current
 TARGET-fixincludes=all
 maybe-all-fixincludes: all-fixincludes
 all-fixincludes: configure-fixincludes
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
@@ -7849,6 +8047,255 @@ all-fixincludes: configure-fixincludes
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-fixincludes))
 @endif fixincludes
+
+
+
+.PHONY: all-stage1-fixincludes maybe-all-stage1-fixincludes
+.PHONY: clean-stage1-fixincludes maybe-clean-stage1-fixincludes
+maybe-all-stage1-fixincludes:
+maybe-clean-stage1-fixincludes:
+@if fixincludes-bootstrap
+maybe-all-stage1-fixincludes: all-stage1-fixincludes
+all-stage1: all-stage1-fixincludes
+TARGET-stage1-fixincludes = $(TARGET-fixincludes)
+all-stage1-fixincludes: configure-stage1-fixincludes
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" \
+		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
+		LIBCFLAGS="$(LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE1_TFLAGS)" \
+		$(TARGET-stage1-fixincludes)
+
+maybe-clean-stage1-fixincludes: clean-stage1-fixincludes
+clean-stage1: clean-stage1-fixincludes
+clean-stage1-fixincludes:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/fixincludes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-fixincludes/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+	$(STAGE1_FLAGS_TO_PASS)  clean
+@endif fixincludes-bootstrap
+
+
+.PHONY: all-stage2-fixincludes maybe-all-stage2-fixincludes
+.PHONY: clean-stage2-fixincludes maybe-clean-stage2-fixincludes
+maybe-all-stage2-fixincludes:
+maybe-clean-stage2-fixincludes:
+@if fixincludes-bootstrap
+maybe-all-stage2-fixincludes: all-stage2-fixincludes
+all-stage2: all-stage2-fixincludes
+TARGET-stage2-fixincludes = $(TARGET-fixincludes)
+all-stage2-fixincludes: configure-stage2-fixincludes
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" \
+		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE2_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE2_TFLAGS)" \
+		$(TARGET-stage2-fixincludes)
+
+maybe-clean-stage2-fixincludes: clean-stage2-fixincludes
+clean-stage2: clean-stage2-fixincludes
+clean-stage2-fixincludes:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/fixincludes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-fixincludes/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif fixincludes-bootstrap
+
+
+.PHONY: all-stage3-fixincludes maybe-all-stage3-fixincludes
+.PHONY: clean-stage3-fixincludes maybe-clean-stage3-fixincludes
+maybe-all-stage3-fixincludes:
+maybe-clean-stage3-fixincludes:
+@if fixincludes-bootstrap
+maybe-all-stage3-fixincludes: all-stage3-fixincludes
+all-stage3: all-stage3-fixincludes
+TARGET-stage3-fixincludes = $(TARGET-fixincludes)
+all-stage3-fixincludes: configure-stage3-fixincludes
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" \
+		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE3_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE3_TFLAGS)" \
+		$(TARGET-stage3-fixincludes)
+
+maybe-clean-stage3-fixincludes: clean-stage3-fixincludes
+clean-stage3: clean-stage3-fixincludes
+clean-stage3-fixincludes:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/fixincludes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-fixincludes/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif fixincludes-bootstrap
+
+
+.PHONY: all-stage4-fixincludes maybe-all-stage4-fixincludes
+.PHONY: clean-stage4-fixincludes maybe-clean-stage4-fixincludes
+maybe-all-stage4-fixincludes:
+maybe-clean-stage4-fixincludes:
+@if fixincludes-bootstrap
+maybe-all-stage4-fixincludes: all-stage4-fixincludes
+all-stage4: all-stage4-fixincludes
+TARGET-stage4-fixincludes = $(TARGET-fixincludes)
+all-stage4-fixincludes: configure-stage4-fixincludes
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" \
+		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE4_TFLAGS)" \
+		$(TARGET-stage4-fixincludes)
+
+maybe-clean-stage4-fixincludes: clean-stage4-fixincludes
+clean-stage4: clean-stage4-fixincludes
+clean-stage4-fixincludes:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/fixincludes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-fixincludes/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif fixincludes-bootstrap
+
+
+.PHONY: all-stageprofile-fixincludes maybe-all-stageprofile-fixincludes
+.PHONY: clean-stageprofile-fixincludes maybe-clean-stageprofile-fixincludes
+maybe-all-stageprofile-fixincludes:
+maybe-clean-stageprofile-fixincludes:
+@if fixincludes-bootstrap
+maybe-all-stageprofile-fixincludes: all-stageprofile-fixincludes
+all-stageprofile: all-stageprofile-fixincludes
+TARGET-stageprofile-fixincludes = $(TARGET-fixincludes)
+all-stageprofile-fixincludes: configure-stageprofile-fixincludes
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEprofile_TFLAGS)" \
+		$(TARGET-stageprofile-fixincludes)
+
+maybe-clean-stageprofile-fixincludes: clean-stageprofile-fixincludes
+clean-stageprofile: clean-stageprofile-fixincludes
+clean-stageprofile-fixincludes:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/fixincludes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-fixincludes/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif fixincludes-bootstrap
+
+
+.PHONY: all-stagefeedback-fixincludes maybe-all-stagefeedback-fixincludes
+.PHONY: clean-stagefeedback-fixincludes maybe-clean-stagefeedback-fixincludes
+maybe-all-stagefeedback-fixincludes:
+maybe-clean-stagefeedback-fixincludes:
+@if fixincludes-bootstrap
+maybe-all-stagefeedback-fixincludes: all-stagefeedback-fixincludes
+all-stagefeedback: all-stagefeedback-fixincludes
+TARGET-stagefeedback-fixincludes = $(TARGET-fixincludes)
+all-stagefeedback-fixincludes: configure-stagefeedback-fixincludes
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEfeedback_TFLAGS)" \
+		$(TARGET-stagefeedback-fixincludes)
+
+maybe-clean-stagefeedback-fixincludes: clean-stagefeedback-fixincludes
+clean-stagefeedback: clean-stagefeedback-fixincludes
+clean-stagefeedback-fixincludes:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/fixincludes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-fixincludes/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/fixincludes && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif fixincludes-bootstrap
+
 
 
 
@@ -7907,7 +8354,6 @@ maybe-info-fixincludes: info-fixincludes
 
 info-fixincludes: \
     configure-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -7933,7 +8379,6 @@ maybe-dvi-fixincludes: dvi-fixincludes
 
 dvi-fixincludes: \
     configure-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -7959,7 +8404,6 @@ maybe-pdf-fixincludes: pdf-fixincludes
 
 pdf-fixincludes: \
     configure-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -7985,7 +8429,6 @@ maybe-html-fixincludes: html-fixincludes
 
 html-fixincludes: \
     configure-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8022,7 +8465,6 @@ maybe-install-info-fixincludes: install-info-fixincludes
 install-info-fixincludes: \
     configure-fixincludes \
     info-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8049,7 +8491,6 @@ maybe-install-pdf-fixincludes: install-pdf-fixincludes
 install-pdf-fixincludes: \
     configure-fixincludes \
     pdf-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8076,7 +8517,6 @@ maybe-install-html-fixincludes: install-html-fixincludes
 install-html-fixincludes: \
     configure-fixincludes \
     html-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8102,7 +8542,6 @@ maybe-installcheck-fixincludes: installcheck-fixincludes
 
 installcheck-fixincludes: \
     configure-fixincludes 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8127,7 +8566,6 @@ maybe-mostlyclean-fixincludes:
 maybe-mostlyclean-fixincludes: mostlyclean-fixincludes
 
 mostlyclean-fixincludes: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8152,7 +8590,6 @@ maybe-clean-fixincludes:
 maybe-clean-fixincludes: clean-fixincludes
 
 clean-fixincludes: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8177,7 +8614,6 @@ maybe-distclean-fixincludes:
 maybe-distclean-fixincludes: distclean-fixincludes
 
 distclean-fixincludes: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -8202,7 +8638,6 @@ maybe-maintainer-clean-fixincludes:
 maybe-maintainer-clean-fixincludes: maintainer-clean-fixincludes
 
 maintainer-clean-fixincludes: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./fixincludes/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -44424,6 +44859,11 @@ stage1-start::
 	  mkdir stage1-binutils; \
 	mv stage1-binutils binutils 
 @endif binutils
+@if fixincludes
+	@cd $(HOST_SUBDIR); [ -d stage1-fixincludes ] || \
+	  mkdir stage1-fixincludes; \
+	mv stage1-fixincludes fixincludes 
+@endif fixincludes
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage1-gas ] || \
 	  mkdir stage1-gas; \
@@ -44529,6 +44969,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv binutils stage1-binutils  ; \
 	fi
 @endif binutils
+@if fixincludes
+	@if test -d $(HOST_SUBDIR)/fixincludes ; then \
+	  cd $(HOST_SUBDIR); mv fixincludes stage1-fixincludes  ; \
+	fi
+@endif fixincludes
 @if gas
 	@if test -d $(HOST_SUBDIR)/gas ; then \
 	  cd $(HOST_SUBDIR); mv gas stage1-gas  ; \
@@ -44680,6 +45125,12 @@ stage2-start::
 	mv stage2-binutils binutils  ; \
 	mv stage1-binutils prev-binutils || test -f stage1-lean 
 @endif binutils
+@if fixincludes
+	@cd $(HOST_SUBDIR); [ -d stage2-fixincludes ] || \
+	  mkdir stage2-fixincludes; \
+	mv stage2-fixincludes fixincludes  ; \
+	mv stage1-fixincludes prev-fixincludes || test -f stage1-lean 
+@endif fixincludes
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage2-gas ] || \
 	  mkdir stage2-gas; \
@@ -44806,6 +45257,12 @@ stage2-end::
 	  mv prev-binutils stage1-binutils ; :  ; \
 	fi
 @endif binutils
+@if fixincludes
+	@if test -d $(HOST_SUBDIR)/fixincludes ; then \
+	  cd $(HOST_SUBDIR); mv fixincludes stage2-fixincludes ; \
+	  mv prev-fixincludes stage1-fixincludes ; :  ; \
+	fi
+@endif fixincludes
 @if gas
 	@if test -d $(HOST_SUBDIR)/gas ; then \
 	  cd $(HOST_SUBDIR); mv gas stage2-gas ; \
@@ -44998,6 +45455,12 @@ stage3-start::
 	mv stage3-binutils binutils  ; \
 	mv stage2-binutils prev-binutils || test -f stage2-lean 
 @endif binutils
+@if fixincludes
+	@cd $(HOST_SUBDIR); [ -d stage3-fixincludes ] || \
+	  mkdir stage3-fixincludes; \
+	mv stage3-fixincludes fixincludes  ; \
+	mv stage2-fixincludes prev-fixincludes || test -f stage2-lean 
+@endif fixincludes
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage3-gas ] || \
 	  mkdir stage3-gas; \
@@ -45124,6 +45587,12 @@ stage3-end::
 	  mv prev-binutils stage2-binutils ; :  ; \
 	fi
 @endif binutils
+@if fixincludes
+	@if test -d $(HOST_SUBDIR)/fixincludes ; then \
+	  cd $(HOST_SUBDIR); mv fixincludes stage3-fixincludes ; \
+	  mv prev-fixincludes stage2-fixincludes ; :  ; \
+	fi
+@endif fixincludes
 @if gas
 	@if test -d $(HOST_SUBDIR)/gas ; then \
 	  cd $(HOST_SUBDIR); mv gas stage3-gas ; \
@@ -45372,6 +45841,12 @@ stage4-start::
 	mv stage4-binutils binutils  ; \
 	mv stage3-binutils prev-binutils || test -f stage3-lean 
 @endif binutils
+@if fixincludes
+	@cd $(HOST_SUBDIR); [ -d stage4-fixincludes ] || \
+	  mkdir stage4-fixincludes; \
+	mv stage4-fixincludes fixincludes  ; \
+	mv stage3-fixincludes prev-fixincludes || test -f stage3-lean 
+@endif fixincludes
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage4-gas ] || \
 	  mkdir stage4-gas; \
@@ -45498,6 +45973,12 @@ stage4-end::
 	  mv prev-binutils stage3-binutils ; :  ; \
 	fi
 @endif binutils
+@if fixincludes
+	@if test -d $(HOST_SUBDIR)/fixincludes ; then \
+	  cd $(HOST_SUBDIR); mv fixincludes stage4-fixincludes ; \
+	  mv prev-fixincludes stage3-fixincludes ; :  ; \
+	fi
+@endif fixincludes
 @if gas
 	@if test -d $(HOST_SUBDIR)/gas ; then \
 	  cd $(HOST_SUBDIR); mv gas stage4-gas ; \
@@ -45734,6 +46215,12 @@ stageprofile-start::
 	mv stageprofile-binutils binutils  ; \
 	mv stage1-binutils prev-binutils || test -f stage1-lean 
 @endif binutils
+@if fixincludes
+	@cd $(HOST_SUBDIR); [ -d stageprofile-fixincludes ] || \
+	  mkdir stageprofile-fixincludes; \
+	mv stageprofile-fixincludes fixincludes  ; \
+	mv stage1-fixincludes prev-fixincludes || test -f stage1-lean 
+@endif fixincludes
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stageprofile-gas ] || \
 	  mkdir stageprofile-gas; \
@@ -45860,6 +46347,12 @@ stageprofile-end::
 	  mv prev-binutils stage1-binutils ; :  ; \
 	fi
 @endif binutils
+@if fixincludes
+	@if test -d $(HOST_SUBDIR)/fixincludes ; then \
+	  cd $(HOST_SUBDIR); mv fixincludes stageprofile-fixincludes ; \
+	  mv prev-fixincludes stage1-fixincludes ; :  ; \
+	fi
+@endif fixincludes
 @if gas
 	@if test -d $(HOST_SUBDIR)/gas ; then \
 	  cd $(HOST_SUBDIR); mv gas stageprofile-gas ; \
@@ -46029,6 +46522,12 @@ stagefeedback-start::
 	mv stagefeedback-binutils binutils  ; \
 	mv stageprofile-binutils prev-binutils || test -f stageprofile-lean 
 @endif binutils
+@if fixincludes
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-fixincludes ] || \
+	  mkdir stagefeedback-fixincludes; \
+	mv stagefeedback-fixincludes fixincludes  ; \
+	mv stageprofile-fixincludes prev-fixincludes || test -f stageprofile-lean 
+@endif fixincludes
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-gas ] || \
 	  mkdir stagefeedback-gas; \
@@ -46155,6 +46654,12 @@ stagefeedback-end::
 	  mv prev-binutils stageprofile-binutils ; :  ; \
 	fi
 @endif binutils
+@if fixincludes
+	@if test -d $(HOST_SUBDIR)/fixincludes ; then \
+	  cd $(HOST_SUBDIR); mv fixincludes stagefeedback-fixincludes ; \
+	  mv prev-fixincludes stageprofile-fixincludes ; :  ; \
+	fi
+@endif fixincludes
 @if gas
 	@if test -d $(HOST_SUBDIR)/gas ; then \
 	  cd $(HOST_SUBDIR); mv gas stagefeedback-gas ; \
@@ -46652,6 +47157,13 @@ all-stage4-gcc: maybe-all-stage4-libiberty
 all-stageprofile-gcc: maybe-all-stageprofile-libiberty
 all-stagefeedback-gcc: maybe-all-stagefeedback-libiberty
 all-gcc: maybe-all-fixincludes
+
+all-stage1-gcc: maybe-all-stage1-fixincludes
+all-stage2-gcc: maybe-all-stage2-fixincludes
+all-stage3-gcc: maybe-all-stage3-fixincludes
+all-stage4-gcc: maybe-all-stage4-fixincludes
+all-stageprofile-gcc: maybe-all-stageprofile-fixincludes
+all-stagefeedback-gcc: maybe-all-stagefeedback-fixincludes
 all-gcc: maybe-all-lto-plugin
 
 all-stage1-gcc: maybe-all-stage1-lto-plugin
@@ -46729,6 +47241,13 @@ all-stage4-libcpp: maybe-all-stage4-intl
 all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
+
+all-stage1-fixincludes: maybe-all-stage1-libiberty
+all-stage2-fixincludes: maybe-all-stage2-libiberty
+all-stage3-fixincludes: maybe-all-stage3-libiberty
+all-stage4-fixincludes: maybe-all-stage4-libiberty
+all-stageprofile-fixincludes: maybe-all-stageprofile-libiberty
+all-stagefeedback-fixincludes: maybe-all-stagefeedback-libiberty
 all-gnattools: maybe-all-target-libada
 all-lto-plugin: maybe-all-libiberty
 

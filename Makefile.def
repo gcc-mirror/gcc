@@ -39,7 +39,7 @@ host_modules= { module= cgen; };
 host_modules= { module= dejagnu; };
 host_modules= { module= etc; };
 host_modules= { module= fastjar; no_check_cross= true; };
-host_modules= { module= fixincludes;
+host_modules= { module= fixincludes; bootstrap=true;
 		missing= TAGS; };
 host_modules= { module= flex; no_check_cross= true; };
 host_modules= { module= gas; bootstrap=true; };
