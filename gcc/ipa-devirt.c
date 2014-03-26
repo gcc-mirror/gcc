@@ -1261,7 +1261,7 @@ get_polymorphic_call_info (tree fndecl,
 	    }
 
 	  /* If the function is constructor or destructor, then
-	     the type is possibly in consturction, but we know
+	     the type is possibly in construction, but we know
 	     it is not derived type.  */
 	  if (DECL_CXX_CONSTRUCTOR_P (fndecl)
 	      || DECL_CXX_DESTRUCTOR_P (fndecl))

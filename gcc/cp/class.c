@@ -9017,6 +9017,16 @@ build_vtbl_initializer (tree binfo,
 	      if (!TARGET_VTABLE_USES_DESCRIPTORS)
 		init = fold_convert (vfunc_ptr_type_node,
 				     build_fold_addr_expr (fn));
+	      /* Don't refer to a virtual destructor from a constructor
+		 vtable or a vtable for an abstract class, since destroying
+		 an object under construction is undefined behavior and we
+		 don't want it to be considered a candidate for speculative
+		 devirtualization.  But do create the thunk for ABI
+		 compliance.  */
+	      if (DECL_DESTRUCTOR_P (fn_original)
+		  && (CLASSTYPE_PURE_VIRTUALS (DECL_CONTEXT (fn_original))
+		      || orig_binfo != binfo))
+		init = size_zero_node;
 	    }
 	}
 
