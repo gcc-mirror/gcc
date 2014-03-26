@@ -1,5 +1,10 @@
 2014-03-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60566
+	PR c++/58678
+	* class.c (build_vtbl_initializer): Handle abstract dtors here.
+	* search.c (get_pure_virtuals): Not here.
+
 	PR c++/60375
 	* parser.c (cp_parser_lambda_expression): Don't parse the body of
 	a lambda in unevaluated context.
