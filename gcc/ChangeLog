@@ -1,3 +1,7 @@
+2014-03-26  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* doc/contrib.texi: Add myself as Andes nds32 port contributor.
+
 2014-03-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60315
