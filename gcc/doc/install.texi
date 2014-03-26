@@ -3144,6 +3144,10 @@ information have to.
 @item
 @uref{#mips-sgi-irix6,,mips-sgi-irix6}
 @item
+@uref{#nds32le-x-elf,,nds32le-*-elf}
+@item
+@uref{#nds32be-x-elf,,nds32be-*-elf}
+@item
 @uref{#powerpc-x-x,,powerpc*-*-*}
 @item
 @uref{#powerpc-x-darwin,,powerpc-*-darwin*}
@@ -4096,6 +4100,20 @@ The moxie processor.
 @heading msp430-*-elf
 TI MSP430 processor.
 This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
+@anchor{nds32le-x-elf}
+@heading nds32le-*-elf
+Andes NDS32 target in little endian mode.
+
+@html
+<hr />
+@end html
+@anchor{nds32be-x-elf}
+@heading nds32be-*-elf
+Andes NDS32 target in big endian mode.
 
 @html
 <hr />
