@@ -2003,6 +2003,7 @@ code that uses them running with the GNU Fortran compiler.
 @c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
+* Volatile COMMON blocks::
 @end menu
 
 
@@ -2195,6 +2196,18 @@ complex functions with the syntax @code{COMPLEX FUNCTION name*16()}, as
 well as @code{COMPLEX*16 FUNCTION name()}.  Both are non-standard, legacy
 extensions.  @command{gfortran} accepts the latter form, which is more
 common, but not the former.
+
+
+@node Volatile COMMON blocks
+@subsection Volatile @code{COMMON} blocks
+@cindex @code{VOLATILE}
+@cindex @code{COMMON}
+
+Some Fortran compilers, including @command{g77}, let the user declare
+@code{COMMON} with the @code{VOLATILE} attribute. This is
+invalid standard Fortran syntax and is not supported by
+@command{gfortran}.  Note that @command{gfortran} accepts
+@code{VOLATILE} variables in @code{COMMON} blocks since revision 4.3.
 
 
 
