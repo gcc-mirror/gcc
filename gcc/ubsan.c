@@ -737,6 +737,21 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
       gimple_call_set_lhs (g, lhs);
       gsi_replace (&gsi, g, false);
       break;
+    case ABS_EXPR:
+      /* Transform i = ABS_EXPR<u>;
+	 into
+	 _N = UBSAN_CHECK_SUB (0, u);
+	 i = ABS_EXPR<_N>;  */
+      a = build_int_cst (lhstype, 0);
+      b = gimple_assign_rhs1 (stmt);
+      g = gimple_build_call_internal (IFN_UBSAN_CHECK_SUB, 2, a, b);
+      a = make_ssa_name (lhstype, NULL);
+      gimple_call_set_lhs (g, a);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      gimple_assign_set_rhs1 (stmt, a);
+      update_stmt (stmt);
+      break;
     default:
       break;
     }

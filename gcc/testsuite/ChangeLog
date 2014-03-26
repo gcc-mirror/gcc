@@ -1,3 +1,8 @@
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60636
+	* c-c++-common/ubsan/pr60636.c: New test.
+
 2014-03-26  Andreas Schwab  <schwab@suse.de>
 
 	* g++.dg/torture/pr60315.C: Remove duplication.

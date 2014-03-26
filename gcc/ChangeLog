@@ -1,5 +1,8 @@
 2014-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/60636
+	* ubsan.c (instrument_si_overflow): Instrument ABS_EXPR.
+
 	* tree-vrp.c (simplify_internal_call_using_ranges): If only
 	one range is range_int_cst_p, but not both, at least optimize
 	addition/subtraction of 0 and multiplication by 0 or 1.
