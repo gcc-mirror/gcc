@@ -1,3 +1,8 @@
+2014-03-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (percent_K_format): Implement special
+	case for LTO and its stripped down BLOCK tree.
+
 2014-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60636
