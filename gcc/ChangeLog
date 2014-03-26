@@ -1,5 +1,11 @@
 2014-03-26  Marek Polacek  <polacek@redhat.com>
 
+	PR c/39525
+	* doc/extend.texi (Designated Inits): Describe what happens to omitted
+	field members.
+
+2014-03-26  Marek Polacek  <polacek@redhat.com>
+
 	PR other/59545
 	* ira-color.c (update_conflict_hard_regno_costs): Perform the
 	multiplication in unsigned type.

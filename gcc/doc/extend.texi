@@ -1967,6 +1967,9 @@ Another syntax that has the same meaning, obsolete since GCC 2.5, is
 struct point p = @{ y: yvalue, x: xvalue @};
 @end smallexample
 
+Omitted field members are implicitly initialized the same as objects
+that have static storage duration.
+
 @cindex designators
 The @samp{[@var{index}]} or @samp{.@var{fieldname}} is known as a
 @dfn{designator}.  You can also use a designator (or the obsolete colon
