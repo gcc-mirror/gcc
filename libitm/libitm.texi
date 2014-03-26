@@ -69,7 +69,7 @@ several threads.
 * Internals::                  Notes on libitm's internal synchronization.
 * GNU Free Documentation License::
                                How you can copy and share this manual.
-* Index::                      Index of this documentation.
+* Library Index::              Index of this documentation.
 @end menu
 
 
@@ -766,8 +766,8 @@ priority inheritance until the TM has priority-aware contention management.
 @c Index
 @c ---------------------------------------------------------------------
 
-@node Index
-@unnumbered Index
+@node Library Index
+@unnumbered Library Index
 
 @printindex cp
 
