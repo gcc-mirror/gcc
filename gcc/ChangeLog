@@ -1,3 +1,8 @@
+2014-03-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-pure-const.c (propagate_pure_const, propagate_nothrow):
+	Do not modify inline clones.
+
 2014-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (general_sext_operand): New mode attr.
