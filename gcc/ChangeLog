@@ -1,3 +1,13 @@
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vrp.c (simplify_internal_call_using_ranges): If only
+	one range is range_int_cst_p, but not both, at least optimize
+	addition/subtraction of 0 and multiplication by 0 or 1.
+	* gimple-fold.c (gimple_fold_call): Fold
+	IFN_UBSAN_CHECK_{ADD,SUB,MUL}.
+	(gimple_fold_stmt_to_constant_1): If both op0 and op1 aren't
+	INTEGER_CSTs, try to fold at least x * 0 and y - y.
+
 2014-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/60452
