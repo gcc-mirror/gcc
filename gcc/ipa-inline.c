@@ -1685,7 +1685,7 @@ inline_small_functions (void)
       edge = (struct cgraph_edge *) fibheap_extract_min (edge_heap);
       gcc_assert (edge->aux);
       edge->aux = NULL;
-      if (!edge->inline_failed)
+      if (!edge->inline_failed || !edge->callee->analyzed)
 	continue;
 
       /* Be sure that caches are maintained consistent.  
