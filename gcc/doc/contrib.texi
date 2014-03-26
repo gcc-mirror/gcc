@@ -1050,6 +1050,9 @@ Carlo Wood for various fixes.
 Tom Wood for work on the m88k port.
 
 @item
+Chung-Ju Wu for his work on the Andes NDS32 port.
+
+@item
 Canqun Yang for work on GNU Fortran.
 
 @item
