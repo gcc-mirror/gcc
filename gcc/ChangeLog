@@ -1,3 +1,8 @@
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/59545
+	* real.c (real_to_integer2): Change type of low to UHWI.
+
 2014-03-26  Tobias Burnus  <burnus@net-b.de>
 
 	* gcc.c (LINK_COMMAND_SPEC): Use libcilkrts.spec for -fcilkplus.

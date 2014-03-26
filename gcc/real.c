@@ -1377,7 +1377,8 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
 		  const REAL_VALUE_TYPE *r)
 {
   REAL_VALUE_TYPE t;
-  HOST_WIDE_INT low, high;
+  unsigned HOST_WIDE_INT low;
+  HOST_WIDE_INT high;
   int exp;
 
   switch (r->cl)
