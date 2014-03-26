@@ -1,3 +1,9 @@
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/futex_bits.h: Include errno.h.
+	(sys_futex0): If syscall returns -1, return -errno rather than
+	-1.
+
 2014-03-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* libitm.texi (Index): Rename to Library Index.
