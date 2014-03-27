@@ -1027,7 +1027,10 @@ s390-*-linux*)
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-*-linux*)
-	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux"
+	if test "${host_address}" = 32; then
+	   tmake_file="${tmake_file} s390/32/t-floattodi"
+	fi
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-ibm-tpf*)
