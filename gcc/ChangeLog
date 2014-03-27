@@ -1,3 +1,8 @@
+2014-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_can_use_return_insn): Check for
+	call-saved FPRs on 31 bit.
+
 2014-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/60682
