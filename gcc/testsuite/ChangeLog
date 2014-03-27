@@ -1,3 +1,8 @@
+2014-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60650
+	* gcc.target/arm/pr60650.c: New.
+
 2014-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/20140327-1.c: New testcase.
