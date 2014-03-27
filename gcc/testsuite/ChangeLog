@@ -1,3 +1,17 @@
+2014-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-vbpermq.c: New test to test the
+	vbpermq builtin.
+
+	* gcc.target/powerpc/vsx-extract-1.c: New test to test VSX
+	vec_select optimizations.
+	* gcc.target/powerpc/vsx-extract-2.c: Likewise.
+	* gcc.target/powerpc/vsx-extract-3.c: Likewise.
+
+	PR target/60672
+	* gcc.target/powerpc/pr60676.c: New file, make sure xxsldwi and
+	xxpermdi builtins are supported.
+
 2014-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60650

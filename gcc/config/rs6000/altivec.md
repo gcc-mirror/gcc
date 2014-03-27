@@ -142,6 +142,7 @@
    UNSPEC_VSUBCUQ
    UNSPEC_VSUBEUQM
    UNSPEC_VSUBECUQ
+   UNSPEC_VBPERMQ
 ])
 
 (define_c_enum "unspecv"
@@ -3322,3 +3323,14 @@
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
 
+;; We use V2DI as the output type to simplify converting the permute
+;; bits into an integer
+(define_insn "altivec_vbpermq"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(unspec:V2DI [(match_operand:V16QI 1 "register_operand" "v")
+		      (match_operand:V16QI 2 "register_operand" "v")]
+		     UNSPEC_VBPERMQ))]
+  "TARGET_P8_VECTOR"
+  "vbpermq %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])

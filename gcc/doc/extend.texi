@@ -14859,6 +14859,35 @@ void vec_vsx_st (vector unsigned char, int, unsigned char *);
 void vec_vsx_st (vector bool char, int, vector bool char *);
 void vec_vsx_st (vector bool char, int, unsigned char *);
 void vec_vsx_st (vector bool char, int, signed char *);
+
+vector double vec_xxpermdi (vector double, vector double, int);
+vector float vec_xxpermdi (vector float, vector float, int);
+vector long long vec_xxpermdi (vector long long, vector long long, int);
+vector unsigned long long vec_xxpermdi (vector unsigned long long,
+                                        vector unsigned long long, int);
+vector int vec_xxpermdi (vector int, vector int, int);
+vector unsigned int vec_xxpermdi (vector unsigned int,
+                                  vector unsigned int, int);
+vector short vec_xxpermdi (vector short, vector short, int);
+vector unsigned short vec_xxpermdi (vector unsigned short,
+                                    vector unsigned short, int);
+vector signed char vec_xxpermdi (vector signed char, vector signed char, int);
+vector unsigned char vec_xxpermdi (vector unsigned char,
+                                   vector unsigned char, int);
+
+vector double vec_xxsldi (vector double, vector double, int);
+vector float vec_xxsldi (vector float, vector float, int);
+vector long long vec_xxsldi (vector long long, vector long long, int);
+vector unsigned long long vec_xxsldi (vector unsigned long long,
+                                      vector unsigned long long, int);
+vector int vec_xxsldi (vector int, vector int, int);
+vector unsigned int vec_xxsldi (vector unsigned int, vector unsigned int, int);
+vector short vec_xxsldi (vector short, vector short, int);
+vector unsigned short vec_xxsldi (vector unsigned short,
+                                  vector unsigned short, int);
+vector signed char vec_xxsldi (vector signed char, vector signed char, int);
+vector unsigned char vec_xxsldi (vector unsigned char,
+                                 vector unsigned char, int);
 @end smallexample
 
 Note that the @samp{vec_ld} and @samp{vec_st} built-in functions always
