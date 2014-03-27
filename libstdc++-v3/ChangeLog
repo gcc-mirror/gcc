@@ -15,6 +15,8 @@
 	* doc/xml/manual/numerics.xml (std.numerics.generalized_ops): Likewise.
 	* doc/xml/manual/strings.xml (strings.string.Cstring): Likewise.
 
+	* doc/html/*: Regenerate.
+
 2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60612

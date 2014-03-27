@@ -6,7 +6,7 @@
     Standard Contents
   </th><td width="20%" align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings"></a>Chapter 7. 
   Strings
-  <a id="idm234603301312" class="indexterm"></a>
+  <a id="idm269891723120" class="indexterm"></a>
 </h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="strings.html#std.strings.string">String Classes</a></span></dt><dd><dl><dt><span class="section"><a href="strings.html#strings.string.simple">Simple Transformations</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.case">Case Sensitivity</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.character_types">Arbitrary Character Types</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.token">Tokenizing</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.shrink">Shrink to Fit</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.Cstring">CString (MFC)</a></span></dt></dl></dd></dl></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.strings.string"></a>String Classes</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.simple"></a>Simple Transformations</h3></div></div></div><p>
       Here are Standard, simple, and portable ways to perform common
       transformations on a <code class="code">string</code> instance, such as
@@ -350,7 +350,7 @@ stringtok(Container &amp;container, string const &amp;in,
 	 </p></li><li class="listitem"><p><code class="code">string</code> operations like this have O(n) complexity
 	     <span class="emphasis"><em>if the implementors do it correctly</em></span>.  The libstdc++
 	     implementors did it correctly.  Other vendors might not.
-	 </p></li><li class="listitem"><p>While chapters of the SGI STL are used in libstdc++, their
+	 </p></li><li class="listitem"><p>While parts of the SGI STL are used in libstdc++, their
 	     string class is not.  The SGI <code class="code">string</code> is essentially
 	     <code class="code">vector&lt;char&gt;</code> and does not do any reference
 	     counting like libstdc++'s does.  (It is O(n), though.)

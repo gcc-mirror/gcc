@@ -21,7 +21,7 @@
       of "output_file" may surprise you.
    </p><p>Seriously, go do it.  Get surprised, then come back.  It's worth it.
    </p><p>The thing to remember is that the <code class="code">basic_[io]stream</code> classes
-      handle formatting, nothing else.  In chaptericular, they break up on
+      handle formatting, nothing else.  In particular, they break up on
       whitespace.  The actual reading, writing, and storing of data is
       handled by the <code class="code">basic_streambuf</code> family.  Fortunately, the
       <code class="code">operator&lt;&lt;</code> is overloaded to take an ostream and
@@ -36,7 +36,7 @@
       way to copy the file is:
    </p><pre class="programlisting">
    OUT &lt;&lt; IN.rdbuf();</pre><p>So what <span class="emphasis"><em>was</em></span> happening with OUT&lt;&lt;IN?  Undefined
-      behavior, since that chaptericular &lt;&lt; isn't defined by the Standard.
+      behavior, since that particular &lt;&lt; isn't defined by the Standard.
       I have seen instances where it is implemented, but the character
       extraction process removes all the whitespace, leaving you with no
       blank lines and only "Thequickbrownfox...".  With
