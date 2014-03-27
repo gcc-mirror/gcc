@@ -1,3 +1,8 @@
+2014-03-26  Dehao Chen  <dehao@google.com>
+
+	* dojump.c (do_compare_rtx_and_jump): Sets correct probability for
+	compiler inserted conditional jumps for NAN float check.
+
 2014-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* ubsan.h (ubsan_create_data): Change second argument's type

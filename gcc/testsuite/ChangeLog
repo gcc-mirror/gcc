@@ -1,3 +1,7 @@
+2014-03-26  Dehao Chen  <dehao@google.com>
+
+	* gcc.dg/predict-8.c: New test.
+
 2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
 
         PR c++/52369
