@@ -9,6 +9,12 @@
 	Likewise.
 	* doc/xml/manual/test.xml (test.organization.layout): Likewise.
 
+	* doc/xml/manual/containers.xml (associative.bitset.size_variable):
+	Fix bad s/part/chapter/ substitutions.
+	* doc/xml/manual/io.xml (std.io): Likewise.
+	* doc/xml/manual/numerics.xml (std.numerics.generalized_ops): Likewise.
+	* doc/xml/manual/strings.xml (strings.string.Cstring): Likewise.
+
 2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60612
