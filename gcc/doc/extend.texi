@@ -15075,6 +15075,9 @@ vector unsigned long long vec_vaddudm (vector bool unsigned long long,
 vector unsigned long long vec_vaddudm (vector unsigned long long,
                                        vector bool unsigned long long);
 
+vector long long vec_vbpermq (vector signed char, vector signed char);
+vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
+
 vector long long vec_vclz (vector long long);
 vector unsigned long long vec_vclz (vector unsigned long long);
 vector int vec_vclz (vector int);

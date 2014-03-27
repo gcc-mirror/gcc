@@ -37,6 +37,9 @@
 	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wD
 	constraint.
 
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document vec_vbpermq builtin.
+
 	PR target/60672
 	* config/rs6000/altivec.h (vec_xxsldwi): Add missing define to
 	enable use of xxsldwi and xxpermdi builtin functions.
