@@ -1,3 +1,13 @@
+2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60612
+	* libsupc++/eh_ptr.cc: Assert __cxa_dependent_exception layout is
+	compatible with __cxa_exception.
+	* libsupc++/unwind-cxx.h (__cxa_dependent_exception): Add padding.
+	Fix typos in comments.
+	* testsuite/18_support/exception_ptr/60612-terminate.cc: New.
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc: New.
+
 2014-03-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60658
