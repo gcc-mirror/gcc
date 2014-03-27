@@ -1,3 +1,8 @@
+2014-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.host: Append t-floattodi to tmake_file depending on
+	host_address.
+
 2014-03-20  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.host (v850*-*-*): Add to tmake_file instead of resetting it.
