@@ -1,3 +1,8 @@
+2014-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58880
+	* gfortran.dg/finalize_24.f90: New.
+
 2014-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-vbpermq.c: New test to test the
@@ -43,8 +48,8 @@
 
 2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
 
-        PR c++/52369
-        * g++.dg/init/const10.C: New.
+	PR c++/52369
+	* g++.dg/init/const10.C: New.
 	* g++.dg/init/const11.C: New.
 	* g++.dg/init/pr25811.C: Adjust.
 	* g++.dg/init/pr29043.C: Likewise.

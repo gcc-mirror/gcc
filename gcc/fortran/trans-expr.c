@@ -69,14 +69,16 @@ gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
   type = get_scalar_to_descriptor_type (scalar, attr);
   desc = gfc_create_var (type, "desc");
   DECL_ARTIFICIAL (desc) = 1;
+
+  if (!POINTER_TYPE_P (TREE_TYPE (scalar)))
+    scalar = gfc_build_addr_expr (NULL_TREE, scalar);
   gfc_add_modify (&se->pre, gfc_conv_descriptor_dtype (desc),
 		  gfc_get_dtype (type));
   gfc_conv_descriptor_data_set (&se->pre, desc, scalar);
 
   /* Copy pointer address back - but only if it could have changed and
      if the actual argument is a pointer and not, e.g., NULL().  */
-  if ((attr.pointer || attr.allocatable)
-       && attr.intent != INTENT_IN && POINTER_TYPE_P (TREE_TYPE (scalar)))
+  if ((attr.pointer || attr.allocatable) && attr.intent != INTENT_IN)
     gfc_add_modify (&se->post, scalar,
 		    fold_convert (TREE_TYPE (scalar),
 				  gfc_conv_descriptor_data_get (desc)));

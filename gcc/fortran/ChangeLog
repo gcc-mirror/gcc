@@ -1,3 +1,9 @@
+2014-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58880
+	* trans-expr.c (gfc_conv_scalar_to_descriptor): Fix handling
+	of nonpointers.
+
 2014-03-26 Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/34928
