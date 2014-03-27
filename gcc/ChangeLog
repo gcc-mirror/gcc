@@ -1,3 +1,12 @@
+2014-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60650
+	* lra-asign.c (find_hard_regno_for, spill_for): Add parameter
+	first_p.  Use it.
+	(find_spills_for): New.
+	(assign_by_spills): Pass the new parameter to find_hard_regno_for.
+	Spill all pseudos on the second iteration.
+
 2014-03-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/50347
