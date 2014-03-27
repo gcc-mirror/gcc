@@ -2162,6 +2162,9 @@ VSX vector register to hold scalar float values or NO_REGS.
 @item wz
 Floating point register if the LFIWZX instruction is enabled or NO_REGS.
 
+@item wD
+Int constant that is the element number of the 64-bit scalar in a vector.
+
 @item wQ
 A memory address that will work with the @code{lq} and @code{stq}
 instructions.

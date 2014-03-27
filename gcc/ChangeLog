@@ -1,3 +1,50 @@
+2014-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md (wD constraint): New constraint to
+	match the constant integer to get the top DImode/DFmode out of a
+	vector in a VSX register.
+
+	* config/rs6000/predicates.md (vsx_scalar_64bit): New predicate to
+	match the constant integer to get the top DImode/DFmode out of a
+	vector in a VSX register.
+
+	* config/rs6000/rs6000-builtins.def (VBPERMQ): Add vbpermq builtin
+	for ISA 2.07.
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	vbpermq builtins.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): If
+	-mdebug=reg, print value of VECTOR_ELEMENT_SCALAR_64BIT.
+
+	* config/rs6000/vsx.md (vsx_extract_<mode>, V2DI/V2DF modes):
+	Optimize vec_extract of 64-bit values, where the value being
+	extracted is in the top word, where we can use scalar
+	instructions.  Add direct move and store support.  Combine the big
+	endian/little endian vector select load support into a single
+	insn.
+	(vsx_extract_<mode>_internal1): Likewise.
+	(vsx_extract_<mode>_internal2): Likewise.
+	(vsx_extract_<mode>_load): Likewise.
+	(vsx_extract_<mode>_store): Likewise.
+	(vsx_extract_<mode>_zero): Delete, big and little endian insns are
+	combined into vsx_extract_<mode>_load.
+	(vsx_extract_<mode>_one_le): Likewise.
+
+	* config/rs6000/rs6000.h (VECTOR_ELEMENT_SCALAR_64BIT): Macro to
+	define the top 64-bit vector element.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wD
+	constraint.
+
+	PR target/60672
+	* config/rs6000/altivec.h (vec_xxsldwi): Add missing define to
+	enable use of xxsldwi and xxpermdi builtin functions.
+	(vec_xxpermdi): Likewise.
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document use of vec_xxsldwi and vec_xxpermdi builtins.
+
 2014-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60650

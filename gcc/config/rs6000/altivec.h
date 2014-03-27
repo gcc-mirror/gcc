@@ -319,6 +319,11 @@
 #define vec_sqrt __builtin_vec_sqrt
 #define vec_vsx_ld __builtin_vec_vsx_ld
 #define vec_vsx_st __builtin_vec_vsx_st
+
+/* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
+   instead of __builtin_vec_<xxx>  */
+#define vec_xxsldwi __builtin_vsx_xxsldwi
+#define vec_xxpermdi __builtin_vsx_xxpermdi
 #endif
 
 #ifdef _ARCH_PWR8
@@ -329,6 +334,7 @@
 #define vec_vaddcuq __builtin_vec_vaddcuq
 #define vec_vaddudm __builtin_vec_vaddudm
 #define vec_vadduqm __builtin_vec_vadduqm
+#define vec_vbpermq __builtin_vec_vbpermq
 #define vec_vclz __builtin_vec_vclz
 #define vec_vclzb __builtin_vec_vclzb
 #define vec_vclzd __builtin_vec_vclzd
