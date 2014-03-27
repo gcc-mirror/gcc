@@ -21,17 +21,21 @@
 
    <para>To minimize the time you have to wait on the compiler, it's good to
       only include the headers you really need.  Many people simply include
-      &lt;iostream&gt; when they don't need to -- and that can <emphasis>penalize
-      your runtime as well.</emphasis>  Here are some tips on which header to use
+      <filename class="headerfile">&lt;iostream&gt;</filename> when they don't
+      need to -- and that can <emphasis>penalize your runtime as well.</emphasis>
+      Here are some tips on which header to use
       for which situations, starting with the simplest.
    </para>
-   <para><emphasis>&lt;iosfwd&gt;</emphasis> should be included whenever you simply
-      need the <emphasis>name</emphasis> of an I/O-related class, such as
-      "ofstream" or "basic_streambuf".  Like the name
-      implies, these are forward declarations.  (A word to all you fellow
-      old school programmers:  trying to forward declare classes like
-      "class istream;" won't work.  Look in the iosfwd header if
-      you'd like to know why.)  For example,
+   <para><emphasis><filename class="headerfile">&lt;iosfwd&gt;</filename></emphasis>
+      should be included whenever you simply need the <emphasis>name</emphasis>
+      of an I/O-related class, such as "<classname>ofstream</classname>" or
+      "<classname>basic_streambuf</classname>".
+      Like the name implies, these are forward declarations.
+      (A word to all you fellow old school programmers:
+      trying to forward declare classes like "<code>class istream;</code>"
+      won't work.
+      Look in the <filename class="headerfile">&lt;iosfwd&gt;</filename> header
+      if you'd like to know why.)  For example,
    </para>
    <programlisting>
     #include &lt;iosfwd&gt;
@@ -44,33 +48,43 @@
 
     extern std::ostream&amp; operator&lt;&lt; (std::ostream&amp;, MyClass&amp;);
    </programlisting>
-   <para><emphasis>&lt;ios&gt;</emphasis> declares the base classes for the entire
-      I/O stream hierarchy, std::ios_base and std::basic_ios&lt;charT&gt;, the
-      counting types std::streamoff and std::streamsize, the file
-      positioning type std::fpos, and the various manipulators like
-      std::hex, std::fixed, std::noshowbase, and so forth.
+   <para><emphasis><filename class="headerfile">&lt;ios&gt;</filename></emphasis>
+      declares the base classes for the entire I/O stream hierarchy,
+      <classname>std::ios_base</classname> and <classname>std::basic_ios&lt;charT&gt;</classname>,
+      the counting types <type>std::streamoff</type> and <type>std::streamsize</type>,
+      the file positioning type <type>std::fpos</type>,
+      and the various manipulators like <function>std::hex</function>,
+      <function>std::fixed</function>, <function>std::noshowbase</function>,
+      and so forth.
    </para>
-   <para>The ios_base class is what holds the format flags, the state flags,
-      and the functions which change them (setf(), width(), precision(),
-      etc).  You can also store extra data and register callback functions
-      through ios_base, but that has been historically underused.  Anything
+   <para>The <classname>ios_base</classname> class is what holds the format
+      flags, the state flags, and the functions which change them
+      (<function>setf()</function>, <function>width()</function>,
+      <function>precision()</function>, etc).
+      You can also store extra data and register callback functions
+      through <classname>ios_base</classname>, but that has been historically
+      underused.  Anything
       which doesn't depend on the type of characters stored is consolidated
       here.
    </para>
-   <para>The template class basic_ios is the highest template class in the
+   <para>The class template <classname>basic_ios</classname> is the highest
+      class template in the
       hierarchy; it is the first one depending on the character type, and
       holds all general state associated with that type:  the pointer to the
       polymorphic stream buffer, the facet information, etc.
    </para>
-   <para><emphasis>&lt;streambuf&gt;</emphasis> declares the template class
-      basic_streambuf, and two standard instantiations, streambuf and
-      wstreambuf.  If you need to work with the vastly useful and capable
-      stream buffer classes, e.g., to create a new form of storage
+   <para><emphasis><filename class="headerfile">&lt;streambuf&gt;</filename></emphasis>
+      declares the class template <classname>basic_streambuf</classname>, and
+      two standard instantiations, <type>streambuf</type> and
+      <type>wstreambuf</type>.  If you need to work with the vastly useful and
+      capable stream buffer classes, e.g., to create a new form of storage
       transport, this header is the one to include.
    </para>
-   <para><emphasis>&lt;istream&gt;</emphasis>/<emphasis>&lt;ostream&gt;</emphasis> are
-      the headers to include when you are using the &gt;&gt;/&lt;&lt;
-      interface, or any of the other abstract stream formatting functions.
+   <para><emphasis><filename class="headerfile">&lt;istream&gt;</filename></emphasis>
+       and <emphasis><filename class="headerfile">&lt;ostream&gt;</filename></emphasis>
+       are the headers to include when you are using the overloaded
+      <code>&gt;&gt;</code> and <code>&lt;&lt;</code> operators,
+      or any of the other abstract stream formatting functions.
       For example,
    </para>
    <programlisting>
@@ -81,25 +95,33 @@
        return os &lt;&lt; c.data1() &lt;&lt; c.data2();
     }
    </programlisting>
-   <para>The std::istream and std::ostream classes are the abstract parents of
+   <para>The <type>std::istream</type> and <type>std::ostream</type> classes
+      are the abstract parents of
       the various concrete implementations.  If you are only using the
       interfaces, then you only need to use the appropriate interface header.
    </para>
-   <para><emphasis>&lt;iomanip&gt;</emphasis> provides "extractors and inserters
-      that alter information maintained by class ios_base and its derived
-      classes," such as std::setprecision and std::setw.  If you need
+   <para><emphasis><filename class="headerfile">&lt;iomanip&gt;</filename></emphasis>
+      provides "extractors and inserters that alter information maintained by
+      class <classname>ios_base</classname> and its derived classes,"
+      such as <function>std::setprecision</function> and
+      <function>std::setw</function>.  If you need
       to write expressions like <code>os &lt;&lt; setw(3);</code> or
-      <code>is &gt;&gt; setbase(8);</code>, you must include &lt;iomanip&gt;.
+      <code>is &gt;&gt; setbase(8);</code>, you must include
+      <filename class="headerfile">&lt;iomanip&gt;</filename>.
    </para>
-   <para><emphasis>&lt;sstream&gt;</emphasis>/<emphasis>&lt;fstream&gt;</emphasis>
+   <para><emphasis><filename class="headerfile">&lt;sstream&gt;</filename></emphasis>
+      and <emphasis><filename class="headerfile">&lt;fstream&gt;</filename></emphasis>
       declare the six stringstream and fstream classes.  As they are the
-      standard concrete descendants of istream and ostream, you will already
-      know about them.
+      standard concrete descendants of <type>istream</type> and <type>ostream</type>,
+      you will already know about them.
    </para>
-   <para>Finally, <emphasis>&lt;iostream&gt;</emphasis> provides the eight standard
-      global objects (cin, cout, etc).  To do this correctly, this header
-      also provides the contents of the &lt;istream&gt; and &lt;ostream&gt;
-      headers, but nothing else.  The contents of this header look like
+   <para>Finally, <emphasis><filename class="headerfile">&lt;iostream&gt;</filename></emphasis>
+      provides the eight standard global objects
+      (<code>cin</code>, <code>cout</code>, etc).  To do this correctly, this
+      header also provides the contents of the
+      <filename class="headerfile">&lt;istream&gt;</filename> and
+      <filename class="headerfile">&lt;ostream&gt;</filename>
+      headers, but nothing else.  The contents of this header look like:
    </para>
    <programlisting>
     #include &lt;ostream&gt;
@@ -119,7 +141,8 @@
       must be initialized before any of your own code uses them; this is
       guaranteed by the standard.  Like any other global object, they must
       be initialized once and only once.  This is typically done with a
-      construct like the one above, and the nested class ios_base::Init is
+      construct like the one above, and the nested class
+      <classname>ios_base::Init</classname> is
       specified in the standard for just this reason.
    </para>
    <para>How does it work?  Because the header is included before any of your
@@ -129,9 +152,10 @@
       constructor runs, the eight stream objects are set up.
    </para>
    <para>The <code>static</code> keyword means that each object file compiled
-      from a source file containing &lt;iostream&gt; will have its own
+      from a source file containing
+      <filename class="headerfile">&lt;iostream&gt;</filename> will have its own
       private copy of <emphasis>__foo</emphasis>.  There is no specified order
-      of construction across object files (it's one of those pesky NP
+      of construction across object files (it's one of those pesky NP complete
       problems that make life so interesting), so one copy in each object
       file means that the stream objects are guaranteed to be set up before
       any of your code which uses them could run, thereby meeting the
@@ -143,7 +167,9 @@
       inside a function call, but over several dozen or hundreds of object
       files, that time can add up.  (It's not in a tight loop, either.)
    </para>
-   <para>The lesson?  Only include &lt;iostream&gt; when you need to use one of
+   <para>The lesson?  Only include
+      <filename class="headerfile">&lt;iostream&gt;</filename> when you need
+      to use one of
       the standard objects in that source file; you'll pay less startup
       time.  Only include the header files you need to in general; your
       compile times will go down when there's less parsing work to do.
@@ -214,7 +240,7 @@
     }
    </programlisting>
    <para>Try it yourself!  More examples can be found in 3.1.x code, in
-      <code>include/ext/*_filebuf.h</code>, and in this article by James Kanze:
+      <filename>include/ext/*_filebuf.h</filename>, and in this article by James Kanze:
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://kanze.james.neuf.fr/articles/fltrsbf1.html">Filtering
       Streambufs</link>.
    </para>
