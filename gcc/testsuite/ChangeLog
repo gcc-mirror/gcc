@@ -1,3 +1,10 @@
+2014-03-27  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	PR target/60580
+	* gcc.target/aarch64/pr60580_1.c: New.
+	* gcc.target/aarch64/test_fp_attribute_1.c: New.
+	* gcc.target/aarch64/test_fp_attribute_2.c: New.
+
 2014-03-26  Dehao Chen  <dehao@google.com>
 
 	* gcc.dg/predict-8.c: New test.

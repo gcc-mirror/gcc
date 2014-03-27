@@ -315,10 +315,6 @@ static GTY(()) int gty_dummy;
 #define AARCH64_NUM_BITMASKS  5334
 static unsigned HOST_WIDE_INT aarch64_bitmasks[AARCH64_NUM_BITMASKS];
 
-/* Did we set flag_omit_frame_pointer just so
-   aarch64_frame_pointer_required would be called? */
-static bool faked_omit_frame_pointer;
-
 typedef enum aarch64_cond_code
 {
   AARCH64_EQ = 0, AARCH64_NE, AARCH64_CS, AARCH64_CC, AARCH64_MI, AARCH64_PL,
@@ -1694,17 +1690,15 @@ aarch64_frame_pointer_required (void)
   if (cfun->calls_alloca)
     return true;
 
-  /* We may have turned flag_omit_frame_pointer on in order to have this
-     function called; if we did, we also set the 'faked_omit_frame_pointer' flag
-     and we'll check it here.
-     If we really did set flag_omit_frame_pointer normally, then we return false
-     (no frame pointer required) in all cases.  */
+  /* In aarch64_override_options_after_change
+     flag_omit_leaf_frame_pointer turns off the frame pointer by
+     default.  Turn it back on now if we've not got a leaf
+     function.  */
+  if (flag_omit_leaf_frame_pointer
+      && (!crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM)))
+    return true;
 
-  if (flag_omit_frame_pointer && !faked_omit_frame_pointer)
-    return false;
-  else if (flag_omit_leaf_frame_pointer)
-    return !crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM);
-  return true;
+  return false;
 }
 
 /* Mark the registers that need to be saved by the callee and calculate
@@ -4132,23 +4126,8 @@ aarch64_can_eliminate (const int from, const int to)
 	return true;
       if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
 	return true;
-    return false;
-    }
-  else
-    {
-      /* If we decided that we didn't need a leaf frame pointer but then used
-	 LR in the function, then we'll want a frame pointer after all, so
-	 prevent this elimination to ensure a frame pointer is used.
 
-	 NOTE: the original value of flag_omit_frame_pointer gets trashed
-	 IFF flag_omit_leaf_frame_pointer is true, so we check the value
-	 of faked_omit_frame_pointer here (which is true when we always
-	 wish to keep non-leaf frame pointers but only wish to keep leaf frame
-	 pointers when LR is clobbered).  */
-      if (to == STACK_POINTER_REGNUM
-	  && df_regs_ever_live_p (LR_REGNUM)
-	  && faked_omit_frame_pointer)
-	return false;
+      return false;
     }
 
   return true;
@@ -5278,17 +5257,10 @@ aarch64_override_options (void)
 static void
 aarch64_override_options_after_change (void)
 {
-  faked_omit_frame_pointer = false;
-
-  /* To omit leaf frame pointers, we need to turn flag_omit_frame_pointer on so
-     that aarch64_frame_pointer_required will be called.  We need to remember
-     whether flag_omit_frame_pointer was turned on normally or just faked.  */
-
-  if (flag_omit_leaf_frame_pointer && !flag_omit_frame_pointer)
-    {
-      flag_omit_frame_pointer = true;
-      faked_omit_frame_pointer = true;
-    }
+  if (flag_omit_frame_pointer)
+    flag_omit_leaf_frame_pointer = false;
+  else if (flag_omit_leaf_frame_pointer)
+    flag_omit_frame_pointer = true;
 }
 
 static struct machine_function *

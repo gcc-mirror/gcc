@@ -1,3 +1,11 @@
+2014-03-27  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	PR target/60580
+	* config/aarch64/aarch64.c (faked_omit_frame_pointer): Remove.
+	(aarch64_frame_pointer_required): Adjust logic.
+	(aarch64_can_eliminate): Adjust logic.
+	(aarch64_override_options_after_change): Adjust logic.
+
 2014-03-27  Dehao Chen  <dehao@google.com>
 
 	* ipa-inline.c (early_inliner): Update node's inline info.
