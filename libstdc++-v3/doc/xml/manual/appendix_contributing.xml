@@ -1113,7 +1113,7 @@ indicate a place that may require attention for multi-thread safety.
 
     Fixing these cases will require an audit of all inline functions
     defined in the library to determine which merit inlining, and moving
-    the rest out of line. This is an issue mainly in chapters 23, 25, and
+    the rest out of line. This is an issue mainly in clauses 23, 25, and
     27. Of course it can be done incrementally, and we should generally
     accept patches that move large functions out of line and into ".tcc"
     files, which can later be pulled into a repository. Compiler/linker
@@ -1327,7 +1327,7 @@ indicate a place that may require attention for multi-thread safety.
     must be replaced with something more rationally behaved.)
 
     All the C headers need the treatment above; in the standard these
-    headers are mentioned in various chapters. Below, I have only
+    headers are mentioned in various clauses. Below, I have only
     mentioned those that present interesting implementation issues.
 
     The components identified as "mostly complete", below, have not been
@@ -1456,7 +1456,7 @@ indicate a place that may require attention for multi-thread safety.
     files to improve link-time behavior is extremely unsatisfactory,
     literally tripling library-build time with no commensurate improvement
     in static program link sizes. It must be redone. (Similar work is
-    needed for some components in chapters 22 and 27.)
+    needed for some components in clauses 22 and 27.)
 
     Other work needed for strings is MT-safety, as discussed under the
     chapter 20 heading.

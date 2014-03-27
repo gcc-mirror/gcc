@@ -28,7 +28,7 @@ regressions, ABI, and performance.
 <para>
   The directory <emphasis>libsrcdir/testsuite</emphasis> contains the
   individual test cases organized in sub-directories corresponding to
-  chapters of the C++ standard (detailed below), the dejagnu test
+  clauses of the C++ standard (detailed below), the dejagnu test
   harness support files, and sources to various testsuite utilities
   that are packaged in a separate testing library.
 </para>
