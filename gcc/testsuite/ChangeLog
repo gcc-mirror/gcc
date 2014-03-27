@@ -1,3 +1,7 @@
+2014-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/20140327-1.c: New testcase.
+
 2014-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/60682
