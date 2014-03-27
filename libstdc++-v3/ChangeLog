@@ -2,6 +2,13 @@
 
 	* doc/xml/manual/io.xml (std.io.objects): Additional markup.
 
+	* doc/xml/faq.xml (faq): Refer to clauses instead of chapters.
+	* doc/xml/manual/appendix_contributing.xml (contrib.design_notes):
+	Likewise.
+	* doc/xml/manual/backwards_compatibility.xml (backwards.third):
+	Likewise.
+	* doc/xml/manual/test.xml (test.organization.layout): Likewise.
+
 2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60612
