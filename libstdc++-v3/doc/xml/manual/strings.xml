@@ -462,7 +462,7 @@ stringtok(Container &amp;container, string const &amp;in,
 	     <emphasis>if the implementors do it correctly</emphasis>.  The libstdc++
 	     implementors did it correctly.  Other vendors might not.
 	 </para></listitem>
-	 <listitem><para>While chapters of the SGI STL are used in libstdc++, their
+	 <listitem><para>While parts of the SGI STL are used in libstdc++, their
 	     string class is not.  The SGI <code>string</code> is essentially
 	     <code>vector&lt;char&gt;</code> and does not do any reference
 	     counting like libstdc++'s does.  (It is O(n), though.)

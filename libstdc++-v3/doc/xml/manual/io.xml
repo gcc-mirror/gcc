@@ -424,7 +424,7 @@
    <para>Seriously, go do it.  Get surprised, then come back.  It's worth it.
    </para>
    <para>The thing to remember is that the <code>basic_[io]stream</code> classes
-      handle formatting, nothing else.  In chaptericular, they break up on
+      handle formatting, nothing else.  In particular, they break up on
       whitespace.  The actual reading, writing, and storing of data is
       handled by the <code>basic_streambuf</code> family.  Fortunately, the
       <code>operator&lt;&lt;</code> is overloaded to take an ostream and
@@ -442,7 +442,7 @@
    <programlisting>
    OUT &lt;&lt; IN.rdbuf();</programlisting>
    <para>So what <emphasis>was</emphasis> happening with OUT&lt;&lt;IN?  Undefined
-      behavior, since that chaptericular &lt;&lt; isn't defined by the Standard.
+      behavior, since that particular &lt;&lt; isn't defined by the Standard.
       I have seen instances where it is implemented, but the character
       extraction process removes all the whitespace, leaving you with no
       blank lines and only "Thequickbrownfox...".  With
@@ -659,7 +659,7 @@
    <para>Note, by the way, that the synchronization requirement only applies to
       the standard streams (<code>cin</code>, <code>cout</code>,
       <code>cerr</code>,
-      <code>clog</code>, and their wide-character counterchapters).  File stream
+      <code>clog</code>, and their wide-character counterparts).  File stream
       objects that you declare yourself have no such requirement and are fully
       buffered.
    </para>
