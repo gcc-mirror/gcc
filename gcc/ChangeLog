@@ -1,3 +1,7 @@
+2014-03-27  Dehao Chen  <dehao@google.com>
+
+	* ipa-inline.c (early_inliner): Update node's inline info.
+
 2014-03-26  Dehao Chen  <dehao@google.com>
 
 	* dojump.c (do_compare_rtx_and_jump): Sets correct probability for
