@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Facets</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="localization.html" title="Chapter 8.  Localization" /><link rel="prev" href="localization.html" title="Chapter 8.  Localization" /><link rel="next" href="containers.html" title="Chapter 9.  Containers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Facets</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="localization.html">Prev</a> </td><th width="60%" align="center">Chapter 8. 
   Localization
   
-</th><td width="20%" align="right"> <a accesskey="n" href="containers.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.localization.facet"></a>Facets</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.facet.ctype"></a>ctype</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.impl"></a>Implementation</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="idm234603126096"></a>Specializations</h5></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="containers.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.localization.facet"></a>Facets</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.facet.ctype"></a>ctype</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.impl"></a>Implementation</h4></div></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="idm269891548288"></a>Specializations</h5></div></div></div><p>
 For the required specialization <code class="classname">codecvt&lt;wchar_t, char, mbstate_t&gt;</code>,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
@@ -53,24 +53,24 @@ characters.
    </p></li><li class="listitem"><p>
        Rename abstract base class. See if just smash-overriding is a
        better approach. Clarify, add sanity to naming.
-     </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm234603103680"></a><p><span class="citetitle"><em class="citetitle">
+     </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.ctype.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm269891525936"></a><p><span class="citetitle"><em class="citetitle">
       The GNU C Library
-    </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6  Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry"><a id="idm234603098928"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6  Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry"><a id="idm269891521184"></a><p><span class="citetitle"><em class="citetitle">
       Correspondence
-    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm234603095840"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm269891518096"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 14882:1998 Programming languages - C++
-    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm234603093552"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm269891515808"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 9899:1999 Programming languages - C
-    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm234603091280"></a><p><span class="title"><em>
+    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm269891513536"></a><p><span class="title"><em>
 	<a class="link" href="http://www.unix.org/version3/ieee_std.html" target="_top">
 	The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
 	</a>
       </em>. </span><span class="copyright">Copyright © 1999 
-      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span></p></div><div class="biblioentry"><a id="idm234603088032"></a><p><span class="citetitle"><em class="citetitle">
+      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span></p></div><div class="biblioentry"><a id="idm269891510288"></a><p><span class="citetitle"><em class="citetitle">
       The C++ Programming Language, Special Edition
     </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="idm234603083408"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></span></p></div><div class="biblioentry"><a id="idm269891505664"></a><p><span class="citetitle"><em class="citetitle">
       Standard C++ IOStreams and Locales
     </em>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
@@ -424,42 +424,42 @@ codecvt usage.
       </p></li><li class="listitem"><p>
       wchar_t/char internal buffers and conversions between
       internal/external buffers?
-      </p></li></ul></div></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm234602986688"></a><p><span class="citetitle"><em class="citetitle">
+      </p></li></ul></div></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.codecvt.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm269891409072"></a><p><span class="citetitle"><em class="citetitle">
       The GNU C Library
     </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">
       Chapters 6 Character Set Handling and 7 Locales and Internationalization
-    . </span></p></div><div class="biblioentry"><a id="idm234602981936"></a><p><span class="citetitle"><em class="citetitle">
+    . </span></p></div><div class="biblioentry"><a id="idm269891404320"></a><p><span class="citetitle"><em class="citetitle">
       Correspondence
-    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm234602978848"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm269891401232"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 14882:1998 Programming languages - C++
-    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm234602976560"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm269891398944"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 9899:1999 Programming languages - C
-    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm234602974288"></a><p><span class="title"><em>
+    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm269891396672"></a><p><span class="title"><em>
 	<a class="link" href="http://www.opengroup.org/austin/" target="_top">
       System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
 	</a>
       </em>. </span><span class="copyright">Copyright © 2008 
 	The Open Group/The Institute of Electrical and Electronics
 	Engineers, Inc.
-      . </span></p></div><div class="biblioentry"><a id="idm234602971056"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></p></div><div class="biblioentry"><a id="idm269891393440"></a><p><span class="citetitle"><em class="citetitle">
       The C++ Programming Language, Special Edition
     </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="idm234602966432"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></span></p></div><div class="biblioentry"><a id="idm269891388816"></a><p><span class="citetitle"><em class="citetitle">
       Standard C++ IOStreams and Locales
     </em>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div><div class="biblioentry"><a id="idm234602960768"></a><p><span class="title"><em>
+      . </span></span></p></div><div class="biblioentry"><a id="idm269891383152"></a><p><span class="title"><em>
 	<a class="link" href="http://www.lysator.liu.se/c/na1.html" target="_top">
       A brief description of Normative Addendum 1
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Clive</span> <span class="surname">Feather</span>. </span><span class="pagenums">Extended Character Sets. </span></p></div><div class="biblioentry"><a id="idm234602957520"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Clive</span> <span class="surname">Feather</span>. </span><span class="pagenums">Extended Character Sets. </span></p></div><div class="biblioentry"><a id="idm269891379904"></a><p><span class="title"><em>
 	<a class="link" href="http://tldp.org/HOWTO/Unicode-HOWTO.html" target="_top">
 	  The Unicode HOWTO
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Bruno</span> <span class="surname">Haible</span>. </span></p></div><div class="biblioentry"><a id="idm234602954736"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Bruno</span> <span class="surname">Haible</span>. </span></p></div><div class="biblioentry"><a id="idm269891377120"></a><p><span class="title"><em>
 	<a class="link" href="http://www.cl.cam.ac.uk/~mgk25/unicode.html" target="_top">
       UTF-8 and Unicode FAQ for Unix/Linux
 	</a>
@@ -705,39 +705,39 @@ void test01()
    model. As of this writing, it is unknown how to query to see
    if a specified message catalog exists using the gettext
    package.
-   </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm234602874320"></a><p><span class="citetitle"><em class="citetitle">
+   </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="facet.messages.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry"><a id="idm269891296640"></a><p><span class="citetitle"><em class="citetitle">
       The GNU C Library
     </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling, and 7 Locales and Internationalization
-    . </span></p></div><div class="biblioentry"><a id="idm234602869568"></a><p><span class="citetitle"><em class="citetitle">
+    . </span></p></div><div class="biblioentry"><a id="idm269891291888"></a><p><span class="citetitle"><em class="citetitle">
       Correspondence
-    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm234602866480"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="idm269891288800"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 14882:1998 Programming languages - C++
-    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm234602864192"></a><p><span class="citetitle"><em class="citetitle">
+    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="idm269891286512"></a><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 9899:1999 Programming languages - C
-    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm234602861920"></a><p><span class="title"><em>
+    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="idm269891284240"></a><p><span class="title"><em>
 	<a class="link" href="http://www.opengroup.org/austin/" target="_top">
       System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
 	</a>
       </em>. </span><span class="copyright">Copyright © 2008 
 	The Open Group/The Institute of Electrical and Electronics
 	Engineers, Inc.
-      . </span></p></div><div class="biblioentry"><a id="idm234602858688"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></p></div><div class="biblioentry"><a id="idm269891281008"></a><p><span class="citetitle"><em class="citetitle">
       The C++ Programming Language, Special Edition
     </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="idm234602854064"></a><p><span class="citetitle"><em class="citetitle">
+      . </span></span></p></div><div class="biblioentry"><a id="idm269891276384"></a><p><span class="citetitle"><em class="citetitle">
       Standard C++ IOStreams and Locales
     </em>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div><div class="biblioentry"><a id="idm234602848400"></a><p><span class="title"><em>
+      . </span></span></p></div><div class="biblioentry"><a id="idm269891270720"></a><p><span class="title"><em>
 	<a class="link" href="http://www.oracle.com/technetwork/java/api/index.html" target="_top">
 	API Specifications, Java Platform
 	</a>
       </em>. </span><span class="pagenums">java.util.Properties, java.text.MessageFormat,
 java.util.Locale, java.util.ResourceBundle
-    . </span></p></div><div class="biblioentry"><a id="idm234602846064"></a><p><span class="title"><em>
+    . </span></p></div><div class="biblioentry"><a id="idm269891268384"></a><p><span class="title"><em>
 	<a class="link" href="https://www.gnu.org/software/gettext/" target="_top">
       GNU gettext tools, version 0.10.38, Native Language Support
       Library and Tools.
