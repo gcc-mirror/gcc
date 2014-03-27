@@ -418,6 +418,7 @@ dependencies = { module=all-ld; on=all-build-bison; };
 dependencies = { module=all-ld; on=all-build-flex; };
 dependencies = { module=all-ld; on=all-intl; };
 dependencies = { module=all-ld; on=all-gas; };
+dependencies = { module=all-ld; on=all-binutils; };
 dependencies = { module=install-ld; on=install-gold; };
 dependencies = { module=install-strip-ld; on=install-strip-gold; };
 dependencies = { module=configure-gold; on=configure-intl; };
