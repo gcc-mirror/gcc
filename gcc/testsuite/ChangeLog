@@ -1,3 +1,7 @@
+2014-03-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr60092.c: Remove default dg-skip-if arguments.
+
 2014-03-27  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	PR target/60580
