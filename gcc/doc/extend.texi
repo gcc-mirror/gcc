@@ -8978,7 +8978,7 @@ Similar to @code{__builtin_nans}, except the return type is @code{float}.
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_ffs (unsigned int x)
+@deftypefn {Built-in Function} int __builtin_ffs (int x)
 Returns one plus the index of the least significant 1-bit of @var{x}, or
 if @var{x} is zero, returns zero.
 @end deftypefn
@@ -9008,9 +9008,9 @@ Returns the parity of @var{x}, i.e.@: the number of 1-bits in @var{x}
 modulo 2.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_ffsl (unsigned long)
+@deftypefn {Built-in Function} int __builtin_ffsl (long)
 Similar to @code{__builtin_ffs}, except the argument type is
-@code{unsigned long}.
+@code{long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_clzl (unsigned long)
@@ -9038,9 +9038,9 @@ Similar to @code{__builtin_parity}, except the argument type is
 @code{unsigned long}.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_ffsll (unsigned long long)
+@deftypefn {Built-in Function} int __builtin_ffsll (long long)
 Similar to @code{__builtin_ffs}, except the argument type is
-@code{unsigned long long}.
+@code{long long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_clzll (unsigned long long)

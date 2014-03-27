@@ -1,3 +1,9 @@
+2014-03-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/50347
+	* doc/extend.texi (ffs Builtins): Change unsigned types to signed
+	types.
+
 2014-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_can_use_return_insn): Check for
