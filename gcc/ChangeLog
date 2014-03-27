@@ -1,3 +1,10 @@
+2014-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60682
+	* omp-low.c (lower_omp_1): For gimple_clobber_p stmts,
+	if they need regimplification, just drop them instead of
+	calling gimple_regimplify_operands on them.
+
 2014-03-27  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	PR target/60580

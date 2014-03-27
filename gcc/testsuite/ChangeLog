@@ -1,3 +1,8 @@
+2014-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60682
+	* g++.dg/gomp/pr60682.C: New test.
+
 2014-03-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/torture/pr60092.c: Remove default dg-skip-if arguments.
