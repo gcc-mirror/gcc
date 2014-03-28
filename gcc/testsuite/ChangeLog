@@ -1,3 +1,7 @@
+2014-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt33.adb: New testcase.
+
 2014-03-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/60697

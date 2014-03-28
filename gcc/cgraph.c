@@ -1488,6 +1488,14 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 	  gsi_insert_before (&gsi, set_stmt, GSI_SAME_STMT);
 	}
       gimple_call_set_lhs (new_stmt, NULL_TREE);
+      update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
+    }
+
+  /* If new callee has no static chain, remove it.  */
+  if (gimple_call_chain (new_stmt) && !DECL_STATIC_CHAIN (e->callee->decl))
+    {
+      gimple_call_set_chain (new_stmt, NULL);
+      update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
     }
 
   cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt, false);
