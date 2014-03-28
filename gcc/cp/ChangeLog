@@ -1,6 +1,20 @@
+2014-03-28  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60573
+	* name-lookup.h (cp_binding_level): New transient field defining_class_p
+	to indicate whether a scope is in the process of defining a class.
+	* semantics.c (begin_class_definition): Set defining_class_p.
+	* name-lookup.c (leave_scope): Reset defining_class_p.
+	* parser.c (synthesize_implicit_template_parm): Use cp_binding_level::
+	defining_class_p rather than TYPE_BEING_DEFINED as the predicate for
+	unwinding to class-defining scope to handle the erroneous definition of
+	a generic function of an arbitrarily nested class within an enclosing
+	class.
+
 2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
-        PR c++/52369
-        * cp/method.c (walk_field_subobs): improve the diagnostic
+
+	PR c++/52369
+	* cp/method.c (walk_field_subobs): improve the diagnostic
 	locations for both REFERENCE_TYPEs and non-static const members.
 	* cp/init.c (diagnose_uninitialized_cst_or_ref_member): use %q#D
 	instead of %qD to be consistent with the c++11 diagnostic.
