@@ -1,3 +1,10 @@
+2014-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58678
+	* g++.dg/abi/thunk6.C: Scan assembler for _ZTv0_n32_N1CD1Ev
+	only for lp64 targets and scan for _ZTv0_n16_N1CD1Ev for ilp32
+	targets.
+
 2014-03-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/60675
