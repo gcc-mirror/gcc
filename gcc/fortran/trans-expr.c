@@ -355,7 +355,11 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 	  gfc_conv_expr_descriptor (parmse, e);
 
 	  if (e->rank != class_ts.u.derived->components->as->rank)
-	    class_array_data_assign (&block, ctree, parmse->expr, true);
+	    {
+	      gcc_assert (class_ts.u.derived->components->as->type
+			  == AS_ASSUMED_RANK);
+	      class_array_data_assign (&block, ctree, parmse->expr, false);
+	    }
 	  else
 	    {
 	      if (gfc_expr_attr (e).codimension)

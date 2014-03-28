@@ -1,3 +1,10 @@
+2014-03-28  Mikael Morin  <mikael@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60576
+	* trans-expr.c (gfc_conv_derived_to_class): Avoid
+	generation of out-of-bounds range expr.
+
 2014-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60522
