@@ -1,3 +1,10 @@
+2014-03-28  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Remove s390 special
+          option.
+	* lib/target-supports.exp: Return true for s390
+          in check_effective_logical_op_short_circuit.
+
 2014-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * gcc.target/i386/avx512f-vshuff32x4-2.c: Fix initialization
