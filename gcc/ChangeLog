@@ -1,3 +1,7 @@
+2014-03-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Correct A12 rule.
+
 2014-03-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (fusion_gpr_load_p): Refuse optimization
