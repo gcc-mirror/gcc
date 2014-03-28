@@ -43,7 +43,7 @@ TEST (void)
   for (i = 0; i < SIZE; i++)
     {
       s1.a[i] = 1.2 / (i + 0.378);
-      s1.a[i] = 91.02 / (i + 4.3578);
+      s2.a[i] = 91.02 / (i + 4.3578);
       u1.a[i] = DEFAULT_VALUE;
       u2.a[i] = DEFAULT_VALUE;
       u3.a[i] = DEFAULT_VALUE;

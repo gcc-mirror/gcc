@@ -1,3 +1,11 @@
+2014-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/avx512f-vshuff32x4-2.c: Fix initialization
+	of second source operand.
+	* gcc.target/i386/avx512f-vshuff64x2-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi64x2-2.c: Ditto.
+
 2014-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/60315
