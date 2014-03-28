@@ -1,4 +1,7 @@
+// PR ipa/60315
 // { dg-do compile }
+// { dg-options "-std=c++11" }
+
 struct Base {
     virtual int f() = 0;
 };

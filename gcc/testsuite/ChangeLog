@@ -1,3 +1,8 @@
+2014-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/60315
+	* g++.dg/torture/pr60315.C: Add -std=c++11 to dg-options.
+
 2014-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	* lib/cilk-plus-dg.exp: New.
