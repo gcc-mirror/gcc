@@ -473,7 +473,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
   enum reg_class rclass;
   bitmap_iterator bi;
   bool *rclass_intersect_p;
-  HARD_REG_SET impossible_start_hard_regs;
+  HARD_REG_SET impossible_start_hard_regs, available_regs;
 
   COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
   rclass = regno_allocno_class_array[regno];
@@ -586,6 +586,8 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
   biggest_nregs = hard_regno_nregs[hard_regno][biggest_mode];
   nregs_diff = (biggest_nregs
 		- hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (regno)]);
+  COPY_HARD_REG_SET (available_regs, reg_class_contents[rclass]);
+  AND_COMPL_HARD_REG_SET (available_regs, lra_no_alloc_regs);
   for (i = 0; i < rclass_size; i++)
     {
       if (try_only_hard_regno >= 0)
@@ -601,9 +603,9 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
 	  && (nregs_diff == 0
 	      || (WORDS_BIG_ENDIAN
 		  ? (hard_regno - nregs_diff >= 0
-		     && TEST_HARD_REG_BIT (reg_class_contents[rclass],
+		     && TEST_HARD_REG_BIT (available_regs,
 					   hard_regno - nregs_diff))
-		  : TEST_HARD_REG_BIT (reg_class_contents[rclass],
+		  : TEST_HARD_REG_BIT (available_regs,
 				       hard_regno + nregs_diff))))
 	{
 	  if (hard_regno_costs_check[hard_regno]
