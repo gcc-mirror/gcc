@@ -1,12 +1,12 @@
 2014-03-27  Jeff Law  <law@redhat.com>
-	    Jakub Jalinek <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60648
-       * expr.c (do_tablejump): Use simplify_gen_binary rather than
-       gen_rtx_{PLUS,MULT} to build up the address expression.
+	* expr.c (do_tablejump): Use simplify_gen_binary rather than
+	gen_rtx_{PLUS,MULT} to build up the address expression.
 
-       * i386/i386.c (ix86_legitimize_address): Use copy_addr_to_reg to avoid
-       creating non-canonical RTL.
+	* i386/i386.c (ix86_legitimize_address): Use copy_addr_to_reg to avoid
+	creating non-canonical RTL.
 
 2014-03-28  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -538,15 +538,15 @@
 
 2014-03-18  Basile Starynkevitch  <basile@starynkevitch.net>
 
-        * plugin.def: Improve comment for PLUGIN_INCLUDE_FILE.
-        * doc/plugins.texi (Plugin callbacks): Mention
-        PLUGIN_INCLUDE_FILE.
-        Italicize plugin event names in description.  Explain that
-        PLUGIN_PRAGMAS has no sense for lto1. Explain
-        PLUGIN_INCLUDE_FILE.
-        Remind that no GCC functions should be called after
-        PLUGIN_FINISH.
-        Explain what pragmas with expansion are.
+	* plugin.def: Improve comment for PLUGIN_INCLUDE_FILE.
+	* doc/plugins.texi (Plugin callbacks): Mention
+	PLUGIN_INCLUDE_FILE.
+	Italicize plugin event names in description.  Explain that
+	PLUGIN_PRAGMAS has no sense for lto1. Explain
+	PLUGIN_INCLUDE_FILE.
+	Remind that no GCC functions should be called after
+	PLUGIN_FINISH.
+	Explain what pragmas with expansion are.
 
 2014-03-18  Martin Liska  <mliska@suse.cz>
 
@@ -782,7 +782,7 @@
 	(splitters for the fop_* register patterns): Remove.
 	(fscalexf4_i387): Rename from *fscalexf4_i387.
 	(ldexpxf3): Use gen_floatsixf2 and gen_fscalexf4_i387.
-	
+
 2014-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59779
@@ -1202,11 +1202,11 @@
 	optimization levels.
 	(run_gcc): And pass it through to the link options.
 
-2014-03-06  Alexandre Oliva <aoliva@redhat.com>
+2014-03-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/60381
 	Revert:
-	2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+	2014-02-28  Alexandre Oliva  <aoliva@redhat.com>
 	PR debug/59992
 	* cselib.c (remove_useless_values): Skip to avoid quadratic
 	behavior if the condition moved from...
@@ -1416,7 +1416,7 @@
 	and latches.  Also honor LOOPS_MAY_HAVE_MULTIPLE_LATCHES.
 	(remove_forwarder_block): Properly update the latch of a loop.
 
-2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+2014-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/59992
 	* cselib.c (cselib_hasher::equal): Special-case VALUE lookup.
@@ -1427,14 +1427,14 @@
 	(cselib_finish): Release it.
 	(dump_cselib_table): Dump it.
 
-2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+2014-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/59992
 	* cselib.c (remove_useless_values): Skip to avoid quadratic
 	behavior if the condition moved from...
 	(cselib_process_insn): ... here holds.
 
-2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+2014-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/57232
 	* var-tracking.c (vt_initialize): Apply the same condition to
@@ -1709,22 +1709,22 @@
 	(sched_rgn_init): ... here.
 	(schedule_region): Check for SCHED_PRESSURE_NONE earlier.
 
-2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+2014-02-23  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md: Correct ashrsi_reg / lshrsi_reg
 	names.
 
-2014-02-23  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
+2014-02-23  Edgar E. Iglesias  <edgar.iglesias@xilinx.com>
 
 	* config/microblaze/microblaze.h: Remove SECONDARY_MEMORY_NEEDED
 	definition.
 
-2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+2014-02-23  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* /config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk,
 	define TARGET_ASM_OUTPUT_MI_THUNK and TARGET_ASM_CAN_OUTPUT_MI_THUNK.
 
-2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+2014-02-23  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config/microblaze/predicates.md: Add cmp_op predicate.
 	* config/microblaze/microblaze.md: Add branch_compare instruction
@@ -2437,16 +2437,16 @@
 	* config.gcc (i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*,
 	*-*-solaris2.9*): Use it.
 
-2014-02-10  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
+2014-02-10  Nagaraju Mekala  <nagaraju.mekala@xilinx.com>
 
 	* config/microblaze/microblaze.md: Add movsi4_rev insn pattern.
 	* config/microblaze/predicates.md: Add reg_or_mem_operand predicate.
 
-2014-02-10  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
+2014-02-10  Nagaraju Mekala  <nagaraju.mekala@xilinx.com>
 
 	* config/microblaze/microblaze.c: Extend mcpu version format
 
-2014-02-10  David Holsgrove <david.holsgrove@xilinx.com>
+2014-02-10  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.h: Define SIZE_TYPE and PTRDIFF_TYPE.
 
@@ -3469,7 +3469,7 @@
 
 	* README.Portability: Fix typo.
 
-2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
+2014-01-30  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md(cstoresf4, cbranchsf4): Replace
 	comparison_operator with ordered_comparison_operator.
@@ -4219,7 +4219,7 @@
 	* config/aarch64/aarch64.md (UNSPEC_LD1): New unspec definition.
 	(UNSPEC_ST1): Likewise.
 
-2014-01-23  David Holsgrove <david.holsgrove@xilinx.com>
+2014-01-23  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md: Add trap insn and attribute
 
@@ -4275,7 +4275,7 @@
 	* config/mips/mips.c (mips_reorg_process_insns): Check which asm
 	operands have been referenced when recording LO_SUM references.
 
-2014-01-22  David Holsgrove <david.holsgrove@xilinx.com>
+2014-01-22  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md: Correct bswaphi2 insn.
 
@@ -4549,7 +4549,7 @@
 	(ipcp_edge_removal_hook): New function.
 	(ipcp_driver): Register ipcp_edge_removal_hook.
 
-2014-01-17  Andrew Pinski <apinski@cavium.com>
+2014-01-17  Andrew Pinski  <apinski@cavium.com>
 	    Steve Ellcey  <sellcey@mips.com>
 
 	PR target/59462
@@ -5424,7 +5424,7 @@
 	one successor with a block with no successors, remove any BARRIER
 	after the second block.
 
-2014-01-07  Dan Xio Qiang <ziyan01@163.com>
+2014-01-07  Dan Xio Qiang  <ziyan01@163.com>
 
 	* hw-doloop.c (reorg_loops): Release the bitmap obstack.
 
