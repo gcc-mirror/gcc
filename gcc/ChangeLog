@@ -1,3 +1,13 @@
+2014-03-27  Jeff Law  <law@redhat.com>
+	    Jakub Jalinek <jakub@redhat.com>
+
+	PR target/60648
+       * expr.c (do_tablejump): Use simplify_gen_binary rather than
+       gen_rtx_{PLUS,MULT} to build up the address expression.
+
+       * i386/i386.c (ix86_legitimize_address): Use copy_addr_to_reg to avoid
+       creating non-canonical RTL.
+
 2014-03-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60243

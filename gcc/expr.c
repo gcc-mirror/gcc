@@ -11134,11 +11134,12 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
      GET_MODE_SIZE, because this indicates how large insns are.  The other
      uses should all be Pmode, because they are addresses.  This code
      could fail if addresses and insns are not the same size.  */
-  index = gen_rtx_PLUS
-    (Pmode,
-     gen_rtx_MULT (Pmode, index,
-		   gen_int_mode (GET_MODE_SIZE (CASE_VECTOR_MODE), Pmode)),
-     gen_rtx_LABEL_REF (Pmode, table_label));
+  index = simplify_gen_binary (MULT, Pmode, index,
+			       gen_int_mode (GET_MODE_SIZE (CASE_VECTOR_MODE),
+					     Pmode));
+  index = simplify_gen_binary (PLUS, Pmode, index,
+			       gen_rtx_LABEL_REF (Pmode, table_label));
+
 #ifdef PIC_CASE_VECTOR_ADDRESS
   if (flag_pic)
     index = PIC_CASE_VECTOR_ADDRESS (index);
