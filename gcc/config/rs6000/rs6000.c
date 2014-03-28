@@ -32523,6 +32523,11 @@ fusion_gpr_load_p (rtx *operands, bool peep2_p)
 
       if (!peep2_reg_dead_p (2, addis_reg))
 	return false;
+
+      /* If the target register being loaded is the stack pointer, we must
+         avoid loading any other value into it, even temporarily.  */
+      if (REG_P (target) && REGNO (target) == STACK_POINTER_REGNUM)
+	return false;
     }
 
   base_reg = XEXP (addr, 0);
