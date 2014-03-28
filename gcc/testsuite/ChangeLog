@@ -1,3 +1,8 @@
+2014-03-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/60675
+	* gcc.target/aarch64/pr60675.C: New.
+
 2014-03-28  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Remove s390 special

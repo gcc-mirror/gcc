@@ -1,3 +1,9 @@
+2014-03-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/60675
+	* lra-assigns.c (find_hard_regno_for): Remove unavailable hard
+	regs from checking multi-reg pseudos.
+
 2014-03-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/t-aprofile (MULTILIB_MATCHES): Correct A12 rule.
