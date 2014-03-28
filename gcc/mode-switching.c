@@ -45,20 +45,20 @@ along with GCC; see the file COPYING3.  If not see
    and finding all the insns which require a specific mode.  Each insn gets
    a unique struct seginfo element.  These structures are inserted into a list
    for each basic block.  For each entity, there is an array of bb_info over
-   the flow graph basic blocks (local var 'bb_info'), and contains a list
+   the flow graph basic blocks (local var 'bb_info'), which contains a list
    of all insns within that basic block, in the order they are encountered.
 
    For each entity, any basic block WITHOUT any insns requiring a specific
-   mode are given a single entry, without a mode.  (Each basic block
-   in the flow graph must have at least one entry in the segment table.)
+   mode are given a single entry without a mode (each basic block in the
+   flow graph must have at least one entry in the segment table).
 
    The LCM algorithm is then run over the flow graph to determine where to
-   place the sets to the highest-priority value in respect of first the first
+   place the sets to the highest-priority mode with respect to the first
    insn in any one block.  Any adjustments required to the transparency
    vectors are made, then the next iteration starts for the next-lower
    priority mode, till for each entity all modes are exhausted.
 
-   More details are located in the code for optimize_mode_switching().  */
+   More details can be found in the code of optimize_mode_switching.  */
 
 /* This structure contains the information for each insn which requires
    either single or double mode to be set.
