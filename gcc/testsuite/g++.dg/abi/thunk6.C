@@ -15,4 +15,5 @@ C::~C() {}
 
 int main() {}
 
-// { dg-final { scan-assembler "_ZTv0_n32_N1CD1Ev" } }
+// { dg-final { scan-assembler "_ZTv0_n32_N1CD1Ev" { target lp64 } } }
+// { dg-final { scan-assembler "_ZTv0_n16_N1CD1Ev" { target ilp32 } } }
