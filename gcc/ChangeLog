@@ -1,3 +1,8 @@
+2014-03-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (fusion_gpr_load_p): Refuse optimization
+	if it would clobber the stack pointer, even temporarily.
+
 2014-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* mode-switching.c: Make small adjustments to the top comment.
