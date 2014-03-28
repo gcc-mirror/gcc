@@ -31999,7 +31999,7 @@ synthesize_implicit_template_parm  (cp_parser *parser)
 	{
 	  /* If not defining a class, then any class scope is a scope level in
 	     an out-of-line member definition.  In this case simply wind back
-	     beyond the first such scope to inject the template argument list.
+	     beyond the first such scope to inject the template parameter list.
 	     Otherwise wind back to the class being defined.  The latter can
 	     occur in class member friend declarations such as:
 
@@ -32010,12 +32010,23 @@ synthesize_implicit_template_parm  (cp_parser *parser)
 		 friend void A::foo (auto);
 	       };
 
-	    The template argument list synthesized for the friend declaration
-	    must be injected in the scope of 'B', just beyond the scope of 'A'
-	    introduced by 'A::'.  */
+	    The template parameter list synthesized for the friend declaration
+	    must be injected in the scope of 'B'.  This can also occur in
+	    erroneous cases such as:
 
-	  while (scope->kind == sk_class
-		 && !TYPE_BEING_DEFINED (scope->this_entity))
+	       struct A {
+	         struct B {
+		   void foo (auto);
+		 };
+		 void B::foo (auto) {}
+	       };
+
+	    Here the attempted definition of 'B::foo' within 'A' is ill-formed
+	    but, nevertheless, the template parameter list synthesized for the
+	    declarator should be injected into the scope of 'A' as if the
+	    ill-formed template was specified explicitly.  */
+
+	  while (scope->kind == sk_class && !scope->defining_class_p)
 	    {
 	      parent_scope = scope;
 	      scope = scope->level_chain;

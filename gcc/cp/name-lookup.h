@@ -255,7 +255,14 @@ struct GTY(()) cp_binding_level {
   unsigned more_cleanups_ok : 1;
   unsigned have_cleanups : 1;
 
-  /* 24 bits left to fill a 32-bit word.  */
+  /* Transient state set if this scope is of sk_class kind
+     and is in the process of defining 'this_entity'.  Reset
+     on leaving the class definition to allow for the scope
+     to be subsequently re-used as a non-defining scope for
+     'this_entity'.  */
+  unsigned defining_class_p : 1;
+
+  /* 23 bits left to fill a 32-bit word.  */
 };
 
 /* The binding level currently in effect.  */
