@@ -19,53 +19,45 @@
 
 load_lib gcc-dg.exp
 load_lib lto.exp
+load_lib cilk-plus-dg.exp
 
 if { ![check_effective_target_cilkplus] } {
     return;
 }
 
-set library_var [get_multilibs]
-# Pointing the ld_library_path to the Cilk Runtime library binaries. 
-append ld_library_path ":${library_var}/libcilkrts/.libs"
-set_ld_library_path_env_vars
-
-global TEST_EXTRA_LIBS
-set TEST_EXTRA_LIBS "-L${library_var}/libcilkrts/.libs"
-
 dg-init
+if [cilkplus_init] {
+    # Run the tests that are shared with C++.
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] " -ftree-vectorize -fcilkplus -std=c99" " "
+    # Run the C-only tests.
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
+        	"-ftree-vectorize -fcilkplus -std=c99" " "
 
-# Run the tests that are shared with C++.
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] " -ftree-vectorize -fcilkplus -std=c99" " "
-# Run the C-only tests.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
-	"-ftree-vectorize -fcilkplus -std=c99" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O1 -fcilkplus" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O2 -fcilkplus" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O3 -fcilkplus" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -fcilkplus" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O2 -ftree-vectorize -fcilkplus" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -std=c99" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -O2 -std=c99" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -O3 -std=c99" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -g -O0 -std=c99" " "
 
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O1 -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O2 -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O3 -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O2 -ftree-vectorize -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -std=c99" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -O2 -std=c99" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -O3 -std=c99" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -g -O0 -std=c99" " "
+    if { [check_libcilkrts_available] } {
+        dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g " " "
+        dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O1 " " "
+        dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -std=c99 " " "
+        dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -ftree-vectorize " " "
+        dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -g " " "
+        if { [check_effective_target_lto] } {
+            dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -flto -g " " "
+        }
+    }
 
-if { [check_libcilkrts_available] } {
-  dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g " " "
-  dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O1 " " "
-  dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -std=c99 " " "
-  dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -ftree-vectorize " " "
-  dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -g " " "
-  if { [check_effective_target_lto] } {
-    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -flto -g " " "
-  }
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -g" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -O3 -std=c99" " "
+    dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -O3 -g" " "
 }
-
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -g" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -O3 -std=c99" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -O3 -g" " "
-
+cilkplus_finish
 dg-finish
-
-unset TEST_EXTRA_LIBS

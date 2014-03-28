@@ -1,4 +1,10 @@
-2014-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2014-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	* lib/cilk-plus-dg.exp: New.
+	* g++.dg/cilk-plus/cilk-plus.exp: Use it.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Use it.
+
+2014-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60522
 	* gfortran.dg/where_4.f90:  New test case.
