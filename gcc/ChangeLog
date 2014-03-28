@@ -1,5 +1,13 @@
 2014-03-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/aarch-common.c (aarch_crypto_can_dual_issue): New.
+	* config/arm/aarch-common-protos.h (aarch_crypto_can_dual_issue):
+	Declare extern.
+	* config/arm/cortex-a53.md: Add reservations and bypass for crypto
+	instructions as well as AdvancedSIMD loads.
+
+2014-03-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_crypto_aes<aes_op>v16qi):
 	Use crypto_aese type.
 	(aarch64_crypto_aes<aesmc_op>v16qi): Use crypto_aesmc type.
