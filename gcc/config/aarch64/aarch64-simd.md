@@ -4250,7 +4250,7 @@
          CRYPTO_AES))]
   "TARGET_SIMD && TARGET_CRYPTO"
   "aes<aes_op>\\t%0.16b, %2.16b"
-  [(set_attr "type" "crypto_aes")]
+  [(set_attr "type" "crypto_aese")]
 )
 
 (define_insn "aarch64_crypto_aes<aesmc_op>v16qi"
@@ -4259,7 +4259,7 @@
 	 CRYPTO_AESMC))]
   "TARGET_SIMD && TARGET_CRYPTO"
   "aes<aesmc_op>\\t%0.16b, %1.16b"
-  [(set_attr "type" "crypto_aes")]
+  [(set_attr "type" "crypto_aesmc")]
 )
 
 ;; sha1

@@ -551,8 +551,8 @@
                           (UNSPEC_SHA256SU1 "sha256su1")])
 
 (define_int_attr crypto_type
- [(UNSPEC_AESE "crypto_aes") (UNSPEC_AESD "crypto_aes")
- (UNSPEC_AESMC "crypto_aes") (UNSPEC_AESIMC "crypto_aes")
+ [(UNSPEC_AESE "crypto_aese") (UNSPEC_AESD "crypto_aese")
+ (UNSPEC_AESMC "crypto_aesmc") (UNSPEC_AESIMC "crypto_aesmc")
  (UNSPEC_SHA1C "crypto_sha1_slow") (UNSPEC_SHA1P "crypto_sha1_slow")
  (UNSPEC_SHA1M "crypto_sha1_slow") (UNSPEC_SHA1SU1 "crypto_sha1_fast")
  (UNSPEC_SHA1SU0 "crypto_sha1_xor") (UNSPEC_SHA256H "crypto_sha256_slow")
