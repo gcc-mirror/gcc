@@ -1,3 +1,8 @@
+2014-03-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c: Include expr.h and tree-dfa.h.
+	(cgraph_redirect_edge_call_stmt_to_callee): If call in noreturn; remove LHS.
+
 2014-03-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/60675

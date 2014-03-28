@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
+#include "expr.h"
+#include "tree-dfa.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1329,6 +1331,7 @@ gimple
 cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 {
   tree decl = gimple_call_fndecl (e->call_stmt);
+  tree lhs = gimple_call_lhs (e->call_stmt);
   gimple new_stmt;
   gimple_stmt_iterator gsi;
 #ifdef ENABLE_CHECKING
@@ -1469,6 +1472,22 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
+    }
+
+  /* If the call becomes noreturn, remove the lhs.  */
+  if (lhs && (gimple_call_flags (new_stmt) & ECF_NORETURN))
+    {
+      if (TREE_CODE (lhs) == SSA_NAME)
+	{
+          gsi = gsi_for_stmt (new_stmt);
+
+	  tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
+	  tree def = get_or_create_ssa_default_def
+		      (DECL_STRUCT_FUNCTION (e->caller->decl), var);
+	  gimple set_stmt = gimple_build_assign (lhs, def);
+	  gsi_insert_before (&gsi, set_stmt, GSI_SAME_STMT);
+	}
+      gimple_call_set_lhs (new_stmt, NULL_TREE);
     }
 
   cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt, false);
