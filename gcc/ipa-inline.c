@@ -573,6 +573,24 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       e->inline_failed = CIF_FUNCTION_NOT_INLINE_CANDIDATE;
       want_inline = false;
     }
+  /* Do fast and conservative check if the function can be good
+     inline cnadidate.  At themoment we allow inline hints to
+     promote non-inline function to inline and we increase
+     MAX_INLINE_INSNS_SINGLE 16fold for inline functions.  */
+  else if (!DECL_DECLARED_INLINE_P (callee->decl)
+	   && inline_summary (callee)->min_size - inline_edge_summary (e)->call_stmt_size
+	      > MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
+    {
+      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
+      want_inline = false;
+    }
+  else if (DECL_DECLARED_INLINE_P (callee->decl)
+	   && inline_summary (callee)->min_size - inline_edge_summary (e)->call_stmt_size
+	      > 16 * MAX_INLINE_INSNS_SINGLE)
+    {
+      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
+      want_inline = false;
+    }
   else
     {
       int growth = estimate_edge_growth (e);
@@ -585,56 +603,26 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 hints suggests that inlining given function is very profitable.  */
       else if (DECL_DECLARED_INLINE_P (callee->decl)
 	       && growth >= MAX_INLINE_INSNS_SINGLE
-	       && !big_speedup
-	       && !(hints & (INLINE_HINT_indirect_call
-			     | INLINE_HINT_loop_iterations
-			     | INLINE_HINT_array_index
-			     | INLINE_HINT_loop_stride)))
+	       && ((!big_speedup
+		    && !(hints & (INLINE_HINT_indirect_call
+				  | INLINE_HINT_loop_iterations
+				  | INLINE_HINT_array_index
+				  | INLINE_HINT_loop_stride)))
+		   || growth >= MAX_INLINE_INSNS_SINGLE * 16))
 	{
           e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
 	}
-      /* Before giving up based on fact that caller size will grow, allow
-         functions that are called few times and eliminating the offline
-	 copy will lead to overall code size reduction.
-	 Not all of these will be handled by subsequent inlining of functions
-	 called once: in particular weak functions are not handled or funcitons
-	 that inline to multiple calls but a lot of bodies is optimized out.
-	 Finally we want to inline earlier to allow inlining of callbacks.
-
-	 This is slightly wrong on aggressive side:  it is entirely possible
-	 that function is called many times with a context where inlining
-	 reduces code size and few times with a context where inlining increase
-	 code size.  Resoluting growth estimate will be negative even if it
-	 would make more sense to keep offline copy and do not inline into the
-	 call sites that makes the code size grow.  
-
-	 When badness orders the calls in a way that code reducing calls come
-	 first, this situation is not a problem at all: after inlining all
-	 "good" calls, we will realize that keeping the function around is
-	 better.  */
-      else if (growth <= MAX_INLINE_INSNS_SINGLE
-	       /* Unlike for functions called once, we play unsafe with
-		  COMDATs.  We can allow that since we know functions
-		  in consideration are small (and thus risk is small) and
-		  moreover grow estimates already accounts that COMDAT
-		  functions may or may not disappear when eliminated from
-		  current unit. With good probability making aggressive
-		  choice in all units is going to make overall program
-		  smaller.
-
-		  Consequently we ask cgraph_can_remove_if_no_direct_calls_p
-		  instead of
-		  cgraph_will_be_removed_from_program_if_no_direct_calls  */
-	        && !DECL_EXTERNAL (callee->decl)
-		&& cgraph_can_remove_if_no_direct_calls_p (callee)
-		&& estimate_growth (callee) <= 0)
-	;
       else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	       && !flag_inline_functions)
 	{
-          e->inline_failed = CIF_NOT_DECLARED_INLINED;
-	  want_inline = false;
+	  /* growth_likely_positive is expensive, always test it last.  */
+          if (growth >= MAX_INLINE_INSNS_SINGLE
+	      || growth_likely_positive (callee, growth))
+	    {
+              e->inline_failed = CIF_NOT_DECLARED_INLINED;
+	      want_inline = false;
+ 	    }
 	}
       /* Apply MAX_INLINE_INSNS_AUTO limit for functions not declared inline
 	 Upgrade it to MAX_INLINE_INSNS_SINGLE when hints suggests that
@@ -649,11 +637,18 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 				    MAX_INLINE_INSNS_SINGLE)
 			     : MAX_INLINE_INSNS_AUTO))
 	{
-          e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
-	  want_inline = false;
+	  /* growth_likely_positive is expensive, always test it last.  */
+          if (growth >= MAX_INLINE_INSNS_SINGLE
+	      || growth_likely_positive (callee, growth))
+	    {
+	      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
+	      want_inline = false;
+ 	    }
 	}
       /* If call is cold, do not inline when function body would grow. */
-      else if (!cgraph_maybe_hot_edge_p (e))
+      else if (!cgraph_maybe_hot_edge_p (e)
+	       && (growth >= MAX_INLINE_INSNS_SINGLE
+		   || growth_likely_positive (callee, growth)))
 	{
           e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;
@@ -1723,14 +1718,12 @@ inline_small_functions (void)
 		   inline_summary (callee)->size);
 	  fprintf (dump_file,
 		   " to be inlined into %s/%i in %s:%i\n"
-		   " Estimated growth after inlined into all is %+i insns.\n"
 		   " Estimated badness is %i, frequency %.2f.\n",
 		   edge->caller->name (), edge->caller->order,
 		   flag_wpa ? "unknown"
 		   : gimple_filename ((const_gimple) edge->call_stmt),
 		   flag_wpa ? -1
 		   : gimple_lineno ((const_gimple) edge->call_stmt),
-		   estimate_growth (callee),
 		   badness,
 		   edge->frequency / (double)CGRAPH_FREQ_BASE);
 	  if (edge->count)
