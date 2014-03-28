@@ -1,3 +1,9 @@
+2014-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60693
+	* config/i386/i386.c (ix86_copy_addr_to_reg): Call copy_addr_to_reg
+	also if addr has VOIDmode.
+
 2014-03-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/aarch-common.c (aarch_crypto_can_dual_issue): New.

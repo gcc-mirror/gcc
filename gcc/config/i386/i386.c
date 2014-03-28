@@ -22755,7 +22755,7 @@ counter_mode (rtx count_exp)
 static rtx
 ix86_copy_addr_to_reg (rtx addr)
 {
-  if (GET_MODE (addr) == Pmode)
+  if (GET_MODE (addr) == Pmode || GET_MODE (addr) == VOIDmode)
     return copy_addr_to_reg (addr);
   else
     {

@@ -1,3 +1,8 @@
+2014-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60693
+	* gcc.target/i386/pr60693.c: New test.
+
 2014-03-28  Vishnu K S  <Vishnu.k_s@atmel.com>
 
 	* gcc.dg/pr59940.c (si): Use 32-bit SI mode instead of int.
