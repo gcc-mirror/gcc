@@ -1,3 +1,8 @@
+2014-03-28  Richard Biener  <rguenther@suse.de>
+
+	* simple-object.c (simple_object_internal_read): Handle
+	EINTR and short reads.
+
 2014-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* regex.c (bzero) [!_LIBC]: Define without coma expression.
