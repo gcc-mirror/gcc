@@ -1,3 +1,23 @@
+2014-03-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60243
+	* ipa-inline.c (want_inline_small_function_p): Short circuit large
+	functions; reorganize to make cheap checks first.
+	(inline_small_functions): Do not estimate growth when dumping;
+	it is expensive.
+	* ipa-inline.h (inline_summary): Add min_size.
+	(growth_likely_positive): New function.
+	* ipa-inline-analysis.c (dump_inline_summary): Add min_size.
+	(set_cond_stmt_execution_predicate): Cleanup.
+	(estimate_edge_size_and_time): Compute min_size.
+	(estimate_calls_size_and_time): Likewise.
+	(estimate_node_size_and_time): Likewise.
+	(inline_update_overall_summary): Update min_size.
+	(do_estimate_edge_time): Likewise.
+	(do_estimate_edge_size): Update.
+	(do_estimate_edge_hints): Update.
+	(growth_likely_positive): New function.
+
 2014-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60693
