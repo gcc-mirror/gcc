@@ -2,7 +2,7 @@
    instructions vector into vfmaddps on FMA4 systems.  */
 
 /* { dg-do compile { target { ! { ia32 } } } } */
-/* { dg-options "-O2 -mfma4 -ftree-vectorize -mtune=generic" } */
+/* { dg-options "-O2 -mfma4 -ftree-vectorize -mtune=generic -mno-fma" } */
 
 extern void exit (int);
 

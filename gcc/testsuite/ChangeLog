@@ -1,3 +1,22 @@
+2014-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/pr45416.c: Allow bextr on x86.
+	* gcc.target/i386/fma4-builtin.c, gcc.target/i386/fma4-fma-2.c,
+	gcc.target/i386/fma4-fma.c, gcc.target/i386/fma4-vector-2.c,
+	gcc.target/i386/fma4-vector.c: Use -mno-fma.
+	* gcc.target/i386/l_fma_double_1.c,
+	gcc.target/i386/l_fma_double_2.c,
+	gcc.target/i386/l_fma_double_3.c,
+	gcc.target/i386/l_fma_double_4.c,
+	gcc.target/i386/l_fma_double_5.c,
+	gcc.target/i386/l_fma_double_6.c, gcc.target/i386/l_fma_float_1.c,
+	gcc.target/i386/l_fma_float_2.c, gcc.target/i386/l_fma_float_3.c,
+	gcc.target/i386/l_fma_float_4.c, gcc.target/i386/l_fma_float_5.c,
+	gcc.target/i386/l_fma_float_6.c: Use -mno-fma4.
+	* gcc.target/i386/pr27971.c: Use -mno-tbm.
+	* gcc.target/i386/pr42542-4a.c: Use -mno-avx.
+	* gcc.target/i386/pr59390.c: Use -mno-fma -mno-fma4.
+
 2014-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60648
