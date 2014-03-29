@@ -1,3 +1,9 @@
+2014-03-29  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60626
+	* parser.c (cp_parser_init_declarator): Handle erroneous generic type
+	usage in non-functions with pushed scope.
+
 2014-03-28  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60573
