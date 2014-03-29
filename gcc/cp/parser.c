@@ -16829,7 +16829,14 @@ cp_parser_init_declarator (cp_parser* parser,
      been issued.  */
   if (parser->fully_implicit_function_template_p)
     if (!function_declarator_p (declarator))
-      finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+      {
+	if (pushed_scope)
+	  {
+	    pop_scope (pushed_scope);
+	    pushed_scope = 0;
+	  }
+	finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+      }
 
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */
