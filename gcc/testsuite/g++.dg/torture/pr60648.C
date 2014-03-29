@@ -1,6 +1,6 @@
-/* { dg-do compile } */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O3 -fPIC -m32" }  */
+// PR target/60648
+// { dg-do compile }
+// { dg-additional-options "-fPIC" { target fpic } }
 
 enum component
 {
@@ -68,6 +68,3 @@ void fn3 ()
   b[1] = fn2 (e);
   d = fn1 (c);
 }
-
-
-
