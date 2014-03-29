@@ -1,3 +1,10 @@
+2014-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60648
+	* g++.dg/pr60648.C: Move test to...
+	* g++.dg/torture/pr60648.C: ... here.  Run on all targets, remove
+	dg-options, add for fpic targets dg-additional-options -fPIC.
+
 2014-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt33.adb: New testcase.
