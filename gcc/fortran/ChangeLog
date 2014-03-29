@@ -1,3 +1,9 @@
+2014-03-29  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60677
+	* trans-intrinsic.c (gfc_conv_intrinsic_ichar): Enlarge argument
+	list buffer.
+
 2014-03-28  Mikael Morin  <mikael@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
@@ -5,7 +11,7 @@
 	* trans-expr.c (gfc_conv_derived_to_class): Avoid
 	generation of out-of-bounds range expr.
 
-2014-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2014-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60522
 	* frontend-passes.c (cfe_code):  Do not walk subtrees
