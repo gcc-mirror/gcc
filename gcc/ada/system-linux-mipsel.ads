@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                        (GNU-Linux/MIPSEL Version)                        --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -62,6 +62,7 @@ package System is
    --  Storage-related Declarations
 
    type Address is private;
+   pragma Preelaborable_Initialization (Address);
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
