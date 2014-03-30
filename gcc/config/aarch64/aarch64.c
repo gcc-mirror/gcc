@@ -3196,6 +3196,9 @@ aarch64_classify_address (struct aarch64_address_info *info,
 		}
 	      else if (SYMBOL_REF_DECL (sym))
 		align = DECL_ALIGN (SYMBOL_REF_DECL (sym));
+	      else if (SYMBOL_REF_HAS_BLOCK_INFO_P (sym)
+		       && SYMBOL_REF_BLOCK (sym) != NULL)
+		align = SYMBOL_REF_BLOCK (sym)->alignment;
 	      else
 		align = BITS_PER_UNIT;
 
