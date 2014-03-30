@@ -1,3 +1,20 @@
+2014-03-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (FMAMODE_NOVF512): New mode iterator.
+	(<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name><round_name>):
+	Split out
+	<sd_mask_codefor>fma_fmadd_<VF_512:mode><sd_maskz_name><round_name>.
+	Use FMAMODE_NOVF512 mode iterator.
+	(<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>): Ditto.
+	(<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name><round_name>): Ditto.
+	(<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name><round_name>): Ditto.
+	(<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>):
+	Split out
+	<sd_mask_codefor>fma_fmaddsub_<VF_512:mode><sd_maskz_name><round_name>.
+	Use VF_128_256 mode iterator.
+	(<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>):
+	Ditto.
+
 2014-03-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Clear
@@ -67,7 +84,8 @@
 2014-03-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c: Include expr.h and tree-dfa.h.
-	(cgraph_redirect_edge_call_stmt_to_callee): If call in noreturn; remove LHS.
+	(cgraph_redirect_edge_call_stmt_to_callee): If call in noreturn;
+	remove LHS.
 
 2014-03-28  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -111,8 +129,7 @@
 	Optimize vec_extract of 64-bit values, where the value being
 	extracted is in the top word, where we can use scalar
 	instructions.  Add direct move and store support.  Combine the big
-	endian/little endian vector select load support into a single
-	insn.
+	endian/little endian vector select load support into a single insn.
 	(vsx_extract_<mode>_internal1): Likewise.
 	(vsx_extract_<mode>_internal2): Likewise.
 	(vsx_extract_<mode>_load): Likewise.
@@ -257,12 +274,13 @@
 
 	PR ipa/60315
 	* cif-code.def (UNREACHABLE) New code.
-	* ipa-inline.c (inline_small_functions): Skip edges to __builtlin_unreachable.
+	* ipa-inline.c (inline_small_functions): Skip edges to
+	__builtlin_unreachable.
 	(estimate_edge_growth): Allow edges to __builtlin_unreachable.
 	* ipa-inline-analysis.c (edge_set_predicate): Redirect edges with false
 	predicate to __bulitin_unreachable.
-	(set_cond_stmt_execution_predicate): Fix issue when invert_tree_comparison
-	returns ERROR_MARK.
+	(set_cond_stmt_execution_predicate): Fix issue when
+	invert_tree_comparison returns ERROR_MARK.
 	* ipa-pure-const.c (propagate_pure_const, propagate_nothrow): Do not
 	propagate to inline clones.
 	* cgraph.c (verify_edge_corresponds_to_fndecl): Allow redirection
@@ -284,8 +302,8 @@
 	(addv<mode>4, subv<mode>4, mulv<mode>4): If operands[2] is CONST_INT,
 	don't generate (sign_extend (const_int)).
 	(*addv<mode>4, *subv<mode>4, *mulv<mode>4): Disallow CONST_INT_P
-	operands[2].  Use We constraint instead of <i> and <general_sext_operand>
-	predicate instead of <general_operand>.
+	operands[2].  Use We constraint instead of <i> and
+	<general_sext_operand> predicate instead of <general_operand>.
 	(*addv<mode>4_1, *subv<mode>4_1, *mulv<mode>4_1): New insns.
 	* config/i386/constraints.md (We): New constraint.
 	* config/i386/predicates.md (x86_64_sext_operand,
@@ -323,8 +341,7 @@
 
 2014-03-25  Richard Biener  <rguenther@suse.de>
 
-	* lto-wrapper.c (merge_and_complain): Handle OPT_fPIE like
-	OPT_fpie.
+	* lto-wrapper.c (merge_and_complain): Handle OPT_fPIE like OPT_fpie.
 	(run_gcc): Likewise.
 
 2014-03-25  Jakub Jelinek  <jakub@redhat.com>
@@ -550,13 +567,10 @@
 2014-03-18  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* plugin.def: Improve comment for PLUGIN_INCLUDE_FILE.
-	* doc/plugins.texi (Plugin callbacks): Mention
-	PLUGIN_INCLUDE_FILE.
+	* doc/plugins.texi (Plugin callbacks): Mention PLUGIN_INCLUDE_FILE.
 	Italicize plugin event names in description.  Explain that
-	PLUGIN_PRAGMAS has no sense for lto1. Explain
-	PLUGIN_INCLUDE_FILE.
-	Remind that no GCC functions should be called after
-	PLUGIN_FINISH.
+	PLUGIN_PRAGMAS has no sense for lto1.  Explain PLUGIN_INCLUDE_FILE.
+	Remind that no GCC functions should be called after PLUGIN_FINISH.
 	Explain what pragmas with expansion are.
 
 2014-03-18  Martin Liska  <mliska@suse.cz>
@@ -814,8 +828,7 @@
 
 2014-03-13  Cesar Philippidis  <cesar@codesourcery.com>
 
-	* lto-wrapper.c (maybe_unlink_file): Suppress diagnostic
-	messages.
+	* lto-wrapper.c (maybe_unlink_file): Suppress diagnostic messages.
 
 2014-03-13  Jakub Jelinek  <jakub@redhat.com>
 
