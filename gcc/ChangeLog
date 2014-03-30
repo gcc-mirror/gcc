@@ -1,3 +1,11 @@
+2014-03-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline
+	2014-03-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/60039
+	* config/sh/sh.md (udivsi3_i1): Clobber R1 register.
+
 2014-03-26  Martin Jambor  <mjambor@suse.cz>
 
       PR ipa/60419
