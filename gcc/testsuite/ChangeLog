@@ -1,3 +1,8 @@
+2014-03-31  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/60034
+	* gcc.target/aarch64/pr60034.c: New file.
+
 2014-03-29  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60626
