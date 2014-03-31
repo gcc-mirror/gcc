@@ -48,7 +48,8 @@ template<typename Ex>
 
 static_assert( termHandler<__cxa_exception>()
 	       == termHandler<__cxa_dependent_exception>(),
-	       "__cxa_dependent_exception::termHandler layout is correct" );
+	       "__cxa_dependent_exception::termHandler layout must be"
+	       " consistent with __cxa_exception::termHandler" );
 
 #ifndef __ARM_EABI_UNWINDER__
 template<typename Ex>
@@ -57,7 +58,8 @@ template<typename Ex>
 
 static_assert( adjptr<__cxa_exception>()
 	       == adjptr<__cxa_dependent_exception>(),
-	       "__cxa_dependent_exception::adjustedPtr layout is correct" );
+	       "__cxa_dependent_exception::adjustedPtr layout must be"
+	       " consistent with __cxa_exception::adjustedPtr" );
 #endif
 }
 
