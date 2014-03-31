@@ -23,6 +23,7 @@
 #include <exception>
 #include <stdlib.h>
 
+#ifdef _GLIBCXX_USE_C99
 void terminate() { _Exit(0); }
 
 void f() noexcept
@@ -34,8 +35,12 @@ void f() noexcept
     std::rethrow_exception(std::current_exception());
   }
 }
+#endif
 
 int main()
 {
+#ifdef _GLIBCXX_USE_C99
   f();
+#endif
+  return 0;
 }

@@ -1,3 +1,9 @@
+2014-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/18_support/exception_ptr/60612-terminate.cc
+	(terminate, f): Wrap in _GLIBCXX_USE_C99.
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc: Likewise.
+
 2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/io.xml (std.io.objects): Additional markup.
