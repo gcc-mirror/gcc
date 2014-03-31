@@ -1,3 +1,9 @@
+2014-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/60647
+	* gcc.dg/pr60647-1.c: New test.
+	* gcc.dg/pr60647-2.c: Likewise.
+
 2014-03-31  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/lto/pr55113_0.c: Skip also for 32bit multilib on x86_64.
