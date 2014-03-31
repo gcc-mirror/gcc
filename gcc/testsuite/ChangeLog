@@ -1,3 +1,11 @@
+2014-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2014-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/60700
+	* gcc.target/i386/pr60700.c: New test.
+
 2014-03-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/60700
