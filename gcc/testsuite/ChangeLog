@@ -1,3 +1,8 @@
+2014-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/60700
+	* gcc.target/i386/pr60700.c: New test.
+
 2014-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/60650
