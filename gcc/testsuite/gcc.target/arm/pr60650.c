@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-omit-frame-pointer -mabi=apcs-gnu -march=armv7-a" } */
+/* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } {"-mfloat-abi=softfp" } } */
+/* { dg-options "-O2 -fno-omit-frame-pointer -mabi=apcs-gnu -mfloat-abi=softfp" } */
+
 
 struct super_block
 {
