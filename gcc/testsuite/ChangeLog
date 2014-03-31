@@ -1,3 +1,8 @@
+2014-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/60650
+	* gcc.target/arm/pr60650.c: Adjust command line options.
+
 2014-03-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/60647
