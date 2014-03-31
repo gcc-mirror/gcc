@@ -1,3 +1,7 @@
+2014-03-31  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/lto/pr55113_0.c: Skip also for 32bit multilib on x86_64.
+
 2014-03-31  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/60034
