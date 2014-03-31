@@ -39,6 +39,8 @@ typedef double __v8df __attribute__ ((__vector_size__ (64)));
 typedef float __v16sf __attribute__ ((__vector_size__ (64)));
 typedef long long __v8di __attribute__ ((__vector_size__ (64)));
 typedef int __v16si __attribute__ ((__vector_size__ (64)));
+typedef short __v32hi __attribute__ ((__vector_size__ (64)));
+typedef char __v64qi __attribute__ ((__vector_size__ (64)));
 
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
@@ -130,6 +132,32 @@ _mm512_undefined_si512 (void)
   return __Y;
 }
 
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set1_epi8 (char __A)
+{
+  return __extension__ (__m512i)(__v64qi)
+	 { __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A };
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set1_epi16 (short __A)
+{
+  return __extension__ (__m512i)(__v32hi)
+	 { __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A,
+	   __A, __A, __A, __A, __A, __A, __A, __A };
+}
+
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set1_pd (double __A)
@@ -152,6 +180,54 @@ _mm512_set1_ps (float __A)
 						 (__mmask16) -1);
 }
 
+/* Create the vector [A B C D A B C D A B C D A B C D].  */
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set4_epi32 (int __A, int __B, int __C, int __D)
+{
+  return __extension__ (__m512i)(__v16si)
+	 { __D, __C, __B, __A, __D, __C, __B, __A,
+	   __D, __C, __B, __A, __D, __C, __B, __A };
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set4_epi64 (long long __A, long long __B, long long __C,
+		   long long __D)
+{
+  return __extension__ (__m512i) (__v8di)
+	 { __D, __C, __B, __A, __D, __C, __B, __A };
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set4_pd (double __A, double __B, double __C, double __D)
+{
+  return __extension__ (__m512d)
+	 { __D, __C, __B, __A, __D, __C, __B, __A };
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set4_ps (float __A, float __B, float __C, float __D)
+{
+  return __extension__ (__m512)
+	 { __D, __C, __B, __A, __D, __C, __B, __A,
+	   __D, __C, __B, __A, __D, __C, __B, __A };
+}
+
+#define _mm512_setr4_epi64(e0,e1,e2,e3)					      \
+  _mm512_set4_epi64(e3,e2,e1,e0)
+
+#define _mm512_setr4_epi32(e0,e1,e2,e3)					      \
+  _mm512_set4_epi32(e3,e2,e1,e0)
+
+#define _mm512_setr4_pd(e0,e1,e2,e3)					      \
+  _mm512_set4_pd(e3,e2,e1,e0)
+
+#define _mm512_setr4_ps(e0,e1,e2,e3)					      \
+  _mm512_set4_ps(e3,e2,e1,e0)
+
 extern __inline __m512
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_setzero_ps (void)
@@ -165,6 +241,13 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_setzero_pd (void)
 {
   return __extension__ (__m512d) { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_setzero_epi32 (void)
+{
+  return __extension__ (__m512i)(__v8di){ 0, 0, 0, 0, 0, 0, 0, 0 };
 }
 
 extern __inline __m512i
