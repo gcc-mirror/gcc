@@ -1234,12 +1234,26 @@ asm_visit_addr (gimple, tree op, tree, void *)
 }
 
 /* Return true iff callsite CALL has at least as many actual arguments as there
-   are formal parameters of the function currently processed by IPA-SRA.  */
+   are formal parameters of the function currently processed by IPA-SRA and
+   that their types match.  */
 
 static inline bool
-callsite_has_enough_arguments_p (gimple call)
+callsite_arguments_match_p (gimple call)
 {
-  return gimple_call_num_args (call) >= (unsigned) func_param_count;
+  if (gimple_call_num_args (call) < (unsigned) func_param_count)
+    return false;
+
+  tree parm;
+  int i;
+  for (parm = DECL_ARGUMENTS (current_function_decl), i = 0;
+       parm;
+       parm = DECL_CHAIN (parm), i++)
+    {
+      tree arg = gimple_call_arg (call, i);
+      if (!useless_type_conversion_p (TREE_TYPE (parm), TREE_TYPE (arg)))
+	return false;
+    }
+  return true;
 }
 
 /* Scan function and look for interesting expressions and create access
@@ -1294,7 +1308,7 @@ scan_function (void)
 		      if (recursive_call_p (current_function_decl, dest))
 			{
 			  encountered_recursive_call = true;
-			  if (!callsite_has_enough_arguments_p (stmt))
+			  if (!callsite_arguments_match_p (stmt))
 			    encountered_unchangable_recursive_call = true;
 			}
 		    }
@@ -4750,16 +4764,17 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
     }
 }
 
-/* Return false iff all callers have at least as many actual arguments as there
-   are formal parameters in the current function.  */
+/* Return false if all callers have at least as many actual arguments as there
+   are formal parameters in the current function and that their types
+   match.  */
 
 static bool
-not_all_callers_have_enough_arguments_p (struct cgraph_node *node,
-					 void *data ATTRIBUTE_UNUSED)
+some_callers_have_mismatched_arguments_p (struct cgraph_node *node,
+					  void *data ATTRIBUTE_UNUSED)
 {
   struct cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (!callsite_has_enough_arguments_p (cs->call_stmt))
+    if (!callsite_arguments_match_p (cs->call_stmt))
       return true;
 
   return false;
@@ -4970,12 +4985,13 @@ ipa_early_sra (void)
       goto simple_out;
     }
 
-  if (cgraph_for_node_and_aliases (node, not_all_callers_have_enough_arguments_p,
+  if (cgraph_for_node_and_aliases (node,
+				   some_callers_have_mismatched_arguments_p,
 				   NULL, true))
     {
       if (dump_file)
 	fprintf (dump_file, "There are callers with insufficient number of "
-		 "arguments.\n");
+		 "arguments or arguments with type mismatches.\n");
       goto simple_out;
     }
 

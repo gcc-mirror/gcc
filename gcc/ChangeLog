@@ -1,3 +1,12 @@
+2014-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/60647
+	* tree-sra.c (callsite_has_enough_arguments_p): Renamed to
+	callsite_arguments_match_p.  Updated all callers.  Also check types of
+	corresponding formal parameters and actual arguments.
+	(not_all_callers_have_enough_arguments_p) Renamed to
+	some_callers_have_mismatched_arguments_p.
+
 2014-03-31  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* tree-inline.c (copy_loops): Add missed copy of 'safelen'.
