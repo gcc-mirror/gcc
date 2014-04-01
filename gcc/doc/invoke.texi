@@ -20848,8 +20848,9 @@ These @samp{-m} options are supported on the SPARC:
 @opindex mno-app-regs
 @opindex mapp-regs
 Specify @option{-mapp-regs} to generate output using the global registers
-2 through 4, which the SPARC SVR4 ABI reserves for applications.  This
-is the default.
+2 through 4, which the SPARC SVR4 ABI reserves for applications.  Like the
+global register 1, each global register 2 through 4 is then treated as an
+allocable register that is clobbered by function calls.  This is the default.
 
 To be fully SVR4 ABI-compliant at the cost of some performance loss,
 specify @option{-mno-app-regs}.  You should compile libraries and system
