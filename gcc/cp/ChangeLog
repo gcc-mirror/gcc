@@ -9,7 +9,7 @@
 
 2014-04-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
-	* cp/init.c (perform_member_init): Homogenize uninitialized
+	* init.c (perform_member_init): Homogenize uninitialized
 	diagnostics.
 
 2014-04-01  Jason Merrill  <jason@redhat.com>
@@ -30,7 +30,7 @@
 	* tree.c (handle_abi_tag_attribute): Ignore abi_tag on template
 	instantiations and specializations.
 
-2014-03-31  Patrick Palka  patrick@parcs.ath.cx
+2014-03-31  Patrick Palka  <patrick@parcs.ath.cx>
 
 	PR c++/44859
 	* typeck.c (maybe_warn_about_returning_address_of_local): Unwrap
