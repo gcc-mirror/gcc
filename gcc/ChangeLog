@@ -1,3 +1,7 @@
+2014-04-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/invoke.texi (mapp-regs): Clarify.
+
 2014-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/60601
