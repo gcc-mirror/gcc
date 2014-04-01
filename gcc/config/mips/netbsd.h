@@ -32,7 +32,9 @@ along with GCC; see the file COPYING3.  If not see
       if (TARGET_ABICALLS)				\
 	builtin_define ("__ABICALLS__");		\
 							\
-      if (mips_abi == ABI_EABI)				\
+      if (mips_abi == ABI_32)				\
+	builtin_define ("__mips_o32");			\
+      else if (mips_abi == ABI_EABI)			\
 	builtin_define ("__mips_eabi");			\
       else if (mips_abi == ABI_N32)			\
 	builtin_define ("__mips_n32");			\
