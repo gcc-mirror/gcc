@@ -1169,8 +1169,9 @@ is_late_template_attribute (tree attr, tree decl)
       /* Also defer most attributes on dependent types.  This is not
 	 necessary in all cases, but is the better default.  */
       else if (dependent_type_p (type)
-	       /* But attribute visibility specifically works on
-		  templates.  */
+	       /* But attributes abi_tag and visibility specifically apply
+		  to templates.  */
+	       && !is_attribute_p ("abi_tag", name)
 	       && !is_attribute_p ("visibility", name))
 	return true;
       else

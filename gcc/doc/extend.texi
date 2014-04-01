@@ -17542,6 +17542,10 @@ unimportant.
 A redeclaration of a function or class must not add new ABI tags,
 since doing so would change the mangled name.
 
+The ABI tags apply to a name, so all instantiations and
+specializations of a template have the same tags.  The attribute will
+be ignored if applied to an explicit specialization or instantiation.
+
 The @option{-Wabi-tag} flag enables a warning about a class which does
 not have all the ABI tags used by its subobjects and virtual functions; for users with code
 that needs to coexist with an earlier ABI, using this option can help

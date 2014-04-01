@@ -1,3 +1,13 @@
+2014-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60642
+	* decl2.c (is_late_template_attribute): Don't defer abi_tag.
+	* mangle.c (write_unqualified_name): Fix abi_tag on templates.
+	* pt.c (get_template_info): Handle NAMESPACE_DECL.
+	(most_general_template): Handle more kinds of template.
+	* tree.c (handle_abi_tag_attribute): Ignore abi_tag on template
+	instantiations and specializations.
+
 2014-03-31  Patrick Palka  patrick@parcs.ath.cx
 
 	PR c++/44859
