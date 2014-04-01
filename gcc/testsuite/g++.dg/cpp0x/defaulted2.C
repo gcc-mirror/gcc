@@ -35,7 +35,7 @@ struct D: public C
 
 struct E
 {
-  const B b;
+  const B b;			// { dg-message "should be initialized" }
   E() { }			// { dg-error "uninitialized" }
 };
 

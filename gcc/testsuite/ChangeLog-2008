@@ -1814,7 +1814,7 @@
 	* gcc.dg/Warray-bounds-5.c: New test.
 	* gcc.dg/Warray-bounds-6.c: New test.
 
-2008-11-05  Fabien Chene <fabien.chene@gmail.com>
+2008-11-05  Fabien Chene <fabien@gcc.gnu.org>
 
 	PR c++/32519
 	* g++.dg/template/pr32519.C: New test.

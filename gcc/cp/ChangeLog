@@ -1,3 +1,8 @@
+2014-04-01  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* cp/init.c (perform_member_init): Homogenize uninitialized
+	diagnostics.
+
 2014-04-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60708
@@ -44,9 +49,9 @@
 2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52369
-	* cp/method.c (walk_field_subobs): improve the diagnostic
+	* cp/method.c (walk_field_subobs): Improve the diagnostic
 	locations for both REFERENCE_TYPEs and non-static const members.
-	* cp/init.c (diagnose_uninitialized_cst_or_ref_member): use %q#D
+	* cp/init.c (diagnose_uninitialized_cst_or_ref_member): Use %q#D
 	instead of %qD to be consistent with the c++11 diagnostic.
 
 2014-03-25  Jason Merrill  <jason@redhat.com>
