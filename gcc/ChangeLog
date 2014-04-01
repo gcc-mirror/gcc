@@ -1,3 +1,11 @@
+2014-04-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/60604
+	* recog.c (general_operand): Incorporate REG_CANNOT_CHANGE_MODE_P
+	check from register_operand.
+	(register_operand): Redefine in terms of general_operand.
+	(nonmemory_operand): Use register_operand for the non-constant cases.
+
 2014-04-01  Richard Biener  <rguenther@suse.de>
 
 	* gimple.h (struct gimple_statement_base): Align subcode to
