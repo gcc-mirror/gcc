@@ -3127,13 +3127,13 @@
 	* typeck.c (cp_build_modify_expr): Complain about assignment to
 	array from init list.
 
-2010-05-10  Fabien Chêne  <fabien.chene@gmail.com>
+2010-05-10  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/43719
-	* decl.c (check_initializer): strip array type before checking for
+	* decl.c (check_initializer): Strip array type before checking for
 	uninitialized const or ref members.
 
-2010-05-07  Fabien Chêne  <fabien.chene@gmail.com>
+2010-05-07  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/43951
 	* init.c (diagnose_uninitialized_cst_or_ref_member_1): Returns the
@@ -3258,12 +3258,12 @@
 	PR c++/43779
 	* typeck.c (warn_args_num): New function.
 	(convert_arguments): Use warn_args_num to print the diagnostic
-	messages. 
+	messages.
 
-2010-04-29  Fabien Chêne  <fabien.chene@gmail.com>
+2010-04-29  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/43890
-	* init.c (diagnose_uninitialized_cst_or_ref_member): check for
+	* init.c (diagnose_uninitialized_cst_or_ref_member): Check for
 	user-provided constructor while recursing.
 
 2010-04-28  Manuel López-Ibáñez  <manu@gcc.gnu.org>
@@ -3277,10 +3277,10 @@
 
 	* init.c (perform_member_init): Check CLASS_TYPE_P.
 
-2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+2010-04-27  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/29043
-	* init.c (perform_member_init): check for uninitialized const or
+	* init.c (perform_member_init): Check for uninitialized const or
 	reference members, including array types.
 
 2010-04-24  Jason Merrill  <jason@redhat.com>
@@ -3331,7 +3331,7 @@
 	convert_like_real.
 	* cp-tree.h: Adjust.
 
-2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+2010-04-27  Fabien Chêne  <fabien@gcc.gnu.org>
 	    Jason Merrill  <jason@redhat.com>
 
 	PR c++/42844
@@ -3403,7 +3403,7 @@
 
 	* call.c (type_decays_to): Call cv_unqualified for non-class type.
 
-2010-04-12  Fabien Chene  <fabien.chene@gmail.com>
+2010-04-12  Fabien Chêne  <fabien@gcc.gnu.org>>
 
 	PR c++/25811
 	* cp-tree.h (diagnose_uninitialized_cst_or_ref_member): Declare.

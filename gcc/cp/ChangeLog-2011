@@ -3511,7 +3511,7 @@
 2011-05-07  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/48859
-	* init.c (diagnose_uninitialized_cst_or_ref_member_1): stop the
+	* init.c (diagnose_uninitialized_cst_or_ref_member_1): Stop the
 	recursion if there is user defined constructor.
 
 2011-05-09  Jason Merrill  <jason@redhat.com>
