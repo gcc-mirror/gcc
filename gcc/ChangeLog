@@ -1,3 +1,8 @@
+2014-04-01  Martin Husemann  <martin@duskware.de>
+
+	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Define __mips_o32
+	for -mabi=32.
+
 2014-04-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/60604
