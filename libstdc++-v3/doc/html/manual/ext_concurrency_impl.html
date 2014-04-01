@@ -26,7 +26,7 @@ non-ancient x86 hardware, <code class="code">-march=native</code> usually does t
 trick.</p><p> For hosts without compiler intrinsics, but with capable
 hardware, hand-crafted assembly is selected. This is the case for the following hosts:
 </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>cris</p></li><li class="listitem"><p>hppa</p></li><li class="listitem"><p>i386</p></li><li class="listitem"><p>i486</p></li><li class="listitem"><p>m48k</p></li><li class="listitem"><p>mips</p></li><li class="listitem"><p>sparc</p></li></ul></div><p>And for the rest, a simulated atomic lock via pthreads.
-</p><p> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html" target="_top"> documentation</a>.
+</p><p> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html" target="_top"> documentation</a>.
 </p><p> More details on the library fallbacks from the porting <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">section</a>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.impl.thread"></a>Thread Abstraction</h3></div></div></div><p>A thin layer above IEEE 1003.1 (i.e. pthreads) is used to abstract
 the thread interface for GCC. This layer is called "gthread," and is

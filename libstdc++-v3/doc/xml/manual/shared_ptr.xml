@@ -243,7 +243,7 @@ available policies are:
        </para>
        <para>
 Selected when GCC supports a builtin atomic compare-and-swap operation
-on the target processor (see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html">Atomic
+on the target processor (see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html">Atomic
 Builtins</link>.)  The reference counts are maintained using a lock-free
 algorithm and GCC's atomic builtins, which provide the required memory
 synchronisation.

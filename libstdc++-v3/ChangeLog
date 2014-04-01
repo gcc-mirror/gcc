@@ -1,3 +1,15 @@
+2014-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/backwards_compatibility.xml (backwards.third.headers):
+	Update link.
+	* doc/xml/manual/policy_data_structures_biblio.xml (bibliography):
+	Fix broken links.
+	* doc/xml/manual/shared_ptr.xml (shared_ptr.impl): Likewise.
+	* doc/xml/manual/using_exceptions.xml (bibliography): Likewise.
+	* doc/xml/manual/concurrency_extensions.xml
+	(manual.ext.concurrency.impl.atomic_fallbacks): Likewise.
+	* doc/html/*: Regenerate.
+
 2014-03-31  Lars Gullik Bjønnes  <larsbj@gullik.org>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
