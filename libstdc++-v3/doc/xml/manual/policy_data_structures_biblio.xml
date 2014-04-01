@@ -181,7 +181,7 @@
     <biblioentry xml:id="biblio.dawestimer">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="www.boost.org/doc/libs/release/libs/timer/">
+	      xlink:href="http://www.boost.org/doc/libs/release/libs/timer/">
 	  Boost Timer Library
 	</link>
       </title>
@@ -208,7 +208,7 @@
     <biblioentry xml:id="biblio.clearypool">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="www.boost.org/doc/libs/release/libs/pool/">
+	      xlink:href="http://www.boost.org/doc/libs/release/libs/pool/">
 	  Boost Pool Library
 	</link>
       </title>
@@ -236,7 +236,7 @@
     <biblioentry xml:id="biblio.maddocktraits">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="www.boost.org/doc/libs/release/libs/type_traits/">
+	      xlink:href="http://www.boost.org/doc/libs/release/libs/type_traits/">
 	  Boost Type Traits Library
 	</link>
       </title>
