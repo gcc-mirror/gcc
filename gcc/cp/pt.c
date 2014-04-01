@@ -6933,6 +6933,26 @@ coerce_template_parms (tree parms,
 	{
           if (PACK_EXPANSION_P (arg))
             {
+	      /* "If every valid specialization of a variadic template
+		 requires an empty template parameter pack, the template is
+		 ill-formed, no diagnostic required."  So check that the
+		 pattern works with this parameter.  */
+	      tree pattern = PACK_EXPANSION_PATTERN (arg);
+	      tree conv = convert_template_argument (TREE_VALUE (parm),
+						     pattern, new_args,
+						     complain, parm_idx,
+						     in_decl);
+	      if (conv == error_mark_node)
+		{
+		  inform (input_location, "so any instantiation with a "
+			 "non-empty parameter pack would be ill-formed");
+		  ++lost;
+		}
+	      else if (TYPE_P (conv) && !TYPE_P (pattern))
+		/* Recover from missing typename.  */
+		TREE_VEC_ELT (inner_args, arg_idx)
+		  = make_pack_expansion (conv);
+
               /* We don't know how many args we have yet, just
                  use the unconverted ones for now.  */
               new_inner_args = inner_args;
