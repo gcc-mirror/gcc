@@ -1,3 +1,9 @@
+2014-03-31  Patrick Palka  patrick@parcs.ath.cx
+
+	PR c++/44859
+	* typeck.c (maybe_warn_about_returning_address_of_local): Unwrap
+	COMPONENT_REFs and ARRAY_REFs sooner.
+
 2014-03-29  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60626
