@@ -305,6 +305,9 @@ struct GTY(()) gimple_statement_base {
   /* Nonzero if this statement contains volatile operands.  */
   unsigned has_volatile_ops 	: 1;
 
+  /* Padding to get subcode to 16 bit alignment.  */
+  unsigned pad			: 1;
+
   /* The SUBCODE field can be used for tuple-specific flags for tuples
      that do not require subcodes.  Note that SUBCODE should be at
      least as wide as tree codes, as several tuples store tree codes
