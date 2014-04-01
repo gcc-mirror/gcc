@@ -1,3 +1,8 @@
+2014-04-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (struct gimple_statement_base): Align subcode to
+	16 bits.
+
 2014-04-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* doc/invoke.texi (mapp-regs): Clarify.
