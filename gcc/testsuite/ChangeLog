@@ -1,7 +1,7 @@
 2014-04-01  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/60363
-	* gcc.target/tree-ssa/ssa-dom-thread-4.c: Xfail for
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Xfail for
 	logical_op_short_circuit targets.
 
 2014-04-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
