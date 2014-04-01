@@ -1,3 +1,9 @@
+2014-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60374
+	* pt.c (coerce_template_parms): Check that the pack expansion
+	pattern works with the first matching parameter.
+
 2014-04-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* cp/init.c (perform_member_init): Homogenize uninitialized
