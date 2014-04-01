@@ -1,3 +1,8 @@
+2014-04-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document vec_vgbbd.
+
 2014-04-01  Richard Henderson  <rth@redhat.com>
 
 	PR target/60704
