@@ -6,7 +6,7 @@ struct foo
 };
 
 template<typename ... Args>
-struct foo< typename Args::is_applied... > // { dg-error "not used|Args" }
+struct foo< typename Args::is_applied... > // { dg-error "not deducible|Args" }
 {
     static bool const value = false;
 };
