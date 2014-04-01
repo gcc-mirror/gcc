@@ -1,3 +1,8 @@
+2014-04-01  Richard Biener  <rguenther@suse.de>
+
+	* simple-object.c (simple_object_internal_write): Handle
+	EINTR and short writes.
+
 2014-03-28  Richard Biener  <rguenther@suse.de>
 
 	* simple-object.c (simple_object_internal_read): Handle
