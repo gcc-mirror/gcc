@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -O3" } */
+/* { dg-options "-std=c99 -O3 -mno-fma -mno-fma4" } */
 
 extern double fma (double, double, double);
 void fun() __attribute__((target("fma")));

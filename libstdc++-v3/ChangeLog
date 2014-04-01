@@ -1,3 +1,53 @@
+2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/io.xml (std.io.objects): Additional markup.
+
+	* doc/xml/faq.xml (faq): Refer to clauses instead of chapters.
+	* doc/xml/manual/appendix_contributing.xml (contrib.design_notes):
+	Likewise.
+	* doc/xml/manual/backwards_compatibility.xml (backwards.third):
+	Likewise.
+	* doc/xml/manual/test.xml (test.organization.layout): Likewise.
+
+	* doc/xml/manual/containers.xml (associative.bitset.size_variable):
+	Fix bad s/part/chapter/ substitutions.
+	* doc/xml/manual/io.xml (std.io): Likewise.
+	* doc/xml/manual/numerics.xml (std.numerics.generalized_ops): Likewise.
+	* doc/xml/manual/strings.xml (strings.string.Cstring): Likewise.
+
+	* doc/html/*: Regenerate.
+
+2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60612
+	* libsupc++/eh_ptr.cc: Assert __cxa_dependent_exception layout is
+	compatible with __cxa_exception.
+	* libsupc++/unwind-cxx.h (__cxa_dependent_exception): Add padding.
+	Fix typos in comments.
+	* testsuite/18_support/exception_ptr/60612-terminate.cc: New.
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc: New.
+
+2014-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60658
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::is_lock_free()):
+	Use sizeof pointer type not the element type.
+	* testsuite/29_atomics/atomic/60658.cc: New.
+
+2014-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Remove TLS
+	entries.
+
 2014-03-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/23_containers/bitset/45713.cc: Skip compile on hppa*64*-*-*.

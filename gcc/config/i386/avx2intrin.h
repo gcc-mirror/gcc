@@ -1233,10 +1233,10 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_i32gather_pd (double const *base, __m128i index, const int scale)
 {
-  __v2df src = _mm_setzero_pd ();
-  __v2df mask = _mm_cmpeq_pd (src, src);
+  __v2df zero = _mm_setzero_pd ();
+  __v2df mask = _mm_cmpeq_pd (zero, zero);
 
-  return (__m128d) __builtin_ia32_gathersiv2df (src,
+  return (__m128d) __builtin_ia32_gathersiv2df (_mm_undefined_pd (),
 						base,
 						(__v4si)index,
 						mask,
@@ -1259,10 +1259,10 @@ extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_i32gather_pd (double const *base, __m128i index, const int scale)
 {
-  __v4df src = _mm256_setzero_pd ();
-  __v4df mask = _mm256_cmp_pd (src, src, _CMP_EQ_OQ);
+  __v4df zero = _mm256_setzero_pd ();
+  __v4df mask = _mm256_cmp_pd (zero, zero, _CMP_EQ_OQ);
 
-  return (__m256d) __builtin_ia32_gathersiv4df (src,
+  return (__m256d) __builtin_ia32_gathersiv4df (_mm256_undefined_pd (),
 						base,
 						(__v4si)index,
 						mask,

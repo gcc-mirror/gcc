@@ -1327,35 +1327,39 @@ propagate_pure_const (void)
 	  w_l->pure_const_state = this_state;
 	  w_l->looping = this_looping;
 
-	  switch (this_state)
-	    {
-	    case IPA_CONST:
-	      if (!TREE_READONLY (w->decl))
-		{
-		  warn_function_const (w->decl, !this_looping);
-		  if (dump_file)
-		    fprintf (dump_file, "Function found to be %sconst: %s\n",
-			     this_looping ? "looping " : "",
-			     w->name ());
-		}
-	      cgraph_set_const_flag (w, true, this_looping);
-	      break;
+	  /* Inline clones share declaration with their offline copies;
+	     do not modify their declarations since the offline copy may
+	     be different.  */
+	  if (!w->global.inlined_to)
+	    switch (this_state)
+	      {
+	      case IPA_CONST:
+		if (!TREE_READONLY (w->decl))
+		  {
+		    warn_function_const (w->decl, !this_looping);
+		    if (dump_file)
+		      fprintf (dump_file, "Function found to be %sconst: %s\n",
+			       this_looping ? "looping " : "",
+			       w->name ());
+		  }
+		cgraph_set_const_flag (w, true, this_looping);
+		break;
 
-	    case IPA_PURE:
-	      if (!DECL_PURE_P (w->decl))
-		{
-		  warn_function_pure (w->decl, !this_looping);
-		  if (dump_file)
-		    fprintf (dump_file, "Function found to be %spure: %s\n",
-			     this_looping ? "looping " : "",
-			     w->name ());
-		}
-	      cgraph_set_pure_flag (w, true, this_looping);
-	      break;
+	      case IPA_PURE:
+		if (!DECL_PURE_P (w->decl))
+		  {
+		    warn_function_pure (w->decl, !this_looping);
+		    if (dump_file)
+		      fprintf (dump_file, "Function found to be %spure: %s\n",
+			       this_looping ? "looping " : "",
+			       w->name ());
+		  }
+		cgraph_set_pure_flag (w, true, this_looping);
+		break;
 
-	    default:
-	      break;
-	    }
+	      default:
+		break;
+	      }
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
 	}
@@ -1448,10 +1452,16 @@ propagate_nothrow (void)
 	  funct_state w_l = get_function_state (w);
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
-	      cgraph_set_nothrow_flag (w, true);
-	      if (dump_file)
-		fprintf (dump_file, "Function found to be nothrow: %s\n",
-			 w->name ());
+	      /* Inline clones share declaration with their offline copies;
+		 do not modify their declarations since the offline copy may
+		 be different.  */
+	      if (!w->global.inlined_to)
+		{
+		  cgraph_set_nothrow_flag (w, true);
+		  if (dump_file)
+		    fprintf (dump_file, "Function found to be nothrow: %s\n",
+			     w->name ());
+		}
 	    }
 	  else if (can_throw && !TREE_NOTHROW (w->decl))
 	    w_l->can_throw = true;

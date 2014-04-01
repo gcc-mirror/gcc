@@ -49,7 +49,7 @@ AC_PROG_CC
 AC_PROG_CXX
 # AC_PROG_LIBTOOL
 # AC_CONFIG_MACRO_DIR([..])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile libcilkrts.spec])
 AM_ENABLE_MULTILIB(, ..)
 AC_FUNC_ALLOCA
 
@@ -182,6 +182,32 @@ AC_LINK_IFELSE(
    pthread_attr_setaffinity_np (&attr, sizeof (cpu_set_t), &cpuset);])],
   AC_DEFINE(HAVE_PTHREAD_AFFINITY_NP, 1,
 [       Define if pthread_{,attr_}{g,s}etaffinity_np is supported.]))
+
+# Check to see if -pthread or -lpthread is needed.  Prefer the former.
+# Note that the CILK_SELF_SPEC in gcc.c may force -pthread.
+# In case the pthread.h system header is not found, this test will fail.
+CFLAGS="$CFLAGS -pthread"
+AC_LINK_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#include <pthread.h>
+   void *g(void *d) { return NULL; }],
+  [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
+ [],
+ [CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
+  AC_LINK_IFELSE(
+   [AC_LANG_PROGRAM(
+    [#include <pthread.h>
+     void *g(void *d) { return NULL; }],
+    [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
+   [],
+   [AC_MSG_ERROR([Pthreads are required to build libcilkrts])])])
+
+if test $enable_shared = yes; then
+  link_cilkrts="-lcilkrts %{static: $LIBS}"
+else
+  link_cilkrts="-lcilkrts $LIBS"
+fi
+AC_SUBST(link_cilkrts)
 
 
 # Must be last

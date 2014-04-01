@@ -1639,11 +1639,18 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	return NULL_TREE;
       target = gimple_get_virt_method_for_binfo (token, binfo);
     }
-#ifdef ENABLE_CHECKING
-  if (target)
-    gcc_assert (possible_polymorphic_call_target_p
-		 (ie, cgraph_get_node (target)));
-#endif
+
+  if (target && !possible_polymorphic_call_target_p (ie,
+						     cgraph_get_node (target)))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Type inconsident devirtualization: %s/%i->%s\n",
+		 ie->caller->name (), ie->caller->order,
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
+      target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+      cgraph_get_create_node (target);
+    }
 
   return target;
 }
@@ -2804,9 +2811,7 @@ create_specialized_node (struct cgraph_node *node,
       if (aggvals)
 	ipa_dump_agg_replacement_values (dump_file, aggvals);
     }
-  gcc_checking_assert (ipa_node_params_vector.exists ()
-		       && (ipa_node_params_vector.length ()
-			   > (unsigned) cgraph_max_uid));
+  ipa_check_create_node_params ();
   update_profiling_info (node, new_node);
   new_info = IPA_NODE_REF (new_node);
   new_info->ipcp_orig_node = node;

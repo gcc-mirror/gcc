@@ -3,11 +3,12 @@
 /* { dg-options "-Wconversion -Woverflow" } */
 
 int f (unsigned int);
+typedef sitype __attribute__((mode(SI)));
 
 int
 g (void)
 {
-  int si = 12;
+  sitype si = 12;
   unsigned int ui = -1; /* { dg-warning "21:negative integer implicitly converted to unsigned type" } */
   unsigned char uc;
   ui = si; /* { dg-warning "8:conversion" } */

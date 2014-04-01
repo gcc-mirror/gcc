@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=signed-integer-overflow" } */
 
+#include <stdio.h>
+
 #ifndef ASM1
 # define ASM1(a) /* Nothing */
 #endif
@@ -51,6 +53,8 @@
 int
 main (void)
 {
+  fputs ("UBSAN TEST START\n", stderr);
+
   CHECK (FN1 (char, char, +), 23);
   CHECK (FN1 (char, char, -), 5);
   CHECK (FN1 (char, char, *), 126);
@@ -258,5 +262,8 @@ main (void)
   CHECK (FN5 (long long int), -77);
   CHECK (FN5 (unsigned long long int), -77);
 
+  fputs ("UBSAN TEST END\n", stderr);
   return 0;
 }
+
+/* { dg-output "UBSAN TEST START(\n|\r\n|\r)UBSAN TEST END" } */

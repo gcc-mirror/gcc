@@ -1,3 +1,16 @@
+2014-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60331
+	* testsuite/libgomp.c++/udr-11.C: New test.
+	* testsuite/libgomp.c++/udr-12.C: New test.
+	* testsuite/libgomp.c++/udr-13.C: New test.
+	* testsuite/libgomp.c++/udr-14.C: New test.
+	* testsuite/libgomp.c++/udr-15.C: New test.
+	* testsuite/libgomp.c++/udr-16.C: New test.
+	* testsuite/libgomp.c++/udr-17.C: New test.
+	* testsuite/libgomp.c++/udr-18.C: New test.
+	* testsuite/libgomp.c++/udr-19.C: New test.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years

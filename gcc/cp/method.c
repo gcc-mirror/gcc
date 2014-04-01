@@ -1110,15 +1110,23 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	      && default_init_uninitialized_part (mem_type))
 	    {
 	      if (diag)
-		error ("uninitialized non-static const member %q#D",
-		       field);
+		{
+		  error ("uninitialized const member in %q#T",
+			 current_class_type);
+		  inform (DECL_SOURCE_LOCATION (field),
+			  "%q#D should be initialized", field);
+		}
 	      bad = true;
 	    }
 	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
 	    {
 	      if (diag)
-		error ("uninitialized non-static reference member %q#D",
-		       field);
+		{
+		  error ("uninitialized reference member in %q#T",
+			 current_class_type);
+		  inform (DECL_SOURCE_LOCATION (field),
+			  "%q#D should be initialized", field);
+		}
 	      bad = true;
 	    }
 

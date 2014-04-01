@@ -35,6 +35,32 @@
 
 using namespace __cxxabiv1;
 
+// Verify assumptions about member layout in exception types
+namespace
+{
+template<typename Ex>
+  constexpr std::size_t unwindhdr()
+  { return offsetof(Ex, unwindHeader); }
+
+template<typename Ex>
+  constexpr std::size_t termHandler()
+  { return unwindhdr<Ex>() - offsetof(Ex, terminateHandler); }
+
+static_assert( termHandler<__cxa_exception>()
+	       == termHandler<__cxa_dependent_exception>(),
+	       "__cxa_dependent_exception::termHandler layout is correct" );
+
+#ifndef __ARM_EABI_UNWINDER__
+template<typename Ex>
+  constexpr std::ptrdiff_t adjptr()
+  { return unwindhdr<Ex>() - offsetof(Ex, adjustedPtr); }
+
+static_assert( adjptr<__cxa_exception>()
+	       == adjptr<__cxa_dependent_exception>(),
+	       "__cxa_dependent_exception::adjustedPtr layout is correct" );
+#endif
+}
+
 std::__exception_ptr::exception_ptr::exception_ptr() _GLIBCXX_USE_NOEXCEPT
 : _M_exception_object(0) { }
 

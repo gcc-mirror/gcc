@@ -477,6 +477,10 @@ extern int rs6000_vector_align[];
 #define VECTOR_ELT_ORDER_BIG                                  \
   (BYTES_BIG_ENDIAN || (rs6000_altivec_element_order == 2))
 
+/* Element number of the 64-bit value in a 128-bit vector that can be accessed
+   with scalar instructions.  */
+#define VECTOR_ELEMENT_SCALAR_64BIT	((BYTES_BIG_ENDIAN) ? 0 : 1)
+
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.
    ALIGN_POWER word-aligns FP doubles (default AIX ABI).

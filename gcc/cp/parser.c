@@ -8718,14 +8718,17 @@ cp_parser_lambda_expression (cp_parser* parser)
 {
   tree lambda_expr = build_lambda_expr ();
   tree type;
-  bool ok;
+  bool ok = true;
 
   LAMBDA_EXPR_LOCATION (lambda_expr)
     = cp_lexer_peek_token (parser->lexer)->location;
 
   if (cp_unevaluated_operand)
-    error_at (LAMBDA_EXPR_LOCATION (lambda_expr),
-	      "lambda-expression in unevaluated context");
+    {
+      error_at (LAMBDA_EXPR_LOCATION (lambda_expr),
+		"lambda-expression in unevaluated context");
+      ok = false;
+    }
 
   /* We may be in the middle of deferred access check.  Disable
      it now.  */
@@ -8770,12 +8773,15 @@ cp_parser_lambda_expression (cp_parser* parser)
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
-    ok = cp_parser_lambda_declarator_opt (parser, lambda_expr);
+    ok &= cp_parser_lambda_declarator_opt (parser, lambda_expr);
 
     if (ok)
       cp_parser_lambda_body (parser, lambda_expr);
     else if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
-      cp_parser_skip_to_end_of_block_or_statement (parser);
+      {
+	if (cp_parser_skip_to_closing_brace (parser))
+	  cp_lexer_consume_token (parser->lexer);
+      }
 
     /* The capture list was built up in reverse order; fix that now.  */
     LAMBDA_EXPR_CAPTURE_LIST (lambda_expr)
@@ -16823,7 +16829,14 @@ cp_parser_init_declarator (cp_parser* parser,
      been issued.  */
   if (parser->fully_implicit_function_template_p)
     if (!function_declarator_p (declarator))
-      finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+      {
+	if (pushed_scope)
+	  {
+	    pop_scope (pushed_scope);
+	    pushed_scope = 0;
+	  }
+	finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+      }
 
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */
@@ -18207,7 +18220,9 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
 
   (void) cleanup;
 
-  if (!processing_specialization && !processing_template_parmlist)
+  if (!processing_specialization
+      && !processing_template_parmlist
+      && !processing_explicit_instantiation)
     if (!current_function_decl
 	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
       parser->auto_is_implicit_function_template_parm_p = true;
@@ -31991,7 +32006,7 @@ synthesize_implicit_template_parm  (cp_parser *parser)
 	{
 	  /* If not defining a class, then any class scope is a scope level in
 	     an out-of-line member definition.  In this case simply wind back
-	     beyond the first such scope to inject the template argument list.
+	     beyond the first such scope to inject the template parameter list.
 	     Otherwise wind back to the class being defined.  The latter can
 	     occur in class member friend declarations such as:
 
@@ -32002,12 +32017,23 @@ synthesize_implicit_template_parm  (cp_parser *parser)
 		 friend void A::foo (auto);
 	       };
 
-	    The template argument list synthesized for the friend declaration
-	    must be injected in the scope of 'B', just beyond the scope of 'A'
-	    introduced by 'A::'.  */
+	    The template parameter list synthesized for the friend declaration
+	    must be injected in the scope of 'B'.  This can also occur in
+	    erroneous cases such as:
 
-	  while (scope->kind == sk_class
-		 && !TYPE_BEING_DEFINED (scope->this_entity))
+	       struct A {
+	         struct B {
+		   void foo (auto);
+		 };
+		 void B::foo (auto) {}
+	       };
+
+	    Here the attempted definition of 'B::foo' within 'A' is ill-formed
+	    but, nevertheless, the template parameter list synthesized for the
+	    declarator should be injected into the scope of 'A' as if the
+	    ill-formed template was specified explicitly.  */
+
+	  while (scope->kind == sk_class && !scope->defining_class_p)
 	    {
 	      parent_scope = scope;
 	      scope = scope->level_chain;

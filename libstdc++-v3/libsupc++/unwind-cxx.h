@@ -81,7 +81,7 @@ struct __cxa_exception
   // Stack of exceptions in cleanups.
   __cxa_exception* nextPropagatingException;
 
-  // The nuber of active cleanup handlers for this exception.
+  // The number of active cleanup handlers for this exception.
   int propagationCount;
 #else
   // Cache parsed handler data from the personality routine Phase 1
@@ -114,6 +114,11 @@ struct __cxa_dependent_exception
   // The primary exception this thing depends on.
   void *primaryException;
 
+  // Unused member to get similar layout to __cxa_exception, otherwise the
+  // alignment requirements of _Unwind_Exception would require padding bytes
+  // before the unwindHeader member.
+  void (_GLIBCXX_CDTOR_CALLABI *__padding)(void *);
+
   // The C++ standard has entertaining rules wrt calling set_terminate
   // and set_unexpected in the middle of the exception cleanup process.
   std::unexpected_handler unexpectedHandler;
@@ -130,7 +135,7 @@ struct __cxa_dependent_exception
   // Stack of exceptions in cleanups.
   __cxa_exception* nextPropagatingException;
 
-  // The nuber of active cleanup handlers for this exception.
+  // The number of active cleanup handlers for this exception.
   int propagationCount;
 #else
   // Cache parsed handler data from the personality routine Phase 1

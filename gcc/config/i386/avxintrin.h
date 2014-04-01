@@ -1168,6 +1168,27 @@ _mm256_movemask_ps (__m256 __A)
 }
 
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_undefined_pd (void)
+{
+  __m256d __Y = __Y;
+  return __Y;
+}
+
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_undefined_ps (void)
+{
+  __m256 __Y = __Y;
+  return __Y;
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_undefined_si256 (void)
+{
+  __m256i __Y = __Y;
+  return __Y;
+}
+
+extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_setzero_pd (void)
 {
   return __extension__ (__m256d){ 0.0, 0.0, 0.0, 0.0 };

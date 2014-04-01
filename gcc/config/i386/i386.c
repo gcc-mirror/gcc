@@ -13940,13 +13940,13 @@ ix86_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       if (GET_CODE (XEXP (x, 0)) == MULT)
 	{
 	  changed = 1;
-	  XEXP (x, 0) = force_operand (XEXP (x, 0), 0);
+	  XEXP (x, 0) = copy_addr_to_reg (XEXP (x, 0));
 	}
 
       if (GET_CODE (XEXP (x, 1)) == MULT)
 	{
 	  changed = 1;
-	  XEXP (x, 1) = force_operand (XEXP (x, 1), 0);
+	  XEXP (x, 1) = copy_addr_to_reg (XEXP (x, 1));
 	}
 
       if (changed
@@ -22770,7 +22770,7 @@ counter_mode (rtx count_exp)
 static rtx
 ix86_copy_addr_to_reg (rtx addr)
 {
-  if (GET_MODE (addr) == Pmode)
+  if (GET_MODE (addr) == Pmode || GET_MODE (addr) == VOIDmode)
     return copy_addr_to_reg (addr);
   else
     {

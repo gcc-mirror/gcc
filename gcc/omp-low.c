@@ -10124,7 +10124,20 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       if ((ctx || task_shared_vars)
 	  && walk_gimple_op (stmt, lower_omp_regimplify_p,
 			     ctx ? NULL : &wi))
-	gimple_regimplify_operands (stmt, gsi_p);
+	{
+	  /* Just remove clobbers, this should happen only if we have
+	     "privatized" local addressable variables in SIMD regions,
+	     the clobber isn't needed in that case and gimplifying address
+	     of the ARRAY_REF into a pointer and creating MEM_REF based
+	     clobber would create worse code than we get with the clobber
+	     dropped.  */
+	  if (gimple_clobber_p (stmt))
+	    {
+	      gsi_replace (gsi_p, gimple_build_nop (), true);
+	      break;
+	    }
+	  gimple_regimplify_operands (stmt, gsi_p);
+	}
       break;
     }
 }

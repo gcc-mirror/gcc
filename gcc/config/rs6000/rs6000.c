@@ -2310,6 +2310,10 @@ rs6000_debug_reg_global (void)
 	   (int)END_BUILTINS);
   fprintf (stderr, DEBUG_FMT_D, "Number of rs6000 builtins",
 	   (int)RS6000_BUILTIN_COUNT);
+
+  if (TARGET_VSX)
+    fprintf (stderr, DEBUG_FMT_D, "VSX easy 64-bit scalar element",
+	     (int)VECTOR_ELEMENT_SCALAR_64BIT);
 }
 
 
@@ -32535,6 +32539,11 @@ fusion_gpr_load_p (rtx *operands, bool peep2_p)
 	return false;
 
       if (!peep2_reg_dead_p (2, addis_reg))
+	return false;
+
+      /* If the target register being loaded is the stack pointer, we must
+         avoid loading any other value into it, even temporarily.  */
+      if (REG_P (target) && REGNO (target) == STACK_POINTER_REGNUM)
 	return false;
     }
 

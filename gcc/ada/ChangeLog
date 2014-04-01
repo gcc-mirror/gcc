@@ -1,3 +1,17 @@
+2014-03-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/60703
+	* system-linux-alpha.ads: Adjust for Ada 2005.
+	* system-linux-mips.ads: Likewise.
+	* system-linux-mips64el.ads: Likewise.
+	* system-linux-mipsel.ads: Likewise.
+	* system-linux-s390.ads: Likewise.
+	* system-linux-s390x.ads: Likewise.
+	* system-linux-sparc.ads: Likewise.
+	* system-linux-sparcv9.ads: Likewise.
+	* system-rtems.ads: Likewise.
+	* system-vxworks-arm.ads: Likewise.
+
 2014-03-16  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR ada/39172

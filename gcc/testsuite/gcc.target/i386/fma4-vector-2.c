@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! { ia32 } } } } */
-/* { dg-options "-O2 -mfma4 -ftree-vectorize -mtune=generic" } */
+/* { dg-options "-O2 -mfma4 -ftree-vectorize -mtune=generic -mno-fma" } */
 
 float r[256], s[256];
 float x[256];

@@ -9336,31 +9336,58 @@ simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   else if (TREE_CODE (op0) == INTEGER_CST)
     set_value_range_to_value (&vr0, op0, NULL);
   else
-    return false;
+    set_value_range_to_varying (&vr0);
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *get_value_range (op1);
   else if (TREE_CODE (op1) == INTEGER_CST)
     set_value_range_to_value (&vr1, op1, NULL);
   else
-    return false;
+    set_value_range_to_varying (&vr1);
 
-  if (!range_int_cst_p (&vr0) || !range_int_cst_p (&vr1))
-    return false;
-
-  tree r1 = int_const_binop (subcode, vr0.min, vr1.min);
-  tree r2 = int_const_binop (subcode, vr0.max, vr1.max);
-  if (r1 == NULL_TREE || TREE_OVERFLOW (r1)
-      || r2 == NULL_TREE || TREE_OVERFLOW (r2))
-    return false;
-  if (subcode == MULT_EXPR)
+  if (!range_int_cst_p (&vr0))
     {
-      tree r3 = int_const_binop (subcode, vr0.min, vr1.max);
-      tree r4 = int_const_binop (subcode, vr0.max, vr1.min);
-      if (r3 == NULL_TREE || TREE_OVERFLOW (r3)
-	  || r4 == NULL_TREE || TREE_OVERFLOW (r4))
+      /* If one range is VR_ANTI_RANGE, VR_VARYING etc.,
+	 optimize at least x = y + 0; x = y - 0; x = y * 0;
+	 and x = y * 1; which never overflow.  */
+      if (!range_int_cst_p (&vr1))
+	return false;
+      if (tree_int_cst_sgn (vr1.min) == -1)
+	return false;
+      if (compare_tree_int (vr1.max, subcode == MULT_EXPR) == 1)
 	return false;
     }
+  else if (!range_int_cst_p (&vr1))
+    {
+      /* If one range is VR_ANTI_RANGE, VR_VARYING etc.,
+	 optimize at least x = 0 + y; x = 0 * y; and x = 1 * y;
+	 which never overflow.  */
+      if (subcode == MINUS_EXPR)
+	return false;
+      if (!range_int_cst_p (&vr0))
+	return false;
+      if (tree_int_cst_sgn (vr0.min) == -1)
+	return false;
+      if (compare_tree_int (vr0.max, subcode == MULT_EXPR) == 1)
+	return false;
+    }
+  else
+    {
+      tree r1 = int_const_binop (subcode, vr0.min, vr1.min);
+      tree r2 = int_const_binop (subcode, vr0.max, vr1.max);
+      if (r1 == NULL_TREE || TREE_OVERFLOW (r1)
+	  || r2 == NULL_TREE || TREE_OVERFLOW (r2))
+	return false;
+      if (subcode == MULT_EXPR)
+	{
+	  tree r3 = int_const_binop (subcode, vr0.min, vr1.max);
+	  tree r4 = int_const_binop (subcode, vr0.max, vr1.min);
+	  if (r3 == NULL_TREE || TREE_OVERFLOW (r3)
+	      || r4 == NULL_TREE || TREE_OVERFLOW (r4))
+	    return false;
+	}
+    }
+
   gimple g = gimple_build_assign_with_ops (subcode, gimple_call_lhs (stmt),
 					   op0, op1);
   gsi_replace (gsi, g, false);

@@ -32,7 +32,7 @@
     <para>
      The GNU Standard C++ Library v3 is an ongoing project to
      implement the ISO 14882 Standard C++ library as described in
-     chapters 17 through 27 and annex D.  For those who want to see
+     clauses 17 through 27 and annex D.  For those who want to see
      exactly how far the project has come, or just want the latest
      bleeding-edge code, the up-to-date source is available over
      anonymous SVN, and can even be browsed over

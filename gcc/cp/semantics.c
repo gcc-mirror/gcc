@@ -2777,6 +2777,7 @@ begin_class_definition (tree t)
   maybe_process_partial_specialization (t);
   pushclass (t);
   TYPE_BEING_DEFINED (t) = 1;
+  class_binding_level->defining_class_p = 1;
 
   if (flag_pack_struct)
     {
@@ -10253,6 +10254,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     case DO_STMT:
     case FOR_STMT:
     case WHILE_STMT:
+    case DECL_EXPR:
       if (flags & tf_error)
         error ("expression %qE is not a constant-expression", t);
       return false;

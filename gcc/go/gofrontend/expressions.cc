@@ -4262,8 +4262,12 @@ Unary_expression::do_get_tree(Translate_context* context)
 
           go_assert(!this->expr_->is_composite_literal()
                     || this->expr_->is_immutable());
-          Unary_expression* ue = static_cast<Unary_expression*>(this->expr_);
-          go_assert(ue == NULL || ue->op() != OPERATOR_AND);
+	  if (this->expr_->classification() == EXPRESSION_UNARY)
+	    {
+	      Unary_expression* ue =
+		static_cast<Unary_expression*>(this->expr_);
+	      go_assert(ue->op() != OPERATOR_AND);
+	    }
 	}
 
       // Build a decl for a constant constructor.

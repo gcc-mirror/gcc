@@ -338,6 +338,20 @@
 	 (match_operand 0 "x86_64_immediate_operand"))
     (match_operand 0 "general_operand")))
 
+;; Return true if OP is non-VOIDmode general operand representable
+;; on x86_64.  This predicate is used in sign-extending conversion
+;; operations that require non-VOIDmode immediate operands.
+(define_predicate "x86_64_sext_operand"
+  (and (match_test "GET_MODE (op) != VOIDmode")
+       (match_operand 0 "x86_64_general_operand")))
+
+;; Return true if OP is non-VOIDmode general operand.  This predicate
+;; is used in sign-extending conversion operations that require
+;; non-VOIDmode immediate operands.
+(define_predicate "sext_operand"
+  (and (match_test "GET_MODE (op) != VOIDmode")
+       (match_operand 0 "general_operand")))
+
 ;; Return true if OP is representable on x86_64 as zero-extended operand.
 ;; This predicate is used in zero-extending conversion operations that
 ;; require non-VOIDmode immediate operands.

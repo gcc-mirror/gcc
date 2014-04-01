@@ -8664,8 +8664,13 @@ regular (non-LTO) compilation.
 
 If object files containing GIMPLE bytecode are stored in a library archive, say
 @file{libfoo.a}, it is possible to extract and use them in an LTO link if you
-are using a linker with plugin support.  To enable this feature, use
-the flag @option{-fuse-linker-plugin} at link time:
+are using a linker with plugin support.  To create static libraries suitable
+for LTO, use @command{gcc-ar} and @command{gcc-ranlib} instead of @command{ar}
+and @code{ranlib}; to show the symbols of object files with GIMPLE bytecode, use
+@command{gcc-nm}.  Those commands require that @command{ar}, @command{ranlib}
+and @command{nm} have been compiled with plugin support.  At link time, use the the
+flag @option{-fuse-linker-plugin} to ensure that the library participates in
+the LTO optimization process:
 
 @smallexample
 gcc -o myprog -O2 -flto -fuse-linker-plugin a.o b.o -lfoo
@@ -8678,7 +8683,9 @@ to make them part of the aggregated GIMPLE image to be optimized.
 If you are not using a linker with plugin support and/or do not
 enable the linker plugin, then the objects inside @file{libfoo.a}
 are extracted and linked as usual, but they do not participate
-in the LTO optimization process.
+in the LTO optimization process.  In order to make a static library suitable
+for both LTO optimization and usual linkage, compile its object files with
+@option{-flto} @code{-ffat-lto-objects}.
 
 Link-time optimizations do not require the presence of the whole program to
 operate.  If the program does not require any symbols to be exported, it is

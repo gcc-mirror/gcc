@@ -588,7 +588,7 @@ libstdc++-v3.
 </para>
 
       <para>The subset commonly known as the Standard Template Library
-	 (chapters 23 through 25, mostly) is adapted from the final release
+	 (clauses 23 through 25, mostly) is adapted from the final release
 	 of the SGI STL (version 3.3), with extensive changes.
       </para>
 

@@ -1,6 +1,6 @@
 
 /* { dg-do run } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -std=c99" } */
 
 #include "limits.h"
 
@@ -37,8 +37,9 @@ extern void abort (void);
 SET_RVEC (8, SCHAR)
 SET_RVEC (16, SHRT)
 SET_RVEC (32, INT)
-SET_RVEC (64, LONG_LONG)
+SET_RVEC (64, LLONG)
 
+void
 set_rvector_long (pRLONG a)
 {
   int i;
@@ -49,8 +50,9 @@ set_rvector_long (pRLONG a)
 SET_VEC (8, SCHAR)
 SET_VEC (16, SHRT)
 SET_VEC (32, INT)
-SET_VEC (64, LONG_LONG)
+SET_VEC (64, LLONG)
 
+void
 set_vector_long (long *__restrict__ a)
 {
   long i;
@@ -63,6 +65,7 @@ CHECK_VEC (16)
 CHECK_VEC (32)
 CHECK_VEC (64)
 
+void
 check_vector_long (long *__restrict__ a, long *__restrict__ b)
 {
   long i;

@@ -232,7 +232,7 @@
    <para>
      There are a couple of ways to handle this kind of thing.  Please
      consider all of them before passing judgement.  They include, in
-     no chaptericular order:
+     no particular order:
    </para>
       <itemizedlist>
 	<listitem><para>A very large N in <code>bitset&lt;N&gt;</code>.</para></listitem>

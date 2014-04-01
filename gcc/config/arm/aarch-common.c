@@ -31,6 +31,42 @@
 #include "c-family/c-common.h"
 #include "rtl.h"
 
+/* In ARMv8-A there's a general expectation that AESE/AESMC
+   and AESD/AESIMC sequences of the form:
+
+   AESE Vn, _
+   AESMC Vn, Vn
+
+   will issue both instructions in a single cycle on super-scalar
+   implementations.  This function identifies such pairs.  */
+
+int
+aarch_crypto_can_dual_issue (rtx producer, rtx consumer)
+{
+  rtx producer_src, consumer_src;
+
+  producer = single_set (producer);
+  consumer = single_set (consumer);
+
+  producer_src = producer ? SET_SRC (producer) : NULL;
+  consumer_src = consumer ? SET_SRC (consumer) : NULL;
+
+  if (producer_src && consumer_src
+      && GET_CODE (producer_src) == UNSPEC && GET_CODE (consumer_src) == UNSPEC
+      && ((XINT (producer_src, 1) == UNSPEC_AESE
+           && XINT (consumer_src, 1) == UNSPEC_AESMC)
+          || (XINT (producer_src, 1) == UNSPEC_AESD
+              && XINT (consumer_src, 1) == UNSPEC_AESIMC)))
+  {
+    unsigned int regno = REGNO (SET_DEST (producer));
+
+    return REGNO (SET_DEST (consumer)) == regno
+           && REGNO (XVECEXP (consumer_src, 0, 0)) == regno;
+  }
+
+  return 0;
+}
+
 typedef struct
 {
   rtx_code search_code;

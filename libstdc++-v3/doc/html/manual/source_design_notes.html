@@ -190,7 +190,7 @@
 <br />
     Fixing these cases will require an audit of all inline functions<br />
     defined in the library to determine which merit inlining, and moving<br />
-    the rest out of line. This is an issue mainly in chapters 23, 25, and<br />
+    the rest out of line. This is an issue mainly in clauses 23, 25, and<br />
     27. Of course it can be done incrementally, and we should generally<br />
     accept patches that move large functions out of line and into ".tcc"<br />
     files, which can later be pulled into a repository. Compiler/linker<br />
@@ -404,7 +404,7 @@
     must be replaced with something more rationally behaved.)<br />
 <br />
     All the C headers need the treatment above; in the standard these<br />
-    headers are mentioned in various chapters. Below, I have only<br />
+    headers are mentioned in various clauses. Below, I have only<br />
     mentioned those that present interesting implementation issues.<br />
 <br />
     The components identified as "mostly complete", below, have not been<br />
@@ -533,7 +533,7 @@
     files to improve link-time behavior is extremely unsatisfactory,<br />
     literally tripling library-build time with no commensurate improvement<br />
     in static program link sizes. It must be redone. (Similar work is<br />
-    needed for some components in chapters 22 and 27.)<br />
+    needed for some components in clauses 22 and 27.)<br />
 <br />
     Other work needed for strings is MT-safety, as discussed under the<br />
     chapter 20 heading.<br />

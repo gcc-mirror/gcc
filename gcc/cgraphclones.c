@@ -238,8 +238,12 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   FOR_EACH_VEC_ELT (redirect_callers, i, e)
     {
       /* Redirect calls to the old version node to point to its new
-	 version.  */
-      cgraph_redirect_edge_callee (e, new_node);
+	 version.  The only exception is when the edge was proved to
+	 be unreachable during the clonning procedure.  */
+      if (!e->callee
+	  || DECL_BUILT_IN_CLASS (e->callee->decl) != BUILT_IN_NORMAL
+	  || DECL_FUNCTION_CODE (e->callee->decl) != BUILT_IN_UNREACHABLE)
+        cgraph_redirect_edge_callee (e, new_node);
     }
 
 

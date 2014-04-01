@@ -1,3 +1,15 @@
+2014-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60689
+	* c-common.c (add_atomic_size_parameter): When creating new
+	params vector, push the size argument first.
+
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla, ubsan_instrument_return): Adjust
+	ubsan_create_data callers.
+
 2014-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/60603
