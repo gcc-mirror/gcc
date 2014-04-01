@@ -1,3 +1,9 @@
+2014-04-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/60128
+	* gfortran.dg/fmt_en.f90: Skip unsupported rounding tests.
+	XFAIL for i?86-*-solaris2.9* and hppa*-*-hpux*.
+
 2014-03-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/60700
