@@ -948,6 +948,9 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   bool user = false;
   enum conversion_rank rank = cr_exact;
 
+  /* We might need to propagate the size from the element to the array.  */
+  complete_type (type);
+
   if (TYPE_DOMAIN (type)
       && !variably_modified_type_p (TYPE_DOMAIN (type), NULL_TREE))
     {

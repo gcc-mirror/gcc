@@ -1,5 +1,8 @@
 2014-04-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60708
+	* call.c (build_array_conv): Call complete_type.
+
 	PR c++/60713
 	* typeck2.c (PICFLAG_SIDE_EFFECTS): New.
 	(picflag_from_initializer): Return it.
