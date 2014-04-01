@@ -695,7 +695,7 @@ nios2_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file, "\taddi\tr3, r3, %%lo(_gp_got - 1b)\n");
       fprintf (file, "\tadd\tr2, r2, r3\n");
       fprintf (file, "\tmovhi\tr3, %%call_hiadj(_mcount)\n");
-      fprintf (file, "\taddi\tr3, %%call_lo(_mcount)\n");
+      fprintf (file, "\taddi\tr3, r3, %%call_lo(_mcount)\n");
       fprintf (file, "\tadd\tr3, r2, r3\n");
       fprintf (file, "\tldw\tr2, 0(r3)\n");
       fprintf (file, "\tcallr\tr2\n");
@@ -1183,7 +1183,7 @@ nios2_unspec_offset (rtx loc, int unspec)
 
 /* Generate GOT pointer based address with large offset.  */
 static rtx
-nios2_large_got_address (rtx sym, rtx offset)
+nios2_large_got_address (rtx offset)
 {
   rtx addr = gen_reg_rtx (Pmode);
   emit_insn (gen_add3_insn (addr, pic_offset_table_rtx,
@@ -1199,7 +1199,7 @@ nios2_got_address (rtx loc, int unspec)
   crtl->uses_pic_offset_table = 1;
 
   if (nios2_large_offset_p (unspec))
-    return nios2_large_got_address (loc, offset);
+    return nios2_large_got_address (offset);
 
   return gen_rtx_PLUS (Pmode, pic_offset_table_rtx, offset);
 }
@@ -1802,6 +1802,30 @@ nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	}
     }
 
+  return x;
+}
+
+static rtx
+nios2_delegitimize_address (rtx x)
+{
+  x = delegitimize_mem_from_attrs (x);
+
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == UNSPEC)
+    {
+      switch (XINT (XEXP (x, 0), 1))
+	{
+	case UNSPEC_PIC_SYM:
+	case UNSPEC_PIC_CALL_SYM:
+	case UNSPEC_PIC_GOTOFF_SYM:
+	case UNSPEC_ADD_TLS_GD:
+	case UNSPEC_ADD_TLS_LDM:
+	case UNSPEC_LOAD_TLS_IE:
+	case UNSPEC_ADD_TLS_LE:
+	  x = XVECEXP (XEXP (x, 0), 0, 0);
+	  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+	  break;
+	}
+    }
   return x;
 }
 
@@ -3258,6 +3282,9 @@ nios2_merge_decl_attributes (tree olddecl, tree newdecl)
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS nios2_legitimize_address
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS nios2_delegitimize_address
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P nios2_legitimate_address_p
