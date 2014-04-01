@@ -15099,6 +15099,9 @@ vector unsigned short vec_vclzh (vector unsigned short);
 vector int vec_vclzw (vector int);
 vector unsigned int vec_vclzw (vector int);
 
+vector signed char vec_vgbbd (vector signed char);
+vector unsigned char vec_vgbbd (vector unsigned char);
+
 vector long long vec_vmaxsd (vector long long, vector long long);
 
 vector unsigned long long vec_vmaxud (vector unsigned long long,
