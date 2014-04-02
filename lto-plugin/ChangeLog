@@ -1,3 +1,8 @@
+2014-04-02  Richard Biener  <rguenther@suse.de>
+
+	* lto-plugin.c (onload): Fail to load if -fno-use-linker-plugin
+	is set in COLLECT_GCC_OPTIONS.
+
 2014-03-28  Richard Biener  <rguenther@suse.de>
 
 	* lto-plugin.c (process_symtab): Handle EINTR and short reads.

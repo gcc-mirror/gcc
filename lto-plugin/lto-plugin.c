@@ -1067,5 +1067,12 @@ onload (struct ld_plugin_tv *tv)
 	     "could not register the all_symbols_read callback");
     }
 
+  /* Support -fno-use-linker-plugin by failing to load the plugin
+     for the case where it is auto-loaded by BFD.  */
+  char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+  if (collect_gcc_options
+      && strstr (collect_gcc_options, "'-fno-use-linker-plugin'"))
+    return LDPS_ERR;
+
   return LDPS_OK;
 }
