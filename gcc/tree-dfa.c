@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-pass.h"
 #include "params.h"
+#include "wide-int.h"
 
 /* Build and maintain data flow information for trees.  */
 
@@ -406,7 +407,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       if (mode == BLKmode)
 	size_tree = TYPE_SIZE (TREE_TYPE (exp));
       else
-	bitsize = wi::to_offset (GET_MODE_BITSIZE (mode));
+	bitsize = int(GET_MODE_BITSIZE (mode));
     }
   if (size_tree != NULL_TREE
       && TREE_CODE (size_tree) == INTEGER_CST)
@@ -461,11 +462,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			else
 			  {
 			    offset_int tem = (wi::to_offset (ssize)
-					      - wi::to_offset (fsize);
+					      - wi::to_offset (fsize));
 			    if (BITS_PER_UNIT == 8)
 			      tem = wi::lshift (tem, 3);
 			    else
-			      tem *= wi::to_offset (BITS_PER_UNIT);
+			      tem *= BITS_PER_UNIT;
 			    tem -= woffset;
 			    maxsize += tem;
 			  }
@@ -656,7 +657,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
      negative bit_offset here.  We might want to store a zero offset
      in this case.  */
   *poffset = bit_offset.to_shwi ();
-  if (!wi::fits_shwi (maxsize) || wi::neg_p (maxsize))
+  if (!wi::fits_shwi_p (maxsize) || wi::neg_p (maxsize))
     *pmax_size = -1;
   else
     *pmax_size = maxsize.to_shwi ();
