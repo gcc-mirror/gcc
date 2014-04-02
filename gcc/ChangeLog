@@ -1,5 +1,10 @@
 2014-04-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu/spu.c (pad_bb): Do not crash when the last
+	insn is CODE_FOR_blockage.
+
+2014-04-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.md ("insv"): Fail if bitoffset+bitsize
 	lies outside the target mode.
 
