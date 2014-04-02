@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-store -fno-common" } */
+/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-store -mno-prefer-avx128 -fno-common" } */
 
 #define N 1024
 

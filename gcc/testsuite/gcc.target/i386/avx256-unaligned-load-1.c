@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-load" } */
+/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-load -mno-prefer-avx128" } */
 
 #define N 1024
 

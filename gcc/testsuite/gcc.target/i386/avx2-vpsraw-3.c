@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mavx2 -O2 -ftree-vectorize -save-temps" } */
+/* { dg-options "-mavx2 -mno-prefer-avx128 -O2 -ftree-vectorize -save-temps" } */
 /* { dg-require-effective-target avx2 } */
 
 

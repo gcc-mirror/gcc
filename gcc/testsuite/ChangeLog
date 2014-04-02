@@ -1,3 +1,22 @@
+2014-04-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/387-3.c, gcc.target/i386/387-4.c,
+	gcc.target/i386/pr30970.c: Use -mtune=generic.
+	* gcc.target/i386/avx2-vpaddb-3.c,
+	gcc.target/i386/avx2-vpaddd-3.c, gcc.target/i386/avx2-vpaddq-3.c,
+	gcc.target/i386/avx2-vpaddw-3.c, gcc.target/i386/avx2-vpmulld-3.c,
+	gcc.target/i386/avx2-vpmullw-3.c, gcc.target/i386/avx2-vpsrad-3.c,
+	gcc.target/i386/avx2-vpsraw-3.c, gcc.target/i386/avx2-vpsrld-3.c,
+	gcc.target/i386/avx2-vpsrlw-3.c, gcc.target/i386/avx2-vpsubb-3.c,
+	gcc.target/i386/avx2-vpsubd-3.c, gcc.target/i386/avx2-vpsubq-3.c,
+	gcc.target/i386/avx2-vpsubw-3.c,
+	gcc.target/i386/avx256-unaligned-load-1.c,
+	gcc.target/i386/avx256-unaligned-load-4.c,
+	gcc.target/i386/avx256-unaligned-store-1.c,
+	gcc.target/i386/avx256-unaligned-store-2.c,
+	gcc.target/i386/avx256-unaligned-store-4.c: Use
+	-mno-prefer-avx128.
+
 2014-03-26  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Iain Sandoe <iain@codesourcery.com>
 
