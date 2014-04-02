@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=core2" } } */
 /* { dg-options "-O2 -msse4 -march=core2 -dp" } */
 
 #include <emmintrin.h>
