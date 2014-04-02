@@ -1,3 +1,14 @@
+2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libbacktrace/Makefile.am (libsanitizer_libbacktrace_la_SOURCES):
+	Add ../../libbacktrace/sort.c.
+	* libbacktrace/Makefile.in: Regenerate.
+	* libbacktrace/backtrace-rename.h (backtrace_qsort): Define.
+
+2014-03-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* configure.tgt: Unsupported for little endian PowerPC for now.
+
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60055

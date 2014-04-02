@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target size32plus } */
 /* { dg-options "-fno-strict-volatile-bitfields" } */
 
 extern void abort (void);

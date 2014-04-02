@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 template<class> struct X { static const bool primary = true; };
 template<class R, class... ArgTypes> struct X<R(int, ArgTypes...)> { 
   static const bool primary = false;

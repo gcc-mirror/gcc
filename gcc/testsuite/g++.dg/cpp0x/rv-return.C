@@ -1,5 +1,5 @@
 // PR c++/41815
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template<typename T, typename U> struct same_type;
 template<typename T> struct same_type<T, T> {};

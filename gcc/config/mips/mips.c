@@ -17206,15 +17206,24 @@ mips_option_override (void)
   /* Make sure that when TARGET_PAIRED_SINGLE_FLOAT is true, TARGET_FLOAT64
      and TARGET_HARD_FLOAT_ABI are both true.  */
   if (TARGET_PAIRED_SINGLE_FLOAT && !(TARGET_FLOAT64 && TARGET_HARD_FLOAT_ABI))
-    error ("%qs must be used with %qs",
-	   TARGET_MIPS3D ? "-mips3d" : "-mpaired-single",
-	   TARGET_HARD_FLOAT_ABI ? "-mfp64" : "-mhard-float");
+    {
+      error ("%qs must be used with %qs",
+	     TARGET_MIPS3D ? "-mips3d" : "-mpaired-single",
+	     TARGET_HARD_FLOAT_ABI ? "-mfp64" : "-mhard-float");
+      target_flags &= ~MASK_PAIRED_SINGLE_FLOAT;
+      TARGET_MIPS3D = 0;
+    }
 
-  /* Make sure that the ISA supports TARGET_PAIRED_SINGLE_FLOAT when it is
-     enabled.  */
+  /* Make sure that -mpaired-single is only used on ISAs that support it.
+     We must disable it otherwise since it relies on other ISA properties
+     like ISA_HAS_8CC having their normal values.  */
   if (TARGET_PAIRED_SINGLE_FLOAT && !ISA_HAS_PAIRED_SINGLE)
-    warning (0, "the %qs architecture does not support paired-single"
+    {
+      error ("the %qs architecture does not support paired-single"
 	     " instructions", mips_arch_info->name);
+      target_flags &= ~MASK_PAIRED_SINGLE_FLOAT;
+      TARGET_MIPS3D = 0;
+    }
 
   if (mips_r10k_cache_barrier != R10K_CACHE_BARRIER_NONE
       && !TARGET_CACHE_BUILTIN)

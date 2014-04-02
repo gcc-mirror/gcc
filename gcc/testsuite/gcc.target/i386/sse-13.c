@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1" } */
 
 #include <mm_malloc.h>
 
@@ -138,7 +138,7 @@
 #define __builtin_ia32_shufpd(A, B, N) __builtin_ia32_shufpd(A, B, 0)
 
 /* xmmintrin.h */
-#define __builtin_prefetch(P, A, I) __builtin_prefetch(P, A, _MM_HINT_NTA)
+#define __builtin_prefetch(P, A, I) __builtin_prefetch(P, 0, _MM_HINT_NTA)
 #define __builtin_ia32_pshufw(A, N) __builtin_ia32_pshufw(A, 0)
 #define __builtin_ia32_vec_set_v4hi(A, D, N) \
   __builtin_ia32_vec_set_v4hi(A, D, 0)

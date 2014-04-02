@@ -1,5 +1,5 @@
 // PR c++/42277
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct S { int s; };
 template <int N>

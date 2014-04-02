@@ -1784,7 +1784,9 @@ package body VMS_Conv is
                      --  so process the compiler switch.
 
                   elsif Command.Name.all = "MAKE"
-                    or else Command.Name.all = "CHOP" then
+                          or else
+                        Command.Name.all = "CHOP"
+                  then
                      Sw :=
                        Matching_Name
                          (Arg (Arg'First .. SwP),

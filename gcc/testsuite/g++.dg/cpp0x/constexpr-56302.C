@@ -1,6 +1,6 @@
 // PR c++/56302
-// { dg-do compile }
-// { dg-options "-std=c++11 -O0" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-O0" }
 
 constexpr int foo () { return 42; }
 constexpr int x = foo () + 2;

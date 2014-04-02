@@ -2259,6 +2259,19 @@ proc check_effective_target_arm_vfp_ok { } {
     }
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=vfp3
+# -mfloat-abi=softfp.
+
+proc check_effective_target_arm_vfp3_ok { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_vfp3_ok object {
+	    int dummy;
+	} "-mfpu=vfp3 -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=fp-armv8
 # -mfloat-abi=softfp.
 proc check_effective_target_arm_v8_vfp_ok {} {
@@ -2404,6 +2417,14 @@ proc add_options_for_arm_neonv2 { flags } {
     }
     global et_arm_neonv2_flags
     return "$flags $et_arm_neonv2_flags"
+}
+
+# Add the options needed for vfp3.
+proc add_options_for_arm_vfp3 { flags } {
+    if { ! [check_effective_target_arm_vfp3_ok] } {
+        return "$flags"
+    }
+    return "$flags -mfpu=vfp3 -mfloat-abi=softfp"
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=neon
@@ -5435,29 +5456,44 @@ proc check_effective_target_c++ { } {
  return 0
 }
 
-# Check which language standard is active by checking for the presence of
-# one of the C++11 -std flags.  This assumes that the default for the
-# compiler is C++98, and that there will never be multiple -std= arguments
-# on the command line.
-proc check_effective_target_c++11 { } {
+# Check whether the current active language standard supports the features
+# of C++11/C++1y by checking for the presence of one of the -std
+# flags.  This assumes that the default for the compiler is C++98, and that
+# there will never be multiple -std= arguments on the command line.
+proc check_effective_target_c++11_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
     return [check-flags { { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }]
 }
-
-proc check_effective_target_c++1y { } {
+proc check_effective_target_c++11 { } {
+    if [check_effective_target_c++11_only] {
+	return 1
+    }
+    return [check_effective_target_c++1y]
+}
+proc check_effective_target_c++11_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { -std=c++1y -std=gnu++1y } }]
+    return ![check_effective_target_c++1y]
 }
 
-proc check_effective_target_c++98 { } {
+proc check_effective_target_c++1y_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 -std=c++1y -std=gnu++1y } }]
+    return [check-flags { { } { } { -std=c++1y -std=gnu++1y -std=c++14 -std=gnu++14 } }]
+}
+proc check_effective_target_c++1y { } {
+    return [check_effective_target_c++1y_only]
+}
+
+proc check_effective_target_c++98_only { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return ![check_effective_target_c++11]
 }
 
 # Return 1 if expensive testcases should be run.
@@ -5667,6 +5703,20 @@ proc check_effective_target_fenv_exceptions {} {
 	    abort ();
 	}
     } "-std=gnu99"]
+}
+
+# Return 1 if LOGICAL_OP_NON_SHORT_CIRCUIT is set to 0 for the current target.
+
+proc check_effective_target_logical_op_short_circuit {} {
+    if { [istarget mips*-*-*]
+	 || [istarget arc*-*-*]
+	 || [istarget avr*-*-*]
+	 || [istarget crisv32-*-*] || [istarget cris-*-*]
+	 || [istarget s390*-*-*]
+	 || [check_effective_target_arm_cortex_m] } {
+	return 1
+    }
+    return 0
 }
 
 # Record that dg-final test TEST requires convential compilation.

@@ -1,5 +1,6 @@
 // PR c++/54922
-// { dg-options "-std=c++11 -pedantic" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-pedantic" }
 
 #define SA(X) static_assert(X,#X)
 

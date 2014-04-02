@@ -1962,7 +1962,6 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
       /* It is unclear if we can ever reach here, but we may as well handle
 	 it.  Allocate a temporary, and split this into a store/load to/from
 	 the temporary.  */
-
       temp = assign_stack_temp (GET_MODE (dst), ssize);
       emit_group_store (temp, src, type, ssize);
       emit_group_load (dst, temp, type, ssize);
@@ -3695,12 +3694,21 @@ compress_float_constant (rtx x, rtx y)
 	 into a new pseudo.  This constant may be used in different modes,
 	 and if not, combine will put things back together for us.  */
       trunc_y = force_reg (srcmode, trunc_y);
-      emit_unop_insn (ic, x, trunc_y, UNKNOWN);
+
+      /* If x is a hard register, perform the extension into a pseudo,
+	 so that e.g. stack realignment code is aware of it.  */
+      rtx target = x;
+      if (REG_P (x) && HARD_REGISTER_P (x))
+	target = gen_reg_rtx (dstmode);
+
+      emit_unop_insn (ic, target, trunc_y, UNKNOWN);
       last_insn = get_last_insn ();
 
-      if (REG_P (x))
+      if (REG_P (target))
 	set_unique_reg_note (last_insn, REG_EQUAL, y);
 
+      if (target != x)
+	return emit_move_insn (x, target);
       return last_insn;
     }
 
@@ -7678,6 +7686,11 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 			 modifier == EXPAND_INITIALIZER
 			  ? EXPAND_INITIALIZER : EXPAND_NORMAL);
 
+      /* expand_expr is allowed to return an object in a mode other
+	 than TMODE.  If it did, we need to convert.  */
+      if (GET_MODE (tmp) != VOIDmode && tmode != GET_MODE (tmp))
+	tmp = convert_modes (tmode, GET_MODE (tmp),
+			     tmp, TYPE_UNSIGNED (TREE_TYPE (offset)));
       result = convert_memory_address_addr_space (tmode, result, as);
       tmp = convert_memory_address_addr_space (tmode, tmp, as);
 
@@ -7824,11 +7837,7 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
       if (avoid_temp_mem)
 	return NULL_RTX;
 
-      target
-	= assign_temp (build_qualified_type (type, (TYPE_QUALS (type)
-						    | (TREE_READONLY (exp)
-						       * TYPE_QUAL_CONST))),
-		       TREE_ADDRESSABLE (exp), 1);
+      target = assign_temp (type, TREE_ADDRESSABLE (exp), 1);
     }
 
   store_constructor (exp, target, 0, int_expr_size (exp));
@@ -10056,10 +10065,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	   and need be, put it there.  */
 	else if (CONSTANT_P (op0) || (!MEM_P (op0) && must_force_mem))
 	  {
-	    tree nt = build_qualified_type (TREE_TYPE (tem),
-					    (TYPE_QUALS (TREE_TYPE (tem))
-					     | TYPE_QUAL_CONST));
-	    memloc = assign_temp (nt, 1, 1);
+	    memloc = assign_temp (TREE_TYPE (tem), 1, 1);
 	    emit_move_insn (memloc, op0);
 	    op0 = memloc;
 	    mem_attrs_from_type = true;
@@ -10217,19 +10223,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	    /* If the result type is BLKmode, store the data into a temporary
 	       of the appropriate type, but with the mode corresponding to the
-	       mode for the data we have (op0's mode).  It's tempting to make
-	       this a constant type, since we know it's only being stored once,
-	       but that can cause problems if we are taking the address of this
-	       COMPONENT_REF because the MEM of any reference via that address
-	       will have flags corresponding to the type, which will not
-	       necessarily be constant.  */
+	       mode for the data we have (op0's mode).  */
 	    if (mode == BLKmode)
 	      {
-		rtx new_rtx;
-
-		new_rtx = assign_stack_temp_for_type (ext_mode,
-						   GET_MODE_BITSIZE (ext_mode),
-						   type);
+		rtx new_rtx
+		  = assign_stack_temp_for_type (ext_mode,
+						GET_MODE_BITSIZE (ext_mode),
+						type);
 		emit_move_insn (new_rtx, op0);
 		op0 = copy_rtx (new_rtx);
 		PUT_MODE (op0, BLKmode);
@@ -10404,6 +10404,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       else if (INTEGRAL_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (treeop0)))
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
+      /* If the output type is a bit-field type, do an extraction.  */
+      else if (reduce_bit_field)
+	return extract_bit_field (op0, TYPE_PRECISION (type), 0,
+				  TYPE_UNSIGNED (type), NULL_RTX,
+				  mode, mode);
       /* As a last resort, spill op0 to memory, and reload it in a
 	 different mode.  */
       else if (!MEM_P (op0))
@@ -10426,10 +10431,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  op0 = target;
 	}
 
-      /* At this point, OP0 is in the correct mode.  If the output type is
-	 such that the operand is known to be aligned, indicate that it is.
-	 Otherwise, we need only be concerned about alignment for non-BLKmode
-	 results.  */
+      /* If OP0 is (now) a MEM, we need to deal with alignment issues.  If the
+	 output type is such that the operand is known to be aligned, indicate
+	 that it is.  Otherwise, we need only be concerned about alignment for
+	 non-BLKmode results.  */
       if (MEM_P (op0))
 	{
 	  enum insn_code icode;
@@ -11112,11 +11117,12 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
      GET_MODE_SIZE, because this indicates how large insns are.  The other
      uses should all be Pmode, because they are addresses.  This code
      could fail if addresses and insns are not the same size.  */
-  index = gen_rtx_PLUS
-    (Pmode,
-     gen_rtx_MULT (Pmode, index,
-		   gen_int_mode (GET_MODE_SIZE (CASE_VECTOR_MODE), Pmode)),
-     gen_rtx_LABEL_REF (Pmode, table_label));
+  index = simplify_gen_binary (MULT, Pmode, index,
+			       gen_int_mode (GET_MODE_SIZE (CASE_VECTOR_MODE),
+					     Pmode));
+  index = simplify_gen_binary (PLUS, Pmode, index,
+			       gen_rtx_LABEL_REF (Pmode, table_label));
+
 #ifdef PIC_CASE_VECTOR_ADDRESS
   if (flag_pic)
     index = PIC_CASE_VECTOR_ADDRESS (index);

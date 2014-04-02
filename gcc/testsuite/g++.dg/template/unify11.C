@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/40684
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 struct A
 {

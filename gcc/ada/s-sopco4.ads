@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  which now generates concatenation inline. It is retained only because
 --  it may be used during bootstrapping using old versions of the compiler.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 package System.String_Ops_Concat_4 is
    pragma Pure;

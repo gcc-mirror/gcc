@@ -627,12 +627,35 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
    to insert statements as needed.  */
 
 static int
-cfe_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
-	  void *data ATTRIBUTE_UNUSED)
+cfe_code (gfc_code **c, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   current_code = c;
   inserted_block = NULL;
   changed_statement = NULL;
+
+  /* Do not do anything inside a WHERE statement; scalar assignments, BLOCKs
+     and allocation on assigment are prohibited inside WHERE, and finally
+     masking an expression would lead to wrong-code when replacing
+
+     WHERE (a>0)
+       b = sum(foo(a) + foo(a))
+     END WHERE
+
+     with
+
+     WHERE (a > 0)
+       tmp = foo(a)
+       b = sum(tmp + tmp)
+     END WHERE
+*/
+
+  if ((*c)->op == EXEC_WHERE)
+    {
+      *walk_subtrees = 0;
+      return 0;
+    }
+  
+
   return 0;
 }
 
@@ -1391,7 +1414,9 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 	  /* Replace A // B < A // C with B < C, and A // B < C // B
 	     with A < C.  */
 	  if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
+	      && op1->expr_type == EXPR_OP
 	      && op1->value.op.op == INTRINSIC_CONCAT
+	      && op2->expr_type == EXPR_OP
 	      && op2->value.op.op == INTRINSIC_CONCAT)
 	    {
 	      gfc_expr *op1_left = op1->value.op.op1;

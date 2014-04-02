@@ -834,7 +834,8 @@ c_common_post_options (const char **pfilename)
   if (flag_iso
       && !c_dialect_cxx ()
       && (global_options_set.x_flag_fp_contract_mode
-	  == (enum fp_contract_mode) 0))
+	  == (enum fp_contract_mode) 0)
+      && flag_unsafe_math_optimizations == 0)
     flag_fp_contract_mode = FP_CONTRACT_OFF;
 
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
@@ -1273,17 +1274,18 @@ c_finish_options (void)
     {
       size_t i;
 
-      {
-	/* Make sure all of the builtins about to be declared have
-	  BUILTINS_LOCATION has their source_location.  */
-	source_location builtins_loc = BUILTINS_LOCATION;
-	cpp_force_token_locations (parse_in, &builtins_loc);
+      cb_file_change (parse_in,
+		      linemap_add (line_table, LC_RENAME, 0,
+				   _("<built-in>"), 0));
+      /* Make sure all of the builtins about to be declared have
+	 BUILTINS_LOCATION has their source_location.  */
+      source_location builtins_loc = BUILTINS_LOCATION;
+      cpp_force_token_locations (parse_in, &builtins_loc);
 
-	cpp_init_builtins (parse_in, flag_hosted);
-	c_cpp_builtins (parse_in);
+      cpp_init_builtins (parse_in, flag_hosted);
+      c_cpp_builtins (parse_in);
 
-	cpp_stop_forcing_token_locations (parse_in);
-      }
+      cpp_stop_forcing_token_locations (parse_in);
 
       /* We're about to send user input to cpplib, so make it warn for
 	 things that we previously (when we sent it internal definitions)

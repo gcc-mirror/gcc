@@ -316,6 +316,10 @@ gigi (Node_Id gnat_root,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
+#if TARGET_ABI_OPEN_VMS
+  vms_float_format = Float_Format;
+#endif
+
   for (i = 0; i < number_file; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as
@@ -1190,6 +1194,7 @@ static tree
 Pragma_to_gnu (Node_Id gnat_node)
 {
   tree gnu_result = alloc_stmt_list ();
+  unsigned char pragma_id;
   Node_Id gnat_temp;
 
   /* Do nothing if we are just annotating types and check for (and ignore)
@@ -1198,7 +1203,8 @@ Pragma_to_gnu (Node_Id gnat_node)
       || !Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
     return gnu_result;
 
-  switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node))))
+  pragma_id = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
+  switch (pragma_id)
     {
     case Pragma_Inspection_Point:
       /* Do nothing at top level: all such variables are already viewable.  */
@@ -1315,6 +1321,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	post_error ("must specify -g?", gnat_node);
       break;
 
+    case Pragma_Warning_As_Error:
     case Pragma_Warnings:
       {
 	Node_Id gnat_expr;
@@ -1327,12 +1334,26 @@ Pragma_to_gnu (Node_Id gnat_node)
 
 	gnat_temp = First (Pragma_Argument_Associations (gnat_node));
 
-	/* This is the String form: pragma Warnings (String).  */
+	/* This is the String form: pragma Warning{s|_As_Error}(String).  */
 	if (Nkind (Expression (gnat_temp)) == N_String_Literal)
 	  {
-	    kind = DK_WARNING;
+	    switch (pragma_id)
+	      {
+	      case Pragma_Warning_As_Error:
+		kind = DK_ERROR;
+		imply = false;
+		break;
+
+	      case Pragma_Warnings:
+		kind = DK_WARNING;
+		imply = true;
+		break;
+
+	      default:
+		gcc_unreachable ();
+	      }
+
 	    gnat_expr = Expression (gnat_temp);
-	    imply = true;
 	  }
 
 	/* This is the On/Off form: pragma Warnings (On | Off [,String]).  */

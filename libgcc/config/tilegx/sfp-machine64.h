@@ -50,10 +50,16 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
     R##_c = FP_CLS_NAN;						\
   } while (0)
 
+#define _FP_TININESS_AFTER_ROUNDING 0
+
 #define	__LITTLE_ENDIAN	1234
 #define	__BIG_ENDIAN	4321
 
+#if defined __BIG_ENDIAN__
+#define __BYTE_ORDER __BIG_ENDIAN
+#else
 #define __BYTE_ORDER __LITTLE_ENDIAN
+#endif
 
 /* Define ALIASNAME as a strong alias for NAME.  */
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)

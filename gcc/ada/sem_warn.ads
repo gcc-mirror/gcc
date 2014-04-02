@@ -39,10 +39,13 @@ package Sem_Warn is
 
    type Warnings_Off_Entry is record
       N : Node_Id;
-      --  A pragma Warnings (Off, ent) node
+      --  A pragma Warnings (Off, ent [,Reason]) node
 
       E : Entity_Id;
       --  The entity involved
+
+      R : String_Id;
+      --  Warning reason if present, or null if not (not currently used)
    end record;
 
    --  An entry is made in the following table for any valid Pragma Warnings

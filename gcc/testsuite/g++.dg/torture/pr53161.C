@@ -1,4 +1,4 @@
-/* { dg-options "-std=c++11" } */
+/* { dg-do compile { target c++11 } } */
 void gg();
 static __typeof(gg) __gthrw_gg __attribute__((__weakref__("gg")));
 

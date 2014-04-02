@@ -1404,6 +1404,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case FIELD_DECL:
     case DEBUG_EXPR_DECL:
     case NAMESPACE_DECL:
+    case NAMELIST_DECL:
       dump_decl_name (buffer, node, flags);
       break;
 
@@ -2700,6 +2701,14 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
 {
   INDENT (spc);
 
+  if (TREE_CODE(t) == NAMELIST_DECL)
+    {
+      pp_string(buffer, "namelist ");
+      dump_decl_name (buffer, t, flags);
+      pp_semicolon (buffer);
+      return;
+    }
+
   if (TREE_CODE (t) == TYPE_DECL)
     pp_string (buffer, "typedef ");
 
@@ -3370,6 +3379,25 @@ percent_K_format (text_info *text)
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
   block = TREE_BLOCK (t);
   *pp_ti_abstract_origin (text) = NULL;
+
+  if (in_lto_p)
+    {
+      /* ???  LTO drops all BLOCK_ABSTRACT_ORIGINs apart from those
+         representing the outermost block of an inlined function.
+	 So walk the BLOCK tree until we hit such a scope.  */
+      while (block
+	     && TREE_CODE (block) == BLOCK)
+	{
+	  if (inlined_function_outer_scope_p (block))
+	    {
+	      *pp_ti_abstract_origin (text) = block;
+	      break;
+	    }
+	  block = BLOCK_SUPERCONTEXT (block);
+	}
+      return;
+    }
+
   while (block
 	 && TREE_CODE (block) == BLOCK
 	 && BLOCK_ABSTRACT_ORIGIN (block))

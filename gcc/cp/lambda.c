@@ -250,6 +250,10 @@ is_normal_capture_proxy (tree decl)
     /* It's not a capture proxy.  */
     return false;
 
+  if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+    /* VLA capture.  */
+    return true;
+
   /* It is a capture proxy, is it a normal capture?  */
   tree val = DECL_VALUE_EXPR (decl);
   if (val == error_mark_node)
@@ -745,6 +749,7 @@ maybe_resolve_dummy (tree object)
   if (type != current_class_type
       && current_class_type
       && LAMBDA_TYPE_P (current_class_type)
+      && lambda_function (current_class_type)
       && DERIVED_FROM_P (type, current_nonlambda_class_type ()))
     {
       /* In a lambda, need to go through 'this' capture.  */
@@ -970,7 +975,7 @@ maybe_add_lambda_conv_op (tree type)
      the conversion op is used.  */
   if (varargs_function_p (callop))
     {
-      DECL_DELETED_FN (STRIP_TEMPLATE (fn)) = 1;
+      DECL_DELETED_FN (fn) = 1;
       return;
     }
 

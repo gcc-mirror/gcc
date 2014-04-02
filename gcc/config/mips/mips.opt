@@ -388,6 +388,10 @@ muninit-const-in-rodata
 Target Report Var(TARGET_UNINIT_CONST_IN_RODATA)
 Put uninitialized constants in ROM (needs -membedded-data)
 
+mvirt
+Target Report Var(TARGET_VIRT)
+Use Virtualization Application Specific instructions
+
 mvr4130-align
 Target Report Mask(VR4130_ALIGN)
 Perform VR4130-specific alignment optimizations

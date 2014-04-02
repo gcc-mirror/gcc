@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -541,8 +541,10 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Sin (X : Complex) return Complex is
    begin
-      if abs Re (X) < Square_Root_Epsilon and then
-         abs Im (X) < Square_Root_Epsilon then
+      if abs Re (X) < Square_Root_Epsilon
+           and then
+         abs Im (X) < Square_Root_Epsilon
+      then
          return X;
       end if;
 

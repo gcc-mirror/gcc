@@ -1,6 +1,6 @@
 // PR c++/29911 (9381)
-// { dg-options -std=c++0x }
 // { dg-do run { target i?86-*-* x86_64-*-* } }
+// { dg-require-effective-target c++11 }
 
 extern "C" int printf(const char *, ...);
 

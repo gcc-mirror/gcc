@@ -1,9 +1,10 @@
 // PR c++/29043
 // { dg-do compile }
 
-struct S		// { dg-error "uninitialized" "" { target c++11 } }
+struct S // { dg-message "implicitly deleted" "" { target c++11 } }
+	 // { dg-error "uninitialized" "" { target c++11 } 4 }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" }
 };
 
 class C
@@ -13,9 +14,10 @@ public:
   S s;
 };
 
-struct S2		// { dg-error "uninitialized" "" { target c++11 } }
+struct S2 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 17 }
 {
-  int& ref;   // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref;   // { dg-message "should be initialized" }
 };
 
 class C2
@@ -33,9 +35,10 @@ class C3
   };
 };
 
-struct S4		// { dg-error "uninitialized" "" { target c++11 } }
+struct S4 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 38 }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" }
 };
 
 struct C4
@@ -46,7 +49,7 @@ struct C4
 
 struct C5
 {
-  C5() {} // { dg-message "uninitialized" }   
+  C5() {} // { dg-error "uninitialized" }
   int const iit[ 1 ];
 };
 

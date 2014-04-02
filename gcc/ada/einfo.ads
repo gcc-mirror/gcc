@@ -820,10 +820,10 @@ package Einfo is
 --       depends on a private type.
 
 --    Designated_Type (synthesized)
---       Applies to access types. Returns the designated type. Differs
---       from Directly_Designated_Type in that if the access type refers
---       to an incomplete type, and the full type is available, then this
---       full type is returned instead of the incomplete type.
+--       Applies to access types. Returns the designated type. Differs from
+--       Directly_Designated_Type in that if the access type refers to an
+--       incomplete type, and the full type is available, then this full type
+--       is returned instead of the incomplete type.
 
 --    Digits_Value (Uint17)
 --       Defined in floating point types and subtypes and decimal types and
@@ -1121,7 +1121,8 @@ package Einfo is
 --       itself. For a subtype entity, Etype points to the base type. For
 --       a class wide type, points to the corresponding specific type. For a
 --       subprogram or subprogram type, Etype has the return type of a function
---       or is set to Standard_Void_Type to represent a procedure.
+--       or is set to Standard_Void_Type to represent a procedure. The Etype
+--       field of a package is also set to Standard_Void_Type.
 --
 --       Note one obscure case: for pragma Default_Storage_Pool (null), the
 --       Etype of the N_Null node is Empty.
@@ -1825,6 +1826,10 @@ package Einfo is
 --       is detected while analyzing the body. Used to activate some error
 --       checks for infinite recursion.
 
+--    Has_Shift_Operator (Flag267) [base type only]
+--       Defined in integer types. Set in the base type of an integer type for
+--       which at least one of the shift operators is defined.
+
 --    Has_Size_Clause (Flag29)
 --       Defined in entities for types and objects. Set if a size clause is
 --       defined for the entity. Used to prevent multiple Size clauses for a
@@ -1971,6 +1976,13 @@ package Einfo is
 --       this case, it always returns the Underlying_Type of the base type, so
 --       that we still have a concrete type. For entities other than types,
 --       returns the entity unchanged.
+
+--    Import_Pragma (Node35)
+--       Defined in subprogram entities. Set if a valid pragma Import or pragma
+--       Import_Function or pragma Import_Procedure aplies to the subprogram,
+--       in which case this field points to the pragma (we can't use the normal
+--       Rep_Item chain mechanism, because a single pragma Import can apply
+--       to multiple subprogram entities.
 
 --    In_Package_Body (Flag48)
 --       Defined in package entities. Set on the entity that denotes the
@@ -3621,13 +3633,12 @@ package Einfo is
 --       in a Relative_Deadline pragma for a task type.
 
 --    Renamed_Entity (Node18)
---       Defined in exceptions, packages, subprograms and generic units. Set
+--       Defined in exceptions, packages, subprograms, and generic units. Set
 --       for entities that are defined by a renaming declaration. Denotes the
 --       renamed entity, or transitively the ultimate renamed entity if
 --       there is a chain of renaming declarations. Empty if no renaming.
 
 --    Renamed_In_Spec (Flag231)
-
 --       Defined in package entities. If a package renaming occurs within
 --       a package spec, then this flag is set on the renamed package. The
 --       purpose is to prevent a warning about unused entities in the renamed
@@ -4067,9 +4078,9 @@ package Einfo is
 --       Protection object (see System.Tasking.Protected_Objects).
 
 --    Uses_Sec_Stack (Flag95)
---       Defined in scope entities (blocks,functions, procedures, tasks,
---       entries). Set to True when secondary stack is used in this scope and
---       must be released on exit unless Sec_Stack_Needed_For_Return is set.
+--       Defined in scope entities (block, entry, function, loop, procedure,
+--       task). Set to True when secondary stack is used in this scope and must
+--       be released on exit unless Sec_Stack_Needed_For_Return is set.
 
 --    Warnings_Off (Flag96)
 --       Defined in all entities. Set if a pragma Warnings (Off, entity-name)
@@ -5626,6 +5637,7 @@ package Einfo is
    --    Has_Loop_Entry_Attributes           (Flag260)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
+   --    Uses_Sec_Stack                      (Flag95)
 
    --  E_Modular_Integer_Type
    --  E_Modular_Integer_Subtype
@@ -5636,6 +5648,7 @@ package Einfo is
    --    Static_Predicate                    (List25)
    --    Non_Binary_Modulus                  (Flag58)   (base type only)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Shift_Operator                  (Flag267)  (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -5932,6 +5945,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Shift_Operator                  (Flag267)  (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -6457,6 +6471,7 @@ package Einfo is
    function Has_RACW                            (Id : E) return B;
    function Has_Record_Rep_Clause               (Id : E) return B;
    function Has_Recursive_Call                  (Id : E) return B;
+   function Has_Shift_Operator                  (Id : E) return B;
    function Has_Size_Clause                     (Id : E) return B;
    function Has_Small_Clause                    (Id : E) return B;
    function Has_Specified_Layout                (Id : E) return B;
@@ -6478,6 +6493,7 @@ package Einfo is
    function Has_Xref_Entry                      (Id : E) return B;
    function Hiding_Loop_Variable                (Id : E) return E;
    function Homonym                             (Id : E) return E;
+   function Import_Pragma                       (Id : E) return E;
    function In_Package_Body                     (Id : E) return B;
    function In_Private_Part                     (Id : E) return B;
    function In_Use                              (Id : E) return B;
@@ -7079,6 +7095,7 @@ package Einfo is
    procedure Set_Has_RACW                        (Id : E; V : B := True);
    procedure Set_Has_Record_Rep_Clause           (Id : E; V : B := True);
    procedure Set_Has_Recursive_Call              (Id : E; V : B := True);
+   procedure Set_Has_Shift_Operator              (Id : E; V : B := True);
    procedure Set_Has_Size_Clause                 (Id : E; V : B := True);
    procedure Set_Has_Small_Clause                (Id : E; V : B := True);
    procedure Set_Has_Specified_Layout            (Id : E; V : B := True);
@@ -7100,6 +7117,7 @@ package Einfo is
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
    procedure Set_Homonym                         (Id : E; V : E);
+   procedure Set_Import_Pragma                   (Id : E; V : E);
    procedure Set_In_Package_Body                 (Id : E; V : B := True);
    procedure Set_In_Private_Part                 (Id : E; V : B := True);
    procedure Set_In_Use                          (Id : E; V : B := True);
@@ -7815,6 +7833,7 @@ package Einfo is
    pragma Inline (Has_RACW);
    pragma Inline (Has_Record_Rep_Clause);
    pragma Inline (Has_Recursive_Call);
+   pragma Inline (Has_Shift_Operator);
    pragma Inline (Has_Size_Clause);
    pragma Inline (Has_Small_Clause);
    pragma Inline (Has_Specified_Layout);
@@ -7836,6 +7855,7 @@ package Einfo is
    pragma Inline (Has_Xref_Entry);
    pragma Inline (Hiding_Loop_Variable);
    pragma Inline (Homonym);
+   pragma Inline (Import_Pragma);
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
@@ -8285,6 +8305,7 @@ package Einfo is
    pragma Inline (Set_Has_RACW);
    pragma Inline (Set_Has_Record_Rep_Clause);
    pragma Inline (Set_Has_Recursive_Call);
+   pragma Inline (Set_Has_Shift_Operator);
    pragma Inline (Set_Has_Size_Clause);
    pragma Inline (Set_Has_Small_Clause);
    pragma Inline (Set_Has_Specified_Layout);
@@ -8306,6 +8327,7 @@ package Einfo is
    pragma Inline (Set_Has_Xref_Entry);
    pragma Inline (Set_Hiding_Loop_Variable);
    pragma Inline (Set_Homonym);
+   pragma Inline (Set_Import_Pragma);
    pragma Inline (Set_In_Package_Body);
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);

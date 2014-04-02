@@ -1,5 +1,6 @@
 // PR c++/50614
-// { dg-options "-std=c++11 -fcompare-debug" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fcompare-debug" }
 
 struct A
 {

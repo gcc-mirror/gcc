@@ -140,6 +140,18 @@ package Exp_Util is
    --  generalize to expressions if there is a need but this is tricky to
    --  implement because of short-circuits (among other things).???
 
+   procedure Insert_Declaration (N : Node_Id; Decl : Node_Id);
+   --  N must be a subexpression (Nkind in N_Subexpr). This is similar to
+   --  Insert_Action (N, Decl), but inserts Decl outside the expression in
+   --  which N appears. This is called Insert_Declaration because the intended
+   --  use is for declarations that have no associated code. We can't go
+   --  moving other kinds of things out of the current expression, since they
+   --  could be executed conditionally (e.g. right operand of short circuit,
+   --  or THEN/ELSE of if expression). This is currently used only in
+   --  Modify_Tree_For_C mode, where it is needed because in C we have no
+   --  way of having declarations within an expression (a really annoying
+   --  limitation).
+
    procedure Insert_Library_Level_Action (N : Node_Id);
    --  This procedure inserts and analyzes the node N as an action at the
    --  library level for the current unit (i.e. it is attached to the
@@ -678,6 +690,12 @@ package Exp_Util is
    --  expression E. Unc_Typ is an unconstrained array or record, or
    --  a classwide type.
 
+   function Matching_Standard_Type (Typ : Entity_Id) return Entity_Id;
+   --  Given a scalar subtype Typ, returns a matching type in standard that
+   --  has the same object size value. For example, a 16 bit signed type will
+   --  typically return Standard_Short_Integer. For fixed-point types, this
+   --  will return integer types of the corresponding size.
+
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean;
    --  Determines if the given type, Typ, may require a large temporary of the
    --  kind that causes back-end trouble if stack checking is enabled. The
@@ -726,6 +744,12 @@ package Exp_Util is
    --  causes trouble for the back end (see Component_May_Be_Bit_Aligned for
    --  further details).
 
+   function Power_Of_Two (N : Node_Id) return Nat;
+   --  Determines if N is a known at compile time value which  is of the form
+   --  2**K, where K is in the range 1 .. M, where the Esize of N is 2**(M+1).
+   --  If so, returns the value K, otherwise returns zero. The caller checks
+   --  that N is of an integer type.
+
    procedure Process_Statements_For_Controlled_Objects (N : Node_Id);
    --  N is a node which contains a non-handled statement list. Inspect the
    --  statements looking for declarations of controlled objects. If at least
@@ -746,14 +770,14 @@ package Exp_Util is
    --  Given the node for a subexpression, this function replaces the node if
    --  necessary by an equivalent subexpression that is guaranteed to be side
    --  effect free. This is done by extracting any actions that could cause
-   --  side effects, and inserting them using Insert_Actions into the tree to
-   --  which Exp is attached. Exp must be analyzed and resolved before the call
-   --  and is analyzed and resolved on return. The Name_Req may only be set to
+   --  side effects, and inserting them using Insert_Actions into the tree
+   --  to which Exp is attached. Exp must be analyzed and resolved before the
+   --  call and is analyzed and resolved on return. Name_Req may only be set to
    --  True if Exp has the form of a name, and the effect is to guarantee that
    --  any replacement maintains the form of name. If Variable_Ref is set to
    --  TRUE, a variable is considered as side effect (used in implementing
-   --  Force_Evaluation). Note: after call to Remove_Side_Effects, it is safe
-   --  to call New_Copy_Tree to obtain a copy of the resulting expression.
+   --  Force_Evaluation). Note: after call to Remove_Side_Effects, it is
+   --  safe to call New_Copy_Tree to obtain a copy of the resulting expression.
 
    function Represented_As_Scalar (T : Entity_Id) return Boolean;
    --  Returns True iff the implementation of this type in code generation
@@ -801,6 +825,29 @@ package Exp_Util is
    --  N is an node which is an entity name that represents the name of a
    --  renamed subprogram. The node is rewritten to be an identifier that
    --  refers directly to the renamed subprogram, given by entity E.
+
+   function Side_Effect_Free
+     (N            : Node_Id;
+      Name_Req     : Boolean := False;
+      Variable_Ref : Boolean := False) return Boolean;
+   --  Determines if the tree N represents an expression that is known not
+   --  to have side effects. If this function returns True, then for example
+   --  a call to Remove_Side_Effects has no effect.
+   --
+   --  Name_Req controls the handling of volatile variable references. If
+   --  Name_Req is False (the normal case), then volatile references are
+   --  considered to be side effects. If Name_Req is True, then volatility
+   --  of variables is ignored.
+   --
+   --  If Variable_Ref is True, then all variable references are considered to
+   --  be side effects (regardless of volatility or the setting of Name_Req).
+
+   function Side_Effect_Free
+     (L            : List_Id;
+      Name_Req     : Boolean := False;
+      Variable_Ref : Boolean := False) return Boolean;
+   --  Determines if all elements of the list L are side effect free. Name_Req
+   --  and Variable_Ref are as described above.
 
    procedure Silly_Boolean_Array_Not_Test (N : Node_Id; T : Entity_Id);
    --  N is the node for a boolean array NOT operation, and T is the type of

@@ -1897,11 +1897,11 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
    actual record and know how to look for fields in variant parts.  */
 
 static tree
-build_simple_component_ref (tree record_variable, tree component,
-                            tree field, bool no_fold_p)
+build_simple_component_ref (tree record_variable, tree component, tree field,
+			    bool no_fold_p)
 {
   tree record_type = TYPE_MAIN_VARIANT (TREE_TYPE (record_variable));
-  tree ref, inner_variable;
+  tree base, ref;
 
   gcc_assert (RECORD_OR_UNION_TYPE_P (record_type)
 	      && COMPLETE_TYPE_P (record_type)
@@ -1933,7 +1933,7 @@ build_simple_component_ref (tree record_variable, tree component,
 	  break;
 
       /* Next, see if we're looking for an inherited component in an extension.
-	 If so, look through the extension directly, but not if the type contains
+	 If so, look through the extension directly, unless the type contains
 	 a placeholder, as it might be needed for a later substitution.  */
       if (!new_field
 	  && TREE_CODE (record_variable) == VIEW_CONVERT_EXPR
@@ -1980,17 +1980,40 @@ build_simple_component_ref (tree record_variable, tree component,
       && TREE_OVERFLOW (DECL_FIELD_OFFSET (field)))
     return NULL_TREE;
 
-  /* Look through conversion between type variants.  This is transparent as
-     far as the field is concerned.  */
-  if (TREE_CODE (record_variable) == VIEW_CONVERT_EXPR
-      && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (record_variable, 0)))
-	 == record_type)
-    inner_variable = TREE_OPERAND (record_variable, 0);
-  else
-    inner_variable = record_variable;
+  /* We have found a suitable field.  Before building the COMPONENT_REF, get
+     the base object of the record variable if possible.  */
+  base = record_variable;
 
-  ref = build3 (COMPONENT_REF, TREE_TYPE (field), inner_variable, field,
-		NULL_TREE);
+  if (TREE_CODE (record_variable) == VIEW_CONVERT_EXPR)
+    {
+      tree inner_variable = TREE_OPERAND (record_variable, 0);
+      tree inner_type = TYPE_MAIN_VARIANT (TREE_TYPE (inner_variable));
+
+      /* Look through a conversion between type variants.  This is transparent
+	 as far as the field is concerned.  */
+      if (inner_type == record_type)
+	base = inner_variable;
+
+      /* Look through a conversion between original and packable version, but
+	 the field needs to be adjusted in this case.  */
+      else if (TYPE_NAME (inner_type) == TYPE_NAME (record_type))
+	{
+	  tree new_field;
+
+	  for (new_field = TYPE_FIELDS (inner_type);
+	       new_field;
+	       new_field = DECL_CHAIN (new_field))
+	    if (SAME_FIELD_P (field, new_field))
+	      break;
+	  if (new_field)
+	    {
+	      field = new_field;
+	      base = inner_variable;
+	    }
+	}
+    }
+
+  ref = build3 (COMPONENT_REF, TREE_TYPE (field), base, field, NULL_TREE);
 
   if (TREE_READONLY (record_variable)
       || TREE_READONLY (field)
@@ -2007,10 +2030,10 @@ build_simple_component_ref (tree record_variable, tree component,
 
   /* The generic folder may punt in this case because the inner array type
      can be self-referential, but folding is in fact not problematic.  */
-  if (TREE_CODE (record_variable) == CONSTRUCTOR
-      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (record_variable)))
+  if (TREE_CODE (base) == CONSTRUCTOR
+      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (base)))
     {
-      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (record_variable);
+      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (base);
       unsigned HOST_WIDE_INT idx;
       tree index, value;
       FOR_EACH_CONSTRUCTOR_ELT (elts, idx, index, value)
@@ -2022,16 +2045,15 @@ build_simple_component_ref (tree record_variable, tree component,
   return fold (ref);
 }
 
-/* Like build_simple_component_ref, except that we give an error if the
-   reference could not be found.  */
+/* Likewise, but generate a Constraint_Error if the reference could not be
+   found.  */
 
 tree
-build_component_ref (tree record_variable, tree component,
-                     tree field, bool no_fold_p)
+build_component_ref (tree record_variable, tree component, tree field,
+		     bool no_fold_p)
 {
   tree ref = build_simple_component_ref (record_variable, component, field,
 					 no_fold_p);
-
   if (ref)
     return ref;
 

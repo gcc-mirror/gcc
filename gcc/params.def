@@ -821,6 +821,11 @@ DEFPARAM (PARAM_IRA_LOOP_RESERVED_REGS,
 	  "The number of registers in each class kept unused by loop invariant motion",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_LRA_MAX_CONSIDERED_RELOAD_PSEUDOS,
+	  "lra-max-considered-reload-pseudos",
+	  "The max number of reload pseudos which are considered during spilling a non-reload pseudo",
+	  500, 0, 0)
+
 /* Switch initialization conversion will refuse to create arrays that are
    bigger than this parameter times the number of switch branches.  */
 
@@ -1078,6 +1083,12 @@ DEFPARAM (PARAM_ASAN_USE_AFTER_RETURN,
          "asan-use-after-return",
          "Enable asan builtin functions protection",
          1, 0, 1)
+
+DEFPARAM (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS,
+	  "uninit-control-dep-attempts",
+	  "Maximum number of nested calls to search for control dependencies "
+	  "during uninitialized variable analysis",
+	  1000, 1, 0)
 /*
 
 Local variables:

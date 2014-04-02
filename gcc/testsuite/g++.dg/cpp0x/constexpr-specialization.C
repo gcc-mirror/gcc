@@ -1,5 +1,5 @@
 // PR c++/56871
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template<typename T> constexpr int foo(T);
 template<> int foo(int);

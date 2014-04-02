@@ -1,5 +1,6 @@
 // PR c++/41997
-// { dg-options "-std=c++11 -O2 -fdump-tree-optimized" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-O2 -fdump-tree-optimized" }
 // { dg-final { scan-tree-dump-not "_0" "optimized" } }
 // { dg-final { cleanup-tree-dump "optimized" } }
 

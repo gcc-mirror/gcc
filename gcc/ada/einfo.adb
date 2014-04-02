@@ -257,7 +257,7 @@ package body Einfo is
 
    --    Contract                        Node34
 
-   --    (unused)                        Node35
+   --    Import_Pragma                   Node35
 
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
@@ -557,12 +557,12 @@ package body Einfo is
    --    Is_Discriminant_Check_Function  Flag264
    --    SPARK_Pragma_Inherited          Flag265
    --    SPARK_Aux_Pragma_Inherited      Flag266
+   --    Has_Shift_Operator              Flag267
 
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag267
    --    (unused)                        Flag268
    --    (unused)                        Flag269
    --    (unused)                        Flag270
@@ -1667,6 +1667,12 @@ package body Einfo is
       return Flag143 (Id);
    end Has_Recursive_Call;
 
+   function Has_Shift_Operator (Id : E) return B is
+   begin
+      pragma Assert (Is_Integer_Type (Id));
+      return Flag267 (Base_Type (Id));
+   end Has_Shift_Operator;
+
    function Has_Size_Clause (Id : E) return B is
    begin
       return Flag29 (Id);
@@ -1784,6 +1790,12 @@ package body Einfo is
    begin
       return Node4 (Id);
    end Homonym;
+
+   function Import_Pragma (Id : E) return E is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Node35 (Id);
+   end Import_Pragma;
 
    function Interface_Alias (Id : E) return E is
    begin
@@ -4366,6 +4378,12 @@ package body Einfo is
       Set_Flag143 (Id, V);
    end Set_Has_Recursive_Call;
 
+   procedure Set_Has_Shift_Operator (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Integer_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag267 (Id, V);
+   end Set_Has_Shift_Operator;
+
    procedure Set_Has_Size_Clause (Id : E; V : B := True) is
    begin
       Set_Flag29 (Id, V);
@@ -4482,6 +4500,12 @@ package body Einfo is
       pragma Assert (Id /= V);
       Set_Node4 (Id, V);
    end Set_Homonym;
+
+   procedure Set_Import_Pragma (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      Set_Node35 (Id, V);
+   end Set_Import_Pragma;
 
    procedure Set_Interface_Alias (Id : E; V : E) is
    begin
@@ -8191,6 +8215,7 @@ package body Einfo is
       W ("Has_RACW",                        Flag214 (Id));
       W ("Has_Record_Rep_Clause",           Flag65  (Id));
       W ("Has_Recursive_Call",              Flag143 (Id));
+      W ("Has_Shift_Operator",              Flag267 (Id));
       W ("Has_Size_Clause",                 Flag29  (Id));
       W ("Has_Small_Clause",                Flag67  (Id));
       W ("Has_Specified_Layout",            Flag100 (Id));
@@ -9290,7 +9315,8 @@ package body Einfo is
    procedure Write_Field25_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Package                                    =>
+         when E_Generic_Package                            |
+              E_Package                                    =>
             Write_Str ("Abstract_States");
 
          when E_Variable                                   =>
@@ -9553,6 +9579,8 @@ package body Einfo is
    procedure Write_Field35_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when Subprogram_Kind                              =>
+            Write_Str ("Import_Pragma");
          when others                                       =>
             Write_Str ("Field35??");
       end case;

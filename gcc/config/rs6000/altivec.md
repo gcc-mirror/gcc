@@ -136,6 +136,13 @@
    UNSPEC_VMRGL_DIRECT
    UNSPEC_VSPLT_DIRECT
    UNSPEC_VSUMSWS_DIRECT
+   UNSPEC_VADDCUQ
+   UNSPEC_VADDEUQM
+   UNSPEC_VADDECUQ
+   UNSPEC_VSUBCUQ
+   UNSPEC_VSUBEUQM
+   UNSPEC_VSUBECUQ
+   UNSPEC_VBPERMQ
 ])
 
 (define_c_enum "unspecv"
@@ -158,17 +165,18 @@
 (define_mode_iterator V [V4SI V8HI V16QI V4SF])
 ;; Vec modes for move/logical/permute ops, include vector types for move not
 ;; otherwise handled by altivec (v2df, v2di, ti)
-(define_mode_iterator VM [V4SI V8HI V16QI V4SF V2DF V2DI TI])
+(define_mode_iterator VM [V4SI V8HI V16QI V4SF V2DF V2DI V1TI TI])
 
 ;; Like VM, except don't do TImode
-(define_mode_iterator VM2 [V4SI V8HI V16QI V4SF V2DF V2DI])
+(define_mode_iterator VM2 [V4SI V8HI V16QI V4SF V2DF V2DI V1TI])
 
 (define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
 (define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
 (define_mode_attr VI_unit [(V16QI "VECTOR_UNIT_ALTIVEC_P (V16QImode)")
 			   (V8HI "VECTOR_UNIT_ALTIVEC_P (V8HImode)")
 			   (V4SI "VECTOR_UNIT_ALTIVEC_P (V4SImode)")
-			   (V2DI "VECTOR_UNIT_P8_VECTOR_P (V2DImode)")])
+			   (V2DI "VECTOR_UNIT_P8_VECTOR_P (V2DImode)")
+			   (V1TI "VECTOR_UNIT_ALTIVEC_P (V1TImode)")])
 
 ;; Vector pack/unpack
 (define_mode_iterator VP [V2DI V4SI V8HI])
@@ -1234,7 +1242,12 @@
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 6)])))]
   "TARGET_P8_VECTOR"
-  "vmrgew %0,%1,%2"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "vmrgew %0,%1,%2";
+  else
+    return "vmrgow %0,%2,%1";
+}
   [(set_attr "type" "vecperm")])
 
 (define_insn "p8_vmrgow"
@@ -1246,7 +1259,12 @@
 	  (parallel [(const_int 1) (const_int 5)
 		     (const_int 3) (const_int 7)])))]
   "TARGET_P8_VECTOR"
-  "vmrgow %0,%1,%2"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "vmrgow %0,%1,%2";
+  else
+    return "vmrgew %0,%2,%1";
+}
   [(set_attr "type" "vecperm")])
 
 (define_expand "vec_widen_umult_even_v16qi"
@@ -1641,7 +1659,7 @@
   if (VECTOR_ELT_ORDER_BIG)
     return "vsumsws %0,%1,%2";
   else
-    return "vspltw %3,%2,0\n\tvsumsws %3,%1,%3\n\tvspltw %0,%3,3";
+    return "vspltw %3,%2,0\n\tvsumsws %3,%1,%3\n\tvsldoi %0,%3,%3,12";
 }
   [(set_attr "type" "veccomplex")
    (set (attr "length")
@@ -2315,7 +2333,21 @@
 ;; Parallel some of the LVE* and STV*'s with unspecs because some have
 ;; identical rtl but different instructions-- and gcc gets confused.
 
-(define_insn "altivec_lve<VI_char>x"
+(define_expand "altivec_lve<VI_char>x"
+  [(parallel
+    [(set (match_operand:VI 0 "register_operand" "=v")
+	  (match_operand:VI 1 "memory_operand" "Z"))
+     (unspec [(const_int 0)] UNSPEC_LVE)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_LVE);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_lve<VI_char>x_internal"
   [(parallel
     [(set (match_operand:VI 0 "register_operand" "=v")
 	  (match_operand:VI 1 "memory_operand" "Z"))
@@ -2333,16 +2365,44 @@
   "lvewx %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "altivec_lvxl"
+(define_expand "altivec_lvxl_<mode>"
   [(parallel
-    [(set (match_operand:V4SI 0 "register_operand" "=v")
-	  (match_operand:V4SI 1 "memory_operand" "Z"))
+    [(set (match_operand:VM2 0 "register_operand" "=v")
+	  (match_operand:VM2 1 "memory_operand" "Z"))
      (unspec [(const_int 0)] UNSPEC_SET_VSCR)])]
   "TARGET_ALTIVEC"
-  "lvxl %0,%y1"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_SET_VSCR);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_lvxl_<mode>_internal"
+  [(parallel
+    [(set (match_operand:VM2 0 "register_operand" "=v")
+	  (match_operand:VM2 1 "memory_operand" "Z"))
+     (unspec [(const_int 0)] UNSPEC_SET_VSCR)])]
+  "TARGET_ALTIVEC"
+  "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "altivec_lvx_<mode>"
+(define_expand "altivec_lvx_<mode>"
+  [(parallel
+    [(set (match_operand:VM2 0 "register_operand" "=v")
+	  (match_operand:VM2 1 "memory_operand" "Z"))
+     (unspec [(const_int 0)] UNSPEC_LVX)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_LVX);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_lvx_<mode>_internal"
   [(parallel
     [(set (match_operand:VM2 0 "register_operand" "=v")
 	  (match_operand:VM2 1 "memory_operand" "Z"))
@@ -2351,7 +2411,21 @@
   "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "altivec_stvx_<mode>"
+(define_expand "altivec_stvx_<mode>"
+  [(parallel
+    [(set (match_operand:VM2 0 "memory_operand" "=Z")
+	  (match_operand:VM2 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVX)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_stvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVX);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_stvx_<mode>_internal"
   [(parallel
     [(set (match_operand:VM2 0 "memory_operand" "=Z")
 	  (match_operand:VM2 1 "register_operand" "v"))
@@ -2360,16 +2434,42 @@
   "stvx %1,%y0"
   [(set_attr "type" "vecstore")])
 
-(define_insn "altivec_stvxl"
+(define_expand "altivec_stvxl_<mode>"
   [(parallel
-    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
-	  (match_operand:V4SI 1 "register_operand" "v"))
+    [(set (match_operand:VM2 0 "memory_operand" "=Z")
+	  (match_operand:VM2 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVXL)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_stvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVXL);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_stvxl_<mode>_internal"
+  [(parallel
+    [(set (match_operand:VM2 0 "memory_operand" "=Z")
+	  (match_operand:VM2 1 "register_operand" "v"))
      (unspec [(const_int 0)] UNSPEC_STVXL)])]
   "TARGET_ALTIVEC"
   "stvxl %1,%y0"
   [(set_attr "type" "vecstore")])
 
-(define_insn "altivec_stve<VI_char>x"
+(define_expand "altivec_stve<VI_char>x"
+  [(set (match_operand:<VI_scalar> 0 "memory_operand" "=Z")
+	(unspec:<VI_scalar> [(match_operand:VI 1 "register_operand" "v")] UNSPEC_STVE))]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_stvex_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVE);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_stve<VI_char>x_internal"
   [(set (match_operand:<VI_scalar> 0 "memory_operand" "=Z")
 	(unspec:<VI_scalar> [(match_operand:VI 1 "register_operand" "v")] UNSPEC_STVE))]
   "TARGET_ALTIVEC"
@@ -2473,7 +2573,7 @@
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4ubs (vtmp1, operands[1], vzero));
-  emit_insn (gen_altivec_vsumsws (dest, vtmp1, vzero));
+  emit_insn (gen_altivec_vsumsws_direct (dest, vtmp1, vzero));
   DONE;
 })
 
@@ -3132,5 +3232,105 @@
 		      UNSPEC_VGBBD))]
   "TARGET_P8_VECTOR"
   "vgbbd %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+
+;; 128-bit binary integer arithmetic
+;; We have a special container type (V1TImode) to allow operations using the
+;; ISA 2.07 128-bit binary support to target the VMX/altivec registers without
+;; having to worry about the register allocator deciding GPRs are better.
+
+(define_insn "altivec_vadduqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(plus:V1TI (match_operand:V1TI 1 "register_operand" "v")
+		   (match_operand:V1TI 2 "register_operand" "v")))]
+  "TARGET_VADDUQM"
+  "vadduqm %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vaddcuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")]
+		     UNSPEC_VADDCUQ))]
+  "TARGET_VADDUQM"
+  "vaddcuq %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubuqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(minus:V1TI (match_operand:V1TI 1 "register_operand" "v")
+		    (match_operand:V1TI 2 "register_operand" "v")))]
+  "TARGET_VADDUQM"
+  "vsubuqm %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubcuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")]
+		     UNSPEC_VSUBCUQ))]
+  "TARGET_VADDUQM"
+  "vsubcuq %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vaddeuqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VADDEUQM))]
+  "TARGET_VADDUQM"
+  "vaddeuqm %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vaddecuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VADDECUQ))]
+  "TARGET_VADDUQM"
+  "vaddecuq %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubeuqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		   UNSPEC_VSUBEUQM))]
+  "TARGET_VADDUQM"
+  "vsubeuqm %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubecuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VSUBECUQ))]
+  "TARGET_VADDUQM"
+  "vsubecuq %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+;; We use V2DI as the output type to simplify converting the permute
+;; bits into an integer
+(define_insn "altivec_vbpermq"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(unspec:V2DI [(match_operand:V16QI 1 "register_operand" "v")
+		      (match_operand:V16QI 2 "register_operand" "v")]
+		     UNSPEC_VBPERMQ))]
+  "TARGET_P8_VECTOR"
+  "vbpermq %0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])

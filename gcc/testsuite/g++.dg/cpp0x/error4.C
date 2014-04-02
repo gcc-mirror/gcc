@@ -1,5 +1,5 @@
 // PR c++/49156
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template<typename T> T declval();
 

@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1y -pedantic-errors" }
+// { dg-do compile { target c++1y } }
 
 auto f() { return 42; }		// { dg-message "old declaration .auto" }
 auto f();			// OK

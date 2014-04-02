@@ -1,4 +1,4 @@
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 constexpr auto f() { return (char)42; }
 #define SA(X) static_assert ((X),#X)

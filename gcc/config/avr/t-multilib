@@ -221,7 +221,6 @@ MULTILIB_MATCHES = \
 	mmcu?avr6=mmcu?atmega2561 \
 	mmcu?avrxmega2=mmcu?atxmega16a4 \
 	mmcu?avrxmega2=mmcu?atxmega16d4 \
-	mmcu?avrxmega2=mmcu?atxmega16x1 \
 	mmcu?avrxmega2=mmcu?atxmega32a4 \
 	mmcu?avrxmega2=mmcu?atxmega32d4 \
 	mmcu?avrxmega2=mmcu?atxmega32x1 \

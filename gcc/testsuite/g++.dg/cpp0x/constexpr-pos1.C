@@ -1,5 +1,5 @@
 // Positive examples from N3092 (FCD)
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 #define SA(X) static_assert(X, #X)
 

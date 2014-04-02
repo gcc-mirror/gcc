@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "--param vect-max-version-for-alias-checks=0" } */
 
 typedef struct

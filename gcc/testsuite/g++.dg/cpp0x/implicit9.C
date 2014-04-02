@@ -1,5 +1,5 @@
 // Test that private base dtor makes derived ctor deleted
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct A
 {

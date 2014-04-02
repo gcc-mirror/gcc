@@ -1,3 +1,19 @@
+2013-04-02  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/target.h (PAGE_SIZE, FIXED_PAGE_SIZE): Remove.
+	* config/arm/target.h, config/sh/target.h: Likewise.
+	* config/sparc/target.h, config/x86/target.h: Likewise.
+
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/futex_bits.h: Include errno.h.
+	(sys_futex0): If syscall returns -1, return -errno rather than
+	-1.
+
+2014-03-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* libitm.texi (Index): Rename to Library Index.
+
 2014-01-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libitm/53113

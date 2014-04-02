@@ -39,6 +39,7 @@ along with this program; see the file COPYING3.  If not see
 #include <stdint.h>
 #endif
 #include <assert.h>
+#include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -817,7 +818,7 @@ process_symtab (void *data, const char *name, off_t offset, off_t length)
 {
   struct plugin_objfile *obj = (struct plugin_objfile *)data;
   char *s;
-  char *secdata;
+  char *secdatastart, *secdata;
 
   if (strncmp (name, LTO_SECTION_PREFIX, LTO_SECTION_PREFIX_LEN) != 0)
     return 1;
@@ -825,23 +826,40 @@ process_symtab (void *data, const char *name, off_t offset, off_t length)
   s = strrchr (name, '.');
   if (s)
     sscanf (s, ".%" PRI_LL "x", &obj->out->id);
-  secdata = xmalloc (length);
+  secdata = secdatastart = xmalloc (length);
   offset += obj->file->offset;
-  if (offset != lseek (obj->file->fd, offset, SEEK_SET)
-	|| length != read (obj->file->fd, secdata, length))
-    {
-      if (message)
-	message (LDPL_FATAL, "%s: corrupt object file", obj->file->name);
-      /* Force claim_file_handler to abandon this file.  */
-      obj->found = 0;
-      free (secdata);
-      return 0;
-    }
+  if (offset != lseek (obj->file->fd, offset, SEEK_SET))
+    goto err;
 
-  translate (secdata, secdata + length, obj->out);
+  do
+    {
+      ssize_t got = read (obj->file->fd, secdata, length);
+      if (got == 0)
+	break;
+      else if (got > 0)
+	{
+	  secdata += got;
+	  length -= got;
+	}
+      else if (errno != EINTR)
+	goto err;
+    }
+  while (length > 0);
+  if (length > 0)
+    goto err;
+
+  translate (secdatastart, secdata, obj->out);
   obj->found++;
-  free (secdata);
+  free (secdatastart);
   return 1;
+
+err:
+  if (message)
+    message (LDPL_FATAL, "%s: corrupt object file", obj->file->name);
+  /* Force claim_file_handler to abandon this file.  */
+  obj->found = 0;
+  free (secdatastart);
+  return 0;
 }
 
 /* Callback used by gold to check if the plugin will claim FILE. Writes
@@ -1048,6 +1066,13 @@ onload (struct ld_plugin_tv *tv)
       check (status == LDPS_OK, LDPL_FATAL,
 	     "could not register the all_symbols_read callback");
     }
+
+  /* Support -fno-use-linker-plugin by failing to load the plugin
+     for the case where it is auto-loaded by BFD.  */
+  char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+  if (collect_gcc_options
+      && strstr (collect_gcc_options, "'-fno-use-linker-plugin'"))
+    return LDPS_ERR;
 
   return LDPS_OK;
 }

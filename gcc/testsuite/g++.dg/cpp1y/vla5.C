@@ -1,5 +1,5 @@
 // PR c++/55149
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 void test(int n) {
   int r[n];

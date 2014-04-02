@@ -1,5 +1,6 @@
 // Test that auto works with VLAs.
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
+// { dg-options "" { target { ! c++1y } } }
 
 void bar(int n)
 {

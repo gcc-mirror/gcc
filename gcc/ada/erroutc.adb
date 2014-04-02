@@ -39,10 +39,20 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
+with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Uintp;    use Uintp;
 
 package body Erroutc is
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   function Matches (S : String; P : String) return Boolean;
+   --  Returns true if the String S patches the pattern P, which can contain
+   --  wild card chars (*). The entire pattern must match the entire string.
+   --  Case is ignored in the comparison (so X matches x).
 
    ---------------
    -- Add_Class --
@@ -63,18 +73,29 @@ package body Erroutc is
    -- Buffer_Ends_With --
    ----------------------
 
+   function Buffer_Ends_With (C : Character) return Boolean is
+   begin
+      return Msglen > 0 and then Msg_Buffer (Msglen) = C;
+   end Buffer_Ends_With;
+
    function Buffer_Ends_With (S : String) return Boolean is
       Len : constant Natural := S'Length;
    begin
-      return
-        Msglen > Len
-          and then Msg_Buffer (Msglen - Len) = ' '
-          and then Msg_Buffer (Msglen - Len + 1 .. Msglen) = S;
+      return Msglen > Len
+        and then Msg_Buffer (Msglen - Len) = ' '
+        and then Msg_Buffer (Msglen - Len + 1 .. Msglen) = S;
    end Buffer_Ends_With;
 
    -------------------
    -- Buffer_Remove --
    -------------------
+
+   procedure Buffer_Remove (C : Character) is
+   begin
+      if Buffer_Ends_With (C) then
+         Msglen := Msglen - 1;
+      end if;
+   end Buffer_Remove;
 
    procedure Buffer_Remove (S : String) is
    begin
@@ -92,13 +113,13 @@ package body Erroutc is
       N1, N2 : Error_Msg_Id;
 
       procedure Delete_Msg (Delete, Keep : Error_Msg_Id);
-      --  Called to delete message Delete, keeping message Keep. Marks
-      --  all messages of Delete with deleted flag set to True, and also
-      --  makes sure that for the error messages that are retained the
-      --  preferred message is the one retained (we prefer the shorter
-      --  one in the case where one has an Instance tag). Note that we
-      --  always know that Keep has at least as many continuations as
-      --  Delete (since we always delete the shorter sequence).
+      --  Called to delete message Delete, keeping message Keep. Marks all
+      --  messages of Delete with deleted flag set to True, and also makes sure
+      --  that for the error messages that are retained the preferred message
+      --  is the one retained (we prefer the shorter one in the case where one
+      --  has an Instance tag). Note that we always know that Keep has at least
+      --  as many continuations as Delete (since we always delete the shorter
+      --  sequence).
 
       ----------------
       -- Delete_Msg --
@@ -207,7 +228,8 @@ package body Erroutc is
    begin
       return Total_Errors_Detected /= 0
         or else (Warnings_Detected /= 0
-                  and then Warning_Mode = Treat_As_Error);
+                  and then Warning_Mode = Treat_As_Error)
+        or else Warnings_Treated_As_Errors /= 0;
    end Compilation_Errors;
 
    ------------------
@@ -276,6 +298,89 @@ package body Erroutc is
    begin
       return Cur_Msg;
    end Get_Msg_Id;
+
+   ---------------------
+   -- Get_Warning_Tag --
+   ---------------------
+
+   function Get_Warning_Tag (Id : Error_Msg_Id) return String is
+      Warn     : constant Boolean    := Errors.Table (Id).Warn;
+      Warn_Chr : constant Character  := Errors.Table (Id).Warn_Chr;
+   begin
+      if Warn and then Warn_Chr /= ' ' then
+         if Warn_Chr = '?' then
+            return "[enabled by default]";
+         elsif Warn_Chr in 'a' .. 'z' then
+            return "[-gnatw" & Warn_Chr & ']';
+         else pragma Assert (Warn_Chr in 'A' .. 'Z');
+            return "[-gnatw." & Fold_Lower (Warn_Chr) & ']';
+         end if;
+      else
+         return "";
+      end if;
+   end Get_Warning_Tag;
+
+   -------------
+   -- Matches --
+   -------------
+
+   function Matches (S : String; P : String) return Boolean is
+      Slast : constant Natural := S'Last;
+      PLast : constant Natural := P'Last;
+
+      SPtr : Natural := S'First;
+      PPtr : Natural := P'First;
+
+   begin
+      --  Loop advancing through characters of string and pattern
+
+      SPtr := S'First;
+      PPtr := P'First;
+      loop
+         --  Return True if pattern is a single asterisk
+
+         if PPtr = PLast and then P (PPtr) = '*' then
+            return True;
+
+            --  Return True if both pattern and string exhausted
+
+         elsif PPtr > PLast and then SPtr > Slast then
+            return True;
+
+            --  Return False, if one exhausted and not the other
+
+         elsif PPtr > PLast or else SPtr > Slast then
+            return False;
+
+            --  Case where pattern starts with asterisk
+
+         elsif P (PPtr) = '*' then
+
+            --  Try all possible starting positions in S for match with the
+            --  remaining characters of the pattern. This is the recursive
+            --  call that implements the scanner backup.
+
+            for J in SPtr .. Slast loop
+               if Matches (S (J .. Slast), P (PPtr + 1 .. PLast)) then
+                  return True;
+               end if;
+            end loop;
+
+            return False;
+
+            --  Dealt with end of string and *, advance if we have a match
+
+         elsif Fold_Lower (S (SPtr)) = Fold_Lower (P (PPtr)) then
+            SPtr := SPtr + 1;
+            PPtr := PPtr + 1;
+
+            --  If first characters do not match, that's decisive
+
+         else
+            return False;
+         end if;
+      end loop;
+   end Matches;
 
    -----------------------
    -- Output_Error_Msgs --
@@ -443,55 +548,51 @@ package body Erroutc is
       Length : Nat;
       --  Maximum total length of lines
 
-      Text     : constant String_Ptr := Errors.Table (E).Text;
-      Warn     : constant Boolean    := Errors.Table (E).Warn;
-      Warn_Chr : constant Character  := Errors.Table (E).Warn_Chr;
-      Warn_Tag : String_Ptr;
-      Ptr      : Natural;
-      Split    : Natural;
-      Start    : Natural;
+      Text  : constant String_Ptr := Errors.Table (E).Text;
+      Ptr   : Natural;
+      Split : Natural;
+      Start : Natural;
 
    begin
-      --  Add warning doc tag if needed
-
-      if Warn and then Warn_Chr /= ' ' then
-         if Warn_Chr = '?' then
-            Warn_Tag := new String'(" [enabled by default]");
-
-         elsif Warn_Chr in 'a' .. 'z' then
-            Warn_Tag := new String'(" [-gnatw" & Warn_Chr & ']');
-
-         else pragma Assert (Warn_Chr in 'A' .. 'Z');
-            Warn_Tag := new String'(" [-gnatw." & Fold_Lower (Warn_Chr) & ']');
-         end if;
-
-      else
-         Warn_Tag := new String'("");
-      end if;
-
-      --  Set error message line length
-
-      if Error_Msg_Line_Length = 0 then
-         Length := Nat'Last;
-      else
-         Length := Error_Msg_Line_Length;
-      end if;
-
-      Max := Integer (Length - Column + 1);
-
       declare
-         Txt : constant String := Text.all & Warn_Tag.all;
-         Len : constant Natural    := Txt'Length;
+         Tag : constant String := Get_Warning_Tag (E);
+         Txt : String_Ptr;
+         Len : Natural;
 
       begin
-         --  For warning, add "warning: " unless msg starts with "info: "
+         --  Postfix warning tag to message if needed
+
+         if Tag /= "" and then Warning_Doc_Switch then
+            Txt := new String'(Text.all & ' ' & Tag);
+         else
+            Txt := Text;
+         end if;
+
+         --  Deal with warning case
 
          if Errors.Table (E).Warn then
-            if Len < 6
-              or else Txt (Txt'First .. Txt'First + 5) /= "info: "
+
+            --  Nothing to do with info messages, "info " already set
+
+            if Txt'Length >= 6
+              and then Txt (Txt'First .. Txt'First + 5) = "info: "
             then
-               Write_Str ("warning: ");
-               Max := Max - 9;
+               null;
+
+            --  Warning treated as error
+
+            elsif Errors.Table (E).Warn_Err then
+
+               --  We prefix the tag error: rather than warning: and postfix
+               --  [warning-as-error] at the end.
+
+               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+               Txt := new String'("error: " & Txt.all & " [warning-as-error]");
+
+            --  Normal case, prefix
+
+            else
+               Txt := new String'("warning: " & Txt.all);
             end if;
 
             --  No prefix needed for style message, "(style)" is there already
@@ -499,12 +600,22 @@ package body Erroutc is
          elsif Errors.Table (E).Style then
             null;
 
-            --  All other cases, add "error: "
+            --  All other cases, add "error: " if unique error tag set
 
          elsif Opt.Unique_Error_Tag then
-            Write_Str ("error: ");
-            Max := Max - 7;
+            Txt := new String'("error: " & Txt.all);
          end if;
+
+         --  Set error message line length and length of message
+
+         if Error_Msg_Line_Length = 0 then
+            Length := Nat'Last;
+         else
+            Length := Error_Msg_Line_Length;
+         end if;
+
+         Max := Integer (Length - Column + 1);
+         Len := Txt'Length;
 
          --  Here we have to split the message up into multiple lines
 
@@ -1110,6 +1221,7 @@ package body Erroutc is
    procedure Set_Specific_Warning_Off
      (Loc    : Source_Ptr;
       Msg    : String;
+      Reason : String_Id;
       Config : Boolean;
       Used   : Boolean := False)
    is
@@ -1118,6 +1230,7 @@ package body Erroutc is
         ((Start      => Loc,
           Msg        => new String'(Msg),
           Stop       => Source_Last (Current_Source_File),
+          Reason     => Reason,
           Open       => True,
           Used       => Used,
           Config     => Config));
@@ -1163,7 +1276,7 @@ package body Erroutc is
    -- Set_Warnings_Mode_Off --
    ---------------------------
 
-   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr) is
+   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr; Reason : String_Id) is
    begin
       --  Don't bother with entries from instantiation copies, since we will
       --  already have a copy in the template, which is what matters.
@@ -1197,10 +1310,10 @@ package body Erroutc is
       --  source file. This ending point will be adjusted by a subsequent
       --  corresponding pragma Warnings (On).
 
-      Warnings.Increment_Last;
-      Warnings.Table (Warnings.Last).Start := Loc;
-      Warnings.Table (Warnings.Last).Stop :=
-        Source_Last (Current_Source_File);
+      Warnings.Append
+        ((Start  => Loc,
+          Stop   => Source_Last (Current_Source_File),
+          Reason => Reason));
    end Set_Warnings_Mode_Off;
 
    --------------------------
@@ -1342,77 +1455,8 @@ package body Erroutc is
 
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
-      Msg : String_Ptr) return Boolean
+      Msg : String_Ptr) return String_Id
    is
-      function Matches (S : String; P : String) return Boolean;
-      --  Returns true if the String S patches the pattern P, which can contain
-      --  wild card chars (*). The entire pattern must match the entire string.
-      --  Case is ignored in the comparison (so X matches x).
-
-      -------------
-      -- Matches --
-      -------------
-
-      function Matches (S : String; P : String) return Boolean is
-         Slast : constant Natural := S'Last;
-         PLast : constant Natural := P'Last;
-
-         SPtr : Natural := S'First;
-         PPtr : Natural := P'First;
-
-      begin
-         --  Loop advancing through characters of string and pattern
-
-         SPtr := S'First;
-         PPtr := P'First;
-         loop
-            --  Return True if pattern is a single asterisk
-
-            if PPtr = PLast and then P (PPtr) = '*' then
-               return True;
-
-            --  Return True if both pattern and string exhausted
-
-            elsif PPtr > PLast and then SPtr > Slast then
-               return True;
-
-            --  Return False, if one exhausted and not the other
-
-            elsif PPtr > PLast or else SPtr > Slast then
-               return False;
-
-            --  Case where pattern starts with asterisk
-
-            elsif P (PPtr) = '*' then
-
-               --  Try all possible starting positions in S for match with
-               --  the remaining characters of the pattern. This is the
-               --  recursive call that implements the scanner backup.
-
-               for J in SPtr .. Slast loop
-                  if Matches (S (J .. Slast), P (PPtr + 1 .. PLast)) then
-                     return True;
-                  end if;
-               end loop;
-
-               return False;
-
-            --  Dealt with end of string and *, advance if we have a match
-
-            elsif Fold_Lower (S (SPtr)) = Fold_Lower (P (PPtr)) then
-               SPtr := SPtr + 1;
-               PPtr := PPtr + 1;
-
-            --  If first characters do not match, that's decisive
-
-            else
-               return False;
-            end if;
-         end loop;
-      end Matches;
-
-   --  Start of processing for Warning_Specifically_Suppressed
-
    begin
       --  Loop through specific warning suppression entries
 
@@ -1429,36 +1473,51 @@ package body Erroutc is
             then
                if Matches (Msg.all, SWE.Msg.all) then
                   SWE.Used := True;
-                  return True;
+                  return SWE.Reason;
                end if;
             end if;
          end;
       end loop;
 
-      return False;
+      return No_String;
    end Warning_Specifically_Suppressed;
+
+   ------------------------------
+   -- Warning_Treated_As_Error --
+   ------------------------------
+
+   function Warning_Treated_As_Error (Msg : String) return Boolean is
+   begin
+      for J in 1 .. Warnings_As_Errors_Count loop
+         if Matches (Msg, Warnings_As_Errors (J).all) then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Warning_Treated_As_Error;
 
    -------------------------
    -- Warnings_Suppressed --
    -------------------------
 
-   function Warnings_Suppressed (Loc : Source_Ptr) return Boolean is
+   function Warnings_Suppressed (Loc : Source_Ptr) return String_Id is
    begin
-      if Warning_Mode = Suppress then
-         return True;
-      end if;
-
       --  Loop through table of ON/OFF warnings
 
       for J in Warnings.First .. Warnings.Last loop
          if Warnings.Table (J).Start <= Loc
            and then Loc <= Warnings.Table (J).Stop
          then
-            return True;
+            return Warnings.Table (J).Reason;
          end if;
       end loop;
 
-      return False;
+      if Warning_Mode = Suppress then
+         return Null_String_Id;
+      else
+         return No_String;
+      end if;
    end Warnings_Suppressed;
 
 end Erroutc;

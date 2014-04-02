@@ -212,6 +212,12 @@ extern enum pipeline_type microblaze_pipe;
 #define STRICT_ALIGNMENT        1
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
   ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
    && (ALIGN) < BITS_PER_WORD						\
@@ -405,9 +411,6 @@ extern enum reg_class microblaze_regno_to_class[];
       : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\
 	  || GET_MODE (X) == VOIDmode)					\
 	 ? (GR_REGS) : (CLASS))))
-
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (GET_MODE_CLASS (MODE) == MODE_INT)
 
 /* Stack layout; function entry, exit and calling.  */
 

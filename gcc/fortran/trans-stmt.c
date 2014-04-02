@@ -5028,6 +5028,11 @@ gfc_trans_allocate (gfc_code * code)
 	      if (tmp && TREE_CODE (tmp) == VAR_DECL)
 		gfc_add_modify (&se.pre, tmp, fold_convert (TREE_TYPE (tmp),
 				memsz));
+	      else if (al->expr->ts.type == BT_CHARACTER
+		       && al->expr->ts.deferred && se.string_length)
+		gfc_add_modify (&se.pre, se.string_length,
+				fold_convert (TREE_TYPE (se.string_length),
+				memsz));
 
 	      /* Convert to size in bytes, using the character KIND.  */
 	      if (unlimited_char)
@@ -5102,8 +5107,8 @@ gfc_trans_allocate (gfc_code * code)
 				  boolean_type_node, stat,
 				  build_int_cst (TREE_TYPE (stat), 0));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 gfc_unlikely (parm), tmp,
-				     build_empty_stmt (input_location));
+				 gfc_unlikely (parm, PRED_FORTRAN_FAIL_ALLOC),
+				 tmp, build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
@@ -5496,7 +5501,7 @@ gfc_trans_deallocate (gfc_code *code)
 	  cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, stat,
 				  build_int_cst (TREE_TYPE (stat), 0));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 gfc_unlikely (cond),
+				 gfc_unlikely (cond, PRED_FORTRAN_FAIL_ALLOC),
 				 build1_v (GOTO_EXPR, label_errmsg),
 				 build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&se.pre, tmp);
@@ -5536,7 +5541,7 @@ gfc_trans_deallocate (gfc_code *code)
       cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, stat,
 			     build_int_cst (TREE_TYPE (stat), 0));
       tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			     gfc_unlikely (cond), tmp,
+			     gfc_unlikely (cond, PRED_FORTRAN_FAIL_ALLOC), tmp,
 			     build_empty_stmt (input_location));
 
       gfc_add_expr_to_block (&block, tmp);

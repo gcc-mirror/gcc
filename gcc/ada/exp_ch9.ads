@@ -90,6 +90,8 @@ package Exp_Ch9 is
    --  needed, but in fact, in Ada 2005 the subprogram may be used in a call-
    --  back, and therefore a protected version of the operation must be
    --  generated as well.
+   --
+   --  Possibly factor this with Exp_Dist.Copy_Specification ???
 
    function Build_Protected_Sub_Specification
      (N        : Node_Id;

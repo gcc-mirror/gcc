@@ -48,8 +48,10 @@
 
 --      function Strict_Equal (Left, Right : Map) return Boolean;
 --      function Overlap (Left, Right : Map) return Boolean;
---      function Left  (Container : Map; Position : Cursor) return Map;
---      function Right (Container : Map; Position : Cursor) return Map;
+--      function First_To_Previous (Container : Map; Current : Cursor)
+--         return Map;
+--      function Current_To_Last (Container : Map; Current : Cursor)
+--         return Map;
 
 --    See detailed specifications for these subprograms
 
@@ -67,7 +69,11 @@ package Ada.Containers.Formal_Hashed_Maps is
    pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is private;
+   type Map (Capacity : Count_Type; Modulus : Hash_Type) is private with
+     Iterable => (First       => First,
+                  Next        => Next,
+                  Has_Element => Has_Element,
+                  Element     => Element);
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -77,53 +83,65 @@ package Ada.Containers.Formal_Hashed_Maps is
 
    No_Element : constant Cursor;
 
-   function "=" (Left, Right : Map) return Boolean;
+   function "=" (Left, Right : Map) return Boolean with
+     Global => null;
 
-   function Capacity (Container : Map) return Count_Type;
+   function Capacity (Container : Map) return Count_Type with
+     Global => null;
 
    procedure Reserve_Capacity
      (Container : in out Map;
       Capacity  : Count_Type)
    with
-     Pre => Capacity <= Container.Capacity;
+     Global => null,
+     Pre    => Capacity <= Container.Capacity;
 
-   function Length (Container : Map) return Count_Type;
+   function Length (Container : Map) return Count_Type with
+     Global => null;
 
-   function Is_Empty (Container : Map) return Boolean;
+   function Is_Empty (Container : Map) return Boolean with
+     Global => null;
 
-   procedure Clear (Container : in out Map);
+   procedure Clear (Container : in out Map) with
+     Global => null;
 
    procedure Assign (Target : in out Map; Source : Map) with
-     Pre => Target.Capacity >= Length (Source);
+     Global => null,
+     Pre    => Target.Capacity >= Length (Source);
 
    function Copy
      (Source   : Map;
       Capacity : Count_Type := 0) return Map
    with
-     Pre => Capacity = 0 or else Capacity >= Source.Capacity;
+     Global => null,
+     Pre    => Capacity = 0 or else Capacity >= Source.Capacity;
    --  Copy returns a container stricty equal to Source. It must have
    --  the same cursors associated with each element. Therefore:
    --  - capacity=0 means use container.capacity as capacity of target
    --  - the modulus cannot be changed.
 
    function Key (Container : Map; Position : Cursor) return Key_Type with
-     Pre => Has_Element (Container, Position);
+     Global => null,
+     Pre    => Has_Element (Container, Position);
 
    function Element
      (Container : Map;
       Position  : Cursor) return Element_Type
    with
-     Pre => Has_Element (Container, Position);
+     Global => null,
+     Pre    => Has_Element (Container, Position);
 
    procedure Replace_Element
      (Container : in out Map;
       Position  : Cursor;
       New_Item  : Element_Type)
    with
-     Pre => Has_Element (Container, Position);
+     Global => null,
+     Pre    => Has_Element (Container, Position);
 
    procedure Move (Target : in out Map; Source : in out Map) with
-     Pre => Target.Capacity >= Length (Source);
+     Global => null,
+     Pre    => Target.Capacity >= Length (Source);
 
    procedure Insert
      (Container : in out Map;
@@ -132,90 +150,119 @@ package Ada.Containers.Formal_Hashed_Maps is
       Position  : out Cursor;
       Inserted  : out Boolean)
    with
-     Pre => Length (Container) < Container.Capacity;
+     Global => null,
+     Pre    => Length (Container) < Container.Capacity;
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type)
    with
-     Pre => Length (Container) < Container.Capacity
-              and then (not Contains (Container, Key));
+     Global => null,
+     Pre    => Length (Container) < Container.Capacity
+                 and then (not Contains (Container, Key));
 
    procedure Include
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type)
    with
-     Pre => Length (Container) < Container.Capacity;
+     Global => null,
+     Pre    => Length (Container) < Container.Capacity;
 
    procedure Replace
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type)
    with
-     Pre => Contains (Container, Key);
+     Global => null,
+     Pre    => Contains (Container, Key);
 
-   procedure Exclude (Container : in out Map; Key : Key_Type);
+   procedure Exclude (Container : in out Map; Key : Key_Type) with
+     Global => null;
 
    procedure Delete (Container : in out Map; Key : Key_Type) with
-     Pre => Contains (Container, Key);
+     Global => null,
+     Pre    => Contains (Container, Key);
 
    procedure Delete (Container : in out Map; Position : in out Cursor) with
-     Pre => Has_Element (Container, Position);
+     Global => null,
+     Pre    => Has_Element (Container, Position);
 
-   function First (Container : Map) return Cursor;
+   function First (Container : Map) return Cursor with
+     Global => null;
 
    function Next (Container : Map; Position : Cursor) return Cursor with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
    procedure Next (Container : Map; Position : in out Cursor) with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
-   function Find (Container : Map; Key : Key_Type) return Cursor;
+   function Find (Container : Map; Key : Key_Type) return Cursor with
+     Global => null;
 
-   function Contains (Container : Map; Key : Key_Type) return Boolean;
+   function Contains (Container : Map; Key : Key_Type) return Boolean with
+     Global => null;
 
    function Element (Container : Map; Key : Key_Type) return Element_Type with
-     Pre => Contains (Container, Key);
+     Global => null,
+     Pre    => Contains (Container, Key);
 
-   function Has_Element (Container : Map; Position : Cursor) return Boolean;
+   function Has_Element (Container : Map; Position : Cursor) return Boolean
+   with
+     Global => null;
 
    function Equivalent_Keys
      (Left   : Map;
       CLeft  : Cursor;
       Right  : Map;
-      CRight : Cursor) return Boolean;
+      CRight : Cursor) return Boolean
+   with
+     Global => null;
 
    function Equivalent_Keys
      (Left  : Map;
       CLeft : Cursor;
-      Right : Key_Type) return Boolean;
+      Right : Key_Type) return Boolean
+   with
+     Global => null;
 
    function Equivalent_Keys
      (Left   : Key_Type;
       Right  : Map;
-      CRight : Cursor) return Boolean;
+      CRight : Cursor) return Boolean
+   with
+     Global => null;
 
-   function Default_Modulus (Capacity : Count_Type) return Hash_Type;
+   function Default_Modulus (Capacity : Count_Type) return Hash_Type with
+     Global => null;
 
-   function Strict_Equal (Left, Right : Map) return Boolean;
+   function Strict_Equal (Left, Right : Map) return Boolean with
+     Global => null;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
    --  they are structurally equal (function "=" returns True) and that they
    --  have the same set of cursors.
 
-   function Left  (Container : Map; Position : Cursor) return Map with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
-   function Right (Container : Map; Position : Cursor) return Map with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
-   --  Left returns a container containing all elements preceding Position
-   --  (excluded) in Container. Right returns a container containing all
-   --  elements following Position (included) in Container. These two new
-   --  functions can be used to express invariant properties in loops which
-   --  iterate over containers. Left returns the part of the container already
-   --  scanned and Right the part not scanned yet.
+   function First_To_Previous (Container : Map; Current : Cursor) return Map
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Current) or else Current = No_Element;
+   function Current_To_Last (Container : Map; Current : Cursor) return Map
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Current) or else Current = No_Element;
+   --  First_To_Previous returns a container containing all elements preceding
+   --  Current (excluded) in Container. Current_To_Last returns a container
+   --  containing all elements following Current (included) in Container.
+   --  These two new functions can be used to express invariant properties in
+   --  loops which iterate over containers. First_To_Previous returns the part
+   --  of the container already scanned and Current_To_Last the part not
+   --  scanned yet.
 
-   function Overlap (Left, Right : Map) return Boolean;
+   function Overlap (Left, Right : Map) return Boolean with
+     Global => null;
    --  Overlap returns True if the containers have common keys
 
 private

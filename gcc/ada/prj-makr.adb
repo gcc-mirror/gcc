@@ -38,6 +38,7 @@ with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
 with Sdefault;
 with Snames;   use Snames;
+with Stringt;
 with Table;    use Table;
 with Tempdir;
 
@@ -804,6 +805,7 @@ package body Prj.Makr is
 
       Csets.Initialize;
       Snames.Initialize;
+      Stringt.Initialize;
 
       Prj.Initialize (No_Project_Tree);
 

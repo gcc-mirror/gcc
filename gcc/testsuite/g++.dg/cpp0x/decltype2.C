@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 template<typename T, typename U> 
 struct is_same 
@@ -46,7 +45,7 @@ int bar(int);
 CHECK_DECLTYPE(decltype(foo), int(char));
 
 decltype(bar) z; // { dg-error "overload" "overload" }
-// { dg-error "invalid type" "invalid" { target *-*-* } 48 }
+// { dg-error "invalid type" "invalid" { target *-*-* } 47 }
 
 CHECK_DECLTYPE(decltype(&foo), int(*)(char));
 CHECK_DECLTYPE(decltype(*&foo), int(&)(char));

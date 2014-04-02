@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-g -dA -gdwarf-4 -std=c++0x" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-g -dA -gdwarf-4" }
 // { dg-final { scan-assembler-times "DIE\[^\n\r\]*DW_TAG_reference_type" 1 } }
 // { dg-final { scan-assembler-times "DIE\[^\n\r\]*DW_TAG_rvalue_reference_type" 1 } }
 

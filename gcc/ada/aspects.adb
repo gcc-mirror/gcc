@@ -174,6 +174,31 @@ package body Aspects is
       return True;
    end Aspects_On_Body_Or_Stub_OK;
 
+   ----------------------
+   -- Exchange_Aspects --
+   ----------------------
+
+   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id) is
+   begin
+      pragma Assert
+        (Permits_Aspect_Specifications (N1)
+           and then Permits_Aspect_Specifications (N2));
+
+      --  Perform the exchange only when both nodes have lists to be swapped
+
+      if Has_Aspects (N1) and then Has_Aspects (N2) then
+         declare
+            L1 : constant List_Id := Aspect_Specifications (N1);
+            L2 : constant List_Id := Aspect_Specifications (N2);
+         begin
+            Set_Parent (L1, N2);
+            Set_Parent (L2, N1);
+            Aspect_Specifications_Hash_Table.Set (N1, L2);
+            Aspect_Specifications_Hash_Table.Set (N2, L1);
+         end;
+      end if;
+   end Exchange_Aspects;
+
    -----------------
    -- Find_Aspect --
    -----------------
@@ -467,8 +492,6 @@ package body Aspects is
    Canonical_Aspect : constant array (Aspect_Id) of Aspect_Id :=
    (No_Aspect                           => No_Aspect,
     Aspect_Abstract_State               => Aspect_Abstract_State,
-    Aspect_Ada_2005                     => Aspect_Ada_2005,
-    Aspect_Ada_2012                     => Aspect_Ada_2005,
     Aspect_Address                      => Aspect_Address,
     Aspect_Alignment                    => Aspect_Alignment,
     Aspect_All_Calls_Remote             => Aspect_All_Calls_Remote,
@@ -479,7 +502,6 @@ package body Aspects is
     Aspect_Atomic_Components            => Aspect_Atomic_Components,
     Aspect_Attach_Handler               => Aspect_Attach_Handler,
     Aspect_Bit_Order                    => Aspect_Bit_Order,
-    Aspect_Compiler_Unit                => Aspect_Compiler_Unit,
     Aspect_Component_Size               => Aspect_Component_Size,
     Aspect_Constant_Indexing            => Aspect_Constant_Indexing,
     Aspect_Contract_Cases               => Aspect_Contract_Cases,
@@ -514,6 +536,7 @@ package body Aspects is
     Aspect_Interrupt_Handler            => Aspect_Interrupt_Handler,
     Aspect_Interrupt_Priority           => Aspect_Priority,
     Aspect_Invariant                    => Aspect_Invariant,
+    Aspect_Iterable                     => Aspect_Iterable,
     Aspect_Iterator_Element             => Aspect_Iterator_Element,
     Aspect_Link_Name                    => Aspect_Link_Name,
     Aspect_Linker_Section               => Aspect_Linker_Section,
@@ -531,12 +554,9 @@ package body Aspects is
     Aspect_Precondition                 => Aspect_Pre,
     Aspect_Predicate                    => Aspect_Predicate,
     Aspect_Preelaborate                 => Aspect_Preelaborate,
-    Aspect_Preelaborate_05              => Aspect_Preelaborate_05,
     Aspect_Preelaborable_Initialization => Aspect_Preelaborable_Initialization,
     Aspect_Priority                     => Aspect_Priority,
     Aspect_Pure                         => Aspect_Pure,
-    Aspect_Pure_05                      => Aspect_Pure_05,
-    Aspect_Pure_12                      => Aspect_Pure_12,
     Aspect_Pure_Function                => Aspect_Pure_Function,
     Aspect_Refined_Depends              => Aspect_Refined_Depends,
     Aspect_Refined_Global               => Aspect_Refined_Global,

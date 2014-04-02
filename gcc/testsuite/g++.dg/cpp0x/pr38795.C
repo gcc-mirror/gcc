@@ -1,6 +1,5 @@
 // PR c++/38795
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 template<typename... T> int foo(int i)
 {

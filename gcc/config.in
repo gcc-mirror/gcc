@@ -369,9 +369,21 @@
 #endif
 
 
-/* Define if your assembler and linker support @tlsldmplt. */
+/* Define to 1 if your assembler and linker support @tlsldm. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_TLSLDM
+#endif
+
+
+/* Define to 1 if your assembler and linker support @tlsldmplt. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_TLSLDMPLT
+#endif
+
+
+/* Define if your assembler supports the 'ud2' mnemonic. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_UD2
 #endif
 
 

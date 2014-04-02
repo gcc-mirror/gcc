@@ -140,10 +140,10 @@ namespace __debug
       noexcept(_Node_alloc_traits::_S_nothrow_move())
       {
 	__glibcxx_check_self_move_assign(__list);
-	bool xfer_memory = _Node_alloc_traits::_S_propagate_on_move_assign()
+	bool __xfer_memory = _Node_alloc_traits::_S_propagate_on_move_assign()
 	    || __list.get_allocator() == this->get_allocator();
 	static_cast<_Base&>(*this) = std::move(__list);
-	if (xfer_memory)
+	if (__xfer_memory)
 	  this->_M_swap(__list);
 	else
 	  this->_M_invalidate_all();

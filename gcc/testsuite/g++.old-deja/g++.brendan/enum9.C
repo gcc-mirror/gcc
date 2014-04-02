@@ -2,7 +2,7 @@
 // GROUPS passed enums
 enum fig {
     figgy,
-    pudding,  // { dg-error "comma at end" "" { target c++98 } }
+    pudding,  // { dg-error "comma at end" "" { target { ! c++11 } } }
 };
 
 class X {

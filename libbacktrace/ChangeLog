@@ -1,3 +1,20 @@
+2014-03-07  Ian Lance Taylor  <iant@google.com>
+
+	* sort.c (backtrace_qsort): Use middle element as pivot.
+
+2014-03-06  Ian Lance Taylor  <iant@google.com>
+
+	* sort.c: New file.
+	* stest.c: New file.
+	* internal.h (backtrace_qsort): Declare.
+	* dwarf.c (read_abbrevs): Call backtrace_qsort instead of qsort.
+	(read_line_info, read_function_entry): Likewise.
+	(read_function_info, build_dwarf_data): Likewise.
+	* elf.c (elf_initialize_syminfo): Likewise.
+	* Makefile.am (libbacktrace_la_SOURCES): Add sort.c.
+	(stest_SOURCES, stest_LDADD): Define.
+	(check_PROGRAMS): Add stest.
+
 2014-02-07  Misty De Meo  <misty@brew.sh>
 
 	PR target/58710

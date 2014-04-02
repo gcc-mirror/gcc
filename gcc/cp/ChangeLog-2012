@@ -2716,7 +2716,7 @@
 2012-02-16  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52126
-	* decl.c (xref_basetypes): call dependent_scope_p instead of
+	* decl.c (xref_basetypes): Call dependent_scope_p instead of
 	dependent_type_p.
 
 2012-02-16  Jason Merrill  <jason@redhat.com>

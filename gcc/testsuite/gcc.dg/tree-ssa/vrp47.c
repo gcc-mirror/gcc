@@ -1,15 +1,11 @@
-/* Skip on MIPS/ARC, where LOGICAL_OP_NON_SHORT_CIRCUIT inhibits the setcc
+/* Setting LOGICAL_OP_NON_SHORT_CIRCUIT to 0 inhibits the setcc
    optimizations that expose the VRP opportunity.  */
-/* Skip on S/390 and avr.  Lower values in BRANCH_COST lead to two conditional
+/* Skip on S/390.  Lower values in BRANCH_COST lead to two conditional
    jumps when evaluating an && condition.  VRP is not able to optimize
    this.  */
-/* { dg-do compile { target { ! "mips*-*-* arc*-*-* s390*-*-*  avr-*-* mn10300-*-* hppa*-*-*" } } } */
+/* { dg-do compile { target { ! { logical_op_short_circuit || { s390*-*-* mn10300-*-* hppa*-*-* } } } } } */
 /* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-dom1 -fdump-tree-vrp2" } */
 /* { dg-additional-options "-march=i586" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
-/* Skip on ARM Cortex-M, where LOGICAL_OP_NON_SHORT_CIRCUIT is set to false,
-   leading to two conditional jumps when evaluating an && condition.  VRP is
-   not able to optimize this.  */
-/* { dg-skip-if "" { arm_cortex_m } } */
 
 int h(int x, int y)
 {

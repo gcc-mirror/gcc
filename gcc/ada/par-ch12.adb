@@ -350,8 +350,8 @@ package body Ch12 is
       if Token = Tok_Others then
          if Ada_Version < Ada_2005 then
             Error_Msg_SP
-              ("partial parametrization of formal packages" &
-                " is an Ada 2005 extension");
+              ("partial parameterization of formal packages"
+               & " is an Ada 2005 extension");
             Error_Msg_SP
               ("\unit must be compiled with -gnat05 switch");
          end if;

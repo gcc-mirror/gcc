@@ -127,3 +127,7 @@ DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_NORMAL,
 /* We can't inline because of mismatched caller/callee attributes.  */
 DEFCIFCODE(ATTRIBUTE_MISMATCH, CIF_FINAL_NORMAL,
 	   N_("function attribute mismatch"))
+
+/* We proved that the call is unreachable.  */
+DEFCIFCODE(UNREACHABLE, CIF_FINAL_NORMAL,
+	   N_("unreachable"))

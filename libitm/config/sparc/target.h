@@ -29,10 +29,6 @@ typedef struct gtm_jmpbuf
   unsigned long pc;
 } gtm_jmpbuf;
 
-/* UltraSPARC processors generally use a fixed page size of 8K.  */
-#define PAGE_SIZE	8192
-#define FIXED_PAGE_SIZE	1
-
 /* The size of one line in hardware caches (in bytes).  We use the primary
    cache line size documented for the UltraSPARC T1/T2.  */
 #define HW_CACHELINE_SIZE 16

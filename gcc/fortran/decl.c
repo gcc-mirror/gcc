@@ -510,9 +510,7 @@ match_old_style_init (const char *name)
       free (newdata);
       return MATCH_ERROR;
     }
-
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   /* Mark the variable as having appeared in a data statement.  */
   if (!gfc_add_data (&sym->attr, sym->name, &sym->declared_at))
@@ -571,9 +569,7 @@ gfc_match_data (void)
       gfc_error ("DATA statement at %C is not allowed in a PURE procedure");
       return MATCH_ERROR;
     }
-
-  if (gfc_implicit_pure (NULL))
-    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+  gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   return MATCH_YES;
 
@@ -1199,7 +1195,7 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
   sym->attr.implied_index = 0;
 
   if (sym->ts.type == BT_CLASS)
-    return gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
+    return gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as);
 
   return true;
 }
@@ -1656,10 +1652,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 scalar:
   if (c->ts.type == BT_CLASS)
     {
-      bool delayed = (gfc_state_stack->sym == c->ts.u.derived)
-		     || (!c->ts.u.derived->components
-			 && !c->ts.u.derived->attr.zero_comp);
-      bool t2 = gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
+      bool t2 = gfc_build_class_symbol (&c->ts, &c->attr, &c->as);
 
       if (t)
 	t = t2;
@@ -1742,6 +1735,7 @@ match_pointer_init (gfc_expr **init, int procptr)
 		 "a PURE procedure");
       return MATCH_ERROR;
     }
+  gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
   /* Match NULL() initialization.  */
   m = gfc_match_null (init);
@@ -2048,6 +2042,10 @@ variable_decl (int elem)
 			 "a PURE procedure");
 	      m = MATCH_ERROR;
 	    }
+
+	  if (current_attr.flavor != FL_PARAMETER
+	      && gfc_state_stack->state != COMP_DERIVED)
+	    gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
 	  if (m != MATCH_YES)
 	    goto cleanup;
@@ -6340,7 +6338,7 @@ attr_decl1 (void)
     }
 
   if (sym->ts.type == BT_CLASS
-      && !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false))
+      && !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as))
     {
       m = MATCH_ERROR;
       goto cleanup;

@@ -1,5 +1,6 @@
 /* PR target/59794 */
-/* { dg-options "-Wno-psabi -O2 -mno-sse" } */
+/* { dg-prune-output "ABI for passing parameters" } */
+/* { dg-options "-O2 -mno-sse" } */
 /* { dg-skip-if "no SSE vector" { *-*-mingw* } } */
 
 typedef double __v2df __attribute__ ((__vector_size__ (16)));

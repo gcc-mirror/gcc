@@ -244,9 +244,9 @@ package body Sem_Ch12 is
    --  This should really be reset on encountering a new main unit, but in
    --  practice we are not using multiple main units so it is not critical.
 
-   -------------------------------------------------
-   -- Formal packages and partial parametrization --
-   -------------------------------------------------
+   --------------------------------------------------
+   -- Formal packages and partial parameterization --
+   --------------------------------------------------
 
    --  When compiling a generic, a formal package is a local instantiation. If
    --  declared with a box, its generic formals are visible in the enclosing
@@ -263,7 +263,7 @@ package body Sem_Ch12 is
 
    --  In a generic, a formal package is treated like a special instantiation.
    --  Our Ada 95 compiler handled formals with and without box in different
-   --  ways. With partial parametrization, we use a single model for both.
+   --  ways. With partial parameterization, we use a single model for both.
    --  We create a package declaration that consists of the specification of
    --  the generic package, and a set of declarations that map the actuals
    --  into local renamings, just as we do for bona fide instantiations. For
@@ -951,7 +951,7 @@ package body Sem_Ch12 is
 
       Others_Present : Boolean := False;
       Others_Choice  : Node_Id := Empty;
-      --  In Ada 2005, indicates partial parametrization of a formal
+      --  In Ada 2005, indicates partial parameterization of a formal
       --  package. As usual an other association must be last in the list.
 
       procedure Check_Overloaded_Formal_Subprogram (Formal : Entity_Id);
@@ -978,7 +978,7 @@ package body Sem_Ch12 is
       --  but return Empty for the actual itself. In this case the code below
       --  creates a corresponding declaration for the formal.
 
-      function Partial_Parametrization return Boolean;
+      function Partial_Parameterization return Boolean;
       --  Ada 2005: if no match is found for a given formal, check if the
       --  association for it includes a box, or whether the associations
       --  include an Others clause.
@@ -1168,15 +1168,15 @@ package body Sem_Ch12 is
          return Act;
       end Matching_Actual;
 
-      -----------------------------
-      -- Partial_Parametrization --
-      -----------------------------
+      ------------------------------
+      -- Partial_Parameterization --
+      ------------------------------
 
-      function Partial_Parametrization return Boolean is
+      function Partial_Parameterization return Boolean is
       begin
          return Others_Present
           or else (Present (Found_Assoc) and then Box_Present (Found_Assoc));
-      end Partial_Parametrization;
+      end Partial_Parameterization;
 
       ---------------------
       -- Process_Default --
@@ -1289,7 +1289,7 @@ package body Sem_Ch12 is
 
       if Present (Actuals) then
 
-         --  Check for an Others choice, indicating a partial parametrization
+         --  Check for an Others choice, indicating a partial parameterization
          --  for a formal package.
 
          Actual := First (Actuals);
@@ -1388,7 +1388,7 @@ package body Sem_Ch12 is
                       Defining_Identifier (Formal),
                       Defining_Identifier (Analyzed_Formal));
 
-                  if No (Match) and then Partial_Parametrization then
+                  if No (Match) and then Partial_Parameterization then
                      Process_Default (Formal);
                   else
                      Append_List
@@ -1403,7 +1403,7 @@ package body Sem_Ch12 is
                       Defining_Identifier (Analyzed_Formal));
 
                   if No (Match) then
-                     if Partial_Parametrization then
+                     if Partial_Parameterization then
                         Process_Default (Formal);
 
                      else
@@ -1505,11 +1505,11 @@ package body Sem_Ch12 is
                      Check_Overloaded_Formal_Subprogram (Formal);
                   end if;
 
-                  --  If there is no corresponding actual, this may be case of
-                  --  partial parametrization, or else the formal has a default
-                  --  or a box.
+                  --  If there is no corresponding actual, this may be case
+                  --  of partial parameterization, or else the formal has a
+                  --  default or a box.
 
-                  if No (Match) and then Partial_Parametrization then
+                  if No (Match) and then Partial_Parameterization then
                      Process_Default (Formal);
 
                      if Nkind (I_Node) = N_Formal_Package_Declaration then
@@ -1571,7 +1571,7 @@ package body Sem_Ch12 is
                       Defining_Identifier (Original_Node (Analyzed_Formal)));
 
                   if No (Match) then
-                     if Partial_Parametrization then
+                     if Partial_Parameterization then
                         Process_Default (Formal);
 
                      else
@@ -1931,13 +1931,13 @@ package body Sem_Ch12 is
       Lo :=
         Make_Attribute_Reference (Loc,
           Attribute_Name => Name_First,
-          Prefix         => New_Reference_To (T, Loc));
+          Prefix         => New_Occurrence_Of (T, Loc));
       Set_Etype (Lo, T);
 
       Hi :=
         Make_Attribute_Reference (Loc,
           Attribute_Name => Name_Last,
-          Prefix         => New_Reference_To (T, Loc));
+          Prefix         => New_Occurrence_Of (T, Loc));
       Set_Etype (Hi, T);
 
       Set_Scalar_Range (T,
@@ -2143,7 +2143,7 @@ package body Sem_Ch12 is
          then
             declare
                Non_Freezing_Ref : constant Node_Id :=
-                                    New_Reference_To (Id, Sloc (Id));
+                                    New_Occurrence_Of (Id, Sloc (Id));
                Decl : Node_Id;
 
             begin
@@ -3019,6 +3019,11 @@ package body Sem_Ch12 is
       New_N := Copy_Generic_Node (N, Empty, Instantiating => False);
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
+
+      --  Once the contents of the generic copy and the template are swapped,
+      --  do the same for their respective aspect specifications.
+
+      Exchange_Aspects (N, New_N);
       Id := Defining_Entity (N);
       Generate_Definition (Id);
 
@@ -3088,7 +3093,6 @@ package body Sem_Ch12 is
             Check_References (Id);
          end if;
       end if;
-
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------
@@ -3598,7 +3602,7 @@ package body Sem_Ch12 is
            Make_Package_Renaming_Declaration (Loc,
              Defining_Unit_Name =>
                Make_Defining_Identifier (Loc, Chars (Gen_Unit)),
-             Name => New_Reference_To (Act_Decl_Id, Loc));
+             Name               => New_Occurrence_Of (Act_Decl_Id, Loc));
 
          Append (Unit_Renaming, Renaming_List);
 
@@ -3615,6 +3619,14 @@ package body Sem_Ch12 is
          Act_Decl :=
            Make_Package_Declaration (Loc,
              Specification => Act_Spec);
+
+         --  Propagate the aspect specifications from the package declaration
+         --  template to the instantiated version of the package declaration.
+
+         if Has_Aspects (Act_Tree) then
+            Set_Aspect_Specifications (Act_Decl,
+              New_Copy_List_Tree (Aspect_Specifications (Act_Tree)));
+         end if;
 
          --  Save the instantiation node, for subsequent instantiation of the
          --  body, if there is one and we are generating code for the current
@@ -5007,7 +5019,7 @@ package body Sem_Ch12 is
           Unit           => Act_Decl,
           Aux_Decls_Node => Make_Compilation_Unit_Aux (Sloc (N)));
 
-      Set_Parent_Spec   (Act_Decl, Parent_Spec (N));
+      Set_Parent_Spec (Act_Decl, Parent_Spec (N));
 
       --  The new compilation unit is linked to its body, but both share the
       --  same file, so we do not set Body_Required on the new unit so as not
@@ -5018,6 +5030,15 @@ package body Sem_Ch12 is
       --  compilation unit of the instance, since this is the main unit.
 
       Rewrite (N, Act_Body);
+
+      --  Propagate the aspect specifications from the package body template to
+      --  the instantiated version of the package body.
+
+      if Has_Aspects (Act_Body) then
+         Set_Aspect_Specifications
+           (N, New_Copy_List_Tree (Aspect_Specifications (Act_Body)));
+      end if;
+
       Body_Cunit := Parent (N);
 
       --  The two compilation unit nodes are linked by the Library_Unit field
@@ -9048,7 +9069,7 @@ package body Sem_Ch12 is
          Nod :=
            Make_Package_Renaming_Declaration (Loc,
              Defining_Unit_Name => New_Copy (Defining_Identifier (Formal)),
-             Name               => New_Reference_To (Actual_Pack, Loc));
+             Name               => New_Occurrence_Of (Actual_Pack, Loc));
 
          Set_Associated_Formal_Package (Defining_Unit_Name (Nod),
            Defining_Identifier (Formal));
@@ -9068,11 +9089,11 @@ package body Sem_Ch12 is
          --  actual parameter associations for later formals that depend on
          --  actuals declared in the formal package.
 
-         --  In Ada 2005, partial parametrization requires that we make visible
-         --  the actuals corresponding to formals that were defaulted in the
-         --  formal package. There formals are identified because they remain
-         --  formal generics within the formal package, rather than being
-         --  renamings of the actuals supplied.
+         --  In Ada 2005, partial parameterization requires that we make
+         --  visible the actuals corresponding to formals that were defaulted
+         --  in the formal package. There formals are identified because they
+         --  remain formal generics within the formal package, rather than
+         --  being renamings of the actuals supplied.
 
          declare
             Gen_Decl : constant Node_Id :=
@@ -10638,21 +10659,30 @@ package body Sem_Ch12 is
             Desig_Act := Available_View (Desig_Act);
          end if;
 
-         if not Subtypes_Match
-           (Desig_Type, Desig_Act) then
+         if not Subtypes_Match (Desig_Type, Desig_Act) then
             Error_Msg_NE
               ("designated type of actual does not match that of formal &",
-                 Actual, Gen_T);
+               Actual, Gen_T);
+
+            if not Predicates_Match (Desig_Type, Desig_Act) then
+               Error_Msg_N ("\predicates do not match", Actual);
+            end if;
+
             Abandon_Instantiation (Actual);
 
          elsif Is_Access_Type (Designated_Type (Act_T))
            and then Is_Constrained (Designated_Type (Designated_Type (Act_T)))
                       /=
-                  Is_Constrained (Designated_Type (Desig_Type))
+                    Is_Constrained (Designated_Type (Desig_Type))
          then
             Error_Msg_NE
               ("designated type of actual does not match that of formal &",
-                 Actual, Gen_T);
+               Actual, Gen_T);
+
+            if not Predicates_Match (Desig_Type, Desig_Act) then
+               Error_Msg_N ("\predicates do not match", Actual);
+            end if;
+
             Abandon_Instantiation (Actual);
          end if;
 
@@ -11094,7 +11124,9 @@ package body Sem_Ch12 is
                Abandon_Instantiation (Actual);
             end if;
 
-            if not Subtypes_Statically_Compatible (Act_T, Ancestor) then
+            if not Subtypes_Statically_Compatible
+                     (Act_T, Ancestor, Formal_Derived_Matching => True)
+            then
                Error_Msg_N
                  ("constraint on actual is incompatible with formal", Actual);
                Abandon_Instantiation (Actual);
@@ -11744,7 +11776,7 @@ package body Sem_Ch12 is
       Decl_Node :=
         Make_Subtype_Declaration (Loc,
           Defining_Identifier => Subt,
-          Subtype_Indication  => New_Reference_To (Act_T, Loc));
+          Subtype_Indication  => New_Occurrence_Of (Act_T, Loc));
 
       if Is_Private_Type (Act_T) then
          Set_Has_Private_View (Subtype_Indication (Decl_Node));
@@ -11807,7 +11839,7 @@ package body Sem_Ch12 is
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => New_Corr,
                 Subtype_Indication  =>
-                  New_Reference_To (Corr_Rec, Loc));
+                  New_Occurrence_Of (Corr_Rec, Loc));
             Append_To (Decl_Nodes, Corr_Decl);
 
             if Ekind (Act_T) = E_Task_Type then

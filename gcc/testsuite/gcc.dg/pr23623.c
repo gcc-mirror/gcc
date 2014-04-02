@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target size32plus } */
 /* { dg-options "-fstrict-volatile-bitfields -fdump-rtl-final" } */
 
 /* With -fstrict-volatile-bitfields, the volatile accesses to bf2.b
@@ -45,4 +46,3 @@ void readb(void)
    variable, we need to give a count of 12 instead of 6 here.  */
 /* { dg-final { scan-rtl-dump-times "mem/v(/.)*:SI" 12 "final" } } */
 /* { dg-final { cleanup-rtl-dump "final" } } */
-

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1934,6 +1934,7 @@ package body Ada.Containers.Multiway_Trees is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
    end Query_Element;
@@ -2723,6 +2724,7 @@ package body Ada.Containers.Multiway_Trees is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
    end Update_Element;

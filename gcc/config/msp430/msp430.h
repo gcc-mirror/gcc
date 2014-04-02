@@ -407,3 +407,5 @@ typedef struct
 #undef  ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
   msp430_start_function ((FILE), (NAME), (DECL))
+
+#define TARGET_HAS_NO_HW_DIVIDE (! TARGET_HWMULT)

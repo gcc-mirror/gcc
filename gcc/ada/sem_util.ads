@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,11 @@ package Sem_Util is
    procedure Add_Access_Type_To_Process (E : Entity_Id; A : Entity_Id);
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
+
+   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id);
+   --  Given a block statement N, generate an internal E_Block label and make
+   --  it the identifier of the block. Id denotes the generated entity. If the
+   --  block already has an identifier, Id returns the entity of its label.
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
    --  Add pragma Prag to the contract of an entry, a package [body], a
@@ -419,39 +424,6 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   --  The following type lists all possible forms of default initialization
-   --  that may apply to a type.
-
-   type Default_Initialization_Kind is
-     (No_Possible_Initialization,
-      --  This value signifies that a type cannot possibly be initialized
-      --  because it has no content, for example - a null record.
-
-      Full_Default_Initialization,
-      --  This value covers the following combinations of types and content:
-      --    * Access type
-      --    * Array-of-scalars with specified Default_Component_Value
-      --    * Array type with fully default initialized component type
-      --    * Record or protected type with components that either have a
-      --      default expression or their related types are fully default
-      --      initialized.
-      --    * Scalar type with specified Default_Value
-      --    * Task type
-      --    * Type extension of a type with full default initialization where
-      --      the extension components are also fully default initialized.
-
-      Mixed_Initialization,
-      --  This value applies to a type where some of its internals are fully
-      --  default initialized and some are not.
-
-      No_Default_Initialization);
-      --  This value reflects a type where none of its content is fully
-      --  default initialized.
-
-   function Default_Initialization
-     (Typ : Entity_Id) return Default_Initialization_Kind;
-   --  Determine default initialization kind that applies to a particular type
-
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
    --  2012 stand-alone object of an anonymous access type, then return the
@@ -601,6 +573,11 @@ package Sem_Util is
    --  to a discriminant carries the discriminant that it denotes when it is
    --  analyzed. Subsequent uses of this id on a different type denotes the
    --  discriminant at the same position in this new type.
+
+   function Find_Enclosing_Iterator_Loop (Id : Entity_Id) return Entity_Id;
+   --  Given an arbitrary entity, try to find the nearest enclosing iterator
+   --  loop. If such a loop is found, return the entity of its identifier (the
+   --  E_Loop scope), otherwise return Empty.
 
    function Find_Loop_In_Conditional_Block (N : Node_Id) return Node_Id;
    --  Find the nested loop statement in a conditional block. Loops subject to
@@ -777,6 +754,14 @@ package Sem_Util is
    function Get_Body_From_Stub (N : Node_Id) return Node_Id;
    --  Return the body node for a stub (subprogram or package)
 
+   function Get_Cursor_Type
+     (Aspect : Node_Id;
+      Typ    : Entity_Id) return Entity_Id;
+   --  Find Cursor type in scope of formal container Typ, by locating primitive
+   --  operation First. For use in resolving the other primitive operations
+   --  of an Iterable type and expanding loops and quantified expressions
+   --  over formal containers.
+
    function Get_Default_External_Name (E : Node_Or_Entity_Id) return Node_Id;
    --  This is used to construct the string literal node representing a
    --  default external name, i.e. one that is constructed from the name of an
@@ -818,6 +803,12 @@ package Sem_Util is
    --  The third argument supplies a source location for constructed nodes
    --  returned by this function.
 
+   function Get_Iterable_Type_Primitive
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id;
+   --  Retrieve one of the primitives First, Next, Has_Element, Element from
+   --  the value of the Iterable aspect of a formal type.
+
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
    --  Retrieve the fully expanded name of the library unit declared by
    --  Decl_Node into the name buffer.
@@ -836,6 +827,13 @@ package Sem_Util is
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
    --  Obtains the Pragma_Id from the Chars field of Pragma_Identifier (N)
+
+   procedure Get_Reason_String (N : Node_Id);
+   --  Recursive routine to analyze reason argument for pragma Warnings. The
+   --  value of the reason argument is appended to the current string using
+   --  Store_String_Chars. The reason argument is expected to be a string
+   --  literal or concatenation of string literals. An error is given for
+   --  any other form.
 
    function Get_Referenced_Object (N : Node_Id) return Node_Id;
    --  Given a node, return the renamed object if the node represents a renamed
@@ -999,6 +997,10 @@ package Sem_Util is
       Exclude_Parents : Boolean := False) return Boolean;
    --  Returns true if the Typ_Ent implements interface Iface_Ent
 
+   function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
+   --  Determine whether an arbitrary node appears in a pragma that acts as an
+   --  assertion expression. See Sem_Prag for the list of qualifying pragmas.
+
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance
 
@@ -1098,6 +1100,17 @@ package Sem_Util is
    --  enumeration literal, or an expression composed of constant-bound
    --  subexpressions which are evaluated by means of standard operators.
 
+   function Is_Container_Element (Exp : Node_Id) return Boolean;
+   --  This routine recognizes expressions that denote an element of one of
+   --  the predefined containers, when the source only contains an indexing
+   --  operation and an implicit dereference is inserted by the compiler.
+   --  In the absence of this optimization, the indexing creates a temporary
+   --  controlled cursor that sets the tampering bit of the container, and
+   --  restricts the use of the convenient notation C (X) to contexts that
+   --  do not check the tampering bit (e.g. C.Include (X, C (Y)). Exp is an
+   --  explicit dereference. The transformation applies when it has the form
+   --  F (X).Discr.all.
+
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;
    --  Ada 2005 (AI-345): Determine whether Proc_Nam is a primitive procedure
@@ -1177,6 +1190,16 @@ package Sem_Util is
    function Is_Iterator (Typ : Entity_Id) return Boolean;
    --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in
    --  Ada.Iterator_Interfaces, or it is derived from one.
+
+   function Is_Junk_Name (N : Name_Id) return Boolean;
+   --  Returns True if the given name contains any of the following substrings
+   --    discard
+   --    dummy
+   --    ignore
+   --    junk
+   --    unused
+   --  Used to suppress warnings on names matching these patterns. The contents
+   --  of Name_Buffer and Name_Len are desteoyed by this call.
 
    type Is_LHS_Result is (Yes, No, Unknown);
    function Is_LHS (N : Node_Id) return Is_LHS_Result;
@@ -1726,6 +1749,8 @@ package Sem_Util is
    --  Same as Basic_Set_Convention, but with an extra check for access types.
    --  In particular, if E is an access-to-subprogram type, and Val is a
    --  foreign convention, then we set Can_Use_Internal_Rep to False on E.
+   --  Also, if the Etype of E is set and is an anonymous access type with
+   --  no convention set, this anonymous type inherits the convention of E.
 
    procedure Set_Current_Entity (E : Entity_Id);
    pragma Inline (Set_Current_Entity);
@@ -1740,11 +1765,22 @@ package Sem_Util is
    --  This routine should always be used instead of Set_Needs_Debug_Info to
    --  ensure that subsidiary entities are properly handled.
 
-   procedure Set_Entity_With_Style_Check (N : Node_Id; Val : Entity_Id);
-   --  This procedure has the same calling sequence as Set_Entity, but
-   --  if Style_Check is set, then it calls a style checking routine which
-   --  can check identifier spelling style. This procedure also takes care
-   --  of checking the restriction No_Implementation_Identifiers.
+   procedure Set_Entity_With_Checks (N : Node_Id; Val : Entity_Id);
+   --  This procedure has the same calling sequence as Set_Entity, but it
+   --  performs additional checks as follows:
+   --
+   --    If Style_Check is set, then it calls a style checking routine which
+   --    can check identifier spelling style. This procedure also takes care
+   --    of checking the restriction No_Implementation_Identifiers.
+   --
+   --    If restriction No_Abort_Statements is set, then it checks that the
+   --    entity is not Ada.Task_Identification.Abort_Task.
+   --
+   --    If restriction No_Dynamic_Attachment is set, then it checks that the
+   --    entity is not one of the restricted names for this restriction.
+   --
+   --    If restriction No_Implementation_Identifiers is set, then it checks
+   --    that the entity is not implementation defined.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);

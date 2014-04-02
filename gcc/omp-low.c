@@ -2927,6 +2927,7 @@ omp_max_vf (void)
 {
   if (!optimize
       || optimize_debug
+      || !flag_tree_loop_optimize
       || (!flag_tree_loop_vectorize
 	  && (global_options_set.x_flag_tree_loop_vectorize
               || global_options_set.x_flag_tree_vectorize)))
@@ -3669,7 +3670,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       /* Don't add any barrier for #pragma omp simd or
 	 #pragma omp distribute.  */
       if (gimple_code (ctx->stmt) != GIMPLE_OMP_FOR
-	  || gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_FOR)
+	  || gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_FOR)
 	gimple_seq_add_stmt (ilist, build_omp_barrier (NULL_TREE));
     }
 
@@ -6837,6 +6838,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       if ((flag_tree_loop_vectorize
 	   || (!global_options_set.x_flag_tree_loop_vectorize
                && !global_options_set.x_flag_tree_vectorize))
+	  && flag_tree_loop_optimize
 	  && loop->safelen > 1)
 	{
 	  loop->force_vect = true;
@@ -9810,6 +9812,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 					TREE_VEC_ELT (t, 1)),
 				&initlist, true, NULL_TREE);
 	  gimple_seq_add_seq (&ilist, initlist);
+
+	  tree clobber = build_constructor (TREE_TYPE (TREE_VEC_ELT (t, 1)),
+					    NULL);
+	  TREE_THIS_VOLATILE (clobber) = 1;
+	  gimple_seq_add_stmt (&olist,
+			       gimple_build_assign (TREE_VEC_ELT (t, 1),
+						    clobber));
 	}
 
       tree clobber = build_constructor (ctx->record_type, NULL);
@@ -10113,7 +10122,20 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       if ((ctx || task_shared_vars)
 	  && walk_gimple_op (stmt, lower_omp_regimplify_p,
 			     ctx ? NULL : &wi))
-	gimple_regimplify_operands (stmt, gsi_p);
+	{
+	  /* Just remove clobbers, this should happen only if we have
+	     "privatized" local addressable variables in SIMD regions,
+	     the clobber isn't needed in that case and gimplifying address
+	     of the ARRAY_REF into a pointer and creating MEM_REF based
+	     clobber would create worse code than we get with the clobber
+	     dropped.  */
+	  if (gimple_clobber_p (stmt))
+	    {
+	      gsi_replace (gsi_p, gimple_build_nop (), true);
+	      break;
+	    }
+	  gimple_regimplify_operands (stmt, gsi_p);
+	}
       break;
     }
 }
@@ -10125,9 +10147,8 @@ lower_omp (gimple_seq *body, omp_context *ctx)
   gimple_stmt_iterator gsi;
   for (gsi = gsi_start (*body); !gsi_end_p (gsi); gsi_next (&gsi))
     lower_omp_1 (&gsi, ctx);
-  /* Inside target region we haven't called fold_stmt during gimplification,
-     because it can break code by adding decl references that weren't in the
-     source.  Call fold_stmt now.  */
+  /* During gimplification, we have not always invoked fold_stmt
+     (gimplify.c:maybe_fold_stmt); call it now.  */
   if (target_nesting_level)
     for (gsi = gsi_start (*body); !gsi_end_p (gsi); gsi_next (&gsi))
       fold_stmt (&gsi);
@@ -10267,7 +10288,8 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
       if ((branch_ctx
 	   && gimple_code (branch_ctx) == GIMPLE_OMP_FOR
 	   && gimple_omp_for_kind (branch_ctx) == GF_OMP_FOR_KIND_CILKSIMD)
-	  || (gimple_code (label_ctx) == GIMPLE_OMP_FOR
+	  || (label_ctx
+	      && gimple_code (label_ctx) == GIMPLE_OMP_FOR
 	      && gimple_omp_for_kind (label_ctx) == GF_OMP_FOR_KIND_CILKSIMD))
 	cilkplus_block = true;
     }

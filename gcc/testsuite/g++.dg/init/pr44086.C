@@ -1,9 +1,9 @@
 // PR c++/44086
 // { dg-do compile }
 
-struct A		// { dg-error "uninitialized" "" { target c++11 } }
+struct A // { dg-error "uninitialized" "" { target c++11 } }
 {
-    int const i : 2; // { dg-message "should be initialized" "" { target c++98 } }
+    int const i : 2; // { dg-message "should be initialized" }
 };
 
 void f()

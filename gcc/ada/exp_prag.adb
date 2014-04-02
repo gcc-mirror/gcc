@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Casing;   use Casing;
+with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
@@ -50,6 +51,7 @@ with Stand;    use Stand;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Validsw;  use Validsw;
 
 package body Exp_Prag is
 
@@ -147,6 +149,646 @@ package body Exp_Prag is
          end;
       end if;
    end Arg3;
+
+   ---------------------------
+   -- Expand_Contract_Cases --
+   ---------------------------
+
+   --  Pragma Contract_Cases is expanded in the following manner:
+
+   --    subprogram S is
+   --       Count    : Natural := 0;
+   --       Flag_1   : Boolean := False;
+   --       . . .
+   --       Flag_N   : Boolean := False;
+   --       Flag_N+1 : Boolean := False;  --  when "others" present
+   --       Pref_1   : ...;
+   --       . . .
+   --       Pref_M   : ...;
+
+   --       <preconditions (if any)>
+
+   --       --  Evaluate all case guards
+
+   --       if Case_Guard_1 then
+   --          Flag_1 := True;
+   --          Count  := Count + 1;
+   --       end if;
+   --       . . .
+   --       if Case_Guard_N then
+   --          Flag_N := True;
+   --          Count  := Count + 1;
+   --       end if;
+
+   --       --  Emit errors depending on the number of case guards that
+   --       --  evaluated to True.
+
+   --       if Count = 0 then
+   --          raise Assertion_Error with "xxx contract cases incomplete";
+   --            <or>
+   --          Flag_N+1 := True;  --  when "others" present
+
+   --       elsif Count > 1 then
+   --          declare
+   --             Str0 : constant String :=
+   --                      "contract cases overlap for subprogram ABC";
+   --             Str1 : constant String :=
+   --                      (if Flag_1 then
+   --                         Str0 & "case guard at xxx evaluates to True"
+   --                       else Str0);
+   --             StrN : constant String :=
+   --                      (if Flag_N then
+   --                         StrN-1 & "case guard at xxx evaluates to True"
+   --                       else StrN-1);
+   --          begin
+   --             raise Assertion_Error with StrN;
+   --          end;
+   --       end if;
+
+   --       --  Evaluate all attribute 'Old prefixes found in the selected
+   --       --  consequence.
+
+   --       if Flag_1 then
+   --          Pref_1 := <prefix of 'Old found in Consequence_1>
+   --       . . .
+   --       elsif Flag_N then
+   --          Pref_M := <prefix of 'Old found in Consequence_N>
+   --       end if;
+
+   --       procedure _Postconditions is
+   --       begin
+   --          <postconditions (if any)>
+
+   --          if Flag_1 and then not Consequence_1 then
+   --             raise Assertion_Error with "failed contract case at xxx";
+   --          end if;
+   --          . . .
+   --          if Flag_N[+1] and then not Consequence_N[+1] then
+   --             raise Assertion_Error with "failed contract case at xxx";
+   --          end if;
+   --       end _Postconditions;
+   --    begin
+   --       . . .
+   --    end S;
+
+   procedure Expand_Contract_Cases
+     (CCs     : Node_Id;
+      Subp_Id : Entity_Id;
+      Decls   : List_Id;
+      Stmts   : in out List_Id)
+   is
+      Loc : constant Source_Ptr := Sloc (CCs);
+
+      procedure Case_Guard_Error
+        (Decls     : List_Id;
+         Flag      : Entity_Id;
+         Error_Loc : Source_Ptr;
+         Msg       : in out Entity_Id);
+      --  Given a declarative list Decls, status flag Flag, the location of the
+      --  error and a string Msg, construct the following check:
+      --    Msg : constant String :=
+      --            (if Flag then
+      --                Msg & "case guard at Error_Loc evaluates to True"
+      --             else Msg);
+      --  The resulting code is added to Decls
+
+      procedure Consequence_Error
+        (Checks : in out Node_Id;
+         Flag   : Entity_Id;
+         Conseq : Node_Id);
+      --  Given an if statement Checks, status flag Flag and a consequence
+      --  Conseq, construct the following check:
+      --    [els]if Flag and then not Conseq then
+      --       raise Assertion_Error
+      --         with "failed contract case at Sloc (Conseq)";
+      --    [end if;]
+      --  The resulting code is added to Checks
+
+      function Declaration_Of (Id : Entity_Id) return Node_Id;
+      --  Given the entity Id of a boolean flag, generate:
+      --    Id : Boolean := False;
+
+      procedure Expand_Old_In_Consequence
+        (Decls  : List_Id;
+         Evals  : in out Node_Id;
+         Flag   : Entity_Id;
+         Conseq : Node_Id);
+      --  Perform specialized expansion of all attribute 'Old references found
+      --  in consequence Conseq such that at runtime only prefixes coming from
+      --  the selected consequence are evaluated. Any temporaries generated in
+      --  the process are added to declarative list Decls. Evals is a complex
+      --  if statement tasked with the evaluation of all prefixes coming from
+      --  a selected consequence. Flag is the corresponding case guard flag.
+      --  Conseq is the consequence expression.
+
+      function Increment (Id : Entity_Id) return Node_Id;
+      --  Given the entity Id of a numerical variable, generate:
+      --    Id := Id + 1;
+
+      function Set (Id : Entity_Id) return Node_Id;
+      --  Given the entity Id of a boolean variable, generate:
+      --    Id := True;
+
+      ----------------------
+      -- Case_Guard_Error --
+      ----------------------
+
+      procedure Case_Guard_Error
+        (Decls     : List_Id;
+         Flag      : Entity_Id;
+         Error_Loc : Source_Ptr;
+         Msg       : in out Entity_Id)
+      is
+         New_Line : constant Character := Character'Val (10);
+         New_Msg  : constant Entity_Id := Make_Temporary (Loc, 'S');
+
+      begin
+         Start_String;
+         Store_String_Char  (New_Line);
+         Store_String_Chars ("  case guard at ");
+         Store_String_Chars (Build_Location_String (Error_Loc));
+         Store_String_Chars (" evaluates to True");
+
+         --  Generate:
+         --    New_Msg : constant String :=
+         --      (if Flag then
+         --          Msg & "case guard at Error_Loc evaluates to True"
+         --       else Msg);
+
+         Append_To (Decls,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => New_Msg,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+             Expression          =>
+               Make_If_Expression (Loc,
+                 Expressions => New_List (
+                   New_Occurrence_Of (Flag, Loc),
+
+                   Make_Op_Concat (Loc,
+                     Left_Opnd  => New_Occurrence_Of (Msg, Loc),
+                     Right_Opnd => Make_String_Literal (Loc, End_String)),
+
+                   New_Occurrence_Of (Msg, Loc)))));
+
+         Msg := New_Msg;
+      end Case_Guard_Error;
+
+      -----------------------
+      -- Consequence_Error --
+      -----------------------
+
+      procedure Consequence_Error
+        (Checks : in out Node_Id;
+         Flag   : Entity_Id;
+         Conseq : Node_Id)
+      is
+         Cond  : Node_Id;
+         Error : Node_Id;
+
+      begin
+         --  Generate:
+         --    Flag and then not Conseq
+
+         Cond :=
+           Make_And_Then (Loc,
+             Left_Opnd  => New_Occurrence_Of (Flag, Loc),
+             Right_Opnd =>
+               Make_Op_Not (Loc,
+                 Right_Opnd => Relocate_Node (Conseq)));
+
+         --  Generate:
+         --    raise Assertion_Error
+         --      with "failed contract case at Sloc (Conseq)";
+
+         Start_String;
+         Store_String_Chars ("failed contract case at ");
+         Store_String_Chars (Build_Location_String (Sloc (Conseq)));
+
+         Error :=
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
+             Parameter_Associations => New_List (
+               Make_String_Literal (Loc, End_String)));
+
+         if No (Checks) then
+            Checks :=
+              Make_Implicit_If_Statement (CCs,
+                Condition       => Cond,
+                Then_Statements => New_List (Error));
+
+         else
+            if No (Elsif_Parts (Checks)) then
+               Set_Elsif_Parts (Checks, New_List);
+            end if;
+
+            Append_To (Elsif_Parts (Checks),
+              Make_Elsif_Part (Loc,
+                Condition       => Cond,
+                Then_Statements => New_List (Error)));
+         end if;
+      end Consequence_Error;
+
+      --------------------
+      -- Declaration_Of --
+      --------------------
+
+      function Declaration_Of (Id : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Id,
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_False, Loc));
+      end Declaration_Of;
+
+      -------------------------------
+      -- Expand_Old_In_Consequence --
+      -------------------------------
+
+      procedure Expand_Old_In_Consequence
+        (Decls  : List_Id;
+         Evals  : in out Node_Id;
+         Flag   : Entity_Id;
+         Conseq : Node_Id)
+      is
+         Eval_Stmts : List_Id := No_List;
+         --  The evaluation sequence expressed as assignment statements of all
+         --  prefixes of attribute 'Old found in the current consequence.
+
+         function Expand_Old (N : Node_Id) return Traverse_Result;
+         --  Determine whether an arbitrary node denotes attribute 'Old and if
+         --  it does, perform all expansion-related actions.
+
+         ----------------
+         -- Expand_Old --
+         ----------------
+
+         function Expand_Old (N : Node_Id) return Traverse_Result is
+            Decl : Node_Id;
+            Pref : Node_Id;
+            Temp : Entity_Id;
+
+         begin
+            if Nkind (N) = N_Attribute_Reference
+              and then Attribute_Name (N) = Name_Old
+            then
+               Pref := Prefix (N);
+               Temp := Make_Temporary (Loc, 'T', Pref);
+               Set_Etype (Temp, Etype (Pref));
+
+               --  Generate a temporary to capture the value of the prefix:
+               --    Temp : <Pref type>;
+
+               Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Etype (Pref), Loc));
+               Set_No_Initialization (Decl);
+
+               Append_To (Decls, Decl);
+
+               --  Evaluate the prefix, generate:
+               --    Temp := <Pref>;
+
+               if No (Eval_Stmts) then
+                  Eval_Stmts := New_List;
+               end if;
+
+               Append_To (Eval_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (Temp, Loc),
+                   Expression => Pref));
+
+               --  Ensure that the prefix is valid
+
+               if Validity_Checks_On and then Validity_Check_Operands then
+                  Ensure_Valid (Pref);
+               end if;
+
+               --  Replace the original attribute 'Old by a reference to the
+               --  generated temporary.
+
+               Rewrite (N, New_Occurrence_Of (Temp, Loc));
+            end if;
+
+            return OK;
+         end Expand_Old;
+
+         procedure Expand_Olds is new Traverse_Proc (Expand_Old);
+
+      --  Start of processing for Expand_Old_In_Consequence
+
+      begin
+         --  Inspect the consequence and expand any attribute 'Old references
+         --  found within.
+
+         Expand_Olds (Conseq);
+
+         --  Augment the machinery to trigger the evaluation of all prefixes
+         --  found in the step above. If Eval is empty, then this is the first
+         --  consequence to yield expansion of 'Old. Generate:
+
+         --    if Flag then
+         --       <evaluation statements>
+         --    end if;
+
+         if No (Evals) then
+            Evals :=
+              Make_Implicit_If_Statement (CCs,
+                Condition       => New_Occurrence_Of (Flag, Loc),
+                Then_Statements => Eval_Stmts);
+
+         --  Otherwise generate:
+         --    elsif Flag then
+         --       <evaluation statements>
+         --    end if;
+
+         else
+            if No (Elsif_Parts (Evals)) then
+               Set_Elsif_Parts (Evals, New_List);
+            end if;
+
+            Append_To (Elsif_Parts (Evals),
+              Make_Elsif_Part (Loc,
+                Condition       => New_Occurrence_Of (Flag, Loc),
+                Then_Statements => Eval_Stmts));
+         end if;
+      end Expand_Old_In_Consequence;
+
+      ---------------
+      -- Increment --
+      ---------------
+
+      function Increment (Id : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Assignment_Statement (Loc,
+             Name       => New_Occurrence_Of (Id, Loc),
+             Expression =>
+               Make_Op_Add (Loc,
+                 Left_Opnd  => New_Occurrence_Of (Id, Loc),
+                 Right_Opnd => Make_Integer_Literal (Loc, 1)));
+      end Increment;
+
+      ---------
+      -- Set --
+      ---------
+
+      function Set (Id : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Assignment_Statement (Loc,
+             Name       => New_Occurrence_Of (Id, Loc),
+             Expression => New_Occurrence_Of (Standard_True, Loc));
+      end Set;
+
+      --  Local variables
+
+      Aggr          : constant Node_Id :=
+                        Expression (First
+                          (Pragma_Argument_Associations (CCs)));
+      Case_Guard    : Node_Id;
+      CG_Checks     : Node_Id;
+      CG_Stmts      : List_Id;
+      Conseq        : Node_Id;
+      Conseq_Checks : Node_Id   := Empty;
+      Count         : Entity_Id;
+      Error_Decls   : List_Id;
+      Flag          : Entity_Id;
+      Msg_Str       : Entity_Id;
+      Multiple_PCs  : Boolean;
+      Old_Evals     : Node_Id   := Empty;
+      Others_Flag   : Entity_Id := Empty;
+      Post_Case     : Node_Id;
+
+   --  Start of processing for Expand_Contract_Cases
+
+   begin
+      --  Do nothing if pragma is not enabled. If pragma is disabled, it has
+      --  already been rewritten as a Null statement.
+
+      if Is_Ignored (CCs) then
+         return;
+
+      --  Guard against malformed contract cases
+
+      elsif Nkind (Aggr) /= N_Aggregate then
+         return;
+      end if;
+
+      Multiple_PCs := List_Length (Component_Associations (Aggr)) > 1;
+
+      --  Create the counter which tracks the number of case guards that
+      --  evaluate to True.
+
+      --    Count : Natural := 0;
+
+      Count := Make_Temporary (Loc, 'C');
+
+      Prepend_To (Decls,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Count,
+          Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc),
+          Expression          => Make_Integer_Literal (Loc, 0)));
+
+      --  Create the base error message for multiple overlapping case guards
+
+      --    Msg_Str : constant String :=
+      --                "contract cases overlap for subprogram Subp_Id";
+
+      if Multiple_PCs then
+         Msg_Str := Make_Temporary (Loc, 'S');
+
+         Start_String;
+         Store_String_Chars ("contract cases overlap for subprogram ");
+         Store_String_Chars (Get_Name_String (Chars (Subp_Id)));
+
+         Error_Decls := New_List (
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Msg_Str,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+             Expression          => Make_String_Literal (Loc, End_String)));
+      end if;
+
+      --  Process individual post cases
+
+      Post_Case := First (Component_Associations (Aggr));
+      while Present (Post_Case) loop
+         Case_Guard := First (Choices (Post_Case));
+         Conseq     := Expression (Post_Case);
+
+         --  The "others" choice requires special processing
+
+         if Nkind (Case_Guard) = N_Others_Choice then
+            Others_Flag := Make_Temporary (Loc, 'F');
+            Prepend_To (Decls, Declaration_Of (Others_Flag));
+
+            --  Check possible overlap between a case guard and "others"
+
+            if Multiple_PCs and Exception_Extra_Info then
+               Case_Guard_Error
+                 (Decls     => Error_Decls,
+                  Flag      => Others_Flag,
+                  Error_Loc => Sloc (Case_Guard),
+                  Msg       => Msg_Str);
+            end if;
+
+            --  Inspect the consequence and perform special expansion of any
+            --  attribute 'Old references found within.
+
+            Expand_Old_In_Consequence
+              (Decls  => Decls,
+               Evals  => Old_Evals,
+               Flag   => Others_Flag,
+               Conseq => Conseq);
+
+            --  Check the corresponding consequence of "others"
+
+            Consequence_Error
+              (Checks => Conseq_Checks,
+               Flag   => Others_Flag,
+               Conseq => Conseq);
+
+         --  Regular post case
+
+         else
+            --  Create the flag which tracks the state of its associated case
+            --  guard.
+
+            Flag := Make_Temporary (Loc, 'F');
+            Prepend_To (Decls, Declaration_Of (Flag));
+
+            --  The flag is set when the case guard is evaluated to True
+            --    if Case_Guard then
+            --       Flag  := True;
+            --       Count := Count + 1;
+            --    end if;
+
+            Append_To (Decls,
+              Make_Implicit_If_Statement (CCs,
+                Condition       => Relocate_Node (Case_Guard),
+                Then_Statements => New_List (
+                  Set (Flag),
+                  Increment (Count))));
+
+            --  Check whether this case guard overlaps with another one
+
+            if Multiple_PCs and Exception_Extra_Info then
+               Case_Guard_Error
+                 (Decls     => Error_Decls,
+                  Flag      => Flag,
+                  Error_Loc => Sloc (Case_Guard),
+                  Msg       => Msg_Str);
+            end if;
+
+            --  Inspect the consequence and perform special expansion of any
+            --  attribute 'Old references found within.
+
+            Expand_Old_In_Consequence
+              (Decls  => Decls,
+               Evals  => Old_Evals,
+               Flag   => Flag,
+               Conseq => Conseq);
+
+            --  The corresponding consequence of the case guard which evaluated
+            --  to True must hold on exit from the subprogram.
+
+            Consequence_Error
+              (Checks => Conseq_Checks,
+               Flag   => Flag,
+               Conseq => Conseq);
+         end if;
+
+         Next (Post_Case);
+      end loop;
+
+      --  Raise Assertion_Error when none of the case guards evaluate to True.
+      --  The only exception is when we have "others", in which case there is
+      --  no error because "others" acts as a default True.
+
+      --  Generate:
+      --    Flag := True;
+
+      if Present (Others_Flag) then
+         CG_Stmts := New_List (Set (Others_Flag));
+
+      --  Generate:
+      --    raise Assertion_Error with "xxx contract cases incomplete";
+
+      else
+         Start_String;
+         Store_String_Chars (Build_Location_String (Loc));
+         Store_String_Chars (" contract cases incomplete");
+
+         CG_Stmts := New_List (
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
+             Parameter_Associations => New_List (
+               Make_String_Literal (Loc, End_String))));
+      end if;
+
+      CG_Checks :=
+        Make_Implicit_If_Statement (CCs,
+          Condition       =>
+            Make_Op_Eq (Loc,
+              Left_Opnd  => New_Occurrence_Of (Count, Loc),
+              Right_Opnd => Make_Integer_Literal (Loc, 0)),
+          Then_Statements => CG_Stmts);
+
+      --  Detect a possible failure due to several case guards evaluating to
+      --  True.
+
+      --  Generate:
+      --    elsif Count > 0 then
+      --       declare
+      --          <Error_Decls>
+      --       begin
+      --          raise Assertion_Error with <Msg_Str>;
+      --    end if;
+
+      if Multiple_PCs then
+         Set_Elsif_Parts (CG_Checks, New_List (
+           Make_Elsif_Part (Loc,
+             Condition       =>
+               Make_Op_Gt (Loc,
+                 Left_Opnd  => New_Occurrence_Of (Count, Loc),
+                 Right_Opnd => Make_Integer_Literal (Loc, 1)),
+
+             Then_Statements => New_List (
+               Make_Block_Statement (Loc,
+                 Declarations               => Error_Decls,
+                 Handled_Statement_Sequence =>
+                   Make_Handled_Sequence_Of_Statements (Loc,
+                     Statements => New_List (
+                       Make_Procedure_Call_Statement (Loc,
+                         Name                   =>
+                           New_Occurrence_Of
+                             (RTE (RE_Raise_Assert_Failure), Loc),
+                         Parameter_Associations => New_List (
+                           New_Occurrence_Of (Msg_Str, Loc))))))))));
+      end if;
+
+      Append_To (Decls, CG_Checks);
+
+      --  Once all case guards are evaluated and checked, evaluate any prefixes
+      --  of attribute 'Old founds in the selected consequence.
+
+      Append_To (Decls, Old_Evals);
+
+      --  Raise Assertion_Error when the corresponding consequence of a case
+      --  guard that evaluated to True fails.
+
+      if No (Stmts) then
+         Stmts := New_List;
+      end if;
+
+      Append_To (Stmts, Conseq_Checks);
+   end Expand_Contract_Cases;
 
    ---------------------
    -- Expand_N_Pragma --
@@ -355,7 +997,7 @@ package body Exp_Prag is
              Then_Statements => New_List (
                Make_Raise_Statement (Loc,
                  Name =>
-                   New_Reference_To (RTE (RE_Assert_Failure), Loc)))));
+                   New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
 
       --  Case where we call the procedure
 
@@ -442,7 +1084,7 @@ package body Exp_Prag is
              Then_Statements => New_List (
                Make_Procedure_Call_Statement (Loc,
                  Name =>
-                   New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
+                   New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
                  Parameter_Associations => New_List (Relocate_Node (Msg))))));
       end if;
 
@@ -735,7 +1377,7 @@ package body Exp_Prag is
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Excep_Internal,
                          Object_Definition   =>
-                           New_Reference_To (RTE (RE_Address), Loc));
+                           New_Occurrence_Of (RTE (RE_Address), Loc));
 
                      Insert_Action (N, Excep_Object);
                      Analyze (Excep_Object);
@@ -755,7 +1397,7 @@ package body Exp_Prag is
                          Pragma_Argument_Associations => New_List (
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
-                               New_Reference_To (Excep_Internal, Loc)),
+                               New_Occurrence_Of (Excep_Internal, Loc)),
 
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
@@ -776,7 +1418,7 @@ package body Exp_Prag is
 
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
-                               New_Reference_To (Excep_Internal, Loc)),
+                               New_Occurrence_Of (Excep_Internal, Loc)),
 
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
@@ -793,7 +1435,7 @@ package body Exp_Prag is
                      Code :=
                         Make_Function_Call (Loc,
                           Name                   =>
-                            New_Reference_To (RTE (RE_Import_Address), Loc),
+                            New_Occurrence_Of (RTE (RE_Import_Address), Loc),
                           Parameter_Associations => New_List
                             (Make_String_Literal (Loc,
                               Strval => Excep_Image)));
@@ -803,7 +1445,7 @@ package body Exp_Prag is
 
                   Rewrite (Call,
                     Make_Procedure_Call_Statement (Loc,
-                      Name => New_Reference_To
+                      Name => New_Occurrence_Of
                                 (RTE (RE_Register_VMS_Exception), Loc),
                       Parameter_Associations => New_List (
                         Code,
@@ -1034,9 +1676,9 @@ package body Exp_Prag is
               Make_Object_Declaration (Loop_Loc,
                 Defining_Identifier => Flag_Id,
                 Object_Definition   =>
-                  New_Reference_To (Standard_Boolean, Loop_Loc),
+                  New_Occurrence_Of (Standard_Boolean, Loop_Loc),
                 Expression          =>
-                  New_Reference_To (Standard_False, Loop_Loc)));
+                  New_Occurrence_Of (Standard_False, Loop_Loc)));
 
             --  Prevent an unwanted optimization where the Current_Value of
             --  the flag eliminates the if statement which stores the variant
@@ -1065,7 +1707,7 @@ package body Exp_Prag is
          Insert_Action (Loop_Stmt,
            Make_Object_Declaration (Loop_Loc,
              Defining_Identifier => Curr_Id,
-             Object_Definition   => New_Reference_To (Expr_Typ, Loop_Loc)));
+             Object_Definition   => New_Occurrence_Of (Expr_Typ, Loop_Loc)));
 
          --  Generate:
          --    Old : <type of Expr>;
@@ -1075,7 +1717,7 @@ package body Exp_Prag is
          Insert_Action (Loop_Stmt,
            Make_Object_Declaration (Loop_Loc,
              Defining_Identifier => Old_Id,
-             Object_Definition   => New_Reference_To (Expr_Typ, Loop_Loc)));
+             Object_Definition   => New_Occurrence_Of (Expr_Typ, Loop_Loc)));
 
          --  Restore original scope after all temporaries have been analyzed
 
@@ -1092,8 +1734,8 @@ package body Exp_Prag is
 
          Append_To (Old_Assign,
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Old_Id, Loc),
-             Expression => New_Reference_To (Curr_Id, Loc)));
+             Name       => New_Occurrence_Of (Old_Id, Loc),
+             Expression => New_Occurrence_Of (Curr_Id, Loc)));
 
          --  Step 4: Store the current value of the expression
 
@@ -1106,7 +1748,7 @@ package body Exp_Prag is
 
          Append_To (Curr_Assign,
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Curr_Id, Loc),
+             Name       => New_Occurrence_Of (Curr_Id, Loc),
              Expression => Relocate_Node (Expr)));
 
          --  Step 5: Create corresponding assertion to verify change of value
@@ -1123,8 +1765,8 @@ package body Exp_Prag is
                Make_Pragma_Argument_Association (Loc,
                  Expression =>
                    Make_Op (Loc,
-                     Curr_Val => New_Reference_To (Curr_Id, Loc),
-                     Old_Val  => New_Reference_To (Old_Id, Loc)))));
+                     Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
+                     Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
          --  Generate:
          --    if Curr /= Old then
@@ -1142,8 +1784,8 @@ package body Exp_Prag is
                  Make_If_Statement (Loc,
                    Condition       =>
                      Make_Op_Ne (Loc,
-                       Left_Opnd  => New_Reference_To (Curr_Id, Loc),
-                       Right_Opnd => New_Reference_To (Old_Id, Loc)),
+                       Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
+                       Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
                    Then_Statements => New_List (Prag));
             end if;
 
@@ -1168,8 +1810,8 @@ package body Exp_Prag is
               Make_Elsif_Part (Loc,
                 Condition       =>
                   Make_Op_Ne (Loc,
-                    Left_Opnd  => New_Reference_To (Curr_Id, Loc),
-                    Right_Opnd => New_Reference_To (Old_Id, Loc)),
+                    Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
+                    Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
                 Then_Statements => New_List (Prag)));
          end if;
       end Process_Variant;
@@ -1220,7 +1862,7 @@ package body Exp_Prag is
 
       Insert_Action (N,
         Make_If_Statement (Loc,
-          Condition       => New_Reference_To (Flag_Id, Loc),
+          Condition       => New_Occurrence_Of (Flag_Id, Loc),
           Then_Statements => Old_Assign));
 
       --  Update the values of all expressions
@@ -1237,12 +1879,12 @@ package body Exp_Prag is
 
       Insert_Action (N,
         Make_If_Statement (Loc,
-          Condition       => New_Reference_To (Flag_Id, Loc),
+          Condition       => New_Occurrence_Of (Flag_Id, Loc),
           Then_Statements => New_List (If_Stmt),
           Else_Statements => New_List (
             Make_Assignment_Statement (Loc,
-              Name       => New_Reference_To (Flag_Id, Loc),
-              Expression => New_Reference_To (Standard_True, Loc)))));
+              Name       => New_Occurrence_Of (Flag_Id, Loc),
+              Expression => New_Occurrence_Of (Standard_True, Loc)))));
 
       --  Note: the pragma has been completely transformed into a sequence of
       --  corresponding declarations and statements. We leave it in the tree
@@ -1278,15 +1920,15 @@ package body Exp_Prag is
          Rewrite
            (N,
             Make_Procedure_Call_Statement (Loc,
-              Name => New_Reference_To (RTE (RE_Set_Deadline), Loc),
+              Name => New_Occurrence_Of (RTE (RE_Set_Deadline), Loc),
               Parameter_Associations => New_List (
                 Unchecked_Convert_To (RTE (RO_RT_Time),
                   Make_Op_Add (Loc,
                     Left_Opnd  =>
                       Make_Function_Call (Loc,
-                        New_Reference_To (RTE (RO_RT_To_Duration), Loc),
+                        New_Occurrence_Of (RTE (RO_RT_To_Duration), Loc),
                         New_List (Make_Function_Call (Loc,
-                          New_Reference_To (RTE (RE_Clock), Loc)))),
+                          New_Occurrence_Of (RTE (RE_Clock), Loc)))),
                     Right_Opnd  =>
                       Unchecked_Convert_To (Standard_Duration, Arg1 (N)))))));
 

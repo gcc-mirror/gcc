@@ -1592,6 +1592,18 @@ Jumping or breaking out of the scope of the array name deallocates the
 storage.  Jumping into the scope is not allowed; you get an error
 message for it.
 
+@cindex variable-length array in a structure
+As an extension, GCC accepts variable-length arrays as a member of
+a structure or a union.  For example:
+
+@smallexample
+void
+foo (int n)
+@{
+  struct S @{ int x[n]; @};
+@}
+@end smallexample
+
 @cindex @code{alloca} vs variable-length arrays
 You can use the function @code{alloca} to get an effect much like
 variable-length arrays.  The function @code{alloca} is available in
@@ -1966,6 +1978,9 @@ Another syntax that has the same meaning, obsolete since GCC 2.5, is
 @smallexample
 struct point p = @{ y: yvalue, x: xvalue @};
 @end smallexample
+
+Omitted field members are implicitly initialized the same as objects
+that have static storage duration.
 
 @cindex designators
 The @samp{[@var{index}]} or @samp{.@var{fieldname}} is known as a
@@ -6343,7 +6358,7 @@ int foo ()
   int *y = &x;
   int result;
   asm ("magic stuff accessing an 'int' pointed to by '%1'"
-       : "=&d" (r) : "a" (y), "m" (*y));
+       : "=&d" (result) : "a" (y), "m" (*y));
   return result;
 @}
 @end smallexample
@@ -8963,7 +8978,7 @@ Similar to @code{__builtin_nans}, except the return type is @code{float}.
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_ffs (unsigned int x)
+@deftypefn {Built-in Function} int __builtin_ffs (int x)
 Returns one plus the index of the least significant 1-bit of @var{x}, or
 if @var{x} is zero, returns zero.
 @end deftypefn
@@ -8993,9 +9008,9 @@ Returns the parity of @var{x}, i.e.@: the number of 1-bits in @var{x}
 modulo 2.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_ffsl (unsigned long)
+@deftypefn {Built-in Function} int __builtin_ffsl (long)
 Similar to @code{__builtin_ffs}, except the argument type is
-@code{unsigned long}.
+@code{long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_clzl (unsigned long)
@@ -9023,9 +9038,9 @@ Similar to @code{__builtin_parity}, except the argument type is
 @code{unsigned long}.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_ffsll (unsigned long long)
+@deftypefn {Built-in Function} int __builtin_ffsll (long long)
 Similar to @code{__builtin_ffs}, except the argument type is
-@code{unsigned long long}.
+@code{long long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_clzll (unsigned long long)
@@ -14844,6 +14859,35 @@ void vec_vsx_st (vector unsigned char, int, unsigned char *);
 void vec_vsx_st (vector bool char, int, vector bool char *);
 void vec_vsx_st (vector bool char, int, unsigned char *);
 void vec_vsx_st (vector bool char, int, signed char *);
+
+vector double vec_xxpermdi (vector double, vector double, int);
+vector float vec_xxpermdi (vector float, vector float, int);
+vector long long vec_xxpermdi (vector long long, vector long long, int);
+vector unsigned long long vec_xxpermdi (vector unsigned long long,
+                                        vector unsigned long long, int);
+vector int vec_xxpermdi (vector int, vector int, int);
+vector unsigned int vec_xxpermdi (vector unsigned int,
+                                  vector unsigned int, int);
+vector short vec_xxpermdi (vector short, vector short, int);
+vector unsigned short vec_xxpermdi (vector unsigned short,
+                                    vector unsigned short, int);
+vector signed char vec_xxpermdi (vector signed char, vector signed char, int);
+vector unsigned char vec_xxpermdi (vector unsigned char,
+                                   vector unsigned char, int);
+
+vector double vec_xxsldi (vector double, vector double, int);
+vector float vec_xxsldi (vector float, vector float, int);
+vector long long vec_xxsldi (vector long long, vector long long, int);
+vector unsigned long long vec_xxsldi (vector unsigned long long,
+                                      vector unsigned long long, int);
+vector int vec_xxsldi (vector int, vector int, int);
+vector unsigned int vec_xxsldi (vector unsigned int, vector unsigned int, int);
+vector short vec_xxsldi (vector short, vector short, int);
+vector unsigned short vec_xxsldi (vector unsigned short,
+                                  vector unsigned short, int);
+vector signed char vec_xxsldi (vector signed char, vector signed char, int);
+vector unsigned char vec_xxsldi (vector unsigned char,
+                                 vector unsigned char, int);
 @end smallexample
 
 Note that the @samp{vec_ld} and @samp{vec_st} built-in functions always
@@ -15031,6 +15075,9 @@ vector unsigned long long vec_vaddudm (vector bool unsigned long long,
 vector unsigned long long vec_vaddudm (vector unsigned long long,
                                        vector bool unsigned long long);
 
+vector long long vec_vbpermq (vector signed char, vector signed char);
+vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
+
 vector long long vec_vclz (vector long long);
 vector unsigned long long vec_vclz (vector unsigned long long);
 vector int vec_vclz (vector int);
@@ -15051,6 +15098,9 @@ vector unsigned short vec_vclzh (vector unsigned short);
 
 vector int vec_vclzw (vector int);
 vector unsigned int vec_vclzw (vector int);
+
+vector signed char vec_vgbbd (vector signed char);
+vector unsigned char vec_vgbbd (vector unsigned char);
 
 vector long long vec_vmaxsd (vector long long, vector long long);
 
@@ -15125,6 +15175,51 @@ vector unsigned long long vec_vupkhsw (vector unsigned int);
 
 vector long long vec_vupklsw (vector int);
 vector unsigned long long vec_vupklsw (vector int);
+@end smallexample
+
+If the ISA 2.07 additions to the vector/scalar (power8-vector)
+instruction set is available, the following additional functions are
+available for 64-bit targets.  New vector types
+(@var{vector __int128_t} and @var{vector __uint128_t}) are available
+to hold the @var{__int128_t} and @var{__uint128_t} types to use these
+builtins.
+
+The normal vector extract, and set operations work on
+@var{vector __int128_t} and @var{vector __uint128_t} types,
+but the index value must be 0.
+
+@smallexample
+vector __int128_t vec_vaddcuq (vector __int128_t, vector __int128_t);
+vector __uint128_t vec_vaddcuq (vector __uint128_t, vector __uint128_t);
+
+vector __int128_t vec_vadduqm (vector __int128_t, vector __int128_t);
+vector __uint128_t vec_vadduqm (vector __uint128_t, vector __uint128_t);
+
+vector __int128_t vec_vaddecuq (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vaddecuq (vector __uint128_t, vector __uint128_t, 
+                                 vector __uint128_t);
+
+vector __int128_t vec_vaddeuqm (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vaddeuqm (vector __uint128_t, vector __uint128_t, 
+                                 vector __uint128_t);
+
+vector __int128_t vec_vsubecuq (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vsubecuq (vector __uint128_t, vector __uint128_t, 
+                                 vector __uint128_t);
+
+vector __int128_t vec_vsubeuqm (vector __int128_t, vector __int128_t,
+                                vector __int128_t);
+vector __uint128_t vec_vsubeuqm (vector __uint128_t, vector __uint128_t,
+                                 vector __uint128_t);
+
+vector __int128_t vec_vsubcuq (vector __int128_t, vector __int128_t);
+vector __uint128_t vec_vsubcuq (vector __uint128_t, vector __uint128_t);
+
+__int128_t vec_vsubuqm (__int128_t, __int128_t);
+__uint128_t vec_vsubuqm (__uint128_t, __uint128_t);
 @end smallexample
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or
@@ -17449,6 +17544,10 @@ unimportant.
 
 A redeclaration of a function or class must not add new ABI tags,
 since doing so would change the mangled name.
+
+The ABI tags apply to a name, so all instantiations and
+specializations of a template have the same tags.  The attribute will
+be ignored if applied to an explicit specialization or instantiation.
 
 The @option{-Wabi-tag} flag enables a warning about a class which does
 not have all the ABI tags used by its subobjects and virtual functions; for users with code

@@ -8,6 +8,8 @@ int k[10], l[10], m[10], n[10], o;
 int *p;
 int **q;
 int r[4][4][4][4][4];
+extern struct s s1;
+extern struct s s2[1]; /* { dg-error "array type has incomplete element type" "" { target c } } */
 int t[10];
 #pragma omp threadprivate (t)
 #pragma omp declare target
@@ -31,6 +33,10 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
   #pragma omp target map(tofrom: n[:p]) /* { dg-error "length \[^\n\r]* of array section does not have integral type" } */
     ;
   #pragma omp target map(to: o[2:5]) /* { dg-error "does not have pointer or array type" } */
+    ;
+  #pragma omp target map(alloc: s1) /* { dg-error "'s1' does not have a mappable type in 'map' clause" } */
+    ;
+  #pragma omp target map(alloc: s2) /* { dg-error "'s2' does not have a mappable type in 'map' clause" } */
     ;
   #pragma omp target map(to: a[:][:]) /* { dg-error "array type length expression must be specified" } */
     bar (&a[0][0]); /* { dg-error "referenced in target region does not have a mappable type" } */

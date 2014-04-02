@@ -350,7 +350,7 @@ package body Freeze is
          then
             Call_Name := New_Copy (Name (N));
          else
-            Call_Name := New_Reference_To (Old_S, Loc);
+            Call_Name := New_Occurrence_Of (Old_S, Loc);
          end if;
 
       else
@@ -432,7 +432,7 @@ package body Freeze is
 
       if Present (Formal) then
          while Present (Formal) loop
-            Append (New_Reference_To (Formal, Loc), Actuals);
+            Append (New_Occurrence_Of (Formal, Loc), Actuals);
             Next_Formal (Formal);
          end loop;
       end if;
@@ -1741,6 +1741,11 @@ package body Freeze is
       procedure Freeze_Record_Type (Rec : Entity_Id);
       --  Freeze record type, including freezing component types, and freezing
       --  primitive operations if this is a tagged type.
+
+      procedure Wrap_Imported_Subprogram (E : Entity_Id);
+      --  If E is an entity for an imported subprogram with pre/post-conditions
+      --  then this procedure will create a wrapper to ensure that proper run-
+      --  time checking of the pre/postconditions. See body for details.
 
       -------------------
       -- Add_To_Result --
@@ -3358,6 +3363,148 @@ package body Freeze is
          end Check_Variant_Part;
       end Freeze_Record_Type;
 
+      ------------------------------
+      -- Wrap_Imported_Subprogram --
+      ------------------------------
+
+      --  The issue here is that our normal approach of checking preconditions
+      --  and postconditions does not work for imported procedures, since we
+      --  are not generating code for the body. To get around this we create
+      --  a wrapper, as shown by the following example:
+
+      --    procedure K (A : Integer);
+      --    pragma Import (C, K);
+
+      --  The spec is rewritten by removing the effects of pragma Import, but
+      --  leaving the convention unchanged, as though the source had said:
+
+      --    procedure K (A : Integer);
+      --    pragma Convention (C, K);
+
+      --  and we create a body, added to the entity K freeze actions, which
+      --  looks like:
+
+      --    procedure K (A : Integer) is
+      --       procedure K (A : Integer);
+      --       pragma Import (C, K);
+      --    begin
+      --       K (A);
+      --    end K;
+
+      --  Now the contract applies in the normal way to the outer procedure,
+      --  and the inner procedure has no contracts, so there is no problem
+      --  in just calling it to get the original effect.
+
+      --  In the case of a function, we create an appropriate return statement
+      --  for the subprogram body that calls the inner procedure.
+
+      procedure Wrap_Imported_Subprogram (E : Entity_Id) is
+         Loc   : constant Source_Ptr := Sloc (E);
+         CE    : constant Name_Id    := Chars (E);
+         Spec  : Node_Id;
+         Parms : List_Id;
+         Stmt  : Node_Id;
+         Iprag : Node_Id;
+         Bod   : Node_Id;
+         Forml : Entity_Id;
+
+      begin
+         --  Nothing to do if not imported
+
+         if not Is_Imported (E) then
+            return;
+
+         --  Test enabling conditions for wrapping
+
+         elsif Is_Subprogram (E)
+           and then Present (Contract (E))
+           and then Present (Pre_Post_Conditions (Contract (E)))
+           and then not GNATprove_Mode
+         then
+            --  Here we do the wrap
+
+            --  Note on calls to Copy_Separate_Tree. The trees we are copying
+            --  here are fully analyzed, but we definitely want fully syntactic
+            --  unanalyzed trees in the body we construct, so that the analysis
+            --  generates the right visibility, and that is exactly what the
+            --  calls to Copy_Separate_Tree give us.
+
+            --  Acquire copy of Inline pragma
+
+            Iprag :=
+              Copy_Separate_Tree (Import_Pragma (E));
+
+            --  Fix up spec to be not imported any more
+
+            Set_Is_Imported    (E, False);
+            Set_Interface_Name (E, Empty);
+            Set_Has_Completion (E, False);
+            Set_Import_Pragma  (E, Empty);
+
+            --  Grab the subprogram declaration and specification
+
+            Spec := Declaration_Node (E);
+
+            --  Build parameter list that we need
+
+            Parms := New_List;
+            Forml := First_Formal (E);
+            while Present (Forml) loop
+               Append_To (Parms, Make_Identifier (Loc, Chars (Forml)));
+               Next_Formal (Forml);
+            end loop;
+
+            --  Build the call
+
+            if Ekind_In (E, E_Function, E_Generic_Function) then
+               Stmt :=
+                 Make_Simple_Return_Statement (Loc,
+                   Expression =>
+                     Make_Function_Call (Loc,
+                       Name                   => Make_Identifier (Loc, CE),
+                       Parameter_Associations => Parms));
+
+            else
+               Stmt :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   => Make_Identifier (Loc, CE),
+                   Parameter_Associations => Parms);
+            end if;
+
+            --  Now build the body
+
+            Bod :=
+              Make_Subprogram_Body (Loc,
+                Specification              =>
+                  Copy_Separate_Tree (Spec),
+                Declarations               => New_List (
+                  Make_Subprogram_Declaration (Loc,
+                    Specification =>
+                      Copy_Separate_Tree (Spec)),
+                    Iprag),
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements             => New_List (Stmt),
+                    End_Label              => Make_Identifier (Loc, CE)));
+
+            --  Append the body to freeze result
+
+            Add_To_Result (Bod);
+            return;
+
+         --  Case of imported subprogram that does not get wrapped
+
+         else
+            --  Set Is_Public. All imported entities need an external symbol
+            --  created for them since they are always referenced from another
+            --  object file. Note this used to be set when we set Is_Imported
+            --  back in Sem_Prag, but now we delay it to this point, since we
+            --  don't want to set this flag if we wrap an imported subprogram.
+
+            Set_Is_Public (E);
+         end if;
+      end Wrap_Imported_Subprogram;
+
    --  Start of processing for Freeze_Entity
 
    begin
@@ -3539,13 +3686,19 @@ package body Freeze is
             null;
          end if;
 
-         --  For a subprogram, freeze all parameter types and also the return
-         --  type (RM 13.14(14)). However skip this for internal subprograms.
-         --  This is also the point where any extra formal parameters are
-         --  created since we now know whether the subprogram will use a
-         --  foreign convention.
+         --  Subprogram case
 
          if Is_Subprogram (E) then
+
+            --  Check for needing to wrap imported subprogram
+
+            Wrap_Imported_Subprogram (E);
+
+            --  Freeze all parameter types and the return type (RM 13.14(14)).
+            --  However skip this for internal subprograms. This is also where
+            --  any extra formal parameters are created since we now know
+            --  whether the subprogram will use a foreign convention.
+
             if not Is_Internal (E) then
                declare
                   F_Type    : Entity_Id;
@@ -3756,6 +3909,18 @@ package body Freeze is
                      then
                         R_Type := Full_View (R_Type);
                         Set_Etype (E, R_Type);
+
+                     --  If the return type is a limited view and the non-
+                     --  limited view is still incomplete, the function has
+                     --  to be frozen at a later time.
+
+                     elsif Ekind (R_Type) = E_Incomplete_Type
+                       and then From_Limited_With (R_Type)
+                       and then
+                         Ekind (Non_Limited_View (R_Type)) = E_Incomplete_Type
+                     then
+                        Set_Is_Frozen (E, False);
+                        return Result;
                      end if;
 
                      Freeze_And_Append (R_Type, N, Result);
@@ -3867,23 +4032,6 @@ package body Freeze is
                      end if;
                   end if;
                end;
-
-               --  Pre/post conditions are implemented through a subprogram in
-               --  the corresponding body, and therefore are not checked on an
-               --  imported subprogram for which the body is not available.
-
-               --  Could consider generating a wrapper to take care of this???
-
-               if Is_Subprogram (E)
-                 and then Is_Imported (E)
-                 and then Present (Contract (E))
-                 and then Present (Pre_Post_Conditions (Contract (E)))
-               then
-                  Error_Msg_NE
-                    ("pre/post conditions on imported subprogram are not "
-                     & "enforced??", E, Pre_Post_Conditions (Contract (E)));
-               end if;
-
             end if;
 
             --  Must freeze its parent first if it is a derived subprogram

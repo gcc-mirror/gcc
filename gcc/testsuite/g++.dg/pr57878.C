@@ -1,5 +1,6 @@
 /* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
-/* { dg-options "-O2 -fno-omit-frame-pointer -fPIC -std=gnu++11" } */
+// { dg-require-effective-target c++11 }
+/* { dg-options "-O2 -fno-omit-frame-pointer -fPIC" } */
 
 typedef int int32;
 typedef long long int64;

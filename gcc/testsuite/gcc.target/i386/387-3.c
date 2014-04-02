@@ -1,6 +1,6 @@
 /* Verify that 387 mathematical constants are recognized.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfpmath=387 -mfancy-math-387" } */
+/* { dg-options "-O2 -mfpmath=387 -mfancy-math-387 -mtune=generic" } */
 /* { dg-final { scan-assembler "fldpi" } } */
 /* { dg-require-effective-target large_long_double } */
 

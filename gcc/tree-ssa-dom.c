@@ -849,8 +849,14 @@ tree_ssa_dominator_optimize (void)
   /* We need to know loop structures in order to avoid destroying them
      in jump threading.  Note that we still can e.g. thread through loop
      headers to an exit edge, or through loop header to the loop body, assuming
-     that we update the loop info.  */
-  loop_optimizer_init (LOOPS_HAVE_SIMPLE_LATCHES);
+     that we update the loop info.
+
+     TODO: We don't need to set LOOPS_HAVE_PREHEADERS generally, but due
+     to several overly conservative bail-outs in jump threading, case
+     gcc.dg/tree-ssa/pr21417.c can't be threaded if loop preheader is
+     missing.  We should improve jump threading in future then
+     LOOPS_HAVE_PREHEADERS won't be needed here.  */
+  loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
 
   /* Initialize the value-handle array.  */
   threadedge_initialize_values ();

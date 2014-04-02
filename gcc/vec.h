@@ -218,6 +218,7 @@ struct vec_prefix
   void register_overhead (size_t, const char *, int, const char *);
   void release_overhead (void);
   static unsigned calculate_allocation (vec_prefix *, unsigned, bool);
+  static unsigned calculate_allocation_1 (unsigned, unsigned);
 
   /* Note that vec_prefix should be a base class for vec, but we use
      offsetof() on vector fields of tree structures (e.g.,
@@ -233,9 +234,24 @@ struct vec_prefix
   friend struct va_heap;
 
   unsigned m_alloc : 31;
-  unsigned m_has_auto_buf : 1;
+  unsigned m_using_auto_storage : 1;
   unsigned m_num;
 };
+
+/* Calculate the number of slots to reserve a vector, making sure that
+   RESERVE slots are free.  If EXACT grow exactly, otherwise grow
+   exponentially.  PFX is the control data for the vector.  */
+
+inline unsigned
+vec_prefix::calculate_allocation (vec_prefix *pfx, unsigned reserve,
+				  bool exact)
+{
+  if (exact)
+    return (pfx ? pfx->m_num : 0) + reserve;
+  else if (!pfx)
+    return MAX (4, reserve);
+  return calculate_allocation_1 (pfx->m_alloc, pfx->m_num + reserve);
+}
 
 template<typename, typename, typename> struct vec;
 
@@ -283,7 +299,7 @@ va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
 {
   unsigned alloc
     = vec_prefix::calculate_allocation (v ? &v->m_vecpfx : 0, reserve, exact);
-  gcc_assert (alloc);
+  gcc_checking_assert (alloc);
 
   if (GATHER_STATISTICS && v)
     v->m_vecpfx.release_overhead ();
@@ -479,7 +495,7 @@ public:
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
   static size_t embedded_size (unsigned);
-  void embedded_init (unsigned, unsigned = 0);
+  void embedded_init (unsigned, unsigned = 0, unsigned = 0);
   void quick_grow (unsigned len);
   void quick_grow_cleared (unsigned len);
 
@@ -1037,10 +1053,10 @@ vec<T, A, vl_embed>::embedded_size (unsigned alloc)
 
 template<typename T, typename A>
 inline void
-vec<T, A, vl_embed>::embedded_init (unsigned alloc, unsigned num)
+vec<T, A, vl_embed>::embedded_init (unsigned alloc, unsigned num, unsigned aut)
 {
   m_vecpfx.m_alloc = alloc;
-  m_vecpfx.m_has_auto_buf = 0;
+  m_vecpfx.m_using_auto_storage = aut;
   m_vecpfx.m_num = num;
 }
 
@@ -1234,10 +1250,8 @@ class auto_vec : public vec<T, va_heap>
 public:
   auto_vec ()
   {
-    m_header.m_alloc = N;
-    m_header.m_has_auto_buf = 1;
-    m_header.m_num = 0;
-    this->m_vec = reinterpret_cast<vec<T, va_heap, vl_embed> *> (&m_header);
+    m_auto.embedded_init (MAX (N, 2), 0, 1);
+    this->m_vec = &m_auto;
   }
 
   ~auto_vec ()
@@ -1246,10 +1260,8 @@ public:
   }
 
 private:
-  friend class vec<T, va_heap, vl_ptr>;
-
-  vec_prefix m_header;
-  T m_data[N];
+  vec<T, va_heap, vl_embed> m_auto;
+  T m_data[MAX (N - 1, 1)];
 };
 
 /* auto_vec is a sub class of vec whose storage is released when it is
@@ -1396,7 +1408,7 @@ template<typename T>
 inline bool
 vec<T, va_heap, vl_ptr>::reserve (unsigned nelems, bool exact MEM_STAT_DECL)
 {
-  if (!nelems || space (nelems))
+  if (space (nelems))
     return false;
 
   /* For now play a game with va_heap::reserve to hide our auto storage if any,
@@ -1462,7 +1474,7 @@ vec<T, va_heap, vl_ptr>::release (void)
 
   if (using_auto_storage ())
     {
-      static_cast<auto_vec<T, 1> *> (this)->m_header.m_num = 0;
+      m_vec->m_vecpfx.m_num = 0;
       return;
     }
 
@@ -1705,12 +1717,7 @@ template<typename T>
 inline bool
 vec<T, va_heap, vl_ptr>::using_auto_storage () const
 {
-  if (!m_vec->m_vecpfx.m_has_auto_buf)
-    return false;
-
-  const vec_prefix *auto_header
-    = &static_cast<const auto_vec<T, 1> *> (this)->m_header;
-  return reinterpret_cast<vec_prefix *> (m_vec) == auto_header;
+  return m_vec->m_vecpfx.m_using_auto_storage;
 }
 
 #if (GCC_VERSION >= 3000)

@@ -309,6 +309,12 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
       gimple def_stmt;
       tree vuse;
 
+      /* Only replace loads in blocks that post-dominate the PHI node.  That
+         makes sure we don't end up speculating loads.  */
+      if (!dominated_by_p (CDI_POST_DOMINATORS,
+			   bb, gimple_bb (use_stmt)))
+	continue;
+         
       /* Check whether this is a load of *ptr.  */
       if (!(is_gimple_assign (use_stmt)
 	    && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
@@ -380,6 +386,7 @@ tree_ssa_phiprop (void)
   size_t n;
 
   calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   n = num_ssa_names;
   phivn = XCNEWVEC (struct phiprop_d, n);
@@ -396,6 +403,8 @@ tree_ssa_phiprop (void)
 
   bbs.release ();
   free (phivn);
+
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   return 0;
 }

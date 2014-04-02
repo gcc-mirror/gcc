@@ -1150,6 +1150,11 @@ comp_template_parms_position (tree t1, tree t2)
 	  != TEMPLATE_PARM_PARAMETER_PACK (index2)))
     return false;
 
+  /* In C++14 we can end up comparing 'auto' to a normal template
+     parameter.  Don't confuse them.  */
+  if (cxx_dialect >= cxx1y && (is_auto (t1) || is_auto (t2)))
+    return TYPE_IDENTIFIER (t1) == TYPE_IDENTIFIER (t2);
+
   return true;
 }
 
@@ -1552,7 +1557,8 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       return value;
     }
 
-  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+      && (flag_iso || warn_vla > 0))
     {
       if (complain & tf_warning_or_error)
 	pedwarn (input_location, OPT_Wvla,
@@ -4177,6 +4183,11 @@ cp_build_binary_op (location_t location,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
+      if (VECTOR_TYPE_P (type0) || VECTOR_TYPE_P (type1))
+	{
+	  sorry ("logical operation on vector type");
+	  return error_mark_node;
+	}
       result_type = boolean_type_node;
       break;
 
@@ -5466,7 +5477,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
   if (argtype != error_mark_node)
     {
-      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (argtype))
+      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (argtype)
+	  && (flag_iso || warn_vla > 0))
 	{
 	  if (complain & tf_warning_or_error)
 	    pedwarn (input_location, OPT_Wvla,
@@ -6282,10 +6294,12 @@ void
 maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
 {
   if (warn_useless_cast
-      && complain & tf_warning
-      && c_inhibit_evaluation_warnings == 0)
+      && complain & tf_warning)
     {
-      if (REFERENCE_REF_P (expr))
+      /* In C++14 mode, this interacts badly with force_paren_expr.  And it
+	 isn't necessary in any mode, because the code below handles
+	 glvalues properly.  For 4.9, just skip it in C++14 mode.  */
+      if (cxx_dialect < cxx1y && REFERENCE_REF_P (expr))
 	expr = TREE_OPERAND (expr, 0);
 
       if ((TREE_CODE (type) == REFERENCE_TYPE
@@ -8269,6 +8283,10 @@ maybe_warn_about_returning_address_of_local (tree retval)
     return;
   whats_returned = TREE_OPERAND (whats_returned, 0);
 
+  while (TREE_CODE (whats_returned) == COMPONENT_REF
+	 || TREE_CODE (whats_returned) == ARRAY_REF)
+    whats_returned = TREE_OPERAND (whats_returned, 0);
+
   if (TREE_CODE (valtype) == REFERENCE_TYPE)
     {
       if (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
@@ -8285,10 +8303,6 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  return;
 	}
     }
-
-  while (TREE_CODE (whats_returned) == COMPONENT_REF
-	 || TREE_CODE (whats_returned) == ARRAY_REF)
-    whats_returned = TREE_OPERAND (whats_returned, 0);
 
   if (DECL_P (whats_returned)
       && DECL_NAME (whats_returned)
@@ -8328,7 +8342,7 @@ check_return_expr (tree retval, bool *no_warning)
 
   *no_warning = false;
 
-  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && contains_cilk_spawn_stmt (retval))
     {
       error_at (EXPR_LOCATION (retval), "use of %<_Cilk_spawn%> in a return "
 		"statement is not allowed");

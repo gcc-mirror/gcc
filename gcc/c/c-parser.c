@@ -2223,7 +2223,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  attrs_ok = true;
 	  if (kind == C_ID_ID)
 	    {
-	      error ("unknown type name %qE", value);
+	      error_at (loc, "unknown type name %qE", value);
 	      t.kind = ctsk_typedef;
 	      t.spec = error_mark_node;
 	    }
@@ -3608,7 +3608,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
-	  error ("unknown type name %qE", token->value);
+	  error_at (token->location, "unknown type name %qE", token->value);
 	  parser->error = true;
 	}
       /* ??? In some Objective-C cases '...' isn't applicable so there
@@ -7703,8 +7703,9 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					      expr.value, exprlist,
 					      sizeof_arg,
 					      sizeof_ptr_memacc_comptypes);
-	  expr.value = build_function_call_vec (expr_loc, arg_loc, expr.value,
-						exprlist, origtypes);
+	  expr.value
+	    = c_build_function_call_vec (expr_loc, arg_loc, expr.value,
+					 exprlist, origtypes);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) == INTEGER_CST
 	      && TREE_CODE (orig_expr.value) == FUNCTION_DECL

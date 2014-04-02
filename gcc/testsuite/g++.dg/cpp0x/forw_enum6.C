@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 enum class E1 : int; // { dg-error "previous definition" }
 enum E1 : int;  // { dg-error "scoped/unscoped mismatch" }
@@ -22,8 +21,8 @@ enum E6 : int; //ok
 enum class E7;
 enum class E7 : int; //ok
 
-enum class E3 e3; // { dg-warning "scoped enum must not use" }
-enum struct E3 e4; // { dg-warning "scoped enum must not use" }
+enum class E3 e3; // { dg-error "scoped enum must not use" }
+enum struct E3 e4; // { dg-error "scoped enum must not use" }
 enum E5 : int e5; // { dg-error "expected|invalid type" }
 
 enum E6 : int { a, b, c }; // { dg-error "previous definition" }
@@ -47,7 +46,7 @@ namespace N2
 {
     enum class N1::E6 { e1, e2, e3 }; // { dg-error "does not enclose" }
     enum N1::E7 : int { e1, e2, e3 }; // { dg-error "does not enclose" }
-};
+}
 
 enum class N1::E6 { e1, e2, e3 };
 enum N1::E7 : int { e1, e2, e3 };

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 
 #define N 320
 #define M 1024

@@ -4,4 +4,4 @@
 
 // { dg-do compile }
 
-enum { a = 3 } x; // { dg-warning "anonymous type" "" { target c++98 } }
+enum { a = 3 } x; // { dg-warning "anonymous type" "" { target { ! c++11 } } }

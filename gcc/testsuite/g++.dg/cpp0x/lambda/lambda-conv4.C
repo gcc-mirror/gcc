@@ -1,5 +1,5 @@
 // PR c++/43641
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 struct B
 {

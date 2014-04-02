@@ -981,6 +981,14 @@
   (ior (match_operand 0 "zero_fp_constant")
        (match_operand 0 "reg_or_mem_operand")))
 
+;; Return 1 if the operand is a CONST_INT and it is the element for 64-bit
+;; data types inside of a vector that scalar instructions operate on
+(define_predicate "vsx_scalar_64bit"
+  (match_code "const_int")
+{
+  return (INTVAL (op) == VECTOR_ELEMENT_SCALAR_64BIT);
+})
+
 ;; Return 1 if the operand is a general register or memory operand without
 ;; pre_inc or pre_dec or pre_modify, which produces invalid form of PowerPC
 ;; lwa instruction.

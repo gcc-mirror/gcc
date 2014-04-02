@@ -1,3 +1,10 @@
+2014-03-03  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::immutable_struct): If IS_COMMON, set
+	DECL_WEAK.
+	(GCC_backend::immutable_struct_set_init): If IS_COMMON, clear
+	DECL_WEAK.
+
 2014-01-24  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::unary_expression): New function.

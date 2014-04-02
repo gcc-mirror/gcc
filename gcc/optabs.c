@@ -3386,7 +3386,8 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
 {
   rtx temp;
 
-  if (! flag_trapv)
+  if (GET_MODE_CLASS (mode) != MODE_INT
+      || ! flag_trapv)
     result_unsignedp = 1;
 
   /* First try to do it with a special abs instruction.  */
@@ -3409,7 +3410,8 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
     {
       rtx last = get_last_insn ();
 
-      temp = expand_unop (mode, neg_optab, op0, NULL_RTX, 0);
+      temp = expand_unop (mode, result_unsignedp ? neg_optab : negv_optab,
+			  op0, NULL_RTX, 0);
       if (temp != 0)
 	temp = expand_binop (mode, smax_optab, op0, temp, target, 0,
 			     OPTAB_WIDEN);
@@ -3451,7 +3453,8 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
 {
   rtx temp, op1;
 
-  if (! flag_trapv)
+  if (GET_MODE_CLASS (mode) != MODE_INT
+      || ! flag_trapv)
     result_unsignedp = 1;
 
   temp = expand_abs_nojump (mode, op0, target, result_unsignedp);
@@ -4747,6 +4750,43 @@ have_add2_insn (rtx x, rtx y)
   if (!insn_operand_matches (icode, 0, x)
       || !insn_operand_matches (icode, 1, x)
       || !insn_operand_matches (icode, 2, y))
+    return 0;
+
+  return 1;
+}
+
+/* Generate and return an insn body to add Y to X.  */
+
+rtx
+gen_addptr3_insn (rtx x, rtx y, rtx z)
+{
+  enum insn_code icode = optab_handler (addptr3_optab, GET_MODE (x));
+
+  gcc_assert (insn_operand_matches (icode, 0, x));
+  gcc_assert (insn_operand_matches (icode, 1, y));
+  gcc_assert (insn_operand_matches (icode, 2, z));
+
+  return GEN_FCN (icode) (x, y, z);
+}
+
+/* Return true if the target implements an addptr pattern and X, Y,
+   and Z are valid for the pattern predicates.  */
+
+int
+have_addptr3_insn (rtx x, rtx y, rtx z)
+{
+  enum insn_code icode;
+
+  gcc_assert (GET_MODE (x) != VOIDmode);
+
+  icode = optab_handler (addptr3_optab, GET_MODE (x));
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  if (!insn_operand_matches (icode, 0, x)
+      || !insn_operand_matches (icode, 1, y)
+      || !insn_operand_matches (icode, 2, z))
     return 0;
 
   return 1;

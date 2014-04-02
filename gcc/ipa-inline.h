@@ -117,6 +117,8 @@ struct GTY(()) inline_summary
   int self_size;
   /* Time of the function body.  */
   int self_time;
+  /* Minimal size increase after inlining.  */
+  int min_size;
 
   /* False when there something makes inlining impossible (such as va_arg).  */
   unsigned inlinable : 1;
@@ -220,6 +222,7 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<ipa_agg_jump_function_p>,
 					int *, int *, inline_hints *);
 int do_estimate_growth (struct cgraph_node *);
+bool growth_likely_positive (struct cgraph_node *, int);
 void inline_merge_summary (struct cgraph_edge *edge);
 void inline_update_overall_summary (struct cgraph_node *node);
 int do_estimate_edge_size (struct cgraph_edge *edge);
@@ -233,7 +236,8 @@ bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
 /* In ipa-inline-transform.c  */
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge_p> *, int *, bool);
 unsigned int inline_transform (struct cgraph_node *);
-void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
+void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *,
+			  int freq_scale);
 
 extern int ncalls_inlined;
 extern int nfunctions_inlined;
@@ -284,7 +288,8 @@ static inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
 #ifdef ENABLE_CHECKING
-  gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size);
+  gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size
+		       || !edge->callee->analyzed);
 #endif
   return (estimate_edge_size (edge)
 	  - inline_edge_summary (edge)->call_stmt_size);

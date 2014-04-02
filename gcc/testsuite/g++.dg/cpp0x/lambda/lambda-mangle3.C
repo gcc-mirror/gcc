@@ -1,5 +1,5 @@
 // PR c++/51818
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler "_ZN1AC1IN3foo3barMUlvE_EEET_" } }
 
 struct A

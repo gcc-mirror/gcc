@@ -186,6 +186,12 @@ s390*-*-*)
 sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	;;
+tilegx*-*-*)
+	cpu_type=tilegx
+	;;
+tilepro*-*-*)
+	cpu_type=tilepro
+	;;
 v850*-*-*)
 	cpu_type=v850
 	;;
@@ -222,7 +228,10 @@ case ${host} in
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
-  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
+  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+  if test x$enable_vtable_verify = xyes; then
+    extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
+  fi
   ;;
 *-*-lynxos*)
   tmake_file="$tmake_file t-lynx $cpu_type/t-crtstuff t-crtstuff-pic t-libgcc-pic"
@@ -1018,7 +1027,10 @@ s390-*-linux*)
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-*-linux*)
-	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux"
+	if test "${host_address}" = 32; then
+	   tmake_file="${tmake_file} s390/32/t-floattodi"
+	fi
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-ibm-tpf*)
@@ -1177,16 +1189,16 @@ tic6x-*-elf)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o"
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
-tilegx-*-linux*)
+tilegx*-*-linux*)
 	tmake_file="${tmake_file} tilegx/t-crtstuff t-softfp-sfdf tilegx/t-softfp t-softfp tilegx/t-tilegx"
 	md_unwind_header=tilepro/linux-unwind.h
         ;;
-tilepro-*-linux*)
+tilepro*-*-linux*)
 	tmake_file="${tmake_file} tilepro/t-crtstuff t-softfp-sfdf t-softfp tilepro/t-tilepro"
 	md_unwind_header=tilepro/linux-unwind.h
         ;;
 v850*-*-*)
-	tmake_file="v850/t-v850 t-fdpbit"
+	tmake_file="${tmake_file} v850/t-v850 t-fdpbit"
 	;;
 vax-*-linux*)
 	tmake_file="$tmake_file vax/t-linux"

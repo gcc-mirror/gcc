@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 template<typename...> class tuple { };
 
 template<typename T, template<typename T> class... Metafunctions>

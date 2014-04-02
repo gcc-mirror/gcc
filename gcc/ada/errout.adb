@@ -332,7 +332,9 @@ package body Errout is
       --  that style checks are not considered warning messages for this
       --  purpose.
 
-      if Is_Warning_Msg and then Warnings_Suppressed (Orig_Loc) then
+      if Is_Warning_Msg
+        and then Warnings_Suppressed (Orig_Loc) /= No_String
+      then
          return;
 
       --  For style messages, check too many messages so far
@@ -640,9 +642,6 @@ package body Errout is
 
    procedure Error_Msg_PT (Typ : Node_Id; Subp : Node_Id) is
    begin
-      --  Error message below needs rewording (remember comma in -gnatj
-      --  mode) ???
-
       Error_Msg_NE
         ("first formal of & must be of mode `OUT`, `IN OUT` or " &
          "access-to-variable", Typ, Subp);
@@ -691,6 +690,9 @@ package body Errout is
 
       Temp_Msg : Error_Msg_Id;
 
+      Warn_Err : Boolean;
+      --  Set if warning to be treated as error
+
       procedure Handle_Serious_Error;
       --  Internal procedure to do all error message handling for a serious
       --  error message, other than bumping the error counts and arranging
@@ -730,6 +732,7 @@ package body Errout is
       Continuation_New_Line := False;
       Suppress_Message := False;
       Kill_Message := False;
+      Warning_Msg_Char := ' ';
       Set_Msg_Text (Msg, Sptr);
 
       --  Kill continuation if parent message killed
@@ -774,7 +777,10 @@ package body Errout is
 
          --  Immediate return if warning message and warnings are suppressed
 
-         if Warnings_Suppressed (Optr) or else Warnings_Suppressed (Sptr) then
+         if Warnings_Suppressed (Optr) /= No_String
+              or else
+            Warnings_Suppressed (Sptr) /= No_String
+         then
             Cur_Msg := No_Error_Msg;
             return;
          end if;
@@ -938,6 +944,7 @@ package body Errout is
           Line     => Get_Physical_Line_Number (Sptr),
           Col      => Get_Column_Number (Sptr),
           Warn     => Is_Warning_Msg,
+          Warn_Err => False, -- reset below
           Warn_Chr => Warning_Msg_Char,
           Style    => Is_Style_Msg,
           Serious  => Is_Serious_Error,
@@ -945,6 +952,21 @@ package body Errout is
           Msg_Cont => Continuation,
           Deleted  => False));
       Cur_Msg := Errors.Last;
+
+      --  Test if warning to be treated as error
+
+      Warn_Err :=
+        Is_Warning_Msg
+          and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
+                      or else
+                    Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
+
+      --  Propagate Warn_Err to this message and preceding continuations
+
+      for J in reverse 1 .. Errors.Last loop
+         Errors.Table (J).Warn_Err := Warn_Err;
+         exit when not Errors.Table (J).Msg_Cont;
+      end loop;
 
       --  If immediate errors mode set, output error message now. Also output
       --  now if the -d1 debug flag is set (so node number message comes out
@@ -1321,10 +1343,11 @@ package body Errout is
 
          begin
             if (CE.Warn and not CE.Deleted)
-              and then
-                (Warning_Specifically_Suppressed (CE.Sptr, CE.Text)
-                   or else
-                 Warning_Specifically_Suppressed (CE.Optr, CE.Text))
+              and then (Warning_Specifically_Suppressed (CE.Sptr, CE.Text) /=
+                                                                   No_String
+                          or else
+                        Warning_Specifically_Suppressed (CE.Optr, CE.Text) /=
+                                                                   No_String)
             then
                Delete_Warning (Cur);
 
@@ -1495,11 +1518,13 @@ package body Errout is
       Last_Error_Msg := No_Error_Msg;
       Serious_Errors_Detected := 0;
       Total_Errors_Detected := 0;
+      Warnings_Treated_As_Errors := 0;
       Warnings_Detected := 0;
+      Warnings_As_Errors_Count := 0;
       Cur_Msg := No_Error_Msg;
       List_Pragmas.Init;
 
-      --  Initialize warnings table
+      --  Initialize warnings tables
 
       Warnings.Init;
       Specific_Warnings.Init;
@@ -1653,6 +1678,11 @@ package body Errout is
                end if;
 
                Write_Char (')');
+
+            elsif Warnings_Treated_As_Errors /= 0 then
+               Write_Str (" (");
+               Write_Int (Warnings_Treated_As_Errors);
+               Write_Str (" treated as errors)");
             end if;
          end if;
 
@@ -2312,6 +2342,12 @@ package body Errout is
          Set_Msg_Blank;
          Set_Msg_Str ("procedure name");
 
+      elsif Nkind (Error_Msg_Node_1) in N_Entity
+        and then Ekind (Error_Msg_Node_1) = E_Anonymous_Access_Subprogram_Type
+      then
+         Set_Msg_Blank;
+         Set_Msg_Str ("access to subprogram");
+
       else
          Set_Msg_Blank_Conditional;
 
@@ -2328,7 +2364,7 @@ package body Errout is
            or else K = N_Operator_Symbol
            or else K = N_Defining_Operator_Symbol
            or else ((K = N_Identifier or else K = N_Defining_Identifier)
-                       and then Is_Operator_Name (Chars (Error_Msg_Node_1)))
+                      and then Is_Operator_Name (Chars (Error_Msg_Node_1)))
          then
             Set_Msg_Node (Error_Msg_Node_1);
 
@@ -2450,6 +2486,7 @@ package body Errout is
          Get_Unqualified_Decoded_Name_String
            (Unit_Name (Get_Source_Unit (Ent)));
          Name_Len := Name_Len - 2;
+         Set_Msg_Blank_Conditional;
          Set_Msg_Quote;
          Set_Casing (Mixed_Case);
          Set_Msg_Name_Buffer;
@@ -2468,11 +2505,11 @@ package body Errout is
          Set_Msg_Node (Ent);
          Add_Class;
 
-         --  If Ent is an anonymous subprogram type, there is no name to print,
-         --  so remove enclosing quotes.
+         --  If we did not print a name (e.g. in the case of an anonymous
+         --  subprogram type), there is no name to print, so remove quotes.
 
-         if Buffer_Ends_With ("""") then
-            Buffer_Remove ("""");
+         if Buffer_Ends_With ('"') then
+            Buffer_Remove ('"');
          else
             Set_Msg_Quote;
          end if;
@@ -2601,10 +2638,13 @@ package body Errout is
          end if;
 
          --  If the type is the designated type of an access_to_subprogram,
-         --  there is no name to provide in the call.
+         --  then there is no name to provide in the call.
 
          if Ekind (Ent) = E_Subprogram_Type then
             return;
+
+         --  Otherwise, we will be able to find some kind of name to output
+
          else
             Unwind_Internal_Type (Ent);
             Nam := Chars (Ent);
@@ -2717,26 +2757,20 @@ package body Errout is
 
       procedure Set_Msg_Insertion_Warning (C : Character) is
       begin
-         Warning_Msg_Char := ' ';
-
          if P <= Text'Last and then Text (P) = C then
-            if Warning_Doc_Switch then
-               Warning_Msg_Char := '?';
-            end if;
-
+            Warning_Msg_Char := '?';
             P := P + 1;
 
          elsif P + 1 <= Text'Last
            and then (Text (P) in 'a' .. 'z'
-                      or else
+                       or else
                      Text (P) in 'A' .. 'Z')
            and then Text (P + 1) = C
          then
-            if Warning_Doc_Switch then
-               Warning_Msg_Char := Text (P);
-            end if;
-
+            Warning_Msg_Char := Text (P);
             P := P + 2;
+         else
+            Warning_Msg_Char := ' ';
          end if;
       end Set_Msg_Insertion_Warning;
 
@@ -3047,34 +3081,14 @@ package body Errout is
                   if Buffer_Ends_With ("type ") then
                      Buffer_Remove ("type ");
                   end if;
+               end if;
 
-                  if Is_Itype (Ent) then
-                     declare
-                        Assoc : constant Node_Id :=
-                          Associated_Node_For_Itype (Ent);
-
-                     begin
-                        if Nkind (Assoc) in N_Subprogram_Specification then
-
-                           --  Anonymous access to subprogram in a signature.
-                           --  Indicate the enclosing subprogram.
-
-                           Ent :=
-                             Defining_Unit_Name
-                               (Associated_Node_For_Itype (Ent));
-                           Set_Msg_Str
-                             ("access to subprogram declared in profile of ");
-
-                        else
-                           Set_Msg_Str ("access to subprogram with profile ");
-                        end if;
-                     end;
-                  end if;
-
-               elsif Ekind (Ent) = E_Function then
+               if Ekind (Ent) = E_Function then
                   Set_Msg_Str ("access to function ");
-               else
+               elsif Ekind (Ent) = E_Procedure then
                   Set_Msg_Str ("access to procedure ");
+               else
+                  Set_Msg_Str ("access to subprogram");
                end if;
 
                exit Find;

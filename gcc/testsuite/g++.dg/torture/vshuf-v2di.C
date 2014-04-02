@@ -1,5 +1,4 @@
-// { dg-options "-std=c++11" }
-// // { dg-do run }
+// // { dg-do run { target c++11 } }
 
 #if __SIZEOF_LONG_LONG__ == 8
 typedef unsigned long long V __attribute__((vector_size(16)));

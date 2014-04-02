@@ -667,7 +667,7 @@ Objective-C and Objective-C++ Dialects}.
 -mvzeroupper -mprefer-avx128 @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd -msha @gol
--maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
+-maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma -mprefetchwt1 @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
@@ -779,6 +779,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
 -meva -mno-eva @gol
+-mvirt -mno-virt @gol
 -mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
@@ -1011,7 +1012,8 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
 @emph{TILE-Gx Options}
-@gccoptlist{-mcpu=@var{cpu} -m32 -m64 -mcmodel=@var{code-model}}
+@gccoptlist{-mcpu=CPU -m32 -m64 -mbig-endian -mlittle-endian @gol
+-mcmodel=@var{code-model}}
 
 @emph{TILEPro Options}
 @gccoptlist{-mcpu=@var{cpu} -m32}
@@ -1720,14 +1722,12 @@ C++ code.
 
 @item c++11
 @itemx c++0x
-The 2011 ISO C++ standard plus amendments.  Support for C++11 is still
-experimental, and may change in incompatible ways in future releases.
+The 2011 ISO C++ standard plus amendments.
 The name @samp{c++0x} is deprecated.
 
 @item gnu++11
 @itemx gnu++0x
-GNU dialect of @option{-std=c++11}. Support for C++11 is still
-experimental, and may change in incompatible ways in future releases.
+GNU dialect of @option{-std=c++11}.
 The name @samp{gnu++0x} is deprecated.
 
 @item c++1y
@@ -1889,12 +1889,11 @@ are ignored.
 Enable the usage of Cilk Plus language extension features for C/C++.
 When the option @option{-fcilkplus} is specified, enable the usage of
 the Cilk Plus Language extension features for C/C++.  The present
-implementation follows ABI version 0.9.  This is an experimental
+implementation follows ABI version 1.2.  This is an experimental
 feature that is only partially complete, and whose interface may
 change in future versions of GCC as the official specification
-changes.  Currently only the array notation feature of the language
-specification has been implemented.  More features will be implemented
-in subsequent release cycles.
+changes.  Currently, all features but @code{_Cilk_for} have been
+implemented.
 
 @item -fgnu-tm
 @opindex fgnu-tm
@@ -8525,8 +8524,9 @@ file.  When the object files are linked together, all the function
 bodies are read from these ELF sections and instantiated as if they
 had been part of the same translation unit.
 
-To use the link-time optimizer, @option{-flto} needs to be specified at
-compile time and during the final link.  For example:
+To use the link-time optimizer, @option{-flto} and optimization
+options should be specified at compile time and during the final link.
+For example:
 
 @smallexample
 gcc -c -O2 -flto foo.c
@@ -8556,8 +8556,15 @@ merges them together into a single GIMPLE representation and optimizes
 them as usual to produce @file{myprog}.
 
 The only important thing to keep in mind is that to enable link-time
-optimizations the @option{-flto} flag needs to be passed to both the
-compile and the link commands.
+optimizations you need to use the GCC driver to perform the link-step.
+GCC then automatically performs link-time optimization if any of the
+objects involved were compiled with the @option{-flto}.  You generally
+should specify the optimization options to be used for link-time
+optimization though GCC will try to be clever at guessing an
+optimization level to use from the options used at compile-time
+if you fail to specify one at link-time.  You can always override
+the automatic decision to do link-time optimization at link-time
+by passing @option{-fno-lto} to the link command.
 
 To make whole program optimization effective, it is necessary to make
 certain whole program assumptions.  The compiler needs to know
@@ -8569,28 +8576,31 @@ the linker plugin is not available, @option{-fwhole-program} should be
 used to allow the compiler to make these assumptions, which leads
 to more aggressive optimization decisions.
 
-Note that when a file is compiled with @option{-flto}, the generated
-object file is larger than a regular object file because it 
-contains GIMPLE bytecodes and the usual final code.  This means that
+When @option{-fuse-linker-plugin} is not enabled then, when a file is
+compiled with @option{-flto}, the generated object file is larger than
+a regular object file because it contains GIMPLE bytecodes and the usual
+final code (see @option{-ffat-lto-objects}.  This means that
 object files with LTO information can be linked as normal object
-files; if @option{-flto} is not passed to the linker, no
-interprocedural optimizations are applied.
+files; if @option{-fno-lto} is passed to the linker, no
+interprocedural optimizations are applied.  Note that when
+@option{-fno-fat-lto-objects} is enabled the compile-stage is faster
+but you cannot perform a regular, non-LTO link on them.
 
 Additionally, the optimization flags used to compile individual files
 are not necessarily related to those used at link time.  For instance,
 
 @smallexample
-gcc -c -O0 -flto foo.c
-gcc -c -O0 -flto bar.c
-gcc -o myprog -flto -O3 foo.o bar.o
+gcc -c -O0 -ffat-lto-objects -flto foo.c
+gcc -c -O0 -ffat-lto-objects -flto bar.c
+gcc -o myprog -O3 foo.o bar.o
 @end smallexample
 
 This produces individual object files with unoptimized assembler
 code, but the resulting binary @file{myprog} is optimized at
-@option{-O3}.  If, instead, the final binary is generated without
-@option{-flto}, then @file{myprog} is not optimized.
+@option{-O3}.  If, instead, the final binary is generated with
+@option{-fno-lto}, then @file{myprog} is not optimized.
 
-When producing the final binary with @option{-flto}, GCC only
+When producing the final binary, GCC only
 applies link-time optimizations to those files that contain bytecode.
 Therefore, you can mix and match object files and libraries with
 GIMPLE bytecodes and final object code.  GCC automatically selects
@@ -8599,28 +8609,45 @@ further processing.
 
 There are some code generation flags preserved by GCC when
 generating bytecodes, as they need to be used during the final link
-stage.  Currently, the following options are saved into the GIMPLE
-bytecode files: @option{-fPIC}, @option{-fcommon} and all the
-@option{-m} target flags.
+stage.  Generally options specified at link-time override those
+specified at compile-time.
 
-At link time, these options are read in and reapplied.  Note that the
-current implementation makes no attempt to recognize conflicting
-values for these options.  If different files have conflicting option
-values (e.g., one file is compiled with @option{-fPIC} and another
-isn't), the compiler simply uses the last value read from the
-bytecode files.  It is recommended, then, that you compile all the files
-participating in the same link with the same options.
+If you do not specify an optimization level option @option{-O} at
+link-time then GCC will compute one based on the optimization levels
+used when compiling the object files.  The highest optimization
+level will win here.
+
+Currently, the following options and their setting are take from
+the first object file that explicitely specified it: 
+@option{-fPIC}, @option{-fpic}, @option{-fpie}, @option{-fcommon},
+@option{-fexceptions}, @option{-fnon-call-exceptions}, @option{-fgnu-tm}
+and all the @option{-m} target flags.
+
+Certain ABI changing flags are required to match in all compilation-units
+and trying to override this at link-time with a conflicting value
+is ignored.  This includes options such as @option{-freg-struct-return}
+and @option{-fpcc-struct-return}. 
+
+Other options such as @option{-ffp-contract}, @option{-fno-strict-overflow},
+@option{-fwrapv}, @option{-fno-trapv} or @option{-fno-strict-aliasing}
+are passed through to the link stage and merged conservatively for
+conflicting translation units.  Specifically
+@option{-fno-strict-overflow}, @option{-fwrapv} and @option{-fno-trapv} take
+precedence and for example @option{-ffp-contract=off} takes precedence
+over @option{-ffp-contract=fast}.  You can override them at linke-time.
+
+It is recommended that you compile all the files participating in the
+same link with the same options and also specify those options at
+link time.
 
 If LTO encounters objects with C linkage declared with incompatible
 types in separate translation units to be linked together (undefined
 behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
-issued.  The behavior is still undefined at run time.
+issued.  The behavior is still undefined at run time.  Similar
+diagnostics may be raised for other languages.
 
 Another feature of LTO is that it is possible to apply interprocedural
-optimizations on files written in different languages.  This requires
-support in the language front end.  Currently, the C, C++ and
-Fortran front ends are capable of emitting GIMPLE bytecodes, so
-something like this should work:
+optimizations on files written in different languages:
 
 @smallexample
 gcc -c -flto foo.c
@@ -8633,13 +8660,17 @@ Notice that the final link is done with @command{g++} to get the C++
 runtime libraries and @option{-lgfortran} is added to get the Fortran
 runtime libraries.  In general, when mixing languages in LTO mode, you
 should use the same link command options as when mixing languages in a
-regular (non-LTO) compilation; all you need to add is @option{-flto} to
-all the compile and link commands.
+regular (non-LTO) compilation.
 
 If object files containing GIMPLE bytecode are stored in a library archive, say
 @file{libfoo.a}, it is possible to extract and use them in an LTO link if you
-are using a linker with plugin support.  To enable this feature, use
-the flag @option{-fuse-linker-plugin} at link time:
+are using a linker with plugin support.  To create static libraries suitable
+for LTO, use @command{gcc-ar} and @command{gcc-ranlib} instead of @command{ar}
+and @code{ranlib}; to show the symbols of object files with GIMPLE bytecode, use
+@command{gcc-nm}.  Those commands require that @command{ar}, @command{ranlib}
+and @command{nm} have been compiled with plugin support.  At link time, use the the
+flag @option{-fuse-linker-plugin} to ensure that the library participates in
+the LTO optimization process:
 
 @smallexample
 gcc -o myprog -O2 -flto -fuse-linker-plugin a.o b.o -lfoo
@@ -8652,7 +8683,9 @@ to make them part of the aggregated GIMPLE image to be optimized.
 If you are not using a linker with plugin support and/or do not
 enable the linker plugin, then the objects inside @file{libfoo.a}
 are extracted and linked as usual, but they do not participate
-in the LTO optimization process.
+in the LTO optimization process.  In order to make a static library suitable
+for both LTO optimization and usual linkage, compile its object files with
+@option{-flto} @code{-ffat-lto-objects}.
 
 Link-time optimizations do not require the presence of the whole program to
 operate.  If the program does not require any symbols to be exported, it is
@@ -8666,11 +8699,11 @@ The current implementation of LTO makes no
 attempt to generate bytecode that is portable between different
 types of hosts.  The bytecode files are versioned and there is a
 strict version check, so bytecode files generated in one version of
-GCC will not work with an older/newer version of GCC@.
+GCC will not work with an older or newer version of GCC.
 
 Link-time optimization does not work well with generation of debugging
 information.  Combining @option{-flto} with
-@option{-g} is currently experimental and expected to produce wrong
+@option{-g} is currently experimental and expected to produce unexpected
 results.
 
 If you specify the optional @var{n}, the optimization and code
@@ -8685,8 +8718,6 @@ is useful when the Makefile calling GCC is already executing in parallel.
 You must prepend a @samp{+} to the command recipe in the parent Makefile
 for this to work.  This option likely only works if @env{MAKE} is
 GNU make.
-
-This option is disabled by default.
 
 @item -flto-partition=@var{alg}
 @opindex flto-partition
@@ -15263,6 +15294,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-f16c
 @itemx -mfma
 @itemx -mno-fma
+@itemx -mprefetchwt1
+@itemx -mno-prefetchwt1
 @itemx -msse4a
 @itemx -mno-sse4a
 @itemx -mfma4
@@ -17447,6 +17480,12 @@ Use (do not use) the MIPS MCU ASE instructions.
 @opindex mno-eva
 Use (do not use) the MIPS Enhanced Virtual Addressing instructions.
 
+@item -mvirt
+@itemx -mno-virt
+@opindex mvirt
+@opindex mno-virt
+Use (do not use) the MIPS Virtualization Application Specific instructions.
+
 @item -mlong64
 @opindex mlong64
 Force @code{long} types to be 64 bits wide.  See @option{-mlong32} for
@@ -18157,18 +18196,25 @@ post- fixed with @code{__}.  This in turn will be used by the
 @code{msp430.h} header file to select an MCU specific supplimentary
 header file.
 
-In addition two scripts will be added to the linker command line:
-@code{memory.ld} and @code{peripherals.ld}, with a search path based
-upon the MCU name.
+The option also sets the ISA to use.  If the MCU name is one that is
+known to only support the 430 ISA then that is selected, otherwise the
+430X ISA is selected.  A generic MCU name of @code{msp430} can also be
+used to select the 430 ISA.  Similarly the generic @code{msp430x} MCU
+name will select the 430X ISA.
+
+In addition an MCU specific linker script will be added to the linker
+command line.  The script's name is the name of the MCU with
+@code{.ld} appended.  Thus specifying @option{-mmcu=xxx} on the gcc
+command line will define the C preprocessor symbol @code{__XXX__} and
+cause the linker to search for a script called @file{xxx.ld}.
 
 This option is also passed on to the assembler.
 
 @item -mcpu=
 @opindex -mcpu=
-Specific the ISA to use.  Accepted values are @code{msp430},
-@code{msp430x} and @code{msp430xv2}.  This option is needed in order
-to ensure that the correct instructions are generated and that the
-correct libraries are linked in.
+Specifies the ISA to use.  Accepted values are @code{msp430},
+@code{msp430x} and @code{msp430xv2}.  This option is deprecated.  The
+@option{-mmcu=} option should be used to select the ISA.
 
 @item -msim
 @opindex msim
@@ -20802,8 +20848,9 @@ These @samp{-m} options are supported on the SPARC:
 @opindex mno-app-regs
 @opindex mapp-regs
 Specify @option{-mapp-regs} to generate output using the global registers
-2 through 4, which the SPARC SVR4 ABI reserves for applications.  This
-is the default.
+2 through 4, which the SPARC SVR4 ABI reserves for applications.  Like the
+global register 1, each global register 2 through 4 is then treated as an
+allocable register that is clobbered by function calls.  This is the default.
 
 To be fully SVR4 ABI-compliant at the cost of some performance loss,
 specify @option{-mno-app-regs}.  You should compile libraries and system
@@ -21337,6 +21384,12 @@ type is @samp{tilegx}.
 Generate code for a 32-bit or 64-bit environment.  The 32-bit
 environment sets int, long, and pointer to 32 bits.  The 64-bit
 environment sets int to 32 bits and long and pointer to 64 bits.
+
+@item -mbig-endian
+@itemx -mlittle-endian
+@opindex mbig-endian
+@opindex mlittle-endian
+Generate code in big/little endian mode, respectively.
 @end table
 
 @node TILEPro Options

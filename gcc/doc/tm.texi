@@ -5900,8 +5900,13 @@ most instructions do not affect it.  The latter category includes
 most RISC machines.
 
 The implicit clobbering poses a strong restriction on the placement of
-the definition and use of the condition code, which need to be in adjacent
-insns for machines using @code{(cc0)}.  This can prevent important
+the definition and use of the condition code.  In the past the definition
+and use were always adjacent.  However, recent changes to support trapping
+arithmatic may result in the definition and user being in different blocks.
+Thus, there may be a @code{NOTE_INSN_BASIC_BLOCK} between them.  Additionally,
+the definition may be the source of exception handling edges.
+
+These restrictions can prevent important
 optimizations on some machines.  For example, on the IBM RS/6000, there
 is a delay for taken branches unless the condition code register is set
 three instructions earlier than the conditional branch.  The instruction

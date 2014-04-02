@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,6 +310,10 @@ package body Switch.M is
                      else
                         case Switch_Chars (Ptr) is
 
+                           when 'A' =>
+                              Ptr := Ptr + 1;
+                              Add_Switch_Component ("-gnateA");
+
                            when 'D' =>
                               Storing (First_Stored + 1 ..
                                          First_Stored + Max - Ptr + 1) :=
@@ -319,16 +323,18 @@ package body Switch.M is
                                    First_Stored + Max - Ptr + 1));
                               Ptr := Max + 1;
 
-                           when 'G' =>
-                              Ptr := Ptr + 1;
-                              Add_Switch_Component ("-gnateG");
-
-                           when 'I' =>
+                           when 'E' | 'F' | 'G' | 'S' | 'u' | 'V' | 'Y' =>
+                              Add_Switch_Component
+                                ("-gnate" & Switch_Chars (Ptr));
                               Ptr := Ptr + 1;
 
+                           when 'i' | 'I' =>
                               declare
-                                 First : constant Positive := Ptr - 1;
+                                 First : constant Positive := Ptr;
+
                               begin
+                                 Ptr := Ptr + 1;
+
                                  if Ptr <= Max and then
                                    Switch_Chars (Ptr) = '='
                                  then
@@ -348,6 +354,14 @@ package body Switch.M is
                                    (Storing (Storing'First ..
                                       First_Stored + Ptr - First));
                               end;
+
+                           when 'l' =>
+                              Ptr := Ptr + 1;
+                              Add_Switch_Component ("-gnatel");
+
+                           when 'L' =>
+                              Ptr := Ptr + 1;
+                              Add_Switch_Component ("-gnateL");
 
                            when 'p' =>
                               Ptr := Ptr + 1;
@@ -375,10 +389,6 @@ package body Switch.M is
                               end;
 
                               return;
-
-                           when 'S' =>
-                              Ptr := Ptr + 1;
-                              Add_Switch_Component ("-gnateS");
 
                            when others =>
                               Last := 0;

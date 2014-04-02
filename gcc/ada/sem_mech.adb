@@ -462,8 +462,8 @@ package body Sem_Mech is
 
                when Convention_Fortran =>
 
-                  --  In OpenVMS, pass a character of array of character
-                  --  value using Descriptor(S).
+                  --  In OpenVMS, pass character and string types using
+                  --  Short_Descriptor(S)
 
                   if OpenVMS_On_Target
                     and then (Root_Type (Typ) = Standard_Character
@@ -473,7 +473,7 @@ package body Sem_Mech is
                                      Root_Type (Component_Type (Typ)) =
                                                      Standard_Character))
                   then
-                     Set_Mechanism (Formal, By_Descriptor_S);
+                     Set_Mechanism (Formal, By_Short_Descriptor_S);
 
                   --  Access types are passed by default (presumably this
                   --  will mean they are passed by copy)

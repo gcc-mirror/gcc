@@ -5,7 +5,7 @@ class B {
    friend class A;
 
    enum {
-      bEnum = 1, // { dg-error "comma at end" "" { target c++98 } }
+      bEnum = 1, // { dg-error "comma at end" "" { target { ! c++11 } } }
    };
 
    int bArray[ bEnum ];

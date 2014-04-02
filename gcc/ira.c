@@ -3428,7 +3428,7 @@ adjust_cleared_regs (rtx loc, const_rtx old_rtx ATTRIBUTE_UNUSED, void *data)
     {
       bitmap cleared_regs = (bitmap) data;
       if (bitmap_bit_p (cleared_regs, REGNO (loc)))
-	return simplify_replace_fn_rtx (*reg_equiv[REGNO (loc)].src_p,
+	return simplify_replace_fn_rtx (copy_rtx (*reg_equiv[REGNO (loc)].src_p),
 					NULL_RTX, adjust_cleared_regs, data);
     }
   return NULL_RTX;

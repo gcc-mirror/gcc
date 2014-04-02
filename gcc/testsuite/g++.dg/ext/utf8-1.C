@@ -1,6 +1,6 @@
-// { dg-do run }
+// { dg-do run { target c++11 } }
 // { dg-require-iconv "ISO-8859-2" }
-// { dg-options "-std=c++0x -fexec-charset=ISO-8859-2" }
+// { dg-options "-fexec-charset=ISO-8859-2" }
 
 const char *str1 = "h\u00e1\U0000010Dky ";
 const char *str2 = "\u010d\u00E1rky\n";

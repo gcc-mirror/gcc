@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-options "-std=c++11" } */
+/* { dg-do compile { target c++11 } } */
 
 typedef signed char __attribute__((vector_size(128) )) vec;
 

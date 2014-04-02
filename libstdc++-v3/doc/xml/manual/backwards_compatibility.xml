@@ -588,7 +588,7 @@ libstdc++-v3.
 </para>
 
       <para>The subset commonly known as the Standard Template Library
-	 (chapters 23 through 25, mostly) is adapted from the final release
+	 (clauses 23 through 25, mostly) is adapted from the final release
 	 of the SGI STL (version 3.3), with extensive changes.
       </para>
 
@@ -614,8 +614,8 @@ libstdc++-v3.
    </para>
    <para>For those of you new to ISO C++ (welcome, time travelers!), no,
       that isn't a typo. Yes, the headers really have new names.
-      Marshall Cline's C++ FAQ Lite has a good explanation in <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.parashift.com/c++-faq-lite/coding-standards.html#faq-27.4">item
-      [27.4]</link>.
+      Marshall Cline's C++ FAQ Lite has a good explanation in <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.parashift.com/c++-faq-lite/std-headers.html">What's
+      the difference between &lt;xxx&gt; and &lt;xxx.h&gt; headers?</link>.
    </para>
 
 <para> Some include adjustment may be required. What follows is an

@@ -262,6 +262,35 @@ package body Ada.Containers.Formal_Hashed_Sets is
    end Copy;
 
    ---------------------
+   -- Current_To_Last --
+   ---------------------
+
+   function Current_To_Last (Container : Set; Current : Cursor) return Set is
+      Curs : Cursor := First (Container);
+      C    : Set (Container.Capacity, Container.Modulus) :=
+               Copy (Container, Container.Capacity);
+      Node : Count_Type;
+
+   begin
+      if Curs = No_Element then
+         Clear (C);
+         return C;
+
+      elsif Current /= No_Element and not Has_Element (Container, Current) then
+         raise Constraint_Error;
+
+      else
+         while Curs.Node /= Current.Node loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
+      end if;
+   end Current_To_Last;
+
+   ---------------------
    -- Default_Modulus --
    ---------------------
 
@@ -474,8 +503,9 @@ package body Ada.Containers.Formal_Hashed_Sets is
                return False;
             end if;
 
-            if Equivalent_Elements (L_Node.Element,
-                                    RN (R_Node).Element) then
+            if Equivalent_Elements
+                 (L_Node.Element, RN (R_Node).Element)
+            then
                return True;
             end if;
 
@@ -624,6 +654,37 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
       return (Node => Node);
    end First;
+
+   -----------------------
+   -- First_To_Previous --
+   -----------------------
+
+   function First_To_Previous
+     (Container : Set;
+      Current   : Cursor) return Set
+   is
+      Curs : Cursor := Current;
+      C    : Set (Container.Capacity, Container.Modulus) :=
+               Copy (Container, Container.Capacity);
+      Node : Count_Type;
+
+   begin
+      if Curs = No_Element then
+         return C;
+
+      elsif not Has_Element (Container, Curs) then
+         raise Constraint_Error;
+
+      else
+         while Curs.Node /= 0 loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
+      end if;
+   end First_To_Previous;
 
    ----------
    -- Free --
@@ -911,34 +972,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       return True;
    end Is_Subset;
 
-   ----------
-   -- Left --
-   ----------
-
-   function Left (Container : Set; Position : Cursor) return Set is
-      Curs : Cursor := Position;
-      C    : Set (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         return C;
-      end if;
-
-      if not Has_Element (Container, Curs) then
-         raise Constraint_Error;
-      end if;
-
-      while Curs.Node /= 0 loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
-   end Left;
-
    ------------
    -- Length --
    ------------
@@ -1104,35 +1137,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
          raise Constraint_Error with "requested capacity is too large";
       end if;
    end Reserve_Capacity;
-
-   -----------
-   -- Right --
-   -----------
-
-   function Right (Container : Set; Position : Cursor) return Set is
-      Curs : Cursor := First (Container);
-      C    : Set (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         Clear (C);
-         return C;
-      end if;
-
-      if Position /= No_Element and not Has_Element (Container, Position) then
-         raise Constraint_Error;
-      end if;
-
-      while Curs.Node /= Position.Node loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
-   end Right;
 
    ------------------
    --  Set_Element --

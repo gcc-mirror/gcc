@@ -156,7 +156,10 @@ check-c++-subtargets : check-g++-subtargets
 lang_checks += check-g++
 lang_checks_parallelized += check-g++
 # For description see comment above check_gcc_parallelize in gcc/Makefile.in.
-check_g++_parallelize = old-deja.exp dg.exp dg-torture.exp
+check_g++_parallelize = old-deja.exp \
+	dg.exp=g++.dg/[0-9A-Za-bd-su-z]* \
+	dg.exp=g++.dg/[ct]* \
+	dg.exp=c-c++-common/*,dg-torture.exp
 
 #
 # Install hooks:

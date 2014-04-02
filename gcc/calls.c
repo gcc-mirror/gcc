@@ -2955,6 +2955,7 @@ expand_call (tree exp, rtx target, int ignore)
       /* If we push args individually in reverse order, perform stack alignment
 	 before the first push (the last arg).  */
       if (PUSH_ARGS_REVERSED && argblock == 0
+          && adjusted_args_size.constant > reg_parm_stack_space
 	  && adjusted_args_size.constant != unadjusted_args_size)
 	{
 	  /* When the stack adjustment is pending, we get better code
@@ -4450,11 +4451,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
 	      if (save_mode == BLKmode)
 		{
-		  tree ot = TREE_TYPE (arg->tree_value);
-		  tree nt = build_qualified_type (ot, (TYPE_QUALS (ot)
-						       | TYPE_QUAL_CONST));
-
-		  arg->save_area = assign_temp (nt, 1, 1);
+		  arg->save_area
+		    = assign_temp (TREE_TYPE (arg->tree_value), 1, 1);
 		  preserve_temp_slots (arg->save_area);
 		  emit_block_move (validize_mem (arg->save_area), stack_area,
 				   GEN_INT (arg->locate.size.constant),

@@ -360,6 +360,9 @@
 /* Define to 1 if you have the `fabsl' function. */
 #undef HAVE_FABSL
 
+/* Define to 1 if you have the `fcntl' function. */
+#undef HAVE_FCNTL
+
 /* libm includes feenableexcept */
 #undef HAVE_FEENABLEEXCEPT
 

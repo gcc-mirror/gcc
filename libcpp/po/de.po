@@ -3,19 +3,21 @@
 # This file is distributed under the same license as the gcc package.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012, 2013.
+# Mario Blättermann <mario.blaettermann@gmail.com>, 2014.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.8-b20130224\n"
+"Project-Id-Version: cpplib 4.9-b20140202\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2013-02-24 01:05+0000\n"
-"PO-Revision-Date: 2013-03-09 17:11+0100\n"
-"Last-Translator: Roland Stigge <stigge@antcom.de>\n"
+"POT-Creation-Date: 2014-02-02 17:35+0000\n"
+"PO-Revision-Date: 2014-03-18 15:18+0100\n"
+"Last-Translator: Mario Blättermann <mario.blaettermann@gmail.com>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: charset.c:673
 #, c-format
@@ -36,7 +38,7 @@ msgstr "keine Implementation für iconv, es kann nicht von %s nach %s konvertier
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "Zeichen 0x%lx ist nicht im regulären Quellzeichensatz\n"
 
-#: charset.c:797 charset.c:1443
+#: charset.c:797 charset.c:1447
 msgid "converting to execution character set"
 msgstr "Konvertierung in Zeichensatz der Ausführung"
 
@@ -45,108 +47,105 @@ msgstr "Konvertierung in Zeichensatz der Ausführung"
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "Zeichen 0x%lx ist kein Unibyte im Ausführungs-Zeichensatz"
 
-#: charset.c:927
-#, c-format
-msgid "Character %x might not be NFKC"
-msgstr "Zeichen %x ist nicht in NFKC"
-
-#: charset.c:993
+#: charset.c:997
 msgid "universal character names are only valid in C++ and C99"
 msgstr "universelle Zeichennamen sind nur in C++ und C99 gültig"
 
-#: charset.c:996
+#: charset.c:1000
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
-msgstr "die Bedeutung von '\\%c' ist in traditionellem C anders"
+msgstr "die Bedeutung von »\\%c« ist in traditionellem C anders"
 
-#: charset.c:1005
+#: charset.c:1009
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "In _cpp_valid_ucn, aber kein UCN"
 
-#: charset.c:1030
+#: charset.c:1034
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "unvollständiger Universal-Zeichenname %.*s"
 
-#: charset.c:1045
+#: charset.c:1049
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "»%.*s« ist kein gültiges universelles Zeichen"
 
-#: charset.c:1055 lex.c:1117
+#: charset.c:1059 lex.c:1126
 msgid "'$' in identifier or number"
-msgstr "'$' in Bezeichner oder Zahl"
+msgstr "»$« in Bezeichner oder Zahl"
 
-#: charset.c:1065
+#: charset.c:1069
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "universelles Zeichen %.*s ist nicht gültig in Bezeichner"
 
-#: charset.c:1069
+#: charset.c:1073
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universelles Zeichen %.*s ist nicht gültig am Anfang eines Bezeichners"
 
-#: charset.c:1101 charset.c:1673
+#: charset.c:1105 charset.c:1677
 msgid "converting UCN to source character set"
 msgstr "UCN wird in Quellzeichensatz konvertiert"
 
-#: charset.c:1105
+#: charset.c:1109
 msgid "converting UCN to execution character set"
 msgstr "UCN wird in Ausführungszeichensatz konvertiert"
 
-#: charset.c:1177
+#: charset.c:1181
 msgid "the meaning of '\\x' is different in traditional C"
-msgstr "die Bedeutung von '\\x' ist in traditionellem C anders"
+msgstr "die Bedeutung von »\\x« ist in traditionellem C anders"
 
-#: charset.c:1194
+#: charset.c:1198
 msgid "\\x used with no following hex digits"
 msgstr "\\x ohne folgende Hex-Ziffern verwendet"
 
-#: charset.c:1201
+# http://de.wikipedia.org/wiki/Escape-Sequenz
+#: charset.c:1205
 msgid "hex escape sequence out of range"
-msgstr "Hex-Fluchtsequenz außerhalb des Wertebereiches"
+msgstr "Hex-Escape-Sequenz außerhalb des Wertebereiches"
 
-#: charset.c:1239
+# http://de.wikipedia.org/wiki/Escape-Sequenz
+#: charset.c:1243
 msgid "octal escape sequence out of range"
-msgstr "Oktal-Fluchtsequenz außerhalb des Wertebereiches"
+msgstr "Oktal-Escape-Sequenz außerhalb des Wertebereiches"
 
-#: charset.c:1305
+#: charset.c:1309
 msgid "the meaning of '\\a' is different in traditional C"
-msgstr "die Bedeutung von '\\a' ist in traditionellem C anders"
+msgstr "die Bedeutung von »\\a« ist in traditionellem C anders"
 
-#: charset.c:1312
+#: charset.c:1316
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
-msgstr "nicht-ISO-standardkonforme Fluchtsequenz '\\%c'"
+msgstr "nicht-ISO-standardkonforme Escape-Sequenz »\\%c«"
 
-#: charset.c:1320
+#: charset.c:1324
 #, c-format
 msgid "unknown escape sequence: '\\%c'"
-msgstr "unbekannte Fluchtsequenz: '\\%c'"
+msgstr "unbekannte Escape-Sequenz: »\\%c«"
 
-#: charset.c:1328
+#: charset.c:1332
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
-msgstr "unbekannte Fluchtsequenz: '\\%s'"
+msgstr "unbekannte Escape-Sequenz: »\\%s«"
 
-#: charset.c:1335
+#: charset.c:1339
 msgid "converting escape sequence to execution character set"
-msgstr "Fluchtsequenz wird in Zeichensatz der Ausführung konvertiert"
+msgstr "Escape-Sequenz wird in Zeichensatz der Ausführung konvertiert"
 
-#: charset.c:1508 charset.c:1572
+#: charset.c:1512 charset.c:1576
 msgid "character constant too long for its type"
 msgstr "Zeichenkonstante zu lang für ihren Typ"
 
-#: charset.c:1511
+#: charset.c:1515
 msgid "multi-character character constant"
 msgstr "Zeichenkonstante mit mehreren Zeichen"
 
-#: charset.c:1611
+#: charset.c:1615
 msgid "empty character constant"
 msgstr "Leere Zeichenkonstante"
 
-#: charset.c:1720
+#: charset.c:1724
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "Fehler beim Konvertieren von %s nach %s"
@@ -159,12 +158,12 @@ msgstr "mehrere Token am Ende der Direktive #%s"
 #: directives.c:357
 #, c-format
 msgid "#%s is a GCC extension"
-msgstr "#%s ist eine Erweiterung des GCC"
+msgstr "#%s ist eine GCC-Erweiterung"
 
 #: directives.c:362
 #, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s ist eine veraltete Erweiterung des GCC"
+msgstr "#%s ist eine veraltete GCC-Erweiterung"
 
 #: directives.c:375
 msgid "suggest not using #elif in traditional C"
@@ -186,7 +185,7 @@ msgstr "das Einbetten einer Direktive innerhalb von Makroargumenten ist nicht po
 
 #: directives.c:428
 msgid "style of line directive is a GCC extension"
-msgstr "der Stil der line-Direktive ist eine Erweiterung des GCC"
+msgstr "der Stil der line-Direktive ist eine GCC-Erweiterung"
 
 #: directives.c:483
 #, c-format
@@ -279,17 +278,17 @@ msgstr "ungültige #%s-Direktive"
 #: directives.c:1159
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
-msgstr "Pragmas im Namespace »%s« werden ohne passende Namensauflösung registriert"
+msgstr "Pragmas im Namensraum »%s« werden ohne passende Namensauflösung registriert"
 
 #: directives.c:1168
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
-msgstr "Pragma »%s« wird mit Namensauflösung und ohne Namespace registriert"
+msgstr "Pragma »%s« wird mit Namensauflösung und ohne Namensraum registriert"
 
 #: directives.c:1186
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
-msgstr "»%s« wird sowohl als Pragma als auch als Pragma-Namespace registriert"
+msgstr "»%s« wird sowohl als Pragma als auch als Pragma-Namensraum registriert"
 
 #: directives.c:1189
 #, c-format
@@ -375,11 +374,11 @@ msgstr "#endif ohne #if"
 
 #: directives.c:2124
 msgid "missing '(' after predicate"
-msgstr "fehlendes '(' hinter Prädikat"
+msgstr "fehlende »(« hinter Prädikat"
 
 #: directives.c:2139
 msgid "missing ')' to complete answer"
-msgstr "fehlendes ')', um Antwort abzuschließen"
+msgstr "fehlende »)«, um Antwort abzuschließen"
 
 #: directives.c:2159
 msgid "predicate's answer is empty"
@@ -398,12 +397,12 @@ msgstr "Prädikat muss ein Bezeichner sein"
 msgid "\"%s\" re-asserted"
 msgstr "»%s« wieder behauptet"
 
-#: directives.c:2566
+#: directives.c:2567
 #, c-format
 msgid "unterminated #%s"
 msgstr "unbeendetes #%s"
 
-#: directives-only.c:221 lex.c:2234 traditional.c:162
+#: directives-only.c:221 lex.c:2311 traditional.c:162
 msgid "unterminated comment"
 msgstr "nicht beendeter Kommentar"
 
@@ -416,324 +415,328 @@ msgstr "Standardausgabe"
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: expr.c:479 expr.c:577
+#: expr.c:510 expr.c:620
 msgid "fixed-point constants are a GCC extension"
 msgstr "Festkommakonstanten sind eine GCC-Erweiterung"
 
-#: expr.c:504
+#: expr.c:535
 msgid "invalid prefix \"0b\" for floating constant"
-msgstr "ungültiger Prefix »0b« für Gleitkommakonstante"
+msgstr "ungültiges Präfix »0b« für Gleitkommakonstante"
 
-#: expr.c:514
+#: expr.c:545
 msgid "use of C99 hexadecimal floating constant"
 msgstr "Verwendung von hexadezimaler C99-Gleitkommakonstante"
 
-#: expr.c:545
+#: expr.c:588
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
-msgstr "ungültiger Suffix »%.*s« an Gleitkommakonstante"
+msgstr "ungültiges Suffix »%.*s« an Gleitkommakonstante"
 
-#: expr.c:556 expr.c:616
+#: expr.c:599 expr.c:659
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
-msgstr "traditionelles C lehnt den Suffix »%.*s« ab"
+msgstr "traditionelles C lehnt das Suffix »%.*s« ab"
 
-#: expr.c:564
+#: expr.c:607
 msgid "suffix for double constant is a GCC extension"
 msgstr "Suffix an Gleitkommakonstante ist eine GCC-Erweiterung"
 
-#: expr.c:570
+#: expr.c:613
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
-msgstr "ungültiger Suffix »%.*s« mit hexadezimaler Gleitkommakonstante"
+msgstr "ungültiges Suffix »%.*s« mit hexadezimaler Gleitkommakonstante"
 
-#: expr.c:581
+#: expr.c:624
 msgid "decimal float constants are a GCC extension"
 msgstr "dezimale Gleitkommakonstanten sind eine GCC-Erweiterung"
 
-#: expr.c:599
+#: expr.c:642
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
-msgstr "ungültiger Suffix »%.*s« an Ganzzahlkonstante"
+msgstr "ungültiges Suffix »%.*s« an Ganzzahlkonstante"
 
-#: expr.c:624
-msgid "use of C++0x long long integer constant"
-msgstr "C++0x long long Ganzzahlkonstante verwendet"
+#: expr.c:667
+msgid "use of C++11 long long integer constant"
+msgstr "C++11 long long Ganzzahlkonstante verwendet"
 
-#: expr.c:625
+#: expr.c:668
 msgid "use of C99 long long integer constant"
 msgstr "C99 long long Ganzzahlkonstante verwendet"
 
-#: expr.c:641
+#: expr.c:684
 msgid "imaginary constants are a GCC extension"
 msgstr "imaginäre Konstanten sind eine GCC-Erweiterung"
 
-#: expr.c:644
-msgid "binary constants are a GCC extension"
-msgstr "binäre Konstanten sind eine GCC-Erweiterung"
+#: expr.c:690
+msgid "binary constants are a C++1y feature or GCC extension"
+msgstr "binäre Konstanten sind ein C++1y-Funktionsmerkmal oder eine GCC-Erweiterung"
 
-#: expr.c:737
+#: expr.c:787
 msgid "integer constant is too large for its type"
 msgstr "Ganzzahlkonstante ist zu groß für ihren Typ"
 
-#: expr.c:768
+#: expr.c:818
 msgid "integer constant is so large that it is unsigned"
 msgstr "Ganzzahlkonstante ist so groß, dass sie vorzeichenlos ist"
 
-#: expr.c:863
+#: expr.c:913
 msgid "missing ')' after \"defined\""
-msgstr "fehlendes ')' hinter »defined«"
+msgstr "fehlende »)« hinter »defined«"
 
-#: expr.c:870
+#: expr.c:920
 msgid "operator \"defined\" requires an identifier"
 msgstr "Operator »defined« erfordert einen Bezeichner"
 
-#: expr.c:878
+#: expr.c:928
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(»%s« ist ein alternatives Token for »%s« in C++)"
 
-#: expr.c:888
+#: expr.c:938
 msgid "this use of \"defined\" may not be portable"
 msgstr "diese Verwendung von »defined« könnte nicht portierbar sein"
 
-#: expr.c:948
+#: expr.c:998
 msgid "user-defined literal in preprocessor expression"
 msgstr "benutzerdefiniertes Symbol in Präprozessorausdruck"
 
-#: expr.c:953
+#: expr.c:1003
 msgid "floating constant in preprocessor expression"
 msgstr "Gleitkommakonstante in Präprozessorausdruck"
 
-#: expr.c:959
+#: expr.c:1009
 msgid "imaginary number in preprocessor expression"
 msgstr "imaginäre Zahl in Präprozessorausdruck"
 
-#: expr.c:1007
+#: expr.c:1057
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "»%s« ist nicht definiert"
 
-#: expr.c:1020
+#: expr.c:1070
 msgid "assertions are a GCC extension"
 msgstr "Assertions sind eine GCC-Erweiterung"
 
-#: expr.c:1023
+#: expr.c:1073
 msgid "assertions are a deprecated extension"
 msgstr "Assertions sind eine veraltete Erweiterung"
 
-#: expr.c:1268
+#: expr.c:1318
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "unausgeglichener Keller in %s"
 
-#: expr.c:1288
+#: expr.c:1338
 #, c-format
 msgid "impossible operator '%u'"
-msgstr "unmöglicher Operator '%u'"
+msgstr "unmöglicher Operator »%u«"
 
-#: expr.c:1389
+#: expr.c:1439
 msgid "missing ')' in expression"
-msgstr "fehlendes ')' in Ausdruck"
+msgstr "fehlende »)« in Ausdruck"
 
-#: expr.c:1418
+#: expr.c:1468
 msgid "'?' without following ':'"
-msgstr "'?' ohne folgendes ':'"
+msgstr "»?« ohne folgenden »:«"
 
-#: expr.c:1428
+#: expr.c:1478
 msgid "integer overflow in preprocessor expression"
 msgstr "Ganzzahlüberlauf in Präprozessorausdruck"
 
-#: expr.c:1433
+#: expr.c:1483
 msgid "missing '(' in expression"
-msgstr "fehlendes '(' in Ausdruck"
+msgstr "fehlende »(« in Ausdruck"
 
-#: expr.c:1465
+#: expr.c:1515
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "der linke Operand von »%s« ändert bei der Weitergabe das Vorzeichen"
 
-#: expr.c:1470
+#: expr.c:1520
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "der rechte Operand von »%s« ändert bei der Weitergabe das Vorzeichen"
 
-#: expr.c:1729
+#: expr.c:1779
 msgid "traditional C rejects the unary plus operator"
 msgstr "traditionelles C weist den unären Plus-Operator zurück"
 
-#: expr.c:1812
+#: expr.c:1877
 msgid "comma operator in operand of #if"
 msgstr "Kommaoperator in Operand von #if"
 
-#: expr.c:1948
+#: expr.c:2013
 msgid "division by zero in #if"
 msgstr "Division durch Null in #if"
 
-#: files.c:504
+#: files.c:505
 msgid "NULL directory in find_file"
 msgstr "NULL-Verzeichnis in find_file"
 
-#: files.c:542
+#: files.c:553
 msgid "one or more PCH files were found, but they were invalid"
-msgstr "ein oder mehrere PCH-Dateien wurden gefunden, aber sie sind ungültig"
+msgstr "eine oder mehrere PCH-Dateien wurden gefunden, aber sie sind ungültig"
 
-#: files.c:545
+#: files.c:556
 msgid "use -Winvalid-pch for more information"
 msgstr "-Winvalid-pch für mehr Informationen verwenden"
 
-#: files.c:643
+#: files.c:660
 #, c-format
 msgid "%s is a block device"
-msgstr "%s ist ein Block-Gerät"
+msgstr "%s ist ein blockorientertes Gerät"
 
-#: files.c:660
+#: files.c:677
 #, c-format
 msgid "%s is too large"
 msgstr "%s ist zu groß"
 
-#: files.c:700
+#: files.c:717
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s ist kürzer als erwartet"
 
-#: files.c:935
+#: files.c:953
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "kein Include-Pfad, um %s zu finden"
 
-#: files.c:1363
+#: files.c:1389
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Mehrere Include-Wächter könnten nützlich sein für:\n"
 
-#: init.c:524
+#: init.c:536
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t muss ein vorzeichenloser Typ sein"
 
-#: init.c:528
+#: init.c:540
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "Präprozessorarithmetik hat maximale Präzision von %lu Bits; Ziel erfordert %lu Bits"
 
-#: init.c:535
+#: init.c:547
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "CPP-Arithmetik muss mindestens so genau sein wie das Ziel int"
 
-#: init.c:538
+#: init.c:550
 msgid "target char is less than 8 bits wide"
 msgstr "Ziel-char ist weniger als 8 Bits breit"
 
-#: init.c:542
+#: init.c:554
 msgid "target wchar_t is narrower than target char"
-msgstr "Ziel-wchar_t ist schmaler als Ziel char"
+msgstr "Ziel-wchar_t ist schmaler als Ziel-char"
 
-#: init.c:546
+#: init.c:558
 msgid "target int is narrower than target char"
 msgstr "Ziel-int ist schmaler als Ziel-char"
 
-#: init.c:551
+#: init.c:563
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP Halb-Ganzzahl ist schmaler als CPP-Zeichen"
 
-#: init.c:555
+#: init.c:567
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP kann auf diesem Computer keine Wide-Zeichenkonstanten über %lu Bits Breite behandeln, das Ziel benötigt %lu Bits"
 
-#: lex.c:910
+#: lex.c:919
 msgid "backslash and newline separated by space"
 msgstr "Backslash und Newline durch Leerzeichen getrennt"
 
-#: lex.c:915
+#: lex.c:924
 msgid "backslash-newline at end of file"
 msgstr "Backslash-Newline am Dateiende"
 
-#: lex.c:931
+#: lex.c:940
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "Trigraph ??%c in %c konvertiert"
 
-#: lex.c:939
+#: lex.c:948
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "Trigraph ??%c ignoriert, -trigraphs zum Aktivieren verwenden"
 
-#: lex.c:988
+#: lex.c:997
 msgid "\"/*\" within comment"
 msgstr "»/*« innerhalb des Kommentars"
 
-#: lex.c:1046
+#: lex.c:1055
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s in Präprozessordirektive"
 
-#: lex.c:1055
+#: lex.c:1064
 msgid "null character(s) ignored"
 msgstr "Null-Zeichen ignoriert"
 
-#: lex.c:1092
+#: lex.c:1101
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "»%.*s« ist nicht in NFKC"
 
-#: lex.c:1095
+#: lex.c:1104
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "»%.*s« ist nicht in NFC"
 
-#: lex.c:1164 lex.c:1241
+#: lex.c:1173 lex.c:1253
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "Versuch, schlechtes »%s« zu verwenden"
 
-#: lex.c:1172 lex.c:1249
+#: lex.c:1181 lex.c:1261
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ kann nur in Erweiterung eines variadischen C99-Makros auftreten"
 
-#: lex.c:1178 lex.c:1255
+#: lex.c:1187 lex.c:1267
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "Bezeichner »%s« ist ein besonderer Operatorname in C++"
 
-#: lex.c:1399
+#: lex.c:1554
 msgid "raw string delimiter longer than 16 characters"
 msgstr "Roh-Zeichenketten-Trennsymbol länger als 16 Zeichen"
 
-#: lex.c:1402
+#: lex.c:1558
+msgid "invalid new-line in raw string delimiter"
+msgstr "ungültiger Zeilenumbruch (neue Zeile) in Roh-Zeichenketten-Trennsymbol"
+
+#: lex.c:1562
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "ungültiges Zeichen '%c' in Roh-Zeichenketten-Trennsymbol"
+msgstr "ungültiges Zeichen »%c« in Roh-Zeichenketten-Trennsymbol"
 
-#: lex.c:1525 lex.c:1547
+#: lex.c:1611 lex.c:1633
 msgid "unterminated raw string"
 msgstr "unbeendete Roh-Zeichenkette"
 
-#: lex.c:1573 lex.c:1706
-msgid "invalid suffix on literal; C++11 requires a space between literal and identifier"
-msgstr "ungültiger Suffix an Literal; C++11 erfordert Leerzeichen zwischen Literal und Bezeichner"
+#: lex.c:1654 lex.c:1783
+msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgstr "ungültiges Suffix an Literal; C++11 erfordert Leerzeichen zwischen Literal und Zeichenketten-Makro"
 
-#: lex.c:1684
+#: lex.c:1765
 msgid "null character(s) preserved in literal"
 msgstr "Null-Zeichen im Literal erhalten"
 
-#: lex.c:1687
+#: lex.c:1768
 #, c-format
 msgid "missing terminating %c character"
 msgstr "fehlendes abschließendes Zeichen %c"
 
-#: lex.c:2245
+#: lex.c:2322
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++-Stil-Kommentare sind in ISO-C90 nicht erlaubt"
 
-#: lex.c:2247
+#: lex.c:2324
 msgid "(this will be reported only once per input file)"
 msgstr "(dies wird nur einmal pro Eingabedatei gemeldet)"
 
-#: lex.c:2252
+#: lex.c:2329
 msgid "multi-line comment"
 msgstr "mehrzeiliger Kommentar"
 
-#: lex.c:2583
+#: lex.c:2660
 #, c-format
 msgid "unspellable token %s"
 msgstr "nicht buchstabierbares Token %s"
@@ -743,156 +746,161 @@ msgstr "nicht buchstabierbares Token %s"
 msgid "macro \"%s\" is not used"
 msgstr "Makro »%s« wird nicht benutzt"
 
-#: macro.c:229 macro.c:426
+#: macro.c:229 macro.c:433
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "ungültiges eingebautes Makro »%s«"
 
-#: macro.c:263
-msgid "could not determine file timestamp"
-msgstr "Datum und Zeit der Datei konnten nicht bestimmt werden"
+#: macro.c:236 macro.c:333
+#, c-format
+msgid "macro \"%s\" might prevent reproducible builds"
+msgstr "Das Makro »%s« könnte reproduzierbare Builds verhindern"
 
-#: macro.c:361
+#: macro.c:267
+msgid "could not determine file timestamp"
+msgstr "Zeitstempel der Datei konnte nicht ermittelt werden"
+
+#: macro.c:368
 msgid "could not determine date and time"
 msgstr "Datum und Zeit konnten nicht bestimmt werden"
 
-#: macro.c:377
+#: macro.c:384
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ innerhalb von Anweisung mit -fdirectives-only expandiert"
 
-#: macro.c:535
+#: macro.c:542
 msgid "invalid string literal, ignoring final '\\'"
-msgstr "ungültiges Zeichenkettenliteral, abschließendes '\\' wird ignoriert"
+msgstr "ungültiges Zeichenkettenliteral, abschließendes »\\« wird ignoriert"
 
-#: macro.c:597
+#: macro.c:604
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "das Einfügen von »%s« und »%s« ergibt kein gültiges Präprozessor-Token"
 
-#: macro.c:719
+#: macro.c:726
 msgid "ISO C99 requires rest arguments to be used"
 msgstr "ISO-C99 erfordert, dass Restargumente verwendet werden"
 
-#: macro.c:724
+#: macro.c:731
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "Makro »%s« erfordert %u Argumente, aber nur %u wurden angegeben"
 
-#: macro.c:729
+#: macro.c:736
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
-msgstr "dem Makro »%s« wurden %u Argumente übergeben, aber es nimmt nur %u"
+msgstr "dem Makro »%s« wurden %u Argumente übergeben, aber es akzeptiert nur %u"
 
-#: macro.c:923 traditional.c:680
+#: macro.c:930 traditional.c:680
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "unvollendete Argumentliste beim Makroaufruf »%s«"
 
-#: macro.c:1074
+#: macro.c:1081
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "funktionsähnliches Makro »%s« muss mit Argumenten in traditionellem C verwendet werden"
 
-#: macro.c:1746
+#: macro.c:1753
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr "Beim Ausführen des Argument %2$d des Makros %1$s: Leere Makroargumente sind nach ISO-C90 und ISO-C++98 unbestimmt"
+msgstr "Beim Ausführen des Arguments %2$d des Makros %1$s: Leere Makroargumente sind nach ISO-C90 und ISO-C++98 unbestimmt"
 
-#: macro.c:2708
+#: macro.c:2715
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "doppelter Makroparameter »%s«"
 
-#: macro.c:2754
+#: macro.c:2761
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "»%s« darf nicht in Makroparameterliste auftreten"
 
-#: macro.c:2762
+#: macro.c:2769
 msgid "macro parameters must be comma-separated"
 msgstr "Makroparameter müssen mit Komma getrennt sein"
 
-#: macro.c:2779
+#: macro.c:2786
 msgid "parameter name missing"
 msgstr "Parametername fehlt"
 
-#: macro.c:2797
+#: macro.c:2804
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonyme variadische Makros wurden in C99 eingeführt"
 
-#: macro.c:2802
+#: macro.c:2809
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO-C erlaubt keine benannten variadischen Makros"
 
-#: macro.c:2811
+#: macro.c:2818
 msgid "missing ')' in macro parameter list"
-msgstr "fehlendes ')' in Makroparameterliste"
+msgstr "fehlendes »)« in Makroparameterliste"
 
-#: macro.c:2860
+#: macro.c:2867
 msgid "'##' cannot appear at either end of a macro expansion"
-msgstr "'##' kann nicht an den Enden einer Makroexpansion auftreten"
+msgstr "»##« kann nicht an den Enden einer Makroexpansion auftreten"
 
-#: macro.c:2895
+#: macro.c:2902
 msgid "ISO C99 requires whitespace after the macro name"
-msgstr "ISO-C99 erfordert Whitespace hinter Makroname"
+msgstr "ISO-C99 erfordert Leerzeichen hinter Makroname"
 
-#: macro.c:2919
+#: macro.c:2926
 msgid "missing whitespace after the macro name"
-msgstr "Whitespace hinter Makroname fehlt"
+msgstr "Leerzeichen hinter Makroname fehlt"
 
-#: macro.c:2953
+#: macro.c:2960
 msgid "'#' is not followed by a macro parameter"
-msgstr "'#' wird nicht von einem Makroparameter gefolgt"
+msgstr "»#« wird nicht von einem Makroparameter gefolgt"
 
-#: macro.c:3111
+#: macro.c:3118
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "»%s« redefiniert"
 
-#: macro.c:3117
+#: macro.c:3124
 msgid "this is the location of the previous definition"
 msgstr "dies ist die Stelle der vorherigen Definition"
 
-#: macro.c:3178
+#: macro.c:3185
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
-msgstr "Makroargument »%s« würde in traditionellem C zum String gewandelt werden"
+msgstr "Makroargument »%s« würde in traditionellem C zur Zeichenkette umgewandelt werden"
 
-#: macro.c:3205
+#: macro.c:3212
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "ungültiger Hash-Typ %d in cpp_macro_definition"
 
-#: pch.c:87 pch.c:335 pch.c:347 pch.c:365 pch.c:371 pch.c:380 pch.c:387
+#: pch.c:87 pch.c:345 pch.c:359 pch.c:377 pch.c:383 pch.c:392 pch.c:399
 msgid "while writing precompiled header"
 msgstr "beim Schreiben des vorkompilierten Headers"
 
-#: pch.c:607
+#: pch.c:619
 #, c-format
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr "%s: nicht verwendet, da »%.*s« vergiftet ist"
 
-#: pch.c:629
+#: pch.c:641
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr "%s: nicht verwendet, da »%.*s« nicht definiert"
 
-#: pch.c:641
+#: pch.c:653
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr "%s: nicht verwendet, da »%.*s« als »%s« statt als »%.*s« definiert wurde"
 
-#: pch.c:682
+#: pch.c:694
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr "%s: nicht verwendet, da »%s« definiert ist"
 
-#: pch.c:702
+#: pch.c:714
 #, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: nicht verwendet, da »__COUNTER__« ungültig ist"
 
-#: pch.c:711 pch.c:886
+#: pch.c:723 pch.c:898
 msgid "while reading precompiled header"
 msgstr "beim Lesen des vorkompilierten Headers"
 
@@ -904,6 +912,9 @@ msgstr "Rekursion bei Expansion des Makros »%s« entdeckt"
 #: traditional.c:968
 msgid "syntax error in macro parameter list"
 msgstr "Syntaxfehler in Makroparameterliste"
+
+#~ msgid "Character %x might not be NFKC"
+#~ msgstr "Zeichen %x ist nicht in NFKC"
 
 #~ msgid "too many decimal points in number"
 #~ msgstr "zu viele Dezimalpunkte in Zahl"
@@ -967,7 +978,7 @@ msgstr "Syntaxfehler in Makroparameterliste"
 #~ msgstr "Kein Newline am Dateiende"
 
 #~ msgid "unknown escape sequence: '\\%03o'"
-#~ msgstr "unbekannte Fluchtsequenz: '\\%03o'"
+#~ msgstr "unbekannte Escape-Sequenz: '\\%03o'"
 
 #~ msgid "`%s' attribute directive ignored"
 #~ msgstr "Attribut-Anweisung »%s« wird ignoriert"
@@ -3876,2725 +3887,3 @@ msgstr "Syntaxfehler in Makroparameterliste"
 
 #~ msgid "-pipe not supported"
 #~ msgstr "-pipe wird nicht unterstützt"
-
-# can we use j/n here, too?
-# 2002-04-23 18:57:43 CEST -ke-
-#~ msgid ""
-#~ "\n"
-#~ "Go ahead? (y or n) "
-#~ msgstr ""
-#~ "\n"
-#~ "Fortfahren? (y oder n) "
-
-#~ msgid ""
-#~ "Internal error: %s (program %s)\n"
-#~ "Please submit a full bug report.\n"
-#~ "See %s for instructions."
-#~ msgstr ""
-#~ "Interner Fehler: %s (Programm %s)\n"
-#~ "Bitte senden Sie einen vollständigen Fehlerbericht\n"
-#~ "auf Englisch ein; Fehler in der deutschen Übersetzung\n"
-#~ "sind an de@li.org zu melden.\n"
-#~ "Gehen Sie gemäß den Hinweisen in %s vor."
-
-#~ msgid "# %s %.2f %.2f\n"
-#~ msgstr "# %s %.2f %.2f\n"
-
-#~ msgid "Usage: %s [options] file...\n"
-#~ msgstr "Aufruf: %s [Optionen] Datei...\n"
-
-#~ msgid "Options:\n"
-#~ msgstr "Optionen:\n"
-
-#~ msgid "  -pass-exit-codes         Exit with highest error code from a phase\n"
-#~ msgstr "  -pass-exit-codes         Ende mit höchstem Rückgabe-Code einer Phase\n"
-
-#~ msgid "  --help                   Display this information\n"
-#~ msgstr "  --help                   Diese Informationen anzeigen\n"
-
-#~ msgid "  --target-help            Display target specific command line options\n"
-#~ msgstr "  --target-help            Zielspezifische Kommandozeilenoptionen anzeigen\n"
-
-#~ msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
-#~ msgstr "  ('-v --help' zum Anzeigen der Kommandozeilenoptionen von Subprozessen verwenden)\n"
-
-#~ msgid "  -dumpspecs               Display all of the built in spec strings\n"
-#~ msgstr "  -dumpspecs               Alle eingebauten Spezifikationszeichenketten anzeigen\n"
-
-#~ msgid "  -dumpversion             Display the version of the compiler\n"
-#~ msgstr "  -dumpversion             Compilerversion anzeigen\n"
-
-#~ msgid "  -dumpmachine             Display the compiler's target processor\n"
-#~ msgstr "  -dumpmachine             Zielprozessor des Compilers anzeigen\n"
-
-#~ msgid "  -print-search-dirs       Display the directories in the compiler's search path\n"
-#~ msgstr "  -print-search-dirs       Verzeichnisse im Suchpfad des Compilers anzeigen\n"
-
-#~ msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library\n"
-#~ msgstr "  -print-libgcc-file-name  Name der Begleitbibliothek des Compilers anzeigen\n"
-
-#~ msgid "  -print-file-name=<lib>   Display the full path to library <lib>\n"
-#~ msgstr "  -print-file-name=<lib>   Vollen Pfad zur Bibliothek <lib> anzeigen\n"
-
-#~ msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"
-#~ msgstr "  -print-prog-name=<prog>  Vollen Pfad zur Compilerkomponente <prog> anzeigen\n"
-
-#~ msgid "  -print-multi-directory   Display the root directory for versions of libgcc\n"
-#~ msgstr "  -print-multi-directory   Wurzelverzeichnis für Versionen von libgcc anzeigen\n"
-
-#~ msgid ""
-#~ "  -print-multi-lib         Display the mapping between command line options and\n"
-#~ "                           multiple library search directories\n"
-#~ msgstr ""
-#~ "  -print-multi-lib         Abbildung zwischen Kommandozeilenoptionen und\n"
-#~ "                           mehreren Suchverzeichnissen für Bibliotheken anzeigen\n"
-
-#~ msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
-#~ msgstr ""
-#~ "  -print-multi-os-directory Relativen Pfad zu Betriebssystembibliotheken\n"
-#~ "                            anzeigen\n"
-
-#~ msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
-#~ msgstr "  -Wa,<Optionen>           Komma-getrennte <Optionen> an Assembler übergeben\n"
-
-#~ msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"
-#~ msgstr "  -Wp,<Optionen>           Komma-getrennte <Optionen> an Präprozessor übergeben\n"
-
-#~ msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker\n"
-#~ msgstr "  -Wl,<Optionen>           Komma-getrennte <Optionen> an Linker übergeben\n"
-
-#~ msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
-#~ msgstr "  -Xassembler <arg>        <arg> an den Assembler übergeben\n"
-
-#~ msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"
-#~ msgstr "  -Xpreprocessor <arg>     <arg> an den Präprozessor übergeben\n"
-
-#~ msgid "  -Xlinker <arg>           Pass <arg> on to the linker\n"
-#~ msgstr "  -Xlinker <arg>           <arg> an den Linker übergeben\n"
-
-#~ msgid "  -save-temps              Do not delete intermediate files\n"
-#~ msgstr "  -save-temps              Temporäre Dateien nicht löschen\n"
-
-#~ msgid "  -pipe                    Use pipes rather than intermediate files\n"
-#~ msgstr "  -pipe                    Pipes statt temporärer Dateien verwenden\n"
-
-#~ msgid "  -time                    Time the execution of each subprocess\n"
-#~ msgstr "  -time                    Zeit für Ausführung jedes Subprozesses stoppen\n"
-
-#~ msgid "  -specs=<file>            Override built-in specs with the contents of <file>\n"
-#~ msgstr ""
-#~ "  -specs=<Datei>           Eingebaute Spezifikationen mit Inhalt der <Datei>\n"
-#~ "                           überschreiben\n"
-
-#~ msgid "  -std=<standard>          Assume that the input sources are for <standard>\n"
-#~ msgstr "  -std=<Standard>          Annehmen, dass die Eingabequellen für <Standard> sind\n"
-
-#~ msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
-#~ msgstr "  -B <Verzeichnis>         <Verzeichnis> zum Suchpfad des Compilers hinzufügen\n"
-
-#~ msgid "  -b <machine>             Run gcc for target <machine>, if installed\n"
-#~ msgstr ""
-#~ "  -b <Maschine>            GCC für die Ziel-<Maschine> laufen lassen, falls\n"
-#~ "                           installiert\n"
-
-#~ msgid "  -V <version>             Run gcc version number <version>, if installed\n"
-#~ msgstr "  -V <Version>             GCC <Version> laufen lassen, falls installiert\n"
-
-#~ msgid "  -v                       Display the programs invoked by the compiler\n"
-#~ msgstr "  -v                       Vom Compiler aufgerufene Programme anzeigen\n"
-
-#~ msgid "  -###                     Like -v but options quoted and commands not executed\n"
-#~ msgstr ""
-#~ "  -###                     Wie -v, aber mit zitierten Optionen und nicht\n"
-#~ "                           ausgeführten Befehlen\n"
-
-#~ msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
-#~ msgstr ""
-#~ "  -E                       Nur Präprozessor, kein Compiler, Assembler oder\n"
-#~ "                           Binder\n"
-
-#~ msgid "  -S                       Compile only; do not assemble or link\n"
-#~ msgstr "  -S                       Nur kompilieren, nicht assemblieren oder binden\n"
-
-#~ msgid "  -c                       Compile and assemble, but do not link\n"
-#~ msgstr "  -c                       Nur kompilieren und assemblieren, aber nicht binden\n"
-
-#~ msgid "  -o <file>                Place the output into <file>\n"
-#~ msgstr "  -o <Datei>               Ausgabe in <Datei> schreiben\n"
-
-#~ msgid ""
-#~ "  -x <language>            Specify the language of the following input files\n"
-#~ "                           Permissible languages include: c c++ assembler none\n"
-#~ "                           'none' means revert to the default behavior of\n"
-#~ "                           guessing the language based on the file's extension\n"
-#~ msgstr ""
-#~ "  -x <Sprache>             Sprache der folgenden Eingabedateien angeben\n"
-#~ "                           Zulässige Sprachen sind: c c++ assembler none\n"
-#~ "                           'none' bedeutet den Rückfall auf das Standard-\n"
-#~ "                           verhalten, die Sprache aufgrund der Dateinamens-\n"
-#~ "                           erweiterung zu vermuten\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "Options starting with -g, -f, -m, -O, -W, or --param are automatically\n"
-#~ " passed on to the various sub-processes invoked by %s.  In order to pass\n"
-#~ " other options on to these processes the -W<letter> options must be used.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Optionen, die mit -g, -f, -m, -O, -W, oder --param beginnen, werden automatisch\n"
-#~ " an die verschiedenen Subprozesse, die von %s aufgerufen werden, übergeben.\n"
-#~ " Um andere Optionen an diese Prozesse zu übergeben, müssen die Optionen\n"
-#~ " -W<Buchstabe> verwendet werden.\n"
-
-#~ msgid "`-%c' option must have argument"
-#~ msgstr "Die Option »-%c« muss ein Argument haben"
-
-#~ msgid "couldn't run `%s': %s"
-#~ msgstr "konnte »%s« nicht ausführen: %s"
-
-#~ msgid "%s (GCC) %s\n"
-#~ msgstr "%s (GCC) %s\n"
-
-#~ msgid ""
-#~ "This is free software; see the source for copying conditions.  There is NO\n"
-#~ "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Dies ist freie Software; die Kopierbedingungen stehen in den Quellen. Es\n"
-#~ "gibt KEINE Garantie; auch nicht für VERKAUFBARKEIT oder FÜR SPEZIELLE ZWECKE.\n"
-#~ "\n"
-
-#~ msgid "argument to `-Xlinker' is missing"
-#~ msgstr "Argument für »-Xlinker« fehlt"
-
-#~ msgid "argument to `-Xpreprocessor' is missing"
-#~ msgstr "Argument für »-Xpreprocessor« fehlt"
-
-#~ msgid "argument to `-Xassembler' is missing"
-#~ msgstr "Argument für »-Xassembler« fehlt"
-
-#~ msgid "argument to `-l' is missing"
-#~ msgstr "Argument für »-l« fehlt"
-
-#~ msgid "argument to `-specs' is missing"
-#~ msgstr "Argument für »-specs« fehlt"
-
-#~ msgid "argument to `-specs=' is missing"
-#~ msgstr "Argument für »-specs=« fehlt"
-
-#~ msgid "`-%c' must come at the start of the command line"
-#~ msgstr "»-%c« muss am Anfang der Kommandozeile stehen"
-
-#~ msgid "argument to `-B' is missing"
-#~ msgstr "Argument für »-B« fehlt"
-
-#~ msgid "warning: -pipe ignored because -save-temps specified"
-#~ msgstr "Warnung: -pipe ignoriert, da -save-temps angegeben"
-
-#~ msgid "warning: -pipe ignored because -time specified"
-#~ msgstr "Warnung: -pipe ignoriert, da -time angegeben"
-
-#~ msgid "argument to `-x' is missing"
-#~ msgstr "Argument für »-x« fehlt"
-
-#~ msgid "argument to `-%s' is missing"
-#~ msgstr "Argument für »-%s« fehlt"
-
-#~ msgid "warning: `-x %s' after last input file has no effect"
-#~ msgstr "Warnung: »-x %s« hinter letzter Eingabedatei hat keine Wirkung"
-
-#~ msgid "invalid specification!  Bug in cc"
-#~ msgstr "ungültige Spezifikation!  Fehler in cc"
-
-#~ msgid "%s\n"
-#~ msgstr "%s\n"
-
-#~ msgid "spec failure: '%%*' has not been initialized by pattern match"
-#~ msgstr "Spezifikationsfehler: »%%*« wurde nicht durch Mustererkennung initialisiert"
-
-#~ msgid "warning: use of obsolete %%[ operator in specs"
-#~ msgstr "Warnung: Verwendung des veralteten Operators %%[ in Spezifikation"
-
-#~ msgid "Processing spec %c%s%c, which is '%s'\n"
-#~ msgstr "Verarbeite Spezifikation %c%s%c, welche »%s« ist\n"
-
-#~ msgid "spec failure: unrecognized spec option '%c'"
-#~ msgstr "Spezifikationsfehler: nicht erkannte Option »%c«"
-
-#~ msgid "unknown spec function `%s'"
-#~ msgstr "unbekannte Spezifikationsfunktion »%s«"
-
-#~ msgid "error in args to spec function `%s'"
-#~ msgstr "Fehler in Argumenten für Spezifikationsfunktion »%s«"
-
-#~ msgid "malformed spec function name"
-#~ msgstr "schlechter Name für Spezifikationsfunktion"
-
-#~ msgid "no arguments for spec function"
-#~ msgstr "keine Argumente für Spezifikationsfunktion"
-
-#~ msgid "malformed spec function arguments"
-#~ msgstr "schlechte Argumente für Spezifikationsfunktion"
-
-#~ msgid "spec failure: more than one arg to SYSROOT_SUFFIX_SPEC."
-#~ msgstr "Spezifikationsfehler: mehr als ein Argument für SYSROOT_SUFFIX_SPEC."
-
-#~ msgid "spec failure: more than one arg to SYSROOT_HEADERS_SUFFIX_SPEC."
-#~ msgstr "Spezifikationsfehler: mehr als ein Argument für SYSROOT_HEADERS_SUFFIX_SPEC."
-
-#~ msgid "unrecognized option `-%s'"
-#~ msgstr "nicht erkannte Option »-%s«"
-
-#~ msgid "install: %s%s\n"
-#~ msgstr "installiere: %s%s\n"
-
-#~ msgid "programs: %s\n"
-#~ msgstr "Programme: %s\n"
-
-#~ msgid "libraries: %s\n"
-#~ msgstr "Bibliotheken: %s\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "For bug reporting instructions, please see:\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Zum Einsenden von Fehlerberichten (auf Englisch) lesen Sie bitte die\n"
-#~ "folgenden Hinweise; Fehler in der deutschen Übersetzung sind an de@li.org\n"
-#~ "zu melden:\n"
-
-#~ msgid "Configured with: %s\n"
-#~ msgstr "Konfiguriert mit: %s\n"
-
-#~ msgid "Thread model: %s\n"
-#~ msgstr "Thread-Modell: %s\n"
-
-#~ msgid "gcc version %s\n"
-#~ msgstr "gcc-Version %s\n"
-
-#~ msgid "gcc driver version %s executing gcc version %s\n"
-#~ msgstr "gcc-Treiberversion %s führt gcc Version %s aus\n"
-
-#~ msgid "no input files"
-#~ msgstr "keine Eingabedateien"
-
-#~ msgid "%s: linker input file unused because linking not done"
-#~ msgstr "%s: Eingabedateien des Binders unbenutzt, da keine Bindung geschieht"
-
-#~ msgid "cannot specify -o with -c or -S and multiple languages"
-#~ msgstr "-o kann nicht mit -c oder -S und mehreren Sprachen angegeben werden"
-
-#~ msgid "%s: %s compiler not installed on this system"
-#~ msgstr "%s: %s-Compiler ist auf diesem System nicht installiert"
-
-#~ msgid "language %s not recognized"
-#~ msgstr "Sprache %s nicht erkannt"
-
-#~ msgid "internal gcc abort"
-#~ msgstr "interner Abruch des gcc"
-
-#~ msgid "Internal gcov abort.\n"
-#~ msgstr "Interner gcov-Abbruch.\n"
-
-#~ msgid ""
-#~ "Usage: gcov [OPTION]... SOURCEFILE\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Aufruf: gcov [OPTION]... QUELLDATEI\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "Print code coverage information.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Information zur Code-Überdeckung ausgeben.\n"
-#~ "\n"
-
-#~ msgid "  -h, --help                      Print this help, then exit\n"
-#~ msgstr "  -h, --help                      Diese Hilfe anzeigen\n"
-
-#~ msgid "  -v, --version                   Print version number, then exit\n"
-#~ msgstr "  -v, --version                   Versionsnummer anzeigen\n"
-
-#~ msgid "  -a, --all-blocks                Show information for every basic block\n"
-#~ msgstr "  -a, --all-blocks                Informationen für jeden Basisblock zeigen\n"
-
-#~ msgid "  -b, --branch-probabilities      Include branch probabilities in output\n"
-#~ msgstr "  -b, --branch-probabilities      Zweigwahrscheinlichkeiten in Ausgabe aufnehmen\n"
-
-#~ msgid ""
-#~ "  -c, --branch-counts             Given counts of branches taken\n"
-#~ "                                    rather than percentages\n"
-#~ msgstr "  -c, --branch-counts             Angegebene Zweigzahlen statt Anteilen nehmen\n"
-
-#~ msgid "  -n, --no-output                 Do not create an output file\n"
-#~ msgstr "  -n, --no-output                 Keine Ausgabedatei erzeugen\n"
-
-#~ msgid ""
-#~ "  -l, --long-file-names           Use long output file names for included\n"
-#~ "                                    source files\n"
-#~ msgstr ""
-#~ "  -l, --long-file-names           Lange Dateinamen für Ausgabedateien für\n"
-#~ "                                    eingefügte Quelldateien verwenden\n"
-
-#~ msgid "  -f, --function-summaries        Output summaries for each function\n"
-#~ msgstr "  -f, --function-summaries        Ausgabezusammenfassungen für jede Funktion\n"
-
-#~ msgid "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n"
-#~ msgstr ""
-#~ "  -o, --object-directory DIR|FILE In DIR oder aufgerufener Datei FILE nach\n"
-#~ "                                  Objektdateien suchen\n"
-
-#~ msgid "  -p, --preserve-paths            Preserve all pathname components\n"
-#~ msgstr "  -p, --preserve-paths            Alle Pfadnamenskomponenten bewahren\n"
-
-#~ msgid "  -u, --unconditional-branches    Show unconditional branch counts too\n"
-#~ msgstr "  -u, --unconditional-branches    Auch unbedingte Zweigzähler zeigen\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "For bug reporting instructions, please see:\n"
-#~ "%s.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Zum Einsenden von Fehlerberichten (auf Englisch) lesen Sie bitte die Hinweise in:\n"
-#~ "%s.\n"
-#~ "Fehler in der deutschen Übersetzung sind an de@li.org zu melden.\n"
-
-#~ msgid "gcov (GCC) %s\n"
-#~ msgstr "gcov (GCC) %s\n"
-
-#~ msgid "Copyright (C) 2003 Free Software Foundation, Inc.\n"
-#~ msgstr "Copyright © 2003 Free Software Foundation, Inc.\n"
-
-#~ msgid ""
-#~ "This is free software; see the source for copying conditions.\n"
-#~ "There is NO warranty; not even for MERCHANTABILITY or \n"
-#~ "FITNESS FOR A PARTICULAR PURPOSE.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Dies ist freie Software; die Kopierbedingungen stehen in den Quellen. Es\n"
-#~ "gibt KEINE Garantie; auch nicht für VERKAUFBARKEIT oder FÜR SPEZIELLE ZWECKE.\n"
-#~ "\n"
-
-#~ msgid "%s:no functions found\n"
-#~ msgstr "%s: keine Funktionen gefunden\n"
-
-#~ msgid "\n"
-#~ msgstr "\n"
-
-#~ msgid "%s:creating `%s'\n"
-#~ msgstr "%s: Erzeugen von »%s«\n"
-
-#~ msgid "%s:error writing output file `%s'\n"
-#~ msgstr "%s: Fehler beim Schreiben der Ausgabedatei »%s«\n"
-
-#~ msgid "%s:could not open output file `%s'\n"
-#~ msgstr "%s: Ausgabedatei %s konnte nicht geöffnet werden\n"
-
-#~ msgid "%s:cannot open graph file\n"
-#~ msgstr "%s: Graph-Datei kann nicht geöffnet werden\n"
-
-#~ msgid "%s:not a gcov graph file\n"
-#~ msgstr "%s: keine gcov-Graph-Datei\n"
-
-#~ msgid "%s:version `%.4s', prefer `%.4s'\n"
-#~ msgstr "%s: Version »%.4s«, aber »%.4s« wird bevorzugt\n"
-
-#~ msgid "%s:already seen blocks for `%s'\n"
-#~ msgstr "%s: bereits gesehene Blöcke für »%s«\n"
-
-#~ msgid "%s:corrupted\n"
-#~ msgstr "%s: beschädigt\n"
-
-#~ msgid "%s:cannot open data file\n"
-#~ msgstr "%s: kann nicht geöffnet werden\n"
-
-#~ msgid "%s:not a gcov data file\n"
-#~ msgstr "%s: keine gcov-Datei\n"
-
-#~ msgid "%s:version `%.4s', prefer version `%.4s'\n"
-#~ msgstr "%s: Version »%.4s«, aber Version »%.4s« wird bevorzugt\n"
-
-#~ msgid "%s:stamp mismatch with graph file\n"
-#~ msgstr "%s: Marke passt nicht zur Graph-Datei\n"
-
-#~ msgid "%s:unknown function `%u'\n"
-#~ msgstr "%s: unbekannte Funktion »%u«\n"
-
-#~ msgid "%s:profile mismatch for `%s'\n"
-#~ msgstr "%s: Profil passt nicht für `%s'\n"
-
-#~ msgid "%s:overflowed\n"
-#~ msgstr "%s: übergelaufen\n"
-
-#~ msgid "%s:`%s' lacks entry and/or exit blocks\n"
-#~ msgstr "%s: Eintrag und/oder Exit-Blöcke fehlen in »%s«\n"
-
-#~ msgid "%s:`%s' has arcs to entry block\n"
-#~ msgstr "%s: »%s« hat Bögen zum Eintrittsblock\n"
-
-#~ msgid "%s:`%s' has arcs from exit block\n"
-#~ msgstr "%s: »%s« hat Bögen vom Eintrittsblock\n"
-
-#~ msgid "%s:graph is unsolvable for `%s'\n"
-#~ msgstr "%s: Graph ist für »%s« unlösbar\n"
-
-#~ msgid "%s `%s'\n"
-#~ msgstr "%s: »%s«\n"
-
-#~ msgid "Lines executed:%s of %d\n"
-#~ msgstr "%s von %d Zeilen ausgeführt\n"
-
-#~ msgid "No executable lines"
-#~ msgstr "Keine ausführbaren Zeilen"
-
-#~ msgid "Branches executed:%s of %d\n"
-#~ msgstr "%s von %d Zweigen ausgeführt\n"
-
-#~ msgid "Taken at least once:%s of %d\n"
-#~ msgstr "%s von %d Zweigen mindestens einmal genommen\n"
-
-#~ msgid "No branches\n"
-#~ msgstr "Keine Zweige\n"
-
-#~ msgid "Calls executed:%s of %d\n"
-#~ msgstr "%s von %d Aufrufe ausgeführt\n"
-
-#~ msgid "No calls\n"
-#~ msgstr "Keine Aufrufe\n"
-
-#~ msgid "%s:no lines for `%s'\n"
-#~ msgstr "%s: keine Zeilen für »%s«\n"
-
-#~ msgid "call   %2d returned %s\n"
-#~ msgstr "Aufruf %2d gab %s zurück\n"
-
-#~ msgid "call   %2d never executed\n"
-#~ msgstr "Aufruf %2d niemals ausgeführt\n"
-
-#~ msgid "branch %2d taken %s%s\n"
-#~ msgstr "Zweig %2d wurde genommen: %s%s\n"
-
-#~ msgid "branch %2d never executed\n"
-#~ msgstr "Zweig %2d niemals ausgeführt\n"
-
-#~ msgid "unconditional %2d taken %s\n"
-#~ msgstr "unbedingtes %2d, genommen: %s\n"
-
-#~ msgid "unconditional %2d never executed\n"
-#~ msgstr "unbedingtes %2d niemals ausgeführt\n"
-
-#~ msgid "%s:cannot open source file\n"
-#~ msgstr "%s: Quelldatei kann nicht geöffnet werden\n"
-
-#~ msgid "%s:source file is newer than graph file `%s'\n"
-#~ msgstr "%s: Quelldatei ist neuer als Graph-Datei »%s«\n"
-
-#~ msgid "GCSE disabled"
-#~ msgstr "GCSE ausgeschaltet"
-
-#~ msgid "NULL pointer checks disabled"
-#~ msgstr "NULL-Zeiger Tests ausgeschaltet"
-
-#~ msgid "jump bypassing disabled"
-#~ msgstr "Sprungumgehungen ausgeschaltet"
-
-#~ msgid "%s: %d basic blocks and %d edges/basic block"
-#~ msgstr "%s: %d Basis-Blöcke und %d Kanten/Basis-Blöcke"
-
-#~ msgid "%s: %d basic blocks and %d registers"
-#~ msgstr "%s: %d Basis-Blöcke und %d Register"
-
-#~ msgid "can't write PCH file: %m"
-#~ msgstr "PCH-Datei kann nicht geschrieben werden: %m"
-
-#~ msgid "can't get position in PCH file: %m"
-#~ msgstr "Position in PCH-Datei kann nicht ermittelt werden: %m"
-
-#~ msgid "can't write padding to PCH file: %m"
-#~ msgstr "Auffüllung für PCH-Datei kann nicht geschrieben werden: %m"
-
-#~ msgid "can't read PCH file: %m"
-#~ msgstr "PCH-Datei kann nicht gelesen werden: %m"
-
-#~ msgid "had to relocate PCH"
-#~ msgstr "PCH musste verschoben werden"
-
-#~ msgid "open /dev/zero: %m"
-#~ msgstr "/dev/zero öffnen: %m"
-
-#~ msgid "can't write PCH file"
-#~ msgstr "PCH-Datei kann nicht geschrieben werden"
-
-#~ msgid "Generating PCH files is not supported when using ggc-simple.c"
-#~ msgstr "Das Erzeugen von PCH-Dateien wird bei Verwendung von ggc-simple.c nicht unterstützt"
-
-#~ msgid "%s cannot be used in asm here"
-#~ msgstr "%s kann nicht hier in »asm« verwendet werden"
-
-#~ msgid "can't open %s: %m"
-#~ msgstr "%s kann nicht geöffnet werden: %m"
-
-#~ msgid "fix_sched_param: unknown param: %s"
-#~ msgstr "fix_sched_param: unbekannter Parameter: %s"
-
-#~ msgid "function cannot be inline"
-#~ msgstr "Funktion kann nicht »inline« sein"
-
-#~ msgid "varargs function cannot be inline"
-#~ msgstr "Varargs-Funktion kann nicht »inline« sein"
-
-#~ msgid "function using alloca cannot be inline"
-#~ msgstr "alloca benutzende Funktion kann nicht »inline« sein"
-
-#~ msgid "function using longjmp cannot be inline"
-#~ msgstr "longjmp benutzende Funktion kann nicht »inline« sein"
-
-#~ msgid "function using setjmp cannot be inline"
-#~ msgstr "setjmp benutzende Funktion kann nicht »inline« sein"
-
-#~ msgid "function uses __builtin_eh_return"
-#~ msgstr "Funktion verwendet __builtin_eh_return"
-
-#~ msgid "function with nested functions cannot be inline"
-#~ msgstr "Funktion mit geschachtelten Funktionen kann nicht »inline« sein"
-
-#~ msgid "function with label addresses used in initializers cannot inline"
-#~ msgstr "Funktion mit Markenadressen in Initialisierungen kann nicht »inline« sein"
-
-#~ msgid "function too large to be inline"
-#~ msgstr "Funktion zu groß um »inline« sein zu können"
-
-#~ msgid "no prototype, and parameter address used; cannot be inline"
-#~ msgstr "kein Prototyp, und Parameteradresse verwendet; kann nicht »inline« sein"
-
-#~ msgid "inline functions not supported for this return value type"
-#~ msgstr "»inline«-Funktionen für diesen Rückgabetyp nicht unterstützt"
-
-#~ msgid "function with varying-size return value cannot be inline"
-#~ msgstr "Funktion mit Rückgabetyp variabler Größe kann nicht »inline« sein"
-
-#~ msgid "function with varying-size parameter cannot be inline"
-#~ msgstr "Funktion mit Parameter variabler Größe kann nicht »inline« sein"
-
-#~ msgid "function with transparent unit parameter cannot be inline"
-#~ msgstr "Funktion mit transparentem Einheiten-Parameter kann nicht »inline« sein"
-
-#~ msgid "function with computed jump cannot inline"
-#~ msgstr "Funktion mit berechnetem Sprung kann nicht »inline« sein"
-
-#~ msgid "function with nonlocal goto cannot be inline"
-#~ msgstr "Funktion mit nichtlokalem Goto kann nicht »inline« sein"
-
-#~ msgid "function with target specific attribute(s) cannot be inlined"
-#~ msgstr "Funktion mit zielspezifischen Attributen kann nicht »inline« sein"
-
-#~ msgid "%Hwill never be executed"
-#~ msgstr "%Hwird niemals ausgeführt"
-
-#~ msgid "This switch lacks documentation"
-#~ msgstr "Dieser Schalter ist undokumentiert"
-
-#~ msgid "command line option \"%s\" is valid for %s but not for %s"
-#~ msgstr "Kommandozeilenoption \"%s\" ist gültig für %s, aber nicht für %s"
-
-#~ msgid "missing argument to \"%s\""
-#~ msgstr "fehlendes Argument für »%s«"
-
-#~ msgid "argument to \"%s\" should be a non-negative integer"
-#~ msgstr "Argument von »%s« sollte eine nicht-negative Ganzzahl sein"
-
-#~ msgid "unrecognized command line option \"%s\""
-#~ msgstr "nicht erkannte Kommandozeilenoption »%s«"
-
-#~ msgid "-Wuninitialized is not supported without -O"
-#~ msgstr "-Wuninitialized wird nicht ohne -O unterstützt"
-
-#~ msgid "unrecognized register name \"%s\""
-#~ msgstr "unbekannter Registername: \"%s\""
-
-#~ msgid "unknown tls-model \"%s\""
-#~ msgstr "unbekanntes tls-Modell »%s«"
-
-#~ msgid "-fwritable-strings is deprecated; see documentation for details"
-#~ msgstr "-fwritable-strings veraltet, schauen Sie in die Dokumentation für Details"
-
-#~ msgid "%s: --param arguments should be of the form NAME=VALUE"
-#~ msgstr "%s: »--param«-Argumente sollten von der Form NAME=VALUE sein"
-
-#~ msgid "invalid --param value `%s'"
-#~ msgstr "ungültiger Wert für --param: »%s«"
-
-#~ msgid "target system does not support debug output"
-#~ msgstr "Zielsystem unterstützt nicht Testausgaben"
-
-#~ msgid "debug format \"%s\" conflicts with prior selection"
-#~ msgstr "Testformat »%s« steht in Konflikt mit vorheriger Auswahl"
-
-#~ msgid "unrecognised debug output level \"%s\""
-#~ msgstr "Testausgabestufe »%s« nicht erkannt"
-
-#~ msgid "debug output level %s is too high"
-#~ msgstr "Testausgabestufe »%s« ist zu groß"
-
-#~ msgid "The following options are language-independent:\n"
-#~ msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
-
-#~ msgid ""
-#~ "The %s front end recognizes the following options:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Das %s-Frontend erkennt die folgenden Optionen:\n"
-#~ "\n"
-
-#~ msgid "The --param option recognizes the following as parameters:\n"
-#~ msgstr "Die Option »--param« erkennt die folgenden Parameter:\n"
-
-#~ msgid "invalid parameter `%s'"
-#~ msgstr "ungültiger Parameter »%s«"
-
-#~ msgid "corrupted profile info: run_max * runs < sum_max"
-#~ msgstr "beschädigte Profilinformation: run_max * runs < sum_max"
-
-#~ msgid "corrupted profile info: sum_all is smaller than sum_max"
-#~ msgstr "beschädigte Profilinformation: sum_all ist kleiner als sum_max"
-
-#~ msgid "corrupted profile info: edge from %i to %i exceeds maximal count"
-#~ msgstr "Info zum beschädigten Profil: Kante von %i nach %i überschreitet Höchstzahl"
-
-#~ msgid "corrupted profile info: number of iterations for basic block %d thought to be %i"
-#~ msgstr "Info zum beschädigten Profil: Anzahl der Durchläufe des Basisblocks %d sollte %i sein"
-
-#~ msgid "corrupted profile info: number of executions for edge %d-%d thought to be %i"
-#~ msgstr "Info zum beschädigten Profil: Anzahl der Ausführungen der Kante »%d-%d« sollte %i sein"
-
-#~ msgid "%s: internal abort\n"
-#~ msgstr "%s: interner Abbruch\n"
-
-#~ msgid "%s: error writing file `%s': %s\n"
-#~ msgstr "%s: Fehler beim Schreiben der Datei »%s«: %s\n"
-
-#~ msgid "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n"
-#~ msgstr "%s: Aufruf '%s [ -VqfnkN ] [ -i <istring> ] [ Dateiname ... ]'\n"
-
-#~ msgid "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n"
-#~ msgstr "%s: Aufruf '%s [ -VqfnkNlgC ] [ -B <VerzName> ] [ Dateiname ... ]'\n"
-
-#~ msgid "%s: warning: no read access for file `%s'\n"
-#~ msgstr "%s: Warnung: kein Leserecht für Datei »%s«\n"
-
-#~ msgid "%s: warning: no write access for file `%s'\n"
-#~ msgstr "%s: Warnung: kein Schreibrecht für Datei »%s«\n"
-
-#~ msgid "%s: warning: no write access for dir containing `%s'\n"
-#~ msgstr "%s: Warnung: kein Schreibrecht für Verzeichnis von »%s«\n"
-
-#~ msgid "%s: invalid file name: %s\n"
-#~ msgstr "%s: ungültiger Dateiname: %s\n"
-
-#~ msgid "%s: %s: can't get status: %s\n"
-#~ msgstr "%s: %s: kann Status nicht ermitteln: %s\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: fatal error: aux info file corrupted at line %d\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: kritischer Fehler: Datei mit Hilfsinformationen beschädigt in Zeile %d\n"
-
-#~ msgid "%s:%d: declaration of function `%s' takes different forms\n"
-#~ msgstr "%s:%d: Deklaration der Funktion »%s« nimmt verschiedene Formen an\n"
-
-#~ msgid "%s: compiling `%s'\n"
-#~ msgstr "%s: »%s« wird kompiliert\n"
-
-#~ msgid "%s: wait: %s\n"
-#~ msgstr "%s: warten: %s\n"
-
-#~ msgid "%s: subprocess got fatal signal %d\n"
-#~ msgstr "%s: Subprozess empfing kritischen Fehler %d\n"
-
-#~ msgid "%s: %s exited with status %d\n"
-#~ msgstr "%s: %s beendet mit Status %d\n"
-
-#~ msgid "%s: warning: missing SYSCALLS file `%s'\n"
-#~ msgstr "%s: Warnung: SYSCALLS-Datei »%s« fehlt\n"
-
-#~ msgid "%s: can't read aux info file `%s': %s\n"
-#~ msgstr "%s: Datei mit Hilfsinformationen »%s« kann nicht gelesen werden: %s\n"
-
-#~ msgid "%s: can't get status of aux info file `%s': %s\n"
-#~ msgstr "%s: Status der Datei mit Hilfsinformationen »%s« kann nicht ermittelt werden: %s\n"
-
-#~ msgid "%s: can't open aux info file `%s' for reading: %s\n"
-#~ msgstr "%s: Datei mit Hilfsinformationen »%s« kann nicht zum Lesen geöffnet werden: %s\n"
-
-#~ msgid "%s: error reading aux info file `%s': %s\n"
-#~ msgstr "%s: Fehler beim Lesen der Datei mit Hilfsinformationen »%s«: %s\n"
-
-#~ msgid "%s: error closing aux info file `%s': %s\n"
-#~ msgstr "%s: Fehler beim Schließen der Datei mit Hilfsinformationen »%s«: %s\n"
-
-#~ msgid "%s: can't delete aux info file `%s': %s\n"
-#~ msgstr "%s: Fehler beim Löschen der Datei mit Hilfsinformationen »%s«: %s\n"
-
-#~ msgid "%s: can't delete file `%s': %s\n"
-#~ msgstr "%s: Fehler beim Löschen der Datei »%s«: %s\n"
-
-#~ msgid "%s: warning: can't rename file `%s' to `%s': %s\n"
-#~ msgstr "%s: Warnung: Fehler beim Umbenennen der Datei »%s« in »%s«: %s\n"
-
-#~ msgid "%s: conflicting extern definitions of '%s'\n"
-#~ msgstr "%s: externe Definitionen von »%s« stehen in Konflikt\n"
-
-#~ msgid "%s: declarations of '%s' will not be converted\n"
-#~ msgstr "%s: Deklarationen von »%s« werden nicht konvertiert\n"
-
-#~ msgid "%s: conflict list for '%s' follows:\n"
-#~ msgstr "%s: Konfliktliste für »%s« folgt:\n"
-
-#~ msgid "%s: warning: using formals list from %s(%d) for function `%s'\n"
-#~ msgstr "%s: Warnung: Formalliste von %s(%d) für Funktion »%s« verwendet\n"
-
-#~ msgid "%s: %d: `%s' used but missing from SYSCALLS\n"
-#~ msgstr "%s: %d: »%s« verwendet, fehlt jedoch in SYSCALLS\n"
-
-#~ msgid "%s: %d: warning: no extern definition for `%s'\n"
-#~ msgstr "%s: %d: Warnung: keine externe Definition für »%s«\n"
-
-#~ msgid "%s: warning: no static definition for `%s' in file `%s'\n"
-#~ msgstr "%s: Warnung: keine statische Definition für »%s« in Datei »%s«\n"
-
-#~ msgid "%s: multiple static defs of `%s' in file `%s'\n"
-#~ msgstr "%s: mehrere statische Definitionen von »%s« in Datei »%s«\n"
-
-#~ msgid "%s: %d: warning: source too confusing\n"
-#~ msgstr "%s: %d: Warnung: Quelle zu verworren\n"
-
-#~ msgid "%s: %d: warning: varargs function declaration not converted\n"
-#~ msgstr "%s: %d: Warnung: Funktionsdeklaration mit variablen Argumenten nicht konvertiert\n"
-
-#~ msgid "%s: declaration of function `%s' not converted\n"
-#~ msgstr "%s: Deklaration der Funktion »%s« nicht konvertiert\n"
-
-#~ msgid "%s: warning: too many parameter lists in declaration of `%s'\n"
-#~ msgstr "%s: Warnung: zu viele Parameterlisten in Deklaration von »%s«\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: warning: too few parameter lists in declaration of `%s'\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: Warnung: zu wenige Parameterlisten in Deklaration von »%s«\n"
-
-#~ msgid "%s: %d: warning: found `%s' but expected `%s'\n"
-#~ msgstr "%s: %d: Warnung: »%s« gefunden, aber »%s« erwartet\n"
-
-#~ msgid "%s: local declaration for function `%s' not inserted\n"
-#~ msgstr "%s: lokale Deklaration für Funktion »%s« nicht eingefügt\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: %d: warning: can't add declaration of `%s' into macro call\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: %d: Warnung: kann Deklaration von »%s« nicht zu Makro-Aufruf hinzufügen\n"
-
-#~ msgid "%s: global declarations for file `%s' not inserted\n"
-#~ msgstr "%s: globale Deklarationen für Datei »%s« wurden nicht eingefügt\n"
-
-#~ msgid "%s: definition of function `%s' not converted\n"
-#~ msgstr "%s: Definition der Funktion »%s« nicht konvertiert\n"
-
-#~ msgid "%s: %d: warning: definition of %s not converted\n"
-#~ msgstr "%s: %d: Warnung: Definition von %s nicht konvertiert\n"
-
-#~ msgid "%s: found definition of `%s' at %s(%d)\n"
-#~ msgstr "%s: Definition von »%s« an Stelle %s(%d) gefunden\n"
-
-#~ msgid "%s: %d: warning: `%s' excluded by preprocessing\n"
-#~ msgstr "%s: %d: Warnung: »%s« durch Präprozessor ausgeschlossen\n"
-
-#~ msgid "%s: function definition not converted\n"
-#~ msgstr "%s: Funktionsdefinition nicht konvertiert\n"
-
-#~ msgid "%s: `%s' not converted\n"
-#~ msgstr "%s: »%s« nicht konvertiert\n"
-
-#~ msgid "%s: would convert file `%s'\n"
-#~ msgstr "%s: würde Datei »%s« konvertieren\n"
-
-#~ msgid "%s: converting file `%s'\n"
-#~ msgstr "%s: Datei »%s« wird konvertiert\n"
-
-#~ msgid "%s: can't get status for file `%s': %s\n"
-#~ msgstr "%s: Status der Datei »%s« kann nicht ermittelt werden: %s\n"
-
-#~ msgid "%s: can't open file `%s' for reading: %s\n"
-#~ msgstr "%s: Datei »%s« kann nicht zum Schreiben geöffnet werden: %s\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "%s: error reading input file `%s': %s\n"
-#~ msgstr ""
-#~ "\n"
-#~ "%s: Fehler beim Lesen der Eingabedatei »%s«: %s\n"
-
-#~ msgid "%s: can't create/open clean file `%s': %s\n"
-#~ msgstr "%s: die leere Datei »%s« kann nicht erzeugt oder geöffnet werden: %s\n"
-
-#~ msgid "%s: warning: file `%s' already saved in `%s'\n"
-#~ msgstr "%s: Warnung: Datei »%s« bereits in »%s« gesichert\n"
-
-#~ msgid "%s: can't link file `%s' to `%s': %s\n"
-#~ msgstr "%s: die Datei »%s« kann nicht mit »%s« verbunden werden (Link): %s\n"
-
-#~ msgid "%s: can't create/open output file `%s': %s\n"
-#~ msgstr "%s: die Ausgabedatei »%s« kann nicht erzeugt oder geöffnet werden: %s\n"
-
-#~ msgid "%s: can't change mode of file `%s': %s\n"
-#~ msgstr "%s: Rechte der Datei »%s« können nicht geändert werden: %s\n"
-
-#~ msgid "%s: cannot get working directory: %s\n"
-#~ msgstr "%s: aktuelles Verzeichnis kann nicht ermittelt werden: %s\n"
-
-#~ msgid "%s: input file names must have .c suffixes: %s\n"
-#~ msgstr "%s: Namen der Eingabedateien müssen Suffix ».c« haben: %s\n"
-
-#~ msgid "Didn't find a coloring.\n"
-#~ msgstr "Färbung konnte nicht gefunden werden.\n"
-
-#~ msgid "output constraint %d must specify a single register"
-#~ msgstr "Ausgabebedingung %d muss ein einzelnes Register angeben"
-
-#~ msgid "output constraint %d cannot be specified together with \"%s\" clobber"
-#~ msgstr "Ausgabebedingung %d kann nicht zusammen mit »%s« angegeben werden"
-
-#~ msgid "output regs must be grouped at top of stack"
-#~ msgstr "Ausgaberegister müssen oben auf dem Stack gruppiert werden"
-
-#~ msgid "implicitly popped regs must be grouped at top of stack"
-#~ msgstr "implizit geholte (»pop«) Register müssen oben auf dem Stack gruppiert werden"
-
-#~ msgid "output operand %d must use `&' constraint"
-#~ msgstr "Ausgabeoperand %d muss »&«-Bedingung benutzen"
-
-#~ msgid "can't use '%s' as a %s register"
-#~ msgstr "»%s« kann nicht als ein %s-Register verwendet werden"
-
-#~ msgid "unknown register name: %s"
-#~ msgstr "unbekannter Registername: %s"
-
-#~ msgid "global register variable follows a function definition"
-#~ msgstr "globale Registervariable folgt einer Funktionsdefinition"
-
-#~ msgid "register used for two global register variables"
-#~ msgstr "Register für zwei globale Registervariablen verwendet"
-
-#~ msgid "call-clobbered register used for global register variable"
-#~ msgstr "für Ruf vorgesehenes Register wurde für globale Registervariable verwendet"
-
-#~ msgid "validate_value_data: [%u] Bad next_regno for empty chain (%u)"
-#~ msgstr "validate_value_data: [%u] Falsches next_regno für leere Kette (%u)"
-
-#~ msgid "validate_value_data: Loop in regno chain (%u)"
-#~ msgstr "validate_value_data: Zyklus in regno-Kette (%u)"
-
-#~ msgid "validate_value_data: [%u] Bad oldest_regno (%u)"
-#~ msgstr "validate_value_data: [%u] Falsches oldest_regno (%u)"
-
-#~ msgid "validate_value_data: [%u] Non-empty reg in chain (%s %u %i)"
-#~ msgstr "validate_value_data: [%u] Nicht leeres Register in Kette (%s %u %i)"
-
-#~ msgid "cannot reload integer constant operand in `asm'"
-#~ msgstr "Ganzzahlkonstantenoperand kann in »asm« nicht neu geladen werden"
-
-#~ msgid "impossible register constraint in `asm'"
-#~ msgstr "unmögliche Registerbedingung in »asm«"
-
-#~ msgid "`&' constraint used with no register class"
-#~ msgstr "»&«-Bedingung ohne Registerklasse verwendet"
-
-#~ msgid "unable to generate reloads for:"
-#~ msgstr "Neuladungen konnten nicht generiert werden für:"
-
-#~ msgid "inconsistent operand constraints in an `asm'"
-#~ msgstr "inkonsistente Operandenbedingungen in einem »asm«"
-
-#~ msgid "frame size too large for reliable stack checking"
-#~ msgstr "Rahmengröße zu groß für zuverlässige Kellerüberprüfung"
-
-#~ msgid "try reducing the number of local variables"
-#~ msgstr "versuchen Sie, die Anzahl der lokalen Variablen zu verringern"
-
-#~ msgid "can't find a register in class `%s' while reloading `asm'"
-#~ msgstr "in der Klasse »%s« konnte während des Neuladens von »asm« kein Register gefunden werden"
-
-#~ msgid "unable to find a register to spill in class `%s'"
-#~ msgstr "in Klasse »%s« konnte kein Register für Überlauf gefunden werden"
-
-#~ msgid "this is the insn:"
-#~ msgstr "dies ist das insn:"
-
-#~ msgid "`asm' operand requires impossible reload"
-#~ msgstr "»asm«-Operand erfordert unmögliches Neuladen"
-
-#~ msgid "could not find a spill register"
-#~ msgstr "es konnte kein Überlaufregister gefunden werden"
-
-#~ msgid "`asm' operand constraint incompatible with operand size"
-#~ msgstr "»asm«-Operandenbedingung inkompatibel mit Operandengröße"
-
-#~ msgid "VOIDmode on an output"
-#~ msgstr "VOIDmode bei einer Ausgabe"
-
-#~ msgid "output operand is constant in `asm'"
-#~ msgstr "Ausgabeoperand ist in »asm« konstant"
-
-#~ msgid "unrecognizable insn:"
-#~ msgstr "unerkennbares insn:"
-
-#~ msgid "insn does not satisfy its constraints:"
-#~ msgstr "insn erfüllt nicht seine Bedingungen:"
-
-#~ msgid "RTL check: access of elt %d of `%s' with last elt %d in %s, at %s:%d"
-#~ msgstr "RTL-Überprüfung: Zugriff von Elt %d von »%s« mit letztem Elt %d in %s, bei %s:%d"
-
-#~ msgid "RTL check: expected elt %d type '%c', have '%c' (rtx %s) in %s, at %s:%d"
-#~ msgstr "RTL-Überprüfung: Elt-%d-Typ %c erwartet, haben Typ %c (rtx %s) in %s, bei %s:%d"
-
-#~ msgid "RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s) in %s, at %s:%d"
-#~ msgstr "RTL-Überprüfung: Elt-%d-Typ %c oder %c erwartet, haben Typ %c (rtx %s) in %s, bei %s:%d"
-
-#~ msgid "RTL check: expected code `%s', have `%s' in %s, at %s:%d"
-#~ msgstr "RTL-Überprüfung: Code »%s« erwartet, haben »%s« in %s, bei %s:%d"
-
-#~ msgid "RTL check: expected code `%s' or `%s', have `%s' in %s, at %s:%d"
-#~ msgstr "RTL-Überprüfung: Code »%s« oder »%s« erwartet, haben »%s« in %s, bei %s:%d"
-
-#~ msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
-#~ msgstr "RTL-Überprüfung: Zugriff von Elt %d von Vektor mit letztem Elt %d in %s, bei %s:%d"
-
-#~ msgid "RTL flag check: %s used with unexpected rtx code `%s' in %s, at %s:%d"
-#~ msgstr "RTL-Kennzeichenüberprüfung: %s mit unerwartetem RTX-Code »%s« in %s bei %s:%d verwendet"
-
-#~ msgid "jump to `%s' invalidly jumps into binding contour"
-#~ msgstr "Sprung zu »%s« springt ungültig in bindenden Querschnitt"
-
-#~ msgid "%Jlabel '%D' used before containing binding contour"
-#~ msgstr "%JMarke »%D« verwendet vor enthaltendem bindenden Querschnitt"
-
-#~ msgid "output operand constraint lacks `='"
-#~ msgstr "Bedingung des Ausgabeoperanden erfordert »=«"
-
-#~ msgid "output constraint `%c' for operand %d is not at the beginning"
-#~ msgstr "Ausgabebedingung »%c« für Operand %d steht nicht am Anfang"
-
-#~ msgid "operand constraint contains incorrectly positioned '+' or '='"
-#~ msgstr "Operandenbedingung enthält falsch positioniertes »+« oder »=«"
-
-#~ msgid "`%%' constraint used with last operand"
-#~ msgstr "»%%«-Bedingung mit letztem Operanden verwendet"
-
-#~ msgid "matching constraint not valid in output operand"
-#~ msgstr "dazu passende Bedingung in Ausgabeoperanden ungültig"
-
-#~ msgid "read-write constraint does not allow a register"
-#~ msgstr "Schreib- und Lesebeschränkungen erlauben kein Register"
-
-#~ msgid "input operand constraint contains `%c'"
-#~ msgstr "Bedingung für Eingabeoperanden enthält »%c«"
-
-#~ msgid "matching constraint references invalid operand number"
-#~ msgstr "dazu passende Bedingung referenziert ungültige Operandennummer"
-
-#~ msgid "invalid punctuation `%c' in constraint"
-#~ msgstr "ungültiges Zeichen »%c« in Bedingung"
-
-#~ msgid "matching constraint does not allow a register"
-#~ msgstr "dazu passende Bedingung erlaubt kein Register"
-
-#~ msgid "asm-specifier for variable `%s' conflicts with asm clobber list"
-#~ msgstr "asm-Spezifizierer für Variable »%s« steht in Konflikt mit asm-Konflikt-Liste"
-
-#~ msgid "unknown register name `%s' in `asm'"
-#~ msgstr "unbekannter Registername »%s« in »asm«"
-
-#~ msgid "PIC register `%s' clobbered in `asm'"
-#~ msgstr "PIC-Register »%s« wird in »asm« zerstört"
-
-#~ msgid "more than %d operands in `asm'"
-#~ msgstr "mehr als %d Operanden in »asm«"
-
-#~ msgid "output number %d not directly addressable"
-#~ msgstr "Ausgabezahl %d nicht direkt adressierbar"
-
-#~ msgid "asm operand %d probably doesn't match constraints"
-#~ msgstr "asm-Operand %d passt wahrscheinlich nicht zu den Bedingungen"
-
-#~ msgid "use of memory input without lvalue in asm operand %d is deprecated"
-#~ msgstr "die Verwendung einer Speichereingabe ohne L-Wert in asm-Operand %d ist veraltet"
-
-#~ msgid "asm clobber conflict with output operand"
-#~ msgstr "asm-Konflikt mit Ausgabeoperand"
-
-#~ msgid "asm clobber conflict with input operand"
-#~ msgstr "asm-Konflikt mit Eingabeoperand"
-
-#~ msgid "too many alternatives in `asm'"
-#~ msgstr "zu viele Alternativen in »asm«"
-
-#~ msgid "operand constraints for `asm' differ in number of alternatives"
-#~ msgstr "Operandenbedingungen für »asm« unterscheiden sich in der Anzahl der Alternativen"
-
-#~ msgid "duplicate asm operand name '%s'"
-#~ msgstr "doppelter asm-Operandenname »%s«"
-
-#~ msgid "missing close brace for named operand"
-#~ msgstr "schließende geschweifte Klammer für benannten Operanden fehlt"
-
-#~ msgid "undefined named operand '%s'"
-#~ msgstr "benannter Operand »%s« ist nicht definiert"
-
-#~ msgid "%Hstatement with no effect"
-#~ msgstr "%HAnweisung ohne Effekt"
-
-#~ msgid "%Hvalue computed is not used"
-#~ msgstr "%Hberechneter Wert ist unbenutzt"
-
-#~ msgid "%Junused variable '%D'"
-#~ msgstr "%JVariable »%D« wird nicht verwendet"
-
-#~ msgid "%Hunreachable code at beginning of %s"
-#~ msgstr "%Hunerreichbarer Code am Anfang von %s"
-
-#~ msgid "enumeration value `%s' not handled in switch"
-#~ msgstr "Aufzählungswert »%s« wird nicht von switch behandelt"
-
-#~ msgid "case value `%ld' not in enumerated type"
-#~ msgstr "case-Wert »%ld« nicht in Aufzählungstyp"
-
-#~ msgid "case value `%ld' not in enumerated type `%s'"
-#~ msgstr "case-Wert »%ld« nicht in Aufzählungstyp »%s«"
-
-#~ msgid "switch missing default case"
-#~ msgstr "die Standardfallbehandlung in switch fehlt"
-
-#~ msgid "type size can't be explicitly evaluated"
-#~ msgstr "die Typgröße kann nicht explizit ausgewertet werden"
-
-#~ msgid "variable-size type declared outside of any function"
-#~ msgstr "Typ mit variabler Größe wurde außerhalb einer Funktion definiert"
-
-#~ msgid "%Jsize of '%D' is %d bytes"
-#~ msgstr "%JGröße von »%Ds« ist %d Bytes"
-
-#~ msgid "%Jsize of '%D' is larger than %d bytes"
-#~ msgstr "%JGröße von »%D« übertrifft %d Bytes"
-
-#~ msgid "%Jpacked attribute causes inefficient alignment for '%D'"
-#~ msgstr "%Jgepacktes Attribut verursacht ineffiziente Ausrichtung für »%D«"
-
-#~ msgid "%Jpacked attribute is unnecessary for '%D'"
-#~ msgstr "%Jgepacktes Attribut ist unnötig für »%D«"
-
-#~ msgid "%Jpadding struct to align '%D'"
-#~ msgstr "%Jstruct wird aufgefüllt, um »%D« auszurichten"
-
-#~ msgid "padding struct size to alignment boundary"
-#~ msgstr "struct wird bis zur Ausrichtungsgrenze aufgefüllt"
-
-#~ msgid "packed attribute causes inefficient alignment for `%s'"
-#~ msgstr "gepacktes Attribut verursacht ineffiziente Ausrichtung für »%s«"
-
-#~ msgid "packed attribute is unnecessary for `%s'"
-#~ msgstr "gepacktes Attribut ist unnötig für »%s«"
-
-#~ msgid "packed attribute causes inefficient alignment"
-#~ msgstr "gepacktes Attribut führt zu ineffizienter Ausrichtung"
-
-#~ msgid "packed attribute is unnecessary"
-#~ msgstr "gepacktes Attribut ist unnötig"
-
-#~ msgid "__builtin_saveregs not supported by this target"
-#~ msgstr "__builtin_saveregs wird von diesem Ziel nicht unterstützt"
-
-#~ msgid "cannot timevar_pop '%s' when top of timevars stack is '%s'"
-#~ msgstr "timevar_pop '%s' kann nicht ausgeführt werden, wenn am Anfang des timevars-Stacks '%s' steht"
-
-#~ msgid ""
-#~ "\n"
-#~ "Execution times (seconds)\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Ausführungszeiten (Sekunden)\n"
-
-#~ msgid " TOTAL                 :"
-#~ msgstr " GESAMT                :"
-
-#~ msgid "time in %s: %ld.%06ld (%ld%%)\n"
-#~ msgstr "Zeit in %s: %ld.%06ld (%ld%%)\n"
-
-#~ msgid "collect: reading %s\n"
-#~ msgstr "sammeln: %s lesen\n"
-
-#~ msgid "collect: recompiling %s\n"
-#~ msgstr "sammeln: %s neu kompilieren\n"
-
-#~ msgid "collect: tweaking %s in %s\n"
-#~ msgstr "sammeln: %s wird in %s eingestellt\n"
-
-#~ msgid "collect: relinking\n"
-#~ msgstr "sammeln: neu binden\n"
-
-#~ msgid "ld returned %d exit status"
-#~ msgstr "ld gab %d als Ende-Status zurück"
-
-#~ msgid "%s "
-#~ msgstr "%s "
-
-#~ msgid " %s"
-#~ msgstr " %s"
-
-#~ msgid "invalid option argument `%s'"
-#~ msgstr "ungültiges Optionsargument »%s«"
-
-#~ msgid "getting core file size maximum limit: %m"
-#~ msgstr "Kern-Dateigrößenlimit wird geholt: %m"
-
-#~ msgid "setting core file size limit to maximum: %m"
-#~ msgstr "Kern-Dateigrößenlimit wird gesetzt: %m"
-
-#~ msgid "%J'%F' used but never defined"
-#~ msgstr "%J»%F« verwendet, aber nirgendwo definiert"
-
-#~ msgid "%J'%F' declared `static' but never defined"
-#~ msgstr "%J»%F« als »static« deklariert, aber nirgendwo definiert"
-
-#~ msgid "%J'%D' defined but not used"
-#~ msgstr "%J»%D« definiert, aber nicht verwendet"
-
-#~ msgid "`%s' is deprecated (declared at %s:%d)"
-#~ msgstr "»%s« ist veraltet (deklariert bei %s:%d)"
-
-#~ msgid "`%s' is deprecated"
-#~ msgstr "»%s« ist veraltet"
-
-#~ msgid "type is deprecated (declared at %s:%d)"
-#~ msgstr "Typ ist veraltet (in %s:%d deklariert)"
-
-#~ msgid "type is deprecated"
-#~ msgstr "Typ ist veraltet"
-
-#~ msgid "invalid register name `%s' for register variable"
-#~ msgstr "ungültiger Registername »%s« für Registervariable"
-
-#~ msgid "branch target register load optimization is not intended to be run twice"
-#~ msgstr "Ladeoptimierung für Zweig-Zielregister ist nicht dafür vorgesehen, mehrfach zu laufen"
-
-#~ msgid ""
-#~ "\n"
-#~ "Target specific options:\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Zielspezifische Optionen:\n"
-
-#~ msgid "  -m%-23s [undocumented]\n"
-#~ msgstr "  -m%-23s [undokumentiert]\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "There are undocumented target specific options as well.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Es gibt auch undokumentierte zielspezifische Optionen.\n"
-
-#~ msgid "  They exist, but they are not documented.\n"
-#~ msgstr "  Es gibt sie, aber sie sind nicht dokumentiert.\n"
-
-#~ msgid "unrecognized gcc debugging option: %c"
-#~ msgstr "gcc-Debuggingoption nicht erkannt: %c"
-
-#~ msgid "invalid option `%s'"
-#~ msgstr "ungültige Option »%s«"
-
-#~ msgid ""
-#~ "%s%s%s version %s (%s)\n"
-#~ "%s\tcompiled by GNU C version %s.\n"
-#~ "%s%s%s version %s (%s) compiled by CC.\n"
-#~ msgstr ""
-#~ "%s%s%s Version %s (%s)\n"
-#~ "%s\tkompiliert von GNU-C-Version %s.\n"
-#~ "%s%s%s Version %s (%s) kompiliert von CC.\n"
-
-#~ msgid "%s%sGGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n"
-#~ msgstr "%s%sGGC-Heuristik: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n"
-
-#~ msgid "options passed: "
-#~ msgstr "angegebene Optionen: "
-
-#~ msgid "options enabled: "
-#~ msgstr "angeschaltete Optionen: "
-
-#~ msgid "can't open %s for writing: %m"
-#~ msgstr "Datei »%s« kann nicht zum Schreiben geöffnet werden: %m"
-
-#~ msgid "created and used with different settings of -fpic"
-#~ msgstr "erzeugt und mit anderen Einstellungen von -fpic verwendet"
-
-#~ msgid "created and used with different settings of -fpie"
-#~ msgstr "erzeugt und mit anderen Einstellungen von -fpie verwendet"
-
-#~ msgid "created and used with differing settings of `-m%s'"
-#~ msgstr "erzeugt und mit anderen Einstellungen von »-m%s« verwendet"
-
-#~ msgid "out of memory"
-#~ msgstr "Platz im Hauptspeicher reicht nicht aus"
-
-#~ msgid "instruction scheduling not supported on this target machine"
-#~ msgstr "Befehlsplanung wird von dieser Zielmaschine nicht unterstützt"
-
-#~ msgid "this target machine does not have delayed branches"
-#~ msgstr "diese Zielmaschine hat keine verzögerten Zweige"
-
-#~ msgid "-f%sleading-underscore not supported on this target machine"
-#~ msgstr "-f%sleading-underscore wird auf dieser Zielmaschine nicht unterstützt"
-
-#~ msgid "target system does not support the \"%s\" debug format"
-#~ msgstr "Zielsystem unterstützt nicht das Testformat \"%s\""
-
-#~ msgid "-ffunction-sections not supported for this target"
-#~ msgstr "-ffunction-sections wird für dieses Ziel nicht unterstützt"
-
-#~ msgid "-fdata-sections not supported for this target"
-#~ msgstr "-fdata-sections wird für dieses Ziel nicht unterstützt"
-
-#~ msgid "-ffunction-sections disabled; it makes profiling impossible"
-#~ msgstr "-ffunction-sections ausgeschaltet; das macht Profiling unmöglich"
-
-#~ msgid "-fprefetch-loop-arrays not supported for this target"
-#~ msgstr "-fprefetch-loop-arrays wird für dieses Ziel nicht unterstützt"
-
-#~ msgid "-fprefetch-loop-arrays not supported for this target (try -march switches)"
-#~ msgstr "-fprefetch-loop-arrays wird für dieses Ziel nicht unterstützt (versuchen Sie die »-march«-Schalter)"
-
-#~ msgid "-fprefetch-loop-arrays is not supported with -Os"
-#~ msgstr "-fprefetch-loop-arrays wird nicht mit -Os unterstützt"
-
-#~ msgid "-ffunction-sections may affect debugging on some targets"
-#~ msgstr "-ffunction-sections kann für verschiedene Ziele die Fehlersuche beeinträchtigen"
-
-#~ msgid "error writing to %s: %m"
-#~ msgstr "Fehler beim Schreiben der Datei %s: %m"
-
-#~ msgid "error closing %s: %m"
-#~ msgstr "Fehler beim Schließen von %s: %m"
-
-#~ msgid "could not open dump file `%s'"
-#~ msgstr "Abzugsdatei »%s« konnte nicht geöffnet werden"
-
-#~ msgid "ignoring unknown option `%.*s' in `-fdump-%s'"
-#~ msgstr "unbekannte Option »%.*s« in »-fdump-%s« wird ignoriert"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it uses alloca (override using the always_inline attribute)"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie alloca verwendet (zum Aufheben: Attribut »always_inline« verwenden)"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it uses setjmp"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie setjmp verwendet"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it uses variable argument lists"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie eine variable Argumentliste verwendet"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it uses setjmp-longjmp exception handling"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie »setjmp-longjmp«-Ausnahmebehandlung verwendet"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it contains a nested function"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie eine geschachtelte Funktion enthält"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it contains a computed goto"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie ein berechnetes »goto« enthält"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it contains a nonlocal goto"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie ein nichtlokales »goto« enthält"
-
-#~ msgid "%Jfunction '%F' can never be inlined because it uses variable sized variables"
-#~ msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie Variablen variabler Größe verwendet"
-
-#~ msgid "%Jinlining failed in call to '%F': %s"
-#~ msgstr "%J»inline« beim Aufruf von »%F« gescheitert: %s"
-
-#~ msgid "%Jsize of return value of '%D' is %u bytes"
-#~ msgstr "%JGröße des Rückgabewertes von »%D« ist %u Bytes"
-
-#~ msgid "%Jsize of return value of '%D' is larger than %wd bytes"
-#~ msgstr "%JGröße des Rückgabewertes von »%D« ist größer als %wd Bytes"
-
-#~ msgid "arrays of functions are not meaningful"
-#~ msgstr "Felder von Funktionen sind sinnlos"
-
-#~ msgid "function return type cannot be function"
-#~ msgstr "Rückgabetyp der Funktion kann keine Funktion sein"
-
-#~ msgid "invalid initializer for bit string"
-#~ msgstr "ungültige Initialisierung für Bitstring"
-
-#~ msgid "tree check: expected %s, have %s in %s, at %s:%d"
-#~ msgstr "Baumprüfung: %s erwartet, haben %s in %s, bei %s:%d"
-
-#~ msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
-#~ msgstr "Baumprüfung: Klasse %c erwartet, haben '%c' (%s) in %s, bei %s:%d"
-
-#~ msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-#~ msgstr "Baumprüfung: auf Elt %d von tree_vec mit %d Elts in %s bei %s:%d zugegriffen"
-
-#~ msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
-#~ msgstr "Baumprüfung: auf Operand %d von %s mit %d Operanden in %s bei %s:%d zugegriffen"
-
-#~ msgid "%J%D causes a section type conflict"
-#~ msgstr "%J%D löst einen Abschnittstypkonflikt aus"
-
-#~ msgid "%Jregister name not specified for '%D'"
-#~ msgstr "%Jfür »%D« wurde kein Registername angegeben"
-
-#~ msgid "%Jinvalid register name for '%D'"
-#~ msgstr "%Jungültiger Registername für »%D«"
-
-#~ msgid "%Jdata type of '%D' isn't suitable for a register"
-#~ msgstr "%JDatentyp von »%D« eignet sich nicht für Register"
-
-#~ msgid "%Jregister specified for '%D' isn't suitable for data type"
-#~ msgstr "%Jfür »%D« angegebenes Register eignet sich nicht für Datentyp"
-
-#~ msgid "global register variable has initial value"
-#~ msgstr "globle Registervariable hat Anfangswert"
-
-#~ msgid "volatile register variables don't work as you might wish"
-#~ msgstr "»volatile«-Registervariablen funktionieren oft nicht so wie erhofft"
-
-#~ msgid "%Jregister name given for non-register variable '%D'"
-#~ msgstr "%JRegistername für Nicht-Registervariable »%D« verwendet"
-
-#~ msgid "%Jstorage size of `%D' isn't known"
-#~ msgstr "%JSpeichergröße von »%D« ist unbekannt"
-
-#~ msgid "%Jalignment of '%D' is greater than maximum object file alignment.  Using %d"
-#~ msgstr "%JAusrichtung von »%D ist größer als maximale Objektdateiausrichtung. %d verwendet«"
-
-#~ msgid "thread-local COMMON data not implemented"
-#~ msgstr "Thread-lokale COMMON-Daten nicht implementiert"
-
-#~ msgid "%Jrequested alignment for '%D' is greater than implemented alignment of %d"
-#~ msgstr "%Jangeforderte Ausrichtung für »%D« ist größer als die implementierte Ausrichtung von %d"
-
-#~ msgid "initializer for integer value is too complicated"
-#~ msgstr "Initialisierung für Ganzzahlwert ist zu kompliziert"
-
-#~ msgid "initializer for floating value is not a floating constant"
-#~ msgstr "Initialisierung für Gleitkommawert ist keine Gleitkommakonstante"
-
-#~ msgid "unknown set constructor type"
-#~ msgstr "unbekannter Mengenkonstruktortyp"
-
-#~ msgid "invalid initial value for member `%s'"
-#~ msgstr "ungültiger Anfangswert für Element »%s«"
-
-#~ msgid "%Jweak declaration of '%D' must precede definition"
-#~ msgstr "%Jschwache Deklaration von »%D« muss der Definition vorangehen"
-
-#~ msgid "%Jweak declaration of '%D' after first use results in unspecified behavior"
-#~ msgstr "%Jschwache Deklaration von »%D« nach erster Benutzung führt zu undefiniertem Verhalten"
-
-#~ msgid "%Jweak declaration of '%D' must be public"
-#~ msgstr "%Jschwache Deklaration von »%D« muss öffentlich sein"
-
-#~ msgid "%Jweak declaration of '%D' not supported"
-#~ msgstr "%Jschwache Deklaration von »%D« wird nicht unterstützt"
-
-#~ msgid "only weak aliases are supported in this configuration"
-#~ msgstr "in dieser Konfiguration werden nur schwache Aliase unterstützt"
-
-#~ msgid "alias definitions not supported in this configuration; ignored"
-#~ msgstr "Alias-Definitionen werden in dieser Konfiguration nicht unterstützt; ignoriert"
-
-#~ msgid "visibility attribute not supported in this configuration; ignored"
-#~ msgstr "Sichtbarkeitsattribute werden in dieser Konfiguration nicht unterstützt; ignoriert"
-
-#~ msgid "virtual array %s[%lu]: element %lu out of bounds in %s, at %s:%d"
-#~ msgstr "virtuelles Feld %s[%lu]: Element %lu außerhalb der Grenzen in %s, bei %s:%d"
-
-#~ msgid "underflowed virtual array %s in %s, at %s:%d"
-#~ msgstr "Unterlauf im virtuellen Feld %s in %s bei %s:%d"
-
-#~ msgid "no sclass for %s stab (0x%x)\n"
-#~ msgstr "kein »sclass« für %s Stab (0x%x)\n"
-
-#~ msgid "fatal error: "
-#~ msgstr "schwerwiegender Fehler: "
-
-#~ msgid "internal compiler error: "
-#~ msgstr "interner Compiler-Fehler: "
-
-#~ msgid "sorry, unimplemented: "
-#~ msgstr "nicht implementiert: "
-
-#~ msgid "anachronism: "
-#~ msgstr "Anachronismus: "
-
-#~ msgid "note: "
-#~ msgstr "Anmerkung: "
-
-#~ msgid "debug: "
-#~ msgstr "zur Fehlersuche: "
-
-#~ msgid "The maximum number of instructions in a single function eligible for inlining"
-#~ msgstr "Die Höchstzahl der Anweisungen in einer einzelnen für »inline« geeigneten Funktion"
-
-#~ msgid "The maximum number of instructions when automatically inlining"
-#~ msgstr "Die Höchstzahl der Anweisungen für automatisches »inline«"
-
-#~ msgid "The maximum number of instructions for the RTL inliner"
-#~ msgstr "Die Höchstzahl der Anweisungen für RTL »inline«"
-
-#~ msgid "The maximum number of instructions to consider to fill a delay slot"
-#~ msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um Verzögerungsschlitz zu füllen"
-
-#~ msgid "The maximum number of instructions to consider to find accurate live register information"
-#~ msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um richtige aktive Registerinformationen zu finden"
-
-#~ msgid "The maximum length of scheduling's pending operations list"
-#~ msgstr "Die Maximallänge der Liste der anhängigen geplanten Operationen"
-
-#~ msgid "The size of function body to be considered large"
-#~ msgstr "Die Größe eines als groß angesehenen Funktionskörpers"
-
-#~ msgid "Maximal growth due to inlining of large function (in percent)"
-#~ msgstr "Maximales Wachstum durch »inline« einer großen Funktion (in Prozent)"
-
-#~ msgid "how much can given compilation unit grow because of the inlining (in percent)"
-#~ msgstr "um wie viel eine Übersetzungseinheit durch »inline« wachsen kann (in Prozent)"
-
-#~ msgid "The maximum amount of memory to be allocated by GCSE"
-#~ msgstr "Maximalbetrag des von GCSE zu belegenden Speichers"
-
-#~ msgid "The maximum number of passes to make when doing GCSE"
-#~ msgstr "Die Höchstzahl der Durchläufe für GCSE"
-
-#~ msgid "The maximum number of instructions to consider to unroll in a loop"
-#~ msgstr "Die Höchstzahl der zum Aufrollen von Schleifen zu betrachtenden Anweisungen"
-
-#~ msgid "The maximum number of instructions to consider to unroll in a loop on average"
-#~ msgstr "Die Höchstzahl der zum Aufrollen von Schleifen im Mittel zu betrachtenden Anweisungen"
-
-#~ msgid "The maximum number of unrollings of a single loop"
-#~ msgstr "Die Höchstzahl der Iterationen zum Aufrollen in einzelner Schleife"
-
-#~ msgid "The maximum number of insns of a peeled loop"
-#~ msgstr "Die Höchstzahl der insns einer geschälten Schleife"
-
-#~ msgid "The maximum number of peelings of a single loop"
-#~ msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife"
-
-#~ msgid "The maximum number of insns of a completely peeled loop"
-#~ msgstr "Die Höchstzahl der insns einer vollständig geschälten Schleife"
-
-#~ msgid "The maximum number of peelings of a single loop that is peeled completely"
-#~ msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife, die vollständig geschält wird"
-
-#~ msgid "The maximum number of insns of a peeled loop that rolls only once"
-#~ msgstr "Die Höchstzahl der insns einer geschälten Schleife, die nur einmal rollt"
-
-#~ msgid "`%s' incompatible attribute ignored"
-#~ msgstr "»%s«-inkompatibles Attribut wird ignoriert"
-
-#~ msgid "%Jfunction `%D' definition is marked dllimport."
-#~ msgstr "%JFunktionsdefinition von »%D« ist als »dllimport« markiert"
-
-#~ msgid "%Jinline function '%D' is declared as dllimport: attribute ignored."
-#~ msgstr "%J»inline«-Funktion »%D« ist als »dllimport« deklariert: Attribute ignoriert."
-
-#~ msgid "ms-bitfields not supported for objc"
-#~ msgstr "ms-Bitfelder nicht unterstützt für objc"
-
-#~ msgid "%Jan address area attribute cannot be specified for local variables"
-#~ msgstr "%Jfür lokale Variablen kann kein Adressabschnittsattribut angegeben werden"
-
-#~ msgid "%Jaddress area of '%s' conflicts with previous declaration"
-#~ msgstr "%JAdressabschnitt von »%s« in Konflikt mit vorheriger Deklaration"
-
-#~ msgid "%Jaddress area attribute cannot be specified for functions"
-#~ msgstr "%JAdressabschnittsattribut kann nicht für Funktionen angegeben werden"
-
-#~ msgid "The compiler does not support -march=%s."
-#~ msgstr "Der Compiler unterstützt nicht -march=%s."
-
-#~ msgid "argument `%d' is not a constant"
-#~ msgstr "Argument »%d« ist keine Konstante"
-
-#~ msgid "`trap' attribute is already used"
-#~ msgstr "»trap«-Attribut wird bereits verwendet"
-
-#~ msgid "cannot specify both -msep-data and -mid-shared-library"
-#~ msgstr "-msep-data und -mid-shared-library können nicht zusammen angegeben werden"
-
-#~ msgid "Generate code for a 68040, without any new instructions"
-#~ msgstr "Code für einen 68040 ohne neue Befehle erzeugen"
-
-#~ msgid "Generate code for a 68060, without any new instructions"
-#~ msgstr "Code für einen 68060 ohne neue Befehle erzeugen"
-
-#~ msgid "Generate code for a 68030"
-#~ msgstr "Code für einen 68030 erzeugen"
-
-#~ msgid "Generate code for a 68040"
-#~ msgstr "Code für einen 68040 erzeugen"
-
-#~ msgid "Generate code for a 68060"
-#~ msgstr "Code für einen 68060 erzeugen"
-
-#~ msgid "Generate code for a 520X"
-#~ msgstr "Code für einen 520X erzeugen"
-
-#~ msgid "Generate code for a 5206e"
-#~ msgstr "Code für einen 5206e erzeugen"
-
-#~ msgid "Generate code for a 528x"
-#~ msgstr "Code für einen 528x erzeugen"
-
-#~ msgid "Generate code for a 5307"
-#~ msgstr "Code für einen 5307 erzeugen"
-
-#~ msgid "Generate code for a 5407"
-#~ msgstr "Code für einen 5407 erzeugen"
-
-#~ msgid "Generate code for a 68851"
-#~ msgstr "Code für einen 68851 erzeugen"
-
-#~ msgid "Do no generate code for a 68851"
-#~ msgstr "Code für einen 68851 erzeugen"
-
-#~ msgid "Generate code for a 68302"
-#~ msgstr "Code für einen 68302 erzeugen"
-
-#~ msgid "Generate code for a 68332"
-#~ msgstr "Code für einen 68332 erzeugen"
-
-#~ msgid "Generate code for a cpu32"
-#~ msgstr "Code für eine cpu32 erzeugen"
-
-#~ msgid "can't rewind temp file: %m"
-#~ msgstr "temporäre Datei konnte nicht zurückgesetzt werden: %m"
-
-#~ msgid "can't write to output file: %m"
-#~ msgstr "in die Ausgabedatei kann nicht geschrieben werden: %m"
-
-#~ msgid "can't read from temp file: %m"
-#~ msgstr "von der temporären Datei kann nicht gelesen werden: %m"
-
-#~ msgid "can't close temp file: %m"
-#~ msgstr "die temporäre Datei kann nicht geschlossen werden: %m"
-
-#~ msgid "-fpic is not supported; -fPIC assumed"
-#~ msgstr "-fpic wird nicht unterstützt; -fPIC angenommen"
-
-#~ msgid "-m%s not supported in this configuration"
-#~ msgstr "-m%s wird in dieser Konfiguration nicht unterstützt"
-
-#~ msgid "%Jdata area attributes cannot be specified for local variables"
-#~ msgstr "%JDatenabschnittsattribute können nicht für lokale Variablen angegeben werden"
-
-#~ msgid "%Jdata area of '%D' conflicts with previous declaration"
-#~ msgstr "%JDatenabschnitt von »%D« in Konflikt mit vorheriger Deklaration"
-
-#~ msgid "invalid %%x value"
-#~ msgstr "ungültiger %%x-Wert"
-
-#~ msgid "invalid %%d value"
-#~ msgstr "ungültiger %%x-Wert"
-
-#~ msgid "invalid %%t/%%b value"
-#~ msgstr "ungültiger %%t/%%b-Wert"
-
-#~ msgid "missing argument to \"-%s\""
-#~ msgstr "fehlendes Argument für »-%s«"
-
-#~ msgid "%s for '%s' in '%s %E'"
-#~ msgstr "%s vor »%s« in »%s %E«"
-
-#~ msgid "no suitable `operator %s' for `%T'"
-#~ msgstr "kein geeigneter »operator %s« für »%T«"
-
-#~ msgid "cannot bind bitfield `%E' to `%T'"
-#~ msgstr "das Bitfeld »%E« kann nicht mit »%T« verbunden werden"
-
-#~ msgid "cannot bind packed field `%E' to `%T'"
-#~ msgstr "das gepackte Feld »%E« kann nicht mit »%T« verbunden werden"
-
-#~ msgid "cannot bind rvalue `%E' to `%T'"
-#~ msgstr "der R-Wert »%E« kann nicht mit »%T« verbunden werden"
-
-#~ msgid "%s has no effect"
-#~ msgstr "%s hat keinen Effekt"
-
-#~ msgid "%Jfunction '%D' redeclared as inline"
-#~ msgstr "%JFunktion »%D« als inline redeklariert"
-
-#~ msgid "%Jprevious declaration of '%D' with attribute noinline"
-#~ msgstr "%Jvorherige Deklaration von »%D« mit Attribut noinline"
-
-#~ msgid "%Jfunction '%D' redeclared with attribute noinline"
-#~ msgstr "%JFunktion »%D« redeklariert mit Attribut noinline"
-
-#~ msgid "%Jprevious declaration of '%D' was inline"
-#~ msgstr "%Jvorherige Deklaration von »%D« war inline"
-
-#~ msgid "conflicting declaration '%#D'"
-#~ msgstr "in Konflikt stehende Deklaration »%#D«"
-
-#~ msgid "'%D' has a previous declaration as `%#D'"
-#~ msgstr "»%D« hat eine vorherige Deklaration als »%#Ds«"
-
-#~ msgid "%Jfollows non-prototype definition here"
-#~ msgstr "%Jfolgt Nicht-Prototyp-Definition hier"
-
-#~ msgid "%Jprevious non-inline declaration here"
-#~ msgstr "%Jvorherige nicht-inline-Deklaration hier"
-
-#~ msgid "%Jconflicts with previous declaration here"
-#~ msgstr "%Jin Konflikt mit vorheriger Deklaration hier"
-
-#~ msgid "%H  from here"
-#~ msgstr "%H  von hier"
-
-#~ msgid "too many initializers for `%T'"
-#~ msgstr "zu viele Initialisierer für »%T«"
-
-#~ msgid "size of array `%D' has non-integral type `%T'"
-#~ msgstr "Feldgröße von »%D« hat Nicht-Ganzzahltyp »%T«"
-
-#~ msgid "size of array has non-integral type `%T'"
-#~ msgstr "Feldgröße hat Nicht-Ganzzahltyp »%T«"
-
-#~ msgid "declaration of `%D' as %s"
-#~ msgstr "Deklaration von »%D« als %s"
-
-#~ msgid "creating %s"
-#~ msgstr "Erzeugen von %s"
-
-#~ msgid "top-level declaration of `%s' specifies `auto'"
-#~ msgstr "Deklaration höchster Ebene von »%s« spezifiziert »auto«"
-
-#~ msgid "%Jinvalid type qualifier for non-member function type"
-#~ msgstr "%Jungültiger Typkennzeichner für Nicht-Element-Funktionstyp"
-
-#~ msgid "%Jprevious definition here"
-#~ msgstr "%Jvorherige Definition hier"
-
-#~ msgid "invalid member function declaration"
-#~ msgstr "ungültige Elementfunktionsdeklaration"
-
-#~ msgid "anonymous union with no members"
-#~ msgstr "anonymes union ohne Element"
-
-#~ msgid "inline function `%D' used but never defined"
-#~ msgstr "inline-Funktion »%D«, aber nirgendwo definiert"
-
-#~ msgid "  when initialized here"
-#~ msgstr "  während es hier initialisiert wurde"
-
-#~ msgid "`%#D' is not a non-static data member of `%T'"
-#~ msgstr "»%#D« ist kein Nicht-static-Datenelement von »%T«"
-
-#~ msgid "invalid use of non-static member function `%D'"
-#~ msgstr "ungültige Verwendung der Nicht-static-Elementfunktion »%D«"
-
-#~ msgid "invalid use of non-static data member `%D'"
-#~ msgstr "ungültige Verwendung des Nicht-static-Datenelementes »%D«"
-
-#~ msgid "type mismatch with previous external decl of `%#D'"
-#~ msgstr "Typen passen nicht zu vorheriger externer Deklaration von »%#D«"
-
-#~ msgid "%s %s %p %d\n"
-#~ msgstr "%s %s %p %d\n"
-
-#~ msgid "`%D' attribute directive ignored"
-#~ msgstr "Attribut-Anweisung »%D« wird ignoriert"
-
-#~ msgid "invalid token"
-#~ msgstr "ungültiges Token"
-
-#~ msgid "`%D::%D' has not been declared"
-#~ msgstr "»%D::%D« wurde nicht deklariert"
-
-#~ msgid "`::%D' has not been declared"
-#~ msgstr "»::%D« wurde nicht deklariert"
-
-#~ msgid "`%D' has not been declared"
-#~ msgstr "»%D« wurde nicht deklariert"
-
-#~ msgid "`%D' %s"
-#~ msgstr "»%D« %s"
-
-#~ msgid "invalid template-id"
-#~ msgstr "ungültige Template-ID"
-
-#~ msgid "%s cannot appear in a constant-expression"
-#~ msgstr "%s kann nicht in einem Konstanten-Ausdruck auftreten"
-
-#~ msgid "`%s' does not name a type"
-#~ msgstr "»%s« bezeichnet keinen Typ"
-
-#~ msgid "statement-expressions are allowed only inside functions"
-#~ msgstr "Anweisungs-Ausdrücke sind nur innerhalb von Funktionen erlaubt"
-
-#~ msgid "ISO C++ forbids compound-literals"
-#~ msgstr "ISO-C++ verbietet zusammengesetzte Literale"
-
-#~ msgid "duplicate `friend'"
-#~ msgstr "doppeltes »friend«"
-
-#~ msgid "attributes are not allowed on a function-definition"
-#~ msgstr "bei einer Funktionsdefinition sind keine Attribute erlaubt"
-
-#~ msgid "attributes after parenthesized initializer ignored"
-#~ msgstr "Attribute hinter geklammerter Initialisierung werden ignoriert"
-
-#~ msgid "friend declaration does not name a class or function"
-#~ msgstr "»friend«-Deklaration benennt keine Klasse oder Funktion"
-
-#~ msgid "invalid function declaration"
-#~ msgstr "ungültige Funktionsdeklaration"
-
-#~ msgid "named return values are no longer supported"
-#~ msgstr "benannte Rückgabewerte werden nicht mehr unterstützt"
-
-#~ msgid "%D redeclared with different access"
-#~ msgstr "%D mit anderem Zugriff redeklariert"
-
-#~ msgid "destructor `%D' declared as member template"
-#~ msgstr "Destruktor »%D« als Element-Template deklariert"
-
-#~ msgid "%J  original definition appeared here"
-#~ msgstr "%J  ursprüngliche Definition trat hier auf"
-
-#~ msgid "`%T' uses anonymous type"
-#~ msgstr "»%T« verwendet anonymen Typen"
-
-#~ msgid "`%T' uses local type `%T'"
-#~ msgstr "»%T« verwendet lokalen Typen »%T«"
-
-#~ msgid "integral expression `%E' is not constant"
-#~ msgstr "Integralausdruck »%E« ist nicht konstant"
-
-#~ msgid "object missing in reference to `%D'"
-#~ msgstr "Objekt fehlt in Referenz auf »%D«"
-
-#~ msgid "`%D' is not a member of `%D'"
-#~ msgstr "»%D« ist kein Element von »%D«"
-
-#~ msgid "`%D' cannot appear in a constant-expression"
-#~ msgstr "»%D« kann nicht in Konstanten-Ausdruck auftreten"
-
-#~ msgid "%s between distinct pointer-to-member types `%T' and `%T' lacks a cast"
-#~ msgstr "%s zwischen verschiedenen Zeiger-auf-Element-Typen »%T« und »%T« fehlt eine Typkonvertierung"
-
-#~ msgid "invalid application of `%s' to a bit-field"
-#~ msgstr "ungültige Anwendung von »%s« auf ein Bitfeld"
-
-#~ msgid "ISO C++ forbids applying `%s' to an expression of function type"
-#~ msgstr "ISO-C++ verbietet Anwendung von »%s« auf einen Ausdruck mit Funktionstyp"
-
-#~ msgid "invalid use of non-static member function"
-#~ msgstr "falsche Benutzung einer nicht-statischen Elementfunktion"
-
-#~ msgid "invalid use of nonstatic data member '%E'"
-#~ msgstr "ungültige Benutzung des nicht-statischen Datenelements »%E«"
-
-#~ msgid "parameter %P of `%D' has incomplete type `%T'"
-#~ msgstr "Parameter %P von »%D« hat unvollständigen Typen »%T«"
-
-#~ msgid "parameter %P has incomplete type `%T'"
-#~ msgstr "Parameter %P hat unvollständigen Typen »%T«"
-
-#~ msgid "%s expression list treated as compound expression"
-#~ msgstr "%s Ausdrucksliste als zusammengesetzten Ausdruck behandelt"
-
-#~ msgid "pointer to member cast via virtual base `%T'"
-#~ msgstr "Typumwandlung von Zeiger in Element über virtuelle Basis »%T«"
-
-#~ msgid "pointer to member conversion via virtual base `%T'"
-#~ msgstr "Konvertierung von Zeiger in Element über virtuelle Basis »%T«"
-
-#~ msgid "return-statement with no value, in function returning '%T'"
-#~ msgstr "Return-Anweisung ohne Wert, in »%T« zurückgebender Funktion"
-
-#~ msgid "return-statement with a value, in function returning 'void'"
-#~ msgstr "Return-Anweisung mit Wert in »void« zurückgebender Funktion"
-
-#~ msgid "Please keep this in mind before you report bugs."
-#~ msgstr "Bitte bedenken Sie dies, wenn Sie einen Fehlerbericht einsenden."
-
-#~ msgid "%Jfinal field '%D' may not have been initialized"
-#~ msgstr "%Jletztes Feld »%D« könnte nicht initialisiert worden sein"
-
-#~ msgid "%J'%D' used prior to declaration"
-#~ msgstr "%J»%D« bereits vor Deklaration benutzt"
-
-#~ msgid "declaration of `%s' shadows a parameter"
-#~ msgstr "Deklaration von »%s« überdeckt einen Parameter"
-
-#~ msgid "declaration of `%s' shadows a symbol from the parameter list"
-#~ msgstr "Deklaration von »%s« überdeckt ein Symbol aus der Parameterliste"
-
-#~ msgid "%Jlabel '%D' used but not defined"
-#~ msgstr "%JMarke »%D« verwendet, aber nicht definiert"
-
-#~ msgid "%Jlabel '%D' defined but not used"
-#~ msgstr "%JMarke »%D« definiert, aber nicht verwendet"
-
-#~ msgid "can't reopen %s: %m"
-#~ msgstr "Es ist nicht möglich, »%s« erneut zu öffnen: %m"
-
-#~ msgid "can't close %s: %m"
-#~ msgstr "Es ist nicht möglich, »%s« zu schließen: %m"
-
-#~ msgid "can't close input file %s: %m"
-#~ msgstr "die Eingabedatei »%s« kann nicht geschlossen werden: %m"
-
-#~ msgid "can't create directory %s: %m"
-#~ msgstr "das Verzeichnis %s kann nicht erzeugt werden: %m"
-
-#~ msgid "can't create %s: %m"
-#~ msgstr "Es ist nicht möglich, %s zu erzeugen: %m"
-
-#~ msgid "`%s' is not a valid class name"
-#~ msgstr "»%s« ist kein gültiger Klassenname"
-
-#~ msgid "--resource requires -o"
-#~ msgstr "--resource erfordert -o"
-
-#~ msgid "cannot specify both -C and -o"
-#~ msgstr "-C und -o können nicht zusammen angegeben werden"
-
-#~ msgid "cannot create temporary file"
-#~ msgstr "temporäre Datei konnte nicht angelegt werden"
-
-#~ msgid "interface `%s' does not have valid constant string layout"
-#~ msgstr "die Schnittstelle »%s« hat nicht die Form einer konstanten Zeichenkette"
-
-#~ msgid "`%s' is not an Objective-C class name or alias"
-#~ msgstr "»%s« ist kein Klassenname oder Alias in Objective-C"
-
-#~ msgid "`%s' redeclared as different kind of symbol"
-#~ msgstr "»%s« redeklariert als andere Symbolart"
-
-#~ msgid "%J%s `%s'"
-#~ msgstr "%J%s: »%s«"
-
-#~ msgid "multiple %s named `%c%s' found"
-#~ msgstr "mehrere %s namens »%c%s« gefunden"
-
-#~ msgid "no super class declared in @interface for `%s'"
-#~ msgstr "keine Superklasse im @interface für »%s« deklariert"
-
-#~ msgid "`%s' may not respond to `%c%s'"
-#~ msgstr "»%s« antwortet möglicherweise nicht auf »%c%s«"
-
-#~ msgid "`%c%s' not implemented by protocol(s)"
-#~ msgstr "»%c%s« nicht von Protokoll(en) implementiert"
-
-#~ msgid "`...' as arguments.)"
-#~ msgstr "»...« als Argumente.)"
-
-#~ msgid "duplicate declaration of method `%c%s'"
-#~ msgstr "doppelte Deklaration der Methode »%c%s«"
-
-#~ msgid "illegal reference type specified for instance variable `%s'"
-#~ msgstr "unzulässiger Referenztyp für Instanzvariable »%s« angegeben"
-
-#~ msgid "instance variable `%s' has unknown size"
-#~ msgstr "Instanzvariable »%s« hat unbekannte Größe"
-
-#~ msgid "type `%s' has virtual member functions"
-#~ msgstr "der Typ »%s« hat virtuelle Elementfunktionen"
-
-#~ msgid "illegal aggregate type `%s' specified for instance variable `%s'"
-#~ msgstr "unzulässiger Aggregattyp »%s« für Instanzvariable »%s« angegeben"
-
-#~ msgid "%s `%s' does not fully implement the `%s' protocol"
-#~ msgstr "%s »%s« implementiert das »%s«-Protokoll nicht vollständig"
-
-#~ msgid "previous declaration of `%s'"
-#~ msgstr "vorherige Deklaration von »%s«"
-
-#~ msgid "Display this information"
-#~ msgstr "Diese Informationen anzeigen"
-
-#~ msgid "Do not discard comments"
-#~ msgstr "Kommentare nicht verwerfen"
-
-#~ msgid "Warn about subscripts whose type is \"char\""
-#~ msgstr "Vor Indizes mit Typ \"char\" warnen"
-
-#~ msgid "Make implicit function declarations an error"
-#~ msgstr "Fehler bei impliziten Funktionsdeklaration erzeugen"
-
-#~ msgid "Warn if passing too many arguments to a function for its format string"
-#~ msgstr "Bei zu vielen Argumenten für eine Funktion (anhand Formatzeichenkette) warnen"
-
-#~ msgid "Warn about suspicious declarations of \"main\""
-#~ msgstr "Vor verdächtigen Deklarationen von \"main\" warnen"
-
-#~ msgid "Warn about global functions without previous declarations"
-#~ msgstr "Vor globalen Funktionen ohne vorherige Deklaration warnen"
-
-#~ msgid "Warn about functions which might be candidates for __attribute__((noreturn))"
-#~ msgstr "Vor Funktionen, die Kandidaten für __attribute__((noreturn)) sind, warnen"
-
-#~ msgid "Warn about use of multi-character character constants"
-#~ msgstr "Bei Verwendung von Zeichenkonstanten mit mehreren Zeichen warnen"
-
-#~ msgid "Warn about \"extern\" declarations not at file scope"
-#~ msgstr "Vor \"extern\"-Deklarationen außerhalb des Dateisichtbarkeitsbereiches warnen"
-
-#~ msgid "Warn about code which might break strict aliasing rules"
-#~ msgstr "Vor Code warnen, der strict-aliasing-Regeln verletzen könnte"
-
-#~ msgid "Warn about unprototyped function declarations"
-#~ msgstr "Vor Funktionsdeklarationen ohne Prototyp warnen"
-
-#~ msgid "Warn about features not present in traditional C"
-#~ msgstr "Vor Sprachmerkmalen, die in traditionellem C nicht verfügbar sind, warnen"
-
-#~ msgid "Recognize built-in functions"
-#~ msgstr "Eingebaute Funktionen erkennen"
-
-#~ msgid "Preserve case used in program"
-#~ msgstr "Im Programm verwendete Groß-/Kleinschreibung beibehalten"
-
-#~ msgid "Inline member functions by default"
-#~ msgstr "Standardmäßig »inline«-Elementfunktionen"
-
-#~ msgid "Permit '$' as an identifier character"
-#~ msgstr "'$' als Bezeichnerzeichen zulassen"
-
-#~ msgid "Generate code to check exception specifications"
-#~ msgstr "Code zur Überprüfung von Exception-Spezifikationen erzeugen"
-
-#~ msgid "Place each function into its own section"
-#~ msgstr "Jede Funktion in ihren eigenen Abschnitt platzieren"
-
-#~ msgid "Generate code for GNU runtime environment"
-#~ msgstr "Code für die GNU-Laufzeitumgebung erzeugen"
-
-#~ msgid "Generate code for NeXT (Apple Mac OS X) runtime environment"
-#~ msgstr "Code für die NeXT (Apple Mac OS X) Laufzeitumgebung erzeugen"
-
-#~ msgid "Convert floating point constants to single precision constants"
-#~ msgstr "Fließkommakonstanten in Konstanten einfacher Genauigkeit konvertieren"
-
-#~ msgid "Print internal debugging-related information"
-#~ msgstr "Interne Testinformationen ausgeben"
-
-#~ msgid "Dump declarations to a .decl file"
-#~ msgstr "Deklaration in .decl-Datei ausgeben"
-
-#~ msgid "-o <file>\tPlace output into <file>"
-#~ msgstr "-o <Datei>\tAusgabe in <Datei> schreiben"
-
-#~ msgid "Generate C header of platform-specific features"
-#~ msgstr "C-Header mit Plattform-spezifischen Merkmalen erzeugen"
-
-#~ msgid "Remap file names when including files"
-#~ msgstr "Dateinamen beim Einfügen von Dateien neu abbilden"
-
-#~ msgid "GCC does not support -C or -CC without -E"
-#~ msgstr "GCC unterstützt nicht -C oder -CC ohne -E"
-
-#~ msgid "-pipe is not supported"
-#~ msgstr "-pipe wird nicht unterstützt"
-
-#~ msgid "-keep_private_externs not allowed with -dynamiclib"
-#~ msgstr "-keep_private_externs ist mit -dynamiclib nicht erlaubt"
-
-#~ msgid "-private_bundle not allowed with -dynamiclib"
-#~ msgstr "-private_bundle ist mit -dynamiclib nicht erlaubt"
-
-#~ msgid "-pg not supported on this platform"
-#~ msgstr "-pg wird auf dieser Plattform nicht unterstützt"
-
-#~ msgid "GCC does not support -C without using -E"
-#~ msgstr "GCC unterstützt nicht -C ohne -E"
-
-#~ msgid "GCC does not support -CC without using -E"
-#~ msgstr "GCC unterstützt nicht -CC ohne -E"
-
-#~ msgid "`-p' not supported; use `-pg' and gprof(1)"
-#~ msgstr "»-p« wird nicht unterstützt; verwenden Sie »-pg« und gprof(1)"
-
-#~ msgid "may not use both -m32 and -m64"
-#~ msgstr "-m32 und -m64 können nicht zusammen angegeben werden"
-
-#~ msgid "profiling not supported with -mg\n"
-#~ msgstr "Profiling wird mit -mg nicht unterstützt\n"
-
-#~ msgid "does not support multilib"
-#~ msgstr "unterstützt nicht multilib"
-
-#~ msgid "concatenation of string literals with __FUNCTION__ is deprecated"
-#~ msgstr "Verkettung von Zeichenkettenliteralen mit __FUNCTION__ ist veraltet"
-
-#~ msgid "ISO C++ forbids range expressions in switch statements"
-#~ msgstr "ISO-C++ verbietet Wertebereichsausdrücke in switch-Anweisungen"
-
-#~ msgid "ISO C++ forbids taking the address of a label"
-#~ msgstr "ISO-C++ verbietet die Adresse einer Marke"
-
-#~ msgid "declaration of `%s' shadows %s"
-#~ msgstr "Deklaration von »%s« verdeckt %s"
-
-#~ msgid "`struct %s' incomplete in scope ending here"
-#~ msgstr "»struct %s« im Gültigkeitsbereich, der hier endet, unvollständig"
-
-#~ msgid "`union %s' incomplete in scope ending here"
-#~ msgstr "»union %s« im Gültigkeitsbereich, der hier endet, unvollständig"
-
-#~ msgid "`enum %s' incomplete in scope ending here"
-#~ msgstr "»enum %s« im Gültigkeitsbereich, der hier endet, unvollständig"
-
-#~ msgid "shadowing library function `%s'"
-#~ msgstr "Bibliotheksfunktion »%s« überdeckt"
-
-#~ msgid "library function `%s' declared as non-function"
-#~ msgstr "Bibliotheksfunktion »%s« als Nicht-Funktion deklariert"
-
-#~ msgid "redeclaration of `%s'"
-#~ msgstr "Redeklaration von »%s«"
-
-#~ msgid "prototype for `%s' follows and number of arguments doesn't match"
-#~ msgstr "Prototyp für »%s« folgt und Anzahl der Argumente passt nicht"
-
-#~ msgid "prototype for `%s' follows and argument %d doesn't match"
-#~ msgstr "Prototyp für »%s« folgt und Argument %d passt nicht"
-
-#~ msgid "type qualifiers for `%s' conflict with previous decl"
-#~ msgstr "Typ-Kennzeichner für »%s« stehen in Konflikt mit vorheriger Deklaration"
-
-#~ msgid "a parameter"
-#~ msgstr "ein Parameter"
-
-#~ msgid "a previous local"
-#~ msgstr "ein vorheriges »local«"
-
-#~ msgid "a global declaration"
-#~ msgstr "eine globale Deklaration"
-
-#~ msgid "`%s' was declared implicitly `extern' and later `static'"
-#~ msgstr "»%s« wurde implizit als »extern« und später als »static« deklariert"
-
-#~ msgid "previous external decl of `%s'"
-#~ msgstr "vorherige externe Deklaration von »%s«"
-
-#~ msgid "type mismatch with previous implicit declaration"
-#~ msgstr "Typen passen nicht zu vorheriger impliziter Deklaration"
-
-#~ msgid "`%s' was previously implicitly declared to return `int'"
-#~ msgstr "»%s« wurde bereits implizit deklariert, »int« zurückzugeben"
-
-#~ msgid "`%s' was declared `extern' and later `static'"
-#~ msgstr "»%s« wurde »extern« deklariert und später »static«"
-
-#~ msgid "`%s' locally external but globally static"
-#~ msgstr "»%s« ist lokal extern, aber global »static«"
-
-#~ msgid "function `%s' was previously declared within a block"
-#~ msgstr "Funktion »%s« wurde bereits innerhalb eines Blockes deklariert"
-
-#~ msgid "declaration of `%s' has `extern' and is initialized"
-#~ msgstr "Deklaration von »%s« hat »extern« und ist initialisiert"
-
-#~ msgid "ISO C forbids parameter `%s' shadowing typedef"
-#~ msgstr "ISO-C verbietet typedef verdeckenden Parameter »%s«"
-
-#~ msgid "parameter `%s' points to incomplete type"
-#~ msgstr "Parameter »%s« zeigt auf unvollständigen Typen"
-
-#~ msgid "parameter points to incomplete type"
-#~ msgstr "Parameter zeigt auf unvollständigen Typen"
-
-#~ msgid "`void' in parameter list must be the entire list"
-#~ msgstr "»void« in Parameterliste muss die gesamte Liste sein"
-
-#~ msgid "`union %s' declared inside parameter list"
-#~ msgstr "»union %s« innerhalb Parameterliste deklariert"
-
-#~ msgid "`enum %s' declared inside parameter list"
-#~ msgstr "»enum %s« innerhalb Parameterliste deklariert"
-
-#~ msgid "anonymous enum declared inside parameter list"
-#~ msgstr "anonymes »enum« innerhalb Parameterliste deklariert"
-
-#~ msgid "bit-field `%s' type invalid in ISO C"
-#~ msgstr "Typ des Bitfeldes »%s« ist ungültig in ISO-C"
-
-#~ msgid "parm types given both in parmlist and separately"
-#~ msgstr "Parametertypen sowohl in Parameterliste als auch separat angegeben"
-
-#~ msgid "universal-character-name '\\u%04x' not valid in identifier"
-#~ msgstr "universeller Zeichenname »\\u%04x« nicht gültig in Bezeichner"
-
-#~ msgid "ignoring invalid multibyte character"
-#~ msgstr "ungültiges Multibyte-Zeichen wird ignoriert"
-
-#~ msgid "options array incorrectly sorted: %s is before %s"
-#~ msgstr "Optionenliste falsch sortiert: %s kommt vor %s"
-
-#~ msgid "-Wno-strict-prototypes is not supported in C++"
-#~ msgstr "-Wno-strict-prototypes wird in C++ nicht unterstützt"
-
-#~ msgid ""
-#~ "Switches:\n"
-#~ "  -include <file>           Include the contents of <file> before other files\n"
-#~ "  -imacros <file>           Accept definition of macros in <file>\n"
-#~ "  -iprefix <path>           Specify <path> as a prefix for next two options\n"
-#~ "  -iwithprefix <dir>        Add <dir> to the end of the system include path\n"
-#~ "  -iwithprefixbefore <dir>  Add <dir> to the end of the main include path\n"
-#~ "  -isystem <dir>            Add <dir> to the start of the system include path\n"
-#~ msgstr ""
-#~ "Optionen:\n"
-#~ "  -include <Datei>          Inhalt von <Datei> vor anderen Dateien einfügen\n"
-#~ "  -imacros <Datei>          die Definition von Makros in <Datei> akzeptieren\n"
-#~ "  -iprefix <Pfad>           <Pfad> als Präfix für die nächsten beiden Optionen\n"
-#~ "                            angeben\n"
-#~ "  -iwithprefix <Verz>       <Verz> zum Ende des System-Einfüge-Pfades\n"
-#~ "                            hinzufügen\n"
-#~ "  -iwithprefixbefore <Verz> <Verz> zum das Ende des Haupt-Einfüge-Pfades\n"
-#~ "                            hinzufügen\n"
-#~ "  -isystem <Verz>           <Verz> zum Anfang des System-Einfüge-Pfades\n"
-#~ "                            hinzufügen\n"
-
-#~ msgid ""
-#~ "  -idirafter <dir>          Add <dir> to the end of the system include path\n"
-#~ "  -I <dir>                  Add <dir> to the end of the main include path\n"
-#~ "  -I-                       Fine-grained include path control; see info docs\n"
-#~ "  -nostdinc                 Do not search system include directories\n"
-#~ "                             (dirs specified with -isystem will still be used)\n"
-#~ "  -nostdinc++               Do not search system include directories for C++\n"
-#~ "  -o <file>                 Put output into <file>\n"
-#~ msgstr ""
-#~ "  -idirafter <Verz>         <Verz> zum Ende des System-Einfüge-Pfades\n"
-#~ "                             hinzufügen\n"
-#~ "  -I <Verz>                 <Verz> zum Anfang des Haupt-Einfüge-Pfades\n"
-#~ "                             hinzufügen\n"
-#~ "  -I-                       Feineinstellung des Einfügepfades; siehe info-\n"
-#~ "                             Seiten\n"
-#~ "  -nostdinc                 keine System-Einfüge-Verzeichnisse durchsuchen\n"
-#~ "                             (-isystem Verzeichnisse werden aber verwendet)\n"
-#~ "  -nostdinc++               keine System-Einfüge-Verzeichnisse nach C++\n"
-#~ "                             durchsuchen\n"
-#~ "  -o <Datei>                Ausgabe in <Datei> leiten\n"
-
-#~ msgid ""
-#~ "  -trigraphs                Support ISO C trigraphs\n"
-#~ "  -std=<std name>           Specify the conformance standard; one of:\n"
-#~ "                            gnu89, gnu99, c89, c99, iso9899:1990,\n"
-#~ "                            iso9899:199409, iso9899:1999, c++98\n"
-#~ "  -w                        Inhibit warning messages\n"
-#~ "  -W[no-]trigraphs          Warn if trigraphs are encountered\n"
-#~ "  -W[no-]comment{s}         Warn if one comment starts inside another\n"
-#~ msgstr ""
-#~ "  -trigraphs                ISO-C-»Trigraphs« unterstützen\n"
-#~ "  -std=<Name>               Standardkonformität angeben; eines von:\n"
-#~ "                             gnu89, gnu99, c89, c99, iso9899:1990,\n"
-#~ "                             iso9899:199409, iso9899:1999, c++98\n"
-#~ "  -w                        Warnungen unterdrücken\n"
-#~ "  -W[no-]trigraphs          Warnungen bei »Trigraphs«\n"
-#~ "  -W[no-]comment{s}         Warnungen bei geschachtelten Kommentaren\n"
-
-#~ msgid ""
-#~ "  -W[no-]traditional        Warn about features not present in traditional C\n"
-#~ "  -W[no-]undef              Warn if an undefined macro is used by #if\n"
-#~ "  -W[no-]import             Warn about the use of the #import directive\n"
-#~ msgstr ""
-#~ "  -W[no-]traditional        Warnungen bei Merkmalen von traditionellem C\n"
-#~ "  -W[no-]undef              Warnungen bei Verwendung undefinierter Makros\n"
-#~ "                             mit #if\n"
-#~ "  -W[no-]import             Warnungen über die Verwendung der Direktive\n"
-#~ "                             #import\n"
-
-#~ msgid ""
-#~ "  -W[no-]error              Treat all warnings as errors\n"
-#~ "  -W[no-]system-headers     Do not suppress warnings from system headers\n"
-#~ "  -W[no-]all                Enable most preprocessor warnings\n"
-#~ msgstr ""
-#~ "  -W[no-]error              alle Warnungen als Fehler behandeln\n"
-#~ "  -W[no-]system-headers     keine Warnungen von System-Headern unterdrücken\n"
-#~ "  -W[no-]all                die meisten Präprozessorwarnungen einschalten\n"
-
-#~ msgid ""
-#~ "  -M                        Generate make dependencies\n"
-#~ "  -MM                       As -M, but ignore system header files\n"
-#~ "  -MD                       Generate make dependencies and compile\n"
-#~ "  -MMD                      As -MD, but ignore system header files\n"
-#~ "  -MF <file>                Write dependency output to the given file\n"
-#~ "  -MG                       Treat missing header file as generated files\n"
-#~ msgstr ""
-#~ "  -M                        make-Abhängigkeiten generieren\n"
-#~ "  -MM                       wie -M, aber System-Header ignorieren\n"
-#~ "  -MD                       make-Abhängigkeiten generieren und kompilieren\n"
-#~ "  -MMD                      wie -MD, aber System-Header ignorieren\n"
-#~ "  -MF <Datei>               Abhängigkeiten-Ausgabe in die angegebene Datei\n"
-#~ "                             schreiben\n"
-#~ "  -MG                       fehlende Header-Dateien als generierte Dateien\n"
-#~ "                             behandeln\n"
-
-#~ msgid ""
-#~ "  -MP\t\t\t    Generate phony targets for all headers\n"
-#~ "  -MQ <target>              Add a MAKE-quoted target\n"
-#~ "  -MT <target>              Add an unquoted target\n"
-#~ msgstr ""
-#~ "  -MP\t\t\t    Generiere falsche (phony) Ziele für Header\n"
-#~ "  -MQ <Ziel>                MAKE-zitiertes Ziel hinzufügen\n"
-#~ "  -MT <Ziel>                ein unzitiertes Ziel hinzufügen\n"
-
-#~ msgid ""
-#~ "  -D<macro>                 Define a <macro> with string '1' as its value\n"
-#~ "  -D<macro>=<val>           Define a <macro> with <val> as its value\n"
-#~ "  -A<question>=<answer>     Assert the <answer> to <question>\n"
-#~ "  -A-<question>=<answer>    Disable the <answer> to <question>\n"
-#~ "  -U<macro>                 Undefine <macro> \n"
-#~ "  -v                        Display the version number\n"
-#~ msgstr ""
-#~ "  -D<Makro>                 <Makro> mit Wert \"1\" definieren\n"
-#~ "  -D<Makro>=<Wert>          <Makro> mit Wert <Wert> definieren\n"
-#~ "  -A<Frage>=<Antwort>       die <Antwort> auf <Frage> annehmen\n"
-#~ "  -A-<Frage>=<Antwort>      die <Antwort> auf <Frage> abschalten\n"
-#~ "  -U<Makro>                 <Makro> löschen\n"
-#~ "  -v                        Version anzeigen\n"
-
-#~ msgid ""
-#~ "  -H                        Print the name of header files as they are used\n"
-#~ "  -C                        Do not discard comments\n"
-#~ "  -dM                       Display a list of macro definitions active at end\n"
-#~ "  -dD                       Preserve macro definitions in output\n"
-#~ "  -dN                       As -dD except that only the names are preserved\n"
-#~ "  -dI                       Include #include directives in the output\n"
-#~ msgstr ""
-#~ "  -H                        Namen von Header-Dateien anzeigen wenn sie\n"
-#~ "                             verwendet werden\n"
-#~ "  -C                        Kommentare nicht streichen\n"
-#~ "  -dM                       am Ende eine Liste von Makrodefinitionen anzeigen\n"
-#~ "  -dD                       Makrodefinitionen in der Ausgabe bewahren\n"
-#~ "  -dN                       wie -dD nur dass die Namen bewahrt werden\n"
-#~ "  -dI                       #include-Anweisungen in die Ausgabe einfügen\n"
-
-#~ msgid ""
-#~ "  -f[no-]preprocessed       Treat the input file as already preprocessed\n"
-#~ "  -ftabstop=<number>        Distance between tab stops for column reporting\n"
-#~ "  -P                        Do not generate #line directives\n"
-#~ "  -remap                    Remap file names when including files\n"
-#~ "  --help                    Display this information\n"
-#~ msgstr ""
-#~ "  -f[no-]preprocessed       Eingabedatei als bereits vorverarbeitet behandeln\n"
-#~ "  -ftabstop=<Zahl>          Tabulatorenabstand für Spaltenmeldungen\n"
-#~ "  -P                        keine #line-Direktiven generieren\n"
-#~ "  -remap                    Dateinamen beim Einfügen neu abbilden\n"
-#~ "  --help                    diese Information anzeigen\n"
-
-#~ msgid "parse error"
-#~ msgstr "Fehler beim Parsen"
-
-#~ msgid "ISO C forbids the address of a cast expression"
-#~ msgstr "ISO-C verbietet die Adresse eines cast-Ausdruckes"
-
-#~ msgid "initializer for static variable is not constant"
-#~ msgstr "Initialisierer für statische Variable ist nicht konstant"
-
-#~ msgid "initializer for static variable uses complicated arithmetic"
-#~ msgstr "Initialisierer für statische Variable verwendet komplizierte Arithmetik"
-
-#~ msgid "aggregate initializer is not constant"
-#~ msgstr "Gesamt-Initialisierer ist nicht konstant"
-
-#~ msgid "aggregate initializer uses complicated arithmetic"
-#~ msgstr "Gesamt-Initialisierer verwendet komplizierte Arithmetik"
-
-#~ msgid "open %s"
-#~ msgstr "öffne %s"
-
-#~ msgid "incompatibilities between object file & expected values"
-#~ msgstr "Inkompatibilitäten zwischen Objektdatei und erwarteten Werten"
-
-#~ msgid ""
-#~ "\n"
-#~ "Processing symbol table #%d, offset = 0x%.8lx, kind = %s\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Verarbeite Symboltabelle #%d, Versatz = 0x%.8lx, Art = %s\n"
-
-#~ msgid "string section missing"
-#~ msgstr "Zeichenkettenabschnitt fehlt"
-
-#~ msgid "section pointer missing"
-#~ msgstr "Abschnittszeiger fehlt"
-
-#~ msgid "no symbol table found"
-#~ msgstr "keine Symboltabelle gefunden"
-
-#~ msgid ""
-#~ "\n"
-#~ "Updating header and load commands.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Aktualisiere Kopf und lokale Befehle.\n"
-#~ "\n"
-
-#~ msgid "load command map, %d cmds, new size %ld.\n"
-#~ msgstr "lade Befehlstabelle, %d Befehle, neue Größe: %ld.\n"
-
-#~ msgid ""
-#~ "writing load commands.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "schreibe Ladebefehle.\n"
-#~ "\n"
-
-#~ msgid "close %s"
-#~ msgstr "schließe %s"
-
-#~ msgid "could not convert 0x%l.8x into a region"
-#~ msgstr "konnte 0x%l.8x nicht in eine Region konvertieren"
-
-#~ msgid "%s function, region %d, offset = %ld (0x%.8lx)\n"
-#~ msgstr "Funktion %s, Region %d, Versatz = %ld (0x%.8lx)\n"
-
-#~ msgid "bad magic number"
-#~ msgstr "falsche magische Zahl"
-
-#~ msgid "bad header version"
-#~ msgstr "falsche Kopf-Version"
-
-#~ msgid "bad raw header version"
-#~ msgstr "falsche Version des Original-Kopfes"
-
-#~ msgid "raw header buffer too small"
-#~ msgstr "Original-Kopf-Puffer zu klein"
-
-#~ msgid "old raw header file"
-#~ msgstr "alte Original-Kopf-Datei"
-
-#~ msgid "unsupported version"
-#~ msgstr "nicht unterstützte Version"
-
-#~ msgid "unknown {de,en}code_mach_o_hdr return value %d"
-#~ msgstr "unbekannter Rückgabewert %d für {de,en}code_mach_o_hdr"
-
-#~ msgid "fstat %s"
-#~ msgstr "fstat %s"
-
-#~ msgid "lseek %s 0"
-#~ msgstr "lseek %s 0"
-
-#~ msgid "read %s"
-#~ msgstr "Lese %s"
-
-#~ msgid "read %ld bytes, expected %ld, from %s"
-#~ msgstr "%ld Bytes gelesen, %ld erwartet, von %s"
-
-#~ msgid "msync %s"
-#~ msgstr "msync %s"
-
-#~ msgid "munmap %s"
-#~ msgstr "munmap %s"
-
-#~ msgid "write %s"
-#~ msgstr "schreibe %s"
-
-#~ msgid "wrote %ld bytes, expected %ld, to %s"
-#~ msgstr "%ld Bytes geschrieben, %ld erwartet, nach %s"
-
-#~ msgid "ISO C++ does not permit \"%s\" in #if"
-#~ msgstr "ISO-C++ lässt nicht »%s« in #if zu"
-
-#~ msgid "invalid character '\\%03o' in #if"
-#~ msgstr "ungültiges Zeichen '\\%03o' in #if"
-
-#~ msgid "absolute file name in remap_filename"
-#~ msgstr "absoluter Dateiname in remap_filename"
-
-#~ msgid "%s: Not a directory"
-#~ msgstr "%s: Kein Verzeichnis"
-
-#~ msgid "directory name missing after %s"
-#~ msgstr "Verzeichnisname fehlt hinter %s"
-
-#~ msgid "file name missing after %s"
-#~ msgstr "Dateiname fehlt hinter %s"
-
-#~ msgid "path name missing after %s"
-#~ msgstr "Pfadname fehlt hinter %s"
-
-#~ msgid "unknown string token %s\n"
-#~ msgstr "Unbekanntes Zeichenketten-Token %s\n"
-
-#~ msgid "non-hex digit '%c' in universal-character-name"
-#~ msgstr "Nicht-Hex-Ziffer '%c' in Universal-Zeichen-Name"
-
-#~ msgid "universal-character-name on EBCDIC target"
-#~ msgstr "Universal-Zeichen-Name auf EBCDIC Ziel"
-
-#~ msgid "universal-character-name out of range"
-#~ msgstr "Universal-Zeichen-Name außerhalb des Wertebereiches"
-
-#~ msgid "escape sequence out of range for its type"
-#~ msgstr "Fluchtsequenz außerhalb des Wertebereiches seines Typs"
-
-#~ msgid "#import is obsolete, use an #ifndef wrapper in the header file"
-#~ msgstr "#import ist veraltet, benutzen Sie einen #ifndef-Wrapper in der Header-Datei"
-
-#~ msgid "#pragma once is obsolete"
-#~ msgstr "#pragma once ist veraltet"
-
-#~ msgid "%s: warnings being treated as errors\n"
-#~ msgstr "%s: Warnungen als Fehler behandelt\n"
-
-#~ msgid "At top level:"
-#~ msgstr "Auf höchster Ebene:"
-
-#~ msgid "In function `%s':"
-#~ msgstr "In Funktion »%s«:"
-
-#~ msgid ""
-#~ "Please submit a full bug report,\n"
-#~ "with preprocessed source if appropriate.\n"
-#~ "See %s for instructions.\n"
-#~ msgstr ""
-#~ "Bitte senden Sie einen vollständigen Fehlerbericht auf Englisch ein;\n"
-#~ "bearbeiten Sie die Quellen zunächst mit einem Präprozessor, wenn es\n"
-#~ "dienlich ist.\n"
-#~ "Fehler in der deutschen Übersetzung sind an de@li.org zu melden.\n"
-#~ "\n"
-#~ "Gehen Sie gemäß den Hinweisen in %s vor.\n"
-
-#~ msgid "In file included from %s:%d"
-#~ msgstr "In von %s:%d eingefügter Datei"
-
-#~ msgid ""
-#~ ",\n"
-#~ "                 from %s:%d"
-#~ msgstr ""
-#~ ",\n"
-#~ "                 von %s:%d"
-
-#~ msgid "internal regno botch: `%s' has regno = %d\n"
-#~ msgstr "interner RegNr-Fehler: »%s« hat RegNr = %d\n"
-
-#~ msgid "support for the DWARF1 debugging format is deprecated"
-#~ msgstr "Unterstützung für das DWARF1-Debugging-Format ist veraltet"
-
-#~ msgid "unsupported wide integer operation"
-#~ msgstr "breite Ganzzahloperation nicht unterstützt"
-
-#~ msgid "mismatched braces in specs"
-#~ msgstr "unpassende geschweifte Klammern in Spezifikation"
-
-#~ msgid "Copyright (C) 2001 Free Software Foundation, Inc.\n"
-#~ msgstr "Copyright © 2001 Free Software Foundation, Inc.\n"
-
-#~ msgid "Could not open basic block file %s.\n"
-#~ msgstr "Konnte einfache Blockdatei %s nicht öffnen.\n"
-
-#~ msgid "Could not open program flow graph file %s.\n"
-#~ msgstr "Konnte Programmflussgraphdatei %s nicht öffnen.\n"
-
-#~ msgid "Could not open data file %s.\n"
-#~ msgstr "Konnte Datei %s nicht öffnen.\n"
-
-#~ msgid "Assuming that all execution counts are zero.\n"
-#~ msgstr "Angenommen, dass alle Ausführungszähler null sind.\n"
-
-#~ msgid "No executable code associated with file %s.\n"
-#~ msgstr "Kein ausführbarer Code mit Datei %s verbunden.\n"
-
-#~ msgid "didn't use all bb entries of graph, function %s\n"
-#~ msgstr "nicht alle bb-Einträge des Graphen wurden benutzt, Funktion %s\n"
-
-#~ msgid "block_num = %ld, num_blocks = %d\n"
-#~ msgstr "block_num = %ld, num_blocks = %d\n"
-
-#~ msgid "ERROR: unexpected line number %ld\n"
-#~ msgstr "FEHLER: nicht erwartete Zeilennummer %ld\n"
-
-#~ msgid "ERROR: too many basic blocks in function %s\n"
-#~ msgstr "FEHLER: zu viele Basis-Blöcke in Funktion %s\n"
-
-#~ msgid "ERROR: out of range line number in function %s\n"
-#~ msgstr "FEHLER: Zeilennummer außerhalb des Wertebereiches in Funktion %s\n"
-
-#~ msgid "Could not open source file %s.\n"
-#~ msgstr "Konnte Quelldatei %s nicht öffnen.\n"
-
-#~ msgid "Unexpected EOF while reading source file %s.\n"
-#~ msgstr "Unerwartetes Dateiende beim Lesen der Quelldatei %s.\n"
-
-#~ msgid "Creating %s.\n"
-#~ msgstr "Erzeuge %s.\n"
-
-#~ msgid "Name `%s' contains quotes"
-#~ msgstr "Name »%s« enthält Anführungszeichen"
-
-#~ msgid "invalid string `%s' in define_cpu_unit"
-#~ msgstr "ungültige Zeichenkette »%s« in define_cpu_unit"
-
-#~ msgid "invalid string `%s' in define_query_cpu_unit"
-#~ msgstr "ungültige Zeichenkette »%s« in define_query_cpu_unit"
-
-#~ msgid "invalid string `%s' in define_bypass"
-#~ msgstr "ungültige Zeichenkette »%s« in define_bypass"
-
-#~ msgid "invalid second string `%s' in exclusion_set"
-#~ msgstr "ungültige zweite Zeichenkette »%s« in exclusion_set"
-
-#~ msgid "invalid first string `%s' in presence_set"
-#~ msgstr "ungültige erste Zeichenkette »%s« in presence_set"
-
-#~ msgid "invalid second string `%s' in presence_set"
-#~ msgstr "ungültige zweite Zeichenkette »%s« in presence_set"
-
-#~ msgid "invalid first string `%s' in absence_set"
-#~ msgstr "ungültige erste Zeichenkette »%s« in absence_set"
-
-#~ msgid "invalid second string `%s' in absence_set"
-#~ msgstr "ungültige zweite Zeichenkette »%s« in absence_set"
-
-#~ msgid "invalid string `%s' in define_automaton"
-#~ msgstr "ungültige Zeichenkette »%s« in define_automaton"
-
-#~ msgid "invalid option `%s' in automata_option"
-#~ msgstr "ungültige Option »%s« in automata_option"
-
-#~ msgid "garbage after ) in reservation `%s'"
-#~ msgstr "Müll hinter ) in Reservierung »%s«"
-
-#~ msgid "invalid `%s' in reservation `%s'"
-#~ msgstr "ungültiges »%s« in Reservierung »%s«"
-
-#~ msgid "repetition `%s' <= 1 in reservation `%s'"
-#~ msgstr "Wiederholung »%s« <= 1 in Reservierung »%s«"
-
-#~ msgid "unit `%s' in exclusion is not declared"
-#~ msgstr "Einheit »%s« ist nicht im Ausschluss deklariert"
-
-#~ msgid "`%s' in exclusion is not unit"
-#~ msgstr "»%s« im Ausschluss ist keine Einheit"
-
-#~ msgid "unit `%s' excludes itself"
-#~ msgstr "Einheit »%s« schließt sich selbst aus"
-
-#~ msgid "units `%s' and `%s' in exclusion set belong to different automata"
-#~ msgstr "Einheiten »%s« und »%s« in Ausschlussmenge gehören zu verschiedenen Automaten"
-
-#~ msgid "unit `%s' excludes and requires presence of `%s'"
-#~ msgstr "Einheit »%s« schließt »%s« aus und erfordert dessen Anwesenheit"
-
-#~ msgid "unit `%s' requires absence and presence of `%s'"
-#~ msgstr "Einheit »%s« erfordert die An- und Abwesenheit von »%s«"
-
-#~ msgid "repeated declaration of automaton `%s'"
-#~ msgstr "wiederholte Deklaration des Automaten %s"
-
-#~ msgid "define_insn_reservation `%s' has negative latency time"
-#~ msgstr "define_insn_reservation »%s« hat negative Latenzzeit"
-
-#~ msgid "`%s' is already used as insn reservation name"
-#~ msgstr "»%s« wurde bereits als insn Reservierungsname verwendet"
-
-#~ msgid "define_bypass `%s - %s' has negative latency time"
-#~ msgstr "define_bypass »%s - %s« hat negative Latenzzeit"
-
-#~ msgid "define_unit `%s' without automaton when one defined"
-#~ msgstr "define_unit »%s« ohne Automat trotz Automatendefinition"
-
-#~ msgid "`%s' is declared as cpu unit"
-#~ msgstr "»%s« wurde als CPU-Einheit deklariert"
-
-#~ msgid "`%s' is declared as cpu reservation"
-#~ msgstr "»%s« wurde als CPU-Reservierung deklariert"
-
-#~ msgid "repeated declaration of unit `%s'"
-#~ msgstr "wiederholte Deklaration der Einheit »%s«"
-
-#~ msgid "repeated declaration of reservation `%s'"
-#~ msgstr "wiederholte Deklaration der Reservierung »%s«"
-
-#~ msgid "there is no insn reservation `%s'"
-#~ msgstr "es gibt keine insn-Reservierung »%s«"
-
-#~ msgid "the same bypass `%s - %s' is already defined"
-#~ msgstr "die selbe Überbrückung »%s - %s« wurde bereits definiert"
-
-#~ msgid "bypass `%s - %s' is already defined"
-#~ msgstr "Überbrückung »%s - %s« wurde bereits definiert"
-
-#~ msgid "undeclared unit or reservation `%s'"
-#~ msgstr "nicht deklarierte Einheit oder Reservierung »%s«"
-
-#~ msgid "unit `%s' is not used"
-#~ msgstr "Einheit »%s« wird nicht verwendet"
-
-#~ msgid "reservation `%s' is not used"
-#~ msgstr "Reservierung »%s« ist unbenutzt"
-
-#~ msgid "cycle in definition of reservation `%s'"
-#~ msgstr "Zyklus in Definition der Reservierung »%s«"
-
-#~ msgid "Units `%s' and `%s' should be in the same automaton"
-#~ msgstr "Einheiten »%s« und »%s« sollten im selben Automat sein"
-
-#~ msgid "-split has no argument."
-#~ msgstr "-split hat kein Argument."
-
-#~ msgid "option `-split' has not been implemented yet\n"
-#~ msgstr "Option »-split« wurde noch nicht implementiert\n"
-
-#~ msgid "Automaton `%s': Insn `%s' will never be issued"
-#~ msgstr "Automat »%s«: Insn »%s« wird nie verwendet"
-
-#~ msgid "Insn `%s' will never be issued"
-#~ msgstr "Insn »%s« wird nie verwendet"
-
-#~ msgid "Errors in DFA description"
-#~ msgstr "Fehler in DFA-Beschreibung"
-
-#~ msgid "Error in writing DFA description file %s"
-#~ msgstr "Fehler beim Schreiben der DFA-Definitionsdatei %s"
-
-#~ msgid "No input file name."
-#~ msgstr "Kein Eingabedateiname."
-
-#~ msgid "Profile does not match flowgraph of function %s (out of date?)"
-#~ msgstr "Profil passt nicht zum Flussgraphen der Funktion %s (veraltet?)"
-
-#~ msgid ".da file corrupted"
-#~ msgstr ".da-Datei beschädigt"
-
-#~ msgid "#`%s' not supported by %s#"
-#~ msgstr "#»%s« wird von %s# nicht unterstützt"
-
-#~ msgid "Copyright (C) 2002 Free Software Foundation, Inc.\n"
-#~ msgstr "Copyright © 2002 Free Software Foundation, Inc.\n"
-
-#~ msgid "I/O error on output"
-#~ msgstr "Ein-/Ausgabefehler bei der Ausgabe"
-
-#~ msgid ""
-#~ "internal error in %s, at tradcpp.c:%d\n"
-#~ "Please submit a full bug report.\n"
-#~ "See %s for instructions."
-#~ msgstr ""
-#~ "Interner Fehler in %s bei tradcpp.c:%d\n"
-#~ "Bitte senden Sie einen vollständigen Fehlerbericht\n"
-#~ "auf Englisch ein; Fehler in der deutschen Übersetzung\n"
-#~ "sind an de@li.org zu melden.\n"
-#~ "Gehen Sie gemäß den Hinweisen in %s vor."

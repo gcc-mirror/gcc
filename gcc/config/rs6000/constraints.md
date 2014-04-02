@@ -56,6 +56,9 @@
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
   "Any VSX register if the -mvsx option was used or NO_REGS.")
 
+;; NOTE: For compatibility, "wc" is reserved to represent individual CR bits.
+;; It is currently used for that purpose in LLVM.
+
 (define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
   "VSX vector register to hold vector double data or NO_REGS.")
 
@@ -102,6 +105,11 @@
 
 (define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
   "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")
+
+(define_constraint "wD"
+  "Int constant that is the element number of the 64-bit scalar in a vector."
+  (and (match_code "const_int")
+       (match_test "TARGET_VSX && (ival == VECTOR_ELEMENT_SCALAR_64BIT)")))
 
 ;; Lq/stq validates the address for load/store quad
 (define_memory_constraint "wQ"

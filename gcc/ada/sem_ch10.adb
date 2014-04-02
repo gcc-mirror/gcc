@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,6 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
 with Sem_Dist; use Sem_Dist;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
@@ -1110,8 +1109,8 @@ package body Sem_Ch10 is
          end;
       end if;
 
-      --  Deal with creating elaboration Boolean if needed. We create an
-      --  elaboration boolean only for units that come from source since
+      --  Deal with creating elaboration counter if needed. We create an
+      --  elaboration counter only for units that come from source since
       --  units manufactured by the compiler never need elab checks.
 
       if Comes_From_Source (N)
@@ -1558,13 +1557,13 @@ package body Sem_Ch10 is
 
    procedure Analyze_Proper_Body (N : Node_Id; Nam : Entity_Id) is
       Subunit_Name : constant Unit_Name_Type := Get_Unit_Name (N);
-      Unum         : Unit_Number_Type;
 
       procedure Optional_Subunit;
       --  This procedure is called when the main unit is a stub, or when we
       --  are not generating code. In such a case, we analyze the subunit if
-      --  present, which is user-friendly and in fact required for ASIS, but
-      --  we don't complain if the subunit is missing.
+      --  present, which is user-friendly and in fact required for ASIS, but we
+      --  don't complain if the subunit is missing. In GNATprove_Mode, we issue
+      --  an error to avoid formal verification of a partial unit.
 
       ----------------------
       -- Optional_Subunit --
@@ -1572,6 +1571,7 @@ package body Sem_Ch10 is
 
       procedure Optional_Subunit is
          Comp_Unit : Node_Id;
+         Unum      : Unit_Number_Type;
 
       begin
          --  Try to load subunit, but ignore any errors that occur during the
@@ -1579,18 +1579,18 @@ package body Sem_Ch10 is
          --  ignore all errors. Note that Fatal_Error will still be set, so we
          --  will be able to check for this case below.
 
-         if not ASIS_Mode then
+         if not (ASIS_Mode or GNATprove_Mode) then
             Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
          end if;
 
          Unum :=
            Load_Unit
              (Load_Name  => Subunit_Name,
-              Required   => False,
+              Required   => GNATprove_Mode,
               Subunit    => True,
               Error_Node => N);
 
-         if not ASIS_Mode then
+         if not (ASIS_Mode or GNATprove_Mode) then
             Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
          end if;
 
@@ -1632,7 +1632,8 @@ package body Sem_Ch10 is
 
       --  Local variables
 
-      Stub_Id : Entity_Id;
+      Comp_Unit : Node_Id;
+      Unum      : Unit_Number_Type;
 
    --  Start of processing for Analyze_Proper_Body
 
@@ -1786,86 +1787,45 @@ package body Sem_Ch10 is
                   Write_Eol;
                end if;
 
-               declare
-                  Comp_Unit : constant Node_Id := Cunit (Unum);
-                  Prop_Body : Node_Id;
+               Comp_Unit := Cunit (Unum);
 
-               begin
-                  --  Check for child unit instead of subunit
+               --  Check for child unit instead of subunit
 
-                  if Nkind (Unit (Comp_Unit)) /= N_Subunit then
-                     Error_Msg_N
-                       ("expected SEPARATE subunit, found child unit",
-                        Cunit_Entity (Unum));
+               if Nkind (Unit (Comp_Unit)) /= N_Subunit then
+                  Error_Msg_N
+                    ("expected SEPARATE subunit, found child unit",
+                     Cunit_Entity (Unum));
 
-                  --  OK, we have a subunit
+               --  OK, we have a subunit
 
-                  else
-                     Prop_Body := Proper_Body (Unit (Comp_Unit));
+               else
+                  Set_Corresponding_Stub (Unit (Comp_Unit), N);
+                  Set_Library_Unit (N, Comp_Unit);
 
-                     --  Set corresponding stub (even if errors)
+                  --  We update the version. Although we are not technically
+                  --  semantically dependent on the subunit, given our approach
+                  --  of macro substitution of subunits, it makes sense to
+                  --  include it in the version identification.
 
-                     Set_Corresponding_Stub (Unit (Comp_Unit), N);
+                  Version_Update (Cunit (Main_Unit), Comp_Unit);
 
-                     --  Collect SCO information for loaded subunit if we are
-                     --  in the main unit.
+                  --  Collect SCO information for loaded subunit if we are in
+                  --  the main unit.
 
-                     if Generate_SCO
-                       and then
-                         In_Extended_Main_Source_Unit
-                           (Cunit_Entity (Current_Sem_Unit))
-                     then
-                        SCO_Record (Unum);
-                     end if;
-
-                     --  Propagate all aspect specifications associated with
-                     --  the stub to the proper body.
-
-                     Move_Or_Merge_Aspects (From => N, To => Prop_Body);
-
-                     --  Move all source pragmas that follow the body stub and
-                     --  apply to it to the declarations of the proper body.
-
-                     if Nkind (N) = N_Subprogram_Body_Stub then
-                        Relocate_Pragmas_To_Body (N, Target_Body => Prop_Body);
-                     end if;
-
-                     --  Analyze the unit if semantics active
-
-                     if not Fatal_Error (Unum) or else Try_Semantics then
-                        Analyze_Subunit (Comp_Unit);
-                     end if;
-
-                     --  Set the library unit pointer in any case
-
-                     Set_Library_Unit (N, Comp_Unit);
-
-                     --  We update the version. Although we are not technically
-                     --  semantically dependent on the subunit, given our
-                     --  approach of macro substitution of subunits, it makes
-                     --  sense to include it in the version identification.
-
-                     Version_Update (Cunit (Main_Unit), Comp_Unit);
+                  if Generate_SCO
+                    and then
+                      In_Extended_Main_Source_Unit
+                        (Cunit_Entity (Current_Sem_Unit))
+                  then
+                     SCO_Record (Unum);
                   end if;
-               end;
 
-            --  The unit which should contain the proper subprogram body does
-            --  not exist. Analyze the aspect specifications of the stub (if
-            --  any).
+                  --  Analyze the unit if semantics active
 
-            elsif Nkind (N) = N_Subprogram_Body_Stub
-              and then Has_Aspects (N)
-            then
-               Stub_Id := Defining_Unit_Name (Specification (N));
-
-               --  Restore the proper visibility of the stub and its formals
-
-               Push_Scope (Stub_Id);
-               Install_Formals (Stub_Id);
-
-               Analyze_Aspect_Specifications (N, Stub_Id);
-
-               Pop_Scope;
+                  if not Fatal_Error (Unum) or else Try_Semantics then
+                     Analyze_Subunit (Comp_Unit);
+                  end if;
+               end if;
             end if;
          end if;
 
@@ -1900,6 +1860,17 @@ package body Sem_Ch10 is
          Error_Msg_N ("missing specification for Protected body", N);
 
       else
+         --  Currently there are no language-defined aspects that can apply to
+         --  a protected body stub. Issue an error and remove the aspects to
+         --  prevent cascaded errors.
+
+         if Has_Aspects (N) then
+            Error_Msg_N
+              ("aspects on protected bodies are not allowed",
+               First (Aspect_Specifications (N)));
+            Remove_Aspects (N);
+         end if;
+
          Set_Scope (Defining_Entity (N), Current_Scope);
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2350,7 +2321,19 @@ package body Sem_Ch10 is
 
       if No (Nam) or else not Is_Task_Type (Etype (Nam)) then
          Error_Msg_N ("missing specification for task body", N);
+
       else
+         --  Currently there are no language-defined aspects that can apply to
+         --  a task body stub. Issue an error and remove the aspects to prevent
+         --  cascaded errors.
+
+         if Has_Aspects (N) then
+            Error_Msg_N
+              ("aspects on task bodies are not allowed",
+               First (Aspect_Specifications (N)));
+            Remove_Aspects (N);
+         end if;
+
          Set_Scope (Defining_Entity (N), Current_Scope);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2378,7 +2361,7 @@ package body Sem_Ch10 is
                 Name =>
                   Make_Identifier (Loc,
                     Chars => New_External_Name (Chars (Etype (Nam)), 'E')),
-                 Expression => New_Reference_To (Standard_True, Loc)));
+                 Expression => New_Occurrence_Of (Standard_True, Loc)));
          end if;
       end if;
    end Analyze_Task_Body_Stub;
@@ -2649,7 +2632,7 @@ package body Sem_Ch10 is
       --  to consider the unit as unreferenced if this is the only reference
       --  that occurs.
 
-      Set_Entity_With_Style_Check (Name (N), E_Name);
+      Set_Entity_With_Checks (Name (N), E_Name);
       Generate_Reference (E_Name, Name (N), 'w', Set_Ref => False);
 
       --  Generate references and check No_Dependence restriction for parents
@@ -2674,7 +2657,7 @@ package body Sem_Ch10 is
                exit;
             end if;
 
-            Set_Entity_With_Style_Check (Pref, Par_Name);
+            Set_Entity_With_Checks (Pref, Par_Name);
 
             Generate_Reference (Par_Name, Pref);
             Check_Restriction_No_Dependence (Pref, N);
@@ -2714,7 +2697,7 @@ package body Sem_Ch10 is
          --  Guard against missing or misspelled child units
 
          if Present (Par_Name) then
-            Set_Entity_With_Style_Check (Pref, Par_Name);
+            Set_Entity_With_Checks (Pref, Par_Name);
             Generate_Reference (Par_Name, Pref);
 
          else
@@ -3169,7 +3152,7 @@ package body Sem_Ch10 is
 
       function Build_Ancestor_Name (P : Node_Id) return Node_Id is
          P_Ref  : constant Node_Id :=
-                   New_Reference_To (Defining_Entity (P), Loc);
+                   New_Occurrence_Of (Defining_Entity (P), Loc);
          P_Spec : Node_Id := P;
 
       begin
@@ -3201,14 +3184,14 @@ package body Sem_Ch10 is
 
       begin
          if No (Parent_Spec (P_Unit)) then
-            return New_Reference_To (P_Name, Loc);
+            return New_Occurrence_Of (P_Name, Loc);
 
          else
             Result :=
               Make_Expanded_Name (Loc,
                 Chars  => Chars (P_Name),
                 Prefix => Build_Ancestor_Name (Unit (Parent_Spec (P_Unit))),
-                Selector_Name => New_Reference_To (P_Name, Loc));
+                Selector_Name => New_Occurrence_Of (P_Name, Loc));
             Set_Entity (Result, P_Name);
             return Result;
          end if;
@@ -3944,7 +3927,7 @@ package body Sem_Ch10 is
                      --  a parent unit that has limited with-clauses.
 
                      Set_Subtype_Indication (Decl,
-                       New_Reference_To (Non_Lim_View, Sloc (Def_Id)));
+                       New_Occurrence_Of (Non_Lim_View, Sloc (Def_Id)));
                      Set_Etype (Def_Id, Non_Lim_View);
                      Set_Ekind (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
                      Set_Analyzed (Decl, False);

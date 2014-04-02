@@ -13,7 +13,7 @@
 The purpose of GENERIC is simply to provide a
 language-independent way of representing an entire function in
 trees.  To this end, it was necessary to add a few new tree codes
-to the back end, but most everything was already there.  If you
+to the back end, but almost everything was already there.  If you
 can express it with the codes in @code{gcc/tree.def}, it's
 GENERIC@.
 
@@ -203,7 +203,7 @@ operands, each of which is also a tree.
 @tindex IDENTIFIER_NODE
 
 An @code{IDENTIFIER_NODE} represents a slightly more general concept
-that the standard C or C++ concept of identifier.  In particular, an
+than the standard C or C++ concept of identifier.  In particular, an
 @code{IDENTIFIER_NODE} may contain a @samp{$}, or other extraordinary
 characters.
 

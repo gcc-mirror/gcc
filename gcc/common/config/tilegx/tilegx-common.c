@@ -45,6 +45,11 @@ tilegx_option_init_struct (struct gcc_options *opts)
 }
 
 
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS \
+  (TARGET_DEFAULT		    \
+   | TARGET_ENDIAN_DEFAULT)
+
 #undef  TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE tilegx_option_optimization_table
 

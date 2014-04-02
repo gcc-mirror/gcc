@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template<template<typename...> class TT>
 TT<int, float, double> foo(TT<int, float>)

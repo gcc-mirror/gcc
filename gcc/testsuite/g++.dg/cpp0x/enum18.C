@@ -1,5 +1,5 @@
 // PR c++/47277
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 int main(void) {
   enum e {};

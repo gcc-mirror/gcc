@@ -245,12 +245,23 @@
 		     UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
 {
+  rtx adjust_mem;
   /* This pattern is not permitted to fail during expansion: if both arguments
      are non-registers (e.g. memory := constant, which can be created by the
      auto-vectorizer), force operand 1 into a register.  */
   if (!s_register_operand (operands[0], <MODE>mode)
       && !s_register_operand (operands[1], <MODE>mode))
     operands[1] = force_reg (<MODE>mode, operands[1]);
+
+  if (s_register_operand (operands[0], <MODE>mode))
+    adjust_mem = operands[1];
+  else
+    adjust_mem = operands[0];
+
+  /* Legitimize address.  */
+  if (!neon_vector_mem_operand (adjust_mem, 2, true))
+    XEXP (adjust_mem, 0) = force_reg (Pmode, XEXP (adjust_mem, 0));
+
 })
 
 (define_insn "*movmisalign<mode>_neon_store"

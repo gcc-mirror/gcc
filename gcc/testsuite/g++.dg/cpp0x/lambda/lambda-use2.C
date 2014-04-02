@@ -1,5 +1,6 @@
 // PR c++/50224
-// { dg-options "-std=c++0x -Wunused-parameter" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wunused-parameter" }
 
 struct T;
 

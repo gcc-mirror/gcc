@@ -335,7 +335,7 @@ Stu Grossman for gdb hacking, allowing GCJ developers to debug Java code.
 Michael K. Gschwind contributed the port to the PDP-11.
 
 @item
-Richard Guenther for his ongoing middle-end contributions and bug fixes
+Richard Biener for his ongoing middle-end contributions and bug fixes
 and for release management.
 
 @item
@@ -1048,6 +1048,9 @@ Carlo Wood for various fixes.
 
 @item
 Tom Wood for work on the m88k port.
+
+@item
+Chung-Ju Wu for his work on the Andes NDS32 port.
 
 @item
 Canqun Yang for work on GNU Fortran.

@@ -721,6 +721,7 @@ build_var (tree fn_decl, tree type, int counter)
   DECL_NAME (var) = get_identifier (buf);
   TREE_STATIC (var) = 1;
   TREE_ADDRESSABLE (var) = 1;
+  DECL_NONALIASED (var) = 1;
   DECL_ALIGN (var) = TYPE_ALIGN (type);
 
   return var;

@@ -1,51 +1,60 @@
 // PR c++/25811
 // { dg-do compile }
 
-struct A1		// { dg-error "uninitialized" "" { target c++11 } }
+struct A1 // { dg-message "implicitly deleted" "" { target c++11 } }
+          // { dg-error "uninitialized" "" { target c++11 } 4 }
 {
-  int const j; // { dg-message "should be initialized" "" { target c++98 } }
+  int const j; // { dg-message "should be initialized" }
 };
 
-struct A2		// { dg-error "uninitialized" "" { target c++11 } }
+struct A2 // { dg-message "implicitly deleted" "" { target c++11 } }
+          // { dg-error "uninitialized" "" { target c++11 } 10 }
 {
-  int const volatile i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const volatile i; // { dg-message "should be initialized" }
 };
 
-struct A3		// { dg-error "uninitialized" "" { target c++11 } }
+struct A3 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 16 }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" }
 };
 
-struct A4		// { dg-error "uninitialized" "" { target c++11 } }
+struct A4 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 22 }
 {
-  int const& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int const& ref; // { dg-message "should be initialized" }
 };
 
-struct A5		// { dg-error "uninitialized" "" { target c++11 } }
+struct A5 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 28 }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" }
+  int const i; // { dg-message "should be initialized" }
 };
 
-template <class T> struct S1 // { dg-error "uninitialized" "" { target c++11 } }
+template <class T> struct S1 // { dg-message "implicitly deleted" "" { target c++11 } }
+			     // { dg-error "uninitialized" "" { target c++11 } 35 }
 {
-  T const i; // { dg-message "should be initialized" "" { target c++98 } }
+  T const i; // { dg-message "should be initialized" }
 };
 
-template <class T> struct S2 // { dg-error "uninitialized" "" { target c++11 } }
+template <class T> struct S2 // { dg-message "implicitly deleted" "" { target c++11 } }
+			     // { dg-error "uninitialized" "" { target c++11 } 41 }
 {
-  T const volatile i; // { dg-message "should be initialized" "" { target c++98 } }
+  T const volatile i; // { dg-message "should be initialized" }
 };
 
-template <class T> struct S3 // { dg-error "uninitialized" "" { target c++11 } }
+template <class T> struct S3 // { dg-message "implicitly deleted" "" { target c++11 } }
+			     // { dg-error "uninitialized" "" { target c++11 } 47 }
 {
-  T& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  T& ref; // { dg-message "should be initialized" }
 };
 
-template <class T> struct S4 // { dg-error "uninitialized" "" { target c++11 } }
+template <class T> struct S4 // { dg-message "implicitly deleted" "" { target c++11 } }
+			     // { dg-error "uninitialized" "" { target c++11 } 53 }
 {
-  T const i; // { dg-message "should be initialized" "" { target c++98 } }
-  T& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  T const i; // { dg-message "should be initialized" }
+  T& ref; // { dg-message "should be initialized" }
 };
 
 struct X
@@ -55,44 +64,50 @@ struct X
   int const& r;
 };
 
-struct Y11		// { dg-error "uninitialized" "" { target c++11 } }
+struct Y11 // { dg-message "implicitly deleted" "" { target c++11 } }
+	   // { dg-error "uninitialized" "" { target c++11 } 67 }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" }
 };
 
-struct Y1		// { dg-error "deleted" "" { target c++11 } }
+struct Y1 // { dg-error "deleted" "" { target c++11 } }
 {
   Y11 a[1];
 };
 
-struct Y22		// { dg-error "uninitialized" "" { target c++11 } }
+struct Y22 // { dg-message "implicitly deleted" "" { target c++11 } }
+	   // { dg-error "uninitialized" "" { target c++11 } 78 }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" }
 };
 
-struct Y2		// { dg-error "deleted" "" { target c++11 } }
+struct Y2 // { dg-error "deleted" "" { target c++11 } }
 {
   Y22 a[1];
 };
 
-struct Z1		// { dg-error "uninitialized" "" { target c++11 } }
+struct Z1 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 89 }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" }
 };
 
-struct Z2 // { dg-error "uninitialized" "" { target c++11 } }
+struct Z2 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 95 }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" }
 };
 
-struct Z3 // { dg-error "uninitialized" "" { target c++11 } }
+struct Z3 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 101 }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" }
 };
 
-struct Z4 // { dg-error "uninitialized" "" { target c++11 } }
+struct Z4 // { dg-message "implicitly deleted" "" { target c++11 } }
+	  // { dg-error "uninitialized" "" { target c++11 } 107 }
 {
-  int& ref; // { dg-message "should be initialized" "" { target c++98 } }
+  int& ref; // { dg-message "should be initialized" }
 };
 
 struct Z5
@@ -100,7 +115,7 @@ struct Z5
   int i;
 };
 
-struct Z		// { dg-error "deleted" "" { target c++11 } }
+struct Z // { dg-error "deleted" "" { target c++11 } }
 {
   Z1 z1;
   Z2 z2;
@@ -109,9 +124,10 @@ struct Z		// { dg-error "deleted" "" { target c++11 } }
   Z5 z5;
 };
 
-union U // { dg-error "uninitialized" "" { target c++11 } }
+union U // { dg-message "implicitly deleted" "" { target c++11 } }
+	// { dg-error "uninitialized" "" { target c++11 } 127 }
 {
-  int const i; // { dg-message "should be initialized" "" { target c++98 } }
+  int const i; // { dg-message "should be initialized" }
 };
 
 void f1 ()

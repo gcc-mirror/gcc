@@ -51,8 +51,6 @@ arm port		Richard Earnshaw	richard.earnshaw@arm.com
 arm port		Paul Brook		paul@codesourcery.com
 arm port		Ramana Radhakrishnan	ramana.radhakrishnan@arm.com
 avr port		Denis Chertykov		chertykov@gmail.com
-avr port		Anatoly Sokolov		aesok@post.ru
-avr port		Eric Weddington		eric.weddington@atmel.com
 bfin port		Bernd Schmidt		bernds@codesourcery.com
 bfin port		Jie Zhang		jzhang918@gmail.com
 c6x port		Bernd Schmidt		bernds@codesourcery.com
@@ -198,8 +196,7 @@ dwarf debugging code	Cary Coutant		ccoutant@google.com
 c++ runtime libs	Paolo Carlini		paolo.carlini@oracle.com
 c++ runtime libs	Ulrich Drepper		drepper@gmail.com
 c++ runtime libs	Benjamin De Kosnik	bkoz@gnu.org
-c++ runtime libs	Loren J. Rittle		ljrittle@acm.org
-c++ runtime libs	Jonathan Wakely		redi@gcc.gnu.org
+c++ runtime libs	Jonathan Wakely		jwakely@redhat.com
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
 fixincludes		Bruce Korb		bkorb@gnu.org
@@ -409,6 +406,7 @@ Manfred Hollstein				mh@suse.com
 Cong Hou					congh@google.com
 Falk Hueffner					falk@debian.org
 Andrew John Hughes				gnu_andrew@member.fsf.org
+Dominique d'Humieres				dominiq@lps.ens.fr
 Andy Hutchinson					hutchinsonandy@aim.com
 Naveen H.S					Naveen.Hurugalawadi@caviumnetworks.com
 Meador Inge					meadori@codesourcery.com
@@ -529,6 +527,7 @@ Franz Sirl					franz.sirl-kernel@lauterbach.com
 Jan Sjodin					jan.sjodin@amd.com
 Edward Smith-Rowland				3dw4rd@verizon.net
 Jayant Sonar					rsonar.jayant@gmail.com
+Anatoly Sokolov					aesok@post.ru
 Michael Sokolov					msokolov@ivan.Harhan.ORG
 Richard Stallman				rms@gnu.org
 Basile Starynkevitch				basile@starynkevitch.net
@@ -551,6 +550,7 @@ Markus Trippelsdorf				markus@trippelsdorf.de
 David Ung					davidu@mips.com
 Neil Vachharajani				nvachhar@gmail.com
 Kris Van Hees					kris.van.hees@oracle.com
+Kugan Vivekanandarajah				kuganv@linaro.org	
 Tom de Vries					tom@codesourcery.com
 Nenad Vukicevic					nenad@intrepid.com
 Feng Wang					fengwang@nudt.edu.cn

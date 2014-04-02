@@ -2,7 +2,7 @@
 
 template < typename > struct A;
 
-template < typename > struct A < int > // { dg-error "not used|template\\-parameter|declaration" }
+template < typename > struct A < int > // { dg-error "not deducible|template\\-parameter|declaration" }
 {
   int i;
   int f ();

@@ -180,10 +180,12 @@ extern void emit_libcall_block (rtx, rtx, rtx, rtx);
    Likewise for subtraction and for just copying.  */
 extern rtx gen_add2_insn (rtx, rtx);
 extern rtx gen_add3_insn (rtx, rtx, rtx);
+extern rtx gen_addptr3_insn (rtx, rtx, rtx);
 extern rtx gen_sub2_insn (rtx, rtx);
 extern rtx gen_sub3_insn (rtx, rtx, rtx);
 extern rtx gen_move_insn (rtx, rtx);
 extern int have_add2_insn (rtx, rtx);
+extern int have_addptr3_insn (rtx, rtx, rtx);
 extern int have_sub2_insn (rtx, rtx);
 
 /* Emit a pair of rtl insns to compare two rtx's and to jump

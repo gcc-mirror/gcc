@@ -1,5 +1,5 @@
 // PR c++/50361
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 #include <initializer_list>
 
@@ -7,7 +7,7 @@ struct Foo
 {
   Foo(std::initializer_list<Foo>) { };
 
-  template<class T> Foo(T t) { T u(t); };
+  template<class T> Foo(T t) { T u(t); }
 
 private:
   union Data

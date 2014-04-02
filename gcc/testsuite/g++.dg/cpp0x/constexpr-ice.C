@@ -1,5 +1,5 @@
 // We used to crash on this instead of giving a decent error.
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct A { int i; };
 

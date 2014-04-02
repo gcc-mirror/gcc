@@ -328,6 +328,14 @@ package body Sem_Intr is
       then
          Errint ("unrecognized intrinsic subprogram", E, N);
 
+      --  Shift cases. We allow user specification of intrinsic shift operators
+      --  for any numeric types.
+
+      elsif Nam_In (Nam, Name_Rotate_Left, Name_Rotate_Right, Name_Shift_Left,
+                         Name_Shift_Right, Name_Shift_Right_Arithmetic)
+      then
+         Check_Shift (E, N);
+
       --  We always allow intrinsic specifications in language defined units
       --  and in expanded code. We assume that the GNAT implementors know what
       --  they are doing, and do not write or generate junk use of intrinsic.
@@ -339,13 +347,7 @@ package body Sem_Intr is
       then
          null;
 
-      --  Shift cases. We allow user specification of intrinsic shift
-      --  operators for any numeric types.
-
-      elsif Nam_In (Nam, Name_Rotate_Left, Name_Rotate_Right, Name_Shift_Left,
-                         Name_Shift_Right, Name_Shift_Right_Arithmetic)
-      then
-         Check_Shift (E, N);
+      --  Exception  functions
 
       elsif Nam_In (Nam, Name_Exception_Information,
                          Name_Exception_Message,
@@ -353,8 +355,12 @@ package body Sem_Intr is
       then
          Check_Exception_Function (E, N);
 
+      --  Intrinsic operators
+
       elsif Nkind (E) = N_Defining_Operator_Symbol then
          Check_Intrinsic_Operator (E, N);
+
+      --  Source_Location and navigation functions
 
       elsif Nam_In (Nam, Name_File, Name_Line, Name_Source_Location,
                          Name_Enclosing_Entity)
@@ -439,6 +445,8 @@ package body Sem_Intr is
            ("first argument of shift must match return type", Ptyp1, N);
          return;
       end if;
+
+      Set_Has_Shift_Operator (Base_Type (Typ1));
    end Check_Shift;
 
    ------------

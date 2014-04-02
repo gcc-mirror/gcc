@@ -3823,7 +3823,8 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
 
       /* If insn was already scheduled on the current fence,
 	 set TARGET_AVAILABLE to -1 no matter what expr's attribute says.  */
-      if (vinsn_vec_has_expr_p (vec_target_unavailable_vinsns, expr))
+      if (vinsn_vec_has_expr_p (vec_target_unavailable_vinsns, expr)
+	  && !fence_insn_p)
 	target_available = -1;
 
       /* If the availability of the EXPR is invalidated by the insertion of
@@ -7466,12 +7467,13 @@ find_min_max_seqno (flist_t fences, int *min_seqno, int *max_seqno)
     }
 }
 
-/* Calculate new fences from FENCES.  */
+/* Calculate new fences from FENCES.  Write the current time to PTIME.  */
 static flist_t
-calculate_new_fences (flist_t fences, int orig_max_seqno)
+calculate_new_fences (flist_t fences, int orig_max_seqno, int *ptime)
 {
   flist_t old_fences = fences;
   struct flist_tail_def _new_fences, *new_fences = &_new_fences;
+  int max_time = 0;
 
   flist_tail_init (new_fences);
   for (; fences; fences = FLIST_NEXT (fences))
@@ -7500,9 +7502,11 @@ calculate_new_fences (flist_t fences, int orig_max_seqno)
         }
       else
         extract_new_fences_from (fences, new_fences, orig_max_seqno);
+      max_time = MAX (max_time, FENCE_CYCLE (fence));
     }
 
   flist_clear (&old_fences);
+  *ptime = max_time;
   return FLIST_TAIL_HEAD (new_fences);
 }
 
@@ -7557,6 +7561,7 @@ static void
 sel_sched_region_2 (int orig_max_seqno)
 {
   int highest_seqno_in_use = orig_max_seqno;
+  int max_time = 0;
 
   stat_bookkeeping_copies = 0;
   stat_insns_needed_bookkeeping = 0;
@@ -7572,19 +7577,22 @@ sel_sched_region_2 (int orig_max_seqno)
 
       find_min_max_seqno (fences, &min_seqno, &max_seqno);
       schedule_on_fences (fences, max_seqno, &scheduled_insns_tailp);
-      fences = calculate_new_fences (fences, orig_max_seqno);
+      fences = calculate_new_fences (fences, orig_max_seqno, &max_time);
       highest_seqno_in_use = update_seqnos_and_stage (min_seqno, max_seqno,
                                                       highest_seqno_in_use,
                                                       &scheduled_insns);
     }
 
   if (sched_verbose >= 1)
-    sel_print ("Scheduled %d bookkeeping copies, %d insns needed "
-               "bookkeeping, %d insns renamed, %d insns substituted\n",
-               stat_bookkeeping_copies,
-               stat_insns_needed_bookkeeping,
-               stat_renamed_scheduled,
-               stat_substitutions_total);
+    {
+      sel_print ("Total scheduling time: %d cycles\n", max_time);
+      sel_print ("Scheduled %d bookkeeping copies, %d insns needed "
+		 "bookkeeping, %d insns renamed, %d insns substituted\n",
+		 stat_bookkeeping_copies,
+		 stat_insns_needed_bookkeeping,
+		 stat_renamed_scheduled,
+		 stat_substitutions_total);
+    }
 }
 
 /* Schedule a region.  When pipelining, search for possibly never scheduled

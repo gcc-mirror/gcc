@@ -1,7 +1,8 @@
 // Test that this is accepted even when pedantic now that it's part
 // of the standard.
 
-// { dg-options "-std=c++0x -pedantic" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-pedantic" }
 
 bool b;
 template <class T>

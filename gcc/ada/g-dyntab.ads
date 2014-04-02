@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2010, AdaCore                     --
+--                     Copyright (C) 2000-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@
 --  GNAT.Table and the GNAT compiler source unit Table to keep as much
 --  coherency as possible between these three related units.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 generic
    type Table_Component_Type is private;

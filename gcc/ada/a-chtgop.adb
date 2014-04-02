@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
                --  See note above
 
-               pragma Assert (Index (HT, Dst_Node) = Src_Index);
+               pragma Assert (Checked_Index (HT, Dst_Node) = Src_Index);
 
             begin
                HT.Buckets (Src_Index) := Dst_Node;
@@ -91,7 +91,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
                   --  See note above
 
-                  pragma Assert (Index (HT, Dst_Node) = Src_Index);
+                  pragma Assert (Checked_Index (HT, Dst_Node) = Src_Index);
 
                begin
                   Set_Next (Node => Dst_Prev, Next => Dst_Node);
@@ -120,6 +120,47 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
       return HT.Buckets'Length;
    end Capacity;
+
+   -------------------
+   -- Checked_Index --
+   -------------------
+
+   function Checked_Index
+     (Hash_Table : aliased in out Hash_Table_Type;
+      Buckets    : Buckets_Type;
+      Node       : Node_Access) return Hash_Type
+   is
+      Result : Hash_Type;
+
+      B : Natural renames Hash_Table.Busy;
+      L : Natural renames Hash_Table.Lock;
+
+   begin
+      B := B + 1;
+      L := L + 1;
+
+      Result := Index (Buckets, Node);
+
+      B := B - 1;
+      L := L - 1;
+
+      return Result;
+
+   exception
+      when others =>
+         B := B - 1;
+         L := L - 1;
+
+         raise;
+   end Checked_Index;
+
+   function Checked_Index
+     (Hash_Table : aliased in out Hash_Table_Type;
+      Node       : Node_Access) return Hash_Type
+   is
+   begin
+      return Checked_Index (Hash_Table, Hash_Table.Buckets.all, Node);
+   end Checked_Index;
 
    -----------
    -- Clear --
@@ -174,7 +215,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
            "attempt to delete node from empty hashed container";
       end if;
 
-      Indx := Index (HT, X);
+      Indx := Checked_Index (HT, X);
       Prev := HT.Buckets (Indx);
 
       if Prev = null then
@@ -288,6 +329,14 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    function Generic_Equal
      (L, R : Hash_Table_Type) return Boolean
    is
+      BL : Natural renames L'Unrestricted_Access.Busy;
+      LL : Natural renames L'Unrestricted_Access.Lock;
+
+      BR : Natural renames R'Unrestricted_Access.Busy;
+      LR : Natural renames R'Unrestricted_Access.Lock;
+
+      Result : Boolean;
+
       L_Index : Hash_Type;
       L_Node  : Node_Access;
 
@@ -315,13 +364,23 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          L_Index := L_Index + 1;
       end loop;
 
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
+
+      BL := BL + 1;
+      LL := LL + 1;
+
+      BR := BR + 1;
+      LR := LR + 1;
+
       --  For each node of hash table L, search for an equivalent node in hash
       --  table R.
 
       N := L.Length;
       loop
          if not Find (HT => R, Key => L_Node) then
-            return False;
+            Result := False;
+            exit;
          end if;
 
          N := N - 1;
@@ -332,7 +391,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
             --  We have exhausted the nodes in this bucket
 
             if N = 0 then
-               return True;
+               Result := True;
+               exit;
             end if;
 
             --  Find the next bucket
@@ -344,6 +404,24 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
             end loop;
          end if;
       end loop;
+
+      BL := BL - 1;
+      LL := LL - 1;
+
+      BR := BR - 1;
+      LR := LR - 1;
+
+      return Result;
+
+   exception
+      when others =>
+         BL := BL - 1;
+         LL := LL - 1;
+
+         BR := BR - 1;
+         LR := LR - 1;
+
+         raise;
    end Generic_Equal;
 
    -----------------------
@@ -407,7 +485,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       for J in 1 .. N loop
          declare
             Node : constant Node_Access := New_Node (Stream);
-            Indx : constant Hash_Type := Index (HT, Node);
+            Indx : constant Hash_Type := Checked_Index (HT, Node);
             B    : Node_Access renames HT.Buckets (Indx);
          begin
             Set_Next (Node => Node, Next => B);
@@ -513,17 +591,21 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    ----------
 
    function Next
-     (HT   : Hash_Table_Type;
+     (HT   : aliased in out Hash_Table_Type;
       Node : Node_Access) return Node_Access
    is
-      Result : Node_Access := Next (Node);
+      Result : Node_Access;
+      First  : Hash_Type;
 
    begin
+      Result := Next (Node);
+
       if Result /= null then
          return Result;
       end if;
 
-      for Indx in Index (HT, Node) + 1 .. HT.Buckets'Last loop
+      First := Checked_Index (HT, Node) + 1;
+      for Indx in First .. HT.Buckets'Last loop
          Result := HT.Buckets (Indx);
 
          if Result /= null then
@@ -643,7 +725,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
                      Src_Node : constant Node_Access := Src_Bucket;
 
                      Dst_Index : constant Hash_Type :=
-                       Index (Dst_Buckets.all, Src_Node);
+                       Checked_Index (HT, Dst_Buckets.all, Src_Node);
 
                      Dst_Bucket : Node_Access renames Dst_Buckets (Dst_Index);
 
@@ -658,12 +740,14 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
                   pragma Assert (L > 0);
                   L := L - 1;
                end loop;
+
             exception
                when others =>
+
                   --  If there's an error computing a hash value during a
-                  --  rehash, then AI-302 says the nodes "become lost."  The
+                  --  rehash, then AI-302 says the nodes "become lost." The
                   --  issue is whether to actually deallocate these lost nodes,
-                  --  since they might be designated by extant cursors.  Here
+                  --  since they might be designated by extant cursors. Here
                   --  we decide to deallocate the nodes, since it's better to
                   --  solve real problems (storage consumption) rather than
                   --  imaginary ones (the user might, or might not, dereference

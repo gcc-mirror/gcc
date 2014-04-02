@@ -163,8 +163,8 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rcp28_round_sd (__m128d __A, __m128d __B, int __R)
 {
-  return (__m128d) __builtin_ia32_rcp28sd_round ((__v2df) __A,
-						 (__v2df) __B,
+  return (__m128d) __builtin_ia32_rcp28sd_round ((__v2df) __B,
+						 (__v2df) __A,
 						 __R);
 }
 
@@ -172,8 +172,8 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rcp28_round_ss (__m128 __A, __m128 __B, int __R)
 {
-  return (__m128) __builtin_ia32_rcp28ss_round ((__v4sf) __A,
-						(__v4sf) __B,
+  return (__m128) __builtin_ia32_rcp28ss_round ((__v4sf) __B,
+						(__v4sf) __A,
 						__R);
 }
 
@@ -237,8 +237,8 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt28_round_sd (__m128d __A, __m128d __B, int __R)
 {
-  return (__m128d) __builtin_ia32_rsqrt28sd_round ((__v2df) __A,
-						   (__v2df) __B,
+  return (__m128d) __builtin_ia32_rsqrt28sd_round ((__v2df) __B,
+						   (__v2df) __A,
 						   __R);
 }
 
@@ -246,8 +246,8 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt28_round_ss (__m128 __A, __m128 __B, int __R)
 {
-  return (__m128) __builtin_ia32_rsqrt28ss_round ((__v4sf) __A,
-						  (__v4sf) __B,
+  return (__m128) __builtin_ia32_rsqrt28ss_round ((__v4sf) __B,
+						  (__v4sf) __A,
 						  __R);
 }
 
@@ -375,16 +375,16 @@ _mm_rsqrt28_round_ss (__m128 __A, __m128 __B, int __R)
     _mm512_maskz_rsqrt28_round_ps(U, A, _MM_FROUND_CUR_DIRECTION)
 
 #define _mm_rcp28_sd(A, B)	\
-    __builtin_ia32_rcp28sd_round(A, B, _MM_FROUND_CUR_DIRECTION)
+    __builtin_ia32_rcp28sd_round(B, A, _MM_FROUND_CUR_DIRECTION)
 
 #define _mm_rcp28_ss(A, B)	\
-    __builtin_ia32_rcp28ss_round(A, B, _MM_FROUND_CUR_DIRECTION)
+    __builtin_ia32_rcp28ss_round(B, A, _MM_FROUND_CUR_DIRECTION)
 
 #define _mm_rsqrt28_sd(A, B)	\
-    __builtin_ia32_rsqrt28sd_round(A, B, _MM_FROUND_CUR_DIRECTION)
+    __builtin_ia32_rsqrt28sd_round(B, A, _MM_FROUND_CUR_DIRECTION)
 
 #define _mm_rsqrt28_ss(A, B)	\
-    __builtin_ia32_rsqrt28ss_round(A, B, _MM_FROUND_CUR_DIRECTION)
+    __builtin_ia32_rsqrt28ss_round(B, A, _MM_FROUND_CUR_DIRECTION)
 
 #ifdef __DISABLE_AVX512ER__
 #undef __DISABLE_AVX512ER__

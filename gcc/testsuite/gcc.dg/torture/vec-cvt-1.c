@@ -1,4 +1,6 @@
 /* { dg-do run } */
+/* This test is too big for small targets.  */
+/* { dg-require-effective-target size32plus } */
 
 #include <stdlib.h>
 

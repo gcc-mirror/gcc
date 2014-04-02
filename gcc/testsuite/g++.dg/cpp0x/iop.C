@@ -6,8 +6,7 @@
 //   See http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2118.html under the
 //   section "Revision 1 Summary and Rationale" for more details.
 
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 // { dg-skip-if "packed attribute missing for struct one" { "epiphany-*-*" } { "*" } { "" } }
 
 template <bool> struct sa;

@@ -492,7 +492,7 @@ change_decl_assembler_name (tree decl, tree name)
       if (alias)
 	{
 	  IDENTIFIER_TRANSPARENT_ALIAS (name) = 1;
-	  TREE_CHAIN (DECL_ASSEMBLER_NAME (name)) = alias;
+	  TREE_CHAIN (name) = alias;
 	}
       if (node)
 	insert_to_assembler_name_hash (node, true);
@@ -601,6 +601,8 @@ dump_symtab_base (FILE *f, symtab_node *node)
 	     ? IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME
 				     (node->alias_target))
 	     : IDENTIFIER_POINTER (node->alias_target));
+  if (node->body_removed)
+    fprintf (f, "\n  Body removed by symtab_remove_unreachable_nodes");
   fprintf (f, "\n  Visibility:");
   if (node->in_other_partition)
     fprintf (f, " in_other_partition");

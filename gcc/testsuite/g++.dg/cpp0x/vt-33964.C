@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 template<typename ... Args>
 struct foo
 {
@@ -6,7 +6,7 @@ struct foo
 };
 
 template<typename ... Args>
-struct foo< typename Args::is_applied... > // { dg-error "not used|Args" }
+struct foo< typename Args::is_applied... > // { dg-error "not deducible|Args" }
 {
     static bool const value = false;
 };

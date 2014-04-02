@@ -1505,7 +1505,7 @@ update_conflict_hard_regno_costs (int *costs, enum reg_class aclass,
 		index = ira_class_hard_reg_index[aclass][hard_regno];
 		if (index < 0)
 		  continue;
-		cost = conflict_costs [i] * mult / div;
+		cost = (int) ((unsigned) conflict_costs [i] * mult) / div;
 		if (cost == 0)
 		  continue;
 		cont_p = true;

@@ -81,8 +81,10 @@ struct GTY (()) machine_function
   int args_size;
   /* Number of bytes needed to store registers in frame.  */
   int save_reg_size;
-   /* Offset from new stack pointer to store registers.  */
+  /* Offset from new stack pointer to store registers.  */
   int save_regs_offset;
+  /* Offset from save_regs_offset to store frame pointer register.  */
+  int fp_save_offset;
   /* != 0 if frame layout already calculated.  */
   int initialized;
 };
@@ -390,6 +392,17 @@ nios2_compute_frame_layout (void)
 	  }
     }
 
+  cfun->machine->fp_save_offset = 0;
+  if (save_mask & (1 << HARD_FRAME_POINTER_REGNUM))
+    {
+      int fp_save_offset = 0;
+      for (regno = 0; regno < HARD_FRAME_POINTER_REGNUM; regno++)
+	if (save_mask & (1 << regno))
+	  fp_save_offset += 4;
+
+      cfun->machine->fp_save_offset = fp_save_offset;
+    }
+
   save_reg_size = NIOS2_STACK_ALIGN (save_reg_size);
   total_size += save_reg_size;
   total_size += NIOS2_STACK_ALIGN (crtl->args.pretend_args_size);
@@ -450,8 +463,8 @@ nios2_expand_prologue (void)
 {
   unsigned int regno;
   int total_frame_size, save_offset;
-  int sp_offset; /* offset from base_reg to final stack value.  */
-  int fp_offset; /* offset from base_reg to final fp value.  */
+  int sp_offset;      /* offset from base_reg to final stack value.  */
+  int save_regs_base; /* offset from base_reg to register save area.  */
   rtx insn;
 
   total_frame_size = nios2_compute_frame_layout ();
@@ -468,8 +481,7 @@ nios2_expand_prologue (void)
 			gen_int_mode (cfun->machine->save_regs_offset
 				      - total_frame_size, Pmode)));
       RTX_FRAME_RELATED_P (insn) = 1;
-
-      fp_offset = 0;
+      save_regs_base = 0;
       sp_offset = -cfun->machine->save_regs_offset;
     }
   else if (total_frame_size)
@@ -478,16 +490,16 @@ nios2_expand_prologue (void)
 				       gen_int_mode (-total_frame_size,
 						     Pmode)));
       RTX_FRAME_RELATED_P (insn) = 1;
-      fp_offset = cfun->machine->save_regs_offset;
+      save_regs_base = cfun->machine->save_regs_offset;
       sp_offset = 0;
     }
   else
-    fp_offset = sp_offset = 0;
+    save_regs_base = sp_offset = 0;
 
   if (crtl->limit_stack)
     nios2_emit_stack_limit_check ();
 
-  save_offset = fp_offset + cfun->machine->save_reg_size;
+  save_offset = save_regs_base + cfun->machine->save_reg_size;
 
   for (regno = LAST_GP_REG; regno > 0; regno--)
     if (cfun->machine->save_mask & (1 << regno))
@@ -498,9 +510,10 @@ nios2_expand_prologue (void)
 
   if (frame_pointer_needed)
     {
+      int fp_save_offset = save_regs_base + cfun->machine->fp_save_offset;
       insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
 				       stack_pointer_rtx,
-				       gen_int_mode (fp_offset, Pmode)));
+				       gen_int_mode (fp_save_offset, Pmode)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -555,7 +568,9 @@ nios2_expand_epilogue (bool sibcall_p)
   if (frame_pointer_needed)
     {
       /* Recover the stack pointer.  */
-      insn = emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
+      insn = emit_insn (gen_add3_insn
+			(stack_pointer_rtx, hard_frame_pointer_rtx,
+			 gen_int_mode (-cfun->machine->fp_save_offset, Pmode)));
       cfa_adj = plus_constant (Pmode, stack_pointer_rtx,
 			       (total_frame_size
 				- cfun->machine->save_regs_offset));
@@ -664,13 +679,25 @@ void
 nios2_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
   fprintf (file, "\tmov\tr8, ra\n");
-  if (flag_pic)
+  if (flag_pic == 1)
     {
       fprintf (file, "\tnextpc\tr2\n");
       fprintf (file, "\t1: movhi\tr3, %%hiadj(_gp_got - 1b)\n");
       fprintf (file, "\taddi\tr3, r3, %%lo(_gp_got - 1b)\n");
       fprintf (file, "\tadd\tr2, r2, r3\n");
       fprintf (file, "\tldw\tr2, %%call(_mcount)(r2)\n");
+      fprintf (file, "\tcallr\tr2\n");
+    }
+  else if (flag_pic == 2)
+    {
+      fprintf (file, "\tnextpc\tr2\n");
+      fprintf (file, "\t1: movhi\tr3, %%hiadj(_gp_got - 1b)\n");
+      fprintf (file, "\taddi\tr3, r3, %%lo(_gp_got - 1b)\n");
+      fprintf (file, "\tadd\tr2, r2, r3\n");
+      fprintf (file, "\tmovhi\tr3, %%call_hiadj(_mcount)\n");
+      fprintf (file, "\taddi\tr3, r3, %%call_lo(_mcount)\n");
+      fprintf (file, "\tadd\tr3, r2, r3\n");
+      fprintf (file, "\tldw\tr2, 0(r3)\n");
       fprintf (file, "\tcallr\tr2\n");
     }
   else
@@ -760,7 +787,8 @@ nios2_initial_elimination_offset (int from, int to)
     /* If we are asked for the frame pointer offset, then adjust OFFSET
        by the offset from the frame pointer to the stack pointer.  */
   if (to == HARD_FRAME_POINTER_REGNUM)
-    offset -= cfun->machine->save_regs_offset;
+    offset -= (cfun->machine->save_regs_offset
+	       + cfun->machine->fp_save_offset); 
 
   return offset;
 }
@@ -920,7 +948,7 @@ nios2_handle_custom_fpu_cfg (const char *cfgname, const char *endp,
     }
   else
     warning (0, "ignoring unrecognized switch %<-mcustom-fpu-cfg%> "
-	     "value %<%s%>", cfg);    
+	     "value %<%s%>", cfgname);
 
   /* Guard against errors in the standard configurations.  */
   nios2_custom_check_insns ();
@@ -1116,20 +1144,64 @@ nios2_call_tls_get_addr (rtx ti)
   return ret;
 }
 
-static rtx
-nios2_unspec_address (rtx loc, rtx base_reg, int unspec)
+/* Return true for large offsets requiring hiadj/lo relocation pairs.  */
+static bool
+nios2_large_offset_p (int unspec)
 {
-  rtx unspec_offset =
-    gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (Pmode, gen_rtvec (1, loc),
-					  unspec));
-  return gen_rtx_PLUS (Pmode, base_reg, unspec_offset);
+  gcc_assert (nios2_unspec_reloc_name (unspec) != NULL);
+
+  if (flag_pic == 2
+      /* FIXME: TLS GOT offset relocations will eventually also get this
+	 treatment, after binutils support for those are also completed.  */
+      && (unspec == UNSPEC_PIC_SYM || unspec == UNSPEC_PIC_CALL_SYM))
+    return true;
+
+  /* 'gotoff' offsets are always hiadj/lo.  */
+  if (unspec == UNSPEC_PIC_GOTOFF_SYM)
+    return true;
+
+  return false;
 }
 
+/* Return true for conforming unspec relocations.  Also used in
+   constraints.md and predicates.md.  */
+bool
+nios2_unspec_reloc_p (rtx op)
+{
+  return (GET_CODE (op) == CONST
+	  && GET_CODE (XEXP (op, 0)) == UNSPEC
+	  && ! nios2_large_offset_p (XINT (XEXP (op, 0), 1)));
+}
+
+/* Helper to generate unspec constant.  */
+static rtx
+nios2_unspec_offset (rtx loc, int unspec)
+{
+  return gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (Pmode, gen_rtvec (1, loc),
+					       unspec));
+}
+
+/* Generate GOT pointer based address with large offset.  */
+static rtx
+nios2_large_got_address (rtx offset)
+{
+  rtx addr = gen_reg_rtx (Pmode);
+  emit_insn (gen_add3_insn (addr, pic_offset_table_rtx,
+			    force_reg (Pmode, offset)));
+  return addr;
+}
+
+/* Generate a GOT pointer based address.  */
 static rtx
 nios2_got_address (rtx loc, int unspec)
 {
+  rtx offset = nios2_unspec_offset (loc, unspec);
   crtl->uses_pic_offset_table = 1;
-  return nios2_unspec_address (loc, pic_offset_table_rtx, unspec);
+
+  if (nios2_large_offset_p (unspec))
+    return nios2_large_got_address (offset);
+
+  return gen_rtx_PLUS (Pmode, pic_offset_table_rtx, offset);
 }
 
 /* Generate the code to access LOC, a thread local SYMBOL_REF.  The
@@ -1151,8 +1223,8 @@ nios2_legitimize_tls_address (rtx loc)
     case TLS_MODEL_LOCAL_DYNAMIC:
       tmp = gen_reg_rtx (Pmode);
       emit_move_insn (tmp, nios2_got_address (loc, UNSPEC_ADD_TLS_LDM));
-      return nios2_unspec_address (loc, nios2_call_tls_get_addr (tmp),
-				   UNSPEC_ADD_TLS_LDO);
+      return gen_rtx_PLUS (Pmode, nios2_call_tls_get_addr (tmp),
+			   nios2_unspec_offset (loc, UNSPEC_ADD_TLS_LDO));
 
     case TLS_MODEL_INITIAL_EXEC:
       tmp = gen_reg_rtx (Pmode);
@@ -1163,8 +1235,8 @@ nios2_legitimize_tls_address (rtx loc)
 
     case TLS_MODEL_LOCAL_EXEC:
       tp = gen_rtx_REG (Pmode, TP_REGNO);
-      return nios2_unspec_address (loc, tp, UNSPEC_ADD_TLS_LE);
-
+      return gen_rtx_PLUS (Pmode, tp,
+			   nios2_unspec_offset (loc, UNSPEC_ADD_TLS_LE));
     default:
       gcc_unreachable ();
     }
@@ -1599,6 +1671,15 @@ nios2_section_type_flags (tree decl, const char *name, int reloc)
   return flags;
 }
 
+/* Return true if SYMBOL_REF X binds locally.  */
+
+static bool
+nios2_symbol_binds_local_p (const_rtx x)
+{
+  return (SYMBOL_REF_DECL (x)
+	  ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
+	  : SYMBOL_REF_LOCAL_P (x));
+}
 
 /* Position independent code related.  */
 
@@ -1616,8 +1697,13 @@ nios2_load_pic_register (void)
 static rtx
 nios2_load_pic_address (rtx sym, int unspec)
 {
-  rtx gotaddr = nios2_got_address (sym, unspec);
-  return gen_const_mem (Pmode, gotaddr);
+  if (flag_pic == 2
+      && GET_CODE (sym) == SYMBOL_REF
+      && nios2_symbol_binds_local_p (sym))
+    /* Under -fPIC, generate a GOTOFF address for local symbols.  */
+    return nios2_got_address (sym, UNSPEC_PIC_GOTOFF_SYM);
+
+  return gen_const_mem (Pmode, nios2_got_address (sym, unspec));
 }
 
 /* Nonzero if the constant value X is a legitimate general operand
@@ -1626,6 +1712,11 @@ nios2_load_pic_address (rtx sym, int unspec)
 bool
 nios2_legitimate_pic_operand_p (rtx x)
 {
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == UNSPEC
+      && nios2_large_offset_p (XINT (XEXP (x, 0), 1)))
+    return true;
+
   return ! (GET_CODE (x) == SYMBOL_REF
 	    || GET_CODE (x) == LABEL_REF || GET_CODE (x) == CONST);
 }
@@ -1701,7 +1792,7 @@ nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       rtx unspec, offset, reg = XEXP (x, 0);
       split_const (XEXP (x, 1), &unspec, &offset);
       if (GET_CODE (unspec) == UNSPEC
-	  && nios2_unspec_reloc_name (XINT (unspec, 1)) != NULL
+	  && !nios2_large_offset_p (XINT (unspec, 1))
 	  && offset != const0_rtx)
 	{
 	  unspec = copy_rtx (unspec);
@@ -1711,6 +1802,30 @@ nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	}
     }
 
+  return x;
+}
+
+static rtx
+nios2_delegitimize_address (rtx x)
+{
+  x = delegitimize_mem_from_attrs (x);
+
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == UNSPEC)
+    {
+      switch (XINT (XEXP (x, 0), 1))
+	{
+	case UNSPEC_PIC_SYM:
+	case UNSPEC_PIC_CALL_SYM:
+	case UNSPEC_PIC_GOTOFF_SYM:
+	case UNSPEC_ADD_TLS_GD:
+	case UNSPEC_ADD_TLS_LDM:
+	case UNSPEC_LOAD_TLS_IE:
+	case UNSPEC_ADD_TLS_LE:
+	  x = XVECEXP (XEXP (x, 0), 0, 0);
+	  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+	  break;
+	}
+    }
   return x;
 }
 
@@ -1728,7 +1843,8 @@ nios2_emit_move_sequence (rtx *operands, enum machine_mode mode)
     }
 
   if (GET_CODE (from) == SYMBOL_REF || GET_CODE (from) == LABEL_REF
-      || GET_CODE (from) == CONST)
+      || (GET_CODE (from) == CONST
+	  && GET_CODE (XEXP (from, 0)) != UNSPEC))
     from = nios2_legitimize_constant_address (from);
 
   operands[0] = to;
@@ -1845,20 +1961,23 @@ nios2_print_operand (FILE *file, rtx op, int letter)
           output_addr_const (file, op);
           return;
         }
-      else if (letter == 'H')
-        {
-          fprintf (file, "%%hiadj(");
+      else if (letter == 'H' || letter == 'L')
+	{
+	  fprintf (file, "%%");
+	  if (GET_CODE (op) == CONST
+	      && GET_CODE (XEXP (op, 0)) == UNSPEC)
+	    {
+	      rtx unspec = XEXP (op, 0);
+	      int unspec_reloc = XINT (unspec, 1);
+	      gcc_assert (nios2_large_offset_p (unspec_reloc));
+	      fprintf (file, "%s_", nios2_unspec_reloc_name (unspec_reloc));
+	      op = XVECEXP (unspec, 0, 0);
+	    }
+          fprintf (file, letter == 'H' ? "hiadj(" : "lo(");
           output_addr_const (file, op);
           fprintf (file, ")");
           return;
-        }
-      else if (letter == 'L')
-        {
-          fprintf (file, "%%lo(");
-          output_addr_const (file, op);
-          fprintf (file, ")");
-          return;
-        }
+	}
       break;
 
     case SUBREG:
@@ -1910,6 +2029,8 @@ nios2_unspec_reloc_name (int unspec)
       return "got";
     case UNSPEC_PIC_CALL_SYM:
       return "call";
+    case UNSPEC_PIC_GOTOFF_SYM:
+      return "gotoff";
     case UNSPEC_LOAD_TLS_IE:
       return "tls_ie";
     case UNSPEC_ADD_TLS_LE:
@@ -1923,16 +2044,6 @@ nios2_unspec_reloc_name (int unspec)
     default:
       return NULL;
     }
-}
-
-/* Return true for conforming unspec relocations.  Also used in
-   constraints.md and predicates.md.  */
-bool
-nios2_unspec_reloc_p (rtx op)
-{
-  return (GET_CODE (op) == CONST
-	  && GET_CODE (XEXP (op, 0)) == UNSPEC
-	  && nios2_unspec_reloc_name (XINT (XEXP (op, 0), 1)) != NULL);
 }
 
 /* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
@@ -3171,6 +3282,9 @@ nios2_merge_decl_attributes (tree olddecl, tree newdecl)
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS nios2_legitimize_address
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS nios2_delegitimize_address
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P nios2_legitimate_address_p

@@ -435,6 +435,10 @@ package body Sem_Ch11 is
       Exception_Name : Entity_Id        := Empty;
 
    begin
+      if Comes_From_Source (N) then
+         Check_Compiler_Unit (N);
+      end if;
+
       Check_SPARK_Restriction ("raise expression is not allowed", N);
 
       --  Check exception restrictions on the original source
@@ -461,7 +465,6 @@ package body Sem_Ch11 is
       --  Deal with RAISE WITH case
 
       if Present (Expression (N)) then
-         Check_Compiler_Unit (Expression (N));
          Analyze_And_Resolve (Expression (N), Standard_String);
       end if;
 
@@ -475,9 +478,11 @@ package body Sem_Ch11 is
 
       Kill_Current_Values (Last_Assignment_Only => True);
 
-      --  Set type as Any_Type since we have no information at all on the type
+      --  Raise_Type is compatible with all other types so that the raise
+      --  expression is legal in any expression context. It will be eventually
+      --  replaced by the concrete type imposed by the context.
 
-      Set_Etype (N, Any_Type);
+      Set_Etype (N, Raise_Type);
    end Analyze_Raise_Expression;
 
    -----------------------------
@@ -627,7 +632,6 @@ package body Sem_Ch11 is
          --  Deal with RAISE WITH case
 
          if Present (Expression (N)) then
-            Check_Compiler_Unit (Expression (N));
             Analyze_And_Resolve (Expression (N), Standard_String);
          end if;
       end if;

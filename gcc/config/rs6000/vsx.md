@@ -34,11 +34,11 @@
 (define_mode_iterator VSX_F [V4SF V2DF])
 
 ;; Iterator for logical types supported by VSX
-(define_mode_iterator VSX_L [V16QI V8HI V4SI V2DI V4SF V2DF TI])
+(define_mode_iterator VSX_L [V16QI V8HI V4SI V2DI V4SF V2DF V1TI TI])
 
 ;; Iterator for memory move.  Handle TImode specially to allow
 ;; it to use gprs as well as vsx registers.
-(define_mode_iterator VSX_M [V16QI V8HI V4SI V2DI V4SF V2DF])
+(define_mode_iterator VSX_M [V16QI V8HI V4SI V2DI V4SF V2DF V1TI])
 
 (define_mode_iterator VSX_M2 [V16QI
 			      V8HI
@@ -46,6 +46,7 @@
 			      V2DI
 			      V4SF
 			      V2DF
+			      V1TI
 			      (TI	"TARGET_VSX_TIMODE")])
 
 ;; Map into the appropriate load/store name based on the type
@@ -56,6 +57,7 @@
 			(V2DF  "vd2")
 			(V2DI  "vd2")
 			(DF    "d")
+			(V1TI  "vd2")
 			(TI    "vd2")])
 
 ;; Map into the appropriate suffix based on the type
@@ -67,6 +69,7 @@
 			 (V2DI  "dp")
 			 (DF    "dp")
 			 (SF	"sp")
+			 (V1TI  "dp")
 			 (TI    "dp")])
 
 ;; Map the register class used
@@ -78,6 +81,7 @@
 			 (V2DF  "wd")
 			 (DF    "ws")
 			 (SF	"d")
+			 (V1TI  "v")
 			 (TI    "wt")])
 
 ;; Map the register class used for float<->int conversions
@@ -123,6 +127,7 @@
 			 (V4SF  "v")
 			 (V2DI  "v")
 			 (V2DF  "v")
+			 (V1TI  "v")
 			 (DF    "s")])
 
 ;; Appropriate type for add ops (and other simple FP ops)
@@ -180,7 +185,8 @@
 				(V2DF	"vecdouble")])
 
 ;; Map the scalar mode for a vector type
-(define_mode_attr VS_scalar [(V2DF	"DF")
+(define_mode_attr VS_scalar [(V1TI	"TI")
+			     (V2DF	"DF")
 			     (V2DI	"DI")
 			     (V4SF	"SF")
 			     (V4SI	"SI")
@@ -191,7 +197,8 @@
 (define_mode_attr VS_double [(V4SI	"V8SI")
 			     (V4SF	"V8SF")
 			     (V2DI	"V4DI")
-			     (V2DF	"V4DF")])
+			     (V2DF	"V4DF")
+			     (V1TI	"V2TI")])
 
 ;; Constants for creating unspecs
 (define_c_enum "unspec"
@@ -1489,6 +1496,21 @@
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
+;; Convert a TImode value into V1TImode
+(define_expand "vsx_set_v1ti"
+  [(match_operand:V1TI 0 "nonimmediate_operand" "")
+   (match_operand:V1TI 1 "nonimmediate_operand" "")
+   (match_operand:TI 2 "input_operand" "")
+   (match_operand:QI 3 "u5bit_cint_operand" "")]
+  "VECTOR_MEM_VSX_P (V1TImode)"
+{
+  if (operands[3] != const0_rtx)
+    gcc_unreachable ();
+
+  emit_move_insn (operands[0], gen_lowpart (V1TImode, operands[1]));
+  DONE;
+})
+
 ;; Set the element of a V2DI/VD2F mode
 (define_insn "vsx_set_<mode>"
   [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wd,?wa")
@@ -1509,52 +1531,129 @@
   [(set_attr "type" "vecperm")])
 
 ;; Extract a DF/DI element from V2DF/V2DI
-(define_insn "vsx_extract_<mode>"
-  [(set (match_operand:<VS_scalar> 0 "vsx_register_operand" "=ws,d,?wa")
-	(vec_select:<VS_scalar> (match_operand:VSX_D 1 "vsx_register_operand" "wd,wd,wa")
+(define_expand "vsx_extract_<mode>"
+  [(set (match_operand:<VS_scalar> 0 "register_operand" "")
+	(vec_select:<VS_scalar> (match_operand:VSX_D 1 "register_operand" "")
 		       (parallel
-			[(match_operand:QI 2 "u5bit_cint_operand" "i,i,i")])))]
+			[(match_operand:QI 2 "u5bit_cint_operand" "")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "")
+
+;; Optimize cases were we can do a simple or direct move.
+;; Or see if we can avoid doing the move at all
+(define_insn "*vsx_extract_<mode>_internal1"
+  [(set (match_operand:<VS_scalar> 0 "register_operand" "=d,ws,?wa,r")
+	(vec_select:<VS_scalar>
+	 (match_operand:VSX_D 1 "register_operand" "d,wd,wa,wm")
+	 (parallel
+	  [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD,wD")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_POWERPC64 && TARGET_DIRECT_MOVE"
+{
+  int op0_regno = REGNO (operands[0]);
+  int op1_regno = REGNO (operands[1]);
+
+  if (op0_regno == op1_regno)
+    return "nop";
+
+  if (INT_REGNO_P (op0_regno))
+    return "mfvsrd %0,%x1";
+
+  if (FP_REGNO_P (op0_regno) && FP_REGNO_P (op1_regno))
+    return "fmr %0,%1";
+
+  return "xxlor %x0,%x1,%x1";
+}
+  [(set_attr "type" "fp,vecsimple,vecsimple,mftgpr")
+   (set_attr "length" "4")])
+
+(define_insn "*vsx_extract_<mode>_internal2"
+  [(set (match_operand:<VS_scalar> 0 "vsx_register_operand" "=d,ws,ws,?wa")
+	(vec_select:<VS_scalar>
+	 (match_operand:VSX_D 1 "vsx_register_operand" "d,wd,wd,wa")
+	 (parallel [(match_operand:QI 2 "u5bit_cint_operand" "wD,wD,i,i")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)
+   && (!TARGET_POWERPC64 || !TARGET_DIRECT_MOVE
+       || INTVAL (operands[2]) != VECTOR_ELEMENT_SCALAR_64BIT)"
 {
   int fldDM;
   gcc_assert (UINTVAL (operands[2]) <= 1);
+
+  if (INTVAL (operands[2]) == VECTOR_ELEMENT_SCALAR_64BIT)
+    {
+      int op0_regno = REGNO (operands[0]);
+      int op1_regno = REGNO (operands[1]);
+
+      if (op0_regno == op1_regno)
+	return "nop";
+
+      if (FP_REGNO_P (op0_regno) && FP_REGNO_P (op1_regno))
+	return "fmr %0,%1";
+
+      return "xxlor %x0,%x1,%x1";
+    }
+
   fldDM = INTVAL (operands[2]) << 1;
   if (!BYTES_BIG_ENDIAN)
     fldDM = 3 - fldDM;
   operands[3] = GEN_INT (fldDM);
-  return \"xxpermdi %x0,%x1,%x1,%3\";
+  return "xxpermdi %x0,%x1,%x1,%3";
 }
-  [(set_attr "type" "vecperm")])
+  [(set_attr "type" "fp,vecsimple,vecperm,vecperm")
+   (set_attr "length" "4")])
 
-;; Optimize extracting element 0 from memory
-(define_insn "*vsx_extract_<mode>_zero"
-  [(set (match_operand:<VS_scalar> 0 "vsx_register_operand" "=ws,d,?wa")
+;; Optimize extracting a single scalar element from memory if the scalar is in
+;; the correct location to use a single load.
+(define_insn "*vsx_extract_<mode>_load"
+  [(set (match_operand:<VS_scalar> 0 "register_operand" "=d,wv,wr")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "indexed_or_indirect_operand" "Z,Z,Z")
-	 (parallel [(const_int 0)])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && WORDS_BIG_ENDIAN"
-  "lxsd%U1x %x0,%y1"
-  [(set (attr "type")
-      (if_then_else
-	(match_test "update_indexed_address_mem (operands[1], VOIDmode)")
-	(const_string "fpload_ux")
-	(const_string "fpload")))
-   (set_attr "length" "4")])  
+	 (match_operand:VSX_D 1 "memory_operand" "m,Z,m")
+	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "@
+   lfd%U1%X1 %0,%1
+   lxsd%U1x %x0,%y1
+   ld%U1%X1 %0,%1"
+  [(set_attr_alternative "type"
+      [(if_then_else
+	 (match_test "update_indexed_address_mem (operands[1], VOIDmode)")
+	 (const_string "fpload_ux")
+	 (if_then_else
+	   (match_test "update_address_mem (operands[1], VOIDmode)")
+	   (const_string "fpload_u")
+	   (const_string "fpload")))
+       (const_string "fpload")
+       (if_then_else
+	 (match_test "update_indexed_address_mem (operands[1], VOIDmode)")
+	 (const_string "load_ux")
+	 (if_then_else
+	   (match_test "update_address_mem (operands[1], VOIDmode)")
+	   (const_string "load_u")
+	   (const_string "load")))])
+   (set_attr "length" "4")])
 
-;; Optimize extracting element 1 from memory for little endian
-(define_insn "*vsx_extract_<mode>_one_le"
-  [(set (match_operand:<VS_scalar> 0 "vsx_register_operand" "=ws,d,?wa")
+;; Optimize storing a single scalar element that is the right location to
+;; memory
+(define_insn "*vsx_extract_<mode>_store"
+  [(set (match_operand:<VS_scalar> 0 "memory_operand" "=m,Z,?Z")
 	(vec_select:<VS_scalar>
-	 (match_operand:VSX_D 1 "indexed_or_indirect_operand" "Z,Z,Z")
-	 (parallel [(const_int 1)])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode) && !WORDS_BIG_ENDIAN"
-  "lxsd%U1x %x0,%y1"
-  [(set (attr "type")
-      (if_then_else
-	(match_test "update_indexed_address_mem (operands[1], VOIDmode)")
-	(const_string "fpload_ux")
-	(const_string "fpload")))
-   (set_attr "length" "4")])  
+	 (match_operand:VSX_D 1 "register_operand" "d,wd,wa")
+	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "@
+   stfd%U0%X0 %1,%0
+   stxsd%U0x %x1,%y0
+   stxsd%U0x %x1,%y0"
+  [(set_attr_alternative "type"
+      [(if_then_else
+	 (match_test "update_indexed_address_mem (operands[0], VOIDmode)")
+	 (const_string "fpstore_ux")
+	 (if_then_else
+	   (match_test "update_address_mem (operands[0], VOIDmode)")
+	   (const_string "fpstore_u")
+	   (const_string "fpstore")))
+       (const_string "fpstore")
+       (const_string "fpstore")])
+   (set_attr "length" "4")])
 
 ;; Extract a SF element from V4SF
 (define_insn_and_split "vsx_extract_v4sf"
@@ -1621,7 +1720,18 @@
 	  op1 = gen_lowpart (V2DImode, op1);
 	}
     }
-  emit_insn (gen (target, op0, op1, perm0, perm1));
+  /* In little endian mode, vsx_xxpermdi2_<mode>_1 will perform a
+     transformation we don't want; it is necessary for
+     rs6000_expand_vec_perm_const_1 but not for this use.  So we
+     prepare for that by reversing the transformation here.  */
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen (target, op0, op1, perm0, perm1));
+  else
+    {
+      rtx p0 = GEN_INT (3 - INTVAL (perm1));
+      rtx p1 = GEN_INT (3 - INTVAL (perm0));
+      emit_insn (gen (target, op1, op0, p0, p1));
+    }
   DONE;
 })
 

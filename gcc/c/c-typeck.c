@@ -2010,13 +2010,17 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
       tmp = create_tmp_var (nonatomic_type, NULL);
       tmp_addr = build_unary_op (loc, ADDR_EXPR, tmp, 0);
       TREE_ADDRESSABLE (tmp) = 1;
+      TREE_NO_WARNING (tmp) = 1;
 
       /* Issue __atomic_load (&expr, &tmp, SEQ_CST);  */
       fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_LOAD);
       params->quick_push (expr_addr);
       params->quick_push (tmp_addr);
       params->quick_push (seq_cst);
-      func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+      func_call = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+
+      /* EXPR is always read.  */
+      mark_exp_read (exp.value);
 
       /* Return tmp which contains the value loaded.  */
       exp.value = build2 (COMPOUND_EXPR, nonatomic_type, func_call, tmp);
@@ -2798,7 +2802,7 @@ build_function_call (location_t loc, tree function, tree params)
   vec_alloc (v, list_length (params));
   for (; params; params = TREE_CHAIN (params))
     v->quick_push (TREE_VALUE (params));
-  ret = build_function_call_vec (loc, vNULL, function, v, NULL);
+  ret = c_build_function_call_vec (loc, vNULL, function, v, NULL);
   vec_free (v);
   return ret;
 }
@@ -2837,14 +2841,6 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   /* Convert anything with function type to a pointer-to-function.  */
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
-      /* Implement type-directed function overloading for builtins.
-	 resolve_overloaded_builtin and targetm.resolve_overloaded_builtin
-	 handle all the type checking.  The result is a complete expression
-	 that implements this function call.  */
-      tem = resolve_overloaded_builtin (loc, function, params);
-      if (tem)
-	return tem;
-
       name = DECL_NAME (function);
 
       if (flag_tm)
@@ -2966,6 +2962,30 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
       return result;
     }
   return require_complete_type (result);
+}
+
+/* Like build_function_call_vec, but call also resolve_overloaded_builtin.  */
+
+tree
+c_build_function_call_vec (location_t loc, vec<location_t> arg_loc,
+			   tree function, vec<tree, va_gc> *params,
+			   vec<tree, va_gc> *origtypes)
+{
+  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
+  STRIP_TYPE_NOPS (function);
+
+  /* Convert anything with function type to a pointer-to-function.  */
+  if (TREE_CODE (function) == FUNCTION_DECL)
+    {
+      /* Implement type-directed function overloading for builtins.
+	 resolve_overloaded_builtin and targetm.resolve_overloaded_builtin
+	 handle all the type checking.  The result is a complete expression
+	 that implements this function call.  */
+      tree tem = resolve_overloaded_builtin (loc, function, params);
+      if (tem)
+	return tem;
+    }
+  return build_function_call_vec (loc, arg_loc, function, params, origtypes);
 }
 
 /* Convert the argument expressions in the vector VALUES
@@ -3616,6 +3636,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   nonatomic_rhs_type = build_qualified_type (rhs_type, TYPE_UNQUALIFIED);
   val = create_tmp_var (nonatomic_rhs_type, NULL);
   TREE_ADDRESSABLE (val) = 1;
+  TREE_NO_WARNING (val) = 1;
   rhs = build2 (MODIFY_EXPR, nonatomic_rhs_type, val, rhs);
   SET_EXPR_LOCATION (rhs, loc);
   add_stmt (rhs);
@@ -3630,7 +3651,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
       params->quick_push (lhs_addr);
       params->quick_push (rhs);
       params->quick_push (seq_cst);
-      func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+      func_call = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
       add_stmt (func_call);
 
       /* Finish the compound statement.  */
@@ -3644,7 +3665,8 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   /* Create the variables and labels required for the op= form.  */
   old = create_tmp_var (nonatomic_lhs_type, NULL);
   old_addr = build_unary_op (loc, ADDR_EXPR, old, 0);
-  TREE_ADDRESSABLE (val) = 1;
+  TREE_ADDRESSABLE (old) = 1;
+  TREE_NO_WARNING (old) = 1;
 
   newval = create_tmp_var (nonatomic_lhs_type, NULL);
   newval_addr = build_unary_op (loc, ADDR_EXPR, newval, 0);
@@ -3661,7 +3683,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   params->quick_push (lhs_addr);
   params->quick_push (old_addr);
   params->quick_push (seq_cst);
-  func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+  func_call = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
   add_stmt (func_call);
   params->truncate (0);
 
@@ -3700,7 +3722,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   params->quick_push (integer_zero_node);
   params->quick_push (seq_cst);
   params->quick_push (seq_cst);
-  func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+  func_call = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
 
   goto_stmt = build1 (GOTO_EXPR, void_type_node, done_decl);
   SET_EXPR_LOCATION (goto_stmt, loc);
@@ -4850,7 +4872,7 @@ handle_warn_cast_qual (location_t loc, tree type, tree otype)
     /* There are qualifiers present in IN_OTYPE that are not present
        in IN_TYPE.  */
     warning_at (loc, OPT_Wcast_qual,
-		"cast discards %q#v qualifier from pointer target type",
+		"cast discards %qv qualifier from pointer target type",
 		discarded);
 
   if (added || discarded)
@@ -9135,7 +9157,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  return error_mark_node;
 	}
     }
-  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && contains_cilk_spawn_stmt (retval))
     {
       error_at (loc, "use of %<_Cilk_spawn%> in a return statement is not "
 		"allowed");
@@ -9662,6 +9684,7 @@ emit_side_effect_warnings (location_t loc, tree expr)
       if (!TREE_SIDE_EFFECTS (r)
 	  && !VOID_TYPE_P (TREE_TYPE (r))
 	  && !CONVERT_EXPR_P (r)
+	  && !TREE_NO_WARNING (r)
 	  && !TREE_NO_WARNING (expr))
 	warning_at (cloc, OPT_Wunused_value,
 		    "right-hand operand of comma expression has no effect");
@@ -12026,7 +12049,7 @@ c_finish_omp_clauses (tree clauses)
 	      else
 		{
 		  t = OMP_CLAUSE_DECL (c);
-		  if (!COMPLETE_TYPE_P (TREE_TYPE (t)))
+		  if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
 		    {
 		      error_at (OMP_CLAUSE_LOCATION (c),
 				"array section does not have mappable type "
@@ -12055,9 +12078,9 @@ c_finish_omp_clauses (tree clauses)
 	    }
 	  else if (!c_mark_addressable (t))
 	    remove = true;
-	  else if (!COMPLETE_TYPE_P (TREE_TYPE (t))
-		   && !(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-			&& OMP_CLAUSE_MAP_KIND (c) == OMP_CLAUSE_MAP_POINTER))
+	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		     && OMP_CLAUSE_MAP_KIND (c) == OMP_CLAUSE_MAP_POINTER)
+		   && !lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,

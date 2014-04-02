@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   /**
-   * @brief struct _Scanner. Scans an input range for regex tokens.
+   * @brief Scans an input range for regex tokens.
    *
    * The %_Scanner class interprets the regular expression pattern in
    * the input range passed to its constructor as a sequence of parse

@@ -3792,6 +3792,12 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	      if (e == expr)
 		{
 		  // *&x == x.
+		  if (!ue->expr_->is_addressable() && !ue->create_temp_)
+		    {
+		      error_at(ue->location(),
+			       "invalid operand for unary %<&%>");
+		      this->set_is_error();
+		    }
 		  return ue->expr_;
 		}
 	      ue->set_does_not_escape();
@@ -3828,6 +3834,9 @@ Expression*
 Unary_expression::do_flatten(Gogo* gogo, Named_object*,
                              Statement_inserter* inserter)
 {
+  if (this->is_error_expression() || this->expr_->is_error_expression())
+    return Expression::make_error(this->location());
+
   Location location = this->location();
   if (this->op_ == OPERATOR_MULT
       && !this->expr_->is_variable())
@@ -4167,7 +4176,10 @@ Unary_expression::do_check_types(Gogo*)
       if (!this->expr_->is_addressable())
 	{
 	  if (!this->create_temp_)
-	    this->report_error(_("invalid operand for unary %<&%>"));
+	    {
+	      error_at(this->location(), "invalid operand for unary %<&%>");
+	      this->set_is_error();
+	    }
 	}
       else
         {
@@ -4250,8 +4262,12 @@ Unary_expression::do_get_tree(Translate_context* context)
 
           go_assert(!this->expr_->is_composite_literal()
                     || this->expr_->is_immutable());
-          Unary_expression* ue = static_cast<Unary_expression*>(this->expr_);
-          go_assert(ue == NULL || ue->op() != OPERATOR_AND);
+	  if (this->expr_->classification() == EXPRESSION_UNARY)
+	    {
+	      Unary_expression* ue =
+		static_cast<Unary_expression*>(this->expr_);
+	      go_assert(ue->op() != OPERATOR_AND);
+	    }
 	}
 
       // Build a decl for a constant constructor.
@@ -13471,6 +13487,20 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
     {
       // The type may not be resolvable at this point.
       Type* type = this->type_;
+
+      for (int depth = this->depth_; depth > 0; --depth)
+        {
+          if (type->array_type() != NULL)
+            type = type->array_type()->element_type();
+          else if (type->map_type() != NULL)
+            type = type->map_type()->val_type();
+          else
+            {
+              // This error will be reported during lowering.
+              return TRAVERSE_CONTINUE;
+            }
+        }
+
       while (true)
 	{
 	  if (type->classification() == Type::TYPE_NAMED)

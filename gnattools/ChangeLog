@@ -1,3 +1,7 @@
+2014-02-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (TOOLS_FLAGS_TO_PASS_CROSS): Robustify.
+
 2014-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (*-*-lynxos*): Delete.

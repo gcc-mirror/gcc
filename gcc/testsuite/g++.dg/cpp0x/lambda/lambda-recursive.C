@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-do run { target c++11 } }
 
 //#include <iostream>
 #include <functional>

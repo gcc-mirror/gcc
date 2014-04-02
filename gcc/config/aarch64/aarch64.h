@@ -32,6 +32,9 @@
       else						\
 	builtin_define ("__AARCH64EL__");		\
 							\
+      if (!TARGET_GENERAL_REGS_ONLY)			\
+	builtin_define ("__ARM_NEON");			\
+							\
       switch (aarch64_cmodel)				\
 	{						\
 	  case AARCH64_CMODEL_TINY:			\
@@ -472,10 +475,10 @@ enum target_cpus
   TARGET_CPU_generic
 };
 
-/* If there is no CPU defined at configure, use "cortex-a53" as default.  */
+/* If there is no CPU defined at configure, use generic as default.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT \
-  (TARGET_CPU_cortexa53 | (AARCH64_CPU_DEFAULT_FLAGS << 6))
+  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << 6))
 #endif
 
 /* The processor for which instructions should be scheduled.  */
@@ -760,10 +763,6 @@ do {									     \
 /* Put trampolines in the text section so that mapping symbols work
    correctly.  */
 #define TRAMPOLINE_SECTION text_section
-
-/* Costs, etc.  */
-#define MEMORY_MOVE_COST(M, CLASS, IN) \
-  (GET_MODE_SIZE (M) < 8 ? 8 : GET_MODE_SIZE (M))
 
 /* To start with.  */
 #define BRANCH_COST(SPEED_P, PREDICTABLE_P) 2

@@ -768,11 +768,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free(_M_type_size(1), nullptr); }
+      { return __atomic_is_lock_free(sizeof(__pointer_type), nullptr); }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free(_M_type_size(1), nullptr); }
+      { return __atomic_is_lock_free(sizeof(__pointer_type), nullptr); }
 
       _GLIBCXX_ALWAYS_INLINE void
       store(__pointer_type __p,

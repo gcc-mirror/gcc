@@ -724,6 +724,31 @@
   DONE;
 })
 
+(define_expand "aarch64_lshr_simddi"
+  [(match_operand:DI 0 "register_operand" "=w")
+   (match_operand:DI 1 "register_operand" "w")
+   (match_operand:SI 2 "aarch64_shift_imm64_di" "")]
+  "TARGET_SIMD"
+  {
+    if (INTVAL (operands[2]) == 64)
+      emit_insn (gen_aarch64_ushr_simddi (operands[0], operands[1]));
+    else
+      emit_insn (gen_lshrdi3 (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+
+;; SIMD shift by 64.  This pattern is a special case as standard pattern does
+;; not handle NEON shifts by 64.
+(define_insn "aarch64_ushr_simddi"
+  [(set (match_operand:DI 0 "register_operand" "=w")
+        (unspec:DI
+          [(match_operand:DI 1 "register_operand" "w")] UNSPEC_USHR64))]
+  "TARGET_SIMD"
+  "ushr\t%d0, %d1, 64"
+  [(set_attr "type" "neon_shift_imm")]
+)
+
 (define_expand "vec_set<mode>"
   [(match_operand:VQ_S 0 "register_operand")
    (match_operand:<VEL> 1 "register_operand")
@@ -4225,7 +4250,7 @@
          CRYPTO_AES))]
   "TARGET_SIMD && TARGET_CRYPTO"
   "aes<aes_op>\\t%0.16b, %2.16b"
-  [(set_attr "type" "crypto_aes")]
+  [(set_attr "type" "crypto_aese")]
 )
 
 (define_insn "aarch64_crypto_aes<aesmc_op>v16qi"
@@ -4234,7 +4259,7 @@
 	 CRYPTO_AESMC))]
   "TARGET_SIMD && TARGET_CRYPTO"
   "aes<aesmc_op>\\t%0.16b, %1.16b"
-  [(set_attr "type" "crypto_aes")]
+  [(set_attr "type" "crypto_aesmc")]
 )
 
 ;; sha1

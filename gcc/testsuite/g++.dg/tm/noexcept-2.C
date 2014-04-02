@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-fgnu-tm -std=c++0x" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fgnu-tm" }
 
 // All of these must fail, because they are not constant expressions.
 template<typename T> int foo(int x, T t)

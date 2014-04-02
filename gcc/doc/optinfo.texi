@@ -12,8 +12,8 @@ information about various compiler transformations and optimizations.
 @menu
 * Dump setup::                         Setup of optimization dumps.
 * Optimization groups::                Groups made up of optimization passes.
-* Dump output verbosity::              How much information to dump.
 * Dump files and streams::             Dump output file names and streams.
+* Dump output verbosity::              How much information to dump.
 * Dump types::                         Various types of dump functions.
 * Dump examples::                      Sample usage.
 @end menu

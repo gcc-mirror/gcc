@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 // { dg-prune-output "expected ';'" }
 // { dg-prune-output "expected unqualified-id" }
 // { dg-prune-output "declaration does not declare anything" }
@@ -16,12 +16,12 @@ struct B2
 
 struct B3
 {
-  virtual auto f() -> final void; // { dg-error "expected type-specifier" }
+  virtual auto f() -> final void; // { dg-error "type" }
 };
 
 struct B4
 {
-  virtual auto f() -> final void {} // { dg-error "expected type-specifier" }
+  virtual auto f() -> final void {} // { dg-error "type" }
 };
 
 struct D : B
@@ -36,10 +36,10 @@ struct D2 : B
 
 struct D3 : B
 {
-  virtual auto g() -> override void; // { dg-error "expected type-specifier" }
+  virtual auto g() -> override void; // { dg-error "type" }
 };
 
 struct D4 : B
 {
-  virtual auto g() -> override void {} // { dg-error "expected type-specifier" }
+  virtual auto g() -> override void {} // { dg-error "type" }
 };

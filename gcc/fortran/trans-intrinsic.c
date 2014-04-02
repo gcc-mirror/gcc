@@ -1193,8 +1193,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 				       boolean_type_node, invalid_bound, cond);
     }
 
-  invalid_bound = gfc_unlikely (invalid_bound);
-
+  invalid_bound = gfc_unlikely (invalid_bound, PRED_FORTRAN_INVALID_BOUND);
 
   /* See Fortran 2008, C.10 for the following algorithm.  */
 
@@ -4677,9 +4676,11 @@ gfc_conv_intrinsic_index_scan_verify (gfc_se * se, gfc_expr * expr,
 static void
 gfc_conv_intrinsic_ichar (gfc_se * se, gfc_expr * expr)
 {
-  tree args[2], type, pchartype;
+  tree args[3], type, pchartype;
+  int nargs;
 
-  gfc_conv_intrinsic_function_args (se, expr, args, 2);
+  nargs = gfc_intrinsic_argument_list_length (expr);
+  gfc_conv_intrinsic_function_args (se, expr, args, nargs);
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (args[1])));
   pchartype = gfc_get_pchar_type (expr->value.function.actual->expr->ts.kind);
   args[1] = fold_build1_loc (input_location, NOP_EXPR, pchartype, args[1]);
@@ -5153,7 +5154,7 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
    excluding the terminating null characters.  The result has
    gfc_array_index_type type.  */
 
-static tree
+tree
 size_of_string_in_bytes (int kind, tree string_length)
 {
   tree bytesize;

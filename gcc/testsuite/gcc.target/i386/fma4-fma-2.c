@@ -3,7 +3,7 @@
    vfnmsubss on FMA4 systems.  */
 
 /* { dg-do compile { target { ! { ia32 } } } } */
-/* { dg-options "-O2 -funsafe-math-optimizations -mfma4" } */
+/* { dg-options "-O2 -funsafe-math-optimizations -mfma4 -mno-fma" } */
 
 extern void exit (int);
 

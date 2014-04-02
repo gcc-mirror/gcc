@@ -4557,11 +4557,12 @@ execute_cleanup_eh_1 (void)
   remove_unreachable_handlers ();
 
   /* Watch out for the region tree vanishing due to all unreachable.  */
-  if (cfun->eh->region_tree && optimize)
+  if (cfun->eh->region_tree)
     {
       bool changed = false;
 
-      changed |= unsplit_all_eh ();
+      if (optimize)
+	changed |= unsplit_all_eh ();
       changed |= cleanup_all_empty_eh ();
 
       if (changed)

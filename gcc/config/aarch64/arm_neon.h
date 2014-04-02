@@ -17693,7 +17693,7 @@ vcvtaq_u64_f64 (float64x2_t __a)
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vcvtmd_s64_f64 (float64_t __a)
 {
-  return __builtin_lfloor (__a);
+  return __builtin_llfloor (__a);
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
@@ -17829,7 +17829,7 @@ vcvtnq_u64_f64 (float64x2_t __a)
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vcvtpd_s64_f64 (float64_t __a)
 {
-  return __builtin_lceil (__a);
+  return __builtin_llceil (__a);
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
@@ -23364,7 +23364,7 @@ vshr_n_u32 (uint32x2_t __a, const int __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vshr_n_u64 (uint64x1_t __a, const int __b)
 {
-  return (uint64x1_t) __builtin_aarch64_lshrdi ((int64x1_t) __a, __b);
+  return __builtin_aarch64_lshr_simddi_uus ( __a, __b);
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
@@ -23421,10 +23421,10 @@ vshrd_n_s64 (int64x1_t __a, const int __b)
   return (int64x1_t) __builtin_aarch64_ashr_simddi (__a, __b);
 }
 
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vshrd_n_u64 (uint64x1_t __a, const int __b)
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
+vshrd_n_u64 (uint64_t __a, const int __b)
 {
-  return (uint64x1_t) __builtin_aarch64_lshrdi (__a, __b);
+  return __builtin_aarch64_lshr_simddi_uus (__a, __b);
 }
 
 /* vsli */

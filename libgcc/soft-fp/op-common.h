@@ -1,5 +1,5 @@
 /* Software floating-point emulation. Common operations.
-   Copyright (C) 1997-2013 Free Software Foundation, Inc.
+   Copyright (C) 1997-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -32,7 +32,7 @@
 #define _FP_DECL(wc, X)				\
   _FP_I_TYPE X##_c __attribute__ ((unused));	\
   _FP_I_TYPE X##_s __attribute__ ((unused));	\
-  _FP_I_TYPE X##_e;				\
+  _FP_I_TYPE X##_e __attribute__ ((unused));	\
   _FP_FRAC_DECL_##wc (X)
 
 /* Test whether the qNaN bit denotes a signaling NaN.  */
@@ -191,8 +191,22 @@
 #define _FP_PACK_SEMIRAW(fs, wc, X)				\
   do								\
     {								\
+      int _FP_PACK_SEMIRAW_is_tiny				\
+	= X##_e == 0 && !_FP_FRAC_ZEROP_##wc (X);		\
+      if (_FP_TININESS_AFTER_ROUNDING				\
+	  && _FP_PACK_SEMIRAW_is_tiny)				\
+	{							\
+	  FP_DECL_##fs (_FP_PACK_SEMIRAW_T);			\
+	  _FP_FRAC_COPY_##wc (_FP_PACK_SEMIRAW_T, X);		\
+	  _FP_PACK_SEMIRAW_T##_s = X##_s;			\
+	  _FP_PACK_SEMIRAW_T##_e = X##_e;			\
+	  _FP_FRAC_SLL_##wc (_FP_PACK_SEMIRAW_T, 1);		\
+	  _FP_ROUND (wc, _FP_PACK_SEMIRAW_T);			\
+	  if (_FP_FRAC_OVERP_##wc (fs, _FP_PACK_SEMIRAW_T))	\
+	    _FP_PACK_SEMIRAW_is_tiny = 0;			\
+	}							\
       _FP_ROUND (wc, X);					\
-      if (X##_e == 0 && !_FP_FRAC_ZEROP_##wc (X))		\
+      if (_FP_PACK_SEMIRAW_is_tiny)				\
 	{							\
 	  if ((FP_CUR_EXCEPTIONS & FP_EX_INEXACT)		\
 	      || (FP_TRAPPING_EXCEPTIONS & FP_EX_UNDERFLOW))	\
@@ -279,6 +293,17 @@
 	  else								\
 	    {								\
 	      /* we've got a denormalized number */			\
+	      int _FP_PACK_CANONICAL_is_tiny = 1;			\
+	      if (_FP_TININESS_AFTER_ROUNDING && X##_e == 0)		\
+		{							\
+		  FP_DECL_##fs (_FP_PACK_CANONICAL_T);			\
+		  _FP_FRAC_COPY_##wc (_FP_PACK_CANONICAL_T, X);		\
+		  _FP_PACK_CANONICAL_T##_s = X##_s;			\
+		  _FP_PACK_CANONICAL_T##_e = X##_e;			\
+		  _FP_ROUND (wc, _FP_PACK_CANONICAL_T);			\
+		  if (_FP_FRAC_OVERP_##wc (fs, _FP_PACK_CANONICAL_T))	\
+		    _FP_PACK_CANONICAL_is_tiny = 0;			\
+		}							\
 	      X##_e = -X##_e + 1;					\
 	      if (X##_e <= _FP_WFRACBITS_##fs)				\
 		{							\
@@ -296,8 +321,10 @@
 		      X##_e = 0;					\
 		      _FP_FRAC_SRL_##wc (X, _FP_WORKBITS);		\
 		    }							\
-		  if ((FP_CUR_EXCEPTIONS & FP_EX_INEXACT)		\
-		      || (FP_TRAPPING_EXCEPTIONS & FP_EX_UNDERFLOW))	\
+		  if (_FP_PACK_CANONICAL_is_tiny			\
+		      && ((FP_CUR_EXCEPTIONS & FP_EX_INEXACT)		\
+			  || (FP_TRAPPING_EXCEPTIONS			\
+			      & FP_EX_UNDERFLOW)))			\
 		    FP_SET_EXCEPTION (FP_EX_UNDERFLOW);			\
 		}							\
 	      else							\

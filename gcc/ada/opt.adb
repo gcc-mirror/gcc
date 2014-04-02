@@ -66,6 +66,7 @@ package body Opt is
       SPARK_Mode_Config                     := SPARK_Mode;
       SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
       Use_VADS_Size_Config                  := Use_VADS_Size;
+      Warnings_As_Errors_Count_Config       := Warnings_As_Errors_Count;
 
       --  Reset the indication that Optimize_Alignment was set locally, since
       --  if we had a pragma in the config file, it would set this flag True,
@@ -103,6 +104,7 @@ package body Opt is
       SPARK_Mode                     := Save.SPARK_Mode;
       SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
       Use_VADS_Size                  := Save.Use_VADS_Size;
+      Warnings_As_Errors_Count       := Save.Warnings_As_Errors_Count;
 
       --  Update consistently the value of Init_Or_Norm_Scalars. The value of
       --  Normalize_Scalars is not saved/restored because after set to True its
@@ -141,6 +143,7 @@ package body Opt is
       Save.SPARK_Mode                     := SPARK_Mode;
       Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
       Save.Use_VADS_Size                  := Use_VADS_Size;
+      Save.Warnings_As_Errors_Count       := Warnings_As_Errors_Count;
    end Save_Opt_Config_Switches;
 
    -----------------------------
@@ -170,6 +173,9 @@ package body Opt is
          Persistent_BSS_Mode         := False;
          Use_VADS_Size               := False;
          Optimize_Alignment_Local    := True;
+
+         --  Note: we do not need to worry about Warnings_As_Errors_Count since
+         --  we do not expect to get any warnings from compiling such a unit.
 
          --  For an internal unit, assertions/debug pragmas are off unless this
          --  is the main unit and they were explicitly enabled. We also make
@@ -212,6 +218,7 @@ package body Opt is
          SPARK_Mode                  := SPARK_Mode_Config;
          SPARK_Mode_Pragma           := SPARK_Mode_Pragma_Config;
          Use_VADS_Size               := Use_VADS_Size_Config;
+         Warnings_As_Errors_Count    := Warnings_As_Errors_Count_Config;
 
          --  Update consistently the value of Init_Or_Norm_Scalars. The value
          --  of Normalize_Scalars is not saved/restored because once set to

@@ -517,12 +517,6 @@ pa_option_override (void)
       write_symbols = NO_DEBUG;
     }
 
-#ifdef AUTO_INC_DEC
-  /* FIXME: Disable auto increment and decrement processing until reload
-     is completed.  See PR middle-end 56791.  */
-  flag_auto_inc_dec = reload_completed;
-#endif
-
   /* We only support the "big PIC" model now.  And we always generate PIC
      code when in 64bit mode.  */
   if (flag_pic == 1 || TARGET_64BIT)
@@ -2633,14 +2627,14 @@ pa_output_move_double (rtx *operands)
   if (optype0 == REGOP)
     latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
-    latehalf[0] = adjust_address (operands[0], SImode, 4);
+    latehalf[0] = adjust_address_nv (operands[0], SImode, 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
     latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
-    latehalf[1] = adjust_address (operands[1], SImode, 4);
+    latehalf[1] = adjust_address_nv (operands[1], SImode, 4);
   else if (optype1 == CNSTOP)
     split_double (operands[1], &operands[1], &latehalf[1]);
   else

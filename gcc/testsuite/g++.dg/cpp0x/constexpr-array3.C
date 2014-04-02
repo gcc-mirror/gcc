@@ -1,5 +1,5 @@
 // PR c++/48132
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct C
 {

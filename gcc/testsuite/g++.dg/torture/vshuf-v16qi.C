@@ -1,5 +1,4 @@
-// { dg-options "-std=c++11" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 typedef unsigned char V __attribute__((vector_size(16)));
 typedef V VI;

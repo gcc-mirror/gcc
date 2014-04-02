@@ -191,10 +191,13 @@ package body Sem_Ch7 is
       if Present (Prag) then
          Analyze_Refined_State_In_Decl_Part (Prag);
 
-      --  State refinement is required when the package declaration has
-      --  abstract states. Null states are not considered.
+      --  State refinement is required when the package declaration defines at
+      --  least one abstract state. Null states are not considered. Refinement
+      --  is not envorced when SPARK checks are turned off.
 
-      elsif Requires_State_Refinement (Spec_Id, Body_Id) then
+      elsif SPARK_Mode /= Off
+        and then Requires_State_Refinement (Spec_Id, Body_Id)
+      then
          Error_Msg_N ("package & requires state refinement", Spec_Id);
       end if;
    end Analyze_Package_Body_Contract;
@@ -326,6 +329,11 @@ package body Sem_Ch7 is
 
          New_N := Copy_Generic_Node (N, Empty, Instantiating => False);
          Rewrite (N, New_N);
+
+         --  Once the contents of the generic copy and the template are
+         --  swapped, do the same for their respective aspect specifications.
+
+         Exchange_Aspects (N, New_N);
 
          --  Update Body_Id to point to the copied node for the remainder of
          --  the processing.
@@ -2603,11 +2611,15 @@ package body Sem_Ch7 is
 
             Set_Is_Potentially_Use_Visible (Id, In_Use (P));
 
+            --  The following test may be redundant, as this is already
+            --  diagnosed in sem_ch3. ???
+
             if  Is_Indefinite_Subtype (Full)
               and then not Is_Indefinite_Subtype (Id)
             then
-               Error_Msg_N
-                 ("full view of type must be definite subtype", Full);
+               Error_Msg_Sloc := Sloc (Parent (Id));
+               Error_Msg_NE
+                 ("full view of& not compatible with declaration#", Full, Id);
             end if;
 
             --  Swap out the subtypes and derived types of Id that

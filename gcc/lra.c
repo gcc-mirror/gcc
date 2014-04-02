@@ -254,6 +254,19 @@ emit_add3_insn (rtx x, rtx y, rtx z)
   rtx insn, last;
 
   last = get_last_insn ();
+
+  if (have_addptr3_insn (x, y, z))
+    {
+      insn = gen_addptr3_insn (x, y, z);
+
+      /* If the target provides an "addptr" pattern it hopefully does
+	 for a reason.  So falling back to the normal add would be
+	 a bug.  */
+      lra_assert (insn != NULL_RTX);
+      emit_insn (insn);
+      return insn;
+    }
+
   insn = emit_insn (gen_rtx_SET (VOIDmode, x,
 				 gen_rtx_PLUS (GET_MODE (y), y, z)));
   if (recog_memoized (insn) < 0)
@@ -340,8 +353,9 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	  base = a1;
 	  index = a2;
 	}
-      if (! REG_P (base)
-	  || (index != NULL_RTX && ! REG_P (index))
+      if (! (REG_P (base) || GET_CODE (base) == SUBREG)
+	  || (index != NULL_RTX
+	      && ! (REG_P (index) || GET_CODE (index) == SUBREG))
 	  || (disp != NULL_RTX && ! CONSTANT_P (disp))
 	  || (scale != NULL_RTX && ! CONSTANT_P (scale)))
 	{

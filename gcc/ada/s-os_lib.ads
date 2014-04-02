@@ -48,7 +48,10 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.OS_Lib (file g-os_lib.ads).
 
-pragma Compiler_Unit;
+--  Note: a distinct body for this spec is included in the .NET runtime library
+--  and must be kept in sync with changes made in this file.
+
+pragma Compiler_Unit_Warning;
 
 with System;
 with System.Strings;
@@ -302,6 +305,13 @@ package System.OS_Lib is
       Success  : out Boolean);
    --  Rename a file. Success is set True or False indicating if the rename is
    --  successful or not.
+   --
+   --  WARNING: In one very important respect, this function is significantly
+   --  non-portable. If New_Name already exists then on Unix systems, the call
+   --  deletes the existing file, and the call signals success. On Windows, the
+   --  call fails, without doing the rename operation. See also the procedure
+   --  Ada.Directories.Rename, which portably provides the windows semantics,
+   --  i.e. fails if the output file already exists.
 
    --  The following defines the mode for the Copy_File procedure below. Note
    --  that "time stamps and other file attributes" in the descriptions below
@@ -802,10 +812,8 @@ package System.OS_Lib is
    --  Similar to the procedure above, but saves the output of the command to
    --  a file with the name Output_File.
    --
-   --  Success is set to True if the command is executed and its output
-   --  successfully written to the file. Invalid_Pid is returned if the output
-   --  file could not be created or if the program could not be spawned
-   --  successfully.
+   --  Invalid_Pid is returned if the output file could not be created or if
+   --  the program could not be spawned successfully.
    --
    --  Spawning processes from tasking programs is not recommended. See
    --  "NOTE: Spawn in tasking programs" below.
@@ -956,6 +964,13 @@ package System.OS_Lib is
    procedure Set_Errno (Errno : Integer);
    pragma Import (C, Set_Errno, "__set_errno");
    --  Set the task-safe error number
+
+   function Errno_Message
+     (Err     : Integer := Errno;
+      Default : String  := "") return String;
+   --  Return a message describing the given Errno value. If none is provided
+   --  by the system, return Default if not empty, else return a generic
+   --  message indicating the numeric errno value.
 
    Directory_Separator : constant Character;
    --  The character that is used to separate parts of a pathname

@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-fno-exceptions -fgnu-tm -O -std=c++0x -fdump-tree-tmlower" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fno-exceptions -fgnu-tm -O -fdump-tree-tmlower" }
 
 struct TrueFalse
 {

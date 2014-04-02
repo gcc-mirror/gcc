@@ -550,7 +550,11 @@ package Sinfo is
    --  do not lead to data dependences for subprograms can be safely ignored.
 
    --  In addition pragma Debug statements are removed from the tree (rewritten
-   --  to NULL stmt), since they should be taken into account in flow analysis.
+   --  to NULL stmt), since they should be ignored in formal verification.
+
+   --  An error is also issued for missing subunits, similar to the warning
+   --  issued when generating code, to avoid formal verification of a partial
+   --  unit.
 
    -----------------------
    -- Check Flag Fields --
@@ -567,6 +571,10 @@ package Sinfo is
    --  check. The front end then inserts or not the check during expansion. In
    --  particular, these flags should also be correctly set in ASIS mode and
    --  GNATprove mode.
+
+   --  Note: the expander always takes care of the Do_Range check case,
+   --  so this flag will never be set in the expanded tree passed to the
+   --  back end code generator.
 
    --  Note that this accounts for all nodes that trigger the corresponding
    --  checks, except for range checks on subtype_indications, which may be
@@ -641,6 +649,12 @@ package Sinfo is
 
    --    Min and Max attributes are expanded into equivalent if expressions,
    --    dealing properly with side effect issues.
+
+   --    Mod for signed integer types is expanded into equivalent expressions
+   --    using Rem (which is % in C) and other C-available operators.
+
+   --    The Actions list of an Expression_With_Actions node does not contain
+   --    any declarations,(so that DO X, .. Y IN Z becomes (X, .. Y, Z) in C).
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -1267,6 +1281,15 @@ package Sinfo is
    --    declaration is treated as an implicit reference to the formal in the
    --    ali file.
 
+   --  Generalized_Indexing (Node4-Sem)
+   --    Present in N_Indexed_Component nodes. Set for Indexed_Component nodes
+   --    that are Ada 2012 container indexing operations. The value of the
+   --    attribute is a function call (possibly dereferenced) that corresponds
+   --    to the proper expansion of the source indexing operation. Before
+   --    expansion, the source node is rewritten as the resolved generalized
+   --    indexing. In ASIS mode, the expansion does not take place, so that
+   --    the source is preserved and properly annotated with types.
+
    --  Generic_Parent (Node5-Sem)
    --    Generic_Parent is defined on declaration nodes that are instances. The
    --    value of Generic_Parent is the generic entity from which the instance
@@ -1401,11 +1424,6 @@ package Sinfo is
    --     This flag is set in an Interface or Import pragma if a matching
    --     pragma of the other kind is also present. This is used to avoid
    --     generating some unwanted error messages.
-
-   --  In_Assertion_Expression (Flag4-Sem)
-   --     This flag is present in N_Function_Call nodes. It is set if the
-   --     function is called from within an assertion expression. This is
-   --     used to avoid some bogus warnings about early elaboration.
 
    --  Includes_Infinities (Flag11-Sem)
    --    This flag is present in N_Range nodes. It is set for the range of
@@ -2923,6 +2941,10 @@ package Sinfo is
       --  Discrete_Subtype_Definitions (List2)
       --  Component_Definition (Node4)
 
+      --  Note: although the language allows the full syntax for discrete
+      --  subtype definitions (i.e. a discrete subtype indication or a range),
+      --  in the generated tree, we always rewrite these as N_Range nodes.
+
       --------------------------------------
       -- 3.6  Discrete Subtype Definition --
       --------------------------------------
@@ -3461,6 +3483,7 @@ package Sinfo is
       --  Sloc contains a copy of the Sloc value of the Prefix
       --  Prefix (Node3)
       --  Expressions (List1)
+      --  Generalized_Indexing (Node4-Sem)
       --  Atomic_Sync_Required (Flag14-Sem)
       --  plus fields for expression
 
@@ -4132,6 +4155,11 @@ package Sinfo is
       --  and we are running in ELIMINATED mode, the operator node will be
       --  changed to be a call to the appropriate routine in System.Bignums.
 
+      --  Note: In Modify_Tree_For_C mode, we do not generate an N_Op_Mod node
+      --  for signed integer types (since there is no equivalent operator in
+      --  C). Instead we rewrite such an operation in terms of REM (which is
+      --  % in C) and other C-available operators.
+
       ------------------------------------
       -- 4.5.7  Conditional Expressions --
       ------------------------------------
@@ -4545,16 +4573,16 @@ package Sinfo is
       --  the implicit label declaration which occurs in the innermost
       --  enclosing block.
 
-      --  Note: there is always a loop statement identifier present in
-      --  the tree, even if none was given in the source. In the case where
-      --  no loop identifier is given in the source, the parser creates
-      --  a name of the form _Loop_n, where n is a decimal integer (the
-      --  two underlines ensure that the loop names created in this manner
-      --  do not conflict with any user defined identifiers), and the flag
-      --  Has_Created_Identifier is set to True. The only exception to the
-      --  rule that all loop statement nodes have identifiers occurs for
-      --  loops constructed by the expander, and the semantic analyzer will
-      --  create and supply dummy loop identifiers in these cases.
+      --  Note: there is always a loop statement identifier present in the
+      --  tree, even if none was given in the source. In the case where no loop
+      --  identifier is given in the source, the parser creates a name of the
+      --  form _Loop_n, where n is a decimal integer (the two underlines ensure
+      --  that the loop names created in this manner do not conflict with any
+      --  user defined identifiers), and the flag Has_Created_Identifier is set
+      --  to True. The only exception to the rule that all loop statement nodes
+      --  have identifiers occurs for loops constructed by the expander, and
+      --  the semantic analyzer will create and supply dummy loop identifiers
+      --  in these cases.
 
       --  N_Loop_Statement
       --  Sloc points to LOOP
@@ -4586,9 +4614,9 @@ package Sinfo is
       --  is present at a time, in which case the other one is empty. Both are
       --  empty in the case of a WHILE loop.
 
-      --  Gigi restriction: This expander ensures that the type of the
-      --  Condition field is always Standard.Boolean, even if the type
-      --  in the source is some non-standard boolean type.
+      --  Gigi restriction: The expander ensures that the type of the Condition
+      --  field is always Standard.Boolean, even if the type in the source is
+      --  some non-standard boolean type.
 
       --  N_Iteration_Scheme
       --  Sloc points to WHILE or FOR
@@ -4647,12 +4675,12 @@ package Sinfo is
       --  or body; the block identifier denotes that E_Block.
 
       --  For block statements that come from source code, there is always a
-      --  block statement identifier present in the tree, denoting an
-      --  E_Block. In the case where no block identifier is given in the
-      --  source, the parser creates a name of the form B_n, where n is a
-      --  decimal integer, and the flag Has_Created_Identifier is set to
-      --  True. Blocks constructed by the expander usually have no identifier,
-      --  and no corresponding entity.
+      --  block statement identifier present in the tree, denoting an E_Block.
+      --  In the case where no block identifier is given in the source,
+      --  the parser creates a name of the form B_n, where n is a decimal
+      --  integer, and the flag Has_Created_Identifier is set to True. Blocks
+      --  constructed by the expander usually have no identifier, and no
+      --  corresponding entity.
 
       --  Note: the block statement created for an extended return statement
       --  has an entity, and this entity is an E_Return_Statement, rather than
@@ -4688,9 +4716,9 @@ package Sinfo is
 
       --  EXIT_STATEMENT ::= exit [loop_NAME] [when CONDITION];
 
-      --  Gigi restriction: This expander ensures that the type of the
-      --  Condition field is always Standard.Boolean, even if the type
-      --  in the source is some non-standard boolean type.
+      --  Gigi restriction: The expander ensures that the type of the Condition
+      --  field is always Standard.Boolean, even if the type in the source is
+      --  some non-standard boolean type.
 
       --  N_Exit_Statement
       --  Sloc points to EXIT
@@ -4785,10 +4813,11 @@ package Sinfo is
 
       --  N_Designator
       --  Sloc points to period
-      --  Name (Node2) holds the parent unit name. Note that this is always
-      --   non-Empty, since this node is only used for the case where a
-      --   parent library unit package name is present.
+      --  Name (Node2) holds the parent unit name
       --  Identifier (Node1)
+
+      --  Note: Name is always non-Empty, since this node is only used for the
+      --  case where a parent library unit package name is present.
 
       --  Note that the identifier can also be an operator symbol here
 
@@ -4806,19 +4835,20 @@ package Sinfo is
       --  DEFINING_PROGRAM_UNIT_NAME ::=
       --    [PARENT_UNIT_NAME .] DEFINING_IDENTIFIER
 
-      --  The parent unit name is present only in the case of a child unit
-      --  name (permissible only for Ada 95 for a library level unit, i.e.
-      --  a unit at scope level one). If no such name is present, the defining
-      --  program unit name is represented simply as the defining identifier.
-      --  In the child unit case, the following node is used to represent the
-      --  child unit name.
+      --  The parent unit name is present only in the case of a child unit name
+      --  (permissible only for Ada 95 for a library level unit, i.e. a unit
+      --  at scope level one). If no such name is present, the defining program
+      --  unit name is represented simply as the defining identifier. In the
+      --  child unit case, the following node is used to represent the child
+      --  unit name.
 
       --  N_Defining_Program_Unit_Name
       --  Sloc points to period
-      --  Name (Node2) holds the parent unit name. Note that this is always
-      --   non-Empty, since this node is only used for the case where a
-      --   parent unit name is present.
+      --  Name (Node2) holds the parent unit name
       --  Defining_Identifier (Node1)
+
+      --  Note: Name is always non-Empty, since this node is only used for the
+      --  case where a parent unit name is present.
 
       --------------------------
       -- 6.1  Operator Symbol --
@@ -4826,13 +4856,13 @@ package Sinfo is
 
       --  OPERATOR_SYMBOL ::= STRING_LITERAL
 
-      --  Note: the fields of the N_Operator_Symbol node are laid out to
-      --  match the corresponding fields of an N_Character_Literal node. This
-      --  allows easy conversion of the operator symbol node into a character
-      --  literal node in the case where a string constant of the form of an
-      --  operator symbol is scanned out as such, but turns out semantically
-      --  to be a string literal that is not an operator. For details see
-      --  Sinfo.CN.Change_Operator_Symbol_To_String_Literal.
+      --  Note: the fields of the N_Operator_Symbol node are laid out to match
+      --  the corresponding fields of an N_Character_Literal node. This allows
+      --  easy conversion of the operator symbol node into a character literal
+      --  node in the case where a string constant of the form of an operator
+      --  symbol is scanned out as such, but turns out semantically to be a
+      --  string literal that is not an operator. For details see Sinfo.CN.
+      --  Change_Operator_Symbol_To_String_Literal.
 
       --  N_Operator_Symbol
       --  Sloc points to literal
@@ -4992,11 +5022,11 @@ package Sinfo is
       --  PROCEDURE_CALL_STATEMENT ::=
       --    procedure_NAME; | procedure_PREFIX ACTUAL_PARAMETER_PART;
 
-      --  Note: the reason that a procedure call has expression fields is
-      --  that it semantically resembles an expression, e.g. overloading is
-      --  allowed and a type is concocted for semantic processing purposes.
-      --  Certain of these fields, such as Parens are not relevant, but it
-      --  is easier to just supply all of them together.
+      --  Note: the reason that a procedure call has expression fields is that
+      --  it semantically resembles an expression, e.g. overloading is allowed
+      --  and a type is concocted for semantic processing purposes. Certain of
+      --  these fields, such as Parens are not relevant, but it is easier to
+      --  just supply all of them together.
 
       --  N_Procedure_Call_Statement
       --  Sloc points to first token of name or prefix
@@ -5036,7 +5066,6 @@ package Sinfo is
       --   actual parameter part)
       --  First_Named_Actual (Node4-Sem)
       --  Controlling_Argument (Node1-Sem) (set to Empty if not dispatching)
-      --  In_Assertion_Expression (Flag4-Sem)
       --  Is_Expanded_Build_In_Place_Call (Flag11-Sem)
       --  Do_Tag_Check (Flag13-Sem)
       --  No_Elaboration_Check (Flag14-Sem)
@@ -5134,8 +5163,8 @@ package Sinfo is
       --                                      [:= EXPRESSION]
 
       --  There are two entities associated with an extended_return_statement:
-      --  the Return_Statement_Entity represents the statement itself, and the
-      --  Defining_Identifier of the Object_Declaration in
+      --  the Return_Statement_Entity represents the statement itself,
+      --  and the Defining_Identifier of the Object_Declaration in
       --  Return_Object_Declarations represents the object being
       --  returned. N_Simple_Return_Statement has only the former.
 
@@ -7412,6 +7441,9 @@ package Sinfo is
       --  not a proper expression), and in the long term all cases of this
       --  idiom should instead use a new node kind N_Compound_Statement.
 
+      --  Note: In Modify_Tree_For_C, we never generate any declarations in
+      --  the action list, which can contain only non-declarative statements.
+
       --------------------
       -- Free Statement --
       --------------------
@@ -8896,6 +8928,9 @@ package Sinfo is
    function From_Default
      (N : Node_Id) return Boolean;    -- Flag6
 
+   function Generalized_Indexing
+     (N : Node_Id) return Node_Id;    -- Node4
+
    function Generic_Associations
      (N : Node_Id) return List_Id;    -- List3
 
@@ -8985,9 +9020,6 @@ package Sinfo is
 
    function Import_Interface_Present
      (N : Node_Id) return Boolean;    -- Flag16
-
-   function In_Assertion_Expression
-     (N : Node_Id) return Boolean;    -- Flag4
 
    function In_Present
      (N : Node_Id) return Boolean;    -- Flag15
@@ -9895,6 +9927,9 @@ package Sinfo is
    procedure Set_From_Default
      (N : Node_Id; Val : Boolean := True);    -- Flag6
 
+   procedure Set_Generalized_Indexing
+     (N : Node_Id; Val : Node_Id);            -- Node4
+
    procedure Set_Generic_Associations
      (N : Node_Id; Val : List_Id);            -- List3
 
@@ -9984,9 +10019,6 @@ package Sinfo is
 
    procedure Set_Import_Interface_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag16
-
-   procedure Set_In_Assertion_Expression
-     (N : Node_Id; Val : Boolean := True);    -- Flag4
 
    procedure Set_In_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag15
@@ -10908,7 +10940,7 @@ package Sinfo is
        (1 => True,    --  Expressions (List1)
         2 => False,   --  unused
         3 => True,    --  Prefix (Node3)
-        4 => False,   --  unused
+        4 => False,   --  Generalized_Indexing (Node4-Sem)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Slice =>
@@ -12362,6 +12394,7 @@ package Sinfo is
    pragma Inline (From_At_End);
    pragma Inline (From_At_Mod);
    pragma Inline (From_Default);
+   pragma Inline (Generalized_Indexing);
    pragma Inline (Generic_Associations);
    pragma Inline (Generic_Formal_Declarations);
    pragma Inline (Generic_Parent);
@@ -12393,7 +12426,6 @@ package Sinfo is
    pragma Inline (Interface_Present);
    pragma Inline (Includes_Infinities);
    pragma Inline (Import_Interface_Present);
-   pragma Inline (In_Assertion_Expression);
    pragma Inline (In_Present);
    pragma Inline (Inherited_Discriminant);
    pragma Inline (Instance_Spec);
@@ -12692,6 +12724,7 @@ package Sinfo is
    pragma Inline (Set_From_At_End);
    pragma Inline (Set_From_At_Mod);
    pragma Inline (Set_From_Default);
+   pragma Inline (Set_Generalized_Indexing);
    pragma Inline (Set_Generic_Associations);
    pragma Inline (Set_Generic_Formal_Declarations);
    pragma Inline (Set_Generic_Parent);
@@ -12719,7 +12752,6 @@ package Sinfo is
    pragma Inline (Set_Identifier);
    pragma Inline (Set_Implicit_With);
    pragma Inline (Set_Import_Interface_Present);
-   pragma Inline (Set_In_Assertion_Expression);
    pragma Inline (Set_In_Present);
    pragma Inline (Set_Includes_Infinities);
    pragma Inline (Set_Inherited_Discriminant);

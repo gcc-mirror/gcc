@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -fabi-version=0" }
-// { dg-do compile }
+// { dg-options "-fabi-version=0" }
+// { dg-do compile { target c++11 } }
 template<typename... Args>
 class tuple {};
 

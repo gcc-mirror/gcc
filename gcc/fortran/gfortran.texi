@@ -811,9 +811,10 @@ operators bound to a type.
 @item Abstract interfaces and type extension with the possibility to
 override type-bound procedures or to have deferred binding.
 
-@item Polymorphic entities (``@code{CLASS}'') for derived types -- including
-@code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE} for
-scalars and arrays, including unlimited polymorphism.
+@item Polymorphic entities (``@code{CLASS}'') for derived types and unlimited
+polymorphism (``@code{CLASS(*)}'') -- including @code{SAME_TYPE_AS},
+@code{EXTENDS_TYPE_OF} and @code{SELECT TYPE} for scalars and arrays and
+finalization.
 
 @item Generic interface names, which have the same name as derived types,
 are now supported. This allows one to write constructor functions.  Note
@@ -838,6 +839,10 @@ used, an allocatable variable on the left-hand side is automatically allocated
 (if unallocated) or reallocated (if the shape is different). Currently, scalar
 deferred character length left-hand sides are correctly handled but arrays
 are not yet fully implemented.
+
+@item Deferred-length character variables and scalar deferred-length character
+components of derived types are supported. (Note that array-valued compoents
+are not yet implemented.)
 
 @item Transferring of allocations via @code{MOVE_ALLOC}.
 
@@ -919,9 +924,10 @@ allowing I/O without any record structure.
 @item
 Namelist input/output for internal files.
 
-@item Further I/O extensions: Rounding during formatted output, using of
+@item Minor I/O features: Rounding during formatted output, using of
 a decimal comma instead of a decimal point, setting whether a plus sign
-should appear for positive numbers.
+should appear for positive numbers. On system where @code{strtod} honours
+the rounding mode, the rounding mode is also supported for input.
 
 @item
 @cindex @code{PROTECTED} statement
@@ -1035,7 +1041,8 @@ flag.
 @item The @code{BLOCK} construct is supported.
 
 @item The @code{STOP} and the new @code{ERROR STOP} statements now
-support all constant expressions.
+support all constant expressions. Both show the signals which were signaling
+at termination.
 
 @item Support for the @code{CONTIGUOUS} attribute.
 
@@ -1486,6 +1493,12 @@ elements will be given the values 1.00 and 2.00.
   X(1,1) = 0.00 , 1.00 , 2.00
 /
 @end smallexample
+
+When writing a namelist, if no @code{DELIM=} is specified, by default a
+double quote is used to delimit character strings. If -std=F95, F2003,
+or F2008, etc, the delim status is set to 'none'.  Defaulting to
+quotes ensures that namelists with character strings can be subsequently
+read back in accurately.
 
 @node X format descriptor without count field
 @subsection @code{X} format descriptor without count field
@@ -1990,6 +2003,7 @@ code that uses them running with the GNU Fortran compiler.
 @c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
+* Volatile COMMON blocks::
 @end menu
 
 
@@ -2182,6 +2196,18 @@ complex functions with the syntax @code{COMPLEX FUNCTION name*16()}, as
 well as @code{COMPLEX*16 FUNCTION name()}.  Both are non-standard, legacy
 extensions.  @command{gfortran} accepts the latter form, which is more
 common, but not the former.
+
+
+@node Volatile COMMON blocks
+@subsection Volatile @code{COMMON} blocks
+@cindex @code{VOLATILE}
+@cindex @code{COMMON}
+
+Some Fortran compilers, including @command{g77}, let the user declare
+@code{COMMON} with the @code{VOLATILE} attribute. This is
+invalid standard Fortran syntax and is not supported by
+@command{gfortran}.  Note that @command{gfortran} accepts
+@code{VOLATILE} variables in @code{COMMON} blocks since revision 4.3.
 
 
 

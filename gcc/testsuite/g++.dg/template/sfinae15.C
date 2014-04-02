@@ -1,6 +1,5 @@
 // PR c++/40944
-// { dg-options -std=c++0x }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 template<typename T>
 struct make { static T&& it(); };

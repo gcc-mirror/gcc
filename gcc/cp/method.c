@@ -971,6 +971,25 @@ get_copy_assign (tree type)
   return fn;
 }
 
+/* Locate the inherited constructor of constructor CTOR.  */
+
+tree
+get_inherited_ctor (tree ctor)
+{
+  gcc_assert (DECL_INHERITED_CTOR_BASE (ctor));
+
+  push_deferring_access_checks (dk_no_check);
+  tree fn = locate_fn_flags (DECL_INHERITED_CTOR_BASE (ctor),
+			     complete_ctor_identifier,
+			     FUNCTION_FIRST_USER_PARMTYPE (ctor),
+			     LOOKUP_NORMAL|LOOKUP_SPECULATIVE,
+			     tf_none);
+  pop_deferring_access_checks ();
+  if (fn == error_mark_node)
+    return NULL_TREE;
+  return fn;
+}
+
 /* Subroutine of synthesized_method_walk.  Update SPEC_P, TRIVIAL_P and
    DELETED_P or give an error message MSG with argument ARG.  */
 
@@ -1091,15 +1110,23 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	      && default_init_uninitialized_part (mem_type))
 	    {
 	      if (diag)
-		error ("uninitialized non-static const member %q#D",
-		       field);
+		{
+		  error ("uninitialized const member in %q#T",
+			 current_class_type);
+		  inform (DECL_SOURCE_LOCATION (field),
+			  "%q#D should be initialized", field);
+		}
 	      bad = true;
 	    }
 	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
 	    {
 	      if (diag)
-		error ("uninitialized non-static reference member %q#D",
-		       field);
+		{
+		  error ("uninitialized reference member in %q#T",
+			 current_class_type);
+		  inform (DECL_SOURCE_LOCATION (field),
+			  "%q#D should be initialized", field);
+		}
 	      bad = true;
 	    }
 
@@ -1645,9 +1672,8 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       /* For an inheriting constructor template, just copy these flags from
 	 the inherited constructor template for now.  */
       raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (inherited_ctor));
-      deleted_p = DECL_DELETED_FN (DECL_TEMPLATE_RESULT (inherited_ctor));
-      constexpr_p
-	= DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT (inherited_ctor));
+      deleted_p = DECL_DELETED_FN (inherited_ctor);
+      constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
     }
   else
     synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
@@ -1656,10 +1682,12 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   /* Don't bother marking a deleted constructor as constexpr.  */
   if (deleted_p)
     constexpr_p = false;
-  /* A trivial copy/move constructor is also a constexpr constructor.  */
+  /* A trivial copy/move constructor is also a constexpr constructor,
+     unless the class has virtual bases (7.1.5p4).  */
   else if (trivial_p && cxx_dialect >= cxx11
 	   && (kind == sfk_copy_constructor
-	       || kind == sfk_move_constructor))
+	       || kind == sfk_move_constructor)
+	   && !CLASSTYPE_VBASECLASSES (type))
     gcc_assert (constexpr_p);
 
   if (!trivial_p && type_has_trivial_fn (type, kind))
@@ -1724,8 +1752,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       TREE_PROTECTED (fn) = TREE_PROTECTED (inherited_ctor);
       /* Copy constexpr from the inherited constructor even if the
 	 inheriting constructor doesn't satisfy the requirements.  */
-      constexpr_p
-	= DECL_DECLARED_CONSTEXPR_P (STRIP_TEMPLATE (inherited_ctor));
+      constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
     }
   /* Add the "this" parameter.  */
   this_parm = build_this_parm (fn_type, TYPE_UNQUALIFIED);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -464,7 +464,7 @@ package body Rtsfind is
 
       S := Scope (Ent);
 
-      if Ekind (S) /= E_Package then
+      if No (S) or else Ekind (S) /= E_Package then
          return False;
       end if;
 
@@ -806,7 +806,7 @@ package body Rtsfind is
       Scop : Entity_Id;
 
    begin
-      Nam  := New_Reference_To (U.Entity, Standard_Location);
+      Nam  := New_Occurrence_Of (U.Entity, Standard_Location);
       Scop := Scope (U.Entity);
 
       if Nkind (N) = N_Defining_Program_Unit_Name then
@@ -814,7 +814,7 @@ package body Rtsfind is
             Nam :=
               Make_Expanded_Name (Standard_Location,
                 Chars  => Chars (U.Entity),
-                Prefix => New_Reference_To (Scop, Standard_Location),
+                Prefix => New_Occurrence_Of (Scop, Standard_Location),
                 Selector_Name => Nam);
             Set_Entity (Nam, U.Entity);
 

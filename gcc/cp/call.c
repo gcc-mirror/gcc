@@ -949,7 +949,11 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   bool user = false;
   enum conversion_rank rank = cr_exact;
 
-  if (TYPE_DOMAIN (type))
+  /* We might need to propagate the size from the element to the array.  */
+  complete_type (type);
+
+  if (TYPE_DOMAIN (type)
+      && !variably_modified_type_p (TYPE_DOMAIN (type), NULL_TREE))
     {
       unsigned HOST_WIDE_INT alen = tree_to_uhwi (array_type_nelts_top (type));
       if (alen < len)
@@ -3180,6 +3184,10 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
     inform (loc, "  no known conversion for implicit "
 	    "%<this%> parameter from %qT to %qT",
 	    info->from_type, info->to_type);
+  else if (info->n_arg == -2)
+    /* Conversion of conversion function return value failed.  */
+    inform (loc, "  no known conversion from %qT to %qT",
+	    info->from_type, info->to_type);
   else
     inform (loc, "  no known conversion for argument %d from %qT to %qT",
 	    info->n_arg+1, info->from_type, info->to_type);
@@ -3233,7 +3241,7 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%T <conversion>", msg, candidate->fn);
   else if (candidate->viable == -1)
     inform (cloc, "%s%#D <near match>", msg, candidate->fn);
-  else if (DECL_DELETED_FN (STRIP_TEMPLATE (candidate->fn)))
+  else if (DECL_DELETED_FN (candidate->fn))
     inform (cloc, "%s%#D <deleted>", msg, candidate->fn);
   else
     inform (cloc, "%s%#D", msg, candidate->fn);
@@ -3604,7 +3612,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	  if (!ics)
 	    {
 	      cand->viable = 0;
-	      cand->reason = arg_conversion_rejection (NULL_TREE, -1,
+	      cand->reason = arg_conversion_rejection (NULL_TREE, -2,
 						       rettype, totype);
 	    }
 	  else if (DECL_NONCONVERTING_P (cand->fn)
@@ -3624,7 +3632,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	    {
 	      cand->viable = -1;
 	      cand->reason
-		= bad_arg_conversion_rejection (NULL_TREE, -1,
+		= bad_arg_conversion_rejection (NULL_TREE, -2,
 						rettype, totype);
 	    }
 	  else if (primary_template_instantiation_p (cand->fn)
@@ -6407,8 +6415,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	  if (complain & tf_error)
 	    error_at (loc, "cannot pass objects of non-trivially-copyable "
 		      "type %q#T through %<...%>", arg_type);
-	  else
-	    return error_mark_node;
+	  return error_mark_node;
 	}
     }
 
@@ -6528,20 +6535,10 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum,
   /* We must make a copy of ARG, in case subsequent processing
      alters any part of it.  */
   arg = break_out_target_exprs (arg);
-  if (TREE_CODE (arg) == CONSTRUCTOR)
-    {
-      arg = digest_init (type, arg, complain);
-      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
-					ICR_DEFAULT_ARGUMENT, fn, parmnum,
-                                        complain);
-    }
-  else
-    {
-      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
-					ICR_DEFAULT_ARGUMENT, fn, parmnum,
-                                        complain);
-      arg = convert_for_arg_passing (type, arg, complain);
-    }
+  arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
+				    ICR_DEFAULT_ARGUMENT, fn, parmnum,
+				    complain);
+  arg = convert_for_arg_passing (type, arg, complain);
   pop_deferring_access_checks();
 
   pop_defarg_context ();
@@ -7833,15 +7830,20 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  if (!(flags & LOOKUP_NONVIRTUAL)
 	      && DECL_PURE_VIRTUAL_P (fn)
 	      && instance == current_class_ref
-	      && (DECL_CONSTRUCTOR_P (current_function_decl)
-		  || DECL_DESTRUCTOR_P (current_function_decl))
 	      && (complain & tf_warning))
-	    /* This is not an error, it is runtime undefined
-	       behavior.  */
-	    warning (0, (DECL_CONSTRUCTOR_P (current_function_decl) ?
-		      "pure virtual %q#D called from constructor"
-		      : "pure virtual %q#D called from destructor"),
-		     fn);
+	    {
+	      /* This is not an error, it is runtime undefined
+		 behavior.  */
+	      if (!current_function_decl)
+		warning (0, "pure virtual %q#D called from "
+			 "non-static data member initializer", fn);
+	      else if (DECL_CONSTRUCTOR_P (current_function_decl)
+		       || DECL_DESTRUCTOR_P (current_function_decl))
+		warning (0, (DECL_CONSTRUCTOR_P (current_function_decl)
+			     ? "pure virtual %q#D called from constructor"
+			     : "pure virtual %q#D called from destructor"),
+			 fn);
+	    }
 
 	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
 	      && is_dummy_object (instance))

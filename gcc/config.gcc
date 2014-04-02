@@ -494,7 +494,7 @@ tilegx*-*-*)
 	cpu_type=tilegx
 	need_64bit_hwint=yes
 	;;
-tilepro-*-*)
+tilepro*-*-*)
 	cpu_type=tilepro
 	need_64bit_hwint=yes
 	;;
@@ -1537,6 +1537,9 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	esac
 	with_tune_32=${with_tune_32:-generic}
 	case ${target} in
+	*-*-solaris2.9*)
+		tm_file="${tm_file} i386/sol2-9.h"
+		;;
 	*-*-solaris2.1[0-9]*)
 		tm_file="${tm_file} i386/x86-64.h i386/sol2-bi.h sol2-bi.h"
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
@@ -2761,15 +2764,20 @@ tic6x-*-uclinux)
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
 	use_collect2=no
 	;;
-tilegx-*-linux*)
+tilegx*-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilegx/linux.h ${tm_file}"
         tmake_file="${tmake_file} tilegx/t-tilegx"
 	extra_objs="${extra_objs} mul-tables.o"
 	c_target_objs="${c_target_objs} tilegx-c.o"
 	cxx_target_objs="${cxx_target_objs} tilegx-c.o"
 	extra_headers="feedback.h"
+	case $target in
+	tilegxbe-*)
+		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+ 		;;
+	esac
 	;;
-tilepro-*-linux*)
+tilepro*-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
         tmake_file="${tmake_file} tilepro/t-tilepro"
 	extra_objs="${extra_objs} mul-tables.o"
@@ -3388,6 +3396,11 @@ case "${target}" in
 				  ${srcdir}/config/aarch64/$def | \
 				  sed -e 's/^[^,]*,[ 	]*//' | \
 				  sed -e 's/,.*$//'`
+				# Extract the architecture flags from aarch64-arches.def
+				ext_mask=`grep "^$pattern(\"$base_val\"," \
+				   ${srcdir}/config/aarch64/$def | \
+				   sed -e 's/)$//' | \
+				   sed -e 's/^.*,//'`
 			  else
 				base_id=`grep "^$pattern(\"$base_val\"," \
 				  ${srcdir}/config/aarch64/$def | \
@@ -4049,10 +4062,8 @@ esac
 target_cpu_default2=
 case ${target} in
 	aarch64*-*-*)
-		if test x$target_cpu_cname = x
+		if test x"$target_cpu_cname" != x
 		then
-			target_cpu_default2=TARGET_CPU_generic
-		else
 			target_cpu_default2=$target_cpu_cname
 		fi
 		;;

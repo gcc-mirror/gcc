@@ -192,7 +192,8 @@
 
   BUILTIN_VDQ_I (SHIFTIMM, ashr, 3)
   VAR1 (SHIFTIMM, ashr_simd, 0, di)
-  BUILTIN_VSDQ_I_DI (SHIFTIMM, lshr, 3)
+  BUILTIN_VDQ_I (SHIFTIMM, lshr, 3)
+  VAR1 (USHIFTIMM, lshr_simd, 0, di)
   /* Implemented by aarch64_<sur>shr_n<mode>.  */
   BUILTIN_VSDQ_I_DI (SHIFTIMM, srshr_n, 0)
   BUILTIN_VSDQ_I_DI (SHIFTIMM, urshr_n, 0)

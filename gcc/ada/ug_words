@@ -68,6 +68,8 @@ gcc -c          ^ GNAT COMPILE
 -gnateG         ^ /GENERATE_PROCESSED_SOURCE
 -gnatei         ^ /MAX_INSTANTIATIONS=
 -gnateI         ^ /MULTI_UNIT_INDEX=
+-gnatel         ^ /ELABORATION_INFO_MESSAGES
+-gnateL         ^ /NOELABORATION_INFO_MESSAGES
 -gnatem         ^ /MAPPING_FILE
 -gnatep         ^ /DATA_PREPROCESSING
 -gnateP         ^ /CATEGORIZATION_WARNINGS

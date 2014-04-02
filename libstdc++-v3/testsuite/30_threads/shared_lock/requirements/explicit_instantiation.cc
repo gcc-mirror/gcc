@@ -27,5 +27,5 @@
 
 namespace std
 {
-  template class shared_lock<shared_mutex>;
+  template class shared_lock<shared_timed_mutex>;
 }

@@ -45,9 +45,26 @@ test01()
 	 == "this is a string|a|string|is|this|\\");
 }
 
+void
+test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  regex re("asdf");
+  cmatch m;
+  regex_match("asdf", m, re);
+  string fmt = "|&|\\0|";
+  char buff[4096] = {0};
+  string res = "|asdf|asdf|";
+  VERIFY(m.format(buff, fmt.data(), fmt.data() + fmt.size(),
+		  regex_constants::format_sed) == buff + res.size());
+  VERIFY(res == buff);
+}
+
 int
 main()
 {
   test01();
+  test02();
   return 0;
 }

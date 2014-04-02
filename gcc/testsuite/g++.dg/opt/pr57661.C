@@ -1,6 +1,6 @@
 // PR tree-optimization/57661
-// { dg-do compile }
-// { dg-options "-O2 -fno-tree-forwprop -std=gnu++11" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-O2 -fno-tree-forwprop" }
 
 template <typename>
 struct A

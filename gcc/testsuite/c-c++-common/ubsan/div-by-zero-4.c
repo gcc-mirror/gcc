@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=integer-divide-by-zero -Wno-overflow" } */
 
-#include <limits.h>
+#define INT_MIN (-__INT_MAX__ - 1)
 
 int
 main (void)

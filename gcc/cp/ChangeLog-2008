@@ -307,8 +307,8 @@
 	* g++spec.c (LIBSTDCXX_STATIC): New.
 	(lang_spec_driver): Use LIBSTDCXX_STATIC when not
 	shared_libgcc.
-	
-2008-11-05  Fabien Chene <fabien.chene@gmail.com>
+
+2008-11-05  Fabien Chêne <fabien@gcc.gnu.org>
 
 	PR c++/32519
 	* cp-tree.h: Fix DECL_NONSTATIC_MEMBER_P to handle member template

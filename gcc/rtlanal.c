@@ -224,10 +224,10 @@ rtx_varies_p (const_rtx x, bool for_alias)
   return 0;
 }
 
-/* Return nonzero if the use of X as an address in a MEM can cause a trap.
-   MODE is the mode of the MEM (not that of X) and UNALIGNED_MEMS controls
-   whether nonzero is returned for unaligned memory accesses on strict
-   alignment machines.  */
+/* Return nonzero if the use of X+OFFSET as an address in a MEM with SIZE
+   bytes can cause a trap.  MODE is the mode of the MEM (not that of X) and
+   UNALIGNED_MEMS controls whether nonzero is returned for unaligned memory
+   references on strict alignment machines.  */
 
 static int
 rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
@@ -235,11 +235,12 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 {
   enum rtx_code code = GET_CODE (x);
 
-  if (STRICT_ALIGNMENT
-      && unaligned_mems
-      && GET_MODE_SIZE (mode) != 0)
+  /* The offset must be a multiple of the mode size if we are considering
+     unaligned memory references on strict alignment machines.  */
+  if (STRICT_ALIGNMENT && unaligned_mems && GET_MODE_SIZE (mode) != 0)
     {
       HOST_WIDE_INT actual_offset = offset;
+
 #ifdef SPARC_STACK_BOUNDARY_HACK
       /* ??? The SPARC port may claim a STACK_BOUNDARY higher than
 	     the real alignment of %sp.  However, when it does this, the
@@ -298,8 +299,27 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
       return 0;
 
     case REG:
-      /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
-      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+      /* Stack references are assumed not to trap, but we need to deal with
+	 nonsensical offsets.  */
+      if (x == frame_pointer_rtx)
+	{
+	  HOST_WIDE_INT adj_offset = offset - STARTING_FRAME_OFFSET;
+	  if (size == 0)
+	    size = GET_MODE_SIZE (mode);
+	  if (FRAME_GROWS_DOWNWARD)
+	    {
+	      if (adj_offset < frame_offset || adj_offset + size - 1 >= 0)
+		return 1;
+	    }
+	  else
+	    {
+	      if (adj_offset < 0 || adj_offset + size - 1 >= frame_offset)
+		return 1;
+	    }
+	  return 0;
+	}
+      /* ??? Need to add a similar guard for nonsensical offsets.  */
+      if (x == hard_frame_pointer_rtx
 	  || x == stack_pointer_rtx
 	  /* The arg pointer varies if it is not a fixed register.  */
 	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
@@ -320,9 +340,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
       if (XEXP (x, 0) == pic_offset_table_rtx && CONSTANT_P (XEXP (x, 1)))
 	return 0;
 
-      /* - or it is an address that can't trap plus a constant integer,
-	   with the proper remainder modulo the mode size if we are
-	   considering unaligned memory references.  */
+      /* - or it is an address that can't trap plus a constant integer.  */
       if (CONST_INT_P (XEXP (x, 1))
 	  && !rtx_addr_can_trap_p_1 (XEXP (x, 0), offset + INTVAL (XEXP (x, 1)),
 				     size, mode, unaligned_mems))

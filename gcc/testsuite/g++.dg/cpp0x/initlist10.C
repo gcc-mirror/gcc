@@ -1,5 +1,5 @@
 // PR c++/38380
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 namespace std
 {

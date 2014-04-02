@@ -70,8 +70,3 @@
   (ior (match_code "symbol_ref")
        (match_operand 0 "register_operand")))
 
-(define_predicate "movsi_rhs_operand"
-  (ior (match_operand 0 "nonimmediate_operand")
-       (ior (match_code "const_int")
-            (ior (match_test "satisfies_constraint_S (op)")
-                 (match_test "satisfies_constraint_Y (op)")))))

@@ -1,5 +1,5 @@
 // Negative test for defaulted/deleted fns.
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 void f();			// { dg-message "previous" }
 void f() = delete;		// { dg-error "deleted" }
@@ -35,7 +35,7 @@ struct D: public C
 
 struct E
 {
-  const B b;
+  const B b;			// { dg-message "should be initialized" }
   E() { }			// { dg-error "uninitialized" }
 };
 

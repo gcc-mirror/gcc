@@ -1031,7 +1031,7 @@ package body Checks is
             Rewrite (N,
               OK_Convert_To (Typ,
                 Make_Function_Call (Loc,
-                  Name => New_Reference_To (RTE (Cent), Loc),
+                  Name => New_Occurrence_Of (RTE (Cent), Loc),
                   Parameter_Associations => New_List (
                     OK_Convert_To (RTE (RE_Integer_64), Left_Opnd  (N)),
                     OK_Convert_To (RTE (RE_Integer_64), Right_Opnd (N))))));
@@ -1516,8 +1516,8 @@ package body Checks is
 
       if Nkind (Original_Node (N)) /= N_Allocator
         and then (No (Lhs)
-          or else not Is_Entity_Name (Lhs)
-          or else No (Param_Entity (Lhs)))
+                   or else not Is_Entity_Name (Lhs)
+                   or else No (Param_Entity (Lhs)))
       then
          if (Etype (N) = Typ
               or else (Do_Access and then Designated_Type (Typ) = S_Typ))
@@ -1767,7 +1767,6 @@ package body Checks is
          if Do_Overflow_Check (N)
            and then not Overflow_Checks_Suppressed (Etype (N))
          then
-
             --  Test for extremely annoying case of xxx'First divided by -1
             --  for division of signed integer types (only overflow case).
 
@@ -2258,7 +2257,7 @@ package body Checks is
                 Then_Statements => New_List (
                   Make_Raise_Statement (Loc,
                     Name       =>
-                      New_Reference_To (Standard_Program_Error, Loc),
+                      New_Occurrence_Of (Standard_Program_Error, Loc),
                     Expression => Make_String_Literal (Loc, End_String)))));
 
          --  Create a sequence of overlapping checks by and-ing them all
@@ -2388,7 +2387,7 @@ package body Checks is
          --  Step 1: Create the expression to verify the validity of the
          --  context.
 
-         Check := New_Reference_To (Context, Loc);
+         Check := New_Occurrence_Of (Context, Loc);
 
          --  When processing a function result, use 'Result. Generate
          --    Context'Result
@@ -3061,17 +3060,18 @@ package body Checks is
       Source_Typ : Entity_Id;
       Do_Static  : Boolean)
    is
-      Cond     : Node_Id;
-      R_Result : Check_Result;
-      R_Cno    : Node_Id;
-
       Loc       : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On : constant Boolean :=
-        (not Index_Checks_Suppressed (Target_Typ))
-         or else (not Range_Checks_Suppressed (Target_Typ));
+                    not Index_Checks_Suppressed (Target_Typ)
+                      or else
+                    not Range_Checks_Suppressed (Target_Typ);
+
+      Cond     : Node_Id;
+      R_Cno    : Node_Id;
+      R_Result : Check_Result;
 
    begin
-      if not Expander_Active or else not Checks_On then
+      if not Expander_Active or not Checks_On then
          return;
       end if;
 
@@ -3079,27 +3079,33 @@ package body Checks is
         Selected_Range_Checks (Ck_Node, Target_Typ, Source_Typ, Empty);
 
       for J in 1 .. 2 loop
-
          R_Cno := R_Result (J);
          exit when No (R_Cno);
 
-         --  If the item is a conditional raise of constraint error, then have
-         --  a look at what check is being performed and ???
+         --  The range check requires runtime evaluation. Depending on what its
+         --  triggering condition is, the check may be converted into a compile
+         --  time constraint check.
 
          if Nkind (R_Cno) = N_Raise_Constraint_Error
            and then Present (Condition (R_Cno))
          then
             Cond := Condition (R_Cno);
 
-            if not Has_Dynamic_Range_Check (Ck_Node) then
-               Insert_Action (Ck_Node, R_Cno);
+            --  Insert the range check before the related context. Note that
+            --  this action analyses the triggering condition.
 
-               if not Do_Static then
-                  Set_Has_Dynamic_Range_Check (Ck_Node);
-               end if;
+            Insert_Action (Ck_Node, R_Cno);
+
+            --  This old code doesn't make sense, why is the context flagged as
+            --  requiring dynamic range checks now in the middle of generating
+            --  them ???
+
+            if not Do_Static then
+               Set_Has_Dynamic_Range_Check (Ck_Node);
             end if;
 
-            --  Output a warning if the condition is known to be True
+            --  The triggering condition evaluates to True, the range check
+            --  can be converted into a compile time constraint check.
 
             if Is_Entity_Name (Cond)
               and then Entity (Cond) = Standard_True
@@ -3111,7 +3117,8 @@ package body Checks is
 
                if Nkind (Ck_Node) = N_Range then
                   Apply_Compile_Time_Constraint_Error
-                    (Low_Bound (Ck_Node), "static range out of bounds of}??",
+                    (Low_Bound (Ck_Node),
+                     "static range out of bounds of}??",
                      CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
@@ -3120,7 +3127,8 @@ package body Checks is
 
                else
                   Apply_Compile_Time_Constraint_Error
-                    (Ck_Node, "static value out of range of}?",
+                    (Ck_Node,
+                     "static value out of range of}?",
                      CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
@@ -3130,10 +3138,14 @@ package body Checks is
             --  on, then we want to delete the check, since it is not needed.
             --  We do this by replacing the if statement by a null statement
 
+            --  Why are we even generating checks if checks are turned off ???
+
             elsif Do_Static or else not Checks_On then
                Remove_Warning_Messages (R_Cno);
                Rewrite (R_Cno, Make_Null_Statement (Loc));
             end if;
+
+         --  The range check raises Constrant_Error explicitly
 
          else
             Install_Static_Check (R_Cno, Loc);
@@ -5734,7 +5746,7 @@ package body Checks is
                          Duplicate_Subexpr_Move_Checks (Sub)),
                      Right_Opnd =>
                        Make_Attribute_Reference (Loc,
-                         Prefix         => New_Reference_To (Etype (A), Loc),
+                         Prefix         => New_Occurrence_Of (Etype (A), Loc),
                          Attribute_Name => Name_Range)),
                 Reason => CE_Index_Check_Failed));
          end if;
@@ -5788,7 +5800,7 @@ package body Checks is
                      Range_N :=
                        Make_Attribute_Reference (Loc,
                          Prefix         =>
-                           New_Reference_To (Etype (A_Idx), Loc),
+                           New_Occurrence_Of (Etype (A_Idx), Loc),
                          Attribute_Name => Name_Range);
 
                   --  For arrays with non-constant bounds we cannot generate
@@ -6936,7 +6948,7 @@ package body Checks is
                 New_Occurrence_Of (RTE (RE_Mark_Id), Loc),
               Expression          =>
                 Make_Function_Call (Loc,
-                  Name => New_Reference_To (RTE (RE_SS_Mark), Loc)))),
+                  Name => New_Occurrence_Of (RTE (RE_SS_Mark), Loc)))),
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
@@ -6944,7 +6956,7 @@ package body Checks is
                 Make_Procedure_Call_Statement (Loc,
                   Name => New_Occurrence_Of (RTE (RE_SS_Release), Loc),
                   Parameter_Associations => New_List (
-                    New_Reference_To (M, Loc))))));
+                    New_Occurrence_Of (M, Loc))))));
    end Make_Bignum_Block;
 
    ----------------------------------
@@ -9144,8 +9156,12 @@ package body Checks is
                     Make_And_Then (Loc,
                       Left_Opnd =>
                         Make_Op_Ge (Loc,
-                          Left_Opnd  => Duplicate_Subexpr_No_Checks (HB),
-                          Right_Opnd => Duplicate_Subexpr_No_Checks (LB)),
+                          Left_Opnd  =>
+                            Convert_To (Base_Type (Etype (HB)),
+                              Duplicate_Subexpr_No_Checks (HB)),
+                          Right_Opnd =>
+                            Convert_To (Base_Type (Etype (LB)),
+                              Duplicate_Subexpr_No_Checks (LB))),
                       Right_Opnd => Cond);
                end;
             end if;

@@ -1,5 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 // A basic implementation of TR1's mem_fn using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>
 #include <cassert>

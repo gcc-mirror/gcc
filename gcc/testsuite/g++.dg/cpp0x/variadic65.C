@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 struct unused;
 template<typename T1 = unused, typename T2 = unused, typename T3 = unused,
          typename T4 = unused, typename T5 = unused, typename T6 = unused>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,11 +73,20 @@ package body CStand is
    --  to be used. The fourth parameter is the digits value. Each type
    --  is added to the list of predefined floating point types.
 
-   procedure Build_Signed_Integer_Type (E : Entity_Id; Siz : Int);
+   procedure Build_Signed_Integer_Type (E : Entity_Id; Siz : Nat);
    --  Procedure to build standard predefined signed integer subtype. The
    --  first parameter is the entity for the subtype. The second parameter
    --  is the size in bits. The corresponding base type is not built by
    --  this routine but instead must be built by the caller where needed.
+
+   procedure Build_Unsigned_Integer_Type
+     (Uns : Entity_Id;
+      Siz : Nat;
+      Nam : String);
+   --  Procedure to build standard predefined unsigned integer subtype. These
+   --  subtypes are not user visible, but they are used internally. The first
+   --  parameter is the entity for the subtype. The second parameter is the
+   --  size in bits. The third parameter is an identifying name.
 
    procedure Copy_Float_Type (To : Entity_Id; From : Entity_Id);
    --  Build a floating point type, copying representation details from From.
@@ -149,6 +158,7 @@ package body CStand is
      (Name      : String;
       Digs      : Positive;
       Float_Rep : Float_Rep_Kind;
+      Precision : Positive;
       Size      : Positive;
       Alignment : Natural);
    --  Registers a single back end floating-point type (from FPT_Mode_Table in
@@ -158,7 +168,8 @@ package body CStand is
    --  as a normal format (non-null-terminated) string. Digs is the number of
    --  digits, which is always non-zero, since non-floating-point types were
    --  filtered out earlier. Float_Rep indicates the kind of floating-point
-   --  type, and Size and Alignment are the size and alignment in bits.
+   --  type, and Precision, Size and Alignment are the precision, size and
+   --  alignment in bits.
 
    procedure Set_Integer_Bounds
      (Id  : Entity_Id;
@@ -218,7 +229,7 @@ package body CStand is
    -- Build_Signed_Integer_Type --
    -------------------------------
 
-   procedure Build_Signed_Integer_Type (E : Entity_Id; Siz : Int) is
+   procedure Build_Signed_Integer_Type (E : Entity_Id; Siz : Nat) is
       U2Siz1 : constant Uint := 2 ** (Siz - 1);
       Lbound : constant Uint := -U2Siz1;
       Ubound : constant Uint := U2Siz1 - 1;
@@ -239,6 +250,41 @@ package body CStand is
       Set_Is_Known_Valid             (E);
       Set_Size_Known_At_Compile_Time (E);
    end Build_Signed_Integer_Type;
+
+   ---------------------------------
+   -- Build_Unsigned_Integer_Type --
+   ---------------------------------
+
+   procedure Build_Unsigned_Integer_Type
+     (Uns : Entity_Id;
+      Siz : Nat;
+      Nam : String)
+   is
+      Decl   : Node_Id;
+      R_Node : Node_Id;
+
+   begin
+      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Set_Defining_Identifier (Decl, Uns);
+      Make_Name (Uns, Nam);
+
+      Set_Ekind                      (Uns, E_Modular_Integer_Type);
+      Set_Scope                      (Uns, Standard_Standard);
+      Set_Etype                      (Uns, Uns);
+      Init_Size                      (Uns, Siz);
+      Set_Elem_Alignment             (Uns);
+      Set_Modulus                    (Uns, Uint_2 ** Siz);
+      Set_Is_Unsigned_Type           (Uns);
+      Set_Size_Known_At_Compile_Time (Uns);
+      Set_Is_Known_Valid             (Uns, True);
+
+      R_Node := New_Node (N_Range, Stloc);
+      Set_Low_Bound  (R_Node, Make_Integer (Uint_0));
+      Set_High_Bound (R_Node, Make_Integer (Modulus (Uns) - 1));
+      Set_Etype (Low_Bound  (R_Node), Uns);
+      Set_Etype (High_Bound (R_Node), Uns);
+      Set_Scalar_Range (Uns, R_Node);
+   end Build_Unsigned_Integer_Type;
 
    ---------------------
    -- Copy_Float_Type --
@@ -436,7 +482,8 @@ package body CStand is
                E : FPT_Mode_Entry renames FPT_Mode_Table (J);
             begin
                Register_Float_Type
-                 (E.NAME.all, E.DIGS, E.FLOAT_REP, E.SIZE, E.ALIGNMENT);
+                 (E.NAME.all, E.DIGS, E.FLOAT_REP, E.PRECISION, E.SIZE,
+                  E.ALIGNMENT);
             end;
          end loop;
       end Create_Back_End_Float_Types;
@@ -1277,6 +1324,13 @@ package body CStand is
          Set_First_Index (Any_String, Index);
       end;
 
+      Raise_Type := New_Standard_Entity;
+      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Set_Defining_Identifier (Decl, Raise_Type);
+      Set_Scope (Raise_Type, Standard_Standard);
+      Build_Signed_Integer_Type (Raise_Type, Standard_Integer_Size);
+      Make_Name (Raise_Type, "any type");
+
       Standard_Integer_8 := New_Standard_Entity;
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Standard_Integer_8);
@@ -1305,58 +1359,45 @@ package body CStand is
       Set_Scope (Standard_Integer_64, Standard_Standard);
       Build_Signed_Integer_Type (Standard_Integer_64, 64);
 
-      --  Standard_Unsigned is not user visible, but is used internally. It
-      --  is an unsigned type with the same length as Standard.Integer.
+      --  Standard_*_Unsigned subtypes are not user visible, but they are
+      --  used internally. They are unsigned types with the same length as
+      --  the correspondingly named signed integer types.
+
+      Standard_Short_Short_Unsigned := New_Standard_Entity;
+      Build_Unsigned_Integer_Type
+        (Standard_Short_Short_Unsigned,
+         Standard_Short_Short_Integer_Size,
+         "short_short_unsigned");
+
+      Standard_Short_Unsigned := New_Standard_Entity;
+      Build_Unsigned_Integer_Type
+        (Standard_Short_Unsigned,
+         Standard_Short_Integer_Size,
+         "short_unsigned");
 
       Standard_Unsigned := New_Standard_Entity;
-      Decl := New_Node (N_Full_Type_Declaration, Stloc);
-      Set_Defining_Identifier (Decl, Standard_Unsigned);
-      Make_Name (Standard_Unsigned, "unsigned");
+      Build_Unsigned_Integer_Type
+        (Standard_Unsigned,
+         Standard_Integer_Size,
+         "unsigned");
 
-      Set_Ekind             (Standard_Unsigned, E_Modular_Integer_Type);
-      Set_Scope             (Standard_Unsigned, Standard_Standard);
-      Set_Etype             (Standard_Unsigned, Standard_Unsigned);
-      Init_Size             (Standard_Unsigned, Standard_Integer_Size);
-      Set_Elem_Alignment    (Standard_Unsigned);
-      Set_Modulus           (Standard_Unsigned,
-                              Uint_2 ** Standard_Integer_Size);
-      Set_Is_Unsigned_Type  (Standard_Unsigned);
-      Set_Size_Known_At_Compile_Time
-                            (Standard_Unsigned);
-      Set_Is_Known_Valid    (Standard_Unsigned, True);
+      Standard_Long_Unsigned := New_Standard_Entity;
+      Build_Unsigned_Integer_Type
+        (Standard_Long_Unsigned,
+         Standard_Long_Integer_Size,
+         "long_unsigned");
 
-      R_Node := New_Node (N_Range, Stloc);
-      Set_Low_Bound  (R_Node, Make_Integer (Uint_0));
-      Set_High_Bound (R_Node, Make_Integer (Modulus (Standard_Unsigned) - 1));
-      Set_Etype (Low_Bound (R_Node), Standard_Unsigned);
-      Set_Etype (High_Bound (R_Node), Standard_Unsigned);
-      Set_Scalar_Range (Standard_Unsigned, R_Node);
+      Standard_Long_Long_Unsigned := New_Standard_Entity;
+      Build_Unsigned_Integer_Type
+        (Standard_Long_Long_Unsigned,
+         Standard_Long_Long_Integer_Size,
+         "long_long_unsigned");
 
       --  Standard_Unsigned_64 is not user visible, but is used internally. It
       --  is an unsigned type mod 2**64, 64-bits unsigned, size is 64.
 
       Standard_Unsigned_64 := New_Standard_Entity;
-      Decl := New_Node (N_Full_Type_Declaration, Stloc);
-      Set_Defining_Identifier (Decl, Standard_Unsigned_64);
-      Make_Name (Standard_Unsigned_64, "unsigned_64");
-
-      Set_Ekind             (Standard_Unsigned_64, E_Modular_Integer_Type);
-      Set_Scope             (Standard_Unsigned_64, Standard_Standard);
-      Set_Etype             (Standard_Unsigned_64, Standard_Unsigned_64);
-      Init_Size             (Standard_Unsigned_64, 64);
-      Set_Elem_Alignment    (Standard_Unsigned_64);
-      Set_Modulus           (Standard_Unsigned_64, Uint_2 ** 64);
-      Set_Is_Unsigned_Type  (Standard_Unsigned_64);
-      Set_Size_Known_At_Compile_Time
-                            (Standard_Unsigned_64);
-      Set_Is_Known_Valid    (Standard_Unsigned_64, True);
-
-      R_Node := New_Node (N_Range, Stloc);
-      Set_Low_Bound  (R_Node, Make_Integer (Uint_0));
-      Set_High_Bound (R_Node, Make_Integer (Uint_2 ** 64 - 1));
-      Set_Etype (Low_Bound (R_Node), Standard_Unsigned_64);
-      Set_Etype (High_Bound (R_Node), Standard_Unsigned_64);
-      Set_Scalar_Range (Standard_Unsigned_64, R_Node);
+      Build_Unsigned_Integer_Type (Standard_Unsigned_64, 64, "unsigned_64");
 
       --  Note: universal integer and universal real are constructed as fully
       --  formed signed numeric types, with parameters corresponding to the
@@ -2045,19 +2086,18 @@ package body CStand is
      (Name      : String;
       Digs      : Positive;
       Float_Rep : Float_Rep_Kind;
+      Precision : Positive;
       Size      : Positive;
       Alignment : Natural)
    is
-      Ent   : constant Entity_Id := New_Standard_Entity;
-      Esize : constant Pos :=
-                Pos ((Size + Alignment - 1) / Alignment * Alignment);
+      Ent : constant Entity_Id := New_Standard_Entity;
 
    begin
       Set_Defining_Identifier (New_Node (N_Full_Type_Declaration, Stloc), Ent);
       Make_Name (Ent, Name);
       Set_Scope (Ent, Standard_Standard);
-      Build_Float_Type (Ent, Esize, Float_Rep, Pos (Digs));
-      Set_RM_Size (Ent, UI_From_Int (Int (Size)));
+      Build_Float_Type (Ent, Int (Size), Float_Rep, Pos (Digs));
+      Set_RM_Size (Ent, UI_From_Int (Int (Precision)));
       Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
 
       if No (Back_End_Float_Types) then

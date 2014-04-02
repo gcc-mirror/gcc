@@ -41,6 +41,8 @@ with System.OS_Constants;
 with System.Win32;         use System.Win32;
 with System.Win32.Ext;     use System.Win32.Ext;
 
+with GNAT.OS_Lib;
+
 package body GNAT.Serial_Communications is
 
    package OSC renames System.OS_Constants;
@@ -91,10 +93,11 @@ package body GNAT.Serial_Communications is
       N_Img : constant String := Positive'Image (Number);
    begin
       if Number > 9 then
-         return Port_Name ("\\.\COM" & N_Img (N_Img'First + 1 .. N_Img'Last));
+         return
+           Port_Name ("\\.\COM" & N_Img (N_Img'First + 1 .. N_Img'Last));
       else
-         return Port_Name
-           ("COM" & N_Img (N_Img'First + 1 .. N_Img'Last) & ':');
+         return
+           Port_Name ("COM" & N_Img (N_Img'First + 1 .. N_Img'Last) & ':');
       end if;
    end Name;
 
@@ -126,7 +129,7 @@ package body GNAT.Serial_Communications is
          dwFlagsAndAttributes  => 0,
          hTemplateFile         => 0);
 
-      if Port.H.all = 0 then
+      if Port.H.all = Port_Data (INVALID_HANDLE_VALUE) then
          Raise_Error ("cannot open com port");
       end if;
    end Open;
@@ -137,7 +140,10 @@ package body GNAT.Serial_Communications is
 
    procedure Raise_Error (Message : String; Error : DWORD := GetLastError) is
    begin
-      raise Serial_Error with Message & " (" & DWORD'Image (Error) & ')';
+      raise Serial_Error with Message
+        & (if Error /= 0
+           then " (" & GNAT.OS_Lib.Errno_Message (Err => Integer (Error)) & ')'
+           else "");
    end Raise_Error;
 
    ----------
@@ -229,10 +235,10 @@ package body GNAT.Serial_Communications is
             Com_Settings.fOutxCtsFlow := 0;
       end case;
 
-      Com_Settings.fAbortOnError   := 0;
-      Com_Settings.ByteSize        := BYTE (C_Bits (Bits));
-      Com_Settings.Parity          := BYTE (C_Parity (Parity));
-      Com_Settings.StopBits        := BYTE (C_Stop_Bits (Stop_Bits));
+      Com_Settings.fAbortOnError := 0;
+      Com_Settings.ByteSize      := BYTE (C_Bits (Bits));
+      Com_Settings.Parity        := BYTE (C_Parity (Parity));
+      Com_Settings.StopBits      := BYTE (C_Stop_Bits (Stop_Bits));
 
       Success := SetCommState (HANDLE (Port.H.all), Com_Settings'Access);
 

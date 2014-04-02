@@ -41,7 +41,7 @@ included in the section entitled ``GNU Free Documentation License''.
 
 @titlepage
 @title GNAT Reference Manual
-@subtitle GNAT, The GNU Ada Compiler
+@subtitle GNAT, The GNU Ada Development Environment
 @versionsubtitle
 @author AdaCore
 @page
@@ -59,7 +59,7 @@ included in the section entitled ``GNU Free Documentation License''.
 GNAT Reference Manual
 
 @noindent
-GNAT, The GNU Ada Compiler@*
+GNAT, The GNU Ada Development Environment@*
 GCC version @value{version-GCC}@*
 
 @noindent
@@ -123,6 +123,7 @@ Implementation Defined Pragmas
 * Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
 * Pragma Compiler_Unit::
+* Pragma Compiler_Unit_Warning::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
@@ -223,6 +224,7 @@ Implementation Defined Pragmas
 * Pragma Profile::
 * Pragma Profile_Warnings::
 * Pragma Propagate_Exceptions::
+* Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
 * Pragma Pure_05::
 * Pragma Pure_12::
@@ -233,6 +235,7 @@ Implementation Defined Pragmas
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Reviewable::
 * Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
@@ -272,6 +275,7 @@ Implementation Defined Pragmas
 * Pragma Use_VADS_Size::
 * Pragma Validity_Checks::
 * Pragma Volatile::
+* Pragma Warning_As_Error::
 * Pragma Warnings::
 * Pragma Weak_External::
 * Pragma Wide_Character_Encoding::
@@ -279,9 +283,6 @@ Implementation Defined Pragmas
 Implementation Defined Aspects
 
 * Aspect Abstract_State::
-* Aspect Ada_2005::
-* Aspect Ada_2012::
-* Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
 * Aspect Dimension::
@@ -957,6 +958,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
 * Pragma Compiler_Unit::
+* Pragma Compiler_Unit_Warning::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
@@ -1057,6 +1059,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Profile::
 * Pragma Profile_Warnings::
 * Pragma Propagate_Exceptions::
+* Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
 * Pragma Pure_05::
 * Pragma Pure_12::
@@ -1067,6 +1070,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Reviewable::
 * Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
@@ -1106,6 +1110,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Use_VADS_Size::
 * Pragma Validity_Checks::
 * Pragma Volatile::
+* Pragma Warning_As_Error::
 * Pragma Warnings::
 * Pragma Weak_External::
 * Pragma Wide_Character_Encoding::
@@ -1188,6 +1193,7 @@ either Ada 83 or Ada 95 programs.
 Syntax:
 @smallexample @c ada
 pragma Ada_05;
+pragma Ada_05 (local_NAME);
 @end smallexample
 
 @noindent
@@ -1196,6 +1202,17 @@ it applies, regardless of the mode set by the command line switches.
 This pragma is useful when writing a reusable component that
 itself uses Ada 2005 features, but which is intended to be usable from
 either Ada 83 or Ada 95 programs.
+
+The one argument form (which is not a configuration pragma)
+is used for managing the transition from
+Ada 95 to Ada 2005 in the run-time library. If an entity is marked
+as Ada_2005 only, then referencing the entity in Ada_83 or Ada_95
+mode will generate a warning. In addition, in Ada_83 or Ada_95
+mode, a preference rule is established which does not choose
+such an entity unless it is unambiguously specified. This avoids
+extra subprograms marked this way from generating ambiguities in
+otherwise legal pre-Ada_2005 programs. The one argument form is
+intended for exclusive use in the GNAT run-time library.
 
 @node Pragma Ada_2005
 @unnumberedsec Pragma Ada_2005
@@ -1217,6 +1234,7 @@ same syntax and effect.
 Syntax:
 @smallexample @c ada
 pragma Ada_12;
+pragma Ada_12 (local_NAME);
 @end smallexample
 
 @noindent
@@ -1227,6 +1245,17 @@ packages and their children, so you need not specify it in these
 contexts.  This pragma is useful when writing a reusable component that
 itself uses Ada 2012 features, but which is intended to be usable from
 Ada 83, Ada 95, or Ada 2005 programs.
+
+The one argument form, which is not a configuration pragma,
+is used for managing the transition from Ada
+2005 to Ada 2012 in the run-time library. If an entity is marked
+as Ada_201 only, then referencing the entity in any pre-Ada_2012
+mode will generate a warning. In addition, in any pre-Ada_2012
+mode, a preference rule is established which does not choose
+such an entity unless it is unambiguously specified. This avoids
+extra subprograms marked this way from generating ambiguities in
+otherwise legal pre-Ada_2012 programs. The one argument form is
+intended for exclusive use in the GNAT run-time library.
 
 @node Pragma Ada_2012
 @unnumberedsec Pragma Ada_2012
@@ -2005,12 +2034,27 @@ pragma Compiler_Unit;
 @end smallexample
 
 @noindent
+This pragma is obsolete. It is equivalent to Compiler_Unit_Warning. It is
+retained so that old versions of the GNAT run-time that use this pragma can
+be compiled with newer versions of the compiler.
+
+@node Pragma Compiler_Unit_Warning
+@unnumberedsec Pragma Compiler_Unit_Warning
+@findex Compiler_Unit_Warning
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Compiler_Unit_Warning;
+@end smallexample
+
+@noindent
 This pragma is intended only for internal use in the GNAT run-time library.
 It indicates that the unit is used as part of the compiler build. The effect
-is to disallow constructs (raise with message, conditional expressions etc)
-that would cause trouble when bootstrapping using an older version of GNAT.
-For the exact list of restrictions, see the compiler sources and references
-to Is_Compiler_Unit.
+is to generate warnings for the use of constructs (for example, conditional
+expressions) that would cause trouble when bootstrapping using an older
+version of GNAT. For the exact list of restrictions, see the compiler sources
+and references to Check_Compiler_Unit.
 
 @node Pragma Complete_Representation
 @unnumberedsec Pragma Complete_Representation
@@ -3718,7 +3762,7 @@ This means that you can compile a program, and then without having to
 recompile the program, you can run it with different values being used
 for initializing otherwise uninitialized values, to test if your program
 behavior depends on the choice.  Of course the behavior should not change,
-and if it does, then most likely you have an erroneous reference to an
+and if it does, then most likely you have an incorrect reference to an
 uninitialized value.
 
 It is even possible to change the value at execution time eliminating even
@@ -4348,10 +4392,16 @@ except that in an @code{Assertion_Policy} pragma, the identifier
 (or disabled).
 
 @code{Loop_Invariant} can only appear as one of the items in the sequence
-of statements of a loop body. The intention is that it be used to
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+The intention is that it be used to
 represent a "loop invariant" assertion, i.e. something that is true each
 time through the loop, and which can be used to show that the loop is
 achieving its purpose.
+
+Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
+apply to the same loop should be grouped in the same sequence of
+statements.
 
 To aid in writing such invariants, the special attribute @code{Loop_Entry}
 may be used to refer to the value of an expression on entry to the loop. This
@@ -4420,8 +4470,10 @@ CHANGE_DIRECTION ::= Increases | Decreases
 @end smallexample
 
 @noindent
-This pragma must appear immediately within the sequence of statements of a
-loop statement. It allows the specification of quantities which must always
+@code{Loop_Variant} can only appear as one of the items in the sequence
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+It allows the specification of quantities which must always
 decrease or increase in successive iterations of the loop. In its simplest
 form, just one expression is specified, whose value must increase or decrease
 on each iteration of the loop.
@@ -4445,6 +4497,10 @@ policy can be @code{Check} to enable the loop variant check, @code{Ignore}
 to ignore the check (in which case the pragma has no effect on the program),
 or @code{Disable} in which case the pragma is not even checked for correct
 syntax.
+
+Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
+apply to the same loop should be grouped in the same sequence of
+statements.
 
 The @code{Loop_Entry} attribute may be used within the expressions of the
 @code{Loop_Variant} pragma to refer to values on entry to the loop.
@@ -5802,6 +5858,25 @@ It is retained for compatibility
 purposes. It used to be used in connection with optimization of
 a now-obsolete mechanism for implementation of exceptions.
 
+@node Pragma Provide_Shift_Operators
+@unnumberedsec Pragma Provide_Shift_Operators
+@cindex Shift operators
+@findex Provide_Shift_Operators
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Provide_Shift_Operators (integer_first_subtype_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma can be applied to a first subtype local name that specifies
+either an unsigned or signed type. It has the effect of providing the
+five shift operators (Shift_Left, Shift_Right, Shift_Right_Arithmetic,
+Rotate_Left and Rotate_Right) for the given type. It is equivalent to
+including the function declarations for these five operators, together
+with the pragma Import (Intrinsic, ...) statements.
+
 @node Pragma Psect_Object
 @unnumberedsec Pragma Psect_Object
 @findex Psect_Object
@@ -6050,6 +6125,114 @@ By including the above lines in a configuration pragmas file,
 the Ada_95 and Style_Checks pragmas are accepted without
 generating a warning, but any other use of implementation
 defined pragmas will cause a warning to be generated.
+
+@node Pragma Reviewable
+@unnumberedsec Pragma Reviewable
+@findex Reviewable
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Reviewable;
+@end smallexample
+
+@noindent
+This pragma is an RM-defined standard pragma, but has no effect on the
+program being compiled, or on the code generated for the program.
+
+To obtain the required output specified in RM H.3.1, the compiler must be
+run with various special switches as follows:
+
+@table @i
+
+@item Where compiler-generated run-time checks remain
+
+The switch @option{-gnatGL}
+@findex @option{-gnatGL}
+may be used to list the expanded code in pseudo-Ada form.
+Runtime checks show up in the listing either as explicit
+checks or operators marked with @{@} to indicate a check is present.
+
+@item An identification of known exceptions at compile time
+
+If the program is compiled with @option{-gnatwa},
+@findex @option{-gnatwa}
+the compiler warning messages will indicate all cases where the compiler
+detects that an exception is certain to occur at run time.
+
+@item Possible reads of uninitialized variables
+
+The compiler warns of many such cases, but its output is incomplete.
+@ifclear FSFEDITION
+The CodePeer analysis tool
+@findex CodePeer static analysis tool
+@end ifclear
+@ifset FSFEDITION
+A supplemental static analysis tool
+@end ifset
+may be used to obtain a comprehensive list of all
+possible points at which uninitialized data may be read.
+
+@item Where run-time support routines are implicitly invoked
+
+In the output from @option{-gnatGL},
+@findex @option{-gnatGL}
+run-time calls are explicitly listed as calls to the relevant
+run-time routine.
+
+@item Object code listing
+
+This may be obtained either by using the @option{-S} switch,
+@findex @option{-S}
+or the objdump utility.
+@findex objdump
+
+@item Constructs known to be erroneous at compile time
+
+These are identified by warnings issued by the compiler (use @option{-gnatwa}).
+@findex @option{-gnatwa}
+
+@item Stack usage information
+
+Static stack usage data (maximum per-subprogram) can be obtained via the
+@option{-fstack-usage} switch to the compiler.
+@findex @option{-fstack-usage}
+Dynamic stack usage data (per task) can be obtained via the @option{-u} switch
+to gnatbind
+@findex @option{-u}
+@ifclear FSFEDITION
+The gnatstack utility
+@findex gnatstack
+can be used to provide additional information on stack usage.
+@end ifclear
+
+@item Object code listing of entire partition
+
+This can be obtained by compiling the partition with @option{-S},
+@findex @option{-S}
+or by applying objdump
+@findex objdump
+to all the object files that are part of the partition.
+
+@item A description of the run-time model
+
+The full sources of the run-time are available, and the documentation of
+these routines describes how these run-time routines interface to the
+underlying operating system facilities.
+
+@item Control and data-flow information
+
+@ifclear FSFEDITION
+The CodePeer tool
+@findex CodePeer static analysis tool
+@end ifclear
+@ifset FSFEDITION
+A supplemental static analysis tool
+@end ifset
+may be used to obtain complete control and data-flow information, as well as
+comprehensive messages identifying possible problems based on this
+information.
+@end table
 
 @node Pragma Share_Generic
 @unnumberedsec Pragma Share_Generic
@@ -6442,11 +6625,11 @@ pragma Stream_Convert (
 @end smallexample
 
 @noindent
-This pragma provides an efficient way of providing stream functions for
-types defined in packages.  Not only is it simpler to use than declaring
-the necessary functions with attribute representation clauses, but more
-significantly, it allows the declaration to made in such a way that the
-stream packages are not loaded unless they are needed.  The use of
+This pragma provides an efficient way of providing user-defined stream
+attributes.  Not only is it simpler to use than specifying the attributes
+directly, but more importantly, it allows the specification to be made in such
+a way that the predefined unit Ada.Streams is not loaded unless it is actually
+needed (i.e. unless the stream attributes are actually used); the use of
 the Stream_Convert pragma adds no overhead at all, unless the stream
 attributes are actually used on the designated type.
 
@@ -6502,6 +6685,11 @@ would be used for @code{Standard.String'Output}, and this same representation
 is expected when a value of this type is read from the stream. Note that the
 value written always includes the bounds, even for Unbounded_String'Write,
 since Unbounded_String is not an array type.
+
+Note that the @code{Stream_Convert} pragma is not effective in the case of
+a derived type of a non-limited tagged type. If such a type is specified then
+the pragma is silently ignored, and the default implementation of the stream
+attributes is used instead.
 
 @node Pragma Style_Checks
 @unnumberedsec Pragma Style_Checks
@@ -7121,6 +7309,13 @@ This is particularly useful for clearly signaling that a particular
 parameter is not modified, even though the spec suggests that it might
 be.
 
+For the variable case, warnings are never given for unreferenced variables
+whose name contains one of the substrings
+@code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED} in any casing. Such names
+are typically to be used in cases where such warnings are expected.
+Thus it is never necessary to use @code{pragma Unmodified} for such
+variables, though it is harmless to do so.
+
 @node Pragma Unreferenced
 @unnumberedsec Pragma Unreferenced
 @findex Unreferenced
@@ -7170,6 +7365,13 @@ clause. In this case the arguments must be unit names of units previously
 mentioned in @code{with} clauses (similar to the usage of pragma
 @code{Elaborate_All}. The effect is to suppress warnings about unreferenced
 units and unreferenced entities within these units.
+
+For the variable case, warnings are never given for unreferenced variables
+whose name contains one of the substrings
+@code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED} in any casing. Such names
+are typically to be used in cases where such warnings are expected.
+Thus it is never necessary to use @code{pragma Unreferenced} for such
+variables, though it is harmless to do so.
 
 @node Pragma Unreferenced_Objects
 @unnumberedsec Pragma Unreferenced_Objects
@@ -7357,6 +7559,89 @@ in some Ada 83 compilers, including DEC Ada 83.  The Ada 95 / Ada 2005
 implementation of pragma Volatile is upwards compatible with the
 implementation in DEC Ada 83.
 
+@node Pragma Warning_As_Error
+@unnumberedsec Pragma Warning_As_Error
+@findex Warning_As_Error
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Warning_As_Error (static_string_EXPRESSION);
+@end smallexample
+
+@noindent
+This configuration pragma allows the programmer to specify a set
+of warnings that will be treated as errors. Any warning which
+matches the pattern given by the pragma argument will be treated
+as an error. This gives much more precise control that -gnatwe
+which treats all warnings as errors.
+
+The pattern may contain asterisks, which match zero or more characters in
+the message. For example, you can use
+@code{pragma Warning_As_Error ("*bits of*unused")} to treat the warning
+message @code{warning: 960 bits of "a" unused} as an error. No other regular
+expression notations are permitted. All characters other than asterisk in
+these three specific cases are treated as literal characters in the match.
+The match is case insensitive, for example XYZ matches xyz.
+
+Another possibility for the static_string_EXPRESSION which works whether
+or not error tags are enabled (@option{-gnatw.d}) is to use the
+@option{-gnatw} tag string, enclosed in brackets,
+as shown in the example below, to treat a class of warnings as errors.
+
+The above use of patterns to match the message applies only to warning
+messages generated by the front end. This pragma can also be applied to
+warnings provided by the back end and mentioned in @ref{Pragma Warnings}.
+By using a single full @option{-Wxxx} switch in the pragma, such warnings
+can also be treated as errors.
+
+The pragma can appear either in a global configuration pragma file
+(e.g. @file{gnat.adc}), or at the start of a file. Given a global
+configuration pragma file containing:
+
+@smallexample @c ada
+pragma Warning_As_Error ("[-gnatwj]");
+@end smallexample
+
+@noindent
+which will treat all obsolescent feature warnings as errors, the
+following program compiles as shown (compile options here are
+@option{-gnatwa.d -gnatl -gnatj55}).
+
+@smallexample @c ada
+     1. pragma Warning_As_Error ("*never assigned*");
+     2. function Warnerr return String is
+     3.    X : Integer;
+           |
+        >>> error: variable "X" is never read and
+            never assigned [-gnatwv] [warning-as-error]
+
+     4.    Y : Integer;
+           |
+        >>> warning: variable "Y" is assigned but
+            never read [-gnatwu]
+
+     5. begin
+     6.    Y := 0;
+     7.    return %ABC%;
+                  |
+        >>> error: use of "%" is an obsolescent
+            feature (RM J.2(4)), use """ instead
+            [-gnatwj] [warning-as-error]
+
+     8. end;
+
+ 8 lines: No errors, 3 warnings (2 treated as errors)
+@end smallexample
+
+@noindent
+Note that this pragma does not affect the set of warnings issued in
+any way, it merely changes the effect of a matching warning if one
+is produced as a result of other warnings options. As shown in this
+example, if the pragma results in a warning being treated as an error,
+the tag is changed from "warning:" to "error:" and the string
+"[warning-as-error]" is appended to the end of the message.
+
 @node Pragma Warnings
 @unnumberedsec Pragma Warnings
 @findex Warnings
@@ -7369,7 +7654,7 @@ pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
 pragma Warnings (static_string_EXPRESSION [,REASON]);
 pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
 
-REASON ::= Reason => static_string_EXPRESSION
+REASON ::= Reason => STRING_LITERAL @{& STRING_LITERAL@}
 @end smallexample
 
 @noindent
@@ -7409,12 +7694,14 @@ full details see @ref{Warning Message Control,,, gnat_ugn, @value{EDITION}
 User's Guide}. This form can also be used as a configuration pragma.
 
 @noindent
-The warnings controlled by the `-gnatw' switch are generated by the front end
-of the compiler. The `GCC' back end can provide additional warnings and they
-are controlled by the `-W' switch.
-The form with a single static_string_EXPRESSION argument also works for the
-latters, but the string must be a single full `-W' switch in this case.
-The above reference lists a few examples of these additional warnings.
+The warnings controlled by the @option{-gnatw} switch are generated by the
+front end of the compiler. The GCC back end can provide additional warnings
+and they are controlled by the @option{-W} switch. Such warnings can be
+identified by the appearance of a string of the form @code{[-Wxxx]} in the
+message which designates the @option{-Wxxx} switch that controls the message.
+The form with a single static_string_EXPRESSION argument also works for these
+warnings, but the string must be a single full @option{-Wxxx} switch in this
+case. The above reference lists a few examples of these additional warnings.
 
 @noindent
 The specified warnings will be in effect until the end of the program
@@ -7438,12 +7725,10 @@ these three specific cases are treated as literal characters in the match.
 The match is case insensitive, for example XYZ matches xyz.
 
 The above use of patterns to match the message applies only to warning
-messages generated by the front end. This form of the pragma with a
-string argument can also be used to control back end warnings controlled
-by a "-Wxxx" switch. Such warnings can be identified by the appearance
-of a string of the form "[-Wxxx]" in the message which identifies the
-"-W" switch that controls the message. By using the text of the
-"-W" switch in the pragma, such back end warnings can be turned on and off.
+messages generated by the front end. This form of the pragma with a string
+argument can also be used to control warnings provided by the back end and
+mentioned above. By using a single full @option{-Wxxx} switch in the pragma,
+such warnings can be turned on and off.
 
 There are two ways to use the pragma in this form. The OFF form can be used as a
 configuration pragma. The effect is to suppress all warnings (if any)
@@ -7559,15 +7844,15 @@ or subunits.
 @node Implementation Defined Aspects
 @chapter Implementation Defined Aspects
 Ada defines (throughout the Ada 2012 reference manual, summarized
-in annex K) a set of aspects that can be specified for certain entities.
+in Annex K) a set of aspects that can be specified for certain entities.
 These language defined aspects are implemented in GNAT in Ada 2012 mode
 and work as described in the Ada 2012 Reference Manual.
 
 In addition, Ada 2012 allows implementations to define additional aspects
 whose meaning is defined by the implementation.  GNAT provides
-a number of these implementation-dependent aspects which can be used
+a number of these implementation-defined aspects which can be used
 to extend and enhance the functionality of the compiler.  This section of
-the GNAT reference manual describes these additional attributes.
+the GNAT reference manual describes these additional aspects.
 
 Note that any program using these aspects may not be portable to
 other compilers (although GNAT implements this set of aspects on all
@@ -7608,15 +7893,12 @@ pragma Shared (R);
 @end smallexample
 
 @noindent
-In the documentation sections that follow, such cases are simply marked
+In the documentation below, such cases are simply marked
 as being equivalent to the corresponding pragma or attribute definition
 clause.
 
 @menu
 * Aspect Abstract_State::
-* Aspect Ada_2005::
-* Aspect Ada_2012::
-* Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
 * Aspect Dimension::
@@ -7660,24 +7942,6 @@ clause.
 @noindent
 This aspect is equivalent to pragma @code{Abstract_State}.
 
-@node Aspect Ada_2005
-@unnumberedsec Aspect Ada_2005
-@findex Ada_2005
-@noindent
-This aspect is equivalent to the one argument form of pragma @code{Ada_2005}.
-
-@node Aspect Ada_2012
-@unnumberedsec Aspect Ada_2012
-@findex Ada_2012
-@noindent
-This aspect is equivalent to the one argument form of pragma @code{Ada_2012}.
-
-@node Aspect Compiler_Unit
-@unnumberedsec Aspect Compiler_Unit
-@findex Compiler_Unit
-@noindent
-This aspect is equivalent to pragma @code{Compiler_Unit}.
-
 @node Aspect Contract_Cases
 @unnumberedsec Aspect Contract_Cases
 @findex Contract_Cases
@@ -7691,8 +7955,6 @@ aggregate.
 @findex Depends
 @noindent
 This aspect is equivalent to pragma @code{Depends}.
-
-* Dimension::
 
 @node Aspect Dimension
 @unnumberedsec Aspect Dimension
@@ -7753,11 +8015,12 @@ will represent values within the dimension system. Each @code{DIMENSION}
 corresponds to one particular dimension. A maximum of 7 dimensions may
 be specified. @code{Unit_Name} is the name of the dimension (for example
 @code{Meter}). @code{Unit_Symbol} is the shorthand used for quantities
-of this dimension (for example 'm' for Meter). @code{Dim_Symbol} gives
+of this dimension (for example @code{m} for @code{Meter}).
+@code{Dim_Symbol} gives
 the identification within the dimension system (typically this is a
-single letter, e.g. 'L' standing for length for unit name Meter). The
-Unit_Smbol is used in formatted output of dimensioned quantities. The
-Dim_Symbol is used in error messages when numeric operations have
+single letter, e.g. @code{L} standing for length for unit name @code{Meter}).
+The @code{Unit_Symbol} is used in formatted output of dimensioned quantities.
+The @code{Dim_Symbol} is used in error messages when numeric operations have
 inconsistent dimensions.
 
 GNAT provides the standard definition of the International MKS system in
@@ -7780,7 +8043,7 @@ following aspect:
 @end smallexample
 
 @noindent
-See section "Performing Dimensionality Analysis in GNAT" in the GNAT Users
+See section ``Performing Dimensionality Analysis in GNAT'' in the GNAT Users
 Guide for detailed examples of use of the dimension system.
 
 @node Aspect Favor_Top_Level
@@ -7984,6 +8247,7 @@ attribute definition clause.
 This aspect is equivalent to the two argument form of pragma @code{Warnings},
 where the first argument is @code{ON} or @code{OFF} and the second argument
 is the entity.
+
 
 @node Implementation Defined Attributes
 @chapter Implementation Defined Attributes
@@ -8714,6 +8978,49 @@ alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
 
+If the alignment of the above record is specified to be 1, then the
+object size will be 40 (5 bytes). This is true by default, and also
+an object size of 40 can be explicitly specified in this case.
+
+A consequence of this capability is that different object sizes can be
+given to subtypes that would otherwise be considered in Ada to be
+statically matching.  But it makes no sense to consider such subtypes
+as statically matching.  Consequently, in @code{GNAT} we add a rule
+to the static matching rules that requires object sizes to match.
+Consider this example:
+
+@smallexample @c ada
+ 1. procedure BadAVConvert is
+ 2.    type R is new Integer;
+ 3.    subtype R1 is R range 1 .. 10;
+ 4.    subtype R2 is R range 1 .. 10;
+ 5.    for R1'Object_Size use 8;
+ 6.    for R2'Object_Size use 16;
+ 7.    type R1P is access all R1;
+ 8.    type R2P is access all R2;
+ 9.    R1PV : R1P := new R1'(4);
+10.    R2PV : R2P;
+11. begin
+12.    R2PV := R2P (R1PV);
+               |
+       >>> target designated subtype not compatible with
+           type "R1" defined at line 3
+
+13. end;
+@end smallexample
+
+@noindent
+In the absence of lines 5 and 6,
+types @code{R1} and @code{R2} statically match and
+hence the conversion on line 12 is legal. But since lines 5 and 6
+cause the object sizes to differ, @code{GNAT} considers that types
+@code{R1} and @code{R2} are not statically matching, and line 12
+generates the diagnostic shown above.
+
+@noindent
+Similar additional checks are performed in other contexts requiring
+statically matching subtypes.
+
 @node Attribute Passed_By_Reference
 @unnumberedsec Attribute Passed_By_Reference
 @cindex Parameters, when passed by reference
@@ -9209,14 +9516,21 @@ The @code{Update} attribute creates a copy of an array or record value
 with one or more modified components. The syntax is:
 
 @smallexample @c ada
-PREFIX'Update (AGGREGATE)
+PREFIX'Update ( RECORD_COMPONENT_ASSOCIATION_LIST )
+PREFIX'Update ( ARRAY_COMPONENT_ASSOCIATION @{, ARRAY_COMPONENT_ASSOCIATION @} )
+PREFIX'Update ( MULTIDIMENSIONAL_ARRAY_COMPONENT_ASSOCIATION
+                @{, MULTIDIMENSIONAL_ARRAY_COMPONENT_ASSOCIATION @} )
+
+MULTIDIMENSIONAL_ARRAY_COMPONENT_ASSOCIATION ::= INDEX_EXPRESSION_LIST_LIST => EXPRESSION
+INDEX_EXPRESSION_LIST_LIST                   ::= INDEX_EXPRESSION_LIST @{| INDEX_EXPRESSION_LIST @}
+INDEX_EXPRESSION_LIST                        ::= ( EXPRESSION @{, EXPRESSION @} )
 @end smallexample
 
 @noindent
 where @code{PREFIX} is the name of an array or record object, and
-@code{AGGREGATE} is a named aggregate that does not contain an @code{others}
+the association list in parentheses does not contain an @code{others}
 choice. The effect is to yield a copy of the array or record value which
-is unchanged apart from the components mentioned in the aggregate, which
+is unchanged apart from the components mentioned in the association list, which
 are changed to the indicated value. The original value of the array or
 record value is not affected. For example:
 
@@ -9224,7 +9538,7 @@ record value is not affected. For example:
 type Arr is Array (1 .. 5) of Integer;
 ...
 Avar1 : Arr := (1,2,3,4,5);
-Avar2 : Arr := Avar1'Update ((2 => 10, 3 .. 4 => 20));
+Avar2 : Arr := Avar1'Update (2 => 10, 3 .. 4 => 20);
 @end smallexample
 
 @noindent
@@ -9235,7 +9549,7 @@ begin unmodified. Similarly:
 type Rec is A, B, C : Integer;
 ...
 Rvar1 : Rec := (A => 1, B => 2, C => 3);
-Rvar2 : Rec := Rvar1'Update ((B => 20));
+Rvar2 : Rec := Rvar1'Update (B => 20);
 @end smallexample
 
 @noindent
@@ -9245,7 +9559,7 @@ Note that the value of the attribute reference is computed
 completely before it is used. This means that if you write:
 
 @smallexample @c ada
-Avar1 := Avar1'Update ((1 => 10, 2 => Function_Call));
+Avar1 := Avar1'Update (1 => 10, 2 => Function_Call);
 @end smallexample
 
 @noindent
@@ -9261,7 +9575,7 @@ The accessibility level of an Update attribute result object is defined
 as for an aggregate.
 
 In the record case, no component can be mentioned more than once. In
-the array case, two overlapping ranges can appear in the aggregate,
+the array case, two overlapping ranges can appear in the association list,
 in which case the modifications are processed left to right.
 
 Multi-dimensional arrays can be modified, as shown by this example:
@@ -9269,7 +9583,7 @@ Multi-dimensional arrays can be modified, as shown by this example:
 @smallexample @c ada
 A : array (1 .. 10, 1 .. 10) of Integer;
 ..
-A := A'Update (1 => (2 => 20), 3 => (4 => 30));
+A := A'Update ((1, 2) => 20, (3, 4) => 30);
 @end smallexample
 
 @noindent
@@ -13592,8 +13906,7 @@ type (signed or modular), as in this example:
 @smallexample @c ada
    function Shift_Left
      (Value  : T;
-      Amount : Natural)
-      return   T;
+      Amount : Natural) return T;
 @end smallexample
 
 @noindent
@@ -13605,6 +13918,10 @@ must be 2**8, 2**16, 2**32 or 2**64.
 The result type must be the same as the type of @code{Value}.
 The shift amount must be Natural.
 The formal parameter names can be anything.
+
+A more convenient way of providing these shift operators is to use
+the Provide_Shift_Operators pragma, which provides the function declarations
+and corresponding pragma Import's for all five shift functions.
 
 @node Source_Location
 @section Source_Location
@@ -13634,9 +13951,11 @@ source file location.
 * Pragma Pack for Arrays::
 * Pragma Pack for Records::
 * Record Representation Clauses::
+* Handling of Records with Holes::
 * Enumeration Clauses::
 * Address Clauses::
 * Effect of Convention on Representation::
+* Conventions and Anonymous Access Types::
 * Determining the Representations chosen by GNAT::
 @end menu
 
@@ -14185,7 +14504,9 @@ an attribute definition clause.  Note that the use of these attributes
 can cause the RM 13.1(14) rule to be violated.  If two access types
 reference aliased objects whose subtypes have differing @code{Object_Size}
 values as a result of explicit attribute definition clauses, then it
-is erroneous to convert from one access subtype to the other.
+is illegal to convert from one access subtype to the other. For a more
+complete description of this additional legality rule, see the
+description of the @code{Object_Size} attribute.
 
 At the implementation level, Esize stores the Object_Size and the
 RM_Size field stores the @code{Value_Size} (and hence the value of the
@@ -14261,6 +14582,34 @@ alignment (4 bytes = 32 bits).
 For all other types, the @code{Object_Size}
 and Value_Size are the same (and equivalent to the RM attribute @code{Size}).
 Only @code{Size} may be specified for such types.
+
+Note that @code{Value_Size} can be used to force biased representation
+for a particular subtype. Consider this example:
+
+@smallexample
+   type R is (A, B, C, D, E, F);
+   subtype RAB is R range A .. B;
+   subtype REF is R range E .. F;
+@end smallexample
+
+@noindent
+By default, @code{RAB}
+has a size of 1 (sufficient to accommodate the representation
+of @code{A} and @code{B}, 0 and 1), and @code{REF}
+has a size of 3 (sufficient to accommodate the representation
+of @code{E} and @code{F}, 4 and 5). But if we add the
+following @code{Value_Size} attribute definition clause:
+
+@smallexample
+   for REF'Value_Size use 1;
+@end smallexample
+
+@noindent
+then biased representation is forced for @code{REF},
+and 0 will represent @code{E} and 1 will represent @code{F}.
+A warning is issued when a @code{Value_Size} attribute
+definition clause forces biased representation. This
+warning can be turned off using @code{-gnatw.B}.
 
 @node Component_Size Clauses
 @section Component_Size Clauses
@@ -14945,6 +15294,83 @@ For non-primitive types, including packed arrays with a size greater than
 type, in particular, always starting on a byte boundary, and the length
 must be a multiple of the storage unit.
 
+@node Handling of Records with Holes
+@section Handling of Records with Holes
+@cindex Handling of Records with Holes
+
+As a result of alignment considerations, records may contain "holes"
+or gaps
+which do not correspond to the data bits of any of the components.
+Record representation clauses can also result in holes in records.
+
+GNAT does not attempt to clear these holes, so in record objects,
+they should be considered to hold undefined rubbish. The generated
+equality routine just tests components so does not access these
+undefined bits, and assignment and copy operations may or may not
+preserve the contents of these holes (for assignments, the holes
+in the target will in practice contain either the bits that are
+present in the holes in the source, or the bits that were present
+in the target before the assignment).
+
+If it is necessary to ensure that holes in records have all zero
+bits, then record objects for which this initialization is desired
+should be explicitly set to all zero values using Unchecked_Conversion
+or address overlays. For example
+
+@smallexample @c ada
+type HRec is record
+   C : Character;
+   I : Integer;
+end record;
+@end smallexample
+
+@noindent
+On typical machines, integers need to be aligned on a four-byte
+boundary, resulting in three bytes of undefined rubbish following
+the 8-bit field for C. To ensure that the hole in a variable of
+type HRec is set to all zero bits,
+you could for example do:
+
+@smallexample @c ada
+type Base is record
+   Dummy1, Dummy2 : Integer := 0;
+end record;
+
+BaseVar : Base;
+RealVar : Hrec;
+for RealVar'Address use BaseVar'Address;
+@end smallexample
+
+@noindent
+Now the 8-bytes of the value of RealVar start out containing all zero
+bits. A safer approach is to just define dummy fields, avoiding the
+holes, as in:
+
+@smallexample @c ada
+type HRec is record
+   C      : Character;
+   Dummy1 : Short_Short_Integer := 0;
+   Dummy2 : Short_Short_Integer := 0;
+   Dummy3 : Short_Short_Integer := 0;
+   I      : Integer;
+end record;
+@end smallexample
+
+@noindent
+And to make absolutely sure that the intent of this is followed, you
+can use representation clauses:
+
+@smallexample @c ada
+for Hrec use record
+   C      at 0 range 0 .. 7;
+   Dummy1 at 1 range 0 .. 7;
+   Dummy2 at 2 range 0 .. 7;
+   Dummy3 at 3 range 0 .. 7;
+   I      at 4 range 0 .. 31;
+end record;
+for Hrec'Size use 64;
+@end smallexample
+
 @node Enumeration Clauses
 @section Enumeration Clauses
 
@@ -15221,6 +15647,103 @@ in the above example) in this case. This means that the overlay
 works "as expected", in that a modification to one of the variables
 will affect the value of the other.
 
+Note that when address clause overlays are used in this way, there is an
+issue of unintentional initialization, as shown by this example:
+
+@smallexample @c ada
+package Overwrite_Record is
+   type R is record
+      A : Character := 'C';
+      B : Character := 'A';
+   end record;
+   X : Short_Integer := 3;
+   Y : R;
+   for Y'Address use X'Address;
+       |
+>>> warning: default initialization of "Y" may
+    modify "X", use pragma Import for "Y" to
+    suppress initialization (RM B.1(24))
+
+end Overwrite_Record;
+@end smallexample
+
+@noindent
+Here the default initialization of @code{Y} will clobber the value
+of @code{X}, which justifies the warning. The warning notes that
+this effect can be eliminated by adding a @code{pragma Import}
+which suppresses the initialization:
+
+@smallexample @c ada
+package Overwrite_Record is
+   type R is record
+      A : Character := 'C';
+      B : Character := 'A';
+   end record;
+   X : Short_Integer := 3;
+   Y : R;
+   for Y'Address use X'Address;
+   pragma Import (Ada, Y);
+end Overwrite_Record;
+@end smallexample
+
+@noindent
+Note that the use of @code{pragma Initialize_Scalars} may cause variables to
+be initialized when they would not otherwise have been in the absence
+of the use of this pragma. This may cause an overlay to have this
+unintended clobbering effect. The compiler avoids this for scalar
+types, but not for composite objects (where in general the effect
+of @code{Initialize_Scalars} is part of the initialization routine
+for the composite object:
+
+@smallexample @c ada
+pragma Initialize_Scalars;
+with Ada.Text_IO;  use Ada.Text_IO;
+procedure Overwrite_Array is
+   type Arr is array (1 .. 5) of Integer;
+   X : Arr := (others => 1);
+   A : Arr;
+   for A'Address use X'Address;
+       |
+>>> warning: default initialization of "A" may
+    modify "X", use pragma Import for "A" to
+    suppress initialization (RM B.1(24))
+
+begin
+   if X /= Arr'(others => 1) then
+      Put_Line ("X was clobbered");
+   else
+      Put_Line ("X was not clobbered");
+   end if;
+end Overwrite_Array;
+@end smallexample
+
+@noindent
+The above program generates the warning as shown, and at execution
+time, prints @code{X was clobbered}. If the @code{pragma Import} is
+added as suggested:
+
+@smallexample @c ada
+pragma Initialize_Scalars;
+with Ada.Text_IO;  use Ada.Text_IO;
+procedure Overwrite_Array is
+   type Arr is array (1 .. 5) of Integer;
+   X : Arr := (others => 1);
+   A : Arr;
+   for A'Address use X'Address;
+   pragma Import (Ada, A);
+begin
+   if X /= Arr'(others => 1) then
+      Put_Line ("X was clobbered");
+   else
+      Put_Line ("X was not clobbered");
+   end if;
+end Overwrite_Array;
+@end smallexample
+
+@noindent
+then the program compiles without the waraning and when run will generate
+the output @code{X was not clobbered}.
+
 @node Effect of Convention on Representation
 @section Effect of Convention on Representation
 @cindex Convention, effect on representation
@@ -15299,6 +15822,78 @@ pointers 32-bits, which provides an easier path for migration of 32-bit legacy
 code. size clause specifying 64-bits must be used to obtain a 64-bit pointer.
 
 @end itemize
+
+@node Conventions and Anonymous Access Types
+@section Conventions and Anonymous Access Types
+@cindex Anonymous access types
+@cindex Convention for anonymous access types
+
+The RM is not entirely clear on convention handling in a number of cases,
+and in particular, it is not clear on the convention to be given to
+anonymous access types in general, and in particular what is to be
+done for the case of anonymous access-to-subprogram.
+
+In GNAT, we decide that if an explicit Convention is applied
+to an object or component, and its type is such an anonymous type,
+then the convention will apply to this anonymous type as well. This
+seems to make sense since it is anomolous in any case to have a
+different convention for an object and its type, and there is clearly
+no way to explicitly specify a convention for an anonymous type, since
+it doesn't have a name to specify!
+
+Furthermore, we decide that if a convention is applied to a record type,
+then this convention is inherited by any of its components that are of an
+anonymous access type which do not have an explicitly specified convention.
+
+The following program shows these conventions in action:
+
+@smallexample @c ada
+package ConvComp is
+   type Foo is range 1 .. 10;
+   type T1 is record
+      A : access function (X : Foo) return Integer;
+      B : Integer;
+   end record;
+   pragma Convention (C, T1);
+
+   type T2 is record
+      A : access function (X : Foo) return Integer;
+      pragma Convention  (C, A);
+      B : Integer;
+   end record;
+   pragma Convention (COBOL, T2);
+
+   type T3 is record
+      A : access function (X : Foo) return Integer;
+      pragma Convention  (COBOL, A);
+      B : Integer;
+   end record;
+   pragma Convention (C, T3);
+
+   type T4 is record
+      A : access function (X : Foo) return Integer;
+      B : Integer;
+   end record;
+   pragma Convention (COBOL, T4);
+
+   function F (X : Foo) return Integer;
+   pragma Convention (C, F);
+
+   function F (X : Foo) return Integer is (13);
+
+   TV1 : T1 := (F'Access, 12);  -- OK
+   TV2 : T2 := (F'Access, 13);  -- OK
+
+   TV3 : T3 := (F'Access, 13);  -- ERROR
+                |
+>>> subprogram "F" has wrong convention
+>>> does not match access to subprogram declared at line 17
+     38.    TV4 : T4 := (F'Access, 13);  -- ERROR
+                |
+>>> subprogram "F" has wrong convention
+>>> does not match access to subprogram declared at line 24
+     39. end ConvComp;
+@end smallexample
 
 @node Determining the Representations chosen by GNAT
 @section Determining the Representations chosen by GNAT
@@ -15472,7 +16067,11 @@ together with a brief description of the functionality that is provided.
 
 For completeness, references are included to other predefined library
 routines defined in other sections of the Ada Reference Manual (these are
-cross-indexed from Annex A).
+cross-indexed from Annex A). For further details see the relevant
+package declarations in the run-time library. In particular, a few units
+are not implemented, as marked by the presence of pragma Unimplemented_Unit,
+and in this case the package declaration contains comments explaining why
+the unit is not implemented.
 
 @table @code
 @item Ada (A.2)
@@ -15480,12 +16079,34 @@ This is a parent package for all the standard library packages.  It is
 usually included implicitly in your program, and itself contains no
 useful data or routines.
 
+@item Ada.Assertions (11.4.2)
+@code{Assertions} provides the @code{Assert} subprograms, and also
+the declaration of the @code{Assertion_Error} exception.
+
+@item Ada.Asynchronous_Task_Control (D.11)
+@code{Asynchronous_Task_Control} provides low level facilities for task
+synchronization. It is typically not implemented. See package spec for details.
+
 @item Ada.Calendar (9.6)
 @code{Calendar} provides time of day access, and routines for
 manipulating times and durations.
 
+@item Ada.Calendar.Arithmetic (9.6.1)
+This package provides additional arithmetic
+operations for @code{Calendar}.
+
+@item Ada.Calendar.Formatting (9.6.1)
+This package provides formatting operations for @code{Calendar}.
+
+@item Ada.Calendar.Time_Zones (9.6.1)
+This package provides additional @code{Calendar} facilities
+for handling time zones.
+
 @item Ada.Characters (A.3.1)
 This is a dummy parent package that contains no useful entities
+
+@item Ada.Characters.Conversions (A.3.2)
+This package provides character conversion functions.
 
 @item Ada.Characters.Handling (A.3.2)
 This package provides some basic character handling capabilities,
@@ -15507,6 +16128,71 @@ of the current program (analogous to the use of @code{argc} and @code{argv}
 in C), and also allows the exit status for the program to be set in a
 system-independent manner.
 
+@item Ada.Complex_Text_IO (G.1.3)
+This package provides text input and output of complex numbers.
+
+@item Ada.Containers (A.18.1)
+A top level package providing a few basic definitions used by all the
+following specific child packages that provide specific kinds of
+containers.
+
+@item Ada.Containers.Bounded_Priority_Queues (A.18.31)
+
+@item Ada.Containers.Bounded_Synchronized_Queues (A.18.29)
+
+@item Ada.Containers.Doubly_Linked_Lists (A.18.3)
+
+@item Ada.Containers.Generic_Array_Sort (A.18.26)
+
+@item Ada.Containers.Generic_Constrained_Array_Sort (A.18.26)
+
+@item Ada.Containers.Generic_Sort (A.18.26)
+
+@item Ada.Containers.Hashed_Maps (A.18.5)
+
+@item Ada.Containers.Hashed_Sets (A.18.8)
+
+@item Ada.Containers.Indefinite_Doubly_Linked_Lists (A.18.12)
+
+@item Ada.Containers.Indefinite_Hashed_Maps (A.18.13)
+
+@item Ada.Containers.Indefinite_Hashed_Sets (A.18.15)
+
+@item Ada.Containers.Indefinite_Holders (A.18.18)
+
+@item Ada.Containers.Indefinite_Multiway_Trees (A.18.17)
+
+@item Ada.Containers.Indefinite_Ordered_Maps (A.18.14)
+
+@item Ada.Containers.Indefinite_Ordered_Sets (A.18.16)
+
+@item Ada.Containers.Indefinite_Vectors (A.18.11)
+
+@item Ada.Containers.Multiway_Trees (A.18.10)
+
+@item Ada.Containers.Ordered_Maps (A.18.6)
+
+@item Ada.Containers.Ordered_Sets (A.18.9)
+
+@item Ada.Containers.Synchronized_Queue_Interfaces (A.18.27)
+
+@item Ada.Containers.Unbounded_Priority_Queues (A.18.30)
+
+@item Ada.Containers.Unbounded_Synchronized_Queues (A.18.28)
+
+@item Ada.Containers.Vectors (A.18.2)
+
+@item Ada.Directories (A.16)
+This package provides operations on directories.
+
+@item Ada.Directories.Hierarchical_File_Names (A.16.1)
+This package provides additional directory operations handling
+hiearchical file names.
+
+@item Ada.Directories.Information (A.16)
+This is an implementation defined package for additional directory
+operations, which is not implemented in GNAT.
+
 @item Ada.Decimal (F.2)
 This package provides constants describing the range of decimal numbers
 implemented, and also a decimal divide routine (analogous to the COBOL
@@ -15517,19 +16203,61 @@ This package provides input-output using a model of a set of records of
 fixed-length, containing an arbitrary definite Ada type, indexed by an
 integer record number.
 
+@item Ada.Dispatching (D.2.1)
+A parent package containing definitions for task dispatching operations.
+
+@item Ada.Dispatching.EDF (D.2.6)
+Not implemented in GNAT.
+
+@item Ada.Dispatching.Non_Preemptive (D.2.4)
+Not implemented in GNAT.
+
+@item Ada.Dispatching.Round_Robin (D.2.5)
+Not implemented in GNAT.
+
 @item Ada.Dynamic_Priorities (D.5)
 This package allows the priorities of a task to be adjusted dynamically
 as the task is running.
+
+@item Ada.Environment_Variables (A.17)
+This package provides facilities for accessing environment variables.
 
 @item Ada.Exceptions (11.4.1)
 This package provides additional information on exceptions, and also
 contains facilities for treating exceptions as data objects, and raising
 exceptions with associated messages.
 
+@item Ada.Execution_Time (D.14)
+Not implemented in GNAT.
+
+@item Ada.Execution_Time.Group_Budgets (D.14.2)
+Not implemented in GNAT.
+
+@item Ada.Execution_Time.Timers (D.14.1)'
+Not implemented in GNAT.
+
 @item Ada.Finalization (7.6)
 This package contains the declarations and subprograms to support the
 use of controlled types, providing for automatic initialization and
-finalization (analogous to the constructors and destructors of C++)
+finalization (analogous to the constructors and destructors of C++).
+
+@item Ada.Float_Text_IO (A.10.9)
+A library level instantiation of Text_IO.Float_IO for type Float.
+
+@item Ada.Float_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Text_IO.Float_IO for type Float.
+
+@item Ada.Float_Wide_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Wide_Text_IO.Float_IO for type Float.
+
+@item Ada.Integer_Text_IO (A.10.9)
+A library level instantiation of Text_IO.Integer_IO for type Integer.
+
+@item Ada.Integer_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Text_IO.Integer_IO for type Integer.
+
+@item Ada.Integer_Wide_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Wide_Text_IO.Integer_IO for type Integer.
 
 @item Ada.Interrupts (C.3.2)
 This package provides facilities for interfacing to interrupts, which
@@ -15544,11 +16272,21 @@ or condition names) that can be handled by GNAT@.
 This package defines the set of exceptions that can be raised by use of
 the standard IO packages.
 
+@item Ada.Iterator_Interfaces (5.5.1)
+This package provides a generic interface to generalized iterators.
+
+@item Ada.Locales (A.19)
+This package provides declarations providing information (Language
+and Country) about the current locale.
+
 @item Ada.Numerics
 This package contains some standard constants and exceptions used
 throughout the numerics packages.  Note that the constants pi and e are
 defined here, and it is better to use these definitions than rolling
 your own.
+
+@item Ada.Numerics.Complex_Arrays (G.3.2)
+Provides operations on arrays of complex numbers.
 
 @item Ada.Numerics.Complex_Elementary_Functions
 Provides the implementation of standard elementary functions (such as
@@ -15615,6 +16353,12 @@ The following predefined instantiations of this package exist
 @code{Ada.Numerics.Long_Elementary_Functions}
 @end table
 
+@item Ada.Numerics.Generic_Real_Arrays (G.3.1)
+Generic operations on arrays of reals
+
+@item Ada.Numerics.Real_Arrays (G.3.1)
+Preinstantiation of Ada.Numerics.Generic_Real_Arrays (Float).
+
 @item Ada.Real_Time (D.8)
 This package provides facilities similar to those of @code{Calendar}, but
 operating with a finer clock suitable for real time control. Note that
@@ -15622,6 +16366,9 @@ annex D requires that there be no backward clock jumps, and GNAT generally
 guarantees this behavior, but of course if the external clock on which
 the GNAT runtime depends is deliberately reset by some external event,
 then such a backward jump may occur.
+
+@item Ada.Real_Time.Timing_Events (D.15)
+Not implemented in GNAT.
 
 @item Ada.Sequential_IO (A.8.1)
 This package provides input-output facilities for sequential files,
@@ -15655,8 +16402,45 @@ strings.  The bounded model requires a maximum length.  It is thus
 somewhat more limited than the unbounded model, but avoids the use of
 dynamic allocation or finalization.
 
+@item Ada.Strings.Bounded.Equal_Case_Insensitive (A.4.10)
+Provides case-insensitive comparisons of bounded strings
+
+@item Ada.Strings.Bounded.Hash (A.4.9)
+This package provides a generic hash function for bounded strings
+
+@item Ada.Strings.Bounded.Hash_Case_Insensitive (A.4.9)
+This package provides a generic hash function for bounded strings that
+converts the string to be hashed to lower case.
+
+@item Ada.Strings.Bounded.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for bounded strings that works
+in a case insensitive manner by converting to lower case before the comparison.
+
 @item Ada.Strings.Fixed (A.4.3)
 This package provides facilities for handling fixed length strings.
+
+@item Ada.Strings.Fixed.Equal_Case_Insensitive (A.4.10)
+This package provides an equality function for fixed strings that compares
+the strings after converting both to lower case.
+
+@item Ada.Strings.Fixed.Hash_Case_Insensitive (A.4.9)
+This package provides a case insensitive hash function for fixed strings that
+converts the string to lower case before computing the hash.
+
+@item Ada.Strings.Fixed.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for fixed strings that works
+in a case insensitive manner by converting to lower case before the comparison.
+
+Ada.Strings.Hash (A.4.9)
+This package provides a hash function for strings.
+
+Ada.Strings.Hash_Case_Insensitive (A.4.9)
+This package provides a hash function for strings that is case insensitive.
+The string is converted to lower case before computing the hash.
+
+@item Ada.Strings.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for\strings that works
+in a case insensitive manner by converting to lower case before the comparison.
 
 @item Ada.Strings.Maps (A.4.2)
 This package provides facilities for handling character mappings and
@@ -15677,42 +16461,86 @@ This package provides facilities for handling variable length
 strings.  The unbounded model allows arbitrary length strings, but
 requires the use of dynamic allocation and finalization.
 
+@item Ada.Strings.Unbounded.Equal_Case_Insensitive (A.4.10)
+Provides case-insensitive comparisons of unbounded strings
+
+@item Ada.Strings.Unbounded.Hash (A.4.9)
+This package provides a generic hash function for unbounded strings
+
+@item Ada.Strings.Unbounded.Hash_Case_Insensitive (A.4.9)
+This package provides a generic hash function for unbounded strings that
+converts the string to be hashed to lower case.
+
+@item Ada.Strings.Unbounded.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for unbounded strings that works
+in a case insensitive manner by converting to lower case before the comparison.
+
+@item Ada.Strings.UTF_Encoding (A.4.11)
+This package provides basic definitions for dealing with UTF-encoded strings.
+
+@item Ada.Strings.UTF_Encoding.Conversions (A.4.11)
+This package provides conversion functions for UTF-encoded strings.
+
+@item Ada.Strings.UTF_Encoding.Strings (A.4.11)
+@itemx Ada.Strings.UTF_Encoding.Wide_Strings (A.4.11)
+@itemx Ada.Strings.UTF_Encoding.Wide_Wide_Strings (A.4.11)
+These packages provide facilities for handling UTF encodings for
+Strings, Wide_Strings and Wide_Wide_Strings.
+
 @item Ada.Strings.Wide_Bounded (A.4.7)
 @itemx Ada.Strings.Wide_Fixed (A.4.7)
 @itemx Ada.Strings.Wide_Maps (A.4.7)
-@itemx Ada.Strings.Wide_Maps.Constants (A.4.7)
 @itemx Ada.Strings.Wide_Unbounded (A.4.7)
 These packages provide analogous capabilities to the corresponding
 packages without @samp{Wide_} in the name, but operate with the types
 @code{Wide_String} and @code{Wide_Character} instead of @code{String}
-and @code{Character}.
+and @code{Character}. Versions of all the child packages are available.
 
 @item Ada.Strings.Wide_Wide_Bounded (A.4.7)
 @itemx Ada.Strings.Wide_Wide_Fixed (A.4.7)
 @itemx Ada.Strings.Wide_Wide_Maps (A.4.7)
-@itemx Ada.Strings.Wide_Wide_Maps.Constants (A.4.7)
 @itemx Ada.Strings.Wide_Wide_Unbounded (A.4.7)
 These packages provide analogous capabilities to the corresponding
 packages without @samp{Wide_} in the name, but operate with the types
 @code{Wide_Wide_String} and @code{Wide_Wide_Character} instead
 of @code{String} and @code{Character}.
 
+@item Ada.Synchronous_Barriers (D.10.1)
+This package provides facilities for synchronizing tasks at a low level
+with barriers.
+
 @item Ada.Synchronous_Task_Control (D.10)
 This package provides some standard facilities for controlling task
 communication in a synchronous manner.
+
+@item Ada.Synchronous_Task_Control.EDF (D.10)
+Not implemented in GNAT.
 
 @item Ada.Tags
 This package contains definitions for manipulation of the tags of tagged
 values.
 
-@item Ada.Task_Attributes
+@item Ada.Tags.Generic_Dispatching_Constructor (3.9)
+This package provides a way of constructing tagged class-wide values given
+only the tag value.
+
+@item Ada.Task_Attributes (C.7.2)
 This package provides the capability of associating arbitrary
 task-specific data with separate tasks.
+
+@item Ada.Task_Identifification (C.7.1)
+This package provides capabilities for task identification.
+
+@item Ada.Task_Termination (C.7.3)
+This package provides control over task termination.
 
 @item Ada.Text_IO
 This package provides basic text input-output capabilities for
 character, string and numeric data.  The subpackages of this
-package are listed next.
+package are listed next. Note that although these are defined
+as subpackages in the RM, they are actually transparently
+implemented as child packages in GNAT, meaning that they
+are only loaded if needed.
 
 @item Ada.Text_IO.Decimal_IO
 Provides input-output facilities for decimal fixed-point types
@@ -15754,7 +16582,10 @@ predefined instantiations of this generic package are available:
 @end table
 
 @item Ada.Text_IO.Modular_IO
-Provides input-output facilities for modular (unsigned) types
+Provides input-output facilities for modular (unsigned) types.
+
+@item Ada.Text_IO.Bounded_IO (A.10.11)
+Provides input-output facilities for bounded strings.
 
 @item Ada.Text_IO.Complex_IO (G.1.3)
 This package provides basic text input-output capabilities for complex
@@ -15769,6 +16600,9 @@ close copy of the facility in COBOL@.
 This package provides a facility that allows Text_IO files to be treated
 as streams, so that the stream attributes can be used for writing
 arbitrary data, including binary data, to Text_IO files.
+
+@item Ada.Text_IO.Unbounded_IO (A.10.12)
+This package provides input-output facilities for unbounded strings.
 
 @item Ada.Unchecked_Conversion (13.9)
 This generic package allows arbitrary conversion from one type to
@@ -15829,126 +16663,20 @@ allocated by use of an allocator.
 This package is similar to @code{Ada.Text_IO}, except that the external
 file supports wide character representations, and the internal types are
 @code{Wide_Character} and @code{Wide_String} instead of @code{Character}
-and @code{String}.  It contains generic subpackages listed next.
-
-@item Ada.Wide_Text_IO.Decimal_IO
-Provides input-output facilities for decimal fixed-point types
-
-@item Ada.Wide_Text_IO.Enumeration_IO
-Provides input-output facilities for enumeration types.
-
-@item Ada.Wide_Text_IO.Fixed_IO
-Provides input-output facilities for ordinary fixed-point types.
-
-@item Ada.Wide_Text_IO.Float_IO
-Provides input-output facilities for float types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Float
-@code{Short_Float_Wide_Text_IO}
-@item Float
-@code{Float_Wide_Text_IO}
-@item Long_Float
-@code{Long_Float_Wide_Text_IO}
-@end table
-
-@item Ada.Wide_Text_IO.Integer_IO
-Provides input-output facilities for integer types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Short_Integer
-@code{Ada.Short_Short_Integer_Wide_Text_IO}
-@item Short_Integer
-@code{Ada.Short_Integer_Wide_Text_IO}
-@item Integer
-@code{Ada.Integer_Wide_Text_IO}
-@item Long_Integer
-@code{Ada.Long_Integer_Wide_Text_IO}
-@item Long_Long_Integer
-@code{Ada.Long_Long_Integer_Wide_Text_IO}
-@end table
-
-@item Ada.Wide_Text_IO.Modular_IO
-Provides input-output facilities for modular (unsigned) types
-
-@item Ada.Wide_Text_IO.Complex_IO (G.1.3)
-This package is similar to @code{Ada.Text_IO.Complex_IO}, except that the
-external file supports wide character representations.
-
-@item Ada.Wide_Text_IO.Editing (F.3.4)
-This package is similar to @code{Ada.Text_IO.Editing}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
-
-@item Ada.Wide_Text_IO.Streams (A.12.3)
-This package is similar to @code{Ada.Text_IO.Streams}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
+and @code{String}. The corresponding set of nested packages and child
+packages are defined.
 
 @item Ada.Wide_Wide_Text_IO (A.11)
 This package is similar to @code{Ada.Text_IO}, except that the external
 file supports wide character representations, and the internal types are
 @code{Wide_Character} and @code{Wide_String} instead of @code{Character}
-and @code{String}.  It contains generic subpackages listed next.
+and @code{String}. The corresponding set of nested packages and child
+packages are defined.
 
-@item Ada.Wide_Wide_Text_IO.Decimal_IO
-Provides input-output facilities for decimal fixed-point types
-
-@item Ada.Wide_Wide_Text_IO.Enumeration_IO
-Provides input-output facilities for enumeration types.
-
-@item Ada.Wide_Wide_Text_IO.Fixed_IO
-Provides input-output facilities for ordinary fixed-point types.
-
-@item Ada.Wide_Wide_Text_IO.Float_IO
-Provides input-output facilities for float types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Float
-@code{Short_Float_Wide_Wide_Text_IO}
-@item Float
-@code{Float_Wide_Wide_Text_IO}
-@item Long_Float
-@code{Long_Float_Wide_Wide_Text_IO}
 @end table
 
-@item Ada.Wide_Wide_Text_IO.Integer_IO
-Provides input-output facilities for integer types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Short_Integer
-@code{Ada.Short_Short_Integer_Wide_Wide_Text_IO}
-@item Short_Integer
-@code{Ada.Short_Integer_Wide_Wide_Text_IO}
-@item Integer
-@code{Ada.Integer_Wide_Wide_Text_IO}
-@item Long_Integer
-@code{Ada.Long_Integer_Wide_Wide_Text_IO}
-@item Long_Long_Integer
-@code{Ada.Long_Long_Integer_Wide_Wide_Text_IO}
-@end table
-
-@item Ada.Wide_Wide_Text_IO.Modular_IO
-Provides input-output facilities for modular (unsigned) types
-
-@item Ada.Wide_Wide_Text_IO.Complex_IO (G.1.3)
-This package is similar to @code{Ada.Text_IO.Complex_IO}, except that the
-external file supports wide character representations.
-
-@item Ada.Wide_Wide_Text_IO.Editing (F.3.4)
-This package is similar to @code{Ada.Text_IO.Editing}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
-
-@item Ada.Wide_Wide_Text_IO.Streams (A.12.3)
-This package is similar to @code{Ada.Text_IO.Streams}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
-@end table
+For packages in Interfaces and System, all the RM defined packages are
+available in GNAT, see the Ada 2012 RM for full details.
 
 @node The Implementation of Standard I/O
 @chapter The Implementation of Standard I/O
@@ -17442,8 +18170,12 @@ is specifically authorized by the Ada Reference Manual
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for doubly linked lists, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)
 @section @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
@@ -17454,8 +18186,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for hashed maps, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)
 @section @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
@@ -17466,8 +18202,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for hashed sets, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)
 @section @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
@@ -17478,8 +18218,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for ordered maps, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)
 @section @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
@@ -17490,8 +18234,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for ordered sets, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Vectors (a-cofove.ads)
 @section @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
@@ -17502,8 +18250,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for vectors, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})

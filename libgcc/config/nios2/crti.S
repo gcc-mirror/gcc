@@ -36,8 +36,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    See crt0.s for the code that calls init and fini.  */
 
-	.file	"crti.asm"
-
 	.section	".init"
 	.align 2
 	.global	_init

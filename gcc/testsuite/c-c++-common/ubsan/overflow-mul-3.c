@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=signed-integer-overflow" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
+
+#include <stdio.h>
 
 __attribute__((noinline, noclone)) long long
 mul (long long x, long long y)
@@ -30,10 +31,16 @@ long long tab[] = {
 int
 main ()
 {
+  fputs ("UBSAN TEST START\n", stderr);
+
   unsigned int i;
   for (i = 0; i < sizeof (tab) / sizeof (long long); i += 3)
     if (mul (tab[i], tab[i + 1]) != tab[i + 2]
         || mul (tab[i + 1], tab[i]) != tab[i + 2])
       __builtin_abort ();
+
+  fputs ("UBSAN TEST END\n", stderr);
   return 0;
 }
+
+/* { dg-output "UBSAN TEST START(\n|\r\n|\r)UBSAN TEST END" } */

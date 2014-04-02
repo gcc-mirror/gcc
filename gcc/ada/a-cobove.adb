@@ -785,6 +785,7 @@ package body Ada.Containers.Bounded_Vectors is
          when others =>
             B := B - 1;
             L := L - 1;
+
             raise;
       end;
    end Find;
@@ -827,6 +828,7 @@ package body Ada.Containers.Bounded_Vectors is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Find_Index;
 
@@ -937,6 +939,7 @@ package body Ada.Containers.Bounded_Vectors is
             when others =>
                B := B - 1;
                L := L - 1;
+
                raise;
          end;
       end Is_Sorted;
@@ -1096,6 +1099,7 @@ package body Ada.Containers.Bounded_Vectors is
             when others =>
                B := B - 1;
                L := L - 1;
+
                raise;
          end;
       end Sort;
@@ -2492,10 +2496,12 @@ package body Ada.Containers.Bounded_Vectors is
          else
             return Cursor'(Container'Unrestricted_Access, Result);
          end if;
+
       exception
          when others =>
             B := B - 1;
             L := L - 1;
+
             raise;
       end;
    end Reverse_Find;
@@ -2541,6 +2547,7 @@ package body Ada.Containers.Bounded_Vectors is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Reverse_Find_Index;
 

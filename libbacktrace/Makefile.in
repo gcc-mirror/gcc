@@ -67,7 +67,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 check_PROGRAMS = $(am__EXEEXT_1)
-@NATIVE_TRUE@am__append_1 = btest
+@NATIVE_TRUE@am__append_1 = btest stest
 subdir = .
 DIST_COMMON = README ChangeLog $(srcdir)/Makefile.in \
 	$(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -94,15 +94,18 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am_libbacktrace_la_OBJECTS = atomic.lo dwarf.lo fileline.lo posix.lo \
-	print.lo state.lo
+	print.lo sort.lo state.lo
 libbacktrace_la_OBJECTS = $(am_libbacktrace_la_OBJECTS)
-@NATIVE_TRUE@am__EXEEXT_1 = btest$(EXEEXT)
+@NATIVE_TRUE@am__EXEEXT_1 = btest$(EXEEXT) stest$(EXEEXT)
 @NATIVE_TRUE@am_btest_OBJECTS = btest-btest.$(OBJEXT)
 btest_OBJECTS = $(am_btest_OBJECTS)
 @NATIVE_TRUE@btest_DEPENDENCIES = libbacktrace.la
 btest_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(btest_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@NATIVE_TRUE@am_stest_OBJECTS = stest.$(OBJEXT)
+stest_OBJECTS = $(am_stest_OBJECTS)
+@NATIVE_TRUE@stest_DEPENDENCIES = libbacktrace.la
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp =
 am__depfiles_maybe =
@@ -116,7 +119,7 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libbacktrace_la_SOURCES) $(EXTRA_libbacktrace_la_SOURCES) \
-	$(btest_SOURCES)
+	$(btest_SOURCES) $(stest_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -264,6 +267,7 @@ libbacktrace_la_SOURCES = \
 	internal.h \
 	posix.c \
 	print.c \
+	sort.c \
 	state.c
 
 BACKTRACE_FILES = \
@@ -300,6 +304,8 @@ TESTS = $(check_PROGRAMS)
 @NATIVE_TRUE@btest_SOURCES = btest.c
 @NATIVE_TRUE@btest_CFLAGS = $(AM_CFLAGS) -g -O
 @NATIVE_TRUE@btest_LDADD = libbacktrace.la
+@NATIVE_TRUE@stest_SOURCES = stest.c
+@NATIVE_TRUE@stest_LDADD = libbacktrace.la
 
 # We can't use automake's automatic dependency tracking, because it
 # breaks when using bootstrap-lean.  Automatic dependency tracking
@@ -394,6 +400,9 @@ clean-checkPROGRAMS:
 btest$(EXEEXT): $(btest_OBJECTS) $(btest_DEPENDENCIES) 
 	@rm -f btest$(EXEEXT)
 	$(btest_LINK) $(btest_OBJECTS) $(btest_LDADD) $(LIBS)
+stest$(EXEEXT): $(stest_OBJECTS) $(stest_DEPENDENCIES) 
+	@rm -f stest$(EXEEXT)
+	$(LINK) $(stest_OBJECTS) $(stest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

@@ -1,6 +1,5 @@
 // Origin: PR c++/48656
-// { dg-options "-std=c++0x" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 struct A {
  int f();

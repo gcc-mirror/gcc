@@ -65,6 +65,7 @@ package Warnsw is
       Check_Unreferenced_Formals          : Boolean;
       Check_Withs                         : Boolean;
       Constant_Condition_Warnings         : Boolean;
+      Elab_Info_Messages                  : Boolean;
       Elab_Warnings                       : Boolean;
       Implementation_Unit_Warnings        : Boolean;
       Ineffective_Inline_Warnings         : Boolean;

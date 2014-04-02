@@ -99,14 +99,15 @@ _GLIBCXX_DEBUG_VERIFY(!_Position._M_is_end(),				\
  *  into a container at a specific position requires that the iterator
  *  be nonsingular (i.e., either dereferenceable or past-the-end),
  *  that it reference the sequence we are inserting into, and that the
- *  iterator range [_First, Last) is a valid (possibly empty)
- *  range. Note that this macro is only valid when the container is a
+ *  iterator range [_First, _Last) is a valid (possibly empty)
+ *  range which does not reference the sequence we are inserting into.
+ *  Note that this macro is only valid when the container is a
  *  _Safe_sequence and the _Position iterator is a _Safe_iterator.
 */
 #define __glibcxx_check_insert_range(_Position,_First,_Last)		\
 __glibcxx_check_valid_range(_First,_Last);				\
 __glibcxx_check_insert(_Position);					\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First),\
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First,_Last),\
 		      _M_message(__gnu_debug::__msg_insert_range_from_self)\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
@@ -117,18 +118,15 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First),\
  *  into a container after a specific position requires that the iterator
  *  be nonsingular (i.e., either dereferenceable or past-the-end),
  *  that it reference the sequence we are inserting into, and that the
- *  iterator range [_First, Last) is a valid (possibly empty)
- *  range. Note that this macro is only valid when the container is a
- *  _Safe_sequence and the iterator is a _Safe_iterator.
- *
- *  @todo We would like to be able to check for noninterference of
- *  _Position and the range [_First, _Last), but that can't (in
- *  general) be done.
+ *  iterator range [_First, _Last) is a valid (possibly empty)
+ *  range which does not reference the sequence we are inserting into.
+ *  Note that this macro is only valid when the container is a
+ *  _Safe_sequence and the _Position iterator is a _Safe_iterator.
 */
 #define __glibcxx_check_insert_range_after(_Position,_First,_Last)	\
 __glibcxx_check_valid_range(_First,_Last);				\
-__glibcxx_check_insert_after(_Position);					\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First),\
+__glibcxx_check_insert_after(_Position);				\
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First,_Last),\
 		      _M_message(__gnu_debug::__msg_insert_range_from_self)\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
@@ -343,7 +341,7 @@ _GLIBCXX_DEBUG_VERIFY(this != &_Other,					\
 		      _M_message(__gnu_debug::__msg_self_move_assign)	\
                       ._M_sequence(*this, "this"))
 
-// Verify that load factor is position
+// Verify that load factor is positive
 #define __glibcxx_check_max_load_factor(_F)				\
 _GLIBCXX_DEBUG_VERIFY(_F > 0.0f,					\
 		      _M_message(__gnu_debug::__msg_valid_load_factor)	\

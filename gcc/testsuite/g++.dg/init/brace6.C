@@ -18,7 +18,7 @@ int main()
 {
    int i = { 1 };
    int j = { 1, 2 }; /* { dg-error "requires one element" } */
-   A a = { 6 }; /* { dg-error "initialize" "" { target c++98 } } */
+   A a = { 6 }; /* { dg-error "initialize" "" { target { ! c++11 } } } */
    B b = { 6 }; /* { dg-error "" } */
    C c = { 6 }; /* { dg-error "too many initializers" } */
    D d = { 6 };

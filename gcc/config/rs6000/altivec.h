@@ -319,6 +319,11 @@
 #define vec_sqrt __builtin_vec_sqrt
 #define vec_vsx_ld __builtin_vec_vsx_ld
 #define vec_vsx_st __builtin_vec_vsx_st
+
+/* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
+   instead of __builtin_vec_<xxx>  */
+#define vec_xxsldwi __builtin_vsx_xxsldwi
+#define vec_xxpermdi __builtin_vsx_xxpermdi
 #endif
 
 #ifdef _ARCH_PWR8
@@ -326,12 +331,19 @@
 #define vec_eqv __builtin_vec_eqv
 #define vec_nand __builtin_vec_nand
 #define vec_orc __builtin_vec_orc
+#define vec_vaddcuq __builtin_vec_vaddcuq
 #define vec_vaddudm __builtin_vec_vaddudm
+#define vec_vadduqm __builtin_vec_vadduqm
+#define vec_vbpermq __builtin_vec_vbpermq
 #define vec_vclz __builtin_vec_vclz
 #define vec_vclzb __builtin_vec_vclzb
 #define vec_vclzd __builtin_vec_vclzd
 #define vec_vclzh __builtin_vec_vclzh
 #define vec_vclzw __builtin_vec_vclzw
+#define vec_vaddecuq __builtin_vec_vaddecuq
+#define vec_vaddeuqm __builtin_vec_vaddeuqm
+#define vec_vsubecuq __builtin_vec_vsubecuq
+#define vec_vsubeuqm __builtin_vec_vsubeuqm
 #define vec_vgbbd __builtin_vec_vgbbd
 #define vec_vmaxsd __builtin_vec_vmaxsd
 #define vec_vmaxud __builtin_vec_vmaxud
@@ -352,7 +364,9 @@
 #define vec_vsld __builtin_vec_vsld
 #define vec_vsrad __builtin_vec_vsrad
 #define vec_vsrd __builtin_vec_vsrd
+#define vec_vsubcuq __builtin_vec_vsubcuq
 #define vec_vsubudm __builtin_vec_vsubudm
+#define vec_vsubuqm __builtin_vec_vsubuqm
 #define vec_vupkhsw __builtin_vec_vupkhsw
 #define vec_vupklsw __builtin_vec_vupklsw
 #endif

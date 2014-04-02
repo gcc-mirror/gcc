@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fsanitize=null -w" } */
 /* { dg-shouldfail "ubsan" } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 
 typedef volatile const _Complex float *T;
 

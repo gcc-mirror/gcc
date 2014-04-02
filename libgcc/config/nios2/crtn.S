@@ -23,12 +23,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 /* This file just makes sure that the .fini and .init sections do in
-fact return.  Users may put any desired instructions in those sections.
-This file is the last thing linked into any executable.
-*/	
-	.file	"crtn.asm"
-
-
+   fact return.  Users may put any desired instructions in those sections.
+   This file is the last thing linked into any executable.  */	
 
 	.section	".init"
 	ldw	ra, 44(sp)

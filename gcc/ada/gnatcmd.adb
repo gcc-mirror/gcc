@@ -44,6 +44,7 @@ with Prj.Util; use Prj.Util;
 with Sdefault;
 with Sinput.P;
 with Snames;   use Snames;
+with Stringt;
 with Table;
 with Targparm;
 with Tempdir;
@@ -1040,6 +1041,7 @@ procedure GNATCmd is
                 "accept project file switches -vPx, -Pprj and -Xnam=val");
       New_Line;
    end Non_VMS_Usage;
+
    ------------------
    -- Process_Link --
    ------------------
@@ -1391,6 +1393,7 @@ begin
 
    Csets.Initialize;
    Snames.Initialize;
+   Stringt.Initialize;
 
    Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
 
@@ -2106,7 +2109,7 @@ begin
          --  Set up the env vars for project path files
 
          Prj.Env.Set_Ada_Paths
-           (Project, Project_Tree, Including_Libraries => False);
+           (Project, Project_Tree, Including_Libraries => True);
 
          --  For gnatcheck, gnatstub, gnatmetric, gnatpp and gnatelim, create
          --  a configuration pragmas file, if necessary.

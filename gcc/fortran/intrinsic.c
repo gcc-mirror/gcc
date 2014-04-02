@@ -4404,12 +4404,15 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
       return MATCH_ERROR;
     }
 
-  if (gfc_pure (NULL) && !isym->pure)
+  if (!isym->pure && gfc_pure (NULL))
     {
       gfc_error ("Subroutine call to intrinsic '%s' at %L is not PURE", name,
 		 &c->loc);
       return MATCH_ERROR;
     }
+
+  if (!isym->pure)
+    gfc_unset_implicit_pure (NULL);
 
   c->resolved_sym->attr.noreturn = isym->noreturn;
 

@@ -3,7 +3,7 @@
 // __cxa_thread_atexit into glibc to get this right.
 
 // { dg-do run { xfail *-*-* } }
-// { dg-options "-std=c++11" }
+// { dg-require-effective-target c++11 }
 // { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
 

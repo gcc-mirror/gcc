@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 template<class... Types> struct B { // { dg-error "declaration of" }
   void f3();
   void f4();

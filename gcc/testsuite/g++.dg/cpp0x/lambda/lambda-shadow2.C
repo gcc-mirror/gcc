@@ -1,4 +1,5 @@
-// { dg-options "-std=c++11 -Wshadow" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wshadow" }
 
 struct A
 {

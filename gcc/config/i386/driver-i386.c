@@ -409,7 +409,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_rdseed = 0, has_prfchw = 0, has_adx = 0;
   unsigned int has_osxsave = 0, has_fxsr = 0, has_xsave = 0, has_xsaveopt = 0;
   unsigned int has_avx512er = 0, has_avx512pf = 0, has_avx512cd = 0;
-  unsigned int has_avx512f = 0, has_sha = 0;
+  unsigned int has_avx512f = 0, has_sha = 0, has_prefetchwt1 = 0;
 
   bool arch;
 
@@ -486,6 +486,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512pf = ebx & bit_AVX512PF;
       has_avx512cd = ebx & bit_AVX512CD;
       has_sha = ebx & bit_SHA;
+
+      has_prefetchwt1 = ecx & bit_PREFETCHWT1;
     }
 
   if (max_level >= 13)
@@ -493,29 +495,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       __cpuid_count (13, 1, eax, ebx, ecx, edx);
 
       has_xsaveopt = eax & bit_XSAVEOPT;
-    }
-
-  /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
-#define XCR_XFEATURE_ENABLED_MASK	0x0
-#define XSTATE_FP			0x1
-#define XSTATE_SSE			0x2
-#define XSTATE_YMM			0x4
-  if (has_osxsave)
-    asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
-	 : "=a" (eax), "=d" (edx)
-	 : "c" (XCR_XFEATURE_ENABLED_MASK));
-
-  /* Check if SSE and YMM states are supported.  */
-  if (!has_osxsave
-      || (eax & (XSTATE_SSE | XSTATE_YMM)) != (XSTATE_SSE | XSTATE_YMM))
-    {
-      has_avx = 0;
-      has_avx2 = 0;
-      has_fma = 0;
-      has_fma4 = 0;
-      has_xop = 0;
-      has_xsave = 0;
-      has_xsaveopt = 0;
     }
 
   /* Check cpuid level of extended features.  */
@@ -538,6 +517,30 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_longmode = edx & bit_LM;
       has_3dnowp = edx & bit_3DNOWP;
       has_3dnow = edx & bit_3DNOW;
+    }
+
+  /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
+#define XCR_XFEATURE_ENABLED_MASK	0x0
+#define XSTATE_FP			0x1
+#define XSTATE_SSE			0x2
+#define XSTATE_YMM			0x4
+  if (has_osxsave)
+    asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
+	 : "=a" (eax), "=d" (edx)
+	 : "c" (XCR_XFEATURE_ENABLED_MASK));
+
+  /* Check if SSE and YMM states are supported.  */
+  if (!has_osxsave
+      || (eax & (XSTATE_SSE | XSTATE_YMM)) != (XSTATE_SSE | XSTATE_YMM))
+    {
+      has_avx = 0;
+      has_avx2 = 0;
+      has_fma = 0;
+      has_fma4 = 0;
+      has_f16c = 0;
+      has_xop = 0;
+      has_xsave = 0;
+      has_xsaveopt = 0;
     }
 
   if (!arch)
@@ -882,6 +885,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx512er = has_avx512er ? " -mavx512er" : " -mno-avx512er";
       const char *avx512cd = has_avx512cd ? " -mavx512cd" : " -mno-avx512cd";
       const char *avx512pf = has_avx512pf ? " -mavx512pf" : " -mno-avx512pf";
+      const char *prefetchwt1 = has_prefetchwt1 ? " -mprefetchwt1" : " -mno-prefetchwt1";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
@@ -889,7 +893,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			tbm, avx, avx2, sse4_2, sse4_1, lzcnt, rtm,
 			hle, rdrnd, f16c, fsgsbase, rdseed, prfchw, adx,
 			fxsr, xsave, xsaveopt, avx512f, avx512er,
-			avx512cd, avx512pf, NULL);
+			avx512cd, avx512pf, prefetchwt1, NULL);
     }
 
 done:

@@ -1,6 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/30161
-// { dg-options "-std=c++0x -g -dA -fno-merge-debug-strings" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-g -dA -fno-merge-debug-strings" }
 
 // The type M<> should have one DW_TAG_GNU_template_parameter_pack DIE,
 // with no DW_AT_name attribute. We don't test the fact that it has no

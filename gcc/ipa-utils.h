@@ -76,7 +76,8 @@ vec <cgraph_node *>
 possible_polymorphic_call_targets (tree, HOST_WIDE_INT,
 				   ipa_polymorphic_call_context,
 				   bool *final = NULL,
-				   void **cache_token = NULL);
+				   void **cache_token = NULL,
+				   int *nonconstruction_targets = NULL);
 odr_type get_odr_type (tree, bool insert = false);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
 					     const ipa_polymorphic_call_context &);
@@ -105,7 +106,8 @@ bool vtable_pointer_value_to_vtable (tree, tree *, unsigned HOST_WIDE_INT *);
 inline vec <cgraph_node *>
 possible_polymorphic_call_targets (struct cgraph_edge *e,
 				   bool *final = NULL,
-				   void **cache_token = NULL)
+				   void **cache_token = NULL,
+				   int *nonconstruction_targets = NULL)
 {
   gcc_checking_assert (e->indirect_info->polymorphic);
   ipa_polymorphic_call_context context = {e->indirect_info->offset,
@@ -115,7 +117,8 @@ possible_polymorphic_call_targets (struct cgraph_edge *e,
   return possible_polymorphic_call_targets (e->indirect_info->otr_type,
 					    e->indirect_info->otr_token,
 					    context,
-					    final, cache_token);
+					    final, cache_token,
+					    nonconstruction_targets);
 }
 
 /* Same as above but taking OBJ_TYPE_REF as an parameter.  */

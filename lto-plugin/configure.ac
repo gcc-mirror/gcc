@@ -7,6 +7,9 @@ AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_SYS_LARGEFILE
 ACX_PROG_CC_WARNING_OPTS([-Wall], [ac_lto_plugin_warn_cflags])
+# Need -Wc to get it through libtool.
+if test "x$GCC" = xyes; then ac_lto_plugin_ldflags="-Wc,-static-libgcc"; fi
+AC_SUBST(ac_lto_plugin_ldflags)
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

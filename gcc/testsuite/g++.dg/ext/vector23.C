@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-std=gnu++1y -Wsign-conversion" } */
+/* { dg-do compile { target c++1y } } */
+/* { dg-options "-Wsign-conversion" } */
 // Ignore warning on some powerpc-linux configurations.
 // { dg-prune-output "non-standard ABI extension" }
 // Ignore warning on Linux/x86

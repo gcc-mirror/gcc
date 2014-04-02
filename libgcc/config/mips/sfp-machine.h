@@ -163,6 +163,8 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define FP_EX_INEXACT           (1 << 0)
 #endif
 
+#define _FP_TININESS_AFTER_ROUNDING 1
+
 #define	__LITTLE_ENDIAN	1234
 #define	__BIG_ENDIAN	4321
 

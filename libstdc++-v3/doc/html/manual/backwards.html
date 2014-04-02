@@ -360,7 +360,7 @@ particular <span class="quote">“<span class="quote">info iostream</span>”</s
    </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.third"></a>Third</h3></div></div></div><p> The third generation GNU C++ library is called libstdc++, or
 libstdc++-v3.
 </p><p>The subset commonly known as the Standard Template Library
-	 (chapters 23 through 25, mostly) is adapted from the final release
+	 (clauses 23 through 25, mostly) is adapted from the final release
 	 of the SGI STL (version 3.3), with extensive changes.
       </p><p>A more formal description of the V3 goals can be found in the
 	 official <a class="link" href="source_design_notes.html" title="Design Notes">design document</a>.
@@ -374,8 +374,8 @@ libstdc++-v3.
     <code class="code">std::</code> into the global namespace.
    </p><p>For those of you new to ISO C++ (welcome, time travelers!), no,
       that isn't a typo. Yes, the headers really have new names.
-      Marshall Cline's C++ FAQ Lite has a good explanation in <a class="link" href="http://www.parashift.com/c++-faq-lite/coding-standards.html#faq-27.4" target="_top">item
-      [27.4]</a>.
+      Marshall Cline's C++ FAQ Lite has a good explanation in <a class="link" href="http://www.parashift.com/c++-faq-lite/std-headers.html" target="_top">What's
+      the difference between &lt;xxx&gt; and &lt;xxx.h&gt; headers?</a>.
    </p><p> Some include adjustment may be required. What follows is an
 autoconf test that defines <code class="code">PRE_STDCXX_HEADERS</code> when they
 exist.</p><pre class="programlisting">
@@ -947,15 +947,15 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
   This is a change in behavior from older versions. Now, most
   <span class="type">iterator_type</span> typedefs in container classes are POD
   objects, not <span class="type">value_type</span> pointers.
-</p></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="idm234595452352"></a><p><span class="title"><em>
+</p></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="idm269883851680"></a><p><span class="title"><em>
 	<a class="link" href="http://www.kegel.com/gcc/gcc4.html" target="_top">
       Migrating to GCC 4.1
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Dan</span> <span class="surname">Kegel</span>. </span></p></div><div class="biblioentry"><a id="idm234595449568"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Dan</span> <span class="surname">Kegel</span>. </span></p></div><div class="biblioentry"><a id="idm269883848896"></a><p><span class="title"><em>
 	<a class="link" href="http://lists.debian.org/debian-gcc/2006/03/msg00405.html" target="_top">
       Building the Whole Debian Archive with GCC 4.1: A Summary
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Martin</span> <span class="surname">Michlmayr</span>. </span></p></div><div class="biblioentry"><a id="idm234595446720"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Martin</span> <span class="surname">Michlmayr</span>. </span></p></div><div class="biblioentry"><a id="idm269883846048"></a><p><span class="title"><em>
 	<a class="link" href="http://annwm.lbl.gov/~leggett/Atlas/gcc-3.2.html" target="_top">
       Migration guide for GCC-3.2
 	</a>

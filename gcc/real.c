@@ -1436,7 +1436,9 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 	  else
 	    {
 	      val[i] = r->sig[j];
-	      val[i] <<= HOST_BITS_PER_LONG;
+	      unsigned HOST_WIDE_INT v = val[i];
+	      v <<= HOST_BITS_PER_LONG;
+	      val[i] = v;
 	      val[i] |= r->sig[j - 1];
 	    }
 	}

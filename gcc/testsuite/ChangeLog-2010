@@ -11264,7 +11264,7 @@
 	* g++.dg/cpp0x/initlist26.C: Adjust.
 	* g++.dg/cpp0x/initlist28.C: Adjust.
 
-2010-05-10  Fabien Chêne  <fabien.chene@gmail.com>
+2010-05-10  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/43719
 	* g++.dg/init/pr43719.C: New.
@@ -11389,7 +11389,7 @@
 	* gnat.dg/sizetype3.ad[sb]: New test.
 	* gnat.dg/sizetype3_pkg.ads: New helper.
 
-2010-05-07  Fabien Chêne  <fabien.chene@gmail.com>
+2010-05-07  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/43951
 	* g++.dg/init/new29.C: New.
@@ -11738,12 +11738,6 @@
 
 	* gcc.dg/tree-ssa/builtin-free.c: New testcase.
 
-2010-04-29  Fabien Chêne  <fabien.chene@gmail.com>
-
-	PR c++/43890
-	* init.c (diagnose_uninitialized_cst_or_ref_member): check for
-	user-provided constructor while recursing.
-
 2010-04-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42274
@@ -11866,7 +11860,7 @@
 	* g++.dg/template/pr23510.C: Update.
 	* lib/prune.exp: Filter out 'recursively instantiated'.
 
-2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+2010-04-27  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/29043
 	* g++.dg/init/pr29043.C: New.
@@ -11898,7 +11892,7 @@
 	* g++.dg/template/sfinae17.C: New.
 	* g++.dg/template/sfinae18.C: New.
 
-2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+2010-04-27  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* g++.dg/init/pr42844.C: New.
 	* g++.dg/cpp0x/pr42844-2.C: New.
@@ -12500,7 +12494,7 @@
 	* g++.dg/cpp0x/lambda/lambda-conv4.C: New.
 	* g++.dg/cpp0x/lambda/lambda-deduce2.C: New.
 
-2010-04-12  Fabien Chene  <fabien.chene@gmail.com>
+2010-04-12  Fabien Chene  <fabien@gcc.gnu.org>
 
 	PR c++/25811
 	* g++.dg/init/pr25811.C: New test.

@@ -99,7 +99,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512pf,avx512er,avx512cd,sha")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -641,15 +641,15 @@ test_4x (_mm_maskz_fixupimm_round_sd, __m128d, __mmask8, __m128d, __m128d, __m12
 test_4x (_mm_maskz_fixupimm_round_ss, __m128, __mmask8, __m128, __m128, __m128i, 1, 8)
 
 /* avx512pfintrin.h */
-test_3vx (_mm512_mask_prefetch_i32gather_ps, __m512i, __mmask16, void const *, 1, 1)
-test_3vx (_mm512_mask_prefetch_i32scatter_ps, void const *, __mmask16, __m512i, 1, 1)
-test_3vx (_mm512_mask_prefetch_i64gather_ps, __m512i, __mmask8, void const *, 1, 1)
-test_3vx (_mm512_mask_prefetch_i64scatter_ps, void const *, __mmask8, __m512i, 1, 1)
+test_3vx (_mm512_mask_prefetch_i32gather_ps, __m512i, __mmask16, void const *, 1, _MM_HINT_T0)
+test_3vx (_mm512_mask_prefetch_i32scatter_ps, void const *, __mmask16, __m512i, 1, _MM_HINT_T0)
+test_3vx (_mm512_mask_prefetch_i64gather_ps, __m512i, __mmask8, void const *, 1, _MM_HINT_T0)
+test_3vx (_mm512_mask_prefetch_i64scatter_ps, void const *, __mmask8, __m512i, 1, _MM_HINT_T0)
 
-test_3vx (_mm512_mask_prefetch_i32gather_pd, __m256i, __mmask8, void const *, 1, 1)
-test_3vx (_mm512_mask_prefetch_i32scatter_pd, void const *, __mmask8, __m256i, 1, 1)
-test_3vx (_mm512_mask_prefetch_i64gather_pd, __m512i, __mmask8, long long *, 1, 1)
-test_3vx (_mm512_mask_prefetch_i64scatter_pd, void const *, __mmask8, __m512i, 1, 1)
+test_3vx (_mm512_mask_prefetch_i32gather_pd, __m256i, __mmask8, void const *, 1, _MM_HINT_T0)
+test_3vx (_mm512_mask_prefetch_i32scatter_pd, void const *, __mmask8, __m256i, 1, _MM_HINT_T0)
+test_3vx (_mm512_mask_prefetch_i64gather_pd, __m512i, __mmask8, long long *, 1, _MM_HINT_T0)
+test_3vx (_mm512_mask_prefetch_i64scatter_pd, void const *, __mmask8, __m512i, 1, _MM_HINT_T0)
 
 /* avx512erintrin.h */
 test_1 (_mm512_exp2a23_round_pd, __m512d, __m512d, 8)

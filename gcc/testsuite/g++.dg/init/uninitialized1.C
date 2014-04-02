@@ -1,8 +1,8 @@
 // PR c++/58126
 
-struct A {		// { dg-error "uninitialized" "" { target c++11 } }
-  const int value1;
-  int& value2;
+struct A { // { dg-error "uninitialized" "" { target c++11 } }
+  const int value1; // { dg-message "should be initialized" }
+  int& value2; // { dg-message "should be initialized" }
 };
 
 struct B : A { };	// { dg-error "deleted" "" { target c++11 } }

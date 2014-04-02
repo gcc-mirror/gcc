@@ -140,7 +140,6 @@ static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
 static rtx expand_builtin_expect (tree, rtx);
 static tree fold_builtin_constant_p (tree);
-static tree fold_builtin_expect (location_t, tree, tree);
 static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (location_t, tree, tree);
 static tree fold_builtin_inf (location_t, tree, int);
@@ -917,18 +916,27 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 #ifdef HAVE_nonlocal_goto
   if (! HAVE_nonlocal_goto)
 #endif
-    /* First adjust our frame pointer to its actual value.  It was
-       previously set to the start of the virtual area corresponding to
-       the stacked variables when we branched here and now needs to be
-       adjusted to the actual hardware fp value.
+    {
+      /* First adjust our frame pointer to its actual value.  It was
+	 previously set to the start of the virtual area corresponding to
+	 the stacked variables when we branched here and now needs to be
+	 adjusted to the actual hardware fp value.
 
-       Assignments to virtual registers are converted by
-       instantiate_virtual_regs into the corresponding assignment
-       to the underlying register (fp in this case) that makes
-       the original assignment true.
-       So the following insn will actually be decrementing fp by
-       STARTING_FRAME_OFFSET.  */
-    emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+	 Assignments to virtual registers are converted by
+	 instantiate_virtual_regs into the corresponding assignment
+	 to the underlying register (fp in this case) that makes
+	 the original assignment true.
+	 So the following insn will actually be decrementing fp by
+	 STARTING_FRAME_OFFSET.  */
+      emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+
+      /* Restoring the frame pointer also modifies the hard frame pointer.
+	 Mark it used (so that the previous assignment remains live once
+	 the frame pointer is eliminated) and clobbered (to represent the
+	 implicit update from the assignment).  */
+      emit_use (hard_frame_pointer_rtx);
+      emit_clobber (hard_frame_pointer_rtx);
+    }
 
 #if !HARD_FRAME_POINTER_IS_ARG_POINTER
   if (fixed_regs[ARG_POINTER_REGNUM])
@@ -972,8 +980,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 
   /* We must not allow the code we just generated to be reordered by
      scheduling.  Specifically, the update of the frame pointer must
-     happen immediately, not later.  Similarly, we must block
-     (frame-related) register values to be used across this code.  */
+     happen immediately, not later.  */
   emit_insn (gen_blockage ());
 }
 
@@ -5298,7 +5305,7 @@ static rtx
 expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp, 
 					rtx target)
 {
-  rtx expect, desired, mem, oldval;
+  rtx expect, desired, mem, oldval, label;
   enum memmodel success, failure;
   tree weak;
   bool is_weak;
@@ -5336,14 +5343,26 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
   if (tree_fits_shwi_p (weak) && tree_to_shwi (weak) != 0)
     is_weak = true;
 
-  oldval = expect;
-  if (!expand_atomic_compare_and_swap ((target == const0_rtx ? NULL : &target),
-				       &oldval, mem, oldval, desired,
+  if (target == const0_rtx)
+    target = NULL;
+
+  /* Lest the rtl backend create a race condition with an imporoper store
+     to memory, always create a new pseudo for OLDVAL.  */
+  oldval = NULL;
+
+  if (!expand_atomic_compare_and_swap (&target, &oldval, mem, expect, desired,
 				       is_weak, success, failure))
     return NULL_RTX;
 
-  if (oldval != expect)
-    emit_move_insn (expect, oldval);
+  /* Conditionally store back to EXPECT, lest we create a race condition
+     with an improper store to memory.  */
+  /* ??? With a rearrangement of atomics at the gimple level, we can handle
+     the normal case where EXPECT is totally private, i.e. a register.  At
+     which point the store can be unconditional.  */
+  label = gen_label_rtx ();
+  emit_cmp_and_jump_insns (target, const0_rtx, NE, NULL, VOIDmode, 1, label);
+  emit_move_insn (expect, oldval);
+  emit_label (label);
 
   return target;
 }
@@ -5706,7 +5725,10 @@ expand_builtin_thread_pointer (tree exp, rtx target)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand op;
-      if (!REG_P (target) || GET_MODE (target) != Pmode)
+      /* If the target is not sutitable then create a new target. */
+      if (target == NULL_RTX
+	  || !REG_P (target)
+	  || GET_MODE (target) != Pmode)
 	target = gen_reg_rtx (Pmode);
       create_output_operand (&op, target, Pmode);
       expand_insn (icode, 1, &op);
@@ -6961,7 +6983,8 @@ fold_builtin_constant_p (tree arg)
    return it as a truthvalue.  */
 
 static tree
-build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
+build_builtin_expect_predicate (location_t loc, tree pred, tree expected,
+				tree predictor)
 {
   tree fn, arg_types, pred_type, expected_type, call_expr, ret_type;
 
@@ -6973,7 +6996,8 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
 
   pred = fold_convert_loc (loc, pred_type, pred);
   expected = fold_convert_loc (loc, expected_type, expected);
-  call_expr = build_call_expr_loc (loc, fn, 2, pred, expected);
+  call_expr = build_call_expr_loc (loc, fn, predictor ? 3 : 2, pred, expected,
+				   predictor);
 
   return build2 (NE_EXPR, TREE_TYPE (pred), call_expr,
 		 build_int_cst (ret_type, 0));
@@ -6982,8 +7006,8 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
 /* Fold a call to builtin_expect with arguments ARG0 and ARG1.  Return
    NULL_TREE if no simplification is possible.  */
 
-static tree
-fold_builtin_expect (location_t loc, tree arg0, tree arg1)
+tree
+fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
 {
   tree inner, fndecl, inner_arg0;
   enum tree_code code;
@@ -7018,8 +7042,8 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1)
       tree op0 = TREE_OPERAND (inner, 0);
       tree op1 = TREE_OPERAND (inner, 1);
 
-      op0 = build_builtin_expect_predicate (loc, op0, arg1);
-      op1 = build_builtin_expect_predicate (loc, op1, arg1);
+      op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2);
+      op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2);
       inner = build2 (code, TREE_TYPE (inner), op0, op1);
 
       return fold_convert_loc (loc, TREE_TYPE (arg0), inner);
@@ -10746,7 +10770,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
       return fold_builtin_strpbrk (loc, arg0, arg1, type);
 
     case BUILT_IN_EXPECT:
-      return fold_builtin_expect (loc, arg0, arg1);
+      return fold_builtin_expect (loc, arg0, arg1, NULL_TREE);
 
     CASE_FLT_FN (BUILT_IN_POW):
       return fold_builtin_pow (loc, fndecl, arg0, arg1, type);
@@ -10925,6 +10949,9 @@ fold_builtin_3 (location_t loc, tree fndecl,
       else
 	return fold_builtin_fprintf (loc, fndecl, arg0, arg2, NULL_TREE,
 				     ignore, fcode);
+
+    case BUILT_IN_EXPECT:
+      return fold_builtin_expect (loc, arg0, arg1, arg2);
 
     default:
       break;

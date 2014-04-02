@@ -91,7 +91,9 @@ public:
   unsigned forced_by_abi : 1;
   /* True when the name is known to be unique and thus it does not need mangling.  */
   unsigned unique_name : 1;
-
+  /* True when body and other characteristics have been removed by
+     symtab_remove_unreachable_nodes. */
+  unsigned body_removed : 1;
 
   /*** WHOPR Partitioning flags.
        These flags are used at ltrans stage when only part of the callgraph is

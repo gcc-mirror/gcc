@@ -90,7 +90,7 @@
 #define __builtin_ia32_shufpd(A, B, N) __builtin_ia32_shufpd(A, B, 0)
 
 /* xmmintrin.h */
-#define __builtin_prefetch(P, A, I) __builtin_prefetch(P, A, _MM_HINT_NTA)
+#define __builtin_prefetch(P, A, I) __builtin_prefetch(P, 0, _MM_HINT_NTA)
 #define __builtin_ia32_pshufw(A, N) __builtin_ia32_pshufw(A, 0)
 #define __builtin_ia32_vec_set_v4hi(A, D, N) \
   __builtin_ia32_vec_set_v4hi(A, D, 0)
@@ -361,14 +361,14 @@
 #define __builtin_ia32_vpermilps512_mask(A, E, C, D) __builtin_ia32_vpermilps512_mask(A, 1, C, D)
 
 /* avx512pfintrin.h */
-#define __builtin_ia32_gatherpfdps(A, B, C, D, E) __builtin_ia32_gatherpfdps(A, B, C, 1, 1)
-#define __builtin_ia32_gatherpfqps(A, B, C, D, E) __builtin_ia32_gatherpfqps(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfdps(A, B, C, D, E) __builtin_ia32_scatterpfdps(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfqps(A, B, C, D, E) __builtin_ia32_scatterpfqps(A, B, C, 1, 1)
-#define __builtin_ia32_gatherpfdpd(A, B, C, D, E) __builtin_ia32_gatherpfdpd(A, B, C, 1, 1)
-#define __builtin_ia32_gatherpfqpd(A, B, C, D, E) __builtin_ia32_gatherpfqpd(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfdpd(A, B, C, D, E) __builtin_ia32_scatterpfdpd(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfqpd(A, B, C, D, E) __builtin_ia32_scatterpfqpd(A, B, C, 1, 1)
+#define __builtin_ia32_gatherpfdps(A, B, C, D, E) __builtin_ia32_gatherpfdps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_gatherpfqps(A, B, C, D, E) __builtin_ia32_gatherpfqps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfdps(A, B, C, D, E) __builtin_ia32_scatterpfdps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfqps(A, B, C, D, E) __builtin_ia32_scatterpfqps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_gatherpfdpd(A, B, C, D, E) __builtin_ia32_gatherpfdpd(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_gatherpfqpd(A, B, C, D, E) __builtin_ia32_gatherpfqpd(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfdpd(A, B, C, D, E) __builtin_ia32_scatterpfdpd(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfqpd(A, B, C, D, E) __builtin_ia32_scatterpfqpd(A, B, C, 1, _MM_HINT_T0)
 
 /* avx512erintrin.h */
 #define __builtin_ia32_exp2pd_mask(A, B, C, D) __builtin_ia32_exp2pd_mask (A, B, C, 8)
@@ -385,7 +385,7 @@
 /* shaintrin.h */
 #define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)
 
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512pf,avx512cd,sha")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

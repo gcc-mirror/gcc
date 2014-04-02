@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3368,7 +3368,7 @@ package body Sem_Ch8 is
                --  there are no subtypes involved.
 
                Rewrite (Parameter_Type (Param_Spec),
-                 New_Reference_To
+                 New_Occurrence_Of
                    (Base_Type (Entity (Parameter_Type (Param_Spec))), Loc));
             end if;
 
@@ -3470,7 +3470,7 @@ package body Sem_Ch8 is
 
          Find_Type (Result_Definition (Spec));
          Rewrite (Result_Definition (Spec),
-           New_Reference_To
+           New_Occurrence_Of
              (Base_Type (Entity (Result_Definition (Spec))), Loc));
 
          Body_Node :=
@@ -3664,7 +3664,7 @@ package body Sem_Ch8 is
         or else Ekind (E) /= E_Discriminant
         or else Inside_A_Generic
       then
-         Set_Entity_With_Style_Check (N, E);
+         Set_Entity_With_Checks (N, E);
 
       --  The replacement of a discriminant by the corresponding discriminal
       --  is not done for a task discriminant that appears in a default
@@ -4587,7 +4587,8 @@ package body Sem_Ch8 is
                   Get_Name_String (Chars (Lit));
 
                   if Chars (Lit) /= Chars (N)
-                    and then Is_Bad_Spelling_Of (Chars (N), Chars (Lit)) then
+                    and then Is_Bad_Spelling_Of (Chars (N), Chars (Lit))
+                  then
                      Error_Msg_Node_2 := Lit;
                      Error_Msg_N -- CODEFIX
                        ("& is undefined, assume misspelling of &", N);
@@ -5057,16 +5058,16 @@ package body Sem_Ch8 is
          end if;
 
          --  Set the entity. Note that the reason we call Set_Entity for the
-         --  overloadable case, as opposed to Set_Entity_With_Style_Check is
+         --  overloadable case, as opposed to Set_Entity_With_Checks is
          --  that in the overloaded case, the initial call can set the wrong
          --  homonym. The call that sets the right homonym is in Sem_Res and
-         --  that call does use Set_Entity_With_Style_Check, so we don't miss
+         --  that call does use Set_Entity_With_Checks, so we don't miss
          --  a style check.
 
          if Is_Overloadable (E) then
             Set_Entity (N, E);
          else
-            Set_Entity_With_Style_Check (N, E);
+            Set_Entity_With_Checks (N, E);
          end if;
 
          if Is_Type (E) then
@@ -6578,7 +6579,7 @@ package body Sem_Ch8 is
                   C := Class_Wide_Type (Entity (Prefix (N)));
                end if;
 
-               Set_Entity_With_Style_Check (N, C);
+               Set_Entity_With_Checks (N, C);
                Generate_Reference (C, N);
                Set_Etype (N, C);
             end if;
@@ -6624,10 +6625,10 @@ package body Sem_Ch8 is
                      Make_Expanded_Name (Sloc (N),
                        Chars         => Chars (T),
                        Prefix        => New_Copy (Prefix (Prefix (N))),
-                       Selector_Name => New_Reference_To (T, Sloc (N))));
+                       Selector_Name => New_Occurrence_Of (T, Sloc (N))));
 
                else
-                  Rewrite (N, New_Reference_To (T, Sloc (N)));
+                  Rewrite (N, New_Occurrence_Of (T, Sloc (N)));
                end if;
 
                Set_Entity (N, T);
@@ -7835,8 +7836,8 @@ package body Sem_Ch8 is
                 Name =>
                   Make_Expanded_Name (Loc,
                     Chars  => Chars (System_Aux_Id),
-                    Prefix => New_Reference_To (Scope (System_Aux_Id), Loc),
-                    Selector_Name => New_Reference_To (System_Aux_Id, Loc)));
+                    Prefix => New_Occurrence_Of (Scope (System_Aux_Id), Loc),
+                    Selector_Name => New_Occurrence_Of (System_Aux_Id, Loc)));
 
             Set_Entity (Name (Withn), System_Aux_Id);
 

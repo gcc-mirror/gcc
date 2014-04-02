@@ -2,6 +2,6 @@
 
 struct A
 {
-  int i;
-  A() { void foo(int=i); }	// { dg-error "this" }
+  int i;			// { dg-message "" }
+  A() { void foo(int=i); }	// { dg-error "" }
 };

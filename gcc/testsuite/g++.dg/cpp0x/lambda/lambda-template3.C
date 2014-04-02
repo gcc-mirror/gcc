@@ -1,5 +1,5 @@
 // PR c++/49554
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 template<typename T>
   struct base

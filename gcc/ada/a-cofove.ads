@@ -48,8 +48,10 @@
 --    There are three new functions:
 
 --      function Strict_Equal (Left, Right : Vector) return Boolean;
---      function Left  (Container : Vector; Position : Cursor) return Vector;
---      function Right (Container : Vector; Position : Cursor) return Vector;
+--      function First_To_Previous  (Container : Vector; Current : Cursor)
+--         return Vector;
+--      function Current_To_Last (Container : Vector; Current : Cursor)
+--         return Vector;
 
 --    See detailed specifications for these subprograms
 
@@ -75,7 +77,11 @@ package Ada.Containers.Formal_Vectors is
    subtype Capacity_Range is
      Count_Type range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
 
-   type Vector (Capacity : Capacity_Range) is private;
+   type Vector (Capacity : Capacity_Range) is private with
+     Iterable => (First       => First,
+                  Next        => Next,
+                  Has_Element => Has_Element,
+                  Element     => Element);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -84,103 +90,132 @@ package Ada.Containers.Formal_Vectors is
 
    No_Element : constant Cursor;
 
-   function "=" (Left, Right : Vector) return Boolean;
+   function "=" (Left, Right : Vector) return Boolean with
+     Global => null;
 
    function To_Vector
      (New_Item : Element_Type;
-      Length   : Count_Type) return Vector;
+      Length   : Count_Type) return Vector
+   with
+     Global => null;
 
-   function "&" (Left, Right : Vector) return Vector;
+   function "&" (Left, Right : Vector) return Vector with
+     Global => null,
+     Pre    => Capacity_Range'Last - Length (Left) >= Length (Right);
 
-   function "&" (Left : Vector; Right : Element_Type) return Vector;
+   function "&" (Left : Vector; Right : Element_Type) return Vector with
+     Global => null,
+     Pre    => Length (Left) < Capacity_Range'Last;
 
-   function "&" (Left : Element_Type; Right : Vector) return Vector;
+   function "&" (Left : Element_Type; Right : Vector) return Vector with
+     Global => null,
+     Pre    => Length (Right) < Capacity_Range'Last;
 
-   function "&" (Left, Right : Element_Type) return Vector;
+   function "&" (Left, Right : Element_Type) return Vector with
+     Global => null,
+     Pre    => Capacity_Range'Last >= 2;
 
-   function Capacity (Container : Vector) return Count_Type;
+   function Capacity (Container : Vector) return Count_Type with
+     Global => null;
 
    procedure Reserve_Capacity
      (Container : in out Vector;
       Capacity  : Count_Type)
    with
-     Pre => Capacity <= Container.Capacity;
+     Global => null,
+     Pre    => Capacity <= Container.Capacity;
 
-   function Length (Container : Vector) return Count_Type;
+   function Length (Container : Vector) return Count_Type with
+     Global => null;
 
    procedure Set_Length
      (Container : in out Vector;
       New_Length    : Count_Type)
    with
-     Pre => New_Length <= Length (Container);
+     Global => null,
+     Pre    => New_Length <= Length (Container);
 
-   function Is_Empty (Container : Vector) return Boolean;
+   function Is_Empty (Container : Vector) return Boolean with
+     Global => null;
 
-   procedure Clear (Container : in out Vector);
+   procedure Clear (Container : in out Vector) with
+     Global => null;
 
    procedure Assign (Target : in out Vector; Source : Vector) with
-     Pre => Length (Source) <= Target.Capacity;
+     Global => null,
+     Pre    => Length (Source) <= Target.Capacity;
 
    function Copy
      (Source   : Vector;
       Capacity : Count_Type := 0) return Vector
    with
-     Pre => Length (Source) <= Capacity and then Capacity in Capacity_Range;
+     Global => null,
+     Pre    => Length (Source) <= Capacity and then Capacity in Capacity_Range;
 
    function To_Cursor
      (Container : Vector;
-      Index     : Extended_Index) return Cursor;
+      Index     : Extended_Index) return Cursor
+   with
+     Global => null;
 
-   function To_Index (Position : Cursor) return Extended_Index;
+   function To_Index (Position : Cursor) return Extended_Index with
+     Global => null;
 
    function Element
      (Container : Vector;
       Index     : Index_Type) return Element_Type
    with
-     Pre => First_Index (Container) <= Index
-              and then Index <= Last_Index (Container);
+     Global => null,
+     Pre    => First_Index (Container) <= Index
+                 and then Index <= Last_Index (Container);
 
    function Element
      (Container : Vector;
       Position  : Cursor) return Element_Type
    with
-     Pre => Has_Element (Container, Position);
+     Global => null,
+     Pre    => Has_Element (Container, Position);
 
    procedure Replace_Element
      (Container : in out Vector;
       Index     : Index_Type;
       New_Item  : Element_Type)
    with
-     Pre => First_Index (Container) <= Index
-              and then Index <= Last_Index (Container);
+     Global => null,
+     Pre    => First_Index (Container) <= Index
+                 and then Index <= Last_Index (Container);
 
    procedure Replace_Element
      (Container : in out Vector;
       Position  : Cursor;
       New_Item  : Element_Type)
    with
-     Pre => Has_Element (Container, Position);
+     Global => null,
+     Pre    => Has_Element (Container, Position);
 
    procedure Move (Target : in out Vector; Source : in out Vector) with
-     Pre => Length (Source) <= Target.Capacity;
+     Global => null,
+     Pre    => Length (Source) <= Target.Capacity;
 
    procedure Insert
      (Container : in out Vector;
       Before    : Extended_Index;
       New_Item  : Vector)
    with
-     Pre => First_Index (Container) <= Before
-              and then Before <= Last_Index (Container) + 1
-              and then Length (Container) < Container.Capacity;
+     Global => null,
+     Pre    => First_Index (Container) <= Before
+                 and then Before <= Last_Index (Container) + 1
+                 and then Length (Container) < Container.Capacity;
 
    procedure Insert
      (Container : in out Vector;
       Before    : Cursor;
       New_Item  : Vector)
    with
-     Pre => Length (Container) < Container.Capacity
-              and then (Has_Element (Container, Before)
-                         or else Before = No_Element);
+     Global => null,
+     Pre    => Length (Container) < Container.Capacity
+                 and then (Has_Element (Container, Before)
+                            or else Before = No_Element);
 
    procedure Insert
      (Container : in out Vector;
@@ -188,9 +223,10 @@ package Ada.Containers.Formal_Vectors is
       New_Item  : Vector;
       Position  : out Cursor)
    with
-     Pre => Length (Container) < Container.Capacity
-              and then (Has_Element (Container, Before)
-                         or else Before = No_Element);
+     Global => null,
+     Pre    => Length (Container) < Container.Capacity
+                 and then (Has_Element (Container, Before)
+                            or else Before = No_Element);
 
    procedure Insert
      (Container : in out Vector;
@@ -198,9 +234,10 @@ package Ada.Containers.Formal_Vectors is
       New_Item  : Element_Type;
       Count     : Count_Type := 1)
    with
-     Pre => First_Index (Container) <= Before
-              and then Before <= Last_Index (Container) + 1
-              and then Length (Container) + Count <= Container.Capacity;
+     Global => null,
+     Pre    => First_Index (Container) <= Before
+                 and then Before <= Last_Index (Container) + 1
+                 and then Length (Container) + Count <= Container.Capacity;
 
    procedure Insert
      (Container : in out Vector;
@@ -208,9 +245,10 @@ package Ada.Containers.Formal_Vectors is
       New_Item  : Element_Type;
       Count     : Count_Type := 1)
    with
-     Pre => Length (Container) + Count <= Container.Capacity
-              and then (Has_Element (Container, Before)
-                         or else Before = No_Element);
+     Global => null,
+     Pre    => Length (Container) + Count <= Container.Capacity
+                 and then (Has_Element (Container, Before)
+                            or else Before = No_Element);
 
    procedure Insert
      (Container : in out Vector;
@@ -219,152 +257,200 @@ package Ada.Containers.Formal_Vectors is
       Position  : out Cursor;
       Count     : Count_Type := 1)
    with
-     Pre => Length (Container) + Count <= Container.Capacity
-              and then (Has_Element (Container, Before)
-                         or else Before = No_Element);
+     Global => null,
+     Pre    => Length (Container) + Count <= Container.Capacity
+                 and then (Has_Element (Container, Before)
+                            or else Before = No_Element);
 
    procedure Prepend
      (Container : in out Vector;
       New_Item  : Vector)
    with
-     Pre => Length (Container) < Container.Capacity;
+     Global => null,
+     Pre    => Length (Container) < Container.Capacity;
 
    procedure Prepend
      (Container : in out Vector;
       New_Item  : Element_Type;
       Count     : Count_Type := 1)
    with
-     Pre => Length (Container) + Count <= Container.Capacity;
+     Global => null,
+     Pre    => Length (Container) + Count <= Container.Capacity;
 
    procedure Append
      (Container : in out Vector;
       New_Item  : Vector)
    with
-     Pre => Length (Container) < Container.Capacity;
+     Global => null,
+     Pre    => Length (Container) < Container.Capacity;
 
    procedure Append
      (Container : in out Vector;
       New_Item  : Element_Type;
       Count     : Count_Type := 1)
    with
-     Pre => Length (Container) + Count <= Container.Capacity;
+     Global => null,
+     Pre    => Length (Container) + Count <= Container.Capacity;
 
    procedure Delete
      (Container : in out Vector;
       Index     : Extended_Index;
       Count     : Count_Type := 1)
    with
-     Pre => First_Index (Container) <= Index
-              and then Index <= Last_Index (Container) + 1;
+     Global => null,
+     Pre    => First_Index (Container) <= Index
+                 and then Index <= Last_Index (Container) + 1;
 
    procedure Delete
      (Container : in out Vector;
       Position  : in out Cursor;
       Count     : Count_Type := 1)
    with
-     Pre => Has_Element (Container, Position);
+     Global => null,
+     Pre    => Has_Element (Container, Position);
 
    procedure Delete_First
      (Container : in out Vector;
-      Count     : Count_Type := 1);
+      Count     : Count_Type := 1)
+   with
+     Global => null;
 
    procedure Delete_Last
      (Container : in out Vector;
-      Count     : Count_Type := 1);
+      Count     : Count_Type := 1)
+   with
+     Global => null;
 
-   procedure Reverse_Elements (Container : in out Vector);
+   procedure Reverse_Elements (Container : in out Vector) with
+     Global => null;
 
    procedure Swap (Container : in out Vector; I, J : Index_Type) with
-     Pre => First_Index (Container) <= I and then I <= Last_Index (Container)
-              and then First_Index (Container) <= J
-              and then J <= Last_Index (Container);
+     Global => null,
+     Pre    => First_Index (Container) <= I
+                 and then I <= Last_Index (Container)
+                 and then First_Index (Container) <= J
+                 and then J <= Last_Index (Container);
 
    procedure Swap (Container : in out Vector; I, J : Cursor) with
-     Pre => Has_Element (Container, I) and then Has_Element (Container, J);
+     Global => null,
+     Pre    => Has_Element (Container, I) and then Has_Element (Container, J);
 
-   function First_Index (Container : Vector) return Index_Type;
+   function First_Index (Container : Vector) return Index_Type with
+     Global => null;
 
-   function First (Container : Vector) return Cursor;
+   function First (Container : Vector) return Cursor with
+     Global => null;
 
    function First_Element (Container : Vector) return Element_Type with
-     Pre => not Is_Empty (Container);
+     Global => null,
+     Pre    => not Is_Empty (Container);
 
-   function Last_Index (Container : Vector) return Extended_Index;
+   function Last_Index (Container : Vector) return Extended_Index with
+     Global => null;
 
-   function Last (Container : Vector) return Cursor;
+   function Last (Container : Vector) return Cursor with
+     Global => null;
 
    function Last_Element (Container : Vector) return Element_Type with
-     Pre => not Is_Empty (Container);
+     Global => null,
+     Pre    => not Is_Empty (Container);
 
    function Next (Container : Vector; Position : Cursor) return Cursor with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
    procedure Next (Container : Vector; Position : in out Cursor) with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
    function Previous (Container : Vector; Position : Cursor) return Cursor with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
    procedure Previous (Container : Vector; Position : in out Cursor) with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
    function Find_Index
      (Container : Vector;
       Item      : Element_Type;
-      Index     : Index_Type := Index_Type'First) return Extended_Index;
+      Index     : Index_Type := Index_Type'First) return Extended_Index
+   with
+     Global => null;
 
    function Find
      (Container : Vector;
       Item      : Element_Type;
       Position  : Cursor := No_Element) return Cursor
    with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
    function Reverse_Find_Index
      (Container : Vector;
       Item      : Element_Type;
-      Index     : Index_Type := Index_Type'Last) return Extended_Index;
+      Index     : Index_Type := Index_Type'Last) return Extended_Index
+   with
+     Global => null;
 
    function Reverse_Find
      (Container : Vector;
       Item      : Element_Type;
       Position  : Cursor := No_Element) return Cursor
    with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
+     Global => null,
+     Pre    => Has_Element (Container, Position) or else Position = No_Element;
 
    function Contains
      (Container : Vector;
-      Item      : Element_Type) return Boolean;
+      Item      : Element_Type) return Boolean
+   with
+     Global => null;
 
-   function Has_Element (Container : Vector; Position : Cursor) return Boolean;
+   function Has_Element (Container : Vector; Position : Cursor) return Boolean
+   with
+     Global => null;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
 
-      function Is_Sorted (Container : Vector) return Boolean;
+      function Is_Sorted (Container : Vector) return Boolean with
+        Global => null;
 
-      procedure Sort (Container : in out Vector);
+      procedure Sort (Container : in out Vector) with
+        Global => null;
 
-      procedure Merge (Target : in out Vector; Source : in out Vector);
+      procedure Merge (Target : in out Vector; Source : in out Vector) with
+        Global => null;
 
    end Generic_Sorting;
 
-   function Strict_Equal (Left, Right : Vector) return Boolean;
+   function Strict_Equal (Left, Right : Vector) return Boolean with
+     Global => null;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
    --  they are structurally equal (function "=" returns True) and that they
    --  have the same set of cursors.
 
-   function Left (Container : Vector; Position : Cursor) return Vector with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
-   function Right (Container : Vector; Position : Cursor) return Vector with
-     Pre => Has_Element (Container, Position) or else Position = No_Element;
-   --  Left returns a container containing all elements preceding Position
-   --  (excluded) in Container. Right returns a container containing all
-   --  elements following Position (included) in Container. These two new
-   --  functions can be used to express invariant properties in loops which
-   --  iterate over containers. Left returns the part of the container already
-   --  scanned and Right the part not scanned yet.
+   function First_To_Previous
+     (Container : Vector;
+      Current : Cursor) return Vector
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Current) or else Current = No_Element;
+   function Current_To_Last
+     (Container : Vector;
+      Current : Cursor) return Vector
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Current) or else Current = No_Element;
+   --  First_To_Previous returns a container containing all elements preceding
+   --  Current (excluded) in Container. Current_To_Last returns a container
+   --  containing all elements following Current (included) in Container.
+   --  These two new functions can be used to express invariant properties in
+   --  loops which iterate over containers. First_To_Previous returns the part
+   --  of the container already scanned and Current_To_Last the part not
+   --  scanned yet.
 
 private
 

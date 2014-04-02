@@ -1018,10 +1018,10 @@ begin
       -- Warnings (GNAT) --
       ---------------------
 
-      --  pragma Warnings (On | Off);
-      --  pragma Warnings (On | Off, LOCAL_NAME);
-      --  pragma Warnings (static_string_EXPRESSION);
-      --  pragma Warnings (On | Off, static_string_EXPRESSION);
+      --  pragma Warnings (On | Off [,REASON]);
+      --  pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
+      --  pragma Warnings (static_string_EXPRESSION [,REASON]);
+      --  pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
 
       --  The one argument ON/OFF case is processed by the parser, since it may
       --  control parser warnings as well as semantic warnings, and in any case
@@ -1042,12 +1042,33 @@ begin
 
             declare
                Argx : constant Node_Id := Expression (Arg1);
+
+               function Get_Reason return String_Id;
+               --  Analyzes Reason argument and returns corresponding String_Id
+               --  value, or null if there is no Reason argument, or if the
+               --  argument is not of the required form.
+
+               ----------------
+               -- Get_Reason --
+               ----------------
+
+               function Get_Reason return String_Id is
+               begin
+                  if Arg_Count = 1 then
+                     return Null_String_Id;
+                  else
+                     Start_String;
+                     Get_Reason_String (Expression (Arg2));
+                     return End_String;
+                  end if;
+               end Get_Reason;
+
             begin
                if Nkind (Argx) = N_Identifier then
                   if Chars (Argx) = Name_On then
                      Set_Warnings_Mode_On (Pragma_Sloc);
                   elsif Chars (Argx) = Name_Off then
-                     Set_Warnings_Mode_Off (Pragma_Sloc);
+                     Set_Warnings_Mode_Off (Pragma_Sloc, Get_Reason);
                   end if;
                end if;
             end;
@@ -1133,6 +1154,7 @@ begin
            Pragma_Compile_Time_Error             |
            Pragma_Compile_Time_Warning           |
            Pragma_Compiler_Unit                  |
+           Pragma_Compiler_Unit_Warning          |
            Pragma_Contract_Cases                 |
            Pragma_Convention_Identifier          |
            Pragma_CPP_Class                      |
@@ -1256,6 +1278,7 @@ begin
            Pragma_Profile                        |
            Pragma_Profile_Warnings               |
            Pragma_Propagate_Exceptions           |
+           Pragma_Provide_Shift_Operators        |
            Pragma_Psect_Object                   |
            Pragma_Pure                           |
            Pragma_Pure_05                        |
@@ -1313,6 +1336,7 @@ begin
            Pragma_Use_VADS_Size                  |
            Pragma_Volatile                       |
            Pragma_Volatile_Components            |
+           Pragma_Warning_As_Error               |
            Pragma_Weak_External                  |
            Pragma_Validity_Checks                =>
          null;

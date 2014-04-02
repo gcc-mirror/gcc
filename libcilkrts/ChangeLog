@@ -1,3 +1,36 @@
+2014-03-26  Tobias Burnus  <burnus@net-b.de>
+
+	* libcilkrts.spec.in: New.
+	* Makefile.am: Handle libcilkrts.spec.
+	* configure.ac: Determine link options for libcilkrts.spec.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2014-03-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/60589
+
+	Reverted:
+	2014-03-09  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.am: Install cilk.h.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2014-03-09  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.am: Install cilk.h.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2014-02-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* include/cilk/common.h (__CILKRTS_ABI_VERSION): Set the ABI version
+	to 1 instead of 0.
+	* runtime/cilk-abi-cilk-for.cpp (cilk_for_recursive): Added a fix to
+	initialize stack frame correctly.
+
 2014-02-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR target/59691

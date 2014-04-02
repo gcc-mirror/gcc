@@ -37,6 +37,7 @@ with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
+with Par_SCO;  use Par_SCO;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
@@ -1955,8 +1956,8 @@ package body Sem_Eval is
 
       elsif Ekind (Def_Id) = E_Constant then
 
-         --  Deferred constants must always be treated as nonstatic
-         --  outside the scope of their full view.
+         --  Deferred constants must always be treated as nonstatic outside the
+         --  scope of their full view.
 
          if Present (Full_View (Def_Id))
            and then not In_Open_Scopes (Scope (Def_Id))
@@ -1976,6 +1977,16 @@ package body Sem_Eval is
               and then not Is_Generic_Type (Etype (N))
             then
                Validate_Static_Object_Name (N);
+            end if;
+
+            --  Mark constant condition in SCOs
+
+            if Generate_SCO
+              and then Comes_From_Source (N)
+              and then Is_Boolean_Type (Etype (Def_Id))
+              and then Compile_Time_Known_Value (N)
+            then
+               Set_SCO_Condition (N, Expr_Value_E (N) = Standard_True);
             end if;
 
             return;
@@ -4675,6 +4686,48 @@ package body Sem_Eval is
       end if;
    end Out_Of_Range;
 
+   ----------------------
+   -- Predicates_Match --
+   ----------------------
+
+   function Predicates_Match (T1, T2 : Entity_Id) return Boolean is
+      Pred1 : Node_Id;
+      Pred2 : Node_Id;
+
+   begin
+      if Ada_Version < Ada_2012 then
+         return True;
+
+         --  Both types must have predicates or lack them
+
+      elsif Has_Predicates (T1) /= Has_Predicates (T2) then
+         return False;
+
+         --  Check matching predicates
+
+      else
+         Pred1 :=
+           Get_Rep_Item
+             (T1, Name_Static_Predicate, Check_Parents => False);
+         Pred2 :=
+           Get_Rep_Item
+             (T2, Name_Static_Predicate, Check_Parents => False);
+
+         --  Subtypes statically match if the predicate comes from the
+         --  same declaration, which can only happen if one is a subtype
+         --  of the other and has no explicit predicate.
+
+         --  Suppress warnings on order of actuals, which is otherwise
+         --  triggered by one of the two calls below.
+
+         pragma Warnings (Off);
+         return Pred1 = Pred2
+           or else (No (Pred1) and then Is_Subtype_Of (T1, T2))
+           or else (No (Pred2) and then Is_Subtype_Of (T2, T1));
+         pragma Warnings (On);
+      end if;
+   end Predicates_Match;
+
    -------------------------
    -- Rewrite_In_Raise_CE --
    -------------------------
@@ -4733,8 +4786,9 @@ package body Sem_Eval is
    ------------------------------------
 
    function Subtypes_Statically_Compatible
-     (T1 : Entity_Id;
-      T2 : Entity_Id) return Boolean
+     (T1                      : Entity_Id;
+      T2                      : Entity_Id;
+      Formal_Derived_Matching : Boolean := False) return Boolean
    is
    begin
       --  Scalar types
@@ -4749,7 +4803,8 @@ package body Sem_Eval is
          --  If either subtype is nonstatic then they're not compatible
 
          elsif not Is_Static_Subtype (T1)
-           or else not Is_Static_Subtype (T2)
+                 or else
+               not Is_Static_Subtype (T2)
          then
             return False;
 
@@ -4810,7 +4865,7 @@ package body Sem_Eval is
 
       else
          return (Is_Composite_Type (T1) and then not Is_Constrained (T2))
-           or else Subtypes_Statically_Match (T1, T2);
+           or else Subtypes_Statically_Match (T1, T2, Formal_Derived_Matching);
       end if;
    end Subtypes_Statically_Compatible;
 
@@ -4823,57 +4878,38 @@ package body Sem_Eval is
    --  they are the same identical constraint, or if they are static and the
    --  values match (RM 4.9.1(1)).
 
-   function Subtypes_Statically_Match (T1, T2 : Entity_Id) return Boolean is
+   --  In addition, in GNAT, the object size (Esize) values of the types must
+   --  match if they are set (unless checking an actual for a formal derived
+   --  type). The use of 'Object_Size can cause this to be false even if the
+   --  types would otherwise match in the RM sense.
 
-      function Predicates_Match return Boolean;
-      --  In Ada 2012, subtypes statically match if their static predicates
-      --  match as well.
-
-      ----------------------
-      -- Predicates_Match --
-      ----------------------
-
-      function Predicates_Match return Boolean is
-         Pred1 : Node_Id;
-         Pred2 : Node_Id;
-
-      begin
-         if Ada_Version < Ada_2012 then
-            return True;
-
-         elsif Has_Predicates (T1) /= Has_Predicates (T2) then
-            return False;
-
-         else
-            Pred1 :=
-              Get_Rep_Item
-                (T1, Name_Static_Predicate, Check_Parents => False);
-            Pred2 :=
-              Get_Rep_Item
-                (T2, Name_Static_Predicate, Check_Parents => False);
-
-            --  Subtypes statically match if the predicate comes from the
-            --  same declaration, which can only happen if one is a subtype
-            --  of the other and has no explicit predicate.
-
-            --  Suppress warnings on order of actuals, which is otherwise
-            --  triggered by one of the two calls below.
-
-            pragma Warnings (Off);
-            return Pred1 = Pred2
-              or else (No (Pred1) and then Is_Subtype_Of (T1, T2))
-              or else (No (Pred2) and then Is_Subtype_Of (T2, T1));
-            pragma Warnings (On);
-         end if;
-      end Predicates_Match;
-
-   --  Start of processing for Subtypes_Statically_Match
-
+   function Subtypes_Statically_Match
+     (T1                      : Entity_Id;
+      T2                      : Entity_Id;
+      Formal_Derived_Matching : Boolean := False) return Boolean
+   is
    begin
       --  A type always statically matches itself
 
       if T1 = T2 then
          return True;
+
+      --  No match if sizes different (from use of 'Object_Size). This test
+      --  is excluded if Formal_Derived_Matching is True, as the base types
+      --  can be different in that case and typically have different sizes
+      --  (and Esizes can be set when Frontend_Layout_On_Target is True).
+
+      elsif not Formal_Derived_Matching
+        and then Known_Static_Esize (T1)
+        and then Known_Static_Esize (T2)
+        and then Esize (T1) /= Esize (T2)
+      then
+         return False;
+
+      --  No match if predicates do not match
+
+      elsif not Predicates_Match (T1, T2) then
+         return False;
 
       --  Scalar types
 
@@ -4929,7 +4965,7 @@ package body Sem_Eval is
             return True;
          end if;
 
-         --  Otherwise both types have bound that can be compared
+         --  Otherwise both types have bounds that can be compared
 
          declare
             LB1 : constant Node_Id := Type_Low_Bound  (T1);
@@ -4938,11 +4974,10 @@ package body Sem_Eval is
             HB2 : constant Node_Id := Type_High_Bound (T2);
 
          begin
-            --  If the bounds are the same tree node, then match if and only
-            --  if any predicates present also match.
+            --  If the bounds are the same tree node, then match (common case)
 
             if LB1 = LB2 and then HB1 = HB2 then
-               return Predicates_Match;
+               return True;
 
             --  Otherwise bounds must be static and identical value
 

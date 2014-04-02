@@ -1,6 +1,5 @@
 // Runtime test for C++11 unrestricted unions
-// { dg-options -std=c++11 }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 int c, d;
 struct A

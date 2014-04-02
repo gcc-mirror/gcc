@@ -1,5 +1,5 @@
 // PR c++/56059
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 typedef int Int;
 template<typename T> struct baz { };

@@ -2,8 +2,7 @@
 // Test that this doesn't lead to link-time collisions.
 
 // { dg-additional-sources "nolinkage1a.cc" }
-// { dg-do link }
-// { dg-options -std=c++11 }
+// { dg-do link { target c++11 } }
 
 #include "nolinkage1.h"
 

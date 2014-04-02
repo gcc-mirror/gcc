@@ -283,7 +283,7 @@ package body Back_End is
       Next_Arg := 1;
       while Next_Arg <= Args'Last loop
          Look_At_Arg : declare
-            Argv     : constant String := Args (Next_Arg).all;
+            Argv : constant String := Args (Next_Arg).all;
 
          begin
             --  If the previous switch has set the Output_File_Name_Present

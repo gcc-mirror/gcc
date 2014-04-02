@@ -1,4 +1,4 @@
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 template<class T> class my_limits {
 public:
   static constexpr T min() throw() { return T(); }

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1044,7 +1044,7 @@ extern Nat get_target_double_scalar_alignment (void);
 /* This function is called by the front-end to enumerate all the supported
    modes for the machine, as well as some predefined C types.  */
 extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
-					int));
+					int, int));
 
 #ifdef __cplusplus
 }

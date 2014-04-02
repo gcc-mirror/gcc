@@ -51,10 +51,9 @@ SIZE(libat_compare_exchange) (UTYPE *mptr, UTYPE *eptr, UTYPE newval,
 #if !DONE && N <= WORDSIZE && defined(atomic_compare_exchange_w)
 bool
 SIZE(libat_compare_exchange) (UTYPE *mptr, UTYPE *eptr, UTYPE newval,
-			      int smodel, int fmodel UNUSED)
+			      int smodel, int fmodel)
 {
   UWORD mask, shift, weval, woldval, wnewval, t, *wptr;
-  bool ret = false;
 
   pre_barrier (smodel);
 
@@ -82,12 +81,13 @@ SIZE(libat_compare_exchange) (UTYPE *mptr, UTYPE *eptr, UTYPE newval,
     }
   while (!atomic_compare_exchange_w (wptr, &woldval, t, true,
 				     __ATOMIC_RELAXED, __ATOMIC_RELAXED));
-  ret = true;
+  post_barrier (smodel);
+  return true;
+
  failure:
   *eptr = woldval >> shift;
-
-  post_barrier (smodel);
-  return ret;
+  post_barrier (fmodel);
+  return false;
 }
 
 #define DONE 1
@@ -102,18 +102,17 @@ SIZE(libat_compare_exchange) (UTYPE *mptr, UTYPE *eptr, UTYPE newval,
 {
   UTYPE oldval;
   UWORD magic;
-  bool ret = false;
+  bool ret;
 
   pre_seq_barrier (smodel);
   magic = protect_start (mptr);
 
   oldval = *mptr;
-  if (oldval == *eptr)
-    {
-      *mptr = newval;
-      ret = true;
-    }
-  *eptr = oldval;
+  ret = (oldval == *eptr);
+  if (ret)
+    *mptr = newval;
+  else
+    *eptr = oldval;
 
   protect_end (mptr, magic);
   post_seq_barrier (smodel);

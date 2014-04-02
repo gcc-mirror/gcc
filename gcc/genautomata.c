@@ -2348,7 +2348,7 @@ add_presence_absence (unit_set_el_t dest_list,
 		for (prev_el = (presence_p
 				? (final_p
 				   ? dst->unit_decl->final_presence_list
-				   : dst->unit_decl->final_presence_list)
+				   : dst->unit_decl->presence_list)
 				: (final_p
 				   ? dst->unit_decl->final_absence_list
 				   : dst->unit_decl->absence_list));
@@ -3494,7 +3494,7 @@ reserv_sets_hash_value (reserv_sets_t reservs)
     {
       reservs_num--;
       hash_value += ((*reserv_ptr >> i)
-		     | (*reserv_ptr << ((sizeof (set_el_t) * CHAR_BIT) & -i)));
+		     | (*reserv_ptr << (((sizeof (set_el_t) * CHAR_BIT) - 1) & -i)));
       i++;
       if (i == sizeof (set_el_t) * CHAR_BIT)
 	i = 0;

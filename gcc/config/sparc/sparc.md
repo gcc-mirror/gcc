@@ -291,7 +291,8 @@
   (const_string "none"))
 
 (define_attr "pic" "false,true"
-  (symbol_ref "(flag_pic != 0 ? PIC_TRUE : PIC_FALSE)"))
+  (symbol_ref "(flag_pic != 0
+		? PIC_TRUE : PIC_FALSE)"))
 
 (define_attr "calls_alloca" "false,true"
   (symbol_ref "(cfun->calls_alloca != 0
@@ -312,6 +313,10 @@
 (define_attr "flat" "false,true"
   (symbol_ref "(TARGET_FLAT != 0
 		? FLAT_TRUE : FLAT_FALSE)"))
+
+(define_attr "fix_ut699" "false,true"
+   (symbol_ref "(sparc_fix_ut699 != 0
+		 ? FIX_UT699_TRUE : FIX_UT699_FALSE)"))
 
 ;; Length (in # of insns).
 ;; Beware that setting a length greater or equal to 3 for conditional branches
@@ -427,32 +432,18 @@
   [(set_attr "length" "2")
    (set_attr "type" "multi")])
 
-;; Attributes for instruction and branch scheduling
-(define_attr "tls_call_delay" "false,true"
-  (symbol_ref "(tls_call_delay (insn)
-		? TLS_CALL_DELAY_TRUE : TLS_CALL_DELAY_FALSE)"))
-
+;; Attributes for branch scheduling
 (define_attr "in_call_delay" "false,true"
-  (cond [(eq_attr "type" "uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
-		(const_string "false")
-	 (eq_attr "type" "load,fpload,store,fpstore")
-		(if_then_else (eq_attr "length" "1")
-			      (const_string "true")
-			      (const_string "false"))]
-	 (if_then_else (and (eq_attr "length" "1")
-			    (eq_attr "tls_call_delay" "true"))
-		       (const_string "true")
-		       (const_string "false"))))
+  (symbol_ref "(eligible_for_call_delay (insn)
+		? IN_CALL_DELAY_TRUE : IN_CALL_DELAY_FALSE)"))
 
-(define_attr "eligible_for_sibcall_delay" "false,true"
+(define_attr "in_sibcall_delay" "false,true"
   (symbol_ref "(eligible_for_sibcall_delay (insn)
-		? ELIGIBLE_FOR_SIBCALL_DELAY_TRUE
-		: ELIGIBLE_FOR_SIBCALL_DELAY_FALSE)"))
+		? IN_SIBCALL_DELAY_TRUE : IN_SIBCALL_DELAY_FALSE)"))
 
-(define_attr "eligible_for_return_delay" "false,true"
+(define_attr "in_return_delay" "false,true"
   (symbol_ref "(eligible_for_return_delay (insn)
-		? ELIGIBLE_FOR_RETURN_DELAY_TRUE
-		: ELIGIBLE_FOR_RETURN_DELAY_FALSE)"))
+		? IN_RETURN_DELAY_TRUE : IN_RETURN_DELAY_FALSE)"))
 
 ;; ??? !v9: Should implement the notion of predelay slots for floating-point
 ;; branches.  This would allow us to remove the nop always inserted before
@@ -467,39 +458,32 @@
 ;; because it prevents us from moving back the final store of inner loops.
 
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
-		     (eq_attr "length" "1"))
-		(const_string "true")
-		(const_string "false")))
-
-(define_attr "in_uncond_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
-		     (eq_attr "length" "1"))
-		(const_string "true")
-		(const_string "false")))
-
-(define_attr "in_annul_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
-		     (eq_attr "length" "1"))
-		(const_string "true")
-		(const_string "false")))
+  (cond [(eq_attr "type" "uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
+	   (const_string "false")
+	 (and (eq_attr "fix_ut699" "true") (eq_attr "type" "load,sload"))
+	   (const_string "false")
+	 (and (eq_attr "fix_ut699" "true")
+	      (and (eq_attr "type" "fpload,fp,fpmove,fpmul,fpdivs,fpsqrts")
+		   (eq_attr "fptype" "single")))
+	   (const_string "false")
+	 (eq_attr "length" "1")
+	   (const_string "true")
+	] (const_string "false")))
 
 (define_delay (eq_attr "type" "call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 (define_delay (eq_attr "type" "sibcall")
-  [(eq_attr "eligible_for_sibcall_delay" "true") (nil) (nil)])
-
-(define_delay (eq_attr "type" "branch")
-  [(eq_attr "in_branch_delay" "true")
-   (nil) (eq_attr "in_annul_branch_delay" "true")])
-
-(define_delay (eq_attr "type" "uncond_branch")
-  [(eq_attr "in_uncond_branch_delay" "true")
-   (nil) (nil)])
+  [(eq_attr "in_sibcall_delay" "true") (nil) (nil)])
 
 (define_delay (eq_attr "type" "return")
-  [(eq_attr "eligible_for_return_delay" "true") (nil) (nil)])
+  [(eq_attr "in_return_delay" "true") (nil) (nil)])
+
+(define_delay (eq_attr "type" "branch")
+  [(eq_attr "in_branch_delay" "true") (nil) (eq_attr "in_branch_delay" "true")])
+
+(define_delay (eq_attr "type" "uncond_branch")
+  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 
 ;; Include SPARC DFA schedulers
@@ -5533,7 +5517,7 @@
 		(match_operand:TF 2 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fdivq\t%1, %2, %0"
-  [(set_attr "type" "fpdivd")])
+  [(set_attr "type" "fpdivs")])
 
 (define_expand "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=e")
@@ -5764,7 +5748,7 @@
 	(sqrt:TF (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fsqrtq\t%1, %0"
-  [(set_attr "type" "fpsqrtd")])
+  [(set_attr "type" "fpsqrts")])
 
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=e")

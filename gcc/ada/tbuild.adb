@@ -203,7 +203,7 @@ package body Tbuild is
           Make_Selected_Component (Loc,
             Prefix => New_Copy (Rec),
             Selector_Name =>
-              New_Reference_To (First_Tag_Component (Full_Type), Loc)));
+              New_Occurrence_Of (First_Tag_Component (Full_Type), Loc)));
    end Make_DT_Access;
 
    ------------------------
@@ -649,6 +649,7 @@ package body Tbuild is
      (Def_Id : Entity_Id;
       Loc    : Source_Ptr) return Node_Id
    is
+      pragma Assert (Present (Def_Id) and then Nkind (Def_Id) in N_Entity);
       Occurrence : Node_Id;
 
    begin
@@ -716,23 +717,6 @@ package body Tbuild is
 
       return Nod;
    end New_Op_Node;
-
-   ----------------------
-   -- New_Reference_To --
-   ----------------------
-
-   function New_Reference_To
-     (Def_Id : Entity_Id;
-      Loc    : Source_Ptr) return Node_Id
-   is
-      pragma Assert (Nkind (Def_Id) in N_Entity);
-      Occurrence : Node_Id;
-   begin
-      Occurrence := New_Node (N_Identifier, Loc);
-      Set_Chars (Occurrence, Chars (Def_Id));
-      Set_Entity (Occurrence, Def_Id);
-      return Occurrence;
-   end New_Reference_To;
 
    -----------------------
    -- New_Suffixed_Name --

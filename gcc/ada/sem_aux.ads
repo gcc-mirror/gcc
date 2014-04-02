@@ -103,6 +103,11 @@ package Sem_Aux is
    --  constants from the point of view of constant folding. Empty is also
    --  returned for variables with no initialization expression.
 
+   function Corresponding_Unsigned_Type (Typ : Entity_Id) return Entity_Id;
+   --  Typ is a signed integer subtype. This routine returns the standard
+   --  unsigned type with the same Esize as the implementation base type of
+   --  Typ, e.g. Long_Integer => Long_Unsigned.
+
    function Enclosing_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
    --  For any entity, Ent, returns the closest dynamic scope in which the
    --  entity is declared or Standard_Standard for library-level entities.
@@ -277,7 +282,7 @@ package Sem_Aux is
    function Is_Generic_Formal (E : Entity_Id) return Boolean;
    --  Determine whether E is a generic formal parameter. In particular this is
    --  used to set the visibility of generic formals of a generic package
-   --  declared with a box or with partial parametrization.
+   --  declared with a box or with partial parameterization.
 
    function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Determines if given entity is an unconstrained array

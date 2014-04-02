@@ -1,8 +1,8 @@
 // PR c++/51973
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template <class T>
-void f(T t) { };
+void f(T t) { }
 
 template <class T> decltype(f<T>(0)) g();
 template <class T> decltype(f<T*>(0)) g();

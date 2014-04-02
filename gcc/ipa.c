@@ -223,10 +223,10 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 		     edge->caller->order,
 		     target->name (), target->order);
 	  edge = cgraph_make_edge_direct (edge, target);
-	  if (!inline_summary_vec && edge->call_stmt)
-	    cgraph_redirect_edge_call_stmt_to_callee (edge);
-	  else
+	  if (inline_summary_vec)
 	    inline_update_overall_summary (node);
+	  else if (edge->call_stmt)
+	    cgraph_redirect_edge_call_stmt_to_callee (edge);
 	}
     }
 }
@@ -354,7 +354,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	node->aux = (void *)2;
       else
 	{
-	  if (DECL_ABSTRACT_ORIGIN (node->decl))
+	  if (TREE_CODE (node->decl) == FUNCTION_DECL
+	      && DECL_ABSTRACT_ORIGIN (node->decl))
 	    {
 	      struct cgraph_node *origin_node
 	      = cgraph_get_create_node (DECL_ABSTRACT_ORIGIN (node->decl));
@@ -483,10 +484,12 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      if (file)
 		fprintf (file, " %s", node->name ());
+	      node->body_removed = true;
 	      node->analyzed = false;
 	      node->definition = false;
 	      node->cpp_implicit_alias = false;
 	      node->alias = false;
+	      node->thunk.thunk_p = false;
 	      node->weakref = false;
 	      if (!node->in_other_partition)
 		node->local.local = false;
@@ -541,6 +544,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		fprintf (file, " %s", vnode->name ());
 	      changed = true;
 	    }
+	  vnode->body_removed = true;
 	  vnode->definition = false;
 	  vnode->analyzed = false;
 	  vnode->aux = NULL;
@@ -970,15 +974,32 @@ function_and_variable_visibility (bool whole_program)
 	  gcc_assert (whole_program || in_lto_p
 		      || !TREE_PUBLIC (node->decl));
 	  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
-				      || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-				      && TREE_PUBLIC (node->decl));
+				|| node->unique_name
+				|| node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+				&& TREE_PUBLIC (node->decl));
 	  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	  if (node->same_comdat_group && TREE_PUBLIC (node->decl))
-	    /* cgraph_externally_visible_p has already checked all other nodes
-	       in the group and they will all be made local.  We need to
-	       dissolve the group at once so that the predicate does not
-	       segfault though. */
-	    symtab_dissolve_same_comdat_group_list (node);
+	    {
+	      symtab_node *next = node;
+
+	      /* Set all members of comdat group local.  */
+	      if (node->same_comdat_group)
+		for (next = node->same_comdat_group;
+		     next != node;
+		     next = next->same_comdat_group)
+		{
+		  symtab_make_decl_local (next->decl);
+		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
+					|| next->unique_name
+					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+					&& TREE_PUBLIC (next->decl));
+		}
+	      /* cgraph_externally_visible_p has already checked all other nodes
+	         in the group and they will all be made local.  We need to
+	         dissolve the group at once so that the predicate does not
+	         segfault though. */
+	      symtab_dissolve_same_comdat_group_list (node);
+	    }
 	  symtab_make_decl_local (node->decl);
 	}
 
@@ -1027,7 +1048,10 @@ function_and_variable_visibility (bool whole_program)
 	        for (next = node->same_comdat_group;
 		     next != node;
 		     next = next->same_comdat_group)
+		{
 		  DECL_COMDAT_GROUP (next->decl) = NULL;
+		  DECL_WEAK (next->decl) = false;
+		}
 	      DECL_COMDAT_GROUP (node->decl) = NULL;
 	      symtab_dissolve_same_comdat_group_list (node);
 	    }

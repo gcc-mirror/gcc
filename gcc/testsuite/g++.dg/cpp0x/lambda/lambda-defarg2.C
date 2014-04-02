@@ -1,5 +1,5 @@
 // PR c++/43886
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 void f2() {
   int i = 1;

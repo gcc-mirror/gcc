@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11 -pedantic-errors" }
+// { dg-do compile { target c++11 } }
 
 constexpr int f()
 {

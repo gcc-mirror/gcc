@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
+! { dg-skip-if "PR libfortran/58015" { *-*-solaris2.9* hppa*-*-hpux* } }
 !
 ! PR fortran/35862
 !

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2012, AdaCore                     --
+--                     Copyright (C) 2002-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 
 --  This is the version for VxWorks
 
-with Interfaces.C.Strings;
+with Interfaces.C;
 
 with GNAT.OS_Lib;
 with GNAT.Sockets.Thin_Common;
@@ -57,7 +57,7 @@ package GNAT.Sockets.Thin is
    procedure Set_Socket_Errno (Errno : Integer) renames GNAT.OS_Lib.Set_Errno;
    --  Set last socket error number
 
-   function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
+   function Socket_Error_Message (Errno : Integer) return String;
    --  Returns the error message string for the error number Errno. If Errno is
    --  not known, returns "Unknown system error".
 
@@ -67,8 +67,7 @@ package GNAT.Sockets.Thin is
 
    package Host_Error_Messages is
 
-      function Host_Error_Message
-        (H_Errno : Integer) return C.Strings.chars_ptr;
+      function Host_Error_Message (H_Errno : Integer) return String;
       --  Returns the error message string for the host error number H_Errno.
       --  If H_Errno is not known, returns "Unknown system error".
 

@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template<template<class> class TT> struct X { };
 template<class> struct Y { };

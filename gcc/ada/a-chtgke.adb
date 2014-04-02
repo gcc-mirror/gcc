@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,71 @@
 
 package body Ada.Containers.Hash_Tables.Generic_Keys is
 
+   -----------------------------
+   -- Checked_Equivalent_Keys --
+   -----------------------------
+
+   function Checked_Equivalent_Keys
+     (HT   : aliased in out Hash_Table_Type;
+      Key  : Key_Type;
+      Node : Node_Access) return Boolean
+   is
+      Result : Boolean;
+
+      B : Natural renames HT.Busy;
+      L : Natural renames HT.Lock;
+
+   begin
+      B := B + 1;
+      L := L + 1;
+
+      Result := Equivalent_Keys (Key, Node);
+
+      B := B - 1;
+      L := L - 1;
+
+      return Result;
+
+   exception
+      when others =>
+         B := B - 1;
+         L := L - 1;
+
+         raise;
+   end Checked_Equivalent_Keys;
+
+   -------------------
+   -- Checked_Index --
+   -------------------
+
+   function Checked_Index
+     (HT  : aliased in out Hash_Table_Type;
+      Key : Key_Type) return Hash_Type
+   is
+      Result : Hash_Type;
+
+      B : Natural renames HT.Busy;
+      L : Natural renames HT.Lock;
+
+   begin
+      B := B + 1;
+      L := L + 1;
+
+      Result := Hash (Key) mod HT.Buckets'Length;
+
+      B := B - 1;
+      L := L - 1;
+
+      return Result;
+
+   exception
+      when others =>
+         B := B - 1;
+         L := L - 1;
+
+         raise;
+   end Checked_Index;
+
    --------------------------
    -- Delete_Key_Sans_Free --
    --------------------------
@@ -47,14 +112,22 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          return;
       end if;
 
-      Indx := Index (HT, Key);
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
+
+      if HT.Busy > 0 then
+         raise Program_Error with
+           "attempt to tamper with cursors (container is busy)";
+      end if;
+
+      Indx := Checked_Index (HT, Key);
       X := HT.Buckets (Indx);
 
       if X = null then
          return;
       end if;
 
-      if Equivalent_Keys (Key, X) then
+      if Checked_Equivalent_Keys (HT, Key, X) then
          if HT.Busy > 0 then
             raise Program_Error with
               "attempt to tamper with cursors (container is busy)";
@@ -72,7 +145,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
             return;
          end if;
 
-         if Equivalent_Keys (Key, X) then
+         if Checked_Equivalent_Keys (HT, Key, X) then
             if HT.Busy > 0 then
                raise Program_Error with
                  "attempt to tamper with cursors (container is busy)";
@@ -89,9 +162,9 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
    ----------
 
    function Find
-     (HT  : Hash_Table_Type;
-      Key : Key_Type) return Node_Access is
-
+     (HT  : aliased in out Hash_Table_Type;
+      Key : Key_Type) return Node_Access
+   is
       Indx : Hash_Type;
       Node : Node_Access;
 
@@ -100,11 +173,11 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          return null;
       end if;
 
-      Indx := Index (HT, Key);
+      Indx := Checked_Index (HT, Key);
 
       Node := HT.Buckets (Indx);
       while Node /= null loop
-         if Equivalent_Keys (Key, Node) then
+         if Checked_Equivalent_Keys (HT, Key, Node) then
             return Node;
          end if;
          Node := Next (Node);
@@ -123,16 +196,21 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       Node     : out Node_Access;
       Inserted : out Boolean)
    is
-      Indx : constant Hash_Type := Index (HT, Key);
-      B    : Node_Access renames HT.Buckets (Indx);
+      Indx : Hash_Type;
 
    begin
-      if B = null then
-         if HT.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (container is busy)";
-         end if;
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
 
+      if HT.Busy > 0 then
+         raise Program_Error with
+           "attempt to tamper with cursors (container is busy)";
+      end if;
+
+      Indx := Checked_Index (HT, Key);
+      Node := HT.Buckets (Indx);
+
+      if Node = null then
          if HT.Length = Count_Type'Last then
             raise Constraint_Error;
          end if;
@@ -140,15 +218,14 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          Node := New_Node (Next => null);
          Inserted := True;
 
-         B := Node;
+         HT.Buckets (Indx) := Node;
          HT.Length := HT.Length + 1;
 
          return;
       end if;
 
-      Node := B;
       loop
-         if Equivalent_Keys (Key, Node) then
+         if Checked_Equivalent_Keys (HT, Key, Node) then
             Inserted := False;
             return;
          end if;
@@ -158,32 +235,16 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          exit when Node = null;
       end loop;
 
-      if HT.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (container is busy)";
-      end if;
-
       if HT.Length = Count_Type'Last then
          raise Constraint_Error;
       end if;
 
-      Node := New_Node (Next => B);
+      Node := New_Node (Next => HT.Buckets (Indx));
       Inserted := True;
 
-      B := Node;
+      HT.Buckets (Indx) := Node;
       HT.Length := HT.Length + 1;
    end Generic_Conditional_Insert;
-
-   -----------
-   -- Index --
-   -----------
-
-   function Index
-     (HT  : Hash_Table_Type;
-      Key : Key_Type) return Hash_Type is
-   begin
-      return Hash (Key) mod HT.Buckets'Length;
-   end Index;
 
    -----------------------------
    -- Generic_Replace_Element --
@@ -197,19 +258,38 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       pragma Assert (HT.Length > 0);
       pragma Assert (Node /= null);
 
-      Old_Hash : constant Hash_Type := Hash (Node);
-      Old_Indx : constant Hash_Type := Old_Hash mod HT.Buckets'Length;
-
-      New_Hash : constant Hash_Type := Hash (Key);
-      New_Indx : constant Hash_Type := New_Hash mod HT.Buckets'Length;
+      Old_Indx : Hash_Type;
+      New_Indx : constant Hash_Type := Checked_Index (HT, Key);
 
       New_Bucket : Node_Access renames HT.Buckets (New_Indx);
       N, M       : Node_Access;
 
    begin
-      if Equivalent_Keys (Key, Node) then
-         pragma Assert (New_Hash = Old_Hash);
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
 
+      declare
+         B : Natural renames HT.Busy;
+         L : Natural renames HT.Lock;
+
+      begin
+         B := B + 1;
+         L := L + 1;
+
+         Old_Indx := Hash (Node) mod HT.Buckets'Length;
+
+         B := B - 1;
+         L := L - 1;
+
+      exception
+         when others =>
+            B := B - 1;
+            L := L - 1;
+
+            raise;
+      end;
+
+      if Checked_Equivalent_Keys (HT, Key, Node) then
          if HT.Lock > 0 then
             raise Program_Error with
               "attempt to tamper with elements (container is locked)";
@@ -222,8 +302,6 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          --  change is allowed.
 
          Assign (Node, Key);
-         pragma Assert (Hash (Node) = New_Hash);
-         pragma Assert (Equivalent_Keys (Key, Node));
          return;
       end if;
 
@@ -234,7 +312,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
 
       N := New_Bucket;
       while N /= null loop
-         if Equivalent_Keys (Key, N) then
+         if Checked_Equivalent_Keys (HT, Key, N) then
             pragma Assert (N /= Node);
             raise Program_Error with
               "attempt to replace existing element";
@@ -260,8 +338,6 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          end if;
 
          Assign (Node, Key);
-         pragma Assert (Hash (Node) = New_Hash);
-         pragma Assert (Equivalent_Keys (Key, Node));
          return;
       end if;
 
@@ -277,8 +353,6 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       --  modified (except for any possible side-effect Assign had on Node).
 
       Assign (Node, Key);
-      pragma Assert (Hash (Node) = New_Hash);
-      pragma Assert (Equivalent_Keys (Key, Node));
 
       --  Now we can safely remove the node from its current bucket
 
@@ -309,5 +383,17 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       Set_Next (Node => Node, Next => New_Bucket);
       New_Bucket := Node;
    end Generic_Replace_Element;
+
+   -----------
+   -- Index --
+   -----------
+
+   function Index
+     (HT  : Hash_Table_Type;
+      Key : Key_Type) return Hash_Type
+   is
+   begin
+      return Hash (Key) mod HT.Buckets'Length;
+   end Index;
 
 end Ada.Containers.Hash_Tables.Generic_Keys;

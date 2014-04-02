@@ -1,3 +1,25 @@
+2014-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2014-03-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2014-03-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2014-03-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2014-03-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, hr.po, id.po,
+	ja.po, nl.po, ru.po, sr.po, sv.po, tr.po, vi.po, zh_CN.po,
+	zh_TW.po: Update.
+
 2014-02-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.pot: Regenerate.

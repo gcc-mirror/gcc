@@ -69,7 +69,7 @@
 --  restrictions are ignored, and the consistency checking for restrictions
 --  might be incomplete, which is no big deal.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 generic
 package System.Rident is
@@ -476,13 +476,15 @@ package System.Rident is
 
                            --  plus these additional restrictions:
 
-                           No_Calendar                     => True,
-                           No_Implicit_Heap_Allocations    => True,
-                           No_Relative_Delay               => True,
-                           No_Select_Statements            => True,
-                           No_Task_Termination             => True,
-                           Simple_Barriers                 => True,
-                           others                          => False),
+                           No_Calendar                      => True,
+                           No_Implicit_Heap_Allocations     => True,
+                           No_Local_Timing_Events           => True,
+                           No_Relative_Delay                => True,
+                           No_Select_Statements             => True,
+                           No_Specific_Termination_Handlers => True,
+                           No_Task_Termination              => True,
+                           Simple_Barriers                  => True,
+                           others                           => False),
 
                         --  Value settings for Ravenscar (same as Restricted)
 

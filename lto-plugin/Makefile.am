@@ -9,6 +9,7 @@ libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = @ac_lto_plugin_warn_cflags@
+AM_LDFLAGS = @ac_lto_plugin_ldflags@
 AM_LIBTOOLFLAGS = --tag=disable-static
 
 libexecsub_LTLIBRARIES = liblto_plugin.la
@@ -22,7 +23,8 @@ liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,)
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
-liblto_plugin_la_LDFLAGS = $(lt_host_flags) -module -bindir $(libexecsubdir) \
+liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
+	$(lt_host_flags) -module -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
 liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
 	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)

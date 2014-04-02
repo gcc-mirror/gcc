@@ -2357,6 +2357,7 @@ copy_loops (copy_body_data *id,
 	      dest_loop->force_vect = true;
 	      cfun->has_force_vect_loops = true;
 	    }
+	  dest_loop->safelen = src_loop->safelen;
 
 	  /* Recurse.  */
 	  copy_loops (id, dest_loop, src_loop);
@@ -3822,46 +3823,49 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
     case GIMPLE_CALL:
       {
 	tree decl;
-	struct cgraph_node *node = NULL;
 
-	/* Do not special case builtins where we see the body.
-	   This just confuse inliner.  */
 	if (gimple_call_internal_p (stmt))
 	  return 0;
-	else if (!(decl = gimple_call_fndecl (stmt))
-		 || !(node = cgraph_get_node (decl))
-		 || node->definition)
-	  ;
-	/* For buitins that are likely expanded to nothing or
-	   inlined do not account operand costs.  */
-	else if (is_simple_builtin (decl))
-	  return 0;
-	else if (is_inexpensive_builtin (decl))
-	  return weights->target_builtin_call_cost;
-	else if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	else if ((decl = gimple_call_fndecl (stmt))
+		 && DECL_BUILT_IN (decl))
 	  {
-	    /* We canonicalize x * x to pow (x, 2.0) with -ffast-math, so
-	       specialize the cheap expansion we do here.
-	       ???  This asks for a more general solution.  */
-	    switch (DECL_FUNCTION_CODE (decl))
+	    /* Do not special case builtins where we see the body.
+	       This just confuse inliner.  */
+	    struct cgraph_node *node;
+	    if (!(node = cgraph_get_node (decl))
+		|| node->definition)
+	      ;
+	    /* For buitins that are likely expanded to nothing or
+	       inlined do not account operand costs.  */
+	    else if (is_simple_builtin (decl))
+	      return 0;
+	    else if (is_inexpensive_builtin (decl))
+	      return weights->target_builtin_call_cost;
+	    else if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
 	      {
-		case BUILT_IN_POW:
-		case BUILT_IN_POWF:
-		case BUILT_IN_POWL:
-		  if (TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
-		      && REAL_VALUES_EQUAL
-			   (TREE_REAL_CST (gimple_call_arg (stmt, 1)), dconst2))
-		    return estimate_operator_cost (MULT_EXPR, weights,
-						   gimple_call_arg (stmt, 0),
-						   gimple_call_arg (stmt, 0));
-		  break;
+		/* We canonicalize x * x to pow (x, 2.0) with -ffast-math, so
+		   specialize the cheap expansion we do here.
+		   ???  This asks for a more general solution.  */
+		switch (DECL_FUNCTION_CODE (decl))
+		  {
+		    case BUILT_IN_POW:
+		    case BUILT_IN_POWF:
+		    case BUILT_IN_POWL:
+		      if (TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
+			  && REAL_VALUES_EQUAL
+			  (TREE_REAL_CST (gimple_call_arg (stmt, 1)), dconst2))
+			return estimate_operator_cost
+			    (MULT_EXPR, weights, gimple_call_arg (stmt, 0),
+			     gimple_call_arg (stmt, 0));
+		      break;
 
-		default:
-		  break;
+		    default:
+		      break;
+		  }
 	      }
 	  }
 
-	cost = node ? weights->call_cost : weights->indirect_call_cost;
+	cost = decl ? weights->call_cost : weights->indirect_call_cost;
 	if (gimple_call_lhs (stmt))
 	  cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)));
 	for (i = 0; i < gimple_call_num_args (stmt); i++)
@@ -4362,6 +4366,9 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 
   /* Unlink the calls virtual operands before replacing it.  */
   unlink_stmt_vdef (stmt);
+  if (gimple_vdef (stmt)
+      && TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
+    release_ssa_name (gimple_vdef (stmt));
 
   /* If the inlined function returns a result that we care about,
      substitute the GIMPLE_CALL with an assignment of the return

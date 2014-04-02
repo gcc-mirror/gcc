@@ -8,8 +8,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
-typedef int int32_t __attribute__ ((mode (SI)));
-typedef int int64_t __attribute__ ((mode (DI)));
+typedef int ditype __attribute__ ((mode (DI)));
 
 #define FN(IDX, RET, CALL)					\
 static RET f ## IDX (void *p) __attribute__ ((noinline));	\
@@ -32,54 +31,54 @@ t ## IDX ()							\
   abort();							\
 }
 
-FN(1, int64_t, (__sync_fetch_and_add((int64_t*)p, 1)))
-FN(2, int64_t, (__sync_fetch_and_sub((int64_t*)p, 1)))
-FN(3, int64_t, (__sync_fetch_and_or((int64_t*)p, 1)))
-FN(4, int64_t, (__sync_fetch_and_and((int64_t*)p, 1)))
-FN(5, int64_t, (__sync_fetch_and_xor((int64_t*)p, 1)))
-FN(6, int64_t, (__sync_fetch_and_nand((int64_t*)p, 1)))
+FN(1, ditype, (__sync_fetch_and_add((ditype*)p, 1)))
+FN(2, ditype, (__sync_fetch_and_sub((ditype*)p, 1)))
+FN(3, ditype, (__sync_fetch_and_or((ditype*)p, 1)))
+FN(4, ditype, (__sync_fetch_and_and((ditype*)p, 1)))
+FN(5, ditype, (__sync_fetch_and_xor((ditype*)p, 1)))
+FN(6, ditype, (__sync_fetch_and_nand((ditype*)p, 1)))
 
-FN( 7, int64_t, (__sync_add_and_fetch((int64_t*)p, 1)))
-FN( 8, int64_t, (__sync_sub_and_fetch((int64_t*)p, 1)))
-FN( 9, int64_t, (__sync_or_and_fetch((int64_t*)p, 1)))
-FN(10, int64_t, (__sync_and_and_fetch((int64_t*)p, 1)))
-FN(11, int64_t, (__sync_xor_and_fetch((int64_t*)p, 1)))
-FN(12, int64_t, (__sync_nand_and_fetch((int64_t*)p, 1)))
+FN( 7, ditype, (__sync_add_and_fetch((ditype*)p, 1)))
+FN( 8, ditype, (__sync_sub_and_fetch((ditype*)p, 1)))
+FN( 9, ditype, (__sync_or_and_fetch((ditype*)p, 1)))
+FN(10, ditype, (__sync_and_and_fetch((ditype*)p, 1)))
+FN(11, ditype, (__sync_xor_and_fetch((ditype*)p, 1)))
+FN(12, ditype, (__sync_nand_and_fetch((ditype*)p, 1)))
 
-FN(13, bool, (__sync_bool_compare_and_swap((int64_t*)p, 1, 2)))
-FN(14, int64_t, (__sync_val_compare_and_swap((int64_t*)p, 1, 2)))
+FN(13, bool, (__sync_bool_compare_and_swap((ditype*)p, 1, 2)))
+FN(14, ditype, (__sync_val_compare_and_swap((ditype*)p, 1, 2)))
 
-FN(15, int64_t, (__sync_lock_test_and_set((int64_t*)p, 1)))
-FN(16, void, (__sync_lock_release((int64_t*)p)))
+FN(15, ditype, (__sync_lock_test_and_set((ditype*)p, 1)))
+FN(16, void, (__sync_lock_release((ditype*)p)))
 
-FN(17, bool, (__atomic_test_and_set((int64_t*)p, __ATOMIC_SEQ_CST)))
-FN(18, void, (__atomic_clear((int64_t*)p, __ATOMIC_SEQ_CST)))
+FN(17, bool, (__atomic_test_and_set((ditype*)p, __ATOMIC_SEQ_CST)))
+FN(18, void, (__atomic_clear((ditype*)p, __ATOMIC_SEQ_CST)))
 
-FN(19, void, (__atomic_exchange((int64_t*)p, (int64_t*)0, (int64_t*)0, __ATOMIC_SEQ_CST)))
-FN(20, int64_t, (__atomic_exchange_n((int64_t*)p, 1, 2)))
+FN(19, void, (__atomic_exchange((ditype*)p, (ditype*)0, (ditype*)0, __ATOMIC_SEQ_CST)))
+FN(20, ditype, (__atomic_exchange_n((ditype*)p, 1, 2)))
 
-FN(21, void, (__atomic_load((int64_t*)p, (int64_t*)0, __ATOMIC_SEQ_CST)))
-FN(22, int64_t, (__atomic_load_n((int64_t*)p, __ATOMIC_SEQ_CST)))
+FN(21, void, (__atomic_load((ditype*)p, (ditype*)0, __ATOMIC_SEQ_CST)))
+FN(22, ditype, (__atomic_load_n((ditype*)p, __ATOMIC_SEQ_CST)))
 
-FN(23, bool, (__atomic_compare_exchange((int64_t*)p, (int64_t*)0, (int64_t*)0, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)))
-FN(24, bool, (__atomic_compare_exchange_n((int64_t*)p, (int64_t*)0, 1, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)))
+FN(23, bool, (__atomic_compare_exchange((ditype*)p, (ditype*)0, (ditype*)0, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)))
+FN(24, bool, (__atomic_compare_exchange_n((ditype*)p, (ditype*)0, 1, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)))
 
-FN(25, void, (__atomic_store((int64_t*)p, (int64_t*)0, __ATOMIC_SEQ_CST)))
-FN(26, void, (__atomic_store_n((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
+FN(25, void, (__atomic_store((ditype*)p, (ditype*)0, __ATOMIC_SEQ_CST)))
+FN(26, void, (__atomic_store_n((ditype*)p, 1, __ATOMIC_SEQ_CST)))
 
-FN(27, int64_t, (__atomic_add_fetch((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(28, int64_t, (__atomic_sub_fetch((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(29, int64_t, (__atomic_and_fetch((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(30, int64_t, (__atomic_nand_fetch((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(31, int64_t, (__atomic_xor_fetch((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(32, int64_t, (__atomic_or_fetch((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
+FN(27, ditype, (__atomic_add_fetch((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(28, ditype, (__atomic_sub_fetch((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(29, ditype, (__atomic_and_fetch((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(30, ditype, (__atomic_nand_fetch((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(31, ditype, (__atomic_xor_fetch((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(32, ditype, (__atomic_or_fetch((ditype*)p, 1, __ATOMIC_SEQ_CST)))
 
-FN(33, int64_t, (__atomic_fetch_add((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(34, int64_t, (__atomic_fetch_sub((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(35, int64_t, (__atomic_fetch_and((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(36, int64_t, (__atomic_fetch_nand((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(37, int64_t, (__atomic_fetch_xor((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
-FN(38, int64_t, (__atomic_fetch_or((int64_t*)p, 1, __ATOMIC_SEQ_CST)))
+FN(33, ditype, (__atomic_fetch_add((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(34, ditype, (__atomic_fetch_sub((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(35, ditype, (__atomic_fetch_and((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(36, ditype, (__atomic_fetch_nand((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(37, ditype, (__atomic_fetch_xor((ditype*)p, 1, __ATOMIC_SEQ_CST)))
+FN(38, ditype, (__atomic_fetch_or((ditype*)p, 1, __ATOMIC_SEQ_CST)))
 
 static void
 handler(int)

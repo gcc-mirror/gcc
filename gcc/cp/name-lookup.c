@@ -1630,10 +1630,14 @@ leave_scope (void)
       free_binding_level = scope;
     }
 
-  /* Find the innermost enclosing class scope, and reset
-     CLASS_BINDING_LEVEL appropriately.  */
   if (scope->kind == sk_class)
     {
+      /* Reset DEFINING_CLASS_P to allow for reuse of a
+	 class-defining scope in a non-defining context.  */
+      scope->defining_class_p = 0;
+
+      /* Find the innermost enclosing class scope, and reset
+	 CLASS_BINDING_LEVEL appropriately.  */
       class_binding_level = NULL;
       for (scope = current_binding_level; scope; scope = scope->level_chain)
 	if (scope->kind == sk_class)
@@ -3114,6 +3118,13 @@ push_class_level_binding_1 (tree name, tree x)
 
   if (name == error_mark_node)
     return false;
+
+  /* Can happen for an erroneous declaration (c++/60384).  */
+  if (!identifier_p (name))
+    {
+      gcc_assert (errorcount || sorrycount);
+      return false;
+    }
 
   /* Check for invalid member names.  But don't worry about a default
      argument-scope lambda being pushed after the class is complete.  */

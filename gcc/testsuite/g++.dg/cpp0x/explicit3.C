@@ -1,5 +1,5 @@
 // Test for "contextually converted to bool"
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 struct A
 {

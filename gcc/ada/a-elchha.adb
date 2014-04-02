@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,7 @@
 
 --  Default version for most targets
 
-pragma Warnings (Off);
-pragma Compiler_Unit;
-pragma Warnings (On);
+pragma Compiler_Unit_Warning;
 
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links;

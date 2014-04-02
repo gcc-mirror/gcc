@@ -1,5 +1,5 @@
 // Test for constexpr conversion in case context
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 enum class E { e1, e2 };
 

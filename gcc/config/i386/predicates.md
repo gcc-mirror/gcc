@@ -338,6 +338,20 @@
 	 (match_operand 0 "x86_64_immediate_operand"))
     (match_operand 0 "general_operand")))
 
+;; Return true if OP is non-VOIDmode general operand representable
+;; on x86_64.  This predicate is used in sign-extending conversion
+;; operations that require non-VOIDmode immediate operands.
+(define_predicate "x86_64_sext_operand"
+  (and (match_test "GET_MODE (op) != VOIDmode")
+       (match_operand 0 "x86_64_general_operand")))
+
+;; Return true if OP is non-VOIDmode general operand.  This predicate
+;; is used in sign-extending conversion operations that require
+;; non-VOIDmode immediate operands.
+(define_predicate "sext_operand"
+  (and (match_test "GET_MODE (op) != VOIDmode")
+       (match_operand 0 "general_operand")))
+
 ;; Return true if OP is representable on x86_64 as zero-extended operand.
 ;; This predicate is used in zero-extending conversion operations that
 ;; require non-VOIDmode immediate operands.
@@ -660,12 +674,12 @@
   return i == 2 || i == 4 || i == 8;
 })
 
-;; Match 1, 2, 5, or 6
-(define_predicate "const1256_operand"
+;; Match 2, 3, 6, or 7
+(define_predicate "const2367_operand"
   (match_code "const_int")
 {
   HOST_WIDE_INT i = INTVAL (op);
-  return i == 1 || i == 2 || i == 5 || i == 6;
+  return i == 2 || i == 3 || i == 6 || i == 7;
 })
 
 ;; Match 1, 2, 4, or 8
@@ -753,11 +767,6 @@
   unsigned HOST_WIDE_INT val = INTVAL (op);
   return val <= 255*8 && val % 8 == 0;
 })
-
-;; Match 1 to 2.
-(define_predicate "const_1_to_2_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 1, 2)")))
 
 ;; Return true if OP is CONST_INT >= 1 and <= 31 (a valid operand
 ;; for shift & compare patterns, as shifting by 0 does not change flags).

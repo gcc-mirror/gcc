@@ -1,6 +1,6 @@
 // PR ipa/59947
-// { dg-do compile }
-// { dg-options "-O0 -std=c++11" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-O0" }
 
 #pragma GCC optimize ("O2")
 template <typename T>

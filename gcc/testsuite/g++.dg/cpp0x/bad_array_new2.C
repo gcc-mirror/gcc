@@ -1,6 +1,5 @@
 // Test for throwing bad_array_new_length on invalid array length
-// { dg-options -std=c++11 }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 #include <new>
 

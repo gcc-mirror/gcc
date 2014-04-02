@@ -160,7 +160,7 @@ next_char (st_parameter_dt *dtp)
 
       dtp->u.p.line_buffer_pos = 0;
       dtp->u.p.line_buffer_enabled = 0;
-    }    
+    }
 
   /* Handle the end-of-record and end-of-file conditions for
      internal array unit.  */
@@ -208,16 +208,16 @@ next_char (st_parameter_dt *dtp)
          c = cc;
        }
 
-      if (length < 0)
+      if (unlikely (length < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
 	  return '\0';
 	}
-  
+
       if (is_array_io (dtp))
 	{
 	  /* Check whether we hit EOF.  */ 
-	  if (length == 0)
+	  if (unlikely (length == 0))
 	    {
 	      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 	      return '\0';
@@ -264,6 +264,48 @@ eat_spaces (st_parameter_dt *dtp)
 {
   int c;
 
+  /* If internal character array IO, peak ahead and seek past spaces.
+     This is an optimazation to eliminate numerous calls to
+     next character unique to character arrays with large character
+     lengths (PR38199). */
+  if (is_array_io (dtp))
+    {
+      gfc_offset offset = stell (dtp->u.p.current_unit->s);
+      gfc_offset limit = dtp->u.p.current_unit->bytes_left;
+
+      if (dtp->common.unit) /* kind=4 */
+	{
+	  gfc_char4_t cc;
+	  limit *= (sizeof (gfc_char4_t));
+	  do
+	    {
+	      cc = dtp->internal_unit[offset];
+	      offset += (sizeof (gfc_char4_t));
+	      dtp->u.p.current_unit->bytes_left--;
+	    }
+	  while (offset < limit && (cc == (gfc_char4_t)' '
+		  || cc == (gfc_char4_t)'\t'));
+	  /* Back up, seek ahead, and fall through to complete the
+	     process so that END conditions are handled correctly.  */
+	  dtp->u.p.current_unit->bytes_left++;
+	  sseek (dtp->u.p.current_unit->s,
+		  offset-(sizeof (gfc_char4_t)), SEEK_SET);
+	}
+      else
+	{
+	  do
+	    {
+	      c = dtp->internal_unit[offset++];
+	      dtp->u.p.current_unit->bytes_left--;
+	    }
+	  while (offset < limit && (c == ' ' || c == '\t'));
+	  /* Back up, seek ahead, and fall through to complete the
+	     process so that END conditions are handled correctly.  */
+	  dtp->u.p.current_unit->bytes_left++;
+	  sseek (dtp->u.p.current_unit->s, offset-1, SEEK_SET);
+	}
+    }
+  /* Now skip spaces, EOF and EOL are handled in next_char.  */
   do
     c = next_char (dtp);
   while (c != EOF && (c == ' ' || c == '\t'));
@@ -971,10 +1013,24 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
     default:
       if (dtp->u.p.namelist_mode)
 	{
+	  if (dtp->u.p.current_unit->delim_status == DELIM_NONE)
+	    {
+	      /* No delimiters so finish reading the string now.  */
+	      int i;
+	      push_char (dtp, c);
+	      for (i = dtp->u.p.ionml->string_length; i > 1; i--)
+		{
+		  if ((c = next_char (dtp)) == EOF)
+		    goto done_eof;
+		  push_char (dtp, c);
+		}
+	      dtp->u.p.saved_type = BT_CHARACTER;
+	      free_line (dtp);
+	      return;
+	    }
 	  unget_char (dtp, c);
 	  return;
 	}
-
       push_char (dtp, c);
       goto get_string;
     }
@@ -1867,17 +1923,31 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	}
       if (is_separator (c))
 	{
-	  /* Found a null value.  */
-	  eat_separator (dtp);
+	  /* Found a null value. Do not use eat_separator here otherwise
+	     we will do an extra read from stdin.  */
 	  dtp->u.p.repeat_count = 0;
 
-	  /* eat_separator sets this flag if the separator was a comma.  */
-	  if (dtp->u.p.comma_flag)
-	    goto cleanup;
+	  /* Set comma_flag.  */
+	  if ((c == ';' 
+	      && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
+	      ||
+	      (c == ','
+	      && dtp->u.p.current_unit->decimal_status == DECIMAL_POINT))
+	    {
+	      dtp->u.p.comma_flag = 1;
+	      goto cleanup;
+	    }
 
-	  /* eat_separator sets this flag if the separator was a \n or \r.  */
-	  if (dtp->u.p.at_eol)
-	    finish_separator (dtp);
+	  /* Set end-of-line flag.  */
+	  if (c == '\n' || c == '\r')
+	    {
+	      dtp->u.p.at_eol = 1;
+	      if (finish_separator (dtp) == LIBERROR_END)
+		{
+		  err = LIBERROR_END;
+		  goto cleanup;
+		}
+	    }
 	  else
 	    goto cleanup;
 	}
@@ -2036,8 +2106,6 @@ list_formatted_read (st_parameter_dt *dtp, bt type, void *p, int kind,
 void
 finish_list_read (st_parameter_dt *dtp)
 {
-  int err;
-
   free_saved (dtp);
 
   fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
@@ -2048,12 +2116,22 @@ finish_list_read (st_parameter_dt *dtp)
       return;
     }
 
-  err = eat_line (dtp);
-  if (err == LIBERROR_END)
+  if (!is_internal_unit (dtp))
     {
-      free_line (dtp);
-      hit_eof (dtp);
+      int c;
+      c = next_char (dtp);
+      if (c == EOF)
+	{
+	  free_line (dtp);
+	  hit_eof (dtp);
+	  return;
+	}
+      if (c != '\n')
+	eat_line (dtp);
     }
+
+  free_line (dtp);
+
 }
 
 /*			NAMELIST INPUT

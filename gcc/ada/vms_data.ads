@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
---                                                                          --
+--                                                                         --
 --                             V M S _ D A T A                              --
 --                                                                          --
 --                                 S p e c                                  --
@@ -1570,7 +1570,20 @@ package VMS_Data is
 
    S_GCC_DistX   : aliased constant S := "/NODISTRIBUTION_STUBS "          &
                                             "!-gnatzr,!-gnatzc";
-   --  NODOC (see /DISTRIBUTION_STUBS)
+   --  NODISTRIBUTION_STUBS (see /DISTRIBUTION_STUBS)
+
+   S_GCC_ElabI   : aliased constant S := "/ELABORATION_INFO_MESSAGES "     &
+                                            "-gnatel";
+   --  ELABORATION_INFO_MESSAGES
+   --
+   --  Causes the compiler to output INFO messages that show where implicit
+   --  Elaborate and Elaborate_All pragmas are added when using the static
+   --  elaboration model. Used to diagnose binder circularities when this
+   --  elaboration model is used.
+
+   S_GCC_NoElabI : aliased constant S := "/NOELABORATION_INFO_MESSAGES "     &
+                                            "-gnateL";
+   --  Turns off elaboration info messages (see ELABORATION_INFO_MESSAGES)
 
    S_GCC_Error   : aliased constant S := "/ERROR_LIMIT=#"                  &
                                             "-gnatm#";
@@ -3345,7 +3358,7 @@ package VMS_Data is
    --                             qualifier with a value other than NONE (in
    --                             other words, this option is effective only
    --                             if optimization is turned on).
-
+   --
    --   ERRORS                    Warning messages are to be treated as errors.
    --                             The warning string still appears, but the
    --                             warning messages are counted as errors, and
@@ -3389,7 +3402,7 @@ package VMS_Data is
    --                           access to an atomic variable requires the
    --                           generation of atomic synchronization code.
    --
-   --   AVOID_GAPS              Activate warnings for gaps in records.
+   --   AVOIDGAPS               Activate warnings for gaps in records.
    --   (-gnatw.h)              This outputs a warning if a representation
    --                           clause for a record leaves unallocated bits.
    --
@@ -3408,6 +3421,10 @@ package VMS_Data is
    --   (-gnatwc)               in tests where the expression is known to
    --                           be True or False at compile time.
    --
+   --   CONSTANT_VARIABLES      Activate warnings on constant variables.
+   --   (-gnatwk)               A warning is output for a variable which could
+   --                           have been declared as a constant.
+   --
    --   DELETED_CODE            Activate warning for conditional deleted code.
    --   (-gnatwt)               This option generates warnings for tracking of
    --                           code in conditionals (IF and CASE statements)
@@ -3415,10 +3432,6 @@ package VMS_Data is
    --                           be executed, and which is removed by the
    --                           front end. This may be useful for detecting
    --                           deactivated code in certified applications.
-   --
-   --   CONSTANT_VARIABLES      Activate warnings on constant variables.
-   --   (-gnatwk)               A warning is output for a variable which could
-   --                           have been declared as a constant.
    --
    --   ELABORATION             Activate warnings on missing pragma Elaborate
    --   (-gnatwl)               and Elaborate_All statements.
@@ -3432,15 +3445,6 @@ package VMS_Data is
    --                           for a non-overloadable entity, and declares
    --                           an entity with the same name as some other
    --                           entity that is directly or use-visible.
-   --
-   --   IMPORT_EXPORT_PRAGMAS   Activate warnings on import-export pragmas.
-   --   (-gnatwx)               This generates a warning on an Export or Import
-   --                           pragma when the compiler detects a possible
-   --                           conflict between the Ada and foreign language
-   --                           calling sequences. For example, the use of
-   --                           default parameters in a convention C procedure
-   --                           is dubious because the C compiler cannot supply
-   --                           the proper default, so a warning is issued.
    --
    --   IMPLEMENTATION          Activate warnings for a with of an internal
    --   (-gnatwi)               GNAT implementation unit, defined as any unit
@@ -3460,6 +3464,15 @@ package VMS_Data is
    --                           warnings of this type are generated, access
    --                           checks occur only at points where the source
    --                           program contains an explicit use of .all.
+   --
+   --   IMPORT_EXPORT_PRAGMAS   Activate warnings on import-export pragmas.
+   --   (-gnatwx)               This generates a warning on an Export or Import
+   --                           pragma when the compiler detects a possible
+   --                           conflict between the Ada and foreign language
+   --                           calling sequences. For example, the use of
+   --                           default parameters in a convention C procedure
+   --                           is dubious because the C compiler cannot supply
+   --                           the proper default, so a warning is issued.
    --
    --   INEFFECTIVE_INLINE      Activate warnings on ineffective Inlines.
    --   (-gnatwp)               Activates warnings for failure of front end
@@ -3822,6 +3835,7 @@ package VMS_Data is
                      S_GCC_DisAtom 'Access,
                      S_GCC_Dist    'Access,
                      S_GCC_DistX   'Access,
+                     S_GCC_ElabI   'Access,
                      S_GCC_Error   'Access,
                      S_GCC_ErrorX  'Access,
                      S_GCC_Expand  'Access,
@@ -3857,6 +3871,7 @@ package VMS_Data is
                      S_GCC_Mess    'Access,
                      S_GCC_Nesting 'Access,
                      S_GCC_Noadc   'Access,
+                     S_GCC_NoElabI 'Access,
                      S_GCC_Noload  'Access,
                      S_GCC_Nostinc 'Access,
                      S_GCC_Nostlib 'Access,
@@ -4049,14 +4064,14 @@ package VMS_Data is
    --   text file.
 
    S_Elim_Log     : aliased constant S := "/LOG "                          &
-                                          "-l";
+                                          "-log";
    --        /NOLOG (D)
    --        /LOG
    --
    --   Duplicate all the output sent to Stderr into a default log file.
 
    S_Elim_Logfile : aliased constant S := "/LOGFILE=@"                     &
-                                          "-l@";
+                                          "-log@";
 
    --      /LOGFILE=logfilename
    --

@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=c++11 -fgnu-tm" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fgnu-tm" }
 
 void foo()
 {

@@ -439,14 +439,16 @@ init_curr_insn_input_reloads (void)
 }
 
 /* Create a new pseudo using MODE, RCLASS, ORIGINAL or reuse already
-   created input reload pseudo (only if TYPE is not OP_OUT).  The
-   result pseudo is returned through RESULT_REG.  Return TRUE if we
-   created a new pseudo, FALSE if we reused the already created input
-   reload pseudo.  Use TITLE to describe new registers for debug
-   purposes.  */
+   created input reload pseudo (only if TYPE is not OP_OUT).  Don't
+   reuse pseudo if IN_SUBREG_P is true and the reused pseudo should be
+   wrapped up in SUBREG.  The result pseudo is returned through
+   RESULT_REG.  Return TRUE if we created a new pseudo, FALSE if we
+   reused the already created input reload pseudo.  Use TITLE to
+   describe new registers for debug purposes.  */
 static bool
 get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
-		enum reg_class rclass, const char *title, rtx *result_reg)
+		enum reg_class rclass, bool in_subreg_p,
+		const char *title, rtx *result_reg)
 {
   int i, regno;
   enum reg_class new_class;
@@ -471,6 +473,8 @@ get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
 	     Ensure we don't return *result_reg with wrong mode.  */
 	  if (GET_MODE (reg) != mode)
 	    {
+	      if (in_subreg_p)
+		continue;
 	      if (GET_MODE_SIZE (GET_MODE (reg)) < GET_MODE_SIZE (mode))
 		continue;
 	      reg = lowpart_subreg (mode, reg, GET_MODE (reg));
@@ -1139,9 +1143,11 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
   rtx reg;
   rtx new_reg;
   enum machine_mode mode;
-  bool before_p = false;
+  bool subreg_p, before_p = false;
 
-  loc = strip_subreg (loc);
+  subreg_p = GET_CODE (*loc) == SUBREG;
+  if (subreg_p)
+    loc = &SUBREG_REG (*loc);
   reg = *loc;
   mode = GET_MODE (reg);
   if (! REG_P (reg))
@@ -1171,7 +1177,7 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
 	{
 	  reg = *loc;
 	  if (get_reload_reg (after == NULL ? OP_IN : OP_INOUT,
-			      mode, reg, cl, "address", &new_reg))
+			      mode, reg, cl, subreg_p, "address", &new_reg))
 	    before_p = true;
 	}
       else if (new_class != NO_REGS && rclass != new_class)
@@ -1304,7 +1310,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 	  = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 
       if (get_reload_reg (curr_static_id->operand[nop].type, reg_mode, reg,
-			  rclass, "subreg reg", &new_reg))
+			  rclass, TRUE, "subreg reg", &new_reg))
 	{
 	  bool insert_before, insert_after;
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
@@ -1365,7 +1371,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 
       if (get_reload_reg (curr_static_id->operand[nop].type, mode, reg,
-                          rclass, "paradoxical subreg", &new_reg))
+                          rclass, TRUE, "paradoxical subreg", &new_reg))
         {
 	  rtx subreg;
 	  bool insert_before, insert_after;
@@ -2112,6 +2118,21 @@ process_alt_operands (int only_alternative)
 		  goto fail;
 		}
 
+	      /* If not assigned pseudo has a class which a subset of
+		 required reg class, it is a less costly alternative
+		 as the pseudo still can get a hard reg of necessary
+		 class.  */
+	      if (! no_regs_p && REG_P (op) && hard_regno[nop] < 0
+		  && (cl = get_reg_class (REGNO (op))) != NO_REGS
+		  && ira_class_subset_p[this_alternative][cl])
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Super set class reg: reject-=3\n", nop);
+		  reject -= 3;
+		}
+
 	      this_alternative_offmemok = offmemok;
 	      if (this_costly_alternative != NO_REGS)
 		{
@@ -2287,9 +2308,20 @@ process_alt_operands (int only_alternative)
 		  if (lra_dump_file != NULL)
 		    fprintf
 		      (lra_dump_file,
-		       "            %d Spill pseudo in memory: reject+=3\n",
+		       "            %d Spill pseudo into memory: reject+=3\n",
 		       nop);
 		  reject += 3;
+		  if (VECTOR_MODE_P (mode))
+		    {
+		      /* Spilling vectors into memory is usually more
+			 costly as they contain big values.  */
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            %d Spill vector pseudo: reject+=2\n",
+			   nop);
+		      reject += 2;
+		    }
 		}
 
 #ifdef SECONDARY_MEMORY_NEEDED
@@ -2599,6 +2631,20 @@ base_plus_disp_to_reg (struct address_info *ad)
   return new_reg;
 }
 
+/* Make reload of index part of address AD.  Return the new
+   pseudo.  */
+static rtx
+index_part_to_reg (struct address_info *ad)
+{
+  rtx new_reg;
+
+  new_reg = lra_create_new_reg (GET_MODE (*ad->index), NULL_RTX,
+				INDEX_REG_CLASS, "index term");
+  expand_mult (GET_MODE (*ad->index), *ad->index_term,
+	       GEN_INT (get_index_scale (ad)), new_reg, 1);
+  return new_reg;
+}
+
 /* Return true if we can add a displacement to address AD, even if that
    makes the address invalid.  The fix-up code requires any new address
    to be the sum of the BASE_TERM, INDEX and DISP_TERM fields.  */
@@ -2903,13 +2949,25 @@ process_address (int nop, rtx *before, rtx *after)
       emit_insn (insns);
       *ad.inner = new_reg;
     }
-  else
+  else if (ad.disp_term != NULL)
     {
       /* base + scale * index + disp => new base + scale * index,
 	 case (1) above.  */
       new_reg = base_plus_disp_to_reg (&ad);
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       new_reg, *ad.index);
+    }
+  else
+    {
+      /* base + scale * index => base + new_reg,
+	 case (1) above.
+      Index part of address may become invalid.  For example, we
+      changed pseudo on the equivalent memory and a subreg of the
+      pseudo onto the memory of different mode for which the scale is
+      prohibitted.  */
+      new_reg = index_part_to_reg (&ad);
+      *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
+				       *ad.base_term, new_reg);
     }
   *before = get_insns ();
   end_sequence ();
@@ -3547,7 +3605,7 @@ curr_insn_transform (void)
 	    new_reg = emit_inc (rclass, *loc, *loc,
 				/* This value does not matter for MODIFY.  */
 				GET_MODE_SIZE (GET_MODE (op)));
-	  else if (get_reload_reg (OP_IN, Pmode, *loc, rclass,
+	  else if (get_reload_reg (OP_IN, Pmode, *loc, rclass, FALSE,
 				   "offsetable address", &new_reg))
 	    lra_emit_move (new_reg, *loc);
 	  before = get_insns ();
@@ -3589,7 +3647,8 @@ curr_insn_transform (void)
 		}
 	    }
 	  old = *loc;
-	  if (get_reload_reg (type, mode, old, goal_alt[i], "", &new_reg)
+	  if (get_reload_reg (type, mode, old, goal_alt[i],
+			      loc != curr_id->operand_loc[i], "", &new_reg)
 	      && type != OP_OUT)
 	    {
 	      push_to_sequence (before);
@@ -4391,6 +4450,9 @@ static bool
 inherit_reload_reg (bool def_p, int original_regno,
 		    enum reg_class cl, rtx insn, rtx next_usage_insns)
 {
+  if (optimize_function_for_size_p (cfun))
+    return false;
+
   enum reg_class rclass = lra_get_allocno_class (original_regno);
   rtx original_reg = regno_reg_rtx[original_regno];
   rtx new_reg, new_insns, usage_insn;
@@ -4455,9 +4517,9 @@ inherit_reload_reg (bool def_p, int original_regno,
 				rclass, "inheritance");
   start_sequence ();
   if (def_p)
-    emit_move_insn (original_reg, new_reg);
+    lra_emit_move (original_reg, new_reg);
   else
-    emit_move_insn (new_reg, original_reg);
+    lra_emit_move (new_reg, original_reg);
   new_insns = get_insns ();
   end_sequence ();
   if (NEXT_INSN (new_insns) != NULL_RTX)

@@ -1,5 +1,4 @@
-// { dg-options "-std=c++0x" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // Test to allow for va_copy with C++0x standard.
 

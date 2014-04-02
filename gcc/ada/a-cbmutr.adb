@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011-2012, Free Software Foundation, Inc.      --
+--             Copyright (C) 2011-2013, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -397,7 +397,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 
@@ -1538,7 +1538,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 
@@ -1585,6 +1585,10 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Nodes : Tree_Node_Array renames Container.Nodes;
       Last  : Count_Type;
 
+      New_Item : Element_Type;
+      pragma Unmodified (New_Item);
+      --  OK to reference, see below
+
    begin
       if Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
@@ -1610,7 +1614,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 
@@ -1623,7 +1627,13 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          Initialize_Root (Container);
       end if;
 
-      Allocate_Node (Container, Position.Node);
+      --  There is no explicit element provided, but in an instance the element
+      --  type may be a scalar with a Default_Value aspect, or a composite
+      --  type with such a scalar component, or components with default
+      --  initialization, so insert the specified number of possibly
+      --  initialized elements at the given position.
+
+      Allocate_Node (Container, New_Item, Position.Node);
       Nodes (Position.Node).Parent := Parent.Node;
 
       Last := Position.Node;
@@ -2227,7 +2237,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 

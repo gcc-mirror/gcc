@@ -1,3 +1,94 @@
+2014-04-02  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.h (c_expand_expr): Remove declaration.
+
+2014-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60689
+	* c-common.c (add_atomic_size_parameter): When creating new
+	params vector, push the size argument first.
+
+2014-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla, ubsan_instrument_return): Adjust
+	ubsan_create_data callers.
+
+2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/60603
+	* c-opts.c (c_finish_options): Restore cb_file_change call to
+	<built-in>.
+
+2014-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36282
+	* c-pragma.c (apply_pragma_weak): Only look at
+	TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) if
+	DECL_ASSEMBLER_NAME_SET_P (decl).
+	(maybe_apply_pending_pragma_weaks): Exit early if
+	vec_safe_is_empty (pending_weaks) rather than only when
+	!pending_weaks.
+	(maybe_apply_pragma_weak): Likewise.  If !DECL_ASSEMBLER_NAME_SET_P,
+	set assembler name back to NULL afterwards.
+
+2014-03-11  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -std=gnu++14.
+
+2014-03-11  Ian Bolton  <ian.bolton@arm.com>
+
+	* c-opts.c (c_common_post_options): Don't override
+	-ffp-contract=fast if unsafe-math-optimizations is on.
+
+2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
+
+    * c.opt: Enable LTO FE for fshort-double.
+
+2014-03-07  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -std=c++14.
+
+2014-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60197
+	* cilk.c (contains_cilk_spawn_stmt): New function.
+	(contains_cilk_spawn_stmt_walker): Likewise.
+	(recognize_spawn): Give error on invalid use of _Cilk_spawn.
+	* c-common.h (contains_cilk_spawn_stmt): Add declaration.
+
+2014-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.c (c_pp_lookup_pragma): Handle PRAGMA_CILK_SIMD.
+	(init_pragma): Call cpp_register_deferred_pragma for PRAGMA_CILK_SIMD
+	even when flag_preprocess_only.
+
+2014-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59231
+	PR c++/11586
+	* c-common.c (shorten_compare): Don't check
+	c_inhibit_evaluation_warnings.
+
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37743
+	* c-common.c (c_common_nodes_and_builtins): When initializing
+	c_uint{16,32,64}_type_node, also set corresponding
+	uint{16,32,64}_type_node to the same value.
+
+	PR c++/60267
+	* c-pragma.c (init_pragma): Don't call cpp_register_deferred_pragma
+	for PRAGMA_IVDEP if flag_preprocess_only.
+
+2014-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/60101
+	* c-common.c (merge_tlist): If copy is true, call new_tlist,
+	if false, add ADD itself, rather than vice versa.
+	(verify_tree): For COND_EXPR, don't call merge_tlist with non-zero
+	copy.  For SAVE_EXPR, only call merge_tlist once.
+
 2014-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/60092

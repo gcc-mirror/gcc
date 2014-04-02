@@ -360,7 +360,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       Pbod : Boolean;                  -- True if proper body OK
       Rnam : Boolean;                  -- True if renaming declaration OK
       Stub : Boolean;                  -- True if body stub OK
-      Pexp : Boolean;                  -- True if parametrized expression OK
+      Pexp : Boolean;                  -- True if parameterized expression OK
       Fil2 : Boolean;                  -- Filler to fill to 8 bits
    end record;
    pragma Pack (Pf_Rec);
@@ -467,7 +467,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  expected column of the end assuming normal Ada indentation usage. If
       --  the RM_Column_Check mode is set, this value is used for generating
       --  error messages about indentation. Otherwise it is used only to
-      --  control heuristic error recovery actions.
+      --  control heuristic error recovery actions. This value is zero origin.
 
       Labl : Node_Id;
       --  This field is used to provide the name of the construct being parsed
@@ -1079,6 +1079,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  advanced to the next vertical bar, arrow, or semicolon, whichever
       --  comes first. We also quit if we encounter an end of file.
 
+      procedure Resync_Cunit;
+      --  Synchronize to next token which could be the start of a compilation
+      --  unit, or to the end of file token.
+
       procedure Resync_Expression;
       --  Used if an error is detected during the parsing of an expression.
       --  It skips past tokens until either a token which cannot be part of
@@ -1087,6 +1091,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  current parenthesis level (a parenthesis level counter is maintained
       --  to carry out this test).
 
+      procedure Resync_Past_Malformed_Aspect;
+      --  Used when parsing aspect specifications to skip a malformed aspect.
+      --  The scan pointer is positioned next to a comma, a semicolon or "is"
+      --  when the aspect applies to a body.
+
       procedure Resync_Past_Semicolon;
       --  Used if an error occurs while scanning a sequence of declarations.
       --  The scan pointer is positioned past the next semicolon and the scan
@@ -1094,20 +1103,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  starts a declaration (but we make sure to skip at least one token
       --  in this case, to avoid getting stuck in a loop).
 
-      procedure Resync_To_Semicolon;
-      --  Similar to Resync_Past_Semicolon, except that the scan pointer is
-      --  left pointing to the semicolon rather than past it.
-
       procedure Resync_Past_Semicolon_Or_To_Loop_Or_Then;
       --  Used if an error occurs while scanning a sequence of statements. The
       --  scan pointer is positioned past the next semicolon, or to the next
       --  occurrence of either then or loop, and the scan resumes.
-
-      procedure Resync_To_When;
-      --  Used when an error occurs scanning an entry index specification. The
-      --  scan pointer is positioned to the next WHEN (or to IS or semicolon if
-      --  either of these appear before WHEN, indicating another error has
-      --  occurred).
 
       procedure Resync_Semicolon_List;
       --  Used if an error occurs while scanning a parenthesized list of items
@@ -1115,9 +1114,15 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  semicolon or right parenthesis at the outer parenthesis level, or
       --  to the next is or RETURN keyword occurrence, whichever comes first.
 
-      procedure Resync_Cunit;
-      --  Synchronize to next token which could be the start of a compilation
-      --  unit, or to the end of file token.
+      procedure Resync_To_Semicolon;
+      --  Similar to Resync_Past_Semicolon, except that the scan pointer is
+      --  left pointing to the semicolon rather than past it.
+
+      procedure Resync_To_When;
+      --  Used when an error occurs scanning an entry index specification. The
+      --  scan pointer is positioned to the next WHEN (or to IS or semicolon if
+      --  either of these appear before WHEN, indicating another error has
+      --  occurred).
    end Sync;
 
    --------------

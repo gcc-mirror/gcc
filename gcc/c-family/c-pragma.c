@@ -263,6 +263,7 @@ apply_pragma_weak (tree decl, tree value)
 
   if (SUPPORTS_WEAK && DECL_EXTERNAL (decl) && TREE_USED (decl)
       && !DECL_WEAK (decl) /* Don't complain about a redundant #pragma.  */
+      && DECL_ASSEMBLER_NAME_SET_P (decl)
       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
     warning (OPT_Wpragmas, "applying #pragma weak %q+D after first use "
 	     "results in unspecified behavior", decl);
@@ -280,7 +281,7 @@ maybe_apply_pragma_weak (tree decl)
   /* Avoid asking for DECL_ASSEMBLER_NAME when it's not needed.  */
 
   /* No weak symbols pending, take the short-cut.  */
-  if (!pending_weaks)
+  if (vec_safe_is_empty (pending_weaks))
     return;
   /* If it's not visible outside this file, it doesn't matter whether
      it's weak.  */
@@ -292,7 +293,13 @@ maybe_apply_pragma_weak (tree decl)
   if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
     return;
 
-  id = DECL_ASSEMBLER_NAME (decl);
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+    id = DECL_ASSEMBLER_NAME (decl);
+  else
+    {
+      id = DECL_ASSEMBLER_NAME (decl);
+      SET_DECL_ASSEMBLER_NAME (decl, NULL_TREE);
+    }
 
   FOR_EACH_VEC_ELT (*pending_weaks, i, pe)
     if (id == pe->name)
@@ -313,7 +320,7 @@ maybe_apply_pending_pragma_weaks (void)
   pending_weak *pe;
   symtab_node *target;
 
-  if (!pending_weaks)
+  if (vec_safe_is_empty (pending_weaks))
     return;
 
   FOR_EACH_VEC_ELT (*pending_weaks, i, pe)
@@ -1221,6 +1228,13 @@ c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
 	return;
       }
 
+  if (id == PRAGMA_CILK_SIMD)
+    {
+      *space = NULL;
+      *name = "simd";
+      return;
+    }
+
   if (id >= PRAGMA_FIRST_EXTERNAL
       && (id < PRAGMA_FIRST_EXTERNAL + registered_pp_pragmas.length ()))
     {
@@ -1384,7 +1398,7 @@ init_pragma (void)
 				      omp_pragmas_simd[i].id, true, true);
     }
 
-  if (flag_cilkplus && !flag_preprocess_only)
+  if (flag_cilkplus)
     cpp_register_deferred_pragma (parse_in, NULL, "simd", PRAGMA_CILK_SIMD,
 				  true, false);
 
@@ -1392,8 +1406,9 @@ init_pragma (void)
     cpp_register_deferred_pragma (parse_in, "GCC", "pch_preprocess",
 				  PRAGMA_GCC_PCH_PREPROCESS, false, false);
 
-  cpp_register_deferred_pragma (parse_in, "GCC", "ivdep", PRAGMA_IVDEP, false,
-				false);
+  if (!flag_preprocess_only)
+    cpp_register_deferred_pragma (parse_in, "GCC", "ivdep", PRAGMA_IVDEP, false,
+				  false);
 #ifdef HANDLE_PRAGMA_PACK_WITH_EXPANSION
   c_register_pragma_with_expansion (0, "pack", handle_pragma_pack);
 #else

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@
 --        (Unit_Name => Kilogram, Unit_Symbol => "kg",  Dim_Symbol => 'M'),
 --        (Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
 --        (Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
---        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Θ"),
+--        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => '@'),
 --        (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
 --        (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
 

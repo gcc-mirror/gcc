@@ -159,6 +159,7 @@ TypeCompartment::addPendingRecompile (JSContext *cx, const RecompileInfo & info)
     pendingRecompiles->append (info);
 }
 volatile JITScript *JSScript::JITScriptHandle::UNJITTABLE;
+#pragma GCC visibility pop
 int
 main ()
 {

@@ -317,20 +317,24 @@
 ;; Thumb-2 always has load/store halfword instructions, so we can avoid a lot
 ;; of the messiness associated with the ARM patterns.
 (define_insn "*thumb2_movhi_insn"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")
-	(match_operand:HI 1 "general_operand"      "rI,n,r,m"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,l,r,m,r")
+	(match_operand:HI 1 "general_operand"      "r,I,Py,n,r,m"))]
   "TARGET_THUMB2
   && (register_operand (operands[0], HImode)
      || register_operand (operands[1], HImode))"
   "@
    mov%?\\t%0, %1\\t%@ movhi
+   mov%?\\t%0, %1\\t%@ movhi
+   mov%?\\t%0, %1\\t%@ movhi
    movw%?\\t%0, %L1\\t%@ movhi
    str%(h%)\\t%1, %0\\t%@ movhi
    ldr%(h%)\\t%0, %1\\t%@ movhi"
-  [(set_attr "type" "mov_imm,mov_reg,store1,load1")
+  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mov_reg,store1,load1")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,4094")
-   (set_attr "neg_pool_range" "*,*,*,250")]
+   (set_attr "predicable_short_it" "yes,no,yes,no,no,no")
+   (set_attr "length" "2,4,2,4,4,4")
+   (set_attr "pool_range" "*,*,*,*,*,4094")
+   (set_attr "neg_pool_range" "*,*,*,*,*,250")]
 )
 
 (define_insn "*thumb2_storewb_pairsi"

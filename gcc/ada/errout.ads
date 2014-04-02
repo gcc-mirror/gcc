@@ -252,7 +252,8 @@ package Errout is
    --      avoided. This is currently used by the Compile_Time_Warning pragma
    --      to ensure the message for a with'ed unit is output, and for warnings
    --      on ineffective back-end inlining, which is detected in units that
-   --      contain subprograms to be inlined in the main program.
+   --      contain subprograms to be inlined in the main program. It is also
+   --      used by the Compiler_Unit_Warning pragma for similar reasons.
 
    --    Insertion character ? (Question: warning message)
    --      The character ? appearing anywhere in a message makes the message
@@ -316,6 +317,10 @@ package Errout is
    --      quotes are added unless manual quotation mode is currently set.
    --      RM and SPARK are special exceptions, they are never treated as
    --      keywords, and just appear verbatim, with no surrounding quotes.
+   --      As a special case, 'R'M is used instead of RM (which is not treated
+   --      as a keyword) to indicate when the reference to the RM is possibly
+   --      not useful anymore, and could possibly be replaced by a comment
+   --      in the source.
 
    --    Insertion character ` (Backquote: set manual quotation mode)
    --      The backquote character always appears in pairs. Each backquote of
@@ -327,7 +332,7 @@ package Errout is
    --    Insertion character ' (Quote: literal character)
    --      Precedes a character which is placed literally into the message.
    --      Used to insert characters into messages that are one of the
-   --      insertion characters defined here. Also used when insertion
+   --      insertion characters defined here. Also used for insertion of
    --      upper case letter sequences not to be treated as keywords.
 
    --    Insertion character \ (Backslash: continuation message)
@@ -806,10 +811,11 @@ package Errout is
    --  ignored. A call with To=False restores the default treatment in which
    --  error calls are treated as usual (and as described in this spec).
 
-   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr)
+   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr; Reason : String_Id)
      renames Erroutc.Set_Warnings_Mode_Off;
    --  Called in response to a pragma Warnings (Off) to record the source
-   --  location from which warnings are to be turned off.
+   --  location from which warnings are to be turned off. Reason is the
+   --  Reason from the pragma, or the null string if none is given.
 
    procedure Set_Warnings_Mode_On (Loc : Source_Ptr)
      renames Erroutc.Set_Warnings_Mode_On;
@@ -819,14 +825,20 @@ package Errout is
    procedure Set_Specific_Warning_Off
      (Loc    : Source_Ptr;
       Msg    : String;
+      Reason : String_Id;
       Config : Boolean;
       Used   : Boolean := False)
      renames Erroutc.Set_Specific_Warning_Off;
    --  This is called in response to the two argument form of pragma Warnings
-   --  where the first argument is OFF, and the second argument is the prefix
-   --  of a specific warning to be suppressed. The first argument is the start
-   --  of the suppression range, and the second argument is the string from
-   --  the pragma.
+   --  where the first argument is OFF, and the second argument is a string
+   --  which identifies a specific warning to be suppressed. The first argument
+   --  is the start of the suppression range, and the second argument is the
+   --  string from the pragma. Loc is the location of the pragma (which is the
+   --  start of the range to suppress). Reason is the reason string from the
+   --  pragma, or the null string if no reason is given. Config is True for the
+   --  configuration pragma case (where there is no requirement for a matching
+   --  OFF pragma). Used is set True to disable the check that the warning
+   --  actually has has the effect of suppressing a warning.
 
    procedure Set_Specific_Warning_On
      (Loc : Source_Ptr;

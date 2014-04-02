@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-std=gnu++11 -Wall" } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-options "-Wall" } */
 
 // Check that we can compare vector types that really are the same through
 // typedefs.

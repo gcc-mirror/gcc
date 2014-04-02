@@ -4,7 +4,7 @@ template<typename T>
 struct X { };
 
 template<typename T>
-struct X<typename T::foo> { }; // { dg-error "not used|T" }
+struct X<typename T::foo> { }; // { dg-error "not deducible|T" }
 
 template<int N>
 struct X<int[N]> {}; // okay
@@ -14,7 +14,7 @@ template<typename T, typename T::foo V>
 struct Y { };
 
 template<typename T, typename U, U v>
-struct Y<T, v> { }; // { dg-error "not used|U" }
+struct Y<T, v> { }; // { dg-error "not deducible|U" }
 
 
 template<typename T, T V>

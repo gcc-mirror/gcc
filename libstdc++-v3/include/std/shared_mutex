@@ -52,8 +52,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
-  /// shared_mutex
-  class shared_mutex
+  /// shared_timed_mutex
+  class shared_timed_mutex
   {
 #if _GTHREAD_USE_MUTEX_TIMEDLOCK
     struct _Mutex : mutex, __timed_mutex_impl<_Mutex>
@@ -84,15 +84,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static constexpr unsigned _M_n_readers = ~_S_write_entered;
 
   public:
-    shared_mutex() : _M_state(0) {}
+    shared_timed_mutex() : _M_state(0) {}
 
-    ~shared_mutex()
+    ~shared_timed_mutex()
     {
       _GLIBCXX_DEBUG_ASSERT( _M_state == 0 );
     }
 
-    shared_mutex(const shared_mutex&) = delete;
-    shared_mutex& operator=(const shared_mutex&) = delete;
+    shared_timed_mutex(const shared_timed_mutex&) = delete;
+    shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
 
     // Exclusive ownership
 

@@ -793,8 +793,9 @@ package body Ada.Wide_Wide_Text_IO.Editing is
       end if;
 
       for J in Position .. Answer'Last loop
-         if Pic.Start_Currency /= Invalid_Position and then
-            Answer (Pic.Start_Currency) = '#' then
+         if Pic.Start_Currency /= Invalid_Position
+           and then Answer (Pic.Start_Currency) = '#'
+         then
             Currency_Pos := 1;
          end if;
 
@@ -861,8 +862,9 @@ package body Ada.Wide_Wide_Text_IO.Editing is
             Last := Last - 1 + Currency_Symbol'Length;
          end if;
 
-         if Pic.Radix_Position /= Invalid_Position and then
-            Answer (Pic.Radix_Position) = 'V' then
+         if Pic.Radix_Position /= Invalid_Position
+           and then Answer (Pic.Radix_Position) = 'V'
+         then
             Last := Last - 1;
          end if;
 

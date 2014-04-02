@@ -5305,9 +5305,8 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
       if (hotpatch_trampoline_halfwords >= 0
 	  && decl_function_context (decl) != NULL_TREE)
 	{
-	  warning_at (0, DECL_SOURCE_LOCATION (decl),
-		      "hotpatch_prologue is not compatible with nested"
-		      " function");
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_mhotpatch,
+		      "hotpatching is not compatible with nested functions");
 	  hotpatch_trampoline_halfwords = -1;
 	}
     }
@@ -9225,6 +9224,13 @@ s390_can_use_return_insn (void)
   for (i = 0; i < 16; i++)
     if (cfun_gpr_save_slot (i))
       return false;
+
+  /* For 31 bit this is not covered by the frame_size check below
+     since f4, f6 are saved in the register save area without needing
+     additional stack space.  */
+  if (!TARGET_64BIT
+      && (cfun_fpr_save_p (FPR4_REGNUM) || cfun_fpr_save_p (FPR6_REGNUM)))
+    return false;
 
   if (cfun->machine->base_reg
       && !call_really_used_regs[REGNO (cfun->machine->base_reg)])

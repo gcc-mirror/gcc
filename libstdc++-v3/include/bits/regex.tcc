@@ -425,7 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  auto& __sub = _Base_type::operator[](__idx);
 	  if (__sub.matched)
-	    std::copy(__sub.first, __sub.second, __out);
+	    __out = std::copy(__sub.first, __sub.second, __out);
 	};
 
       if (__flags & regex_constants::format_sed)
@@ -455,7 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (__next == __fmt_last)
 		break;
 
-	      std::copy(__fmt_first, __next, __out);
+	      __out = std::copy(__fmt_first, __next, __out);
 
 	      auto __eat = [&](char __ch) -> bool
 		{
@@ -493,7 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		*__out++ = '$';
 	      __fmt_first = __next;
 	    }
-	  std::copy(__fmt_first, __fmt_last, __out);
+	  __out = std::copy(__fmt_first, __fmt_last, __out);
 	}
       return __out;
     }
@@ -512,7 +512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__i == __end)
 	{
 	  if (!(__flags & regex_constants::format_no_copy))
-	    std::copy(__first, __last, __out);
+	    __out = std::copy(__first, __last, __out);
 	}
       else
 	{
@@ -521,14 +521,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  for (; __i != __end; ++__i)
 	    {
 	      if (!(__flags & regex_constants::format_no_copy))
-		std::copy(__i->prefix().first, __i->prefix().second, __out);
+		__out = std::copy(__i->prefix().first, __i->prefix().second,
+				  __out);
 	      __out = __i->format(__out, __fmt, __fmt + __len, __flags);
 	      __last = __i->suffix();
 	      if (__flags & regex_constants::format_first_only)
 		break;
 	    }
 	  if (!(__flags & regex_constants::format_no_copy))
-	    std::copy(__last.first, __last.second, __out);
+	    __out = std::copy(__last.first, __last.second, __out);
 	}
       return __out;
     }

@@ -1,8 +1,8 @@
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 constexpr bool is_negative(int x) {
   return x < 0;
-};
+}
 
 constexpr bool do_has_neg(const int* x, bool(*p)(int)) {
  return p(x[0]) || p(x[1]);  // Line 6

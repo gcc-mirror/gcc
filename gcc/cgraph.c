@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
+#include "expr.h"
+#include "tree-dfa.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1328,6 +1330,7 @@ gimple
 cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 {
   tree decl = gimple_call_fndecl (e->call_stmt);
+  tree lhs = gimple_call_lhs (e->call_stmt);
   gimple new_stmt;
   gimple_stmt_iterator gsi;
 #ifdef ENABLE_CHECKING
@@ -1470,6 +1473,30 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
     }
 
+  /* If the call becomes noreturn, remove the lhs.  */
+  if (lhs && (gimple_call_flags (new_stmt) & ECF_NORETURN))
+    {
+      if (TREE_CODE (lhs) == SSA_NAME)
+	{
+          gsi = gsi_for_stmt (new_stmt);
+
+	  tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
+	  tree def = get_or_create_ssa_default_def
+		      (DECL_STRUCT_FUNCTION (e->caller->decl), var);
+	  gimple set_stmt = gimple_build_assign (lhs, def);
+	  gsi_insert_before (&gsi, set_stmt, GSI_SAME_STMT);
+	}
+      gimple_call_set_lhs (new_stmt, NULL_TREE);
+      update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
+    }
+
+  /* If new callee has no static chain, remove it.  */
+  if (gimple_call_chain (new_stmt) && !DECL_STATIC_CHAIN (e->callee->decl))
+    {
+      gimple_call_set_chain (new_stmt, NULL);
+      update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
+    }
+
   cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt, false);
 
   if (cgraph_dump_file)
@@ -1518,7 +1545,10 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 		{
 		  if (callee->decl == new_call
 		      || callee->former_clone_of == new_call)
-		    return;
+		    {
+		      cgraph_set_call_stmt (e, new_stmt);
+		      return;
+		    }
 		  callee = callee->clone_of;
 		}
 	    }
@@ -1528,7 +1558,10 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 	     attached to edge is invalid.  */
 	  count = e->count;
 	  frequency = e->frequency;
-	  cgraph_remove_edge (e);
+ 	  if (e->indirect_unknown_callee || e->inline_failed)
+	    cgraph_remove_edge (e);
+	  else
+	    cgraph_remove_node_and_inline_clones (e->callee, NULL);
 	}
       else if (new_call)
 	{
@@ -2597,8 +2630,19 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
   node = cgraph_get_node (decl);
 
   /* We do not know if a node from a different partition is an alias or what it
-     aliases and therefore cannot do the former_clone_of check reliably.  */
-  if (!node || node->in_other_partition || e->callee->in_other_partition)
+     aliases and therefore cannot do the former_clone_of check reliably.  When
+     body_removed is set, we have lost all information about what was alias or
+     thunk of and also cannot proceed.  */
+  if (!node
+      || node->body_removed
+      || node->in_other_partition
+      || e->callee->in_other_partition)
+    return false;
+
+  /* Optimizers can redirect unreachable calls or calls triggering undefined
+     behaviour to builtin_unreachable.  */
+  if (DECL_BUILT_IN_CLASS (e->callee->decl) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (e->callee->decl) == BUILT_IN_UNREACHABLE)
     return false;
   node = cgraph_function_or_thunk_node (node, NULL);
 

@@ -1,5 +1,5 @@
 // PR c++/50054
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 void g( const int& (a)[1] ) {}	// { dg-error "array of references" }
 

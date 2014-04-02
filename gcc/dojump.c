@@ -1103,6 +1103,11 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 
 	  else
 	    {
+	      int first_prob = prob;
+	      if (first_code == UNORDERED)
+		first_prob = REG_BR_PROB_BASE / 100;
+	      else if (first_code == ORDERED)
+		first_prob = REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100;
 	      if (and_them)
 		{
 		  rtx dest_label;
@@ -1116,11 +1121,13 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 		  else
 		    dest_label = if_false_label;
                   do_compare_rtx_and_jump (op0, op1, first_code, unsignedp, mode,
-					   size, dest_label, NULL_RTX, prob);
+					   size, dest_label, NULL_RTX,
+					   first_prob);
 		}
               else
                 do_compare_rtx_and_jump (op0, op1, first_code, unsignedp, mode,
-					 size, NULL_RTX, if_true_label, prob);
+					 size, NULL_RTX, if_true_label,
+					 first_prob);
 	    }
 	}
 

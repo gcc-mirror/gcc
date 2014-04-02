@@ -600,7 +600,7 @@ proc cleanup-saved-temps { args } {
     set suffixes {}
 
     # add the to-be-kept suffixes
-    foreach suffix {".mii" ".ii" ".i" ".s" ".o" ".gkd"} {
+    foreach suffix {".mii" ".ii" ".i" ".s" ".o" ".gkd" ".res" ".ltrans.out"} {
 	if {[lsearch $args $suffix] < 0} {
 	    lappend suffixes $suffix
 	}
@@ -611,6 +611,8 @@ proc cleanup-saved-temps { args } {
     set testcase [lindex $testcase 0]
     foreach suffix $suffixes {
 	remove-build-file "[file rootname [file tail $testcase]]$suffix"
+	remove-build-file "[file rootname [file tail $testcase]].exe$suffix"
+	remove-build-file "[file rootname [file tail $testcase]].exe.ltrans\[0-9\]*$suffix"
 	# -fcompare-debug dumps
 	remove-build-file "[file rootname [file tail $testcase]].gk$suffix"
     }
@@ -620,6 +622,9 @@ proc cleanup-saved-temps { args } {
 	foreach srcfile $additional_sources {
 	    foreach suffix $suffixes {
 		remove-build-file "[file rootname [file tail $srcfile]]$suffix"
+		remove-build-file "[file rootname [file tail $srcfile]].exe$suffix"
+		remove-build-file "[file rootname [file tail $srcfile]].exe.ltrans\[0-9\]*$suffix"
+
 		# -fcompare-debug dumps
 		remove-build-file "[file rootname [file tail $srcfile]].gk$suffix"
 	    }
@@ -651,7 +656,7 @@ proc scan-module { args } {
 # Argument 1 is the regexp to match
 proc scan-module-absence { args } {
     set modfilename [string tolower [lindex $args 0]].mod
-    set fd [open $modfilename r]
+    set fd [open [list | gzip -dc $modfilename] r]
     set text [read $fd]
     close $fd
 
