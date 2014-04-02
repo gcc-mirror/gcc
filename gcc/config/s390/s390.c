@@ -4790,7 +4790,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
   int smode_bsize, mode_bsize;
   rtx op, clobber;
 
-  if (bitsize + bitpos > GET_MODE_SIZE (mode))
+  if (bitsize + bitpos > GET_MODE_BITSIZE (mode))
     return false;
 
   /* Generate INSERT IMMEDIATE (IILL et al).  */
