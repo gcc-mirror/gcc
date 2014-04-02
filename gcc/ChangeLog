@@ -1,3 +1,7 @@
+2014-04-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_insv): Use GET_MODE_BITSIZE.
+
 2014-04-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (pad_bb): Do not crash when the last
