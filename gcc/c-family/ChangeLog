@@ -1,3 +1,7 @@
+2014-04-02  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.h (c_expand_expr): Remove declaration.
+
 2014-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60689
