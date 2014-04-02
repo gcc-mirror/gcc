@@ -1,4 +1,4 @@
-// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-darwin* powerpc-ibm-aix* } }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-darwin1[1-9]* powerpc-ibm-aix* } }
 // { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-gnu* powerpc-ibm-aix* } }
 // { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
 // { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
