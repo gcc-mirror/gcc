@@ -1,5 +1,19 @@
 2014-04-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.target/i386/funcspec-2.c, gcc.target/i386/funcspec-3.c,
+	gcc.target/i386/funcspec-9.c, gcc.target/i386/isa-1.c,
+	gcc.target/i386/memcpy-strategy-1.c,
+	gcc.target/i386/memcpy-strategy-2.c,
+	gcc.target/i386/memcpy-vector_loop-1.c,
+	gcc.target/i386/memcpy-vector_loop-2.c,
+	gcc.target/i386/memset-vector_loop-1.c,
+	gcc.target/i386/memset-vector_loop-2.c,
+	gcc.target/i386/sse2-init-v2di-2.c, gcc.target/i386/ssetype-1.c,
+	gcc.target/i386/ssetype-2.c, gcc.target/i386/ssetype-5.c: Skip for
+	-march= options different from those in dg-options.
+
+2014-04-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.target/i386/387-3.c, gcc.target/i386/387-4.c,
 	gcc.target/i386/pr30970.c: Use -mtune=generic.
 	* gcc.target/i386/avx2-vpaddb-3.c,
