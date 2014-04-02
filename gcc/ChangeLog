@@ -1,3 +1,18 @@
+2014-04-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60735
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): If we have
+	software floating point or no floating point registers, do not
+	allow any type in the FPRs.  Eliminate a test for SPE SIMD types
+	in GPRs that occurs after we tested for GPRs that would never be
+	true.
+
+	* config/rs6000/rs6000.md (mov<mode>_softfloat32, FMOVE64):
+	Rewrite tests to use TARGET_DOUBLE_FLOAT and TARGET_E500_DOUBLE,
+	since the FMOVE64 type is DFmode/DDmode.  If TARGET_E500_DOUBLE,
+	specifically allow DDmode, since that does not use the SPE SIMD
+	instructions.
+
 2014-04-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60729
