@@ -1,4 +1,17 @@
 2014-03-26  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Iain Sandoe <iain@codesourcery.com>
+
+	PR target/54083
+	* gcc.dg/attr-weakref-1.c: Allow the test on darwin
+	with the additional options -Wl,-undefined,dynamic_lookup
+	and -Wl,-flat_namespace.
+	* gcc.dg/torture/pr53922.c: Additional option
+	-Wl,-flat_namespace for darwin[89].
+	* gcc.dg/torture/pr60092.c: Additional options
+	-Wl,-undefined,dynamic_lookup and -Wl,-flat_namespace
+	for darwin[89].
+
+2014-03-26  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR target/43751
 	* lib/prune.exp: Modify the regular express to prune
