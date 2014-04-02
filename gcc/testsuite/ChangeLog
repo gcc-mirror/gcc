@@ -1,7 +1,8 @@
-2014-04-02  Richard Biener  <rguenther@suse.de>
+2014-03-26  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
-	PR middle-end/60729
-	* g++.dg/vect/pr60729.cc: New testcase.
+	PR target/43751
+	* lib/prune.exp: Modify the regular express to prune
+	the new warnings introduced by r205679 on darwin9.
 
 2014-04-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
