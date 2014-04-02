@@ -1,3 +1,9 @@
+2014-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/60719
+	* Makefile.in (install-driver): Guard extra installs with special
+	names properly.
+
 2014-04-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
