@@ -1,5 +1,12 @@
 2014-04-02  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/60729
+	* optabs.c (expand_abs_nojump): Honor flag_trapv only for
+	MODE_INTs.  Properly use negv_optab.
+	(expand_abs): Likewise.
+
+2014-04-02  Richard Biener  <rguenther@suse.de>
+
 	PR bootstrap/60719
 	* Makefile.in (install-driver): Guard extra installs with special
 	names properly.
