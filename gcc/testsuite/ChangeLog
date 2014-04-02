@@ -1,3 +1,8 @@
+2014-04-02  Joseph Myers  <joseph@codesourcery.cmo>
+
+	* gcc.target/i386/avx2-vpand-3.c,
+	gcc.target/i386/avx256-unaligned-load-2.c: Use -mno-prefer-avx128.
+
 2014-04-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/i386/funcspec-2.c, gcc.target/i386/funcspec-3.c,
