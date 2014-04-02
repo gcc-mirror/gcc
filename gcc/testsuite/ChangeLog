@@ -1,3 +1,8 @@
+2014-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60729
+	* g++.dg/vect/pr60729.cc: New testcase.
+
 2014-04-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
         * g++.dg/init/ctor4.C: Adjust.
