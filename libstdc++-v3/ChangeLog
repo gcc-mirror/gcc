@@ -1,3 +1,10 @@
+2014-04-02  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/54407
+	* testsuite/30_threads/condition_variable/54185.cc: Skip for
+	darwin < 11.
+
 2014-04-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/backwards_compatibility.xml (backwards.third.headers):
