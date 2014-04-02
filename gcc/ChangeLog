@@ -1,3 +1,10 @@
+2014-04-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/60733
+	* gimple-ssa-strength-reduction.c (ncd_with_phi): Change required
+	insertion point for PHI candidates to be the end of the feeding
+	block for the PHI argument.
+
 2014-04-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60650
