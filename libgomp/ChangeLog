@@ -1,3 +1,8 @@
+2014-04-02  Richard Henderson  <rth@redhat.com>
+
+	* config/linux/futex.h (futex_wait): Get error value from errno.
+	(futex_wake): Likewise.
+
 2014-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60331
