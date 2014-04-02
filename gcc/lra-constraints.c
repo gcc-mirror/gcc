@@ -1747,12 +1747,27 @@ process_alt_operands (int only_alternative)
 				  [GET_MODE (*curr_id->operand_loc[m])]);
 			  }
 
-			/* We prefer no matching alternatives because
-			   it gives more freedom in RA.	 */
-			if (operand_reg[nop] == NULL_RTX
-			    || (find_regno_note (curr_insn, REG_DEAD,
-						 REGNO (operand_reg[nop]))
-				 == NULL_RTX))
+			/* Prefer matching earlyclobber alternative as
+			   it results in less hard regs required for
+			   the insn than a non-matching earlyclobber
+			   alternative.  */
+			if (curr_static_id->operand[m].early_clobber)
+			  {
+			    if (lra_dump_file != NULL)
+			      fprintf
+				(lra_dump_file,
+				 "            %d Matching earlyclobber alt:"
+				 " reject--\n",
+				 nop);
+			    reject--;
+			  }
+			/* Otherwise we prefer no matching
+			   alternatives because it gives more freedom
+			   in RA.  */
+			else if (operand_reg[nop] == NULL_RTX
+				 || (find_regno_note (curr_insn, REG_DEAD,
+						      REGNO (operand_reg[nop]))
+				     == NULL_RTX))
 			  {
 			    if (lra_dump_file != NULL)
 			      fprintf
@@ -2143,7 +2158,7 @@ process_alt_operands (int only_alternative)
 		}
 	      /* If the operand is dying, has a matching constraint,
 		 and satisfies constraints of the matched operand
-		 which failed to satisfy the own constraints, probably
+		 which failed to satisfy the own constraints, most probably
 		 the reload for this operand will be gone.  */
 	      if (this_alternative_matches >= 0
 		  && !curr_alt_win[this_alternative_matches]

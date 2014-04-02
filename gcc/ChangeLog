@@ -1,3 +1,9 @@
+2014-04-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60650
+	* lra-constraints.c (process_alt_operands): Decrease reject for
+	earlyclobber matching.
+
 2014-04-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_insv): Use GET_MODE_BITSIZE.
@@ -280,7 +286,7 @@
 2014-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60650
-	* lra-asign.c (find_hard_regno_for, spill_for): Add parameter
+	* lra-assign.c (find_hard_regno_for, spill_for): Add parameter
 	first_p.  Use it.
 	(find_spills_for): New.
 	(assign_by_spills): Pass the new parameter to find_hard_regno_for.
