@@ -52,6 +52,9 @@ struct streamer_tree_cache_d
   vec<tree> nodes;
   /* The node hashes (if available).  */
   vec<hashval_t> hashes;
+
+  /* Next index to assign.  */
+  unsigned next_idx;
 };
 
 /* Return true if tree node EXPR should be streamed as a builtin.  For
@@ -97,7 +100,7 @@ void streamer_tree_cache_append (struct streamer_tree_cache_d *, tree,
 				 hashval_t);
 bool streamer_tree_cache_lookup (struct streamer_tree_cache_d *, tree,
 				 unsigned *);
-struct streamer_tree_cache_d *streamer_tree_cache_create (bool, bool);
+struct streamer_tree_cache_d *streamer_tree_cache_create (bool, bool, bool);
 void streamer_tree_cache_delete (struct streamer_tree_cache_d *);
 
 /* Return the tree node at slot IX in CACHE.  */

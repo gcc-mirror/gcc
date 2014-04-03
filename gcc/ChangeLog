@@ -1,5 +1,24 @@
 2014-04-03  Richard Biener  <rguenther@suse.de>
 
+	* tree-streamer.h (struct streamer_tree_cache_d): Add next_idx
+	member.
+	(streamer_tree_cache_create): Adjust.
+	* tree-streamer.c (streamer_tree_cache_add_to_node_array): Adjust
+	to allow optional nodes array.
+	(streamer_tree_cache_insert_1): Use next_idx to assign idx.
+	(streamer_tree_cache_append): Likewise.
+	(streamer_tree_cache_create): Create nodes array optionally
+	as specified by parameter.
+	* lto-streamer-out.c (create_output_block): Avoid maintaining
+	the node array in the writer cache.
+	(DFS_write_tree): Remove assertion.
+	(produce_asm_for_decls): Free the out decl state hash table
+	early.
+	* lto-streamer-in.c (lto_data_in_create): Adjust for
+	streamer_tree_cache_create prototype change.
+
+2014-04-03  Richard Biener  <rguenther@suse.de>
+
 	* tree-streamer-out.c (streamer_write_chain): Do not temporarily
 	set TREE_CHAIN to NULL_TREE.
 
