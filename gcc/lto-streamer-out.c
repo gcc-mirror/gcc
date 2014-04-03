@@ -79,7 +79,7 @@ create_output_block (enum lto_section_type section_type)
   ob->decl_state = lto_get_out_decl_state ();
   ob->main_stream = XCNEW (struct lto_output_stream);
   ob->string_stream = XCNEW (struct lto_output_stream);
-  ob->writer_cache = streamer_tree_cache_create (!flag_wpa, true);
+  ob->writer_cache = streamer_tree_cache_create (!flag_wpa, true, false);
 
   if (section_type == LTO_section_function_body)
     ob->cfg_stream = XCNEW (struct lto_output_stream);
@@ -1277,7 +1277,6 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 	     ???  We still wrap these in LTO_tree_scc so at the
 	     input side we can properly identify the tree we want
 	     to ultimatively return.  */
-	  size_t old_len = ob->writer_cache->nodes.length ();
 	  if (size == 1)
 	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
 	  else
@@ -1315,7 +1314,6 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 		  streamer_write_zero (ob);
 		}
 	    }
-	  gcc_assert (old_len + size == ob->writer_cache->nodes.length ());
 
 	  /* Finally truncate the vector.  */
 	  sccstack.truncate (first);
@@ -2423,10 +2421,18 @@ produce_asm_for_decls (void)
 
   gcc_assert (!alias_pairs);
 
-  /* Write the global symbols.  */
+  /* Get rid of the global decl state hash tables to save some memory.  */
   out_state = lto_get_out_decl_state ();
-  num_fns = lto_function_decl_states.length ();
+  for (int i = 0; i < LTO_N_DECL_STREAMS; i++)
+    if (out_state->streams[i].tree_hash_table)
+      {
+	delete out_state->streams[i].tree_hash_table;
+	out_state->streams[i].tree_hash_table = NULL;
+      }
+
+  /* Write the global symbols.  */
   lto_output_decl_state_streams (ob, out_state);
+  num_fns = lto_function_decl_states.length ();
   for (idx = 0; idx < num_fns; idx++)
     {
       fn_out_state =
