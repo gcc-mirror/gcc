@@ -1,3 +1,11 @@
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (accessible_nvdtor_p): New.
+	(check_bases): Don't check base destructor here ...
+	(check_bases_and_members): ... check them here.  Trigger on
+	Wnon-virtual-dtor flag.
+	(finish_struct_1): Use accessible_nvdtor_p.
+
 2014-04-01  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (process_partial_specialization): Say "not deducible"

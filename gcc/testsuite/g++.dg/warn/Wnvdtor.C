@@ -8,3 +8,4 @@ extern "Java"
     virtual void bar( void);
   };
 }
+

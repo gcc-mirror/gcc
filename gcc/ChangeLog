@@ -1,3 +1,27 @@
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (Wnon-virtual-dtor): Adjust documentation.
+	(Weffc++): Remove Scott's numbering, merge lists and reference
+	Wnon-virtual-dtor.
+
+	c-family/
+
+	cp/
+	* class.c (accessible_nvdtor_p): New.
+	(check_bases): Don't check base destructor here ...
+	(check_bases_and_members): ... check them here.  Trigger on
+	Wnon-virtual-dtor flag.
+	(finish_struct_1): Use accessible_nvdtor_p.
+
+	testsuite/
+	* g++.dg/warn/Wnvdtor.C: Add non-polymorphic case.
+	* g++.dg/warn/Wnvdtor-2.C: New.
+	* g++.dg/warn/Wnvdtor-3.C: New.
+	* g++.dg/warn/Wnvdtor-4.C: New.
+	* g++.dg/warn/Weff1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-2.C: Delete.
+
 2014-04-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78-expand.md (movqi): Handle (SUBREG (SYMBOL_REF))

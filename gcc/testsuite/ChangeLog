@@ -1,3 +1,13 @@
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/warn/Wnvdtor.C: Add non-polymorphic case.
+	* g++.dg/warn/Wnvdtor-2.C: New.
+	* g++.dg/warn/Wnvdtor-3.C: New.
+	* g++.dg/warn/Wnvdtor-4.C: New.
+	* g++.dg/warn/Weff1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-2.C: Delete.
+
 2014-04-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60659

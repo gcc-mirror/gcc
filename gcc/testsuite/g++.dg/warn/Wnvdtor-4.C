@@ -1,6 +1,5 @@
-// PR c++/7302
 // { dg-do compile }
-// { dg-options "-Wnon-virtual-dtor" }
+// { dg-options "-Weffc++ -Wno-non-virtual-dtor" }
 
 // Warn when a class has virtual functions and accessible non-virtual
 // destructor, in which case it would be possible but unsafe to delete
@@ -9,7 +8,7 @@
 struct A
 {
 protected:
-  ~A(); // inaccessible - no warning
+  ~A();
 public:
   virtual void f() = 0;
 };
@@ -17,17 +16,17 @@ public:
 struct B
 {
 private:
-  ~B(); // inaccessible - no warning
+  ~B();
 public:
   virtual void f() = 0;
 };
 
-struct C // { dg-warning "non-virtual destructor" }
+struct C
 {
   virtual void f() = 0;
 };
 
-struct D // { dg-warning "non-virtual destructor" }
+struct D
 {
   ~D();
   virtual void f() = 0;
@@ -35,7 +34,7 @@ struct D // { dg-warning "non-virtual destructor" }
 
 struct E;
 
-struct F // { dg-warning "non-virtual destructor" }
+struct F
 {
 protected:
   friend class E;
@@ -44,7 +43,7 @@ public:
   virtual void f() = 0;
 };
 
-struct G // { dg-warning "non-virtual destructor" }
+struct G
 {
 private:
   friend class E;
