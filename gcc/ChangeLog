@@ -1,3 +1,11 @@
+2014-04-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60659
+	* ipa-devirt.c (get_polymorphic_call_info): Do not ICE on type inconsistent
+	code and instead mark the context inconsistent.
+	(possible_polymorphic_call_targets): For inconsistent contexts
+	return empty complete list.
+
 2014-04-02  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.md (zero_extendqisi2, zero_extendhisi2)
