@@ -1,3 +1,7 @@
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c.opt (Wnon-virtual-dtor): Auto set when Weffc++.
+
 2014-04-02  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.h (c_expand_expr): Remove declaration.

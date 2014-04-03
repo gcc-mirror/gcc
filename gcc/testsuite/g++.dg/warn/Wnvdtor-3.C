@@ -1,6 +1,5 @@
-// PR c++/7302
 // { dg-do compile }
-// { dg-options "-Wnon-virtual-dtor" }
+// { dg-options "-Weffc++" }
 
 // Warn when a class has virtual functions and accessible non-virtual
 // destructor, in which case it would be possible but unsafe to delete
