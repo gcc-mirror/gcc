@@ -1,3 +1,8 @@
+2014-04-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-expand.md (movqi): Handle (SUBREG (SYMBOL_REF))
+	properly.
+
 2014-04-03  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_verify_propagated_values): Also dump symtab and
