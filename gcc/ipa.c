@@ -469,7 +469,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       if (!node->aux)
 	{
 	  if (file)
-	    fprintf (file, " %s", node->name ());
+	    fprintf (file, " %s/%i", node->name (), node->order);
 	  cgraph_remove_node (node);
 	  changed = true;
 	}
@@ -483,7 +483,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  if (node->definition)
 	    {
 	      if (file)
-		fprintf (file, " %s", node->name ());
+		fprintf (file, " %s/%i", node->name (), node->order);
 	      node->body_removed = true;
 	      node->analyzed = false;
 	      node->definition = false;
@@ -531,7 +531,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  && (!flag_ltrans || !DECL_EXTERNAL (vnode->decl)))
 	{
 	  if (file)
-	    fprintf (file, " %s", vnode->name ());
+	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
 	  varpool_remove_node (vnode);
 	  changed = true;
 	}
