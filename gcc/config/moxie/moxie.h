@@ -59,7 +59,7 @@
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE 64
 
-#define DEFAULT_SIGNED_CHAR 1
+#define DEFAULT_SIGNED_CHAR 0
 
 #undef  SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -68,7 +68,7 @@
 #define PTRDIFF_TYPE "int"
 
 #undef  WCHAR_TYPE
-#define WCHAR_TYPE "long int"
+#define WCHAR_TYPE "unsigned int"
 
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
