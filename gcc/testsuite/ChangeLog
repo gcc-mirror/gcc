@@ -1,3 +1,8 @@
+2014-04-03  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60505
+	* gcc.dg/vect/pr60505.c: New test.
+
 2014-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60740
