@@ -1,5 +1,10 @@
 2014-04-03  Richard Biener  <rguenther@suse.de>
 
+	* tree-streamer-out.c (streamer_write_chain): Do not temporarily
+	set TREE_CHAIN to NULL_TREE.
+
+2014-04-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/60740
 	* graphite-scop-detection.c (stmt_simple_for_scop_p): Iterate
 	over all GIMPLE_COND operands.
