@@ -1,3 +1,18 @@
+2014-04-03  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60505
+	* tree-vectorizer.h (struct _stmt_vec_info): Add th field as the
+	threshold of number of iterations below which no vectorization will be
+	done.
+	* tree-vect-loop.c (new_loop_vec_info):
+	Initialize LOOP_VINFO_COST_MODEL_THRESHOLD.
+	* tree-vect-loop.c (vect_analyze_loop_operations):
+	Set LOOP_VINFO_COST_MODEL_THRESHOLD.
+	* tree-vect-loop.c (vect_transform_loop):
+	Use LOOP_VINFO_COST_MODEL_THRESHOLD.
+	* tree-vect-loop.c (vect_analyze_loop_2): Check the maximum number
+	of iterations of the loop and see if we should build the epilogue.
+
 2014-04-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-streamer.h (struct streamer_tree_cache_d): Add next_idx
