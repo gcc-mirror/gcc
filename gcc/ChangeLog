@@ -1,3 +1,9 @@
+2014-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60740
+	* graphite-scop-detection.c (stmt_simple_for_scop_p): Iterate
+	over all GIMPLE_COND operands.
+
 2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (Wnon-virtual-dtor): Adjust documentation.
