@@ -1,3 +1,9 @@
+2014-04-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/builtin-bswap-6.c: Adjust return value to disable GCC
+	optimization.
+	* gcc.dg/builtin-bswap-7.c: Likewise.
+
 2014-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58207
