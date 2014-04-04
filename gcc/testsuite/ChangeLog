@@ -1,6 +1,13 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
+	2013-10-23  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/direct-move.h: Fix header for executable tests.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
 	2013-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/56843
