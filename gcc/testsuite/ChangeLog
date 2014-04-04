@@ -1,3 +1,8 @@
+2014-04-04  Jeff Law  <law@redhat.com>
+
+	PR target/60657
+	* gcc.target/arm/pr60657.c: New test.
+
 2014-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60746
