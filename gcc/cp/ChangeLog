@@ -1,3 +1,8 @@
+2014-04-04  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/21113
+	* decl.c (decl_jump_unsafe): Consider variably-modified decls.
+
 2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* class.c (find_abi_tags_r): Check for the return of warning
