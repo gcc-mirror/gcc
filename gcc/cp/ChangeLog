@@ -1,3 +1,8 @@
+2014-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58207
+	* semantics.c (sort_constexpr_mem_initializers): Robustify loop.
+
 2014-04-04  Patrick Palka  <patrick@parcs.ath.cx>
 
 	PR c++/44613

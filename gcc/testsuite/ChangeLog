@@ -1,3 +1,8 @@
+2014-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58207
+	* g++.dg/cpp0x/constexpr-ice15.C: New.
+
 2014-04-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59626
