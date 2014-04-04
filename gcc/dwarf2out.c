@@ -11325,8 +11325,18 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
       return 1;
     }
 
+  /* FIXME: Refer to PR60655. It is possible for simplification
+     of rtl expressions in var tracking to produce such expressions.
+     We should really identify / validate expressions
+     enclosed in CONST that can be handled by assemblers on various
+     targets and only handle legitimate cases here.  */
   if (GET_CODE (rtl) != SYMBOL_REF)
-    return 0;
+    {
+      if (GET_CODE (rtl) == NOT)
+	  return 1;
+
+      return 0;
+    }
 
   if (CONSTANT_POOL_ADDRESS_P (rtl))
     {
