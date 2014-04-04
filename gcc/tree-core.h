@@ -373,9 +373,9 @@ enum cv_qualifier {
   TYPE_QUAL_RESTRICT = 0x4,
   TYPE_QUAL_ATOMIC   = 0x8,
   /* UPC qualifiers */
-  TYPE_QUAL_SHARED   = 0x10,
-  TYPE_QUAL_RELAXED  = 0x20,
-  TYPE_QUAL_STRICT   = 0x40
+  TYPE_QUAL_UPC_SHARED   = 0x10,
+  TYPE_QUAL_UPC_RELAXED  = 0x20,
+  TYPE_QUAL_UPC_STRICT   = 0x40
 };
 
 /* Enumerate visibility settings.  */
@@ -764,13 +764,13 @@ struct GTY(()) tree_base {
       unsigned user_align : 1;
       unsigned nameless_flag : 1;
       unsigned atomic_flag : 1;
-      unsigned shared_flag : 1;
-      unsigned strict_flag : 1;
-      unsigned relaxed_flag : 1;
+      unsigned upc_shared_flag : 1;
+      unsigned upc_strict_flag : 1;
+      unsigned upc_relaxed_flag : 1;
 
       unsigned threads_factor_flag : 1;
-      unsigned block_factor_0 : 1;
-      unsigned block_factor_x : 1;
+      unsigned upc_block_factor_0 : 1;
+      unsigned upc_block_factor_x : 1;
       unsigned spare1 : 5;
 
       /* This field is only used with TREE_TYPE nodes; the only reason it is
@@ -1268,7 +1268,7 @@ struct GTY((user)) tree_type_common {
   unsigned no_force_blk_flag : 1;
   unsigned needs_constructing_flag : 1;
   unsigned transparent_aggr_flag : 1;
-  unsigned restrict_flag : 1;
+  unsigned reupc_strict_flag : 1;
   unsigned contains_placeholder_bits : 2;
 
   ENUM_BITFIELD(machine_mode) mode : 8;

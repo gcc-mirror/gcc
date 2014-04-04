@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "stringpool.h"
 #include "input.h"
 #include "c/c-tree.h"
@@ -174,8 +175,8 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
   tree type = TREE_TYPE (src);
   /* Drop the shared qualifier.  */
   tree result_type = TYPE_MAIN_VARIANT (type);
-  int strict_mode = TYPE_STRICT (type)
-    || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
+  int strict_mode = TYPE_UPC_STRICT (type)
+    || (!TYPE_UPC_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_debug
                    || (flag_upc_instrument && get_upc_pupc_mode ());
   enum machine_mode mode = TYPE_MODE (type);
@@ -255,8 +256,8 @@ static tree
 upc_expand_put (location_t loc, tree dest, tree src, int want_value)
 {
   tree type = TREE_TYPE (dest);
-  int strict_mode = TYPE_STRICT (type)
-    || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
+  int strict_mode = TYPE_UPC_STRICT (type)
+    || (!TYPE_UPC_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_debug
                    || (flag_upc_instrument && get_upc_pupc_mode ());
   enum machine_mode mode = TYPE_MODE (type);
@@ -428,7 +429,7 @@ upc_simplify_shared_ref (location_t loc, tree exp)
     {
       const int shared_quals = TYPE_QUALS (TREE_TYPE (exp))
                                | TREE_QUALS (exp);
-      gcc_assert (shared_quals & TYPE_QUAL_SHARED);
+      gcc_assert (shared_quals & TYPE_QUAL_UPC_SHARED);
       ref_type = c_build_qualified_type_1 (ref_type, shared_quals,
                                            size_zero_node);
     }
@@ -838,7 +839,7 @@ upc_genericize_pts_to_int_cvt (location_t loc, tree *expr_p)
   pts = *pts_p;
   ref_type = TREE_TYPE (TREE_TYPE (pts));
   shared_quals = TYPE_QUALS (ref_type) | TREE_QUALS (pts);
-  gcc_assert (shared_quals & TYPE_QUAL_SHARED);
+  gcc_assert (shared_quals & TYPE_QUAL_UPC_SHARED);
   if ((shared_quals & TYPE_QUAL_CONST) != 0)
     {
       /* drop 'const' qualifier to arg. type mis-match.  */

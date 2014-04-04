@@ -212,7 +212,7 @@ pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type)
       previous = true;
     }
 
-  if (qualifiers & TYPE_QUAL_RELAXED)
+  if (qualifiers & TYPE_QUAL_UPC_RELAXED)
     {
       if (previous)
         pp_c_whitespace (pp);
@@ -220,7 +220,7 @@ pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type)
       previous = true;
     }
 
-  if (qualifiers & TYPE_QUAL_STRICT)
+  if (qualifiers & TYPE_QUAL_UPC_STRICT)
     {
       if (previous)
         pp_c_whitespace (pp);
@@ -228,7 +228,7 @@ pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type)
       previous = true;
     }
 
-  if (qualifiers & TYPE_QUAL_SHARED)
+  if (qualifiers & TYPE_QUAL_UPC_SHARED)
     {
       if (previous)
         pp_c_whitespace (pp);

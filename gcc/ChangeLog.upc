@@ -1,3 +1,18 @@
+2014-04-04 Gary Funck  <gary@intrepid.com>
+
+	* tree-upc.c tree-upc.h: New.
+	Factor UPC-specific tree node handling
+	into tree-upc.c and tree-upc.h.
+	* Makefile.in: Refer to tree-upc.c and tree-upc.h.
+	* c/c-convert.c c/c-decl.c c/c-objc-common.c
+	c/c-typeck.c c/c-upc-lang.c c-family/c-common.c
+	c-family/c-pretty-print.c c-family/c-upc-low.c
+	c-family/c-upc-pts-packed.c c-family/c-upc-pts-struct.c
+	c-family/c-upc.c c-family/c-upc.h convert.c
+	dwarf2out.c print-tree.c tree-core.h tree-dump.c
+	tree-pretty-print.c tree.c tree.h: Rename variables and
+	functions to include 'upc' in their names.
+
 2014-03-31 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 208955 into gupc branch.

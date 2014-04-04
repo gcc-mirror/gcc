@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "stor-layout.h"
 #include "expr.h"
 #include "tree-pretty-print.h"
@@ -794,15 +795,15 @@ static void
 dump_upc_type_quals (pretty_printer *buffer, tree type, int quals)
 {
   gcc_assert (type && TYPE_CHECK (type));
-  gcc_assert (quals & TYPE_QUAL_SHARED);
-  if (quals & TYPE_QUAL_STRICT)
+  gcc_assert (quals & TYPE_QUAL_UPC_SHARED);
+  if (quals & TYPE_QUAL_UPC_STRICT)
     pp_string (buffer, "strict ");
-  if (quals & TYPE_QUAL_RELAXED)
+  if (quals & TYPE_QUAL_UPC_RELAXED)
     pp_string (buffer, "relaxed ");
   pp_string (buffer, "shared ");
-  if (TYPE_HAS_BLOCK_FACTOR (type))
+  if (TYPE_HAS_UPC_BLOCK_FACTOR (type))
     {
-      tree block_factor = TYPE_BLOCK_FACTOR (type);
+      tree block_factor = TYPE_UPC_BLOCK_FACTOR (type);
       pp_string (buffer, "[");
       pp_wide_integer (buffer, TREE_INT_CST_LOW (block_factor));
       pp_string (buffer, "] ");
@@ -907,7 +908,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_string (buffer, "volatile ");
 	else if (quals & TYPE_QUAL_RESTRICT)
 	  pp_string (buffer, "restrict ");
-	else if (quals & TYPE_QUAL_SHARED)
+	else if (quals & TYPE_QUAL_UPC_SHARED)
           dump_upc_type_quals (buffer, node, quals);
 
 	if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))
@@ -1051,11 +1052,11 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    pp_string (buffer, " volatile");
 	  if (quals & TYPE_QUAL_RESTRICT)
 	    pp_string (buffer, " restrict");
-          if (quals & TYPE_QUAL_SHARED)
+          if (quals & TYPE_QUAL_UPC_SHARED)
 	    {
-	      if (quals & TYPE_QUAL_STRICT)
+	      if (quals & TYPE_QUAL_UPC_STRICT)
 		pp_string (buffer, " strict");
-	      if (quals & TYPE_QUAL_RELAXED)
+	      if (quals & TYPE_QUAL_UPC_RELAXED)
 		pp_string (buffer, " relaxed");
               pp_string (buffer, " shared");
 	    }
@@ -1218,7 +1219,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_string (buffer, "const ");
 	if (quals & TYPE_QUAL_VOLATILE)
 	  pp_string (buffer, "volatile ");
-	if (quals & TYPE_QUAL_SHARED)
+	if (quals & TYPE_QUAL_UPC_SHARED)
           dump_upc_type_quals (buffer, node, quals);
 
         /* Print the name of the structure.  */

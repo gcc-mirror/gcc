@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "stor-layout.h"
 #include "trans-mem.h"
 #include "varasm.h"
@@ -354,10 +355,10 @@ qualify_type (tree type, tree like)
 	         | TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (like)
 		 | ENCODE_QUAL_ADDR_SPACE (as_common);
 
-  if (result_quals & TYPE_QUAL_SHARED)
+  if (result_quals & TYPE_QUAL_UPC_SHARED)
     {
-      tree b1 = TYPE_BLOCK_FACTOR (type);
-      tree b2 = TYPE_BLOCK_FACTOR (like);
+      tree b1 = TYPE_UPC_BLOCK_FACTOR (type);
+      tree b2 = TYPE_UPC_BLOCK_FACTOR (like);
       /* We can merge in a new UPC blocking factor only
          if one/other is NULL.  Otherwise, they must match.  */
       if (b1 != b2)
@@ -707,8 +708,8 @@ common_pointer_type (tree t1, tree t2)
   else
     target_quals = (quals1 | quals2);
 
-  if (target_quals & TYPE_QUAL_SHARED)
-    target_block_factor = TYPE_BLOCK_FACTOR (
+  if (target_quals & TYPE_QUAL_UPC_SHARED)
+    target_block_factor = TYPE_UPC_BLOCK_FACTOR (
                             strip_array_types (pointed_to_1));
 
   /* If the two named address spaces are different, determine the common
@@ -1133,8 +1134,8 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
   /* If the type is UPC qualified, the block sizes have
      to be equal.  The block sizes are either NULL
      or are the same integer constant.  */
-  if ((TYPE_QUALS (t1) & TYPE_QUAL_SHARED)
-      && (TYPE_BLOCK_FACTOR (t1) != TYPE_BLOCK_FACTOR (t2)))
+  if ((TYPE_QUALS (t1) & TYPE_QUAL_UPC_SHARED)
+      && (TYPE_UPC_BLOCK_FACTOR (t1) != TYPE_UPC_BLOCK_FACTOR (t2)))
     return 0;
 
   /* Allow for two different type nodes which have essentially the same
@@ -2356,7 +2357,7 @@ build_component_ref (location_t loc, tree datum, tree component)
 	    quals |= TYPE_QUALS (TREE_TYPE (datum));
 	  /* All references to UPC shared struct components
 	     are defined to have an indefinite (zero) blocking factor.  */
-	  if (quals & TYPE_QUAL_SHARED)
+	  if (quals & TYPE_QUAL_UPC_SHARED)
 	    upc_block_factor = size_zero_node;
 	  subtype = c_build_qualified_type_1 (TREE_TYPE (subdatum),
 	                                      quals, upc_block_factor);
@@ -12557,7 +12558,7 @@ c_build_qualified_type_1 (tree type, int type_quals, tree layout_qualifier)
       for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
 	{
 	  const tree t_elem_type = strip_array_types (t);
-	  tree t_elem_block_factor = TYPE_BLOCK_FACTOR (t_elem_type);
+	  tree t_elem_block_factor = TYPE_UPC_BLOCK_FACTOR (t_elem_type);
 	  if (TYPE_QUALS (t_elem_type) == type_quals
 	      && t_elem_block_factor == layout_qualifier
 	      && TYPE_NAME (t) == TYPE_NAME (type)

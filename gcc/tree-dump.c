@@ -394,9 +394,9 @@ dequeue_and_dump (dump_info_p di)
 		   (quals & TYPE_QUAL_CONST) ? 'c' : ' ',
 		   (quals & TYPE_QUAL_VOLATILE) ? 'v' : ' ',
 		   (quals & TYPE_QUAL_RESTRICT) ? 'r' : ' ',
-		   (quals & TYPE_QUAL_SHARED) ? 's' : ' ',
-		   (quals & TYPE_QUAL_STRICT) ? 't' : ' ',
-		   (quals & TYPE_QUAL_RELAXED) ? 'x' : ' ');
+		   (quals & TYPE_QUAL_UPC_SHARED) ? 's' : ' ',
+		   (quals & TYPE_QUAL_UPC_STRICT) ? 't' : ' ',
+		   (quals & TYPE_QUAL_UPC_RELAXED) ? 'x' : ' ');
 	  di->column += 14;
 	}
 

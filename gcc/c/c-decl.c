@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "c-tree.h"
+#include "tree-upc.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "cpplib.h"
@@ -3878,9 +3879,9 @@ quals_from_declspecs (const struct c_declspecs *specs)
 	       | (specs->volatile_p ? TYPE_QUAL_VOLATILE : 0)
 	       | (specs->restrict_p ? TYPE_QUAL_RESTRICT : 0)
 	       | (specs->atomic_p ? TYPE_QUAL_ATOMIC : 0)
-	       | (specs->shared_p   ? TYPE_QUAL_SHARED : 0)
-	       | (specs->strict_p   ? TYPE_QUAL_STRICT : 0)
-	       | (specs->relaxed_p  ? TYPE_QUAL_RELAXED : 0)
+	       | (specs->shared_p   ? TYPE_QUAL_UPC_SHARED : 0)
+	       | (specs->strict_p   ? TYPE_QUAL_UPC_STRICT : 0)
+	       | (specs->relaxed_p  ? TYPE_QUAL_UPC_RELAXED : 0)
 	       | (ENCODE_QUAL_ADDR_SPACE (specs->address_space)));
   gcc_assert (!specs->type
 	      && !specs->decl_attr
@@ -5178,9 +5179,9 @@ grokdeclarator (const struct c_declarator *declarator,
   volatilep = declspecs->volatile_p + TYPE_VOLATILE (element_type);
   atomicp = declspecs->atomic_p + TYPE_ATOMIC (element_type);
   sharedp = declspecs->shared_p + upc_shared_type_p (element_type);
-  strictp = declspecs->strict_p + TYPE_STRICT (element_type);
-  relaxedp = declspecs->relaxed_p + TYPE_RELAXED (element_type);
-  upc_elem_block_factor = TYPE_BLOCK_FACTOR (element_type);
+  strictp = declspecs->strict_p + TYPE_UPC_STRICT (element_type);
+  relaxedp = declspecs->relaxed_p + TYPE_UPC_RELAXED (element_type);
+  upc_elem_block_factor = TYPE_UPC_BLOCK_FACTOR (element_type);
   upc_layout_qualifier = declspecs->upc_layout_qualifier;
   as1 = declspecs->address_space;
   as2 = TYPE_ADDR_SPACE (element_type);
@@ -5226,9 +5227,9 @@ grokdeclarator (const struct c_declarator *declarator,
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
 		| (volatilep ? TYPE_QUAL_VOLATILE : 0)
 		| (atomicp ? TYPE_QUAL_ATOMIC : 0)
-		| (sharedp ? TYPE_QUAL_SHARED : 0)
-		| (strictp ? TYPE_QUAL_STRICT : 0)
-		| (relaxedp ? TYPE_QUAL_RELAXED : 0)
+		| (sharedp ? TYPE_QUAL_UPC_SHARED : 0)
+		| (strictp ? TYPE_QUAL_UPC_STRICT : 0)
+		| (relaxedp ? TYPE_QUAL_UPC_RELAXED : 0)
 		| ENCODE_QUAL_ADDR_SPACE (address_space));
   
   /* Applying the _Atomic qualifier to an array type (through the use
@@ -5837,11 +5838,11 @@ grokdeclarator (const struct c_declarator *declarator,
 		if (VOID_TYPE_P (type) && really_funcdef)
 		  pedwarn (loc, 0,
 			   "function definition has qualified void return type");
-                else if (type_quals & TYPE_QUAL_SHARED)
+                else if (type_quals & TYPE_QUAL_UPC_SHARED)
                   {
                     error_at (loc, "function definition has UPC shared qualified return type");
-                    type_quals &= ~(TYPE_QUAL_SHARED | TYPE_QUAL_STRICT
-                                    | TYPE_QUAL_RELAXED);
+                    type_quals &= ~(TYPE_QUAL_UPC_SHARED | TYPE_QUAL_UPC_STRICT
+                                    | TYPE_QUAL_UPC_RELAXED);
                   }
 		else
 		  warning_at (loc, OPT_Wignored_qualifiers,
@@ -5935,7 +5936,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       that were given inside the `*'.  */
 	    type_quals = declarator->u.pointer.quals;
 	    upc_layout_qualifier = declarator->u.pointer.upc_layout_qual;
-	    sharedp = ((type_quals & TYPE_QUAL_SHARED) != 0);
+	    sharedp = ((type_quals & TYPE_QUAL_UPC_SHARED) != 0);
 
 	    declarator = declarator->declarator;
 	    break;
@@ -6233,11 +6234,11 @@ grokdeclarator (const struct c_declarator *declarator,
 	    type = c_build_pointer_type (type);
 	    type_quals = TYPE_UNQUALIFIED;
 	  }
-        else if (type_quals & TYPE_QUAL_SHARED)
+        else if (type_quals & TYPE_QUAL_UPC_SHARED)
 	  {
 	    error ("parameter declared with UPC shared qualifier");
-	    type_quals &= ~(TYPE_QUAL_SHARED | TYPE_QUAL_STRICT
-			    | TYPE_QUAL_RELAXED);
+	    type_quals &= ~(TYPE_QUAL_UPC_SHARED | TYPE_QUAL_UPC_STRICT
+			    | TYPE_QUAL_UPC_RELAXED);
 	  }
 	else if (type_quals)
 	  type = c_build_qualified_type (type, type_quals);
@@ -6286,12 +6287,12 @@ grokdeclarator (const struct c_declarator *declarator,
 	      error_at (loc, "unnamed field has incomplete type");
 	    type = error_mark_node;
 	  }
-        else if (type_quals & TYPE_QUAL_SHARED)
+        else if (type_quals & TYPE_QUAL_UPC_SHARED)
 	  {
 	    error_at (loc, "field %qE declared with UPC shared qualifier",
 		   name);
-	    type_quals &= ~(TYPE_QUAL_SHARED | TYPE_QUAL_STRICT
-			    | TYPE_QUAL_RELAXED);
+	    type_quals &= ~(TYPE_QUAL_UPC_SHARED | TYPE_QUAL_UPC_STRICT
+			    | TYPE_QUAL_UPC_RELAXED);
 	  }
 	type = c_build_qualified_type (type, type_quals);
 	decl = build_decl (declarator->id_loc,
@@ -6408,7 +6409,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* An uninitialized decl with `extern' is a reference.  */
 	int extern_ref = !initialized && storage_class == csc_extern;
 
-	if ((type_quals & TYPE_QUAL_SHARED)
+	if ((type_quals & TYPE_QUAL_UPC_SHARED)
 	     && !extern_ref
 	     && !((current_scope == file_scope)
 	           || (storage_class == csc_static)))
@@ -6469,7 +6470,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    /* UPC's 'shared' attribute implies that the storage
 	       is 'static' to the extent it is stored in
 	       memory.  */
-	    if (type_quals & TYPE_QUAL_SHARED)
+	    if (type_quals & TYPE_QUAL_UPC_SHARED)
 	      TREE_STATIC (decl) = 1;
 	    TREE_PUBLIC (decl) = extern_ref;
 	  }

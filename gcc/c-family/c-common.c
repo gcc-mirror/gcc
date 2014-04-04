@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "intl.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "calls.h"
@@ -4795,12 +4796,12 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
 	  || !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (type)))
 	error ("invalid use of %<restrict%>");
     }
-  if (type_quals & TYPE_QUAL_SHARED)
+  if (type_quals & TYPE_QUAL_UPC_SHARED)
     {
       TREE_SHARED (decl) = 1;
-      if (type_quals & TYPE_QUAL_STRICT)
+      if (type_quals & TYPE_QUAL_UPC_STRICT)
 	TREE_STRICT(decl) = 1;
-      else if (type_quals & TYPE_QUAL_RELAXED)
+      else if (type_quals & TYPE_QUAL_UPC_RELAXED)
 	TREE_RELAXED(decl) = 1;
       /* The declaration's type should have been previously defined
 	 as a UPC shared type.  */
@@ -10217,7 +10218,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   type = *ptype;
   /* Force an indefinite layout factor.  */ 
   if (upc_shared_type_p (type))
-    type = c_build_qualified_type_1 (type, TYPE_QUAL_SHARED, size_zero_node);
+    type = c_build_qualified_type_1 (type, TYPE_QUAL_UPC_SHARED,
+                                     size_zero_node);
   elt = TREE_TYPE (type);
   quals = TYPE_QUALS (strip_array_types (elt));
   if (quals == 0)

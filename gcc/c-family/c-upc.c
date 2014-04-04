@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "input.h"
@@ -57,11 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static int recursive_count_upc_threads_refs (tree);
 static int upc_sizeof_type_check (const char *, tree);
-
-void
-upc_block_factor_lookup_init (void)
-{
-}
 
 
 /* Return a UPC pointer-to-shared type with target type, TO_TYPE.
@@ -709,7 +705,7 @@ upc_pts_int_sum (location_t loc,
 
   const tree ttype = TREE_TYPE (ptrop);
   const int shared_quals =
-    (TYPE_QUAL_SHARED | TYPE_QUAL_STRICT | TYPE_QUAL_RELAXED);
+    (TYPE_QUAL_UPC_SHARED | TYPE_QUAL_UPC_STRICT | TYPE_QUAL_UPC_RELAXED);
   const int quals_minus_shared = TYPE_QUALS (ttype) & ~shared_quals;
   const tree result_type = c_build_qualified_type (ttype, quals_minus_shared);
   const tree result_targ_type = TREE_TYPE (result_type);

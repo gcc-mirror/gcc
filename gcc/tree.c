@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "flags.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "stor-layout.h"
 #include "calls.h"
 #include "attribs.h"
@@ -190,11 +191,6 @@ struct GTY(()) type_hash {
 static GTY ((if_marked ("type_hash_marked_p"), param_is (struct type_hash)))
      htab_t type_hash_table;
 
-/* Hash table for UPC block factor lookups when the block factor
-   is not 0 (the indefinite block factor) or 1 (the default).  */
-static GTY ((if_marked ("tree_map_marked_p"),
-           param_is (struct tree_map)))
-     htab_t block_factor_for_type;
 
 /* Hash table and temporary node for larger integer const values.  */
 static GTY (()) tree int_cst_node;
@@ -571,8 +567,8 @@ init_ttree (void)
   type_hash_table = htab_create_ggc (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
 				     type_hash_eq, 0);
 
-  block_factor_for_type = htab_create_ggc (512, tree_map_hash,
-                                               tree_map_eq, 0);
+  /* Initialize hash table used to manage UPC blocking factors.  */
+  upc_block_factor_lookup_init ();
 
   debug_expr_for_decl = htab_create_ggc (512, tree_decl_map_hash,
 					 tree_decl_map_eq, 0);
@@ -1000,8 +996,8 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	  TYPE_CACHED_VALUES (t) = NULL_TREE;
 	}
 
-      if (TYPE_HAS_BLOCK_FACTOR (node))
-        SET_TYPE_BLOCK_FACTOR (t, TYPE_BLOCK_FACTOR (node));
+      if (TYPE_HAS_UPC_BLOCK_FACTOR (node))
+        SET_TYPE_UPC_BLOCK_FACTOR (t, TYPE_UPC_BLOCK_FACTOR (node));
     }
 
   return t;
@@ -6134,11 +6130,11 @@ set_type_quals (tree type, int type_quals, tree layout_qualifier)
   TYPE_RESTRICT (type) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
   TYPE_ATOMIC (type) = (type_quals & TYPE_QUAL_ATOMIC) != 0;
   TYPE_ADDR_SPACE (type) = DECODE_QUAL_ADDR_SPACE (type_quals);
-  TYPE_SHARED (type) = (type_quals & TYPE_QUAL_SHARED) != 0;
-  TYPE_STRICT (type) = (type_quals & TYPE_QUAL_STRICT) != 0;
-  TYPE_RELAXED (type) = (type_quals & TYPE_QUAL_RELAXED) != 0;
-  if (TYPE_SHARED (type))
-    SET_TYPE_BLOCK_FACTOR (type, layout_qualifier);
+  TYPE_UPC_SHARED (type) = (type_quals & TYPE_QUAL_UPC_SHARED) != 0;
+  TYPE_UPC_STRICT (type) = (type_quals & TYPE_QUAL_UPC_STRICT) != 0;
+  TYPE_UPC_RELAXED (type) = (type_quals & TYPE_QUAL_UPC_RELAXED) != 0;
+  if (TYPE_UPC_SHARED (type))
+    SET_TYPE_UPC_BLOCK_FACTOR (type, layout_qualifier);
 }
 
 /* Returns true iff CAND is equivalent to BASE with
@@ -6149,7 +6145,7 @@ check_qualified_type (const_tree cand, const_tree base,
                       int type_quals, tree layout_qualifier)
 {
   return (TYPE_QUALS (cand) == type_quals
-	  && TYPE_BLOCK_FACTOR (cand) == layout_qualifier
+	  && TYPE_UPC_BLOCK_FACTOR (cand) == layout_qualifier
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
@@ -6165,7 +6161,7 @@ static bool
 check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 {
   return (TYPE_QUALS (cand) == TYPE_QUALS (base)
-	  && TYPE_BLOCK_FACTOR (cand) == TYPE_BLOCK_FACTOR (base)
+	  && TYPE_UPC_BLOCK_FACTOR (cand) == TYPE_UPC_BLOCK_FACTOR (base)
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
@@ -6284,97 +6280,6 @@ build_qualified_type_1 (tree type, int type_quals, tree layout_qualifier)
     }
 
   return t;
-}
-
-/* Lookup the UPC block size of TYPE, and return it if we find one.  */
-
-tree
-block_factor_lookup (const_tree type)
-{
-  struct tree_map *h, in;
-  union
-    {
-      const_tree ct;
-      tree t;
-    } ct_to_t;
-  ct_to_t.ct = type;
-  /* Drop the const qualifier, avoid the warning.  */
-  in.base.from = ct_to_t.t;
-
-  h = (struct tree_map *)
-      htab_find_with_hash (block_factor_for_type, &in, TYPE_HASH (type));
-  if (h)
-    return h->to;
-  return NULL_TREE;
-}
-
-/* Insert a mapping TYPE->BLOCK_FACTOR in the UPC block factor  hashtable.  */
-
-void
-block_factor_insert (tree type,
-                     tree block_factor)
-{
-  struct tree_map *h;
-  void **loc;
-
-  gcc_assert (type && TYPE_P (type));
-  gcc_assert (block_factor && INTEGRAL_TYPE_P (TREE_TYPE (block_factor)));
-  gcc_assert (!(integer_zerop (block_factor) || integer_onep (block_factor)));
-  h = ggc_alloc_tree_map ();
-  h->base.from = type;
-  h->to = (tree) block_factor;
-  loc = htab_find_slot_with_hash (block_factor_for_type,
-                                  h, TYPE_HASH (type), INSERT);
-  *(struct tree_map **) loc = h;
-}
-
-/* Return the blocking factor of the UPC shared type, TYPE.
-   If the blocking factor is NULL, then return the default blocking
-   factor of 1.  */
-
-tree
-upc_get_block_factor (const tree type)
-{
-  tree block_factor = size_one_node;
-  const tree elt_type = strip_array_types (type);
-  if (elt_type && (TREE_CODE (elt_type) != ERROR_MARK)
-      && TYPE_HAS_BLOCK_FACTOR (elt_type))
-    block_factor = TYPE_BLOCK_FACTOR (elt_type);
-  return block_factor;
-}
-
-/* Return a variant of TYPE, where all UPC qualifiers
-   have been removed.  */
-
-tree
-build_upc_unshared_type (tree type)
-{
-  tree u_type = type;
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      const tree elem_type = TREE_TYPE(type);
-      const tree u_elem_type = build_upc_unshared_type (elem_type);
-      if (u_elem_type != elem_type)
-        {
-          for (u_type = TYPE_MAIN_VARIANT (type);
-               u_type && TREE_TYPE(u_type) != u_elem_type;
-               u_type = TYPE_NEXT_VARIANT (u_type)) /* loop */;
-          if (!u_type)
-            {
-              u_type = build_variant_type_copy (type);
-              TREE_TYPE (u_type) = u_elem_type;
-            }
-        }
-    }
-  else
-    {
-      const int quals = TYPE_QUALS (type);
-      const int u_quals = quals & ~(TYPE_QUAL_SHARED
-                                    | TYPE_QUAL_RELAXED
-                                    | TYPE_QUAL_STRICT);
-      u_type = build_qualified_type (type, u_quals);
-    }
-  return u_type;
 }
 
 /* Create a variant of type T with alignment ALIGN.  */
@@ -12479,7 +12384,7 @@ extern void gt_ggc_mx_die_struct (void *);
 void gt_ggc_mx (tree_type_common *tt)
 {
   tree t = (tree) tt;
-  tree block_factor = TYPE_BLOCK_FACTOR (t);
+  tree block_factor = TYPE_UPC_BLOCK_FACTOR (t);
 
   gt_ggc_mx (tt->common.typed.type);
   gt_ggc_mx (tt->common.chain);
@@ -12507,7 +12412,7 @@ void gt_ggc_mx (tree_type_common *tt)
   gt_ggc_mx (tt->context);
   gt_ggc_mx (tt->canonical);
 
-  if (TYPE_HAS_BLOCK_FACTOR_X (t))
+  if (TYPE_HAS_UPC_BLOCK_FACTOR_X (t))
     gt_ggc_mx (block_factor);
 }
 
@@ -12519,7 +12424,7 @@ extern void gt_ggc_nx_die_struct (void *);
 void gt_pch_nx (tree_type_common *tt)
 {
   tree t = (tree) tt;
-  tree block_factor = TYPE_BLOCK_FACTOR (t);
+  tree block_factor = TYPE_UPC_BLOCK_FACTOR (t);
 
   gt_pch_nx (tt->common.typed.type);
   gt_pch_nx (tt->common.chain);
@@ -12547,14 +12452,14 @@ void gt_pch_nx (tree_type_common *tt)
   gt_pch_nx (tt->context);
   gt_pch_nx (tt->canonical);
 
-  if (TYPE_HAS_BLOCK_FACTOR_X (t))
+  if (TYPE_HAS_UPC_BLOCK_FACTOR_X (t))
     gt_pch_nx (block_factor);
 }
 
 void gt_pch_nx (tree_type_common *tt, gt_pointer_operator op, void *cookie)
 {
   tree t = (tree) tt;
-  tree block_factor = TYPE_BLOCK_FACTOR (t);
+  tree block_factor = TYPE_UPC_BLOCK_FACTOR (t);
 
   op (&(tt->common.typed.type), cookie);
   op (&(tt->common.chain), cookie);
@@ -12582,7 +12487,7 @@ void gt_pch_nx (tree_type_common *tt, gt_pointer_operator op, void *cookie)
   op (&(tt->context), cookie);
   op (&(tt->canonical), cookie);
 
-  if (TYPE_HAS_BLOCK_FACTOR_X (t))
+  if (TYPE_HAS_UPC_BLOCK_FACTOR_X (t))
     op (&(block_factor), cookie);
 }
 

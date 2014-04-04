@@ -30,8 +30,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 extern int count_upc_threads_refs (tree);
 extern int is_multiple_of_upc_threads (tree);
 extern void set_upc_threads_refs_to_one (tree *);
-extern void upc_block_factor_lookup_init (void);
-extern tree upc_get_block_factor (const tree);
 extern tree upc_build_pointer_type (tree);
 extern tree upc_blocksizeof (location_t, tree);
 extern void upc_check_decl (tree);

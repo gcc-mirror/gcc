@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "varasm.h"
 #include "print-rtl.h"
 #include "stor-layout.h"
@@ -619,7 +620,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	fputs (" type_1", file);
       if (TYPE_LANG_FLAG_2 (node))
 	fputs (" type_2", file);
-      if (!TYPE_SHARED (node))
+      if (!TYPE_UPC_SHARED (node))
         {
 	  if (TYPE_LANG_FLAG_3 (node))
 	    fputs (" type_3", file);
@@ -636,13 +637,13 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       print_node (file, "size", TYPE_SIZE (node), indent + 4);
       print_node (file, "unit size", TYPE_SIZE_UNIT (node), indent + 4);
-      if (TYPE_SHARED (node))
+      if (TYPE_UPC_SHARED (node))
         {
           if (TYPE_HAS_THREADS_FACTOR(node))
 	    fputs (" THREADS factor", file);
-	  if (TYPE_HAS_BLOCK_FACTOR (node))
+	  if (TYPE_HAS_UPC_BLOCK_FACTOR (node))
 	    print_node (file, "block factor",
-	                TYPE_BLOCK_FACTOR (node), indent + 4);
+	                TYPE_UPC_BLOCK_FACTOR (node), indent + 4);
         }
       indent_to (file, indent + 3);
 

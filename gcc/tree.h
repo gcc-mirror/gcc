@@ -559,70 +559,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
   (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : (NODE)))
 
-/* Non-zero if the UPC blocking factor is 0.  */
-#define TYPE_HAS_BLOCK_FACTOR_0(NODE)  \
-  TYPE_CHECK (NODE)->base.u.bits.block_factor_0
-
-/* Non-zero if the UPC blocking factor is greater than 1.
-   In this case, the blocking factor value is stored in a hash table.  */
-#define TYPE_HAS_BLOCK_FACTOR_X(NODE) \
-  TYPE_CHECK (NODE)->base.u.bits.block_factor_x
-
-/* Non-zero if the UPC blocking factor is not equal to 1 (the default).  */
-#define TYPE_HAS_BLOCK_FACTOR(NODE) \
-  (TYPE_SHARED(NODE) \
-   && (TYPE_HAS_BLOCK_FACTOR_0 (NODE) \
-       || TYPE_HAS_BLOCK_FACTOR_X (NODE)))
-
-extern void block_factor_insert (tree, tree);
-extern tree block_factor_lookup (const_tree);
-
-/* Return the UPC blocking factor of the type given by NODE..
-   The default block factor is one.  The additional flag bits
-   over-ride the default.  */
-#define TYPE_BLOCK_FACTOR(NODE) \
-  (TYPE_SHARED (NODE) \
-    ? (TYPE_HAS_BLOCK_FACTOR_0 (NODE) ? size_zero_node \
-      : TYPE_HAS_BLOCK_FACTOR_X (NODE) ? block_factor_lookup (NODE) \
-      : NULL_TREE) \
-    : NULL_TREE)
-
-/* Set the UPC block factor in the type described by NODE.
-   For a zero blocking factor set TYPE_BLOCK_FACTOR_0 (NODE). 
-   For a blocking factor greater than 1, insert the value
-   into a hash table indexed by NODE, and then set the
-   flag TYPE_BLOCK_FACTOR_X (NODE).  */
-#define SET_TYPE_BLOCK_FACTOR(NODE, VAL) \
-  do { \
-    if (TYPE_SHARED (NODE)) \
-      { \
-	TYPE_HAS_BLOCK_FACTOR_0 (NODE) = 0; \
-	TYPE_HAS_BLOCK_FACTOR_X (NODE) = 0; \
-	if (VAL) \
-	  { \
-	    gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (VAL))); \
-	    if (!integer_onep (VAL)) \
-	      { \
-		if (integer_zerop (VAL)) \
-		  TYPE_HAS_BLOCK_FACTOR_0 (NODE) = 1; \
-		else \
-		  { \
-		    TYPE_HAS_BLOCK_FACTOR_X (NODE) = 1; \
-		    block_factor_insert (NODE, VAL); \
-		  } \
-	      } \
-          } \
-      } \
-    else \
-      gcc_assert (!VAL); \
-  } while (0)
-
 /* Return TRUE if TYPE is a UPC shared type.  For arrays,
    the element type must be queried, because array types
    are never qualified.  */
 #define upc_shared_type_p(TYPE) \
   ((TYPE) && TYPE_P (TYPE) \
-   && TYPE_SHARED ((TREE_CODE (TYPE) != ARRAY_TYPE \
+   && TYPE_UPC_SHARED ((TREE_CODE (TYPE) != ARRAY_TYPE \
                     ? (TYPE) : strip_array_types (TYPE))))
 
 /* Return TRUE if EXP is a conversion operation involving
@@ -815,9 +757,9 @@ extern tree block_factor_lookup (const_tree);
 #define TREE_QUALS(NODE)			\
   ((TREE_READONLY(NODE) * TYPE_QUAL_CONST) |	\
    (TREE_THIS_VOLATILE(NODE) * TYPE_QUAL_VOLATILE) |	\
-   (TREE_SHARED(NODE) * TYPE_QUAL_SHARED) |	\
-   (TREE_STRICT(NODE) * TYPE_QUAL_STRICT) |	\
-   (TREE_RELAXED(NODE) * TYPE_QUAL_RELAXED))
+   (TREE_SHARED(NODE) * TYPE_QUAL_UPC_SHARED) |	\
+   (TREE_STRICT(NODE) * TYPE_QUAL_UPC_STRICT) |	\
+   (TREE_RELAXED(NODE) * TYPE_QUAL_UPC_RELAXED))
 
 /* In integral and pointer types, means an unsigned type.  */
 #define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->base.u.bits.unsigned_flag)
@@ -936,9 +878,9 @@ extern tree block_factor_lookup (const_tree);
   (IDENTIFIER_NODE_CHECK (NODE)->base.deprecated_flag)
 
 /* UPC common tree flags */
-#define TREE_SHARED(NODE) ((NODE)->base.u.bits.shared_flag)
-#define TREE_STRICT(NODE) ((NODE)->base.u.bits.strict_flag)
-#define TREE_RELAXED(NODE) ((NODE)->base.u.bits.relaxed_flag)
+#define TREE_SHARED(NODE) ((NODE)->base.u.bits.upc_shared_flag)
+#define TREE_STRICT(NODE) ((NODE)->base.u.bits.upc_strict_flag)
+#define TREE_RELAXED(NODE) ((NODE)->base.u.bits.upc_relaxed_flag)
 
 /* In fixed-point types, means a saturating type.  */
 #define TYPE_SATURATING(NODE) (TYPE_CHECK (NODE)->base.u.bits.saturating_flag)
@@ -1692,16 +1634,17 @@ extern void protected_set_expr_location (tree, location_t);
 
 /* If nonzero, this type is `restrict'-qualified, in the C sense of
    the term.  */
-#define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type_common.restrict_flag)
+#define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type_common.reupc_strict_flag)
 
 /* If nonzero, this type is `shared'-qualified, in the UPC dialect */
-#define TYPE_SHARED(NODE) (TYPE_CHECK (NODE)->base.u.bits.shared_flag)
+#define TYPE_UPC_SHARED(NODE) (TYPE_CHECK (NODE)->base.u.bits.upc_shared_flag)
 
 /* If nonzero, this type is `strict'-qualified, in the UPC dialect  */
-#define TYPE_STRICT(NODE) (TYPE_CHECK (NODE)->base.u.bits.strict_flag)
+#define TYPE_UPC_STRICT(NODE) (TYPE_CHECK (NODE)->base.u.bits.upc_strict_flag)
 
 /* If nonzero, this type is `relaxed'-qualified, in the UPC dialect  */
-#define TYPE_RELAXED(NODE) (TYPE_CHECK (NODE)->base.u.bits.relaxed_flag)
+#define TYPE_UPC_RELAXED(NODE) \
+  (TYPE_CHECK (NODE)->base.u.bits.upc_relaxed_flag)
 
 /* Record that we are processing a UPC shared array declaration
    or type definition that refers to THREADS in its array dimension.*/
@@ -1732,9 +1675,9 @@ extern void protected_set_expr_location (tree, location_t);
 	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
 	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)		\
-          | (TYPE_SHARED  (NODE) * TYPE_QUAL_SHARED)		\
-          | (TYPE_STRICT  (NODE) * TYPE_QUAL_STRICT)		\
-          | (TYPE_RELAXED (NODE) * TYPE_QUAL_RELAXED)		\
+          | (TYPE_UPC_SHARED  (NODE) * TYPE_QUAL_UPC_SHARED)		\
+          | (TYPE_UPC_STRICT  (NODE) * TYPE_QUAL_UPC_STRICT)		\
+          | (TYPE_UPC_RELAXED (NODE) * TYPE_QUAL_UPC_RELAXED)		\
 	  | (ENCODE_QUAL_ADDR_SPACE (TYPE_ADDR_SPACE (NODE)))))
 
 /* The set of qualifiers pertinent to a FUNCTION_DECL node.  */
@@ -1747,9 +1690,9 @@ extern void protected_set_expr_location (tree, location_t);
   ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
 	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
 	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
-          | (TYPE_SHARED  (NODE) * TYPE_QUAL_SHARED)		\
-          | (TYPE_STRICT  (NODE) * TYPE_QUAL_STRICT)		\
-          | (TYPE_RELAXED (NODE) * TYPE_QUAL_RELAXED)           \
+          | (TYPE_UPC_SHARED  (NODE) * TYPE_QUAL_UPC_SHARED)		\
+          | (TYPE_UPC_STRICT  (NODE) * TYPE_QUAL_UPC_STRICT)		\
+          | (TYPE_UPC_RELAXED (NODE) * TYPE_QUAL_UPC_RELAXED)           \
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
 
 /* The same as TYPE_QUALS without the address space and atomic 
@@ -3941,9 +3884,6 @@ extern tree bit_position (const_tree);
 extern HOST_WIDE_INT int_bit_position (const_tree);
 extern tree byte_position (const_tree);
 extern HOST_WIDE_INT int_byte_position (const_tree);
-
-/* UPC related functions */
-extern tree build_upc_unshared_type (tree);
 
 #define sizetype sizetype_tab[(int) stk_sizetype]
 #define bitsizetype sizetype_tab[(int) stk_bitsizetype]

@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "varasm.h"
@@ -10429,14 +10430,14 @@ modified_type_die (tree type, int type_quals,
       sub_die = modified_type_die (type, type_quals & ~TYPE_QUAL_VOLATILE, context_die);
     }
   else if (use_upc_dwarf2_extensions
-           && (type_quals & TYPE_QUAL_SHARED))
+           && (type_quals & TYPE_QUAL_UPC_SHARED))
     {
       HOST_WIDE_INT block_factor = 1;
 
       /* Inside the compiler,
-         "shared int x;" TYPE_BLOCK_FACTOR is null.
-         "shared [] int *p;" TYPE_BLOCK_FACTOR is zero.
-         "shared [10] int x[50];" TYPE_BLOCK_FACTOR is 10 * bitsize(int)
+         "shared int x;" TYPE_UPC_BLOCK_FACTOR is null.
+         "shared [] int *p;" TYPE_UPC_BLOCK_FACTOR is zero.
+         "shared [10] int x[50];" TYPE_UPC_BLOCK_FACTOR is 10 * bitsize(int)
          The DWARF2 encoding is as follows:
          "shared int x;"  DW_AT_count: 1
          "shared [] int *p;" <no DW_AT_count attribute>
@@ -10446,30 +10447,30 @@ modified_type_die (tree type, int type_quals,
       mod_type_die = new_die (DW_TAG_upc_shared_type,
                                   comp_unit_die (), type);
 
-      if (TYPE_HAS_BLOCK_FACTOR (type))
-        block_factor = TREE_INT_CST_LOW (TYPE_BLOCK_FACTOR (type));
+      if (TYPE_HAS_UPC_BLOCK_FACTOR (type))
+        block_factor = TREE_INT_CST_LOW (TYPE_UPC_BLOCK_FACTOR (type));
 
       if (block_factor != 0)
         add_AT_unsigned (mod_type_die, DW_AT_count, block_factor);
 
       sub_die = modified_type_die (type,
-                           type_quals & ~TYPE_QUAL_SHARED,
+                           type_quals & ~TYPE_QUAL_UPC_SHARED,
                            context_die);
     }
-  else if (use_upc_dwarf2_extensions && type_quals & TYPE_QUAL_STRICT)
+  else if (use_upc_dwarf2_extensions && type_quals & TYPE_QUAL_UPC_STRICT)
     {
       mod_type_die = new_die (DW_TAG_upc_strict_type,
                                   comp_unit_die (), type);
       sub_die = modified_type_die (type,
-                           type_quals & ~TYPE_QUAL_STRICT,
+                           type_quals & ~TYPE_QUAL_UPC_STRICT,
                            context_die);
     }
-  else if (use_upc_dwarf2_extensions && type_quals & TYPE_QUAL_RELAXED)
+  else if (use_upc_dwarf2_extensions && type_quals & TYPE_QUAL_UPC_RELAXED)
     {
       mod_type_die = new_die (DW_TAG_upc_relaxed_type,
                                   comp_unit_die (), type);
       sub_die = modified_type_die (type,
-                           type_quals & ~TYPE_QUAL_RELAXED,
+                           type_quals & ~TYPE_QUAL_UPC_RELAXED,
                            context_die);
     }
   else if (code == POINTER_TYPE)

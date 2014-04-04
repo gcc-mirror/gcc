@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "tree-upc.h"
 #include "stringpool.h"
 #include "ggc.h"
 #include "hashtab.h"
@@ -81,10 +82,11 @@ upc_pts_struct_init_type (void)
   tree shared_void_type, shared_char_type;
   lang_hooks.upc.pts_struct_init_type ();
   shared_void_type = c_build_qualified_type_1 (void_type_node,
-                                               TYPE_QUAL_SHARED, NULL_TREE);
+                                               TYPE_QUAL_UPC_SHARED,
+					       NULL_TREE);
   upc_pts_type_node = build_pointer_type (shared_void_type);
   shared_char_type = c_build_qualified_type_1 (char_type_node,
-                                               TYPE_QUAL_SHARED,
+                                               TYPE_QUAL_UPC_SHARED,
 					       size_zero_node);
   upc_char_pts_type_node = build_pointer_type (shared_char_type);
   upc_null_pts_node = upc_pts_struct_build_value (UNKNOWN_LOCATION,
