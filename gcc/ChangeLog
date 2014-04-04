@@ -1,3 +1,10 @@
+2014-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR bootstrap/60743
+	* config/arm/cortex-a53.md (cortex_a53_fdivs): Reduce reservation
+	duration.
+	(cortex_a53_fdivd): Likewise.
+
 2014-04-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60640
