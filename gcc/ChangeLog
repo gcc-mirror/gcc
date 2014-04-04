@@ -1,3 +1,8 @@
+2014-04-04  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.md (zero_extendqisi2, zero_extendhisi2): Fix
+	typos.
+
 2014-04-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59626

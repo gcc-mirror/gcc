@@ -247,7 +247,7 @@
    ;
    ld.b   %0, %1
    lda.b  %0, %1
-   ldo.b  %0, %1
+   ldo.b  %0, %1"
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
@@ -264,7 +264,7 @@
    ;
    ld.s   %0, %1
    lda.s  %0, %1
-   ldo.s  %0, %1
+   ldo.s  %0, %1"
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
