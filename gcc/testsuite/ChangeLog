@@ -1,5 +1,49 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Little Endian Vector Support
+	Backport from mainline r205638
+	2013-12-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: Skip for little
+	endian.
+
+	Backport from mainline r205146
+	2013-11-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr48258-1.c: Skip for little endian.
+
+	Backport from mainline r204862
+	2013-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/3b-15.c: Revise for little endian.
+
+	Backport from mainline r204321
+	2013-11-02  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/vmx/vec-set.c: New.
+
+	Backport from mainline r204138
+	2013-10-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/gcc-bug-i.c: Add little endian variant.
+	* gcc.dg/vmx/eg-5.c: Likewise.
+
+	Backport from mainline r203930
+	2013-10-22  Bill Schmidt  <wschmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/altivec-perm-1.c: Move the two vector pack
+	tests into...
+	* gcc.target/powerpc/altivec-perm-3.c: ...this new test, which is
+	restricted to big-endian targets.
+
+	Backport from mainline r203246
+	2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr43154.c: Skip for ppc64 little endian.
+	* gcc.target/powerpc/fusion.c: Likewise.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline
 	2013-11-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

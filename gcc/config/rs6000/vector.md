@@ -88,7 +88,8 @@
 				 (smax "smax")])
 
 
-;; Vector move instructions.
+;; Vector move instructions.  Little-endian VSX loads and stores require
+;; special handling to circumvent "element endianness."
 (define_expand "mov<mode>"
   [(set (match_operand:VEC_M 0 "nonimmediate_operand" "")
 	(match_operand:VEC_M 1 "any_operand" ""))]
@@ -103,6 +104,16 @@
       else if (!vlogical_operand (operands[0], <MODE>mode)
 	       && !vlogical_operand (operands[1], <MODE>mode))
 	operands[1] = force_reg (<MODE>mode, operands[1]);
+    }
+  if (!BYTES_BIG_ENDIAN
+      && VECTOR_MEM_VSX_P (<MODE>mode)
+      && <MODE>mode != TImode
+      && !gpr_or_gpr_p (operands[0], operands[1])
+      && (memory_operand (operands[0], <MODE>mode)
+          ^ memory_operand (operands[1], <MODE>mode)))
+    {
+      rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
+      DONE;
     }
 })
 
@@ -862,7 +873,7 @@
 {
   rtx reg = gen_reg_rtx (V4SFmode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], true);
+  rs6000_expand_interleave (reg, operands[1], operands[1], BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvspdp (operands[0], reg));
   DONE;
 })
@@ -874,7 +885,7 @@
 {
   rtx reg = gen_reg_rtx (V4SFmode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], false);
+  rs6000_expand_interleave (reg, operands[1], operands[1], !BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvspdp (operands[0], reg));
   DONE;
 })
@@ -886,7 +897,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], true);
+  rs6000_expand_interleave (reg, operands[1], operands[1], BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvsxwdp (operands[0], reg));
   DONE;
 })
@@ -898,7 +909,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], false);
+  rs6000_expand_interleave (reg, operands[1], operands[1], !BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvsxwdp (operands[0], reg));
   DONE;
 })
@@ -910,7 +921,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], true);
+  rs6000_expand_interleave (reg, operands[1], operands[1], BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvuxwdp (operands[0], reg));
   DONE;
 })
@@ -922,7 +933,7 @@
 {
   rtx reg = gen_reg_rtx (V4SImode);
 
-  rs6000_expand_interleave (reg, operands[1], operands[1], false);
+  rs6000_expand_interleave (reg, operands[1], operands[1], !BYTES_BIG_ENDIAN);
   emit_insn (gen_vsx_xvcvuxwdp (operands[0], reg));
   DONE;
 })
@@ -936,8 +947,19 @@
    (match_operand:V16QI 3 "vlogical_operand" "")]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
-  emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1], operands[2],
-				       operands[3]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
+    	      				 operands[2], operands[3]));
+  else
+    {
+      /* We have changed lvsr to lvsl, so to complete the transformation
+         of vperm for LE, we must swap the inputs.  */
+      rtx unspec = gen_rtx_UNSPEC (<MODE>mode,
+                                   gen_rtvec (3, operands[2],
+                                              operands[1], operands[3]),
+                                   UNSPEC_VPERM);
+      emit_move_insn (operands[0], unspec);
+    }
   DONE;
 })
 

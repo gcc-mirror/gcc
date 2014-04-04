@@ -1,5 +1,300 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Little Endian Vector Support
+	Backport from mainline r205333
+	2013-11-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vec_perm_const_1): Correct
+	for little endian.
+
+	Backport from mainline r205241
+	2013-11-21  Bill Schmidt  <wschmidt@vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_pack_trunc_v2df): Revert previous
+	little endian change.
+	(vec_pack_sfix_trunc_v2df): Likewise.
+	(vec_pack_ufix_trunc_v2df): Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_interleave): Correct
+	double checking of endianness.
+
+	Backport from mainline r205146
+	2013-11-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_set_<mode>): Adjust for little endian.
+	(vsx_extract_<mode>): Likewise.
+	(*vsx_extract_<mode>_one_le): New LE variant on
+	*vsx_extract_<mode>_zero.
+	(vsx_extract_v4sf): Adjust for little endian.
+
+	Backport from mainline r205080
+	2013-11-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Adjust
+	V16QI vector splat case for little endian.
+
+	Backport from mainline r205045:
+
+	2013-11-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/vector.md ("mov<mode>"): Do not call
+	rs6000_emit_le_vsx_move to move into or out of GPRs.
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Assert
+	source and destination are not GPR hard regs.
+
+	Backport from mainline r204920
+	2011-11-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_frame_related): Add split_reg
+	parameter and use it in REG_FRAME_RELATED_EXPR note.
+	(emit_frame_save): Call rs6000_frame_related with extra NULL_RTX
+	parameter.
+	(rs6000_emit_prologue): Likewise, but for little endian VSX
+	stores, pass the source register of the store instead.
+
+	Backport from mainline r204862
+	2013-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (UNSPEC_VPERM_X, UNSPEC_VPERM_UNS_X):
+	Remove.
+	(altivec_vperm_<mode>): Revert earlier little endian change.
+	(*altivec_vperm_<mode>_internal): Remove.
+	(altivec_vperm_<mode>_uns): Revert earlier little endian change.
+	(*altivec_vperm_<mode>_uns_internal): Remove.
+	* config/rs6000/vector.md (vec_realign_load_<mode>): Revise
+	commentary.
+
+	Backport from mainline r204441
+	2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Remove restriction against use of VSX instructions when generating
+	code for little endian mode.
+
+	Backport from mainline r204440
+	2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (mulv4si3): Ensure we generate vmulouh
+	for both big and little endian.
+	(mulv8hi3): Swap input operands for merge high and merge low
+	instructions for little endian.
+
+	Backport from mainline r204439
+	2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (vec_widen_umult_even_v16qi): Change
+	define_insn to define_expand that uses even patterns for big
+	endian and odd patterns for little endian.
+	(vec_widen_smult_even_v16qi): Likewise.
+	(vec_widen_umult_even_v8hi): Likewise.
+	(vec_widen_smult_even_v8hi): Likewise.
+	(vec_widen_umult_odd_v16qi): Likewise.
+	(vec_widen_smult_odd_v16qi): Likewise.
+	(vec_widen_umult_odd_v8hi): Likewise.
+	(vec_widen_smult_odd_v8hi): Likewise.
+	(altivec_vmuleub): New define_insn.
+	(altivec_vmuloub): Likewise.
+	(altivec_vmulesb): Likewise.
+	(altivec_vmulosb): Likewise.
+	(altivec_vmuleuh): Likewise.
+	(altivec_vmulouh): Likewise.
+	(altivec_vmulesh): Likewise.
+	(altivec_vmulosh): Likewise.
+
+	Backport from mainline r204395
+	2013-11-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_pack_sfix_trunc_v2df): Adjust for
+	little endian.
+	(vec_pack_ufix_trunc_v2df): Likewise.
+
+	Backport from mainline r204363
+	2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (vec_widen_umult_hi_v16qi): Swap
+	arguments to merge instruction for little endian.
+	(vec_widen_umult_lo_v16qi): Likewise.
+	(vec_widen_smult_hi_v16qi): Likewise.
+	(vec_widen_smult_lo_v16qi): Likewise.
+	(vec_widen_umult_hi_v8hi): Likewise.
+	(vec_widen_umult_lo_v8hi): Likewise.
+	(vec_widen_smult_hi_v8hi): Likewise.
+	(vec_widen_smult_lo_v8hi): Likewise.
+
+	Backport from mainline r204350
+	2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (*vsx_le_perm_store_<mode> for VSX_D):
+	Replace the define_insn_and_split with a define_insn and two
+	define_splits, with the split after reload re-permuting the source
+	register to its original value.
+	(*vsx_le_perm_store_<mode> for VSX_W): Likewise.
+	(*vsx_le_perm_store_v8hi): Likewise.
+	(*vsx_le_perm_store_v16qi): Likewise.
+
+	Backport from mainline r204321
+	2013-11-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_pack_trunc_v2df):  Adjust for
+	little endian.
+
+	Backport from mainline r204321
+	2013-11-02  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Adjust for
+	little endian.
+
+	Backport from mainline r203980
+	2013-10-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (mulv8hi3): Adjust for little endian.
+
+	Backport from mainline r203930
+	2013-10-22  Bill Schmidt  <wschmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Reverse
+	meaning of merge-high and merge-low masks for little endian; avoid
+	use of vector-pack masks for little endian for mismatched modes.
+
+	Backport from mainline r203877
+	2013-10-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (vec_unpacku_hi_v16qi): Adjust for
+	little endian.
+	(vec_unpacku_hi_v8hi): Likewise.
+	(vec_unpacku_lo_v16qi): Likewise.
+	(vec_unpacku_lo_v8hi): Likewise.
+
+	Backport from mainline r203863
+	2013-10-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (vspltis_constant): Make sure we check
+	all elements for both endian flavors.
+
+	Backport from mainline r203714
+	2013-10-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc/config/rs6000/vector.md (vec_unpacks_hi_v4sf): Correct for
+	endianness.
+	(vec_unpacks_lo_v4sf): Likewise.
+	(vec_unpacks_float_hi_v4si): Likewise.
+	(vec_unpacks_float_lo_v4si): Likewise.
+	(vec_unpacku_float_hi_v4si): Likewise.
+	(vec_unpacku_float_lo_v4si): Likewise.
+
+	Backport from mainline r203713
+	2013-10-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_concat_<mode>): Adjust output for LE.
+	(vsx_concat_v2sf): Likewise.
+
+	Backport from mainline r203458
+	2013-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (*vsx_le_perm_load_v2di): Generalize to
+	handle vector float as well.
+	(*vsx_le_perm_load_v4si): Likewise.
+	(*vsx_le_perm_store_v2di): Likewise.
+	(*vsx_le_perm_store_v4si): Likewise.
+
+	Backport from mainline r203457
+	2013-10-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (vec_realign_load<mode>): Generate vperm
+	directly to circumvent subtract from splat{31} workaround.
+	* config/rs6000/rs6000-protos.h (altivec_expand_vec_perm_le): New
+	prototype.
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_le): New.
+	* config/rs6000/altivec.md (define_c_enum "unspec"): Add
+	UNSPEC_VPERM_X and UNSPEC_VPERM_UNS_X.
+	(altivec_vperm_<mode>): Convert to define_insn_and_split to
+	separate big and little endian logic.
+	(*altivec_vperm_<mode>_internal): New define_insn.
+	(altivec_vperm_<mode>_uns): Convert to define_insn_and_split to
+	separate big and little endian logic.
+	(*altivec_vperm_<mode>_uns_internal): New define_insn.
+	(vec_permv16qi): Add little endian logic.
+
+	Backport from mainline r203247
+	2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const_le): New.
+	(altivec_expand_vec_perm_const): Call it.
+
+	Backport from mainline r203246
+	2013-10-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (mov<mode>): Emit permuted move
+	sequences for LE VSX loads and stores at expand time.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_le_vsx_move): New
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_const_vec): New.
+	(rs6000_gen_le_vsx_permute): New.
+	(rs6000_gen_le_vsx_load): New.
+	(rs6000_gen_le_vsx_store): New.
+	(rs6000_gen_le_vsx_move): New.
+	* config/rs6000/vsx.md (*vsx_le_perm_load_v2di): New.
+	(*vsx_le_perm_load_v4si): New.
+	(*vsx_le_perm_load_v8hi): New.
+	(*vsx_le_perm_load_v16qi): New.
+	(*vsx_le_perm_store_v2di): New.
+	(*vsx_le_perm_store_v4si): New.
+	(*vsx_le_perm_store_v8hi): New.
+	(*vsx_le_perm_store_v16qi): New.
+	(*vsx_xxpermdi2_le_<mode>): New.
+	(*vsx_xxpermdi4_le_<mode>): New.
+	(*vsx_xxpermdi8_le_V8HI): New.
+	(*vsx_xxpermdi16_le_V16QI): New.
+	(*vsx_lxvd2x2_le_<mode>): New.
+	(*vsx_lxvd2x4_le_<mode>): New.
+	(*vsx_lxvd2x8_le_V8HI): New.
+	(*vsx_lxvd2x16_le_V16QI): New.
+	(*vsx_stxvd2x2_le_<mode>): New.
+	(*vsx_stxvd2x4_le_<mode>): New.
+	(*vsx_stxvd2x8_le_V8HI): New.
+	(*vsx_stxvd2x16_le_V16QI): New.
+
+	Backport from mainline r201235
+	2013-07-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+	            Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vpkpx): Handle little endian.
+	(altivec_vpks<VI_char>ss): Likewise.
+	(altivec_vpks<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>um): Likewise.
+
+	Backport from mainline r201208
+	2013-07-24  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+	            Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/vector.md (vec_realign_load_<mode>): Reorder input
+	operands to vperm for little endian.
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): Use lvsr instead
+	of lvsl to create the control mask for a vperm for little endian.
+
+	Backport from mainline r201195
+	2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	            Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Reverse
+	two operands for little-endian.
+
+	Backport from mainline r201193
+	2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	            Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Correct
+	selection of field for vector splat in little endian mode.
+
+	Backport from mainline r201149
+	2013-07-22  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+	            Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Fix
+	endianness when selecting field to splat.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r205123:
 
 	2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
