@@ -1,3 +1,8 @@
+2014-04-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/60719
+	* Makefile.in (install-driver): Fix shell scripting.
+
 2014-04-03  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/60505
