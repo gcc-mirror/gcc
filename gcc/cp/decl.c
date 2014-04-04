@@ -2785,12 +2785,11 @@ decl_jump_unsafe (tree decl)
       || type == error_mark_node)
     return 0;
 
-  type = strip_array_types (type);
-
-  if (DECL_NONTRIVIALLY_INITIALIZED_P (decl))
+  if (DECL_NONTRIVIALLY_INITIALIZED_P (decl)
+      || variably_modified_type_p (type, NULL_TREE))
     return 2;
 
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
     return 1;
 
   return 0;
