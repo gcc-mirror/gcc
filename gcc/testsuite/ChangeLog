@@ -1,3 +1,11 @@
+2014-04-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60640
+        * g++.dg/ipa/pr60640-1.C: New test.
+        * g++.dg/ipa/pr60640-2.C: Likewise.
+        * g++.dg/ipa/pr60640-3.C: Likewise.
+        * g++.dg/ipa/pr60640-4.C: Likewise.
+
 2014-04-04  Jeff Law  <law@redhat.com>
 
 	PR target/60657
