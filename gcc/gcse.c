@@ -2502,6 +2502,65 @@ pre_insert_copies (void)
       }
 }
 
+struct set_data
+{
+  rtx insn;
+  const_rtx set;
+  int nsets;
+};
+
+/* Increment number of sets and record set in DATA.  */
+
+static void
+record_set_data (rtx dest, const_rtx set, void *data)
+{
+  struct set_data *s = (struct set_data *)data;
+
+  if (GET_CODE (set) == SET)
+    {
+      /* We allow insns having multiple sets, where all but one are
+	 dead as single set insns.  In the common case only a single
+	 set is present, so we want to avoid checking for REG_UNUSED
+	 notes unless necessary.  */
+      if (s->nsets == 1
+	  && find_reg_note (s->insn, REG_UNUSED, SET_DEST (s->set))
+	  && !side_effects_p (s->set))
+	s->nsets = 0;
+
+      if (!s->nsets)
+	{
+	  /* Record this set.  */
+	  s->nsets += 1;
+	  s->set = set;
+	}
+      else if (!find_reg_note (s->insn, REG_UNUSED, dest)
+	       || side_effects_p (set))
+	s->nsets += 1;
+    }
+}
+
+static const_rtx
+single_set_gcse (rtx insn)
+{
+  struct set_data s;
+  rtx pattern;
+  
+  gcc_assert (INSN_P (insn));
+
+  /* Optimize common case.  */
+  pattern = PATTERN (insn);
+  if (GET_CODE (pattern) == SET)
+    return pattern;
+
+  s.insn = insn;
+  s.nsets = 0;
+  note_stores (pattern, record_set_data, &s);
+
+  /* Considered invariant insns have exactly one set.  */
+  gcc_assert (s.nsets == 1);
+  return s.set;
+}
+
 /* Emit move from SRC to DEST noting the equivalence with expression computed
    in INSN.  */
 
@@ -2509,7 +2568,8 @@ static rtx
 gcse_emit_move_after (rtx dest, rtx src, rtx insn)
 {
   rtx new_rtx;
-  rtx set = single_set (insn), set2;
+  const_rtx set = single_set_gcse (insn);
+  rtx set2;
   rtx note;
   rtx eqv = NULL_RTX;
 
@@ -3369,13 +3429,12 @@ hoist_code (void)
 	      FOR_EACH_VEC_ELT (occrs_to_hoist, j, occr)
 		{
 		  rtx insn;
-		  rtx set;
+		  const_rtx set;
 
 		  gcc_assert (!occr->deleted_p);
 
 		  insn = occr->insn;
-		  set = single_set (insn);
-		  gcc_assert (set);
+		  set = single_set_gcse (insn);
 
 		  /* Create a pseudo-reg to store the result of reaching
 		     expressions into.  Get the mode for the new pseudo
@@ -3456,10 +3515,8 @@ get_pressure_class_and_nregs (rtx insn, int *nregs)
 {
   rtx reg;
   enum reg_class pressure_class;
-  rtx set = single_set (insn);
+  const_rtx set = single_set_gcse (insn);
 
-  /* Considered invariant insns have only one set.  */
-  gcc_assert (set != NULL_RTX);
   reg = SET_DEST (set);
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);

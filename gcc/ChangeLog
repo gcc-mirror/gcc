@@ -1,3 +1,12 @@
+2014-04-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/60155
+	* gcse.c (record_set_data): New function.
+	(single_set_gcse): New function.
+	(gcse_emit_move_after): Use single_set_gcse instead of single_set.
+	(hoist_code): Likewise.
+	(get_pressure_class_and_nregs): Likewise.
+
 2014-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* explow.c (probe_stack_range): Emit a final optimization blockage.
