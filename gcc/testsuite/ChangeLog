@@ -1,5 +1,13 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline
+	2013-04-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sd-vsx.c: Skip on AIX.
+	* gcc.target/powerpc/sd-pwr6.c: Same.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Back port from trunk
 	2014-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
