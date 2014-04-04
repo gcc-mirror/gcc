@@ -1,3 +1,8 @@
+2014-04-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR debug/60655
+	* gcc.c-torture/compile/pr60655-1.c: New test.
+
 2014-04-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60640

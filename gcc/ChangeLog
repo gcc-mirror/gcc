@@ -1,3 +1,10 @@
+2014-04-04  Jakub Jelinek  <jakub@redhat.com>
+	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR debug/60655
+	* dwarf2out.c (const_ok_for_output_1): Reject expressions
+	containing a NOT.
+
 2014-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR bootstrap/60743
