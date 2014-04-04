@@ -1,6 +1,13 @@
+2014-04-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60191
+	* fortran/trans-types.c (gfc_get_function_type): In case of recursion
+	build a variadic function type with empty argument list instead of a
+	stdarg-like function type with incomplete argument list.
+
 2014-04-04  Jeff Law  <law@redhat.com>
 
-        PR target/60657
+	PR target/60657
 	* config/arm/predicates.md (const_int_I_operand): New predicate.
 	(const_int_M_operand): Similarly.
 	* config/arm/arm.md (insv_zero): Use const_int_M_operand instead of
