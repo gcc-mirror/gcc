@@ -1,3 +1,178 @@
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Power8 Base Support
+	Backport from mainline
+	2013-11-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59054
+	* gcc.target/powerpc/direct-move.h (VSX_REG_ATTR): Allow test to
+	specify an appropriate register class for VSX operations.
+	(load_vsx): Use it.
+	(load_gpr_to_vsx): Likewise.
+	(load_vsx_to_gpr): Likewise.
+	* gcc.target/powerpc/direct-move-vint1.c: Use an appropriate
+	register class for VSX registers that the type can handle.  Remove
+	checks for explicit number of instructions generated, just check
+	if the instruction is generated.
+	* gcc.target/powerpc/direct-move-vint2.c: Likewise.
+	* gcc.target/powerpc/direct-move-float1.c: Likewise.
+	* gcc.target/powerpc/direct-move-float2.c: Likewise.
+	* gcc.target/powerpc/direct-move-double1.c: Likewise.
+	* gcc.target/powerpc/direct-move-double2.c: Likewise.
+	* gcc.target/powerpc/direct-move-long1.c: Likewise.
+	* gcc.target/powerpc/direct-move-long2.c: Likewise.
+
+	* gcc.target/powerpc/bool3-av.c: Limit to 64-bit mode for now.
+	* gcc.target/powerpc/bool3-p7.c: Likewise.
+	* gcc.target/powerpc/bool3-p8.c: Likewise.
+
+	* gcc.target/powerpc/p8vector-ldst.c: Just check that the
+	appropriate instructions are generated, don't check the count.
+
+	2013-11-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59054
+	* gcc.target/powerpc/pr59054.c: New test.
+
+	2013-08-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr57744.c: Declare abort.
+
+	2013-07-18  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/pr57744.c: Fix typo.
+
+	Back port from mainline
+	2013-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-fp.c: New test for floating point
+	scalar operations when using -mupper-regs-sf and -mupper-regs-df.
+	* gcc.target/powerpc/ppc-target-1.c: Update tests to allow either
+	VSX scalar operations or the traditional floating point form of
+	the instruction.
+	* gcc.target/powerpc/ppc-target-2.c: Likewise.
+	* gcc.target/powerpc/recip-3.c: Likewise.
+	* gcc.target/powerpc/recip-5.c: Likewise.
+	* gcc.target/powerpc/pr72747.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-3.c: Likewise.
+
+	Back port from mainline
+	2013-09-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-ldst.c: New test for -mupper-regs-sf
+	and -mupper-regs-df.
+
+	Back port from mainline
+	2013-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/58673
+	* gcc.target/powerpc/pr58673-1.c: New file to test whether
+	-mquad-word + -mno-vsx-timode causes errors.
+	* gcc.target/powerpc/pr58673-2.c: Likewise.
+
+
+	Backport from trunk.
+	2013-07-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/bool2.h: New file, test the code generation
+	of logical operations for power5, altivec, power7, and power8 systems.
+	* gcc.target/powerpc/bool2-p5.c: Likewise.
+	* gcc.target/powerpc/bool2-av.c: Likewise.
+	* gcc.target/powerpc/bool2-p7.c: Likewise.
+	* gcc.target/powerpc/bool2-p8.c: Likewise.
+	* gcc.target/powerpc/bool3.h: Likewise.
+	* gcc.target/powerpc/bool3-av.c: Likewise.
+	* gcc.target/powerpc/bool2-p7.c: Likewise.
+	* gcc.target/powerpc/bool2-p8.c: Likewise.
+
+	Backport from trunk.
+	2013-07-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/fusion.c: New file, test power8 fusion support.
+
+	Back port from the trunk
+	2013-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57744
+	* gcc.target/powerpc/pr57744.c: New test to make sure lqarx and
+	stqcx. get even registers.
+
+	Back port from the trunk
+
+	2013-06-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+		    Pat Haugen <pthaugen@us.ibm.com>
+		    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/atomic-p7.c: New file, add tests for atomic
+	load/store instructions on power7, power8.
+	* gcc.target/powerpc/atomic-p8.c: Likewise.
+
+	Back port from the trunk
+
+	2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+		    Pat Haugen <pthaugen@us.ibm.com>
+		    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/direct-move-vint1.c: New tests for power8
+	direct move instructions.
+	* gcc.target/powerpc/direct-move-vint2.c: Likewise.
+	* gcc.target/powerpc/direct-move.h: Likewise.
+	* gcc.target/powerpc/direct-move-float1.c: Likewise.
+	* gcc.target/powerpc/direct-move-float2.c: Likewise.
+	* gcc.target/powerpc/direct-move-double1.c: Likewise.
+	* gcc.target/powerpc/direct-move-double2.c: Likewise.
+	* gcc.target/powerpc/direct-move-long1.c: Likewise.
+	* gcc.target/powerpc/direct-move-long2.c: Likewise.
+
+	Backport from the trunk
+
+	2013-06-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+		    Pat Haugen <pthaugen@us.ibm.com>
+		    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-builtin-1.c: New test to test
+	power8 builtin functions.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-2.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-3.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-4.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-5.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-6.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-7.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-1.c: New
+	tests to test power8 auto-vectorization.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-2.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-3.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-4.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-5.c: Likewise.
+
+	* gcc.target/powerpc/crypto-builtin-1.c: Use effective target
+	powerpc_p8vector_ok instead of powerpc_vsx_ok.
+
+	* gcc.target/powerpc/bool.c: New file, add eqv, nand, nor tests.
+
+	* lib/target-supports.exp (check_p8vector_hw_available) Add power8
+	support.
+	(check_effective_target_powerpc_p8vector_ok): Likewise.
+	(is-effective-target): Likewise.
+	(check_vect_support_and_set_flags): Likewise.
+
+	Backport from trunk
+
+	2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+		    Pat Haugen <pthaugen@us.ibm.com>
+		    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/crypto-builtin-1.c: New file, test for power8
+	crypto builtins.
+
+	Backport from mainline
+	2013-03-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/mmfpgpr.c: New test.
+	* gcc.target/powerpc/sd-vsx.c: Likewise.
+	* gcc.target/powerpc/sd-pwr6.c: Likewise.
+	* gcc.target/powerpc/vsx-float0.c: Likewise.
+
 2014-04-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR libfortran/60128

@@ -5,4 +5,4 @@
 
 double foo (double x) { return __builtin_sqrt (x); }
 
-/* { dg-final { scan-assembler "xssqrtdp" } } */
+/* { dg-final { scan-assembler "xssqrtdp\|fsqrt" } } */

@@ -30,7 +30,7 @@
    RS6000_BUILTIN_A -- ABS builtins
    RS6000_BUILTIN_D -- DST builtins
    RS6000_BUILTIN_E -- SPE EVSEL builtins.
-   RS6000_BUILTIN_P -- Altivec and VSX predicate builtins
+   RS6000_BUILTIN_P -- Altivec, VSX, ISA 2.07 vector predicate builtins
    RS6000_BUILTIN_Q -- Paired floating point VSX predicate builtins
    RS6000_BUILTIN_S -- SPE predicate builtins
    RS6000_BUILTIN_X -- special builtins
@@ -299,6 +299,108 @@
 		    RS6000_BTM_VSX,			/* MASK */	\
 		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
 		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+/* ISA 2.07 (power8) vector convenience macros.  */
+/* For the instructions that are encoded as altivec instructions use
+   __builtin_altivec_ as the builtin name.  */
+#define BU_P8V_AV_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P8V_AV_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P8V_AV_P(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_P (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_PREDICATE),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* For the instructions encoded as VSX instructions use __builtin_vsx as the
+   builtin name.  */
+#define BU_P8V_VSX_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P8V_OVERLOAD_1(ENUM, NAME)					\
+  RS6000_BUILTIN_1 (P8V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_P8V_OVERLOAD_2(ENUM, NAME)					\
+  RS6000_BUILTIN_2 (P8V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+/* Crypto convenience macros.  */
+#define BU_CRYPTO_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_CRYPTO_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_CRYPTO_3(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_3 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_CRYPTO_OVERLOAD_1(ENUM, NAME)				\
+  RS6000_BUILTIN_1 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_CRYPTO_OVERLOAD_2(ENUM, NAME)				\
+  RS6000_BUILTIN_2 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_CRYPTO_OVERLOAD_3(ENUM, NAME)				\
+  RS6000_BUILTIN_3 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
 /* SPE convenience macros.  */
@@ -1012,7 +1114,7 @@ BU_VSX_1 (XVTSQRTSP_FG,	      "xvtsqrtsp_fg",	CONST,	vsx_tsqrtv4sf2_fg)
 BU_VSX_1 (XVRESP,	      "xvresp",		CONST,	vsx_frev4sf2)
 
 BU_VSX_1 (XSCVDPSP,	      "xscvdpsp",	CONST,	vsx_xscvdpsp)
-BU_VSX_1 (XSCVSPDP,	      "xscvspdp",	CONST,	vsx_xscvdpsp)
+BU_VSX_1 (XSCVSPDP,	      "xscvspdp",	CONST,	vsx_xscvspdp)
 BU_VSX_1 (XVCVDPSP,	      "xvcvdpsp",	CONST,	vsx_xvcvdpsp)
 BU_VSX_1 (XVCVSPDP,	      "xvcvspdp",	CONST,	vsx_xvcvspdp)
 BU_VSX_1 (XSTSQRTDP_FE,	      "xstsqrtdp_fe",	CONST,	vsx_tsqrtdf2_fe)
@@ -1052,9 +1154,9 @@ BU_VSX_1 (XVRSPIZ,	      "xvrspiz",	CONST,	vsx_btruncv4sf2)
 
 BU_VSX_1 (XSRDPI,	      "xsrdpi",		CONST,	vsx_xsrdpi)
 BU_VSX_1 (XSRDPIC,	      "xsrdpic",	CONST,	vsx_xsrdpic)
-BU_VSX_1 (XSRDPIM,	      "xsrdpim",	CONST,	vsx_floordf2)
-BU_VSX_1 (XSRDPIP,	      "xsrdpip",	CONST,	vsx_ceildf2)
-BU_VSX_1 (XSRDPIZ,	      "xsrdpiz",	CONST,	vsx_btruncdf2)
+BU_VSX_1 (XSRDPIM,	      "xsrdpim",	CONST,	floordf2)
+BU_VSX_1 (XSRDPIP,	      "xsrdpip",	CONST,	ceildf2)
+BU_VSX_1 (XSRDPIZ,	      "xsrdpiz",	CONST,	btruncdf2)
 
 /* VSX predicate functions.  */
 BU_VSX_P (XVCMPEQSP_P,	      "xvcmpeqsp_p",	CONST,	vector_eq_v4sf_p)
@@ -1131,6 +1233,139 @@ BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
+
+/* 1 argument VSX instructions added in ISA 2.07.  */
+BU_P8V_VSX_1 (XSCVSPDPN,      "xscvspdpn",	CONST,	vsx_xscvspdpn)
+BU_P8V_VSX_1 (XSCVDPSPN,      "xscvdpspn",	CONST,	vsx_xscvdpspn)
+
+/* 1 argument altivec instructions added in ISA 2.07.  */
+BU_P8V_AV_1 (ABS_V2DI,	      "abs_v2di",	CONST,	absv2di2)
+BU_P8V_AV_1 (VUPKHSW,	      "vupkhsw",	CONST,	altivec_vupkhsw)
+BU_P8V_AV_1 (VUPKLSW,	      "vupklsw",	CONST,	altivec_vupklsw)
+BU_P8V_AV_1 (VCLZB,	      "vclzb",		CONST,  clzv16qi2)
+BU_P8V_AV_1 (VCLZH,	      "vclzh",		CONST,  clzv8hi2)
+BU_P8V_AV_1 (VCLZW,	      "vclzw",		CONST,  clzv4si2)
+BU_P8V_AV_1 (VCLZD,	      "vclzd",		CONST,  clzv2di2)
+BU_P8V_AV_1 (VPOPCNTB,	      "vpopcntb",	CONST,  popcountv16qi2)
+BU_P8V_AV_1 (VPOPCNTH,	      "vpopcnth",	CONST,  popcountv8hi2)
+BU_P8V_AV_1 (VPOPCNTW,	      "vpopcntw",	CONST,  popcountv4si2)
+BU_P8V_AV_1 (VPOPCNTD,	      "vpopcntd",	CONST,  popcountv2di2)
+BU_P8V_AV_1 (VGBBD,	      "vgbbd",		CONST,  p8v_vgbbd)
+
+/* 2 argument altivec instructions added in ISA 2.07.  */
+BU_P8V_AV_2 (VADDUDM,		"vaddudm",	CONST,	addv2di3)
+BU_P8V_AV_2 (VMINSD,		"vminsd",	CONST,	sminv2di3)
+BU_P8V_AV_2 (VMAXSD,		"vmaxsd",	CONST,	smaxv2di3)
+BU_P8V_AV_2 (VMINUD,		"vminud",	CONST,	uminv2di3)
+BU_P8V_AV_2 (VMAXUD,		"vmaxud",	CONST,	umaxv2di3)
+BU_P8V_AV_2 (VMRGEW,		"vmrgew",	CONST,	p8_vmrgew)
+BU_P8V_AV_2 (VMRGOW,		"vmrgow",	CONST,	p8_vmrgow)
+BU_P8V_AV_2 (VPKUDUM,		"vpkudum",	CONST,	altivec_vpkudum)
+BU_P8V_AV_2 (VPKSDSS,		"vpksdss",	CONST,	altivec_vpksdss)
+BU_P8V_AV_2 (VPKUDUS,		"vpkudus",	CONST,	altivec_vpkudus)
+BU_P8V_AV_2 (VPKSDUS,		"vpksdus",	CONST,	altivec_vpkswus)
+BU_P8V_AV_2 (VRLD,		"vrld",		CONST,	vrotlv2di3)
+BU_P8V_AV_2 (VSLD,		"vsld",		CONST,	vashlv2di3)
+BU_P8V_AV_2 (VSRD,		"vsrd",		CONST,	vlshrv2di3)
+BU_P8V_AV_2 (VSRAD,		"vsrad",	CONST,	vashrv2di3)
+BU_P8V_AV_2 (VSUBUDM,		"vsubudm",	CONST,	subv2di3)
+
+BU_P8V_AV_2 (EQV_V16QI,		"eqv_v16qi",	CONST,	eqvv16qi3)
+BU_P8V_AV_2 (EQV_V8HI,		"eqv_v8hi",	CONST,	eqvv8hi3)
+BU_P8V_AV_2 (EQV_V4SI,		"eqv_v4si",	CONST,	eqvv4si3)
+BU_P8V_AV_2 (EQV_V2DI,		"eqv_v2di",	CONST,	eqvv2di3)
+BU_P8V_AV_2 (EQV_V4SF,		"eqv_v4sf",	CONST,	eqvv4sf3)
+BU_P8V_AV_2 (EQV_V2DF,		"eqv_v2df",	CONST,	eqvv2df3)
+
+BU_P8V_AV_2 (NAND_V16QI,	"nand_v16qi",	CONST,	nandv16qi3)
+BU_P8V_AV_2 (NAND_V8HI,		"nand_v8hi",	CONST,	nandv8hi3)
+BU_P8V_AV_2 (NAND_V4SI,		"nand_v4si",	CONST,	nandv4si3)
+BU_P8V_AV_2 (NAND_V2DI,		"nand_v2di",	CONST,	nandv2di3)
+BU_P8V_AV_2 (NAND_V4SF,		"nand_v4sf",	CONST,	nandv4sf3)
+BU_P8V_AV_2 (NAND_V2DF,		"nand_v2df",	CONST,	nandv2df3)
+
+BU_P8V_AV_2 (ORC_V16QI,		"orc_v16qi",	CONST,	orcv16qi3)
+BU_P8V_AV_2 (ORC_V8HI,		"orc_v8hi",	CONST,	orcv8hi3)
+BU_P8V_AV_2 (ORC_V4SI,		"orc_v4si",	CONST,	orcv4si3)
+BU_P8V_AV_2 (ORC_V2DI,		"orc_v2di",	CONST,	orcv2di3)
+BU_P8V_AV_2 (ORC_V4SF,		"orc_v4sf",	CONST,	orcv4sf3)
+BU_P8V_AV_2 (ORC_V2DF,		"orc_v2df",	CONST,	orcv2df3)
+
+/* Vector comparison instructions added in ISA 2.07.  */
+BU_P8V_AV_2 (VCMPEQUD,		"vcmpequd",	CONST,	vector_eqv2di)
+BU_P8V_AV_2 (VCMPGTSD,		"vcmpgtsd",	CONST,	vector_gtv2di)
+BU_P8V_AV_2 (VCMPGTUD,		"vcmpgtud",	CONST,	vector_gtuv2di)
+
+/* Vector comparison predicate instructions added in ISA 2.07.  */
+BU_P8V_AV_P (VCMPEQUD_P,	"vcmpequd_p",	CONST,	vector_eq_v2di_p)
+BU_P8V_AV_P (VCMPGTSD_P,	"vcmpgtsd_p",	CONST,	vector_gt_v2di_p)
+BU_P8V_AV_P (VCMPGTUD_P,	"vcmpgtud_p",	CONST,	vector_gtu_v2di_p)
+
+/* ISA 2.07 vector overloaded 1 argument functions.  */
+BU_P8V_OVERLOAD_1 (VUPKHSW,	"vupkhsw")
+BU_P8V_OVERLOAD_1 (VUPKLSW,	"vupklsw")
+BU_P8V_OVERLOAD_1 (VCLZ,	"vclz")
+BU_P8V_OVERLOAD_1 (VCLZB,	"vclzb")
+BU_P8V_OVERLOAD_1 (VCLZH,	"vclzh")
+BU_P8V_OVERLOAD_1 (VCLZW,	"vclzw")
+BU_P8V_OVERLOAD_1 (VCLZD,	"vclzd")
+BU_P8V_OVERLOAD_1 (VPOPCNT,	"vpopcnt")
+BU_P8V_OVERLOAD_1 (VPOPCNTB,	"vpopcntb")
+BU_P8V_OVERLOAD_1 (VPOPCNTH,	"vpopcnth")
+BU_P8V_OVERLOAD_1 (VPOPCNTW,	"vpopcntw")
+BU_P8V_OVERLOAD_1 (VPOPCNTD,	"vpopcntd")
+BU_P8V_OVERLOAD_1 (VGBBD,	"vgbbd")
+
+/* ISA 2.07 vector overloaded 2 argument functions.  */
+BU_P8V_OVERLOAD_2 (EQV,		"eqv")
+BU_P8V_OVERLOAD_2 (NAND,	"nand")
+BU_P8V_OVERLOAD_2 (ORC,		"orc")
+BU_P8V_OVERLOAD_2 (VADDUDM,	"vaddudm")
+BU_P8V_OVERLOAD_2 (VMAXSD,	"vmaxsd")
+BU_P8V_OVERLOAD_2 (VMAXUD,	"vmaxud")
+BU_P8V_OVERLOAD_2 (VMINSD,	"vminsd")
+BU_P8V_OVERLOAD_2 (VMINUD,	"vminud")
+BU_P8V_OVERLOAD_2 (VMRGEW,	"vmrgew")
+BU_P8V_OVERLOAD_2 (VMRGOW,	"vmrgow")
+BU_P8V_OVERLOAD_2 (VPKSDSS,	"vpksdss")
+BU_P8V_OVERLOAD_2 (VPKSDUS,	"vpksdus")
+BU_P8V_OVERLOAD_2 (VPKUDUM,	"vpkudum")
+BU_P8V_OVERLOAD_2 (VPKUDUS,	"vpkudus")
+BU_P8V_OVERLOAD_2 (VRLD,	"vrld")
+BU_P8V_OVERLOAD_2 (VSLD,	"vsld")
+BU_P8V_OVERLOAD_2 (VSRAD,	"vsrad")
+BU_P8V_OVERLOAD_2 (VSRD,	"vsrd")
+BU_P8V_OVERLOAD_2 (VSUBUDM,	"vsubudm")
+
+
+/* 1 argument crypto functions.  */
+BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
+
+/* 2 argument crypto functions.  */
+BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher)
+BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",	  CONST, crypto_vcipherlast)
+BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher)
+BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",	  CONST, crypto_vncipherlast)
+BU_CRYPTO_2 (VPMSUMB,		"vpmsumb",	  CONST, crypto_vpmsumb)
+BU_CRYPTO_2 (VPMSUMH,		"vpmsumh",	  CONST, crypto_vpmsumh)
+BU_CRYPTO_2 (VPMSUMW,		"vpmsumw",	  CONST, crypto_vpmsumw)
+BU_CRYPTO_2 (VPMSUMD,		"vpmsumd",	  CONST, crypto_vpmsumd)
+
+/* 3 argument crypto functions.  */
+BU_CRYPTO_3 (VPERMXOR_V2DI,	"vpermxor_v2di",  CONST, crypto_vpermxor_v2di)
+BU_CRYPTO_3 (VPERMXOR_V4SI,	"vpermxor_v4si",  CONST, crypto_vpermxor_v4si)
+BU_CRYPTO_3 (VPERMXOR_V8HI,	"vpermxor_v8hi",  CONST, crypto_vpermxor_v8hi)
+BU_CRYPTO_3 (VPERMXOR_V16QI,	"vpermxor_v16qi", CONST, crypto_vpermxor_v16qi)
+BU_CRYPTO_3 (VSHASIGMAW,	"vshasigmaw",	  CONST, crypto_vshasigmaw)
+BU_CRYPTO_3 (VSHASIGMAD,	"vshasigmad",	  CONST, crypto_vshasigmad)
+
+/* 2 argument crypto overloaded functions.  */
+BU_CRYPTO_OVERLOAD_2 (VPMSUM,	 "vpmsum")
+
+/* 3 argument crypto overloaded functions.  */
+BU_CRYPTO_OVERLOAD_3 (VPERMXOR,	 "vpermxor")
+BU_CRYPTO_OVERLOAD_3 (VSHASIGMA, "vshasigma")
+
 
 /* 3 argument paired floating point builtins.  */
 BU_PAIRED_3 (MSUB,            "msub",           FP, 	fmsv2sf4)

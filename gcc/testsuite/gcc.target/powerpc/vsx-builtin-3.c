@@ -16,9 +16,9 @@
 /* { dg-final { scan-assembler "xvrspiz" } } */
 /* { dg-final { scan-assembler "xsrdpi" } } */
 /* { dg-final { scan-assembler "xsrdpic" } } */
-/* { dg-final { scan-assembler "xsrdpim" } } */
-/* { dg-final { scan-assembler "xsrdpip" } } */
-/* { dg-final { scan-assembler "xsrdpiz" } } */
+/* { dg-final { scan-assembler "xsrdpim\|frim" } } */
+/* { dg-final { scan-assembler "xsrdpip\|frip" } } */
+/* { dg-final { scan-assembler "xsrdpiz\|friz" } } */
 /* { dg-final { scan-assembler "xsmaxdp" } } */
 /* { dg-final { scan-assembler "xsmindp" } } */
 /* { dg-final { scan-assembler "xxland" } } */

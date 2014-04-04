@@ -5,8 +5,7 @@
 /* { dg-final { scan-assembler-times "fabs" 3 } } */
 /* { dg-final { scan-assembler-times "fnabs" 3 } } */
 /* { dg-final { scan-assembler-times "fsel" 3 } } */
-/* { dg-final { scan-assembler-times "fcpsgn" 3 } } */
-/* { dg-final { scan-assembler-times "xscpsgndp" 1 } } */
+/* { dg-final { scan-assembler-times "fcpsgn\|xscpsgndp" 4 } } */
 
 double normal1 (double, double);
 double power5  (double, double) __attribute__((__target__("cpu=power5")));

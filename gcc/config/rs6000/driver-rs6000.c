@@ -167,7 +167,7 @@ elf_platform (void)
 
   if (fd != -1)
     {
-      char buf[1024];
+      static char buf[1024];
       ElfW(auxv_t) *av;
       ssize_t n;
 
