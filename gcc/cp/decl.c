@@ -1737,9 +1737,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 			if (permerror (input_location,
 				       "default argument given for parameter "
 				       "%d of %q#D", i, newdecl))
-			  permerror (DECL_SOURCE_LOCATION (olddecl),
-				     "previous specification in %q#D here",
-				     olddecl);
+			  inform (DECL_SOURCE_LOCATION (olddecl),
+				  "previous specification in %q#D here",
+				  olddecl);
 		      }
 		    else
 		      {

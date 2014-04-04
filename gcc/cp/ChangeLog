@@ -1,3 +1,8 @@
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* decl.c (duplicate_decls): Check for the return of permerror
+	before emitting a note.
+
 2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (accessible_nvdtor_p): New.
@@ -66,9 +71,9 @@
 2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52369
-	* cp/method.c (walk_field_subobs): Improve the diagnostic
+	* method.c (walk_field_subobs): Improve the diagnostic
 	locations for both REFERENCE_TYPEs and non-static const members.
-	* cp/init.c (diagnose_uninitialized_cst_or_ref_member): Use %q#D
+	* init.c (diagnose_uninitialized_cst_or_ref_member): Use %q#D
 	instead of %qD to be consistent with the c++11 diagnostic.
 
 2014-03-25  Jason Merrill  <jason@redhat.com>
