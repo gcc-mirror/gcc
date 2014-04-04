@@ -155,6 +155,7 @@ extern tree altivec_resolve_overloaded_builtin (location_t, tree, void *);
 extern rtx rs6000_libcall_value (enum machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
+extern int rs6000_reg_parm_stack_space (tree);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
 #ifdef ARGS_SIZE_RTX
@@ -179,7 +180,8 @@ extern unsigned int rs6000_dbx_register_number (unsigned int);
 extern void rs6000_emit_epilogue (int);
 extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern const char * output_isel (rtx *);
-extern void rs6000_call_indirect_aix (rtx, rtx, rtx);
+extern void rs6000_call_aix (rtx, rtx, rtx, rtx);
+extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);

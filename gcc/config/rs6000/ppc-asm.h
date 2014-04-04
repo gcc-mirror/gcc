@@ -256,7 +256,30 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * the real function with one or two leading periods respectively.
  */
 
-#if defined (__powerpc64__)
+#if defined(__powerpc64__) && _CALL_ELF == 2
+
+/* Defining "toc" above breaks @toc in assembler code.  */
+#undef toc
+
+#define FUNC_NAME(name) GLUE(__USER_LABEL_PREFIX__,name)
+#define JUMP_TARGET(name) FUNC_NAME(name)
+#define FUNC_START(name) \
+	.type FUNC_NAME(name),@function; \
+	.globl FUNC_NAME(name); \
+FUNC_NAME(name): \
+0:	addis 2,12,(.TOC.-0b)@ha; \
+	addi 2,2,(.TOC.-0b)@l; \
+	.localentry FUNC_NAME(name),.-FUNC_NAME(name)
+
+#define HIDDEN_FUNC(name) \
+  FUNC_START(name) \
+  .hidden FUNC_NAME(name);
+
+#define FUNC_END(name) \
+	.size FUNC_NAME(name),.-FUNC_NAME(name)
+
+#elif defined (__powerpc64__)
+
 #define FUNC_NAME(name) GLUE(.,name)
 #define JUMP_TARGET(name) FUNC_NAME(name)
 #define FUNC_START(name) \

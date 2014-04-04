@@ -26,7 +26,26 @@
 
 #include "asmcfi.h"
 
-#if defined(__powerpc64__) && defined(__ELF__)
+#if defined(__powerpc64__) && _CALL_ELF == 2
+.macro FUNC name
+        .globl  \name
+        .type   \name, @function
+\name:
+0:	addis 2,12,(.TOC.-0b)@ha
+	addi 2,2,(.TOC.-0b)@l
+	.localentry \name, . - \name
+.endm
+.macro END name
+	.size	\name, . - \name
+.endm
+.macro HIDDEN name
+	.hidden	\name
+.endm
+.macro CALL name
+	bl	\name
+	nop
+.endm
+#elif defined(__powerpc64__) && defined(__ELF__)
 .macro FUNC name
         .globl  \name, .\name
         .section ".opd","aw"
@@ -115,6 +134,9 @@ _$0:
 
 /* Parameterize the code for call frame constants.  */
 #if defined(_CALL_AIXDESC)
+# define BASE		6*WS
+# define LR_SAVE	2*WS
+#elif _CALL_ELF == 2
 # define BASE		6*WS
 # define LR_SAVE	2*WS
 #elif defined(_CALL_SYSV)

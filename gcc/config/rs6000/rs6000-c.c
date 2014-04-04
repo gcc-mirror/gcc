@@ -461,6 +461,10 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     case ABI_AIX:
       builtin_define ("_CALL_AIXDESC");
       builtin_define ("_CALL_AIX");
+      builtin_define ("_CALL_ELF=1");
+      break;
+    case ABI_ELFv2:
+      builtin_define ("_CALL_ELF=2");
       break;
     case ABI_DARWIN:
       builtin_define ("_CALL_DARWIN");
@@ -472,6 +476,13 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   /* Let the compiled code know if 'f' class registers will not be available.  */
   if (TARGET_SOFT_FLOAT || !TARGET_FPRS)
     builtin_define ("__NO_FPRS__");
+
+  /* Whether aggregates passed by value are aligned to a 16 byte boundary
+     if their alignment is 16 bytes or larger.  */
+  if ((TARGET_MACHO && rs6000_darwin64_abi)
+      || DEFAULT_ABI == ABI_ELFv2
+      || (DEFAULT_ABI == ABI_AIX && !rs6000_compat_align_parm))
+    builtin_define ("__STRUCT_PARM_ALIGN__=16");
 
   /* Generate defines for Xilinx FPU. */
   if (rs6000_xilinx_fpu) 

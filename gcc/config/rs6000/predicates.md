@@ -1077,7 +1077,8 @@
   (and (match_code "symbol_ref")
        (match_test "(DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op))
 		    && ((SYMBOL_REF_LOCAL_P (op)
-			 && (DEFAULT_ABI != ABI_AIX
+			 && ((DEFAULT_ABI != ABI_AIX
+			      && DEFAULT_ABI != ABI_ELFv2)
 			     || !SYMBOL_REF_EXTERNAL_P (op)))
 		        || (op == XEXP (DECL_RTL (current_function_decl),
 						  0)))")))
@@ -1553,6 +1554,26 @@
 	  || XVECEXP (unspec, 0, 0) != src_reg
 	  || GET_CODE (XVECEXP (unspec, 0, 1)) != CONST_INT
 	  || INTVAL (XVECEXP (unspec, 0, 1)) != maskval)
+	return 0;
+    }
+  return 1;
+})
+
+;; Return 1 if OP is valid for crsave insn, known to be a PARALLEL.
+(define_predicate "crsave_operation"
+  (match_code "parallel")
+{
+  int count = XVECLEN (op, 0);
+  int i;
+
+  for (i = 1; i < count; i++)
+    {
+      rtx exp = XVECEXP (op, 0, i);
+
+      if (GET_CODE (exp) != USE
+	  || GET_CODE (XEXP (exp, 0)) != REG
+	  || GET_MODE (XEXP (exp, 0)) != CCmode
+	  || ! CR_REGNO_P (REGNO (XEXP (exp, 0))))
 	return 0;
     }
   return 1;
