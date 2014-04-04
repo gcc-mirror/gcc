@@ -1,3 +1,12 @@
+2014-04-04  Bill Schmidt <wschmidt@linux.vnet.ibm.com>
+
+	Power8 HTM Support
+	Backport from mainline
+        * lib/target-supports.exp (check_effective_target_powerpc_htm_ok): New
+        function to test if HTM is available.
+	* gcc.target/powerpc/htm-xl-intrin-1.c: New test.
+	* gcc.target/powerpc/htm-builtin-1.c: New test.
+
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Power8 Base Support

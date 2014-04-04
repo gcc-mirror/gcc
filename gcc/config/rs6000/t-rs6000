@@ -72,6 +72,7 @@ MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/vsx.md \
 	$(srcdir)/config/rs6000/altivec.md \
 	$(srcdir)/config/rs6000/crypto.md \
+	$(srcdir)/config/rs6000/htm.md \
 	$(srcdir)/config/rs6000/spe.md \
 	$(srcdir)/config/rs6000/dfp.md \
 	$(srcdir)/config/rs6000/paired.md

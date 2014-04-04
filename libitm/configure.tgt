@@ -47,7 +47,10 @@ fi
 # work out any special compilation flags as necessary.
 case "${target_cpu}" in
   alpha*)		ARCH=alpha ;;
-  rs6000 | powerpc*)	ARCH=powerpc ;;
+  rs6000 | powerpc*)
+	XCFLAGS="${XCFLAGS} -mhtm"
+	ARCH=powerpc
+	;;
 
   arm*)		ARCH=arm ;;
 

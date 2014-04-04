@@ -205,7 +205,8 @@ extern int darwin_emit_branch_islands;
     "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
     "vrsave", "vscr",							\
     "spe_acc", "spefscr",                                               \
-    "sfp"								\
+    "sfp",								\
+    "tfhar", "tfiar", "texasr"						\
 }
 
 /* This outputs NAME to FILE.  */
