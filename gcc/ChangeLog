@@ -1,3 +1,15 @@
+2014-04-04  Jeff Law  <law@redhat.com>
+
+        PR target/60657
+	* config/arm/predicates.md (const_int_I_operand): New predicate.
+	(const_int_M_operand): Similarly.
+	* config/arm/arm.md (insv_zero): Use const_int_M_operand instead of
+	const_int_operand.
+	(insv_t2, extv_reg, extzv_t2): Likewise.
+	(load_multiple_with_writeback): Similarly for const_int_I_operand.
+	(pop_multiple_with_writeback_and_return): Likewise.
+	(vfp_pop_multiple_with_writeback): Likewise
+
 2014-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60746
