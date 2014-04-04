@@ -1,3 +1,10 @@
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* decl.c (duplicate_decls): Check for the return of warning_at
+	before emitting a note.
+	(warn_misplaced_attr_for_class_type): Likewise.
+	(check_tag_decl): Likewise.
+
 2014-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58207

@@ -1648,10 +1648,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	       && prototype_p (TREE_TYPE (newdecl)))
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
-	  warning_at (DECL_SOURCE_LOCATION (newdecl), 0,
-		      "prototype specified for %q#D", newdecl);
-	  inform (DECL_SOURCE_LOCATION (olddecl),
-		  "previous non-prototype definition here");
+	  if (warning_at (DECL_SOURCE_LOCATION (newdecl), 0,
+			  "prototype specified for %q#D", newdecl))
+	    inform (DECL_SOURCE_LOCATION (olddecl),
+		    "previous non-prototype definition here");
 	}
       else if (VAR_OR_FUNCTION_DECL_P (olddecl)
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
@@ -4241,12 +4241,12 @@ warn_misplaced_attr_for_class_type (source_location location,
 {
   gcc_assert (OVERLOAD_TYPE_P (class_type));
 
-  warning_at (location, OPT_Wattributes,
-	      "attribute ignored in declaration "
-	      "of %q#T", class_type);
-  inform (location,
-	  "attribute for %q#T must follow the %qs keyword",
-	  class_type, class_key_or_enum_as_string (class_type));
+  if (warning_at (location, OPT_Wattributes,
+		  "attribute ignored in declaration "
+		  "of %q#T", class_type))
+    inform (location,
+	    "attribute for %q#T must follow the %qs keyword",
+	    class_type, class_key_or_enum_as_string (class_type));
 }
 
 /* Make sure that a declaration with no declarator is well-formed, i.e.
@@ -4373,12 +4373,12 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
 	       No attribute-specifier-seq shall appertain to an explicit
 	       instantiation.  */
 	{
-	  warning_at (loc, OPT_Wattributes,
-		      "attribute ignored in explicit instantiation %q#T",
-		      declared_type);
-	  inform (loc,
-		  "no attribute can be applied to "
-		  "an explicit instantiation");
+	  if (warning_at (loc, OPT_Wattributes,
+			  "attribute ignored in explicit instantiation %q#T",
+			  declared_type))
+	    inform (loc,
+		    "no attribute can be applied to "
+		    "an explicit instantiation");
 	}
       else
 	warn_misplaced_attr_for_class_type (loc, declared_type);
