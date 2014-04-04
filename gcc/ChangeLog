@@ -1,5 +1,13 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Back port from main line:
+	2014-04-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document vec_vgbbd.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Back port mainline subversion id 209025.
 	2014-04-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
