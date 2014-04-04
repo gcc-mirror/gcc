@@ -139,7 +139,10 @@ process_references (struct ipa_ref_list *list,
 
       if (node->definition && !node->in_other_partition
 	  && ((!DECL_EXTERNAL (node->decl) || node->alias)
-	      || (before_inlining_p
+	      || (((before_inlining_p
+		    && (cgraph_state < CGRAPH_STATE_IPA_SSA
+		        || !lookup_attribute ("always_inline",
+					      DECL_ATTRIBUTES (node->decl)))))
 		  /* We use variable constructors during late complation for
 		     constant folding.  Keep references alive so partitioning
 		     knows about potential references.  */
@@ -191,7 +194,10 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 	  /* Prior inlining, keep alive bodies of possible targets for
 	     devirtualization.  */
 	   if (n->definition
-	       && before_inlining_p)
+	       && (before_inlining_p
+		   && (cgraph_state < CGRAPH_STATE_IPA_SSA
+		       || !lookup_attribute ("always_inline",
+					     DECL_ATTRIBUTES (n->decl)))))
 	     pointer_set_insert (reachable, n);
 
 	  /* Even after inlining we want to keep the possible targets in the
@@ -491,6 +497,12 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      node->alias = false;
 	      node->thunk.thunk_p = false;
 	      node->weakref = false;
+	      /* After early inlining we drop always_inline attributes on
+		 bodies of functions that are still referenced (have their
+		 address taken).  */
+	      DECL_ATTRIBUTES (node->decl)
+		= remove_attribute ("always_inline",
+				    DECL_ATTRIBUTES (node->decl));
 	      if (!node->in_other_partition)
 		node->local.local = false;
 	      cgraph_node_remove_callees (node);

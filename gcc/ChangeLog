@@ -1,3 +1,13 @@
+2014-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59626
+	* lto-cgraph.c (input_overwrite_node): Check that partitioning
+	flags are set only during streaming.
+	* ipa.c (process_references, walk_polymorphic_call_targets,
+	symtab_remove_unreachable_nodes): Drop bodies of always inline
+	after early inlining.
+	(symtab_remove_unreachable_nodes): Remove always_inline attribute.
+	
 2014-04-04  Jakub Jelinek  <jakub@redhat.com>
 	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
