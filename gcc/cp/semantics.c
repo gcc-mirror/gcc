@@ -7720,8 +7720,8 @@ sort_constexpr_mem_initializers (tree type, vec<constructor_elt, va_gc> *v)
 {
   tree pri = CLASSTYPE_PRIMARY_BINFO (type);
   tree field_type;
-  constructor_elt elt;
-  int i;
+  unsigned i;
+  constructor_elt *ce;
 
   if (pri)
     field_type = BINFO_TYPE (pri);
@@ -7732,14 +7732,14 @@ sort_constexpr_mem_initializers (tree type, vec<constructor_elt, va_gc> *v)
 
   /* Find the element for the primary base or vptr and move it to the
      beginning of the vec.  */
-  vec<constructor_elt, va_gc> &vref = *v;
-  for (i = 0; ; ++i)
-    if (TREE_TYPE (vref[i].index) == field_type)
+  for (i = 0; vec_safe_iterate (v, i, &ce); ++i)
+    if (TREE_TYPE (ce->index) == field_type)
       break;
 
-  if (i > 0)
+  if (i > 0 && i < vec_safe_length (v))
     {
-      elt = vref[i];
+      vec<constructor_elt, va_gc> &vref = *v;
+      constructor_elt elt = vref[i];
       for (; i > 0; --i)
 	vref[i] = vref[i-1];
       vref[0] = elt;
