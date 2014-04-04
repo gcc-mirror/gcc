@@ -673,9 +673,6 @@ extern unsigned char rs6000_recip_bits[];
 #define RS6000_RECIP_AUTO_RSQRTE_P(MODE) \
   (rs6000_recip_bits[(int)(MODE)] & RS6000_RECIP_MASK_AUTO_RSQRTE)
 
-#define RS6000_RECIP_HIGH_PRECISION_P(MODE) \
-  ((MODE) == SFmode || (MODE) == V4SFmode || TARGET_RECIP_PRECISION)
-
 /* The default CPU for TARGET_OPTION_OVERRIDE.  */
 #define OPTION_TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT
 

@@ -1,6 +1,19 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
+	2013-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/56843
+	* config/rs6000/rs6000.c (rs6000_emit_swdiv_high_precision): Remove.
+	(rs6000_emit_swdiv_low_precision): Remove.
+	(rs6000_emit_swdiv): Rewrite to handle between one and four
+	iterations of Newton-Raphson generally; modify required number of
+	iterations for some cases.
+	* config/rs6000/rs6000.h (RS6000_RECIP_HIGH_PRECISION_P): Remove.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
 	2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 

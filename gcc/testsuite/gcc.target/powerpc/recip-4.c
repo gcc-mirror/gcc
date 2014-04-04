@@ -7,8 +7,8 @@
 /* { dg-final { scan-assembler-times "xvnmsub.dp" 2 } } */
 /* { dg-final { scan-assembler-times "xvrsqrtesp" 1 } } */
 /* { dg-final { scan-assembler-times "xvmsub.sp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmulsp" 4 } } */
-/* { dg-final { scan-assembler-times "xvnmsub.sp" 2 } } */
+/* { dg-final { scan-assembler-times "xvmulsp" 2 } } */
+/* { dg-final { scan-assembler-times "xvnmsub.sp" 1 } } */
 
 #define SIZE 1024
 

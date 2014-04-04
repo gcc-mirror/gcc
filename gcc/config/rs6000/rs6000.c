@@ -29417,54 +29417,26 @@ rs6000_emit_nmsub (rtx dst, rtx m1, rtx m2, rtx a)
   emit_insn (gen_rtx_SET (VOIDmode, dst, r));
 }
 
-/* Newton-Raphson approximation of floating point divide with just 2 passes
-   (either single precision floating point, or newer machines with higher
-   accuracy estimates).  Support both scalar and vector divide.  Assumes no
-   trapping math and finite arguments.  */
+/* Newton-Raphson approximation of floating point divide DST = N/D.  If NOTE_P,
+   add a reg_note saying that this was a division.  Support both scalar and
+   vector divide.  Assumes no trapping math and finite arguments.  */
 
-static void
-rs6000_emit_swdiv_high_precision (rtx dst, rtx n, rtx d)
+void
+rs6000_emit_swdiv (rtx dst, rtx n, rtx d, bool note_p)
 {
   enum machine_mode mode = GET_MODE (dst);
-  rtx x0, e0, e1, y1, u0, v0;
-  enum insn_code code = optab_handler (smul_optab, mode);
-  insn_gen_fn gen_mul = GEN_FCN (code);
-  rtx one = rs6000_load_constant_and_splat (mode, dconst1);
+  rtx one, x0, e0, x1, xprev, eprev, xnext, enext, u, v;
+  int i;
 
-  gcc_assert (code != CODE_FOR_nothing);
+  /* Low precision estimates guarantee 5 bits of accuracy.  High
+     precision estimates guarantee 14 bits of accuracy.  SFmode
+     requires 23 bits of accuracy.  DFmode requires 52 bits of
+     accuracy.  Each pass at least doubles the accuracy, leading
+     to the following.  */
+  int passes = (TARGET_RECIP_PRECISION) ? 1 : 3;
+  if (mode == DFmode || mode == V2DFmode)
+    passes++;
 
-  /* x0 = 1./d estimate */
-  x0 = gen_reg_rtx (mode);
-  emit_insn (gen_rtx_SET (VOIDmode, x0,
-			  gen_rtx_UNSPEC (mode, gen_rtvec (1, d),
-					  UNSPEC_FRES)));
-
-  e0 = gen_reg_rtx (mode);
-  rs6000_emit_nmsub (e0, d, x0, one);		/* e0 = 1. - (d * x0) */
-
-  e1 = gen_reg_rtx (mode);
-  rs6000_emit_madd (e1, e0, e0, e0);		/* e1 = (e0 * e0) + e0 */
-
-  y1 = gen_reg_rtx (mode);
-  rs6000_emit_madd (y1, e1, x0, x0);		/* y1 = (e1 * x0) + x0 */
-
-  u0 = gen_reg_rtx (mode);
-  emit_insn (gen_mul (u0, n, y1));		/* u0 = n * y1 */
-
-  v0 = gen_reg_rtx (mode);
-  rs6000_emit_nmsub (v0, d, u0, n);		/* v0 = n - (d * u0) */
-
-  rs6000_emit_madd (dst, v0, y1, u0);		/* dst = (v0 * y1) + u0 */
-}
-
-/* Newton-Raphson approximation of floating point divide that has a low
-   precision estimate.  Assumes no trapping math and finite arguments.  */
-
-static void
-rs6000_emit_swdiv_low_precision (rtx dst, rtx n, rtx d)
-{
-  enum machine_mode mode = GET_MODE (dst);
-  rtx x0, e0, e1, e2, y1, y2, y3, u0, v0, one;
   enum insn_code code = optab_handler (smul_optab, mode);
   insn_gen_fn gen_mul = GEN_FCN (code);
 
@@ -29478,46 +29450,44 @@ rs6000_emit_swdiv_low_precision (rtx dst, rtx n, rtx d)
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, d),
 					  UNSPEC_FRES)));
 
-  e0 = gen_reg_rtx (mode);
-  rs6000_emit_nmsub (e0, d, x0, one);		/* e0 = 1. - d * x0 */
+  /* Each iteration but the last calculates x_(i+1) = x_i * (2 - d * x_i).  */
+  if (passes > 1) {
 
-  y1 = gen_reg_rtx (mode);
-  rs6000_emit_madd (y1, e0, x0, x0);		/* y1 = x0 + e0 * x0 */
+    /* e0 = 1. - d * x0  */
+    e0 = gen_reg_rtx (mode);
+    rs6000_emit_nmsub (e0, d, x0, one);
 
-  e1 = gen_reg_rtx (mode);
-  emit_insn (gen_mul (e1, e0, e0));		/* e1 = e0 * e0 */
+    /* x1 = x0 + e0 * x0  */
+    x1 = gen_reg_rtx (mode);
+    rs6000_emit_madd (x1, e0, x0, x0);
 
-  y2 = gen_reg_rtx (mode);
-  rs6000_emit_madd (y2, e1, y1, y1);		/* y2 = y1 + e1 * y1 */
+    for (i = 0, xprev = x1, eprev = e0; i < passes - 2;
+	 ++i, xprev = xnext, eprev = enext) {
+      
+      /* enext = eprev * eprev  */
+      enext = gen_reg_rtx (mode);
+      emit_insn (gen_mul (enext, eprev, eprev));
 
-  e2 = gen_reg_rtx (mode);
-  emit_insn (gen_mul (e2, e1, e1));		/* e2 = e1 * e1 */
+      /* xnext = xprev + enext * xprev  */
+      xnext = gen_reg_rtx (mode);
+      rs6000_emit_madd (xnext, enext, xprev, xprev);
+    }
 
-  y3 = gen_reg_rtx (mode);
-  rs6000_emit_madd (y3, e2, y2, y2);		/* y3 = y2 + e2 * y2 */
+  } else
+    xprev = x0;
 
-  u0 = gen_reg_rtx (mode);
-  emit_insn (gen_mul (u0, n, y3));		/* u0 = n * y3 */
+  /* The last iteration calculates x_(i+1) = n * x_i * (2 - d * x_i).  */
 
-  v0 = gen_reg_rtx (mode);
-  rs6000_emit_nmsub (v0, d, u0, n);		/* v0 = n - d * u0 */
+  /* u = n * xprev  */
+  u = gen_reg_rtx (mode);
+  emit_insn (gen_mul (u, n, xprev));
 
-  rs6000_emit_madd (dst, v0, y3, u0);		/* dst = u0 + v0 * y3 */
-}
+  /* v = n - (d * u)  */
+  v = gen_reg_rtx (mode);
+  rs6000_emit_nmsub (v, d, u, n);
 
-/* Newton-Raphson approximation of floating point divide DST = N/D.  If NOTE_P,
-   add a reg_note saying that this was a division.  Support both scalar and
-   vector divide.  Assumes no trapping math and finite arguments.  */
-
-void
-rs6000_emit_swdiv (rtx dst, rtx n, rtx d, bool note_p)
-{
-  enum machine_mode mode = GET_MODE (dst);
-
-  if (RS6000_RECIP_HIGH_PRECISION_P (mode))
-    rs6000_emit_swdiv_high_precision (dst, n, d);
-  else
-    rs6000_emit_swdiv_low_precision (dst, n, d);
+  /* dst = (v * xprev) + u  */
+  rs6000_emit_madd (dst, v, xprev, u);
 
   if (note_p)
     add_reg_note (get_last_insn (), REG_EQUAL, gen_rtx_DIV (mode, n, d));
@@ -29532,7 +29502,16 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
   enum machine_mode mode = GET_MODE (src);
   rtx x0 = gen_reg_rtx (mode);
   rtx y = gen_reg_rtx (mode);
-  int passes = (TARGET_RECIP_PRECISION) ? 2 : 3;
+
+  /* Low precision estimates guarantee 5 bits of accuracy.  High
+     precision estimates guarantee 14 bits of accuracy.  SFmode
+     requires 23 bits of accuracy.  DFmode requires 52 bits of
+     accuracy.  Each pass at least doubles the accuracy, leading
+     to the following.  */
+  int passes = (TARGET_RECIP_PRECISION) ? 1 : 3;
+  if (mode == DFmode || mode == V2DFmode)
+    passes++;
+
   REAL_VALUE_TYPE dconst3_2;
   int i;
   rtx halfthree;

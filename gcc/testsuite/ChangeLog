@@ -1,6 +1,17 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
+	2013-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/56843
+	* gcc.target/powerpc/recip-1.c: Modify expected output.
+	* gcc.target/powerpc/recip-3.c: Likewise.
+	* gcc.target/powerpc/recip-4.c: Likewise.
+	* gcc.target/powerpc/recip-5.c: Add expected output for iterations.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
 	2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/dfp-dd-2.c: New test.
