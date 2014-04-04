@@ -25,6 +25,9 @@ case "${target}" in
 		TSAN_SUPPORTED=yes
 	fi
 	;;
+  powerpc*le-*-linux*)
+	UNSUPPORTED=1
+	;;
   powerpc*-*-linux*)
 	;;
   sparc*-*-linux*)
