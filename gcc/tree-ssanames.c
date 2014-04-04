@@ -133,7 +133,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
 
       /* The node was cleared out when we put it on the free list, so
 	 there is no need to do so again here.  */
-      gcc_assert (ssa_name (SSA_NAME_VERSION (t)) == NULL);
+      gcc_assert (VEC_index (tree, SSANAMES (fn), SSA_NAME_VERSION (t)) == NULL);
       VEC_replace (tree, SSANAMES (fn), SSA_NAME_VERSION (t), t);
     }
   else

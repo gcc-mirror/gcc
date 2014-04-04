@@ -1,3 +1,7 @@
+2014-04-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssanames.c (make_ssa_name_fn): Fix assert.
+
 2014-04-01  Richard Biener  <rguenther@suse.de>
 
 	* gimple.h (struct gimple_statement_base): Align subcode to
