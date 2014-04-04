@@ -1,3 +1,9 @@
+2014-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/60620
+	* Makefile.def (dependencies): Make gnattools depend on libstdc++-v3. 
+	* Makefile.in: Regenerate.
+
 2014-03-28  Yaakov Selkowitz  <yselkowitz@users.sourceforge.net>
 
 	* Makefile.def (dependencies): Make all-ld depend on all-binutils

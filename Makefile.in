@@ -47249,6 +47249,7 @@ all-stage4-fixincludes: maybe-all-stage4-libiberty
 all-stageprofile-fixincludes: maybe-all-stageprofile-libiberty
 all-stagefeedback-fixincludes: maybe-all-stagefeedback-libiberty
 all-gnattools: maybe-all-target-libada
+all-gnattools: maybe-all-target-libstdc++-v3
 all-lto-plugin: maybe-all-libiberty
 
 all-stage1-lto-plugin: maybe-all-stage1-libiberty
