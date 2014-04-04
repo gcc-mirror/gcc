@@ -1,3 +1,11 @@
+2014-04-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	Backport from mainline r208895:
+	2014-03-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (fusion_gpr_load_p): Refuse optimization
+	if it would clobber the stack pointer, even temporarily.
+
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Back port from main line:
