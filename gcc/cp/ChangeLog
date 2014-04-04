@@ -1,5 +1,11 @@
 2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
 
+	* class.c (find_abi_tags_r): Check for the return of warning
+	before emitting a note.
+	(one_inherited_ctor): Likewise.
+
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
 	* decl.c (duplicate_decls): Check for the return of permerror
 	before emitting a note.
 

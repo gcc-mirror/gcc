@@ -1385,19 +1385,21 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 	      /* Otherwise we're diagnosing missing tags.  */
 	      else if (TYPE_P (p->subob))
 		{
-		  warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
-			   "that base %qT has", p->t, tag, p->subob);
-		  inform (location_of (p->subob), "%qT declared here",
-			  p->subob);
+		  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
+			       "that base %qT has", p->t, tag, p->subob))
+		    inform (location_of (p->subob), "%qT declared here",
+			    p->subob);
 		}
 	      else
 		{
-		  warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
-			   "that %qT (used in the type of %qD) has",
-			   p->t, tag, *tp, p->subob);
-		  inform (location_of (p->subob), "%qD declared here",
-			  p->subob);
-		  inform (location_of (*tp), "%qT declared here", *tp);
+		  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
+			       "that %qT (used in the type of %qD) has",
+			       p->t, tag, *tp, p->subob))
+		    {
+		      inform (location_of (p->subob), "%qD declared here",
+			      p->subob);
+		      inform (location_of (*tp), "%qT declared here", *tp);
+		    }
 		}
 	    }
 	}
@@ -3083,9 +3085,9 @@ one_inherited_ctor (tree ctor, tree t)
   one_inheriting_sig (t, ctor, new_parms, i);
   if (parms == NULL_TREE)
     {
-      warning (OPT_Winherited_variadic_ctor,
-	       "the ellipsis in %qD is not inherited", ctor);
-      inform (DECL_SOURCE_LOCATION (ctor), "%qD declared here", ctor);
+      if (warning (OPT_Winherited_variadic_ctor,
+		   "the ellipsis in %qD is not inherited", ctor))
+	inform (DECL_SOURCE_LOCATION (ctor), "%qD declared here", ctor);
     }
 }
 
