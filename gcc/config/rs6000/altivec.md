@@ -136,6 +136,12 @@
    UNSPEC_VMRGL_DIRECT
    UNSPEC_VSPLT_DIRECT
    UNSPEC_VSUMSWS_DIRECT
+   UNSPEC_VADDCUQ
+   UNSPEC_VADDEUQM
+   UNSPEC_VADDECUQ
+   UNSPEC_VSUBCUQ
+   UNSPEC_VSUBEUQM
+   UNSPEC_VSUBECUQ
 ])
 
 (define_c_enum "unspecv"
@@ -158,17 +164,18 @@
 (define_mode_iterator V [V4SI V8HI V16QI V4SF])
 ;; Vec modes for move/logical/permute ops, include vector types for move not
 ;; otherwise handled by altivec (v2df, v2di, ti)
-(define_mode_iterator VM [V4SI V8HI V16QI V4SF V2DF V2DI TI])
+(define_mode_iterator VM [V4SI V8HI V16QI V4SF V2DF V2DI V1TI TI])
 
 ;; Like VM, except don't do TImode
-(define_mode_iterator VM2 [V4SI V8HI V16QI V4SF V2DF V2DI])
+(define_mode_iterator VM2 [V4SI V8HI V16QI V4SF V2DF V2DI V1TI])
 
 (define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
 (define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
 (define_mode_attr VI_unit [(V16QI "VECTOR_UNIT_ALTIVEC_P (V16QImode)")
 			   (V8HI "VECTOR_UNIT_ALTIVEC_P (V8HImode)")
 			   (V4SI "VECTOR_UNIT_ALTIVEC_P (V4SImode)")
-			   (V2DI "VECTOR_UNIT_P8_VECTOR_P (V2DImode)")])
+			   (V2DI "VECTOR_UNIT_P8_VECTOR_P (V2DImode)")
+			   (V1TI "VECTOR_UNIT_ALTIVEC_P (V1TImode)")])
 
 ;; Vector pack/unpack
 (define_mode_iterator VP [V2DI V4SI V8HI])
@@ -3226,3 +3233,92 @@
   "vgbbd %0,%1"
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
+
+
+;; 128-bit binary integer arithmetic
+;; We have a special container type (V1TImode) to allow operations using the
+;; ISA 2.07 128-bit binary support to target the VMX/altivec registers without
+;; having to worry about the register allocator deciding GPRs are better.
+
+(define_insn "altivec_vadduqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(plus:V1TI (match_operand:V1TI 1 "register_operand" "v")
+		   (match_operand:V1TI 2 "register_operand" "v")))]
+  "TARGET_VADDUQM"
+  "vadduqm %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vaddcuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")]
+		     UNSPEC_VADDCUQ))]
+  "TARGET_VADDUQM"
+  "vaddcuq %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubuqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(minus:V1TI (match_operand:V1TI 1 "register_operand" "v")
+		    (match_operand:V1TI 2 "register_operand" "v")))]
+  "TARGET_VADDUQM"
+  "vsubuqm %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubcuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")]
+		     UNSPEC_VSUBCUQ))]
+  "TARGET_VADDUQM"
+  "vsubcuq %0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vaddeuqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VADDEUQM))]
+  "TARGET_VADDUQM"
+  "vaddeuqm %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vaddecuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VADDECUQ))]
+  "TARGET_VADDUQM"
+  "vaddecuq %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubeuqm"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		   UNSPEC_VSUBEUQM))]
+  "TARGET_VADDUQM"
+  "vsubeuqm %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "altivec_vsubecuq"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:V1TI 3 "register_operand" "v")]
+		     UNSPEC_VSUBECUQ))]
+  "TARGET_VADDUQM"
+  "vsubecuq %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
