@@ -848,12 +848,6 @@ extern unsigned rs6000_pointer_size;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 128
 
-/* A C expression to compute the alignment for a variables in the
-   local store.  TYPE is the data type, and ALIGN is the alignment
-   that the object would ordinarily have.  */
-#define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
-  DATA_ALIGNMENT (TYPE, ALIGN)
-
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
 
@@ -863,8 +857,15 @@ extern unsigned rs6000_pointer_size;
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* Make strings word-aligned so strcpy from constants will be faster.
-   Make vector constants quadword aligned.  */
+enum data_align { align_abi, align_opt, align_both };
+
+/* A C expression to compute the alignment for a variables in the
+   local store.  TYPE is the data type, and ALIGN is the alignment
+   that the object would ordinarily have.  */
+#define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
+  rs6000_data_alignment (TYPE, ALIGN, align_both)
+
+/* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)                           \
   (TREE_CODE (EXP) == STRING_CST	                         \
    && (STRICT_ALIGNMENT || !optimize_size)                       \
@@ -872,21 +873,14 @@ extern unsigned rs6000_pointer_size;
    ? BITS_PER_WORD                                               \
    : (ALIGN))
 
-/* Make arrays of chars word-aligned for the same reasons.
-   Align vectors to 128 bits.  Align SPE vectors and E500 v2 doubles to
+/* Make arrays of chars word-aligned for the same reasons.  */
+#define DATA_ALIGNMENT(TYPE, ALIGN) \
+  rs6000_data_alignment (TYPE, ALIGN, align_opt)
+
+/* Align vectors to 128 bits.  Align SPE vectors and E500 v2 doubles to
    64 bits.  */
-#define DATA_ALIGNMENT(TYPE, ALIGN)					\
-  (TREE_CODE (TYPE) == VECTOR_TYPE					\
-   ? (((TARGET_SPE && SPE_VECTOR_MODE (TYPE_MODE (TYPE)))		\
-       || (TARGET_PAIRED_FLOAT && PAIRED_VECTOR_MODE (TYPE_MODE (TYPE)))) \
-      ? 64 : 128)							\
-   : ((TARGET_E500_DOUBLE						\
-       && TREE_CODE (TYPE) == REAL_TYPE					\
-       && TYPE_MODE (TYPE) == DFmode)					\
-      ? 64								\
-      : (TREE_CODE (TYPE) == ARRAY_TYPE					\
-	 && TYPE_MODE (TREE_TYPE (TYPE)) == QImode			\
-	 && (ALIGN) < BITS_PER_WORD) ? BITS_PER_WORD : (ALIGN)))
+#define DATA_ABI_ALIGNMENT(TYPE, ALIGN) \
+  rs6000_data_alignment (TYPE, ALIGN, align_abi)
 
 /* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */

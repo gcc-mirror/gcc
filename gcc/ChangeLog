@@ -1,5 +1,64 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Back port from trunk
+	2013-04-25  Alan Modra  <amodra@gmail.com>
+
+	PR target/57052
+	* config/rs6000/rs6000.md (rotlsi3_internal7): Rename to
+	rotlsi3_internal7le and condition on !BYTES_BIG_ENDIAN.
+	(rotlsi3_internal8be): New BYTES_BIG_ENDIAN insn.
+	Repeat for many other rotate/shift and mask patterns using subregs.
+	Name lshiftrt insns.
+	(ashrdisi3_noppc64): Rename to ashrdisi3_noppc64be and condition
+	on WORDS_BIG_ENDIAN.
+
+	2013-06-07  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	override user -mfp-in-toc.
+	(offsettable_ok_by_alignment): Consider just the current access
+	rather than the whole object, unless BLKmode.  Handle
+	CONSTANT_POOL_ADDRESS_P constants that lack a decl too.
+	(use_toc_relative_ref): Allow CONSTANT_POOL_ADDRESS_P constants
+	for -mcmodel=medium.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Don't
+	override user -mfp-in-toc or -msum-in-toc.  Default to
+	-mno-fp-in-toc for -mcmodel=medium.
+
+	2013-06-18  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.h (enum data_align): New.
+	(LOCAL_ALIGNMENT, DATA_ALIGNMENT): Use rs6000_data_alignment.
+	(DATA_ABI_ALIGNMENT): Define.
+	(CONSTANT_ALIGNMENT): Correct comment.
+	* config/rs6000/rs6000-protos.h (rs6000_data_alignment): Declare.
+	* config/rs6000/rs6000.c (rs6000_data_alignment): New function.
+
+	2013-07-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.md (""*tls_gd_low<TLSmode:tls_abi_suffix>"):
+	Require GOT register as additional operand in UNSPEC.
+	("*tls_ld_low<TLSmode:tls_abi_suffix>"): Likewise.
+	("*tls_got_dtprel_low<TLSmode:tls_abi_suffix>"): Likewise.
+	("*tls_got_tprel_low<TLSmode:tls_abi_suffix>"): Likewise.
+	("*tls_gd<TLSmode:tls_abi_suffix>"): Update splitter.
+	("*tls_ld<TLSmode:tls_abi_suffix>"): Likewise.
+	("tls_got_dtprel_<TLSmode:tls_abi_suffix>"): Likewise.
+	("tls_got_tprel_<TLSmode:tls_abi_suffix>"): Likewise.
+
+	2014-01-23  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	force flag_ira_loop_pressure if set via command line.
+
+	2014-02-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/60032
+	* config/rs6000/rs6000.c (rs6000_secondary_memory_needed_mode): Only
+	change SDmode to DDmode when lra_in_progress.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	V1TImode Support
 	Back port from trunk
 	2014-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>

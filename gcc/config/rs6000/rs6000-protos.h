@@ -152,6 +152,7 @@ extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool, rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
+extern unsigned int rs6000_data_alignment (tree, unsigned int, enum data_align);
 extern unsigned int rs6000_special_round_type_align (tree, unsigned int,
 						     unsigned int);
 extern unsigned int darwin_rs6000_special_round_type_align (tree, unsigned int,
