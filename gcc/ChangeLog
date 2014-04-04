@@ -1,3 +1,23 @@
+2014-04-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60640
+        * cgraph.h (cgraph_clone_node): New parameter added to declaration.
+        Adjust all callers.
+	* cgraph.c (clone_of_p): Also return true if thunks match.
+	(verify_edge_corresponds_to_fndecl): Removed extraneous call to
+	cgraph_function_or_thunk_node and an obsolete comment.
+        * cgraphclones.c (build_function_type_skip_args): Moved upwards in the
+        file.
+        (build_function_decl_skip_args): Likewise.
+	(set_new_clone_decl_and_node_flags): New function.
+        (duplicate_thunk_for_node): Likewise.
+        (redirect_edge_duplicating_thunks): Likewise.
+        (cgraph_clone_node): New parameter args_to_skip, pass it to
+        redirect_edge_duplicating_thunks which is called instead of
+        cgraph_redirect_edge_callee.
+        (cgraph_create_virtual_clone): Pass args_to_skip to cgraph_clone_node,
+	moved setting of a lot of flags to set_new_clone_decl_and_node_flags.
+
 2014-04-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR fortran/60191
