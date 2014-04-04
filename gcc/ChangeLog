@@ -1,5 +1,30 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline
+        2014-02-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (-mlra): Add switch to enable the LRA
+	register allocator.
+
+	* config/rs6000/rs6000.c (TARGET_LRA_P): Add support for -mlra to
+	enable the LRA register allocator.  Back port the changes from the
+	trunk to enable LRA.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(legitimate_lo_sum_address_p): Likewise.
+	(use_toc_relative_ref): Likewise.
+	(rs6000_legitimate_address_p): Likewise.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_memory_needed_mode): Likewise.
+	(rs6000_alloc_sdmode_stack_slot): Likewise.
+	(rs6000_lra_p): Likewise.
+
+	* config/rs6000/sync.md (load_lockedti): Copy TI/PTI variables by
+	64-bit parts to force the register allocator to allocate even/odd
+	register pairs for the quad word atomic instructions.
+	(store_conditionalti): Likewise.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Back port from mainline
 	2014-01-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 

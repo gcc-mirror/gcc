@@ -1,5 +1,5 @@
 ;; Machine description for PowerPC synchronization instructions.
-;; Copyright (C) 2005-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2014 Free Software Foundation, Inc.
 ;; Contributed by Geoffrey Keating.
 
 ;; This file is part of GCC.
@@ -205,9 +205,12 @@
   [(set_attr "type" "load_l")])
 
 ;; Use PTImode to get even/odd register pairs.
+
 ;; Use a temporary register to force getting an even register for the
-;; lqarx/stqcrx. instructions.  Normal optimizations will eliminate this extra
-;; copy on big endian systems.
+;; lqarx/stqcrx. instructions.  Under AT 7.0, we need use an explicit copy,
+;; even in big endian mode, unless we are using the LRA register allocator.  In
+;; GCC 4.9, the register allocator is smart enough to assign a even/odd
+;; register pair.
 
 ;; On little endian systems where non-atomic quad word load/store instructions
 ;; are not used, the address can be register+offset, so make sure the address
@@ -230,12 +233,26 @@
     }
 
   emit_insn (gen_load_lockedpti (pti, op1));
-  if (WORDS_BIG_ENDIAN)
+  if (WORDS_BIG_ENDIAN && rs6000_lra_flag)
     emit_move_insn (op0, gen_lowpart (TImode, pti));
   else
     {
-      emit_move_insn (gen_lowpart (DImode, op0), gen_highpart (DImode, pti));
-      emit_move_insn (gen_highpart (DImode, op0), gen_lowpart (DImode, pti));
+      rtx op0_lo = gen_lowpart (DImode, op0);
+      rtx op0_hi = gen_highpart (DImode, op0);
+      rtx pti_lo = gen_lowpart (DImode, pti);
+      rtx pti_hi = gen_highpart (DImode, pti);
+
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, op0));
+      if (WORDS_BIG_ENDIAN)
+	{
+	  emit_move_insn (op0_hi, pti_hi);
+	  emit_move_insn (op0_lo, pti_lo);
+	}
+      else
+	{
+	  emit_move_insn (op0_hi, pti_lo);
+	  emit_move_insn (op0_lo, pti_hi);
+	}
     }
   DONE;
 })
@@ -260,8 +277,9 @@
   [(set_attr "type" "store_c")])
 
 ;; Use a temporary register to force getting an even register for the
-;; lqarx/stqcrx. instructions.  Normal optimizations will eliminate this extra
-;; copy on big endian systems.
+;; lqarx/stqcrx. instructions.  Under AT 7.0, we need use an explicit copy,
+;; even in big endian mode.  In GCC 4.9, the register allocator is smart enough
+;; to assign a even/odd register pair.
 
 ;; On little endian systems where non-atomic quad word load/store instructions
 ;; are not used, the address can be register+offset, so make sure the address
@@ -290,12 +308,26 @@
   pti_mem = change_address (op1, PTImode, addr);
   pti_reg = gen_reg_rtx (PTImode);
 
-  if (WORDS_BIG_ENDIAN)
+  if (WORDS_BIG_ENDIAN && rs6000_lra_flag)
     emit_move_insn (pti_reg, gen_lowpart (PTImode, op2));
   else
     {
-      emit_move_insn (gen_lowpart (DImode, pti_reg), gen_highpart (DImode, op2));
-      emit_move_insn (gen_highpart (DImode, pti_reg), gen_lowpart (DImode, op2));
+      rtx op2_lo = gen_lowpart (DImode, op2);
+      rtx op2_hi = gen_highpart (DImode, op2);
+      rtx pti_lo = gen_lowpart (DImode, pti_reg);
+      rtx pti_hi = gen_highpart (DImode, pti_reg);
+
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, op0));
+      if (WORDS_BIG_ENDIAN)
+	{
+	  emit_move_insn (pti_hi, op2_hi);
+	  emit_move_insn (pti_lo, op2_lo);
+	}
+      else
+	{
+	  emit_move_insn (pti_hi, op2_lo);
+	  emit_move_insn (pti_lo, op2_hi);
+	}
     }
 
   emit_insn (gen_store_conditionalpti (op0, pti_mem, pti_reg));
