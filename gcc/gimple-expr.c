@@ -527,6 +527,24 @@ create_tmp_reg (tree type, const char *prefix)
   return tmp;
 }
 
+/* Create a new temporary variable declaration of type TYPE by calling
+   create_tmp_var and if TYPE is a vector or a complex number, mark the new
+   temporary as gimple register.  */
+
+tree
+create_tmp_reg_fn (struct function *fn, tree type, const char *prefix)
+{
+  tree tmp;
+
+  tmp = create_tmp_var_raw (type, prefix);
+  gimple_add_tmp_var_fn (fn, tmp);
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (tmp) = 1;
+
+  return tmp;
+}
+
 
 /* ----- Expression related -----  */
 

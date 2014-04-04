@@ -1479,13 +1479,14 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
     {
       if (TREE_CODE (lhs) == SSA_NAME)
 	{
+	  tree var = create_tmp_reg_fn (DECL_STRUCT_FUNCTION (e->caller->decl),
+					TREE_TYPE (lhs), NULL);
+	  var = get_or_create_ssa_default_def
+		  (DECL_STRUCT_FUNCTION (e->caller->decl), var);
+	  gimple set_stmt = gimple_build_assign (lhs, var);
           gsi = gsi_for_stmt (new_stmt);
-
-	  tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
-	  tree def = get_or_create_ssa_default_def
-		      (DECL_STRUCT_FUNCTION (e->caller->decl), var);
-	  gimple set_stmt = gimple_build_assign (lhs, def);
-	  gsi_insert_before (&gsi, set_stmt, GSI_SAME_STMT);
+	  gsi_insert_before_without_update (&gsi, set_stmt, GSI_SAME_STMT);
+	  update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), set_stmt);
 	}
       gimple_call_set_lhs (new_stmt, NULL_TREE);
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
