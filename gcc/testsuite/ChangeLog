@@ -1,3 +1,24 @@
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2013-11-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gfortran.dg/nan_7.f90: Disable for little endian PowerPC.
+
+	Backport from mainline r205106:
+
+	2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/darwin-longlong.c (msw): Make endian-safe.
+
+	Backport from mainline r205046:
+
+	2013-11-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-2.c (MAKE_SLOT): New macro to
+	construct parameter slot value in endian-independent way.
+	(fcevv, fciievv, fcvevv): Use it.
+
 2014-04-04  Bill Schmidt <wschmidt@linux.vnet.ibm.com>
 
 	Power8 HTM Support
