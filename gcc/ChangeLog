@@ -1,5 +1,22 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline
+	2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_FABSD32): New DFP ABS builtin.
+	(BUILT_IN_FABSD64): Likewise.
+	(BUILT_IN_FABSD128): Likewise.
+	* builtins.c (expand_builtin): Add support for
+	new DFP ABS builtins.
+	(fold_builtin_1): Likewise.
+	* config/rs6000/dfp.md
+	(*abstd2_fpr): Handle non-overlapping destination
+	and source operands.
+	(*nabstd2_fpr): Likewise.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Apply mainline r205060.
 	2013-11-20  Alan Modra  <amodra@gmail.com>
 	* config/rs6000/sysv4.h (CC1_ENDIAN_LITTLE_SPEC): Define as empty.

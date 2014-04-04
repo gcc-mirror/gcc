@@ -1,5 +1,14 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline
+	2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/dfp-dd-2.c: New test.
+	* gcc.target/powerpc/dfp-td-2.c: Likewise.
+	* gcc.target/powerpc/dfp-td-3.c: Likewise.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	ELFv2 ABI Support
 	Backport from mainline r204808:
 
