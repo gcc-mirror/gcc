@@ -7577,7 +7577,7 @@ ia64-*-hpux*)
   rm -rf conftest*
   ;;
 
-x86_64-*kfreebsd*-gnu|x86_64-*linux*|ppc*-*linux*|powerpc*-*linux*| \
+x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*| \
 s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
@@ -7602,7 +7602,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 		;;
 	    esac
 	    ;;
-	  ppc64-*linux*|powerpc64-*linux*)
+	  powerpc64le-*linux*)
+	    LD="${LD-ld} -m elf32lppclinux"
+	    ;;
+	  powerpc64-*linux*)
 	    LD="${LD-ld} -m elf32ppclinux"
 	    ;;
 	  s390x-*linux*)
@@ -7621,7 +7624,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  ppc*-*linux*|powerpc*-*linux*)
+	  powerpcle-*linux*)
+	    LD="${LD-ld} -m elf64lppc"
+	    ;;
+	  powerpc-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -11820,7 +11826,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11823 "configure"
+#line 11829 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11926,7 +11932,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11929 "configure"
+#line 11935 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25300,7 +25306,7 @@ else
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class
 cat << \EOF > $JAVA_TEST
-/* #line 25303 "configure" */
+/* #line 25309 "configure" */
 package java.lang;
 
 public class Object
@@ -25393,7 +25399,7 @@ EOF
 if uudecode$EXEEXT Test.uue; then
         ac_cv_prog_uudecode_base64=yes
 else
-        echo "configure: 25396: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
+        echo "configure: 25402: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
         echo "configure: failed file was:" >&5
         cat Test.uue >&5
         ac_cv_prog_uudecode_base64=no
@@ -25421,7 +25427,7 @@ JAVA_TEST=Test.java
 CLASS_TEST=Test.class
 TEST=Test
 cat << \EOF > $JAVA_TEST
-/* [#]line 25424 "configure" */
+/* [#]line 25430 "configure" */
 public class Test {
 public static void main (String args[]) {
         System.exit (0);
@@ -25629,7 +25635,7 @@ if test "x${use_glibj_zip}" = xfalse || \
   JAVA_TEST=Test.java
   CLASS_TEST=Test.class
   cat << \EOF > $JAVA_TEST
-  /* #line 25632 "configure" */
+  /* #line 25638 "configure" */
   public class Test
   {
     public static void main(String args)
