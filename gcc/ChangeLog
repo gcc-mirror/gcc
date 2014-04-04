@@ -1,3 +1,7 @@
+2014-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c (probe_stack_range): Emit a final optimization blockage.
+
 2014-04-04  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.md (zero_extendqisi2, zero_extendhisi2): Fix
