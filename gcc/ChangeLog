@@ -1,5 +1,331 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Little Endian Vector API Support
+	Backport from mainline r206443
+	2014-01-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Remove
+	two duplicate entries.
+
+	Backport from mainline r206494
+	2014-01-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* doc/invoke.texi: Add -maltivec={be,le} options, and document
+	default element-order behavior for -maltivec.
+	* config/rs6000/rs6000.opt: Add -maltivec={be,le} options.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Ensure
+	that -maltivec={le,be} implies -maltivec; disallow -maltivec=le
+	when targeting big endian, at least for now.
+	* config/rs6000/rs6000.h: Add #define of VECTOR_ELT_ORDER_BIG.
+
+	Backport from mainline r206541
+	2014-01-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Fix pasto for VPKSDUS.
+
+	Backport from mainline r206590
+	2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Implement -maltivec=be for vec_insert and vec_extract.
+
+	Backport from mainline r206641
+	2014-01-15  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* config/rs6000/altivec.md (mulv8hi3): Explicitly generate vmulesh
+	and vmulosh rather than call gen_vec_widen_smult_*.
+	(vec_widen_umult_even_v16qi): Test VECTOR_ELT_ORDER_BIG rather
+	than BYTES_BIG_ENDIAN to determine use of even or odd instruction.
+	(vec_widen_smult_even_v16qi): Likewise.
+	(vec_widen_umult_even_v8hi): Likewise.
+	(vec_widen_smult_even_v8hi): Likewise.
+	(vec_widen_umult_odd_v16qi): Likewise.
+	(vec_widen_smult_odd_v16qi): Likewise.
+	(vec_widen_umult_odd_v8hi): Likewise.
+	(vec_widen_smult_odd_v8hi): Likewise.
+	(vec_widen_umult_hi_v16qi): Explicitly generate vmuleub and
+	vmuloub rather than call gen_vec_widen_umult_*.
+	(vec_widen_umult_lo_v16qi): Likewise.
+	(vec_widen_smult_hi_v16qi): Explicitly generate vmulesb and
+	vmulosb rather than call gen_vec_widen_smult_*.
+	(vec_widen_smult_lo_v16qi): Likewise.
+	(vec_widen_umult_hi_v8hi): Explicitly generate vmuleuh and vmulouh
+	rather than call gen_vec_widen_umult_*.
+	(vec_widen_umult_lo_v8hi): Likewise.
+	(vec_widen_smult_hi_v8hi): Explicitly gnerate vmulesh and vmulosh
+	rather than call gen_vec_widen_smult_*.
+	(vec_widen_smult_lo_v8hi): Likewise.
+
+	Backport from mainline r207062
+	2014-01-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vec_perm_const_1): Remove
+	correction for little endian...
+	* config/rs6000/vsx.md (vsx_xxpermdi2_<mode>_1): ...and move it to
+	here.
+
+	Backport from mainline r207262
+	2014-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const):  Use
+	CODE_FOR_altivec_vmrg*_direct rather than CODE_FOR_altivec_vmrg*.
+	* config/rs6000/vsx.md (vsx_mergel_<mode>): Adjust for
+	-maltivec=be with LE targets.
+	(vsx_mergeh_<mode>): Likewise.
+	* config/rs6000/altivec.md (UNSPEC_VMRG[HL]_DIRECT): New
+	unspecs.
+	(mulv8hi3): Use gen_altivec_vmrg[hl]w_direct.
+	(altivec_vmrghb): Replace with define_expand and new
+	*altivec_vmrghb_internal insn; adjust for -maltivec=be with LE
+	targets.
+	(altivec_vmrghb_direct): New define_insn.
+	(altivec_vmrghh): Replace with define_expand and new
+	*altivec_vmrghh_internal insn; adjust for -maltivec=be with LE
+	targets.
+	(altivec_vmrghh_direct): New define_insn.
+	(altivec_vmrghw): Replace with define_expand and new
+	*altivec_vmrghw_internal insn; adjust for -maltivec=be with LE
+	targets.
+	(altivec_vmrghw_direct): New define_insn.
+	(*altivec_vmrghsf): Adjust for endianness.
+	(altivec_vmrglb): Replace with define_expand and new
+	*altivec_vmrglb_internal insn; adjust for -maltivec=be with LE
+	targets.
+	(altivec_vmrglb_direct): New define_insn.
+	(altivec_vmrglh): Replace with define_expand and new
+	*altivec_vmrglh_internal insn; adjust for -maltivec=be with LE
+	targets.
+	(altivec_vmrglh_direct): New define_insn.
+	(altivec_vmrglw): Replace with define_expand and new
+	*altivec_vmrglw_internal insn; adjust for -maltivec=be with LE
+	targets.
+	(altivec_vmrglw_direct): New define_insn.
+	(*altivec_vmrglsf): Adjust for endianness.
+	(vec_widen_umult_hi_v16qi): Use gen_altivec_vmrghh_direct.
+	(vec_widen_umult_lo_v16qi): Use gen_altivec_vmrglh_direct.
+	(vec_widen_smult_hi_v16qi): Use gen_altivec_vmrghh_direct.
+	(vec_widen_smult_lo_v16qi): Use gen_altivec_vmrglh_direct.
+	(vec_widen_umult_hi_v8hi): Use gen_altivec_vmrghw_direct.
+	(vec_widen_umult_lo_v8hi): Use gen_altivec_vmrglw_direct.
+	(vec_widen_smult_hi_v8hi): Use gen_altivec_vmrghw_direct.
+	(vec_widen_smult_lo_v8hi): Use gen_altivec_vmrglw_direct.
+
+	Backport from mainline r207318
+	2014-01-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (rs6000_expand_vector_init): Use
+	gen_vsx_xxspltw_v4sf_direct instead of gen_vsx_xxspltw_v4sf;
+	remove element index adjustment for endian (now handled in vsx.md
+	and altivec.md).
+	(altivec_expand_vec_perm_const): Use
+	gen_altivec_vsplt[bhw]_direct instead of gen_altivec_vsplt[bhw].
+	* gcc/config/rs6000/vsx.md (UNSPEC_VSX_XXSPLTW): New unspec.
+	(vsx_xxspltw_<mode>): Adjust element index for little endian.
+	* gcc/config/rs6000/altivec.md (altivec_vspltb): Divide into a
+	define_expand and a new define_insn *altivec_vspltb_internal;
+	adjust for -maltivec=be on a little endian target.
+	(altivec_vspltb_direct): New.
+	(altivec_vsplth): Divide into a define_expand and a new
+	define_insn *altivec_vsplth_internal; adjust for -maltivec=be on a
+	little endian target.
+	(altivec_vsplth_direct): New.
+	(altivec_vspltw): Divide into a define_expand and a new
+	define_insn *altivec_vspltw_internal; adjust for -maltivec=be on a
+	little endian target.
+	(altivec_vspltw_direct): New.
+	(altivec_vspltsf): Divide into a define_expand and a new
+	define_insn *altivec_vspltsf_internal; adjust for -maltivec=be on
+	a little endian target.
+
+	Backport from mainline r207326
+	2014-01-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Remove
+	unused variable "field".
+	* config/rs6000/vsx.md (vsx_mergel_<mode>): Add missing DONE.
+	(vsx_mergeh_<mode>): Likewise.
+	* config/rs6000/altivec.md (altivec_vmrghb): Likewise.
+	(altivec_vmrghh): Likewise.
+	(altivec_vmrghw): Likewise.
+	(altivec_vmrglb): Likewise.
+	(altivec_vmrglh): Likewise.
+	(altivec_vmrglw): Likewise.
+	(altivec_vspltb): Add missing uses.
+	(altivec_vsplth): Likewise.
+	(altivec_vspltw): Likewise.
+	(altivec_vspltsf): Likewise.
+
+	Backport from mainline r207414
+	2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (UNSPEC_VSUMSWS_DIRECT): New unspec.
+	(altivec_vsumsws): Add handling for -maltivec=be with a little
+	endian target.
+	(altivec_vsumsws_direct): New.
+	(reduc_splus_<mode>): Call gen_altivec_vsumsws_direct instead of
+	gen_altivec_vsumsws.
+
+	Backport from mainline r207415
+	2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_le): Generalize
+	for vector types other than V16QImode.
+	* config/rs6000/altivec.md (altivec_vperm_<mode>): Change to a
+	define_expand, and call altivec_expand_vec_perm_le when producing
+	code with little endian element order.
+	(*altivec_vperm_<mode>_internal): New insn having previous
+	behavior of altivec_vperm_<mode>.
+	(altivec_vperm_<mode>_uns): Change to a define_expand, and call
+	altivec_expand_vec_perm_le when producing code with little endian
+	element order.
+	(*altivec_vperm_<mode>_uns_internal): New insn having previous
+	behavior of altivec_vperm_<mode>_uns.
+
+	Backport from mainline r207520
+	2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* altivec.md (UNSPEC_VPACK_UNS_UNS_MOD_DIRECT): New unspec.
+	(UNSPEC_VUNPACK_HI_SIGN_DIRECT): Likewise.
+	(UNSPEC_VUNPACK_LO_SIGN_DIRECT): Likewise.
+	(mulv8hi3): Use gen_altivec_vpkuwum_direct instead of
+	gen_altivec_vpkuwum.
+	(altivec_vpkpx): Test for VECTOR_ELT_ORDER_BIG instead of for
+	BYTES_BIG_ENDIAN.
+	(altivec_vpks<VI_char>ss): Likewise.
+	(altivec_vpks<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>um): Likewise.
+	(altivec_vpku<VI_char>um_direct): New (copy of
+	altivec_vpku<VI_char>um that still relies on BYTES_BIG_ENDIAN, for
+	internal use).
+	(altivec_vupkhs<VU_char>): Emit vupkls* instead of vupkhs* when
+	target is little endian and -maltivec=be is not specified.
+	(*altivec_vupkhs<VU_char>_direct): New (copy of
+	altivec_vupkhs<VU_char> that always emits vupkhs*, for internal
+	use).
+	(altivec_vupkls<VU_char>): Emit vupkhs* instead of vupkls* when
+	target is little endian and -maltivec=be is not specified.
+	(*altivec_vupkls<VU_char>_direct): New (copy of
+	altivec_vupkls<VU_char> that always emits vupkls*, for internal
+	use).
+	(altivec_vupkhpx): Emit vupklpx instead of vupkhpx when target is
+	little endian and -maltivec=be is not specified.
+	(altivec_vupklpx): Emit vupkhpx instead of vupklpx when target is
+	little endian and -maltivec=be is not specified.
+
+	Backport from mainline r207521
+	2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vsum2sws): Adjust code
+	generation for -maltivec=be.
+	(altivec_vsumsws): Simplify redundant test.
+
+	Backport from mainline r207525
+	2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Change
+	CODE_FOR_altivec_vpku[hw]um to
+	CODE_FOR_altivec_vpku[hw]um_direct.
+	* config/rs6000/altivec.md (vec_unpacks_hi_<VP_small_lc>): Change
+	UNSPEC_VUNPACK_HI_SIGN to UNSPEC_VUNPACK_HI_SIGN_DIRECT.
+	(vec_unpacks_lo_<VP_small_lc>): Change UNSPEC_VUNPACK_LO_SIGN to
+	UNSPEC_VUNPACK_LO_SIGN_DIRECT.
+
+	Backport from mainline r207814.
+	2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_xxpermdi_<mode>): Handle little
+	endian targets.
+
+	Backport from mainline r207815.
+	2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (p8_vmrgew): Handle little endian
+	targets.
+	(p8_vmrgow): Likewise.
+
+	Backport from mainline r207919.
+	2014-02-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (vspltis_constant): Fix most significant
+	bit of zero.
+
+	Backport from mainline 208019
+	2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_lvxl): Rename as
+	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of
+	V4SI.
+	(altivec_lvxl_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	(altivec_lvx): Rename as *altivec_lvx_<mode>_internal.
+	(altivec_lvx_<mode>): New define_expand incorporating -maltivec=be
+	semantics where needed.
+	(altivec_stvx): Rename as *altivec_stvx_<mode>_internal.
+	(altivec_stvx_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	(altivec_stvxl): Rename as *altivec_stvxl_<mode>_internal and use
+	VM2 iterator instead of V4SI.
+	(altivec_stvxl_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	* config/rs6000/rs6000-builtin.def: Add new built-in definitions
+	LVXL_V2DF, LVXL_V2DI, LVXL_V4SF, LVXL_V4SI, LVXL_V8HI, LVXL_V16QI,
+	LVX_V2DF, LVX_V2DI, LVX_V4SF, LVX_V4SI, LVX_V8HI, LVX_V16QI,
+	STVX_V2DF, STVX_V2DI, STVX_V4SF, STVX_V4SI, STVX_V8HI, STVX_V16QI,
+	STVXL_V2DF, STVXL_V2DI, STVXL_V4SF, STVXL_V4SI, STVXL_V8HI,
+	STVXL_V16QI.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Replace
+	ALTIVEC_BUILTIN_LVX with ALTIVEC_BUILTIN_LVX_<MODE> throughout;
+	similarly for ALTIVEC_BUILTIN_LVXL, ALTIVEC_BUILTIN_STVX, and
+	ALTIVEC_BUILTIN_STVXL.
+	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be): New
+	prototype.
+	(altivec_expand_stvx_be): Likewise.
+	* config/rs6000/rs6000.c (swap_selector_for_mode): New function.
+	(altivec_expand_lvx_be): Likewise.
+	(altivec_expand_stvx_be): Likewise.
+	(altivec_expand_builtin): Add cases for
+	ALTIVEC_BUILTIN_STVX_<MODE>, ALTIVEC_BUILTIN_STVXL_<MODE>,
+	ALTIVEC_BUILTIN_LVXL_<MODE>, and ALTIVEC_BUILTIN_LVX_<MODE>.
+	(altivec_init_builtins): Add definitions for
+	__builtin_altivec_lvxl_<mode>, __builtin_altivec_lvx_<mode>,
+	__builtin_altivec_stvx_<mode>, and
+	__builtin_altivec_stvxl_<mode>.
+
+	Backport from mainline 208021
+	2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vsumsws): Replace second
+	vspltw with vsldoi.
+	(reduc_uplus_v16qi): Use gen_altivec_vsumsws_direct instead of
+	gen_altivec_vsumsws.
+
+	Backport from mainline 208049
+	2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_lve<VI_char>x): Replace
+	define_insn with define_expand and new define_insn
+	*altivec_lve<VI_char>x_internal.
+	(altivec_stve<VI_char>x): Replace define_insn with define_expand
+	and new define_insn *altivec_stve<VI_char>x_internal.
+	* config/rs6000/rs6000-protos.h (altivec_expand_stvex_be): New
+	prototype.
+	* config/rs6000/rs6000.c (altivec_expand_lvx_be): Document use by
+	lve*x built-ins.
+	(altivec_expand_stvex_be): New function.
+
+	Backport from mainline
+        2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Relax assert
+	to permit subregs.
+
+	Backport from mainline
+        2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	* config/rs6000/vector.md (*vector_unordered<mode>): Change split
+	to use canonical form for nor<mode>3.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline
         2014-02-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
 

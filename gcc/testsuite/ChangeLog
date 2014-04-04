@@ -1,5 +1,138 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Little Endian Vector API Support
+	Backport from mainline r206590
+	2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/insert.c: New.
+	* gcc.dg/vmx/insert-be-order.c: New.
+	* gcc.dg/vmx/extract.c: New.
+	* gcc.dg/vmx/extract-be-order.c: New.
+
+	Backport from mainline r206641
+	2014-01-15  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/vmx/mult-even-odd.c: New.
+	* gcc.dg/vmx/mult-even-odd-be-order.c: New.
+
+	Backport from mainline r206926
+	2014-01-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/insert-vsx-be-order.c: New.
+	* gcc.dg/vmx/extract-vsx.c: New.
+	* gcc.dg/vmx/extract-vsx-be-order.c: New.
+	* gcc.dg/vmx/insert-vsx.c: New.
+
+	Backport from mainline r207262
+	2014-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/merge-be-order.c: New.
+	* gcc.dg/vmx/merge.c: New.
+	* gcc.dg/vmx/merge-vsx-be-order.c: New.
+	* gcc.dg/vmx/merge-vsx.c: New.
+
+	Backport from mainline r207318
+	2014-01-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/splat.c: New.
+	* gcc.dg/vmx/splat-vsx.c: New.
+	* gcc.dg/vmx/splat-be-order.c: New.
+	* gcc.dg/vmx/splat-vsx-be-order.c: New.
+	* gcc.dg/vmx/eg-5.c: Remove special casing for little endian.
+	* gcc.dg/vmx/sn7153.c: Add special casing for little endian.
+
+	Backport from mainline r207414
+	2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/vsums.c: New.
+	* gcc.dg/vmx/vsums-be-order.c: New.
+
+	Backport from mainline r207415
+	2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/3b-15.c: Remove special handling for little endian.
+	* gcc.dg/vmx/perm.c: New.
+	* gcc.dg/vmx/perm-be-order.c: New.
+
+	Backport from mainline r207520
+	2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/pack.c: New.
+	* gcc.dg/vmx/pack-be-order.c: New.
+	* gcc.dg/vmx/unpack.c: New.
+	* gcc.dg/vmx/unpack-be-order.c: New.
+
+	Backport from mainline r207521
+	2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/sum2s.c: New.
+	* gcc.dg/vmx/sum2s-be-order.c: New.
+
+	Backport from mainline 208019
+	2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/ld.c: New test.
+	* gcc.dg/vmx/ld-be-order.c: New test.
+	* gcc.dg/vmx/ld-vsx.c: New test.
+	* gcc.dg/vmx/ld-vsx-be-order.c: New test.
+	* gcc.dg/vmx/ldl.c: New test.
+	* gcc.dg/vmx/ldl-be-order.c: New test.
+	* gcc.dg/vmx/ldl-vsx.c: New test.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: New test.
+	* gcc.dg/vmx/st.c: New test.
+	* gcc.dg/vmx/st-be-order.c: New test.
+	* gcc.dg/vmx/st-vsx.c: New test.
+	* gcc.dg/vmx/st-vsx-be-order.c: New test.
+	* gcc.dg/vmx/stl.c: New test.
+	* gcc.dg/vmx/stl-be-order.c: New test.
+	* gcc.dg/vmx/stl-vsx.c: New test.
+	* gcc.dg/vmx/stl-vsx-be-order.c: New test.
+
+	Backport from mainline 208021
+	2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/vsums.c: Check entire result vector.
+	* gcc.dg/vmx/vsums-be-order.c: Likewise.
+
+	Backport from mainline 208049
+	2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/lde.c: New test.
+	* gcc.dg/vmx/lde-be-order.c: New test.
+	* gcc.dg/vmx/ste.c: New test.
+	* gcc.dg/vmx/ste-be-order.c: New test.
+
+	Backport from mainline 208120
+	2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/ld-vsx.c: Don't use vec_all_eq.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-vsx.c: Likewise.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+
+	Backport from mainline 208321
+	2014-03-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/extract-vsx.c: Replace "vector long" with "vector
+	long long" throughout.
+	* gcc.dg/vmx/extract-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/insert-vsx.c: Likewise.
+	* gcc.dg/vmx/insert-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ld-vsx.c: Likewise.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-vsx.c: Likewise.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/st-vsx.c: Likewise.
+	* gcc.dg/vmx/st-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/stl-vsx.c: Likewise.
+	* gcc.dg/vmx/stl-vsx-be-order.c: Likewise.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Back port from mainline
 	2014-01-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 

@@ -34,7 +34,11 @@ main()
 
 void validate_sat()
 {
+#ifdef __LITTLE_ENDIAN__
+  if (vec_any_ne(vec_splat(vec_mfvscr(), 0), ((vector unsigned short){1,1,1,1,1,1,1,1})))
+#else
   if (vec_any_ne(vec_splat(vec_mfvscr(), 7), ((vector unsigned short){1,1,1,1,1,1,1,1})))
+#endif
     {
       union {vector unsigned short v; unsigned short s[8];} u;
       u.v = vec_mfvscr();
