@@ -1,3 +1,13 @@
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r203071:
+
+	2013-10-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	Import from savannah.gnu.org:
+	* config.guess: Update to 2013-06-10 version.
+	* config.sub: Update to 2013-10-01 version.
+
 2013-10-16  Release Manager
 
 	* GCC 4.8.2 released.
