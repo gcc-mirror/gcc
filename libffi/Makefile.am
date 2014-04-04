@@ -15,10 +15,12 @@ EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host	\
 	 src/ia64/unix.S src/mips/ffi.c src/mips/n32.S src/mips/o32.S	\
 	 src/mips/ffitarget.h src/m32r/ffi.c src/m32r/sysv.S		\
 	 src/m32r/ffitarget.h src/m68k/ffi.c src/m68k/sysv.S		\
-	 src/m68k/ffitarget.h src/powerpc/ffi.c src/powerpc/sysv.S	\
-	 src/powerpc/linux64.S src/powerpc/linux64_closure.S		\
-	 src/powerpc/ppc_closure.S src/powerpc/asm.h			\
-	src/powerpc/aix.S src/powerpc/darwin.S				\
+	 src/m68k/ffitarget.h						\
+	src/powerpc/ffi.c src/powerpc/ffi_powerpc.h			\
+	src/powerpc/ffi_sysv.c src/powerpc/ffi_linux64.c		\
+	src/powerpc/sysv.S src/powerpc/linux64.S			\
+	src/powerpc/linux64_closure.S src/powerpc/ppc_closure.S		\
+	src/powerpc/asm.h src/powerpc/aix.S src/powerpc/darwin.S	\
 	src/powerpc/aix_closure.S src/powerpc/darwin_closure.S		\
 	src/powerpc/ffi_darwin.c src/powerpc/ffitarget.h		\
 	src/s390/ffi.c src/s390/sysv.S src/s390/ffitarget.h		\
@@ -179,7 +181,7 @@ if M68K
 nodist_libffi_la_SOURCES += src/m68k/ffi.c src/m68k/sysv.S
 endif
 if POWERPC
-nodist_libffi_la_SOURCES += src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
+nodist_libffi_la_SOURCES += src/powerpc/ffi.c src/powerpc/ffi_sysv.c src/powerpc/ffi_linux64.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
 endif
 if POWERPC_AIX
 nodist_libffi_la_SOURCES += src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
@@ -188,7 +190,7 @@ if POWERPC_DARWIN
 nodist_libffi_la_SOURCES += src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
 endif
 if POWERPC_FREEBSD
-nodist_libffi_la_SOURCES += src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
+nodist_libffi_la_SOURCES += src/powerpc/ffi.c src/powerpc/ffi_sysv.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
 endif
 if AARCH64
 nodist_libffi_la_SOURCES += src/aarch64/sysv.S src/aarch64/ffi.c

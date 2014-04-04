@@ -1,3 +1,39 @@
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport mainline r205844.
+	2013-11-18  Alan Modra  <amodra@gmail.com>
+	* src/powerpc/ffitarget.h: Import from upstream.
+	* src/powerpc/ffi_powerpc.h: Likewise.
+	* src/powerpc/ffi.c: Likewise.
+	* src/powerpc/ffi_sysv.c: Likewise.
+	* src/powerpc/ffi_linux64.c: Likewise.
+	* src/powerpc/sysv.S: Likewise.
+	* src/powerpc/ppc_closure.S: Likewise.
+	* src/powerpc/linux64.S: Likewise.
+	* src/powerpc/linux64_closure.S: Likewise.
+	* src/types.c: Likewise.
+	* Makefile.am (EXTRA_DIST): Add new src/powerpc files.
+	(nodist_libffi_la_SOURCES <POWERPC, POWERPC_FREEBSD>): Likewise.
+	* configure.ac (HAVE_LONG_DOUBLE_VARIANT): Define for powerpc.
+	* include/ffi.h.in (ffi_prep_types): Declare.
+	* src/prep_cif.c (ffi_prep_cif_core): Call ffi_prep_types.
+	* configure: Regenerate.
+	* fficonfig.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+	* man/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+	* src/powerpc/ppc_closure.S: Don't bl .Luint128.
+
+	* src/powerpc/ffitarget.h: Import from upstream.
+	* src/powerpc/ffi.c: Likewise.
+	* src/powerpc/linux64.S: Likewise.
+	* src/powerpc/linux64_closure.S: Likewise.
+	* doc/libffi.texi: Likewise.
+	* testsuite/libffi.call/cls_double_va.c: Likewise.
+	* testsuite/libffi.call/cls_longdouble_va.c: Likewise.
+
 2013-10-16  Release Manager
 
 	* GCC 4.8.2 released.

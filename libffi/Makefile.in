@@ -48,10 +48,10 @@ target_triplet = @target@
 @IA64_TRUE@am__append_11 = src/ia64/ffi.c src/ia64/unix.S
 @M32R_TRUE@am__append_12 = src/m32r/sysv.S src/m32r/ffi.c
 @M68K_TRUE@am__append_13 = src/m68k/ffi.c src/m68k/sysv.S
-@POWERPC_TRUE@am__append_14 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
+@POWERPC_TRUE@am__append_14 = src/powerpc/ffi.c src/powerpc/ffi_sysv.c src/powerpc/ffi_linux64.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
 @POWERPC_AIX_TRUE@am__append_15 = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
 @POWERPC_DARWIN_TRUE@am__append_16 = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
-@POWERPC_FREEBSD_TRUE@am__append_17 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
+@POWERPC_FREEBSD_TRUE@am__append_17 = src/powerpc/ffi.c src/powerpc/ffi_sysv.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
 @AARCH64_TRUE@am__append_18 = src/aarch64/sysv.S src/aarch64/ffi.c
 @ARM_TRUE@am__append_19 = src/arm/sysv.S src/arm/ffi.c
 @ARM_TRUE@@FFI_EXEC_TRAMPOLINE_TABLE_TRUE@am__append_20 = src/arm/trampoline.S
@@ -133,7 +133,9 @@ am_libffi_la_OBJECTS = src/prep_cif.lo src/types.lo src/raw_api.lo \
 @IA64_TRUE@am__objects_11 = src/ia64/ffi.lo src/ia64/unix.lo
 @M32R_TRUE@am__objects_12 = src/m32r/sysv.lo src/m32r/ffi.lo
 @M68K_TRUE@am__objects_13 = src/m68k/ffi.lo src/m68k/sysv.lo
-@POWERPC_TRUE@am__objects_14 = src/powerpc/ffi.lo src/powerpc/sysv.lo \
+@POWERPC_TRUE@am__objects_14 = src/powerpc/ffi.lo \
+@POWERPC_TRUE@	src/powerpc/ffi_sysv.lo \
+@POWERPC_TRUE@	src/powerpc/ffi_linux64.lo src/powerpc/sysv.lo \
 @POWERPC_TRUE@	src/powerpc/ppc_closure.lo \
 @POWERPC_TRUE@	src/powerpc/linux64.lo \
 @POWERPC_TRUE@	src/powerpc/linux64_closure.lo
@@ -144,6 +146,7 @@ am_libffi_la_OBJECTS = src/prep_cif.lo src/types.lo src/raw_api.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin_closure.lo
 @POWERPC_FREEBSD_TRUE@am__objects_17 = src/powerpc/ffi.lo \
+@POWERPC_FREEBSD_TRUE@	src/powerpc/ffi_sysv.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/sysv.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/ppc_closure.lo
 @AARCH64_TRUE@am__objects_18 = src/aarch64/sysv.lo src/aarch64/ffi.lo
@@ -278,6 +281,7 @@ FFI_EXEC_TRAMPOLINE_TABLE = @FFI_EXEC_TRAMPOLINE_TABLE@
 FGREP = @FGREP@
 GREP = @GREP@
 HAVE_LONG_DOUBLE = @HAVE_LONG_DOUBLE@
+HAVE_LONG_DOUBLE_VARIANT = @HAVE_LONG_DOUBLE_VARIANT@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -387,10 +391,12 @@ EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host	\
 	 src/ia64/unix.S src/mips/ffi.c src/mips/n32.S src/mips/o32.S	\
 	 src/mips/ffitarget.h src/m32r/ffi.c src/m32r/sysv.S		\
 	 src/m32r/ffitarget.h src/m68k/ffi.c src/m68k/sysv.S		\
-	 src/m68k/ffitarget.h src/powerpc/ffi.c src/powerpc/sysv.S	\
-	 src/powerpc/linux64.S src/powerpc/linux64_closure.S		\
-	 src/powerpc/ppc_closure.S src/powerpc/asm.h			\
-	src/powerpc/aix.S src/powerpc/darwin.S				\
+	 src/m68k/ffitarget.h						\
+	src/powerpc/ffi.c src/powerpc/ffi_powerpc.h			\
+	src/powerpc/ffi_sysv.c src/powerpc/ffi_linux64.c		\
+	src/powerpc/sysv.S src/powerpc/linux64.S			\
+	src/powerpc/linux64_closure.S src/powerpc/ppc_closure.S		\
+	src/powerpc/asm.h src/powerpc/aix.S src/powerpc/darwin.S	\
 	src/powerpc/aix_closure.S src/powerpc/darwin_closure.S		\
 	src/powerpc/ffi_darwin.c src/powerpc/ffitarget.h		\
 	src/s390/ffi.c src/s390/sysv.S src/s390/ffitarget.h		\
@@ -711,6 +717,10 @@ src/powerpc/$(DEPDIR)/$(am__dirstamp):
 	@: > src/powerpc/$(DEPDIR)/$(am__dirstamp)
 src/powerpc/ffi.lo: src/powerpc/$(am__dirstamp) \
 	src/powerpc/$(DEPDIR)/$(am__dirstamp)
+src/powerpc/ffi_sysv.lo: src/powerpc/$(am__dirstamp) \
+	src/powerpc/$(DEPDIR)/$(am__dirstamp)
+src/powerpc/ffi_linux64.lo: src/powerpc/$(am__dirstamp) \
+	src/powerpc/$(DEPDIR)/$(am__dirstamp)
 src/powerpc/sysv.lo: src/powerpc/$(am__dirstamp) \
 	src/powerpc/$(DEPDIR)/$(am__dirstamp)
 src/powerpc/ppc_closure.lo: src/powerpc/$(am__dirstamp) \
@@ -912,6 +922,10 @@ mostlyclean-compile:
 	-rm -f src/powerpc/ffi.lo
 	-rm -f src/powerpc/ffi_darwin.$(OBJEXT)
 	-rm -f src/powerpc/ffi_darwin.lo
+	-rm -f src/powerpc/ffi_linux64.$(OBJEXT)
+	-rm -f src/powerpc/ffi_linux64.lo
+	-rm -f src/powerpc/ffi_sysv.$(OBJEXT)
+	-rm -f src/powerpc/ffi_sysv.lo
 	-rm -f src/powerpc/linux64.$(OBJEXT)
 	-rm -f src/powerpc/linux64.lo
 	-rm -f src/powerpc/linux64_closure.$(OBJEXT)
@@ -1009,6 +1023,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/darwin_closure.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/ffi_darwin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/ffi_linux64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/ffi_sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/linux64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/linux64_closure.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/ppc_closure.Plo@am__quote@

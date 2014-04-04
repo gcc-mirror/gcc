@@ -31,7 +31,7 @@
 
 	.file   "ppc_closure.S"
 
-#ifndef __powerpc64__
+#ifndef POWERPC64
 
 ENTRY(ffi_closure_SYSV)
 .LFB1:
@@ -238,7 +238,7 @@ ENTRY(ffi_closure_SYSV)
 	lwz %r3,112+0(%r1)
 	lwz %r4,112+4(%r1)
 	lwz %r5,112+8(%r1)
-	bl .Luint128
+	b .Luint128
 
 # The return types below are only used when the ABI type is FFI_SYSV.
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 1. One byte struct.
@@ -378,8 +378,7 @@ END(ffi_closure_SYSV)
 	.align 2
 .LEFDE1:
 
-#endif
-
 #if defined __ELF__ && defined __linux__
 	.section	.note.GNU-stack,"",@progbits
+#endif
 #endif

@@ -73,6 +73,9 @@
 /* Define if you have the long double type and it is bigger than a double */
 #undef HAVE_LONG_DOUBLE
 
+/* Define if you support more than one size of the long double type */
+#undef HAVE_LONG_DOUBLE_VARIANT
+
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
 
