@@ -1,5 +1,19 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline r207699.
+	2014-02-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60137
+	* gcc.target/powerpc/pr60137.c: New file.
+
+	Backport from mainline r207808.
+	2014-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60203
+	* gcc.target/powerpc/pr60203.c: New testsuite.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Little Endian Vector API Support
 	Backport from mainline r206590
 	2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>

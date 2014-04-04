@@ -1,5 +1,39 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline r207699.
+	2014-02-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60137
+	* config/rs6000/rs6000.md (128-bit GPR splitter): Add a splitter
+	for VSX/Altivec vectors that land in GPR registers.
+
+	Backport from mainline r207808.
+	2014-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60203
+	* config/rs6000/rs6000.md (rreg): Add TFmode, TDmode constraints.
+	(mov<mode>_internal, TFmode/TDmode): Split TFmode/TDmode moves
+	into 64-bit and 32-bit moves.  On 64-bit moves, add support for
+	using direct move instructions on ISA 2.07.  Also adjust
+	instruction length for 64-bit.
+	(mov<mode>_64bit, TFmode/TDmode): Likewise.
+	(mov<mode>_32bit, TFmode/TDmode): Likewise.
+
+	Backport from mainline r207868.
+	2014-02-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60203
+	* config/rs6000/rs6000.md (mov<mode>_64bit, TF/TDmode moves):
+	Split 64-bit moves into 2 patterns.  Do not allow the use of
+	direct move for TDmode in little endian, since the decimal value
+	has little endian bytes within a word, but the 64-bit pieces are
+	ordered in a big endian fashion, and normal subreg's of TDmode are
+	not allowed.
+	(mov<mode>_64bit_dm): Likewise.
+	(movtd_64bit_nodm): Likewise.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r207658
 	2014-02-06  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
