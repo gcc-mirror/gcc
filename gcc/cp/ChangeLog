@@ -1,5 +1,10 @@
 2014-04-04  Patrick Palka  <patrick@parcs.ath.cx>
 
+	PR c++/44613
+	* semantics.c (add_stmt): Set STATEMENT_LIST_HAS_LABEL.
+	* decl.c (cp_finish_decl): Create a new BIND_EXPR before
+	instantiating a variable-sized type.
+
 	PR c++/21113
 	* decl.c (decl_jump_unsafe): Consider variably-modified decls.
 

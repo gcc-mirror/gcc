@@ -6440,7 +6440,24 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
      after the call to check_initializer so that the DECL_EXPR for a
      reference temp is added before the DECL_EXPR for the reference itself.  */
   if (DECL_FUNCTION_SCOPE_P (decl))
-    add_decl_expr (decl);
+    {
+      /* If we're building a variable sized type, and we might be
+	 reachable other than via the top of the current binding
+	 level, then create a new BIND_EXPR so that we deallocate
+	 the object at the right time.  */
+      if (VAR_P (decl)
+	  && DECL_SIZE (decl)
+	  && !TREE_CONSTANT (DECL_SIZE (decl))
+	  && STATEMENT_LIST_HAS_LABEL (cur_stmt_list))
+	{
+	  tree bind;
+	  bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+	  TREE_SIDE_EFFECTS (bind) = 1;
+	  add_stmt (bind);
+	  BIND_EXPR_BODY (bind) = push_stmt_list ();
+	}
+      add_decl_expr (decl);
+    }
 
   /* Let the middle end know about variables and functions -- but not
      static data members in uninstantiated class templates.  */
