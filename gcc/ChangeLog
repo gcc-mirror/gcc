@@ -1,3 +1,7 @@
+2014-04-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssanames.c (make_ssa_name_fn): Fix assert.
+
 2014-04-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_insv): Use GET_MODE_BITSIZE.
