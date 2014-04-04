@@ -1,3 +1,17 @@
+2014-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60746
+	* tree-ssanames.c (make_ssa_name_fn): Fix assert.
+	* gimple.c (gimple_set_bb): Avoid ICEing for NULL cfun for
+	non-GIMPLE_LABELs.
+	* gimplify.h (gimple_add_tmp_var_fn): Declare.
+	* gimplify.c (gimple_add_tmp_var_fn): New function.
+	* gimple-expr.h (create_tmp_reg_fn): Declare.
+	* gimple-expr.c (create_tmp_reg_fn): New function.
+	* gimple-low.c (record_vars_into): Don't change cfun.
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Fix
+	code generation without cfun.
+
 2014-04-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR bootstrap/60719
