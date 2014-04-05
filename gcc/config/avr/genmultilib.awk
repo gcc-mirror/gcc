@@ -86,7 +86,7 @@ BEGIN {
     name = $2
     gsub ("\"", "", name)
 
-    if ($4 == "NULL")
+    if ($5 == "NULL")
     {
 	core = name
 
@@ -106,7 +106,17 @@ BEGIN {
     if (core == "avr1")
 	next
 
-    tiny_stack[name]  = $5
+    # split device specific feature list
+    n = split($4,dev_attribute,"|")
+
+    # set tiny_stack false by default
+    tiny_stack[name] = 0
+    for (i=1; i <= n; i++)
+      if (dev_attribute[i] == "AVR_SHORT_SP") {
+        tiny_stack[name]  = 1
+        break
+      }
+
     mcu[n_mcu] = name
     n_mcu++
     option[name]      = "mmcu=" name

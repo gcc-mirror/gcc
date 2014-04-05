@@ -88,8 +88,9 @@ enum
    __AVR_HAVE_8BIT_SP__ and __AVR_HAVE_16BIT_SP__.  During multilib generation
    there is always __AVR_SP8__ == __AVR_HAVE_8BIT_SP__.  */
 
-#define AVR_HAVE_8BIT_SP                                                \
-  (avr_current_device->short_sp || TARGET_TINY_STACK || avr_sp8)
+#define AVR_HAVE_8BIT_SP                                 \
+  ((avr_current_device->dev_attribute & AVR_SHORT_SP) || \
+   TARGET_TINY_STACK || avr_sp8)
 
 #define AVR_HAVE_SPH (!avr_sp8)
 

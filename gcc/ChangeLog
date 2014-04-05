@@ -1,3 +1,22 @@
+2014-04-05  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
+
+	* config/avr/avr-arch.h (avr_mcu_t): Add dev_attribute field to have device
+	specific ISA/ feature information. Remove short_sp and errata_skip ds.
+	Add avr_device_specific_features enum to have device specific info.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): use dev_attribute to check
+	errata_skip. Add __AVR_ISA_RMW__ builtin macro if RMW ISA available.
+	* config/avr/avr-devices.c (avr_mcu_types): Update AVR_MCU macro for
+	updated device specific info.
+	* config/avr/avr-mcus.def: Merge device specific details to
+	dev_attribute field.
+	* config/avr/avr.c (avr_2word_insn_p): use dev_attribute field to check
+	errata_skip.
+	* config/avr/avr.h (AVR_HAVE_8BIT_SP): same for short sp info.
+	* config/avr/driver-avr.c (avr_device_to_as): Pass -mrmw option to
+	assembler if RMW isa supported by current device.
+	* config/avr/genmultilib.awk: Update as device info structure changed.
+	* doc/invoke.texi: Add info for __AVR_ISA_RMW__ builtin macro
+
 2014-04-04  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/60656
@@ -33,7 +52,7 @@
 	symtab_remove_unreachable_nodes): Drop bodies of always inline
 	after early inlining.
 	(symtab_remove_unreachable_nodes): Remove always_inline attribute.
-	
+
 2014-04-04  Jakub Jelinek  <jakub@redhat.com>
 	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
