@@ -1,3 +1,11 @@
+2014-04-04  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60656
+	* tree-vect-stmts.c (supportable_widening_operation):
+	Fix a bug that elements in a vector with vect_used_by_reduction
+	property are incorrectly reordered when the operation on it is not
+	consistant with the one in reduction operation.
+
 2014-04-04  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR rtl-optimization/60155

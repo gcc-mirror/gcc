@@ -1,3 +1,8 @@
+2014-04-04  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60656
+	* gcc.dg/vect/pr60656.c: New test.
+
 2014-04-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/builtin-bswap-6.c: Adjust return value to disable GCC
