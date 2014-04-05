@@ -1,3 +1,13 @@
+2014-04-05  Alan Modra  <amodra@gmail.com>
+
+	Apply from mainline
+	2014-01-28  Alan Modra  <amodra@gmail.com>
+	* Makefile.in (BUILD_CPPFLAGS): Do not use ALL_CPPFLAGS.
+	* configure.ac <recursive call for build != host>: Define
+	GENERATOR_FILE.  Comment.  Use CXX_FOR_BUILD, CXXFLAGS_FOR_BUILD
+	and LD_FOR_BUILD too.
+	* configure: Regenerate.
+
 2014-04-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	Backport from mainline r208895:
