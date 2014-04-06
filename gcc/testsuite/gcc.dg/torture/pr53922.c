@@ -3,6 +3,7 @@
 /* { dg-skip-if "No undefined" { *-*-mingw* } { "*" } { "" } } */
 /* { dg-skip-if "No undefined weak" { hppa*-*-hpux* && { ! lp64 } } { "*" } { "" } } */
 /* { dg-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } } */
+/* { dg-additional-options "-Wl,-flat_namespace" { target *-*-darwin[89]* } } */
 
 int x(int a)
 {
