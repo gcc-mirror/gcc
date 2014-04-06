@@ -3,7 +3,7 @@
 typedef unsigned char unit;
 typedef unit *unitptr;
 extern short global_precision;
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern void *memcpy (void *dest, const void *src, size_t n);
 
 short mp_compare(const unit* r1, const unit* r2)
