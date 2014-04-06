@@ -1,7 +1,13 @@
+2014-04-06  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.c-torture/compile/pr60655-1.c: Use __SIZE_TYPE__ for size_t.
+
 2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/60671
 	g++.dg/pr49718.C: Adjust scan-assembler-times for hppa*-*-hpux*.
+
+2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/60672
 	* g++.dg/cpp1y/auto-fn25.C: Require lto.
