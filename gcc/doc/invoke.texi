@@ -12983,6 +12983,9 @@ instructions because of a hardware erratum.  Skip instructions are
 The second macro is only defined if @code{__AVR_HAVE_JMP_CALL__} is also
 set.
 
+@item __AVR_ISA_RMW__
+The device has Read-Modify-Write instructions (XCH, LAC, LAS and LAT).
+
 @item __AVR_SFR_OFFSET__=@var{offset}
 Instructions that can address I/O special function registers directly
 like @code{IN}, @code{OUT}, @code{SBI}, etc.@: may use a different
