@@ -1,3 +1,11 @@
+2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR debug/55794
+	* config/pa/pa.c (pa_output_function_epilogue): Skip address and code
+	size accounting for thunks.
+	(pa_asm_output_mi_thunk): Use final_start_function() and
+	final_end_function() to output function start and end directives.
+
 2014-04-05  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
 
 	* config/avr/avr-arch.h (avr_mcu_t): Add dev_attribute field to have device
