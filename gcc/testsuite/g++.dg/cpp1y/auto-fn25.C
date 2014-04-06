@@ -1,6 +1,7 @@
 // PR c++/60574
-// { dg-options "-flto" }
 // { dg-do compile { target c++1y } }
+// { dg-require-effective-target lto }
+// { dg-options "-flto" }
 
 struct A
 {
