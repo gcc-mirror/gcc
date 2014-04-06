@@ -1,5 +1,8 @@
 2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/60671
+	g++.dg/pr49718.C: Adjust scan-assembler-times for hppa*-*-hpux*.
+
 	PR testsuite/60672
 	* g++.dg/cpp1y/auto-fn25.C: Require lto.
 
