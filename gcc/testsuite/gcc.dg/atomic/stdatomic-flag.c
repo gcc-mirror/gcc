@@ -1,5 +1,5 @@
 /* Test atomic_flag routines for existence and execution.  */
-/* { dg-do run } */
+/* { dg-do run { xfail hppa*-*-hpux* } } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
 
 #include <stdatomic.h>

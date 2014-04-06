@@ -1,3 +1,7 @@
+2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/atomic/stdatomic-flag.c: xfail on hppa*-*-hpux*.
+
 2014-04-05  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	* gfortran.dg/warn_conversion_4.f90: Adjust test.
