@@ -1,5 +1,8 @@
 2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/60672
+	* g++.dg/cpp1y/auto-fn25.C: Require lto.
+
 	* gcc.dg/atomic/stdatomic-flag.c: xfail on hppa*-*-hpux*.
 
 2014-04-05  Dominique d'Humieres <dominiq@lps.ens.fr>
