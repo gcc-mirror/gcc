@@ -536,7 +536,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
   # System.Stack_Checking.Operations is not needed on VxWorks 6 as it leads to
   # an undefined symbol when building a dynamic shared library. To alleviate
   # this problem and distinguish this case, we use the THREAD_KIND and include
-  # the package only in kernel mode.
+  # the package only in default mode.
 
   ifeq ($(strip $(filter-out default,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -1615,6 +1615,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(target_
         $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
     EXTRA_LIBGNAT_SRCS+=tb-alvms.c
+    override GNATRTL_ALTIVEC_OBJS=
 
     TOOLS_TARGET_PAIRS= \
       mlib-tgt-specific.adb<mlib-tgt-specific-vms-alpha.adb \

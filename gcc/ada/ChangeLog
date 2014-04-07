@@ -1,3 +1,7 @@
+2014-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (alpha-vms): Add missing line.
+
 2014-03-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/60703
