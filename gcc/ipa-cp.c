@@ -1458,22 +1458,21 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
   args_count = ipa_get_cs_argument_count (args);
   parms_count = ipa_get_param_count (callee_info);
 
-  /* If this call goes through a thunk we must not propagate to the first (0th)
-     parameter.  However, we might need to uncover a thunk from below a series
-     of aliases first.  */
+  /* If this call goes through a thunk we should not propagate because we
+     cannot redirect edges to thunks.  However, we might need to uncover a
+     thunk from below a series of aliases first.  */
   alias_or_thunk = cs->callee;
   while (alias_or_thunk->alias)
     alias_or_thunk = cgraph_alias_aliased_node (alias_or_thunk);
   if (alias_or_thunk->thunk.thunk_p)
     {
-      ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
-							       0));
-      i = 1;
+      for (i = 0; i < parms_count; i++)
+	ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
+								 i));
+      return ret;
     }
-  else
-    i = 0;
 
-  for (; (i < args_count) && (i < parms_count); i++)
+  for (i = 0; (i < args_count) && (i < parms_count); i++)
     {
       struct ipa_jump_func *jump_func = ipa_get_ith_jump_func (args, i);
       struct ipcp_param_lattices *dest_plats;
