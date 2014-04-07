@@ -255,7 +255,7 @@ hardware, hand-crafted assembly is selected. This is the case for the following 
 <para>And for the rest, a simulated atomic lock via pthreads.
 </para>
 
-<para> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html"> documentation</link>.
+<para> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html"> documentation</link>.
 </para>
 
 <para> More details on the library fallbacks from the porting <link linkend="internals.thread_safety">section</link>.

@@ -2670,9 +2670,10 @@ the compiler to never throw an exception.
 @opindex Wnon-virtual-dtor
 @opindex Wno-non-virtual-dtor
 Warn when a class has virtual functions and an accessible non-virtual
-destructor, in which case it is possible but unsafe to delete
-an instance of a derived class through a pointer to the base class.
-This warning is also enabled if @option{-Weffc++} is specified.
+destructor itself or in a base class, or has in which case it is
+possible but unsafe to delete an instance of a derived class through a
+pointer to the base class.  This warning is automatically enabled if
+@option{-Weffc++} is specified.
 
 @item -Wreorder @r{(C++ and Objective-C++ only)}
 @opindex Wreorder
@@ -2716,39 +2717,33 @@ The following @option{-W@dots{}} options are not affected by @option{-Wall}.
 @opindex Weffc++
 @opindex Wno-effc++
 Warn about violations of the following style guidelines from Scott Meyers'
-@cite{Effective C++, Second Edition} book:
+@cite{Effective C++} series of books:
 
 @itemize @bullet
 @item
-Item 11:  Define a copy constructor and an assignment operator for classes
+Define a copy constructor and an assignment operator for classes
 with dynamically-allocated memory.
 
 @item
-Item 12:  Prefer initialization to assignment in constructors.
+Prefer initialization to assignment in constructors.
 
 @item
-Item 14:  Make destructors virtual in base classes.
+Have @code{operator=} return a reference to @code{*this}.
 
 @item
-Item 15:  Have @code{operator=} return a reference to @code{*this}.
+Don't try to return a reference when you must return an object.
 
 @item
-Item 23:  Don't try to return a reference when you must return an object.
-
-@end itemize
-
-Also warn about violations of the following style guidelines from
-Scott Meyers' @cite{More Effective C++} book:
-
-@itemize @bullet
-@item
-Item 6:  Distinguish between prefix and postfix forms of increment and
+Distinguish between prefix and postfix forms of increment and
 decrement operators.
 
 @item
-Item 7:  Never overload @code{&&}, @code{||}, or @code{,}.
+Never overload @code{&&}, @code{||}, or @code{,}.
 
 @end itemize
+
+This option also enables @option{-Wnon-virtual-dtor}, which is also
+one of the effective C++ recommendations.
 
 When selecting this option, be aware that the standard library
 headers do not obey all of these guidelines; use @samp{grep -v}
@@ -12988,6 +12983,9 @@ instructions because of a hardware erratum.  Skip instructions are
 The second macro is only defined if @code{__AVR_HAVE_JMP_CALL__} is also
 set.
 
+@item __AVR_ISA_RMW__
+The device has Read-Modify-Write instructions (XCH, LAC, LAS and LAT).
+
 @item __AVR_SFR_OFFSET__=@var{offset}
 Instructions that can address I/O special function registers directly
 like @code{IN}, @code{OUT}, @code{SBI}, etc.@: may use a different
@@ -20848,8 +20846,9 @@ These @samp{-m} options are supported on the SPARC:
 @opindex mno-app-regs
 @opindex mapp-regs
 Specify @option{-mapp-regs} to generate output using the global registers
-2 through 4, which the SPARC SVR4 ABI reserves for applications.  This
-is the default.
+2 through 4, which the SPARC SVR4 ABI reserves for applications.  Like the
+global register 1, each global register 2 through 4 is then treated as an
+allocable register that is clobbered by function calls.  This is the default.
 
 To be fully SVR4 ABI-compliant at the cost of some performance loss,
 specify @option{-mno-app-regs}.  You should compile libraries and system

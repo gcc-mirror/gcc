@@ -100,31 +100,11 @@ typedef struct
   /* Index in avr_arch_types[].  */
   enum avr_arch arch;
 
+  /* device specific feature */
+  int dev_attribute;
+
   /* Must lie outside user's namespace.  NULL == no macro.  */
   const char *const macro;
-
-  /* Stack pointer have 8 bits width.  */
-  int short_sp;
-
-  /* Some AVR devices have a core erratum when skipping a 2-word instruction.
-     Skip instructions are:  SBRC, SBRS, SBIC, SBIS, CPSE.
-     Problems will occur with return address is IRQ executes during the
-     skip sequence.
-
-     A support ticket from Atmel returned the following information:
-
-         Subject: (ATTicket:644469) On AVR skip-bug core Erratum
-         From: avr@atmel.com                    Date: 2011-07-27
-         (Please keep the subject when replying to this mail)
-
-         This errata exists only in AT90S8515 and ATmega103 devices.
-
-         For information please refer the following respective errata links
-            http://www.atmel.com/dyn/resources/prod_documents/doc2494.pdf
-            http://www.atmel.com/dyn/resources/prod_documents/doc1436.pdf  */
-
-  /* Core Erratum:  Must not skip 2-word instruction.  */
-  int errata_skip;
 
   /* Start of data section.  */
   int data_section_start;
@@ -135,6 +115,42 @@ typedef struct
   /* Name of device library.  */
   const char *const library_name;
 } avr_mcu_t;
+
+/* AVR device specific features.
+
+AVR_ISA_RMW
+  Only few avr devices have Read-Modify-Write (RMW) instructions
+  (XCH, LAC, LAS and LAT)
+
+AVR_SHORT_SP
+  Stack Pointer has only 8 bit width.
+  The device / multilib has an 8-bit stack pointer (no SPH).
+
+AVR_ERRATA_SKIP
+  Some AVR devices have a core erratum when skipping a 2-word instruction.
+  Skip instructions are:  SBRC, SBRS, SBIC, SBIS, CPSE.
+  Problems will occur with return address is IRQ executes during the
+  skip sequence.
+
+  A support ticket from Atmel returned the following information:
+
+     Subject: (ATTicket:644469) On AVR skip-bug core Erratum
+     From: avr@atmel.com                    Date: 2011-07-27
+     (Please keep the subject when replying to this mail)
+
+     This errata exists only in AT90S8515 and ATmega103 devices.
+
+     For information please refer the following respective errata links
+       http://www.atmel.com/dyn/resources/prod_documents/doc2494.pdf
+       http://www.atmel.com/dyn/resources/prod_documents/doc1436.pdf  */
+
+enum avr_device_specific_features
+{
+  AVR_ISA_NONE,
+  AVR_ISA_RMW     = 0x1, /* device has RMW instructions. */
+  AVR_SHORT_SP    = 0x2, /* Stack Pointer has 8 bits width. */
+  AVR_ERRATA_SKIP = 0x4  /* device has a core erratum. */
+};
 
 /* Map architecture to its texinfo string.  */
 

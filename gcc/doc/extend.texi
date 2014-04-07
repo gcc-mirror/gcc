@@ -15099,6 +15099,9 @@ vector unsigned short vec_vclzh (vector unsigned short);
 vector int vec_vclzw (vector int);
 vector unsigned int vec_vclzw (vector int);
 
+vector signed char vec_vgbbd (vector signed char);
+vector unsigned char vec_vgbbd (vector unsigned char);
+
 vector long long vec_vmaxsd (vector long long, vector long long);
 
 vector unsigned long long vec_vmaxud (vector unsigned long long,
@@ -17541,6 +17544,10 @@ unimportant.
 
 A redeclaration of a function or class must not add new ABI tags,
 since doing so would change the mangled name.
+
+The ABI tags apply to a name, so all instantiations and
+specializations of a template have the same tags.  The attribute will
+be ignored if applied to an explicit specialization or instantiation.
 
 The @option{-Wabi-tag} flag enables a warning about a class which does
 not have all the ABI tags used by its subobjects and virtual functions; for users with code

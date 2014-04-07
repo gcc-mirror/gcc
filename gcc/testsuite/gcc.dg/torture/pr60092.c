@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-require-weak "" } */
 /* { dg-skip-if "No undefined weak" { hppa*-*-hpux* && { ! lp64 } } } */
+/* { dg-additional-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } } */
+/* { dg-additional-options "-Wl,-flat_namespace" { target *-*-darwin[89]* } } */
 /* { dg-xfail-run-if "posix_memalign modifies first arg on error" { *-*-solaris2.11* } { "-O0" } } */
 
 typedef __SIZE_TYPE__ size_t;

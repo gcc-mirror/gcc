@@ -264,6 +264,11 @@ typedef struct _loop_vec_info {
 	     values unknown at compile time.  */
   int min_profitable_iters;
 
+  /* Threshold of number of iterations below which vectorzation will not be
+     performed. It is calculated from MIN_PROFITABLE_ITERS and
+     PARAM_MIN_VECT_LOOP_BOUND.  */
+  unsigned int th;
+
   /* Is the loop vectorizable? */
   bool vectorizable;
 
@@ -382,6 +387,7 @@ typedef struct _loop_vec_info {
    cost model.  */
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
 #define LOOP_VINFO_COST_MODEL_MIN_ITERS(L) (L)->min_profitable_iters
+#define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask

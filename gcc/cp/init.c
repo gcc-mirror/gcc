@@ -694,11 +694,14 @@ perform_member_init (tree member, tree init)
 	  if (CP_TYPE_CONST_P (type)
 	      && init == NULL_TREE
 	      && default_init_uninitialized_part (type))
-	    /* TYPE_NEEDS_CONSTRUCTING can be set just because we have a
-	       vtable; still give this diagnostic.  */
-	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
-		       "uninitialized member %qD with %<const%> type %qT",
-		       member, type);
+	    {
+	      /* TYPE_NEEDS_CONSTRUCTING can be set just because we have a
+		 vtable; still give this diagnostic.  */
+	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
+			     "uninitialized const member in %q#T", type))
+		inform (DECL_SOURCE_LOCATION (member),
+			"%q#D should be initialized", member );
+	    }
 	  finish_expr_stmt (build_aggr_init (decl, init, flags,
 					     tf_warning_or_error));
 	}
@@ -710,13 +713,19 @@ perform_member_init (tree member, tree init)
 	  tree core_type;
 	  /* member traversal: note it leaves init NULL */
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
-	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
-		       "uninitialized reference member %qD",
-		       member);
+	    {
+	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
+			     "uninitialized reference member in %q#T", type))
+		inform (DECL_SOURCE_LOCATION (member),
+			"%q#D should be initialized", member);
+	    }
 	  else if (CP_TYPE_CONST_P (type))
-	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
-		       "uninitialized member %qD with %<const%> type %qT",
-		       member, type);
+	    {
+	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
+			     "uninitialized const member in %q#T", type))
+		  inform (DECL_SOURCE_LOCATION (member),
+			  "%q#D should be initialized", member );
+	    }
 
 	  core_type = strip_array_types (type);
 

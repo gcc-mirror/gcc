@@ -30,18 +30,23 @@
     if (rl78_far_p (operands[0]) && rl78_far_p (operands[1]))
       operands[1] = copy_to_mode_reg (QImode, operands[1]);
 
-    /* FIXME: Not sure how GCC can generate (SUBREG (SYMBOL_REF)),
-       but it does.  Since this makes no sense, reject it here.  */
+    /* GCC can generate (SUBREG (SYMBOL_REF)) when it has to store a symbol
+       into a bitfield, or a packed ordinary field.  We can handle this
+       provided that the destination is a register.  If not, then load the
+       source into a register first.  */
     if (GET_CODE (operands[1]) == SUBREG
-        && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
-      FAIL;
+        && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
+	&& ! REG_P (operands[0]))
+	operands[1] = copy_to_mode_reg (QImode, operands[1]);
+
     /* Similarly for (SUBREG (CONST (PLUS (SYMBOL_REF)))).
        cf. g++.dg/abi/packed.C.  */
     if (GET_CODE (operands[1]) == SUBREG
 	&& GET_CODE (XEXP (operands[1], 0)) == CONST
         && GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == PLUS
-        && GET_CODE (XEXP (XEXP (XEXP (operands[1], 0), 0), 0)) == SYMBOL_REF)
-      FAIL;
+        && GET_CODE (XEXP (XEXP (XEXP (operands[1], 0), 0), 0)) == SYMBOL_REF
+	&& ! REG_P (operands[0]))
+	operands[1] = copy_to_mode_reg (QImode, operands[1]);
 
     if (CONST_INT_P (operands[1]) && ! IN_RANGE (INTVAL (operands[1]), (-1 << 8) + 1, (1 << 8) - 1))
       FAIL;

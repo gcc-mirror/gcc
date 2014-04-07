@@ -3001,10 +3001,10 @@ ncd_with_phi (slsr_cand_t c, double_int incr, gimple phi,
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
 	      double_int diff = arg_cand->index - basis->index;
+	      basic_block pred = gimple_phi_arg_edge (phi, i)->src;
 
 	      if ((incr == diff) || (!address_arithmetic_p && incr == -diff))
-		ncd = ncd_for_two_cands (ncd, gimple_bb (arg_cand->cand_stmt),
-					 *where, arg_cand, where);
+		ncd = ncd_for_two_cands (ncd, pred, *where, NULL, where);
 	    }
 	}
     }

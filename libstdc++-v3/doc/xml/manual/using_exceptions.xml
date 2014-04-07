@@ -480,7 +480,7 @@ is called.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf">
+	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf">
 	Standard Library Exception Policy
 	</link>
       </title>

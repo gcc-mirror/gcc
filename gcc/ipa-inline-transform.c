@@ -184,7 +184,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    freq_scale = e->frequency;
 	  n = cgraph_clone_node (e->callee, e->callee->decl,
 				 e->count, freq_scale, update_original,
-				 vNULL, true, inlining_into);
+				 vNULL, true, inlining_into, NULL);
 	  cgraph_redirect_edge_callee (e, n);
 	}
     }

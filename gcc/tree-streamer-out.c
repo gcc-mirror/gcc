@@ -523,13 +523,6 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
 {
   while (t)
     {
-      tree saved_chain;
-
-      /* Clear TREE_CHAIN to avoid blindly recursing into the rest
-	 of the list.  */
-      saved_chain = TREE_CHAIN (t);
-      TREE_CHAIN (t) = NULL_TREE;
-
       /* We avoid outputting external vars or functions by reference
 	 to the global decls section as we do not want to have them
 	 enter decl merging.  This is, of course, only for the call
@@ -541,7 +534,6 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
       else
 	stream_write_tree (ob, t, ref_p);
 
-      TREE_CHAIN (t) = saved_chain;
       t = TREE_CHAIN (t);
     }
 

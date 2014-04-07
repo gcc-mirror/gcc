@@ -1,3 +1,7 @@
+2014-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_cmplx): Fix typo.
+
 2014-03-28  Mikael Morin  <mikael@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

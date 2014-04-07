@@ -107,8 +107,6 @@ simple_object_internal_write (int descriptor, off_t offset,
 			      const unsigned char *buffer, size_t size,
 			      const char **errmsg, int *err)
 {
-  ssize_t wrote;
-
   if (lseek (descriptor, offset, SEEK_SET) < 0)
     {
       *errmsg = "lseek";
@@ -116,15 +114,26 @@ simple_object_internal_write (int descriptor, off_t offset,
       return 0;
     }
 
-  wrote = write (descriptor, buffer, size);
-  if (wrote < 0)
+  do
     {
-      *errmsg = "write";
-      *err = errno;
-      return 0;
+      ssize_t wrote = write (descriptor, buffer, size);
+      if (wrote == 0)
+	break;
+      else if (wrote > 0)
+	{
+	  buffer += wrote;
+	  size -= wrote;
+	}
+      else if (errno != EINTR)
+	{
+	  *errmsg = "write";
+	  *err = errno;
+	  return 0;
+	}
     }
+  while (size > 0);
 
-  if ((size_t) wrote < size)
+  if (size > 0)
     {
       *errmsg = "short write";
       *err = 0;

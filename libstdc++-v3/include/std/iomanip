@@ -415,8 +415,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 		 const _Quoted_string<basic_string<_CharT, _Traits, _Alloc>&,
 				      _CharT>& __str)
       {
-	__str._M_string.clear();
-
 	_CharT __c;
 	__is >> __c;
 	if (!__is.good())
@@ -427,6 +425,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	    __is >> __str._M_string;
 	    return __is;
 	  }
+	__str._M_string.clear();
 	std::ios_base::fmtflags __flags
 	  = __is.flags(__is.flags() & ~std::ios_base::skipws);
 	do

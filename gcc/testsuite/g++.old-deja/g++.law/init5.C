@@ -11,8 +11,8 @@ extern int fred( int);
 
 class X {
       public :
-      void f( int = fred( 0) ) ; // { dg-error "" } previous spec
+      void f( int = fred( 0) ) ; // { dg-message "previous spec" }
 } ;
 
-void X::f( int x = fred( 0) ) {// { dg-error "" } .*
+void X::f( int x = fred( 0) ) { // { dg-error "default argument" }
 }

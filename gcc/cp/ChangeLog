@@ -1,3 +1,82 @@
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* decl.c (duplicate_decls): Check for the return of warning_at
+	before emitting a note.
+	(warn_misplaced_attr_for_class_type): Likewise.
+	(check_tag_decl): Likewise.
+
+2014-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58207
+	* semantics.c (sort_constexpr_mem_initializers): Robustify loop.
+
+2014-04-04  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/44613
+	* semantics.c (add_stmt): Set STATEMENT_LIST_HAS_LABEL.
+	* decl.c (cp_finish_decl): Create a new BIND_EXPR before
+	instantiating a variable-sized type.
+
+	PR c++/21113
+	* decl.c (decl_jump_unsafe): Consider variably-modified decls.
+
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* class.c (find_abi_tags_r): Check for the return of warning
+	before emitting a note.
+	(one_inherited_ctor): Likewise.
+
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* decl.c (duplicate_decls): Check for the return of permerror
+	before emitting a note.
+
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (accessible_nvdtor_p): New.
+	(check_bases): Don't check base destructor here ...
+	(check_bases_and_members): ... check them here.  Trigger on
+	Wnon-virtual-dtor flag.
+	(finish_struct_1): Use accessible_nvdtor_p.
+
+2014-04-01  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (process_partial_specialization): Say "not deducible"
+	rather than "not used".  Use inform.
+
+	PR c++/60374
+	* pt.c (coerce_template_parms): Check that the pack expansion
+	pattern works with the first matching parameter.
+
+2014-04-01  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* init.c (perform_member_init): Homogenize uninitialized
+	diagnostics.
+
+2014-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60708
+	* call.c (build_array_conv): Call complete_type.
+
+	PR c++/60713
+	* typeck2.c (PICFLAG_SIDE_EFFECTS): New.
+	(picflag_from_initializer): Return it.
+	(process_init_constructor): Handle it.
+
+	PR c++/60642
+	* decl2.c (is_late_template_attribute): Don't defer abi_tag.
+	* mangle.c (write_unqualified_name): Fix abi_tag on templates.
+	* pt.c (get_template_info): Handle NAMESPACE_DECL.
+	(most_general_template): Handle more kinds of template.
+	* tree.c (handle_abi_tag_attribute): Ignore abi_tag on template
+	instantiations and specializations.
+
+2014-03-31  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/44859
+	* typeck.c (maybe_warn_about_returning_address_of_local): Unwrap
+	COMPONENT_REFs and ARRAY_REFs sooner.
+
 2014-03-29  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60626
@@ -20,9 +99,9 @@
 2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52369
-	* cp/method.c (walk_field_subobs): improve the diagnostic
+	* method.c (walk_field_subobs): Improve the diagnostic
 	locations for both REFERENCE_TYPEs and non-static const members.
-	* cp/init.c (diagnose_uninitialized_cst_or_ref_member): use %q#D
+	* init.c (diagnose_uninitialized_cst_or_ref_member): Use %q#D
 	instead of %qD to be consistent with the c++11 diagnostic.
 
 2014-03-25  Jason Merrill  <jason@redhat.com>

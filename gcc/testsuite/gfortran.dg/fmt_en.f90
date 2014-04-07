@@ -7,8 +7,8 @@ use ISO_FORTRAN_ENV
     integer, parameter :: j(size(real_kinds)+4)=[REAL_KINDS, [4, 4, 4, 4]]
     logical :: l_skip(4) = .false.
     integer :: i
-    integer :: n_tst = 0, n_cnt = 0
-    character(len=20) :: s
+    integer :: n_tst = 0, n_cnt = 0, n_skip = 0
+    character(len=20) :: s, s1
 
     open (unit = 10, file = 'fmt_en.res')
 !   Check that the default rounding mode is to nearest and to even on tie.
@@ -17,22 +17,30 @@ use ISO_FORTRAN_ENV
         write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(1)), &
                                   real(9.49999905,kind=j(1)),  &
                                   real(9.5,kind=j(1)), real(8.5,kind=j(1))
+        write(s1, '(3PE10.3,2PE10.3)') real(987350.,kind=j(1)), &
+                                       real(98765.0,kind=j(1))
       else if (i == 2) then
         write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(2)), &
                                   real(9.49999905,kind=j(2)),  &
                                   real(9.5,kind=j(2)), real(8.5,kind=j(2))
+        write(s1, '(3PE10.3,2PE10.3)') real(987350.,kind=j(2)), &
+                                       real(98765.0,kind=j(2))
       else if (i == 3) then
         write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(3)), &
                                   real(9.49999905,kind=j(3)),  &
                                   real(9.5,kind=j(3)), real(8.5,kind=j(3))
+        write(s1, '(3PE10.3,2PE10.3)') real(987350.,kind=j(3)), &
+                                       real(98765.0,kind=j(3))
       else if (i == 4) then
         write(s, '(2F4.1,2F4.0)') real(-9.49999905,kind=j(4)), &
                                   real(9.49999905,kind=j(4)),  &
                                   real(9.5,kind=j(4)), real(8.5,kind=j(4))
+        write(s1, '(3PE10.3,2PE10.3)') real(987350.,kind=j(4)), &
+                                       real(98765.0,kind=j(4))
       end if
-      if (s /= '-9.5 9.5 10.  8.') then
+      if (s /= '-9.5 9.5 10.  8.' .or. s1 /= ' 987.4E+03 98.76E+03') then
         l_skip(i) = .true.
-        print "('Unsupported rounding for real(',i0,')')", j(i)
+!        print "('Unsupported rounding for real(',i0,')')", j(i)
       end if
     end do
         
@@ -139,7 +147,7 @@ use ISO_FORTRAN_ENV
     call checkfmt("(en15.3)", -9.765625E-04,"   -976.562E-06")
     call checkfmt("(en15.6)", -2.9296875E-03,"  -2.929688E-03")
 
-    !print *, n_tst, n_cnt
+    ! print *, n_tst, n_cnt, n_skip
     if (n_cnt /= 0) call abort
     if (all(.not. l_skip)) write (10, *) "All kinds rounded to nearest"
     close (10)
@@ -152,7 +160,6 @@ contains
         real, intent(in) :: x
         character(len=*), intent(in) :: cmp
         do i=1,size(real_kinds)
-          if (l_skip(i)) cycle
           if (i == 1) then
             write(s, fmt) real(x,kind=j(1))
           else if (i == 2) then
@@ -164,12 +171,16 @@ contains
           end if
           n_tst = n_tst + 1
           if (s /= cmp) then
-             print "(a,1x,a,' expected: ',1x,a)", fmt, s, cmp
-             n_cnt = n_cnt + 1
-           end if
+            if (l_skip(i)) then
+              n_skip = n_skip + 1
+            else
+              print "(a,1x,a,' expected: ',1x,a)", fmt, s, cmp
+              n_cnt = n_cnt + 1
+            end if
+          end if
         end do
         
     end subroutine
 end program
-! { dg-final { scan-file fmt_en.res "All kinds rounded to nearest" { xfail i?86-*-solaris2.9* } } }
+! { dg-final { scan-file fmt_en.res "All kinds rounded to nearest" { xfail { i?86-*-solaris2.9* hppa*-*-hpux* } } } }
 ! { dg-final { cleanup-saved-temps } }

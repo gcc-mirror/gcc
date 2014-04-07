@@ -1,3 +1,40 @@
+2014-04-02  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/54407
+	* testsuite/30_threads/condition_variable/54185.cc: Skip for
+	darwin < 11.
+
+2014-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/backwards_compatibility.xml (backwards.third.headers):
+	Update link.
+	* doc/xml/manual/policy_data_structures_biblio.xml (bibliography):
+	Fix broken links.
+	* doc/xml/manual/shared_ptr.xml (shared_ptr.impl): Likewise.
+	* doc/xml/manual/using_exceptions.xml (bibliography): Likewise.
+	* doc/xml/manual/concurrency_extensions.xml
+	(manual.ext.concurrency.impl.atomic_fallbacks): Likewise.
+	* doc/html/*: Regenerate.
+
+2014-03-31  Lars Gullik Bjønnes  <larsbj@gullik.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60270
+	* include/std/iomanip (_Quoted_string operator>>): Do not clear
+	string if input is not quoted.
+	* testsuite/27_io/manipulators/standard/char/60270.cc: New.
+
+2014-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/eh_ptr.cc: Improve static_assert messages.
+
+2014-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/18_support/exception_ptr/60612-terminate.cc
+	(terminate, f): Wrap in _GLIBCXX_USE_C99.
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc: Likewise.
+
 2014-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/io.xml (std.io.objects): Additional markup.

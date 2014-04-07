@@ -59,8 +59,8 @@ avr_device_to_as (int argc, const char **argv)
   avr_set_current_device (argv[0]);
 
   return concat ("-mmcu=", avr_current_arch->arch_name,
-                 avr_current_device->errata_skip ? "" : " -mno-skip-bug",
-                 NULL);
+    avr_current_device->dev_attribute & AVR_ERRATA_SKIP ? "" : " -mno-skip-bug",
+    avr_current_device->dev_attribute & AVR_ISA_RMW ? " -mrmw" : "", NULL);
 }
 
 /* Returns command line parameters to pass to ld.  */
@@ -144,7 +144,7 @@ avr_device_to_sp8 (int argc, const char **argv)
           || avr_current_device->arch == ARCH_AVR25))
     return "";
 
-  return avr_current_device->short_sp
+  return (avr_current_device->dev_attribute & AVR_SHORT_SP)
     ? "-msp8"
     : "%<msp8";
 }

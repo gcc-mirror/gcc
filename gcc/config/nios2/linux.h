@@ -26,11 +26,16 @@
     }                                           \
   while (0)
 
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-nios2.so.1"
+
 #undef LINK_SPEC
 #define LINK_SPEC LINK_SPEC_ENDIAN \
-  " %{shared:-shared} \
-    %{static:-Bstatic} \
-    %{rdynamic:-export-dynamic}"
+ "%{shared:-shared} \
+  %{!shared: \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
+    %{static:-static}}"
 
 /* This toolchain implements the ABI for Linux Systems documented in the
    Nios II Processor Reference Handbook.  */

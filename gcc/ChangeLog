@@ -1,3 +1,366 @@
+2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60750
+	* tree-ssa-operands.c (maybe_add_call_vops): Also add VDEFs
+	for noreturn calls.
+	* tree-cfgcleanup.c (fixup_noreturn_call): Do not remove VDEFs.
+
+2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR debug/55794
+	* config/pa/pa.c (pa_output_function_epilogue): Skip address and code
+	size accounting for thunks.
+	(pa_asm_output_mi_thunk): Use final_start_function() and
+	final_end_function() to output function start and end directives.
+
+2014-04-05  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
+
+	* config/avr/avr-arch.h (avr_mcu_t): Add dev_attribute field to have device
+	specific ISA/ feature information. Remove short_sp and errata_skip ds.
+	Add avr_device_specific_features enum to have device specific info.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): use dev_attribute to check
+	errata_skip. Add __AVR_ISA_RMW__ builtin macro if RMW ISA available.
+	* config/avr/avr-devices.c (avr_mcu_types): Update AVR_MCU macro for
+	updated device specific info.
+	* config/avr/avr-mcus.def: Merge device specific details to
+	dev_attribute field.
+	* config/avr/avr.c (avr_2word_insn_p): use dev_attribute field to check
+	errata_skip.
+	* config/avr/avr.h (AVR_HAVE_8BIT_SP): same for short sp info.
+	* config/avr/driver-avr.c (avr_device_to_as): Pass -mrmw option to
+	assembler if RMW isa supported by current device.
+	* config/avr/genmultilib.awk: Update as device info structure changed.
+	* doc/invoke.texi: Add info for __AVR_ISA_RMW__ builtin macro
+
+2014-04-04  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60656
+	* tree-vect-stmts.c (supportable_widening_operation):
+	Fix a bug that elements in a vector with vect_used_by_reduction
+	property are incorrectly reordered when the operation on it is not
+	consistant with the one in reduction operation.
+
+2014-04-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/60155
+	* gcse.c (record_set_data): New function.
+	(single_set_gcse): New function.
+	(gcse_emit_move_after): Use single_set_gcse instead of single_set.
+	(hoist_code): Likewise.
+	(get_pressure_class_and_nregs): Likewise.
+
+2014-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c (probe_stack_range): Emit a final optimization blockage.
+
+2014-04-04  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.md (zero_extendqisi2, zero_extendhisi2): Fix
+	typos.
+
+2014-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59626
+	* lto-cgraph.c (input_overwrite_node): Check that partitioning
+	flags are set only during streaming.
+	* ipa.c (process_references, walk_polymorphic_call_targets,
+	symtab_remove_unreachable_nodes): Drop bodies of always inline
+	after early inlining.
+	(symtab_remove_unreachable_nodes): Remove always_inline attribute.
+
+2014-04-04  Jakub Jelinek  <jakub@redhat.com>
+	Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR debug/60655
+	* dwarf2out.c (const_ok_for_output_1): Reject expressions
+	containing a NOT.
+
+2014-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR bootstrap/60743
+	* config/arm/cortex-a53.md (cortex_a53_fdivs): Reduce reservation
+	duration.
+	(cortex_a53_fdivd): Likewise.
+
+2014-04-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60640
+        * cgraph.h (cgraph_clone_node): New parameter added to declaration.
+        Adjust all callers.
+	* cgraph.c (clone_of_p): Also return true if thunks match.
+	(verify_edge_corresponds_to_fndecl): Removed extraneous call to
+	cgraph_function_or_thunk_node and an obsolete comment.
+        * cgraphclones.c (build_function_type_skip_args): Moved upwards in the
+        file.
+        (build_function_decl_skip_args): Likewise.
+	(set_new_clone_decl_and_node_flags): New function.
+        (duplicate_thunk_for_node): Likewise.
+        (redirect_edge_duplicating_thunks): Likewise.
+        (cgraph_clone_node): New parameter args_to_skip, pass it to
+        redirect_edge_duplicating_thunks which is called instead of
+        cgraph_redirect_edge_callee.
+        (cgraph_create_virtual_clone): Pass args_to_skip to cgraph_clone_node,
+	moved setting of a lot of flags to set_new_clone_decl_and_node_flags.
+
+2014-04-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60191
+	* fortran/trans-types.c (gfc_get_function_type): In case of recursion
+	build a variadic function type with empty argument list instead of a
+	stdarg-like function type with incomplete argument list.
+
+2014-04-04  Jeff Law  <law@redhat.com>
+
+	PR target/60657
+	* config/arm/predicates.md (const_int_I_operand): New predicate.
+	(const_int_M_operand): Similarly.
+	* config/arm/arm.md (insv_zero): Use const_int_M_operand instead of
+	const_int_operand.
+	(insv_t2, extv_reg, extzv_t2): Likewise.
+	(load_multiple_with_writeback): Similarly for const_int_I_operand.
+	(pop_multiple_with_writeback_and_return): Likewise.
+	(vfp_pop_multiple_with_writeback): Likewise
+
+2014-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60746
+	* tree-ssanames.c (make_ssa_name_fn): Fix assert.
+	* gimple.c (gimple_set_bb): Avoid ICEing for NULL cfun for
+	non-GIMPLE_LABELs.
+	* gimplify.h (gimple_add_tmp_var_fn): Declare.
+	* gimplify.c (gimple_add_tmp_var_fn): New function.
+	* gimple-expr.h (create_tmp_reg_fn): Declare.
+	* gimple-expr.c (create_tmp_reg_fn): New function.
+	* gimple-low.c (record_vars_into): Don't change cfun.
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Fix
+	code generation without cfun.
+
+2014-04-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/60719
+	* Makefile.in (install-driver): Fix shell scripting.
+
+2014-04-03  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60505
+	* tree-vectorizer.h (struct _stmt_vec_info): Add th field as the
+	threshold of number of iterations below which no vectorization will be
+	done.
+	* tree-vect-loop.c (new_loop_vec_info):
+	Initialize LOOP_VINFO_COST_MODEL_THRESHOLD.
+	* tree-vect-loop.c (vect_analyze_loop_operations):
+	Set LOOP_VINFO_COST_MODEL_THRESHOLD.
+	* tree-vect-loop.c (vect_transform_loop):
+	Use LOOP_VINFO_COST_MODEL_THRESHOLD.
+	* tree-vect-loop.c (vect_analyze_loop_2): Check the maximum number
+	of iterations of the loop and see if we should build the epilogue.
+
+2014-04-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-streamer.h (struct streamer_tree_cache_d): Add next_idx
+	member.
+	(streamer_tree_cache_create): Adjust.
+	* tree-streamer.c (streamer_tree_cache_add_to_node_array): Adjust
+	to allow optional nodes array.
+	(streamer_tree_cache_insert_1): Use next_idx to assign idx.
+	(streamer_tree_cache_append): Likewise.
+	(streamer_tree_cache_create): Create nodes array optionally
+	as specified by parameter.
+	* lto-streamer-out.c (create_output_block): Avoid maintaining
+	the node array in the writer cache.
+	(DFS_write_tree): Remove assertion.
+	(produce_asm_for_decls): Free the out decl state hash table
+	early.
+	* lto-streamer-in.c (lto_data_in_create): Adjust for
+	streamer_tree_cache_create prototype change.
+
+2014-04-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-streamer-out.c (streamer_write_chain): Do not temporarily
+	set TREE_CHAIN to NULL_TREE.
+
+2014-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60740
+	* graphite-scop-detection.c (stmt_simple_for_scop_p): Iterate
+	over all GIMPLE_COND operands.
+
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (Wnon-virtual-dtor): Adjust documentation.
+	(Weffc++): Remove Scott's numbering, merge lists and reference
+	Wnon-virtual-dtor.
+
+	c-family/
+
+	cp/
+	* class.c (accessible_nvdtor_p): New.
+	(check_bases): Don't check base destructor here ...
+	(check_bases_and_members): ... check them here.  Trigger on
+	Wnon-virtual-dtor flag.
+	(finish_struct_1): Use accessible_nvdtor_p.
+
+	testsuite/
+	* g++.dg/warn/Wnvdtor.C: Add non-polymorphic case.
+	* g++.dg/warn/Wnvdtor-2.C: New.
+	* g++.dg/warn/Wnvdtor-3.C: New.
+	* g++.dg/warn/Wnvdtor-4.C: New.
+	* g++.dg/warn/Weff1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-2.C: Delete.
+
+2014-04-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-expand.md (movqi): Handle (SUBREG (SYMBOL_REF))
+	properly.
+
+2014-04-03  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_verify_propagated_values): Also dump symtab and
+	mention gcc_unreachable before failing.
+	* ipa.c (symtab_remove_unreachable_nodes): Also print order of
+	removed symbols.
+
+2014-04-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60659
+	* ipa-devirt.c (get_polymorphic_call_info): Do not ICE on type inconsistent
+	code and instead mark the context inconsistent.
+	(possible_polymorphic_call_targets): For inconsistent contexts
+	return empty complete list.
+
+2014-04-02  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.md (zero_extendqisi2, zero_extendhisi2)
+	(extendqisi2, extendhisi2): Define.
+	* config/moxie/moxie.h (DEFAULT_SIGNED_CHAR): Change to 0.
+	(WCHAR_TYPE): Change to unsigned int.
+
+2014-04-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/60733
+	* gimple-ssa-strength-reduction.c (ncd_with_phi): Change required
+	insertion point for PHI candidates to be the end of the feeding
+	block for the PHI argument.
+
+2014-04-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60650
+	* lra-constraints.c (process_alt_operands): Decrease reject for
+	earlyclobber matching.
+
+2014-04-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_insv): Use GET_MODE_BITSIZE.
+
+2014-04-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (pad_bb): Do not crash when the last
+	insn is CODE_FOR_blockage.
+
+2014-04-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.md ("insv"): Fail if bitoffset+bitsize
+	lies outside the target mode.
+
+2014-04-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60735
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): If we have
+	software floating point or no floating point registers, do not
+	allow any type in the FPRs.  Eliminate a test for SPE SIMD types
+	in GPRs that occurs after we tested for GPRs that would never be
+	true.
+
+	* config/rs6000/rs6000.md (mov<mode>_softfloat32, FMOVE64):
+	Rewrite tests to use TARGET_DOUBLE_FLOAT and TARGET_E500_DOUBLE,
+	since the FMOVE64 type is DFmode/DDmode.  If TARGET_E500_DOUBLE,
+	specifically allow DDmode, since that does not use the SPE SIMD
+	instructions.
+
+2014-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60729
+	* optabs.c (expand_abs_nojump): Honor flag_trapv only for
+	MODE_INTs.  Properly use negv_optab.
+	(expand_abs): Likewise.
+
+2014-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/60719
+	* Makefile.in (install-driver): Guard extra installs with special
+	names properly.
+
+2014-04-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document vec_vgbbd.
+
+2014-04-01  Richard Henderson  <rth@redhat.com>
+
+	PR target/60704
+	* config/i386/i386.md (*float<SWI48><MODEF>2_sse): Leave the second
+	alternative enabled before register allocation.
+
+2014-04-01  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/nios2.md (unspec): Remove UNSPEC_TLS, UNSPEC_TLS_LDM.
+	* config/nios2/nios2.c (nios2_function_profiler): Fix addi operand
+	typo.
+	(nios2_large_got_address): Remove unneeded 'sym' parameter.
+	(nios2_got_address): Update nios2_large_got_address call site.
+	(nios2_delegitimize_address): New function.
+	(TARGET_DELEGITIMIZE_ADDRESS): Define to nios2_delegitimize_address.
+	* config/nios2/linux.h (GLIBC_DYNAMIC_LINKER): Define.
+	(LINK_SPEC): Specify dynamic linker using GNU_USER_DYNAMIC_LINKER.
+
+2014-04-01  Martin Husemann  <martin@duskware.de>
+
+	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Define __mips_o32
+	for -mabi=32.
+
+2014-04-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/60604
+	* recog.c (general_operand): Incorporate REG_CANNOT_CHANGE_MODE_P
+	check from register_operand.
+	(register_operand): Redefine in terms of general_operand.
+	(nonmemory_operand): Use register_operand for the non-constant cases.
+
+2014-04-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (struct gimple_statement_base): Align subcode to
+	16 bits.
+
+2014-04-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/invoke.texi (mapp-regs): Clarify.
+
+2014-03-31  Ulrich Drepper  <drepper@gmail.com>
+
+	* config/i386/avx512fintrin.h (__v32hi): Define type.
+	(__v64qi): Likewise.
+	(_mm512_set1_epi8): Define.
+	(_mm512_set1_epi16): Define.
+	(_mm512_set4_epi32): Define.
+	(_mm512_set4_epi64): Define.
+	(_mm512_set4_pd): Define.
+	(_mm512_set4_ps): Define.
+	(_mm512_setr4_epi64): Define.
+	(_mm512_setr4_epi32): Define.
+	(_mm512_setr4_pd): Define.
+	(_mm512_setr4_ps): Define.
+	(_mm512_setzero_epi32): Define.
+
+2014-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/60647
+	* tree-sra.c (callsite_has_enough_arguments_p): Renamed to
+	callsite_arguments_match_p.  Updated all callers.  Also check types of
+	corresponding formal parameters and actual arguments.
+	(not_all_callers_have_enough_arguments_p) Renamed to
+	some_callers_have_mismatched_arguments_p.
+
 2014-03-31  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* tree-inline.c (copy_loops): Add missed copy of 'safelen'.
@@ -168,7 +531,7 @@
 2014-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60650
-	* lra-asign.c (find_hard_regno_for, spill_for): Add parameter
+	* lra-assign.c (find_hard_regno_for, spill_for): Add parameter
 	first_p.  Use it.
 	(find_spills_for): New.
 	(assign_by_spills): Pass the new parameter to find_hard_regno_for.

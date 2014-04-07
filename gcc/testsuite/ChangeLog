@@ -1,3 +1,220 @@
+2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60750
+	* g++.dg/torture/pr60750.C: New testcase.
+	* gcc.dg/tree-ssa/20040517-1.c: Adjust.
+
+2014-04-06  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.c-torture/compile/pr60655-1.c: Use __SIZE_TYPE__ for size_t.
+
+2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/60671
+	g++.dg/pr49718.C: Adjust scan-assembler-times for hppa*-*-hpux*.
+
+2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/60672
+	* g++.dg/cpp1y/auto-fn25.C: Require lto.
+
+	* gcc.dg/atomic/stdatomic-flag.c: xfail on hppa*-*-hpux*.
+
+2014-04-05  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	* gfortran.dg/warn_conversion_4.f90: Adjust test.
+
+2014-05-04 Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
+
+	* gcc.target/avr/dev-specific-rmw.c: New test.
+
+2014-04-04  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60656
+	* gcc.dg/vect/pr60656.c: New test.
+
+2014-04-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/builtin-bswap-6.c: Adjust return value to disable GCC
+	optimization.
+	* gcc.dg/builtin-bswap-7.c: Likewise.
+
+2014-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58207
+	* g++.dg/cpp0x/constexpr-ice15.C: New.
+
+2014-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59626
+	testcase by Richard Biener
+	* gcc.dg/lto/pr59626_0.c: New testcase.
+	* gcc.dg/lto/pr59626_1.c: New testcase.
+
+2014-04-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR debug/60655
+	* gcc.c-torture/compile/pr60655-1.c: New test.
+
+2014-04-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60640
+        * g++.dg/ipa/pr60640-1.C: New test.
+        * g++.dg/ipa/pr60640-2.C: Likewise.
+        * g++.dg/ipa/pr60640-3.C: Likewise.
+        * g++.dg/ipa/pr60640-4.C: Likewise.
+
+2014-04-04  Jeff Law  <law@redhat.com>
+
+	PR target/60657
+	* gcc.target/arm/pr60657.c: New test.
+
+2014-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60746
+	* g++.dg/torture/pr60746.C: New testcase.
+
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* g++.old-deja/g++.robertl/eb121.C: Adjust.
+	* g++.old-deja/g++.jason/overload21.C: Likewise.
+	* g++.old-deja/g++.law/init5.C: Likewise.
+
+2014-04-03  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60505
+	* gcc.dg/vect/pr60505.c: New test.
+
+2014-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60740
+	* gcc.dg/graphite/pr60740.c: New testcase.
+
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/warn/Wnvdtor.C: Add non-polymorphic case.
+	* g++.dg/warn/Wnvdtor-2.C: New.
+	* g++.dg/warn/Wnvdtor-3.C: New.
+	* g++.dg/warn/Wnvdtor-4.C: New.
+	* g++.dg/warn/Weff1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-1.C: Delete.
+	* g++.old-deja/g++.benjamin/15309-2.C: Delete.
+
+2014-04-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60659
+	* testsuite/g++.dg/torture/pr60659.C: New testcase.
+
+2014-04-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/60733
+	* gcc.dg/torture/pr60733.c:  New test.
+
+2014-04-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60650
+	* gcc.target/arm/pr60650-2.c: New.
+
+2014-04-02  Joseph Myers  <joseph@codesourcery.cmo>
+
+	* gcc.target/i386/avx2-vpand-3.c,
+	gcc.target/i386/avx256-unaligned-load-2.c: Use -mno-prefer-avx128.
+
+2014-04-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/funcspec-2.c, gcc.target/i386/funcspec-3.c,
+	gcc.target/i386/funcspec-9.c, gcc.target/i386/isa-1.c,
+	gcc.target/i386/memcpy-strategy-1.c,
+	gcc.target/i386/memcpy-strategy-2.c,
+	gcc.target/i386/memcpy-vector_loop-1.c,
+	gcc.target/i386/memcpy-vector_loop-2.c,
+	gcc.target/i386/memset-vector_loop-1.c,
+	gcc.target/i386/memset-vector_loop-2.c,
+	gcc.target/i386/sse2-init-v2di-2.c, gcc.target/i386/ssetype-1.c,
+	gcc.target/i386/ssetype-2.c, gcc.target/i386/ssetype-5.c: Skip for
+	-march= options different from those in dg-options.
+
+2014-04-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/387-3.c, gcc.target/i386/387-4.c,
+	gcc.target/i386/pr30970.c: Use -mtune=generic.
+	* gcc.target/i386/avx2-vpaddb-3.c,
+	gcc.target/i386/avx2-vpaddd-3.c, gcc.target/i386/avx2-vpaddq-3.c,
+	gcc.target/i386/avx2-vpaddw-3.c, gcc.target/i386/avx2-vpmulld-3.c,
+	gcc.target/i386/avx2-vpmullw-3.c, gcc.target/i386/avx2-vpsrad-3.c,
+	gcc.target/i386/avx2-vpsraw-3.c, gcc.target/i386/avx2-vpsrld-3.c,
+	gcc.target/i386/avx2-vpsrlw-3.c, gcc.target/i386/avx2-vpsubb-3.c,
+	gcc.target/i386/avx2-vpsubd-3.c, gcc.target/i386/avx2-vpsubq-3.c,
+	gcc.target/i386/avx2-vpsubw-3.c,
+	gcc.target/i386/avx256-unaligned-load-1.c,
+	gcc.target/i386/avx256-unaligned-load-4.c,
+	gcc.target/i386/avx256-unaligned-store-1.c,
+	gcc.target/i386/avx256-unaligned-store-2.c,
+	gcc.target/i386/avx256-unaligned-store-4.c: Use
+	-mno-prefer-avx128.
+
+2014-03-26  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Iain Sandoe <iain@codesourcery.com>
+
+	PR target/54083
+	* gcc.dg/attr-weakref-1.c: Allow the test on darwin
+	with the additional options -Wl,-undefined,dynamic_lookup
+	and -Wl,-flat_namespace.
+	* gcc.dg/torture/pr53922.c: Additional option
+	-Wl,-flat_namespace for darwin[89].
+	* gcc.dg/torture/pr60092.c: Additional options
+	-Wl,-undefined,dynamic_lookup and -Wl,-flat_namespace
+	for darwin[89].
+
+2014-03-26  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/43751
+	* lib/prune.exp: Modify the regular express to prune
+	the new warnings introduced by r205679 on darwin9.
+
+2014-04-01  Fabien Chêne  <fabien@gcc.gnu.org>
+
+        * g++.dg/init/ctor4.C: Adjust.
+	* g++.dg/init/ctor4-1.C: New.
+	* g++.dg/cpp0x/defaulted2.C: Adjust.
+
+2014-04-01  Richard Henderson  <rth@redhat.com>
+
+	PR target/60704
+	* gcc.dg/pr60704.c: New file.
+
+2014-04-01  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/60363
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Xfail for
+	logical_op_short_circuit targets.
+
+2014-04-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/60128
+	* gfortran.dg/fmt_en.f90: Skip unsupported rounding tests.
+	XFAIL for i?86-*-solaris2.9* and hppa*-*-hpux*.
+
+2014-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/60700
+	* gcc.target/i386/pr60700.c: New test.
+
+2014-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/60650
+	* gcc.target/arm/pr60650.c: Adjust command line options.
+
+2014-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/60647
+	* gcc.dg/pr60647-1.c: New test.
+	* gcc.dg/pr60647-2.c: Likewise.
+
+2014-03-31  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/lto/pr55113_0.c: Skip also for 32bit multilib on x86_64.
+
 2014-03-31  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/60034

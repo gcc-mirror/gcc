@@ -60,6 +60,7 @@ extern tree get_formal_tmp_var (tree, gimple_seq *);
 extern tree get_initialized_tmp_var (tree, gimple_seq *, gimple_seq *);
 extern void declare_vars (tree, gimple, bool);
 extern void gimple_add_tmp_var (tree);
+extern void gimple_add_tmp_var_fn (struct function *, tree);
 extern tree unshare_expr (tree);
 extern tree unshare_expr_without_location (tree);
 extern tree voidify_wrapper_expr (tree, tree);
