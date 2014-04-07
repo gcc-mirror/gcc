@@ -746,7 +746,14 @@ proc check_effective_target_mmap {} {
 
 # Return 1 if the target supports dlopen, 0 otherwise.
 proc check_effective_target_dlopen {} {
-    return [check_function_available "dlopen"]
+    return [check_no_compiler_messages dlopen executable {
+	#include <dlfcn.h>
+	int main(void) { dlopen ("dummy.so", RTLD_NOW); }
+    } [add_options_for_dlopen ""]]
+}
+
+proc add_options_for_dlopen { flags } {
+    return "$flags -ldl"
 }
 
 # Return 1 if the target supports clone, 0 otherwise.

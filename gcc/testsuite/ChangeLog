@@ -1,3 +1,10 @@
+2014-04-07  Jason Merrill  <jason@redhat.com>
+
+	* lib/gcc-dg.exp (dg-build-dso): New.
+	(gcc-dg-test-1): Handle dg-do-what "dso".
+	* lib/target-supports.exp (add_options_for_dlopen): New.
+	(check_effective_target_dlopen): Use it.
+
 2014-04-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* gcc.target/arm/pr60657.c: Fix missing curly brace.
