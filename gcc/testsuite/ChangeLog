@@ -1,3 +1,9 @@
+2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60750
+	* g++.dg/torture/pr60750.C: New testcase.
+	* gcc.dg/tree-ssa/20040517-1.c: Adjust.
+
 2014-04-06  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.c-torture/compile/pr60655-1.c: Use __SIZE_TYPE__ for size_t.

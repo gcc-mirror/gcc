@@ -648,10 +648,8 @@ maybe_add_call_vops (struct function *fn, gimple stmt)
      call-clobbered.  */
   if (!(call_flags & ECF_NOVOPS))
     {
-      /* A 'pure' or a 'const' function never call-clobbers anything.
-	 A 'noreturn' function might, but since we don't return anyway
-	 there is no point in recording that.  */
-      if (!(call_flags & (ECF_PURE | ECF_CONST | ECF_NORETURN)))
+      /* A 'pure' or a 'const' function never call-clobbers anything.  */
+      if (!(call_flags & (ECF_PURE | ECF_CONST)))
 	add_virtual_operand (fn, stmt, opf_def);
       else if (!(call_flags & ECF_CONST))
 	add_virtual_operand (fn, stmt, opf_use);
