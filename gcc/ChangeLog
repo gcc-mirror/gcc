@@ -1,3 +1,8 @@
+2014-04-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* haifa-sched.c: Fix outdated function reference and minor
+	grammar errors in introductory comment.
+
 2014-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60750
