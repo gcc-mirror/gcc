@@ -1,3 +1,9 @@
+2014-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60731
+	* common.opt (-fno-gnu-unique): Add.
+	* config/elfos.h (USE_GNU_UNIQUE_OBJECT): Check it.
+
 2014-04-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* haifa-sched.c: Fix outdated function reference and minor
