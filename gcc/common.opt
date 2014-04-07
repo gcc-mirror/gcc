@@ -1267,6 +1267,10 @@ fgnu-tm
 Common Report Var(flag_tm)
 Enable support for GNU transactional memory
 
+fgnu-unique
+Common Report Var(flag_gnu_unique) Init(1)
+Use STB_GNU_UNIQUE if supported by the assembler
+
 floop-flatten
 Common Ignore
 Does nothing. Preserved for backward compatibility.
