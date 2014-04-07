@@ -1,3 +1,10 @@
+2014-04-07  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/60609
+	* config/arm/arm.h (ASM_OUTPUT_CASE_END): Remove.
+	(LABEL_ALIGN_AFTER_BARRIER): Align barriers which occur after
+	ADDR_DIFF_VEC.
+
 2014-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60766
