@@ -78,8 +78,8 @@ void test04()
     To() = default;
     To(const To&) = default;
     To(const From&) = delete;
-    To& operator=(const From&) { value = 1; }
-    To& operator=(From&&) { value = 2; }
+    To& operator=(const From&) { value = 1; return *this; }
+    To& operator=(From&&) { value = 2; return *this; }
   };
 
   To t;

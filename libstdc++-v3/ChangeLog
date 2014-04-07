@@ -1,3 +1,10 @@
+2014-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/exchange/1.cc: Add missing return statements.
+	* testsuite/20_util/pair/40925.cc: Avoid most vexing parse.
+	* testsuite/22_locale/codecvt_byname/50714.cc: Add missing exception
+	specifications.
+
 2014-04-02  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
