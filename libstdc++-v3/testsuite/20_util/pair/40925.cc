@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2009-2014 Free Software Foundation, Inc.
@@ -63,5 +63,5 @@ void test01()
   std::pair<move_only, int*> p15(move_only(), ip);
   std::pair<move_only, int X::*> p16(move_only(), mp);
 
-  std::pair<move_only, move_only> p17(move_only(), move_only());
+  std::pair<move_only, move_only> p17{move_only(), move_only()};
 }
