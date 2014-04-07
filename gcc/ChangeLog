@@ -1,3 +1,10 @@
+2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60750
+	* tree-ssa-operands.c (maybe_add_call_vops): Also add VDEFs
+	for noreturn calls.
+	* tree-cfgcleanup.c (fixup_noreturn_call): Do not remove VDEFs.
+
 2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR debug/55794
