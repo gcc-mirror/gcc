@@ -1,3 +1,9 @@
+2014-04-07  Douglas B Rupp  <rupp@adacore.com>
+
+	PR target/60504
+	* config/arm/arm.h (ASM_PREFERRED_EH_DATA_FORMAT): Expose from
+	ARM_TARGET2_DWARF_FORMAT.
+
 2014-04-07  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/60609
@@ -8,10 +14,8 @@
 2014-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60766
-	* tree-ssa-loop-ivopts.c (cand_value_at): Compute in an
-	unsigned type.
-	(may_eliminate_iv): Convert cand_value_at result to desired
-	type.
+	* tree-ssa-loop-ivopts.c (cand_value_at): Compute in an unsigned type.
+	(may_eliminate_iv): Convert cand_value_at result to desired type.
 
 2014-04-07  Jason Merrill  <jason@redhat.com>
 
