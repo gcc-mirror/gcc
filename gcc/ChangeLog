@@ -1,3 +1,9 @@
+2014-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60640
+	* ipa-cp.c (propagate_constants_accross_call): Do not propagate
+	accross thunks.
+
 2014-04-07  Dominique d'Humieres <dominiq@lps.ens.fr>    
 
 	Backport from mainline
