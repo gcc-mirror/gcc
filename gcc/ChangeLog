@@ -1,3 +1,14 @@
+2014-04-07  Dominique d'Humieres <dominiq@lps.ens.fr>    
+
+	Backport from mainline
+	2013-09-14  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR target/48094
+	* config/darwin.c (darwin_objc2_section): Note if ObjC Metadata
+	is seen.
+	(darwin_objc1_section): Likewise.
+	(darwin_file_end): Emit Image Info section when required.
+
 2014-04-04  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssanames.c (make_ssa_name_fn): Fix assert.

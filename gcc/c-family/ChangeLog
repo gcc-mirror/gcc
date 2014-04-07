@@ -1,3 +1,12 @@
+2014-04-07  Dominique d'Humieres <dominiq@lps.ens.fr>    
+
+	Backport from mainline
+	2013-09-14  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR target/48094
+	* c.opt (fgnu-runtime, fnext-runtime, fobjc-abi-version,
+	fobjc-gc, freplace-objc-classes): Accept for LTO.
+
 2013-09-01  Iain Sandoe  <iain@codesourcery.com>
 
 	Backported from 4.8

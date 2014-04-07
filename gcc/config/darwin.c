@@ -1322,6 +1322,9 @@ is_objc_metadata (tree decl)
   return NULL_TREE;
 }
 
+static int classes_seen;
+static int objc_metadata_seen;
+
 /* Return the section required for Objective C ABI 2 metadata.  */
 static section *
 darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
@@ -1331,12 +1334,9 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   gcc_assert (TREE_CODE (ident) == IDENTIFIER_NODE);
   p = IDENTIFIER_POINTER (ident);
 
-  /* If we are in LTO, then we don't know the state of flag_next_runtime
-     or flag_objc_abi when the code was generated.  We set these from the
-     meta-data - which is needed to deal with const string constructors.  */
+  gcc_checking_assert (flag_next_runtime == 1 && flag_objc_abi == 2);
 
-  flag_next_runtime = 1;
-  flag_objc_abi = 2;
+  objc_metadata_seen = 1;
 
   if (base == data_section)
     base = darwin_sections[objc2_metadata_section];
@@ -1359,7 +1359,10 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   else if (!strncmp (p, "V2_NLCL", 7))
     return darwin_sections[objc2_nonlazy_class_section];
   else if (!strncmp (p, "V2_CLAB", 7))
-    return darwin_sections[objc2_classlist_section];
+    {
+      classes_seen = 1;
+      return darwin_sections[objc2_classlist_section];
+    }
   else if (!strncmp (p, "V2_SRFS", 7))
     return darwin_sections[objc2_selector_refs_section];
   else if (!strncmp (p, "V2_NLCA", 7))
@@ -1394,12 +1397,9 @@ darwin_objc1_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   gcc_assert (TREE_CODE (ident) == IDENTIFIER_NODE);
   p = IDENTIFIER_POINTER (ident);
 
-  /* If we are in LTO, then we don't know the state of flag_next_runtime
-     or flag_objc_abi when the code was generated.  We set these from the
-     meta-data - which is needed to deal with const string constructors.  */
-  flag_next_runtime = 1;
-  if (!global_options_set.x_flag_objc_abi)
-    flag_objc_abi = 1;
+  gcc_checking_assert (flag_next_runtime == 1 && flag_objc_abi < 2);
+
+  objc_metadata_seen = 1;
 
   /* String sections first, cos there are lots of strings.  */
   if      (!strncmp (p, "V1_STRG", 7))
@@ -1412,7 +1412,10 @@ darwin_objc1_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
     return darwin_sections[objc_meth_var_types_section];
 
   else if (!strncmp (p, "V1_CLAS", 7))
-    return darwin_sections[objc_class_section];
+    {
+      classes_seen = 1;
+      return darwin_sections[objc_class_section];
+    }
   else if (!strncmp (p, "V1_META", 7))
     return darwin_sections[objc_meta_class_section];
   else if (!strncmp (p, "V1_CATG", 7))
@@ -1596,8 +1599,6 @@ machopic_select_section (tree decl,
       if (TREE_CODE (name) == TYPE_DECL)
         name = DECL_NAME (name);
 
-      /* FIXME: This is unsatisfactory for LTO, since it relies on other
-	 metadata determining the source FE.  */
       if (!strcmp (IDENTIFIER_POINTER (name), "__builtin_ObjCString"))
 	{
 	  if (flag_next_runtime)
@@ -2788,6 +2789,33 @@ darwin_file_start (void)
 void
 darwin_file_end (void)
 {
+
+  /* If we are expecting to output NeXT ObjC meta-data, (and we actually see
+     some) then we output the fix-and-continue marker (Image Info).
+     This applies to Objective C, Objective C++ and LTO with either language
+     as part of the input.  */
+  if (flag_next_runtime && objc_metadata_seen)
+    {
+      unsigned int flags = 0;
+      if (flag_objc_abi >= 2)
+	{
+	  flags = 16;
+	  output_section_asm_op
+	    (darwin_sections[objc2_image_info_section]->unnamed.data);
+	}
+      else
+	output_section_asm_op
+	  (darwin_sections[objc_image_info_section]->unnamed.data);
+
+      ASM_OUTPUT_ALIGN (asm_out_file, 2);
+      fputs ("L_OBJC_ImageInfo:\n", asm_out_file);
+
+      flags |= (flag_replace_objc_classes && classes_seen) ? 1 : 0;
+      flags |= flag_objc_gc ? 2 : 0;
+
+      fprintf (asm_out_file, "\t.long\t0\n\t.long\t%u\n", flags);
+    }
+
   machopic_finish (asm_out_file);
   if (strcmp (lang_hooks.name, "GNU C++") == 0)
     {

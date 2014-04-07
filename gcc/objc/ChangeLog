@@ -1,3 +1,14 @@
+2014-04-07  Dominique d'Humieres <dominiq@lps.ens.fr>    
+
+	Backport from mainline
+	2013-09-14  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR target/48094
+	* objc-next-runtime-abi-01.c (generate_objc_image_info): Remove.
+	(objc_generate_v1_next_metadata): Remove generation of ImageInfo.
+	* objc-next-runtime-abi-02.c (generate_v2_objc_image_info): Remove.
+	(objc_generate_v2_next_metadata): Remove generation of ImageInfo.
+
 2013-09-01  Iain Sandoe  <iain@codesourcery.com>
 
 	Backported from 4.8
