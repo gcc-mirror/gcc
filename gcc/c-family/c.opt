@@ -933,7 +933,7 @@ C++ ObjC++ Var(flag_no_gnu_keywords, 0)
 Recognize GNU-defined keywords
 
 fgnu-runtime
-ObjC ObjC++ Report RejectNegative Var(flag_next_runtime,0) Init(NEXT_OBJC_RUNTIME)
+ObjC ObjC++ LTO Report RejectNegative Var(flag_next_runtime,0) Init(NEXT_OBJC_RUNTIME)
 Generate code for GNU runtime environment
 
 fgnu89-inline
@@ -1007,7 +1007,7 @@ fnew-abi
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fnext-runtime
-ObjC ObjC++ Report RejectNegative Var(flag_next_runtime)
+ObjC ObjC++ LTO Report RejectNegative Var(flag_next_runtime)
 Generate code for NeXT (Apple Mac OS X) runtime environment
 
 fnil-receivers
@@ -1025,7 +1025,7 @@ C++ ObjC++ Optimization Var(flag_nothrow_opt)
 Treat a throw() exception specification as noexcept to improve code size
 
 fobjc-abi-version=
-ObjC ObjC++ Joined Report RejectNegative UInteger Var(flag_objc_abi)
+ObjC ObjC++ LTO Joined Report RejectNegative UInteger Var(flag_objc_abi)
 Specify which ABI to use for Objective-C family code and meta-data generation.
 
 ; Generate special '- .cxx_construct' and '- .cxx_destruct' methods
@@ -1045,7 +1045,7 @@ ObjC ObjC++ Var(flag_objc_exceptions)
 Enable Objective-C exception and synchronization syntax
 
 fobjc-gc
-ObjC ObjC++ Var(flag_objc_gc)
+ObjC ObjC++ LTO Var(flag_objc_gc)
 Enable garbage collection (GC) in Objective-C/Objective-C++ programs
 
 fobjc-nilcheck
@@ -1105,7 +1105,7 @@ C++ ObjC++ Var(flag_pretty_templates) Init(1)
 -fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments
 
 freplace-objc-classes
-ObjC ObjC++ Var(flag_replace_objc_classes)
+ObjC ObjC++ LTO Var(flag_replace_objc_classes)
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime
 
 frepo

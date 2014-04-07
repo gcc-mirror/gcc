@@ -2332,36 +2332,6 @@ generate_classref_translation_entry (tree chain)
   return;
 }
 
-
-/* The Fix-and-Continue functionality available in Mac OS X 10.3 and
-   later requires that ObjC translation units participating in F&C be
-   specially marked.  The following routine accomplishes this.  */
-
-/* static int _OBJC_IMAGE_INFO[2] = { 0, 1 }; */
-
-static void
-generate_objc_image_info (void)
-{
-  tree decl;
-  int flags
-    = ((flag_replace_objc_classes && imp_count ? 1 : 0)
-       | (flag_objc_gc ? 2 : 0));
-  vec<constructor_elt, va_gc> *v = NULL;
-  tree array_type;
-
-  array_type  = build_sized_array_type (integer_type_node, 2);
-
-  decl = start_var_decl (array_type, "_OBJC_ImageInfo");
-
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, integer_zero_node);
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (integer_type_node, flags));
-  /* The runtime wants this and refers to it in a manner hidden from the compiler.
-     So we must force the output.  */
-  DECL_PRESERVE_P (decl) = 1;
-  OBJCMETA (decl, objc_meta, meta_info);
-  finish_var_decl (decl, objc_build_constructor (TREE_TYPE (decl), v));
-}
-
 static void
 objc_generate_v1_next_metadata (void)
 {
@@ -2411,9 +2381,6 @@ objc_generate_v1_next_metadata (void)
   vers = OBJC_VERSION;
   attr = build_tree_list (objc_meta, meta_modules);
   build_module_descriptor (vers, attr);
-
-  /* This conveys information on GC usage and zero-link.  */
-  generate_objc_image_info ();
 
   /* Dump the class references.  This forces the appropriate classes
      to be linked into the executable image, preserving unix archive
