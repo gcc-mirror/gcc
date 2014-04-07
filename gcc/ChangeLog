@@ -1,3 +1,11 @@
+2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60766
+	* tree-ssa-loop-ivopts.c (cand_value_at): Compute in an
+	unsigned type.
+	(may_eliminate_iv): Convert cand_value_at result to desired
+	type.
+
 2014-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60731

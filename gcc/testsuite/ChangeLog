@@ -1,3 +1,8 @@
+2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60766
+	* gcc.dg/torture/pr60766.c: New testcase.
+
 2014-04-07  Jason Merrill  <jason@redhat.com>
 
 	* lib/gcc-dg.exp (dg-build-dso): New.
