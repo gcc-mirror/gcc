@@ -650,7 +650,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
   else if (completep
 	   && !type_in_anonymous_namespace_p
 		 (method_class_type (TREE_TYPE (target))))
-    *completep = true;
+    *completep = false;
 }
 
 /* See if BINFO's type match OUTER_TYPE.  If so, lookup 

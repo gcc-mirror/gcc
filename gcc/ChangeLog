@@ -1,3 +1,8 @@
+2014-04-07  Jan Hubicka  <hubcika@ucw.cz>
+
+	* ipa-devirt.c (maybe_record_node): When node is not recorded,
+	set completep to false rather than true.
+
 2014-04-07  Douglas B Rupp  <rupp@adacore.com>
 
 	PR target/60504
