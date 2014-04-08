@@ -1,3 +1,5 @@
+/* { dg-xfail-if "PR target/60602" { sparc*-*-solaris2.9* && { ! gas } } { "-O0" } } */
+
 struct var_len
 {
   int field1;
