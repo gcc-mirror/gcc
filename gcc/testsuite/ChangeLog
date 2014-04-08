@@ -1,3 +1,9 @@
+2014-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/60602
+	* gcc.c-torture/compile/pr28865.c: XFAIL on sparc*-*-solaris2.9*
+	with as at -O0.
+
 2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/warn/Wnvdtor-2.C: Add more cases.
