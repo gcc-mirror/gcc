@@ -1,3 +1,9 @@
+2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (check_bases_and_members): Warn about non-virtual dtors
+	in public bases only.  Check warn_ecpp before complaining about
+	non-polymorphic bases.
+
 2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* decl.c (duplicate_decls): Check for the return of warning_at

@@ -53,4 +53,23 @@ public:
 };
 
 struct H {};
-struct I : H {};
+
+struct I1 : H
+{};
+struct I2 : private H
+{};
+
+struct J1 : H
+{ virtual ~J1 ();};
+struct J2 : private H
+{ virtual ~J2 ();};
+
+struct K 
+{
+  virtual void k ();
+};
+
+struct L1 : K
+{virtual ~L1 ();};
+struct L2 : private K
+{virtual ~L2 ();};
