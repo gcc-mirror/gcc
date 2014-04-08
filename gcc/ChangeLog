@@ -1,5 +1,11 @@
 2014-04-08  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/60706
+	* tree-pretty-print.c (pp_double_int): For HWI32 hosts with
+	a 64bit widest int print double-int similar to on HWI64 hosts.
+
+2014-04-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/60785
 	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Treat
 	default defs properly.
