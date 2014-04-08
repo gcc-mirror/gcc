@@ -2671,10 +2671,10 @@ the compiler to never throw an exception.
 @opindex Wnon-virtual-dtor
 @opindex Wno-non-virtual-dtor
 Warn when a class has virtual functions and an accessible non-virtual
-destructor itself or in a base class, or has in which case it is
-possible but unsafe to delete an instance of a derived class through a
-pointer to the base class.  This warning is automatically enabled if
-@option{-Weffc++} is specified.
+destructor itself or in an accessible polymorphic base class, in which
+case it is possible but unsafe to delete an instance of a derived
+class through a pointer to the class itself or base class.  This
+warning is automatically enabled if @option{-Weffc++} is specified.
 
 @item -Wreorder @r{(C++ and Objective-C++ only)}
 @opindex Wreorder
@@ -2744,7 +2744,9 @@ Never overload @code{&&}, @code{||}, or @code{,}.
 @end itemize
 
 This option also enables @option{-Wnon-virtual-dtor}, which is also
-one of the effective C++ recommendations.
+one of the effective C++ recommendations.  However, the check is
+extended to warn about the lack of virtual destructor in accessible
+non-polymorphic bases classes too.
 
 When selecting this option, be aware that the standard library
 headers do not obey all of these guidelines; use @samp{grep -v}

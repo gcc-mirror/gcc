@@ -1,3 +1,8 @@
+2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke (Wnon-virtual-dtor): Update to match implementation.
+	(Weffc++): Likewise.
+
 2014-04-07  Jan Hubicka  <hubcika@ucw.cz>
 
 	* ipa-devirt.c (maybe_record_node): When node is not recorded,

@@ -5570,21 +5570,24 @@ check_bases_and_members (tree t)
   TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_CONTAINS_VPTR_P (t);
 
-  /* Warn if a base of a polymorphic type has an accessible
+  /* Warn if a public base of a polymorphic type has an accessible
      non-virtual destructor.  It is only now that we know the class is
      polymorphic.  Although a polymorphic base will have a already
      been diagnosed during its definition, we warn on use too.  */
   if (TYPE_POLYMORPHIC_P (t) && warn_nonvdtor)
     {
-      tree binfo, base_binfo;
+      tree binfo = TYPE_BINFO (t);
+      vec<tree, va_gc> *accesses = BINFO_BASE_ACCESSES (binfo);
+      tree base_binfo;
       unsigned i;
       
-      for (binfo = TYPE_BINFO (t), i = 0;
-	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+      for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
 	  tree basetype = TREE_TYPE (base_binfo);
 
-	  if (accessible_nvdtor_p (basetype))
+	  if ((*accesses)[i] == access_public_node
+	      && (TYPE_POLYMORPHIC_P (basetype) || warn_ecpp)
+	      && accessible_nvdtor_p (basetype))
 	    warning (OPT_Wnon_virtual_dtor,
 		     "base class %q#T has accessible non-virtual destructor",
 		     basetype);

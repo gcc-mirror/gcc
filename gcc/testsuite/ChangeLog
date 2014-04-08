@@ -1,3 +1,9 @@
+2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/warn/Wnvdtor-2.C: Add more cases.
+	* g++.dg/warn/Wnvdtor-3.C: Likewise.
+	* g++.dg/warn/Wnvdtor-4.C: Likewise.
+
 2014-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/test_raise_from_pure.adb: UnXFAIL for ARM.
