@@ -1,3 +1,9 @@
+2014-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60785
+	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Treat
+	default defs properly.
+
 2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke (Wnon-virtual-dtor): Update to match implementation.
