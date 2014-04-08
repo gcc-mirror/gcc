@@ -1,3 +1,8 @@
+2014-04-08  Jason Merrill  <jason@redhat.com>
+
+	* lib/gcc-dg.exp (dg-build-dso): Reset dg-do-what-default to
+	compile.
+
 2014-04-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR rtl-optimization/60776

@@ -229,6 +229,7 @@ proc dg-build-dso { args } {
     set dir "[file dirname $main_file]"
     set dg-do-what-default dso
     dg-test -keep-output $dir/$file "" ""
+    set dg-do-what-default compile
 
     set output_file "[file rootname [file tail $file]].so"
     append final-code "remove-build-file $output_file"
