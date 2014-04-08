@@ -284,6 +284,9 @@ __upc_atomic_[=type_abbrev=] (
 {
   [= (. abbrev-type) =] orig_value __attribute__((unused));
   [= (. abbrev-type) =] new_value __attribute__((unused));
+  [=IF (= (get "type_abbrev") "PTS") =]
+  int op_ok __attribute__((unused));[=
+  ENDIF =]
   [= (. abbrev-type) =] *target_ptr = __cvtaddr (*(upc_shared_ptr_t *)&target);
   switch (op_num)
     {[=
@@ -301,15 +304,33 @@ __upc_atomic_[=type_abbrev=] (
 	  __atomic_exchange (target_ptr, operand1, &orig_value,
 			     /* memmodel */ __ATOMIC_SEQ_CST);[=
         = 'UPC_CSWAP'  =]
-	do
-	  {
-	    orig_value = *target_ptr;
-	    new_value = (orig_value == *operand1) ? *operand2 : orig_value;
-	  }
-	while (!__atomic_compare_exchange (target_ptr, &orig_value, &new_value,
+	orig_value = *operand1;
+	/* __atomic_compare_exchange will return the previous value
+	   in &orig_value independent of whether operand2 is written
+	   to the target location.  */[=
+	IF (= (get "type_abbrev") "PTS") =]
+	op_ok = __atomic_compare_exchange (target_ptr, &orig_value, operand2,
 				/* weak */ 0,
 				/* success_memmodel */ __ATOMIC_SEQ_CST,
-				/* failure_memmodel */ __ATOMIC_SEQ_CST));[=
+				/* failure_memmodel */ __ATOMIC_SEQ_CST);
+	/* If the previous compare exchange operation failed, check
+	   for UPC PTS equality (which ignores phase).  If the pointers
+	   compare as equal, try again.  */
+	if (!op_ok && (orig_value == *operand1))
+	  {
+            (void) __atomic_compare_exchange (target_ptr,
+	                        &orig_value, operand2,
+				/* weak */ 0,
+				/* success_memmodel */ __ATOMIC_SEQ_CST,
+				/* failure_memmodel */ __ATOMIC_SEQ_CST);
+	  }[=
+        ELSE =]
+	(void) __atomic_compare_exchange (target_ptr,
+			    &orig_value, operand2,
+			    /* weak */ 0,
+			    /* success_memmodel */ __ATOMIC_SEQ_CST,
+			    /* failure_memmodel */ __ATOMIC_SEQ_CST);[=
+        ENDIF =][=
         ESAC =]
         break;[=
       ENDIF =][=
@@ -356,7 +377,7 @@ __upc_atomic_[=type_abbrev=] (
 	  ESAC =]
 	do
 	  {
-	    orig_value = *target_ptr;
+            __atomic_load (target_ptr, &orig_value, __ATOMIC_SEQ_CST);
 	    new_value = [= (. op_calc) =];
 	  }
 	while (!__atomic_compare_exchange (target_ptr, &orig_value, &new_value,

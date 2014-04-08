@@ -52,8 +52,10 @@ target_triplet = @target@
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(UPC_BACKTRACE_SUP) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_barrier.upc smp/upc_castable.upc smp/upc_config.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_debug.h smp/upc_debug.c \
-@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
-@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_libat_lock.c smp/upc_libat_lock.h \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_libg.c smp/upc_lib.h \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_lock.upc smp/upc_lock.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_lock_sup.h smp/upc_lock_sup.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_main.c smp/upc_mem.c smp/upc_mem.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_nb.upc smp/upc_numa.h $(UPC_NUMA_SUP) \
@@ -119,7 +121,6 @@ DIST_COMMON = $(am__configure_deps) $(libsubinclude_HEADERS) \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@             upc_coll_reduce.in
 
 @LIBGUPC_LINK_SCRIPT_TRUE@am__append_16 = $(UPC_LINK_SCRIPT)
-@LIBGUPC_PTHREADS_FALSE@libgupc_pt_la_DEPENDENCIES =
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -177,7 +178,8 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 	smp/upc_backtrace.h smp/upc_backtrace.c smp/upc_barrier.upc \
 	smp/upc_castable.upc smp/upc_config.h smp/upc_debug.h \
 	smp/upc_debug.c smp/upc_defs.h smp/upc_gasp.c smp/upc_gum.c \
-	smp/upc_libg.c smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
+	smp/upc_libat_lock.c smp/upc_libat_lock.h smp/upc_libg.c \
+	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
 	smp/upc_lock_sup.h smp/upc_lock_sup.c smp/upc_main.c \
 	smp/upc_mem.c smp/upc_mem.h smp/upc_nb.upc smp/upc_numa.h \
 	smp/upc_numa_stub.c smp/upc_numa.c smp/upc_pgm_info.c \
@@ -234,9 +236,10 @@ am__objects_4 = $(am__objects_2) $(am__objects_3)
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_atomic.lo $(am__objects_4) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_barrier.lo upc_castable.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_debug.lo upc_gasp.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_5) upc_libg.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_lock.lo upc_lock_sup.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_main.lo upc_mem.lo upc_nb.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_5) upc_libat_lock.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_libg.lo upc_lock.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_lock_sup.lo upc_main.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_mem.lo upc_nb.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_6) upc_pgm_info.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_pupc.lo upc_sysdep.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_tick.lo upc_vm.lo
@@ -318,6 +321,7 @@ am__objects_20 = $(am__objects_18) $(am__objects_19)
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_debug.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_gasp.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_21) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_libat_lock.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_libg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_lock.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_lock_sup.lo \
@@ -823,11 +827,13 @@ libgupc_version_info = -version-info $(libtool_VERSION)
 libgupc_la_LDFLAGS = $(libgupc_version_info)
 libgupc_la_LINK = $(LINK) $(libgupc_la_LDFLAGS)
 libgupc_la_LIBADD = \
-	../libatomic/libatomic_convenience.la
+	../libatomic/libatomic_convenience_no_lock.la
 
 libgupc_la_DEPENDENCIES = $(libgupc_la_LIBADD)
 @LIBGUPC_PTHREADS_TRUE@nodist_libgupc_pt_la_SOURCES = $(UPC_RUNTIME_SRC)
-@LIBGUPC_PTHREADS_TRUE@libgupc_pt_la_LIBADD = 
+@LIBGUPC_PTHREADS_TRUE@libgupc_pt_la_LIBADD = \
+@LIBGUPC_PTHREADS_TRUE@	../libatomic/libatomic_convenience_no_lock.la
+
 @LIBGUPC_PTHREADS_TRUE@libgupc_pt_la_DEPENDENCIES = $(libgupc_pt_la_LIBADD)
 @LIBGUPC_PTHREADS_TRUE@libgupc_pt_la_CPPFLAGS = $(AM_CPPFLAGS) -DGUPCR_USE_PTHREADS=1
 @LIBGUPC_PTHREADS_TRUE@libgupc_pt_la_UPCFLAGS = $(AM_UPCFLAGS) -fupc-pthreads-model-tls
@@ -1053,6 +1059,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_debug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_gasp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_gum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_libat_lock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_libg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_lock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_lock_sup.Plo@am__quote@
@@ -1091,6 +1098,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_debug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_gasp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_gum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_libat_lock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_libg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_lock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_lock_sup.Plo@am__quote@
@@ -1195,6 +1203,13 @@ upc_gum.lo: smp/upc_gum.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_gum.c' object='upc_gum.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o upc_gum.lo `test -f 'smp/upc_gum.c' || echo '$(srcdir)/'`smp/upc_gum.c
+
+upc_libat_lock.lo: smp/upc_libat_lock.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT upc_libat_lock.lo -MD -MP -MF $(DEPDIR)/upc_libat_lock.Tpo -c -o upc_libat_lock.lo `test -f 'smp/upc_libat_lock.c' || echo '$(srcdir)/'`smp/upc_libat_lock.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/upc_libat_lock.Tpo $(DEPDIR)/upc_libat_lock.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_libat_lock.c' object='upc_libat_lock.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o upc_libat_lock.lo `test -f 'smp/upc_libat_lock.c' || echo '$(srcdir)/'`smp/upc_libat_lock.c
 
 upc_libg.lo: smp/upc_libg.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT upc_libg.lo -MD -MP -MF $(DEPDIR)/upc_libg.Tpo -c -o upc_libg.lo `test -f 'smp/upc_libg.c' || echo '$(srcdir)/'`smp/upc_libg.c
@@ -1496,6 +1511,13 @@ libgupc_pt_la-upc_gum.lo: smp/upc_gum.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_gum.c' object='libgupc_pt_la-upc_gum.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgupc_pt_la-upc_gum.lo `test -f 'smp/upc_gum.c' || echo '$(srcdir)/'`smp/upc_gum.c
+
+libgupc_pt_la-upc_libat_lock.lo: smp/upc_libat_lock.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgupc_pt_la-upc_libat_lock.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_libat_lock.Tpo -c -o libgupc_pt_la-upc_libat_lock.lo `test -f 'smp/upc_libat_lock.c' || echo '$(srcdir)/'`smp/upc_libat_lock.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-upc_libat_lock.Tpo $(DEPDIR)/libgupc_pt_la-upc_libat_lock.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_libat_lock.c' object='libgupc_pt_la-upc_libat_lock.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgupc_pt_la-upc_libat_lock.lo `test -f 'smp/upc_libat_lock.c' || echo '$(srcdir)/'`smp/upc_libat_lock.c
 
 libgupc_pt_la-upc_libg.lo: smp/upc_libg.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgupc_pt_la-upc_libg.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_libg.Tpo -c -o libgupc_pt_la-upc_libg.lo `test -f 'smp/upc_libg.c' || echo '$(srcdir)/'`smp/upc_libg.c

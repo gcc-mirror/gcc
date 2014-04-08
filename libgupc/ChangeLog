@@ -1,15 +1,34 @@
-2014-03-18 Nenad Vukicevic  <nenad@intrepid.com>
+2014-04-08  Gary Funck  <gary@intrepid.com>
+
+	Fix UPC atomic operations on types that have no builtin
+	compiler support.  Build a version of the libatomic convenience
+	library that has no locking support, and then provide
+	locks in the UPC runtime library.  These lock functions
+	serialize atomic operations on types with no builtin atomics.
+	* libatomic/Makefile.am: Add rule to build
+	libatomic_convenience_nolock library.
+	* libatomic/Makefile.in: Re-generate.
+	* Makefile.am: Use libatomic_convenience_nolock library.
+	Compile libat lock support.  Add convenience library to
+	pthreads version of the UPC runtime library.
+	* Makefile.in: Re-generate.
+	* smp/upc_atomic.tpl: Simplify compare/swap support.
+	* smp/upc_atomic.upc: Re-generate.
+	* smp/upc_libat_lock.c: New.  UPC-specific libat lock support.
+	* smp/upc_libat_lock.h: New.  UPC-specific libat lock support.
+
+2014-03-18  Nenad Vukicevic  <nenad@intrepid.com>
 
 	As per UPC spec 1.3 query function is upc_atomic_isfast().
 	* include/upc_atomic.h (upc_atomic_query): Rename to
 	upc_atomic_isfast().
-	* portals4/gupcr_atomic.upc (upc_atomic_query): Rename to                    
+	* portals4/gupcr_atomic.upc (upc_atomic_query): Rename to
 	upc_atomic_isfast().
-	* smp/upc_atomic.tpl (upc_atomic_query): Rename to                    
+	* smp/upc_atomic.tpl (upc_atomic_query): Rename to
 	upc_atomic_isfast().
 	* smp/upc_atomic.upc: Regenerate.
 
-2014-01-17 Nenad Vukicevic  <nenad@intrepid.com>
+2014-01-17  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/upc_barrier.upc: Remove unnecessary include.
 	* smp/upc_pts.hi (GUPCR_PTS_SET_VADDR): Fix the cast.  Some other
@@ -17,13 +36,13 @@
 	* smp/upc_vm.c (__upc_vm_map_addr): Add a cast to avoid a possible
 	warning on void * arithmetic.
 
-2014-01-17 Nenad Vukicevic  <nenad@intrepid.com>
+2014-01-17  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/gcc-upc-lib.in: Add defines for __UPC_CASTABLE__,
 	__UPC_COLLECTIVE__, __UPC_TICK__, and __UPC_PUCP__ defines.
 	* portals4/gcc-upc-lib.in: Ditto.
 
-2014-01-10 Gary Funck  <gary@intrepid.com>
+2014-01-10  Gary Funck  <gary@intrepid.com>
 
 	Update copyright notices.
 
@@ -53,7 +72,7 @@
 
 	* configure.ac: Rework checking of GDB availability for backtracing.
 	Usage of GDB backtracing is enabled only if GDB was found or the
-	path was specified by the user.  Change was needed as Mac OS X 
+	path was specified by the user.  Change was needed as Mac OS X
 	10.9 does not have gdb installed.
 	Additional fix for printing correct result if "-rdynamic" option
 	is available.

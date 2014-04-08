@@ -154,8 +154,10 @@ UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	$(UPC_BACKTRACE_SUP) \
 	smp/upc_barrier.upc smp/upc_castable.upc smp/upc_config.h \
 	smp/upc_debug.h smp/upc_debug.c \
-	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
-	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
+	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) \
+	smp/upc_libat_lock.c smp/upc_libat_lock.h \
+	smp/upc_libg.c smp/upc_lib.h \
+	smp/upc_lock.upc smp/upc_lock.h \
 	smp/upc_lock_sup.h smp/upc_lock_sup.c \
 	smp/upc_main.c smp/upc_mem.c smp/upc_mem.h \
 	smp/upc_nb.upc smp/upc_numa.h $(UPC_NUMA_SUP) \
@@ -308,18 +310,18 @@ UPC_LINK_SCRIPT =
 endif
 nodist_toolexeclib_HEADERS += $(UPC_LINK_SCRIPT)
 
-
 libgupc_la_SOURCES = $(UPC_RUNTIME_SRC)
 libgupc_version_info = -version-info $(libtool_VERSION)
 libgupc_la_LDFLAGS = $(libgupc_version_info)
 libgupc_la_LINK = $(LINK) $(libgupc_la_LDFLAGS)
 libgupc_la_LIBADD = \
-	../libatomic/libatomic_convenience.la
+	../libatomic/libatomic_convenience_no_lock.la
 libgupc_la_DEPENDENCIES = $(libgupc_la_LIBADD)
 
 if LIBGUPC_PTHREADS
 nodist_libgupc_pt_la_SOURCES = $(UPC_RUNTIME_SRC)
-libgupc_pt_la_LIBADD =
+libgupc_pt_la_LIBADD = \
+	../libatomic/libatomic_convenience_no_lock.la
 libgupc_pt_la_DEPENDENCIES = $(libgupc_pt_la_LIBADD)
 libgupc_pt_la_CPPFLAGS = $(AM_CPPFLAGS) -DGUPCR_USE_PTHREADS=1
 libgupc_pt_la_UPCFLAGS = $(AM_UPCFLAGS) -fupc-pthreads-model-tls
