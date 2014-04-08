@@ -1,3 +1,10 @@
+2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/atomic_load_store-p8.c: New.
+
 2014-04-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60640
