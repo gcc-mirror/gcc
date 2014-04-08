@@ -5,6 +5,7 @@
 	* s-linux-android.ads: New file.
 	* s-intman-android.adb: Likewise.
 	* sigtramp-armdroid.c: Likewise.
+	* sigtramp.h: Add Android support.
 
 2014-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
