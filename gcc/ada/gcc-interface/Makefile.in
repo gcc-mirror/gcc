@@ -1045,15 +1045,17 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
-  s-intman.adb<s-intman-posix.adb \
-  s-linux.ads<s-linux.ads \
+  s-intman.adb<s-intman-android.adb \
+  s-linux.ads<s-linux-android.ads \
   s-osinte.adb<s-osinte-android.adb \
   s-osinte.ads<s-osinte-android.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-posix.adb \
-  s-taspri.ads<s-taspri-posix-noaltstack.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-linux-armel.ads \
+  a-exexpr.adb<a-exexpr-gcc.adb \
+  s-excmac.ads<s-excmac-arm.ads \
   $(DUMMY_SOCKETS_TARGET_PAIRS)
 
   TOOLS_TARGET_PAIRS =  \
@@ -1062,7 +1064,9 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
 
   GNATRTL_SOCKETS_OBJS =
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
-  EH_MECHANISM=
+  EXTRA_LIBGNAT_OBJS+=raise-gcc.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
+  EH_MECHANISM=-arm
   THREADSLIB =
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
