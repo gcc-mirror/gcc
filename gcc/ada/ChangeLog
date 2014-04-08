@@ -4,6 +4,7 @@
 	* gcc-interface/Makefile.in (arm% linux-android): Switch to EHABI.
 	* s-linux-android.ads: New file.
 	* s-intman-android.adb: Likewise.
+	* sigtramp-armdroid.c: Likewise.
 
 2014-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 

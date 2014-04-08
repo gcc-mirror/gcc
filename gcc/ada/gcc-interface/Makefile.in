@@ -1064,7 +1064,7 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
 
   GNATRTL_SOCKETS_OBJS =
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
-  EXTRA_LIBGNAT_OBJS+=raise-gcc.o
+  EXTRA_LIBGNAT_OBJS+=raise-gcc.o sigtramp-armdroid.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
   EH_MECHANISM=-arm
   THREADSLIB =
@@ -3068,6 +3068,7 @@ mkdir.o   : mkdir.c
 socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
 raise.o   : raise.c raise.h
+sigtramp-armdroid.o : sigtramp-armdroid.c sigtramp.h
 sigtramp-armvxw.o : sigtramp-armvxw.c sigtramp.h
 sigtramp-ppcvxw.o : sigtramp-ppcvxw.c sigtramp.h
 terminals.o : terminals.c
