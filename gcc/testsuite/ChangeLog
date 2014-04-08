@@ -1,3 +1,18 @@
+2014-04-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR rtl-optimization/60776
+	* gcc.dg/builtin-bswap-6.c: Use -mbranch-cost=0 for s390.
+	* gcc.dg/builtin-bswap-7.c: Likewise.
+	* gcc.dg/builtin-bswap-6a.c: New testcase.
+	* gcc.dg/builtin-bswap-7a.c: New testcase.
+
+	Revert
+	2014-04-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/builtin-bswap-6.c: Adjust return value to disable GCC
+	optimization.
+	* gcc.dg/builtin-bswap-7.c: Likewise.
+
 2014-04-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60785
