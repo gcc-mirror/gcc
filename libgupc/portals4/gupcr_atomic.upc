@@ -418,12 +418,13 @@ upc_atomic_relaxed (upc_atomicdomain_t * domain,
 	  *(shared void *shared *) target = *(shared void **) operand1;
 	  break;
 	case UPC_CSWAP:
-	  if (*(shared void **) operand1 == *(shared void *shared *) target)
-	    {
-	      if (fetch_ptr)
-		*(shared void **) fetch_ptr = *(shared void *shared *) target;
+	  {
+	    shared void *tmp = *(shared void *shared *) target;
+	    if (*(shared void **) operand1 == tmp)
 	      *(shared void *shared *) target = *(shared void **) operand2;
-	    }
+	    if (fetch_ptr)
+	      *(shared void **) fetch_ptr = tmp;
+	  }
 	  break;
 	default:
 	  upc_unlock (ldomain->lock);

@@ -1,3 +1,8 @@
+2014-04-09  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_atomic.upc (upc_atomic_relaxed): Fix PTS
+	CSWAP operation to return target value on failures too.
+
 2014-04-08  Gary Funck  <gary@intrepid.com>
 
 	Fix UPC atomic operations on types that have no builtin
