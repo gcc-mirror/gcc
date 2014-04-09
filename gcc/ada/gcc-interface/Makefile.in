@@ -2239,7 +2239,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<s-linux-x32.ads \
   s-mudido.adb<s-mudido-affinity.adb \
   s-osinte.ads<s-osinte-linux.ads \
-  s-osinte.adb<s-osinte-posix.adb \
+  s-osinte.adb<s-osinte-x32.adb \
   s-osprim.adb<s-osprim-x32.adb \
   s-taprop.adb<s-taprop-linux.adb \
   s-tasinf.ads<s-tasinf-linux.ads \
