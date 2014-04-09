@@ -3739,6 +3739,27 @@ proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
 }
 
 # Return 1 if the target plus current options supports a vector
+# widening multiplication of *int* args into *long* result, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_widen_mult_si_to_di_pattern { } {
+    global et_vect_widen_mult_si_to_di_pattern
+
+    if [info exists et_vect_widen_mult_si_to_di_pattern_saved] {
+        verbose "check_effective_target_vect_widen_mult_si_to_di_pattern: using cached result" 2
+    } else {
+        if {[istarget ia64-*-*]
+              || [istarget i?86-*-*]
+	      || [istarget x86_64-*-*] } {
+            set et_vect_widen_mult_si_to_di_pattern_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_mult_si_to_di_pattern: returning $et_vect_widen_mult_si_to_di_pattern_saved" 2
+    return $et_vect_widen_mult_si_to_di_pattern_saved
+}
+
+# Return 1 if the target plus current options supports a vector
 # widening shift, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.

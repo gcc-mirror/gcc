@@ -1,3 +1,14 @@
+2014-04-09  Cong Hou  <congh@google.com>
+
+	PR testsuite/60773
+	* lib/target-supports.exp:
+	(check_effective_target_vect_widen_si_to_di_pattern): New.
+	* gcc.dg/vect/pr60656.c: Require vect_long effective target.
+	Use scan-tree-dump-times for vect_widen_mult_si_to_di_pattern
+	targets only.
+	(foo): Fix up formatting.
+	(main): Call check_vect.
+
 2014-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59115
