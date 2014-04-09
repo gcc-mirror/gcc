@@ -1,3 +1,9 @@
+2014-04-09  Cong Hou  <congh@google.com>
+
+	PR testsuite/60773
+	* doc/sourcebuild.texi (vect_widen_mult_si_to_di_pattern): Add
+	documentation.
+
 2014-04-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Use vnand
