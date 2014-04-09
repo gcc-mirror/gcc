@@ -54,7 +54,7 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-      type timeval is array (1 .. 2) of time_t;
+      type timeval is array (1 .. 2) of Long_Long_Integer;
 
       procedure timeval_to_duration
         (T    : not null access timeval;
@@ -118,7 +118,7 @@ package body System.OS_Primitives is
 
       return
         timespec'(tv_sec  => S,
-                  tv_nsec => time_t (Long_Long_Integer (F * 10#1#E9)));
+                  tv_nsec => Long_Long_Integer (F * 10#1#E9));
    end To_Timespec;
 
    -----------------

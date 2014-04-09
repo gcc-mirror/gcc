@@ -12,6 +12,8 @@
 	* s-linux-sparc.ads (Time): Likewise.
 	* s-linux-x32.ads (Time): Likewise.
 	* s-osprim-x32.ads (timespec): Adjust.
+	(Clock): Likewise.
+	(To_Timespec): Likewise.
 	* s-osinte-linux.ads (Time): Define local subtypes for those defined
 	in System.Linux.
 	* s-taprop-linux.adb (Monotonic_Clock): Do not define timeval.
