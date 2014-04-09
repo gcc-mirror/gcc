@@ -1,3 +1,8 @@
+2014-04-09  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: Remove mips*-*-* from option
+	and scan lists.
+
 2014-04-09  Cong Hou  <congh@google.com>
 
 	PR testsuite/60773
