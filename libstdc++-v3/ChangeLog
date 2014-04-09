@@ -6,6 +6,13 @@
 
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline
+	2013-11-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* configure: Regenerate.
+
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r204808:
 
 	2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>

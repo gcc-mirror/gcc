@@ -1,46 +1,9 @@
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
-	2013-11-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
-
-	* libgo/config/libtool.m4: Update to mainline version.
-	* libgo/configure: Regenerate.
-
-	2013-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
-
-	* libgo/config/libtool.m4: Update to mainline version.
-	* libgo/configure: Regenerate.
-
 	2013-11-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* libtool.m4: Update to mainline version.
-	* libjava/libltdl/acinclude.m4: Likewise.
-
-	* gcc/configure: Regenerate.
-	* boehm-gc/configure: Regenerate.
-	* libatomic/configure: Regenerate.
-	* libbacktrace/configure: Regenerate.
-	* libffi/configure: Regenerate.
-	* libgfortran/configure: Regenerate.
-	* libgomp/configure: Regenerate.
-	* libitm/configure: Regenerate.
-	* libjava/configure: Regenerate.
-	* libjava/libltdl/configure: Regenerate.
-	* libjava/classpath/configure: Regenerate.
-	* libmudflap/configure: Regenerate.
-	* libobjc/configure: Regenerate.
-	* libquadmath/configure: Regenerate.
-	* libsanitizer/configure: Regenerate.
-	* libssp/configure: Regenerate.
-	* libstdc++-v3/configure: Regenerate.
-	* lto-plugin/configure: Regenerate.
-	* zlib/configure: Regenerate.
-
-	Backport from mainline
-	2013-09-20  Alan Modra  <amodra@gmail.com>
-
-	* libtool.m4 (_LT_ENABLE_LOCK <ld -m flags>): Remove non-canonical
-	ppc host match.  Support little-endian powerpc linux hosts.
 	* configure: Regenerate.
 
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>

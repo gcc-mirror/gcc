@@ -1,3 +1,11 @@
+2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2013-11-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* acinclude.m4: Update to mainline version.
+	* configure: Regenerate.
+
 2013-10-16  Release Manager
 
 	* GCC 4.8.2 released.
