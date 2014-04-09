@@ -1,3 +1,8 @@
+2014-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/generic/asmcfi.h: Also check for
+	__GCC_HAVE_DWARF2_CFI_ASM.
+
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r204808:
