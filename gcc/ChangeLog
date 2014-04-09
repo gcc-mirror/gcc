@@ -1,5 +1,19 @@
 2014-04-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Revert following patch
+	2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
+	(loadsync_<mode>): Change mode.
+	(load_quadpti, store_quadpti): New.
+	(atomic_load<mode>, atomic_store<mode>): Add support for TI mode.
+	* config/rs6000/rs6000.md (unspec enum): Add UNSPEC_LSQ.
+
+2014-04-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r202642
 	2013-09-17  Alan Modra  <amodra@gmail.com>
 
