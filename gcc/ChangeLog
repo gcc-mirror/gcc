@@ -1,3 +1,15 @@
+2014-04-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	Revert
+	2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
+	(loadsync_<mode>): Change mode.
+	(load_quadpti, store_quadpti): New.
+	(atomic_load<mode>, atomic_store<mode>): Add support for TI mode.
+	* config/rs6000/rs6000.md (unspec enum): Add UNSPEC_LSQ.
+	* config/rs6000/predicates.md (quad_memory_operand): !TARGET_SYNC_TI.
+
 2014-04-09  Cong Hou  <congh@google.com>
 
 	PR testsuite/60773
