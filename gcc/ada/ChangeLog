@@ -1,4 +1,5 @@
 2014-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+	    Svante Signell <svante.signell@gmail.com>
 
 	PR ada/54040
 	PR ada/59346
@@ -26,9 +27,9 @@
 	* gcc-interface/Makefile.in (arm% linux-android): Switch to EHABI.
 	* s-linux-android.ads: New file.
 	* s-intman-android.adb: Likewise.
+	* s-osinte-android.ads: Adjust.
 	* sigtramp-armdroid.c: Likewise.
 	* sigtramp.h: Add Android support.
-	* s-osinte-android.ads: Adjust.
 
 2014-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
