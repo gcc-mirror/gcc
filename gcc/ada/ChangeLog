@@ -1,3 +1,25 @@
+2014-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/54040
+	PR ada/59346
+	* s-osinte-x32.adb: New file.
+	* s-linux.ads (Time): New section.
+	* s-linux-alpha.ads (Time): Likewise.
+	* s-linux-android.ads (Time: Likewise.
+	* s-linux-hppa.ads (Time): Likewise.
+	* s-linux-mipsel.ads (Time): Likewise.
+	* s-linux-sparc.ads (Time): Likewise.
+	* s-linux-x32.ads (Time): Likewise.
+	* s-osprim-x32.ads (timespec): Adjust.
+	* s-osinte-linux.ads (Time): Define local subtypes for those defined
+	in System.Linux.
+	* s-taprop-linux.adb (Monotonic_Clock): Do not define timeval.
+	* s-osinte-hpux.ads (timespec): Revert POSIX breakage.
+	* s-osinte-kfreebsd-gnu.ads (timespec): Likewise.
+	* s-osinte-solaris-posix.ads (timespec): Likewise.
+	* s-osinte-posix.adb (To_Timespec): Likewise.
+	* gcc-interface/Makefile.in (x32/Linux): Use s-osinte-x32.adb.
+
 2014-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/60411
@@ -6,6 +28,7 @@
 	* s-intman-android.adb: Likewise.
 	* sigtramp-armdroid.c: Likewise.
 	* sigtramp.h: Add Android support.
+	* s-osinte-android.ads: Adjust.
 
 2014-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 

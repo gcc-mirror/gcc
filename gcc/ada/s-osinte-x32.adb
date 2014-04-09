@@ -30,7 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version is for POSIX-like operating systems
+--  This version is for Linux/x32
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
@@ -103,7 +103,7 @@ package body System.OS_Interface is
       end if;
 
       return timespec'(tv_sec => S,
-                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+                       tv_nsec => Long_Long_Integer (F * 10#1#E9));
    end To_Timespec;
 
 end System.OS_Interface;
