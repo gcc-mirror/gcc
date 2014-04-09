@@ -8961,10 +8961,10 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  if (VAR_P (capture_init_expr)
 	      && decl_storage_duration (capture_init_expr) != dk_auto)
 	    {
-	      pedwarn (capture_token->location, 0, "capture of variable "
-		       "%qD with non-automatic storage duration",
-		       capture_init_expr);
-	      inform (0, "%q+#D declared here", capture_init_expr);
+	      if (pedwarn (capture_token->location, 0, "capture of variable "
+			   "%qD with non-automatic storage duration",
+			   capture_init_expr))
+		inform (0, "%q+#D declared here", capture_init_expr);
 	      continue;
 	    }
 
