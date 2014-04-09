@@ -1,3 +1,10 @@
+2014-04-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Use vnand
+	instead of vnor to exploit possible fusion opportunity in the
+	future.
+	(altivec_expand_vec_perm_const_le): Likewise.
+
 2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
