@@ -1,3 +1,8 @@
+2014-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59115
+	* g++.dg/template/crash119.C: New.
+
 2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.target/powerpc/atomic_load_store-p8.c: New.

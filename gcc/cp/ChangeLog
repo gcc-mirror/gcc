@@ -1,3 +1,12 @@
+2014-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59115
+	* pt.c (process_template_parm): For an invalid non-type parameter
+	only set TREE_TYPE to error_mark_node.
+	(push_inline_template_parms_recursive, comp_template_parms,
+	redeclare_class_template, coerce_template_template_parm,
+	coerce_template_template_parms, unify): Use error_operand_p.
+
 2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (check_bases_and_members): Warn about non-virtual dtors
