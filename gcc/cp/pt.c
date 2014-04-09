@@ -2304,10 +2304,10 @@ check_template_variable (tree decl)
 	       "%qD is not a static data member of a class template", decl);
   else if (template_header_count > wanted)
     {
-      pedwarn (DECL_SOURCE_LOCATION (decl), 0,
-	       "too many template headers for %D (should be %d)",
-	       decl, wanted);
-      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
+      bool warned = pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+			     "too many template headers for %D (should be %d)",
+			     decl, wanted);
+      if (warned && CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
 	inform (DECL_SOURCE_LOCATION (decl),
 		"members of an explicitly specialized class are defined "
 		"without a template header");

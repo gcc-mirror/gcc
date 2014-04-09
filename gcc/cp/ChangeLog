@@ -1,3 +1,9 @@
+2014-04-09  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* pt.c (check_template_variable): Check for the return of pedwarn
+	before emitting a note.
+	* parser.c (cp_parser_lambda_introducer): Likewise.
+
 2014-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59115
