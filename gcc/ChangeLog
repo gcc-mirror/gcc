@@ -1,6 +1,12 @@
 2014-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60516
+	* config/i386/i386.c (ix86_expand_epilogue): Adjust REG_CFA_ADJUST_CFA
+	note creation for the 2010-08-31 changes.
+
 	2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 		    Meador Inge  <meadori@codesourcery.com>
 
