@@ -1,3 +1,7 @@
+2014-04-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gfortran.dg/class_nameclash.f90: New test.
+
 2014-04-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52844

@@ -588,13 +588,13 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   else if ((*as) && attr->pointer)
     sprintf (name, "__class_%s_%d_%dp", tname, rank, (*as)->corank);
   else if ((*as))
-    sprintf (name, "__class_%s_%d_%d", tname, rank, (*as)->corank);
+    sprintf (name, "__class_%s_%d_%dt", tname, rank, (*as)->corank);
   else if (attr->pointer)
     sprintf (name, "__class_%s_p", tname);
   else if (attr->allocatable)
     sprintf (name, "__class_%s_a", tname);
   else
-    sprintf (name, "__class_%s", tname);
+    sprintf (name, "__class_%s_t", tname);
 
   if (ts->u.derived->attr.unlimited_polymorphic)
     {
