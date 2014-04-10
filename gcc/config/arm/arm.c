@@ -230,7 +230,6 @@ static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
-static bool arm_tls_symbol_p (rtx x);
 static int arm_issue_rate (void);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static bool arm_output_addr_const_extra (FILE *, rtx);
@@ -6587,6 +6586,32 @@ legitimize_tls_address (rtx x, rtx reg)
 rtx
 arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 {
+  if (arm_tls_referenced_p (x))
+    {
+      rtx addend = NULL;
+
+      if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS)
+	{
+	  addend = XEXP (XEXP (x, 0), 1);
+	  x = XEXP (XEXP (x, 0), 0);
+	}
+
+      if (GET_CODE (x) != SYMBOL_REF)
+	return x;
+
+      gcc_assert (SYMBOL_REF_TLS_MODEL (x) != 0);
+
+      x = legitimize_tls_address (x, NULL_RTX);
+
+      if (addend)
+	{
+	  x = gen_rtx_PLUS (SImode, x, addend);
+	  orig_x = x;
+	}
+      else
+	return x;
+    }
+
   if (!TARGET_ARM)
     {
       /* TODO: legitimize_address for Thumb2.  */
@@ -6594,9 +6619,6 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
         return x;
       return thumb_legitimize_address (x, orig_x, mode);
     }
-
-  if (arm_tls_symbol_p (x))
-    return legitimize_tls_address (x, NULL_RTX);
 
   if (GET_CODE (x) == PLUS)
     {
@@ -6709,9 +6731,6 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 rtx
 thumb_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 {
-  if (arm_tls_symbol_p (x))
-    return legitimize_tls_address (x, NULL_RTX);
-
   if (GET_CODE (x) == PLUS
       && CONST_INT_P (XEXP (x, 1))
       && (INTVAL (XEXP (x, 1)) >= 32 * GET_MODE_SIZE (mode)
@@ -7001,20 +7020,6 @@ thumb_legitimize_reload_address (rtx *x_p,
 }
 
 /* Test for various thread-local symbols.  */
-
-/* Return TRUE if X is a thread-local symbol.  */
-
-static bool
-arm_tls_symbol_p (rtx x)
-{
-  if (! TARGET_HAVE_TLS)
-    return false;
-
-  if (GET_CODE (x) != SYMBOL_REF)
-    return false;
-
-  return SYMBOL_REF_TLS_MODEL (x) != 0;
-}
 
 /* Helper for arm_tls_referenced_p.  */
 

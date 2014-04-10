@@ -1,3 +1,11 @@
+2014-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2014-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58595
+	* gcc.dg/tls/pr58595.c: New test.
+
 2014-04-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60640

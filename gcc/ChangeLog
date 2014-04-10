@@ -1,3 +1,16 @@
+2014-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2014-03-06  Jakub Jelinek  <jakub@redhat.com>
+		    Meador Inge  <meadori@codesourcery.com>
+
+	PR target/58595
+	* config/arm/arm.c (arm_tls_symbol_p): Remove.
+	(arm_legitimize_address): Call legitimize_tls_address for any
+	arm_tls_referenced_p expression, handle constant addend.  Call it
+	before testing for !TARGET_ARM.
+	(thumb_legitimize_address): Don't handle arm_tls_symbol_p here.
+
 2014-04-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r208750
