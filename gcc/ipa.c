@@ -1032,6 +1032,7 @@ function_and_variable_visibility (bool whole_program)
 				   == DECL_COMDAT_GROUP (decl_node->decl));
 	      gcc_checking_assert (node->same_comdat_group);
 	    }
+	  node->forced_by_abi = decl_node->forced_by_abi;
 	  if (DECL_EXTERNAL (decl_node->decl))
 	    DECL_EXTERNAL (node->decl) = 1;
 	}

@@ -1,7 +1,9 @@
-2014-04-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+2014-04-10  Jan Hubicka  <hubicka@ucw.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
 
-	* fortran/class.c (gfc_build_class_symbol): Append "_t" to target class
-	names to make the generated type names unique.
+	PR lto/60567
+	* ipa.c (function_and_variable_visibility): Copy forced_by_abi flag from
+	decl_node to node.
 
 2014-04-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
