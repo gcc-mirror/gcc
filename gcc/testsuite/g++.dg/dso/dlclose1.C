@@ -1,5 +1,5 @@
 // PR c++/60731
-// { dg-do run { target dlopen } }
+// { dg-do run { target { dlopen && disable-for-4.9 } } }
 // { dg-add-options dlopen }
 // { dg-build-dso "dlclose1-dso.cc" }
 
