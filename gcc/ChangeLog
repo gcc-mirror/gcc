@@ -1,6 +1,26 @@
 2014-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-03-12  Jakub Jelinek  <jakub@redhat.com>
+		    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/60502
+	* tree-ssa-reassoc.c (eliminate_not_pairs): Use build_all_ones_cst
+	instead of build_low_bits_mask.
+
+	2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (build_all_ones_cst): New function.
+	* tree.h (build_all_ones_cst): Declare it.
+
+	2013-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (build_minus_one_cst): New function.
+	* tree.h (build_minus_one_cst): Declare new function.
+
+2014-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
 	2014-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60693

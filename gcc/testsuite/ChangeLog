@@ -1,6 +1,12 @@
 2014-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-03-12  Jakub Jelinek  <jakub@redhat.com>
+		    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/60502
+	* gcc.c-torture/compile/pr60502.c: New test.
+
 	2014-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60693
