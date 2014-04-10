@@ -1,3 +1,8 @@
+2014-04-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-builtins-compile-1.c: Replace long long with
+	long.
+
 2014-04-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR debug/60655
