@@ -1,3 +1,12 @@
+2014-04-10  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/60761
+	* error.c (dump_decl) <case FUNCTION_DECL>: If
+	DECL_LANG_SPECIFIC is NULL, but DECL_ABSTRACT_ORIGIN is not,
+	recurse on DECL_ABSTRACT_ORIGIN instead of printing
+	<built-in>.
+
 2014-04-09  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* pt.c (check_template_variable): Check for the return of pedwarn
