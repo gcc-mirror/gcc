@@ -1,3 +1,9 @@
+2014-04-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60769
+	* lra-constraints.c (simplify_operand_subreg): Force reload of
+	paradoxical subreg if it is not in the class contents.
+
 2014-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline

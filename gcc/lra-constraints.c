@@ -1156,6 +1156,8 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
   enum machine_mode mode;
   rtx reg, new_reg;
   rtx operand = *curr_id->operand_loc[nop];
+  enum reg_class regclass;
+  enum op_type type;
 
   before = after = NULL_RTX;
 
@@ -1164,6 +1166,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 
   mode = GET_MODE (operand);
   reg = SUBREG_REG (operand);
+  type = curr_static_id->operand[nop].type;
   /* If we change address for paradoxical subreg of memory, the
      address might violate the necessary alignment or the access might
      be slow.  So take this into consideration.  We should not worry
@@ -1234,6 +1237,55 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
       SUBREG_REG (operand) = new_reg;
       lra_process_new_insns (curr_insn, before, after,
 			     "Inserting subreg reload");
+      return true;
+    }
+  /* Force a reload for a paradoxical subreg. For paradoxical subreg,
+     IRA allocates hardreg to the inner pseudo reg according to its mode
+     instead of the outermode, so the size of the hardreg may not be enough
+     to contain the outermode operand, in that case we may need to insert
+     reload for the reg. For the following two types of paradoxical subreg,
+     we need to insert reload:
+     1. If the op_type is OP_IN, and the hardreg could not be paired with
+        other hardreg to contain the outermode operand
+        (checked by in_hard_reg_set_p), we need to insert the reload.
+     2. If the op_type is OP_OUT or OP_INOUT.  */
+  else if (REG_P (reg)
+	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
+	   && (hard_regno_nregs[hard_regno][GET_MODE (reg)]
+	       < hard_regno_nregs[hard_regno][mode])
+	   && (regclass = lra_get_allocno_class (REGNO (reg)))
+	   && (type != OP_IN
+	       || !in_hard_reg_set_p (reg_class_contents[regclass],
+				      mode, hard_regno)))
+    {
+      /* The class will be defined later in curr_insn_transform.  */
+      enum reg_class rclass
+	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
+      rtx subreg;
+      
+      new_reg = lra_create_new_reg_with_unique_value (mode, reg, rclass,
+						      "paradoxical subreg");
+      PUT_MODE (new_reg, mode);
+      subreg = simplify_gen_subreg (GET_MODE (reg), new_reg, mode, 0);
+      if (type != OP_OUT)
+	{
+	  push_to_sequence (before);
+	  lra_emit_move (subreg, reg);
+	  before = get_insns ();
+	  end_sequence ();
+	}
+      if (type != OP_IN)
+	{
+	  start_sequence ();
+	  lra_emit_move (reg, subreg);
+	  emit_insn (after);
+	  after = get_insns ();
+	  end_sequence ();
+	}
+      SUBREG_REG (operand) = new_reg;
+      lra_process_new_insns (curr_insn, before, after,
+                             "Inserting paradoxical subreg reload");
       return true;
     }
   return false;
