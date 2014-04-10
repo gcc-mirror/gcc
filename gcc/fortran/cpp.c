@@ -569,6 +569,7 @@ gfc_cpp_init (void)
   if (gfc_option.flag_preprocessed)
     return;
 
+  cpp_change_file (cpp_in, LC_RENAME, _("<built-in>"));
   if (!gfc_cpp_option.no_predefined)
     {
       /* Make sure all of the builtins about to be declared have

@@ -1,6 +1,11 @@
 2014-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/60603
+	* gcc.dg/debug/dwarf2/dwarf2-macro2.c: New test.
+
 	2014-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60516
