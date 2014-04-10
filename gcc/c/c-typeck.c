@@ -2666,7 +2666,7 @@ build_function_call (location_t loc, tree function, tree params)
   vec_alloc (v, list_length (params));
   for (; params; params = TREE_CHAIN (params))
     v->quick_push (TREE_VALUE (params));
-  ret = build_function_call_vec (loc, function, v, NULL);
+  ret = c_build_function_call_vec (loc, function, v, NULL);
   vec_free (v);
   return ret;
 }
@@ -2705,14 +2705,6 @@ build_function_call_vec (location_t loc, tree function,
   /* Convert anything with function type to a pointer-to-function.  */
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
-      /* Implement type-directed function overloading for builtins.
-	 resolve_overloaded_builtin and targetm.resolve_overloaded_builtin
-	 handle all the type checking.  The result is a complete expression
-	 that implements this function call.  */
-      tem = resolve_overloaded_builtin (loc, function, params);
-      if (tem)
-	return tem;
-
       name = DECL_NAME (function);
 
       if (flag_tm)
@@ -2862,6 +2854,30 @@ build_function_call_vec (location_t loc, tree function,
       return result;
     }
   return require_complete_type (result);
+}
+
+/* Like build_function_call_vec, but call also resolve_overloaded_builtin.  */
+
+tree
+c_build_function_call_vec (location_t loc, tree function,
+			   vec<tree, va_gc> *params,
+			   vec<tree, va_gc> *origtypes)
+{
+  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
+  STRIP_TYPE_NOPS (function);
+
+  /* Convert anything with function type to a pointer-to-function.  */
+  if (TREE_CODE (function) == FUNCTION_DECL)
+    {
+      /* Implement type-directed function overloading for builtins.
+	 resolve_overloaded_builtin and targetm.resolve_overloaded_builtin
+	 handle all the type checking.  The result is a complete expression
+	 that implements this function call.  */
+      tree tem = resolve_overloaded_builtin (loc, function, params);
+      if (tem)
+	return tem;
+    }
+  return build_function_call_vec (loc, function, params, origtypes);
 }
 
 /* Convert the argument expressions in the vector VALUES

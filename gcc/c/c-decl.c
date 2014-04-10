@@ -4507,8 +4507,8 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  cleanup = build_unary_op (input_location, ADDR_EXPR, decl, 0);
 	  vec_alloc (v, 1);
 	  v->quick_push (cleanup);
-	  cleanup = build_function_call_vec (DECL_SOURCE_LOCATION (decl),
-	      				     cleanup_decl, v, NULL);
+	  cleanup = c_build_function_call_vec (DECL_SOURCE_LOCATION (decl),
+					       cleanup_decl, v, NULL);
 	  vec_free (v);
 
 	  /* Don't warn about decl unused; the cleanup uses it.  */

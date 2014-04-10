@@ -1,3 +1,19 @@
+2014-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2014-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60689
+	* c-tree.h (c_build_function_call_vec): New prototype.
+	* c-typeck.c (build_function_call_vec): Don't call
+	resolve_overloaded_builtin here.
+	(c_build_function_call_vec): New wrapper function around
+	build_function_call_vec.  Call resolve_overloaded_builtin here.
+	(convert_lvalue_to_rvalue, build_function_call, build_atomic_assign):
+	Call c_build_function_call_vec instead of build_function_call_vec.
+	* c-parser.c (c_parser_postfix_expression_after_primary): Likewise.
+	* c-decl.c (finish_decl): Likewise.
+
 2014-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58809

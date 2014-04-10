@@ -640,6 +640,8 @@ extern tree c_finish_omp_task (location_t, tree, tree);
 extern tree c_finish_omp_clauses (tree);
 extern tree c_build_va_arg (location_t, tree, tree);
 extern tree c_finish_transaction (location_t, tree, int);
+extern tree c_build_function_call_vec (location_t, tree, vec<tree, va_gc> *,
+				       vec<tree, va_gc> *);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

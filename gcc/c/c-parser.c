@@ -6904,8 +6904,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					      sizeof_ptr_memacc_comptypes);
 	  /* FIXME diagnostics: Ideally we want the FUNCNAME, not the
 	     "(" after the FUNCNAME, which is what we have now.    */
-	  expr.value = build_function_call_vec (op_loc, expr.value, exprlist,
-						origtypes);
+	  expr.value = c_build_function_call_vec (op_loc, expr.value, exprlist,
+						  origtypes);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) == INTEGER_CST
 	      && TREE_CODE (orig_expr.value) == FUNCTION_DECL
