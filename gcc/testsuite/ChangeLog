@@ -3,6 +3,9 @@
 	Backport from mainline
 	2014-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/60693
+	* gcc.target/i386/pr60693.c: New test.
+
 	PR c++/60689
 	* c-c++-common/pr60689.c: New test.
 
