@@ -1,3 +1,10 @@
+2014-04-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR debug/60655
+	* config/arm/arm.c (TARGET_CONST_NOT_OK_FOR_DEBUG_P): Define
+	(arm_const_not_ok_for_debug_p): Reject MINUS with SYM_REF's
+	ameliorating the cases where it can be.
+
 2014-04-09  David Edelsohn  <dje.gcc@gmail.com>
 
 	Revert
