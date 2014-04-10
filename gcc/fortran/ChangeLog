@@ -3,6 +3,13 @@
 	* class.c (gfc_build_class_symbol): Append "_t" to target class
 	names to make the generated type names unique.
 
+2014-04-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60191
+	* trans-types.c (gfc_get_function_type): In case of recursion
+	build a variadic function type with empty argument list instead of a
+	stdarg-like function type with incomplete argument list.
+
 2014-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	* check.c (gfc_check_cmplx): Fix typo.
