@@ -1,3 +1,7 @@
+2014-04-10  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+
 2014-04-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/exchange/1.cc: Add missing return statements.
