@@ -1,5 +1,10 @@
 2014-04-10  Andreas Schwab  <schwab@suse.de>
 
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Remove TLS
+	symbols.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt: Likewise.
+
 	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
 
 2014-04-07  Jonathan Wakely  <jwakely@redhat.com>

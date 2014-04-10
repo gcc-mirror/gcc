@@ -3745,5 +3745,3 @@ OBJECT:8:_ZTTSi@@GLIBCXX_3.4
 OBJECT:8:_ZTTSo@@GLIBCXX_3.4
 OBJECT:8:_ZTTSt13basic_istreamIwSt11char_traitsIwEE@@GLIBCXX_3.4
 OBJECT:8:_ZTTSt13basic_ostreamIwSt11char_traitsIwEE@@GLIBCXX_3.4
-TLS:4:_ZSt11__once_call@@GLIBCXX_3.4.11
-TLS:4:_ZSt15__once_callable@@GLIBCXX_3.4.11
