@@ -1,3 +1,9 @@
+2014-04-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR debug/60655
+	* gcc.c-torture/compile/pr60655-2.c: Copy from pr60655-1.c without
+	-fdata-sections.
+
 2014-04-09  Steve Ellcey  <sellcey@mips.com>
 
 	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: Remove mips*-*-* from option
