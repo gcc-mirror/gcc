@@ -1,3 +1,8 @@
+2014-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/60663
+	* gcc.target/arm/pr60663.c: New test.
+
 2014-04-10  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/dso/dlclose1.C: Disable for 4.9.
