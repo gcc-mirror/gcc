@@ -942,4 +942,15 @@ extern rtl_opt_pass *make_pass_resolve_sw_modes (gcc::context *ctxt);
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
   epiphany_start_function ((FILE), (NAME), (DECL))
 
+/* This is how we tell the assembler that two symbols have the same value.  */
+#define ASM_OUTPUT_DEF(FILE, NAME1, NAME2) \
+  do					   \
+    {					   \
+      assemble_name (FILE, NAME1); 	   \
+      fputs (" = ", FILE);		   \
+      assemble_name (FILE, NAME2);	   \
+      fputc ('\n', FILE);		   \
+    }					   \
+  while (0)
+
 #endif /* !GCC_EPIPHANY_H */
