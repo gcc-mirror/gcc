@@ -1,3 +1,9 @@
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/60194
+	* doc/invoke.texi (-Wformat-signedness): Document it.
+	(Wformat=2): Mention that this enables -Wformat-signedness.
+
 2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* common/config/epiphany/epiphany-common.c

@@ -246,7 +246,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-endif-labels -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
--Wformat-security  -Wformat-y2k @gol
+-Wformat-security  -Wformat-signedness  -Wformat-y2k @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
@@ -3539,7 +3539,7 @@ The C standard specifies that zero-length formats are allowed.
 @opindex Wformat=2
 Enable @option{-Wformat} plus additional format checks.  Currently
 equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
--Wformat-y2k}.
+-Wformat-signedness -Wformat-y2k}.
 
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral
@@ -3560,6 +3560,12 @@ string came from untrusted input and contains @samp{%n}.  (This is
 currently a subset of what @option{-Wformat-nonliteral} warns about, but
 in future warnings may be added to @option{-Wformat-security} that are not
 included in @option{-Wformat-nonliteral}.)
+
+@item -Wformat-signedness
+@opindex Wformat-signedness
+@opindex Wno-format-signedness
+If @option{-Wformat} is specified, also warn if the format string
+requires an unsigned argument and the argument is signed and vice versa.
 
 @item -Wformat-y2k
 @opindex Wformat-y2k
