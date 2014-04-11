@@ -1,3 +1,9 @@
+2014-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/60663
+	* cse.c (cse_insn): Set src_volatile on ASM_OPERANDS in
+	PARALLEL.
+
 2014-04-10  Jan Hubicka  <hubicka@ucw.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
