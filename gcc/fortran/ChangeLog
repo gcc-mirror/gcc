@@ -1,3 +1,10 @@
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58880
+	PR fortran/60495
+	* resolve.c (gfc_resolve_finalizers): Ensure that vtables
+	and finalization wrappers are generated.
+
 2014-04-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsic.texi (RANDOM_SEED): Improve example.
