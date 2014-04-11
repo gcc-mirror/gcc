@@ -1,3 +1,9 @@
+2014-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57926
+	* c-common.c (sync_resolve_size, get_atomic_generic_size): Call
+	default_conversion for an array argument.
+
 2014-04-08  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/60745
