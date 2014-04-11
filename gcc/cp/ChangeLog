@@ -1,5 +1,10 @@
 2014-04-11  Jason Merrill  <jason@redhat.com>
 
+	* parser.h (struct cp_token): Rename ambiguous_p to error_reported.
+	* parser.c: Adjust.
+	(cp_lexer_get_preprocessor_token): Always clear it.
+	(cp_parser_lambda_expression): Use it to avoid duplicate diagnostics.
+
 	DR 1467
 	PR c++/51747
 	* decl.c (reshape_init_r): Handle a single element of class type.
