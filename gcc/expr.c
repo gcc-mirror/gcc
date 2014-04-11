@@ -551,9 +551,9 @@ convert_move (rtx to, rtx from, int unsignedp)
       if (unsignedp)
 	fill_value = const0_rtx;
       else
-	fill_value = emit_store_flag (gen_reg_rtx (word_mode),
-				      LT, lowfrom, const0_rtx,
-				      VOIDmode, 0, -1);
+	fill_value = emit_store_flag_force (gen_reg_rtx (word_mode),
+					    LT, lowfrom, const0_rtx,
+					    lowpart_mode, 0, -1);
 
       /* Fill the remaining words.  */
       for (i = GET_MODE_SIZE (lowpart_mode) / UNITS_PER_WORD; i < nwords; i++)

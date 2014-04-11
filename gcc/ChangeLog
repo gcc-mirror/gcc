@@ -1,3 +1,11 @@
+2014-04-11  Steve Ellcey  <sellcey@mips.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60556
+	* expr.c (convert_move): Use emit_store_flag_force instead of
+	emit_store_flag.  Pass lowpart_mode instead of VOIDmode as 5th
+	argument to it.
+
 2014-04-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60797

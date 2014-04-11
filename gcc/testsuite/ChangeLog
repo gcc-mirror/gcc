@@ -1,3 +1,9 @@
+2014-04-11  Steve Ellcey  <sellcey@mips.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60556
+	* gcc.c-torture/compile/pr60556.c: New test.
+
 2014-04-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60797
