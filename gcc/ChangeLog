@@ -1,5 +1,20 @@
 2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
+	* common/config/epiphany/epiphany-common.c
+	(epiphany_option_optimization_table): Enable section anchors by
+	default at -O1 or higher.
+	* config/epiphany/epiphany.c (TARGET_MAX_ANCHOR_OFFSET): Define.
+	(TARGET_MIN_ANCHOR_OFFSET): Likewise.
+	(epiphany_rtx_costs) <SET>: For binary operators, the set as such
+	carries no extra cost.
+	(epiphany_legitimate_address_p): For BLKmode, apply SImode check.
+	* config/epiphany/epiphany.h (ASM_OUTPUT_DEF): Define.
+	* config/epiphany/predicates.md (memclob_operand): New predicate.
+	* config/epiphany/epiphany.md (stack_adjust_add, stack_adjust_str):
+	Use memclob_operand predicate and X constraint for operand 3.
+
+2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
 	* config/epiphany/epiphany.c (epiphany_rtx_cost): Compare
 	with CC_N_NE / CC_C_LTU / CC_C_GTU carries no extra cost for
 	its operands.

@@ -358,6 +358,11 @@
   (and (match_code "mem")
        (match_test "post_modify_address (XEXP (op, 0), Pmode)")))
 
+; used in the memory clobber of stack_adjust_str, allows addresses with
+; large offsets.
+(define_predicate "memclob_operand"
+  (match_code "mem"))
+
 (define_predicate "nonsymbolic_immediate_operand"
   (ior (match_test "immediate_operand (op, mode)")
        (match_code "const_vector"))) /* Is this specific enough?  */
