@@ -1,3 +1,8 @@
+2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/std/complex (__complex_exp, pow): Specify the template
+	parameter in calls to std::polar, for expression templates.
+
 2014-04-10  Andreas Schwab  <schwab@suse.de>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Remove TLS
