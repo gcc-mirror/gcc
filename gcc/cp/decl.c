@@ -5405,6 +5405,18 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
       return init;
     }
 
+  /* "If T is a class type and the initializer list has a single element of
+     type cv U, where U is T or a class derived from T, the object is
+     initialized from that element."  Even if T is an aggregate.  */
+  if (cxx_dialect >= cxx11 && CLASS_TYPE_P (type)
+      && first_initializer_p
+      && d->end - d->cur == 1
+      && reference_related_p (type, TREE_TYPE (init)))
+    {
+      d->cur++;
+      return init;
+    }
+
   /* [dcl.init.aggr]
 
      All implicit type conversions (clause _conv_) are considered when
