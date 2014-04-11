@@ -1089,28 +1089,6 @@ See S/390 and zSeries Options.
 -fvisibility -fstrict-volatile-bitfields -fsync-libcalls}
 @end table
 
-@menu
-* Overall Options::     Controlling the kind of output:
-                        an executable, object files, assembler files,
-                        or preprocessed source.
-* C Dialect Options::   Controlling the variant of C language compiled.
-* C++ Dialect Options:: Variations on C++.
-* Objective-C and Objective-C++ Dialect Options:: Variations on Objective-C
-                        and Objective-C++.
-* Language Independent Options:: Controlling how diagnostics should be
-                        formatted.
-* Warning Options::     How picky should the compiler be?
-* Debugging Options::   Symbol tables, measurements, and debugging dumps.
-* Optimize Options::    How much optimization?
-* Preprocessor Options:: Controlling header files and macro definitions.
-                         Also, getting dependency information for Make.
-* Assembler Options::   Passing options to the assembler.
-* Link Options::        Specifying libraries and so on.
-* Directory Options::   Where to find header files and libraries.
-                        Where to find the compiler executable files.
-* Spec Files::          How to pass switches to sub-processes.
-* Target Options::      Running a cross-compiler, or an old version of GCC.
-@end menu
 
 @node Overall Options
 @section Options Controlling the Kind of Output

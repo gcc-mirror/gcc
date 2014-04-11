@@ -1,3 +1,12 @@
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/59055
+	* doc/bugreport.texi (Bugs): Remove nodes pointing to the
+	nirvana.
+	* doc/gcc.texi (Service): Update description in the @menu
+	* doc/invoke.texi (Option Summary): Remove misplaced and
+	duplicated @menu.
+
 2014-04-11  Steve Ellcey  <sellcey@mips.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
