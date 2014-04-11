@@ -1,5 +1,11 @@
 2014-04-11  Tobias Burnus  <burnus@net-b.de>
 
+	PR c/60194
+	* * g++.dg/warn/warn_format_signedness.C: New.
+	* gcc.dg/format/warn-signedness.c: New.
+
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/58880
 	PR fortran/60495
 	* gfortran.dg/finalize_25.f90: New.
