@@ -3025,7 +3025,7 @@ struct legacy_reducer_downcast< reducer< op_min_index<Index, Type, Compare, Alig
 #include <limits.h>
 
 /* Wchar_t min/max constants */
-#if defined(_MSC_VER) || defined(ANDROID)
+#if defined(_MSC_VER) || defined(__ANDROID__)
 #   include <wchar.h>
 #else
 #   include <stdint.h>

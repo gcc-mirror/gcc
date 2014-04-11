@@ -90,7 +90,7 @@ COMMON_PORTABLE extern const char *const __cilkrts_assertion_failed;
  * GPL V3 licensed.
  */
 COMMON_PORTABLE void cilkbug_assert_no_uncaught_exception(void);
-#if defined(_WIN32) || defined(ANDROID)
+#if defined(_WIN32) || defined(__ANDROID__)
 #  define CILKBUG_ASSERT_NO_UNCAUGHT_EXCEPTION()
 #else
 #  define CILKBUG_ASSERT_NO_UNCAUGHT_EXCEPTION() \
