@@ -3847,8 +3847,12 @@ cxx_init_decl_processing (void)
     newtype = build_exception_variant (newtype, new_eh_spec);
     deltype = cp_build_type_attribute_variant (void_ftype_ptr, extvisattr);
     deltype = build_exception_variant (deltype, empty_except_spec);
-    DECL_IS_OPERATOR_NEW (push_cp_library_fn (NEW_EXPR, newtype, 0)) = 1;
-    DECL_IS_OPERATOR_NEW (push_cp_library_fn (VEC_NEW_EXPR, newtype, 0)) = 1;
+    tree opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
+    DECL_IS_MALLOC (opnew) = 1;
+    DECL_IS_OPERATOR_NEW (opnew) = 1;
+    opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
+    DECL_IS_MALLOC (opnew) = 1;
+    DECL_IS_OPERATOR_NEW (opnew) = 1;
     global_delete_fndecl = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
     push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 
