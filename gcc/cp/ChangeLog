@@ -1,5 +1,9 @@
 2014-04-11  Jason Merrill  <jason@redhat.com>
 
+	DR 1467
+	PR c++/51747
+	* decl.c (reshape_init_r): Handle a single element of class type.
+
 	DR 1338
 	* decl.c (cxx_init_decl_processing): Set DECL_IS_MALLOC on
 	built-in operator new.
