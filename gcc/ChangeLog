@@ -1,3 +1,16 @@
+2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/60651
+	* mode-switching.c (optimize_mode_switching): Make sure to emit
+	sets of a lower numbered entity before sets of a higher numbered
+	entity to a mode of the same or lower priority.
+	When creating a seginfo for a basic block that starts with a code
+	label, move the insertion point past the code label.
+	(new_seginfo): Document and enforce requirement that
+	NOTE_INSN_BASIC_BLOCK only appears for empty blocks.
+	* doc/tm.texi.in: Document ordering constraint for emitted mode sets.
+	* doc/tm.texi: Regenerate.
+
 2014-01-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR target/60811

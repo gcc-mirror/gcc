@@ -96,12 +96,18 @@ static void make_preds_opaque (basic_block, int);
 
 
 /* This function will allocate a new BBINFO structure, initialized
-   with the MODE, INSN, and basic block BB parameters.  */
+   with the MODE, INSN, and basic block BB parameters.
+   INSN may not be a NOTE_INSN_BASIC_BLOCK, unless it is an empty
+   basic block; that allows us later to insert instructions in a FIFO-like
+   manner.  */
 
 static struct seginfo *
 new_seginfo (int mode, rtx insn, int bb, HARD_REG_SET regs_live)
 {
   struct seginfo *ptr;
+
+  gcc_assert (!NOTE_INSN_BASIC_BLOCK_P (insn)
+	      || insn == BB_END (NOTE_BASIC_BLOCK (insn)));
   ptr = XNEW (struct seginfo);
   ptr->mode = mode;
   ptr->insn_ptr = insn;
@@ -534,7 +540,13 @@ optimize_mode_switching (void)
 		break;
 	    if (e)
 	      {
-		ptr = new_seginfo (no_mode, BB_HEAD (bb), bb->index, live_now);
+		rtx ins_pos = BB_HEAD (bb);
+		if (LABEL_P (ins_pos))
+		  ins_pos = NEXT_INSN (ins_pos);
+		gcc_assert (NOTE_INSN_BASIC_BLOCK_P (ins_pos));
+		if (ins_pos != BB_END (bb))
+		  ins_pos = NEXT_INSN (ins_pos);
+		ptr = new_seginfo (no_mode, ins_pos, bb->index, live_now);
 		add_seginfo (info + bb->index, ptr);
 		bitmap_clear_bit (transp[bb->index], j);
 	      }
@@ -733,7 +745,15 @@ optimize_mode_switching (void)
 		    {
 		      emitted = true;
 		      if (NOTE_INSN_BASIC_BLOCK_P (ptr->insn_ptr))
-			emit_insn_after (mode_set, ptr->insn_ptr);
+			/* We need to emit the insns in a FIFO-like manner,
+			   i.e. the first to be emitted at our insertion
+			   point ends up first in the instruction steam.
+			   Because we made sure that NOTE_INSN_BASIC_BLOCK is
+			   only used for initially empty basic blocks, we
+			   can archive this by appending at the end of
+			   the block.  */
+			emit_insn_after
+			  (mode_set, BB_END (NOTE_BASIC_BLOCK (ptr->insn_ptr)));
 		      else
 			emit_insn_before (mode_set, ptr->insn_ptr);
 		    }
