@@ -1,5 +1,12 @@
 2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR libstdc++/59434
+	* include/bits/stl_iterator.h (move_iterator::reference,
+	move_iterator::operator*): Implement LWG 2106.
+	* testsuite/24_iterators/move_iterator/dr2106.cc: New file.
+
+2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
+
 	* include/std/complex (__complex_exp, pow): Specify the template
 	parameter in calls to std::polar, for expression templates.
 
