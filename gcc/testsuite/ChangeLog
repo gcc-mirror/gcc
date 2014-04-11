@@ -1,3 +1,13 @@
+2014-04-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-nofloat-1.c: Rename to ...
+	* gcc.target/s390/htm-nofloat-compile-1.c: ... this one.
+	* gcc.target/s390/htm-nofloat-2.c: Add check for htm target and
+	rename to ...
+	* gcc.target/s390/htm-nofloat-1.c: ... this one.
+	* gcc.target/s390/s390.exp: Make sure the assembler supports htm
+	instructions as well.
+
 2014-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/60663
