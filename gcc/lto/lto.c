@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "context.h"
 #include "pass_manager.h"
+#include "ipa-inline.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */
@@ -3272,6 +3273,10 @@ do_whole_program_analysis (void)
     lto_max_map ();
   else
     lto_balanced_map ();
+
+  /* Inline summaries are needed for balanced partitioning.  Free them now so
+     the memory can be used for streamer caches.  */
+  inline_free_summary ();
 
   /* AUX pointers are used by partitioning code to bookkeep number of
      partitions symbol is in.  This is no longer needed.  */
