@@ -1,3 +1,9 @@
+2014-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58600
+	* name-lookup.c (parse_using_directive): Return early if the
+	attribs argument is error_mark_node; use get_attribute_name.
+
 2014-04-11  Jason Merrill  <jason@redhat.com>
 
 	DR 1030

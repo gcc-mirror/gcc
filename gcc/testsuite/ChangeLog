@@ -1,3 +1,9 @@
+2014-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58600
+	* g++.dg/cpp0x/gen-attrs-58.C: New.
+	* g++.dg/cpp0x/gen-attrs-59.C: Likewise.
+
 2014-04-11  Steve Ellcey  <sellcey@mips.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
