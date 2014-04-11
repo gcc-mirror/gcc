@@ -1,3 +1,16 @@
+2014-04-11  Jason Merrill  <jason@redhat.com>
+
+	DR 1030
+	PR c++/51253
+	* cp-tree.h (CALL_EXPR_LIST_INIT_P): New.
+	* call.c (struct z_candidate): Add flags field.
+	(add_candidate): Add flags parm.
+	(add_function_candidate, add_conv_candidate, build_builtin_candidate)
+	(add_template_candidate_real): Pass it.
+	(build_over_call): Set CALL_EXPR_LIST_INIT_P.
+	* tree.c (build_aggr_init_expr): Copy it.
+	* semantics.c (simplify_aggr_init_expr): Preevaluate args if it's set.
+
 2014-04-10  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
