@@ -1,3 +1,9 @@
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58880
+	PR fortran/60495
+	* gfortran.dg/finalize_25.f90: New.
+
 2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.target/epiphany/t1068-2.c: New file.
