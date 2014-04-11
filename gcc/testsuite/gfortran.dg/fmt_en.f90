@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR60128 Invalid outputs with EN descriptors
 ! Test case provided by Walt Brainerd.
 program pr60128

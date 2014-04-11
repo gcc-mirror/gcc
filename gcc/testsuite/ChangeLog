@@ -1,3 +1,8 @@
+2014-04-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/fmt_en.f90: Gate test on effective_target
+	fd_truncate.
+
 2014-04-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/htm-nofloat-1.c: Rename to ...
