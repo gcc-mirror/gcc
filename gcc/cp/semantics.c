@@ -3867,6 +3867,7 @@ simplify_aggr_init_expr (tree *tp)
 				    aggr_init_expr_nargs (aggr_init_expr),
 				    AGGR_INIT_EXPR_ARGP (aggr_init_expr));
   TREE_NOTHROW (call_expr) = TREE_NOTHROW (aggr_init_expr);
+  tree ret = call_expr;
 
   if (style == ctor)
     {
@@ -3882,7 +3883,7 @@ simplify_aggr_init_expr (tree *tp)
 	 expand_call{,_inline}.  */
       cxx_mark_addressable (slot);
       CALL_EXPR_RETURN_SLOT_OPT (call_expr) = true;
-      call_expr = build2 (INIT_EXPR, TREE_TYPE (call_expr), slot, call_expr);
+      ret = build2 (INIT_EXPR, TREE_TYPE (ret), slot, ret);
     }
   else if (style == pcc)
     {
@@ -3890,11 +3891,25 @@ simplify_aggr_init_expr (tree *tp)
 	 need to copy the returned value out of the static buffer into the
 	 SLOT.  */
       push_deferring_access_checks (dk_no_check);
-      call_expr = build_aggr_init (slot, call_expr,
-				   DIRECT_BIND | LOOKUP_ONLYCONVERTING,
-                                   tf_warning_or_error);
+      ret = build_aggr_init (slot, ret,
+			     DIRECT_BIND | LOOKUP_ONLYCONVERTING,
+			     tf_warning_or_error);
       pop_deferring_access_checks ();
-      call_expr = build2 (COMPOUND_EXPR, TREE_TYPE (slot), call_expr, slot);
+      ret = build2 (COMPOUND_EXPR, TREE_TYPE (slot), ret, slot);
+    }
+
+  /* DR 1030 says that we need to evaluate the elements of an
+     initializer-list in forward order even when it's used as arguments to
+     a constructor.  So if the target wants to evaluate them in reverse
+     order and there's more than one argument other than 'this', force
+     pre-evaluation.  */
+  if (PUSH_ARGS_REVERSED && CALL_EXPR_LIST_INIT_P (aggr_init_expr)
+      && aggr_init_expr_nargs (aggr_init_expr) > 2)
+    {
+      tree preinit;
+      stabilize_call (call_expr, &preinit);
+      if (preinit)
+	ret = build2 (COMPOUND_EXPR, TREE_TYPE (ret), preinit, ret);
     }
 
   if (AGGR_INIT_ZERO_FIRST (aggr_init_expr))
@@ -3902,11 +3917,10 @@ simplify_aggr_init_expr (tree *tp)
       tree init = build_zero_init (type, NULL_TREE,
 				   /*static_storage_p=*/false);
       init = build2 (INIT_EXPR, void_type_node, slot, init);
-      call_expr = build2 (COMPOUND_EXPR, TREE_TYPE (call_expr),
-			  init, call_expr);
+      ret = build2 (COMPOUND_EXPR, TREE_TYPE (ret), init, ret);
     }
 
-  *tp = call_expr;
+  *tp = ret;
 }
 
 /* Emit all thunks to FN that should be emitted when FN is emitted.  */
