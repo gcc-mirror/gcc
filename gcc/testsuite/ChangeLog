@@ -1,3 +1,8 @@
+2014-04-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-builtins-compile-1.c: Remove htm check.
+	* gcc.target/s390/htm-builtins-compile-2.c: Remove htm check.
+
 2014-04-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60769

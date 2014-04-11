@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target htm } */
 /* { dg-options "-O3 -march=zEC12 -mzarch" } */
 
 void must_not_compile1 (void)
