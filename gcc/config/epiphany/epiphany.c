@@ -763,6 +763,19 @@ epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       *total = COSTS_N_INSNS (1);
       return true;
 
+    case COMPARE:
+      switch (GET_MODE (x))
+	{
+	/* There are a number of single-insn combiner patterns that use
+	   the flag side effects of arithmetic.  */
+	case CC_N_NEmode:
+	case CC_C_LTUmode:
+	case CC_C_GTUmode:
+	  return true;
+	default:
+	  return false;
+	}
+
     default:
       return false;
     }

@@ -1,5 +1,9 @@
 2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
 
+	* gcc.target/epiphany/btst-1.c: New test.
+
+2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
 	PR rtl-optimization/60651
 	* gcc.target/epiphany/mode-switch.c: New test.
 
