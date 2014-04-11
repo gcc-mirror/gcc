@@ -1,3 +1,12 @@
+2014-04-11  Barry Tannenbaum  <barry.m.tannenbaum@intel.com>
+
+	PR other/60644
+	* runtime/os-unix.c: Replaced all occurrances of ANDROID with
+	__ANDROID__.
+	* runtime/bug.h: Likewise.
+	* include/cilk/metaprogramming.h: Likewise.
+	* include/cilk/reducer_min_max.h: Likewise.
+
 2014-03-26  Tobias Burnus  <burnus@net-b.de>
 
 	* libcilkrts.spec.in: New.
