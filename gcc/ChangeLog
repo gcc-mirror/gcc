@@ -1,3 +1,9 @@
+2014-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60797
+	* varasm.c (assemble_alias): Avoid endless error reporting
+	recursion by setting TREE_ASM_WRITTEN.
+
 2014-04-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md: Add a splitter for NOT rtx.
