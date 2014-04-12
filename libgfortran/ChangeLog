@@ -1,8 +1,13 @@
+2014-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/60810
+	io/unit.c (is_trim_ok): If internal unit is array, do not trim.
+
 2014-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/60148
 	* io/transfer.c (data_transfer_init): If std= was specified, set
-	delim status to DELIM_NONE of no other was specified.
+	delim status to DELIM_NONE if no other was specified.
 
 2014-03-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
