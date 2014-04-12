@@ -1,3 +1,8 @@
+2014-04-12  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/60469
+	* c-c++-common/cilk-plus/CK/pr60469.c: New test.
+
 2014-04-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/umips-store16-1.c: New test.
