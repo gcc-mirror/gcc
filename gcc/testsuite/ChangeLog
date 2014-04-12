@@ -1,3 +1,7 @@
+2014-04-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/umips-store16-1.c: New test.
+
 2014-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR c/60194

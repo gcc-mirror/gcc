@@ -1,3 +1,14 @@
+2014-04-12  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/constraints.md: Add new register constraint "kb".
+	* config/mips/mips.md (*mov<mode>_internal): Use constraint "kb".
+	(*movhi_internal): Likewise.
+	(*movqi_internal): Likewise.
+	* config/mips/mips.h (M16_STORE_REGS): New register class.
+	(REG_CLASS_NAMES): Add M16_STORE_REGS.
+	(REG_CLASS_CONTENTS): Likewise.
+	* config/mips/mips.c (mips_regno_to_class): Add M16_STORE_REGS.
+
 2014-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR c/60194
