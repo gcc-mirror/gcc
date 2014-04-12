@@ -1,3 +1,9 @@
+2014-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	Backport from mainline
+	PR libfortran/60810
+	io/unit.c (is_trim_ok): If internal unit is array, do not trim.
+
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline

@@ -1,3 +1,9 @@
+2014-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	Backport from mainline
+	PR libfortran/60810
+	gfortran.dg/arrayio_13.f90: New test.
+
 2014-04-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/fmt_en.f90: Gate test on effective_target

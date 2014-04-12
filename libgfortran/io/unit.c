@@ -383,9 +383,7 @@ static bool
 is_trim_ok (st_parameter_dt *dtp)
 {
   /* Check rank and stride.  */
-  if (dtp->internal_unit_desc
-      && (GFC_DESCRIPTOR_RANK (dtp->internal_unit_desc) > 1
-	  || GFC_DESCRIPTOR_STRIDE(dtp->internal_unit_desc, 0) != 1))
+  if (dtp->internal_unit_desc)
     return false;
   /* Format strings can not have 'BZ' or '/'.  */
   if (dtp->common.flags & IOPARM_DT_HAS_FORMAT)
