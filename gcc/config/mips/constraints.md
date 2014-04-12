@@ -92,6 +92,9 @@
 ;; but the DSP version allows any accumulator target.
 (define_register_constraint "ka" "ISA_HAS_DSP_MULT ? ACC_REGS : MD_REGS")
 
+(define_register_constraint "kb" "M16_STORE_REGS"
+  "@internal")
+
 (define_constraint "kf"
   "@internal"
   (match_operand 0 "force_to_mem_operand"))
