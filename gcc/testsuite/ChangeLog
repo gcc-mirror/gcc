@@ -1,5 +1,11 @@
 2014-04-12  Igor Zamyatin  <igor.zamyatin@intel.com>
 
+	PR middle-end/60467
+	* c-c++-common/cilk-plus/CK/invalid_spawns.c: Add new invalid
+	case to check.
+
+2014-04-12  Igor Zamyatin  <igor.zamyatin@intel.com>
+
 	PR middle-end/60469
 	* c-c++-common/cilk-plus/CK/pr60469.c: New test.
 
