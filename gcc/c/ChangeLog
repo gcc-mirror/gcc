@@ -1,3 +1,13 @@
+2014-04-12  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/60469
+	* c-array-notation.c (fix_builtin_array_notation_fn): Use
+	create_tmp_var instead build_decl for creating temps.
+	(build_array_notation_expr): Likewise.
+	(fix_conditional_array_notations_1): Likewise.
+	(fix_array_notation_expr): Likewise.
+	(fix_array_notation_call_expr): Likewise.
+
 2014-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60689
