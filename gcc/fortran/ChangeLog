@@ -1,3 +1,15 @@
+2014-04-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58085
+	PR fortran/60717
+	* trans.h: Add 'use_offset' bitfield to gfc_se.
+	* trans-array.c (gfc_conv_expr_descriptor): Use 'use_offset'
+	as a trigger to unconditionally recalculate the offset for
+	array slices and constant arrays.
+	trans-expr.c (gfc_conv_intrinsic_to_class): Use it.
+	trans-stmt.c (trans_associate_var): Ditto.
+	(gfc_conv_procedure_call): Ditto.
+
 2014-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58880

@@ -593,6 +593,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
       else
 	{
 	  parmse->ss = ss;
+	  parmse->use_offset = 1;
 	  gfc_conv_expr_descriptor (parmse, e);
 	  gfc_add_modify (&parmse->pre, ctree, parmse->expr);
 	}
@@ -4378,6 +4379,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			|| CLASS_DATA (fsym)->attr.codimension))
 	    {
 	      /* Pass a class array.  */
+	      parmse.use_offset = 1;
 	      gfc_conv_expr_descriptor (&parmse, e);
 
 	      /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is
