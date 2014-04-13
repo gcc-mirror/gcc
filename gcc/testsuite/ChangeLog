@@ -1,3 +1,11 @@
+2014-04-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/60717
+	* gfortran.dg/unlimited_polymorphic_17.f90: New test.
+
+	PR fortran/58085
+	* gfortran.dg/associate_15.f90: New test.
+
 2014-04-12  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/60467

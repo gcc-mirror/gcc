@@ -6807,8 +6807,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
       /* Set offset for assignments to pointer only to zero if it is not
          the full array.  */
-      if (se->direct_byref
-	  && info->ref && info->ref->u.ar.type != AR_FULL)
+      if ((se->direct_byref || se->use_offset)
+	  && ((info->ref && info->ref->u.ar.type != AR_FULL)
+	      || (expr->expr_type == EXPR_ARRAY && se->use_offset)))
 	base = gfc_index_zero_node;
       else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
 	base = gfc_evaluate_now (gfc_conv_array_offset (desc), &loop.pre);
@@ -6893,13 +6894,13 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 				    stride, info->stride[n]);
 
 	  if (se->direct_byref
-	      && info->ref
-	      && info->ref->u.ar.type != AR_FULL)
+	      && ((info->ref && info->ref->u.ar.type != AR_FULL)
+		  || (expr->expr_type == EXPR_ARRAY && se->use_offset)))
 	    {
 	      base = fold_build2_loc (input_location, MINUS_EXPR,
 				      TREE_TYPE (base), base, stride);
 	    }
-	  else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+	  else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)) || se->use_offset)
 	    {
 	      tmp = gfc_conv_array_lbound (desc, n);
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -6935,8 +6936,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	gfc_get_dataptr_offset (&loop.pre, parm, desc, offset,
 				subref_array_target, expr);
 
-      if ((se->direct_byref || GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
-	  && !se->data_not_needed)
+      if (((se->direct_byref || GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+	   && !se->data_not_needed)
+	  || (se->use_offset && base != NULL_TREE))
 	{
 	  /* Set the offset.  */
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm, base);
