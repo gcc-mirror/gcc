@@ -4417,7 +4417,7 @@ Syntax:
 @smallexample @c ada
 pragma Loop_Optimize (OPTIMIZATION_HINT @{, OPTIMIZATION_HINT@});
 
-OPTIMIZATION_HINT ::= No_Unroll | Unroll | No_Vector | Vector
+OPTIMIZATION_HINT ::= Ivdep | No_Unroll | Unroll | No_Vector | Vector
 @end smallexample
 
 @noindent
@@ -4426,8 +4426,13 @@ programmer to specify optimization hints for the enclosing loop.  The hints
 are not mutually exclusive and can be freely mixed, but not all combinations
 will yield a sensible outcome.
 
-There are four supported optimization hints for a loop:
+There are five supported optimization hints for a loop:
+
 @itemize @bullet
+@item Ivdep
+
+The programmer asserts that there are no loop-carried dependencies which would prevent consecutive iterations of the loop from being executed simultaneously.
+
 @item No_Unroll
 
 The loop must not be unrolled.  This is a strong hint: the compiler will not

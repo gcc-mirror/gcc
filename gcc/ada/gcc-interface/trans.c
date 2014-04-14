@@ -1268,10 +1268,14 @@ Pragma_to_gnu (Node_Id gnat_node)
 	   Present (gnat_temp);
 	   gnat_temp = Next (gnat_temp))
 	{
-	  tree gnu_loop_stmt = gnu_loop_stack ->last ()->stmt;
+	  tree gnu_loop_stmt = gnu_loop_stack->last ()->stmt;
 
 	  switch (Chars (Expression (gnat_temp)))
 	    {
+	    case Name_Ivdep:
+	      LOOP_STMT_IVDEP (gnu_loop_stmt) = 1;
+	      break;
+
 	    case Name_No_Unroll:
 	      LOOP_STMT_NO_UNROLL (gnu_loop_stmt) = 1;
 	      break;
@@ -7747,13 +7751,20 @@ gnat_gimplify_stmt (tree *stmt_p)
 	tree gnu_cond = LOOP_STMT_COND (stmt);
 	tree gnu_update = LOOP_STMT_UPDATE (stmt);
 	tree gnu_end_label = LOOP_STMT_LABEL (stmt);
-	tree t;
 
 	/* Build the condition expression from the test, if any.  */
 	if (gnu_cond)
-	  gnu_cond
-	    = build3 (COND_EXPR, void_type_node, gnu_cond, alloc_stmt_list (),
-		      build1 (GOTO_EXPR, void_type_node, gnu_end_label));
+	  {
+	    /* Deal with the optimization hints.  */
+	    if (LOOP_STMT_IVDEP (stmt))
+	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
+				 build_int_cst (integer_type_node,
+						annot_expr_ivdep_kind));
+
+	    gnu_cond
+	      = build3 (COND_EXPR, void_type_node, gnu_cond, NULL_TREE,
+			build1 (GOTO_EXPR, void_type_node, gnu_end_label));
+	  }
 
 	/* Set to emit the statements of the loop.  */
 	*stmt_p = NULL_TREE;
@@ -7782,7 +7793,7 @@ gnat_gimplify_stmt (tree *stmt_p)
         if (gnu_update && !LOOP_STMT_TOP_UPDATE_P (stmt))
 	  append_to_statement_list (gnu_update, stmt_p);
 
-	t = build1 (GOTO_EXPR, void_type_node, gnu_start_label);
+	tree t = build1 (GOTO_EXPR, void_type_node, gnu_start_label);
 	SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (gnu_end_label));
 	append_to_statement_list (t, stmt_p);
 

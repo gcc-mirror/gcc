@@ -1,4 +1,19 @@
 2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* snames.ads-tmpl (Name_Ivdep): New pragma-related name.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Loop_Optimize>: Add support
+	for Ivdep hint.
+	* gnat_rm.texi (Implementation Defined Pragmas): Document new Ivdep
+	hint for Loop_Optimize.
+	* gnat_ugn.texi (Vectorization of loops): Mention new Ivdep hint.
+	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Loop_Optimize>: Deal
+	with new Ivdep hint.
+	* gcc-interface/ada-tree.h (LOOP_STMT_IVDEP): New macro.
+	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Loop_Optimize>: Deal
+	with new Ivdep hint.
+	(gnat_gimplify_stmt) <LOOP_STMT>: Propagate the loop hints.
+
+2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
             Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads (Suppress_Back_Annotation): Remove as unused.

@@ -1,3 +1,7 @@
+2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect11.ad[sb]: New test.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/tree-ssa/forwprop-switch.C: New testcase.
