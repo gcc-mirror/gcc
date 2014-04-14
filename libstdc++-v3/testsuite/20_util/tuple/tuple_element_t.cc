@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++14" }
 // { dg-do compile }
 
-// Copyright (C) 2007-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,8 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Tuple
-
 #include <tuple>
 
 using namespace std;
@@ -31,8 +29,8 @@ int
 main()
 {
   // As foo isn't constructible from anything else, this
-  // lets us check if type is returning foo when it should
+  // lets us check if the alias is returning foo when it should
   foo q1;
-  tuple_element<0,tuple<foo,void,int> >::type q2(q1);
-  tuple_element<2,tuple<void,int,foo> >::type q3(q1);
+  tuple_element_t<0,tuple<foo,void,int> > q2(q1);
+  tuple_element_t<2,tuple<void,int,foo> > q3(q1);
 }

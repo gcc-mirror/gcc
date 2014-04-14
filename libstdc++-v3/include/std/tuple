@@ -710,6 +710,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       add_cv<typename tuple_element<__i, _Tp>::type>::type type;
     };
 
+#if __cplusplus > 201103L
+  template<std::size_t __i, typename _Tp>
+    using tuple_element_t = typename tuple_element<__i, _Tp>::type;
+#endif
+
   /// Finds the size of a given tuple type.
   template<typename _Tp>
     struct tuple_size;
