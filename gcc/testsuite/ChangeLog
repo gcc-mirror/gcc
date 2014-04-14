@@ -1,3 +1,7 @@
+2014-01-20  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/sh/memset.c: New test.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55022
