@@ -1,5 +1,9 @@
 2014-04-14  Richard Biener  <rguenther@suse.de>
 
+	* passes.def: Move early points-to after early SRA.
+
+2014-04-14  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-forwprop.c (simplify_gimple_switch): Enhance
 	check for which sign-changes we allow when forwarding
 	a converted value into a switch.
