@@ -1,5 +1,9 @@
 2014-04-14  Christian Bruel  <christian.bruel@st.com>
 
+        * config/sh/sh-mem.cc (sh_expand_strlen): Unroll last word.
+
+2014-04-14  Christian Bruel  <christian.bruel@st.com>
+
 	* config/sh/sh.md (setmemqi): New expand pattern.
 	* config/sh/sh.h (CLEAR_RATIO): Define.
 	* config/sh/sh-mem.cc (sh_expand_setmem): Define.
