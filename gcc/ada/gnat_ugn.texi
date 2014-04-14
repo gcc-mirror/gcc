@@ -10780,6 +10780,38 @@ preferably to other optimizations by means of pragma @code{Loop_Optimize}:
 placed immediately within the loop will convey the appropriate hint to the
 compiler for this loop.
 
+It is also possible to help the compiler generate better vectorized code
+for a given loop by asserting that there are no loop-carried dependencies
+in the loop.  Consider for example the procedure:
+
+@smallexample @c ada
+  type Arr is array (1 .. 4) of Long_Float;
+
+  procedure Add (X, Y : not null access Arr; R : not null access Arr) is
+  begin
+    for I in Arr'Range loop
+      R(I) := X(I) + Y(I);
+    end loop;
+  end;
+@end smallexample
+
+@noindent
+By default, the compiler cannot unconditionally vectorize the loop because
+assigning to a component of the array designated by R in one iteration could
+change the value read from the components of the arrays designated by X or Y
+in a later iteration.  As a result, the compiler will generate two versions
+of the loop in the object code, one vectorized and the other not vectorized,
+as well as a test to select the appropriate version at run time.  This can
+be overcome by another hint:
+
+@smallexample @c ada
+  pragma Loop_Optimize (Ivdep);
+@end smallexample
+
+@noindent
+placed immediately within the loop will tell the compiler that it can safely
+omit the non-vectorized version of the loop as well as the run-time test.
+
 @node Other Optimization Switches
 @subsection Other Optimization Switches
 @cindex Optimization Switches
