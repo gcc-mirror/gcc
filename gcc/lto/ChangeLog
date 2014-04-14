@@ -1,3 +1,8 @@
+2014-04-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto/lto-symtab.c (lto_cgraph_replace_node): Don't re-merge
+	tp_first_run.
+
 2014-03-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c: Include ipa-inline.h

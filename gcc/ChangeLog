@@ -1,3 +1,9 @@
+2014-04-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.c (ipa_merge_profiles): Merge profile_id.
+	* coverage.c (coverage_compute_profile_id): Handle externally visible
+	symbols.
+
 2014-04-14  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (ipa_sra_preliminary_function_checks): Skip
