@@ -1162,7 +1162,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (c_is_int
       && ((n >= -1 && n <= 2)
 	  || (flag_unsafe_math_optimizations
-	      && optimize_insn_for_speed_p ()
+	      && optimize_bb_for_speed_p (gsi_bb (*gsi))
 	      && powi_cost (n) <= POWI_MAX_MULTS)))
     return gimple_expand_builtin_powi (gsi, loc, arg0, n);
 
