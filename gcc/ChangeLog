@@ -1,3 +1,8 @@
+2014-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Skip
+	DECL_DISREGARD_INLINE_LIMITS functions.
+
 2014-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60827

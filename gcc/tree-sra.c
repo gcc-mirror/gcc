@@ -4960,6 +4960,14 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
   if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
     return false;
 
+  if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Always inline function will be inlined "
+		 "anyway. \n");
+      return false;
+    }
+
   return true;
 }
 
