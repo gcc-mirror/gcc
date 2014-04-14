@@ -1,3 +1,14 @@
+2014-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (examine_argument): Return bool.  Return true if
+	parameter should be passed in memory.
+	<case X86_64_COMPLEX_X87_CLASS>: Adjust.
+	(construct_container): Update calls to examine_argument.
+	(function_arg_advance_64): Ditto.
+	(return_in_memory_32): Merge with ix86_return_in_memory.
+	(return_in_memory_64): Ditto.
+	(return_in_memory_ms_64): Ditto.
+
 2014-04-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.c (ipa_merge_profiles): Merge profile_id.
@@ -12,8 +23,7 @@
 2014-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60827
-	* config/i386/i386.md (*fixuns_trunc<mode>_1): Revert the last
-	change.
+	* config/i386/i386.md (*fixuns_trunc<mode>_1): Revert the last change.
 
 2014-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -181,8 +191,7 @@
 2014-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/59055
-	* doc/bugreport.texi (Bugs): Remove nodes pointing to the
-	nirvana.
+	* doc/bugreport.texi (Bugs): Remove nodes pointing to the nirvana.
 	* doc/gcc.texi (Service): Update description in the @menu
 	* doc/invoke.texi (Option Summary): Remove misplaced and
 	duplicated @menu.
@@ -208,15 +217,14 @@
 2014-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/60663
-	* cse.c (cse_insn): Set src_volatile on ASM_OPERANDS in
-	PARALLEL.
+	* cse.c (cse_insn): Set src_volatile on ASM_OPERANDS in PARALLEL.
 
 2014-04-10  Jan Hubicka  <hubicka@ucw.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/60567
-	* ipa.c (function_and_variable_visibility): Copy forced_by_abi flag from
-	decl_node to node.
+	* ipa.c (function_and_variable_visibility): Copy forced_by_abi
+	flag from decl_node to node.
 
 2014-04-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -334,9 +342,10 @@
 
 2014-04-05  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
 
-	* config/avr/avr-arch.h (avr_mcu_t): Add dev_attribute field to have device
-	specific ISA/ feature information. Remove short_sp and errata_skip ds.
-	Add avr_device_specific_features enum to have device specific info.
+	* config/avr/avr-arch.h (avr_mcu_t): Add dev_attribute field to have
+	device specific ISA/ feature information. Remove short_sp and
+	errata_skip ds.  Add avr_device_specific_features enum to have device
+	specific info.
 	* config/avr/avr-c.c (avr_cpu_cpp_builtins): use dev_attribute to check
 	errata_skip. Add __AVR_ISA_RMW__ builtin macro if RMW ISA available.
 	* config/avr/avr-devices.c (avr_mcu_types): Update AVR_MCU macro for
@@ -456,8 +465,8 @@
 
 	PR tree-optimization/60505
 	* tree-vectorizer.h (struct _stmt_vec_info): Add th field as the
-	threshold of number of iterations below which no vectorization will be
-	done.
+	threshold of number of iterations below which no vectorization
+	will be done.
 	* tree-vect-loop.c (new_loop_vec_info):
 	Initialize LOOP_VINFO_COST_MODEL_THRESHOLD.
 	* tree-vect-loop.c (vect_analyze_loop_operations):
@@ -469,8 +478,7 @@
 
 2014-04-03  Richard Biener  <rguenther@suse.de>
 
-	* tree-streamer.h (struct streamer_tree_cache_d): Add next_idx
-	member.
+	* tree-streamer.h (struct streamer_tree_cache_d): Add next_idx member.
 	(streamer_tree_cache_create): Adjust.
 	* tree-streamer.c (streamer_tree_cache_add_to_node_array): Adjust
 	to allow optional nodes array.
@@ -481,8 +489,7 @@
 	* lto-streamer-out.c (create_output_block): Avoid maintaining
 	the node array in the writer cache.
 	(DFS_write_tree): Remove assertion.
-	(produce_asm_for_decls): Free the out decl state hash table
-	early.
+	(produce_asm_for_decls): Free the out decl state hash table early.
 	* lto-streamer-in.c (lto_data_in_create): Adjust for
 	streamer_tree_cache_create prototype change.
 
@@ -536,8 +543,8 @@
 2014-04-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60659
-	* ipa-devirt.c (get_polymorphic_call_info): Do not ICE on type inconsistent
-	code and instead mark the context inconsistent.
+	* ipa-devirt.c (get_polymorphic_call_info): Do not ICE on type
+	inconsistent code and instead mark the context inconsistent.
 	(possible_polymorphic_call_targets): For inconsistent contexts
 	return empty complete list.
 
@@ -641,8 +648,7 @@
 
 2014-04-01  Richard Biener  <rguenther@suse.de>
 
-	* gimple.h (struct gimple_statement_base): Align subcode to
-	16 bits.
+	* gimple.h (struct gimple_statement_base): Align subcode to 16 bits.
 
 2014-04-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
