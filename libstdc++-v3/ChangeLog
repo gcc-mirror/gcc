@@ -1,3 +1,11 @@
+2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,
+	_Vector_base::_M_allocate): NullablePointer requirements do not
+	include initialization from literal zero, use value-initialization.
+	* include/bits/vector.tcc (vector::_M_insert_aux,
+	vector::_M_explace_back_aux): Likewise for assignment.
+
 2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/59434

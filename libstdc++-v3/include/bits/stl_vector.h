@@ -84,17 +84,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	pointer _M_end_of_storage;
 
 	_Vector_impl()
-	: _Tp_alloc_type(), _M_start(0), _M_finish(0), _M_end_of_storage(0)
+	: _Tp_alloc_type(), _M_start(), _M_finish(), _M_end_of_storage()
 	{ }
 
 	_Vector_impl(_Tp_alloc_type const& __a) _GLIBCXX_NOEXCEPT
-	: _Tp_alloc_type(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
+	: _Tp_alloc_type(__a), _M_start(), _M_finish(), _M_end_of_storage()
 	{ }
 
 #if __cplusplus >= 201103L
 	_Vector_impl(_Tp_alloc_type&& __a) noexcept
 	: _Tp_alloc_type(std::move(__a)),
-	  _M_start(0), _M_finish(0), _M_end_of_storage(0)
+	  _M_start(), _M_finish(), _M_end_of_storage()
 	{ }
 #endif
 
@@ -167,7 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_allocate(size_t __n)
       {
 	typedef __gnu_cxx::__alloc_traits<_Tp_alloc_type> _Tr;
-	return __n != 0 ? _Tr::allocate(_M_impl, __n) : 0;
+	return __n != 0 ? _Tr::allocate(_M_impl, __n) : pointer();
       }
 
       void

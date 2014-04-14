@@ -362,7 +362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
 	                               __x);
 #endif
-	      __new_finish = 0;
+	      __new_finish = pointer();
 
 	      __new_finish
 		= std::__uninitialized_move_if_noexcept_a
@@ -412,7 +412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  {
 	    _Alloc_traits::construct(this->_M_impl, __new_start + size(),
 				     std::forward<_Args>(__args)...);
-	    __new_finish = 0;
+	    __new_finish = pointer();
 
 	    __new_finish
 	      = std::__uninitialized_move_if_noexcept_a
@@ -493,7 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  std::__uninitialized_fill_n_a(__new_start + __elems_before,
 						__n, __x,
 						_M_get_Tp_allocator());
-		  __new_finish = 0;
+		  __new_finish = pointer();
 
 		  __new_finish
 		    = std::__uninitialized_move_if_noexcept_a
