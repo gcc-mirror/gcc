@@ -6,6 +6,9 @@
 	* include/bits/vector.tcc (vector::_M_insert_aux,
 	vector::_M_explace_back_aux): Likewise for assignment.
 
+	* include/bits/allocator.h (operator==, operator!=): Add exception
+	specifications.
+
 2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/59434
