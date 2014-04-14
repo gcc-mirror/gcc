@@ -1,3 +1,8 @@
+2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (place_field): Finalize non-constant offset for the
+	field, if any.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-switch-conversion.c (lshift_cheap_p): Get speed_p
