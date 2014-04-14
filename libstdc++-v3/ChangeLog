@@ -13,6 +13,11 @@
 	* include/std/tuple (get): Qualify calls to prevent ADL.
 	* testsuite/20_util/tuple/60497.cc: New.
 
+	* include/std/tuple (tuple_element_t): Define.
+	* testsuite/20_util/tuple/tuple_element.cc: Change to compile-only
+	test.
+	* testsuite/20_util/tuple/tuple_element_t.cc: New.
+
 2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/59434
