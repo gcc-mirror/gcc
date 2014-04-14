@@ -611,7 +611,12 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 		   bool *completep)
 {
   struct cgraph_node *target_node;
-  enum built_in_function fcode;
+
+  /* cxa_pure_virtual and __builtin_unreachable do not need to be added into
+     list of targets; the runtime effect of calling them is undefined.
+     Only "real" virtual methods should be accounted.  */
+  if (target && TREE_CODE (TREE_TYPE (target)) != METHOD_TYPE)
+    return;
 
   if (!can_refer)
     {
@@ -619,22 +624,19 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	 is when we completely optimized it out.  */
       if (flag_ltrans
 	  || !target 
-          || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
+	  || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
 	*completep = false;
       return;
     }
 
-  if (!target
-      /* Those are used to mark impossible scenarios.  */
-      || (fcode = DECL_FUNCTION_CODE (target))
-	  == BUILT_IN_UNREACHABLE
-      || fcode == BUILT_IN_TRAP)
+  if (!target)
     return;
 
   target_node = cgraph_get_node (target);
 
   if (target_node != NULL
-      && (TREE_PUBLIC (target)
+      && ((TREE_PUBLIC (target)
+	   || DECL_EXTERNAL (target))
 	  || target_node->definition)
       && symtab_real_symbol_p (target_node))
     {
