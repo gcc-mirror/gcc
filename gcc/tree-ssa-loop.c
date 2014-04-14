@@ -157,7 +157,7 @@ tree_loop_vectorize (void)
 static bool
 gate_tree_loop_vectorize (void)
 {
-  return flag_tree_loop_vectorize || cfun->has_force_vect_loops;
+  return flag_tree_loop_vectorize || cfun->has_force_vectorize_loops;
 }
 
 namespace {

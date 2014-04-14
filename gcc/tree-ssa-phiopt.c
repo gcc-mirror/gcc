@@ -350,7 +350,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
   if (!do_store_elim)
     replace_conditional_negation
       = ((!optimize_size && optimize >= 2)
-	 || (((flag_tree_loop_vectorize || cfun->has_force_vect_loops)
+	 || (((flag_tree_loop_vectorize || cfun->has_force_vectorize_loops)
 	      && flag_tree_loop_if_convert != 0)
 	     || flag_tree_loop_if_convert == 1
 	     || flag_tree_loop_if_convert_stores == 1));

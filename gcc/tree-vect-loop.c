@@ -2986,7 +2986,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* vector version will never be profitable.  */
   else
     {
-      if (LOOP_VINFO_LOOP (loop_vinfo)->force_vect)
+      if (LOOP_VINFO_LOOP (loop_vinfo)->force_vectorize)
 	warning_at (vect_location, OPT_Wopenmp_simd, "vectorization "
 		    "did not happen for a simd loop");
 

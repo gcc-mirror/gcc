@@ -2354,10 +2354,10 @@ copy_loops (copy_body_data *id,
 	      dest_loop->simduid = remap_decl (src_loop->simduid, id);
 	      cfun->has_simduid_loops = true;
 	    }
-	  if (src_loop->force_vect)
+	  if (src_loop->force_vectorize)
 	    {
-	      dest_loop->force_vect = true;
-	      cfun->has_force_vect_loops = true;
+	      dest_loop->force_vectorize = true;
+	      cfun->has_force_vectorize_loops = true;
 	    }
 	  dest_loop->safelen = src_loop->safelen;
 
