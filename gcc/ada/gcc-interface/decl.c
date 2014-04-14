@@ -8443,7 +8443,8 @@ create_field_decl_from (tree old_field, tree field_type, tree record_type,
   if (!new_pos)
     {
       normalize_offset (&pos, &bitpos, offset_align);
-      DECL_FIELD_OFFSET (new_field) = pos;
+      /* Finalize the position.  */
+      DECL_FIELD_OFFSET (new_field) = variable_size (pos);
       DECL_FIELD_BIT_OFFSET (new_field) = bitpos;
       SET_DECL_OFFSET_ALIGN (new_field, offset_align);
       DECL_SIZE (new_field) = size;

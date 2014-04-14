@@ -1,3 +1,8 @@
+2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (create_field_decl_from): Finalize non-constant
+	offset for the field, if any.
+
 2014-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 	    Svante Signell <svante.signell@gmail.com>
 
