@@ -10230,9 +10230,7 @@ is_cxx_auto (tree type)
 {
   if (is_cxx ())
     {
-      tree name = TYPE_NAME (type);
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
+      tree name = TYPE_IDENTIFIER (type);
       if (name == get_identifier ("auto")
 	  || name == get_identifier ("decltype(auto)"))
 	return true;
@@ -10509,10 +10507,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   /* This probably indicates a bug.  */
   else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
     {
-      name = TYPE_NAME (type);
-      if (name
-	  && TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
+      name = TYPE_IDENTIFIER (type);
       add_name_attribute (mod_type_die,
 			  name ? IDENTIFIER_POINTER (name) : "__unknown__");
     }
@@ -19856,10 +19851,9 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
         dw_die_ref type_die = lookup_type_die (type);
         if (type_die == NULL)
           {
-	    tree name = TYPE_NAME (type);
-	    if (TREE_CODE (name) == TYPE_DECL)
-	      name = DECL_NAME (name);
-            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die (), type);
+	    tree name = TYPE_IDENTIFIER (type);
+            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die (),
+				type);
             add_name_attribute (type_die, IDENTIFIER_POINTER (name));
             equate_type_number_to_die (type, type_die);
           }
@@ -19869,9 +19863,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     default:
       if (is_cxx_auto (type))
 	{
-	  tree name = TYPE_NAME (type);
-	  if (TREE_CODE (name) == TYPE_DECL)
-	    name = DECL_NAME (name);
+	  tree name = TYPE_IDENTIFIER (type);
 	  dw_die_ref *die = (name == get_identifier ("auto")
 			     ? &auto_die : &decltype_auto_die);
 	  if (!*die)

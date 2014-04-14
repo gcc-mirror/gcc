@@ -1,3 +1,12 @@
+2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* tree.h (TYPE_IDENTIFIER): Declare.
+	* tree.c (subrange_type_for_debug_p): Use it.
+	* godump.c (go_format_type): Likewise.
+	* dwarf2out.c (is_cxx_auto, modified_type_die,
+	gen_type_die_with_usage, gen_type_die_with_usage): Likewise.
+	* dbxout.c (dbxout_type, dbxout_symbol): Likewise.
+
 2014-04-14  Jan Hubicka   <hubicka@ucw.cz>
 
 	PR lto/60820

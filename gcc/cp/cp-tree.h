@@ -1252,7 +1252,6 @@ extern bool statement_code_p[MAX_TREE_CODES];
 enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Macros to make error reporting functions' lives easier.  */
-#define TYPE_IDENTIFIER(NODE) (DECL_NAME (TYPE_NAME (NODE)))
 #define TYPE_LINKAGE_IDENTIFIER(NODE) \
   (TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (NODE)))
 #define TYPE_NAME_STRING(NODE) (IDENTIFIER_POINTER (TYPE_IDENTIFIER (NODE)))

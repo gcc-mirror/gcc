@@ -1,3 +1,10 @@
+2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity, components_to_record):
+	Use TYPE_IDENTIFIER.
+	* gcc-interface/utils.c (make_aligning_type, maybe_pad_type,
+	finish_record_type, rest_of_record_type_compilation): Likewise.
+
 2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* snames.ads-tmpl (Name_Ivdep): New pragma-related name.
