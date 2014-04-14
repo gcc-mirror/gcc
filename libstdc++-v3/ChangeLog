@@ -9,6 +9,10 @@
 	* include/bits/allocator.h (operator==, operator!=): Add exception
 	specifications.
 
+	PR libstdc++/60497
+	* include/std/tuple (get): Qualify calls to prevent ADL.
+	* testsuite/20_util/tuple/60497.cc: New.
+
 2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/59434
