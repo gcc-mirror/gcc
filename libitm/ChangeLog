@@ -1,3 +1,8 @@
+2014-04-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* acinclude.m4: Move s390* case from RTM to HTM check.
+	* configure: Regenerate.
+
 2014-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/generic/asmcfi.h: Also check for
