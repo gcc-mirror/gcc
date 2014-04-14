@@ -12089,6 +12089,20 @@ label:
    FAIL;
 })
 
+(define_expand "setmemqi"
+  [(parallel [(set (match_operand:BLK 0 "memory_operand")
+                   (match_operand 2 "const_int_operand"))
+              (use (match_operand:QI 1 "const_int_operand"))
+              (use (match_operand:QI 3 "const_int_operand"))])]
+  "TARGET_SH1 && optimize"
+  {
+    if (optimize_insn_for_size_p ())
+       FAIL;
+
+    sh_expand_setmem (operands);
+    DONE;
+  })
+
 
 ;; -------------------------------------------------------------------------
 ;; Floating point instructions.
