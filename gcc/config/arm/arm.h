@@ -937,13 +937,13 @@ extern int arm_arch_crc;
 
 #ifndef ARM_TARGET2_DWARF_FORMAT
 #define ARM_TARGET2_DWARF_FORMAT DW_EH_PE_pcrel
+#endif
 
 /* ttype entries (the only interesting data references used)
    use TARGET2 relocations.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(code, data) \
   (((code) == 0 && (data) == 1 && ARM_UNWIND_INFO) ? ARM_TARGET2_DWARF_FORMAT \
 			       : DW_EH_PE_absptr)
-#endif
 
 /* The native (Norcroft) Pascal compiler for the ARM passes the static chain
    as an invisible last argument (possible since varargs don't exist in
@@ -2194,14 +2194,9 @@ extern int making_const_table;
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) /* Empty.  */
 
-/* Make sure subsequent insns are aligned after a TBB.  */
-#define ASM_OUTPUT_CASE_END(FILE, NUM, JUMPTABLE)	\
-  do							\
-    {							\
-      if (GET_MODE (PATTERN (JUMPTABLE)) == QImode)	\
-	ASM_OUTPUT_ALIGN (FILE, 1);			\
-    }							\
-  while (0)
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL)                \
+   (GET_CODE (PATTERN (prev_active_insn (LABEL))) == ADDR_DIFF_VEC \
+   ? 1 : 0)
 
 #define ARM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL) 	\
   do							\

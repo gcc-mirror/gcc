@@ -5665,6 +5665,7 @@ assemble_alias (tree decl, tree target)
 # if !defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL)
       error_at (DECL_SOURCE_LOCATION (decl),
 		"alias definitions not supported in this configuration");
+      TREE_ASM_WRITTEN (decl) = 1;
       return;
 # else
       if (!DECL_WEAK (decl))
@@ -5675,6 +5676,7 @@ assemble_alias (tree decl, tree target)
 	  else
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "only weak aliases are supported in this configuration");
+	  TREE_ASM_WRITTEN (decl) = 1;
 	  return;
 	}
 # endif

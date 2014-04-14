@@ -1,3 +1,8 @@
+2014-04-11  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/60810
+	io/unit.c (is_trim_ok): If internal unit is array, do not trim.
+
 2014-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/60148

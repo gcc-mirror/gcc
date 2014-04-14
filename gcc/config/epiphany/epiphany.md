@@ -2380,7 +2380,7 @@
 	(plus:SI (reg:SI GPR_SP) (match_operand:SI 0 "arith_operand" "rL")))
    (clobber (reg:CC CC_REGNUM))
    (clobber (reg:SI STATUS_REGNUM))
-   (clobber (match_operand:BLK 1 "memory_operand" "=m"))]
+   (clobber (match_operand:BLK 1 "memclob_operand" "=X"))]
   "reload_completed"
   "add sp,sp,%0")
 
@@ -2396,7 +2396,7 @@
 	(match_operand 1 "any_gpr_operand" "r"))
    (set (reg:SI GPR_SP)
 	(plus:SI (reg:SI GPR_SP) (match_operand:SI 2 "nonmemory_operand" "rn")))
-   (clobber (match_operand:BLK 3 "memory_operand" "=m"))]
+   (clobber (match_operand:BLK 3 "memclob_operand" "=X"))]
   "reload_completed"
 {
   return (GET_MODE_SIZE (GET_MODE (operands[0])) <= 4

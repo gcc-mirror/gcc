@@ -1,3 +1,67 @@
+2014-04-11  Jason Merrill  <jason@redhat.com>
+
+	* parser.h (struct cp_token): Rename ambiguous_p to error_reported.
+	* parser.c: Adjust.
+	(cp_lexer_get_preprocessor_token): Always clear it.
+	(cp_parser_lambda_expression): Use it to avoid duplicate diagnostics.
+
+	DR 1467
+	PR c++/51747
+	* decl.c (reshape_init_r): Handle a single element of class type.
+
+	DR 1338
+	* decl.c (cxx_init_decl_processing): Set DECL_IS_MALLOC on
+	built-in operator new.
+
+2014-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58600
+	* name-lookup.c (parse_using_directive): Return early if the
+	attribs argument is error_mark_node; use get_attribute_name.
+
+2014-04-11  Jason Merrill  <jason@redhat.com>
+
+	DR 1030
+	PR c++/51253
+	* cp-tree.h (CALL_EXPR_LIST_INIT_P): New.
+	* call.c (struct z_candidate): Add flags field.
+	(add_candidate): Add flags parm.
+	(add_function_candidate, add_conv_candidate, build_builtin_candidate)
+	(add_template_candidate_real): Pass it.
+	(build_over_call): Set CALL_EXPR_LIST_INIT_P.
+	* tree.c (build_aggr_init_expr): Copy it.
+	* semantics.c (simplify_aggr_init_expr): Preevaluate args if it's set.
+
+2014-04-10  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/60761
+	* error.c (dump_decl) <case FUNCTION_DECL>: If
+	DECL_LANG_SPECIFIC is NULL, but DECL_ABSTRACT_ORIGIN is not,
+	recurse on DECL_ABSTRACT_ORIGIN instead of printing
+	<built-in>.
+
+2014-04-09  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* pt.c (check_template_variable): Check for the return of pedwarn
+	before emitting a note.
+	* parser.c (cp_parser_lambda_introducer): Likewise.
+
+2014-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59115
+	* pt.c (process_template_parm): For an invalid non-type parameter
+	only set TREE_TYPE to error_mark_node.
+	(push_inline_template_parms_recursive, comp_template_parms,
+	redeclare_class_template, coerce_template_template_parm,
+	coerce_template_template_parms, unify): Use error_operand_p.
+
+2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (check_bases_and_members): Warn about non-virtual dtors
+	in public bases only.  Check warn_ecpp before complaining about
+	non-polymorphic bases.
+
 2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	* decl.c (duplicate_decls): Check for the return of warning_at

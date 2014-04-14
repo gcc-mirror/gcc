@@ -536,7 +536,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
   # System.Stack_Checking.Operations is not needed on VxWorks 6 as it leads to
   # an undefined symbol when building a dynamic shared library. To alleviate
   # this problem and distinguish this case, we use the THREAD_KIND and include
-  # the package only in kernel mode.
+  # the package only in default mode.
 
   ifeq ($(strip $(filter-out default,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -1045,15 +1045,17 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
-  s-intman.adb<s-intman-posix.adb \
-  s-linux.ads<s-linux.ads \
+  s-intman.adb<s-intman-android.adb \
+  s-linux.ads<s-linux-android.ads \
   s-osinte.adb<s-osinte-android.adb \
   s-osinte.ads<s-osinte-android.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-posix.adb \
-  s-taspri.ads<s-taspri-posix-noaltstack.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-linux-armel.ads \
+  a-exexpr.adb<a-exexpr-gcc.adb \
+  s-excmac.ads<s-excmac-arm.ads \
   $(DUMMY_SOCKETS_TARGET_PAIRS)
 
   TOOLS_TARGET_PAIRS =  \
@@ -1062,7 +1064,9 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
 
   GNATRTL_SOCKETS_OBJS =
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
-  EH_MECHANISM=
+  EXTRA_LIBGNAT_OBJS+=raise-gcc.o sigtramp-armdroid.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
+  EH_MECHANISM=-arm
   THREADSLIB =
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -1615,6 +1619,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(target_
         $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
     EXTRA_LIBGNAT_SRCS+=tb-alvms.c
+    override GNATRTL_ALTIVEC_OBJS=
 
     TOOLS_TARGET_PAIRS= \
       mlib-tgt-specific.adb<mlib-tgt-specific-vms-alpha.adb \
@@ -2234,7 +2239,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<s-linux-x32.ads \
   s-mudido.adb<s-mudido-affinity.adb \
   s-osinte.ads<s-osinte-linux.ads \
-  s-osinte.adb<s-osinte-posix.adb \
+  s-osinte.adb<s-osinte-x32.adb \
   s-osprim.adb<s-osprim-x32.adb \
   s-taprop.adb<s-taprop-linux.adb \
   s-tasinf.ads<s-tasinf-linux.ads \
@@ -3063,6 +3068,7 @@ mkdir.o   : mkdir.c
 socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
 raise.o   : raise.c raise.h
+sigtramp-armdroid.o : sigtramp-armdroid.c sigtramp.h
 sigtramp-armvxw.o : sigtramp-armvxw.c sigtramp.h
 sigtramp-ppcvxw.o : sigtramp-ppcvxw.c sigtramp.h
 terminals.o : terminals.c

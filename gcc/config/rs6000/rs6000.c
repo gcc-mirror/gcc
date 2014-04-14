@@ -5635,11 +5635,15 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
 			UNSPEC_VPERM);
   else 
     {
-      /* Invert selector.  */
+      /* Invert selector.  We prefer to generate VNAND on P8 so
+         that future fusion opportunities can kick in, but must
+         generate VNOR elsewhere.  */
       rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
-      rtx andx = gen_rtx_AND (V16QImode, notx, notx);
+      rtx iorx = (TARGET_P8_VECTOR
+		  ? gen_rtx_IOR (V16QImode, notx, notx)
+		  : gen_rtx_AND (V16QImode, notx, notx));
       rtx tmp = gen_reg_rtx (V16QImode);
-      emit_move_insn (tmp, andx);
+      emit_insn (gen_rtx_SET (VOIDmode, tmp, iorx));
 
       /* Permute with operands reversed and adjusted selector.  */
       x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
@@ -30229,12 +30233,12 @@ altivec_expand_vec_perm_const_le (rtx operands[4])
 
 /* Similarly to altivec_expand_vec_perm_const_le, we must adjust the
    permute control vector.  But here it's not a constant, so we must
-   generate a vector NOR to do the adjustment.  */
+   generate a vector NAND or NOR to do the adjustment.  */
 
 void
 altivec_expand_vec_perm_le (rtx operands[4])
 {
-  rtx notx, andx, unspec;
+  rtx notx, iorx, unspec;
   rtx target = operands[0];
   rtx op0 = operands[1];
   rtx op1 = operands[2];
@@ -30253,10 +30257,13 @@ altivec_expand_vec_perm_le (rtx operands[4])
   if (!REG_P (target))
     tmp = gen_reg_rtx (mode);
 
-  /* Invert the selector with a VNOR.  */
+  /* Invert the selector with a VNAND if available, else a VNOR.
+     The VNAND is preferred for future fusion opportunities.  */
   notx = gen_rtx_NOT (V16QImode, sel);
-  andx = gen_rtx_AND (V16QImode, notx, notx);
-  emit_move_insn (norreg, andx);
+  iorx = (TARGET_P8_VECTOR
+	  ? gen_rtx_IOR (V16QImode, notx, notx)
+	  : gen_rtx_AND (V16QImode, notx, notx));
+  emit_insn (gen_rtx_SET (VOIDmode, norreg, iorx));
 
   /* Permute with operands reversed and adjusted selector.  */
   unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op0, norreg),

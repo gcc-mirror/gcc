@@ -1,3 +1,8 @@
+2014-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/generic/asmcfi.h: Also check for
+	__GCC_HAVE_DWARF2_CFI_ASM.
+
 2013-04-02  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/target.h (PAGE_SIZE, FIXED_PAGE_SIZE): Remove.

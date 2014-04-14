@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -217,8 +217,9 @@ package System.OS_Interface is
    -- Time --
    ----------
 
-   type timespec is private;
-   type time_t is private;
+   subtype time_t   is System.Linux.time_t;
+   subtype timespec is System.Linux.timespec;
+   subtype timeval  is System.Linux.timeval;
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
@@ -597,14 +598,6 @@ private
    pragma Warnings (On);
 
    type pid_t is new int;
-
-   type time_t is new System.Linux.time_t;
-
-   type timespec is record
-      tv_sec  : time_t;
-      tv_nsec : time_t;
-   end record;
-   pragma Convention (C, timespec);
 
    type unsigned_long_long_t is mod 2 ** 64;
    --  Local type only used to get the alignment of this type below

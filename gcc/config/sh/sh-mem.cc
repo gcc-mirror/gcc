@@ -586,9 +586,35 @@ sh_expand_strlen (rtx *operands)
 
   emit_move_insn (current_addr, plus_constant (Pmode, current_addr, -4));
 
-  /* start byte loop.  */
   addr1 = adjust_address (addr1, QImode, 0);
 
+  /* unroll remaining bytes.  */
+  emit_insn (gen_extendqisi2 (tmp1, addr1));
+  emit_insn (gen_cmpeqsi_t (tmp1, const0_rtx));
+  jump = emit_jump_insn (gen_branch_true (L_return));
+  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+
+  emit_move_insn (current_addr, plus_constant (Pmode, current_addr, 1));
+
+  emit_insn (gen_extendqisi2 (tmp1, addr1));
+  emit_insn (gen_cmpeqsi_t (tmp1, const0_rtx));
+  jump = emit_jump_insn (gen_branch_true (L_return));
+  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+
+  emit_move_insn (current_addr, plus_constant (Pmode, current_addr, 1));
+
+  emit_insn (gen_extendqisi2 (tmp1, addr1));
+  emit_insn (gen_cmpeqsi_t (tmp1, const0_rtx));
+  jump = emit_jump_insn (gen_branch_true (L_return));
+  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+
+  emit_move_insn (current_addr, plus_constant (Pmode, current_addr, 1));
+
+  emit_insn (gen_extendqisi2 (tmp1, addr1));
+  jump = emit_jump_insn (gen_jump_compact (L_return));
+  emit_barrier_after (jump);
+
+  /* start byte loop.  */
   emit_label (L_loop_byte);
 
   emit_insn (gen_extendqisi2 (tmp1, addr1));
@@ -600,11 +626,114 @@ sh_expand_strlen (rtx *operands)
 
   /* end loop.  */
 
-  emit_label (L_return);
-
   emit_insn (gen_addsi3 (start_addr, start_addr, GEN_INT (1)));
+
+  emit_label (L_return);
 
   emit_insn (gen_subsi3 (operands[0], current_addr, start_addr));
 
   return true;
+}
+
+/* Emit code to perform a memset
+
+   OPERANDS[0] is the destination.
+   OPERANDS[1] is the size;
+   OPERANDS[2] is the char to search.
+   OPERANDS[3] is the alignment.  */
+void
+sh_expand_setmem (rtx *operands)
+{
+  rtx L_loop_byte = gen_label_rtx ();
+  rtx L_loop_word = gen_label_rtx ();
+  rtx L_return = gen_label_rtx ();
+  rtx jump;
+  rtx dest = copy_rtx (operands[0]);
+  rtx dest_addr = copy_addr_to_reg (XEXP (dest, 0));
+  rtx val = force_reg (SImode, operands[2]);
+  int align = INTVAL (operands[3]);
+  int count = 0;
+  rtx len = force_reg (SImode, operands[1]);
+
+  if (! CONST_INT_P (operands[1]))
+    return;
+
+  count = INTVAL (operands[1]);
+
+  if (CONST_INT_P (operands[2])
+      && (INTVAL (operands[2]) == 0 || INTVAL (operands[2]) == -1) && count > 8)
+    {
+      rtx lenw = gen_reg_rtx (SImode);
+
+      if (align < 4)
+        {
+          emit_insn (gen_tstsi_t (GEN_INT (3), dest_addr));
+          jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+          add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+        }
+
+      /* word count. Do we have iterations ? */
+      emit_insn (gen_lshrsi3 (lenw, len, GEN_INT (2)));
+
+      dest = adjust_automodify_address (dest, SImode, dest_addr, 0);
+
+      /* start loop.  */
+      emit_label (L_loop_word);
+
+      if (TARGET_SH2)
+        emit_insn (gen_dect (lenw, lenw));
+      else
+        {
+          emit_insn (gen_addsi3 (lenw, lenw, GEN_INT (-1)));
+          emit_insn (gen_tstsi_t (lenw, lenw));
+        }
+
+      emit_move_insn (dest, val);
+      emit_move_insn (dest_addr, plus_constant (Pmode, dest_addr,
+                                                GET_MODE_SIZE (SImode)));
+
+
+      jump = emit_jump_insn (gen_branch_false (L_loop_word));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+      count = count % 4;
+
+      dest = adjust_address (dest, QImode, 0);
+
+      val = gen_lowpart (QImode, val);
+
+      while (count--)
+        {
+          emit_move_insn (dest, val);
+          emit_move_insn (dest_addr, plus_constant (Pmode, dest_addr,
+                                                    GET_MODE_SIZE (QImode)));
+        }
+
+      jump = emit_jump_insn (gen_jump_compact (L_return));
+      emit_barrier_after (jump);
+    }
+
+  dest = adjust_automodify_address (dest, QImode, dest_addr, 0);
+
+  /* start loop.  */
+  emit_label (L_loop_byte);
+
+  if (TARGET_SH2)
+    emit_insn (gen_dect (len, len));
+  else
+    {
+      emit_insn (gen_addsi3 (len, len, GEN_INT (-1)));
+      emit_insn (gen_tstsi_t (len, len));
+    }
+
+  val = gen_lowpart (QImode, val);
+  emit_move_insn (dest, val);
+  emit_move_insn (dest_addr, plus_constant (Pmode, dest_addr,
+                                            GET_MODE_SIZE (QImode)));
+
+  jump = emit_jump_insn (gen_branch_false (L_loop_byte));
+  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+
+  emit_label (L_return);
+
+  return;
 }

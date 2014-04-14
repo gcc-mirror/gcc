@@ -648,14 +648,15 @@ static mips_one_only_stub *mips16_set_fcsr_stub;
 
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class mips_regno_to_class[FIRST_PSEUDO_REGISTER] = {
-  LEA_REGS,	LEA_REGS,	M16_REGS,	V1_REG,
-  M16_REGS,	M16_REGS,	M16_REGS,	M16_REGS,
-  LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
-  LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
-  M16_REGS,	M16_REGS,	LEA_REGS,	LEA_REGS,
-  LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
-  T_REG,	PIC_FN_ADDR_REG, LEA_REGS,	LEA_REGS,
-  LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
+  LEA_REGS,        LEA_REGS,        M16_STORE_REGS,  V1_REG,
+  M16_STORE_REGS,  M16_STORE_REGS,  M16_STORE_REGS,  M16_STORE_REGS,
+  LEA_REGS,        LEA_REGS,        LEA_REGS,        LEA_REGS,
+  LEA_REGS,        LEA_REGS,        LEA_REGS,        LEA_REGS,
+  M16_REGS,        M16_STORE_REGS,  LEA_REGS,        LEA_REGS,
+  LEA_REGS,        LEA_REGS,        LEA_REGS,        LEA_REGS,
+  T_REG,           PIC_FN_ADDR_REG, LEA_REGS,        LEA_REGS,
+  LEA_REGS,        LEA_REGS,        LEA_REGS,        LEA_REGS,
+
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,

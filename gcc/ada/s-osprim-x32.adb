@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2013, Free Software Foundation, Inc.              --
+--             Copyright (C) 2013-2014, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package body System.OS_Primitives is
 
    type timespec is record
       tv_sec  : time_t;
-      tv_nsec : time_t;
+      tv_nsec : Long_Long_Integer;
    end record;
    pragma Convention (C, timespec);
 
@@ -54,7 +54,7 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-      type timeval is array (1 .. 2) of time_t;
+      type timeval is array (1 .. 2) of Long_Long_Integer;
 
       procedure timeval_to_duration
         (T    : not null access timeval;
@@ -118,7 +118,7 @@ package body System.OS_Primitives is
 
       return
         timespec'(tv_sec  => S,
-                  tv_nsec => time_t (Long_Long_Integer (F * 10#1#E9)));
+                  tv_nsec => Long_Long_Integer (F * 10#1#E9));
    end To_Timespec;
 
    -----------------

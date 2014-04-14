@@ -1,3 +1,31 @@
+2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/59434
+	* include/bits/stl_iterator.h (move_iterator::reference,
+	move_iterator::operator*): Implement LWG 2106.
+	* testsuite/24_iterators/move_iterator/dr2106.cc: New file.
+
+2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/std/complex (__complex_exp, pow): Specify the template
+	parameter in calls to std::polar, for expression templates.
+
+2014-04-10  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Remove TLS
+	symbols.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt: Likewise.
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+
+2014-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/exchange/1.cc: Add missing return statements.
+	* testsuite/20_util/pair/40925.cc: Avoid most vexing parse.
+	* testsuite/22_locale/codecvt_byname/50714.cc: Add missing exception
+	specifications.
+
 2014-04-02  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 

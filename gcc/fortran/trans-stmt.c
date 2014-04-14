@@ -1170,16 +1170,18 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       /* If association is to an expression, evaluate it and create temporary.
 	 Otherwise, get descriptor of target for pointer assignment.  */
       gfc_init_se (&se, NULL);
-      if (sym->assoc->variable)
+      if (sym->assoc->variable || e->expr_type == EXPR_ARRAY)
 	{
 	  se.direct_byref = 1;
+	  se.use_offset = 1;
 	  se.expr = desc;
 	}
+
       gfc_conv_expr_descriptor (&se, e);
 
       /* If we didn't already do the pointer assignment, set associate-name
 	 descriptor to the one generated for the temporary.  */
-      if (!sym->assoc->variable)
+      if (!sym->assoc->variable && e->expr_type != EXPR_ARRAY)
 	{
 	  int dim;
 

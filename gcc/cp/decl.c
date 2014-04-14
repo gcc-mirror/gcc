@@ -3847,8 +3847,12 @@ cxx_init_decl_processing (void)
     newtype = build_exception_variant (newtype, new_eh_spec);
     deltype = cp_build_type_attribute_variant (void_ftype_ptr, extvisattr);
     deltype = build_exception_variant (deltype, empty_except_spec);
-    DECL_IS_OPERATOR_NEW (push_cp_library_fn (NEW_EXPR, newtype, 0)) = 1;
-    DECL_IS_OPERATOR_NEW (push_cp_library_fn (VEC_NEW_EXPR, newtype, 0)) = 1;
+    tree opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
+    DECL_IS_MALLOC (opnew) = 1;
+    DECL_IS_OPERATOR_NEW (opnew) = 1;
+    opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
+    DECL_IS_MALLOC (opnew) = 1;
+    DECL_IS_OPERATOR_NEW (opnew) = 1;
     global_delete_fndecl = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
     push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
 
@@ -5397,6 +5401,18 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 	}
 
+      d->cur++;
+      return init;
+    }
+
+  /* "If T is a class type and the initializer list has a single element of
+     type cv U, where U is T or a class derived from T, the object is
+     initialized from that element."  Even if T is an aggregate.  */
+  if (cxx_dialect >= cxx11 && CLASS_TYPE_P (type)
+      && first_initializer_p
+      && d->end - d->cur == 1
+      && reference_related_p (type, TREE_TYPE (init)))
+    {
       d->cur++;
       return init;
     }

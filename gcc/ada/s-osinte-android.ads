@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package System.OS_Interface is
    -- Signals --
    -------------
 
-   Max_Interrupt : constant := 63;
+   Max_Interrupt : constant := 31;
    type Signal is new int range 0 .. Max_Interrupt;
    for Signal'Size use int'Size;
 
@@ -114,9 +114,6 @@ package System.OS_Interface is
    SIGXFSZ    : constant := System.Linux.SIGXFSZ;
    SIGUNUSED  : constant := System.Linux.SIGUNUSED;
    SIGSTKFLT  : constant := System.Linux.SIGSTKFLT;
-   SIGLTHRRES : constant := System.Linux.SIGLTHRRES;
-   SIGLTHRCAN : constant := System.Linux.SIGLTHRCAN;
-   SIGLTHRDBG : constant := System.Linux.SIGLTHRDBG;
 
    SIGADAABORT : constant := SIGABRT;
    --  Change this to use another signal for task abort. SIGTERM might be a
@@ -138,12 +135,8 @@ package System.OS_Interface is
       SIGPROF,
       --  To avoid confusing the profiler
 
-      SIGKILL, SIGSTOP,
+      SIGKILL, SIGSTOP);
       --  These two signals actually can't be masked (POSIX won't allow it)
-
-      SIGLTHRRES, SIGLTHRCAN, SIGLTHRDBG);
-      --  These three signals are used by GNU/LinuxThreads starting from glibc
-      --  2.1 (future 2.2).
 
    Reserved : constant Signal_Set := (SIGVTALRM, SIGUNUSED);
    --  Not clear why these two signals are reserved. Perhaps they are not
@@ -187,6 +180,8 @@ package System.OS_Interface is
 
    SA_SIGINFO : constant := System.Linux.SA_SIGINFO;
    SA_ONSTACK : constant := System.Linux.SA_ONSTACK;
+   SA_NODEFER : constant := System.Linux.SA_NODEFER;
+   SA_RESTART : constant := System.Linux.SA_RESTART;
 
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;
@@ -580,17 +575,16 @@ package System.OS_Interface is
 
 private
 
-   type sigset_t is
-   --  array (0 .. OS_Constants.SIZEOF_sigset - 1) of unsigned_char;
-       array (1 .. 127) of unsigned_char;
+   type sigset_t is new Interfaces.C.unsigned_long;
    pragma Convention (C, sigset_t);
    for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    pragma Warnings (Off);
    for struct_sigaction use record
       sa_handler at Linux.sa_handler_pos range 0 .. Standard'Address_Size - 1;
-      sa_mask    at Linux.sa_mask_pos    range 0 .. 1023;
-      sa_flags   at Linux.sa_flags_pos   range 0 .. Standard'Address_Size - 1;
+      sa_mask    at Linux.sa_mask_pos range 0 .. sigset_t'Size - 1;
+      sa_flags   at Linux.sa_flags_pos
+        range 0 .. Interfaces.C.unsigned_long'Size - 1;
    end record;
    --  We intentionally leave sa_restorer unspecified and let the compiler
    --  append it after the last field, so disable corresponding warning.

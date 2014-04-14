@@ -1,3 +1,235 @@
+2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60720
+	* lto-streamer-out.c (wrap_refs): New function.
+	(lto_output): Wrap symbol references in global initializes in
+	type-preserving MEM_REFs.
+
+2014-04-14  Christian Bruel  <christian.bruel@st.com>
+
+        * config/sh/sh-mem.cc (sh_expand_strlen): Unroll last word.
+
+2014-04-14  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.md (setmemqi): New expand pattern.
+	* config/sh/sh.h (CLEAR_RATIO): Define.
+	* config/sh/sh-mem.cc (sh_expand_setmem): Define.
+	* config/sh/sh-protos.h (sh_expand_setmem): Declare.
+
+2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55022
+	* fold-const.c (negate_expr_p): Don't negate directional rounding
+	division.
+	(fold_negate_expr): Likewise.
+
+2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59817
+	PR tree-optimization/60453
+	* graphite-scop-detection.c (graphite_can_represent_scev): Complete
+	recursion to catch all CHRECs in the scalar evolution and restrict
+	the predicate for the remains appropriately.
+
+2014-04-12  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/constraints.md: Add new register constraint "kb".
+	* config/mips/mips.md (*mov<mode>_internal): Use constraint "kb".
+	(*movhi_internal): Likewise.
+	(*movqi_internal): Likewise.
+	* config/mips/mips.h (M16_STORE_REGS): New register class.
+	(REG_CLASS_NAMES): Add M16_STORE_REGS.
+	(REG_CLASS_CONTENTS): Likewise.
+	* config/mips/mips.c (mips_regno_to_class): Add M16_STORE_REGS.
+
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/60194
+	* doc/invoke.texi (-Wformat-signedness): Document it.
+	(Wformat=2): Mention that this enables -Wformat-signedness.
+
+2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* common/config/epiphany/epiphany-common.c
+	(epiphany_option_optimization_table): Enable section anchors by
+	default at -O1 or higher.
+	* config/epiphany/epiphany.c (TARGET_MAX_ANCHOR_OFFSET): Define.
+	(TARGET_MIN_ANCHOR_OFFSET): Likewise.
+	(epiphany_rtx_costs) <SET>: For binary operators, the set as such
+	carries no extra cost.
+	(epiphany_legitimate_address_p): For BLKmode, apply SImode check.
+	* config/epiphany/epiphany.h (ASM_OUTPUT_DEF): Define.
+	* config/epiphany/predicates.md (memclob_operand): New predicate.
+	* config/epiphany/epiphany.md (stack_adjust_add, stack_adjust_str):
+	Use memclob_operand predicate and X constraint for operand 3.
+
+2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_rtx_cost): Compare
+	with CC_N_NE / CC_C_LTU / CC_C_GTU carries no extra cost for
+	its operands.
+
+2014-04-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/60651
+	* mode-switching.c (optimize_mode_switching): Make sure to emit
+	sets of a lower numbered entity before sets of a higher numbered
+	entity to a mode of the same or lower priority.
+	When creating a seginfo for a basic block that starts with a code
+	label, move the insertion point past the code label.
+	(new_seginfo): Document and enforce requirement that
+	NOTE_INSN_BASIC_BLOCK only appears for empty blocks.
+	* doc/tm.texi.in: Document ordering constraint for emitted mode sets.
+	* doc/tm.texi: Regenerate.
+
+2014-01-11  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR target/60811
+	* config/arc/arc.c (arc_save_restore): Fix assert typo.
+
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 4.10.0.
+
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR other/59055
+	* doc/bugreport.texi (Bugs): Remove nodes pointing to the
+	nirvana.
+	* doc/gcc.texi (Service): Update description in the @menu
+	* doc/invoke.texi (Option Summary): Remove misplaced and
+	duplicated @menu.
+
+2014-04-11  Steve Ellcey  <sellcey@mips.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60556
+	* expr.c (convert_move): Use emit_store_flag_force instead of
+	emit_store_flag.  Pass lowpart_mode instead of VOIDmode as 5th
+	argument to it.
+
+2014-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60797
+	* varasm.c (assemble_alias): Avoid endless error reporting
+	recursion by setting TREE_ASM_WRITTEN.
+
+2014-04-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md: Add a splitter for NOT rtx.
+
+2014-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/60663
+	* cse.c (cse_insn): Set src_volatile on ASM_OPERANDS in
+	PARALLEL.
+
+2014-04-10  Jan Hubicka  <hubicka@ucw.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/60567
+	* ipa.c (function_and_variable_visibility): Copy forced_by_abi flag from
+	decl_node to node.
+
+2014-04-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR debug/60655
+	* config/arm/arm.c (TARGET_CONST_NOT_OK_FOR_DEBUG_P): Define
+	(arm_const_not_ok_for_debug_p): Reject MINUS with SYM_REF's
+	ameliorating the cases where it can be.
+
+2014-04-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	Revert
+	2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
+	(loadsync_<mode>): Change mode.
+	(load_quadpti, store_quadpti): New.
+	(atomic_load<mode>, atomic_store<mode>): Add support for TI mode.
+	* config/rs6000/rs6000.md (unspec enum): Add UNSPEC_LSQ.
+	* config/rs6000/predicates.md (quad_memory_operand): !TARGET_SYNC_TI.
+
+2014-04-09  Cong Hou  <congh@google.com>
+
+	PR testsuite/60773
+	* doc/sourcebuild.texi (vect_widen_mult_si_to_di_pattern): Add
+	documentation.
+
+2014-04-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Use vnand
+	instead of vnor to exploit possible fusion opportunity in the
+	future.
+	(altivec_expand_vec_perm_const_le): Likewise.
+
+2014-04-08  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
+	(loadsync_<mode>): Change mode.
+	(load_quadpti, store_quadpti): New.
+	(atomic_load<mode>, atomic_store<mode>): Add support for TI mode.
+	* config/rs6000/rs6000.md (unspec enum): Add UNSPEC_LSQ.
+
+2014-04-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/60763
+	* config/rs6000/vsx.md (vsx_xscvdpspn_scalar): Change input to DImode.
+	* config/rs6000/rs6000.md (reload_vsx_from_gprsf): Update accordingly.
+	Use gen_rtx_REG rather than simplify_gen_subreg for op0_di.
+
+2014-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60706
+	* tree-pretty-print.c (pp_double_int): For HWI32 hosts with
+	a 64bit widest int print double-int similar to on HWI64 hosts.
+
+2014-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60785
+	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Treat
+	default defs properly.
+
+2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke (Wnon-virtual-dtor): Update to match implementation.
+	(Weffc++): Likewise.
+
+2014-04-07  Jan Hubicka  <hubcika@ucw.cz>
+
+	* ipa-devirt.c (maybe_record_node): When node is not recorded,
+	set completep to false rather than true.
+
+2014-04-07  Douglas B Rupp  <rupp@adacore.com>
+
+	PR target/60504
+	* config/arm/arm.h (ASM_PREFERRED_EH_DATA_FORMAT): Expose from
+	ARM_TARGET2_DWARF_FORMAT.
+
+2014-04-07  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/60609
+	* config/arm/arm.h (ASM_OUTPUT_CASE_END): Remove.
+	(LABEL_ALIGN_AFTER_BARRIER): Align barriers which occur after
+	ADDR_DIFF_VEC.
+
+2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60766
+	* tree-ssa-loop-ivopts.c (cand_value_at): Compute in an unsigned type.
+	(may_eliminate_iv): Convert cand_value_at result to desired type.
+
+2014-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60731
+	* common.opt (-fno-gnu-unique): Add.
+	* config/elfos.h (USE_GNU_UNIQUE_OBJECT): Check it.
+
+2014-04-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* haifa-sched.c: Fix outdated function reference and minor
+	grammar errors in introductory comment.
+
 2014-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60750
@@ -101,13 +333,6 @@
         cgraph_redirect_edge_callee.
         (cgraph_create_virtual_clone): Pass args_to_skip to cgraph_clone_node,
 	moved setting of a lot of flags to set_new_clone_decl_and_node_flags.
-
-2014-04-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
-
-	PR fortran/60191
-	* fortran/trans-types.c (gfc_get_function_type): In case of recursion
-	build a variadic function type with empty argument list instead of a
-	stdarg-like function type with incomplete argument list.
 
 2014-04-04  Jeff Law  <law@redhat.com>
 

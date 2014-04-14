@@ -1,3 +1,8 @@
+2014-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c: Include ipa-inline.h
+	(do_whole_program_analysis): Free inline summary after partitioning.
+
 2014-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60553

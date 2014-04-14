@@ -735,7 +735,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline complex<_Tp>
     __complex_exp(const complex<_Tp>& __z)
-    { return std::polar(exp(__z.real()), __z.imag()); }
+    { return std::polar<_Tp>(exp(__z.real()), __z.imag()); }
 
 #if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
@@ -995,7 +995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return pow(__x.real(), __y);
 
       complex<_Tp> __t = std::log(__x);
-      return std::polar(exp(__y * __t.real()), __y * __t.imag());
+      return std::polar<_Tp>(exp(__y * __t.real()), __y * __t.imag());
     }
 
   template<typename _Tp>
@@ -1032,8 +1032,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline complex<_Tp>
     pow(const _Tp& __x, const complex<_Tp>& __y)
     {
-      return __x > _Tp() ? std::polar(pow(__x, __y.real()),
-				      __y.imag() * log(__x))
+      return __x > _Tp() ? std::polar<_Tp>(pow(__x, __y.real()),
+					   __y.imag() * log(__x))
 	                 : std::pow(complex<_Tp>(__x), __y);
     }
 
