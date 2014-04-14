@@ -3075,34 +3075,6 @@ String_type::do_get_backend(Gogo* gogo)
   return backend_string_type;
 }
 
-// Return a tree for the length of STRING.
-
-tree
-String_type::length_tree(Gogo*, tree string)
-{
-  tree string_type = TREE_TYPE(string);
-  go_assert(TREE_CODE(string_type) == RECORD_TYPE);
-  tree length_field = DECL_CHAIN(TYPE_FIELDS(string_type));
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(length_field)),
-		    "__length") == 0);
-  return fold_build3(COMPONENT_REF, TREE_TYPE(length_field), string,
-		     length_field, NULL_TREE);
-}
-
-// Return a tree for a pointer to the bytes of STRING.
-
-tree
-String_type::bytes_tree(Gogo*, tree string)
-{
-  tree string_type = TREE_TYPE(string);
-  go_assert(TREE_CODE(string_type) == RECORD_TYPE);
-  tree bytes_field = TYPE_FIELDS(string_type);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(bytes_field)),
-		    "__data") == 0);
-  return fold_build3(COMPONENT_REF, TREE_TYPE(bytes_field), string,
-		     bytes_field, NULL_TREE);
-}
-
 // The type descriptor for the string type.
 
 Expression*
@@ -4916,9 +4888,8 @@ Struct_type::method_function(const std::string& name, bool* is_ambiguous) const
 // the interface INTERFACE.  IS_POINTER is true if this is for a
 // pointer to THIS.
 
-tree
-Struct_type::interface_method_table(Gogo* gogo,
-				    const Interface_type* interface,
+Expression*
+Struct_type::interface_method_table(Interface_type* interface,
 				    bool is_pointer)
 {
   std::pair<Struct_type*, Struct_type::Struct_method_table_pair*>
@@ -4937,7 +4908,7 @@ Struct_type::interface_method_table(Gogo* gogo,
       ins.first->second = smtp;
     }
 
-  return Type::interface_method_table(gogo, this, interface, is_pointer,
+  return Type::interface_method_table(this, interface, is_pointer,
 				      &smtp->first, &smtp->second);
 }
 
@@ -8198,13 +8169,12 @@ Named_type::method_function(const std::string& name, bool* is_ambiguous) const
 // the interface INTERFACE.  IS_POINTER is true if this is for a
 // pointer to THIS.
 
-tree
-Named_type::interface_method_table(Gogo* gogo, const Interface_type* interface,
-				   bool is_pointer)
+Expression*
+Named_type::interface_method_table(Interface_type* interface, bool is_pointer)
 {
-  return Type::interface_method_table(gogo, this, interface, is_pointer,
-				      &this->interface_method_tables_,
-				      &this->pointer_interface_method_tables_);
+  return Type::interface_method_table(this, interface, is_pointer,
+                                      &this->interface_method_tables_,
+                                      &this->pointer_interface_method_tables_);
 }
 
 // Return whether a named type has any hidden fields.
@@ -9385,9 +9355,9 @@ Type::method_function(const Methods* methods, const std::string& name,
 // Return a pointer to the interface method table for TYPE for the
 // interface INTERFACE.
 
-tree
-Type::interface_method_table(Gogo* gogo, Type* type,
-			     const Interface_type *interface,
+Expression*
+Type::interface_method_table(Type* type,
+			     Interface_type *interface,
 			     bool is_pointer,
 			     Interface_method_tables** method_tables,
 			     Interface_method_tables** pointer_tables)
@@ -9399,23 +9369,18 @@ Type::interface_method_table(Gogo* gogo, Type* type,
   if (*pimt == NULL)
     *pimt = new Interface_method_tables(5);
 
-  std::pair<const Interface_type*, tree> val(interface, NULL_TREE);
+  std::pair<Interface_type*, Expression*> val(interface, NULL);
   std::pair<Interface_method_tables::iterator, bool> ins = (*pimt)->insert(val);
 
+  Location loc = Linemap::predeclared_location();
   if (ins.second)
     {
       // This is a new entry in the hash table.
-      go_assert(ins.first->second == NULL_TREE);
-      ins.first->second = gogo->interface_method_table_for_type(interface,
-								type,
-								is_pointer);
+      go_assert(ins.first->second == NULL);
+      ins.first->second =
+	Expression::make_interface_mtable_ref(interface, type, is_pointer, loc);
     }
-
-  tree decl = ins.first->second;
-  if (decl == error_mark_node)
-    return error_mark_node;
-  go_assert(decl != NULL_TREE && TREE_CODE(decl) == VAR_DECL);
-  return build_fold_addr_expr(decl);
+  return Expression::make_unary(OPERATOR_AND, ins.first->second, loc);
 }
 
 // Look for field or method NAME for TYPE.  Return an Expression for

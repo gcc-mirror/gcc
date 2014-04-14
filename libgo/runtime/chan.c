@@ -483,31 +483,10 @@ __go_send_big(ChanType *t, Hchan* c, byte* p)
 	runtime_chansend(t, c, p, nil, runtime_getcallerpc(&t));
 }
 
-// The compiler generates a call to __go_receive_small to receive a
-// value 8 bytes or smaller.
-uint64
-__go_receive_small(ChanType *t, Hchan* c)
-{
-	union {
-		byte b[sizeof(uint64)];
-		uint64 v;
-	} u;
-	byte *p;
-
-	u.v = 0;
-#ifndef WORDS_BIGENDIAN
-	p = u.b;
-#else
-	p = u.b + sizeof(uint64) - t->__element_type->__size;
-#endif
-	runtime_chanrecv(t, c, p, nil, nil);
-	return u.v;
-}
-
-// The compiler generates a call to __go_receive_big to receive a
-// value larger than 8 bytes.
+// The compiler generates a call to __go_receive to receive a
+// value from a channel.
 void
-__go_receive_big(ChanType *t, Hchan* c, byte* p)
+__go_receive(ChanType *t, Hchan* c, byte* p)
 {
 	runtime_chanrecv(t, c, p, nil, nil);
 }

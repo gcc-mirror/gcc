@@ -2955,7 +2955,7 @@ Parse::create_closure(Named_object* function, Enclosing_vars* enclosing_vars,
   Struct_type* st = closure_var->var_value()->type()->deref()->struct_type();
   Expression* cv = Expression::make_struct_composite_literal(st, initializer,
 							     location);
-  return Expression::make_heap_composite(cv, location);
+  return Expression::make_heap_expression(cv, location);
 }
 
 // PrimaryExpr = Operand { Selector | Index | Slice | TypeGuard | Call } .
@@ -3538,7 +3538,7 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 	expr = Expression::make_type(Type::make_pointer_type(expr->type()),
 				     location);
       else if (op == OPERATOR_AND && expr->is_composite_literal())
-	expr = Expression::make_heap_composite(expr, location);
+	expr = Expression::make_heap_expression(expr, location);
       else if (op != OPERATOR_CHANOP)
 	expr = Expression::make_unary(op, expr, location);
       else
@@ -3765,7 +3765,8 @@ Parse::labeled_stmt(const std::string& label_name, Location location)
     {
       // Mark the label as used to avoid a useless error about an
       // unused label.
-      label->set_is_used();
+      if (label != NULL)
+        label->set_is_used();
 
       error_at(location, "missing statement after label");
       this->unget_token(Token::make_operator_token(OPERATOR_SEMICOLON,
