@@ -1,3 +1,7 @@
+2014-04-14  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* doc/invoke.texi (free): Document AArch64.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60042
