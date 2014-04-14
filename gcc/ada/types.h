@@ -272,6 +272,8 @@ SUBTYPE (Uint_Direct, Uint, Uint_Direct_First, Uint_Direct_Last)
 #define Uint_10 (Uint_Direct_Bias + 10)
 #define Uint_16 (Uint_Direct_Bias + 16)
 
+#define Uint_Minus_1 (Uint_Direct_Bias - 1)
+
 /* Types for Ureal_Support Package:  */
 
 /* Type used for representation of universal reals.  */

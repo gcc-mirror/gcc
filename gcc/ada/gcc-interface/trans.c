@@ -353,6 +353,7 @@ gigi (Node_Id gnat_root,
 
   /* Initialize ourselves.  */
   init_code_table ();
+  init_gnat_decl ();
   init_gnat_utils ();
 
   /* If we are just annotating types, give VOID_TYPE zero sizes to avoid
@@ -727,6 +728,7 @@ gigi (Node_Id gnat_root,
     }
 
   /* Destroy ourselves.  */
+  destroy_gnat_decl ();
   destroy_gnat_utils ();
 
   /* We cannot track the location of errors past this point.  */

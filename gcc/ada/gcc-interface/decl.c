@@ -7467,12 +7467,8 @@ annotate_value (tree gnu_size)
     {
       struct tree_int_map *e;
 
-      if (!annotate_value_cache)
-        annotate_value_cache = htab_create_ggc (512, tree_int_map_hash,
-					        tree_int_map_eq, 0);
       in.base.from = gnu_size;
-      e = (struct tree_int_map *)
-	    htab_find (annotate_value_cache, &in);
+      e = (struct tree_int_map *) htab_find (annotate_value_cache, &in);
 
       if (e)
 	return (Node_Ref_Or_Val) e->to;
@@ -7559,11 +7555,17 @@ annotate_value (tree gnu_size)
       break;
 
     case CALL_EXPR:
-      {
-	tree t = maybe_inline_call_in_expr (gnu_size);
-	if (t)
-	  return annotate_value (t);
-      }
+      /* In regular mode, inline back only if symbolic annotation is requested
+	 in order to avoid memory explosion on big discriminated record types.
+	 But not in ASIS mode, as symbolic annotation is required for DDA.  */
+      if (List_Representation_Info == 3 || type_annotate_only)
+	{
+	  tree t = maybe_inline_call_in_expr (gnu_size);
+	  if (t)
+	    return annotate_value (t);
+	}
+      else
+	return Uint_Minus_1;
 
       /* Fall through... */
 
@@ -7592,11 +7594,10 @@ annotate_value (tree gnu_size)
   if (in.base.from)
     {
       struct tree_int_map **h;
-      /* We can't assume the hash table data hasn't moved since the
-	 initial look up, so we have to search again.  Allocating and
-	 inserting an entry at that point would be an alternative, but
-	 then we'd better discard the entry if we decided not to cache
-	 it.  */
+      /* We can't assume the hash table data hasn't moved since the initial
+	 look up, so we have to search again.  Allocating and inserting an
+	 entry at that point would be an alternative, but then we'd better
+	 discard the entry if we decided not to cache it.  */
       h = (struct tree_int_map **)
 	    htab_find_slot (annotate_value_cache, &in, INSERT);
       gcc_assert (!*h);
@@ -8920,6 +8921,26 @@ concat_name (tree gnu_name, const char *suffix)
   strcat (new_name, "___");
   strcat (new_name, suffix);
   return get_identifier_with_length (new_name, len);
+}
+
+/* Initialize data structures of the decl.c module.  */
+
+void
+init_gnat_decl (void)
+{
+  /* Initialize the cache of annotated values.  */
+  annotate_value_cache
+    = htab_create_ggc (512, tree_int_map_hash, tree_int_map_eq, 0);
+}
+
+/* Destroy data structures of the decl.c module.  */
+
+void
+destroy_gnat_decl (void)
+{
+  /* Destroy the cache of annotated values.  */
+  htab_delete (annotate_value_cache);
+  annotate_value_cache = NULL;
 }
 
 #include "gt-ada-decl.h"
