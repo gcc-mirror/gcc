@@ -1,3 +1,7 @@
+2014-04-14  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* doc/invoke.texi (free): Document AArch64.
+
 2013-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* DEV-PHASE: Set to prerelease.

@@ -7390,7 +7390,7 @@ Attempt to remove redundant extension instructions.  This is especially
 helpful for the x86-64 architecture, which implicitly zero-extends in 64-bit
 registers after writing to their lower 32-bit half.
 
-Enabled for x86 at levels @option{-O2}, @option{-O3}.
+Enabled for AArch64 and x86 at levels @option{-O2}, @option{-O3}.
 
 @item -flive-range-shrinkage
 @opindex flive-range-shrinkage
