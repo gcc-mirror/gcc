@@ -1,3 +1,10 @@
+2014-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_widen_mult_si_to_di_pattern):
+	Initialize et_vect_widen_mult_si_to_di_pattern_saved.
+	Fix formatting.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 
 	PR lto/60720
