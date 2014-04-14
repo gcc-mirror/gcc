@@ -1,3 +1,9 @@
+2014-04-14  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	* lib/gcc-dg.exp (dg-build-dso): New.
+	(gcc-dg-test-1): Handle dg-do-what "dso".
+
 2014-04-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/60717
