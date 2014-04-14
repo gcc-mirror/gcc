@@ -1,6 +1,12 @@
 2014-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60827
+	* config/i386/i386.md (*fixuns_trunc<mode>_1): Revert the last
+	change.
+
+2014-04-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60827
 	* config/i386/i386.md (*fixuns_trunc<mode>_1): Check
 	optimize_insn_for_speed_p instead of
 	optimize_function_for_speed_p.
