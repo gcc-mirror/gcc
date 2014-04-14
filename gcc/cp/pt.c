@@ -4028,16 +4028,7 @@ mark_template_parm (tree t, void* data)
   int idx;
   struct template_parm_data* tpd = (struct template_parm_data*) data;
 
-  if (TREE_CODE (t) == TEMPLATE_PARM_INDEX)
-    {
-      level = TEMPLATE_PARM_LEVEL (t);
-      idx = TEMPLATE_PARM_IDX (t);
-    }
-  else
-    {
-      level = TEMPLATE_TYPE_LEVEL (t);
-      idx = TEMPLATE_TYPE_IDX (t);
-    }
+  template_parm_level_and_index (t, &level, &idx);
 
   if (level == tpd->level)
     {
