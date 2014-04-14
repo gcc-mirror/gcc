@@ -1,3 +1,8 @@
+2014-04-14  Jan Hubicka   <hubicka@ucw.cz>
+
+	PR lto/60820
+	* varpool.c (varpool_remove_node): Do not alter decls when streaming.
+
 2014-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (examine_argument): Return bool.  Return true if
