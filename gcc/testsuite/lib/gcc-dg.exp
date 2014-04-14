@@ -144,11 +144,6 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 	    # The following line is needed for targets like the i960 where
 	    # the default output file is b.out.  Sigh.
 	}
-	"dso" {
-	    set compile_type "executable"
-	    set output_file "[file rootname [file tail $prog]].so"
-	    set extra_tool_flags "$extra_tool_flags -fPIC -shared"
-	}
 	"repo" {
 	    set compile_type "object"
 	    set output_file "[file rootname [file tail $prog]].o"
@@ -212,27 +207,6 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 
 proc gcc-dg-test { prog do_what extra_tool_flags } {
     return [gcc-dg-test-1 gcc_target_compile $prog $do_what $extra_tool_flags]
-}
-
-# Usage: { dg-build-dso "file.ext" }
-# Compiles the specified file into "file.so" (treating that compilation as
-# a separate test) for use by the main test, and schedules it for removal
-# when the main test is complete.  The DSO source file should not use "dg-do".
-# This relies on a couple of local variable names in dg-test.
-
-proc dg-build-dso { args } {
-    global dg-do-what-default
-    upvar prog main_file
-    upvar dg-final-code final-code
-
-    set file [lindex $args 1]
-    set dir "[file dirname $main_file]"
-    set dg-do-what-default dso
-    dg-test -keep-output $dir/$file "" ""
-    set dg-do-what-default compile
-
-    set output_file "[file rootname [file tail $file]].so"
-    append final-code "remove-build-file $output_file"
 }
 
 proc gcc-dg-prune { system text } {
