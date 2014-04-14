@@ -251,8 +251,8 @@ init_gnat_utils (void)
   dummy_node_table = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
 
   /* Initialize the hash table of padded types.  */
-  pad_type_hash_table = htab_create_ggc (512, pad_type_hash_hash,
-					 pad_type_hash_eq, 0);
+  pad_type_hash_table
+    = htab_create_ggc (512, pad_type_hash_hash, pad_type_hash_eq, 0);
 }
 
 /* Destroy data structures of the utils.c module.  */

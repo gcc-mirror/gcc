@@ -1371,12 +1371,6 @@ package Opt is
    --  initialized by Osint.Initialize, and further initialized by the
    --  Adjust_Global_Switches flag in Gnat1drv.
 
-   Suppress_Back_Annotation : Boolean := False;
-   --  GNAT
-   --  This flag is set True if back annotation of representation information
-   --  is to be suppressed. This is set if neither -gnatt or -gnatR0-3 is set.
-   --  This avoids unnecessary time being spent on back annotation.
-
    Table_Factor : Int := 1;
    --  GNAT
    --  Factor by which all initial table sizes set in Alloc are multiplied.

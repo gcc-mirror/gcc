@@ -108,6 +108,14 @@ package Repinfo is
    --       represent the value of such an expression, as explained in
    --       the following section.
 
+   --  Note: the extended back-annotation for the dynamic case is needed only
+   --  for -gnatR3 output, and for proper operation of the ASIS DDA. Since it
+   --  can be expensive to do this back annotation (for discriminated records
+   --  with many variable length arrays), we only do the full back annotation
+   --  in -gnatR3 mode, or ASIS mode. In any other mode, the back-end just sets
+   --  the value to Uint_Minus_1, indicating that the value of the attribute
+   --  depends on discriminant information, but not giving further details.
+
    --  GCC expressions are represented with a Uint value that is negative.
    --  See the body of this package for details on the representation used.
 
@@ -117,7 +125,9 @@ package Repinfo is
    --  as a negative Uint value, provides an expression which, when evaluated
    --  with a given set of discriminant values, indicates whether the variant
    --  is present for that set of values (result is True, i.e. non-zero) or
-   --  not present (result is False, i.e. zero).
+   --  not present (result is False, i.e. zero). Again, the full annotation of
+   --  this field is done only in -gnatR3 mode or in ASIS mode, and in other
+   --  modes, the value is set to Uint_Minus_1.
 
    subtype Node_Ref is Uint;
    --  Subtype used for negative Uint values used to represent nodes

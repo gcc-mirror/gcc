@@ -1,4 +1,24 @@
 2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+            Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads (Suppress_Back_Annotation): Remove as unused.
+	* fe.h (Back_Annotate_Rep_Info): Likewise.
+	(Global_Discard_Names): Likewise.
+	(List_Representation_Info): Declare.
+	* types.h (Uint_Minus_1): Likewise.
+	* repinfo.ads: Document back-annotation change.
+	* gcc-interface/gigi.h (init_gnat_decl): Declare.
+	(destroy_gnat_decl): Likewise.
+	* gcc-interface/decl.c (annotate_value): Do not create the cache of
+	annotated values here but...
+	<CALL_EXPR>: Only inline the call if -gnatR3 is specified or we are
+	in ASIS mode.
+	(init_gnat_decl): ...here instead.  New function.
+	(destroy_gnat_decl): Likewise.
+	* gcc-interface/trans.c (gigi): Call {init|destroy}_gnat_decl.
+	* gcc-interface/utils.c (init_gnat_utils): Minor reformatting.
+
+2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (create_field_decl_from): Finalize non-constant
 	offset for the field, if any.
