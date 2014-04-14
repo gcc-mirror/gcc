@@ -6967,7 +6967,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     outer->num_nodes -= num_nodes;
   loop0->num_nodes -= bbs.length () - num_nodes;
 
-  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vect_loops)
+  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vectorize_loops)
     {
       struct loop *aloop;
       for (i = 0; vec_safe_iterate (loops->larray, i, &aloop); i++)
@@ -6979,8 +6979,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 					   d.to_context);
 		dest_cfun->has_simduid_loops = true;
 	      }
-	    if (aloop->force_vect)
-	      dest_cfun->has_force_vect_loops = true;
+	    if (aloop->force_vectorize)
+	      dest_cfun->has_force_vectorize_loops = true;
 	  }
     }
 

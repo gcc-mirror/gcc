@@ -174,7 +174,7 @@ struct GTY ((chain_next ("%h.next"))) loop {
   int safelen;
 
   /* True if we should try harder to vectorize this loop.  */
-  bool force_vect;
+  bool force_vectorize;
 
   /* True if this loop should never be vectorized.  */
   bool dont_vectorize;

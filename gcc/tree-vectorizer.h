@@ -958,7 +958,7 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
 static inline bool
 unlimited_cost_model (loop_p loop)
 {
-  if (loop != NULL && loop->force_vect
+  if (loop != NULL && loop->force_vectorize
       && flag_simd_cost_model != VECT_COST_MODEL_DEFAULT)
     return flag_simd_cost_model == VECT_COST_MODEL_UNLIMITED;
   return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);

@@ -417,7 +417,7 @@ vectorize_loops (void)
       any_ifcvt_loops = true;
     else if ((flag_tree_loop_vectorize
 	      && optimize_loop_nest_for_speed_p (loop))
-	     || loop->force_vect)
+	     || loop->force_vectorize)
       {
 	loop_vec_info loop_vinfo;
 	vect_location = find_loop_location (loop);
@@ -477,7 +477,7 @@ vectorize_loops (void)
 	num_vectorized_loops++;
 	/* Now that the loop has been vectorized, allow it to be unrolled
 	   etc.  */
-	loop->force_vect = false;
+	loop->force_vectorize = false;
 
 	if (loop->simduid)
 	  {

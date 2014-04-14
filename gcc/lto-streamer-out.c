@@ -1693,7 +1693,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);
-      streamer_write_hwi (ob, loop->force_vect);
+      streamer_write_hwi (ob, loop->force_vectorize);
       stream_write_tree (ob, loop->simduid, true);
     }
 
@@ -1788,7 +1788,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->has_nonlocal_label, 1);
   bp_pack_value (&bp, fn->calls_alloca, 1);
   bp_pack_value (&bp, fn->calls_setjmp, 1);
-  bp_pack_value (&bp, fn->has_force_vect_loops, 1);
+  bp_pack_value (&bp, fn->has_force_vectorize_loops, 1);
   bp_pack_value (&bp, fn->has_simduid_loops, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
