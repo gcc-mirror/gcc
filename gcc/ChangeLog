@@ -1,3 +1,10 @@
+2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60720
+	* lto-streamer-out.c (wrap_refs): New function.
+	(lto_output): Wrap symbol references in global initializes in
+	type-preserving MEM_REFs.
+
 2014-04-14  Christian Bruel  <christian.bruel@st.com>
 
         * config/sh/sh-mem.cc (sh_expand_strlen): Unroll last word.
