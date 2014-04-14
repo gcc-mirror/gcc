@@ -612,34 +612,9 @@ class Gogo
   void
   build_interface_method_tables();
 
-  // Build an interface method table for a type: a list of function
-  // pointers, one for each interface method.  This returns a decl.
-  tree
-  interface_method_table_for_type(const Interface_type*, Type*,
-				  bool is_pointer);
-
-  // Return a tree which allocate SIZE bytes to hold values of type
-  // TYPE.
-  tree
-  allocate_memory(Type *type, tree size, Location);
-
-  // Return a type to use for pointer to const char.
-  static tree
-  const_char_pointer_type_tree();
-
-  // Build a string constant with the right type.
-  static tree
-  string_constant_tree(const std::string&);
-
-  // Build a Go string constant.  This returns a pointer to the
-  // constant.
-  tree
-  go_string_constant_tree(const std::string&);
-
-  // Receive a value from a channel.
-  static tree
-  receive_from_channel(tree type_tree, tree type_descriptor_tree, tree channel,
-		       Location);
+  // Return an expression which allocates memory to hold values of type TYPE.
+  Expression*
+  allocate_memory(Type *type, Location);
 
  private:
   // During parsing, we keep a stack of functions.  Each function on
@@ -686,11 +661,6 @@ class Gogo
   // Register variables with the garbage collector.
   void
   register_gc_vars(const std::vector<Named_object*>&, tree*);
-
-  // Build a pointer to a Go string constant.  This returns a pointer
-  // to the pointer.
-  tree
-  ptr_go_string_constant_tree(const std::string&);
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
@@ -1119,14 +1089,14 @@ class Function
   tree
   get_decl() const;
 
-  // Set the function decl to hold a tree of the function code.
+  // Set the function decl to hold a backend representation of the function
+  // code.
   void
-  build_tree(Gogo*, Named_object*);
+  build(Gogo*, Named_object*);
 
-  // Get the value to return when not explicitly specified.  May also
-  // add statements to execute first to STMT_LIST.
-  tree
-  return_value(Gogo*, Named_object*, Location, tree* stmt_list) const;
+  // Get the statement that assigns values to this function's result struct.
+  Bstatement*
+  return_value(Gogo*, Named_object*, Location) const;
 
   // Get a tree for the variable holding the defer stack.
   Expression*
@@ -1151,14 +1121,8 @@ class Function
   // Type for mapping from label names to Label objects.
   typedef Unordered_map(std::string, Label*) Labels;
 
-  tree
-  make_receiver_parm_decl(Gogo*, Named_object*, tree);
-
-  tree
-  copy_parm_to_heap(Gogo*, Named_object*, tree);
-
   void
-  build_defer_wrapper(Gogo*, Named_object*, tree*, tree*);
+  build_defer_wrapper(Gogo*, Named_object*, Bstatement**, Bstatement**);
 
   typedef std::vector<std::pair<Named_object*,
 				Location> > Closure_fields;
@@ -1531,16 +1495,16 @@ class Variable
   get_backend_variable(Gogo*, Named_object*, const Package*,
 		       const std::string&);
 
-  // Get the initial value of the variable as a tree.  This may only
+  // Get the initial value of the variable.  This may only
   // be called if has_pre_init() returns false.
-  tree
-  get_init_tree(Gogo*, Named_object* function);
+  Bexpression*
+  get_init(Gogo*, Named_object* function);
 
   // Return a series of statements which sets the value of the
   // variable in DECL.  This should only be called is has_pre_init()
   // returns true.  DECL may be NULL for a sink variable.
-  tree
-  get_init_block(Gogo*, Named_object* function, tree decl);
+  Bstatement*
+  get_init_block(Gogo*, Named_object* function, Bvariable* decl);
 
   // Export the variable.
   void

@@ -1005,6 +1005,10 @@ Label*
 Gogo::add_label_definition(const std::string& label_name,
 			   Location location)
 {
+  // A label with a blank identifier is never declared or defined.
+  if (label_name == "_")
+    return NULL;
+
   go_assert(!this->functions_.empty());
   Function* func = this->functions_.back().function->func_value();
   Label* label = func->add_label_definition(this, label_name, location);
@@ -3330,6 +3334,7 @@ Build_method_tables::type(Type* type)
   Struct_type* st = type->struct_type();
   if (nt != NULL || st != NULL)
     {
+      Translate_context context(this->gogo_, NULL, NULL, NULL);
       for (std::vector<Interface_type*>::const_iterator p =
 	     this->interfaces_.begin();
 	   p != this->interfaces_.end();
@@ -3343,8 +3348,8 @@ Build_method_tables::type(Type* type)
 	      if ((*p)->implements_interface(Type::make_pointer_type(nt),
 					     NULL))
 		{
-		  nt->interface_method_table(this->gogo_, *p, false);
-		  nt->interface_method_table(this->gogo_, *p, true);
+		  nt->interface_method_table(*p, false)->get_tree(&context);
+                  nt->interface_method_table(*p, true)->get_tree(&context);
 		}
 	    }
 	  else
@@ -3352,13 +3357,35 @@ Build_method_tables::type(Type* type)
 	      if ((*p)->implements_interface(Type::make_pointer_type(st),
 					     NULL))
 		{
-		  st->interface_method_table(this->gogo_, *p, false);
-		  st->interface_method_table(this->gogo_, *p, true);
+		  st->interface_method_table(*p, false)->get_tree(&context);
+		  st->interface_method_table(*p, true)->get_tree(&context);
 		}
 	    }
 	}
     }
   return TRAVERSE_CONTINUE;
+}
+
+// Return an expression which allocates memory to hold values of type TYPE.
+
+Expression*
+Gogo::allocate_memory(Type* type, Location location)
+{
+  Btype* btype = type->get_backend(this);
+  size_t size = this->backend()->type_size(btype);
+  mpz_t size_val;
+  mpz_init_set_ui(size_val, size);
+  Type* uintptr = Type::lookup_integer_type("uintptr");
+  Expression* size_expr =
+    Expression::make_integer(&size_val, uintptr, location);
+
+  // If the package imports unsafe, then it may play games with
+  // pointers that look like integers.
+  bool use_new_pointers = this->imported_unsafe_ || type->has_pointer();
+  return Runtime::make_call((use_new_pointers
+			     ? Runtime::NEW
+			     : Runtime::NEW_NOPOINTERS),
+                            location, 1, size_expr);
 }
 
 // Traversal class used to check for return statements.
@@ -4111,6 +4138,293 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
   return this->fndecl_;
 }
 
+// Build the backend representation for the function code.
+
+void
+Function::build(Gogo* gogo, Named_object* named_function)
+{
+  Translate_context context(gogo, named_function, NULL, NULL);
+
+  // A list of parameter variables for this function.
+  std::vector<Bvariable*> param_vars;
+
+  // Variables that need to be declared for this function and their
+  // initial values.
+  std::vector<Bvariable*> vars;
+  std::vector<Bexpression*> var_inits;
+  for (Bindings::const_definitions_iterator p =
+	 this->block_->bindings()->begin_definitions();
+       p != this->block_->bindings()->end_definitions();
+       ++p)
+    {
+      Location loc = (*p)->location();
+      if ((*p)->is_variable() && (*p)->var_value()->is_parameter())
+	{
+	  Bvariable* bvar = (*p)->get_backend_variable(gogo, named_function);
+          Bvariable* parm_bvar = bvar;
+
+	  // We always pass the receiver to a method as a pointer.  If
+	  // the receiver is declared as a non-pointer type, then we
+	  // copy the value into a local variable.
+	  if ((*p)->var_value()->is_receiver()
+	      && (*p)->var_value()->type()->points_to() == NULL)
+	    {
+	      std::string name = (*p)->name() + ".pointer";
+	      Type* var_type = (*p)->var_value()->type();
+	      Variable* parm_var =
+		  new Variable(Type::make_pointer_type(var_type), NULL, false,
+			       true, false, loc);
+	      Named_object* parm_no =
+                  Named_object::make_variable(name, NULL, parm_var);
+              parm_bvar = parm_no->get_backend_variable(gogo, named_function);
+
+              vars.push_back(bvar);
+	      Expression* parm_ref =
+                  Expression::make_var_reference(parm_no, loc);
+	      parm_ref = Expression::make_unary(OPERATOR_MULT, parm_ref, loc);
+	      if ((*p)->var_value()->is_in_heap())
+		parm_ref = Expression::make_heap_expression(parm_ref, loc);
+              var_inits.push_back(tree_to_expr(parm_ref->get_tree(&context)));
+	    }
+	  else if ((*p)->var_value()->is_in_heap())
+	    {
+	      // If we take the address of a parameter, then we need
+	      // to copy it into the heap.
+	      std::string parm_name = (*p)->name() + ".param";
+	      Variable* parm_var = new Variable((*p)->var_value()->type(), NULL,
+						false, true, false, loc);
+	      Named_object* parm_no =
+		  Named_object::make_variable(parm_name, NULL, parm_var);
+	      parm_bvar = parm_no->get_backend_variable(gogo, named_function);
+
+              vars.push_back(bvar);
+	      Expression* var_ref =
+		  Expression::make_var_reference(parm_no, loc);
+	      var_ref = Expression::make_heap_expression(var_ref, loc);
+              var_inits.push_back(tree_to_expr(var_ref->get_tree(&context)));
+	    }
+          param_vars.push_back(parm_bvar);
+	}
+      else if ((*p)->is_result_variable())
+	{
+	  Bvariable* bvar = (*p)->get_backend_variable(gogo, named_function);
+
+	  Type* type = (*p)->result_var_value()->type();
+	  Bexpression* init;
+	  if (!(*p)->result_var_value()->is_in_heap())
+	    {
+	      Btype* btype = type->get_backend(gogo);
+	      init = gogo->backend()->zero_expression(btype);
+	    }
+	  else
+            {
+              Expression* alloc = Expression::make_allocation(type, loc);
+              init = tree_to_expr(alloc->get_tree(&context));
+            }
+
+          vars.push_back(bvar);
+          var_inits.push_back(init);
+	}
+    }
+  if (!gogo->backend()->function_set_parameters(this->fndecl_, param_vars))
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
+  // If we need a closure variable, fetch it by calling a runtime
+  // function.  The caller will have called __go_set_closure before
+  // the function call.
+  if (this->closure_var_ != NULL)
+    {
+      Bvariable* closure_bvar =
+	this->closure_var_->get_backend_variable(gogo, named_function);
+      vars.push_back(closure_bvar);
+
+      Expression* closure =
+          Runtime::make_call(Runtime::GET_CLOSURE, this->location_, 0);
+      var_inits.push_back(tree_to_expr(closure->get_tree(&context)));
+    }
+
+  if (this->block_ != NULL)
+    {
+      // Declare variables if necessary.
+      Bblock* var_decls = NULL;
+
+      Bstatement* defer_init = NULL;
+      if (!vars.empty() || this->defer_stack_ != NULL)
+	{
+          var_decls =
+              gogo->backend()->block(this->fndecl_, NULL, vars,
+                                     this->block_->start_location(),
+                                     this->block_->end_location());
+
+	  if (this->defer_stack_ != NULL)
+	    {
+	      Translate_context dcontext(gogo, named_function, this->block_,
+                                         var_decls);
+              defer_init = this->defer_stack_->get_backend(&dcontext);
+	    }
+	}
+
+      // Build the backend representation for all the statements in the
+      // function.
+      Translate_context context(gogo, named_function, NULL, NULL);
+      Bblock* code_block = this->block_->get_backend(&context);
+
+      // Initialize variables if necessary.
+      std::vector<Bstatement*> init;
+      go_assert(vars.size() == var_inits.size());
+      for (size_t i = 0; i < vars.size(); ++i)
+	{
+          Bstatement* init_stmt =
+              gogo->backend()->init_statement(vars[i], var_inits[i]);
+          init.push_back(init_stmt);
+	}
+      Bstatement* var_init = gogo->backend()->statement_list(init);
+
+      // Initialize all variables before executing this code block.
+      Bstatement* code_stmt = gogo->backend()->block_statement(code_block);
+      code_stmt = gogo->backend()->compound_statement(var_init, code_stmt);
+
+      // If we have a defer stack, initialize it at the start of a
+      // function.
+      Bstatement* except = NULL;
+      Bstatement* fini = NULL;
+      if (defer_init != NULL)
+	{
+	  // Clean up the defer stack when we leave the function.
+	  this->build_defer_wrapper(gogo, named_function, &except, &fini);
+
+          // Wrap the code for this function in an exception handler to handle
+          // defer calls.
+          code_stmt =
+              gogo->backend()->exception_handler_statement(code_stmt,
+                                                           except, fini,
+                                                           this->location_);
+	}
+
+      // Stick the code into the block we built for the receiver, if
+      // we built one.
+      if (var_decls != NULL)
+        {
+          std::vector<Bstatement*> code_stmt_list(1, code_stmt);
+          gogo->backend()->block_add_statements(var_decls, code_stmt_list);
+          code_stmt = gogo->backend()->block_statement(var_decls);
+        }
+
+      if (!gogo->backend()->function_set_body(this->fndecl_, code_stmt))
+        {
+          go_assert(saw_errors());
+          return;
+        }
+    }
+
+  // If we created a descriptor for the function, make sure we emit it.
+  if (this->descriptor_ != NULL)
+    {
+      Translate_context context(gogo, NULL, NULL, NULL);
+      this->descriptor_->get_tree(&context);
+    }
+}
+
+// Build the wrappers around function code needed if the function has
+// any defer statements.  This sets *EXCEPT to an exception handler
+// and *FINI to a finally handler.
+
+void
+Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
+			      Bstatement** except, Bstatement** fini)
+{
+  Location end_loc = this->block_->end_location();
+
+  // Add an exception handler.  This is used if a panic occurs.  Its
+  // purpose is to stop the stack unwinding if a deferred function
+  // calls recover.  There are more details in
+  // libgo/runtime/go-unwind.c.
+
+  std::vector<Bstatement*> stmts;
+  Expression* call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
+					this->defer_stack(end_loc));
+  Translate_context context(gogo, named_function, NULL, NULL);
+  Bexpression* defer = tree_to_expr(call->get_tree(&context));
+  stmts.push_back(gogo->backend()->expression_statement(defer));
+
+  Bstatement* ret_bstmt = this->return_value(gogo, named_function, end_loc);
+  if (ret_bstmt != NULL)
+    stmts.push_back(ret_bstmt);
+
+  go_assert(*except == NULL);
+  *except = gogo->backend()->statement_list(stmts);
+
+  call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
+                            this->defer_stack(end_loc));
+  defer = tree_to_expr(call->get_tree(&context));
+
+  call = Runtime::make_call(Runtime::UNDEFER, end_loc, 1,
+        		    this->defer_stack(end_loc));
+  Bexpression* undefer = tree_to_expr(call->get_tree(&context));
+  Bstatement* function_defer =
+      gogo->backend()->function_defer_statement(this->fndecl_, undefer, defer,
+                                                end_loc);
+  stmts = std::vector<Bstatement*>(1, function_defer);
+  if (this->type_->results() != NULL
+      && !this->type_->results()->empty()
+      && !this->type_->results()->front().name().empty())
+    {
+      // If the result variables are named, and we are returning from
+      // this function rather than panicing through it, we need to
+      // return them again, because they might have been changed by a
+      // defer function.  The runtime routines set the defer_stack
+      // variable to true if we are returning from this function.
+
+      ret_bstmt = this->return_value(gogo, named_function, end_loc);
+      Bexpression* nil =
+          tree_to_expr(Expression::make_nil(end_loc)->get_tree(&context));
+      Bexpression* ret =
+          gogo->backend()->compound_expression(ret_bstmt, nil, end_loc);
+      Expression* ref =
+	Expression::make_temporary_reference(this->defer_stack_, end_loc);
+      Bexpression* bref = tree_to_expr(ref->get_tree(&context));
+      ret = gogo->backend()->conditional_expression(NULL, bref, ret, NULL,
+                                                    end_loc);
+      stmts.push_back(gogo->backend()->expression_statement(ret));
+    }
+
+  go_assert(*fini == NULL);
+  *fini = gogo->backend()->statement_list(stmts);
+}
+
+// Return the statement that assigns values to this function's result struct.
+
+Bstatement*
+Function::return_value(Gogo* gogo, Named_object* named_function,
+		       Location location) const
+{
+  const Typed_identifier_list* results = this->type_->results();
+  if (results == NULL || results->empty())
+    return NULL;
+
+  go_assert(this->results_ != NULL);
+  if (this->results_->size() != results->size())
+    {
+      go_assert(saw_errors());
+      return gogo->backend()->error_statement();
+    }
+
+  std::vector<Bexpression*> vals(results->size());
+  for (size_t i = 0; i < vals.size(); ++i)
+    {
+      Named_object* no = (*this->results_)[i];
+      Bvariable* bvar = no->get_backend_variable(gogo, named_function);
+      Bexpression* val = gogo->backend()->var_expression(bvar, location);
+      if (no->result_var_value()->is_in_heap())
+        val = gogo->backend()->indirect_expression(val, true, location);
+      vals[i] = val;
+    }
+  return gogo->backend()->return_statement(this->fndecl_, vals, location);
+}
+
 // Class Block.
 
 Block::Block(Block* enclosing, Location location)
@@ -4855,6 +5169,74 @@ Variable::determine_type()
 	  this->type_ = type;
 	}
     }
+}
+
+// Get the initial value of a variable.  This does not
+// consider whether the variable is in the heap--it returns the
+// initial value as though it were always stored in the stack.
+
+Bexpression*
+Variable::get_init(Gogo* gogo, Named_object* function)
+{
+  go_assert(this->preinit_ == NULL);
+  Location loc = this->location();
+  if (this->init_ == NULL)
+    {
+      go_assert(!this->is_parameter_);
+      if (this->is_global_ || this->is_in_heap())
+	return NULL;
+      Btype* btype = this->type()->get_backend(gogo);
+      return gogo->backend()->zero_expression(btype);
+    }
+  else
+    {
+      Translate_context context(gogo, function, NULL, NULL);
+      Expression* init = Expression::make_cast(this->type(), this->init_, loc);
+      return tree_to_expr(init->get_tree(&context));
+    }
+}
+
+// Get the initial value of a variable when a block is required.
+// VAR_DECL is the decl to set; it may be NULL for a sink variable.
+
+Bstatement*
+Variable::get_init_block(Gogo* gogo, Named_object* function,
+                         Bvariable* var_decl)
+{
+  go_assert(this->preinit_ != NULL);
+
+  // We want to add the variable assignment to the end of the preinit
+  // block.
+
+  Translate_context context(gogo, function, NULL, NULL);
+  Bblock* bblock = this->preinit_->get_backend(&context);
+
+  // It's possible to have pre-init statements without an initializer
+  // if the pre-init statements set the variable.
+  Bstatement* decl_init = NULL;
+  if (this->init_ != NULL)
+    {
+      if (var_decl == NULL)
+        {
+          Bexpression* init_bexpr =
+              tree_to_expr(this->init_->get_tree(&context));
+          decl_init = gogo->backend()->expression_statement(init_bexpr);
+        }
+      else
+	{
+          Location loc = this->location();
+          Expression* val_expr =
+              Expression::convert_for_assignment(gogo, this->type(),
+                                                 this->init_, this->location());
+          Bexpression* val = tree_to_expr(val_expr->get_tree(&context));
+          Bexpression* var_ref = gogo->backend()->var_expression(var_decl, loc);
+          decl_init = gogo->backend()->assignment_statement(var_ref, val, loc);
+	}
+    }
+  Bstatement* block_stmt = gogo->backend()->block_statement(bblock);
+  if (decl_init != NULL)
+    block_stmt = gogo->backend()->compound_statement(block_stmt, decl_init);
+  return block_stmt;
 }
 
 // Export the variable
