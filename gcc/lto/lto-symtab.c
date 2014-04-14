@@ -91,12 +91,6 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   if (node->decl != prevailing_node->decl)
     cgraph_release_function_body (node);
 
-  /* Time profile merging */
-  if (node->tp_first_run)
-    prevailing_node->tp_first_run = prevailing_node->tp_first_run ?
-      MIN (prevailing_node->tp_first_run, node->tp_first_run) :
-      node->tp_first_run;
-
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);
 }

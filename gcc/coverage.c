@@ -555,18 +555,29 @@ coverage_compute_lineno_checksum (void)
 unsigned
 coverage_compute_profile_id (struct cgraph_node *n)
 {
-  expanded_location xloc
-    = expand_location (DECL_SOURCE_LOCATION (n->decl));
-  unsigned chksum = xloc.line;
+  unsigned chksum;
 
-  chksum = coverage_checksum_string (chksum, xloc.file);
-  chksum = coverage_checksum_string
-    (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
-  if (first_global_object_name)
-    chksum = coverage_checksum_string
-      (chksum, first_global_object_name);
-  chksum = coverage_checksum_string
-    (chksum, aux_base_name);
+  /* Externally visible symbols have unique name.  */
+  if (TREE_PUBLIC (n->decl) || DECL_EXTERNAL (n->decl))
+    {
+      chksum = coverage_checksum_string
+	(0, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
+    }
+  else
+    {
+      expanded_location xloc
+	= expand_location (DECL_SOURCE_LOCATION (n->decl));
+
+      chksum = xloc.line;
+      chksum = coverage_checksum_string (chksum, xloc.file);
+      chksum = coverage_checksum_string
+	(chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
+      if (first_global_object_name)
+	chksum = coverage_checksum_string
+	  (chksum, first_global_object_name);
+      chksum = coverage_checksum_string
+	(chksum, aux_base_name);
+    }
 
   /* Non-negative integers are hopefully small enough to fit in all targets.  */
   return chksum & 0x7fffffff;
