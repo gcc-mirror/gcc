@@ -2671,10 +2671,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      for (index = ndim - 1; index >= 0; index--)
 		{
 		  tree gnu_index = TYPE_INDEX_TYPE (gnu_index_types[index]);
-		  tree gnu_index_name = TYPE_NAME (gnu_index);
-
-		  if (TREE_CODE (gnu_index_name) == TYPE_DECL)
-		    gnu_index_name = DECL_NAME (gnu_index_name);
+		  tree gnu_index_name = TYPE_IDENTIFIER (gnu_index);
 
 		  /* Make sure to reference the types themselves, and not just
 		     their names, as the debugger may fall back on them.  */
@@ -3652,11 +3649,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      if (debug_info_p)
 		{
 		  tree gnu_subtype_marker = make_node (RECORD_TYPE);
-		  tree gnu_unpad_base_name = TYPE_NAME (gnu_unpad_base_type);
+		  tree gnu_unpad_base_name
+		    = TYPE_IDENTIFIER (gnu_unpad_base_type);
 		  tree gnu_size_unit = TYPE_SIZE_UNIT (gnu_type);
-
-		  if (TREE_CODE (gnu_unpad_base_name) == TYPE_DECL)
-		    gnu_unpad_base_name = DECL_NAME (gnu_unpad_base_name);
 
 		  TYPE_NAME (gnu_subtype_marker)
 		    = create_concat_name (gnat_entity, "XVS");
@@ -4976,11 +4971,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				   false, !gnu_decl, definition, false);
 
       if (TYPE_IS_PADDING_P (gnu_type))
-	{
-	  gnu_entity_name = TYPE_NAME (gnu_type);
-	  if (TREE_CODE (gnu_entity_name) == TYPE_DECL)
-	    gnu_entity_name = DECL_NAME (gnu_entity_name);
-	}
+	gnu_entity_name = TYPE_IDENTIFIER (gnu_type);
 
       /* Now set the RM size of the type.  We cannot do it before padding
 	 because we need to accept arbitrary RM sizes on integral types.  */
@@ -7035,7 +7026,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
     {
       Node_Id gnat_discr = Name (variant_part), variant;
       tree gnu_discr = gnat_to_gnu (gnat_discr);
-      tree gnu_name = TYPE_NAME (gnu_record_type);
+      tree gnu_name = TYPE_IDENTIFIER (gnu_record_type);
       tree gnu_var_name
 	= concat_name (get_identifier (Get_Name_String (Chars (gnat_discr))),
 		       "XVN");
@@ -7046,9 +7037,6 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       vinfo_t *gnu_variant;
       unsigned int variants_align = 0;
       unsigned int i;
-
-      if (TREE_CODE (gnu_name) == TYPE_DECL)
-	gnu_name = DECL_NAME (gnu_name);
 
       gnu_union_name
 	= concat_name (gnu_name, IDENTIFIER_POINTER (gnu_var_name));

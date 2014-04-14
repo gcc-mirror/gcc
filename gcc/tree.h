@@ -1906,6 +1906,11 @@ extern void protected_set_expr_location (tree, location_t);
    It is an IDENTIFIER_NODE.  */
 #define DECL_NAME(NODE) (DECL_MINIMAL_CHECK (NODE)->decl_minimal.name)
 
+/* The IDENTIFIER_NODE associated with the TYPE_NAME field.  */
+#define TYPE_IDENTIFIER(NODE) \
+  (TYPE_NAME (NODE) && DECL_P (TYPE_NAME (NODE)) \
+   ? DECL_NAME (TYPE_NAME (NODE)) : TYPE_NAME (NODE))
+
 /* Every ..._DECL node gets a unique number.  */
 #define DECL_UID(NODE) (DECL_MINIMAL_CHECK (NODE)->decl_minimal.uid)
 

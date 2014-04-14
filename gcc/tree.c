@@ -7796,20 +7796,9 @@ subrange_type_for_debug_p (const_tree type, tree *lowval, tree *highval)
        || TREE_CODE (base_type) == BOOLEAN_TYPE)
       && int_size_in_bytes (type) == int_size_in_bytes (base_type)
       && tree_int_cst_equal (low, TYPE_MIN_VALUE (base_type))
-      && tree_int_cst_equal (high, TYPE_MAX_VALUE (base_type)))
-    {
-      tree type_name = TYPE_NAME (type);
-      tree base_type_name = TYPE_NAME (base_type);
-
-      if (type_name && TREE_CODE (type_name) == TYPE_DECL)
-	type_name = DECL_NAME (type_name);
-
-      if (base_type_name && TREE_CODE (base_type_name) == TYPE_DECL)
-	base_type_name = DECL_NAME (base_type_name);
-
-      if (type_name == base_type_name)
-	return false;
-    }
+      && tree_int_cst_equal (high, TYPE_MAX_VALUE (base_type))
+      && TYPE_IDENTIFIER (type) == TYPE_IDENTIFIER (base_type))
+    return false;
 
   if (lowval)
     *lowval = low;

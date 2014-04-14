@@ -706,10 +706,8 @@ make_aligning_type (tree type, unsigned int align, tree size,
   tree vblock_addr_st = size_binop (PLUS_EXPR, record_addr_st, room_st);
   tree voffset_st, pos, field;
 
-  tree name = TYPE_NAME (type);
+  tree name = TYPE_IDENTIFIER (type);
 
-  if (TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
   name = concat_name (name, "ALIGN");
   TYPE_NAME (record_type) = name;
 
@@ -1203,14 +1201,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	   && DECL_IGNORED_P (TYPE_NAME (type))))
     {
       tree marker = make_node (RECORD_TYPE);
-      tree name = TYPE_NAME (record);
-      tree orig_name = TYPE_NAME (type);
-
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
-
-      if (TREE_CODE (orig_name) == TYPE_DECL)
-	orig_name = DECL_NAME (orig_name);
+      tree name = TYPE_IDENTIFIER (record);
+      tree orig_name = TYPE_IDENTIFIER (type);
 
       TYPE_NAME (marker) = concat_name (name, "XVS");
       finish_record_type (marker,
@@ -1419,7 +1411,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 		    bool debug_info_p)
 {
   enum tree_code code = TREE_CODE (record_type);
-  tree name = TYPE_NAME (record_type);
+  tree name = TYPE_IDENTIFIER (record_type);
   tree ada_size = bitsize_zero_node;
   tree size = bitsize_zero_node;
   bool had_size = TYPE_SIZE (record_type) != 0;
@@ -1431,8 +1423,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 
   /* Always attach the TYPE_STUB_DECL for a record type.  It is required to
      generate debug info and have a parallel type.  */
-  if (name && TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
   TYPE_STUB_DECL (record_type) = create_type_stub_decl (name, record_type);
 
   /* Globally initialize the record first.  If this is a rep'ed record,
@@ -1692,12 +1682,9 @@ rest_of_record_type_compilation (tree record_type)
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
 		     ? UNION_TYPE : TREE_CODE (record_type));
-      tree orig_name = TYPE_NAME (record_type), new_name;
+      tree orig_name = TYPE_IDENTIFIER (record_type), new_name;
       tree last_pos = bitsize_zero_node;
       tree old_field, prev_old_field = NULL_TREE;
-
-      if (TREE_CODE (orig_name) == TYPE_DECL)
-	orig_name = DECL_NAME (orig_name);
 
       new_name
 	= concat_name (orig_name, TREE_CODE (record_type) == QUAL_UNION_TYPE

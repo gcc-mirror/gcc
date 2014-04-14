@@ -1,5 +1,9 @@
 2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* cp-tree.h (TYPE_IDENTIFIER): Remove declaration.
+
+2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* pt.c (mark_template_parm): Use template_parm_level_and_index.
 
 2014-04-11  Jason Merrill  <jason@redhat.com>
