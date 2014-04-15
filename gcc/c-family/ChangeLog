@@ -1,3 +1,9 @@
+2014-04-15  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/60467
+	* cilk.c (cilk_set_spawn_marker): Remove FUNCTION_DECL
+	as possible argument for Cilk_spawn.
+
 2014-04-08  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/60745
