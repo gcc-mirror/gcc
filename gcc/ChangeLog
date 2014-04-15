@@ -1,3 +1,8 @@
+2014-04-15  Teresa Johnson  <tejohnson@google.com>
+
+	* cfg.c (dump_bb_info): Fix flags check.
+	* tree-cfg.c (remove_bb): Only dump TDF_BLOCKS when removing.
+
 2014-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/60663

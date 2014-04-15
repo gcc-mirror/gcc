@@ -1,3 +1,7 @@
+2014-04-15  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/tree-prof/update-loopch.c: Update expected output.
+
 2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/vect14.adb: New test.
