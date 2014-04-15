@@ -2400,11 +2400,9 @@ Case_Statement_to_gnu (Node_Id gnat_node)
       /* First compile all the different case choices for the current WHEN
 	 alternative.  */
       for (gnat_choice = First (Discrete_Choices (gnat_when));
-	   Present (gnat_choice);
-	   gnat_choice = Next (gnat_choice))
+	   Present (gnat_choice); gnat_choice = Next (gnat_choice))
 	{
 	  tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
-	  tree label = create_artificial_label (input_location);
 
 	  switch (Nkind (gnat_choice))
 	    {
@@ -2428,8 +2426,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 		{
 		  tree gnu_type = get_unpadded_type (Entity (gnat_choice));
 
-		  gnu_low = TYPE_MIN_VALUE (gnu_type);
-		  gnu_high = TYPE_MAX_VALUE (gnu_type);
+		  gnu_low = fold (TYPE_MIN_VALUE (gnu_type));
+		  gnu_high = fold (TYPE_MAX_VALUE (gnu_type));
 		  break;
 		}
 
@@ -2447,13 +2445,20 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	      gcc_unreachable ();
 	    }
 
-	  /* Everything should be folded into constants at this point.  */
-	  gcc_assert (!gnu_low  || TREE_CODE (gnu_low)  == INTEGER_CST);
-	  gcc_assert (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST);
-
-	  add_stmt_with_node (build_case_label (gnu_low, gnu_high, label),
-			      gnat_choice);
-	  choices_added_p = true;
+	  /* If the case value is a subtype that raises Constraint_Error at
+	     run time because of a wrong bound, then gnu_low or gnu_high is
+	     not translated into an INTEGER_CST.  In such a case, we need
+	     to ensure that the when statement is not added in the tree,
+	     otherwise it will crash the gimplifier.  */
+	  if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
+	      && (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST))
+	    {
+	      add_stmt_with_node (build_case_label
+				  (gnu_low, gnu_high,
+				   create_artificial_label (input_location)),
+				  gnat_choice);
+	      choices_added_p = true;
+	    }
 	}
 
       /* This construct doesn't define a scope so we shouldn't push a binding
