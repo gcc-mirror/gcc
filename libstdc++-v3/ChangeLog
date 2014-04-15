@@ -20,6 +20,8 @@
 	* include/bits/shared_ptr_base.h
 	(__shared_ptr::__shared_ptr(nullptr_t)): Likewise
 
+	* include/std/atomic: Uglify parameter names.
+
 2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,
