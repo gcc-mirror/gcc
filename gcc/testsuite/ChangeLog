@@ -1,3 +1,8 @@
+2014-04-15  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/60469
+	* c-c++-common/cilk-plus/CK/pr60469.c: New test.
+
 2014-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/lto/pr55113_0.c: Skip on i?86-*-solaris2.1[0-1]*.
