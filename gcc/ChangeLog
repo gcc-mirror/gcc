@@ -1,3 +1,9 @@
+2014-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/59335
+	* Makefile.in (PLUGIN_HEADERS): Add various headers that have been
+	added in 4.9.
+
 2014-04-14  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* doc/invoke.texi (free): Document AArch64.
