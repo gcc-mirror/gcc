@@ -824,14 +824,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	  opts->x_flag_fat_lto_objects = 1;
 	}
     }
-  if ((opts->x_flag_lto_partition_balanced != 0) + (opts->x_flag_lto_partition_1to1 != 0)
-       + (opts->x_flag_lto_partition_none != 0) >= 1)
-    {
-      if ((opts->x_flag_lto_partition_balanced != 0)
-	   + (opts->x_flag_lto_partition_1to1 != 0)
-	   + (opts->x_flag_lto_partition_none != 0) > 1)
-	error_at (loc, "only one -flto-partition value can be specified");
-    }
 
   /* We initialize opts->x_flag_split_stack to -1 so that targets can set a
      default value if they choose based on other options.  */
