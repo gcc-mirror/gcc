@@ -355,7 +355,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_base& operator=(const __atomic_base&) = delete;
       __atomic_base& operator=(const __atomic_base&) volatile = delete;
 
-      // Requires __int_type convertible to _M_i.
       constexpr __atomic_base(__int_type __i) noexcept : _M_i (__i) { }
 
       operator __int_type() const noexcept
