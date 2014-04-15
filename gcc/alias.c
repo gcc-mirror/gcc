@@ -995,17 +995,6 @@ record_component_aliases (tree type)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      /* Recursively record aliases for the base classes, if there are any.  */
-      if (TYPE_BINFO (type))
-	{
-	  int i;
-	  tree binfo, base_binfo;
-
-	  for (binfo = TYPE_BINFO (type), i = 0;
-	       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-	    record_alias_subset (superset,
-				 get_alias_set (BINFO_TYPE (base_binfo)));
-	}
       for (field = TYPE_FIELDS (type); field != 0; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL && !DECL_NONADDRESSABLE_P (field))
 	  record_alias_subset (superset, get_alias_set (TREE_TYPE (field)));
