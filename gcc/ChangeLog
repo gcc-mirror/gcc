@@ -1,5 +1,10 @@
 2014-04-15  Richard Biener  <rguenther@suse.de>
 
+	* alias.c (ncr_compar): New function.
+	(nonoverlapping_component_refs_p): Re-implement in O (n log n).
+
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
 	* alias.c (record_component_aliases): Do not walk BINFOs.
 
 2014-04-15  Richard Biener  <rguenther@suse.de>
