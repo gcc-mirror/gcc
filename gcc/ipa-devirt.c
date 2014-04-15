@@ -598,6 +598,48 @@ build_type_inheritance_graph (void)
   timevar_pop (TV_IPA_INHERITANCE);
 }
 
+/* Return true if N has reference from live virtual table
+   (and thus can be a destination of polymorphic call). 
+   Be conservatively correct when callgraph is not built or
+   if the method may be referred externally.  */
+
+static bool
+referenced_from_vtable_p (struct cgraph_node *node)
+{
+  int i;
+  struct ipa_ref *ref;
+  bool found = false;
+
+  if (node->externally_visible
+      || node->used_from_other_partition)
+    return true;
+
+  /* Keep this test constant time.
+     It is unlikely this can happen except for the case where speculative
+     devirtualization introduced many speculative edges to this node. 
+     In this case the target is very likely alive anyway.  */
+  if (node->ref_list.referring.length () > 100)
+    return true;
+
+  /* We need references built.  */
+  if (cgraph_state <= CGRAPH_STATE_CONSTRUCTION)
+    return true;
+
+  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
+					      i, ref); i++)
+	
+    if ((ref->use == IPA_REF_ALIAS
+	 && referenced_from_vtable_p (cgraph (ref->referring)))
+	|| (ref->use == IPA_REF_ADDR
+	    && TREE_CODE (ref->referring->decl) == VAR_DECL
+	    && DECL_VIRTUAL_P (ref->referring->decl)))
+      {
+	found = true;
+	break;
+      }
+  return found;
+}
+
 /* If TARGET has associated node, record it in the NODES array.
    CAN_REFER specify if program can refer to the target directly.
    if TARGET is unknown (NULL) or it can not be inserted (for example because
@@ -634,11 +676,29 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 
   target_node = cgraph_get_node (target);
 
-  if (target_node != NULL
-      && ((TREE_PUBLIC (target)
-	   || DECL_EXTERNAL (target))
-	  || target_node->definition)
-      && symtab_real_symbol_p (target_node))
+  /* Method can only be called by polymorphic call if any
+     of vtables refering to it are alive. 
+
+     While this holds for non-anonymous functions, too, there are
+     cases where we want to keep them in the list; for example
+     inline functions with -fno-weak are static, but we still
+     may devirtualize them when instance comes from other unit.
+     The same holds for LTO.
+
+     Currently we ignore these functions in speculative devirtualization.
+     ??? Maybe it would make sense to be more aggressive for LTO even
+     eslewhere.  */
+  if (!flag_ltrans
+      && type_in_anonymous_namespace_p (DECL_CONTEXT (target))
+      && (!target_node
+          || !referenced_from_vtable_p (target_node)))
+    ;
+  /* See if TARGET is useful function we can deal with.  */
+  else if (target_node != NULL
+	   && (TREE_PUBLIC (target)
+	       || DECL_EXTERNAL (target)
+	       || target_node->definition)
+	   && symtab_real_symbol_p (target_node))
     {
       gcc_assert (!target_node->global.inlined_to);
       gcc_assert (symtab_real_symbol_p (target_node));
@@ -1724,6 +1784,12 @@ likely_target_p (struct cgraph_node *n)
 			DECL_ATTRIBUTES (n->decl)))
     return false;
   if (n->frequency < NODE_FREQUENCY_NORMAL)
+    return false;
+  /* If there are no virtual tables refering the target alive,
+     the only way the target can be called is an instance comming from other
+     compilation unit; speculative devirtualization is build around an
+     assumption that won't happen.  */
+  if (!referenced_from_vtable_p (n))
     return false;
   return true;
 }
