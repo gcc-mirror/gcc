@@ -1,3 +1,9 @@
+2014-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/60663
+	* config/arm/arm.c (arm_new_rtx_costs): Improve ASM_OPERANDS case,
+	avoid 0 cost.
+
 2014-04-15  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (LTO_major_version): Bump to 4.
