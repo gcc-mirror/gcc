@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2012-2014 Free Software Foundation, Inc.
@@ -27,10 +27,10 @@ using std::tuple;
 
 struct A { };
 
-template class tuple<tuple<>>;
-template class tuple<tuple<tuple<>>>;
-template class tuple<A, tuple<A, tuple<A, tuple<A>>>>;
-template class tuple<tuple<tuple<A, A>, A>, A>;
+template class std::tuple<tuple<>>;
+template class std::tuple<tuple<tuple<>>>;
+template class std::tuple<A, tuple<A, tuple<A, tuple<A>>>>;
+template class std::tuple<tuple<tuple<A, A>, A>, A>;
 
 // Verify the following QoI properties are preserved
 
