@@ -6151,7 +6151,8 @@ prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
       Node_Id gnat_arg0 = Next (First (gnat_arg));
       Node_Id gnat_arg1 = Empty;
 
-      if (Present (gnat_arg0) && Is_Static_Expression (Expression (gnat_arg0)))
+      if (Present (gnat_arg0)
+	  && Is_OK_Static_Expression (Expression (gnat_arg0)))
 	{
 	  gnu_arg0 = gnat_to_gnu (Expression (gnat_arg0));
 
@@ -6165,7 +6166,8 @@ prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
 	  gnat_arg1 = Next (gnat_arg0);
 	}
 
-      if (Present (gnat_arg1) && Is_Static_Expression (Expression (gnat_arg1)))
+      if (Present (gnat_arg1)
+	  && Is_OK_Static_Expression (Expression (gnat_arg1)))
 	{
 	  gnu_arg1 = gnat_to_gnu (Expression (gnat_arg1));
 
