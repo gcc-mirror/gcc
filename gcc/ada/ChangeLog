@@ -1,4 +1,23 @@
 2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create a mere
+	scalar constant instead of a reference for renaming of scalar literal.
+	Do not create a new object for constant renaming except for a function
+	call.  Make sure a VAR_DECL is created for the renaming pointer.
+	* gcc-interface/trans.c (constant_decl_with_initializer_p): New.
+	(fold_constant_decl_in_expr): New function.
+	(Identifier_to_gnu): Use constant_decl_with_initializer_p.
+	For a constant renaming, try to fold a constant DECL in the result.
+	(lvalue_required_p) <N_Object_Renaming_Declaration>: Always return 1.
+	(Identifier_to_gnu): Reference the renamed object of constant renaming
+	pointers directly.
+	(Case_Statement_to_gnu): Do not re-fold the bounds of integer types.
+	Assert that the case values are constant.
+	* gcc-interface/utils.c (invalidate_global_renaming_pointers): Do not
+	invalidate constant renaming pointers.
+
+2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (type_for_vector_element_p): New predicate.
 	(build_vector_type_for_size): New function.

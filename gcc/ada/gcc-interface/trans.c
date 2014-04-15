@@ -898,17 +898,8 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 				address_of_constant, aliased);
 
     case N_Object_Renaming_Declaration:
-      /* We need to make a real renaming only if the constant object is
-	 aliased or if we may use a renaming pointer; otherwise we can
-	 optimize and return the rvalue.  We make an exception if the object
-	 is an identifier since in this case the rvalue can be propagated
-	 attached to the CONST_DECL.  */
-      return (!constant
-	      || aliased
-	      /* This should match the constant case of the renaming code.  */
-	      || Is_Composite_Type
-		 (Underlying_Type (Etype (Name (gnat_parent))))
-	      || Nkind (Name (gnat_parent)) == N_Identifier);
+      /* We need to preserve addresses through a renaming.  */
+      return 1;
 
     case N_Object_Declaration:
       /* We cannot use a constructor if this is an atomic object because
@@ -963,6 +954,77 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 
     default:
       return 0;
+    }
+
+  gcc_unreachable ();
+}
+
+/* Return true if T is a constant DECL node that can be safely replaced
+   by its initializer.  */
+
+static bool
+constant_decl_with_initializer_p (tree t)
+{
+  if (!TREE_CONSTANT (t) || !DECL_P (t) || !DECL_INITIAL (t))
+    return false;
+
+  /* Return false for aggregate types that contain a placeholder since
+     their initializers cannot be manipulated easily.  */
+  if (AGGREGATE_TYPE_P (TREE_TYPE (t))
+      && !TYPE_IS_FAT_POINTER_P (TREE_TYPE (t))
+      && type_contains_placeholder_p (TREE_TYPE (t)))
+    return false;
+
+  return true;
+}
+
+/* Return an expression equivalent to EXP but where constant DECL nodes
+   have been replaced by their initializer.  */
+
+static tree
+fold_constant_decl_in_expr (tree exp)
+{
+  enum tree_code code = TREE_CODE (exp);
+  tree op0;
+
+  switch (code)
+    {
+    case CONST_DECL:
+    case VAR_DECL:
+      if (!constant_decl_with_initializer_p (exp))
+	return exp;
+
+      return DECL_INITIAL (exp);
+
+    case BIT_FIELD_REF:
+    case COMPONENT_REF:
+      op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold_build3 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
+			  TREE_OPERAND (exp, 2));
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold (build4 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
+			   TREE_OPERAND (exp, 2), TREE_OPERAND (exp, 3)));
+
+    case VIEW_CONVERT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold_build1 (code, TREE_TYPE (exp), op0);
+
+    default:
+      return exp;
     }
 
   gcc_unreachable ();
@@ -1112,13 +1174,16 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 					  true, false)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
-      /* If it's a renaming pointer and we are at the right binding level,
-	 we can reference the renamed object directly, since the renamed
-	 expression has been protected against multiple evaluations.  */
+      /* If it's a renaming pointer and, either the renamed object is constant
+	 or we are at the right binding level, we can reference the renamed
+	 object directly, since it is constant or has been protected against
+	 multiple evaluations.  */
       if (TREE_CODE (gnu_result) == VAR_DECL
           && !DECL_LOOP_PARM_P (gnu_result)
 	  && DECL_RENAMED_OBJECT (gnu_result)
-	  && (!DECL_RENAMING_GLOBAL_P (gnu_result) || global_bindings_p ()))
+	  && (TREE_CONSTANT (DECL_RENAMED_OBJECT (gnu_result))
+	      || !DECL_RENAMING_GLOBAL_P (gnu_result)
+	      || global_bindings_p ()))
 	gnu_result = DECL_RENAMED_OBJECT (gnu_result);
 
       /* Otherwise, do the final dereference.  */
@@ -1138,15 +1203,8 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
   /* If we have a constant declaration and its initializer, try to return the
      latter to avoid the need to call fold in lots of places and the need for
-     elaboration code if this identifier is used as an initializer itself.
-     Don't do it for aggregate types that contain a placeholder since their
-     initializers cannot be manipulated easily.  */
-  if (TREE_CONSTANT (gnu_result)
-      && DECL_P (gnu_result)
-      && DECL_INITIAL (gnu_result)
-      && !(AGGREGATE_TYPE_P (TREE_TYPE (gnu_result))
-	   && !TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_result))
-	   && type_contains_placeholder_p (TREE_TYPE (gnu_result))))
+     elaboration code if this identifier is used as an initializer itself.  */
+  if (constant_decl_with_initializer_p (gnu_result))
     {
       bool constant_only = (TREE_CODE (gnu_result) == CONST_DECL
 			    && !DECL_CONST_CORRESPONDING_VAR (gnu_result));
@@ -1164,6 +1222,21 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       /* Finally retrieve the initializer if this is deemed valid.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)
 	gnu_result = DECL_INITIAL (gnu_result);
+    }
+
+  /* But for a constant renaming we couldn't do that incrementally for its
+     definition because of the need to return an lvalue so, if the present
+     context doesn't itself require an lvalue, we try again here.  */
+  else if (Ekind (gnat_temp) == E_Constant
+	   && Is_Elementary_Type (gnat_temp_type)
+	   && Present (Renamed_Object (gnat_temp)))
+    {
+      if (require_lvalue < 0)
+	require_lvalue
+	  = lvalue_required_p (gnat_node, gnu_result_type, true, false,
+			       Is_Aliased (gnat_temp));
+      if (!require_lvalue)
+	gnu_result = fold_constant_decl_in_expr (gnu_result);
     }
 
   /* The GNAT tree has the type of a function set to its result type, so we
@@ -2327,9 +2400,11 @@ Case_Statement_to_gnu (Node_Id gnat_node)
       /* First compile all the different case choices for the current WHEN
 	 alternative.  */
       for (gnat_choice = First (Discrete_Choices (gnat_when));
-	   Present (gnat_choice); gnat_choice = Next (gnat_choice))
+	   Present (gnat_choice);
+	   gnat_choice = Next (gnat_choice))
 	{
 	  tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+	  tree label = create_artificial_label (input_location);
 
 	  switch (Nkind (gnat_choice))
 	    {
@@ -2353,8 +2428,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 		{
 		  tree gnu_type = get_unpadded_type (Entity (gnat_choice));
 
-		  gnu_low = fold (TYPE_MIN_VALUE (gnu_type));
-		  gnu_high = fold (TYPE_MAX_VALUE (gnu_type));
+		  gnu_low = TYPE_MIN_VALUE (gnu_type);
+		  gnu_high = TYPE_MAX_VALUE (gnu_type);
 		  break;
 		}
 
@@ -2372,20 +2447,13 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	      gcc_unreachable ();
 	    }
 
-	  /* If the case value is a subtype that raises Constraint_Error at
-	     run time because of a wrong bound, then gnu_low or gnu_high is
-	     not translated into an INTEGER_CST.  In such a case, we need
-	     to ensure that the when statement is not added in the tree,
-	     otherwise it will crash the gimplifier.  */
-	  if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
-	      && (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST))
-	    {
-	      add_stmt_with_node (build_case_label
-				  (gnu_low, gnu_high,
-				   create_artificial_label (input_location)),
-				  gnat_choice);
-	      choices_added_p = true;
-	    }
+	  /* Everything should be folded into constants at this point.  */
+	  gcc_assert (!gnu_low  || TREE_CODE (gnu_low)  == INTEGER_CST);
+	  gcc_assert (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST);
+
+	  add_stmt_with_node (build_case_label (gnu_low, gnu_high, label),
+			      gnat_choice);
+	  choices_added_p = true;
 	}
 
       /* This construct doesn't define a scope so we shouldn't push a binding
