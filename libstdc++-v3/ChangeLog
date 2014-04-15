@@ -54,6 +54,8 @@
 	* testsuite/ext/throw_value/cons.cc: Fix most vexing parse.
 	* testsuite/util/testsuite_common_types.h: Update comment.
 
+	* include/experimental/string_view: Fix inconsistent exception specs.
+
 2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,
