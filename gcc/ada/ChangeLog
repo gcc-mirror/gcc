@@ -12,8 +12,6 @@
 	(lvalue_required_p) <N_Object_Renaming_Declaration>: Always return 1.
 	(Identifier_to_gnu): Reference the renamed object of constant renaming
 	pointers directly.
-	(Case_Statement_to_gnu): Do not re-fold the bounds of integer types.
-	Assert that the case values are constant.
 	* gcc-interface/utils.c (invalidate_global_renaming_pointers): Do not
 	invalidate constant renaming pointers.
 
