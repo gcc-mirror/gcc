@@ -1,5 +1,9 @@
 2014-04-15  Richard Biener  <rguenther@suse.de>
 
+	* lto-streamer.h (LTO_major_version): Bump to 4.
+
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
 	* common.opt (lto_partition_model): New enum.
 	(flto-partition=): Merge separate options with a single with argument,
 	add -flto-partition=one support.

@@ -140,7 +140,7 @@ along with GCC; see the file COPYING3.  If not see
    sections a '.' and the section type are appended.  */
 #define LTO_SECTION_NAME_PREFIX         ".gnu.lto_"
 
-#define LTO_major_version 3
+#define LTO_major_version 4
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
