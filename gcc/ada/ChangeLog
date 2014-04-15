@@ -4,10 +4,12 @@
 
 2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	* gcc-interface/decl.c (gnat_to_gnu_entity, components_to_record):
-	Use TYPE_IDENTIFIER.
-	* gcc-interface/utils.c (make_aligning_type, maybe_pad_type,
-	finish_record_type, rest_of_record_type_compilation): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use TYPE_IDENTIFIER.
+	(components_to_record): Likewise.
+	* gcc-interface/utils.c (make_aligning_type): Likewise.
+	(maybe_pad_type): Likewise.
+	(finish_record_type): Likewise.
+	(rest_of_record_type_compilation): Likewise.
 
 2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -22,7 +24,7 @@
 	* gcc-interface/ada-tree.h (LOOP_STMT_IVDEP): New macro.
 	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Loop_Optimize>: Deal
 	with new Ivdep hint.
-	(gnat_gimplify_stmt) <LOOP_STMT>: Propagate the loop hints.
+	(gnat_gimplify_stmt) <LOOP_STMT>: Propagate loop hints.
 
 2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
             Robert Dewar  <dewar@adacore.com>
@@ -50,7 +52,7 @@
 	offset for the field, if any.
 
 2014-04-09  Eric Botcazou  <ebotcazou@adacore.com>
-	    Svante Signell <svante.signell@gmail.com>
+	    Svante Signell  <svante.signell@gmail.com>
 
 	PR ada/54040
 	PR ada/59346
