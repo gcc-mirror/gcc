@@ -12,6 +12,9 @@
 	from the callable checks.
 	* testsuite/20_util/function/60594.cc: New.
 
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::_M_type_size): Add
+	const to constexpr member functions.
+
 2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,
