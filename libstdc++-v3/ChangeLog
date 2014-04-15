@@ -22,6 +22,33 @@
 
 	* include/std/atomic: Uglify parameter names.
 
+	PR c++/60786
+	* testsuite/20_util/shared_ptr/requirements/explicit_instantiation/
+	1.cc: Fix invalid explicit instantiations with unqualified names.
+	* testsuite/20_util/shared_ptr/requirements/explicit_instantiation/
+	2.cc: Likweise.
+	* testsuite/20_util/tuple/53648.cc: Likweise.
+	* testsuite/20_util/weak_ptr/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	debug_container.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	debug_container.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/3.cc: Likewise.
+
 2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,

@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2007-2014 Free Software Foundation, Inc.
@@ -21,4 +21,5 @@
 #include <unordered_set>
 
 using namespace std;
-template class unordered_set<int, hash<int>, equal_to<int>, allocator<char>>;
+template class std::unordered_set<int, hash<int>, equal_to<int>,
+                                  allocator<char>>;

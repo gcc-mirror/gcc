@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2006-2014 Free Software Foundation, Inc.
@@ -24,8 +24,7 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-using std::shared_ptr;
-template class shared_ptr<int>;
-template class shared_ptr<void>;
-template class shared_ptr<ClassType>;
-template class shared_ptr<IncompleteClass>;
+template class std::shared_ptr<int>;
+template class std::shared_ptr<void>;
+template class std::shared_ptr<ClassType>;
+template class std::shared_ptr<IncompleteClass>;

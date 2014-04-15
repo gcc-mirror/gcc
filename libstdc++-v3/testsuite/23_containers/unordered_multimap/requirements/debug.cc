@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2007-2014 Free Software Foundation, Inc.
@@ -21,8 +21,6 @@
 #include <string>
 #include <debug/unordered_map>
 
-using namespace __gnu_debug;
-
 using std::string;
 
-template class unordered_multimap<string, float>;
+template class __gnu_debug::unordered_multimap<string, float>;
