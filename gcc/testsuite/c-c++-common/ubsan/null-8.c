@@ -13,4 +13,4 @@ main (void)
   return s->i;
 }
 
-/* { dg-output "member access within null pointer of type 'struct S'(\n|\r\n|\r)" } */
+/* { dg-output "member access within null pointer of type 'struct S'\[^\n\r]*(\n|\r\n|\r)" } */

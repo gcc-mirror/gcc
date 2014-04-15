@@ -13,4 +13,4 @@ main (void)
   return u->i;
 }
 
-/* { dg-output "member access within null pointer of type 'union U'(\n|\r\n|\r)" } */
+/* { dg-output "member access within null pointer of type 'union U'\[^\n\r]*(\n|\r\n|\r)" } */

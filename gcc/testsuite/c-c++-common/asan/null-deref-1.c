@@ -18,5 +18,5 @@ int main()
 
 /* { dg-output "ERROR: AddressSanitizer:? SEGV on unknown address\[^\n\r]*" } */
 /* { dg-output "0x\[0-9a-f\]+ \[^\n\r]*pc 0x\[0-9a-f\]+\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ (in \[^\n\r]*NullDeref\[^\n\r]* (\[^\n\r]*null-deref-1.c:10|\[^\n\r]*:0)|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*    #0 0x\[0-9a-f\]+ (in \[^\n\r]*NullDeref\[^\n\r]* (\[^\n\r]*null-deref-1.c:10|\[^\n\r]*:0)|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "    #1 0x\[0-9a-f\]+ (in _*main (\[^\n\r]*null-deref-1.c:15|\[^\n\r]*:0)|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
