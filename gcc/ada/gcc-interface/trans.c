@@ -7761,6 +7761,15 @@ gnat_gimplify_stmt (tree *stmt_p)
 				 build_int_cst (integer_type_node,
 						annot_expr_ivdep_kind));
 
+	    if (LOOP_STMT_NO_VECTOR (stmt))
+	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
+				 build_int_cst (integer_type_node,
+						annot_expr_no_vector_kind));
+	    if (LOOP_STMT_VECTOR (stmt))
+	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
+				 build_int_cst (integer_type_node,
+						annot_expr_vector_kind));
+
 	    gnu_cond
 	      = build3 (COND_EXPR, void_type_node, gnu_cond, NULL_TREE,
 			build1 (GOTO_EXPR, void_type_node, gnu_end_label));

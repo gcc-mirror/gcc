@@ -1,3 +1,17 @@
+2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgloop.h (struct loop): Move force_vectorize down.
+	* gimplify.c (gimple_boolify) <ANNOTATE_EXPR>: Handle new kinds.
+	(gimplify_expr) <ANNOTATE_EXPR>: Minor tweak.
+	* lto-streamer-in.c (input_cfg): Read dont_vectorize field.
+	* lto-streamer-out.c (output_cfg): Write dont_vectorize field.
+	* tree-cfg.c (replace_loop_annotate): Revamp and handle new kinds.
+	* tree-core.h (enum annot_expr_kind): Add new kind values.
+	* tree-inline.c (copy_loops): Copy dont_vectorize field and reorder.
+	* tree-pretty-print.c (dump_generic_node) <ANNOTATE_EXPR>: Handle new
+	kinds.
+	* tree.def (ANNOTATE_EXPR): Tweak comment.
+
 2014-04-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (maybe_record_node): Ignore all non-methods (including

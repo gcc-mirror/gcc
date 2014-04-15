@@ -1280,7 +1280,7 @@ DEFTREECODE (TARGET_OPTION_NODE, "target_option_node", tcc_exceptional, 0)
 
 /* ANNOTATE_EXPR.
    Operand 0 is the expression to be annotated.
-   Operand 1 is the annotation id. */
+   Operand 1 is the annotation kind.  */
 DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 2)
 
 /* Cilk spawn statement

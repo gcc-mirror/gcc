@@ -1693,6 +1693,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);
+      streamer_write_hwi (ob, loop->dont_vectorize);
       streamer_write_hwi (ob, loop->force_vectorize);
       stream_write_tree (ob, loop->simduid, true);
     }
