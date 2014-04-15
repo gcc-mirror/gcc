@@ -15,6 +15,11 @@
 	* include/bits/atomic_base.h (__atomic_base<_PTp*>::_M_type_size): Add
 	const to constexpr member functions.
 
+	* include/bits/shared_ptr.h (shared_ptr::shared_ptr(nullptr_t)): Use
+	delegating constructor.
+	* include/bits/shared_ptr_base.h
+	(__shared_ptr::__shared_ptr(nullptr_t)): Likewise
+
 2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,
