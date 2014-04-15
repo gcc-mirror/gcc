@@ -718,6 +718,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 
       /* Read OMP SIMD related info.  */
       loop->safelen = streamer_read_hwi (ib);
+      loop->dont_vectorize = streamer_read_hwi (ib);
       loop->force_vectorize = streamer_read_hwi (ib);
       loop->simduid = stream_read_tree (ib, data_in);
 

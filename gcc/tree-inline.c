@@ -2349,17 +2349,18 @@ copy_loops (copy_body_data *id,
 	  place_new_loop (cfun, dest_loop);
 	  flow_loop_tree_node_add (dest_parent, dest_loop);
 
-	  if (src_loop->simduid)
-	    {
-	      dest_loop->simduid = remap_decl (src_loop->simduid, id);
-	      cfun->has_simduid_loops = true;
-	    }
+	  dest_loop->safelen = src_loop->safelen;
+	  dest_loop->dont_vectorize = src_loop->dont_vectorize;
 	  if (src_loop->force_vectorize)
 	    {
 	      dest_loop->force_vectorize = true;
 	      cfun->has_force_vectorize_loops = true;
 	    }
-	  dest_loop->safelen = src_loop->safelen;
+	  if (src_loop->simduid)
+	    {
+	      dest_loop->simduid = remap_decl (src_loop->simduid, id);
+	      cfun->has_simduid_loops = true;
+	    }
 
 	  /* Recurse.  */
 	  copy_loops (id, dest_loop, src_loop);

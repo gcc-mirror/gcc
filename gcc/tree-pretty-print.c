@@ -2105,13 +2105,21 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case ANNOTATE_EXPR:
       pp_string (buffer, "ANNOTATE_EXPR <");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (node, 1)))
 	{
 	case annot_expr_ivdep_kind:
-	  pp_string (buffer, "ivdep, ");
+	  pp_string (buffer, ", ivdep");
 	  break;
+	case annot_expr_no_vector_kind:
+	  pp_string (buffer, ", no-vector");
+	  break;
+	case annot_expr_vector_kind:
+	  pp_string (buffer, ", vector");
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_greater (buffer);
       break;
 

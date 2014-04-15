@@ -1,3 +1,8 @@
+2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect12.ad[sb]: New test.
+	* gnat.dg/vect13.ad[sb]: Likewise.
+
 2014-04-15  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/asan/null-deref-1.c: Change regexp to pass test
