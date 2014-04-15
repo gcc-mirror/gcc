@@ -1959,7 +1959,7 @@ remove_bb (basic_block bb)
       fprintf (dump_file, "Removing basic block %d\n", bb->index);
       if (dump_flags & TDF_DETAILS)
 	{
-	  dump_bb (dump_file, bb, 0, dump_flags);
+	  dump_bb (dump_file, bb, 0, TDF_BLOCKS);
 	  fprintf (dump_file, "\n");
 	}
     }
