@@ -1380,7 +1380,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		    tree t = TREE_VALUE (t1);
 
 		    if (TYPE_PTR_P (t)
-			&& TYPE_NAME (TREE_TYPE (t))
 			&& TYPE_IDENTIFIER (TREE_TYPE (t))
 			   == get_identifier ("FILE")
 			&& compparms (TREE_CHAIN (t1), TREE_CHAIN (t2)))
