@@ -7387,7 +7387,7 @@ iterative_hash_expr (const_tree t, hashval_t val)
 {
   int i;
   enum tree_code code;
-  char tclass;
+  enum tree_code_class tclass;
 
   if (t == NULL_TREE)
     return iterative_hash_hashval_t (0, val);
@@ -11224,7 +11224,7 @@ walk_tree_without_duplicates_1 (tree *tp, walk_tree_fn func, void *data,
 tree
 tree_block (tree t)
 {
-  char const c = TREE_CODE_CLASS (TREE_CODE (t));
+  const enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
 
   if (IS_EXPR_CODE_CLASS (c))
     return LOCATION_BLOCK (t->exp.locus);
@@ -11235,7 +11235,7 @@ tree_block (tree t)
 void
 tree_set_block (tree t, tree b)
 {
-  char const c = TREE_CODE_CLASS (TREE_CODE (t));
+  const enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
 
   if (IS_EXPR_CODE_CLASS (c))
     {

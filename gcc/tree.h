@@ -4192,7 +4192,7 @@ static inline tree
 fold_build_pointer_plus_loc (location_t loc, tree ptr, tree off)
 {
   return fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (ptr),
-			  ptr, fold_convert_loc (loc, sizetype, off));
+			  ptr, convert_to_ptrofftype_loc (loc, off));
 }
 #define fold_build_pointer_plus(p,o) \
 	fold_build_pointer_plus_loc (UNKNOWN_LOCATION, p, o)
