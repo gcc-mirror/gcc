@@ -1,3 +1,15 @@
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/56965
+	* alias.c (ncr_compar, nonoverlapping_component_refs_p): Move ...
+	* tree-ssa-alias.c (ncr_compar, nonoverlapping_component_refs_p):
+	... here.
+	* alias.c (true_dependence_1): Do not call
+	nonoverlapping_component_refs_p.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Call
+	nonoverlapping_component_refs_p.
+	(indirect_refs_may_alias_p): Likewise.
+
 2014-04-15  Teresa Johnson  <tejohnson@google.com>
 
 	* cfg.c (dump_bb_info): Fix flags check.
