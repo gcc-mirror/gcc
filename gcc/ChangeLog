@@ -1,5 +1,16 @@
 2014-04-15  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Add struct function argument and adjust.
+	(find_func_aliases_for_call): Likewise.
+	(find_func_aliases): Likewise.
+	(find_func_clobbers): Likewise.
+	(intra_create_variable_infos): Likewise.
+	(compute_points_to_sets): Likewise.
+	(ipa_pta_execute): Adjust.  Do not push/pop cfun.
+
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
 	* tree.c (iterative_hash_expr): Use enum tree_code_class
 	to store TREE_CODE_CLASS.
 	(tree_block): Likewise.
