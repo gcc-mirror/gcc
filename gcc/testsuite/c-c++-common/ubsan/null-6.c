@@ -10,4 +10,4 @@ main (void)
   return 0;
 }
 
-/* { dg-output "store to null pointer of type 'long unsigned int'(\n|\r\n|\r)" } */
+/* { dg-output "store to null pointer of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
