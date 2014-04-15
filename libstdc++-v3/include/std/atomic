@@ -163,6 +163,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       _Tp _M_i;
 
+      // TODO: static_assert(is_trivially_copyable<_Tp>::value, "");
+
+      static_assert(sizeof(_Tp) > 0,
+		    "Incomplete or zero-sized types are not supported");
+
     public:
       atomic() noexcept = default;
       ~atomic() noexcept = default;

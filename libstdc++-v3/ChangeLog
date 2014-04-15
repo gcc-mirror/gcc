@@ -3,6 +3,10 @@
 	PR libstdc++/60734
 	* include/bits/stl_tree.h (_Rb_tree::_M_end): Fix invalid cast.
 
+	PR libstdc++/60695
+	* include/std/atomic (atomic<_Tp>): Add static assertion.
+	* testsuite/29_atomics/atomic/60695.cc: New.
+
 2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,
