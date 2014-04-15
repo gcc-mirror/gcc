@@ -963,10 +963,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_ptr(std::auto_ptr<_Tp1>&& __r);
 #endif
 
-      /* TODO: use delegating constructor */
-      constexpr __shared_ptr(nullptr_t) noexcept
-      : _M_ptr(0), _M_refcount()
-      { }
+      constexpr __shared_ptr(nullptr_t) noexcept : __shared_ptr() { }
 
       template<typename _Tp1>
 	__shared_ptr&
