@@ -1,3 +1,8 @@
+2014-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/59335
+	* Make-lang.h (CP_PLUGIN_HEADERS): Add type-utils.h.
+
 2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (TYPE_IDENTIFIER): Remove declaration.
