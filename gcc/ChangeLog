@@ -1,3 +1,12 @@
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
+	* tree.c (iterative_hash_expr): Use enum tree_code_class
+	to store TREE_CODE_CLASS.
+	(tree_block): Likewise.
+	(tree_set_block): Likewise.
+	* tree.h (fold_build_pointer_plus_loc): Use
+	convert_to_ptrofftype_loc.
+
 2014-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR plugins/59335
