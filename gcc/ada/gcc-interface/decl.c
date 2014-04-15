@@ -960,18 +960,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      gnu_type = TREE_TYPE (gnu_expr);
 
 	    /* Case 1: If this is a constant renaming stemming from a function
-	       call, treat it as a normal object whose initial value is what
-	       is being renamed.  RM 3.3 says that the result of evaluating a
-	       function call is a constant object.  As a consequence, it can
-	       be the inner object of a constant renaming.  In this case, the
-	       renaming must be fully instantiated, i.e. it cannot be a mere
-	       reference to (part of) an existing object.  */
+	       call, treat it as a normal object whose initial value is what is
+	       being renamed.  RM 3.3 says that the result of evaluating a
+	       function call is a constant object.  Treat constant literals
+	       the same way.  As a consequence, it can be the inner object of
+	       a constant renaming.  In this case, the renaming must be fully
+	       instantiated, i.e. it cannot be a mere reference to (part of) an
+	       existing object.  */
 	    if (const_flag)
 	      {
 	        tree inner_object = gnu_expr;
 		while (handled_component_p (inner_object))
 		  inner_object = TREE_OPERAND (inner_object, 0);
-		if (TREE_CODE (inner_object) == CALL_EXPR)
+		if (TREE_CODE (inner_object) == CALL_EXPR
+		    || CONSTANT_CLASS_P (inner_object))
 		  create_normal_object = true;
 	      }
 
@@ -1030,15 +1032,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       about that failure.  */
 		  }
 
-		/* Case 3: If this is a constant renaming and creating a
-		   new object is allowed and cheap, treat it as a normal
-		   object whose initial value is what is being renamed.  */
-		if (const_flag
-		    && !Is_Composite_Type
-		        (Underlying_Type (Etype (gnat_entity))))
-		  ;
-
-		/* Case 4: Make this into a constant pointer to the object we
+		/* Case 3: Make this into a constant pointer to the object we
 		   are to rename and attach the object to the pointer if it is
 		   something we can stabilize.
 
@@ -1050,68 +1044,59 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   The pointer is called a "renaming" pointer in this case.
 
 		   In the rare cases where we cannot stabilize the renamed
-		   object, we just make a "bare" pointer, and the renamed
-		   entity is always accessed indirectly through it.  */
-		else
+		   object, we just make a "bare" pointer and the renamed
+		   object will always be accessed indirectly through it.
+
+		   Note that we need to preserve the volatility of the renamed
+		   object through the indirection.  */
+		if (TREE_THIS_VOLATILE (gnu_expr) && !TYPE_VOLATILE (gnu_type))
+		  gnu_type = build_qualified_type (gnu_type,
+						   (TYPE_QUALS (gnu_type)
+						    | TYPE_QUAL_VOLATILE));
+		gnu_type = build_reference_type (gnu_type);
+		inner_const_flag = TREE_READONLY (gnu_expr);
+		const_flag = true;
+
+		/* If the previous attempt at stabilizing failed, there is
+		   no point in trying again and we reuse the result without
+		   attaching it to the pointer.  In this case it will only
+		   be used as the initializing expression of the pointer and
+		   thus needs no special treatment with regard to multiple
+		   evaluations.
+
+		   Otherwise, try to stabilize and attach the expression to
+		   the pointer if the stabilization succeeds.
+
+		   Note that this might introduce SAVE_EXPRs and we don't
+		   check whether we are at the global level or not.  This
+		   is fine since we are building a pointer initializer and
+		   neither the pointer nor the initializing expression can
+		   be accessed before the pointer elaboration has taken
+		   place in a correct program.
+
+		   These SAVE_EXPRs will be evaluated at the right place
+		   by either the evaluation of the initializer for the
+		   non-global case or the elaboration code for the global
+		   case, and will be attached to the elaboration procedure
+		   in the latter case.  */
+		if (!maybe_stable_expr)
 		  {
-		    /* We need to preserve the volatileness of the renamed
-		       object through the indirection.  */
-		    if (TREE_THIS_VOLATILE (gnu_expr)
-			&& !TYPE_VOLATILE (gnu_type))
-		      gnu_type
-			= build_qualified_type (gnu_type,
-						(TYPE_QUALS (gnu_type)
-						 | TYPE_QUAL_VOLATILE));
-		    gnu_type = build_reference_type (gnu_type);
-		    inner_const_flag = TREE_READONLY (gnu_expr);
-		    const_flag = true;
+		    maybe_stable_expr
+		      = gnat_stabilize_reference (gnu_expr, true, &stable);
 
-		    /* If the previous attempt at stabilizing failed, there
-		       is no point in trying again and we reuse the result
-		       without attaching it to the pointer.  In this case it
-		       will only be used as the initializing expression of
-		       the pointer and thus needs no special treatment with
-		       regard to multiple evaluations.  */
-		    if (maybe_stable_expr)
-		      ;
-
-		    /* Otherwise, try to stabilize and attach the expression
-		       to the pointer if the stabilization succeeds.
-
-		       Note that this might introduce SAVE_EXPRs and we don't
-		       check whether we're at the global level or not.  This
-		       is fine since we are building a pointer initializer and
-		       neither the pointer nor the initializing expression can
-		       be accessed before the pointer elaboration has taken
-		       place in a correct program.
-
-		       These SAVE_EXPRs will be evaluated at the right place
-		       by either the evaluation of the initializer for the
-		       non-global case or the elaboration code for the global
-		       case, and will be attached to the elaboration procedure
-		       in the latter case.  */
-		    else
-	 	     {
-			maybe_stable_expr
-			  = gnat_stabilize_reference (gnu_expr, true, &stable);
-
-			if (stable)
-			  renamed_obj = maybe_stable_expr;
-
-			/* Attaching is actually performed downstream, as soon
-			   as we have a VAR_DECL for the pointer we make.  */
-		      }
-
-		    if (type_annotate_only
- 			&& TREE_CODE (maybe_stable_expr) == ERROR_MARK)
-		      gnu_expr = NULL_TREE;
-		    else
-		      gnu_expr = build_unary_op (ADDR_EXPR, gnu_type,
-						 maybe_stable_expr);
-
-		    gnu_size = NULL_TREE;
-		    used_by_ref = true;
+		    if (stable)
+		      renamed_obj = maybe_stable_expr;
 		  }
+
+		if (type_annotate_only
+ 		    && TREE_CODE (maybe_stable_expr) == ERROR_MARK)
+		  gnu_expr = NULL_TREE;
+		else
+		  gnu_expr
+		    = build_unary_op (ADDR_EXPR, gnu_type, maybe_stable_expr);
+
+		gnu_size = NULL_TREE;
+		used_by_ref = true;
 	      }
 	  }
 
@@ -1483,10 +1468,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Now create the variable or the constant and set various flags.  */
 	gnu_decl
-	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
-			     gnu_expr, const_flag, Is_Public (gnat_entity),
-			     imported_p || !definition, static_p, attr_list,
-			     gnat_entity);
+	  = create_var_decl_1 (gnu_entity_name, gnu_ext_name, gnu_type,
+			       gnu_expr, const_flag, Is_Public (gnat_entity),
+			       imported_p || !definition, static_p,
+			       !renamed_obj, attr_list, gnat_entity);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
 	DECL_POINTS_TO_READONLY_P (gnu_decl) = used_by_ref && inner_const_flag;
 	DECL_CAN_NEVER_BE_NULL_P (gnu_decl) = Can_Never_Be_Null (gnat_entity);
@@ -1517,7 +1502,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If this is a renaming pointer, attach the renamed object to it and
 	   register it if we are at the global level.  Note that an external
 	   constant is at the global level.  */
-	if (TREE_CODE (gnu_decl) == VAR_DECL && renamed_obj)
+	if (renamed_obj)
 	  {
 	    SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
 	    if ((!definition && kind == E_Constant) || global_bindings_p ())

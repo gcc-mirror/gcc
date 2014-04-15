@@ -2514,7 +2514,10 @@ record_global_renaming_pointer (tree decl)
   vec_safe_push (global_renaming_pointers, decl);
 }
 
-/* Invalidate the global renaming pointers.   */
+/* Invalidate the global renaming pointers that are not constant, lest their
+   renamed object contains SAVE_EXPRs tied to an elaboration routine.  Note
+   that we should not blindly invalidate everything here because of the need
+   to propagate constant values through renaming.  */
 
 void
 invalidate_global_renaming_pointers (void)
@@ -2526,7 +2529,8 @@ invalidate_global_renaming_pointers (void)
     return;
 
   FOR_EACH_VEC_ELT (*global_renaming_pointers, i, iter)
-    SET_DECL_RENAMED_OBJECT (iter, NULL_TREE);
+    if (!TREE_CONSTANT (DECL_RENAMED_OBJECT (iter)))
+      SET_DECL_RENAMED_OBJECT (iter, NULL_TREE);
 
   vec_free (global_renaming_pointers);
 }
