@@ -1,5 +1,15 @@
 2014-04-15  Richard Biener  <rguenther@suse.de>
 
+	* common.opt (lto_partition_model): New enum.
+	(flto-partition=): Merge separate options with a single with argument,
+	add -flto-partition=one support.
+	* flag-types.h (enum lto_partition_model): Declare.
+	* opts.c (finish_options): Remove duplicate -flto-partition=
+	option check.
+	* lto-wrapper.c (run_gcc): Adjust.
+
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
 	* alias.c (ncr_compar): New function.
 	(nonoverlapping_component_refs_p): Re-implement in O (n log n).
 

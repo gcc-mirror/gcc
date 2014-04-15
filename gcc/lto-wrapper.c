@@ -657,9 +657,7 @@ run_gcc (unsigned argc, char *argv[])
 	  /* Drop arguments that we want to take from the link line.  */
 	  case OPT_flto_:
 	  case OPT_flto:
-	  case OPT_flto_partition_none:
-	  case OPT_flto_partition_1to1:
-	  case OPT_flto_partition_balanced:
+	  case OPT_flto_partition_:
 	      continue;
 
 	  default:
@@ -727,8 +725,9 @@ run_gcc (unsigned argc, char *argv[])
 	  verbose = 1;
 	  break;
 
-	case OPT_flto_partition_none:
-	  no_partition = true;
+	case OPT_flto_partition_:
+	  if (strcmp (option->arg, "none") == 0)
+	    no_partition = true;
 	  break;
 
 	case OPT_flto_:

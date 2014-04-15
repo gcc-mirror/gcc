@@ -34,7 +34,7 @@ extern vec<ltrans_partition> ltrans_partitions;
 
 void lto_1_to_1_map (void);
 void lto_max_map (void);
-void lto_balanced_map (void);
+void lto_balanced_map (int);
 void lto_promote_cross_file_statics (void);
 void free_ltrans_partitions (void);
 void lto_promote_statics_nonwpa (void);
