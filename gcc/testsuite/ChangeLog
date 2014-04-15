@@ -1,3 +1,9 @@
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/56965
+	* gcc.dg/torture/pr56965-1.c: New testcase.
+	* gcc.dg/torture/pr56965-2.c: Likewise.
+
 2014-04-15  Teresa Johnson  <tejohnson@google.com>
 
 	* gcc.dg/tree-prof/update-loopch.c: Update expected output.
