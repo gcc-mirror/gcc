@@ -1,3 +1,8 @@
+2014-03-21  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (gen_enumeration_type_die): Add DW_AT_const_value
+	as unsigned or int depending on type and value used.
+
 2014-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/56965
