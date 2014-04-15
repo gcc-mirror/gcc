@@ -3194,6 +3194,96 @@ build_template (tree template_type, tree array_type, tree expr)
   return gnat_build_constructor (template_type, template_elts);
 }
 
+/* Return true if TYPE is suitable for the element type of a vector.  */
+
+static bool
+type_for_vector_element_p (tree type)
+{
+  enum machine_mode mode;
+
+  if (!INTEGRAL_TYPE_P (type)
+      && !SCALAR_FLOAT_TYPE_P (type)
+      && !FIXED_POINT_TYPE_P (type))
+    return false;
+
+  mode = TYPE_MODE (type);
+  if (GET_MODE_CLASS (mode) != MODE_INT
+      && !SCALAR_FLOAT_MODE_P (mode)
+      && !ALL_SCALAR_FIXED_POINT_MODE_P (mode))
+    return false;
+
+  return true;
+}
+
+/* Return a vector type given the SIZE and the INNER_TYPE, or NULL_TREE if
+   this is not possible.  If ATTRIBUTE is non-zero, we are processing the
+   attribute declaration and want to issue error messages on failure.  */
+
+static tree
+build_vector_type_for_size (tree inner_type, tree size, tree attribute)
+{
+  unsigned HOST_WIDE_INT size_int, inner_size_int;
+  int nunits;
+
+  /* Silently punt on variable sizes.  We can't make vector types for them,
+     need to ignore them on front-end generated subtypes of unconstrained
+     base types, and this attribute is for binding implementors, not end
+     users, so we should never get there from legitimate explicit uses.  */
+  if (!tree_fits_uhwi_p (size))
+    return NULL_TREE;
+  size_int = tree_to_uhwi (size);
+
+  if (!type_for_vector_element_p (inner_type))
+    {
+      if (attribute)
+	error ("invalid element type for attribute %qs",
+	       IDENTIFIER_POINTER (attribute));
+      return NULL_TREE;
+    }
+  inner_size_int = tree_to_uhwi (TYPE_SIZE_UNIT (inner_type));
+
+  if (size_int % inner_size_int)
+    {
+      if (attribute)
+	error ("vector size not an integral multiple of component size");
+      return NULL_TREE;
+    }
+
+  if (size_int == 0)
+    {
+      if (attribute)
+	error ("zero vector size");
+      return NULL_TREE;
+    }
+
+  nunits = size_int / inner_size_int;
+  if (nunits & (nunits - 1))
+    {
+      if (attribute)
+	error ("number of components of vector not a power of two");
+      return NULL_TREE;
+    }
+
+  return build_vector_type (inner_type, nunits);
+}
+
+/* Return a vector type whose representative array type is ARRAY_TYPE, or
+   NULL_TREE if this is not possible.  If ATTRIBUTE is non-zero, we are
+   processing the attribute and want to issue error messages on failure.  */
+
+static tree
+build_vector_type_for_array (tree array_type, tree attribute)
+{
+  tree vector_type = build_vector_type_for_size (TREE_TYPE (array_type),
+						 TYPE_SIZE_UNIT (array_type),
+						 attribute);
+  if (!vector_type)
+    return NULL_TREE;
+
+  TYPE_REPRESENTATIVE_ARRAY (vector_type) = array_type;
+  return vector_type;
+}
+
 /* Helper routine to make a descriptor field.  FIELD_LIST is the list of decls
    being built; the new decl is chained on to the front of the list.  */
 
@@ -5268,6 +5358,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   tree etype = TREE_TYPE (expr);
   enum tree_code ecode = TREE_CODE (etype);
   enum tree_code code = TREE_CODE (type);
+  tree tem;
   int c;
 
   /* If the expression is already of the right type, we are done.  */
@@ -5413,6 +5504,18 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	   && gnat_types_compatible_p (TYPE_REPRESENTATIVE_ARRAY (type),
 				       etype))
     expr = convert (type, expr);
+
+  /* And, if the array type is not the representative, we try to build an
+     intermediate vector type of which the array type is the representative
+     and to do the unchecked conversion between the vector types, in order
+     to enable further simplifications in the middle-end.  */
+  else if (code == VECTOR_TYPE
+	   && ecode == ARRAY_TYPE
+	   && (tem = build_vector_type_for_array (etype, NULL_TREE)))
+    {
+      expr = convert (tem, expr);
+      return unchecked_convert (type, expr, notrunc_p);
+    }
 
   /* If we are converting a CONSTRUCTOR to a more aligned RECORD_TYPE, bump
      the alignment of the CONSTRUCTOR to speed up the copy operation.  */
@@ -6310,26 +6413,12 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 
 static tree
 handle_vector_size_attribute (tree *node, tree name, tree args,
-			      int ARG_UNUSED (flags),
-			      bool *no_add_attrs)
+			      int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  unsigned HOST_WIDE_INT vecsize, nunits;
-  enum machine_mode orig_mode;
-  tree type = *node, new_type, size;
+  tree type = *node;
+  tree vector_type;
 
   *no_add_attrs = true;
-
-  size = TREE_VALUE (args);
-
-  if (!tree_fits_uhwi_p (size))
-    {
-      warning (OPT_Wattributes, "%qs attribute ignored",
-	       IDENTIFIER_POINTER (name));
-      return NULL_TREE;
-    }
-
-  /* Get the vector size (in bytes).  */
-  vecsize = tree_to_uhwi (size);
 
   /* We need to provide for vector pointers, vector arrays, and
      functions returning vectors.  For example:
@@ -6338,53 +6427,17 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
      In this case, the mode is SI, but the type being modified is
      HI, so we need to look further.  */
-
   while (POINTER_TYPE_P (type)
 	 || TREE_CODE (type) == FUNCTION_TYPE
 	 || TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
 
-  /* Get the mode of the type being modified.  */
-  orig_mode = TYPE_MODE (type);
-
-  if ((!INTEGRAL_TYPE_P (type)
-       && !SCALAR_FLOAT_TYPE_P (type)
-       && !FIXED_POINT_TYPE_P (type))
-      || (!SCALAR_FLOAT_MODE_P (orig_mode)
-	  && GET_MODE_CLASS (orig_mode) != MODE_INT
-	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
-      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
-      || TREE_CODE (type) == BOOLEAN_TYPE)
-    {
-      error ("invalid vector type for attribute %qs",
-	     IDENTIFIER_POINTER (name));
-      return NULL_TREE;
-    }
-
-  if (vecsize % tree_to_uhwi (TYPE_SIZE_UNIT (type)))
-    {
-      error ("vector size not an integral multiple of component size");
-      return NULL;
-    }
-
-  if (vecsize == 0)
-    {
-      error ("zero vector size");
-      return NULL;
-    }
-
-  /* Calculate how many units fit in the vector.  */
-  nunits = vecsize / tree_to_uhwi (TYPE_SIZE_UNIT (type));
-  if (nunits & (nunits - 1))
-    {
-      error ("number of components of the vector not a power of two");
-      return NULL_TREE;
-    }
-
-  new_type = build_vector_type (type, nunits);
+  vector_type = build_vector_type_for_size (type, TREE_VALUE (args), name);
+  if (!vector_type)
+    return NULL_TREE;
 
   /* Build back pointers if needed.  */
-  *node = reconstruct_complex_type (*node, new_type);
+  *node = reconstruct_complex_type (*node, vector_type);
 
   return NULL_TREE;
 }
@@ -6394,83 +6447,26 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
 static tree
 handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
-			      int ARG_UNUSED (flags),
-			      bool *no_add_attrs)
+			      int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  /* Vector representative type and size.  */
-  tree rep_type = *node;
-  tree rep_size = TYPE_SIZE_UNIT (rep_type);
-
-  /* Vector size in bytes and number of units.  */
-  unsigned HOST_WIDE_INT vec_bytes, vec_units;
-
-  /* Vector element type and mode.  */
-  tree elem_type;
-  enum machine_mode elem_mode;
+  tree type = *node;
+  tree vector_type;
 
   *no_add_attrs = true;
 
-  if (TREE_CODE (rep_type) != ARRAY_TYPE)
+  if (TREE_CODE (type) != ARRAY_TYPE)
     {
       error ("attribute %qs applies to array types only",
 	     IDENTIFIER_POINTER (name));
       return NULL_TREE;
     }
 
-  /* Silently punt on variable sizes.  We can't make vector types for them,
-     need to ignore them on front-end generated subtypes of unconstrained
-     bases, and this attribute is for binding implementors, not end-users, so
-     we should never get there from legitimate explicit uses.  */
-
-  if (!tree_fits_uhwi_p (rep_size))
+  vector_type = build_vector_type_for_array (type, name);
+  if (!vector_type)
     return NULL_TREE;
 
-  /* Get the element type/mode and check this is something we know
-     how to make vectors of.  */
-
-  elem_type = TREE_TYPE (rep_type);
-  elem_mode = TYPE_MODE (elem_type);
-
-  if ((!INTEGRAL_TYPE_P (elem_type)
-       && !SCALAR_FLOAT_TYPE_P (elem_type)
-       && !FIXED_POINT_TYPE_P (elem_type))
-      || (!SCALAR_FLOAT_MODE_P (elem_mode)
-	  && GET_MODE_CLASS (elem_mode) != MODE_INT
-	  && !ALL_SCALAR_FIXED_POINT_MODE_P (elem_mode))
-      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (elem_type)))
-    {
-      error ("invalid element type for attribute %qs",
-	     IDENTIFIER_POINTER (name));
-      return NULL_TREE;
-    }
-
-  /* Sanity check the vector size and element type consistency.  */
-
-  vec_bytes = tree_to_uhwi (rep_size);
-
-  if (vec_bytes % tree_to_uhwi (TYPE_SIZE_UNIT (elem_type)))
-    {
-      error ("vector size not an integral multiple of component size");
-      return NULL;
-    }
-
-  if (vec_bytes == 0)
-    {
-      error ("zero vector size");
-      return NULL;
-    }
-
-  vec_units = vec_bytes / tree_to_uhwi (TYPE_SIZE_UNIT (elem_type));
-  if (vec_units & (vec_units - 1))
-    {
-      error ("number of components of the vector not a power of two");
-      return NULL_TREE;
-    }
-
-  /* Build the vector type and replace.  */
-
-  *node = build_vector_type (elem_type, vec_units);
-  TYPE_REPRESENTATIVE_ARRAY (*node) = rep_type;
+  TYPE_REPRESENTATIVE_ARRAY (vector_type) = type;
+  *node = vector_type;
 
   return NULL_TREE;
 }

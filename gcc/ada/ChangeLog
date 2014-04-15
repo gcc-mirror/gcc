@@ -1,5 +1,15 @@
 2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (type_for_vector_element_p): New predicate.
+	(build_vector_type_for_size): New function.
+	(build_vector_type_for_array): Likewise.
+	(unchecked_convert): Build an intermediate vector type to convert
+	from a generic array type to a vector type.
+	(handle_vector_size_attribute): Reimplement.
+	(handle_vector_type_attribute): Likewise.
+
+2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (prepend_one_attribute_pragma): Call
 	Is_OK_Static_Expression in lieu of Is_Static_Expression to
 	detect valid arguments.
