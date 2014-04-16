@@ -1,3 +1,20 @@
+2014-04-16  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/60765
+	* decl2.c (cplus_decl_attributes): Handle
+	pointer-to-member-function declarations.
+
+2014-04-16  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/60764
+	* call.c (build_user_type_coversion): Use build_dummy_object
+	to create the placeholder object for a constructor method call.
+	(build_special_member_call): Likewise.
+	(build_over_call): Check for the placeholder object with
+	is_dummy_object.
+	(build_new_method_call_1): Likewise.  Don't attempt to resolve
+	a dummy object for a constructor method call.
+
 2014-04-16  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	PR c++/59295

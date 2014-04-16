@@ -3524,8 +3524,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       int ctorflags = flags;
 
-      first_arg = build_int_cst (build_pointer_type (totype), 0);
-      first_arg = build_fold_indirect_ref (first_arg);
+      first_arg = build_dummy_object (totype);
 
       /* We should never try to call the abstract or base constructor
 	 from here.  */
@@ -7101,7 +7100,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 ctor is trivial, do a bitwise copy with a simple TARGET_EXPR for a
 	 temp or an INIT_EXPR otherwise.  */
       fa = argarray[0];
-      if (integer_zerop (fa))
+      if (is_dummy_object (fa))
 	{
 	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
@@ -7443,10 +7442,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 
   /* Handle the special case where INSTANCE is NULL_TREE.  */
   if (name == complete_ctor_identifier && !instance)
-    {
-      instance = build_int_cst (build_pointer_type (class_type), 0);
-      instance = build1 (INDIRECT_REF, class_type, instance);
-    }
+    instance = build_dummy_object (class_type);
   else
     {
       if (name == complete_dtor_identifier
@@ -7756,8 +7752,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
       if (init)
 	{
-	  if (INDIRECT_REF_P (instance)
-	      && integer_zerop (TREE_OPERAND (instance, 0)))
+	  if (is_dummy_object (instance))
 	    return get_target_expr_sfinae (init, complain);
 	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
 	  TREE_SIDE_EFFECTS (init) = true;
@@ -7856,6 +7851,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	    }
 
 	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+	      && !DECL_CONSTRUCTOR_P (fn)
 	      && is_dummy_object (instance))
 	    {
 	      instance = maybe_resolve_dummy (instance);
