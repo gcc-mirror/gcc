@@ -1,3 +1,7 @@
+2014-04-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	* decl.c (reshape_init_r): Handle a single element of vector type.
+
 2014-04-16  Patrick Palka  <patrick@parcs.ath.cx>
 
 	PR c++/60765
