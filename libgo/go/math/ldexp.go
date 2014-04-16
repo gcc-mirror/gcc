@@ -17,16 +17,6 @@ func libc_ldexp(float64, int) float64
 
 func Ldexp(frac float64, exp int) float64 {
 	r := libc_ldexp(frac, exp)
-
-	// Work around a bug in the implementation of ldexp on Solaris
-	// 9.  If multiplying a negative number by 2 raised to a
-	// negative exponent underflows, we want to return negative
-	// zero, but the Solaris 9 implementation returns positive
-	// zero.  This workaround can be removed when and if we no
-	// longer care about Solaris 9.
-	if r == 0 && frac < 0 && exp < 0 {
-		r = Copysign(0, frac)
-	}
 	return r
 }
 
