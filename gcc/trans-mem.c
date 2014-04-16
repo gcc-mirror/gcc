@@ -4914,6 +4914,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   if (DECL_ONE_ONLY (new_decl))
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
+  gcc_assert (!old_node->ipa_transforms_to_apply.exists ());
   new_node = cgraph_copy_node_for_versioning (old_node, new_decl, vNULL, NULL);
   new_node->local.local = false;
   new_node->externally_visible = old_node->externally_visible;

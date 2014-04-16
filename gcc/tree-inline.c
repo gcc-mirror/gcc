@@ -5324,18 +5324,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.dst_node = new_version_node;
   id.src_cfun = DECL_STRUCT_FUNCTION (old_decl);
   id.blocks_to_copy = blocks_to_copy;
-  if (id.src_node->ipa_transforms_to_apply.exists ())
-    {
-      vec<ipa_opt_pass> old_transforms_to_apply
-	    = id.dst_node->ipa_transforms_to_apply;
-      unsigned int i;
-
-      id.dst_node->ipa_transforms_to_apply
-	    = id.src_node->ipa_transforms_to_apply.copy ();
-      for (i = 0; i < old_transforms_to_apply.length (); i++)
-        id.dst_node->ipa_transforms_to_apply.safe_push (old_transforms_to_apply[i]);
-      old_transforms_to_apply.release ();
-    }
 
   id.copy_decl = copy_decl_no_change;
   id.transform_call_graph_edges

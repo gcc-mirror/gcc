@@ -1,3 +1,13 @@
+2014-04-16  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphclones.c (cgraph_create_virtual_clone): Duplicate
+	ipa_transforms_to_apply.
+	(cgraph_function_versioning): Assert that old_node has empty
+	ipa_transforms_to_apply.
+	* trans-mem.c (ipa_tm_create_version): Likewise.
+	* tree-inline.c (tree_function_versioning): Do not duplicate
+	ipa_transforms_to_apply.
+
 2014-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/60817
