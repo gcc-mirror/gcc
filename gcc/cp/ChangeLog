@@ -1,3 +1,9 @@
+2014-04-16  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	PR c++/59295
+	* friend.c (add_friend, make_friend_class): Move repeated friend
+	warning under Wredundant_decls.
+
 2014-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (duplicate_decls): Remove redundant TYPE_NAME use.
