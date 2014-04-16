@@ -1,3 +1,11 @@
+2014-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60844
+	* tree-ssa-reassoc.c (reassoc_remove_stmt): New function.
+	(propagate_op_to_single_use, remove_visited_stmt_chain,
+	linearize_expr, repropagate_negates, reassociate_bb): Use it
+	instead of gsi_remove.
+
 2014-04-16  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraphclones.c (cgraph_create_virtual_clone): Duplicate
