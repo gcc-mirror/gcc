@@ -625,8 +625,11 @@ upc_pts_packed_build_cond_expr (location_t loc, tree exp)
     {
       const tree bs0 = upc_get_block_factor (elem_type0);
       const tree bs1 = upc_get_block_factor (elem_type1);
-      const int has_phase0 = !(integer_zerop (bs0) || integer_onep (bs0));
-      const int has_phase1 = !(integer_zerop (bs1) || integer_onep (bs1));
+      /* (shared void *) has a phase field, though it is unused.  */
+      const int has_phase0 = VOID_TYPE_P (ttype0)
+                               || !(integer_zerop (bs0) || integer_onep (bs0));
+      const int has_phase1 = VOID_TYPE_P (ttype1)
+                               || !(integer_zerop (bs1) || integer_onep (bs1));
       const int has_phase = has_phase0 || has_phase1;
       const int is_eq_op = (code == EQ_EXPR || code == NE_EXPR);
       const int is_bitwise_cmp = is_eq_op

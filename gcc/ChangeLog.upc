@@ -1,3 +1,9 @@
+2014-04-16 Gary Funck  <gary@intrepid.com>
+
+	Fix PTS comparison involving a generic PTS using packed representation.
+	* c-family/c-upc-pts-packed.c (upc_pts_packed_build_cond_expr):
+	When comparing (shared void *) pointers, mask out the phase component.
+
 2014-04-14 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 209359 into gupc branch.
