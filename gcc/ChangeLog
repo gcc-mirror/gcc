@@ -1,3 +1,7 @@
+2014-04-16  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
+
+	* config/avr/avr-mcus.def: Correct typo for atxmega256a3bu macro.
+
 2014-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-operands.c (create_vop_var): Set DECL_IGNORED_P.
