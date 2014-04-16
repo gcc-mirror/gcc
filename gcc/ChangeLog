@@ -1,3 +1,8 @@
+2014-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* final.c (compute_alignments): Do not apply loop alignment to a block
+	falling through to the exit.
+
 2014-04-16  Catherine Moore  <clm@codesourcery.com>
 
 	* mips.md (*mov<mode>_internal, *movhi_internal, *movqi_internal):
