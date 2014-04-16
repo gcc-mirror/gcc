@@ -1,3 +1,7 @@
+2014-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (__is_location_invariant): Use __or_ helper.
+
 2014-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60734

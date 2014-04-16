@@ -1747,8 +1747,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    */
   template<typename _Tp>
     struct __is_location_invariant
-    : integral_constant<bool, (is_pointer<_Tp>::value
-			       || is_member_pointer<_Tp>::value)>
+    : __or_<is_pointer<_Tp>, is_member_pointer<_Tp>>::type
     { };
 
   class _Undefined_class;
