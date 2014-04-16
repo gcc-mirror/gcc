@@ -2954,7 +2954,7 @@ foo:	.long	25
 	tls_first_major=2
 	tls_first_minor=17
 	;;
-  i[34567]86-*-* | x86_64-*-solaris2.1[0-9]*)
+  i[34567]86-*-* | x86_64-*-*)
     case "$target" in
       i[34567]86-*-solaris2.*)
 	on_solaris=yes
@@ -2986,7 +2986,9 @@ changequote(,)dnl
       tls_section_flag=T
       tls_as_opt="--fatal-warnings"
     fi
-    conftest_s="$conftest_s
+    case "$target" in
+      i[34567]86-*-*)
+	conftest_s="$conftest_s
 foo:	.long	25
 	.text
 	movl	%gs:0, %eax
@@ -3000,23 +3002,26 @@ foo:	.long	25
 	movl	\$foo@tpoff, %eax
 	subl	\$foo@tpoff, %eax
 	leal	foo@ntpoff(%ecx), %eax"
-    ;;
-  x86_64-*-*)
-    conftest_s='
-	.section ".tdata","awT",@progbits
+	;;
+      x86_64-*-*)
+	if test x$on_solaris = xyes; then
+	  case $gas_flag in
+	    yes) tls_as_opt="$tls_as_opt --64" ;;
+	    no)	 tls_as_opt="$tls_as_opt -xarch=amd64" ;;
+	  esac	  
+	fi
+	conftest_s="$conftest_s
 foo:	.long	25
 	.text
 	movq	%fs:0, %rax
-	leaq	foo@TLSGD(%rip), %rdi
-	leaq	foo@TLSLD(%rip), %rdi
-	leaq	foo@DTPOFF(%rax), %rdx
-	movq	foo@GOTTPOFF(%rip), %rax
-	movq	$foo@TPOFF, %rax'
-	tls_first_major=2
-	tls_first_minor=14
-	tls_section_flag=T
-	tls_as_opt=--fatal-warnings
-	;;
+	leaq	foo@tlsgd(%rip), %rdi
+	leaq	foo@tlsld(%rip), %rdi
+	leaq	foo@dtpoff(%rax), %rdx
+	movq	foo@gottpoff(%rip), %rax
+	movq	\$foo@tpoff, %rax"
+        ;;
+    esac
+    ;;
   ia64-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits

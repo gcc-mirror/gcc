@@ -1,3 +1,12 @@
+2014-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/60817
+	* configure.ac (set_have_as_tls): Merge i[34567]86-*-* and
+	x86_64-*-* cases.
+	Pass necessary as flags on 64-bit Solaris/x86.
+	Use lowercase relocs for x86_64-*-*.
+	* configure: Regenerate.
+
 2014-04-15  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-devirt.c (referenced_from_vtable_p): New predicate.
