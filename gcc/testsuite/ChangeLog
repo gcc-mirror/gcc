@@ -1,3 +1,7 @@
+2014-04-16  Catherine Moore  <clm@codesourcery.com>
+
+	* gcc.target/mips/umips-store16-2.c: New test.
+
 2014-04-16  Marc Glisse  <marc.glisse@inria.fr>
 
 	* g++.dg/cpp0x/initlist-vect.C: New file.

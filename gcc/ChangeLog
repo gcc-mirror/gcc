@@ -1,3 +1,8 @@
+2014-04-16  Catherine Moore  <clm@codesourcery.com>
+
+	* mips.md (*mov<mode>_internal, *movhi_internal, *movqi_internal):
+	Adjust constraints for microMIPS store patterns.
+
 2014-04-16  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
 
 	* config/avr/avr-mcus.def: Correct typo for atxmega256a3bu macro.
