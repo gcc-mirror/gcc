@@ -1,3 +1,9 @@
+2014-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/uninit-B-O0.c: Remove XFAIL.
+	* gcc.dg/uninit-I-O0.c: Likewise.
+	* gcc.dg/uninit-pr19430-O0.c: Remove some XFAILs.
+
 2014-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60844

@@ -1,3 +1,11 @@
+2014-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-operands.c (create_vop_var): Set DECL_IGNORED_P.
+	(append_use): Run at -O0.
+	(append_vdef): Likewise.
+	* tree-ssa-ter.c (ter_is_replaceable_p): Do not special-case -O0.
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Remove obsolete comment.
+
 2014-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60844
