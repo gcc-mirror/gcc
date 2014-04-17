@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2013 Free Software Foundation, Inc.
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
@@ -125,6 +125,47 @@ test_compare (enum pkind kind, enum cmp_op op,
 		   p0_s, p1_s, expected, got);
 	  abort ();
 	}
+      if (op == EQ_OP || op == NE_OP)
+        {
+	  /* Per C99 6.5.9, the following comparison is allowed
+	     and does not require a cast:
+	     one operand is a pointer to an object or incomplete type
+	     and the other is a pointer to a qualified or
+	     unqualified version of void.  */
+	  shared void *const vp0 = (shared void *) &ablocked[jj];
+	  shared void *const vp1 = (shared void *) &ablocked[kk];
+	  /* xp0 and xp1 are used in error diagnostics to print
+	     the operand values.  */
+	  shared void *xp0, *xp1;
+	  switch (op)
+	    {
+	    case EQ_OP:
+	      xp0 = pp0_phase_reset;
+	      xp1 = vp1;
+	      got = (pp0_phase_reset == vp1);
+	      break;
+	    case NE_OP:
+	      xp0 = vp0;
+	      xp1 = pp1_phase_reset;
+	      got = (vp0 != pp1_phase_reset);
+	      break;
+	    default: abort ();
+	    }
+	  if (got != expected)
+	    {
+	      char b1[100], b2[100];
+	      const char *const op_s = op_name_tbl[op];
+	      const char *const p0_s = sptr (b1, xp0);
+	      const char *const p1_s = sptr (b2, xp1);
+	      fprintf (stderr, "test26: Error: thread %d: %s PTS comparison "
+		       "%s to (shared void *) failed.\n"
+		       "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d "
+		       "p0=%s p1=%s expected=%d got=%d\n",
+		       MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk,
+		       p0_s, p1_s, expected, got);
+	      abort ();
+	    }
+        }
     }
   else
     {

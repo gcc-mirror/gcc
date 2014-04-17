@@ -1,11 +1,14 @@
+2014-04-16  Gary Funck  <gary@intrepid.com>
+
+	* test26..upc: Add test case for comparisons involving
+	generic pointer-to-shared operands.
+
 2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
 
-	testsuite/libgupc.upc/intrepid/test07.upc: Split test into two
-	separate compilation units.
-	testsuite/libgupc.upc/intrepid/test07_sep.upc: New.
-	testsuite/libgupc.upc/intrepid/test08.upc: Split test into two
-	separate compilation units.
-	testsuite/libgupc.upc/intrepid/test08_sep.upc: New.
+	* test07.upc: Split test into two separate compilation units.
+	* test07_sep.upc: New.
+	* test08.upc: Split test into two separate compilation units.
+	* test08_sep.upc: New.
 
 2012-09-26  Gary Funck  <gary@intrepid.com>
 
