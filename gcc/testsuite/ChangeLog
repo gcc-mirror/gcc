@@ -1,3 +1,8 @@
+2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60836
+	* g++.dg/vect/pr60836.cc: New testcase.
+
 2014-04-17   Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60841

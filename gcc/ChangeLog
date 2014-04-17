@@ -1,3 +1,9 @@
+2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60836
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Force
+	initial PHI args to be gimple values.
+
 2014-04-17   Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60841
