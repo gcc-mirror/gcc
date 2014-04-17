@@ -415,7 +415,18 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 			  || !DECL_EXTERNAL (e->callee->decl)
 			  || e->callee->alias
 			  || before_inlining_p))
-		    pointer_set_insert (reachable, e->callee);
+		    {
+		      /* Be sure that we will not optimize out alias target
+			 body.  */
+		      if (DECL_EXTERNAL (e->callee->decl)
+			  && e->callee->alias
+			  && before_inlining_p)
+			{
+		          pointer_set_insert (reachable,
+					      cgraph_function_node (e->callee));
+			}
+		      pointer_set_insert (reachable, e->callee);
+		    }
 		  enqueue_node (e->callee, &first, reachable);
 		}
 
