@@ -3677,7 +3677,10 @@ public:
 #endif
     }
 
-  unsigned int execute () { return rest_of_handle_live_range_shrinkage (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_live_range_shrinkage ();
+    }
 
 }; // class pass_live_range_shrinkage
 
@@ -3715,7 +3718,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return rest_of_handle_sched (); }
+  virtual unsigned int execute (function *) { return rest_of_handle_sched (); }
 
 }; // class pass_sched
 
@@ -3763,7 +3766,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return rest_of_handle_sched2 (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_sched2 ();
+    }
 
 }; // class pass_sched2
 

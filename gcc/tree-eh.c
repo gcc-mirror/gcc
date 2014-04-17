@@ -2121,8 +2121,36 @@ lower_eh_constructs_1 (struct leh_state *state, gimple_seq *pseq)
     lower_eh_constructs_2 (state, &gsi);
 }
 
-static unsigned int
-lower_eh_constructs (void)
+namespace {
+
+const pass_data pass_data_lower_eh =
+{
+  GIMPLE_PASS, /* type */
+  "eh", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_EH, /* tv_id */
+  PROP_gimple_lcf, /* properties_required */
+  PROP_gimple_leh, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_lower_eh : public gimple_opt_pass
+{
+public:
+  pass_lower_eh (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_eh, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *);
+
+}; // class pass_lower_eh
+
+unsigned int
+pass_lower_eh::execute (function *fun)
 {
   struct leh_state null_state;
   gimple_seq bodyp;
@@ -2155,41 +2183,13 @@ lower_eh_constructs (void)
 
   /* If this function needs a language specific EH personality routine
      and the frontend didn't already set one do so now.  */
-  if (function_needs_eh_personality (cfun) == eh_personality_lang
+  if (function_needs_eh_personality (fun) == eh_personality_lang
       && !DECL_FUNCTION_PERSONALITY (current_function_decl))
     DECL_FUNCTION_PERSONALITY (current_function_decl)
       = lang_hooks.eh_personality ();
 
   return 0;
 }
-
-namespace {
-
-const pass_data pass_data_lower_eh =
-{
-  GIMPLE_PASS, /* type */
-  "eh", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
-  TV_TREE_EH, /* tv_id */
-  PROP_gimple_lcf, /* properties_required */
-  PROP_gimple_leh, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_lower_eh : public gimple_opt_pass
-{
-public:
-  pass_lower_eh (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_lower_eh, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  unsigned int execute () { return lower_eh_constructs (); }
-
-}; // class pass_lower_eh
 
 } // anon namespace
 
@@ -3108,13 +3108,6 @@ refactor_eh_r (gimple_seq seq)
     }
 }
 
-static unsigned
-refactor_eh (void)
-{
-  refactor_eh_r (gimple_body (current_function_decl));
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_refactor_eh =
@@ -3140,7 +3133,11 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_exceptions != 0; }
-  unsigned int execute () { return refactor_eh (); }
+  virtual unsigned int execute (function *)
+    {
+      refactor_eh_r (gimple_body (current_function_decl));
+      return 0;
+    }
 
 }; // class pass_refactor_eh
 
@@ -3304,37 +3301,6 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
   return ret;
 }
 
-static unsigned
-execute_lower_resx (void)
-{
-  basic_block bb;
-  struct pointer_map_t *mnt_map;
-  bool dominance_invalidated = false;
-  bool any_rewritten = false;
-
-  mnt_map = pointer_map_create ();
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      gimple last = last_stmt (bb);
-      if (last && is_gimple_resx (last))
-	{
-	  dominance_invalidated |= lower_resx (bb, last, mnt_map);
-	  any_rewritten = true;
-	}
-    }
-
-  pointer_map_destroy (mnt_map);
-
-  if (dominance_invalidated)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      free_dominance_info (CDI_POST_DOMINATORS);
-    }
-
-  return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
-}
-
 namespace {
 
 const pass_data pass_data_lower_resx =
@@ -3360,9 +3326,40 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_exceptions != 0; }
-  unsigned int execute () { return execute_lower_resx (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_lower_resx
+
+unsigned
+pass_lower_resx::execute (function *fun)
+{
+  basic_block bb;
+  struct pointer_map_t *mnt_map;
+  bool dominance_invalidated = false;
+  bool any_rewritten = false;
+
+  mnt_map = pointer_map_create ();
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple last = last_stmt (bb);
+      if (last && is_gimple_resx (last))
+	{
+	  dominance_invalidated |= lower_resx (bb, last, mnt_map);
+	  any_rewritten = true;
+	}
+    }
+
+  pointer_map_destroy (mnt_map);
+
+  if (dominance_invalidated)
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+    }
+
+  return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
+}
 
 } // anon namespace
 
@@ -3704,39 +3701,6 @@ lower_eh_dispatch (basic_block src, gimple stmt)
   return redirected;
 }
 
-static unsigned
-execute_lower_eh_dispatch (void)
-{
-  basic_block bb;
-  int flags = 0;
-  bool redirected = false;
-
-  assign_filter_values ();
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      gimple last = last_stmt (bb);
-      if (last == NULL)
-	continue;
-      if (gimple_code (last) == GIMPLE_EH_DISPATCH)
-	{
-	  redirected |= lower_eh_dispatch (bb, last);
-	  flags |= TODO_update_ssa_only_virtuals;
-	}
-      else if (gimple_code (last) == GIMPLE_RESX)
-	{
-	  if (stmt_can_throw_external (last))
-	    optimize_clobbers (bb);
-	  else
-	    flags |= sink_clobbers (bb);
-	}
-    }
-
-  if (redirected)
-    delete_unreachable_blocks ();
-  return flags;
-}
-
 namespace {
 
 const pass_data pass_data_lower_eh_dispatch =
@@ -3762,10 +3726,42 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *fun) { return fun->eh->region_tree != NULL; }
-
-  unsigned int execute () { return execute_lower_eh_dispatch (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_lower_eh_dispatch
+
+unsigned
+pass_lower_eh_dispatch::execute (function *fun)
+{
+  basic_block bb;
+  int flags = 0;
+  bool redirected = false;
+
+  assign_filter_values ();
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple last = last_stmt (bb);
+      if (last == NULL)
+	continue;
+      if (gimple_code (last) == GIMPLE_EH_DISPATCH)
+	{
+	  redirected |= lower_eh_dispatch (bb, last);
+	  flags |= TODO_update_ssa_only_virtuals;
+	}
+      else if (gimple_code (last) == GIMPLE_RESX)
+	{
+	  if (stmt_can_throw_external (last))
+	    optimize_clobbers (bb);
+	  else
+	    flags |= sink_clobbers (bb);
+	}
+    }
+
+  if (redirected)
+    delete_unreachable_blocks ();
+  return flags;
+}
 
 } // anon namespace
 
@@ -4564,21 +4560,6 @@ execute_cleanup_eh_1 (void)
   return 0;
 }
 
-static unsigned int
-execute_cleanup_eh (void)
-{
-  int ret = execute_cleanup_eh_1 ();
-
-  /* If the function no longer needs an EH personality routine
-     clear it.  This exposes cross-language inlining opportunities
-     and avoids references to a never defined personality routine.  */
-  if (DECL_FUNCTION_PERSONALITY (current_function_decl)
-      && function_needs_eh_personality (cfun) != eh_personality_lang)
-    DECL_FUNCTION_PERSONALITY (current_function_decl) = NULL_TREE;
-
-  return ret;
-}
-
 namespace {
 
 const pass_data pass_data_cleanup_eh =
@@ -4609,9 +4590,24 @@ public:
       return fun->eh != NULL && fun->eh->region_tree != NULL;
     }
 
-  unsigned int execute () { return execute_cleanup_eh (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_cleanup_eh
+
+unsigned int
+pass_cleanup_eh::execute (function *fun)
+{
+  int ret = execute_cleanup_eh_1 ();
+
+  /* If the function no longer needs an EH personality routine
+     clear it.  This exposes cross-language inlining opportunities
+     and avoids references to a never defined personality routine.  */
+  if (DECL_FUNCTION_PERSONALITY (current_function_decl)
+      && function_needs_eh_personality (fun) != eh_personality_lang)
+    DECL_FUNCTION_PERSONALITY (current_function_decl) = NULL_TREE;
+
+  return ret;
+}
 
 } // anon namespace
 

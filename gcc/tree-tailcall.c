@@ -1065,12 +1065,6 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   return 0;
 }
 
-static unsigned int
-execute_tail_recursion (void)
-{
-  return tree_optimize_tail_calls_1 (false);
-}
-
 static bool
 gate_tail_calls (void)
 {
@@ -1109,7 +1103,10 @@ public:
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_tail_recursion (m_ctxt); }
   virtual bool gate (function *) { return gate_tail_calls (); }
-  unsigned int execute () { return execute_tail_recursion (); }
+  virtual unsigned int execute (function *)
+    {
+      return tree_optimize_tail_calls_1 (false);
+    }
 
 }; // class pass_tail_recursion
 
@@ -1146,7 +1143,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_tail_calls (); }
-  unsigned int execute () { return execute_tail_calls (); }
+  virtual unsigned int execute (function *) { return execute_tail_calls (); }
 
 }; // class pass_tail_calls
 

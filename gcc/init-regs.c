@@ -125,13 +125,6 @@ initialize_uninitialized_regs (void)
   BITMAP_FREE (already_genned);
 }
 
-static unsigned int
-rest_of_handle_initialize_regs (void)
-{
-  initialize_uninitialized_regs ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_initialize_regs =
@@ -157,7 +150,11 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return optimize > 0; }
-  unsigned int execute () { return rest_of_handle_initialize_regs (); }
+  virtual unsigned int execute (function *)
+    {
+      initialize_uninitialized_regs ();
+      return 0;
+    }
 
 }; // class pass_initialize_regs
 

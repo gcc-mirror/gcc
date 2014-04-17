@@ -96,7 +96,7 @@ public:
      be sub-passes otherwise this pass does nothing.
      The return value contains TODOs to execute in addition to those in
      TODO_flags_finish.   */
-  virtual unsigned int execute ();
+  virtual unsigned int execute (function *fun);
 
 protected:
   opt_pass (const pass_data&, gcc::context *);

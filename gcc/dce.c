@@ -808,7 +808,10 @@ public:
       return optimize > 1 && flag_dce && dbg_cnt (dce_ud);
     }
 
-  unsigned int execute () { return rest_of_handle_ud_dce (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_ud_dce ();
+    }
 
 }; // class pass_ud_rtl_dce
 
@@ -1237,7 +1240,10 @@ public:
       return optimize > 0 && flag_dce && dbg_cnt (dce_fast);
     }
 
-  unsigned int execute () { return rest_of_handle_fast_dce (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_fast_dce ();
+    }
 
 }; // class pass_fast_rtl_dce
 

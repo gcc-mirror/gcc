@@ -5642,7 +5642,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return free_lang_data (); }
+  virtual unsigned int execute (function *) { return free_lang_data (); }
 
 }; // class pass_ipa_free_lang_data
 

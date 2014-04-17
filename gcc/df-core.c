@@ -765,7 +765,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return optimize > 0; }
-  unsigned int execute () { return rest_of_handle_df_initialize (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_df_initialize ();
+    }
 
 }; // class pass_df_initialize_opt
 
@@ -803,7 +806,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return optimize == 0; }
-  unsigned int execute () { return rest_of_handle_df_initialize (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_df_initialize ();
+    }
 
 }; // class pass_df_initialize_no_opt
 
@@ -867,7 +873,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_df_finish (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_df_finish ();
+    }
 
 }; // class pass_df_finish
 

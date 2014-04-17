@@ -688,7 +688,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return tree_profiling (); }
+  virtual unsigned int execute (function *) { return tree_profiling (); }
 
 }; // class pass_ipa_tree_profile
 

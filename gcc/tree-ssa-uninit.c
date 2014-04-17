@@ -2281,76 +2281,6 @@ warn_uninitialized_phi (gimple phi, vec<gimple> *worklist,
 
 }
 
-
-/* Entry point to the late uninitialized warning pass.  */
-
-static unsigned int
-execute_late_warn_uninitialized (void)
-{
-  basic_block bb;
-  gimple_stmt_iterator gsi;
-  vec<gimple> worklist = vNULL;
-  pointer_set_t *added_to_worklist;
-
-  calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-  /* Re-do the plain uninitialized variable check, as optimization may have
-     straightened control flow.  Do this first so that we don't accidentally
-     get a "may be" warning when we'd have seen an "is" warning later.  */
-  warn_uninitialized_vars (/*warn_possibly_uninitialized=*/1);
-
-  timevar_push (TV_TREE_UNINIT);
-
-  possibly_undefined_names = pointer_set_create ();
-  added_to_worklist = pointer_set_create ();
-
-  /* Initialize worklist  */
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-        gimple phi = gsi_stmt (gsi);
-        size_t n, i;
-
-        n = gimple_phi_num_args (phi);
-
-        /* Don't look at virtual operands.  */
-        if (virtual_operand_p (gimple_phi_result (phi)))
-          continue;
-
-        for (i = 0; i < n; ++i)
-          {
-            tree op = gimple_phi_arg_def (phi, i);
-            if (TREE_CODE (op) == SSA_NAME
-                && uninit_undefined_value_p (op))
-              {
-                worklist.safe_push (phi);
-		pointer_set_insert (added_to_worklist, phi);
-                if (dump_file && (dump_flags & TDF_DETAILS))
-                  {
-                    fprintf (dump_file, "[WORKLIST]: add to initial list: ");
-                    print_gimple_stmt (dump_file, phi, 0, 0);
-                  }
-                break;
-              }
-          }
-      }
-
-  while (worklist.length () != 0)
-    {
-      gimple cur_phi = 0;
-      cur_phi = worklist.pop ();
-      warn_uninitialized_phi (cur_phi, &worklist, added_to_worklist);
-    }
-
-  worklist.release ();
-  pointer_set_destroy (added_to_worklist);
-  pointer_set_destroy (possibly_undefined_names);
-  possibly_undefined_names = NULL;
-  free_dominance_info (CDI_POST_DOMINATORS);
-  timevar_pop (TV_TREE_UNINIT);
-  return 0;
-}
-
 static bool
 gate_warn_uninitialized (void)
 {
@@ -2383,9 +2313,76 @@ public:
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_late_warn_uninitialized (m_ctxt); }
   virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  unsigned int execute () { return execute_late_warn_uninitialized (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_late_warn_uninitialized
+
+unsigned int
+pass_late_warn_uninitialized::execute (function *fun)
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  vec<gimple> worklist = vNULL;
+  pointer_set_t *added_to_worklist;
+
+  calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* Re-do the plain uninitialized variable check, as optimization may have
+     straightened control flow.  Do this first so that we don't accidentally
+     get a "may be" warning when we'd have seen an "is" warning later.  */
+  warn_uninitialized_vars (/*warn_possibly_uninitialized=*/1);
+
+  timevar_push (TV_TREE_UNINIT);
+
+  possibly_undefined_names = pointer_set_create ();
+  added_to_worklist = pointer_set_create ();
+
+  /* Initialize worklist  */
+  FOR_EACH_BB_FN (bb, fun)
+    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple phi = gsi_stmt (gsi);
+	size_t n, i;
+
+	n = gimple_phi_num_args (phi);
+
+	/* Don't look at virtual operands.  */
+	if (virtual_operand_p (gimple_phi_result (phi)))
+	  continue;
+
+	for (i = 0; i < n; ++i)
+	  {
+	    tree op = gimple_phi_arg_def (phi, i);
+	    if (TREE_CODE (op) == SSA_NAME
+		&& uninit_undefined_value_p (op))
+	      {
+		worklist.safe_push (phi);
+		pointer_set_insert (added_to_worklist, phi);
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  {
+		    fprintf (dump_file, "[WORKLIST]: add to initial list: ");
+		    print_gimple_stmt (dump_file, phi, 0, 0);
+		  }
+		break;
+	      }
+	  }
+      }
+
+  while (worklist.length () != 0)
+    {
+      gimple cur_phi = 0;
+      cur_phi = worklist.pop ();
+      warn_uninitialized_phi (cur_phi, &worklist, added_to_worklist);
+    }
+
+  worklist.release ();
+  pointer_set_destroy (added_to_worklist);
+  pointer_set_destroy (possibly_undefined_names);
+  possibly_undefined_names = NULL;
+  free_dominance_info (CDI_POST_DOMINATORS);
+  timevar_pop (TV_TREE_UNINIT);
+  return 0;
+}
 
 } // anon namespace
 
@@ -2441,7 +2438,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  unsigned int execute () { return execute_early_warn_uninitialized (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_early_warn_uninitialized ();
+    }
 
 }; // class pass_early_warn_uninitialized
 

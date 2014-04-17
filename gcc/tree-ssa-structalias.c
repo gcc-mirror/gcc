@@ -7444,7 +7444,7 @@ public:
 	      && !seen_error ());
     }
 
-  unsigned int execute () { return ipa_pta_execute (); }
+  virtual unsigned int execute (function *) { return ipa_pta_execute (); }
 
 }; // class pass_ipa_pta
 

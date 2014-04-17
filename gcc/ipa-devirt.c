@@ -2136,7 +2136,7 @@ public:
 	      && optimize);
     }
 
-  unsigned int execute () { return ipa_devirt (); }
+  virtual unsigned int execute (function *) { return ipa_devirt (); }
 
 }; // class pass_ipa_devirt
 

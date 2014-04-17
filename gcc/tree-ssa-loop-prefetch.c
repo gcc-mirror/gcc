@@ -2004,15 +2004,6 @@ tree_ssa_prefetch_arrays (void)
 
 /* Prefetching.  */
 
-static unsigned int
-tree_ssa_loop_prefetch (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return tree_ssa_prefetch_arrays ();
-}
-
 namespace {
 
 const pass_data pass_data_loop_prefetch =
@@ -2038,9 +2029,18 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_prefetch_loop_arrays > 0; }
-  unsigned int execute () { return tree_ssa_loop_prefetch (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_loop_prefetch
+
+unsigned int
+pass_loop_prefetch::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return tree_ssa_prefetch_arrays ();
+}
 
 } // anon namespace
 

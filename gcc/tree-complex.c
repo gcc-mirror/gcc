@@ -1680,7 +1680,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_lower_complex (m_ctxt); }
-  unsigned int execute () { return tree_lower_complex (); }
+  virtual unsigned int execute (function *) { return tree_lower_complex (); }
 
 }; // class pass_lower_complex
 
@@ -1724,7 +1724,7 @@ public:
       return !(fun->curr_properties & PROP_gimple_lcx);
     }
 
-  unsigned int execute () { return tree_lower_complex (); }
+  virtual unsigned int execute (function *) { return tree_lower_complex (); }
 
 }; // class pass_lower_complex_O0
 

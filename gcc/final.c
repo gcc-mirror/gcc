@@ -871,7 +871,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return compute_alignments (); }
+  virtual unsigned int execute (function *) { return compute_alignments (); }
 
 }; // class pass_compute_alignments
 
@@ -4499,7 +4499,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_final (); }
+  virtual unsigned int execute (function *) { return rest_of_handle_final (); }
 
 }; // class pass_final
 
@@ -4544,7 +4544,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_shorten_branches (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_shorten_branches ();
+    }
 
 }; // class pass_shorten_branches
 
@@ -4707,7 +4710,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_clean_state (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_clean_state ();
+    }
 
 }; // class pass_clean_state
 

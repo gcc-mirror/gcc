@@ -1865,7 +1865,7 @@ public:
       return (optimize > 0 && (flag_rename_registers));
     }
 
-  unsigned int execute () { return regrename_optimize (); }
+  virtual unsigned int execute (function *) { return regrename_optimize (); }
 
 }; // class pass_regrename
 

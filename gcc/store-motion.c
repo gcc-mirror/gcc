@@ -1258,7 +1258,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return execute_rtl_store_motion (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_rtl_store_motion ();
+    }
 
 }; // class pass_rtl_store_motion
 

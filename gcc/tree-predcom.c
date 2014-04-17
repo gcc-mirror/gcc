@@ -2598,7 +2598,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_predictive_commoning != 0; }
-  unsigned int execute () { return run_tree_predictive_commoning (); }
+  virtual unsigned int execute (function *)
+    {
+      return run_tree_predictive_commoning ();
+    }
 
 }; // class pass_predcom
 

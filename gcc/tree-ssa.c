@@ -1169,7 +1169,10 @@ public:
       return !(fun->curr_properties & PROP_ssa);
     }
 
-  unsigned int execute () { return execute_init_datastructures (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_init_datastructures ();
+    }
 
 }; // class pass_init_datastructures
 

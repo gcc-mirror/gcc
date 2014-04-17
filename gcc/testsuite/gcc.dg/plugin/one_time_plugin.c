@@ -50,7 +50,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute ();
+  virtual unsigned int execute (function *);
 
 private:
   int counter;
@@ -63,7 +63,8 @@ bool one_pass::gate (function *)
   return true;
 }
 
-unsigned int one_pass::execute ()
+unsigned int
+one_pass::execute (function *)
 {
   if (counter > 0) {
     printf ("Executed more than once \n");

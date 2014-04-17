@@ -390,7 +390,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rtl_loop_init (); }
+  virtual unsigned int execute (function *) { return rtl_loop_init (); }
 
 }; // class pass_rtl_loop_init
 
@@ -404,24 +404,6 @@ make_pass_rtl_loop_init (gcc::context *ctxt)
 
 
 /* Finalization of the RTL loop passes.  */
-
-static unsigned int
-rtl_loop_done (void)
-{
-  /* No longer preserve loops, remove them now.  */
-  cfun->curr_properties &= ~PROP_loops;
-  loop_optimizer_finalize ();
-  free_dominance_info (CDI_DOMINATORS);
-
-  cleanup_cfg (0);
-  if (dump_file)
-    {
-      dump_reg_info (dump_file);
-      dump_flow_info (dump_file, dump_flags);
-    }
-
-  return 0;
-}
 
 namespace {
 
@@ -447,9 +429,27 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rtl_loop_done (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_rtl_loop_done
+
+unsigned int
+pass_rtl_loop_done::execute (function *fun)
+{
+  /* No longer preserve loops, remove them now.  */
+  fun->curr_properties &= ~PROP_loops;
+  loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
+
+  cleanup_cfg (0);
+  if (dump_file)
+    {
+      dump_reg_info (dump_file);
+      dump_flow_info (dump_file, dump_flags);
+    }
+
+  return 0;
+}
 
 } // anon namespace
 
@@ -461,13 +461,6 @@ make_pass_rtl_loop_done (gcc::context *ctxt)
 
 
 /* Loop invariant code motion.  */
-static unsigned int
-rtl_move_loop_invariants (void)
-{
-  if (number_of_loops (cfun) > 1)
-    move_loop_invariants ();
-  return 0;
-}
 
 namespace {
 
@@ -495,7 +488,12 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_move_loop_invariants; }
-  unsigned int execute () { return rtl_move_loop_invariants (); }
+  virtual unsigned int execute (function *fun)
+    {
+      if (number_of_loops (fun) > 1)
+	move_loop_invariants ();
+      return 0;
+    }
 
 }; // class pass_rtl_move_loop_invariants
 
@@ -508,14 +506,6 @@ make_pass_rtl_move_loop_invariants (gcc::context *ctxt)
 }
 
 
-static unsigned int
-rtl_unswitch (void)
-{
-  if (number_of_loops (cfun) > 1)
-    unswitch_loops ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_rtl_unswitch =
@@ -541,7 +531,12 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_unswitch_loops; }
-  unsigned int execute () { return rtl_unswitch (); }
+  virtual unsigned int execute (function *fun)
+    {
+      if (number_of_loops (fun) > 1)
+	unswitch_loops ();
+      return 0;
+    }
 
 }; // class pass_rtl_unswitch
 
@@ -554,27 +549,6 @@ make_pass_rtl_unswitch (gcc::context *ctxt)
 }
 
 
-static unsigned int
-rtl_unroll_and_peel_loops (void)
-{
-  if (number_of_loops (cfun) > 1)
-    {
-      int flags = 0;
-      if (dump_file)
-	df_dump (dump_file);
-
-      if (flag_peel_loops)
-	flags |= UAP_PEEL;
-      if (flag_unroll_loops)
-	flags |= UAP_UNROLL;
-      if (flag_unroll_all_loops)
-	flags |= UAP_UNROLL_ALL;
-
-      unroll_and_peel_loops (flags);
-    }
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_rtl_unroll_and_peel_loops =
@@ -604,9 +578,30 @@ public:
       return (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops);
     }
 
-  unsigned int execute () { return rtl_unroll_and_peel_loops (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_rtl_unroll_and_peel_loops
+
+unsigned int
+pass_rtl_unroll_and_peel_loops::execute (function *fun)
+{
+  if (number_of_loops (fun) > 1)
+    {
+      int flags = 0;
+      if (dump_file)
+	df_dump (dump_file);
+
+      if (flag_peel_loops)
+	flags |= UAP_PEEL;
+      if (flag_unroll_loops)
+	flags |= UAP_UNROLL;
+      if (flag_unroll_all_loops)
+	flags |= UAP_UNROLL_ALL;
+
+      unroll_and_peel_loops (flags);
+    }
+  return 0;
+}
 
 } // anon namespace
 
@@ -617,16 +612,6 @@ make_pass_rtl_unroll_and_peel_loops (gcc::context *ctxt)
 }
 
 
-static unsigned int
-rtl_doloop (void)
-{
-#ifdef HAVE_doloop_end
-  if (number_of_loops (cfun) > 1)
-    doloop_optimize_loops ();
-#endif
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_rtl_doloop =
@@ -652,7 +637,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return rtl_doloop (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_rtl_doloop
 
@@ -664,6 +649,16 @@ pass_rtl_doloop::gate (function *)
 #else
   return false;
 #endif
+}
+
+unsigned int
+pass_rtl_doloop::execute (function *fun ATTRIBUTE_UNUSED)
+{
+#ifdef HAVE_doloop_end
+  if (number_of_loops (fun) > 1)
+    doloop_optimize_loops ();
+#endif
+  return 0;
 }
 
 } // anon namespace

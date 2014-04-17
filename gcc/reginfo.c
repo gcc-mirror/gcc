@@ -985,7 +985,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return reginfo_init (); }
+  virtual unsigned int execute (function *) { return reginfo_init (); }
 
 }; // class pass_reginfo_init
 

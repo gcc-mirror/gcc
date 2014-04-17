@@ -446,7 +446,10 @@ public:
 	      || flag_isolate_erroneous_paths_attribute != 0);
     }
 
-  unsigned int execute () { return gimple_ssa_isolate_erroneous_paths (); }
+  virtual unsigned int execute (function *)
+    {
+      return gimple_ssa_isolate_erroneous_paths ();
+    }
 
 }; // class pass_isolate_erroneous_paths
 }

@@ -2542,7 +2542,10 @@ public:
       return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
     }
 
-  unsigned int execute () { return rest_of_handle_insert_vzeroupper (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_insert_vzeroupper ();
+    }
 
 }; // class pass_insert_vzeroupper
 

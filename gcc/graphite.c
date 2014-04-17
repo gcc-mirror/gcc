@@ -411,7 +411,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_graphite_transforms (); }
-  unsigned int execute () { return graphite_transforms (); }
+  virtual unsigned int execute (function *) { return graphite_transforms (); }
 
 }; // class pass_graphite_transforms
 

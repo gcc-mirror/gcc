@@ -3402,7 +3402,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return execute_dwarf2_frame (); }
+  virtual unsigned int execute (function *) { return execute_dwarf2_frame (); }
 
 }; // class pass_dwarf2_frame
 

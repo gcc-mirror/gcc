@@ -374,41 +374,6 @@ next:;
 
 /* Main entry for phiprop pass.  */
 
-static unsigned int
-tree_ssa_phiprop (void)
-{
-  vec<basic_block> bbs;
-  struct phiprop_d *phivn;
-  bool did_something = false;
-  basic_block bb;
-  gimple_stmt_iterator gsi;
-  unsigned i;
-  size_t n;
-
-  calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-
-  n = num_ssa_names;
-  phivn = XCNEWVEC (struct phiprop_d, n);
-
-  /* Walk the dominator tree in preorder.  */
-  bbs = get_all_dominated_blocks (CDI_DOMINATORS,
-				  single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
-  FOR_EACH_VEC_ELT (bbs, i, bb)
-    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      did_something |= propagate_with_phi (bb, gsi_stmt (gsi), phivn, n);
-
-  if (did_something)
-    gsi_commit_edge_inserts ();
-
-  bbs.release ();
-  free (phivn);
-
-  free_dominance_info (CDI_POST_DOMINATORS);
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_phiprop =
@@ -434,9 +399,44 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_phiprop; }
-  unsigned int execute () { return tree_ssa_phiprop (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_phiprop
+
+unsigned int
+pass_phiprop::execute (function *fun)
+{
+  vec<basic_block> bbs;
+  struct phiprop_d *phivn;
+  bool did_something = false;
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  unsigned i;
+  size_t n;
+
+  calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  n = num_ssa_names;
+  phivn = XCNEWVEC (struct phiprop_d, n);
+
+  /* Walk the dominator tree in preorder.  */
+  bbs = get_all_dominated_blocks (CDI_DOMINATORS,
+				  single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun)));
+  FOR_EACH_VEC_ELT (bbs, i, bb)
+    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      did_something |= propagate_with_phi (bb, gsi_stmt (gsi), phivn, n);
+
+  if (did_something)
+    gsi_commit_edge_inserts ();
+
+  bbs.release ();
+  free (phivn);
+
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  return 0;
+}
 
 } // anon namespace
 

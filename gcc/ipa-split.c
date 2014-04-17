@@ -1671,7 +1671,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return execute_split_functions (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_split_functions ();
+    }
 
 }; // class pass_split_functions
 
@@ -1728,7 +1731,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return execute_feedback_split_functions (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_feedback_split_functions ();
+    }
 
 }; // class pass_feedback_split_functions
 

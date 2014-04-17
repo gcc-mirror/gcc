@@ -5548,12 +5548,6 @@ do_reload (void)
 }
 
 /* Run the integrated register allocator.  */
-static unsigned int
-rest_of_handle_ira (void)
-{
-  ira (dump_file);
-  return 0;
-}
 
 namespace {
 
@@ -5579,7 +5573,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_ira (); }
+  virtual unsigned int execute (function *)
+    {
+      ira (dump_file);
+      return 0;
+    }
 
 }; // class pass_ira
 
@@ -5589,13 +5587,6 @@ rtl_opt_pass *
 make_pass_ira (gcc::context *ctxt)
 {
   return new pass_ira (ctxt);
-}
-
-static unsigned int
-rest_of_handle_reload (void)
-{
-  do_reload ();
-  return 0;
 }
 
 namespace {
@@ -5622,7 +5613,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_reload (); }
+  virtual unsigned int execute (function *)
+    {
+      do_reload ();
+      return 0;
+    }
 
 }; // class pass_reload
 

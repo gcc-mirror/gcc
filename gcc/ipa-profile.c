@@ -745,7 +745,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_ipa_profile; }
-  unsigned int execute () { return ipa_profile (); }
+  virtual unsigned int execute (function *) { return ipa_profile (); }
 
 }; // class pass_ipa_profile
 

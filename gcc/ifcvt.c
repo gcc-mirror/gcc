@@ -4560,7 +4560,10 @@ public:
       return (optimize > 0) && dbg_cnt (if_conversion);
     }
 
-  unsigned int execute () { return rest_of_handle_if_conversion (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_if_conversion ();
+    }
 
 }; // class pass_rtl_ifcvt
 
@@ -4575,12 +4578,6 @@ make_pass_rtl_ifcvt (gcc::context *ctxt)
 
 /* Rerun if-conversion, as combine may have simplified things enough
    to now meet sequence length restrictions.  */
-static unsigned int
-rest_of_handle_if_after_combine (void)
-{
-  if_convert (true);
-  return 0;
-}
 
 namespace {
 
@@ -4612,7 +4609,11 @@ public:
 	&& dbg_cnt (if_after_combine);
     }
 
-  unsigned int execute () { return rest_of_handle_if_after_combine (); }
+  virtual unsigned int execute (function *)
+    {
+      if_convert (true);
+      return 0;
+    }
 
 }; // class pass_if_after_combine
 
@@ -4622,14 +4623,6 @@ rtl_opt_pass *
 make_pass_if_after_combine (gcc::context *ctxt)
 {
   return new pass_if_after_combine (ctxt);
-}
-
-
-static unsigned int
-rest_of_handle_if_after_reload (void)
-{
-  if_convert (true);
-  return 0;
 }
 
 
@@ -4663,7 +4656,11 @@ public:
 	&& dbg_cnt (if_after_reload);
     }
 
-  unsigned int execute () { return rest_of_handle_if_after_reload (); }
+  virtual unsigned int execute (function *)
+    {
+      if_convert (true);
+      return 0;
+    }
 
 }; // class pass_if_after_reload
 

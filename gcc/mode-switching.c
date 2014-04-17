@@ -789,16 +789,6 @@ optimize_mode_switching (void)
 
 #endif /* OPTIMIZE_MODE_SWITCHING */
 
-static unsigned int
-rest_of_handle_mode_switching (void)
-{
-#ifdef OPTIMIZE_MODE_SWITCHING
-  optimize_mode_switching ();
-#endif /* OPTIMIZE_MODE_SWITCHING */
-  return 0;
-}
-
-
 namespace {
 
 const pass_data pass_data_mode_switching =
@@ -835,7 +825,13 @@ public:
 #endif
     }
 
-  unsigned int execute () { return rest_of_handle_mode_switching (); }
+  virtual unsigned int execute (function *)
+    {
+#ifdef OPTIMIZE_MODE_SWITCHING
+      optimize_mode_switching ();
+#endif /* OPTIMIZE_MODE_SWITCHING */
+      return 0;
+    }
 
 }; // class pass_mode_switching
 

@@ -13909,7 +13909,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return (optimize > 0); }
-  unsigned int execute () { return rest_of_handle_combine (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_combine ();
+    }
 
 }; // class pass_combine
 

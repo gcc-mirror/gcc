@@ -1542,7 +1542,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_pure_const (); }
-  unsigned int execute () { return propagate (); }
+  virtual unsigned int execute (function *) { return propagate (); }
 
 }; // class pass_ipa_pure_const
 
@@ -1581,8 +1581,38 @@ skip_function_for_local_pure_const (struct cgraph_node *node)
    ipa_pure_const.   This pass is effective when executed together with
    other optimization passes in early optimization pass queue.  */
 
-static unsigned int
-local_pure_const (void)
+namespace {
+
+const pass_data pass_data_local_pure_const =
+{
+  GIMPLE_PASS, /* type */
+  "local-pure-const", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_IPA_PURE_CONST, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_local_pure_const : public gimple_opt_pass
+{
+public:
+  pass_local_pure_const (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_local_pure_const, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_local_pure_const (m_ctxt); }
+  virtual bool gate (function *) { return gate_pure_const (); }
+  virtual unsigned int execute (function *);
+
+}; // class pass_local_pure_const
+
+unsigned int
+pass_local_pure_const::execute (function *fun)
 {
   bool changed = false;
   funct_state l;
@@ -1600,17 +1630,17 @@ local_pure_const (void)
 
   /* Do NORETURN discovery.  */
   if (!skip && !TREE_THIS_VOLATILE (current_function_decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 0)
+      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) == 0)
     {
-      warn_function_noreturn (cfun->decl);
+      warn_function_noreturn (fun->decl);
       if (dump_file)
-        fprintf (dump_file, "Function found to be noreturn: %s\n",
-	         current_function_name ());
+	fprintf (dump_file, "Function found to be noreturn: %s\n",
+		 current_function_name ());
 
       /* Update declaration and reduce profile to executed once.  */
       TREE_THIS_VOLATILE (current_function_decl) = 1;
       if (node->frequency > NODE_FREQUENCY_EXECUTED_ONCE)
-        node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
+	node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
 
       changed = true;
     }
@@ -1691,36 +1721,6 @@ local_pure_const (void)
     return 0;
 }
 
-namespace {
-
-const pass_data pass_data_local_pure_const =
-{
-  GIMPLE_PASS, /* type */
-  "local-pure-const", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
-  TV_IPA_PURE_CONST, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_local_pure_const : public gimple_opt_pass
-{
-public:
-  pass_local_pure_const (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_local_pure_const, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_local_pure_const (m_ctxt); }
-  virtual bool gate (function *) { return gate_pure_const (); }
-  unsigned int execute () { return local_pure_const (); }
-
-}; // class pass_local_pure_const
-
 } // anon namespace
 
 gimple_opt_pass *
@@ -1730,15 +1730,6 @@ make_pass_local_pure_const (gcc::context *ctxt)
 }
 
 /* Emit noreturn warnings.  */
-
-static unsigned int
-execute_warn_function_noreturn (void)
-{
-  if (!TREE_THIS_VOLATILE (current_function_decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 0)
-    warn_function_noreturn (current_function_decl);
-  return 0;
-}
 
 namespace {
 
@@ -1765,7 +1756,13 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return warn_suggest_attribute_noreturn; }
-  unsigned int execute () { return execute_warn_function_noreturn (); }
+  virtual unsigned int execute (function *fun)
+    {
+      if (!TREE_THIS_VOLATILE (current_function_decl)
+	  && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) == 0)
+	warn_function_noreturn (current_function_decl);
+      return 0;
+    }
 
 }; // class pass_warn_function_noreturn
 

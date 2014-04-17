@@ -3898,7 +3898,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return rest_of_handle_delay_slots (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_delay_slots ();
+    }
 
 }; // class pass_delay_slots
 
@@ -3922,13 +3925,6 @@ make_pass_delay_slots (gcc::context *ctxt)
 }
 
 /* Machine dependent reorg pass.  */
-
-static unsigned int
-rest_of_handle_machine_reorg (void)
-{
-  targetm.machine_dependent_reorg ();
-  return 0;
-}
 
 namespace {
 
@@ -3959,7 +3955,11 @@ public:
       return targetm.machine_dependent_reorg != 0;
     }
 
-  unsigned int execute () { return rest_of_handle_machine_reorg (); }
+  virtual unsigned int execute (function *)
+    {
+      targetm.machine_dependent_reorg ();
+      return 0;
+    }
 
 }; // class pass_machine_reorg
 

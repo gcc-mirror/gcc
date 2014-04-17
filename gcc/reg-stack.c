@@ -3364,7 +3364,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_stack_regs (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_stack_regs ();
+    }
 
 }; // class pass_stack_regs_run
 

@@ -3804,7 +3804,7 @@ public:
       return flag_ipa_cp && optimize;
     }
 
-  unsigned int execute () { return ipcp_driver (); }
+  virtual unsigned int execute (function *) { return ipcp_driver (); }
 
 }; // class pass_ipa_cp
 

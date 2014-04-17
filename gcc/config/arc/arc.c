@@ -623,7 +623,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_arc_ifcvt (m_ctxt); }
-  unsigned int execute () { return arc_ifcvt (); }
+  virtual unsigned int execute (function *) { return arc_ifcvt (); }
 };
 
 } // anon namespace
@@ -660,7 +660,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return arc_predicate_delay_insns (); }
+  virtual unsigned int execute (function *)
+    {
+      return arc_predicate_delay_insns ();
+    }
 };
 
 } // anon namespace

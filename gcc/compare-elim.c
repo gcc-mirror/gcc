@@ -676,7 +676,10 @@ public:
       return flag_compare_elim_after_reload;
     }
 
-  unsigned int execute () { return execute_compare_elim_after_reload (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_compare_elim_after_reload ();
+    }
 
 }; // class pass_compare_elim_after_reload
 

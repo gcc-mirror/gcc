@@ -1585,7 +1585,10 @@ public:
       return !(fun->curr_properties & PROP_gimple_lvec);
     }
 
-  unsigned int execute () { return expand_vector_operations (); }
+  virtual unsigned int execute (function *)
+    {
+      return expand_vector_operations ();
+    }
 
 }; // class pass_lower_vector
 
@@ -1625,7 +1628,10 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_lower_vector_ssa (m_ctxt); }
-  unsigned int execute () { return expand_vector_operations (); }
+  virtual unsigned int execute (function *)
+    {
+      return expand_vector_operations ();
+    }
 
 }; // class pass_lower_vector_ssa
 

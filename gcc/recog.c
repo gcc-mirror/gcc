@@ -3847,7 +3847,10 @@ public:
      a clone method.  */
   opt_pass * clone () { return new pass_peephole2 (m_ctxt); }
   virtual bool gate (function *) { return (optimize > 0 && flag_peephole2); }
-  unsigned int execute () { return rest_of_handle_peephole2 (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_peephole2 ();
+    }
 
 }; // class pass_peephole2
 
@@ -3857,13 +3860,6 @@ rtl_opt_pass *
 make_pass_peephole2 (gcc::context *ctxt)
 {
   return new pass_peephole2 (ctxt);
-}
-
-static unsigned int
-rest_of_handle_split_all_insns (void)
-{
-  split_all_insns ();
-  return 0;
 }
 
 namespace {
@@ -3893,7 +3889,11 @@ public:
   /* The epiphany backend creates a second instance of this pass, so
      we need a clone method.  */
   opt_pass * clone () { return new pass_split_all_insns (m_ctxt); }
-  unsigned int execute () { return rest_of_handle_split_all_insns (); }
+  virtual unsigned int execute (function *)
+    {
+      split_all_insns ();
+      return 0;
+    }
 
 }; // class pass_split_all_insns
 
@@ -3940,7 +3940,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_split_after_reload (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_split_after_reload ();
+    }
 
 }; // class pass_split_after_reload
 
@@ -3950,13 +3953,6 @@ rtl_opt_pass *
 make_pass_split_after_reload (gcc::context *ctxt)
 {
   return new pass_split_after_reload (ctxt);
-}
-
-static unsigned int
-rest_of_handle_split_before_regstack (void)
-{
-  split_all_insns ();
-  return 0;
 }
 
 namespace {
@@ -3984,9 +3980,11 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () {
-    return rest_of_handle_split_before_regstack ();
-  }
+  virtual unsigned int execute (function *)
+    {
+      split_all_insns ();
+      return 0;
+    }
 
 }; // class pass_split_before_regstack
 
@@ -4058,7 +4056,10 @@ public:
 #endif
     }
 
-  unsigned int execute () { return rest_of_handle_split_before_sched2 (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_split_before_sched2 ();
+    }
 
 }; // class pass_split_before_sched2
 
@@ -4105,7 +4106,10 @@ public:
 #endif
     }
 
-  unsigned int execute () { return split_all_insns_noflow (); }
+  virtual unsigned int execute (function *)
+    {
+      return split_all_insns_noflow ();
+    }
 
 }; // class pass_split_for_shorten_branches
 

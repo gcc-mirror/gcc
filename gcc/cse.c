@@ -7510,7 +7510,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return optimize > 0; }
-  unsigned int execute () { return rest_of_handle_cse (); }
+  virtual unsigned int execute (function *) { return rest_of_handle_cse (); }
 
 }; // class pass_cse
 
@@ -7587,7 +7587,7 @@ public:
       return optimize > 0 && flag_rerun_cse_after_loop;
     }
 
-  unsigned int execute () { return rest_of_handle_cse2 (); }
+  virtual unsigned int execute (function *) { return rest_of_handle_cse2 (); }
 
 }; // class pass_cse2
 
@@ -7662,9 +7662,10 @@ public:
       return optimize > 0 && flag_rerun_cse_after_global_opts;
     }
 
-  unsigned int execute () {
-    return rest_of_handle_cse_after_global_opts ();
-  }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_cse_after_global_opts ();
+    }
 
 }; // class pass_cse_after_global_opts
 

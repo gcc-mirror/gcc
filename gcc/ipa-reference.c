@@ -1190,7 +1190,7 @@ public:
 	      && !seen_error ());
     }
 
-  unsigned int execute () { return propagate (); }
+  virtual unsigned int execute (function *) { return propagate (); }
 
 }; // class pass_ipa_reference
 

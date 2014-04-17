@@ -1689,22 +1689,6 @@ decompose_multiword_subregs (bool decompose_copies)
 
 /* Implement first lower subreg pass.  */
 
-static unsigned int
-rest_of_handle_lower_subreg (void)
-{
-  decompose_multiword_subregs (false);
-  return 0;
-}
-
-/* Implement second lower subreg pass.  */
-
-static unsigned int
-rest_of_handle_lower_subreg2 (void)
-{
-  decompose_multiword_subregs (true);
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_lower_subreg =
@@ -1730,7 +1714,11 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_split_wide_types != 0; }
-  unsigned int execute () { return rest_of_handle_lower_subreg (); }
+  virtual unsigned int execute (function *)
+    {
+      decompose_multiword_subregs (false);
+      return 0;
+    }
 
 }; // class pass_lower_subreg
 
@@ -1741,6 +1729,8 @@ make_pass_lower_subreg (gcc::context *ctxt)
 {
   return new pass_lower_subreg (ctxt);
 }
+
+/* Implement second lower subreg pass.  */
 
 namespace {
 
@@ -1768,7 +1758,11 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_split_wide_types != 0; }
-  unsigned int execute () { return rest_of_handle_lower_subreg2 (); }
+  virtual unsigned int execute (function *)
+    {
+      decompose_multiword_subregs (true);
+      return 0;
+    }
 
 }; // class pass_lower_subreg2
 

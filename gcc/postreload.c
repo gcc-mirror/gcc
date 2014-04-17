@@ -2315,23 +2315,6 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
     }
 }
 
-static unsigned int
-rest_of_handle_postreload (void)
-{
-  if (!dbg_cnt (postreload_cse))
-    return 0;
-
-  /* Do a very simple CSE pass over just the hard registers.  */
-  reload_cse_regs (get_insns ());
-  /* Reload_cse_regs can eliminate potentially-trapping MEMs.
-     Remove any EH edges associated with them.  */
-  if (cfun->can_throw_non_call_exceptions
-      && purge_all_dead_edges ())
-    cleanup_cfg (0);
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_postreload_cse =
@@ -2358,9 +2341,26 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *) { return (optimize > 0 && reload_completed); }
 
-  unsigned int execute () { return rest_of_handle_postreload (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_postreload_cse
+
+unsigned int
+pass_postreload_cse::execute (function *fun)
+{
+  if (!dbg_cnt (postreload_cse))
+    return 0;
+
+  /* Do a very simple CSE pass over just the hard registers.  */
+  reload_cse_regs (get_insns ());
+  /* Reload_cse_regs can eliminate potentially-trapping MEMs.
+     Remove any EH edges associated with them.  */
+  if (fun->can_throw_non_call_exceptions
+      && purge_all_dead_edges ())
+    cleanup_cfg (0);
+
+  return 0;
+}
 
 } // anon namespace
 
