@@ -1790,13 +1790,6 @@ out:
   return 0;
 }
 
-static bool
-gate_tree_loop_distribution (void)
-{
-  return flag_tree_loop_distribution
-    || flag_tree_loop_distribute_patterns;
-}
-
 namespace {
 
 const pass_data pass_data_loop_distribution =
@@ -1821,7 +1814,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_loop_distribution (); }
+  virtual bool gate (function *)
+    {
+      return flag_tree_loop_distribution
+	|| flag_tree_loop_distribute_patterns;
+    }
+
   unsigned int execute () { return tree_loop_distribution (); }
 
 }; // class pass_loop_distribution

@@ -902,13 +902,6 @@ ubsan_pass (void)
   return 0;
 }
 
-static bool
-gate_ubsan (void)
-{
-  return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW
-			  | SANITIZE_BOOL | SANITIZE_ENUM);
-}
-
 namespace {
 
 const pass_data pass_data_ubsan =
@@ -933,7 +926,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ubsan (); }
+  virtual bool gate (function *)
+    {
+      return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW
+			      | SANITIZE_BOOL | SANITIZE_ENUM);
+    }
+
   unsigned int execute () { return ubsan_pass (); }
 
 }; // class pass_ubsan

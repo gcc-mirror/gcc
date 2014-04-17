@@ -3115,12 +3115,6 @@ refactor_eh (void)
   return 0;
 }
 
-static bool
-gate_refactor_eh (void)
-{
-  return flag_exceptions != 0;
-}
-
 namespace {
 
 const pass_data pass_data_refactor_eh =
@@ -3145,7 +3139,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_refactor_eh (); }
+  virtual bool gate (function *) { return flag_exceptions != 0; }
   unsigned int execute () { return refactor_eh (); }
 
 }; // class pass_refactor_eh
@@ -3341,12 +3335,6 @@ execute_lower_resx (void)
   return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
 }
 
-static bool
-gate_lower_resx (void)
-{
-  return flag_exceptions != 0;
-}
-
 namespace {
 
 const pass_data pass_data_lower_resx =
@@ -3371,7 +3359,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_lower_resx (); }
+  virtual bool gate (function *) { return flag_exceptions != 0; }
   unsigned int execute () { return execute_lower_resx (); }
 
 }; // class pass_lower_resx
@@ -3749,12 +3737,6 @@ execute_lower_eh_dispatch (void)
   return flags;
 }
 
-static bool
-gate_lower_eh_dispatch (void)
-{
-  return cfun->eh->region_tree != NULL;
-}
-
 namespace {
 
 const pass_data pass_data_lower_eh_dispatch =
@@ -3779,7 +3761,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_lower_eh_dispatch (); }
+  virtual bool gate (function *fun) { return fun->eh->region_tree != NULL; }
+
   unsigned int execute () { return execute_lower_eh_dispatch (); }
 
 }; // class pass_lower_eh_dispatch
@@ -4596,12 +4579,6 @@ execute_cleanup_eh (void)
   return ret;
 }
 
-static bool
-gate_cleanup_eh (void)
-{
-  return cfun->eh != NULL && cfun->eh->region_tree != NULL;
-}
-
 namespace {
 
 const pass_data pass_data_cleanup_eh =
@@ -4627,7 +4604,11 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_cleanup_eh (m_ctxt); }
-  bool gate () { return gate_cleanup_eh (); }
+  virtual bool gate (function *fun)
+    {
+      return fun->eh != NULL && fun->eh->region_tree != NULL;
+    }
+
   unsigned int execute () { return execute_cleanup_eh (); }
 
 }; // class pass_cleanup_eh

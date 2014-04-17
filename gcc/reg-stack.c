@@ -3285,16 +3285,6 @@ reg_to_stack (void)
 }
 #endif /* STACK_REGS */
 
-static bool
-gate_handle_stack_regs (void)
-{
-#ifdef STACK_REGS
-  return 1;
-#else
-  return 0;
-#endif
-}
-
 namespace {
 
 const pass_data pass_data_stack_regs =
@@ -3319,7 +3309,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_stack_regs (); }
+  virtual bool gate (function *)
+    {
+#ifdef STACK_REGS
+      return true;
+#else
+      return false;
+#endif
+    }
 
 }; // class pass_stack_regs
 

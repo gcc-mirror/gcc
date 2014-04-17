@@ -663,18 +663,6 @@ check_all_va_list_escapes (struct stdarg_info *si)
   return false;
 }
 
-
-/* Return true if this optimization pass should be done.
-   It makes only sense for stdarg functions.  */
-
-static bool
-gate_optimize_stdarg (void)
-{
-  /* This optimization is only for stdarg functions.  */
-  return cfun->stdarg != 0;
-}
-
-
 /* Entry point to the stdarg optimization pass.  */
 
 static unsigned int
@@ -1023,7 +1011,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_optimize_stdarg (); }
+  virtual bool gate (function *fun)
+    {
+      /* This optimization is only for stdarg functions.  */
+      return fun->stdarg != 0;
+    }
+
   unsigned int execute () { return execute_optimize_stdarg (); }
 
 }; // class pass_stdarg

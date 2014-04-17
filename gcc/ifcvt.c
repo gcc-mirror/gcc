@@ -4512,13 +4512,6 @@ if_convert (bool after_combine)
 #endif
 }
 
-static bool
-gate_handle_if_conversion (void)
-{
-  return (optimize > 0)
-    && dbg_cnt (if_conversion);
-}
-
 /* If-conversion and CFG cleanup.  */
 static unsigned int
 rest_of_handle_if_conversion (void)
@@ -4562,7 +4555,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_if_conversion (); }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0) && dbg_cnt (if_conversion);
+    }
+
   unsigned int execute () { return rest_of_handle_if_conversion (); }
 
 }; // class pass_rtl_ifcvt
@@ -4573,13 +4570,6 @@ rtl_opt_pass *
 make_pass_rtl_ifcvt (gcc::context *ctxt)
 {
   return new pass_rtl_ifcvt (ctxt);
-}
-
-static bool
-gate_handle_if_after_combine (void)
-{
-  return optimize > 0 && flag_if_conversion
-    && dbg_cnt (if_after_combine);
 }
 
 
@@ -4616,7 +4606,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_if_after_combine (); }
+  virtual bool gate (function *)
+    {
+      return optimize > 0 && flag_if_conversion
+	&& dbg_cnt (if_after_combine);
+    }
+
   unsigned int execute () { return rest_of_handle_if_after_combine (); }
 
 }; // class pass_if_after_combine
@@ -4629,13 +4624,6 @@ make_pass_if_after_combine (gcc::context *ctxt)
   return new pass_if_after_combine (ctxt);
 }
 
-
-static bool
-gate_handle_if_after_reload (void)
-{
-  return optimize > 0 && flag_if_conversion2
-    && dbg_cnt (if_after_reload);
-}
 
 static unsigned int
 rest_of_handle_if_after_reload (void)
@@ -4669,7 +4657,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_if_after_reload (); }
+  virtual bool gate (function *)
+    {
+      return optimize > 0 && flag_if_conversion2
+	&& dbg_cnt (if_after_reload);
+    }
+
   unsigned int execute () { return rest_of_handle_if_after_reload (); }
 
 }; // class pass_if_after_reload

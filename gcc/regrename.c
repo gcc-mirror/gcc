@@ -1836,12 +1836,6 @@ regrename_optimize (void)
   return 0;
 }
 
-static bool
-gate_handle_regrename (void)
-{
-  return (optimize > 0 && (flag_rename_registers));
-}
-
 namespace {
 
 const pass_data pass_data_regrename =
@@ -1866,7 +1860,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_regrename (); }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0 && (flag_rename_registers));
+    }
+
   unsigned int execute () { return regrename_optimize (); }
 
 }; // class pass_regrename

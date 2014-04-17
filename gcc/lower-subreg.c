@@ -1687,14 +1687,6 @@ decompose_multiword_subregs (bool decompose_copies)
   BITMAP_FREE (subreg_context);
 }
 
-/* Gate function for lower subreg pass.  */
-
-static bool
-gate_handle_lower_subreg (void)
-{
-  return flag_split_wide_types != 0;
-}
-
 /* Implement first lower subreg pass.  */
 
 static unsigned int
@@ -1737,7 +1729,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_lower_subreg (); }
+  virtual bool gate (function *) { return flag_split_wide_types != 0; }
   unsigned int execute () { return rest_of_handle_lower_subreg (); }
 
 }; // class pass_lower_subreg
@@ -1775,7 +1767,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_lower_subreg (); }
+  virtual bool gate (function *) { return flag_split_wide_types != 0; }
   unsigned int execute () { return rest_of_handle_lower_subreg2 (); }
 
 }; // class pass_lower_subreg2

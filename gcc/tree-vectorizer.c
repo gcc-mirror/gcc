@@ -613,12 +613,6 @@ execute_vect_slp (void)
   return 0;
 }
 
-static bool
-gate_vect_slp (void)
-{
-  return flag_tree_slp_vectorize != 0;
-}
-
 namespace {
 
 const pass_data pass_data_slp_vectorize =
@@ -644,7 +638,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_vect_slp (); }
+  virtual bool gate (function *) { return flag_tree_slp_vectorize != 0; }
   unsigned int execute () { return execute_vect_slp (); }
 
 }; // class pass_slp_vectorize
@@ -702,13 +696,6 @@ increase_alignment (void)
 }
 
 
-static bool
-gate_increase_alignment (void)
-{
-  return flag_section_anchors && flag_tree_loop_vectorize;
-}
-
-
 namespace {
 
 const pass_data pass_data_ipa_increase_alignment =
@@ -733,7 +720,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_increase_alignment (); }
+  virtual bool gate (function *)
+    {
+      return flag_section_anchors && flag_tree_loop_vectorize;
+    }
+
   unsigned int execute () { return increase_alignment (); }
 
 }; // class pass_ipa_increase_alignment

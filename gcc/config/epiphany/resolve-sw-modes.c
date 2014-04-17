@@ -45,12 +45,6 @@ along with GCC; see the file COPYING3.  If not see
    insert new mode setting insns on the edges where the other mode
    becomes unambigous.  */
 
-static bool
-gate_resolve_sw_modes (void)
-{
-  return optimize;
-}
-
 static unsigned
 resolve_sw_modes (void)
 {
@@ -185,7 +179,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_resolve_sw_modes (); }
+  virtual bool gate (function *) { return optimize; }
   unsigned int execute () { return resolve_sw_modes (); }
 
 }; // class pass_resolve_sw_modes

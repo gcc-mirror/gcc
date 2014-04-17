@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "dumpfile.h"
 
+struct function;
+
 /* Optimization pass type.  */
 enum opt_pass_type
 {
@@ -88,7 +90,7 @@ public:
 
   /* This pass and all sub-passes are executed only if the function returns
      true.  The default implementation returns true.  */
-  virtual bool gate ();
+  virtual bool gate (function *fun);
 
   /* This is the code to run.  If has_execute is false, then there should
      be sub-passes otherwise this pass does nothing.

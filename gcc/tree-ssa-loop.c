@@ -44,12 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The loop superpass.  */
 
-static bool
-gate_tree_loop (void)
-{
-  return flag_tree_loop_optimize != 0;
-}
-
 namespace {
 
 const pass_data pass_data_tree_loop =
@@ -74,7 +68,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_loop (); }
+  virtual bool gate (function *) { return flag_tree_loop_optimize != 0; }
 
 }; // class pass_tree_loop
 
@@ -152,12 +146,6 @@ tree_loop_vectorize (void)
   return vectorize_loops ();
 }
 
-static bool
-gate_tree_loop_vectorize (void)
-{
-  return flag_tree_loop_vectorize || cfun->has_force_vectorize_loops;
-}
-
 namespace {
 
 const pass_data pass_data_vectorize =
@@ -182,7 +170,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_loop_vectorize (); }
+  virtual bool gate (function *fun)
+    {
+      return flag_tree_loop_vectorize || fun->has_force_vectorize_loops;
+    }
+
   unsigned int execute () { return tree_loop_vectorize (); }
 
 }; // class pass_vectorize
@@ -205,12 +197,6 @@ check_data_deps (void)
 
   tree_check_data_deps ();
   return 0;
-}
-
-static bool
-gate_check_data_deps (void)
-{
-  return flag_check_data_deps != 0;
 }
 
 namespace {
@@ -237,7 +223,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_check_data_deps (); }
+  virtual bool gate (function *) { return flag_check_data_deps != 0; }
   unsigned int execute () { return check_data_deps (); }
 
 }; // class pass_check_data_deps
@@ -251,12 +237,6 @@ make_pass_check_data_deps (gcc::context *ctxt)
 }
 
 /* Propagation of constants using scev.  */
-
-static bool
-gate_scev_const_prop (void)
-{
-  return flag_tree_scev_cprop;
-}
 
 namespace {
 
@@ -283,7 +263,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_scev_const_prop (); }
+  virtual bool gate (function *) { return flag_tree_scev_cprop; }
   unsigned int execute () { return scev_const_prop (); }
 
 }; // class pass_scev_cprop
@@ -357,12 +337,6 @@ tree_ssa_loop_ivopts (void)
   return 0;
 }
 
-static bool
-gate_tree_ssa_loop_ivopts (void)
-{
-  return flag_ivopts != 0;
-}
-
 namespace {
 
 const pass_data pass_data_iv_optimize =
@@ -387,7 +361,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_ivopts (); }
+  virtual bool gate (function *) { return flag_ivopts != 0; }
   unsigned int execute () { return tree_ssa_loop_ivopts (); }
 
 }; // class pass_iv_optimize

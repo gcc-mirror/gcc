@@ -374,7 +374,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_graphite_transforms (); }
+  virtual bool gate (function *) { return gate_graphite_transforms (); }
 
 }; // class pass_graphite
 
@@ -410,7 +410,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_graphite_transforms (); }
+  virtual bool gate (function *) { return gate_graphite_transforms (); }
   unsigned int execute () { return graphite_transforms (); }
 
 }; // class pass_graphite_transforms

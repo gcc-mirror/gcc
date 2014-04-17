@@ -2287,13 +2287,6 @@ do_ssa_ccp (void)
 }
 
 
-static bool
-gate_ccp (void)
-{
-  return flag_tree_ccp != 0;
-}
-
-
 namespace {
 
 const pass_data pass_data_ccp =
@@ -2320,7 +2313,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_ccp (m_ctxt); }
-  bool gate () { return gate_ccp (); }
+  virtual bool gate (function *) { return flag_tree_ccp != 0; }
   unsigned int execute () { return do_ssa_ccp (); }
 
 }; // class pass_ccp

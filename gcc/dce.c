@@ -779,13 +779,6 @@ rest_of_handle_ud_dce (void)
 }
 
 
-static bool
-gate_ud_dce (void)
-{
-  return optimize > 1 && flag_dce
-    && dbg_cnt (dce_ud);
-}
-
 namespace {
 
 const pass_data pass_data_ud_rtl_dce =
@@ -810,7 +803,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ud_dce (); }
+  virtual bool gate (function *)
+    {
+      return optimize > 1 && flag_dce && dbg_cnt (dce_ud);
+    }
+
   unsigned int execute () { return rest_of_handle_ud_dce (); }
 
 }; // class pass_ud_rtl_dce
@@ -1211,13 +1208,6 @@ run_fast_dce (void)
 }
 
 
-static bool
-gate_fast_dce (void)
-{
-  return optimize > 0 && flag_dce
-    && dbg_cnt (dce_fast);
-}
-
 namespace {
 
 const pass_data pass_data_fast_rtl_dce =
@@ -1242,7 +1232,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_fast_dce (); }
+  virtual bool gate (function *)
+    {
+      return optimize > 0 && flag_dce && dbg_cnt (dce_fast);
+    }
+
   unsigned int execute () { return rest_of_handle_fast_dce (); }
 
 }; // class pass_fast_rtl_dce

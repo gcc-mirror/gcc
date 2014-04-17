@@ -52,12 +52,6 @@ execute_dumb_plugin_example (void)
   return 0;
 }
 
-static bool
-gate_dumb_plugin_example (void)
-{
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_dumb_plugin_example =
@@ -82,7 +76,6 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_dumb_plugin_example (); }
   unsigned int execute () { return execute_dumb_plugin_example (); }
 
 }; // class pass_dumb_plugin_example

@@ -414,15 +414,6 @@ gimple_ssa_isolate_erroneous_paths (void)
   return 0;
 }
 
-static bool
-gate_isolate_erroneous_paths (void)
-{
-  /* If we do not have a suitable builtin function for the trap statement,
-     then do not perform the optimization.  */
-  return (flag_isolate_erroneous_paths_dereference != 0
-	  || flag_isolate_erroneous_paths_attribute != 0);
-}
-
 namespace {
 const pass_data pass_data_isolate_erroneous_paths =
 {
@@ -447,7 +438,14 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_isolate_erroneous_paths (m_ctxt); }
-  bool gate () { return gate_isolate_erroneous_paths (); }
+  virtual bool gate (function *)
+    {
+      /* If we do not have a suitable builtin function for the trap statement,
+	 then do not perform the optimization.  */
+      return (flag_isolate_erroneous_paths_dereference != 0
+	      || flag_isolate_erroneous_paths_attribute != 0);
+    }
+
   unsigned int execute () { return gimple_ssa_isolate_erroneous_paths (); }
 
 }; // class pass_isolate_erroneous_paths

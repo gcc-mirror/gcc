@@ -504,12 +504,6 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
   occ_head = NULL;
 }
 
-static bool
-gate_cse_reciprocals (void)
-{
-  return optimize && flag_reciprocal_math;
-}
-
 /* Go through all the floating-point SSA_NAMEs, and call
    execute_cse_reciprocals_1 on each of them.  */
 static unsigned int
@@ -678,7 +672,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_cse_reciprocals (); }
+  virtual bool gate (function *) { return optimize && flag_reciprocal_math; }
   unsigned int execute () { return execute_cse_reciprocals (); }
 
 }; // class pass_cse_reciprocals
@@ -1562,14 +1556,6 @@ execute_cse_sincos (void)
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
-static bool
-gate_cse_sincos (void)
-{
-  /* We no longer require either sincos or cexp, since powi expansion
-     piggybacks on this pass.  */
-  return optimize;
-}
-
 namespace {
 
 const pass_data pass_data_cse_sincos =
@@ -1595,7 +1581,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_cse_sincos (); }
+  virtual bool gate (function *)
+    {
+      /* We no longer require either sincos or cexp, since powi expansion
+	 piggybacks on this pass.  */
+      return optimize;
+    }
+
   unsigned int execute () { return execute_cse_sincos (); }
 
 }; // class pass_cse_sincos
@@ -2065,12 +2057,6 @@ execute_optimize_bswap (void)
 	  | TODO_verify_stmts : 0);
 }
 
-static bool
-gate_optimize_bswap (void)
-{
-  return flag_expensive_optimizations && optimize;
-}
-
 namespace {
 
 const pass_data pass_data_optimize_bswap =
@@ -2095,7 +2081,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_optimize_bswap (); }
+  virtual bool gate (function *)
+    {
+      return flag_expensive_optimizations && optimize;
+    }
+
   unsigned int execute () { return execute_optimize_bswap (); }
 
 }; // class pass_optimize_bswap
@@ -2874,12 +2864,6 @@ execute_optimize_widening_mul (void)
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
-static bool
-gate_optimize_widening_mul (void)
-{
-  return flag_expensive_optimizations && optimize;
-}
-
 namespace {
 
 const pass_data pass_data_optimize_widening_mul =
@@ -2905,7 +2889,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_optimize_widening_mul (); }
+  virtual bool gate (function *)
+    {
+      return flag_expensive_optimizations && optimize;
+    }
+
   unsigned int execute () { return execute_optimize_widening_mul (); }
 
 }; // class pass_optimize_widening_mul

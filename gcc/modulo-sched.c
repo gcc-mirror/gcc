@@ -3323,13 +3323,6 @@ rotate_partial_schedule (partial_schedule_ptr ps, int start_cycle)
 
 #endif /* INSN_SCHEDULING */
 
-static bool
-gate_handle_sms (void)
-{
-  return (optimize > 0 && flag_modulo_sched);
-}
-
-
 /* Run instruction scheduler.  */
 /* Perform SMS module scheduling.  */
 static unsigned int
@@ -3380,7 +3373,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_sms (); }
+  virtual bool gate (function *)
+{
+  return (optimize > 0 && flag_modulo_sched);
+}
+
   unsigned int execute () { return rest_of_handle_sms (); }
 
 }; // class pass_sms

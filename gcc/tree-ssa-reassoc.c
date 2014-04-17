@@ -4694,12 +4694,6 @@ execute_reassoc (void)
   return 0;
 }
 
-static bool
-gate_tree_ssa_reassoc (void)
-{
-  return flag_tree_reassoc != 0;
-}
-
 namespace {
 
 const pass_data pass_data_reassoc =
@@ -4727,7 +4721,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_reassoc (m_ctxt); }
-  bool gate () { return gate_tree_ssa_reassoc (); }
+  virtual bool gate (function *) { return flag_tree_reassoc != 0; }
   unsigned int execute () { return execute_reassoc (); }
 
 }; // class pass_reassoc

@@ -715,14 +715,6 @@ tsan_pass (void)
   return 0;
 }
 
-/* The pass's gate.  */
-
-static bool
-tsan_gate (void)
-{
-  return (flag_sanitize & SANITIZE_THREAD) != 0;
-}
-
 /* Inserts __tsan_init () into the list of CTORs.  */
 
 void
@@ -765,7 +757,11 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_tsan (m_ctxt); }
-  bool gate () { return tsan_gate (); }
+  virtual bool gate (function *)
+{
+  return (flag_sanitize & SANITIZE_THREAD) != 0;
+}
+
   unsigned int execute () { return tsan_pass (); }
 
 }; // class pass_tsan
@@ -776,12 +772,6 @@ gimple_opt_pass *
 make_pass_tsan (gcc::context *ctxt)
 {
   return new pass_tsan (ctxt);
-}
-
-static bool
-tsan_gate_O0 (void)
-{
-  return (flag_sanitize & SANITIZE_THREAD) != 0 && !optimize;
 }
 
 namespace {
@@ -808,7 +798,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return tsan_gate_O0 (); }
+  virtual bool gate (function *)
+    {
+      return (flag_sanitize & SANITIZE_THREAD) != 0 && !optimize;
+    }
+
   unsigned int execute () { return tsan_pass (); }
 
 }; // class pass_tsan_O0

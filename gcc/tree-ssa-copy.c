@@ -644,12 +644,6 @@ execute_copy_prop (void)
   return 0;
 }
 
-static bool
-gate_copy_prop (void)
-{
-  return flag_tree_copy_prop != 0;
-}
-
 namespace {
 
 const pass_data pass_data_copy_prop =
@@ -676,7 +670,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_copy_prop (m_ctxt); }
-  bool gate () { return gate_copy_prop (); }
+  virtual bool gate (function *) { return flag_tree_copy_prop != 0; }
   unsigned int execute () { return execute_copy_prop (); }
 
 }; // class pass_copy_prop

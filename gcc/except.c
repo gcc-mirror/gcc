@@ -2620,17 +2620,6 @@ convert_to_eh_region_ranges (void)
   return 0;
 }
 
-static bool
-gate_convert_to_eh_region_ranges (void)
-{
-  /* Nothing to do for SJLJ exceptions or if no regions created.  */
-  if (cfun->eh->region_tree == NULL)
-    return false;
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    return false;
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_convert_to_eh_region_ranges =
@@ -2655,10 +2644,21 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_convert_to_eh_region_ranges (); }
+  virtual bool gate (function *);
   unsigned int execute () { return convert_to_eh_region_ranges (); }
 
 }; // class pass_convert_to_eh_region_ranges
+
+bool
+pass_convert_to_eh_region_ranges::gate (function *)
+{
+  /* Nothing to do for SJLJ exceptions or if no regions created.  */
+  if (cfun->eh->region_tree == NULL)
+    return false;
+  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+    return false;
+  return true;
+}
 
 } // anon namespace
 

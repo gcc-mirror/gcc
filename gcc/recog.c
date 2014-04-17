@@ -3810,12 +3810,6 @@ if_test_bypass_p (rtx out_insn, rtx in_insn)
   return true;
 }
 
-static bool
-gate_handle_peephole2 (void)
-{
-  return (optimize > 0 && flag_peephole2);
-}
-
 static unsigned int
 rest_of_handle_peephole2 (void)
 {
@@ -3852,7 +3846,7 @@ public:
   /* The epiphany backend creates a second instance of this pass, so we need
      a clone method.  */
   opt_pass * clone () { return new pass_peephole2 (m_ctxt); }
-  bool gate () { return gate_handle_peephole2 (); }
+  virtual bool gate (function *) { return (optimize > 0 && flag_peephole2); }
   unsigned int execute () { return rest_of_handle_peephole2 (); }
 
 }; // class pass_peephole2
@@ -3958,24 +3952,6 @@ make_pass_split_after_reload (gcc::context *ctxt)
   return new pass_split_after_reload (ctxt);
 }
 
-static bool
-gate_handle_split_before_regstack (void)
-{
-#if HAVE_ATTR_length && defined (STACK_REGS)
-  /* If flow2 creates new instructions which need splitting
-     and scheduling after reload is not done, they might not be
-     split until final which doesn't allow splitting
-     if HAVE_ATTR_length.  */
-# ifdef INSN_SCHEDULING
-  return (optimize && !flag_schedule_insns_after_reload);
-# else
-  return (optimize);
-# endif
-#else
-  return 0;
-#endif
-}
-
 static unsigned int
 rest_of_handle_split_before_regstack (void)
 {
@@ -4007,12 +3983,30 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_split_before_regstack (); }
+  virtual bool gate (function *);
   unsigned int execute () {
     return rest_of_handle_split_before_regstack ();
   }
 
 }; // class pass_split_before_regstack
+
+bool
+pass_split_before_regstack::gate (function *)
+{
+#if HAVE_ATTR_length && defined (STACK_REGS)
+  /* If flow2 creates new instructions which need splitting
+     and scheduling after reload is not done, they might not be
+     split until final which doesn't allow splitting
+     if HAVE_ATTR_length.  */
+# ifdef INSN_SCHEDULING
+  return (optimize && !flag_schedule_insns_after_reload);
+# else
+  return (optimize);
+# endif
+#else
+  return 0;
+#endif
+}
 
 } // anon namespace
 
@@ -4020,16 +4014,6 @@ rtl_opt_pass *
 make_pass_split_before_regstack (gcc::context *ctxt)
 {
   return new pass_split_before_regstack (ctxt);
-}
-
-static bool
-gate_handle_split_before_sched2 (void)
-{
-#ifdef INSN_SCHEDULING
-  return optimize > 0 && flag_schedule_insns_after_reload;
-#else
-  return 0;
-#endif
 }
 
 static unsigned int
@@ -4065,7 +4049,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_split_before_sched2 (); }
+  virtual bool gate (function *)
+    {
+#ifdef INSN_SCHEDULING
+      return optimize > 0 && flag_schedule_insns_after_reload;
+#else
+      return false;
+#endif
+    }
+
   unsigned int execute () { return rest_of_handle_split_before_sched2 (); }
 
 }; // class pass_split_before_sched2
@@ -4076,18 +4068,6 @@ rtl_opt_pass *
 make_pass_split_before_sched2 (gcc::context *ctxt)
 {
   return new pass_split_before_sched2 (ctxt);
-}
-
-/* The placement of the splitting that we do for shorten_branches
-   depends on whether regstack is used by the target or not.  */
-static bool
-gate_do_final_split (void)
-{
-#if HAVE_ATTR_length && !defined (STACK_REGS)
-  return 1;
-#else
-  return 0;
-#endif
 }
 
 namespace {
@@ -4114,7 +4094,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_do_final_split (); }
+  virtual bool gate (function *)
+    {
+      /* The placement of the splitting that we do for shorten_branches
+	 depends on whether regstack is used by the target or not.  */
+#if HAVE_ATTR_length && !defined (STACK_REGS)
+      return true;
+#else
+      return false;
+#endif
+    }
+
   unsigned int execute () { return split_all_insns_noflow (); }
 
 }; // class pass_split_for_shorten_branches

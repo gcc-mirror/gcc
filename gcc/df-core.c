@@ -740,13 +740,6 @@ rest_of_handle_df_initialize (void)
 }
 
 
-static bool
-gate_opt (void)
-{
-  return optimize > 0;
-}
-
-
 namespace {
 
 const pass_data pass_data_df_initialize_opt =
@@ -771,7 +764,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_opt (); }
+  virtual bool gate (function *) { return optimize > 0; }
   unsigned int execute () { return rest_of_handle_df_initialize (); }
 
 }; // class pass_df_initialize_opt
@@ -782,13 +775,6 @@ rtl_opt_pass *
 make_pass_df_initialize_opt (gcc::context *ctxt)
 {
   return new pass_df_initialize_opt (ctxt);
-}
-
-
-static bool
-gate_no_opt (void)
-{
-  return optimize == 0;
 }
 
 
@@ -816,7 +802,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_no_opt (); }
+  virtual bool gate (function *) { return optimize == 0; }
   unsigned int execute () { return rest_of_handle_df_initialize (); }
 
 }; // class pass_df_initialize_no_opt

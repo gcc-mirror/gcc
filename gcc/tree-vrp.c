@@ -9894,12 +9894,6 @@ execute_vrp (void)
   return 0;
 }
 
-static bool
-gate_vrp (void)
-{
-  return flag_tree_vrp != 0;
-}
-
 namespace {
 
 const pass_data pass_data_vrp =
@@ -9927,7 +9921,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_vrp (m_ctxt); }
-  bool gate () { return gate_vrp (); }
+  virtual bool gate (function *) { return flag_tree_vrp != 0; }
   unsigned int execute () { return execute_vrp (); }
 
 }; // class pass_vrp

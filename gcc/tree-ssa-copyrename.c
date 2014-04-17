@@ -435,14 +435,6 @@ rename_ssa_copies (void)
   return 0;
 }
 
-/* Return true if copy rename is to be performed.  */
-
-static bool
-gate_copyrename (void)
-{
-  return flag_tree_copyrename != 0;
-}
-
 namespace {
 
 const pass_data pass_data_rename_ssa_copies =
@@ -468,7 +460,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_rename_ssa_copies (m_ctxt); }
-  bool gate () { return gate_copyrename (); }
+  virtual bool gate (function *) { return flag_tree_copyrename != 0; }
   unsigned int execute () { return rename_ssa_copies (); }
 
 }; // class pass_rename_ssa_copies

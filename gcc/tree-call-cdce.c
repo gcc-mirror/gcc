@@ -917,15 +917,6 @@ tree_call_cdce (void)
   return 0;
 }
 
-static bool
-gate_call_cdce (void)
-{
-  /* The limit constants used in the implementation
-     assume IEEE floating point format.  Other formats
-     can be supported in the future if needed.  */
-  return flag_tree_builtin_call_dce != 0 && optimize_function_for_speed_p (cfun);
-}
-
 namespace {
 
 const pass_data pass_data_call_cdce =
@@ -950,7 +941,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_call_cdce (); }
+  virtual bool gate (function *fun)
+    {
+      /* The limit constants used in the implementation
+	 assume IEEE floating point format.  Other formats
+	 can be supported in the future if needed.  */
+      return flag_tree_builtin_call_dce != 0
+       	&& optimize_function_for_speed_p (fun);
+    }
+
   unsigned int execute () { return tree_call_cdce (); }
 
 }; // class pass_call_cdce

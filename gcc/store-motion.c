@@ -1223,15 +1223,6 @@ one_store_motion_pass (void)
 }
 
 
-static bool
-gate_rtl_store_motion (void)
-{
-  return optimize > 0 && flag_gcse_sm
-    && !cfun->calls_setjmp
-    && optimize_function_for_speed_p (cfun)
-    && dbg_cnt (store_motion);
-}
-
 static unsigned int
 execute_rtl_store_motion (void)
 {
@@ -1266,10 +1257,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_store_motion (); }
+  virtual bool gate (function *);
   unsigned int execute () { return execute_rtl_store_motion (); }
 
 }; // class pass_rtl_store_motion
+
+bool
+pass_rtl_store_motion::gate (function *fun)
+{
+  return optimize > 0 && flag_gcse_sm
+    && !fun->calls_setjmp
+    && optimize_function_for_speed_p (fun)
+    && dbg_cnt (store_motion);
+}
 
 } // anon namespace
 

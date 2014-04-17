@@ -49,7 +49,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate ();
+  virtual bool gate (function *);
   unsigned int execute ();
 
 private:
@@ -58,7 +58,7 @@ private:
 
 } // anon namespace
 
-bool one_pass::gate (void)
+bool one_pass::gate (function *)
 {
   return true;
 }

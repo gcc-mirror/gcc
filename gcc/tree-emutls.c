@@ -816,14 +816,6 @@ ipa_lower_emutls (void)
   return TODO_verify_all;
 }
 
-/* If the target supports TLS natively, we need do nothing here.  */
-
-static bool
-gate_emutls (void)
-{
-  return !targetm.have_tls;
-}
-
 namespace {
 
 const pass_data pass_data_ipa_lower_emutls =
@@ -848,7 +840,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_emutls (); }
+  virtual bool gate (function *)
+    {
+      /* If the target supports TLS natively, we need do nothing here.  */
+      return !targetm.have_tls;
+    }
+
   unsigned int execute () { return ipa_lower_emutls (); }
 
 }; // class pass_ipa_lower_emutls

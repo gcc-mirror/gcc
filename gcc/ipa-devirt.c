@@ -2096,16 +2096,6 @@ ipa_devirt (void)
   return ndevirtualized ? TODO_remove_functions : 0;
 }
 
-/* Gate for speculative IPA devirtualization optimization.  */
-
-static bool
-gate_ipa_devirt (void)
-{
-  return (flag_devirtualize
-	  && flag_devirtualize_speculatively
-	  && optimize);
-}
-
 namespace {
 
 const pass_data pass_data_ipa_devirt =
@@ -2139,7 +2129,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ipa_devirt (); }
+  virtual bool gate (function *)
+    {
+      return (flag_devirtualize
+	      && flag_devirtualize_speculatively
+	      && optimize);
+    }
+
   unsigned int execute () { return ipa_devirt (); }
 
 }; // class pass_ipa_devirt

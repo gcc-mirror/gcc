@@ -2538,12 +2538,6 @@ tree_ssa_loop_im (void)
   return tree_ssa_lim ();
 }
 
-static bool
-gate_tree_ssa_loop_im (void)
-{
-  return flag_tree_loop_im != 0;
-}
-
 namespace {
 
 const pass_data pass_data_lim =
@@ -2569,7 +2563,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_lim (m_ctxt); }
-  bool gate () { return gate_tree_ssa_loop_im (); }
+  virtual bool gate (function *) { return flag_tree_loop_im != 0; }
   unsigned int execute () { return tree_ssa_loop_im (); }
 
 }; // class pass_lim

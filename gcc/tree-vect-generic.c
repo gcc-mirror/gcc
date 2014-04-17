@@ -1528,12 +1528,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 /* Use this to lower vector operations introduced by the vectorizer,
    if it may need the bit-twiddling tricks implemented in this file.  */
 
-static bool
-gate_expand_vector_operations_ssa (void)
-{
-  return !(cfun->curr_properties & PROP_gimple_lvec);
-}
-
 static unsigned int
 expand_vector_operations (void)
 {
@@ -1586,7 +1580,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_expand_vector_operations_ssa (); }
+  virtual bool gate (function *fun)
+    {
+      return !(fun->curr_properties & PROP_gimple_lvec);
+    }
+
   unsigned int execute () { return expand_vector_operations (); }
 
 }; // class pass_lower_vector

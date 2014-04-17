@@ -10344,14 +10344,6 @@ variable_tracking_main (void)
   return ret;
 }
 
-static bool
-gate_handle_var_tracking (void)
-{
-  return (flag_var_tracking && !targetm.delay_vartrack);
-}
-
-
-
 namespace {
 
 const pass_data pass_data_variable_tracking =
@@ -10376,7 +10368,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_var_tracking (); }
+  virtual bool gate (function *)
+    {
+      return (flag_var_tracking && !targetm.delay_vartrack);
+    }
+
   unsigned int execute () { return variable_tracking_main (); }
 
 }; // class pass_variable_tracking

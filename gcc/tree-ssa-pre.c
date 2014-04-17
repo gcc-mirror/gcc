@@ -4771,12 +4771,6 @@ do_pre (void)
   return todo;
 }
 
-static bool
-gate_pre (void)
-{
-  return flag_tree_pre != 0;
-}
-
 namespace {
 
 const pass_data pass_data_pre =
@@ -4803,7 +4797,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_pre (); }
+  virtual bool gate (function *) { return flag_tree_pre != 0; }
   unsigned int execute () { return do_pre (); }
 
 }; // class pass_pre
@@ -4842,12 +4836,6 @@ execute_fre (void)
   return todo;
 }
 
-static bool
-gate_fre (void)
-{
-  return flag_tree_fre != 0;
-}
-
 namespace {
 
 const pass_data pass_data_fre =
@@ -4873,7 +4861,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_fre (m_ctxt); }
-  bool gate () { return gate_fre (); }
+  virtual bool gate (function *) { return flag_tree_fre != 0; }
   unsigned int execute () { return execute_fre (); }
 
 }; // class pass_fre

@@ -1465,14 +1465,6 @@ do_switchconv (void)
   return 0;
 }
 
-/* The pass gate. */
-
-static bool
-switchconv_gate (void)
-{
-  return flag_tree_switch_conversion != 0;
-}
-
 namespace {
 
 const pass_data pass_data_convert_switch =
@@ -1499,7 +1491,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return switchconv_gate (); }
+  virtual bool gate (function *) { return flag_tree_switch_conversion != 0; }
   unsigned int execute () { return do_switchconv (); }
 
 }; // class pass_convert_switch

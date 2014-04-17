@@ -287,31 +287,8 @@ fix_loop_structure (bitmap changed_bbs)
   return number_of_loops (cfun) - old_nloops;
 }
 
-/* Gate for the RTL loop superpass.  The actual passes are subpasses.
-   See passes.c for more on that.  */
-
-static bool
-gate_handle_loop2 (void)
-{
-  if (optimize > 0
-      && (flag_move_loop_invariants
-	  || flag_unswitch_loops
-	  || flag_peel_loops
-	  || flag_unroll_loops
-#ifdef HAVE_doloop_end
-	  || (flag_branch_on_count_reg && HAVE_doloop_end)
-#endif
-	 ))
-    return true;
-  else
-    {
-      /* No longer preserve loops, remove them now.  */
-      cfun->curr_properties &= ~PROP_loops;
-      if (current_loops)
-	loop_optimizer_finalize ();
-      return false;
-    } 
-}
+/* The RTL loop superpass.  The actual passes are subpasses.  See passes.c for
+   more on that.  */
 
 namespace {
 
@@ -337,9 +314,32 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_loop2 (); }
+  virtual bool gate (function *);
 
 }; // class pass_loop2
+
+bool
+pass_loop2::gate (function *fun)
+{
+  if (optimize > 0
+      && (flag_move_loop_invariants
+	  || flag_unswitch_loops
+	  || flag_peel_loops
+	  || flag_unroll_loops
+#ifdef HAVE_doloop_end
+	  || (flag_branch_on_count_reg && HAVE_doloop_end)
+#endif
+      ))
+    return true;
+  else
+    {
+      /* No longer preserve loops, remove them now.  */
+      fun->curr_properties &= ~PROP_loops;
+      if (current_loops)
+	loop_optimizer_finalize ();
+      return false;
+    } 
+}
 
 } // anon namespace
 
@@ -461,12 +461,6 @@ make_pass_rtl_loop_done (gcc::context *ctxt)
 
 
 /* Loop invariant code motion.  */
-static bool
-gate_rtl_move_loop_invariants (void)
-{
-  return flag_move_loop_invariants;
-}
-
 static unsigned int
 rtl_move_loop_invariants (void)
 {
@@ -500,7 +494,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_move_loop_invariants (); }
+  virtual bool gate (function *) { return flag_move_loop_invariants; }
   unsigned int execute () { return rtl_move_loop_invariants (); }
 
 }; // class pass_rtl_move_loop_invariants
@@ -514,13 +508,6 @@ make_pass_rtl_move_loop_invariants (gcc::context *ctxt)
 }
 
 
-/* Loop unswitching for RTL.  */
-static bool
-gate_rtl_unswitch (void)
-{
-  return flag_unswitch_loops;
-}
-
 static unsigned int
 rtl_unswitch (void)
 {
@@ -553,7 +540,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_unswitch (); }
+  virtual bool gate (function *) { return flag_unswitch_loops; }
   unsigned int execute () { return rtl_unswitch (); }
 
 }; // class pass_rtl_unswitch
@@ -567,13 +554,6 @@ make_pass_rtl_unswitch (gcc::context *ctxt)
 }
 
 
-/* Loop unswitching for RTL.  */
-static bool
-gate_rtl_unroll_and_peel_loops (void)
-{
-  return (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops);
-}
-
 static unsigned int
 rtl_unroll_and_peel_loops (void)
 {
@@ -619,7 +599,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_unroll_and_peel_loops (); }
+  virtual bool gate (function *)
+    {
+      return (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops);
+    }
+
   unsigned int execute () { return rtl_unroll_and_peel_loops (); }
 
 }; // class pass_rtl_unroll_and_peel_loops
@@ -633,17 +617,6 @@ make_pass_rtl_unroll_and_peel_loops (gcc::context *ctxt)
 }
 
 
-/* The doloop optimization.  */
-static bool
-gate_rtl_doloop (void)
-{
-#ifdef HAVE_doloop_end
-  return (flag_branch_on_count_reg && HAVE_doloop_end);
-#else
-  return 0;
-#endif
-}
-
 static unsigned int
 rtl_doloop (void)
 {
@@ -678,10 +651,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_doloop (); }
+  virtual bool gate (function *);
   unsigned int execute () { return rtl_doloop (); }
 
 }; // class pass_rtl_doloop
+
+bool
+pass_rtl_doloop::gate (function *)
+{
+#ifdef HAVE_doloop_end
+  return (flag_branch_on_count_reg && HAVE_doloop_end);
+#else
+  return false;
+#endif
+}
 
 } // anon namespace
 

@@ -3524,7 +3524,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_intra_sra (); }
+  virtual bool gate (function *) { return gate_intra_sra (); }
   unsigned int execute () { return early_intra_sra (); }
 
 }; // class pass_sra_early
@@ -3561,7 +3561,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_intra_sra (); }
+  virtual bool gate (function *) { return gate_intra_sra (); }
   unsigned int execute () { return late_intra_sra (); }
 
 }; // class pass_sra
@@ -5051,13 +5051,6 @@ ipa_early_sra (void)
   return ret;
 }
 
-/* Return if early ipa sra shall be performed.  */
-static bool
-ipa_early_sra_gate (void)
-{
-  return flag_ipa_sra && dbg_cnt (eipa_sra);
-}
-
 namespace {
 
 const pass_data pass_data_early_ipa_sra =
@@ -5082,7 +5075,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return ipa_early_sra_gate (); }
+  virtual bool gate (function *) { return flag_ipa_sra && dbg_cnt (eipa_sra); }
   unsigned int execute () { return ipa_early_sra (); }
 
 }; // class pass_early_ipa_sra

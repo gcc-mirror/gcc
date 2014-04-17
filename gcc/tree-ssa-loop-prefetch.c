@@ -2013,12 +2013,6 @@ tree_ssa_loop_prefetch (void)
   return tree_ssa_prefetch_arrays ();
 }
 
-static bool
-gate_tree_ssa_loop_prefetch (void)
-{
-  return flag_prefetch_loop_arrays > 0;
-}
-
 namespace {
 
 const pass_data pass_data_loop_prefetch =
@@ -2043,7 +2037,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_prefetch (); }
+  virtual bool gate (function *) { return flag_prefetch_loop_arrays > 0; }
   unsigned int execute () { return tree_ssa_loop_prefetch (); }
 
 }; // class pass_loop_prefetch

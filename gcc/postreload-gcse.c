@@ -1308,13 +1308,6 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 }
 
 
-static bool
-gate_handle_gcse2 (void)
-{
-  return (optimize > 0 && flag_gcse_after_reload
-	  && optimize_function_for_speed_p (cfun));
-}
-
 
 static unsigned int
 rest_of_handle_gcse2 (void)
@@ -1348,7 +1341,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_gcse2 (); }
+  virtual bool gate (function *fun)
+    {
+      return (optimize > 0 && flag_gcse_after_reload
+	      && optimize_function_for_speed_p (fun));
+    }
+
   unsigned int execute () { return rest_of_handle_gcse2 (); }
 
 }; // class pass_gcse2

@@ -398,12 +398,6 @@ tracer (void)
   return changed ? TODO_cleanup_cfg : 0;
 }
 
-static bool
-gate_tracer (void)
-{
-  return (optimize > 0 && flag_tracer && flag_reorder_blocks);
-}
-
 namespace {
 
 const pass_data pass_data_tracer =
@@ -428,7 +422,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tracer (); }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0 && flag_tracer && flag_reorder_blocks);
+    }
+
   unsigned int execute () { return tracer (); }
 
 }; // class pass_tracer
