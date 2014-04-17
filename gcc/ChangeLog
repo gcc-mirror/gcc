@@ -1,5 +1,10 @@
 2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* opts.c (common_handle_option): Disable -fipa-reference coorectly
+	with -fuse-profile.
+
+2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-devirt.c (odr_type_d): Add field all_derivations_known.
 	(type_all_derivations_known_p): New predicate.
 	(type_all_ctors_visible_p): New predicate.
