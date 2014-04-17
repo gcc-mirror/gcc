@@ -1,3 +1,9 @@
+2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60849
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Allow vector
+	comparison results and add clarifying comment.
+
 2014-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* genmodes.c (struct mode_data): Add need_bytesize_adj field.
