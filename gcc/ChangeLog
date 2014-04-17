@@ -1,3 +1,10 @@
+2014-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60863
+	* config/i386/i386.c (ix86_expand_clear): Remove outdated
+	comment.  Check optimize_insn_for_size_p instead of
+	optimize_insn_for_speed_p.
+
 2014-04-17  Martin Jambor  <mjambor@suse.cz>
 
 	* gimple-iterator.c (gsi_start_edge): New function.
