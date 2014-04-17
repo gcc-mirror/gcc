@@ -142,11 +142,8 @@ DEF_GO_RUNTIME(SEND_SMALL, "__go_send_small", P3(TYPE, CHAN, UINT64), R0())
 // Send a big value on a channel.
 DEF_GO_RUNTIME(SEND_BIG, "__go_send_big", P3(TYPE, CHAN, POINTER), R0())
 
-// Receive a small value from a channel.
-DEF_GO_RUNTIME(RECEIVE_SMALL, "__go_receive_small", P2(TYPE, CHAN), R1(UINT64))
-
-// Receive a big value from a channel.
-DEF_GO_RUNTIME(RECEIVE_BIG, "__go_receive_big", P3(TYPE, CHAN, POINTER), R0())
+// Receive a value from a channel.
+DEF_GO_RUNTIME(RECEIVE, "__go_receive", P3(TYPE, CHAN, POINTER), R0())
 
 // Receive a value from a channel returning whether it is closed.
 DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
@@ -208,7 +205,7 @@ DEF_GO_RUNTIME(RUNTIME_ERROR, "__go_runtime_error", P1(INT32), R0())
 
 
 // Close.
-DEF_GO_RUNTIME(CLOSE, "__go_close", P1(CHAN), R0())
+DEF_GO_RUNTIME(CLOSE, "__go_builtin_close", P1(CHAN), R0())
 
 
 // Copy.
@@ -233,6 +230,11 @@ DEF_GO_RUNTIME(NEW_NOPOINTERS, "__go_new_nopointers", P1(UINTPTR), R1(POINTER))
 // Start a new goroutine.
 DEF_GO_RUNTIME(GO, "__go_go", P2(FUNC_PTR, POINTER), R0())
 
+// Get the function closure.
+DEF_GO_RUNTIME(GET_CLOSURE, "__go_get_closure", P0(), R1(POINTER))
+
+// Set the function closure.
+DEF_GO_RUNTIME(SET_CLOSURE, "__go_set_closure", P1(POINTER), R0())
 
 // Defer a function.
 DEF_GO_RUNTIME(DEFER, "__go_defer", P3(BOOLPTR, FUNC_PTR, POINTER), R0())
@@ -270,7 +272,7 @@ DEF_GO_RUNTIME(IFACEI2T2, "runtime.ifaceI2T2", P3(TYPE, IFACE, POINTER),
 
 // A type assertion from one interface type to another.  This is
 // used for a type assertion.
-DEF_GO_RUNTIME(ASSERT_INTERFACE, "__go_assert_interface", P2(TYPE, TYPE), R0())
+DEF_GO_RUNTIME(ASSERT_INTERFACE, "__go_assert_interface", P2(TYPE, TYPE), R1(POINTER))
 
 // Convert one interface type to another.  This is used for an
 // assignment.

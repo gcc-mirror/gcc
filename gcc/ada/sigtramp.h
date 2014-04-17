@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2011-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2011-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -41,10 +41,29 @@
 extern "C" {
 #endif
 
-  typedef void sighandler_t (int signo, void *siginfo, void *sigcontext);
+#ifdef __ANDROID__
+#include <stdlib.h>
+#include <asm/signal.h>
+#include <asm/sigcontext.h>
+
+/* Android SDK doesn't define these structs */
+typedef struct sigcontext mcontext_t;
+
+typedef struct ucontext
+  {
+    unsigned long uc_flags;
+    struct ucontext *uc_link;
+    stack_t uc_stack;
+    mcontext_t uc_mcontext;
+} ucontext_t;
+#endif
+
+  /* This typedef signature sometimes conflicts with the sighandler_t from
+     system headers so call it something unique.  */
+  typedef void __sigtramphandler_t (int signo, void *siginfo, void *sigcontext);
 
   void __gnat_sigtramp  (int signo, void *siginfo, void *sigcontext,
-			 sighandler_t * handler);
+			 __sigtramphandler_t * handler);
 
   /* To be called from an established signal handler.  Setup the DWARF CFI
      bits letting unwinders walk through the signal frame up into the

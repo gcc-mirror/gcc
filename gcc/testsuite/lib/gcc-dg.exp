@@ -181,6 +181,7 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 	lappend options "additional_flags=$extra_tool_flags"
     }
 
+    verbose "$target_compile $prog $output_file $compile_type $options" 4
     set comp_output [$target_compile "$prog" "$output_file" "$compile_type" $options]
 
     # Look for an internal compiler error, which sometimes masks the fact

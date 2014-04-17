@@ -6841,8 +6841,8 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  && flag_tree_loop_optimize
 	  && loop->safelen > 1)
 	{
-	  loop->force_vect = true;
-	  cfun->has_force_vect_loops = true;
+	  loop->force_vectorize = true;
+	  cfun->has_force_vectorize_loops = true;
 	}
     }
 }
@@ -11485,9 +11485,9 @@ simd_clone_adjust (struct cgraph_node *node)
 
   /* Mostly annotate the loop for the vectorizer (the rest is done below).  */
   struct loop *loop = alloc_loop ();
-  cfun->has_force_vect_loops = true;
+  cfun->has_force_vectorize_loops = true;
   loop->safelen = node->simdclone->simdlen;
-  loop->force_vect = true;
+  loop->force_vectorize = true;
   loop->header = body_bb;
   add_bb_to_loop (incr_bb, loop);
 

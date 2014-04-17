@@ -2709,11 +2709,11 @@ tree
 gfc_get_function_type (gfc_symbol * sym)
 {
   tree type;
-  vec<tree, va_gc> *typelist;
+  vec<tree, va_gc> *typelist = NULL;
   gfc_formal_arglist *f;
   gfc_symbol *arg;
-  int alternate_return;
-  bool is_varargs = true, recursive_type = false;
+  int alternate_return = 0;
+  bool is_varargs = true;
 
   /* Make sure this symbol is a function, a subroutine or the main
      program.  */
@@ -2725,14 +2725,11 @@ gfc_get_function_type (gfc_symbol * sym)
   if (sym->backend_decl == NULL)
     sym->backend_decl = error_mark_node;
   else if (sym->backend_decl == error_mark_node)
-    recursive_type = true;
+    goto arg_type_list_done;
   else if (sym->attr.proc_pointer)
     return TREE_TYPE (TREE_TYPE (sym->backend_decl));
   else
     return TREE_TYPE (sym->backend_decl);
-
-  alternate_return = 0;
-  typelist = NULL;
 
   if (sym->attr.entry_master)
     /* Additional parameter for selecting an entry point.  */
@@ -2781,13 +2778,6 @@ gfc_get_function_type (gfc_symbol * sym)
 
 	  if (arg->attr.flavor == FL_PROCEDURE)
 	    {
-	      /* We don't know in the general case which argument causes
-		 recursion.  But we know that it is a procedure.  So we give up
-		 creating the procedure argument type list at the first
-		 procedure argument.  */
-	      if (recursive_type)
-	        goto arg_type_list_done;
-
 	      type = gfc_get_function_type (arg);
 	      type = build_pointer_type (type);
 	    }
@@ -2841,10 +2831,10 @@ gfc_get_function_type (gfc_symbol * sym)
       || sym->attr.if_source != IFSRC_UNKNOWN)
     is_varargs = false;
 
-arg_type_list_done:
-
-  if (!recursive_type && sym->backend_decl == error_mark_node)
+  if (sym->backend_decl == error_mark_node)
     sym->backend_decl = NULL_TREE;
+
+arg_type_list_done:
 
   if (alternate_return)
     type = integer_type_node;
@@ -2883,7 +2873,7 @@ arg_type_list_done:
   else
     type = gfc_sym_type (sym);
 
-  if (is_varargs || recursive_type)
+  if (is_varargs)
     type = build_varargs_function_type_vec (type, typelist);
   else
     type = build_function_type_vec (type, typelist);

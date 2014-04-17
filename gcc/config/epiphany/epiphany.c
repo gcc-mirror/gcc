@@ -145,6 +145,13 @@ static rtx frame_insn (rtx);
   hook_bool_const_tree_hwi_hwi_const_tree_true
 #define TARGET_ASM_OUTPUT_MI_THUNK epiphany_output_mi_thunk
 
+/* ??? we can use larger offsets for wider-mode sized accesses, but there
+   is no concept of anchors being dependent on the modes that they are used
+   for, so we can only use an offset range that would suit all modes.  */
+#define TARGET_MAX_ANCHOR_OFFSET (optimize_size ? 31 : 2047)
+/* We further restrict the minimum to be a multiple of eight.  */
+#define TARGET_MIN_ANCHOR_OFFSET (optimize_size ? 0 : -2040)
+
 #include "target-def.h"
 
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -762,6 +769,28 @@ epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case LSHIFTRT:
       *total = COSTS_N_INSNS (1);
       return true;
+
+    case COMPARE:
+      switch (GET_MODE (x))
+	{
+	/* There are a number of single-insn combiner patterns that use
+	   the flag side effects of arithmetic.  */
+	case CC_N_NEmode:
+	case CC_C_LTUmode:
+	case CC_C_GTUmode:
+	  return true;
+	default:
+	  return false;
+	}
+
+	
+    case SET:
+      {
+	rtx src = SET_SRC (x);
+	if (BINARY_P (src))
+	  *total = 0;
+	return false;
+      }
 
     default:
       return false;
@@ -2003,7 +2032,7 @@ epiphany_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
       && LEGITIMATE_OFFSET_ADDRESS_P (mode, XEXP ((x), 1)))
     return true;
   if (mode == BLKmode)
-    return true;
+    return epiphany_legitimate_address_p (SImode, x, strict);
   return false;
 }
 

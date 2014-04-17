@@ -1129,7 +1129,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 
   /* Don't unroll #pragma omp simd loops until the vectorizer
      attempts to vectorize those.  */
-  if (loop->force_vect)
+  if (loop->force_vectorize)
     return false;
 
   /* Try to unroll this loop.  */

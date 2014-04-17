@@ -884,8 +884,9 @@ ipcp_verify_propagated_values (void)
 	    {
 	      if (dump_file)
 		{
+		  dump_symtab (dump_file);
 		  fprintf (dump_file, "\nIPA lattices after constant "
-			   "propagation:\n");
+			   "propagation, before gcc_unreachable:\n");
 		  print_all_lattices (dump_file, true, false);
 		}
 

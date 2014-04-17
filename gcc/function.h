@@ -661,8 +661,8 @@ struct GTY(()) function {
   unsigned int is_thunk : 1;
 
   /* Nonzero if the current function contains any loops with
-     loop->force_vect set.  */
-  unsigned int has_force_vect_loops : 1;
+     loop->force_vectorize set.  */
+  unsigned int has_force_vectorize_loops : 1;
 
   /* Nonzero if the current function contains any loops with
      nonzero value in loop->simduid.  */

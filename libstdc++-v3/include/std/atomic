@@ -163,6 +163,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       _Tp _M_i;
 
+      // TODO: static_assert(is_trivially_copyable<_Tp>::value, "");
+
+      static_assert(sizeof(_Tp) > 0,
+		    "Incomplete or zero-sized types are not supported");
+
     public:
       atomic() noexcept = default;
       ~atomic() noexcept = default;
@@ -195,43 +200,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __atomic_is_lock_free(sizeof(_M_i), nullptr); }
 
       void
-      store(_Tp __i, memory_order _m = memory_order_seq_cst) noexcept
-      { __atomic_store(&_M_i, &__i, _m); }
+      store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
+      { __atomic_store(&_M_i, &__i, __m); }
 
       void
-      store(_Tp __i, memory_order _m = memory_order_seq_cst) volatile noexcept
-      { __atomic_store(&_M_i, &__i, _m); }
+      store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
+      { __atomic_store(&_M_i, &__i, __m); }
 
       _Tp
-      load(memory_order _m = memory_order_seq_cst) const noexcept
+      load(memory_order __m = memory_order_seq_cst) const noexcept
       { 
         _Tp tmp;
-	__atomic_load(&_M_i, &tmp, _m); 
+	__atomic_load(&_M_i, &tmp, __m);
 	return tmp;
       }
 
       _Tp
-      load(memory_order _m = memory_order_seq_cst) const volatile noexcept
+      load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       { 
         _Tp tmp;
-	__atomic_load(&_M_i, &tmp, _m); 
+	__atomic_load(&_M_i, &tmp, __m);
 	return tmp;
       }
 
       _Tp
-      exchange(_Tp __i, memory_order _m = memory_order_seq_cst) noexcept
+      exchange(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
       { 
         _Tp tmp;
-	__atomic_exchange(&_M_i, &__i, &tmp, _m); 
+	__atomic_exchange(&_M_i, &__i, &tmp, __m);
 	return tmp;
       }
 
       _Tp
       exchange(_Tp __i, 
-	       memory_order _m = memory_order_seq_cst) volatile noexcept
+	       memory_order __m = memory_order_seq_cst) volatile noexcept
       { 
         _Tp tmp;
-	__atomic_exchange(&_M_i, &__i, &tmp, _m); 
+	__atomic_exchange(&_M_i, &__i, &tmp, __m);
 	return tmp;
       }
 
@@ -239,14 +244,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
 			    memory_order __f) noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f); 
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f);
       }
 
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
 			    memory_order __f) volatile noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f); 
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f);
       }
 
       bool
@@ -265,14 +270,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
 			      memory_order __f) noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f); 
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f);
       }
 
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
 			      memory_order __f) volatile noexcept
       {
-	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f); 
+	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f);
       }
 
       bool

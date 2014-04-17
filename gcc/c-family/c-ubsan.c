@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"
+#include "asan.h"
 
 /* Instrument division by zero and INT_MIN / -1.  If not instrumenting,
    return NULL_TREE.  */
@@ -185,6 +186,10 @@ ubsan_instrument_vla (location_t loc, tree size)
 tree
 ubsan_instrument_return (location_t loc)
 {
+  /* It is possible that PCH zapped table with definitions of sanitizer
+     builtins.  Reinitialize them if needed.  */
+  initialize_sanitizer_builtins ();
+
   tree data = ubsan_create_data ("__ubsan_missing_return_data", &loc,
 				 NULL, NULL_TREE);
   tree t = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_MISSING_RETURN);

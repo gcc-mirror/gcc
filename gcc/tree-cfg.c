@@ -252,9 +252,9 @@ build_gimple_cfg (gimple_seq seq)
 }
 
 
-/* Search for ANNOTATE call with annot_expr_ivdep_kind; if found, remove
-   it and set loop->safelen to INT_MAX.  We assume that the annotation
-   comes immediately before the condition.  */
+/* Look for ANNOTATE calls with loop annotation kind; if found, remove
+   them and propagate the information to the loop.  We assume that the
+   annotations come immediately before the condition of the loop.  */
 
 static void
 replace_loop_annotate ()
@@ -268,50 +268,62 @@ replace_loop_annotate ()
     {
       gsi = gsi_last_bb (loop->header);
       stmt = gsi_stmt (gsi);
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+      if (!(stmt && gimple_code (stmt) == GIMPLE_COND))
+	continue;
+      for (gsi_prev_nondebug (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
 	{
-	  gsi_prev_nondebug (&gsi);
-	  if (gsi_end_p (gsi))
-	    continue;
 	  stmt = gsi_stmt (gsi);
 	  if (gimple_code (stmt) != GIMPLE_CALL)
-		continue;
+	    break;
 	  if (!gimple_call_internal_p (stmt)
-		  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
-	    continue;
-	  if ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1))
-	      != annot_expr_ivdep_kind)
-	    continue;
+	      || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	    break;
+	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
+	    {
+	    case annot_expr_ivdep_kind:
+	      loop->safelen = INT_MAX;
+	      break;
+	    case annot_expr_no_vector_kind:
+	      loop->dont_vectorize = true;
+	      break;
+	    case annot_expr_vector_kind:
+	      loop->force_vectorize = true;
+	      cfun->has_force_vectorize_loops = true;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
 	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				      gimple_call_arg (stmt, 0));
 	  gsi_replace (&gsi, stmt, true);
-	  loop->safelen = INT_MAX;
 	}
     }
 
-  /* Remove IFN_ANNOTATE. Safeguard for the case loop->latch == NULL.  */
+  /* Remove IFN_ANNOTATE.  Safeguard for the case loop->latch == NULL.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gsi = gsi_last_bb (bb);
-      stmt = gsi_stmt (gsi);
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
-	gsi_prev_nondebug (&gsi);
-      if (gsi_end_p (gsi))
-	continue;
-      stmt = gsi_stmt (gsi);
-      if (gimple_code (stmt) != GIMPLE_CALL)
-	continue;
-      if (!gimple_call_internal_p (stmt)
-	  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
-	continue;
-      if ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1))
-	  != annot_expr_ivdep_kind)
-	continue;
-      warning_at (gimple_location (stmt), 0, "ignoring %<GCC ivdep%> "
-		  "annotation");
-      stmt = gimple_build_assign (gimple_call_lhs (stmt),
-				  gimple_call_arg (stmt, 0));
-      gsi_replace (&gsi, stmt, true);
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  stmt = gsi_stmt (gsi);
+	  if (gimple_code (stmt) != GIMPLE_CALL)
+	    break;
+	  if (!gimple_call_internal_p (stmt)
+	      || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	    break;
+	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
+	    {
+	    case annot_expr_ivdep_kind:
+	    case annot_expr_no_vector_kind:
+	    case annot_expr_vector_kind:
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  warning_at (gimple_location (stmt), 0, "ignoring loop annotation");
+	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				      gimple_call_arg (stmt, 0));
+	  gsi_replace (&gsi, stmt, true);
+	}
     }
 }
 
@@ -1949,7 +1961,7 @@ remove_bb (basic_block bb)
       fprintf (dump_file, "Removing basic block %d\n", bb->index);
       if (dump_flags & TDF_DETAILS)
 	{
-	  dump_bb (dump_file, bb, 0, dump_flags);
+	  dump_bb (dump_file, bb, 0, TDF_BLOCKS);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -6969,7 +6981,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     outer->num_nodes -= num_nodes;
   loop0->num_nodes -= bbs.length () - num_nodes;
 
-  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vect_loops)
+  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vectorize_loops)
     {
       struct loop *aloop;
       for (i = 0; vec_safe_iterate (loops->larray, i, &aloop); i++)
@@ -6981,8 +6993,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 					   d.to_context);
 		dest_cfun->has_simduid_loops = true;
 	      }
-	    if (aloop->force_vect)
-	      dest_cfun->has_force_vect_loops = true;
+	    if (aloop->force_vectorize)
+	      dest_cfun->has_force_vectorize_loops = true;
 	  }
     }
 

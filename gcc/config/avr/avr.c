@@ -10122,7 +10122,7 @@ test_hard_reg_class (enum reg_class rclass, rtx x)
 static bool
 avr_2word_insn_p (rtx insn)
 {
-  if (avr_current_device->errata_skip
+  if ((avr_current_device->dev_attribute & AVR_ERRATA_SKIP)
       || !insn
       || 2 != get_attr_length (insn))
     {

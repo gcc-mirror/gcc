@@ -1,3 +1,7 @@
+2014-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Enable snapshots from gcc-4_9-branch.
+
 2014-02-01  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	PR other/56653

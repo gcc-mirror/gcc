@@ -730,6 +730,7 @@ package Snames is
    Name_Increases                      : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
+   Name_Ivdep                          : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
    Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $;

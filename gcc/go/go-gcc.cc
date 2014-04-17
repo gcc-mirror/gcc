@@ -29,6 +29,7 @@
 #include "stor-layout.h"
 #include "varasm.h"
 #include "tree-iterator.h"
+#include "convert.h"
 #include "basic-block.h"
 #include "gimple-expr.h"
 #include "toplev.h"
@@ -235,6 +236,18 @@ class Gcc_backend : public Backend
   complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag);
 
   Bexpression*
+  string_constant_expression(const std::string& val);
+
+  Bexpression*
+  real_part_expression(Bexpression* bcomplex, Location);
+
+  Bexpression*
+  imag_part_expression(Bexpression* bcomplex, Location);
+
+  Bexpression*
+  complex_expression(Bexpression* breal, Bexpression* bimag, Location);
+
+  Bexpression*
   convert_expression(Btype* type, Bexpression* expr, Location);
 
   Bexpression*
@@ -258,6 +271,23 @@ class Gcc_backend : public Backend
 
   Bexpression*
   binary_expression(Operator, Bexpression*, Bexpression*, Location);
+
+  Bexpression*
+  constructor_expression(Btype*, const std::vector<Bexpression*>&, Location);
+
+  Bexpression*
+  array_constructor_expression(Btype*, const std::vector<unsigned long>&,
+                               const std::vector<Bexpression*>&, Location);
+
+  Bexpression*
+  pointer_offset_expression(Bexpression* base, Bexpression* offset, Location);
+
+  Bexpression*
+  array_index_expression(Bexpression* array, Bexpression* index, Location);
+
+  Bexpression*
+  call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
+                  Location);
 
   // Statements.
 
@@ -293,6 +323,10 @@ class Gcc_backend : public Backend
 
   Bstatement*
   statement_list(const std::vector<Bstatement*>&);
+
+  Bstatement*
+  exception_handler_statement(Bstatement* bstat, Bstatement* except_stmt,
+                              Bstatement* finally_stmt, Location);
 
   // Blocks.
 
@@ -371,6 +405,16 @@ class Gcc_backend : public Backend
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
            bool is_visible, bool is_declaration, bool is_inlinable,
            bool disable_split_stack, bool in_unique_section, Location);
+
+  Bstatement*
+  function_defer_statement(Bfunction* function, Bexpression* undefer,
+                           Bexpression* defer, Location);
+
+  bool
+  function_set_parameters(Bfunction* function, const std::vector<Bvariable*>&);
+
+  bool
+  function_set_body(Bfunction* function, Bstatement* code_stmt);
 
  private:
   // Make a Bexpression from a tree.
@@ -973,18 +1017,108 @@ Gcc_backend::complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag)
   return tree_to_expr(ret);
 }
 
+// Make a constant string expression.
+
+Bexpression*
+Gcc_backend::string_constant_expression(const std::string& val)
+{
+  tree index_type = build_index_type(size_int(val.length()));
+  tree const_char_type = build_qualified_type(unsigned_char_type_node,
+					      TYPE_QUAL_CONST);
+  tree string_type = build_array_type(const_char_type, index_type);
+  string_type = build_variant_type_copy(string_type);
+  TYPE_STRING_FLAG(string_type) = 1;
+  tree string_val = build_string(val.length(), val.data());
+  TREE_TYPE(string_val) = string_type;
+
+  return this->make_expression(string_val);
+}
+
+// Return the real part of a complex expression.
+
+Bexpression*
+Gcc_backend::real_part_expression(Bexpression* bcomplex, Location location)
+{
+  tree complex_tree = bcomplex->get_tree();
+  if (complex_tree == error_mark_node)
+    return this->error_expression();
+  gcc_assert(COMPLEX_FLOAT_TYPE_P(TREE_TYPE(complex_tree)));
+  tree ret = fold_build1_loc(location.gcc_location(), REALPART_EXPR,
+                             TREE_TYPE(TREE_TYPE(complex_tree)),
+                             complex_tree);
+  return this->make_expression(ret);
+}
+
+// Return the imaginary part of a complex expression.
+
+Bexpression*
+Gcc_backend::imag_part_expression(Bexpression* bcomplex, Location location)
+{
+  tree complex_tree = bcomplex->get_tree();
+  if (complex_tree == error_mark_node)
+    return this->error_expression();
+  gcc_assert(COMPLEX_FLOAT_TYPE_P(TREE_TYPE(complex_tree)));
+  tree ret = fold_build1_loc(location.gcc_location(), IMAGPART_EXPR,
+                             TREE_TYPE(TREE_TYPE(complex_tree)),
+                             complex_tree);
+  return this->make_expression(ret);
+}
+
+// Make a complex expression given its real and imaginary parts.
+
+Bexpression*
+Gcc_backend::complex_expression(Bexpression* breal, Bexpression* bimag,
+                                Location location)
+{
+  tree real_tree = breal->get_tree();
+  tree imag_tree = bimag->get_tree();
+  if (real_tree == error_mark_node || imag_tree == error_mark_node)
+    return this->error_expression();
+  gcc_assert(TYPE_MAIN_VARIANT(TREE_TYPE(real_tree))
+            == TYPE_MAIN_VARIANT(TREE_TYPE(imag_tree)));
+  gcc_assert(SCALAR_FLOAT_TYPE_P(TREE_TYPE(real_tree)));
+  tree ret = fold_build2_loc(location.gcc_location(), COMPLEX_EXPR,
+                             build_complex_type(TREE_TYPE(real_tree)),
+                             real_tree, imag_tree);
+  return this->make_expression(ret);
+}
+
 // An expression that converts an expression to a different type.
 
 Bexpression*
-Gcc_backend::convert_expression(Btype* type, Bexpression* expr, Location)
+Gcc_backend::convert_expression(Btype* type, Bexpression* expr,
+				Location location)
 {
   tree type_tree = type->get_tree();
   tree expr_tree = expr->get_tree();
-  if (type_tree == error_mark_node || expr_tree == error_mark_node)
+  if (type_tree == error_mark_node
+      || expr_tree == error_mark_node
+      || TREE_TYPE(expr_tree) == error_mark_node)
     return this->error_expression();
 
-  tree ret = fold_convert(type_tree, expr_tree);
-  return tree_to_expr(ret);
+  tree ret;
+  if (this->type_size(type) == 0)
+    {
+      // Do not convert zero-sized types.
+      ret = expr_tree;
+    }
+  else if (TREE_CODE(type_tree) == INTEGER_TYPE)
+    ret = fold(convert_to_integer(type_tree, expr_tree));
+  else if (TREE_CODE(type_tree) == REAL_TYPE)
+    ret = fold(convert_to_real(type_tree, expr_tree));
+  else if (TREE_CODE(type_tree) == COMPLEX_TYPE)
+    ret = fold(convert_to_complex(type_tree, expr_tree));
+  else if (TREE_CODE(type_tree) == POINTER_TYPE
+           && TREE_CODE(TREE_TYPE(expr_tree)) == INTEGER_TYPE)
+    ret = fold(convert_to_pointer(type_tree, expr_tree));
+  else if (TREE_CODE(type_tree) == RECORD_TYPE
+           || TREE_CODE(type_tree) == ARRAY_TYPE)
+    ret = fold_build1_loc(location.gcc_location(), VIEW_CONVERT_EXPR,
+                          type_tree, expr_tree);
+  else
+    ret = fold_convert_loc(location.gcc_location(), type_tree, expr_tree);
+
+  return this->make_expression(ret);
 }
 
 // Get the address of a function.
@@ -1242,6 +1376,205 @@ Gcc_backend::binary_expression(Operator op, Bexpression* left,
   return this->make_expression(ret);
 }
 
+// Return an expression that constructs BTYPE with VALS.
+
+Bexpression*
+Gcc_backend::constructor_expression(Btype* btype,
+                                    const std::vector<Bexpression*>& vals,
+                                    Location location)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_expression();
+
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, vals.size());
+
+  bool is_constant = true;
+  tree field = TYPE_FIELDS(type_tree);
+  for (std::vector<Bexpression*>::const_iterator p = vals.begin();
+       p != vals.end();
+       ++p, field = DECL_CHAIN(field))
+    {
+      gcc_assert(field != NULL_TREE);
+      tree val = (*p)->get_tree();
+      if (TREE_TYPE(field) == error_mark_node
+          || val == error_mark_node
+          || TREE_TYPE(val) == error_mark_node)
+        return this->error_expression();
+
+      constructor_elt empty = {NULL, NULL};
+      constructor_elt* elt = init->quick_push(empty);
+      elt->index = field;
+      elt->value = fold_convert_loc(location.gcc_location(), TREE_TYPE(field),
+                                    val);
+      if (!TREE_CONSTANT(elt->value))
+	is_constant = false;
+    }
+  gcc_assert(field == NULL_TREE);
+  tree ret = build_constructor(type_tree, init);
+  if (is_constant)
+    TREE_CONSTANT(ret) = 1;
+
+  return this->make_expression(ret);
+}
+
+Bexpression*
+Gcc_backend::array_constructor_expression(
+    Btype* array_btype, const std::vector<unsigned long>& indexes,
+    const std::vector<Bexpression*>& vals, Location)
+{
+  tree type_tree = array_btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_expression();
+
+  gcc_assert(indexes.size() == vals.size());
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, vals.size());
+
+  bool is_constant = true;
+  for (size_t i = 0; i < vals.size(); ++i)
+    {
+      tree index = size_int(indexes[i]);
+      tree val = (vals[i])->get_tree();
+
+      if (index == error_mark_node
+          || val == error_mark_node)
+        return this->error_expression();
+
+      if (!TREE_CONSTANT(val))
+        is_constant = false;
+
+      constructor_elt empty = {NULL, NULL};
+      constructor_elt* elt = init->quick_push(empty);
+      elt->index = index;
+      elt->value = val;
+    }
+
+  tree ret = build_constructor(type_tree, init);
+  if (is_constant)
+    TREE_CONSTANT(ret) = 1;
+  return this->make_expression(ret);
+}
+
+// Return an expression for the address of BASE[INDEX].
+
+Bexpression*
+Gcc_backend::pointer_offset_expression(Bexpression* base, Bexpression* index,
+                                       Location location)
+{
+  tree base_tree = base->get_tree();
+  tree index_tree = index->get_tree();
+  tree element_type_tree = TREE_TYPE(TREE_TYPE(base_tree));
+  if (base_tree == error_mark_node
+      || TREE_TYPE(base_tree) == error_mark_node
+      || index_tree == error_mark_node
+      || element_type_tree == error_mark_node)
+    return this->error_expression();
+
+  tree element_size = TYPE_SIZE_UNIT(element_type_tree);
+  index_tree = fold_convert_loc(location.gcc_location(), sizetype, index_tree);
+  tree offset = fold_build2_loc(location.gcc_location(), MULT_EXPR, sizetype,
+                                index_tree, element_size);
+  tree ptr = fold_build2_loc(location.gcc_location(), POINTER_PLUS_EXPR,
+                             TREE_TYPE(base_tree), base_tree, offset);
+  return this->make_expression(ptr);
+}
+
+// Return an expression representing ARRAY[INDEX]
+
+Bexpression*
+Gcc_backend::array_index_expression(Bexpression* array, Bexpression* index,
+                                    Location location)
+{
+  tree array_tree = array->get_tree();
+  tree index_tree = index->get_tree();
+  if (array_tree == error_mark_node
+      || TREE_TYPE(array_tree) == error_mark_node
+      || index_tree == error_mark_node)
+    return this->error_expression();
+
+  tree ret = build4_loc(location.gcc_location(), ARRAY_REF,
+			TREE_TYPE(TREE_TYPE(array_tree)), array_tree,
+                        index_tree, NULL_TREE, NULL_TREE);
+  return this->make_expression(ret);
+}
+
+// Create an expression for a call to FN_EXPR with FN_ARGS.
+Bexpression*
+Gcc_backend::call_expression(Bexpression* fn_expr,
+                             const std::vector<Bexpression*>& fn_args,
+                             Location location)
+{
+  tree fn = fn_expr->get_tree();
+  if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
+    return this->error_expression();
+
+  gcc_assert(FUNCTION_POINTER_TYPE_P(TREE_TYPE(fn)));
+  tree rettype = TREE_TYPE(TREE_TYPE(TREE_TYPE(fn)));
+
+  size_t nargs = fn_args.size();
+  tree* args = nargs == 0 ? NULL : new tree[nargs];
+  for (size_t i = 0; i < nargs; ++i)
+    {
+      args[i] = fn_args.at(i)->get_tree();
+      if (args[i] == error_mark_node)
+        return this->error_expression();
+    }
+
+  tree fndecl = fn;
+  if (TREE_CODE(fndecl) == ADDR_EXPR)
+    fndecl = TREE_OPERAND(fndecl, 0);
+
+  // This is to support builtin math functions when using 80387 math.
+  tree excess_type = NULL_TREE;
+  if (optimize
+      && TREE_CODE(fndecl) == FUNCTION_DECL
+      && DECL_IS_BUILTIN(fndecl)
+      && DECL_BUILT_IN_CLASS(fndecl) == BUILT_IN_NORMAL
+      && nargs > 0
+      && ((SCALAR_FLOAT_TYPE_P(rettype)
+	   && SCALAR_FLOAT_TYPE_P(TREE_TYPE(args[0])))
+	  || (COMPLEX_FLOAT_TYPE_P(rettype)
+	      && COMPLEX_FLOAT_TYPE_P(TREE_TYPE(args[0])))))
+    {
+      excess_type = excess_precision_type(TREE_TYPE(args[0]));
+      if (excess_type != NULL_TREE)
+	{
+	  tree excess_fndecl = mathfn_built_in(excess_type,
+					       DECL_FUNCTION_CODE(fndecl));
+	  if (excess_fndecl == NULL_TREE)
+	    excess_type = NULL_TREE;
+	  else
+	    {
+	      fn = build_fold_addr_expr_loc(location.gcc_location(),
+                                            excess_fndecl);
+	      for (size_t i = 0; i < nargs; ++i)
+		{
+		  if (SCALAR_FLOAT_TYPE_P(TREE_TYPE(args[i]))
+		      || COMPLEX_FLOAT_TYPE_P(TREE_TYPE(args[i])))
+		    args[i] = ::convert(excess_type, args[i]);
+		}
+	    }
+	}
+    }
+
+  tree ret =
+      build_call_array_loc(location.gcc_location(),
+                           excess_type != NULL_TREE ? excess_type : rettype,
+                           fn, nargs, args);
+
+  if (excess_type != NULL_TREE)
+    {
+      // Calling convert here can undo our excess precision change.
+      // That may or may not be a bug in convert_to_real.
+      ret = build1_loc(location.gcc_location(), NOP_EXPR, rettype, ret);
+    }
+
+  delete[] args;
+  return this->make_expression(ret);
+}
+
 // An expression as a statement.
 
 Bstatement*
@@ -1399,6 +1732,40 @@ Gcc_backend::return_statement(Bfunction* bfunction,
       ret = stmt_list;
     }
   return this->make_statement(ret);
+}
+
+// Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if an
+// error occurs.  EXCEPT_STMT may be NULL.  FINALLY_STMT may be NULL and if not
+// NULL, it will always be executed.  This is used for handling defers in Go
+// functions.  In C++, the resulting code is of this form:
+//   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
+
+Bstatement*
+Gcc_backend::exception_handler_statement(Bstatement* bstat,
+                                         Bstatement* except_stmt,
+                                         Bstatement* finally_stmt,
+                                         Location location)
+{
+  tree stat_tree = bstat->get_tree();
+  tree except_tree = except_stmt == NULL ? NULL_TREE : except_stmt->get_tree();
+  tree finally_tree = finally_stmt == NULL
+      ? NULL_TREE
+      : finally_stmt->get_tree();
+
+  if (stat_tree == error_mark_node
+      || except_tree == error_mark_node
+      || finally_tree == error_mark_node)
+    return this->error_statement();
+
+  if (except_tree != NULL_TREE)
+    stat_tree = build2_loc(location.gcc_location(), TRY_CATCH_EXPR,
+                           void_type_node, stat_tree,
+                           build2_loc(location.gcc_location(), CATCH_EXPR,
+                                      void_type_node, NULL, except_tree));
+  if (finally_tree != NULL_TREE)
+    stat_tree = build2_loc(location.gcc_location(), TRY_FINALLY_EXPR,
+                           void_type_node, stat_tree, finally_tree);
+  return this->make_statement(stat_tree);
 }
 
 // If.
@@ -2067,6 +2434,78 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
 
   go_preserve_from_gc(decl);
   return new Bfunction(decl);
+}
+
+// Create a statement that runs all deferred calls for FUNCTION.  This should
+// be a statement that looks like this in C++:
+//   finish:
+//     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
+
+Bstatement*
+Gcc_backend::function_defer_statement(Bfunction* function, Bexpression* undefer,
+                                      Bexpression* defer, Location location)
+{
+  tree undefer_tree = undefer->get_tree();
+  tree defer_tree = defer->get_tree();
+
+  if (undefer_tree == error_mark_node
+      || defer_tree == error_mark_node)
+    return this->error_statement();
+
+  tree stmt_list = NULL;
+  Blabel* blabel = this->label(function, "", location);
+  Bstatement* label_def = this->label_definition_statement(blabel);
+  append_to_statement_list(label_def->get_tree(), &stmt_list);
+
+  Bstatement* jump_stmt = this->goto_statement(blabel, location);
+  tree jump = jump_stmt->get_tree();
+  tree catch_body = build2(COMPOUND_EXPR, void_type_node, defer_tree, jump);
+  catch_body = build2(CATCH_EXPR, void_type_node, NULL, catch_body);
+  tree try_catch =
+      build2(TRY_CATCH_EXPR, void_type_node, undefer_tree, catch_body);
+  append_to_statement_list(try_catch, &stmt_list);
+
+  return this->make_statement(stmt_list);
+}
+
+// Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
+// This will only be called for a function definition.
+
+bool
+Gcc_backend::function_set_parameters(Bfunction* function,
+                                     const std::vector<Bvariable*>& param_vars)
+{
+  tree func_tree = function->get_tree();
+  if (func_tree == error_mark_node)
+    return false;
+
+  tree params = NULL_TREE;
+  tree *pp = &params;
+  for (std::vector<Bvariable*>::const_iterator pv = param_vars.begin();
+       pv != param_vars.end();
+       ++pv)
+    {
+      *pp = (*pv)->get_tree();
+      gcc_assert(*pp != error_mark_node);
+      pp = &DECL_CHAIN(*pp);
+    }
+  *pp = NULL_TREE;
+  DECL_ARGUMENTS(func_tree) = params;
+  return true;
+}
+
+// Set the function body for FUNCTION using the code in CODE_BLOCK.
+
+bool
+Gcc_backend::function_set_body(Bfunction* function, Bstatement* code_stmt)
+{
+  tree func_tree = function->get_tree();
+  tree code = code_stmt->get_tree();
+
+  if (func_tree == error_mark_node || code == error_mark_node)
+    return false;
+  DECL_SAVED_TREE(func_tree) = code;
+  return true;
 }
 
 // The single backend.

@@ -130,20 +130,17 @@ hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
    This function (and similar RTL-related cost code in e.g. IVOPTS) should
    be moved to some kind of interface file for GIMPLE/RTL interactions.  */
 static bool
-lshift_cheap_p (void)
+lshift_cheap_p (bool speed_p)
 {
   /* FIXME: This should be made target dependent via this "this_target"
      mechanism, similar to e.g. can_copy_init_p in gcse.c.  */
   static bool init[2] = {false, false};
   static bool cheap[2] = {true, true};
-  bool speed_p;
 
   /* If the targer has no lshift in word_mode, the operation will most
      probably not be cheap.  ??? Does GCC even work for such targets?  */
   if (optab_handler (ashl_optab, word_mode) == CODE_FOR_nothing)
     return false;
-
-  speed_p = optimize_insn_for_speed_p ();
 
   if (!init[speed_p])
     {
@@ -165,12 +162,12 @@ lshift_cheap_p (void)
 static bool
 expand_switch_using_bit_tests_p (tree range,
 				 unsigned int uniq,
-				 unsigned int count)
+				 unsigned int count, bool speed_p)
 {
   return (((uniq == 1 && count >= 3)
 	   || (uniq == 2 && count >= 5)
 	   || (uniq == 3 && count >= 6))
-	  && lshift_cheap_p ()
+	  && lshift_cheap_p (speed_p)
 	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
 	  && compare_tree_int (range, 0) > 0);
 }
@@ -1363,7 +1360,9 @@ process_switch (gimple swtch)
   if (info.uniq <= MAX_CASE_BIT_TESTS)
     {
       if (expand_switch_using_bit_tests_p (info.range_size,
-					   info.uniq, info.count))
+					   info.uniq, info.count,
+					   optimize_bb_for_speed_p
+					     (gimple_bb (swtch))))
 	{
 	  if (dump_file)
 	    fputs ("  expanding as bit test is preferable\n", dump_file);

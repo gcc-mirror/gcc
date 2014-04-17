@@ -1,3 +1,22 @@
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
+	* lto.c: Include params.h.
+	(do_whole_program_analysis): Switch on flag_lto_partition value,
+	add support for LTO_PARTITION_ONE.
+	* lto-partition.h (lto_balanced_map): Adjust.
+	* lto-partition.c (lto_balanced_map): Get number of desired
+	partitions as argument to support -flto-partition=one.
+
+2014-04-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto/lto-symtab.c (lto_cgraph_replace_node): Don't re-merge
+	tp_first_run.
+
+2014-03-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c: Include ipa-inline.h
+	(do_whole_program_analysis): Free inline summary after partitioning.
+
 2014-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60553

@@ -210,7 +210,6 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 
 	  /* For memory the only cheap thing we can do is see if we
 	     have a use of the default def of the virtual operand.
-	     ???  Note that at -O0 we do not have virtual operands.
 	     ???  Not so cheap would be to use the alias oracle via
 	     walk_aliased_vdefs, if we don't find any aliasing vdef
 	     warn as is-used-uninitialized, if we don't find an aliasing

@@ -13889,11 +13889,6 @@ case "$target" in
 	# msghdr in <sys/socket.h>.
 	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=500"
 	;;
-    *-*-solaris2.[89])
-	# Solaris 8/9 need this so struct msghdr gets the msg_control
-	# etc. fields in <sys/socket.h> (_XPG4_2).
-	OSCFLAGS="$OSCFLAGS -D_XOPEN_SOURCE=500 -D_XOPEN_SOURCE_EXTENDED -D__EXTENSIONS__"
-	;;
     *-*-solaris2.1[01])
 	# Solaris 10+ needs this so struct msghdr gets the msg_control
 	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=600 as
@@ -15050,20 +15045,6 @@ fi
 if test "$libgo_has_struct_exception" = "yes"; then
 
 $as_echo "#define HAVE_STRUCT_EXCEPTION 1" >>confdefs.h
-
-fi
-
-case "$target" in
-  sparc*-*-solaris2.[89]*)
-    libgo_cv_lib_makecontext_stack_top=yes
-    ;;
-  *)
-    libgo_cv_lib_makecontext_stack_top=no
-    ;;
-esac
-if test "$libgo_cv_lib_makecontext_stack_top" = "yes"; then
-
-$as_echo "#define MAKECONTEXT_STACK_TOP 1" >>confdefs.h
 
 fi
 

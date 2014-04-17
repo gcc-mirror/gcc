@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=x86-64" } } */
 /* { dg-options "-march=x86-64 -msse4" } */
 
 extern void abort (void);

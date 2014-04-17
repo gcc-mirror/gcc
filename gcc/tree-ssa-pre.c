@@ -3013,66 +3013,6 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 }
 
 
-/* Returns true if we want to inhibit the insertions of PHI nodes
-   for the given EXPR for basic block BB (a member of a loop).
-   We want to do this, when we fear that the induction variable we
-   create might inhibit vectorization.  */
-
-static bool
-inhibit_phi_insertion (basic_block bb, pre_expr expr)
-{
-  vn_reference_t vr = PRE_EXPR_REFERENCE (expr);
-  vec<vn_reference_op_s> ops = vr->operands;
-  vn_reference_op_t op;
-  unsigned i;
-
-  /* If we aren't going to vectorize we don't inhibit anything.  */
-  if (!flag_tree_loop_vectorize)
-    return false;
-
-  /* Otherwise we inhibit the insertion when the address of the
-     memory reference is a simple induction variable.  In other
-     cases the vectorizer won't do anything anyway (either it's
-     loop invariant or a complicated expression).  */
-  FOR_EACH_VEC_ELT (ops, i, op)
-    {
-      switch (op->opcode)
-	{
-	case CALL_EXPR:
-	  /* Calls are not a problem.  */
-	  return false;
-
-	case ARRAY_REF:
-	case ARRAY_RANGE_REF:
-	  if (TREE_CODE (op->op0) != SSA_NAME)
-	    break;
-	  /* Fallthru.  */
-	case SSA_NAME:
-	  {
-	    basic_block defbb = gimple_bb (SSA_NAME_DEF_STMT (op->op0));
-	    affine_iv iv;
-	    /* Default defs are loop invariant.  */
-	    if (!defbb)
-	      break;
-	    /* Defined outside this loop, also loop invariant.  */
-	    if (!flow_bb_inside_loop_p (bb->loop_father, defbb))
-	      break;
-	    /* If it's a simple induction variable inhibit insertion,
-	       the vectorizer might be interested in this one.  */
-	    if (simple_iv (bb->loop_father, bb->loop_father,
-			   op->op0, &iv, true))
-	      return true;
-	    /* No simple IV, vectorizer can't do anything, hence no
-	       reason to inhibit the transformation for this operand.  */
-	    break;
-	  }
-	default:
-	  break;
-	}
-    }
-  return false;
-}
-
 /* Insert the to-be-made-available values of expression EXPRNUM for each
    predecessor, stored in AVAIL, into the predecessors of BLOCK, and
    merge the result with a phi node, given the same value number as
@@ -3106,8 +3046,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 						EDGE_PRED (block, 1)->src);
       /* Induction variables only have one edge inside the loop.  */
       if ((firstinsideloop ^ secondinsideloop)
-	  && (expr->kind != REFERENCE
-	      || inhibit_phi_insertion (block, expr)))
+	  && expr->kind != REFERENCE)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Skipping insertion of phi for partial redundancy: Looks like an induction variable\n");
@@ -4233,6 +4172,56 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  && stmt_can_make_abnormal_goto (stmt);
 
 	      gcc_assert (sprime != rhs);
+
+	      /* Inhibit the use of an inserted PHI on a loop header when
+		 the address of the memory reference is a simple induction
+		 variable.  In other cases the vectorizer won't do anything
+		 anyway (either it's loop invariant or a complicated
+		 expression).  */
+	      if (flag_tree_loop_vectorize
+		  && gimple_assign_single_p (stmt)
+		  && TREE_CODE (sprime) == SSA_NAME
+		  && loop_outer (b->loop_father))
+		{
+		  gimple def_stmt = SSA_NAME_DEF_STMT (sprime);
+		  basic_block def_bb = gimple_bb (def_stmt);
+		  if (gimple_code (def_stmt) == GIMPLE_PHI
+		      && b->loop_father->header == def_bb
+		      && has_zero_uses (sprime))
+		    {
+		      ssa_op_iter iter;
+		      tree op;
+		      bool found = false;
+		      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+			{
+			  affine_iv iv;
+			  def_bb = gimple_bb (SSA_NAME_DEF_STMT (op));
+			  if (def_bb
+			      && flow_bb_inside_loop_p (b->loop_father,
+							def_bb)
+			      && simple_iv (b->loop_father,
+					    b->loop_father, op, &iv, true))
+			    {
+			      found = true;
+			      break;
+			    }
+			}
+		      if (found)
+			{
+			  if (dump_file && (dump_flags & TDF_DETAILS))
+			    {
+			      fprintf (dump_file, "Not replacing ");
+			      print_gimple_expr (dump_file, stmt, 0, 0);
+			      fprintf (dump_file, " with ");
+			      print_generic_expr (dump_file, sprime, 0);
+			      fprintf (dump_file, " which would add a loop"
+				       " carried dependence to loop %d\n",
+				       b->loop_father->num);
+			    }
+			  continue;
+			}
+		    }
+		}
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

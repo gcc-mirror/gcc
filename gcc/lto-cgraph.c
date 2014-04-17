@@ -1001,6 +1001,9 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->thunk.thunk_p = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
+  gcc_assert (flag_ltrans
+	      || (!node->in_other_partition
+		  && !node->used_from_other_partition));
 }
 
 /* Return string alias is alias of.  */
@@ -1042,7 +1045,7 @@ input_node (struct lto_file_decl_data *file_data,
     {
       node = cgraph_clone_node (cgraph (nodes[clone_ref]), fn_decl,
 				0, CGRAPH_FREQ_BASE, false,
-				vNULL, false, NULL);
+				vNULL, false, NULL, NULL);
     }
   else
     {
@@ -1169,6 +1172,9 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->same_comdat_group = (symtab_node *) (intptr_t) ref;
   node->resolution = streamer_read_enum (ib, ld_plugin_symbol_resolution,
 					        LDPR_NUM_KNOWN);
+  gcc_assert (flag_ltrans
+	      || (!node->in_other_partition
+		  && !node->used_from_other_partition));
 
   return node;
 }

@@ -245,12 +245,12 @@
 (define_insn_reservation "cortex_a53_fdivs" 14
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "fdivs, fsqrts"))
-  "cortex_a53_slot0, cortex_a53_fp_div_sqrt * 13")
+  "cortex_a53_slot0, cortex_a53_fp_div_sqrt * 5")
 
 (define_insn_reservation "cortex_a53_fdivd" 29
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "fdivd, fsqrtd"))
-  "cortex_a53_slot0, cortex_a53_fp_div_sqrt * 28")
+  "cortex_a53_slot0, cortex_a53_fp_div_sqrt * 8")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ARMv8-A Cryptographic extensions.

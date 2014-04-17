@@ -246,7 +246,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-endif-labels -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
--Wformat-security  -Wformat-y2k @gol
+-Wformat-security  -Wformat-signedness  -Wformat-y2k @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
@@ -1070,6 +1070,7 @@ See S/390 and zSeries Options.
 -ffixed-@var{reg}  -fexceptions @gol
 -fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables @gol
 -fasynchronous-unwind-tables @gol
+-fno-gnu-unique @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{} @gol
 -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{} @gol
@@ -1088,28 +1089,6 @@ See S/390 and zSeries Options.
 -fvisibility -fstrict-volatile-bitfields -fsync-libcalls}
 @end table
 
-@menu
-* Overall Options::     Controlling the kind of output:
-                        an executable, object files, assembler files,
-                        or preprocessed source.
-* C Dialect Options::   Controlling the variant of C language compiled.
-* C++ Dialect Options:: Variations on C++.
-* Objective-C and Objective-C++ Dialect Options:: Variations on Objective-C
-                        and Objective-C++.
-* Language Independent Options:: Controlling how diagnostics should be
-                        formatted.
-* Warning Options::     How picky should the compiler be?
-* Debugging Options::   Symbol tables, measurements, and debugging dumps.
-* Optimize Options::    How much optimization?
-* Preprocessor Options:: Controlling header files and macro definitions.
-                         Also, getting dependency information for Make.
-* Assembler Options::   Passing options to the assembler.
-* Link Options::        Specifying libraries and so on.
-* Directory Options::   Where to find header files and libraries.
-                        Where to find the compiler executable files.
-* Spec Files::          How to pass switches to sub-processes.
-* Target Options::      Running a cross-compiler, or an old version of GCC.
-@end menu
 
 @node Overall Options
 @section Options Controlling the Kind of Output
@@ -2670,9 +2649,10 @@ the compiler to never throw an exception.
 @opindex Wnon-virtual-dtor
 @opindex Wno-non-virtual-dtor
 Warn when a class has virtual functions and an accessible non-virtual
-destructor, in which case it is possible but unsafe to delete
-an instance of a derived class through a pointer to the base class.
-This warning is also enabled if @option{-Weffc++} is specified.
+destructor itself or in an accessible polymorphic base class, in which
+case it is possible but unsafe to delete an instance of a derived
+class through a pointer to the class itself or base class.  This
+warning is automatically enabled if @option{-Weffc++} is specified.
 
 @item -Wreorder @r{(C++ and Objective-C++ only)}
 @opindex Wreorder
@@ -2716,39 +2696,35 @@ The following @option{-W@dots{}} options are not affected by @option{-Wall}.
 @opindex Weffc++
 @opindex Wno-effc++
 Warn about violations of the following style guidelines from Scott Meyers'
-@cite{Effective C++, Second Edition} book:
+@cite{Effective C++} series of books:
 
 @itemize @bullet
 @item
-Item 11:  Define a copy constructor and an assignment operator for classes
+Define a copy constructor and an assignment operator for classes
 with dynamically-allocated memory.
 
 @item
-Item 12:  Prefer initialization to assignment in constructors.
+Prefer initialization to assignment in constructors.
 
 @item
-Item 14:  Make destructors virtual in base classes.
+Have @code{operator=} return a reference to @code{*this}.
 
 @item
-Item 15:  Have @code{operator=} return a reference to @code{*this}.
+Don't try to return a reference when you must return an object.
 
 @item
-Item 23:  Don't try to return a reference when you must return an object.
-
-@end itemize
-
-Also warn about violations of the following style guidelines from
-Scott Meyers' @cite{More Effective C++} book:
-
-@itemize @bullet
-@item
-Item 6:  Distinguish between prefix and postfix forms of increment and
+Distinguish between prefix and postfix forms of increment and
 decrement operators.
 
 @item
-Item 7:  Never overload @code{&&}, @code{||}, or @code{,}.
+Never overload @code{&&}, @code{||}, or @code{,}.
 
 @end itemize
+
+This option also enables @option{-Wnon-virtual-dtor}, which is also
+one of the effective C++ recommendations.  However, the check is
+extended to warn about the lack of virtual destructor in accessible
+non-polymorphic bases classes too.
 
 When selecting this option, be aware that the standard library
 headers do not obey all of these guidelines; use @samp{grep -v}
@@ -3563,7 +3539,7 @@ The C standard specifies that zero-length formats are allowed.
 @opindex Wformat=2
 Enable @option{-Wformat} plus additional format checks.  Currently
 equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
--Wformat-y2k}.
+-Wformat-signedness -Wformat-y2k}.
 
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral
@@ -3584,6 +3560,12 @@ string came from untrusted input and contains @samp{%n}.  (This is
 currently a subset of what @option{-Wformat-nonliteral} warns about, but
 in future warnings may be added to @option{-Wformat-security} that are not
 included in @option{-Wformat-nonliteral}.)
+
+@item -Wformat-signedness
+@opindex Wformat-signedness
+@opindex Wno-format-signedness
+If @option{-Wformat} is specified, also warn if the format string
+requires an unsigned argument and the argument is signed and vice versa.
 
 @item -Wformat-y2k
 @opindex Wformat-y2k
@@ -7414,7 +7396,7 @@ Attempt to remove redundant extension instructions.  This is especially
 helpful for the x86-64 architecture, which implicitly zero-extends in 64-bit
 registers after writing to their lower 32-bit half.
 
-Enabled for x86 at levels @option{-O2}, @option{-O3}.
+Enabled for AArch64 and x86 at levels @option{-O2}, @option{-O3}.
 
 @item -flive-range-shrinkage
 @opindex flive-range-shrinkage
@@ -12987,6 +12969,9 @@ instructions because of a hardware erratum.  Skip instructions are
 @code{SBRS}, @code{SBRC}, @code{SBIS}, @code{SBIC} and @code{CPSE}.
 The second macro is only defined if @code{__AVR_HAVE_JMP_CALL__} is also
 set.
+
+@item __AVR_ISA_RMW__
+The device has Read-Modify-Write instructions (XCH, LAC, LAS and LAT).
 
 @item __AVR_SFR_OFFSET__=@var{offset}
 Instructions that can address I/O special function registers directly
@@ -22014,6 +21999,20 @@ that needs this handling enables it on your behalf.
 Generate unwind table in DWARF 2 format, if supported by target machine.  The
 table is exact at each instruction boundary, so it can be used for stack
 unwinding from asynchronous events (such as debugger or garbage collector).
+
+@item -fno-gnu-unique
+@opindex fno-gnu-unique
+On systems with recent GNU assembler and C library, the C++ compiler
+uses the @code{STB_GNU_UNIQUE} binding to make sure that definitions
+of template static data members and static local variables in inline
+functions are unique even in the presence of @code{RTLD_LOCAL}; this
+is necessary to avoid problems with a library used by two different
+@code{RTLD_LOCAL} plugins depending on a definition in one of them and
+therefore disagreeing with the other one about the binding of the
+symbol.  But this causes @code{dlclose} to be ignored for affected
+DSOs; if your program relies on reinitialization of a DSO via
+@code{dlclose} and @code{dlopen}, you can use
+@option{-fno-gnu-unique}.
 
 @item -fpcc-struct-return
 @opindex fpcc-struct-return

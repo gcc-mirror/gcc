@@ -353,6 +353,7 @@ gigi (Node_Id gnat_root,
 
   /* Initialize ourselves.  */
   init_code_table ();
+  init_gnat_decl ();
   init_gnat_utils ();
 
   /* If we are just annotating types, give VOID_TYPE zero sizes to avoid
@@ -727,6 +728,7 @@ gigi (Node_Id gnat_root,
     }
 
   /* Destroy ourselves.  */
+  destroy_gnat_decl ();
   destroy_gnat_utils ();
 
   /* We cannot track the location of errors past this point.  */
@@ -896,17 +898,8 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 				address_of_constant, aliased);
 
     case N_Object_Renaming_Declaration:
-      /* We need to make a real renaming only if the constant object is
-	 aliased or if we may use a renaming pointer; otherwise we can
-	 optimize and return the rvalue.  We make an exception if the object
-	 is an identifier since in this case the rvalue can be propagated
-	 attached to the CONST_DECL.  */
-      return (!constant
-	      || aliased
-	      /* This should match the constant case of the renaming code.  */
-	      || Is_Composite_Type
-		 (Underlying_Type (Etype (Name (gnat_parent))))
-	      || Nkind (Name (gnat_parent)) == N_Identifier);
+      /* We need to preserve addresses through a renaming.  */
+      return 1;
 
     case N_Object_Declaration:
       /* We cannot use a constructor if this is an atomic object because
@@ -961,6 +954,77 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 
     default:
       return 0;
+    }
+
+  gcc_unreachable ();
+}
+
+/* Return true if T is a constant DECL node that can be safely replaced
+   by its initializer.  */
+
+static bool
+constant_decl_with_initializer_p (tree t)
+{
+  if (!TREE_CONSTANT (t) || !DECL_P (t) || !DECL_INITIAL (t))
+    return false;
+
+  /* Return false for aggregate types that contain a placeholder since
+     their initializers cannot be manipulated easily.  */
+  if (AGGREGATE_TYPE_P (TREE_TYPE (t))
+      && !TYPE_IS_FAT_POINTER_P (TREE_TYPE (t))
+      && type_contains_placeholder_p (TREE_TYPE (t)))
+    return false;
+
+  return true;
+}
+
+/* Return an expression equivalent to EXP but where constant DECL nodes
+   have been replaced by their initializer.  */
+
+static tree
+fold_constant_decl_in_expr (tree exp)
+{
+  enum tree_code code = TREE_CODE (exp);
+  tree op0;
+
+  switch (code)
+    {
+    case CONST_DECL:
+    case VAR_DECL:
+      if (!constant_decl_with_initializer_p (exp))
+	return exp;
+
+      return DECL_INITIAL (exp);
+
+    case BIT_FIELD_REF:
+    case COMPONENT_REF:
+      op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold_build3 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
+			  TREE_OPERAND (exp, 2));
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold (build4 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
+			   TREE_OPERAND (exp, 2), TREE_OPERAND (exp, 3)));
+
+    case VIEW_CONVERT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold_build1 (code, TREE_TYPE (exp), op0);
+
+    default:
+      return exp;
     }
 
   gcc_unreachable ();
@@ -1110,13 +1174,16 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 					  true, false)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
-      /* If it's a renaming pointer and we are at the right binding level,
-	 we can reference the renamed object directly, since the renamed
-	 expression has been protected against multiple evaluations.  */
+      /* If it's a renaming pointer and, either the renamed object is constant
+	 or we are at the right binding level, we can reference the renamed
+	 object directly, since it is constant or has been protected against
+	 multiple evaluations.  */
       if (TREE_CODE (gnu_result) == VAR_DECL
           && !DECL_LOOP_PARM_P (gnu_result)
 	  && DECL_RENAMED_OBJECT (gnu_result)
-	  && (!DECL_RENAMING_GLOBAL_P (gnu_result) || global_bindings_p ()))
+	  && (TREE_CONSTANT (DECL_RENAMED_OBJECT (gnu_result))
+	      || !DECL_RENAMING_GLOBAL_P (gnu_result)
+	      || global_bindings_p ()))
 	gnu_result = DECL_RENAMED_OBJECT (gnu_result);
 
       /* Otherwise, do the final dereference.  */
@@ -1136,15 +1203,8 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
   /* If we have a constant declaration and its initializer, try to return the
      latter to avoid the need to call fold in lots of places and the need for
-     elaboration code if this identifier is used as an initializer itself.
-     Don't do it for aggregate types that contain a placeholder since their
-     initializers cannot be manipulated easily.  */
-  if (TREE_CONSTANT (gnu_result)
-      && DECL_P (gnu_result)
-      && DECL_INITIAL (gnu_result)
-      && !(AGGREGATE_TYPE_P (TREE_TYPE (gnu_result))
-	   && !TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_result))
-	   && type_contains_placeholder_p (TREE_TYPE (gnu_result))))
+     elaboration code if this identifier is used as an initializer itself.  */
+  if (constant_decl_with_initializer_p (gnu_result))
     {
       bool constant_only = (TREE_CODE (gnu_result) == CONST_DECL
 			    && !DECL_CONST_CORRESPONDING_VAR (gnu_result));
@@ -1162,6 +1222,21 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       /* Finally retrieve the initializer if this is deemed valid.  */
       if ((constant_only && !address_of_constant) || !require_lvalue)
 	gnu_result = DECL_INITIAL (gnu_result);
+    }
+
+  /* But for a constant renaming we couldn't do that incrementally for its
+     definition because of the need to return an lvalue so, if the present
+     context doesn't itself require an lvalue, we try again here.  */
+  else if (Ekind (gnat_temp) == E_Constant
+	   && Is_Elementary_Type (gnat_temp_type)
+	   && Present (Renamed_Object (gnat_temp)))
+    {
+      if (require_lvalue < 0)
+	require_lvalue
+	  = lvalue_required_p (gnat_node, gnu_result_type, true, false,
+			       Is_Aliased (gnat_temp));
+      if (!require_lvalue)
+	gnu_result = fold_constant_decl_in_expr (gnu_result);
     }
 
   /* The GNAT tree has the type of a function set to its result type, so we
@@ -1266,10 +1341,14 @@ Pragma_to_gnu (Node_Id gnat_node)
 	   Present (gnat_temp);
 	   gnat_temp = Next (gnat_temp))
 	{
-	  tree gnu_loop_stmt = gnu_loop_stack ->last ()->stmt;
+	  tree gnu_loop_stmt = gnu_loop_stack->last ()->stmt;
 
 	  switch (Chars (Expression (gnat_temp)))
 	    {
+	    case Name_Ivdep:
+	      LOOP_STMT_IVDEP (gnu_loop_stmt) = 1;
+	      break;
+
 	    case Name_No_Unroll:
 	      LOOP_STMT_NO_UNROLL (gnu_loop_stmt) = 1;
 	      break;
@@ -7745,13 +7824,29 @@ gnat_gimplify_stmt (tree *stmt_p)
 	tree gnu_cond = LOOP_STMT_COND (stmt);
 	tree gnu_update = LOOP_STMT_UPDATE (stmt);
 	tree gnu_end_label = LOOP_STMT_LABEL (stmt);
-	tree t;
 
 	/* Build the condition expression from the test, if any.  */
 	if (gnu_cond)
-	  gnu_cond
-	    = build3 (COND_EXPR, void_type_node, gnu_cond, alloc_stmt_list (),
-		      build1 (GOTO_EXPR, void_type_node, gnu_end_label));
+	  {
+	    /* Deal with the optimization hints.  */
+	    if (LOOP_STMT_IVDEP (stmt))
+	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
+				 build_int_cst (integer_type_node,
+						annot_expr_ivdep_kind));
+
+	    if (LOOP_STMT_NO_VECTOR (stmt))
+	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
+				 build_int_cst (integer_type_node,
+						annot_expr_no_vector_kind));
+	    if (LOOP_STMT_VECTOR (stmt))
+	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
+				 build_int_cst (integer_type_node,
+						annot_expr_vector_kind));
+
+	    gnu_cond
+	      = build3 (COND_EXPR, void_type_node, gnu_cond, NULL_TREE,
+			build1 (GOTO_EXPR, void_type_node, gnu_end_label));
+	  }
 
 	/* Set to emit the statements of the loop.  */
 	*stmt_p = NULL_TREE;
@@ -7780,7 +7875,7 @@ gnat_gimplify_stmt (tree *stmt_p)
         if (gnu_update && !LOOP_STMT_TOP_UPDATE_P (stmt))
 	  append_to_statement_list (gnu_update, stmt_p);
 
-	t = build1 (GOTO_EXPR, void_type_node, gnu_start_label);
+	tree t = build1 (GOTO_EXPR, void_type_node, gnu_start_label);
 	SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (gnu_end_label));
 	append_to_statement_list (t, stmt_p);
 

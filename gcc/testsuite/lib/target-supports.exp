@@ -746,7 +746,14 @@ proc check_effective_target_mmap {} {
 
 # Return 1 if the target supports dlopen, 0 otherwise.
 proc check_effective_target_dlopen {} {
-    return [check_function_available "dlopen"]
+    return [check_no_compiler_messages dlopen executable {
+	#include <dlfcn.h>
+	int main(void) { dlopen ("dummy.so", RTLD_NOW); }
+    } [add_options_for_dlopen ""]]
+}
+
+proc add_options_for_dlopen { flags } {
+    return "$flags -ldl"
 }
 
 # Return 1 if the target supports clone, 0 otherwise.
@@ -3729,6 +3736,28 @@ proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
     }
     verbose "check_effective_target_vect_widen_mult_hi_to_si_pattern: returning $et_vect_widen_mult_hi_to_si_pattern_saved" 2
     return $et_vect_widen_mult_hi_to_si_pattern_saved
+}
+
+# Return 1 if the target plus current options supports a vector
+# widening multiplication of *int* args into *long* result, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_widen_mult_si_to_di_pattern { } {
+    global et_vect_widen_mult_si_to_di_pattern
+
+    if [info exists et_vect_widen_mult_si_to_di_pattern_saved] {
+        verbose "check_effective_target_vect_widen_mult_si_to_di_pattern: using cached result" 2
+    } else {
+	set et_vect_widen_mult_si_to_di_pattern_saved 0
+        if {[istarget ia64-*-*]
+	    || [istarget i?86-*-*]
+	    || [istarget x86_64-*-*] } {
+            set et_vect_widen_mult_si_to_di_pattern_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_mult_si_to_di_pattern: returning $et_vect_widen_mult_si_to_di_pattern_saved" 2
+    return $et_vect_widen_mult_si_to_di_pattern_saved
 }
 
 # Return 1 if the target plus current options supports a vector

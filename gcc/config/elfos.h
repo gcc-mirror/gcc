@@ -287,7 +287,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Write the extra assembler code needed to declare an object properly.  */
 
 #ifdef HAVE_GAS_GNU_UNIQUE_OBJECT
-#define USE_GNU_UNIQUE_OBJECT 1
+#define USE_GNU_UNIQUE_OBJECT flag_gnu_unique
 #else
 #define USE_GNU_UNIQUE_OBJECT 0
 #endif

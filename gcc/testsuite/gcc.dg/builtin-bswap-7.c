@@ -3,6 +3,10 @@
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-O -fdump-rtl-combine" } */
 
+/* The branch cost setting prevents the return value from being
+   calculated with arithmetic instead of doing a compare.  */
+/* { dg-additional-options "-mbranch-cost=0" { target s390x-*-* } } */
+
 #include <stdint.h>
 
 #define BS(X) __builtin_bswap64(X)

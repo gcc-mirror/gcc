@@ -52,12 +52,12 @@ namespace std
 
   template<>
   int
-  codecvt<mychar, char, mbstate_t>::do_encoding() const
+  codecvt<mychar, char, mbstate_t>::do_encoding() const throw()
   { return 0; }
 
   template<>
   bool
-  codecvt<mychar, char, mbstate_t>::do_always_noconv() const
+  codecvt<mychar, char, mbstate_t>::do_always_noconv() const throw()
   { return false; }
 
   template<>
@@ -69,7 +69,7 @@ namespace std
 
   template<>
   int
-  codecvt<mychar, char, mbstate_t>::do_max_length() const
+  codecvt<mychar, char, mbstate_t>::do_max_length() const throw()
   { return 4; }
 }
 

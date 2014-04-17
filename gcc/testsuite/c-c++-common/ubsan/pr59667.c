@@ -11,4 +11,4 @@ main (void)
   return 0;
 }
 
-/* { dg-output "store to null pointer of type 'float'(\n|\r\n|\r)" } */
+/* { dg-output "store to null pointer of type 'float'\[^\n\r]*(\n|\r\n|\r)" } */

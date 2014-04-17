@@ -9766,6 +9766,8 @@ for @var{entity}.  For any fixed @var{entity}, @code{mode_priority_to_mode}
 Generate one or more insns to set @var{entity} to @var{mode}.
 @var{hard_reg_live} is the set of hard registers live at the point where
 the insn(s) are to be inserted.
+Sets of a lower numbered entity will be emitted before sets of a higher
+numbered entity to a mode of the same or lower priority.
 @end defmac
 
 @node Target Attributes

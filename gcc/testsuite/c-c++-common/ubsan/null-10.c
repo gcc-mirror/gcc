@@ -10,4 +10,4 @@ main (void)
   return  0;
 }
 
-/* { dg-output "load of null pointer of type 'short int'(\n|\r\n|\r)" } */
+/* { dg-output "load of null pointer of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */

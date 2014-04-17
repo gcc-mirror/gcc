@@ -1417,6 +1417,10 @@ place_field (record_layout_info rli, tree field)
   DECL_FIELD_BIT_OFFSET (field) = rli->bitpos;
   SET_DECL_OFFSET_ALIGN (field, rli->offset_align);
 
+  /* Evaluate nonconstant offsets only once, either now or as soon as safe.  */
+  if (TREE_CODE (DECL_FIELD_OFFSET (field)) != INTEGER_CST)
+    DECL_FIELD_OFFSET (field) = variable_size (DECL_FIELD_OFFSET (field));
+
   /* If this field ended up more aligned than we thought it would be (we
      approximate this by seeing if its position changed), lay out the field
      again; perhaps we can use an integral mode for it now.  */

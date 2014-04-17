@@ -10364,9 +10364,7 @@ is_cxx_auto (tree type)
 {
   if (is_cxx ())
     {
-      tree name = TYPE_NAME (type);
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
+      tree name = TYPE_IDENTIFIER (type);
       if (name == get_identifier ("auto")
 	  || name == get_identifier ("decltype(auto)"))
 	return true;
@@ -10643,10 +10641,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   /* This probably indicates a bug.  */
   else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
     {
-      name = TYPE_NAME (type);
-      if (name
-	  && TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
+      name = TYPE_IDENTIFIER (type);
       add_name_attribute (mod_type_die,
 			  name ? IDENTIFIER_POINTER (name) : "__unknown__");
     }
@@ -11459,8 +11454,18 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
       return 1;
     }
 
+  /* FIXME: Refer to PR60655. It is possible for simplification
+     of rtl expressions in var tracking to produce such expressions.
+     We should really identify / validate expressions
+     enclosed in CONST that can be handled by assemblers on various
+     targets and only handle legitimate cases here.  */
   if (GET_CODE (rtl) != SYMBOL_REF)
-    return 0;
+    {
+      if (GET_CODE (rtl) == NOT)
+	  return 1;
+
+      return 0;
+    }
 
   if (CONSTANT_POOL_ADDRESS_P (rtl))
     {
@@ -16372,20 +16377,31 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	    && tree_to_shwi (bound) == dflt)
 	  ;
 
-	/* Otherwise represent the bound as an unsigned value with the
-	   precision of its type.  The precision and signedness of the
-	   type will be necessary to re-interpret it unambiguously.  */
-	else if (prec < HOST_BITS_PER_WIDE_INT)
+	/* If HOST_WIDE_INT is big enough then represent the bound as
+	   a constant value.  We need to choose a form based on
+	   whether the type is signed or unsigned.  We cannot just
+	   call add_AT_unsigned if the value itself is positive
+	   (add_AT_unsigned might add the unsigned value encoded as
+	   DW_FORM_data[1248]).  Some DWARF consumers will lookup the
+	   bounds type and then sign extend any unsigned values found
+	   for signed types.  This is needed only for
+	   DW_AT_{lower,upper}_bound, since for most other attributes,
+	   consumers will treat DW_FORM_data[1248] as unsigned values,
+	   regardless of the underlying type.  */
+	else if (prec <= HOST_BITS_PER_WIDE_INT
+		 || tree_fits_uhwi_p (bound))
 	  {
-	    unsigned HOST_WIDE_INT mask
-	      = ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
-	    add_AT_unsigned (subrange_die, bound_attr,
-		  	     TREE_INT_CST_LOW (bound) & mask);
+	    if (TYPE_UNSIGNED (TREE_TYPE (bound)))
+	      add_AT_unsigned (subrange_die, bound_attr,
+			       TREE_INT_CST_LOW (bound));
+	    else
+	      add_AT_int (subrange_die, bound_attr, TREE_INT_CST_LOW (bound));
 	  }
-	else if (prec == HOST_BITS_PER_WIDE_INT || tree_fits_uhwi_p (bound))
-	  add_AT_unsigned (subrange_die, bound_attr,
-		  	   TREE_INT_CST_LOW (bound));
 	else
+	  /* Otherwise represent the bound as an unsigned value with
+	     the precision of its type.  The precision and signedness
+	     of the type will be necessary to re-interpret it
+	     unambiguously.  */
 	  add_AT_wide (subrange_die, bound_attr, bound);
       }
       break;
@@ -17528,22 +17544,23 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 
 	  if (simple_type_size_in_bits (TREE_TYPE (value))
 	      <= HOST_BITS_PER_WIDE_INT || tree_fits_shwi_p (value))
-	    /* DWARF2 does not provide a way of indicating whether or
-	       not enumeration constants are signed or unsigned.  GDB
-	       always assumes the values are signed, so we output all
-	       values as if they were signed.  That means that
-	       enumeration constants with very large unsigned values
-	       will appear to have negative values in the debugger.
-
-	       TODO: the above comment is wrong, DWARF2 does provide
-	       DW_FORM_sdata/DW_FORM_udata to represent signed/unsigned data.
-	       This should be re-worked to use correct signed/unsigned
-	       int/double tags for all cases, instead of always treating as
-	       signed.  */
-	    add_AT_int (enum_die, DW_AT_const_value, TREE_INT_CST_LOW (value));
+	    {
+	      /* For constant forms created by add_AT_unsigned DWARF
+		 consumers (GDB, elfutils, etc.) always zero extend
+		 the value.  Only when the actual value is negative
+		 do we need to use add_AT_int to generate a constant
+		 form that can represent negative values.  */
+	      HOST_WIDE_INT val = TREE_INT_CST_LOW (value);
+	      if (TYPE_UNSIGNED (TREE_TYPE (value)) || val >= 0)
+		add_AT_unsigned (enum_die, DW_AT_const_value,
+				 (unsigned HOST_WIDE_INT) val);
+	      else
+		add_AT_int (enum_die, DW_AT_const_value, val);
+	    }
 	  else
 	    /* Enumeration constants may be wider than HOST_WIDE_INT.  Handle
-	       that here.  */
+	       that here.  TODO: This should be re-worked to use correct
+	       signed/unsigned double tags for all cases.  */
 	    add_AT_wide (enum_die, DW_AT_const_value, value);
 	}
 
@@ -20017,10 +20034,9 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
         dw_die_ref type_die = lookup_type_die (type);
         if (type_die == NULL)
           {
-	    tree name = TYPE_NAME (type);
-	    if (TREE_CODE (name) == TYPE_DECL)
-	      name = DECL_NAME (name);
-            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die (), type);
+	    tree name = TYPE_IDENTIFIER (type);
+            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die (),
+				type);
             add_name_attribute (type_die, IDENTIFIER_POINTER (name));
             equate_type_number_to_die (type, type_die);
           }
@@ -20030,9 +20046,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     default:
       if (is_cxx_auto (type))
 	{
-	  tree name = TYPE_NAME (type);
-	  if (TREE_CODE (name) == TYPE_DECL)
-	    name = DECL_NAME (name);
+	  tree name = TYPE_IDENTIFIER (type);
 	  dw_die_ref *die = (name == get_identifier ("auto")
 			     ? &auto_die : &decltype_auto_die);
 	  if (!*die)

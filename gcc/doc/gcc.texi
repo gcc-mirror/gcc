@@ -140,7 +140,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * Gcov::            @command{gcov}---a test coverage program.
 * Trouble::         If you have trouble using GCC.
 * Bugs::            How, why and where to report bugs.
-* Service::         How to find suppliers of support for GCC.
+* Service::         How To Get Help with GCC
 * Contributing::    How to contribute to testing and developing GCC.
 
 * Funding::         How to help assure funding for free software.

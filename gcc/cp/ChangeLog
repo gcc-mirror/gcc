@@ -1,3 +1,155 @@
+2014-04-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	* decl.c (reshape_init_r): Handle a single element of vector type.
+
+2014-04-16  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/60765
+	* decl2.c (cplus_decl_attributes): Handle
+	pointer-to-member-function declarations.
+
+2014-04-16  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/60764
+	* call.c (build_user_type_coversion): Use build_dummy_object
+	to create the placeholder object for a constructor method call.
+	(build_special_member_call): Likewise.
+	(build_over_call): Check for the placeholder object with
+	is_dummy_object.
+	(build_new_method_call_1): Likewise.  Don't attempt to resolve
+	a dummy object for a constructor method call.
+
+2014-04-16  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	PR c++/59295
+	* friend.c (add_friend, make_friend_class): Move repeated friend
+	warning under Wredundant_decls.
+
+2014-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls): Remove redundant TYPE_NAME use.
+	* name-lookup.c (pushdecl_maybe_friend_1): Likewise.
+	(do_class_using_decl): Likewise.
+	* mangle.c (dump_substitution_candidates): Use TYPE_NAME_STRING.
+
+2014-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/59335
+	* Make-lang.h (CP_PLUGIN_HEADERS): Add type-utils.h.
+
+2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (TYPE_IDENTIFIER): Remove declaration.
+
+2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (mark_template_parm): Use template_parm_level_and_index.
+
+2014-04-11  Jason Merrill  <jason@redhat.com>
+
+	* parser.h (struct cp_token): Rename ambiguous_p to error_reported.
+	* parser.c: Adjust.
+	(cp_lexer_get_preprocessor_token): Always clear it.
+	(cp_parser_lambda_expression): Use it to avoid duplicate diagnostics.
+
+	DR 1467
+	PR c++/51747
+	* decl.c (reshape_init_r): Handle a single element of class type.
+
+	DR 1338
+	* decl.c (cxx_init_decl_processing): Set DECL_IS_MALLOC on
+	built-in operator new.
+
+2014-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58600
+	* name-lookup.c (parse_using_directive): Return early if the
+	attribs argument is error_mark_node; use get_attribute_name.
+
+2014-04-11  Jason Merrill  <jason@redhat.com>
+
+	DR 1030
+	PR c++/51253
+	* cp-tree.h (CALL_EXPR_LIST_INIT_P): New.
+	* call.c (struct z_candidate): Add flags field.
+	(add_candidate): Add flags parm.
+	(add_function_candidate, add_conv_candidate, build_builtin_candidate)
+	(add_template_candidate_real): Pass it.
+	(build_over_call): Set CALL_EXPR_LIST_INIT_P.
+	* tree.c (build_aggr_init_expr): Copy it.
+	* semantics.c (simplify_aggr_init_expr): Preevaluate args if it's set.
+
+2014-04-10  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/60761
+	* error.c (dump_decl) <case FUNCTION_DECL>: If
+	DECL_LANG_SPECIFIC is NULL, but DECL_ABSTRACT_ORIGIN is not,
+	recurse on DECL_ABSTRACT_ORIGIN instead of printing
+	<built-in>.
+
+2014-04-09  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* pt.c (check_template_variable): Check for the return of pedwarn
+	before emitting a note.
+	* parser.c (cp_parser_lambda_introducer): Likewise.
+
+2014-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59115
+	* pt.c (process_template_parm): For an invalid non-type parameter
+	only set TREE_TYPE to error_mark_node.
+	(push_inline_template_parms_recursive, comp_template_parms,
+	redeclare_class_template, coerce_template_template_parm,
+	coerce_template_template_parms, unify): Use error_operand_p.
+
+2014-04-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (check_bases_and_members): Warn about non-virtual dtors
+	in public bases only.  Check warn_ecpp before complaining about
+	non-polymorphic bases.
+
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* decl.c (duplicate_decls): Check for the return of warning_at
+	before emitting a note.
+	(warn_misplaced_attr_for_class_type): Likewise.
+	(check_tag_decl): Likewise.
+
+2014-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58207
+	* semantics.c (sort_constexpr_mem_initializers): Robustify loop.
+
+2014-04-04  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/44613
+	* semantics.c (add_stmt): Set STATEMENT_LIST_HAS_LABEL.
+	* decl.c (cp_finish_decl): Create a new BIND_EXPR before
+	instantiating a variable-sized type.
+
+	PR c++/21113
+	* decl.c (decl_jump_unsafe): Consider variably-modified decls.
+
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* class.c (find_abi_tags_r): Check for the return of warning
+	before emitting a note.
+	(one_inherited_ctor): Likewise.
+
+2014-04-04  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	* decl.c (duplicate_decls): Check for the return of permerror
+	before emitting a note.
+
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (accessible_nvdtor_p): New.
+	(check_bases): Don't check base destructor here ...
+	(check_bases_and_members): ... check them here.  Trigger on
+	Wnon-virtual-dtor flag.
+	(finish_struct_1): Use accessible_nvdtor_p.
+
 2014-04-01  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (process_partial_specialization): Say "not deducible"
@@ -58,9 +210,9 @@
 2014-03-26  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/52369
-	* cp/method.c (walk_field_subobs): Improve the diagnostic
+	* method.c (walk_field_subobs): Improve the diagnostic
 	locations for both REFERENCE_TYPEs and non-static const members.
-	* cp/init.c (diagnose_uninitialized_cst_or_ref_member): Use %q#D
+	* init.c (diagnose_uninitialized_cst_or_ref_member): Use %q#D
 	instead of %qD to be consistent with the c++11 diagnostic.
 
 2014-03-25  Jason Merrill  <jason@redhat.com>

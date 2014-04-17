@@ -207,7 +207,7 @@ static conversion *maybe_handle_ref_bind (conversion **);
 static void maybe_handle_implicit_object (conversion **);
 static struct z_candidate *add_candidate
 	(struct z_candidate **, tree, tree, const vec<tree, va_gc> *, size_t,
-	 conversion **, tree, tree, int, struct rejection_reason *);
+	 conversion **, tree, tree, int, struct rejection_reason *, int);
 static tree source_type (conversion *);
 static void add_warning (struct z_candidate *, struct z_candidate *);
 static bool reference_compatible_p (tree, tree);
@@ -521,7 +521,6 @@ struct z_candidate {
      sequence from the type returned by FN to the desired destination
      type.  */
   conversion *second_conv;
-  int viable;
   struct rejection_reason *reason;
   /* If FN is a member function, the binfo indicating the path used to
      qualify the name of FN at the call site.  This path is used to
@@ -539,6 +538,10 @@ struct z_candidate {
   tree explicit_targs;
   candidate_warning *warnings;
   z_candidate *next;
+  int viable;
+
+  /* The flags active in add_candidate.  */
+  int flags;
 };
 
 /* Returns true iff T is a null pointer constant in the sense of
@@ -1811,7 +1814,8 @@ add_candidate (struct z_candidate **candidates,
 	       tree fn, tree first_arg, const vec<tree, va_gc> *args,
 	       size_t num_convs, conversion **convs,
 	       tree access_path, tree conversion_path,
-	       int viable, struct rejection_reason *reason)
+	       int viable, struct rejection_reason *reason,
+	       int flags)
 {
   struct z_candidate *cand = (struct z_candidate *)
     conversion_obstack_alloc (sizeof (struct z_candidate));
@@ -1826,6 +1830,7 @@ add_candidate (struct z_candidate **candidates,
   cand->viable = viable;
   cand->reason = reason;
   cand->next = *candidates;
+  cand->flags = flags;
   *candidates = cand;
 
   return cand;
@@ -2062,7 +2067,7 @@ add_function_candidate (struct z_candidate **candidates,
 
  out:
   return add_candidate (candidates, fn, orig_first_arg, args, len, convs,
-			access_path, conversion_path, viable, reason);
+			access_path, conversion_path, viable, reason, flags);
 }
 
 /* Create an overload candidate for the conversion function FN which will
@@ -2164,7 +2169,7 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
     }
 
   return add_candidate (candidates, totype, first_arg, arglist, len, convs,
-			access_path, conversion_path, viable, reason);
+			access_path, conversion_path, viable, reason, flags);
 }
 
 static void
@@ -2239,7 +2244,7 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
 		 num_convs, convs,
 		 /*access_path=*/NULL_TREE,
 		 /*conversion_path=*/NULL_TREE,
-		 viable, reason);
+		 viable, reason, flags);
 }
 
 static bool
@@ -3057,7 +3062,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   return cand;
  fail:
   return add_candidate (candidates, tmpl, first_arg, arglist, nargs, NULL,
-			access_path, conversion_path, 0, reason);
+			access_path, conversion_path, 0, reason, flags);
 }
 
 
@@ -3520,8 +3525,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       int ctorflags = flags;
 
-      first_arg = build_int_cst (build_pointer_type (totype), 0);
-      first_arg = build_fold_indirect_ref (first_arg);
+      first_arg = build_dummy_object (totype);
 
       /* We should never try to call the abstract or base constructor
 	 from here.  */
@@ -7095,7 +7099,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 ctor is trivial, do a bitwise copy with a simple TARGET_EXPR for a
 	 temp or an INIT_EXPR otherwise.  */
       fa = argarray[0];
-      if (integer_zerop (fa))
+      if (is_dummy_object (fa))
 	{
 	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
@@ -7218,7 +7222,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	return error_mark_node;
     }
 
-  return build_cxx_call (fn, nargs, argarray, complain|decltype_flag);
+  tree call = build_cxx_call (fn, nargs, argarray, complain|decltype_flag);
+  if (TREE_CODE (call) == CALL_EXPR
+      && (cand->flags & LOOKUP_LIST_INIT_CTOR))
+    CALL_EXPR_LIST_INIT_P (call) = true;
+  return call;
 }
 
 /* Build and return a call to FN, using NARGS arguments in ARGARRAY.
@@ -7433,10 +7441,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 
   /* Handle the special case where INSTANCE is NULL_TREE.  */
   if (name == complete_ctor_identifier && !instance)
-    {
-      instance = build_int_cst (build_pointer_type (class_type), 0);
-      instance = build1 (INDIRECT_REF, class_type, instance);
-    }
+    instance = build_dummy_object (class_type);
   else
     {
       if (name == complete_dtor_identifier
@@ -7746,8 +7751,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
       if (init)
 	{
-	  if (INDIRECT_REF_P (instance)
-	      && integer_zerop (TREE_OPERAND (instance, 0)))
+	  if (is_dummy_object (instance))
 	    return get_target_expr_sfinae (init, complain);
 	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
 	  TREE_SIDE_EFFECTS (init) = true;
@@ -7846,6 +7850,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	    }
 
 	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+	      && !DECL_CONSTRUCTOR_P (fn)
 	      && is_dummy_object (instance))
 	    {
 	      instance = maybe_resolve_dummy (instance);

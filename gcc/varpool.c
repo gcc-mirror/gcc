@@ -166,7 +166,9 @@ varpool_remove_node (varpool_node *node)
   /* Because we remove references from external functions before final compilation,
      we may end up removing useful constructors.
      FIXME: We probably want to trace boundaries better.  */
-  if ((init = ctor_for_folding (node->decl)) == error_mark_node)
+  if (cgraph_state == CGRAPH_LTO_STREAMING)
+    ;
+  else if ((init = ctor_for_folding (node->decl)) == error_mark_node)
     varpool_remove_initializer (node);
   else
     DECL_INITIAL (node->decl) = init;

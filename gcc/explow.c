@@ -1700,6 +1700,9 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 	  emit_stack_probe (addr);
 	}
     }
+
+  /* Make sure nothing is scheduled before we are done.  */
+  emit_insn (gen_blockage ());
 }
 
 /* Adjust the stack pointer by minus SIZE (an rtx for a number of bytes)

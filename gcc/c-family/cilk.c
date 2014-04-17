@@ -99,7 +99,6 @@ cilk_set_spawn_marker (location_t loc, tree fcall)
        it.  */
     return false; 
   else if (TREE_CODE (fcall) != CALL_EXPR
-	   && TREE_CODE (fcall) != FUNCTION_DECL
 	   /* In C++, TARGET_EXPR is generated when we have an overloaded
 	      '=' operator.  */
 	   && TREE_CODE (fcall) != TARGET_EXPR)

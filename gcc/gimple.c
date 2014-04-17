@@ -1464,9 +1464,12 @@ gimple_set_bb (gimple stmt, basic_block bb)
 {
   stmt->bb = bb;
 
+  if (gimple_code (stmt) != GIMPLE_LABEL)
+    return;
+
   /* If the statement is a label, add the label to block-to-labels map
      so that we can speed up edge creation for GIMPLE_GOTOs.  */
-  if (cfun->cfg && gimple_code (stmt) == GIMPLE_LABEL)
+  if (cfun->cfg)
     {
       tree t;
       int uid;

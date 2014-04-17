@@ -6,18 +6,18 @@
 // destructor, in which case it would be possible but unsafe to delete
 // an instance of a derived class through a pointer to the base class.
 
-struct A // { dg-bogus "non-virtual destructor" }
+struct A
 {
 protected:
-  ~A();
+  ~A(); // inaccessible - no warning
 public:
   virtual void f() = 0;
 };
 
-struct B // { dg-bogus "non-virtual destructor" }
+struct B
 {
 private:
-  ~B();
+  ~B(); // inaccessible - no warning
 public:
   virtual void f() = 0;
 };
@@ -52,3 +52,25 @@ private:
 public:
   virtual void f() = 0;
 };
+
+struct H {};
+
+struct I1 : H
+{};
+struct I2 : private H
+{};
+
+struct J1 : H
+{ virtual ~J1 ();};
+struct J2 : private H
+{ virtual ~J2 ();};
+
+struct K // { dg-warning "accessible non-virtual destructor" }
+{
+  virtual void k ();
+};
+
+struct L1 : K // { dg-warning "accessible non-virtual destructor" }
+{virtual ~L1 ();};
+struct L2 : private K
+{virtual ~L2 ();};

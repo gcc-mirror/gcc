@@ -710,6 +710,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       add_cv<typename tuple_element<__i, _Tp>::type>::type type;
     };
 
+#if __cplusplus > 201103L
+  template<std::size_t __i, typename _Tp>
+    using tuple_element_t = typename tuple_element<__i, _Tp>::type;
+#endif
+
   /// Finds the size of a given tuple type.
   template<typename _Tp>
     struct tuple_size;
@@ -755,14 +760,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
     get(tuple<_Elements...>& __t) noexcept
-    { return __get_helper<__i>(__t); }
+    { return std::__get_helper<__i>(__t); }
 
   template<std::size_t __i, typename... _Elements>
     constexpr typename __add_c_ref<
                       typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
     get(const tuple<_Elements...>& __t) noexcept
-    { return __get_helper<__i>(__t); }
+    { return std::__get_helper<__i>(__t); }
 
   template<std::size_t __i, typename... _Elements>
     constexpr typename __add_r_ref<
@@ -786,17 +791,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename... _Types>
     constexpr _Tp&
     get(tuple<_Types...>& __t) noexcept
-    { return __get_helper2<_Tp>(__t); }
+    { return std::__get_helper2<_Tp>(__t); }
 
   template <typename _Tp, typename... _Types>
     constexpr _Tp&&
     get(tuple<_Types...>&& __t) noexcept
-    { return std::move(__get_helper2<_Tp>(__t)); }
+    { return std::move(std::__get_helper2<_Tp>(__t)); }
 
   template <typename _Tp, typename... _Types>
     constexpr const _Tp&
     get(const tuple<_Types...>& __t) noexcept
-    { return __get_helper2<_Tp>(__t); }
+    { return std::__get_helper2<_Tp>(__t); }
 #endif
 
   // This class helps construct the various comparison operations on tuples

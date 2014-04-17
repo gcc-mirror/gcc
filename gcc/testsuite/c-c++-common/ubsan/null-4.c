@@ -11,4 +11,4 @@ main (void)
   return 0;
 }
 
-/* { dg-output "load of null pointer of type 'complex double'(\n|\r\n|\r)" } */
+/* { dg-output "load of null pointer of type 'complex double'\[^\n\r]*(\n|\r\n|\r)" } */

@@ -7,7 +7,7 @@
 --                                   B o d y                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a GNU/LinuxThreads, Solaris pthread and HP-UX pthread version
---  of this package.
+--  This version is for POSIX-like operating systems
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
@@ -104,7 +103,7 @@ package body System.OS_Interface is
       end if;
 
       return timespec'(tv_sec => S,
-                       tv_nsec => time_t (Long_Long_Integer (F * 10#1#E9)));
+                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
 end System.OS_Interface;

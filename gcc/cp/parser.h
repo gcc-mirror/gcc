@@ -51,10 +51,10 @@ typedef struct GTY (()) cp_token {
   ENUM_BITFIELD (pragma_kind) pragma_kind : 6;
   /* True if this token is from a context where it is implicitly extern "C" */
   BOOL_BITFIELD implicit_extern_c : 1;
-  /* True for a CPP_NAME token that is not a keyword (i.e., for which
-     KEYWORD is RID_MAX) iff this name was looked up and found to be
-     ambiguous.  An error has already been reported.  */
-  BOOL_BITFIELD ambiguous_p : 1;
+  /* True if an error has already been reported for this token, such as a
+     CPP_NAME token that is not a keyword (i.e., for which KEYWORD is
+     RID_MAX) iff this name was looked up and found to be ambiguous.  */
+  BOOL_BITFIELD error_reported : 1;
   /* True for a token that has been purged.  If a token is purged,
      it is no longer a valid token and it should be considered
      deleted.  */

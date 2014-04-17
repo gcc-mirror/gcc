@@ -1,3 +1,116 @@
+2014-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (__is_location_invariant): Use __or_ helper.
+
+2014-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60734
+	* include/bits/stl_tree.h (_Rb_tree::_M_end): Fix invalid cast.
+
+	PR libstdc++/60695
+	* include/std/atomic (atomic<_Tp>): Add static assertion.
+	* testsuite/29_atomics/atomic/60695.cc: New.
+
+	PR libstdc++/60594
+	* include/std/functional (function::_Callable): Exclude own type
+	from the callable checks.
+	* testsuite/20_util/function/60594.cc: New.
+
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::_M_type_size): Add
+	const to constexpr member functions.
+
+	* include/bits/shared_ptr.h (shared_ptr::shared_ptr(nullptr_t)): Use
+	delegating constructor.
+	* include/bits/shared_ptr_base.h
+	(__shared_ptr::__shared_ptr(nullptr_t)): Likewise
+
+	* include/std/atomic: Uglify parameter names.
+
+	PR c++/60786
+	* testsuite/20_util/shared_ptr/requirements/explicit_instantiation/
+	1.cc: Fix invalid explicit instantiations with unqualified names.
+	* testsuite/20_util/shared_ptr/requirements/explicit_instantiation/
+	2.cc: Likweise.
+	* testsuite/20_util/tuple/53648.cc: Likweise.
+	* testsuite/20_util/weak_ptr/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	debug_container.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	debug_container.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/3.cc: Likewise.
+
+	* testsuite/24_iterators/insert_iterator/requirements/container.cc: Do
+	not use uninitialized members in mem-initializers.
+	* testsuite/ext/throw_value/cons.cc: Fix most vexing parse.
+	* testsuite/util/testsuite_common_types.h: Update comment.
+
+	* include/experimental/string_view: Fix inconsistent exception specs.
+
+	* include/bits/shared_ptr.h (shared_ptr::shared_ptr(nullptr_t)):
+	Remove name of unused parameter.
+
+2014-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (_Vector_base::_Vector_impl,
+	_Vector_base::_M_allocate): NullablePointer requirements do not
+	include initialization from literal zero, use value-initialization.
+	* include/bits/vector.tcc (vector::_M_insert_aux,
+	vector::_M_explace_back_aux): Likewise for assignment.
+
+	* include/bits/allocator.h (operator==, operator!=): Add exception
+	specifications.
+
+	PR libstdc++/60497
+	* include/std/tuple (get): Qualify calls to prevent ADL.
+	* testsuite/20_util/tuple/60497.cc: New.
+
+	* include/std/tuple (tuple_element_t): Define.
+	* testsuite/20_util/tuple/tuple_element.cc: Change to compile-only
+	test.
+	* testsuite/20_util/tuple/tuple_element_t.cc: New.
+
+2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/59434
+	* include/bits/stl_iterator.h (move_iterator::reference,
+	move_iterator::operator*): Implement LWG 2106.
+	* testsuite/24_iterators/move_iterator/dr2106.cc: New file.
+
+2014-04-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/std/complex (__complex_exp, pow): Specify the template
+	parameter in calls to std::polar, for expression templates.
+
+2014-04-10  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Remove TLS
+	symbols.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt: Likewise.
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+
+2014-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/exchange/1.cc: Add missing return statements.
+	* testsuite/20_util/pair/40925.cc: Avoid most vexing parse.
+	* testsuite/22_locale/codecvt_byname/50714.cc: Add missing exception
+	specifications.
+
 2014-04-02  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 

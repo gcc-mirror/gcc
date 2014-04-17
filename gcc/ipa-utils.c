@@ -660,6 +660,14 @@ ipa_merge_profiles (struct cgraph_node *dst,
   if (dst->tp_first_run > src->tp_first_run && src->tp_first_run)
     dst->tp_first_run = src->tp_first_run;
 
+  if (src->profile_id)
+    {
+      if (!dst->profile_id)
+	dst->profile_id = src->profile_id;
+      else
+	gcc_assert (src->profile_id == dst->profile_id);
+    }
+
   if (!dst->count)
     return;
   if (cgraph_dump_file)

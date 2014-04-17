@@ -79,7 +79,7 @@ create_output_block (enum lto_section_type section_type)
   ob->decl_state = lto_get_out_decl_state ();
   ob->main_stream = XCNEW (struct lto_output_stream);
   ob->string_stream = XCNEW (struct lto_output_stream);
-  ob->writer_cache = streamer_tree_cache_create (!flag_wpa, true);
+  ob->writer_cache = streamer_tree_cache_create (!flag_wpa, true, false);
 
   if (section_type == LTO_section_function_body)
     ob->cfg_stream = XCNEW (struct lto_output_stream);
@@ -1280,7 +1280,6 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 	     ???  We still wrap these in LTO_tree_scc so at the
 	     input side we can properly identify the tree we want
 	     to ultimatively return.  */
-	  size_t old_len = ob->writer_cache->nodes.length ();
 	  if (size == 1)
 	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
 	  else
@@ -1318,7 +1317,6 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 		  streamer_write_zero (ob);
 		}
 	    }
-	  gcc_assert (old_len + size == ob->writer_cache->nodes.length ());
 
 	  /* Finally truncate the vector.  */
 	  sccstack.truncate (first);
@@ -1707,7 +1705,8 @@ output_cfg (struct output_block *ob, struct function *fn)
 
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);
-      streamer_write_hwi (ob, loop->force_vect);
+      streamer_write_hwi (ob, loop->dont_vectorize);
+      streamer_write_hwi (ob, loop->force_vectorize);
       stream_write_tree (ob, loop->simduid, true);
     }
 
@@ -1802,7 +1801,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->has_nonlocal_label, 1);
   bp_pack_value (&bp, fn->calls_alloca, 1);
   bp_pack_value (&bp, fn->calls_setjmp, 1);
-  bp_pack_value (&bp, fn->has_force_vect_loops, 1);
+  bp_pack_value (&bp, fn->has_force_vectorize_loops, 1);
   bp_pack_value (&bp, fn->has_simduid_loops, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
@@ -2036,6 +2035,29 @@ copy_function (struct cgraph_node *node)
   lto_end_section ();
 }
 
+/* Wrap symbol references in *TP inside a type-preserving MEM_REF.  */
+
+static tree
+wrap_refs (tree *tp, int *ws, void *)
+{
+  tree t = *tp;
+  if (handled_component_p (t)
+      && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL)
+    {
+      tree decl = TREE_OPERAND (t, 0);
+      tree ptrtype = build_pointer_type (TREE_TYPE (decl));
+      TREE_OPERAND (t, 0) = build2 (MEM_REF, TREE_TYPE (decl),
+				    build1 (ADDR_EXPR, ptrtype, decl),
+				    build_int_cst (ptrtype, 0));
+      TREE_THIS_VOLATILE (TREE_OPERAND (t, 0)) = TREE_THIS_VOLATILE (decl);
+      *ws = 0;
+    }
+  else if (TREE_CODE (t) == CONSTRUCTOR)
+    ;
+  else if (!EXPR_P (t))
+    *ws = 0;
+  return NULL_TREE;
+}
 
 /* Main entry point from the pass manager.  */
 
@@ -2057,24 +2079,33 @@ lto_output (void)
   for (i = 0; i < n_nodes; i++)
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      cgraph_node *node = dyn_cast <cgraph_node> (snode);
-      if (node
-	  && lto_symtab_encoder_encode_body_p (encoder, node)
-	  && !node->alias)
+      if (cgraph_node *node = dyn_cast <cgraph_node> (snode))
 	{
+	  if (lto_symtab_encoder_encode_body_p (encoder, node)
+	      && !node->alias)
+	    {
 #ifdef ENABLE_CHECKING
-	  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
-	  bitmap_set_bit (output, DECL_UID (node->decl));
+	      gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
+	      bitmap_set_bit (output, DECL_UID (node->decl));
 #endif
-	  decl_state = lto_new_out_decl_state ();
-	  lto_push_out_decl_state (decl_state);
-	  if (gimple_has_body_p (node->decl) || !flag_wpa)
-	    output_function (node);
-	  else
-	    copy_function (node);
-	  gcc_assert (lto_get_out_decl_state () == decl_state);
-	  lto_pop_out_decl_state ();
-	  lto_record_function_out_decl_state (node->decl, decl_state);
+	      decl_state = lto_new_out_decl_state ();
+	      lto_push_out_decl_state (decl_state);
+	      if (gimple_has_body_p (node->decl) || !flag_wpa)
+		output_function (node);
+	      else
+		copy_function (node);
+	      gcc_assert (lto_get_out_decl_state () == decl_state);
+	      lto_pop_out_decl_state ();
+	      lto_record_function_out_decl_state (node->decl, decl_state);
+	    }
+	}
+      else if (varpool_node *node = dyn_cast <varpool_node> (snode))
+	{
+	  /* Wrap symbol references inside the ctor in a type
+	     preserving MEM_REF.  */
+	  tree ctor = DECL_INITIAL (node->decl);
+	  if (ctor && !in_lto_p)
+	    walk_tree (&ctor, wrap_refs, NULL, NULL);
 	}
     }
 
@@ -2435,10 +2466,18 @@ produce_asm_for_decls (void)
 
   gcc_assert (!alias_pairs);
 
-  /* Write the global symbols.  */
+  /* Get rid of the global decl state hash tables to save some memory.  */
   out_state = lto_get_out_decl_state ();
-  num_fns = lto_function_decl_states.length ();
+  for (int i = 0; i < LTO_N_DECL_STREAMS; i++)
+    if (out_state->streams[i].tree_hash_table)
+      {
+	delete out_state->streams[i].tree_hash_table;
+	out_state->streams[i].tree_hash_table = NULL;
+      }
+
+  /* Write the global symbols.  */
   lto_output_decl_state_streams (ob, out_state);
+  num_fns = lto_function_decl_states.length ();
   for (idx = 0; idx < num_fns; idx++)
     {
       fn_out_state =

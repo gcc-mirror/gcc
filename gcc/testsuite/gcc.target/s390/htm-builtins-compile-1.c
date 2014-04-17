@@ -27,8 +27,8 @@ foo (struct __htm_tdb* tdb, int reg, int *mem, uint64_t *mem64)
   cc = __builtin_tbegin ((void *)0x12345678);
   cc = __builtin_tbegin (tdb);
   cc = __builtin_tbegin (&global_tdb);
-  cc = __builtin_tbegin ((void *)(long long)(reg + 0x12345678));
-  cc = __builtin_tbegin ((void *)(long long)(reg));
+  cc = __builtin_tbegin ((void *)(long)(reg + 0x12345678));
+  cc = __builtin_tbegin ((void *)(long)(reg));
 
   __builtin_tbegin_nofloat ((void *)0);
   __builtin_tbegin_nofloat ((void *)-99999);
@@ -36,8 +36,8 @@ foo (struct __htm_tdb* tdb, int reg, int *mem, uint64_t *mem64)
   cc = __builtin_tbegin_nofloat ((void *)0x12345678);
   cc = __builtin_tbegin_nofloat (tdb);
   cc = __builtin_tbegin_nofloat (&global_tdb);
-  cc = __builtin_tbegin_nofloat ((void *)(long long)(reg + 0x12345678));
-  cc = __builtin_tbegin_nofloat ((void *)(long long)(reg));
+  cc = __builtin_tbegin_nofloat ((void *)(long)(reg + 0x12345678));
+  cc = __builtin_tbegin_nofloat ((void *)(long)(reg));
 
   __builtin_tbegin_retry ((void *)0, 0);
   cc = __builtin_tbegin_retry ((void *)0, 1);
@@ -50,9 +50,9 @@ foo (struct __htm_tdb* tdb, int reg, int *mem, uint64_t *mem64)
   cc = __builtin_tbegin_retry (&global_tdb, 42);
   cc = __builtin_tbegin_retry ((void *)0x12345678, global);
   cc = __builtin_tbegin_retry (
-	  (void *)(long long) (reg + 0x12345678), global + 1);
+	  (void *)(long) (reg + 0x12345678), global + 1);
   cc = __builtin_tbegin_retry (
-	  (void *)(long long)(reg), global - 1);
+	  (void *)(long)(reg), global - 1);
 
   __builtin_tbegin_retry_nofloat ((void *)0, 0);
   cc = __builtin_tbegin_retry_nofloat ((void *)0, 1);
@@ -65,9 +65,9 @@ foo (struct __htm_tdb* tdb, int reg, int *mem, uint64_t *mem64)
   cc = __builtin_tbegin_retry_nofloat (&global_tdb, 42);
   cc = __builtin_tbegin_retry_nofloat ((void *)0x12345678, global);
   cc = __builtin_tbegin_retry_nofloat (
-	  (void *)(long long) (reg + 0x12345678), global + 1);
+	  (void *)(long) (reg + 0x12345678), global + 1);
   cc = __builtin_tbegin_retry_nofloat (
-	  (void *)(long long)(reg), global - 1);
+	  (void *)(long)(reg), global - 1);
 
   __builtin_tbeginc ();
 

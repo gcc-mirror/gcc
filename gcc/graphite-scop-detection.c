@@ -219,7 +219,14 @@ graphite_can_represent_scev (tree scev)
 
   switch (TREE_CODE (scev))
     {
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+      return graphite_can_represent_scev (TREE_OPERAND (scev, 0));
+
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       return graphite_can_represent_scev (TREE_OPERAND (scev, 0))
 	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
@@ -241,13 +248,15 @@ graphite_can_represent_scev (tree scev)
       if (!evolution_function_right_is_integer_cst (scev)
 	  || !graphite_can_represent_init (scev))
 	return false;
+      return graphite_can_represent_scev (CHREC_LEFT (scev));
 
     default:
       break;
     }
 
   /* Only affine functions can be represented.  */
-  if (!scev_is_linear_expression (scev))
+  if (tree_contains_chrecs (scev, NULL)
+      || !scev_is_linear_expression (scev))
     return false;
 
   return true;
@@ -346,13 +355,10 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 
     case GIMPLE_COND:
       {
-	tree op;
-	ssa_op_iter op_iter;
-        enum tree_code code = gimple_cond_code (stmt);
-
 	/* We can handle all binary comparisons.  Inequalities are
 	   also supported as they can be represented with union of
 	   polyhedra.  */
+        enum tree_code code = gimple_cond_code (stmt);
         if (!(code == LT_EXPR
 	      || code == GT_EXPR
 	      || code == LE_EXPR
@@ -361,11 +367,14 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 	      || code == NE_EXPR))
           return false;
 
-	FOR_EACH_SSA_TREE_OPERAND (op, stmt, op_iter, SSA_OP_ALL_USES)
-	  if (!graphite_can_represent_expr (scop_entry, loop, op)
-	      /* We can not handle REAL_TYPE. Failed for pr39260.  */
-	      || TREE_CODE (TREE_TYPE (op)) == REAL_TYPE)
-	    return false;
+	for (unsigned i = 0; i < 2; ++i)
+	  {
+	    tree op = gimple_op (stmt, i);
+	    if (!graphite_can_represent_expr (scop_entry, loop, op)
+		/* We can not handle REAL_TYPE. Failed for pr39260.  */
+		|| TREE_CODE (TREE_TYPE (op)) == REAL_TYPE)
+	      return false;
+	  }
 
 	return true;
       }

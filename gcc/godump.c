@@ -578,9 +578,7 @@ go_format_type (struct godump_container *container, tree type,
       tree name;
       void **slot;
 
-      name = TYPE_NAME (type);
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
+      name = TYPE_IDENTIFIER (type);
 
       slot = htab_find_slot (container->invalid_hash, IDENTIFIER_POINTER (name),
 			     NO_INSERT);
@@ -685,9 +683,7 @@ go_format_type (struct godump_container *container, tree type,
 	  tree name;
 	  void **slot;
 
-	  name = TYPE_NAME (TREE_TYPE (type));
-	  if (TREE_CODE (name) == TYPE_DECL)
-	    name = DECL_NAME (name);
+	  name = TYPE_IDENTIFIER (TREE_TYPE (type));
 
 	  slot = htab_find_slot (container->invalid_hash,
 				 IDENTIFIER_POINTER (name), NO_INSERT);
@@ -806,9 +802,7 @@ go_format_type (struct godump_container *container, tree type,
 		    tree name;
 		    void **slot;
 
-		    name = TYPE_NAME (TREE_TYPE (field));
-		    if (TREE_CODE (name) == TYPE_DECL)
-		      name = DECL_NAME (name);
+		    name = TYPE_IDENTIFIER (TREE_TYPE (field));
 
 		    slot = htab_find_slot (container->invalid_hash,
 					   IDENTIFIER_POINTER (name),

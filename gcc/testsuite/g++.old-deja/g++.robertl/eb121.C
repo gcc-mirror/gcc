@@ -3,7 +3,7 @@ class A {
 private:
   int i1_;
 public:
-  void f(int const i1 = 1); // { dg-error "previous specification" }
+  void f(int const i1 = 1); // { dg-message "previous specification" }
 };
 
 void

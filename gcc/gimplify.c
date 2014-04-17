@@ -627,6 +627,25 @@ force_constant_size (tree var)
 /* Push the temporary variable TMP into the current binding.  */
 
 void
+gimple_add_tmp_var_fn (struct function *fn, tree tmp)
+{
+  gcc_assert (!DECL_CHAIN (tmp) && !DECL_SEEN_IN_BIND_EXPR_P (tmp));
+
+  /* Later processing assumes that the object size is constant, which might
+     not be true at this point.  Force the use of a constant upper bound in
+     this case.  */
+  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (tmp)))
+    force_constant_size (tmp);
+
+  DECL_CONTEXT (tmp) = fn->decl;
+  DECL_SEEN_IN_BIND_EXPR_P (tmp) = 1;
+
+  record_vars_into (tmp, fn->decl);
+}
+
+/* Push the temporary variable TMP into the current binding.  */
+
+void
 gimple_add_tmp_var (tree tmp)
 {
   gcc_assert (!DECL_CHAIN (tmp) && !DECL_SEEN_IN_BIND_EXPR_P (tmp));
@@ -2794,15 +2813,18 @@ gimple_boolify (tree expr)
       return expr;
 
     case ANNOTATE_EXPR:
-      if ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (expr, 1))
-	  == annot_expr_ivdep_kind)
+      switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)))
 	{
+	case annot_expr_ivdep_kind:
+	case annot_expr_no_vector_kind:
+	case annot_expr_vector_kind:
 	  TREE_OPERAND (expr, 0) = gimple_boolify (TREE_OPERAND (expr, 0));
 	  if (TREE_CODE (type) != BOOLEAN_TYPE)
 	    TREE_TYPE (expr) = boolean_type_node;
 	  return expr;
+	default:
+	  gcc_unreachable ();
 	}
-      /* FALLTHRU */
 
     default:
       if (COMPARISON_CLASS_P (expr))
@@ -7509,7 +7531,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case ANNOTATE_EXPR:
 	  {
 	    tree cond = TREE_OPERAND (*expr_p, 0);
-	    tree id = TREE_OPERAND (*expr_p, 1);
+	    tree kind = TREE_OPERAND (*expr_p, 1);
 	    tree type = TREE_TYPE (cond);
 	    if (!INTEGRAL_TYPE_P (type))
 	      {
@@ -7519,8 +7541,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      }
 	    tree tmp = create_tmp_var (type, NULL);
 	    gimplify_arg (&cond, pre_p, EXPR_LOCATION (*expr_p));
-	    gimple call = gimple_build_call_internal (IFN_ANNOTATE, 2,
-						      cond, id);
+	    gimple call
+	      = gimple_build_call_internal (IFN_ANNOTATE, 2, cond, kind);
 	    gimple_call_set_lhs (call, tmp);
 	    gimplify_seq_add_stmt (pre_p, call);
 	    *expr_p = tmp;

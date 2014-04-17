@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-load" } */
+/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-load -mno-prefer-avx128" } */
 
 void
 avx_test (char **cp, char **ep)

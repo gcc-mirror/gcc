@@ -87,6 +87,10 @@ typedef struct gfc_se
      args alias.  */
   unsigned force_tmp:1;
 
+  /* Unconditionally calculate offset for array segments and constant
+     arrays in gfc_conv_expr_descriptor.  */
+  unsigned use_offset:1;
+
   unsigned want_coarray:1;
 
   /* Scalarization parameters.  */
@@ -99,7 +103,7 @@ gfc_se;
 
 /* Denotes different types of coarray.
    Please keep in sync with libgfortran/caf/libcaf.h.  */
-typedef enum 
+typedef enum
 {
   GFC_CAF_COARRAY_STATIC,
   GFC_CAF_COARRAY_ALLOC,
@@ -178,7 +182,7 @@ typedef enum
   /* An intrinsic function call.  Many intrinsic functions which map directly
      to library calls are created as GFC_SS_FUNCTION nodes.  */
   GFC_SS_INTRINSIC,
-  
+
   /* A component of a derived type.  */
   GFC_SS_COMPONENT
 }

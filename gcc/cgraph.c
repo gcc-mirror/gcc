@@ -1478,13 +1478,14 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
     {
       if (TREE_CODE (lhs) == SSA_NAME)
 	{
+	  tree var = create_tmp_reg_fn (DECL_STRUCT_FUNCTION (e->caller->decl),
+					TREE_TYPE (lhs), NULL);
+	  var = get_or_create_ssa_default_def
+		  (DECL_STRUCT_FUNCTION (e->caller->decl), var);
+	  gimple set_stmt = gimple_build_assign (lhs, var);
           gsi = gsi_for_stmt (new_stmt);
-
-	  tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
-	  tree def = get_or_create_ssa_default_def
-		      (DECL_STRUCT_FUNCTION (e->caller->decl), var);
-	  gimple set_stmt = gimple_build_assign (lhs, def);
-	  gsi_insert_before (&gsi, set_stmt, GSI_SAME_STMT);
+	  gsi_insert_before_without_update (&gsi, set_stmt, GSI_SAME_STMT);
+	  update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), set_stmt);
 	}
       gimple_call_set_lhs (new_stmt, NULL_TREE);
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
@@ -2542,12 +2543,34 @@ collect_callers_of_node (struct cgraph_node *node)
   return redirect_callers;
 }
 
-/* Return TRUE if NODE2 is equivalent to NODE or its clone.  */
+/* Return TRUE if NODE2 a clone of NODE or is equivalent to it.  */
+
 static bool
 clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
 {
+  bool skipped_thunk = false;
   node = cgraph_function_or_thunk_node (node, NULL);
   node2 = cgraph_function_or_thunk_node (node2, NULL);
+
+  /* There are no virtual clones of thunks so check former_clone_of or if we
+     might have skipped thunks because this adjustments are no longer
+     necessary.  */
+  while (node->thunk.thunk_p)
+    {
+      if (node2->former_clone_of == node->decl)
+	return true;
+      if (!node->thunk.this_adjusting)
+	return false;
+      node = cgraph_function_or_thunk_node (node->callees->callee, NULL);
+      skipped_thunk = true;
+    }
+
+  if (skipped_thunk
+      && (!node2->clone_of
+	  || !node2->clone.args_to_skip
+	  || !bitmap_bit_p (node2->clone.args_to_skip, 0)))
+    return false;
+
   while (node != node2 && node2)
     node2 = node2->clone_of;
   return node2 != NULL;
@@ -2647,10 +2670,8 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
   node = cgraph_function_or_thunk_node (node, NULL);
 
   if (e->callee->former_clone_of != node->decl
-      /* IPA-CP sometimes redirect edge to clone and then back to the former
-	 function.  This ping-pong has to go, eventually.  */
       && (node != cgraph_function_or_thunk_node (e->callee, NULL))
-      && !clone_of_p (cgraph_function_or_thunk_node (node, NULL), e->callee))
+      && !clone_of_p (node, e->callee))
     return true;
   else
     return false;

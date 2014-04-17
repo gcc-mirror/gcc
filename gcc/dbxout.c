@@ -2110,12 +2110,12 @@ dbxout_type (tree type, int full)
 	       another type's definition; instead, output an xref
 	       and let the definition come when the name is defined.  */
 	    stabstr_S ((TREE_CODE (type) == RECORD_TYPE) ? "xs" : "xu");
-	    if (TYPE_NAME (type) != 0
-		/* The C frontend creates for anonymous variable length
-		   records/unions TYPE_NAME with DECL_NAME NULL.  */
-		&& (TREE_CODE (TYPE_NAME (type)) != TYPE_DECL
-		    || DECL_NAME (TYPE_NAME (type))))
-	      dbxout_type_name (type);
+	    if (TYPE_IDENTIFIER (type))
+	      {
+		/* Note that the C frontend creates for anonymous variable
+		   length records/unions TYPE_NAME with DECL_NAME NULL.  */
+		dbxout_type_name (type);
+	      }
 	    else
 	      {
 		stabstr_S ("$$");
@@ -2748,9 +2748,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 		   DBX format, and it confuses some tools such as objdump.  */
 		&& tree_fits_uhwi_p (TYPE_SIZE (type)))
 	      {
-		tree name = TYPE_NAME (type);
-		if (TREE_CODE (name) == TYPE_DECL)
-		  name = DECL_NAME (name);
+		tree name = TYPE_IDENTIFIER (type);
 
 		dbxout_begin_complex_stabs ();
 		stabstr_I (name);
@@ -2807,9 +2805,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	       This is what represents `struct foo' with no typedef.  */
 	    /* In C++, the name of a type is the corresponding typedef.
 	       In C, it is an IDENTIFIER_NODE.  */
-	    tree name = TYPE_NAME (type);
-	    if (TREE_CODE (name) == TYPE_DECL)
-	      name = DECL_NAME (name);
+	    tree name = TYPE_IDENTIFIER (type);
 
 	    dbxout_begin_complex_stabs ();
 	    stabstr_I (name);

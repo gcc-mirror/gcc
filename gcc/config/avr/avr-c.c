@@ -347,13 +347,16 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (TARGET_NO_INTERRUPTS)
     cpp_define (pfile, "__NO_INTERRUPTS__");
 
-  if (avr_current_device->errata_skip)
+  if (avr_current_device->dev_attribute & AVR_ERRATA_SKIP)
     {
       cpp_define (pfile, "__AVR_ERRATA_SKIP__");
 
       if (avr_current_arch->have_jmp_call)
         cpp_define (pfile, "__AVR_ERRATA_SKIP_JMP_CALL__");
     }
+
+  if (avr_current_device->dev_attribute & AVR_ISA_RMW)
+    cpp_define (pfile, "__AVR_ISA_RMW__");
 
   cpp_define_formatted (pfile, "__AVR_SFR_OFFSET__=0x%x",
                         avr_current_arch->sfr_offset);

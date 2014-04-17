@@ -4363,8 +4363,10 @@ cand_value_at (struct loop *loop, struct iv_cand *cand, gimple at, tree niter,
   tree steptype = type;
   if (POINTER_TYPE_P (type))
     steptype = sizetype;
+  steptype = unsigned_type_for (type);
 
-  tree_to_aff_combination (iv->step, steptype, &step);
+  tree_to_aff_combination (iv->step, TREE_TYPE (iv->step), &step);
+  aff_combination_convert (&step, steptype);
   tree_to_aff_combination (niter, TREE_TYPE (niter), &nit);
   aff_combination_convert (&nit, steptype);
   aff_combination_mult (&nit, &step, &delta);
@@ -4372,6 +4374,8 @@ cand_value_at (struct loop *loop, struct iv_cand *cand, gimple at, tree niter,
     aff_combination_add (&delta, &step);
 
   tree_to_aff_combination (iv->base, type, val);
+  if (!POINTER_TYPE_P (type))
+    aff_combination_convert (val, steptype);
   aff_combination_add (val, &delta);
 }
 
@@ -4750,7 +4754,8 @@ may_eliminate_iv (struct ivopts_data *data,
 
   cand_value_at (loop, cand, use->stmt, desc->niter, &bnd);
 
-  *bound = aff_combination_to_tree (&bnd);
+  *bound = fold_convert (TREE_TYPE (cand->iv->base),
+			 aff_combination_to_tree (&bnd));
   *comp = iv_elimination_compare (data, use);
 
   /* It is unlikely that computing the number of iterations using division

@@ -3127,7 +3127,14 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   version.h stringpool.h gimplify.h gimple-iterator.h gimple-ssa.h \
   fold-const.h tree-cfg.h tree-into-ssa.h tree-ssanames.h print-tree.h \
   varasm.h context.h tree-phinodes.h stor-layout.h ssa-iterators.h \
-  $(RESOURCE_H) tree-cfgcleanup.h
+  $(RESOURCE_H) tree-cfgcleanup.h attribs.h calls.h cfgexpand.h \
+  diagnostic-color.h gcc-symtab.h gimple-builder.h gimple-low.h \
+  gimple-walk.h gimplify-me.h pass_manager.h print-rtl.h stmt.h \
+  tree-dfa.h tree-hasher.h tree-nested.h tree-object-size.h tree-outof-ssa.h \
+  tree-parloops.h tree-ssa-address.h tree-ssa-coalesce.h tree-ssa-dom.h \
+  tree-ssa-loop.h tree-ssa-loop-ivopts.h tree-ssa-loop-manip.h \
+  tree-ssa-loop-niter.h tree-ssa-ter.h tree-ssa-threadedge.h \
+  tree-ssa-threadupdate.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
@@ -3208,9 +3215,9 @@ install-driver: installdirs xgcc$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-if [ "$(GCC_INSTALL_NAME)" != "$(target_noncanonical)-gcc-$(version)" ]; then \
-	  -rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-$(version)$(exeext) \
-	  -( cd $(DESTDIR)$(bindir) && \
-	     $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-$(version)$(exeext) ) \
+	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-$(version)$(exeext); \
+	  ( cd $(DESTDIR)$(bindir) && \
+	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-$(version)$(exeext) ); \
 	fi
 	-if [ ! -f gcc-cross$(exeext) ] \
 	    && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \

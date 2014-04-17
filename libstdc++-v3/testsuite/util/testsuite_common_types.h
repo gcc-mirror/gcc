@@ -689,7 +689,8 @@ namespace __gnu_test
       struct _Concept;
 
     // NB: _Tp must be a literal type.
-    // Have to have user-defined default ctor for this to work.
+    // Have to have user-defined default ctor for this to work,
+    // or implicit default ctor must initialize all members.
     template<typename _Tp>
       struct _Concept<_Tp, true>
       {

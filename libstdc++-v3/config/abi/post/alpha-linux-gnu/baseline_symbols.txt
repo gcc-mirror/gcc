@@ -4026,5 +4026,3 @@ OBJECT:96:_ZTVSt12ctype_bynameIcE@@GLIBCXX_3.4
 OBJECT:96:_ZTVSt5ctypeIcE@@GLIBCXX_3.4
 OBJECT:96:_ZTVSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:96:_ZTVSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE@@GLIBCXX_3.4
-TLS:8:_ZSt11__once_call@@GLIBCXX_3.4.11
-TLS:8:_ZSt15__once_callable@@GLIBCXX_3.4.11

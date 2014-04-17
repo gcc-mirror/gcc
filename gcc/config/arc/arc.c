@@ -2134,7 +2134,7 @@ arc_save_restore (rtx base_reg,
 	  if (*first_offset)
 	    {
 	      /* "reg_size" won't be more than 127 .  */
-	      gcc_assert (epilogue_p || abs (*first_offset <= 127));
+	      gcc_assert (epilogue_p || abs (*first_offset) <= 127);
 	      frame_add (base_reg, *first_offset);
 	      *first_offset = 0;
 	    }

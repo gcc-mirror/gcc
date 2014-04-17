@@ -849,9 +849,10 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
                      unsigned int *max_nunits,
                      vec<slp_tree> *loads,
                      unsigned int vectorization_factor,
-		     bool *matches, unsigned *npermutes)
+		     bool *matches, unsigned *npermutes, unsigned *tree_size,
+		     unsigned max_tree_size)
 {
-  unsigned nops, i, this_npermutes = 0;
+  unsigned nops, i, this_npermutes = 0, this_tree_size = 0;
   gimple stmt;
 
   if (!matches)
@@ -911,6 +912,12 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       if (oprnd_info->first_dt != vect_internal_def)
         continue;
 
+      if (++this_tree_size > max_tree_size)
+	{
+	  vect_free_oprnd_info (oprnds_info);
+	  return false;
+	}
+
       child = vect_create_new_slp_node (oprnd_info->def_stmts);
       if (!child)
 	{
@@ -921,7 +928,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       bool *matches = XALLOCAVEC (bool, group_size);
       if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &child,
 			       group_size, max_nunits, loads,
-			       vectorization_factor, matches, npermutes))
+			       vectorization_factor, matches,
+			       npermutes, &this_tree_size, max_tree_size))
 	{
 	  oprnd_info->def_stmts = vNULL;
 	  SLP_TREE_CHILDREN (*node).quick_push (child);
@@ -961,7 +969,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &child,
 				   group_size, max_nunits, loads,
 				   vectorization_factor,
-				   matches, npermutes))
+				   matches, npermutes, &this_tree_size,
+				   max_tree_size))
 	    {
 	      oprnd_info->def_stmts = vNULL;
 	      SLP_TREE_CHILDREN (*node).quick_push (child);
@@ -976,6 +985,9 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       vect_free_oprnd_info (oprnds_info);
       return false;
     }
+
+  if (tree_size)
+    *tree_size += this_tree_size;
 
   vect_free_oprnd_info (oprnds_info);
   return true;
@@ -1436,7 +1448,7 @@ vect_analyze_slp_cost (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
 static bool
 vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
-                           gimple stmt)
+                           gimple stmt, unsigned max_tree_size)
 {
   slp_instance new_instance;
   slp_tree node;
@@ -1536,7 +1548,8 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   /* Build the tree for the SLP instance.  */
   if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &node, group_size,
 			   &max_nunits, &loads,
-			   vectorization_factor, NULL, NULL))
+			   vectorization_factor, NULL, NULL, NULL,
+			   max_tree_size))
     {
       /* Calculate the unrolling factor based on the smallest type.  */
       if (max_nunits > nunits)
@@ -1641,7 +1654,8 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
    trees of packed scalar stmts if SLP is possible.  */
 
 bool
-vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
+vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
+		  unsigned max_tree_size)
 {
   unsigned int i;
   vec<gimple> grouped_stores;
@@ -1664,7 +1678,8 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
   /* Find SLP sequences starting from groups of grouped stores.  */
   FOR_EACH_VEC_ELT (grouped_stores, i, first_element)
-    if (vect_analyze_slp_instance (loop_vinfo, bb_vinfo, first_element))
+    if (vect_analyze_slp_instance (loop_vinfo, bb_vinfo, first_element,
+				   max_tree_size))
       ok = true;
 
   if (bb_vinfo && !ok)
@@ -1681,7 +1696,8 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     {
       /* Find SLP sequences starting from reduction chains.  */
       FOR_EACH_VEC_ELT (reduc_chains, i, first_element)
-        if (vect_analyze_slp_instance (loop_vinfo, bb_vinfo, first_element))
+        if (vect_analyze_slp_instance (loop_vinfo, bb_vinfo, first_element,
+				       max_tree_size))
           ok = true;
         else
           return false;
@@ -1693,7 +1709,8 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
   /* Find SLP sequences starting from groups of reductions.  */
   if (loop_vinfo && LOOP_VINFO_REDUCTIONS (loop_vinfo).length () > 1
-      && vect_analyze_slp_instance (loop_vinfo, bb_vinfo, reductions[0]))
+      && vect_analyze_slp_instance (loop_vinfo, bb_vinfo, reductions[0],
+				    max_tree_size))
     ok = true;
 
   return true;
@@ -2071,12 +2088,13 @@ vect_slp_analyze_bb_1 (basic_block bb)
   slp_instance instance;
   int i;
   int min_vf = 2;
+  unsigned n_stmts = 0;
 
   bb_vinfo = new_bb_vec_info (bb);
   if (!bb_vinfo)
     return NULL;
 
-  if (!vect_analyze_data_refs (NULL, bb_vinfo, &min_vf))
+  if (!vect_analyze_data_refs (NULL, bb_vinfo, &min_vf, &n_stmts))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2124,7 +2142,7 @@ vect_slp_analyze_bb_1 (basic_block bb)
 
   /* Check the SLP opportunities in the basic block, analyze and build SLP
      trees.  */
-  if (!vect_analyze_slp (NULL, bb_vinfo))
+  if (!vect_analyze_slp (NULL, bb_vinfo, n_stmts))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 

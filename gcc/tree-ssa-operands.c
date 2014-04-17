@@ -166,6 +166,7 @@ create_vop_var (struct function *fn)
 			   get_identifier (".MEM"),
 			   void_type_node);
   DECL_ARTIFICIAL (global_var) = 1;
+  DECL_IGNORED_P (global_var) = 1;
   TREE_READONLY (global_var) = 0;
   DECL_EXTERNAL (global_var) = 1;
   TREE_STATIC (global_var) = 1;
@@ -477,9 +478,6 @@ append_use (tree *use_p)
 static inline void
 append_vdef (tree var)
 {
-  if (!optimize)
-    return;
-
   gcc_assert ((build_vdef == NULL_TREE
 	       || build_vdef == var)
 	      && (build_vuse == NULL_TREE
@@ -495,9 +493,6 @@ append_vdef (tree var)
 static inline void
 append_vuse (tree var)
 {
-  if (!optimize)
-    return;
-
   gcc_assert (build_vuse == NULL_TREE
 	      || build_vuse == var);
 
@@ -648,10 +643,8 @@ maybe_add_call_vops (struct function *fn, gimple stmt)
      call-clobbered.  */
   if (!(call_flags & ECF_NOVOPS))
     {
-      /* A 'pure' or a 'const' function never call-clobbers anything.
-	 A 'noreturn' function might, but since we don't return anyway
-	 there is no point in recording that.  */
-      if (!(call_flags & (ECF_PURE | ECF_CONST | ECF_NORETURN)))
+      /* A 'pure' or a 'const' function never call-clobbers anything.  */
+      if (!(call_flags & (ECF_PURE | ECF_CONST)))
 	add_virtual_operand (fn, stmt, opf_def);
       else if (!(call_flags & ECF_CONST))
 	add_virtual_operand (fn, stmt, opf_use);

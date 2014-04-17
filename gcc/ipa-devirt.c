@@ -162,6 +162,8 @@ struct GTY(()) odr_type_d
   int id;
   /* Is it in anonymous namespace? */
   bool anonymous_namespace;
+  /* Do we know about all derivations of given type?  */
+  bool all_derivations_known;
 };
 
 
@@ -178,6 +180,61 @@ polymorphic_type_binfo_p (tree binfo)
 {
   /* See if BINFO's type has an virtual table associtated with it.  */
   return BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (binfo)));
+}
+
+/* Return TRUE if all derived types of T are known and thus
+   we may consider the walk of derived type complete.
+
+   This is typically true only for final anonymous namespace types and types
+   defined within functions (that may be COMDAT and thus shared across units,
+   but with the same set of derived types).  */
+
+static bool
+type_all_derivations_known_p (tree t)
+{
+  if (TYPE_FINAL_P (t))
+    return true;
+  if (flag_ltrans)
+    return false;
+  if (type_in_anonymous_namespace_p (t))
+    return true;
+  return (decl_function_context (TYPE_NAME (t)) != NULL);
+}
+
+/* Return TURE if type's constructors are all visible.  */
+
+static bool
+type_all_ctors_visible_p (tree t)
+{
+  return !flag_ltrans
+	 && cgraph_state >= CGRAPH_STATE_CONSTRUCTION
+	 /* We can not always use type_all_derivations_known_p.
+	    For function local types we must assume case where
+	    the function is COMDAT and shared in between units. 
+
+	    TODO: These cases are quite easy to get, but we need
+	    to keep track of C++ privatizing via -Wno-weak
+	    as well as the  IPA privatizing.  */
+	 && type_in_anonymous_namespace_p (t);
+}
+
+/* Return TRUE if type may have instance.  */
+
+static bool
+type_possibly_instantiated_p (tree t)
+{
+  tree vtable;
+  varpool_node *vnode;
+
+  /* TODO: Add abstract types here.  */
+  if (!type_all_ctors_visible_p (t))
+    return true;
+
+  vtable = BINFO_VTABLE (TYPE_BINFO (t));
+  if (TREE_CODE (vtable) == POINTER_PLUS_EXPR)
+    vtable = TREE_OPERAND (TREE_OPERAND (vtable, 0), 0);
+  vnode = varpool_get_node (vtable);
+  return vnode && vnode->definition;
 }
 
 /* One Definition Rule hashtable helpers.  */
@@ -439,6 +496,7 @@ get_odr_type (tree type, bool insert)
       val->bases = vNULL;
       val->derived_types = vNULL;
       val->anonymous_namespace = type_in_anonymous_namespace_p (type);
+      val->all_derivations_known = type_all_derivations_known_p (type);
       *slot = val;
       for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); i++)
 	/* For now record only polymorphic types. other are
@@ -469,7 +527,8 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
   unsigned int i;
   fprintf (f, "%*s type %i: ", indent * 2, "", t->id);
   print_generic_expr (f, t->type, TDF_SLIM);
-  fprintf (f, "%s\n", t->anonymous_namespace ? " (anonymous namespace)":"");
+  fprintf (f, "%s", t->anonymous_namespace ? " (anonymous namespace)":"");
+  fprintf (f, "%s\n", t->all_derivations_known ? " (derivations known)":"");
   if (TYPE_NAME (t->type))
     {
       fprintf (f, "%*s defined at: %s:%i\n", indent * 2, "",
@@ -598,6 +657,48 @@ build_type_inheritance_graph (void)
   timevar_pop (TV_IPA_INHERITANCE);
 }
 
+/* Return true if N has reference from live virtual table
+   (and thus can be a destination of polymorphic call). 
+   Be conservatively correct when callgraph is not built or
+   if the method may be referred externally.  */
+
+static bool
+referenced_from_vtable_p (struct cgraph_node *node)
+{
+  int i;
+  struct ipa_ref *ref;
+  bool found = false;
+
+  if (node->externally_visible
+      || node->used_from_other_partition)
+    return true;
+
+  /* Keep this test constant time.
+     It is unlikely this can happen except for the case where speculative
+     devirtualization introduced many speculative edges to this node. 
+     In this case the target is very likely alive anyway.  */
+  if (node->ref_list.referring.length () > 100)
+    return true;
+
+  /* We need references built.  */
+  if (cgraph_state <= CGRAPH_STATE_CONSTRUCTION)
+    return true;
+
+  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
+					      i, ref); i++)
+	
+    if ((ref->use == IPA_REF_ALIAS
+	 && referenced_from_vtable_p (cgraph (ref->referring)))
+	|| (ref->use == IPA_REF_ADDR
+	    && TREE_CODE (ref->referring->decl) == VAR_DECL
+	    && DECL_VIRTUAL_P (ref->referring->decl)))
+      {
+	found = true;
+	break;
+      }
+  return found;
+}
+
 /* If TARGET has associated node, record it in the NODES array.
    CAN_REFER specify if program can refer to the target directly.
    if TARGET is unknown (NULL) or it can not be inserted (for example because
@@ -611,7 +712,12 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 		   bool *completep)
 {
   struct cgraph_node *target_node;
-  enum built_in_function fcode;
+
+  /* cxa_pure_virtual and __builtin_unreachable do not need to be added into
+     list of targets; the runtime effect of calling them is undefined.
+     Only "real" virtual methods should be accounted.  */
+  if (target && TREE_CODE (TREE_TYPE (target)) != METHOD_TYPE)
+    return;
 
   if (!can_refer)
     {
@@ -619,24 +725,39 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	 is when we completely optimized it out.  */
       if (flag_ltrans
 	  || !target 
-          || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
+	  || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
 	*completep = false;
       return;
     }
 
-  if (!target
-      /* Those are used to mark impossible scenarios.  */
-      || (fcode = DECL_FUNCTION_CODE (target))
-	  == BUILT_IN_UNREACHABLE
-      || fcode == BUILT_IN_TRAP)
+  if (!target)
     return;
 
   target_node = cgraph_get_node (target);
 
-  if (target_node != NULL
-      && (TREE_PUBLIC (target)
-	  || target_node->definition)
-      && symtab_real_symbol_p (target_node))
+  /* Method can only be called by polymorphic call if any
+     of vtables refering to it are alive. 
+
+     While this holds for non-anonymous functions, too, there are
+     cases where we want to keep them in the list; for example
+     inline functions with -fno-weak are static, but we still
+     may devirtualize them when instance comes from other unit.
+     The same holds for LTO.
+
+     Currently we ignore these functions in speculative devirtualization.
+     ??? Maybe it would make sense to be more aggressive for LTO even
+     eslewhere.  */
+  if (!flag_ltrans
+      && type_in_anonymous_namespace_p (DECL_CONTEXT (target))
+      && (!target_node
+          || !referenced_from_vtable_p (target_node)))
+    ;
+  /* See if TARGET is useful function we can deal with.  */
+  else if (target_node != NULL
+	   && (TREE_PUBLIC (target)
+	       || DECL_EXTERNAL (target)
+	       || target_node->definition)
+	   && symtab_real_symbol_p (target_node))
     {
       gcc_assert (!target_node->global.inlined_to);
       gcc_assert (symtab_real_symbol_p (target_node));
@@ -648,14 +769,16 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	}
     }
   else if (completep
-	   && !type_in_anonymous_namespace_p
-		 (method_class_type (TREE_TYPE (target))))
-    *completep = true;
+	   && (!type_in_anonymous_namespace_p
+		 (DECL_CONTEXT (target))
+	       || flag_ltrans))
+    *completep = false;
 }
 
 /* See if BINFO's type match OUTER_TYPE.  If so, lookup 
    BINFO of subtype of OTR_TYPE at OFFSET and in that BINFO find
-   method in vtable and insert method to NODES array.
+   method in vtable and insert method to NODES array
+   or BASES_TO_CONSIDER if this array is non-NULL.
    Otherwise recurse to base BINFOs.
    This match what get_binfo_at_offset does, but with offset
    being unknown.
@@ -674,6 +797,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 
 static void
 record_target_from_binfo (vec <cgraph_node *> &nodes,
+			  vec <tree> *bases_to_consider,
 			  tree binfo,
 			  tree otr_type,
 			  vec <tree> &type_binfos,
@@ -733,13 +857,19 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 	    return;
 	}
       gcc_assert (inner_binfo);
-      if (!pointer_set_insert (matched_vtables, BINFO_VTABLE (inner_binfo)))
+      if (bases_to_consider
+	  ? !pointer_set_contains (matched_vtables, BINFO_VTABLE (inner_binfo))
+	  : !pointer_set_insert (matched_vtables, BINFO_VTABLE (inner_binfo)))
 	{
 	  bool can_refer;
 	  tree target = gimple_get_virt_method_for_binfo (otr_token,
 							  inner_binfo,
 							  &can_refer);
-	  maybe_record_node (nodes, target, inserted, can_refer, completep);
+	  if (!bases_to_consider)
+	    maybe_record_node (nodes, target, inserted, can_refer, completep);
+	  /* Destructors are never called via construction vtables.  */
+	  else if (!target || !DECL_CXX_DESTRUCTOR_P (target))
+	    bases_to_consider->safe_push (target);
 	}
       return;
     }
@@ -748,7 +878,7 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     /* Walking bases that have no virtual method is pointless excercise.  */
     if (polymorphic_type_binfo_p (base_binfo))
-      record_target_from_binfo (nodes, base_binfo, otr_type,
+      record_target_from_binfo (nodes, bases_to_consider, base_binfo, otr_type,
 				type_binfos, 
 				otr_token, outer_type, offset, inserted,
 				matched_vtables, anonymous, completep);
@@ -760,7 +890,11 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
    of TYPE, insert them to NODES, recurse into derived nodes. 
    INSERTED is used to avoid duplicate insertions of methods into NODES.
    MATCHED_VTABLES are used to avoid duplicate walking vtables.
-   Clear COMPLETEP if unreferable target is found.  */
+   Clear COMPLETEP if unreferable target is found.
+ 
+   If CONSIDER_CONSTURCTION is true, record to BASES_TO_CONSDIER
+   all cases where BASE_SKIPPED is true (because the base is abstract
+   class).  */
 
 static void
 possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
@@ -771,23 +905,39 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 				     HOST_WIDE_INT otr_token,
 				     tree outer_type,
 				     HOST_WIDE_INT offset,
-				     bool *completep)
+				     bool *completep,
+				     vec <tree> &bases_to_consider,
+				     bool consider_construction)
 {
   tree binfo = TYPE_BINFO (type->type);
   unsigned int i;
   vec <tree> type_binfos = vNULL;
+  bool possibly_instantiated = type_possibly_instantiated_p (type->type);
 
-  record_target_from_binfo (nodes, binfo, otr_type, type_binfos, otr_token,
-			    outer_type, offset,
-			    inserted, matched_vtables,
-			    type->anonymous_namespace, completep);
+  /* We may need to consider types w/o instances because of possible derived
+     types using their methods either directly or via construction vtables.
+     We are safe to skip them when all derivations are known, since we will
+     handle them later.
+     This is done by recording them to BASES_TO_CONSIDER array.  */
+  if (possibly_instantiated || consider_construction)
+    {
+      record_target_from_binfo (nodes,
+				(!possibly_instantiated
+				 && type_all_derivations_known_p (type->type))
+				? &bases_to_consider : NULL,
+				binfo, otr_type, type_binfos, otr_token,
+				outer_type, offset,
+				inserted, matched_vtables,
+				type->anonymous_namespace, completep);
+    }
   type_binfos.release ();
   for (i = 0; i < type->derived_types.length (); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted, 
 					 matched_vtables,
 					 otr_type,
 					 type->derived_types[i],
-					 otr_token, outer_type, offset, completep);
+					 otr_token, outer_type, offset, completep,
+					 bases_to_consider, consider_construction);
 }
 
 /* Cache of queries for polymorphic call targets.
@@ -1170,7 +1320,7 @@ get_polymorphic_call_info (tree fndecl,
   context->offset = 0;
   base_pointer = OBJ_TYPE_REF_OBJECT (ref);
   context->maybe_derived_type = true;
-  context->maybe_in_construction = false;
+  context->maybe_in_construction = true;
 
   /* Walk SSA for outer object.  */
   do 
@@ -1214,7 +1364,13 @@ get_polymorphic_call_info (tree fndecl,
 		     not part of outer type.  */
 		  if (!contains_type_p (TREE_TYPE (base),
 					context->offset + offset2, *otr_type))
-		    return base_pointer;
+		    {
+		      /* Use OTR_TOKEN = INT_MAX as a marker of probably type inconsistent
+			 code sequences; we arrange the calls to be builtin_unreachable
+			 later.  */
+		      *otr_token = INT_MAX;
+		      return base_pointer;
+		    }
 		  get_polymorphic_call_info_for_decl (context, base,
 						      context->offset + offset2);
 		  return NULL;
@@ -1288,8 +1444,10 @@ get_polymorphic_call_info (tree fndecl,
 	  if (!contains_type_p (context->outer_type, context->offset,
 			        *otr_type))
 	    { 
-	      context->outer_type = NULL;
-	      gcc_unreachable ();
+	      /* Use OTR_TOKEN = INT_MAX as a marker of probably type inconsistent
+		 code sequences; we arrange the calls to be builtin_unreachable
+		 later.  */
+	      *otr_token = INT_MAX;
 	      return base_pointer;
 	    }
 	  context->maybe_derived_type = false;
@@ -1363,7 +1521,8 @@ record_targets_from_bases (tree otr_type,
 	  tree target = gimple_get_virt_method_for_binfo (otr_token,
 							  base_binfo,
 							  &can_refer);
-	  maybe_record_node (nodes, target, inserted, can_refer, completep);
+	  if (!target || ! DECL_CXX_DESTRUCTOR_P (target))
+	    maybe_record_node (nodes, target, inserted, can_refer, completep);
 	  pointer_set_insert (matched_vtables, BINFO_VTABLE (base_binfo));
 	}
     }
@@ -1388,6 +1547,9 @@ devirt_variable_node_removal_hook (varpool_node *n,
    possibly in construction or destruction where the virtual table may
    temporarily change to one of base types.  INCLUDE_DERIVER_TYPES make
    us to walk the inheritance graph for all derivations.
+
+   OTR_TOKEN == INT_MAX is used to mark calls that are provably
+   undefined and should be redirected to unreachable.
 
    If COMPLETEP is non-NULL, store true if the list is complete. 
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
@@ -1414,6 +1576,7 @@ possible_polymorphic_call_targets (tree otr_type,
   pointer_set_t *inserted;
   pointer_set_t *matched_vtables;
   vec <cgraph_node *> nodes = vNULL;
+  vec <tree> bases_to_consider = vNULL;
   odr_type type, outer_type;
   polymorphic_call_target_d key;
   polymorphic_call_target_d **slot;
@@ -1421,7 +1584,9 @@ possible_polymorphic_call_targets (tree otr_type,
   tree binfo, target;
   bool complete;
   bool can_refer;
+  bool skipped = false;
 
+  /* If ODR is not initialized, return empty incomplete list.  */
   if (!odr_hash.is_created ())
     {
       if (completep)
@@ -1431,11 +1596,28 @@ possible_polymorphic_call_targets (tree otr_type,
       return nodes;
     }
 
+  /* If we hit type inconsistency, just return empty list of targets.  */
+  if (otr_token == INT_MAX)
+    {
+      if (completep)
+	*completep = true;
+      if (nonconstruction_targetsp)
+	*nonconstruction_targetsp = 0;
+      return nodes;
+    }
+
   type = get_odr_type (otr_type, true);
 
   /* Lookup the outer class type we want to walk.  */
-  if (context.outer_type)
-    get_class_context (&context, otr_type);
+  if (context.outer_type
+      && !get_class_context (&context, otr_type))
+    {
+      if (completep)
+	*completep = false;
+      if (nonconstruction_targetsp)
+	*nonconstruction_targetsp = 0;
+      return nodes;
+    }
 
   /* We canonicalize our query, so we do not need extra hashtable entries.  */
 
@@ -1448,9 +1630,6 @@ possible_polymorphic_call_targets (tree otr_type,
     }
   /* We need to update our hiearchy if the type does not exist.  */
   outer_type = get_odr_type (context.outer_type, true);
-  /* If outer and inner type match, there are no bases to see.  */
-  if (type == outer_type)
-    context.maybe_in_construction = false;
   /* If the type is complete, there are no derivations.  */
   if (TYPE_FINAL_P (outer_type->type))
     context.maybe_derived_type = false;
@@ -1511,7 +1690,10 @@ possible_polymorphic_call_targets (tree otr_type,
       target = NULL;
     }
 
-  maybe_record_node (nodes, target, inserted, can_refer, &complete);
+  /* Destructors are never called through construction virtual tables,
+     because the type is always known.  */
+  if (target && DECL_CXX_DESTRUCTOR_P (target))
+    context.maybe_in_construction = false;
 
   if (target)
     {
@@ -1520,8 +1702,15 @@ possible_polymorphic_call_targets (tree otr_type,
       if (DECL_FINAL_P (target))
 	context.maybe_derived_type = false;
     }
+
+  /* If OUTER_TYPE is abstract, we know we are not seeing its instance.  */
+  if (type_possibly_instantiated_p (outer_type->type))
+    maybe_record_node (nodes, target, inserted, can_refer, &complete);
   else
-    gcc_assert (!complete);
+    {
+      skipped = true;
+      gcc_assert (in_lto_p || context.maybe_derived_type);
+    }
 
   pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
 
@@ -1530,7 +1719,7 @@ possible_polymorphic_call_targets (tree otr_type,
     {
       /* For anonymous namespace types we can attempt to build full type.
 	 All derivations must be in this unit (unless we see partial unit).  */
-      if (!type->anonymous_namespace || flag_ltrans)
+      if (!type->all_derivations_known)
 	complete = false;
       for (i = 0; i < outer_type->derived_types.length(); i++)
 	possible_polymorphic_call_targets_1 (nodes, inserted,
@@ -1538,15 +1727,36 @@ possible_polymorphic_call_targets (tree otr_type,
 					     otr_type,
 					     outer_type->derived_types[i],
 					     otr_token, outer_type->type,
-					     context.offset, &complete);
+					     context.offset, &complete,
+					     bases_to_consider,
+					     context.maybe_in_construction);
     }
 
   /* Finally walk bases, if asked to.  */
   (*slot)->nonconstruction_targets = nodes.length();
+
+  /* Destructors are never called through construction virtual tables,
+     because the type is always known.  One of entries may be cxa_pure_virtual
+     so look to at least two of them.  */
   if (context.maybe_in_construction)
-    record_targets_from_bases (otr_type, otr_token, outer_type->type,
-			       context.offset, nodes, inserted,
-			       matched_vtables, &complete);
+    for (i =0 ; i < MIN (nodes.length (), 2); i++)
+      if (DECL_CXX_DESTRUCTOR_P (nodes[i]->decl))
+	context.maybe_in_construction = false;
+  if (context.maybe_in_construction)
+    {
+      if (type != outer_type
+	  && (!skipped
+	      || (context.maybe_derived_type
+	          && !type_all_derivations_known_p (outer_type->type))))
+	record_targets_from_bases (otr_type, otr_token, outer_type->type,
+				   context.offset, nodes, inserted,
+				   matched_vtables, &complete);
+      if (skipped)
+        maybe_record_node (nodes, target, inserted, can_refer, &complete);
+      for (i = 0; i < bases_to_consider.length(); i++)
+        maybe_record_node (nodes, bases_to_consider[i], inserted, can_refer, &complete);
+    }
+  bases_to_consider.release();
 
   (*slot)->targets = nodes;
   (*slot)->complete = complete;
@@ -1693,6 +1903,12 @@ likely_target_p (struct cgraph_node *n)
 			DECL_ATTRIBUTES (n->decl)))
     return false;
   if (n->frequency < NODE_FREQUENCY_NORMAL)
+    return false;
+  /* If there are no virtual tables refering the target alive,
+     the only way the target can be called is an instance comming from other
+     compilation unit; speculative devirtualization is build around an
+     assumption that won't happen.  */
+  if (!referenced_from_vtable_p (n))
     return false;
   return true;
 }

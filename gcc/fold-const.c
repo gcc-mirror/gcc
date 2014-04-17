@@ -461,8 +461,6 @@ negate_expr_p (tree t)
 
     case TRUNC_DIV_EXPR:
     case ROUND_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
       /* In general we can't negate A / B, because if A is INT_MIN and
 	 B is 1, we may turn this into INT_MIN / -1 which is undefined
@@ -657,8 +655,6 @@ fold_negate_expr (location_t loc, tree t)
 
     case TRUNC_DIV_EXPR:
     case ROUND_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
       /* In general we can't negate A / B, because if A is INT_MIN and
 	 B is 1, we may turn this into INT_MIN / -1 which is undefined

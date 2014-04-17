@@ -1267,6 +1267,10 @@ fgnu-tm
 Common Report Var(flag_tm)
 Enable support for GNU transactional memory
 
+fgnu-unique
+Common Report Var(flag_gnu_unique) Init(1)
+Use STB_GNU_UNIQUE if supported by the assembler
+
 floop-flatten
 Common Ignore
 Does nothing. Preserved for backward compatibility.
@@ -1491,21 +1495,27 @@ flto=
 Common RejectNegative Joined Var(flag_lto)
 Link-time optimization with number of parallel jobs or jobserver.
 
-flto-partition=1to1
-Common Var(flag_lto_partition_1to1)
-Partition symbols and vars at linktime based on object files they originate from
+Enum
+Name(lto_partition_model) Type(enum lto_partition_model) UnknownError(unknown LTO partitioning model %qs)
 
-flto-partition=balanced
-Common Var(flag_lto_partition_balanced)
-Partition functions and vars at linktime into approximately same sized buckets
+EnumValue
+Enum(lto_partition_model) String(none) Value(LTO_PARTITION_NONE)
 
-flto-partition=max
-Common Var(flag_lto_partition_max)
-Put every symbol into separate partition
+EnumValue
+Enum(lto_partition_model) String(one) Value(LTO_PARTITION_ONE)
 
-flto-partition=none
-Common Var(flag_lto_partition_none)
-Disable partioning and streaming
+EnumValue
+Enum(lto_partition_model) String(balanced) Value(LTO_PARTITION_BALANCED)
+
+EnumValue
+Enum(lto_partition_model) String(1to1) Value(LTO_PARTITION_1TO1)
+
+EnumValue
+Enum(lto_partition_model) String(max) Value(LTO_PARTITION_MAX)
+
+flto-partition=
+Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_BALANCED)
+Specify the algorithm to partition symbols and vars at linktime
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=

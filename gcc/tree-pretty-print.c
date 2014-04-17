@@ -2119,13 +2119,21 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case ANNOTATE_EXPR:
       pp_string (buffer, "ANNOTATE_EXPR <");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (node, 1)))
 	{
 	case annot_expr_ivdep_kind:
-	  pp_string (buffer, "ivdep, ");
+	  pp_string (buffer, ", ivdep");
 	  break;
+	case annot_expr_no_vector_kind:
+	  pp_string (buffer, ", no-vector");
+	  break;
+	case annot_expr_vector_kind:
+	  pp_string (buffer, ", vector");
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_greater (buffer);
       break;
 
@@ -3479,6 +3487,12 @@ pp_double_int (pretty_printer *pp, double_int d, bool uns)
     pp_wide_integer (pp, d.low);
   else if (d.fits_uhwi ())
     pp_unsigned_wide_integer (pp, d.low);
+  else if (HOST_BITS_PER_DOUBLE_INT == HOST_BITS_PER_WIDEST_INT)
+    pp_scalar (pp,
+	       uns
+	       ? HOST_WIDEST_INT_PRINT_UNSIGNED : HOST_WIDEST_INT_PRINT_DEC,
+	       (HOST_WIDEST_INT) ((((unsigned HOST_WIDEST_INT) d.high << 1)
+				   << (HOST_BITS_PER_WIDE_INT - 1)) | d.low));
   else
     {
       unsigned HOST_WIDE_INT low = d.low;

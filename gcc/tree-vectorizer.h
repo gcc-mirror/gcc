@@ -264,6 +264,11 @@ typedef struct _loop_vec_info {
 	     values unknown at compile time.  */
   int min_profitable_iters;
 
+  /* Threshold of number of iterations below which vectorzation will not be
+     performed. It is calculated from MIN_PROFITABLE_ITERS and
+     PARAM_MIN_VECT_LOOP_BOUND.  */
+  unsigned int th;
+
   /* Is the loop vectorizable? */
   bool vectorizable;
 
@@ -382,6 +387,7 @@ typedef struct _loop_vec_info {
    cost model.  */
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
 #define LOOP_VINFO_COST_MODEL_MIN_ITERS(L) (L)->min_profitable_iters
+#define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
@@ -952,7 +958,7 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
 static inline bool
 unlimited_cost_model (loop_p loop)
 {
-  if (loop != NULL && loop->force_vect
+  if (loop != NULL && loop->force_vectorize
       && flag_simd_cost_model != VECT_COST_MODEL_DEFAULT)
     return flag_simd_cost_model == VECT_COST_MODEL_UNLIMITED;
   return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);
@@ -1051,7 +1057,8 @@ extern bool vect_analyze_data_ref_accesses (loop_vec_info, bb_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern tree vect_check_gather (gimple, loop_vec_info, tree *, tree *,
 			       int *);
-extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *);
+extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *,
+				    unsigned *);
 extern tree vect_create_data_ref_ptr (gimple, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
 				      gimple *, bool, bool *);
@@ -1101,7 +1108,7 @@ extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
                                           slp_instance, bool);
 extern bool vect_schedule_slp (loop_vec_info, bb_vec_info);
 extern void vect_update_slp_costs_according_to_vf (loop_vec_info);
-extern bool vect_analyze_slp (loop_vec_info, bb_vec_info);
+extern bool vect_analyze_slp (loop_vec_info, bb_vec_info, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (vec<tree> , slp_tree,

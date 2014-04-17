@@ -33,6 +33,7 @@ extern tree create_tmp_var_name (const char *);
 extern tree create_tmp_var_raw (tree, const char *);
 extern tree create_tmp_var (tree, const char *);
 extern tree create_tmp_reg (tree, const char *);
+extern tree create_tmp_reg_fn (struct function *, tree, const char *);
 
 
 extern void extract_ops_from_tree_1 (tree, enum tree_code *, tree *, tree *,

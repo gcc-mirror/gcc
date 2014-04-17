@@ -743,11 +743,10 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 	    fputs (", probably never executed", outf);
 	}
       fputc ('\n', outf);
-      if (TDF_DETAILS)
-	check_bb_profile (bb, outf, indent, flags);
 
       if (flags & TDF_DETAILS)
 	{
+	  check_bb_profile (bb, outf, indent, flags);
 	  if (flags & TDF_COMMENT)
 	    fputs (";; ", outf);
 	  fprintf (outf, "%s prev block ", s_indent);

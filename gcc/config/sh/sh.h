@@ -1594,6 +1594,11 @@ struct sh_args {
 
 #define SET_BY_PIECES_P(SIZE, ALIGN) STORE_BY_PIECES_P(SIZE, ALIGN)
 
+/* If a memory clear move would take CLEAR_RATIO or more simple
+   move-instruction pairs, we will do a setmem instead.  */
+
+#define CLEAR_RATIO(speed) ((speed) ? 15 : 3)
+
 /* Macros to check register numbers against specific register classes.  */
 
 /* These assume that REGNO is a hard or pseudo reg number.

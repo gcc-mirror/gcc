@@ -2418,7 +2418,9 @@ check_format_types (format_wanted_type *types)
 	 a second level of indirection.  */
       if (TREE_CODE (wanted_type) == INTEGER_TYPE
 	  && TREE_CODE (cur_type) == INTEGER_TYPE
-	  && (!pedantic || i == 0 || (i == 1 && char_type_flag))
+	  && ((!pedantic && !warn_format_signedness)
+	      || (i == 0 && !warn_format_signedness)
+	      || (i == 1 && char_type_flag))
 	  && (TYPE_UNSIGNED (wanted_type)
 	      ? wanted_type == c_common_unsigned_type (cur_type)
 	      : wanted_type == c_common_signed_type (cur_type)))

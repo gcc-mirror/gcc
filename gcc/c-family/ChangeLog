@@ -1,3 +1,38 @@
+2014-04-14  Richard Biener  <rguenther@suse.de>
+	Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c/60819
+	* c-common.c (convert_vector_to_pointer_for_subscript): Properly
+	apply may-alias the scalar pointer type when applicable.
+
+2014-04-12  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/60467
+	* cilk.c (cilk_set_spawn_marker): Remove FUNCTION_DECL
+	as possible argument for Cilk_spawn.
+
+2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/60194
+	* c.opt (Wformat-signedness): Add
+	* c-format.c(check_format_types): Use it.
+
+2014-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57926
+	* c-common.c (sync_resolve_size, get_atomic_generic_size): Call
+	default_conversion for an array argument.
+
+2014-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/60745
+	* c-ubsan.c: Include asan.h.
+	(ubsan_instrument_return): Call initialize_sanitizer_builtins.
+
+2014-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c.opt (Wnon-virtual-dtor): Auto set when Weffc++.
+
 2014-04-02  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.h (c_expand_expr): Remove declaration.

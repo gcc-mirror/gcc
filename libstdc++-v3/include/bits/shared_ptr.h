@@ -262,8 +262,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __p  A null pointer constant.
        *  @post   use_count() == 0 && get() == nullptr
        */
-      constexpr shared_ptr(nullptr_t __p) noexcept
-      : __shared_ptr<_Tp>(__p) { }
+      constexpr shared_ptr(nullptr_t) noexcept : shared_ptr() { }
 
       shared_ptr& operator=(const shared_ptr&) noexcept = default;
 

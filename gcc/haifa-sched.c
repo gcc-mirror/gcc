@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Instruction scheduling pass.  This file, along with sched-deps.c,
-   contains the generic parts.  The actual entry point is found for
+   contains the generic parts.  The actual entry point for
    the normal instruction scheduling pass is found in sched-rgn.c.
 
    We compute insn priorities based on data dependencies.  Flow
@@ -77,12 +77,12 @@ along with GCC; see the file COPYING3.  If not see
 
    Before reload, an extended analysis of interblock data dependences
    is required for interblock scheduling.  This is performed in
-   compute_block_backward_dependences ().
+   compute_block_dependences ().
 
    Dependencies set up by memory references are treated in exactly the
    same way as other dependencies, by using insn backward dependences
    INSN_BACK_DEPS.  INSN_BACK_DEPS are translated into forward dependences
-   INSN_FORW_DEPS the purpose of forward list scheduling.
+   INSN_FORW_DEPS for the purpose of forward list scheduling.
 
    Having optimized the critical path, we may have also unduly
    extended the lifetimes of some registers.  If an operation requires
