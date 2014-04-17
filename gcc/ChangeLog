@@ -1,3 +1,11 @@
+2014-04-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60876
+	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): Make sure
+	GET_MODE_SIZE gets passed an enum machine_mode type and not
+	integer.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+
 2014-04-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (inline_small_functions): Account only non-cold
