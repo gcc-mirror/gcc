@@ -1,3 +1,18 @@
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60847
+	Forward port from 4.8 branch
+	2013-07-19  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/bmiintrin.h (_blsi_u32): New.
+	(_blsi_u64): Ditto.
+	(_blsr_u32): Ditto.
+	(_blsr_u64): Ditto.
+	(_blsmsk_u32): Ditto.
+	(_blsmsk_u64): Ditto.
+	(_tzcnt_u32): Ditto.
+	(_tzcnt_u64): Ditto.
+
 2014-04-17  Kito Cheng  <kito@0xlab.org>
 
 	* gcc.c (used_arg): Prevent out of bound access for multilib_options.
