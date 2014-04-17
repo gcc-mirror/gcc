@@ -1,5 +1,13 @@
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* pass_manager.h (pass_manager::register_dump_files_1): Remove declaration.
+	* passes.c (pass_manager::register_dump_files_1): Merge into
+	(pass_manager::register_dump_files): this, and remove its handling of
+	properties since the pass always has the properties anyway.
+	(pass_manager::pass_manager): Adjust.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* pass_manager.h (pass_manager::register_dump_files_1): Adjust.
 	* passes.c (pass_manager::register_dump_files_1): Remove dead code
 	dealing with properties.

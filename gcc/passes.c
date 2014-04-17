@@ -706,11 +706,10 @@ pass_manager::register_one_dump_file (opt_pass *pass)
   free (CONST_CAST (char *, full_name));
 }
 
-/* Recursive worker function for register_dump_files.  */
+/* Register the dump files for the pass_manager starting at PASS. */
 
 void
-pass_manager::
-register_dump_files_1 (opt_pass *pass)
+pass_manager::register_dump_files (opt_pass *pass)
 {
   do
     {
@@ -718,23 +717,11 @@ register_dump_files_1 (opt_pass *pass)
         register_one_dump_file (pass);
 
       if (pass->sub)
-        register_dump_files_1 (pass->sub);
+        register_dump_files (pass->sub);
 
       pass = pass->next;
     }
   while (pass);
-}
-
-/* Register the dump files for the pass_manager starting at PASS.
-   PROPERTIES reflects the properties that are guaranteed to be available at
-   the beginning of the pipeline.  */
-
-void
-pass_manager::
-register_dump_files (opt_pass *pass,int properties)
-{
-  pass->properties_required |= properties;
-  register_dump_files_1 (pass);
 }
 
 struct pass_registry
@@ -1536,19 +1523,11 @@ pass_manager::pass_manager (context *ctxt)
 #undef TERMINATE_PASS_LIST
 
   /* Register the passes with the tree dump code.  */
-  register_dump_files (all_lowering_passes, PROP_gimple_any);
-  register_dump_files (all_small_ipa_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
-  register_dump_files (all_regular_ipa_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
-  register_dump_files (all_late_ipa_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
-  register_dump_files (all_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
+  register_dump_files (all_lowering_passes);
+  register_dump_files (all_small_ipa_passes);
+  register_dump_files (all_regular_ipa_passes);
+  register_dump_files (all_late_ipa_passes);
+  register_dump_files (all_passes);
 }
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
