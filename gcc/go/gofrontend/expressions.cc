@@ -2792,12 +2792,12 @@ Const_expression::do_get_tree(Translate_context* context)
   // If the type has been set for this expression, but the underlying
   // object is an abstract int or float, we try to get the abstract
   // value.  Otherwise we may lose something in the conversion.
+  Expression* expr = this->constant_->const_value()->expr();
   if (this->type_ != NULL
       && this->type_->is_numeric_type()
       && (this->constant_->const_value()->type() == NULL
 	  || this->constant_->const_value()->type()->is_abstract()))
     {
-      Expression* expr = this->constant_->const_value()->expr();
       Numeric_constant nc;
       if (expr->numeric_constant_value(&nc)
 	  && nc.set_type(this->type_, false, this->location()))
@@ -2807,15 +2807,9 @@ Const_expression::do_get_tree(Translate_context* context)
 	}
     }
 
-  Gogo* gogo = context->gogo();
-  Bexpression* ret =
-      tree_to_expr(this->constant_->get_tree(gogo, context->function()));
   if (this->type_ != NULL)
-    {
-      Btype* btype = this->type_->get_backend(gogo);
-      ret = gogo->backend()->convert_expression(btype, ret, this->location());
-    }
-  return expr_to_tree(ret);
+    expr = Expression::make_cast(this->type_, expr, this->location());
+  return expr->get_tree(context);
 }
 
 // Dump ast representation for constant expression.
