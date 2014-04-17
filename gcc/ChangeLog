@@ -1,5 +1,26 @@
 2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (odr_type_d): Add field all_derivations_known.
+	(type_all_derivations_known_p): New predicate.
+	(type_all_ctors_visible_p): New predicate.
+	(type_possibly_instantiated_p): New predicate.
+	(get_odr_type): Compute all_derivations_known.
+	(dump_odr_type): Dump the flag.
+	(maybe_record_type): Cleanup.
+	(record_target_from_binfo): Add bases_to_consider array;
+	record bases for types w/o instances and skip CXX destructor.
+	(possible_polymorphic_call_targets_1): Add bases_to_consider
+	and consider_construction parameters; check if type may
+	have instance.
+	(get_polymorphic_call_info): Set maybe_in_construction to true
+	when we know nothing.
+	(record_targets_from_bases): Skip CXX destructors; they are
+	never called for types in construction.
+	(possible_polymorphic_call_targets): Do not record target when
+	type may not have instance.
+
+2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/60854
 	* ipa.c (symtab_remove_unreachable_nodes): Mark targets of
 	external aliases alive, too.
