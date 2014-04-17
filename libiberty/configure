@@ -594,6 +594,7 @@ pexecute
 target_header_dir
 CHECK
 LIBOBJS
+NOASANFLAG
 PICFLAG
 INSTALL_DATA
 INSTALL_SCRIPT
@@ -4969,6 +4970,12 @@ fi
 if [ "${shared}" != "yes" ]; then
   PICFLAG=
 fi
+
+
+NOASANFLAG=
+case " ${CFLAGS} " in
+  *\ -fsanitize=address\ *) NOASANFLAG=-fno-sanitize=address ;;
+esac
 
 
 echo "# Warning: this fragment is automatically generated" > temp-frag

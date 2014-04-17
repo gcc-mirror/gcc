@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # -*- perl -*-
 
-#   Copyright (C) 2001, 2007, 2010
+#   Copyright (C) 2001, 2007, 2010, 2014
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -214,6 +214,9 @@ sub deps {
 
     $crule  = "\tif [ x\"\$(PICFLAG)\" != x ]; then \\\n";
     $crule .= "\t  \$(COMPILE.c) \$(PICFLAG) \$< -o pic/\$@; \\\n";
+    $crule .= "\telse true; fi\n";
+    $crule .= "\tif [ x\"\$(NOASANFLAG)\" != x ]; then \\\n";
+    $crule .= "\t  \$(COMPILE.c) \$(PICFLAG) \$(NOASANFLAG) \$< -o noasan/\$@; \\\n";
     $crule .= "\telse true; fi\n";
     $crule .= "\t\$(COMPILE.c) \$< \$(OUTPUT_OPTION)\n";
     $crule .= "\n";
