@@ -1193,12 +1193,6 @@ function_and_variable_visibility (bool whole_program)
 /* Local function pass handling visibilities.  This happens before LTO streaming
    so in particular -fwhole-program should be ignored at this level.  */
 
-static unsigned int
-local_function_and_variable_visibility (void)
-{
-  return function_and_variable_visibility (flag_whole_program && !flag_lto);
-}
-
 namespace {
 
 const pass_data pass_data_ipa_function_and_variable_visibility =
@@ -1224,9 +1218,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () {
-    return local_function_and_variable_visibility ();
-  }
+  virtual unsigned int execute (function *)
+    {
+      return function_and_variable_visibility (flag_whole_program && !flag_lto);
+    }
 
 }; // class pass_ipa_function_and_variable_visibility
 
@@ -1239,13 +1234,6 @@ make_pass_ipa_function_and_variable_visibility (gcc::context *ctxt)
 }
 
 /* Free inline summary.  */
-
-static unsigned
-free_inline_summary (void)
-{
-  inline_free_summary ();
-  return 0;
-}
 
 namespace {
 
@@ -1271,7 +1259,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return free_inline_summary (); }
+  virtual unsigned int execute (function *)
+    {
+      inline_free_summary ();
+      return 0;
+    }
 
 }; // class pass_ipa_free_inline_summary
 
@@ -1333,9 +1325,10 @@ public:
       /* Do not re-run on ltrans stage.  */
       return !flag_ltrans;
     }
-  unsigned int execute () {
-    return whole_program_function_and_variable_visibility ();
-  }
+  virtual unsigned int execute (function *)
+    {
+      return whole_program_function_and_variable_visibility ();
+    }
 
 }; // class pass_ipa_whole_program_visibility
 
@@ -1653,7 +1646,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return ipa_cdtor_merge (); }
+  virtual unsigned int execute (function *) { return ipa_cdtor_merge (); }
 
 }; // class pass_ipa_cdtor_merge
 

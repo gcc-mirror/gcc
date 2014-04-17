@@ -1347,7 +1347,7 @@ public:
 	      && optimize_function_for_speed_p (fun));
     }
 
-  unsigned int execute () { return rest_of_handle_gcse2 (); }
+  virtual unsigned int execute (function *) { return rest_of_handle_gcse2 (); }
 
 }; // class pass_gcse2
 

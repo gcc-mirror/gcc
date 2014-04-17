@@ -2025,7 +2025,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return set_nothrow_function_flags (); }
+  virtual unsigned int execute (function *)
+    {
+      return set_nothrow_function_flags ();
+    }
 
 }; // class pass_set_nothrow_function_flags
 
@@ -2645,7 +2648,10 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return convert_to_eh_region_ranges (); }
+  virtual unsigned int execute (function *)
+    {
+      return convert_to_eh_region_ranges ();
+    }
 
 }; // class pass_convert_to_eh_region_ranges
 

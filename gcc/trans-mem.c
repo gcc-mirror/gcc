@@ -856,7 +856,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tm; }
-  unsigned int execute () { return diagnose_tm_blocks (); }
+  virtual unsigned int execute (function *) { return diagnose_tm_blocks (); }
 
 }; // class pass_diagnose_tm_blocks
 
@@ -1778,7 +1778,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tm; }
-  unsigned int execute () { return execute_lower_tm (); }
+  virtual unsigned int execute (function *) { return execute_lower_tm (); }
 
 }; // class pass_lower_tm
 
@@ -3029,7 +3029,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_tm_mark (); }
+  virtual unsigned int execute (function *) { return execute_tm_mark (); }
 
 }; // class pass_tm_mark
 
@@ -3162,31 +3162,6 @@ expand_block_edges (struct tm_region *const region, basic_block bb)
 
 /* Entry point to the final expansion of transactional nodes. */
 
-static unsigned int
-execute_tm_edges (void)
-{
-  vec<tm_region_p> bb_regions
-    = get_bb_regions_instrumented (/*traverse_clones=*/false,
-				   /*include_uninstrumented_p=*/true);
-  struct tm_region *r;
-  unsigned i;
-
-  FOR_EACH_VEC_ELT (bb_regions, i, r)
-    if (r != NULL)
-      expand_block_edges (r, BASIC_BLOCK_FOR_FN (cfun, i));
-
-  bb_regions.release ();
-
-  /* We've got to release the dominance info now, to indicate that it
-     must be rebuilt completely.  Otherwise we'll crash trying to update
-     the SSA web in the TODO section following this pass.  */
-  free_dominance_info (CDI_DOMINATORS);
-  bitmap_obstack_release (&tm_obstack);
-  all_tm_regions = NULL;
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_tm_edges =
@@ -3211,9 +3186,34 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_tm_edges (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_tm_edges
+
+unsigned int
+pass_tm_edges::execute (function *fun)
+{
+  vec<tm_region_p> bb_regions
+    = get_bb_regions_instrumented (/*traverse_clones=*/false,
+				   /*include_uninstrumented_p=*/true);
+  struct tm_region *r;
+  unsigned i;
+
+  FOR_EACH_VEC_ELT (bb_regions, i, r)
+    if (r != NULL)
+      expand_block_edges (r, BASIC_BLOCK_FOR_FN (fun, i));
+
+  bb_regions.release ();
+
+  /* We've got to release the dominance info now, to indicate that it
+     must be rebuilt completely.  Otherwise we'll crash trying to update
+     the SSA web in the TODO section following this pass.  */
+  free_dominance_info (CDI_DOMINATORS);
+  bitmap_obstack_release (&tm_obstack);
+  all_tm_regions = NULL;
+
+  return 0;
+}
 
 } // anon namespace
 
@@ -3946,7 +3946,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tm && optimize > 0; }
-  unsigned int execute () { return execute_tm_memopt (); }
+  virtual unsigned int execute (function *) { return execute_tm_memopt (); }
 
 }; // class pass_tm_memopt
 
@@ -5582,7 +5582,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tm; }
-  unsigned int execute () { return ipa_tm_execute (); }
+  virtual unsigned int execute (function *) { return ipa_tm_execute (); }
 
 }; // class pass_ipa_tm
 

@@ -3325,28 +3325,6 @@ rotate_partial_schedule (partial_schedule_ptr ps, int start_cycle)
 
 /* Run instruction scheduler.  */
 /* Perform SMS module scheduling.  */
-static unsigned int
-rest_of_handle_sms (void)
-{
-#ifdef INSN_SCHEDULING
-  basic_block bb;
-
-  /* Collect loop information to be used in SMS.  */
-  cfg_layout_initialize (0);
-  sms_schedule ();
-
-  /* Update the life information, because we add pseudos.  */
-  max_regno = max_reg_num ();
-
-  /* Finalize layout changes.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
-      bb->aux = bb->next_bb;
-  free_dominance_info (CDI_DOMINATORS);
-  cfg_layout_finalize ();
-#endif /* INSN_SCHEDULING */
-  return 0;
-}
 
 namespace {
 
@@ -3378,9 +3356,32 @@ public:
   return (optimize > 0 && flag_modulo_sched);
 }
 
-  unsigned int execute () { return rest_of_handle_sms (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_sms
+
+unsigned int
+pass_sms::execute (function *fun ATTRIBUTE_UNUSED)
+{
+#ifdef INSN_SCHEDULING
+  basic_block bb;
+
+  /* Collect loop information to be used in SMS.  */
+  cfg_layout_initialize (0);
+  sms_schedule ();
+
+  /* Update the life information, because we add pseudos.  */
+  max_regno = max_reg_num ();
+
+  /* Finalize layout changes.  */
+  FOR_EACH_BB_FN (bb, fun)
+    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (fun))
+      bb->aux = bb->next_bb;
+  free_dominance_info (CDI_DOMINATORS);
+  cfg_layout_finalize ();
+#endif /* INSN_SCHEDULING */
+  return 0;
+}
 
 } // anon namespace
 

@@ -95,7 +95,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return insert_uses (); }
+  virtual unsigned int execute (function *) { return insert_uses (); }
 
 }; // class pass_mode_switch_use
 

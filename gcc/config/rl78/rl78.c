@@ -117,14 +117,6 @@ rl78_init_machine_status (void)
   return m;
 }
 
-/* Runs the devirtualization pass.  */
-static unsigned int
-devirt_pass (void)
-{
-  rl78_reorg ();
-  return 0;
-}
-
 /* This pass converts virtual instructions using virtual registers, to
    real instructions using real registers.  Rather than run it as
    reorg, we reschedule it before vartrack to help with debugging.  */
@@ -153,7 +145,12 @@ public:
   }
 
   /* opt_pass methods: */
-  unsigned int execute () { return devirt_pass (); }
+  virtual unsigned int execute (function *)
+    {
+      rl78_reorg ();
+      return 0;
+    }
+
 };
 
 } // anon namespace
@@ -235,7 +232,7 @@ public:
   }
 
   /* opt_pass methods: */
-  unsigned int execute () { return move_elim_pass (); }
+  virtual unsigned int execute (function *) { return move_elim_pass (); }
 };
 
 } // anon namespace

@@ -586,33 +586,6 @@ vectorize_loops (void)
 
 /*  Entry point to basic block SLP phase.  */
 
-static unsigned int
-execute_vect_slp (void)
-{
-  basic_block bb;
-
-  init_stmt_vec_info_vec ();
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      vect_location = find_bb_location (bb);
-
-      if (vect_slp_analyze_bb (bb))
-        {
-          if (!dbg_cnt (vect_slp))
-            break;
-
-          vect_slp_transform_bb (bb);
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			     "basic block vectorized\n");
-        }
-    }
-
-  free_stmt_vec_info_vec ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_slp_vectorize =
@@ -639,9 +612,36 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_slp_vectorize != 0; }
-  unsigned int execute () { return execute_vect_slp (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_slp_vectorize
+
+unsigned int
+pass_slp_vectorize::execute (function *fun)
+{
+  basic_block bb;
+
+  init_stmt_vec_info_vec ();
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      vect_location = find_bb_location (bb);
+
+      if (vect_slp_analyze_bb (bb))
+        {
+          if (!dbg_cnt (vect_slp))
+            break;
+
+          vect_slp_transform_bb (bb);
+          if (dump_enabled_p ())
+            dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			     "basic block vectorized\n");
+        }
+    }
+
+  free_stmt_vec_info_vec ();
+  return 0;
+}
 
 } // anon namespace
 
@@ -725,7 +725,7 @@ public:
       return flag_section_anchors && flag_tree_loop_vectorize;
     }
 
-  unsigned int execute () { return increase_alignment (); }
+  virtual unsigned int execute (function *) { return increase_alignment (); }
 
 }; // class pass_ipa_increase_alignment
 

@@ -16550,7 +16550,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return mips_machine_reorg2 (); }
+  virtual unsigned int execute (function *) { return mips_machine_reorg2 (); }
 
 }; // class pass_mips_machine_reorg2
 

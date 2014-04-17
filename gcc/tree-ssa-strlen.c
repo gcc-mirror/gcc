@@ -2061,34 +2061,6 @@ strlen_dom_walker::after_dom_children (basic_block bb)
 
 /* Main entry point.  */
 
-static unsigned int
-tree_ssa_strlen (void)
-{
-  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
-  max_stridx = 1;
-  strinfo_pool = create_alloc_pool ("strinfo_struct pool",
-				    sizeof (struct strinfo_struct), 64);
-
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  /* String length optimization is implemented as a walk of the dominator
-     tree and a forward walk of statements within each block.  */
-  strlen_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
-
-  ssa_ver_to_stridx.release ();
-  free_alloc_pool (strinfo_pool);
-  if (decl_to_stridxlist_htab.is_created ())
-    {
-      obstack_free (&stridx_obstack, NULL);
-      decl_to_stridxlist_htab.dispose ();
-    }
-  laststmt.stmt = NULL;
-  laststmt.len = NULL_TREE;
-  laststmt.stridx = 0;
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_strlen =
@@ -2114,9 +2086,37 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_optimize_strlen != 0; }
-  unsigned int execute () { return tree_ssa_strlen (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_strlen
+
+unsigned int
+pass_strlen::execute (function *fun)
+{
+  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+  max_stridx = 1;
+  strinfo_pool = create_alloc_pool ("strinfo_struct pool",
+				    sizeof (struct strinfo_struct), 64);
+
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* String length optimization is implemented as a walk of the dominator
+     tree and a forward walk of statements within each block.  */
+  strlen_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
+
+  ssa_ver_to_stridx.release ();
+  free_alloc_pool (strinfo_pool);
+  if (decl_to_stridxlist_htab.is_created ())
+    {
+      obstack_free (&stridx_obstack, NULL);
+      decl_to_stridxlist_htab.dispose ();
+    }
+  laststmt.stmt = NULL;
+  laststmt.len = NULL_TREE;
+  laststmt.stridx = 0;
+
+  return 0;
+}
 
 } // anon namespace
 

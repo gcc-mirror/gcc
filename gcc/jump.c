@@ -163,7 +163,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return cleanup_barriers (); }
+  virtual unsigned int execute (function *) { return cleanup_barriers (); }
 
 }; // class pass_cleanup_barriers
 

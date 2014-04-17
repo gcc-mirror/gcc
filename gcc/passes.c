@@ -114,7 +114,7 @@ opt_pass::gate (function *)
 }
 
 unsigned int
-opt_pass::execute ()
+opt_pass::execute (function *)
 {
   return 0;
 }
@@ -138,7 +138,7 @@ pass_manager::execute_early_local_passes ()
 unsigned int
 pass_manager::execute_pass_mode_switching ()
 {
-  return pass_mode_switching_1->execute ();
+  return pass_mode_switching_1->execute (cfun);
 }
 
 
@@ -367,7 +367,10 @@ public:
       return (!seen_error () && !in_lto_p);
     }
 
-  unsigned int execute () { return execute_all_early_local_passes (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_all_early_local_passes ();
+    }
 
 }; // class pass_early_local_passes
 
@@ -2153,7 +2156,7 @@ execute_one_pass (opt_pass *pass)
   /* Do it!  */
   if (pass->has_execute)
     {
-      todo_after = pass->execute ();
+      todo_after = pass->execute (cfun);
       do_per_function (clear_last_verified, NULL);
     }
 

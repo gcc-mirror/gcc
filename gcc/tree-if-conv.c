@@ -1986,33 +1986,6 @@ tree_if_conversion (struct loop *loop)
 
 /* Tree if-conversion pass management.  */
 
-static unsigned int
-main_tree_if_conversion (void)
-{
-  struct loop *loop;
-  unsigned todo = 0;
-
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  FOR_EACH_LOOP (loop, 0)
-    if (flag_tree_loop_if_convert == 1
-	|| flag_tree_loop_if_convert_stores == 1
-	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
-	    && !loop->dont_vectorize))
-      todo |= tree_if_conversion (loop);
-
-#ifdef ENABLE_CHECKING
-  {
-    basic_block bb;
-    FOR_EACH_BB_FN (bb, cfun)
-      gcc_assert (!bb->aux);
-  }
-#endif
-
-  return todo;
-}
-
 namespace {
 
 const pass_data pass_data_if_conversion =
@@ -2039,7 +2012,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return main_tree_if_conversion (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_if_conversion
 
@@ -2050,6 +2023,33 @@ pass_if_conversion::gate (function *fun)
 	   && flag_tree_loop_if_convert != 0)
 	  || flag_tree_loop_if_convert == 1
 	  || flag_tree_loop_if_convert_stores == 1);
+}
+
+unsigned int
+pass_if_conversion::execute (function *fun)
+{
+  struct loop *loop;
+  unsigned todo = 0;
+
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  FOR_EACH_LOOP (loop, 0)
+    if (flag_tree_loop_if_convert == 1
+	|| flag_tree_loop_if_convert_stores == 1
+	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
+	    && !loop->dont_vectorize))
+      todo |= tree_if_conversion (loop);
+
+#ifdef ENABLE_CHECKING
+  {
+    basic_block bb;
+    FOR_EACH_BB_FN (bb, fun)
+      gcc_assert (!bb->aux);
+  }
+#endif
+
+  return todo;
 }
 
 } // anon namespace

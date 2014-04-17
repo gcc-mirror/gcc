@@ -2529,15 +2529,6 @@ tree_ssa_lim (void)
 
 /* Loop invariant motion pass.  */
 
-static unsigned int
-tree_ssa_loop_im (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return tree_ssa_lim ();
-}
-
 namespace {
 
 const pass_data pass_data_lim =
@@ -2564,9 +2555,18 @@ public:
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_lim (m_ctxt); }
   virtual bool gate (function *) { return flag_tree_loop_im != 0; }
-  unsigned int execute () { return tree_ssa_loop_im (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_lim
+
+unsigned int
+pass_lim::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return tree_ssa_lim ();
+}
 
 } // anon namespace
 

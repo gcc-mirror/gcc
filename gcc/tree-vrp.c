@@ -9922,7 +9922,7 @@ public:
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_vrp (m_ctxt); }
   virtual bool gate (function *) { return flag_tree_vrp != 0; }
-  unsigned int execute () { return execute_vrp (); }
+  virtual unsigned int execute (function *) { return execute_vrp (); }
 
 }; // class pass_vrp
 

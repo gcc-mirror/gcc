@@ -4722,7 +4722,7 @@ public:
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_reassoc (m_ctxt); }
   virtual bool gate (function *) { return flag_tree_reassoc != 0; }
-  unsigned int execute () { return execute_reassoc (); }
+  virtual unsigned int execute (function *) { return execute_reassoc (); }
 
 }; // class pass_reassoc
 

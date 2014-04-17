@@ -367,36 +367,6 @@ tail_duplicate (void)
 
   return changed;
 }
-
-/* Main entry point to this file.  */
-
-static unsigned int
-tracer (void)
-{
-  bool changed;
-
-  if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
-    return 0;
-
-  mark_dfs_back_edges ();
-  if (dump_file)
-    brief_dump_cfg (dump_file, dump_flags);
-
-  /* Trace formation is done on the fly inside tail_duplicate */
-  changed = tail_duplicate ();
-  if (changed)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      /* If we changed the CFG schedule loops for fixup by cleanup_cfg.  */
-      if (current_loops)
-	loops_state_set (LOOPS_NEED_FIXUP);
-    }
-
-  if (dump_file)
-    brief_dump_cfg (dump_file, dump_flags);
-
-  return changed ? TODO_cleanup_cfg : 0;
-}
 
 namespace {
 
@@ -427,10 +397,37 @@ public:
       return (optimize > 0 && flag_tracer && flag_reorder_blocks);
     }
 
-  unsigned int execute () { return tracer (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_tracer
 
+unsigned int
+pass_tracer::execute (function *fun)
+{
+  bool changed;
+
+  if (n_basic_blocks_for_fn (fun) <= NUM_FIXED_BLOCKS + 1)
+    return 0;
+
+  mark_dfs_back_edges ();
+  if (dump_file)
+    brief_dump_cfg (dump_file, dump_flags);
+
+  /* Trace formation is done on the fly inside tail_duplicate */
+  changed = tail_duplicate ();
+  if (changed)
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      /* If we changed the CFG schedule loops for fixup by cleanup_cfg.  */
+      if (current_loops)
+	loops_state_set (LOOPS_NEED_FIXUP);
+    }
+
+  if (dump_file)
+    brief_dump_cfg (dump_file, dump_flags);
+
+  return changed ? TODO_cleanup_cfg : 0;
+}
 } // anon namespace
 
 gimple_opt_pass *

@@ -44,14 +44,6 @@ handle_end_of_compilation_unit (void *event_data, void *data)
 }
 
 
-static unsigned int
-execute_dumb_plugin_example (void)
-{
-  warning (0, G_("Analyze function %s"),
-           IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_dumb_plugin_example =
@@ -76,9 +68,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_dumb_plugin_example (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_dumb_plugin_example
+
+unsigned int
+pass_dumb_plugin_example::execute (function *)
+{
+  warning (0, G_("Analyze function %s"),
+           IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+  return 0;
+}
 
 } // anon namespace
 

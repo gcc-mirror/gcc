@@ -867,56 +867,6 @@ shrink_wrap_conditional_dead_built_in_calls (vec<gimple> calls)
   return changed;
 }
 
-/* Pass entry points.  */
-
-static unsigned int
-tree_call_cdce (void)
-{
-  basic_block bb;
-  gimple_stmt_iterator i;
-  bool something_changed = false;
-  auto_vec<gimple> cond_dead_built_in_calls;
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      /* Collect dead call candidates.  */
-      for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
-        {
-	  gimple stmt = gsi_stmt (i);
-          if (is_gimple_call (stmt)
-              && is_call_dce_candidate (stmt))
-            {
-              if (dump_file && (dump_flags & TDF_DETAILS))
-                {
-                  fprintf (dump_file, "Found conditional dead call: ");
-                  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-                  fprintf (dump_file, "\n");
-                }
-	      if (!cond_dead_built_in_calls.exists ())
-		cond_dead_built_in_calls.create (64);
-	      cond_dead_built_in_calls.safe_push (stmt);
-            }
-	}
-    }
-
-  if (!cond_dead_built_in_calls.exists ())
-    return 0;
-
-  something_changed
-    = shrink_wrap_conditional_dead_built_in_calls (cond_dead_built_in_calls);
-
-  if (something_changed)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      free_dominance_info (CDI_POST_DOMINATORS);
-      /* As we introduced new control-flow we need to insert PHI-nodes
-         for the call-clobbers of the remaining call.  */
-      mark_virtual_operands_for_renaming (cfun);
-      return TODO_update_ssa;
-    }
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_call_cdce =
@@ -950,9 +900,57 @@ public:
        	&& optimize_function_for_speed_p (fun);
     }
 
-  unsigned int execute () { return tree_call_cdce (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_call_cdce
+
+unsigned int
+pass_call_cdce::execute (function *fun)
+{
+  basic_block bb;
+  gimple_stmt_iterator i;
+  bool something_changed = false;
+  auto_vec<gimple> cond_dead_built_in_calls;
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      /* Collect dead call candidates.  */
+      for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+        {
+	  gimple stmt = gsi_stmt (i);
+          if (is_gimple_call (stmt)
+              && is_call_dce_candidate (stmt))
+            {
+              if (dump_file && (dump_flags & TDF_DETAILS))
+                {
+                  fprintf (dump_file, "Found conditional dead call: ");
+                  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+                  fprintf (dump_file, "\n");
+                }
+	      if (!cond_dead_built_in_calls.exists ())
+		cond_dead_built_in_calls.create (64);
+	      cond_dead_built_in_calls.safe_push (stmt);
+            }
+	}
+    }
+
+  if (!cond_dead_built_in_calls.exists ())
+    return 0;
+
+  something_changed
+    = shrink_wrap_conditional_dead_built_in_calls (cond_dead_built_in_calls);
+
+  if (something_changed)
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      /* As we introduced new control-flow we need to insert PHI-nodes
+         for the call-clobbers of the remaining call.  */
+      mark_virtual_operands_for_renaming (fun);
+      return TODO_update_ssa;
+    }
+
+  return 0;
+}
 
 } // anon namespace
 

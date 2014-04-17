@@ -762,7 +762,7 @@ public:
   return (flag_sanitize & SANITIZE_THREAD) != 0;
 }
 
-  unsigned int execute () { return tsan_pass (); }
+  virtual unsigned int execute (function *) { return tsan_pass (); }
 
 }; // class pass_tsan
 
@@ -803,7 +803,7 @@ public:
       return (flag_sanitize & SANITIZE_THREAD) != 0 && !optimize;
     }
 
-  unsigned int execute () { return tsan_pass (); }
+  virtual unsigned int execute (function *) { return tsan_pass (); }
 
 }; // class pass_tsan_O0
 

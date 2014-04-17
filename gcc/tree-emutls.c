@@ -846,7 +846,7 @@ public:
       return !targetm.have_tls;
     }
 
-  unsigned int execute () { return ipa_lower_emutls (); }
+  virtual unsigned int execute (function *) { return ipa_lower_emutls (); }
 
 }; // class pass_ipa_lower_emutls
 

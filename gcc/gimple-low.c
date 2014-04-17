@@ -180,7 +180,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return lower_function_body (); }
+  virtual unsigned int execute (function *) { return lower_function_body (); }
 
 }; // class pass_lower_cf
 

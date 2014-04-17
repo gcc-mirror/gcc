@@ -1256,15 +1256,6 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
 /* Canonical induction variable creation pass.  */
 
-static unsigned int
-tree_ssa_loop_ivcanon (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return canonicalize_induction_variables ();
-}
-
 namespace {
 
 const pass_data pass_data_iv_canon =
@@ -1290,9 +1281,18 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_loop_ivcanon != 0; }
-  unsigned int execute () { return tree_ssa_loop_ivcanon (); }
+  virtual unsigned int execute (function *fun);
 
 }; // class pass_iv_canon
+
+unsigned int
+pass_iv_canon::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return canonicalize_induction_variables ();
+}
 
 } // anon namespace
 
@@ -1303,17 +1303,6 @@ make_pass_iv_canon (gcc::context *ctxt)
 }
 
 /* Complete unrolling of loops.  */
-
-static unsigned int
-tree_complete_unroll (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return tree_unroll_loops_completely (flag_unroll_loops
-				       || flag_peel_loops
-				       || optimize >= 3, true);
-}
 
 namespace {
 
@@ -1339,9 +1328,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return tree_complete_unroll (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_complete_unroll
+
+unsigned int
+pass_complete_unroll::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return tree_unroll_loops_completely (flag_unroll_loops
+				       || flag_peel_loops
+				       || optimize >= 3, true);
+}
 
 } // anon namespace
 
@@ -1352,25 +1352,6 @@ make_pass_complete_unroll (gcc::context *ctxt)
 }
 
 /* Complete unrolling of inner loops.  */
-
-static unsigned int
-tree_complete_unroll_inner (void)
-{
-  unsigned ret = 0;
-
-  loop_optimizer_init (LOOPS_NORMAL
-		       | LOOPS_HAVE_RECORDED_EXITS);
-  if (number_of_loops (cfun) > 1)
-    {
-      scev_initialize ();
-      ret = tree_unroll_loops_completely (optimize >= 3, false);
-      free_numbers_of_iterations_estimates ();
-      scev_finalize ();
-    }
-  loop_optimizer_finalize ();
-
-  return ret;
-}
 
 namespace {
 
@@ -1397,9 +1378,28 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return optimize >= 2; }
-  unsigned int execute () { return tree_complete_unroll_inner (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_complete_unrolli
+
+unsigned int
+pass_complete_unrolli::execute (function *fun)
+{
+  unsigned ret = 0;
+
+  loop_optimizer_init (LOOPS_NORMAL
+		       | LOOPS_HAVE_RECORDED_EXITS);
+  if (number_of_loops (fun) > 1)
+    {
+      scev_initialize ();
+      ret = tree_unroll_loops_completely (optimize >= 3, false);
+      free_numbers_of_iterations_estimates ();
+      scev_finalize ();
+    }
+  loop_optimizer_finalize ();
+
+  return ret;
+}
 
 } // anon namespace
 

@@ -3525,7 +3525,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_intra_sra (); }
-  unsigned int execute () { return early_intra_sra (); }
+  virtual unsigned int execute (function *) { return early_intra_sra (); }
 
 }; // class pass_sra_early
 
@@ -3562,7 +3562,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_intra_sra (); }
-  unsigned int execute () { return late_intra_sra (); }
+  virtual unsigned int execute (function *) { return late_intra_sra (); }
 
 }; // class pass_sra
 
@@ -5076,7 +5076,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_ipa_sra && dbg_cnt (eipa_sra); }
-  unsigned int execute () { return ipa_early_sra (); }
+  virtual unsigned int execute (function *) { return ipa_early_sra (); }
 
 }; // class pass_early_ipa_sra
 

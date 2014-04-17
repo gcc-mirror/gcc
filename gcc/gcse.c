@@ -4209,7 +4209,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return execute_rtl_pre (); }
+  virtual unsigned int execute (function *) { return execute_rtl_pre (); }
 
 }; // class pass_rtl_pre
 
@@ -4261,7 +4261,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *);
-  unsigned int execute () { return execute_rtl_hoist (); }
+  virtual unsigned int execute (function *) { return execute_rtl_hoist (); }
 
 }; // class pass_rtl_hoist
 

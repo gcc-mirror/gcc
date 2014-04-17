@@ -1494,14 +1494,6 @@ branch_target_load_optimize (bool after_prologue_epilogue_gen)
     }
 }
 
-
-static unsigned int
-rest_of_handle_branch_target_load_optimize1 (void)
-{
-  branch_target_load_optimize (epilogue_completed);
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_branch_target_load_optimize1 =
@@ -1527,9 +1519,11 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_branch_target_load_optimize; }
-  unsigned int execute () {
-    return rest_of_handle_branch_target_load_optimize1 ();
-  }
+  virtual unsigned int execute (function *)
+    {
+      branch_target_load_optimize (epilogue_completed);
+      return 0;
+    }
 
 }; // class pass_branch_target_load_optimize1
 
@@ -1541,28 +1535,6 @@ make_pass_branch_target_load_optimize1 (gcc::context *ctxt)
   return new pass_branch_target_load_optimize1 (ctxt);
 }
 
-
-static unsigned int
-rest_of_handle_branch_target_load_optimize2 (void)
-{
-  static int warned = 0;
-
-  /* Leave this a warning for now so that it is possible to experiment
-     with running this pass twice.  In 3.6, we should either make this
-     an error, or use separate dump files.  */
-  if (flag_branch_target_load_optimize
-      && flag_branch_target_load_optimize2
-      && !warned)
-    {
-      warning (0, "branch target register load optimization is not intended "
-		  "to be run twice");
-
-      warned = 1;
-    }
-
-  branch_target_load_optimize (epilogue_completed);
-  return 0;
-}
 
 namespace {
 
@@ -1593,11 +1565,31 @@ public:
       return (optimize > 0 && flag_branch_target_load_optimize2);
     }
 
-  unsigned int execute () {
-    return rest_of_handle_branch_target_load_optimize2 ();
-  }
+  virtual unsigned int execute (function *);
 
 }; // class pass_branch_target_load_optimize2
+
+unsigned int
+pass_branch_target_load_optimize2::execute (function *)
+{
+  static int warned = 0;
+
+  /* Leave this a warning for now so that it is possible to experiment
+     with running this pass twice.  In 3.6, we should either make this
+     an error, or use separate dump files.  */
+  if (flag_branch_target_load_optimize
+      && flag_branch_target_load_optimize2
+      && !warned)
+    {
+      warning (0, "branch target register load optimization is not intended "
+	       "to be run twice");
+
+      warned = 1;
+    }
+
+  branch_target_load_optimize (epilogue_completed);
+  return 0;
+}
 
 } // anon namespace
 

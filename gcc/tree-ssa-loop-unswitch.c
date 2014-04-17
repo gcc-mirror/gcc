@@ -402,15 +402,6 @@ tree_unswitch_loop (struct loop *loop,
 
 /* Loop unswitching pass.  */
 
-static unsigned int
-tree_ssa_loop_unswitch (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return tree_ssa_unswitch_loops ();
-}
-
 namespace {
 
 const pass_data pass_data_tree_unswitch =
@@ -436,9 +427,18 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_unswitch_loops != 0; }
-  unsigned int execute () { return tree_ssa_loop_unswitch (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_tree_unswitch
+
+unsigned int
+pass_tree_unswitch::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return tree_ssa_unswitch_loops ();
+}
 
 } // anon namespace
 

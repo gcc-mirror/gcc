@@ -1943,7 +1943,7 @@ public:
 	&& dbg_cnt (cprop);
     }
 
-  unsigned int execute () { return execute_rtl_cprop (); }
+  virtual unsigned int execute (function *) { return execute_rtl_cprop (); }
 
 }; // class pass_rtl_cprop
 

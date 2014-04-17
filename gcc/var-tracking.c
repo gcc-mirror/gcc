@@ -10373,7 +10373,10 @@ public:
       return (flag_var_tracking && !targetm.delay_vartrack);
     }
 
-  unsigned int execute () { return variable_tracking_main (); }
+  virtual unsigned int execute (function *)
+    {
+      return variable_tracking_main ();
+    }
 
 }; // class pass_variable_tracking
 

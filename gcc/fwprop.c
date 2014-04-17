@@ -1509,7 +1509,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_fwprop (); }
-  unsigned int execute () { return fwprop (); }
+  virtual unsigned int execute (function *) { return fwprop (); }
 
 }; // class pass_rtl_fwprop
 
@@ -1574,7 +1574,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_fwprop (); }
-  unsigned int execute () { return fwprop_addr (); }
+  virtual unsigned int execute (function *) { return fwprop_addr (); }
 
 }; // class pass_rtl_fwprop_addr
 

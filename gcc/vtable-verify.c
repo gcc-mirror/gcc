@@ -723,23 +723,6 @@ verify_bb_vtables (basic_block bb)
     }
 }
 
-/* Main function, called from pass->excute().  Loop through all the
-   basic blocks in the current function, passing them to
-   verify_bb_vtables, which searches for virtual calls, and inserts
-   calls to __VLTVerifyVtablePointer.  */
-
-unsigned int
-vtable_verify_main (void)
-{
-  unsigned int ret = 1;
-  basic_block bb;
-
-  FOR_ALL_BB_FN (bb, cfun)
-      verify_bb_vtables (bb);
-
-  return ret;
-}
-
 /* Definition of this optimization pass.  */
 
 namespace {
@@ -767,9 +750,25 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return (flag_vtable_verify); }
-  unsigned int execute () { return vtable_verify_main (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_vtable_verify
+
+/* Loop through all the basic blocks in the current function, passing them to
+   verify_bb_vtables, which searches for virtual calls, and inserts
+   calls to __VLTVerifyVtablePointer.  */
+
+unsigned int
+pass_vtable_verify::execute (function *fun)
+{
+  unsigned int ret = 1;
+  basic_block bb;
+
+  FOR_ALL_BB_FN (bb, fun)
+      verify_bb_vtables (bb);
+
+  return ret;
+}
 
 } // anon namespace
 

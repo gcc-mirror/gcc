@@ -3736,7 +3736,7 @@ public:
       return optimize > 0 && flag_dse && dbg_cnt (dse1);
     }
 
-  unsigned int execute () { return rest_of_handle_dse (); }
+  virtual unsigned int execute (function *) { return rest_of_handle_dse (); }
 
 }; // class pass_rtl_dse1
 
@@ -3777,7 +3777,7 @@ public:
       return optimize > 0 && flag_dse && dbg_cnt (dse2);
     }
 
-  unsigned int execute () { return rest_of_handle_dse (); }
+  virtual unsigned int execute (function *) { return rest_of_handle_dse (); }
 
 }; // class pass_rtl_dse2
 

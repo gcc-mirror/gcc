@@ -2299,72 +2299,6 @@ fini_ssa_renamer (void)
    Steps 3 and 4 are done using the dominator tree walker
    (walk_dominator_tree).  */
 
-static unsigned int
-rewrite_into_ssa (void)
-{
-  bitmap_head *dfs;
-  basic_block bb;
-  unsigned i;
-
-  /* Initialize operand data structures.  */
-  init_ssa_operands (cfun);
-
-  /* Initialize internal data needed by the renamer.  */
-  init_ssa_renamer ();
-
-  /* Initialize the set of interesting blocks.  The callback
-     mark_def_sites will add to this set those blocks that the renamer
-     should process.  */
-  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
-  bitmap_clear (interesting_blocks);
-
-  /* Initialize dominance frontier.  */
-  dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_EACH_BB_FN (bb, cfun)
-    bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
-
-  /* 1- Compute dominance frontiers.  */
-  calculate_dominance_info (CDI_DOMINATORS);
-  compute_dominance_frontiers (dfs);
-
-  /* 2- Find and mark definition sites.  */
-  mark_def_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
-
-  /* 3- Insert PHI nodes at dominance frontiers of definition blocks.  */
-  insert_phi_nodes (dfs);
-
-  /* 4- Rename all the blocks.  */
-  rewrite_blocks (ENTRY_BLOCK_PTR_FOR_FN (cfun), REWRITE_ALL);
-
-  /* Free allocated memory.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    bitmap_clear (&dfs[bb->index]);
-  free (dfs);
-
-  sbitmap_free (interesting_blocks);
-
-  fini_ssa_renamer ();
-
-  /* Try to get rid of all gimplifier generated temporaries by making
-     its SSA names anonymous.  This way we can garbage collect them
-     all after removing unused locals which we do in our TODO.  */
-  for (i = 1; i < num_ssa_names; ++i)
-    {
-      tree decl, name = ssa_name (i);
-      if (!name
-	  || SSA_NAME_IS_DEFAULT_DEF (name))
-	continue;
-      decl = SSA_NAME_VAR (name);
-      if (decl
-	  && TREE_CODE (decl) == VAR_DECL
-	  && !VAR_DECL_IS_VIRTUAL_OPERAND (decl)
-	  && DECL_IGNORED_P (decl))
-	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, DECL_NAME (decl));
-    }
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_build_ssa =
@@ -2395,9 +2329,75 @@ public:
       return !(fun->curr_properties & PROP_ssa);
     }
 
-  unsigned int execute () { return rewrite_into_ssa (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_build_ssa
+
+unsigned int
+pass_build_ssa::execute (function *fun)
+{
+  bitmap_head *dfs;
+  basic_block bb;
+  unsigned i;
+
+  /* Initialize operand data structures.  */
+  init_ssa_operands (fun);
+
+  /* Initialize internal data needed by the renamer.  */
+  init_ssa_renamer ();
+
+  /* Initialize the set of interesting blocks.  The callback
+     mark_def_sites will add to this set those blocks that the renamer
+     should process.  */
+  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (fun));
+  bitmap_clear (interesting_blocks);
+
+  /* Initialize dominance frontier.  */
+  dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (fun));
+  FOR_EACH_BB_FN (bb, fun)
+    bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
+
+  /* 1- Compute dominance frontiers.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+  compute_dominance_frontiers (dfs);
+
+  /* 2- Find and mark definition sites.  */
+  mark_def_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
+
+  /* 3- Insert PHI nodes at dominance frontiers of definition blocks.  */
+  insert_phi_nodes (dfs);
+
+  /* 4- Rename all the blocks.  */
+  rewrite_blocks (ENTRY_BLOCK_PTR_FOR_FN (fun), REWRITE_ALL);
+
+  /* Free allocated memory.  */
+  FOR_EACH_BB_FN (bb, fun)
+    bitmap_clear (&dfs[bb->index]);
+  free (dfs);
+
+  sbitmap_free (interesting_blocks);
+
+  fini_ssa_renamer ();
+
+  /* Try to get rid of all gimplifier generated temporaries by making
+     its SSA names anonymous.  This way we can garbage collect them
+     all after removing unused locals which we do in our TODO.  */
+  for (i = 1; i < num_ssa_names; ++i)
+    {
+      tree decl, name = ssa_name (i);
+      if (!name
+	  || SSA_NAME_IS_DEFAULT_DEF (name))
+	continue;
+      decl = SSA_NAME_VAR (name);
+      if (decl
+	  && TREE_CODE (decl) == VAR_DECL
+	  && !VAR_DECL_IS_VIRTUAL_OPERAND (decl)
+	  && DECL_IGNORED_P (decl))
+	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, DECL_NAME (decl));
+    }
+
+  return 0;
+}
 
 } // anon namespace
 

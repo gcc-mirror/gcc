@@ -1462,37 +1462,6 @@ merge_in_block (int max_reg, basic_block bb)
 
 #endif
 
-static unsigned int
-rest_of_handle_auto_inc_dec (void)
-{
-#ifdef AUTO_INC_DEC
-  basic_block bb;
-  int max_reg = max_reg_num ();
-
-  if (!initialized)
-    init_decision_table ();
-
-  mem_tmp = gen_rtx_MEM (Pmode, NULL_RTX);
-
-  df_note_add_problem ();
-  df_analyze ();
-
-  reg_next_use = XCNEWVEC (rtx, max_reg);
-  reg_next_inc_use = XCNEWVEC (rtx, max_reg);
-  reg_next_def = XCNEWVEC (rtx, max_reg);
-  FOR_EACH_BB_FN (bb, cfun)
-    merge_in_block (max_reg, bb);
-
-  free (reg_next_use);
-  free (reg_next_inc_use);
-  free (reg_next_def);
-
-  mem_tmp = NULL;
-#endif
-  return 0;
-}
-
-
 /* Discover auto-inc auto-dec instructions.  */
 
 namespace {
@@ -1529,9 +1498,39 @@ public:
     }
 
 
-  unsigned int execute () { return rest_of_handle_auto_inc_dec (); }
+  unsigned int execute (function *);
 
 }; // class pass_inc_dec
+
+unsigned int
+pass_inc_dec::execute (function *fun ATTRIBUTE_UNUSED)
+{
+#ifdef AUTO_INC_DEC
+  basic_block bb;
+  int max_reg = max_reg_num ();
+
+  if (!initialized)
+    init_decision_table ();
+
+  mem_tmp = gen_rtx_MEM (Pmode, NULL_RTX);
+
+  df_note_add_problem ();
+  df_analyze ();
+
+  reg_next_use = XCNEWVEC (rtx, max_reg);
+  reg_next_inc_use = XCNEWVEC (rtx, max_reg);
+  reg_next_def = XCNEWVEC (rtx, max_reg);
+  FOR_EACH_BB_FN (bb, fun)
+    merge_in_block (max_reg, bb);
+
+  free (reg_next_use);
+  free (reg_next_inc_use);
+  free (reg_next_def);
+
+  mem_tmp = NULL;
+#endif
+  return 0;
+}
 
 } // anon namespace
 

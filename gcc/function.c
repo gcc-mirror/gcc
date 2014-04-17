@@ -1967,7 +1967,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return instantiate_virtual_regs (); }
+  virtual unsigned int execute (function *)
+    {
+      return instantiate_virtual_regs ();
+    }
 
 }; // class pass_instantiate_virtual_regs
 
@@ -6965,7 +6968,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_check_leaf_regs (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_check_leaf_regs ();
+    }
 
 }; // class pass_leaf_regs
 
@@ -7025,9 +7031,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () {
-    return rest_of_handle_thread_prologue_and_epilogue ();
-  }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_thread_prologue_and_epilogue ();
+    }
 
 }; // class pass_thread_prologue_and_epilogue
 
@@ -7184,41 +7191,6 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
     df_insn_rescan (insn);
 }
 
-static unsigned
-rest_of_match_asm_constraints (void)
-{
-  basic_block bb;
-  rtx insn, pat, *p_sets;
-  int noutputs;
-
-  if (!crtl->has_asm_statement)
-    return 0;
-
-  df_set_flags (DF_DEFER_INSN_RESCAN);
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      FOR_BB_INSNS (bb, insn)
-	{
-	  if (!INSN_P (insn))
-	    continue;
-
-	  pat = PATTERN (insn);
-	  if (GET_CODE (pat) == PARALLEL)
-	    p_sets = &XVECEXP (pat, 0, 0), noutputs = XVECLEN (pat, 0);
-	  else if (GET_CODE (pat) == SET)
-	    p_sets = &PATTERN (insn), noutputs = 1;
-	  else
-	    continue;
-
-	  if (GET_CODE (*p_sets) == SET
-	      && GET_CODE (SET_SRC (*p_sets)) == ASM_OPERANDS)
-	    match_asm_constraints_1 (insn, p_sets, noutputs);
-	 }
-    }
-
-  return TODO_df_finish;
-}
-
 namespace {
 
 const pass_data pass_data_match_asm_constraints =
@@ -7243,9 +7215,44 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_match_asm_constraints (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_match_asm_constraints
+
+unsigned
+pass_match_asm_constraints::execute (function *fun)
+{
+  basic_block bb;
+  rtx insn, pat, *p_sets;
+  int noutputs;
+
+  if (!crtl->has_asm_statement)
+    return 0;
+
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!INSN_P (insn))
+	    continue;
+
+	  pat = PATTERN (insn);
+	  if (GET_CODE (pat) == PARALLEL)
+	    p_sets = &XVECEXP (pat, 0, 0), noutputs = XVECLEN (pat, 0);
+	  else if (GET_CODE (pat) == SET)
+	    p_sets = &PATTERN (insn), noutputs = 1;
+	  else
+	    continue;
+
+	  if (GET_CODE (*p_sets) == SET
+	      && GET_CODE (SET_SRC (*p_sets)) == ASM_OPERANDS)
+	    match_asm_constraints_1 (insn, p_sets, noutputs);
+	 }
+    }
+
+  return TODO_df_finish;
+}
 
 } // anon namespace
 

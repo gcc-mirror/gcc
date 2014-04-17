@@ -253,23 +253,6 @@ warn_self_assign (gimple stmt)
     }
 }
 
-/* Entry point for the self-assignment detection pass.  */
-
-static unsigned int
-execute_warn_self_assign (void)
-{
-  gimple_stmt_iterator gsi;
-  basic_block bb;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-        warn_self_assign (gsi_stmt (gsi));
-    }
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_warn_self_assign =
@@ -295,9 +278,24 @@ public:
 
   /* opt_pass methods: */
   bool gate (function *) { return true; }
-  unsigned int execute () { return execute_warn_self_assign (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_warn_self_assign
+
+unsigned int
+pass_warn_self_assign::execute (function *fun)
+{
+  gimple_stmt_iterator gsi;
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+        warn_self_assign (gsi_stmt (gsi));
+    }
+
+  return 0;
+}
 
 } // anon namespace
 
