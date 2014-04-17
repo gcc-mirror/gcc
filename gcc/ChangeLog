@@ -1,3 +1,10 @@
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* pass_manager.h (pass_manager::register_dump_files_1): Adjust.
+	* passes.c (pass_manager::register_dump_files_1): Remove dead code
+	dealing with properties.
+	(pass_manager::register_dump_files): Adjust.
+
 2014-03-20  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (add_bound_info): If HOST_WIDE_INT is big enough,
