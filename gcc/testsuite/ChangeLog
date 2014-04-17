@@ -1,3 +1,8 @@
+2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/ti_math1.c: New.
+	* gcc.target/powerpc/ti_math2.c: New.
+
 2014-04-17  Martin Jambor  <mjambor@suse.cz>
 
 	* gnat.dg/opt34.adb: New.
