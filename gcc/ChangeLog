@@ -1,3 +1,7 @@
+2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.md (addti3, subti3): New.
+
 2014-04-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60863
