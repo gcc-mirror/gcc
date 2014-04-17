@@ -871,13 +871,6 @@ mem_ref (rtx x)
    pass runs as late as possible.  The pass is inserted in the pass pipeline
    at the end of sparc_option_override.  */
 
-static bool
-sparc_gate_work_around_errata (void)
-{
-  /* The only errata we handle are those of the AT697F and UT699.  */
-  return sparc_fix_at697f != 0 || sparc_fix_ut699 != 0;
-}
-
 static unsigned int
 sparc_do_work_around_errata (void)
 {
@@ -1146,7 +1139,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return sparc_gate_work_around_errata (); }
+  virtual bool gate (function *)
+    {
+      /* The only errata we handle are those of the AT697F and UT699.  */
+      return sparc_fix_at697f != 0 || sparc_fix_ut699 != 0;
+    }
+
   unsigned int execute () { return sparc_do_work_around_errata (); }
 
 }; // class pass_work_around_errata

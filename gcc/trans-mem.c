@@ -456,14 +456,6 @@ build_tm_abort_call (location_t loc, bool is_outer)
 					     AR_USERABORT
 					     | (is_outer ? AR_OUTERABORT : 0)));
 }
-
-/* Common gateing function for several of the TM passes.  */
-
-static bool
-gate_tm (void)
-{
-  return flag_tm;
-}
 
 /* Map for aribtrary function replacement under TM, as created
    by the tm_wrap attribute.  */
@@ -863,7 +855,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tm (); }
+  virtual bool gate (function *) { return flag_tm; }
   unsigned int execute () { return diagnose_tm_blocks (); }
 
 }; // class pass_diagnose_tm_blocks
@@ -1785,7 +1777,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tm (); }
+  virtual bool gate (function *) { return flag_tm; }
   unsigned int execute () { return execute_lower_tm (); }
 
 }; // class pass_lower_tm
@@ -2062,7 +2054,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tm_init (); }
+  virtual bool gate (function *) { return gate_tm_init (); }
 
 }; // class pass_tm_init
 
@@ -3929,12 +3921,6 @@ execute_tm_memopt (void)
   return 0;
 }
 
-static bool
-gate_tm_memopt (void)
-{
-  return flag_tm && optimize > 0;
-}
-
 namespace {
 
 const pass_data pass_data_tm_memopt =
@@ -3959,7 +3945,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tm_memopt (); }
+  virtual bool gate (function *) { return flag_tm && optimize > 0; }
   unsigned int execute () { return execute_tm_memopt (); }
 
 }; // class pass_tm_memopt
@@ -5595,7 +5581,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tm (); }
+  virtual bool gate (function *) { return flag_tm; }
   unsigned int execute () { return ipa_tm_execute (); }
 
 }; // class pass_ipa_tm

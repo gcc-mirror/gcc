@@ -3646,12 +3646,6 @@ execute_strength_reduction (void)
   return 0;
 }
 
-static bool
-gate_strength_reduction (void)
-{
-  return flag_tree_slsr;
-}
-
 namespace {
 
 const pass_data pass_data_strength_reduction =
@@ -3676,7 +3670,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_strength_reduction (); }
+  virtual bool gate (function *) { return flag_tree_slsr; }
   unsigned int execute () { return execute_strength_reduction (); }
 
 }; // class pass_strength_reduction

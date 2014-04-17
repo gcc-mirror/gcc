@@ -2253,12 +2253,6 @@ parallelize_loops (void)
 
 /* Parallelization.  */
 
-static bool
-gate_tree_parallelize_loops (void)
-{
-  return flag_tree_parallelize_loops > 1;
-}
-
 static unsigned
 tree_parallelize_loops (void)
 {
@@ -2294,7 +2288,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_parallelize_loops (); }
+  virtual bool gate (function *) { return flag_tree_parallelize_loops > 1; }
   unsigned int execute () { return tree_parallelize_loops (); }
 
 }; // class pass_parallelize_loops

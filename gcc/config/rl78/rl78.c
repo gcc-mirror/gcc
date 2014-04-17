@@ -117,13 +117,6 @@ rl78_init_machine_status (void)
   return m;
 }
 
-/* Returns whether to run the devirtualization pass.  */
-static bool
-devirt_gate (void)
-{
-  return true;
-}
-
 /* Runs the devirtualization pass.  */
 static unsigned int
 devirt_pass (void)
@@ -160,7 +153,6 @@ public:
   }
 
   /* opt_pass methods: */
-  bool gate () { return devirt_gate (); }
   unsigned int execute () { return devirt_pass (); }
 };
 
@@ -243,7 +235,6 @@ public:
   }
 
   /* opt_pass methods: */
-  bool gate () { return devirt_gate (); }
   unsigned int execute () { return move_elim_pass (); }
 };
 

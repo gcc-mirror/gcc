@@ -1108,7 +1108,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_tail_recursion (m_ctxt); }
-  bool gate () { return gate_tail_calls (); }
+  virtual bool gate (function *) { return gate_tail_calls (); }
   unsigned int execute () { return execute_tail_recursion (); }
 
 }; // class pass_tail_recursion
@@ -1145,7 +1145,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tail_calls (); }
+  virtual bool gate (function *) { return gate_tail_calls (); }
   unsigned int execute () { return execute_tail_calls (); }
 
 }; // class pass_tail_calls

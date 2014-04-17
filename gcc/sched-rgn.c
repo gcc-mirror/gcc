@@ -3591,16 +3591,6 @@ advance_target_bb (basic_block bb, rtx insn)
 
 #endif
 
-static bool
-gate_handle_live_range_shrinkage (void)
-{
-#ifdef INSN_SCHEDULING
-  return flag_live_range_shrinkage;
-#else
-  return 0;
-#endif
-}
-
 /* Run instruction scheduler.  */
 static unsigned int
 rest_of_handle_live_range_shrinkage (void)
@@ -3618,16 +3608,6 @@ rest_of_handle_live_range_shrinkage (void)
   return 0;
 }
 
-static bool
-gate_handle_sched (void)
-{
-#ifdef INSN_SCHEDULING
-  return optimize > 0 && flag_schedule_insns && dbg_cnt (sched_func);
-#else
-  return 0;
-#endif
-}
-
 /* Run instruction scheduler.  */
 static unsigned int
 rest_of_handle_sched (void)
@@ -3640,17 +3620,6 @@ rest_of_handle_sched (void)
     schedule_insns ();
 #endif
   return 0;
-}
-
-static bool
-gate_handle_sched2 (void)
-{
-#ifdef INSN_SCHEDULING
-  return optimize > 0 && flag_schedule_insns_after_reload
-    && !targetm.delay_sched2 && dbg_cnt (sched2_func);
-#else
-  return 0;
-#endif
 }
 
 /* Run second scheduling pass after reload.  */
@@ -3699,7 +3668,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_live_range_shrinkage (); }
+  virtual bool gate (function *)
+    {
+#ifdef INSN_SCHEDULING
+      return flag_live_range_shrinkage;
+#else
+      return 0;
+#endif
+    }
+
   unsigned int execute () { return rest_of_handle_live_range_shrinkage (); }
 
 }; // class pass_live_range_shrinkage
@@ -3737,10 +3714,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_sched (); }
+  virtual bool gate (function *);
   unsigned int execute () { return rest_of_handle_sched (); }
 
 }; // class pass_sched
+
+bool
+pass_sched::gate (function *)
+{
+#ifdef INSN_SCHEDULING
+  return optimize > 0 && flag_schedule_insns && dbg_cnt (sched_func);
+#else
+  return 0;
+#endif
+}
 
 } // anon namespace
 
@@ -3775,10 +3762,21 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_sched2 (); }
+  virtual bool gate (function *);
   unsigned int execute () { return rest_of_handle_sched2 (); }
 
 }; // class pass_sched2
+
+bool
+pass_sched2::gate (function *)
+{
+#ifdef INSN_SCHEDULING
+  return optimize > 0 && flag_schedule_insns_after_reload
+    && !targetm.delay_sched2 && dbg_cnt (sched2_func);
+#else
+  return 0;
+#endif
+}
 
 } // anon namespace
 

@@ -1495,17 +1495,6 @@ rest_of_handle_auto_inc_dec (void)
 
 /* Discover auto-inc auto-dec instructions.  */
 
-static bool
-gate_auto_inc_dec (void)
-{
-#ifdef AUTO_INC_DEC
-  return (optimize > 0 && flag_auto_inc_dec);
-#else
-  return false;
-#endif
-}
-
-
 namespace {
 
 const pass_data pass_data_inc_dec =
@@ -1530,7 +1519,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_auto_inc_dec (); }
+  virtual bool gate (function *)
+    {
+#ifdef AUTO_INC_DEC
+      return (optimize > 0 && flag_auto_inc_dec);
+#else
+      return false;
+#endif
+    }
+
+
   unsigned int execute () { return rest_of_handle_auto_inc_dec (); }
 
 }; // class pass_inc_dec

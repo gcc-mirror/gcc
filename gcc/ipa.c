@@ -1283,14 +1283,6 @@ make_pass_ipa_free_inline_summary (gcc::context *ctxt)
   return new pass_ipa_free_inline_summary (ctxt);
 }
 
-/* Do not re-run on ltrans stage.  */
-
-static bool
-gate_whole_program_function_and_variable_visibility (void)
-{
-  return !flag_ltrans;
-}
-
 /* Bring functionss local at LTO time with -fwhole-program.  */
 
 static unsigned int
@@ -1335,9 +1327,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () {
-    return gate_whole_program_function_and_variable_visibility ();
-  }
+
+  virtual bool gate (function *)
+    {
+      /* Do not re-run on ltrans stage.  */
+      return !flag_ltrans;
+    }
   unsigned int execute () {
     return whole_program_function_and_variable_visibility ();
   }
@@ -1624,16 +1619,6 @@ ipa_cdtor_merge (void)
   return 0;
 }
 
-/* Perform the pass when we have no ctors/dtors support
-   or at LTO time to merge multiple constructors into single
-   function.  */
-
-static bool
-gate_ipa_cdtor_merge (void)
-{
-  return !targetm.have_ctors_dtors || (optimize && in_lto_p);
-}
-
 namespace {
 
 const pass_data pass_data_ipa_cdtor_merge =
@@ -1667,10 +1652,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ipa_cdtor_merge (); }
+  virtual bool gate (function *);
   unsigned int execute () { return ipa_cdtor_merge (); }
 
 }; // class pass_ipa_cdtor_merge
+
+bool
+pass_ipa_cdtor_merge::gate (function *)
+{
+  /* Perform the pass when we have no ctors/dtors support
+     or at LTO time to merge multiple constructors into single
+     function.  */
+  return !targetm.have_ctors_dtors || (optimize && in_lto_p);
+}
 
 } // anon namespace
 

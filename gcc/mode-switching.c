@@ -789,16 +789,6 @@ optimize_mode_switching (void)
 
 #endif /* OPTIMIZE_MODE_SWITCHING */
 
-static bool
-gate_mode_switching (void)
-{
-#ifdef OPTIMIZE_MODE_SWITCHING
-  return true;
-#else
-  return false;
-#endif
-}
-
 static unsigned int
 rest_of_handle_mode_switching (void)
 {
@@ -836,7 +826,15 @@ public:
   /* The epiphany backend creates a second instance of this pass, so we need
      a clone method.  */
   opt_pass * clone () { return new pass_mode_switching (m_ctxt); }
-  bool gate () { return gate_mode_switching (); }
+  virtual bool gate (function *)
+    {
+#ifdef OPTIMIZE_MODE_SWITCHING
+      return true;
+#else
+      return false;
+#endif
+    }
+
   unsigned int execute () { return rest_of_handle_mode_switching (); }
 
 }; // class pass_mode_switching

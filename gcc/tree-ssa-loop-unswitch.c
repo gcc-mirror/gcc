@@ -411,12 +411,6 @@ tree_ssa_loop_unswitch (void)
   return tree_ssa_unswitch_loops ();
 }
 
-static bool
-gate_tree_ssa_loop_unswitch (void)
-{
-  return flag_unswitch_loops != 0;
-}
-
 namespace {
 
 const pass_data pass_data_tree_unswitch =
@@ -441,7 +435,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_unswitch (); }
+  virtual bool gate (function *) { return flag_unswitch_loops != 0; }
   unsigned int execute () { return tree_ssa_loop_unswitch (); }
 
 }; // class pass_tree_unswitch

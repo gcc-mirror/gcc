@@ -1247,13 +1247,6 @@ validate_value_data (struct value_data *vd)
 }
 #endif
 
-static bool
-gate_handle_cprop (void)
-{
-  return (optimize > 0 && (flag_cprop_registers));
-}
-
-
 namespace {
 
 const pass_data pass_data_cprop_hardreg =
@@ -1278,7 +1271,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_cprop (); }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0 && (flag_cprop_registers));
+    }
+
   unsigned int execute () { return copyprop_hardreg_forward (); }
 
 }; // class pass_cprop_hardreg

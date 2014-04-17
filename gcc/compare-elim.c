@@ -643,15 +643,6 @@ execute_compare_elim_after_reload (void)
   return 0;
 }
 
-static bool
-gate_compare_elim_after_reload (void)
-{
-  /* Setting this target hook value is how a backend indicates the need.  */
-  if (targetm.flags_regnum == INVALID_REGNUM)
-    return false;
-  return flag_compare_elim_after_reload;
-}
-
 namespace {
 
 const pass_data pass_data_compare_elim_after_reload =
@@ -677,7 +668,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_compare_elim_after_reload (); }
+  virtual bool gate (function *)
+    {
+      /* Setting this target hook value is how a backend indicates the need.  */
+      if (targetm.flags_regnum == INVALID_REGNUM)
+	return false;
+      return flag_compare_elim_after_reload;
+    }
+
   unsigned int execute () { return execute_compare_elim_after_reload (); }
 
 }; // class pass_compare_elim_after_reload

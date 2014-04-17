@@ -1265,12 +1265,6 @@ tree_ssa_loop_ivcanon (void)
   return canonicalize_induction_variables ();
 }
 
-static bool
-gate_tree_ssa_loop_ivcanon (void)
-{
-  return flag_tree_loop_ivcanon != 0;
-}
-
 namespace {
 
 const pass_data pass_data_iv_canon =
@@ -1295,7 +1289,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_ivcanon (); }
+  virtual bool gate (function *) { return flag_tree_loop_ivcanon != 0; }
   unsigned int execute () { return tree_ssa_loop_ivcanon (); }
 
 }; // class pass_iv_canon
@@ -1319,12 +1313,6 @@ tree_complete_unroll (void)
   return tree_unroll_loops_completely (flag_unroll_loops
 				       || flag_peel_loops
 				       || optimize >= 3, true);
-}
-
-static bool
-gate_tree_complete_unroll (void)
-{
-  return true;
 }
 
 namespace {
@@ -1351,7 +1339,6 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_complete_unroll (); }
   unsigned int execute () { return tree_complete_unroll (); }
 
 }; // class pass_complete_unroll
@@ -1385,12 +1372,6 @@ tree_complete_unroll_inner (void)
   return ret;
 }
 
-static bool
-gate_tree_complete_unroll_inner (void)
-{
-  return optimize >= 2;
-}
-
 namespace {
 
 const pass_data pass_data_complete_unrolli =
@@ -1415,7 +1396,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_complete_unroll_inner (); }
+  virtual bool gate (function *) { return optimize >= 2; }
   unsigned int execute () { return tree_complete_unroll_inner (); }
 
 }; // class pass_complete_unrolli

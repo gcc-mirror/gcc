@@ -257,12 +257,6 @@ copy_loop_headers (void)
   return 0;
 }
 
-static bool
-gate_ch (void)
-{
-  return flag_tree_ch != 0;
-}
-
 namespace {
 
 const pass_data pass_data_ch =
@@ -288,7 +282,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ch (); }
+  virtual bool gate (function *) { return flag_tree_ch != 0; }
   unsigned int execute () { return copy_loop_headers (); }
 
 }; // class pass_ch

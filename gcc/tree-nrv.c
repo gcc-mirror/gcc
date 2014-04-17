@@ -272,12 +272,6 @@ tree_nrv (void)
   return 0;
 }
 
-static bool
-gate_pass_return_slot (void)
-{
-  return optimize > 0;
-}
-
 namespace {
 
 const pass_data pass_data_nrv =
@@ -302,7 +296,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_pass_return_slot (); }
+  virtual bool gate (function *) { return optimize > 0; }
+
   unsigned int execute () { return tree_nrv (); }
 
 }; // class pass_nrv

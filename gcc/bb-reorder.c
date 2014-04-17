@@ -2302,15 +2302,6 @@ insert_section_boundary_note (void)
     }
 }
 
-static bool
-gate_handle_reorder_blocks (void)
-{
-  if (targetm.cannot_modify_jumps_p ())
-    return false;
-  return (optimize > 0
-	  && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
-}
-
 static unsigned int
 rest_of_handle_reorder_blocks (void)
 {
@@ -2355,7 +2346,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_reorder_blocks (); }
+  virtual bool gate (function *)
+    {
+      if (targetm.cannot_modify_jumps_p ())
+	return false;
+      return (optimize > 0
+	      && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
+    }
+
   unsigned int execute () { return rest_of_handle_reorder_blocks (); }
 
 }; // class pass_reorder_blocks
@@ -2373,16 +2371,6 @@ make_pass_reorder_blocks (gcc::context *ctxt)
    speed up edge based data flow.  We used to not unfactoring them again,
    which can seriously pessimize code with many computed jumps in the source
    code, such as interpreters.  See e.g. PR15242.  */
-
-static bool
-gate_duplicate_computed_gotos (void)
-{
-  if (targetm.cannot_modify_jumps_p ())
-    return false;
-  return (optimize > 0
-	  && flag_expensive_optimizations
-	  && ! optimize_function_for_size_p (cfun));
-}
 
 
 static unsigned int
@@ -2527,10 +2515,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_duplicate_computed_gotos (); }
+  virtual bool gate (function *);
   unsigned int execute () { return duplicate_computed_gotos (); }
 
 }; // class pass_duplicate_computed_gotos
+
+bool
+pass_duplicate_computed_gotos::gate (function *fun)
+{
+  if (targetm.cannot_modify_jumps_p ())
+    return false;
+  return (optimize > 0
+	  && flag_expensive_optimizations
+	  && ! optimize_function_for_size_p (fun));
+}
 
 } // anon namespace
 
@@ -2538,22 +2536,6 @@ rtl_opt_pass *
 make_pass_duplicate_computed_gotos (gcc::context *ctxt)
 {
   return new pass_duplicate_computed_gotos (ctxt);
-}
-
-static bool
-gate_handle_partition_blocks (void)
-{
-  /* The optimization to partition hot/cold basic blocks into separate
-     sections of the .o file does not work well with linkonce or with
-     user defined section attributes.  Don't call it if either case
-     arises.  */
-  return (flag_reorder_blocks_and_partition
-          && optimize
-	  /* See gate_handle_reorder_blocks.  We should not partition if
-	     we are going to omit the reordering.  */
-	  && optimize_function_for_speed_p (cfun)
-	  && !DECL_ONE_ONLY (current_function_decl)
-	  && !user_defined_section_attribute);
 }
 
 /* This function is the main 'entrance' for the optimization that
@@ -2750,10 +2732,26 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_partition_blocks (); }
+  virtual bool gate (function *);
   unsigned int execute () { return partition_hot_cold_basic_blocks (); }
 
 }; // class pass_partition_blocks
+
+bool
+pass_partition_blocks::gate (function *fun)
+{
+  /* The optimization to partition hot/cold basic blocks into separate
+     sections of the .o file does not work well with linkonce or with
+     user defined section attributes.  Don't call it if either case
+     arises.  */
+  return (flag_reorder_blocks_and_partition
+	  && optimize
+	  /* See gate_handle_reorder_blocks.  We should not partition if
+	     we are going to omit the reordering.  */
+	  && optimize_function_for_speed_p (fun)
+	  && !DECL_ONE_ONLY (current_function_decl)
+	  && !user_defined_section_attribute);
+}
 
 } // anon namespace
 

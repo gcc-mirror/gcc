@@ -756,12 +756,6 @@ tree_ssa_ifcombine (void)
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
-static bool
-gate_ifcombine (void)
-{
-  return 1;
-}
-
 namespace {
 
 const pass_data pass_data_tree_ifcombine =
@@ -786,7 +780,6 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ifcombine (); }
   unsigned int execute () { return tree_ssa_ifcombine (); }
 
 }; // class pass_tree_ifcombine

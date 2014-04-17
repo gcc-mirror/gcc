@@ -2089,12 +2089,6 @@ tree_ssa_strlen (void)
   return 0;
 }
 
-static bool
-gate_strlen (void)
-{
-  return flag_optimize_strlen != 0;
-}
-
 namespace {
 
 const pass_data pass_data_strlen =
@@ -2119,7 +2113,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_strlen (); }
+  virtual bool gate (function *) { return flag_optimize_strlen != 0; }
   unsigned int execute () { return tree_ssa_strlen (); }
 
 }; // class pass_strlen

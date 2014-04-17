@@ -711,12 +711,6 @@ ipa_profile (void)
   return 0;
 }
 
-static bool
-gate_ipa_profile (void)
-{
-  return flag_ipa_profile;
-}
-
 namespace {
 
 const pass_data pass_data_ipa_profile =
@@ -750,7 +744,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ipa_profile (); }
+  virtual bool gate (function *) { return flag_ipa_profile; }
   unsigned int execute () { return ipa_profile (); }
 
 }; // class pass_ipa_profile

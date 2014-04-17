@@ -740,14 +740,6 @@ vtable_verify_main (void)
   return ret;
 }
 
-/* Gate function for the pass.  */
-
-static bool
-gate_tree_vtable_verify (void)
-{
-  return (flag_vtable_verify);
-}
-
 /* Definition of this optimization pass.  */
 
 namespace {
@@ -774,7 +766,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_vtable_verify (); }
+  virtual bool gate (function *) { return (flag_vtable_verify); }
   unsigned int execute () { return vtable_verify_main (); }
 
 }; // class pass_vtable_verify

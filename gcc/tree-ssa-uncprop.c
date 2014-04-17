@@ -581,12 +581,6 @@ uncprop_dom_walker::before_dom_children (basic_block bb)
   uncprop_into_successor_phis (bb);
 }
 
-static bool
-gate_uncprop (void)
-{
-  return flag_tree_dom != 0;
-}
-
 namespace {
 
 const pass_data pass_data_uncprop =
@@ -612,7 +606,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_uncprop (m_ctxt); }
-  bool gate () { return gate_uncprop (); }
+  virtual bool gate (function *) { return flag_tree_dom != 0; }
   unsigned int execute () { return tree_ssa_uncprop (); }
 
 }; // class pass_uncprop

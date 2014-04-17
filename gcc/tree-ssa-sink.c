@@ -588,12 +588,6 @@ do_sink (void)
   return 0;
 }
 
-static bool
-gate_sink (void)
-{
-  return flag_tree_sink != 0;
-}
-
 namespace {
 
 const pass_data pass_data_sink_code =
@@ -621,7 +615,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_sink (); }
+  virtual bool gate (function *) { return flag_tree_sink != 0; }
   unsigned int execute () { return do_sink (); }
 
 }; // class pass_sink_code

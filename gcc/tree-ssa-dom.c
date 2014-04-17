@@ -952,12 +952,6 @@ tree_ssa_dominator_optimize (void)
   return 0;
 }
 
-static bool
-gate_dominator (void)
-{
-  return flag_tree_dom != 0;
-}
-
 namespace {
 
 const pass_data pass_data_dominator =
@@ -985,7 +979,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dominator (m_ctxt); }
-  bool gate () { return gate_dominator (); }
+  virtual bool gate (function *) { return flag_tree_dom != 0; }
   unsigned int execute () { return tree_ssa_dominator_optimize (); }
 
 }; // class pass_dominator
@@ -3142,7 +3136,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_phi_only_cprop (m_ctxt); }
-  bool gate () { return gate_dominator (); }
+  virtual bool gate (function *) { return flag_tree_dom != 0; }
   unsigned int execute () { return eliminate_degenerate_phis (); }
 
 }; // class pass_phi_only_cprop

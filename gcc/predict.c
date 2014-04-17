@@ -3131,12 +3131,6 @@ compute_function_frequency (void)
     }
 }
 
-static bool
-gate_estimate_probability (void)
-{
-  return flag_guess_branch_prob;
-}
-
 /* Build PREDICT_EXPR.  */
 tree
 build_predict_expr (enum br_predictor predictor, enum prediction taken)
@@ -3177,7 +3171,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_estimate_probability (); }
+  virtual bool gate (function *) { return flag_guess_branch_prob; }
   unsigned int execute () { return tree_estimate_probability_driver (); }
 
 }; // class pass_profile

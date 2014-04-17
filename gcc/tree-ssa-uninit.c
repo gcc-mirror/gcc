@@ -2382,7 +2382,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_late_warn_uninitialized (m_ctxt); }
-  bool gate () { return gate_warn_uninitialized (); }
+  virtual bool gate (function *) { return gate_warn_uninitialized (); }
   unsigned int execute () { return execute_late_warn_uninitialized (); }
 
 }; // class pass_late_warn_uninitialized
@@ -2440,7 +2440,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_warn_uninitialized (); }
+  virtual bool gate (function *) { return gate_warn_uninitialized (); }
   unsigned int execute () { return execute_early_warn_uninitialized (); }
 
 }; // class pass_early_warn_uninitialized

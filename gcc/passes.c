@@ -108,7 +108,7 @@ opt_pass::clone ()
 }
 
 bool
-opt_pass::gate ()
+opt_pass::gate (function *)
 {
   return true;
 }
@@ -337,15 +337,6 @@ execute_all_early_local_passes (void)
   return 0;
 }
 
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_early_local_passes (void)
-{
-	  /* Don't bother doing anything if the program has errors.  */
-  return (!seen_error () && !in_lto_p);
-}
-
 namespace {
 
 const pass_data pass_data_early_local_passes =
@@ -370,7 +361,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_early_local_passes (); }
+  virtual bool gate (function *)
+    {
+      /* Don't bother doing anything if the program has errors.  */
+      return (!seen_error () && !in_lto_p);
+    }
+
   unsigned int execute () { return execute_all_early_local_passes (); }
 
 }; // class pass_early_local_passes
@@ -381,16 +377,6 @@ simple_ipa_opt_pass *
 make_pass_early_local_passes (gcc::context *ctxt)
 {
   return new pass_early_local_passes (ctxt);
-}
-
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_early_optimizations (void)
-{
-  return (optimize >= 1
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
 }
 
 namespace {
@@ -417,7 +403,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_early_optimizations (); }
+  virtual bool gate (function *)
+    {
+      return (optimize >= 1
+	      /* Don't bother doing anything if the program has errors.  */
+	      && !seen_error ());
+    }
 
 }; // class pass_all_early_optimizations
 
@@ -427,14 +418,6 @@ static gimple_opt_pass *
 make_pass_all_early_optimizations (gcc::context *ctxt)
 {
   return new pass_all_early_optimizations (ctxt);
-}
-
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_optimizations (void)
-{
-  return optimize >= 1 && !optimize_debug;
 }
 
 namespace {
@@ -461,7 +444,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_optimizations (); }
+  virtual bool gate (function *) { return optimize >= 1 && !optimize_debug; }
 
 }; // class pass_all_optimizations
 
@@ -471,14 +454,6 @@ static gimple_opt_pass *
 make_pass_all_optimizations (gcc::context *ctxt)
 {
   return new pass_all_optimizations (ctxt);
-}
-
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_optimizations_g (void)
-{
-  return optimize >= 1 && optimize_debug;
 }
 
 namespace {
@@ -505,7 +480,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_optimizations_g (); }
+  virtual bool gate (function *) { return optimize >= 1 && optimize_debug; }
 
 }; // class pass_all_optimizations_g
 
@@ -515,14 +490,6 @@ static gimple_opt_pass *
 make_pass_all_optimizations_g (gcc::context *ctxt)
 {
   return new pass_all_optimizations_g (ctxt);
-}
-
-static bool
-gate_rest_of_compilation (void)
-{
-  /* Early return if there were errors.  We can run afoul of our
-     consistency checks, and there's not really much point in fixing them.  */
-  return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
 }
 
 namespace {
@@ -549,7 +516,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rest_of_compilation (); }
+  virtual bool gate (function *)
+    {
+      /* Early return if there were errors.  We can run afoul of our
+	 consistency checks, and there's not really much point in fixing them.  */
+      return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
+    }
 
 }; // class pass_rest_of_compilation
 
@@ -559,12 +531,6 @@ static rtl_opt_pass *
 make_pass_rest_of_compilation (gcc::context *ctxt)
 {
   return new pass_rest_of_compilation (ctxt);
-}
-
-static bool
-gate_postreload (void)
-{
-  return reload_completed;
 }
 
 namespace {
@@ -591,7 +557,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_postreload (); }
+  virtual bool gate (function *) { return reload_completed; }
 
 }; // class pass_postreload
 
@@ -823,7 +789,7 @@ dump_one_pass (opt_pass *pass, int pass_indent)
   const char *pn;
   bool is_on, is_really_on;
 
-  is_on = pass->gate ();
+  is_on = pass->gate (cfun);
   is_really_on = override_gate_status (pass, current_function_decl, is_on);
 
   if (pass->static_pass_number <= 0)
@@ -1976,7 +1942,7 @@ execute_ipa_summary_passes (ipa_opt_pass_d *ipa_pass)
 
       /* Execute all of the IPA_PASSes in the list.  */
       if (ipa_pass->type == IPA_PASS
-	  && pass->gate ()
+	  && pass->gate (cfun)
 	  && ipa_pass->generate_summary)
 	{
 	  pass_init_dump_file (pass);
@@ -2128,7 +2094,7 @@ execute_one_pass (opt_pass *pass)
 
   /* Check whether gate check should be avoided.
      User controls the value of the gate through the parameter "gate_status". */
-  gate_status = pass->gate ();
+  gate_status = pass->gate (cfun);
   gate_status = override_gate_status (pass, current_function_decl, gate_status);
 
   /* Override gate with plugin.  */
@@ -2274,7 +2240,7 @@ ipa_write_summaries_2 (opt_pass *pass, struct lto_out_decl_state *state)
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_summary
-	  && pass->gate ())
+	  && pass->gate (cfun))
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2392,7 +2358,7 @@ ipa_write_optimization_summaries_1 (opt_pass *pass,
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_optimization_summary
-	  && pass->gate ())
+	  && pass->gate (cfun))
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2470,7 +2436,7 @@ ipa_read_summaries_1 (opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if (pass->gate ())
+      if (pass->gate (cfun))
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_summary)
 	    {
@@ -2520,7 +2486,7 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if (pass->gate ())
+      if (pass->gate (cfun))
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_optimization_summary)
 	    {
@@ -2597,7 +2563,7 @@ execute_ipa_stmt_fixups (opt_pass *pass,
     {
       /* Execute all of the IPA_PASSes in the list.  */
       if (pass->type == IPA_PASS
-	  && pass->gate ())
+	  && pass->gate (cfun))
 	{
 	  ipa_opt_pass_d *ipa_pass = (ipa_opt_pass_d *) pass;
 

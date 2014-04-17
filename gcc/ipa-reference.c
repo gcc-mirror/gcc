@@ -1148,14 +1148,6 @@ ipa_reference_read_optimization_summary (void)
     }
 }
 
-static bool
-gate_reference (void)
-{
-  return (flag_ipa_reference
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
-}
-
 namespace {
 
 const pass_data pass_data_ipa_reference =
@@ -1191,7 +1183,13 @@ public:
     {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_reference (); }
+  virtual bool gate (function *)
+    {
+      return (flag_ipa_reference
+	      /* Don't bother doing anything if the program has errors.  */
+	      && !seen_error ());
+    }
+
   unsigned int execute () { return propagate (); }
 
 }; // class pass_ipa_reference

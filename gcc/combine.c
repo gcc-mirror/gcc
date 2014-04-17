@@ -13854,12 +13854,6 @@ dump_combine_total_stats (FILE *file)
      total_attempts, total_merges, total_extras, total_successes);
 }
 
-static bool
-gate_handle_combine (void)
-{
-  return (optimize > 0);
-}
-
 /* Try combining insns through substitution.  */
 static unsigned int
 rest_of_handle_combine (void)
@@ -13914,7 +13908,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_combine (); }
+  virtual bool gate (function *) { return (optimize > 0); }
   unsigned int execute () { return rest_of_handle_combine (); }
 
 }; // class pass_combine

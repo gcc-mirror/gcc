@@ -409,12 +409,6 @@ tree_ssa_phiprop (void)
   return 0;
 }
 
-static bool
-gate_phiprop (void)
-{
-  return flag_tree_phiprop;
-}
-
 namespace {
 
 const pass_data pass_data_phiprop =
@@ -439,7 +433,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_phiprop (); }
+  virtual bool gate (function *) { return flag_tree_phiprop; }
   unsigned int execute () { return tree_ssa_phiprop (); }
 
 }; // class pass_phiprop

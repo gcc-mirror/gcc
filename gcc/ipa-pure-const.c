@@ -1541,7 +1541,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_pure_const (); }
+  virtual bool gate (function *) { return gate_pure_const (); }
   unsigned int execute () { return propagate (); }
 
 }; // class pass_ipa_pure_const
@@ -1716,7 +1716,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_local_pure_const (m_ctxt); }
-  bool gate () { return gate_pure_const (); }
+  virtual bool gate (function *) { return gate_pure_const (); }
   unsigned int execute () { return local_pure_const (); }
 
 }; // class pass_local_pure_const
@@ -1738,12 +1738,6 @@ execute_warn_function_noreturn (void)
       && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == 0)
     warn_function_noreturn (current_function_decl);
   return 0;
-}
-
-static bool
-gate_warn_function_noreturn (void)
-{
-  return warn_suggest_attribute_noreturn;
 }
 
 namespace {
@@ -1770,7 +1764,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_warn_function_noreturn (); }
+  virtual bool gate (function *) { return warn_suggest_attribute_noreturn; }
   unsigned int execute () { return execute_warn_function_noreturn (); }
 
 }; // class pass_warn_function_noreturn

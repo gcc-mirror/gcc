@@ -1504,12 +1504,6 @@ tree_ssa_cd_dce (void)
   return perform_tree_ssa_dce (/*aggressive=*/optimize >= 2);
 }
 
-static bool
-gate_dce (void)
-{
-  return flag_tree_dce != 0;
-}
-
 namespace {
 
 const pass_data pass_data_dce =
@@ -1535,7 +1529,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dce (m_ctxt); }
-  bool gate () { return gate_dce (); }
+  virtual bool gate (function *) { return flag_tree_dce != 0; }
   unsigned int execute () { return tree_ssa_dce (); }
 
 }; // class pass_dce
@@ -1573,7 +1567,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dce_loop (m_ctxt); }
-  bool gate () { return gate_dce (); }
+  virtual bool gate (function *) { return flag_tree_dce != 0; }
   unsigned int execute () { return tree_ssa_dce_loop (); }
 
 }; // class pass_dce_loop
@@ -1611,7 +1605,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_cd_dce (m_ctxt); }
-  bool gate () { return gate_dce (); }
+  virtual bool gate (function *) { return flag_tree_dce != 0; }
   unsigned int execute () { return tree_ssa_cd_dce (); }
 
 }; // class pass_cd_dce

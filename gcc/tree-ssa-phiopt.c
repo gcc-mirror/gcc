@@ -2202,11 +2202,6 @@ gate_hoist_loads (void)
 
 /* Always do these optimizations if we have SSA
    trees to work on.  */
-static bool
-gate_phiopt (void)
-{
-  return 1;
-}
 
 namespace {
 
@@ -2234,7 +2229,6 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_phiopt (m_ctxt); }
-  bool gate () { return gate_phiopt (); }
   unsigned int execute () { return tree_ssa_phiopt (); }
 
 }; // class pass_phiopt
@@ -2245,12 +2239,6 @@ gimple_opt_pass *
 make_pass_phiopt (gcc::context *ctxt)
 {
   return new pass_phiopt (ctxt);
-}
-
-static bool
-gate_cselim (void)
-{
-  return flag_tree_cselim;
 }
 
 namespace {
@@ -2278,7 +2266,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_cselim (); }
+  virtual bool gate (function *) { return flag_tree_cselim; }
   unsigned int execute () { return tree_ssa_cs_elim (); }
 
 }; // class pass_cselim

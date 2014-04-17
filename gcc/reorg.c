@@ -3863,17 +3863,6 @@ dbr_schedule (rtx first)
 }
 #endif /* DELAY_SLOTS */
 
-static bool
-gate_handle_delay_slots (void)
-{
-#ifdef DELAY_SLOTS
-  /* At -O0 dataflow info isn't updated after RA.  */
-  return optimize > 0 && flag_delayed_branch && !crtl->dbr_scheduled_p;
-#else
-  return 0;
-#endif
-}
-
 /* Run delay slot optimization.  */
 static unsigned int
 rest_of_handle_delay_slots (void)
@@ -3908,10 +3897,21 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_delay_slots (); }
+  virtual bool gate (function *);
   unsigned int execute () { return rest_of_handle_delay_slots (); }
 
 }; // class pass_delay_slots
+
+bool
+pass_delay_slots::gate (function *)
+{
+#ifdef DELAY_SLOTS
+  /* At -O0 dataflow info isn't updated after RA.  */
+  return optimize > 0 && flag_delayed_branch && !crtl->dbr_scheduled_p;
+#else
+  return 0;
+#endif
+}
 
 } // anon namespace
 
@@ -3922,12 +3922,6 @@ make_pass_delay_slots (gcc::context *ctxt)
 }
 
 /* Machine dependent reorg pass.  */
-static bool
-gate_handle_machine_reorg (void)
-{
-  return targetm.machine_dependent_reorg != 0;
-}
-
 
 static unsigned int
 rest_of_handle_machine_reorg (void)
@@ -3960,7 +3954,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_machine_reorg (); }
+  virtual bool gate (function *)
+    {
+      return targetm.machine_dependent_reorg != 0;
+    }
+
   unsigned int execute () { return rest_of_handle_machine_reorg (); }
 
 }; // class pass_machine_reorg

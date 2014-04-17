@@ -80,7 +80,6 @@ along with GCC; see the file COPYING3.  If not see
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
 
-static bool gate_dse (void);
 static unsigned int tree_ssa_dse (void);
 
 
@@ -363,12 +362,6 @@ tree_ssa_dse (void)
   return 0;
 }
 
-static bool
-gate_dse (void)
-{
-  return flag_tree_dse != 0;
-}
-
 namespace {
 
 const pass_data pass_data_dse =
@@ -394,7 +387,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dse (m_ctxt); }
-  bool gate () { return gate_dse (); }
+  virtual bool gate (function *) { return flag_tree_dse != 0; }
   unsigned int execute () { return tree_ssa_dse (); }
 
 }; // class pass_dse

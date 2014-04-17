@@ -2365,15 +2365,6 @@ rewrite_into_ssa (void)
   return 0;
 }
 
-/* Gate for IPCP optimization.  */
-
-static bool
-gate_into_ssa (void)
-{
-  /* Do nothing for funcions that was produced already in SSA form.  */
-  return !(cfun->curr_properties & PROP_ssa);
-}
-
 namespace {
 
 const pass_data pass_data_build_ssa =
@@ -2398,7 +2389,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_into_ssa (); }
+  virtual bool gate (function *fun)
+    {
+      /* Do nothing for funcions that was produced already in SSA form.  */
+      return !(fun->curr_properties & PROP_ssa);
+    }
+
   unsigned int execute () { return rewrite_into_ssa (); }
 
 }; // class pass_build_ssa

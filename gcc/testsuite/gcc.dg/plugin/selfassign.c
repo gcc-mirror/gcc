@@ -270,14 +270,6 @@ execute_warn_self_assign (void)
   return 0;
 }
 
-/* Pass gate function. Currently always returns true.  */
-
-static bool
-gate_warn_self_assign (void)
-{
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_warn_self_assign =
@@ -302,7 +294,6 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_warn_self_assign (); }
   unsigned int execute () { return execute_warn_self_assign (); }
 
 }; // class pass_warn_self_assign

@@ -1494,12 +1494,6 @@ branch_target_load_optimize (bool after_prologue_epilogue_gen)
     }
 }
 
-static bool
-gate_handle_branch_target_load_optimize1 (void)
-{
-  return flag_branch_target_load_optimize;
-}
-
 
 static unsigned int
 rest_of_handle_branch_target_load_optimize1 (void)
@@ -1532,7 +1526,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_branch_target_load_optimize1 (); }
+  virtual bool gate (function *) { return flag_branch_target_load_optimize; }
   unsigned int execute () {
     return rest_of_handle_branch_target_load_optimize1 ();
   }
@@ -1545,12 +1539,6 @@ rtl_opt_pass *
 make_pass_branch_target_load_optimize1 (gcc::context *ctxt)
 {
   return new pass_branch_target_load_optimize1 (ctxt);
-}
-
-static bool
-gate_handle_branch_target_load_optimize2 (void)
-{
-  return (optimize > 0 && flag_branch_target_load_optimize2);
 }
 
 
@@ -1600,7 +1588,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_branch_target_load_optimize2 (); }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0 && flag_branch_target_load_optimize2);
+    }
+
   unsigned int execute () {
     return rest_of_handle_branch_target_load_optimize2 ();
   }

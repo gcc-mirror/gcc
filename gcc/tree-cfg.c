@@ -8355,12 +8355,6 @@ run_warn_unused_result (void)
   return 0;
 }
 
-static bool
-gate_warn_unused_result (void)
-{
-  return flag_warn_unused_result;
-}
-
 namespace {
 
 const pass_data pass_data_warn_unused_result =
@@ -8385,7 +8379,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_warn_unused_result (); }
+  virtual bool gate (function *) { return flag_warn_unused_result; }
   unsigned int execute () { return run_warn_unused_result (); }
 
 }; // class pass_warn_unused_result

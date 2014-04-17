@@ -1693,14 +1693,6 @@ make_pass_lower_complex (gcc::context *ctxt)
 }
 
 
-static bool
-gate_no_optimization (void)
-{
-  /* With errors, normal optimization passes are not run.  If we don't
-     lower complex operations at all, rtl expansion will abort.  */
-  return !(cfun->curr_properties & PROP_gimple_lcx);
-}
-
 namespace {
 
 const pass_data pass_data_lower_complex_O0 =
@@ -1725,7 +1717,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_no_optimization (); }
+  virtual bool gate (function *fun)
+    {
+      /* With errors, normal optimization passes are not run.  If we don't
+	 lower complex operations at all, rtl expansion will abort.  */
+      return !(fun->curr_properties & PROP_gimple_lcx);
+    }
+
   unsigned int execute () { return tree_lower_complex (); }
 
 }; // class pass_lower_complex_O0

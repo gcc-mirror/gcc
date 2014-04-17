@@ -2315,13 +2315,6 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
     }
 }
 
-static bool
-gate_handle_postreload (void)
-{
-  return (optimize > 0 && reload_completed);
-}
-
-
 static unsigned int
 rest_of_handle_postreload (void)
 {
@@ -2363,7 +2356,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_postreload (); }
+  virtual bool gate (function *) { return (optimize > 0 && reload_completed); }
+
   unsigned int execute () { return rest_of_handle_postreload (); }
 
 }; // class pass_postreload_cse

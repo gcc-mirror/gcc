@@ -3831,13 +3831,6 @@ ssa_forward_propagate_and_combine (void)
   return todoflags;
 }
 
-
-static bool
-gate_forwprop (void)
-{
-  return flag_tree_forwprop;
-}
-
 namespace {
 
 const pass_data pass_data_forwprop =
@@ -3863,7 +3856,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_forwprop (m_ctxt); }
-  bool gate () { return gate_forwprop (); }
+  virtual bool gate (function *) { return flag_tree_forwprop; }
   unsigned int execute () { return ssa_forward_propagate_and_combine (); }
 
 }; // class pass_forwprop

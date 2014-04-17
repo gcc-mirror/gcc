@@ -325,12 +325,6 @@ replace_ref (df_ref ref, rtx reg)
 }
 
 
-static bool
-gate_handle_web (void)
-{
-  return (optimize > 0 && flag_web);
-}
-
 /* Main entry point.  */
 
 static unsigned int
@@ -473,7 +467,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_web (); }
+  virtual bool gate (function *) { return (optimize > 0 && flag_web); }
   unsigned int execute () { return web_main (); }
 
 }; // class pass_web

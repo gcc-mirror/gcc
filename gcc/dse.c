@@ -608,11 +608,6 @@ static bitmap kill_on_calls;
 
 /* The number of bits used in the global bitmaps.  */
 static unsigned int current_position;
-
-
-static bool gate_dse1 (void);
-static bool gate_dse2 (void);
-
 
 /*----------------------------------------------------------------------------
    Zeroth step.
@@ -3712,20 +3707,6 @@ rest_of_handle_dse (void)
   return 0;
 }
 
-static bool
-gate_dse1 (void)
-{
-  return optimize > 0 && flag_dse
-    && dbg_cnt (dse1);
-}
-
-static bool
-gate_dse2 (void)
-{
-  return optimize > 0 && flag_dse
-    && dbg_cnt (dse2);
-}
-
 namespace {
 
 const pass_data pass_data_rtl_dse1 =
@@ -3750,7 +3731,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_dse1 (); }
+  virtual bool gate (function *)
+    {
+      return optimize > 0 && flag_dse && dbg_cnt (dse1);
+    }
+
   unsigned int execute () { return rest_of_handle_dse (); }
 
 }; // class pass_rtl_dse1
@@ -3787,7 +3772,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_dse2 (); }
+  virtual bool gate (function *)
+    {
+      return optimize > 0 && flag_dse && dbg_cnt (dse2);
+    }
+
   unsigned int execute () { return rest_of_handle_dse (); }
 
 }; // class pass_rtl_dse2

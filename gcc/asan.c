@@ -2504,7 +2504,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_asan (m_ctxt); }
-  bool gate () { return gate_asan (); }
+  virtual bool gate (function *) { return gate_asan (); }
   unsigned int execute () { return asan_instrument (); }
 
 }; // class pass_asan
@@ -2515,12 +2515,6 @@ gimple_opt_pass *
 make_pass_asan (gcc::context *ctxt)
 {
   return new pass_asan (ctxt);
-}
-
-static bool
-gate_asan_O0 (void)
-{
-  return !optimize && gate_asan ();
 }
 
 namespace {
@@ -2548,7 +2542,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_asan_O0 (); }
+  virtual bool gate (function *) { return !optimize && gate_asan (); }
   unsigned int execute () { return asan_instrument (); }
 
 }; // class pass_asan_O0
@@ -2599,12 +2593,6 @@ execute_sanopt (void)
   return 0;
 }
 
-static bool
-gate_sanopt (void)
-{
-  return flag_sanitize;
-}
-
 namespace {
 
 const pass_data pass_data_sanopt =
@@ -2630,7 +2618,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_sanopt (); }
+  virtual bool gate (function *) { return flag_sanitize; }
   unsigned int execute () { return execute_sanopt (); }
 
 }; // class pass_sanopt
