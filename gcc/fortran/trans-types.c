@@ -373,7 +373,7 @@ gfc_init_kinds (void)
       /* The middle end doesn't support constants larger than 2*HWI.
 	 Perhaps the target hook shouldn't have accepted these either,
 	 but just to be safe...  */
-      bitsize = GET_MODE_BITSIZE (mode);
+      bitsize = GET_MODE_BITSIZE ((enum machine_mode) mode);
       if (bitsize > 2*HOST_BITS_PER_WIDE_INT)
 	continue;
 

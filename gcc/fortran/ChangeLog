@@ -1,3 +1,8 @@
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-types.c (gfc_init_kinds): Make sure GET_MODE_BITSIZE
+	argument is enum machine_mode.
+
 2014-04-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/58085

@@ -1,3 +1,17 @@
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* genmodes.c (struct mode_data): Add need_bytesize_adj field.
+	(blank_mode): Initialize it.
+	(emit_mode_size_inline, emit_mode_nunits_inline,
+	emit_mode_inner_inline): New functions.
+	(emit_insn_modes_h): Call them and surround their output with
+	#if GCC_VERSION >= 4001 ... #endif.
+	* machmode.h (GET_MODE_SIZE, GET_MODE_NUNITS, GET_MODE_INNER):
+	For GCC_VERSION >= 4001 use mode_*_inline routines instead of
+	mode_* arrays if the argument is __builtin_constant_p.
+	* lower-subreg.c (dump_choices): Make sure GET_MODE_SIZE argument
+	is enum machine_mode.
+
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* passes.c (opt_pass::execute): Adjust.
