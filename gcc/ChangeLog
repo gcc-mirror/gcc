@@ -1,3 +1,9 @@
+2014-04-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (inline_small_functions): Account only non-cold
+	functions.
+	* doc/invoke.texi (inline-unit-growth): Update documentation.
+
 2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.md (addti3, subti3): New.

@@ -1585,7 +1585,10 @@ inline_small_functions (void)
 	    struct inline_summary *info = inline_summary (node);
 	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->aux;
 
-	    if (!DECL_EXTERNAL (node->decl))
+	    /* Do not account external functions, they will be optimized out
+	       if not inlined.  Also only count the non-cold portion of program.  */
+	    if (!DECL_EXTERNAL (node->decl)
+		&& node->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED)
 	      initial_size += info->size;
 	    info->growth = estimate_growth (node);
 	    if (dfs && dfs->next_cycle)

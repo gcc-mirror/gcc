@@ -9409,7 +9409,8 @@ before applying @option{--param inline-unit-growth}.  The default is 10000.
 @item inline-unit-growth
 Specifies maximal overall growth of the compilation unit caused by inlining.
 The default value is 30 which limits unit growth to 1.3 times the original
-size.
+size. Cold functions (either marked cold via an attribibute or by profile
+feedback) are not accounted into the unit size.
 
 @item ipcp-unit-growth
 Specifies maximal overall growth of the compilation unit caused by
