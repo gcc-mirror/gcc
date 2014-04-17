@@ -1,3 +1,15 @@
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56781
+	* maint-tool: Also emit rule for noasan/ subdirectory.
+	* configure.ac (NOASANFLAG): Set and substitute.
+	* Makefile.in: Regenerated.
+	(NOASANFLAG): Set.
+	(all, $(TARGETLIB), mostlyclean): Handle noasan subdir like pic
+	subdir.
+	(stamp-noasandir): New goal.
+	* configure: Regenerated.
+
 2014-04-01  Richard Biener  <rguenther@suse.de>
 
 	* simple-object.c (simple_object_internal_write): Handle

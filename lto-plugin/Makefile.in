@@ -239,15 +239,18 @@ Wc = -Wc,
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,)
+	$(if $(wildcard ../libiberty/noasan/libiberty.a),$(Wc)../libiberty/noasan/libiberty.a, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,))
 
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
 liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	$(lt_host_flags) -module -bindir $(libexecsubdir) \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
+	$(if $(wildcard ../libiberty/noasan/libiberty.a),, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a))
 
 liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
-	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+	../libiberty/noasan/libiberty.a),../libiberty/noasan/libiberty.a, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,))
 
 liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -539,6 +542,8 @@ uninstall-am: uninstall-libexecsubLTLIBRARIES
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-libexecsubLTLIBRARIES
 
+override CFLAGS := $(filter-out -fsanitize=address,$(CFLAGS))
+override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 
 all-local: $(in_gcc_libs)
 

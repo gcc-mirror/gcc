@@ -2,8 +2,8 @@
 # Originally written by K. Richard Pixley <rich@cygnus.com>.
 #
 # Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-# 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-# Free Software Foundation
+# 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+# 2012, 2014 Free Software Foundation
 #
 # This file is part of the libiberty library.
 # Libiberty is free software; you can redistribute it and/or
@@ -62,6 +62,7 @@ MAKEINFO = @MAKEINFO@
 PERL = @PERL@
 
 PICFLAG = @PICFLAG@
+NOASANFLAG = @NOASANFLAG@
 
 MAKEOVERRIDES =
 
@@ -101,7 +102,7 @@ FLAGS_TO_PASS = \
 SUBDIRS = testsuite
 
 # FIXME: add @BUILD_INFO@ once we're sure it works for everyone.
-all: stamp-picdir $(TARGETLIB) required-list all-subdir
+all: stamp-picdir stamp-noasandir $(TARGETLIB) required-list all-subdir
 	@: $(MAKE) ; $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
 .PHONY: check installcheck
@@ -241,12 +242,19 @@ INSTALLED_HEADERS =                                                     \
 	$(INCDIR)/timeval-utils.h
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
-	-rm -f $(TARGETLIB) pic/$(TARGETLIB)
+	-rm -f $(TARGETLIB) pic/$(TARGETLIB) noasan/$(TARGETLIB)
 	$(AR) $(AR_FLAGS) $(TARGETLIB) \
 	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	$(RANLIB) $(TARGETLIB)
 	if [ x"$(PICFLAG)" != x ]; then \
 	  cd pic; \
+	  $(AR) $(AR_FLAGS) $(TARGETLIB) \
+	    $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS); \
+	  $(RANLIB) $(TARGETLIB); \
+	  cd ..; \
+	else true; fi; \
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  cd noasan; \
 	  $(AR) $(AR_FLAGS) $(TARGETLIB) \
 	    $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS); \
 	  $(RANLIB) $(TARGETLIB); \
@@ -389,6 +397,12 @@ stamp-picdir:
 	else true; fi
 	touch stamp-picdir
 
+stamp-noasandir:
+	if [ x"$(NOASANFLAG)" != x ] && [ ! -d noasan ]; then \
+	  mkdir noasan; \
+	else true; fi
+	touch stamp-noasandir
+
 .PHONY: all etags tags ls clean stage1 stage2
 
 etags tags: TAGS etags-subdir
@@ -426,9 +440,9 @@ maint-deps :
 # Cleaning has to be done carefully to ensure that we don't clean our SUBDIRS
 # multiple times, hence our explicit recursion with an empty SUBDIRS.
 mostlyclean: mostlyclean-subdir
-	-rm -rf *.$(objext) pic core errs \#* *.E a.out
+	-rm -rf *.$(objext) pic noasan core errs \#* *.E a.out
 	-rm -f errors dummy config.h stamp-*
-	-rm -f $(CONFIG_H) stamp-picdir
+	-rm -f $(CONFIG_H) stamp-picdir stamp-noasandir
 	-rm -f libiberty.aux libiberty.cp libiberty.cps libiberty.fn libiberty.ky
 	-rm -f libiberty.log libiberty.tmp libiberty.tps libiberty.pg
 	-rm -f libiberty.pgs libiberty.toc libiberty.tp libiberty.tpl libiberty.vr
@@ -485,8 +499,8 @@ maintainer-clean-subdir: config.h
 	  cd $$dir && $(MAKE) $(FLAGS_TO_PASS) $$target; \
 	done
 
-$(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS): stamp-picdir
-$(CONFIGURED_OFILES): stamp-picdir
+$(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS): stamp-picdir stamp-noasandir
+$(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 
 # Don't export variables to the environment, in order to not confuse
 # configure.
@@ -500,12 +514,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/_doprnt.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/_doprnt.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/_doprnt.c $(OUTPUT_OPTION)
 
 ./alloca.$(objext): $(srcdir)/alloca.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/alloca.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/alloca.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/alloca.c $(OUTPUT_OPTION)
 
@@ -514,6 +534,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/argv.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/argv.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/argv.c $(OUTPUT_OPTION)
 
 ./asprintf.$(objext): $(srcdir)/asprintf.c config.h $(INCDIR)/ansidecl.h \
@@ -521,11 +544,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/asprintf.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/asprintf.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/asprintf.c $(OUTPUT_OPTION)
 
 ./atexit.$(objext): $(srcdir)/atexit.c config.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/atexit.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/atexit.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/atexit.c $(OUTPUT_OPTION)
 
@@ -534,11 +563,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/basename.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/basename.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/basename.c $(OUTPUT_OPTION)
 
 ./bcmp.$(objext): $(srcdir)/bcmp.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/bcmp.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/bcmp.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/bcmp.c $(OUTPUT_OPTION)
 
@@ -546,11 +581,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/bcopy.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/bcopy.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/bcopy.c $(OUTPUT_OPTION)
 
 ./bsearch.$(objext): $(srcdir)/bsearch.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/bsearch.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/bsearch.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/bsearch.c $(OUTPUT_OPTION)
 
@@ -558,11 +599,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/bzero.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/bzero.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/bzero.c $(OUTPUT_OPTION)
 
 ./calloc.$(objext): $(srcdir)/calloc.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/calloc.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/calloc.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/calloc.c $(OUTPUT_OPTION)
 
@@ -571,11 +618,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/choose-temp.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/choose-temp.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/choose-temp.c $(OUTPUT_OPTION)
 
 ./clock.$(objext): $(srcdir)/clock.c config.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/clock.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/clock.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/clock.c $(OUTPUT_OPTION)
 
@@ -584,11 +637,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/concat.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/concat.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/concat.c $(OUTPUT_OPTION)
 
 ./copysign.$(objext): $(srcdir)/copysign.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/copysign.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/copysign.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/copysign.c $(OUTPUT_OPTION)
 
@@ -598,6 +657,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/cp-demangle.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/cp-demangle.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/cp-demangle.c $(OUTPUT_OPTION)
 
 ./cp-demint.$(objext): $(srcdir)/cp-demint.c config.h $(INCDIR)/ansidecl.h \
@@ -605,6 +667,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/cp-demint.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/cp-demint.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/cp-demint.c $(OUTPUT_OPTION)
 
@@ -614,12 +679,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/cplus-dem.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/cplus-dem.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/cplus-dem.c $(OUTPUT_OPTION)
 
 ./crc32.$(objext): $(srcdir)/crc32.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/crc32.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/crc32.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/crc32.c $(OUTPUT_OPTION)
 
@@ -628,12 +699,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/dwarfnames.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/dwarfnames.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/dwarfnames.c $(OUTPUT_OPTION)
 
 ./dyn-string.$(objext): $(srcdir)/dyn-string.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/dyn-string.h $(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/dyn-string.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/dyn-string.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/dyn-string.c $(OUTPUT_OPTION)
 
@@ -642,11 +719,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/fdmatch.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/fdmatch.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/fdmatch.c $(OUTPUT_OPTION)
 
 ./ffs.$(objext): $(srcdir)/ffs.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/ffs.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/ffs.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/ffs.c $(OUTPUT_OPTION)
 
@@ -654,6 +737,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	$(INCDIR)/fibheap.h $(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/fibheap.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/fibheap.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/fibheap.c $(OUTPUT_OPTION)
 
@@ -663,12 +749,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/filename_cmp.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/filename_cmp.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/filename_cmp.c $(OUTPUT_OPTION)
 
 ./floatformat.$(objext): $(srcdir)/floatformat.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/floatformat.h $(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/floatformat.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/floatformat.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/floatformat.c $(OUTPUT_OPTION)
 
@@ -677,6 +769,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/fnmatch.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/fnmatch.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/fnmatch.c $(OUTPUT_OPTION)
 
 ./fopen_unlocked.$(objext): $(srcdir)/fopen_unlocked.c config.h \
@@ -684,11 +779,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/fopen_unlocked.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/fopen_unlocked.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/fopen_unlocked.c $(OUTPUT_OPTION)
 
 ./getcwd.$(objext): $(srcdir)/getcwd.c config.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/getcwd.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/getcwd.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/getcwd.c $(OUTPUT_OPTION)
 
@@ -697,17 +798,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/getopt.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/getopt.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/getopt.c $(OUTPUT_OPTION)
 
 ./getopt1.$(objext): $(srcdir)/getopt1.c config.h $(INCDIR)/getopt.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/getopt1.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/getopt1.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/getopt1.c $(OUTPUT_OPTION)
 
 ./getpagesize.$(objext): $(srcdir)/getpagesize.c config.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/getpagesize.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/getpagesize.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/getpagesize.c $(OUTPUT_OPTION)
 
@@ -716,12 +826,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/getpwd.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/getpwd.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/getpwd.c $(OUTPUT_OPTION)
 
 ./getruntime.$(objext): $(srcdir)/getruntime.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/getruntime.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/getruntime.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/getruntime.c $(OUTPUT_OPTION)
 
@@ -730,12 +846,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/gettimeofday.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/gettimeofday.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/gettimeofday.c $(OUTPUT_OPTION)
 
 ./hashtab.$(objext): $(srcdir)/hashtab.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/hashtab.h $(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/hashtab.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/hashtab.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/hashtab.c $(OUTPUT_OPTION)
 
@@ -744,17 +866,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/hex.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/hex.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/hex.c $(OUTPUT_OPTION)
 
 ./index.$(objext): $(srcdir)/index.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/index.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/index.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/index.c $(OUTPUT_OPTION)
 
 ./insque.$(objext): $(srcdir)/insque.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/insque.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/insque.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/insque.c $(OUTPUT_OPTION)
 
@@ -764,12 +895,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/lbasename.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/lbasename.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/lbasename.c $(OUTPUT_OPTION)
 
 ./lrealpath.$(objext): $(srcdir)/lrealpath.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/lrealpath.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/lrealpath.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/lrealpath.c $(OUTPUT_OPTION)
 
@@ -778,6 +915,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/make-relative-prefix.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/make-relative-prefix.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/make-relative-prefix.c $(OUTPUT_OPTION)
 
 ./make-temp-file.$(objext): $(srcdir)/make-temp-file.c config.h \
@@ -785,11 +925,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/make-temp-file.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/make-temp-file.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/make-temp-file.c $(OUTPUT_OPTION)
 
 ./md5.$(objext): $(srcdir)/md5.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/md5.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/md5.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/md5.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/md5.c $(OUTPUT_OPTION)
 
@@ -797,11 +943,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memchr.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memchr.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/memchr.c $(OUTPUT_OPTION)
 
 ./memcmp.$(objext): $(srcdir)/memcmp.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memcmp.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memcmp.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/memcmp.c $(OUTPUT_OPTION)
 
@@ -809,11 +961,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memcpy.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memcpy.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/memcpy.c $(OUTPUT_OPTION)
 
 ./memmem.$(objext): $(srcdir)/memmem.c config.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memmem.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memmem.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/memmem.c $(OUTPUT_OPTION)
 
@@ -821,11 +979,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memmove.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memmove.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/memmove.c $(OUTPUT_OPTION)
 
 ./mempcpy.$(objext): $(srcdir)/mempcpy.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/mempcpy.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/mempcpy.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/mempcpy.c $(OUTPUT_OPTION)
 
@@ -833,17 +997,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memset.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memset.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/memset.c $(OUTPUT_OPTION)
 
 ./mkstemps.$(objext): $(srcdir)/mkstemps.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/mkstemps.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/mkstemps.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/mkstemps.c $(OUTPUT_OPTION)
 
 ./msdos.$(objext): $(srcdir)/msdos.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/msdos.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/msdos.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/msdos.c $(OUTPUT_OPTION)
 
@@ -852,11 +1025,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/objalloc.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/objalloc.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/objalloc.c $(OUTPUT_OPTION)
 
 ./obstack.$(objext): $(srcdir)/obstack.c config.h $(INCDIR)/obstack.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/obstack.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/obstack.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/obstack.c $(OUTPUT_OPTION)
 
@@ -865,6 +1044,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/partition.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/partition.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/partition.c $(OUTPUT_OPTION)
 
 ./pex-common.$(objext): $(srcdir)/pex-common.c config.h $(INCDIR)/ansidecl.h \
@@ -872,12 +1054,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-common.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/pex-common.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-common.c $(OUTPUT_OPTION)
 
 ./pex-djgpp.$(objext): $(srcdir)/pex-djgpp.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h $(srcdir)/pex-common.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-djgpp.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/pex-djgpp.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-djgpp.c $(OUTPUT_OPTION)
 
@@ -887,12 +1075,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-msdos.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/pex-msdos.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-msdos.c $(OUTPUT_OPTION)
 
 ./pex-one.$(objext): $(srcdir)/pex-one.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-one.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/pex-one.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-one.c $(OUTPUT_OPTION)
 
@@ -901,12 +1095,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-unix.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/pex-unix.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-unix.c $(OUTPUT_OPTION)
 
 ./pex-win32.$(objext): $(srcdir)/pex-win32.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h $(srcdir)/pex-common.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pex-win32.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/pex-win32.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/pex-win32.c $(OUTPUT_OPTION)
 
@@ -915,6 +1115,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/pexecute.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/pexecute.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/pexecute.c $(OUTPUT_OPTION)
 
 ./physmem.$(objext): $(srcdir)/physmem.c config.h $(INCDIR)/ansidecl.h \
@@ -922,17 +1125,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/physmem.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/physmem.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/physmem.c $(OUTPUT_OPTION)
 
 ./putenv.$(objext): $(srcdir)/putenv.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/putenv.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/putenv.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/putenv.c $(OUTPUT_OPTION)
 
 ./random.$(objext): $(srcdir)/random.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/random.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/random.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/random.c $(OUTPUT_OPTION)
 
@@ -941,17 +1153,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/regex.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/regex.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/regex.c $(OUTPUT_OPTION)
 
 ./rename.$(objext): $(srcdir)/rename.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/rename.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/rename.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/rename.c $(OUTPUT_OPTION)
 
 ./rindex.$(objext): $(srcdir)/rindex.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/rindex.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/rindex.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/rindex.c $(OUTPUT_OPTION)
 
@@ -960,11 +1181,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/safe-ctype.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/safe-ctype.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/safe-ctype.c $(OUTPUT_OPTION)
 
 ./setenv.$(objext): $(srcdir)/setenv.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/setenv.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/setenv.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/setenv.c $(OUTPUT_OPTION)
 
@@ -972,17 +1199,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/setproctitle.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/setproctitle.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/setproctitle.c $(OUTPUT_OPTION)
 
 ./sha1.$(objext): $(srcdir)/sha1.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/sha1.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/sha1.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/sha1.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/sha1.c $(OUTPUT_OPTION)
 
 ./sigsetmask.$(objext): $(srcdir)/sigsetmask.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/sigsetmask.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/sigsetmask.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/sigsetmask.c $(OUTPUT_OPTION)
 
@@ -992,6 +1228,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/simple-object-coff.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/simple-object-coff.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/simple-object-coff.c $(OUTPUT_OPTION)
 
 ./simple-object-elf.$(objext): $(srcdir)/simple-object-elf.c config.h \
@@ -999,6 +1238,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	$(srcdir)/simple-object-common.h $(INCDIR)/simple-object.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/simple-object-elf.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/simple-object-elf.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/simple-object-elf.c $(OUTPUT_OPTION)
 
@@ -1008,6 +1250,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/simple-object-mach-o.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/simple-object-mach-o.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/simple-object-mach-o.c $(OUTPUT_OPTION)
 
 ./simple-object-xcoff.$(objext): $(srcdir)/simple-object-xcoff.c config.h \
@@ -1015,6 +1260,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	$(srcdir)/simple-object-common.h $(INCDIR)/simple-object.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/simple-object-xcoff.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/simple-object-xcoff.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/simple-object-xcoff.c $(OUTPUT_OPTION)
 
@@ -1024,11 +1272,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/simple-object.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/simple-object.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/simple-object.c $(OUTPUT_OPTION)
 
 ./snprintf.$(objext): $(srcdir)/snprintf.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/snprintf.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/snprintf.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/snprintf.c $(OUTPUT_OPTION)
 
@@ -1037,12 +1291,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/sort.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/sort.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/sort.c $(OUTPUT_OPTION)
 
 ./spaces.$(objext): $(srcdir)/spaces.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/spaces.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/spaces.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/spaces.c $(OUTPUT_OPTION)
 
@@ -1051,11 +1311,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/splay-tree.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/splay-tree.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/splay-tree.c $(OUTPUT_OPTION)
 
 ./stack-limit.$(objext): $(srcdir)/stack-limit.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/stack-limit.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/stack-limit.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/stack-limit.c $(OUTPUT_OPTION)
 
@@ -1063,11 +1329,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/stpcpy.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/stpcpy.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/stpcpy.c $(OUTPUT_OPTION)
 
 ./stpncpy.$(objext): $(srcdir)/stpncpy.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/stpncpy.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/stpncpy.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/stpncpy.c $(OUTPUT_OPTION)
 
@@ -1075,17 +1347,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strcasecmp.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strcasecmp.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strcasecmp.c $(OUTPUT_OPTION)
 
 ./strchr.$(objext): $(srcdir)/strchr.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strchr.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strchr.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strchr.c $(OUTPUT_OPTION)
 
 ./strdup.$(objext): $(srcdir)/strdup.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strdup.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strdup.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strdup.c $(OUTPUT_OPTION)
 
@@ -1094,11 +1375,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strerror.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strerror.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strerror.c $(OUTPUT_OPTION)
 
 ./strncasecmp.$(objext): $(srcdir)/strncasecmp.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strncasecmp.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strncasecmp.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strncasecmp.c $(OUTPUT_OPTION)
 
@@ -1106,11 +1393,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strncmp.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strncmp.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strncmp.c $(OUTPUT_OPTION)
 
 ./strndup.$(objext): $(srcdir)/strndup.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strndup.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strndup.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strndup.c $(OUTPUT_OPTION)
 
@@ -1118,11 +1411,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strnlen.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strnlen.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strnlen.c $(OUTPUT_OPTION)
 
 ./strrchr.$(objext): $(srcdir)/strrchr.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strrchr.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strrchr.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strrchr.c $(OUTPUT_OPTION)
 
@@ -1131,11 +1430,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strsignal.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strsignal.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strsignal.c $(OUTPUT_OPTION)
 
 ./strstr.$(objext): $(srcdir)/strstr.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strstr.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strstr.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strstr.c $(OUTPUT_OPTION)
 
@@ -1144,11 +1449,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strtod.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strtod.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strtod.c $(OUTPUT_OPTION)
 
 ./strtol.$(objext): $(srcdir)/strtol.c config.h $(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strtol.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strtol.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strtol.c $(OUTPUT_OPTION)
 
@@ -1157,12 +1468,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strtoul.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strtoul.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/strtoul.c $(OUTPUT_OPTION)
 
 ./strverscmp.$(objext): $(srcdir)/strverscmp.c $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strverscmp.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/strverscmp.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strverscmp.c $(OUTPUT_OPTION)
 
@@ -1171,11 +1488,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/timeval-utils.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/timeval-utils.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/timeval-utils.c $(OUTPUT_OPTION)
 
 ./tmpnam.$(objext): $(srcdir)/tmpnam.c
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/tmpnam.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/tmpnam.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/tmpnam.c $(OUTPUT_OPTION)
 
@@ -1184,6 +1507,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/unlink-if-ordinary.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/unlink-if-ordinary.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/unlink-if-ordinary.c $(OUTPUT_OPTION)
 
 ./vasprintf.$(objext): $(srcdir)/vasprintf.c config.h $(INCDIR)/ansidecl.h \
@@ -1191,11 +1517,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vasprintf.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vasprintf.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/vasprintf.c $(OUTPUT_OPTION)
 
 ./vfork.$(objext): $(srcdir)/vfork.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vfork.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vfork.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/vfork.c $(OUTPUT_OPTION)
 
@@ -1203,11 +1535,17 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vfprintf.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vfprintf.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/vfprintf.c $(OUTPUT_OPTION)
 
 ./vprintf.$(objext): $(srcdir)/vprintf.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vprintf.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vprintf.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/vprintf.c $(OUTPUT_OPTION)
 
@@ -1216,17 +1554,26 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vsnprintf.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vsnprintf.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/vsnprintf.c $(OUTPUT_OPTION)
 
 ./vsprintf.$(objext): $(srcdir)/vsprintf.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/vsprintf.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/vsprintf.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/vsprintf.c $(OUTPUT_OPTION)
 
 ./waitpid.$(objext): $(srcdir)/waitpid.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/waitpid.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/waitpid.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/waitpid.c $(OUTPUT_OPTION)
 
@@ -1235,12 +1582,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xatexit.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xatexit.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/xatexit.c $(OUTPUT_OPTION)
 
 ./xexit.$(objext): $(srcdir)/xexit.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xexit.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xexit.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/xexit.c $(OUTPUT_OPTION)
 
@@ -1249,12 +1602,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xmalloc.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xmalloc.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/xmalloc.c $(OUTPUT_OPTION)
 
 ./xmemdup.$(objext): $(srcdir)/xmemdup.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xmemdup.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xmemdup.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/xmemdup.c $(OUTPUT_OPTION)
 
@@ -1263,6 +1622,9 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xstrdup.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xstrdup.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/xstrdup.c $(OUTPUT_OPTION)
 
 ./xstrerror.$(objext): $(srcdir)/xstrerror.c config.h $(INCDIR)/ansidecl.h \
@@ -1270,12 +1632,18 @@ $(CONFIGURED_OFILES): stamp-picdir
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xstrerror.c -o pic/$@; \
 	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xstrerror.c -o noasan/$@; \
+	else true; fi
 	$(COMPILE.c) $(srcdir)/xstrerror.c $(OUTPUT_OPTION)
 
 ./xstrndup.$(objext): $(srcdir)/xstrndup.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/xstrndup.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/xstrndup.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/xstrndup.c $(OUTPUT_OPTION)
 
