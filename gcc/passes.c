@@ -708,33 +708,21 @@ pass_manager::register_one_dump_file (opt_pass *pass)
 
 /* Recursive worker function for register_dump_files.  */
 
-int
+void
 pass_manager::
-register_dump_files_1 (opt_pass *pass, int properties)
+register_dump_files_1 (opt_pass *pass)
 {
   do
     {
-      int new_properties = (properties | pass->properties_provided)
-			   & ~pass->properties_destroyed;
-
       if (pass->name && pass->name[0] != '*')
         register_one_dump_file (pass);
 
       if (pass->sub)
-        new_properties = register_dump_files_1 (pass->sub, new_properties);
-
-      /* If we have a gate, combine the properties that we could have with
-         and without the pass being examined.  */
-      if (pass->has_gate)
-        properties &= new_properties;
-      else
-        properties = new_properties;
+        register_dump_files_1 (pass->sub);
 
       pass = pass->next;
     }
   while (pass);
-
-  return properties;
 }
 
 /* Register the dump files for the pass_manager starting at PASS.
@@ -746,7 +734,7 @@ pass_manager::
 register_dump_files (opt_pass *pass,int properties)
 {
   pass->properties_required |= properties;
-  register_dump_files_1 (pass, properties);
+  register_dump_files_1 (pass);
 }
 
 struct pass_registry
