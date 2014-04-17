@@ -1371,7 +1371,7 @@ dump_choices (bool speed_p, const char *description)
   fprintf (dump_file, "Choices when optimizing for %s:\n", description);
 
   for (i = 0; i < MAX_MACHINE_MODE; i++)
-    if (GET_MODE_SIZE (i) > UNITS_PER_WORD)
+    if (GET_MODE_SIZE ((enum machine_mode) i) > UNITS_PER_WORD)
       fprintf (dump_file, "  %s mode %s for copy lowering.\n",
 	       choices[speed_p].move_modes_to_split[i]
 	       ? "Splitting"

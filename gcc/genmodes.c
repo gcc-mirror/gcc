@@ -72,6 +72,8 @@ struct mode_data
   unsigned int counter;		/* Rank ordering of modes */
   unsigned int ibit;		/* the number of integral bits */
   unsigned int fbit;		/* the number of fractional bits */
+  bool need_bytesize_adj;	/* true if this mode need dynamic size
+				   adjustment */
 };
 
 static struct mode_data *modes[MAX_MODE_CLASS];
@@ -82,7 +84,7 @@ static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1U, -1U, -1U, -1U,
   0, 0, 0, 0, 0,
-  "<unknown>", 0, 0, 0, 0
+  "<unknown>", 0, 0, 0, 0, false
 };
 
 static htab_t modes_by_name;
@@ -904,6 +906,105 @@ emit_max_int (void)
   printf ("#define MAX_BITSIZE_MODE_ANY_MODE (%d*BITS_PER_UNIT)\n", mmax);
 }
 
+/* Emit mode_size_inline routine into insn-modes.h header.  */
+static void
+emit_mode_size_inline (void)
+{
+  int c;
+  struct mode_adjust *a;
+  struct mode_data *m;
+
+  /* Size adjustments must be propagated to all containing modes.  */
+  for (a = adj_bytesize; a; a = a->next)
+    {
+      a->mode->need_bytesize_adj = true;
+      for (m = a->mode->contained; m; m = m->next_cont)
+	m->need_bytesize_adj = true;
+    }
+
+  printf ("\
+#ifdef __cplusplus\n\
+inline __attribute__((__always_inline__))\n\
+#else\n\
+extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
+#endif\n\
+unsigned char\n\
+mode_size_inline (enum machine_mode mode)\n\
+{\n\
+  extern %sunsigned char mode_size[NUM_MACHINE_MODES];\n\
+  switch (mode)\n\
+    {\n", adj_bytesize ? "" : "const ");
+
+  for_all_modes (c, m)
+    if (!m->need_bytesize_adj)
+      printf ("    case %smode: return %u;\n", m->name, m->bytesize);
+
+  puts ("\
+    default: return mode_size[mode];\n\
+    }\n\
+}\n");
+}
+
+/* Emit mode_nunits_inline routine into insn-modes.h header.  */
+static void
+emit_mode_nunits_inline (void)
+{
+  int c;
+  struct mode_data *m;
+
+  puts ("\
+#ifdef __cplusplus\n\
+inline __attribute__((__always_inline__))\n\
+#else\n\
+extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
+#endif\n\
+unsigned char\n\
+mode_nunits_inline (enum machine_mode mode)\n\
+{\n\
+  extern const unsigned char mode_nunits[NUM_MACHINE_MODES];\n\
+  switch (mode)\n\
+    {");
+
+  for_all_modes (c, m)
+    printf ("    case %smode: return %u;\n", m->name, m->ncomponents);
+
+  puts ("\
+    default: return mode_nunits[mode];\n\
+    }\n\
+}\n");
+}
+
+/* Emit mode_inner_inline routine into insn-modes.h header.  */
+static void
+emit_mode_inner_inline (void)
+{
+  int c;
+  struct mode_data *m;
+
+  puts ("\
+#ifdef __cplusplus\n\
+inline __attribute__((__always_inline__))\n\
+#else\n\
+extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
+#endif\n\
+unsigned char\n\
+mode_inner_inline (enum machine_mode mode)\n\
+{\n\
+  extern const unsigned char mode_inner[NUM_MACHINE_MODES];\n\
+  switch (mode)\n\
+    {");
+
+  for_all_modes (c, m)
+    printf ("    case %smode: return %smode;\n", m->name,
+	    c != MODE_PARTIAL_INT && m->component
+	    ? m->component->name : void_mode->name);
+
+  puts ("\
+    default: return mode_inner[mode];\n\
+    }\n\
+}\n");
+}
+
 static void
 emit_insn_modes_h (void)
 {
@@ -969,6 +1070,12 @@ enum machine_mode\n{");
   printf ("#define CONST_MODE_IBIT%s\n", adj_ibit ? "" : " const");
   printf ("#define CONST_MODE_FBIT%s\n", adj_fbit ? "" : " const");
   emit_max_int ();
+  puts ("\n#if GCC_VERSION >= 4001\n");
+  emit_mode_size_inline ();
+  emit_mode_nunits_inline ();
+  emit_mode_inner_inline ();
+  puts ("#endif /* GCC_VERSION >= 4001 */");
+
   puts ("\
 \n\
 #endif /* insn-modes.h */");
