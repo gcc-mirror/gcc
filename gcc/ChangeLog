@@ -1,3 +1,7 @@
+2014-04-17  Joey Ye  <joey.ye@arm.com>
+
+	* opts.c (OPT_fif_conversion, OPT_fif_conversion2): Disable for Og.
+
 2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* opts.c (common_handle_option): Disable -fipa-reference coorectly
