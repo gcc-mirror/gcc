@@ -16203,21 +16203,31 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	    && tree_to_shwi (bound) == dflt)
 	  ;
 
-	/* Otherwise represent the bound as an unsigned value with the
-	   precision of its type.  The precision and signedness of the
-	   type will be necessary to re-interpret it unambiguously.  */
-	else if (prec < HOST_BITS_PER_WIDE_INT)
-	  {
-	    unsigned HOST_WIDE_INT mask
-	      = ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
-	    add_AT_unsigned (subrange_die, bound_attr,
-		  	     TREE_INT_CST_LOW (bound) & mask);
-	  }
-	else if (prec == HOST_BITS_PER_WIDE_INT
+	/* If HOST_WIDE_INT is big enough then represent the bound as
+	   a constant value.  We need to choose a form based on
+	   whether the type is signed or unsigned.  We cannot just
+	   call add_AT_unsigned if the value itself is positive
+	   (add_AT_unsigned might add the unsigned value encoded as
+	   DW_FORM_data[1248]).  Some DWARF consumers will lookup the
+	   bounds type and then sign extend any unsigned values found
+	   for signed types.  This is needed only for
+	   DW_AT_{lower,upper}_bound, since for most other attributes,
+	   consumers will treat DW_FORM_data[1248] as unsigned values,
+	   regardless of the underlying type.  */
+	else if (prec <= HOST_BITS_PER_WIDE_INT
 		 || TREE_INT_CST_HIGH (bound) == 0)
-	  add_AT_unsigned (subrange_die, bound_attr,
-		  	   TREE_INT_CST_LOW (bound));
+	  {
+	    if (TYPE_UNSIGNED (TREE_TYPE (bound)))
+	      add_AT_unsigned (subrange_die, bound_attr,
+			       TREE_INT_CST_LOW (bound));
+	    else
+	      add_AT_int (subrange_die, bound_attr, TREE_INT_CST_LOW (bound));
+	  }
 	else
+	  /* Otherwise represent the bound as an unsigned value with
+	     the precision of its type.  The precision and signedness
+	     of the type will be necessary to re-interpret it
+	     unambiguously.  */
 	  add_AT_double (subrange_die, bound_attr, TREE_INT_CST_HIGH (bound),
 		         TREE_INT_CST_LOW (bound));
       }

@@ -1,3 +1,8 @@
+2014-03-20  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (add_bound_info): If HOST_WIDE_INT is big enough,
+	then represent the bound as normal constant value.
+
 2014-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60847
