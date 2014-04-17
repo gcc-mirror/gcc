@@ -1,5 +1,11 @@
 2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/60820
+	* gcc.dg/lto/pr60820_0.c: New testcase.
+	* gcc.dg/lto/pr60820_1.c: New testcase.
+
+2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/60854
 	* g++.dg/torture/pr60854.C: New testcase.
 
