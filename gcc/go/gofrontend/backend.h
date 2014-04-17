@@ -257,6 +257,12 @@ class Backend
   virtual Bexpression*
   indirect_expression(Bexpression* expr, bool known_valid, Location) = 0;
 
+  // Return an expression that declares a constant named NAME with the
+  // constant value VAL in BTYPE.
+  virtual Bexpression*
+  named_constant_expression(Btype* btype, const std::string& name,
+                             Bexpression* val, Location) = 0;
+
   // Return an expression for the multi-precision integer VAL in BTYPE.
   virtual Bexpression*
   integer_constant_expression(Btype* btype, mpz_t val) = 0;
