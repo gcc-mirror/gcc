@@ -1,3 +1,8 @@
+2014-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	* gnat.dg/opt34.adb: New.
+	* gnat.dg/opt34_pkg.ads: Likewise.
+
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* g++.dg/plugin/dumb_plugin.c, g++.dg/plugin/selfasign.c,
