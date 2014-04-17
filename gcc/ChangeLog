@@ -1,5 +1,10 @@
 2014-04-17  Evgeny Stupachenko  <evstupac@gmail.com>
 
+	* config/i386/i386.c (x86_add_stmt_cost): Fix vector cost model for
+	Silvermont.
+
+2014-04-17  Evgeny Stupachenko  <evstupac@gmail.com>
+
 	* config/i386/x86-tune.def (TARGET_SLOW_PSHUFB): New tune definition.
 	* config/i386/i386.h (TARGET_SLOW_PSHUFB): New tune flag.
 	* config/i386/i386.c (expand_vec_perm_even_odd_1): Avoid byte shuffles
