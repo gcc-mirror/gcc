@@ -386,6 +386,10 @@ DEF_TUNE (X86_TUNE_USE_VECTOR_FP_CONVERTS, "use_vector_fp_converts",
    from integer to FP. */
 DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts", m_AMDFAM10)
 
+/* X86_TUNE_SLOW_SHUFB: Indicates tunings with slow pshufb instruction.  */
+DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
+          m_BONNELL | m_SILVERMONT | m_INTEL)
+
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/

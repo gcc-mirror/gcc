@@ -1,5 +1,12 @@
 2014-04-17  Evgeny Stupachenko  <evstupac@gmail.com>
 
+	* config/i386/x86-tune.def (TARGET_SLOW_PSHUFB): New tune definition.
+	* config/i386/i386.h (TARGET_SLOW_PSHUFB): New tune flag.
+	* config/i386/i386.c (expand_vec_perm_even_odd_1): Avoid byte shuffles
+	for TARGET_SLOW_PSHUFB
+
+2014-04-17  Evgeny Stupachenko  <evstupac@gmail.com>
+
 	* config/i386/i386.c (slm_cost): Adjust vec_to_scalar_cost.
 	* config/i386/i386.c (intel_cost): Ditto.
 
