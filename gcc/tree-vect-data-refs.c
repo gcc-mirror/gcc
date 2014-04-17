@@ -3172,7 +3172,7 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 bool
 vect_analyze_data_refs (loop_vec_info loop_vinfo,
 			bb_vec_info bb_vinfo,
-			int *min_vf)
+			int *min_vf, unsigned *n_stmts)
 {
   struct loop *loop = NULL;
   basic_block bb = NULL;
@@ -3207,6 +3207,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
+	      if (is_gimple_debug (stmt))
+		continue;
+	      ++*n_stmts;
 	      if (!find_data_references_in_stmt (loop, stmt, &datarefs))
 		{
 		  if (is_gimple_call (stmt) && loop->safelen)
@@ -3260,6 +3263,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    continue;
+	  ++*n_stmts;
 	  if (!find_data_references_in_stmt (NULL, stmt,
 					     &BB_VINFO_DATAREFS (bb_vinfo)))
 	    {
