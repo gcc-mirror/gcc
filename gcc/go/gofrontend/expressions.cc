@@ -555,6 +555,10 @@ class Error_expression : public Expression
   { return true; }
 
   bool
+  do_is_immutable() const
+  { return true; }
+
+  bool
   do_numeric_constant_value(Numeric_constant* nc) const
   {
     nc->set_unsigned_long(NULL, 0);
@@ -1422,6 +1426,10 @@ class Boolean_expression : public Expression
   do_is_constant() const
   { return true; }
 
+  bool
+  do_is_immutable() const
+  { return true; }
+
   Type*
   do_type();
 
@@ -1790,6 +1798,10 @@ class Integer_expression : public Expression
   { return true; }
 
   bool
+  do_is_immutable() const
+  { return true; }
+
+  bool
   do_numeric_constant_value(Numeric_constant* nc) const;
 
   Type*
@@ -2109,6 +2121,10 @@ class Float_expression : public Expression
   { return true; }
 
   bool
+  do_is_immutable() const
+  { return true; }
+
+  bool
   do_numeric_constant_value(Numeric_constant* nc) const
   {
     nc->set_float(this->type_, this->val_);
@@ -2289,6 +2305,10 @@ class Complex_expression : public Expression
  protected:
   bool
   do_is_constant() const
+  { return true; }
+
+  bool
+  do_is_immutable() const
   { return true; }
 
   bool
@@ -2503,6 +2523,10 @@ class Const_expression : public Expression
 
   bool
   do_is_constant() const
+  { return true; }
+
+  bool
+  do_is_immutable() const
   { return true; }
 
   bool
@@ -2994,6 +3018,9 @@ class Type_conversion_expression : public Expression
   do_is_constant() const;
 
   bool
+  do_is_immutable() const;
+
+  bool
   do_numeric_constant_value(Numeric_constant*) const;
 
   bool
@@ -3173,6 +3200,27 @@ Type_conversion_expression::do_is_constant() const
     return false;
 
   return true;
+}
+
+// Return whether a type conversion is immutable.
+
+bool
+Type_conversion_expression::do_is_immutable() const
+{
+  Type* type = this->type_;
+  Type* expr_type = this->expr_->type();
+
+  if (type->interface_type() != NULL
+      || expr_type->interface_type() != NULL)
+    return false;
+
+  if (!this->expr_->is_immutable())
+    return false;
+
+  if (Type::are_identical(type, expr_type, false, NULL))
+    return true;
+
+  return type->is_basic_type() && expr_type->is_basic_type();
 }
 
 // Return the constant numeric value if there is one.
@@ -3599,7 +3647,8 @@ class Unary_expression : public Expression
 
   bool
   do_is_immutable() const
-  { return this->expr_->is_immutable(); }
+  { return this->expr_->is_immutable()
+      || (this->op_ == OPERATOR_AND && this->expr_->is_variable()); }
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -14076,6 +14125,10 @@ class Type_info_expression : public Expression
   { }
 
  protected:
+  bool
+  do_is_immutable() const
+  { return true; }
+
   Type*
   do_type();
 
