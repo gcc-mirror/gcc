@@ -450,7 +450,6 @@ const pass_data pass_data_rename_ssa_copies =
   GIMPLE_PASS, /* type */
   "copyrename", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_COPY_RENAME, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

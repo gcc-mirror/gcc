@@ -7005,7 +7005,6 @@ const pass_data pass_data_build_alias =
   GIMPLE_PASS, /* type */
   "alias", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -7045,7 +7044,6 @@ const pass_data pass_data_build_ealias =
   GIMPLE_PASS, /* type */
   "ealias", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -7437,7 +7435,6 @@ const pass_data pass_data_ipa_pta =
   SIMPLE_IPA_PASS, /* type */
   "pta", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_PTA, /* tv_id */
   0, /* properties_required */

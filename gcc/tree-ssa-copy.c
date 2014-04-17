@@ -657,7 +657,6 @@ const pass_data pass_data_copy_prop =
   GIMPLE_PASS, /* type */
   "copyprop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_COPY_PROP, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */

@@ -660,7 +660,6 @@ const pass_data pass_data_cse_reciprocals =
   GIMPLE_PASS, /* type */
   "recip", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -1578,7 +1577,6 @@ const pass_data pass_data_cse_sincos =
   GIMPLE_PASS, /* type */
   "sincos", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -2080,7 +2078,6 @@ const pass_data pass_data_optimize_bswap =
   GIMPLE_PASS, /* type */
   "bswap", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -2890,7 +2887,6 @@ const pass_data pass_data_optimize_widening_mul =
   GIMPLE_PASS, /* type */
   "widening_mul", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */

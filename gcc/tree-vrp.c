@@ -9907,7 +9907,6 @@ const pass_data pass_data_vrp =
   GIMPLE_PASS, /* type */
   "vrp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_VRP, /* tv_id */
   PROP_ssa, /* properties_required */

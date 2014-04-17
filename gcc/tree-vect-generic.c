@@ -1566,7 +1566,6 @@ const pass_data pass_data_lower_vector =
   GIMPLE_PASS, /* type */
   "veclower", /* name */
   OPTGROUP_VEC, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1607,7 +1606,6 @@ const pass_data pass_data_lower_vector_ssa =
   GIMPLE_PASS, /* type */
   "veclower2", /* name */
   OPTGROUP_VEC, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */

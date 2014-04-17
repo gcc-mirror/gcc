@@ -65,7 +65,6 @@ const pass_data pass_data_dumb_plugin_example =
   GIMPLE_PASS, /* type */
   "dumb_plugin_example", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */

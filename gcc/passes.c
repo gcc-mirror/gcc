@@ -353,7 +353,6 @@ const pass_data pass_data_early_local_passes =
   SIMPLE_IPA_PASS, /* type */
   "early_local_cleanups", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_EARLY_LOCAL, /* tv_id */
   0, /* properties_required */
@@ -401,7 +400,6 @@ const pass_data pass_data_all_early_optimizations =
   GIMPLE_PASS, /* type */
   "early_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -446,7 +444,6 @@ const pass_data pass_data_all_optimizations =
   GIMPLE_PASS, /* type */
   "*all_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
@@ -491,7 +488,6 @@ const pass_data pass_data_all_optimizations_g =
   GIMPLE_PASS, /* type */
   "*all_optimizations_g", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
@@ -536,7 +532,6 @@ const pass_data pass_data_rest_of_compilation =
   RTL_PASS, /* type */
   "*rest_of_compilation", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_REST_OF_COMPILATION, /* tv_id */
   PROP_rtl, /* properties_required */
@@ -579,7 +574,6 @@ const pass_data pass_data_postreload =
   RTL_PASS, /* type */
   "*all-postreload", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_POSTRELOAD, /* tv_id */
   PROP_rtl, /* properties_required */
@@ -829,7 +823,7 @@ dump_one_pass (opt_pass *pass, int pass_indent)
   const char *pn;
   bool is_on, is_really_on;
 
-  is_on = pass->has_gate ? pass->gate () : true;
+  is_on = pass->gate ();
   is_really_on = override_gate_status (pass, current_function_decl, is_on);
 
   if (pass->static_pass_number <= 0)
@@ -1982,7 +1976,7 @@ execute_ipa_summary_passes (ipa_opt_pass_d *ipa_pass)
 
       /* Execute all of the IPA_PASSes in the list.  */
       if (ipa_pass->type == IPA_PASS
-	  && ((!pass->has_gate) || pass->gate ())
+	  && pass->gate ()
 	  && ipa_pass->generate_summary)
 	{
 	  pass_init_dump_file (pass);
@@ -2134,7 +2128,7 @@ execute_one_pass (opt_pass *pass)
 
   /* Check whether gate check should be avoided.
      User controls the value of the gate through the parameter "gate_status". */
-  gate_status = pass->has_gate ? pass->gate () : true;
+  gate_status = pass->gate ();
   gate_status = override_gate_status (pass, current_function_decl, gate_status);
 
   /* Override gate with plugin.  */
@@ -2280,7 +2274,7 @@ ipa_write_summaries_2 (opt_pass *pass, struct lto_out_decl_state *state)
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_summary
-	  && ((!pass->has_gate) || pass->gate ()))
+	  && pass->gate ())
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2398,7 +2392,7 @@ ipa_write_optimization_summaries_1 (opt_pass *pass,
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_optimization_summary
-	  && ((!pass->has_gate) || pass->gate ()))
+	  && pass->gate ())
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2476,7 +2470,7 @@ ipa_read_summaries_1 (opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if ((!pass->has_gate) || pass->gate ())
+      if (pass->gate ())
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_summary)
 	    {
@@ -2526,7 +2520,7 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if ((!pass->has_gate) || pass->gate ())
+      if (pass->gate ())
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_optimization_summary)
 	    {
@@ -2603,7 +2597,7 @@ execute_ipa_stmt_fixups (opt_pass *pass,
     {
       /* Execute all of the IPA_PASSes in the list.  */
       if (pass->type == IPA_PASS
-	  && ((!pass->has_gate) || pass->gate ()))
+	  && pass->gate ())
 	{
 	  ipa_opt_pass_d *ipa_pass = (ipa_opt_pass_d *) pass;
 

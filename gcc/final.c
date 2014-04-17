@@ -854,7 +854,6 @@ const pass_data pass_data_compute_alignments =
   RTL_PASS, /* type */
   "alignments", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -4483,7 +4482,6 @@ const pass_data pass_data_final =
   RTL_PASS, /* type */
   "final", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_FINAL, /* tv_id */
   0, /* properties_required */
@@ -4529,7 +4527,6 @@ const pass_data pass_data_shorten_branches =
   RTL_PASS, /* type */
   "shorten", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_SHORTEN_BRANCH, /* tv_id */
   0, /* properties_required */
@@ -4693,7 +4690,6 @@ const pass_data pass_data_clean_state =
   RTL_PASS, /* type */
   "*clean_state", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_FINAL, /* tv_id */
   0, /* properties_required */

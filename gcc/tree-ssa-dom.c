@@ -965,7 +965,6 @@ const pass_data pass_data_dominator =
   GIMPLE_PASS, /* type */
   "dom", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SSA_DOMINATOR_OPTS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -3123,7 +3122,6 @@ const pass_data pass_data_phi_only_cprop =
   GIMPLE_PASS, /* type */
   "phicprop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PHI_CPROP, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

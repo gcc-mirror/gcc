@@ -1155,7 +1155,6 @@ const pass_data pass_data_init_datastructures =
   GIMPLE_PASS, /* type */
   "*init_datastructures", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1686,7 +1685,6 @@ const pass_data pass_data_update_address_taken =
   GIMPLE_PASS, /* type */
   "addressables", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   false, /* has_execute */
   TV_ADDRESS_TAKEN, /* tv_id */
   PROP_ssa, /* properties_required */

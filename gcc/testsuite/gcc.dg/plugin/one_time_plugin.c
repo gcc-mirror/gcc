@@ -31,7 +31,6 @@ const pass_data pass_data_one_pass =
   GIMPLE_PASS, /* type */
   "cfg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */

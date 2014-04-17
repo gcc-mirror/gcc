@@ -424,7 +424,6 @@ const pass_data pass_data_tree_unswitch =
   GIMPLE_PASS, /* type */
   "unswitch", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_LOOP_UNSWITCH, /* tv_id */
   PROP_cfg, /* properties_required */

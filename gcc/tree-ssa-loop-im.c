@@ -2551,7 +2551,6 @@ const pass_data pass_data_lim =
   GIMPLE_PASS, /* type */
   "lim", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_LIM, /* tv_id */
   PROP_cfg, /* properties_required */

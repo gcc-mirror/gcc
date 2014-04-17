@@ -3096,7 +3096,6 @@ const pass_data pass_data_jump =
   RTL_PASS, /* type */
   "jump", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_JUMP, /* tv_id */
   0, /* properties_required */
@@ -3140,7 +3139,6 @@ const pass_data pass_data_jump2 =
   RTL_PASS, /* type */
   "jump2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_JUMP, /* tv_id */
   0, /* properties_required */

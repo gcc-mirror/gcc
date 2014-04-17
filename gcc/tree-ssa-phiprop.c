@@ -422,7 +422,6 @@ const pass_data pass_data_phiprop =
   GIMPLE_PASS, /* type */
   "phiprop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PHIPROP, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

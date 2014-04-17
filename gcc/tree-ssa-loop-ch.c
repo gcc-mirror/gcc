@@ -270,7 +270,6 @@ const pass_data pass_data_ch =
   GIMPLE_PASS, /* type */
   "ch", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_CH, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

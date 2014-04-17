@@ -1664,7 +1664,6 @@ const pass_data pass_data_split_functions =
   GIMPLE_PASS, /* type */
   "fnsplit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_FNSPLIT, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1724,7 +1723,6 @@ const pass_data pass_data_feedback_split_functions =
   GIMPLE_PASS, /* type */
   "feedback_fnsplit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_FNSPLIT, /* tv_id */
   PROP_cfg, /* properties_required */

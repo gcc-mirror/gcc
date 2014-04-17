@@ -4545,7 +4545,6 @@ const pass_data pass_data_rtl_ifcvt =
   RTL_PASS, /* type */
   "ce1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IFCVT, /* tv_id */
   0, /* properties_required */
@@ -4600,7 +4599,6 @@ const pass_data pass_data_if_after_combine =
   RTL_PASS, /* type */
   "ce2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IFCVT, /* tv_id */
   0, /* properties_required */
@@ -4654,7 +4652,6 @@ const pass_data pass_data_if_after_reload =
   RTL_PASS, /* type */
   "ce3", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IFCVT2, /* tv_id */
   0, /* properties_required */

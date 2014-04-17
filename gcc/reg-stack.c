@@ -3302,7 +3302,6 @@ const pass_data pass_data_stack_regs =
   RTL_PASS, /* type */
   "*stack_regs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_REG_STACK, /* tv_id */
   0, /* properties_required */
@@ -3351,7 +3350,6 @@ const pass_data pass_data_stack_regs_run =
   RTL_PASS, /* type */
   "stack", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_REG_STACK, /* tv_id */
   0, /* properties_required */

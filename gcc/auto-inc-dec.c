@@ -1513,7 +1513,6 @@ const pass_data pass_data_inc_dec =
   RTL_PASS, /* type */
   "auto_inc_dec", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_AUTO_INC_DEC, /* tv_id */
   0, /* properties_required */

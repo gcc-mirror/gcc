@@ -933,7 +933,6 @@ const pass_data pass_data_call_cdce =
   GIMPLE_PASS, /* type */
   "cdce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_CALL_CDCE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
