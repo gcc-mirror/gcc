@@ -571,8 +571,14 @@ valid_gimple_rhs_p (tree expr)
       /* All constants are ok.  */
       break;
 
-    case tcc_binary:
     case tcc_comparison:
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (expr))
+	  || (TREE_CODE (TREE_TYPE (expr)) != BOOLEAN_TYPE
+	      && TYPE_PRECISION (TREE_TYPE (expr)) != 1))
+	return false;
+
+      /* Fallthru.  */
+    case tcc_binary:
       if (!is_gimple_val (TREE_OPERAND (expr, 0))
 	  || !is_gimple_val (TREE_OPERAND (expr, 1)))
 	return false;
