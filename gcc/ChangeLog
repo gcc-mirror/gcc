@@ -1,4 +1,47 @@
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+	
+	* passes.c (dump_one_pass): don't check pass->has_gate.
+	(execute_ipa_summary_passes): Likewise.
+	(execute_one_pass): Likewise.
+	(ipa_write_summaries_2): Likewise.
+	(ipa_write_optimization_summaries_1): Likewise.
+	(ipa_read_optimization_summaries_1): Likewise.
+	(execute_ipa_stmt_fixups): Likewise.
+	* tree-pass.h (pass_data::has_gate): Remove.
+	* asan.c, auto-inc-dec.c, bb-reorder.c, bt-load.c, cfgcleanup.c,
+	cfgexpand.c, cfgrtl.c, cgraphbuild.c, combine-stack-adj.c, combine.c,
+	compare-elim.c, config/arc/arc.c, config/epiphany/mode-switch-use.c,
+	config/epiphany/resolve-sw-modes.c, config/i386/i386.c,
+	config/mips/mips.c, config/rl78/rl78.c, config/s390/s390.c,
+	config/sh/sh_optimize_sett_clrt.cc, config/sh/sh_treg_combine.cc,
+	config/sparc/sparc.c, cprop.c, cse.c, dce.c, df-core.c, dse.c,
+	dwarf2cfi.c, except.c, final.c, function.c, fwprop.c, gcse.c,
+	gimple-low.c, gimple-ssa-isolate-paths.c,
+	gimple-ssa-strength-reduction.c, graphite.c, ifcvt.c, init-regs.c,
+	ipa-cp.c, ipa-devirt.c, ipa-inline-analysis.c, ipa-inline.c,
+	ipa-profile.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c, ipa.c,
+	ira.c, jump.c, loop-init.c, lower-subreg.c, mode-switching.c,
+	modulo-sched.c, omp-low.c, postreload-gcse.c, postreload.c, predict.c,
+	recog.c, ree.c, reg-stack.c, regcprop.c, reginfo.c, regrename.c,
+	reorg.c, sched-rgn.c, stack-ptr-mod.c, store-motion.c, tracer.c,
+	trans-mem.c, tree-call-cdce.c, tree-cfg.c, tree-cfgcleanup.c,
+	tree-complex.c, tree-eh.c, tree-emutls.c, tree-if-conv.c,
+	tree-into-ssa.c, tree-loop-distribution.c, tree-nrv.c,
+	tree-object-size.c, tree-parloops.c, tree-predcom.c, tree-profile.c,
+	tree-sra.c, tree-ssa-ccp.c, tree-ssa-copy.c, tree-ssa-copyrename.c,
+	tree-ssa-dce.c, tree-ssa-dom.c, tree-ssa-dse.c, tree-ssa-forwprop.c,
+	tree-ssa-ifcombine.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-loop-unswitch.c, tree-ssa-loop.c, tree-ssa-math-opts.c,
+	tree-ssa-phiopt.c, tree-ssa-phiprop.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sink.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-ssa-uncprop.c, tree-ssa-uninit.c,
+	tree-ssa.c, tree-ssanames.c, tree-stdarg.c, tree-switch-conversion.c,
+	tree-tailcall.c, tree-vect-generic.c, tree-vectorizer.c, tree-vrp.c,
+	tree.c, tsan.c, ubsan.c, var-tracking.c, vtable-verify.c, web.c:
+	Adjust.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* pass_manager.h (pass_manager::register_dump_files_1): Remove declaration.
 	* passes.c (pass_manager::register_dump_files_1): Merge into

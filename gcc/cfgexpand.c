@@ -5923,7 +5923,6 @@ const pass_data pass_data_expand =
   RTL_PASS, /* type */
   "expand", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_EXPAND, /* tv_id */
   ( PROP_ssa | PROP_gimple_leh | PROP_cfg

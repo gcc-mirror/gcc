@@ -145,7 +145,6 @@ const pass_data pass_data_initialize_regs =
   RTL_PASS, /* type */
   "init-regs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */

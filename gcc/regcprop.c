@@ -1261,7 +1261,6 @@ const pass_data pass_data_cprop_hardreg =
   RTL_PASS, /* type */
   "cprop_hardreg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_CPROP_REGISTERS, /* tv_id */
   0, /* properties_required */

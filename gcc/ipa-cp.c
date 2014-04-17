@@ -3779,7 +3779,6 @@ const pass_data pass_data_ipa_cp =
   IPA_PASS, /* type */
   "cp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_CONSTANT_PROP, /* tv_id */
   0, /* properties_required */

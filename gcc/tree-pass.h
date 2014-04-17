@@ -47,10 +47,6 @@ struct pass_data
   /* The -fopt-info optimization group flags as defined in dumpfile.h. */
   unsigned int optinfo_flags;
 
-  /* If true, this pass has its own implementation of the opt_pass::gate
-     method.  */
-  bool has_gate;
-
   /* If true, this pass has its own implementation of the opt_pass::execute
      method.  */
   bool has_execute;
@@ -90,9 +86,8 @@ public:
      The default implementation prints an error message and aborts.  */
   virtual opt_pass *clone ();
 
-  /* If has_gate is set, this pass and all sub-passes are executed only if
-     the function returns true.
-     The default implementation returns true.  */
+  /* This pass and all sub-passes are executed only if the function returns
+     true.  The default implementation returns true.  */
   virtual bool gate ();
 
   /* This is the code to run.  If has_execute is false, then there should

@@ -1331,7 +1331,6 @@ const pass_data pass_data_gcse2 =
   RTL_PASS, /* type */
   "gcse2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_GCSE_AFTER_RELOAD, /* tv_id */
   0, /* properties_required */

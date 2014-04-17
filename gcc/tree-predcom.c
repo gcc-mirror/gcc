@@ -2586,7 +2586,6 @@ const pass_data pass_data_predcom =
   GIMPLE_PASS, /* type */
   "pcom", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_PREDCOM, /* tv_id */
   PROP_cfg, /* properties_required */

@@ -2026,7 +2026,6 @@ const pass_data pass_data_loop_prefetch =
   GIMPLE_PASS, /* type */
   "aprefetch", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PREFETCH, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

@@ -968,7 +968,6 @@ const pass_data pass_data_reginfo_init =
   RTL_PASS, /* type */
   "reginfo", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */

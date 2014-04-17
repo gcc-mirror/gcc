@@ -754,7 +754,6 @@ const pass_data pass_data_df_initialize_opt =
   RTL_PASS, /* type */
   "dfinit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_DF_SCAN, /* tv_id */
   0, /* properties_required */
@@ -800,7 +799,6 @@ const pass_data pass_data_df_initialize_no_opt =
   RTL_PASS, /* type */
   "no-opt dfinit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_DF_SCAN, /* tv_id */
   0, /* properties_required */
@@ -866,7 +864,6 @@ const pass_data pass_data_df_finish =
   RTL_PASS, /* type */
   "dfinish", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */

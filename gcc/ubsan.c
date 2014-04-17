@@ -916,7 +916,6 @@ const pass_data pass_data_ubsan =
   GIMPLE_PASS, /* type */
   "ubsan", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_UBSAN, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

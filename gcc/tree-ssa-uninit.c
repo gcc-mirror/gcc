@@ -2364,7 +2364,6 @@ const pass_data pass_data_late_warn_uninitialized =
   GIMPLE_PASS, /* type */
   "uninit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -2424,7 +2423,6 @@ const pass_data pass_data_early_warn_uninitialized =
   GIMPLE_PASS, /* type */
   "*early_warn_uninitialized", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_UNINIT, /* tv_id */
   PROP_ssa, /* properties_required */

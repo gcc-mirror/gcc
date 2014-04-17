@@ -1662,7 +1662,6 @@ const pass_data pass_data_lower_complex =
   GIMPLE_PASS, /* type */
   "cplxlower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -1709,7 +1708,6 @@ const pass_data pass_data_lower_complex_O0 =
   GIMPLE_PASS, /* type */
   "cplxlower0", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */

@@ -605,7 +605,6 @@ const pass_data pass_data_arc_ifcvt =
   RTL_PASS,
   "arc_ifcvt",				/* name */
   OPTGROUP_NONE,			/* optinfo_flags */
-  false,				/* has_gate */
   true,					/* has_execute */
   TV_IFCVT2,				/* tv_id */
   0,					/* properties_required */
@@ -644,7 +643,6 @@ const pass_data pass_data_arc_predicate_delay_insns =
   RTL_PASS,
   "arc_predicate_delay_insns",		/* name */
   OPTGROUP_NONE,			/* optinfo_flags */
-  false,				/* has_gate */
   true,					/* has_execute */
   TV_IFCVT2,				/* tv_id */
   0,					/* properties_required */

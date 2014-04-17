@@ -10359,7 +10359,6 @@ const pass_data pass_data_variable_tracking =
   RTL_PASS, /* type */
   "vartrack", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_VAR_TRACKING, /* tv_id */
   0, /* properties_required */

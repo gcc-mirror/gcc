@@ -1206,7 +1206,6 @@ const pass_data pass_data_ipa_function_and_variable_visibility =
   SIMPLE_IPA_PASS, /* type */
   "visibility", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_CGRAPHOPT, /* tv_id */
   0, /* properties_required */
@@ -1255,7 +1254,6 @@ const pass_data pass_data_ipa_free_inline_summary =
   SIMPLE_IPA_PASS, /* type */
   "*free_inline_summary", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_IPA_FREE_INLINE_SUMMARY, /* tv_id */
   0, /* properties_required */
@@ -1311,7 +1309,6 @@ const pass_data pass_data_ipa_whole_program_visibility =
   IPA_PASS, /* type */
   "whole-program", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_CGRAPHOPT, /* tv_id */
   0, /* properties_required */
@@ -1644,7 +1641,6 @@ const pass_data pass_data_ipa_cdtor_merge =
   IPA_PASS, /* type */
   "cdtor", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_CGRAPHOPT, /* tv_id */
   0, /* properties_required */

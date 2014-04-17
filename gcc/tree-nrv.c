@@ -285,7 +285,6 @@ const pass_data pass_data_nrv =
   GIMPLE_PASS, /* type */
   "nrv", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_NRV, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
@@ -389,7 +388,6 @@ const pass_data pass_data_return_slot =
   GIMPLE_PASS, /* type */
   "retslot", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */

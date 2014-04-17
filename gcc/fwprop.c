@@ -1490,7 +1490,6 @@ const pass_data pass_data_rtl_fwprop =
   RTL_PASS, /* type */
   "fwprop1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_FWPROP, /* tv_id */
   0, /* properties_required */
@@ -1557,7 +1556,6 @@ const pass_data pass_data_rtl_fwprop_addr =
   RTL_PASS, /* type */
   "fwprop2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_FWPROP, /* tv_id */
   0, /* properties_required */

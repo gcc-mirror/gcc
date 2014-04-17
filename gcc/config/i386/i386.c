@@ -2526,7 +2526,6 @@ const pass_data pass_data_insert_vzeroupper =
   RTL_PASS, /* type */
   "vzeroupper", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */

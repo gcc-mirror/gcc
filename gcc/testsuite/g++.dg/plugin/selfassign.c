@@ -285,7 +285,6 @@ const pass_data pass_data_warn_self_assign =
   GIMPLE_PASS, /* type */
   "warn_self_assign", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */

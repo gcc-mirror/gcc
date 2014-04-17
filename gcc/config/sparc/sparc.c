@@ -1129,7 +1129,6 @@ const pass_data pass_data_work_around_errata =
   RTL_PASS, /* type */
   "errata", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */

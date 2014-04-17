@@ -1517,7 +1517,6 @@ const pass_data pass_data_dce =
   GIMPLE_PASS, /* type */
   "dce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_DCE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1556,7 +1555,6 @@ const pass_data pass_data_dce_loop =
   GIMPLE_PASS, /* type */
   "dceloop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_DCE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1595,7 +1593,6 @@ const pass_data pass_data_cd_dce =
   GIMPLE_PASS, /* type */
   "cddce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_CD_DCE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

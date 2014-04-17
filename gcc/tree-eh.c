@@ -2170,7 +2170,6 @@ const pass_data pass_data_lower_eh =
   GIMPLE_PASS, /* type */
   "eh", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_EH, /* tv_id */
   PROP_gimple_lcf, /* properties_required */
@@ -3129,7 +3128,6 @@ const pass_data pass_data_refactor_eh =
   GIMPLE_PASS, /* type */
   "ehopt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_EH, /* tv_id */
   PROP_gimple_lcf, /* properties_required */
@@ -3356,7 +3354,6 @@ const pass_data pass_data_lower_resx =
   GIMPLE_PASS, /* type */
   "resx", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_EH, /* tv_id */
   PROP_gimple_lcf, /* properties_required */
@@ -3765,7 +3762,6 @@ const pass_data pass_data_lower_eh_dispatch =
   GIMPLE_PASS, /* type */
   "ehdisp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_EH, /* tv_id */
   PROP_gimple_lcf, /* properties_required */
@@ -4613,7 +4609,6 @@ const pass_data pass_data_cleanup_eh =
   GIMPLE_PASS, /* type */
   "ehcleanup", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_EH, /* tv_id */
   PROP_gimple_lcf, /* properties_required */

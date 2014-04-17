@@ -138,7 +138,6 @@ const pass_data sh_optimize_sett_clrt::default_pass_data =
   RTL_PASS,		// type
   "",			// name (overwritten by the constructor)
   OPTGROUP_NONE,	// optinfo_flags
-  true,			// has_gate
   true,			// has_execute
   TV_OPTIMIZE,		// tv_id
   0,			// properties_required

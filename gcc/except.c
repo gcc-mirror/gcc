@@ -2008,7 +2008,6 @@ const pass_data pass_data_set_nothrow_function_flags =
   RTL_PASS, /* type */
   "nothrow", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -2639,7 +2638,6 @@ const pass_data pass_data_convert_to_eh_region_ranges =
   RTL_PASS, /* type */
   "eh_ranges", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */

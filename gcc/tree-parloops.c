@@ -2277,7 +2277,6 @@ const pass_data pass_data_parallelize_loops =
   GIMPLE_PASS, /* type */
   "parloops", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PARALLELIZE_LOOPS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

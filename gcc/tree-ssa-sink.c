@@ -601,7 +601,6 @@ const pass_data pass_data_sink_code =
   GIMPLE_PASS, /* type */
   "sink", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SINK, /* tv_id */
   /* PROP_no_crit_edges is ensured by running split_critical_edges in

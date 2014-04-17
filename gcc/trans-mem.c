@@ -846,7 +846,6 @@ const pass_data pass_data_diagnose_tm_blocks =
   GIMPLE_PASS, /* type */
   "*diagnose_tm_blocks", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TRANS_MEM, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -1769,7 +1768,6 @@ const pass_data pass_data_lower_tm =
   GIMPLE_PASS, /* type */
   "tmlower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TRANS_MEM, /* tv_id */
   PROP_gimple_lcf, /* properties_required */
@@ -2047,7 +2045,6 @@ const pass_data pass_data_tm_init =
   GIMPLE_PASS, /* type */
   "*tminit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_TRANS_MEM, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
@@ -3023,7 +3020,6 @@ const pass_data pass_data_tm_mark =
   GIMPLE_PASS, /* type */
   "tmmark", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TRANS_MEM, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
@@ -3206,7 +3202,6 @@ const pass_data pass_data_tm_edges =
   GIMPLE_PASS, /* type */
   "tmedge", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TRANS_MEM, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
@@ -3947,7 +3942,6 @@ const pass_data pass_data_tm_memopt =
   GIMPLE_PASS, /* type */
   "tmmemopt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TRANS_MEM, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
@@ -5584,7 +5578,6 @@ const pass_data pass_data_ipa_tm =
   SIMPLE_IPA_PASS, /* type */
   "tmipa", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TRANS_MEM, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */

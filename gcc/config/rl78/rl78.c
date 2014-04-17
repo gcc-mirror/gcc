@@ -142,7 +142,6 @@ const pass_data pass_data_rl78_devirt =
   RTL_PASS, /* type */
   "devirt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
@@ -226,7 +225,6 @@ const pass_data pass_data_rl78_move_elim =
   RTL_PASS, /* type */
   "move_elim", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */

@@ -2381,7 +2381,6 @@ const pass_data pass_data_build_ssa =
   GIMPLE_PASS, /* type */
   "ssa", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SSA_OTHER, /* tv_id */
   PROP_cfg, /* properties_required */

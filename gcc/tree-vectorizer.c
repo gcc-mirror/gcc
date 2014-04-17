@@ -626,7 +626,6 @@ const pass_data pass_data_slp_vectorize =
   GIMPLE_PASS, /* type */
   "slp", /* name */
   OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SLP_VECTORIZATION, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
@@ -717,7 +716,6 @@ const pass_data pass_data_ipa_increase_alignment =
   SIMPLE_IPA_PASS, /* type */
   "increase_alignment", /* name */
   OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_OPT, /* tv_id */
   0, /* properties_required */

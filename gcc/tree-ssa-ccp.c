@@ -2301,7 +2301,6 @@ const pass_data pass_data_ccp =
   GIMPLE_PASS, /* type */
   "ccp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_CCP, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2719,7 +2718,6 @@ const pass_data pass_data_fold_builtins =
   GIMPLE_PASS, /* type */
   "fab", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */

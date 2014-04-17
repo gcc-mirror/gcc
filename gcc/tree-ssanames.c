@@ -610,7 +610,6 @@ const pass_data pass_data_release_ssa_names =
   GIMPLE_PASS, /* type */
   "release_ssa", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_SSA_OTHER, /* tv_id */
   PROP_ssa, /* properties_required */

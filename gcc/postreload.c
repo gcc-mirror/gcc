@@ -2346,7 +2346,6 @@ const pass_data pass_data_postreload_cse =
   RTL_PASS, /* type */
   "postreload", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_RELOAD_CSE_REGS, /* tv_id */
   0, /* properties_required */

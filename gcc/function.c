@@ -1950,7 +1950,6 @@ const pass_data pass_data_instantiate_virtual_regs =
   RTL_PASS, /* type */
   "vregs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -6949,7 +6948,6 @@ const pass_data pass_data_leaf_regs =
   RTL_PASS, /* type */
   "*leaf_regs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -7009,7 +7007,6 @@ const pass_data pass_data_thread_prologue_and_epilogue =
   RTL_PASS, /* type */
   "pro_and_epilogue", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_THREAD_PROLOGUE_AND_EPILOGUE, /* tv_id */
   0, /* properties_required */
@@ -7229,7 +7226,6 @@ const pass_data pass_data_match_asm_constraints =
   RTL_PASS, /* type */
   "asmcons", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
