@@ -1,3 +1,7 @@
+2014-04-17  Kito Cheng  <kito@0xlab.org>
+
+	* gcc.c (used_arg): Prevent out of bound access for multilib_options.
+
 2014-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60849
