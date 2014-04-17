@@ -18,6 +18,7 @@ in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
 
 # Can be removed when libiberty becomes a normal convenience library
 Wc=-Wc,
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
@@ -28,6 +29,9 @@ liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
 liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
 	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(liblto_plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
 all-local: $(in_gcc_libs)
 

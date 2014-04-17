@@ -1,3 +1,9 @@
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56781
+	* Makefile.am (LTLDFLAGS, liblto_plugin_la_LINK): New variables.
+	* Makefile.in: Regenerated.
+
 2014-04-02  Richard Biener  <rguenther@suse.de>
 
 	* lto-plugin.c (onload): Fail to load if -fno-use-linker-plugin
