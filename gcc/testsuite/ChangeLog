@@ -1,3 +1,8 @@
+2014-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59200
+	* g++.dg/cpp0x/alias-decl-42.C: New.
+
 2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.target/powerpc/ti_math1.c: New.
@@ -14,7 +19,7 @@
 	gcc.dg/plugin/one_time_plugin.c, gcc.dg/plugin/selfasign.c: Adjust.
 
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
-	
+
 	* g++.dg/plugin/dumb_plugin.c, g++.dg/plugin/selfassign.c,
 	gcc.dg/plugin/one_time_plugin.c, gcc.dg/plugin/selfassign.c: Adjust.
 
