@@ -9619,9 +9619,20 @@ Call_expression::do_get_tree(Translate_context* context)
       fn = Expression::make_compound(set_closure, fn, location);
     }
 
-  Btype* bft = fntype->get_backend_fntype(gogo);
   Bexpression* bfn = tree_to_expr(fn->get_tree(context));
-  bfn = gogo->backend()->convert_expression(bft, bfn, location);
+
+  // When not calling a named function directly, use a type conversion
+  // in case the type of the function is a recursive type which refers
+  // to itself.  We don't do this for an interface method because 1)
+  // an interface method never refers to itself, so we always have a
+  // function type here; 2) we pass an extra first argument to an
+  // interface method, so fntype is not correct.
+  if (func == NULL && !is_interface_method)
+    {
+      Btype* bft = fntype->get_backend_fntype(gogo);
+      bfn = gogo->backend()->convert_expression(bft, bfn, location);
+    }
+
   Bexpression* call = gogo->backend()->call_expression(bfn, fn_args, location);
 
   if (this->results_ != NULL)
