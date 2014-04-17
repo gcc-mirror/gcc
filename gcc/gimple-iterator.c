@@ -689,6 +689,15 @@ gsi_insert_seq_on_edge (edge e, gimple_seq seq)
   gimple_seq_add_seq (&PENDING_STMT (e), seq);
 }
 
+/* Return a new iterator pointing to the first statement in sequence of
+   statements on edge E.  Such statements need to be subsequently moved into a
+   basic block by calling gsi_commit_edge_inserts.  */
+
+gimple_stmt_iterator
+gsi_start_edge (edge e)
+{
+  return gsi_start (PENDING_STMT (e));
+}
 
 /* Insert the statement pointed-to by GSI into edge E.  Every attempt
    is made to place the statement in an existing basic block, but

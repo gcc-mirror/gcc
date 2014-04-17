@@ -123,6 +123,8 @@ gsi_start_bb (basic_block bb)
   return i;
 }
 
+gimple_stmt_iterator gsi_start_edge (edge e);
+
 /* Return a new iterator initially pointing to GIMPLE_SEQ's last statement.  */
 
 static inline gimple_stmt_iterator

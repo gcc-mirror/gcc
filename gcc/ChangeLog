@@ -1,3 +1,17 @@
+2014-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	* gimple-iterator.c (gsi_start_edge): New function.
+	* gimple-iterator.h (gsi_start_edge): Declare.
+	* tree-sra.c (single_non_eh_succ): New function.
+	(disqualify_ops_if_throwing_stmt): Renamed to
+	disqualify_if_bad_bb_terminating_stmt.  Allow throwing statements
+	having one non-EH successor BB.
+	(sra_modify_expr): If stmt ends bb, use single non-EH successor to
+	generate loads into replacements.
+	(sra_modify_assign): Likewise and and also use the simple path for
+	such statements.
+	(sra_modify_function_body): Commit statements on edges.
+
 2014-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60849
