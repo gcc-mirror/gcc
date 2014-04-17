@@ -1738,7 +1738,7 @@ struct processor_costs slm_cost = {
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
   1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
+  4,					/* vec_to_scalar_cost.  */
   1,					/* scalar_to_vec_cost.  */
   1,					/* vec_align_load_cost.  */
   2,					/* vec_unalign_load_cost.  */
@@ -1815,7 +1815,7 @@ struct processor_costs intel_cost = {
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
   1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
+  4,					/* vec_to_scalar_cost.  */
   1,					/* scalar_to_vec_cost.  */
   1,					/* vec_align_load_cost.  */
   2,					/* vec_unalign_load_cost.  */
@@ -46318,7 +46318,6 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
-
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
 

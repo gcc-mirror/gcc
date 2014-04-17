@@ -1,3 +1,8 @@
+2014-04-17  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/i386.c (slm_cost): Adjust vec_to_scalar_cost.
+	* config/i386/i386.c (intel_cost): Ditto.
+
 2014-04-17  Joey Ye  <joey.ye@arm.com>
 
 	* opts.c (OPT_fif_conversion, OPT_fif_conversion2): Disable for Og.
