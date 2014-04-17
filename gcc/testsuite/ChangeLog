@@ -1,3 +1,13 @@
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60847
+	Forward port from 4.8 branch
+	2013-07-19  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/bmi-1.c: Extend with new instrinsics.
+	Fix scan patterns.
+	* gcc.target/i386/bmi-2.c: Ditto.
+
 2014-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60849
