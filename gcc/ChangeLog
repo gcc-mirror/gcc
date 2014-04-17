@@ -1,4 +1,9 @@
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* configure.ac: Check for -Woverloaded-virtual and enable it if found.
+	* configure: Regenerate.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
 	
 	* passes.c (dump_one_pass): don't check pass->has_gate.
 	(execute_ipa_summary_passes): Likewise.

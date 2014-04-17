@@ -340,6 +340,8 @@ ACX_PROG_CC_WARNING_OPTS(
 ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wmissing-format-attribute])), [strict_warn])
 ACX_PROG_CC_WARNING_OPTS(
+	m4_quote(m4_do([-Woverloaded-virtual])), [strict_warn])
+ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wold-style-definition -Wc++-compat])), [c_strict_warn])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC(
 	m4_quote(m4_do([-Wno-long-long -Wno-variadic-macros ], 
