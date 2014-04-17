@@ -282,7 +282,7 @@ void __cilkrts_init_tls_variables(void)
 }
 #endif
 
-#if defined (__linux__) && ! defined(ANDROID)
+#if defined (__linux__) && ! defined(__ANDROID__)
 /*
  * Get the thread id, rather than the pid. In the case of MIC offload, it's
  * possible that we have multiple threads entering Cilk, and each has a
@@ -343,7 +343,7 @@ static int linux_get_affinity_count (int tid)
     return available_procs;
 #endif
 }
-#endif
+#endif  //  defined (__linux__) && ! defined(__ANDROID__)
 
 /*
  * __cilkrts_hardware_cpu_count
@@ -354,7 +354,7 @@ static int linux_get_affinity_count (int tid)
 
 COMMON_SYSDEP int __cilkrts_hardware_cpu_count(void)
 {
-#if defined ANDROID || (defined(__sun__) && defined(__svr4__))
+#if defined __ANDROID__ || (defined(__sun__) && defined(__svr4__))
     return sysconf (_SC_NPROCESSORS_ONLN);
 #elif defined __MIC__
     /// HACK: Usually, the 3rd and 4th hyperthreads are not beneficial
@@ -409,7 +409,7 @@ COMMON_SYSDEP void __cilkrts_yield(void)
     // giving up the processor and latency starting up when work becomes
     // available
     _mm_delay_32(1024);
-#elif defined(ANDROID) || (defined(__sun__) && defined(__svr4__))
+#elif defined(__ANDROID__) || (defined(__sun__) && defined(__svr4__))
     // On Android and Solaris, call sched_yield to yield quantum.  I'm not
     // sure why we don't do this on Linux also.
     sched_yield();

@@ -468,7 +468,7 @@ inline void* allocate_aligned(std::size_t size, std::size_t alignment)
 #ifdef _WIN32
     return _aligned_malloc(size, alignment);
 #else
-#if defined(ANDROID) || defined(__ANDROID__)
+#if defined(__ANDROID__)
     return memalign(std::max(alignment, sizeof(void*)), size);
 #else
     void* ptr;
