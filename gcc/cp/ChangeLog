@@ -1,5 +1,8 @@
 2014-04-18  Jason Merrill  <jason@redhat.com>
 
+	DR 1571
+	* call.c (reference_binding): Recurse on user-defined conversion.
+
 	PR c++/60872
 	* call.c (standard_conversion): Don't try to apply restrict to void.
 
