@@ -1,3 +1,8 @@
+2014-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/merge-vsx.c: Add V4SI and V4SF tests.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+
 2014-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	Backport from mainline
