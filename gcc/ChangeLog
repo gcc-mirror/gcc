@@ -2,10 +2,8 @@
 
 	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Enhance
 	the widen-mult pattern by handling two operands with different
-	sizes.
-	* tree-vect-stmts.c (vectorizable_conversion): Allow multi-steps
-	conversions after widening mult operation.
-	(supportable_widening_operation): Likewise.
+	sizes, and operands whose size is smaller than half of the result
+	type.
 
 2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
 
