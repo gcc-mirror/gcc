@@ -1,3 +1,9 @@
+2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (spec_rem): New static variable.
+	(dump_overall_stats): New function.
+	(dump_inline_stats): New function.
+
 2014-04-18  Richard Henderson  <rth@redhat.com>
 
 	* config/aarch64/aarch64.c (aarch64_register_move_cost): Pass a mode
