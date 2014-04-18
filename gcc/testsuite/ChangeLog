@@ -1,3 +1,8 @@
+2014-04-18  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-widen-mult-u8-s16-s32.c: New test.
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: New test.
+
 2014-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/merge-vsx.c: Add V4SI and V4SF tests.
