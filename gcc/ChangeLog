@@ -1,3 +1,8 @@
+2014-04-18  Richard Henderson  <rth@redhat.com>
+
+	* config/aarch64/aarch64.c (aarch64_register_move_cost): Pass a mode
+	to GET_MODE_SIZE, not a reg_class_t.
+
 2014-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (vsx_xxmrghw_<mode>): Adjust for

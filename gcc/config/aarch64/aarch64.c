@@ -4568,9 +4568,11 @@ aarch64_address_cost (rtx x ATTRIBUTE_UNUSED,
 }
 
 static int
-aarch64_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-			    reg_class_t from, reg_class_t to)
+aarch64_register_move_cost (enum machine_mode mode,
+			    reg_class_t from_i, reg_class_t to_i)
 {
+  enum reg_class from = (enum reg_class) from_i;
+  enum reg_class to = (enum reg_class) to_i;
   const struct cpu_regmove_cost *regmove_cost
     = aarch64_tune_params->regmove_cost;
 
@@ -4586,8 +4588,7 @@ aarch64_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
      secondary reload.  A general register is used as a scratch to move
      the upper DI value and the lower DI value is moved directly,
      hence the cost is the sum of three moves. */
-
-  if (! TARGET_SIMD && GET_MODE_SIZE (from) == 128 && GET_MODE_SIZE (to) == 128)
+  if (! TARGET_SIMD && GET_MODE_SIZE (mode) == 128)
     return regmove_cost->GP2FP + regmove_cost->FP2GP + regmove_cost->FP2FP;
 
   return regmove_cost->FP2FP;
