@@ -671,6 +671,11 @@ dump_inline_hints (FILE *f, inline_hints hints)
       hints &= ~INLINE_HINT_array_index;
       fprintf (f, " array_index");
     }
+  if (hints & INLINE_HINT_known_hot)
+    {
+      hints &= ~INLINE_HINT_known_hot;
+      fprintf (f, " known_hot");
+    }
   gcc_assert (!hints);
 }
 
@@ -3666,6 +3671,17 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 				&known_aggs);
   estimate_node_size_and_time (callee, clause, known_vals, known_binfos,
 			       known_aggs, &size, &min_size, &time, &hints, es->param);
+
+  /* When we have profile feedback, we can quite safely identify hot
+     edges and for those we disable size limits.  Don't do that when
+     probability that caller will call the callee is low however, since it
+     may hurt optimization of the caller's hot path.  */
+  if (edge->count && cgraph_maybe_hot_edge_p (edge)
+      && (edge->count * 2
+          > (edge->caller->global.inlined_to
+	     ? edge->caller->global.inlined_to->count : edge->caller->count)))
+    hints |= INLINE_HINT_known_hot;
+
   known_vals.release ();
   known_binfos.release ();
   known_aggs.release ();

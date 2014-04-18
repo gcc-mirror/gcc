@@ -578,18 +578,21 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
      inline cnadidate.  At themoment we allow inline hints to
      promote non-inline function to inline and we increase
      MAX_INLINE_INSNS_SINGLE 16fold for inline functions.  */
-  else if (!DECL_DECLARED_INLINE_P (callee->decl)
+  else if ((!DECL_DECLARED_INLINE_P (callee->decl)
+	   && (!e->count || !cgraph_maybe_hot_edge_p (e)))
 	   && inline_summary (callee)->min_size - inline_edge_summary (e)->call_stmt_size
 	      > MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
     {
       e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
-  else if (DECL_DECLARED_INLINE_P (callee->decl)
+  else if ((DECL_DECLARED_INLINE_P (callee->decl) || e->count)
 	   && inline_summary (callee)->min_size - inline_edge_summary (e)->call_stmt_size
 	      > 16 * MAX_INLINE_INSNS_SINGLE)
     {
-      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
+      e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
+			  ? CIF_MAX_INLINE_INSNS_SINGLE_LIMIT
+			  : CIF_MAX_INLINE_INSNS_AUTO_LIMIT);
       want_inline = false;
     }
   else
@@ -606,6 +609,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && growth >= MAX_INLINE_INSNS_SINGLE
 	       && ((!big_speedup
 		    && !(hints & (INLINE_HINT_indirect_call
+				  | INLINE_HINT_known_hot
 				  | INLINE_HINT_loop_iterations
 				  | INLINE_HINT_array_index
 				  | INLINE_HINT_loop_stride)))
@@ -630,6 +634,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 inlining given function is very profitable.  */
       else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	       && !big_speedup
+	       && !(hints & INLINE_HINT_known_hot)
 	       && growth >= ((hints & (INLINE_HINT_indirect_call
 				       | INLINE_HINT_loop_iterations
 			               | INLINE_HINT_array_index

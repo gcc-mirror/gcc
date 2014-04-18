@@ -1,5 +1,14 @@
 2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.h (INLINE_HINT_known_hot): New hint.
+	* ipa-inline-analysis.c (dump_inline_hints): Dump it.
+	(do_estimate_edge_time): Compute it.
+	* ipa-inline.c (want_inline_small_function_p): Bypass
+	INLINE_INSNS_AUTO/SINGLE limits for calls that are known
+	to be hot.
+
+2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (spec_rem): New static variable.
 	(dump_overall_stats): New function.
 	(dump_inline_stats): New function.
