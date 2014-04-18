@@ -1,3 +1,12 @@
+2014-04-18  Cong Hou  <congh@google.com>
+
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Enhance
+	the widen-mult pattern by handling two operands with different
+	sizes.
+	* tree-vect-stmts.c (vectorizable_conversion): Allow multi-steps
+	conversions after widening mult operation.
+	(supportable_widening_operation): Likewise.
+
 2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.h (INLINE_HINT_known_hot): New hint.
