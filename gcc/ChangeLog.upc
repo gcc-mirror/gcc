@@ -1,25 +1,25 @@
-2014-04-20 Gary Funck  <gary@intrepid.com>
+2014-04-20  Gary Funck  <gary@intrepid.com>
 
 	* c/c-typeck.c (build_binary_op): Check for invalid comparison
-	between pointers-to-share with target types that have
+	between pointers-to-shared with target types that have
 	differing UPC blocking factors.
 
-2014-04-16 Gary Funck  <gary@intrepid.com>
+2014-04-16  Gary Funck  <gary@intrepid.com>
 
 	Fix PTS comparison involving a generic PTS using packed representation.
 	* c-family/c-upc-pts-packed.c (upc_pts_packed_build_cond_expr):
 	When comparing (shared void *) pointers, mask out the phase component.
 
-2014-04-14 Gary Funck  <gary@intrepid.com>
+2014-04-14  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 209359 into gupc branch.
 	DEV-PHASE: Bump to 4.10.0-1.
 
-2014-04-07 Gary Funck  <gary@intrepid.com>
+2014-04-07  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 209179 into gupc branch.
 
-2014-04-04 Gary Funck  <gary@intrepid.com>
+2014-04-04  Gary Funck  <gary@intrepid.com>
 
 	* tree-upc.c tree-upc.h: New.
 	Factor UPC-specific tree node handling
@@ -34,73 +34,73 @@
 	tree-pretty-print.c tree.c tree.h: Rename variables and
 	functions to include 'upc' in their names.
 
-2014-03-31 Gary Funck  <gary@intrepid.com>
+2014-03-31  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 208955 into gupc branch.
 
-2014-03-24 Gary Funck  <gary@intrepid.com>
+2014-03-24  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 208783 into gupc branch.
 
-2014-03-17 Gary Funck  <gary@intrepid.com>
+2014-03-17  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 208609 into gupc branch.
 
-2014-03-10 Gary Funck  <gary@intrepid.com>
+2014-03-10  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 208447 into gupc branch.
 
-2014-03-03 Gary Funck  <gary@intrepid.com>
+2014-03-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 208270 into gupc branch.
 
-2014-02-24 Gary Funck  <gary@intrepid.com>
+2014-02-24  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 208066 into gupc branch.
 
-2014-02-17 Gary Funck  <gary@intrepid.com>
+2014-02-17  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 207818 into gupc branch.
 
-2014-02-10 Gary Funck  <gary@intrepid.com>
+2014-02-10  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 207649 into gupc branch.
 
-2014-02-03 Gary Funck  <gary@intrepid.com>
+2014-02-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 207415 into gupc branch.
 
-2014-01-30 Gary Funck  <gary@intrepid.com>
+2014-01-30  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 207297 into gupc branch.
 
-2014-01-28 Gary Funck  <gary@intrepid.com>
+2014-01-28  Gary Funck  <gary@intrepid.com>
 
 	* c/gupcspec.c (match_suffix): Remove use of PARAMS.
 
-2014-01-20 Gary Funck  <gary@intrepid.com>
+2014-01-20  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206847 into gupc branch.
 
-2014-01-20 Gary Funck  <gary@intrepid.com>
+2014-01-20  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206792 into gupc branch.
 
-2014-01-17 Nenad Vukicevic  <nenad@intrepid.com>
+2014-01-17  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* c-family/c-cppbuiltin.c (upc_cpp_builtins): Remove pre-defines
 	for __UPC_CASTABLE__, __UPC_COLLECTIVE__, __UPC_TICK__ and
 	__UPC_PUPC__ as they are library and not compiler features.
 
-2014-01-13 Gary Funck  <gary@intrepid.com>
+2014-01-13  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206575 into gupc branch.
 
-2014-01-10 Gary Funck  <gary@intrepid.com>
+2014-01-10  Gary Funck  <gary@intrepid.com>
 
 	Update copyright notices.
 
-2014-01-06 Gary Funck  <gary@intrepid.com>
+2014-01-06  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206354 into gupc branch.
 
@@ -231,35 +231,35 @@
 	of lang. flag bits.
 	(tree_expr_size): Move prototype from explow.h.
 
-2013-12-30 Gary Funck  <gary@intrepid.com>
+2013-12-30  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206243 into gupc branch.
 
-2013-12-23 Gary Funck  <gary@intrepid.com>
+2013-12-23  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206179 into gupc branch.
 
-2013-12-22 Gary Funck  <gary@intrepid.com>
+2013-12-22  Gary Funck  <gary@intrepid.com>
 
 	* upc/upc-act.c (upc_cpp_builtins): Bump UPC_VERSION
 	to reflect UPC specification version 1.3 compliance.
 
-2013-12-16 Gary Funck  <gary@intrepid.com>
+2013-12-16  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206010 into gupc branch.
 
-2013-12-09 Gary Funck  <gary@intrepid.com>
+2013-12-09  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 205801 into gupc branch.
 
-2013-12-03 Meador Inge  <meadori@codesourcery.com>
+2013-12-03  Meador Inge  <meadori@codesourcery.com>
 
 	* tree-core.h (tree_type_common): Change tree_type_common to use
 	user-provided GC marking.
 	(gt_ggc_mx, gt_pch_nx): New prototypes.
 	* tree.c (gt_ggc_mx, gt_pch_nx): New functions.
 
-2013-12-03 Gary Funck  <gary@intrepid.com>
+2013-12-03  Gary Funck  <gary@intrepid.com>
 
 	Revert:
 
@@ -270,12 +270,12 @@
 	if the corresponding tree pointers are not equal.
 	* c-typeck.c (comptypes_internal, c_build_qualified_type_1): Ditto.
 
-2013-12-03 Gary Funck  <gary@intrepid.com>
+2013-12-03  Gary Funck  <gary@intrepid.com>
 
 	* c-family/c.opt: Fix typo introduced in 2013-06-03
 	merge with trunk.
 
-2013-12-02 Gary Funck  <gary@intrepid.com>
+2013-12-02  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 205582 into gupc branch.
 
@@ -284,50 +284,50 @@
 	* upc/upc-genericize.c (upc_expand_get): Ensure that temporaries
 	are declared via a DECL_EXPR.
 
-2013-11-25 Gary Funck  <gary@intrepid.com>
+2013-11-25  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 205346 into gupc branch.
 
-2013-11-18 Gary Funck  <gary@intrepid.com>
+2013-11-18  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 204942 into gupc branch.
 
-2013-11-15 Gary Funck  <gary@intrepid.com>
+2013-11-15  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 204894 into gupc branch.
 
-2013-11-15 Gary Funck  <gary@intrepid.com>
+2013-11-15  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 204659 into gupc branch.
 
-2013-11-04 Gary Funck  <gary@intrepid.com>
+2013-11-04  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 204345 into gupc branch.
 
-2013-10-31 Gary Funck  <gary@intrepid.com>
+2013-10-31  Gary Funck  <gary@intrepid.com>
 
 	Released GUPC 4.9.0.1 based on version 203902.
 	This release version was committed on 2013-10-21.
 	* DEV-PHASE: Bump to 4.9.0.2.
 	* DATESTAMP: Bump date stamp.
 
-2013-10-28 Gary Funck  <gary@intrepid.com>
+2013-10-28  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 204119 into gupc branch.
 
-2013-10-21 Gary Funck  <gary@intrepid.com>
+2013-10-21  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 203886 into gupc branch.
 
-2013-10-14 Gary Funck  <gary@intrepid.com>
+2013-10-14  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 203514 into gupc branch.
 
-2013-10-07 Gary Funck  <gary@intrepid.com>
+2013-10-07  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 203240 into gupc branch.
 
-2013-10-01 Gary Funck  <gary@intrepid.com>
+2013-10-01  Gary Funck  <gary@intrepid.com>
 
 	Implement pointer-to-shared -> integer conversions.
 	Required per UPC 1.3 Specification.
@@ -335,78 +335,78 @@
 	PTS->int conversions as an error.  Rewrite into a CONVERT_EXPR
 	for later processing by upc_genericize().
 
-2013-10-01 Gary Funck  <gary@intrepid.com>
+2013-10-01  Gary Funck  <gary@intrepid.com>
 
 	Implement pointer-to-shared -> integer conversions.
 	Required per UPC 1.3 Specification.
 	* upc/upc-genericize.c (upc_genericize_pts_to_int_cvt): New.
 	(upc_genericize_expr): Call upc_genericize_pts_to_int_cvt().
 
-2013-09-30 Gary Funck  <gary@intrepid.com>
+2013-09-30  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 203026 into gupc branch.
 
-2013-09-23 Gary Funck  <gary@intrepid.com>
+2013-09-23  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 202825 into gupc branch.
 
-2013-09-18 Gary Funck  <gary@intrepid.com>
+2013-09-18  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 202725 into gupc branch.
 
-2013-09-16 Gary Funck  <gary@intrepid.com>
+2013-09-16  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 202619 into gupc branch.
 
-2013-09-09 Gary Funck  <gary@intrepid.com>
+2013-09-09  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 202382 into gupc branch.
 
-2013-09-02 Gary Funck  <gary@intrepid.com>
+2013-09-02  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 202159 into gupc branch.
 
-2013-08-26 Gary Funck  <gary@intrepid.com>
+2013-08-26  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 202008 into gupc branch.
 
-2013-08-19 Gary Funck  <gary@intrepid.com>
+2013-08-19  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 201832 into gupc branch.
 
-2013-08-05 Gary Funck  <gary@intrepid.com>
+2013-08-05  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 201483 into gupc branch.
 
-2013-07-29 Gary Funck  <gary@intrepid.com>
+2013-07-29  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 201301 into gupc branch.
 
-2013-07-22 Gary Funck  <gary@intrepid.com>
+2013-07-22  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 201119 into gupc branch.
 
-2013-07-15 Gary Funck  <gary@intrepid.com>
+2013-07-15  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 200955 into gupc branch.
 
-2013-07-08 Gary Funck  <gary@intrepid.com>
+2013-07-08  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 200775 into gupc branch.
 
-2013-07-01 Gary Funck  <gary@intrepid.com>
+2013-07-01  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 200575 into gupc branch.
 
-2013-06-24 Gary Funck  <gary@intrepid.com>
+2013-06-24  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 200361 into gupc branch.
 
-2013-06-19 Gary Funck  <gary@intrepid.com>
+2013-06-19  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 200149 into gupc branch.
 
-2013-06-19 Gary Funck  <gary@intrepid.com>
+2013-06-19  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 200149 into gupc branch.
 	* upc/upc-act.c (upc_create_static_var): New.
@@ -418,19 +418,19 @@
 	file too early.
 	(upc_build_sync_stmt): Delete unused variable, sync_expr_type.
 
-2013-06-03 Gary Funck  <gary@intrepid.com>
+2013-06-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 199596 into gupc branch.
 
-2013-05-27 Gary Funck  <gary@intrepid.com>
+2013-05-27  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 199350 into gupc branch.
 
-2013-05-20 Gary Funck  <gary@intrepid.com>
+2013-05-20  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 199093 into gupc branch.
 
-2013-05-14 Gary Funck  <gary@intrepid.com>
+2013-05-14  Gary Funck  <gary@intrepid.com>
 
 	* upc/upc-pts-packed.c (upc_pts_packed_build_cvt):
 	When checking whether the phase of a PTS should be reset,
@@ -438,27 +438,27 @@
 	the check for equal type sizes.
 	* upc/upc-pts-struct.c (upc_pts_struct_build_cvt): Ditto.
 
-2013-05-13 Gary Funck  <gary@intrepid.com>
+2013-05-13  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 198815 into gupc branch.
 
-2013-05-06 Gary Funck  <gary@intrepid.com>
+2013-05-06  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 198622 into gupc branch.
 
-2013-04-29 Gary Funck  <gary@intrepid.com>
+2013-04-29  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 198433 into gupc branch.
 
-2013-04-15 Gary Funck  <gary@intrepid.com>
+2013-04-15  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 197958 into gupc branch.
 
-2013-04-08 Gary Funck  <gary@intrepid.com>
+2013-04-08  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 197571 into gupc branch.
 
-2013-04-04 Gary Funck  <gary@intrepid.com>
+2013-04-04  Gary Funck  <gary@intrepid.com>
 
 	Per the UPC 1.3 specification, the type of the
 	optional barrier/notify/wait expression is not constrained to
@@ -474,11 +474,11 @@
 	to check/convert the optional synchronization statement
 	expression.
 
-2013-04-02 Gary Funck  <gary@intrepid.com>
+2013-04-02  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 197340 into gupc branch.
 
-2013-04-02 Gary Funck  <gary@intrepid.com>
+2013-04-02  Gary Funck  <gary@intrepid.com>
 
 	Revert revision 178346 (2011-08-30)
 	which changed the prototype of check_qualified_type and related
@@ -496,7 +496,7 @@
 	* upc/upc-act.c (upc_block_factor_lookup): Accept const_tree
 	input argument and convert this to 'tree' for use with hash function.
 
-2013-04-02 Gary Funck  <gary@intrepid.com>
+2013-04-02  Gary Funck  <gary@intrepid.com>
 
 	Revert revision 178346 (2011-08-30)
 	which changed the prototype of check_qualified_type and related
@@ -509,74 +509,74 @@
 	* upc/upc-act.c (upc_block_factor_lookup): Accept const_tree
 	input argument and convert this to 'tree' for use with hash function.
 
-2013-03-25 Gary Funck  <gary@intrepid.com>
+2013-03-25  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 197029 into gupc branch.
 
-2013-03-21 Gary Funck  <gary@intrepid.com>
+2013-03-21  Gary Funck  <gary@intrepid.com>
 
 	Released GUPC 4.8.0.3 based on version 196601.
 	This release version was committed on 2013-03-11.
 	* DATESTAMP: Bump date stamp.
 
-2013-03-18 Gary Funck  <gary@intrepid.com>
+2013-03-18  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 196771 into gupc branch.
 	* DEV-PHASE: Bump release identifier to 4.9.0-1.
 
-2013-03-11 Gary Funck  <gary@intrepid.com>
+2013-03-11  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 196592 into gupc branch.
 
-2013-03-04 Gary Funck  <gary@intrepid.com>
+2013-03-04  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 196422 into gupc branch.
 
-2013-02-25 Gary Funck  <gary@intrepid.com>
+2013-02-25  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 196253 into gupc branch.
 
-2013-02-18 Gary Funck  <gary@intrepid.com>
+2013-02-18  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 196115 into gupc branch.
 
-2013-02-11 Gary Funck  <gary@intrepid.com>
+2013-02-11  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 195937 into gupc branch.
 
-2013-02-04 Gary Funck  <gary@intrepid.com>
+2013-02-04  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 195707 into gupc branch.
 
-2013-01-28 Gary Funck  <gary@intrepid.com>
+2013-01-28  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 195502 into gupc branch.
 
-2013-01-21 Gary Funck  <gary@intrepid.com>
+2013-01-21  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 195330 into gupc branch.
 
-2013-01-14 Gary Funck  <gary@intrepid.com>
+2013-01-14  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 195164 into gupc branch.
 
-2013-01-07 Gary Funck  <gary@intrepid.com>
+2013-01-07  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 194962 into gupc branch.
 
-2012-12-24 Gary Funck  <gary@intrepid.com>
+2012-12-24  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 194709 into gupc branch.
 
-2012-12-17 Gary Funck  <gary@intrepid.com>
+2012-12-17  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 194552 into gupc branch.
 
-2012-12-10 Gary Funck  <gary@intrepid.com>
+2012-12-10  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 194351 into gupc branch.
 
-2012-12-03 Gary Funck  <gary@intrepid.com>
+2012-12-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 194076 into gupc branch.
 
@@ -587,19 +587,19 @@
 	* DEV-PHASE: Bump release identifier to 4.8.0-3.
 	* DATESTAMP: Bump date stamp.
 
-2012-11-26 Gary Funck  <gary@intrepid.com>
+2012-11-26  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 193807 into gupc branch.
 
-2012-11-20 Gary Funck  <gary@intrepid.com>
+2012-11-20  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 193672 into gupc branch.
 
-2012-11-19 Gary Funck  <gary@intrepid.com>
+2012-11-19  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 193617 into gupc branch.
 
-2012-11-15 Gary Funck  <gary@intrepid.com>
+2012-11-15  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 193426 into gupc branch.
 
@@ -610,11 +610,11 @@
 	* DEV-PHASE: Bump release identifier to 4.8.0-2.
 	* DATESTAMP: Bump date stamp.
 
-2012-11-05 Gary Funck  <gary@intrepid.com>
+2012-11-05  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 193152 into gupc branch.
 
-2012-10-29 Gary Funck  <gary@intrepid.com>
+2012-10-29  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 192909 into gupc branch.
 
@@ -635,7 +635,7 @@
 	(upc_cpp_builtins): Ditto.
 	* upc/upc-lang.c (upc_init_options): Ditto.
 
-2012-10-27 Gary Funck  <gary@intrepid.com>
+2012-10-27  Gary Funck  <gary@intrepid.com>
 
 	* defaults.h: fix typos and formatting in UPC-related entries.
 
@@ -656,19 +656,19 @@
 	* upc/upc-act.c (upc_build_init_func): Remove settings
 	of the section for shared initialization code.
 
-2012-10-22 Gary Funck  <gary@intrepid.com>
+2012-10-22  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 192673 into gupc branch.
 
-2012-10-15 Gary Funck  <gary@intrepid.com>
+2012-10-15  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 192449 into gupc branch.
 
-2012-10-08 Gary Funck  <gary@intrepid.com>
+2012-10-08  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 192198 into gupc branch.
 
-2012-10-01 Gary Funck  <gary@intrepid.com>
+2012-10-01  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 191931 into gupc branch.
 
@@ -686,7 +686,7 @@
 
 	* upc/upc-act.c (upc_cpp_builtins): Pre-define __UPC_TICK__.
 
-2012-09-24 Gary Funck  <gary@intrepid.com>
+2012-09-24  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 191658 into gupc branch.
 
@@ -1096,12 +1096,12 @@
 	* upc/upc-genericize.c (upc_expand_put): Use is_gimple_reg instead of
 	is_gimple_non_addressable.
 
-2012-01-06  Nenad Vukicevic <nenad@intrepid.com>
+2012-01-06  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc/Make-lang.in: Add appropriate linker flags when linking
 	gupc drivers.
 
-2012-01-06  Nenad Vukicevic <nenad@intrepid.com>
+2012-01-06  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc/Make-lang.in: Add appropriate linker flags when linking
 	gupc drivers.
@@ -1125,7 +1125,7 @@
 	* upc/upc-act.c (upc_cpp_builtins): Disable inlining of the
 	runtime if flag_upc_debug is asserted.
 
-2011-12-20  Nenad Vukicevic <nenad@intrepid.com>
+2011-12-20  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* top-level/Makefile.def (flags_to_pass): Added GUPC
 	defines. Fixes the make error when upc is not specified as one
@@ -1165,13 +1165,13 @@
 	Merge trunk version 181493 into gupc branch.
 	Incorporates final fix for PR target/49992.
 
-2011-11-09  Nenad Vukicevic <nenad@intrepid.com>
+2011-11-09  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Makefile.in (CRTSTUFF_CFLAGS): Revert the previous
 	change that converted relative include paths into absolute
 	ones, as it does not work with older version of make (3.80).
 
-2011-10-27  Nenad Vukicevic <nenad@intrepid.com>
+2011-10-27  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Apply patch for Darwin build - PR49992.
 	* top-level/configure.ac: Don't run ranlib with '-c' option for Darwin.
@@ -1247,7 +1247,7 @@
 	(upc_genericize_array_ref): expand the newly constructed
 	indirect reference by calling upc_genericize_indirect_ref().
 
-2011-10-11  Nenad Vukicevic <nenad@intrepid.com>
+2011-10-11  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* testsuite/lib/upc-dg.exp: Limit number of torture runs to
 	only four (O0 static/dynamic, O3 static/dynamic).
@@ -1268,7 +1268,7 @@
 	This ensures that &a[i].field1 ends up with the required
 	zero block size, for example.
 
-2011-10-07  Nenad Vukicevic <nenad@intrepid.com>
+2011-10-07  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add configuration checks for struct/packed builds so we can
 	use upc_struct_pts/upc_packed_pts selectors in the testsuite.
@@ -1276,7 +1276,7 @@
 	(check_effective_target_upc_struct_pts): New.
 	(check_effective_target_upc_packed_pts): New.
 
-2011-09-15  Nenad Vukicevic <nenad@intrepid.com>
+2011-09-15  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add to FLAGS the flags needed to disable inlining of
 	UPC run-time access routines.
@@ -1417,7 +1417,7 @@
 	* convert.c (convert_to_integer): Fix the check for the
 	  difference between two UPC pointers-to-shared values.
 
-2011-08-23  Nenad Vukicevic <nenad@intrepid.com>
+2011-08-23  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Fix the name for --with-upc-pts-packed-bits
 	  option. Support --with-upc-packed-bits as deprecated. Fix the code to
@@ -1485,7 +1485,7 @@
 	  derive the unshared equivalent when calculating
 	  the result type of the node.
 
-2011-07-15  Nenad Vukicevic <nenad@intrepid.com>
+2011-07-15  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* config/darwin.c: Disable var_tracking option
 	  on -O0 as it is supposed to run only when optimization
@@ -2309,7 +2309,7 @@
 	* libupc/testsuite/libupc.upc/intrepid/test18.upc:
 	Likewise.
 
-2010-03-01 Gary Funck  <gary@intrepid.com>
+2010-03-01  Gary Funck  <gary@intrepid.com>
 
 	Create gupc branch from trunk version 157149.
 
@@ -2331,7 +2331,7 @@
 	before calling TYPE_BLOCK_FACTOR().  This fits better with
 	recent encoding of block factor values with a hash table.
 
-2011-09-15  Nenad Vukicevic <nenad@intrepid.com>
+2011-09-15  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add to FLAGS the flags needed to disable inlining of
 	UPC run-time access routines.
@@ -2542,7 +2542,7 @@
 	* convert.c (convert_to_integer): Fix the check for the
 	  difference between two UPC pointers-to-shared values.
 
-2011-08-23  Nenad Vukicevic <nenad@intrepid.com>
+2011-08-23  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Fix the name for --with-upc-pts-packed-bits
 	  option. Support --with-upc-packed-bits as deprecated. Fix the code to
@@ -2670,7 +2670,7 @@
 	  derive the unshared equivalent when calculating
 	  the result type of the node.
 
-2011-07-15  Nenad Vukicevic <nenad@intrepid.com>
+2011-07-15  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* config/darwin.c: Disable var_tracking option
 	  on -O0 as it is supposed to run only when optimization
@@ -4079,6 +4079,6 @@
 	  variable initializer function is not removed from
 	  the call tree graph.
 
-2010-03-01 Gary Funck  <gary@intrepid.com>
+2010-03-01  Gary Funck  <gary@intrepid.com>
 
 	Create gupc branch from trunk version 157149.
