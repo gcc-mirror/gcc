@@ -10847,6 +10847,23 @@ build_binary_op (location_t location, enum tree_code code,
 				  "local pointers");
 	      return error_mark_node;
 	    }
+	  if (upc_shared_type_p (tt0)
+	      && upc_shared_type_p (tt1) && (tt0 != tt1)
+	      && !(VOID_TYPE_P (tt0) || VOID_TYPE_P (tt1)))
+	    {
+	      const tree bs_0 = upc_get_block_factor (tt0);
+	      const tree bs_1 = upc_get_block_factor (tt1);
+	      /* Both source and destination are non-void pointers to shared,
+		 whose target types are not equal.
+		 UPC dictates that their blocking factors must be equal. */
+	      if (!tree_int_cst_equal (bs_0, bs_1))
+		{
+		  error_at (location, "UPC does not allow comparison "
+				      "between pointers to shared with "
+				      "differing block sizes without a cast");
+		  return error_mark_node;
+		}
+	    }
 	  /* Anything compares with void *.  void * compares with anything.
 	     Otherwise, the targets must be compatible
 	     and both must be object or both incomplete.  */
@@ -10951,6 +10968,23 @@ build_binary_op (location_t location, enum tree_code code,
 	      error_at (location, "UPC does not allow comparisons between "
 	                          "pointers to shared and local pointers");
 	      return error_mark_node;
+	    }
+	  if (upc_shared_type_p (tt0)
+	      && upc_shared_type_p (tt1) && (tt0 != tt1)
+	      && !(VOID_TYPE_P (tt0) || VOID_TYPE_P (tt1)))
+	    {
+	      const tree bs_0 = upc_get_block_factor (tt0);
+	      const tree bs_1 = upc_get_block_factor (tt1);
+	      /* Both source and destination are non-void pointers to shared,
+		 whose target types are not equal.
+		 UPC dictates that their blocking factors must be equal. */
+	      if (!tree_int_cst_equal (bs_0, bs_1))
+		{
+		  error_at (location, "UPC does not allow comparison "
+				      "between pointers to shared with "
+				      "differing block sizes without a cast");
+		  return error_mark_node;
+		}
 	    }
 	  if (comp_target_types (location, type0, type1))
 	    {

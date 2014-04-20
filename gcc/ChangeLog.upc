@@ -1,3 +1,9 @@
+2014-04-20 Gary Funck  <gary@intrepid.com>
+
+	* c/c-typeck.c (build_binary_op): Check for invalid comparison
+	between pointers-to-share with target types that have
+	differing UPC blocking factors.
+
 2014-04-16 Gary Funck  <gary@intrepid.com>
 
 	Fix PTS comparison involving a generic PTS using packed representation.
