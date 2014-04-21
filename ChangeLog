@@ -1,3 +1,7 @@
+2014-04-21 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Delete myself.
+
 2014-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/56781
