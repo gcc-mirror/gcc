@@ -1,9 +1,16 @@
+2014-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60909
+	* config/i386/i386.c (ix86_expand_builtin)
+	<case IX86_BUILTIN_RDRAND{16,32,64}_STEP>: Use temporary
+	register for target RTX.
+	<case IX86_BUILTIN_RDSEED{16,32,64}_STEP>: Ditto.
+
 2014-04-18  Cong Hou  <congh@google.com>
 
 	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Enhance
-	the widen-mult pattern by handling two operands with different
-	sizes, and operands whose size is smaller than half of the result
-	type.
+	the widen-mult pattern by handling two operands with different sizes,
+	and operands whose size is smaller than half of the result type.
 
 2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -11,8 +18,7 @@
 	* ipa-inline-analysis.c (dump_inline_hints): Dump it.
 	(do_estimate_edge_time): Compute it.
 	* ipa-inline.c (want_inline_small_function_p): Bypass
-	INLINE_INSNS_AUTO/SINGLE limits for calls that are known
-	to be hot.
+	INLINE_INSNS_AUTO/SINGLE limits for calls that are known to be hot.
 
 2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -27,16 +33,14 @@
 
 2014-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* config/rs6000/vsx.md (vsx_xxmrghw_<mode>): Adjust for
-	little-endian.
+	* config/rs6000/vsx.md (vsx_xxmrghw_<mode>): Adjust for little-endian.
 	(vsx_xxmrglw_<mode>): Likewise.
 
 2014-04-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/60876
 	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): Make sure
-	GET_MODE_SIZE gets passed an enum machine_mode type and not
-	integer.
+	GET_MODE_SIZE gets passed an enum machine_mode type and not integer.
 	(rs6000_init_hard_regno_mode_ok): Likewise.
 
 2014-04-17  Jan Hubicka  <hubicka@ucw.cz>
@@ -186,7 +190,7 @@
 	* configure: Regenerate.
 
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
-	
+
 	* passes.c (dump_one_pass): don't check pass->has_gate.
 	(execute_ipa_summary_passes): Likewise.
 	(execute_one_pass): Likewise.
@@ -230,7 +234,8 @@
 
 2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
 
-	* pass_manager.h (pass_manager::register_dump_files_1): Remove declaration.
+	* pass_manager.h (pass_manager::register_dump_files_1): Remove
+	declaration.
 	* passes.c (pass_manager::register_dump_files_1): Merge into
 	(pass_manager::register_dump_files): this, and remove its handling of
 	properties since the pass always has the properties anyway.
@@ -330,8 +335,7 @@
 	(record_target_from_binfo): Add bases_to_consider array;
 	record bases for types w/o instances and skip CXX destructor.
 	(possible_polymorphic_call_targets_1): Add bases_to_consider
-	and consider_construction parameters; check if type may
-	have instance.
+	and consider_construction parameters; check if type may have instance.
 	(get_polymorphic_call_info): Set maybe_in_construction to true
 	when we know nothing.
 	(record_targets_from_bases): Skip CXX destructors; they are
@@ -348,7 +352,7 @@
 2014-04-16  Andrew  Pinski  <apinski@cavium.com>
 
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Change aarch64 ilp32
-        definition.
+	definition.
 
 2014-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -640,7 +644,7 @@
 
 2014-04-14  Christian Bruel  <christian.bruel@st.com>
 
-        * config/sh/sh-mem.cc (sh_expand_strlen): Unroll last word.
+	* config/sh/sh-mem.cc (sh_expand_strlen): Unroll last word.
 
 2014-04-14  Christian Bruel  <christian.bruel@st.com>
 
@@ -949,21 +953,21 @@
 2014-04-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60640
-        * cgraph.h (cgraph_clone_node): New parameter added to declaration.
-        Adjust all callers.
+	* cgraph.h (cgraph_clone_node): New parameter added to declaration.
+	Adjust all callers.
 	* cgraph.c (clone_of_p): Also return true if thunks match.
 	(verify_edge_corresponds_to_fndecl): Removed extraneous call to
 	cgraph_function_or_thunk_node and an obsolete comment.
-        * cgraphclones.c (build_function_type_skip_args): Moved upwards in the
-        file.
-        (build_function_decl_skip_args): Likewise.
+	* cgraphclones.c (build_function_type_skip_args): Moved upwards in the
+	file.
+	(build_function_decl_skip_args): Likewise.
 	(set_new_clone_decl_and_node_flags): New function.
-        (duplicate_thunk_for_node): Likewise.
-        (redirect_edge_duplicating_thunks): Likewise.
-        (cgraph_clone_node): New parameter args_to_skip, pass it to
-        redirect_edge_duplicating_thunks which is called instead of
-        cgraph_redirect_edge_callee.
-        (cgraph_create_virtual_clone): Pass args_to_skip to cgraph_clone_node,
+	(duplicate_thunk_for_node): Likewise.
+	(redirect_edge_duplicating_thunks): Likewise.
+	(cgraph_clone_node): New parameter args_to_skip, pass it to
+	redirect_edge_duplicating_thunks which is called instead of
+	cgraph_redirect_edge_callee.
+	(cgraph_create_virtual_clone): Pass args_to_skip to cgraph_clone_node,
 	moved setting of a lot of flags to set_new_clone_decl_and_node_flags.
 
 2014-04-04  Jeff Law  <law@redhat.com>
@@ -1045,24 +1049,6 @@
 	* doc/invoke.texi (Wnon-virtual-dtor): Adjust documentation.
 	(Weffc++): Remove Scott's numbering, merge lists and reference
 	Wnon-virtual-dtor.
-
-	c-family/
-
-	cp/
-	* class.c (accessible_nvdtor_p): New.
-	(check_bases): Don't check base destructor here ...
-	(check_bases_and_members): ... check them here.  Trigger on
-	Wnon-virtual-dtor flag.
-	(finish_struct_1): Use accessible_nvdtor_p.
-
-	testsuite/
-	* g++.dg/warn/Wnvdtor.C: Add non-polymorphic case.
-	* g++.dg/warn/Wnvdtor-2.C: New.
-	* g++.dg/warn/Wnvdtor-3.C: New.
-	* g++.dg/warn/Wnvdtor-4.C: New.
-	* g++.dg/warn/Weff1.C: Delete.
-	* g++.old-deja/g++.benjamin/15309-1.C: Delete.
-	* g++.old-deja/g++.benjamin/15309-2.C: Delete.
 
 2014-04-03  Nick Clifton  <nickc@redhat.com>
 
