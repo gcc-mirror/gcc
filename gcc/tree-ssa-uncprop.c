@@ -383,47 +383,6 @@ private:
   auto_vec<tree, 2> m_equiv_stack;
 };
 
-/* Main driver for un-cprop.  */
-
-static unsigned int
-tree_ssa_uncprop (void)
-{
-  basic_block bb;
-
-  associate_equivalences_with_edges ();
-
-  /* Create our global data structures.  */
-  val_ssa_equiv.create (1024);
-
-  /* We're going to do a dominator walk, so ensure that we have
-     dominance information.  */
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  /* Recursively walk the dominator tree undoing unprofitable
-     constant/copy propagations.  */
-  uncprop_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
-
-  /* we just need to empty elements out of the hash table, and cleanup the
-    AUX field on the edges.  */
-  val_ssa_equiv.dispose ();
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      edge e;
-      edge_iterator ei;
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  if (e->aux)
-	    {
-	      free (e->aux);
-	      e->aux = NULL;
-	    }
-	}
-    }
-  return 0;
-}
-
-
 /* We have finished processing the dominator children of BB, perform
    any finalization actions in preparation for leaving this node in
    the dominator tree.  */
@@ -581,12 +540,6 @@ uncprop_dom_walker::before_dom_children (basic_block bb)
   uncprop_into_successor_phis (bb);
 }
 
-static bool
-gate_uncprop (void)
-{
-  return flag_tree_dom != 0;
-}
-
 namespace {
 
 const pass_data pass_data_uncprop =
@@ -594,7 +547,6 @@ const pass_data pass_data_uncprop =
   GIMPLE_PASS, /* type */
   "uncprop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SSA_UNCPROP, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -613,10 +565,48 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_uncprop (m_ctxt); }
-  bool gate () { return gate_uncprop (); }
-  unsigned int execute () { return tree_ssa_uncprop (); }
+  virtual bool gate (function *) { return flag_tree_dom != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_uncprop
+
+unsigned int
+pass_uncprop::execute (function *fun)
+{
+  basic_block bb;
+
+  associate_equivalences_with_edges ();
+
+  /* Create our global data structures.  */
+  val_ssa_equiv.create (1024);
+
+  /* We're going to do a dominator walk, so ensure that we have
+     dominance information.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Recursively walk the dominator tree undoing unprofitable
+     constant/copy propagations.  */
+  uncprop_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
+
+  /* we just need to empty elements out of the hash table, and cleanup the
+    AUX field on the edges.  */
+  val_ssa_equiv.dispose ();
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      edge e;
+      edge_iterator ei;
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  if (e->aux)
+	    {
+	      free (e->aux);
+	      e->aux = NULL;
+	    }
+	}
+    }
+  return 0;
+}
 
 } // anon namespace
 

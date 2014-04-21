@@ -26,9 +26,9 @@
 // Check data member 'container' accessible.
 class test_dm : public std::insert_iterator<std::list<int> >
 {
-  container_type l;
-  container_type::iterator i;
+  container_type& l();
+  container_type::iterator i();
   container_type* p;
 public:
-  test_dm(): std::insert_iterator<std::list<int> >(l, i), p(container) { }
+  test_dm(): std::insert_iterator<std::list<int> >(l(), i()), p(container) { }
 };

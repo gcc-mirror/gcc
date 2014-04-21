@@ -48,47 +48,9 @@ notice_stack_pointer_modification_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
     crtl->sp_is_unchanging = 0;
 }
 
-static void
-notice_stack_pointer_modification (void)
-{
-  basic_block bb;
-  rtx insn;
-
-  /* Assume that the stack pointer is unchanging if alloca hasn't
-     been used.  */
-  crtl->sp_is_unchanging = !cfun->calls_alloca;
-  if (crtl->sp_is_unchanging)
-    FOR_EACH_BB_FN (bb, cfun)
-      FOR_BB_INSNS (bb, insn)
-        {
-	  if (INSN_P (insn))
-	    {
-	      /* Check if insn modifies the stack pointer.  */
-	      note_stores (PATTERN (insn),
-			   notice_stack_pointer_modification_1,
-			   NULL);
-	      if (! crtl->sp_is_unchanging)
-		return;
-	    }
-	}
-
-  /* The value coming into this pass was 0, and the exit block uses
-     are based on this.  If the value is now 1, we need to redo the
-     exit block uses.  */
-  if (df && crtl->sp_is_unchanging)
-    df_update_exit_block_uses ();
-}
-
   /* Some targets can emit simpler epilogues if they know that sp was
      not ever modified during the function.  After reload, of course,
      we've already emitted the epilogue so there's no sense searching.  */
-
-static unsigned int
-rest_of_handle_stack_ptr_mod (void)
-{
-  notice_stack_pointer_modification ();
-  return 0;
-}
 
 namespace {
 
@@ -97,7 +59,6 @@ const pass_data pass_data_stack_ptr_mod =
   RTL_PASS, /* type */
   "*stack_ptr_mod", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -115,9 +76,42 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_stack_ptr_mod (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_stack_ptr_mod
+
+unsigned int
+pass_stack_ptr_mod::execute (function *fun)
+{
+  basic_block bb;
+  rtx insn;
+
+  /* Assume that the stack pointer is unchanging if alloca hasn't
+     been used.  */
+  crtl->sp_is_unchanging = !fun->calls_alloca;
+  if (crtl->sp_is_unchanging)
+    FOR_EACH_BB_FN (bb, fun)
+      FOR_BB_INSNS (bb, insn)
+        {
+	  if (INSN_P (insn))
+	    {
+	      /* Check if insn modifies the stack pointer.  */
+	      note_stores (PATTERN (insn),
+			   notice_stack_pointer_modification_1,
+			   NULL);
+	      if (! crtl->sp_is_unchanging)
+		return 0;
+	    }
+	}
+
+  /* The value coming into this pass was 0, and the exit block uses
+     are based on this.  If the value is now 1, we need to redo the
+     exit block uses.  */
+  if (df && crtl->sp_is_unchanging)
+    df_update_exit_block_uses ();
+
+  return 0;
+}
 
 } // anon namespace
 

@@ -431,8 +431,8 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_fguess_branch_probability, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fcprop_registers, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fforward_propagate, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fif_conversion, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fif_conversion2, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion2, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fipa_pure_const, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fipa_reference, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fipa_profile, NULL, 1 },
@@ -823,14 +823,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
             error_at (loc, "-fno-fat-lto-objects are supported only with linker plugin");
 	  opts->x_flag_fat_lto_objects = 1;
 	}
-    }
-  if ((opts->x_flag_lto_partition_balanced != 0) + (opts->x_flag_lto_partition_1to1 != 0)
-       + (opts->x_flag_lto_partition_none != 0) >= 1)
-    {
-      if ((opts->x_flag_lto_partition_balanced != 0)
-	   + (opts->x_flag_lto_partition_1to1 != 0)
-	   + (opts->x_flag_lto_partition_none != 0) > 1)
-	error_at (loc, "only one -flto-partition value can be specified");
     }
 
   /* We initialize opts->x_flag_split_stack to -1 so that targets can set a
@@ -1740,7 +1732,7 @@ common_handle_option (struct gcc_options *opts,
       /* FIXME: Instrumentation we insert makes ipa-reference bitmaps
 	 quadratic.  Disable the pass until better memory representation
 	 is done.  */
-      if (!opts_set->x_flag_ipa_reference && opts->x_in_lto_p)
+      if (!opts_set->x_flag_ipa_reference)
         opts->x_flag_ipa_reference = false;
       break;
 

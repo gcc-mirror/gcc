@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2009-2014 Free Software Foundation, Inc.
 //
@@ -24,8 +24,8 @@ void foo1()
 { 
   typedef __gnu_cxx::throw_value_limit value_type;
   value_type v1;
-  value_type v2(v2);
-  value_type v3(value_type());
+  value_type v2{v1};
+  value_type v3{value_type()};
 }
 
 bool foo2()

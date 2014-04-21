@@ -13,5 +13,5 @@ struct wrap
 int main()
 {
   wrap w;
-  f(w);				// { dg-error "lvalue" }
+  f(w);				// { dg-error "" }
 }

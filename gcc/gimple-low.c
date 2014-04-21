@@ -163,7 +163,6 @@ const pass_data pass_data_lower_cf =
   GIMPLE_PASS, /* type */
   "lower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -181,7 +180,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return lower_function_body (); }
+  virtual unsigned int execute (function *) { return lower_function_body (); }
 
 }; // class pass_lower_cf
 

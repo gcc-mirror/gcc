@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
 // Copyright (C) 2007-2014 Free Software Foundation, Inc.
@@ -27,9 +27,8 @@
 // library this checks the templates can be instantiated for non-default
 // lock policy, for a single-threaded lib this is redundant but harmless.
 using namespace __gnu_test;
-using std::__weak_ptr;
 using std::_S_single;
-template class __weak_ptr<int, _S_single>;
-template class __weak_ptr<void, _S_single>;
-template class __weak_ptr<ClassType, _S_single>;
-template class __weak_ptr<IncompleteClass, _S_single>;
+template class std::__weak_ptr<int, _S_single>;
+template class std::__weak_ptr<void, _S_single>;
+template class std::__weak_ptr<ClassType, _S_single>;
+template class std::__weak_ptr<IncompleteClass, _S_single>;

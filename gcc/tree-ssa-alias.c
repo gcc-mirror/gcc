@@ -858,6 +858,125 @@ may_overlap:
   return false;
 }
 
+/* qsort compare function to sort FIELD_DECLs after their
+   DECL_FIELD_CONTEXT TYPE_UID.  */
+
+static inline int
+ncr_compar (const void *field1_, const void *field2_)
+{
+  const_tree field1 = *(const_tree *) const_cast <void *>(field1_);
+  const_tree field2 = *(const_tree *) const_cast <void *>(field2_);
+  unsigned int uid1
+    = TYPE_UID (TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field1)));
+  unsigned int uid2
+    = TYPE_UID (TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field2)));
+  if (uid1 < uid2)
+    return -1;
+  else if (uid1 > uid2)
+    return 1;
+  return 0;
+}
+
+/* Return true if we can determine that the fields referenced cannot
+   overlap for any pair of objects.  */
+
+static bool
+nonoverlapping_component_refs_p (const_tree x, const_tree y)
+{
+  if (!flag_strict_aliasing
+      || !x || !y
+      || TREE_CODE (x) != COMPONENT_REF
+      || TREE_CODE (y) != COMPONENT_REF)
+    return false;
+
+  auto_vec<const_tree, 16> fieldsx;
+  while (TREE_CODE (x) == COMPONENT_REF)
+    {
+      tree field = TREE_OPERAND (x, 1);
+      tree type = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field));
+      if (TREE_CODE (type) == RECORD_TYPE)
+	fieldsx.safe_push (field);
+      x = TREE_OPERAND (x, 0);
+    }
+  if (fieldsx.length () == 0)
+    return false;
+  auto_vec<const_tree, 16> fieldsy;
+  while (TREE_CODE (y) == COMPONENT_REF)
+    {
+      tree field = TREE_OPERAND (y, 1);
+      tree type = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field));
+      if (TREE_CODE (type) == RECORD_TYPE)
+	fieldsy.safe_push (TREE_OPERAND (y, 1));
+      y = TREE_OPERAND (y, 0);
+    }
+  if (fieldsy.length () == 0)
+    return false;
+
+  /* Most common case first.  */
+  if (fieldsx.length () == 1
+      && fieldsy.length () == 1)
+    return ((TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldsx[0]))
+	     == TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldsy[0])))
+	    && fieldsx[0] != fieldsy[0]
+	    && !(DECL_BIT_FIELD (fieldsx[0]) && DECL_BIT_FIELD (fieldsy[0])));
+
+  if (fieldsx.length () == 2)
+    {
+      if (ncr_compar (&fieldsx[0], &fieldsx[1]) == 1)
+	{
+	  const_tree tem = fieldsx[0];
+	  fieldsx[0] = fieldsx[1];
+	  fieldsx[1] = tem;
+	}
+    }
+  else
+    fieldsx.qsort (ncr_compar);
+
+  if (fieldsy.length () == 2)
+    {
+      if (ncr_compar (&fieldsy[0], &fieldsy[1]) == 1)
+	{
+	  const_tree tem = fieldsy[0];
+	  fieldsy[0] = fieldsy[1];
+	  fieldsy[1] = tem;
+	}
+    }
+  else
+    fieldsy.qsort (ncr_compar);
+
+  unsigned i = 0, j = 0;
+  do
+    {
+      const_tree fieldx = fieldsx[i];
+      const_tree fieldy = fieldsy[j];
+      tree typex = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldx));
+      tree typey = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldy));
+      if (typex == typey)
+	{
+	  /* We're left with accessing different fields of a structure,
+	     no possible overlap, unless they are both bitfields.  */
+	  if (fieldx != fieldy)
+	    return !(DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy));
+	}
+      if (TYPE_UID (typex) < TYPE_UID (typey))
+	{
+	  i++;
+	  if (i == fieldsx.length ())
+	    break;
+	}
+      else
+	{
+	  j++;
+	  if (j == fieldsy.length ())
+	    break;
+	}
+    }
+  while (1);
+
+  return false;
+}
+
+
 /* Return true if two memory references based on the variables BASE1
    and BASE2 constrained to [OFFSET1, OFFSET1 + MAX_SIZE1) and
    [OFFSET2, OFFSET2 + MAX_SIZE2) may alias.  REF1 and REF2
@@ -1023,6 +1142,10 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (dbase2)) == 1)
     return ranges_overlap_p (doffset1, max_size1, doffset2, max_size2);
 
+  if (ref1 && ref2
+      && nonoverlapping_component_refs_p (ref1, ref2))
+    return false;
+
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
       && (handled_component_p (ref1) || handled_component_p (ref2)))
@@ -1144,11 +1267,18 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       && !alias_sets_conflict_p (base1_alias_set, base2_alias_set))
     return false;
 
+  /* If either reference is view-converted, give up now.  */
+  if (same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) != 1
+      || same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) != 1)
+    return true;
+
+  if (ref1 && ref2
+      && nonoverlapping_component_refs_p (ref1, ref2))
+    return false;
+
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
-      && (handled_component_p (ref1) || handled_component_p (ref2))
-      && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1
-      && same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1)
+      && (handled_component_p (ref1) || handled_component_p (ref2)))
     return aliasing_component_refs_p (ref1,
 				      ref1_alias_set, base1_alias_set,
 				      offset1, max_size1,

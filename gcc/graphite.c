@@ -357,7 +357,6 @@ const pass_data pass_data_graphite =
   GIMPLE_PASS, /* type */
   "graphite0", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_GRAPHITE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -375,7 +374,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_graphite_transforms (); }
+  virtual bool gate (function *) { return gate_graphite_transforms (); }
 
 }; // class pass_graphite
 
@@ -394,7 +393,6 @@ const pass_data pass_data_graphite_transforms =
   GIMPLE_PASS, /* type */
   "graphite", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_GRAPHITE_TRANSFORMS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -412,8 +410,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_graphite_transforms (); }
-  unsigned int execute () { return graphite_transforms (); }
+  virtual bool gate (function *) { return gate_graphite_transforms (); }
+  virtual unsigned int execute (function *) { return graphite_transforms (); }
 
 }; // class pass_graphite_transforms
 

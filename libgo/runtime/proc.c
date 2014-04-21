@@ -1212,9 +1212,6 @@ runtime_newextram(void)
 	// here we need to set up the context for g0.
 	getcontext(&mp->g0->context);
 	mp->g0->context.uc_stack.ss_sp = g0_sp;
-#ifdef MAKECONTEXT_STACK_TOP
-	mp->g0->context.uc_stack.ss_sp += g0_spsize;
-#endif
 	mp->g0->context.uc_stack.ss_size = g0_spsize;
 	makecontext(&mp->g0->context, kickoff, 0);
 

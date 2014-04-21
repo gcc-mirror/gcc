@@ -1490,7 +1490,6 @@ const pass_data pass_data_rtl_fwprop =
   RTL_PASS, /* type */
   "fwprop1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_FWPROP, /* tv_id */
   0, /* properties_required */
@@ -1509,8 +1508,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_fwprop (); }
-  unsigned int execute () { return fwprop (); }
+  virtual bool gate (function *) { return gate_fwprop (); }
+  virtual unsigned int execute (function *) { return fwprop (); }
 
 }; // class pass_rtl_fwprop
 
@@ -1557,7 +1556,6 @@ const pass_data pass_data_rtl_fwprop_addr =
   RTL_PASS, /* type */
   "fwprop2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_FWPROP, /* tv_id */
   0, /* properties_required */
@@ -1575,8 +1573,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_fwprop (); }
-  unsigned int execute () { return fwprop_addr (); }
+  virtual bool gate (function *) { return gate_fwprop (); }
+  virtual unsigned int execute (function *) { return fwprop_addr (); }
 
 }; // class pass_rtl_fwprop_addr
 

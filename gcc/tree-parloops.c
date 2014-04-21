@@ -2253,23 +2253,6 @@ parallelize_loops (void)
 
 /* Parallelization.  */
 
-static bool
-gate_tree_parallelize_loops (void)
-{
-  return flag_tree_parallelize_loops > 1;
-}
-
-static unsigned
-tree_parallelize_loops (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  if (parallelize_loops ())
-    return TODO_cleanup_cfg | TODO_rebuild_alias;
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_parallelize_loops =
@@ -2277,7 +2260,6 @@ const pass_data pass_data_parallelize_loops =
   GIMPLE_PASS, /* type */
   "parloops", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PARALLELIZE_LOOPS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2295,10 +2277,21 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_parallelize_loops (); }
-  unsigned int execute () { return tree_parallelize_loops (); }
+  virtual bool gate (function *) { return flag_tree_parallelize_loops > 1; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_parallelize_loops
+
+unsigned
+pass_parallelize_loops::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  if (parallelize_loops ())
+    return TODO_cleanup_cfg | TODO_rebuild_alias;
+  return 0;
+}
 
 } // anon namespace
 

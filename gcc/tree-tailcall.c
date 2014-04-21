@@ -1065,12 +1065,6 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   return 0;
 }
 
-static unsigned int
-execute_tail_recursion (void)
-{
-  return tree_optimize_tail_calls_1 (false);
-}
-
 static bool
 gate_tail_calls (void)
 {
@@ -1090,7 +1084,6 @@ const pass_data pass_data_tail_recursion =
   GIMPLE_PASS, /* type */
   "tailr", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1109,8 +1102,11 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_tail_recursion (m_ctxt); }
-  bool gate () { return gate_tail_calls (); }
-  unsigned int execute () { return execute_tail_recursion (); }
+  virtual bool gate (function *) { return gate_tail_calls (); }
+  virtual unsigned int execute (function *)
+    {
+      return tree_optimize_tail_calls_1 (false);
+    }
 
 }; // class pass_tail_recursion
 
@@ -1129,7 +1125,6 @@ const pass_data pass_data_tail_calls =
   GIMPLE_PASS, /* type */
   "tailc", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1147,8 +1142,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tail_calls (); }
-  unsigned int execute () { return execute_tail_calls (); }
+  virtual bool gate (function *) { return gate_tail_calls (); }
+  virtual unsigned int execute (function *) { return execute_tail_calls (); }
 
 }; // class pass_tail_calls
 

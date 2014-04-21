@@ -229,4 +229,14 @@ enum vtv_priority {
   VTV_STANDARD_PRIORITY = 1,
   VTV_PREINIT_PRIORITY  = 2
 };
+
+/* flag_lto_partition initialization values.  */
+enum lto_partition_model {
+  LTO_PARTITION_NONE = 0,
+  LTO_PARTITION_ONE = 1,
+  LTO_PARTITION_BALANCED = 2,
+  LTO_PARTITION_1TO1 = 3,
+  LTO_PARTITION_MAX = 4
+};
+
 #endif /* ! GCC_FLAG_TYPES_H */

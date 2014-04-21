@@ -1196,9 +1196,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	       && TREE_CODE (TREE_TYPE (from)) != FUNCTION_TYPE)
 	{
 	  tree nfrom = TREE_TYPE (from);
+	  /* Don't try to apply restrict to void.  */
+	  int quals = cp_type_quals (nfrom) & ~TYPE_QUAL_RESTRICT;
 	  from = build_pointer_type
-	    (cp_build_qualified_type (void_type_node, 
-			              cp_type_quals (nfrom)));
+	    (cp_build_qualified_type (void_type_node, quals));
 	  conv = build_conv (ck_ptr, from, conv);
 	}
       else if (TYPE_PTRDATAMEM_P (from))
@@ -1683,20 +1684,30 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   if (!conv)
     return NULL;
 
+  if (conv->user_conv_p)
+    {
+      /* If initializing the temporary used a conversion function,
+	 recalculate the second conversion sequence.  */
+      for (conversion *t = conv; t; t = next_conversion (t))
+	if (t->kind == ck_user
+	    && DECL_CONV_FN_P (t->cand->fn))
+	  {
+	    tree ftype = TREE_TYPE (TREE_TYPE (t->cand->fn));
+	    int sflags = (flags|LOOKUP_NO_CONVERSION)&~LOOKUP_NO_TEMP_BIND;
+	    conversion *new_second
+	      = reference_binding (rto, ftype, NULL_TREE, c_cast_p,
+				   sflags, complain);
+	    if (!new_second)
+	      return NULL;
+	    return merge_conversion_sequences (t, new_second);
+	  }
+    }
+
   conv = build_conv (ck_ref_bind, rto, conv);
   /* This reference binding, unlike those above, requires the
      creation of a temporary.  */
   conv->need_temporary_p = true;
-  if (TYPE_REF_IS_RVALUE (rto))
-    {
-      conv->rvaluedness_matches_p = 1;
-      /* In the second case, if the reference is an rvalue reference and
-	 the second standard conversion sequence of the user-defined
-	 conversion sequence includes an lvalue-to-rvalue conversion, the
-	 program is ill-formed.  */
-      if (conv->user_conv_p && next_conversion (conv)->kind == ck_rvalue)
-	conv->bad_p = 1;
-    }
+  conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
 
   return conv;
 }
@@ -3524,8 +3535,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       int ctorflags = flags;
 
-      first_arg = build_int_cst (build_pointer_type (totype), 0);
-      first_arg = build_fold_indirect_ref (first_arg);
+      first_arg = build_dummy_object (totype);
 
       /* We should never try to call the abstract or base constructor
 	 from here.  */
@@ -7101,7 +7111,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 ctor is trivial, do a bitwise copy with a simple TARGET_EXPR for a
 	 temp or an INIT_EXPR otherwise.  */
       fa = argarray[0];
-      if (integer_zerop (fa))
+      if (is_dummy_object (fa))
 	{
 	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
@@ -7443,10 +7453,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 
   /* Handle the special case where INSTANCE is NULL_TREE.  */
   if (name == complete_ctor_identifier && !instance)
-    {
-      instance = build_int_cst (build_pointer_type (class_type), 0);
-      instance = build1 (INDIRECT_REF, class_type, instance);
-    }
+    instance = build_dummy_object (class_type);
   else
     {
       if (name == complete_dtor_identifier
@@ -7756,8 +7763,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
       if (init)
 	{
-	  if (INDIRECT_REF_P (instance)
-	      && integer_zerop (TREE_OPERAND (instance, 0)))
+	  if (is_dummy_object (instance))
 	    return get_target_expr_sfinae (init, complain);
 	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
 	  TREE_SIDE_EFFECTS (init) = true;
@@ -7856,6 +7862,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	    }
 
 	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+	      && !DECL_CONSTRUCTOR_P (fn)
 	      && is_dummy_object (instance))
 	    {
 	      instance = maybe_resolve_dummy (instance);

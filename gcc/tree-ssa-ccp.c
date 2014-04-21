@@ -2287,13 +2287,6 @@ do_ssa_ccp (void)
 }
 
 
-static bool
-gate_ccp (void)
-{
-  return flag_tree_ccp != 0;
-}
-
-
 namespace {
 
 const pass_data pass_data_ccp =
@@ -2301,7 +2294,6 @@ const pass_data pass_data_ccp =
   GIMPLE_PASS, /* type */
   "ccp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_CCP, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2321,8 +2313,8 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_ccp (m_ctxt); }
-  bool gate () { return gate_ccp (); }
-  unsigned int execute () { return do_ssa_ccp (); }
+  virtual bool gate (function *) { return flag_tree_ccp != 0; }
+  virtual unsigned int execute (function *) { return do_ssa_ccp (); }
 
 }; // class pass_ccp
 
@@ -2567,14 +2559,43 @@ optimize_unreachable (gimple_stmt_iterator i)
 /* A simple pass that attempts to fold all builtin functions.  This pass
    is run after we've propagated as many constants as we can.  */
 
-static unsigned int
-execute_fold_all_builtins (void)
+namespace {
+
+const pass_data pass_data_fold_builtins =
+{
+  GIMPLE_PASS, /* type */
+  "fab", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_update_ssa ), /* todo_flags_finish */
+};
+
+class pass_fold_builtins : public gimple_opt_pass
+{
+public:
+  pass_fold_builtins (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_fold_builtins, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_fold_builtins (m_ctxt); }
+  virtual unsigned int execute (function *);
+
+}; // class pass_fold_builtins
+
+unsigned int
+pass_fold_builtins::execute (function *fun)
 {
   bool cfg_changed = false;
   basic_block bb;
   unsigned int todoflags = 0;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator i;
       for (i = gsi_start_bb (bb); !gsi_end_p (i); )
@@ -2616,7 +2637,7 @@ execute_fold_all_builtins (void)
 	  result = gimple_fold_builtin (stmt);
 
 	  if (result)
-	    gimple_remove_stmt_histograms (cfun, stmt);
+	    gimple_remove_stmt_histograms (fun, stmt);
 
 	  if (!result)
 	    switch (DECL_FUNCTION_CODE (callee))
@@ -2710,37 +2731,6 @@ execute_fold_all_builtins (void)
 
   return todoflags;
 }
-
-
-namespace {
-
-const pass_data pass_data_fold_builtins =
-{
-  GIMPLE_PASS, /* type */
-  "fab", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_update_ssa ), /* todo_flags_finish */
-};
-
-class pass_fold_builtins : public gimple_opt_pass
-{
-public:
-  pass_fold_builtins (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_fold_builtins, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fold_builtins (m_ctxt); }
-  unsigned int execute () { return execute_fold_all_builtins (); }
-
-}; // class pass_fold_builtins
 
 } // anon namespace
 

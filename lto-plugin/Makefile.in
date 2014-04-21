@@ -84,9 +84,6 @@ am__installdirs = "$(DESTDIR)$(libexecsubdir)"
 LTLIBRARIES = $(libexecsub_LTLIBRARIES)
 am_liblto_plugin_la_OBJECTS = lto-plugin.lo
 liblto_plugin_la_OBJECTS = $(am_liblto_plugin_la_OBJECTS)
-liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(liblto_plugin_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp =
 am__depfiles_maybe =
@@ -239,17 +236,25 @@ in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
 
 # Can be removed when libiberty becomes a normal convenience library
 Wc = -Wc,
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,)
+	$(if $(wildcard ../libiberty/noasan/libiberty.a),$(Wc)../libiberty/noasan/libiberty.a, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,))
 
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
 liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	$(lt_host_flags) -module -bindir $(libexecsubdir) \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
+	$(if $(wildcard ../libiberty/noasan/libiberty.a),, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a))
 
 liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
-	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+	../libiberty/noasan/libiberty.a),../libiberty/noasan/libiberty.a, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,))
+
+liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(liblto_plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -537,6 +542,8 @@ uninstall-am: uninstall-libexecsubLTLIBRARIES
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-libexecsubLTLIBRARIES
 
+override CFLAGS := $(filter-out -fsanitize=address,$(CFLAGS))
+override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 
 all-local: $(in_gcc_libs)
 

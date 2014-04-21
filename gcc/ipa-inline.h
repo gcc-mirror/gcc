@@ -68,7 +68,9 @@ enum inline_hints_vals {
   INLINE_HINT_cross_module = 64,
   /* If array indexes of loads/stores become known there may be room for
      further optimization.  */
-  INLINE_HINT_array_index = 128
+  INLINE_HINT_array_index = 128,
+  /* We know that the callee is hot by profile.  */
+  INLINE_HINT_known_hot = 256
 };
 typedef int inline_hints;
 

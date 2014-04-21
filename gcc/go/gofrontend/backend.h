@@ -257,6 +257,12 @@ class Backend
   virtual Bexpression*
   indirect_expression(Bexpression* expr, bool known_valid, Location) = 0;
 
+  // Return an expression that declares a constant named NAME with the
+  // constant value VAL in BTYPE.
+  virtual Bexpression*
+  named_constant_expression(Btype* btype, const std::string& name,
+                             Bexpression* val, Location) = 0;
+
   // Return an expression for the multi-precision integer VAL in BTYPE.
   virtual Bexpression*
   integer_constant_expression(Btype* btype, mpz_t val) = 0;
@@ -268,6 +274,22 @@ class Backend
   // Return an expression for the complex value REAL/IMAG in BTYPE.
   virtual Bexpression*
   complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag) = 0;
+
+  // Return an expression for the string value VAL.
+  virtual Bexpression*
+  string_constant_expression(const std::string& val) = 0;
+
+  // Return an expression for the real part of BCOMPLEX.
+  virtual Bexpression*
+  real_part_expression(Bexpression* bcomplex, Location) = 0;
+
+  // Return an expression for the imaginary part of BCOMPLEX.
+  virtual Bexpression*
+  imag_part_expression(Bexpression* bcomplex, Location) = 0;
+
+  // Return an expression for the complex number (BREAL, BIMAG).
+  virtual Bexpression*
+  complex_expression(Bexpression* breal, Bexpression* bimag, Location) = 0;
 
   // Return an expression that converts EXPR to TYPE.
   virtual Bexpression*
@@ -311,6 +333,38 @@ class Backend
   virtual Bexpression*
   binary_expression(Operator op, Bexpression* left, Bexpression* right,
                     Location) = 0;
+
+  // Return an expression that constructs BTYPE with VALS.  BTYPE must be the
+  // backend representation a of struct.  VALS must be in the same order as the
+  // corresponding fields in BTYPE.
+  virtual Bexpression*
+  constructor_expression(Btype* btype, const std::vector<Bexpression*>& vals,
+                         Location) = 0;
+
+  // Return an expression that constructs an array of BTYPE with INDEXES and
+  // VALS.  INDEXES and VALS must have the same amount of elements. Each index
+  // in INDEXES must be in the same order as the corresponding value in VALS.
+  virtual Bexpression*
+  array_constructor_expression(Btype* btype,
+                               const std::vector<unsigned long>& indexes,
+                               const std::vector<Bexpression*>& vals,
+                               Location) = 0;
+
+  // Return an expression for the address of BASE[INDEX].
+  // BASE has a pointer type.  This is used for slice indexing.
+  virtual Bexpression*
+  pointer_offset_expression(Bexpression* base, Bexpression* index,
+                            Location) = 0;
+
+  // Return an expression for ARRAY[INDEX] as an l-value.  ARRAY is a valid
+  // fixed-length array, not a slice.
+  virtual Bexpression*
+  array_index_expression(Bexpression* array, Bexpression* index, Location) = 0;
+
+  // Create an expression for a call to FN with ARGS.
+  virtual Bexpression*
+  call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
+                  Location) = 0;
 
   // Statements.
 
@@ -366,6 +420,15 @@ class Backend
   // Create a single statement from a list of statements.
   virtual Bstatement*
   statement_list(const std::vector<Bstatement*>&) = 0;
+
+  // Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if
+  // an exception occurs. EXCEPT_STMT may be NULL.  FINALLY_STMT may be NULL and
+  // if not NULL, it will always be executed.  This is used for handling defers
+  // in Go functions.  In C++, the resulting code is of this form:
+  //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
+  virtual Bstatement*
+  exception_handler_statement(Bstatement* bstat, Bstatement* except_stmt,
+                              Bstatement* finally_stmt, Location) = 0;
 
   // Blocks.
 
@@ -570,6 +633,26 @@ class Backend
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
            bool is_visible, bool is_declaration, bool is_inlinable,
            bool disable_split_stack, bool in_unique_section, Location) = 0;
+
+  // Create a statement that runs all deferred calls for FUNCTION.  This should
+  // be a statement that looks like this in C++:
+  //   finish:
+  //     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
+  virtual Bstatement*
+  function_defer_statement(Bfunction* function, Bexpression* undefer,
+                           Bexpression* check_defer, Location) = 0;
+
+  // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
+  // This will only be called for a function definition.  Returns true on
+  // success, false on failure.
+  virtual bool
+  function_set_parameters(Bfunction* function,
+                         const std::vector<Bvariable*>& param_vars) = 0;
+
+  // Set the function body for FUNCTION using the code in CODE_STMT.  Returns
+  // true on success, false on failure.
+  virtual bool
+  function_set_body(Bfunction* function, Bstatement* code_stmt) = 0;
 };
 
 // The backend interface has to define this function.

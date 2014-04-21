@@ -2008,7 +2008,6 @@ const pass_data pass_data_set_nothrow_function_flags =
   RTL_PASS, /* type */
   "nothrow", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -2026,7 +2025,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return set_nothrow_function_flags (); }
+  virtual unsigned int execute (function *)
+    {
+      return set_nothrow_function_flags ();
+    }
 
 }; // class pass_set_nothrow_function_flags
 
@@ -2621,17 +2623,6 @@ convert_to_eh_region_ranges (void)
   return 0;
 }
 
-static bool
-gate_convert_to_eh_region_ranges (void)
-{
-  /* Nothing to do for SJLJ exceptions or if no regions created.  */
-  if (cfun->eh->region_tree == NULL)
-    return false;
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    return false;
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_convert_to_eh_region_ranges =
@@ -2639,7 +2630,6 @@ const pass_data pass_data_convert_to_eh_region_ranges =
   RTL_PASS, /* type */
   "eh_ranges", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -2657,10 +2647,24 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_convert_to_eh_region_ranges (); }
-  unsigned int execute () { return convert_to_eh_region_ranges (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *)
+    {
+      return convert_to_eh_region_ranges ();
+    }
 
 }; // class pass_convert_to_eh_region_ranges
+
+bool
+pass_convert_to_eh_region_ranges::gate (function *)
+{
+  /* Nothing to do for SJLJ exceptions or if no regions created.  */
+  if (cfun->eh->region_tree == NULL)
+    return false;
+  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+    return false;
+  return true;
+}
 
 } // anon namespace
 

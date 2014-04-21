@@ -305,8 +305,36 @@ ipa_record_stmt_references (struct cgraph_node *node, gimple stmt)
 /* Create cgraph edges for function calls.
    Also look for functions and variables having addresses taken.  */
 
-static unsigned int
-build_cgraph_edges (void)
+namespace {
+
+const pass_data pass_data_build_cgraph_edges =
+{
+  GIMPLE_PASS, /* type */
+  "*build_cgraph_edges", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_build_cgraph_edges : public gimple_opt_pass
+{
+public:
+  pass_build_cgraph_edges (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_build_cgraph_edges, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *);
+
+}; // class pass_build_cgraph_edges
+
+unsigned int
+pass_build_cgraph_edges::execute (function *fun)
 {
   basic_block bb;
   struct cgraph_node *node = cgraph_get_node (current_function_decl);
@@ -317,7 +345,7 @@ build_cgraph_edges (void)
 
   /* Create the callgraph edges and record the nodes referenced by the function.
      body.  */
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -370,45 +398,16 @@ build_cgraph_edges (void)
    }
 
   /* Look for initializers of constant variables and private statics.  */
-  FOR_EACH_LOCAL_DECL (cfun, ix, decl)
+  FOR_EACH_LOCAL_DECL (fun, ix, decl)
     if (TREE_CODE (decl) == VAR_DECL
 	&& (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
 	&& !DECL_HAS_VALUE_EXPR_P (decl))
       varpool_finalize_decl (decl);
-  record_eh_tables (node, cfun);
+  record_eh_tables (node, fun);
 
   pointer_set_destroy (visited_nodes);
   return 0;
 }
-
-namespace {
-
-const pass_data pass_data_build_cgraph_edges =
-{
-  GIMPLE_PASS, /* type */
-  "*build_cgraph_edges", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  PROP_cfg, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_build_cgraph_edges : public gimple_opt_pass
-{
-public:
-  pass_build_cgraph_edges (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_build_cgraph_edges, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  unsigned int execute () { return build_cgraph_edges (); }
-
-}; // class pass_build_cgraph_edges
 
 } // anon namespace
 
@@ -522,7 +521,6 @@ const pass_data pass_data_rebuild_cgraph_edges =
   GIMPLE_PASS, /* type */
   "*rebuild_cgraph_edges", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_CGRAPH, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -541,7 +539,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_rebuild_cgraph_edges (m_ctxt); }
-  unsigned int execute () { return rebuild_cgraph_edges (); }
+  virtual unsigned int execute (function *) { return rebuild_cgraph_edges (); }
 
 }; // class pass_rebuild_cgraph_edges
 
@@ -554,15 +552,6 @@ make_pass_rebuild_cgraph_edges (gcc::context *ctxt)
 }
 
 
-static unsigned int
-remove_cgraph_callee_edges (void)
-{
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
-  cgraph_node_remove_callees (node);
-  ipa_remove_all_references (&node->ref_list);
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_remove_cgraph_callee_edges =
@@ -570,7 +559,6 @@ const pass_data pass_data_remove_cgraph_callee_edges =
   GIMPLE_PASS, /* type */
   "*remove_cgraph_callee_edges", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -591,9 +579,18 @@ public:
   opt_pass * clone () {
     return new pass_remove_cgraph_callee_edges (m_ctxt);
   }
-  unsigned int execute () { return remove_cgraph_callee_edges (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_remove_cgraph_callee_edges
+
+unsigned int
+pass_remove_cgraph_callee_edges::execute (function *)
+{
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  cgraph_node_remove_callees (node);
+  ipa_remove_all_references (&node->ref_list);
+  return 0;
+}
 
 } // anon namespace
 

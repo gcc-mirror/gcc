@@ -1356,43 +1356,38 @@ simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
 static bool
 simplify_gimple_switch (gimple stmt)
 {
-  tree cond = gimple_switch_index (stmt);
-  tree def, to, ti;
-  gimple def_stmt;
-
   /* The optimization that we really care about is removing unnecessary
      casts.  That will let us do much better in propagating the inferred
      constant at the switch target.  */
+  tree cond = gimple_switch_index (stmt);
   if (TREE_CODE (cond) == SSA_NAME)
     {
-      def_stmt = SSA_NAME_DEF_STMT (cond);
-      if (is_gimple_assign (def_stmt))
+      gimple def_stmt = SSA_NAME_DEF_STMT (cond);
+      if (gimple_assign_cast_p (def_stmt))
 	{
-	  if (gimple_assign_rhs_code (def_stmt) == NOP_EXPR)
+	  tree def = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (def) != SSA_NAME)
+	    return false;
+
+	  /* If we have an extension or sign-change that preserves the
+	     values we check against then we can copy the source value into
+	     the switch.  */
+	  tree ti = TREE_TYPE (def);
+	  if (INTEGRAL_TYPE_P (ti)
+	      && TYPE_PRECISION (ti) <= TYPE_PRECISION (TREE_TYPE (cond)))
 	    {
-	      int need_precision;
-	      bool fail;
-
-	      def = gimple_assign_rhs1 (def_stmt);
-
-	      to = TREE_TYPE (cond);
-	      ti = TREE_TYPE (def);
-
-	      /* If we have an extension that preserves value, then we
-		 can copy the source value into the switch.  */
-
-	      need_precision = TYPE_PRECISION (ti);
-	      fail = false;
-	      if (! INTEGRAL_TYPE_P (ti))
-		fail = true;
-	      else if (TYPE_UNSIGNED (to) && !TYPE_UNSIGNED (ti))
-		fail = true;
-	      else if (!TYPE_UNSIGNED (to) && TYPE_UNSIGNED (ti))
-		need_precision += 1;
-	      if (TYPE_PRECISION (to) < need_precision)
-		fail = true;
-
-	      if (!fail)
+	      size_t n = gimple_switch_num_labels (stmt);
+	      tree min = NULL_TREE, max = NULL_TREE;
+	      if (n > 1)
+		{
+		  min = CASE_LOW (gimple_switch_label (stmt, 1));
+		  if (CASE_HIGH (gimple_switch_label (stmt, n - 1)))
+		    max = CASE_HIGH (gimple_switch_label (stmt, n - 1));
+		  else
+		    max = CASE_LOW (gimple_switch_label (stmt, n - 1));
+		}
+	      if ((!min || int_fits_type_p (min, ti))
+		  && (!max || int_fits_type_p (max, ti)))
 		{
 		  gimple_switch_set_index (stmt, def);
 		  simplify_gimple_switch_label_vec (stmt, ti);
@@ -3572,15 +3567,45 @@ simplify_mult (gimple_stmt_iterator *gsi)
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
-static unsigned int
-ssa_forward_propagate_and_combine (void)
+namespace {
+
+const pass_data pass_data_forwprop =
+{
+  GIMPLE_PASS, /* type */
+  "forwprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_FORWPROP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
+};
+
+class pass_forwprop : public gimple_opt_pass
+{
+public:
+  pass_forwprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_forwprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_forwprop (m_ctxt); }
+  virtual bool gate (function *) { return flag_tree_forwprop; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_forwprop
+
+unsigned int
+pass_forwprop::execute (function *fun)
 {
   basic_block bb;
   unsigned int todoflags = 0;
 
   cfg_changed = false;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
 
@@ -3665,7 +3690,7 @@ ssa_forward_propagate_and_combine (void)
 	  else if (TREE_CODE_CLASS (code) == tcc_comparison)
 	    {
 	      if (forward_propagate_comparison (&gsi))
-	        cfg_changed = true;
+		cfg_changed = true;
 	    }
 	  else
 	    gsi_next (&gsi);
@@ -3835,44 +3860,6 @@ ssa_forward_propagate_and_combine (void)
 
   return todoflags;
 }
-
-
-static bool
-gate_forwprop (void)
-{
-  return flag_tree_forwprop;
-}
-
-namespace {
-
-const pass_data pass_data_forwprop =
-{
-  GIMPLE_PASS, /* type */
-  "forwprop", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_FORWPROP, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
-};
-
-class pass_forwprop : public gimple_opt_pass
-{
-public:
-  pass_forwprop (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_forwprop, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_forwprop (m_ctxt); }
-  bool gate () { return gate_forwprop (); }
-  unsigned int execute () { return ssa_forward_propagate_and_combine (); }
-
-}; // class pass_forwprop
 
 } // anon namespace
 

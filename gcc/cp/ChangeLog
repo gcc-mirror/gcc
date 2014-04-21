@@ -1,3 +1,58 @@
+2014-04-18  Jason Merrill  <jason@redhat.com>
+
+	DR 1571
+	* call.c (reference_binding): Recurse on user-defined conversion.
+
+	PR c++/60872
+	* call.c (standard_conversion): Don't try to apply restrict to void.
+
+2014-04-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	* decl.c (reshape_init_r): Handle a single element of vector type.
+
+2014-04-16  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/60765
+	* decl2.c (cplus_decl_attributes): Handle
+	pointer-to-member-function declarations.
+
+2014-04-16  Patrick Palka  <patrick@parcs.ath.cx>
+
+	PR c++/60764
+	* call.c (build_user_type_coversion): Use build_dummy_object
+	to create the placeholder object for a constructor method call.
+	(build_special_member_call): Likewise.
+	(build_over_call): Check for the placeholder object with
+	is_dummy_object.
+	(build_new_method_call_1): Likewise.  Don't attempt to resolve
+	a dummy object for a constructor method call.
+
+2014-04-16  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	PR c++/59295
+	* friend.c (add_friend, make_friend_class): Move repeated friend
+	warning under Wredundant_decls.
+
+2014-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls): Remove redundant TYPE_NAME use.
+	* name-lookup.c (pushdecl_maybe_friend_1): Likewise.
+	(do_class_using_decl): Likewise.
+	* mangle.c (dump_substitution_candidates): Use TYPE_NAME_STRING.
+
+2014-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/59335
+	* Make-lang.h (CP_PLUGIN_HEADERS): Add type-utils.h.
+
+2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (TYPE_IDENTIFIER): Remove declaration.
+
+2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (mark_template_parm): Use template_parm_level_and_index.
+
 2014-04-11  Jason Merrill  <jason@redhat.com>
 
 	* parser.h (struct cp_token): Rename ambiguous_p to error_reported.

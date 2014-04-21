@@ -146,7 +146,6 @@ const pass_data pass_data_cleanup_barriers =
   RTL_PASS, /* type */
   "barriers", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -164,7 +163,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return cleanup_barriers (); }
+  virtual unsigned int execute (function *) { return cleanup_barriers (); }
 
 }; // class pass_cleanup_barriers
 

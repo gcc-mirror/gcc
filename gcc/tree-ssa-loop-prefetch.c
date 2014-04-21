@@ -2004,21 +2004,6 @@ tree_ssa_prefetch_arrays (void)
 
 /* Prefetching.  */
 
-static unsigned int
-tree_ssa_loop_prefetch (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return tree_ssa_prefetch_arrays ();
-}
-
-static bool
-gate_tree_ssa_loop_prefetch (void)
-{
-  return flag_prefetch_loop_arrays > 0;
-}
-
 namespace {
 
 const pass_data pass_data_loop_prefetch =
@@ -2026,7 +2011,6 @@ const pass_data pass_data_loop_prefetch =
   GIMPLE_PASS, /* type */
   "aprefetch", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PREFETCH, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2044,10 +2028,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_prefetch (); }
-  unsigned int execute () { return tree_ssa_loop_prefetch (); }
+  virtual bool gate (function *) { return flag_prefetch_loop_arrays > 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_loop_prefetch
+
+unsigned int
+pass_loop_prefetch::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return tree_ssa_prefetch_arrays ();
+}
 
 } // anon namespace
 

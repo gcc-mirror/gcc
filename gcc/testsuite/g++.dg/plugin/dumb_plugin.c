@@ -44,20 +44,6 @@ handle_end_of_compilation_unit (void *event_data, void *data)
 }
 
 
-static unsigned int
-execute_dumb_plugin_example (void)
-{
-  warning (0, G_("Analyze function %s"),
-           IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
-  return 0;
-}
-
-static bool
-gate_dumb_plugin_example (void)
-{
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_dumb_plugin_example =
@@ -65,7 +51,6 @@ const pass_data pass_data_dumb_plugin_example =
   GIMPLE_PASS, /* type */
   "dumb_plugin_example", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -83,10 +68,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_dumb_plugin_example (); }
-  unsigned int execute () { return execute_dumb_plugin_example (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_dumb_plugin_example
+
+unsigned int
+pass_dumb_plugin_example::execute (function *)
+{
+  warning (0, G_("Analyze function %s"),
+           IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+  return 0;
+}
 
 } // anon namespace
 

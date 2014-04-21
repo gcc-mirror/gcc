@@ -78,7 +78,6 @@ const pass_data pass_data_mode_switch_use =
   RTL_PASS, /* type */
   "mode_switch_use", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -96,7 +95,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return insert_uses (); }
+  virtual unsigned int execute (function *) { return insert_uses (); }
 
 }; // class pass_mode_switch_use
 

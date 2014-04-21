@@ -789,26 +789,6 @@ optimize_mode_switching (void)
 
 #endif /* OPTIMIZE_MODE_SWITCHING */
 
-static bool
-gate_mode_switching (void)
-{
-#ifdef OPTIMIZE_MODE_SWITCHING
-  return true;
-#else
-  return false;
-#endif
-}
-
-static unsigned int
-rest_of_handle_mode_switching (void)
-{
-#ifdef OPTIMIZE_MODE_SWITCHING
-  optimize_mode_switching ();
-#endif /* OPTIMIZE_MODE_SWITCHING */
-  return 0;
-}
-
-
 namespace {
 
 const pass_data pass_data_mode_switching =
@@ -816,7 +796,6 @@ const pass_data pass_data_mode_switching =
   RTL_PASS, /* type */
   "mode_sw", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_MODE_SWITCH, /* tv_id */
   0, /* properties_required */
@@ -837,8 +816,22 @@ public:
   /* The epiphany backend creates a second instance of this pass, so we need
      a clone method.  */
   opt_pass * clone () { return new pass_mode_switching (m_ctxt); }
-  bool gate () { return gate_mode_switching (); }
-  unsigned int execute () { return rest_of_handle_mode_switching (); }
+  virtual bool gate (function *)
+    {
+#ifdef OPTIMIZE_MODE_SWITCHING
+      return true;
+#else
+      return false;
+#endif
+    }
+
+  virtual unsigned int execute (function *)
+    {
+#ifdef OPTIMIZE_MODE_SWITCHING
+      optimize_mode_switching ();
+#endif /* OPTIMIZE_MODE_SWITCHING */
+      return 0;
+    }
 
 }; // class pass_mode_switching
 

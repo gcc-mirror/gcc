@@ -157,7 +157,6 @@ static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
 static int insert_subset_children (splay_tree_node, void*);
 static alias_set_entry get_alias_set_entry (alias_set_type);
-static bool nonoverlapping_component_refs_p (const_rtx, const_rtx);
 static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx,
 			       const_rtx, enum machine_mode, rtx,
@@ -995,17 +994,6 @@ record_component_aliases (tree type)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      /* Recursively record aliases for the base classes, if there are any.  */
-      if (TYPE_BINFO (type))
-	{
-	  int i;
-	  tree binfo, base_binfo;
-
-	  for (binfo = TYPE_BINFO (type), i = 0;
-	       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-	    record_alias_subset (superset,
-				 get_alias_set (BINFO_TYPE (base_binfo)));
-	}
       for (field = TYPE_FIELDS (type); field != 0; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL && !DECL_NONADDRESSABLE_P (field))
 	  record_alias_subset (superset, get_alias_set (TREE_TYPE (field)));
@@ -2259,68 +2247,6 @@ read_dependence (const_rtx mem, const_rtx x)
   return false;
 }
 
-/* Return true if we can determine that the fields referenced cannot
-   overlap for any pair of objects.  */
-
-static bool
-nonoverlapping_component_refs_p (const_rtx rtlx, const_rtx rtly)
-{
-  const_tree x = MEM_EXPR (rtlx), y = MEM_EXPR (rtly);
-  const_tree fieldx, fieldy, typex, typey, orig_y;
-
-  if (!flag_strict_aliasing
-      || !x || !y
-      || TREE_CODE (x) != COMPONENT_REF
-      || TREE_CODE (y) != COMPONENT_REF)
-    return false;
-
-  do
-    {
-      /* The comparison has to be done at a common type, since we don't
-	 know how the inheritance hierarchy works.  */
-      orig_y = y;
-      do
-	{
-	  fieldx = TREE_OPERAND (x, 1);
-	  typex = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldx));
-
-	  y = orig_y;
-	  do
-	    {
-	      fieldy = TREE_OPERAND (y, 1);
-	      typey = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldy));
-
-	      if (typex == typey)
-		goto found;
-
-	      y = TREE_OPERAND (y, 0);
-	    }
-	  while (y && TREE_CODE (y) == COMPONENT_REF);
-
-	  x = TREE_OPERAND (x, 0);
-	}
-      while (x && TREE_CODE (x) == COMPONENT_REF);
-      /* Never found a common type.  */
-      return false;
-
-    found:
-      /* If we're left with accessing different fields of a structure, then no
-	 possible overlap, unless they are both bitfields.  */
-      if (TREE_CODE (typex) == RECORD_TYPE && fieldx != fieldy)
-	return !(DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy));
-
-      /* The comparison on the current field failed.  If we're accessing
-	 a very nested structure, look at the next outer level.  */
-      x = TREE_OPERAND (x, 0);
-      y = TREE_OPERAND (y, 0);
-    }
-  while (x && y
-	 && TREE_CODE (x) == COMPONENT_REF
-	 && TREE_CODE (y) == COMPONENT_REF);
-
-  return false;
-}
-
 /* Look at the bottom of the COMPONENT_REF list for a DECL, and return it.  */
 
 static tree
@@ -2594,9 +2520,6 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
     return 0;
 
   if (nonoverlapping_memrefs_p (mem, x, false))
-    return 0;
-
-  if (nonoverlapping_component_refs_p (mem, x))
     return 0;
 
   return rtx_refs_may_alias_p (x, mem, true);

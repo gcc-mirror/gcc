@@ -264,8 +264,7 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
   Variable* var = this->var_->var_value();
   Bvariable* bvar = this->var_->get_backend_variable(context->gogo(),
 						     context->function());
-  tree init = var->get_init_tree(context->gogo(), context->function());
-  Bexpression* binit = init == NULL ? NULL : tree_to_expr(init);
+  Bexpression* binit = var->get_init(context->gogo(), context->function());
 
   if (!var->is_in_heap())
     {
@@ -638,13 +637,17 @@ Assignment_statement::do_check_types(Gogo*)
 Bstatement*
 Assignment_statement::do_get_backend(Translate_context* context)
 {
-  tree rhs_tree = this->rhs_->get_tree(context);
   if (this->lhs_->is_sink_expression())
-    return context->backend()->expression_statement(tree_to_expr(rhs_tree));
+    {
+      tree rhs_tree = this->rhs_->get_tree(context);
+      return context->backend()->expression_statement(tree_to_expr(rhs_tree));
+    }
+
   tree lhs_tree = this->lhs_->get_tree(context);
-  rhs_tree = Expression::convert_for_assignment(context, this->lhs_->type(),
-						this->rhs_->type(), rhs_tree,
-						this->location());
+  Expression* rhs =
+      Expression::convert_for_assignment(context->gogo(), this->lhs_->type(),
+                                         this->rhs_, this->location());
+  tree rhs_tree = rhs->get_tree(context);
   return context->backend()->assignment_statement(tree_to_expr(lhs_tree),
 						  tree_to_expr(rhs_tree),
 						  this->location());
@@ -2187,7 +2190,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 					      location);
 
   // Allocate the initialized struct on the heap.
-  constructor = Expression::make_heap_composite(constructor, location);
+  constructor = Expression::make_heap_expression(constructor, location);
 
   // Look up the thunk.
   Named_object* named_thunk = gogo->lookup(thunk_name, NULL);

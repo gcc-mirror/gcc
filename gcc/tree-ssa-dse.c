@@ -80,9 +80,6 @@ along with GCC; see the file COPYING3.  If not see
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
 
-static bool gate_dse (void);
-static unsigned int tree_ssa_dse (void);
-
 
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT, find a candidate statement *USE_STMT that
@@ -328,47 +325,6 @@ dse_dom_walker::before_dom_children (basic_block bb)
     }
 }
 
-/* Main entry point.  */
-
-static unsigned int
-tree_ssa_dse (void)
-{
-  need_eh_cleanup = BITMAP_ALLOC (NULL);
-
-  renumber_gimple_stmt_uids ();
-
-  /* We might consider making this a property of each pass so that it
-     can be [re]computed on an as-needed basis.  Particularly since
-     this pass could be seen as an extension of DCE which needs post
-     dominators.  */
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  /* Dead store elimination is fundamentally a walk of the post-dominator
-     tree and a backwards walk of statements within each block.  */
-  dse_dom_walker (CDI_POST_DOMINATORS).walk (cfun->cfg->x_exit_block_ptr);
-
-  /* Removal of stores may make some EH edges dead.  Purge such edges from
-     the CFG as needed.  */
-  if (!bitmap_empty_p (need_eh_cleanup))
-    {
-      gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-      cleanup_tree_cfg ();
-    }
-
-  BITMAP_FREE (need_eh_cleanup);
-    
-  /* For now, just wipe the post-dominator information.  */
-  free_dominance_info (CDI_POST_DOMINATORS);
-  return 0;
-}
-
-static bool
-gate_dse (void)
-{
-  return flag_tree_dse != 0;
-}
-
 namespace {
 
 const pass_data pass_data_dse =
@@ -376,7 +332,6 @@ const pass_data pass_data_dse =
   GIMPLE_PASS, /* type */
   "dse", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_DSE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -395,10 +350,43 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dse (m_ctxt); }
-  bool gate () { return gate_dse (); }
-  unsigned int execute () { return tree_ssa_dse (); }
+  virtual bool gate (function *) { return flag_tree_dse != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_dse
+
+unsigned int
+pass_dse::execute (function *fun)
+{
+  need_eh_cleanup = BITMAP_ALLOC (NULL);
+
+  renumber_gimple_stmt_uids ();
+
+  /* We might consider making this a property of each pass so that it
+     can be [re]computed on an as-needed basis.  Particularly since
+     this pass could be seen as an extension of DCE which needs post
+     dominators.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Dead store elimination is fundamentally a walk of the post-dominator
+     tree and a backwards walk of statements within each block.  */
+  dse_dom_walker (CDI_POST_DOMINATORS).walk (fun->cfg->x_exit_block_ptr);
+
+  /* Removal of stores may make some EH edges dead.  Purge such edges from
+     the CFG as needed.  */
+  if (!bitmap_empty_p (need_eh_cleanup))
+    {
+      gimple_purge_all_dead_eh_edges (need_eh_cleanup);
+      cleanup_tree_cfg ();
+    }
+
+  BITMAP_FREE (need_eh_cleanup);
+    
+  /* For now, just wipe the post-dominator information.  */
+  free_dominance_info (CDI_POST_DOMINATORS);
+  return 0;
+}
 
 } // anon namespace
 

@@ -1,3 +1,174 @@
+2014-04-18  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-widen-mult-u8-s16-s32.c: New test.
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: New test.
+
+2014-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/merge-vsx.c: Add V4SI and V4SF tests.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+
+2014-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59200
+	* g++.dg/cpp0x/alias-decl-42.C: New.
+
+2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/ti_math1.c: New.
+	* gcc.target/powerpc/ti_math2.c: New.
+
+2014-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	* gnat.dg/opt34.adb: New.
+	* gnat.dg/opt34_pkg.ads: Likewise.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* g++.dg/plugin/dumb_plugin.c, g++.dg/plugin/selfasign.c,
+	gcc.dg/plugin/one_time_plugin.c, gcc.dg/plugin/selfasign.c: Adjust.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* g++.dg/plugin/dumb_plugin.c, g++.dg/plugin/selfassign.c,
+	gcc.dg/plugin/one_time_plugin.c, gcc.dg/plugin/selfassign.c: Adjust.
+
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60847
+	Forward port from 4.8 branch
+	2013-07-19  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/bmi-1.c: Extend with new instrinsics.
+	Fix scan patterns.
+	* gcc.target/i386/bmi-2.c: Ditto.
+
+2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60849
+	* g++.dg/opt/pr60849.C: New testcase.
+
+2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60836
+	* g++.dg/vect/pr60836.cc: New testcase.
+
+2014-04-17   Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60841
+	* gcc.dg/vect/pr60841.c: New testcase.
+
+2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-31.C: New testcase.
+
+2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/60820
+	* gcc.dg/lto/pr60820_0.c: New testcase.
+	* gcc.dg/lto/pr60820_1.c: New testcase.
+
+2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60854
+	* g++.dg/torture/pr60854.C: New testcase.
+
+2014-04-16  Catherine Moore  <clm@codesourcery.com>
+
+	* gcc.target/mips/umips-store16-2.c: New test.
+
+2014-04-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/cpp0x/initlist-vect.C: New file.
+
+2014-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/uninit-B-O0.c: Remove XFAIL.
+	* gcc.dg/uninit-I-O0.c: Likewise.
+	* gcc.dg/uninit-pr19430-O0.c: Remove some XFAILs.
+
+2014-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60844
+	* gcc.dg/pr60844.c: New test.
+
+2014-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/56965
+	* gcc.dg/torture/pr56965-1.c: New testcase.
+	* gcc.dg/torture/pr56965-2.c: Likewise.
+
+2014-04-15  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/tree-prof/update-loopch.c: Update expected output.
+
+2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect14.adb: New test.
+
+2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect12.ad[sb]: New test.
+	* gnat.dg/vect13.ad[sb]: Likewise.
+
+2014-04-15  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/asan/null-deref-1.c: Change regexp to pass test
+	under qemu-arm.
+	* c-c++-common/ubsan/div-by-zero-1.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-2.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-3.c: Likewise.
+	* c-c++-common/ubsan/load-bool-enum.c (foo): Likewise.
+	* c-c++-common/ubsan/null-1.c: Likewise.
+	* c-c++-common/ubsan/null-10.c: Likewise.
+	* c-c++-common/ubsan/null-11.c: Likewise.
+	* c-c++-common/ubsan/null-2.c: Likewise.
+	* c-c++-common/ubsan/null-3.c: Likewise.
+	* c-c++-common/ubsan/null-4.c: Likewise.
+	* c-c++-common/ubsan/null-5.c: Likewise.
+	* c-c++-common/ubsan/null-6.c: Likewise.
+	* c-c++-common/ubsan/null-7.c: Likewise.
+	* c-c++-common/ubsan/null-8.c: Likewise.
+	* c-c++-common/ubsan/null-9.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-int128.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-4.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-2.c: Likewise.
+	* c-c++-common/ubsan/pr59333.c: Likewise.
+	* c-c++-common/ubsan/pr59667.c: Likewise.
+	* c-c++-common/ubsan/pr60613-2.c: Likewise.
+	* c-c++-common/ubsan/pr60636.c: Likewise.
+	* c-c++-common/ubsan/shift-1.c: Likewise.
+	* c-c++-common/ubsan/shift-2.c: Likewise.
+	* c-c++-common/ubsan/vla-1.c: Likewise.
+
+2014-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect11.ad[sb]: New test.
+
+2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/forwprop-switch.C: New testcase.
+
+2014-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/lto/pr55113_0.c: Skip on i?86-*-solaris2.1[0-1]*.
+
+2014-04-14  Richard Biener  <rguenther@suse.de>
+	Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c/60819
+	* gcc.target/i386/vec-may_alias.c: New testcase.
+
+2014-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_widen_mult_si_to_di_pattern):
+	Initialize et_vect_widen_mult_si_to_di_pattern_saved.
+	Fix formatting.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 
 	PR lto/60720

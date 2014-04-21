@@ -108,13 +108,13 @@ opt_pass::clone ()
 }
 
 bool
-opt_pass::gate ()
+opt_pass::gate (function *)
 {
   return true;
 }
 
 unsigned int
-opt_pass::execute ()
+opt_pass::execute (function *)
 {
   return 0;
 }
@@ -138,7 +138,7 @@ pass_manager::execute_early_local_passes ()
 unsigned int
 pass_manager::execute_pass_mode_switching ()
 {
-  return pass_mode_switching_1->execute ();
+  return pass_mode_switching_1->execute (cfun);
 }
 
 
@@ -337,15 +337,6 @@ execute_all_early_local_passes (void)
   return 0;
 }
 
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_early_local_passes (void)
-{
-	  /* Don't bother doing anything if the program has errors.  */
-  return (!seen_error () && !in_lto_p);
-}
-
 namespace {
 
 const pass_data pass_data_early_local_passes =
@@ -353,7 +344,6 @@ const pass_data pass_data_early_local_passes =
   SIMPLE_IPA_PASS, /* type */
   "early_local_cleanups", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_EARLY_LOCAL, /* tv_id */
   0, /* properties_required */
@@ -371,8 +361,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_early_local_passes (); }
-  unsigned int execute () { return execute_all_early_local_passes (); }
+  virtual bool gate (function *)
+    {
+      /* Don't bother doing anything if the program has errors.  */
+      return (!seen_error () && !in_lto_p);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return execute_all_early_local_passes ();
+    }
 
 }; // class pass_early_local_passes
 
@@ -384,16 +382,6 @@ make_pass_early_local_passes (gcc::context *ctxt)
   return new pass_early_local_passes (ctxt);
 }
 
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_early_optimizations (void)
-{
-  return (optimize >= 1
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
-}
-
 namespace {
 
 const pass_data pass_data_all_early_optimizations =
@@ -401,7 +389,6 @@ const pass_data pass_data_all_early_optimizations =
   GIMPLE_PASS, /* type */
   "early_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -419,7 +406,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_early_optimizations (); }
+  virtual bool gate (function *)
+    {
+      return (optimize >= 1
+	      /* Don't bother doing anything if the program has errors.  */
+	      && !seen_error ());
+    }
 
 }; // class pass_all_early_optimizations
 
@@ -431,14 +423,6 @@ make_pass_all_early_optimizations (gcc::context *ctxt)
   return new pass_all_early_optimizations (ctxt);
 }
 
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_optimizations (void)
-{
-  return optimize >= 1 && !optimize_debug;
-}
-
 namespace {
 
 const pass_data pass_data_all_optimizations =
@@ -446,7 +430,6 @@ const pass_data pass_data_all_optimizations =
   GIMPLE_PASS, /* type */
   "*all_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
@@ -464,7 +447,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_optimizations (); }
+  virtual bool gate (function *) { return optimize >= 1 && !optimize_debug; }
 
 }; // class pass_all_optimizations
 
@@ -476,14 +459,6 @@ make_pass_all_optimizations (gcc::context *ctxt)
   return new pass_all_optimizations (ctxt);
 }
 
-/* Gate: execute, or not, all of the non-trivial optimizations.  */
-
-static bool
-gate_all_optimizations_g (void)
-{
-  return optimize >= 1 && optimize_debug;
-}
-
 namespace {
 
 const pass_data pass_data_all_optimizations_g =
@@ -491,7 +466,6 @@ const pass_data pass_data_all_optimizations_g =
   GIMPLE_PASS, /* type */
   "*all_optimizations_g", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
@@ -509,7 +483,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_all_optimizations_g (); }
+  virtual bool gate (function *) { return optimize >= 1 && optimize_debug; }
 
 }; // class pass_all_optimizations_g
 
@@ -521,14 +495,6 @@ make_pass_all_optimizations_g (gcc::context *ctxt)
   return new pass_all_optimizations_g (ctxt);
 }
 
-static bool
-gate_rest_of_compilation (void)
-{
-  /* Early return if there were errors.  We can run afoul of our
-     consistency checks, and there's not really much point in fixing them.  */
-  return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
-}
-
 namespace {
 
 const pass_data pass_data_rest_of_compilation =
@@ -536,7 +502,6 @@ const pass_data pass_data_rest_of_compilation =
   RTL_PASS, /* type */
   "*rest_of_compilation", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_REST_OF_COMPILATION, /* tv_id */
   PROP_rtl, /* properties_required */
@@ -554,7 +519,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rest_of_compilation (); }
+  virtual bool gate (function *)
+    {
+      /* Early return if there were errors.  We can run afoul of our
+	 consistency checks, and there's not really much point in fixing them.  */
+      return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
+    }
 
 }; // class pass_rest_of_compilation
 
@@ -566,12 +536,6 @@ make_pass_rest_of_compilation (gcc::context *ctxt)
   return new pass_rest_of_compilation (ctxt);
 }
 
-static bool
-gate_postreload (void)
-{
-  return reload_completed;
-}
-
 namespace {
 
 const pass_data pass_data_postreload =
@@ -579,7 +543,6 @@ const pass_data pass_data_postreload =
   RTL_PASS, /* type */
   "*all-postreload", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_POSTRELOAD, /* tv_id */
   PROP_rtl, /* properties_required */
@@ -597,7 +560,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_postreload (); }
+  virtual bool gate (function *) { return reload_completed; }
 
 }; // class pass_postreload
 
@@ -706,47 +669,22 @@ pass_manager::register_one_dump_file (opt_pass *pass)
   free (CONST_CAST (char *, full_name));
 }
 
-/* Recursive worker function for register_dump_files.  */
+/* Register the dump files for the pass_manager starting at PASS. */
 
-int
-pass_manager::
-register_dump_files_1 (opt_pass *pass, int properties)
+void
+pass_manager::register_dump_files (opt_pass *pass)
 {
   do
     {
-      int new_properties = (properties | pass->properties_provided)
-			   & ~pass->properties_destroyed;
-
       if (pass->name && pass->name[0] != '*')
         register_one_dump_file (pass);
 
       if (pass->sub)
-        new_properties = register_dump_files_1 (pass->sub, new_properties);
-
-      /* If we have a gate, combine the properties that we could have with
-         and without the pass being examined.  */
-      if (pass->has_gate)
-        properties &= new_properties;
-      else
-        properties = new_properties;
+        register_dump_files (pass->sub);
 
       pass = pass->next;
     }
   while (pass);
-
-  return properties;
-}
-
-/* Register the dump files for the pass_manager starting at PASS.
-   PROPERTIES reflects the properties that are guaranteed to be available at
-   the beginning of the pipeline.  */
-
-void
-pass_manager::
-register_dump_files (opt_pass *pass,int properties)
-{
-  pass->properties_required |= properties;
-  register_dump_files_1 (pass, properties);
 }
 
 struct pass_registry
@@ -854,7 +792,7 @@ dump_one_pass (opt_pass *pass, int pass_indent)
   const char *pn;
   bool is_on, is_really_on;
 
-  is_on = pass->has_gate ? pass->gate () : true;
+  is_on = pass->gate (cfun);
   is_really_on = override_gate_status (pass, current_function_decl, is_on);
 
   if (pass->static_pass_number <= 0)
@@ -1548,19 +1486,11 @@ pass_manager::pass_manager (context *ctxt)
 #undef TERMINATE_PASS_LIST
 
   /* Register the passes with the tree dump code.  */
-  register_dump_files (all_lowering_passes, PROP_gimple_any);
-  register_dump_files (all_small_ipa_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
-  register_dump_files (all_regular_ipa_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
-  register_dump_files (all_late_ipa_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
-  register_dump_files (all_passes,
-		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
-		       | PROP_cfg);
+  register_dump_files (all_lowering_passes);
+  register_dump_files (all_small_ipa_passes);
+  register_dump_files (all_regular_ipa_passes);
+  register_dump_files (all_late_ipa_passes);
+  register_dump_files (all_passes);
 }
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
@@ -2015,7 +1945,7 @@ execute_ipa_summary_passes (ipa_opt_pass_d *ipa_pass)
 
       /* Execute all of the IPA_PASSes in the list.  */
       if (ipa_pass->type == IPA_PASS
-	  && ((!pass->has_gate) || pass->gate ())
+	  && pass->gate (cfun)
 	  && ipa_pass->generate_summary)
 	{
 	  pass_init_dump_file (pass);
@@ -2167,7 +2097,7 @@ execute_one_pass (opt_pass *pass)
 
   /* Check whether gate check should be avoided.
      User controls the value of the gate through the parameter "gate_status". */
-  gate_status = pass->has_gate ? pass->gate () : true;
+  gate_status = pass->gate (cfun);
   gate_status = override_gate_status (pass, current_function_decl, gate_status);
 
   /* Override gate with plugin.  */
@@ -2226,7 +2156,7 @@ execute_one_pass (opt_pass *pass)
   /* Do it!  */
   if (pass->has_execute)
     {
-      todo_after = pass->execute ();
+      todo_after = pass->execute (cfun);
       do_per_function (clear_last_verified, NULL);
     }
 
@@ -2313,7 +2243,7 @@ ipa_write_summaries_2 (opt_pass *pass, struct lto_out_decl_state *state)
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_summary
-	  && ((!pass->has_gate) || pass->gate ()))
+	  && pass->gate (cfun))
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2431,7 +2361,7 @@ ipa_write_optimization_summaries_1 (opt_pass *pass,
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_optimization_summary
-	  && ((!pass->has_gate) || pass->gate ()))
+	  && pass->gate (cfun))
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2509,7 +2439,7 @@ ipa_read_summaries_1 (opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if ((!pass->has_gate) || pass->gate ())
+      if (pass->gate (cfun))
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_summary)
 	    {
@@ -2559,7 +2489,7 @@ ipa_read_optimization_summaries_1 (opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if ((!pass->has_gate) || pass->gate ())
+      if (pass->gate (cfun))
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_optimization_summary)
 	    {
@@ -2636,7 +2566,7 @@ execute_ipa_stmt_fixups (opt_pass *pass,
     {
       /* Execute all of the IPA_PASSes in the list.  */
       if (pass->type == IPA_PASS
-	  && ((!pass->has_gate) || pass->gate ()))
+	  && pass->gate (cfun))
 	{
 	  ipa_opt_pass_d *ipa_pass = (ipa_opt_pass_d *) pass;
 

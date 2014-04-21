@@ -12,4 +12,4 @@ main ()
   return 0;
 }
 
-/* { dg-output "negation of -9223372036854775808 cannot be represented in type 'long long int'" } */
+/* { dg-output "negation of -9223372036854775808 cannot be represented in type 'long long int'\[^\n\r]*" } */

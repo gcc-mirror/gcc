@@ -66,7 +66,6 @@ static bool merge_object_sizes (struct object_size_info *, tree, tree,
 				unsigned HOST_WIDE_INT);
 static bool plus_stmt_object_size (struct object_size_info *, tree, gimple);
 static bool cond_expr_object_size (struct object_size_info *, tree, gimple);
-static unsigned int compute_object_sizes (void);
 static void init_offset_limit (void);
 static void check_for_plus_in_loops (struct object_size_info *, tree);
 static void check_for_plus_in_loops_1 (struct object_size_info *, tree,
@@ -1207,11 +1206,40 @@ fini_object_sizes (void)
 
 /* Simple pass to optimize all __builtin_object_size () builtins.  */
 
-static unsigned int
-compute_object_sizes (void)
+namespace {
+
+const pass_data pass_data_object_sizes =
+{
+  GIMPLE_PASS, /* type */
+  "objsz", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
+};
+
+class pass_object_sizes : public gimple_opt_pass
+{
+public:
+  pass_object_sizes (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_object_sizes, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
+  virtual unsigned int execute (function *);
+
+}; // class pass_object_sizes
+
+unsigned int
+pass_object_sizes::execute (function *fun)
 {
   basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator i;
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
@@ -1280,36 +1308,6 @@ compute_object_sizes (void)
   fini_object_sizes ();
   return 0;
 }
-
-namespace {
-
-const pass_data pass_data_object_sizes =
-{
-  GIMPLE_PASS, /* type */
-  "objsz", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
-};
-
-class pass_object_sizes : public gimple_opt_pass
-{
-public:
-  pass_object_sizes (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_object_sizes, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
-  unsigned int execute () { return compute_object_sizes (); }
-
-}; // class pass_object_sizes
 
 } // anon namespace
 

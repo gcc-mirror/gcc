@@ -6445,6 +6445,50 @@ fi
   done
 CFLAGS="$save_CFLAGS"
 
+save_CFLAGS="$CFLAGS"
+for real_option in -Woverloaded-virtual; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
+  as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
+$as_echo_n "checking whether $CC supports $option... " >&6; }
+if { as_var=$as_acx_Woption; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS="$option"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$as_acx_Woption=yes"
+else
+  eval "$as_acx_Woption=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+eval ac_res=\$$as_acx_Woption
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
+  strict_warn="$strict_warn${strict_warn:+ }$real_option"
+fi
+  done
+CFLAGS="$save_CFLAGS"
+
 c_strict_warn=
 save_CFLAGS="$CFLAGS"
 for real_option in -Wold-style-definition -Wc++-compat; do
@@ -18130,7 +18174,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18133 "configure"
+#line 18177 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18236,7 +18280,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18239 "configure"
+#line 18283 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23486,7 +23530,7 @@ foo:	.long	25
 	tls_first_major=2
 	tls_first_minor=17
 	;;
-  i[34567]86-*-* | x86_64-*-solaris2.1[0-9]*)
+  i[34567]86-*-* | x86_64-*-*)
     case "$target" in
       i[34567]86-*-solaris2.*)
 	on_solaris=yes
@@ -23517,7 +23561,9 @@ $as_echo "#define TLS_SECTION_ASM_FLAG 't'" >>confdefs.h
       tls_section_flag=T
       tls_as_opt="--fatal-warnings"
     fi
-    conftest_s="$conftest_s
+    case "$target" in
+      i[34567]86-*-*)
+	conftest_s="$conftest_s
 foo:	.long	25
 	.text
 	movl	%gs:0, %eax
@@ -23531,23 +23577,26 @@ foo:	.long	25
 	movl	\$foo@tpoff, %eax
 	subl	\$foo@tpoff, %eax
 	leal	foo@ntpoff(%ecx), %eax"
-    ;;
-  x86_64-*-*)
-    conftest_s='
-	.section ".tdata","awT",@progbits
+	;;
+      x86_64-*-*)
+	if test x$on_solaris = xyes; then
+	  case $gas_flag in
+	    yes) tls_as_opt="$tls_as_opt --64" ;;
+	    no)	 tls_as_opt="$tls_as_opt -xarch=amd64" ;;
+	  esac
+	fi
+	conftest_s="$conftest_s
 foo:	.long	25
 	.text
 	movq	%fs:0, %rax
-	leaq	foo@TLSGD(%rip), %rdi
-	leaq	foo@TLSLD(%rip), %rdi
-	leaq	foo@DTPOFF(%rax), %rdx
-	movq	foo@GOTTPOFF(%rip), %rax
-	movq	$foo@TPOFF, %rax'
-	tls_first_major=2
-	tls_first_minor=14
-	tls_section_flag=T
-	tls_as_opt=--fatal-warnings
-	;;
+	leaq	foo@tlsgd(%rip), %rdi
+	leaq	foo@tlsld(%rip), %rdi
+	leaq	foo@dtpoff(%rax), %rdx
+	movq	foo@gottpoff(%rip), %rax
+	movq	\$foo@tpoff, %rax"
+        ;;
+    esac
+    ;;
   ia64-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits

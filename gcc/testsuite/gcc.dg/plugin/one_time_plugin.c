@@ -31,7 +31,6 @@ const pass_data pass_data_one_pass =
   GIMPLE_PASS, /* type */
   "cfg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -50,8 +49,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate ();
-  unsigned int execute ();
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *);
 
 private:
   int counter;
@@ -59,12 +58,13 @@ private:
 
 } // anon namespace
 
-bool one_pass::gate (void)
+bool one_pass::gate (function *)
 {
   return true;
 }
 
-unsigned int one_pass::execute ()
+unsigned int
+one_pass::execute (function *)
 {
   if (counter > 0) {
     printf ("Executed more than once \n");

@@ -1139,15 +1139,6 @@ execute_init_datastructures (void)
   return 0;
 }
 
-/* Gate for IPCP optimization.  */
-
-static bool
-gate_init_datastructures (void)
-{
-  /* Do nothing for funcions that was produced already in SSA form.  */
-  return !(cfun->curr_properties & PROP_ssa);
-}
-
 namespace {
 
 const pass_data pass_data_init_datastructures =
@@ -1155,7 +1146,6 @@ const pass_data pass_data_init_datastructures =
   GIMPLE_PASS, /* type */
   "*init_datastructures", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1173,8 +1163,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_init_datastructures (); }
-  unsigned int execute () { return execute_init_datastructures (); }
+  virtual bool gate (function *fun)
+    {
+      /* Do nothing for funcions that was produced already in SSA form.  */
+      return !(fun->curr_properties & PROP_ssa);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return execute_init_datastructures ();
+    }
 
 }; // class pass_init_datastructures
 
@@ -1686,7 +1684,6 @@ const pass_data pass_data_update_address_taken =
   GIMPLE_PASS, /* type */
   "addressables", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   false, /* has_execute */
   TV_ADDRESS_TAKEN, /* tv_id */
   PROP_ssa, /* properties_required */

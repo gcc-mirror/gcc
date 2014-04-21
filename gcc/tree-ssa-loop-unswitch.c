@@ -402,21 +402,6 @@ tree_unswitch_loop (struct loop *loop,
 
 /* Loop unswitching pass.  */
 
-static unsigned int
-tree_ssa_loop_unswitch (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return tree_ssa_unswitch_loops ();
-}
-
-static bool
-gate_tree_ssa_loop_unswitch (void)
-{
-  return flag_unswitch_loops != 0;
-}
-
 namespace {
 
 const pass_data pass_data_tree_unswitch =
@@ -424,7 +409,6 @@ const pass_data pass_data_tree_unswitch =
   GIMPLE_PASS, /* type */
   "unswitch", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_LOOP_UNSWITCH, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -442,10 +426,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_unswitch (); }
-  unsigned int execute () { return tree_ssa_loop_unswitch (); }
+  virtual bool gate (function *) { return flag_unswitch_loops != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_tree_unswitch
+
+unsigned int
+pass_tree_unswitch::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return tree_ssa_unswitch_loops ();
+}
 
 } // anon namespace
 

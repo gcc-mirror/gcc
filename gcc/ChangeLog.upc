@@ -1,3 +1,7 @@
+2014-04-21  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 209542 into gupc branch.
+
 2014-04-20  Gary Funck  <gary@intrepid.com>
 
 	* c/c-typeck.c (build_binary_op): Check for invalid comparison

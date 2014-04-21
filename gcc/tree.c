@@ -5671,7 +5671,6 @@ const pass_data pass_data_ipa_free_lang_data =
   SIMPLE_IPA_PASS, /* type */
   "*free_lang_data", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_IPA_FREE_LANG_DATA, /* tv_id */
   0, /* properties_required */
@@ -5689,7 +5688,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return free_lang_data (); }
+  virtual unsigned int execute (function *) { return free_lang_data (); }
 
 }; // class pass_ipa_free_lang_data
 
@@ -7443,7 +7442,7 @@ iterative_hash_expr (const_tree t, hashval_t val)
 {
   int i;
   enum tree_code code;
-  char tclass;
+  enum tree_code_class tclass;
 
   if (t == NULL_TREE)
     return iterative_hash_hashval_t (0, val);
@@ -7862,20 +7861,9 @@ subrange_type_for_debug_p (const_tree type, tree *lowval, tree *highval)
        || TREE_CODE (base_type) == BOOLEAN_TYPE)
       && int_size_in_bytes (type) == int_size_in_bytes (base_type)
       && tree_int_cst_equal (low, TYPE_MIN_VALUE (base_type))
-      && tree_int_cst_equal (high, TYPE_MAX_VALUE (base_type)))
-    {
-      tree type_name = TYPE_NAME (type);
-      tree base_type_name = TYPE_NAME (base_type);
-
-      if (type_name && TREE_CODE (type_name) == TYPE_DECL)
-	type_name = DECL_NAME (type_name);
-
-      if (base_type_name && TREE_CODE (base_type_name) == TYPE_DECL)
-	base_type_name = DECL_NAME (base_type_name);
-
-      if (type_name == base_type_name)
-	return false;
-    }
+      && tree_int_cst_equal (high, TYPE_MAX_VALUE (base_type))
+      && TYPE_IDENTIFIER (type) == TYPE_IDENTIFIER (base_type))
+    return false;
 
   if (lowval)
     *lowval = low;
@@ -11301,7 +11289,7 @@ walk_tree_without_duplicates_1 (tree *tp, walk_tree_fn func, void *data,
 tree
 tree_block (tree t)
 {
-  char const c = TREE_CODE_CLASS (TREE_CODE (t));
+  const enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
 
   if (IS_EXPR_CODE_CLASS (c))
     return LOCATION_BLOCK (t->exp.locus);
@@ -11312,7 +11300,7 @@ tree_block (tree t)
 void
 tree_set_block (tree t, tree b)
 {
-  char const c = TREE_CODE_CLASS (TREE_CODE (t));
+  const enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
 
   if (IS_EXPR_CODE_CLASS (c))
     {

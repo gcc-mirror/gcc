@@ -4157,24 +4157,6 @@ is_too_expensive (const char *pass)
   return false;
 }
 
-/* All the passes implemented in this file.  Each pass has its
-   own gate and execute function, and at the end of the file a
-   pass definition for passes.c.
-
-   We do not construct an accurate cfg in functions which call
-   setjmp, so none of these passes runs if the function calls
-   setjmp.
-   FIXME: Should just handle setjmp via REG_SETJMP notes.  */
-
-static bool
-gate_rtl_pre (void)
-{
-  return optimize > 0 && flag_gcse
-    && !cfun->calls_setjmp
-    && optimize_function_for_speed_p (cfun)
-    && dbg_cnt (pre);
-}
-
 static unsigned int
 execute_rtl_pre (void)
 {
@@ -4186,18 +4168,6 @@ execute_rtl_pre (void)
   if (changed)
     cleanup_cfg (0);
   return 0;
-}
-
-static bool
-gate_rtl_hoist (void)
-{
-  return optimize > 0 && flag_gcse
-    && !cfun->calls_setjmp
-    /* It does not make sense to run code hoisting unless we are optimizing
-       for code size -- it rarely makes programs faster, and can make then
-       bigger if we did PRE (when optimizing for space, we don't run PRE).  */
-    && optimize_function_for_size_p (cfun)
-    && dbg_cnt (hoist);
 }
 
 static unsigned int
@@ -4220,7 +4190,6 @@ const pass_data pass_data_rtl_pre =
   RTL_PASS, /* type */
   "rtl pre", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_PRE, /* tv_id */
   PROP_cfglayout, /* properties_required */
@@ -4239,10 +4208,24 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_pre (); }
-  unsigned int execute () { return execute_rtl_pre (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *) { return execute_rtl_pre (); }
 
 }; // class pass_rtl_pre
+
+/* We do not construct an accurate cfg in functions which call
+   setjmp, so none of these passes runs if the function calls
+   setjmp.
+   FIXME: Should just handle setjmp via REG_SETJMP notes.  */
+
+bool
+pass_rtl_pre::gate (function *fun)
+{
+  return optimize > 0 && flag_gcse
+    && !fun->calls_setjmp
+    && optimize_function_for_speed_p (fun)
+    && dbg_cnt (pre);
+}
 
 } // anon namespace
 
@@ -4259,7 +4242,6 @@ const pass_data pass_data_rtl_hoist =
   RTL_PASS, /* type */
   "hoist", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_HOIST, /* tv_id */
   PROP_cfglayout, /* properties_required */
@@ -4278,10 +4260,22 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_hoist (); }
-  unsigned int execute () { return execute_rtl_hoist (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *) { return execute_rtl_hoist (); }
 
 }; // class pass_rtl_hoist
+
+bool
+pass_rtl_hoist::gate (function *)
+{
+  return optimize > 0 && flag_gcse
+    && !cfun->calls_setjmp
+    /* It does not make sense to run code hoisting unless we are optimizing
+       for code size -- it rarely makes programs faster, and can make then
+       bigger if we did PRE (when optimizing for space, we don't run PRE).  */
+    && optimize_function_for_size_p (cfun)
+    && dbg_cnt (hoist);
+}
 
 } // anon namespace
 

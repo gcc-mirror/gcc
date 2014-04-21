@@ -117,21 +117,6 @@ rl78_init_machine_status (void)
   return m;
 }
 
-/* Returns whether to run the devirtualization pass.  */
-static bool
-devirt_gate (void)
-{
-  return true;
-}
-
-/* Runs the devirtualization pass.  */
-static unsigned int
-devirt_pass (void)
-{
-  rl78_reorg ();
-  return 0;
-}
-
 /* This pass converts virtual instructions using virtual registers, to
    real instructions using real registers.  Rather than run it as
    reorg, we reschedule it before vartrack to help with debugging.  */
@@ -142,7 +127,6 @@ const pass_data pass_data_rl78_devirt =
   RTL_PASS, /* type */
   "devirt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
@@ -161,8 +145,12 @@ public:
   }
 
   /* opt_pass methods: */
-  bool gate () { return devirt_gate (); }
-  unsigned int execute () { return devirt_pass (); }
+  virtual unsigned int execute (function *)
+    {
+      rl78_reorg ();
+      return 0;
+    }
+
 };
 
 } // anon namespace
@@ -226,7 +214,6 @@ const pass_data pass_data_rl78_move_elim =
   RTL_PASS, /* type */
   "move_elim", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
@@ -245,8 +232,7 @@ public:
   }
 
   /* opt_pass methods: */
-  bool gate () { return devirt_gate (); }
-  unsigned int execute () { return move_elim_pass (); }
+  virtual unsigned int execute (function *) { return move_elim_pass (); }
 };
 
 } // anon namespace

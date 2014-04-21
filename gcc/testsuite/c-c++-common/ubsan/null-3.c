@@ -15,4 +15,4 @@ main (void)
   return foo (*p);
 }
 
-/* { dg-output "load of null pointer of type 'int \\*'(\n|\r\n|\r)" } */
+/* { dg-output "load of null pointer of type 'int \\*'\[^\n\r]*(\n|\r\n|\r)" } */

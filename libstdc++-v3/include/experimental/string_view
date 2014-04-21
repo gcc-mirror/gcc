@@ -329,7 +329,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find(_CharT __c, size_type __pos=0) const noexcept;
 
       size_type
-      find(const _CharT* __str, size_type __pos, size_type __n) const;
+      find(const _CharT* __str, size_type __pos, size_type __n) const noexcept;
 
       size_type
       find(const _CharT* __str, size_type __pos=0) const noexcept
@@ -343,7 +343,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       rfind(_CharT __c, size_type __pos = npos) const noexcept;
 
       size_type
-      rfind(const _CharT* __str, size_type __pos, size_type __n) const;
+      rfind(const _CharT* __str, size_type __pos, size_type __n) const noexcept;
 
       size_type
       rfind(const _CharT* __str, size_type __pos = npos) const noexcept

@@ -55,16 +55,9 @@ extern tree objcp_end_compound_stmt (tree, int);
 	objcp_end_compound_stmt (stmt, flags)
 
 #undef OBJC_TYPE_NAME
-#define OBJC_TYPE_NAME(type) \
-  (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL \
-   ? DECL_NAME (TYPE_NAME (type)) \
-   : TYPE_NAME (type))
+#define OBJC_TYPE_NAME(type) (TYPE_IDENTIFIER (type))
 #undef OBJC_SET_TYPE_NAME
-#define OBJC_SET_TYPE_NAME(type, name) \
-  if(TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL) \
-    DECL_NAME (TYPE_NAME (type)) = name; \
-  else \
-    TYPE_NAME (type) = name;
+#define OBJC_SET_TYPE_NAME(type, name) (TYPE_IDENTIFIER (type) = (name))
 
 #undef TYPE_OBJC_INFO
 #define TYPE_OBJC_INFO(TYPE) LANG_TYPE_CLASS_CHECK (TYPE)->objc_info

@@ -32,5 +32,5 @@ main ()
   return 0;
 }
 
-/* { dg-output "signed integer overflow: 8 \\- -9223372036854775801 cannot be represented in type 'long long int'(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*signed integer overflow: 8 \\- -9223372036854775802 cannot be represented in type 'long long int'" } */
+/* { dg-output "signed integer overflow: 8 \\- -9223372036854775801 cannot be represented in type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*signed integer overflow: 8 \\- -9223372036854775802 cannot be represented in type 'long long int'\[^\n\r]*" } */

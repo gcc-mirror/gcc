@@ -9,4 +9,4 @@ main (void)
   return ***ppp;
 }
 
-/* { dg-output "load of null pointer of type 'int \\*\\*'(\n|\r\n|\r)" } */
+/* { dg-output "load of null pointer of type 'int \\*\\*'\[^\n\r]*(\n|\r\n|\r)" } */

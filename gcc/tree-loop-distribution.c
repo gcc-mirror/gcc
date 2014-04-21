@@ -1669,15 +1669,49 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 
 /* Distribute all loops in the current function.  */
 
-static unsigned int
-tree_loop_distribution (void)
+namespace {
+
+const pass_data pass_data_loop_distribution =
+{
+  GIMPLE_PASS, /* type */
+  "ldist", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_LOOP_DISTRIBUTION, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
+};
+
+class pass_loop_distribution : public gimple_opt_pass
+{
+public:
+  pass_loop_distribution (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_loop_distribution, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return flag_tree_loop_distribution
+	|| flag_tree_loop_distribute_patterns;
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_loop_distribution
+
+unsigned int
+pass_loop_distribution::execute (function *fun)
 {
   struct loop *loop;
   bool changed = false;
   basic_block bb;
   control_dependences *cd = NULL;
 
-  FOR_ALL_BB_FN (bb, cfun)
+  FOR_ALL_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1715,7 +1749,7 @@ tree_loop_distribution (void)
 	      if (virtual_operand_p (gimple_phi_result (phi)))
 		continue;
 	      /* Distribute stmts which have defs that are used outside of
-	         the loop.  */
+		 the loop.  */
 	      if (!stmt_has_scalar_dependences_outside_loop (loop, phi))
 		continue;
 	      work_list.safe_push (phi);
@@ -1725,7 +1759,7 @@ tree_loop_distribution (void)
 	      gimple stmt = gsi_stmt (gsi);
 
 	      /* If there is a stmt with side-effects bail out - we
-	         cannot and should not distribute this loop.  */
+		 cannot and should not distribute this loop.  */
 	      if (gimple_has_side_effects (stmt))
 		{
 		  work_list.truncate (0);
@@ -1733,7 +1767,7 @@ tree_loop_distribution (void)
 		}
 
 	      /* Distribute stmts which have defs that are used outside of
-	         the loop.  */
+		 the loop.  */
 	      if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
 		;
 	      /* Otherwise only distribute stores for now.  */
@@ -1779,7 +1813,7 @@ out:
 
   if (changed)
     {
-      mark_virtual_operands_for_renaming (cfun);
+      mark_virtual_operands_for_renaming (fun);
       rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
     }
 
@@ -1789,43 +1823,6 @@ out:
 
   return 0;
 }
-
-static bool
-gate_tree_loop_distribution (void)
-{
-  return flag_tree_loop_distribution
-    || flag_tree_loop_distribute_patterns;
-}
-
-namespace {
-
-const pass_data pass_data_loop_distribution =
-{
-  GIMPLE_PASS, /* type */
-  "ldist", /* name */
-  OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_LOOP_DISTRIBUTION, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
-};
-
-class pass_loop_distribution : public gimple_opt_pass
-{
-public:
-  pass_loop_distribution (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_loop_distribution, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_tree_loop_distribution (); }
-  unsigned int execute () { return tree_loop_distribution (); }
-
-}; // class pass_loop_distribution
 
 } // anon namespace
 

@@ -2299,15 +2299,49 @@ fini_ssa_renamer (void)
    Steps 3 and 4 are done using the dominator tree walker
    (walk_dominator_tree).  */
 
-static unsigned int
-rewrite_into_ssa (void)
+namespace {
+
+const pass_data pass_data_build_ssa =
+{
+  GIMPLE_PASS, /* type */
+  "ssa", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_SSA_OTHER, /* tv_id */
+  PROP_cfg, /* properties_required */
+  PROP_ssa, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_remove_unused_locals ), /* todo_flags_finish */
+};
+
+class pass_build_ssa : public gimple_opt_pass
+{
+public:
+  pass_build_ssa (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_build_ssa, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fun)
+    {
+      /* Do nothing for funcions that was produced already in SSA form.  */
+      return !(fun->curr_properties & PROP_ssa);
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_build_ssa
+
+unsigned int
+pass_build_ssa::execute (function *fun)
 {
   bitmap_head *dfs;
   basic_block bb;
   unsigned i;
 
   /* Initialize operand data structures.  */
-  init_ssa_operands (cfun);
+  init_ssa_operands (fun);
 
   /* Initialize internal data needed by the renamer.  */
   init_ssa_renamer ();
@@ -2315,12 +2349,12 @@ rewrite_into_ssa (void)
   /* Initialize the set of interesting blocks.  The callback
      mark_def_sites will add to this set those blocks that the renamer
      should process.  */
-  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (fun));
   bitmap_clear (interesting_blocks);
 
   /* Initialize dominance frontier.  */
-  dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_EACH_BB_FN (bb, cfun)
+  dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (fun));
+  FOR_EACH_BB_FN (bb, fun)
     bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
 
   /* 1- Compute dominance frontiers.  */
@@ -2328,16 +2362,16 @@ rewrite_into_ssa (void)
   compute_dominance_frontiers (dfs);
 
   /* 2- Find and mark definition sites.  */
-  mark_def_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
+  mark_def_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
 
   /* 3- Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs);
 
   /* 4- Rename all the blocks.  */
-  rewrite_blocks (ENTRY_BLOCK_PTR_FOR_FN (cfun), REWRITE_ALL);
+  rewrite_blocks (ENTRY_BLOCK_PTR_FOR_FN (fun), REWRITE_ALL);
 
   /* Free allocated memory.  */
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     bitmap_clear (&dfs[bb->index]);
   free (dfs);
 
@@ -2364,45 +2398,6 @@ rewrite_into_ssa (void)
 
   return 0;
 }
-
-/* Gate for IPCP optimization.  */
-
-static bool
-gate_into_ssa (void)
-{
-  /* Do nothing for funcions that was produced already in SSA form.  */
-  return !(cfun->curr_properties & PROP_ssa);
-}
-
-namespace {
-
-const pass_data pass_data_build_ssa =
-{
-  GIMPLE_PASS, /* type */
-  "ssa", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_SSA_OTHER, /* tv_id */
-  PROP_cfg, /* properties_required */
-  PROP_ssa, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_remove_unused_locals ), /* todo_flags_finish */
-};
-
-class pass_build_ssa : public gimple_opt_pass
-{
-public:
-  pass_build_ssa (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_build_ssa, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_into_ssa (); }
-  unsigned int execute () { return rewrite_into_ssa (); }
-
-}; // class pass_build_ssa
 
 } // anon namespace
 

@@ -1380,7 +1380,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		    tree t = TREE_VALUE (t1);
 
 		    if (TYPE_PTR_P (t)
-			&& TYPE_NAME (TREE_TYPE (t))
 			&& TYPE_IDENTIFIER (TREE_TYPE (t))
 			   == get_identifier ("FILE")
 			&& compparms (TREE_CHAIN (t1), TREE_CHAIN (t2)))
@@ -5408,7 +5407,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
   /* "If T is a class type and the initializer list has a single element of
      type cv U, where U is T or a class derived from T, the object is
      initialized from that element."  Even if T is an aggregate.  */
-  if (cxx_dialect >= cxx11 && CLASS_TYPE_P (type)
+  if (cxx_dialect >= cxx11 && (CLASS_TYPE_P (type) || VECTOR_TYPE_P (type))
       && first_initializer_p
       && d->end - d->cur == 1
       && reference_related_p (type, TREE_TYPE (init)))

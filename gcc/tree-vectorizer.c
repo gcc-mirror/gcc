@@ -417,7 +417,7 @@ vectorize_loops (void)
       any_ifcvt_loops = true;
     else if ((flag_tree_loop_vectorize
 	      && optimize_loop_nest_for_speed_p (loop))
-	     || loop->force_vect)
+	     || loop->force_vectorize)
       {
 	loop_vec_info loop_vinfo;
 	vect_location = find_loop_location (loop);
@@ -477,7 +477,7 @@ vectorize_loops (void)
 	num_vectorized_loops++;
 	/* Now that the loop has been vectorized, allow it to be unrolled
 	   etc.  */
-	loop->force_vect = false;
+	loop->force_vectorize = false;
 
 	if (loop->simduid)
 	  {
@@ -586,39 +586,6 @@ vectorize_loops (void)
 
 /*  Entry point to basic block SLP phase.  */
 
-static unsigned int
-execute_vect_slp (void)
-{
-  basic_block bb;
-
-  init_stmt_vec_info_vec ();
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      vect_location = find_bb_location (bb);
-
-      if (vect_slp_analyze_bb (bb))
-        {
-          if (!dbg_cnt (vect_slp))
-            break;
-
-          vect_slp_transform_bb (bb);
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			     "basic block vectorized\n");
-        }
-    }
-
-  free_stmt_vec_info_vec ();
-  return 0;
-}
-
-static bool
-gate_vect_slp (void)
-{
-  return flag_tree_slp_vectorize != 0;
-}
-
 namespace {
 
 const pass_data pass_data_slp_vectorize =
@@ -626,7 +593,6 @@ const pass_data pass_data_slp_vectorize =
   GIMPLE_PASS, /* type */
   "slp", /* name */
   OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SLP_VECTORIZATION, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
@@ -645,10 +611,37 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_vect_slp (); }
-  unsigned int execute () { return execute_vect_slp (); }
+  virtual bool gate (function *) { return flag_tree_slp_vectorize != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_slp_vectorize
+
+unsigned int
+pass_slp_vectorize::execute (function *fun)
+{
+  basic_block bb;
+
+  init_stmt_vec_info_vec ();
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      vect_location = find_bb_location (bb);
+
+      if (vect_slp_analyze_bb (bb))
+        {
+          if (!dbg_cnt (vect_slp))
+            break;
+
+          vect_slp_transform_bb (bb);
+          if (dump_enabled_p ())
+            dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			     "basic block vectorized\n");
+        }
+    }
+
+  free_stmt_vec_info_vec ();
+  return 0;
+}
 
 } // anon namespace
 
@@ -703,13 +696,6 @@ increase_alignment (void)
 }
 
 
-static bool
-gate_increase_alignment (void)
-{
-  return flag_section_anchors && flag_tree_loop_vectorize;
-}
-
-
 namespace {
 
 const pass_data pass_data_ipa_increase_alignment =
@@ -717,7 +703,6 @@ const pass_data pass_data_ipa_increase_alignment =
   SIMPLE_IPA_PASS, /* type */
   "increase_alignment", /* name */
   OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_OPT, /* tv_id */
   0, /* properties_required */
@@ -735,8 +720,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_increase_alignment (); }
-  unsigned int execute () { return increase_alignment (); }
+  virtual bool gate (function *)
+    {
+      return flag_section_anchors && flag_tree_loop_vectorize;
+    }
+
+  virtual unsigned int execute (function *) { return increase_alignment (); }
 
 }; // class pass_ipa_increase_alignment
 

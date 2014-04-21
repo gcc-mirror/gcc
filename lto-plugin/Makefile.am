@@ -11,6 +11,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = @ac_lto_plugin_warn_cflags@
 AM_LDFLAGS = @ac_lto_plugin_ldflags@
 AM_LIBTOOLFLAGS = --tag=disable-static
+override CFLAGS := $(filter-out -fsanitize=address,$(CFLAGS))
+override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 
 libexecsub_LTLIBRARIES = liblto_plugin.la
 gcc_build_dir = ../$(host_subdir)/gcc
@@ -18,16 +20,23 @@ in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
 
 # Can be removed when libiberty becomes a normal convenience library
 Wc=-Wc,
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,)
+	$(if $(wildcard ../libiberty/noasan/libiberty.a),$(Wc)../libiberty/noasan/libiberty.a, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,))
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
 liblto_plugin_la_LDFLAGS = $(AM_LDFLAGS) \
 	$(lt_host_flags) -module -bindir $(libexecsubdir) \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
+	$(if $(wildcard ../libiberty/noasan/libiberty.a),, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a))
 liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
-	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+	../libiberty/noasan/libiberty.a),../libiberty/noasan/libiberty.a, \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,))
+liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(liblto_plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
 all-local: $(in_gcc_libs)
 

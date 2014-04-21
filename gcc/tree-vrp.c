@@ -9894,12 +9894,6 @@ execute_vrp (void)
   return 0;
 }
 
-static bool
-gate_vrp (void)
-{
-  return flag_tree_vrp != 0;
-}
-
 namespace {
 
 const pass_data pass_data_vrp =
@@ -9907,7 +9901,6 @@ const pass_data pass_data_vrp =
   GIMPLE_PASS, /* type */
   "vrp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_VRP, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -9928,8 +9921,8 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_vrp (m_ctxt); }
-  bool gate () { return gate_vrp (); }
-  unsigned int execute () { return execute_vrp (); }
+  virtual bool gate (function *) { return flag_tree_vrp != 0; }
+  virtual unsigned int execute (function *) { return execute_vrp (); }
 
 }; // class pass_vrp
 

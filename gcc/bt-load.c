@@ -1494,20 +1494,6 @@ branch_target_load_optimize (bool after_prologue_epilogue_gen)
     }
 }
 
-static bool
-gate_handle_branch_target_load_optimize1 (void)
-{
-  return flag_branch_target_load_optimize;
-}
-
-
-static unsigned int
-rest_of_handle_branch_target_load_optimize1 (void)
-{
-  branch_target_load_optimize (epilogue_completed);
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_branch_target_load_optimize1 =
@@ -1515,7 +1501,6 @@ const pass_data pass_data_branch_target_load_optimize1 =
   RTL_PASS, /* type */
   "btl1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -1533,10 +1518,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_branch_target_load_optimize1 (); }
-  unsigned int execute () {
-    return rest_of_handle_branch_target_load_optimize1 ();
-  }
+  virtual bool gate (function *) { return flag_branch_target_load_optimize; }
+  virtual unsigned int execute (function *)
+    {
+      branch_target_load_optimize (epilogue_completed);
+      return 0;
+    }
 
 }; // class pass_branch_target_load_optimize1
 
@@ -1548,34 +1535,6 @@ make_pass_branch_target_load_optimize1 (gcc::context *ctxt)
   return new pass_branch_target_load_optimize1 (ctxt);
 }
 
-static bool
-gate_handle_branch_target_load_optimize2 (void)
-{
-  return (optimize > 0 && flag_branch_target_load_optimize2);
-}
-
-
-static unsigned int
-rest_of_handle_branch_target_load_optimize2 (void)
-{
-  static int warned = 0;
-
-  /* Leave this a warning for now so that it is possible to experiment
-     with running this pass twice.  In 3.6, we should either make this
-     an error, or use separate dump files.  */
-  if (flag_branch_target_load_optimize
-      && flag_branch_target_load_optimize2
-      && !warned)
-    {
-      warning (0, "branch target register load optimization is not intended "
-		  "to be run twice");
-
-      warned = 1;
-    }
-
-  branch_target_load_optimize (epilogue_completed);
-  return 0;
-}
 
 namespace {
 
@@ -1584,7 +1543,6 @@ const pass_data pass_data_branch_target_load_optimize2 =
   RTL_PASS, /* type */
   "btl2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -1602,12 +1560,36 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_branch_target_load_optimize2 (); }
-  unsigned int execute () {
-    return rest_of_handle_branch_target_load_optimize2 ();
-  }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0 && flag_branch_target_load_optimize2);
+    }
+
+  virtual unsigned int execute (function *);
 
 }; // class pass_branch_target_load_optimize2
+
+unsigned int
+pass_branch_target_load_optimize2::execute (function *)
+{
+  static int warned = 0;
+
+  /* Leave this a warning for now so that it is possible to experiment
+     with running this pass twice.  In 3.6, we should either make this
+     an error, or use separate dump files.  */
+  if (flag_branch_target_load_optimize
+      && flag_branch_target_load_optimize2
+      && !warned)
+    {
+      warning (0, "branch target register load optimization is not intended "
+	       "to be run twice");
+
+      warned = 1;
+    }
+
+  branch_target_load_optimize (epilogue_completed);
+  return 0;
+}
 
 } // anon namespace
 

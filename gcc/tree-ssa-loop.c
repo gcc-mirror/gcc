@@ -44,12 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The loop superpass.  */
 
-static bool
-gate_tree_loop (void)
-{
-  return flag_tree_loop_optimize != 0;
-}
-
 namespace {
 
 const pass_data pass_data_tree_loop =
@@ -57,7 +51,6 @@ const pass_data pass_data_tree_loop =
   GIMPLE_PASS, /* type */
   "loop", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_TREE_LOOP, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -75,7 +68,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_loop (); }
+  virtual bool gate (function *) { return flag_tree_loop_optimize != 0; }
 
 }; // class pass_tree_loop
 
@@ -89,23 +82,6 @@ make_pass_tree_loop (gcc::context *ctxt)
 
 /* Loop optimizer initialization.  */
 
-static unsigned int
-tree_ssa_loop_init (void)
-{
-  loop_optimizer_init (LOOPS_NORMAL
-		       | LOOPS_HAVE_RECORDED_EXITS);
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-
-  /* We might discover new loops, e.g. when turning irreducible
-     regions into reducible.  */
-  scev_initialize ();
-
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_tree_loop_init =
@@ -113,7 +89,6 @@ const pass_data pass_data_tree_loop_init =
   GIMPLE_PASS, /* type */
   "loopinit", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -131,9 +106,26 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return tree_ssa_loop_init (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_tree_loop_init
+
+unsigned int
+pass_tree_loop_init::execute (function *fun)
+{
+  loop_optimizer_init (LOOPS_NORMAL
+		       | LOOPS_HAVE_RECORDED_EXITS);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+
+  /* We might discover new loops, e.g. when turning irreducible
+     regions into reducible.  */
+  scev_initialize ();
+
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return 0;
+}
 
 } // anon namespace
 
@@ -145,21 +137,6 @@ make_pass_tree_loop_init (gcc::context *ctxt)
 
 /* Loop autovectorization.  */
 
-static unsigned int
-tree_loop_vectorize (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return vectorize_loops ();
-}
-
-static bool
-gate_tree_loop_vectorize (void)
-{
-  return flag_tree_loop_vectorize || cfun->has_force_vect_loops;
-}
-
 namespace {
 
 const pass_data pass_data_vectorize =
@@ -167,7 +144,6 @@ const pass_data pass_data_vectorize =
   GIMPLE_PASS, /* type */
   "vect", /* name */
   OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_VECTORIZATION, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -185,10 +161,23 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_loop_vectorize (); }
-  unsigned int execute () { return tree_loop_vectorize (); }
+  virtual bool gate (function *fun)
+    {
+      return flag_tree_loop_vectorize || fun->has_force_vectorize_loops;
+    }
+
+  virtual unsigned int execute (function *);
 
 }; // class pass_vectorize
+
+unsigned int
+pass_vectorize::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return vectorize_loops ();
+}
 
 } // anon namespace
 
@@ -200,22 +189,6 @@ make_pass_vectorize (gcc::context *ctxt)
 
 /* Check the correctness of the data dependence analyzers.  */
 
-static unsigned int
-check_data_deps (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  tree_check_data_deps ();
-  return 0;
-}
-
-static bool
-gate_check_data_deps (void)
-{
-  return flag_check_data_deps != 0;
-}
-
 namespace {
 
 const pass_data pass_data_check_data_deps =
@@ -223,7 +196,6 @@ const pass_data pass_data_check_data_deps =
   GIMPLE_PASS, /* type */
   "ckdd", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_CHECK_DATA_DEPS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -241,10 +213,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_check_data_deps (); }
-  unsigned int execute () { return check_data_deps (); }
+  virtual bool gate (function *) { return flag_check_data_deps != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_check_data_deps
+
+unsigned int
+pass_check_data_deps::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  tree_check_data_deps ();
+  return 0;
+}
 
 } // anon namespace
 
@@ -256,12 +238,6 @@ make_pass_check_data_deps (gcc::context *ctxt)
 
 /* Propagation of constants using scev.  */
 
-static bool
-gate_scev_const_prop (void)
-{
-  return flag_tree_scev_cprop;
-}
-
 namespace {
 
 const pass_data pass_data_scev_cprop =
@@ -269,7 +245,6 @@ const pass_data pass_data_scev_cprop =
   GIMPLE_PASS, /* type */
   "sccp", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_SCEV_CONST, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -288,8 +263,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_scev_const_prop (); }
-  unsigned int execute () { return scev_const_prop (); }
+  virtual bool gate (function *) { return flag_tree_scev_cprop; }
+  virtual unsigned int execute (function *) { return scev_const_prop (); }
 
 }; // class pass_scev_cprop
 
@@ -303,17 +278,6 @@ make_pass_scev_cprop (gcc::context *ctxt)
 
 /* Record bounds on numbers of iterations of loops.  */
 
-static unsigned int
-tree_ssa_loop_bounds (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  estimate_numbers_of_iterations ();
-  scev_reset ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_record_bounds =
@@ -321,7 +285,6 @@ const pass_data pass_data_record_bounds =
   GIMPLE_PASS, /* type */
   "*record_bounds", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_LOOP_BOUNDS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -339,9 +302,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return tree_ssa_loop_bounds (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_record_bounds
+
+unsigned int
+pass_record_bounds::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  estimate_numbers_of_iterations ();
+  scev_reset ();
+  return 0;
+}
 
 } // anon namespace
 
@@ -353,22 +327,6 @@ make_pass_record_bounds (gcc::context *ctxt)
 
 /* Induction variable optimizations.  */
 
-static unsigned int
-tree_ssa_loop_ivopts (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  tree_ssa_iv_optimize ();
-  return 0;
-}
-
-static bool
-gate_tree_ssa_loop_ivopts (void)
-{
-  return flag_ivopts != 0;
-}
-
 namespace {
 
 const pass_data pass_data_iv_optimize =
@@ -376,7 +334,6 @@ const pass_data pass_data_iv_optimize =
   GIMPLE_PASS, /* type */
   "ivopts", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_LOOP_IVOPTS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -394,10 +351,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_ivopts (); }
-  unsigned int execute () { return tree_ssa_loop_ivopts (); }
+  virtual bool gate (function *) { return flag_ivopts != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_iv_optimize
+
+unsigned int
+pass_iv_optimize::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  tree_ssa_iv_optimize ();
+  return 0;
+}
 
 } // anon namespace
 
@@ -425,7 +392,6 @@ const pass_data pass_data_tree_loop_done =
   GIMPLE_PASS, /* type */
   "loopdone", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -443,7 +409,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return tree_ssa_loop_done (); }
+  virtual unsigned int execute (function *) { return tree_ssa_loop_done (); }
 
 }; // class pass_tree_loop_done
 

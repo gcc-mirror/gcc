@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "target-globals.h"
+#include "tree-vectorizer.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);
 static rtx legitimize_pe_coff_extern_decl (rtx, bool);
@@ -1738,7 +1739,7 @@ struct processor_costs slm_cost = {
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
   1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
+  4,					/* vec_to_scalar_cost.  */
   1,					/* scalar_to_vec_cost.  */
   1,					/* vec_align_load_cost.  */
   2,					/* vec_unalign_load_cost.  */
@@ -1815,7 +1816,7 @@ struct processor_costs intel_cost = {
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
   1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
+  4,					/* vec_to_scalar_cost.  */
   1,					/* scalar_to_vec_cost.  */
   1,					/* vec_align_load_cost.  */
   2,					/* vec_unalign_load_cost.  */
@@ -2493,12 +2494,6 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"btver2", &btver2_cost, 16, 10, 16, 7, 11}
 };
 
-static bool
-gate_insert_vzeroupper (void)
-{
-  return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
-}
-
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
@@ -2525,7 +2520,6 @@ const pass_data pass_data_insert_vzeroupper =
   RTL_PASS, /* type */
   "vzeroupper", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -2543,8 +2537,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_insert_vzeroupper (); }
-  unsigned int execute () { return rest_of_handle_insert_vzeroupper (); }
+  virtual bool gate (function *)
+    {
+      return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_insert_vzeroupper ();
+    }
 
 }; // class pass_insert_vzeroupper
 
@@ -6815,8 +6816,9 @@ classify_argument (enum machine_mode mode, const_tree type,
 }
 
 /* Examine the argument and return set number of register required in each
-   class.  Return 0 iff parameter should be passed in memory.  */
-static int
+   class.  Return true iff parameter should be passed in memory.  */
+
+static bool
 examine_argument (enum machine_mode mode, const_tree type, int in_return,
 		  int *int_nregs, int *sse_nregs)
 {
@@ -6825,8 +6827,9 @@ examine_argument (enum machine_mode mode, const_tree type, int in_return,
 
   *int_nregs = 0;
   *sse_nregs = 0;
+
   if (!n)
-    return 0;
+    return true;
   for (n--; n >= 0; n--)
     switch (regclass[n])
       {
@@ -6844,15 +6847,15 @@ examine_argument (enum machine_mode mode, const_tree type, int in_return,
 	break;
       case X86_64_X87_CLASS:
       case X86_64_X87UP_CLASS:
-	if (!in_return)
-	  return 0;
-	break;
       case X86_64_COMPLEX_X87_CLASS:
-	return in_return ? 2 : 0;
+	if (!in_return)
+	  return true;
+	break;
       case X86_64_MEMORY_CLASS:
 	gcc_unreachable ();
       }
-  return 1;
+
+  return false;
 }
 
 /* Construct container for the argument used by GCC interface.  See
@@ -6882,8 +6885,8 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
   n = classify_argument (mode, type, regclass, 0);
   if (!n)
     return NULL;
-  if (!examine_argument (mode, type, in_return, &needed_intregs,
-			 &needed_sseregs))
+  if (examine_argument (mode, type, in_return, &needed_intregs,
+			&needed_sseregs))
     return NULL;
   if (needed_intregs > nintregs || needed_sseregs > nsseregs)
     return NULL;
@@ -7202,7 +7205,7 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		 || VALID_AVX256_REG_MODE (mode)))
     return;
 
-  if (examine_argument (mode, type, 0, &int_nregs, &sse_nregs)
+  if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs)
       && sse_nregs <= cum->sse_nregs && int_nregs <= cum->nregs)
     {
       cum->nregs -= int_nregs;
@@ -8003,78 +8006,6 @@ ix86_libcall_value (enum machine_mode mode)
 
 /* Return true iff type is returned in memory.  */
 
-static bool ATTRIBUTE_UNUSED
-return_in_memory_32 (const_tree type, enum machine_mode mode)
-{
-  HOST_WIDE_INT size;
-
-  if (mode == BLKmode)
-    return true;
-
-  size = int_size_in_bytes (type);
-
-  if (MS_AGGREGATE_RETURN && AGGREGATE_TYPE_P (type) && size <= 8)
-    return false;
-
-  if (VECTOR_MODE_P (mode) || mode == TImode)
-    {
-      /* User-created vectors small enough to fit in EAX.  */
-      if (size < 8)
-	return false;
-
-      /* MMX/3dNow values are returned in MM0,
-	 except when it doesn't exits or the ABI prescribes otherwise.  */
-      if (size == 8)
-	return !TARGET_MMX || TARGET_VECT8_RETURNS;
-
-      /* SSE values are returned in XMM0, except when it doesn't exist.  */
-      if (size == 16)
-	return !TARGET_SSE;
-
-      /* AVX values are returned in YMM0, except when it doesn't exist.  */
-      if (size == 32)
-	return !TARGET_AVX;
-
-      /* AVX512F values are returned in ZMM0, except when it doesn't exist.  */
-      if (size == 64)
-	return !TARGET_AVX512F;
-    }
-
-  if (mode == XFmode)
-    return false;
-
-  if (size > 12)
-    return true;
-
-  /* OImode shouldn't be used directly.  */
-  gcc_assert (mode != OImode);
-
-  return false;
-}
-
-static bool ATTRIBUTE_UNUSED
-return_in_memory_64 (const_tree type, enum machine_mode mode)
-{
-  int needed_intregs, needed_sseregs;
-  return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);
-}
-
-static bool ATTRIBUTE_UNUSED
-return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
-{
-  HOST_WIDE_INT size = int_size_in_bytes (type);
-
-  /* __m128 is returned in xmm0.  */
-  if ((!type || VECTOR_INTEGER_TYPE_P (type) || INTEGRAL_TYPE_P (type)
-       || VECTOR_FLOAT_TYPE_P (type))
-      && (SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
-      && !COMPLEX_MODE_P (mode) && (GET_MODE_SIZE (mode) == 16 || size == 16))
-    return false;
-
-  /* Otherwise, the size must be exactly in [1248]. */
-  return size != 1 && size != 2 && size != 4 && size != 8;
-}
-
 static bool
 ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
@@ -8082,16 +8013,80 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   return SUBTARGET_RETURN_IN_MEMORY (type, fntype);
 #else
   const enum machine_mode mode = type_natural_mode (type, NULL, true);
+  HOST_WIDE_INT size;
 
   if (TARGET_64BIT)
     {
       if (ix86_function_type_abi (fntype) == MS_ABI)
-	return return_in_memory_ms_64 (type, mode);
+	{
+	  size = int_size_in_bytes (type);
+
+	  /* __m128 is returned in xmm0.  */
+	  if ((!type || VECTOR_INTEGER_TYPE_P (type)
+	       || INTEGRAL_TYPE_P (type)
+	       || VECTOR_FLOAT_TYPE_P (type))
+	      && (SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
+	      && !COMPLEX_MODE_P (mode)
+	      && (GET_MODE_SIZE (mode) == 16 || size == 16))
+	    return false;
+
+	  /* Otherwise, the size must be exactly in [1248]. */
+	  return size != 1 && size != 2 && size != 4 && size != 8;
+	}
       else
-	return return_in_memory_64 (type, mode);
+	{
+	  int needed_intregs, needed_sseregs;
+
+	  return examine_argument (mode, type, 1,
+				   &needed_intregs, &needed_sseregs);
+	}
     }
   else
-    return return_in_memory_32 (type, mode);
+    {
+      if (mode == BLKmode)
+	return true;
+
+      size = int_size_in_bytes (type);
+
+      if (MS_AGGREGATE_RETURN && AGGREGATE_TYPE_P (type) && size <= 8)
+	return false;
+
+      if (VECTOR_MODE_P (mode) || mode == TImode)
+	{
+	  /* User-created vectors small enough to fit in EAX.  */
+	  if (size < 8)
+	    return false;
+
+	  /* Unless ABI prescibes otherwise,
+	     MMX/3dNow values are returned in MM0 if available.  */
+	     
+	  if (size == 8)
+	    return TARGET_VECT8_RETURNS || !TARGET_MMX;
+
+	  /* SSE values are returned in XMM0 if available.  */
+	  if (size == 16)
+	    return !TARGET_SSE;
+
+	  /* AVX values are returned in YMM0 if available.  */
+	  if (size == 32)
+	    return !TARGET_AVX;
+
+	  /* AVX512F values are returned in ZMM0 if available.  */
+	  if (size == 64)
+	    return !TARGET_AVX512F;
+	}
+
+      if (mode == XFmode)
+	return false;
+
+      if (size > 12)
+	return true;
+
+      /* OImode shouldn't be used directly.  */
+      gcc_assert (mode != OImode);
+
+      return false;
+    }
 #endif
 }
 
@@ -16688,8 +16683,7 @@ ix86_expand_clear (rtx dest)
     dest = gen_rtx_REG (SImode, REGNO (dest));
   tmp = gen_rtx_SET (VOIDmode, dest, const0_rtx);
 
-  /* This predicate should match that for movsi_xor and movdi_xor_rex64.  */
-  if (!TARGET_USE_MOV0 || optimize_insn_for_speed_p ())
+  if (!TARGET_USE_MOV0 || optimize_insn_for_size_p ())
     {
       rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
       tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
@@ -44047,7 +44041,7 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       gcc_unreachable ();
 
     case V8HImode:
-      if (TARGET_SSSE3)
+      if (TARGET_SSSE3 && !TARGET_SLOW_PSHUFB)
 	return expand_vec_perm_pshufb2 (d);
       else
 	{
@@ -44070,7 +44064,7 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       break;
 
     case V16QImode:
-      if (TARGET_SSSE3)
+      if (TARGET_SSSE3 && !TARGET_SLOW_PSHUFB)
 	return expand_vec_perm_pshufb2 (d);
       else
 	{
@@ -46350,6 +46344,18 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
     count *= 50;  /* FIXME.  */
 
   retval = (unsigned) (count * stmt_cost);
+
+  /* We need to multiply all vector stmt cost by 1.7 (estimated cost)
+     for Silvermont as it has out of order integer pipeline and can execute
+     2 scalar instruction per tick, but has in order SIMD pipeline.  */
+  if (TARGET_SILVERMONT || TARGET_INTEL)
+    if (stmt_info && stmt_info->stmt)
+      {
+	tree lhs_op = gimple_get_lhs (stmt_info->stmt);
+	if (lhs_op && TREE_CODE (TREE_TYPE (lhs_op)) == INTEGER_TYPE)
+	  retval = (retval * 17) / 10;
+      }
+
   cost[where] += retval;
 
   return retval;

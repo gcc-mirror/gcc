@@ -2573,12 +2573,6 @@ run_tree_predictive_commoning (void)
   return tree_predictive_commoning ();
 }
 
-static bool
-gate_tree_predictive_commoning (void)
-{
-  return flag_predictive_commoning != 0;
-}
-
 namespace {
 
 const pass_data pass_data_predcom =
@@ -2586,7 +2580,6 @@ const pass_data pass_data_predcom =
   GIMPLE_PASS, /* type */
   "pcom", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_PREDCOM, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -2604,8 +2597,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_predictive_commoning (); }
-  unsigned int execute () { return run_tree_predictive_commoning (); }
+  virtual bool gate (function *) { return flag_predictive_commoning != 0; }
+  virtual unsigned int execute (function *)
+    {
+      return run_tree_predictive_commoning ();
+    }
 
 }; // class pass_predcom
 

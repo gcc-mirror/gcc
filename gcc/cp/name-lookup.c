@@ -945,7 +945,6 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    set_underlying_type (x);
 
 	  if (type != error_mark_node
-	      && TYPE_NAME (type)
 	      && TYPE_IDENTIFIER (type))
 	    set_identifier_type_value (DECL_NAME (x), x);
 
@@ -3333,7 +3332,7 @@ do_class_using_decl (tree scope, tree name)
     }
   /* Using T::T declares inheriting ctors, even if T is a typedef.  */
   if (MAYBE_CLASS_TYPE_P (scope)
-      && ((TYPE_NAME (scope) && name == TYPE_IDENTIFIER (scope))
+      && (name == TYPE_IDENTIFIER (scope)
 	  || constructor_name_p (name, scope)))
     {
       maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);

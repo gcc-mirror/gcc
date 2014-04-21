@@ -250,9 +250,9 @@ build_gimple_cfg (gimple_seq seq)
 }
 
 
-/* Search for ANNOTATE call with annot_expr_ivdep_kind; if found, remove
-   it and set loop->safelen to INT_MAX.  We assume that the annotation
-   comes immediately before the condition.  */
+/* Look for ANNOTATE calls with loop annotation kind; if found, remove
+   them and propagate the information to the loop.  We assume that the
+   annotations come immediately before the condition of the loop.  */
 
 static void
 replace_loop_annotate ()
@@ -266,50 +266,62 @@ replace_loop_annotate ()
     {
       gsi = gsi_last_bb (loop->header);
       stmt = gsi_stmt (gsi);
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+      if (!(stmt && gimple_code (stmt) == GIMPLE_COND))
+	continue;
+      for (gsi_prev_nondebug (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
 	{
-	  gsi_prev_nondebug (&gsi);
-	  if (gsi_end_p (gsi))
-	    continue;
 	  stmt = gsi_stmt (gsi);
 	  if (gimple_code (stmt) != GIMPLE_CALL)
-		continue;
+	    break;
 	  if (!gimple_call_internal_p (stmt)
-		  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
-	    continue;
-	  if ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1))
-	      != annot_expr_ivdep_kind)
-	    continue;
+	      || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	    break;
+	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
+	    {
+	    case annot_expr_ivdep_kind:
+	      loop->safelen = INT_MAX;
+	      break;
+	    case annot_expr_no_vector_kind:
+	      loop->dont_vectorize = true;
+	      break;
+	    case annot_expr_vector_kind:
+	      loop->force_vectorize = true;
+	      cfun->has_force_vectorize_loops = true;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
 	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
 				      gimple_call_arg (stmt, 0));
 	  gsi_replace (&gsi, stmt, true);
-	  loop->safelen = INT_MAX;
 	}
     }
 
-  /* Remove IFN_ANNOTATE. Safeguard for the case loop->latch == NULL.  */
+  /* Remove IFN_ANNOTATE.  Safeguard for the case loop->latch == NULL.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gsi = gsi_last_bb (bb);
-      stmt = gsi_stmt (gsi);
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
-	gsi_prev_nondebug (&gsi);
-      if (gsi_end_p (gsi))
-	continue;
-      stmt = gsi_stmt (gsi);
-      if (gimple_code (stmt) != GIMPLE_CALL)
-	continue;
-      if (!gimple_call_internal_p (stmt)
-	  || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
-	continue;
-      if ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1))
-	  != annot_expr_ivdep_kind)
-	continue;
-      warning_at (gimple_location (stmt), 0, "ignoring %<GCC ivdep%> "
-		  "annotation");
-      stmt = gimple_build_assign (gimple_call_lhs (stmt),
-				  gimple_call_arg (stmt, 0));
-      gsi_replace (&gsi, stmt, true);
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  stmt = gsi_stmt (gsi);
+	  if (gimple_code (stmt) != GIMPLE_CALL)
+	    break;
+	  if (!gimple_call_internal_p (stmt)
+	      || gimple_call_internal_fn (stmt) != IFN_ANNOTATE)
+	    break;
+	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
+	    {
+	    case annot_expr_ivdep_kind:
+	    case annot_expr_no_vector_kind:
+	    case annot_expr_vector_kind:
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  warning_at (gimple_location (stmt), 0, "ignoring loop annotation");
+	  stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				      gimple_call_arg (stmt, 0));
+	  gsi_replace (&gsi, stmt, true);
+	}
     }
 }
 
@@ -339,7 +351,6 @@ const pass_data pass_data_build_cfg =
   GIMPLE_PASS, /* type */
   "cfg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_CFG, /* tv_id */
   PROP_gimple_leh, /* properties_required */
@@ -357,7 +368,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_build_cfg (); }
+  virtual unsigned int execute (function *) { return execute_build_cfg (); }
 
 }; // class pass_build_cfg
 
@@ -1947,7 +1958,7 @@ remove_bb (basic_block bb)
       fprintf (dump_file, "Removing basic block %d\n", bb->index);
       if (dump_flags & TDF_DETAILS)
 	{
-	  dump_bb (dump_file, bb, 0, dump_flags);
+	  dump_bb (dump_file, bb, 0, TDF_BLOCKS);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -6967,7 +6978,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     outer->num_nodes -= num_nodes;
   loop0->num_nodes -= bbs.length () - num_nodes;
 
-  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vect_loops)
+  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vectorize_loops)
     {
       struct loop *aloop;
       for (i = 0; vec_safe_iterate (loops->larray, i, &aloop); i++)
@@ -6979,8 +6990,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 					   d.to_context);
 		dest_cfun->has_simduid_loops = true;
 	      }
-	    if (aloop->force_vect)
-	      dest_cfun->has_force_vect_loops = true;
+	    if (aloop->force_vectorize)
+	      dest_cfun->has_force_vectorize_loops = true;
 	  }
     }
 
@@ -8072,7 +8083,6 @@ const pass_data pass_data_split_crit_edges =
   GIMPLE_PASS, /* type */
   "crited", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_SPLIT_EDGES, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -8090,7 +8100,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return split_critical_edges (); }
+  virtual unsigned int execute (function *) { return split_critical_edges (); }
 
   opt_pass * clone () { return new pass_split_crit_edges (m_ctxt); }
 }; // class pass_split_crit_edges
@@ -8155,64 +8165,6 @@ gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
 
 
 
-/* Emit return warnings.  */
-
-static unsigned int
-execute_warn_function_return (void)
-{
-  source_location location;
-  gimple last;
-  edge e;
-  edge_iterator ei;
-
-  if (!targetm.warn_func_return (cfun->decl))
-    return 0;
-
-  /* If we have a path to EXIT, then we do return.  */
-  if (TREE_THIS_VOLATILE (cfun->decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) > 0)
-    {
-      location = UNKNOWN_LOCATION;
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-	{
-	  last = last_stmt (e->src);
-	  if ((gimple_code (last) == GIMPLE_RETURN
-	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
-	      && (location = gimple_location (last)) != UNKNOWN_LOCATION)
-	    break;
-	}
-      if (location == UNKNOWN_LOCATION)
-	location = cfun->function_end_locus;
-      warning_at (location, 0, "%<noreturn%> function does return");
-    }
-
-  /* If we see "return;" in some basic block, then we do reach the end
-     without returning a value.  */
-  else if (warn_return_type
-	   && !TREE_NO_WARNING (cfun->decl)
-	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) > 0
-	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (cfun->decl))))
-    {
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-	{
-	  gimple last = last_stmt (e->src);
-	  if (gimple_code (last) == GIMPLE_RETURN
-	      && gimple_return_retval (last) == NULL
-	      && !gimple_no_warning_p (last))
-	    {
-	      location = gimple_location (last);
-	      if (location == UNKNOWN_LOCATION)
-		  location = cfun->function_end_locus;
-	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
-	      TREE_NO_WARNING (cfun->decl) = 1;
-	      break;
-	    }
-	}
-    }
-  return 0;
-}
-
-
 /* Given a basic block B which ends with a conditional and has
    precisely two successors, determine which of the edges is taken if
    the conditional is true and which is taken if the conditional is
@@ -8237,6 +8189,8 @@ extract_true_false_edges_from_block (basic_block b,
     }
 }
 
+/* Emit return warnings.  */
+
 namespace {
 
 const pass_data pass_data_warn_function_return =
@@ -8244,7 +8198,6 @@ const pass_data pass_data_warn_function_return =
   GIMPLE_PASS, /* type */
   "*warn_function_return", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -8262,9 +8215,64 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_warn_function_return (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_warn_function_return
+
+unsigned int
+pass_warn_function_return::execute (function *fun)
+{
+  source_location location;
+  gimple last;
+  edge e;
+  edge_iterator ei;
+
+  if (!targetm.warn_func_return (fun->decl))
+    return 0;
+
+  /* If we have a path to EXIT, then we do return.  */
+  if (TREE_THIS_VOLATILE (fun->decl)
+      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0)
+    {
+      location = UNKNOWN_LOCATION;
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
+	{
+	  last = last_stmt (e->src);
+	  if ((gimple_code (last) == GIMPLE_RETURN
+	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
+	      && (location = gimple_location (last)) != UNKNOWN_LOCATION)
+	    break;
+	}
+      if (location == UNKNOWN_LOCATION)
+	location = cfun->function_end_locus;
+      warning_at (location, 0, "%<noreturn%> function does return");
+    }
+
+  /* If we see "return;" in some basic block, then we do reach the end
+     without returning a value.  */
+  else if (warn_return_type
+	   && !TREE_NO_WARNING (fun->decl)
+	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0
+	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))
+    {
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
+	{
+	  gimple last = last_stmt (e->src);
+	  if (gimple_code (last) == GIMPLE_RETURN
+	      && gimple_return_retval (last) == NULL
+	      && !gimple_no_warning_p (last))
+	    {
+	      location = gimple_location (last);
+	      if (location == UNKNOWN_LOCATION)
+		location = fun->function_end_locus;
+	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
+	      TREE_NO_WARNING (fun->decl) = 1;
+	      break;
+	    }
+	}
+    }
+  return 0;
+}
 
 } // anon namespace
 
@@ -8339,19 +8347,6 @@ do_warn_unused_result (gimple_seq seq)
     }
 }
 
-static unsigned int
-run_warn_unused_result (void)
-{
-  do_warn_unused_result (gimple_body (current_function_decl));
-  return 0;
-}
-
-static bool
-gate_warn_unused_result (void)
-{
-  return flag_warn_unused_result;
-}
-
 namespace {
 
 const pass_data pass_data_warn_unused_result =
@@ -8359,7 +8354,6 @@ const pass_data pass_data_warn_unused_result =
   GIMPLE_PASS, /* type */
   "*warn_unused_result", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -8377,8 +8371,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_warn_unused_result (); }
-  unsigned int execute () { return run_warn_unused_result (); }
+  virtual bool gate (function *) { return flag_warn_unused_result; }
+  virtual unsigned int execute (function *)
+    {
+      do_warn_unused_result (gimple_body (current_function_decl));
+      return 0;
+    }
 
 }; // class pass_warn_unused_result
 
@@ -8502,7 +8500,6 @@ const pass_data pass_data_fixup_cfg =
   GIMPLE_PASS, /* type */
   "*free_cfg_annotations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -8521,7 +8518,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_fixup_cfg (m_ctxt); }
-  unsigned int execute () { return execute_fixup_cfg (); }
+  virtual unsigned int execute (function *) { return execute_fixup_cfg (); }
 
 }; // class pass_fixup_cfg
 

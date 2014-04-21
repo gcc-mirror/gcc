@@ -1019,14 +1019,14 @@ class Type
 
   // A mapping from interfaces to the associated interface method
   // tables for this type.  This maps to a decl.
-  typedef Unordered_map_hash(const Interface_type*, tree, Type_hash_identical,
+  typedef Unordered_map_hash(Interface_type*, Expression*, Type_hash_identical,
 			     Type_identical) Interface_method_tables;
 
   // Return a pointer to the interface method table for TYPE for the
   // interface INTERFACE.
-  static tree
-  interface_method_table(Gogo* gogo, Type* type,
-			 const Interface_type *interface, bool is_pointer,
+  static Expression*
+  interface_method_table(Type* type,
+			 Interface_type *interface, bool is_pointer,
 			 Interface_method_tables** method_tables,
 			 Interface_method_tables** pointer_tables);
 
@@ -1688,14 +1688,6 @@ class String_type : public Type
     : Type(TYPE_STRING)
   { }
 
-  // Return a tree for the length of STRING.
-  static tree
-  length_tree(Gogo*, tree string);
-
-  // Return a tree which points to the bytes of STRING.
-  static tree
-  bytes_tree(Gogo*, tree string);
-
  protected:
   bool
   do_has_pointer() const
@@ -2205,9 +2197,8 @@ class Struct_type : public Type
   // the interface INTERFACE.  If IS_POINTER is true, set the type
   // descriptor to a pointer to this type, otherwise set it to this
   // type.
-  tree
-  interface_method_table(Gogo*, const Interface_type* interface,
-			 bool is_pointer);
+  Expression*
+  interface_method_table(Interface_type* interface, bool is_pointer);
 
   // Traverse just the field types of a struct type.
   int
@@ -2946,9 +2937,8 @@ class Named_type : public Type
   // the interface INTERFACE.  If IS_POINTER is true, set the type
   // descriptor to a pointer to this type, otherwise set it to this
   // type.
-  tree
-  interface_method_table(Gogo*, const Interface_type* interface,
-			 bool is_pointer);
+  Expression*
+  interface_method_table(Interface_type* interface, bool is_pointer);
 
   // Whether this type has any hidden fields.
   bool
