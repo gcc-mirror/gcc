@@ -2330,7 +2330,7 @@ gimple_assign_rhs_class (const_gimple gs)
    and do not have the semantics of a copy, such as COND_EXPR.  */
 
 static inline bool
-gimple_assign_single_p (gimple gs)
+gimple_assign_single_p (const_gimple gs)
 {
   return (is_gimple_assign (gs)
           && gimple_assign_rhs_class (gs) == GIMPLE_SINGLE_RHS);
@@ -2339,7 +2339,7 @@ gimple_assign_single_p (gimple gs)
 /* Return true if GS performs a store to its lhs.  */
 
 static inline bool
-gimple_store_p (gimple gs)
+gimple_store_p (const_gimple gs)
 {
   tree lhs = gimple_get_lhs (gs);
   return lhs && !is_gimple_reg (lhs);
@@ -2348,7 +2348,7 @@ gimple_store_p (gimple gs)
 /* Return true if GS is an assignment that loads from its rhs1.  */
 
 static inline bool
-gimple_assign_load_p (gimple gs)
+gimple_assign_load_p (const_gimple gs)
 {
   tree rhs;
   if (!gimple_assign_single_p (gs))
@@ -2365,7 +2365,7 @@ gimple_assign_load_p (gimple gs)
 /* Return true if S is a type-cast assignment.  */
 
 static inline bool
-gimple_assign_cast_p (gimple s)
+gimple_assign_cast_p (const_gimple s)
 {
   if (is_gimple_assign (s))
     {
@@ -2381,7 +2381,7 @@ gimple_assign_cast_p (gimple s)
 /* Return true if S is a clobber statement.  */
 
 static inline bool
-gimple_clobber_p (gimple s)
+gimple_clobber_p (const_gimple s)
 {
   return gimple_assign_single_p (s)
          && TREE_CLOBBER_P (gimple_assign_rhs1 (s));

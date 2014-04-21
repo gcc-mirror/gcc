@@ -701,7 +701,7 @@ Return true if the code of g is @code{GIMPLE_CALL}.
 Return true if the code of g is @code{GIMPLE_DEBUG}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} bool gimple_assign_cast_p (gimple g)
+@deftypefn {GIMPLE function} bool gimple_assign_cast_p (const_gimple g)
 Return true if g is a @code{GIMPLE_ASSIGN} that performs a type cast
 operation.
 @end deftypefn
@@ -1102,7 +1102,7 @@ Set @code{RHS} to be the third operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} bool gimple_assign_cast_p (gimple s)
+@deftypefn {GIMPLE function} bool gimple_assign_cast_p (const_gimple s)
 Return true if @code{S} is a type-cast assignment.
 @end deftypefn
 
