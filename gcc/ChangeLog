@@ -1,3 +1,16 @@
+2014-04-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple.h (gimple_assign_single_p): Accept a const_gimple rather
+	than a gimple.
+	(gimple_store_p): Likewise.
+	(gimple_assign_load_p): Likewise.
+	(gimple_assign_cast_p): Likewise.
+	(gimple_clobber_p): Likewise.
+
+	* doc/gimple.texi (gimple_assign_cast_p): Accept a const_gimple
+	rather than a gimple.
+	(gimple_assign_cast_p): Likewise.
+
 2014-04-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/60735
