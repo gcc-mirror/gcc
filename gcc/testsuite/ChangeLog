@@ -1,3 +1,8 @@
+2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60868
+	* gcc.target/i386/pr60868.c: New testcase.
+
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/59073
