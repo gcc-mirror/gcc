@@ -1,5 +1,7 @@
 2014-04-22  Richard Henderson  <rth@redhat.com>
 
+	* gcc-interface/Makefile.in: Support aarch64-linux.
+
 	* init.c [__linux__] (HAVE_GNAT_ALTERNATE_STACK): New define.
 	(__gnat_alternate_stack): Enable for all linux except ia64.
 
