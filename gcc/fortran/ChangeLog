@@ -1,3 +1,13 @@
+2014-04-22  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2014-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58880
+	PR fortran/60495
+	* resolve.c (gfc_resolve_finalizers): Ensure that vtables
+	and finalization wrappers are generated.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.
