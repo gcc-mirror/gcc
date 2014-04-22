@@ -616,6 +616,10 @@ class Gogo
   Expression*
   allocate_memory(Type *type, Location);
 
+  // Get the name of the magic initialization function.
+  const std::string&
+  get_init_fn_name();
+
  private:
   // During parsing, we keep a stack of functions.  Each function on
   // the stack is one that we are currently parsing.  For each
@@ -642,17 +646,13 @@ class Gogo
   const Bindings*
   current_bindings() const;
 
-  // Get the name of the magic initialization function.
-  const std::string&
-  get_init_fn_name();
-
   // Get the decl for the magic initialization function.
-  tree
+  Named_object*
   initialization_function_decl();
 
   // Write the magic initialization function.
   void
-  write_initialization_function(tree fndecl, tree init_stmt_list);
+  write_initialization_function(Named_object* fndecl, tree init_stmt_list);
 
   // Initialize imported packages.
   void

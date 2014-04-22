@@ -575,6 +575,45 @@ Gogo::current_bindings() const
     return this->globals_;
 }
 
+// Get the name to use for the import control function.  If there is a
+// global function or variable, then we know that that name must be
+// unique in the link, and we use it as the basis for our name.
+
+const std::string&
+Gogo::get_init_fn_name()
+{
+  if (this->init_fn_name_.empty())
+    {
+      go_assert(this->package_ != NULL);
+      if (this->is_main_package())
+	{
+	  // Use a name which the runtime knows.
+	  this->init_fn_name_ = "__go_init_main";
+	}
+      else
+	{
+	  std::string s = this->pkgpath_symbol();
+	  s.append("..import");
+	  this->init_fn_name_ = s;
+	}
+    }
+
+  return this->init_fn_name_;
+}
+
+// Build the decl for the initialization function.
+
+Named_object*
+Gogo::initialization_function_decl()
+{
+  std::string name = this->get_init_fn_name();
+  Location loc = this->package_->location();
+
+  Function_type* fntype = Type::make_function_type(NULL, NULL, NULL, loc);
+  Function* initfn = new Function(fntype, NULL, NULL, loc);
+  return Named_object::make_function(name, NULL, initfn);
+}
+
 // Return the current block.
 
 Block*
@@ -4071,7 +4110,12 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
         ;
       else if (Gogo::unpack_hidden_name(no->name()) == "init"
                && !this->type_->is_method())
-        ;
+	;
+      else if (no->name() == gogo->get_init_fn_name())
+	{
+	  is_visible = true;
+	  asm_name = no->name();
+	}
       else if (Gogo::unpack_hidden_name(no->name()) == "main"
                && gogo->is_main_package())
         is_visible = true;
@@ -4647,13 +4691,9 @@ Block::get_backend(Translate_context* context)
 	vars.push_back((*pv)->get_backend_variable(gogo, function));
     }
 
-  // FIXME: Permitting FUNCTION to be NULL here is a temporary measure
-  // until we have a proper representation of the init function.
-  Bfunction* bfunction;
-  if (function == NULL)
-    bfunction = NULL;
-  else
-    bfunction = tree_to_function(function->func_value()->get_decl());
+  go_assert(function != NULL);
+  Bfunction* bfunction =
+    function->func_value()->get_or_make_decl(gogo, function);
   Bblock* ret = context->backend()->block(bfunction, context->bblock(),
 					  vars, this->start_location_,
 					  this->end_location_);
