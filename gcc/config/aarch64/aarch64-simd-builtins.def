@@ -265,7 +265,7 @@
   BUILTIN_VDQF (UNOP, nearbyint, 2)
   BUILTIN_VDQF (UNOP, rint, 2)
   BUILTIN_VDQF (UNOP, round, 2)
-  BUILTIN_VDQF (UNOP, frintn, 2)
+  BUILTIN_VDQF_DF (UNOP, frintn, 2)
 
   /* Implemented by l<fcvt_pattern><su_optab><VQDF:mode><vcvt_target>2.  */
   VAR1 (UNOP, lbtruncv2sf, 2, v2si)

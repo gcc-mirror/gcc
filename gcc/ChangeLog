@@ -1,3 +1,20 @@
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (BUILTIN_VDQF_DF): Macro
+	added.
+	* config/aarch64/aarch64-simd-builtins.def (frintn): Use added
+	macro.
+	* config/aarch64/aarch64-simd.md (<frint_pattern>): Comment
+	corrected.
+	* config/aarch64/aarch64.md (<frint_pattern>): Likewise.
+	* config/aarch64/arm_neon.h (vrnd_f64): Added.
+	(vrnda_f64): Likewise.
+	(vrndi_f64): Likewise.
+	(vrndm_f64): Likewise.
+	(vrndn_f64): Likewise.
+	(vrndp_f64): Likewise.
+	(vrndx_f64): Likewise.
+
 2014-04-22  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* config/arm/arm.c (arm_print_operand, thumb_exit): Make sure

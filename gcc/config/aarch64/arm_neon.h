@@ -22481,6 +22481,12 @@ vrnd_f32 (float32x2_t __a)
   return __builtin_aarch64_btruncv2sf (__a);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrnd_f64 (float64x1_t __a)
+{
+  return vset_lane_f64 (__builtin_trunc (vget_lane_f64 (__a, 0)), __a, 0);
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vrndq_f32 (float32x4_t __a)
 {
@@ -22499,6 +22505,12 @@ __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vrnda_f32 (float32x2_t __a)
 {
   return __builtin_aarch64_roundv2sf (__a);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrnda_f64 (float64x1_t __a)
+{
+  return vset_lane_f64 (__builtin_round (vget_lane_f64 (__a, 0)), __a, 0);
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
@@ -22521,6 +22533,12 @@ vrndi_f32 (float32x2_t __a)
   return __builtin_aarch64_nearbyintv2sf (__a);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrndi_f64 (float64x1_t __a)
+{
+  return vset_lane_f64 (__builtin_nearbyint (vget_lane_f64 (__a, 0)), __a, 0);
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vrndiq_f32 (float32x4_t __a)
 {
@@ -22539,6 +22557,12 @@ __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vrndm_f32 (float32x2_t __a)
 {
   return __builtin_aarch64_floorv2sf (__a);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrndm_f64 (float64x1_t __a)
+{
+  return vset_lane_f64 (__builtin_floor (vget_lane_f64 (__a, 0)), __a, 0);
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
@@ -22560,6 +22584,13 @@ vrndn_f32 (float32x2_t __a)
 {
   return __builtin_aarch64_frintnv2sf (__a);
 }
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrndn_f64 (float64x1_t __a)
+{
+  return __builtin_aarch64_frintndf (__a);
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vrndnq_f32 (float32x4_t __a)
 {
@@ -22580,6 +22611,12 @@ vrndp_f32 (float32x2_t __a)
   return __builtin_aarch64_ceilv2sf (__a);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrndp_f64 (float64x1_t __a)
+{
+  return vset_lane_f64 (__builtin_ceil (vget_lane_f64 (__a, 0)), __a, 0);
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vrndpq_f32 (float32x4_t __a)
 {
@@ -22598,6 +22635,12 @@ __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vrndx_f32 (float32x2_t __a)
 {
   return __builtin_aarch64_rintv2sf (__a);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrndx_f64 (float64x1_t __a)
+{
+  return vset_lane_f64 (__builtin_rint (vget_lane_f64 (__a, 0)), __a, 0);
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))

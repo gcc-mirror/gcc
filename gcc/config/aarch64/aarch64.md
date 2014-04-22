@@ -3188,7 +3188,7 @@
 ;; -------------------------------------------------------------------
 
 ;; frint floating-point round to integral standard patterns.
-;; Expands to btrunc, ceil, floor, nearbyint, rint, round.
+;; Expands to btrunc, ceil, floor, nearbyint, rint, round, frintn.
 
 (define_insn "<frint_pattern><mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w")
