@@ -1,5 +1,10 @@
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/60823
+	* c-c++-common/gomp/pr60823-1.c: New test.
+	* c-c++-common/gomp/pr60823-2.c: New test.
+	* c-c++-common/gomp/pr60823-3.c: New test.
+
 	Backported from mainline
 	2014-04-16  Jakub Jelinek  <jakub@redhat.com>
 

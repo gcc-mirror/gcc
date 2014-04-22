@@ -1,3 +1,15 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60823
+	* omp-low.c (ipa_simd_modify_function_body): Go through
+	all SSA_NAMEs and for those refering to vector arguments
+	which are going to be replaced adjust SSA_NAME_VAR and,
+	if it is a default definition, change it into a non-default
+	definition assigned at the beginning of function from new_decl.
+	(ipa_simd_modify_stmt_ops): Rewritten.
+	* tree-dfa.c (set_ssa_default_def): When removing default def,
+	check for NULL loc instead of NULL *loc.
+
 2014-04-22  Lin Zuojian  <manjian2006@gmail.com>
 
 	PR middle-end/60281

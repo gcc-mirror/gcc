@@ -343,7 +343,7 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
     {
       loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
 				      DECL_UID (var), NO_INSERT);
-      if (*loc)
+      if (loc)
 	{
 	  SSA_NAME_IS_DEFAULT_DEF (*(tree *)loc) = false;
 	  htab_clear_slot (DEFAULT_DEFS (fn), loc);
