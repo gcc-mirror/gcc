@@ -1,3 +1,12 @@
+2014-04-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* machmode.h (bitwise_mode_for_mode): Declare.
+	* stor-layout.h (bitwise_type_for_mode): Likewise.
+	* stor-layout.c (bitwise_mode_for_mode): New function.
+	(bitwise_type_for_mode): Likewise.
+	* builtins.c (fold_builtin_memory_op): Use it instead of
+	int_mode_for_mode and build_nonstandard_integer_type.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc (enable_obsolete): Remove *-*-solaris2.9*.
