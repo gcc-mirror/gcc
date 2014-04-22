@@ -1,6 +1,7 @@
 2013-11-21  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* alias.c
 	(ao_ref_from_mem): Use wide-int interfaces.

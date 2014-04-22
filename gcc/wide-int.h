@@ -801,7 +801,7 @@ generic_wide_int <storage>::sign_mask () const
       if (excess > 0)
 	high <<= excess;
     }
-  return HOST_WIDE_INT (high) < 0 ? -1 : 0;
+  return (HOST_WIDE_INT) (high) < 0 ? -1 : 0;
 }
 
 /* Return the signed value of the least-significant explicitly-encoded

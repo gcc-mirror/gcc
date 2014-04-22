@@ -1130,7 +1130,7 @@ wi::add_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
       if (sgn == SIGNED)
 	{
 	  unsigned HOST_WIDE_INT x = (val[len - 1] ^ o0) & (val[len - 1] ^ o1);
-	  *overflow = HOST_WIDE_INT (x << shift) < 0;
+	  *overflow = (HOST_WIDE_INT) (x << shift) < 0;
 	}
       else
 	{
@@ -1369,7 +1369,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	{
 	  if (sgn == SIGNED)
 	    {
-	      if (HOST_WIDE_INT (r) != sext_hwi (r, prec))
+	      if ((HOST_WIDE_INT) (r) != sext_hwi (r, prec))
 		*overflow = true;
 	    }
 	  else
@@ -1549,7 +1549,7 @@ wi::sub_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
       if (sgn == SIGNED)
 	{
 	  unsigned HOST_WIDE_INT x = (o0 ^ o1) & (val[len - 1] ^ o0);
-	  *overflow = HOST_WIDE_INT (x << shift) < 0;
+	  *overflow = (HOST_WIDE_INT) (x << shift) < 0;
 	}
       else
 	{
