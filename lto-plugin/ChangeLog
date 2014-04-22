@@ -1,3 +1,7 @@
+2014-04-22  Release Manager
+
+	* GCC 4.9.0 released.
+
 2014-04-02  Richard Biener  <rguenther@suse.de>
 
 	* lto-plugin.c (onload): Fail to load if -fno-use-linker-plugin
