@@ -1,3 +1,13 @@
+2014-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-04-14  Richard Biener  <rguenther@suse.de>
+		Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c/60819
+	* c-common.c (convert_vector_to_pointer_for_subscript): Properly
+	apply may-alias the scalar pointer type when applicable.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.

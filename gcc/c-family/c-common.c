@@ -11770,8 +11770,21 @@ convert_vector_to_pointer_for_subscript (location_t loc,
 
       c_common_mark_addressable_vec (*vecp);
       type = build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
-      type = build_pointer_type (type);
       type1 = build_pointer_type (TREE_TYPE (*vecp));
+      bool ref_all = TYPE_REF_CAN_ALIAS_ALL (type1);
+      if (!ref_all
+	  && !DECL_P (*vecp))
+	{
+	  /* If the original vector isn't declared may_alias and it
+	     isn't a bare vector look if the subscripting would
+	     alias the vector we subscript, and if not, force ref-all.  */
+	  alias_set_type vecset = get_alias_set (*vecp);
+	  alias_set_type sset = get_alias_set (type);
+	  if (!alias_sets_must_conflict_p (sset, vecset)
+	      && !alias_set_subset_of (sset, vecset))
+	    ref_all = true;
+	}
+      type = build_pointer_type_for_mode (type, ptr_mode, ref_all);
       *vecp = build1 (ADDR_EXPR, type1, *vecp);
       *vecp = convert (type, *vecp);
     }
