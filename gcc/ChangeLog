@@ -1,3 +1,7 @@
+2014-04-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (TARGET_FLAGS_REGNUM): Define.
+
 2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (TYPES_REINTERP): Removed.
