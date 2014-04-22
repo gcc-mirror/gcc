@@ -1,3 +1,7 @@
+2014-04-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/memcpy-5.c: New test.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/compile/pr28865.c: Remove dg-xfail-if.
