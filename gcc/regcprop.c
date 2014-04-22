@@ -1056,93 +1056,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
   return anything_changed;
 }
 
-/* Main entry point for the forward copy propagation optimization.  */
-
-static unsigned int
-copyprop_hardreg_forward (void)
-{
-  struct value_data *all_vd;
-  basic_block bb;
-  sbitmap visited;
-  bool analyze_called = false;
-
-  all_vd = XNEWVEC (struct value_data, last_basic_block_for_fn (cfun));
-
-  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
-  bitmap_clear (visited);
-
-  if (MAY_HAVE_DEBUG_INSNS)
-    debug_insn_changes_pool
-      = create_alloc_pool ("debug insn changes pool",
-			   sizeof (struct queued_debug_insn_change), 256);
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      bitmap_set_bit (visited, bb->index);
-
-      /* If a block has a single predecessor, that we've already
-	 processed, begin with the value data that was live at
-	 the end of the predecessor block.  */
-      /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (single_pred_p (bb)
-	  && bitmap_bit_p (visited, single_pred (bb)->index)
-	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
-	{
-	  all_vd[bb->index] = all_vd[single_pred (bb)->index];
-	  if (all_vd[bb->index].n_debug_insn_changes)
-	    {
-	      unsigned int regno;
-
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		{
-		  if (all_vd[bb->index].e[regno].debug_insn_changes)
-		    {
-		      all_vd[bb->index].e[regno].debug_insn_changes = NULL;
-		      if (--all_vd[bb->index].n_debug_insn_changes == 0)
-			break;
-		    }
-		}
-	    }
-	}
-      else
-	init_value_data (all_vd + bb->index);
-
-      copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
-    }
-
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      FOR_EACH_BB_FN (bb, cfun)
-	if (bitmap_bit_p (visited, bb->index)
-	    && all_vd[bb->index].n_debug_insn_changes)
-	  {
-	    unsigned int regno;
-	    bitmap live;
-
-	    if (!analyze_called)
-	      {
-		df_analyze ();
-		analyze_called = true;
-	      }
-	    live = df_get_live_out (bb);
-	    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	      if (all_vd[bb->index].e[regno].debug_insn_changes)
-		{
-		  if (REGNO_REG_SET_P (live, regno))
-		    apply_debug_insn_changes (all_vd + bb->index, regno);
-		  if (all_vd[bb->index].n_debug_insn_changes == 0)
-		    break;
-		}
-	  }
-
-      free_alloc_pool (debug_insn_changes_pool);
-    }
-
-  sbitmap_free (visited);
-  free (all_vd);
-  return 0;
-}
-
 /* Dump the value chain data to stderr.  */
 
 DEBUG_FUNCTION void
@@ -1247,13 +1160,6 @@ validate_value_data (struct value_data *vd)
 }
 #endif
 
-static bool
-gate_handle_cprop (void)
-{
-  return (optimize > 0 && (flag_cprop_registers));
-}
-
-
 namespace {
 
 const pass_data pass_data_cprop_hardreg =
@@ -1261,7 +1167,6 @@ const pass_data pass_data_cprop_hardreg =
   RTL_PASS, /* type */
   "cprop_hardreg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_CPROP_REGISTERS, /* tv_id */
   0, /* properties_required */
@@ -1279,10 +1184,99 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_cprop (); }
-  unsigned int execute () { return copyprop_hardreg_forward (); }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0 && (flag_cprop_registers));
+    }
+
+  virtual unsigned int execute (function *);
 
 }; // class pass_cprop_hardreg
+
+unsigned int
+pass_cprop_hardreg::execute (function *fun)
+{
+  struct value_data *all_vd;
+  basic_block bb;
+  sbitmap visited;
+  bool analyze_called = false;
+
+  all_vd = XNEWVEC (struct value_data, last_basic_block_for_fn (fun));
+
+  visited = sbitmap_alloc (last_basic_block_for_fn (fun));
+  bitmap_clear (visited);
+
+  if (MAY_HAVE_DEBUG_INSNS)
+    debug_insn_changes_pool
+      = create_alloc_pool ("debug insn changes pool",
+			   sizeof (struct queued_debug_insn_change), 256);
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      bitmap_set_bit (visited, bb->index);
+
+      /* If a block has a single predecessor, that we've already
+	 processed, begin with the value data that was live at
+	 the end of the predecessor block.  */
+      /* ??? Ought to use more intelligent queuing of blocks.  */
+      if (single_pred_p (bb)
+	  && bitmap_bit_p (visited, single_pred (bb)->index)
+	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
+	{
+	  all_vd[bb->index] = all_vd[single_pred (bb)->index];
+	  if (all_vd[bb->index].n_debug_insn_changes)
+	    {
+	      unsigned int regno;
+
+	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+		{
+		  if (all_vd[bb->index].e[regno].debug_insn_changes)
+		    {
+		      all_vd[bb->index].e[regno].debug_insn_changes = NULL;
+		      if (--all_vd[bb->index].n_debug_insn_changes == 0)
+			break;
+		    }
+		}
+	    }
+	}
+      else
+	init_value_data (all_vd + bb->index);
+
+      copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
+    }
+
+  if (MAY_HAVE_DEBUG_INSNS)
+    {
+      FOR_EACH_BB_FN (bb, fun)
+	if (bitmap_bit_p (visited, bb->index)
+	    && all_vd[bb->index].n_debug_insn_changes)
+	  {
+	    unsigned int regno;
+	    bitmap live;
+
+	    if (!analyze_called)
+	      {
+		df_analyze ();
+		analyze_called = true;
+	      }
+	    live = df_get_live_out (bb);
+	    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	      if (all_vd[bb->index].e[regno].debug_insn_changes)
+		{
+		  if (REGNO_REG_SET_P (live, regno))
+		    apply_debug_insn_changes (all_vd + bb->index, regno);
+		  if (all_vd[bb->index].n_debug_insn_changes == 0)
+		    break;
+		}
+	  }
+
+      free_alloc_pool (debug_insn_changes_pool);
+    }
+
+  sbitmap_free (visited);
+  free (all_vd);
+  return 0;
+}
 
 } // anon namespace
 

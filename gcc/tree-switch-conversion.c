@@ -1420,12 +1420,43 @@ process_switch (gimple swtch)
 /* The main function of the pass scans statements for switches and invokes
    process_switch on them.  */
 
-static unsigned int
-do_switchconv (void)
+namespace {
+
+const pass_data pass_data_convert_switch =
+{
+  GIMPLE_PASS, /* type */
+  "switchconv", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_SWITCH_CONVERSION, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_stmts
+    | TODO_verify_flow ), /* todo_flags_finish */
+};
+
+class pass_convert_switch : public gimple_opt_pass
+{
+public:
+  pass_convert_switch (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_convert_switch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_tree_switch_conversion != 0; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_convert_switch
+
+unsigned int
+pass_convert_switch::execute (function *fun)
 {
   basic_block bb;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
   {
     const char *failure_reason;
     gimple stmt = last_stmt (bb);
@@ -1470,46 +1501,6 @@ do_switchconv (void)
 
   return 0;
 }
-
-/* The pass gate. */
-
-static bool
-switchconv_gate (void)
-{
-  return flag_tree_switch_conversion != 0;
-}
-
-namespace {
-
-const pass_data pass_data_convert_switch =
-{
-  GIMPLE_PASS, /* type */
-  "switchconv", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_SWITCH_CONVERSION, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts
-    | TODO_verify_flow ), /* todo_flags_finish */
-};
-
-class pass_convert_switch : public gimple_opt_pass
-{
-public:
-  pass_convert_switch (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_convert_switch, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return switchconv_gate (); }
-  unsigned int execute () { return do_switchconv (); }
-
-}; // class pass_convert_switch
 
 } // anon namespace
 

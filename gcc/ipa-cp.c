@@ -3762,16 +3762,6 @@ ipcp_read_summary (void)
   ipa_prop_read_jump_functions ();
 }
 
-/* Gate for IPCP optimization.  */
-
-static bool
-cgraph_gate_cp (void)
-{
-  /* FIXME: We should remove the optimize check after we ensure we never run
-     IPA passes when not optimizing.  */
-  return flag_ipa_cp && optimize;
-}
-
 namespace {
 
 const pass_data pass_data_ipa_cp =
@@ -3779,7 +3769,6 @@ const pass_data pass_data_ipa_cp =
   IPA_PASS, /* type */
   "cp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_CONSTANT_PROP, /* tv_id */
   0, /* properties_required */
@@ -3808,8 +3797,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return cgraph_gate_cp (); }
-  unsigned int execute () { return ipcp_driver (); }
+  virtual bool gate (function *)
+    {
+      /* FIXME: We should remove the optimize check after we ensure we never run
+	 IPA passes when not optimizing.  */
+      return flag_ipa_cp && optimize;
+    }
+
+  virtual unsigned int execute (function *) { return ipcp_driver (); }
 
 }; // class pass_ipa_cp
 

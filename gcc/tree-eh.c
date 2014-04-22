@@ -2121,8 +2121,36 @@ lower_eh_constructs_1 (struct leh_state *state, gimple_seq *pseq)
     lower_eh_constructs_2 (state, &gsi);
 }
 
-static unsigned int
-lower_eh_constructs (void)
+namespace {
+
+const pass_data pass_data_lower_eh =
+{
+  GIMPLE_PASS, /* type */
+  "eh", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_EH, /* tv_id */
+  PROP_gimple_lcf, /* properties_required */
+  PROP_gimple_leh, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_lower_eh : public gimple_opt_pass
+{
+public:
+  pass_lower_eh (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_eh, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *);
+
+}; // class pass_lower_eh
+
+unsigned int
+pass_lower_eh::execute (function *fun)
 {
   struct leh_state null_state;
   gimple_seq bodyp;
@@ -2155,42 +2183,13 @@ lower_eh_constructs (void)
 
   /* If this function needs a language specific EH personality routine
      and the frontend didn't already set one do so now.  */
-  if (function_needs_eh_personality (cfun) == eh_personality_lang
+  if (function_needs_eh_personality (fun) == eh_personality_lang
       && !DECL_FUNCTION_PERSONALITY (current_function_decl))
     DECL_FUNCTION_PERSONALITY (current_function_decl)
       = lang_hooks.eh_personality ();
 
   return 0;
 }
-
-namespace {
-
-const pass_data pass_data_lower_eh =
-{
-  GIMPLE_PASS, /* type */
-  "eh", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_EH, /* tv_id */
-  PROP_gimple_lcf, /* properties_required */
-  PROP_gimple_leh, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_lower_eh : public gimple_opt_pass
-{
-public:
-  pass_lower_eh (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_lower_eh, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  unsigned int execute () { return lower_eh_constructs (); }
-
-}; // class pass_lower_eh
 
 } // anon namespace
 
@@ -3109,19 +3108,6 @@ refactor_eh_r (gimple_seq seq)
     }
 }
 
-static unsigned
-refactor_eh (void)
-{
-  refactor_eh_r (gimple_body (current_function_decl));
-  return 0;
-}
-
-static bool
-gate_refactor_eh (void)
-{
-  return flag_exceptions != 0;
-}
-
 namespace {
 
 const pass_data pass_data_refactor_eh =
@@ -3129,7 +3115,6 @@ const pass_data pass_data_refactor_eh =
   GIMPLE_PASS, /* type */
   "ehopt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_EH, /* tv_id */
   PROP_gimple_lcf, /* properties_required */
@@ -3147,8 +3132,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_refactor_eh (); }
-  unsigned int execute () { return refactor_eh (); }
+  virtual bool gate (function *) { return flag_exceptions != 0; }
+  virtual unsigned int execute (function *)
+    {
+      refactor_eh_r (gimple_body (current_function_decl));
+      return 0;
+    }
 
 }; // class pass_refactor_eh
 
@@ -3312,8 +3301,37 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
   return ret;
 }
 
-static unsigned
-execute_lower_resx (void)
+namespace {
+
+const pass_data pass_data_lower_resx =
+{
+  GIMPLE_PASS, /* type */
+  "resx", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_EH, /* tv_id */
+  PROP_gimple_lcf, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
+};
+
+class pass_lower_resx : public gimple_opt_pass
+{
+public:
+  pass_lower_resx (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_resx, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_exceptions != 0; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_lower_resx
+
+unsigned
+pass_lower_resx::execute (function *fun)
 {
   basic_block bb;
   struct pointer_map_t *mnt_map;
@@ -3322,7 +3340,7 @@ execute_lower_resx (void)
 
   mnt_map = pointer_map_create ();
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple last = last_stmt (bb);
       if (last && is_gimple_resx (last))
@@ -3342,42 +3360,6 @@ execute_lower_resx (void)
 
   return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
 }
-
-static bool
-gate_lower_resx (void)
-{
-  return flag_exceptions != 0;
-}
-
-namespace {
-
-const pass_data pass_data_lower_resx =
-{
-  GIMPLE_PASS, /* type */
-  "resx", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_EH, /* tv_id */
-  PROP_gimple_lcf, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
-};
-
-class pass_lower_resx : public gimple_opt_pass
-{
-public:
-  pass_lower_resx (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_lower_resx, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_lower_resx (); }
-  unsigned int execute () { return execute_lower_resx (); }
-
-}; // class pass_lower_resx
 
 } // anon namespace
 
@@ -3719,8 +3701,37 @@ lower_eh_dispatch (basic_block src, gimple stmt)
   return redirected;
 }
 
-static unsigned
-execute_lower_eh_dispatch (void)
+namespace {
+
+const pass_data pass_data_lower_eh_dispatch =
+{
+  GIMPLE_PASS, /* type */
+  "ehdisp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_EH, /* tv_id */
+  PROP_gimple_lcf, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
+};
+
+class pass_lower_eh_dispatch : public gimple_opt_pass
+{
+public:
+  pass_lower_eh_dispatch (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_lower_eh_dispatch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fun) { return fun->eh->region_tree != NULL; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_lower_eh_dispatch
+
+unsigned
+pass_lower_eh_dispatch::execute (function *fun)
 {
   basic_block bb;
   int flags = 0;
@@ -3728,7 +3739,7 @@ execute_lower_eh_dispatch (void)
 
   assign_filter_values ();
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple last = last_stmt (bb);
       if (last == NULL)
@@ -3751,42 +3762,6 @@ execute_lower_eh_dispatch (void)
     delete_unreachable_blocks ();
   return flags;
 }
-
-static bool
-gate_lower_eh_dispatch (void)
-{
-  return cfun->eh->region_tree != NULL;
-}
-
-namespace {
-
-const pass_data pass_data_lower_eh_dispatch =
-{
-  GIMPLE_PASS, /* type */
-  "ehdisp", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_EH, /* tv_id */
-  PROP_gimple_lcf, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
-};
-
-class pass_lower_eh_dispatch : public gimple_opt_pass
-{
-public:
-  pass_lower_eh_dispatch (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_lower_eh_dispatch, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_lower_eh_dispatch (); }
-  unsigned int execute () { return execute_lower_eh_dispatch (); }
-
-}; // class pass_lower_eh_dispatch
 
 } // anon namespace
 
@@ -4585,27 +4560,6 @@ execute_cleanup_eh_1 (void)
   return 0;
 }
 
-static unsigned int
-execute_cleanup_eh (void)
-{
-  int ret = execute_cleanup_eh_1 ();
-
-  /* If the function no longer needs an EH personality routine
-     clear it.  This exposes cross-language inlining opportunities
-     and avoids references to a never defined personality routine.  */
-  if (DECL_FUNCTION_PERSONALITY (current_function_decl)
-      && function_needs_eh_personality (cfun) != eh_personality_lang)
-    DECL_FUNCTION_PERSONALITY (current_function_decl) = NULL_TREE;
-
-  return ret;
-}
-
-static bool
-gate_cleanup_eh (void)
-{
-  return cfun->eh != NULL && cfun->eh->region_tree != NULL;
-}
-
 namespace {
 
 const pass_data pass_data_cleanup_eh =
@@ -4613,7 +4567,6 @@ const pass_data pass_data_cleanup_eh =
   GIMPLE_PASS, /* type */
   "ehcleanup", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_EH, /* tv_id */
   PROP_gimple_lcf, /* properties_required */
@@ -4632,10 +4585,29 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_cleanup_eh (m_ctxt); }
-  bool gate () { return gate_cleanup_eh (); }
-  unsigned int execute () { return execute_cleanup_eh (); }
+  virtual bool gate (function *fun)
+    {
+      return fun->eh != NULL && fun->eh->region_tree != NULL;
+    }
+
+  virtual unsigned int execute (function *);
 
 }; // class pass_cleanup_eh
+
+unsigned int
+pass_cleanup_eh::execute (function *fun)
+{
+  int ret = execute_cleanup_eh_1 ();
+
+  /* If the function no longer needs an EH personality routine
+     clear it.  This exposes cross-language inlining opportunities
+     and avoids references to a never defined personality routine.  */
+  if (DECL_FUNCTION_PERSONALITY (current_function_decl)
+      && function_needs_eh_personality (fun) != eh_personality_lang)
+    DECL_FUNCTION_PERSONALITY (current_function_decl) = NULL_TREE;
+
+  return ret;
+}
 
 } // anon namespace
 

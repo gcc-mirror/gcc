@@ -562,39 +562,6 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
 /* Return SSA names that are unused to GGC memory and compact the SSA
    version namespace.  This is used to keep footprint of compiler during
    interprocedural optimization.  */
-static unsigned int
-release_dead_ssa_names (void)
-{
-  unsigned i, j;
-  int n = vec_safe_length (FREE_SSANAMES (cfun));
-
-  /* Now release the freelist.  */
-  vec_free (FREE_SSANAMES (cfun));
-
-  /* And compact the SSA number space.  We make sure to not change the
-     relative order of SSA versions.  */
-  for (i = 1, j = 1; i < cfun->gimple_df->ssa_names->length (); ++i)
-    {
-      tree name = ssa_name (i);
-      if (name)
-	{
-	  if (i != j)
-	    {
-	      SSA_NAME_VERSION (name) = j;
-	      (*cfun->gimple_df->ssa_names)[j] = name;
-	    }
-	  j++;
-	}
-    }
-  cfun->gimple_df->ssa_names->truncate (j);
-
-  statistics_counter_event (cfun, "SSA names released", n);
-  statistics_counter_event (cfun, "SSA name holes removed", i - j);
-  if (dump_file)
-    fprintf (dump_file, "Released %i names, %.2f%%, removed %i holes\n",
-	     n, n * 100.0 / num_ssa_names, i - j);
-  return 0;
-}
 
 namespace {
 
@@ -603,7 +570,6 @@ const pass_data pass_data_release_ssa_names =
   GIMPLE_PASS, /* type */
   "release_ssa", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_SSA_OTHER, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -621,9 +587,43 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return release_dead_ssa_names (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_release_ssa_names
+
+unsigned int
+pass_release_ssa_names::execute (function *fun)
+{
+  unsigned i, j;
+  int n = vec_safe_length (FREE_SSANAMES (fun));
+
+  /* Now release the freelist.  */
+  vec_free (FREE_SSANAMES (fun));
+
+  /* And compact the SSA number space.  We make sure to not change the
+     relative order of SSA versions.  */
+  for (i = 1, j = 1; i < fun->gimple_df->ssa_names->length (); ++i)
+    {
+      tree name = ssa_name (i);
+      if (name)
+	{
+	  if (i != j)
+	    {
+	      SSA_NAME_VERSION (name) = j;
+	      (*fun->gimple_df->ssa_names)[j] = name;
+	    }
+	  j++;
+	}
+    }
+  fun->gimple_df->ssa_names->truncate (j);
+
+  statistics_counter_event (fun, "SSA names released", n);
+  statistics_counter_event (fun, "SSA name holes removed", i - j);
+  if (dump_file)
+    fprintf (dump_file, "Released %i names, %.2f%%, removed %i holes\n",
+	     n, n * 100.0 / num_ssa_names, i - j);
+  return 0;
+}
 
 } // anon namespace
 

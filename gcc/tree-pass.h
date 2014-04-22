@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "dumpfile.h"
 
+struct function;
+
 /* Optimization pass type.  */
 enum opt_pass_type
 {
@@ -46,10 +48,6 @@ struct pass_data
 
   /* The -fopt-info optimization group flags as defined in dumpfile.h. */
   unsigned int optinfo_flags;
-
-  /* If true, this pass has its own implementation of the opt_pass::gate
-     method.  */
-  bool has_gate;
 
   /* If true, this pass has its own implementation of the opt_pass::execute
      method.  */
@@ -90,16 +88,15 @@ public:
      The default implementation prints an error message and aborts.  */
   virtual opt_pass *clone ();
 
-  /* If has_gate is set, this pass and all sub-passes are executed only if
-     the function returns true.
-     The default implementation returns true.  */
-  virtual bool gate ();
+  /* This pass and all sub-passes are executed only if the function returns
+     true.  The default implementation returns true.  */
+  virtual bool gate (function *fun);
 
   /* This is the code to run.  If has_execute is false, then there should
      be sub-passes otherwise this pass does nothing.
      The return value contains TODOs to execute in addition to those in
      TODO_flags_finish.   */
-  virtual unsigned int execute ();
+  virtual unsigned int execute (function *fun);
 
 protected:
   opt_pass (const pass_data&, gcc::context *);

@@ -711,12 +711,6 @@ ipa_profile (void)
   return 0;
 }
 
-static bool
-gate_ipa_profile (void)
-{
-  return flag_ipa_profile;
-}
-
 namespace {
 
 const pass_data pass_data_ipa_profile =
@@ -724,7 +718,6 @@ const pass_data pass_data_ipa_profile =
   IPA_PASS, /* type */
   "profile_estimate", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_PROFILE, /* tv_id */
   0, /* properties_required */
@@ -751,8 +744,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ipa_profile (); }
-  unsigned int execute () { return ipa_profile (); }
+  virtual bool gate (function *) { return flag_ipa_profile; }
+  virtual unsigned int execute (function *) { return ipa_profile (); }
 
 }; // class pass_ipa_profile
 

@@ -1256,21 +1256,6 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
 /* Canonical induction variable creation pass.  */
 
-static unsigned int
-tree_ssa_loop_ivcanon (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return canonicalize_induction_variables ();
-}
-
-static bool
-gate_tree_ssa_loop_ivcanon (void)
-{
-  return flag_tree_loop_ivcanon != 0;
-}
-
 namespace {
 
 const pass_data pass_data_iv_canon =
@@ -1278,7 +1263,6 @@ const pass_data pass_data_iv_canon =
   GIMPLE_PASS, /* type */
   "ivcanon", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_LOOP_IVCANON, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1296,10 +1280,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_ssa_loop_ivcanon (); }
-  unsigned int execute () { return tree_ssa_loop_ivcanon (); }
+  virtual bool gate (function *) { return flag_tree_loop_ivcanon != 0; }
+  virtual unsigned int execute (function *fun);
 
 }; // class pass_iv_canon
+
+unsigned int
+pass_iv_canon::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return canonicalize_induction_variables ();
+}
 
 } // anon namespace
 
@@ -1311,23 +1304,6 @@ make_pass_iv_canon (gcc::context *ctxt)
 
 /* Complete unrolling of loops.  */
 
-static unsigned int
-tree_complete_unroll (void)
-{
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  return tree_unroll_loops_completely (flag_unroll_loops
-				       || flag_peel_loops
-				       || optimize >= 3, true);
-}
-
-static bool
-gate_tree_complete_unroll (void)
-{
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_complete_unroll =
@@ -1335,7 +1311,6 @@ const pass_data pass_data_complete_unroll =
   GIMPLE_PASS, /* type */
   "cunroll", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_COMPLETE_UNROLL, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1353,10 +1328,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_complete_unroll (); }
-  unsigned int execute () { return tree_complete_unroll (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_complete_unroll
+
+unsigned int
+pass_complete_unroll::execute (function *fun)
+{
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  return tree_unroll_loops_completely (flag_unroll_loops
+				       || flag_peel_loops
+				       || optimize >= 3, true);
+}
 
 } // anon namespace
 
@@ -1368,31 +1353,6 @@ make_pass_complete_unroll (gcc::context *ctxt)
 
 /* Complete unrolling of inner loops.  */
 
-static unsigned int
-tree_complete_unroll_inner (void)
-{
-  unsigned ret = 0;
-
-  loop_optimizer_init (LOOPS_NORMAL
-		       | LOOPS_HAVE_RECORDED_EXITS);
-  if (number_of_loops (cfun) > 1)
-    {
-      scev_initialize ();
-      ret = tree_unroll_loops_completely (optimize >= 3, false);
-      free_numbers_of_iterations_estimates ();
-      scev_finalize ();
-    }
-  loop_optimizer_finalize ();
-
-  return ret;
-}
-
-static bool
-gate_tree_complete_unroll_inner (void)
-{
-  return optimize >= 2;
-}
-
 namespace {
 
 const pass_data pass_data_complete_unrolli =
@@ -1400,7 +1360,6 @@ const pass_data pass_data_complete_unrolli =
   GIMPLE_PASS, /* type */
   "cunrolli", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_COMPLETE_UNROLL, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1418,10 +1377,29 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_complete_unroll_inner (); }
-  unsigned int execute () { return tree_complete_unroll_inner (); }
+  virtual bool gate (function *) { return optimize >= 2; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_complete_unrolli
+
+unsigned int
+pass_complete_unrolli::execute (function *fun)
+{
+  unsigned ret = 0;
+
+  loop_optimizer_init (LOOPS_NORMAL
+		       | LOOPS_HAVE_RECORDED_EXITS);
+  if (number_of_loops (fun) > 1)
+    {
+      scev_initialize ();
+      ret = tree_unroll_loops_completely (optimize >= 3, false);
+      free_numbers_of_iterations_estimates ();
+      scev_finalize ();
+    }
+  loop_optimizer_finalize ();
+
+  return ret;
+}
 
 } // anon namespace
 

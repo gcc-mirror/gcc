@@ -1,3 +1,405 @@
+2014-04-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* machmode.h (bitwise_mode_for_mode): Declare.
+	* stor-layout.h (bitwise_type_for_mode): Likewise.
+	* stor-layout.c (bitwise_mode_for_mode): New function.
+	(bitwise_type_for_mode): Likewise.
+	* builtins.c (fold_builtin_memory_op): Use it instead of
+	int_mode_for_mode and build_nonstandard_integer_type.
+
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (enable_obsolete): Remove *-*-solaris2.9*.
+	(*-*-solaris2.[0-9] | *-*-solaris2.[0-9].*): Mark unsupported.
+	(*-*-solaris2*): Simplify.
+	(i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*): Likewise.
+	(i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*): Remove
+	*-*-solaris2.9* handling.
+
+	* configure.ac (gcc_cv_as_hidden): Remove test for Solaris 9/x86
+	as bug.
+	(gcc_cv_ld_hidden): Remove *-*-solaris2.9* handling.
+	(ld_tls_support): Remove i?86-*-solaris2.9, sparc*-*-solaris2.9
+	handling, simplify.
+	(gcc_cv_as_gstabs_flag): Remove workaround for Solaris 9/x86 as bug.
+	* configure: Regenerate.
+
+	* config/i386/sol2-9.h: Remove.
+
+	* doc/install.texi (Specific, i?86-*-solaris2.9): Remove.
+	(Specific, *-*-solaris2*): Mention Solaris 9 support removal.
+	Remove Solaris 9 references.
+
+2014-04-22  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* aarch64.md (float<GPI:mode><GPF:mode>2): Remove.
+	(floatuns<GPI:mode><GPF:mode>2): Remove.
+	(<optab><fcvt_target><GPF:mode>2): New pattern for equal width float
+	and floatuns conversions.
+	(<optab><fcvt_iesize><GPF:mode>2): New pattern for inequal width float
+	and floatuns conversions.
+	* iterators.md (fcvt_target, FCVT_TARGET): Support SF and DF modes.
+	(w1,w2): New mode attributes for inequal width conversions.
+
+2014-04-22  Renlin Li  <Renlin.Li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand_address): Adjust
+	the output asm format.
+
+2014-04-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_cm<optab>di): Always split.
+	(*aarch64_cm<optab>di): New.
+	(aarch64_cmtstdi): Always split.
+	(*aarch64_cmtstdi): New.
+
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60823
+	* omp-low.c (ipa_simd_modify_function_body): Go through
+	all SSA_NAMEs and for those refering to vector arguments
+	which are going to be replaced adjust SSA_NAME_VAR and,
+	if it is a default definition, change it into a non-default
+	definition assigned at the beginning of function from new_decl.
+	(ipa_simd_modify_stmt_ops): Rewritten.
+	* tree-dfa.c (set_ssa_default_def): When removing default def,
+	check for NULL loc instead of NULL *loc.
+
+2014-04-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Loosen
+	restrictions on core registers for DImode values in Thumb2.
+
+2014-04-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/arm/arm.md (*anddi_notdi_zesidi): New pattern.
+	* config/arm/thumb2.md (*iordi_notdi_zesidi): New pattern.
+
+2014-04-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/arm/thumb2.md (*iordi_notdi_di): New pattern.
+	(*iordi_notzesidi_di): Likewise.
+	(*iordi_notsesidi_di): Likewise.
+
+2014-04-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/arm/arm-protos.h (tune_params): New struct members.
+	* config/arm/arm.c: Initialise tune_params per processor.
+	(thumb2_reorg): Suppress conversion from t32 to t16 when optimizing
+	for speed, based on new tune_params.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (BUILTIN_VDQF_DF): Macro
+	added.
+	* config/aarch64/aarch64-simd-builtins.def (frintn): Use added
+	macro.
+	* config/aarch64/aarch64-simd.md (<frint_pattern>): Comment
+	corrected.
+	* config/aarch64/aarch64.md (<frint_pattern>): Likewise.
+	* config/aarch64/arm_neon.h (vrnd_f64): Added.
+	(vrnda_f64): Likewise.
+	(vrndi_f64): Likewise.
+	(vrndm_f64): Likewise.
+	(vrndn_f64): Likewise.
+	(vrndp_f64): Likewise.
+	(vrndx_f64): Likewise.
+
+2014-04-22  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/arm.c (arm_print_operand, thumb_exit): Make sure
+	GET_MODE_SIZE argument is enum machine_mode.
+
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60910
+	* config/sparc/sparc.c (sparc_init_modes): Pass enum machine_mode
+	value instead of int to GET_MODE_CLASS and GET_MODE_SIZE macros.
+
+2014-04-22  Lin Zuojian  <manjian2006@gmail.com>
+
+	PR middle-end/60281
+	* asan.c (asan_emit_stack_protection): Force the base to align to
+	appropriate bits if STRICT_ALIGNMENT.  Set shadow_mem align to
+	appropriate bits if STRICT_ALIGNMENT.
+	* cfgexpand.c (expand_stack_vars): Set base_align appropriately
+	when asan is on.
+	(expand_used_vars): Leave a space in the stack frame for alignment
+	if STRICT_ALIGNMENT.
+
+2014-04-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple.h (gimple_assign_single_p): Accept a const_gimple rather
+	than a gimple.
+	(gimple_store_p): Likewise.
+	(gimple_assign_load_p): Likewise.
+	(gimple_assign_cast_p): Likewise.
+	(gimple_clobber_p): Likewise.
+
+	* doc/gimple.texi (gimple_assign_cast_p): Accept a const_gimple
+	rather than a gimple.
+	(gimple_assign_cast_p): Likewise.
+
+2014-04-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60735
+	* config/rs6000/rs6000.md (mov<mode>_softfloat32, FMOVE64 case):
+	If mode is DDmode and TARGET_E500_DOUBLE allow move.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print some
+	more debug information for E500 if -mdebug=reg.
+
+2014-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60909
+	* config/i386/i386.c (ix86_expand_builtin)
+	<case IX86_BUILTIN_RDRAND{16,32,64}_STEP>: Use temporary
+	register for target RTX.
+	<case IX86_BUILTIN_RDSEED{16,32,64}_STEP>: Ditto.
+
+2014-04-18  Cong Hou  <congh@google.com>
+
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Enhance
+	the widen-mult pattern by handling two operands with different sizes,
+	and operands whose size is smaller than half of the result type.
+
+2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.h (INLINE_HINT_known_hot): New hint.
+	* ipa-inline-analysis.c (dump_inline_hints): Dump it.
+	(do_estimate_edge_time): Compute it.
+	* ipa-inline.c (want_inline_small_function_p): Bypass
+	INLINE_INSNS_AUTO/SINGLE limits for calls that are known to be hot.
+
+2014-04-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (spec_rem): New static variable.
+	(dump_overall_stats): New function.
+	(dump_inline_stats): New function.
+
+2014-04-18  Richard Henderson  <rth@redhat.com>
+
+	* config/aarch64/aarch64.c (aarch64_register_move_cost): Pass a mode
+	to GET_MODE_SIZE, not a reg_class_t.
+
+2014-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_xxmrghw_<mode>): Adjust for little-endian.
+	(vsx_xxmrglw_<mode>): Likewise.
+
+2014-04-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60876
+	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): Make sure
+	GET_MODE_SIZE gets passed an enum machine_mode type and not integer.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+
+2014-04-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (inline_small_functions): Account only non-cold
+	functions.
+	* doc/invoke.texi (inline-unit-growth): Update documentation.
+
+2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.md (addti3, subti3): New.
+
+2014-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60863
+	* config/i386/i386.c (ix86_expand_clear): Remove outdated
+	comment.  Check optimize_insn_for_size_p instead of
+	optimize_insn_for_speed_p.
+
+2014-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	* gimple-iterator.c (gsi_start_edge): New function.
+	* gimple-iterator.h (gsi_start_edge): Declare.
+	* tree-sra.c (single_non_eh_succ): New function.
+	(disqualify_ops_if_throwing_stmt): Renamed to
+	disqualify_if_bad_bb_terminating_stmt.  Allow throwing statements
+	having one non-EH successor BB.
+	(sra_modify_expr): If stmt ends bb, use single non-EH successor to
+	generate loads into replacements.
+	(sra_modify_assign): Likewise and and also use the simple path for
+	such statements.
+	(sra_modify_function_body): Commit statements on edges.
+
+2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60849
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Allow vector
+	comparison results and add clarifying comment.
+
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* genmodes.c (struct mode_data): Add need_bytesize_adj field.
+	(blank_mode): Initialize it.
+	(emit_mode_size_inline, emit_mode_nunits_inline,
+	emit_mode_inner_inline): New functions.
+	(emit_insn_modes_h): Call them and surround their output with
+	#if GCC_VERSION >= 4001 ... #endif.
+	* machmode.h (GET_MODE_SIZE, GET_MODE_NUNITS, GET_MODE_INNER):
+	For GCC_VERSION >= 4001 use mode_*_inline routines instead of
+	mode_* arrays if the argument is __builtin_constant_p.
+	* lower-subreg.c (dump_choices): Make sure GET_MODE_SIZE argument
+	is enum machine_mode.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* passes.c (opt_pass::execute): Adjust.
+	(pass_manager::execute_pass_mode_switching): Likewise.
+	(early_local_passes::execute): Likewise.
+	(execute_one_pass): Pass cfun to the pass's execute method.
+	* tree-pass.h (opt_pass::execute): Add function * argument.
+	* asan.c, auto-inc-dec.c, bb-reorder.c, bt-load.c, cfgcleanup.c,
+	cfgexpand.c, cfgrtl.c, cgraphbuild.c, combine-stack-adj.c, combine.c,
+	compare-elim.c, config/arc/arc.c, config/epiphany/mode-switch-use.c,
+	config/epiphany/resolve-sw-modes.c, config/i386/i386.c,
+	config/mips/mips.c, config/rl78/rl78.c, config/s390/s390.c,
+	config/sparc/sparc.c, cprop.c, dce.c, df-core.c, dse.c, dwarf2cfi.c,
+	except.c, final.c, function.c, fwprop.c, gcse.c, gimple-low.c,
+	gimple-ssa-isolate-paths.c, gimple-ssa-strength-reduction.c,
+	graphite.c, ifcvt.c, init-regs.c, ipa-cp.c, ipa-devirt.c,
+	ipa-inline-analysis.c, ipa-inline.c, ipa-profile.c, ipa-pure-const.c,
+	ipa-reference.c, ipa-split.c, ipa.c, ira.c, jump.c, loop-init.c,
+	lower-subreg.c, mode-switching.c, omp-low.c, postreload-gcse.c,
+	postreload.c, predict.c, recog.c, ree.c, reg-stack.c, regcprop.c,
+	reginfo.c, regrename.c, reorg.c, sched-rgn.c, stack-ptr-mod.c,
+	store-motion.c, tracer.c, trans-mem.c, tree-call-cdce.c, tree-cfg.c,
+	tree-cfgcleanup.c, tree-complex.c, tree-eh.c, tree-emutls.c,
+	tree-if-conv.c, tree-into-ssa.c, tree-loop-distribution.c, tree-nrv.c,
+	tree-object-size.c, tree-parloops.c, tree-predcom.c, tree-ssa-ccp.c,
+	tree-ssa-copy.c, tree-ssa-copyrename.c, tree-ssa-dce.c,
+	tree-ssa-dom.c, tree-ssa-dse.c, tree-ssa-forwprop.c,
+	tree-ssa-ifcombine.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-loop-unswitch.c, tree-ssa-loop.c, tree-ssa-math-opts.c,
+	tree-ssa-phiopt.c, tree-ssa-phiprop.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sink.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-ssa-uncprop.c, tree-ssa-uninit.c,
+	tree-ssa.c, tree-ssanames.c, tree-stdarg.c, tree-switch-conversion.c,
+	tree-tailcall.c, tree-vect-generic.c, tree-vectorizer.c, tree-vrp.c,
+	tree.c, tsan.c, ubsan.c, var-tracking.c, vtable-verify.c, web.c:
+	Adjust.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* passes.c (opt_pass::gate): Take function * argument.
+	(gate_all_early_local_passes): Merge into
+	(early_local_passes::gate): this.
+	(gate_all_early_optimizations): Merge into
+	(all_early_optimizations::gate): this.
+	(gate_all_optimizations): Mege into
+	(all_optimizations::gate): this.
+	(gate_all_optimizations_g): Merge into
+	(all_optimizations_g::gate): this.
+	(gate_rest_of_compilation): Mege into
+	(rest_of_compilation::gate): this.
+	(gate_postreload): Merge into
+	(postreload::gate): this.
+	(dump_one_pass): Pass cfun to the pass's gate method.
+	(execute_ipa_summary_passes): Likewise.
+	(execute_one_pass): Likewise.
+	(ipa_write_summaries_2): Likewise.
+	(ipa_write_optimization_summaries_1): Likewise.
+	(ipa_read_summaries_1): Likewise.
+	(ipa_read_optimization_summaries_1): Likewise.
+	(execute_ipa_stmt_fixups): Likewise.
+	* tree-pass.h (opt_pass::gate): Add function * argument.
+	* asan.c, auto-inc-dec.c, bb-reorder.c, bt-load.c,
+	combine-stack-adj.c, combine.c, compare-elim.c,
+	config/epiphany/resolve-sw-modes.c, config/i386/i386.c,
+	config/rl78/rl78.c, config/sh/sh_optimize_sett_clrt.cc,
+	config/sh/sh_treg_combine.cc, config/sparc/sparc.c, cprop.c, cse.c,
+	dce.c, df-core.c, dse.c, dwarf2cfi.c, except.c,  fwprop.c, gcse.c,
+	gimple-ssa-isolate-paths.c, gimple-ssa-strength-reduction.c,
+	graphite.c, ifcvt.c, init-regs.c, ipa-cp.c, ipa-devirt.c,
+	ipa-profile.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c, ipa.c,
+	loop-init.c, lower-subreg.c, mode-switching.c, modulo-sched.c,
+	omp-low.c, postreload-gcse.c, postreload.c, predict.c, recog.c, ree.c,
+	reg-stack.c, regcprop.c, regrename.c, reorg.c, sched-rgn.c,
+	store-motion.c, tracer.c, trans-mem.c, tree-call-cdce.c, tree-cfg.c,
+	tree-cfgcleanup.c, tree-complex.c, tree-eh.c, tree-emutls.c,
+	tree-if-conv.c, tree-into-ssa.c, tree-loop-distribution.c,
+	tree-nrv.c, tree-parloops.c, tree-predcom.c, tree-profile.c,
+	tree-sra.c, tree-ssa-ccp.c, tree-ssa-copy.c, tree-ssa-copyrename.c,
+	tree-ssa-dce.c, tree-ssa-dom.c, tree-ssa-dse.c, tree-ssa-forwprop.c,
+	tree-ssa-ifcombine.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-loop-unswitch.c, tree-ssa-loop.c, tree-ssa-math-opts.c,
+	tree-ssa-phiopt.c, tree-ssa-phiprop.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sink.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-ssa-uncprop.c, tree-ssa-uninit.c,
+	tree-ssa.c, tree-stdarg.c, tree-switch-conversion.c, tree-tailcall.c,
+	tree-vect-generic.c, tree-vectorizer.c, tree-vrp.c, tsan.c, ubsan.c,
+	var-tracking.c, vtable-verify.c, web.c: Adjust.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* configure.ac: Check for -Woverloaded-virtual and enable it if found.
+	* configure: Regenerate.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* passes.c (dump_one_pass): don't check pass->has_gate.
+	(execute_ipa_summary_passes): Likewise.
+	(execute_one_pass): Likewise.
+	(ipa_write_summaries_2): Likewise.
+	(ipa_write_optimization_summaries_1): Likewise.
+	(ipa_read_optimization_summaries_1): Likewise.
+	(execute_ipa_stmt_fixups): Likewise.
+	* tree-pass.h (pass_data::has_gate): Remove.
+	* asan.c, auto-inc-dec.c, bb-reorder.c, bt-load.c, cfgcleanup.c,
+	cfgexpand.c, cfgrtl.c, cgraphbuild.c, combine-stack-adj.c, combine.c,
+	compare-elim.c, config/arc/arc.c, config/epiphany/mode-switch-use.c,
+	config/epiphany/resolve-sw-modes.c, config/i386/i386.c,
+	config/mips/mips.c, config/rl78/rl78.c, config/s390/s390.c,
+	config/sh/sh_optimize_sett_clrt.cc, config/sh/sh_treg_combine.cc,
+	config/sparc/sparc.c, cprop.c, cse.c, dce.c, df-core.c, dse.c,
+	dwarf2cfi.c, except.c, final.c, function.c, fwprop.c, gcse.c,
+	gimple-low.c, gimple-ssa-isolate-paths.c,
+	gimple-ssa-strength-reduction.c, graphite.c, ifcvt.c, init-regs.c,
+	ipa-cp.c, ipa-devirt.c, ipa-inline-analysis.c, ipa-inline.c,
+	ipa-profile.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c, ipa.c,
+	ira.c, jump.c, loop-init.c, lower-subreg.c, mode-switching.c,
+	modulo-sched.c, omp-low.c, postreload-gcse.c, postreload.c, predict.c,
+	recog.c, ree.c, reg-stack.c, regcprop.c, reginfo.c, regrename.c,
+	reorg.c, sched-rgn.c, stack-ptr-mod.c, store-motion.c, tracer.c,
+	trans-mem.c, tree-call-cdce.c, tree-cfg.c, tree-cfgcleanup.c,
+	tree-complex.c, tree-eh.c, tree-emutls.c, tree-if-conv.c,
+	tree-into-ssa.c, tree-loop-distribution.c, tree-nrv.c,
+	tree-object-size.c, tree-parloops.c, tree-predcom.c, tree-profile.c,
+	tree-sra.c, tree-ssa-ccp.c, tree-ssa-copy.c, tree-ssa-copyrename.c,
+	tree-ssa-dce.c, tree-ssa-dom.c, tree-ssa-dse.c, tree-ssa-forwprop.c,
+	tree-ssa-ifcombine.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-loop-unswitch.c, tree-ssa-loop.c, tree-ssa-math-opts.c,
+	tree-ssa-phiopt.c, tree-ssa-phiprop.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sink.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-ssa-uncprop.c, tree-ssa-uninit.c,
+	tree-ssa.c, tree-ssanames.c, tree-stdarg.c, tree-switch-conversion.c,
+	tree-tailcall.c, tree-vect-generic.c, tree-vectorizer.c, tree-vrp.c,
+	tree.c, tsan.c, ubsan.c, var-tracking.c, vtable-verify.c, web.c:
+	Adjust.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* pass_manager.h (pass_manager::register_dump_files_1): Remove
+	declaration.
+	* passes.c (pass_manager::register_dump_files_1): Merge into
+	(pass_manager::register_dump_files): this, and remove its handling of
+	properties since the pass always has the properties anyway.
+	(pass_manager::pass_manager): Adjust.
+
+2014-04-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* pass_manager.h (pass_manager::register_dump_files_1): Adjust.
+	* passes.c (pass_manager::register_dump_files_1): Remove dead code
+	dealing with properties.
+	(pass_manager::register_dump_files): Adjust.
+
 2014-03-20  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (add_bound_info): If HOST_WIDE_INT is big enough,
@@ -85,8 +487,7 @@
 	(record_target_from_binfo): Add bases_to_consider array;
 	record bases for types w/o instances and skip CXX destructor.
 	(possible_polymorphic_call_targets_1): Add bases_to_consider
-	and consider_construction parameters; check if type may
-	have instance.
+	and consider_construction parameters; check if type may have instance.
 	(get_polymorphic_call_info): Set maybe_in_construction to true
 	when we know nothing.
 	(record_targets_from_bases): Skip CXX destructors; they are
@@ -103,7 +504,7 @@
 2014-04-16  Andrew  Pinski  <apinski@cavium.com>
 
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Change aarch64 ilp32
-        definition.
+	definition.
 
 2014-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -395,7 +796,7 @@
 
 2014-04-14  Christian Bruel  <christian.bruel@st.com>
 
-        * config/sh/sh-mem.cc (sh_expand_strlen): Unroll last word.
+	* config/sh/sh-mem.cc (sh_expand_strlen): Unroll last word.
 
 2014-04-14  Christian Bruel  <christian.bruel@st.com>
 
@@ -704,21 +1105,21 @@
 2014-04-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60640
-        * cgraph.h (cgraph_clone_node): New parameter added to declaration.
-        Adjust all callers.
+	* cgraph.h (cgraph_clone_node): New parameter added to declaration.
+	Adjust all callers.
 	* cgraph.c (clone_of_p): Also return true if thunks match.
 	(verify_edge_corresponds_to_fndecl): Removed extraneous call to
 	cgraph_function_or_thunk_node and an obsolete comment.
-        * cgraphclones.c (build_function_type_skip_args): Moved upwards in the
-        file.
-        (build_function_decl_skip_args): Likewise.
+	* cgraphclones.c (build_function_type_skip_args): Moved upwards in the
+	file.
+	(build_function_decl_skip_args): Likewise.
 	(set_new_clone_decl_and_node_flags): New function.
-        (duplicate_thunk_for_node): Likewise.
-        (redirect_edge_duplicating_thunks): Likewise.
-        (cgraph_clone_node): New parameter args_to_skip, pass it to
-        redirect_edge_duplicating_thunks which is called instead of
-        cgraph_redirect_edge_callee.
-        (cgraph_create_virtual_clone): Pass args_to_skip to cgraph_clone_node,
+	(duplicate_thunk_for_node): Likewise.
+	(redirect_edge_duplicating_thunks): Likewise.
+	(cgraph_clone_node): New parameter args_to_skip, pass it to
+	redirect_edge_duplicating_thunks which is called instead of
+	cgraph_redirect_edge_callee.
+	(cgraph_create_virtual_clone): Pass args_to_skip to cgraph_clone_node,
 	moved setting of a lot of flags to set_new_clone_decl_and_node_flags.
 
 2014-04-04  Jeff Law  <law@redhat.com>
@@ -800,24 +1201,6 @@
 	* doc/invoke.texi (Wnon-virtual-dtor): Adjust documentation.
 	(Weffc++): Remove Scott's numbering, merge lists and reference
 	Wnon-virtual-dtor.
-
-	c-family/
-
-	cp/
-	* class.c (accessible_nvdtor_p): New.
-	(check_bases): Don't check base destructor here ...
-	(check_bases_and_members): ... check them here.  Trigger on
-	Wnon-virtual-dtor flag.
-	(finish_struct_1): Use accessible_nvdtor_p.
-
-	testsuite/
-	* g++.dg/warn/Wnvdtor.C: Add non-polymorphic case.
-	* g++.dg/warn/Wnvdtor-2.C: New.
-	* g++.dg/warn/Wnvdtor-3.C: New.
-	* g++.dg/warn/Wnvdtor-4.C: New.
-	* g++.dg/warn/Weff1.C: Delete.
-	* g++.old-deja/g++.benjamin/15309-1.C: Delete.
-	* g++.old-deja/g++.benjamin/15309-2.C: Delete.
 
 2014-04-03  Nick Clifton  <nickc@redhat.com>
 

@@ -1148,14 +1148,6 @@ ipa_reference_read_optimization_summary (void)
     }
 }
 
-static bool
-gate_reference (void)
-{
-  return (flag_ipa_reference
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
-}
-
 namespace {
 
 const pass_data pass_data_ipa_reference =
@@ -1163,7 +1155,6 @@ const pass_data pass_data_ipa_reference =
   IPA_PASS, /* type */
   "static-var", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_REFERENCE, /* tv_id */
   0, /* properties_required */
@@ -1192,8 +1183,14 @@ public:
     {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_reference (); }
-  unsigned int execute () { return propagate (); }
+  virtual bool gate (function *)
+    {
+      return (flag_ipa_reference
+	      /* Don't bother doing anything if the program has errors.  */
+	      && !seen_error ());
+    }
+
+  virtual unsigned int execute (function *) { return propagate (); }
 
 }; // class pass_ipa_reference
 

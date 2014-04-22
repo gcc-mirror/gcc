@@ -1986,44 +1986,6 @@ tree_if_conversion (struct loop *loop)
 
 /* Tree if-conversion pass management.  */
 
-static unsigned int
-main_tree_if_conversion (void)
-{
-  struct loop *loop;
-  unsigned todo = 0;
-
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  FOR_EACH_LOOP (loop, 0)
-    if (flag_tree_loop_if_convert == 1
-	|| flag_tree_loop_if_convert_stores == 1
-	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
-	    && !loop->dont_vectorize))
-      todo |= tree_if_conversion (loop);
-
-#ifdef ENABLE_CHECKING
-  {
-    basic_block bb;
-    FOR_EACH_BB_FN (bb, cfun)
-      gcc_assert (!bb->aux);
-  }
-#endif
-
-  return todo;
-}
-
-/* Returns true when the if-conversion pass is enabled.  */
-
-static bool
-gate_tree_if_conversion (void)
-{
-  return (((flag_tree_loop_vectorize || cfun->has_force_vectorize_loops)
-	   && flag_tree_loop_if_convert != 0)
-	  || flag_tree_loop_if_convert == 1
-	  || flag_tree_loop_if_convert_stores == 1);
-}
-
 namespace {
 
 const pass_data pass_data_if_conversion =
@@ -2031,7 +1993,6 @@ const pass_data pass_data_if_conversion =
   GIMPLE_PASS, /* type */
   "ifcvt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2050,10 +2011,46 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_if_conversion (); }
-  unsigned int execute () { return main_tree_if_conversion (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *);
 
 }; // class pass_if_conversion
+
+bool
+pass_if_conversion::gate (function *fun)
+{
+  return (((flag_tree_loop_vectorize || fun->has_force_vectorize_loops)
+	   && flag_tree_loop_if_convert != 0)
+	  || flag_tree_loop_if_convert == 1
+	  || flag_tree_loop_if_convert_stores == 1);
+}
+
+unsigned int
+pass_if_conversion::execute (function *fun)
+{
+  struct loop *loop;
+  unsigned todo = 0;
+
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  FOR_EACH_LOOP (loop, 0)
+    if (flag_tree_loop_if_convert == 1
+	|| flag_tree_loop_if_convert_stores == 1
+	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
+	    && !loop->dont_vectorize))
+      todo |= tree_if_conversion (loop);
+
+#ifdef ENABLE_CHECKING
+  {
+    basic_block bb;
+    FOR_EACH_BB_FN (bb, fun)
+      gcc_assert (!bb->aux);
+  }
+#endif
+
+  return todo;
+}
 
 } // anon namespace
 

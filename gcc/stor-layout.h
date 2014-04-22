@@ -98,6 +98,8 @@ extern tree make_unsigned_type (int);
    mode_for_size, but is passed a tree.  */
 extern enum machine_mode mode_for_size_tree (const_tree, enum mode_class, int);
 
+extern tree bitwise_type_for_mode (enum machine_mode);
+
 /* Given a VAR_DECL, PARM_DECL or RESULT_DECL, clears the results of
    a previous call to layout_decl and calls it again.  */
 extern void relayout_decl (tree);

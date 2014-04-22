@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_conditional_move (0)
 #endif
 
-static unsigned int tree_ssa_phiopt (void);
 static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gimple, tree, tree);
@@ -79,162 +78,6 @@ static void replace_phi_edge_with_variable (basic_block, edge, gimple, tree);
 static void hoist_adjacent_loads (basic_block, basic_block,
 				  basic_block, basic_block);
 static bool gate_hoist_loads (void);
-
-/* This pass tries to replaces an if-then-else block with an
-   assignment.  We have four kinds of transformations.  Some of these
-   transformations are also performed by the ifcvt RTL optimizer.
-
-   Conditional Replacement
-   -----------------------
-
-   This transformation, implemented in conditional_replacement,
-   replaces
-
-     bb0:
-      if (cond) goto bb2; else goto bb1;
-     bb1:
-     bb2:
-      x = PHI <0 (bb1), 1 (bb0), ...>;
-
-   with
-
-     bb0:
-      x' = cond;
-      goto bb2;
-     bb2:
-      x = PHI <x' (bb0), ...>;
-
-   We remove bb1 as it becomes unreachable.  This occurs often due to
-   gimplification of conditionals.
-
-   Value Replacement
-   -----------------
-
-   This transformation, implemented in value_replacement, replaces
-
-     bb0:
-       if (a != b) goto bb2; else goto bb1;
-     bb1:
-     bb2:
-       x = PHI <a (bb1), b (bb0), ...>;
-
-   with
-
-     bb0:
-     bb2:
-       x = PHI <b (bb0), ...>;
-
-   This opportunity can sometimes occur as a result of other
-   optimizations.
-
-
-   Another case caught by value replacement looks like this:
-
-     bb0:
-       t1 = a == CONST;
-       t2 = b > c;
-       t3 = t1 & t2;
-       if (t3 != 0) goto bb1; else goto bb2;
-     bb1:
-     bb2:
-       x = PHI (CONST, a)
-
-   Gets replaced with:
-     bb0:
-     bb2:
-       t1 = a == CONST;
-       t2 = b > c;
-       t3 = t1 & t2;
-       x = a;
-
-   ABS Replacement
-   ---------------
-
-   This transformation, implemented in abs_replacement, replaces
-
-     bb0:
-       if (a >= 0) goto bb2; else goto bb1;
-     bb1:
-       x = -a;
-     bb2:
-       x = PHI <x (bb1), a (bb0), ...>;
-
-   with
-
-     bb0:
-       x' = ABS_EXPR< a >;
-     bb2:
-       x = PHI <x' (bb0), ...>;
-
-   MIN/MAX Replacement
-   -------------------
-
-   This transformation, minmax_replacement replaces
-
-     bb0:
-       if (a <= b) goto bb2; else goto bb1;
-     bb1:
-     bb2:
-       x = PHI <b (bb1), a (bb0), ...>;
-
-   with
-
-     bb0:
-       x' = MIN_EXPR (a, b)
-     bb2:
-       x = PHI <x' (bb0), ...>;
-
-   A similar transformation is done for MAX_EXPR.
-
-
-   This pass also performs a fifth transformation of a slightly different
-   flavor.
-
-   Adjacent Load Hoisting
-   ----------------------
-
-   This transformation replaces
-
-     bb0:
-       if (...) goto bb2; else goto bb1;
-     bb1:
-       x1 = (<expr>).field1;
-       goto bb3;
-     bb2:
-       x2 = (<expr>).field2;
-     bb3:
-       # x = PHI <x1, x2>;
-
-   with
-
-     bb0:
-       x1 = (<expr>).field1;
-       x2 = (<expr>).field2;
-       if (...) goto bb2; else goto bb1;
-     bb1:
-       goto bb3;
-     bb2:
-     bb3:
-       # x = PHI <x1, x2>;
-
-   The purpose of this transformation is to enable generation of conditional
-   move instructions such as Intel CMOVE or PowerPC ISEL.  Because one of
-   the loads is speculative, the transformation is restricted to very
-   specific cases to avoid introducing a page fault.  We are looking for
-   the common idiom:
-
-     if (...)
-       x = y->left;
-     else
-       x = y->right;
-
-   where left and right are typically adjacent pointers in a tree structure.  */
-
-static unsigned int
-tree_ssa_phiopt (void)
-{
-  return tree_ssa_phiopt_worker (false, gate_hoist_loads ());
-}
 
 /* This pass tries to transform conditional stores into unconditional
    ones, enabling further simplifications with the simpler then and else
@@ -2200,13 +2043,155 @@ gate_hoist_loads (void)
 	  && HAVE_conditional_move);
 }
 
-/* Always do these optimizations if we have SSA
-   trees to work on.  */
-static bool
-gate_phiopt (void)
-{
-  return 1;
-}
+/* This pass tries to replaces an if-then-else block with an
+   assignment.  We have four kinds of transformations.  Some of these
+   transformations are also performed by the ifcvt RTL optimizer.
+
+   Conditional Replacement
+   -----------------------
+
+   This transformation, implemented in conditional_replacement,
+   replaces
+
+     bb0:
+      if (cond) goto bb2; else goto bb1;
+     bb1:
+     bb2:
+      x = PHI <0 (bb1), 1 (bb0), ...>;
+
+   with
+
+     bb0:
+      x' = cond;
+      goto bb2;
+     bb2:
+      x = PHI <x' (bb0), ...>;
+
+   We remove bb1 as it becomes unreachable.  This occurs often due to
+   gimplification of conditionals.
+
+   Value Replacement
+   -----------------
+
+   This transformation, implemented in value_replacement, replaces
+
+     bb0:
+       if (a != b) goto bb2; else goto bb1;
+     bb1:
+     bb2:
+       x = PHI <a (bb1), b (bb0), ...>;
+
+   with
+
+     bb0:
+     bb2:
+       x = PHI <b (bb0), ...>;
+
+   This opportunity can sometimes occur as a result of other
+   optimizations.
+
+
+   Another case caught by value replacement looks like this:
+
+     bb0:
+       t1 = a == CONST;
+       t2 = b > c;
+       t3 = t1 & t2;
+       if (t3 != 0) goto bb1; else goto bb2;
+     bb1:
+     bb2:
+       x = PHI (CONST, a)
+
+   Gets replaced with:
+     bb0:
+     bb2:
+       t1 = a == CONST;
+       t2 = b > c;
+       t3 = t1 & t2;
+       x = a;
+
+   ABS Replacement
+   ---------------
+
+   This transformation, implemented in abs_replacement, replaces
+
+     bb0:
+       if (a >= 0) goto bb2; else goto bb1;
+     bb1:
+       x = -a;
+     bb2:
+       x = PHI <x (bb1), a (bb0), ...>;
+
+   with
+
+     bb0:
+       x' = ABS_EXPR< a >;
+     bb2:
+       x = PHI <x' (bb0), ...>;
+
+   MIN/MAX Replacement
+   -------------------
+
+   This transformation, minmax_replacement replaces
+
+     bb0:
+       if (a <= b) goto bb2; else goto bb1;
+     bb1:
+     bb2:
+       x = PHI <b (bb1), a (bb0), ...>;
+
+   with
+
+     bb0:
+       x' = MIN_EXPR (a, b)
+     bb2:
+       x = PHI <x' (bb0), ...>;
+
+   A similar transformation is done for MAX_EXPR.
+
+
+   This pass also performs a fifth transformation of a slightly different
+   flavor.
+
+   Adjacent Load Hoisting
+   ----------------------
+
+   This transformation replaces
+
+     bb0:
+       if (...) goto bb2; else goto bb1;
+     bb1:
+       x1 = (<expr>).field1;
+       goto bb3;
+     bb2:
+       x2 = (<expr>).field2;
+     bb3:
+       # x = PHI <x1, x2>;
+
+   with
+
+     bb0:
+       x1 = (<expr>).field1;
+       x2 = (<expr>).field2;
+       if (...) goto bb2; else goto bb1;
+     bb1:
+       goto bb3;
+     bb2:
+     bb3:
+       # x = PHI <x1, x2>;
+
+   The purpose of this transformation is to enable generation of conditional
+   move instructions such as Intel CMOVE or PowerPC ISEL.  Because one of
+   the loads is speculative, the transformation is restricted to very
+   specific cases to avoid introducing a page fault.  We are looking for
+   the common idiom:
+
+     if (...)
+       x = y->left;
+     else
+       x = y->right;
+
+   where left and right are typically adjacent pointers in a tree structure.  */
 
 namespace {
 
@@ -2215,7 +2200,6 @@ const pass_data pass_data_phiopt =
   GIMPLE_PASS, /* type */
   "phiopt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PHIOPT, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2235,8 +2219,10 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_phiopt (m_ctxt); }
-  bool gate () { return gate_phiopt (); }
-  unsigned int execute () { return tree_ssa_phiopt (); }
+  virtual unsigned int execute (function *)
+    {
+      return tree_ssa_phiopt_worker (false, gate_hoist_loads ());
+    }
 
 }; // class pass_phiopt
 
@@ -2248,12 +2234,6 @@ make_pass_phiopt (gcc::context *ctxt)
   return new pass_phiopt (ctxt);
 }
 
-static bool
-gate_cselim (void)
-{
-  return flag_tree_cselim;
-}
-
 namespace {
 
 const pass_data pass_data_cselim =
@@ -2261,7 +2241,6 @@ const pass_data pass_data_cselim =
   GIMPLE_PASS, /* type */
   "cselim", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PHIOPT, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -2280,8 +2259,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_cselim (); }
-  unsigned int execute () { return tree_ssa_cs_elim (); }
+  virtual bool gate (function *) { return flag_tree_cselim; }
+  virtual unsigned int execute (function *) { return tree_ssa_cs_elim (); }
 
 }; // class pass_cselim
 

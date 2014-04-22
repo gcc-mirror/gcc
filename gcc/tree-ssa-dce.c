@@ -1504,12 +1504,6 @@ tree_ssa_cd_dce (void)
   return perform_tree_ssa_dce (/*aggressive=*/optimize >= 2);
 }
 
-static bool
-gate_dce (void)
-{
-  return flag_tree_dce != 0;
-}
-
 namespace {
 
 const pass_data pass_data_dce =
@@ -1517,7 +1511,6 @@ const pass_data pass_data_dce =
   GIMPLE_PASS, /* type */
   "dce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_DCE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1536,8 +1529,8 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dce (m_ctxt); }
-  bool gate () { return gate_dce (); }
-  unsigned int execute () { return tree_ssa_dce (); }
+  virtual bool gate (function *) { return flag_tree_dce != 0; }
+  virtual unsigned int execute (function *) { return tree_ssa_dce (); }
 
 }; // class pass_dce
 
@@ -1556,7 +1549,6 @@ const pass_data pass_data_dce_loop =
   GIMPLE_PASS, /* type */
   "dceloop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_DCE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1575,8 +1567,8 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_dce_loop (m_ctxt); }
-  bool gate () { return gate_dce (); }
-  unsigned int execute () { return tree_ssa_dce_loop (); }
+  virtual bool gate (function *) { return flag_tree_dce != 0; }
+  virtual unsigned int execute (function *) { return tree_ssa_dce_loop (); }
 
 }; // class pass_dce_loop
 
@@ -1595,7 +1587,6 @@ const pass_data pass_data_cd_dce =
   GIMPLE_PASS, /* type */
   "cddce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_CD_DCE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -1614,8 +1605,8 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_cd_dce (m_ctxt); }
-  bool gate () { return gate_dce (); }
-  unsigned int execute () { return tree_ssa_cd_dce (); }
+  virtual bool gate (function *) { return flag_tree_dce != 0; }
+  virtual unsigned int execute (function *) { return tree_ssa_cd_dce (); }
 
 }; // class pass_cd_dce
 

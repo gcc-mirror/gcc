@@ -6988,12 +6988,6 @@ compute_may_aliases (void)
   return 0;
 }
 
-static bool
-gate_tree_pta (void)
-{
-  return flag_tree_pta;
-}
-
 /* A dummy pass to cause points-to information to be computed via
    TODO_rebuild_alias.  */
 
@@ -7004,7 +6998,6 @@ const pass_data pass_data_build_alias =
   GIMPLE_PASS, /* type */
   "alias", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -7022,7 +7015,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_pta (); }
+  virtual bool gate (function *) { return flag_tree_pta; }
 
 }; // class pass_build_alias
 
@@ -7044,7 +7037,6 @@ const pass_data pass_data_build_ealias =
   GIMPLE_PASS, /* type */
   "ealias", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   false, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -7062,7 +7054,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_pta (); }
+  virtual bool gate (function *) { return flag_tree_pta; }
 
 }; // class pass_build_ealias
 
@@ -7074,16 +7066,6 @@ make_pass_build_ealias (gcc::context *ctxt)
   return new pass_build_ealias (ctxt);
 }
 
-
-/* Return true if we should execute IPA PTA.  */
-static bool
-gate_ipa_pta (void)
-{
-  return (optimize
-	  && flag_ipa_pta
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !seen_error ());
-}
 
 /* IPA PTA solutions for ESCAPED.  */
 struct pt_solution ipa_escaped_pt
@@ -7436,7 +7418,6 @@ const pass_data pass_data_ipa_pta =
   SIMPLE_IPA_PASS, /* type */
   "pta", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_PTA, /* tv_id */
   0, /* properties_required */
@@ -7454,8 +7435,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ipa_pta (); }
-  unsigned int execute () { return ipa_pta_execute (); }
+  virtual bool gate (function *)
+    {
+      return (optimize
+	      && flag_ipa_pta
+	      /* Don't bother doing anything if the program has errors.  */
+	      && !seen_error ());
+    }
+
+  virtual unsigned int execute (function *) { return ipa_pta_execute (); }
 
 }; // class pass_ipa_pta
 

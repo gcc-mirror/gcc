@@ -70,28 +70,6 @@ set_fast_math (void)
     {
       unsigned int mxcsr;
   
-#if defined __sun__ && defined __svr4__
-      /* Solaris 2 before Solaris 9 4/04 cannot execute SSE instructions even
-	 if the CPU supports them.  Programs receive SIGILL instead, so check
-	 for that at runtime.  */
-      struct sigaction act, oact;
-
-      act.sa_handler = sigill_hdlr;
-      sigemptyset (&act.sa_mask);
-      /* Need to set SA_SIGINFO so a ucontext_t * is passed to the handler.  */
-      act.sa_flags = SA_SIGINFO;
-      sigaction (SIGILL, &act, &oact);
-
-      /* We need a single SSE instruction here so the handler can safely skip
-	 over it.  */
-      __asm__ volatile ("movaps %xmm0,%xmm0");
-
-      sigaction (SIGILL, &oact, NULL);
-
-      if (sigill_caught)
-	return;
-#endif /* __sun__ && __svr4__ */
-
       if (edx & bit_FXSAVE)
 	{
 	  /* Check if DAZ is available.  */

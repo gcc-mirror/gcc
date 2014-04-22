@@ -1836,12 +1836,6 @@ regrename_optimize (void)
   return 0;
 }
 
-static bool
-gate_handle_regrename (void)
-{
-  return (optimize > 0 && (flag_rename_registers));
-}
-
 namespace {
 
 const pass_data pass_data_regrename =
@@ -1849,7 +1843,6 @@ const pass_data pass_data_regrename =
   RTL_PASS, /* type */
   "rnreg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_RENAME_REGISTERS, /* tv_id */
   0, /* properties_required */
@@ -1867,8 +1860,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_regrename (); }
-  unsigned int execute () { return regrename_optimize (); }
+  virtual bool gate (function *)
+    {
+      return (optimize > 0 && (flag_rename_registers));
+    }
+
+  virtual unsigned int execute (function *) { return regrename_optimize (); }
 
 }; // class pass_regrename
 

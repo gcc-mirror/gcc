@@ -2280,11 +2280,44 @@ warn_uninitialized_phi (gimple phi, vec<gimple> *worklist,
 
 }
 
+static bool
+gate_warn_uninitialized (void)
+{
+  return warn_uninitialized || warn_maybe_uninitialized;
+}
 
-/* Entry point to the late uninitialized warning pass.  */
+namespace {
 
-static unsigned int
-execute_late_warn_uninitialized (void)
+const pass_data pass_data_late_warn_uninitialized =
+{
+  GIMPLE_PASS, /* type */
+  "uninit", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_late_warn_uninitialized : public gimple_opt_pass
+{
+public:
+  pass_late_warn_uninitialized (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_late_warn_uninitialized, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_late_warn_uninitialized (m_ctxt); }
+  virtual bool gate (function *) { return gate_warn_uninitialized (); }
+  virtual unsigned int execute (function *);
+
+}; // class pass_late_warn_uninitialized
+
+unsigned int
+pass_late_warn_uninitialized::execute (function *fun)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
@@ -2304,34 +2337,34 @@ execute_late_warn_uninitialized (void)
   added_to_worklist = pointer_set_create ();
 
   /* Initialize worklist  */
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-        gimple phi = gsi_stmt (gsi);
-        size_t n, i;
+	gimple phi = gsi_stmt (gsi);
+	size_t n, i;
 
-        n = gimple_phi_num_args (phi);
+	n = gimple_phi_num_args (phi);
 
-        /* Don't look at virtual operands.  */
-        if (virtual_operand_p (gimple_phi_result (phi)))
-          continue;
+	/* Don't look at virtual operands.  */
+	if (virtual_operand_p (gimple_phi_result (phi)))
+	  continue;
 
-        for (i = 0; i < n; ++i)
-          {
-            tree op = gimple_phi_arg_def (phi, i);
-            if (TREE_CODE (op) == SSA_NAME
-                && uninit_undefined_value_p (op))
-              {
-                worklist.safe_push (phi);
+	for (i = 0; i < n; ++i)
+	  {
+	    tree op = gimple_phi_arg_def (phi, i);
+	    if (TREE_CODE (op) == SSA_NAME
+		&& uninit_undefined_value_p (op))
+	      {
+		worklist.safe_push (phi);
 		pointer_set_insert (added_to_worklist, phi);
-                if (dump_file && (dump_flags & TDF_DETAILS))
-                  {
-                    fprintf (dump_file, "[WORKLIST]: add to initial list: ");
-                    print_gimple_stmt (dump_file, phi, 0, 0);
-                  }
-                break;
-              }
-          }
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  {
+		    fprintf (dump_file, "[WORKLIST]: add to initial list: ");
+		    print_gimple_stmt (dump_file, phi, 0, 0);
+		  }
+		break;
+	      }
+	  }
       }
 
   while (worklist.length () != 0)
@@ -2349,43 +2382,6 @@ execute_late_warn_uninitialized (void)
   timevar_pop (TV_TREE_UNINIT);
   return 0;
 }
-
-static bool
-gate_warn_uninitialized (void)
-{
-  return warn_uninitialized || warn_maybe_uninitialized;
-}
-
-namespace {
-
-const pass_data pass_data_late_warn_uninitialized =
-{
-  GIMPLE_PASS, /* type */
-  "uninit", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_late_warn_uninitialized : public gimple_opt_pass
-{
-public:
-  pass_late_warn_uninitialized (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_late_warn_uninitialized, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_late_warn_uninitialized (m_ctxt); }
-  bool gate () { return gate_warn_uninitialized (); }
-  unsigned int execute () { return execute_late_warn_uninitialized (); }
-
-}; // class pass_late_warn_uninitialized
 
 } // anon namespace
 
@@ -2423,7 +2419,6 @@ const pass_data pass_data_early_warn_uninitialized =
   GIMPLE_PASS, /* type */
   "*early_warn_uninitialized", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_UNINIT, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -2441,8 +2436,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_warn_uninitialized (); }
-  unsigned int execute () { return execute_early_warn_uninitialized (); }
+  virtual bool gate (function *) { return gate_warn_uninitialized (); }
+  virtual unsigned int execute (function *)
+    {
+      return execute_early_warn_uninitialized ();
+    }
 
 }; // class pass_early_warn_uninitialized
 

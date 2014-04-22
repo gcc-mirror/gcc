@@ -1017,8 +1017,17 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 	base_align_bias = ((asan_frame_size + alignb - 1)
 			   & ~(alignb - HOST_WIDE_INT_1)) - asan_frame_size;
     }
+  /* Align base if target is STRICT_ALIGNMENT.  */
+  if (STRICT_ALIGNMENT)
+    base = expand_binop (Pmode, and_optab, base,
+			 gen_int_mode (-((GET_MODE_ALIGNMENT (SImode)
+					  << ASAN_SHADOW_SHIFT)
+					 / BITS_PER_UNIT), Pmode), NULL_RTX,
+			 1, OPTAB_DIRECT);
+
   if (use_after_return_class == -1 && pbase)
     emit_move_insn (pbase, base);
+
   base = expand_binop (Pmode, add_optab, base,
 		       gen_int_mode (base_offset - base_align_bias, Pmode),
 		       NULL_RTX, 1, OPTAB_DIRECT);
@@ -1097,6 +1106,8 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 	      && (ASAN_RED_ZONE_SIZE >> ASAN_SHADOW_SHIFT) == 4);
   shadow_mem = gen_rtx_MEM (SImode, shadow_base);
   set_mem_alias_set (shadow_mem, asan_shadow_set);
+  if (STRICT_ALIGNMENT)
+    set_mem_align (shadow_mem, (GET_MODE_ALIGNMENT (SImode)));
   prev_offset = base_offset;
   for (l = length; l; l -= 2)
     {
@@ -1186,6 +1197,10 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 
   shadow_mem = gen_rtx_MEM (BLKmode, shadow_base);
   set_mem_alias_set (shadow_mem, asan_shadow_set);
+
+  if (STRICT_ALIGNMENT)
+    set_mem_align (shadow_mem, (GET_MODE_ALIGNMENT (SImode)));
+
   prev_offset = base_offset;
   last_offset = base_offset;
   last_size = 0;
@@ -2485,7 +2500,6 @@ const pass_data pass_data_asan =
   GIMPLE_PASS, /* type */
   "asan", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
@@ -2505,8 +2519,8 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_asan (m_ctxt); }
-  bool gate () { return gate_asan (); }
-  unsigned int execute () { return asan_instrument (); }
+  virtual bool gate (function *) { return gate_asan (); }
+  virtual unsigned int execute (function *) { return asan_instrument (); }
 
 }; // class pass_asan
 
@@ -2518,12 +2532,6 @@ make_pass_asan (gcc::context *ctxt)
   return new pass_asan (ctxt);
 }
 
-static bool
-gate_asan_O0 (void)
-{
-  return !optimize && gate_asan ();
-}
-
 namespace {
 
 const pass_data pass_data_asan_O0 =
@@ -2531,7 +2539,6 @@ const pass_data pass_data_asan_O0 =
   GIMPLE_PASS, /* type */
   "asan0", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
@@ -2550,8 +2557,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_asan_O0 (); }
-  unsigned int execute () { return asan_instrument (); }
+  virtual bool gate (function *) { return !optimize && gate_asan (); }
+  virtual unsigned int execute (function *) { return asan_instrument (); }
 
 }; // class pass_asan_O0
 
@@ -2565,12 +2572,42 @@ make_pass_asan_O0 (gcc::context *ctxt)
 
 /* Perform optimization of sanitize functions.  */
 
-static unsigned int
-execute_sanopt (void)
+namespace {
+
+const pass_data pass_data_sanopt =
+{
+  GIMPLE_PASS, /* type */
+  "sanopt", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_flow | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
+};
+
+class pass_sanopt : public gimple_opt_pass
+{
+public:
+  pass_sanopt (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_sanopt, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_sanitize; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_sanopt
+
+unsigned int
+pass_sanopt::execute (function *fun)
 {
   basic_block bb;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2600,43 +2637,6 @@ execute_sanopt (void)
     }
   return 0;
 }
-
-static bool
-gate_sanopt (void)
-{
-  return flag_sanitize;
-}
-
-namespace {
-
-const pass_data pass_data_sanopt =
-{
-  GIMPLE_PASS, /* type */
-  "sanopt", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_verify_flow | TODO_verify_stmts
-    | TODO_update_ssa ), /* todo_flags_finish */
-};
-
-class pass_sanopt : public gimple_opt_pass
-{
-public:
-  pass_sanopt (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_sanopt, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_sanopt (); }
-  unsigned int execute () { return execute_sanopt (); }
-
-}; // class pass_sanopt
 
 } // anon namespace
 

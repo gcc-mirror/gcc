@@ -1,4 +1,4 @@
-// Specific definitions for Solaris 9+  -*- C++ -*-
+// Specific definitions for Solaris 10+  -*- C++ -*-
 
 // Copyright (C) 2000-2014 Free Software Foundation, Inc.
 //
@@ -33,11 +33,6 @@
 #define __CORRECT_ISO_CPP_STDLIB_H_PROTO
 #define __CORRECT_ISO_CPP_STRING_H_PROTO
 #define __CORRECT_ISO_CPP_WCHAR_H_PROTO
-#endif
-
-/* Solaris 9 uses the non-standard CLOCK_HIGHRES instead.  */
-#ifndef CLOCK_MONOTONIC
-#define CLOCK_MONOTONIC CLOCK_HIGHRES
 #endif
 
 #endif

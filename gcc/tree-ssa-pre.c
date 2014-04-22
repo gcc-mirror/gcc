@@ -4690,15 +4690,44 @@ fini_pre ()
   free_dominance_info (CDI_POST_DOMINATORS);
 }
 
-/* Gate and execute functions for PRE.  */
+namespace {
 
-static unsigned int
-do_pre (void)
+const pass_data pass_data_pre =
+{
+  GIMPLE_PASS, /* type */
+  "pre", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_PRE, /* tv_id */
+  /* PROP_no_crit_edges is ensured by placing pass_split_crit_edges before
+     pass_pre.  */
+  ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  PROP_no_crit_edges, /* properties_destroyed */
+  TODO_rebuild_alias, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
+};
+
+class pass_pre : public gimple_opt_pass
+{
+public:
+  pass_pre (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_pre, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_tree_pre != 0; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_pre
+
+unsigned int
+pass_pre::execute (function *fun)
 {
   unsigned int todo = 0;
 
   do_partial_partial =
-    flag_tree_partial_pre && optimize_function_for_speed_p (cfun);
+    flag_tree_partial_pre && optimize_function_for_speed_p (fun);
 
   /* This has to happen before SCCVN runs because
      loop_optimizer_init may create new phis, etc.  */
@@ -4721,7 +4750,7 @@ do_pre (void)
      fixed, don't run it when he have an incredibly large number of
      bb's.  If we aren't going to run insert, there is no point in
      computing ANTIC, either, even though it's plenty fast.  */
-  if (n_basic_blocks_for_fn (cfun) < 4000)
+  if (n_basic_blocks_for_fn (fun) < 4000)
     {
       compute_antic ();
       insert ();
@@ -4736,10 +4765,10 @@ do_pre (void)
   /* Remove all the redundant expressions.  */
   todo |= eliminate ();
 
-  statistics_counter_event (cfun, "Insertions", pre_stats.insertions);
-  statistics_counter_event (cfun, "PA inserted", pre_stats.pa_insert);
-  statistics_counter_event (cfun, "New PHIs", pre_stats.phis);
-  statistics_counter_event (cfun, "Eliminated", pre_stats.eliminations);
+  statistics_counter_event (fun, "Insertions", pre_stats.insertions);
+  statistics_counter_event (fun, "PA inserted", pre_stats.pa_insert);
+  statistics_counter_event (fun, "New PHIs", pre_stats.phis);
+  statistics_counter_event (fun, "Eliminated", pre_stats.eliminations);
 
   clear_expression_ids ();
   remove_dead_inserted_code ();
@@ -4771,82 +4800,12 @@ do_pre (void)
   return todo;
 }
 
-static bool
-gate_pre (void)
-{
-  return flag_tree_pre != 0;
-}
-
-namespace {
-
-const pass_data pass_data_pre =
-{
-  GIMPLE_PASS, /* type */
-  "pre", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_PRE, /* tv_id */
-  /* PROP_no_crit_edges is ensured by placing pass_split_crit_edges before
-     pass_pre.  */
-  ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  PROP_no_crit_edges, /* properties_destroyed */
-  TODO_rebuild_alias, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
-};
-
-class pass_pre : public gimple_opt_pass
-{
-public:
-  pass_pre (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_pre, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_pre (); }
-  unsigned int execute () { return do_pre (); }
-
-}; // class pass_pre
-
 } // anon namespace
 
 gimple_opt_pass *
 make_pass_pre (gcc::context *ctxt)
 {
   return new pass_pre (ctxt);
-}
-
-
-/* Gate and execute functions for FRE.  */
-
-static unsigned int
-execute_fre (void)
-{
-  unsigned int todo = 0;
-
-  if (!run_scc_vn (VN_WALKREWRITE))
-    return 0;
-
-  memset (&pre_stats, 0, sizeof (pre_stats));
-
-  /* Remove all the redundant expressions.  */
-  todo |= eliminate ();
-
-  todo |= fini_eliminate ();
-
-  free_scc_vn ();
-
-  statistics_counter_event (cfun, "Insertions", pre_stats.insertions);
-  statistics_counter_event (cfun, "Eliminated", pre_stats.eliminations);
-
-  return todo;
-}
-
-static bool
-gate_fre (void)
-{
-  return flag_tree_fre != 0;
 }
 
 namespace {
@@ -4856,7 +4815,6 @@ const pass_data pass_data_fre =
   GIMPLE_PASS, /* type */
   "fre", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_FRE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -4875,10 +4833,33 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_fre (m_ctxt); }
-  bool gate () { return gate_fre (); }
-  unsigned int execute () { return execute_fre (); }
+  virtual bool gate (function *) { return flag_tree_fre != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_fre
+
+unsigned int
+pass_fre::execute (function *fun)
+{
+  unsigned int todo = 0;
+
+  if (!run_scc_vn (VN_WALKREWRITE))
+    return 0;
+
+  memset (&pre_stats, 0, sizeof (pre_stats));
+
+  /* Remove all the redundant expressions.  */
+  todo |= eliminate ();
+
+  todo |= fini_eliminate ();
+
+  free_scc_vn ();
+
+  statistics_counter_event (fun, "Insertions", pre_stats.insertions);
+  statistics_counter_event (fun, "Eliminated", pre_stats.eliminations);
+
+  return todo;
+}
 
 } // anon namespace
 

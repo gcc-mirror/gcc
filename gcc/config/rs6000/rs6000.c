@@ -2283,6 +2283,24 @@ rs6000_debug_reg_global (void)
   if (rs6000_float_gprs)
     fprintf (stderr, DEBUG_FMT_S, "float_gprs", "true");
 
+  fprintf (stderr, DEBUG_FMT_S, "fprs",
+	   (TARGET_FPRS ? "true" : "false"));
+
+  fprintf (stderr, DEBUG_FMT_S, "single_float",
+	   (TARGET_SINGLE_FLOAT ? "true" : "false"));
+
+  fprintf (stderr, DEBUG_FMT_S, "double_float",
+	   (TARGET_DOUBLE_FLOAT ? "true" : "false"));
+
+  fprintf (stderr, DEBUG_FMT_S, "soft_float",
+	   (TARGET_SOFT_FLOAT ? "true" : "false"));
+
+  fprintf (stderr, DEBUG_FMT_S, "e500_single",
+	   (TARGET_E500_SINGLE ? "true" : "false"));
+
+  fprintf (stderr, DEBUG_FMT_S, "e500_double",
+	   (TARGET_E500_DOUBLE ? "true" : "false"));
+
   if (TARGET_LINK_STACK)
     fprintf (stderr, DEBUG_FMT_S, "link_stack", "true");
 
@@ -2329,6 +2347,8 @@ rs6000_setup_reg_addr_masks (void)
 
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
     {
+      enum machine_mode m2 = (enum machine_mode)m;
+
       /* SDmode is special in that we want to access it only via REG+REG
 	 addressing on power7 and above, since we want to use the LFIWZX and
 	 STFIWZX instructions to load it.  */
@@ -2363,13 +2383,13 @@ rs6000_setup_reg_addr_masks (void)
 
 	      if (TARGET_UPDATE
 		  && (rc == RELOAD_REG_GPR || rc == RELOAD_REG_FPR)
-		  && GET_MODE_SIZE (m) <= 8
-		  && !VECTOR_MODE_P (m)
-		  && !COMPLEX_MODE_P (m)
+		  && GET_MODE_SIZE (m2) <= 8
+		  && !VECTOR_MODE_P (m2)
+		  && !COMPLEX_MODE_P (m2)
 		  && !indexed_only_p
-		  && !(TARGET_E500_DOUBLE && GET_MODE_SIZE (m) == 8)
-		  && !(m == DFmode && TARGET_UPPER_REGS_DF)
-		  && !(m == SFmode && TARGET_UPPER_REGS_SF))
+		  && !(TARGET_E500_DOUBLE && GET_MODE_SIZE (m2) == 8)
+		  && !(m2 == DFmode && TARGET_UPPER_REGS_DF)
+		  && !(m2 == SFmode && TARGET_UPPER_REGS_SF))
 		{
 		  addr_mask |= RELOAD_REG_PRE_INCDEC;
 
@@ -2815,6 +2835,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
       for (m = 0; m < NUM_MACHINE_MODES; ++m)
 	{
+	  enum machine_mode m2 = (enum machine_mode)m;
 	  int reg_size2 = reg_size;
 
 	  /* TFmode/TDmode always takes 2 registers, even in VSX.  */
@@ -2823,7 +2844,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	    reg_size2 = UNITS_PER_FP_WORD;
 
 	  rs6000_class_max_nregs[m][c]
-	    = (GET_MODE_SIZE (m) + reg_size2 - 1) / reg_size2;
+	    = (GET_MODE_SIZE (m2) + reg_size2 - 1) / reg_size2;
 	}
     }
 

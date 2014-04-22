@@ -529,7 +529,8 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
 
    Try to find the following pattern:
 
-     type a_t, b_t;
+     type1 a_t;
+     type2 b_t;
      TYPE a_T, b_T, prod_T;
 
      S1  a_t = ;
@@ -538,11 +539,12 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
      S4  b_T = (TYPE) b_t;
      S5  prod_T = a_T * b_T;
 
-   where type 'TYPE' is at least double the size of type 'type'.
+   where type 'TYPE' is at least double the size of type 'type1' and 'type2'.
 
    Also detect unsigned cases:
 
-     unsigned type a_t, b_t;
+     unsigned type1 a_t;
+     unsigned type2 b_t;
      unsigned TYPE u_prod_T;
      TYPE a_T, b_T, prod_T;
 
@@ -596,6 +598,8 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
    * Return value: A new stmt that will be used to replace the sequence of
    stmts that constitute the pattern.  In this case it will be:
         WIDEN_MULT <a_t, b_t>
+   If the result of WIDEN_MULT needs to be converted to a larger type, the
+   returned stmt will be this type conversion stmt.
 */
 
 static gimple
@@ -606,8 +610,8 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
   gimple def_stmt0, def_stmt1;
   tree oprnd0, oprnd1;
   tree type, half_type0, half_type1;
-  gimple pattern_stmt;
-  tree vectype, vectype_out = NULL_TREE;
+  gimple new_stmt = NULL, pattern_stmt = NULL;
+  tree vectype, vecitype;
   tree var;
   enum tree_code dummy_code;
   int dummy_int;
@@ -661,6 +665,33 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
         return NULL;
     }
 
+  /* If the two arguments have different sizes, convert the one with
+     the smaller type into the larger type.  */
+  if (TYPE_PRECISION (half_type0) != TYPE_PRECISION (half_type1))
+    {
+      tree* oprnd = NULL;
+      gimple def_stmt = NULL;
+
+      if (TYPE_PRECISION (half_type0) < TYPE_PRECISION (half_type1))
+	{
+	  def_stmt = def_stmt0;
+	  half_type0 = half_type1;
+	  oprnd = &oprnd0;
+	}
+      else
+	{
+	  def_stmt = def_stmt1;
+	  half_type1 = half_type0;
+	  oprnd = &oprnd1;
+	}
+
+        tree old_oprnd = gimple_assign_rhs1 (def_stmt);
+        tree new_oprnd = make_ssa_name (half_type0, NULL);
+        new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd,
+                                                 old_oprnd, NULL_TREE);
+        *oprnd = new_oprnd;
+    }
+
   /* Handle unsigned case.  Look for
      S6  u_prod_T = (unsigned TYPE) prod_T;
      Use unsigned TYPE as the type for WIDEN_MULT_EXPR.  */
@@ -692,6 +723,15 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
   if (!types_compatible_p (half_type0, half_type1))
     return NULL;
 
+  /* If TYPE is more than twice larger than HALF_TYPE, we use WIDEN_MULT
+     to get an intermediate result of type ITYPE.  In this case we need
+     to build a statement to convert this intermediate result to type TYPE.  */
+  tree itype = type;
+  if (TYPE_PRECISION (type) > TYPE_PRECISION (half_type0) * 2)
+    itype = build_nonstandard_integer_type
+              (GET_MODE_BITSIZE (TYPE_MODE (half_type0)) * 2,
+               TYPE_UNSIGNED (type));
+
   /* Pattern detected.  */
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -699,22 +739,55 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
 
   /* Check target support  */
   vectype = get_vectype_for_scalar_type (half_type0);
-  vectype_out = get_vectype_for_scalar_type (type);
+  vecitype = get_vectype_for_scalar_type (itype);
   if (!vectype
-      || !vectype_out
+      || !vecitype
       || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt,
-					  vectype_out, vectype,
+					  vecitype, vectype,
 					  &dummy_code, &dummy_code,
 					  &dummy_int, &dummy_vec))
     return NULL;
 
   *type_in = vectype;
-  *type_out = vectype_out;
+  *type_out = get_vectype_for_scalar_type (type);
 
   /* Pattern supported. Create a stmt to be used to replace the pattern: */
-  var = vect_recog_temp_ssa_var (type, NULL);
+  var = vect_recog_temp_ssa_var (itype, NULL);
   pattern_stmt = gimple_build_assign_with_ops (WIDEN_MULT_EXPR, var, oprnd0,
 					       oprnd1);
+
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
+  STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo) = NULL;
+
+  /* If the original two operands have different sizes, we may need to convert
+     the smaller one into the larget type.  If this is the case, at this point
+     the new stmt is already built.  */
+  if (new_stmt)
+    {
+      append_pattern_def_seq (stmt_vinfo, new_stmt);
+      stmt_vec_info new_stmt_info
+        = new_stmt_vec_info (new_stmt, loop_vinfo, bb_vinfo);
+      set_vinfo_for_stmt (new_stmt, new_stmt_info);
+      STMT_VINFO_VECTYPE (new_stmt_info) = vectype;
+    }
+
+  /* If ITYPE is not TYPE, we need to build a type convertion stmt to convert
+     the result of the widen-mult operation into type TYPE.  */
+  if (itype != type)
+    {
+      append_pattern_def_seq (stmt_vinfo, pattern_stmt);
+      stmt_vec_info pattern_stmt_info
+        = new_stmt_vec_info (pattern_stmt, loop_vinfo, bb_vinfo);
+      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+      STMT_VINFO_VECTYPE (pattern_stmt_info) = vecitype;
+      pattern_stmt
+        = gimple_build_assign_with_ops (NOP_EXPR,
+                                        vect_recog_temp_ssa_var (type, NULL),
+                                        gimple_assign_lhs (pattern_stmt),
+                                        NULL_TREE);
+    }
 
   if (dump_enabled_p ())
     dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);

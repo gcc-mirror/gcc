@@ -1223,15 +1223,6 @@ one_store_motion_pass (void)
 }
 
 
-static bool
-gate_rtl_store_motion (void)
-{
-  return optimize > 0 && flag_gcse_sm
-    && !cfun->calls_setjmp
-    && optimize_function_for_speed_p (cfun)
-    && dbg_cnt (store_motion);
-}
-
 static unsigned int
 execute_rtl_store_motion (void)
 {
@@ -1248,7 +1239,6 @@ const pass_data pass_data_rtl_store_motion =
   RTL_PASS, /* type */
   "store_motion", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_LSM, /* tv_id */
   PROP_cfglayout, /* properties_required */
@@ -1267,10 +1257,22 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_rtl_store_motion (); }
-  unsigned int execute () { return execute_rtl_store_motion (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *)
+    {
+      return execute_rtl_store_motion ();
+    }
 
 }; // class pass_rtl_store_motion
+
+bool
+pass_rtl_store_motion::gate (function *fun)
+{
+  return optimize > 0 && flag_gcse_sm
+    && !fun->calls_setjmp
+    && optimize_function_for_speed_p (fun)
+    && dbg_cnt (store_motion);
+}
 
 } // anon namespace
 

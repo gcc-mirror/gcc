@@ -8631,33 +8631,6 @@ s390_restore_gprs_from_fprs (void)
 /* A pass run immediately before shrink-wrapping and prologue and epilogue
    generation.  */
 
-static unsigned int
-s390_early_mach (void)
-{
-  rtx insn;
-
-  /* Try to get rid of the FPR clobbers.  */
-  s390_optimize_nonescaping_tx ();
-
-  /* Re-compute register info.  */
-  s390_register_info ();
-
-  /* If we're using a base register, ensure that it is always valid for
-     the first non-prologue instruction.  */
-  if (cfun->machine->base_reg)
-    emit_insn_at_entry (gen_main_pool (cfun->machine->base_reg));
-
-  /* Annotate all constant pool references to let the scheduler know
-     they implicitly use the base register.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      {
-	annotate_constant_pool_refs (&PATTERN (insn));
-	df_insn_rescan (insn);
-      }
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_s390_early_mach =
@@ -8665,7 +8638,6 @@ const pass_data pass_data_s390_early_mach =
   RTL_PASS, /* type */
   "early_mach", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
@@ -8684,9 +8656,36 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return s390_early_mach (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_s390_early_mach
+
+unsigned int
+pass_s390_early_mach::execute (function *fun)
+{
+  rtx insn;
+
+  /* Try to get rid of the FPR clobbers.  */
+  s390_optimize_nonescaping_tx ();
+
+  /* Re-compute register info.  */
+  s390_register_info ();
+
+  /* If we're using a base register, ensure that it is always valid for
+     the first non-prologue instruction.  */
+  if (fun->machine->base_reg)
+    emit_insn_at_entry (gen_main_pool (fun->machine->base_reg));
+
+  /* Annotate all constant pool references to let the scheduler know
+     they implicitly use the base register.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	annotate_constant_pool_refs (&PATTERN (insn));
+	df_insn_rescan (insn);
+      }
+  return 0;
+}
 
 } // anon namespace
 

@@ -5548,12 +5548,6 @@ do_reload (void)
 }
 
 /* Run the integrated register allocator.  */
-static unsigned int
-rest_of_handle_ira (void)
-{
-  ira (dump_file);
-  return 0;
-}
 
 namespace {
 
@@ -5562,7 +5556,6 @@ const pass_data pass_data_ira =
   RTL_PASS, /* type */
   "ira", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_IRA, /* tv_id */
   0, /* properties_required */
@@ -5580,7 +5573,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_ira (); }
+  virtual unsigned int execute (function *)
+    {
+      ira (dump_file);
+      return 0;
+    }
 
 }; // class pass_ira
 
@@ -5592,13 +5589,6 @@ make_pass_ira (gcc::context *ctxt)
   return new pass_ira (ctxt);
 }
 
-static unsigned int
-rest_of_handle_reload (void)
-{
-  do_reload ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_reload =
@@ -5606,7 +5596,6 @@ const pass_data pass_data_reload =
   RTL_PASS, /* type */
   "reload", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_RELOAD, /* tv_id */
   0, /* properties_required */
@@ -5624,7 +5613,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_reload (); }
+  virtual unsigned int execute (function *)
+    {
+      do_reload ();
+      return 0;
+    }
 
 }; // class pass_reload
 

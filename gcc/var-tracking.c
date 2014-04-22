@@ -10361,14 +10361,6 @@ variable_tracking_main (void)
   return ret;
 }
 
-static bool
-gate_handle_var_tracking (void)
-{
-  return (flag_var_tracking && !targetm.delay_vartrack);
-}
-
-
-
 namespace {
 
 const pass_data pass_data_variable_tracking =
@@ -10376,7 +10368,6 @@ const pass_data pass_data_variable_tracking =
   RTL_PASS, /* type */
   "vartrack", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_VAR_TRACKING, /* tv_id */
   0, /* properties_required */
@@ -10394,8 +10385,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_var_tracking (); }
-  unsigned int execute () { return variable_tracking_main (); }
+  virtual bool gate (function *)
+    {
+      return (flag_var_tracking && !targetm.delay_vartrack);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return variable_tracking_main ();
+    }
 
 }; // class pass_variable_tracking
 

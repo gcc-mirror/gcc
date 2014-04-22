@@ -144,26 +144,8 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
   mcontext_t *mctx;
   long new_cfa;
 
-  if (/* Solaris 9 - single-threaded
-	----------------------------
-         <sigacthandler+16>:    mov    0x244(%ebx),%ecx
-	 <sigacthandler+22>:    mov    0x8(%ebp),%eax
-	 <sigacthandler+25>:    mov    (%ecx,%eax,4),%ecx
-	 <sigacthandler+28>:    pushl  0x10(%ebp)
-	 <sigacthandler+31>:    pushl  0xc(%ebp)
-	 <sigacthandler+34>:    push   %eax
-	 <sigacthandler+35>:    call   *%ecx
-	 <sigacthandler+37>:    add    $0xc,%esp	<--- PC
-	 <sigacthandler+40>:    pushl  0x10(%ebp) */
-      (*(unsigned long *)(pc - 21) == 0x2448b8b
-       && *(unsigned long *)(pc - 17) == 0x458b0000
-       && *(unsigned long *)(pc - 13) == 0x810c8b08
-       && *(unsigned long *)(pc - 9)  == 0xff1075ff
-       && *(unsigned long *)(pc - 5)  == 0xff500c75
-       && *(unsigned long *)(pc - 1)  == 0xcc483d1)
-
-      || /* Solaris 9 - multi-threaded, Solaris 10
-	   ---------------------------------------
+  if (/* Solaris 10
+	-----------
 	   <__sighndlr+0>:      push   %ebp
 	   <__sighndlr+1>:      mov    %esp,%ebp
 	   <__sighndlr+3>:      pushl  0x10(%ebp)

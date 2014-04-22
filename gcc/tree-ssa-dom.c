@@ -832,8 +832,40 @@ private:
    every new symbol exposed, its corresponding bit will be set in
    VARS_TO_RENAME.  */
 
-static unsigned int
-tree_ssa_dominator_optimize (void)
+namespace {
+
+const pass_data pass_data_dominator =
+{
+  GIMPLE_PASS, /* type */
+  "dom", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_SSA_DOMINATOR_OPTS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa
+    | TODO_verify_ssa
+    | TODO_verify_flow ), /* todo_flags_finish */
+};
+
+class pass_dominator : public gimple_opt_pass
+{
+public:
+  pass_dominator (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_dominator, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_dominator (m_ctxt); }
+  virtual bool gate (function *) { return flag_tree_dom != 0; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_dominator
+
+unsigned int
+pass_dominator::execute (function *fun)
 {
   memset (&opt_stats, 0, sizeof (opt_stats));
 
@@ -867,12 +899,12 @@ tree_ssa_dominator_optimize (void)
   mark_dfs_back_edges ();
 
   /* Recursively walk the dominator tree optimizing statements.  */
-  dom_opt_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
+  dom_opt_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
 
   {
     gimple_stmt_iterator gsi;
     basic_block bb;
-    FOR_EACH_BB_FN (bb, cfun)
+    FOR_EACH_BB_FN (bb, fun)
       {
 	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  update_stmt_if_modified (gsi_stmt (gsi));
@@ -908,13 +940,13 @@ tree_ssa_dominator_optimize (void)
 	 iterator.  */
       EXECUTE_IF_SET_IN_BITMAP (need_eh_cleanup, 0, i, bi)
 	{
-	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (fun, i);
 	  if (bb == NULL)
 	    continue;
 	  while (single_succ_p (bb)
 		 && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
 	    bb = single_succ (bb);
-	  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
+	  if (bb == EXIT_BLOCK_PTR_FOR_FN (fun))
 	    continue;
 	  if ((unsigned) bb->index != i)
 	    bitmap_set_bit (need_eh_cleanup, bb->index);
@@ -924,11 +956,11 @@ tree_ssa_dominator_optimize (void)
       bitmap_clear (need_eh_cleanup);
     }
 
-  statistics_counter_event (cfun, "Redundant expressions eliminated",
+  statistics_counter_event (fun, "Redundant expressions eliminated",
 			    opt_stats.num_re);
-  statistics_counter_event (cfun, "Constants propagated",
+  statistics_counter_event (fun, "Constants propagated",
 			    opt_stats.num_const_prop);
-  statistics_counter_event (cfun, "Copies propagated",
+  statistics_counter_event (fun, "Copies propagated",
 			    opt_stats.num_copy_prop);
 
   /* Debugging dumps.  */
@@ -951,45 +983,6 @@ tree_ssa_dominator_optimize (void)
 
   return 0;
 }
-
-static bool
-gate_dominator (void)
-{
-  return flag_tree_dom != 0;
-}
-
-namespace {
-
-const pass_data pass_data_dominator =
-{
-  GIMPLE_PASS, /* type */
-  "dom", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_SSA_DOMINATOR_OPTS, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_cleanup_cfg | TODO_update_ssa
-    | TODO_verify_ssa
-    | TODO_verify_flow ), /* todo_flags_finish */
-};
-
-class pass_dominator : public gimple_opt_pass
-{
-public:
-  pass_dominator (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_dominator, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dominator (m_ctxt); }
-  bool gate () { return gate_dominator (); }
-  unsigned int execute () { return tree_ssa_dominator_optimize (); }
-
-}; // class pass_dominator
 
 } // anon namespace
 
@@ -3032,8 +3025,40 @@ eliminate_degenerate_phis_1 (basic_block bb, bitmap interesting_names)
    pick up the secondary optimization opportunities with minimal
    cost.  */
 
-static unsigned int
-eliminate_degenerate_phis (void)
+namespace {
+
+const pass_data pass_data_phi_only_cprop =
+{
+  GIMPLE_PASS, /* type */
+  "phicprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_PHI_CPROP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_verify_ssa
+    | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
+};
+
+class pass_phi_only_cprop : public gimple_opt_pass
+{
+public:
+  pass_phi_only_cprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_phi_only_cprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_phi_only_cprop (m_ctxt); }
+  virtual bool gate (function *) { return flag_tree_dom != 0; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_phi_only_cprop
+
+unsigned int
+pass_phi_only_cprop::execute (function *fun)
 {
   bitmap interesting_names;
   bitmap interesting_names1;
@@ -3066,7 +3091,7 @@ eliminate_degenerate_phis (void)
      phase in dominator order.  Presumably this is because walking
      in dominator order leaves fewer PHIs for later examination
      by the worklist phase.  */
-  eliminate_degenerate_phis_1 (ENTRY_BLOCK_PTR_FOR_FN (cfun),
+  eliminate_degenerate_phis_1 (ENTRY_BLOCK_PTR_FOR_FN (fun),
 			       interesting_names);
 
   /* Second phase.  Eliminate second order degenerate PHIs as well
@@ -3115,39 +3140,6 @@ eliminate_degenerate_phis (void)
   BITMAP_FREE (interesting_names1);
   return 0;
 }
-
-namespace {
-
-const pass_data pass_data_phi_only_cprop =
-{
-  GIMPLE_PASS, /* type */
-  "phicprop", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_PHI_CPROP, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_cleanup_cfg | TODO_verify_ssa
-    | TODO_verify_stmts
-    | TODO_update_ssa ), /* todo_flags_finish */
-};
-
-class pass_phi_only_cprop : public gimple_opt_pass
-{
-public:
-  pass_phi_only_cprop (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_phi_only_cprop, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_phi_only_cprop (m_ctxt); }
-  bool gate () { return gate_dominator (); }
-  unsigned int execute () { return eliminate_degenerate_phis (); }
-
-}; // class pass_phi_only_cprop
 
 } // anon namespace
 

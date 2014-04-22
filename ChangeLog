@@ -1,3 +1,13 @@
+2014-04-21 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Delete myself.
+
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56781
+	* libtool-ldflags: Also prefix -static-lib*, -shared-lib*
+	and -B* options with -Xcompiler.
+
 2014-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/60620

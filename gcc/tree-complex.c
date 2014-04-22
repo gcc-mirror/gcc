@@ -1662,7 +1662,6 @@ const pass_data pass_data_lower_complex =
   GIMPLE_PASS, /* type */
   "cplxlower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -1681,7 +1680,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_lower_complex (m_ctxt); }
-  unsigned int execute () { return tree_lower_complex (); }
+  virtual unsigned int execute (function *) { return tree_lower_complex (); }
 
 }; // class pass_lower_complex
 
@@ -1694,14 +1693,6 @@ make_pass_lower_complex (gcc::context *ctxt)
 }
 
 
-static bool
-gate_no_optimization (void)
-{
-  /* With errors, normal optimization passes are not run.  If we don't
-     lower complex operations at all, rtl expansion will abort.  */
-  return !(cfun->curr_properties & PROP_gimple_lcx);
-}
-
 namespace {
 
 const pass_data pass_data_lower_complex_O0 =
@@ -1709,7 +1700,6 @@ const pass_data pass_data_lower_complex_O0 =
   GIMPLE_PASS, /* type */
   "cplxlower0", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1727,8 +1717,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_no_optimization (); }
-  unsigned int execute () { return tree_lower_complex (); }
+  virtual bool gate (function *fun)
+    {
+      /* With errors, normal optimization passes are not run.  If we don't
+	 lower complex operations at all, rtl expansion will abort.  */
+      return !(fun->curr_properties & PROP_gimple_lcx);
+    }
+
+  virtual unsigned int execute (function *) { return tree_lower_complex (); }
 
 }; // class pass_lower_complex_O0
 

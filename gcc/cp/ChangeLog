@@ -1,3 +1,11 @@
+2014-04-18  Jason Merrill  <jason@redhat.com>
+
+	DR 1571
+	* call.c (reference_binding): Recurse on user-defined conversion.
+
+	PR c++/60872
+	* call.c (standard_conversion): Don't try to apply restrict to void.
+
 2014-04-16  Marc Glisse  <marc.glisse@inria.fr>
 
 	* decl.c (reshape_init_r): Handle a single element of vector type.

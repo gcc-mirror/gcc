@@ -3078,17 +3078,6 @@ cleanup_cfg (int mode)
   return changed;
 }
 
-static unsigned int
-execute_jump (void)
-{
-  delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  if (dump_file)
-    dump_flow_info (dump_file, dump_flags);
-  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
-	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_jump =
@@ -3096,7 +3085,6 @@ const pass_data pass_data_jump =
   RTL_PASS, /* type */
   "jump", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_JUMP, /* tv_id */
   0, /* properties_required */
@@ -3114,9 +3102,20 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_jump (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_jump
+
+unsigned int
+pass_jump::execute (function *)
+{
+  delete_trivially_dead_insns (get_insns (), max_reg_num ());
+  if (dump_file)
+    dump_flow_info (dump_file, dump_flags);
+  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
+	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+  return 0;
+}
 
 } // anon namespace
 
@@ -3126,13 +3125,6 @@ make_pass_jump (gcc::context *ctxt)
   return new pass_jump (ctxt);
 }
 
-static unsigned int
-execute_jump2 (void)
-{
-  cleanup_cfg (flag_crossjumping ? CLEANUP_CROSSJUMP : 0);
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_jump2 =
@@ -3140,7 +3132,6 @@ const pass_data pass_data_jump2 =
   RTL_PASS, /* type */
   "jump2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_JUMP, /* tv_id */
   0, /* properties_required */
@@ -3158,7 +3149,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_jump2 (); }
+  virtual unsigned int execute (function *)
+    {
+      cleanup_cfg (flag_crossjumping ? CLEANUP_CROSSJUMP : 0);
+      return 0;
+    }
 
 }; // class pass_jump2
 

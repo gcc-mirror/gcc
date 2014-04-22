@@ -2767,6 +2767,9 @@ fix = {
      */
     bypass    = 'We have a problem when using C\+\+|for C\+\+, '
 		'_[a-z0-9A-Z_]+_exception; for C, exception';
+    /* The Solaris 10 headers already get this right.  */
+    mach   = '*-*-solaris2.1[0-9]*';
+    not_machine = true;
     c_fix     = wrap;
 
     c_fix_arg = "#ifdef __cplusplus\n"
@@ -3407,42 +3410,6 @@ fix = {
 };
 
 /*
- * Sun Solaris up to 9 has a version of sys/int_types.h that forbids use
- * of Standard C99 64-bit types in 32-bit mode.
- */
-fix = {
-    hackname  = solaris_int_types;
-    select    = "__STDC__ - 0 == 0";
-    bypass    = "_LONGLONG_TYPE";
-    files     = sys/int_types.h;
-    c_fix     = format;
-    c_fix_arg =
-    "(defined(_STDC_C99) || !defined(_STRICT_STDC) || defined(__GNUC__))";
-    test_text =
-    "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-    "typedef	long long		int64_t;\n"
-    "#endif\n\n"
-    "#if defined(_LP64) || (__STDC__ - 0 == 0 && !defined(_NO_LONGLONG))\n"
-    "typedef int64_t			intmax_t;\n"
-    "#endif";
-};
-
-/*
- *  Before Solaris 10, <iso/setjmp_iso.h> doesn't mark longjump noreturn.
- */
-fix = {
-    hackname  = solaris_longjmp_noreturn;
-    mach      = "*-*-solaris2*";
-    files     = "iso/setjmp_iso.h";
-    bypass    = "__NORETURN";
-    select    = "(.*longjmp\\(jmp_buf.*[^)]+\\));";
-    c_fix     = format;
-    c_fix_arg = "%1 __attribute__ ((__noreturn__));";
-
-    test_text = "extern void longjmp(jmp_buf, int);";
-};
-
-/*
  * Sun Solaris 10 defines several C99 math macros in terms of
  * builtins specific to the Studio compiler, in particular not
  * compatible with the GNU compiler.
@@ -3595,44 +3562,6 @@ fix = {
 };
 
 /*
- * Sun Solaris defines PTHREAD_MUTEX_INITIALIZER with a trailing
- * "0" for the last field of the pthread_mutex_t structure, which is
- * of type upad64_t, which itself is typedef'd to int64_t, but with
- * __STDC__ defined (e.g. by -ansi) it is a union. So change the
- * initializer to "{0}" instead
- */
-fix = {
-    hackname = solaris_mutex_init_2;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    /*
-     * On Solaris 10, this fix is unnecessary because upad64_t is
-     * always defined correctly regardless of the definition of the
-     * __STDC__ macro.  The first "mach" pattern matches up to
-     * solaris9.  The second "mach" pattern will not match any two (or
-     * more) digit solaris version, but it will match e.g. 2.5.1.
-     */
-    mach = '*-*-solaris2.[0-9]', '*-*-solaris2.[0-9][!0-9]*';
-    c_fix = format;
-    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-                "%0\n"
-                "#else\n"
-                "%1, {0}}%4\n"
-                "#endif";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+"
-                "(|/\*.*\*/[ \t]*\\\\\n[ \t]*)\\{.*)"
-                ",[ \t]*0\\}" "(|[ \t].*)$";
-    test_text =
-    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-    "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
-    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
-    "#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\\\\\n"
-    "	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, 0}\n"
-    "#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\\\\\n"
-    "	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, 0}";
-};
-
-/*
  * Sun Solaris defines PTHREAD_ONCE_INIT as an array containing a
  * structure.  As such, it need two levels of brackets, but only
  * contains one.  Wrap the macro definition in an extra layer.
@@ -3648,38 +3577,6 @@ fix = {
     test_text =
     '#pragma ident	"@(#)pthread.h	1.37	04/09/28 SMI"'"\n"
     "#define PTHREAD_ONCE_INIT\t{0, 0, 0, PTHREAD_ONCE_NOTDONE}";
-};
-
-/*
- * Sun Solaris defines PTHREAD_ONCE_INIT with a "0" for some
- *  fields of the pthread_once_t structure, which are of type
- *  upad64_t, which itself is typedef'd to int64_t, but with __STDC__
- *  defined (e.g. by -ansi) it is a union. So change the initializer
- *  to "{0}" instead.  This test relies on solaris_once_init_1.
- */
-fix = {
-    hackname = solaris_once_init_2;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    /*
-     * On Solaris 10, this fix is unnecessary because upad64_t is
-     * always defined correctly regardless of the definition of the
-     * __STDC__ macro.  The first "mach" pattern matches up to
-     * solaris9.  The second "mach" pattern will not match any two (or
-     * more) digit solaris version, but it will match e.g. 2.5.1.
-     */
-    mach = '*-*-solaris2.[0-9]', '*-*-solaris2.[0-9][!0-9]*';
-    c_fix = format;
-    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-                "%0\n"
-                "#else\n"
-                "%1{0}, {0}, {0}, {%3}%4\n"
-                "#endif";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_ONCE_INIT[ \t]+\\{\\{)"
-                "(0, 0, 0, )(PTHREAD_[A-Z_]+)(\\}\\})[ \t]*$";
-    test_text =
-    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-    "#define PTHREAD_ONCE_INIT\t{{0, 0, 0, PTHREAD_ONCE_NOTDONE}}\n";
 };
 
 /*
@@ -3777,33 +3674,6 @@ fix = {
     sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
 
     test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
-};
-
-/*
- * On Solaris 9, __va_list needs to become a typedef for
- * __builtin_va_list to make -Wmissing-format-attribute work.
- */
-fix = {
-    hackname = solaris_sys_va_list;
-    files    = sys/va_list.h;
-    mach     = '*-*-solaris2.9';
-    select   = "#if.*__STDC__.*\n"
-	       "typedef void \\*__va_list;\n"
-	       "#else\n"
-	       "typedef char \\*__va_list;\n"
-	       "#endif";
-
-    c_fix    = format;
-    c_fix_arg = "#ifdef __GNUC__\n"
-		"typedef __builtin_va_list __va_list;\n"
-		"#else\n"
-		"%0\n"
-		"#endif";
-    test_text = "#if defined(__STDC__) && !defined(__ia64)\n"
-    		"typedef void *__va_list;\n"
-	        "#else\n"
-	        "typedef char *__va_list;\n"
-	        "#endif";
 };
 
 /*

@@ -504,43 +504,67 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
   occ_head = NULL;
 }
 
-static bool
-gate_cse_reciprocals (void)
-{
-  return optimize && flag_reciprocal_math;
-}
-
 /* Go through all the floating-point SSA_NAMEs, and call
    execute_cse_reciprocals_1 on each of them.  */
-static unsigned int
-execute_cse_reciprocals (void)
+namespace {
+
+const pass_data pass_data_cse_reciprocals =
+{
+  GIMPLE_PASS, /* type */
+  "recip", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_stmts ), /* todo_flags_finish */
+};
+
+class pass_cse_reciprocals : public gimple_opt_pass
+{
+public:
+  pass_cse_reciprocals (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_cse_reciprocals, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return optimize && flag_reciprocal_math; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_cse_reciprocals
+
+unsigned int
+pass_cse_reciprocals::execute (function *fun)
 {
   basic_block bb;
   tree arg;
 
   occ_pool = create_alloc_pool ("dominators for recip",
 				sizeof (struct occurrence),
-				n_basic_blocks_for_fn (cfun) / 3 + 1);
+				n_basic_blocks_for_fn (fun) / 3 + 1);
 
   memset (&reciprocal_stats, 0, sizeof (reciprocal_stats));
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
 #ifdef ENABLE_CHECKING
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     gcc_assert (!bb->aux);
 #endif
 
-  for (arg = DECL_ARGUMENTS (cfun->decl); arg; arg = DECL_CHAIN (arg))
+  for (arg = DECL_ARGUMENTS (fun->decl); arg; arg = DECL_CHAIN (arg))
     if (FLOAT_TYPE_P (TREE_TYPE (arg))
 	&& is_gimple_reg (arg))
       {
-	tree name = ssa_default_def (cfun, arg);
+	tree name = ssa_default_def (fun, arg);
 	if (name)
 	  execute_cse_reciprocals_1 (NULL, name);
       }
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
       gimple phi;
@@ -642,9 +666,9 @@ execute_cse_reciprocals (void)
 	}
     }
 
-  statistics_counter_event (cfun, "reciprocal divs inserted",
+  statistics_counter_event (fun, "reciprocal divs inserted",
 			    reciprocal_stats.rdivs_inserted);
-  statistics_counter_event (cfun, "reciprocal functions inserted",
+  statistics_counter_event (fun, "reciprocal functions inserted",
 			    reciprocal_stats.rfuncs_inserted);
 
   free_dominance_info (CDI_DOMINATORS);
@@ -652,37 +676,6 @@ execute_cse_reciprocals (void)
   free_alloc_pool (occ_pool);
   return 0;
 }
-
-namespace {
-
-const pass_data pass_data_cse_reciprocals =
-{
-  GIMPLE_PASS, /* type */
-  "recip", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts ), /* todo_flags_finish */
-};
-
-class pass_cse_reciprocals : public gimple_opt_pass
-{
-public:
-  pass_cse_reciprocals (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_cse_reciprocals, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_cse_reciprocals (); }
-  unsigned int execute () { return execute_cse_reciprocals (); }
-
-}; // class pass_cse_reciprocals
 
 } // anon namespace
 
@@ -1410,8 +1403,44 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
    on the SSA_NAME argument of each of them.  Also expand powi(x,n) into
    an optimal number of multiplies, when n is a constant.  */
 
-static unsigned int
-execute_cse_sincos (void)
+namespace {
+
+const pass_data pass_data_cse_sincos =
+{
+  GIMPLE_PASS, /* type */
+  "sincos", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_stmts ), /* todo_flags_finish */
+};
+
+class pass_cse_sincos : public gimple_opt_pass
+{
+public:
+  pass_cse_sincos (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_cse_sincos, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      /* We no longer require either sincos or cexp, since powi expansion
+	 piggybacks on this pass.  */
+      return optimize;
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_cse_sincos
+
+unsigned int
+pass_cse_sincos::execute (function *fun)
 {
   basic_block bb;
   bool cfg_changed = false;
@@ -1419,7 +1448,7 @@ execute_cse_sincos (void)
   calculate_dominance_info (CDI_DOMINATORS);
   memset (&sincos_stats, 0, sizeof (sincos_stats));
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
       bool cleanup_eh = false;
@@ -1556,51 +1585,12 @@ execute_cse_sincos (void)
 	cfg_changed |= gimple_purge_dead_eh_edges (bb);
     }
 
-  statistics_counter_event (cfun, "sincos statements inserted",
+  statistics_counter_event (fun, "sincos statements inserted",
 			    sincos_stats.inserted);
 
   free_dominance_info (CDI_DOMINATORS);
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
-
-static bool
-gate_cse_sincos (void)
-{
-  /* We no longer require either sincos or cexp, since powi expansion
-     piggybacks on this pass.  */
-  return optimize;
-}
-
-namespace {
-
-const pass_data pass_data_cse_sincos =
-{
-  GIMPLE_PASS, /* type */
-  "sincos", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts ), /* todo_flags_finish */
-};
-
-class pass_cse_sincos : public gimple_opt_pass
-{
-public:
-  pass_cse_sincos (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_cse_sincos, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_cse_sincos (); }
-  unsigned int execute () { return execute_cse_sincos (); }
-
-}; // class pass_cse_sincos
 
 } // anon namespace
 
@@ -1903,8 +1893,41 @@ find_bswap (gimple stmt)
 /* Find manual byte swap implementations and turn them into a bswap
    builtin invokation.  */
 
-static unsigned int
-execute_optimize_bswap (void)
+namespace {
+
+const pass_data pass_data_optimize_bswap =
+{
+  GIMPLE_PASS, /* type */
+  "bswap", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_optimize_bswap : public gimple_opt_pass
+{
+public:
+  pass_optimize_bswap (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_optimize_bswap, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return flag_expensive_optimizations && optimize;
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_optimize_bswap
+
+unsigned int
+pass_optimize_bswap::execute (function *fun)
 {
   basic_block bb;
   bool bswap16_p, bswap32_p, bswap64_p;
@@ -1950,7 +1973,7 @@ execute_optimize_bswap (void)
 
   memset (&bswap_stats, 0, sizeof (bswap_stats));
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
 
@@ -2056,52 +2079,16 @@ execute_optimize_bswap (void)
 	}
     }
 
-  statistics_counter_event (cfun, "16-bit bswap implementations found",
+  statistics_counter_event (fun, "16-bit bswap implementations found",
 			    bswap_stats.found_16bit);
-  statistics_counter_event (cfun, "32-bit bswap implementations found",
+  statistics_counter_event (fun, "32-bit bswap implementations found",
 			    bswap_stats.found_32bit);
-  statistics_counter_event (cfun, "64-bit bswap implementations found",
+  statistics_counter_event (fun, "64-bit bswap implementations found",
 			    bswap_stats.found_64bit);
 
   return (changed ? TODO_update_ssa | TODO_verify_ssa
 	  | TODO_verify_stmts : 0);
 }
-
-static bool
-gate_optimize_bswap (void)
-{
-  return flag_expensive_optimizations && optimize;
-}
-
-namespace {
-
-const pass_data pass_data_optimize_bswap =
-{
-  GIMPLE_PASS, /* type */
-  "bswap", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_optimize_bswap : public gimple_opt_pass
-{
-public:
-  pass_optimize_bswap (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_optimize_bswap, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_optimize_bswap (); }
-  unsigned int execute () { return execute_optimize_bswap (); }
-
-}; // class pass_optimize_bswap
 
 } // anon namespace
 
@@ -2788,15 +2775,49 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
    smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
    where appropriate.  */
 
-static unsigned int
-execute_optimize_widening_mul (void)
+namespace {
+
+const pass_data pass_data_optimize_widening_mul =
+{
+  GIMPLE_PASS, /* type */
+  "widening_mul", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
+};
+
+class pass_optimize_widening_mul : public gimple_opt_pass
+{
+public:
+  pass_optimize_widening_mul (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_optimize_widening_mul, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return flag_expensive_optimizations && optimize;
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_optimize_widening_mul
+
+unsigned int
+pass_optimize_widening_mul::execute (function *fun)
 {
   basic_block bb;
   bool cfg_changed = false;
 
   memset (&widen_mul_stats, 0, sizeof (widen_mul_stats));
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
 
@@ -2867,52 +2888,15 @@ execute_optimize_widening_mul (void)
 	}
     }
 
-  statistics_counter_event (cfun, "widening multiplications inserted",
+  statistics_counter_event (fun, "widening multiplications inserted",
 			    widen_mul_stats.widen_mults_inserted);
-  statistics_counter_event (cfun, "widening maccs inserted",
+  statistics_counter_event (fun, "widening maccs inserted",
 			    widen_mul_stats.maccs_inserted);
-  statistics_counter_event (cfun, "fused multiply-adds inserted",
+  statistics_counter_event (fun, "fused multiply-adds inserted",
 			    widen_mul_stats.fmas_inserted);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
-
-static bool
-gate_optimize_widening_mul (void)
-{
-  return flag_expensive_optimizations && optimize;
-}
-
-namespace {
-
-const pass_data pass_data_optimize_widening_mul =
-{
-  GIMPLE_PASS, /* type */
-  "widening_mul", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_verify_stmts
-    | TODO_update_ssa ), /* todo_flags_finish */
-};
-
-class pass_optimize_widening_mul : public gimple_opt_pass
-{
-public:
-  pass_optimize_widening_mul (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_optimize_widening_mul, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_optimize_widening_mul (); }
-  unsigned int execute () { return execute_optimize_widening_mul (); }
-
-}; // class pass_optimize_widening_mul
 
 } // anon namespace
 

@@ -1015,44 +1015,22 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
     {
     case NAMED_OBJECT_CONST:
       {
-	Named_constant* named_constant = this->u_.const_value;
 	Translate_context subcontext(gogo, function, NULL, NULL);
-	tree expr_tree = named_constant->expr()->get_tree(&subcontext);
-	if (expr_tree == error_mark_node)
-	  decl = error_mark_node;
-	else
+	Type* type = this->u_.const_value->type();
+	Location loc = this->location();
+
+	Expression* const_ref = Expression::make_const_reference(this, loc);
+        Bexpression* const_decl =
+	  tree_to_expr(const_ref->get_tree(&subcontext));
+	if (type != NULL && type->is_numeric_type())
 	  {
-	    Type* type = named_constant->type();
-	    if (type != NULL && !type->is_abstract())
-	      {
-		if (type->is_error())
-		  expr_tree = error_mark_node;
-		else
-		  {
-		    Btype* btype = type->get_backend(gogo);
-		    expr_tree = fold_convert(type_to_tree(btype), expr_tree);
-		  }
-	      }
-	    if (expr_tree == error_mark_node)
-	      decl = error_mark_node;
-	    else if (INTEGRAL_TYPE_P(TREE_TYPE(expr_tree)))
-	      {
-                tree name = get_identifier_from_string(this->get_id(gogo));
-		decl = build_decl(named_constant->location().gcc_location(),
-                                  CONST_DECL, name, TREE_TYPE(expr_tree));
-		DECL_INITIAL(decl) = expr_tree;
-		TREE_CONSTANT(decl) = 1;
-		TREE_READONLY(decl) = 1;
-	      }
-	    else
-	      {
-		// A CONST_DECL is only for an enum constant, so we
-		// shouldn't use for non-integral types.  Instead we
-		// just return the constant itself, rather than a
-		// decl.
-		decl = expr_tree;
-	      }
+	    Btype* btype = type->get_backend(gogo);
+	    std::string name = this->get_id(gogo);
+            const_decl =
+	      gogo->backend()->named_constant_expression(btype, name,
+							 const_decl, loc);
 	  }
+	decl = expr_to_tree(const_decl);
       }
       break;
 

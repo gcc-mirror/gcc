@@ -125,19 +125,6 @@ initialize_uninitialized_regs (void)
   BITMAP_FREE (already_genned);
 }
 
-static bool
-gate_initialize_regs (void)
-{
-  return optimize > 0;
-}
-
-static unsigned int
-rest_of_handle_initialize_regs (void)
-{
-  initialize_uninitialized_regs ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_initialize_regs =
@@ -145,7 +132,6 @@ const pass_data pass_data_initialize_regs =
   RTL_PASS, /* type */
   "init-regs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -163,8 +149,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_initialize_regs (); }
-  unsigned int execute () { return rest_of_handle_initialize_regs (); }
+  virtual bool gate (function *) { return optimize > 0; }
+  virtual unsigned int execute (function *)
+    {
+      initialize_uninitialized_regs ();
+      return 0;
+    }
 
 }; // class pass_initialize_regs
 

@@ -555,6 +555,10 @@ class Error_expression : public Expression
   { return true; }
 
   bool
+  do_is_immutable() const
+  { return true; }
+
+  bool
   do_numeric_constant_value(Numeric_constant* nc) const
   {
     nc->set_unsigned_long(NULL, 0);
@@ -1422,6 +1426,10 @@ class Boolean_expression : public Expression
   do_is_constant() const
   { return true; }
 
+  bool
+  do_is_immutable() const
+  { return true; }
+
   Type*
   do_type();
 
@@ -1790,6 +1798,10 @@ class Integer_expression : public Expression
   { return true; }
 
   bool
+  do_is_immutable() const
+  { return true; }
+
+  bool
   do_numeric_constant_value(Numeric_constant* nc) const;
 
   Type*
@@ -2109,6 +2121,10 @@ class Float_expression : public Expression
   { return true; }
 
   bool
+  do_is_immutable() const
+  { return true; }
+
+  bool
   do_numeric_constant_value(Numeric_constant* nc) const
   {
     nc->set_float(this->type_, this->val_);
@@ -2289,6 +2305,10 @@ class Complex_expression : public Expression
  protected:
   bool
   do_is_constant() const
+  { return true; }
+
+  bool
+  do_is_immutable() const
   { return true; }
 
   bool
@@ -2503,6 +2523,10 @@ class Const_expression : public Expression
 
   bool
   do_is_constant() const
+  { return true; }
+
+  bool
+  do_is_immutable() const
   { return true; }
 
   bool
@@ -2768,12 +2792,12 @@ Const_expression::do_get_tree(Translate_context* context)
   // If the type has been set for this expression, but the underlying
   // object is an abstract int or float, we try to get the abstract
   // value.  Otherwise we may lose something in the conversion.
+  Expression* expr = this->constant_->const_value()->expr();
   if (this->type_ != NULL
       && this->type_->is_numeric_type()
       && (this->constant_->const_value()->type() == NULL
 	  || this->constant_->const_value()->type()->is_abstract()))
     {
-      Expression* expr = this->constant_->const_value()->expr();
       Numeric_constant nc;
       if (expr->numeric_constant_value(&nc)
 	  && nc.set_type(this->type_, false, this->location()))
@@ -2783,15 +2807,9 @@ Const_expression::do_get_tree(Translate_context* context)
 	}
     }
 
-  Gogo* gogo = context->gogo();
-  Bexpression* ret =
-      tree_to_expr(this->constant_->get_tree(gogo, context->function()));
   if (this->type_ != NULL)
-    {
-      Btype* btype = this->type_->get_backend(gogo);
-      ret = gogo->backend()->convert_expression(btype, ret, this->location());
-    }
-  return expr_to_tree(ret);
+    expr = Expression::make_cast(this->type_, expr, this->location());
+  return expr->get_tree(context);
 }
 
 // Dump ast representation for constant expression.
@@ -2994,6 +3012,9 @@ class Type_conversion_expression : public Expression
   do_is_constant() const;
 
   bool
+  do_is_immutable() const;
+
+  bool
   do_numeric_constant_value(Numeric_constant*) const;
 
   bool
@@ -3173,6 +3194,27 @@ Type_conversion_expression::do_is_constant() const
     return false;
 
   return true;
+}
+
+// Return whether a type conversion is immutable.
+
+bool
+Type_conversion_expression::do_is_immutable() const
+{
+  Type* type = this->type_;
+  Type* expr_type = this->expr_->type();
+
+  if (type->interface_type() != NULL
+      || expr_type->interface_type() != NULL)
+    return false;
+
+  if (!this->expr_->is_immutable())
+    return false;
+
+  if (Type::are_identical(type, expr_type, false, NULL))
+    return true;
+
+  return type->is_basic_type() && expr_type->is_basic_type();
 }
 
 // Return the constant numeric value if there is one.
@@ -3599,7 +3641,8 @@ class Unary_expression : public Expression
 
   bool
   do_is_immutable() const
-  { return this->expr_->is_immutable(); }
+  { return this->expr_->is_immutable()
+      || (this->op_ == OPERATOR_AND && this->expr_->is_variable()); }
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -9570,9 +9613,20 @@ Call_expression::do_get_tree(Translate_context* context)
       fn = Expression::make_compound(set_closure, fn, location);
     }
 
-  Btype* bft = fntype->get_backend_fntype(gogo);
   Bexpression* bfn = tree_to_expr(fn->get_tree(context));
-  bfn = gogo->backend()->convert_expression(bft, bfn, location);
+
+  // When not calling a named function directly, use a type conversion
+  // in case the type of the function is a recursive type which refers
+  // to itself.  We don't do this for an interface method because 1)
+  // an interface method never refers to itself, so we always have a
+  // function type here; 2) we pass an extra first argument to an
+  // interface method, so fntype is not correct.
+  if (func == NULL && !is_interface_method)
+    {
+      Btype* bft = fntype->get_backend_fntype(gogo);
+      bfn = gogo->backend()->convert_expression(bft, bfn, location);
+    }
+
   Bexpression* call = gogo->backend()->call_expression(bfn, fn_args, location);
 
   if (this->results_ != NULL)
@@ -14076,6 +14130,10 @@ class Type_info_expression : public Expression
   { }
 
  protected:
+  bool
+  do_is_immutable() const
+  { return true; }
+
   Type*
   do_type();
 

@@ -1950,7 +1950,6 @@ const pass_data pass_data_instantiate_virtual_regs =
   RTL_PASS, /* type */
   "vregs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -1968,7 +1967,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return instantiate_virtual_regs (); }
+  virtual unsigned int execute (function *)
+    {
+      return instantiate_virtual_regs ();
+    }
 
 }; // class pass_instantiate_virtual_regs
 
@@ -6949,7 +6951,6 @@ const pass_data pass_data_leaf_regs =
   RTL_PASS, /* type */
   "*leaf_regs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -6967,7 +6968,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_check_leaf_regs (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_check_leaf_regs ();
+    }
 
 }; // class pass_leaf_regs
 
@@ -7009,7 +7013,6 @@ const pass_data pass_data_thread_prologue_and_epilogue =
   RTL_PASS, /* type */
   "pro_and_epilogue", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_THREAD_PROLOGUE_AND_EPILOGUE, /* tv_id */
   0, /* properties_required */
@@ -7028,9 +7031,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () {
-    return rest_of_handle_thread_prologue_and_epilogue ();
-  }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_thread_prologue_and_epilogue ();
+    }
 
 }; // class pass_thread_prologue_and_epilogue
 
@@ -7187,8 +7191,36 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
     df_insn_rescan (insn);
 }
 
-static unsigned
-rest_of_match_asm_constraints (void)
+namespace {
+
+const pass_data pass_data_match_asm_constraints =
+{
+  RTL_PASS, /* type */
+  "asmcons", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_match_asm_constraints : public rtl_opt_pass
+{
+public:
+  pass_match_asm_constraints (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_match_asm_constraints, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *);
+
+}; // class pass_match_asm_constraints
+
+unsigned
+pass_match_asm_constraints::execute (function *fun)
 {
   basic_block bb;
   rtx insn, pat, *p_sets;
@@ -7198,7 +7230,7 @@ rest_of_match_asm_constraints (void)
     return 0;
 
   df_set_flags (DF_DEFER_INSN_RESCAN);
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       FOR_BB_INSNS (bb, insn)
 	{
@@ -7221,35 +7253,6 @@ rest_of_match_asm_constraints (void)
 
   return TODO_df_finish;
 }
-
-namespace {
-
-const pass_data pass_data_match_asm_constraints =
-{
-  RTL_PASS, /* type */
-  "asmcons", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
-  true, /* has_execute */
-  TV_NONE, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_match_asm_constraints : public rtl_opt_pass
-{
-public:
-  pass_match_asm_constraints (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_match_asm_constraints, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  unsigned int execute () { return rest_of_match_asm_constraints (); }
-
-}; // class pass_match_asm_constraints
 
 } // anon namespace
 

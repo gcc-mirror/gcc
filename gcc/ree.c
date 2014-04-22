@@ -1093,14 +1093,6 @@ rest_of_handle_ree (void)
   return 0;
 }
 
-/* Run REE pass when flag_ree is set at optimization level > 0.  */
-
-static bool
-gate_handle_ree (void)
-{
-  return (optimize > 0 && flag_ree);
-}
-
 namespace {
 
 const pass_data pass_data_ree =
@@ -1108,7 +1100,6 @@ const pass_data pass_data_ree =
   RTL_PASS, /* type */
   "ree", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_REE, /* tv_id */
   0, /* properties_required */
@@ -1126,8 +1117,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_handle_ree (); }
-  unsigned int execute () { return rest_of_handle_ree (); }
+  virtual bool gate (function *) { return (optimize > 0 && flag_ree); }
+  virtual unsigned int execute (function *) { return rest_of_handle_ree (); }
 
 }; // class pass_ree
 

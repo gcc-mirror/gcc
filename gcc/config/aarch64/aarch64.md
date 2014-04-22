@@ -3188,7 +3188,7 @@
 ;; -------------------------------------------------------------------
 
 ;; frint floating-point round to integral standard patterns.
-;; Expands to btrunc, ceil, floor, nearbyint, rint, round.
+;; Expands to btrunc, ceil, floor, nearbyint, rint, round, frintn.
 
 (define_insn "<frint_pattern><mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w")
@@ -3299,20 +3299,24 @@
   [(set_attr "type" "f_cvtf2i")]
 )
 
-(define_insn "float<GPI:mode><GPF:mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (float:GPF (match_operand:GPI 1 "register_operand" "r")))]
-  "TARGET_FLOAT"
-  "scvtf\\t%<GPF:s>0, %<GPI:w>1"
-  [(set_attr "type" "f_cvti2f")]
+(define_insn "<optab><fcvt_target><GPF:mode>2"
+  [(set (match_operand:GPF 0 "register_operand" "=w,w")
+        (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,r")))]
+  ""
+  "@
+   <su_optab>cvtf\t%<GPF:s>0, %<s>1
+   <su_optab>cvtf\t%<GPF:s>0, %<w1>1"
+  [(set_attr "simd" "yes,no")
+   (set_attr "fp" "no,yes")
+   (set_attr "type" "neon_int_to_fp_<Vetype>,f_cvti2f")]
 )
 
-(define_insn "floatuns<GPI:mode><GPF:mode>2"
+(define_insn "<optab><fcvt_iesize><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w")
-        (unsigned_float:GPF (match_operand:GPI 1 "register_operand" "r")))]
+        (FLOATUORS:GPF (match_operand:<FCVT_IESIZE> 1 "register_operand" "r")))]
   "TARGET_FLOAT"
-  "ucvtf\\t%<GPF:s>0, %<GPI:w>1"
-  [(set_attr "type" "f_cvt")]
+  "<su_optab>cvtf\t%<GPF:s>0, %<w2>1"
+  [(set_attr "type" "f_cvti2f")]
 )
 
 ;; -------------------------------------------------------------------

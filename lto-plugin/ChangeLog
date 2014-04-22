@@ -1,3 +1,16 @@
+2014-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56781
+	* Makefile.am (CFLAGS, LDFLAGS): Filter out -fsanitize=address.
+	(liblto_plugin_la_LIBADD, liblto_plugin_la_LDFLAGS,
+	liblto_plugin_la_DEPENDENCIES): Prefer ../libiberty/noasan/libiberty.a
+	over ../libiberty/pic/libiberty.a if the former exists.
+	* Makefile.in: Regenerated.
+
+	PR sanitizer/56781
+	* Makefile.am (LTLDFLAGS, liblto_plugin_la_LINK): New variables.
+	* Makefile.in: Regenerated.
+
 2014-04-02  Richard Biener  <rguenther@suse.de>
 
 	* lto-plugin.c (onload): Fail to load if -fno-use-linker-plugin

@@ -227,6 +227,10 @@ class Gcc_backend : public Backend
   indirect_expression(Bexpression* expr, bool known_valid, Location);
 
   Bexpression*
+  named_constant_expression(Btype* btype, const std::string& name,
+			    Bexpression* val, Location);
+
+  Bexpression*
   integer_constant_expression(Btype* btype, mpz_t val);
 
   Bexpression*
@@ -959,6 +963,29 @@ Gcc_backend::indirect_expression(Bexpression* expr, bool known_valid,
   if (known_valid)
     TREE_THIS_NOTRAP(ret) = 1;
   return tree_to_expr(ret);
+}
+
+// Return an expression that declares a constant named NAME with the
+// constant value VAL in BTYPE.
+
+Bexpression*
+Gcc_backend::named_constant_expression(Btype* btype, const std::string& name,
+				       Bexpression* val, Location location)
+{
+  tree type_tree = btype->get_tree();
+  tree const_val = val->get_tree();
+  if (type_tree == error_mark_node || const_val == error_mark_node)
+    return this->error_expression();
+
+  tree name_tree = get_identifier_from_string(name);
+  tree decl = build_decl(location.gcc_location(), CONST_DECL, name_tree,
+			 type_tree);
+  DECL_INITIAL(decl) = const_val;
+  TREE_CONSTANT(decl) = 1;
+  TREE_READONLY(decl) = 1;
+
+  go_preserve_from_gc(decl);
+  return this->make_expression(decl);
 }
 
 // Return a typed value as a constant integer.

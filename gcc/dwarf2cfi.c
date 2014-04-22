@@ -3377,21 +3377,6 @@ dwarf2out_do_cfi_asm (void)
   return true;
 }
 
-static bool
-gate_dwarf2_frame (void)
-{
-#ifndef HAVE_prologue
-  /* Targets which still implement the prologue in assembler text
-     cannot use the generic dwarf2 unwinding.  */
-  return false;
-#endif
-
-  /* ??? What to do for UI_TARGET unwinding?  They might be able to benefit
-     from the optimized shrink-wrapping annotations that we will compute.
-     For now, only produce the CFI notes for dwarf2.  */
-  return dwarf2out_do_frame ();
-}
-
 namespace {
 
 const pass_data pass_data_dwarf2_frame =
@@ -3399,7 +3384,6 @@ const pass_data pass_data_dwarf2_frame =
   RTL_PASS, /* type */
   "dwarf2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_FINAL, /* tv_id */
   0, /* properties_required */
@@ -3417,10 +3401,25 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_dwarf2_frame (); }
-  unsigned int execute () { return execute_dwarf2_frame (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *) { return execute_dwarf2_frame (); }
 
 }; // class pass_dwarf2_frame
+
+bool
+pass_dwarf2_frame::gate (function *)
+{
+#ifndef HAVE_prologue
+  /* Targets which still implement the prologue in assembler text
+     cannot use the generic dwarf2 unwinding.  */
+  return false;
+#endif
+
+  /* ??? What to do for UI_TARGET unwinding?  They might be able to benefit
+     from the optimized shrink-wrapping annotations that we will compute.
+     For now, only produce the CFI notes for dwarf2.  */
+  return dwarf2out_do_frame ();
+}
 
 } // anon namespace
 

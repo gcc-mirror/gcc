@@ -138,7 +138,7 @@ func (w WaitStatus) TrapCause() int
 //sys	Select(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timeval) (n int, err error)
 //select(nfd _C_int, r *FdSet, w *FdSet, e *FdSet, timeout *Timeval) _C_int
 
-const nfdbits = int(unsafe.Sizeof(fds_bits_type) * 8)
+const nfdbits = int(unsafe.Sizeof(fds_bits_type(0)) * 8)
 
 type FdSet struct {
 	Bits [(FD_SETSIZE + nfdbits - 1) / nfdbits]fds_bits_type

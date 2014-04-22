@@ -424,7 +424,7 @@ class sh_treg_combine : public rtl_opt_pass
 public:
   sh_treg_combine (gcc::context* ctx, bool split_insns, const char* name);
   virtual ~sh_treg_combine (void);
-  virtual bool gate (void);
+  virtual bool gate (function *);
   virtual unsigned int execute (void);
 
 private:
@@ -593,7 +593,6 @@ const pass_data sh_treg_combine::default_pass_data =
   RTL_PASS,		// type
   "",			// name (overwritten by the constructor)
   OPTGROUP_NONE,	// optinfo_flags
-  true,			// has_gate
   true,			// has_execute
   TV_OPTIMIZE,		// tv_id
   0,			// properties_required
@@ -1436,7 +1435,7 @@ sh_treg_combine::try_optimize_cbranch (rtx insn)
 }
 
 bool
-sh_treg_combine::gate (void)
+sh_treg_combine::gate (function *)
 {
   return optimize > 0;
 }

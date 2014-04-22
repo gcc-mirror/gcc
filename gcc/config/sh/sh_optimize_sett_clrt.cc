@@ -79,7 +79,7 @@ class sh_optimize_sett_clrt : public rtl_opt_pass
 public:
   sh_optimize_sett_clrt (gcc::context* ctx, const char* name);
   virtual ~sh_optimize_sett_clrt (void);
-  virtual bool gate (void);
+  virtual bool gate (function *);
   virtual unsigned int execute (void);
 
 private:
@@ -138,7 +138,6 @@ const pass_data sh_optimize_sett_clrt::default_pass_data =
   RTL_PASS,		// type
   "",			// name (overwritten by the constructor)
   OPTGROUP_NONE,	// optinfo_flags
-  true,			// has_gate
   true,			// has_execute
   TV_OPTIMIZE,		// tv_id
   0,			// properties_required
@@ -162,7 +161,7 @@ sh_optimize_sett_clrt::~sh_optimize_sett_clrt (void)
 }
 
 bool
-sh_optimize_sett_clrt::gate (void)
+sh_optimize_sett_clrt::gate (function *)
 {
   return optimize > 0;
 }

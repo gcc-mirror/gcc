@@ -663,16 +663,6 @@ tree_profiling (void)
   return 0;
 }
 
-/* When profile instrumentation, use or test coverage shall be performed.  */
-
-static bool
-gate_tree_profile_ipa (void)
-{
-  return (!in_lto_p
-	  && (flag_branch_probabilities || flag_test_coverage
-	      || profile_arc_flag));
-}
-
 namespace {
 
 const pass_data pass_data_ipa_tree_profile =
@@ -680,7 +670,6 @@ const pass_data pass_data_ipa_tree_profile =
   SIMPLE_IPA_PASS, /* type */
   "profile", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_PROFILE, /* tv_id */
   0, /* properties_required */
@@ -698,10 +687,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_profile_ipa (); }
-  unsigned int execute () { return tree_profiling (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *) { return tree_profiling (); }
 
 }; // class pass_ipa_tree_profile
+
+bool
+pass_ipa_tree_profile::gate (function *)
+{
+  /* When profile instrumentation, use or test coverage shall be performed.  */
+  return (!in_lto_p
+	  && (flag_branch_probabilities || flag_test_coverage
+	      || profile_arc_flag));
+}
 
 } // anon namespace
 

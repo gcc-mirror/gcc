@@ -563,37 +563,6 @@ sink_code_in_bb (basic_block bb)
    Note that this reduces the number of computations of a = b + c to 1
    when we take the else edge, instead of 2.
 */
-static void
-execute_sink_code (void)
-{
-  loop_optimizer_init (LOOPS_NORMAL);
-  split_critical_edges ();
-  connect_infinite_loops_to_exit ();
-  memset (&sink_stats, 0, sizeof (sink_stats));
-  calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-  sink_code_in_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
-  statistics_counter_event (cfun, "Sunk statements", sink_stats.sunk);
-  free_dominance_info (CDI_POST_DOMINATORS);
-  remove_fake_exit_edges ();
-  loop_optimizer_finalize ();
-}
-
-/* Gate and execute functions for PRE.  */
-
-static unsigned int
-do_sink (void)
-{
-  execute_sink_code ();
-  return 0;
-}
-
-static bool
-gate_sink (void)
-{
-  return flag_tree_sink != 0;
-}
-
 namespace {
 
 const pass_data pass_data_sink_code =
@@ -601,11 +570,10 @@ const pass_data pass_data_sink_code =
   GIMPLE_PASS, /* type */
   "sink", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SINK, /* tv_id */
   /* PROP_no_crit_edges is ensured by running split_critical_edges in
-     execute_sink_code.  */
+     pass_data_sink_code::execute ().  */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
@@ -622,10 +590,28 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_sink (); }
-  unsigned int execute () { return do_sink (); }
+  virtual bool gate (function *) { return flag_tree_sink != 0; }
+  virtual unsigned int execute (function *);
 
 }; // class pass_sink_code
+
+unsigned int
+pass_sink_code::execute (function *fun)
+{
+  loop_optimizer_init (LOOPS_NORMAL);
+  split_critical_edges ();
+  connect_infinite_loops_to_exit ();
+  memset (&sink_stats, 0, sizeof (sink_stats));
+  calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  sink_code_in_bb (EXIT_BLOCK_PTR_FOR_FN (fun));
+  statistics_counter_event (fun, "Sunk statements", sink_stats.sunk);
+  free_dominance_info (CDI_POST_DOMINATORS);
+  remove_fake_exit_edges ();
+  loop_optimizer_finalize ();
+
+  return 0;
+}
 
 } // anon namespace
 

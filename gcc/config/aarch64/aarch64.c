@@ -3836,34 +3836,34 @@ aarch64_print_operand_address (FILE *f, rtx x)
 	if (addr.offset == const0_rtx)
 	  asm_fprintf (f, "[%s]", reg_names [REGNO (addr.base)]);
 	else
-	  asm_fprintf (f, "[%s,%wd]", reg_names [REGNO (addr.base)],
+	  asm_fprintf (f, "[%s, %wd]", reg_names [REGNO (addr.base)],
 		       INTVAL (addr.offset));
 	return;
 
       case ADDRESS_REG_REG:
 	if (addr.shift == 0)
-	  asm_fprintf (f, "[%s,%s]", reg_names [REGNO (addr.base)],
+	  asm_fprintf (f, "[%s, %s]", reg_names [REGNO (addr.base)],
 		       reg_names [REGNO (addr.offset)]);
 	else
-	  asm_fprintf (f, "[%s,%s,lsl %u]", reg_names [REGNO (addr.base)],
+	  asm_fprintf (f, "[%s, %s, lsl %u]", reg_names [REGNO (addr.base)],
 		       reg_names [REGNO (addr.offset)], addr.shift);
 	return;
 
       case ADDRESS_REG_UXTW:
 	if (addr.shift == 0)
-	  asm_fprintf (f, "[%s,w%d,uxtw]", reg_names [REGNO (addr.base)],
+	  asm_fprintf (f, "[%s, w%d, uxtw]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM);
 	else
-	  asm_fprintf (f, "[%s,w%d,uxtw %u]", reg_names [REGNO (addr.base)],
+	  asm_fprintf (f, "[%s, w%d, uxtw %u]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM, addr.shift);
 	return;
 
       case ADDRESS_REG_SXTW:
 	if (addr.shift == 0)
-	  asm_fprintf (f, "[%s,w%d,sxtw]", reg_names [REGNO (addr.base)],
+	  asm_fprintf (f, "[%s, w%d, sxtw]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM);
 	else
-	  asm_fprintf (f, "[%s,w%d,sxtw %u]", reg_names [REGNO (addr.base)],
+	  asm_fprintf (f, "[%s, w%d, sxtw %u]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM, addr.shift);
 	return;
 
@@ -3871,27 +3871,27 @@ aarch64_print_operand_address (FILE *f, rtx x)
 	switch (GET_CODE (x))
 	  {
 	  case PRE_INC:
-	    asm_fprintf (f, "[%s,%d]!", reg_names [REGNO (addr.base)], 
+	    asm_fprintf (f, "[%s, %d]!", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case POST_INC:
-	    asm_fprintf (f, "[%s],%d", reg_names [REGNO (addr.base)],
+	    asm_fprintf (f, "[%s], %d", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case PRE_DEC:
-	    asm_fprintf (f, "[%s,-%d]!", reg_names [REGNO (addr.base)],
+	    asm_fprintf (f, "[%s, -%d]!", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case POST_DEC:
-	    asm_fprintf (f, "[%s],-%d", reg_names [REGNO (addr.base)],
+	    asm_fprintf (f, "[%s], -%d", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case PRE_MODIFY:
-	    asm_fprintf (f, "[%s,%wd]!", reg_names [REGNO (addr.base)],
+	    asm_fprintf (f, "[%s, %wd]!", reg_names [REGNO (addr.base)],
 			 INTVAL (addr.offset));
 	    return;
 	  case POST_MODIFY:
-	    asm_fprintf (f, "[%s],%wd", reg_names [REGNO (addr.base)],
+	    asm_fprintf (f, "[%s], %wd", reg_names [REGNO (addr.base)],
 			 INTVAL (addr.offset));
 	    return;
 	  default:
@@ -3900,7 +3900,7 @@ aarch64_print_operand_address (FILE *f, rtx x)
 	break;
 
       case ADDRESS_LO_SUM:
-	asm_fprintf (f, "[%s,#:lo12:", reg_names [REGNO (addr.base)]);
+	asm_fprintf (f, "[%s, #:lo12:", reg_names [REGNO (addr.base)]);
 	output_addr_const (f, addr.offset);
 	asm_fprintf (f, "]");
 	return;
@@ -4847,9 +4847,11 @@ aarch64_address_cost (rtx x ATTRIBUTE_UNUSED,
 }
 
 static int
-aarch64_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-			    reg_class_t from, reg_class_t to)
+aarch64_register_move_cost (enum machine_mode mode,
+			    reg_class_t from_i, reg_class_t to_i)
 {
+  enum reg_class from = (enum reg_class) from_i;
+  enum reg_class to = (enum reg_class) to_i;
   const struct cpu_regmove_cost *regmove_cost
     = aarch64_tune_params->regmove_cost;
 
@@ -4875,8 +4877,7 @@ aarch64_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
      secondary reload.  A general register is used as a scratch to move
      the upper DI value and the lower DI value is moved directly,
      hence the cost is the sum of three moves. */
-
-  if (! TARGET_SIMD && GET_MODE_SIZE (from) == 128 && GET_MODE_SIZE (to) == 128)
+  if (! TARGET_SIMD && GET_MODE_SIZE (mode) == 128)
     return regmove_cost->GP2FP + regmove_cost->FP2GP + regmove_cost->FP2FP;
 
   return regmove_cost->FP2FP;

@@ -442,26 +442,6 @@ free_bb_for_insn (void)
   return 0;
 }
 
-static unsigned int
-rest_of_pass_free_cfg (void)
-{
-#ifdef DELAY_SLOTS
-  /* The resource.c machinery uses DF but the CFG isn't guaranteed to be
-     valid at that point so it would be too late to call df_analyze.  */
-  if (optimize > 0 && flag_delayed_branch)
-    {
-      df_note_add_problem ();
-      df_analyze ();
-    }
-#endif
-
-  if (crtl->has_bb_partition)
-    insert_section_boundary_note ();
-
-  free_bb_for_insn ();
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_free_cfg =
@@ -469,7 +449,6 @@ const pass_data pass_data_free_cfg =
   RTL_PASS, /* type */
   "*free_cfg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -487,9 +466,29 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_pass_free_cfg (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_free_cfg
+
+unsigned int
+pass_free_cfg::execute (function *)
+{
+#ifdef DELAY_SLOTS
+  /* The resource.c machinery uses DF but the CFG isn't guaranteed to be
+     valid at that point so it would be too late to call df_analyze.  */
+  if (optimize > 0 && flag_delayed_branch)
+    {
+      df_note_add_problem ();
+      df_analyze ();
+    }
+#endif
+
+  if (crtl->has_bb_partition)
+    insert_section_boundary_note ();
+
+  free_bb_for_insn ();
+  return 0;
+}
 
 } // anon namespace
 
@@ -3467,27 +3466,6 @@ record_effective_endpoints (void)
     cfg_layout_function_footer = unlink_insn_chain (cfg_layout_function_footer, get_last_insn ());
 }
 
-static unsigned int
-into_cfg_layout_mode (void)
-{
-  cfg_layout_initialize (0);
-  return 0;
-}
-
-static unsigned int
-outof_cfg_layout_mode (void)
-{
-  basic_block bb;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
-      bb->aux = bb->next_bb;
-
-  cfg_layout_finalize ();
-
-  return 0;
-}
-
 namespace {
 
 const pass_data pass_data_into_cfg_layout_mode =
@@ -3495,7 +3473,6 @@ const pass_data pass_data_into_cfg_layout_mode =
   RTL_PASS, /* type */
   "into_cfglayout", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_CFG, /* tv_id */
   0, /* properties_required */
@@ -3513,7 +3490,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return into_cfg_layout_mode (); }
+  virtual unsigned int execute (function *)
+    {
+      cfg_layout_initialize (0);
+      return 0;
+    }
 
 }; // class pass_into_cfg_layout_mode
 
@@ -3532,7 +3513,6 @@ const pass_data pass_data_outof_cfg_layout_mode =
   RTL_PASS, /* type */
   "outof_cfglayout", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_CFG, /* tv_id */
   0, /* properties_required */
@@ -3550,9 +3530,23 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return outof_cfg_layout_mode (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_outof_cfg_layout_mode
+
+unsigned int
+pass_outof_cfg_layout_mode::execute (function *fun)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, fun)
+    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (fun))
+      bb->aux = bb->next_bb;
+
+  cfg_layout_finalize ();
+
+  return 0;
+}
 
 } // anon namespace
 

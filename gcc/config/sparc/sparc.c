@@ -872,13 +872,6 @@ mem_ref (rtx x)
    pass runs as late as possible.  The pass is inserted in the pass pipeline
    at the end of sparc_option_override.  */
 
-static bool
-sparc_gate_work_around_errata (void)
-{
-  /* The only errata we handle are those of the AT697F and UT699.  */
-  return sparc_fix_at697f != 0 || sparc_fix_ut699 != 0;
-}
-
 static unsigned int
 sparc_do_work_around_errata (void)
 {
@@ -1130,7 +1123,6 @@ const pass_data pass_data_work_around_errata =
   RTL_PASS, /* type */
   "errata", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
@@ -1148,8 +1140,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return sparc_gate_work_around_errata (); }
-  unsigned int execute () { return sparc_do_work_around_errata (); }
+  virtual bool gate (function *)
+    {
+      /* The only errata we handle are those of the AT697F and UT699.  */
+      return sparc_fix_at697f != 0 || sparc_fix_ut699 != 0;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return sparc_do_work_around_errata ();
+    }
 
 }; // class pass_work_around_errata
 
@@ -4822,47 +4822,48 @@ sparc_init_modes (void)
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
-      switch (GET_MODE_CLASS (i))
+      enum machine_mode m = (enum machine_mode) i;
+      switch (GET_MODE_CLASS (m))
 	{
 	case MODE_INT:
 	case MODE_PARTIAL_INT:
 	case MODE_COMPLEX_INT:
-	  if (GET_MODE_SIZE (i) < 4)
+	  if (GET_MODE_SIZE (m) < 4)
 	    sparc_mode_class[i] = 1 << (int) H_MODE;
-	  else if (GET_MODE_SIZE (i) == 4)
+	  else if (GET_MODE_SIZE (m) == 4)
 	    sparc_mode_class[i] = 1 << (int) S_MODE;
-	  else if (GET_MODE_SIZE (i) == 8)
+	  else if (GET_MODE_SIZE (m) == 8)
 	    sparc_mode_class[i] = 1 << (int) D_MODE;
-	  else if (GET_MODE_SIZE (i) == 16)
+	  else if (GET_MODE_SIZE (m) == 16)
 	    sparc_mode_class[i] = 1 << (int) T_MODE;
-	  else if (GET_MODE_SIZE (i) == 32)
+	  else if (GET_MODE_SIZE (m) == 32)
 	    sparc_mode_class[i] = 1 << (int) O_MODE;
 	  else
 	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_VECTOR_INT:
-	  if (GET_MODE_SIZE (i) == 4)
+	  if (GET_MODE_SIZE (m) == 4)
 	    sparc_mode_class[i] = 1 << (int) SF_MODE;
-	  else if (GET_MODE_SIZE (i) == 8)
+	  else if (GET_MODE_SIZE (m) == 8)
 	    sparc_mode_class[i] = 1 << (int) DF_MODE;
 	  else
 	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_FLOAT:
 	case MODE_COMPLEX_FLOAT:
-	  if (GET_MODE_SIZE (i) == 4)
+	  if (GET_MODE_SIZE (m) == 4)
 	    sparc_mode_class[i] = 1 << (int) SF_MODE;
-	  else if (GET_MODE_SIZE (i) == 8)
+	  else if (GET_MODE_SIZE (m) == 8)
 	    sparc_mode_class[i] = 1 << (int) DF_MODE;
-	  else if (GET_MODE_SIZE (i) == 16)
+	  else if (GET_MODE_SIZE (m) == 16)
 	    sparc_mode_class[i] = 1 << (int) TF_MODE;
-	  else if (GET_MODE_SIZE (i) == 32)
+	  else if (GET_MODE_SIZE (m) == 32)
 	    sparc_mode_class[i] = 1 << (int) OF_MODE;
 	  else
 	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_CC:
-	  if (i == (int) CCFPmode || i == (int) CCFPEmode)
+	  if (m == CCFPmode || m == CCFPEmode)
 	    sparc_mode_class[i] = 1 << (int) CCFP_MODE;
 	  else
 	    sparc_mode_class[i] = 1 << (int) CC_MODE;

@@ -740,13 +740,6 @@ rest_of_handle_df_initialize (void)
 }
 
 
-static bool
-gate_opt (void)
-{
-  return optimize > 0;
-}
-
-
 namespace {
 
 const pass_data pass_data_df_initialize_opt =
@@ -754,7 +747,6 @@ const pass_data pass_data_df_initialize_opt =
   RTL_PASS, /* type */
   "dfinit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_DF_SCAN, /* tv_id */
   0, /* properties_required */
@@ -772,8 +764,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_opt (); }
-  unsigned int execute () { return rest_of_handle_df_initialize (); }
+  virtual bool gate (function *) { return optimize > 0; }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_df_initialize ();
+    }
 
 }; // class pass_df_initialize_opt
 
@@ -786,13 +781,6 @@ make_pass_df_initialize_opt (gcc::context *ctxt)
 }
 
 
-static bool
-gate_no_opt (void)
-{
-  return optimize == 0;
-}
-
-
 namespace {
 
 const pass_data pass_data_df_initialize_no_opt =
@@ -800,7 +788,6 @@ const pass_data pass_data_df_initialize_no_opt =
   RTL_PASS, /* type */
   "no-opt dfinit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_DF_SCAN, /* tv_id */
   0, /* properties_required */
@@ -818,8 +805,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_no_opt (); }
-  unsigned int execute () { return rest_of_handle_df_initialize (); }
+  virtual bool gate (function *) { return optimize == 0; }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_df_initialize ();
+    }
 
 }; // class pass_df_initialize_no_opt
 
@@ -866,7 +856,6 @@ const pass_data pass_data_df_finish =
   RTL_PASS, /* type */
   "dfinish", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -884,7 +873,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return rest_of_handle_df_finish (); }
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_df_finish ();
+    }
 
 }; // class pass_df_finish
 

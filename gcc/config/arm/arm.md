@@ -2863,6 +2863,28 @@
    (set_attr "type" "multiple")]
 )
 
+(define_insn_and_split "*anddi_notdi_zesidi"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+        (and:DI (not:DI (match_operand:DI 2 "s_register_operand" "r"))
+                (zero_extend:DI
+                 (match_operand:SI 1 "s_register_operand" "r"))))]
+  "TARGET_32BIT"
+  "#"
+  "TARGET_32BIT && reload_completed"
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 2)) (match_dup 1)))
+   (set (match_dup 3) (const_int 0))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+  }"
+  [(set_attr "length" "8")
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "multiple")]
+)
+
 (define_insn_and_split "*anddi_notsesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (not:DI (sign_extend:DI

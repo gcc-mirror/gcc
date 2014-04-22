@@ -8838,29 +8838,11 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       if (FLOAT_MODE_P (TYPE_MODE (desttype))
 	  || TREE_CODE (desttype) == BOOLEAN_TYPE
 	  || TREE_CODE (desttype) == ENUMERAL_TYPE)
-	{
-	  /* A more suitable int_mode_for_mode would return a vector
-	     integer mode for a vector float mode or a integer complex
-	     mode for a float complex mode if there isn't a regular
-	     integer mode covering the mode of desttype.  */
-	  enum machine_mode mode = int_mode_for_mode (TYPE_MODE (desttype));
-	  if (mode == BLKmode)
-	    desttype = NULL_TREE;
-	  else
-	    desttype = build_nonstandard_integer_type (GET_MODE_BITSIZE (mode),
-						       1);
-	}
+	desttype = bitwise_type_for_mode (TYPE_MODE (desttype));
       if (FLOAT_MODE_P (TYPE_MODE (srctype))
 	  || TREE_CODE (srctype) == BOOLEAN_TYPE
 	  || TREE_CODE (srctype) == ENUMERAL_TYPE)
-	{
-	  enum machine_mode mode = int_mode_for_mode (TYPE_MODE (srctype));
-	  if (mode == BLKmode)
-	    srctype = NULL_TREE;
-	  else
-	    srctype = build_nonstandard_integer_type (GET_MODE_BITSIZE (mode),
-						      1);
-	}
+	srctype = bitwise_type_for_mode (TYPE_MODE (srctype));
       if (!srctype)
 	srctype = desttype;
       if (!desttype)

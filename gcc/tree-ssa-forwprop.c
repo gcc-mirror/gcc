@@ -3569,15 +3569,45 @@ simplify_mult (gimple_stmt_iterator *gsi)
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
-static unsigned int
-ssa_forward_propagate_and_combine (void)
+namespace {
+
+const pass_data pass_data_forwprop =
+{
+  GIMPLE_PASS, /* type */
+  "forwprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_FORWPROP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
+};
+
+class pass_forwprop : public gimple_opt_pass
+{
+public:
+  pass_forwprop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_forwprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_forwprop (m_ctxt); }
+  virtual bool gate (function *) { return flag_tree_forwprop; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_forwprop
+
+unsigned int
+pass_forwprop::execute (function *fun)
 {
   basic_block bb;
   unsigned int todoflags = 0;
 
   cfg_changed = false;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
 
@@ -3662,7 +3692,7 @@ ssa_forward_propagate_and_combine (void)
 	  else if (TREE_CODE_CLASS (code) == tcc_comparison)
 	    {
 	      if (forward_propagate_comparison (&gsi))
-	        cfg_changed = true;
+		cfg_changed = true;
 	    }
 	  else
 	    gsi_next (&gsi);
@@ -3832,44 +3862,6 @@ ssa_forward_propagate_and_combine (void)
 
   return todoflags;
 }
-
-
-static bool
-gate_forwprop (void)
-{
-  return flag_tree_forwprop;
-}
-
-namespace {
-
-const pass_data pass_data_forwprop =
-{
-  GIMPLE_PASS, /* type */
-  "forwprop", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_FORWPROP, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
-};
-
-class pass_forwprop : public gimple_opt_pass
-{
-public:
-  pass_forwprop (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_forwprop, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_forwprop (m_ctxt); }
-  bool gate () { return gate_forwprop (); }
-  unsigned int execute () { return ssa_forward_propagate_and_combine (); }
-
-}; // class pass_forwprop
 
 } // anon namespace
 

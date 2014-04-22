@@ -91,8 +91,7 @@ public:
 
 private:
   void set_pass_for_id (int id, opt_pass *pass);
-  int register_dump_files_1 (opt_pass *pass, int properties);
-  void register_dump_files (opt_pass *pass, int properties);
+  void register_dump_files (opt_pass *pass);
 
 private:
   context *m_ctxt;

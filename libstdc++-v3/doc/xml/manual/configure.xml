@@ -162,8 +162,7 @@
 
  <varlistentry><term><code>--enable-libstdcxx-threads</code></term>
  <listitem><para>Enable C++11 threads support.  If not explicitly specified,
-        the  configure process enables it if possible.  It defaults to 'off'
-	on Solaris 9, where it would break symbol versioning.   This
+        the  configure process enables it if possible.  This
 	option can change the library ABI.
      </para>
  </listitem></varlistentry>

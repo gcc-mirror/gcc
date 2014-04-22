@@ -859,17 +859,49 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
 }
 
-/* Gate and execute functions for ubsan pass.  */
+namespace {
 
-static unsigned int
-ubsan_pass (void)
+const pass_data pass_data_ubsan =
+{
+  GIMPLE_PASS, /* type */
+  "ubsan", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_UBSAN, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa, /* todo_flags_finish */
+};
+
+class pass_ubsan : public gimple_opt_pass
+{
+public:
+  pass_ubsan (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_ubsan, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW
+			      | SANITIZE_BOOL | SANITIZE_ENUM);
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_ubsan
+
+unsigned int
+pass_ubsan::execute (function *fun)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
 
   initialize_sanitizer_builtins ();
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
@@ -901,43 +933,6 @@ ubsan_pass (void)
     }
   return 0;
 }
-
-static bool
-gate_ubsan (void)
-{
-  return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW
-			  | SANITIZE_BOOL | SANITIZE_ENUM);
-}
-
-namespace {
-
-const pass_data pass_data_ubsan =
-{
-  GIMPLE_PASS, /* type */
-  "ubsan", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_UBSAN, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_update_ssa, /* todo_flags_finish */
-};
-
-class pass_ubsan : public gimple_opt_pass
-{
-public:
-  pass_ubsan (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_ubsan, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_ubsan (); }
-  unsigned int execute () { return ubsan_pass (); }
-
-}; // class pass_ubsan
 
 } // anon namespace
 

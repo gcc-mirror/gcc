@@ -1,3 +1,14 @@
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/crtfastmath.c (set_fast_math): Remove SSE execution
+	check.
+	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Remove
+	Solaris 9 single-threaded support.
+	* config/sparc/sol2-unwind.h (sparc64_is_sighandler): Remove
+	Solaris 9 single-threaded support.  Add call_user_handler code
+	sequences.
+	(sparc_is_sighandler): Likewise.
+
 2014-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config.host: Append t-floattodi to tmake_file depending on

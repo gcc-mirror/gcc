@@ -8324,13 +8324,6 @@ execute_expand_omp (void)
 
 /* OMP expansion -- the default pass, run before creation of SSA form.  */
 
-static bool
-gate_expand_omp (void)
-{
-  return ((flag_openmp != 0 || flag_openmp_simd != 0
-	   || flag_cilkplus != 0) && !seen_error ());
-}
-
 namespace {
 
 const pass_data pass_data_expand_omp =
@@ -8338,7 +8331,6 @@ const pass_data pass_data_expand_omp =
   GIMPLE_PASS, /* type */
   "ompexp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -8356,8 +8348,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_expand_omp (); }
-  unsigned int execute () { return execute_expand_omp (); }
+  virtual bool gate (function *)
+    {
+      return ((flag_openmp != 0 || flag_openmp_simd != 0
+	       || flag_cilkplus != 0) && !seen_error ());
+    }
+
+  virtual unsigned int execute (function *) { return execute_expand_omp (); }
 
 }; // class pass_expand_omp
 
@@ -10199,7 +10196,6 @@ const pass_data pass_data_lower_omp =
   GIMPLE_PASS, /* type */
   "omplower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -10217,7 +10213,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_lower_omp (); }
+  virtual unsigned int execute (function *) { return execute_lower_omp (); }
 
 }; // class pass_lower_omp
 
@@ -10617,12 +10613,6 @@ diagnose_omp_structured_block_errors (void)
   return 0;
 }
 
-static bool
-gate_diagnose_omp_blocks (void)
-{
-  return flag_openmp || flag_cilkplus;
-}
-
 namespace {
 
 const pass_data pass_data_diagnose_omp_blocks =
@@ -10630,7 +10620,6 @@ const pass_data pass_data_diagnose_omp_blocks =
   GIMPLE_PASS, /* type */
   "*diagnose_omp_blocks", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -10648,10 +10637,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_diagnose_omp_blocks (); }
-  unsigned int execute () {
-    return diagnose_omp_structured_block_errors ();
-  }
+  virtual bool gate (function *) { return flag_openmp || flag_cilkplus; }
+  virtual unsigned int execute (function *)
+    {
+      return diagnose_omp_structured_block_errors ();
+    }
 
 }; // class pass_diagnose_omp_blocks
 
@@ -11289,45 +11279,53 @@ static tree
 ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  if (!SSA_VAR_P (*tp))
-    {
-      /* Make sure we treat subtrees as a RHS.  This makes sure that
-	 when examining the `*foo' in *foo=x, the `foo' get treated as
-	 a use properly.  */
-      wi->is_lhs = false;
-      wi->val_only = true;
-      if (TYPE_P (*tp))
-	*walk_subtrees = 0;
-      return NULL_TREE;
-    }
   struct modify_stmt_info *info = (struct modify_stmt_info *) wi->info;
-  struct ipa_parm_adjustment *cand
-    = ipa_get_adjustment_candidate (&tp, NULL, info->adjustments, true);
-  if (!cand)
-    return NULL_TREE;
-
-  tree t = *tp;
-  tree repl = make_ssa_name (TREE_TYPE (t), NULL);
-
-  gimple stmt;
-  gimple_stmt_iterator gsi = gsi_for_stmt (info->stmt);
-  if (wi->is_lhs)
-    {
-      stmt = gimple_build_assign (unshare_expr (cand->new_decl), repl);
-      gsi_insert_after (&gsi, stmt, GSI_SAME_STMT);
-      SSA_NAME_DEF_STMT (repl) = info->stmt;
-    }
+  tree *orig_tp = tp;
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    tp = &TREE_OPERAND (*tp, 0);
+  struct ipa_parm_adjustment *cand = NULL;
+  if (TREE_CODE (*tp) == PARM_DECL)
+    cand = ipa_get_adjustment_candidate (&tp, NULL, info->adjustments, true);
   else
     {
-      /* You'd think we could skip the extra SSA variable when
-	 wi->val_only=true, but we may have `*var' which will get
-	 replaced into `*var_array[iter]' and will likely be something
-	 not gimple.  */
-      stmt = gimple_build_assign (repl, unshare_expr (cand->new_decl));
-      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+      if (TYPE_P (*tp))
+	*walk_subtrees = 0;
     }
 
-  if (!useless_type_conversion_p (TREE_TYPE (*tp), TREE_TYPE (repl)))
+  tree repl = NULL_TREE;
+  if (cand)
+    repl = unshare_expr (cand->new_decl);
+  else
+    {
+      if (tp != orig_tp)
+	{
+	  *walk_subtrees = 0;
+	  bool modified = info->modified;
+	  info->modified = false;
+	  walk_tree (tp, ipa_simd_modify_stmt_ops, wi, wi->pset);
+	  if (!info->modified)
+	    {
+	      info->modified = modified;
+	      return NULL_TREE;
+	    }
+	  info->modified = modified;
+	  repl = *tp;
+	}
+      else
+	return NULL_TREE;
+    }
+
+  if (tp != orig_tp)
+    {
+      repl = build_fold_addr_expr (repl);
+      gimple stmt
+	= gimple_build_assign (make_ssa_name (TREE_TYPE (repl), NULL), repl);
+      repl = gimple_assign_lhs (stmt);
+      gimple_stmt_iterator gsi = gsi_for_stmt (info->stmt);
+      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+      *orig_tp = repl;
+    }
+  else if (!useless_type_conversion_p (TREE_TYPE (*tp), TREE_TYPE (repl)))
     {
       tree vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (*tp), repl);
       *tp = vce;
@@ -11336,8 +11334,6 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
     *tp = repl;
 
   info->modified = true;
-  wi->is_lhs = false;
-  wi->val_only = true;
   return NULL_TREE;
 }
 
@@ -11356,7 +11352,7 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 			       tree retval_array, tree iter)
 {
   basic_block bb;
-  unsigned int i, j;
+  unsigned int i, j, l;
 
   /* Re-use the adjustments array, but this time use it to replace
      every function argument use to an offset into the corresponding
@@ -11377,6 +11373,46 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
       if (adjustments[j].op == IPA_PARM_OP_NONE
 	  && TYPE_VECTOR_SUBPARTS (vectype) < node->simdclone->simdlen)
 	j += node->simdclone->simdlen / TYPE_VECTOR_SUBPARTS (vectype) - 1;
+    }
+
+  l = adjustments.length ();
+  for (i = 1; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      if (name
+	  && SSA_NAME_VAR (name)
+	  && TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL)
+	{
+	  for (j = 0; j < l; j++)
+	    if (SSA_NAME_VAR (name) == adjustments[j].base
+		&& adjustments[j].new_decl)
+	      {
+		tree base_var;
+		if (adjustments[j].new_ssa_base == NULL_TREE)
+		  {
+		    base_var
+		      = copy_var_decl (adjustments[j].base,
+				       DECL_NAME (adjustments[j].base),
+				       TREE_TYPE (adjustments[j].base));
+		    adjustments[j].new_ssa_base = base_var;
+		  }
+		else
+		  base_var = adjustments[j].new_ssa_base;
+		if (SSA_NAME_IS_DEFAULT_DEF (name))
+		  {
+		    bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+		    gimple_stmt_iterator gsi = gsi_after_labels (bb);
+		    tree new_decl = unshare_expr (adjustments[j].new_decl);
+		    set_ssa_default_def (cfun, adjustments[j].base, NULL_TREE);
+		    SET_SSA_NAME_VAR_OR_IDENTIFIER (name, base_var);
+		    SSA_NAME_IS_DEFAULT_DEF (name) = 0;
+		    gimple stmt = gimple_build_assign (name, new_decl);
+		    gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+		  }
+		else
+		  SET_SSA_NAME_VAR_OR_IDENTIFIER (name, base_var);
+	      }
+	}
     }
 
   struct modify_stmt_info info;
@@ -11795,7 +11831,6 @@ const pass_data pass_data_omp_simd_clone =
   SIMPLE_IPA_PASS,		/* type */
   "simdclone",			/* name */
   OPTGROUP_NONE,		/* optinfo_flags */
-  true,				/* has_gate */
   true,				/* has_execute */
   TV_NONE,			/* tv_id */
   ( PROP_ssa | PROP_cfg ),	/* properties_required */
@@ -11813,12 +11848,18 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return ((flag_openmp || flag_openmp_simd
-			  || flag_cilkplus || (in_lto_p && !flag_wpa))
-			 && (targetm.simd_clone.compute_vecsize_and_simdlen
-			     != NULL)); }
-  unsigned int execute () { return ipa_omp_simd_clone (); }
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *) { return ipa_omp_simd_clone (); }
 };
+
+bool
+pass_omp_simd_clone::gate (function *)
+{
+  return ((flag_openmp || flag_openmp_simd
+	   || flag_cilkplus
+	   || (in_lto_p && !flag_wpa))
+	  && (targetm.simd_clone.compute_vecsize_and_simdlen != NULL));
+}
 
 } // anon namespace
 

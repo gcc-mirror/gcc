@@ -3523,25 +3523,7 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
       #ifndef __GTHREADS_CXX0X
       #error
       #endif
-    ], [case $target_os in
-	  # gthreads support breaks symbol versioning on Solaris 9 (PR
-	  # libstdc++/52189).
-          solaris2.9*)
-	    if test x$enable_symvers = xno; then
-	      ac_has_gthreads=yes
-	    elif test x$enable_libstdcxx_threads = xyes; then
-	      AC_MSG_WARN([You have requested C++11 threads support, but])
-	      AC_MSG_WARN([this breaks symbol versioning.])
-	      ac_has_gthreads=yes
-	    else
-	      ac_has_gthreads=no
-	    fi
-	    ;;
-	  *)
-	    ac_has_gthreads=yes
-	    ;;
-        esac],
-       [ac_has_gthreads=no])
+    ], [ac_has_gthreads=yes], [ac_has_gthreads=no])
   else
     ac_has_gthreads=no
   fi

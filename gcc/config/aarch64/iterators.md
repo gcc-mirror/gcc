@@ -293,6 +293,10 @@
 ;; 32-bit version and "%x0" in the 64-bit version.
 (define_mode_attr w [(QI "w") (HI "w") (SI "w") (DI "x") (SF "s") (DF "d")])
 
+;; For inequal width int to float conversion
+(define_mode_attr w1 [(SF "w") (DF "x")])
+(define_mode_attr w2 [(SF "x") (DF "w")])
+
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
 
@@ -558,8 +562,12 @@
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])
 
-(define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si")])
-(define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")])
+(define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si") (SF "si") (DF "di")])
+(define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI") (SF "SI") (DF "DI")])
+
+;; for the inequal width integer to fp conversions
+(define_mode_attr fcvt_iesize [(SF "di") (DF "si")])
+(define_mode_attr FCVT_IESIZE [(SF "DI") (DF "SI")])
 
 (define_mode_attr VSWAP_WIDTH [(V8QI "V16QI") (V16QI "V8QI")
 				(V4HI "V8HI") (V8HI  "V4HI")

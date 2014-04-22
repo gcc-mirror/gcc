@@ -1526,12 +1526,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 /* Use this to lower vector operations introduced by the vectorizer,
    if it may need the bit-twiddling tricks implemented in this file.  */
 
-static bool
-gate_expand_vector_operations_ssa (void)
-{
-  return !(cfun->curr_properties & PROP_gimple_lvec);
-}
-
 static unsigned int
 expand_vector_operations (void)
 {
@@ -1564,7 +1558,6 @@ const pass_data pass_data_lower_vector =
   GIMPLE_PASS, /* type */
   "veclower", /* name */
   OPTGROUP_VEC, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1585,8 +1578,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_expand_vector_operations_ssa (); }
-  unsigned int execute () { return expand_vector_operations (); }
+  virtual bool gate (function *fun)
+    {
+      return !(fun->curr_properties & PROP_gimple_lvec);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return expand_vector_operations ();
+    }
 
 }; // class pass_lower_vector
 
@@ -1605,7 +1605,6 @@ const pass_data pass_data_lower_vector_ssa =
   GIMPLE_PASS, /* type */
   "veclower2", /* name */
   OPTGROUP_VEC, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1627,7 +1626,10 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_lower_vector_ssa (m_ctxt); }
-  unsigned int execute () { return expand_vector_operations (); }
+  virtual unsigned int execute (function *)
+    {
+      return expand_vector_operations ();
+    }
 
 }; // class pass_lower_vector_ssa
 

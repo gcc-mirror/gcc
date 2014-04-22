@@ -353,7 +353,6 @@ const pass_data pass_data_build_cfg =
   GIMPLE_PASS, /* type */
   "cfg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_CFG, /* tv_id */
   PROP_gimple_leh, /* properties_required */
@@ -371,7 +370,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_build_cfg (); }
+  virtual unsigned int execute (function *) { return execute_build_cfg (); }
 
 }; // class pass_build_cfg
 
@@ -8086,7 +8085,6 @@ const pass_data pass_data_split_crit_edges =
   GIMPLE_PASS, /* type */
   "crited", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_TREE_SPLIT_EDGES, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -8104,7 +8102,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return split_critical_edges (); }
+  virtual unsigned int execute (function *) { return split_critical_edges (); }
 
   opt_pass * clone () { return new pass_split_crit_edges (m_ctxt); }
 }; // class pass_split_crit_edges
@@ -8169,64 +8167,6 @@ gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
 
 
 
-/* Emit return warnings.  */
-
-static unsigned int
-execute_warn_function_return (void)
-{
-  source_location location;
-  gimple last;
-  edge e;
-  edge_iterator ei;
-
-  if (!targetm.warn_func_return (cfun->decl))
-    return 0;
-
-  /* If we have a path to EXIT, then we do return.  */
-  if (TREE_THIS_VOLATILE (cfun->decl)
-      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) > 0)
-    {
-      location = UNKNOWN_LOCATION;
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-	{
-	  last = last_stmt (e->src);
-	  if ((gimple_code (last) == GIMPLE_RETURN
-	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
-	      && (location = gimple_location (last)) != UNKNOWN_LOCATION)
-	    break;
-	}
-      if (location == UNKNOWN_LOCATION)
-	location = cfun->function_end_locus;
-      warning_at (location, 0, "%<noreturn%> function does return");
-    }
-
-  /* If we see "return;" in some basic block, then we do reach the end
-     without returning a value.  */
-  else if (warn_return_type
-	   && !TREE_NO_WARNING (cfun->decl)
-	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) > 0
-	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (cfun->decl))))
-    {
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
-	{
-	  gimple last = last_stmt (e->src);
-	  if (gimple_code (last) == GIMPLE_RETURN
-	      && gimple_return_retval (last) == NULL
-	      && !gimple_no_warning_p (last))
-	    {
-	      location = gimple_location (last);
-	      if (location == UNKNOWN_LOCATION)
-		  location = cfun->function_end_locus;
-	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
-	      TREE_NO_WARNING (cfun->decl) = 1;
-	      break;
-	    }
-	}
-    }
-  return 0;
-}
-
-
 /* Given a basic block B which ends with a conditional and has
    precisely two successors, determine which of the edges is taken if
    the conditional is true and which is taken if the conditional is
@@ -8251,6 +8191,8 @@ extract_true_false_edges_from_block (basic_block b,
     }
 }
 
+/* Emit return warnings.  */
+
 namespace {
 
 const pass_data pass_data_warn_function_return =
@@ -8258,7 +8200,6 @@ const pass_data pass_data_warn_function_return =
   GIMPLE_PASS, /* type */
   "*warn_function_return", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -8276,9 +8217,64 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return execute_warn_function_return (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_warn_function_return
+
+unsigned int
+pass_warn_function_return::execute (function *fun)
+{
+  source_location location;
+  gimple last;
+  edge e;
+  edge_iterator ei;
+
+  if (!targetm.warn_func_return (fun->decl))
+    return 0;
+
+  /* If we have a path to EXIT, then we do return.  */
+  if (TREE_THIS_VOLATILE (fun->decl)
+      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0)
+    {
+      location = UNKNOWN_LOCATION;
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
+	{
+	  last = last_stmt (e->src);
+	  if ((gimple_code (last) == GIMPLE_RETURN
+	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
+	      && (location = gimple_location (last)) != UNKNOWN_LOCATION)
+	    break;
+	}
+      if (location == UNKNOWN_LOCATION)
+	location = cfun->function_end_locus;
+      warning_at (location, 0, "%<noreturn%> function does return");
+    }
+
+  /* If we see "return;" in some basic block, then we do reach the end
+     without returning a value.  */
+  else if (warn_return_type
+	   && !TREE_NO_WARNING (fun->decl)
+	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0
+	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))
+    {
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
+	{
+	  gimple last = last_stmt (e->src);
+	  if (gimple_code (last) == GIMPLE_RETURN
+	      && gimple_return_retval (last) == NULL
+	      && !gimple_no_warning_p (last))
+	    {
+	      location = gimple_location (last);
+	      if (location == UNKNOWN_LOCATION)
+		location = fun->function_end_locus;
+	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
+	      TREE_NO_WARNING (fun->decl) = 1;
+	      break;
+	    }
+	}
+    }
+  return 0;
+}
 
 } // anon namespace
 
@@ -8353,19 +8349,6 @@ do_warn_unused_result (gimple_seq seq)
     }
 }
 
-static unsigned int
-run_warn_unused_result (void)
-{
-  do_warn_unused_result (gimple_body (current_function_decl));
-  return 0;
-}
-
-static bool
-gate_warn_unused_result (void)
-{
-  return flag_warn_unused_result;
-}
-
 namespace {
 
 const pass_data pass_data_warn_unused_result =
@@ -8373,7 +8356,6 @@ const pass_data pass_data_warn_unused_result =
   GIMPLE_PASS, /* type */
   "*warn_unused_result", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
@@ -8391,8 +8373,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_warn_unused_result (); }
-  unsigned int execute () { return run_warn_unused_result (); }
+  virtual bool gate (function *) { return flag_warn_unused_result; }
+  virtual unsigned int execute (function *)
+    {
+      do_warn_unused_result (gimple_body (current_function_decl));
+      return 0;
+    }
 
 }; // class pass_warn_unused_result
 
@@ -8516,7 +8502,6 @@ const pass_data pass_data_fixup_cfg =
   GIMPLE_PASS, /* type */
   "*free_cfg_annotations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -8535,7 +8520,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_fixup_cfg (m_ctxt); }
-  unsigned int execute () { return execute_fixup_cfg (); }
+  virtual unsigned int execute (function *) { return execute_fixup_cfg (); }
 
 }; // class pass_fixup_cfg
 

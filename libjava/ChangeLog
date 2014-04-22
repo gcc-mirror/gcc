@@ -1,3 +1,9 @@
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (THREADLIBS, THREADSPEC): Remove *-*-solaris2.9
+	handling.
+	* configure: Regenerate.
+
 2014-03-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* include/dwarf2-signal.h: Update copyright year.

@@ -177,7 +177,13 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 /* Get the size in bytes and bits of an object of mode MODE.  */
 
 extern CONST_MODE_SIZE unsigned char mode_size[NUM_MACHINE_MODES];
+#if GCC_VERSION >= 4001
+#define GET_MODE_SIZE(MODE) \
+  ((unsigned short) (__builtin_constant_p (MODE) \
+		     ? mode_size_inline (MODE) : mode_size[MODE]))
+#else
 #define GET_MODE_SIZE(MODE)    ((unsigned short) mode_size[MODE])
+#endif
 #define GET_MODE_BITSIZE(MODE) \
   ((unsigned short) (GET_MODE_SIZE (MODE) * BITS_PER_UNIT))
 
@@ -203,7 +209,13 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 /* Return the mode of the inner elements in a vector.  */
 
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
+#if GCC_VERSION >= 4001
+#define GET_MODE_INNER(MODE) \
+  ((enum machine_mode) (__builtin_constant_p (MODE) \
+			? mode_inner_inline (MODE) : mode_inner[MODE]))
+#else
 #define GET_MODE_INNER(MODE) ((enum machine_mode) mode_inner[MODE])
+#endif
 
 /* Get the size in bytes or bites of the basic parts of an
    object of mode MODE.  */
@@ -224,7 +236,13 @@ extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 /* Get the number of units in the object.  */
 
 extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
+#if GCC_VERSION >= 4001
+#define GET_MODE_NUNITS(MODE) \
+  ((unsigned char) (__builtin_constant_p (MODE) \
+		    ? mode_nunits_inline (MODE) : mode_nunits[MODE]))
+#else
 #define GET_MODE_NUNITS(MODE)  mode_nunits[MODE]
+#endif
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
@@ -252,6 +270,8 @@ extern enum machine_mode smallest_mode_for_size (unsigned int,
    or BLKmode on failure.  */
 
 extern enum machine_mode int_mode_for_mode (enum machine_mode);
+
+extern enum machine_mode bitwise_mode_for_mode (enum machine_mode);
 
 /* Return a mode that is suitable for representing a vector,
    or BLKmode on failure.  */

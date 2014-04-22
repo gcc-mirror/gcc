@@ -1197,9 +1197,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	       && TREE_CODE (TREE_TYPE (from)) != FUNCTION_TYPE)
 	{
 	  tree nfrom = TREE_TYPE (from);
+	  /* Don't try to apply restrict to void.  */
+	  int quals = cp_type_quals (nfrom) & ~TYPE_QUAL_RESTRICT;
 	  from = build_pointer_type
-	    (cp_build_qualified_type (void_type_node, 
-			              cp_type_quals (nfrom)));
+	    (cp_build_qualified_type (void_type_node, quals));
 	  conv = build_conv (ck_ptr, from, conv);
 	}
       else if (TYPE_PTRDATAMEM_P (from))
@@ -1684,20 +1685,30 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   if (!conv)
     return NULL;
 
+  if (conv->user_conv_p)
+    {
+      /* If initializing the temporary used a conversion function,
+	 recalculate the second conversion sequence.  */
+      for (conversion *t = conv; t; t = next_conversion (t))
+	if (t->kind == ck_user
+	    && DECL_CONV_FN_P (t->cand->fn))
+	  {
+	    tree ftype = TREE_TYPE (TREE_TYPE (t->cand->fn));
+	    int sflags = (flags|LOOKUP_NO_CONVERSION)&~LOOKUP_NO_TEMP_BIND;
+	    conversion *new_second
+	      = reference_binding (rto, ftype, NULL_TREE, c_cast_p,
+				   sflags, complain);
+	    if (!new_second)
+	      return NULL;
+	    return merge_conversion_sequences (t, new_second);
+	  }
+    }
+
   conv = build_conv (ck_ref_bind, rto, conv);
   /* This reference binding, unlike those above, requires the
      creation of a temporary.  */
   conv->need_temporary_p = true;
-  if (TYPE_REF_IS_RVALUE (rto))
-    {
-      conv->rvaluedness_matches_p = 1;
-      /* In the second case, if the reference is an rvalue reference and
-	 the second standard conversion sequence of the user-defined
-	 conversion sequence includes an lvalue-to-rvalue conversion, the
-	 program is ill-formed.  */
-      if (conv->user_conv_p && next_conversion (conv)->kind == ck_rvalue)
-	conv->bad_p = 1;
-    }
+  conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
 
   return conv;
 }

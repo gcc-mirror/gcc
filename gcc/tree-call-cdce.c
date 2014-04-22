@@ -867,16 +867,51 @@ shrink_wrap_conditional_dead_built_in_calls (vec<gimple> calls)
   return changed;
 }
 
-/* Pass entry points.  */
+namespace {
 
-static unsigned int
-tree_call_cdce (void)
+const pass_data pass_data_call_cdce =
+{
+  GIMPLE_PASS, /* type */
+  "cdce", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_TREE_CALL_CDCE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
+};
+
+class pass_call_cdce : public gimple_opt_pass
+{
+public:
+  pass_call_cdce (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_call_cdce, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fun)
+    {
+      /* The limit constants used in the implementation
+	 assume IEEE floating point format.  Other formats
+	 can be supported in the future if needed.  */
+      return flag_tree_builtin_call_dce != 0
+       	&& optimize_function_for_speed_p (fun);
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_call_cdce
+
+unsigned int
+pass_call_cdce::execute (function *fun)
 {
   basic_block bb;
   gimple_stmt_iterator i;
   bool something_changed = false;
   auto_vec<gimple> cond_dead_built_in_calls;
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       /* Collect dead call candidates.  */
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
@@ -910,51 +945,12 @@ tree_call_cdce (void)
       free_dominance_info (CDI_POST_DOMINATORS);
       /* As we introduced new control-flow we need to insert PHI-nodes
          for the call-clobbers of the remaining call.  */
-      mark_virtual_operands_for_renaming (cfun);
+      mark_virtual_operands_for_renaming (fun);
       return TODO_update_ssa;
     }
 
   return 0;
 }
-
-static bool
-gate_call_cdce (void)
-{
-  /* The limit constants used in the implementation
-     assume IEEE floating point format.  Other formats
-     can be supported in the future if needed.  */
-  return flag_tree_builtin_call_dce != 0 && optimize_function_for_speed_p (cfun);
-}
-
-namespace {
-
-const pass_data pass_data_call_cdce =
-{
-  GIMPLE_PASS, /* type */
-  "cdce", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_CALL_CDCE, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
-};
-
-class pass_call_cdce : public gimple_opt_pass
-{
-public:
-  pass_call_cdce (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_call_cdce, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_call_cdce (); }
-  unsigned int execute () { return tree_call_cdce (); }
-
-}; // class pass_call_cdce
 
 } // anon namespace
 

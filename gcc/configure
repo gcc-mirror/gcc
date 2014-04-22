@@ -6427,6 +6427,50 @@ fi
   done
 CFLAGS="$save_CFLAGS"
 
+save_CFLAGS="$CFLAGS"
+for real_option in -Woverloaded-virtual; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
+  as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
+$as_echo_n "checking whether $CC supports $option... " >&6; }
+if { as_var=$as_acx_Woption; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS="$option"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$as_acx_Woption=yes"
+else
+  eval "$as_acx_Woption=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+eval ac_res=\$$as_acx_Woption
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
+  strict_warn="$strict_warn${strict_warn:+ }$real_option"
+fi
+  done
+CFLAGS="$save_CFLAGS"
+
 c_strict_warn=
 save_CFLAGS="$CFLAGS"
 for real_option in -Wold-style-definition -Wc++-compat; do
@@ -17927,7 +17971,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17930 "configure"
+#line 17974 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18033,7 +18077,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18036 "configure"
+#line 18080 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22147,35 +22191,7 @@ foobar:' > conftest.s
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-
-# Solaris 9/x86 as incorrectly emits an alias for a hidden symbol with
-# STV_HIDDEN, so disable .hidden support if so.
-case "${target}" in
-  i?86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
-    if test x$gcc_cv_as != x && test x$gcc_cv_objdump != x; then
-      cat > conftest.s <<EOF
-.globl hidden
-        .hidden hidden
-hidden:
-.globl default
-        .set    default,hidden
-EOF
-      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-        && $gcc_cv_objdump -t conftest.o 2>/dev/null | \
-        grep '\.hidden default' > /dev/null; then
-        gcc_cv_as_hidden=no
-      else
-        gcc_cv_as_hidden=yes
-      fi
-    else
-      # Assume bug is present if objdump is missing.
-      gcc_cv_as_hidden=no
-    fi
-    ;;
-  *)
-    gcc_cv_as_hidden=yes
-    ;;
-esac
+	gcc_cv_as_hidden=yes
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -22308,7 +22324,7 @@ else
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
-      *-*-solaris2.9* | *-*-solaris2.1[0-9]*)
+      *-*-solaris2.1[0-9]*)
 	# Support for .hidden in Sun ld appeared in Solaris 9 FCS, but
 	# .symbolic was only added in Solaris 9 12/02.
         gcc_cv_ld_hidden=yes
@@ -23695,34 +23711,7 @@ case "$target" in
   # TLS on x86 was only introduced in Solaris 9 4/04, replacing the earlier
   # Sun style that Sun ld and GCC don't support any longer.
   *-*-solaris2.*)
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker and ld.so.1 TLS support" >&5
-$as_echo_n "checking linker and ld.so.1 TLS support... " >&6; }
-    ld_tls_support=no
-    # Check ld and ld.so.1 TLS support.
-    if echo "$ld_ver" | grep GNU > /dev/null; then
-      # Assume all interesting versions of GNU ld have TLS support.
-      # FIXME: still need ld.so.1 support, i.e. ld version checks below.
-      ld_tls_support=yes
-    else
-      case "$target" in
-	# Solaris 9/x86 ld has GNU style TLS support since version 1.374.
-        i?86-*-solaris2.9)
-          min_tls_ld_vers_minor=374
-          ;;
-	# Solaris 9/SPARC and Solaris 10+ ld have TLS support since FCS.
-        sparc*-*-solaris2.9 | *-*-solaris2.1[0-9]*)
-	  min_tls_ld_vers_minor=343
-          ;;
-      esac
-      if test "$ld_vers_major" -gt 1 || \
-        test "$ld_vers_minor" -ge "$min_tls_ld_vers_minor"; then
- 	ld_tls_support=yes
-      else
-        set_have_as_tls=no
-      fi
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_tls_support" >&5
-$as_echo "$ld_tls_support" >&6; }
+    ld_tls_support=yes
 
     save_LIBS="$LIBS"
     save_LDFLAGS="$LDFLAGS"
@@ -26524,18 +26513,7 @@ fi
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	# The native Solaris 9/Intel assembler doesn't understand --gstabs
-   # and warns about it, but still exits successfully.  So check for
-   # this.
-   if { ac_try='$gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-   then :
-   else gcc_cv_as_gstabs_flag=yes
-   fi
+	gcc_cv_as_gstabs_flag=yes
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5

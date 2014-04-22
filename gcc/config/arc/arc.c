@@ -607,7 +607,6 @@ const pass_data pass_data_arc_ifcvt =
   RTL_PASS,
   "arc_ifcvt",				/* name */
   OPTGROUP_NONE,			/* optinfo_flags */
-  false,				/* has_gate */
   true,					/* has_execute */
   TV_IFCVT2,				/* tv_id */
   0,					/* properties_required */
@@ -626,7 +625,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_arc_ifcvt (m_ctxt); }
-  unsigned int execute () { return arc_ifcvt (); }
+  virtual unsigned int execute (function *) { return arc_ifcvt (); }
 };
 
 } // anon namespace
@@ -646,7 +645,6 @@ const pass_data pass_data_arc_predicate_delay_insns =
   RTL_PASS,
   "arc_predicate_delay_insns",		/* name */
   OPTGROUP_NONE,			/* optinfo_flags */
-  false,				/* has_gate */
   true,					/* has_execute */
   TV_IFCVT2,				/* tv_id */
   0,					/* properties_required */
@@ -664,7 +662,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return arc_predicate_delay_insns (); }
+  virtual unsigned int execute (function *)
+    {
+      return arc_predicate_delay_insns ();
+    }
 };
 
 } // anon namespace

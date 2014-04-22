@@ -5641,7 +5641,6 @@ const pass_data pass_data_ipa_free_lang_data =
   SIMPLE_IPA_PASS, /* type */
   "*free_lang_data", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
   true, /* has_execute */
   TV_IPA_FREE_LANG_DATA, /* tv_id */
   0, /* properties_required */
@@ -5659,7 +5658,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute () { return free_lang_data (); }
+  virtual unsigned int execute (function *) { return free_lang_data (); }
 
 }; // class pass_ipa_free_lang_data
 

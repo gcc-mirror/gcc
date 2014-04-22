@@ -2,7 +2,7 @@
 
 # Script to translate LDFLAGS into a form suitable for use with libtool.
 
-# Copyright (C) 2005 Free Software Foundation, Inc.
+# Copyright (C) 2005-2014 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,14 +36,15 @@ prev_arg=
 for arg
 do
     case $arg in
-	-f*|--*)
+	-f*|--*|-static-lib*|-shared-lib*|-B*)
 	    # Libtool does not ascribe any special meaning options
 	    # that begin with -f or with a double-dash.  So, it will
 	    # think these options are linker options, and prefix them
 	    # with "-Wl,".  Then, the compiler driver will ignore the
 	    # options.  So, we prefix these options with -Xcompiler to
 	    # make clear to libtool that they are in fact compiler
-	    # options.
+	    # options.  Similarly for e.g. -static-libstdc++, or
+	    # -B/some/path.
 	    case $prev_arg in
 		-Xpreprocessor|-Xcompiler|-Xlinker)
 		    # This option is already prefixed; don't prefix it again.

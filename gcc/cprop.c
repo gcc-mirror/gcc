@@ -1896,14 +1896,6 @@ one_cprop_pass (void)
    setjmp.
    FIXME: Should just handle setjmp via REG_SETJMP notes.  */
 
-static bool
-gate_rtl_cprop (void)
-{
-  return optimize > 0 && flag_gcse
-    && !cfun->calls_setjmp
-    && dbg_cnt (cprop);
-}
-
 static unsigned int
 execute_rtl_cprop (void)
 {
@@ -1925,7 +1917,6 @@ const pass_data pass_data_rtl_cprop =
   RTL_PASS, /* type */
   "cprop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_CPROP, /* tv_id */
   PROP_cfglayout, /* properties_required */
@@ -1945,8 +1936,14 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_rtl_cprop (m_ctxt); }
-  bool gate () { return gate_rtl_cprop (); }
-  unsigned int execute () { return execute_rtl_cprop (); }
+  virtual bool gate (function *fun)
+    {
+      return optimize > 0 && flag_gcse
+	&& !fun->calls_setjmp
+	&& dbg_cnt (cprop);
+    }
+
+  virtual unsigned int execute (function *) { return execute_rtl_cprop (); }
 
 }; // class pass_rtl_cprop
 

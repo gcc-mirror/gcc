@@ -1142,17 +1142,41 @@ build_access_from_expr (tree expr, gimple stmt, bool write)
   return false;
 }
 
-/* Disqualify LHS and RHS for scalarization if STMT must end its basic block in
-   modes in which it matters, return true iff they have been disqualified.  RHS
-   may be NULL, in that case ignore it.  If we scalarize an aggregate in
-   intra-SRA we may need to add statements after each statement.  This is not
-   possible if a statement unconditionally has to end the basic block.  */
+/* Return the single non-EH successor edge of BB or NULL if there is none or
+   more than one.  */
+
+static edge
+single_non_eh_succ (basic_block bb)
+{
+  edge e, res = NULL;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (!(e->flags & EDGE_EH))
+      {
+	if (res)
+	  return NULL;
+	res = e;
+      }
+
+  return res;
+}
+
+/* Disqualify LHS and RHS for scalarization if STMT has to terminate its BB and
+   there is no alternative spot where to put statements SRA might need to
+   generate after it.  The spot we are looking for is an edge leading to a
+   single non-EH successor, if it exists and is indeed single.  RHS may be
+   NULL, in that case ignore it.  */
+
 static bool
-disqualify_ops_if_throwing_stmt (gimple stmt, tree lhs, tree rhs)
+disqualify_if_bad_bb_terminating_stmt (gimple stmt, tree lhs, tree rhs)
 {
   if ((sra_mode == SRA_MODE_EARLY_INTRA || sra_mode == SRA_MODE_INTRA)
-      && (stmt_can_throw_internal (stmt) || stmt_ends_bb_p (stmt)))
+      && stmt_ends_bb_p (stmt))
     {
+      if (single_non_eh_succ (gimple_bb (stmt)))
+	return false;
+
       disqualify_base_of_expr (lhs, "LHS of a throwing stmt.");
       if (rhs)
 	disqualify_base_of_expr (rhs, "RHS of a throwing stmt.");
@@ -1180,7 +1204,7 @@ build_accesses_from_assign (gimple stmt)
   lhs = gimple_assign_lhs (stmt);
   rhs = gimple_assign_rhs1 (stmt);
 
-  if (disqualify_ops_if_throwing_stmt (stmt, lhs, rhs))
+  if (disqualify_if_bad_bb_terminating_stmt (stmt, lhs, rhs))
     return false;
 
   racc = build_access_from_expr_1 (rhs, stmt, false);
@@ -1319,7 +1343,7 @@ scan_function (void)
 		}
 
 	      t = gimple_call_lhs (stmt);
-	      if (t && !disqualify_ops_if_throwing_stmt (stmt, t, NULL))
+	      if (t && !disqualify_if_bad_bb_terminating_stmt (stmt, t, NULL))
 		ret |= build_access_from_expr (t, stmt, true);
 	      break;
 
@@ -2763,6 +2787,13 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
   type = TREE_TYPE (*expr);
 
   loc = gimple_location (gsi_stmt (*gsi));
+  gimple_stmt_iterator alt_gsi = gsi_none ();
+  if (write && stmt_ends_bb_p (gsi_stmt (*gsi)))
+    {
+      alt_gsi = gsi_start_edge (single_non_eh_succ (gsi_bb (*gsi)));
+      gsi = &alt_gsi;
+    }
+
   if (access->grp_to_be_replaced)
     {
       tree repl = get_access_replacement (access);
@@ -3226,14 +3257,23 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   if (modify_this_stmt
       || gimple_has_volatile_ops (*stmt)
       || contains_vce_or_bfcref_p (rhs)
-      || contains_vce_or_bfcref_p (lhs))
+      || contains_vce_or_bfcref_p (lhs)
+      || stmt_ends_bb_p (*stmt))
     {
       if (access_has_children_p (racc))
 	generate_subtree_copies (racc->first_child, racc->base, 0, 0, 0,
 				 gsi, false, false, loc);
       if (access_has_children_p (lacc))
-	generate_subtree_copies (lacc->first_child, lacc->base, 0, 0, 0,
-				 gsi, true, true, loc);
+	{
+	  gimple_stmt_iterator alt_gsi = gsi_none ();
+	  if (stmt_ends_bb_p (*stmt))
+	    {
+	      alt_gsi = gsi_start_edge (single_non_eh_succ (gsi_bb (*gsi)));
+	      gsi = &alt_gsi;
+	    }
+	  generate_subtree_copies (lacc->first_child, lacc->base, 0, 0, 0,
+				   gsi, true, true, loc);
+	}
       sra_stats.separate_lhs_rhs_handling++;
 
       /* This gimplification must be done after generate_subtree_copies,
@@ -3397,6 +3437,7 @@ sra_modify_function_body (void)
 	}
     }
 
+  gsi_commit_edge_inserts ();
   return cfg_changed;
 }
 
@@ -3507,7 +3548,6 @@ const pass_data pass_data_sra_early =
   GIMPLE_PASS, /* type */
   "esra", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SRA, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -3525,8 +3565,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_intra_sra (); }
-  unsigned int execute () { return early_intra_sra (); }
+  virtual bool gate (function *) { return gate_intra_sra (); }
+  virtual unsigned int execute (function *) { return early_intra_sra (); }
 
 }; // class pass_sra_early
 
@@ -3545,7 +3585,6 @@ const pass_data pass_data_sra =
   GIMPLE_PASS, /* type */
   "sra", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SRA, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -3563,8 +3602,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_intra_sra (); }
-  unsigned int execute () { return late_intra_sra (); }
+  virtual bool gate (function *) { return gate_intra_sra (); }
+  virtual unsigned int execute (function *) { return late_intra_sra (); }
 
 }; // class pass_sra
 
@@ -5053,13 +5092,6 @@ ipa_early_sra (void)
   return ret;
 }
 
-/* Return if early ipa sra shall be performed.  */
-static bool
-ipa_early_sra_gate (void)
-{
-  return flag_ipa_sra && dbg_cnt (eipa_sra);
-}
-
 namespace {
 
 const pass_data pass_data_early_ipa_sra =
@@ -5067,7 +5099,6 @@ const pass_data pass_data_early_ipa_sra =
   GIMPLE_PASS, /* type */
   "eipa_sra", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_IPA_SRA, /* tv_id */
   0, /* properties_required */
@@ -5085,8 +5116,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return ipa_early_sra_gate (); }
-  unsigned int execute () { return ipa_early_sra (); }
+  virtual bool gate (function *) { return flag_ipa_sra && dbg_cnt (eipa_sra); }
+  virtual unsigned int execute (function *) { return ipa_early_sra (); }
 
 }; // class pass_early_ipa_sra
 

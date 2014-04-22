@@ -340,6 +340,8 @@ ACX_PROG_CC_WARNING_OPTS(
 ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wmissing-format-attribute])), [strict_warn])
 ACX_PROG_CC_WARNING_OPTS(
+	m4_quote(m4_do([-Woverloaded-virtual])), [strict_warn])
+ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wold-style-definition -Wc++-compat])), [c_strict_warn])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC(
 	m4_quote(m4_do([-Wno-long-long -Wno-variadic-macros ], 
@@ -2314,35 +2316,7 @@ gcc_GAS_CHECK_FEATURE([.nsubspa comdat], gcc_cv_as_nsubspa_comdat,
 gcc_GAS_CHECK_FEATURE([.hidden], gcc_cv_as_hidden,
  [elf,2,13,0],,
 [	.hidden foobar
-foobar:],[
-# Solaris 9/x86 as incorrectly emits an alias for a hidden symbol with
-# STV_HIDDEN, so disable .hidden support if so.
-case "${target}" in
-  i?86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
-    if test x$gcc_cv_as != x && test x$gcc_cv_objdump != x; then
-      cat > conftest.s <<EOF
-.globl hidden
-        .hidden hidden
-hidden:
-.globl default
-        .set    default,hidden
-EOF
-      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-        && $gcc_cv_objdump -t conftest.o 2>/dev/null | \
-        grep '\.hidden default' > /dev/null; then
-        gcc_cv_as_hidden=no
-      else
-        gcc_cv_as_hidden=yes
-      fi
-    else
-      # Assume bug is present if objdump is missing.
-      gcc_cv_as_hidden=no
-    fi
-    ;;
-  *)
-    gcc_cv_as_hidden=yes
-    ;;
-esac])
+foobar:])
 case "${target}" in
   *-*-darwin*)
     # Darwin as has some visibility support, though with a different syntax.
@@ -2458,7 +2432,7 @@ else
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
-      *-*-solaris2.9* | *-*-solaris2.1[0-9]*)
+      *-*-solaris2.1[0-9]*)
 	# Support for .hidden in Sun ld appeared in Solaris 9 FCS, but
 	# .symbolic was only added in Solaris 9 12/02.
         gcc_cv_ld_hidden=yes
@@ -3339,32 +3313,7 @@ case "$target" in
   # TLS on x86 was only introduced in Solaris 9 4/04, replacing the earlier
   # Sun style that Sun ld and GCC don't support any longer.
   *-*-solaris2.*)
-    AC_MSG_CHECKING(linker and ld.so.1 TLS support)
-    ld_tls_support=no
-    # Check ld and ld.so.1 TLS support.
-    if echo "$ld_ver" | grep GNU > /dev/null; then
-      # Assume all interesting versions of GNU ld have TLS support.
-      # FIXME: still need ld.so.1 support, i.e. ld version checks below.
-      ld_tls_support=yes
-    else
-      case "$target" in
-	# Solaris 9/x86 ld has GNU style TLS support since version 1.374.
-        i?86-*-solaris2.9)
-          min_tls_ld_vers_minor=374
-          ;;
-	# Solaris 9/SPARC and Solaris 10+ ld have TLS support since FCS.
-        sparc*-*-solaris2.9 | *-*-solaris2.1[[0-9]]*)
-	  min_tls_ld_vers_minor=343
-          ;;
-      esac
-      if test "$ld_vers_major" -gt 1 || \
-        test "$ld_vers_minor" -ge "$min_tls_ld_vers_minor"; then
- 	ld_tls_support=yes
-      else
-        set_have_as_tls=no
-      fi
-    fi
-    AC_MSG_RESULT($ld_tls_support)
+    ld_tls_support=yes
 
     save_LIBS="$LIBS"
     save_LDFLAGS="$LDFLAGS"
@@ -4431,14 +4380,7 @@ if test x"$insn" != x; then
 
  gcc_GAS_CHECK_FEATURE([--gstabs option],
   gcc_cv_as_gstabs_flag,
-  [elf,2,11,0], [--gstabs], [$insn],
-  [# The native Solaris 9/Intel assembler doesn't understand --gstabs
-   # and warns about it, but still exits successfully.  So check for
-   # this.
-   if AC_TRY_COMMAND([$gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null])
-   then :
-   else gcc_cv_as_gstabs_flag=yes
-   fi],
+  [elf,2,11,0], [--gstabs], [$insn],,
   [AC_DEFINE(HAVE_AS_GSTABS_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gstabs option.])])
 

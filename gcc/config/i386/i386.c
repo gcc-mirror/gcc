@@ -2495,12 +2495,6 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"btver2", &btver2_cost, 16, 10, 16, 7, 11}
 };
 
-static bool
-gate_insert_vzeroupper (void)
-{
-  return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
-}
-
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
@@ -2527,7 +2521,6 @@ const pass_data pass_data_insert_vzeroupper =
   RTL_PASS, /* type */
   "vzeroupper", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -2545,8 +2538,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_insert_vzeroupper (); }
-  unsigned int execute () { return rest_of_handle_insert_vzeroupper (); }
+  virtual bool gate (function *)
+    {
+      return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_insert_vzeroupper ();
+    }
 
 }; // class pass_insert_vzeroupper
 
@@ -16669,8 +16669,7 @@ ix86_expand_clear (rtx dest)
     dest = gen_rtx_REG (SImode, REGNO (dest));
   tmp = gen_rtx_SET (VOIDmode, dest, const0_rtx);
 
-  /* This predicate should match that for movsi_xor and movdi_xor_rex64.  */
-  if (!TARGET_USE_MOV0 || optimize_insn_for_speed_p ())
+  if (!TARGET_USE_MOV0 || optimize_insn_for_size_p ())
     {
       rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
       tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
@@ -35400,7 +35399,8 @@ rdrand_step:
       else
 	op2 = gen_rtx_SUBREG (SImode, op0, 0);
 
-      if (target == 0)
+      if (target == 0
+	  || !register_operand (target, SImode))
 	target = gen_reg_rtx (SImode);
 
       pat = gen_rtx_GEU (VOIDmode, gen_rtx_REG (CCCmode, FLAGS_REG),
@@ -35442,7 +35442,8 @@ rdseed_step:
                          const0_rtx);
       emit_insn (gen_rtx_SET (VOIDmode, op2, pat));
 
-      if (target == 0)
+      if (target == 0
+	  || !register_operand (target, SImode))
         target = gen_reg_rtx (SImode);
 
       emit_insn (gen_zero_extendqisi2 (target, op2));

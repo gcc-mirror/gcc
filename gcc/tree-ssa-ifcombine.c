@@ -723,45 +723,6 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 
 /* Main entry for the tree if-conversion pass.  */
 
-static unsigned int
-tree_ssa_ifcombine (void)
-{
-  basic_block *bbs;
-  bool cfg_changed = false;
-  int i;
-
-  bbs = single_pred_before_succ_order ();
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  /* Search every basic block for COND_EXPR we may be able to optimize.
-
-     We walk the blocks in order that guarantees that a block with
-     a single predecessor is processed after the predecessor.
-     This ensures that we collapse outter ifs before visiting the
-     inner ones, and also that we do not try to visit a removed
-     block.  This is opposite of PHI-OPT, because we cascade the
-     combining rather than cascading PHIs. */
-  for (i = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
-    {
-      basic_block bb = bbs[i];
-      gimple stmt = last_stmt (bb);
-
-      if (stmt
-	  && gimple_code (stmt) == GIMPLE_COND)
-	cfg_changed |= tree_ssa_ifcombine_bb (bb);
-    }
-
-  free (bbs);
-
-  return cfg_changed ? TODO_cleanup_cfg : 0;
-}
-
-static bool
-gate_ifcombine (void)
-{
-  return 1;
-}
-
 namespace {
 
 const pass_data pass_data_tree_ifcombine =
@@ -769,7 +730,6 @@ const pass_data pass_data_tree_ifcombine =
   GIMPLE_PASS, /* type */
   "ifcombine", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_IFCOMBINE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -787,10 +747,42 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ifcombine (); }
-  unsigned int execute () { return tree_ssa_ifcombine (); }
+  virtual unsigned int execute (function *);
 
 }; // class pass_tree_ifcombine
+
+unsigned int
+pass_tree_ifcombine::execute (function *fun)
+{
+  basic_block *bbs;
+  bool cfg_changed = false;
+  int i;
+
+  bbs = single_pred_before_succ_order ();
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Search every basic block for COND_EXPR we may be able to optimize.
+
+     We walk the blocks in order that guarantees that a block with
+     a single predecessor is processed after the predecessor.
+     This ensures that we collapse outter ifs before visiting the
+     inner ones, and also that we do not try to visit a removed
+     block.  This is opposite of PHI-OPT, because we cascade the
+     combining rather than cascading PHIs. */
+  for (i = n_basic_blocks_for_fn (fun) - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
+    {
+      basic_block bb = bbs[i];
+      gimple stmt = last_stmt (bb);
+
+      if (stmt
+	  && gimple_code (stmt) == GIMPLE_COND)
+	cfg_changed |= tree_ssa_ifcombine_bb (bb);
+    }
+
+  free (bbs);
+
+  return cfg_changed ? TODO_cleanup_cfg : 0;
+}
 
 } // anon namespace
 

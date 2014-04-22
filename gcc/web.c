@@ -325,16 +325,37 @@ replace_ref (df_ref ref, rtx reg)
 }
 
 
-static bool
-gate_handle_web (void)
+namespace {
+
+const pass_data pass_data_web =
 {
-  return (optimize > 0 && flag_web);
-}
+  RTL_PASS, /* type */
+  "web", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_WEB, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+};
 
-/* Main entry point.  */
+class pass_web : public rtl_opt_pass
+{
+public:
+  pass_web (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_web, ctxt)
+  {}
 
-static unsigned int
-web_main (void)
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return (optimize > 0 && flag_web); }
+  virtual unsigned int execute (function *);
+
+}; // class pass_web
+
+unsigned int
+pass_web::execute (function *fun)
 {
   struct web_entry *def_entry;
   struct web_entry *use_entry;
@@ -351,7 +372,7 @@ web_main (void)
   df_set_flags (DF_DEFER_INSN_RESCAN);
 
   /* Assign ids to the uses.  */
-  FOR_ALL_BB_FN (bb, cfun)
+  FOR_ALL_BB_FN (bb, fun)
     FOR_BB_INSNS (bb, insn)
     {
       unsigned int uid = INSN_UID (insn);
@@ -379,7 +400,7 @@ web_main (void)
   use_entry = XCNEWVEC (struct web_entry, uses_num);
 
   /* Produce the web.  */
-  FOR_ALL_BB_FN (bb, cfun)
+  FOR_ALL_BB_FN (bb, fun)
     FOR_BB_INSNS (bb, insn)
     {
       unsigned int uid = INSN_UID (insn);
@@ -404,7 +425,7 @@ web_main (void)
 
   /* Update the instruction stream, allocating new registers for split pseudos
      in progress.  */
-  FOR_ALL_BB_FN (bb, cfun)
+  FOR_ALL_BB_FN (bb, fun)
     FOR_BB_INSNS (bb, insn)
     {
       unsigned int uid = INSN_UID (insn);
@@ -449,36 +470,6 @@ web_main (void)
   return 0;
 }
 
-namespace {
-
-const pass_data pass_data_web =
-{
-  RTL_PASS, /* type */
-  "web", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_WEB, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
-};
-
-class pass_web : public rtl_opt_pass
-{
-public:
-  pass_web (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_web, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_handle_web (); }
-  unsigned int execute () { return web_main (); }
-
-}; // class pass_web
-
 } // anon namespace
 
 rtl_opt_pass *

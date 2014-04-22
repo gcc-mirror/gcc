@@ -572,9 +572,13 @@ valid_gimple_rhs_p (tree expr)
       break;
 
     case tcc_comparison:
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (expr))
-	  || (TREE_CODE (TREE_TYPE (expr)) != BOOLEAN_TYPE
-	      && TYPE_PRECISION (TREE_TYPE (expr)) != 1))
+      /* GENERIC allows comparisons with non-boolean types, reject
+         those for GIMPLE.  Let vector-typed comparisons pass - rules
+	 for GENERIC and GIMPLE are the same here.  */
+      if (!(INTEGRAL_TYPE_P (TREE_TYPE (expr))
+	    && (TREE_CODE (TREE_TYPE (expr)) == BOOLEAN_TYPE
+		|| TYPE_PRECISION (TREE_TYPE (expr)) == 1))
+	  && ! VECTOR_TYPE_P (TREE_TYPE (expr)))
 	return false;
 
       /* Fallthru.  */

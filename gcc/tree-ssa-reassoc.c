@@ -4693,12 +4693,6 @@ execute_reassoc (void)
   return 0;
 }
 
-static bool
-gate_tree_ssa_reassoc (void)
-{
-  return flag_tree_reassoc != 0;
-}
-
 namespace {
 
 const pass_data pass_data_reassoc =
@@ -4706,7 +4700,6 @@ const pass_data pass_data_reassoc =
   GIMPLE_PASS, /* type */
   "reassoc", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
   true, /* has_execute */
   TV_TREE_REASSOC, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
@@ -4727,8 +4720,8 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_reassoc (m_ctxt); }
-  bool gate () { return gate_tree_ssa_reassoc (); }
-  unsigned int execute () { return execute_reassoc (); }
+  virtual bool gate (function *) { return flag_tree_reassoc != 0; }
+  virtual unsigned int execute (function *) { return execute_reassoc (); }
 
 }; // class pass_reassoc
 
