@@ -1452,7 +1452,7 @@
 )
 
 ;; Vector versions of the floating-point frint patterns.
-;; Expands to btrunc, ceil, floor, nearbyint, rint, round.
+;; Expands to btrunc, ceil, floor, nearbyint, rint, round, frintn.
 (define_insn "<frint_pattern><mode>2"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
 	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")]

@@ -311,6 +311,8 @@ aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   VAR7 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
 #define BUILTIN_VDQF(T, N, MAP) \
   VAR3 (T, N, MAP, v2sf, v4sf, v2df)
+#define BUILTIN_VDQF_DF(T, N, MAP) \
+  VAR4 (T, N, MAP, v2sf, v4sf, v2df, df)
 #define BUILTIN_VDQH(T, N, MAP) \
   VAR2 (T, N, MAP, v4hi, v8hi)
 #define BUILTIN_VDQHS(T, N, MAP) \
