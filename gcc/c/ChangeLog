@@ -1,3 +1,9 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59073
+	* c-parser.c (c_parser_omp_parallel): If c_parser_omp_for
+	fails, don't set OM_PARALLEL_COMBINED and return NULL.
+
 2014-04-12  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/60469
