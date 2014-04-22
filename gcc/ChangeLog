@@ -1,6 +1,16 @@
 2014-04-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55022
+	* fold-const.c (negate_expr_p): Don't negate directional rounding
+	division.
+	(fold_negate_expr): Likewise.
+
+2014-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2014-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60849
