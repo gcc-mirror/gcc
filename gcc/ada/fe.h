@@ -39,7 +39,7 @@ extern "C" {
 /* comperr:  */
 
 #define Compiler_Abort comperr__compiler_abort
-extern int Compiler_Abort (Fat_Pointer, int, Fat_Pointer) ATTRIBUTE_NORETURN;
+extern int Compiler_Abort (String_Pointer, int, String_Pointer) ATTRIBUTE_NORETURN;
 
 /* csets: */
 
@@ -90,8 +90,8 @@ extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
 #define Error_Msg_NE              errout__error_msg_ne
 #define Set_Identifier_Casing     errout__set_identifier_casing
 
-extern void Error_Msg_N	          (Fat_Pointer, Node_Id);
-extern void Error_Msg_NE          (Fat_Pointer, Node_Id, Entity_Id);
+extern void Error_Msg_N	          (String_Pointer, Node_Id);
+extern void Error_Msg_NE          (String_Pointer, Node_Id, Entity_Id);
 extern void Set_Identifier_Casing (Char *, const Char *);
 
 /* err_vars: */
@@ -151,7 +151,7 @@ extern void Setup_Asm_Outputs		(Node_Id);
 
 extern void Get_Encoded_Name			(Entity_Id);
 extern void Get_External_Name			(Entity_Id, Boolean);
-extern void Get_External_Name_With_Suffix	(Entity_Id, Fat_Pointer);
+extern void Get_External_Name_With_Suffix	(Entity_Id, String_Pointer);
 
 /* exp_util: */
 

@@ -76,11 +76,14 @@ typedef Char *Str;
 /* Pointer to string of Chars */
 typedef Char *Str_Ptr;
 
-/* Types for the fat pointer used for strings and the template it
-   points to.  */
-typedef struct {int Low_Bound, High_Bound; } String_Template;
-typedef struct {const char *Array; String_Template *Bounds; }
-	__attribute ((aligned (sizeof (char *) * 2))) Fat_Pointer;
+/* Types for the fat pointer used for strings and the template it points to.
+   On most platforms the fat pointer is naturally aligned but, on the rest,
+   it is given twice the natural alignment.  For maximum portability, we do
+   not overalign the type but only the objects.  */
+typedef struct { int Low_Bound, High_Bound; } String_Template;
+typedef struct { const char *Array; String_Template *Bounds; } String_Pointer;
+#define DECLARE_STRING_POINTER(...) \
+  __attribute__ ((aligned (sizeof (char *) * 2))) String_Pointer __VA_ARGS__
 
 /* Types for Node/Entity Kinds:  */
 
