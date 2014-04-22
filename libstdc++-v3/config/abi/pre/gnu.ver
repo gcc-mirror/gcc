@@ -1584,6 +1584,20 @@ CXXABI_1.3.8 {
 
 } CXXABI_1.3.7;
 
+CXXABI_1.3.9 {
+
+    # typeinfo name for __int128, unsigned __int128 and __float128
+    _ZTS[gno];
+    _ZTSP[gno];
+    _ZTSPK[gno];
+
+    # typeinfo for __float128
+    _ZTIg;
+    _ZTIPg;
+    _ZTIPKg;
+
+} CXXABI_1.3.8;
+
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {
 
