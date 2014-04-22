@@ -41,11 +41,6 @@ check_vect (void)
     want_level = 1, want_c = bit_SSSE3, want_d = 0;
 # else
     want_level = 1, want_c = 0, want_d = bit_SSE2;
-#  if defined(__sun__) && defined(__svr4__)
-    /* Before Solaris 9 4/04, trying to execute an SSE2 instruction gives
-       SIGILL even if the CPU can handle them.  */
-    asm volatile ("unpcklpd %xmm0,%xmm2");
-#  endif
 # endif
 
     if (!__get_cpuid (want_level, &a, &b, &c, &d)

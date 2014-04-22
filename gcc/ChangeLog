@@ -1,3 +1,26 @@
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (enable_obsolete): Remove *-*-solaris2.9*.
+	(*-*-solaris2.[0-9] | *-*-solaris2.[0-9].*): Mark unsupported.
+	(*-*-solaris2*): Simplify.
+	(i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*): Likewise.
+	(i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*): Remove
+	*-*-solaris2.9* handling.
+
+	* configure.ac (gcc_cv_as_hidden): Remove test for Solaris 9/x86
+	as bug.
+	(gcc_cv_ld_hidden): Remove *-*-solaris2.9* handling.
+	(ld_tls_support): Remove i?86-*-solaris2.9, sparc*-*-solaris2.9
+	handling, simplify.
+	(gcc_cv_as_gstabs_flag): Remove workaround for Solaris 9/x86 as bug.
+	* configure: Regenerate.
+
+	* config/i386/sol2-9.h: Remove.
+
+	* doc/install.texi (Specific, i?86-*-solaris2.9): Remove.
+	(Specific, *-*-solaris2*): Mention Solaris 9 support removal.
+	Remove Solaris 9 references.
+
 2014-04-22  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* aarch64.md (float<GPI:mode><GPF:mode>2): Remove.

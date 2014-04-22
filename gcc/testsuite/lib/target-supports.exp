@@ -593,7 +593,7 @@ proc add_options_for_tls { flags } {
     # libthread, so always pass -pthread for native TLS. Same for AIX.
     # Need to duplicate native TLS check from
     # check_effective_target_tls_native to avoid recursion.
-    if { ([istarget *-*-solaris2.9*] || [istarget powerpc-ibm-aix*]) &&
+    if { ([istarget powerpc-ibm-aix*]) &&
 	 [check_no_messages_and_pattern tls_native "!emutls" assembly {
 	     __thread int i;
 	     int f (void) { return i; }

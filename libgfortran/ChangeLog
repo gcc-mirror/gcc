@@ -1,3 +1,8 @@
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/fpu-387.h [__sun__ && __svr4__]: Remove SSE execution
+	check.
+
 2014-04-11  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/60810

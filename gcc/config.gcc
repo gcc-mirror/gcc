@@ -246,7 +246,6 @@ md_file=
 case ${target} in
    picochip-*				\
  | score-*				\
- | *-*-solaris2.9*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -287,8 +286,8 @@ case ${target} in
  | *-*-rtemsaout*			\
  | *-*-rtemscoff*			\
  | *-*-solaris2				\
- | *-*-solaris2.[0-8]			\
- | *-*-solaris2.[0-8].*			\
+ | *-*-solaris2.[0-9]			\
+ | *-*-solaris2.[0-9].*			\
  | *-*-sysv*				\
  | vax-*-vms*				\
  )
@@ -810,15 +809,8 @@ case ${target} in
   # i?86-*-solaris2* needs to insert headers between cpu default and
   # Solaris 2 specific ones.
   sol2_tm_file="dbxelf.h elfos.h ${cpu_type}/sysv4.h sol2.h ${cpu_type}/sol2.h"
-  case ${target} in
-    *-*-solaris2.1[0-9]*)
-      sol2_tm_file="${sol2_tm_file} sol2-10.h"
-      use_gcc_stdint=wrap
-      ;;
-    *)
-      use_gcc_stdint=provide
-      ;;
-  esac
+  sol2_tm_file="${sol2_tm_file} sol2-10.h"
+  use_gcc_stdint=wrap
   if test x$gnu_ld = xyes; then
     tm_file="usegld.h ${tm_file}"
   fi
@@ -1526,42 +1518,27 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	tm_file="${tm_file} i386/unix.h i386/att.h ${sol2_tm_file}"
 	# Set default arch_32 to pentium4, tune_32 to generic like the other
 	# i386 targets, although config.guess defaults to i386-pc-solaris2*.
-	case ${target} in
-	*-*-solaris2.9*)
-		# Solaris 9/x86 cannot execute SSE/SSE2 instructions by default.
-		with_arch_32=${with_arch_32:-pentiumpro}
-		;;
-	*)
-		with_arch_32=${with_arch_32:-pentium4}
-		;;
-	esac
+	with_arch_32=${with_arch_32:-pentium4}
 	with_tune_32=${with_tune_32:-generic}
-	case ${target} in
-	*-*-solaris2.9*)
-		tm_file="${tm_file} i386/sol2-9.h"
-		;;
-	*-*-solaris2.1[0-9]*)
-		tm_file="${tm_file} i386/x86-64.h i386/sol2-bi.h sol2-bi.h"
-		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
-		tmake_file="$tmake_file i386/t-sol2-64"
-		need_64bit_isa=yes
-		if test x$with_cpu = x; then
-			if test x$with_cpu_64 = x; then
-				with_cpu_64=generic
-			fi
-		else
-			case " $x86_cpus $x86_archs $x86_64_archs " in
-			*" $with_cpu "*)
-				;;
-			*)
-				echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-				echo "$x86_cpus $x86_archs $x86_64_archs" 1>&2
-				exit 1
-				;;
-			esac
+	tm_file="${tm_file} i386/x86-64.h i386/sol2-bi.h sol2-bi.h"
+	tm_defines="${tm_defines} TARGET_BI_ARCH=1"
+	tmake_file="$tmake_file i386/t-sol2-64"
+	need_64bit_isa=yes
+	if test x$with_cpu = x; then
+		if test x$with_cpu_64 = x; then
+			with_cpu_64=generic
 		fi
-		;;
-	esac
+	else
+		case " $x86_cpus $x86_archs $x86_64_archs " in
+		*" $with_cpu "*)
+			;;
+		*)
+			echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
+			echo "$x86_cpus $x86_archs $x86_64_archs" 1>&2
+			exit 1
+			;;
+		esac
+	fi
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h vx-common.h"
