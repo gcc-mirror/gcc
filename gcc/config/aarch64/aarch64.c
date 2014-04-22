@@ -4147,32 +4147,32 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
 		+ crtl->outgoing_args_size
 		+ cfun->machine->saved_varargs_size);
 
-   frame_size = AARCH64_ROUND_UP (frame_size, STACK_BOUNDARY / BITS_PER_UNIT);
-   offset = frame_size;
+  frame_size = AARCH64_ROUND_UP (frame_size, STACK_BOUNDARY / BITS_PER_UNIT);
+  offset = frame_size;
 
-   if (to == HARD_FRAME_POINTER_REGNUM)
-     {
-       if (from == ARG_POINTER_REGNUM)
-	 return offset - crtl->outgoing_args_size;
+  if (to == HARD_FRAME_POINTER_REGNUM)
+    {
+      if (from == ARG_POINTER_REGNUM)
+	return offset - crtl->outgoing_args_size;
 
-       if (from == FRAME_POINTER_REGNUM)
-	 return cfun->machine->frame.saved_regs_size + get_frame_size ();
-     }
+      if (from == FRAME_POINTER_REGNUM)
+	return cfun->machine->frame.saved_regs_size + get_frame_size ();
+    }
 
-   if (to == STACK_POINTER_REGNUM)
-     {
-       if (from == FRAME_POINTER_REGNUM)
-         {
-           HOST_WIDE_INT elim = crtl->outgoing_args_size
-                              + cfun->machine->frame.saved_regs_size
-                              + get_frame_size ()
-                              - cfun->machine->frame.fp_lr_offset;
-           elim = AARCH64_ROUND_UP (elim, STACK_BOUNDARY / BITS_PER_UNIT);
-           return elim;
-         }
-     }
+  if (to == STACK_POINTER_REGNUM)
+    {
+      if (from == FRAME_POINTER_REGNUM)
+	{
+	  HOST_WIDE_INT elim = crtl->outgoing_args_size
+	    + cfun->machine->frame.saved_regs_size
+	    + get_frame_size ()
+	    - cfun->machine->frame.fp_lr_offset;
+	  elim = AARCH64_ROUND_UP (elim, STACK_BOUNDARY / BITS_PER_UNIT);
+	  return elim;
+	}
+    }
 
-   return offset;
+  return offset;
 }
 
 
