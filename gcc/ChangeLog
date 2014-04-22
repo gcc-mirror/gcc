@@ -1,3 +1,8 @@
+2014-04-22  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphclones.c (cgraph_function_versioning): Copy
+	ipa_transforms_to_apply instead of asserting it is empty.
+
 2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60868
