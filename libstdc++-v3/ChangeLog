@@ -1,3 +1,7 @@
+2014-04-22  Release Manager
+
+	* GCC 4.9.0 released.
+
 2014-04-10  Andreas Schwab  <schwab@suse.de>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Remove TLS
