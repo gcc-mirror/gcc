@@ -1,3 +1,15 @@
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc/config/aarch64/aarch64-simd.md (aarch64_s<optab><mode>):
+	Pattern extended.
+	* config/aarch64/aarch64-simd-builtins.def (sqneg): Iterator
+	extended.
+	(sqabs): Likewise.
+	* config/aarch64/arm_neon.h (vqneg_s64): New intrinsic.
+	(vqnegd_s64): Likewise.
+	(vqabs_s64): Likewise.
+	(vqabsd_s64): Likewise.
+
 2014-04-22  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.c (sparc_init_modes): Hoist GET_MODE_SIZE
