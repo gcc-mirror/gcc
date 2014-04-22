@@ -1,3 +1,8 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59073
+	* c-c++-common/gomp/pr59073.c: New test.
+
 2014-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/merge-vsx.c: Add V4SI and V4SF tests.

@@ -29825,10 +29825,12 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 	return cp_parser_omp_for (parser, pragma_tok, p_name, mask, cclauses);
       block = begin_omp_parallel ();
       save = cp_parser_begin_omp_structured_block (parser);
-      cp_parser_omp_for (parser, pragma_tok, p_name, mask, cclauses);
+      tree ret = cp_parser_omp_for (parser, pragma_tok, p_name, mask, cclauses);
       cp_parser_end_omp_structured_block (parser, save);
       stmt = finish_omp_parallel (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
 				  block);
+      if (ret == NULL_TREE)
+	return ret;
       OMP_PARALLEL_COMBINED (stmt) = 1;
       return stmt;
     }

@@ -1,3 +1,9 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59073
+	* parser.c (cp_parser_omp_parallel): If cp_parser_omp_for
+	fails, don't set OM_PARALLEL_COMBINED and return NULL.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.
