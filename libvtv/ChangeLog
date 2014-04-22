@@ -1,3 +1,7 @@
+2014-04-22  Release Manager
+
+	* GCC 4.9.0 released.
+
 2013-09-25 Caroline Tice  <cmtice@google.com>
 
 	* Makefile.am: Reinstate ENABLE_VTABLE_VERIFY checks, to make
