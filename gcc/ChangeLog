@@ -1,3 +1,15 @@
+2014-04-22  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Handle TLS for ILP32.
+	* config/aarch64/aarch64.md (tlsie_small): Rename to ...
+	(tlsie_small_<mode>): this and handle PTR.
+	(tlsie_small_sidi): New pattern.
+	(tlsle_small): Change to an expand to handle ILP32.
+	(tlsle_small_<mode>): New pattern.
+	(tlsdesc_small): Rename to ...
+	(tlsdesc_small_<mode>): this and handle PTR.
+
 2014-04-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.c (TARGET_FLAGS_REGNUM): Define.
