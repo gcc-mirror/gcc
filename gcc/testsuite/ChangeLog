@@ -1,3 +1,8 @@
+2014-04-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60881
+	* coarray/alloc_comp_3.f90: New.
+
 2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60868
