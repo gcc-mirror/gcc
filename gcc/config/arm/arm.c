@@ -22646,12 +22646,19 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
     }
 
   /* We allow almost any value to be stored in the general registers.
-     Restrict doubleword quantities to even register pairs so that we can
-     use ldrd.  Do not allow very large Neon structure opaque modes in
-     general registers; they would use too many.  */
+     Restrict doubleword quantities to even register pairs in ARM state
+     so that we can use ldrd.  Do not allow very large Neon structure
+     opaque modes in general registers; they would use too many.  */
   if (regno <= LAST_ARM_REGNUM)
-    return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0)
-      && ARM_NUM_REGS (mode) <= 4;
+    {
+      if (ARM_NUM_REGS (mode) > 4)
+	  return FALSE;
+
+      if (TARGET_THUMB2)
+	return TRUE;
+
+      return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
+    }
 
   if (regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)

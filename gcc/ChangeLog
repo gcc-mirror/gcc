@@ -1,3 +1,8 @@
+2014-04-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Loosen
+	restrictions on core registers for DImode values in Thumb2.
+
 2014-04-22  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/arm/arm.md (*anddi_notdi_zesidi): New pattern.
