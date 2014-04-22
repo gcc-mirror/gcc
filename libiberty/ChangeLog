@@ -1,3 +1,7 @@
+2014-04-22  Release Manager
+
+	* GCC 4.9.0 released.
+
 2014-04-01  Richard Biener  <rguenther@suse.de>
 
 	* simple-object.c (simple_object_internal_write): Handle
