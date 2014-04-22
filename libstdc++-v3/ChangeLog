@@ -1,3 +1,28 @@
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host: Remove solaris2.9 handling.
+	Change os_include_dir to os/solaris/solaris2.10.
+	* acinclude.m4 (ac_has_gthreads): Remove solaris2.9* handling.
+	* crossconfig.m4: Remove *-solaris2.9 handling, simplify.
+	* configure: Regenerate.
+	* config/abi/post/solaris2.9: Remove.
+	* config/os/solaris/solaris2.9: Rename to ...
+	* config/os/solaris/solaris2.10: ... this.
+	* config/os/solaris/solaris2.10/os_defines.h (CLOCK_MONOTONIC):
+	Remove.
+
+	* doc/xml/manual/configure.xml (--enable-libstdcxx-threads):
+	Remove Solaris 9 reference.
+	* doc/html/manual/configure.html: Regenerate.
+
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Remove *-*-solaris2.9 xfail.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/12.cc:
+	Likewise.
+
+	* testsuite/ext/enc_filebuf/char/13598.cc: Remove *-*-solaris2.9
+	xfail.
+
 2014-04-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional (__is_location_invariant): Use __or_ helper.

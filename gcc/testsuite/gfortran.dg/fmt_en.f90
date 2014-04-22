@@ -182,5 +182,5 @@ contains
         
     end subroutine
 end program
-! { dg-final { scan-file fmt_en.res "All kinds rounded to nearest" { xfail { i?86-*-solaris2.9* hppa*-*-hpux* } } } }
+! { dg-final { scan-file fmt_en.res "All kinds rounded to nearest" { xfail hppa*-*-hpux* } } }
 ! { dg-final { cleanup-saved-temps } }

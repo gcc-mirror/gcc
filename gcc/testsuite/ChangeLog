@@ -1,3 +1,32 @@
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c-torture/compile/pr28865.c: Remove dg-xfail-if.
+
+	* gcc.dg/c99-stdint-6.c: Remove dg-options for *-*-solaris2.9.
+	* gcc.dg/lto/20090210_0.c: Remove dg-extra-ld-options for
+	*-*-solaris2.9.
+	* gcc.dg/torture/pr47917.c: Remove dg-options for *-*-solaris2.9.
+	* gcc.target/i386/pr22076.c: Remove i?86-*-solaris2.9 handling
+	from dg-options.
+	* gcc.target/i386/pr22152.c: Remove i?86-*-solaris2.9 handling
+	from dg-additional-options.
+	* gcc.target/i386/vect8-ret.c: Remove i?86-*-solaris2.9 handling
+	from dg-options.
+
+	* gcc.dg/vect/tree-vect.h (check_vect): Remove Solaris 9 SSE2
+	execution check.
+	* gcc.target/i386/sse-os-support.h [__sun__ && __svr4__]
+	(sigill_hdlr): Remove.
+	(sse_os_support) [__sun__ && __svr4__]: Remove SSE execution
+	check.
+
+	* gfortran.dg/erf_3.F90: Remove sparc*-*-solaris2.9* handling.
+	* gfortran.dg/fmt_en.f90: Remove i?86-*-solaris2.9* handling.
+	* gfortran.dg/round_4.f90: Remove *-*-solaris2.9* handling.
+
+	* lib/target-supports.exp (add_options_for_tls): Remove
+	*-*-solaris2.9* handling.
+
 2014-04-22  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/vect_cvtf_1.c: New.

@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-std=c99" } */
-/* { dg-options "-std=c99 -D_XOPEN_SOURCE=500" { target *-*-solaris2.9 } } */
 /* { dg-options "-std=gnu99" { target *-*-hpux* } } */
 /* { dg-additional-options "-D__USE_MINGW_ANSI_STDIO=1" { target *-*-mingw* } } */
 /* { dg-xfail-run-if "no C99 snprintf function" { *-*-hpux10* } } */

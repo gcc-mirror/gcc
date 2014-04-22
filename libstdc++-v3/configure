@@ -71038,8 +71038,6 @@ done
 
     ;;
   *-solaris*)
-    case "$target" in
-      *-solaris2.9 | *-solaris2.10)
 
   # If we're not using GNU ld, then there's no point in even trying these
   # tests.  Check for that first.  We should have already tested for gld
@@ -71179,27 +71177,21 @@ $as_echo "$ac_ld_relro" >&6; }
 
 
 
-         $as_echo "#define HAVE_MBSTATE_T 1" >>confdefs.h
+    $as_echo "#define HAVE_MBSTATE_T 1" >>confdefs.h
 
-         $as_echo "#define HAVE_FINITE 1" >>confdefs.h
+    $as_echo "#define HAVE_FINITE 1" >>confdefs.h
 
-         $as_echo "#define HAVE_FPCLASS 1" >>confdefs.h
+    $as_echo "#define HAVE_FPCLASS 1" >>confdefs.h
 
-         # All of the dependencies for wide character support are here, so
-         # turn it on.
-         $as_echo "#define _GLIBCXX_USE_WCHAR_T 1" >>confdefs.h
+    # All of the dependencies for wide character support are here, so
+    # turn it on.
+    $as_echo "#define _GLIBCXX_USE_WCHAR_T 1" >>confdefs.h
 
-        ;;
-    esac
-    case "$target" in
-      *-*-solaris2.10)
-      # These two C99 functions are present only in Solaris >= 10
-      $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
+    # These two C99 functions are present only in Solaris >= 10
+    $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
 
-      $as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
+    $as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
 
-     ;;
-    esac
     $as_echo "#define HAVE_ISNAN 1" >>confdefs.h
 
     $as_echo "#define HAVE_ISNANF 1" >>confdefs.h
@@ -78671,26 +78663,7 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  case $target_os in
-	  # gthreads support breaks symbol versioning on Solaris 9 (PR
-	  # libstdc++/52189).
-          solaris2.9*)
-	    if test x$enable_symvers = xno; then
-	      ac_has_gthreads=yes
-	    elif test x$enable_libstdcxx_threads = xyes; then
-	      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You have requested C++11 threads support, but" >&5
-$as_echo "$as_me: WARNING: You have requested C++11 threads support, but" >&2;}
-	      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: this breaks symbol versioning." >&5
-$as_echo "$as_me: WARNING: this breaks symbol versioning." >&2;}
-	      ac_has_gthreads=yes
-	    else
-	      ac_has_gthreads=no
-	    fi
-	    ;;
-	  *)
-	    ac_has_gthreads=yes
-	    ;;
-        esac
+  ac_has_gthreads=yes
 else
   ac_has_gthreads=no
 fi
