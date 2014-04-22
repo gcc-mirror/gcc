@@ -1,3 +1,10 @@
+2014-04-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/arm/arm-protos.h (tune_params): New struct members.
+	* config/arm/arm.c: Initialise tune_params per processor.
+	(thumb2_reorg): Suppress conversion from t32 to t16 when optimizing
+	for speed, based on new tune_params.
+
 2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (BUILTIN_VDQF_DF): Macro
