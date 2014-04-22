@@ -1,3 +1,9 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60910
+	* config/sparc/sparc.c (sparc_init_modes): Pass enum machine_mode
+	value instead of int to GET_MODE_CLASS and GET_MODE_SIZE macros.
+
 2014-04-22  Lin Zuojian  <manjian2006@gmail.com>
 
 	PR middle-end/60281
