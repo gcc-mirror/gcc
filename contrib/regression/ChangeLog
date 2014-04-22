@@ -1,3 +1,7 @@
+2014-04-22  Release Manager
+
+	* GCC 4.9.0 released.
+
 2012-08-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* btest-gcc.sh (TESTLOGS): Make gfortran.sum optional.
