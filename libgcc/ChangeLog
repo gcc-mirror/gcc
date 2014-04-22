@@ -1,3 +1,7 @@
+2014-04-22  Release Manager
+
+	* GCC 4.9.0 released.
+
 2014-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config.host: Append t-floattodi to tmake_file depending on
