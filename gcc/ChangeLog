@@ -1,5 +1,10 @@
 2014-04-22  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/arm/arm.md (*anddi_notdi_zesidi): New pattern.
+	* config/arm/thumb2.md (*iordi_notdi_zesidi): New pattern.
+
+2014-04-22  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/arm/thumb2.md (*iordi_notdi_di): New pattern.
 	(*iordi_notzesidi_di): Likewise.
 	(*iordi_notsesidi_di): Likewise.

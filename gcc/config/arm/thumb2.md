@@ -1418,6 +1418,30 @@
    (set_attr "type" "multiple")]
 )
 
+(define_insn_and_split "*iordi_notdi_zesidi"
+  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
+	(ior:DI (not:DI (match_operand:DI 2 "s_register_operand" "0,?r"))
+		(zero_extend:DI
+		 (match_operand:SI 1 "s_register_operand" "r,r"))))]
+  "TARGET_THUMB2"
+  "#"
+  "TARGET_THUMB2 && reload_completed"
+  [(set (match_dup 0) (ior:SI (not:SI (match_dup 2)) (match_dup 1)))
+   (set (match_dup 3) (not:SI (match_dup 4)))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[4] = gen_highpart (SImode, operands[2]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+  }"
+  [(set_attr "length" "8")
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "multiple")]
+)
+
 (define_insn_and_split "*iordi_notsesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(ior:DI (not:DI (sign_extend:DI
