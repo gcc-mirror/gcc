@@ -1,3 +1,8 @@
+2014-04-22  Richard Henderson  <rth@redhat.com>
+
+	* init.c [__linux__] (HAVE_GNAT_ALTERNATE_STACK): New define.
+	(__gnat_alternate_stack): Enable for all linux except ia64.
+
 2014-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Compiler_Abort): Replace Fat_Pointer with String_Pointer.
