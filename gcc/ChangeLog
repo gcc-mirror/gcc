@@ -1,3 +1,14 @@
+2014-04-22  Richard Henderson  <rth@redhat.com>
+
+	* config/aarch64/aarch64 (addti3, subti3): New expanders.
+	(add<GPI>3_compare0): Remove leading * from name.
+	(add<GPI>3_carryin): Likewise.
+	(sub<GPI>3_compare0): Likewise.
+	(sub<GPI>3_carryin): Likewise.
+	(<su_optab>mulditi3): New expander.
+	(multi3): New expander.
+	(madd<GPI>): Remove leading * from name.
+
 2014-04-22  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraphclones.c (cgraph_function_versioning): Copy
