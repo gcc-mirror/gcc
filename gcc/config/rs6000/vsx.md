@@ -1891,7 +1891,12 @@
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 1) (const_int 5)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxmrghw %x0,%x1,%x2"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "xxmrghw %x0,%x1,%x2";
+  else
+    return "xxmrglw %x0,%x2,%x1";
+}
   [(set_attr "type" "vecperm")])
 
 (define_insn "vsx_xxmrglw_<mode>"
@@ -1903,7 +1908,12 @@
 	  (parallel [(const_int 2) (const_int 6)
 		     (const_int 3) (const_int 7)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxmrglw %x0,%x1,%x2"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "xxmrglw %x0,%x1,%x2";
+  else
+    return "xxmrghw %x0,%x2,%x1";
+}
   [(set_attr "type" "vecperm")])
 
 ;; Shift left double by word immediate
