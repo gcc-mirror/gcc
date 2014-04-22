@@ -1,3 +1,7 @@
+2014-04-22  Release Manager
+
+	* GCC 4.9.0 released.
+
 2014-04-02  Richard Henderson  <rth@redhat.com>
 
 	* config/linux/futex.h (futex_wait): Get error value from errno.
