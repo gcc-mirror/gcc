@@ -2214,10 +2214,21 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
       return this->error_variable();
     }
 
+  go_assert(function != NULL);
+  tree decl = function->get_tree();
+
   tree var;
   // We can only use create_tmp_var if the type is not addressable.
   if (!TREE_ADDRESSABLE(type_tree))
-    var = create_tmp_var(type_tree, "GOTMP");
+    {
+      if (DECL_STRUCT_FUNCTION(decl) == NULL)
+      	push_struct_function(decl);
+      else
+      	push_cfun(DECL_STRUCT_FUNCTION(decl));
+
+      var = create_tmp_var(type_tree, "GOTMP");
+      pop_cfun();
+    }
   else
     {
       gcc_assert(bblock != NULL);
@@ -2227,16 +2238,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
       DECL_ARTIFICIAL(var) = 1;
       DECL_IGNORED_P(var) = 1;
       TREE_USED(var) = 1;
-      // FIXME: Permitting function to be NULL here is a temporary
-      // measure until we have a proper representation of the init
-      // function.
-      if (function != NULL)
-	DECL_CONTEXT(var) = function->get_tree();
-      else
-	{
-	  gcc_assert(current_function_decl != NULL_TREE);
-	  DECL_CONTEXT(var) = current_function_decl;
-	}
+      DECL_CONTEXT(var) = decl;
 
       // We have to add this variable to the BLOCK and the BIND_EXPR.
       tree bind_tree = bblock->get_tree();
