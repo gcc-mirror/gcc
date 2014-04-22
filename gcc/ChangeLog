@@ -1,5 +1,11 @@
 2014-04-22  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/arm/thumb2.md (*iordi_notdi_di): New pattern.
+	(*iordi_notzesidi_di): Likewise.
+	(*iordi_notsesidi_di): Likewise.
+
+2014-04-22  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/arm/arm-protos.h (tune_params): New struct members.
 	* config/arm/arm.c: Initialise tune_params per processor.
 	(thumb2_reorg): Suppress conversion from t32 to t16 when optimizing
