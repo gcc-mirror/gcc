@@ -1,3 +1,8 @@
+2014-04-22  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.c (sparc_init_modes): Hoist GET_MODE_SIZE
+	computation to the top of the loop.
+
 2014-04-22  Renlin  <renlin.li@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
