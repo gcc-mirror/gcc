@@ -1,3 +1,12 @@
+2014-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60849
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Only allow effective
+	boolean results for comparisons.
+
 2014-04-22   Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
