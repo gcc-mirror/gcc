@@ -7833,7 +7833,6 @@ gnat_gimplify_stmt (tree *stmt_p)
 	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
 				 build_int_cst (integer_type_node,
 						annot_expr_ivdep_kind));
-
 	    if (LOOP_STMT_NO_VECTOR (stmt))
 	      gnu_cond = build2 (ANNOTATE_EXPR, TREE_TYPE (gnu_cond), gnu_cond,
 				 build_int_cst (integer_type_node,
@@ -9357,16 +9356,16 @@ void
 post_error (const char *msg, Node_Id node)
 {
   String_Template temp;
-  Fat_Pointer fp;
+  DECLARE_STRING_POINTER (sp);
 
   if (No (node))
     return;
 
   temp.Low_Bound = 1;
   temp.High_Bound = strlen (msg);
-  fp.Bounds = &temp;
-  fp.Array = msg;
-  Error_Msg_N (fp, node);
+  sp.Bounds = &temp;
+  sp.Array = msg;
+  Error_Msg_N (sp, node);
 }
 
 /* Similar to post_error, but NODE is the node at which to post the error and
@@ -9376,16 +9375,16 @@ void
 post_error_ne (const char *msg, Node_Id node, Entity_Id ent)
 {
   String_Template temp;
-  Fat_Pointer fp;
+  DECLARE_STRING_POINTER (sp);
 
   if (No (node))
     return;
 
   temp.Low_Bound = 1;
   temp.High_Bound = strlen (msg);
-  fp.Bounds = &temp;
-  fp.Array = msg;
-  Error_Msg_NE (fp, node, ent);
+  sp.Bounds = &temp;
+  sp.Array = msg;
+  Error_Msg_NE (sp, node, ent);
 }
 
 /* Similar to post_error_ne, but NUM is the number to use for the '^'.  */

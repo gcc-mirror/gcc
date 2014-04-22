@@ -1465,6 +1465,44 @@ create_tinfo_types (void)
   pop_abi_namespace ();
 }
 
+/* Helper for emit_support_tinfos. Emits the type_info descriptor of
+   a single type.  */
+
+void
+emit_support_tinfo_1 (tree bltn)
+{
+  tree types[3];
+
+  if (bltn == NULL_TREE)
+    return;
+  types[0] = bltn;
+  types[1] = build_pointer_type (bltn);
+  types[2] = build_pointer_type (cp_build_qualified_type (bltn,
+							  TYPE_QUAL_CONST));
+
+  for (int i = 0; i < 3; ++i)
+    {
+      tree tinfo = get_tinfo_decl (types[i]);
+      TREE_USED (tinfo) = 1;
+      mark_needed (tinfo);
+      /* The C++ ABI requires that these objects be COMDAT.  But,
+	 On systems without weak symbols, initialized COMDAT
+	 objects are emitted with internal linkage.  (See
+	 comdat_linkage for details.)  Since we want these objects
+	 to have external linkage so that copies do not have to be
+	 emitted in code outside the runtime library, we make them
+	 non-COMDAT here.  
+
+	 It might also not be necessary to follow this detail of the
+	 ABI.  */
+      if (!flag_weak || ! targetm.cxx.library_rtti_comdat ())
+	{
+	  gcc_assert (TREE_PUBLIC (tinfo) && !DECL_COMDAT (tinfo));
+	  DECL_INTERFACE_KNOWN (tinfo) = 1;
+	}
+    }
+}
+
 /* Emit the type_info descriptors which are guaranteed to be in the runtime
    support.  Generating them here guarantees consistency with the other
    structures.  We use the following heuristic to determine when the runtime
@@ -1507,42 +1545,9 @@ emit_support_tinfos (void)
     return;
   doing_runtime = 1;
   for (ix = 0; fundamentals[ix]; ix++)
-    {
-      tree bltn = *fundamentals[ix];
-      tree types[3];
-      int i;
-
-      if (bltn == NULL_TREE)
-	continue;
-      types[0] = bltn;
-      types[1] = build_pointer_type (bltn);
-      types[2] = build_pointer_type (cp_build_qualified_type (bltn,
-							      TYPE_QUAL_CONST));
-
-      for (i = 0; i < 3; ++i)
-	{
-	  tree tinfo;
-
-	  tinfo = get_tinfo_decl (types[i]);
-	  TREE_USED (tinfo) = 1;
-	  mark_needed (tinfo);
-	  /* The C++ ABI requires that these objects be COMDAT.  But,
-	     On systems without weak symbols, initialized COMDAT
-	     objects are emitted with internal linkage.  (See
-	     comdat_linkage for details.)  Since we want these objects
-	     to have external linkage so that copies do not have to be
-	     emitted in code outside the runtime library, we make them
-	     non-COMDAT here.  
-
-	     It might also not be necessary to follow this detail of the
-	     ABI.  */
-	  if (!flag_weak || ! targetm.cxx.library_rtti_comdat ())
-	    {
-	      gcc_assert (TREE_PUBLIC (tinfo) && !DECL_COMDAT (tinfo));
-	      DECL_INTERFACE_KNOWN (tinfo) = 1;
-	    }
-	}
-    }
+    emit_support_tinfo_1 (*fundamentals[ix]);
+  for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
+    emit_support_tinfo_1 (TREE_VALUE (t));
 }
 
 /* Finish a type info decl. DECL_PTR is a pointer to an unemitted

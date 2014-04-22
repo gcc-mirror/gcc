@@ -4823,41 +4823,43 @@ sparc_init_modes (void)
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       enum machine_mode m = (enum machine_mode) i;
+      unsigned int size = GET_MODE_SIZE (m);
+
       switch (GET_MODE_CLASS (m))
 	{
 	case MODE_INT:
 	case MODE_PARTIAL_INT:
 	case MODE_COMPLEX_INT:
-	  if (GET_MODE_SIZE (m) < 4)
+	  if (size < 4)
 	    sparc_mode_class[i] = 1 << (int) H_MODE;
-	  else if (GET_MODE_SIZE (m) == 4)
+	  else if (size == 4)
 	    sparc_mode_class[i] = 1 << (int) S_MODE;
-	  else if (GET_MODE_SIZE (m) == 8)
+	  else if (size == 8)
 	    sparc_mode_class[i] = 1 << (int) D_MODE;
-	  else if (GET_MODE_SIZE (m) == 16)
+	  else if (size == 16)
 	    sparc_mode_class[i] = 1 << (int) T_MODE;
-	  else if (GET_MODE_SIZE (m) == 32)
+	  else if (size == 32)
 	    sparc_mode_class[i] = 1 << (int) O_MODE;
 	  else
 	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_VECTOR_INT:
-	  if (GET_MODE_SIZE (m) == 4)
+	  if (size == 4)
 	    sparc_mode_class[i] = 1 << (int) SF_MODE;
-	  else if (GET_MODE_SIZE (m) == 8)
+	  else if (size == 8)
 	    sparc_mode_class[i] = 1 << (int) DF_MODE;
 	  else
 	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_FLOAT:
 	case MODE_COMPLEX_FLOAT:
-	  if (GET_MODE_SIZE (m) == 4)
+	  if (size == 4)
 	    sparc_mode_class[i] = 1 << (int) SF_MODE;
-	  else if (GET_MODE_SIZE (m) == 8)
+	  else if (size == 8)
 	    sparc_mode_class[i] = 1 << (int) DF_MODE;
-	  else if (GET_MODE_SIZE (m) == 16)
+	  else if (size == 16)
 	    sparc_mode_class[i] = 1 << (int) TF_MODE;
-	  else if (GET_MODE_SIZE (m) == 32)
+	  else if (size == 32)
 	    sparc_mode_class[i] = 1 << (int) OF_MODE;
 	  else
 	    sparc_mode_class[i] = 0;

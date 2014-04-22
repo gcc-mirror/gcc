@@ -283,8 +283,8 @@ internal_error_function (diagnostic_context *context,
   text_info tinfo;
   char *buffer, *p, *loc;
   String_Template temp, temp_loc;
-  Fat_Pointer fp, fp_loc;
-  expanded_location s;
+  DECLARE_STRING_POINTER (sp, sp_loc);
+  expanded_location xloc;
 
   /* Warn if plugins present.  */
   warn_if_plugins ();
@@ -311,21 +311,21 @@ internal_error_function (diagnostic_context *context,
 
   temp.Low_Bound = 1;
   temp.High_Bound = p - buffer;
-  fp.Bounds = &temp;
-  fp.Array = buffer;
+  sp.Bounds = &temp;
+  sp.Array = buffer;
 
-  s = expand_location (input_location);
-  if (context->show_column && s.column != 0)
-    asprintf (&loc, "%s:%d:%d", s.file, s.line, s.column);
+  xloc = expand_location (input_location);
+  if (context->show_column && xloc.column != 0)
+    asprintf (&loc, "%s:%d:%d", xloc.file, xloc.line, xloc.column);
   else
-    asprintf (&loc, "%s:%d", s.file, s.line);
+    asprintf (&loc, "%s:%d", xloc.file, xloc.line);
   temp_loc.Low_Bound = 1;
   temp_loc.High_Bound = strlen (loc);
-  fp_loc.Bounds = &temp_loc;
-  fp_loc.Array = loc;
+  sp_loc.Bounds = &temp_loc;
+  sp_loc.Array = loc;
 
   Current_Error_Node = error_gnat_node;
-  Compiler_Abort (fp, -1, fp_loc);
+  Compiler_Abort (sp, -1, sp_loc);
 }
 
 /* Perform all the initialization steps that are language-specific.  */

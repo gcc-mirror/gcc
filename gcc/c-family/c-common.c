@@ -3470,7 +3470,7 @@ c_common_fixed_point_type_for_size (unsigned int ibit, unsigned int fbit,
 
 /* Used for communication between c_common_type_for_mode and
    c_register_builtin_type.  */
-static GTY(()) tree registered_builtin_types;
+tree registered_builtin_types;
 
 /* Return a data type that has machine mode MODE.
    If the mode is an integer,

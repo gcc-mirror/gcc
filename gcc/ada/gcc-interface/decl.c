@@ -8859,8 +8859,10 @@ create_concat_name (Entity_Id gnat_entity, const char *suffix)
   if (suffix)
     {
       String_Template temp = {1, (int) strlen (suffix)};
-      Fat_Pointer fp = {suffix, &temp};
-      Get_External_Name_With_Suffix (gnat_entity, fp);
+      DECLARE_STRING_POINTER (sp);
+      sp.Bounds = &temp;
+      sp.Array = suffix;
+      Get_External_Name_With_Suffix (gnat_entity, sp);
     }
   else
     Get_External_Name (gnat_entity, 0);

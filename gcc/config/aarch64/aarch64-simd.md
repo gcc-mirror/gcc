@@ -2259,6 +2259,15 @@
   DONE;
 })
 
+(define_expand "aarch64_reinterpretdf<mode>"
+  [(match_operand:DF 0 "register_operand" "")
+   (match_operand:VD_RE 1 "register_operand" "")]
+  "TARGET_SIMD"
+{
+  aarch64_simd_reinterpret (operands[0], operands[1]);
+  DONE;
+})
+
 (define_expand "aarch64_reinterpretv16qi<mode>"
   [(match_operand:V16QI 0 "register_operand" "")
    (match_operand:VQ 1 "register_operand" "")]
@@ -2610,9 +2619,9 @@
 ;; <su>q<absneg>
 
 (define_insn "aarch64_s<optab><mode>"
-  [(set (match_operand:VSDQ_I_BHSI 0 "register_operand" "=w")
-	(UNQOPS:VSDQ_I_BHSI
-	  (match_operand:VSDQ_I_BHSI 1 "register_operand" "w")))]
+  [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
+	(UNQOPS:VSDQ_I
+	  (match_operand:VSDQ_I 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "s<optab>\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
   [(set_attr "type" "neon_<optab><q>")]

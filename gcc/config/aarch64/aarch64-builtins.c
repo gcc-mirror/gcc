@@ -147,7 +147,23 @@ aarch64_types_unopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned };
 #define TYPES_UNOPU (aarch64_types_unopu_qualifiers)
 #define TYPES_CREATE (aarch64_types_unop_qualifiers)
-#define TYPES_REINTERP (aarch64_types_unop_qualifiers)
+#define TYPES_REINTERP_SS (aarch64_types_unop_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_unop_su_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned };
+#define TYPES_REINTERP_SU (aarch64_types_unop_su_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_unop_sp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_poly };
+#define TYPES_REINTERP_SP (aarch64_types_unop_sp_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_unop_us_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none };
+#define TYPES_REINTERP_US (aarch64_types_unop_us_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_unop_ps_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_none };
+#define TYPES_REINTERP_PS (aarch64_types_unop_ps_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
@@ -1129,6 +1145,25 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
 	  return fold_build2 (NE_EXPR, type, and_node, vec_zero_node);
 	  break;
 	}
+      VAR1 (REINTERP_SS, reinterpretdi, 0, df)
+      VAR1 (REINTERP_SS, reinterpretv8qi, 0, df)
+      VAR1 (REINTERP_SS, reinterpretv4hi, 0, df)
+      VAR1 (REINTERP_SS, reinterpretv2si, 0, df)
+      VAR1 (REINTERP_SS, reinterpretv2sf, 0, df)
+      BUILTIN_VD (REINTERP_SS, reinterpretdf, 0)
+      BUILTIN_VD (REINTERP_SU, reinterpretdf, 0)
+      VAR1 (REINTERP_US, reinterpretdi, 0, df)
+      VAR1 (REINTERP_US, reinterpretv8qi, 0, df)
+      VAR1 (REINTERP_US, reinterpretv4hi, 0, df)
+      VAR1 (REINTERP_US, reinterpretv2si, 0, df)
+      VAR1 (REINTERP_US, reinterpretv2sf, 0, df)
+      BUILTIN_VD (REINTERP_SP, reinterpretdf, 0)
+      VAR1 (REINTERP_PS, reinterpretdi, 0, df)
+      VAR1 (REINTERP_PS, reinterpretv8qi, 0, df)
+      VAR1 (REINTERP_PS, reinterpretv4hi, 0, df)
+      VAR1 (REINTERP_PS, reinterpretv2si, 0, df)
+      VAR1 (REINTERP_PS, reinterpretv2sf, 0, df)
+	return fold_build1 (VIEW_CONVERT_EXPR, type, args[0]);
       VAR1 (UNOP, floatv2si, 2, v2sf)
       VAR1 (UNOP, floatv4si, 2, v4sf)
       VAR1 (UNOP, floatv2di, 2, v2df)

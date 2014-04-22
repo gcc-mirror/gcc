@@ -1,3 +1,22 @@
+2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60868
+	* gcc.target/i386/pr60868.c: New testcase.
+
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59073
+	* c-c++-common/gomp/pr59073.c: New test.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/vreinterpret_f64_1.c: New.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/vqneg_s64_1.c: New testcase.
+	* gcc.target/aarch64/vqabs_s64_1.c: New testcase.
+
 2014-04-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/memcpy-5.c: New test.

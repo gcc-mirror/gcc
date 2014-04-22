@@ -636,22 +636,58 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 
     case SYMBOL_SMALL_TLSDESC:
       {
-	rtx x0 = gen_rtx_REG (Pmode, R0_REGNUM);
+	enum machine_mode mode = GET_MODE (dest);
+	rtx x0 = gen_rtx_REG (mode, R0_REGNUM);
 	rtx tp;
 
-	emit_insn (gen_tlsdesc_small (imm));
+	gcc_assert (mode == Pmode || mode == ptr_mode);
+
+	/* In ILP32, the got entry is always of SImode size.  Unlike
+	   small GOT, the dest is fixed at reg 0.  */
+	if (TARGET_ILP32)
+	  emit_insn (gen_tlsdesc_small_si (imm));
+	else
+	  emit_insn (gen_tlsdesc_small_di (imm));
 	tp = aarch64_load_tp (NULL);
-	emit_insn (gen_rtx_SET (Pmode, dest, gen_rtx_PLUS (Pmode, tp, x0)));
+
+	if (mode != Pmode)
+	  tp = gen_lowpart (mode, tp);
+
+	emit_insn (gen_rtx_SET (mode, dest, gen_rtx_PLUS (mode, tp, x0)));
 	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
 	return;
       }
 
     case SYMBOL_SMALL_GOTTPREL:
       {
-	rtx tmp_reg = gen_reg_rtx (Pmode);
+	/* In ILP32, the mode of dest can be either SImode or DImode,
+	   while the got entry is always of SImode size.  The mode of
+	   dest depends on how dest is used: if dest is assigned to a
+	   pointer (e.g. in the memory), it has SImode; it may have
+	   DImode if dest is dereferenced to access the memeory.
+	   This is why we have to handle three different tlsie_small
+	   patterns here (two patterns for ILP32).  */
+	enum machine_mode mode = GET_MODE (dest);
+	rtx tmp_reg = gen_reg_rtx (mode);
 	rtx tp = aarch64_load_tp (NULL);
-	emit_insn (gen_tlsie_small (tmp_reg, imm));
-	emit_insn (gen_rtx_SET (Pmode, dest, gen_rtx_PLUS (Pmode, tp, tmp_reg)));
+
+	if (mode == ptr_mode)
+	  {
+	    if (mode == DImode)
+	      emit_insn (gen_tlsie_small_di (tmp_reg, imm));
+	    else
+	      {
+		emit_insn (gen_tlsie_small_si (tmp_reg, imm));
+		tp = gen_lowpart (mode, tp);
+	      }
+	  }
+	else
+	  {
+	    gcc_assert (mode == Pmode);
+	    emit_insn (gen_tlsie_small_sidi (tmp_reg, imm));
+	  }
+
+	emit_insn (gen_rtx_SET (mode, dest, gen_rtx_PLUS (mode, tp, tmp_reg)));
 	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
 	return;
       }
@@ -1713,8 +1749,6 @@ aarch64_layout_frame (void)
   if (reload_completed && cfun->machine->frame.laid_out)
     return;
 
-  cfun->machine->frame.fp_lr_offset = 0;
-
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     cfun->machine->frame.reg_offset[regno] = -1;
@@ -1764,14 +1798,12 @@ aarch64_layout_frame (void)
     {
       cfun->machine->frame.reg_offset[R29_REGNUM] = offset;
       offset += UNITS_PER_WORD;
-      cfun->machine->frame.fp_lr_offset = UNITS_PER_WORD;
     }
 
   if (cfun->machine->frame.reg_offset[R30_REGNUM] != -1)
     {
       cfun->machine->frame.reg_offset[R30_REGNUM] = offset;
       offset += UNITS_PER_WORD;
-      cfun->machine->frame.fp_lr_offset += UNITS_PER_WORD;
     }
 
   cfun->machine->frame.padding0 =
@@ -4147,32 +4179,31 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
 		+ crtl->outgoing_args_size
 		+ cfun->machine->saved_varargs_size);
 
-   frame_size = AARCH64_ROUND_UP (frame_size, STACK_BOUNDARY / BITS_PER_UNIT);
-   offset = frame_size;
+  frame_size = AARCH64_ROUND_UP (frame_size, STACK_BOUNDARY / BITS_PER_UNIT);
+  offset = frame_size;
 
-   if (to == HARD_FRAME_POINTER_REGNUM)
-     {
-       if (from == ARG_POINTER_REGNUM)
-	 return offset - crtl->outgoing_args_size;
+  if (to == HARD_FRAME_POINTER_REGNUM)
+    {
+      if (from == ARG_POINTER_REGNUM)
+	return offset - crtl->outgoing_args_size;
 
-       if (from == FRAME_POINTER_REGNUM)
-	 return cfun->machine->frame.saved_regs_size + get_frame_size ();
-     }
+      if (from == FRAME_POINTER_REGNUM)
+	return cfun->machine->frame.saved_regs_size + get_frame_size ();
+    }
 
-   if (to == STACK_POINTER_REGNUM)
-     {
-       if (from == FRAME_POINTER_REGNUM)
-         {
-           HOST_WIDE_INT elim = crtl->outgoing_args_size
-                              + cfun->machine->frame.saved_regs_size
-                              + get_frame_size ()
-                              - cfun->machine->frame.fp_lr_offset;
-           elim = AARCH64_ROUND_UP (elim, STACK_BOUNDARY / BITS_PER_UNIT);
-           return elim;
-         }
-     }
+  if (to == STACK_POINTER_REGNUM)
+    {
+      if (from == FRAME_POINTER_REGNUM)
+	{
+	  HOST_WIDE_INT elim = crtl->outgoing_args_size
+	    + cfun->machine->frame.saved_regs_size
+	    + get_frame_size ();
+	  elim = AARCH64_ROUND_UP (elim, STACK_BOUNDARY / BITS_PER_UNIT);
+	  return elim;
+	}
+    }
 
-   return offset;
+  return offset;
 }
 
 
@@ -8516,6 +8547,9 @@ aarch64_cannot_change_mode_class (enum machine_mode from,
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS aarch64_fixed_condition_code_regs
+
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM CC_REGNUM
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

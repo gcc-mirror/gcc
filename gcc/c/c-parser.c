@@ -12208,10 +12208,12 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
       if (!flag_openmp)  /* flag_openmp_simd  */
 	return c_parser_omp_for (loc, parser, p_name, mask, cclauses);
       block = c_begin_omp_parallel ();
-      c_parser_omp_for (loc, parser, p_name, mask, cclauses);
+      tree ret = c_parser_omp_for (loc, parser, p_name, mask, cclauses);
       stmt
 	= c_finish_omp_parallel (loc, cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
 				 block);
+      if (ret == NULL_TREE)
+	return ret;
       OMP_PARALLEL_COMBINED (stmt) = 1;
       return stmt;
     }

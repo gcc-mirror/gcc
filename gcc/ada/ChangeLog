@@ -1,3 +1,24 @@
+2014-04-22  Richard Henderson  <rth@redhat.com>
+
+	* gcc-interface/Makefile.in: Support aarch64-linux.
+
+	* init.c [__linux__] (HAVE_GNAT_ALTERNATE_STACK): New define.
+	(__gnat_alternate_stack): Enable for all linux except ia64.
+
+2014-04-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Compiler_Abort): Replace Fat_Pointer with String_Pointer.
+	(Error_Msg_N): Likewise.
+	(Error_Msg_NE): Likewise.
+	(Get_External_Name_With_Suffix): Likewise.
+	* types.h (Fat_Pointer): Delete.
+	(String_Pointer): New type.
+	(DECLARE_STRING_POINTER): New macro.
+	* gcc-interface/decl.c (create_concat_name): Adjust.
+	* gcc-interface/trans.c (post_error): Likewise.
+	(post_error_ne): Likewise.
+	* gcc-interface/misc.c (internal_error_function): Likewise.
+
 2014-04-15  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 

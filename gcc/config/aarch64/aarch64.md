@@ -3586,35 +3586,62 @@
   [(set_attr "type" "call")
    (set_attr "length" "16")])
 
-(define_insn "tlsie_small"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_operand:DI 1 "aarch64_tls_ie_symref" "S")]
+(define_insn "tlsie_small_<mode>"
+  [(set (match_operand:PTR 0 "register_operand" "=r")
+        (unspec:PTR [(match_operand 1 "aarch64_tls_ie_symref" "S")]
 		   UNSPEC_GOTSMALLTLS))]
   ""
-  "adrp\\t%0, %A1\;ldr\\t%0, [%0, #%L1]"
+  "adrp\\t%0, %A1\;ldr\\t%<w>0, [%0, #%L1]"
   [(set_attr "type" "load1")
    (set_attr "length" "8")]
 )
 
-(define_insn "tlsle_small"
+(define_insn "tlsie_small_sidi"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_operand:DI 1 "register_operand" "r")
-                   (match_operand:DI 2 "aarch64_tls_le_symref" "S")]
+	(zero_extend:DI
+          (unspec:SI [(match_operand 1 "aarch64_tls_ie_symref" "S")]
+		      UNSPEC_GOTSMALLTLS)))]
+  ""
+  "adrp\\t%0, %A1\;ldr\\t%w0, [%0, #%L1]"
+  [(set_attr "type" "load1")
+   (set_attr "length" "8")]
+)
+
+(define_expand "tlsle_small"
+  [(set (match_operand 0 "register_operand" "=r")
+        (unspec [(match_operand 1 "register_operand" "r")
+                   (match_operand 2 "aarch64_tls_le_symref" "S")]
+                   UNSPEC_GOTSMALLTLS))]
+  ""
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+  emit_insn ((mode == DImode
+	      ? gen_tlsle_small_di
+	      : gen_tlsle_small_si) (operands[0],
+				     operands[1],
+				     operands[2]));
+  DONE;
+})
+
+(define_insn "tlsle_small_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "register_operand" "r")
+                   (match_operand 2 "aarch64_tls_le_symref" "S")]
 		   UNSPEC_GOTSMALLTLS))]
   ""
-  "add\\t%0, %1, #%G2\;add\\t%0, %0, #%L2"
+  "add\\t%<w>0, %<w>1, #%G2\;add\\t%<w>0, %<w>0, #%L2"
   [(set_attr "type" "alu_reg")
    (set_attr "length" "8")]
 )
 
-(define_insn "tlsdesc_small"
-  [(set (reg:DI R0_REGNUM)
-        (unspec:DI [(match_operand:DI 0 "aarch64_valid_symref" "S")]
+(define_insn "tlsdesc_small_<mode>"
+  [(set (reg:PTR R0_REGNUM)
+        (unspec:PTR [(match_operand 0 "aarch64_valid_symref" "S")]
 		   UNSPEC_TLSDESC))
    (clobber (reg:DI LR_REGNUM))
    (clobber (match_scratch:DI 1 "=r"))]
   "TARGET_TLS_DESC"
-  "adrp\\tx0, %A0\;ldr\\t%1, [x0, #%L0]\;add\\tx0, x0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
+  "adrp\\tx0, %A0\;ldr\\t%<w>1, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
   [(set_attr "type" "call")
    (set_attr "length" "16")])
 

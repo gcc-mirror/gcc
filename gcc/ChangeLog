@@ -1,3 +1,350 @@
+2014-04-22  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphclones.c (cgraph_function_versioning): Copy
+	ipa_transforms_to_apply instead of asserting it is empty.
+
+2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60868
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Call counter_mode 
+	on count_exp to get mode.
+
+2014-04-22  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Handle TLS for ILP32.
+	* config/aarch64/aarch64.md (tlsie_small): Rename to ...
+	(tlsie_small_<mode>): this and handle PTR.
+	(tlsie_small_sidi): New pattern.
+	(tlsle_small): Change to an expand to handle ILP32.
+	(tlsle_small_<mode>): New pattern.
+	(tlsdesc_small): Rename to ...
+	(tlsdesc_small_<mode>): this and handle PTR.
+
+2014-04-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (TARGET_FLAGS_REGNUM): Define.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (TYPES_REINTERP): Removed.
+	(aarch64_types_signed_unsigned_qualifiers): Qualifier added.
+	(aarch64_types_signed_poly_qualifiers): Likewise.
+	(aarch64_types_unsigned_signed_qualifiers): Likewise.
+	(aarch64_types_poly_signed_qualifiers): Likewise.
+	(TYPES_REINTERP_SS): Type macro added.
+	(TYPES_REINTERP_SU): Likewise.
+	(TYPES_REINTERP_SP): Likewise.
+	(TYPES_REINTERP_US): Likewise.
+	(TYPES_REINTERP_PS): Likewise.
+	(aarch64_fold_builtin): New expression folding added.
+	* config/aarch64/aarch64-simd-builtins.def (REINTERP):
+	Declarations removed.
+	(REINTERP_SS): Declarations added.
+	(REINTERP_US): Likewise.
+	(REINTERP_PS): Likewise.
+	(REINTERP_SU): Likewise.
+	(REINTERP_SP): Likewise.
+	* config/aarch64/arm_neon.h (vreinterpret_p8_f64): Implemented.
+	(vreinterpretq_p8_f64): Likewise.
+	(vreinterpret_p16_f64): Likewise.
+	(vreinterpretq_p16_f64): Likewise.
+	(vreinterpret_f32_f64): Likewise.
+	(vreinterpretq_f32_f64): Likewise.
+	(vreinterpret_f64_f32): Likewise.
+	(vreinterpret_f64_p8): Likewise.
+	(vreinterpret_f64_p16): Likewise.
+	(vreinterpret_f64_s8): Likewise.
+	(vreinterpret_f64_s16): Likewise.
+	(vreinterpret_f64_s32): Likewise.
+	(vreinterpret_f64_s64): Likewise.
+	(vreinterpret_f64_u8): Likewise.
+	(vreinterpret_f64_u16): Likewise.
+	(vreinterpret_f64_u32): Likewise.
+	(vreinterpret_f64_u64): Likewise.
+	(vreinterpretq_f64_f32): Likewise.
+	(vreinterpretq_f64_p8): Likewise.
+	(vreinterpretq_f64_p16): Likewise.
+	(vreinterpretq_f64_s8): Likewise.
+	(vreinterpretq_f64_s16): Likewise.
+	(vreinterpretq_f64_s32): Likewise.
+	(vreinterpretq_f64_s64): Likewise.
+	(vreinterpretq_f64_u8): Likewise.
+	(vreinterpretq_f64_u16): Likewise.
+	(vreinterpretq_f64_u32): Likewise.
+	(vreinterpretq_f64_u64): Likewise.
+	(vreinterpret_s64_f64): Likewise.
+	(vreinterpretq_s64_f64): Likewise.
+	(vreinterpret_u64_f64): Likewise.
+	(vreinterpretq_u64_f64): Likewise.
+	(vreinterpret_s8_f64): Likewise.
+	(vreinterpretq_s8_f64): Likewise.
+	(vreinterpret_s16_f64): Likewise.
+	(vreinterpretq_s16_f64): Likewise.
+	(vreinterpret_s32_f64): Likewise.
+	(vreinterpretq_s32_f64): Likewise.
+	(vreinterpret_u8_f64): Likewise.
+	(vreinterpretq_u8_f64): Likewise.
+	(vreinterpret_u16_f64): Likewise.
+	(vreinterpretq_u16_f64): Likewise.
+	(vreinterpret_u32_f64): Likewise.
+	(vreinterpretq_u32_f64): Likewise.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64/aarch64-builtins.c (TYPES_REINTERP): Removed.
+	* config/aarch64/aarch64/aarch64-simd-builtins.def (REINTERP): Removed.
+	(vreinterpret_p8_s8): Likewise.
+	* config/aarch64/aarch64/arm_neon.h (vreinterpret_p8_s8): Uses cast.
+	(vreinterpret_p8_s16): Likewise.
+	(vreinterpret_p8_s32): Likewise.
+	(vreinterpret_p8_s64): Likewise.
+	(vreinterpret_p8_f32): Likewise.
+	(vreinterpret_p8_u8): Likewise.
+	(vreinterpret_p8_u16): Likewise.
+	(vreinterpret_p8_u32): Likewise.
+	(vreinterpret_p8_u64): Likewise.
+	(vreinterpret_p8_p16): Likewise.
+	(vreinterpretq_p8_s8): Likewise.
+	(vreinterpretq_p8_s16): Likewise.
+	(vreinterpretq_p8_s32): Likewise.
+	(vreinterpretq_p8_s64): Likewise.
+	(vreinterpretq_p8_f32): Likewise.
+	(vreinterpretq_p8_u8): Likewise.
+	(vreinterpretq_p8_u16): Likewise.
+	(vreinterpretq_p8_u32): Likewise.
+	(vreinterpretq_p8_u64): Likewise.
+	(vreinterpretq_p8_p16): Likewise.
+	(vreinterpret_p16_s8): Likewise.
+	(vreinterpret_p16_s16): Likewise.
+	(vreinterpret_p16_s32): Likewise.
+	(vreinterpret_p16_s64): Likewise.
+	(vreinterpret_p16_f32): Likewise.
+	(vreinterpret_p16_u8): Likewise.
+	(vreinterpret_p16_u16): Likewise.
+	(vreinterpret_p16_u32): Likewise.
+	(vreinterpret_p16_u64): Likewise.
+	(vreinterpret_p16_p8): Likewise.
+	(vreinterpretq_p16_s8): Likewise.
+	(vreinterpretq_p16_s16): Likewise.
+	(vreinterpretq_p16_s32): Likewise.
+	(vreinterpretq_p16_s64): Likewise.
+	(vreinterpretq_p16_f32): Likewise.
+	(vreinterpretq_p16_u8): Likewise.
+	(vreinterpretq_p16_u16): Likewise.
+	(vreinterpretq_p16_u32): Likewise.
+	(vreinterpretq_p16_u64): Likewise.
+	(vreinterpretq_p16_p8): Likewise.
+	(vreinterpret_f32_s8): Likewise.
+	(vreinterpret_f32_s16): Likewise.
+	(vreinterpret_f32_s32): Likewise.
+	(vreinterpret_f32_s64): Likewise.
+	(vreinterpret_f32_u8): Likewise.
+	(vreinterpret_f32_u16): Likewise.
+	(vreinterpret_f32_u32): Likewise.
+	(vreinterpret_f32_u64): Likewise.
+	(vreinterpret_f32_p8): Likewise.
+	(vreinterpret_f32_p16): Likewise.
+	(vreinterpretq_f32_s8): Likewise.
+	(vreinterpretq_f32_s16): Likewise.
+	(vreinterpretq_f32_s32): Likewise.
+	(vreinterpretq_f32_s64): Likewise.
+	(vreinterpretq_f32_u8): Likewise.
+	(vreinterpretq_f32_u16): Likewise.
+	(vreinterpretq_f32_u32): Likewise.
+	(vreinterpretq_f32_u64): Likewise.
+	(vreinterpretq_f32_p8): Likewise.
+	(vreinterpretq_f32_p16): Likewise.
+	(vreinterpret_s64_s8): Likewise.
+	(vreinterpret_s64_s16): Likewise.
+	(vreinterpret_s64_s32): Likewise.
+	(vreinterpret_s64_f32): Likewise.
+	(vreinterpret_s64_u8): Likewise.
+	(vreinterpret_s64_u16): Likewise.
+	(vreinterpret_s64_u32): Likewise.
+	(vreinterpret_s64_u64): Likewise.
+	(vreinterpret_s64_p8): Likewise.
+	(vreinterpret_s64_p16): Likewise.
+	(vreinterpretq_s64_s8): Likewise.
+	(vreinterpretq_s64_s16): Likewise.
+	(vreinterpretq_s64_s32): Likewise.
+	(vreinterpretq_s64_f32): Likewise.
+	(vreinterpretq_s64_u8): Likewise.
+	(vreinterpretq_s64_u16): Likewise.
+	(vreinterpretq_s64_u32): Likewise.
+	(vreinterpretq_s64_u64): Likewise.
+	(vreinterpretq_s64_p8): Likewise.
+	(vreinterpretq_s64_p16): Likewise.
+	(vreinterpret_u64_s8): Likewise.
+	(vreinterpret_u64_s16): Likewise.
+	(vreinterpret_u64_s32): Likewise.
+	(vreinterpret_u64_s64): Likewise.
+	(vreinterpret_u64_f32): Likewise.
+	(vreinterpret_u64_u8): Likewise.
+	(vreinterpret_u64_u16): Likewise.
+	(vreinterpret_u64_u32): Likewise.
+	(vreinterpret_u64_p8): Likewise.
+	(vreinterpret_u64_p16): Likewise.
+	(vreinterpretq_u64_s8): Likewise.
+	(vreinterpretq_u64_s16): Likewise.
+	(vreinterpretq_u64_s32): Likewise.
+	(vreinterpretq_u64_s64): Likewise.
+	(vreinterpretq_u64_f32): Likewise.
+	(vreinterpretq_u64_u8): Likewise.
+	(vreinterpretq_u64_u16): Likewise.
+	(vreinterpretq_u64_u32): Likewise.
+	(vreinterpretq_u64_p8): Likewise.
+	(vreinterpretq_u64_p16): Likewise.
+	(vreinterpret_s8_s16): Likewise.
+	(vreinterpret_s8_s32): Likewise.
+	(vreinterpret_s8_s64): Likewise.
+	(vreinterpret_s8_f32): Likewise.
+	(vreinterpret_s8_u8): Likewise.
+	(vreinterpret_s8_u16): Likewise.
+	(vreinterpret_s8_u32): Likewise.
+	(vreinterpret_s8_u64): Likewise.
+	(vreinterpret_s8_p8): Likewise.
+	(vreinterpret_s8_p16): Likewise.
+	(vreinterpretq_s8_s16): Likewise.
+	(vreinterpretq_s8_s32): Likewise.
+	(vreinterpretq_s8_s64): Likewise.
+	(vreinterpretq_s8_f32): Likewise.
+	(vreinterpretq_s8_u8): Likewise.
+	(vreinterpretq_s8_u16): Likewise.
+	(vreinterpretq_s8_u32): Likewise.
+	(vreinterpretq_s8_u64): Likewise.
+	(vreinterpretq_s8_p8): Likewise.
+	(vreinterpretq_s8_p16): Likewise.
+	(vreinterpret_s16_s8): Likewise.
+	(vreinterpret_s16_s32): Likewise.
+	(vreinterpret_s16_s64): Likewise.
+	(vreinterpret_s16_f32): Likewise.
+	(vreinterpret_s16_u8): Likewise.
+	(vreinterpret_s16_u16): Likewise.
+	(vreinterpret_s16_u32): Likewise.
+	(vreinterpret_s16_u64): Likewise.
+	(vreinterpret_s16_p8): Likewise.
+	(vreinterpret_s16_p16): Likewise.
+	(vreinterpretq_s16_s8): Likewise.
+	(vreinterpretq_s16_s32): Likewise.
+	(vreinterpretq_s16_s64): Likewise.
+	(vreinterpretq_s16_f32): Likewise.
+	(vreinterpretq_s16_u8): Likewise.
+	(vreinterpretq_s16_u16): Likewise.
+	(vreinterpretq_s16_u32): Likewise.
+	(vreinterpretq_s16_u64): Likewise.
+	(vreinterpretq_s16_p8): Likewise.
+	(vreinterpretq_s16_p16): Likewise.
+	(vreinterpret_s32_s8): Likewise.
+	(vreinterpret_s32_s16): Likewise.
+	(vreinterpret_s32_s64): Likewise.
+	(vreinterpret_s32_f32): Likewise.
+	(vreinterpret_s32_u8): Likewise.
+	(vreinterpret_s32_u16): Likewise.
+	(vreinterpret_s32_u32): Likewise.
+	(vreinterpret_s32_u64): Likewise.
+	(vreinterpret_s32_p8): Likewise.
+	(vreinterpret_s32_p16): Likewise.
+	(vreinterpretq_s32_s8): Likewise.
+	(vreinterpretq_s32_s16): Likewise.
+	(vreinterpretq_s32_s64): Likewise.
+	(vreinterpretq_s32_f32): Likewise.
+	(vreinterpretq_s32_u8): Likewise.
+	(vreinterpretq_s32_u16): Likewise.
+	(vreinterpretq_s32_u32): Likewise.
+	(vreinterpretq_s32_u64): Likewise.
+	(vreinterpretq_s32_p8): Likewise.
+	(vreinterpretq_s32_p16): Likewise.
+	(vreinterpret_u8_s8): Likewise.
+	(vreinterpret_u8_s16): Likewise.
+	(vreinterpret_u8_s32): Likewise.
+	(vreinterpret_u8_s64): Likewise.
+	(vreinterpret_u8_f32): Likewise.
+	(vreinterpret_u8_u16): Likewise.
+	(vreinterpret_u8_u32): Likewise.
+	(vreinterpret_u8_u64): Likewise.
+	(vreinterpret_u8_p8): Likewise.
+	(vreinterpret_u8_p16): Likewise.
+	(vreinterpretq_u8_s8): Likewise.
+	(vreinterpretq_u8_s16): Likewise.
+	(vreinterpretq_u8_s32): Likewise.
+	(vreinterpretq_u8_s64): Likewise.
+	(vreinterpretq_u8_f32): Likewise.
+	(vreinterpretq_u8_u16): Likewise.
+	(vreinterpretq_u8_u32): Likewise.
+	(vreinterpretq_u8_u64): Likewise.
+	(vreinterpretq_u8_p8): Likewise.
+	(vreinterpretq_u8_p16): Likewise.
+	(vreinterpret_u16_s8): Likewise.
+	(vreinterpret_u16_s16): Likewise.
+	(vreinterpret_u16_s32): Likewise.
+	(vreinterpret_u16_s64): Likewise.
+	(vreinterpret_u16_f32): Likewise.
+	(vreinterpret_u16_u8): Likewise.
+	(vreinterpret_u16_u32): Likewise.
+	(vreinterpret_u16_u64): Likewise.
+	(vreinterpret_u16_p8): Likewise.
+	(vreinterpret_u16_p16): Likewise.
+	(vreinterpretq_u16_s8): Likewise.
+	(vreinterpretq_u16_s16): Likewise.
+	(vreinterpretq_u16_s32): Likewise.
+	(vreinterpretq_u16_s64): Likewise.
+	(vreinterpretq_u16_f32): Likewise.
+	(vreinterpretq_u16_u8): Likewise.
+	(vreinterpretq_u16_u32): Likewise.
+	(vreinterpretq_u16_u64): Likewise.
+	(vreinterpretq_u16_p8): Likewise.
+	(vreinterpretq_u16_p16): Likewise.
+	(vreinterpret_u32_s8): Likewise.
+	(vreinterpret_u32_s16): Likewise.
+	(vreinterpret_u32_s32): Likewise.
+	(vreinterpret_u32_s64): Likewise.
+	(vreinterpret_u32_f32): Likewise.
+	(vreinterpret_u32_u8): Likewise.
+	(vreinterpret_u32_u16): Likewise.
+	(vreinterpret_u32_u64): Likewise.
+	(vreinterpret_u32_p8): Likewise.
+	(vreinterpret_u32_p16): Likewise.
+	(vreinterpretq_u32_s8): Likewise.
+	(vreinterpretq_u32_s16): Likewise.
+	(vreinterpretq_u32_s32): Likewise.
+	(vreinterpretq_u32_s64): Likewise.
+	(vreinterpretq_u32_f32): Likewise.
+	(vreinterpretq_u32_u8): Likewise.
+	(vreinterpretq_u32_u16): Likewise.
+	(vreinterpretq_u32_u64): Likewise.
+	(vreinterpretq_u32_p8): Likewise.
+	(vreinterpretq_u32_p16): Likewise.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc/config/aarch64/aarch64-simd.md (aarch64_s<optab><mode>):
+	Pattern extended.
+	* config/aarch64/aarch64-simd-builtins.def (sqneg): Iterator
+	extended.
+	(sqabs): Likewise.
+	* config/aarch64/arm_neon.h (vqneg_s64): New intrinsic.
+	(vqnegd_s64): Likewise.
+	(vqabs_s64): Likewise.
+	(vqabsd_s64): Likewise.
+
+2014-04-22  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.c (sparc_init_modes): Hoist GET_MODE_SIZE
+	computation to the top of the loop.
+
+2014-04-22  Renlin  <renlin.li@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame): Delete "fp_lr_offset".
+	* config/aarch64/aarch64.c (aarch64_layout_frame)
+	(aarch64_initial_elimination_offset): Likewise.
+
+2014-04-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_initial_elimination_offset):
+	Fix indentation.
+
 2014-04-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* machmode.h (bitwise_mode_for_mode): Declare.

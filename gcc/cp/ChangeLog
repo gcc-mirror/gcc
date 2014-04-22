@@ -1,3 +1,16 @@
+2014-04-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/43622
+	* rtti.c (emit_support_tinfo_1): New function, extracted from
+	emit_support_tinfos.
+	(emit_support_tinfos): Call it and iterate on registered_builtin_types.
+
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59073
+	* parser.c (cp_parser_omp_parallel): If cp_parser_omp_for
+	fails, don't set OM_PARALLEL_COMBINED and return NULL.
+
 2014-04-18  Jason Merrill  <jason@redhat.com>
 
 	DR 1571
