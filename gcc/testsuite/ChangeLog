@@ -1,6 +1,14 @@
 2014-04-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60836
+	* g++.dg/vect/pr60836.cc: New testcase.
+
+2014-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2014-04-14  Richard Biener  <rguenther@suse.de>
 		Marc Glisse  <marc.glisse@inria.fr>
 
