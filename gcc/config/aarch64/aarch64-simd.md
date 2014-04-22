@@ -2259,6 +2259,15 @@
   DONE;
 })
 
+(define_expand "aarch64_reinterpretdf<mode>"
+  [(match_operand:DF 0 "register_operand" "")
+   (match_operand:VD_RE 1 "register_operand" "")]
+  "TARGET_SIMD"
+{
+  aarch64_simd_reinterpret (operands[0], operands[1]);
+  DONE;
+})
+
 (define_expand "aarch64_reinterpretv16qi<mode>"
   [(match_operand:V16QI 0 "register_operand" "")
    (match_operand:VQ 1 "register_operand" "")]

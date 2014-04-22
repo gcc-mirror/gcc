@@ -1,5 +1,70 @@
 2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (TYPES_REINTERP): Removed.
+	(aarch64_types_signed_unsigned_qualifiers): Qualifier added.
+	(aarch64_types_signed_poly_qualifiers): Likewise.
+	(aarch64_types_unsigned_signed_qualifiers): Likewise.
+	(aarch64_types_poly_signed_qualifiers): Likewise.
+	(TYPES_REINTERP_SS): Type macro added.
+	(TYPES_REINTERP_SU): Likewise.
+	(TYPES_REINTERP_SP): Likewise.
+	(TYPES_REINTERP_US): Likewise.
+	(TYPES_REINTERP_PS): Likewise.
+	(aarch64_fold_builtin): New expression folding added.
+	* config/aarch64/aarch64-simd-builtins.def (REINTERP):
+	Declarations removed.
+	(REINTERP_SS): Declarations added.
+	(REINTERP_US): Likewise.
+	(REINTERP_PS): Likewise.
+	(REINTERP_SU): Likewise.
+	(REINTERP_SP): Likewise.
+	* config/aarch64/arm_neon.h (vreinterpret_p8_f64): Implemented.
+	(vreinterpretq_p8_f64): Likewise.
+	(vreinterpret_p16_f64): Likewise.
+	(vreinterpretq_p16_f64): Likewise.
+	(vreinterpret_f32_f64): Likewise.
+	(vreinterpretq_f32_f64): Likewise.
+	(vreinterpret_f64_f32): Likewise.
+	(vreinterpret_f64_p8): Likewise.
+	(vreinterpret_f64_p16): Likewise.
+	(vreinterpret_f64_s8): Likewise.
+	(vreinterpret_f64_s16): Likewise.
+	(vreinterpret_f64_s32): Likewise.
+	(vreinterpret_f64_s64): Likewise.
+	(vreinterpret_f64_u8): Likewise.
+	(vreinterpret_f64_u16): Likewise.
+	(vreinterpret_f64_u32): Likewise.
+	(vreinterpret_f64_u64): Likewise.
+	(vreinterpretq_f64_f32): Likewise.
+	(vreinterpretq_f64_p8): Likewise.
+	(vreinterpretq_f64_p16): Likewise.
+	(vreinterpretq_f64_s8): Likewise.
+	(vreinterpretq_f64_s16): Likewise.
+	(vreinterpretq_f64_s32): Likewise.
+	(vreinterpretq_f64_s64): Likewise.
+	(vreinterpretq_f64_u8): Likewise.
+	(vreinterpretq_f64_u16): Likewise.
+	(vreinterpretq_f64_u32): Likewise.
+	(vreinterpretq_f64_u64): Likewise.
+	(vreinterpret_s64_f64): Likewise.
+	(vreinterpretq_s64_f64): Likewise.
+	(vreinterpret_u64_f64): Likewise.
+	(vreinterpretq_u64_f64): Likewise.
+	(vreinterpret_s8_f64): Likewise.
+	(vreinterpretq_s8_f64): Likewise.
+	(vreinterpret_s16_f64): Likewise.
+	(vreinterpretq_s16_f64): Likewise.
+	(vreinterpret_s32_f64): Likewise.
+	(vreinterpretq_s32_f64): Likewise.
+	(vreinterpret_u8_f64): Likewise.
+	(vreinterpretq_u8_f64): Likewise.
+	(vreinterpret_u16_f64): Likewise.
+	(vreinterpretq_u16_f64): Likewise.
+	(vreinterpret_u32_f64): Likewise.
+	(vreinterpretq_u32_f64): Likewise.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
 	* config/aarch64/aarch64/aarch64-builtins.c (TYPES_REINTERP): Removed.
 	* config/aarch64/aarch64/aarch64-simd-builtins.def (REINTERP): Removed.
 	(vreinterpret_p8_s8): Likewise.

@@ -1,5 +1,9 @@
 2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
 
+	* gcc.target/aarch64/vreinterpret_f64_1.c: New.
+
+2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
+
 	* gcc.target/aarch64/vqneg_s64_1.c: New testcase.
 	* gcc.target/aarch64/vqabs_s64_1.c: New testcase.
 
