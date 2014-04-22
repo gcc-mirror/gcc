@@ -1057,7 +1057,8 @@ extern bool vect_analyze_data_ref_accesses (loop_vec_info, bb_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern tree vect_check_gather (gimple, loop_vec_info, tree *, tree *,
 			       int *);
-extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *);
+extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *,
+				    unsigned *);
 extern tree vect_create_data_ref_ptr (gimple, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
 				      gimple *, bool, bool *);
@@ -1107,7 +1108,7 @@ extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
                                           slp_instance, bool);
 extern bool vect_schedule_slp (loop_vec_info, bb_vec_info);
 extern void vect_update_slp_costs_according_to_vf (loop_vec_info);
-extern bool vect_analyze_slp (loop_vec_info, bb_vec_info);
+extern bool vect_analyze_slp (loop_vec_info, bb_vec_info, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (vec<tree> , slp_tree,
