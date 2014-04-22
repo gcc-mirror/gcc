@@ -142,8 +142,8 @@
   BUILTIN_VSQN_HSDI (UNOP, sqmovn, 0)
   BUILTIN_VSQN_HSDI (UNOP, uqmovn, 0)
   /* Implemented by aarch64_s<optab><mode>.  */
-  BUILTIN_VSDQ_I_BHSI (UNOP, sqabs, 0)
-  BUILTIN_VSDQ_I_BHSI (UNOP, sqneg, 0)
+  BUILTIN_VSDQ_I (UNOP, sqabs, 0)
+  BUILTIN_VSDQ_I (UNOP, sqneg, 0)
 
   BUILTIN_VSD_HSI (QUADOP, sqdmlal_lane, 0)
   BUILTIN_VSD_HSI (QUADOP, sqdmlsl_lane, 0)
