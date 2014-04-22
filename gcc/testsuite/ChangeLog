@@ -1,3 +1,7 @@
+2014-04-22  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/vect_cvtf_1.c: New.
+
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60823
