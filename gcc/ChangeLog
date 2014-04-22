@@ -1,3 +1,8 @@
+2014-04-22  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/arm.c (arm_print_operand, thumb_exit): Make sure
+	GET_MODE_SIZE argument is enum machine_mode.
+
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60910
