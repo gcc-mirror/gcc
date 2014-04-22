@@ -321,10 +321,10 @@ CXXABI_2.0 {
     _ZTIPDn;
     _ZTIPKDn;
 
-    # typeinfo for __int128 and unsigned __int128
-    _ZTI[no];
-    _ZTIP[no];
-    _ZTIPK[no];
+    # typeinfo for __int128, unsigned __int128 and __float128
+    _ZTI[gno];
+    _ZTIP[gno];
+    _ZTIPK[gno];
 
     # virtual table
     _ZTVN10__cxxabiv117__array_type_infoE;

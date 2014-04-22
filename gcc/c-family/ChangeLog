@@ -1,3 +1,9 @@
+2014-04-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/43622
+	* c-common.c (registered_builtin_types): Make non-static.
+	* c-common.h (registered_builtin_types): Declare.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 	Marc Glisse  <marc.glisse@inria.fr>
 
