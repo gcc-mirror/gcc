@@ -1,3 +1,11 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60844
+	* gcc.dg/pr60844.c: New test.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.
