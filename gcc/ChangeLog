@@ -1,3 +1,12 @@
+2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60868
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Call counter_mode 
+	on count_exp to get mode.
+
 2014-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (vsx_xxmrghw_<mode>): Adjust for

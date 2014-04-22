@@ -1,3 +1,10 @@
+2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr60868.c: New testcase.
+
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/59073
