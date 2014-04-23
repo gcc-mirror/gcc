@@ -4898,7 +4898,7 @@ output_constructor_regular_field (oc_local_state *local)
       offset_int idx = wi::sext (wi::to_offset (local->index)
 				 - wi::to_offset (local->min_index), prec);
       fieldpos = (idx * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (local->val))))
-	.to_shwi ();
+	.to_short_addr ();
     }
   else if (local->field != NULL_TREE)
     fieldpos = int_byte_position (local->field);

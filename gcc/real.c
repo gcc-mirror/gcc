@@ -1446,7 +1446,7 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
       w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT;
       tmp = real_int::from_array
 	(val, (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w);
-      tmp = wi::lrshift<real_int> (tmp, (words * HOST_BITS_PER_WIDE_INT) - exp);
+      tmp = wi::lrshift (tmp, (words * HOST_BITS_PER_WIDE_INT) - exp);
       result = wide_int::from (tmp, precision, UNSIGNED);
 
       if (r->sign)

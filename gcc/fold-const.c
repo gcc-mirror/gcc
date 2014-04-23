@@ -4274,9 +4274,8 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
   if (integer_onep (low) && TREE_CODE (high) == INTEGER_CST)
     {
       int prec = TYPE_PRECISION (etype);
-      wide_int osb = wi::set_bit_in_zero (prec - 1, prec) - 1;
 
-      if (osb == high)
+      if (wi::mask (prec - 1, false, prec) == high)
 	{
 	  if (TYPE_UNSIGNED (etype))
 	    {
@@ -12950,7 +12949,7 @@ fold_binary_loc (location_t loc,
 	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg0,
 									1)),
 			      arg1, 0)
-	  && wi::bit_and (TREE_OPERAND (arg0, 0), 1) == 1)
+	  && wi::extract_uhwi (TREE_OPERAND (arg0, 0), 0, 1) == 1)
 	{
 	  return omit_two_operands_loc (loc, type,
 				    code == NE_EXPR

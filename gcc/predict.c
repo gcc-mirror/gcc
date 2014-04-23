@@ -1309,33 +1309,34 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       bool overflow, overall_overflow = false;
       widest_int compare_count, tem;
 
-      widest_int loop_bound = wi::to_widest (loop_bound_var);
-      widest_int compare_bound = wi::to_widest (compare_var);
-      widest_int base = wi::to_widest (compare_base);
-      widest_int compare_step = wi::to_widest (compare_step_var);
-
       /* (loop_bound - base) / compare_step */
-      tem = wi::sub (loop_bound, base, SIGNED, &overflow);
+      tem = wi::sub (wi::to_widest (loop_bound_var),
+		     wi::to_widest (compare_base), SIGNED, &overflow);
       overall_overflow |= overflow;
-      widest_int loop_count = wi::div_trunc (tem, compare_step, SIGNED,
-					     &overflow);
+      widest_int loop_count = wi::div_trunc (tem,
+					     wi::to_widest (compare_step_var),
+					     SIGNED, &overflow);
       overall_overflow |= overflow;
 
-      if (!wi::neg_p (compare_step)
+      if (!wi::neg_p (wi::to_widest (compare_step_var))
           ^ (compare_code == LT_EXPR || compare_code == LE_EXPR))
 	{
 	  /* (loop_bound - compare_bound) / compare_step */
-	  tem = wi::sub (loop_bound, compare_bound, SIGNED, &overflow);
+	  tem = wi::sub (wi::to_widest (loop_bound_var),
+			 wi::to_widest (compare_var), SIGNED, &overflow);
 	  overall_overflow |= overflow;
-	  compare_count = wi::div_trunc (tem, compare_step, SIGNED, &overflow);
+	  compare_count = wi::div_trunc (tem, wi::to_widest (compare_step_var),
+					 SIGNED, &overflow);
 	  overall_overflow |= overflow;
 	}
       else
         {
 	  /* (compare_bound - base) / compare_step */
-	  tem = wi::sub (compare_bound, base, SIGNED, &overflow);
+	  tem = wi::sub (wi::to_widest (compare_var),
+			 wi::to_widest (compare_base), SIGNED, &overflow);
 	  overall_overflow |= overflow;
-          compare_count = wi::div_trunc (tem, compare_step, SIGNED, &overflow);
+          compare_count = wi::div_trunc (tem, wi::to_widest (compare_step_var),
+					 SIGNED, &overflow);
 	  overall_overflow |= overflow;
 	}
       if (compare_code == LE_EXPR || compare_code == GE_EXPR)
