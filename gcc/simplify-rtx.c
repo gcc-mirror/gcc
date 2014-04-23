@@ -5395,7 +5395,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	case MODE_DECIMAL_FLOAT:
 	  {
 	    REAL_VALUE_TYPE r;
-	    long tmp[MAX_BITSIZE_MODE_ANY_INT / 32];
+	    long tmp[MAX_BITSIZE_MODE_ANY_MODE / 32];
 
 	    /* real_from_target wants its input in words affected by
 	       FLOAT_WORDS_BIG_ENDIAN.  However, we ignore this,

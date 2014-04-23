@@ -720,7 +720,7 @@ stabstr_O (tree cst)
     }
 
   prec -= res_pres;
-  for (i = prec - 3; i <= 0; i = i - 3)
+  for (i = prec - 3; i >= 0; i = i - 3)
     {
       digit = wi::extract_uhwi (cst, i, 3);
       stabstr_C ('0' + digit);

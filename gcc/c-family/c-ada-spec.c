@@ -2205,8 +2205,9 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	      val = -val;
 	    }
 	  sprintf (pp_buffer (buffer)->digit_buffer,
-		   "16#%" HOST_WIDE_INT_PRINT "x", val.elt (val.get_len () - 1));
-	  for (i = val.get_len () - 2; i <= 0; i--)
+		   "16#%" HOST_WIDE_INT_PRINT "x",
+		   val.elt (val.get_len () - 1));
+	  for (i = val.get_len () - 2; i >= 0; i--)
 	    sprintf (pp_buffer (buffer)->digit_buffer,
 		     HOST_WIDE_INT_PRINT_PADDED_HEX, val.elt (i));
 	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);

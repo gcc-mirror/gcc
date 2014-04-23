@@ -1847,7 +1847,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 	    int i;
 	    int len = get_full_len (*val2->v.val_wide);
 	    if (WORDS_BIG_ENDIAN)
-	      for (i = len; i >= 0; --i)
+	      for (i = len - 1; i >= 0; --i)
 		dw2_asm_output_data (HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR,
 				     val2->v.val_wide->elt (i), NULL);
 	    else
@@ -2073,7 +2073,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 
 	      dw2_asm_output_data (1, len * l, NULL);
 	      if (WORDS_BIG_ENDIAN)
-		for (i = len; i >= 0; --i)
+		for (i = len - 1; i >= 0; --i)
 		  dw2_asm_output_data (l, val2->v.val_wide->elt (i), NULL);
 	      else
 		for (i = 0; i < len; ++i)
@@ -5398,11 +5398,11 @@ print_die (dw_die_ref die, FILE *outfile)
 	    int i = a->dw_attr_val.v.val_wide->get_len ();
 	    fprintf (outfile, "constant (");
 	    gcc_assert (i > 0);
-	    if (a->dw_attr_val.v.val_wide->elt (i) == 0)
+	    if (a->dw_attr_val.v.val_wide->elt (i - 1) == 0)
 	      fprintf (outfile, "0x");
 	    fprintf (outfile, HOST_WIDE_INT_PRINT_HEX,
 		     a->dw_attr_val.v.val_wide->elt (--i));
-	    while (-- i >= 0)
+	    while (--i >= 0)
 	      fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX,
 		       a->dw_attr_val.v.val_wide->elt (i));
 	    fprintf (outfile, ")");
@@ -8723,7 +8723,7 @@ output_die (dw_die_ref die)
 				   NULL);
 
 	    if (WORDS_BIG_ENDIAN)
-	      for (i = len; i >= 0; --i)
+	      for (i = len - 1; i >= 0; --i)
 		{
 		  dw2_asm_output_data (l, a->dw_attr_val.v.val_wide->elt (i),
 				       name);
