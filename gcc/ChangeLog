@@ -1,3 +1,9 @@
+2013-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * config/arm/arm.c (cortexa8_extra_costs): New table.
+       (arm_cortex_a8_tune): New tuning struct.
+       * config/arm/arm-cores.def (cortex-a8): Use cortex_a8 tuning struct.
+
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
        * config/arm/arm.c (arm_new_rtx_costs): Handle FMA.
