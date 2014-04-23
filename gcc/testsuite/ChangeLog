@@ -1,3 +1,34 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60275
+	* g++.dg/ubsan/return-2.C: Revert 2014-03-24 changes, add
+	-fno-sanitize-recover to dg-options.
+	* g++.dg/ubsan/cxx11-shift-1.C: Remove c++11 target restriction,
+	add -std=c++11 to dg-options.
+	* g++.dg/ubsan/cxx11-shift-2.C: Likewise.
+	* g++.dg/ubsan/cxx1y-vla.C: Remove c++1y target restriction,
+	add -std=c++1y to dg-options.
+	* c-c++-common/ubsan/undefined-1.c: Revert 2014-03-24 changes, add
+	-fno-sanitize-recover to dg-options.
+	* c-c++-common/ubsan/overflow-sub-1.c: Likewise.
+	* c-c++-common/ubsan/vla-4.c: Likewise.
+	* c-c++-common/ubsan/pr59503.c: Likewise.
+	* c-c++-common/ubsan/vla-3.c: Likewise.
+	* c-c++-common/ubsan/save-expr-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-1.c: Likewise.
+	* c-c++-common/ubsan/shift-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-2.c: Likewise.
+	* c-c++-common/ubsan/vla-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-1.c: Likewise.
+	* c-c++-common/ubsan/pr60613-1.c: Likewise.
+	* c-c++-common/ubsan/shift-6.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-3.c: New test.
+	* c-c++-common/ubsan/overflow-add-4.c: New test.
+	* c-c++-common/ubsan/div-by-zero-6.c: New test.
+	* c-c++-common/ubsan/div-by-zero-7.c: New test.
+
 2014-04-22  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/sh/hiconst.c: New test.

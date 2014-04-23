@@ -288,7 +288,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fsanitize=@var{style} @gol
+-fsanitize=@var{style} -fsanitize-recover @gol
+-fsanitize-undefined-trap-on-error @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
@@ -5379,6 +5380,26 @@ a++;
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
+
+@item -fsanitize-recover
+@opindex fsanitize-recover
+By default @option{-fsanitize=undefined} sanitization (and its suboptions
+except for @option{-fsanitize=unreachable} and @option{-fsanitize=return})
+after reporting undefined behavior attempts to continue running the
+program as if no undefined behavior happened.  This means multiple undefined
+behavior runtime errors can be reported in a single program run, and the exit
+code of the program may indicate success even when undefined behavior
+has been reported.  The @option{-fno-sanitize-recover} can be used to alter
+this behavior, only the first detected undefined behavior will be reported
+and program will exit after that with non-zero exit code.
+
+@item -fsanitize-undefined-trap-on-error
+@opindex fsanitize-undefined-trap-on-error
+The @option{-fsanitize-undefined-trap-on-error} instructs the compiler to
+report undefined behavior using @code{__builtin_trap ()} rather than
+a @code{libubsan} library routine.  The advantage of this is that the
+@code{libubsan} library is not needed and will not be linked in, so this
+is usable even for use in freestanding environments.
 
 @item -fdump-final-insns@r{[}=@var{file}@r{]}
 @opindex fdump-final-insns
