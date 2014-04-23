@@ -387,7 +387,34 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
           && (gimple_code (stmt) != GIMPLE_CALL
               || gimple_call_lhs (stmt) == NULL_TREE
               || TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME))
-	continue;
+	{
+	  /* STMT might still have DEFS and we need to invalidate any known
+	     equivalences for them.
+
+	     Consider if STMT is a GIMPLE_ASM with one or more outputs that
+	     feeds a conditional inside a loop.  We might derive an equivalence
+	     due to the conditional.  */
+	  tree op;
+	  ssa_op_iter iter;
+
+	  if (backedge_seen)
+	    FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_DEFS)
+	      {
+		/* This call only invalidates equivalences created by
+		   PHI nodes.  This is by design to keep the cost of
+		   of invalidation reasonable.  */
+		invalidate_equivalences (op, stack, src_map, dst_map);
+
+		/* However, conditionals can imply values for real
+		   operands as well.  And those won't be recorded in the
+		   maps.  In fact, those equivalences may be recorded totally
+		   outside the threading code.  We can just create a new
+		   temporary NULL equivalence here.  */
+	        record_temporary_equivalence (op, NULL_TREE, stack);
+	      }
+
+	  continue;
+	}
 
       /* The result of __builtin_object_size depends on all the arguments
 	 of a phi node. Temporarily using only one edge produces invalid

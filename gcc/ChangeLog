@@ -1,3 +1,11 @@
+2014-04-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Make sure to
+	invalidate outputs from statements that do not produce useful
+	outputs for threading.
+
 2014-04-23 Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
 
 	* config/aarch64/aarch64.md (stack_protect_set, stack_protect_test)
