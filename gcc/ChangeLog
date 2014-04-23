@@ -1,5 +1,18 @@
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+       * config/aarch64/aarch64.md (rev16<mode>2): New pattern.
+       (rev16<mode>2_alt): Likewise.
+       * config/aarch64/aarch64.c (aarch64_rtx_costs): Handle rev16 case.
+       * config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p): New.
+       (aarch_rev16_shleft_mask_imm_p): Likewise.
+       (aarch_rev16_p_1): Likewise.
+       (aarch_rev16_p): Likewise.
+       * config/arm/aarch-common-protos.h (aarch_rev16_p): Declare extern.
+       (aarch_rev16_shright_mask_imm_p): Likewise.
+       (aarch_rev16_shleft_mask_imm_p): Likewise.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
        * config/arm/aarch-common-protos.h (alu_cost_table): Add rev field.
        * config/arm/aarch-cost-tables.h (generic_extra_costs): Specify
        rev cost.

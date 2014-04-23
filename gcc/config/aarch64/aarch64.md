@@ -3253,6 +3253,38 @@
   [(set_attr "type" "rev")]
 )
 
+;; There are no canonicalisation rules for the position of the lshiftrt, ashift
+;; operations within an IOR/AND RTX, therefore we have two patterns matching
+;; each valid permutation.
+
+(define_insn "rev16<mode>2"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand" "r")
+                                      (const_int 8))
+                          (match_operand:GPI 3 "const_int_operand" "n"))
+                 (and:GPI (lshiftrt:GPI (match_dup 1)
+                                        (const_int 8))
+                          (match_operand:GPI 2 "const_int_operand" "n"))))]
+  "aarch_rev16_shleft_mask_imm_p (operands[3], <MODE>mode)
+   && aarch_rev16_shright_mask_imm_p (operands[2], <MODE>mode)"
+  "rev16\\t%<w>0, %<w>1"
+  [(set_attr "type" "rev")]
+)
+
+(define_insn "rev16<mode>2_alt"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (lshiftrt:GPI (match_operand:GPI 1 "register_operand" "r")
+                                        (const_int 8))
+                          (match_operand:GPI 2 "const_int_operand" "n"))
+                 (and:GPI (ashift:GPI (match_dup 1)
+                                      (const_int 8))
+                          (match_operand:GPI 3 "const_int_operand" "n"))))]
+  "aarch_rev16_shleft_mask_imm_p (operands[3], <MODE>mode)
+   && aarch_rev16_shright_mask_imm_p (operands[2], <MODE>mode)"
+  "rev16\\t%<w>0, %<w>1"
+  [(set_attr "type" "rev")]
+)
+
 ;; zero_extend version of above
 (define_insn "*bswapsi2_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r")

@@ -1,3 +1,7 @@
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * gcc.target/aarch64/rev16_1.c: New test.
+
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60903
