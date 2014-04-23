@@ -9899,8 +9899,17 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       /* Vector mode?  */
       *cost = LIBCALL_COST (2);
       return false;
+    case IOR:
+      if (mode == SImode && arm_arch6 && aarch_rev16_p (x))
+        {
+          *cost = COSTS_N_INSNS (1);
+          if (speed_p)
+            *cost += extra_cost->alu.rev;
 
-    case AND: case XOR: case IOR:
+          return true;
+        }
+    /* Fall through.  */
+    case AND: case XOR:
       if (mode == SImode)
 	{
 	  enum rtx_code subcode = GET_CODE (XEXP (x, 0));
