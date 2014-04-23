@@ -1,3 +1,9 @@
+2014-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* config/i386/cygwin.h (ENDFILE_SPEC): Include
+	default-manifest.o if it can be found in the search path.
+	* config/i386/mingw32.h (ENDFILE_SPEC): Likewise.
+
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
@@ -37,7 +43,7 @@
 	2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60868
-	* config/i386/i386.c (ix86_expand_set_or_movmem): Call counter_mode 
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Call counter_mode
 	on count_exp to get mode.
 
 2014-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
