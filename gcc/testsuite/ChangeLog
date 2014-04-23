@@ -1,3 +1,7 @@
+2014-04-22  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/sh/hiconst.c: New test.
+
 2014-04-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/nios2/custom-fp-conversion.c: Adjust to test that

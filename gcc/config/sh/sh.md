@@ -6978,20 +6978,20 @@ label:
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
-(define_expand "movhi"
-  [(set (match_operand:HI 0 "general_movdst_operand" "")
-	(match_operand:HI 1 "general_movsrc_operand" ""))]
+(define_expand "mov<mode>"
+  [(set (match_operand:QIHI 0 "general_movdst_operand")
+	(match_operand:QIHI 1 "general_movsrc_operand"))]
   ""
 {
-  prepare_move_operands (operands, HImode);
-})
+ if (can_create_pseudo_p () && CONST_INT_P (operands[1])
+    && REG_P (operands[0]) && REGNO (operands[0]) != R0_REG)
+    {
+        rtx reg = gen_reg_rtx(SImode);
+        emit_move_insn (reg, operands[1]);
+        operands[1] = gen_lowpart (<MODE>mode, reg);
+    }
 
-(define_expand "movqi"
-  [(set (match_operand:QI 0 "general_operand" "")
-	(match_operand:QI 1 "general_operand" ""))]
-  ""
-{
-  prepare_move_operands (operands, QImode);
+  prepare_move_operands (operands, <MODE>mode);
 })
 
 ;; Specifying the displacement addressing load / store patterns separately
