@@ -94,20 +94,15 @@ loop_optimizer_init (unsigned flags)
   else
     {
       bool recorded_exits = loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS);
+      bool needs_fixup = loops_state_satisfies_p (LOOPS_NEED_FIXUP);
 
       gcc_assert (cfun->curr_properties & PROP_loops);
 
       /* Ensure that the dominators are computed, like flow_loops_find does.  */
       calculate_dominance_info (CDI_DOMINATORS);
 
-      if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
-	{
-	  loops_state_clear (~0U);
-	  fix_loop_structure (NULL);
-	}
-
 #ifdef ENABLE_CHECKING
-      else
+      if (!needs_fixup)
 	verify_loop_structure ();
 #endif
 
@@ -115,6 +110,14 @@ loop_optimizer_init (unsigned flags)
       if (recorded_exits)
 	release_recorded_exits ();
       loops_state_clear (~0U);
+
+      if (needs_fixup)
+	{
+	  /* Apply LOOPS_MAY_HAVE_MULTIPLE_LATCHES early as fix_loop_structure
+	     re-applies flags.  */
+	  loops_state_set (flags & LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	  fix_loop_structure (NULL);
+	}
     }
 
   /* Apply flags to loops.  */
