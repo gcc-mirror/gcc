@@ -1,3 +1,8 @@
+2014-04-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.c (arm_cortex_a57_tune): Initialize all fields.
+	(arm_cortex_a12_tune): Likewise.
+
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle BSWAP.
