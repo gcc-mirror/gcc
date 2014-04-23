@@ -619,7 +619,7 @@ build_type_inheritance_graph (void)
   /* We reconstruct the graph starting of types of all methods seen in the
      the unit.  */
   FOR_EACH_SYMBOL (n)
-    if (is_a <cgraph_node> (n)
+    if (is_a <cgraph_node *> (n)
 	&& DECL_VIRTUAL_P (n->decl)
 	&& symtab_real_symbol_p (n))
       get_odr_type (method_class_type (TREE_TYPE (n->decl)), true);
@@ -643,7 +643,7 @@ build_type_inheritance_graph (void)
        assume it is called externally or C is in anonymous namespace and
        thus we will see the vtable.  */
 
-    else if (is_a <varpool_node> (n)
+    else if (is_a <varpool_node *> (n)
 	     && DECL_VIRTUAL_P (n->decl)
 	     && TREE_CODE (DECL_CONTEXT (n->decl)) == RECORD_TYPE
 	     && TYPE_BINFO (DECL_CONTEXT (n->decl))

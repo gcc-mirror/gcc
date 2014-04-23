@@ -192,7 +192,7 @@ eq_assembler_name (const void *p1, const void *p2)
 static void
 insert_to_assembler_name_hash (symtab_node *node, bool with_clones)
 {
-  if (is_a <varpool_node> (node) && DECL_HARD_REGISTER (node->decl))
+  if (is_a <varpool_node *> (node) && DECL_HARD_REGISTER (node->decl))
     return;
   gcc_checking_assert (!node->previous_sharing_asm_name
 		       && !node->next_sharing_asm_name);
@@ -214,7 +214,7 @@ insert_to_assembler_name_hash (symtab_node *node, bool with_clones)
       *aslot = node;
 
       /* Update also possible inline clones sharing a decl.  */
-      cnode = dyn_cast <cgraph_node> (node);
+      cnode = dyn_cast <cgraph_node *> (node);
       if (cnode && cnode->clones && with_clones)
 	for (cnode = cnode->clones; cnode; cnode = cnode->next_sibling_clone)
 	  if (cnode->decl == decl)
@@ -258,7 +258,7 @@ unlink_from_assembler_name_hash (symtab_node *node, bool with_clones)
       node->previous_sharing_asm_name = NULL;
 
       /* Update also possible inline clones sharing a decl.  */
-      cnode = dyn_cast <cgraph_node> (node);
+      cnode = dyn_cast <cgraph_node *> (node);
       if (cnode && cnode->clones && with_clones)
 	for (cnode = cnode->clones; cnode; cnode = cnode->next_sibling_clone)
 	  if (cnode->decl == decl)
@@ -364,14 +364,14 @@ symtab_unregister_node (symtab_node *node)
   if (slot && *slot && *slot == node)
     {
       symtab_node *replacement_node = NULL;
-      if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
 	replacement_node = cgraph_find_replacement_node (cnode);
       if (!replacement_node)
 	htab_clear_slot (symtab_hash, slot);
       else
 	*slot = replacement_node;
     }
-  if (!is_a <varpool_node> (node) || !DECL_HARD_REGISTER (node->decl))
+  if (!is_a <varpool_node *> (node) || !DECL_HARD_REGISTER (node->decl))
     unlink_from_assembler_name_hash (node, false);
 }
 
@@ -411,9 +411,9 @@ symtab_get_node (const_tree decl)
 void
 symtab_remove_node (symtab_node *node)
 {
-  if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     cgraph_remove_node (cnode);
-  else if (varpool_node *vnode = dyn_cast <varpool_node> (node))
+  else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
     varpool_remove_node (vnode);
 }
 
@@ -690,9 +690,9 @@ dump_symtab_base (FILE *f, symtab_node *node)
 void
 dump_symtab_node (FILE *f, symtab_node *node)
 {
-  if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     dump_cgraph_node (f, cnode);
-  else if (varpool_node *vnode = dyn_cast <varpool_node> (node))
+  else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
     dump_varpool_node (f, vnode);
 }
 
@@ -731,7 +731,7 @@ verify_symtab_base (symtab_node *node)
   bool error_found = false;
   symtab_node *hashed_node;
 
-  if (is_a <cgraph_node> (node))
+  if (is_a <cgraph_node *> (node))
     {
       if (TREE_CODE (node->decl) != FUNCTION_DECL)
 	{
@@ -739,7 +739,7 @@ verify_symtab_base (symtab_node *node)
           error_found = true;
 	}
     }
-  else if (is_a <varpool_node> (node))
+  else if (is_a <varpool_node *> (node))
     {
       if (TREE_CODE (node->decl) != VAR_DECL)
 	{
@@ -762,9 +762,9 @@ verify_symtab_base (symtab_node *node)
 	  error_found = true;
 	}
       if (hashed_node != node
-	  && (!is_a <cgraph_node> (node)
-	      || !dyn_cast <cgraph_node> (node)->clone_of
-	      || dyn_cast <cgraph_node> (node)->clone_of->decl
+	  && (!is_a <cgraph_node *> (node)
+	      || !dyn_cast <cgraph_node *> (node)->clone_of
+	      || dyn_cast <cgraph_node *> (node)->clone_of->decl
 		 != node->decl))
 	{
 	  error ("node differs from symtab decl hashtable");
@@ -786,7 +786,7 @@ verify_symtab_base (symtab_node *node)
 	  hashed_node = hashed_node->next_sharing_asm_name;
 	}
       if (!hashed_node
-          && !(is_a <varpool_node> (node)
+          && !(is_a <varpool_node *> (node)
 	       || DECL_HARD_REGISTER (node->decl)))
 	{
           error ("node not found in symtab assembler name hash");
@@ -878,7 +878,7 @@ verify_symtab_node (symtab_node *node)
     return;
 
   timevar_push (TV_CGRAPH_VERIFY);
-  if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     verify_cgraph_node (cnode);
   else
     if (verify_symtab_base (node))
@@ -973,7 +973,7 @@ symtab_make_decl_local (tree decl)
 enum availability
 symtab_node_availability (symtab_node *node)
 {
-  if (is_a <cgraph_node> (node))
+  if (is_a <cgraph_node *> (node))
     return cgraph_function_body_availability (cgraph (node));
   else
     return cgraph_variable_initializer_availability (varpool (node));
@@ -1061,7 +1061,7 @@ symtab_alias_ultimate_target (symtab_node *node, enum availability *availability
 void
 fixup_same_cpp_alias_visibility (symtab_node *node, symtab_node *target)
 {
-  if (is_a <cgraph_node> (node))
+  if (is_a <cgraph_node *> (node))
     {
       DECL_DECLARED_INLINE_P (node->decl)
 	 = DECL_DECLARED_INLINE_P (target->decl);
@@ -1108,9 +1108,9 @@ symtab_resolve_alias (symtab_node *node, symtab_node *target)
        n = n->analyzed ? symtab_alias_target (n) : NULL)
     if (n == node)
        {
-	 if (is_a <cgraph_node> (node))
+	 if (is_a <cgraph_node *> (node))
            error ("function %q+D part of alias cycle", node->decl);
-         else if (is_a <varpool_node> (node))
+         else if (is_a <varpool_node *> (node))
            error ("variable %q+D part of alias cycle", node->decl);
 	 else
 	   gcc_unreachable ();
@@ -1277,7 +1277,7 @@ symtab_get_symbol_partitioning_class (symtab_node *node)
 {
   /* Inline clones are always duplicated.
      This include external delcarations.   */
-  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 
   if (DECL_ABSTRACT (node->decl))
     return SYMBOL_EXTERNAL;
@@ -1293,7 +1293,7 @@ symtab_get_symbol_partitioning_class (symtab_node *node)
   if (DECL_EXTERNAL (node->decl))
     return SYMBOL_EXTERNAL;
 
-  if (varpool_node *vnode = dyn_cast <varpool_node> (node))
+  if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
     {
       /* Constant pool references use local symbol names that can not
          be promoted global.  We should never put into a constant pool

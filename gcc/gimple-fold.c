@@ -96,7 +96,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
       snode = symtab_get_node (decl);
       if (!snode)
 	return false;
-      node = dyn_cast <cgraph_node> (snode);
+      node = dyn_cast <cgraph_node *> (snode);
       return !node || !node->global.inlined_to;
     }
 

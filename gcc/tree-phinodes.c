@@ -115,7 +115,7 @@ allocate_phi_node (size_t len)
       && gimple_phi_capacity ((*free_phinodes[bucket])[0]) >= len)
     {
       free_phinode_count--;
-      phi = as_a <gimple_statement_phi> (free_phinodes[bucket]->pop ());
+      phi = as_a <gimple_statement_phi *> (free_phinodes[bucket]->pop ());
       if (free_phinodes[bucket]->is_empty ())
 	vec_free (free_phinodes[bucket]);
       if (GATHER_STATISTICS)
@@ -297,7 +297,7 @@ reserve_phi_args_for_new_edge (basic_block bb)
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple_statement_phi *stmt =
-	as_a <gimple_statement_phi> (gsi_stmt (gsi));
+	as_a <gimple_statement_phi *> (gsi_stmt (gsi));
 
       if (len > gimple_phi_capacity (stmt))
 	{
@@ -436,7 +436,7 @@ remove_phi_args (edge e)
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
-    remove_phi_arg_num (as_a <gimple_statement_phi> (gsi_stmt (gsi)),
+    remove_phi_arg_num (as_a <gimple_statement_phi *> (gsi_stmt (gsi)),
 			e->dest_idx);
 }
 

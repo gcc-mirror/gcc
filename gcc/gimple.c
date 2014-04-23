@@ -544,7 +544,7 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
      enforced by the front end.  */
   gcc_assert (nlabels == 0 || noutputs == 0);
 
-  p = as_a <gimple_statement_asm> (
+  p = as_a <gimple_statement_asm *> (
         gimple_build_with_ops (GIMPLE_ASM, ERROR_MARK,
 			       ninputs + noutputs + nclobbers + nlabels));
 
@@ -671,7 +671,7 @@ gimple_build_try (gimple_seq eval, gimple_seq cleanup,
   gimple_statement_try *p;
 
   gcc_assert (kind == GIMPLE_TRY_CATCH || kind == GIMPLE_TRY_FINALLY);
-  p = as_a <gimple_statement_try> (gimple_alloc (GIMPLE_TRY, 0));
+  p = as_a <gimple_statement_try *> (gimple_alloc (GIMPLE_TRY, 0));
   gimple_set_subcode (p, kind);
   if (eval)
     gimple_try_set_eval (p, eval);
@@ -702,7 +702,7 @@ gimple
 gimple_build_resx (int region)
 {
   gimple_statement_resx *p =
-    as_a <gimple_statement_resx> (
+    as_a <gimple_statement_resx *> (
       gimple_build_with_ops (GIMPLE_RESX, ERROR_MARK, 0));
   p->region = region;
   return p;
@@ -752,7 +752,7 @@ gimple
 gimple_build_eh_dispatch (int region)
 {
   gimple_statement_eh_dispatch *p =
-    as_a <gimple_statement_eh_dispatch> (
+    as_a <gimple_statement_eh_dispatch *> (
       gimple_build_with_ops (GIMPLE_EH_DISPATCH, ERROR_MARK, 0));
   p->region = region;
   return p;
@@ -829,7 +829,7 @@ gimple_build_omp_for (gimple_seq body, int kind, tree clauses, size_t collapse,
 		      gimple_seq pre_body)
 {
   gimple_statement_omp_for *p =
-    as_a <gimple_statement_omp_for> (gimple_alloc (GIMPLE_OMP_FOR, 0));
+    as_a <gimple_statement_omp_for *> (gimple_alloc (GIMPLE_OMP_FOR, 0));
   if (body)
     gimple_omp_set_body (p, body);
   gimple_omp_for_set_clauses (p, clauses);
@@ -1664,7 +1664,7 @@ gimple_copy (gimple stmt)
 	  gimple_omp_for_set_clauses (copy, t);
 	  {
 	    gimple_statement_omp_for *omp_for_copy =
-	      as_a <gimple_statement_omp_for> (copy);
+	      as_a <gimple_statement_omp_for *> (copy);
 	    omp_for_copy->iter =
 	      static_cast <struct gimple_omp_for_iter *> (
 		  ggc_internal_vec_alloc_stat (sizeof (struct gimple_omp_for_iter),
