@@ -14825,7 +14825,7 @@ simple_decl_align_in_bits (const_tree decl)
 static inline offset_int
 round_up_to_align (const offset_int &t, unsigned int align)
 {
-  return wi::udiv_trunc (t + align - 1, align) * align;
+  return wi::udiv_ceil (t, align) * align;
 }
 
 /* Given a pointer to a FIELD_DECL, compute and return the byte offset of the
