@@ -1,3 +1,8 @@
+2014-04-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/custom-fp-conversion.c: Adjust to test that
+	lroundf generates custom round instruction, too.
+
 2014-04-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60881

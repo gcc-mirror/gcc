@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
   									\
   N2FPU_CODE(floatis) N2FPU_CODE(floatus)				\
   N2FPU_CODE(floatid) N2FPU_CODE(floatud)				\
-  N2FPU_CODE(fixsi) N2FPU_CODE(fixsu)					\
+  N2FPU_CODE(round) N2FPU_CODE(fixsi) N2FPU_CODE(fixsu)			\
   N2FPU_CODE(fixdi) N2FPU_CODE(fixdu)					\
   N2FPU_CODE(fextsd) N2FPU_CODE(ftruncds)				\
 									\

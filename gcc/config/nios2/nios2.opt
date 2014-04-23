@@ -529,3 +529,13 @@ Do not use the fwrx custom instruction
 mcustom-fwrx=
 Target Report RejectNegative Joined UInteger Var(nios2_custom_fwrx) Init(-1)
 Integer id (N) of fwrx custom instruction
+
+mno-custom-round
+Target Report RejectNegative Var(nios2_custom_round, -1)
+Do not use the round custom instruction
+
+mcustom-round=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_round) Init(-1)
+Integer id (N) of round custom instruction
+
+

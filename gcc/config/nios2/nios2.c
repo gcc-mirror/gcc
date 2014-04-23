@@ -192,6 +192,7 @@ struct nios2_fpu_insn_info
 #define N2F_DFREQ         0x2
 #define N2F_UNSAFE        0x4
 #define N2F_FINITE        0x8
+#define N2F_NO_ERRNO      0x10
   unsigned int flags;
   enum insn_code icode;
   enum nios2_ftcode ftcode;
@@ -274,6 +275,7 @@ struct nios2_fpu_insn_info nios2_fpu_insn[] =
     N2FPU_INSN_DEF_BASE (floatus,  2, 0, floatunssisf2, (SF, UI)),
     N2FPU_INSN_DEF_BASE (floatid,  2, 0, floatsidf2,    (DF, SI)),
     N2FPU_INSN_DEF_BASE (floatud,  2, 0, floatunssidf2, (DF, UI)),
+    N2FPU_INSN_DEF_BASE (round,    2, N2F_NO_ERRNO, lroundsfsi2,   (SI, SF)),
     N2FPU_INSN_DEF_BASE (fixsi,    2, 0, fix_truncsfsi2,      (SI, SF)),
     N2FPU_INSN_DEF_BASE (fixsu,    2, 0, fixuns_truncsfsi2,   (UI, SF)),
     N2FPU_INSN_DEF_BASE (fixdi,    2, 0, fix_truncdfsi2,      (SI, DF)),
@@ -298,6 +300,7 @@ struct nios2_fpu_insn_info nios2_fpu_insn[] =
 #define N2FPU_FTCODE(code) (N2FPU(code).ftcode)
 #define N2FPU_FINITE_P(code) (N2FPU(code).flags & N2F_FINITE)
 #define N2FPU_UNSAFE_P(code) (N2FPU(code).flags & N2F_UNSAFE)
+#define N2FPU_NO_ERRNO_P(code) (N2FPU(code).flags & N2F_NO_ERRNO)
 #define N2FPU_DOUBLE_P(code) (N2FPU(code).flags & N2F_DF)
 #define N2FPU_DOUBLE_REQUIRED_P(code) (N2FPU(code).flags & N2F_DFREQ)
 
@@ -843,6 +846,15 @@ nios2_custom_check_insns (void)
       if (N2FPU_ENABLED_P (i) && N2FPU_FINITE_P (i))
 	warning (0, "switch %<-mcustom-%s%> has no effect unless "
 		 "-ffinite-math-only is specified", N2FPU_NAME (i));
+
+  /* Warn if the user is trying to use a custom rounding instruction
+     that won't get used without -fno-math-errno.  See
+     expand_builtin_int_roundingfn_2 () in builtins.c.  */
+  if (flag_errno_math)
+    for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
+      if (N2FPU_ENABLED_P (i) && N2FPU_NO_ERRNO_P (i))
+	warning (0, "switch %<-mcustom-%s%> has no effect unless "
+		 "-fno-math-errno is specified", N2FPU_NAME (i));
 
   if (errors || custom_code_conflict)
     fatal_error ("conflicting use of -mcustom switches, target attributes, "

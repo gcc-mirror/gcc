@@ -1,10 +1,11 @@
 /* Test generation of conversion custom instructions.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O1 -ffinite-math-only -funsafe-math-optimizations" } */
+/* { dg-options "-O1 -ffinite-math-only -funsafe-math-optimizations -fno-math-errno" } */
 
 /* -O1 in the options is significant.  Without it FP operations may not be
-   optimized to custom instructions.  */
+   optimized to custom instructions.  Also, -fno-math-errno is required
+   to inline lroundf. */
 
 #include <stdio.h> 
 #include <math.h>
@@ -25,6 +26,8 @@
 #pragma GCC target ("custom-floatud=107")
 #pragma GCC target ("custom-floatus=108")
 #pragma GCC target ("custom-ftruncds=109")
+#pragma GCC target ("custom-round=110")
+
 
 typedef struct data {
   double fextsd;
@@ -37,6 +40,7 @@ typedef struct data {
   double floatud;
   float floatus;
   float ftruncds;
+  int round;
 } data_t;
 
 void
@@ -52,6 +56,7 @@ custom_fp (int i, unsigned u, float f, double d, data_t *out)
   out->floatud = (double) u;
   out->floatus = (float) u;
   out->ftruncds = (float) d;
+  out->round = lroundf (f);
 }
 
 /* { dg-final { scan-assembler "custom\\t100, .* # fextsd .*" } } */
@@ -64,3 +69,4 @@ custom_fp (int i, unsigned u, float f, double d, data_t *out)
 /* { dg-final { scan-assembler "custom\\t107, .* # floatud .*" } } */
 /* { dg-final { scan-assembler "custom\\t108, .* # floatus .*" } } */
 /* { dg-final { scan-assembler "custom\\t109, .* # ftruncds .*" } } */
+/* { dg-final { scan-assembler "custom\\t110, .* # round .*" } } */
