@@ -5125,16 +5125,13 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	{
 	  wide_int minv, maxv, valv, cst2v;
 	  wide_int tem, sgnbit;
-	  bool valid_p = false, valn = false, cst2n = false;
+	  bool valid_p = false, valn, cst2n;
 	  enum tree_code ccode = comp_code;
 
 	  valv = wide_int::from (val, nprec, UNSIGNED);
 	  cst2v = wide_int::from (cst2, nprec, UNSIGNED);
-	  if (TYPE_SIGN (TREE_TYPE (val)) == SIGNED)
-	    {
-	      valn = wi::neg_p (wi::sext (valv, nprec));
-	      cst2n = wi::neg_p (wi::sext (cst2v, nprec));
-	    }
+	  valn = wi::neg_p (valv, TYPE_SIGN (TREE_TYPE (val)));
+	  cst2n = wi::neg_p (cst2v, TYPE_SIGN (TREE_TYPE (val)));
 	  /* If CST2 doesn't have most significant bit set,
 	     but VAL is negative, we have comparison like
 	     if ((x & 0x123) > -4) (always true).  Just give up.  */
@@ -5153,13 +5150,11 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		 have folded the comparison into false) and
 		 maximum unsigned value is VAL | ~CST2.  */
 	      maxv = valv | ~cst2v;
-	      maxv = wi::zext (maxv, nprec);
 	      valid_p = true;
 	      break;
 
 	    case NE_EXPR:
 	      tem = valv | ~cst2v;
-	      tem = wi::zext (tem, nprec);
 	      /* If VAL is 0, handle (X & CST2) != 0 as (X & CST2) > 0U.  */
 	      if (valv == 0)
 		{
@@ -5176,7 +5171,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		  sgnbit = wi::zero (nprec);
 		  goto lt_expr;
 		}
-	      if (!cst2n && wi::neg_p (wi::sext (cst2v, nprec)))
+	      if (!cst2n && wi::neg_p (cst2v))
 		sgnbit = wi::set_bit_in_zero (nprec - 1, nprec);
 	      if (sgnbit != 0)
 		{
@@ -5245,7 +5240,6 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		  maxv -= 1;
 		}
 	      maxv |= ~cst2v;
-	      maxv = wi::zext (maxv, nprec);
 	      minv = sgnbit;
 	      valid_p = true;
 	      break;
@@ -5274,7 +5268,6 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		}
 	      maxv -= 1;
 	      maxv |= ~cst2v;
-	      maxv = wi::zext (maxv, nprec);
 	      minv = sgnbit;
 	      valid_p = true;
 	      break;
@@ -5283,7 +5276,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      break;
 	    }
 	  if (valid_p
-	      && wi::zext (maxv - minv, nprec) != wi::minus_one (nprec))
+	      && (maxv - minv) != -1)
 	    {
 	      tree tmp, new_val, type;
 	      int i;
