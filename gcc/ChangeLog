@@ -1,3 +1,7 @@
+2014-04-23  Tom de Vries  <tom@codesourcery.com>
+
+	* target-hooks-macros.h: Fix DEFHOOKPOD argument order in comment.
+
 2014-04-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* is-a.h: Update comments to reflect the following changes to the
