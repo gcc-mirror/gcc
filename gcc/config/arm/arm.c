@@ -1781,7 +1781,8 @@ const struct tune_params arm_cortex_a57_tune =
   true,                                       /* Prefer LDRD/STRD.  */
   {true, true},                                /* Prefer non short circuit.  */
   &arm_default_vec_cost,                       /* Vectorizer costs.  */
-  false                                        /* Prefer Neon for 64-bits bitops.  */
+  false,                                       /* Prefer Neon for 64-bits bitops.  */
+  true, true                                   /* Prefer 32-bit encodings.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -1834,7 +1835,8 @@ const struct tune_params arm_cortex_a12_tune =
   true,						/* Prefer LDRD/STRD.  */
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false                                         /* Prefer Neon for 64-bits bitops.  */
+  false,                                        /* Prefer Neon for 64-bits bitops.  */
+  false, false                                  /* Prefer 32-bit encodings.  */
 };
 
 /* armv7m tuning.  On Cortex-M4 cores for example, MOVW/MOVT take a single
