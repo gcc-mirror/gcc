@@ -1,3 +1,9 @@
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60891
+	* loop-init.c (loop_optimizer_init): Make sure to apply
+	LOOPS_MAY_HAVE_MULTIPLE_LATCHES before fixing up loops.
+
 2014-04-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline

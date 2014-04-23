@@ -1,3 +1,8 @@
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60891
+	* gcc.dg/torture/pr60891.c: New testcase.
+
 2014-04-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
