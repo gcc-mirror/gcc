@@ -1294,7 +1294,6 @@ OBJS = \
 	loop-invariant.o \
 	loop-iv.o \
 	loop-unroll.o \
-	loop-unswitch.o \
 	lower-subreg.o \
 	lra.o \
 	lra-assigns.o \

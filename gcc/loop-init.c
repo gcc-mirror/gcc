@@ -511,49 +511,6 @@ make_pass_rtl_move_loop_invariants (gcc::context *ctxt)
 
 namespace {
 
-const pass_data pass_data_rtl_unswitch =
-{
-  RTL_PASS, /* type */
-  "loop2_unswitch", /* name */
-  OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
-  TV_LOOP_UNSWITCH, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
-};
-
-class pass_rtl_unswitch : public rtl_opt_pass
-{
-public:
-  pass_rtl_unswitch (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_rtl_unswitch, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_unswitch_loops; }
-  virtual unsigned int execute (function *fun)
-    {
-      if (number_of_loops (fun) > 1)
-	unswitch_loops ();
-      return 0;
-    }
-
-}; // class pass_rtl_unswitch
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_rtl_unswitch (gcc::context *ctxt)
-{
-  return new pass_rtl_unswitch (ctxt);
-}
-
-
-namespace {
-
 const pass_data pass_data_rtl_unroll_and_peel_loops =
 {
   RTL_PASS, /* type */
