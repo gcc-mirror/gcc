@@ -1,3 +1,8 @@
+2014-04-22  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.md (mov<mode>): Replace movQIHI.
+	 Force immediates to SImode.
+
 2014-04-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (UNSPEC_ROUND): New.
