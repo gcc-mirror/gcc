@@ -2067,7 +2067,7 @@ lto_output (void)
   for (i = 0; i < n_nodes; i++)
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      if (cgraph_node *node = dyn_cast <cgraph_node> (snode))
+      if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
 	{
 	  if (lto_symtab_encoder_encode_body_p (encoder, node)
 	      && !node->alias)
@@ -2087,7 +2087,7 @@ lto_output (void)
 	      lto_record_function_out_decl_state (node->decl, decl_state);
 	    }
 	}
-      else if (varpool_node *node = dyn_cast <varpool_node> (snode))
+      else if (varpool_node *node = dyn_cast <varpool_node *> (snode))
 	{
 	  /* Wrap symbol references inside the ctor in a type
 	     preserving MEM_REF.  */
@@ -2344,7 +2344,7 @@ output_symbol_p (symtab_node *node)
   /* We keep external functions in symtab for sake of inlining
      and devirtualization.  We do not want to see them in symbol table as
      references unless they are really used.  */
-  cnode = dyn_cast <cgraph_node> (node);
+  cnode = dyn_cast <cgraph_node *> (node);
   if (cnode && (!node->definition || DECL_EXTERNAL (cnode->decl))
       && cnode->callers)
     return true;
@@ -2362,7 +2362,7 @@ output_symbol_p (symtab_node *node)
 	{
 	  if (ref->use == IPA_REF_ALIAS)
 	    continue;
-          if (is_a <cgraph_node> (ref->referring))
+          if (is_a <cgraph_node *> (ref->referring))
 	    return true;
 	  if (!DECL_EXTERNAL (ref->referring->decl))
 	    return true;

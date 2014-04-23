@@ -42,7 +42,7 @@ ipa_record_reference (symtab_node *referring_node,
   struct ipa_ref_list *list, *list2;
   ipa_ref_t *old_references;
 
-  gcc_checking_assert (!stmt || is_a <cgraph_node> (referring_node));
+  gcc_checking_assert (!stmt || is_a <cgraph_node *> (referring_node));
   gcc_checking_assert (use_type != IPA_REF_ALIAS || !stmt);
 
   list = &referring_node->ref_list;

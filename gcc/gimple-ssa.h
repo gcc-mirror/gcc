@@ -109,7 +109,7 @@ gimple_vuse_op (const_gimple g)
 {
   struct use_optype_d *ops;
   const gimple_statement_with_memory_ops *mem_ops_stmt =
-     dyn_cast <const gimple_statement_with_memory_ops> (g);
+     dyn_cast <const gimple_statement_with_memory_ops *> (g);
   if (!mem_ops_stmt)
     return NULL_USE_OPERAND_P;
   ops = mem_ops_stmt->use_ops;
@@ -125,7 +125,7 @@ static inline def_operand_p
 gimple_vdef_op (gimple g)
 {
   gimple_statement_with_memory_ops *mem_ops_stmt =
-     dyn_cast <gimple_statement_with_memory_ops> (g);
+     dyn_cast <gimple_statement_with_memory_ops *> (g);
   if (!mem_ops_stmt)
     return NULL_DEF_OPERAND_P;
   if (mem_ops_stmt->vdef)
