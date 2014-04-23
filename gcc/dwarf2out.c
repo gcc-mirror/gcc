@@ -12911,14 +12911,13 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  dw_die_ref type_die;
 
 	  /* Note that if TARGET_SUPPORTS_WIDE_INT == 0, a
-	     CONST_DOUBLE rtx could represent either an large integer
-	     or a floating-point constant.  If
-	     TARGET_SUPPORTS_WIDE_INT != 0, the value is always a
-	     floating point constant.
+	     CONST_DOUBLE rtx could represent either a large integer
+	     or a floating-point constant.  If TARGET_SUPPORTS_WIDE_INT != 0,
+	     the value is always a floating point constant.
 
 	     When it is an integer, a CONST_DOUBLE is used whenever
-	     the constant requires 2 HWIs to be adequately
-	     represented.  We output CONST_DOUBLEs as blocks.  */
+	     the constant requires 2 HWIs to be adequately represented.
+	     We output CONST_DOUBLEs as blocks.  */
 	  if (mode == VOIDmode
 	      || (GET_MODE (rtl) == VOIDmode
 		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
@@ -15147,9 +15146,9 @@ insert_wide_int (const wide_int &val, unsigned char *dest, int elt_size)
     }
 
   /* We'd have to extend this code to support odd sizes.  */
-  gcc_assert (elt_size % (HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT) == 0);
+  gcc_assert (elt_size % (HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT) == 0);
 
-  int n = elt_size / (HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT);
+  int n = elt_size / (HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT);
 
   if (WORDS_BIG_ENDIAN)
     for (i = n - 1; i >= 0; i--)

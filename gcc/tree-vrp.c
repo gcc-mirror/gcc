@@ -2008,9 +2008,9 @@ zero_nonzero_bits_from_vr (const tree expr_type,
       if (xor_mask != 0)
 	{
 	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
-				    (*may_be_nonzero).get_precision ());
-	  *may_be_nonzero = (*may_be_nonzero) | mask;
-	  *must_be_nonzero = (*must_be_nonzero).and_not (mask);
+				    may_be_nonzero->get_precision ());
+	  *may_be_nonzero = *may_be_nonzero | mask;
+	  *must_be_nonzero = must_be_nonzero->and_not (mask);
 	}
     }
 

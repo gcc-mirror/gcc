@@ -232,7 +232,7 @@ cwi_output_hex (FILE *outfile, const_rtx x)
 {
   int i = CWI_GET_NUM_ELEM (x);
   gcc_assert (i > 0);
-  if (CWI_ELT (x, i-1) == 0)
+  if (CWI_ELT (x, i - 1) == 0)
     /* The HOST_WIDE_INT_PRINT_HEX prepends a 0x only if the val is
        non zero.  We want all numbers to have a 0x prefix.  */
     fprintf (outfile, "0x");

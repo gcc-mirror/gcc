@@ -3460,7 +3460,7 @@ extern tree build_case_label (tree, tree, tree);
 extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
 #define make_tree_binfo(t) make_tree_binfo_stat (t MEM_STAT_INFO)
 
-/* Make a INTEGER_CST.  */
+/* Make an INTEGER_CST.  */
 
 extern tree make_int_cst_stat (int, int MEM_STAT_DECL);
 #define make_int_cst(LEN, EXT_LEN) \

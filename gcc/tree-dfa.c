@@ -407,7 +407,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       if (mode == BLKmode)
 	size_tree = TYPE_SIZE (TREE_TYPE (exp));
       else
-	bitsize = int(GET_MODE_BITSIZE (mode));
+	bitsize = int (GET_MODE_BITSIZE (mode));
     }
   if (size_tree != NULL_TREE
       && TREE_CODE (size_tree) == INTEGER_CST)

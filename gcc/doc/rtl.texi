@@ -1553,7 +1553,7 @@ neither inherently signed nor inherently unsigned; where necessary,
 signedness is determined by the rtl operation instead.
 
 On more modern ports, @code{CONST_DOUBLE} only represents floating
-point values.  New ports define to @code{TARGET_SUPPORTS_WIDE_INT} to
+point values.  New ports define @code{TARGET_SUPPORTS_WIDE_INT} to
 make this designation.
 
 @findex CONST_DOUBLE_LOW
@@ -1571,7 +1571,7 @@ the precise bit pattern used by the target machine, use the macro
 
 @findex CONST_WIDE_INT
 @item (const_wide_int:@var{m} @var{nunits} @var{elt0} @dots{})
-This contains an array of @code{HOST_WIDE_INTS} that is large enough
+This contains an array of @code{HOST_WIDE_INT}s that is large enough
 to hold any constant that can be represented on the target.  This form
 of rtl is only used on targets that define
 @code{TARGET_SUPPORTS_WIDE_INT} to be nonzero and then

@@ -717,7 +717,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define STATIC_CONSTANT_P(X) (false && (X))
 #endif
 
-/* Until we can use STATIC_ASSERT.  */
+/* Until we can use C++11's static_assert.  */
 #define STATIC_ASSERT(X) \
   typedef int assertion1[(X) ? 1 : -1] ATTRIBUTE_UNUSED
 

@@ -892,7 +892,8 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      info->constructors[k]->quick_push (elt);
 	    }
 
-	  pos = int_const_binop (PLUS_EXPR, pos, build_int_cst (TREE_TYPE (pos), 1));
+	  pos = int_const_binop (PLUS_EXPR, pos,
+				 build_int_cst (TREE_TYPE (pos), 1));
 	}
       gcc_assert (tree_int_cst_equal (pos, CASE_LOW (cs)));
 
@@ -917,7 +918,8 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      elt.value = unshare_expr_without_location (val);
 	      info->constructors[j]->quick_push (elt);
 
-	      pos = int_const_binop (PLUS_EXPR, pos, build_int_cst (TREE_TYPE (pos), 1));
+	      pos = int_const_binop (PLUS_EXPR, pos,
+				     build_int_cst (TREE_TYPE (pos), 1));
 	    } while (!tree_int_cst_lt (high, pos)
 		     && tree_int_cst_lt (low, pos));
 	  j++;

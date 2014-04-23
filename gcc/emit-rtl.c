@@ -213,8 +213,8 @@ static int
 const_wide_int_htab_eq (const void *x, const void *y)
 {
   int i;
-  const_rtx xr = (const_rtx)x;
-  const_rtx yr = (const_rtx)y;
+  const_rtx xr = (const_rtx) x;
+  const_rtx yr = (const_rtx) y;
   if (CONST_WIDE_INT_NUNITS (xr) != CONST_WIDE_INT_NUNITS (yr))
     return 0;
 

@@ -348,7 +348,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
 
   union {
     /* The final union field is aligned to 64 bits on LP64 hosts,
-       giving a 32-bit gap after the fields above. We optimize the
+       giving a 32-bit gap after the fields above.  We optimize the
        layout for that case and use the gap for extra code-specific
        information.  */
 
