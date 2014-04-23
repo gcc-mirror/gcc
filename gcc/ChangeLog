@@ -1,3 +1,9 @@
+2014-04-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* aarch64.md (<optab>_rol<mode>3): New pattern.
+	(<optab>_rolsi3_uxtw): Likewise.
+	* aarch64.c (aarch64_strip_shift): Handle ROTATE and ROTATERT.
+
 2014-04-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm.c (arm_cortex_a57_tune): Initialize all fields.
