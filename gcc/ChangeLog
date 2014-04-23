@@ -1,3 +1,16 @@
+2014-04-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (UNSPEC_ROUND): New.
+	(lroundsfsi2): New.
+	* config/nios2/nios2.opt (mno-custom-round, mcustom-round=): New.
+	* config/nios2/nios2-opts.h (N2FPU_ALL_CODES): Add round.
+	* config/nios2/nios2.c (N2F_NO_ERRNO): Define.
+	(nios2_fpu_insn): Add entry for round.
+	(N2FPU_NO_ERRNO_P): Define.
+	(nios2_custom_check_insns): Add check for N2F_NO_ERRNO and
+	flag_errno_math.
+	* doc/invoke.texi (Nios II Options): Document -mcustom-round.
+
 2014-04-22  Richard Henderson  <rth@redhat.com>
 
 	* config/aarch64/aarch64 (addti3, subti3): New expanders.

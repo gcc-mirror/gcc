@@ -18485,6 +18485,12 @@ Conversion from double precision to single precision.
 Conversion from floating point to signed or unsigned integer types, with
 truncation towards zero.
 
+@item @samp{round}
+Conversion from single-precision floating point to signed integer,
+rounding to the nearest integer and ties away from zero.
+This corresponds to the @code{__builtin_lroundf} function when
+@option{-fno-math-errno} is used.
+
 @item @samp{floatis}, @samp{floatus}, @samp{floatid}, @samp{floatud}
 Conversion from signed or unsigned integer types to floating-point types.
 
