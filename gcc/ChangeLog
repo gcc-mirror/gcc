@@ -1,3 +1,14 @@
+2014-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60909
+	* config/i386/i386.c (ix86_expand_builtin)
+	<case IX86_BUILTIN_RDRAND{16,32,64}_STEP>: Use temporary
+	register for target RTX.
+	<case IX86_BUILTIN_RDSEED{16,32,64}_STEP>: Ditto.
+
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

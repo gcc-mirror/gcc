@@ -1,3 +1,12 @@
+2014-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60909
+	* gcc.target/i386/pr60909-1.c: New test.
+	* gcc.target/i386/pr60909-2.c: Ditto.
+
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
