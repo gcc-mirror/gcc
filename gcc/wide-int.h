@@ -563,6 +563,9 @@ namespace wi
 
   template <typename T>
   unsigned HOST_WIDE_INT extract_uhwi (const T &, unsigned int, unsigned int);
+
+  template <typename T>
+  unsigned int min_precision (const T &, signop);
 }
 
 namespace wi
@@ -3001,6 +3004,17 @@ wi::extract_uhwi (const T &x, unsigned int bitpos,
       res |= upper << (-shift % HOST_BITS_PER_WIDE_INT);
     }
   return zext_hwi (res, width);
+}
+
+/* Return the minimum precision needed to store X with sign SGN.  */
+template <typename T>
+inline unsigned int
+wi::min_precision (const T &x, signop sgn)
+{
+  if (sgn == SIGNED)
+    return get_precision (x) - clrsb (x);
+  else
+    return get_precision (x) - clz (x);
 }
 
 template<typename T>

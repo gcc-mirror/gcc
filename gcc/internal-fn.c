@@ -478,7 +478,7 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	  rtx do_overflow = gen_label_rtx ();
 	  rtx hipart_different = gen_label_rtx ();
 
-	  int hprec = GET_MODE_PRECISION (hmode);
+	  unsigned int hprec = GET_MODE_PRECISION (hmode);
 	  rtx hipart0 = expand_shift (RSHIFT_EXPR, mode, op0, hprec,
 				      NULL_RTX, 0);
 	  hipart0 = gen_lowpart (hmode, hipart0);
@@ -513,12 +513,11 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	      wide_int arg0_min, arg0_max;
 	      if (get_range_info (arg0, &arg0_min, &arg0_max) == VR_RANGE)
 		{
-		  if (wi::les_p (arg0_max, wi::max_value (hprec, SIGNED))
-		      && wi::les_p (wi::min_value (hprec, SIGNED), arg0_min))
+		  unsigned int mprec0 = wi::min_precision (arg0_min, SIGNED);
+		  unsigned int mprec1 = wi::min_precision (arg0_max, SIGNED);
+		  if (mprec0 <= hprec && mprec1 <= hprec)
 		    op0_small_p = true;
-		  else if (wi::les_p (arg0_max, wi::max_value (hprec, UNSIGNED))
-			   && wi::les_p (~wi::max_value (hprec, UNSIGNED),
-					 arg0_min))
+		  else if (mprec0 <= hprec + 1 && mprec1 <= hprec + 1)
 		    op0_medium_p = true;
 		  if (!wi::neg_p (arg0_min, TYPE_SIGN (TREE_TYPE (arg0))))
 		    op0_sign = 0;
@@ -531,12 +530,11 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	      wide_int arg1_min, arg1_max;
 	      if (get_range_info (arg1, &arg1_min, &arg1_max) == VR_RANGE)
 		{
-		  if (wi::les_p (arg1_max, wi::max_value (hprec, SIGNED))
-		      && wi::les_p (wi::min_value (hprec, SIGNED), arg1_min))
+		  unsigned int mprec0 = wi::min_precision (arg1_min, SIGNED);
+		  unsigned int mprec1 = wi::min_precision (arg1_max, SIGNED);
+		  if (mprec0 <= hprec && mprec1 <= hprec)
 		    op1_small_p = true;
-		  else if (wi::les_p (arg1_max, wi::max_value (hprec, UNSIGNED))
-			   && wi::les_p (~wi::max_value (hprec, UNSIGNED),
-					 arg1_min))
+		  else if (mprec0 <= hprec + 1 && mprec1 <= hprec + 1)
 		    op1_medium_p = true;
 		  if (!wi::neg_p (arg1_min, TYPE_SIGN (TREE_TYPE (arg1))))
 		    op1_sign = 0;
