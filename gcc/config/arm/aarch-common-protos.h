@@ -24,6 +24,9 @@
 #define GCC_AARCH_COMMON_PROTOS_H
 
 extern int aarch_crypto_can_dual_issue (rtx, rtx);
+extern bool aarch_rev16_p (rtx);
+extern bool aarch_rev16_shleft_mask_imm_p (rtx, enum machine_mode);
+extern bool aarch_rev16_shright_mask_imm_p (rtx, enum machine_mode);
 extern int arm_early_load_addr_dep (rtx, rtx);
 extern int arm_early_store_addr_dep (rtx, rtx);
 extern int arm_mac_accumulator_is_mul_result (rtx, rtx);

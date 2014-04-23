@@ -4695,6 +4695,16 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
       return false;
 
     case IOR:
+      if (aarch_rev16_p (x))
+        {
+          *cost = COSTS_N_INSNS (1);
+
+          if (speed)
+            *cost += extra_cost->alu.rev;
+
+          return true;
+        }
+    /* Fall through.  */
     case XOR:
     case AND:
     cost_logic:
