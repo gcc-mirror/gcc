@@ -6581,8 +6581,9 @@ fold_single_bit_test (location_t loc, enum tree_code code,
 	 not overflow, adjust BITNUM and INNER.  */
       if (TREE_CODE (inner) == RSHIFT_EXPR
 	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
-	  && wi::ltu_p (wi::to_widest (TREE_OPERAND (inner, 1)) + bitnum,
-			TYPE_PRECISION (type)))
+	  && bitnum < TYPE_PRECISION (type)
+	  && wi::ltu_p (TREE_OPERAND (inner, 1),
+			TYPE_PRECISION (type) - bitnum))
 	{
 	  bitnum += tree_to_uhwi (TREE_OPERAND (inner, 1));
 	  inner = TREE_OPERAND (inner, 0);

@@ -3163,12 +3163,13 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	  && (idx = (*valueize) (TREE_OPERAND (t, 1)))
 	  && TREE_CODE (idx) == INTEGER_CST)
 	{
-	  tree low_bound = array_ref_low_bound (t);
-	  tree unit_size = array_ref_element_size (t);
+	  tree low_bound, unit_size;
 
 	  /* If the resulting bit-offset is constant, track it.  */
-	  if (TREE_CODE (low_bound) == INTEGER_CST
-	      && tree_fits_uhwi_p (unit_size))
+	  if ((low_bound = array_ref_low_bound (t),
+	       TREE_CODE (low_bound) == INTEGER_CST)
+	      && (unit_size = array_ref_element_size (t),
+		  tree_fits_uhwi_p (unit_size)))
 	    {
 	      offset_int woffset
 		= wi::sext (wi::to_offset (idx) - wi::to_offset (low_bound),

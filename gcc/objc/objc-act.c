@@ -4882,7 +4882,9 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		     which specifies the index of the format string
 		     argument.  Add 2.  */
 		  number = TREE_VALUE (second_argument);
-		  if (number && TREE_CODE (number) == INTEGER_CST)
+		  if (number
+		      && TREE_CODE (number) == INTEGER_CST
+		      && !wi::eq_p (number, 0))
 		    TREE_VALUE (second_argument)
 		      = wide_int_to_tree (TREE_TYPE (number),
 					  wi::add (number, 2));
@@ -4893,7 +4895,9 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		     in which case we don't need to add 2.  Add 2 if not
 		     0.  */
 		  number = TREE_VALUE (third_argument);
-		  if (number && TREE_CODE (number) == INTEGER_CST)
+		  if (number
+		      && TREE_CODE (number) == INTEGER_CST
+		      && !wi::eq_p (number, 0))
 		    TREE_VALUE (third_argument)
 		      = wide_int_to_tree (TREE_TYPE (number),
 					  wi::add (number, 2));
