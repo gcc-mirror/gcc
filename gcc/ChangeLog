@@ -1,5 +1,32 @@
 2014-04-23  Nick Clifton  <nickc@redhat.com>
 
+	* config/msp430/msp430.c (msp430_handle_option): Move function
+	to msp430-common.c
+	(msp430_option_override): Simplify mcu and mcpu option handling.
+	(msp430_is_f5_mcu): Rename to msp430_use_f5_series_hwmult.  Add
+	support for -mhwmult command line option.
+	(has_32bit_hwmult): Rename to use_32bit_hwmult.  Add support for
+	-mhwmult command line option.
+	(msp430_hwmult_enabled): Delete.
+	(msp43o_output_labelref): Add support for -mhwmult command line
+	option.
+	* config/msp430/msp430.md (mulhisi3, umulhisi3, mulsidi3)
+	(umulsidi3): Likewise.
+	* config/msp430/msp430.opt (mmcu): Add Report attribute.
+	(mcpu, mlarge, msmall): Likewise.
+	(mhwmult): New option.
+	* config/msp430/msp430-protos.h (msp430_hwmult_enabled): Remove
+	prototype.
+	(msp430_is_f5_mcu): Remove prototype.
+	(msp430_use_f5_series_hwmult): Add prototype.
+	* config/msp430/msp430-opts.h: New file.
+	* common/config/msp430: New directory.
+	* common/config/msp430/msp430-common.c: New file.
+	* config.gcc (msp430): Remove target_has_targetm_common.
+	* doc/invoke.texi: Document -mhwmult command line option.
+
+2014-04-23  Nick Clifton  <nickc@redhat.com>
+
 	* config/i386/cygwin.h (ENDFILE_SPEC): Include
 	default-manifest.o if it can be found in the search path.
 	* config/i386/mingw32.h (ENDFILE_SPEC): Likewise.

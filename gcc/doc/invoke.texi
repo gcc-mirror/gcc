@@ -825,7 +825,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-meb -mel -mno-crt0}
 
 @emph{MSP430 Options}
-@gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax}
+@gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax @gol
+-mhwmult=}
 
 @emph{NDS32 Options}
 @gccoptlist{-mbig-endian -mlittle-endian @gol
@@ -18213,6 +18214,28 @@ Use small-model addressing (16-bit pointers, 16-bit @code{size_t}).
 This option is passed to the assembler and linker, and allows the
 linker to perform certain optimizations that cannot be done until
 the final link.
+
+@item mhwmult=
+@opindex mhwmult=
+Describes the type of hardware multiply supported by the target.
+Accepted values are @code{none} for no hardware multiply, @code{16bit}
+for the original 16-bit-only multiply supported by early MCUs.
+@code{32bit} for the 16/32-bit multiply supported by later MCUs and
+@code{f5series} for the 16/32-bit multiply supported by F5-series MCUs.
+A value of @code{auto} can also be given.  This tells GCC to deduce
+the hardware multiply support based upon the MCU name provided by the
+@option{-mmcu} option.  If no @option{-mmcu} option is specified then
+@code{32bit} hardware multiply support is assumed.  @code{auto} is the
+default setting.
+
+Hardware multiplies are normally performed by calling a library
+routine.  This saves space in the generated code.  When compiling at
+@code{-O3} or higher however the hardware multiplier is invoked
+inline.  This makes for bigger, but faster code.
+
+The hardware multiply routines disable interrupts whilst running and
+restore the previous interrupt state when they finish.  This makes
+them safe to use inside interrupt handlers as well as in normal code.
 
 @end table
 
