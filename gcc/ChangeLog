@@ -1,5 +1,11 @@
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (arm_rev16si2): New pattern.
+	(arm_rev16si2_alt): Likewise.
+	* config/arm/arm.c (arm_new_rtx_costs): Handle rev16 case.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
        * config/aarch64/aarch64.md (rev16<mode>2): New pattern.
        (rev16<mode>2_alt): Likewise.
        * config/aarch64/aarch64.c (aarch64_rtx_costs): Handle rev16 case.
