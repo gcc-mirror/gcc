@@ -1,5 +1,5 @@
-/* { dg-do run { target c++1y } } */
-/* { dg-options "-fsanitize=vla-bound -Wall -Wno-unused-variable" } */
+/* { dg-do run } */
+/* { dg-options "-fsanitize=vla-bound -Wall -Wno-unused-variable -std=c++1y" } */
 /* { dg-shouldfail "ubsan" } */
 
 int

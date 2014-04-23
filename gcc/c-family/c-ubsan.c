@@ -73,14 +73,22 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
   /* In case we have a SAVE_EXPR in a conditional context, we need to
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op0, t);
-  tree data = ubsan_create_data ("__ubsan_overflow_data",
-				 &loc, NULL,
-				 ubsan_type_descriptor (type, false),
-				 NULL_TREE);
-  data = build_fold_addr_expr_loc (loc, data);
-  tt = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW);
-  tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
-			    ubsan_encode_value (op1));
+  if (flag_sanitize_undefined_trap_on_error)
+    tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  else
+    {
+      tree data = ubsan_create_data ("__ubsan_overflow_data", &loc, NULL,
+				     ubsan_type_descriptor (type, false),
+				     NULL_TREE);
+      data = build_fold_addr_expr_loc (loc, data);
+      enum built_in_function bcode
+	= flag_sanitize_recover
+	  ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
+	  : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
+      tt = builtin_decl_explicit (bcode);
+      tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
+				ubsan_encode_value (op1));
+    }
   t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_zero_node);
 
   return t;
@@ -142,19 +150,28 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   /* In case we have a SAVE_EXPR in a conditional context, we need to
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), op0, t);
-  tree data = ubsan_create_data ("__ubsan_shift_data",
-				 &loc, NULL,
-				 ubsan_type_descriptor (type0, false),
-				 ubsan_type_descriptor (type1, false),
-				 NULL_TREE);
-
-  data = build_fold_addr_expr_loc (loc, data);
-
   t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t,
 		   tt ? tt : integer_zero_node);
-  tt = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS);
-  tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
-			    ubsan_encode_value (op1));
+
+  if (flag_sanitize_undefined_trap_on_error)
+    tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  else
+    {
+      tree data = ubsan_create_data ("__ubsan_shift_data", &loc, NULL,
+				     ubsan_type_descriptor (type0, false),
+				     ubsan_type_descriptor (type1, false),
+				     NULL_TREE);
+
+      data = build_fold_addr_expr_loc (loc, data);
+
+      enum built_in_function bcode
+	= flag_sanitize_recover
+	  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
+	  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
+      tt = builtin_decl_explicit (bcode);
+      tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
+				ubsan_encode_value (op1));
+    }
   t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_zero_node);
 
   return t;
@@ -169,13 +186,21 @@ ubsan_instrument_vla (location_t loc, tree size)
   tree t, tt;
 
   t = fold_build2 (LE_EXPR, boolean_type_node, size, build_int_cst (type, 0));
-  tree data = ubsan_create_data ("__ubsan_vla_data",
-				 &loc, NULL,
-				 ubsan_type_descriptor (type, false),
-				 NULL_TREE);
-  data = build_fold_addr_expr_loc (loc, data);
-  tt = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE);
-  tt = build_call_expr_loc (loc, tt, 2, data, ubsan_encode_value (size));
+  if (flag_sanitize_undefined_trap_on_error)
+    tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  else
+    {
+      tree data = ubsan_create_data ("__ubsan_vla_data", &loc, NULL,
+				     ubsan_type_descriptor (type, false),
+				     NULL_TREE);
+      data = build_fold_addr_expr_loc (loc, data);
+      enum built_in_function bcode
+	= flag_sanitize_recover
+	  ? BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE
+	  : BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE_ABORT;
+      tt = builtin_decl_explicit (bcode);
+      tt = build_call_expr_loc (loc, tt, 2, data, ubsan_encode_value (size));
+    }
   t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_zero_node);
 
   return t;
@@ -186,6 +211,8 @@ ubsan_instrument_vla (location_t loc, tree size)
 tree
 ubsan_instrument_return (location_t loc)
 {
+  if (flag_sanitize_undefined_trap_on_error)
+    return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   /* It is possible that PCH zapped table with definitions of sanitizer
      builtins.  Reinitialize them if needed.  */
   initialize_sanitizer_builtins ();
