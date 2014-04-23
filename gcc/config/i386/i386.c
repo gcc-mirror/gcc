@@ -35407,7 +35407,8 @@ rdrand_step:
       else
 	op2 = gen_rtx_SUBREG (SImode, op0, 0);
 
-      if (target == 0)
+      if (target == 0
+	  || !register_operand (target, SImode))
 	target = gen_reg_rtx (SImode);
 
       pat = gen_rtx_GEU (VOIDmode, gen_rtx_REG (CCCmode, FLAGS_REG),
@@ -35449,7 +35450,8 @@ rdseed_step:
                          const0_rtx);
       emit_insn (gen_rtx_SET (VOIDmode, op2, pat));
 
-      if (target == 0)
+      if (target == 0
+	  || !register_operand (target, SImode))
         target = gen_reg_rtx (SImode);
 
       emit_insn (gen_zero_extendqisi2 (target, op2));
