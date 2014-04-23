@@ -1,3 +1,18 @@
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * config/arm/aarch-common-protos.h (alu_cost_table): Add rev field.
+       * config/arm/aarch-cost-tables.h (generic_extra_costs): Specify
+       rev cost.
+       (cortex_a53_extra_costs): Likewise.
+       (cortex_a57_extra_costs): Likewise.
+       * config/arm/arm.c (cortexa9_extra_costs): Likewise.
+       (cortexa7_extra_costs): Likewise.
+       (cortexa8_extra_costs): Likewise.
+       (cortexa12_extra_costs): Likewise.
+       (cortexa15_extra_costs): Likewise.
+       (v7m_extra_costs): Likewise.
+       (arm_new_rtx_costs): Handle BSWAP.
+
 2013-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
        * config/arm/arm.c (cortexa8_extra_costs): New table.

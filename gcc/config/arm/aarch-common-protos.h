@@ -54,6 +54,7 @@ struct alu_cost_table
   const int bfi;		/* Bit-field insert.  */
   const int bfx;		/* Bit-field extraction.  */
   const int clz;		/* Count Leading Zeros.  */
+  const int rev;		/* Reverse bits/bytes.  */
   const int non_exec;		/* Extra cost when not executing insn.  */
   const bool non_exec_costs_exec; /* True if non-execution must add the exec
 				     cost.  */
