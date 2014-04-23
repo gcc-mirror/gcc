@@ -1,3 +1,9 @@
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60635
+	* gimplify.c (gimple_regimplify_operands): Update the
+	re-gimplifed stmt.
+
 2014-04-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from the trunk, subversion id 209546.

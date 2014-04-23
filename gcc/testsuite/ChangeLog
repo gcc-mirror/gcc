@@ -1,3 +1,9 @@
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60635
+	* gfortran.dg/lto/pr60635_0.f90: New testcase.
+	* gfortran.dg/lto/pr60635_1.c: Likewise.
+
 2014-04-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from the trunk, subversion id 209546.
