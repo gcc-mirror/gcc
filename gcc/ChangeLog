@@ -1,5 +1,15 @@
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
+	Backport from mainline
+	2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60720
+	* lto-streamer-out.c (wrap_refs): New function.
+	(lto_output): Wrap symbol references in global initializes in
+	type-preserving MEM_REFs.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/60895
 	* tree-inline.c (declare_return_variable): Use mark_addressable.
 

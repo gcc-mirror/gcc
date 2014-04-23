@@ -1,5 +1,14 @@
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
+	Backport from mainline
+	2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60720
+	* gcc.dg/lto/pr60720_0.c: New testcase.
+	* gcc.dg/lto/pr60720_1.c: Likewise.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/60895
 	* g++.dg/torture/pr60895.C: New testcase.
 
