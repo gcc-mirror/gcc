@@ -1,10 +1,20 @@
+2014-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60909
+	* config/i386/i386.c (ix86_expand_builtin)
+	<case IX86_BUILTIN_RDRAND{16,32,64}_STEP>: Use temporary
+        register for target RTX.
+
 2014-04-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60640
 	* ipa-cp.c (propagate_constants_accross_call): Do not propagate
 	accross thunks.
 
-2014-04-07  Dominique d'Humieres <dominiq@lps.ens.fr>    
+2014-04-07  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	Backport from mainline
 	2013-09-14  Iain Sandoe <iains@gcc.gnu.org>
@@ -73,7 +83,7 @@
 	double ints throughout.
 
 2014-03-18  Richard Biener  <rguenther@suse.de>
- 
+
 	Backport from mainline
 	2013-08-27  Richard Biener  <rguenther@suse.de>
 
