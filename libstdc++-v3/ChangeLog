@@ -1,3 +1,8 @@
+2014-04-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt
+	(CXXABI_1.3.9): New version.
+
 2014-04-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/43622
