@@ -1,3 +1,26 @@
+2014-04-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from main line:
+	2014-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (VBPERMQ): Add vbpermq builtin
+	for ISA 2.07.
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	vbpermq builtins.
+
+	* config/rs6000/altivec.md (UNSPEC_VBPERMQ): Add support for the
+	vbpermq instruction.
+	(altivec_vbpermq): Likewise.
+
+	PR target/60672
+	* config/rs6000/altivec.h (vec_xxsldwi): Add missing define to
+	enable use of xxsldwi and xxpermdi builtin functions.
+	(vec_xxpermdi): Likewise.
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document use of vec_xxsldwi and vec_xxpermdi builtins.
+
 2014-04-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
