@@ -1,5 +1,22 @@
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
+	* Makefile.in (OBJS): Remove loop-unswitch.o.
+	* loop-unswitch.c: Delete.
+	* tree-pass.h (make_pass_rtl_unswitch): Remove.
+	* passes.def (pass_rtl_unswitch): Likewise.
+	* loop-init.c (gate_rtl_unswitch): Likewise.
+	(rtl_unswitch): Likewise.
+	(pass_data_rtl_unswitch): Likewise.
+	(pass_rtl_unswitch): Likewise.
+	(make_pass_rtl_unswitch): Likewise.
+	* rtl.h (reversed_condition): Likewise.
+	(compare_and_jump_seq): Likewise.
+	* loop-iv.c (reversed_condition): Move here from loop-unswitch.c
+	and make static.
+	* loop-unroll.c (compare_and_jump_seq): Likewise.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/60903
 	* tree-ssa-loop-im.c (analyze_memory_references): Remove
 	commented code block.

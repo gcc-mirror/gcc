@@ -1732,6 +1732,21 @@ canon_condition (rtx cond)
   return cond;
 }
 
+/* Reverses CONDition; returns NULL if we cannot.  */
+
+static rtx
+reversed_condition (rtx cond)
+{
+  enum rtx_code reversed;
+  reversed = reversed_comparison_code (cond, NULL);
+  if (reversed == UNKNOWN)
+    return NULL_RTX;
+  else
+    return gen_rtx_fmt_ee (reversed,
+			   GET_MODE (cond), XEXP (cond, 0),
+			   XEXP (cond, 1));
+}
+
 /* Tries to use the fact that COND holds to simplify EXPR.  ALTERED is the
    set of altered regs.  */
 

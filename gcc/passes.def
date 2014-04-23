@@ -341,7 +341,6 @@ along with GCC; see the file COPYING3.  If not see
       PUSH_INSERT_PASSES_WITHIN (pass_loop2)
 	  NEXT_PASS (pass_rtl_loop_init);
 	  NEXT_PASS (pass_rtl_move_loop_invariants);
-	  NEXT_PASS (pass_rtl_unswitch);
 	  NEXT_PASS (pass_rtl_unroll_and_peel_loops);
 	  NEXT_PASS (pass_rtl_doloop);
 	  NEXT_PASS (pass_rtl_loop_done);

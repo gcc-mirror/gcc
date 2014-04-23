@@ -1060,6 +1060,59 @@ split_edge_and_insert (edge e, rtx insns)
   return bb;
 }
 
+/* Prepare a sequence comparing OP0 with OP1 using COMP and jumping to LABEL if
+   true, with probability PROB.  If CINSN is not NULL, it is the insn to copy
+   in order to create a jump.  */
+
+static rtx
+compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
+		      rtx cinsn)
+{
+  rtx seq, jump, cond;
+  enum machine_mode mode;
+
+  mode = GET_MODE (op0);
+  if (mode == VOIDmode)
+    mode = GET_MODE (op1);
+
+  start_sequence ();
+  if (GET_MODE_CLASS (mode) == MODE_CC)
+    {
+      /* A hack -- there seems to be no easy generic way how to make a
+	 conditional jump from a ccmode comparison.  */
+      gcc_assert (cinsn);
+      cond = XEXP (SET_SRC (pc_set (cinsn)), 0);
+      gcc_assert (GET_CODE (cond) == comp);
+      gcc_assert (rtx_equal_p (op0, XEXP (cond, 0)));
+      gcc_assert (rtx_equal_p (op1, XEXP (cond, 1)));
+      emit_jump_insn (copy_insn (PATTERN (cinsn)));
+      jump = get_last_insn ();
+      gcc_assert (JUMP_P (jump));
+      JUMP_LABEL (jump) = JUMP_LABEL (cinsn);
+      LABEL_NUSES (JUMP_LABEL (jump))++;
+      redirect_jump (jump, label, 0);
+    }
+  else
+    {
+      gcc_assert (!cinsn);
+
+      op0 = force_operand (op0, NULL_RTX);
+      op1 = force_operand (op1, NULL_RTX);
+      do_compare_rtx_and_jump (op0, op1, comp, 0,
+			       mode, NULL_RTX, NULL_RTX, label, -1);
+      jump = get_last_insn ();
+      gcc_assert (JUMP_P (jump));
+      JUMP_LABEL (jump) = label;
+      LABEL_NUSES (label)++;
+    }
+  add_int_reg_note (jump, REG_BR_PROB, prob);
+
+  seq = get_insns ();
+  end_sequence ();
+
+  return seq;
+}
+
 /* Unroll LOOP for which we are able to count number of iterations in runtime
    LOOP->LPT_DECISION.TIMES times.  The transformation does this (with some
    extra care for case n < 0):
