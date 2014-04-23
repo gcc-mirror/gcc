@@ -1,3 +1,7 @@
+2014-04-23  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.h (ASM_APP_OFF): Re-define it in a cleaner way.
+
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60895
