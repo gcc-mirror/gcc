@@ -1,3 +1,8 @@
+2014-04-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* gcc.target/i386/pr60902.c: New test.
+
 2014-04-23  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/aarch64/vdup_lane_1.c: New testcase.
