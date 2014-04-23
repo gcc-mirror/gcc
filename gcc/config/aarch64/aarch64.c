@@ -4471,9 +4471,13 @@ aarch64_strip_shift (rtx x)
 {
   rtx op = x;
 
+  /* We accept both ROTATERT and ROTATE: since the RHS must be a constant
+     we can convert both to ROR during final output.  */
   if ((GET_CODE (op) == ASHIFT
        || GET_CODE (op) == ASHIFTRT
-       || GET_CODE (op) == LSHIFTRT)
+       || GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ROTATERT
+       || GET_CODE (op) == ROTATE)
       && CONST_INT_P (XEXP (op, 1)))
     return XEXP (op, 0);
 

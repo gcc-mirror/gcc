@@ -2565,7 +2565,18 @@
   [(set_attr "type" "logic_shift_imm")]
 )
 
-;; zero_extend version of above
+(define_insn "*<optab>_rol<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(LOGICAL:GPI (rotate:GPI
+		      (match_operand:GPI 1 "register_operand" "r")
+		      (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
+		     (match_operand:GPI 3 "register_operand" "r")))]
+  ""
+  "<logical>\\t%<w>0, %<w>3, %<w>1, ror (<sizen> - %2)"
+  [(set_attr "type" "logic_shift_imm")]
+)
+
+;; zero_extend versions of above
 (define_insn "*<LOGICAL:optab>_<SHIFT:optab>si3_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
@@ -2575,6 +2586,18 @@
 		     (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "<LOGICAL:logical>\\t%w0, %w3, %w1, <SHIFT:shift> %2"
+  [(set_attr "type" "logic_shift_imm")]
+)
+
+(define_insn "*<optab>_rolsi3_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (LOGICAL:SI (rotate:SI
+		      (match_operand:SI 1 "register_operand" "r")
+		      (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
+		     (match_operand:SI 3 "register_operand" "r"))))]
+  ""
+  "<logical>\\t%w0, %w3, %w1, ror (32 - %2)"
   [(set_attr "type" "logic_shift_imm")]
 )
 
