@@ -1041,8 +1041,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   /* The offset embedded in MEM_REFs can be negative.  Bias them
      so that the resulting offset adjustment is positive.  */
   offset_int moff = mem_ref_offset (base1);
-  moff = wi::lshift (moff, (BITS_PER_UNIT == 8
-			    ? 3 : exact_log2 (BITS_PER_UNIT)));
+  moff = wi::lshift (moff, LOG2_BITS_PER_UNIT);
   if (wi::neg_p (moff))
     offset2p += (-moff).to_short_addr ();
   else
@@ -1118,8 +1117,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
     {
       offset_int moff = mem_ref_offset (dbase2);
-      moff = wi::lshift (moff, (BITS_PER_UNIT == 8
-				? 3 : exact_log2 (BITS_PER_UNIT)));
+      moff = wi::lshift (moff, LOG2_BITS_PER_UNIT);
       if (wi::neg_p (moff))
 	doffset1 -= (-moff).to_short_addr ();
       else
@@ -1217,15 +1215,13 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       /* The offset embedded in MEM_REFs can be negative.  Bias them
 	 so that the resulting offset adjustment is positive.  */
       moff = mem_ref_offset (base1);
-      moff = wi::lshift (moff, (BITS_PER_UNIT == 8
-				? 3 : exact_log2 (BITS_PER_UNIT)));
+      moff = wi::lshift (moff, LOG2_BITS_PER_UNIT);
       if (wi::neg_p (moff))
 	offset2 += (-moff).to_short_addr ();
       else
 	offset1 += moff.to_shwi ();
       moff = mem_ref_offset (base2);
-      moff = wi::lshift (moff, (BITS_PER_UNIT == 8
-				? 3 : exact_log2 (BITS_PER_UNIT)));
+      moff = wi::lshift (moff, LOG2_BITS_PER_UNIT);
       if (wi::neg_p (moff))
 	offset1 += (-moff).to_short_addr ();
       else
@@ -2200,12 +2196,10 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 				       TREE_OPERAND (ref->base, 1)))
 		{
 		  offset_int off1 = mem_ref_offset (base);
-		  off1 = wi::lshift (off1, (BITS_PER_UNIT == 8
-					    ? 3 : exact_log2 (BITS_PER_UNIT)));
+		  off1 = wi::lshift (off1, LOG2_BITS_PER_UNIT);
 		  off1 += offset;
 		  offset_int off2 = mem_ref_offset (ref->base);
-		  off2 = wi::lshift (off2, (BITS_PER_UNIT == 8
-					    ? 3 : exact_log2 (BITS_PER_UNIT)));
+		  off2 = wi::lshift (off2, LOG2_BITS_PER_UNIT);
 		  off2 += ref_offset;
 		  if (wi::fits_shwi_p (off1) && wi::fits_shwi_p (off2))
 		    {

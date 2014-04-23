@@ -463,10 +463,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			  {
 			    offset_int tem = (wi::to_offset (ssize)
 					      - wi::to_offset (fsize));
-			    if (BITS_PER_UNIT == 8)
-			      tem = wi::lshift (tem, 3);
-			    else
-			      tem *= BITS_PER_UNIT;
+			    tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
 			    tem -= woffset;
 			    maxsize += tem;
 			  }
@@ -583,8 +580,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      else
 		{
 		  offset_int off = mem_ref_offset (exp);
-		  off = wi::lshift (off, (BITS_PER_UNIT == 8
-					  ? 3 : exact_log2 (BITS_PER_UNIT)));
+		  off = wi::lshift (off, LOG2_BITS_PER_UNIT);
 		  off += bit_offset;
 		  if (wi::fits_shwi_p (off))
 		    {

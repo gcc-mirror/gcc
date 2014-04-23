@@ -817,8 +817,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		    offset_int off
 		      = (wi::to_offset (this_offset)
 			 + wi::lrshift (wi::to_offset (bit_offset),
-					BITS_PER_UNIT == 8
-					? 3 : exact_log2 (BITS_PER_UNIT)));
+					LOG2_BITS_PER_UNIT));
 		    if (wi::fits_shwi_p (off)
 			/* Probibit value-numbering zero offset components
 			   of addresses the same before the pass folding
