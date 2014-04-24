@@ -1,3 +1,7 @@
+2014-04-24  Joey Ye  <joey.ye@arm.com>
+
+	* g++.dg/cpp0x/nsdmi-union5.C: Change to runtime test.
+
 2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_bswap): New.
