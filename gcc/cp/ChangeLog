@@ -1,3 +1,9 @@
+2014-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_atomic): Allow seq_cst before
+	atomic-clause, allow comma in between atomic-clause and
+	seq_cst.
+
 2014-04-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/43622
