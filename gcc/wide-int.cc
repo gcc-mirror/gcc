@@ -1727,8 +1727,10 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
       && wi::only_sign_bit_p (dividend))
     overflow = true;
 
-  /* If overflow is set, just get out.  There will only be grief by
-     continuing.  */
+  /* Handle the overflow cases.  Viewed as unsigned value, the quotient of
+     (signed min / -1) has the same representation as the orignal dividend.
+     We have traditionally made division by zero act as division by one,
+     so there too we use the original dividend.  */
   if (overflow)
     {
       if (remainder)
@@ -1739,8 +1741,9 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
       if (oflow != 0)
 	*oflow = true;
       if (quotient)
-	quotient[0] = 0;
-      return 1;
+	for (unsigned int i = 0; i < dividend_len; ++i)
+	  quotient[i] = dividend_val[i];
+      return dividend_len;
     }
 
   if (oflow)
