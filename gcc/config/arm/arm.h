@@ -1543,6 +1543,8 @@ typedef struct GTY(()) machine_function
   rtx thumb1_cc_op1;
   /* Also record the CC mode that is supported.  */
   enum machine_mode thumb1_cc_mode;
+  /* Set to 1 after arm_reorg has started.  */
+  int after_arm_reorg;
 }
 machine_function;
 #endif
