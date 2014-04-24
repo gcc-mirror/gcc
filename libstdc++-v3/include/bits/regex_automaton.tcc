@@ -197,20 +197,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // _M_insert_state() never return -1
 	  auto __id = _M_nfa._M_insert_state(__dup);
 	  __m[__u] = __id;
-	  if (__u == _M_end)
-	    continue;
-	  if (__dup._M_next != _S_invalid_state_id && __m[__dup._M_next] == -1)
-	    __stack.push(__dup._M_next);
 	  if (__dup._M_opcode == _S_opcode_alternative
 	      || __dup._M_opcode == _S_opcode_subexpr_lookahead)
 	    if (__dup._M_alt != _S_invalid_state_id && __m[__dup._M_alt] == -1)
 	      __stack.push(__dup._M_alt);
+	  if (__u == _M_end)
+	    continue;
+	  if (__dup._M_next != _S_invalid_state_id && __m[__dup._M_next] == -1)
+	    __stack.push(__dup._M_next);
 	}
-      long __size = static_cast<long>(__m.size());
-      for (long __k = 0; __k < __size; __k++)
+      for (auto __v : __m)
 	{
-	  long __v;
-	  if ((__v = __m[__k]) == -1)
+	  if (__v == -1)
 	    continue;
 	  auto& __ref = _M_nfa[__v];
 	  if (__ref._M_next != _S_invalid_state_id)

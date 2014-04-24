@@ -1,3 +1,9 @@
+2014-04-24  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone()):
+	Do _M_alt before _M_next.
+	* testsuite/28_regex/basic_regex/multiple_quantifiers.cc: Add testcases.
+
 2014-04-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/43622
