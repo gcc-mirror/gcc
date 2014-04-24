@@ -1,4 +1,9 @@
-i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
+2014-04-24  Dinar Temirbulatov  <dtemirbulatov@gmail.com>
+
+	PR c++/57958
+	* testsuite/g++.dg/cpp0x/pr57958.C: New test.
+
+2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_perm): Return
 	true for aarch64_be.
