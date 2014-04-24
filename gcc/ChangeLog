@@ -1,3 +1,8 @@
+2014-04-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/sh/sh_treg_combine.c (sh_treg_combine::execute): Take
+	function * argument.
+
 2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Enable for bigendian.
