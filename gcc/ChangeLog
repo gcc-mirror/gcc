@@ -1,3 +1,148 @@
+2014-04-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC Built-in Functions): Document new
+	powerpc extended divide, bcd, pack/unpack 128-bit, builtin
+	functions.
+	(PowerPC AltiVec/VSX Built-in Functions): Likewise.
+
+	* config/rs6000/predicates.md (const_0_to_3_operand): New
+	predicate to match 0..3 integer constants.
+
+	* config/rs6000/rs6000-builtin.def (BU_DFP_MISC_1): Add new macros
+	to support adding miscellaneous builtin functions.
+	(BU_DFP_MISC_2): Likewise.
+	(BU_P7_MISC_1): Likewise.
+	(BU_P7_MISC_2): Likewise.
+	(BU_P8V_MISC_3): Likewise.
+	(BU_MISC_1): Likewise.
+	(BU_MISC_2): Likewise.
+	(DIVWE): Add extended divide builtin functions.
+	(DIVWEO): Likewise.
+	(DIVWEU): Likewise.
+	(DIVWEUO): Likewise.
+	(DIVDE): Likewise.
+	(DIVDEO): Likewise.
+	(DIVDEU): Likewise.
+	(DIVDEUO): Likewise.
+	(DXEX): Add decimal floating-point builtin functions.
+	(DXEXQ): Likewise.
+	(DDEDPD): Likewise.
+	(DDEDPDQ): Likewise.
+	(DENBCD): Likewise.
+	(DENBCDQ): Likewise.
+	(DIEX): Likewise.
+	(DIEXQ): Likewise.
+	(DSCLI): Likewise.
+	(DSCLIQ): Likewise.
+	(DSCRI): Likewise.
+	(DSCRIQ): Likewise.
+	(CDTBCD): Add new BCD builtin functions.
+	(CBCDTD): Likewise.
+	(ADDG6S): Likewise.
+	(BCDADD): Likewise.
+	(BCDADD_LT): Likewise.
+	(BCDADD_EQ): Likewise.
+	(BCDADD_GT): Likewise.
+	(BCDADD_OV): Likewise.
+	(BCDSUB): Likewise.
+	(BCDSUB_LT): Likewise.
+	(BCDSUB_EQ): Likewise.
+	(BCDSUB_GT): Likewise.
+	(BCDSUB_OV): Likewise.
+	(PACK_TD): Add new pack/unpack 128-bit type builtin functions.
+	(UNPACK_TD): Likewise.
+	(PACK_TF): Likewise.
+	(UNPACK_TF): Likewise.
+	(UNPACK_TF_0): Likewise.
+	(UNPACK_TF_1): Likewise.
+	(PACK_V1TI): Likewise.
+	(UNPACK_V1TI): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for decimal floating point builtin functions.
+	(rs6000_expand_ternop_builtin): Add checks for the new builtin
+	functions that take constant arguments.
+	(rs6000_invalid_builtin): Add decimal floating point builtin
+	support.
+	(rs6000_init_builtins): Setup long double, _Decimal64, and
+	_Decimal128 types for new builtin functions.
+	(builtin_function_type): Set the unsigned flags appropriately for
+	the new builtin functions.
+	(rs6000_opt_masks): Add support for decimal floating point builtin
+	functions.
+
+	* config/rs6000/rs6000.h (RS6000_BTM_DFP): Add support for decimal
+	floating point builtin functions.
+	(RS6000_BTM_COMMON): Likewise.
+	(RS6000_BTI_long_double): Likewise.
+	(RS6000_BTI_dfloat64): Likewise.
+	(RS6000_BTI_dfloat128): Likewise.
+	(long_double_type_internal_node): Likewise.
+	(dfloat64_type_internal_node): Likewise.
+	(dfloat128_type_internal_node): Likewise.
+
+	* config/rs6000/altivec.h (UNSPEC_BCDADD): Add support for ISA
+	2.07 bcd arithmetic instructions.
+	(UNSPEC_BCDSUB): Likewise.
+	(UNSPEC_BCD_OVERFLOW): Likewise.
+	(UNSPEC_BCD_ADD_SUB): Likewise.
+	(bcd_add_sub): Likewise.
+	(BCD_TEST): Likewise.
+	(bcd<bcd_add_sub>): Likewise.
+	(bcd<bcd_add_sub>_test): Likewise.
+	(bcd<bcd_add_sub>_test2): Likewise.
+	(bcd<bcd_add_sub>_<code>): Likewise.
+	(peephole2 for combined bcd ops): Likewise.
+
+	* config/rs6000/dfp.md (UNSPEC_DDEDPD): Add support for new
+	decimal floating point builtin functions.
+	(UNSPEC_DENBCD): Likewise.
+	(UNSPEC_DXEX): Likewise.
+	(UNSPEC_DIEX): Likewise.
+	(UNSPEC_DSCLI): Likewise.
+	(UNSPEC_DSCRI): Likewise.
+	(D64_D128): Likewise.
+	(dfp_suffix): Likewise.
+	(dfp_ddedpd_<mode>): Likewise.
+	(dfp_denbcd_<mode>): Likewise.
+	(dfp_dxex_<mode>): Likewise.
+	(dfp_diex_<mode>): Likewise.
+	(dfp_dscli_<mode>): Likewise.
+	(dfp_dscri_<mode>): Likewise.
+
+	* config/rs6000/rs6000.md (UNSPEC_ADDG6S): Add support for new BCD
+	builtin functions.
+	(UNSPEC_CDTBCD): Likewise.
+	(UNSPEC_CBCDTD): Likewise.
+	(UNSPEC_DIVE): Add support for new extended divide builtin
+	functions.
+	(UNSPEC_DIVEO): Likewise.
+	(UNSPEC_DIVEU): Likewise.
+	(UNSPEC_DIVEUO): Likewise.
+	(UNSPEC_UNPACK_128BIT): Add support for new builtin functions to
+	pack/unpack 128-bit types.
+	(UNSPEC_PACK_128BIT): Likewise.
+	(idiv_ldiv): New mode attribute to set the 32/64-bit divide type.
+	(udiv<mode>3): Use idiv_ldiv mode attribute.
+	(div<mode>3): Likewise.
+	(addg6s): Add new BCD builtin functions.
+	(cdtbcd): Likewise.
+	(cbcdtd): Likewise.
+	(UNSPEC_DIV_EXTEND): Add support for new extended divide
+	instructions.
+	(div_extend): Likewise.
+	(div<div_extend>_<mode>"): Likewise.
+	(FP128_64): Add support for new builtin functions to pack/unpack
+	128-bit types.
+	(unpack<mode>): Likewise.
+	(unpacktf_0): Likewise.
+	(unpacktf_1): Likewise.
+	(unpack<mode>_dm): Likewise.
+	(unpack<mode>_nodm): Likewise.
+	(pack<mode>): Likewise.
+	(unpackv1ti): Likewise.
+	(packv1ti): Likewise.
+
 2014-04-24  Vishnu K S  <Vishnu.k_s@atmel.com>
 
 	* gcc/config/avr/avr.c: Add comment on why -fdelete-null-pointer-checks
