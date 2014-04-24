@@ -1,3 +1,103 @@
+i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_perm): Return
+	true for aarch64_be.
+
+2014-04-24  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/fuse-caller-save.c: New test.
+
+2014-04-24  Joey Ye  <joey.ye@arm.com>
+
+	* g++.dg/cpp0x/nsdmi-union5.C: Change to runtime test.
+
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_bswap): New.
+	* gcc.dg/vect/vect-bswap16: New test.
+	* gcc.dg/vect/vect-bswap32: Likewise.
+	* gcc.dg/vect/vect-bswap64: Likewise.
+
+2014-04-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* gcc.target/i386/pr60902.c: New test.
+
+2014-04-23  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/vdup_lane_1.c: New testcase.
+	* gcc.target/aarch64/vdup_lane_2.c: New testcase.
+	* gcc.target/aarch64/vdup_n_1.c: New testcase.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/rev16.c: New test.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * gcc.target/aarch64/rev16_1.c: New test.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60903
+	* gcc.dg/torture/pr60903.c: New testcase.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60895
+	* g++.dg/torture/pr60895.C: New testcase.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60891
+	* gcc.dg/torture/pr60891.c: New testcase.
+
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60275
+	* g++.dg/ubsan/return-2.C: Revert 2014-03-24 changes, add
+	-fno-sanitize-recover to dg-options.
+	* g++.dg/ubsan/cxx11-shift-1.C: Remove c++11 target restriction,
+	add -std=c++11 to dg-options.
+	* g++.dg/ubsan/cxx11-shift-2.C: Likewise.
+	* g++.dg/ubsan/cxx1y-vla.C: Remove c++1y target restriction,
+	add -std=c++1y to dg-options.
+	* c-c++-common/ubsan/undefined-1.c: Revert 2014-03-24 changes, add
+	-fno-sanitize-recover to dg-options.
+	* c-c++-common/ubsan/overflow-sub-1.c: Likewise.
+	* c-c++-common/ubsan/vla-4.c: Likewise.
+	* c-c++-common/ubsan/pr59503.c: Likewise.
+	* c-c++-common/ubsan/vla-3.c: Likewise.
+	* c-c++-common/ubsan/save-expr-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-1.c: Likewise.
+	* c-c++-common/ubsan/shift-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-2.c: Likewise.
+	* c-c++-common/ubsan/vla-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-1.c: Likewise.
+	* c-c++-common/ubsan/pr60613-1.c: Likewise.
+	* c-c++-common/ubsan/shift-6.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-3.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-3.c: New test.
+	* c-c++-common/ubsan/overflow-add-4.c: New test.
+	* c-c++-common/ubsan/div-by-zero-6.c: New test.
+	* c-c++-common/ubsan/div-by-zero-7.c: New test.
+
+2014-04-22  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/sh/hiconst.c: New test.
+
+2014-04-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/custom-fp-conversion.c: Adjust to test that
+	lroundf generates custom round instruction, too.
+
+2014-04-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60881
+	* coarray/alloc_comp_3.f90: New.
+
 2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60868

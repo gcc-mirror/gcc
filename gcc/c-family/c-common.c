@@ -8406,7 +8406,7 @@ handle_tm_wrap_attribute (tree *node, tree name, tree args,
 		error ("%qD is not compatible with %qD", wrap_decl, decl);
 	    }
 	  else
-	    error ("transaction_wrap argument is not a function");
+	    error ("%qE argument is not a function", name);
 	}
     }
 

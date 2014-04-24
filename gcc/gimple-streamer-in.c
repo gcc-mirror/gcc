@@ -137,7 +137,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
     case GIMPLE_ASM:
       {
 	/* FIXME lto.  Move most of this into a new gimple_asm_set_string().  */
-	gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm> (stmt);
+	gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm *> (stmt);
 	tree str;
 	asm_stmt->ni = streamer_read_uhwi (ib);
 	asm_stmt->no = streamer_read_uhwi (ib);

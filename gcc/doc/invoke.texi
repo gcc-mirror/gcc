@@ -288,7 +288,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fsanitize=@var{style} @gol
+-fsanitize=@var{style} -fsanitize-recover @gol
+-fsanitize-undefined-trap-on-error @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
@@ -825,7 +826,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-meb -mel -mno-crt0}
 
 @emph{MSP430 Options}
-@gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax}
+@gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax @gol
+-mhwmult=}
 
 @emph{NDS32 Options}
 @gccoptlist{-mbig-endian -mlittle-endian @gol
@@ -5379,6 +5381,26 @@ a++;
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
+
+@item -fsanitize-recover
+@opindex fsanitize-recover
+By default @option{-fsanitize=undefined} sanitization (and its suboptions
+except for @option{-fsanitize=unreachable} and @option{-fsanitize=return})
+after reporting undefined behavior attempts to continue running the
+program as if no undefined behavior happened.  This means multiple undefined
+behavior runtime errors can be reported in a single program run, and the exit
+code of the program may indicate success even when undefined behavior
+has been reported.  The @option{-fno-sanitize-recover} can be used to alter
+this behavior, only the first detected undefined behavior will be reported
+and program will exit after that with non-zero exit code.
+
+@item -fsanitize-undefined-trap-on-error
+@opindex fsanitize-undefined-trap-on-error
+The @option{-fsanitize-undefined-trap-on-error} instructs the compiler to
+report undefined behavior using @code{__builtin_trap ()} rather than
+a @code{libubsan} library routine.  The advantage of this is that the
+@code{libubsan} library is not needed and will not be linked in, so this
+is usable even for use in freestanding environments.
 
 @item -fdump-final-insns@r{[}=@var{file}@r{]}
 @opindex fdump-final-insns
@@ -18221,6 +18243,28 @@ This option is passed to the assembler and linker, and allows the
 linker to perform certain optimizations that cannot be done until
 the final link.
 
+@item mhwmult=
+@opindex mhwmult=
+Describes the type of hardware multiply supported by the target.
+Accepted values are @code{none} for no hardware multiply, @code{16bit}
+for the original 16-bit-only multiply supported by early MCUs.
+@code{32bit} for the 16/32-bit multiply supported by later MCUs and
+@code{f5series} for the 16/32-bit multiply supported by F5-series MCUs.
+A value of @code{auto} can also be given.  This tells GCC to deduce
+the hardware multiply support based upon the MCU name provided by the
+@option{-mmcu} option.  If no @option{-mmcu} option is specified then
+@code{32bit} hardware multiply support is assumed.  @code{auto} is the
+default setting.
+
+Hardware multiplies are normally performed by calling a library
+routine.  This saves space in the generated code.  When compiling at
+@code{-O3} or higher however the hardware multiplier is invoked
+inline.  This makes for bigger, but faster code.
+
+The hardware multiply routines disable interrupts whilst running and
+restore the previous interrupt state when they finish.  This makes
+them safe to use inside interrupt handlers as well as in normal code.
+
 @end table
 
 @node NDS32 Options
@@ -18484,6 +18528,12 @@ Conversion from double precision to single precision.
 @item @samp{fixsi}, @samp{fixsu}, @samp{fixdi}, @samp{fixdu}
 Conversion from floating point to signed or unsigned integer types, with
 truncation towards zero.
+
+@item @samp{round}
+Conversion from single-precision floating point to signed integer,
+rounding to the nearest integer and ties away from zero.
+This corresponds to the @code{__builtin_lroundf} function when
+@option{-fno-math-errno} is used.
 
 @item @samp{floatis}, @samp{floatus}, @samp{floatid}, @samp{floatud}
 Conversion from signed or unsigned integer types to floating-point types.

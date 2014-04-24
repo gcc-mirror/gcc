@@ -95,18 +95,6 @@ msp430_init_machine_status (void)
   return m;
 }
 
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION msp430_handle_option
-
-bool
-msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
-		      struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		      const struct cl_decoded_option *decoded ATTRIBUTE_UNUSED,
-		      location_t loc ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		msp430_option_override
 
@@ -196,19 +184,14 @@ msp430_option_override (void)
 
   if (target_cpu)
     {
-      if (strcasecmp (target_cpu, "msp430x") == 0
-	  || strcasecmp (target_cpu, "msp430xv2") == 0
-	  || strcasecmp (target_cpu, "430x") == 0
-	  || strcasecmp (target_cpu, "430xv2") == 0)
+      if (strcasecmp (target_cpu, "msp430x") == 0)
 	msp430x = true;
-      else if (strcasecmp (target_cpu, "msp430") == 0
-	       || strcasecmp (target_cpu, "430") == 0)
+      else /* target_cpu == "msp430" - already handled by the front end.  */
 	msp430x = false;
-      else
-	error ("unrecognised argument of -mcpu: %s", target_cpu);
     }
-
-  if (target_mcu)
+  /* Note - the front end has already ensured at most
+     one of target_cpu and target_mcu will be set.  */
+  else if (target_mcu)
     {
       int i;
 
@@ -217,25 +200,12 @@ msp430_option_override (void)
 	 supports 430.  */
       msp430x = true;
 
-      /* For backwards compatibility we recognise two generic MCU
-	 430X names.  However we want to be able to generate special C
-	 preprocessor defines for them, which is why we set target_mcu
-	 to NULL.  */
-      if (strcasecmp (target_mcu, "msp430") == 0)
-	{
-	  msp430x = false;
-	  target_mcu = NULL;
-	}
-      else if (strcasecmp (target_mcu, "msp430x") == 0
-	       || strcasecmp (target_mcu, "msp430xv2") == 0)
-	target_mcu = NULL;
-      else
-	for (i = ARRAY_SIZE (msp430_mcu_names); i--;)
-	  if (strcasecmp (msp430_mcu_names[i], target_mcu) == 0)
-	    {
-	      msp430x = false;
-	      break;
-	    }
+      for (i = ARRAY_SIZE (msp430_mcu_names); i--;)
+	if (strcasecmp (msp430_mcu_names[i], target_mcu) == 0)
+	  {
+	    msp430x = false;
+	    break;
+	  }
       /* It is not an error if we do not match the MCU name.  There are
 	 hundreds of them.  */
     }
@@ -1847,16 +1817,20 @@ static const struct
 
 /* Returns true if the current MCU is an F5xxx series.  */
 bool
-msp430_is_f5_mcu (void)
+msp430_use_f5_series_hwmult (void)
 {
-  if (target_mcu == NULL)
+  if (msp430_hwmult_type == F5SERIES)
+    return true;
+
+  if (target_mcu == NULL || msp430_hwmult_type != AUTO)
     return false;
+
   return strncasecmp (target_mcu, "msp430f5", 8) == 0;
 }
 
 /* Returns true id the current MCU has a second generation 32-bit hardware multiplier.  */
 static bool
-has_32bit_hw_mult (void)
+use_32bit_hwmult (void)
 {
   static const char * known_32bit_mult_mcus [] =
     {
@@ -1868,31 +1842,16 @@ has_32bit_hw_mult (void)
       "msp430f47177",     "msp430f47187",     "msp430f47197"
     };
   int i;
-  if (target_mcu == NULL)
+
+  if (msp430_hwmult_type == LARGE)
+    return true;
+
+  if (target_mcu == NULL || msp430_hwmult_type != AUTO)
     return false;
 
   for (i = ARRAY_SIZE (known_32bit_mult_mcus); i--;)
     if (strcasecmp (target_mcu, known_32bit_mult_mcus[i]) == 0)
       return true;
-
-  return false;
-}
-
-/* Returns true if hardware multiply is supported by the chosen MCU.  */
-bool
-msp430_hwmult_enabled (void)
-{
-  if (target_mcu == NULL)
-    return false;
-
-  if (!ENABLE_HWMULT)
-    return false;
-
-  if (msp430_is_interrupt_func ())
-    return false;
-
-  if (msp430_is_f5_mcu () || has_32bit_hw_mult ())
-    return true;
 
   return false;
 }
@@ -1913,20 +1872,20 @@ msp430_output_labelref (FILE *file, const char *name)
 
   /* If we have been given a specific MCU name then we may be
      able to make use of its hardware multiply capabilities.  */
-  if (msp430_hwmult_enabled ())
+  if (msp430_hwmult_type != NONE)
     {
       if (strcmp ("__mspabi_mpyi", name) == 0)
 	{
-	  if (msp430_is_f5_mcu ())
+	  if (msp430_use_f5_series_hwmult ())
 	    name = "__mulhi2_f5";
 	  else
 	    name = "__mulhi2";
 	}
       else if (strcmp ("__mspabi_mpyl", name) == 0)
 	{
-	  if (msp430_is_f5_mcu ())
+	  if (msp430_use_f5_series_hwmult ())
 	    name = "__mulsi2_f5";
-	  else if (has_32bit_hw_mult ())
+	  else if (use_32bit_hwmult ())
 	    name = "__mulsi2_hw32";
 	  else
 	    name = "__mulsi2";

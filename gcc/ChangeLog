@@ -1,3 +1,676 @@
+2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	* flag-types.h (enum ivar_visibility): Add.
+
+2014-04-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/sh/sh_treg_combine.c (sh_treg_combine::execute): Take
+	function * argument.
+
+2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Enable for bigendian.
+
+2014-04-24  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* reg-notes.def (REG_NOTE (CALL_DECL)): New reg-note REG_CALL_DECL.
+	* calls.c (expand_call, emit_library_call_value_1): Add REG_CALL_DECL
+	reg-note.
+	* combine.c (distribute_notes): Handle REG_CALL_DECL reg-note.
+	* emit-rtl.c (try_split): Same.
+
+2014-04-24  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* common.opt (fuse-caller-save): New option.
+
+2014-04-24  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Reverse order of elements
+	for big-endian.
+
+2014-04-24  Richard Biener  <rguenther@suse.de>
+
+	* expr.c (expand_expr_real_1): Avoid gimple_assign_rhs_to_tree
+	during TER and instead use the sepops interface for expanding
+	non-GIMPLE_SINGLE_RHS.
+
+2014-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Only redefine
+	if not HAVE_AS_IX86_DIFF_SECT_DELTA.
+
+2014-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_cfi_directive): Support Solaris/x86
+	assembler 64-bit option.
+	* configure: Regenerate.
+
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Check
+	TARGET_SIMD rather than TARGET_GENERAL_REGS_ONLY.
+	(TARGET_SIMD): Take AARCH64_ISA_SIMD into account.
+	(TARGET_FLOAT): Take AARCH64_ISA_FP into account.
+	(TARGET_CRYPTO): Take TARGET_SIMD into account.
+
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Handle BUILT_IN_BSWAP16,
+	BUILT_IN_BSWAP32, BUILT_IN_BSWAP64.
+	* config/aarch64/aarch64-simd.md (bswap<mode>): New pattern.
+	* config/aarch64/aarch64-simd-builtins.def: Define vector bswap
+	builtins.
+	* config/aarch64/iterator.md (VDQHSD): New mode iterator.
+	(Vrevsuff): New mode attribute.
+
+2014-04-24  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.h (machine_function): Define variable
+	after_arm_reorg here.
+	* config/arm/arm.c (after_arm_reorg): Remove the definition.
+	(arm_split_constant): Update the way to access variable
+	after_arm_reorg.
+	(arm_reorg): Ditto.
+	(arm_output_function_epilogue): Remove the reset of after_arm_reorg.
+
+2014-04-23  Tom de Vries  <tom@codesourcery.com>
+
+	* target-hooks-macros.h: Fix DEFHOOKPOD argument order in comment.
+
+2014-04-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* is-a.h: Update comments to reflect the following changes to the
+	"pointerness" of the API, making the template parameter match the
+	return type, allowing use of is-a.h with typedefs of pointers.
+	(is_a_helper::cast): Return a T rather then a pointer to a T, so
+	that the return type matches the parameter to the is_a_helper.
+	(as_a): Likewise.
+	(dyn_cast): Likewise.
+
+	* cgraph.c (cgraph_node_for_asm): Update for removal of implicit
+	pointer from the is-a.h API.
+
+	* cgraph.h (is_a_helper <cgraph_node>::test): Convert to...
+	(is_a_helper <cgraph_node *>::test): ...this, matching change to
+	is-a.h API.
+	(is_a_helper <varpool_node>::test): Likewise, convert to...
+	(is_a_helper <varpool_node *>::test): ...this.
+
+	(varpool_first_variable): Update for removal of implicit pointer
+	from the is-a.h API.
+	(varpool_next_variable): Likewise.
+	(varpool_first_static_initializer): Likewise.
+	(varpool_next_static_initializer): Likewise.
+	(varpool_first_defined_variable): Likewise.
+	(varpool_next_defined_variable): Likewise.
+	(cgraph_first_defined_function): Likewise.
+	(cgraph_next_defined_function): Likewise.
+	(cgraph_first_function): Likewise.
+	(cgraph_next_function): Likewise.
+	(cgraph_first_function_with_gimple_body): Likewise.
+	(cgraph_next_function_with_gimple_body): Likewise.
+	(cgraph_alias_target): Likewise.
+	(varpool_alias_target): Likewise.
+	(cgraph_function_or_thunk_node): Likewise.
+	(varpool_variable_node): Likewise.
+	(symtab_real_symbol_p): Likewise.
+	* cgraphunit.c (referred_to_p): Likewise.
+	(analyze_functions): Likewise.
+	(handle_alias_pairs): Likewise.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Likewise.
+	* gimple-ssa.h (gimple_vuse_op): Likewise.
+	(gimple_vdef_op): Likewise.
+	* gimple-streamer-in.c (input_gimple_stmt): Likewise.
+	* gimple.c (gimple_build_asm_1): Likewise.
+	(gimple_build_try): Likewise.
+	(gimple_build_resx): Likewise.
+	(gimple_build_eh_dispatch): Likewise.
+	(gimple_build_omp_for): Likewise.
+	(gimple_omp_for_set_clauses): Likewise.
+
+	* gimple.h (is_a_helper <gimple_statement_asm>::test): Convert to...
+	(is_a_helper <gimple_statement_asm *>::test): ...this.
+	(is_a_helper <gimple_statement_bind>::test): Convert to...
+	(is_a_helper <gimple_statement_bind *>::test): ...this.
+	(is_a_helper <gimple_statement_call>::test): Convert to...
+	(is_a_helper <gimple_statement_call *>::test): ...this.
+	(is_a_helper <gimple_statement_catch>::test): Convert to...
+	(is_a_helper <gimple_statement_catch *>::test): ...this.
+	(is_a_helper <gimple_statement_resx>::test): Convert to...
+	(is_a_helper <gimple_statement_resx *>::test): ...this.
+	(is_a_helper <gimple_statement_eh_dispatch>::test): Convert to...
+	(is_a_helper <gimple_statement_eh_dispatch *>::test): ...this.
+	(is_a_helper <gimple_statement_eh_else>::test): Convert to...
+	(is_a_helper <gimple_statement_eh_else *>::test): ...this.
+	(is_a_helper <gimple_statement_eh_filter>::test): Convert to...
+	(is_a_helper <gimple_statement_eh_filter *>::test): ...this.
+	(is_a_helper <gimple_statement_eh_mnt>::test): Convert to...
+	(is_a_helper <gimple_statement_eh_mnt *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_atomic_load>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_atomic_load *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_atomic_store>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_atomic_store *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_return>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_return *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_continue>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_continue *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_critical>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_critical *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_for>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_for *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_taskreg>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_taskreg *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_parallel>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_parallel *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_target>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_target *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_sections>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_sections *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_single>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_single *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_teams>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_teams *>::test): ...this.
+	(is_a_helper <gimple_statement_omp_task>::test): Convert to...
+	(is_a_helper <gimple_statement_omp_task *>::test): ...this.
+	(is_a_helper <gimple_statement_phi>::test): Convert to...
+	(is_a_helper <gimple_statement_phi *>::test): ...this.
+	(is_a_helper <gimple_statement_transaction>::test): Convert to...
+	(is_a_helper <gimple_statement_transaction *>::test): ...this.
+	(is_a_helper <gimple_statement_try>::test): Convert to...
+	(is_a_helper <gimple_statement_try *>::test): ...this.
+	(is_a_helper <gimple_statement_wce>::test): Convert to...
+	(is_a_helper <gimple_statement_wce *>::test): ...this.
+	(is_a_helper <const gimple_statement_asm>::test): Convert to...
+	(is_a_helper <const gimple_statement_asm *>::test): ...this.
+	(is_a_helper <const gimple_statement_bind>::test): Convert to...
+	(is_a_helper <const gimple_statement_bind *>::test): ...this.
+	(is_a_helper <const gimple_statement_call>::test): Convert to...
+	(is_a_helper <const gimple_statement_call *>::test): ...this.
+	(is_a_helper <const gimple_statement_catch>::test): Convert to...
+	(is_a_helper <const gimple_statement_catch *>::test): ...this.
+	(is_a_helper <const gimple_statement_resx>::test): Convert to...
+	(is_a_helper <const gimple_statement_resx *>::test): ...this.
+	(is_a_helper <const gimple_statement_eh_dispatch>::test):
+	Convert to...
+	(is_a_helper <const gimple_statement_eh_dispatch *>::test):
+	...this.
+	(is_a_helper <const gimple_statement_eh_filter>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_eh_filter *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_atomic_load>::test):
+	Convert to...
+	(is_a_helper <const gimple_statement_omp_atomic_load *>::test):
+	...this.
+	(is_a_helper <const gimple_statement_omp_atomic_store>::test):
+	Convert to...
+	(is_a_helper <const gimple_statement_omp_atomic_store *>::test):
+	...this.
+	(is_a_helper <const gimple_statement_omp_return>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_return *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_continue>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_continue *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_critical>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_critical *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_for>::test): Convert to...
+	(is_a_helper <const gimple_statement_omp_for *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_taskreg>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_taskreg *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_parallel>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_parallel *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_target>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_target *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_sections>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_sections *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_single>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_single *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_teams>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_teams *>::test): ...this.
+	(is_a_helper <const gimple_statement_omp_task>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_omp_task *>::test): ...this.
+	(is_a_helper <const gimple_statement_phi>::test): Convert to...
+	(is_a_helper <const gimple_statement_phi *>::test): ...this.
+	(is_a_helper <const gimple_statement_transaction>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_transaction *>::test): ...this.
+	(is_a_helper <const gimple_statement_with_ops>::test): Convert
+	to...
+	(is_a_helper <const gimple_statement_with_ops *>::test): ...this.
+	(is_a_helper <gimple_statement_with_ops>::test): Convert to...
+	(is_a_helper <gimple_statement_with_ops *>::test): ...this.
+	(is_a_helper <const gimple_statement_with_memory_ops>::test):
+	Convert to...
+	(is_a_helper <const gimple_statement_with_memory_ops *>::test):
+	...this.
+	(is_a_helper <gimple_statement_with_memory_ops>::test): Convert
+	to...
+	(is_a_helper <gimple_statement_with_memory_ops *>::test): ...this.
+
+	(gimple_use_ops): Update for removal of implicit pointer from the
+	is-a.h API.
+	(gimple_set_use_ops): Likewise.
+	(gimple_vuse): Likewise.
+	(gimple_vdef): Likewise.
+	(gimple_vuse_ptr): Likewise.
+	(gimple_vdef_ptr): Likewise.
+	(gimple_set_vuse): Likewise.
+	(gimple_set_vdef): Likewise.
+	(gimple_omp_return_set_lhs): Likewise.
+	(gimple_omp_return_lhs): Likewise.
+	(gimple_omp_return_lhs_ptr): Likewise.
+	(gimple_call_fntype): Likewise.
+	(gimple_call_set_fntype): Likewise.
+	(gimple_call_set_internal_fn): Likewise.
+	(gimple_call_use_set): Likewise.
+	(gimple_call_clobber_set): Likewise.
+	(gimple_bind_vars): Likewise.
+	(gimple_bind_set_vars): Likewise.
+	(gimple_bind_body_ptr): Likewise.
+	(gimple_bind_set_body): Likewise.
+	(gimple_bind_add_stmt): Likewise.
+	(gimple_bind_block): Likewise.
+	(gimple_bind_set_block): Likewise.
+	(gimple_asm_ninputs): Likewise.
+	(gimple_asm_noutputs): Likewise.
+	(gimple_asm_nclobbers): Likewise.
+	(gimple_asm_nlabels): Likewise.
+	(gimple_asm_input_op): Likewise.
+	(gimple_asm_input_op_ptr): Likewise.
+	(gimple_asm_output_op): Likewise.
+	(gimple_asm_output_op_ptr): Likewise.
+	(gimple_asm_set_output_op): Likewise.
+	(gimple_asm_clobber_op): Likewise.
+	(gimple_asm_set_clobber_op): Likewise.
+	(gimple_asm_label_op): Likewise.
+	(gimple_asm_set_label_op): Likewise.
+	(gimple_asm_string): Likewise.
+	(gimple_catch_types): Likewise.
+	(gimple_catch_types_ptr): Likewise.
+	(gimple_catch_handler_ptr): Likewise.
+	(gimple_catch_set_types): Likewise.
+	(gimple_catch_set_handler): Likewise.
+	(gimple_eh_filter_types): Likewise.
+	(gimple_eh_filter_types_ptr): Likewise.
+	(gimple_eh_filter_failure_ptr): Likewise.
+	(gimple_eh_filter_set_types): Likewise.
+	(gimple_eh_filter_set_failure): Likewise.
+	(gimple_eh_must_not_throw_fndecl): Likewise.
+	(gimple_eh_must_not_throw_set_fndecl): Likewise.
+	(gimple_eh_else_n_body_ptr): Likewise.
+	(gimple_eh_else_e_body_ptr): Likewise.
+	(gimple_eh_else_set_n_body): Likewise.
+	(gimple_eh_else_set_e_body): Likewise.
+	(gimple_try_eval_ptr): Likewise.
+	(gimple_try_cleanup_ptr): Likewise.
+	(gimple_try_set_eval): Likewise.
+	(gimple_try_set_cleanup): Likewise.
+	(gimple_wce_cleanup_ptr): Likewise.
+	(gimple_wce_set_cleanup): Likewise.
+	(gimple_phi_capacity): Likewise.
+	(gimple_phi_num_args): Likewise.
+	(gimple_phi_result): Likewise.
+	(gimple_phi_result_ptr): Likewise.
+	(gimple_phi_set_result): Likewise.
+	(gimple_phi_arg): Likewise.
+	(gimple_phi_set_arg): Likewise.
+	(gimple_resx_region): Likewise.
+	(gimple_resx_set_region): Likewise.
+	(gimple_eh_dispatch_region): Likewise.
+	(gimple_eh_dispatch_set_region): Likewise.
+	(gimple_omp_critical_name): Likewise.
+	(gimple_omp_critical_name_ptr): Likewise.
+	(gimple_omp_critical_set_name): Likewise.
+	(gimple_omp_for_clauses): Likewise.
+	(gimple_omp_for_clauses_ptr): Likewise.
+	(gimple_omp_for_set_clauses): Likewise.
+	(gimple_omp_for_collapse): Likewise.
+	(gimple_omp_for_index): Likewise.
+	(gimple_omp_for_index_ptr): Likewise.
+	(gimple_omp_for_set_index): Likewise.
+	(gimple_omp_for_initial): Likewise.
+	(gimple_omp_for_initial_ptr): Likewise.
+	(gimple_omp_for_set_initial): Likewise.
+	(gimple_omp_for_final): Likewise.
+	(gimple_omp_for_final_ptr): Likewise.
+	(gimple_omp_for_set_final): Likewise.
+	(gimple_omp_for_incr): Likewise.
+	(gimple_omp_for_incr_ptr): Likewise.
+	(gimple_omp_for_set_incr): Likewise.
+	(gimple_omp_for_pre_body_ptr): Likewise.
+	(gimple_omp_for_set_pre_body): Likewise.
+	(gimple_omp_parallel_clauses): Likewise.
+	(gimple_omp_parallel_clauses_ptr): Likewise.
+	(gimple_omp_parallel_set_clauses): Likewise.
+	(gimple_omp_parallel_child_fn): Likewise.
+	(gimple_omp_parallel_child_fn_ptr): Likewise.
+	(gimple_omp_parallel_set_child_fn): Likewise.
+	(gimple_omp_parallel_data_arg): Likewise.
+	(gimple_omp_parallel_data_arg_ptr): Likewise.
+	(gimple_omp_parallel_set_data_arg): Likewise.
+	(gimple_omp_task_clauses): Likewise.
+	(gimple_omp_task_clauses_ptr): Likewise.
+	(gimple_omp_task_set_clauses): Likewise.
+	(gimple_omp_task_child_fn): Likewise.
+	(gimple_omp_task_child_fn_ptr): Likewise.
+	(gimple_omp_task_set_child_fn): Likewise.
+	(gimple_omp_task_data_arg): Likewise.
+	(gimple_omp_task_data_arg_ptr): Likewise.
+	(gimple_omp_task_set_data_arg): Likewise.
+	(gimple_omp_taskreg_clauses): Likewise.
+	(gimple_omp_taskreg_clauses_ptr): Likewise.
+	(gimple_omp_taskreg_set_clauses): Likewise.
+	(gimple_omp_taskreg_child_fn): Likewise.
+	(gimple_omp_taskreg_child_fn_ptr): Likewise.
+	(gimple_omp_taskreg_set_child_fn): Likewise.
+	(gimple_omp_taskreg_data_arg): Likewise.
+	(gimple_omp_taskreg_data_arg_ptr): Likewise.
+	(gimple_omp_taskreg_set_data_arg): Likewise.
+	(gimple_omp_task_copy_fn): Likewise.
+	(gimple_omp_task_copy_fn_ptr): Likewise.
+	(gimple_omp_task_set_copy_fn): Likewise.
+	(gimple_omp_task_arg_size): Likewise.
+	(gimple_omp_task_arg_size_ptr): Likewise.
+	(gimple_omp_task_set_arg_size): Likewise.
+	(gimple_omp_task_arg_align): Likewise.
+	(gimple_omp_task_arg_align_ptr): Likewise.
+	(gimple_omp_task_set_arg_align): Likewise.
+	(gimple_omp_single_clauses): Likewise.
+	(gimple_omp_single_clauses_ptr): Likewise.
+	(gimple_omp_single_set_clauses): Likewise.
+	(gimple_omp_target_clauses): Likewise.
+	(gimple_omp_target_clauses_ptr): Likewise.
+	(gimple_omp_target_set_clauses): Likewise.
+	(gimple_omp_target_child_fn): Likewise.
+	(gimple_omp_target_child_fn_ptr): Likewise.
+	(gimple_omp_target_set_child_fn): Likewise.
+	(gimple_omp_target_data_arg): Likewise.
+	(gimple_omp_target_data_arg_ptr): Likewise.
+	(gimple_omp_target_set_data_arg): Likewise.
+	(gimple_omp_teams_clauses): Likewise.
+	(gimple_omp_teams_clauses_ptr): Likewise.
+	(gimple_omp_teams_set_clauses): Likewise.
+	(gimple_omp_sections_clauses): Likewise.
+	(gimple_omp_sections_clauses_ptr): Likewise.
+	(gimple_omp_sections_set_clauses): Likewise.
+	(gimple_omp_sections_control): Likewise.
+	(gimple_omp_sections_control_ptr): Likewise.
+	(gimple_omp_sections_set_control): Likewise.
+	(gimple_omp_for_set_cond): Likewise.
+	(gimple_omp_for_cond): Likewise.
+	(gimple_omp_atomic_store_set_val): Likewise.
+	(gimple_omp_atomic_store_val): Likewise.
+	(gimple_omp_atomic_store_val_ptr): Likewise.
+	(gimple_omp_atomic_load_set_lhs): Likewise.
+	(gimple_omp_atomic_load_lhs): Likewise.
+	(gimple_omp_atomic_load_lhs_ptr): Likewise.
+	(gimple_omp_atomic_load_set_rhs): Likewise.
+	(gimple_omp_atomic_load_rhs): Likewise.
+	(gimple_omp_atomic_load_rhs_ptr): Likewise.
+	(gimple_omp_continue_control_def): Likewise.
+	(gimple_omp_continue_control_def_ptr): Likewise.
+	(gimple_omp_continue_set_control_def): Likewise.
+	(gimple_omp_continue_control_use): Likewise.
+	(gimple_omp_continue_control_use_ptr): Likewise.
+	(gimple_omp_continue_set_control_use): Likewise.
+	(gimple_transaction_body_ptr): Likewise.
+	(gimple_transaction_label): Likewise.
+	(gimple_transaction_label_ptr): Likewise.
+	(gimple_transaction_set_body): Likewise.
+	(gimple_transaction_set_label): Likewise.
+
+	* ipa-devirt.c (build_type_inheritance_graph): Likewise.
+	* ipa-inline-analysis.c (inline_write_summary): Likewise.
+	* ipa-ref.c (ipa_record_reference): Likewise.
+	* ipa-reference.c (analyze_function): Likewise.
+	(ipa_reference_write_optimization_summary): Likewise.
+	* ipa.c (symtab_remove_unreachable_nodes): Likewise.
+	(address_taken_from_non_vtable_p): Likewise.
+	(comdat_can_be_unshared_p_1): Likewise.
+	* lto-cgraph.c (lto_output_ref): Likewise.
+	(add_references): Likewise.
+	(compute_ltrans_boundary): Likewise.
+	(output_symtab): Likewise.
+	(input_ref): Likewise.
+	(input_cgraph_1): Likewise.
+	(output_cgraph_opt_summary): Likewise.
+	* lto-streamer-out.c (lto_output): Likewise.
+	(output_symbol_p): Likewise.
+	* lto-streamer.h (lsei_next_function_in_partition): Likewise.
+	(lsei_start_function_in_partition): Likewise.
+	(lsei_next_variable_in_partition): Likewise.
+	(lsei_start_variable_in_partition): Likewise.
+	* symtab.c (insert_to_assembler_name_hash): Likewise.
+	(unlink_from_assembler_name_hash): Likewise.
+	(symtab_unregister_node): Likewise.
+	(symtab_remove_node): Likewise.
+	(dump_symtab_node): Likewise.
+	(verify_symtab_base): Likewise.
+	(verify_symtab_node): Likewise.
+	(symtab_make_decl_local): Likewise.
+	(symtab_alias_ultimate_target): Likewise.
+	(symtab_resolve_alias): Likewise.
+	(symtab_get_symbol_partitioning_class): Likewise.
+	* tree-phinodes.c (allocate_phi_node): Likewise.
+	(reserve_phi_args_for_new_edge): Likewise.
+	(remove_phi_args): Likewise.
+	* varpool.c (varpool_node_for_asm): Likewise.
+	(varpool_remove_unreferenced_decls): Likewise.
+
+2014-04-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Make sure to
+	invalidate outputs from statements that do not produce useful
+	outputs for threading.
+
+2014-04-23 Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+
+	* config/aarch64/aarch64.md (stack_protect_set, stack_protect_test)
+	(stack_protect_set_<mode>, stack_protect_test_<mode>): Add
+	machine descriptions for Stack Smashing Protector.
+
+2014-04-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* aarch64.md (<optab>_rol<mode>3): New pattern.
+	(<optab>_rolsi3_uxtw): Likewise.
+	* aarch64.c (aarch64_strip_shift): Handle ROTATE and ROTATERT.
+
+2014-04-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.c (arm_cortex_a57_tune): Initialize all fields.
+	(arm_cortex_a12_tune): Likewise.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle BSWAP.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_rev16si2): New pattern.
+	(arm_rev16si2_alt): Likewise.
+	* config/arm/arm.c (arm_new_rtx_costs): Handle rev16 case.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * config/aarch64/aarch64.md (rev16<mode>2): New pattern.
+       (rev16<mode>2_alt): Likewise.
+       * config/aarch64/aarch64.c (aarch64_rtx_costs): Handle rev16 case.
+       * config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p): New.
+       (aarch_rev16_shleft_mask_imm_p): Likewise.
+       (aarch_rev16_p_1): Likewise.
+       (aarch_rev16_p): Likewise.
+       * config/arm/aarch-common-protos.h (aarch_rev16_p): Declare extern.
+       (aarch_rev16_shright_mask_imm_p): Likewise.
+       (aarch_rev16_shleft_mask_imm_p): Likewise.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * config/arm/aarch-common-protos.h (alu_cost_table): Add rev field.
+       * config/arm/aarch-cost-tables.h (generic_extra_costs): Specify
+       rev cost.
+       (cortex_a53_extra_costs): Likewise.
+       (cortex_a57_extra_costs): Likewise.
+       * config/arm/arm.c (cortexa9_extra_costs): Likewise.
+       (cortexa7_extra_costs): Likewise.
+       (cortexa8_extra_costs): Likewise.
+       (cortexa12_extra_costs): Likewise.
+       (cortexa15_extra_costs): Likewise.
+       (v7m_extra_costs): Likewise.
+       (arm_new_rtx_costs): Handle BSWAP.
+
+2013-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * config/arm/arm.c (cortexa8_extra_costs): New table.
+       (arm_cortex_a8_tune): New tuning struct.
+       * config/arm/arm-cores.def (cortex-a8): Use cortex_a8 tuning struct.
+
+2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+       * config/arm/arm.c (arm_new_rtx_costs): Handle FMA.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (OBJS): Remove loop-unswitch.o.
+	* loop-unswitch.c: Delete.
+	* tree-pass.h (make_pass_rtl_unswitch): Remove.
+	* passes.def (pass_rtl_unswitch): Likewise.
+	* loop-init.c (gate_rtl_unswitch): Likewise.
+	(rtl_unswitch): Likewise.
+	(pass_data_rtl_unswitch): Likewise.
+	(pass_rtl_unswitch): Likewise.
+	(make_pass_rtl_unswitch): Likewise.
+	* rtl.h (reversed_condition): Likewise.
+	(compare_and_jump_seq): Likewise.
+	* loop-iv.c (reversed_condition): Move here from loop-unswitch.c
+	and make static.
+	* loop-unroll.c (compare_and_jump_seq): Likewise.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60903
+	* tree-ssa-loop-im.c (analyze_memory_references): Remove
+	commented code block.
+	(execute_sm_if_changed): Properly apply IRREDUCIBLE_LOOP
+	loop flags to newly created BBs and edges.
+
+2014-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_handle_option): Move function
+	to msp430-common.c
+	(msp430_option_override): Simplify mcu and mcpu option handling.
+	(msp430_is_f5_mcu): Rename to msp430_use_f5_series_hwmult.  Add
+	support for -mhwmult command line option.
+	(has_32bit_hwmult): Rename to use_32bit_hwmult.  Add support for
+	-mhwmult command line option.
+	(msp430_hwmult_enabled): Delete.
+	(msp43o_output_labelref): Add support for -mhwmult command line
+	option.
+	* config/msp430/msp430.md (mulhisi3, umulhisi3, mulsidi3)
+	(umulsidi3): Likewise.
+	* config/msp430/msp430.opt (mmcu): Add Report attribute.
+	(mcpu, mlarge, msmall): Likewise.
+	(mhwmult): New option.
+	* config/msp430/msp430-protos.h (msp430_hwmult_enabled): Remove
+	prototype.
+	(msp430_is_f5_mcu): Remove prototype.
+	(msp430_use_f5_series_hwmult): Add prototype.
+	* config/msp430/msp430-opts.h: New file.
+	* common/config/msp430: New directory.
+	* common/config/msp430/msp430-common.c: New file.
+	* config.gcc (msp430): Remove target_has_targetm_common.
+	* doc/invoke.texi: Document -mhwmult command line option.
+
+2014-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* config/i386/cygwin.h (ENDFILE_SPEC): Include
+	default-manifest.o if it can be found in the search path.
+	* config/i386/mingw32.h (ENDFILE_SPEC): Likewise.
+
+2014-04-23  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.h (ASM_APP_OFF): Re-define it in a cleaner way.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60895
+	* tree-inline.c (declare_return_variable): Use mark_addressable.
+
+2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60891
+	* loop-init.c (loop_optimizer_init): Make sure to apply
+	LOOPS_MAY_HAVE_MULTIPLE_LATCHES before fixing up loops.
+
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60275
+	* common.opt (fsanitize-recover, fsanitize-undefined-trap-on-error):
+	New options.
+	* gcc.c (sanitize_spec_function): Don't return "" for "undefined"
+	if flag_sanitize_undefined_trap_on_error.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT,
+	BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT,
+	BUILT_IN_UBSAN_HANDLE_VLA_BOUND_NOT_POSITIVE_ABORT,
+	BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT,
+	BUILT_IN_UBSAN_HANDLE_ADD_OVERFLOW_ABORT,
+	BUILT_IN_UBSAN_HANDLE_SUB_OVERFLOW_ABORT,
+	BUILT_IN_UBSAN_HANDLE_MUL_OVERFLOW_ABORT,
+	BUILT_IN_UBSAN_HANDLE_NEGATE_OVERFLOW_ABORT,
+	BUILT_IN_UBSAN_HANDLE_LOAD_INVALID_VALUE_ABORT): New builtins.
+	* ubsan.c (ubsan_instrument_unreachable): Return
+	__builtin_trap () if flag_sanitize_undefined_trap_on_error.
+	(ubsan_expand_null_ifn): Emit __builtin_trap ()
+	if flag_sanitize_undefined_trap_on_error and
+	__ubsan_handle_type_mismatch_abort if !flag_sanitize_recover.
+	(ubsan_expand_null_ifn, ubsan_build_overflow_builtin,
+	instrument_bool_enum_load): Emit __builtin_trap () if
+	flag_sanitize_undefined_trap_on_error and
+	__builtin_handle_*_abort () if !flag_sanitize_recover.
+	* doc/invoke.texi (-fsanitize-recover,
+	-fsanitize-undefined-trap-on-error): Document.
+
+2014-04-22  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.md (mov<mode>): Replace movQIHI.
+	 Force immediates to SImode.
+
+2014-04-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (UNSPEC_ROUND): New.
+	(lroundsfsi2): New.
+	* config/nios2/nios2.opt (mno-custom-round, mcustom-round=): New.
+	* config/nios2/nios2-opts.h (N2FPU_ALL_CODES): Add round.
+	* config/nios2/nios2.c (N2F_NO_ERRNO): Define.
+	(nios2_fpu_insn): Add entry for round.
+	(N2FPU_NO_ERRNO_P): Define.
+	(nios2_custom_check_insns): Add check for N2F_NO_ERRNO and
+	flag_errno_math.
+	* doc/invoke.texi (Nios II Options): Document -mcustom-round.
+
+2014-04-22  Richard Henderson  <rth@redhat.com>
+
+	* config/aarch64/aarch64 (addti3, subti3): New expanders.
+	(add<GPI>3_compare0): Remove leading * from name.
+	(add<GPI>3_carryin): Likewise.
+	(sub<GPI>3_compare0): Likewise.
+	(sub<GPI>3_carryin): Likewise.
+	(<su_optab>mulditi3): New expander.
+	(multi3): New expander.
+	(madd<GPI>): Remove leading * from name.
+
 2014-04-22  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraphclones.c (cgraph_function_versioning): Copy
@@ -6,7 +679,7 @@
 2014-04-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60868
-	* config/i386/i386.c (ix86_expand_set_or_movmem): Call counter_mode 
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Call counter_mode
 	on count_exp to get mode.
 
 2014-04-22  Andrew Pinski  <apinski@cavium.com>

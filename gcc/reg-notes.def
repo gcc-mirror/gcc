@@ -211,3 +211,8 @@ REG_NOTE (ARGS_SIZE)
    that the return value of a call can be used to reinitialize a
    pseudo reg.  */
 REG_NOTE (RETURNED)
+
+/* Used to mark a call with the function decl called by the call.
+   The decl might not be available in the call due to splitting of the call
+   insn.  This note is a SYMBOL_REF.  */
+REG_NOTE (CALL_DECL)

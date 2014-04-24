@@ -1104,7 +1104,29 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 
 	    return aarch64_builtin_decls[builtin];
 	  }
-
+	case BUILT_IN_BSWAP16:
+#undef AARCH64_CHECK_BUILTIN_MODE
+#define AARCH64_CHECK_BUILTIN_MODE(C, N) \
+  (out_mode == N##Imode && out_n == C \
+   && in_mode == N##Imode && in_n == C)
+	  if (AARCH64_CHECK_BUILTIN_MODE (4, H))
+	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4hi];
+	  else if (AARCH64_CHECK_BUILTIN_MODE (8, H))
+	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv8hi];
+	  else
+	    return NULL_TREE;
+	case BUILT_IN_BSWAP32:
+	  if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2si];
+	  else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv4si];
+	  else
+	    return NULL_TREE;
+	case BUILT_IN_BSWAP64:
+	  if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	    return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOPU_bswapv2di];
+	  else
+	    return NULL_TREE;
 	default:
 	  return NULL_TREE;
       }

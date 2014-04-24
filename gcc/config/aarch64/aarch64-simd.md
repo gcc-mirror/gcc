@@ -286,6 +286,14 @@
   [(set_attr "type" "neon_mul_<Vetype><q>")]
 )
 
+(define_insn "bswap<mode>"
+  [(set (match_operand:VDQHSD 0 "register_operand" "=w")
+        (bswap:VDQHSD (match_operand:VDQHSD 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "rev<Vrevsuff>\\t%0.<Vbtype>, %1.<Vbtype>"
+  [(set_attr "type" "neon_rev<q>")]
+)
+
 (define_insn "*aarch64_mul3_elt<mode>"
  [(set (match_operand:VMUL 0 "register_operand" "=w")
     (mult:VMUL

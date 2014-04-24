@@ -191,6 +191,79 @@ arm_get_set_operands (rtx producer, rtx consumer,
   return 0;
 }
 
+bool
+aarch_rev16_shright_mask_imm_p (rtx val, enum machine_mode mode)
+{
+  return CONST_INT_P (val)
+         && INTVAL (val) == trunc_int_for_mode (0xff00ff00ff00ff, mode);
+}
+
+bool
+aarch_rev16_shleft_mask_imm_p (rtx val, enum machine_mode mode)
+{
+  return CONST_INT_P (val)
+         && INTVAL (val) == trunc_int_for_mode (0xff00ff00ff00ff00, mode);
+}
+
+
+static bool
+aarch_rev16_p_1 (rtx lhs, rtx rhs, enum machine_mode mode)
+{
+  if (GET_CODE (lhs) == AND
+         && GET_CODE (XEXP (lhs, 0)) == ASHIFT
+            && CONST_INT_P (XEXP (XEXP (lhs, 0), 1))
+            && INTVAL (XEXP (XEXP (lhs, 0), 1)) == 8
+            && REG_P (XEXP (XEXP (lhs, 0), 0))
+         && CONST_INT_P (XEXP (lhs, 1))
+      && GET_CODE (rhs) == AND
+         && GET_CODE (XEXP (rhs, 0)) == LSHIFTRT
+            && REG_P (XEXP (XEXP (rhs, 0), 0))
+            && CONST_INT_P (XEXP (XEXP (rhs, 0), 1))
+            && INTVAL (XEXP (XEXP (rhs, 0), 1)) == 8
+         && CONST_INT_P (XEXP (rhs, 1))
+      && REGNO (XEXP (XEXP (rhs, 0), 0)) == REGNO (XEXP (XEXP (lhs, 0), 0)))
+
+    {
+      rtx lhs_mask = XEXP (lhs, 1);
+      rtx rhs_mask = XEXP (rhs, 1);
+
+      return aarch_rev16_shright_mask_imm_p (rhs_mask, mode)
+             && aarch_rev16_shleft_mask_imm_p (lhs_mask, mode);
+    }
+
+  return false;
+}
+
+/* Recognise a sequence of bitwise operations corresponding to a rev16 operation.
+   These will be of the form:
+     ((x >> 8) & 0x00ff00ff)
+   | ((x << 8) & 0xff00ff00)
+   for SImode and with similar but wider bitmasks for DImode.
+   The two sub-expressions of the IOR can appear on either side so check both
+   permutations with the help of aarch_rev16_p_1 above.  */
+
+bool
+aarch_rev16_p (rtx x)
+{
+  rtx left_sub_rtx, right_sub_rtx;
+  bool is_rev = false;
+
+  if (GET_CODE (x) != IOR)
+    return false;
+
+  left_sub_rtx = XEXP (x, 0);
+  right_sub_rtx = XEXP (x, 1);
+
+  /* There are no canonicalisation rules for the position of the two shifts
+     involved in a rev, so try both permutations.  */
+  is_rev = aarch_rev16_p_1 (left_sub_rtx, right_sub_rtx, GET_MODE (x));
+
+  if (!is_rev)
+    is_rev = aarch_rev16_p_1 (right_sub_rtx, left_sub_rtx, GET_MODE (x));
+
+  return is_rev;
+}
+
 /* Return nonzero if the CONSUMER instruction (a load) does need
    PRODUCER's value to calculate the address.  */
 int

@@ -673,7 +673,7 @@ cgraph_node_for_asm (tree asmname)
        node;
        node = node->next_sharing_asm_name)
     {
-      cgraph_node *cn = dyn_cast <cgraph_node> (node);
+      cgraph_node *cn = dyn_cast <cgraph_node *> (node);
       if (cn && !cn->global.inlined_to)
 	return cn;
     }

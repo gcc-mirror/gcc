@@ -1,3 +1,20 @@
+2014-04-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/43622
+	* config/abi/pre/gnu.ver (CXXABI_1.3.9): Remove __float128 symbols.
+	* config/abi/pre/gnu-versioned-namespace.ver: Likewise.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Likewise.
+
+2014-04-24  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update for
+	new CXXABI_1.3.9 symbols.
+
+2014-04-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt
+	(CXXABI_1.3.9): New version.
+
 2014-04-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/43622

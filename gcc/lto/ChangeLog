@@ -1,3 +1,16 @@
+2014-04-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* lto-partition.c (add_references_to_partition): Update for
+	removal of implicit pointer from the is-a.h API.
+	(add_symbol_to_partition_1): Likewise.
+	(contained_in_symbol): Likewise.
+	(undo_partition): Likewise.
+	(lto_balanced_map): Likewise.
+	(promote_symbol): Likewise.
+	* lto-symtab.c (lto_symtab_merge_symbols_1): Likewise.
+	(lto_symtab_merge_symbols): Likewise.
+	* lto.c (lto_wpa_write_files): Likewise.
+
 2014-04-15  Richard Biener  <rguenther@suse.de>
 
 	* lto.c: Include params.h.

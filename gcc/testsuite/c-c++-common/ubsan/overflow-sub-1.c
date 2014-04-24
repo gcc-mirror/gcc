@@ -1,7 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable" } */
-
-#include <stdio.h>
+/* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable -fno-sanitize-recover" } */
 
 #define SCHAR_MAX __SCHAR_MAX__
 #define SCHAR_MIN (-__SCHAR_MAX__ - 1)
@@ -20,8 +18,6 @@ check (int i, int j)
 int
 main (void)
 {
-  fputs ("UBSAN TEST START\n", stderr);
-
 #if __INT_MAX__ == 2147483647
   /* Here, nothing should fail.  */
   volatile int i = -1;
@@ -61,9 +57,5 @@ main (void)
   d--;
   check (d, 32767);
 #endif
-
-  fputs ("UBSAN TEST END\n", stderr);
   return 0;
 }
-
-/* { dg-output "UBSAN TEST START(\n|\r\n|\r)UBSAN TEST END" } */

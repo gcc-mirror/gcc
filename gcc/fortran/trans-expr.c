@@ -5991,7 +5991,8 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
     {
       gfc_init_se (&se, NULL);
       /* Pointer component.  */
-      if (cm->attr.dimension && !cm->attr.proc_pointer)
+      if ((cm->attr.dimension || cm->attr.codimension)
+	  && !cm->attr.proc_pointer)
 	{
 	  /* Array pointer.  */
 	  if (expr->expr_type == EXPR_NULL)
@@ -6028,7 +6029,8 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 					gfc_class_initializer (&cm->ts, expr));
       gfc_add_expr_to_block (&block, tmp);
     }
-  else if (cm->attr.dimension && !cm->attr.proc_pointer)
+  else if ((cm->attr.dimension || cm->attr.codimension)
+	   && !cm->attr.proc_pointer)
     {
       if (cm->attr.allocatable && expr->expr_type == EXPR_NULL)
  	gfc_conv_descriptor_data_set (&block, dest, null_pointer_node);

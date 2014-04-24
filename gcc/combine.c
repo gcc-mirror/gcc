@@ -13262,6 +13262,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	case REG_NORETURN:
 	case REG_SETJMP:
 	case REG_TM:
+	case REG_CALL_DECL:
 	  /* These notes must remain with the call.  It should not be
 	     possible for both I2 and I3 to be a call.  */
 	  if (CALL_P (i3))

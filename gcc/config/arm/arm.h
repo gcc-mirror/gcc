@@ -1543,6 +1543,8 @@ typedef struct GTY(()) machine_function
   rtx thumb1_cc_op1;
   /* Also record the CC mode that is supported.  */
   enum machine_mode thumb1_cc_mode;
+  /* Set to 1 after arm_reorg has started.  */
+  int after_arm_reorg;
 }
 machine_function;
 #endif
@@ -2141,8 +2143,7 @@ extern int making_const_table;
   do { cfun->machine->thumb1_cc_insn = NULL_RTX; } while (0)
 
 #undef  ASM_APP_OFF
-#define ASM_APP_OFF (TARGET_THUMB1 ? "\t.code\t16\n" : \
-		     TARGET_THUMB2 ? "\t.thumb\n" : "")
+#define ASM_APP_OFF (TARGET_ARM ? "" : "\t.thumb\n")
 
 /* Output a push or a pop instruction (only used when profiling).
    We can't push STATIC_CHAIN_REGNUM (r12) directly with Thumb-1.  We know

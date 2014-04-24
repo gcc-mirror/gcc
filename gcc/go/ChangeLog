@@ -1,3 +1,8 @@
+2014-04-22  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::temporary_variable): Push cfun around
+	call to create_tmp_var.  Require that function be non-NULL.
+
 2014-04-17  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::named_constant_expression): New

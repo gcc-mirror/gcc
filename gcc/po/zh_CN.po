@@ -24308,7 +24308,7 @@ msgstr "堆栈探针目前需要框架指针或 %saccumulate-outgoing-args%s 来
 #: config/i386/i386.c:4108
 #, gcc-internal-format
 msgid "-mfentry isn%'t supported for 32-bit in combination with -fpic"
-msgstr "-mfentry 在 32 位下不能和 -pic 同时使用"
+msgstr "-mfentry 在 32 位下不能和 -fpic 同时使用"
 
 #: config/i386/i386.c:4115
 #, gcc-internal-format

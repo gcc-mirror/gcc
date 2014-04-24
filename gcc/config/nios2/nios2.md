@@ -70,6 +70,7 @@
   UNSPEC_FATAN
   UNSPEC_FEXP
   UNSPEC_FLOG
+  UNSPEC_ROUND
   UNSPEC_LOAD_GOT_REGISTER
   UNSPEC_PIC_SYM
   UNSPEC_PIC_CALL_SYM
@@ -583,6 +584,13 @@
         (FIX:SI (match_operand:F 1 "general_operand" "r")))]
   "nios2_fpu_insn_enabled (n2fpu_fix<f><i>)"
   { return nios2_fpu_insn_asm (n2fpu_fix<f><i>); }
+  [(set_attr "type" "custom")])
+
+(define_insn "lroundsfsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SF 1 "general_operand" "r")] UNSPEC_ROUND))]
+  "nios2_fpu_insn_enabled (n2fpu_round)"
+  { return nios2_fpu_insn_asm (n2fpu_round); }
   [(set_attr "type" "custom")])
 
 (define_insn "extendsfdf2"

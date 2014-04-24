@@ -406,7 +406,7 @@ referred_to_p (symtab_node *node)
   if (ipa_ref_list_referring_iterate (&node->ref_list, 0, ref))
     return true;
   /* For functions check also calls.  */
-  cgraph_node *cn = dyn_cast <cgraph_node> (node);
+  cgraph_node *cn = dyn_cast <cgraph_node *> (node);
   if (cn && cn->callers)
     return true;
   return false;
@@ -994,7 +994,7 @@ analyze_functions (void)
 	  changed = true;
 	  node = queued_nodes;
 	  queued_nodes = (symtab_node *)queued_nodes->aux;
-	  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 	  if (cnode && cnode->definition)
 	    {
 	      struct cgraph_edge *edge;
@@ -1045,7 +1045,7 @@ analyze_functions (void)
 	    }
 	  else
 	    {
-	      varpool_node *vnode = dyn_cast <varpool_node> (node);
+	      varpool_node *vnode = dyn_cast <varpool_node *> (node);
 	      if (vnode && vnode->definition && !vnode->analyzed)
 		varpool_analyze_node (vnode);
 	    }
@@ -1089,7 +1089,7 @@ analyze_functions (void)
 	  symtab_remove_node (node);
 	  continue;
 	}
-      if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
 	{
 	  tree decl = node->decl;
 
@@ -1179,7 +1179,7 @@ handle_alias_pairs (void)
 	}
 
       if (TREE_CODE (p->decl) == FUNCTION_DECL
-          && target_node && is_a <cgraph_node> (target_node))
+          && target_node && is_a <cgraph_node *> (target_node))
 	{
 	  struct cgraph_node *src_node = cgraph_get_node (p->decl);
 	  if (src_node && src_node->definition)
@@ -1188,7 +1188,7 @@ handle_alias_pairs (void)
 	  alias_pairs->unordered_remove (i);
 	}
       else if (TREE_CODE (p->decl) == VAR_DECL
-	       && target_node && is_a <varpool_node> (target_node))
+	       && target_node && is_a <varpool_node *> (target_node))
 	{
 	  varpool_create_variable_alias (p->decl, target_node->decl);
 	  alias_pairs->unordered_remove (i);

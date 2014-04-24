@@ -1,3 +1,9 @@
+2014-04-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60881
+	* trans-expr.c (gfc_trans_subcomponent_assign): Fix handling
+	of scalar coarrays.
+
 2014-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-types.c (gfc_init_kinds): Make sure GET_MODE_BITSIZE

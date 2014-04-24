@@ -684,6 +684,10 @@ Wselector
 ObjC ObjC++ Var(warn_selector) Warning
 Warn if a selector has multiple methods
 
+Wshadow-ivar
+ObjC ObjC++ Var(warn_shadow_ivar) Init(-1) Warning
+Warn if a local declaration hides an instance variable
+
 Wsequence-point
 C ObjC C++ ObjC++ Var(warn_sequence_point) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possible violations of sequence point rules
@@ -1037,6 +1041,29 @@ Generate code for NeXT (Apple Mac OS X) runtime environment
 fnil-receivers
 ObjC ObjC++ Var(flag_nil_receivers) Init(1)
 Assume that receivers of Objective-C messages may be nil
+
+flocal-ivars
+ObjC ObjC++ Var(flag_local_ivars) Init(1)
+Allow access to instance variables as if they were local declarations within instance method implementations.
+
+fivar-visibility=
+ObjC ObjC++ Joined RejectNegative Enum(ivar_visibility) Var(default_ivar_visibility) Init(IVAR_VISIBILITY_PROTECTED)
+-fvisibility=[private|protected|public|package]	Set the default symbol visibility
+
+Enum
+Name(ivar_visibility) Type(enum ivar_visibility) UnknownError(unrecognized ivar visibility value %qs)
+
+EnumValue
+Enum(ivar_visibility) String(private) Value(IVAR_VISIBILITY_PRIVATE)
+
+EnumValue
+Enum(ivar_visibility) String(protected) Value(IVAR_VISIBILITY_PROTECTED)
+
+EnumValue
+Enum(ivar_visibility) String(public) Value(IVAR_VISIBILITY_PUBLIC)
+
+EnumValue
+Enum(ivar_visibility) String(package) Value(IVAR_VISIBILITY_PACKAGE)
 
 fnonansi-builtins
 C++ ObjC++ Var(flag_no_nonansi_builtin, 0)

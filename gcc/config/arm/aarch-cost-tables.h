@@ -39,6 +39,7 @@ const struct cpu_cost_table generic_extra_costs =
     0,			/* bfi.  */
     0,			/* bfx.  */
     0,			/* clz.  */
+    0,			/* rev.  */
     COSTS_N_INSNS (1),	/* non_exec.  */
     false		/* non_exec_costs_exec.  */
   },
@@ -139,6 +140,7 @@ const struct cpu_cost_table cortexa53_extra_costs =
     COSTS_N_INSNS (1),	/* bfi.  */
     COSTS_N_INSNS (1),	/* bfx.  */
     0,			/* clz.  */
+    0,			/* rev.  */
     0,			/* non_exec.  */
     true		/* non_exec_costs_exec.  */
   },
@@ -239,6 +241,7 @@ const struct cpu_cost_table cortexa57_extra_costs =
     COSTS_N_INSNS (1), /* bfi.  */
     0,                 /* bfx.  */
     0,                 /* clz.  */
+    0,			/* rev.  */
     0,                 /* non_exec.  */
     true               /* non_exec_costs_exec.  */
   },

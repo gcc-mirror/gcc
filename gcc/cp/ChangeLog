@@ -1,3 +1,15 @@
+2014-04-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/43622
+	* rtti.c (emit_support_tinfos): Do not iterate on
+	registered_builtin_types (partial revert).
+
+2014-04-23 Dinar Temirbulatov  <dtemirbulatov@gmail.com>
+
+	PR c++/57958
+	* semantics.c (apply_deduced_return_type): Complete non-void type
+	before estimating whether the type is aggregate.
+
 2014-04-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/43622

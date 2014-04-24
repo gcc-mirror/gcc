@@ -1,3 +1,8 @@
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* configure.ac: Quote usage of ac_cv_func_clock_gettime in if test.
+	* configure: Regenerate.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/fpu-387.h [__sun__ && __svr4__]: Remove SSE execution

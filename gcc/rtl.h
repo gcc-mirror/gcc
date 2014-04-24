@@ -2932,10 +2932,6 @@ extern unsigned int variable_tracking_main (void);
 extern void get_mode_bounds (enum machine_mode, int, enum machine_mode,
 			     rtx *, rtx *);
 
-/* In loop-unswitch.c  */
-extern rtx reversed_condition (rtx);
-extern rtx compare_and_jump_seq (rtx, rtx, enum rtx_code, rtx, int, rtx);
-
 /* In loop-iv.c  */
 extern rtx canon_condition (rtx);
 extern void simplify_using_condition (rtx, rtx *, bitmap);

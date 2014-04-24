@@ -238,7 +238,7 @@ varpool_node *
 varpool_node_for_asm (tree asmname)
 {
   if (symtab_node *node = symtab_node_for_asm (asmname))
-    return dyn_cast <varpool_node> (node);
+    return dyn_cast <varpool_node *> (node);
   else
     return NULL;
 }
@@ -521,14 +521,14 @@ varpool_remove_unreferenced_decls (void)
 	       next != node;
 	       next = next->same_comdat_group)
 	    {
-	      varpool_node *vnext = dyn_cast <varpool_node> (next);
+	      varpool_node *vnext = dyn_cast <varpool_node *> (next);
 	      if (vnext && vnext->analyzed && !symtab_comdat_local_p (next))
 		enqueue_node (vnext, &first);
 	    }
 	}
       for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
 	{
-	  varpool_node *vnode = dyn_cast <varpool_node> (ref->referred);
+	  varpool_node *vnode = dyn_cast <varpool_node *> (ref->referred);
 	  if (vnode
 	      && !vnode->in_other_partition
 	      && (!DECL_EXTERNAL (ref->referred->decl)

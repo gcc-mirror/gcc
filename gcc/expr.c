@@ -9366,12 +9366,33 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (g)
 	{
 	  rtx r;
-	  location_t saved_loc = curr_insn_location ();
-
-	  set_curr_insn_location (gimple_location (g));
-	  r = expand_expr_real (gimple_assign_rhs_to_tree (g), target,
-				tmode, modifier, NULL, inner_reference_p);
-	  set_curr_insn_location (saved_loc);
+	  ops.code = gimple_assign_rhs_code (g);
+          switch (get_gimple_rhs_class (ops.code))
+	    {
+	    case GIMPLE_TERNARY_RHS:
+	      ops.op2 = gimple_assign_rhs3 (g);
+	      /* Fallthru */
+	    case GIMPLE_BINARY_RHS:
+	      ops.op1 = gimple_assign_rhs2 (g);
+	      /* Fallthru */
+	    case GIMPLE_UNARY_RHS:
+	      ops.op0 = gimple_assign_rhs1 (g);
+	      ops.type = TREE_TYPE (gimple_assign_lhs (g));
+	      ops.location = gimple_location (g);
+	      r = expand_expr_real_2 (&ops, target, tmode, modifier);
+	      break;
+	    case GIMPLE_SINGLE_RHS:
+	      {
+		location_t saved_loc = curr_insn_location ();
+		set_curr_insn_location (gimple_location (g));
+		r = expand_expr_real (gimple_assign_rhs1 (g), target,
+				      tmode, modifier, NULL, inner_reference_p);
+		set_curr_insn_location (saved_loc);
+		break;
+	      }
+	    default:
+	      gcc_unreachable ();
+	    }
 	  if (REG_P (r) && !REG_EXPR (r))
 	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (exp), r);
 	  return r;

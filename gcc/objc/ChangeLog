@@ -1,3 +1,12 @@
+2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	PR objc/56044
+	* objc-act.c (objc_ivar_visibility, objc_default_ivar_visibility): Add.
+	(objc_init): Initialize objc_default_ivar_visibility.
+	(objc_start_class_interface): Use objc_default_ivar_visibility.
+	(objc_start_class_implementation): Likewise.
+	(objc_lookup_ivar): Implement -fno-local-ivars.
+
 2014-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59963

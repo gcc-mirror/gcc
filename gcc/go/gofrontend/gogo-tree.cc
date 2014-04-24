@@ -236,32 +236,6 @@ Gogo::define_builtin_function_trees()
 		 false);
 }
 
-// Get the name to use for the import control function.  If there is a
-// global function or variable, then we know that that name must be
-// unique in the link, and we use it as the basis for our name.
-
-const std::string&
-Gogo::get_init_fn_name()
-{
-  if (this->init_fn_name_.empty())
-    {
-      go_assert(this->package_ != NULL);
-      if (this->is_main_package())
-	{
-	  // Use a name which the runtime knows.
-	  this->init_fn_name_ = "__go_init_main";
-	}
-      else
-	{
-	  std::string s = this->pkgpath_symbol();
-	  s.append("..import");
-	  this->init_fn_name_ = s;
-	}
-    }
-
-  return this->init_fn_name_;
-}
-
 // Add statements to INIT_STMT_LIST which run the initialization
 // functions for imported packages.  This is only used for the "main"
 // package.
@@ -434,65 +408,31 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
     append_to_statement_list(call, init_stmt_list);
 }
 
-// Build the decl for the initialization function.
-
-tree
-Gogo::initialization_function_decl()
-{
-  // The tedious details of building your own function.  There doesn't
-  // seem to be a helper function for this.
-  std::string name = this->package_name() + ".init";
-  tree fndecl = build_decl(this->package_->location().gcc_location(),
-			   FUNCTION_DECL, get_identifier_from_string(name),
-			   build_function_type(void_type_node,
-					       void_list_node));
-  const std::string& asm_name(this->get_init_fn_name());
-  SET_DECL_ASSEMBLER_NAME(fndecl, get_identifier_from_string(asm_name));
-
-  tree resdecl = build_decl(this->package_->location().gcc_location(),
-			    RESULT_DECL, NULL_TREE, void_type_node);
-  DECL_ARTIFICIAL(resdecl) = 1;
-  DECL_CONTEXT(resdecl) = fndecl;
-  DECL_RESULT(fndecl) = resdecl;
-
-  TREE_STATIC(fndecl) = 1;
-  TREE_USED(fndecl) = 1;
-  DECL_ARTIFICIAL(fndecl) = 1;
-  TREE_PUBLIC(fndecl) = 1;
-
-  DECL_INITIAL(fndecl) = make_node(BLOCK);
-  TREE_USED(DECL_INITIAL(fndecl)) = 1;
-
-  return fndecl;
-}
-
 // Create the magic initialization function.  INIT_STMT_LIST is the
 // code that it needs to run.
 
 void
-Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
+Gogo::write_initialization_function(Named_object* initfn, tree init_stmt_list)
 {
   // Make sure that we thought we needed an initialization function,
   // as otherwise we will not have reported it in the export data.
   go_assert(this->is_main_package() || this->need_init_fn_);
 
-  if (fndecl == NULL_TREE)
-    fndecl = this->initialization_function_decl();
+  if (initfn == NULL)
+    initfn = this->initialization_function_decl();
 
-  DECL_SAVED_TREE(fndecl) = init_stmt_list;
+  Bfunction* fndecl = initfn->func_value()->get_or_make_decl(this, initfn);
+  Location loc = this->package_->location();
+  std::vector<Bvariable*> vars;
+  this->backend()->block(fndecl, NULL, vars, loc, loc);
 
-  if (DECL_STRUCT_FUNCTION(fndecl) == NULL)
-    push_struct_function(fndecl);
-  else
-    push_cfun(DECL_STRUCT_FUNCTION(fndecl));
-  cfun->function_start_locus = this->package_->location().gcc_location();
-  cfun->function_end_locus = cfun->function_start_locus;
-
-  gimplify_function_tree(fndecl);
-
-  cgraph_add_new_function(fndecl, false);
-
-  pop_cfun();
+  if (!this->backend()->function_set_body(fndecl, tree_to_stat(init_stmt_list)))
+    {
+      go_assert(saw_errors());
+      return;
+    }
+  gimplify_function_tree(function_to_tree(fndecl));
+  cgraph_add_new_function(function_to_tree(fndecl), false);
 }
 
 // Search for references to VAR in any statements or called functions.
@@ -775,7 +715,7 @@ Gogo::write_globals()
 
   tree* vec = new tree[count];
 
-  tree init_fndecl = NULL_TREE;
+  Named_object* init_fndecl = NULL;
   tree init_stmt_list = NULL_TREE;
 
   if (this->is_main_package())
@@ -902,17 +842,12 @@ Gogo::write_globals()
 	    {
 	      // We are going to create temporary variables which
 	      // means that we need an fndecl.
-	      if (init_fndecl == NULL_TREE)
+	      if (init_fndecl == NULL)
 		init_fndecl = this->initialization_function_decl();
-	      if (DECL_STRUCT_FUNCTION(init_fndecl) == NULL)
-		push_struct_function(init_fndecl);
-	      else
-		push_cfun(DECL_STRUCT_FUNCTION(init_fndecl));
+
 	      Bvariable* var_decl = is_sink ? NULL : var;
               var_init_stmt =
-                  no->var_value()->get_init_block(this, NULL, var_decl);
-
-	      pop_cfun();
+                  no->var_value()->get_init_block(this, init_fndecl, var_decl);
 	    }
 
 	  if (var_init_stmt != NULL)
@@ -975,7 +910,7 @@ Gogo::write_globals()
 
   // Set up a magic function to do all the initialization actions.
   // This will be called if this package is imported.
-  if (init_stmt_list != NULL_TREE
+  if (init_stmt_list != NULL
       || this->need_init_fn_
       || this->is_main_package())
     this->write_initialization_function(init_fndecl, init_stmt_list);

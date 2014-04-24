@@ -3527,6 +3527,7 @@ try_split (rtx pat, rtx trial, int last)
   int probability;
   rtx insn_last, insn;
   int njumps = 0;
+  rtx call_insn = NULL_RTX;
 
   /* We're not good at redistributing frame information.  */
   if (RTX_FRAME_RELATED_P (trial))
@@ -3599,6 +3600,9 @@ try_split (rtx pat, rtx trial, int last)
 	  {
 	    rtx next, *p;
 
+	    gcc_assert (call_insn == NULL_RTX);
+	    call_insn = insn;
+
 	    /* Add the old CALL_INSN_FUNCTION_USAGE to whatever the
 	       target may have explicitly specified.  */
 	    p = &CALL_INSN_FUNCTION_USAGE (insn);
@@ -3669,6 +3673,11 @@ try_split (rtx pat, rtx trial, int last)
 
 	case REG_ARGS_SIZE:
 	  fixup_args_size_notes (NULL_RTX, insn_last, INTVAL (XEXP (note, 0)));
+	  break;
+
+	case REG_CALL_DECL:
+	  gcc_assert (call_insn != NULL_RTX);
+	  add_reg_note (call_insn, REG_NOTE_KIND (note), XEXP (note, 0));
 	  break;
 
 	default:

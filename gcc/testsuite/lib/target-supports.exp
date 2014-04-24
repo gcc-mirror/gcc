@@ -3271,6 +3271,24 @@ proc check_effective_target_vect_shift { } {
     return $et_vect_shift_saved
 }
 
+# Return 1 if the target supports vector bswap operations.
+
+proc check_effective_target_vect_bswap { } {
+    global et_vect_bswap_saved
+
+    if [info exists et_vect_bswap_saved] {
+	verbose "check_effective_target_vect_bswap: using cached result" 2
+    } else {
+	set et_vect_bswap_saved 0
+	if { [istarget aarch64*-*-*] } {
+	   set et_vect_bswap_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_bswap: returning $et_vect_bswap_saved" 2
+    return $et_vect_bswap_saved
+}
+
 # Return 1 if the target supports hardware vector shift operation for char.
 
 proc check_effective_target_vect_shift_char { } {
@@ -3469,8 +3487,7 @@ proc check_effective_target_vect_perm { } {
     } else {
         set et_vect_perm_saved 0
         if { [is-effective-target arm_neon_ok]
-	     || ([istarget aarch64*-*-*]
-		 && [is-effective-target aarch64_little_endian])
+	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
 	     || [istarget i?86-*-*]

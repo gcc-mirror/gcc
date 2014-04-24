@@ -1,15 +1,11 @@
 /* PR sanitizer/58413 */
 /* { dg-do run { target int32plus } } */
-/* { dg-options "-fsanitize=shift -w" } */
-
-#include <stdio.h>
+/* { dg-options "-fsanitize=shift -w -fno-sanitize-recover" } */
 
 int x = 7;
 int
 main (void)
 {
-  fputs ("UBSAN TEST START\n", stderr);
-
   /* All of the following should pass.  */
   int A[128 >> 5] = {};
   int B[128 << 5] = {};
@@ -30,9 +26,5 @@ main (void)
     case 128 >> (4 + 1):
       return 1;
     }
-
-  fputs ("UBSAN TEST END\n", stderr);
   return 0;
 }
-
-/* { dg-output "UBSAN TEST START(\n|\r\n|\r)UBSAN TEST END" } */
