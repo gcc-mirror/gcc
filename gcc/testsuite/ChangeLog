@@ -1,3 +1,10 @@
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_bswap): New.
+	* gcc.dg/vect/vect-bswap16: New test.
+	* gcc.dg/vect/vect-bswap32: Likewise.
+	* gcc.dg/vect/vect-bswap64: Likewise.
+
 2014-04-23  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/60902

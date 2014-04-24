@@ -150,6 +150,9 @@
 ;; Vector modes for H and S types.
 (define_mode_iterator VDQHS [V4HI V8HI V2SI V4SI])
 
+;; Vector modes for H, S and D types.
+(define_mode_iterator VDQHSD [V4HI V8HI V2SI V4SI V2DI])
+
 ;; Vector modes for Q, H and S types.
 (define_mode_iterator VDQQHS [V8QI V16QI V4HI V8HI V2SI V4SI])
 
@@ -355,6 +358,9 @@
                          (DI   "1d") (DF    "1d")
                          (V2DI "2d") (V2SF "2s")
 			 (V4SF "4s") (V2DF "2d")])
+
+(define_mode_attr Vrevsuff [(V4HI "16") (V8HI "16") (V2SI "32")
+                            (V4SI "32") (V2DI "64")])
 
 (define_mode_attr Vmtype [(V8QI ".8b") (V16QI ".16b")
 			 (V4HI ".4h") (V8HI  ".8h")
