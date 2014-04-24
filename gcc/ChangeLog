@@ -1,3 +1,20 @@
+2014-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_GIMPLE_SEQ): Define.
+	* gimplify.c (omp_is_private): Change last argument's type to int.
+	Only diagnose lastprivate if the simd argument is 1, only diagnose
+	linear if the simd argument is 2.
+	(gimplify_omp_for): Adjust omp_is_private callers.  When adding
+	lastprivate or private, add the clause to OMP_FOR_CLAUSES.  Pass
+	GOVD_EXPLICIT to omp_add_variable.  For simd with collapse == 1
+	create OMP_CLAUSE_LINEAR rather than OMP_CLAUSE_PRIVATE for var.
+	If var != decl and decl is in OMP_CLAUSE_LINEAR, gimplify decl
+	increment to OMP_CLAUSE_LINEAR_GIMPLE_SEQ.
+	* omp-low.c (scan_sharing_clauses, lower_lastprivate_clauses): Handle
+	OMP_CLAUSE_LINEAR_GIMPLE_SEQ.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_LINEAR.
+
 2014-04-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
