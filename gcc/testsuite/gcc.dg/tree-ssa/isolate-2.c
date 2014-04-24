@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fisolate-erroneous-paths-attribute -fdump-tree-isolate-paths -fdump-tree-phicprop1" } */
+/* { dg-skip-if "" keeps_null_pointer_checks } */
 
 
 int z;

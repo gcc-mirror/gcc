@@ -1,3 +1,12 @@
+2014-04-24  Vishnu K S  <Vishnu.k_s@atmel.com>
+
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-1.c: Skip test if
+	keeps_null_pointer_checks.
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-2.c: Ditto 
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-3.c: Ditto
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-4.c: Ditto
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-5.c: Ditto
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-16.c: Remove all dg-error directives.

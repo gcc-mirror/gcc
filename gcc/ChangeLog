@@ -1,3 +1,8 @@
+2014-04-24  Vishnu K S  <Vishnu.k_s@atmel.com>
+
+	* gcc/config/avr/avr.c: Add comment on why -fdelete-null-pointer-checks
+	is disabled.
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_LINEAR_GIMPLE_SEQ): Define.
