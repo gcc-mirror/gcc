@@ -1546,8 +1546,6 @@ emit_support_tinfos (void)
   doing_runtime = 1;
   for (ix = 0; fundamentals[ix]; ix++)
     emit_support_tinfo_1 (*fundamentals[ix]);
-  for (tree t = registered_builtin_types; t; t = TREE_CHAIN (t))
-    emit_support_tinfo_1 (TREE_VALUE (t));
 }
 
 /* Finish a type info decl. DECL_PTR is a pointer to an unemitted

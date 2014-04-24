@@ -1586,15 +1586,10 @@ CXXABI_1.3.8 {
 
 CXXABI_1.3.9 {
 
-    # typeinfo name for __int128, unsigned __int128 and __float128
-    _ZTS[gno];
-    _ZTSP[gno];
-    _ZTSPK[gno];
-
-    # typeinfo for __float128
-    _ZTIg;
-    _ZTIPg;
-    _ZTIPKg;
+    # typeinfo name for __int128 and unsigned __int128
+    _ZTS[no];
+    _ZTSP[no];
+    _ZTSPK[no];
 
 } CXXABI_1.3.8;
 
