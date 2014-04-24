@@ -22636,9 +22636,14 @@ else
 	else
 	  case "$target" in
 	    i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)
-	      # On Solaris/x86, make sure that GCC and gas agree on using
+	      # On Solaris/x86, make sure that GCC and assembler agree on using
 	      # read-only .eh_frame sections for 64-bit.
-	      if $gcc_cv_as --64 -o conftest.o conftest.s > /dev/null 2>&1 && \
+	      if test x$gas = xyes; then
+	         as_ix86_64_opt="--64"
+	      else
+	         as_ix86_64_opt="-xarch=amd64"
+	      fi
+	      if $gcc_cv_as $as_ix86_64_opt -o conftest.o conftest.s > /dev/null 2>&1 && \
 		$gcc_cv_objdump -h conftest.o 2>/dev/null | \
 			sed -e /.eh_frame/!d -e N | \
 			grep READONLY > /dev/null; then
