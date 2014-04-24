@@ -1,3 +1,9 @@
+2014-04-24  Richard Biener  <rguenther@suse.de>
+
+	* expr.c (expand_expr_real_1): Avoid gimple_assign_rhs_to_tree
+	during TER and instead use the sepops interface for expanding
+	non-GIMPLE_SINGLE_RHS.
+
 2014-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Only redefine
