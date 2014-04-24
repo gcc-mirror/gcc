@@ -1,3 +1,8 @@
+2014-04-24  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/fuse-caller-save.c: New test.
+
 2014-04-24  Joey Ye  <joey.ye@arm.com>
 
 	* g++.dg/cpp0x/nsdmi-union5.C: Change to runtime test.
