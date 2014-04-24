@@ -474,9 +474,7 @@ s390_handle_hotpatch_attribute (tree *node, tree name, tree args,
 
       if (TREE_CODE (expr) != INTEGER_CST
 	  || !INTEGRAL_TYPE_P (TREE_TYPE (expr))
-	  || TREE_INT_CST_HIGH (expr) != 0
-	  || TREE_INT_CST_LOW (expr) > (unsigned int)
-	  s390_hotpatch_trampoline_halfwords_max)
+	  || wi::gtu_p (expr, s390_hotpatch_trampoline_halfwords_max))
 	{
 	  error ("requested %qE attribute is not a non-negative integer"
 		 " constant or too large (max. %d)", name,
