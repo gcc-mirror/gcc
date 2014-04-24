@@ -1,3 +1,7 @@
+2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Enable for bigendian.
+
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
