@@ -1,3 +1,8 @@
+2014-04-24  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update for
+	new CXXABI_1.3.9 symbols.
+
 2014-04-23  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt
