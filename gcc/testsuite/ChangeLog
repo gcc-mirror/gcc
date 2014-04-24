@@ -1,3 +1,8 @@
+i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_perm): Return
+	true for aarch64_be.
+
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 

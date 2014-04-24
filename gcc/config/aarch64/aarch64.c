@@ -8143,11 +8143,6 @@ aarch64_evpc_tbl (struct expand_vec_perm_d *d)
   enum machine_mode vmode = d->vmode;
   unsigned int i, nelt = d->nelt;
 
-  /* TODO: ARM's TBL indexing is little-endian.  In order to handle GCC's
-     numbering of elements for big-endian, we must reverse the order.  */
-  if (BYTES_BIG_ENDIAN)
-    return false;
-
   if (d->testing_p)
     return true;
 
