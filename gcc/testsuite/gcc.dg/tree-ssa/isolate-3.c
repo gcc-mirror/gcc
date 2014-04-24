@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-isolate-paths" } */
+/* { dg-skip-if "" keeps_null_pointer_checks } */
 
 
 typedef long unsigned int size_t;
