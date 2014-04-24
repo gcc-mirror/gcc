@@ -1,3 +1,13 @@
+2014-04-24  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.h (machine_function): Define variable
+	after_arm_reorg here.
+	* config/arm/arm.c (after_arm_reorg): Remove the definition.
+	(arm_split_constant): Update the way to access variable
+	after_arm_reorg.
+	(arm_reorg): Ditto.
+	(arm_output_function_epilogue): Remove the reset of after_arm_reorg.
+
 2014-04-23  Tom de Vries  <tom@codesourcery.com>
 
 	* target-hooks-macros.h: Fix DEFHOOKPOD argument order in comment.
