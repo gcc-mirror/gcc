@@ -2516,6 +2516,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_FRSQRTES	MASK_POPCNTB	/* FRSQRTES instruction.  */
 #define RS6000_BTM_POPCNTD	MASK_POPCNTD	/* Target supports ISA 2.06.  */
 #define RS6000_BTM_CELL		MASK_FPRND	/* Target is cell powerpc.  */
+#define RS6000_BTM_DFP		MASK_DFP	/* Decimal floating point.  */
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2527,7 +2528,8 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_FRSQRTES			\
 				 | RS6000_BTM_HTM			\
 				 | RS6000_BTM_POPCNTD			\
-				 | RS6000_BTM_CELL)
+				 | RS6000_BTM_CELL			\
+				 | RS6000_BTM_DFP)
 
 /* Define builtin enum index.  */
 
@@ -2622,6 +2624,9 @@ enum rs6000_builtin_type_index
   RS6000_BTI_UINTTI,		 /* unsigned_intTI_type_node */
   RS6000_BTI_float,	         /* float_type_node */
   RS6000_BTI_double,	         /* double_type_node */
+  RS6000_BTI_long_double,        /* long_double_type_node */
+  RS6000_BTI_dfloat64,		 /* dfloat64_type_node */
+  RS6000_BTI_dfloat128,		 /* dfloat128_type_node */
   RS6000_BTI_void,	         /* void_type_node */
   RS6000_BTI_MAX
 };
@@ -2673,6 +2678,9 @@ enum rs6000_builtin_type_index
 #define uintTI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_UINTTI])
 #define float_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_float])
 #define double_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_double])
+#define long_double_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_long_double])
+#define dfloat64_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_dfloat64])
+#define dfloat128_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_dfloat128])
 #define void_type_internal_node		 (rs6000_builtin_types[RS6000_BTI_void])
 
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];

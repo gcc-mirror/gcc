@@ -12787,9 +12787,12 @@ float __builtin_recipdivf (float, float);
 float __builtin_rsqrtf (float);
 double __builtin_recipdiv (double, double);
 double __builtin_rsqrt (double);
-long __builtin_bpermd (long, long);
 uint64_t __builtin_ppc_get_timebase ();
 unsigned long __builtin_ppc_mftb ();
+double __builtin_unpack_longdouble (long double, int);
+double __builtin_longdouble_dw0 (long double);
+double __builtin_longdouble_dw1 (long double);
+long double __builtin_pack_longdouble (double, double);
 @end smallexample
 
 The @code{vec_rsqrt}, @code{__builtin_rsqrt}, and
@@ -12808,6 +12811,57 @@ instructions and always returns the 64 bits of the Time Base Register.
 The @code{__builtin_ppc_mftb} function always generates one instruction and
 returns the Time Base Register value as an unsigned long, throwing away
 the most significant word on 32-bit environments.
+
+The following built-in functions are available for the PowerPC family
+of processors, starting with ISA 2.06 or later (@option{-mcpu=power7}
+or @option{-mpopcntd}):
+@smallexample
+long __builtin_bpermd (long, long);
+int __builtin_divwe (int, int);
+int __builtin_divweo (int, int);
+unsigned int __builtin_divweu (unsigned int, unsigned int);
+unsigned int __builtin_divweuo (unsigned int, unsigned int);
+long __builtin_divde (long, long);
+long __builtin_divdeo (long, long);
+unsigned long __builtin_divdeu (unsigned long, unsigned long);
+unsigned long __builtin_divdeuo (unsigned long, unsigned long);
+unsigned int cdtbcd (unsigned int);
+unsigned int cbcdtd (unsigned int);
+unsigned int addg6s (unsigned int, unsigned int);
+@end smallexample
+
+The @code{__builtin_divde}, @code{__builtin_divdeo},
+@code{__builitin_divdeu}, @code{__builtin_divdeou} functions require a
+64-bit environment support ISA 2.06 or later.
+
+The following built-in functions are available for the PowerPC family
+of processors when hardware decimal floating point
+(@option{-mhard-dfp}) is available:
+@smallexample
+_Decimal64 __builtin_dxex (_Decimal64);
+_Decimal128 __builtin_dxexq (_Decimal128);
+_Decimal64 __builtin_ddedpd (int, _Decimal64);
+_Decimal128 __builtin_ddedpdq (int, _Decimal128);
+_Decimal64 __builtin_denbcd (int, _Decimal64);
+_Decimal128 __builtin_denbcdq (int, _Decimal128);
+_Decimal64 __builtin_diex (_Decimal64, _Decimal64);
+_Decimal128 _builtin_diexq (_Decimal128, _Decimal128);
+_Decimal64 __builtin_dscli (_Decimal64, int);
+_Decimal128 __builitn_dscliq (_Decimal128, int);
+_Decimal64 __builtin_dscri (_Decimal64, int);
+_Decimal128 __builitn_dscriq (_Decimal128, int);
+unsigned long long __builtin_unpack_dec128 (_Decimal128, int);
+_Decimal128 __builtin_pack_dec128 (unsigned long long, unsigned long long);
+@end smallexample
+
+The following built-in functions are available for the PowerPC family
+of processors when the Vector Scalar (vsx) instruction set is
+available:
+@smallexample
+unsigned long long __builtin_unpack_vector_int128 (vector __int128_t, int);
+vector __int128_t __builtin_pack_vector_int128 (unsigned long long,
+                                                unsigned long long);
+@end smallexample
 
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec Built-in Functions
@@ -15220,6 +15274,17 @@ vector __uint128_t vec_vsubcuq (vector __uint128_t, vector __uint128_t);
 
 __int128_t vec_vsubuqm (__int128_t, __int128_t);
 __uint128_t vec_vsubuqm (__uint128_t, __uint128_t);
+
+vector __int128_t __builtin_bcdadd (vector __int128_t, vector__int128_t);
+int __builtin_bcdadd_lt (vector __int128_t, vector__int128_t);
+int __builtin_bcdadd_eq (vector __int128_t, vector__int128_t);
+int __builtin_bcdadd_gt (vector __int128_t, vector__int128_t);
+int __builtin_bcdadd_ov (vector __int128_t, vector__int128_t);
+vector __int128_t bcdsub (vector __int128_t, vector__int128_t);
+int __builtin_bcdsub_lt (vector __int128_t, vector__int128_t);
+int __builtin_bcdsub_eq (vector __int128_t, vector__int128_t);
+int __builtin_bcdsub_gt (vector __int128_t, vector__int128_t);
+int __builtin_bcdsub_ov (vector __int128_t, vector__int128_t);
 @end smallexample
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or
