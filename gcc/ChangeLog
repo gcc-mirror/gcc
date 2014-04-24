@@ -1,6 +1,15 @@
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
+	* reg-notes.def (REG_NOTE (CALL_DECL)): New reg-note REG_CALL_DECL.
+	* calls.c (expand_call, emit_library_call_value_1): Add REG_CALL_DECL
+	reg-note.
+	* combine.c (distribute_notes): Handle REG_CALL_DECL reg-note.
+	* emit-rtl.c (try_split): Same.
+
+2014-04-24  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
 	* common.opt (fuse-caller-save): New option.
 
 2014-04-24  Tejas Belagod  <tejas.belagod@arm.com>
