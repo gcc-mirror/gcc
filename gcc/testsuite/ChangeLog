@@ -1,3 +1,8 @@
+2014-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-16.c: Remove all dg-error directives.
+	Replace load with read and store with write.
+
 2014-04-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
