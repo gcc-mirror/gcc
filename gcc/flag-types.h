@@ -104,6 +104,16 @@ enum symbol_visibility
 };
 #endif
 
+/* Enumerate Objective-c instance variable visibility settings. */
+
+enum ivar_visibility
+{
+  IVAR_VISIBILITY_PRIVATE,
+  IVAR_VISIBILITY_PROTECTED,
+  IVAR_VISIBILITY_PUBLIC,
+  IVAR_VISIBILITY_PACKAGE
+};
+
 /* The stack reuse level.  */
 enum stack_reuse_level
 {

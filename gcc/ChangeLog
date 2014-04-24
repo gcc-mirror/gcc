@@ -1,3 +1,7 @@
+2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	* flag-types.h (enum ivar_visibility): Add.
+
 2014-04-24  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config/sh/sh_treg_combine.c (sh_treg_combine::execute): Take
