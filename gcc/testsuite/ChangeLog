@@ -1,3 +1,9 @@
+2014-04-24  Jeff Law  <law@redhat.com>
+
+	PR target/60822
+	* gcc.c-torture/pr60822.c: New test.
+	* gcc.c-torture/pr60822.x: New test.
+
 2014-04-24  Dinar Temirbulatov  <dtemirbulatov@gmail.com>
 
 	PR c++/57958
