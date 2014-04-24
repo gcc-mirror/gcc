@@ -26,13 +26,15 @@ along with GCC; see the file COPYING3.  If not see
 	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_VECT8_RETURNS)
 
 /* Old versions of the Solaris assembler can not handle the difference of
-   labels in different sections, so force DW_EH_PE_datarel.  */
+   labels in different sections, so force DW_EH_PE_datarel if so.  */
+#ifndef HAVE_AS_IX86_DIFF_SECT_DELTA
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			\
   (flag_pic ? ((GLOBAL ? DW_EH_PE_indirect : 0)				\
 	       | (TARGET_64BIT ? DW_EH_PE_pcrel | DW_EH_PE_sdata4	\
 		  : DW_EH_PE_datarel))					\
    : DW_EH_PE_absptr)
+#endif
 
 /* The Solaris linker will not merge a read-only .eh_frame section
    with a read-write .eh_frame section.  None of the encodings used

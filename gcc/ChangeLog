@@ -1,5 +1,10 @@
 2014-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Only redefine
+	if not HAVE_AS_IX86_DIFF_SECT_DELTA.
+
+2014-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (gcc_cv_as_cfi_directive): Support Solaris/x86
 	assembler 64-bit option.
 	* configure: Regenerate.
