@@ -1,3 +1,14 @@
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Handle BUILT_IN_BSWAP16,
+	BUILT_IN_BSWAP32, BUILT_IN_BSWAP64.
+	* config/aarch64/aarch64-simd.md (bswap<mode>): New pattern.
+	* config/aarch64/aarch64-simd-builtins.def: Define vector bswap
+	builtins.
+	* config/aarch64/iterator.md (VDQHSD): New mode iterator.
+	(Vrevsuff): New mode attribute.
+
 2014-04-24  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.h (machine_function): Define variable
