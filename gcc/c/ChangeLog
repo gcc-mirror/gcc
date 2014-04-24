@@ -1,3 +1,8 @@
+2014-04-24  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* c-parser.c (c_parser_sizeof_expression): Reorganize slightly to
+	avoid goto.
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_atomic): Allow seq_cst before
