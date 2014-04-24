@@ -1,5 +1,13 @@
 2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Check
+	TARGET_SIMD rather than TARGET_GENERAL_REGS_ONLY.
+	(TARGET_SIMD): Take AARCH64_ISA_SIMD into account.
+	(TARGET_FLOAT): Take AARCH64_ISA_FP into account.
+	(TARGET_CRYPTO): Take TARGET_SIMD into account.
+
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_builtin_vectorized_function): Handle BUILT_IN_BSWAP16,
 	BUILT_IN_BSWAP32, BUILT_IN_BSWAP64.
