@@ -1,3 +1,8 @@
+2014-04-24  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Reverse order of elements
+	for big-endian.
+
 2014-04-24  Richard Biener  <rguenther@suse.de>
 
 	* expr.c (expand_expr_real_1): Avoid gimple_assign_rhs_to_tree
