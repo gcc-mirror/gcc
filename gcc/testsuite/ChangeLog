@@ -1,5 +1,9 @@
 2014-04-25  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/pr18079-2.c: Fix quoting in dg-warning.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c/18079
 	* gcc.dg/pr18079.c: New test.
 	* gcc.dg/pr18079-2.c: New test.
