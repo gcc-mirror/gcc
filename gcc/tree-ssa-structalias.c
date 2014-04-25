@@ -7264,10 +7264,7 @@ ipa_pta_execute (void)
       tree ptr;
       struct function *fn;
       unsigned i;
-      varinfo_t fi;
       basic_block bb;
-      struct pt_solution uses, clobbers;
-      struct cgraph_edge *e;
 
       /* Nodes without a body are not interesting.  */
       if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
@@ -7283,21 +7280,6 @@ ipa_pta_execute (void)
 	    find_what_p_points_to (ptr);
 	}
 
-      /* Compute the call-use and call-clobber sets for all direct calls.  */
-      fi = lookup_vi_for_tree (node->decl);
-      gcc_assert (fi->is_fn_info);
-      clobbers
-	= find_what_var_points_to (first_vi_for_offset (fi, fi_clobbers));
-      uses = find_what_var_points_to (first_vi_for_offset (fi, fi_uses));
-      for (e = node->callers; e; e = e->next_caller)
-	{
-	  if (!e->call_stmt)
-	    continue;
-
-	  *gimple_call_clobber_set (e->call_stmt) = clobbers;
-	  *gimple_call_use_set (e->call_stmt) = uses;
-	}
-
       /* Compute the call-use and call-clobber sets for indirect calls
 	 and calls to external functions.  */
       FOR_EACH_BB_FN (bb, fn)
@@ -7308,17 +7290,27 @@ ipa_pta_execute (void)
 	    {
 	      gimple stmt = gsi_stmt (gsi);
 	      struct pt_solution *pt;
-	      varinfo_t vi;
+	      varinfo_t vi, fi;
 	      tree decl;
 
 	      if (!is_gimple_call (stmt))
 		continue;
 
-	      /* Handle direct calls to external functions.  */
+	      /* Handle direct calls to functions with body.  */
 	      decl = gimple_call_fndecl (stmt);
 	      if (decl
-		  && (!(fi = lookup_vi_for_tree (decl))
-		      || !fi->is_fn_info))
+		  && (fi = lookup_vi_for_tree (decl))
+		  && fi->is_fn_info)
+		{
+		  *gimple_call_clobber_set (stmt)
+		     = find_what_var_points_to
+		         (first_vi_for_offset (fi, fi_clobbers));
+		  *gimple_call_use_set (stmt)
+		     = find_what_var_points_to
+		         (first_vi_for_offset (fi, fi_uses));
+		}
+	      /* Handle direct calls to external functions.  */
+	      else if (decl)
 		{
 		  pt = gimple_call_use_set (stmt);
 		  if (gimple_call_flags (stmt) & ECF_CONST)
@@ -7362,10 +7354,9 @@ ipa_pta_execute (void)
 		      pt->nonlocal = 1;
 		    }
 		}
-
 	      /* Handle indirect calls.  */
-	      if (!decl
-		  && (fi = get_fi_for_callee (stmt)))
+	      else if (!decl
+		       && (fi = get_fi_for_callee (stmt)))
 		{
 		  /* We need to accumulate all clobbers/uses of all possible
 		     callees.  */

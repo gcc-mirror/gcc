@@ -1,5 +1,10 @@
 2014-04-25  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/60912
+	* g++.dg/opt/pr60912.C: New testcase.
+
+2014-04-25  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/60911
 	* gcc.dg/lto/pr60911_0.c: New testcase.
 
