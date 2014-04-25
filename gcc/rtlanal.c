@@ -1046,13 +1046,13 @@ record_hard_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 /* Examine INSN, and compute the set of hard registers written by it.
    Store it in *PSET.  Should only be called after reload.  */
 void
-find_all_hard_reg_sets (const_rtx insn, HARD_REG_SET *pset)
+find_all_hard_reg_sets (const_rtx insn, HARD_REG_SET *pset, bool implicit)
 {
   rtx link;
 
   CLEAR_HARD_REG_SET (*pset);
   note_stores (PATTERN (insn), record_hard_reg_sets, pset);
-  if (CALL_P (insn))
+  if (implicit && CALL_P (insn))
     IOR_HARD_REG_SET (*pset, call_used_reg_set);
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)

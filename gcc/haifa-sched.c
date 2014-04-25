@@ -1299,7 +1299,7 @@ recompute_todo_spec (rtx next, bool for_backtrack)
 	  {
 	    HARD_REG_SET t;
 
-	    find_all_hard_reg_sets (prev, &t);
+	    find_all_hard_reg_sets (prev, &t, true);
 	    if (TEST_HARD_REG_BIT (t, regno))
 	      return HARD_DEP;
 	    if (prev == pro)
@@ -3082,7 +3082,7 @@ check_clobbered_conditions (rtx insn)
   if ((current_sched_info->flags & DO_PREDICATION) == 0)
     return;
 
-  find_all_hard_reg_sets (insn, &t);
+  find_all_hard_reg_sets (insn, &t, true);
 
  restart:
   for (i = 0; i < ready.n_ready; i++)

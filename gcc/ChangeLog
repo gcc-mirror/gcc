@@ -1,3 +1,12 @@
+2014-04-25  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* rtlanal.c (find_all_hard_reg_sets): Add bool implicit parameter and
+	handle.
+	* rtl.h (find_all_hard_reg_sets): Add bool parameter.
+	* haifa-sched.c (recompute_todo_spec, check_clobbered_conditions): Add
+	new argument to find_all_hard_reg_sets call.
+
 2014-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p):
