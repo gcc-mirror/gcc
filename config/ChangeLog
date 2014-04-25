@@ -1,3 +1,8 @@
+2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/43538
+	* mt-gnu: Don't reset CXXFLAGS_FOR_TARGET.
+
 2013-11-29  Marek Polacek  <polacek@redhat.com>
 
 	* bootstrap-ubsan.mk (POSTSTAGE1_LDFLAGS): Remove -lpthread -ldl.
