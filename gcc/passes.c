@@ -2109,20 +2109,6 @@ execute_all_ipa_transforms (void)
     }
 }
 
-/* Callback for do_per_function to apply all IPA transforms.  */
-
-static void
-apply_ipa_transforms (void *data)
-{
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
-  if (!node->global.inlined_to && node->ipa_transforms_to_apply.exists ())
-    {
-      *(bool *)data = true;
-      execute_all_ipa_transforms ();
-      rebuild_cgraph_edges ();
-    }
-}
-
 /* Check if PASS is explicitly disabled or enabled and return
    the gate status.  FUNC is the function to be processed, and
    GATE_STATUS is the gate status determined by pass manager by
@@ -2194,8 +2180,26 @@ execute_one_pass (opt_pass *pass)
      Apply all trnasforms first.  */
   if (pass->type == SIMPLE_IPA_PASS)
     {
+      struct cgraph_node *node;
       bool applied = false;
-      do_per_function (apply_ipa_transforms, (void *)&applied);
+      FOR_EACH_DEFINED_FUNCTION (node)
+	if (node->analyzed
+	    && cgraph_function_with_gimple_body_p (node)
+	    && (!node->clone_of || node->decl != node->clone_of->decl))
+	  {
+	    if (!node->global.inlined_to
+		&& node->ipa_transforms_to_apply.exists ())
+	      {
+		cgraph_get_body (node);
+		push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+		execute_all_ipa_transforms ();
+		rebuild_cgraph_edges ();
+		free_dominance_info (CDI_DOMINATORS);
+		free_dominance_info (CDI_POST_DOMINATORS);
+		pop_cfun ();
+		applied = true;
+	      }
+	  }
       if (applied)
         symtab_remove_unreachable_nodes (true, dump_file);
       /* Restore current_pass.  */

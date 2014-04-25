@@ -1,3 +1,10 @@
+2014-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60911
+	* passes.c (apply_ipa_transforms): Inline into only caller ...
+	(execute_one_pass): ... here.  Properly bring in function
+	bodies for nodes we want to apply IPA transforms to.
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_LINEAR_GIMPLE_SEQ): Define.
