@@ -1,3 +1,8 @@
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60156
+	* c-c++-common/pr60156.c: New test.
+
 2014-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60912
