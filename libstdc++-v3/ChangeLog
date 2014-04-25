@@ -1,3 +1,10 @@
+2014-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60958
+	* include/tr1/regex (regex_traits::isctype): Comment out broken code.
+	* testsuite/util/testsuite_regex.h (regex_match_debug): Improve
+	comment.
+
 2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	* testsuite/util/testsuite_abi.cc (check_version): Update for
