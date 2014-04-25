@@ -37,12 +37,6 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #include "longlong.h"
 #endif
 
-/* This is the maximal size of the buffer needed for dump.  */
-const unsigned int MAX_SIZE = (4 * (MAX_BITSIZE_MODE_ANY_INT / 4
-				    + (MAX_BITSIZE_MODE_ANY_INT
-				       / HOST_BITS_PER_WIDE_INT)
-				    + 32));
-
 static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 
 /*
@@ -51,7 +45,7 @@ static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 
 /* Quantities to deal with values that hold half of a wide int.  Used
    in multiply and divide.  */
-#define HALF_INT_MASK (((HOST_WIDE_INT)1 << HOST_BITS_PER_HALF_WIDE_INT) - 1)
+#define HALF_INT_MASK (((HOST_WIDE_INT) 1 << HOST_BITS_PER_HALF_WIDE_INT) - 1)
 
 #define BLOCK_OF(TARGET) ((TARGET) / HOST_BITS_PER_WIDE_INT)
 #define BLOCKS_NEEDED(PREC) \
@@ -129,8 +123,8 @@ wi::from_array (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 
 /* Construct a wide int from a buffer of length LEN.  BUFFER will be
    read according to byte endianess and word endianess of the target.
-   Only the lower LEN bytes of the result are set; the remaining high
-   bytes are cleared.  */
+   Only the lower BUFFER_LEN bytes of the result are set; the remaining
+   high bytes are cleared.  */
 wide_int
 wi::from_buffer (const unsigned char *buffer, unsigned int buffer_len)
 {
@@ -213,7 +207,7 @@ wi::to_mpz (wide_int x, mpz_t result, signop sgn)
     mpz_com (result, result);
 }
 
-/* Returns VAL converted to TYPE.  If WRAP is true, then out-of-range
+/* Returns X converted to TYPE.  If WRAP is true, then out-of-range
    values of VAL will be wrapped; otherwise, they will be set to the
    appropriate minimum or maximum TYPE bound.  */
 wide_int
@@ -244,8 +238,8 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
      for representing the value.  The code to calculate count is
      extracted from the GMP manual, section "Integer Import and Export":
      http://gmplib.org/manual/Integer-Import-and-Export.html  */
-  numb = 8*sizeof(HOST_WIDE_INT);
-  count = (mpz_sizeinbase (x, 2) + numb-1) / numb;
+  numb = 8 * sizeof(HOST_WIDE_INT);
+  count = (mpz_sizeinbase (x, 2) + numb - 1) / numb;
   HOST_WIDE_INT *val = res.write_val ();
   mpz_export (val, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, x);
   if (count < 1)
@@ -353,9 +347,8 @@ wi::force_to_size (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
    where we do allow comparisons of values of different precisions.  */
 static inline HOST_WIDE_INT
 selt (const HOST_WIDE_INT *a, unsigned int len,
-     unsigned int blocks_needed,
-     unsigned int small_prec,
-     unsigned int index, signop sgn)
+      unsigned int blocks_needed, unsigned int small_prec,
+      unsigned int index, signop sgn)
 {
   HOST_WIDE_INT val;
   if (index < len)
@@ -389,7 +382,7 @@ top_bit_of (const HOST_WIDE_INT *a, unsigned int len, unsigned int prec)
 
 /*
  * Comparisons, note that only equality is an operator.  The other
- * comparisons cannot be operators since they are inherently singed or
+ * comparisons cannot be operators since they are inherently signed or
  * unsigned and C++ has no such operators.
  */
 
@@ -402,7 +395,7 @@ wi::eq_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
   int l0 = op0len - 1;
   unsigned int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
 
-  while (op0len != op1len)
+  if (op0len != op1len)
     return false;
 
   if (op0len == BLOCKS_NEEDED (prec) && small_prec)
@@ -742,7 +735,7 @@ wi::mask (HOST_WIDE_INT *val, unsigned int width, bool negate,
   unsigned int shift = width & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift != 0)
     {
-      HOST_WIDE_INT last = (((unsigned HOST_WIDE_INT) 1) << shift) - 1;
+      HOST_WIDE_INT last = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
       val[i++] = negate ? ~last : last;
     }
   else
@@ -775,12 +768,12 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   unsigned int shift = start & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift)
     {
-      HOST_WIDE_INT block = (((unsigned HOST_WIDE_INT) 1) << shift) - 1;
+      HOST_WIDE_INT block = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
       shift = end & (HOST_BITS_PER_WIDE_INT - 1);
       if (shift)
 	{
 	  /* case 000111000 */
-	  block = (((unsigned HOST_WIDE_INT) 1) << shift) - block - 1;
+	  block = ((unsigned HOST_WIDE_INT) 1 << shift) - block - 1;
 	  val[i++] = negate ? ~block : block;
 	  return i;
 	}
@@ -797,7 +790,7 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   if (shift != 0)
     {
       /* 000011111 */
-      HOST_WIDE_INT block = (((unsigned HOST_WIDE_INT) 1) << shift) - 1;
+      HOST_WIDE_INT block = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
       val[i++] = negate ? ~block : block;
     }
   else if (end < prec)
@@ -824,7 +817,7 @@ wi::and_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   if (l0 > l1)
     {
       HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
-      if (op1mask  == 0)
+      if (op1mask == 0)
 	{
 	  l0 = l1;
 	  len = l1 + 1;
@@ -1369,7 +1362,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	{
 	  if (sgn == SIGNED)
 	    {
-	      if ((HOST_WIDE_INT) (r) != sext_hwi (r, prec))
+	      if ((HOST_WIDE_INT) r != sext_hwi (r, prec))
 		*overflow = true;
 	    }
 	  else
@@ -2137,60 +2130,3 @@ wi::only_sign_bit_p (const wide_int_ref &x)
 void gt_ggc_mx (widest_int *) { }
 void gt_pch_nx (widest_int *, void (*) (void *, void *), void *) { }
 void gt_pch_nx (widest_int *) { }
-
-/*
- * Private debug printing routines.
- */
-#ifdef DEBUG_WIDE_INT
-/* The debugging routines print results of wide operations into the
-   dump files of the respective passes in which they were called.  */
-static char *
-dumpa (const HOST_WIDE_INT *val, unsigned int len, unsigned int prec, char *buf)
-{
-  int i;
-  unsigned int l;
-  const char * sep = "";
-
-  l = sprintf (buf, "[%d (", prec);
-  for (i = len - 1; i >= 0; i--)
-    {
-      l += sprintf (&buf[l], "%s" HOST_WIDE_INT_PRINT_HEX, sep, val[i]);
-      sep = " ";
-    }
-
-  gcc_assert (len != 0);
-
-  l += sprintf (&buf[l], ")]");
-
-  gcc_assert (l < MAX_SIZE);
-  return buf;
-
-
-}
-#endif
-
-#if 0
-/* The debugging routines print results of wide operations into the
-   dump files of the respective passes in which they were called.  */
-char *
-wide_int_ro::dump (char* buf) const
-{
-  int i;
-  unsigned int l;
-  const char * sep = "";
-
-  l = sprintf (buf, "[%d (", precision);
-  for (i = len - 1; i >= 0; i--)
-    {
-      l += sprintf (&buf[l], "%s" HOST_WIDE_INT_PRINT_HEX, sep, val[i]);
-      sep = " ";
-    }
-
-  gcc_assert (len != 0);
-
-  l += sprintf (&buf[l], ")]");
-
-  gcc_assert (l < MAX_SIZE);
-  return buf;
-}
-#endif
