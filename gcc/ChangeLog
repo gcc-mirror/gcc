@@ -1,3 +1,11 @@
+2014-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (tga_func): Remove.
+	(LIB_TLS_SPEC): Remove.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.h (LIB_SPEC): Don't use LIB_TLS_SPEC.
+
 2014-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60912

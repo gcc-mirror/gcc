@@ -2935,13 +2935,8 @@ foo:	.long	25
 	;;
   i[34567]86-*-* | x86_64-*-*)
     case "$target" in
-      i[34567]86-*-solaris2.*)
+      i[34567]86-*-solaris2.* | x86_64-*-solaris2.1[0-9]*)
 	on_solaris=yes
-	tga_func=___tls_get_addr
-	;;
-      x86_64-*-solaris2.1[0-9]*)
-	on_solaris=yes
-	tga_func=__tls_get_addr
         ;;
       *)
 	on_solaris=no
@@ -3217,7 +3212,6 @@ foo:	.long	25
     case "$target" in
       sparc*-sun-solaris2.*)
 	on_solaris=yes
-	tga_func=__tls_get_addr
 	;;
       *)
 	on_solaris=no
@@ -3313,37 +3307,6 @@ else
   [$tls_first_major,$tls_first_minor,0], [$tls_as_opt], [$conftest_s],,
   [set_have_as_tls=yes])
 fi
-case "$target" in
-  # TLS was introduced in the Solaris 9 FCS release.  Support for GNU-style
-  # TLS on x86 was only introduced in Solaris 9 4/04, replacing the earlier
-  # Sun style that Sun ld and GCC don't support any longer.
-  *-*-solaris2.*)
-    ld_tls_support=yes
-
-    save_LIBS="$LIBS"
-    save_LDFLAGS="$LDFLAGS"
-    LIBS=
-    LDFLAGS=
-
-    AC_MSG_CHECKING(library containing $tga_func)
-    # Before Solaris 10, __tls_get_addr (SPARC/x64) resp. ___tls_get_addr
-    # (32-bit x86) only lived in libthread, so check for that.  Keep
-    # set_have_as_tls if found, disable if not.
-    AC_SEARCH_LIBS([$tga_func], [thread],, [set_have_as_tls=no])
-    ld_tls_libs="$LIBS"
-    # Clear LIBS if we cannot support TLS.
-    if test $set_have_as_tls = no; then
-      LIBS=
-    fi
-    # Always define LIB_TLS_SPEC, even without TLS support.
-    AC_DEFINE_UNQUOTED(LIB_TLS_SPEC, "$LIBS",
-        [Define to the library containing __tls_get_addr/___tls_get_addr.])
-    AC_MSG_RESULT($LIBS)
-
-    LIBS="$save_LIBS"
-    LDFLAGS="$save_LDFLAGS"
-    ;;
-esac
 if test $set_have_as_tls = yes ; then
   AC_DEFINE(HAVE_AS_TLS, 1,
 	    [Define if your assembler and linker support thread-local storage.])
