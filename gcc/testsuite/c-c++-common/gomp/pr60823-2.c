@@ -1,5 +1,6 @@
 /* PR tree-optimization/60823 */
 /* { dg-do run } */
+/* { dg-require-effective-target vect_simd_clones } */
 /* { dg-options "-O2 -fopenmp-simd" } */
 
 #pragma omp declare simd simdlen(4) notinbranch
