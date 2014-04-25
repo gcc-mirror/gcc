@@ -1,3 +1,9 @@
+2014-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p):
+	Use HOST_WIDE_INT_C for mask literal.
+	(aarch_rev16_shleft_mask_imm_p): Likewise.
+
 2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/60941
