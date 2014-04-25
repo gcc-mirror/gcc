@@ -1,5 +1,11 @@
 2014-04-25  Marek Polacek  <polacek@redhat.com>
 
+	PR c/18079
+	* c-decl.c (diagnose_mismatched_decls): Warn for mismatched
+	always_inline/noinline and hot/cold attributes.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c/60114
 	* c-parser.c (c_parser_initelt): Pass input_location to
 	process_init_element.

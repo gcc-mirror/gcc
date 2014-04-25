@@ -1,3 +1,9 @@
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/18079
+	* gcc.dg/pr18079.c: New test.
+	* gcc.dg/pr18079-2.c: New test.
+
 2014-04-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-c++-common/gomp/pr60823-2.c: Require effective target
