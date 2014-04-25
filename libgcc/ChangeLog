@@ -1,3 +1,8 @@
+2014-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/crtfastmath.c [!__x86_64__ && __sun__ && __svr4__]
+	(sigill_caught, sigill_hdlr): Remove.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/crtfastmath.c (set_fast_math): Remove SSE execution
