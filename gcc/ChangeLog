@@ -1,3 +1,9 @@
+2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR preprocessor/56540
+	* config/i386/i386-c.c (ix86_target_macros): Define
+	__SIZEOF_FLOAT80__ and __SIZEOF_FLOAT128__.
+
 2014-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (tga_func): Remove.
