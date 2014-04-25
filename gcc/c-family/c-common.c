@@ -2228,6 +2228,10 @@ check_main_parameter_types (tree decl)
   if (argct > 0 && (argct < 2 || argct > 3))
     pedwarn (input_location, OPT_Wmain,
 	     "%q+D takes only zero or two arguments", decl);
+
+  if (stdarg_p (TREE_TYPE (decl)))
+    pedwarn (input_location, OPT_Wmain,
+	     "%q+D declared as variadic function", decl);
 }
 
 /* vector_targets_convertible_p is used for vector pointer types.  The
