@@ -1,3 +1,8 @@
+2014-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-c++-common/gomp/pr60823-2.c: Require effective target
+	vect_simd_clones.
+
 2014-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60960
@@ -1694,8 +1699,7 @@
 
 2014-02-19  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
-	* gcc.dg/vect/no-vfa-vect-depend-2.c (main1): Fix buffer
-	overflow.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c (main1): Fix buffer overflow.
 
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2004,8 +2008,7 @@
 
 2014-02-10  Jakub Jelinek  <jakub@redhat.com>
 
-	* gcc.dg/vect/pr59984.c: Require effective target
-	vect_simd_clones.
+	* gcc.dg/vect/pr59984.c: Require effective target vect_simd_clones.
 
 2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
