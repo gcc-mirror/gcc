@@ -31,26 +31,6 @@
 #include "cpuid.h"
 #endif
 
-#if !defined __x86_64__ && defined __sun__ && defined __svr4__
-#include <signal.h>
-#include <ucontext.h>
-
-static volatile sig_atomic_t sigill_caught;
-
-static void
-sigill_hdlr (int sig __attribute((unused)),
-	     siginfo_t *sip __attribute__((unused)),
-	     ucontext_t *ucp)
-{
-  sigill_caught = 1;
-  /* Set PC to the instruction after the faulting one to skip over it,
-     otherwise we enter an infinite loop.  3 is the size of the movaps
-     instruction.  */
-  ucp->uc_mcontext.gregs[EIP] += 3;
-  setcontext (ucp);
-}
-#endif
-
 static void __attribute__((constructor))
 #ifndef __x86_64__
 /* The i386 ABI only requires 4-byte stack alignment, so this is necessary
