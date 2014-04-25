@@ -1,3 +1,8 @@
+2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Update for
+	CXXABI_1.3.9.
+
 2014-04-24  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone()):
