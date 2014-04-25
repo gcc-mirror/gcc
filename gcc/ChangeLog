@@ -1,3 +1,8 @@
+2014-04-25  Tom de Vries  <tom@codesourcery.com>
+
+	* rtlanal.c (find_all_hard_reg_sets): Note INSN_CALL_FUNCTION_USAGE
+	clobbers.
+
 2014-04-25  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
