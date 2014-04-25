@@ -1,3 +1,11 @@
+2014-04-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/predicates.md (call_insn_operand): Add long_call check.
+	* config/arm/arm.md (sibcall, sibcall_value): Force the address to
+	reg for long_call.
+	* config/arm/arm.c (arm_function_ok_for_sibcall): Remove long_call
+	restriction.
+
 2014-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_cortex_a8_tune): Initialise
