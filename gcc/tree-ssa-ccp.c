@@ -607,7 +607,7 @@ get_value_for_expr (tree expr, bool for_bits_p)
   else
     {
       val.lattice_val = VARYING;
-      val.mask = 1;
+      val.mask = -1;
       val.value = NULL_TREE;
     }
   return val;
@@ -1848,7 +1848,7 @@ evaluate_stmt (gimple stmt)
 	      if (nonzero_bits == 0)
 		val.mask = 0;
 	      else
-		val.mask = extend_mask (nonzero_bits);
+		val.mask = val.mask & extend_mask (nonzero_bits);
 	    }
 	}
     }
