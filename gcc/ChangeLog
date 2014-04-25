@@ -1,3 +1,11 @@
+2014-04-24  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60896
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Pick up
+	all statements in PATTERN_DEF_SEQ in recognized widen-mult pattern.
+	(vect_mark_pattern_stmts): Set the def type of all statements in
+	PATTERN_DEF_SEQ as vect_internal_def.
+
 2014-04-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* doc/extend.texi (PowerPC Built-in Functions): Document new
