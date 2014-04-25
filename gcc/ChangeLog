@@ -1,5 +1,10 @@
 2014-04-25  Tom de Vries  <tom@codesourcery.com>
 
+	* expr.c (clobber_reg_mode): New function.
+	* expr.h (clobber_reg): New function.
+
+2014-04-25  Tom de Vries  <tom@codesourcery.com>
+
 	* rtlanal.c (find_all_hard_reg_sets): Note INSN_CALL_FUNCTION_USAGE
 	clobbers.
 
