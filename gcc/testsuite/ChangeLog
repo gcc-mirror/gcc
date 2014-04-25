@@ -1,3 +1,7 @@
+2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20140425-1.c: New test.
+
 2014-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60912
