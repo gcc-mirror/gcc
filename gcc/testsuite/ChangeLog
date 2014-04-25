@@ -1,3 +1,8 @@
+2014-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60960
+	* gcc.c-torture/execute/pr60960.c: New test.
+
 2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20140425-1.c: New test.
