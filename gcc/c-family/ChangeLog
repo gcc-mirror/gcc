@@ -1,3 +1,7 @@
+2014-04-24  Mike Stump  <mikestump@comcast.net>
+
+	* c.opt (Wshadow-ivar): Default to on.
+
 2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	* c.opt (Wshadow-ivar, flocal-ivars, fivar-visibility): Add.
