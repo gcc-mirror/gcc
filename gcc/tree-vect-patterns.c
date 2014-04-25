@@ -392,6 +392,8 @@ vect_recog_dot_prod_pattern (vec<gimple> *stmts, tree *type_in,
       gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_internal_def);
       oprnd00 = gimple_assign_rhs1 (stmt);
       oprnd01 = gimple_assign_rhs2 (stmt);
+      STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (last_stmt))
+	  = STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
     }
   else
     {
@@ -3065,8 +3067,7 @@ vect_mark_pattern_stmts (gimple orig_stmt, gimple pattern_stmt,
 	    }
 	  gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
 	  STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
-	  STMT_VINFO_DEF_TYPE (def_stmt_info)
-	    = STMT_VINFO_DEF_TYPE (orig_stmt_info);
+	  STMT_VINFO_DEF_TYPE (def_stmt_info) = vect_internal_def;
 	  if (STMT_VINFO_VECTYPE (def_stmt_info) == NULL_TREE)
 	    STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
 	}
