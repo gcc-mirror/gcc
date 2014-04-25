@@ -1,3 +1,18 @@
+2014-04-25  Cary Coutant  <ccoutant@google.com>
+
+        PR debug/60929
+	* dwarf2out.c (should_move_die_to_comdat): A type definition
+        can contain a subprogram definition, but don't move it to a
+        comdat unit.
+	(clone_as_declaration): Copy DW_AT_abstract_origin attribute.
+        (generate_skeleton_bottom_up): Remove DW_AT_object_pointer attribute
+        from original DIE.
+	(clone_tree_hash): Rename to...
+	(clone_tree_partial): ...this; change callers.  Copy
+        DW_TAG_subprogram DIEs as declarations.
+	(copy_decls_walk): Don't copy children of a declaration into a
+        type unit.
+
 2014-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60969
