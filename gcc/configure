@@ -23306,13 +23306,8 @@ foo:	.long	25
 	;;
   i[34567]86-*-* | x86_64-*-*)
     case "$target" in
-      i[34567]86-*-solaris2.*)
+      i[34567]86-*-solaris2.* | x86_64-*-solaris2.1[0-9]*)
 	on_solaris=yes
-	tga_func=___tls_get_addr
-	;;
-      x86_64-*-solaris2.1[0-9]*)
-	on_solaris=yes
-	tga_func=__tls_get_addr
         ;;
       *)
 	on_solaris=no
@@ -23587,7 +23582,6 @@ foo:	.long	25
     case "$target" in
       sparc*-sun-solaris2.*)
 	on_solaris=yes
-	tga_func=__tls_get_addr
 	;;
       *)
 	on_solaris=no
@@ -23711,101 +23705,6 @@ if test $gcc_cv_as_tls = yes; then
   set_have_as_tls=yes
 fi
 fi
-case "$target" in
-  # TLS was introduced in the Solaris 9 FCS release.  Support for GNU-style
-  # TLS on x86 was only introduced in Solaris 9 4/04, replacing the earlier
-  # Sun style that Sun ld and GCC don't support any longer.
-  *-*-solaris2.*)
-    ld_tls_support=yes
-
-    save_LIBS="$LIBS"
-    save_LDFLAGS="$LDFLAGS"
-    LIBS=
-    LDFLAGS=
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking library containing $tga_func" >&5
-$as_echo_n "checking library containing $tga_func... " >&6; }
-    # Before Solaris 10, __tls_get_addr (SPARC/x64) resp. ___tls_get_addr
-    # (32-bit x86) only lived in libthread, so check for that.  Keep
-    # set_have_as_tls if found, disable if not.
-    as_ac_Search=`$as_echo "ac_cv_search_$tga_func" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing $tga_func" >&5
-$as_echo_n "checking for library containing $tga_func... " >&6; }
-if { as_var=$as_ac_Search; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char $tga_func ();
-int
-main ()
-{
-return $tga_func ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' thread; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  eval "$as_ac_Search=\$ac_res"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if { as_var=$as_ac_Search; eval "test \"\${$as_var+set}\" = set"; }; then :
-  break
-fi
-done
-if { as_var=$as_ac_Search; eval "test \"\${$as_var+set}\" = set"; }; then :
-
-else
-  eval "$as_ac_Search=no"
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-eval ac_res=\$$as_ac_Search
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-eval ac_res=\$$as_ac_Search
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-else
-  set_have_as_tls=no
-fi
-
-    ld_tls_libs="$LIBS"
-    # Clear LIBS if we cannot support TLS.
-    if test $set_have_as_tls = no; then
-      LIBS=
-    fi
-    # Always define LIB_TLS_SPEC, even without TLS support.
-
-cat >>confdefs.h <<_ACEOF
-#define LIB_TLS_SPEC "$LIBS"
-_ACEOF
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBS" >&5
-$as_echo "$LIBS" >&6; }
-
-    LIBS="$save_LIBS"
-    LDFLAGS="$save_LDFLAGS"
-    ;;
-esac
 if test $set_have_as_tls = yes ; then
 
 $as_echo "#define HAVE_AS_TLS 1" >>confdefs.h

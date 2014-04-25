@@ -115,7 +115,6 @@ along with GCC; see the file COPYING3.  If not see
 #define LIB_SPEC \
   "%{!symbolic:\
      %{pthreads|pthread:-lpthread} \
-     %{pthreads|pthread|fprofile-generate*:" LIB_TLS_SPEC "} \
      %{p|pg:-ldl} -lc}"
 
 #ifndef CROSS_DIRECTORY_STRUCTURE

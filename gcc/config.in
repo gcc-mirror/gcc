@@ -1697,12 +1697,6 @@
 #endif
 
 
-/* Define to the library containing __tls_get_addr/___tls_get_addr. */
-#ifndef USED_FOR_TARGET
-#undef LIB_TLS_SPEC
-#endif
-
-
 /* The linker hash style */
 #ifndef USED_FOR_TARGET
 #undef LINKER_HASH_STYLE
