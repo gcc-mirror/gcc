@@ -1,3 +1,10 @@
+2014-04-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/60930
+	* gimple-ssa-strength-reduction.c (create_mul_imm_cand):  Reject
+	creating a multiply candidate by folding two constant
+	multiplicands when the result overflows.
+
 2014-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60960
