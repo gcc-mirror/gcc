@@ -131,7 +131,7 @@ namespace __gnu_test
 
   // regex_match_debug behaves like regex_match, but will run *two* executors
   // (if there's no back-reference) and check if their results agree. If not,
-  // an exception throws. One can use them just in the way of using regex_match.
+  // an exception is thrown. The arguments are the same as for regex_match.
   template<typename _Bi_iter, typename _Alloc,
 	   typename _Ch_type, typename _Rx_traits>
     bool
@@ -153,7 +153,7 @@ namespace __gnu_test
       // __m is unspecified if return value is false.
       if (__res1 == __res2 && (!__res1 || __m == __mm))
 	return __res1;
-      throw(std::exception());
+      throw std::exception();
     }
 
   // No match_results version
