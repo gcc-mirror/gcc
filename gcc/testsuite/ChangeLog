@@ -1,3 +1,8 @@
+2014-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60960
+	* gcc.c-torture/execute/pr60960.c: New test.
+
 2014-04-25  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/pr18079-2.c: Fix quoting in dg-warning.

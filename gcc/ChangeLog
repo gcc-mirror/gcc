@@ -1,3 +1,9 @@
+2014-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60960
+	* tree-vect-generic.c (expand_vector_operation): Only call
+	expand_vector_divmod if type's mode satisfies VECTOR_MODE_P.
+
 2014-04-25  Tom de Vries  <tom@codesourcery.com>
 
 	* expr.c (clobber_reg_mode): New function.
