@@ -1,3 +1,10 @@
+2014-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60911
+	* passes.c (apply_ipa_transforms): Inline into only caller ...
+	(execute_one_pass): ... here.  Properly bring in function
+	bodies for nodes we want to apply IPA transforms to.
+
 2014-04-24  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/60896
