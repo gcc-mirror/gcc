@@ -1,3 +1,10 @@
+2014-04-25  Cary Coutant  <ccoutant@google.com>
+
+        PR debug/60929
+        * g++.dg/debug/dwarf2/dwarf4-nested.C: New test case.
+        * g++.dg/debug/dwarf2/dwarf4-typedef.C: Add
+        -fdebug-types-section flag.
+
 2014-04-25  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/arm/tail-long-call.c: New test.
