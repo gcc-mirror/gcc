@@ -1,3 +1,8 @@
+2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/60941
+	* config/sparc/sparc.md (ashlsi3_extend): Delete.
+
 2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR preprocessor/56540
