@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre-details" } */
+/* { dg-options "-O -fdump-tree-fre1-details" } */
 
 extern int posix_memalign(void **memptr,
 			  __SIZE_TYPE__ alignment, __SIZE_TYPE__ size);
