@@ -1,3 +1,8 @@
+2014-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	* config/i386/i386.md (define_expand "ldexpxf3"): Fix out-of-bounds
+	array accesses.
+
 2014-04-25  Cary Coutant  <ccoutant@google.com>
 
         PR debug/60929
