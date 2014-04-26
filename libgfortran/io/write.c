@@ -1835,7 +1835,10 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
               break;
 
 	    case BT_CHARACTER:
-	      write_character (dtp, p, 1, obj->string_length, DELIM);
+	      if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+		write_character (dtp, p, 4, obj->string_length, DELIM);
+	      else
+		write_character (dtp, p, 1, obj->string_length, DELIM);
               break;
 
 	    case BT_REAL:
