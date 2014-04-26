@@ -769,8 +769,8 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
   if (shift)
     {
       HOST_WIDE_INT block = ((unsigned HOST_WIDE_INT) 1 << shift) - 1;
-      shift = end & (HOST_BITS_PER_WIDE_INT - 1);
-      if (shift)
+      shift += width;
+      if (shift < HOST_BITS_PER_WIDE_INT)
 	{
 	  /* case 000111000 */
 	  block = ((unsigned HOST_WIDE_INT) 1 << shift) - block - 1;
