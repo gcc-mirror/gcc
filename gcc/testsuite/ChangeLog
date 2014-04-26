@@ -1,3 +1,9 @@
+2014-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/alias-30.c (dg-options): Dump only fre1 details.
+	* gcc.dg/vect/pr60505.c: Cleanup vect tree dump.
+	* g++.dg/ipa/devirt-27.C (dg-options): Remove -fdump-ipa-devirt.
+
 2014-04-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-c++-common/gomp/pr60823-2.c: Require effective target
@@ -3255,8 +3261,8 @@
 	* gfortran.dg/vect/fast-math-mgrid-resid.f: Change
 	-fdump-tree-optimized to -fdump-tree-pcom-details in dg-options and
 	cleanup-tree-dump from optimized to pcom.  Remove scan-tree-dump-times
-	for vect_\[^\\n\]*\\+, add scan-tree-dump-times for no suitable chains and
-	Executing predictive commoning without unrolling.
+	for vect_\[^\\n\]*\\+, add scan-tree-dump-times for no suitable
+	chains and Executing predictive commoning without unrolling.
 
 2014-01-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 

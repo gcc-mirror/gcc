@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-ipa-devirt -fdump-tree-optimized"  } */
+/* { dg-options "-O3 -fdump-tree-optimized"  } */
 struct A
  {
    int a;
