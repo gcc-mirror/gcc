@@ -717,7 +717,7 @@ wi::mask (HOST_WIDE_INT *val, unsigned int width, bool negate,
   gcc_assert (width < 4 * MAX_BITSIZE_MODE_ANY_INT);
   gcc_assert (prec <= 4 * MAX_BITSIZE_MODE_ANY_INT);
 
-  if (width == prec)
+  if (width >= prec)
     {
       val[0] = negate ? 0 : -1;
       return 1;
