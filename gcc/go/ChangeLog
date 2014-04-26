@@ -1,3 +1,16 @@
+2014-04-25  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc: Include "cgraph.h" and "gimplify.h".
+	(Gcc_backend::return_statement): Push and pop function.
+	(Gcc_backend::label): Likewise.
+	(Gcc_backend::function_defer_statement): Likewise.
+	(Gcc_backend::switch_statement): Add function parameter.
+	(Gcc_backend::block): Don't permit function to be NULL.
+	(Gcc_backend::temporary_variable): Change go_assert to
+	gcc_assert.
+	(Gcc_backend::gc_root_variable): New function.
+	(Gcc_backend::write_global_definitions): New function.
+
 2014-04-22  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::temporary_variable): Push cfun around

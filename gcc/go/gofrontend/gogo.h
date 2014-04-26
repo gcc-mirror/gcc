@@ -44,6 +44,7 @@ class Backend;
 class Export;
 class Import;
 class Bexpression;
+class Btype;
 class Bstatement;
 class Bblock;
 class Bvariable;
@@ -591,11 +592,6 @@ class Gogo
   Expression*
   runtime_error(int code, Location);
 
-  // Build a builtin struct with a list of fields.
-  static tree
-  builtin_struct(tree* ptype, const char* struct_name, tree struct_type,
-		 int nfields, ...);
-
   // Mark a function declaration as a builtin library function.
   static void
   mark_fndecl_as_builtin_library(tree fndecl);
@@ -650,17 +646,18 @@ class Gogo
   Named_object*
   initialization_function_decl();
 
-  // Write the magic initialization function.
-  void
-  write_initialization_function(Named_object* fndecl, tree init_stmt_list);
+  // Create the magic initialization function.
+  Named_object*
+  create_initialization_function(Named_object* fndecl, Bstatement* code_stmt);
 
   // Initialize imported packages.
   void
-  init_imports(tree*);
+  init_imports(std::vector<Bstatement*>&);
 
   // Register variables with the garbage collector.
   void
-  register_gc_vars(const std::vector<Named_object*>&, tree*);
+  register_gc_vars(const std::vector<Named_object*>&,
+                   std::vector<Bstatement*>&);
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
@@ -1086,7 +1083,7 @@ class Function
   get_or_make_decl(Gogo*, Named_object*);
 
   // Return the function's decl after it has been built.
-  tree
+  Bfunction*
   get_decl() const;
 
   // Set the function decl to hold a backend representation of the function
@@ -1675,7 +1672,7 @@ class Named_constant
   Named_constant(Type* type, Expression* expr, int iota_value,
 		 Location location)
     : type_(type), expr_(expr), iota_value_(iota_value), location_(location),
-      lowering_(false), is_sink_(false)
+      lowering_(false), is_sink_(false), bconst_(NULL)
   { }
 
   Type*
@@ -1737,6 +1734,10 @@ class Named_constant
   static void
   import_const(Import*, std::string*, Type**, Expression**);
 
+  // Get the backend representation of the constant value.
+  Bexpression*
+  get_backend(Gogo*, Named_object*);
+
  private:
   // The type of the constant.
   Type* type_;
@@ -1754,6 +1755,8 @@ class Named_constant
   bool lowering_;
   // Whether this constant is blank named and needs only type checking.
   bool is_sink_;
+  // The backend representation of the constant value.
+  Bexpression* bconst_;
 };
 
 // A type declaration.
@@ -2176,9 +2179,10 @@ class Named_object
   std::string
   get_id(Gogo*);
 
-  // Return a tree representing this object.
-  tree
-  get_tree(Gogo*, Named_object* function);
+  // Get the backend representation of this object.
+  void
+  get_backend(Gogo*, std::vector<Bexpression*>&, std::vector<Btype*>&,
+              std::vector<Bfunction*>&);
 
   // Define a type declaration.
   void
@@ -2219,8 +2223,6 @@ class Named_object
     Function_declaration* func_declaration_value;
     Package* package_value;
   } u_;
-  // The DECL tree for this object if we have already converted it.
-  tree tree_;
 };
 
 // A binding contour.  This binds names to objects.
