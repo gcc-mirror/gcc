@@ -1,3 +1,7 @@
+2014-04-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Library_Version): Bump to 4.10.
+
 2014-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Revert
