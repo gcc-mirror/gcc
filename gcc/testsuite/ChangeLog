@@ -1,3 +1,8 @@
+2014-04-26  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/52539
+	* gfortran.dg/namelist_utf8.f90: New test.
+
 2014-04-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/alias-30.c (dg-options): Dump only fre1 details.
