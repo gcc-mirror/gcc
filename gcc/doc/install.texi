@@ -2544,8 +2544,7 @@ Finally a @code{stagefeedback} compiler is built using the information collected
 
 Unlike standard bootstrap, several additional restrictions apply.  The
 compiler used to build @code{stage1} needs to support a 64-bit integral type.
-It is recommended to only use GCC for this.  Also parallel make is currently
-not supported since collisions in profile collecting may occur.
+It is recommended to only use GCC for this.
 
 @html
 <hr />
