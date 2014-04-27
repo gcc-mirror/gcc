@@ -2130,3 +2130,9 @@ wi::only_sign_bit_p (const wide_int_ref &x)
 void gt_ggc_mx (widest_int *) { }
 void gt_pch_nx (widest_int *, void (*) (void *, void *), void *) { }
 void gt_pch_nx (widest_int *) { }
+
+template void wide_int::dump () const;
+template void generic_wide_int <wide_int_ref_storage <false> >::dump () const;
+template void generic_wide_int <wide_int_ref_storage <true> >::dump () const;
+template void offset_int::dump () const;
+template void widest_int::dump () const;

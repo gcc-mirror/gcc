@@ -709,6 +709,9 @@ public:
 #undef ASSIGNMENT_OPERATOR
 #undef INCDEC_OPERATOR
 
+  /* Debugging functions.  */
+  void dump () const;
+
   static const bool is_sign_extended
     = wi::int_traits <generic_wide_int <storage> >::is_sign_extended;
 };
@@ -857,6 +860,23 @@ generic_wide_int <storage>::operator = (const T &x)
 {
   storage::operator = (x);
   return *this;
+}
+
+/* Dump the contents of the integer to stderr, for debugging.  */
+template <typename storage>
+void
+generic_wide_int <storage>::dump () const
+{
+  unsigned int len = this->get_len ();
+  const HOST_WIDE_INT *val = this->get_val ();
+  unsigned int precision = this->get_precision ();
+  fprintf (stderr, "[");
+  if (len * HOST_BITS_PER_WIDE_INT < precision)
+    fprintf (stderr, "...,");
+  for (unsigned int i = 0; i < len - 1; ++i)
+    fprintf (stderr, HOST_WIDE_INT_PRINT_HEX ",", val[len - 1 - i]);
+  fprintf (stderr, HOST_WIDE_INT_PRINT_HEX "], precision = %d\n",
+	   val[0], precision);
 }
 
 namespace wi
