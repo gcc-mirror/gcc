@@ -81,7 +81,7 @@ canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
 
   top = val[len - 1];
   if (len * HOST_BITS_PER_WIDE_INT > precision)
-    top = sext_hwi (top, precision % HOST_BITS_PER_WIDE_INT);
+    val[len - 1] = top = sext_hwi (top, precision % HOST_BITS_PER_WIDE_INT);
   if (top != 0 && top != (HOST_WIDE_INT)-1)
     return len;
 
