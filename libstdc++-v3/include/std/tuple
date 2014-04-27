@@ -755,14 +755,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
     get(tuple<_Elements...>& __t) noexcept
-    { return __get_helper<__i>(__t); }
+    { return std::__get_helper<__i>(__t); }
 
   template<std::size_t __i, typename... _Elements>
     constexpr typename __add_c_ref<
                       typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
     get(const tuple<_Elements...>& __t) noexcept
-    { return __get_helper<__i>(__t); }
+    { return std::__get_helper<__i>(__t); }
 
   template<std::size_t __i, typename... _Elements>
     constexpr typename __add_r_ref<

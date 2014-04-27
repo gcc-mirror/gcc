@@ -1,3 +1,9 @@
+2014-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60497
+	* include/std/tuple (get): Qualify calls to prevent ADL.
+	* testsuite/20_util/tuple/60497.cc: New.
+
 2012-04-05  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
