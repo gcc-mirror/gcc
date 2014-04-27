@@ -736,12 +736,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr bool
     operator!=(const optional<_Tp>& __lhs, _Tp const& __rhs)
-    { return !__lhs || *__lhs != __rhs; }
+    { return !__lhs || !(*__lhs == __rhs); }
 
   template<typename _Tp>
     constexpr bool
     operator!=(const _Tp& __lhs, const optional<_Tp>& __rhs)
-    { return !__rhs || __lhs != *__rhs; }
+    { return !__rhs || !(__lhs == *__rhs); }
 
   template<typename _Tp>
     constexpr bool
