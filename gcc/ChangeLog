@@ -1,3 +1,14 @@
+2014-04-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* cselib.c (find_slot_memmode): Delete.
+	(cselib_hasher): Change compare_type to a struct.
+	(cselib_hasher::equal): Update accordingly.  Don't expect wrapped
+	constants.
+	(preserve_constants_and_equivs): Adjust for new compare_type.
+	(cselib_find_slot): Likewise.  Take the mode of the rtx as argument.
+	(wrap_constant): Delete.
+	(cselib_lookup_mem, cselib_lookup_1): Update calls to cselib_find_slot.
+
 2014-04-26  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* doc/install.texi (Building with profile feedback): Remove

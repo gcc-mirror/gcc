@@ -49,9 +49,6 @@ struct elt_list {
     cselib_val *elt;
 };
 
-/* See the documentation of cselib_find_slot below.  */
-static enum machine_mode find_slot_memmode;
-
 static bool cselib_record_memory;
 static bool cselib_preserve_constants;
 static bool cselib_any_perm_equivs;
@@ -94,7 +91,14 @@ static rtx cselib_expand_value_rtx_1 (rtx, struct expand_value_data *, int);
 struct cselib_hasher : typed_noop_remove <cselib_val>
 {
   typedef cselib_val value_type;
-  typedef rtx_def compare_type;
+  struct compare_type {
+    /* The rtx value and its mode (needed separately for constant
+       integers).  */
+    enum machine_mode mode;
+    rtx x;
+    /* The mode of the contaning MEM, if any, otherwise VOIDmode.  */
+    enum machine_mode memmode;
+  };
   static inline hashval_t hash (const value_type *);
   static inline bool equal (const value_type *, const compare_type *);
 };
@@ -118,19 +122,12 @@ inline bool
 cselib_hasher::equal (const value_type *v, const compare_type *x_arg)
 {
   struct elt_loc_list *l;
-  rtx x = CONST_CAST_RTX (x_arg);
-  enum machine_mode mode = GET_MODE (x);
-
-  gcc_assert (!CONST_SCALAR_INT_P (x) && GET_CODE (x) != CONST_FIXED);
+  rtx x = x_arg->x;
+  enum machine_mode mode = x_arg->mode;
+  enum machine_mode memmode = x_arg->memmode;
 
   if (mode != GET_MODE (v->val_rtx))
     return false;
-
-  /* Unwrap X if necessary.  */
-  if (GET_CODE (x) == CONST
-      && (CONST_SCALAR_INT_P (XEXP (x, 0))
-	  || GET_CODE (XEXP (x, 0)) == CONST_FIXED))
-    x = XEXP (x, 0);
 
   if (GET_CODE (x) == VALUE)
     return x == v->val_rtx;
@@ -138,7 +135,7 @@ cselib_hasher::equal (const value_type *v, const compare_type *x_arg)
   /* We don't guarantee that distinct rtx's have different hash values,
      so we need to do a comparison.  */
   for (l = v->locs; l; l = l->next)
-    if (rtx_equal_for_cselib_1 (l->loc, x, find_slot_memmode))
+    if (rtx_equal_for_cselib_1 (l->loc, x, memmode))
       {
 	promote_debug_loc (l);
 	return true;
@@ -498,8 +495,11 @@ preserve_constants_and_equivs (cselib_val **x, void *info ATTRIBUTE_UNUSED)
 
   if (invariant_or_equiv_p (v))
     {
+      cselib_hasher::compare_type lookup = {
+	GET_MODE (v->val_rtx), v->val_rtx, VOIDmode
+      };
       cselib_val **slot
-	= cselib_preserved_hash_table.find_slot_with_hash (v->val_rtx,
+	= cselib_preserved_hash_table.find_slot_with_hash (&lookup,
 							   v->hash, INSERT);
       gcc_assert (!*slot);
       *slot = v;
@@ -572,22 +572,19 @@ cselib_get_next_uid (void)
 
 /* Search for X, whose hashcode is HASH, in CSELIB_HASH_TABLE,
    INSERTing if requested.  When X is part of the address of a MEM,
-   MEMMODE should specify the mode of the MEM.  While searching the
-   table, MEMMODE is held in FIND_SLOT_MEMMODE, so that autoinc RTXs
-   in X can be resolved.  */
+   MEMMODE should specify the mode of the MEM.  */
 
 static cselib_val **
-cselib_find_slot (rtx x, hashval_t hash, enum insert_option insert,
-		  enum machine_mode memmode)
+cselib_find_slot (enum machine_mode mode, rtx x, hashval_t hash,
+		  enum insert_option insert, enum machine_mode memmode)
 {
   cselib_val **slot = NULL;
-  find_slot_memmode = memmode;
+  cselib_hasher::compare_type lookup = { mode, x, memmode };
   if (cselib_preserve_constants)
-    slot = cselib_preserved_hash_table.find_slot_with_hash (x, hash,
+    slot = cselib_preserved_hash_table.find_slot_with_hash (&lookup, hash,
 							    NO_INSERT);
   if (!slot)
-    slot = cselib_hash_table.find_slot_with_hash (x, hash, insert);
-  find_slot_memmode = VOIDmode;
+    slot = cselib_hash_table.find_slot_with_hash (&lookup, hash, insert);
   return slot;
 }
 
@@ -1042,18 +1039,6 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
   return 1;
 }
 
-/* We need to pass down the mode of constants through the hash table
-   functions.  For that purpose, wrap them in a CONST of the appropriate
-   mode.  */
-static rtx
-wrap_constant (enum machine_mode mode, rtx x)
-{
-  if (!CONST_SCALAR_INT_P (x) && GET_CODE (x) != CONST_FIXED)
-    return x;
-  gcc_assert (mode != VOIDmode);
-  return gen_rtx_CONST (mode, x);
-}
-
 /* Hash an rtx.  Return 0 if we couldn't hash the rtx.
    For registers and memory locations, we look up their cselib_val structure
    and return its VALUE element.
@@ -1407,8 +1392,7 @@ cselib_lookup_mem (rtx x, int create)
 
   mem_elt = new_cselib_val (next_uid, mode, x);
   add_mem_for_addr (addr, mem_elt, x);
-  slot = cselib_find_slot (wrap_constant (mode, x), mem_elt->hash,
-			   INSERT, mode);
+  slot = cselib_find_slot (mode, x, mem_elt->hash, INSERT, VOIDmode);
   *slot = mem_elt;
   return mem_elt;
 }
@@ -2064,7 +2048,7 @@ cselib_lookup_1 (rtx x, enum machine_mode mode,
 	    }
 	}
       REG_VALUES (i)->next = new_elt_list (REG_VALUES (i)->next, e);
-      slot = cselib_find_slot (x, e->hash, INSERT, memmode);
+      slot = cselib_find_slot (mode, x, e->hash, INSERT, memmode);
       *slot = e;
       return e;
     }
@@ -2077,7 +2061,7 @@ cselib_lookup_1 (rtx x, enum machine_mode mode,
   if (! hashval)
     return 0;
 
-  slot = cselib_find_slot (wrap_constant (mode, x), hashval,
+  slot = cselib_find_slot (mode, x, hashval,
 			   create ? INSERT : NO_INSERT, memmode);
   if (slot == 0)
     return 0;
