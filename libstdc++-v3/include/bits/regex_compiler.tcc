@@ -188,8 +188,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __init();
 	  auto __e = _M_pop();
-	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_alt(_S_invalid_state_id,
-						      __e._M_start, __neg));
+	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_repeat(_S_invalid_state_id,
+							 __e._M_start, __neg));
 	  __e._M_append(__r);
 	  _M_stack.push(__r);
 	}
@@ -197,8 +197,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __init();
 	  auto __e = _M_pop();
-	  __e._M_append(_M_nfa._M_insert_alt(_S_invalid_state_id, __e._M_start,
-					     __neg));
+	  __e._M_append(_M_nfa._M_insert_repeat(_S_invalid_state_id,
+						__e._M_start, __neg));
 	  _M_stack.push(__e);
 	}
       else if (_M_match_token(_ScannerT::_S_token_opt))
@@ -206,8 +206,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __init();
 	  auto __e = _M_pop();
 	  auto __end = _M_nfa._M_insert_dummy();
-	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_alt(_S_invalid_state_id,
-						      __e._M_start, __neg));
+	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_repeat(_S_invalid_state_id,
+							 __e._M_start, __neg));
 	  __e._M_append(__end);
 	  __r._M_append(__end);
 	  _M_stack.push(__r);
@@ -244,8 +244,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      auto __tmp = __r._M_clone();
 	      _StateSeqT __s(_M_nfa,
-			     _M_nfa._M_insert_alt(_S_invalid_state_id,
-						  __tmp._M_start, __neg));
+			     _M_nfa._M_insert_repeat(_S_invalid_state_id,
+						     __tmp._M_start, __neg));
 	      __tmp._M_append(__s);
 	      __e._M_append(__s);
 	    }
@@ -261,8 +261,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      for (long __i = 0; __i < __n; ++__i)
 		{
 		  auto __tmp = __r._M_clone();
-		  auto __alt = _M_nfa._M_insert_alt(__tmp._M_start,
-						    __end, __neg);
+		  auto __alt = _M_nfa._M_insert_repeat(__tmp._M_start,
+						       __end, __neg);
 		  __stack.push(__alt);
 		  __e._M_append(_StateSeqT(_M_nfa, __alt, __tmp._M_end));
 		}

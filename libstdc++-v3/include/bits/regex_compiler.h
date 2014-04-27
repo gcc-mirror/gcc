@@ -421,7 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_make_cache(true_type)
       {
-	for (int __i = 0; __i < _M_cache.size(); __i++)
+	for (size_t __i = 0; __i < _M_cache.size(); __i++)
 	  _M_cache[static_cast<_UnsignedCharT>(__i)] =
 	    _M_apply(__i, false_type());
       }
