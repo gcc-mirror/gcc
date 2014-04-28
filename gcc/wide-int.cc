@@ -1137,46 +1137,6 @@ wi::add_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
   return canonize (val, len, prec);
 }
 
-/* This is bogus.  We should always return the precision and leave the
-   caller to handle target dependencies.  */
-static int
-clz_zero (unsigned int precision)
-{
-  unsigned int count;
-
-  enum machine_mode mode = mode_for_size (precision, MODE_INT, 0);
-  if (mode == BLKmode)
-    mode_for_size (precision, MODE_PARTIAL_INT, 0);
-
-  /* Even if the value at zero is undefined, we have to come up
-     with some replacement.  Seems good enough.  */
-  if (mode == BLKmode)
-    count = precision;
-  else if (!CLZ_DEFINED_VALUE_AT_ZERO (mode, count))
-    count = precision;
-  return count;
-}
-
-/* This is bogus.  We should always return the precision and leave the
-   caller to handle target dependencies.  */
-static int
-ctz_zero (unsigned int precision)
-{
-  unsigned int count;
-
-  enum machine_mode mode = mode_for_size (precision, MODE_INT, 0);
-  if (mode == BLKmode)
-    mode_for_size (precision, MODE_PARTIAL_INT, 0);
-
-  /* Even if the value at zero is undefined, we have to come up
-     with some replacement.  Seems good enough.  */
-  if (mode == BLKmode)
-    count = precision;
-  else if (!CTZ_DEFINED_VALUE_AT_ZERO (mode, count))
-    count = precision;
-  return count;
-}
-
 /* Subroutines of the multiplication and division operations.  Unpack
    the first IN_LEN HOST_WIDE_INTs in INPUT into 2 * IN_LEN
    HOST_HALF_WIDE_INTs of RESULT.  The rest of RESULT is filled by
@@ -2002,10 +1962,6 @@ wi::clz (const wide_int_ref &x)
     /* The upper bit is set, so there are no leading zeros.  */
     return 0;
 
-  /* Check whether the value is zero.  */
-  if (high == 0 && x.len == 1)
-    return clz_zero (x.precision);
-
   /* We don't need to look below HIGH.  Either HIGH is nonzero,
      or the top bit of the block below is nonzero; clz_hwi is
      HOST_BITS_PER_WIDE_INT in the latter case.  */
@@ -2047,7 +2003,7 @@ int
 wi::ctz (const wide_int_ref &x)
 {
   if (x.len == 1 && x.ulow () == 0)
-    return ctz_zero (x.precision);
+    return x.precision;
 
   /* Having dealt with the zero case, there must be a block with a
      nonzero bit.  We don't care about the bits above the first 1.  */

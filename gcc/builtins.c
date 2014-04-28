@@ -8080,6 +8080,7 @@ fold_builtin_bitop (tree fndecl, tree arg)
   /* Optimize for constant argument.  */
   if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
+      tree type = TREE_TYPE (arg);
       int result;
 
       switch (DECL_FUNCTION_CODE (fndecl))
@@ -8089,11 +8090,17 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLZ):
-	  result = wi::clz (arg);
+	  if (wi::ne_p (arg, 0))
+	    result = wi::clz (arg);
+	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
+	    result = TYPE_PRECISION (type);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CTZ):
-	  result = wi::ctz (arg);
+	  if (wi::ne_p (arg, 0))
+	    result = wi::ctz (arg);
+	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
+	    result = TYPE_PRECISION (type);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLRSB):

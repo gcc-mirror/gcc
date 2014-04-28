@@ -1656,6 +1656,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
       wide_int result;
       enum machine_mode imode = op_mode == VOIDmode ? mode : op_mode;
       rtx_mode_t op0 = std::make_pair (op, imode);
+      int int_value;
 
 #if TARGET_SUPPORTS_WIDE_INT == 0
       /* This assert keeps the simplification from producing a result
@@ -1686,7 +1687,11 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case CLZ:
-	  result = wi::shwi (wi::clz (op0), mode);
+	  if (wi::ne_p (op0, 0))
+	    int_value = wi::clz (op0);
+	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (mode, int_value))
+	    int_value = GET_MODE_PRECISION (mode);
+	  result = wi::shwi (int_value, mode);
 	  break;
 
 	case CLRSB:
@@ -1694,7 +1699,11 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case CTZ:
-	  result = wi::shwi (wi::ctz (op0), mode);
+	  if (wi::ne_p (op0, 0))
+	    int_value = wi::ctz (op0);
+	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, int_value))
+	    int_value = GET_MODE_PRECISION (mode);
+	  result = wi::shwi (int_value, mode);
 	  break;
 
 	case POPCOUNT:
