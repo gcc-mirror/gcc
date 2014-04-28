@@ -1,3 +1,11 @@
+2014-04-28  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Only iterate
+	over real defs when invalidating outputs from statements that do not
+	produce useful outputs for threading.
+
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60979

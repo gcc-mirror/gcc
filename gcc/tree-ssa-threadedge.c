@@ -398,7 +398,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	  ssa_op_iter iter;
 
 	  if (backedge_seen)
-	    FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_DEFS)
+	    FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
 	      {
 		/* This call only invalidates equivalences created by
 		   PHI nodes.  This is by design to keep the cost of
