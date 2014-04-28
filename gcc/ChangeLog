@@ -1,3 +1,10 @@
+2014-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/gimple.texi: Replace the description of the now-defunct
+	union gimple_statement_d with a diagram showing the
+	gimple_statement_base class hierarchy and its relationships to
+	the GSS_ and GIMPLE_ enums.
+
 2014-04-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_modes_tieable_p): New.
