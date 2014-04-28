@@ -1,5 +1,12 @@
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/vrp91.c: New testcase.
+	* gcc.dg/Wstrict-overflow-14.c: XFAIL.
+	* gcc.dg/Wstrict-overflow-15.c: Likewise.
+	* gcc.dg/Wstrict-overflow-18.c: Remove XFAIL.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/60979
 	* gcc.dg/graphite/pr60979.c: New testcase.
 

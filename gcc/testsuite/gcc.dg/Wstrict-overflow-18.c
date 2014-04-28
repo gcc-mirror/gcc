@@ -17,7 +17,7 @@ foo (struct c *p)
 
   for (i = 0; i < p->a - p->b; ++i)
     {
-      if (i > 0)  /* { dg-bogus "warning" "" { xfail *-*-* } } */
+      if (i > 0)  /* { dg-bogus "warning" "" } */
 	sum += 2;
       bar (p);
     }
