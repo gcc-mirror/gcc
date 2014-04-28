@@ -1768,8 +1768,7 @@ execute_function_todo (function *fn, void *data)
     }
 
 #if defined ENABLE_CHECKING
-  if (flags & TODO_verify_ssa
-      || (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA)))
+  if (flags & TODO_verify_ssa)
     {
       verify_gimple_in_cfg (cfun);
       verify_ssa (true);
@@ -1778,8 +1777,18 @@ execute_function_todo (function *fn, void *data)
     verify_gimple_in_cfg (cfun);
   if (flags & TODO_verify_flow)
     verify_flow_info ();
-  if (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA))
-    verify_loop_closed_ssa (false);
+  if (flags & TODO_verify_il)
+    {
+      if (current_loops
+	  && loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	{
+	  if (!(flags & (TODO_verify_stmts|TODO_verify_ssa)))
+	    verify_gimple_in_cfg (cfun);
+	  if (!(flags & TODO_verify_ssa))
+	    verify_ssa (true);
+	  verify_loop_closed_ssa (false);
+	}
+    }
   if (flags & TODO_verify_rtl_sharing)
     verify_rtl_sharing ();
 #endif
@@ -2167,7 +2176,7 @@ execute_one_pass (opt_pass *pass)
     check_profile_consistency (pass->static_pass_number, 0, true);
 
   /* Run post-pass cleanup and verification.  */
-  execute_todo (todo_after | pass->todo_flags_finish);
+  execute_todo (todo_after | pass->todo_flags_finish | TODO_verify_il);
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
     check_profile_consistency (pass->static_pass_number, 1, true);
 

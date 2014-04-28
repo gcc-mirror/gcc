@@ -1,5 +1,15 @@
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
+	* tree-pass.h (TODO_verify_il): Define.
+	(TODO_verify_all): Complete properly.
+	* passes.c (execute_function_todo): Move existing loop-closed
+	SSA verification under TODO_verify_il.
+	(execute_one_pass): Trigger TODO_verify_il at todo-after time.
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps):
+	Fix tree sharing issue.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/60092
 	* builtins.def (DEF_C11_BUILTIN): Add.
 	(BUILT_IN_ALIGNED_ALLOC): Likewise.
