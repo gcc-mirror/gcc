@@ -1,3 +1,15 @@
+2014-04-28  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (sra_modify_expr): Generate new memory accesses with
+	same alias type as the original statement.
+	(subreplacement_assignment_data): New type.
+	(handle_unscalarized_data_in_subtree): New type of parameter,
+	generate new memory accesses with same alias type as the original
+	statement.
+	(load_assign_lhs_subreplacements): Likewise.
+	(sra_modify_constructor_assign): Generate new memory accesses with
+	same alias type as the original statement.
+
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (TODO_verify_il): Define.

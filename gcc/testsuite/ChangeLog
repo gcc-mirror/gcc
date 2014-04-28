@@ -1,3 +1,7 @@
+2014-04-28  Martin Jambor  <mjambor@suse.cz>
+
+        * gcc.dg/tree-ssa/sra-14.c: New test.
+
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60092
