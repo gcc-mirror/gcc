@@ -1,3 +1,8 @@
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gcc-interface/utils.c: Define flag_isoc11.
+
 2014-04-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Library_Version): Bump to 4.10.

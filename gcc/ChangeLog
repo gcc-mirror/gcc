@@ -1,5 +1,20 @@
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/60092
+	* builtins.def (DEF_C11_BUILTIN): Add.
+	(BUILT_IN_ALIGNED_ALLOC): Likewise.
+	* coretypes.h (enum function_class): Add function_c11_misc.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	BUILT_IN_ALIGNED_ALLOC like BUILT_IN_MALLOC.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+	(propagate_necessity): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-ccp.c (evaluate_stmt): Handle BUILT_IN_ALIGNED_ALLOC.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (vrp_var_may_overflow): Remove.
 	(vrp_visit_phi_node): Rather than bumping to +-INF possibly
 	with overflow immediately bump to one before that value and

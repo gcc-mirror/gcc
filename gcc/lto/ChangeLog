@@ -1,3 +1,8 @@
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* lto-lang.c: Define flag_isoc11.
+
 2014-04-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* lto-partition.c (add_references_to_partition): Update for
