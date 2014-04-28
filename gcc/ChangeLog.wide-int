@@ -3,12 +3,10 @@
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-	* alias.c
-	(ao_ref_from_mem): Use wide-int interfaces.
+	* alias.c (ao_ref_from_mem): Use wide-int interfaces.
 	(rtx_equal_for_memref_p): Update comment.
 	(adjust_offset_for_component_ref): Use wide-int interfaces.
-	* builtins.c
-	(get_object_alignment_2): Use wide-int interfaces.
+	* builtins.c (get_object_alignment_2): Likewise.
 	(c_readstr): Likewise.
 	(target_char_cast): Add comment.
 	(determine_block_size): Use wide-int interfaces.
@@ -20,8 +18,7 @@
 	(fold_builtin_pow): Likewise.
 	(fold_builtin_memory_op): Use wide-int interfaces.
 	(fold_builtin_object_size): Likewise.
-	* cfgloop.c
-	(alloc_loop): Initialize nb_iterations_upper_bound and
+	* cfgloop.c (alloc_loop): Initialize nb_iterations_upper_bound and
 	nb_iterations_estimate.
 	(record_niter_bound): Use wide-int interfaces.
 	(get_estimated_loop_iterations_int): Likewise.
@@ -36,44 +33,34 @@
 	(get_max_loop_iterations): Likewise.
 	(gcov_type_to_double_int): Rename to gcov_type_to_wide_int and
 	update for wide-int.
-	* cgraph.c
-	(cgraph_add_thunk): Use wide-int interfaces.
-	* combine.c
-	(try_combine): Use wide-int interfaces.
+	* cgraph.c (cgraph_add_thunk): Use wide-int interfaces.
+	* combine.c (try_combine): Likewise.
 	(subst): Use CONST_SCALAR_INT_P rather than CONST_INT_P.
-	* config/aarch64/aarch64.c
-	(aapcs_vfp_sub_candidate): Use wide-int interfaces.
+	* config/aarch64/aarch64.c (aapcs_vfp_sub_candidate): Use wide-int
+	interfaces.
 	(aarch64_float_const_representable_p): Likewise.
 	* config/arc/arc.c: Include wide-int.h.
 	(arc_can_use_doloop_p): Use wide-int interfaces.
-	* config/arm/arm.c
-	(aapcs_vfp_sub_candidate): Use wide-int interfaces.
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Likewise.
 	(vfp3_const_double_index): Likewise.
-	* config/avr/avr.c
-	(avr_out_round): Use wide-int interfaces.
+	* config/avr/avr.c (avr_out_round): Likewise.
 	(avr_fold_builtin): Likewise.
-	* config/bfin/bfin.c
-	(bfin_local_alignment): Use wide-int interfaces.
+	* config/bfin/bfin.c (bfin_local_alignment): Likewise.
 	(bfin_can_use_doloop_p): Likewise.
-	* config/darwin.c
-	(darwin_mergeable_constant_section): Use wide-int interfaces.
+	* config/darwin.c (darwin_mergeable_constant_section): Likewise.
 	(machopic_select_rtx_section): Update to handle CONST_WIDE_INT.
 	* config/i386/i386.c: Include wide-int.h.
 	(ix86_data_alignment): Use wide-int interfaces.
 	(ix86_local_alignment): Likewise.
 	(ix86_emit_swsqrtsf): Update real_from_integer.
-	* config/msp430/msp430.c
-	(msp430_attr): Use wide-int interfaces.
-	* config/nds32/nds32.c
-	(nds32_insert_attributes): Use wide-int interfaces.
-	* config/rs6000/predicates.md
-	(any_operand): Add const_wide_int.
+	* config/msp430/msp430.c (msp430_attr): Use wide-int interfaces.
+	* config/nds32/nds32.c (nds32_insert_attributes): Likewise.
+	* config/rs6000/predicates.md (any_operand): Add const_wide_int.
 	(zero_constant): Likewise.
 	(input_operand): Likewise.
 	(splat_input_operand): Likewise.
 	(non_logical_cint_operand): Change const_double to const_wide_int.
-	* config/rs6000/rs6000.c
-	(num_insns_constant): Handle CONST_WIDE_INT.
+	* config/rs6000/rs6000.c (num_insns_constant): Handle CONST_WIDE_INT.
 	(easy_altivec_constant): Remove comment.
 	(paired_expand_vector_init): Use CONSTANT_P.
 	(rs6000_legitimize_address): Handle CONST_WIDE_INT.
@@ -88,55 +75,43 @@
 	(rs6000_emit_swrsqrt); Update call to real_from_integer.
 	* config/rs6000/rs6000-c.c: Include wide-int.h.
 	(altivec_resolve_overloaded_builtin): Use wide-int interfaces.
-	* config/rs6000/rs6000.h
-	(TARGET_SUPPORTS_WIDE_INT): New.
-	* config/rs6000/rs6000.md
-	Use const_scalar_int_operand.  Handle CONST_WIDE_INT.
-	* config/sol2-c.c
-	(solaris_pragma_align): Change low to unsigned HWI.  Use tree_fits_uhwi_p.
+	* config/rs6000/rs6000.h (TARGET_SUPPORTS_WIDE_INT): New.
+	* config/rs6000/rs6000.md: Use const_scalar_int_operand.
+	Handle CONST_WIDE_INT.
+	* config/sol2-c.c (solaris_pragma_align): Change low to unsigned HWI.
+	Use tree_fits_uhwi_p.
 	* config/sparc/sparc.c: Include wide-int.h.
 	(sparc_fold_builtin): Use wide-int interfaces.
 	* config/vax/vax.c: Include wide-int.h.
 	(vax_float_literal): Use real_from_integer.
-	* coretypes.h
-	(struct hwivec_def): New.
+	* coretypes.h (struct hwivec_def): New.
 	(hwivec): New.
 	(const_hwivec): New.
-	* cse.c
-	(hash_rtx_cb): Handle CONST_WIDE_INT.
+	* cse.c (hash_rtx_cb): Handle CONST_WIDE_INT.
 	(equiv_constant): Handle CONST_WIDE_INT.
-	* cselib.c
-	(rtx_equal_for_cselib_1): Use CASE_CONST_UNIQUE.
+	* cselib.c (rtx_equal_for_cselib_1): Use CASE_CONST_UNIQUE.
 	(cselib_hash_rtx): Handle CONST_WIDE_INT.
-	* dbxout.c
-	(stabstr_U): Use wide-int interfaces.
+	* dbxout.c (stabstr_U): Use wide-int interfaces.
 	(dbxout_type): Update to use cst_fits_shwi_p.
-	* defaults.h
-	(LOG2_BITS_PER_UNIT): Define.
+	* defaults.h (LOG2_BITS_PER_UNIT): Define.
 	(TARGET_SUPPORTS_WIDE_INT): Add default.
 	* dfp.c: Include wide-int.h.
 	(decimal_real_to_integer2): Use wide-int interfaces and rename to
 	decimal_real_to_integer.
-	* dfp.h
-	(decimal_real_to_integer2): Return a wide_int and rename to
+	* dfp.h (decimal_real_to_integer2): Return a wide_int and rename to
 	decimal_real_to_integer.
-	* doc/generic.texi
-	(Constant expressions): Use wide-int interfaces.
-	* doc/rtl.texi
-	(const_double): Use wide-int interfaces.
+	* doc/generic.texi (Constant expressions): Update for wide_int.
+	* doc/rtl.texi (const_double): Likewise.
 	(const_wide_int, CONST_WIDE_INT, CONST_WIDE_INT_VEC): New.
 	(CONST_WIDE_INT_NUNITS, CONST_WIDE_INT_ELT): New.
-	* doc/tm.texi.in
-	(REAL_VALUE_TO_INT): Remove.
+	* doc/tm.texi.in (REAL_VALUE_TO_INT): Remove.
 	(REAL_VALUE_FROM_INT): Remove.
 	(TARGET_SUPPORTS_WIDE_INT): New.
 	* doc/tm.texi: Regenerate.
-	* dojump.c
-	(prefer_and_bit_test): Use wide-int interfaces.
+	* dojump.c (prefer_and_bit_test): Use wide-int interfaces.
 	* double-int.h: Include wide-int.h.
 	(struct wi::int_traits): New.
-	* dwarf2out.c
-	(get_full_len): New.
+	* dwarf2out.c (get_full_len): New.
 	(dw_val_equal_p): Add case dw_val_class_wide_int.
 	(size_of_loc_descr): Likewise.
 	(output_loc_operands): Likewise.
@@ -150,8 +125,8 @@
 	(size_of_die): Likewise.
 	(value_format): Likewise.
 	(output_die): Likewise.
-	(double_int_type_size_in_bits): Rename to
-	offset_int_type_size_in_bits.  Use wide-int.
+	(double_int_type_size_in_bits): Rename to offset_int_type_size_in_bits.
+	Use wide-int.
 	(clz_loc_descriptor): Use wide-int interfaces.
 	(mem_loc_descriptor): Likewise.  Handle CONST_WIDE_INT.
 	(loc_descriptor): Use wide-int interfaces.  Handle CONST_WIDE_INT.
@@ -168,8 +143,7 @@
 	(wide_int_ptr): New.
 	(enum dw_val_class): Add dw_val_class_wide_int.
 	(struct dw_val_struct): Add val_wide.
-	* emit-rtl.c
-	(const_wide_int_htab): New.
+	* emit-rtl.c (const_wide_int_htab): New.
 	(const_wide_int_htab_hash): New.
 	(const_wide_int_htab_eq): New.
 	(lookup_const_wide_int): New.
@@ -180,17 +154,14 @@
 	update for wide-int.
 	(immed_double_const): Conditionally compile for wide-int.
 	(init_emit_once): Use wide-int interfaces.
-	* explow.c
-	(plus_constant): Use wide-int interfaces.
-	* expmed.c
-	(mask_rtx): Move further up file.  Use wide-int interfaces.
+	* explow.c (plus_constant): Likewise.
+	* expmed.c (mask_rtx): Move further up file.  Use wide-int interfaces.
 	(lshift_value): Use wide-int interfaces.
 	(expand_mult): Likewise.
 	(choose_multiplier): Likewise.
 	(expand_smod_pow2): Likewise.
 	(make_tree): Likewise.
-	* expr.c
-	(convert_modes): Consolidate handling of constants.
+	* expr.c (convert_modes): Consolidate handling of constants.
 	Use wide-int interfaces.
 	(emit_group_load_1): Add note.
 	(store_expr): Update comment.
@@ -207,12 +178,10 @@
 	(fixed_to_decimal): Likewise.
 	(fixed_convert_from_real): Likewise.
 	(real_convert_from_fixed): Likewise.
-	* fold-const.h
-	(mem_ref_offset): Return an offset_int.
+	* fold-const.h (mem_ref_offset): Return an offset_int.
 	(div_if_zero_remainder): Remove code parameter.
-	* fold-const.c
-	(div_if_zero_remainder): Remove code parameter.  Use wide-int
-	interfaces.
+	* fold-const.c (div_if_zero_remainder): Remove code parameter.
+	Use wide-int interfaces.
 	(may_negate_without_overflow_p): Use wide-int interfaces.
 	(negate_expr_p): Likewise.
 	(fold_negate_expr): Likewise.
@@ -253,42 +222,34 @@
 	(fold_abs_const): Likewise.
 	(fold_relational_const): Use tree_int_cst_lt.
 	(round_up_loc): Use wide-int interfaces.
-	* genemit.c
-	(gen_exp): Add CONST_WIDE_INT case.
-	* gengenrtl.c
-	(excluded_rtx): Add CONST_WIDE_INT case.
+	* genemit.c (gen_exp): Add CONST_WIDE_INT case.
+	* gengenrtl.c (excluded_rtx): Add CONST_WIDE_INT case.
 	* gengtype.c: Remove include of double-int.h.
 	(do_typedef): Use wide-int interfaces.
 	(open_base_files): Add wide-int.h.
 	(main): Add offset_int and widest_int typedefs.
 	* gengtype-lex.l: Handle "^".
 	(CXX_KEYWORD): Add "static".
-	* gengtype-parse.c
-	(require3): New.
+	* gengtype-parse.c (require3): New.
 	(require_template_declaration): Handle constant template arguments
 	and nested templates.
 	* gengtype-state.c: Don't include "double-int.h".
-	* genpreds.c
-	(write_one_predicate_function): Update comment.
+	* genpreds.c (write_one_predicate_function): Update comment.
 	(write_tm_constrs_h): Add check for hval and lval use in
 	CONST_WIDE_INT.
-	* genrecog.c
-	(validate_pattern): Add CONST_WIDE_INT case.
+	* genrecog.c (validate_pattern): Add CONST_WIDE_INT case.
 	(add_to_sequence): Likewise.
-	* gensupport.c
-	(struct std_pred_table): Add const_scalar_int_operand and
-	const_double_operand.
-	* gimple.c
-	(preprocess_case_label_vec_for_gimple): Use wide-int interfaces.
-	* gimple-fold.c
-	(get_base_constructor): Use wide-int interfaces.
+	* gensupport.c (struct std_pred_table): Add const_scalar_int_operand
+	and const_double_operand.
+	* gimple.c (preprocess_case_label_vec_for_gimple): Use wide-int
+	interfaces.
+	* gimple-fold.c (get_base_constructor): Likewise.
 	(fold_array_ctor_reference): Likewise.
 	(fold_nonarray_ctor_reference): Likewise.
 	(fold_const_aggregate_ref_1): Likewise.
 	(gimple_val_nonnegative_real_p): Likewise.
 	(gimple_fold_indirect_ref): Likewise.
-	* gimple-pretty-print.c
-	(dump_ssaname_info): Use wide-int interfaces.
+	* gimple-pretty-print.c (dump_ssaname_info): Likewise.
 	* gimple-ssa-strength-reduction.c: Include wide-int-print.h.
 	(struct slsr_cand_d): Change index to be widest_int.
 	(struct incr_info_d): Change incr to be widest_int.
@@ -330,71 +291,54 @@
 	(replace_profitable_candidates): Likewise.
 	* godump.c: Include wide-int-print.h.
 	(go_output_typedef): Use wide-int interfaces.
-	* graphite-clast-to-gimple.c
-	(gmp_cst_to_tree): Use wide-int interfaces.
-	* graphite-sese-to-poly.c
-	(tree_int_to_gmp): Use wide-int interfaces.
+	* graphite-clast-to-gimple.c (gmp_cst_to_tree): Likewise.
+	* graphite-sese-to-poly.c (tree_int_to_gmp): Likewise.
 	(build_loop_iteration_domains): Likewise.
 	* hooks.h: Include wide-int.h rather than double-int.h.
 	(hook_bool_dint_dint_uint_bool_true): Delete.
 	(hook_bool_wint_wint_uint_bool_true): Declare.
-	* hooks.c
-	(hook_bool_dint_dint_uint_bool_true): Removed.
+	* hooks.c (hook_bool_dint_dint_uint_bool_true): Removed.
 	(hook_bool_wint_wint_uint_bool_true): New.
-	* internal-fn.c
-	(ubsan_expand_si_overflow_addsub_check): Use wide-int interfaces.
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): Use wide-int
+	interfaces.
 	(ubsan_expand_si_overflow_mul_check): Likewise.
-	* ipa-devirt.c
-	(get_polymorphic_call_info): Use wide-int interfaces.
-	* ipa-prop.c
-	(compute_complex_assign_jump_func): Use wide-int interfaces.
+	* ipa-devirt.c (get_polymorphic_call_info): Likewise.
+	* ipa-prop.c (compute_complex_assign_jump_func): Likewise.
 	(get_ancestor_addr_info): Likewise.
 	(ipa_modify_call_arguments): Likewise.
-	* loop-doloop.c
-	(doloop_modify): Use wide-int interfaces.
+	* loop-doloop.c (doloop_modify): Likewise.
 	(doloop_optimize): Likewise.
-	* loop-iv.c
-	(iv_number_of_iterations): Use wide-int interfaces.
-	* loop-unroll.c
-	(decide_unroll_constant_iterations): Use wide-int interfaces.
+	* loop-iv.c (iv_number_of_iterations): Likewise.
+	* loop-unroll.c (decide_unroll_constant_iterations): Likewise.
 	(unroll_loop_constant_iterations): Likewise.
 	(decide_unroll_runtime_iterations): Likewise.
 	(unroll_loop_runtime_iterations): Likewise.
 	(decide_peel_simple): Likewise.
 	(decide_unroll_stupid): Likewise.
-	* lto-streamer-in.c
-	(streamer_read_wi): Add.
+	* lto-streamer-in.c (streamer_read_wi): Add.
 	(input_cfg): Use wide-int interfaces.
 	(lto_input_tree_1): Likewise.
-	* lto-streamer-out.c
-	(streamer_write_wi): Add.
+	* lto-streamer-out.c (streamer_write_wi): Add.
 	(hash_tree): Use wide-int interfaces.
 	(output_cfg): Likewise.
-	* Makefile.in
-	(OBJS): Add wide-int.o and wide-int-print.o.
+	* Makefile.in (OBJS): Add wide-int.o and wide-int-print.o.
 	(GTFILES): Add wide-int.h and signop.h.
 	(TAGS): Look for .cc files too.
-	* omp-low.c
-	(scan_omp_1_op): Use wide-int interfaces.
-	* optabs.c
-	(expand_subword_shift): Use wide-int interfaces.
+	* omp-low.c (scan_omp_1_op): Use wide-int interfaces.
+	* optabs.c (expand_subword_shift): Likewise.
 	(expand_doubleword_shift): Likewise.
 	(expand_absneg_bit): Likewise.
 	(expand_copysign_absneg): Likewise.
 	(expand_copysign_bit): Likewise.
-	* postreload.c
-	(reload_cse_simplify_set): Use wide-int interfaces.
-	* predict.c
-	(predict_iv_comparison): Use wide-int interfaces.
+	* postreload.c (reload_cse_simplify_set): Likewise.
+	* predict.c (predict_iv_comparison): Likewise.
 	* pretty-print.h: Include wide-int-print.h.
 	(pp_wide_int) New.
-	* print-rtl.c
-	(print_rtx): Add CONST_WIDE_INT case.
+	* print-rtl.c (print_rtx): Add CONST_WIDE_INT case.
 	* print-tree.c: Include wide-int-print.h.
 	(print_node_brief): Use wide-int interfaces.
 	(print_node): Likewise.
-	* read-rtl.c
-	(validate_const_wide_int): New.
+	* read-rtl.c (validate_const_wide_int): New.
 	(read_rtx_code): Add CONST_WIDE_INT case.
 	* real.c: Include wide-int.h.
 	(real_to_integer2): Delete.
@@ -407,23 +351,19 @@
 	(REAL_VALUE_TO_INT): Delete.
 	(real_to_integer): Declare a wide-int form.
 	(real_from_integer): Take a wide_int rather than two HOST_WIDE_INTs.
-	* recog.c
-	(const_int_operand): Improve comment.
+	* recog.c (const_int_operand): Improve comment.
 	(const_scalar_int_operand): New.
 	(const_double_operand): Add a separate definition for CONST_WIDE_INT.
-	* rtlanal.c
-	(commutative_operand_precedence): Handle CONST_WIDE_INT.
+	* rtlanal.c (commutative_operand_precedence): Handle CONST_WIDE_INT.
 	(split_double): Likewise.
-	* rtl.c
-	(DEF_RTL_EXPR): Handle CONST_WIDE_INT.
+	* rtl.c (DEF_RTL_EXPR): Handle CONST_WIDE_INT.
 	(rtx_size): Likewise.
 	(rtx_alloc_stat_v): New.
 	(rtx_alloc_stat): Now calls rtx_alloc_stat_v.
 	(cwi_output_hex): New.
 	(iterative_hash_rtx): Handle CONST_WIDE_INT.
 	(cwi_check_failed_bounds): New.
-	* rtl.def
-	(CONST_WIDE_INT): New.
+	* rtl.def (CONST_WIDE_INT): New.
 	* rtl.h: Include <utility> and wide-int.h.
 	(struct hwivec_def): New.
 	(CWI_GET_NUM_ELEM): New.
@@ -450,25 +390,19 @@
 	(rtx_alloc_v) New.
 	(const_wide_int_alloc): New.
 	(immed_wide_int_const): New.
-	* sched-vis.c
-	(print_value): Handle CONST_WIDE_INT.
-	* sel-sched-ir.c
-	(lhs_and_rhs_separable_p): Update comment.
+	* sched-vis.c (print_value): Handle CONST_WIDE_INT.
+	* sel-sched-ir.c (lhs_and_rhs_separable_p): Update comment.
 	* signop.h: New file.
-	* simplify-rtx.c
-	(mode_signbit_p): Handle CONST_WIDE_INT.
+	* simplify-rtx.c (mode_signbit_p): Handle CONST_WIDE_INT.
 	(simplify_const_unary_operation): Use wide-int interfaces.
 	(simplify_binary_operation_1): Likewise.
 	(simplify_const_binary_operation): Likewise.
 	(simplify_const_relational_operation): Likewise.
 	(simplify_immed_subreg): Likewise.
-	* stmt.c
-	(expand_case): Use wide-int interfaces.
-	* stor-layout.h
-	(set_min_and_max_values_for_integral_type): Take a signop rather
-	than a bool.
-	* stor-layout.c
-	(layout_type): Use wide-int interfaces.
+	* stmt.c (expand_case): Likewise.
+	* stor-layout.h (set_min_and_max_values_for_integral_type): Take a
+	signop rather than a bool.
+	* stor-layout.c (layout_type): Use wide-int interfaces.
 	(initialize_sizetypes): Update calls to
 	set_min_and_max_values_for_integral_type.
 	(set_min_and_max_values_for_integral_type): Take a signop rather
@@ -476,17 +410,15 @@
 	(fixup_signed_type): Update accordingly.  Remove
 	HOST_BITS_PER_DOUBLE_INT limit.
 	(fixup_unsigned_type): Likewise.
-	* system.h
-	(STATIC_CONSTANT_P): New.
+	* system.h (STATIC_CONSTANT_P): New.
 	(STATIC_ASSERT): New.
-	* target.def
-	(can_use_doloop_p): Take widest_ints rather than double_ints.
+	* target.def (can_use_doloop_p): Take widest_ints rather than
+	double_ints.
 	* target.h: Include wide-int.h rather than double-int.h.
 	* targhooks.h (can_use_doloop_if_innermost): Take widest_ints rather
 	than double_ints.
-	* targhooks.c
-	(default_cxx_get_cookie_size): Use tree_int_cst_lt rather than
-	INT_CST_LT_UNSIGNED.
+	* targhooks.c (default_cxx_get_cookie_size): Use tree_int_cst_lt
+	rather than INT_CST_LT_UNSIGNED.
 	(can_use_doloop_if_innermost): Take widest_ints rather than
 	double_ints.
 	* tree-affine.c: Include wide-int-print.h.
@@ -546,7 +478,7 @@
 	(cache_integer_cst): Use wide-int interfaces.
 	(build_low_bits_mask): Likewise.
 	(cst_and_fits_in_hwi): Likewise.
-	(real_value_from_int_cst): Use wide-int interfaces.
+	(real_value_from_int_cst): Likewise.
 	(make_int_cst_stat): New.
 	(integer_zerop): Use wide_int interfaces.
 	(integer_onep): Likewise.
@@ -583,28 +515,21 @@
 	(lower_bound_in_type): Likewise.
 	(num_ending_zeros): Likewise.
 	(drop_tree_overflow): Likewise.
-	* tree-call-cdce.c
-	(check_pow): Update call to real_from_integer.
+	* tree-call-cdce.c (check_pow): Update call to real_from_integer.
 	(gen_conditions_for_pow_cst_base): Likewise.
 	* tree-cfg.c: Include wide-int.h and wide-int-print.h.
 	(group_case_labels_stmt): Use wide-int interfaces.
 	(verify_gimple_assign_binary): Likewise.
 	(print_loop): Likewise.
-	* tree-chrec.c
-	(tree_fold_binomial): Use wide-int interfaces.
-	* tree-core.h
-	(struct tree_base): Add int_length.
+	* tree-chrec.c (tree_fold_binomial): Likewise.
+	* tree-core.h (struct tree_base): Add int_length.
 	(struct tree_int_cst): Change rep of value.
-	* tree-data-ref.c
-	(dr_analyze_innermost): Use wide-int interfaces.
+	* tree-data-ref.c (dr_analyze_innermost): Use wide-int interfaces.
 	(dr_may_alias_p): Likewise.
 	(max_stmt_executions_tree): Likewise.
-	* tree.def
-	(INTEGER_CST): Update comment.
-	* tree-dfa.c
-	(get_ref_base_and_extent): Use wide-int interfaces.
-	* tree-dfa.h
-	(get_addr_base_and_unit_offset_1): Use wide-int interfaces.
+	* tree.def (INTEGER_CST): Update comment.
+	* tree-dfa.c (get_ref_base_and_extent): Use wide-int interfaces.
+	* tree-dfa.h (get_addr_base_and_unit_offset_1): Likewise.
 	* tree-dump.c: Include wide-int.h and wide-int-print.h.
 	(dequeue_and_dump): Use wide-int interfaces.
 	* tree.h: Include wide-int.h.
@@ -641,11 +566,9 @@
 	(wi::fits_to_tree_p): New.
 	(wi::min_value): New.
 	(wi::max_value): New.
-	* tree-inline.c
-	(remap_gimple_op_r): Use wide-int interfaces.
+	* tree-inline.c (remap_gimple_op_r): Use wide-int interfaces.
 	(copy_tree_body_r): Likewise.
-	* tree-object-size.c
-	(compute_object_offset): Use wide-int interfaces.
+	* tree-object-size.c (compute_object_offset): Likewise.
 	(addr_object_size): Likewise.
 	* tree-predcom.c: Include wide-int-print.h.
 	(struct dref_d): Change type of offset to widest_int.
@@ -661,10 +584,8 @@
 	(determine_roots_comp): Likewise.
 	* tree-pretty-print.c: Include wide-int-print.h.
 	(dump_generic_node): Use wide-int interfaces.
-	* tree-sra.c
-	(sra_ipa_modify_expr): Use wide-int interfaces.
-	* tree-ssa-address.c
-	(addr_for_mem_ref): Use wide-int interfaces.
+	* tree-sra.c (sra_ipa_modify_expr): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
 	(move_fixed_address_to_symbol): Likewise.
 	(move_hint_to_base): Likewise.
 	(move_pointer_to_base): Likewise.
@@ -672,12 +593,10 @@
 	(most_expensive_mult_to_index): Likewise.
 	(addr_to_parts): Likewise.
 	(copy_ref_info): Likewise.
-	* tree-ssa-alias.c
-	(indirect_ref_may_alias_decl_p): Use wide-int interfaces.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Likewise.
 	(indirect_refs_may_alias_p): Likewise.
 	(stmt_kills_ref_p_1): Likewise.
-	* tree-ssa.c
-	(non_rewritable_mem_ref_base): Use wide-int interfaces.
+	* tree-ssa.c (non_rewritable_mem_ref_base): Likewise.
 	* tree-ssa-ccp.c: Update comment at top of file.  Include
 	wide-int-print.h.
 	(struct prop_value_d): Change type of mask to widest_int.
@@ -704,21 +623,17 @@
 	(ccp_fold_stmt): Likewise.
 	(visit_cond_stmt): Likewise.
 	(ccp_visit_stmt): Likewise.
-	* tree-ssa-forwprop.c
-	(forward_propagate_addr_expr_1): Use wide-int interfaces.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
 	(constant_pointer_difference): Likewise.
 	(associate_pointerplus): Likewise.
 	(combine_conversions): Likewise.
 	* tree-ssa-loop.h: Include wide-int.h.
 	(struct tree_niter_desc): Change type of max to widest_int.
-	* tree-ssa-loop-im.c
-	(mem_refs_may_alias_p): Use wide-int interfaces.
-	* tree-ssa-loop-ivcanon.c
-	(remove_exits_and_undefined_stmts): Use wide-int interfaces.
+	* tree-ssa-loop-im.c (mem_refs_may_alias_p): Use wide-int interfaces.
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Likewise.
 	(remove_redundant_iv_tests): Likewise.
 	(canonicalize_loop_induction_variables): Likewise.
-	* tree-ssa-loop-ivopts.c
-	(alloc_iv): Use wide-int interfaces.
+	* tree-ssa-loop-ivopts.c (alloc_iv): Likewise.
 	(constant_multiple_of): Take a widest_int pointer instead of
 	a double_int pointer.
 	(get_computation_aff): Use wide-int interfaces.
@@ -728,8 +643,8 @@
 	(get_computation_cost_at): Likewise.
 	(iv_elimination_compare_lt): Likewise.
 	(may_eliminate_iv): Likewise.
-	* tree-ssa-loop-niter.h
-	(estimated_loop_iterations): Use widest_int instead of double_int.
+	* tree-ssa-loop-niter.h (estimated_loop_iterations): Use widest_int
+	instead of double_int.
 	(max_loop_iterations): Likewise.
 	(max_stmt_executions): Likewise.
 	(estimated_stmt_executions): Likewise.
@@ -770,67 +685,53 @@
 	(estimated_stmt_executions): Likewise.
 	(n_of_executions_at_most): Use wide-int interfaces.
 	(scev_probably_wraps_p): Likewise.
-	* tree-ssa-math-opts.c
-	(gimple_expand_builtin_pow): Update calls to real_to_integer.
-	* tree-scalar-evolution.c:
-	(simplify_peeled_chrec): Use wide-int interfaces.
-	* tree-ssanames.c
-	(set_range_info): Use wide_int_refs rather than double_ints.
-	Adjust for trailing_wide_ints <3> representation.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Update calls
+	to real_to_integer.
+	* tree-scalar-evolution.c (simplify_peeled_chrec): Use wide-int
+	interfaces.
+	* tree-ssanames.c (set_range_info): Use wide_int_refs rather than
+	double_ints.  Adjust for trailing_wide_ints <3> representation.
 	(set_nonzero_bits): Likewise.
 	(get_range_info): Return wide_ints rather than double_ints.
 	Adjust for trailing_wide_ints <3> representation.
 	(get_nonzero_bits): Likewise.
 	(duplicate_ssa_name_range_info): Adjust for trailing_wide_ints <3>
 	representation.
-	* tree-ssanames.h
-	(struct range_info_def): Replace min, max and nonzero_bits with
-	a trailing_wide_ints <3>.
+	* tree-ssanames.h (struct range_info_def): Replace min, max and
+	nonzero_bits with a trailing_wide_ints <3>.
 	(set_range_info): Use wide_int_refs rather than double_ints.
 	(set_nonzero_bits): Likewise.
 	(get_range_info): Return wide_ints rather than double_ints.
 	(get_nonzero_bits): Likewise.
-	* tree-ssa-phiopt.c
-	(jump_function_from_stmt): Use wide-int interfaces.
-	* tree-ssa-pre.c
-	(phi_translate_1): Use wide-int interfaces.
-	* tree-ssa-reassoc.c
-	(decrement_power): Use calls to real_from_integer.
+	* tree-ssa-phiopt.c (jump_function_from_stmt): Use wide-int interfaces.
+	* tree-ssa-pre.c (phi_translate_1): Likewise.
+	* tree-ssa-reassoc.c (decrement_power): Use calls to real_from_integer.
 	(acceptable_pow_call): Likewise.
-	* tree-ssa-sccvn.c
-	(copy_reference_ops_from_ref): Use wide-int interfaces.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use wide-int
+	interfaces.
 	(vn_reference_fold_indirect): Likewise.
 	(vn_reference_maybe_forwprop_address): Likewise.
 	(valueize_refs_1): Likewise.
-	* tree-ssa-structalias.c
-	(get_constraint_for_ptr_offset): Use wide-int interfaces.
-	* tree-ssa-uninit.c
-	(is_value_included_in): Use wide-int interfaces, tree_int_cst_lt
-	and tree_int_cst_le.
-	* tree-streamer-in.c
-	(unpack_ts_base_value_fields): Use wide-int interfaces.
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Likewise.
+	* tree-ssa-uninit.c (is_value_included_in): Use wide-int interfaces,
+	tree_int_cst_lt and tree_int_cst_le.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Use wide-int
+	interfaces.
 	(streamer_alloc_tree): Likewise.
-	* tree-streamer-out.c
-	(pack_ts_int_cst_value_fields): Use wide-int interfaces.
+	* tree-streamer-out.c (pack_ts_int_cst_value_fields): Likewise.
 	(streamer_write_tree_header): Likewise.
 	(streamer_write_integer_cst): Likewise.
-	* tree-switch-conversion.c
-	(emit_case_bit_tests): Use wide-int interfaces.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
 	(build_constructors): Likewise.
 	(array_value_type): Likewise.
-	* tree-vect-data-refs.c
-	(vect_prune_runtime_alias_test_list): Use wide-int interfaces.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list): Likewise.
 	(vect_check_gather): Likewise.
-	* tree-vect-generic.c
-	(build_replicated_const): Use wide-int interfaces.
+	* tree-vect-generic.c (build_replicated_const): Likewise.
 	(expand_vector_divmod): Likewise.
-	* tree-vect-loop.c
-	(vect_transform_loop): Use wide-int interfaces.
-	* tree-vect-loop-manip.c
-	(vect_do_peeling_for_loop_bound): Use wide-int interfaces.
+	* tree-vect-loop.c (vect_transform_loop): Likewise.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): Likewise.
 	(vect_do_peeling_for_alignment): Likewise.
-	* tree-vect-patterns.c
-	(vect_recog_divmod_pattern): Use wide-int interfaces.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Likewise.
 	* tree-vrp.c: Include wide-int.h.
 	(operand_less_p): Use wide-int interfaces and tree_int_cst_lt.
 	(extract_range_from_assert): Use wide-int interfaces.
@@ -859,19 +760,16 @@
 	(simplify_conversion_using_ranges): Use wide-int interfaces.
 	(simplify_float_conversion_using_ranges): Likewise.
 	(vrp_finalize): Likewise.
-	* value-prof.c
-	(gimple_divmod_fixed_value_transform): Use wide-int interfaces.
+	* value-prof.c (gimple_divmod_fixed_value_transform): Likewise.
 	(gimple_stringops_transform): Likewise.
-	* varasm.c
-	(decode_addr_const): Use wide-int interfaces.
+	* varasm.c (decode_addr_const): Likewise.
 	(const_hash_1): Likewise.
 	(const_rtx_hash_1): Likewise
 	(output_constant): Likewise.
 	(array_size_for_constructor): Likewise.
 	(output_constructor_regular_field): Likewise.
 	(output_constructor_bitfield): Likewise.
-	* var-tracking.c
-	(loc_cmp): Handle CONST_WIDE_INT.
+	* var-tracking.c (loc_cmp): Handle CONST_WIDE_INT.
 	* mkconfig.sh: Include machmode.h to pick up BITS_PER_UNIT for
 	GENERATOR_FILEs.
 	* gencheck.c: Define BITS_PER_UNIT.
@@ -882,23 +780,17 @@
 
 
 ada:
-	* gcc-interface/cuintp.c
-	(UI_From_gnu): Use wide-int interfaces.
-	* gcc-interface/decl.c
-	(gnat_to_gnu_entity): Use TYPE_SIGN.
+	* gcc-interface/cuintp.c (UI_From_gnu): Use wide-int interfaces.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use TYPE_SIGN.
 	(annotate_value): Use wide-int interfaces.
-	* gcc-interface/utils.c
-	(get_nonnull_operand): Use tree_fits_uhwi_p.
+	* gcc-interface/utils.c (get_nonnull_operand): Use tree_fits_uhwi_p.
 
 
 c:
-	* c-decl.c
-	(check_bitfield_type_and_width): Use TYPE_SIGN.
+	* c-decl.c (check_bitfield_type_and_width): Use TYPE_SIGN.
 	(finish_enum): Use wide-int interfaces.
-	* c-parser.c
-	(c_parser_cilk_clause_vectorlength): Use wide-int interfaces.
-	* c-typeck.c
-	(build_c_cast): Use wide-int interfaces.
+	* c-parser.c (c_parser_cilk_clause_vectorlength): Likewise.
+	* c-typeck.c (build_c_cast): Likewise.
 	(set_nonincremental_init_from_string): Likewise.
 	(c_tree_equal): Likewise.
 
@@ -914,8 +806,7 @@ c-family:
 	(match_case_to_enum_1): Use tree_fits_uhwi_p and tree_fits_shwi_p.
 	(handle_alloc_size_attribute): Use wide-int interfaces.
 	(get_nonnull_operand): Likewise.
-	* c-format.c
-	(get_constant): Use tree_fits_uhwi_p.
+	* c-format.c (get_constant): Use tree_fits_uhwi_p.
 	* c-lex.c: Include wide-int.h.
 	(narrowest_unsigned_type): Take a widest_int rather than two
 	HOST_WIDE_INTs.
@@ -924,8 +815,7 @@ c-family:
 	(lex_charconst): Use wide-int interfaces.
 	* c-pretty-print.c: Include wide-int.h.
 	(pp_c_integer_constant): Use wide-int interfaces.
-	* cilk.c
-	(declare_one_free_variable): Use tree_int_cst_lt instead of
+	* cilk.c (declare_one_free_variable): Use tree_int_cst_lt instead of
 	INT_CST_LT_UNSIGNED.
 
 
@@ -965,8 +855,7 @@ fortran:
 	(gfc_conv_string_init): Use wide-int interfaces.
 	(gfc_conv_mpz_to_tree): Likewise.
 	(gfc_conv_tree_to_mpz): Likewise.
-	* trans-decl.c
-	(gfc_can_put_var_on_stack): Use tree_fits_uhwi_p.
+	* trans-decl.c (gfc_can_put_var_on_stack): Use tree_fits_uhwi_p.
 	* trans-expr.c: Include wide-int.h.
 	(gfc_conv_cst_int_power): Use wide-int interfaces.
 	(gfc_string_to_single_character): Likewise.
@@ -975,15 +864,13 @@ fortran:
 	(trans_this_image): Use wide-int interfaces.
 	(gfc_conv_intrinsic_bound): Likewise.
 	(conv_intrinsic_cobound): Likewise.
-	* trans-types.c
-	(gfc_init_types): Use wide-int interfaces.
+	* trans-types.c (gfc_init_types): Likewise.
 	(gfc_get_array_type_bounds): Pass an integer of the correct type
 	instead of using integer_one_node.
 
 
 go:
-	* go-gcc.cc
-	(Gcc_backend::type_size): Use tree_fits_uhwi_p.
+	* go-gcc.cc (Gcc_backend::type_size): Use tree_fits_uhwi_p.
 
 
 java:
@@ -999,10 +886,8 @@ java:
 
 
 lto:
-	* lto.c
-	(compare_tree_sccs_1): Use wide-int interfaces.
-	* lto-lang.c
-	(get_nonnull_operand): Use wide-int interfaces.
+	* lto.c (compare_tree_sccs_1): Use wide-int interfaces.
+	* lto-lang.c (get_nonnull_operand): Likewise.
 
 
 objc:
