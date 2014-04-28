@@ -365,8 +365,7 @@ extern unsigned long aarch64_tune_flags;
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)	aarch64_hard_regno_mode_ok (REGNO, MODE)
 
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
+#define MODES_TIEABLE_P(MODE1, MODE2) aarch64_modes_tieable_p (MODE1, MODE2)
 
 #define DWARF2_UNWIND_INFO 1
 
