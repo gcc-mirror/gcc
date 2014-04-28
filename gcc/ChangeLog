@@ -1,3 +1,25 @@
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (execute_pass_list): Adjust prototype.
+	* passes.c (pass_manager::execute_early_local_passes):
+	Adjust.
+	(do_per_function): Change callback signature, push all actual
+	work to the callbals.
+	(do_per_function_toporder): Likewise.
+	(execute_function_dump): Adjust.
+	(execute_function_todo): Likewise.
+	(clear_last_verified): Likewise.
+	(verify_curr_properties): Likewise.
+	(update_properties_after_pass): Likewise.
+	(execute_pass_list_1): Split out from ...
+	(execute_pass_list): ... here.  Adjust.
+	(execute_ipa_pass_list): Likewise.
+	* cgraphunit.c (cgraph_add_new_function): Adjust.
+	(analyze_function): Likewise.
+	(expand_function): Likewise.
+	* cgraph.c (release_function_body): Free dominance info
+	here instead of asserting it was magically freed elsewhere.
+
 2014-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Tweak GAS check for LEON instructions on SPARC.

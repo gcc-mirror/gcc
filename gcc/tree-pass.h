@@ -586,7 +586,7 @@ extern gimple_opt_pass *make_pass_convert_switch (gcc::context *ctxt);
 extern opt_pass *current_pass;
 
 extern bool execute_one_pass (opt_pass *);
-extern void execute_pass_list (opt_pass *);
+extern void execute_pass_list (function *, opt_pass *);
 extern void execute_ipa_pass_list (opt_pass *);
 extern void execute_ipa_summary_passes (ipa_opt_pass_d *);
 extern void execute_all_ipa_transforms (void);
@@ -614,7 +614,7 @@ extern bool function_called_by_processed_nodes_p (void);
 extern bool first_pass_instance;
 
 /* Declare for plugins.  */
-extern void do_per_function_toporder (void (*) (void *), void *);
+extern void do_per_function_toporder (void (*) (function *, void *), void *);
 
 extern void disable_pass (const char *);
 extern void enable_pass (const char *);
