@@ -1033,7 +1033,8 @@ inline wide_int_storage::wide_int_storage () {}
 template <typename T>
 inline wide_int_storage::wide_int_storage (const T &x)
 {
-  STATIC_ASSERT (!wi::int_traits<T>::host_dependent_precision);
+  { STATIC_ASSERT (!wi::int_traits<T>::host_dependent_precision); }
+  { STATIC_ASSERT (wi::int_traits<T>::precision_type != wi::CONST_PRECISION); }
   WIDE_INT_REF_FOR (T) xi (x);
   precision = xi.precision;
   wi::copy (*this, xi);
@@ -3087,7 +3088,7 @@ namespace wi
   wide_int from_buffer (const unsigned char *, unsigned int);
 
 #ifndef GENERATOR_FILE
-  void to_mpz (wide_int, mpz_t, signop);
+  void to_mpz (const wide_int_ref &, mpz_t, signop);
 #endif
 
   wide_int mask (unsigned int, bool, unsigned int);

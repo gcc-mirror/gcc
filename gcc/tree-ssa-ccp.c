@@ -218,7 +218,8 @@ dump_lattice_value (FILE *outf, const char *prefix, prop_value_t val)
 	}
       else
 	{
-	  wide_int cval = wi::bit_and_not (wi::to_widest (val.value), val.mask);
+	  widest_int cval = wi::bit_and_not (wi::to_widest (val.value),
+					     val.mask);
 	  fprintf (outf, "%sCONSTANT ", prefix);
 	  print_hex (cval, outf);
 	  fprintf (outf, " (");
@@ -1249,7 +1250,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
     case RROTATE_EXPR:
       if (r2mask == 0)
 	{
-	  wide_int shift = r2val;
+	  widest_int shift = r2val;
 	  if (shift == 0)
 	    {
 	      *mask = r1mask;
@@ -1286,7 +1287,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	 is zero.  */
       if (r2mask == 0)
 	{
-	  wide_int shift = r2val;
+	  widest_int shift = r2val;
 	  if (shift == 0)
 	    {
 	      *mask = r1mask;

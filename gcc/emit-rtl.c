@@ -535,7 +535,7 @@ lookup_const_wide_int (rtx wint)
    (if TARGET_SUPPORTS_WIDE_INT).  */
 
 rtx
-immed_wide_int_const (const wide_int &v, enum machine_mode mode)
+immed_wide_int_const (const wide_int_ref &v, enum machine_mode mode)
 {
   unsigned int len = v.get_len ();
   unsigned int prec = GET_MODE_PRECISION (mode);

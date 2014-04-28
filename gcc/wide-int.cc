@@ -174,37 +174,36 @@ wi::from_buffer (const unsigned char *buffer, unsigned int buffer_len)
   return result;
 }
 
-/* Sets RESULT from THIS, the sign is taken according to SGN.  */
+/* Sets RESULT from X, the sign is taken according to SGN.  */
 void
-wi::to_mpz (wide_int x, mpz_t result, signop sgn)
+wi::to_mpz (const wide_int_ref &x, mpz_t result, signop sgn)
 {
-  bool negative = false;
   int len = x.get_len ();
   const HOST_WIDE_INT *v = x.get_val ();
-  int small_prec = x.get_precision () & (HOST_BITS_PER_WIDE_INT - 1);
+  int excess = len * HOST_BITS_PER_WIDE_INT - x.get_precision ();
 
   if (wi::neg_p (x, sgn))
     {
-      negative = true;
       /* We use ones complement to avoid -x80..0 edge case that -
 	 won't work on.  */
-      x = ~x;
+      HOST_WIDE_INT *t = XALLOCAVEC (HOST_WIDE_INT, len);
+      for (int i = 0; i < len; i++)
+	t[i] = ~v[i];
+      if (excess > 0)
+	t[len - 1] = (unsigned HOST_WIDE_INT) t[len - 1] << excess >> excess;
+      mpz_import (result, len, -1, sizeof (HOST_WIDE_INT), 0, 0, t);
+      mpz_com (result, result);
     }
-
-  if (sgn == UNSIGNED && small_prec)
+  else if (excess > 0)
     {
-      HOST_WIDE_INT t[WIDE_INT_MAX_ELTS];
-
+      HOST_WIDE_INT *t = XALLOCAVEC (HOST_WIDE_INT, len);
       for (int i = 0; i < len - 1; i++)
 	t[i] = v[i];
-      t[len-1] = zext_hwi (v[len-1], small_prec);
+      t[len - 1] = (unsigned HOST_WIDE_INT) v[len - 1] << excess >> excess;
       mpz_import (result, len, -1, sizeof (HOST_WIDE_INT), 0, 0, t);
     }
   else
     mpz_import (result, len, -1, sizeof (HOST_WIDE_INT), 0, 0, v);
-
-  if (negative)
-    mpz_com (result, result);
 }
 
 /* Returns X converted to TYPE.  If WRAP is true, then out-of-range

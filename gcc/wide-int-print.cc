@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
   (((PREC) + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT)
 
 void
-print_dec (const wide_int &wi, char *buf, signop sgn)
+print_dec (const wide_int_ref &wi, char *buf, signop sgn)
 {
   if (sgn == SIGNED)
     print_decs (wi, buf);
@@ -43,7 +43,7 @@ print_dec (const wide_int &wi, char *buf, signop sgn)
 }
 
 void
-print_dec (const wide_int &wi, FILE *file, signop sgn)
+print_dec (const wide_int_ref &wi, FILE *file, signop sgn)
 {
   if (sgn == SIGNED)
     print_decs (wi, file);
@@ -56,7 +56,7 @@ print_dec (const wide_int &wi, FILE *file, signop sgn)
    in a HWI.  Other print in hex.  */
 
 void
-print_decs (const wide_int &wi, char *buf)
+print_decs (const wide_int_ref &wi, char *buf)
 {
   if ((wi.get_precision () <= HOST_BITS_PER_WIDE_INT)
       || (wi.get_len () == 1))
@@ -74,7 +74,7 @@ print_decs (const wide_int &wi, char *buf)
    in a HWI.  Other print in hex.  */
 
 void
-print_decs (const wide_int &wi, FILE *file)
+print_decs (const wide_int_ref &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_decs (wi, buf);
@@ -85,7 +85,7 @@ print_decs (const wide_int &wi, FILE *file)
    in a HWI.  Other print in hex.  */
 
 void
-print_decu (const wide_int &wi, char *buf)
+print_decu (const wide_int_ref &wi, char *buf)
 {
   if ((wi.get_precision () <= HOST_BITS_PER_WIDE_INT)
       || (wi.get_len () == 1 && !wi::neg_p (wi)))
@@ -98,7 +98,7 @@ print_decu (const wide_int &wi, char *buf)
    in a HWI.  Other print in hex.  */
 
 void
-print_decu (const wide_int &wi, FILE *file)
+print_decu (const wide_int_ref &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_decu (wi, buf);
@@ -106,7 +106,7 @@ print_decu (const wide_int &wi, FILE *file)
 }
 
 void
-print_hex (const wide_int &wi, char *buf)
+print_hex (const wide_int_ref &wi, char *buf)
 {
   int i = wi.get_len ();
 
@@ -136,7 +136,7 @@ print_hex (const wide_int &wi, char *buf)
 /* Print one big hex number to FILE.  Note that some assemblers may not
    accept this for large modes.  */
 void
-print_hex (const wide_int &wi, FILE *file)
+print_hex (const wide_int_ref &wi, FILE *file)
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_hex (wi, buf);

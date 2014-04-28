@@ -27,13 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Printing functions.  */
 
-extern void print_dec (const wide_int &wi, char *buf, signop sgn);
-extern void print_dec (const wide_int &wi, FILE *file, signop sgn);
-extern void print_decs (const wide_int &wi, char *buf);
-extern void print_decs (const wide_int &wi, FILE *file);
-extern void print_decu (const wide_int &wi, char *buf);
-extern void print_decu (const wide_int &wi, FILE *file);
-extern void print_hex (const wide_int &wi, char *buf);
-extern void print_hex (const wide_int &wi, FILE *file);
+extern void print_dec (const wide_int_ref &wi, char *buf, signop sgn);
+extern void print_dec (const wide_int_ref &wi, FILE *file, signop sgn);
+extern void print_decs (const wide_int_ref &wi, char *buf);
+extern void print_decs (const wide_int_ref &wi, FILE *file);
+extern void print_decu (const wide_int_ref &wi, char *buf);
+extern void print_decu (const wide_int_ref &wi, FILE *file);
+extern void print_hex (const wide_int_ref &wi, char *buf);
+extern void print_hex (const wide_int_ref &wi, FILE *file);
 
 #endif /* WIDE_INT_PRINT_H */

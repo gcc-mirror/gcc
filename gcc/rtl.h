@@ -2008,7 +2008,7 @@ extern double_int rtx_to_double_int (const_rtx);
 #endif
 extern void cwi_output_hex (FILE *, const_rtx);
 #ifndef GENERATOR_FILE
-extern rtx immed_wide_int_const (const wide_int &cst, enum machine_mode mode);
+extern rtx immed_wide_int_const (const wide_int_ref &, enum machine_mode);
 #endif
 #if TARGET_SUPPORTS_WIDE_INT == 0
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,

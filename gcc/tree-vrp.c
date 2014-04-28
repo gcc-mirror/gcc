@@ -3860,7 +3860,8 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
 	  bool overflow;
 
-	  wide_int wtmp = wi::mul (wi::to_widest (step), nit, sgn, &overflow);
+	  widest_int wtmp = wi::mul (wi::to_widest (step), nit, sgn,
+				     &overflow);
 	  /* If the multiplication overflowed we can't do a meaningful
 	     adjustment.  Likewise if the result doesn't fit in the type
 	     of the induction variable.  For a signed type we have to
