@@ -1,3 +1,27 @@
+2014-04-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_storestruct_lane_qualifiers): New.
+	(TYPES_STORESTRUCT_LANE): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (st2_lane): New.
+	(st3_lane): Likewise.
+	(st4_lane): Likewise.
+	* config/aarch64/aarch64-simd.md (vec_store_lanesoi_lane<mode>): New.
+	(vec_store_lanesci_lane<mode>): Likewise.
+	(vec_store_lanesxi_lane<mode>): Likewise.
+	(aarch64_st2_lane<VQ:mode>): Likewise.
+	(aarch64_st3_lane<VQ:mode>): Likewise.
+	(aarch64_st4_lane<VQ:mode>): Likewise.
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_ST{2,3,4}_LANE.
+	* config/aarch64/arm_neon.h
+	(__ST2_LANE_FUNC): Rewrite using builtins, update use points to
+	use new macro arguments.
+	(__ST3_LANE_FUNC): Likewise.
+	(__ST4_LANE_FUNC): Likewise.
+	* config/aarch64/iterators.md (V_TWO_ELEM): New.
+	(V_THREE_ELEM): Likewise.
+	(V_FOUR_ELEM): Likewise.
+
 2014-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/gimple.texi: Replace the description of the now-defunct

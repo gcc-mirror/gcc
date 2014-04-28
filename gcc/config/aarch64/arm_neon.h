@@ -14452,131 +14452,224 @@ __LD4_LANE_FUNC (uint16x8x4_t, uint16_t, 8h, h, u16, q)
 __LD4_LANE_FUNC (uint32x4x4_t, uint32_t, 4s, s, u32, q)
 __LD4_LANE_FUNC (uint64x2x4_t, uint64_t, 2d, d, u64, q)
 
-#define __ST2_LANE_FUNC(intype, ptrtype, regsuffix,			\
-			lnsuffix, funcsuffix, Q)			\
-  typedef struct { ptrtype __x[2]; } __ST2_LANE_STRUCTURE_##intype;	\
-  __extension__ static __inline void					\
-  __attribute__ ((__always_inline__))					\
-  vst2 ## Q ## _lane_ ## funcsuffix (ptrtype *ptr,			\
-				     intype b, const int c)		\
-  {									\
-    __ST2_LANE_STRUCTURE_##intype *__p =				\
-				(__ST2_LANE_STRUCTURE_##intype *)ptr;	\
-    __asm__ ("ld1 {v16." #regsuffix ", v17." #regsuffix "}, %1\n\t"	\
-	     "st2 {v16." #lnsuffix ", v17." #lnsuffix "}[%2], %0\n\t"	\
-	     : "=Q"(*__p)						\
-	     : "Q"(b), "i"(c)						\
-	     : "v16", "v17");						\
-  }
+#define __ST2_LANE_FUNC(intype, largetype, ptrtype,			     \
+			mode, ptr_mode, funcsuffix, signedtype)		     \
+__extension__ static __inline void					     \
+__attribute__ ((__always_inline__))					     \
+vst2_lane_ ## funcsuffix (ptrtype *__ptr,				     \
+			  intype __b, const int __c)			     \
+{									     \
+  __builtin_aarch64_simd_oi __o;					     \
+  largetype __temp;							     \
+  __temp.val[0]								     \
+    = vcombine_##funcsuffix (__b.val[0],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __temp.val[1]								     \
+    = vcombine_##funcsuffix (__b.val[1],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __o = __builtin_aarch64_set_qregoi##mode (__o,			     \
+					    (signedtype) __temp.val[0], 0);  \
+  __o = __builtin_aarch64_set_qregoi##mode (__o,			     \
+					    (signedtype) __temp.val[1], 1);  \
+  __builtin_aarch64_st2_lane##mode ((__builtin_aarch64_simd_ ## ptr_mode *)  \
+				     __ptr, __o, __c);			     \
+}
 
-__ST2_LANE_FUNC (int8x8x2_t, int8_t, 8b, b, s8,)
-__ST2_LANE_FUNC (float32x2x2_t, float32_t, 2s, s, f32,)
-__ST2_LANE_FUNC (float64x1x2_t, float64_t, 1d, d, f64,)
-__ST2_LANE_FUNC (poly8x8x2_t, poly8_t, 8b, b, p8,)
-__ST2_LANE_FUNC (poly16x4x2_t, poly16_t, 4h, h, p16,)
-__ST2_LANE_FUNC (int16x4x2_t, int16_t, 4h, h, s16,)
-__ST2_LANE_FUNC (int32x2x2_t, int32_t, 2s, s, s32,)
-__ST2_LANE_FUNC (int64x1x2_t, int64_t, 1d, d, s64,)
-__ST2_LANE_FUNC (uint8x8x2_t, uint8_t, 8b, b, u8,)
-__ST2_LANE_FUNC (uint16x4x2_t, uint16_t, 4h, h, u16,)
-__ST2_LANE_FUNC (uint32x2x2_t, uint32_t, 2s, s, u32,)
-__ST2_LANE_FUNC (uint64x1x2_t, uint64_t, 1d, d, u64,)
-__ST2_LANE_FUNC (float32x4x2_t, float32_t, 4s, s, f32, q)
-__ST2_LANE_FUNC (float64x2x2_t, float64_t, 2d, d, f64, q)
-__ST2_LANE_FUNC (poly8x16x2_t, poly8_t, 16b, b, p8, q)
-__ST2_LANE_FUNC (poly16x8x2_t, poly16_t, 8h, h, p16, q)
-__ST2_LANE_FUNC (int8x16x2_t, int8_t, 16b, b, s8, q)
-__ST2_LANE_FUNC (int16x8x2_t, int16_t, 8h, h, s16, q)
-__ST2_LANE_FUNC (int32x4x2_t, int32_t, 4s, s, s32, q)
-__ST2_LANE_FUNC (int64x2x2_t, int64_t, 2d, d, s64, q)
-__ST2_LANE_FUNC (uint8x16x2_t, uint8_t, 16b, b, u8, q)
-__ST2_LANE_FUNC (uint16x8x2_t, uint16_t, 8h, h, u16, q)
-__ST2_LANE_FUNC (uint32x4x2_t, uint32_t, 4s, s, u32, q)
-__ST2_LANE_FUNC (uint64x2x2_t, uint64_t, 2d, d, u64, q)
+__ST2_LANE_FUNC (float32x2x2_t, float32x4x2_t, float32_t, v4sf, sf, f32,
+		 float32x4_t)
+__ST2_LANE_FUNC (float64x1x2_t, float64x2x2_t, float64_t, v2df, df, f64,
+		 float64x2_t)
+__ST2_LANE_FUNC (poly8x8x2_t, poly8x16x2_t, poly8_t, v16qi, qi, p8, int8x16_t)
+__ST2_LANE_FUNC (poly16x4x2_t, poly16x8x2_t, poly16_t, v8hi, hi, p16,
+		 int16x8_t)
+__ST2_LANE_FUNC (int8x8x2_t, int8x16x2_t, int8_t, v16qi, qi, s8, int8x16_t)
+__ST2_LANE_FUNC (int16x4x2_t, int16x8x2_t, int16_t, v8hi, hi, s16, int16x8_t)
+__ST2_LANE_FUNC (int32x2x2_t, int32x4x2_t, int32_t, v4si, si, s32, int32x4_t)
+__ST2_LANE_FUNC (int64x1x2_t, int64x2x2_t, int64_t, v2di, di, s64, int64x2_t)
+__ST2_LANE_FUNC (uint8x8x2_t, uint8x16x2_t, uint8_t, v16qi, qi, u8, int8x16_t)
+__ST2_LANE_FUNC (uint16x4x2_t, uint16x8x2_t, uint16_t, v8hi, hi, u16,
+		 int16x8_t)
+__ST2_LANE_FUNC (uint32x2x2_t, uint32x4x2_t, uint32_t, v4si, si, u32,
+		 int32x4_t)
+__ST2_LANE_FUNC (uint64x1x2_t, uint64x2x2_t, uint64_t, v2di, di, u64,
+		 int64x2_t)
 
-#define __ST3_LANE_FUNC(intype, ptrtype, regsuffix,			\
-			lnsuffix, funcsuffix, Q)			\
-  typedef struct { ptrtype __x[3]; } __ST3_LANE_STRUCTURE_##intype;	\
-  __extension__ static __inline void					\
-  __attribute__ ((__always_inline__))					\
-  vst3 ## Q ## _lane_ ## funcsuffix (ptrtype *ptr,			\
-				     intype b, const int c)		\
-  {									\
-    __ST3_LANE_STRUCTURE_##intype *__p =				\
-				(__ST3_LANE_STRUCTURE_##intype *)ptr;	\
-    __asm__ ("ld1 {v16." #regsuffix " - v18." #regsuffix "}, %1\n\t"	\
-	     "st3 {v16." #lnsuffix " - v18." #lnsuffix "}[%2], %0\n\t"	\
-	     : "=Q"(*__p)						\
-	     : "Q"(b), "i"(c)						\
-	     : "v16", "v17", "v18");					\
-  }
+#undef __ST2_LANE_FUNC
+#define __ST2_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
+__extension__ static __inline void					    \
+__attribute__ ((__always_inline__))					    \
+vst2q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
+			   intype __b, const int __c)			    \
+{									    \
+  union { intype __i;							    \
+	  __builtin_aarch64_simd_oi __o; } __temp = { __b };		    \
+  __builtin_aarch64_st2_lane##mode ((__builtin_aarch64_simd_ ## ptr_mode *) \
+				    __ptr, __temp.__o, __c);		    \
+}
 
-__ST3_LANE_FUNC (int8x8x3_t, int8_t, 8b, b, s8,)
-__ST3_LANE_FUNC (float32x2x3_t, float32_t, 2s, s, f32,)
-__ST3_LANE_FUNC (float64x1x3_t, float64_t, 1d, d, f64,)
-__ST3_LANE_FUNC (poly8x8x3_t, poly8_t, 8b, b, p8,)
-__ST3_LANE_FUNC (poly16x4x3_t, poly16_t, 4h, h, p16,)
-__ST3_LANE_FUNC (int16x4x3_t, int16_t, 4h, h, s16,)
-__ST3_LANE_FUNC (int32x2x3_t, int32_t, 2s, s, s32,)
-__ST3_LANE_FUNC (int64x1x3_t, int64_t, 1d, d, s64,)
-__ST3_LANE_FUNC (uint8x8x3_t, uint8_t, 8b, b, u8,)
-__ST3_LANE_FUNC (uint16x4x3_t, uint16_t, 4h, h, u16,)
-__ST3_LANE_FUNC (uint32x2x3_t, uint32_t, 2s, s, u32,)
-__ST3_LANE_FUNC (uint64x1x3_t, uint64_t, 1d, d, u64,)
-__ST3_LANE_FUNC (float32x4x3_t, float32_t, 4s, s, f32, q)
-__ST3_LANE_FUNC (float64x2x3_t, float64_t, 2d, d, f64, q)
-__ST3_LANE_FUNC (poly8x16x3_t, poly8_t, 16b, b, p8, q)
-__ST3_LANE_FUNC (poly16x8x3_t, poly16_t, 8h, h, p16, q)
-__ST3_LANE_FUNC (int8x16x3_t, int8_t, 16b, b, s8, q)
-__ST3_LANE_FUNC (int16x8x3_t, int16_t, 8h, h, s16, q)
-__ST3_LANE_FUNC (int32x4x3_t, int32_t, 4s, s, s32, q)
-__ST3_LANE_FUNC (int64x2x3_t, int64_t, 2d, d, s64, q)
-__ST3_LANE_FUNC (uint8x16x3_t, uint8_t, 16b, b, u8, q)
-__ST3_LANE_FUNC (uint16x8x3_t, uint16_t, 8h, h, u16, q)
-__ST3_LANE_FUNC (uint32x4x3_t, uint32_t, 4s, s, u32, q)
-__ST3_LANE_FUNC (uint64x2x3_t, uint64_t, 2d, d, u64, q)
+__ST2_LANE_FUNC (float32x4x2_t, float32_t, v4sf, sf, f32)
+__ST2_LANE_FUNC (float64x2x2_t, float64_t, v2df, df, f64)
+__ST2_LANE_FUNC (poly8x16x2_t, poly8_t, v16qi, qi, p8)
+__ST2_LANE_FUNC (poly16x8x2_t, poly16_t, v8hi, hi, p16)
+__ST2_LANE_FUNC (int8x16x2_t, int8_t, v16qi, qi, s8)
+__ST2_LANE_FUNC (int16x8x2_t, int16_t, v8hi, hi, s16)
+__ST2_LANE_FUNC (int32x4x2_t, int32_t, v4si, si, s32)
+__ST2_LANE_FUNC (int64x2x2_t, int64_t, v2di, di, s64)
+__ST2_LANE_FUNC (uint8x16x2_t, uint8_t, v16qi, qi, u8)
+__ST2_LANE_FUNC (uint16x8x2_t, uint16_t, v8hi, hi, u16)
+__ST2_LANE_FUNC (uint32x4x2_t, uint32_t, v4si, si, u32)
+__ST2_LANE_FUNC (uint64x2x2_t, uint64_t, v2di, di, u64)
 
-#define __ST4_LANE_FUNC(intype, ptrtype, regsuffix,			\
-			lnsuffix, funcsuffix, Q)			\
-  typedef struct { ptrtype __x[4]; } __ST4_LANE_STRUCTURE_##intype;	\
-  __extension__ static __inline void					\
-  __attribute__ ((__always_inline__))					\
-  vst4 ## Q ## _lane_ ## funcsuffix (ptrtype *ptr,			\
-				     intype b, const int c)		\
-  {									\
-    __ST4_LANE_STRUCTURE_##intype *__p =				\
-				(__ST4_LANE_STRUCTURE_##intype *)ptr;	\
-    __asm__ ("ld1 {v16." #regsuffix " - v19." #regsuffix "}, %1\n\t"	\
-	     "st4 {v16." #lnsuffix " - v19." #lnsuffix "}[%2], %0\n\t"	\
-	     : "=Q"(*__p)						\
-	     : "Q"(b), "i"(c)						\
-	     : "v16", "v17", "v18", "v19");				\
-  }
+#define __ST3_LANE_FUNC(intype, largetype, ptrtype,			     \
+			mode, ptr_mode, funcsuffix, signedtype)		     \
+__extension__ static __inline void					     \
+__attribute__ ((__always_inline__))					     \
+vst3_lane_ ## funcsuffix (ptrtype *__ptr,				     \
+			  intype __b, const int __c)			     \
+{									     \
+  __builtin_aarch64_simd_ci __o;					     \
+  largetype __temp;							     \
+  __temp.val[0]								     \
+    = vcombine_##funcsuffix (__b.val[0],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __temp.val[1]								     \
+    = vcombine_##funcsuffix (__b.val[1],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __temp.val[2]								     \
+    = vcombine_##funcsuffix (__b.val[2],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __o = __builtin_aarch64_set_qregci##mode (__o,			     \
+					    (signedtype) __temp.val[0], 0);  \
+  __o = __builtin_aarch64_set_qregci##mode (__o,			     \
+					    (signedtype) __temp.val[1], 1);  \
+  __o = __builtin_aarch64_set_qregci##mode (__o,			     \
+					    (signedtype) __temp.val[2], 2);  \
+  __builtin_aarch64_st3_lane##mode ((__builtin_aarch64_simd_ ## ptr_mode *)  \
+				     __ptr, __o, __c);			     \
+}
 
-__ST4_LANE_FUNC (int8x8x4_t, int8_t, 8b, b, s8,)
-__ST4_LANE_FUNC (float32x2x4_t, float32_t, 2s, s, f32,)
-__ST4_LANE_FUNC (float64x1x4_t, float64_t, 1d, d, f64,)
-__ST4_LANE_FUNC (poly8x8x4_t, poly8_t, 8b, b, p8,)
-__ST4_LANE_FUNC (poly16x4x4_t, poly16_t, 4h, h, p16,)
-__ST4_LANE_FUNC (int16x4x4_t, int16_t, 4h, h, s16,)
-__ST4_LANE_FUNC (int32x2x4_t, int32_t, 2s, s, s32,)
-__ST4_LANE_FUNC (int64x1x4_t, int64_t, 1d, d, s64,)
-__ST4_LANE_FUNC (uint8x8x4_t, uint8_t, 8b, b, u8,)
-__ST4_LANE_FUNC (uint16x4x4_t, uint16_t, 4h, h, u16,)
-__ST4_LANE_FUNC (uint32x2x4_t, uint32_t, 2s, s, u32,)
-__ST4_LANE_FUNC (uint64x1x4_t, uint64_t, 1d, d, u64,)
-__ST4_LANE_FUNC (float32x4x4_t, float32_t, 4s, s, f32, q)
-__ST4_LANE_FUNC (float64x2x4_t, float64_t, 2d, d, f64, q)
-__ST4_LANE_FUNC (poly8x16x4_t, poly8_t, 16b, b, p8, q)
-__ST4_LANE_FUNC (poly16x8x4_t, poly16_t, 8h, h, p16, q)
-__ST4_LANE_FUNC (int8x16x4_t, int8_t, 16b, b, s8, q)
-__ST4_LANE_FUNC (int16x8x4_t, int16_t, 8h, h, s16, q)
-__ST4_LANE_FUNC (int32x4x4_t, int32_t, 4s, s, s32, q)
-__ST4_LANE_FUNC (int64x2x4_t, int64_t, 2d, d, s64, q)
-__ST4_LANE_FUNC (uint8x16x4_t, uint8_t, 16b, b, u8, q)
-__ST4_LANE_FUNC (uint16x8x4_t, uint16_t, 8h, h, u16, q)
-__ST4_LANE_FUNC (uint32x4x4_t, uint32_t, 4s, s, u32, q)
-__ST4_LANE_FUNC (uint64x2x4_t, uint64_t, 2d, d, u64, q)
+__ST3_LANE_FUNC (float32x2x3_t, float32x4x3_t, float32_t, v4sf, sf, f32,
+		 float32x4_t)
+__ST3_LANE_FUNC (float64x1x3_t, float64x2x3_t, float64_t, v2df, df, f64,
+		 float64x2_t)
+__ST3_LANE_FUNC (poly8x8x3_t, poly8x16x3_t, poly8_t, v16qi, qi, p8, int8x16_t)
+__ST3_LANE_FUNC (poly16x4x3_t, poly16x8x3_t, poly16_t, v8hi, hi, p16,
+		 int16x8_t)
+__ST3_LANE_FUNC (int8x8x3_t, int8x16x3_t, int8_t, v16qi, qi, s8, int8x16_t)
+__ST3_LANE_FUNC (int16x4x3_t, int16x8x3_t, int16_t, v8hi, hi, s16, int16x8_t)
+__ST3_LANE_FUNC (int32x2x3_t, int32x4x3_t, int32_t, v4si, si, s32, int32x4_t)
+__ST3_LANE_FUNC (int64x1x3_t, int64x2x3_t, int64_t, v2di, di, s64, int64x2_t)
+__ST3_LANE_FUNC (uint8x8x3_t, uint8x16x3_t, uint8_t, v16qi, qi, u8, int8x16_t)
+__ST3_LANE_FUNC (uint16x4x3_t, uint16x8x3_t, uint16_t, v8hi, hi, u16,
+		 int16x8_t)
+__ST3_LANE_FUNC (uint32x2x3_t, uint32x4x3_t, uint32_t, v4si, si, u32,
+		 int32x4_t)
+__ST3_LANE_FUNC (uint64x1x3_t, uint64x2x3_t, uint64_t, v2di, di, u64,
+		 int64x2_t)
+
+#undef __ST3_LANE_FUNC
+#define __ST3_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
+__extension__ static __inline void					    \
+__attribute__ ((__always_inline__))					    \
+vst3q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
+			   intype __b, const int __c)			    \
+{									    \
+  union { intype __i;							    \
+	  __builtin_aarch64_simd_ci __o; } __temp = { __b };		    \
+  __builtin_aarch64_st3_lane##mode ((__builtin_aarch64_simd_ ## ptr_mode *) \
+				    __ptr, __temp.__o, __c);		    \
+}
+
+__ST3_LANE_FUNC (float32x4x3_t, float32_t, v4sf, sf, f32)
+__ST3_LANE_FUNC (float64x2x3_t, float64_t, v2df, df, f64)
+__ST3_LANE_FUNC (poly8x16x3_t, poly8_t, v16qi, qi, p8)
+__ST3_LANE_FUNC (poly16x8x3_t, poly16_t, v8hi, hi, p16)
+__ST3_LANE_FUNC (int8x16x3_t, int8_t, v16qi, qi, s8)
+__ST3_LANE_FUNC (int16x8x3_t, int16_t, v8hi, hi, s16)
+__ST3_LANE_FUNC (int32x4x3_t, int32_t, v4si, si, s32)
+__ST3_LANE_FUNC (int64x2x3_t, int64_t, v2di, di, s64)
+__ST3_LANE_FUNC (uint8x16x3_t, uint8_t, v16qi, qi, u8)
+__ST3_LANE_FUNC (uint16x8x3_t, uint16_t, v8hi, hi, u16)
+__ST3_LANE_FUNC (uint32x4x3_t, uint32_t, v4si, si, u32)
+__ST3_LANE_FUNC (uint64x2x3_t, uint64_t, v2di, di, u64)
+
+#define __ST4_LANE_FUNC(intype, largetype, ptrtype,			     \
+			mode, ptr_mode, funcsuffix, signedtype)		     \
+__extension__ static __inline void					     \
+__attribute__ ((__always_inline__))					     \
+vst4_lane_ ## funcsuffix (ptrtype *__ptr,				     \
+			  intype __b, const int __c)			     \
+{									     \
+  __builtin_aarch64_simd_xi __o;					     \
+  largetype __temp;							     \
+  __temp.val[0]								     \
+    = vcombine_##funcsuffix (__b.val[0],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __temp.val[1]								     \
+    = vcombine_##funcsuffix (__b.val[1],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __temp.val[2]								     \
+    = vcombine_##funcsuffix (__b.val[2],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __temp.val[3]								     \
+    = vcombine_##funcsuffix (__b.val[3],				     \
+			     vcreate_##funcsuffix (__AARCH64_UINT64_C (0))); \
+  __o = __builtin_aarch64_set_qregxi##mode (__o,			     \
+					    (signedtype) __temp.val[0], 0);  \
+  __o = __builtin_aarch64_set_qregxi##mode (__o,			     \
+					    (signedtype) __temp.val[1], 1);  \
+  __o = __builtin_aarch64_set_qregxi##mode (__o,			     \
+					    (signedtype) __temp.val[2], 2);  \
+  __o = __builtin_aarch64_set_qregxi##mode (__o,			     \
+					    (signedtype) __temp.val[3], 3);  \
+  __builtin_aarch64_st4_lane##mode ((__builtin_aarch64_simd_ ## ptr_mode *)  \
+				     __ptr, __o, __c);			     \
+}
+
+__ST4_LANE_FUNC (float32x2x4_t, float32x4x4_t, float32_t, v4sf, sf, f32,
+		 float32x4_t)
+__ST4_LANE_FUNC (float64x1x4_t, float64x2x4_t, float64_t, v2df, df, f64,
+		 float64x2_t)
+__ST4_LANE_FUNC (poly8x8x4_t, poly8x16x4_t, poly8_t, v16qi, qi, p8, int8x16_t)
+__ST4_LANE_FUNC (poly16x4x4_t, poly16x8x4_t, poly16_t, v8hi, hi, p16,
+		 int16x8_t)
+__ST4_LANE_FUNC (int8x8x4_t, int8x16x4_t, int8_t, v16qi, qi, s8, int8x16_t)
+__ST4_LANE_FUNC (int16x4x4_t, int16x8x4_t, int16_t, v8hi, hi, s16, int16x8_t)
+__ST4_LANE_FUNC (int32x2x4_t, int32x4x4_t, int32_t, v4si, si, s32, int32x4_t)
+__ST4_LANE_FUNC (int64x1x4_t, int64x2x4_t, int64_t, v2di, di, s64, int64x2_t)
+__ST4_LANE_FUNC (uint8x8x4_t, uint8x16x4_t, uint8_t, v16qi, qi, u8, int8x16_t)
+__ST4_LANE_FUNC (uint16x4x4_t, uint16x8x4_t, uint16_t, v8hi, hi, u16,
+		 int16x8_t)
+__ST4_LANE_FUNC (uint32x2x4_t, uint32x4x4_t, uint32_t, v4si, si, u32,
+		 int32x4_t)
+__ST4_LANE_FUNC (uint64x1x4_t, uint64x2x4_t, uint64_t, v2di, di, u64,
+		 int64x2_t)
+
+#undef __ST4_LANE_FUNC
+#define __ST4_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
+__extension__ static __inline void					    \
+__attribute__ ((__always_inline__))					    \
+vst4q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
+			   intype __b, const int __c)			    \
+{									    \
+  union { intype __i;							    \
+	  __builtin_aarch64_simd_xi __o; } __temp = { __b };		    \
+  __builtin_aarch64_st4_lane##mode ((__builtin_aarch64_simd_ ## ptr_mode *) \
+				    __ptr, __temp.__o, __c);		    \
+}
+
+__ST4_LANE_FUNC (float32x4x4_t, float32_t, v4sf, sf, f32)
+__ST4_LANE_FUNC (float64x2x4_t, float64_t, v2df, df, f64)
+__ST4_LANE_FUNC (poly8x16x4_t, poly8_t, v16qi, qi, p8)
+__ST4_LANE_FUNC (poly16x8x4_t, poly16_t, v8hi, hi, p16)
+__ST4_LANE_FUNC (int8x16x4_t, int8_t, v16qi, qi, s8)
+__ST4_LANE_FUNC (int16x8x4_t, int16_t, v8hi, hi, s16)
+__ST4_LANE_FUNC (int32x4x4_t, int32_t, v4si, si, s32)
+__ST4_LANE_FUNC (int64x2x4_t, int64_t, v2di, di, s64)
+__ST4_LANE_FUNC (uint8x16x4_t, uint8_t, v16qi, qi, u8)
+__ST4_LANE_FUNC (uint16x8x4_t, uint16_t, v8hi, hi, u16)
+__ST4_LANE_FUNC (uint32x4x4_t, uint32_t, v4si, si, u32)
+__ST4_LANE_FUNC (uint64x2x4_t, uint64_t, v2di, di, u64)
 
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vaddlv_s32 (int32x2_t a)

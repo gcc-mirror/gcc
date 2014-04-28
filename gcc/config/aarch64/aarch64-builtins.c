@@ -246,6 +246,11 @@ aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
 #define TYPES_STORE1 (aarch64_types_store1_qualifiers)
 #define TYPES_STORESTRUCT (aarch64_types_store1_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode,
+      qualifier_none, qualifier_none };
+#define TYPES_STORESTRUCT_LANE (aarch64_types_storestruct_lane_qualifiers)
 
 #define CF0(N, X) CODE_FOR_aarch64_##N##X
 #define CF1(N, X) CODE_FOR_##N##X##1
