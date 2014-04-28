@@ -1,3 +1,8 @@
+2014-04-28  Daniel Gutson  <daniel.gutson@tallertechnologies.com>
+
+	* typeck.c (build_reinterpret_cast_1): Pass proper argument to
+	warn() in pedantic.
+
 2014-02-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58845

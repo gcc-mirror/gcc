@@ -6649,7 +6649,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	   where possible, and it is necessary in some cases.  DR 195
 	   addresses this issue, but as of 2004/10/26 is still in
 	   drafting.  */
-	warning (0, "ISO C++ forbids casting between pointer-to-function and pointer-to-object");
+	warning (OPT_Wpedantic, "ISO C++ forbids casting between pointer-to-function and pointer-to-object");
       return fold_if_not_in_template (build_nop (type, expr));
     }
   else if (TREE_CODE (type) == VECTOR_TYPE)
