@@ -413,10 +413,11 @@ package Exp_Dbug is
 
    procedure Get_External_Name
      (Entity     : Entity_Id;
-      Has_Suffix : Boolean);
-   --  Set Name_Buffer and Name_Len to the external name of entity E. The
+      Has_Suffix : Boolean := False;
+      Suffix     : String := "");
+   --  Set Name_Buffer and Name_Len to the external name of the entity. The
    --  external name is the Interface_Name, if specified, unless the entity
-   --  has an address clause or a suffix.
+   --  has an address clause or Has_Suffix is true.
    --
    --  If the Interface is not present, or not used, the external name is the
    --  concatenation of:
@@ -428,26 +429,11 @@ package Exp_Dbug is
    --    - the string "$" (or "__" if target does not allow "$"), followed
    --        by homonym suffix, if the entity is an overloaded subprogram
    --        or is defined within an overloaded subprogram.
-
-   procedure Get_External_Name_With_Suffix
-     (Entity : Entity_Id;
-      Suffix : String);
-   --  Set Name_Buffer and Name_Len to the external name of entity E. If
-   --  Suffix is the empty string the external name is as above, otherwise
-   --  the external name is the concatenation of:
-   --
-   --    - the string "_ada_", if the entity is a library subprogram,
-   --    - the names of any enclosing scopes, each followed by "__",
-   --        or "X_" if the next entity is a subunit)
-   --    - the name of the entity
-   --    - the string "$" (or "__" if target does not allow "$"), followed
-   --        by homonym suffix, if the entity is an overloaded subprogram
-   --        or is defined within an overloaded subprogram.
-   --    - the string "___" followed by Suffix
+   --    - the string "___" followed by Suffix if Has_Suffix is true.
    --
    --  Note that a call to this procedure has no effect if we are not
    --  generating code, since the necessary information for computing the
-   --  proper encoded name is not available in this case.
+   --  proper external name is not available in this case.
 
    --------------------------------------------
    -- Subprograms for Handling Qualification --

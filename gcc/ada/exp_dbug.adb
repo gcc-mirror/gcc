@@ -507,8 +507,8 @@ package body Exp_Dbug is
    begin
       --  If not generating code, there is no need to create encoded names, and
       --  problems when the back-end is called to annotate types without full
-      --  code generation. See comments in Get_External_Name_With_Suffix for
-      --  additional details.
+      --  code generation. See comments in Get_External_Name for additional
+      --  details.
 
       --  However we do create encoded names if the back end is active, even
       --  if Operating_Mode got reset. Otherwise any serious error reported
@@ -556,7 +556,7 @@ package body Exp_Dbug is
       --  Fixed-point case
 
       if Is_Fixed_Point_Type (E) then
-         Get_External_Name_With_Suffix (E, "XF_");
+         Get_External_Name (E, True, "XF_");
          Add_Real_To_Buffer (Delta_Value (E));
 
          if Small_Value (E) /= Delta_Value (E) then
@@ -568,14 +568,14 @@ package body Exp_Dbug is
 
       elsif Vax_Float (E) then
          if Digits_Value (Base_Type (E)) = 6 then
-            Get_External_Name_With_Suffix (E, "XFF");
+            Get_External_Name (E, True, "XFF");
 
          elsif Digits_Value (Base_Type (E)) = 9 then
-            Get_External_Name_With_Suffix (E, "XFF");
+            Get_External_Name (E, True, "XFF");
 
          else
             pragma Assert (Digits_Value (Base_Type (E)) = 15);
-            Get_External_Name_With_Suffix (E, "XFG");
+            Get_External_Name (E, True, "XFG");
          end if;
 
       --  Discrete case where bounds do not match size
@@ -607,9 +607,9 @@ package body Exp_Dbug is
 
          begin
             if Biased then
-               Get_External_Name_With_Suffix (E, "XB");
+               Get_External_Name (E, True, "XB");
             else
-               Get_External_Name_With_Suffix (E, "XD");
+               Get_External_Name (E, True, "XD");
             end if;
 
             if Lo_Encode or Hi_Encode then
@@ -649,7 +649,7 @@ package body Exp_Dbug is
 
       else
          Has_Suffix := False;
-         Get_External_Name (E, Has_Suffix);
+         Get_External_Name (E);
       end if;
 
       if Debug_Flag_B and then Has_Suffix then
@@ -667,7 +667,11 @@ package body Exp_Dbug is
    -- Get_External_Name --
    -----------------------
 
-   procedure Get_External_Name (Entity : Entity_Id; Has_Suffix : Boolean) is
+   procedure Get_External_Name
+     (Entity     : Entity_Id;
+      Has_Suffix : Boolean := False;
+      Suffix     : String := "")
+   is
       E    : Entity_Id := Entity;
       Kind : Entity_Kind;
 
@@ -704,6 +708,20 @@ package body Exp_Dbug is
    --  Start of processing for Get_External_Name
 
    begin
+      --  If we are not in code generation mode, this procedure may still be
+      --  called from Back_End (more specifically - from gigi for doing type
+      --  representation annotation or some representation-specific checks).
+      --  But in this mode there is no need to mess with external names.
+
+      --  Furthermore, the call causes difficulties in this case because the
+      --  string representing the homonym number is not correctly reset as a
+      --  part of the call to Output_Homonym_Numbers_Suffix (which is not
+      --  called in gigi).
+
+      if Operating_Mode /= Generate_Code then
+         return;
+      end if;
+
       Reset_Buffers;
 
       --  If this is a child unit, we want the child
@@ -762,42 +780,13 @@ package body Exp_Dbug is
          Get_Qualified_Name_And_Append (E);
       end if;
 
-      Name_Buffer (Name_Len + 1) := ASCII.NUL;
-   end Get_External_Name;
-
-   -----------------------------------
-   -- Get_External_Name_With_Suffix --
-   -----------------------------------
-
-   procedure Get_External_Name_With_Suffix
-     (Entity : Entity_Id;
-      Suffix : String)
-   is
-      Has_Suffix : constant Boolean := (Suffix /= "");
-
-   begin
-      --  If we are not in code generation mode, this procedure may still be
-      --  called from Back_End (more specifically - from gigi for doing type
-      --  representation annotation or some representation-specific checks).
-      --  But in this mode there is no need to mess with external names.
-
-      --  Furthermore, the call causes difficulties in this case because the
-      --  string representing the homonym number is not correctly reset as a
-      --  part of the call to Output_Homonym_Numbers_Suffix (which is not
-      --  called in gigi).
-
-      if Operating_Mode /= Generate_Code then
-         return;
-      end if;
-
-      Get_External_Name (Entity, Has_Suffix);
-
       if Has_Suffix then
          Add_Str_To_Name_Buffer ("___");
          Add_Str_To_Name_Buffer (Suffix);
-         Name_Buffer (Name_Len + 1) := ASCII.NUL;
       end if;
-   end Get_External_Name_With_Suffix;
+
+      Name_Buffer (Name_Len + 1) := ASCII.NUL;
+   end Get_External_Name;
 
    --------------------------
    -- Get_Variant_Encoding --
@@ -944,7 +933,7 @@ package body Exp_Dbug is
       Suffix_Index : Int)
    is
    begin
-      Get_External_Name (Typ, Has_Suffix => False);
+      Get_External_Name (Typ);
 
       if Ancestor_Typ /= Typ then
          declare
@@ -952,7 +941,7 @@ package body Exp_Dbug is
             Save_Str : constant String (1 .. Name_Len)
                          := Name_Buffer (1 .. Name_Len);
          begin
-            Get_External_Name (Ancestor_Typ, Has_Suffix => False);
+            Get_External_Name (Ancestor_Typ);
 
             --  Append the extended name of the ancestor to the
             --  extended name of Typ
