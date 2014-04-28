@@ -387,7 +387,7 @@ forcegchelper(void *vnote)
 static uintptr
 scavengelist(MSpan *list, uint64 now, uint64 limit)
 {
-	uintptr released, sumreleased;
+	uintptr released, sumreleased, start, end, pagesize;
 	MSpan *s;
 
 	if(runtime_MSpanList_IsEmpty(list))
@@ -400,7 +400,17 @@ scavengelist(MSpan *list, uint64 now, uint64 limit)
 			mstats.heap_released += released;
 			sumreleased += released;
 			s->npreleased = s->npages;
-			runtime_SysUnused((void*)(s->start << PageShift), s->npages << PageShift);
+
+			start = s->start << PageShift;
+			end = start + (s->npages << PageShift);
+
+			// Round start up and end down to ensure we
+			// are acting on entire pages.
+			pagesize = getpagesize();
+			start = ROUND(start, pagesize);
+			end &= ~(pagesize - 1);
+			if(end > start)
+				runtime_SysUnused((void*)start, end - start);
 		}
 	}
 	return sumreleased;

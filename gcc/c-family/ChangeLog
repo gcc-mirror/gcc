@@ -1,3 +1,43 @@
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/18079
+	* c-common.c (handle_noinline_attribute): Warn if the attribute
+	conflicts with always_inline attribute.
+	(handle_always_inline_attribute): Warn if the attribute conflicts
+	with noinline attribute.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60156
+	* c-common.c (check_main_parameter_types): Warn about variadic main.
+
+2014-04-24  Mike Stump  <mikestump@comcast.net>
+
+	* c.opt (Wshadow-ivar): Default to on.
+
+2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	* c.opt (Wshadow-ivar, flocal-ivars, fivar-visibility): Add.
+
+2014-04-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (handle_tm_wrap_attribute): Tweak error message.
+
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60275
+	* c-ubsan.c (ubsan_instrument_return): Return __builtin_trap ()
+	if flag_sanitize_undefined_trap_on_error.
+	(ubsan_instrument_division, ubsan_instrument_shift,
+	ubsan_instrument_vla): Likewise.  Use __ubsan_handle_*_abort ()
+	if !flag_sanitize_recover.
+
+2014-04-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/43622
+	* c-common.c (registered_builtin_types): Make non-static.
+	* c-common.h (registered_builtin_types): Declare.
+
 2014-04-14  Richard Biener  <rguenther@suse.de>
 	Marc Glisse  <marc.glisse@inria.fr>
 

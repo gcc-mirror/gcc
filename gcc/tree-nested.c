@@ -1082,6 +1082,11 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    need_stmts = true;
 	  goto do_decl_clause;
 
+	case OMP_CLAUSE_LINEAR:
+	  if (OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause))
+	    need_stmts = true;
+	  goto do_decl_clause;
+
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_COPYPRIVATE:
@@ -1155,6 +1160,12 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  walk_body (convert_nonlocal_reference_stmt,
 		     convert_nonlocal_reference_op, info,
 		     &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause));
+	  break;
+
+	case OMP_CLAUSE_LINEAR:
+	  walk_body (convert_nonlocal_reference_stmt,
+		     convert_nonlocal_reference_op, info,
+		     &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause));
 	  break;
 
 	default:
@@ -1605,6 +1616,11 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    need_stmts = true;
 	  goto do_decl_clause;
 
+	case OMP_CLAUSE_LINEAR:
+	  if (OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause))
+	    need_stmts = true;
+	  goto do_decl_clause;
+
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_COPYPRIVATE:
@@ -1683,6 +1699,12 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  walk_body (convert_local_reference_stmt,
 		     convert_local_reference_op, info,
 		     &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause));
+	  break;
+
+	case OMP_CLAUSE_LINEAR:
+	  walk_body (convert_local_reference_stmt,
+		     convert_local_reference_op, info,
+		     &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause));
 	  break;
 
 	default:

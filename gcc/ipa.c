@@ -387,7 +387,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 			      before_inlining_p, reachable);
 	}
 
-      if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
 	{
 	  /* Mark the callees reachable unless they are direct calls to extern
  	     inline functions we decided to not inline.  */
@@ -465,7 +465,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       /* When we see constructor of external variable, keep referred nodes in the
 	boundary.  This will also hold initializers of the external vars NODE
 	refers to.  */
-      varpool_node *vnode = dyn_cast <varpool_node> (node);
+      varpool_node *vnode = dyn_cast <varpool_node *> (node);
       if (vnode
 	  && DECL_EXTERNAL (node->decl)
 	  && !vnode->alias
@@ -694,7 +694,7 @@ address_taken_from_non_vtable_p (symtab_node *node)
     if (ref->use == IPA_REF_ADDR)
       {
 	varpool_node *node;
-	if (is_a <cgraph_node> (ref->referring))
+	if (is_a <cgraph_node *> (ref->referring))
 	  return true;
 	node = ipa_ref_referring_varpool_node (ref);
 	if (!DECL_VIRTUAL_P (node->decl))
@@ -732,7 +732,7 @@ comdat_can_be_unshared_p_1 (symtab_node *node)
     return false;
 
   /* Non-readonly and volatile variables can not be duplicated.  */
-  if (is_a <varpool_node> (node)
+  if (is_a <varpool_node *> (node)
       && (!TREE_READONLY (node->decl)
 	  || TREE_THIS_VOLATILE (node->decl)))
     return false;

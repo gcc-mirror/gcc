@@ -28,12 +28,12 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-// See below __regex_algo_impl to get what this is talking about. The default
-// value 1 indicated a conservative optimization without giving up worst case
-// performance.
-#ifndef _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT
-#define _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT 1
-#endif
+// A non-standard switch to let the user pick the matching algorithm.
+// If _GLIBCXX_REGEX_USE_THOMPSON_NFA is defined, the thompson NFA
+// algorithm will be used. This algorithm is not enabled by default,
+// and cannot be used if the regex contains back-references, but has better
+// (polynomial instead of exponential) worst case performace.
+// See __regex_algo_impl below.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -66,24 +66,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (auto& __it : __res)
 	__it.matched = false;
 
-      // This function decide which executor to use under given circumstances.
-      // The _S_auto policy now is the following: if a NFA has no
-      // back-references and has more than _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT
-      // quantifiers (*, +, ?), the BFS executor will be used, other wise
-      // DFS executor. This is because DFS executor has a exponential upper
-      // bound, but better best-case performace. Meanwhile, BFS executor can
-      // effectively prevent from exponential-long time matching (which must
-      // contains many quantifiers), but it's slower in average.
-      //
-      // For simple regex, BFS executor could be 2 or more times slower than
-      // DFS executor.
-      //
-      // Of course, BFS executor cannot handle back-references.
+      // __policy is used by testsuites so that they can use Thompson NFA
+      // without defining a macro. Users should define
+      // _GLIBCXX_REGEX_USE_THOMPSON_NFA if they need to use this approach.
       bool __ret;
       if (!__re._M_automaton->_M_has_backref
-	  && (__policy == _RegexExecutorPolicy::_S_alternate
-	      || __re._M_automaton->_M_quant_count
-		> _GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT))
+#ifndef _GLIBCXX_REGEX_USE_THOMPSON_NFA
+	  && __policy == _RegexExecutorPolicy::_S_alternate
+#endif
+	  )
 	{
 	  _Executor<_BiIter, _Alloc, _TraitsT, false>
 	    __executor(__s, __e, __m, __re, __flags);

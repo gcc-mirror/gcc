@@ -974,7 +974,9 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
     cgraph_copy_node_for_versioning (old_version_node, new_decl,
 				     redirect_callers, bbs_to_copy);
 
-  gcc_assert (!old_version_node->ipa_transforms_to_apply.exists ());
+  if (old_version_node->ipa_transforms_to_apply.exists ())
+    new_version_node->ipa_transforms_to_apply
+      = old_version_node->ipa_transforms_to_apply.copy ();
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (old_decl, new_decl, tree_map, false, args_to_skip,
 			    skip_return, bbs_to_copy, new_entry_block);

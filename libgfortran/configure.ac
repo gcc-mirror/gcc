@@ -510,7 +510,7 @@ AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENA
 # test is copied from libgomp, and modified to not link in -lrt as
 # libgfortran calls clock_gettime via a weak reference if it's found
 # in librt.
-if test $ac_cv_func_clock_gettime = no; then
+if test "$ac_cv_func_clock_gettime" = no; then
   AC_CHECK_LIB(rt, clock_gettime,
     [AC_DEFINE(HAVE_CLOCK_GETTIME_LIBRT, 1,
                [Define to 1 if you have the `clock_gettime' function in librt.])])

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fomit-frame-pointer -flax-vector-conversions -mmmx" } */
-/* { dg-options "-O2 -fomit-frame-pointer -flax-vector-conversions -mmmx -mno-vect8-ret-in-mem" { target i?86-*-solaris2.9 *-*-vxworks* } } */
+/* { dg-options "-O2 -fomit-frame-pointer -flax-vector-conversions -mmmx -mno-vect8-ret-in-mem" { target *-*-vxworks* } } */
 
 #include <mmintrin.h>
 

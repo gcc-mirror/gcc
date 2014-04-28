@@ -73,6 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_results(__results),
       _M_match_queue(__dfs_mode ? nullptr
 		     : new vector<pair<_StateIdT, _ResultsVec>>()),
+      _M_rep_count(_M_nfa.size()),
       _M_visited(__dfs_mode ? nullptr : new vector<bool>(_M_nfa.size())),
       _M_flags((__flags & regex_constants::match_prev_avail)
 	       ? (__flags
@@ -102,6 +103,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_search();
 
     private:
+      template<bool __match_mode>
+	void
+	_M_rep_once_more(_StateIdT);
+
       template<bool __match_mode>
 	void
 	_M_dfs(_StateIdT __start);
@@ -149,9 +154,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _ResultsVec&                                          _M_results;
       // Used in BFS, saving states that need to be considered for the next
       // character.
-      std::unique_ptr<vector<pair<_StateIdT, _ResultsVec>>> _M_match_queue;
+      unique_ptr<vector<pair<_StateIdT, _ResultsVec>>>      _M_match_queue;
       // Used in BFS, indicating that which state is already visited.
-      std::unique_ptr<vector<bool>>                         _M_visited;
+      vector<pair<_BiIter, int>>                            _M_rep_count;
+      unique_ptr<vector<bool>>                              _M_visited;
       _FlagT                                                _M_flags;
       // To record current solution.
       _StateIdT                                             _M_start_state;

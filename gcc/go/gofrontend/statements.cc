@@ -434,15 +434,9 @@ Temporary_statement::do_get_backend(Translate_context* context)
 {
   go_assert(this->bvariable_ == NULL);
 
-  // FIXME: Permitting FUNCTION to be NULL here is a temporary measure
-  // until we have a better representation of the init function.
   Named_object* function = context->function();
-  Bfunction* bfunction;
-  if (function == NULL)
-    bfunction = NULL;
-  else
-    bfunction = tree_to_function(function->func_value()->get_decl());
-
+  go_assert(function != NULL);
+  Bfunction* bfunction = function->func_value()->get_decl();
   Btype* btype = this->type()->get_backend(context->gogo());
 
   Bexpression* binit;
@@ -2781,8 +2775,6 @@ Return_statement::do_get_backend(Translate_context* context)
   Location loc = this->location();
 
   Function* function = context->function()->func_value();
-  tree fndecl = function->get_decl();
-
   Function::Results* results = function->result_variables();
   std::vector<Bexpression*> retvals;
   if (results != NULL && !results->empty())
@@ -2797,7 +2789,7 @@ Return_statement::do_get_backend(Translate_context* context)
 	}
     }
 
-  return context->backend()->return_statement(tree_to_function(fndecl),
+  return context->backend()->return_statement(function->get_decl(),
 					      retvals, loc);
 }
 
@@ -3803,8 +3795,10 @@ Constant_switch_statement::do_get_backend(Translate_context* context)
   this->clauses_->get_backend(context, break_label, &all_cases,
 			      &all_statements);
 
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
   Bstatement* switch_statement;
-  switch_statement = context->backend()->switch_statement(switch_val_expr,
+  switch_statement = context->backend()->switch_statement(bfunction,
+							  switch_val_expr,
 							  all_cases,
 							  all_statements,
 							  this->location());
@@ -4980,7 +4974,9 @@ Select_clauses::get_backend(Translate_context* context,
   std::vector<Bstatement*> statements;
   statements.reserve(2);
 
-  Bstatement* switch_stmt = context->backend()->switch_statement(bcall,
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+  Bstatement* switch_stmt = context->backend()->switch_statement(bfunction,
+								 bcall,
 								 cases,
 								 clauses,
 								 location);

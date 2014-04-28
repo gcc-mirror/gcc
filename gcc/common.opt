@@ -862,6 +862,14 @@ fsanitize=
 Common Driver Report Joined
 Select what to sanitize
 
+fsanitize-recover
+Common Report Var(flag_sanitize_recover) Init(1)
+After diagnosing undefined behavior attempt to continue execution
+
+fsanitize-undefined-trap-on-error
+Common Report Var(flag_sanitize_undefined_trap_on_error) Init(0)
+Use trap instead of a library function for undefined behavior sanitization
+
 fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization
 Generate unwind tables that are exact at each instruction boundary
@@ -2694,5 +2702,9 @@ Create a position independent executable
 
 z
 Driver Joined Separate
+
+fuse-caller-save
+Common Report Var(flag_use_caller_save) Optimization
+Use caller save register across calls if possible
 
 ; This comment is to ensure we retain the blank line above.

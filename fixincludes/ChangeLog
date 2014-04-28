@@ -1,3 +1,20 @@
+2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (math_exception): Bypass on *-*-solaris2.1[0-9]*.
+	(solaris_int_types): Remove.
+	(solaris_longjmp_noreturn): Remove.
+	(solaris_mutex_init_2): Remove.
+	(solaris_once_init_2): Remove.
+	(solaris_sys_va_list): Remove.
+	* fixincl.x: Regenerate.
+	* tests/base/iso/setjmp_iso.h: Remove.
+	* tests/base/pthread.h [SOLARIS_MUTEX_INIT_2_CHECK]: Remove.
+	[SOLARIS_ONCE_INIT_1_CHECK]: Remove wrapping done by
+	solaris_once_init_2.
+	[SOLARIS_ONCE_INIT_2_CHECK]: Remove.
+	* tests/base/sys/int_types.h: Remove.
+	* tests/base/sys/va_list.h: Remove.
+
 2013-12-20  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	Makefile.in: Use $(FI) instead of fixincl@EXEEXT@.

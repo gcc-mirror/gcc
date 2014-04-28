@@ -681,5 +681,6 @@
        (match_code "reg" "0")))
 
 (define_predicate "call_insn_operand"
-  (ior (match_code "symbol_ref")
+  (ior (and (match_code "symbol_ref")
+	    (match_test "!arm_is_long_call_p (SYMBOL_REF_DECL (op))"))
        (match_operand 0 "s_register_operand")))

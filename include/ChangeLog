@@ -1,3 +1,7 @@
+2014-04-22  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* longlong.h: Merge from glibc.
+
 2014-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* ansidecl.h (ANSI_PROTOTYPES, PTRCONST, LONG_DOUBLE, PARAMS)

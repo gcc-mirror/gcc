@@ -32,6 +32,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h>
 #include <ctype.h>
 
+typedef unsigned char uchar;
+
 
 /* List directed input.  Several parsing subroutines are practically
    reimplemented from formatted input, the reason being that there are
@@ -95,6 +97,37 @@ push_char (st_parameter_dt *dtp, char c)
     }
 
   dtp->u.p.saved_string[dtp->u.p.saved_used++] = c;
+}
+
+/* Save a KIND=4 character to a string buffer, enlarging the buffer
+   as necessary.  */
+
+static void
+push_char4 (st_parameter_dt *dtp, gfc_char4_t c)
+{
+  gfc_char4_t *new, *p = (gfc_char4_t *) dtp->u.p.saved_string;
+
+  if (p == NULL)
+    {
+      dtp->u.p.saved_string = xcalloc (SCRATCH_SIZE, sizeof (gfc_char4_t));
+      dtp->u.p.saved_length = SCRATCH_SIZE;
+      dtp->u.p.saved_used = 0;
+      p = (gfc_char4_t *) dtp->u.p.saved_string;
+    }
+
+  if (dtp->u.p.saved_used >= dtp->u.p.saved_length)
+    {
+      dtp->u.p.saved_length = 2 * dtp->u.p.saved_length;
+      new = realloc (p, dtp->u.p.saved_length);
+      if (new == NULL)
+	generate_error (&dtp->common, LIBERROR_OS, NULL);
+      p = new;
+      
+      memset (new + dtp->u.p.saved_used, 0, 
+	      dtp->u.p.saved_length - dtp->u.p.saved_used);
+    }
+
+  p[dtp->u.p.saved_used++] = c;
 }
 
 
@@ -246,6 +279,57 @@ done:
   return c;
 }
 
+
+static gfc_char4_t
+next_char_utf8 (st_parameter_dt *dtp) 
+{
+  static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
+  static const uchar patns[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+  int i, nb;
+  gfc_char4_t c;
+
+  c = next_char (dtp);
+  if (c < 0x80)
+    return c;
+
+  /* The number of leading 1-bits in the first byte indicates how many
+     bytes follow.  */
+  for (nb = 2; nb < 7; nb++)
+    if ((c & ~masks[nb-1]) == patns[nb-1])
+      goto found;
+  goto invalid;
+	
+ found:
+  c = (c & masks[nb-1]);
+
+  /* Decode the bytes read.  */
+  for (i = 1; i < nb; i++)
+    {
+      gfc_char4_t n = next_char (dtp);
+
+      if ((n & 0xC0) != 0x80)
+	goto invalid;
+
+      c = ((c << 6) + (n & 0x3F));
+    }
+
+  /* Make sure the shortest possible encoding was used.  */
+  if (c <=      0x7F && nb > 1) goto invalid;
+  if (c <=     0x7FF && nb > 2) goto invalid;
+  if (c <=    0xFFFF && nb > 3) goto invalid;
+  if (c <=  0x1FFFFF && nb > 4) goto invalid;
+  if (c <= 0x3FFFFFF && nb > 5) goto invalid;
+
+  /* Make sure the character is valid.  */
+  if (c > 0x7FFFFFFF || (c >= 0xD800 && c <= 0xDFFF))
+    goto invalid;
+
+  return c;
+      
+ invalid:
+  generate_error (&dtp->common, LIBERROR_READ_VALUE, "Invalid UTF-8 encoding");
+  return (gfc_char4_t) '?';
+}
 
 /* Push a character back onto the input.  */
 
@@ -1087,50 +1171,97 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
     }
 
  get_string:
-  for (;;)
-    {
-      if ((c = next_char (dtp)) == EOF)
-	goto done_eof;
-      switch (c)
-	{
-	case '"':
-	case '\'':
-	  if (c != quote)
-	    {
+
+  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+    for (;;)
+      {
+	if ((c = next_char_utf8 (dtp)) == EOF)
+	  goto done_eof;
+	switch (c)
+	  {
+	  case '"':
+	  case '\'':
+	    if (c != quote)
+	      {
+		push_char4 (dtp, c);
+		break;
+	      }
+  
+	    /* See if we have a doubled quote character or the end of
+	       the string.  */
+  
+	    if ((c = next_char_utf8 (dtp)) == EOF)
+	      goto done_eof;
+	    if (c == quote)
+	      {
+		push_char4 (dtp, quote);
+		break;
+	      }
+  
+	    unget_char (dtp, c);
+	    goto done;
+  
+	  CASE_SEPARATORS:
+	    if (quote == ' ')
+	      {
+		unget_char (dtp, c);
+		goto done;
+	      }
+  
+	    if (c != '\n' && c != '\r')
+	      push_char4 (dtp, c);
+	    break;
+  
+	  default:
+	    push_char4 (dtp, c);
+	    break;
+	  }
+      }
+  else
+    for (;;)
+      {
+	if ((c = next_char (dtp)) == EOF)
+	  goto done_eof;
+	switch (c)
+	  {
+	  case '"':
+	  case '\'':
+	    if (c != quote)
+	      {
+		push_char (dtp, c);
+		break;
+	      }
+  
+	    /* See if we have a doubled quote character or the end of
+	       the string.  */
+  
+	    if ((c = next_char (dtp)) == EOF)
+	      goto done_eof;
+	    if (c == quote)
+	      {
+		push_char (dtp, quote);
+		break;
+	      }
+  
+	    unget_char (dtp, c);
+	    goto done;
+  
+	  CASE_SEPARATORS:
+	    if (quote == ' ')
+	      {
+		unget_char (dtp, c);
+		goto done;
+	      }
+  
+	    if (c != '\n' && c != '\r')
 	      push_char (dtp, c);
-	      break;
-	    }
-
-	  /* See if we have a doubled quote character or the end of
-	     the string.  */
-
-	  if ((c = next_char (dtp)) == EOF)
-	    goto done_eof;
-	  if (c == quote)
-	    {
-	      push_char (dtp, quote);
-	      break;
-	    }
-
-	  unget_char (dtp, c);
-	  goto done;
-
-	CASE_SEPARATORS:
-	  if (quote == ' ')
-	    {
-	      unget_char (dtp, c);
-	      goto done;
-	    }
-
-	  if (c != '\n' && c != '\r')
+	    break;
+  
+	  default:
 	    push_char (dtp, c);
-	  break;
-
-	default:
-	  push_char (dtp, c);
-	  break;
-	}
-    }
+	    break;
+	  }
+      }
 
   /* At this point, we have to have a separator, or else the string is
      invalid.  */
@@ -1903,7 +2034,7 @@ static int
 list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 			    int kind, size_t size)
 {
-  gfc_char4_t *q;
+  gfc_char4_t *q, *r;
   int c, i, m;
   int err = 0;
 
@@ -2031,13 +2162,19 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	{
 	  m = ((int) size < dtp->u.p.saved_used)
 	      ? (int) size : dtp->u.p.saved_used;
-	  if (kind == 1)
-	    memcpy (p, dtp->u.p.saved_string, m);
+
+	  q = (gfc_char4_t *) p;
+	  r = (gfc_char4_t *) dtp->u.p.saved_string;
+	  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+	    for (i = 0; i < m; i++)
+	      *q++ = *r++;
 	  else
 	    {
-	      q = (gfc_char4_t *) p;
-	      for (i = 0; i < m; i++)
-		q[i] = (unsigned char) dtp->u.p.saved_string[i];
+	      if (kind == 1)
+		memcpy (p, dtp->u.p.saved_string, m);
+	      else
+		for (i = 0; i < m; i++)
+		  *q++ = (unsigned char) dtp->u.p.saved_string[i];
 	    }
 	}
       else
@@ -2771,10 +2908,27 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	    }
 	  else
 	    m = dtp->u.p.saved_used;
-	  pdata = (void*)( pdata + clow - 1 );
-	  memcpy (pdata, dtp->u.p.saved_string, m);
-	  if (m < dlen)
-	    memset ((void*)( pdata + m ), ' ', dlen - m);
+
+	  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+	    {
+	      gfc_char4_t *q4, *p4 = pdata;
+	      int i;
+
+	      q4 = (gfc_char4_t *) dtp->u.p.saved_string;
+	      p4 += clow -1;
+	      for (i = 0; i < m; i++)
+		*p4++ = *q4++;
+	      if (m < dlen)
+		for (i = 0; i < dlen - m; i++)
+		  *p4++ = (gfc_char4_t) ' ';
+	    }
+	  else
+	    {
+	      pdata = (void*)( pdata + clow - 1 );
+	      memcpy (pdata, dtp->u.p.saved_string, m);
+	      if (m < dlen)
+		memset ((void*)( pdata + m ), ' ', dlen - m);
+	    }
 	  break;
 
 	default:

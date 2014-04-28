@@ -466,7 +466,7 @@ analyze_function (struct cgraph_node *fn)
   local = init_function_info (fn);
   for (i = 0; ipa_ref_list_reference_iterate (&fn->ref_list, i, ref); i++)
     {
-      if (!is_a <varpool_node> (ref->referred))
+      if (!is_a <varpool_node *> (ref->referred))
 	continue;
       var = ipa_ref_varpool_node (ref)->decl;
       if (!is_proper_for_analysis (var))
@@ -973,7 +973,7 @@ ipa_reference_write_optimization_summary (void)
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-      varpool_node *vnode = dyn_cast <varpool_node> (snode);
+      varpool_node *vnode = dyn_cast <varpool_node *> (snode);
       if (vnode
 	  && bitmap_bit_p (all_module_statics, DECL_UID (vnode->decl))
 	  && referenced_from_this_partition_p (&vnode->ref_list, encoder))
@@ -991,7 +991,7 @@ ipa_reference_write_optimization_summary (void)
     for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
       {
 	symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-	cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+	cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
 	if (cnode && write_node_summary_p (cnode, encoder, ltrans_statics))
 	  count++;
       }
@@ -1006,7 +1006,7 @@ ipa_reference_write_optimization_summary (void)
     for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
       {
 	symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
-	cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+	cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
 	if (cnode && write_node_summary_p (cnode, encoder, ltrans_statics))
 	  {
 	    ipa_reference_optimization_summary_t info;

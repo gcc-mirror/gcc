@@ -403,6 +403,73 @@ int_mode_for_mode (enum machine_mode mode)
   return mode;
 }
 
+/* Find a mode that can be used for efficient bitwise operations on MODE.
+   Return BLKmode if no such mode exists.  */
+
+enum machine_mode
+bitwise_mode_for_mode (enum machine_mode mode)
+{
+  /* Quick exit if we already have a suitable mode.  */
+  unsigned int bitsize = GET_MODE_BITSIZE (mode);
+  if (SCALAR_INT_MODE_P (mode) && bitsize <= MAX_FIXED_MODE_SIZE)
+    return mode;
+
+  /* Reuse the sanity checks from int_mode_for_mode.  */
+  gcc_checking_assert ((int_mode_for_mode (mode), true));
+
+  /* Try to replace complex modes with complex modes.  In general we
+     expect both components to be processed independently, so we only
+     care whether there is a register for the inner mode.  */
+  if (COMPLEX_MODE_P (mode))
+    {
+      enum machine_mode trial = mode;
+      if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT)
+	trial = mode_for_size (bitsize, MODE_COMPLEX_INT, false);
+      if (trial != BLKmode
+	  && have_regs_of_mode[GET_MODE_INNER (trial)])
+	return trial;
+    }
+
+  /* Try to replace vector modes with vector modes.  Also try using vector
+     modes if an integer mode would be too big.  */
+  if (VECTOR_MODE_P (mode) || bitsize > MAX_FIXED_MODE_SIZE)
+    {
+      enum machine_mode trial = mode;
+      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+	trial = mode_for_size (bitsize, MODE_VECTOR_INT, 0);
+      if (trial != BLKmode
+	  && have_regs_of_mode[trial]
+	  && targetm.vector_mode_supported_p (trial))
+	return trial;
+    }
+
+  /* Otherwise fall back on integers while honoring MAX_FIXED_MODE_SIZE.  */
+  return mode_for_size (bitsize, MODE_INT, true);
+}
+
+/* Find a type that can be used for efficient bitwise operations on MODE.
+   Return null if no such mode exists.  */
+
+tree
+bitwise_type_for_mode (enum machine_mode mode)
+{
+  mode = bitwise_mode_for_mode (mode);
+  if (mode == BLKmode)
+    return NULL_TREE;
+
+  unsigned int inner_size = GET_MODE_UNIT_BITSIZE (mode);
+  tree inner_type = build_nonstandard_integer_type (inner_size, true);
+
+  if (VECTOR_MODE_P (mode))
+    return build_vector_type_for_mode (inner_type, mode);
+
+  if (COMPLEX_MODE_P (mode))
+    return build_complex_type (inner_type);
+
+  gcc_checking_assert (GET_MODE_INNER (mode) == VOIDmode);
+  return inner_type;
+}
+
 /* Find a mode that is suitable for representing a vector with
    NUNITS elements of mode INNERMODE.  Returns BLKmode if there
    is no suitable mode.  */

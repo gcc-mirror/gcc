@@ -94,20 +94,15 @@ loop_optimizer_init (unsigned flags)
   else
     {
       bool recorded_exits = loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS);
+      bool needs_fixup = loops_state_satisfies_p (LOOPS_NEED_FIXUP);
 
       gcc_assert (cfun->curr_properties & PROP_loops);
 
       /* Ensure that the dominators are computed, like flow_loops_find does.  */
       calculate_dominance_info (CDI_DOMINATORS);
 
-      if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
-	{
-	  loops_state_clear (~0U);
-	  fix_loop_structure (NULL);
-	}
-
 #ifdef ENABLE_CHECKING
-      else
+      if (!needs_fixup)
 	verify_loop_structure ();
 #endif
 
@@ -115,6 +110,14 @@ loop_optimizer_init (unsigned flags)
       if (recorded_exits)
 	release_recorded_exits ();
       loops_state_clear (~0U);
+
+      if (needs_fixup)
+	{
+	  /* Apply LOOPS_MAY_HAVE_MULTIPLE_LATCHES early as fix_loop_structure
+	     re-applies flags.  */
+	  loops_state_set (flags & LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	  fix_loop_structure (NULL);
+	}
     }
 
   /* Apply flags to loops.  */
@@ -503,49 +506,6 @@ rtl_opt_pass *
 make_pass_rtl_move_loop_invariants (gcc::context *ctxt)
 {
   return new pass_rtl_move_loop_invariants (ctxt);
-}
-
-
-namespace {
-
-const pass_data pass_data_rtl_unswitch =
-{
-  RTL_PASS, /* type */
-  "loop2_unswitch", /* name */
-  OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
-  TV_LOOP_UNSWITCH, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
-};
-
-class pass_rtl_unswitch : public rtl_opt_pass
-{
-public:
-  pass_rtl_unswitch (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_rtl_unswitch, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_unswitch_loops; }
-  virtual unsigned int execute (function *fun)
-    {
-      if (number_of_loops (fun) > 1)
-	unswitch_loops ();
-      return 0;
-    }
-
-}; // class pass_rtl_unswitch
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_rtl_unswitch (gcc::context *ctxt)
-{
-  return new pass_rtl_unswitch (ctxt);
 }
 
 

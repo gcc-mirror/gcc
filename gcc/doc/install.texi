@@ -2544,8 +2544,7 @@ Finally a @code{stagefeedback} compiler is built using the information collected
 
 Unlike standard bootstrap, several additional restrictions apply.  The
 compiler used to build @code{stage1} needs to support a 64-bit integral type.
-It is recommended to only use GCC for this.  Also parallel make is currently
-not supported since collisions in profile collecting may occur.
+It is recommended to only use GCC for this.
 
 @html
 <hr />
@@ -3109,8 +3108,6 @@ information have to.
 @uref{#x-x-linux-gnu,,*-*-linux-gnu}
 @item
 @uref{#ix86-x-linux,,i?86-*-linux*}
-@item
-@uref{#ix86-x-solaris289,,i?86-*-solaris2.9}
 @item
 @uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
 @item
@@ -3676,27 +3673,6 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 <hr />
 @end html
-@anchor{ix86-x-solaris29}
-@heading i?86-*-solaris2.9
-The Sun assembler in Solaris 9 has several bugs and limitations.
-While GCC works around them, several features are missing, so it is
-@c FIXME: which ones?
-recommended to use the GNU assembler instead.  There is no bundled
-version, but the current version, from GNU binutils 2.22, is known to
-work.
-
-Solaris@tie{}2/x86 doesn't support the execution of SSE/SSE2 instructions
-before Solaris@tie{}9 4/04, even if the CPU supports them.  Programs will
-receive @code{SIGILL} if they try.  The fix is available both in
-Solaris@tie{}9 Update@tie{}6 and kernel patch 112234-12 or newer.  To
-avoid this problem,
-@option{-march} defaults to @samp{pentiumpro} on Solaris 9.  If
-you have the patch installed, you can configure GCC with an appropriate
-@option{--with-arch} option, but need GNU @command{as} for SSE2 support.
-
-@html
-<hr />
-@end html
 @anchor{ix86-x-solaris210}
 @heading i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  Starting
@@ -4250,10 +4226,9 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 9 has been obsoleted in GCC 4.9, but can still be
-enabled by configuring with @option{--enable-obsolete}.  Support will be
-removed in GCC 4.10.  Support for Solaris 8 has removed in GCC 4.8.
-Support for Solaris 7 has been removed in GCC 4.6.
+Support for Solaris 9 has been removed in GCC 4.10.  Support for Solaris
+8 has been removed in GCC 4.8.  Support for Solaris 7 has been removed
+in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and
@@ -4332,25 +4307,6 @@ itself, rather it is a kernel bug triggered by the @command{expect}
 program which is used only by the GCC testsuite driver.  When the bug
 causes the @command{expect} program to miss anticipated output, extra
 testsuite failures appear.
-
-There are patches for Solaris 9 (117171-11 or newer for
-SPARC, 117172-11 or newer for Intel) that address this problem.
-
-Thread-local storage (TLS) is supported in Solaris@tie{}9, but requires
-some patches.  The @samp{libthread} patches provide the
-@code{__tls_get_addr} (SPARC, 64-bit x86) resp.@ @code{___tls_get_addr}
-(32-bit x86) functions.  On Solaris@tie{}9, the necessary support
-on SPARC is present since FCS, while 114432-05 or newer is required on
-Intel.  Additionally, on Solaris@tie{}9/x86, patch 113986-02 or newer is
-required for the Sun @command{ld} and runtime linker (@command{ld.so.1})
-support, while Solaris@tie{}9/SPARC works since FCS.  The linker
-patches must be installed even if GNU @command{ld} is used. Sun
-@command{as} in Solaris@tie{}9 doesn't support the necessary
-relocations, so GNU @command{as} must be used.  The @command{configure}
-script checks for those prerequisites and automatically enables TLS
-support if they are met.  Although those minimal patch versions should
-work, it is recommended to use the latest patch versions which include
-additional bug fixes.
 
 @html
 <hr />

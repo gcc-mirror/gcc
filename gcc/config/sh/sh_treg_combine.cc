@@ -425,7 +425,7 @@ public:
   sh_treg_combine (gcc::context* ctx, bool split_insns, const char* name);
   virtual ~sh_treg_combine (void);
   virtual bool gate (function *);
-  virtual unsigned int execute (void);
+  virtual unsigned int execute (function *);
 
 private:
   // Type of ccreg store that is supported.
@@ -1441,7 +1441,7 @@ sh_treg_combine::gate (function *)
 }
 
 unsigned int
-sh_treg_combine::execute (void)
+sh_treg_combine::execute (function *fun)
 {
   unsigned int ccr0 = INVALID_REGNUM;
   unsigned int ccr1 = INVALID_REGNUM;
@@ -1468,7 +1468,7 @@ sh_treg_combine::execute (void)
   // Look for basic blocks that end with a conditional branch and try to
   // optimize them.
   basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       rtx i = BB_END (bb);
       if (any_condjump_p (i) && onlyjump_p (i))

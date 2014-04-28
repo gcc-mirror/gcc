@@ -96,54 +96,10 @@ extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */
 
 
-#if defined( SOLARIS_MUTEX_INIT_2_CHECK )
-#ident "@(#)pthread.h  1.26  98/04/12 SMI"
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define PTHREAD_MUTEX_INITIALIZER	{{{0},0}, {{{0}}}, 0}
-#else
-#define PTHREAD_MUTEX_INITIALIZER	{{{0},0}, {{{0}}}, {0}}
-#endif
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define PTHREAD_COND_INITIALIZER	{{{0}, 0}, 0}	/* DEFAULTCV */
-#else
-#define PTHREAD_COND_INITIALIZER	{{{0}, 0}, {0}}	/* DEFAULTCV */
-#endif
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\
-	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, 0}
-#else
-#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\
-	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, {0}}
-#endif
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\
-	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, 0}
-#else
-#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\
-	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, {0}}
-#endif
-#endif  /* SOLARIS_MUTEX_INIT_2_CHECK */
-
-
 #if defined( SOLARIS_ONCE_INIT_1_CHECK )
 #pragma ident	"@(#)pthread.h	1.37	04/09/28 SMI"
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
 #define PTHREAD_ONCE_INIT	{{0, 0, 0, PTHREAD_ONCE_NOTDONE}}
-#else
-#define PTHREAD_ONCE_INIT	{{{0}, {0}, {0}, {PTHREAD_ONCE_NOTDONE}}}
-#endif
 #endif  /* SOLARIS_ONCE_INIT_1_CHECK */
-
-
-#if defined( SOLARIS_ONCE_INIT_2_CHECK )
-#ident "@(#)pthread.h  1.26  98/04/12 SMI"
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define PTHREAD_ONCE_INIT	{{0, 0, 0, PTHREAD_ONCE_NOTDONE}}
-#else
-#define PTHREAD_ONCE_INIT	{{{0}, {0}, {0}, {PTHREAD_ONCE_NOTDONE}}}
-#endif
-
-#endif  /* SOLARIS_ONCE_INIT_2_CHECK */
 
 
 #if defined( SOLARIS_RWLOCK_INIT_1_CHECK )

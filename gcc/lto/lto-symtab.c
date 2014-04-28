@@ -560,10 +560,10 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
 
       if (!lto_symtab_symbol_p (e))
 	continue;
-      cgraph_node *ce = dyn_cast <cgraph_node> (e);
+      cgraph_node *ce = dyn_cast <cgraph_node *> (e);
       if (ce && !DECL_BUILT_IN (e->decl))
 	lto_cgraph_replace_node (ce, cgraph (prevailing));
-      if (varpool_node *ve = dyn_cast <varpool_node> (e))
+      if (varpool_node *ve = dyn_cast <varpool_node *> (e))
 	lto_varpool_replace_node (ve, varpool (prevailing));
     }
 
@@ -609,7 +609,7 @@ lto_symtab_merge_symbols (void)
 	    }
 	  node->aux = NULL;
 
-	  if (!(cnode = dyn_cast <cgraph_node> (node))
+	  if (!(cnode = dyn_cast <cgraph_node *> (node))
 	      || !cnode->clone_of
 	      || cnode->clone_of->decl != cnode->decl)
 	    {
@@ -624,11 +624,11 @@ lto_symtab_merge_symbols (void)
 	      /* The user defined assembler variables are also not unified by their
 		 symbol name (since it is irrelevant), but we need to unify symbol
 		 nodes if tree merging occured.  */
-	      if ((vnode = dyn_cast <varpool_node> (node))
+	      if ((vnode = dyn_cast <varpool_node *> (node))
 		  && DECL_HARD_REGISTER (vnode->decl)
 		  && (node2 = symtab_get_node (vnode->decl))
 		  && node2 != node)
-		lto_varpool_replace_node (dyn_cast <varpool_node> (node2),
+		lto_varpool_replace_node (dyn_cast <varpool_node *> (node2),
 					  vnode);
 	  
 

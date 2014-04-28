@@ -51,17 +51,28 @@
   VAR1 (GETLANE, get_lane, 0, di)
   BUILTIN_VALL (GETLANE, be_checked_get_lane, 0)
 
-  BUILTIN_VD_RE (REINTERP, reinterpretdi, 0)
-  BUILTIN_VDC (REINTERP, reinterpretv8qi, 0)
-  BUILTIN_VDC (REINTERP, reinterpretv4hi, 0)
-  BUILTIN_VDC (REINTERP, reinterpretv2si, 0)
-  BUILTIN_VDC (REINTERP, reinterpretv2sf, 0)
-  BUILTIN_VQ (REINTERP, reinterpretv16qi, 0)
-  BUILTIN_VQ (REINTERP, reinterpretv8hi, 0)
-  BUILTIN_VQ (REINTERP, reinterpretv4si, 0)
-  BUILTIN_VQ (REINTERP, reinterpretv4sf, 0)
-  BUILTIN_VQ (REINTERP, reinterpretv2di, 0)
-  BUILTIN_VQ (REINTERP, reinterpretv2df, 0)
+  VAR1 (REINTERP_SS, reinterpretdi, 0, df)
+  VAR1 (REINTERP_SS, reinterpretv8qi, 0, df)
+  VAR1 (REINTERP_SS, reinterpretv4hi, 0, df)
+  VAR1 (REINTERP_SS, reinterpretv2si, 0, df)
+  VAR1 (REINTERP_SS, reinterpretv2sf, 0, df)
+  BUILTIN_VD (REINTERP_SS, reinterpretdf, 0)
+
+  BUILTIN_VD (REINTERP_SU, reinterpretdf, 0)
+
+  VAR1 (REINTERP_US, reinterpretdi, 0, df)
+  VAR1 (REINTERP_US, reinterpretv8qi, 0, df)
+  VAR1 (REINTERP_US, reinterpretv4hi, 0, df)
+  VAR1 (REINTERP_US, reinterpretv2si, 0, df)
+  VAR1 (REINTERP_US, reinterpretv2sf, 0, df)
+
+  BUILTIN_VD (REINTERP_SP, reinterpretdf, 0)
+
+  VAR1 (REINTERP_PS, reinterpretdi, 0, df)
+  VAR1 (REINTERP_PS, reinterpretv8qi, 0, df)
+  VAR1 (REINTERP_PS, reinterpretv4hi, 0, df)
+  VAR1 (REINTERP_PS, reinterpretv2si, 0, df)
+  VAR1 (REINTERP_PS, reinterpretv2sf, 0, df)
 
   BUILTIN_VDQ_I (BINOP, dup_lane, 0)
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
@@ -142,8 +153,8 @@
   BUILTIN_VSQN_HSDI (UNOP, sqmovn, 0)
   BUILTIN_VSQN_HSDI (UNOP, uqmovn, 0)
   /* Implemented by aarch64_s<optab><mode>.  */
-  BUILTIN_VSDQ_I_BHSI (UNOP, sqabs, 0)
-  BUILTIN_VSDQ_I_BHSI (UNOP, sqneg, 0)
+  BUILTIN_VSDQ_I (UNOP, sqabs, 0)
+  BUILTIN_VSDQ_I (UNOP, sqneg, 0)
 
   BUILTIN_VSD_HSI (QUADOP, sqdmlal_lane, 0)
   BUILTIN_VSD_HSI (QUADOP, sqdmlsl_lane, 0)
@@ -265,7 +276,7 @@
   BUILTIN_VDQF (UNOP, nearbyint, 2)
   BUILTIN_VDQF (UNOP, rint, 2)
   BUILTIN_VDQF (UNOP, round, 2)
-  BUILTIN_VDQF (UNOP, frintn, 2)
+  BUILTIN_VDQF_DF (UNOP, frintn, 2)
 
   /* Implemented by l<fcvt_pattern><su_optab><VQDF:mode><vcvt_target>2.  */
   VAR1 (UNOP, lbtruncv2sf, 2, v2si)
@@ -329,6 +340,8 @@
   VAR1 (UNOP, floatunsv2si, 2, v2sf)
   VAR1 (UNOP, floatunsv4si, 2, v4sf)
   VAR1 (UNOP, floatunsv2di, 2, v2df)
+
+  VAR5 (UNOPU, bswap, 10, v4hi, v8hi, v2si, v4si, v2di)
 
   /* Implemented by
      aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>.  */

@@ -767,7 +767,7 @@ enum gimple_statement_structure_enum {
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_asm>::test (gimple gs)
+is_a_helper <gimple_statement_asm *>::test (gimple gs)
 {
   return gs->code == GIMPLE_ASM;
 }
@@ -775,7 +775,7 @@ is_a_helper <gimple_statement_asm>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_bind>::test (gimple gs)
+is_a_helper <gimple_statement_bind *>::test (gimple gs)
 {
   return gs->code == GIMPLE_BIND;
 }
@@ -783,7 +783,7 @@ is_a_helper <gimple_statement_bind>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_call>::test (gimple gs)
+is_a_helper <gimple_statement_call *>::test (gimple gs)
 {
   return gs->code == GIMPLE_CALL;
 }
@@ -791,7 +791,7 @@ is_a_helper <gimple_statement_call>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_catch>::test (gimple gs)
+is_a_helper <gimple_statement_catch *>::test (gimple gs)
 {
   return gs->code == GIMPLE_CATCH;
 }
@@ -799,7 +799,7 @@ is_a_helper <gimple_statement_catch>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_resx>::test (gimple gs)
+is_a_helper <gimple_statement_resx *>::test (gimple gs)
 {
   return gs->code == GIMPLE_RESX;
 }
@@ -807,7 +807,7 @@ is_a_helper <gimple_statement_resx>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_eh_dispatch>::test (gimple gs)
+is_a_helper <gimple_statement_eh_dispatch *>::test (gimple gs)
 {
   return gs->code == GIMPLE_EH_DISPATCH;
 }
@@ -815,7 +815,7 @@ is_a_helper <gimple_statement_eh_dispatch>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_eh_else>::test (gimple gs)
+is_a_helper <gimple_statement_eh_else *>::test (gimple gs)
 {
   return gs->code == GIMPLE_EH_ELSE;
 }
@@ -823,7 +823,7 @@ is_a_helper <gimple_statement_eh_else>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_eh_filter>::test (gimple gs)
+is_a_helper <gimple_statement_eh_filter *>::test (gimple gs)
 {
   return gs->code == GIMPLE_EH_FILTER;
 }
@@ -831,7 +831,7 @@ is_a_helper <gimple_statement_eh_filter>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_eh_mnt>::test (gimple gs)
+is_a_helper <gimple_statement_eh_mnt *>::test (gimple gs)
 {
   return gs->code == GIMPLE_EH_MUST_NOT_THROW;
 }
@@ -839,7 +839,7 @@ is_a_helper <gimple_statement_eh_mnt>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_atomic_load>::test (gimple gs)
+is_a_helper <gimple_statement_omp_atomic_load *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_ATOMIC_LOAD;
 }
@@ -847,7 +847,7 @@ is_a_helper <gimple_statement_omp_atomic_load>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_atomic_store>::test (gimple gs)
+is_a_helper <gimple_statement_omp_atomic_store *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_ATOMIC_STORE;
 }
@@ -855,7 +855,7 @@ is_a_helper <gimple_statement_omp_atomic_store>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_return>::test (gimple gs)
+is_a_helper <gimple_statement_omp_return *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_RETURN;
 }
@@ -863,7 +863,7 @@ is_a_helper <gimple_statement_omp_return>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_continue>::test (gimple gs)
+is_a_helper <gimple_statement_omp_continue *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_CONTINUE;
 }
@@ -871,7 +871,7 @@ is_a_helper <gimple_statement_omp_continue>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_critical>::test (gimple gs)
+is_a_helper <gimple_statement_omp_critical *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_CRITICAL;
 }
@@ -879,7 +879,7 @@ is_a_helper <gimple_statement_omp_critical>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_for>::test (gimple gs)
+is_a_helper <gimple_statement_omp_for *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
 }
@@ -887,7 +887,7 @@ is_a_helper <gimple_statement_omp_for>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_taskreg>::test (gimple gs)
+is_a_helper <gimple_statement_omp_taskreg *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
 }
@@ -895,7 +895,7 @@ is_a_helper <gimple_statement_omp_taskreg>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_parallel>::test (gimple gs)
+is_a_helper <gimple_statement_omp_parallel *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_PARALLEL;
 }
@@ -903,7 +903,7 @@ is_a_helper <gimple_statement_omp_parallel>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_target>::test (gimple gs)
+is_a_helper <gimple_statement_omp_target *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_TARGET;
 }
@@ -911,7 +911,7 @@ is_a_helper <gimple_statement_omp_target>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_sections>::test (gimple gs)
+is_a_helper <gimple_statement_omp_sections *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_SECTIONS;
 }
@@ -919,7 +919,7 @@ is_a_helper <gimple_statement_omp_sections>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_single>::test (gimple gs)
+is_a_helper <gimple_statement_omp_single *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_SINGLE;
 }
@@ -927,7 +927,7 @@ is_a_helper <gimple_statement_omp_single>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_teams>::test (gimple gs)
+is_a_helper <gimple_statement_omp_teams *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_TEAMS;
 }
@@ -935,7 +935,7 @@ is_a_helper <gimple_statement_omp_teams>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_omp_task>::test (gimple gs)
+is_a_helper <gimple_statement_omp_task *>::test (gimple gs)
 {
   return gs->code == GIMPLE_OMP_TASK;
 }
@@ -943,7 +943,7 @@ is_a_helper <gimple_statement_omp_task>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_phi>::test (gimple gs)
+is_a_helper <gimple_statement_phi *>::test (gimple gs)
 {
   return gs->code == GIMPLE_PHI;
 }
@@ -951,7 +951,7 @@ is_a_helper <gimple_statement_phi>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_transaction>::test (gimple gs)
+is_a_helper <gimple_statement_transaction *>::test (gimple gs)
 {
   return gs->code == GIMPLE_TRANSACTION;
 }
@@ -959,7 +959,7 @@ is_a_helper <gimple_statement_transaction>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_try>::test (gimple gs)
+is_a_helper <gimple_statement_try *>::test (gimple gs)
 {
   return gs->code == GIMPLE_TRY;
 }
@@ -967,7 +967,7 @@ is_a_helper <gimple_statement_try>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_wce>::test (gimple gs)
+is_a_helper <gimple_statement_wce *>::test (gimple gs)
 {
   return gs->code == GIMPLE_WITH_CLEANUP_EXPR;
 }
@@ -975,7 +975,7 @@ is_a_helper <gimple_statement_wce>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_asm>::test (const_gimple gs)
+is_a_helper <const gimple_statement_asm *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_ASM;
 }
@@ -983,7 +983,7 @@ is_a_helper <const gimple_statement_asm>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_bind>::test (const_gimple gs)
+is_a_helper <const gimple_statement_bind *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_BIND;
 }
@@ -991,7 +991,7 @@ is_a_helper <const gimple_statement_bind>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_call>::test (const_gimple gs)
+is_a_helper <const gimple_statement_call *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_CALL;
 }
@@ -999,7 +999,7 @@ is_a_helper <const gimple_statement_call>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_catch>::test (const_gimple gs)
+is_a_helper <const gimple_statement_catch *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_CATCH;
 }
@@ -1007,7 +1007,7 @@ is_a_helper <const gimple_statement_catch>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_resx>::test (const_gimple gs)
+is_a_helper <const gimple_statement_resx *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_RESX;
 }
@@ -1015,7 +1015,7 @@ is_a_helper <const gimple_statement_resx>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_eh_dispatch>::test (const_gimple gs)
+is_a_helper <const gimple_statement_eh_dispatch *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_EH_DISPATCH;
 }
@@ -1023,7 +1023,7 @@ is_a_helper <const gimple_statement_eh_dispatch>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_eh_filter>::test (const_gimple gs)
+is_a_helper <const gimple_statement_eh_filter *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_EH_FILTER;
 }
@@ -1031,7 +1031,7 @@ is_a_helper <const gimple_statement_eh_filter>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_atomic_load>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_atomic_load *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_ATOMIC_LOAD;
 }
@@ -1039,7 +1039,7 @@ is_a_helper <const gimple_statement_omp_atomic_load>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_atomic_store>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_atomic_store *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_ATOMIC_STORE;
 }
@@ -1047,7 +1047,7 @@ is_a_helper <const gimple_statement_omp_atomic_store>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_return>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_return *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_RETURN;
 }
@@ -1055,7 +1055,7 @@ is_a_helper <const gimple_statement_omp_return>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_continue>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_continue *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_CONTINUE;
 }
@@ -1063,7 +1063,7 @@ is_a_helper <const gimple_statement_omp_continue>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_critical>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_critical *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_CRITICAL;
 }
@@ -1071,7 +1071,7 @@ is_a_helper <const gimple_statement_omp_critical>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_for>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_for *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
 }
@@ -1079,7 +1079,7 @@ is_a_helper <const gimple_statement_omp_for>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_taskreg>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_taskreg *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
 }
@@ -1087,7 +1087,7 @@ is_a_helper <const gimple_statement_omp_taskreg>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_parallel>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_parallel *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_PARALLEL;
 }
@@ -1095,7 +1095,7 @@ is_a_helper <const gimple_statement_omp_parallel>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_target>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_target *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_TARGET;
 }
@@ -1103,7 +1103,7 @@ is_a_helper <const gimple_statement_omp_target>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_sections>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_sections *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_SECTIONS;
 }
@@ -1111,7 +1111,7 @@ is_a_helper <const gimple_statement_omp_sections>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_single>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_single *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_SINGLE;
 }
@@ -1119,7 +1119,7 @@ is_a_helper <const gimple_statement_omp_single>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_teams>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_teams *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_TEAMS;
 }
@@ -1127,7 +1127,7 @@ is_a_helper <const gimple_statement_omp_teams>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_omp_task>::test (const_gimple gs)
+is_a_helper <const gimple_statement_omp_task *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_OMP_TASK;
 }
@@ -1135,7 +1135,7 @@ is_a_helper <const gimple_statement_omp_task>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_phi>::test (const_gimple gs)
+is_a_helper <const gimple_statement_phi *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_PHI;
 }
@@ -1143,7 +1143,7 @@ is_a_helper <const gimple_statement_phi>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_transaction>::test (const_gimple gs)
+is_a_helper <const gimple_statement_transaction *>::test (const_gimple gs)
 {
   return gs->code == GIMPLE_TRANSACTION;
 }
@@ -1647,7 +1647,7 @@ gimple_has_ops (const_gimple g)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_with_ops>::test (const_gimple gs)
+is_a_helper <const gimple_statement_with_ops *>::test (const_gimple gs)
 {
   return gimple_has_ops (gs);
 }
@@ -1655,7 +1655,7 @@ is_a_helper <const gimple_statement_with_ops>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_with_ops>::test (gimple gs)
+is_a_helper <gimple_statement_with_ops *>::test (gimple gs)
 {
   return gimple_has_ops (gs);
 }
@@ -1671,7 +1671,7 @@ gimple_has_mem_ops (const_gimple g)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_with_memory_ops>::test (const_gimple gs)
+is_a_helper <const gimple_statement_with_memory_ops *>::test (const_gimple gs)
 {
   return gimple_has_mem_ops (gs);
 }
@@ -1679,7 +1679,7 @@ is_a_helper <const gimple_statement_with_memory_ops>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_with_memory_ops>::test (gimple gs)
+is_a_helper <gimple_statement_with_memory_ops *>::test (gimple gs)
 {
   return gimple_has_mem_ops (gs);
 }
@@ -1690,7 +1690,7 @@ static inline struct use_optype_d *
 gimple_use_ops (const_gimple g)
 {
   const gimple_statement_with_ops *ops_stmt =
-    dyn_cast <const gimple_statement_with_ops> (g);
+    dyn_cast <const gimple_statement_with_ops *> (g);
   if (!ops_stmt)
     return NULL;
   return ops_stmt->use_ops;
@@ -1703,7 +1703,7 @@ static inline void
 gimple_set_use_ops (gimple g, struct use_optype_d *use)
 {
   gimple_statement_with_ops *ops_stmt =
-    as_a <gimple_statement_with_ops> (g);
+    as_a <gimple_statement_with_ops *> (g);
   ops_stmt->use_ops = use;
 }
 
@@ -1714,7 +1714,7 @@ static inline tree
 gimple_vuse (const_gimple g)
 {
   const gimple_statement_with_memory_ops *mem_ops_stmt =
-     dyn_cast <const gimple_statement_with_memory_ops> (g);
+     dyn_cast <const gimple_statement_with_memory_ops *> (g);
   if (!mem_ops_stmt)
     return NULL_TREE;
   return mem_ops_stmt->vuse;
@@ -1726,7 +1726,7 @@ static inline tree
 gimple_vdef (const_gimple g)
 {
   const gimple_statement_with_memory_ops *mem_ops_stmt =
-     dyn_cast <const gimple_statement_with_memory_ops> (g);
+     dyn_cast <const gimple_statement_with_memory_ops *> (g);
   if (!mem_ops_stmt)
     return NULL_TREE;
   return mem_ops_stmt->vdef;
@@ -1738,7 +1738,7 @@ static inline tree *
 gimple_vuse_ptr (gimple g)
 {
   gimple_statement_with_memory_ops *mem_ops_stmt =
-     dyn_cast <gimple_statement_with_memory_ops> (g);
+     dyn_cast <gimple_statement_with_memory_ops *> (g);
   if (!mem_ops_stmt)
     return NULL;
   return &mem_ops_stmt->vuse;
@@ -1750,7 +1750,7 @@ static inline tree *
 gimple_vdef_ptr (gimple g)
 {
   gimple_statement_with_memory_ops *mem_ops_stmt =
-     dyn_cast <gimple_statement_with_memory_ops> (g);
+     dyn_cast <gimple_statement_with_memory_ops *> (g);
   if (!mem_ops_stmt)
     return NULL;
   return &mem_ops_stmt->vdef;
@@ -1762,7 +1762,7 @@ static inline void
 gimple_set_vuse (gimple g, tree vuse)
 {
   gimple_statement_with_memory_ops *mem_ops_stmt =
-    as_a <gimple_statement_with_memory_ops> (g);
+    as_a <gimple_statement_with_memory_ops *> (g);
   mem_ops_stmt->vuse = vuse;
 }
 
@@ -1772,7 +1772,7 @@ static inline void
 gimple_set_vdef (gimple g, tree vdef)
 {
   gimple_statement_with_memory_ops *mem_ops_stmt =
-    as_a <gimple_statement_with_memory_ops> (g);
+    as_a <gimple_statement_with_memory_ops *> (g);
   mem_ops_stmt->vdef = vdef;
 }
 
@@ -1904,7 +1904,7 @@ static inline void
 gimple_omp_return_set_lhs (gimple g, tree lhs)
 {
   gimple_statement_omp_return *omp_return_stmt =
-    as_a <gimple_statement_omp_return> (g);
+    as_a <gimple_statement_omp_return *> (g);
   omp_return_stmt->val = lhs;
 }
 
@@ -1915,7 +1915,7 @@ static inline tree
 gimple_omp_return_lhs (const_gimple g)
 {
   const gimple_statement_omp_return *omp_return_stmt =
-    as_a <const gimple_statement_omp_return> (g);
+    as_a <const gimple_statement_omp_return *> (g);
   return omp_return_stmt->val;
 }
 
@@ -1926,7 +1926,7 @@ static inline tree *
 gimple_omp_return_lhs_ptr (gimple g)
 {
   gimple_statement_omp_return *omp_return_stmt =
-    as_a <gimple_statement_omp_return> (g);
+    as_a <gimple_statement_omp_return *> (g);
   return &omp_return_stmt->val;
 }
 
@@ -2330,7 +2330,7 @@ gimple_assign_rhs_class (const_gimple gs)
    and do not have the semantics of a copy, such as COND_EXPR.  */
 
 static inline bool
-gimple_assign_single_p (gimple gs)
+gimple_assign_single_p (const_gimple gs)
 {
   return (is_gimple_assign (gs)
           && gimple_assign_rhs_class (gs) == GIMPLE_SINGLE_RHS);
@@ -2339,7 +2339,7 @@ gimple_assign_single_p (gimple gs)
 /* Return true if GS performs a store to its lhs.  */
 
 static inline bool
-gimple_store_p (gimple gs)
+gimple_store_p (const_gimple gs)
 {
   tree lhs = gimple_get_lhs (gs);
   return lhs && !is_gimple_reg (lhs);
@@ -2348,7 +2348,7 @@ gimple_store_p (gimple gs)
 /* Return true if GS is an assignment that loads from its rhs1.  */
 
 static inline bool
-gimple_assign_load_p (gimple gs)
+gimple_assign_load_p (const_gimple gs)
 {
   tree rhs;
   if (!gimple_assign_single_p (gs))
@@ -2365,7 +2365,7 @@ gimple_assign_load_p (gimple gs)
 /* Return true if S is a type-cast assignment.  */
 
 static inline bool
-gimple_assign_cast_p (gimple s)
+gimple_assign_cast_p (const_gimple s)
 {
   if (is_gimple_assign (s))
     {
@@ -2381,7 +2381,7 @@ gimple_assign_cast_p (gimple s)
 /* Return true if S is a clobber statement.  */
 
 static inline bool
-gimple_clobber_p (gimple s)
+gimple_clobber_p (const_gimple s)
 {
   return gimple_assign_single_p (s)
          && TREE_CLOBBER_P (gimple_assign_rhs1 (s));
@@ -2454,7 +2454,7 @@ static inline tree
 gimple_call_fntype (const_gimple gs)
 {
   const gimple_statement_call *call_stmt =
-    as_a <const gimple_statement_call> (gs);
+    as_a <const gimple_statement_call *> (gs);
   if (gimple_call_internal_p (gs))
     return NULL_TREE;
   return call_stmt->u.fntype;
@@ -2465,7 +2465,7 @@ gimple_call_fntype (const_gimple gs)
 static inline void
 gimple_call_set_fntype (gimple gs, tree fntype)
 {
-  gimple_statement_call *call_stmt = as_a <gimple_statement_call> (gs);
+  gimple_statement_call *call_stmt = as_a <gimple_statement_call *> (gs);
   gcc_gimple_checking_assert (!gimple_call_internal_p (gs));
   call_stmt->u.fntype = fntype;
 }
@@ -2519,7 +2519,7 @@ gimple_call_set_fndecl (gimple gs, tree decl)
 static inline void
 gimple_call_set_internal_fn (gimple gs, enum internal_fn fn)
 {
-  gimple_statement_call *call_stmt = as_a <gimple_statement_call> (gs);
+  gimple_statement_call *call_stmt = as_a <gimple_statement_call *> (gs);
   gcc_gimple_checking_assert (gimple_call_internal_p (gs));
   call_stmt->u.internal_fn = fn;
 }
@@ -2797,7 +2797,7 @@ gimple_call_copy_flags (gimple dest_call, gimple orig_call)
 static inline struct pt_solution *
 gimple_call_use_set (gimple call)
 {
-  gimple_statement_call *call_stmt = as_a <gimple_statement_call> (call);
+  gimple_statement_call *call_stmt = as_a <gimple_statement_call *> (call);
   return &call_stmt->call_used;
 }
 
@@ -2808,7 +2808,7 @@ gimple_call_use_set (gimple call)
 static inline struct pt_solution *
 gimple_call_clobber_set (gimple call)
 {
-  gimple_statement_call *call_stmt = as_a <gimple_statement_call> (call);
+  gimple_statement_call *call_stmt = as_a <gimple_statement_call *> (call);
   return &call_stmt->call_clobbered;
 }
 
@@ -3078,7 +3078,7 @@ static inline tree
 gimple_bind_vars (const_gimple gs)
 {
   const gimple_statement_bind *bind_stmt =
-    as_a <const gimple_statement_bind> (gs);
+    as_a <const gimple_statement_bind *> (gs);
   return bind_stmt->vars;
 }
 
@@ -3089,7 +3089,7 @@ gimple_bind_vars (const_gimple gs)
 static inline void
 gimple_bind_set_vars (gimple gs, tree vars)
 {
-  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind> (gs);
+  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind *> (gs);
   bind_stmt->vars = vars;
 }
 
@@ -3100,7 +3100,7 @@ gimple_bind_set_vars (gimple gs, tree vars)
 static inline void
 gimple_bind_append_vars (gimple gs, tree vars)
 {
-  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind> (gs);
+  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind *> (gs);
   bind_stmt->vars = chainon (bind_stmt->vars, vars);
 }
 
@@ -3108,7 +3108,7 @@ gimple_bind_append_vars (gimple gs, tree vars)
 static inline gimple_seq *
 gimple_bind_body_ptr (gimple gs)
 {
-  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind> (gs);
+  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind *> (gs);
   return &bind_stmt->body;
 }
 
@@ -3127,7 +3127,7 @@ gimple_bind_body (gimple gs)
 static inline void
 gimple_bind_set_body (gimple gs, gimple_seq seq)
 {
-  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind> (gs);
+  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind *> (gs);
   bind_stmt->body = seq;
 }
 
@@ -3137,7 +3137,7 @@ gimple_bind_set_body (gimple gs, gimple_seq seq)
 static inline void
 gimple_bind_add_stmt (gimple gs, gimple stmt)
 {
-  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind> (gs);
+  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind *> (gs);
   gimple_seq_add_stmt (&bind_stmt->body, stmt);
 }
 
@@ -3147,7 +3147,7 @@ gimple_bind_add_stmt (gimple gs, gimple stmt)
 static inline void
 gimple_bind_add_seq (gimple gs, gimple_seq seq)
 {
-  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind> (gs);
+  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind *> (gs);
   gimple_seq_add_seq (&bind_stmt->body, seq);
 }
 
@@ -3159,7 +3159,7 @@ static inline tree
 gimple_bind_block (const_gimple gs)
 {
   const gimple_statement_bind *bind_stmt =
-    as_a <const gimple_statement_bind> (gs);
+    as_a <const gimple_statement_bind *> (gs);
   return bind_stmt->block;
 }
 
@@ -3170,7 +3170,7 @@ gimple_bind_block (const_gimple gs)
 static inline void
 gimple_bind_set_block (gimple gs, tree block)
 {
-  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind> (gs);
+  gimple_statement_bind *bind_stmt = as_a <gimple_statement_bind *> (gs);
   gcc_gimple_checking_assert (block == NULL_TREE
 			      || TREE_CODE (block) == BLOCK);
   bind_stmt->block = block;
@@ -3183,7 +3183,7 @@ static inline unsigned
 gimple_asm_ninputs (const_gimple gs)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   return asm_stmt->ni;
 }
 
@@ -3194,7 +3194,7 @@ static inline unsigned
 gimple_asm_noutputs (const_gimple gs)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   return asm_stmt->no;
 }
 
@@ -3205,7 +3205,7 @@ static inline unsigned
 gimple_asm_nclobbers (const_gimple gs)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   return asm_stmt->nc;
 }
 
@@ -3215,7 +3215,7 @@ static inline unsigned
 gimple_asm_nlabels (const_gimple gs)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   return asm_stmt->nl;
 }
 
@@ -3225,7 +3225,7 @@ static inline tree
 gimple_asm_input_op (const_gimple gs, unsigned index)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->ni);
   return gimple_op (gs, index + asm_stmt->no);
 }
@@ -3236,7 +3236,7 @@ static inline tree *
 gimple_asm_input_op_ptr (const_gimple gs, unsigned index)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->ni);
   return gimple_op_ptr (gs, index + asm_stmt->no);
 }
@@ -3247,7 +3247,7 @@ gimple_asm_input_op_ptr (const_gimple gs, unsigned index)
 static inline void
 gimple_asm_set_input_op (gimple gs, unsigned index, tree in_op)
 {
-  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm> (gs);
+  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->ni
 			      && TREE_CODE (in_op) == TREE_LIST);
   gimple_set_op (gs, index + asm_stmt->no, in_op);
@@ -3260,7 +3260,7 @@ static inline tree
 gimple_asm_output_op (const_gimple gs, unsigned index)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->no);
   return gimple_op (gs, index);
 }
@@ -3271,7 +3271,7 @@ static inline tree *
 gimple_asm_output_op_ptr (const_gimple gs, unsigned index)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->no);
   return gimple_op_ptr (gs, index);
 }
@@ -3282,7 +3282,7 @@ gimple_asm_output_op_ptr (const_gimple gs, unsigned index)
 static inline void
 gimple_asm_set_output_op (gimple gs, unsigned index, tree out_op)
 {
-  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm> (gs);
+  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->no
 			      && TREE_CODE (out_op) == TREE_LIST);
   gimple_set_op (gs, index, out_op);
@@ -3295,7 +3295,7 @@ static inline tree
 gimple_asm_clobber_op (const_gimple gs, unsigned index)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->nc);
   return gimple_op (gs, index + asm_stmt->ni + asm_stmt->no);
 }
@@ -3306,7 +3306,7 @@ gimple_asm_clobber_op (const_gimple gs, unsigned index)
 static inline void
 gimple_asm_set_clobber_op (gimple gs, unsigned index, tree clobber_op)
 {
-  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm> (gs);
+  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->nc
 			      && TREE_CODE (clobber_op) == TREE_LIST);
   gimple_set_op (gs, index + asm_stmt->ni + asm_stmt->no, clobber_op);
@@ -3318,7 +3318,7 @@ static inline tree
 gimple_asm_label_op (const_gimple gs, unsigned index)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->nl);
   return gimple_op (gs, index + asm_stmt->ni + asm_stmt->nc);
 }
@@ -3328,7 +3328,7 @@ gimple_asm_label_op (const_gimple gs, unsigned index)
 static inline void
 gimple_asm_set_label_op (gimple gs, unsigned index, tree label_op)
 {
-  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm> (gs);
+  gimple_statement_asm *asm_stmt = as_a <gimple_statement_asm *> (gs);
   gcc_gimple_checking_assert (index < asm_stmt->nl
 			      && TREE_CODE (label_op) == TREE_LIST);
   gimple_set_op (gs, index + asm_stmt->ni + asm_stmt->nc, label_op);
@@ -3341,7 +3341,7 @@ static inline const char *
 gimple_asm_string (const_gimple gs)
 {
   const gimple_statement_asm *asm_stmt =
-    as_a <const gimple_statement_asm> (gs);
+    as_a <const gimple_statement_asm *> (gs);
   return asm_stmt->string;
 }
 
@@ -3398,7 +3398,7 @@ static inline tree
 gimple_catch_types (const_gimple gs)
 {
   const gimple_statement_catch *catch_stmt =
-    as_a <const gimple_statement_catch> (gs);
+    as_a <const gimple_statement_catch *> (gs);
   return catch_stmt->types;
 }
 
@@ -3408,7 +3408,7 @@ gimple_catch_types (const_gimple gs)
 static inline tree *
 gimple_catch_types_ptr (gimple gs)
 {
-  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch> (gs);
+  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch *> (gs);
   return &catch_stmt->types;
 }
 
@@ -3419,7 +3419,7 @@ gimple_catch_types_ptr (gimple gs)
 static inline gimple_seq *
 gimple_catch_handler_ptr (gimple gs)
 {
-  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch> (gs);
+  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch *> (gs);
   return &catch_stmt->handler;
 }
 
@@ -3439,7 +3439,7 @@ gimple_catch_handler (gimple gs)
 static inline void
 gimple_catch_set_types (gimple gs, tree t)
 {
-  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch> (gs);
+  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch *> (gs);
   catch_stmt->types = t;
 }
 
@@ -3449,7 +3449,7 @@ gimple_catch_set_types (gimple gs, tree t)
 static inline void
 gimple_catch_set_handler (gimple gs, gimple_seq handler)
 {
-  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch> (gs);
+  gimple_statement_catch *catch_stmt = as_a <gimple_statement_catch *> (gs);
   catch_stmt->handler = handler;
 }
 
@@ -3460,7 +3460,7 @@ static inline tree
 gimple_eh_filter_types (const_gimple gs)
 {
   const gimple_statement_eh_filter *eh_filter_stmt =
-    as_a <const gimple_statement_eh_filter> (gs);
+    as_a <const gimple_statement_eh_filter *> (gs);
   return eh_filter_stmt->types;
 }
 
@@ -3472,7 +3472,7 @@ static inline tree *
 gimple_eh_filter_types_ptr (gimple gs)
 {
   gimple_statement_eh_filter *eh_filter_stmt =
-    as_a <gimple_statement_eh_filter> (gs);
+    as_a <gimple_statement_eh_filter *> (gs);
   return &eh_filter_stmt->types;
 }
 
@@ -3484,7 +3484,7 @@ static inline gimple_seq *
 gimple_eh_filter_failure_ptr (gimple gs)
 {
   gimple_statement_eh_filter *eh_filter_stmt =
-    as_a <gimple_statement_eh_filter> (gs);
+    as_a <gimple_statement_eh_filter *> (gs);
   return &eh_filter_stmt->failure;
 }
 
@@ -3505,7 +3505,7 @@ static inline void
 gimple_eh_filter_set_types (gimple gs, tree types)
 {
   gimple_statement_eh_filter *eh_filter_stmt =
-    as_a <gimple_statement_eh_filter> (gs);
+    as_a <gimple_statement_eh_filter *> (gs);
   eh_filter_stmt->types = types;
 }
 
@@ -3517,7 +3517,7 @@ static inline void
 gimple_eh_filter_set_failure (gimple gs, gimple_seq failure)
 {
   gimple_statement_eh_filter *eh_filter_stmt =
-    as_a <gimple_statement_eh_filter> (gs);
+    as_a <gimple_statement_eh_filter *> (gs);
   eh_filter_stmt->failure = failure;
 }
 
@@ -3526,7 +3526,7 @@ gimple_eh_filter_set_failure (gimple gs, gimple_seq failure)
 static inline tree
 gimple_eh_must_not_throw_fndecl (gimple gs)
 {
-  gimple_statement_eh_mnt *eh_mnt_stmt = as_a <gimple_statement_eh_mnt> (gs);
+  gimple_statement_eh_mnt *eh_mnt_stmt = as_a <gimple_statement_eh_mnt *> (gs);
   return eh_mnt_stmt->fndecl;
 }
 
@@ -3535,7 +3535,7 @@ gimple_eh_must_not_throw_fndecl (gimple gs)
 static inline void
 gimple_eh_must_not_throw_set_fndecl (gimple gs, tree decl)
 {
-  gimple_statement_eh_mnt *eh_mnt_stmt = as_a <gimple_statement_eh_mnt> (gs);
+  gimple_statement_eh_mnt *eh_mnt_stmt = as_a <gimple_statement_eh_mnt *> (gs);
   eh_mnt_stmt->fndecl = decl;
 }
 
@@ -3545,7 +3545,7 @@ static inline gimple_seq *
 gimple_eh_else_n_body_ptr (gimple gs)
 {
   gimple_statement_eh_else *eh_else_stmt =
-    as_a <gimple_statement_eh_else> (gs);
+    as_a <gimple_statement_eh_else *> (gs);
   return &eh_else_stmt->n_body;
 }
 
@@ -3559,7 +3559,7 @@ static inline gimple_seq *
 gimple_eh_else_e_body_ptr (gimple gs)
 {
   gimple_statement_eh_else *eh_else_stmt =
-    as_a <gimple_statement_eh_else> (gs);
+    as_a <gimple_statement_eh_else *> (gs);
   return &eh_else_stmt->e_body;
 }
 
@@ -3573,7 +3573,7 @@ static inline void
 gimple_eh_else_set_n_body (gimple gs, gimple_seq seq)
 {
   gimple_statement_eh_else *eh_else_stmt =
-    as_a <gimple_statement_eh_else> (gs);
+    as_a <gimple_statement_eh_else *> (gs);
   eh_else_stmt->n_body = seq;
 }
 
@@ -3581,7 +3581,7 @@ static inline void
 gimple_eh_else_set_e_body (gimple gs, gimple_seq seq)
 {
   gimple_statement_eh_else *eh_else_stmt =
-    as_a <gimple_statement_eh_else> (gs);
+    as_a <gimple_statement_eh_else *> (gs);
   eh_else_stmt->e_body = seq;
 }
 
@@ -3627,7 +3627,7 @@ gimple_try_catch_is_cleanup (const_gimple gs)
 static inline gimple_seq *
 gimple_try_eval_ptr (gimple gs)
 {
-  gimple_statement_try *try_stmt = as_a <gimple_statement_try> (gs);
+  gimple_statement_try *try_stmt = as_a <gimple_statement_try *> (gs);
   return &try_stmt->eval;
 }
 
@@ -3647,7 +3647,7 @@ gimple_try_eval (gimple gs)
 static inline gimple_seq *
 gimple_try_cleanup_ptr (gimple gs)
 {
-  gimple_statement_try *try_stmt = as_a <gimple_statement_try> (gs);
+  gimple_statement_try *try_stmt = as_a <gimple_statement_try *> (gs);
   return &try_stmt->cleanup;
 }
 
@@ -3681,7 +3681,7 @@ gimple_try_set_catch_is_cleanup (gimple g, bool catch_is_cleanup)
 static inline void
 gimple_try_set_eval (gimple gs, gimple_seq eval)
 {
-  gimple_statement_try *try_stmt = as_a <gimple_statement_try> (gs);
+  gimple_statement_try *try_stmt = as_a <gimple_statement_try *> (gs);
   try_stmt->eval = eval;
 }
 
@@ -3692,7 +3692,7 @@ gimple_try_set_eval (gimple gs, gimple_seq eval)
 static inline void
 gimple_try_set_cleanup (gimple gs, gimple_seq cleanup)
 {
-  gimple_statement_try *try_stmt = as_a <gimple_statement_try> (gs);
+  gimple_statement_try *try_stmt = as_a <gimple_statement_try *> (gs);
   try_stmt->cleanup = cleanup;
 }
 
@@ -3702,7 +3702,7 @@ gimple_try_set_cleanup (gimple gs, gimple_seq cleanup)
 static inline gimple_seq *
 gimple_wce_cleanup_ptr (gimple gs)
 {
-  gimple_statement_wce *wce_stmt = as_a <gimple_statement_wce> (gs);
+  gimple_statement_wce *wce_stmt = as_a <gimple_statement_wce *> (gs);
   return &wce_stmt->cleanup;
 }
 
@@ -3721,7 +3721,7 @@ gimple_wce_cleanup (gimple gs)
 static inline void
 gimple_wce_set_cleanup (gimple gs, gimple_seq cleanup)
 {
-  gimple_statement_wce *wce_stmt = as_a <gimple_statement_wce> (gs);
+  gimple_statement_wce *wce_stmt = as_a <gimple_statement_wce *> (gs);
   wce_stmt->cleanup = cleanup;
 }
 
@@ -3752,7 +3752,7 @@ static inline unsigned
 gimple_phi_capacity (const_gimple gs)
 {
   const gimple_statement_phi *phi_stmt =
-    as_a <const gimple_statement_phi> (gs);
+    as_a <const gimple_statement_phi *> (gs);
   return phi_stmt->capacity;
 }
 
@@ -3765,7 +3765,7 @@ static inline unsigned
 gimple_phi_num_args (const_gimple gs)
 {
   const gimple_statement_phi *phi_stmt =
-    as_a <const gimple_statement_phi> (gs);
+    as_a <const gimple_statement_phi *> (gs);
   return phi_stmt->nargs;
 }
 
@@ -3776,7 +3776,7 @@ static inline tree
 gimple_phi_result (const_gimple gs)
 {
   const gimple_statement_phi *phi_stmt =
-    as_a <const gimple_statement_phi> (gs);
+    as_a <const gimple_statement_phi *> (gs);
   return phi_stmt->result;
 }
 
@@ -3785,7 +3785,7 @@ gimple_phi_result (const_gimple gs)
 static inline tree *
 gimple_phi_result_ptr (gimple gs)
 {
-  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi> (gs);
+  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi *> (gs);
   return &phi_stmt->result;
 }
 
@@ -3794,7 +3794,7 @@ gimple_phi_result_ptr (gimple gs)
 static inline void
 gimple_phi_set_result (gimple gs, tree result)
 {
-  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi> (gs);
+  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi *> (gs);
   phi_stmt->result = result;
   if (result && TREE_CODE (result) == SSA_NAME)
     SSA_NAME_DEF_STMT (result) = gs;
@@ -3807,7 +3807,7 @@ gimple_phi_set_result (gimple gs, tree result)
 static inline struct phi_arg_d *
 gimple_phi_arg (gimple gs, unsigned index)
 {
-  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi> (gs);
+  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi *> (gs);
   gcc_gimple_checking_assert (index <= phi_stmt->capacity);
   return &(phi_stmt->args[index]);
 }
@@ -3818,7 +3818,7 @@ gimple_phi_arg (gimple gs, unsigned index)
 static inline void
 gimple_phi_set_arg (gimple gs, unsigned index, struct phi_arg_d * phiarg)
 {
-  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi> (gs);
+  gimple_statement_phi *phi_stmt = as_a <gimple_statement_phi *> (gs);
   gcc_gimple_checking_assert (index <= phi_stmt->nargs);
   phi_stmt->args[index] = *phiarg;
 }
@@ -3906,7 +3906,7 @@ static inline int
 gimple_resx_region (const_gimple gs)
 {
   const gimple_statement_resx *resx_stmt =
-    as_a <const gimple_statement_resx> (gs);
+    as_a <const gimple_statement_resx *> (gs);
   return resx_stmt->region;
 }
 
@@ -3915,7 +3915,7 @@ gimple_resx_region (const_gimple gs)
 static inline void
 gimple_resx_set_region (gimple gs, int region)
 {
-  gimple_statement_resx *resx_stmt = as_a <gimple_statement_resx> (gs);
+  gimple_statement_resx *resx_stmt = as_a <gimple_statement_resx *> (gs);
   resx_stmt->region = region;
 }
 
@@ -3925,7 +3925,7 @@ static inline int
 gimple_eh_dispatch_region (const_gimple gs)
 {
   const gimple_statement_eh_dispatch *eh_dispatch_stmt =
-    as_a <const gimple_statement_eh_dispatch> (gs);
+    as_a <const gimple_statement_eh_dispatch *> (gs);
   return eh_dispatch_stmt->region;
 }
 
@@ -3935,7 +3935,7 @@ static inline void
 gimple_eh_dispatch_set_region (gimple gs, int region)
 {
   gimple_statement_eh_dispatch *eh_dispatch_stmt =
-    as_a <gimple_statement_eh_dispatch> (gs);
+    as_a <gimple_statement_eh_dispatch *> (gs);
   eh_dispatch_stmt->region = region;
 }
 
@@ -4247,7 +4247,7 @@ static inline tree
 gimple_omp_critical_name (const_gimple gs)
 {
   const gimple_statement_omp_critical *omp_critical_stmt =
-    as_a <const gimple_statement_omp_critical> (gs);
+    as_a <const gimple_statement_omp_critical *> (gs);
   return omp_critical_stmt->name;
 }
 
@@ -4258,7 +4258,7 @@ static inline tree *
 gimple_omp_critical_name_ptr (gimple gs)
 {
   gimple_statement_omp_critical *omp_critical_stmt =
-    as_a <gimple_statement_omp_critical> (gs);
+    as_a <gimple_statement_omp_critical *> (gs);
   return &omp_critical_stmt->name;
 }
 
@@ -4269,7 +4269,7 @@ static inline void
 gimple_omp_critical_set_name (gimple gs, tree name)
 {
   gimple_statement_omp_critical *omp_critical_stmt =
-    as_a <gimple_statement_omp_critical> (gs);
+    as_a <gimple_statement_omp_critical *> (gs);
   omp_critical_stmt->name = name;
 }
 
@@ -4351,7 +4351,7 @@ static inline tree
 gimple_omp_for_clauses (const_gimple gs)
 {
   const gimple_statement_omp_for *omp_for_stmt =
-    as_a <const gimple_statement_omp_for> (gs);
+    as_a <const gimple_statement_omp_for *> (gs);
   return omp_for_stmt->clauses;
 }
 
@@ -4362,7 +4362,7 @@ static inline tree *
 gimple_omp_for_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   return &omp_for_stmt->clauses;
 }
 
@@ -4373,7 +4373,7 @@ static inline void
 gimple_omp_for_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   omp_for_stmt->clauses = clauses;
 }
 
@@ -4384,7 +4384,7 @@ static inline size_t
 gimple_omp_for_collapse (gimple gs)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   return omp_for_stmt->collapse;
 }
 
@@ -4395,7 +4395,7 @@ static inline tree
 gimple_omp_for_index (const_gimple gs, size_t i)
 {
   const gimple_statement_omp_for *omp_for_stmt =
-    as_a <const gimple_statement_omp_for> (gs);
+    as_a <const gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return omp_for_stmt->iter[i].index;
 }
@@ -4407,7 +4407,7 @@ static inline tree *
 gimple_omp_for_index_ptr (gimple gs, size_t i)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return &omp_for_stmt->iter[i].index;
 }
@@ -4419,7 +4419,7 @@ static inline void
 gimple_omp_for_set_index (gimple gs, size_t i, tree index)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   omp_for_stmt->iter[i].index = index;
 }
@@ -4431,7 +4431,7 @@ static inline tree
 gimple_omp_for_initial (const_gimple gs, size_t i)
 {
   const gimple_statement_omp_for *omp_for_stmt =
-    as_a <const gimple_statement_omp_for> (gs);
+    as_a <const gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return omp_for_stmt->iter[i].initial;
 }
@@ -4443,7 +4443,7 @@ static inline tree *
 gimple_omp_for_initial_ptr (gimple gs, size_t i)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return &omp_for_stmt->iter[i].initial;
 }
@@ -4455,7 +4455,7 @@ static inline void
 gimple_omp_for_set_initial (gimple gs, size_t i, tree initial)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   omp_for_stmt->iter[i].initial = initial;
 }
@@ -4467,7 +4467,7 @@ static inline tree
 gimple_omp_for_final (const_gimple gs, size_t i)
 {
   const gimple_statement_omp_for *omp_for_stmt =
-    as_a <const gimple_statement_omp_for> (gs);
+    as_a <const gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return omp_for_stmt->iter[i].final;
 }
@@ -4479,7 +4479,7 @@ static inline tree *
 gimple_omp_for_final_ptr (gimple gs, size_t i)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return &omp_for_stmt->iter[i].final;
 }
@@ -4491,7 +4491,7 @@ static inline void
 gimple_omp_for_set_final (gimple gs, size_t i, tree final)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   omp_for_stmt->iter[i].final = final;
 }
@@ -4503,7 +4503,7 @@ static inline tree
 gimple_omp_for_incr (const_gimple gs, size_t i)
 {
   const gimple_statement_omp_for *omp_for_stmt =
-    as_a <const gimple_statement_omp_for> (gs);
+    as_a <const gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return omp_for_stmt->iter[i].incr;
 }
@@ -4515,7 +4515,7 @@ static inline tree *
 gimple_omp_for_incr_ptr (gimple gs, size_t i)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return &omp_for_stmt->iter[i].incr;
 }
@@ -4527,7 +4527,7 @@ static inline void
 gimple_omp_for_set_incr (gimple gs, size_t i, tree incr)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   omp_for_stmt->iter[i].incr = incr;
 }
@@ -4540,7 +4540,7 @@ static inline gimple_seq *
 gimple_omp_for_pre_body_ptr (gimple gs)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   return &omp_for_stmt->pre_body;
 }
 
@@ -4562,7 +4562,7 @@ static inline void
 gimple_omp_for_set_pre_body (gimple gs, gimple_seq pre_body)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   omp_for_stmt->pre_body = pre_body;
 }
 
@@ -4573,7 +4573,7 @@ static inline tree
 gimple_omp_parallel_clauses (const_gimple gs)
 {
   const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
+    as_a <const gimple_statement_omp_parallel *> (gs);
   return omp_parallel_stmt->clauses;
 }
 
@@ -4584,7 +4584,7 @@ static inline tree *
 gimple_omp_parallel_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
+    as_a <gimple_statement_omp_parallel *> (gs);
   return &omp_parallel_stmt->clauses;
 }
 
@@ -4596,7 +4596,7 @@ static inline void
 gimple_omp_parallel_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
+    as_a <gimple_statement_omp_parallel *> (gs);
   omp_parallel_stmt->clauses = clauses;
 }
 
@@ -4607,7 +4607,7 @@ static inline tree
 gimple_omp_parallel_child_fn (const_gimple gs)
 {
   const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
+    as_a <const gimple_statement_omp_parallel *> (gs);
   return omp_parallel_stmt->child_fn;
 }
 
@@ -4618,7 +4618,7 @@ static inline tree *
 gimple_omp_parallel_child_fn_ptr (gimple gs)
 {
   gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
+    as_a <gimple_statement_omp_parallel *> (gs);
   return &omp_parallel_stmt->child_fn;
 }
 
@@ -4629,7 +4629,7 @@ static inline void
 gimple_omp_parallel_set_child_fn (gimple gs, tree child_fn)
 {
   gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
+    as_a <gimple_statement_omp_parallel *> (gs);
   omp_parallel_stmt->child_fn = child_fn;
 }
 
@@ -4641,7 +4641,7 @@ static inline tree
 gimple_omp_parallel_data_arg (const_gimple gs)
 {
   const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
+    as_a <const gimple_statement_omp_parallel *> (gs);
   return omp_parallel_stmt->data_arg;
 }
 
@@ -4652,7 +4652,7 @@ static inline tree *
 gimple_omp_parallel_data_arg_ptr (gimple gs)
 {
   gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
+    as_a <gimple_statement_omp_parallel *> (gs);
   return &omp_parallel_stmt->data_arg;
 }
 
@@ -4663,7 +4663,7 @@ static inline void
 gimple_omp_parallel_set_data_arg (gimple gs, tree data_arg)
 {
   gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
+    as_a <gimple_statement_omp_parallel *> (gs);
   omp_parallel_stmt->data_arg = data_arg;
 }
 
@@ -4674,7 +4674,7 @@ static inline tree
 gimple_omp_task_clauses (const_gimple gs)
 {
   const gimple_statement_omp_task *omp_task_stmt =
-    as_a <const gimple_statement_omp_task> (gs);
+    as_a <const gimple_statement_omp_task *> (gs);
   return omp_task_stmt->clauses;
 }
 
@@ -4685,7 +4685,7 @@ static inline tree *
 gimple_omp_task_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   return &omp_task_stmt->clauses;
 }
 
@@ -4697,7 +4697,7 @@ static inline void
 gimple_omp_task_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   omp_task_stmt->clauses = clauses;
 }
 
@@ -4708,7 +4708,7 @@ static inline tree
 gimple_omp_task_child_fn (const_gimple gs)
 {
   const gimple_statement_omp_task *omp_task_stmt =
-    as_a <const gimple_statement_omp_task> (gs);
+    as_a <const gimple_statement_omp_task *> (gs);
   return omp_task_stmt->child_fn;
 }
 
@@ -4719,7 +4719,7 @@ static inline tree *
 gimple_omp_task_child_fn_ptr (gimple gs)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   return &omp_task_stmt->child_fn;
 }
 
@@ -4730,7 +4730,7 @@ static inline void
 gimple_omp_task_set_child_fn (gimple gs, tree child_fn)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   omp_task_stmt->child_fn = child_fn;
 }
 
@@ -4742,7 +4742,7 @@ static inline tree
 gimple_omp_task_data_arg (const_gimple gs)
 {
   const gimple_statement_omp_task *omp_task_stmt =
-    as_a <const gimple_statement_omp_task> (gs);
+    as_a <const gimple_statement_omp_task *> (gs);
   return omp_task_stmt->data_arg;
 }
 
@@ -4753,7 +4753,7 @@ static inline tree *
 gimple_omp_task_data_arg_ptr (gimple gs)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   return &omp_task_stmt->data_arg;
 }
 
@@ -4764,7 +4764,7 @@ static inline void
 gimple_omp_task_set_data_arg (gimple gs, tree data_arg)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   omp_task_stmt->data_arg = data_arg;
 }
 
@@ -4775,7 +4775,7 @@ static inline tree
 gimple_omp_taskreg_clauses (const_gimple gs)
 {
   const gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <const gimple_statement_omp_taskreg> (gs);
+    as_a <const gimple_statement_omp_taskreg *> (gs);
   return omp_taskreg_stmt->clauses;
 }
 
@@ -4786,7 +4786,7 @@ static inline tree *
 gimple_omp_taskreg_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <gimple_statement_omp_taskreg> (gs);
+    as_a <gimple_statement_omp_taskreg *> (gs);
   return &omp_taskreg_stmt->clauses;
 }
 
@@ -4798,7 +4798,7 @@ static inline void
 gimple_omp_taskreg_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <gimple_statement_omp_taskreg> (gs);
+    as_a <gimple_statement_omp_taskreg *> (gs);
   omp_taskreg_stmt->clauses = clauses;
 }
 
@@ -4809,7 +4809,7 @@ static inline tree
 gimple_omp_taskreg_child_fn (const_gimple gs)
 {
   const gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <const gimple_statement_omp_taskreg> (gs);
+    as_a <const gimple_statement_omp_taskreg *> (gs);
   return omp_taskreg_stmt->child_fn;
 }
 
@@ -4820,7 +4820,7 @@ static inline tree *
 gimple_omp_taskreg_child_fn_ptr (gimple gs)
 {
   gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <gimple_statement_omp_taskreg> (gs);
+    as_a <gimple_statement_omp_taskreg *> (gs);
   return &omp_taskreg_stmt->child_fn;
 }
 
@@ -4831,7 +4831,7 @@ static inline void
 gimple_omp_taskreg_set_child_fn (gimple gs, tree child_fn)
 {
   gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <gimple_statement_omp_taskreg> (gs);
+    as_a <gimple_statement_omp_taskreg *> (gs);
   omp_taskreg_stmt->child_fn = child_fn;
 }
 
@@ -4843,7 +4843,7 @@ static inline tree
 gimple_omp_taskreg_data_arg (const_gimple gs)
 {
   const gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <const gimple_statement_omp_taskreg> (gs);
+    as_a <const gimple_statement_omp_taskreg *> (gs);
   return omp_taskreg_stmt->data_arg;
 }
 
@@ -4854,7 +4854,7 @@ static inline tree *
 gimple_omp_taskreg_data_arg_ptr (gimple gs)
 {
   gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <gimple_statement_omp_taskreg> (gs);
+    as_a <gimple_statement_omp_taskreg *> (gs);
   return &omp_taskreg_stmt->data_arg;
 }
 
@@ -4865,7 +4865,7 @@ static inline void
 gimple_omp_taskreg_set_data_arg (gimple gs, tree data_arg)
 {
   gimple_statement_omp_taskreg *omp_taskreg_stmt =
-    as_a <gimple_statement_omp_taskreg> (gs);
+    as_a <gimple_statement_omp_taskreg *> (gs);
   omp_taskreg_stmt->data_arg = data_arg;
 }
 
@@ -4876,7 +4876,7 @@ static inline tree
 gimple_omp_task_copy_fn (const_gimple gs)
 {
   const gimple_statement_omp_task *omp_task_stmt =
-    as_a <const gimple_statement_omp_task> (gs);
+    as_a <const gimple_statement_omp_task *> (gs);
   return omp_task_stmt->copy_fn;
 }
 
@@ -4887,7 +4887,7 @@ static inline tree *
 gimple_omp_task_copy_fn_ptr (gimple gs)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   return &omp_task_stmt->copy_fn;
 }
 
@@ -4898,7 +4898,7 @@ static inline void
 gimple_omp_task_set_copy_fn (gimple gs, tree copy_fn)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   omp_task_stmt->copy_fn = copy_fn;
 }
 
@@ -4909,7 +4909,7 @@ static inline tree
 gimple_omp_task_arg_size (const_gimple gs)
 {
   const gimple_statement_omp_task *omp_task_stmt =
-    as_a <const gimple_statement_omp_task> (gs);
+    as_a <const gimple_statement_omp_task *> (gs);
   return omp_task_stmt->arg_size;
 }
 
@@ -4920,7 +4920,7 @@ static inline tree *
 gimple_omp_task_arg_size_ptr (gimple gs)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   return &omp_task_stmt->arg_size;
 }
 
@@ -4931,7 +4931,7 @@ static inline void
 gimple_omp_task_set_arg_size (gimple gs, tree arg_size)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   omp_task_stmt->arg_size = arg_size;
 }
 
@@ -4942,7 +4942,7 @@ static inline tree
 gimple_omp_task_arg_align (const_gimple gs)
 {
   const gimple_statement_omp_task *omp_task_stmt =
-    as_a <const gimple_statement_omp_task> (gs);
+    as_a <const gimple_statement_omp_task *> (gs);
   return omp_task_stmt->arg_align;
 }
 
@@ -4953,7 +4953,7 @@ static inline tree *
 gimple_omp_task_arg_align_ptr (gimple gs)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   return &omp_task_stmt->arg_align;
 }
 
@@ -4964,7 +4964,7 @@ static inline void
 gimple_omp_task_set_arg_align (gimple gs, tree arg_align)
 {
   gimple_statement_omp_task *omp_task_stmt =
-    as_a <gimple_statement_omp_task> (gs);
+    as_a <gimple_statement_omp_task *> (gs);
   omp_task_stmt->arg_align = arg_align;
 }
 
@@ -4975,7 +4975,7 @@ static inline tree
 gimple_omp_single_clauses (const_gimple gs)
 {
   const gimple_statement_omp_single *omp_single_stmt =
-    as_a <const gimple_statement_omp_single> (gs);
+    as_a <const gimple_statement_omp_single *> (gs);
   return omp_single_stmt->clauses;
 }
 
@@ -4986,7 +4986,7 @@ static inline tree *
 gimple_omp_single_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_single *omp_single_stmt =
-    as_a <gimple_statement_omp_single> (gs);
+    as_a <gimple_statement_omp_single *> (gs);
   return &omp_single_stmt->clauses;
 }
 
@@ -4997,7 +4997,7 @@ static inline void
 gimple_omp_single_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_single *omp_single_stmt =
-    as_a <gimple_statement_omp_single> (gs);
+    as_a <gimple_statement_omp_single *> (gs);
   omp_single_stmt->clauses = clauses;
 }
 
@@ -5008,7 +5008,7 @@ static inline tree
 gimple_omp_target_clauses (const_gimple gs)
 {
   const gimple_statement_omp_target *omp_target_stmt =
-    as_a <const gimple_statement_omp_target> (gs);
+    as_a <const gimple_statement_omp_target *> (gs);
   return omp_target_stmt->clauses;
 }
 
@@ -5019,7 +5019,7 @@ static inline tree *
 gimple_omp_target_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_target *omp_target_stmt =
-    as_a <gimple_statement_omp_target> (gs);
+    as_a <gimple_statement_omp_target *> (gs);
   return &omp_target_stmt->clauses;
 }
 
@@ -5030,7 +5030,7 @@ static inline void
 gimple_omp_target_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_target *omp_target_stmt =
-    as_a <gimple_statement_omp_target> (gs);
+    as_a <gimple_statement_omp_target *> (gs);
   omp_target_stmt->clauses = clauses;
 }
 
@@ -5062,7 +5062,7 @@ static inline tree
 gimple_omp_target_child_fn (const_gimple gs)
 {
   const gimple_statement_omp_target *omp_target_stmt =
-    as_a <const gimple_statement_omp_target> (gs);
+    as_a <const gimple_statement_omp_target *> (gs);
   return omp_target_stmt->child_fn;
 }
 
@@ -5073,7 +5073,7 @@ static inline tree *
 gimple_omp_target_child_fn_ptr (gimple gs)
 {
   gimple_statement_omp_target *omp_target_stmt =
-    as_a <gimple_statement_omp_target> (gs);
+    as_a <gimple_statement_omp_target *> (gs);
   return &omp_target_stmt->child_fn;
 }
 
@@ -5084,7 +5084,7 @@ static inline void
 gimple_omp_target_set_child_fn (gimple gs, tree child_fn)
 {
   gimple_statement_omp_target *omp_target_stmt =
-    as_a <gimple_statement_omp_target> (gs);
+    as_a <gimple_statement_omp_target *> (gs);
   omp_target_stmt->child_fn = child_fn;
 }
 
@@ -5096,7 +5096,7 @@ static inline tree
 gimple_omp_target_data_arg (const_gimple gs)
 {
   const gimple_statement_omp_target *omp_target_stmt =
-    as_a <const gimple_statement_omp_target> (gs);
+    as_a <const gimple_statement_omp_target *> (gs);
   return omp_target_stmt->data_arg;
 }
 
@@ -5107,7 +5107,7 @@ static inline tree *
 gimple_omp_target_data_arg_ptr (gimple gs)
 {
   gimple_statement_omp_target *omp_target_stmt =
-    as_a <gimple_statement_omp_target> (gs);
+    as_a <gimple_statement_omp_target *> (gs);
   return &omp_target_stmt->data_arg;
 }
 
@@ -5118,7 +5118,7 @@ static inline void
 gimple_omp_target_set_data_arg (gimple gs, tree data_arg)
 {
   gimple_statement_omp_target *omp_target_stmt =
-    as_a <gimple_statement_omp_target> (gs);
+    as_a <gimple_statement_omp_target *> (gs);
   omp_target_stmt->data_arg = data_arg;
 }
 
@@ -5129,7 +5129,7 @@ static inline tree
 gimple_omp_teams_clauses (const_gimple gs)
 {
   const gimple_statement_omp_teams *omp_teams_stmt =
-    as_a <const gimple_statement_omp_teams> (gs);
+    as_a <const gimple_statement_omp_teams *> (gs);
   return omp_teams_stmt->clauses;
 }
 
@@ -5140,7 +5140,7 @@ static inline tree *
 gimple_omp_teams_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_teams *omp_teams_stmt =
-    as_a <gimple_statement_omp_teams> (gs);
+    as_a <gimple_statement_omp_teams *> (gs);
   return &omp_teams_stmt->clauses;
 }
 
@@ -5151,7 +5151,7 @@ static inline void
 gimple_omp_teams_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_teams *omp_teams_stmt =
-    as_a <gimple_statement_omp_teams> (gs);
+    as_a <gimple_statement_omp_teams *> (gs);
   omp_teams_stmt->clauses = clauses;
 }
 
@@ -5162,7 +5162,7 @@ static inline tree
 gimple_omp_sections_clauses (const_gimple gs)
 {
   const gimple_statement_omp_sections *omp_sections_stmt =
-    as_a <const gimple_statement_omp_sections> (gs);
+    as_a <const gimple_statement_omp_sections *> (gs);
   return omp_sections_stmt->clauses;
 }
 
@@ -5173,7 +5173,7 @@ static inline tree *
 gimple_omp_sections_clauses_ptr (gimple gs)
 {
   gimple_statement_omp_sections *omp_sections_stmt =
-    as_a <gimple_statement_omp_sections> (gs);
+    as_a <gimple_statement_omp_sections *> (gs);
   return &omp_sections_stmt->clauses;
 }
 
@@ -5185,7 +5185,7 @@ static inline void
 gimple_omp_sections_set_clauses (gimple gs, tree clauses)
 {
   gimple_statement_omp_sections *omp_sections_stmt =
-    as_a <gimple_statement_omp_sections> (gs);
+    as_a <gimple_statement_omp_sections *> (gs);
   omp_sections_stmt->clauses = clauses;
 }
 
@@ -5197,7 +5197,7 @@ static inline tree
 gimple_omp_sections_control (const_gimple gs)
 {
   const gimple_statement_omp_sections *omp_sections_stmt =
-    as_a <const gimple_statement_omp_sections> (gs);
+    as_a <const gimple_statement_omp_sections *> (gs);
   return omp_sections_stmt->control;
 }
 
@@ -5209,7 +5209,7 @@ static inline tree *
 gimple_omp_sections_control_ptr (gimple gs)
 {
   gimple_statement_omp_sections *omp_sections_stmt =
-    as_a <gimple_statement_omp_sections> (gs);
+    as_a <gimple_statement_omp_sections *> (gs);
   return &omp_sections_stmt->control;
 }
 
@@ -5221,7 +5221,7 @@ static inline void
 gimple_omp_sections_set_control (gimple gs, tree control)
 {
   gimple_statement_omp_sections *omp_sections_stmt =
-    as_a <gimple_statement_omp_sections> (gs);
+    as_a <gimple_statement_omp_sections *> (gs);
   omp_sections_stmt->control = control;
 }
 
@@ -5232,7 +5232,7 @@ static inline void
 gimple_omp_for_set_cond (gimple gs, size_t i, enum tree_code cond)
 {
   gimple_statement_omp_for *omp_for_stmt =
-    as_a <gimple_statement_omp_for> (gs);
+    as_a <gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (TREE_CODE_CLASS (cond) == tcc_comparison
 			      && i < omp_for_stmt->collapse);
   omp_for_stmt->iter[i].cond = cond;
@@ -5245,7 +5245,7 @@ static inline enum tree_code
 gimple_omp_for_cond (const_gimple gs, size_t i)
 {
   const gimple_statement_omp_for *omp_for_stmt =
-    as_a <const gimple_statement_omp_for> (gs);
+    as_a <const gimple_statement_omp_for *> (gs);
   gcc_gimple_checking_assert (i < omp_for_stmt->collapse);
   return omp_for_stmt->iter[i].cond;
 }
@@ -5257,7 +5257,7 @@ static inline void
 gimple_omp_atomic_store_set_val (gimple g, tree val)
 {
   gimple_statement_omp_atomic_store *omp_atomic_store_stmt =
-    as_a <gimple_statement_omp_atomic_store> (g);
+    as_a <gimple_statement_omp_atomic_store *> (g);
   omp_atomic_store_stmt->val = val;
 }
 
@@ -5268,7 +5268,7 @@ static inline tree
 gimple_omp_atomic_store_val (const_gimple g)
 {
   const gimple_statement_omp_atomic_store *omp_atomic_store_stmt =
-    as_a <const gimple_statement_omp_atomic_store> (g);
+    as_a <const gimple_statement_omp_atomic_store *> (g);
   return omp_atomic_store_stmt->val;
 }
 
@@ -5279,7 +5279,7 @@ static inline tree *
 gimple_omp_atomic_store_val_ptr (gimple g)
 {
   gimple_statement_omp_atomic_store *omp_atomic_store_stmt =
-    as_a <gimple_statement_omp_atomic_store> (g);
+    as_a <gimple_statement_omp_atomic_store *> (g);
   return &omp_atomic_store_stmt->val;
 }
 
@@ -5290,7 +5290,7 @@ static inline void
 gimple_omp_atomic_load_set_lhs (gimple g, tree lhs)
 {
   gimple_statement_omp_atomic_load *omp_atomic_load_stmt =
-    as_a <gimple_statement_omp_atomic_load> (g);
+    as_a <gimple_statement_omp_atomic_load *> (g);
   omp_atomic_load_stmt->lhs = lhs;
 }
 
@@ -5301,7 +5301,7 @@ static inline tree
 gimple_omp_atomic_load_lhs (const_gimple g)
 {
   const gimple_statement_omp_atomic_load *omp_atomic_load_stmt =
-    as_a <const gimple_statement_omp_atomic_load> (g);
+    as_a <const gimple_statement_omp_atomic_load *> (g);
   return omp_atomic_load_stmt->lhs;
 }
 
@@ -5312,7 +5312,7 @@ static inline tree *
 gimple_omp_atomic_load_lhs_ptr (gimple g)
 {
   gimple_statement_omp_atomic_load *omp_atomic_load_stmt =
-    as_a <gimple_statement_omp_atomic_load> (g);
+    as_a <gimple_statement_omp_atomic_load *> (g);
   return &omp_atomic_load_stmt->lhs;
 }
 
@@ -5323,7 +5323,7 @@ static inline void
 gimple_omp_atomic_load_set_rhs (gimple g, tree rhs)
 {
   gimple_statement_omp_atomic_load *omp_atomic_load_stmt =
-    as_a <gimple_statement_omp_atomic_load> (g);
+    as_a <gimple_statement_omp_atomic_load *> (g);
   omp_atomic_load_stmt->rhs = rhs;
 }
 
@@ -5334,7 +5334,7 @@ static inline tree
 gimple_omp_atomic_load_rhs (const_gimple g)
 {
   const gimple_statement_omp_atomic_load *omp_atomic_load_stmt =
-    as_a <const gimple_statement_omp_atomic_load> (g);
+    as_a <const gimple_statement_omp_atomic_load *> (g);
   return omp_atomic_load_stmt->rhs;
 }
 
@@ -5345,7 +5345,7 @@ static inline tree *
 gimple_omp_atomic_load_rhs_ptr (gimple g)
 {
   gimple_statement_omp_atomic_load *omp_atomic_load_stmt =
-    as_a <gimple_statement_omp_atomic_load> (g);
+    as_a <gimple_statement_omp_atomic_load *> (g);
   return &omp_atomic_load_stmt->rhs;
 }
 
@@ -5356,7 +5356,7 @@ static inline tree
 gimple_omp_continue_control_def (const_gimple g)
 {
   const gimple_statement_omp_continue *omp_continue_stmt =
-    as_a <const gimple_statement_omp_continue> (g);
+    as_a <const gimple_statement_omp_continue *> (g);
   return omp_continue_stmt->control_def;
 }
 
@@ -5366,7 +5366,7 @@ static inline tree *
 gimple_omp_continue_control_def_ptr (gimple g)
 {
   gimple_statement_omp_continue *omp_continue_stmt =
-    as_a <gimple_statement_omp_continue> (g);
+    as_a <gimple_statement_omp_continue *> (g);
   return &omp_continue_stmt->control_def;
 }
 
@@ -5376,7 +5376,7 @@ static inline void
 gimple_omp_continue_set_control_def (gimple g, tree def)
 {
   gimple_statement_omp_continue *omp_continue_stmt =
-    as_a <gimple_statement_omp_continue> (g);
+    as_a <gimple_statement_omp_continue *> (g);
   omp_continue_stmt->control_def = def;
 }
 
@@ -5387,7 +5387,7 @@ static inline tree
 gimple_omp_continue_control_use (const_gimple g)
 {
   const gimple_statement_omp_continue *omp_continue_stmt =
-    as_a <const gimple_statement_omp_continue> (g);
+    as_a <const gimple_statement_omp_continue *> (g);
   return omp_continue_stmt->control_use;
 }
 
@@ -5398,7 +5398,7 @@ static inline tree *
 gimple_omp_continue_control_use_ptr (gimple g)
 {
   gimple_statement_omp_continue *omp_continue_stmt =
-    as_a <gimple_statement_omp_continue> (g);
+    as_a <gimple_statement_omp_continue *> (g);
   return &omp_continue_stmt->control_use;
 }
 
@@ -5409,7 +5409,7 @@ static inline void
 gimple_omp_continue_set_control_use (gimple g, tree use)
 {
   gimple_statement_omp_continue *omp_continue_stmt =
-    as_a <gimple_statement_omp_continue> (g);
+    as_a <gimple_statement_omp_continue *> (g);
   omp_continue_stmt->control_use = use;
 }
 
@@ -5419,7 +5419,7 @@ static inline gimple_seq *
 gimple_transaction_body_ptr (gimple gs)
 {
   gimple_statement_transaction *transaction_stmt =
-    as_a <gimple_statement_transaction> (gs);
+    as_a <gimple_statement_transaction *> (gs);
   return &transaction_stmt->body;
 }
 
@@ -5437,7 +5437,7 @@ static inline tree
 gimple_transaction_label (const_gimple gs)
 {
   const gimple_statement_transaction *transaction_stmt =
-    as_a <const gimple_statement_transaction> (gs);
+    as_a <const gimple_statement_transaction *> (gs);
   return transaction_stmt->label;
 }
 
@@ -5445,7 +5445,7 @@ static inline tree *
 gimple_transaction_label_ptr (gimple gs)
 {
   gimple_statement_transaction *transaction_stmt =
-    as_a <gimple_statement_transaction> (gs);
+    as_a <gimple_statement_transaction *> (gs);
   return &transaction_stmt->label;
 }
 
@@ -5464,7 +5464,7 @@ static inline void
 gimple_transaction_set_body (gimple gs, gimple_seq body)
 {
   gimple_statement_transaction *transaction_stmt =
-    as_a <gimple_statement_transaction> (gs);
+    as_a <gimple_statement_transaction *> (gs);
   transaction_stmt->body = body;
 }
 
@@ -5474,7 +5474,7 @@ static inline void
 gimple_transaction_set_label (gimple gs, tree label)
 {
   gimple_statement_transaction *transaction_stmt =
-    as_a <gimple_statement_transaction> (gs);
+    as_a <gimple_statement_transaction *> (gs);
   transaction_stmt->label = label;
 }
 

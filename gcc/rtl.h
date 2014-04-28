@@ -2042,7 +2042,7 @@ extern const_rtx set_of (const_rtx, const_rtx);
 extern void record_hard_reg_sets (rtx, const_rtx, void *);
 extern void record_hard_reg_uses (rtx *, void *);
 #ifdef HARD_CONST
-extern void find_all_hard_reg_sets (const_rtx, HARD_REG_SET *);
+extern void find_all_hard_reg_sets (const_rtx, HARD_REG_SET *, bool);
 #endif
 extern void note_stores (const_rtx, void (*) (rtx, const_rtx, void *), void *);
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
@@ -2742,10 +2742,6 @@ extern unsigned int variable_tracking_main (void);
 /* In stor-layout.c.  */
 extern void get_mode_bounds (enum machine_mode, int, enum machine_mode,
 			     rtx *, rtx *);
-
-/* In loop-unswitch.c  */
-extern rtx reversed_condition (rtx);
-extern rtx compare_and_jump_seq (rtx, rtx, enum rtx_code, rtx, int, rtx);
 
 /* In loop-iv.c  */
 extern rtx canon_condition (rtx);

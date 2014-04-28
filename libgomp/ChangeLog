@@ -1,3 +1,15 @@
+2014-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/atomic-14.C: Allow seq_cst and
+	atomic type clauses in any order and optional comma in between.
+	* testsuite/libgomp.c++/atomic-15.C: Likewise.
+	* testsuite/libgomp.c/atomic-17.c: Likewise.
+
+	* testsuite/libgomp.c/simd-7.c: New test.
+	* testsuite/libgomp.c/simd-8.c: New test.
+	* testsuite/libgomp.c/simd-9.c: New test.
+	* testsuite/libgomp.c/loop-16.c: New test.
+
 2014-04-02  Richard Henderson  <rth@redhat.com>
 
 	* config/linux/futex.h (futex_wait): Get error value from errno.

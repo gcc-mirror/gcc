@@ -7,19 +7,19 @@ Target Mask(ASM_HEX)
 Force assembly output to always use hex constants
 
 mmcu=
-Target ToLower Joined RejectNegative Var(target_mcu)
+Target Report ToLower Joined RejectNegative Var(target_mcu)
 Specify the MCU to build for.
 
 mcpu=
-Target Joined RejectNegative Var(target_cpu)
+Target Report Joined RejectNegative Var(target_cpu)
 Specify the ISA to build for: msp430, mdsp430x, msp430xv2
 
 mlarge
-Target Mask(LARGE) RejectNegative
+Target Report Mask(LARGE) RejectNegative
 Select large model - 20-bit addresses/pointers
 
 msmall
-Target InverseMask(LARGE) RejectNegative
+Target Report InverseMask(LARGE) RejectNegative
 Select small model - 16-bit addresses/pointers (default)
 
 mrelax
@@ -33,6 +33,27 @@ minrt
 Target Report Mask(MINRT) RejectNegative
 Use a minimum runtime (no static initializers or ctors) for memory-constrained devices.
 
-mhwmult
-Target Report Var(ENABLE_HWMULT, 1) Init(1)
-Enable hardware multiply (except in interrupt routines)
+HeaderInclude
+config/msp430/msp430-opts.h
+
+mhwmult=
+Target Joined RejectNegative Report ToLower Var(msp430_hwmult_type) Enum(msp430_hwmult_types) Init(AUTO)
+Specify the type of hardware multiply to support
+
+Enum
+Name(msp430_hwmult_types) Type(enum msp430_hwmult_types)
+
+EnumValue
+Enum(msp430_hwmult_types) String(none) Value(NONE)
+
+EnumValue
+Enum(msp430_hwmult_types) String(auto) Value(AUTO)
+
+EnumValue
+Enum(msp430_hwmult_types) String(16bit) Value(SMALL)
+
+EnumValue
+Enum(msp430_hwmult_types) String(32bit) Value(LARGE)
+
+EnumValue
+Enum(msp430_hwmult_types) String(f5series) Value(F5SERIES)

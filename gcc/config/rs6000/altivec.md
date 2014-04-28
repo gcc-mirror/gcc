@@ -143,6 +143,9 @@
    UNSPEC_VSUBEUQM
    UNSPEC_VSUBECUQ
    UNSPEC_VBPERMQ
+   UNSPEC_BCDADD
+   UNSPEC_BCDSUB
+   UNSPEC_BCD_OVERFLOW
 ])
 
 (define_c_enum "unspecv"
@@ -3334,3 +3337,112 @@
   "vbpermq %0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "vecsimple")])
+
+;; Decimal Integer operations
+(define_int_iterator UNSPEC_BCD_ADD_SUB [UNSPEC_BCDADD UNSPEC_BCDSUB])
+
+(define_int_attr bcd_add_sub [(UNSPEC_BCDADD "add")
+			      (UNSPEC_BCDSUB "sub")])
+
+(define_code_iterator BCD_TEST [eq lt gt unordered])
+
+(define_insn "bcd<bcd_add_sub>"
+  [(set (match_operand:V1TI 0 "register_operand" "")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "")
+		      (match_operand:V1TI 2 "register_operand" "")
+		      (match_operand:QI 3 "const_0_to_1_operand" "")]
+		     UNSPEC_BCD_ADD_SUB))
+   (clobber (reg:CCFP 74))]
+  "TARGET_P8_VECTOR"
+  "bcd<bcd_add_sub>. %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+;; Use a floating point type (V2DFmode) for the compare to set CR6 so that we
+;; can use the unordered test for BCD nans and add/subtracts that overflow.  An
+;; UNORDERED test on an integer type (like V1TImode) is not defined.  The type
+;; probably should be one that can go in the VMX (Altivec) registers, so we
+;; can't use DDmode or DFmode.
+(define_insn "*bcd<bcd_add_sub>_test"
+  [(set (reg:CCFP 74)
+	(compare:CCFP
+	 (unspec:V2DF [(match_operand:V1TI 1 "register_operand" "v")
+		       (match_operand:V1TI 2 "register_operand" "v")
+		       (match_operand:QI 3 "const_0_to_1_operand" "i")]
+		      UNSPEC_BCD_ADD_SUB)
+	 (match_operand:V2DF 4 "zero_constant" "j")))
+   (clobber (match_scratch:V1TI 0 "=v"))]
+  "TARGET_P8_VECTOR"
+  "bcd<bcd_add_sub>. %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_insn "*bcd<bcd_add_sub>_test2"
+  [(set (match_operand:V1TI 0 "register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
+		      (match_operand:V1TI 2 "register_operand" "v")
+		      (match_operand:QI 3 "const_0_to_1_operand" "i")]
+		     UNSPEC_BCD_ADD_SUB))
+   (set (reg:CCFP 74)
+	(compare:CCFP
+	 (unspec:V2DF [(match_dup 1)
+		       (match_dup 2)
+		       (match_dup 3)]
+		      UNSPEC_BCD_ADD_SUB)
+	 (match_operand:V2DF 4 "zero_constant" "j")))]
+  "TARGET_P8_VECTOR"
+  "bcd<bcd_add_sub>. %0,%1,%2,%3"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+(define_expand "bcd<bcd_add_sub>_<code>"
+  [(parallel [(set (reg:CCFP 74)
+		   (compare:CCFP
+		    (unspec:V2DF [(match_operand:V1TI 1 "register_operand" "")
+				  (match_operand:V1TI 2 "register_operand" "")
+				  (match_operand:QI 3 "const_0_to_1_operand" "")]
+				 UNSPEC_BCD_ADD_SUB)
+		    (match_dup 4)))
+	      (clobber (match_scratch:V1TI 5 ""))])
+   (set (match_operand:SI 0 "register_operand" "")
+	(BCD_TEST:SI (reg:CCFP 74)
+		     (const_int 0)))]
+  "TARGET_P8_VECTOR"
+{
+  operands[4] = CONST0_RTX (V2DFmode);
+})
+
+;; Peephole2 pattern to combine a bcdadd/bcdsub that calculates the value and
+;; the bcdadd/bcdsub that tests the value.  The combiner won't work since
+;; CR6 is a hard coded register.  Unfortunately, all of the Altivec predicate
+;; support is hard coded to use the fixed register CR6 instead of creating
+;; a register class for CR6.
+
+(define_peephole2
+  [(parallel [(set (match_operand:V1TI 0 "register_operand" "")
+		   (unspec:V1TI [(match_operand:V1TI 1 "register_operand" "")
+				 (match_operand:V1TI 2 "register_operand" "")
+				 (match_operand:QI 3 "const_0_to_1_operand" "")]
+				UNSPEC_BCD_ADD_SUB))
+	      (clobber (reg:CCFP 74))])
+   (parallel [(set (reg:CCFP 74)
+		   (compare:CCFP
+		    (unspec:V2DF [(match_dup 1)
+				  (match_dup 2)
+				  (match_dup 3)]
+				 UNSPEC_BCD_ADD_SUB)
+		    (match_operand:V2DF 4 "zero_constant" "")))
+	      (clobber (match_operand:V1TI 5 "register_operand" ""))])]
+  "TARGET_P8_VECTOR"
+  [(parallel [(set (match_dup 0)
+		   (unspec:V1TI [(match_dup 1)
+				 (match_dup 2)
+				 (match_dup 3)]
+				UNSPEC_BCD_ADD_SUB))
+	      (set (reg:CCFP 74)
+		   (compare:CCFP
+		    (unspec:V2DF [(match_dup 1)
+				  (match_dup 2)
+				  (match_dup 3)]
+				 UNSPEC_BCD_ADD_SUB)
+		    (match_dup 4)))])])

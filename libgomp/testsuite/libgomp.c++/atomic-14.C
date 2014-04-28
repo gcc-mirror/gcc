@@ -13,13 +13,13 @@ main ()
     v = x;
   if (v != 3)
     abort ();
-  #pragma omp atomic update seq_cst
+  #pragma omp atomic seq_cst update
     x = 3 * 2 * 1 + x;
-  #pragma omp atomic read seq_cst
+  #pragma omp atomic read, seq_cst
     v = x;
   if (v != 9)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic seq_cst, capture
     v = x = x | 16;
   if (v != 25)
     abort ();
@@ -27,15 +27,15 @@ main ()
     v = x = x + 14 * 2 / 4;
   if (v != 32)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic seq_cst capture
     v = x = 5 | x;
   if (v != 37)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic capture, seq_cst
     v = x = 40 + 12 - 2 - 7 - x;
   if (v != 6)
     abort ();
-  #pragma omp atomic read seq_cst
+  #pragma omp atomic seq_cst read
     v = x;
   if (v != 6)
     abort ();
@@ -43,7 +43,7 @@ main ()
     { v = x; x = 3 + x; }
   if (v != 6)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic seq_cst capture
     { v = x; x = -1 * -1 * -1 * -1 - x; }
   if (v != 9)
     abort ();
@@ -51,11 +51,11 @@ main ()
     v = x;
   if (v != -8)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic capture, seq_cst
     { x = 2 * 2 - x; v = x; }
   if (v != 12)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic seq_cst capture
     { x = 7 & x; v = x; }
   if (v != 4)
     abort ();
@@ -63,7 +63,7 @@ main ()
     { v = x; x = 6; }
   if (v != 4)
     abort ();
-  #pragma omp atomic read seq_cst
+  #pragma omp atomic read, seq_cst
     v = x;
   if (v != 6)
     abort ();
@@ -71,11 +71,11 @@ main ()
     { v = x; x = 7 * 8 + 23; }
   if (v != 6)
     abort ();
-  #pragma omp atomic read seq_cst
+  #pragma omp atomic seq_cst, read
     v = x;
   if (v != 79)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic capture , seq_cst
     { v = x; x = 23 + 6 * 4; }
   if (v != 79)
     abort ();
@@ -83,7 +83,7 @@ main ()
     v = x;
   if (v != 47)
     abort ();
-  #pragma omp atomic capture seq_cst
+  #pragma omp atomic seq_cst capture
     { v = x; x = l ? 17 : 12; }
   if (v != 47)
     abort ();

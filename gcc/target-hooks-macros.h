@@ -18,7 +18,7 @@
 /* The following macros should be provided by the including file:
 
    DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT): Define a function-valued hook.
-   DEFHOOKPOD(DOC, TYPE, NAME, INIT): Define a piece-of-data 'hook'.  */
+   DEFHOOKPOD(NAME, DOC, TYPE, INIT): Define a piece-of-data 'hook'.  */
 
 /* Defaults for optional macros:
    DEFHOOKPODX(NAME, TYPE, INIT): Like DEFHOOKPOD, but share documentation

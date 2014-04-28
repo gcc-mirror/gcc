@@ -24,6 +24,9 @@
 #define GCC_AARCH_COMMON_PROTOS_H
 
 extern int aarch_crypto_can_dual_issue (rtx, rtx);
+extern bool aarch_rev16_p (rtx);
+extern bool aarch_rev16_shleft_mask_imm_p (rtx, enum machine_mode);
+extern bool aarch_rev16_shright_mask_imm_p (rtx, enum machine_mode);
 extern int arm_early_load_addr_dep (rtx, rtx);
 extern int arm_early_store_addr_dep (rtx, rtx);
 extern int arm_mac_accumulator_is_mul_result (rtx, rtx);
@@ -54,6 +57,7 @@ struct alu_cost_table
   const int bfi;		/* Bit-field insert.  */
   const int bfx;		/* Bit-field extraction.  */
   const int clz;		/* Count Leading Zeros.  */
+  const int rev;		/* Reverse bits/bytes.  */
   const int non_exec;		/* Extra cost when not executing insn.  */
   const bool non_exec_costs_exec; /* True if non-execution must add the exec
 				     cost.  */

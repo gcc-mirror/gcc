@@ -1,3 +1,13 @@
+2014-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43620
+	* Makefile.am (AUTOMAKE_OPTIONS): Add no-dist.
+	* include/Makefile.am (AUTOMAKE_OPTIONS): Likewise.
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Likewise.
+	* Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
 2013-12-21  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* include/private/gcconfig.h: Add FreeBSD powerpc64 defines.

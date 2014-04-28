@@ -106,8 +106,8 @@ static int spelling_length (void);
 static char *print_spelling (char *);
 static void warning_init (int, const char *);
 static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
-static void output_init_element (tree, tree, bool, tree, tree, int, bool,
-				 struct obstack *);
+static void output_init_element (location_t, tree, tree, bool, tree, tree, int,
+				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
 static int set_designator (int, struct obstack *);
 static void push_range_stack (tree, struct obstack *);
@@ -7442,13 +7442,15 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
 	  if ((TREE_CODE (constructor_type) == RECORD_TYPE
 	       || TREE_CODE (constructor_type) == UNION_TYPE)
 	      && constructor_fields == 0)
-	    process_init_element (pop_init_level (1, braced_init_obstack),
+	    process_init_element (input_location,
+				  pop_init_level (1, braced_init_obstack),
 				  true, braced_init_obstack);
 	  else if (TREE_CODE (constructor_type) == ARRAY_TYPE
 		   && constructor_max_index
 		   && tree_int_cst_lt (constructor_max_index,
 				       constructor_index))
-	    process_init_element (pop_init_level (1, braced_init_obstack),
+	    process_init_element (input_location,
+				  pop_init_level (1, braced_init_obstack),
 				  true, braced_init_obstack);
 	  else
 	    break;
@@ -7648,10 +7650,9 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
       /* When we come to an explicit close brace,
 	 pop any inner levels that didn't have explicit braces.  */
       while (constructor_stack->implicit)
-	{
-	  process_init_element (pop_init_level (1, braced_init_obstack),
-				true, braced_init_obstack);
-	}
+	process_init_element (input_location,
+			      pop_init_level (1, braced_init_obstack),
+			      true, braced_init_obstack);
       gcc_assert (!constructor_range_stack);
     }
 
@@ -7829,10 +7830,9 @@ set_designator (int array, struct obstack * braced_init_obstack)
       /* Designator list starts at the level of closest explicit
 	 braces.  */
       while (constructor_stack->implicit)
-	{
-	  process_init_element (pop_init_level (1, braced_init_obstack),
-				true, braced_init_obstack);
-	}
+	process_init_element (input_location,
+			      pop_init_level (1, braced_init_obstack),
+			      true, braced_init_obstack);
       constructor_designated = 1;
       return 0;
     }
@@ -8452,9 +8452,9 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
    existing initializer.  */
 
 static void
-output_init_element (tree value, tree origtype, bool strict_string, tree type,
-		     tree field, int pending, bool implicit,
-		     struct obstack * braced_init_obstack)
+output_init_element (location_t loc, tree value, tree origtype,
+		     bool strict_string, tree type, tree field, int pending,
+		     bool implicit, struct obstack * braced_init_obstack)
 {
   tree semantic_type = NULL_TREE;
   bool maybe_const = true;
@@ -8552,8 +8552,8 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
 
   if (semantic_type)
     value = build1 (EXCESS_PRECISION_EXPR, semantic_type, value);
-  value = digest_init (input_location, type, value, origtype, npc,
-      		       strict_string, require_constant_value);
+  value = digest_init (loc, type, value, origtype, npc, strict_string,
+		       require_constant_value);
   if (value == error_mark_node)
     {
       constructor_erroneous = 1;
@@ -8680,8 +8680,8 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 	{
 	  if (tree_int_cst_equal (elt->purpose,
 				  constructor_unfilled_index))
-	    output_init_element (elt->value, elt->origtype, true,
-				 TREE_TYPE (constructor_type),
+	    output_init_element (input_location, elt->value, elt->origtype,
+				 true, TREE_TYPE (constructor_type),
 				 constructor_unfilled_index, 0, false,
 				 braced_init_obstack);
 	  else if (tree_int_cst_lt (constructor_unfilled_index,
@@ -8735,8 +8735,8 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 	  if (tree_int_cst_equal (elt_bitpos, ctor_unfilled_bitpos))
 	    {
 	      constructor_unfilled_fields = elt->purpose;
-	      output_init_element (elt->value, elt->origtype, true,
-				   TREE_TYPE (elt->purpose),
+	      output_init_element (input_location, elt->value, elt->origtype,
+				   true, TREE_TYPE (elt->purpose),
 				   elt->purpose, 0, false,
 				   braced_init_obstack);
 	    }
@@ -8809,7 +8809,7 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
    existing initializer.  */
 
 void
-process_init_element (struct c_expr value, bool implicit,
+process_init_element (location_t loc, struct c_expr value, bool implicit,
 		      struct obstack * braced_init_obstack)
 {
   tree orig_value = value.value;
@@ -8853,14 +8853,14 @@ process_init_element (struct c_expr value, bool implicit,
       if ((TREE_CODE (constructor_type) == RECORD_TYPE
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
 	  && constructor_fields == 0)
-	process_init_element (pop_init_level (1, braced_init_obstack),
+	process_init_element (loc, pop_init_level (1, braced_init_obstack),
 			      true, braced_init_obstack);
       else if ((TREE_CODE (constructor_type) == ARRAY_TYPE
 	        || TREE_CODE (constructor_type) == VECTOR_TYPE)
 	       && constructor_max_index
 	       && tree_int_cst_lt (constructor_max_index,
 				   constructor_index))
-	process_init_element (pop_init_level (1, braced_init_obstack),
+	process_init_element (loc, pop_init_level (1, braced_init_obstack),
 			      true, braced_init_obstack);
       else
 	break;
@@ -8938,7 +8938,7 @@ process_init_element (struct c_expr value, bool implicit,
 	  if (value.value)
 	    {
 	      push_member_name (constructor_fields);
-	      output_init_element (value.value, value.original_type,
+	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, fieldtype,
 				   constructor_fields, 1, implicit,
 				   braced_init_obstack);
@@ -9030,7 +9030,7 @@ process_init_element (struct c_expr value, bool implicit,
 	  if (value.value)
 	    {
 	      push_member_name (constructor_fields);
-	      output_init_element (value.value, value.original_type,
+	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, fieldtype,
 				   constructor_fields, 1, implicit,
 				   braced_init_obstack);
@@ -9082,7 +9082,7 @@ process_init_element (struct c_expr value, bool implicit,
 	  if (value.value)
 	    {
 	      push_array_bounds (tree_to_uhwi (constructor_index));
-	      output_init_element (value.value, value.original_type,
+	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, elttype,
 				   constructor_index, 1, implicit,
 				   braced_init_obstack);
@@ -9117,7 +9117,7 @@ process_init_element (struct c_expr value, bool implicit,
 	    {
 	      if (TREE_CODE (value.value) == VECTOR_CST)
 		elttype = TYPE_MAIN_VARIANT (constructor_type);
-	      output_init_element (value.value, value.original_type,
+	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, elttype,
 				   constructor_index, 1, implicit,
 				   braced_init_obstack);
@@ -9146,7 +9146,7 @@ process_init_element (struct c_expr value, bool implicit,
       else
 	{
 	  if (value.value)
-	    output_init_element (value.value, value.original_type,
+	    output_init_element (loc, value.value, value.original_type,
 				 strict_string, constructor_type,
 				 NULL_TREE, 1, implicit,
 				 braced_init_obstack);
@@ -9165,8 +9165,8 @@ process_init_element (struct c_expr value, bool implicit,
 	  while (constructor_stack != range_stack->stack)
 	    {
 	      gcc_assert (constructor_stack->implicit);
-	      process_init_element (pop_init_level (1,
-						    braced_init_obstack),
+	      process_init_element (loc,
+				    pop_init_level (1, braced_init_obstack),
 				    true, braced_init_obstack);
 	    }
 	  for (p = range_stack;
@@ -9174,7 +9174,8 @@ process_init_element (struct c_expr value, bool implicit,
 	       p = p->prev)
 	    {
 	      gcc_assert (constructor_stack->implicit);
-	      process_init_element (pop_init_level (1, braced_init_obstack),
+	      process_init_element (loc,
+				    pop_init_level (1, braced_init_obstack),
 				    true, braced_init_obstack);
 	    }
 

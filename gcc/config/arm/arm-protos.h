@@ -272,6 +272,11 @@ struct tune_params
   const struct cpu_vec_costs* vec_costs;
   /* Prefer Neon for 64-bit bitops.  */
   bool prefer_neon_for_64bits;
+  /* Prefer 32-bit encoding instead of flag-setting 16-bit encoding.  */
+  bool disparage_flag_setting_t16_encodings;
+  /* Prefer 32-bit encoding instead of 16-bit encoding where subset of flags
+     would be set.  */
+  bool disparage_partial_flag_setting_t16_encodings;
 };
 
 extern const struct tune_params *current_tune;
