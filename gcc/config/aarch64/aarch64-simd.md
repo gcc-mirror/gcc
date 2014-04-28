@@ -3686,6 +3686,17 @@
   [(set_attr "type" "neon_store2_2reg<q>")]
 )
 
+(define_insn "vec_store_lanesoi_lane<mode>"
+  [(set (match_operand:<V_TWO_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:<V_TWO_ELEM> [(match_operand:OI 1 "register_operand" "w")
+                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+		    (match_operand:SI 2 "immediate_operand" "i")]
+                   UNSPEC_ST2_LANE))]
+  "TARGET_SIMD"
+  "st2\\t{%S1.<Vetype> - %T1.<Vetype>}[%2], %0"
+  [(set_attr "type" "neon_store3_one_lane<q>")]
+)
+
 (define_insn "vec_load_lanesci<mode>"
   [(set (match_operand:CI 0 "register_operand" "=w")
 	(unspec:CI [(match_operand:CI 1 "aarch64_simd_struct_operand" "Utv")
@@ -3706,6 +3717,17 @@
   [(set_attr "type" "neon_store3_3reg<q>")]
 )
 
+(define_insn "vec_store_lanesci_lane<mode>"
+  [(set (match_operand:<V_THREE_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:<V_THREE_ELEM> [(match_operand:CI 1 "register_operand" "w")
+                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+		    (match_operand:SI 2 "immediate_operand" "i")]
+                   UNSPEC_ST3_LANE))]
+  "TARGET_SIMD"
+  "st3\\t{%S1.<Vetype> - %U1.<Vetype>}[%2], %0"
+  [(set_attr "type" "neon_store3_one_lane<q>")]
+)
+
 (define_insn "vec_load_lanesxi<mode>"
   [(set (match_operand:XI 0 "register_operand" "=w")
 	(unspec:XI [(match_operand:XI 1 "aarch64_simd_struct_operand" "Utv")
@@ -3724,6 +3746,17 @@
   "TARGET_SIMD"
   "st4\\t{%S1.<Vtype> - %V1.<Vtype>}, %0"
   [(set_attr "type" "neon_store4_4reg<q>")]
+)
+
+(define_insn "vec_store_lanesxi_lane<mode>"
+  [(set (match_operand:<V_FOUR_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:<V_FOUR_ELEM> [(match_operand:XI 1 "register_operand" "w")
+                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+		    (match_operand:SI 2 "immediate_operand" "i")]
+                   UNSPEC_ST4_LANE))]
+  "TARGET_SIMD"
+  "st4\\t{%S1.<Vetype> - %V1.<Vetype>}[%2], %0"
+  [(set_attr "type" "neon_store4_one_lane<q>")]
 )
 
 ;; Reload patterns for AdvSIMD register list operands.
@@ -4217,6 +4250,57 @@
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
   emit_insn (gen_vec_store_lanes<VSTRUCT:mode><VQ:mode> (mem, operands[1]));
+  DONE;
+})
+
+(define_expand "aarch64_st2_lane<VQ:mode>"
+ [(match_operand:DI 0 "register_operand" "r")
+  (match_operand:OI 1 "register_operand" "w")
+  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+  (match_operand:SI 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  enum machine_mode mode = <V_TWO_ELEM>mode;
+  rtx mem = gen_rtx_MEM (mode, operands[0]);
+  operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+
+  emit_insn (gen_vec_store_lanesoi_lane<VQ:mode> (mem,
+						  operands[1],
+						  operands[2]));
+  DONE;
+})
+
+(define_expand "aarch64_st3_lane<VQ:mode>"
+ [(match_operand:DI 0 "register_operand" "r")
+  (match_operand:CI 1 "register_operand" "w")
+  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+  (match_operand:SI 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  enum machine_mode mode = <V_THREE_ELEM>mode;
+  rtx mem = gen_rtx_MEM (mode, operands[0]);
+  operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+
+  emit_insn (gen_vec_store_lanesci_lane<VQ:mode> (mem,
+						  operands[1],
+						  operands[2]));
+  DONE;
+})
+
+(define_expand "aarch64_st4_lane<VQ:mode>"
+ [(match_operand:DI 0 "register_operand" "r")
+  (match_operand:XI 1 "register_operand" "w")
+  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+  (match_operand:SI 2 "immediate_operand")]
+  "TARGET_SIMD"
+{
+  enum machine_mode mode = <V_FOUR_ELEM>mode;
+  rtx mem = gen_rtx_MEM (mode, operands[0]);
+  operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+
+  emit_insn (gen_vec_store_lanesxi_lane<VQ:mode> (mem,
+						  operands[1],
+						  operands[2]));
   DONE;
 })
 
