@@ -24497,7 +24497,7 @@ else
        .align 4
        smac %g2, %g3, %g1
        umac %g2, %g3, %g1
-       cas [%g2], %g3, %g1' > conftest.s
+       casa [%g2] 0xb, %g3, %g1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -Aleon -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
