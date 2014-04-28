@@ -1,3 +1,7 @@
+2014-04-28  Richard Henderson  <rth@redhat.com>
+
+	* gcc-interface/Makefile.in: Support aarch64-linux.
+
 2014-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_dbug.ads (Get_External_Name): Add 'False' default to Has_Suffix,
