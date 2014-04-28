@@ -882,6 +882,7 @@ enable_werror_always
 enable_checking
 enable_coverage
 enable_gather_detailed_mem_stats
+enable_valgrind_annotations
 with_stabs
 enable_multilib
 enable_multiarch
@@ -1591,6 +1592,8 @@ Optional Features:
                           Values are opt, noopt, default is noopt
   --enable-gather-detailed-mem-stats
                           enable detailed memory allocation stats gathering
+  --enable-valgrind-annotations
+                          enable valgrind runtime interaction
   --enable-multilib       enable library support for multiple ABIs
   --enable-multiarch      enable support for multiarch paths
   --enable-__cxa_atexit   enable __cxa_atexit for C++
@@ -6772,12 +6775,11 @@ fi
 
 
 
-if test x$ac_valgrind_checking != x ; then
-  # It is certainly possible that there's valgrind but no valgrind.h.
-  # GCC relies on making annotations so we must have both.
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <valgrind/memcheck.h>" >&5
+# It is certainly possible that there's valgrind but no valgrind.h.
+# GCC relies on making annotations so we must have both.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <valgrind/memcheck.h>" >&5
 $as_echo_n "checking for VALGRIND_DISCARD in <valgrind/memcheck.h>... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <valgrind/memcheck.h>
 #ifndef VALGRIND_DISCARD
@@ -6790,11 +6792,11 @@ else
   gcc_cv_header_valgrind_memcheck_h=no
 fi
 rm -f conftest.err conftest.$ac_ext
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_valgrind_memcheck_h" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_valgrind_memcheck_h" >&5
 $as_echo "$gcc_cv_header_valgrind_memcheck_h" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <memcheck.h>" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <memcheck.h>" >&5
 $as_echo_n "checking for VALGRIND_DISCARD in <memcheck.h>... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <memcheck.h>
 #ifndef VALGRIND_DISCARD
@@ -6807,8 +6809,20 @@ else
   gcc_cv_header_memcheck_h=no
 fi
 rm -f conftest.err conftest.$ac_ext
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_memcheck_h" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_memcheck_h" >&5
 $as_echo "$gcc_cv_header_memcheck_h" >&6; }
+if test $gcc_cv_header_valgrind_memcheck_h = yes; then
+
+$as_echo "#define HAVE_VALGRIND_MEMCHECK_H 1" >>confdefs.h
+
+fi
+if test $gcc_cv_header_memcheck_h = yes; then
+
+$as_echo "#define HAVE_MEMCHECK_H 1" >>confdefs.h
+
+fi
+
+if test x$ac_valgrind_checking != x ; then
 
 # Prepare PATH_SEPARATOR.
 # The user is always right.
@@ -6887,16 +6901,6 @@ fi
 
 $as_echo "#define ENABLE_VALGRIND_CHECKING 1" >>confdefs.h
 
-  if test $gcc_cv_header_valgrind_memcheck_h = yes; then
-
-$as_echo "#define HAVE_VALGRIND_MEMCHECK_H 1" >>confdefs.h
-
-  fi
-  if test $gcc_cv_header_memcheck_h = yes; then
-
-$as_echo "#define HAVE_MEMCHECK_H 1" >>confdefs.h
-
-  fi
 fi
 
 
@@ -6938,6 +6942,25 @@ cat >>confdefs.h <<_ACEOF
 #define GATHER_STATISTICS $gather_stats
 _ACEOF
 
+
+# Check whether --enable-valgrind-annotations was given.
+if test "${enable_valgrind_annotations+set}" = set; then :
+  enableval=$enable_valgrind_annotations;
+else
+  enable_valgrind_annotations=no
+fi
+
+if test x$enable_valgrind_annotations != xno \
+    || test x$ac_valgrind_checking != x; then
+  if (test $have_valgrind_h = no \
+      && test $gcc_cv_header_memcheck_h = no \
+      && test $gcc_cv_header_valgrind_memcheck_h = no); then
+    as_fn_error "*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h" "$LINENO" 5
+  fi
+
+$as_echo "#define ENABLE_VALGRIND_ANNOTATIONS 1" >>confdefs.h
+
+fi
 
 # -------------------------------
 # Miscenalleous configure options
@@ -17971,7 +17994,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17974 "configure"
+#line 17997 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18077,7 +18100,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18080 "configure"
+#line 18103 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

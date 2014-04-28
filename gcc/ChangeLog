@@ -1,3 +1,15 @@
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac: Do valgrind header checks unconditionally.
+	Add --enable-valgrind-annotations.
+	* system.h: Guard valgrind header inclusion with
+	ENABLE_VALGRIND_ANNOTATIONS instead of ENABLE_VALGRIND_CHECKING.
+	* alloc-pool.c (pool_alloc, pool_free): Use
+	ENABLE_VALGRIND_ANNOTATIONS instead of ENABLE_VALGRIND_CHECKING
+	to guard possibly dead code.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
 2014-04-28  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/60902
