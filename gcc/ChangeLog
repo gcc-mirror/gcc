@@ -1,3 +1,11 @@
+2014-04-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_modes_tieable_p): New.
+	* config/aarch64/aarch64.c
+	(aarch64_cannot_change_mode_class): Weaken conditions.
+	(aarch64_modes_tieable_p): New.
+	* config/aarch64/aarch64.h (MODES_TIEABLE_P): Use it.
+
 2014-04-28  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
