@@ -16142,15 +16142,8 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (parser->num_template_parameter_lists)
     parser->type_definition_forbidden_message = saved_message;
 
-  if (type == error_mark_node)
-    {
-      cp_parser_skip_to_end_of_block_or_statement (parser);
-      return error_mark_node;
-    }
-
-  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-
-  if (cp_parser_error_occurred (parser))
+  if (type == error_mark_node
+      || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
     {
       cp_parser_skip_to_end_of_block_or_statement (parser);
       return error_mark_node;

@@ -1,3 +1,8 @@
+2014-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59120
+	* g++.dg/cpp0x/alias-decl-43.C: New.
+
 2014-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/59604

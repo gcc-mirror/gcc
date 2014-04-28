@@ -1,3 +1,9 @@
+2014-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59120
+	* parser.c (cp_parser_alias_declaration): Check return value of
+	cp_parser_require.
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_atomic): Allow seq_cst before
