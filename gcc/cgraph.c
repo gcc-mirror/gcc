@@ -1695,8 +1695,8 @@ release_function_body (tree decl)
 	}
       if (cfun->cfg)
 	{
-	  gcc_assert (dom_computed[0] == DOM_NONE);
-	  gcc_assert (dom_computed[1] == DOM_NONE);
+	  free_dominance_info (CDI_DOMINATORS);
+	  free_dominance_info (CDI_POST_DOMINATORS);
 	  clear_edges ();
 	  cfun->cfg = NULL;
 	}

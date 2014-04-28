@@ -612,7 +612,8 @@ extern void push_init_level (int, struct obstack *);
 extern struct c_expr pop_init_level (int, struct obstack *);
 extern void set_init_index (tree, tree, struct obstack *);
 extern void set_init_label (tree, struct obstack *);
-extern void process_init_element (struct c_expr, bool, struct obstack *);
+extern void process_init_element (location_t, struct c_expr, bool,
+				  struct obstack *);
 extern tree build_compound_literal (location_t, tree, tree, bool);
 extern void check_compound_literal_type (location_t, struct c_type_name *);
 extern tree c_start_case (location_t, location_t, tree);

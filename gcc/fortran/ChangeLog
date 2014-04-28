@@ -1,3 +1,23 @@
+2014-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/59604
+	PR fortran/58003
+	* gfortran.h (gfc_convert_mpz_to_signed):  Add prototype.
+	* arith.c (gfc_int2int):  Convert number to signed if
+	arithmetic overflow is not checked.
+	* simplify.c (convert_mpz_to_unsigned): Only trigger assert for
+	size if range checking is in force.
+	(convert_mpz_to_signed):  Make non-static, rename to
+	(gfc_convert_mpz_to_signed).
+	(simplify_dshift): Use gfc_convert_mpz_to_signed.
+	(gfc_simplify_ibclr):  Likewise.
+	(gfc_simplify_ibits):  Likewise.
+	(gfc_simplify_ibset):  Likewise.
+	(simplify_shift):  Likewise.
+	(gfc_simplify_ishiftc):  Likewise.
+	(gfc_simplify_maskr):  Likewise.
+	(gfc_simplify_maskl):  Likewise.
+
 2014-04-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60881

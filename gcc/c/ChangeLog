@@ -1,3 +1,38 @@
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/18079
+	* c-decl.c (diagnose_mismatched_decls): Warn for mismatched
+	always_inline/noinline and hot/cold attributes.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60114
+	* c-parser.c (c_parser_initelt): Pass input_location to
+	process_init_element.
+	(c_parser_initval): Pass loc to process_init_element.
+	* c-tree.h (process_init_element): Adjust declaration.
+	* c-typeck.c (push_init_level): Pass input_location to
+	process_init_element.
+	(pop_init_level): Likewise.
+	(set_designator): Likewise.
+	(output_init_element): Add location_t parameter.  Pass loc to
+	digest_init.
+	(output_pending_init_elements): Pass input_location to
+	output_init_element.
+	(process_init_element): Add location_t parameter.  Pass loc to
+	output_init_element.
+
+2014-04-24  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* c-parser.c (c_parser_sizeof_expression): Reorganize slightly to
+	avoid goto.
+
+2014-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_atomic): Allow seq_cst before
+	atomic-clause, allow comma in between atomic-clause and
+	seq_cst.
+
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/59073

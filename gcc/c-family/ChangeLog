@@ -1,3 +1,20 @@
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/18079
+	* c-common.c (handle_noinline_attribute): Warn if the attribute
+	conflicts with always_inline attribute.
+	(handle_always_inline_attribute): Warn if the attribute conflicts
+	with noinline attribute.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60156
+	* c-common.c (check_main_parameter_types): Warn about variadic main.
+
+2014-04-24  Mike Stump  <mikestump@comcast.net>
+
+	* c.opt (Wshadow-ivar): Default to on.
+
 2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	* c.opt (Wshadow-ivar, flocal-ivars, fivar-visibility): Add.

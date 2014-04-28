@@ -195,14 +195,18 @@ bool
 aarch_rev16_shright_mask_imm_p (rtx val, enum machine_mode mode)
 {
   return CONST_INT_P (val)
-         && INTVAL (val) == trunc_int_for_mode (0xff00ff00ff00ff, mode);
+         && INTVAL (val)
+            == trunc_int_for_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff),
+                                   mode);
 }
 
 bool
 aarch_rev16_shleft_mask_imm_p (rtx val, enum machine_mode mode)
 {
   return CONST_INT_P (val)
-         && INTVAL (val) == trunc_int_for_mode (0xff00ff00ff00ff00, mode);
+         && INTVAL (val)
+            == trunc_int_for_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff00),
+                                   mode);
 }
 
 

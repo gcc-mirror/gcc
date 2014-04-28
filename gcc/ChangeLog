@@ -1,3 +1,376 @@
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_var_may_overflow): Remove.
+	(vrp_visit_phi_node): Rather than bumping to +-INF possibly
+	with overflow immediately bump to one before that value and
+	let iteration figure out overflow status.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac: Do valgrind header checks unconditionally.
+	Add --enable-valgrind-annotations.
+	* system.h: Guard valgrind header inclusion with
+	ENABLE_VALGRIND_ANNOTATIONS instead of ENABLE_VALGRIND_CHECKING.
+	* alloc-pool.c (pool_alloc, pool_free): Use
+	ENABLE_VALGRIND_ANNOTATIONS instead of ENABLE_VALGRIND_CHECKING
+	to guard possibly dead code.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
+2014-04-28  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Only iterate
+	over real defs when invalidating outputs from statements that do not
+	produce useful outputs for threading.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60979
+	* graphite-scop-detection.c (scopdet_basic_block_info): Reject
+	SCOPs that end in a block with a successor with abnormal
+	predecessors.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (execute_pass_list): Adjust prototype.
+	* passes.c (pass_manager::execute_early_local_passes):
+	Adjust.
+	(do_per_function): Change callback signature, push all actual
+	work to the callbals.
+	(do_per_function_toporder): Likewise.
+	(execute_function_dump): Adjust.
+	(execute_function_todo): Likewise.
+	(clear_last_verified): Likewise.
+	(verify_curr_properties): Likewise.
+	(update_properties_after_pass): Likewise.
+	(execute_pass_list_1): Split out from ...
+	(execute_pass_list): ... here.  Adjust.
+	(execute_ipa_pass_list): Likewise.
+	* cgraphunit.c (cgraph_add_new_function): Adjust.
+	(analyze_function): Likewise.
+	(expand_function): Likewise.
+	* cgraph.c (release_function_body): Free dominance info
+	here instead of asserting it was magically freed elsewhere.
+
+2014-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Tweak GAS check for LEON instructions on SPARC.
+	* configure: Regenerate.
+	* config/sparc/sparc.opt (muser-mode): New option.
+	* config/sparc/sync.md (atomic_compare_and_swap<mode>_1): Do not enable
+	for LEON3.
+	(atomic_compare_and_swap_leon3_1): New instruction for LEON3.
+	* doc/invoke.texi (SPARC options): Document -muser-mode.
+
+2014-04-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* cselib.c (find_slot_memmode): Delete.
+	(cselib_hasher): Change compare_type to a struct.
+	(cselib_hasher::equal): Update accordingly.  Don't expect wrapped
+	constants.
+	(preserve_constants_and_equivs): Adjust for new compare_type.
+	(cselib_find_slot): Likewise.  Take the mode of the rtx as argument.
+	(wrap_constant): Delete.
+	(cselib_lookup_mem, cselib_lookup_1): Update calls to cselib_find_slot.
+
+2014-04-26  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* doc/install.texi (Building with profile feedback): Remove
+	outdated sentence.
+
+2014-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	* config/i386/i386.md (define_expand "ldexpxf3"): Fix out-of-bounds
+	array accesses.
+
+2014-04-25  Cary Coutant  <ccoutant@google.com>
+
+        PR debug/60929
+	* dwarf2out.c (should_move_die_to_comdat): A type definition
+        can contain a subprogram definition, but don't move it to a
+        comdat unit.
+	(clone_as_declaration): Copy DW_AT_abstract_origin attribute.
+        (generate_skeleton_bottom_up): Remove DW_AT_object_pointer attribute
+        from original DIE.
+	(clone_tree_hash): Rename to...
+	(clone_tree_partial): ...this; change callers.  Copy
+        DW_TAG_subprogram DIEs as declarations.
+	(copy_decls_walk): Don't copy children of a declaration into a
+        type unit.
+
+2014-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60969
+	* config/i386/i386.md (*movsf_internal): Set MODE to SI for
+	alternative 12.
+
+2014-04-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/predicates.md (call_insn_operand): Add long_call check.
+	* config/arm/arm.md (sibcall, sibcall_value): Force the address to
+	reg for long_call.
+	* config/arm/arm.c (arm_function_ok_for_sibcall): Remove long_call
+	restriction.
+
+2014-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_cortex_a8_tune): Initialise
+	T16-related fields.
+
+2014-04-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/60930
+	* gimple-ssa-strength-reduction.c (create_mul_imm_cand):  Reject
+	creating a multiply candidate by folding two constant
+	multiplicands when the result overflows.
+
+2014-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60960
+	* tree-vect-generic.c (expand_vector_operation): Only call
+	expand_vector_divmod if type's mode satisfies VECTOR_MODE_P.
+
+2014-04-25  Tom de Vries  <tom@codesourcery.com>
+
+	* expr.c (clobber_reg_mode): New function.
+	* expr.h (clobber_reg): New function.
+
+2014-04-25  Tom de Vries  <tom@codesourcery.com>
+
+	* rtlanal.c (find_all_hard_reg_sets): Note INSN_CALL_FUNCTION_USAGE
+	clobbers.
+
+2014-04-25  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* rtlanal.c (find_all_hard_reg_sets): Add bool implicit parameter and
+	handle.
+	* rtl.h (find_all_hard_reg_sets): Add bool parameter.
+	* haifa-sched.c (recompute_todo_spec, check_clobbered_conditions): Add
+	new argument to find_all_hard_reg_sets call.
+
+2014-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p):
+	Use HOST_WIDE_INT_C for mask literal.
+	(aarch_rev16_shleft_mask_imm_p): Likewise.
+
+2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/60941
+	* config/sparc/sparc.md (ashlsi3_extend): Delete.
+
+2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR preprocessor/56540
+	* config/i386/i386-c.c (ix86_target_macros): Define
+	__SIZEOF_FLOAT80__ and __SIZEOF_FLOAT128__.
+
+2014-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (tga_func): Remove.
+	(LIB_TLS_SPEC): Remove.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.h (LIB_SPEC): Don't use LIB_TLS_SPEC.
+
+2014-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60912
+	* tree-ssa-structalias.c (ipa_pta_execute): Compute direct
+	call stmt use/clobber sets during stmt walk instead of
+	walking the possibly incomplete set of caller edges.
+
+2014-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60911
+	* passes.c (apply_ipa_transforms): Inline into only caller ...
+	(execute_one_pass): ... here.  Properly bring in function
+	bodies for nodes we want to apply IPA transforms to.
+
+2014-04-24  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60896
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Pick up
+	all statements in PATTERN_DEF_SEQ in recognized widen-mult pattern.
+	(vect_mark_pattern_stmts): Set the def type of all statements in
+	PATTERN_DEF_SEQ as vect_internal_def.
+
+2014-04-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC Built-in Functions): Document new
+	powerpc extended divide, bcd, pack/unpack 128-bit, builtin
+	functions.
+	(PowerPC AltiVec/VSX Built-in Functions): Likewise.
+
+	* config/rs6000/predicates.md (const_0_to_3_operand): New
+	predicate to match 0..3 integer constants.
+
+	* config/rs6000/rs6000-builtin.def (BU_DFP_MISC_1): Add new macros
+	to support adding miscellaneous builtin functions.
+	(BU_DFP_MISC_2): Likewise.
+	(BU_P7_MISC_1): Likewise.
+	(BU_P7_MISC_2): Likewise.
+	(BU_P8V_MISC_3): Likewise.
+	(BU_MISC_1): Likewise.
+	(BU_MISC_2): Likewise.
+	(DIVWE): Add extended divide builtin functions.
+	(DIVWEO): Likewise.
+	(DIVWEU): Likewise.
+	(DIVWEUO): Likewise.
+	(DIVDE): Likewise.
+	(DIVDEO): Likewise.
+	(DIVDEU): Likewise.
+	(DIVDEUO): Likewise.
+	(DXEX): Add decimal floating-point builtin functions.
+	(DXEXQ): Likewise.
+	(DDEDPD): Likewise.
+	(DDEDPDQ): Likewise.
+	(DENBCD): Likewise.
+	(DENBCDQ): Likewise.
+	(DIEX): Likewise.
+	(DIEXQ): Likewise.
+	(DSCLI): Likewise.
+	(DSCLIQ): Likewise.
+	(DSCRI): Likewise.
+	(DSCRIQ): Likewise.
+	(CDTBCD): Add new BCD builtin functions.
+	(CBCDTD): Likewise.
+	(ADDG6S): Likewise.
+	(BCDADD): Likewise.
+	(BCDADD_LT): Likewise.
+	(BCDADD_EQ): Likewise.
+	(BCDADD_GT): Likewise.
+	(BCDADD_OV): Likewise.
+	(BCDSUB): Likewise.
+	(BCDSUB_LT): Likewise.
+	(BCDSUB_EQ): Likewise.
+	(BCDSUB_GT): Likewise.
+	(BCDSUB_OV): Likewise.
+	(PACK_TD): Add new pack/unpack 128-bit type builtin functions.
+	(UNPACK_TD): Likewise.
+	(PACK_TF): Likewise.
+	(UNPACK_TF): Likewise.
+	(UNPACK_TF_0): Likewise.
+	(UNPACK_TF_1): Likewise.
+	(PACK_V1TI): Likewise.
+	(UNPACK_V1TI): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for decimal floating point builtin functions.
+	(rs6000_expand_ternop_builtin): Add checks for the new builtin
+	functions that take constant arguments.
+	(rs6000_invalid_builtin): Add decimal floating point builtin
+	support.
+	(rs6000_init_builtins): Setup long double, _Decimal64, and
+	_Decimal128 types for new builtin functions.
+	(builtin_function_type): Set the unsigned flags appropriately for
+	the new builtin functions.
+	(rs6000_opt_masks): Add support for decimal floating point builtin
+	functions.
+
+	* config/rs6000/rs6000.h (RS6000_BTM_DFP): Add support for decimal
+	floating point builtin functions.
+	(RS6000_BTM_COMMON): Likewise.
+	(RS6000_BTI_long_double): Likewise.
+	(RS6000_BTI_dfloat64): Likewise.
+	(RS6000_BTI_dfloat128): Likewise.
+	(long_double_type_internal_node): Likewise.
+	(dfloat64_type_internal_node): Likewise.
+	(dfloat128_type_internal_node): Likewise.
+
+	* config/rs6000/altivec.h (UNSPEC_BCDADD): Add support for ISA
+	2.07 bcd arithmetic instructions.
+	(UNSPEC_BCDSUB): Likewise.
+	(UNSPEC_BCD_OVERFLOW): Likewise.
+	(UNSPEC_BCD_ADD_SUB): Likewise.
+	(bcd_add_sub): Likewise.
+	(BCD_TEST): Likewise.
+	(bcd<bcd_add_sub>): Likewise.
+	(bcd<bcd_add_sub>_test): Likewise.
+	(bcd<bcd_add_sub>_test2): Likewise.
+	(bcd<bcd_add_sub>_<code>): Likewise.
+	(peephole2 for combined bcd ops): Likewise.
+
+	* config/rs6000/dfp.md (UNSPEC_DDEDPD): Add support for new
+	decimal floating point builtin functions.
+	(UNSPEC_DENBCD): Likewise.
+	(UNSPEC_DXEX): Likewise.
+	(UNSPEC_DIEX): Likewise.
+	(UNSPEC_DSCLI): Likewise.
+	(UNSPEC_DSCRI): Likewise.
+	(D64_D128): Likewise.
+	(dfp_suffix): Likewise.
+	(dfp_ddedpd_<mode>): Likewise.
+	(dfp_denbcd_<mode>): Likewise.
+	(dfp_dxex_<mode>): Likewise.
+	(dfp_diex_<mode>): Likewise.
+	(dfp_dscli_<mode>): Likewise.
+	(dfp_dscri_<mode>): Likewise.
+
+	* config/rs6000/rs6000.md (UNSPEC_ADDG6S): Add support for new BCD
+	builtin functions.
+	(UNSPEC_CDTBCD): Likewise.
+	(UNSPEC_CBCDTD): Likewise.
+	(UNSPEC_DIVE): Add support for new extended divide builtin
+	functions.
+	(UNSPEC_DIVEO): Likewise.
+	(UNSPEC_DIVEU): Likewise.
+	(UNSPEC_DIVEUO): Likewise.
+	(UNSPEC_UNPACK_128BIT): Add support for new builtin functions to
+	pack/unpack 128-bit types.
+	(UNSPEC_PACK_128BIT): Likewise.
+	(idiv_ldiv): New mode attribute to set the 32/64-bit divide type.
+	(udiv<mode>3): Use idiv_ldiv mode attribute.
+	(div<mode>3): Likewise.
+	(addg6s): Add new BCD builtin functions.
+	(cdtbcd): Likewise.
+	(cbcdtd): Likewise.
+	(UNSPEC_DIV_EXTEND): Add support for new extended divide
+	instructions.
+	(div_extend): Likewise.
+	(div<div_extend>_<mode>"): Likewise.
+	(FP128_64): Add support for new builtin functions to pack/unpack
+	128-bit types.
+	(unpack<mode>): Likewise.
+	(unpacktf_0): Likewise.
+	(unpacktf_1): Likewise.
+	(unpack<mode>_dm): Likewise.
+	(unpack<mode>_nodm): Likewise.
+	(pack<mode>): Likewise.
+	(unpackv1ti): Likewise.
+	(packv1ti): Likewise.
+
+2014-04-24  Vishnu K S  <Vishnu.k_s@atmel.com>
+
+	* gcc/config/avr/avr.c: Add comment on why -fdelete-null-pointer-checks
+	is disabled.
+
+2014-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_GIMPLE_SEQ): Define.
+	* gimplify.c (omp_is_private): Change last argument's type to int.
+	Only diagnose lastprivate if the simd argument is 1, only diagnose
+	linear if the simd argument is 2.
+	(gimplify_omp_for): Adjust omp_is_private callers.  When adding
+	lastprivate or private, add the clause to OMP_FOR_CLAUSES.  Pass
+	GOVD_EXPLICIT to omp_add_variable.  For simd with collapse == 1
+	create OMP_CLAUSE_LINEAR rather than OMP_CLAUSE_PRIVATE for var.
+	If var != decl and decl is in OMP_CLAUSE_LINEAR, gimplify decl
+	increment to OMP_CLAUSE_LINEAR_GIMPLE_SEQ.
+	* omp-low.c (scan_sharing_clauses, lower_lastprivate_clauses): Handle
+	OMP_CLAUSE_LINEAR_GIMPLE_SEQ.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_LINEAR.
+
+2014-04-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/60822
+	* config/m68k/m68k.md (extendplussidi): Don't allow memory for
+	operand 1.
+
 2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	* flag-types.h (enum ivar_visibility): Add.

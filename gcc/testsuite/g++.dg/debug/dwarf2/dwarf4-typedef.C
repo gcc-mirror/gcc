@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-gdwarf-4" } */
+/* { dg-options "-gdwarf-4 -fdebug-types-section" } */
 
 /* Regression test for an ICE in output_die when using -gdwarf-4.  */
 

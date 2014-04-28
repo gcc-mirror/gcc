@@ -406,9 +406,9 @@ class Backend
   // integers, then STATEMENTS[i] is executed.  STATEMENTS[i] will
   // either end with a goto statement or will fall through into
   // STATEMENTS[i + 1].  CASES[i] is empty for the default clause,
-  // which need not be last.
+  // which need not be last.  FUNCTION is the current function.
   virtual Bstatement*
-  switch_statement(Bexpression* value,
+  switch_statement(Bfunction* function, Bexpression* value,
 		   const std::vector<std::vector<Bexpression*> >& cases,
 		   const std::vector<Bstatement*>& statements,
 		   Location) = 0;
@@ -534,6 +534,12 @@ class Backend
 		     bool address_is_taken, Location location,
 		     Bstatement** pstatement) = 0;
 
+  // Create a GC root variable. TYPE is the __go_gc_root_list struct described
+  // in Gogo::register_gc_vars.  INIT is the composite literal consisting of a
+  // pointer to the next GC root and the global variables registered.
+  virtual Bvariable*
+  gc_root_variable(Btype* type, Bexpression* init) = 0;
+
   // Create a named immutable initialized data structure.  This is
   // used for type descriptors, map descriptors, and function
   // descriptors.  This returns a Bvariable because it corresponds to
@@ -653,6 +659,16 @@ class Backend
   // true on success, false on failure.
   virtual bool
   function_set_body(Bfunction* function, Bstatement* code_stmt) = 0;
+
+  // Utility.
+
+  // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
+  // FUNCTION_DECLS, and VARIABLE_DECLS declared globally.
+  virtual void
+  write_global_definitions(const std::vector<Btype*>& type_decls,
+                           const std::vector<Bexpression*>& constant_decls,
+                           const std::vector<Bfunction*>& function_decls,
+                           const std::vector<Bvariable*>& variable_decls) = 0;
 };
 
 // The backend interface has to define this function.

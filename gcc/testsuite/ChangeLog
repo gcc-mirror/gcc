@@ -1,10 +1,156 @@
-i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp91.c: New testcase.
+	* gcc.dg/Wstrict-overflow-14.c: XFAIL.
+	* gcc.dg/Wstrict-overflow-15.c: Likewise.
+	* gcc.dg/Wstrict-overflow-18.c: Remove XFAIL.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60979
+	* gcc.dg/graphite/pr60979.c: New testcase.
+
+2014-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR c/60983
+	* gcc.dg/pr60114.c: Use signed chars.
+
+2014-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59120
+	* g++.dg/cpp0x/alias-decl-43.C: New.
+
+2014-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/59604
+	PR fortran/58003
+	* gfortran.dg/no_range_check_3.f90:  New test.
+
+2014-04-26  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/52539
+	* gfortran.dg/namelist_utf8.f90: New test.
+
+2014-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/alias-30.c (dg-options): Dump only fre1 details.
+	* gcc.dg/vect/pr60505.c: Cleanup vect tree dump.
+	* g++.dg/ipa/devirt-27.C (dg-options): Remove -fdump-ipa-devirt.
+
+2014-04-25  Cary Coutant  <ccoutant@google.com>
+
+        PR debug/60929
+        * g++.dg/debug/dwarf2/dwarf4-nested.C: New test case.
+        * g++.dg/debug/dwarf2/dwarf4-typedef.C: Add
+        -fdebug-types-section flag.
+
+2014-04-25  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/arm/tail-long-call.c: New test.
+
+2014-04-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/60930
+	* gcc.dg/torture/pr60930.c:  New test.
+
+2014-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60960
+	* gcc.c-torture/execute/pr60960.c: New test.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/pr18079-2.c: Fix quoting in dg-warning.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/18079
+	* gcc.dg/pr18079.c: New test.
+	* gcc.dg/pr18079-2.c: New test.
+
+2014-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-c++-common/gomp/pr60823-2.c: Require effective target
+	vect_simd_clones.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60114
+	* gcc.dg/pr60114.c: New test.
+
+2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20140425-1.c: New test.
+
+2014-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60156
+	* c-c++-common/pr60156.c: New test.
+
+2014-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60912
+	* g++.dg/opt/pr60912.C: New testcase.
+
+2014-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60911
+	* gcc.dg/lto/pr60911_0.c: New testcase.
+
+2014-04-24  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60896
+	* g++.dg/vect/pr60896.cc: New test.
+
+2014-04-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pack01.c: New test to test the new pack and
+	unpack builtin functionss for 128-bit types.
+	* gcc.target/powerpc/pack02.c: Likewise.
+	* gcc.target/powerpc/pack03.c: Likewise.
+	* gcc.target/powerpc/extend-divide-1.c: New test to test extended
+	divide builtin functionss.
+	* gcc.target/powerpc/extend-divide-2.c: Likewise.
+	* gcc.target/powerpc/bcd-1.c: New test for the new BCD builtin
+	functions.
+	* gcc.target/powerpc/bcd-2.c: Likewise.
+	* gcc.target/powerpc/bcd-3.c: Likewise.
+	* gcc.target/powerpc/dfp-builtin-1.c: New test for the new DFP
+	builtin functionss.
+	* gcc.target/powerpc/dfp-builtin-2.c: Likewise.
+
+2014-04-24  Vishnu K S  <Vishnu.k_s@atmel.com>
+
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-1.c: Skip test if
+	keeps_null_pointer_checks.
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-2.c: Ditto.
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-3.c: Ditto.
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-4.c: Ditto.
+	* gcc/testsuite/gcc.dg/tree-ssa/isolate-5.c: Ditto.
+
+2014-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-16.c: Remove all dg-error directives.
+	Replace load with read and store with write.
+
+2014-04-24  Jeff Law  <law@redhat.com>
+
+	PR target/60822
+	* gcc.c-torture/pr60822.c: New test.
+	* gcc.c-torture/pr60822.x: New test.
+
+2014-04-24  Dinar Temirbulatov  <dtemirbulatov@gmail.com>
+
+	PR c++/57958
+	* testsuite/g++.dg/cpp0x/pr57958.C: New test.
+
+2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_perm): Return
 	true for aarch64_be.
 
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/fuse-caller-save.c: New test.
 
@@ -36,7 +182,7 @@ i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * gcc.target/aarch64/rev16_1.c: New test.
+	* gcc.target/aarch64/rev16_1.c: New test.
 
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
@@ -241,7 +387,7 @@ i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 	PR tree-optimization/60836
 	* g++.dg/vect/pr60836.cc: New testcase.
 
-2014-04-17   Richard Biener  <rguenther@suse.de>
+2014-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60841
 	* gcc.dg/vect/pr60841.c: New testcase.
@@ -1924,8 +2070,7 @@ i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 2014-02-19  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
-	* gcc.dg/vect/no-vfa-vect-depend-2.c (main1): Fix buffer
-	overflow.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c (main1): Fix buffer overflow.
 
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2234,8 +2379,7 @@ i2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 2014-02-10  Jakub Jelinek  <jakub@redhat.com>
 
-	* gcc.dg/vect/pr59984.c: Require effective target
-	vect_simd_clones.
+	* gcc.dg/vect/pr59984.c: Require effective target vect_simd_clones.
 
 2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
 

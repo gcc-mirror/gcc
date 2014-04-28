@@ -3038,7 +3038,8 @@ rs6000_builtin_mask_calculate (void)
 	  | ((rs6000_cpu == PROCESSOR_CELL) ? RS6000_BTM_CELL      : 0)
 	  | ((TARGET_P8_VECTOR)		    ? RS6000_BTM_P8_VECTOR : 0)
 	  | ((TARGET_CRYPTO)		    ? RS6000_BTM_CRYPTO	   : 0)
-	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0));
+	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
+	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0));
 }
 
 /* Override command line options.  Mostly we process the processor type and
@@ -12396,7 +12397,15 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	}
     }
   else if (icode == CODE_FOR_vsx_set_v2df
-           || icode == CODE_FOR_vsx_set_v2di)
+           || icode == CODE_FOR_vsx_set_v2di
+	   || icode == CODE_FOR_bcdadd
+	   || icode == CODE_FOR_bcdadd_lt
+	   || icode == CODE_FOR_bcdadd_eq
+	   || icode == CODE_FOR_bcdadd_gt
+	   || icode == CODE_FOR_bcdsub
+	   || icode == CODE_FOR_bcdsub_lt
+	   || icode == CODE_FOR_bcdsub_eq
+	   || icode == CODE_FOR_bcdsub_gt)
     {
       /* Only allow 1-bit unsigned literals.  */
       STRIP_NOPS (arg2);
@@ -12404,6 +12413,44 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0x1)
 	{
 	  error ("argument 3 must be a 1-bit unsigned literal");
+	  return const0_rtx;
+	}
+    }
+  else if (icode == CODE_FOR_dfp_ddedpd_dd
+           || icode == CODE_FOR_dfp_ddedpd_td)
+    {
+      /* Only allow 2-bit unsigned literals where the value is 0 or 2.  */
+      STRIP_NOPS (arg0);
+      if (TREE_CODE (arg0) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg2) & ~0x3)
+	{
+	  error ("argument 1 must be 0 or 2");
+	  return const0_rtx;
+	}
+    }
+  else if (icode == CODE_FOR_dfp_denbcd_dd
+	   || icode == CODE_FOR_dfp_denbcd_td)
+    {
+      /* Only allow 1-bit unsigned literals.  */
+      STRIP_NOPS (arg0);
+      if (TREE_CODE (arg0) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg0) & ~0x1)
+	{
+	  error ("argument 1 must be a 1-bit unsigned literal");
+	  return const0_rtx;
+	}
+    }
+  else if (icode == CODE_FOR_dfp_dscli_dd
+           || icode == CODE_FOR_dfp_dscli_td
+	   || icode == CODE_FOR_dfp_dscri_dd
+	   || icode == CODE_FOR_dfp_dscri_td)
+    {
+      /* Only allow 6-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~0x3f)
+	{
+	  error ("argument 2 must be a 6-bit unsigned literal");
 	  return const0_rtx;
 	}
     }
@@ -13496,6 +13543,14 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
     error ("Builtin function %s requires the -mpaired option", name);
   else if ((fnmask & RS6000_BTM_SPE) != 0)
     error ("Builtin function %s requires the -mspe option", name);
+  else if ((fnmask & (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
+	   == (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
+    error ("Builtin function %s requires the -mhard-dfp and"
+	   "-mpower8-vector options", name);
+  else if ((fnmask & RS6000_BTM_DFP) != 0)
+    error ("Builtin function %s requires the -mhard-dfp option", name);
+  else if ((fnmask & RS6000_BTM_P8_VECTOR) != 0)
+    error ("Builtin function %s requires the -mpower8-vector option", name);
   else
     error ("Builtin function %s is not supported with the current options",
 	   name);
@@ -13775,6 +13830,9 @@ rs6000_init_builtins (void)
   uintTI_type_internal_node = unsigned_intTI_type_node;
   float_type_internal_node = float_type_node;
   double_type_internal_node = double_type_node;
+  long_double_type_internal_node = long_double_type_node;
+  dfloat64_type_internal_node = dfloat64_type_node;
+  dfloat128_type_internal_node = dfloat128_type_node;
   void_type_internal_node = void_type_node;
 
   /* Initialize the modes for builtin_function_type, mapping a machine mode to
@@ -13789,6 +13847,9 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[TImode][1] = unsigned_intTI_type_node;
   builtin_mode_to_type[SFmode][0] = float_type_node;
   builtin_mode_to_type[DFmode][0] = double_type_node;
+  builtin_mode_to_type[TFmode][0] = long_double_type_node;
+  builtin_mode_to_type[DDmode][0] = dfloat64_type_node;
+  builtin_mode_to_type[TDmode][0] = dfloat128_type_node;
   builtin_mode_to_type[V1TImode][0] = V1TI_type_node;
   builtin_mode_to_type[V1TImode][1] = unsigned_V1TI_type_node;
   builtin_mode_to_type[V2SImode][0] = V2SI_type_node;
@@ -14881,6 +14942,8 @@ builtin_function_type (enum machine_mode mode_ret, enum machine_mode mode_arg0,
       /* unsigned 1 argument functions.  */
     case CRYPTO_BUILTIN_VSBOX:
     case P8V_BUILTIN_VGBBD:
+    case MISC_BUILTIN_CDTBCD:
+    case MISC_BUILTIN_CBCDTD:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       break;
@@ -14899,6 +14962,11 @@ builtin_function_type (enum machine_mode mode_ret, enum machine_mode mode_arg0,
     case CRYPTO_BUILTIN_VPMSUMW:
     case CRYPTO_BUILTIN_VPMSUMD:
     case CRYPTO_BUILTIN_VPMSUM:
+    case MISC_BUILTIN_ADDG6S:
+    case MISC_BUILTIN_DIVWEU:
+    case MISC_BUILTIN_DIVWEUO:
+    case MISC_BUILTIN_DIVDEU:
+    case MISC_BUILTIN_DIVDEUO:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;
@@ -14960,7 +15028,16 @@ builtin_function_type (enum machine_mode mode_ret, enum machine_mode mode_arg0,
       /* signed args, unsigned return.  */
     case VSX_BUILTIN_XVCVDPUXDS_UNS:
     case ALTIVEC_BUILTIN_FIXUNS_V4SF_V4SI:
+    case MISC_BUILTIN_UNPACK_TD:
+    case MISC_BUILTIN_UNPACK_V1TI:
       h.uns_p[0] = 1;
+      break;
+
+      /* unsigned arguments for 128-bit pack instructions.  */
+    case MISC_BUILTIN_PACK_TD:
+    case MISC_BUILTIN_PACK_V1TI:
+      h.uns_p[1] = 1;
+      h.uns_p[2] = 1;
       break;
 
     default:
@@ -31226,6 +31303,7 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "power8-vector",	 RS6000_BTM_P8_VECTOR,	false, false },
   { "crypto",		 RS6000_BTM_CRYPTO,	false, false },
   { "htm",		 RS6000_BTM_HTM,	false, false },
+  { "hard-dfp",		 RS6000_BTM_DFP,	false, false },
 };
 
 /* Option variables that we want to support inside attribute((target)) and

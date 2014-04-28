@@ -969,7 +969,8 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 
 	  if (!optimize
 	      || !VECTOR_INTEGER_TYPE_P (type)
-	      || TREE_CODE (rhs2) != VECTOR_CST)
+	      || TREE_CODE (rhs2) != VECTOR_CST
+	      || !VECTOR_MODE_P (TYPE_MODE (type)))
 	    break;
 
 	  ret = expand_vector_divmod (gsi, type, rhs1, rhs2, code);

@@ -1710,7 +1710,8 @@ const struct tune_params arm_cortex_a8_tune =
   false,					/* Prefer LDRD/STRD.  */
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false                                         /* Prefer Neon for 64-bits bitops.  */
+  false,                                        /* Prefer Neon for 64-bits bitops.  */
+  false, false                                  /* Prefer 32-bit encodings.  */
 };
 
 const struct tune_params arm_cortex_a7_tune =
@@ -6214,11 +6215,6 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
   /* The PIC register is live on entry to VxWorks PLT entries, so we
      must make the call before restoring the PIC register.  */
   if (TARGET_VXWORKS_RTP && flag_pic && !targetm.binds_local_p (decl))
-    return false;
-
-  /* Cannot tail-call to long calls, since these are out of range of
-     a branch instruction.  */
-  if (decl && arm_is_long_call_p (decl))
     return false;
 
   /* If we are interworking and the function is not declared static

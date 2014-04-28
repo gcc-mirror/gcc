@@ -3022,4 +3022,8 @@ typedef int (*walk_expr_fn_t) (gfc_expr **, int *, void *);
 int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
 int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
 
+/* simplify.c */
+
+void gfc_convert_mpz_to_signed (mpz_t, int);
+
 #endif /* GCC_GFORTRAN_H  */

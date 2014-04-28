@@ -1,3 +1,66 @@
+2014-04-27  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.h (_NFA<>::_M_insert_repeat):
+	Add _S_opcode_repeat support to distingush a loop from
+	_S_opcode_alternative.
+	* include/bits/regex_automaton.tcc (_State_base::_M_print,
+	_State_base::_M_dot, _NFA<>::_M_eliminate_dummy,
+	_StateSeq<>::_M_clone): Likewise.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_M_quantifier):
+	Likewise.
+	* include/bits/regex_executor.tcc (_Executor<>::_M_dfs): Likewise.
+	* include/bits/regex_scanner.tcc (_Scanner<>::_M_eat_escape_ecma):
+	Uglify local variable __i.
+	* include/bits/regex_compiler.h (_BracketMatcher<>::_M_make_cache):
+	Use size_t instead of int to compare with vector::size().
+
+2014-04-27  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_executor.h: Add _M_rep_count to track how
+	many times this repeat node are visited.
+	* include/bits/regex_executor.tcc (_Executor<>::_M_rep_once_more,
+	_Executor<>::_M_dfs): Use _M_rep_count to prevent entering
+	infinite loop.
+
+2014-04-27  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.tcc (__regex_algo_impl<>): Remove
+	_GLIBCXX_REGEX_DFS_QUANTIFIERS_LIMIT and use
+	_GLIBCXX_REGEX_USE_THOMPSON_NFA instead.
+	* include/bits/regex_automaton.h: Remove quantifier counting variable.
+	* include/bits/regex_automaton.tcc (_State_base::_M_dot):
+	Adjust debug NFA dump.
+
+2014-04-25  Lars Gullik Bjønnes  <larsbj@gullik.org>
+
+	PR libstdc++/60710
+	* include/experimental/optional (operator!=): Implement in terms of
+	operator==.
+	* testsuite/experimental/optional/relops/1.cc: Remove operator!=.
+	* testsuite/experimental/optional/relops/2.cc: Likewise.
+	* testsuite/experimental/optional/relops/3.cc: Likewise.
+	* testsuite/experimental/optional/relops/4.cc: Likewise.
+	* testsuite/experimental/optional/relops/5.cc: Likewise.
+	* testsuite/experimental/optional/relops/6.cc: Likewise.
+
+2014-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60958
+	* include/tr1/regex (regex_traits::isctype): Comment out broken code.
+	* testsuite/util/testsuite_regex.h (regex_match_debug): Improve
+	comment.
+
+2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Update for
+	CXXABI_1.3.9.
+
+2014-04-24  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone()):
+	Do _M_alt before _M_next.
+	* testsuite/28_regex/basic_regex/multiple_quantifiers.cc: Add testcases.
+
 2014-04-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/43622

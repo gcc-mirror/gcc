@@ -335,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (__c == 'x' || __c == 'u')
 	{
 	  _M_value.erase();
-	  for (int i = 0; i < (__c == 'x' ? 2 : 4); i++)
+	  for (int __i = 0; __i < (__c == 'x' ? 2 : 4); __i++)
 	    {
 	      if (_M_current == _M_end
 		  || !_M_ctype.is(_CtypeT::xdigit, *_M_current))

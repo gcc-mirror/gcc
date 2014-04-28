@@ -882,6 +882,7 @@ enable_werror_always
 enable_checking
 enable_coverage
 enable_gather_detailed_mem_stats
+enable_valgrind_annotations
 with_stabs
 enable_multilib
 enable_multiarch
@@ -1591,6 +1592,8 @@ Optional Features:
                           Values are opt, noopt, default is noopt
   --enable-gather-detailed-mem-stats
                           enable detailed memory allocation stats gathering
+  --enable-valgrind-annotations
+                          enable valgrind runtime interaction
   --enable-multilib       enable library support for multiple ABIs
   --enable-multiarch      enable support for multiarch paths
   --enable-__cxa_atexit   enable __cxa_atexit for C++
@@ -6772,12 +6775,11 @@ fi
 
 
 
-if test x$ac_valgrind_checking != x ; then
-  # It is certainly possible that there's valgrind but no valgrind.h.
-  # GCC relies on making annotations so we must have both.
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <valgrind/memcheck.h>" >&5
+# It is certainly possible that there's valgrind but no valgrind.h.
+# GCC relies on making annotations so we must have both.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <valgrind/memcheck.h>" >&5
 $as_echo_n "checking for VALGRIND_DISCARD in <valgrind/memcheck.h>... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <valgrind/memcheck.h>
 #ifndef VALGRIND_DISCARD
@@ -6790,11 +6792,11 @@ else
   gcc_cv_header_valgrind_memcheck_h=no
 fi
 rm -f conftest.err conftest.$ac_ext
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_valgrind_memcheck_h" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_valgrind_memcheck_h" >&5
 $as_echo "$gcc_cv_header_valgrind_memcheck_h" >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <memcheck.h>" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <memcheck.h>" >&5
 $as_echo_n "checking for VALGRIND_DISCARD in <memcheck.h>... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <memcheck.h>
 #ifndef VALGRIND_DISCARD
@@ -6807,8 +6809,20 @@ else
   gcc_cv_header_memcheck_h=no
 fi
 rm -f conftest.err conftest.$ac_ext
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_memcheck_h" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_memcheck_h" >&5
 $as_echo "$gcc_cv_header_memcheck_h" >&6; }
+if test $gcc_cv_header_valgrind_memcheck_h = yes; then
+
+$as_echo "#define HAVE_VALGRIND_MEMCHECK_H 1" >>confdefs.h
+
+fi
+if test $gcc_cv_header_memcheck_h = yes; then
+
+$as_echo "#define HAVE_MEMCHECK_H 1" >>confdefs.h
+
+fi
+
+if test x$ac_valgrind_checking != x ; then
 
 # Prepare PATH_SEPARATOR.
 # The user is always right.
@@ -6887,16 +6901,6 @@ fi
 
 $as_echo "#define ENABLE_VALGRIND_CHECKING 1" >>confdefs.h
 
-  if test $gcc_cv_header_valgrind_memcheck_h = yes; then
-
-$as_echo "#define HAVE_VALGRIND_MEMCHECK_H 1" >>confdefs.h
-
-  fi
-  if test $gcc_cv_header_memcheck_h = yes; then
-
-$as_echo "#define HAVE_MEMCHECK_H 1" >>confdefs.h
-
-  fi
 fi
 
 
@@ -6938,6 +6942,25 @@ cat >>confdefs.h <<_ACEOF
 #define GATHER_STATISTICS $gather_stats
 _ACEOF
 
+
+# Check whether --enable-valgrind-annotations was given.
+if test "${enable_valgrind_annotations+set}" = set; then :
+  enableval=$enable_valgrind_annotations;
+else
+  enable_valgrind_annotations=no
+fi
+
+if test x$enable_valgrind_annotations != xno \
+    || test x$ac_valgrind_checking != x; then
+  if (test $have_valgrind_h = no \
+      && test $gcc_cv_header_memcheck_h = no \
+      && test $gcc_cv_header_valgrind_memcheck_h = no); then
+    as_fn_error "*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h" "$LINENO" 5
+  fi
+
+$as_echo "#define ENABLE_VALGRIND_ANNOTATIONS 1" >>confdefs.h
+
+fi
 
 # -------------------------------
 # Miscenalleous configure options
@@ -17971,7 +17994,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17974 "configure"
+#line 17997 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18077,7 +18100,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18080 "configure"
+#line 18103 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23306,13 +23329,8 @@ foo:	.long	25
 	;;
   i[34567]86-*-* | x86_64-*-*)
     case "$target" in
-      i[34567]86-*-solaris2.*)
+      i[34567]86-*-solaris2.* | x86_64-*-solaris2.1[0-9]*)
 	on_solaris=yes
-	tga_func=___tls_get_addr
-	;;
-      x86_64-*-solaris2.1[0-9]*)
-	on_solaris=yes
-	tga_func=__tls_get_addr
         ;;
       *)
 	on_solaris=no
@@ -23587,7 +23605,6 @@ foo:	.long	25
     case "$target" in
       sparc*-sun-solaris2.*)
 	on_solaris=yes
-	tga_func=__tls_get_addr
 	;;
       *)
 	on_solaris=no
@@ -23711,101 +23728,6 @@ if test $gcc_cv_as_tls = yes; then
   set_have_as_tls=yes
 fi
 fi
-case "$target" in
-  # TLS was introduced in the Solaris 9 FCS release.  Support for GNU-style
-  # TLS on x86 was only introduced in Solaris 9 4/04, replacing the earlier
-  # Sun style that Sun ld and GCC don't support any longer.
-  *-*-solaris2.*)
-    ld_tls_support=yes
-
-    save_LIBS="$LIBS"
-    save_LDFLAGS="$LDFLAGS"
-    LIBS=
-    LDFLAGS=
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking library containing $tga_func" >&5
-$as_echo_n "checking library containing $tga_func... " >&6; }
-    # Before Solaris 10, __tls_get_addr (SPARC/x64) resp. ___tls_get_addr
-    # (32-bit x86) only lived in libthread, so check for that.  Keep
-    # set_have_as_tls if found, disable if not.
-    as_ac_Search=`$as_echo "ac_cv_search_$tga_func" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing $tga_func" >&5
-$as_echo_n "checking for library containing $tga_func... " >&6; }
-if { as_var=$as_ac_Search; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char $tga_func ();
-int
-main ()
-{
-return $tga_func ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' thread; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  eval "$as_ac_Search=\$ac_res"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if { as_var=$as_ac_Search; eval "test \"\${$as_var+set}\" = set"; }; then :
-  break
-fi
-done
-if { as_var=$as_ac_Search; eval "test \"\${$as_var+set}\" = set"; }; then :
-
-else
-  eval "$as_ac_Search=no"
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-eval ac_res=\$$as_ac_Search
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-eval ac_res=\$$as_ac_Search
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-else
-  set_have_as_tls=no
-fi
-
-    ld_tls_libs="$LIBS"
-    # Clear LIBS if we cannot support TLS.
-    if test $set_have_as_tls = no; then
-      LIBS=
-    fi
-    # Always define LIB_TLS_SPEC, even without TLS support.
-
-cat >>confdefs.h <<_ACEOF
-#define LIB_TLS_SPEC "$LIBS"
-_ACEOF
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBS" >&5
-$as_echo "$LIBS" >&6; }
-
-    LIBS="$save_LIBS"
-    LDFLAGS="$save_LDFLAGS"
-    ;;
-esac
 if test $set_have_as_tls = yes ; then
 
 $as_echo "#define HAVE_AS_TLS 1" >>confdefs.h
@@ -24496,7 +24418,7 @@ else
        .align 4
        smac %g2, %g3, %g1
        umac %g2, %g3, %g1
-       cas [%g2], %g3, %g1' > conftest.s
+       casa [%g2] 0xb, %g3, %g1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -Aleon -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5

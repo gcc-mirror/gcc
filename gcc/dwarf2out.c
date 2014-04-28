@@ -6917,14 +6917,13 @@ should_move_die_to_comdat (dw_die_ref die)
     case DW_TAG_structure_type:
     case DW_TAG_enumeration_type:
     case DW_TAG_union_type:
-      /* Don't move declarations, inlined instances, or types nested in a
-	 subprogram.  */
+      /* Don't move declarations, inlined instances, types nested in a
+	 subprogram, or types that contain subprogram definitions.  */
       if (is_declaration_die (die)
           || get_AT (die, DW_AT_abstract_origin)
-          || is_nested_in_subprogram (die))
+          || is_nested_in_subprogram (die)
+          || contains_subprogram_definition (die))
         return 0;
-      /* A type definition should never contain a subprogram definition.  */
-      gcc_assert (!contains_subprogram_definition (die));
       return 1;
     case DW_TAG_array_type:
     case DW_TAG_interface_type:
@@ -7013,6 +7012,7 @@ clone_as_declaration (dw_die_ref die)
 
       switch (a->dw_attr)
         {
+        case DW_AT_abstract_origin:
         case DW_AT_artificial:
         case DW_AT_containing_type:
         case DW_AT_external:
@@ -7245,6 +7245,12 @@ generate_skeleton_bottom_up (skeleton_chain_node *parent)
 	    dw_die_ref clone = clone_die (c);
 	    move_all_children (c, clone);
 
+	    /* If the original has a DW_AT_object_pointer attribute,
+	       it would now point to a child DIE just moved to the
+	       cloned tree, so we need to remove that attribute from
+	       the original.  */
+	    remove_AT (c, DW_AT_object_pointer);
+
 	    replace_child (c, clone, prev);
 	    generate_skeleton_ancestor_tree (parent);
 	    add_child_die (parent->new_die, c);
@@ -7386,28 +7392,38 @@ break_out_comdat_types (dw_die_ref die)
   } while (next != NULL);
 }
 
-/* Like clone_tree, but additionally enter all the children into
-   the hash table decl_table.  */
+/* Like clone_tree, but copy DW_TAG_subprogram DIEs as declarations.
+   Enter all the cloned children into the hash table decl_table.  */
 
 static dw_die_ref
-clone_tree_hash (dw_die_ref die, decl_hash_type decl_table)
+clone_tree_partial (dw_die_ref die, decl_hash_type decl_table)
 {
   dw_die_ref c;
-  dw_die_ref clone = clone_die (die);
+  dw_die_ref clone;
   struct decl_table_entry *entry;
-  decl_table_entry **slot = decl_table.find_slot_with_hash (die,
-					  htab_hash_pointer (die), INSERT);
+  decl_table_entry **slot;
+
+  if (die->die_tag == DW_TAG_subprogram)
+    clone = clone_as_declaration (die);
+  else
+    clone = clone_die (die);
+
+  slot = decl_table.find_slot_with_hash (die,
+					 htab_hash_pointer (die), INSERT);
+
   /* Assert that DIE isn't in the hash table yet.  If it would be there
      before, the ancestors would be necessarily there as well, therefore
-     clone_tree_hash wouldn't be called.  */
+     clone_tree_partial wouldn't be called.  */
   gcc_assert (*slot == HTAB_EMPTY_ENTRY);
+
   entry = XCNEW (struct decl_table_entry);
   entry->orig = die;
   entry->copy = clone;
   *slot = entry;
 
-  FOR_EACH_CHILD (die, c,
-		  add_child_die (clone, clone_tree_hash (c, decl_table)));
+  if (die->die_tag != DW_TAG_subprogram)
+    FOR_EACH_CHILD (die, c,
+		    add_child_die (clone, clone_tree_partial (c, decl_table)));
 
   return clone;
 }
@@ -7458,9 +7474,15 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, decl_hash_type decl_table)
               entry->copy = copy;
               *slot = entry;
 
-	      FOR_EACH_CHILD (targ, c,
-			      add_child_die (copy,
-					     clone_tree_hash (c, decl_table)));
+	      /* If TARG is not a declaration DIE, we need to copy its
+	         children.  */
+	      if (!is_declaration_die (targ))
+		{
+		  FOR_EACH_CHILD (
+		      targ, c,
+		      add_child_die (copy,
+				     clone_tree_partial (c, decl_table)));
+		}
 
               /* Make sure the cloned tree is marked as part of the
                  type unit.  */

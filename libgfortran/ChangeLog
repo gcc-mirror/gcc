@@ -1,3 +1,16 @@
+2014-04-26  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/52539
+	* io/list_read.c: Add uchar typedef. (push_char4): New function
+	to save kind=4 character. (next_char_utf8): New function to read
+	a single UTF-8 encoded character value. (read_chracter): Update
+	to use the new functions for reading UTF-8 strings.
+	(list_formatted_read_scalar): Update to handle list directed
+	reads of UTF-8 strings. (nml_read_obj): Likewise update for
+	UTF-8 strings in namelists.
+	* io/write.c (nml_write_obj): Add kind=4 character support for
+	namelist writes.
+
 2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* configure.ac: Quote usage of ac_cv_func_clock_gettime in if test.

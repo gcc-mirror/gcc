@@ -5795,19 +5795,6 @@
 }
   [(set_attr "type" "shift")])
 
-(define_insn "*ashlsi3_extend"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-	  (ashift:SI (match_operand:SI 1 "register_operand" "r")
-		     (match_operand:SI 2 "arith_operand" "rI"))))]
-  "TARGET_ARCH64"
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
-  return "sll\t%1, %2, %0";
-}
-  [(set_attr "type" "shift")])
-
 (define_expand "ashldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (match_operand:DI 1 "register_operand" "r")

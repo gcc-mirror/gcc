@@ -678,7 +678,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       if (__ctype.is(__c, __f))
 	return true;
-      
+#if 0
       // special case of underscore in [[:w:]]
       if (__c == __ctype.widen('_'))
 	{
@@ -698,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__f | __bt)
 	    return true;
 	}
-      
+#endif
       return false;
     }
 

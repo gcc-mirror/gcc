@@ -172,6 +172,12 @@
 #endif
 
 
+/* Define to get calls to the valgrind runtime enabled. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_VALGRIND_ANNOTATIONS
+#endif
+
+
 /* Define if you want to run subprograms and generated programs through
    valgrind (a memory checker). This is extremely expensive. */
 #ifndef USED_FOR_TARGET
@@ -1694,12 +1700,6 @@
 /* Define to the linker option to disable use of shared objects. */
 #ifndef USED_FOR_TARGET
 #undef LD_STATIC_OPTION
-#endif
-
-
-/* Define to the library containing __tls_get_addr/___tls_get_addr. */
-#ifndef USED_FOR_TARGET
-#undef LIB_TLS_SPEC
 #endif
 
 

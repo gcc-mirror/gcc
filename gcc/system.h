@@ -1035,7 +1035,7 @@ helper_const_non_const_cast (const char *p)
 #endif
 #endif
 
-#ifdef ENABLE_VALGRIND_CHECKING
+#ifdef ENABLE_VALGRIND_ANNOTATIONS
 # ifdef HAVE_VALGRIND_MEMCHECK_H
 #  include <valgrind/memcheck.h>
 # elif defined HAVE_MEMCHECK_H

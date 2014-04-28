@@ -21,7 +21,10 @@
 // Tests multiple consecutive quantifiers
 
 #include <regex>
+#include <testsuite_hooks.h>
+#include <testsuite_regex.h>
 
+using namespace __gnu_test;
 using namespace std;
 
 int
@@ -29,5 +32,6 @@ main()
 {
   regex re1("a++");
   regex re2("(a+)+");
+  VERIFY(regex_match_debug("aa", regex("(a)*{3}")));
   return 0;
 }

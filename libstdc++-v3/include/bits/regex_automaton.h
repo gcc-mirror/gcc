@@ -52,6 +52,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
       _S_opcode_unknown,
       _S_opcode_alternative,
+      _S_opcode_repeat,
       _S_opcode_backref,
       _S_opcode_line_begin_assertion,
       _S_opcode_line_end_assertion,
@@ -74,9 +75,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t _M_backref_index;  // for _S_opcode_backref
       struct
       {
-	// for _S_opcode_alternative.
-	_StateIdT  _M_quant_index;
-	// for _S_opcode_alternative or _S_opcode_subexpr_lookahead
+	// for _S_opcode_alternative, _S_opcode_repeat and
+	// _S_opcode_subexpr_lookahead
 	_StateIdT  _M_alt;
 	// for _S_opcode_word_boundary or _S_opcode_subexpr_lookahead or
 	// quantifiers (ungreedy if set true)
@@ -120,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit
     _NFA_base(_FlagT __f)
     : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
-    _M_quant_count(0), _M_has_backref(false)
+    _M_has_backref(false)
     { }
 
     _NFA_base(_NFA_base&&) = default;
@@ -145,7 +145,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _FlagT                    _M_flags;
     _StateIdT                 _M_start_state;
     _SizeT                    _M_subexpr_count;
-    _SizeT                    _M_quant_count;
     bool                      _M_has_backref;
   };
 
@@ -175,7 +174,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_StateT __tmp(_S_opcode_alternative);
 	// It labels every quantifier to make greedy comparison easier in BFS
 	// approach.
-	__tmp._M_quant_index = this->_M_quant_count++;
+	__tmp._M_next = __next;
+	__tmp._M_alt = __alt;
+	return _M_insert_state(std::move(__tmp));
+      }
+
+      _StateIdT
+      _M_insert_repeat(_StateIdT __next, _StateIdT __alt, bool __neg)
+      {
+	_StateT __tmp(_S_opcode_repeat);
+	// It labels every quantifier to make greedy comparison easier in BFS
+	// approach.
 	__tmp._M_next = __next;
 	__tmp._M_alt = __alt;
 	__tmp._M_neg = __neg;

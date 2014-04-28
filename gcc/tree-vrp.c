@@ -3949,52 +3949,6 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
     }
 }
 
-/* Return true if VAR may overflow at STMT.  This checks any available
-   loop information to see if we can determine that VAR does not
-   overflow.  */
-
-static bool
-vrp_var_may_overflow (tree var, gimple stmt)
-{
-  struct loop *l;
-  tree chrec, init, step;
-
-  if (current_loops == NULL)
-    return true;
-
-  l = loop_containing_stmt (stmt);
-  if (l == NULL
-      || !loop_outer (l))
-    return true;
-
-  chrec = instantiate_parameters (l, analyze_scalar_evolution (l, var));
-  if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    return true;
-
-  init = initial_condition_in_loop_num (chrec, l->num);
-  step = evolution_part_in_loop_num (chrec, l->num);
-
-  if (step == NULL_TREE
-      || !is_gimple_min_invariant (step)
-      || !valid_value_p (init))
-    return true;
-
-  /* If we get here, we know something useful about VAR based on the
-     loop information.  If it wraps, it may overflow.  */
-
-  if (scev_probably_wraps_p (init, step, stmt, get_chrec_loop (chrec),
-			     true))
-    return true;
-
-  if (dump_file && (dump_flags & TDF_DETAILS) != 0)
-    {
-      print_generic_expr (dump_file, var, 0);
-      fprintf (dump_file, ": loop information indicates does not overflow\n");
-    }
-
-  return false;
-}
-
 
 /* Given two numeric value ranges VR0, VR1 and a comparison code COMP:
 
@@ -8382,32 +8336,32 @@ vrp_visit_phi_node (gimple phi)
 	  && (cmp_min != 0 || cmp_max != 0))
 	goto varying;
 
-      /* If the new minimum is smaller or larger than the previous
-	 one, go all the way to -INF.  In the first case, to avoid
-	 iterating millions of times to reach -INF, and in the
-	 other case to avoid infinite bouncing between different
-	 minimums.  */
-      if (cmp_min > 0 || cmp_min < 0)
-	{
-	  if (!needs_overflow_infinity (TREE_TYPE (vr_result.min))
-	      || !vrp_var_may_overflow (lhs, phi))
-	    vr_result.min = TYPE_MIN_VALUE (TREE_TYPE (vr_result.min));
-	  else if (supports_overflow_infinity (TREE_TYPE (vr_result.min)))
-	    vr_result.min =
-		negative_overflow_infinity (TREE_TYPE (vr_result.min));
-	}
+      /* If the new minimum is larger than than the previous one
+	 retain the old value.  If the new minimum value is smaller
+	 than the previous one and not -INF go all the way to -INF + 1.
+	 In the first case, to avoid infinite bouncing between different
+	 minimums, and in the other case to avoid iterating millions of
+	 times to reach -INF.  Going to -INF + 1 also lets the following
+	 iteration compute whether there will be any overflow, at the
+	 expense of one additional iteration.  */
+      if (cmp_min < 0)
+	vr_result.min = lhs_vr->min;
+      else if (cmp_min > 0
+	       && !vrp_val_is_min (vr_result.min))
+	vr_result.min
+	  = int_const_binop (PLUS_EXPR,
+			     vrp_val_min (TREE_TYPE (vr_result.min)),
+			     build_int_cst (TREE_TYPE (vr_result.min), 1));
 
-      /* Similarly, if the new maximum is smaller or larger than
-	 the previous one, go all the way to +INF.  */
-      if (cmp_max < 0 || cmp_max > 0)
-	{
-	  if (!needs_overflow_infinity (TREE_TYPE (vr_result.max))
-	      || !vrp_var_may_overflow (lhs, phi))
-	    vr_result.max = TYPE_MAX_VALUE (TREE_TYPE (vr_result.max));
-	  else if (supports_overflow_infinity (TREE_TYPE (vr_result.max)))
-	    vr_result.max =
-		positive_overflow_infinity (TREE_TYPE (vr_result.max));
-	}
+      /* Similarly for the maximum value.  */
+      if (cmp_max > 0)
+	vr_result.max = lhs_vr->max;
+      else if (cmp_max < 0
+	       && !vrp_val_is_max (vr_result.max))
+	vr_result.max
+	  = int_const_binop (MINUS_EXPR,
+			     vrp_val_max (TREE_TYPE (vr_result.min)),
+			     build_int_cst (TREE_TYPE (vr_result.min), 1));
 
       /* If we dropped either bound to +-INF then if this is a loop
 	 PHI node SCEV may known more about its value-range.  */

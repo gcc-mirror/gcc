@@ -2229,6 +2229,10 @@ check_main_parameter_types (tree decl)
   if (argct > 0 && (argct < 2 || argct > 3))
     pedwarn (input_location, OPT_Wmain,
 	     "%q+D takes only zero or two arguments", decl);
+
+  if (stdarg_p (TREE_TYPE (decl)))
+    pedwarn (input_location, OPT_Wmain,
+	     "%q+D declared as variadic function", decl);
 }
 
 /* vector_targets_convertible_p is used for vector pointer types.  The
@@ -6549,8 +6553,8 @@ handle_hot_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     {
       if (lookup_attribute ("cold", DECL_ATTRIBUTES (*node)) != NULL)
 	{
-	  warning (OPT_Wattributes, "%qE attribute conflicts with attribute %s",
-		   name, "cold");
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with attribute %qs", name, "cold");
 	  *no_add_attrs = true;
 	}
       /* Most of the rest of the hot processing is done later with
@@ -6577,8 +6581,8 @@ handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     {
       if (lookup_attribute ("hot", DECL_ATTRIBUTES (*node)) != NULL)
 	{
-	  warning (OPT_Wattributes, "%qE attribute conflicts with attribute %s",
-		   name, "hot");
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with attribute %qs", name, "hot");
 	  *no_add_attrs = true;
 	}
       /* Most of the rest of the cold processing is done later with
@@ -6651,7 +6655,16 @@ handle_noinline_attribute (tree *node, tree name,
 			   int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
-    DECL_UNINLINABLE (*node) = 1;
+    {
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with attribute %qs", name, "always_inline");
+	  *no_add_attrs = true;
+	}
+      else
+	DECL_UNINLINABLE (*node) = 1;
+    }
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
@@ -6689,9 +6702,16 @@ handle_always_inline_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
-      /* Set the attribute and mark it for disregarding inline
-	 limits.  */
-      DECL_DISREGARD_INLINE_LIMITS (*node) = 1;
+      if (lookup_attribute ("noinline", DECL_ATTRIBUTES (*node)))
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
+		   "with %qs attribute", name, "noinline");
+	  *no_add_attrs = true;
+	}
+      else
+	/* Set the attribute and mark it for disregarding inline
+	   limits.  */
+	DECL_DISREGARD_INLINE_LIMITS (*node) = 1;
     }
   else
     {

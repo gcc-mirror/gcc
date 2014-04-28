@@ -2365,6 +2365,18 @@ use_reg_mode (rtx *call_fusage, rtx reg, enum machine_mode mode)
     = gen_rtx_EXPR_LIST (mode, gen_rtx_USE (VOIDmode, reg), *call_fusage);
 }
 
+/* Add a CLOBBER expression for REG to the (possibly empty) list pointed
+   to by CALL_FUSAGE.  REG must denote a hard register.  */
+
+void
+clobber_reg_mode (rtx *call_fusage, rtx reg, enum machine_mode mode)
+{
+  gcc_assert (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER);
+
+  *call_fusage
+    = gen_rtx_EXPR_LIST (mode, gen_rtx_CLOBBER (VOIDmode, reg), *call_fusage);
+}
+
 /* Add USE expressions to *CALL_FUSAGE for each of NREGS consecutive regs,
    starting at REGNO.  All of these registers must be hard registers.  */
 

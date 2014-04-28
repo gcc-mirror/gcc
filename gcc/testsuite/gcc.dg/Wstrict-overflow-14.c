@@ -10,6 +10,6 @@ foo (int j)
   int sum = 0;
 
   for (i = 1; i < j; i += i)
-    sum += i / 16; /* { dg-warning "assuming signed overflow does not occur" "" } */
+    sum += i / 16; /* { dg-warning "assuming signed overflow does not occur" ""  { xfail *-*-* } } */
   return sum;
 }

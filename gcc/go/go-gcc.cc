@@ -29,9 +29,11 @@
 #include "stor-layout.h"
 #include "varasm.h"
 #include "tree-iterator.h"
+#include "cgraph.h"
 #include "convert.h"
 #include "basic-block.h"
 #include "gimple-expr.h"
+#include "gimplify.h"
 #include "toplev.h"
 #include "output.h"
 #include "real.h"
@@ -317,7 +319,7 @@ class Gcc_backend : public Backend
 	       Location);
 
   Bstatement*
-  switch_statement(Bexpression* value,
+  switch_statement(Bfunction* function, Bexpression* value,
 		   const std::vector<std::vector<Bexpression*> >& cases,
 		   const std::vector<Bstatement*>& statements,
 		   Location);
@@ -376,6 +378,9 @@ class Gcc_backend : public Backend
 		     Location, Bstatement**);
 
   Bvariable*
+  gc_root_variable(Btype*, Bexpression*);
+
+  Bvariable*
   immutable_struct(const std::string&, bool, bool, Btype*, Location);
 
   void
@@ -419,6 +424,12 @@ class Gcc_backend : public Backend
 
   bool
   function_set_body(Bfunction* function, Bstatement* code_stmt);
+
+  void
+  write_global_definitions(const std::vector<Btype*>&,
+                           const std::vector<Bexpression*>&,
+                           const std::vector<Bfunction*>&,
+                           const std::vector<Bvariable*>&);
 
  private:
   // Make a Bexpression from a tree.
@@ -1708,6 +1719,7 @@ Gcc_backend::return_statement(Bfunction* bfunction,
   tree result = DECL_RESULT(fntree);
   if (result == error_mark_node)
     return this->error_statement();
+
   tree ret;
   if (vals.empty())
     ret = fold_build1_loc(location.gcc_location(), RETURN_EXPR, void_type_node,
@@ -1731,7 +1743,14 @@ Gcc_backend::return_statement(Bfunction* bfunction,
       // statement.
       tree stmt_list = NULL_TREE;
       tree rettype = TREE_TYPE(result);
+
+      if (DECL_STRUCT_FUNCTION(fntree) == NULL)
+	push_struct_function(fntree);
+      else
+	push_cfun(DECL_STRUCT_FUNCTION(fntree));
       tree rettmp = create_tmp_var(rettype, "RESULT");
+      pop_cfun();
+
       tree field = TYPE_FIELDS(rettype);
       for (std::vector<Bexpression*>::const_iterator p = vals.begin();
 	   p != vals.end();
@@ -1817,12 +1836,19 @@ Gcc_backend::if_statement(Bexpression* condition, Bblock* then_block,
 
 Bstatement*
 Gcc_backend::switch_statement(
+    Bfunction* function,
     Bexpression* value,
     const std::vector<std::vector<Bexpression*> >& cases,
     const std::vector<Bstatement*>& statements,
     Location switch_location)
 {
   gcc_assert(cases.size() == statements.size());
+
+  tree decl = function->get_tree();
+  if (DECL_STRUCT_FUNCTION(decl) == NULL)
+    push_struct_function(decl);
+  else
+    push_cfun(DECL_STRUCT_FUNCTION(decl));
 
   tree stmt_list = NULL_TREE;
   std::vector<std::vector<Bexpression*> >::const_iterator pc = cases.begin();
@@ -1863,6 +1889,7 @@ Gcc_backend::switch_statement(
 	  append_to_statement_list(t, &stmt_list);
 	}
     }
+  pop_cfun();
 
   tree tv = value->get_tree();
   if (tv == error_mark_node)
@@ -1921,13 +1948,7 @@ Gcc_backend::block(Bfunction* function, Bblock* enclosing,
   tree block_tree = make_node(BLOCK);
   if (enclosing == NULL)
     {
-      // FIXME: Permitting FUNCTION to be NULL is a temporary measure
-      // until we have a proper representation of the init function.
-      tree fndecl;
-      if (function == NULL)
-	fndecl = current_function_decl;
-      else
-	fndecl = function->get_tree();
+      tree fndecl = function->get_tree();
       gcc_assert(fndecl != NULL_TREE);
 
       // We may have already created a block for local variables when
@@ -1981,7 +2002,6 @@ Gcc_backend::block(Bfunction* function, Bblock* enclosing,
                               void_type_node, BLOCK_VARS(block_tree),
                               NULL_TREE, block_tree);
   TREE_SIDE_EFFECTS(bind_tree) = 1;
-
   return new Bblock(bind_tree);
 }
 
@@ -2213,7 +2233,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
       return this->error_variable();
     }
 
-  go_assert(function != NULL);
+  gcc_assert(function != NULL);
   tree decl = function->get_tree();
 
   tree var;
@@ -2262,6 +2282,28 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
   return new Bvariable(var);
 }
 
+// Make a GC root variable.
+
+Bvariable*
+Gcc_backend::gc_root_variable(Btype* type, Bexpression* init)
+{
+  tree type_tree = type->get_tree();
+  tree init_tree = init->get_tree();
+  if (type_tree == error_mark_node || init_tree == error_mark_node)
+    return this->error_variable();
+
+  tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
+                         create_tmp_var_name("gc"), type_tree);
+  DECL_EXTERNAL(decl) = 0;
+  TREE_PUBLIC(decl) = 0;
+  TREE_STATIC(decl) = 1;
+  DECL_ARTIFICIAL(decl) = 1;
+  DECL_INITIAL(decl) = init_tree;
+  rest_of_decl_compilation(decl, 1, 0);
+
+  return new Bvariable(decl);
+}
+
 // Create a named immutable initialized data structure.
 
 Bvariable*
@@ -2276,9 +2318,9 @@ Gcc_backend::immutable_struct(const std::string& name, bool is_hidden,
 			 get_identifier_from_string(name),
 			 build_qualified_type(type_tree, TYPE_QUAL_CONST));
   TREE_STATIC(decl) = 1;
+  TREE_USED(decl) = 1;
   TREE_READONLY(decl) = 1;
   TREE_CONSTANT(decl) = 1;
-  TREE_USED(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
   if (!is_hidden)
     TREE_PUBLIC(decl) = 1;
@@ -2368,7 +2410,17 @@ Gcc_backend::label(Bfunction* function, const std::string& name,
 {
   tree decl;
   if (name.empty())
-    decl = create_artificial_label(location.gcc_location());
+    {
+      tree func_tree = function->get_tree();
+      if (DECL_STRUCT_FUNCTION(func_tree) == NULL)
+	push_struct_function(func_tree);
+      else
+	push_cfun(DECL_STRUCT_FUNCTION(func_tree));
+
+      decl = create_artificial_label(location.gcc_location());
+
+      pop_cfun();
+    }
   else
     {
       tree id = get_identifier_from_string(name);
@@ -2476,10 +2528,17 @@ Gcc_backend::function_defer_statement(Bfunction* function, Bexpression* undefer,
 {
   tree undefer_tree = undefer->get_tree();
   tree defer_tree = defer->get_tree();
+  tree fntree = function->get_tree();
 
   if (undefer_tree == error_mark_node
-      || defer_tree == error_mark_node)
+      || defer_tree == error_mark_node
+      || fntree == error_mark_node)
     return this->error_statement();
+
+  if (DECL_STRUCT_FUNCTION(fntree) == NULL)
+    push_struct_function(fntree);
+  else
+    push_cfun(DECL_STRUCT_FUNCTION(fntree));
 
   tree stmt_list = NULL;
   Blabel* blabel = this->label(function, "", location);
@@ -2493,6 +2552,7 @@ Gcc_backend::function_defer_statement(Bfunction* function, Bexpression* undefer,
   tree try_catch =
       build2(TRY_CATCH_EXPR, void_type_node, undefer_tree, catch_body);
   append_to_statement_list(try_catch, &stmt_list);
+  pop_cfun();
 
   return this->make_statement(stmt_list);
 }
@@ -2535,6 +2595,88 @@ Gcc_backend::function_set_body(Bfunction* function, Bstatement* code_stmt)
     return false;
   DECL_SAVED_TREE(func_tree) = code;
   return true;
+}
+
+// Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
+// FUNCTION_DECLS, and VARIABLE_DECLS declared globally.
+
+void
+Gcc_backend::write_global_definitions(
+    const std::vector<Btype*>& type_decls,
+    const std::vector<Bexpression*>& constant_decls,
+    const std::vector<Bfunction*>& function_decls,
+    const std::vector<Bvariable*>& variable_decls)
+{
+  size_t count_definitions = type_decls.size() + constant_decls.size()
+      + function_decls.size() + variable_decls.size();
+
+  tree* defs = new tree[count_definitions];
+
+  // Convert all non-erroneous declarations into Gimple form.
+  size_t i = 0;
+  for (std::vector<Bvariable*>::const_iterator p = variable_decls.begin();
+       p != variable_decls.end();
+       ++p)
+    {
+      if ((*p)->get_tree() != error_mark_node)
+        {
+          defs[i] = (*p)->get_tree();
+          go_preserve_from_gc(defs[i]);
+          ++i;
+        }
+    }
+
+  for (std::vector<Btype*>::const_iterator p = type_decls.begin();
+       p != type_decls.end();
+       ++p)
+    {
+      tree type_tree = (*p)->get_tree();
+      if (type_tree != error_mark_node
+          && IS_TYPE_OR_DECL_P(type_tree))
+        {
+          defs[i] = TYPE_NAME(type_tree);
+          gcc_assert(defs[i] != NULL);
+          go_preserve_from_gc(defs[i]);
+          ++i;
+        }
+    }
+  for (std::vector<Bexpression*>::const_iterator p = constant_decls.begin();
+       p != constant_decls.end();
+       ++p)
+    {
+      if ((*p)->get_tree() != error_mark_node)
+        {
+          defs[i] = (*p)->get_tree();
+          go_preserve_from_gc(defs[i]);
+          ++i;
+        }
+    }
+  for (std::vector<Bfunction*>::const_iterator p = function_decls.begin();
+       p != function_decls.end();
+       ++p)
+    {
+      tree decl = (*p)->get_tree();
+      if (decl != error_mark_node)
+        {
+          go_preserve_from_gc(decl);
+          gimplify_function_tree(decl);
+          cgraph_finalize_function(decl, true);
+
+          defs[i] = decl;
+          ++i;
+        }
+    }
+
+  // Pass everything back to the middle-end.
+
+  wrapup_global_declarations(defs, i);
+
+  finalize_compilation_unit();
+
+  check_global_declarations(defs, i);
+  emit_debug_global_declarations(defs, i);
+
+  delete[] defs;
 }
 
 // The single backend.
