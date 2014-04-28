@@ -520,7 +520,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	    gimple_register_cfg_hooks ();
 	    bitmap_obstack_initialize (NULL);
-	    execute_pass_list (passes->all_lowering_passes);
+	    execute_pass_list (cfun, passes->all_lowering_passes);
 	    passes->execute_early_local_passes ();
 	    bitmap_obstack_release (NULL);
 	    pop_cfun ();
@@ -658,7 +658,7 @@ analyze_function (struct cgraph_node *node)
 
 	  gimple_register_cfg_hooks ();
 	  bitmap_obstack_initialize (NULL);
-	  execute_pass_list (g->get_passes ()->all_lowering_passes);
+	  execute_pass_list (cfun, g->get_passes ()->all_lowering_passes);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  compact_blocks ();
@@ -1771,7 +1771,7 @@ expand_function (struct cgraph_node *node)
   /* Signal the start of passes.  */
   invoke_plugin_callbacks (PLUGIN_ALL_PASSES_START, NULL);
 
-  execute_pass_list (g->get_passes ()->all_passes);
+  execute_pass_list (cfun, g->get_passes ()->all_passes);
 
   /* Signal the end of passes.  */
   invoke_plugin_callbacks (PLUGIN_ALL_PASSES_END, NULL);
