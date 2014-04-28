@@ -113,6 +113,10 @@ mrelax
 Target
 Optimize tail call instructions in assembler and linker
 
+muser-mode
+Target Report Mask(USER_MODE)
+Do not generate code that can only run in supervisor mode
+
 mcpu=
 Target RejectNegative Joined Var(sparc_cpu_and_features) Enum(sparc_processor_type) Init(PROCESSOR_V7)
 Use features of and schedule code for given CPU

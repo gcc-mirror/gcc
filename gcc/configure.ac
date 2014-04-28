@@ -3625,7 +3625,7 @@ foo:
        .align 4
        smac %g2, %g3, %g1
        umac %g2, %g3, %g1
-       cas [[%g2]], %g3, %g1],,
+       casa [[%g2]] 0xb, %g3, %g1],,
       [AC_DEFINE(HAVE_AS_LEON, 1,
                 [Define if your assembler supports LEON instructions.])])
     ;;
