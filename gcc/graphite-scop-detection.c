@@ -474,8 +474,10 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
       result.exits = false;
 
       /* Mark bbs terminating a SESE region difficult, if they start
-	 a condition.  */
-      if (!single_succ_p (bb))
+	 a condition or if the block it exits to cannot be split
+	 with make_forwarder_block.  */
+      if (!single_succ_p (bb)
+	  || bb_has_abnormal_pred (single_succ (bb)))
 	result.difficult = true;
       else
 	result.exit = single_succ (bb);
