@@ -1,3 +1,10 @@
+2014-04-29  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.md (addti3, subti3): New.
+
 2014-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60971
