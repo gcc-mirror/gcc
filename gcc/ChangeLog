@@ -1,3 +1,13 @@
+2014-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* calls.c (initialize_argument_information): Always treat
+	PUSH_ARGS_REVERSED as 1, simplify code accordingly.
+	(expand_call): Likewise.
+	(emit_library_call_calue_1): Likewise.
+	* expr.c (PUSH_ARGS_REVERSED): Do not define.
+	(emit_push_insn): Always treat PUSH_ARGS_REVERSED as 1, simplify
+	code accordingly.
+
 2014-04-29  Nick Clifton  <nickc@redhat.com>
 
 	* config/arc/arc.c (arc_select_cc_mode): Fix parentheses.
