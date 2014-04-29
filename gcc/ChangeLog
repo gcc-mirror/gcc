@@ -1,3 +1,12 @@
+2014-04-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/arc/arc.c (arc_select_cc_mode): Fix parentheses.
+	(arc_init_reg_tables): Use a machine_mode enum to iterate over
+	available modes.
+	* config/m32r/m32r.c (init_reg_tables): Likewise.
+	* config/m32c/m32c.c (m32c_illegal_subreg_p): Use a machine_mode
+	enum to hold the modes.
+
 2014-04-29  Richard Biener  <rguenther@suse.de>
 
 	* dominance.c (free_dominance_info): Add overload with
