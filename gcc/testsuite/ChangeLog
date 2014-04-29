@@ -1,3 +1,8 @@
+2014-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51707
+	* g++.dg/cpp0x/constexpr-51707.C: New.
+
 2014-04-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/tree-ssa/pr23401.c: Update the expected number of
