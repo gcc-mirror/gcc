@@ -1,3 +1,43 @@
+2014-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/simd.exp: New file.
+	* gcc.target/aarch64/simd/vzipf32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipf32.x: New file.
+	* gcc.target/aarch64/simd/vzipp16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipp16.x: New file.
+	* gcc.target/aarch64/simd/vzipp8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipp8.x: New file.
+	* gcc.target/aarch64/simd/vzipqf32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqf32.x: New file.
+	* gcc.target/aarch64/simd/vzipqp16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqp16.x: New file.
+	* gcc.target/aarch64/simd/vzipqp8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqp8.x: New file.
+	* gcc.target/aarch64/simd/vzipqs16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqs16.x: New file.
+	* gcc.target/aarch64/simd/vzipqs32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqs32.x: New file.
+	* gcc.target/aarch64/simd/vzipqs8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqs8.x: New file.
+	* gcc.target/aarch64/simd/vzipqu16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqu16.x: New file.
+	* gcc.target/aarch64/simd/vzipqu32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqu32.x: New file.
+	* gcc.target/aarch64/simd/vzipqu8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqu8.x: New file.
+	* gcc.target/aarch64/simd/vzips16_1.c: New file.
+	* gcc.target/aarch64/simd/vzips16.x: New file.
+	* gcc.target/aarch64/simd/vzips32_1.c: New file.
+	* gcc.target/aarch64/simd/vzips32.x: New file.
+	* gcc.target/aarch64/simd/vzips8_1.c: New file.
+	* gcc.target/aarch64/simd/vzips8.x: New file.
+	* gcc.target/aarch64/simd/vzipu16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipu16.x: New file.
+	* gcc.target/aarch64/simd/vzipu32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipu32.x: New file.
+	* gcc.target/aarch64/simd/vzipu8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipu8.x: New file.
+
 2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.target/aarch64/fcsel_1.c: New test case.
