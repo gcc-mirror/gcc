@@ -1,3 +1,11 @@
+2014-04-29  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2014-04-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/ti_math1.c: New.
+	* gcc.target/powerpc/ti_math2.c: New.
+
 2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20140425-1.c: New test.
