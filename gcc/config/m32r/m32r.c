@@ -282,31 +282,33 @@ init_reg_tables (void)
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
-      switch (GET_MODE_CLASS (i))
+      enum machine_mode m = (enum machine_mode) i;
+      
+      switch (GET_MODE_CLASS (m))
 	{
 	case MODE_INT:
 	case MODE_PARTIAL_INT:
 	case MODE_COMPLEX_INT:
-	  if (GET_MODE_SIZE (i) <= 4)
+	  if (GET_MODE_SIZE (m) <= 4)
 	    m32r_mode_class[i] = 1 << (int) S_MODE;
-	  else if (GET_MODE_SIZE (i) == 8)
+	  else if (GET_MODE_SIZE (m) == 8)
 	    m32r_mode_class[i] = 1 << (int) D_MODE;
-	  else if (GET_MODE_SIZE (i) == 16)
+	  else if (GET_MODE_SIZE (m) == 16)
 	    m32r_mode_class[i] = 1 << (int) T_MODE;
-	  else if (GET_MODE_SIZE (i) == 32)
+	  else if (GET_MODE_SIZE (m) == 32)
 	    m32r_mode_class[i] = 1 << (int) O_MODE;
 	  else
 	    m32r_mode_class[i] = 0;
 	  break;
 	case MODE_FLOAT:
 	case MODE_COMPLEX_FLOAT:
-	  if (GET_MODE_SIZE (i) <= 4)
+	  if (GET_MODE_SIZE (m) <= 4)
 	    m32r_mode_class[i] = 1 << (int) SF_MODE;
-	  else if (GET_MODE_SIZE (i) == 8)
+	  else if (GET_MODE_SIZE (m) == 8)
 	    m32r_mode_class[i] = 1 << (int) DF_MODE;
-	  else if (GET_MODE_SIZE (i) == 16)
+	  else if (GET_MODE_SIZE (m) == 16)
 	    m32r_mode_class[i] = 1 << (int) TF_MODE;
-	  else if (GET_MODE_SIZE (i) == 32)
+	  else if (GET_MODE_SIZE (m) == 32)
 	    m32r_mode_class[i] = 1 << (int) OF_MODE;
 	  else
 	    m32r_mode_class[i] = 0;
