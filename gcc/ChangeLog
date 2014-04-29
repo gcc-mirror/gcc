@@ -10,6 +10,13 @@
 
 2014-04-29  Nick Clifton  <nickc@redhat.com>
 
+	* config/msp430/msp430.md (umulsidi): Fix typo.
+	(mulhisi3): Enable even inside interrupt handlers.
+	* config/msp430/msp430.c (msp430_print_operand): %O: Allow for the
+	bigger return address pushed in large mode.
+
+2014-04-29  Nick Clifton  <nickc@redhat.com>
+
 	* config/arc/arc.c (arc_select_cc_mode): Fix parentheses.
 	(arc_init_reg_tables): Use a machine_mode enum to iterate over
 	available modes.

@@ -2162,7 +2162,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	 because builtins are expanded before the frame layout is determined.  */
       fprintf (file, "%d",
 	       msp430_initial_elimination_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM)
-	        - 2);
+	       - (TARGET_LARGE ? 4 : 2));
       return;
 
     case 'J':
