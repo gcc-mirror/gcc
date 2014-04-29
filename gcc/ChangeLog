@@ -1,3 +1,7 @@
+2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/aarch64/aarch64.md (mov<mode>cc): New for GPF.
+
 2014-04-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
