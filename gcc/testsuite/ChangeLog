@@ -1,3 +1,7 @@
+2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/aarch64/fcsel_1.c: New test case.
+
 2014-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/60810
