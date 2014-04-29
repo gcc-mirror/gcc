@@ -1761,41 +1761,53 @@ execute_function_todo (function *fn, void *data)
     rebuild_cgraph_edges ();
 
   /* If we've seen errors do not bother running any verifiers.  */
-  if (seen_error ())
+  if (!seen_error ())
     {
-      pop_cfun ();
-      return;
-    }
-
 #if defined ENABLE_CHECKING
-  if (flags & TODO_verify_ssa)
-    {
-      verify_gimple_in_cfg (cfun);
-      verify_ssa (true);
-    }
-  else if (flags & TODO_verify_stmts)
-    verify_gimple_in_cfg (cfun);
-  if (flags & TODO_verify_flow)
-    verify_flow_info ();
-  if (flags & TODO_verify_il)
-    {
-      if (current_loops
-	  && loops_state_satisfies_p (LOOP_CLOSED_SSA))
+      dom_state pre_verify_state = dom_info_state (fn, CDI_DOMINATORS);
+      dom_state pre_verify_pstate = dom_info_state (fn, CDI_POST_DOMINATORS);
+
+      if (flags & TODO_verify_ssa)
 	{
-	  if (!(flags & (TODO_verify_stmts|TODO_verify_ssa)))
-	    verify_gimple_in_cfg (cfun);
-	  if (!(flags & TODO_verify_ssa))
-	    verify_ssa (true);
-	  verify_loop_closed_ssa (false);
+	  verify_gimple_in_cfg (cfun);
+	  verify_ssa (true);
 	}
-    }
-  if (flags & TODO_verify_rtl_sharing)
-    verify_rtl_sharing ();
+      else if (flags & TODO_verify_stmts)
+	verify_gimple_in_cfg (cfun);
+      if (flags & TODO_verify_flow)
+	verify_flow_info ();
+      if (flags & TODO_verify_il)
+	{
+	  if (current_loops
+	      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	    {
+	      if (!(flags & (TODO_verify_stmts|TODO_verify_ssa)))
+		verify_gimple_in_cfg (cfun);
+	      if (!(flags & TODO_verify_ssa))
+		verify_ssa (true);
+	      verify_loop_closed_ssa (false);
+	    }
+	}
+      if (flags & TODO_verify_rtl_sharing)
+	verify_rtl_sharing ();
+
+      /* Make sure verifiers don't change dominator state.  */
+      gcc_assert (dom_info_state (fn, CDI_DOMINATORS) == pre_verify_state);
+      gcc_assert (dom_info_state (fn, CDI_POST_DOMINATORS) == pre_verify_pstate);
 #endif
+    }
 
   fn->last_verified = flags & TODO_verify_all;
 
   pop_cfun ();
+
+  /* For IPA passes make sure to release dominator info, it can be
+     computed by non-verifying TODOs.  */
+  if (!cfun)
+    {
+      free_dominance_info (fn, CDI_DOMINATORS);
+      free_dominance_info (fn, CDI_POST_DOMINATORS);
+    }
 }
 
 /* Perform all TODO actions.  */

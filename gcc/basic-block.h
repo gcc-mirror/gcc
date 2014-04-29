@@ -826,10 +826,13 @@ enum cdi_direction
   CDI_POST_DOMINATORS = 2
 };
 
+extern enum dom_state dom_info_state (function *, enum cdi_direction);
 extern enum dom_state dom_info_state (enum cdi_direction);
 extern void set_dom_info_availability (enum cdi_direction, enum dom_state);
+extern bool dom_info_available_p (function *, enum cdi_direction);
 extern bool dom_info_available_p (enum cdi_direction);
 extern void calculate_dominance_info (enum cdi_direction);
+extern void free_dominance_info (function *, enum cdi_direction);
 extern void free_dominance_info (enum cdi_direction);
 extern basic_block nearest_common_dominator (enum cdi_direction,
 					     basic_block, basic_block);
