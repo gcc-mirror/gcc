@@ -1,3 +1,17 @@
+2014-04-29  Richard Biener  <rguenther@suse.de>
+
+	* dominance.c (free_dominance_info): Add overload with
+	function parameter.
+	(dom_info_state): Likewise.
+	(dom_info_available_p): Likewise.
+	* basic-block.h (free_dominance_info, dom_info_state,
+	dom_info_available_p): Declare overloads.
+	* passes.c (execute_function_todo): Verify that verifiers
+	don't change dominator info state.  Drop dominator info
+	for IPA pass invocations.
+	* cgraph.c (release_function_body): Restore asserts that
+	dominator information is released.
+
 2014-04-29  Patrick Palka  <patrick@parcs.ath.cx>
 
 	* doc/invoke.texi: Fix typo.
