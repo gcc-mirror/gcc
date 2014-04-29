@@ -1,3 +1,14 @@
+2014-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vzip1_f32, vzip1_p8, vzip1_p16, vzip1_s8,
+	vzip1_s16, vzip1_s32, vzip1_u8, vzip1_u16, vzip1_u32, vzip1q_f32,
+	vzip1q_f64, vzip1q_p8, vzip1q_p16, vzip1q_s8, vzip1q_s16, vzip1q_s32,
+	vzip1q_s64, vzip1q_u8, vzip1q_u16, vzip1q_u32, vzip1q_u64, vzip2_f32,
+	vzip2_p8, vzip2_p16, vzip2_s8, vzip2_s16, vzip2_s32, vzip2_u8,
+	vzip2_u16, vzip2_u32, vzip2q_f32, vzip2q_f64, vzip2q_p8, vzip2q_p16,
+	vzip2q_s8, vzip2q_s16, vzip2q_s32, vzip2q_s64, vzip2q_u8, vzip2q_u16,
+	vzip2q_u32, vzip2q_u64): Replace inline __asm__ with __builtin_shuffle.
+
 2014-04-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-cfg.c (dump_function_to_file): Dump the return type of
