@@ -149,7 +149,7 @@ typedef struct GTY(()) cp_default_arg_entry_d {
 } cp_default_arg_entry;
 
 
-/* An entry in a stack for member functions of local classes.  */
+/* An entry in a stack for member functions defined within their classes.  */
 
 typedef struct GTY(()) cp_unparsed_functions_entry_d {
   /* Functions with default arguments that require post-processing.
@@ -163,6 +163,10 @@ typedef struct GTY(()) cp_unparsed_functions_entry_d {
   /* Non-static data members with initializers that require post-processing.
      FIELD_DECLs appear in this list in declaration order.  */
   vec<tree, va_gc> *nsdmis;
+
+  /* Nested classes go in this vector, so that we can do some final
+     processing after parsing any NSDMIs.  */
+  vec<tree, va_gc> *classes;
 } cp_unparsed_functions_entry;
 
 

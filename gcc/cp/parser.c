@@ -1848,11 +1848,13 @@ cp_parser_context_new (cp_parser_context* next)
   parser->unparsed_queues->last ().funs_with_definitions
 #define unparsed_nsdmis \
   parser->unparsed_queues->last ().nsdmis
+#define unparsed_classes \
+  parser->unparsed_queues->last ().classes
 
 static void
 push_unparsed_function_queues (cp_parser *parser)
 {
-  cp_unparsed_functions_entry e = {NULL, make_tree_vector (), NULL};
+  cp_unparsed_functions_entry e = {NULL, make_tree_vector (), NULL, NULL};
   vec_safe_push (parser->unparsed_queues, e);
 }
 
@@ -17834,7 +17836,7 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
 /* Used by handling of trailing-return-types and NSDMI, in which 'this'
    is in scope even though it isn't real.  */
 
-static void
+void
 inject_this_parameter (tree ctype, cp_cv_quals quals)
 {
   tree this_parm;
@@ -19505,6 +19507,13 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
+
+      /* Now do some post-NSDMI bookkeeping.  */
+      FOR_EACH_VEC_SAFE_ELT (unparsed_classes, ix, class_type)
+	after_nsdmi_defaulted_late_checks (class_type);
+      vec_safe_truncate (unparsed_classes, 0);
+      after_nsdmi_defaulted_late_checks (type);
+
       /* Now parse the body of the functions.  */
       if (flag_openmp)
 	{
@@ -19521,6 +19530,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  cp_parser_late_parsing_for_member (parser, decl);
       vec_safe_truncate (unparsed_funs_with_definitions, 0);
     }
+  else
+    vec_safe_push (unparsed_classes, type);
 
   /* Put back any saved access checks.  */
   pop_deferring_access_checks ();

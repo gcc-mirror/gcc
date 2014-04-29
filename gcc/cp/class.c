@@ -4725,11 +4725,7 @@ deduce_noexcept_on_destructor (tree dtor)
 {
   if (!TYPE_RAISES_EXCEPTIONS (TREE_TYPE (dtor)))
     {
-      tree ctx = DECL_CONTEXT (dtor);
-      tree implicit_fn = implicitly_declare_fn (sfk_destructor, ctx,
-						/*const_p=*/false,
-						NULL, NULL);
-      tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
+      tree eh_spec = unevaluated_noexcept_spec ();
       TREE_TYPE (dtor) = build_exception_variant (TREE_TYPE (dtor), eh_spec);
     }
 }

@@ -840,8 +840,7 @@ merge_types (tree t1, tree t2)
 				  type_memfn_quals (t1),
 				  type_memfn_rqual (t1));
 	raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
-					     TYPE_RAISES_EXCEPTIONS (t2),
-					     NULL_TREE);
+					     TYPE_RAISES_EXCEPTIONS (t2));
 	t1 = build_exception_variant (rval, raises);
 	break;
       }
@@ -852,8 +851,7 @@ merge_types (tree t1, tree t2)
 	   is just the main variant of this.  */
 	tree basetype = class_of_this_parm (t2);
 	tree raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
-						  TYPE_RAISES_EXCEPTIONS (t2),
-						  NULL_TREE);
+						  TYPE_RAISES_EXCEPTIONS (t2));
 	cp_ref_qualifier rqual = type_memfn_rqual (t1);
 	tree t3;
 
