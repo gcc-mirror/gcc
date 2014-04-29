@@ -1,3 +1,9 @@
+2014-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60971
+	* tree-tailcall.c (process_assignment): Reject conversions which
+	reduce precision.
+
 2014-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* calls.c (initialize_argument_information): Always treat
