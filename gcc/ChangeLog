@@ -1,3 +1,10 @@
+2014-04-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.md (umulsidi): Fix typo.
+	(mulhisi3): Enable even inside interrupt handlers.
+	* config/msp430/msp430.c (msp430_print_operand): %O: Allow for the
+	bigger return address pushed in large mode.
+
 2014-04-28  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
