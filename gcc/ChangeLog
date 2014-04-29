@@ -1,3 +1,10 @@
+2014-04-29  Patrick Palka  <patrick@parcs.ath.cx>
+
+	* doc/invoke.texi: Fix typo.
+	* tree-vrp.c: Fix typos.
+	* gimple.c (infer_nonnull_range): Reorder operands of an &&
+	condition.
+
 2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* config/aarch64/aarch64.md (mov<mode>cc): New for GPF.

@@ -4732,7 +4732,7 @@ Warn if a global function is defined without a previous declaration.
 Do so even if the definition itself provides a prototype.
 Use this option to detect global functions that are not declared in
 header files.  In C, no warnings are issued for functions with previous
-non-prototype declarations; use @option{-Wmissing-prototype} to detect
+non-prototype declarations; use @option{-Wmissing-prototypes} to detect
 missing prototypes.  In C++, no warnings are issued for function templates,
 or for inline functions, or for functions in anonymous namespaces.
 
