@@ -1,3 +1,10 @@
+2014-04-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/tree-ssa/pr23401.c: Update the expected number of
+	occurrences of "int" in the gimple dump to reflect that the return
+	types of functions now show up in such dumps.
+	* gcc.dg/tree-ssa/pr27810.c: Likewise.
+
 2014-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60971
