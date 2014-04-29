@@ -1,3 +1,8 @@
+2014-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60971
+	* c-c++-common/turtore/pr60971.c: New test.
+
 2014-04-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/alias-30.c (dg-options): Dump only fre1 details.

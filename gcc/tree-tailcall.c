@@ -285,9 +285,19 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
     {
       /* Reject a tailcall if the type conversion might need
 	 additional code.  */
-      if (gimple_assign_cast_p (stmt)
-	  && TYPE_MODE (TREE_TYPE (dest)) != TYPE_MODE (TREE_TYPE (src_var)))
-	return false;
+      if (gimple_assign_cast_p (stmt))
+	{
+	  if (TYPE_MODE (TREE_TYPE (dest)) != TYPE_MODE (TREE_TYPE (src_var)))
+	    return false;
+
+	  /* Even if the type modes are the same, if the precision of the
+	     type is smaller than mode's precision,
+	     reduce_to_bit_field_precision would generate additional code.  */
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
+	      && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (dest)))
+		  > TYPE_PRECISION (TREE_TYPE (dest))))
+	    return false;
+	}
 
       if (src_var != *ass_var)
 	return false;
