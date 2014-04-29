@@ -521,6 +521,45 @@ perform_target_ctor (tree init)
     }
 }
 
+/* Return the non-static data initializer for FIELD_DECL MEMBER.  */
+
+tree
+get_nsdmi (tree member, bool in_ctor)
+{
+  tree init;
+  tree save_ccp = current_class_ptr;
+  tree save_ccr = current_class_ref;
+  if (!in_ctor)
+    inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
+  if (DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
+    /* Do deferred instantiation of the NSDMI.  */
+    init = (tsubst_copy_and_build
+	    (DECL_INITIAL (DECL_TI_TEMPLATE (member)),
+	     DECL_TI_ARGS (member),
+	     tf_warning_or_error, member, /*function_p=*/false,
+	     /*integral_constant_expression_p=*/false));
+  else
+    {
+      init = DECL_INITIAL (member);
+      if (init && TREE_CODE (init) == DEFAULT_ARG)
+	{
+	  error ("constructor required before non-static data member "
+		 "for %qD has been parsed", member);
+	  DECL_INITIAL (member) = error_mark_node;
+	  init = NULL_TREE;
+	}
+      /* Strip redundant TARGET_EXPR so we don't need to remap it, and
+	 so the aggregate init code below will see a CONSTRUCTOR.  */
+      if (init && TREE_CODE (init) == TARGET_EXPR
+	  && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (init))))
+	init = TARGET_EXPR_INITIAL (init);
+      init = break_out_target_exprs (init);
+    }
+  current_class_ptr = save_ccp;
+  current_class_ref = save_ccr;
+  return init;
+}
+
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
    arguments.  If TREE_LIST is void_type_node, an empty initializer
    list was given; if NULL_TREE no initializer was given.  */
@@ -534,31 +573,7 @@ perform_member_init (tree member, tree init)
   /* Use the non-static data member initializer if there was no
      mem-initializer for this field.  */
   if (init == NULL_TREE)
-    {
-      if (DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
-	/* Do deferred instantiation of the NSDMI.  */
-	init = (tsubst_copy_and_build
-		(DECL_INITIAL (DECL_TI_TEMPLATE (member)),
-		 DECL_TI_ARGS (member),
-		 tf_warning_or_error, member, /*function_p=*/false,
-		 /*integral_constant_expression_p=*/false));
-      else
-	{
-	  init = DECL_INITIAL (member);
-	  if (init && TREE_CODE (init) == DEFAULT_ARG)
-	    {
-	      error ("constructor required before non-static data member "
-		     "for %qD has been parsed", member);
-	      init = NULL_TREE;
-	    }
-	  /* Strip redundant TARGET_EXPR so we don't need to remap it, and
-	     so the aggregate init code below will see a CONSTRUCTOR.  */
-	  if (init && TREE_CODE (init) == TARGET_EXPR
-	      && !VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (init))))
-	    init = TARGET_EXPR_INITIAL (init);
-	  init = break_out_target_exprs (init);
-	}
-    }
+    init = get_nsdmi (member, /*ctor*/true);
 
   if (init == error_mark_node)
     return;

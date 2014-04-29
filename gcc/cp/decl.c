@@ -1167,15 +1167,18 @@ static void
 check_redeclaration_exception_specification (tree new_decl,
 					     tree old_decl)
 {
-  tree new_type;
-  tree old_type;
-  tree new_exceptions;
-  tree old_exceptions;
+  tree new_exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (new_decl));
+  tree old_exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old_decl));
 
-  new_type = TREE_TYPE (new_decl);
-  new_exceptions = TYPE_RAISES_EXCEPTIONS (new_type);
-  old_type = TREE_TYPE (old_decl);
-  old_exceptions = TYPE_RAISES_EXCEPTIONS (old_type);
+  /* Two default specs are equivalent, don't force evaluation.  */
+  if (UNEVALUATED_NOEXCEPT_SPEC_P (new_exceptions)
+      && UNEVALUATED_NOEXCEPT_SPEC_P (old_exceptions))
+    return;
+
+  maybe_instantiate_noexcept (new_decl);
+  maybe_instantiate_noexcept (old_decl);
+  new_exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (new_decl));
+  old_exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old_decl));
 
   /* [except.spec]
 
@@ -1915,12 +1918,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   if (types_match)
     {
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	check_redeclaration_exception_specification (newdecl, olddecl);
+
       /* Automatically handles default parameters.  */
       tree oldtype = TREE_TYPE (olddecl);
       tree newtype;
-
-      if (TREE_CODE (newdecl) == FUNCTION_DECL)
-	maybe_instantiate_noexcept (olddecl);
 
       /* For typedefs use the old type, as the new type's DECL_NAME points
 	 at newdecl, which will be ggc_freed.  */
@@ -1952,10 +1955,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	}
 
-      /* Do this after calling `merge_types' so that default
-	 parameters don't confuse us.  */
-      else if (TREE_CODE (newdecl) == FUNCTION_DECL)
-	check_redeclaration_exception_specification (newdecl, olddecl);
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
 
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -13434,6 +13433,9 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
      linkage is set.  */
   if (!DECL_CLONED_FUNCTION_P (decl1))
     determine_visibility (decl1);
+
+  if (!processing_template_decl)
+    maybe_instantiate_noexcept (decl1);
 
   begin_scope (sk_function_parms, decl1);
 

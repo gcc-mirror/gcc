@@ -19470,14 +19470,16 @@ maybe_instantiate_noexcept (tree fn)
   fntype = TREE_TYPE (fn);
   spec = TYPE_RAISES_EXCEPTIONS (fntype);
 
-  if (!DEFERRED_NOEXCEPT_SPEC_P (spec))
+  if (!spec || !TREE_PURPOSE (spec))
     return;
 
   noex = TREE_PURPOSE (spec);
 
   if (TREE_CODE (noex) == DEFERRED_NOEXCEPT)
     {
-      if (push_tinst_level (fn))
+      if (DEFERRED_NOEXCEPT_PATTERN (noex) == NULL_TREE)
+	spec = get_defaulted_eh_spec (fn);
+      else if (push_tinst_level (fn))
 	{
 	  push_access_scope (fn);
 	  push_deferring_access_checks (dk_no_deferred);
@@ -19496,24 +19498,9 @@ maybe_instantiate_noexcept (tree fn)
 	}
       else
 	spec = noexcept_false_spec;
-    }
-  else
-    {
-      /* This is an implicitly declared function, so NOEX is a list of
-	 other functions to evaluate and merge.  */
-      tree elt;
-      spec = noexcept_true_spec;
-      for (elt = noex; elt; elt = OVL_NEXT (elt))
-	{
-	  tree fn = OVL_CURRENT (elt);
-	  tree subspec;
-	  maybe_instantiate_noexcept (fn);
-	  subspec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-	  spec = merge_exception_specifiers (spec, subspec, NULL_TREE);
-	}
-    }
 
-  TREE_TYPE (fn) = build_exception_variant (fntype, spec);
+      TREE_TYPE (fn) = build_exception_variant (fntype, spec);
+    }
 
   FOR_EACH_CLONE (clone, fn)
     {
@@ -19663,9 +19650,6 @@ instantiate_decl (tree d, int defer_ok,
 	}
       SET_DECL_IMPLICIT_INSTANTIATION (d);
     }
-
-  if (TREE_CODE (d) == FUNCTION_DECL)
-    maybe_instantiate_noexcept (d);
 
   /* Defer all other templates, unless we have been explicitly
      forbidden from doing so.  */

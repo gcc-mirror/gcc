@@ -1003,8 +1003,9 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 
   if (spec_p)
     {
+      maybe_instantiate_noexcept (fn);
       tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-      *spec_p = merge_exception_specifiers (*spec_p, raises, fn);
+      *spec_p = merge_exception_specifiers (*spec_p, raises);
     }
 
   if (!trivial_fn_p (fn))
@@ -1090,17 +1091,14 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		inform (0, "initializer for %q+#D is invalid", field);
 	      if (trivial_p)
 		*trivial_p = false;
-#if 0
 	      /* Core 1351: If the field has an NSDMI that could throw, the
-		 default constructor is noexcept(false).  FIXME this is
-		 broken by deferred parsing and 1360 saying we can't lazily
-		 declare a non-trivial default constructor.  Also this
-		 needs to do deferred instantiation.  Disable until the
-		 conflict between 1351 and 1360 is resolved.  */
-	      if (spec_p && !expr_noexcept_p (DECL_INITIAL (field), complain))
-		*spec_p = noexcept_false_spec;
-#endif
-
+		 default constructor is noexcept(false).  */
+	      if (spec_p)
+		{
+		  tree nsdmi = get_nsdmi (field, /*ctor*/false);
+		  if (!expr_noexcept_p (nsdmi, complain))
+		    *spec_p = noexcept_false_spec;
+		}
 	      /* Don't do the normal processing.  */
 	      continue;
 	    }
@@ -1438,6 +1436,26 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   --c_inhibit_evaluation_warnings;
 }
 
+/* DECL is a defaulted function whose exception specification is now
+   needed.  Return what it should be.  */
+
+tree
+get_defaulted_eh_spec (tree decl)
+{
+  if (DECL_CLONED_FUNCTION_P (decl))
+    decl = DECL_CLONED_FUNCTION (decl);
+  special_function_kind sfk = special_function_p (decl);
+  tree ctype = DECL_CONTEXT (decl);
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
+  tree parm_type = TREE_VALUE (parms);
+  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+  tree spec = empty_except_spec;
+  synthesized_method_walk (ctype, sfk, const_p, &spec, NULL, NULL,
+			   NULL, false, DECL_INHERITED_CTOR_BASE (decl),
+			   parms);
+  return spec;
+}
+
 /* DECL is a deleted function.  If it's implicitly deleted, explain why and
    return true; else return false.  */
 
@@ -1675,6 +1693,13 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       deleted_p = DECL_DELETED_FN (inherited_ctor);
       constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
     }
+  else if (cxx_dialect >= cxx11)
+    {
+      raises = unevaluated_noexcept_spec ();
+      synthesized_method_walk (type, kind, const_p, NULL, &trivial_p,
+			       &deleted_p, &constexpr_p, false,
+			       inherited_base, inherited_parms);
+    }
   else
     synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
 			     &deleted_p, &constexpr_p, false,
@@ -1826,25 +1851,33 @@ defaulted_late_check (tree fn)
      is explicitly defaulted on its first declaration, (...) it is
      implicitly considered to have the same exception-specification as if
      it had been implicitly declared.  */
-  if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
+  tree fn_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+  if (!fn_spec)
     {
-      maybe_instantiate_noexcept (fn);
-      if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
-			      eh_spec, ce_normal))
+      if (DECL_DEFAULTED_IN_CLASS_P (fn))
+	TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
+    }
+  else if (UNEVALUATED_NOEXCEPT_SPEC_P (fn_spec))
+    /* Equivalent to the implicit spec.  */;
+  else if (DECL_DEFAULTED_IN_CLASS_P (fn)
+	   && !CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
+    /* We can't compare an explicit exception-specification on a
+       constructor defaulted in the class body to the implicit
+       exception-specification until after we've parsed any NSDMI; see
+       after_nsdmi_defaulted_late_checks.  */;
+  else
+    {
+      tree eh_spec = get_defaulted_eh_spec (fn);
+      if (!comp_except_specs (fn_spec, eh_spec, ce_normal))
 	{
 	  if (DECL_DEFAULTED_IN_CLASS_P (fn))
-	    {
-	      DECL_DELETED_FN (fn) = true;
-	      eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-	    }
+	    DECL_DELETED_FN (fn) = true;
 	  else
 	    error ("function %q+D defaulted on its redeclaration "
 		   "with an exception-specification that differs from "
-		   "the implicit declaration %q#D", fn, implicit_fn);
+		   "the implicit exception-specification %qX", fn, eh_spec);
 	}
     }
-  if (DECL_DEFAULTED_IN_CLASS_P (fn))
-    TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
 
   if (DECL_DEFAULTED_IN_CLASS_P (fn)
       && DECL_DECLARED_CONSTEXPR_P (implicit_fn))
@@ -1872,6 +1905,30 @@ defaulted_late_check (tree fn)
 
   if (DECL_DELETED_FN (implicit_fn))
     DECL_DELETED_FN (fn) = 1;
+}
+
+/* OK, we've parsed the NSDMI for class T, now we can check any explicit
+   exception-specifications on functions defaulted in the class body.  */
+
+void
+after_nsdmi_defaulted_late_checks (tree t)
+{
+  if (uses_template_parms (t))
+    return;
+  if (t == error_mark_node)
+    return;
+  for (tree fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
+    if (!DECL_ARTIFICIAL (fn) && DECL_DEFAULTED_IN_CLASS_P (fn))
+      {
+	tree fn_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+	if (UNEVALUATED_NOEXCEPT_SPEC_P (fn_spec))
+	  continue;
+
+	tree eh_spec = get_defaulted_eh_spec (fn);
+	if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
+				eh_spec, ce_normal))
+	  DECL_DELETED_FN (fn) = true;
+      }
 }
 
 /* Returns true iff FN can be explicitly defaulted, and gives any

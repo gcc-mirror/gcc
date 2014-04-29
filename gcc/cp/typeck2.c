@@ -1989,10 +1989,10 @@ nothrow_spec_p_uninst (const_tree spec)
 }
 
 /* Combine the two exceptions specifier lists LIST and ADD, and return
-   their union.  If FN is non-null, it's the source of ADD.  */
+   their union.  */
 
 tree
-merge_exception_specifiers (tree list, tree add, tree fn)
+merge_exception_specifiers (tree list, tree add)
 {
   tree noex, orig_list;
 
@@ -2008,22 +2008,18 @@ merge_exception_specifiers (tree list, tree add, tree fn)
   if (nothrow_spec_p_uninst (add))
     return list;
 
-  noex = TREE_PURPOSE (list);
-  if (DEFERRED_NOEXCEPT_SPEC_P (add))
-    {
-      /* If ADD is a deferred noexcept, we must have been called from
-	 process_subob_fn.  For implicitly declared functions, we build up
-	 a list of functions to consider at instantiation time.  */
-      if (noex && operand_equal_p (noex, boolean_true_node, 0))
-	noex = NULL_TREE;
-      gcc_assert (fn && (!noex || is_overloaded_fn (noex)));
-      noex = build_overload (fn, noex);
-    }
-  else if (nothrow_spec_p_uninst (list))
+  /* Two implicit noexcept specs (e.g. on a destructor) are equivalent.  */
+  if (UNEVALUATED_NOEXCEPT_SPEC_P (add)
+      && UNEVALUATED_NOEXCEPT_SPEC_P (list))
+    return list;
+  /* We should have instantiated other deferred noexcept specs by now.  */
+  gcc_assert (!DEFERRED_NOEXCEPT_SPEC_P (add));
+
+  if (nothrow_spec_p_uninst (list))
     return add;
-  else
-    gcc_checking_assert (!TREE_PURPOSE (add)
-			 || cp_tree_equal (noex, TREE_PURPOSE (add)));
+  noex = TREE_PURPOSE (list);
+  gcc_checking_assert (!TREE_PURPOSE (add)
+		       || cp_tree_equal (noex, TREE_PURPOSE (add)));
 
   /* Combine the dynamic-exception-specifiers, if any.  */
   orig_list = list;
