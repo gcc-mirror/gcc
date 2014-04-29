@@ -1,3 +1,25 @@
+2013-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/simd/simd.exp: New file.
+	* gcc.target/arm/simd/vzipqf32_1.c: New file.
+	* gcc.target/arm/simd/vzipqp16_1.c: New file.
+	* gcc.target/arm/simd/vzipqp8_1.c: New file.
+	* gcc.target/arm/simd/vzipqs16_1.c: New file.
+	* gcc.target/arm/simd/vzipqs32_1.c: New file.
+	* gcc.target/arm/simd/vzipqs8_1.c: New file.
+	* gcc.target/arm/simd/vzipqu16_1.c: New file.
+	* gcc.target/arm/simd/vzipqu32_1.c: New file.
+	* gcc.target/arm/simd/vzipqu8_1.c: New file.
+	* gcc.target/arm/simd/vzipf32_1.c: New file.
+	* gcc.target/arm/simd/vzipp16_1.c: New file.
+	* gcc.target/arm/simd/vzipp8_1.c: New file.
+	* gcc.target/arm/simd/vzips16_1.c: New file.
+	* gcc.target/arm/simd/vzips32_1.c: New file.
+	* gcc.target/arm/simd/vzips8_1.c: New file.
+	* gcc.target/arm/simd/vzipu16_1.c: New file.
+	* gcc.target/arm/simd/vzipu32_1.c: New file.
+	* gcc.target/arm/simd/vzipu8_1.c: New file.
+
 2014-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51707
