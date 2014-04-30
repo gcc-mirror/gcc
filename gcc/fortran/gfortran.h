@@ -2948,7 +2948,6 @@ bool gfc_convert_to_structure_constructor (gfc_expr *, gfc_symbol *,
 /* trans.c */
 void gfc_generate_code (gfc_namespace *);
 void gfc_generate_module_code (gfc_namespace *);
-void gfc_init_coarray_decl (bool);
 
 /* trans-intrinsic.c */
 bool gfc_inline_intrinsic_function_p (gfc_expr *);

@@ -699,6 +699,8 @@ extern GTY(()) tree gfor_fndecl_associated;
 /* Coarray run-time library function decls.  */
 extern GTY(()) tree gfor_fndecl_caf_init;
 extern GTY(()) tree gfor_fndecl_caf_finalize;
+extern GTY(()) tree gfor_fndecl_caf_this_image;
+extern GTY(()) tree gfor_fndecl_caf_num_images;
 extern GTY(()) tree gfor_fndecl_caf_register;
 extern GTY(()) tree gfor_fndecl_caf_deregister;
 extern GTY(()) tree gfor_fndecl_caf_critical;
@@ -707,10 +709,6 @@ extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_images;
 extern GTY(()) tree gfor_fndecl_caf_error_stop;
 extern GTY(()) tree gfor_fndecl_caf_error_stop_str;
-
-/* Coarray global variables for num_images/this_image.  */
-extern GTY(()) tree gfort_gvar_caf_num_images;
-extern GTY(()) tree gfort_gvar_caf_this_image;
 
 
 /* Math functions.  Many other math functions are handled in
