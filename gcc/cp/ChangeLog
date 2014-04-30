@@ -1,5 +1,8 @@
 2014-04-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60980
+	* init.c (build_value_init): Don't try to call an array constructor.
+
 	PR c++/60951
 	* typeck2.c (massage_init_elt): Use maybe_constant_init.
 
