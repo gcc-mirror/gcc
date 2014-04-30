@@ -1,4 +1,9 @@
-int printf(const char *, ...);
+__attribute__((__noinline__))
+void
+dummy ()
+{
+  asm volatile("");
+}
 
 int a, g, i, k, *p;
 signed char b;
@@ -31,6 +36,6 @@ main ()
       *l = a;
       g = foo (*m = k && *d, 1 > i) || bar (); 
     }
-  getpid();
+  dummy();
   return 0;
 }
