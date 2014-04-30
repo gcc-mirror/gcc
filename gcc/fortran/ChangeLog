@@ -1,5 +1,12 @@
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-decl.c (create_function_arglist): Add hidden coarray arguments
+	also for polymorphic coarrays.
+	* trans-expr.c (gfc_conv_procedure_call): Pass hidden coarray arguments
+	also for polymorphic coarrays.
+
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
 	* resolve.c (resolve_function): Don't do
 	assumed-size check for lcobound/ucobound.
 	* trans-types.c (gfc_build_array_type): Only build an array

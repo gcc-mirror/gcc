@@ -1,5 +1,11 @@
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/coarray_poly_7.f90
+	* gfortran.dg/coarray_poly_8.f90
+	* gfortran.dg/coarray_poly_9.f90
+
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/coarray_lib_this_image_2.f90: Update dump.
 	* gfortran.dg/coarray_lib_token_4.f90: Ditto.
 	* gfortran.dg/coarray/codimension.f90: New.
