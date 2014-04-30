@@ -261,7 +261,7 @@ Archive_file::interpret_header(const Archive_header* hdr, off_t off,
   char size_string[size_string_size + 1];
   memcpy(size_string, hdr->ar_size, size_string_size);
   char* ps = size_string + size_string_size;
-  while (ps[-1] == ' ')
+  while (ps > size_string && ps[-1] == ' ')
     --ps;
   *ps = '\0';
 
