@@ -1387,25 +1387,42 @@ gfc_get_expr_charlen (gfc_expr *e)
 static tree
 get_tree_for_caf_expr (gfc_expr *expr)
 {
-   tree caf_decl = NULL_TREE;
-   gfc_ref *ref;
+  tree caf_decl;
+  bool found;
+  gfc_ref *ref;
 
-   gcc_assert (expr && expr->expr_type == EXPR_VARIABLE);
-   if (expr->symtree->n.sym->attr.codimension)
-     caf_decl = expr->symtree->n.sym->backend_decl;
+  gcc_assert (expr && expr->expr_type == EXPR_VARIABLE);
 
-   for (ref = expr->ref; ref; ref = ref->next)
-     if (ref->type == REF_COMPONENT)
-       {
+  caf_decl = expr->symtree->n.sym->backend_decl;
+  gcc_assert (caf_decl);
+  if (expr->symtree->n.sym->ts.type == BT_CLASS)
+    caf_decl = gfc_class_data_get (caf_decl);
+  if (expr->symtree->n.sym->attr.codimension)
+    return caf_decl;
+
+  /* The following code assumes that the coarray is a component reachable via
+     only scalar components/variables; the Fortran standard guarantees this.  */
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      {
 	gfc_component *comp = ref->u.c.component;
-        if (comp->attr.pointer || comp->attr.allocatable)
-	  caf_decl = NULL_TREE;
-	if (comp->attr.codimension)
-	  caf_decl = comp->backend_decl;
-       }
 
-   gcc_assert (caf_decl != NULL_TREE);
-   return caf_decl;
+	if (POINTER_TYPE_P (TREE_TYPE (caf_decl)))
+	  caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
+	caf_decl = fold_build3_loc (input_location, COMPONENT_REF,
+				    TREE_TYPE (comp->backend_decl), caf_decl,
+				    comp->backend_decl, NULL_TREE);
+	if (comp->ts.type == BT_CLASS)
+	  caf_decl = gfc_class_data_get (caf_decl);
+	if (comp->attr.codimension)
+	  {
+	    found = true;
+	    break;
+	  }
+      }
+  gcc_assert (found && caf_decl);
+  return caf_decl;
 }
 
 

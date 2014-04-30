@@ -1,3 +1,8 @@
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_poly_4.f90: New.
+	* gfortran.dg/coarray_poly_5.f90: New.
+
 2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/arm/simd/vuzpqf32_1.c: New file.

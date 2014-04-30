@@ -1,4 +1,9 @@
-2014-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (get_tree_for_caf_expr): Fix handling of polymorphic
+	and derived-type coarrays.
+
+2014-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/59604
 	PR fortran/58003
