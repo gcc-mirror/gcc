@@ -1,3 +1,9 @@
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60351
+	* c-typeck.c (build_binary_op): Use location when warning about
+	shift count.
+
 2014-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/18079
