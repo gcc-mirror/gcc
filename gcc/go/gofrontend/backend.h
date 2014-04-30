@@ -660,6 +660,11 @@ class Backend
   virtual bool
   function_set_body(Bfunction* function, Bstatement* code_stmt) = 0;
 
+  // Look up a named built-in function in the current backend implementation.
+  // Returns NULL if no built-in function by that name exists.
+  virtual Bfunction*
+  lookup_builtin(const std::string&) = 0;
+
   // Utility.
 
   // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
