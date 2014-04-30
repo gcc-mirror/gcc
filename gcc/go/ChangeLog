@@ -1,3 +1,12 @@
+2014-04-30  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc: #include "langhooks.h".
+	(Gcc_backend::Gcc_backend): Add constructor.
+	(Gcc_backend::lookup_function): New function.
+	(Gcc_backend::define_builtin): New private function.
+	(Gcc_backend::gcc_backend): Remove.
+	(go_get_backend): Use new to create new Gcc_backend.
+
 2014-04-25  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc: Include "cgraph.h" and "gimplify.h".
