@@ -1377,13 +1377,10 @@ real_to_integer (const REAL_VALUE_TYPE *r)
 wide_int
 real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 {
-  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) real_int;
-  HOST_WIDE_INT val[2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
+  HOST_WIDE_INT val[2 * WIDE_INT_MAX_ELTS];
   int exp;
-  int words;
+  int words, w;
   wide_int result;
-  real_int tmp;
-  int w;
 
   switch (r->cl)
     {
@@ -1415,10 +1412,12 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
       if (exp > precision)
 	goto overflow;
 
+      /* Put the significand into a wide_int that has precision W, which
+	 is the smallest HWI-multiple that has at least PRECISION bits.
+	 This ensures that the top bit of the significand is in the
+	 top bit of the wide_int.  */
       words = (precision + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
-
-      for (unsigned int i = 0; i < ARRAY_SIZE (val); i++)
-	val[i] = 0;
+      w = words * HOST_BITS_PER_WIDE_INT;
 
 #if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
       for (int i = 0; i < words; i++)
@@ -1427,27 +1426,23 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 	  val[i] = (j < 0) ? 0 : r->sig[j];
 	}
 #else
-      gcc_assert (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG);
+      gcc_assert (HOST_BITS_PER_WIDE_INT == 2 * HOST_BITS_PER_LONG);
       for (int i = 0; i < words; i++)
 	{
-	  int j = SIGSZ - (words * 2) + (i + 2) + 1;
+	  int j = SIGSZ - (words * 2) + (i * 2);
 	  if (j < 0)
 	    val[i] = 0;
 	  else
-	    {
-	      val[i] = r->sig[j];
-	      unsigned HOST_WIDE_INT v = val[i];
-	      v <<= HOST_BITS_PER_LONG;
-	      val[i] = v;
-	      val[i] |= r->sig[j - 1];
-	    }
+	    val[i] = r->sig[j];
+	  j += 1;
+	  if (j >= 0)
+	    val[i] |= (unsigned HOST_WIDE_INT) r->sig[j] << HOST_BITS_PER_LONG;
 	}
 #endif
-      w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT;
-      tmp = real_int::from_array
-	(val, (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w);
-      tmp = wi::lrshift (tmp, (words * HOST_BITS_PER_WIDE_INT) - exp);
-      result = wide_int::from (tmp, precision, UNSIGNED);
+      /* Shift the value into place and truncate to the desired precision.  */
+      result = wide_int::from_array (val, words, w);
+      result = wi::lrshift (result, w - exp);
+      result = wide_int::from (result, precision, UNSIGNED);
 
       if (r->sign)
 	return -result;
