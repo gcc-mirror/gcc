@@ -8255,12 +8255,12 @@ output_init_element (location_t loc, tree value, tree origtype,
 	  value = error_mark_node;
 	}
       else if (require_constant_elements)
-	pedwarn (input_location, 0,
+	pedwarn (loc, OPT_Wpedantic,
 		 "initializer element is not computable at load time");
     }
   else if (!maybe_const
 	   && (require_constant_value || require_constant_elements))
-    pedwarn_init (input_location, 0,
+    pedwarn_init (loc, OPT_Wpedantic,
 		  "initializer element is not a constant expression");
 
   /* Issue -Wc++-compat warnings about initializing a bitfield with
