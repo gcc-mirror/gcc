@@ -10997,7 +10997,8 @@ build_binary_op (location_t location, enum tree_code code,
 	return error_mark_node;
     }
 
-  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE))
+  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE
+			| SANITIZE_FLOAT_DIVIDE))
       && current_function_decl != 0
       && !lookup_attribute ("no_sanitize_undefined",
 			    DECL_ATTRIBUTES (current_function_decl))
@@ -11008,7 +11009,8 @@ build_binary_op (location_t location, enum tree_code code,
       op1 = c_save_expr (op1);
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
-      if (doing_div_or_mod && (flag_sanitize & SANITIZE_DIVIDE))
+      if (doing_div_or_mod && (flag_sanitize & (SANITIZE_DIVIDE
+						| SANITIZE_FLOAT_DIVIDE)))
 	instrument_expr = ubsan_instrument_division (location, op0, op1);
       else if (doing_shift && (flag_sanitize & SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);

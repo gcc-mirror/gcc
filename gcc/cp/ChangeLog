@@ -1,3 +1,9 @@
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Call ubsan_instrument_division
+	even when SANITIZE_FLOAT_DIVIDE is on.  Set doing_div_or_mod even
+	for non-integer types.
+
 2014-04-29  Jason Merrill  <jason@redhat.com>
 
 	DR 1351
