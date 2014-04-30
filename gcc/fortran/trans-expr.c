@@ -4783,19 +4783,24 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       /* For descriptorless coarrays and assumed-shape coarray dummies, we
 	 pass the token and the offset as additional arguments.  */
-      if (fsym && fsym->attr.codimension
-	  && gfc_option.coarray == GFC_FCOARRAY_LIB
-	  && !fsym->attr.allocatable
-	  && e == NULL)
+      if (fsym && e == NULL && gfc_option.coarray == GFC_FCOARRAY_LIB
+	  && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
+	       && !fsym->attr.allocatable)
+	      || (fsym->ts.type == BT_CLASS
+		  && CLASS_DATA (fsym)->attr.codimension
+		  && !CLASS_DATA (fsym)->attr.allocatable)))
 	{
 	  /* Token and offset. */
 	  vec_safe_push (stringargs, null_pointer_node);
 	  vec_safe_push (stringargs, build_int_cst (gfc_array_index_type, 0));
 	  gcc_assert (fsym->attr.optional);
 	}
-      else if (fsym && fsym->attr.codimension
-	       && !fsym->attr.allocatable
-	       && gfc_option.coarray == GFC_FCOARRAY_LIB)
+      else if (fsym && gfc_option.coarray == GFC_FCOARRAY_LIB
+	       && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
+		    && !fsym->attr.allocatable)
+		   || (fsym->ts.type == BT_CLASS
+		       && CLASS_DATA (fsym)->attr.codimension
+		       && !CLASS_DATA (fsym)->attr.allocatable)))
 	{
 	  tree caf_decl, caf_type;
 	  tree offset, tmp2;
@@ -4837,22 +4842,30 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      tmp = caf_decl;
 	    }
 
-          if (fsym->as->type == AS_ASSUMED_SHAPE
-	      || (fsym->as->type == AS_ASSUMED_RANK && !fsym->attr.pointer
-		  && !fsym->attr.allocatable))
+          tmp2 = fsym->ts.type == BT_CLASS
+		 ? gfc_class_data_get (parmse.expr) : parmse.expr;
+          if ((fsym->ts.type != BT_CLASS
+	       && (fsym->as->type == AS_ASSUMED_SHAPE
+		   || fsym->as->type == AS_ASSUMED_RANK))
+	      || (fsym->ts.type == BT_CLASS
+		  && (CLASS_DATA (fsym)->as->type == AS_ASSUMED_SHAPE
+		      || CLASS_DATA (fsym)->as->type == AS_ASSUMED_RANK)))
 	    {
-	      gcc_assert (POINTER_TYPE_P (TREE_TYPE (parmse.expr)));
-	      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE
-						   (TREE_TYPE (parmse.expr))));
-	      tmp2 = build_fold_indirect_ref_loc (input_location, parmse.expr);
+	      if (fsym->ts.type == BT_CLASS)
+		gcc_assert (!POINTER_TYPE_P (TREE_TYPE (tmp2)));
+	      else
+		{
+		  gcc_assert (POINTER_TYPE_P (TREE_TYPE (tmp2)));
+		  tmp2 = build_fold_indirect_ref_loc (input_location, tmp2);
+		}
+	      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp2)));
 	      tmp2 = gfc_conv_descriptor_data_get (tmp2);
 	    }
-	  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (parmse.expr)))
-	    tmp2 = gfc_conv_descriptor_data_get (parmse.expr);
+	  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp2)))
+	    tmp2 = gfc_conv_descriptor_data_get (tmp2);
 	  else
 	    {
-	      gcc_assert (POINTER_TYPE_P (TREE_TYPE (parmse.expr)));
-	      tmp2 = parmse.expr;
+	      gcc_assert (POINTER_TYPE_P (TREE_TYPE (tmp2)));
 	    }
 
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,

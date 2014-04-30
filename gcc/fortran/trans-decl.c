@@ -2234,9 +2234,12 @@ create_function_arglist (gfc_symbol * sym)
 
       /* Coarrays which are descriptorless or assumed-shape pass with
 	 -fcoarray=lib the token and the offset as hidden arguments.  */
-      if (f->sym->attr.codimension
-	  && gfc_option.coarray == GFC_FCOARRAY_LIB
-	  && !f->sym->attr.allocatable)
+      if (gfc_option.coarray == GFC_FCOARRAY_LIB
+	  && ((f->sym->ts.type != BT_CLASS && f->sym->attr.codimension
+	       && !f->sym->attr.allocatable)
+	      || (f->sym->ts.type == BT_CLASS
+		  && CLASS_DATA (f->sym)->attr.codimension
+		  && !CLASS_DATA (f->sym)->attr.allocatable)))
 	{
 	  tree caf_type;
 	  tree token;
@@ -2244,13 +2247,18 @@ create_function_arglist (gfc_symbol * sym)
 
 	  gcc_assert (f->sym->backend_decl != NULL_TREE
 		      && !sym->attr.is_bind_c);
-	  caf_type = TREE_TYPE (f->sym->backend_decl);
+	  caf_type = f->sym->ts.type == BT_CLASS
+		     ? TREE_TYPE (CLASS_DATA (f->sym)->backend_decl)
+		     : TREE_TYPE (f->sym->backend_decl);
 
 	  token = build_decl (input_location, PARM_DECL,
 			      create_tmp_var_name ("caf_token"),
 			      build_qualified_type (pvoid_type_node,
 						    TYPE_QUAL_RESTRICT));
-	  if (f->sym->as->type == AS_ASSUMED_SHAPE)
+	  if ((f->sym->ts.type != BT_CLASS
+	       && f->sym->as->type != AS_DEFERRED)
+	      || (f->sym->ts.type == BT_CLASS
+		  && CLASS_DATA (f->sym)->as->type != AS_DEFERRED))
 	    {
 	      gcc_assert (DECL_LANG_SPECIFIC (f->sym->backend_decl) == NULL
 			  || GFC_DECL_TOKEN (f->sym->backend_decl) == NULL_TREE);
@@ -2275,7 +2283,10 @@ create_function_arglist (gfc_symbol * sym)
 			       create_tmp_var_name ("caf_offset"),
 			       gfc_array_index_type);
 
-	  if (f->sym->as->type == AS_ASSUMED_SHAPE)
+	  if ((f->sym->ts.type != BT_CLASS
+	       && f->sym->as->type != AS_DEFERRED)
+	      || (f->sym->ts.type == BT_CLASS
+		  && CLASS_DATA (f->sym)->as->type != AS_DEFERRED))
 	    {
 	      gcc_assert (GFC_DECL_CAF_OFFSET (f->sym->backend_decl)
 					       == NULL_TREE);
