@@ -1,3 +1,10 @@
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.c (sanitize_spec_function): Handle SANITIZE_FLOAT_DIVIDE.
+	* builtins.def: Initialize builtins even for SANITIZE_FLOAT_DIVIDE.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_FLOAT_DIVIDE.
+	* opts.c (common_handle_option): Add -fsanitize=float-divide-by-zero.
+
 2014-04-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (vzip1_f32, vzip1_p8, vzip1_p16, vzip1_s8,

@@ -4110,10 +4110,7 @@ cp_build_binary_op (location_t location,
 	  enum tree_code tcode0 = code0, tcode1 = code1;
 	  tree cop1 = fold_non_dependent_expr_sfinae (op1, tf_none);
 	  cop1 = maybe_constant_value (cop1);
-
-	  if (tcode0 == INTEGER_TYPE)
-	    doing_div_or_mod = true;
-
+	  doing_div_or_mod = true;
 	  warn_for_div_by_zero (location, cop1);
 
 	  if (tcode0 == COMPLEX_TYPE || tcode0 == VECTOR_TYPE)
@@ -4153,9 +4150,7 @@ cp_build_binary_op (location_t location,
       {
 	tree cop1 = fold_non_dependent_expr_sfinae (op1, tf_none);
 	cop1 = maybe_constant_value (cop1);
-
-	if (code0 == INTEGER_TYPE)
-	  doing_div_or_mod = true;
+	doing_div_or_mod = true;
 	warn_for_div_by_zero (location, cop1);
       }
 
@@ -4902,7 +4897,8 @@ cp_build_binary_op (location_t location,
   if (build_type == NULL_TREE)
     build_type = result_type;
 
-  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE))
+  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE
+			| SANITIZE_FLOAT_DIVIDE))
       && !processing_template_decl
       && current_function_decl != 0
       && !lookup_attribute ("no_sanitize_undefined",
@@ -4916,7 +4912,8 @@ cp_build_binary_op (location_t location,
 								  tf_none));
       op1 = maybe_constant_value (fold_non_dependent_expr_sfinae (op1,
 								  tf_none));
-      if (doing_div_or_mod && (flag_sanitize & SANITIZE_DIVIDE))
+      if (doing_div_or_mod && (flag_sanitize & (SANITIZE_DIVIDE
+						| SANITIZE_FLOAT_DIVIDE)))
 	{
 	  /* For diagnostics we want to use the promoted types without
 	     shorten_binary_op.  So convert the arguments to the
