@@ -1,3 +1,10 @@
+2014-04-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Work around for current cygwin32 build problems.
+	* config/i386/cygming-crtbegin.c (__register_frame_info,
+	__deregister_frame_info, _Jv_RegisterClasses): Compile weak default
+	functions only for 64-bit systems.
+
 2014-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/crtfastmath.c [!__x86_64__ && __sun__ && __svr4__]
