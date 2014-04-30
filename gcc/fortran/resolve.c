@@ -2942,6 +2942,8 @@ resolve_function (gfc_expr *expr)
   else if (expr->value.function.actual != NULL
 	   && expr->value.function.isym != NULL
 	   && GENERIC_ID != GFC_ISYM_LBOUND
+	   && GENERIC_ID != GFC_ISYM_LCOBOUND
+	   && GENERIC_ID != GFC_ISYM_UCOBOUND
 	   && GENERIC_ID != GFC_ISYM_LEN
 	   && GENERIC_ID != GFC_ISYM_LOC
 	   && GENERIC_ID != GFC_ISYM_C_LOC

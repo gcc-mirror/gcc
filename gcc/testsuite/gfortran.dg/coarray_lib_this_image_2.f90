@@ -16,7 +16,7 @@ contains
   end subroutine bar
 end
 
-! { dg-final { scan-tree-dump-times "bar \\(struct array2_real\\(kind=4\\) & restrict x, void \\* restrict caf_token.., integer\\(kind=8\\) caf_offset..\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "bar \\(struct array1_real\\(kind=4\\) & restrict x, void \\* restrict caf_token.., integer\\(kind=8\\) caf_offset..\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "mylcobound = 5;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "parm...dim\\\[1\\\].lbound = 5;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "myucobound = \\(integer\\(kind=4\\)\\) \\(\\(\\(unsigned int\\) parm...dim\\\[1\\\].lbound \\+ \\(unsigned int\\) _gfortran_caf_num_images \\(0, -1\\)\\) \\+ 4294967295\\);" 1 "original" } }

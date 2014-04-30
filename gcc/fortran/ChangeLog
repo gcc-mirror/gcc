@@ -1,5 +1,12 @@
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
+	* resolve.c (resolve_function): Don't do
+	assumed-size check for lcobound/ucobound.
+	* trans-types.c (gfc_build_array_type): Only build an array
+	descriptor with codimensions for allocatable coarrays.
+
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.h (gfc_init_coarray_decl): Remove.
 	* parse.c (translate_all_program_units): Remove call to it.
 	(gfc_parse_file): Update call.
