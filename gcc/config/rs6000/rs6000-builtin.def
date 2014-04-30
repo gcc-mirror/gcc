@@ -570,6 +570,75 @@
 		    MASK,				/* MASK */	\
 		    (ATTR | RS6000_BTC_SPECIAL),	/* ATTR */	\
 		    CODE_FOR_nothing)			/* ICODE */
+
+
+/* Decimal floating point builtins for instructions.  */
+#define BU_DFP_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_DFP,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_DFP_MISC_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_DFP,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+
+/* Miscellaneous builtins for instructions added in ISA 2.06.  These
+   instructions don't require either the DFP or VSX options, just the basic ISA
+   2.06 (popcntd) enablement since they operate on general purpose
+   registers.  */
+#define BU_P7_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_POPCNTD,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P7_MISC_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_POPCNTD,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+
+/* Miscellaneous builtins for instructions added in ISA 2.07.  These
+   instructions do require the ISA 2.07 vector support, but they aren't vector
+   instructions.  */
+#define BU_P8V_MISC_3(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_3 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Miscellaneous builtins.  */
+#define BU_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_ALWAYS,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_MISC_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_ALWAYS,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #endif
 
 /* Insure 0 is not a legitimate index.  */
@@ -1412,10 +1481,10 @@ BU_P8V_AV_2 (ORC_V4SF,		"orc_v4sf",	CONST,	orcv4sf3)
 BU_P8V_AV_2 (ORC_V2DF,		"orc_v2df",	CONST,	orcv2df3)
 
 /* 3 argument altivec instructions added in ISA 2.07.  */
-BU_P8V_AV_3 (VADDEUQM,		"vaddeuqm",	 CONST,	altivec_vaddeuqm)
-BU_P8V_AV_3 (VADDECUQ,		"vaddecuq",	 CONST,	altivec_vaddecuq)
-BU_P8V_AV_3 (VSUBEUQM,		"vsubeuqm",	 CONST,	altivec_vsubeuqm)
-BU_P8V_AV_3 (VSUBECUQ,		"vsubecuq",	 CONST,	altivec_vsubecuq)
+BU_P8V_AV_3 (VADDEUQM,		"vaddeuqm",	CONST,	altivec_vaddeuqm)
+BU_P8V_AV_3 (VADDECUQ,		"vaddecuq",	CONST,	altivec_vaddecuq)
+BU_P8V_AV_3 (VSUBEUQM,		"vsubeuqm",	CONST,	altivec_vsubeuqm)
+BU_P8V_AV_3 (VSUBECUQ,		"vsubecuq",	CONST,	altivec_vsubecuq)
 
 /* Vector comparison instructions added in ISA 2.07.  */
 BU_P8V_AV_2 (VCMPEQUD,		"vcmpequd",	CONST,	vector_eqv2di)
@@ -1473,6 +1542,64 @@ BU_P8V_OVERLOAD_3 (VADDECUQ,	"vaddecuq")
 BU_P8V_OVERLOAD_3 (VADDEUQM,	"vaddeuqm")
 BU_P8V_OVERLOAD_3 (VSUBECUQ,	"vsubecuq")
 BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
+
+
+/* 2 argument extended divide functions added in ISA 2.06.  */
+BU_P7_MISC_2 (DIVWE,		"divwe",	CONST,	dive_si)
+BU_P7_MISC_2 (DIVWEO,		"divweo",	CONST,	diveo_si)
+BU_P7_MISC_2 (DIVWEU,		"divweu",	CONST,	diveu_si)
+BU_P7_MISC_2 (DIVWEUO,		"divweuo",	CONST,	diveuo_si)
+BU_P7_MISC_2 (DIVDE,		"divde",	CONST,	dive_di)
+BU_P7_MISC_2 (DIVDEO,		"divdeo",	CONST,	diveo_di)
+BU_P7_MISC_2 (DIVDEU,		"divdeu",	CONST,	diveu_di)
+BU_P7_MISC_2 (DIVDEUO,		"divdeuo",	CONST,	diveuo_di)
+
+/* 1 argument DFP (decimal floating point) functions added in ISA 2.05.  */
+BU_DFP_MISC_1 (DXEX,		"dxex",		CONST,	dfp_dxex_dd)
+BU_DFP_MISC_1 (DXEXQ,		"dxexq",	CONST,	dfp_dxex_td)
+
+/* 2 argument DFP (decimal floating point) functions added in ISA 2.05.  */
+BU_DFP_MISC_2 (DDEDPD,		"ddedpd",	CONST,	dfp_ddedpd_dd)
+BU_DFP_MISC_2 (DDEDPDQ,		"ddedpdq",	CONST,	dfp_ddedpd_td)
+BU_DFP_MISC_2 (DENBCD,		"denbcd",	CONST,	dfp_denbcd_dd)
+BU_DFP_MISC_2 (DENBCDQ,		"denbcdq",	CONST,	dfp_denbcd_td)
+BU_DFP_MISC_2 (DIEX,		"diex",		CONST,	dfp_diex_dd)
+BU_DFP_MISC_2 (DIEXQ,		"diexq",	CONST,	dfp_diex_td)
+BU_DFP_MISC_2 (DSCLI,		"dscli",	CONST,	dfp_dscli_dd)
+BU_DFP_MISC_2 (DSCLIQ,		"dscliq",	CONST,	dfp_dscli_td)
+BU_DFP_MISC_2 (DSCRI,		"dscri",	CONST,	dfp_dscri_dd)
+BU_DFP_MISC_2 (DSCRIQ,		"dscriq",	CONST,	dfp_dscri_td)
+
+/* 1 argument BCD functions added in ISA 2.06.  */
+BU_P7_MISC_1 (CDTBCD,		"cdtbcd",	CONST,	cdtbcd)
+BU_P7_MISC_1 (CBCDTD,		"cbcdtd",	CONST,	cbcdtd)
+
+/* 2 argument BCD functions added in ISA 2.06.  */
+BU_P7_MISC_2 (ADDG6S,		"addg6s",	CONST,	addg6s)
+
+/* 3 argument BCD functions added in ISA 2.07.  */
+BU_P8V_MISC_3 (BCDADD,		"bcdadd",	CONST,	bcdadd)
+BU_P8V_MISC_3 (BCDADD_LT,	"bcdadd_lt",	CONST,	bcdadd_lt)
+BU_P8V_MISC_3 (BCDADD_EQ,	"bcdadd_eq",	CONST,	bcdadd_eq)
+BU_P8V_MISC_3 (BCDADD_GT,	"bcdadd_gt",	CONST,	bcdadd_gt)
+BU_P8V_MISC_3 (BCDADD_OV,	"bcdadd_ov",	CONST,	bcdadd_unordered)
+BU_P8V_MISC_3 (BCDSUB,		"bcdsub",	CONST,	bcdsub)
+BU_P8V_MISC_3 (BCDSUB_LT,	"bcdsub_lt",	CONST,	bcdsub_lt)
+BU_P8V_MISC_3 (BCDSUB_EQ,	"bcdsub_eq",	CONST,	bcdsub_eq)
+BU_P8V_MISC_3 (BCDSUB_GT,	"bcdsub_gt",	CONST,	bcdsub_gt)
+BU_P8V_MISC_3 (BCDSUB_OV,	"bcdsub_ov",	CONST,	bcdsub_unordered)
+
+/* 2 argument pack/unpack 128-bit floating point types.  */
+BU_DFP_MISC_2 (PACK_TD,		"pack_dec128",		CONST,	packtd)
+BU_DFP_MISC_2 (UNPACK_TD,	"unpack_dec128",	CONST,	unpacktd)
+
+BU_MISC_2 (PACK_TF,		"pack_longdouble",	CONST,	packtf)
+BU_MISC_2 (UNPACK_TF,		"unpack_longdouble",	CONST,	unpacktf)
+BU_MISC_1 (UNPACK_TF_0,		"longdouble_dw0",	CONST,	unpacktf_0)
+BU_MISC_1 (UNPACK_TF_1,		"longdouble_dw1",	CONST,	unpacktf_1)
+
+BU_P7_MISC_2 (PACK_V1TI,	"pack_vector_int128",	CONST,	packv1ti)
+BU_P7_MISC_2 (UNPACK_V1TI,	"unpack_vector_int128",	CONST,	unpackv1ti)
 
 
 /* 1 argument crypto functions.  */

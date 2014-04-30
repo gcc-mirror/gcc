@@ -322,3 +322,72 @@
   "TARGET_DFP"
   "dctfixq %0,%1"
   [(set_attr "type" "fp")])
+
+
+;; Decimal builtin support
+
+(define_c_enum "unspec"
+  [UNSPEC_DDEDPD
+   UNSPEC_DENBCD
+   UNSPEC_DXEX
+   UNSPEC_DIEX
+   UNSPEC_DSCLI
+   UNSPEC_DSCRI])
+
+(define_mode_iterator D64_D128 [DD TD])
+
+(define_mode_attr dfp_suffix [(DD "")
+			      (TD "q")])
+
+(define_insn "dfp_ddedpd_<mode>"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(unspec:D64_D128 [(match_operand:QI 1 "const_0_to_3_operand" "i")
+			  (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+			 UNSPEC_DDEDPD))]
+  "TARGET_DFP"
+  "ddedpd<dfp_suffix> %1,%0,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "dfp_denbcd_<mode>"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(unspec:D64_D128 [(match_operand:QI 1 "const_0_to_1_operand" "i")
+			  (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+			 UNSPEC_DENBCD))]
+  "TARGET_DFP"
+  "denbcd<dfp_suffix> %1,%0,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "dfp_dxex_<mode>"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")]
+			 UNSPEC_DXEX))]
+  "TARGET_DFP"
+  "dxex<dfp_suffix> %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_insn "dfp_diex_<mode>"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")
+			  (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+			 UNSPEC_DXEX))]
+  "TARGET_DFP"
+  "diex<dfp_suffix> %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "dfp_dscli_<mode>"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")
+			  (match_operand:QI 2 "immediate_operand" "i")]
+			 UNSPEC_DSCLI))]
+  "TARGET_DFP"
+  "dscli<dfp_suffix> %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "dfp_dscri_<mode>"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")
+			  (match_operand:QI 2 "immediate_operand" "i")]
+			 UNSPEC_DSCRI))]
+  "TARGET_DFP"
+  "dscri<dfp_suffix> %0,%1,%2"
+  [(set_attr "type" "fp")])
