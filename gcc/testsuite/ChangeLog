@@ -1,5 +1,11 @@
 2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vuzps32_1.c: Expect zip1/2 insn rather than uzp1/2.
+	* gcc.target/aarch64/vuzpu32_1.c: Likewise.
+	* gcc.target/aarch64/vuzpf32_1.c: Likewise.
+
+2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/simd/vuzpf32_1.c: New file.
 	* gcc.target/aarch64/simd/vuzpf32.x: New file.
 	* gcc.target/aarch64/simd/vuzpp16_1.c: New file.

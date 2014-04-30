@@ -1,3 +1,14 @@
+2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vuzp1_f32, vuzp1_p8, vuzp1_p16, vuzp1_s8,
+	vuzp1_s16, vuzp1_s32, vuzp1_u8, vuzp1_u16, vuzp1_u32, vuzp1q_f32,
+	vuzp1q_f64, vuzp1q_p8, vuzp1q_p16, vuzp1q_s8, vuzp1q_s16, vuzp1q_s32,
+	vuzp1q_s64, vuzp1q_u8, vuzp1q_u16, vuzp1q_u32, vuzp1q_u64, vuzp2_f32,
+	vuzp2_p8, vuzp2_p16, vuzp2_s8, vuzp2_s16, vuzp2_s32, vuzp2_u8,
+	vuzp2_u16, vuzp2_u32, vuzp2q_f32, vuzp2q_f64, vuzp2q_p8, vuzp2q_p16,
+	vuzp2q_s8, vuzp2q_s16, vuzp2q_s32, vuzp2q_s64, vuzp2q_u8, vuzp2q_u16,
+	vuzp2q_u32, vuzp2q_u64): Replace temporary asm with __builtin_shuffle.
+
 2014-04-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.opt (mlra): Move comment above option name
