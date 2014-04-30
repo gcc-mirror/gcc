@@ -18,12 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Augment i386/unix.h version to return 8-byte vectors in memory, matching
-   Sun Studio compilers until version 12, the only ones supported on
-   Solaris 9.  */
-#undef TARGET_SUBTARGET_DEFAULT
-#define TARGET_SUBTARGET_DEFAULT \
-	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_VECT8_RETURNS)
+#define SUBTARGET_OPTIMIZATION_OPTIONS				\
+  { OPT_LEVELS_1_PLUS, OPT_momit_leaf_frame_pointer, NULL, 1 }
 
 /* Old versions of the Solaris assembler can not handle the difference of
    labels in different sections, so force DW_EH_PE_datarel if so.  */
@@ -50,26 +46,45 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_SUN_TLS
 #define TARGET_SUN_TLS 1
 
-#undef  SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
-
-#undef  PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
 /* Solaris 2/Intel as chokes on #line directives before Solaris 10.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%{,assembler-with-cpp:-P} %(cpp_subtarget)"
 
-#define ASM_CPU_DEFAULT_SPEC ""
+/* GNU as understands --32 and --64, but the native Solaris
+   assembler requires -xarch=generic or -xarch=generic64 instead.  */
+#ifdef USE_GAS
+#define ASM_CPU32_DEFAULT_SPEC "--32"
+#define ASM_CPU64_DEFAULT_SPEC "--64"
+#else
+#define ASM_CPU32_DEFAULT_SPEC "-xarch=generic"
+#define ASM_CPU64_DEFAULT_SPEC "-xarch=generic64"
+#endif
 
-#define ASM_CPU_SPEC ""
- 
-/* Don't include ASM_PIC_SPEC.  While the Solaris 9 assembler accepts
-   -K PIC, it gives many warnings:
-	R_386_32 relocation is used for symbol "<symbol>"
+#undef ASM_CPU_SPEC
+#define ASM_CPU_SPEC "%(asm_cpu_default)"
+
+/* Don't include ASM_PIC_SPEC.  While the Solaris 10+ assembler accepts -K PIC,
+   it gives many warnings: 
+	Absolute relocation is used for symbol "<symbol>"
    GNU as doesn't recognize -K at all.  */
 #undef ASM_SPEC
 #define ASM_SPEC ASM_SPEC_BASE
+
+#define DEFAULT_ARCH32_P !TARGET_64BIT_DEFAULT
+
+#define ARCH64_SUBDIR "amd64"
+
+#ifdef USE_GLD
+/* Since binutils 2.21, GNU ld supports new *_sol2 emulations to strictly
+   follow the Solaris 2 ABI.  Prefer them if present.  */
+#ifdef HAVE_LD_SOL2_EMULATION
+#define ARCH32_EMULATION "elf_i386_sol2"
+#define ARCH64_EMULATION "elf_x86_64_sol2"
+#else
+#define ARCH32_EMULATION "elf_i386"
+#define ARCH64_EMULATION "elf_x86_64"
+#endif
+#endif
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -84,21 +99,37 @@ along with GCC; see the file COPYING3.  If not see
   { "asm_cpu",		 ASM_CPU_SPEC },		\
   { "asm_cpu_default",	 ASM_CPU_DEFAULT_SPEC },	\
 
-#undef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS \
-  { "startfile_arch",	STARTFILE_ARCH_SPEC },		\
-  { "link_arch",	LINK_ARCH_SPEC },		\
-  SUBTARGET_CPU_EXTRA_SPECS
-
 /* Register the Solaris-specific #pragma directives.  */
 #define REGISTER_SUBTARGET_PRAGMAS() solaris_register_pragmas ()
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 
+/* The Solaris 10 FCS as doesn't accept "#" comments, while later versions
+   do.  */
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "/"
+
 /* The 32-bit Solaris assembler does not support .quad.  Do not use it.  */
 #ifndef HAVE_AS_IX86_QUAD
 #undef ASM_QUAD
+#endif
+
+/* The native Solaris assembler can't calculate the difference between
+   symbols in different sections, which causes problems for -fPIC jump
+   tables in .rodata.  */
+#ifndef HAVE_AS_IX86_DIFF_SECT_DELTA
+#undef JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
+
+/* The native Solaris assembler cannot handle the SYMBOL-. syntax, but
+   requires SYMBOL@rel/@rel64 instead.  */
+#define ASM_OUTPUT_DWARF_PCREL(FILE, SIZE, LABEL)	\
+  do {							\
+    fputs (integer_asm_op (SIZE, FALSE), FILE);		\
+    assemble_name (FILE, LABEL);			\
+    fputs (SIZE == 8 ? "@rel64" : "@rel", FILE);	\
+  } while (0)
 #endif
 
 /* The Solaris assembler wants a .local for non-exported aliases.  */
@@ -148,6 +179,20 @@ along with GCC; see the file COPYING3.  If not see
   while (0)
 #endif /* !USE_GAS */
 
+/* As in sparc/sol2.h, override the default from i386/x86-64.h to work
+   around Sun as TLS bug.  */
+#undef  ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+  do									\
+    {									\
+      if (TARGET_SUN_TLS						\
+	  && in_section							\
+	  && ((in_section->common.flags & SECTION_TLS) == SECTION_TLS))	\
+	switch_to_section (bss_section);				\
+      x86_elf_aligned_common (FILE, NAME, SIZE, ALIGN);			\
+    }									\
+  while  (0)
+
 /* Output a simple call for .init/.fini.  */
 #define ASM_OUTPUT_CALL(FILE, FN)				\
   do								\
@@ -173,6 +218,14 @@ along with GCC; see the file COPYING3.  If not see
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors, \"aw\""
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors, \"aw\""
 #endif
+
+#define USE_IX86_FRAME_POINTER 1
+#define USE_X86_64_FRAME_POINTER 1
+
+#undef NO_PROFILE_COUNTERS
+
+#undef MCOUNT_NAME
+#define MCOUNT_NAME "_mcount"
 
 /* We do not need NT_VERSION notes.  */
 #undef X86_FILE_START_VERSION_DIRECTIVE
