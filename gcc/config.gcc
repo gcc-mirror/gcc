@@ -808,8 +808,9 @@ case ${target} in
 *-*-solaris2*)
   # i?86-*-solaris2* needs to insert headers between cpu default and
   # Solaris 2 specific ones.
-  sol2_tm_file="dbxelf.h elfos.h ${cpu_type}/sysv4.h sol2.h ${cpu_type}/sol2.h"
-  sol2_tm_file="${sol2_tm_file} sol2-10.h"
+  sol2_tm_file_head="dbxelf.h elfos.h ${cpu_type}/sysv4.h"
+  sol2_tm_file_tail="${cpu_type}/sol2.h sol2.h"
+  sol2_tm_file="${sol2_tm_file_head} ${sol2_tm_file_tail}"
   use_gcc_stdint=wrap
   if test x$gnu_ld = xyes; then
     tm_file="usegld.h ${tm_file}"
@@ -1515,14 +1516,13 @@ i[34567]86-*-rtems*)
 	tmake_file="${tmake_file} i386/t-rtems"
 	;;
 i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
-	tm_file="${tm_file} i386/unix.h i386/att.h ${sol2_tm_file}"
 	# Set default arch_32 to pentium4, tune_32 to generic like the other
 	# i386 targets, although config.guess defaults to i386-pc-solaris2*.
 	with_arch_32=${with_arch_32:-pentium4}
 	with_tune_32=${with_tune_32:-generic}
-	tm_file="${tm_file} i386/x86-64.h i386/sol2-bi.h sol2-bi.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h ${sol2_tm_file_head} i386/x86-64.h ${sol2_tm_file_tail}"
 	tm_defines="${tm_defines} TARGET_BI_ARCH=1"
-	tmake_file="$tmake_file i386/t-sol2-64"
+	tmake_file="$tmake_file i386/t-sol2"
 	need_64bit_isa=yes
 	if test x$with_cpu = x; then
 		if test x$with_cpu_64 = x; then
@@ -2661,7 +2661,7 @@ sparc-*-netbsdelf*)
 	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
 sparc*-*-solaris2*)
-	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h sparc/tso.h"
+	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sparc/tso.h"
 	case ${target} in
 	    sparc64-*-* | sparcv9-*-*)
 		tm_file="sparc/default-64.h ${tm_file}"
@@ -2670,7 +2670,7 @@ sparc*-*-solaris2*)
 		test x$with_cpu != x || with_cpu=v9
 		;;
 	esac
-	tmake_file="${tmake_file} sparc/t-sparc sparc/t-sol2-64"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-sol2"
 	;;
 sparc-wrs-vxworks)
 	tm_file="${tm_file} elfos.h sparc/sysv4.h vx-common.h vxworks.h sparc/vxworks.h"

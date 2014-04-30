@@ -1,3 +1,55 @@
+2014-04-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2-10.h (TARGET_LIBC_HAS_FUNCTION): Move ...
+	* config/sol2.h: ... here.
+	* config/sol2-10.h: Remove.
+
+	* config/sol2-bi.h (WCHAR_TYPE, WCHAR_TYPE_SIZE, WINT_TYPE)
+	(WINT_TYPE_SIZE, MULTILIB_DEFAULTS, DEF_ARCH32_SPEC)
+	(DEF_ARCH64_SPEC, ASM_CPU_DEFAULT_SPEC, LINK_ARCH64_SPEC_BASE)
+	(LINK_ARCH64_SPEC, ARCH_DEFAULT_EMULATION, TARGET_LD_EMULATION)
+	(LINK_ARCH_SPEC, SUBTARGET_EXTRA_SPECS): Move ...
+	* config/sol2.h: ... here.
+	(SECTION_NAME_FORMAT): Don't redefine.
+	(STARTFILE_ARCH32_SPEC): Rename to ...
+	(STARTFILE_ARCH_SPEC): ... this.
+	(ASM_OUTPUT_ALIGNED_COMMON): Move ...
+	* config/sparc/sol2.h: ... here.
+	(SECTION_NAME_FORMAT): Don't undef.
+	* config/i386/sol2.h (ASM_CPU_DEFAULT_SPEC)
+	(SUBTARGET_EXTRA_SPECS): Remove.
+	* config/sparc/sol2.h (ASM_CPU_DEFAULT_SPEC): Remove.
+
+	* config/i386/sol2-bi.h (TARGET_SUBTARGET_DEFAULT)
+	(MD_STARTFILE_PREFIX): Remove.
+	(SUBTARGET_OPTIMIZATION_OPTIONS, ASM_CPU32_DEFAULT_SPEC)
+	(ASM_CPU64_DEFAULT_SPEC, ASM_CPU_SPEC, ASM_SPEC, DEFAULT_ARCH32_P)
+	(ARCH64_SUBDIR, ARCH32_EMULATION, ARCH64_EMULATION)
+	(ASM_COMMENT_START, JUMP_TABLES_IN_TEXT_SECTION)
+	(ASM_OUTPUT_DWARF_PCREL, ASM_OUTPUT_ALIGNED_COMMON)
+	(USE_IX86_FRAME_POINTER, USE_X86_64_FRAME_POINTER): Move ...
+	* config/i386/sol2.h: ... here.
+	(TARGET_SUBTARGET_DEFAULT, SIZE_TYPE, PTRDIFF_TYPE): Remove.
+	* config/i386/sol2-bi.h: Remove.
+	* config/sol2.h (MD_STARTFILE_PREFIX): Remove.
+	(LINK_ARCH32_SPEC_BASE): Remove /usr/ccs/lib/libp, /usr/ccs/lib.
+
+	* config/i386/t-sol2-64: Rename to ...
+	* config/i386/t-sol2: ... this.
+	* config/sparc/t-sol2-64: Rename to ...
+	* config/sparc/t-sol2: ... this.
+
+	* config.gcc (*-*-solaris2*): Split sol2_tm_file into
+	sol2_tm_file_head, sol2_tm_file_tail.
+	Include ${cpu_type}/sol2.h before sol2.h.
+	Remove sol2-10.h.
+	(i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*): Include
+	i386/x86-64.h between sol2_tm_file_head and sol2_tm_file_tail.
+	Remove i386/sol2-bi.h, sol2-bi.h from tm_file.
+	Reflect i386/t-sol2-64 renaming.
+	(sparc*-*-solaris2*): Remove sol2-bi.h from tm_file.
+	Reflect sparc/t-sol2-64 renaming.
+
 2014-04-30  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (execute_function_todo): Move TODO_verify_stmts
