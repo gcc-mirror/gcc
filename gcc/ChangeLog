@@ -1,3 +1,18 @@
+2014-04-30  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Move TODO_verify_stmts
+	and TODO_verify_ssa under the TODO_verify_il umbrella.
+	* tree-ssa.h (verify_ssa): Adjust prototype.
+	* tree-ssa.c (verify_ssa): Add parameter to tell whether
+	we should verify SSA operands.
+	* tree-cfg.h (verify_gimple_in_cfg): Adjust prototype.
+	* tree-cfg.c (verify_gimple_in_cfg): Add parameter to tell
+	whether we should verify whether not throwing stmts have EH info.
+	* graphite-scop-detection.c (create_sese_edges): Adjust.
+	* tree-ssa-loop-manip.c (verify_loop_closed_ssa): Likewise.
+	* tree-eh.c (lower_try_finally_switch): Do not add the
+	default case label twice.
+
 2014-04-30  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.c (sanitize_spec_function): Handle SANITIZE_FLOAT_DIVIDE.
