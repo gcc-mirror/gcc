@@ -58,7 +58,7 @@ extern gimple first_stmt (basic_block);
 extern gimple last_stmt (basic_block);
 extern gimple last_and_only_stmt (basic_block);
 extern void verify_gimple_in_seq (gimple_seq);
-extern void verify_gimple_in_cfg (struct function *);
+extern void verify_gimple_in_cfg (struct function *, bool);
 extern tree gimple_block_label (basic_block);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned, edge);
