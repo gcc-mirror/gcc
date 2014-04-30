@@ -1,5 +1,26 @@
 2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/arm/simd/vuzpqf32_1.c: New file.
+	* gcc.target/arm/simd/vuzpqp16_1.c: New file.
+	* gcc.target/arm/simd/vuzpqp8_1.c: New file.
+	* gcc.target/arm/simd/vuzpqs16_1.c: New file.
+	* gcc.target/arm/simd/vuzpqs32_1.c: New file.
+	* gcc.target/arm/simd/vuzpqs8_1.c: New file.
+	* gcc.target/arm/simd/vuzpqu16_1.c: New file.
+	* gcc.target/arm/simd/vuzpqu32_1.c: New file.
+	* gcc.target/arm/simd/vuzpqu8_1.c: New file.
+	* gcc.target/arm/simd/vuzpf32_1.c: New file.
+	* gcc.target/arm/simd/vuzpp16_1.c: New file.
+	* gcc.target/arm/simd/vuzpp8_1.c: New file.
+	* gcc.target/arm/simd/vuzps16_1.c: New file.
+	* gcc.target/arm/simd/vuzps32_1.c: New file.
+	* gcc.target/arm/simd/vuzps8_1.c: New file.
+	* gcc.target/arm/simd/vuzpu16_1.c: New file.
+	* gcc.target/arm/simd/vuzpu32_1.c: New file.
+	* gcc.target/arm/simd/vuzpu8_1.c: New file.
+
+2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vuzps32_1.c: Expect zip1/2 insn rather than uzp1/2.
 	* gcc.target/aarch64/vuzpu32_1.c: Likewise.
 	* gcc.target/aarch64/vuzpf32_1.c: Likewise.
