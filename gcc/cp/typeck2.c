@@ -1138,7 +1138,7 @@ massage_init_elt (tree type, tree init, tsubst_flags_t complain)
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
   tree t = fold_non_dependent_expr_sfinae (init, complain);
-  t = maybe_constant_value (t);
+  t = maybe_constant_init (t);
   if (TREE_CONSTANT (t))
     init = t;
   return init;
