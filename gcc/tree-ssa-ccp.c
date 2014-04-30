@@ -1803,6 +1803,25 @@ evaluate_stmt (gimple stmt)
 	      val = bit_value_assume_aligned (stmt, NULL_TREE, val, false);
 	      break;
 
+	    case BUILT_IN_ALIGNED_ALLOC:
+	      {
+		tree align = get_constant_value (gimple_call_arg (stmt, 0));
+		if (align
+		    && tree_fits_uhwi_p (align))
+		  {
+		    unsigned HOST_WIDE_INT aligni = tree_to_uhwi (align);
+		    if (aligni > 1
+			/* align must be power-of-two */
+			&& (aligni & (aligni - 1)) == 0)
+		      {
+			val.lattice_val = CONSTANT;
+			val.value = build_int_cst (ptr_type_node, 0);
+			val.mask = double_int::from_shwi (-aligni);
+		      }
+		  }
+		break;
+	      }
+
 	    default:;
 	    }
 	}

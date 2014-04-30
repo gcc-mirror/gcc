@@ -34,9 +34,6 @@ go_create_gogo(int int_type_size, int pointer_size, const char *pkgpath,
 
   if (relative_import_path != NULL)
     ::gogo->set_relative_import_path(relative_import_path);
-
-  // FIXME: This should be in the gcc dependent code.
-  ::gogo->define_builtin_function_trees();
 }
 
 // Parse the input files.

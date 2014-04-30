@@ -1342,6 +1342,18 @@ build_noexcept_spec (tree expr, int complain)
     }
 }
 
+/* Returns a noexcept-specifier to be evaluated later, for an
+   implicitly-declared or explicitly defaulted special member function.  */
+
+tree
+unevaluated_noexcept_spec (void)
+{
+  static tree spec;
+  if (spec == NULL_TREE)
+    spec = build_noexcept_spec (make_node (DEFERRED_NOEXCEPT), tf_none);
+  return spec;
+}
+
 /* Returns a TRY_CATCH_EXPR that will put TRY_LIST and CATCH_LIST in the
    TRY and CATCH locations.  CATCH_LIST must be a STATEMENT_LIST */
 

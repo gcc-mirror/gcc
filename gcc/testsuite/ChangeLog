@@ -1,3 +1,166 @@
+2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vuzps32_1.c: Expect zip1/2 insn rather than uzp1/2.
+	* gcc.target/aarch64/vuzpu32_1.c: Likewise.
+	* gcc.target/aarch64/vuzpf32_1.c: Likewise.
+
+2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/vuzpf32_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpf32.x: New file.
+	* gcc.target/aarch64/simd/vuzpp16_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpp16.x: New file.
+	* gcc.target/aarch64/simd/vuzpp8_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpp8.x: New file.
+	* gcc.target/aarch64/simd/vuzpqf32_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqf32.x: New file.
+	* gcc.target/aarch64/simd/vuzpqp16_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqp16.x: New file.
+	* gcc.target/aarch64/simd/vuzpqp8_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqp8.x: New file.
+	* gcc.target/aarch64/simd/vuzpqs16_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqs16.x: New file.
+	* gcc.target/aarch64/simd/vuzpqs32_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqs32.x: New file.
+	* gcc.target/aarch64/simd/vuzpqs8_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqs8.x: New file.
+	* gcc.target/aarch64/simd/vuzpqu16_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqu16.x: New file.
+	* gcc.target/aarch64/simd/vuzpqu32_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqu32.x: New file.
+	* gcc.target/aarch64/simd/vuzpqu8_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpqu8.x: New file.
+	* gcc.target/aarch64/simd/vuzps16_1.c: New file.
+	* gcc.target/aarch64/simd/vuzps16.x: New file.
+	* gcc.target/aarch64/simd/vuzps32_1.c: New file.
+	* gcc.target/aarch64/simd/vuzps32.x: New file.
+	* gcc.target/aarch64/simd/vuzps8_1.c: New file.
+	* gcc.target/aarch64/simd/vuzps8.x: New file.
+	* gcc.target/aarch64/simd/vuzpu16_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpu16.x: New file.
+	* gcc.target/aarch64/simd/vuzpu32_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpu32.x: New file.
+	* gcc.target/aarch64/simd/vuzpu8_1.c: New file.
+	* gcc.target/aarch64/simd/vuzpu8.x: New file.
+
+2014-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/48329
+	* gfortran.dg/vect/pr48329.f90: New testcase.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/div-by-zero-5.c: Fix formatting.
+	* c-c++-common/ubsan/float-div-by-zero-1.c: New test.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60139
+	* gcc.dg/pr60139.c: New test.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60351
+	* gcc.dg/pr60351.c: New test.
+
+2013-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/simd/simd.exp: New file.
+	* gcc.target/arm/simd/vzipqf32_1.c: New file.
+	* gcc.target/arm/simd/vzipqp16_1.c: New file.
+	* gcc.target/arm/simd/vzipqp8_1.c: New file.
+	* gcc.target/arm/simd/vzipqs16_1.c: New file.
+	* gcc.target/arm/simd/vzipqs32_1.c: New file.
+	* gcc.target/arm/simd/vzipqs8_1.c: New file.
+	* gcc.target/arm/simd/vzipqu16_1.c: New file.
+	* gcc.target/arm/simd/vzipqu32_1.c: New file.
+	* gcc.target/arm/simd/vzipqu8_1.c: New file.
+	* gcc.target/arm/simd/vzipf32_1.c: New file.
+	* gcc.target/arm/simd/vzipp16_1.c: New file.
+	* gcc.target/arm/simd/vzipp8_1.c: New file.
+	* gcc.target/arm/simd/vzips16_1.c: New file.
+	* gcc.target/arm/simd/vzips32_1.c: New file.
+	* gcc.target/arm/simd/vzips8_1.c: New file.
+	* gcc.target/arm/simd/vzipu16_1.c: New file.
+	* gcc.target/arm/simd/vzipu32_1.c: New file.
+	* gcc.target/arm/simd/vzipu8_1.c: New file.
+
+2014-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51707
+	* g++.dg/cpp0x/constexpr-51707.C: New.
+
+2014-04-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/tree-ssa/pr23401.c: Update the expected number of
+	occurrences of "int" in the gimple dump to reflect that the return
+	types of functions now show up in such dumps.
+	* gcc.dg/tree-ssa/pr27810.c: Likewise.
+
+2014-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60971
+	* c-c++-common/turtore/pr60971.c: New test.
+
+2014-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/simd.exp: New file.
+	* gcc.target/aarch64/simd/vzipf32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipf32.x: New file.
+	* gcc.target/aarch64/simd/vzipp16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipp16.x: New file.
+	* gcc.target/aarch64/simd/vzipp8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipp8.x: New file.
+	* gcc.target/aarch64/simd/vzipqf32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqf32.x: New file.
+	* gcc.target/aarch64/simd/vzipqp16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqp16.x: New file.
+	* gcc.target/aarch64/simd/vzipqp8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqp8.x: New file.
+	* gcc.target/aarch64/simd/vzipqs16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqs16.x: New file.
+	* gcc.target/aarch64/simd/vzipqs32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqs32.x: New file.
+	* gcc.target/aarch64/simd/vzipqs8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqs8.x: New file.
+	* gcc.target/aarch64/simd/vzipqu16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqu16.x: New file.
+	* gcc.target/aarch64/simd/vzipqu32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqu32.x: New file.
+	* gcc.target/aarch64/simd/vzipqu8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipqu8.x: New file.
+	* gcc.target/aarch64/simd/vzips16_1.c: New file.
+	* gcc.target/aarch64/simd/vzips16.x: New file.
+	* gcc.target/aarch64/simd/vzips32_1.c: New file.
+	* gcc.target/aarch64/simd/vzips32.x: New file.
+	* gcc.target/aarch64/simd/vzips8_1.c: New file.
+	* gcc.target/aarch64/simd/vzips8.x: New file.
+	* gcc.target/aarch64/simd/vzipu16_1.c: New file.
+	* gcc.target/aarch64/simd/vzipu16.x: New file.
+	* gcc.target/aarch64/simd/vzipu32_1.c: New file.
+	* gcc.target/aarch64/simd/vzipu32.x: New file.
+	* gcc.target/aarch64/simd/vzipu8_1.c: New file.
+	* gcc.target/aarch64/simd/vzipu8.x: New file.
+
+2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/aarch64/fcsel_1.c: New test case.
+
+2014-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/60810
+	* gfortran.dg/arrayio_13.f90: New test.
+
+2014-04-28  Martin Jambor  <mjambor@suse.cz>
+
+        * gcc.dg/tree-ssa/sra-14.c: New test.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gcc.dg/tree-ssa/alias-32.c: New testcase.
+	* gcc.dg/vect/pr60092.c: Likewise.
+
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/vrp91.c: New testcase.

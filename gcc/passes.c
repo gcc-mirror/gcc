@@ -1716,6 +1716,7 @@ pass_manager::dump_profile_report () const
 static void
 execute_function_todo (function *fn, void *data)
 {
+  bool from_ipa_pass = (cfun == NULL);
   unsigned int flags = (size_t)data;
   flags &= ~fn->last_verified;
   if (!flags)
@@ -1761,32 +1762,56 @@ execute_function_todo (function *fn, void *data)
     rebuild_cgraph_edges ();
 
   /* If we've seen errors do not bother running any verifiers.  */
-  if (seen_error ())
+  if (!seen_error ())
     {
-      pop_cfun ();
-      return;
-    }
-
 #if defined ENABLE_CHECKING
-  if (flags & TODO_verify_ssa
-      || (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA)))
-    {
-      verify_gimple_in_cfg (cfun);
-      verify_ssa (true);
-    }
-  else if (flags & TODO_verify_stmts)
-    verify_gimple_in_cfg (cfun);
-  if (flags & TODO_verify_flow)
-    verify_flow_info ();
-  if (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA))
-    verify_loop_closed_ssa (false);
-  if (flags & TODO_verify_rtl_sharing)
-    verify_rtl_sharing ();
+      dom_state pre_verify_state = dom_info_state (fn, CDI_DOMINATORS);
+      dom_state pre_verify_pstate = dom_info_state (fn, CDI_POST_DOMINATORS);
+
+      if (flags & TODO_verify_il)
+	{
+	  if (cfun->curr_properties & PROP_trees)
+	    {
+	      if (cfun->curr_properties & PROP_cfg)
+		/* IPA passes leave stmts to be fixed up, so make sure to
+		   not verify stmts really throw.  */
+		verify_gimple_in_cfg (cfun, !from_ipa_pass);
+	      else
+		verify_gimple_in_seq (gimple_body (cfun->decl));
+	    }
+	  if (cfun->curr_properties & PROP_ssa)
+	    /* IPA passes leave stmts to be fixed up, so make sure to
+	       not verify SSA operands whose verifier will choke on that.  */
+	    verify_ssa (true, !from_ipa_pass);
+	}
+      if (flags & TODO_verify_flow)
+	verify_flow_info ();
+      if (flags & TODO_verify_il)
+	{
+	  if (current_loops
+	      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	    verify_loop_closed_ssa (false);
+	}
+      if (flags & TODO_verify_rtl_sharing)
+	verify_rtl_sharing ();
+
+      /* Make sure verifiers don't change dominator state.  */
+      gcc_assert (dom_info_state (fn, CDI_DOMINATORS) == pre_verify_state);
+      gcc_assert (dom_info_state (fn, CDI_POST_DOMINATORS) == pre_verify_pstate);
 #endif
+    }
 
   fn->last_verified = flags & TODO_verify_all;
 
   pop_cfun ();
+
+  /* For IPA passes make sure to release dominator info, it can be
+     computed by non-verifying TODOs.  */
+  if (from_ipa_pass)
+    {
+      free_dominance_info (fn, CDI_DOMINATORS);
+      free_dominance_info (fn, CDI_POST_DOMINATORS);
+    }
 }
 
 /* Perform all TODO actions.  */
@@ -2167,7 +2192,7 @@ execute_one_pass (opt_pass *pass)
     check_profile_consistency (pass->static_pass_number, 0, true);
 
   /* Run post-pass cleanup and verification.  */
-  execute_todo (todo_after | pass->todo_flags_finish);
+  execute_todo (todo_after | pass->todo_flags_finish | TODO_verify_il);
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
     check_profile_consistency (pass->static_pass_number, 1, true);
 

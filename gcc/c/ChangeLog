@@ -1,3 +1,20 @@
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (build_binary_op): Call ubsan_instrument_division
+	also when SANITIZE_FLOAT_DIVIDE is on.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60139
+	* c-typeck.c (output_init_element): Pass OPT_Wpedantic to pedwarn
+	and pedwarn_init.  Use loc insted of input_location.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60351
+	* c-typeck.c (build_binary_op): Use location when warning about
+	shift count.
+
 2014-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/18079

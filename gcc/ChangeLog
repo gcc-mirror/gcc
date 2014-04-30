@@ -1,3 +1,251 @@
+2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vuzp1_f32, vuzp1_p8, vuzp1_p16, vuzp1_s8,
+	vuzp1_s16, vuzp1_s32, vuzp1_u8, vuzp1_u16, vuzp1_u32, vuzp1q_f32,
+	vuzp1q_f64, vuzp1q_p8, vuzp1q_p16, vuzp1q_s8, vuzp1q_s16, vuzp1q_s32,
+	vuzp1q_s64, vuzp1q_u8, vuzp1q_u16, vuzp1q_u32, vuzp1q_u64, vuzp2_f32,
+	vuzp2_p8, vuzp2_p16, vuzp2_s8, vuzp2_s16, vuzp2_s32, vuzp2_u8,
+	vuzp2_u16, vuzp2_u32, vuzp2q_f32, vuzp2q_f64, vuzp2q_p8, vuzp2q_p16,
+	vuzp2q_s8, vuzp2q_s16, vuzp2q_s32, vuzp2q_s64, vuzp2q_u8, vuzp2q_u16,
+	vuzp2q_u32, vuzp2q_u64): Replace temporary asm with __builtin_shuffle.
+
+2014-04-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arc/arc.opt (mlra): Move comment above option name
+	to avoid mis-parsing as language options.
+
+2014-04-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2-10.h (TARGET_LIBC_HAS_FUNCTION): Move ...
+	* config/sol2.h: ... here.
+	* config/sol2-10.h: Remove.
+
+	* config/sol2-bi.h (WCHAR_TYPE, WCHAR_TYPE_SIZE, WINT_TYPE)
+	(WINT_TYPE_SIZE, MULTILIB_DEFAULTS, DEF_ARCH32_SPEC)
+	(DEF_ARCH64_SPEC, ASM_CPU_DEFAULT_SPEC, LINK_ARCH64_SPEC_BASE)
+	(LINK_ARCH64_SPEC, ARCH_DEFAULT_EMULATION, TARGET_LD_EMULATION)
+	(LINK_ARCH_SPEC, SUBTARGET_EXTRA_SPECS): Move ...
+	* config/sol2.h: ... here.
+	(SECTION_NAME_FORMAT): Don't redefine.
+	(STARTFILE_ARCH32_SPEC): Rename to ...
+	(STARTFILE_ARCH_SPEC): ... this.
+	(ASM_OUTPUT_ALIGNED_COMMON): Move ...
+	* config/sparc/sol2.h: ... here.
+	(SECTION_NAME_FORMAT): Don't undef.
+	* config/i386/sol2.h (ASM_CPU_DEFAULT_SPEC)
+	(SUBTARGET_EXTRA_SPECS): Remove.
+	* config/sparc/sol2.h (ASM_CPU_DEFAULT_SPEC): Remove.
+
+	* config/i386/sol2-bi.h (TARGET_SUBTARGET_DEFAULT)
+	(MD_STARTFILE_PREFIX): Remove.
+	(SUBTARGET_OPTIMIZATION_OPTIONS, ASM_CPU32_DEFAULT_SPEC)
+	(ASM_CPU64_DEFAULT_SPEC, ASM_CPU_SPEC, ASM_SPEC, DEFAULT_ARCH32_P)
+	(ARCH64_SUBDIR, ARCH32_EMULATION, ARCH64_EMULATION)
+	(ASM_COMMENT_START, JUMP_TABLES_IN_TEXT_SECTION)
+	(ASM_OUTPUT_DWARF_PCREL, ASM_OUTPUT_ALIGNED_COMMON)
+	(USE_IX86_FRAME_POINTER, USE_X86_64_FRAME_POINTER): Move ...
+	* config/i386/sol2.h: ... here.
+	(TARGET_SUBTARGET_DEFAULT, SIZE_TYPE, PTRDIFF_TYPE): Remove.
+	* config/i386/sol2-bi.h: Remove.
+	* config/sol2.h (MD_STARTFILE_PREFIX): Remove.
+	(LINK_ARCH32_SPEC_BASE): Remove /usr/ccs/lib/libp, /usr/ccs/lib.
+
+	* config/i386/t-sol2-64: Rename to ...
+	* config/i386/t-sol2: ... this.
+	* config/sparc/t-sol2-64: Rename to ...
+	* config/sparc/t-sol2: ... this.
+
+	* config.gcc (*-*-solaris2*): Split sol2_tm_file into
+	sol2_tm_file_head, sol2_tm_file_tail.
+	Include ${cpu_type}/sol2.h before sol2.h.
+	Remove sol2-10.h.
+	(i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*): Include
+	i386/x86-64.h between sol2_tm_file_head and sol2_tm_file_tail.
+	Remove i386/sol2-bi.h, sol2-bi.h from tm_file.
+	Reflect i386/t-sol2-64 renaming.
+	(sparc*-*-solaris2*): Remove sol2-bi.h from tm_file.
+	Reflect sparc/t-sol2-64 renaming.
+
+2014-04-30  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Move TODO_verify_stmts
+	and TODO_verify_ssa under the TODO_verify_il umbrella.
+	* tree-ssa.h (verify_ssa): Adjust prototype.
+	* tree-ssa.c (verify_ssa): Add parameter to tell whether
+	we should verify SSA operands.
+	* tree-cfg.h (verify_gimple_in_cfg): Adjust prototype.
+	* tree-cfg.c (verify_gimple_in_cfg): Add parameter to tell
+	whether we should verify whether not throwing stmts have EH info.
+	* graphite-scop-detection.c (create_sese_edges): Adjust.
+	* tree-ssa-loop-manip.c (verify_loop_closed_ssa): Likewise.
+	* tree-eh.c (lower_try_finally_switch): Do not add the
+	default case label twice.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.c (sanitize_spec_function): Handle SANITIZE_FLOAT_DIVIDE.
+	* builtins.def: Initialize builtins even for SANITIZE_FLOAT_DIVIDE.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_FLOAT_DIVIDE.
+	* opts.c (common_handle_option): Add -fsanitize=float-divide-by-zero.
+
+2014-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vzip1_f32, vzip1_p8, vzip1_p16, vzip1_s8,
+	vzip1_s16, vzip1_s32, vzip1_u8, vzip1_u16, vzip1_u32, vzip1q_f32,
+	vzip1q_f64, vzip1q_p8, vzip1q_p16, vzip1q_s8, vzip1q_s16, vzip1q_s32,
+	vzip1q_s64, vzip1q_u8, vzip1q_u16, vzip1q_u32, vzip1q_u64, vzip2_f32,
+	vzip2_p8, vzip2_p16, vzip2_s8, vzip2_s16, vzip2_s32, vzip2_u8,
+	vzip2_u16, vzip2_u32, vzip2q_f32, vzip2q_f64, vzip2q_p8, vzip2q_p16,
+	vzip2q_s8, vzip2q_s16, vzip2q_s32, vzip2q_s64, vzip2q_u8, vzip2q_u16,
+	vzip2q_u32, vzip2q_u64): Replace inline __asm__ with __builtin_shuffle.
+
+2014-04-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-cfg.c (dump_function_to_file): Dump the return type of
+	functions, in a line to itself before the function body, mimicking
+	the layout of a C function.
+
+2014-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60971
+	* tree-tailcall.c (process_assignment): Reject conversions which
+	reduce precision.
+
+2014-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* calls.c (initialize_argument_information): Always treat
+	PUSH_ARGS_REVERSED as 1, simplify code accordingly.
+	(expand_call): Likewise.
+	(emit_library_call_calue_1): Likewise.
+	* expr.c (PUSH_ARGS_REVERSED): Do not define.
+	(emit_push_insn): Always treat PUSH_ARGS_REVERSED as 1, simplify
+	code accordingly.
+
+2014-04-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.md (umulsidi): Fix typo.
+	(mulhisi3): Enable even inside interrupt handlers.
+	* config/msp430/msp430.c (msp430_print_operand): %O: Allow for the
+	bigger return address pushed in large mode.
+
+2014-04-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/arc/arc.c (arc_select_cc_mode): Fix parentheses.
+	(arc_init_reg_tables): Use a machine_mode enum to iterate over
+	available modes.
+	* config/m32r/m32r.c (init_reg_tables): Likewise.
+	* config/m32c/m32c.c (m32c_illegal_subreg_p): Use a machine_mode
+	enum to hold the modes.
+
+2014-04-29  Richard Biener  <rguenther@suse.de>
+
+	* dominance.c (free_dominance_info): Add overload with
+	function parameter.
+	(dom_info_state): Likewise.
+	(dom_info_available_p): Likewise.
+	* basic-block.h (free_dominance_info, dom_info_state,
+	dom_info_available_p): Declare overloads.
+	* passes.c (execute_function_todo): Verify that verifiers
+	don't change dominator info state.  Drop dominator info
+	for IPA pass invocations.
+	* cgraph.c (release_function_body): Restore asserts that
+	dominator information is released.
+
+2014-04-29  Patrick Palka  <patrick@parcs.ath.cx>
+
+	* doc/invoke.texi: Fix typo.
+	* tree-vrp.c: Fix typos.
+	* gimple.c (infer_nonnull_range): Reorder operands of an &&
+	condition.
+
+2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/aarch64/aarch64.md (mov<mode>cc): New for GPF.
+
+2014-04-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_storestruct_lane_qualifiers): New.
+	(TYPES_STORESTRUCT_LANE): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (st2_lane): New.
+	(st3_lane): Likewise.
+	(st4_lane): Likewise.
+	* config/aarch64/aarch64-simd.md (vec_store_lanesoi_lane<mode>): New.
+	(vec_store_lanesci_lane<mode>): Likewise.
+	(vec_store_lanesxi_lane<mode>): Likewise.
+	(aarch64_st2_lane<VQ:mode>): Likewise.
+	(aarch64_st3_lane<VQ:mode>): Likewise.
+	(aarch64_st4_lane<VQ:mode>): Likewise.
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_ST{2,3,4}_LANE.
+	* config/aarch64/arm_neon.h
+	(__ST2_LANE_FUNC): Rewrite using builtins, update use points to
+	use new macro arguments.
+	(__ST3_LANE_FUNC): Likewise.
+	(__ST4_LANE_FUNC): Likewise.
+	* config/aarch64/iterators.md (V_TWO_ELEM): New.
+	(V_THREE_ELEM): Likewise.
+	(V_FOUR_ELEM): Likewise.
+
+2014-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/gimple.texi: Replace the description of the now-defunct
+	union gimple_statement_d with a diagram showing the
+	gimple_statement_base class hierarchy and its relationships to
+	the GSS_ and GIMPLE_ enums.
+
+2014-04-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_modes_tieable_p): New.
+	* config/aarch64/aarch64.c
+	(aarch64_cannot_change_mode_class): Weaken conditions.
+	(aarch64_modes_tieable_p): New.
+	* config/aarch64/aarch64.h (MODES_TIEABLE_P): Use it.
+
+2014-04-28  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/sync.md (AINT mode_iterator): Move definition.
+	(loadsync_<mode>): Change mode.
+	(load_quadpti, store_quadpti): New.
+	(atomic_load<mode>, atomic_store<mode>): Add support for TI mode.
+	* config/rs6000/rs6000.md (unspec enum): Add UNSPEC_LSQ.
+
+2014-04-28  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (sra_modify_expr): Generate new memory accesses with
+	same alias type as the original statement.
+	(subreplacement_assignment_data): New type.
+	(handle_unscalarized_data_in_subtree): New type of parameter,
+	generate new memory accesses with same alias type as the original
+	statement.
+	(load_assign_lhs_subreplacements): Likewise.
+	(sra_modify_constructor_assign): Generate new memory accesses with
+	same alias type as the original statement.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (TODO_verify_il): Define.
+	(TODO_verify_all): Complete properly.
+	* passes.c (execute_function_todo): Move existing loop-closed
+	SSA verification under TODO_verify_il.
+	(execute_one_pass): Trigger TODO_verify_il at todo-after time.
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps):
+	Fix tree sharing issue.
+
+2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* builtins.def (DEF_C11_BUILTIN): Add.
+	(BUILT_IN_ALIGNED_ALLOC): Likewise.
+	* coretypes.h (enum function_class): Add function_c11_misc.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	BUILT_IN_ALIGNED_ALLOC like BUILT_IN_MALLOC.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+	(propagate_necessity): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-ccp.c (evaluate_stmt): Handle BUILT_IN_ALIGNED_ALLOC.
+
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_var_may_overflow): Remove.

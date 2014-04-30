@@ -959,7 +959,7 @@ error:
    TODO: verify the variable annotations.  */
 
 DEBUG_FUNCTION void
-verify_ssa (bool check_modified_stmt)
+verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
 {
   size_t i;
   basic_block bb;
@@ -1042,7 +1042,7 @@ verify_ssa (bool check_modified_stmt)
 	      goto err;
 	    }
 
-	  if (verify_ssa_operands (cfun, stmt))
+	  if (check_ssa_operands && verify_ssa_operands (cfun, stmt))
 	    {
 	      print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
 	      goto err;

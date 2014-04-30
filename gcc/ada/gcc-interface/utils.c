@@ -6518,6 +6518,7 @@ def_builtin_1 (enum built_in_function fncode,
 
 static int flag_isoc94 = 0;
 static int flag_isoc99 = 0;
+static int flag_isoc11 = 0;
 
 /* Install what the common builtins.def offers.  */
 

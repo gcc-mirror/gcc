@@ -68,22 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "cfgexpand.h"
 
-/* Decide whether a function's arguments should be processed
-   from first to last or from last to first.
-
-   They should if the stack and args grow in opposite directions, but
-   only if we have push insns.  */
-
-#ifdef PUSH_ROUNDING
-
-#ifndef PUSH_ARGS_REVERSED
-#if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
-#define PUSH_ARGS_REVERSED	/* If it's last to first.  */
-#endif
-#endif
-
-#endif
-
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD
 #define STACK_PUSH_CODE PRE_DEC
@@ -4334,11 +4318,7 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
       /* Loop over all the words allocated on the stack for this arg.  */
       /* We can do it by words, because any scalar bigger than a word
 	 has a size a multiple of a word.  */
-#ifndef PUSH_ARGS_REVERSED
-      for (i = not_stack; i < size; i++)
-#else
       for (i = size - 1; i >= not_stack; i--)
-#endif
 	if (i >= not_stack + offset)
 	  emit_push_insn (operand_subword_force (x, i, mode),
 			  word_mode, NULL_TREE, NULL_RTX, align, 0, NULL_RTX,

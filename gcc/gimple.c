@@ -2565,8 +2565,8 @@ infer_nonnull_range (gimple stmt, tree op, bool dereference, bool attribute)
 	    {
 	      for (unsigned int i = 0; i < gimple_call_num_args (stmt); i++)
 		{
-		  if (operand_equal_p (op, gimple_call_arg (stmt, i), 0)
-		      && POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (stmt, i))))
+		  if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (stmt, i)))
+		      && operand_equal_p (op, gimple_call_arg (stmt, i), 0))
 		    return true;
 		}
 	      return false;

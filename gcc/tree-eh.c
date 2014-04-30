@@ -1550,6 +1550,8 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   /* Make sure that the last case is the default label, as one is required.
      Then sort the labels, which is also required in GIMPLE.  */
   CASE_LOW (last_case) = NULL;
+  tree tem = case_label_vec.pop ();
+  gcc_assert (tem == last_case);
   sort_case_labels (case_label_vec);
 
   /* Build the switch statement, setting last_case to be the default

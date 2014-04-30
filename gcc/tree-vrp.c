@@ -4356,7 +4356,7 @@ debug_all_value_ranges (void)
 
 /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,
    create a new SSA name N and return the assertion assignment
-   'V = ASSERT_EXPR <V, V OP W>'.  */
+   'N = ASSERT_EXPR <V, V OP W>'.  */
 
 static gimple
 build_assert_expr_for (tree cond, tree v)
@@ -6037,7 +6037,7 @@ process_assert_insertions (void)
     }
    else
     {
-      y = ASSERT_EXPR <y, x <= y>
+      y = ASSERT_EXPR <y, x >= y>
       x = y + 3
     }
 

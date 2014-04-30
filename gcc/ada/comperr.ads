@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,8 @@ package Comperr is
 
    procedure Compiler_Abort
      (X            : String;
-      Code         : Integer := 0;
-      Fallback_Loc : String := "");
+      Fallback_Loc : String  := "";
+      From_GCC     : Boolean := False);
    pragma No_Return (Compiler_Abort);
    --  Signals an internal compiler error. Never returns control. Depending on
    --  processing may end up raising Unrecoverable_Error, or exiting directly.
@@ -46,10 +46,9 @@ package Comperr is
    --  Note that this is only used at the outer level (to handle constraint
    --  errors or assert errors etc.) In the normal logic of the compiler we
    --  always use pragma Assert to check for errors, and if necessary an
-   --  explicit abort is achieved by pragma Assert (False). Code is positive
-   --  for a gigi abort (giving the gigi abort code), zero for a front
-   --  end exception (with possible message stored in TSD.Current_Excep,
-   --  and negative (an unused value) for a GCC abort.
+   --  explicit abort is achieved by pragma Assert (False). From_GCC is true
+   --  for a GCC abort and false for a front end exception (with a possible
+   --  message stored in TSD.Current_Excep).
 
    procedure Delete_SCIL_Files;
    --  Delete SCIL files associated with the main unit

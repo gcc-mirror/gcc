@@ -212,9 +212,12 @@ DEFTREECODE (USING_STMT, "using_stmt", tcc_statement, 1)
    parsing had occurred.  */
 DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
 
-/* An uninstantiated noexcept-specification.  DEFERRED_NOEXCEPT_PATTERN is
-   the pattern from the template, and DEFERRED_NOEXCEPT_ARGS are the
-   template arguments to substitute into the pattern when needed.  */
+/* An uninstantiated/unevaluated noexcept-specification.  For the
+   uninstantiated case, DEFERRED_NOEXCEPT_PATTERN is the pattern from the
+   template, and DEFERRED_NOEXCEPT_ARGS are the template arguments to
+   substitute into the pattern when needed.  For the unevaluated case,
+   those slots are NULL_TREE and we use get_defaulted_eh_spec to find
+   the exception-specification.  */
 DEFTREECODE (DEFERRED_NOEXCEPT, "deferred_noexcept", tcc_exceptional, 0)
 
 /* A template-id, like foo<int>.  The first operand is the template.

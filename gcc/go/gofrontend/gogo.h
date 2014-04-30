@@ -575,34 +575,9 @@ class Gogo
   void
   write_globals();
 
-  // Create trees for implicit builtin functions.
-  void
-  define_builtin_function_trees();
-
-  // Build a call to a builtin function.  PDECL should point to a NULL
-  // initialized static pointer which will hold the fndecl.  NAME is
-  // the name of the function.  NARGS is the number of arguments.
-  // RETTYPE is the return type.  It is followed by NARGS pairs of
-  // type and argument (both trees).
-  static tree
-  call_builtin(tree* pdecl, Location, const char* name, int nargs,
-	       tree rettype, ...);
-
   // Build a call to the runtime error function.
   Expression*
   runtime_error(int code, Location);
-
-  // Mark a function declaration as a builtin library function.
-  static void
-  mark_fndecl_as_builtin_library(tree fndecl);
-
-  // Build a constructor for a slice.  SLICE_TYPE_TREE is the type of
-  // the slice.  VALUES points to the values.  COUNT is the size,
-  // CAPACITY is the capacity.  If CAPACITY is NULL, it is set to
-  // COUNT.
-  static tree
-  slice_constructor(tree slice_type_tree, tree values, tree count,
-		    tree capacity);
 
   // Build required interface method tables.
   void

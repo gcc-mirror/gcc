@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,8 +74,8 @@ package body Comperr is
 
    procedure Compiler_Abort
      (X            : String;
-      Code         : Integer := 0;
-      Fallback_Loc : String := "")
+      Fallback_Loc : String  := "";
+      From_GCC     : Boolean := False)
    is
       --  The procedures below output a "bug box" with information about
       --  the cause of the compiler abort and about the preferred method
@@ -206,7 +206,7 @@ package body Comperr is
          Write_Str (") ");
 
          if X'Length + Column > 76 then
-            if Code < 0 then
+            if From_GCC then
                Write_Str ("GCC error:");
             end if;
 
@@ -235,11 +235,7 @@ package body Comperr is
             Write_Str (X);
          end if;
 
-         if Code > 0 then
-            Write_Str (", Code=");
-            Write_Int (Int (Code));
-
-         elsif Code = 0 then
+         if not From_GCC then
 
             --  For exception case, get exception message from the TSD. Note
             --  that it would be neater and cleaner to pass the exception

@@ -629,14 +629,14 @@
        (match_test "offsettable_nonstrict_memref_p (op)")))
 
 ;; Return 1 if the operand is suitable for load/store quad memory.
-;; This predicate only checks for non-atomic loads/stores.
+;; This predicate only checks for non-atomic loads/stores (not lqarx/stqcx).
 (define_predicate "quad_memory_operand"
   (match_code "mem")
 {
   rtx addr, op0, op1;
   int ret;
 
-  if (!TARGET_QUAD_MEMORY)
+  if (!TARGET_QUAD_MEMORY && !TARGET_SYNC_TI)
     ret = 0;
 
   else if (!memory_operand (op, mode))

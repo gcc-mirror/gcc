@@ -483,7 +483,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
 #define UDIV_TIME 40
 #endif /* 80x86 */
 
-#if (defined (__x86_64__) || defined (__i386__)) && W_TYPE_SIZE == 64
+#if defined (__x86_64__) && W_TYPE_SIZE == 64
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add{q} {%5,%1|%1,%5}\n\tadc{q} {%3,%0|%0,%3}"		\
 	   : "=r" ((UDItype) (sh)),					\

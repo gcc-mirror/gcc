@@ -1,3 +1,47 @@
+2014-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60980
+	* init.c (build_value_init): Don't try to call an array constructor.
+
+	PR c++/60951
+	* typeck2.c (massage_init_elt): Use maybe_constant_init.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Call ubsan_instrument_division
+	even when SANITIZE_FLOAT_DIVIDE is on.  Set doing_div_or_mod even
+	for non-integer types.
+
+2014-04-29  Jason Merrill  <jason@redhat.com>
+
+	DR 1351
+	Represent the unevaluated exception specification of an implicitly
+	declared or deleted function with a simple placeholder, not a list
+	of functions.
+	* cp-tree.h (UNEVALUATED_NOEXCEPT_SPEC_P): New.
+	* except.c (unevaluated_noexcept_spec): New.
+	* class.c (deduce_noexcept_on_destructor): Use it.
+	* decl.c (check_redeclaration_exception_specification): Call
+	maybe_instantiate_noexcept.
+	(duplicate_decls): Call it before merge_types.
+	(start_preparsed_function): Call maybe_instantiate_noexcept.
+	* decl2.c (mark_used): Call maybe_instantiate_noexcept earlier.
+	* init.c (get_nsdmi): Factor out of perform_member_init.
+	* method.c (process_subob_fn): Call maybe_instantiate_noexcept.
+	(walk_field_subobs): Consider NSDMI for EH spec.
+	(get_defaulted_eh_spec): New.
+	(implicitly_declare_fn): Use unevaluated_noexcept_spec.
+	(defaulted_late_check): Defer EH checking in non-template classes.
+	(after_nsdmi_defaulted_late_checks): New.
+	* parser.c (cp_parser_class_specifier_1): Use it.
+	(unparsed_classes): New macro.
+	* parser.h (cp_unparsed_functions_entry_d): Add classes field.
+	* pt.c (maybe_instantiate_noexcept): Use get_defaulted_eh_spec.
+	Remove list-of-functions handling.
+	* typeck2.c (merge_exception_specifiers): Remove list-of-functions
+	handling and FN parameter.
+	* typeck.c (merge_types): Adjust.
+
 2014-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59120

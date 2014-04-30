@@ -1645,6 +1645,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_FREE:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_POSIX_MEMALIGN:
+	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
 	case BUILT_IN_ALLOCA:
 	case BUILT_IN_ALLOCA_WITH_ALIGN:
@@ -1955,6 +1956,7 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	/* Allocating memory does not have any side-effects apart from
 	   being the definition point for the pointer.  */
 	case BUILT_IN_MALLOC:
+	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
 	case BUILT_IN_STRDUP:
 	case BUILT_IN_STRNDUP:

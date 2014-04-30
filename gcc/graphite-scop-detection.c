@@ -1056,7 +1056,7 @@ create_sese_edges (vec<sd_region> regions)
 
 #ifdef ENABLE_CHECKING
   verify_loop_structure ();
-  verify_ssa (false);
+  verify_ssa (false, true);
 #endif
 }
 

@@ -8316,7 +8316,8 @@ aarch64_cannot_change_mode_class (enum machine_mode from,
   /* Limited combinations of subregs are safe on FPREGs.  Particularly,
      1. Vector Mode to Scalar mode where 1 unit of the vector is accessed.
      2. Scalar to Scalar for integer modes or same size float modes.
-     3. Vector to Vector modes.  */
+     3. Vector to Vector modes.
+     4. On little-endian only, Vector-Structure to Vector modes.  */
   if (GET_MODE_SIZE (from) > GET_MODE_SIZE (to))
     {
       if (aarch64_vector_mode_supported_p (from)
@@ -8332,9 +8333,39 @@ aarch64_cannot_change_mode_class (enum machine_mode from,
       if (aarch64_vector_mode_supported_p (from)
 	  && aarch64_vector_mode_supported_p (to))
 	return false;
+
+      /* Within an vector structure straddling multiple vector registers
+	 we are in a mixed-endian representation.  As such, we can't
+	 easily change modes for BYTES_BIG_ENDIAN.  Otherwise, we can
+	 switch between vectors and vector structures cheaply.  */
+      if (!BYTES_BIG_ENDIAN)
+	if ((aarch64_vector_mode_supported_p (from)
+	      && aarch64_vect_struct_mode_p (to))
+	    || (aarch64_vector_mode_supported_p (to)
+	      && aarch64_vect_struct_mode_p (from)))
+	  return false;
     }
 
   return true;
+}
+
+/* Implement MODES_TIEABLE_P.  */
+
+bool
+aarch64_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+{
+  if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
+    return true;
+
+  /* We specifically want to allow elements of "structure" modes to
+     be tieable to the structure.  This more general condition allows
+     other rarer situations too.  */
+  if (TARGET_SIMD
+      && aarch64_vector_mode_p (mode1)
+      && aarch64_vector_mode_p (mode2))
+    return true;
+
+  return false;
 }
 
 #undef TARGET_ADDRESS_COST

@@ -3159,7 +3159,7 @@ m32c_illegal_subreg_p (rtx op)
 {
   int offset;
   unsigned int i;
-  int src_mode, dest_mode;
+  enum machine_mode src_mode, dest_mode;
 
   if (GET_CODE (op) == MEM
       && ! m32c_legitimate_address_p (Pmode, XEXP (op, 0), false))
