@@ -1,3 +1,8 @@
+2014-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/48329
+	* gfortran.dg/vect/pr48329.f90: New testcase.
+
 2014-04-30  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/div-by-zero-5.c: Fix formatting.
