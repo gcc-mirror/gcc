@@ -937,13 +937,13 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   /* The case -fcoarray=single is handled elsewhere.  */
   gcc_assert (gfc_option.coarray != GFC_FCOARRAY_SINGLE);
 
-  gfc_init_coarray_decl (false);
-
   /* Argument-free version: THIS_IMAGE().  */
   if (expr->value.function.actual->expr == NULL)
     {
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1,
+				 integer_zero_node);
       se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
-			       gfort_gvar_caf_this_image);
+			       tmp);
       return;
     }
 
@@ -1039,9 +1039,10 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   */
 
   /* this_image () - 1.  */
-  tmp = fold_convert (type, gfort_gvar_caf_this_image);
-  tmp = fold_build2_loc (input_location, MINUS_EXPR, type, tmp,
-		       build_int_cst (type, 1));
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1,
+			     integer_zero_node);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, type,
+			 fold_convert (type, tmp), build_int_cst (type, 1));
   if (corank == 1)
     {
       /* sub(1) = m + lcobound(corank).  */
@@ -1244,8 +1245,10 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
     num_images = build_int_cst (type, 1);
   else
     {
-      gfc_init_coarray_decl (false);
-      num_images = fold_convert (type, gfort_gvar_caf_num_images);
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
+				 integer_zero_node,
+				 build_int_cst (integer_type_node, -1));
+      num_images = fold_convert (type, tmp);
     }
 
   tmp = gfc_create_var (type, NULL);
@@ -1264,9 +1267,10 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 static void
 trans_num_images (gfc_se * se)
 {
-  gfc_init_coarray_decl (false);
-  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
-			   gfort_gvar_caf_num_images);
+  tree tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
+				  integer_zero_node,
+				  build_int_cst (integer_type_node, -1));
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
 
@@ -1607,13 +1611,13 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	{
           tree cosize;
 
-	  gfc_init_coarray_decl (false);
 	  cosize = gfc_conv_descriptor_cosize (desc, arg->expr->rank, corank);
-
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images,
+				     2, integer_zero_node,
+				     build_int_cst (integer_type_node, -1));
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
-				 fold_convert (gfc_array_index_type,
-					       gfort_gvar_caf_num_images),
+				 fold_convert (gfc_array_index_type, tmp),
 				 build_int_cst (gfc_array_index_type, 1));
 	  tmp = fold_build2_loc (input_location, TRUNC_DIV_EXPR,
 				 gfc_array_index_type, tmp,
@@ -1624,11 +1628,12 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
       else if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
 	{
 	  /* ubound = lbound + num_images() - 1.  */
-	  gfc_init_coarray_decl (false);
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images,
+				     2, integer_zero_node,
+				     build_int_cst (integer_type_node, -1));
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
-				 fold_convert (gfc_array_index_type,
-					       gfort_gvar_caf_num_images),
+				 fold_convert (gfc_array_index_type, tmp),
 				 build_int_cst (gfc_array_index_type, 1));
 	  resbound = fold_build2_loc (input_location, PLUS_EXPR,
 				      gfc_array_index_type, resbound, tmp);

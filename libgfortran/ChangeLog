@@ -1,3 +1,21 @@
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_this_image, _gfortran_caf_num_images):
+	New prototypes.
+	(_gfortran_caf_init): Change prototype.
+	(mpi_token_t): New typedef.
+	(TOKEN): New define.
+	* caf/mpi.c (_gfortran_caf_this_image, _gfortran_caf_num_images):
+	New functions.
+	(_gfortran_caf_init): Update.
+	(_gfortran_caf_finalize, _gfortran_caf_register,
+	_gfortran_caf_deregister): Use mpi_token_t.
+	* caf/single.c (_gfortran_caf_this_image, _gfortran_caf_num_images):
+	New functions.
+	(_gfortran_caf_init): Update.
+	(_gfortran_caf_finalize, _gfortran_caf_register,
+	_gfortran_caf_deregister): Use mpi_token_t, simplify.
+
 2014-04-26  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/52539
