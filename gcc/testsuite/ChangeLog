@@ -1,3 +1,8 @@
+2014-04-30  Soundararajan Dhakshinamoorthy  <sounderarajan.d@atmel.com>
+
+	* gcc.c-torture/execute/pr58419.c: Use dummy no-inline function
+	instead of getpid.
+
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_poly_7.f90
