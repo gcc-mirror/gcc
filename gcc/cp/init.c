@@ -339,7 +339,8 @@ build_value_init (tree type, tsubst_flags_t complain)
   gcc_assert (!processing_template_decl
 	      || (SCALAR_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE));
 
-  if (type_build_ctor_call (type))
+  if (CLASS_TYPE_P (type)
+      && type_build_ctor_call (type))
     {
       tree ctor = build_aggr_init_expr
 	(type,
