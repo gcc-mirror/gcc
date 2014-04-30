@@ -1959,7 +1959,8 @@ tree
 make_int_cst_stat (int len, int ext_len MEM_STAT_DECL)
 {
   tree t;
-  int length = (ext_len - 1) * sizeof (HOST_WIDE_INT) + sizeof (struct tree_int_cst);
+  int length = ((ext_len - 1) * sizeof (HOST_WIDE_INT)
+		+ sizeof (struct tree_int_cst));
 
   gcc_assert (len);
   record_node_allocation_statistics (INTEGER_CST, length);
