@@ -1,5 +1,9 @@
 2014-05-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
+	* config/arc/arc.c (TARGET_LRA_P): Undef before redefine.
+
+2014-05-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
 	* config/arc/arc.c (arc_select_cc_mode): Fix typo.
 
 2014-05-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
