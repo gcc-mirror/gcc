@@ -994,7 +994,7 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
   if (GET_MODE_CLASS (mode) == MODE_INT
       && y == const0_rtx
       && (op == EQ || op == NE
-	  || ((op == LT || op == GE) && GET_MODE_SIZE (GET_MODE (x)) <= 4))))
+	  || ((op == LT || op == GE) && GET_MODE_SIZE (GET_MODE (x)) <= 4)))
     return CC_ZNmode;
 
   /* add.f for if (a+b) */

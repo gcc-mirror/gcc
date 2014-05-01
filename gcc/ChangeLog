@@ -1,3 +1,7 @@
+2014-05-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/arc/arc.c (arc_select_cc_mode): Fix typo.
+
 2014-05-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* tree-if-conv.c (is_cond_scalar_reduction): New function.
