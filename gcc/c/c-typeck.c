@@ -2107,7 +2107,8 @@ default_conversion (tree exp)
 
   if (code == VOID_TYPE)
     {
-      error ("void value not ignored as it ought to be");
+      error_at (EXPR_LOC_OR_LOC (exp, input_location),
+		"void value not ignored as it ought to be");
       return error_mark_node;
     }
 

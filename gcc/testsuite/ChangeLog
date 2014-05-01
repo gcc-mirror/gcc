@@ -1,3 +1,8 @@
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56989
+	* gcc.dg/pr56989.c: New test.
+
 2014-04-30  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (go-gc-tests): For rundir, pass extra files
