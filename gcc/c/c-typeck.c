@@ -100,14 +100,15 @@ static void push_string (const char *);
 static void push_member_name (tree);
 static int spelling_length (void);
 static char *print_spelling (char *);
-static void warning_init (int, const char *);
+static void warning_init (location_t, int, const char *);
 static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
 static void output_init_element (location_t, tree, tree, bool, tree, tree, int,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
 static int set_designator (int, struct obstack *);
 static void push_range_stack (tree, struct obstack *);
-static void add_pending_init (tree, tree, tree, bool, struct obstack *);
+static void add_pending_init (location_t, tree, tree, tree, bool,
+			      struct obstack *);
 static void set_nonincremental_init (struct obstack *);
 static void set_nonincremental_init_from_string (tree, struct obstack *);
 static tree find_init_member (tree, struct obstack *);
@@ -6446,15 +6447,15 @@ pedwarn_init (location_t location, int opt, const char *gmsgid)
    component name is taken from the spelling stack.  */
 
 static void
-warning_init (int opt, const char *gmsgid)
+warning_init (location_t loc, int opt, const char *gmsgid)
 {
   char *ofwhat;
 
   /* The gmsgid may be a format string with %< and %>. */
-  warning (opt, gmsgid);
+  warning_at (loc, opt, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
-    warning (opt, "(near initialization for %qs)", ofwhat);
+    warning_at (loc, opt, "(near initialization for %qs)", ofwhat);
 }
 
 /* If TYPE is an array type and EXPR is a parenthesized string
@@ -7300,7 +7301,8 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
   if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned)
     {
       missing_braces_mentioned = 1;
-      warning_init (OPT_Wmissing_braces, "missing braces around initializer");
+      warning_init (input_location, OPT_Wmissing_braces,
+		    "missing braces around initializer");
     }
 
   if (TREE_CODE (constructor_type) == RECORD_TYPE
@@ -7361,7 +7363,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
   else
     {
       if (constructor_type != error_mark_node)
-	warning_init (0, "braces around scalar initializer");
+	warning_init (input_location, 0, "braces around scalar initializer");
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
     }
@@ -7776,8 +7778,8 @@ set_init_label (tree fieldname, struct obstack * braced_init_obstack)
    existing initializer.  */
 
 static void
-add_pending_init (tree purpose, tree value, tree origtype, bool implicit,
-		  struct obstack * braced_init_obstack)
+add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
+		  bool implicit, struct obstack *braced_init_obstack)
 {
   struct init_node *p, **q, *r;
 
@@ -7798,9 +7800,12 @@ add_pending_init (tree purpose, tree value, tree origtype, bool implicit,
 	      if (!implicit)
 		{
 		  if (TREE_SIDE_EFFECTS (p->value))
-		    warning_init (0, "initialized field with side-effects overwritten");
+		    warning_init (loc, 0,
+				  "initialized field with side-effects "
+				  "overwritten");
 		  else if (warn_override_init)
-		    warning_init (OPT_Woverride_init, "initialized field overwritten");
+		    warning_init (loc, OPT_Woverride_init,
+				  "initialized field overwritten");
 		}
 	      p->value = value;
 	      p->origtype = origtype;
@@ -7825,9 +7830,12 @@ add_pending_init (tree purpose, tree value, tree origtype, bool implicit,
 	      if (!implicit)
 		{
 		  if (TREE_SIDE_EFFECTS (p->value))
-		    warning_init (0, "initialized field with side-effects overwritten");
+		    warning_init (loc, 0,
+				  "initialized field with side-effects "
+				  "overwritten");
 		  else if (warn_override_init)
-		    warning_init (OPT_Woverride_init, "initialized field overwritten");
+		    warning_init (loc, OPT_Woverride_init,
+				  "initialized field overwritten");
 		}
 	      p->value = value;
 	      p->origtype = origtype;
@@ -8016,10 +8024,8 @@ set_nonincremental_init (struct obstack * braced_init_obstack)
     return;
 
   FOR_EACH_CONSTRUCTOR_ELT (constructor_elements, ix, index, value)
-    {
-      add_pending_init (index, value, NULL_TREE, true,
-			braced_init_obstack);
-    }
+    add_pending_init (input_location, index, value, NULL_TREE, true,
+		      braced_init_obstack);
   constructor_elements = NULL;
   if (TREE_CODE (constructor_type) == RECORD_TYPE)
     {
@@ -8112,7 +8118,7 @@ set_nonincremental_init_from_string (tree str,
 	}
 
       value = build_int_cst_wide (type, val[1], val[0]);
-      add_pending_init (purpose, value, NULL_TREE, true,
+      add_pending_init (input_location, purpose, value, NULL_TREE, true,
                         braced_init_obstack);
     }
 
@@ -8278,7 +8284,7 @@ output_init_element (location_t loc, tree value, tree origtype,
       if (checktype != error_mark_node
 	  && (TYPE_MAIN_VARIANT (checktype)
 	      != TYPE_MAIN_VARIANT (DECL_BIT_FIELD_TYPE (field))))
-	warning_init (OPT_Wc___compat,
+	warning_init (loc, OPT_Wc___compat,
 		      "enum conversion in initialization is invalid in C++");
     }
 
@@ -8314,7 +8320,7 @@ output_init_element (location_t loc, tree value, tree origtype,
 	  && tree_int_cst_lt (field, constructor_unfilled_index))
 	set_nonincremental_init (braced_init_obstack);
 
-      add_pending_init (field, value, origtype, implicit,
+      add_pending_init (loc, field, value, origtype, implicit,
 			braced_init_obstack);
       return;
     }
@@ -8341,7 +8347,7 @@ output_init_element (location_t loc, tree value, tree origtype,
 	    }
 	}
 
-      add_pending_init (field, value, origtype, implicit,
+      add_pending_init (loc, field, value, origtype, implicit,
 			braced_init_obstack);
       return;
     }
@@ -8351,10 +8357,11 @@ output_init_element (location_t loc, tree value, tree origtype,
       if (!implicit)
 	{
 	  if (TREE_SIDE_EFFECTS (constructor_elements->last ().value))
-	    warning_init (0,
+	    warning_init (loc, 0,
 			  "initialized field with side-effects overwritten");
 	  else if (warn_override_init)
-	    warning_init (OPT_Woverride_init, "initialized field overwritten");
+	    warning_init (loc, OPT_Woverride_init,
+			  "initialized field overwritten");
 	}
 
       /* We can have just one union field set.  */
