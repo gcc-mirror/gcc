@@ -5852,7 +5852,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     vice-versa.  */
 		  if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		      & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		    WARN_FOR_QUALIFIERS (location, 0,
+		    WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 					 G_("passing argument %d of %qE "
 					    "makes %q#v qualified function "
 					    "pointer from unqualified"),
@@ -5868,7 +5868,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		}
 	      else if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
 		       & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
-		WARN_FOR_QUALIFIERS (location, 0,
+		WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 				     G_("passing argument %d of %qE discards "
 					"%qv qualifier from pointer target type"),
 				     G_("assignment discards %qv qualifier "
@@ -6049,7 +6049,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
 		{
-		  WARN_FOR_QUALIFIERS (location, 0,
+		  WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 				       G_("passing argument %d of %qE discards "
 					  "%qv qualifier from pointer target type"),
 				       G_("assignment discards %qv qualifier "
@@ -6086,7 +6086,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		WARN_FOR_QUALIFIERS (location, 0,
+		WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 				     G_("passing argument %d of %qE makes "
 					"%q#v qualified function pointer "
 					"from unqualified"),

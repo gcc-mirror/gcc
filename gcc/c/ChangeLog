@@ -1,5 +1,11 @@
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/43245
+	* c-typeck.c (convert_for_assignment): Pass OPT_Wdiscarded_qualifiers
+	instead of 0 to WARN_FOR_QUALIFIERS.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/56989
 	* c-typeck.c (default_conversion): Use better location for
 	error call.
