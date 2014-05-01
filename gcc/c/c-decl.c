@@ -9564,6 +9564,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		}
 	      return specs;
 	    case RID_BOOL:
+	      if (!flag_isoc99 && !in_system_header_at (loc))
+		pedwarn (loc, OPT_Wpedantic,
+			 "ISO C90 does not support boolean types");
 	      if (specs->long_p)
 		error_at (loc,
 			  ("both %<long%> and %<_Bool%> in "

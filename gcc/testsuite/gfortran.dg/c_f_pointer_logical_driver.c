@@ -4,13 +4,13 @@
 
 #define NUM_ELEMS 10
 
-void test_scalar(_Bool *my_c_bool_ptr);
-void test_array(_Bool *my_bool_array, int num_elems);
+void test_scalar(bool *my_c_bool_ptr);
+void test_array(bool *my_bool_array, int num_elems);
 
 int main(int argc, char **argv)
 {
-  _Bool my_bool = true;
-  _Bool my_bool_array[NUM_ELEMS];
+  bool my_bool = true;
+  bool my_bool_array[NUM_ELEMS];
   int i;
 
   test_scalar(&my_bool);

@@ -1,5 +1,11 @@
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/29467
+	* c-decl.c (declspecs_add_type): Pedwarn if boolean types are used
+	in C89 mode.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/43245
 	* c-typeck.c (convert_for_assignment): Pass OPT_Wdiscarded_qualifiers
 	instead of 0 to WARN_FOR_QUALIFIERS.

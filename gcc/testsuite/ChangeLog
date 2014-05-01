@@ -1,5 +1,15 @@
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/29467
+	* gcc.dg/pr29467.c: New test.
+	* gcc.dg/declspec-13.c: Renumber some dg-warnings.  Add dg-warnings
+	about boolean types.
+	* gfortran.dg/bind_c_usage_24_c.c: Include <stdbool.h>.  Change _Bool
+	to bool.
+	* gfortran.dg/c_f_pointer_logical_driver.c: Change _Bool to bool.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/43245
 	* gcc.dg/pr43245.c: New test.
 
