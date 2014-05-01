@@ -355,6 +355,10 @@ Wdeprecated
 C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
 
+Wdiscarded-qualifiers
+C ObjC Var(warn_discarded_qualifiers) Init(1) Warning
+Warn if type qualifiers on pointers are discarded
+
 Wdiv-by-zero
 C ObjC C++ ObjC++ Var(warn_div_by_zero) Init(1) Warning
 Warn about compile-time integer division by zero

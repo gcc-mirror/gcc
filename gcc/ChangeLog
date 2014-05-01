@@ -1,3 +1,8 @@
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/43245
+	* doc/invoke.texi: Document -Wdiscarded-qualifiers.
+
 2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (vuzp1_f32, vuzp1_p8, vuzp1_p16, vuzp1_s8,
