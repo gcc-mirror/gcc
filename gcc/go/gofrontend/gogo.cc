@@ -1147,8 +1147,6 @@ Gogo::write_globals()
           Bstatement* var_init_stmt = NULL;
 	  if (!var->has_pre_init())
 	    {
-              Bexpression* var_binit = var->get_init(this, NULL);
-
               // If the backend representation of the variable initializer is
               // constant, we can just set the initial value using
               // global_var_set_init instead of during the init() function.
@@ -1167,6 +1165,13 @@ Gogo::write_globals()
                   is_constant_initializer =
                       init_cast->is_immutable() && !var_type->has_pointer();
                 }
+
+	      // Non-constant variable initializations might need to create
+	      // temporary variables, which will need the initialization
+	      // function as context.
+              if (!is_constant_initializer && init_fndecl == NULL)
+		init_fndecl = this->initialization_function_decl();
+              Bexpression* var_binit = var->get_init(this, init_fndecl);
 
               if (var_binit == NULL)
 		;
