@@ -685,10 +685,7 @@ try_unroll_loop_completely (struct loop *loop,
   /* We do not know the number of iterations and thus we can not eliminate
      the EXIT edge.  */
   else
-    {
-      n_unroll = 0;
-      exit = NULL;
-    }
+    exit = NULL;
 
   /* See if we can improve our estimate by using recorded loop bounds.  */
   if (maxiter >= 0
