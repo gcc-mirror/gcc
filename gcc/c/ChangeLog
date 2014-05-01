@@ -1,5 +1,11 @@
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/43395
+	* c-typeck.c (c_finish_return): Distinguish between label and variable
+	when warning about returning local address.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/29467
 	* c-decl.c (declspecs_add_type): Pedwarn if boolean types are used
 	in C89 mode.
