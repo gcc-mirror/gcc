@@ -1,3 +1,10 @@
+2014-05-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* tree-if-conv.c (is_cond_scalar_reduction): New function.
+	(convert_scalar_cond_reduction): Likewise.
+	(predicate_scalar_phi): Add recognition and transformation
+	of simple conditioanl reduction to be vectorizable.
+
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c/43245
