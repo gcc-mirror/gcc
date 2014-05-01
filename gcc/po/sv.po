@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.9-b20140202\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2014-02-02 17:35+0000\n"
-"PO-Revision-Date: 2014-03-30 20:23+0200\n"
+"PO-Revision-Date: 2014-04-11 20:56+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -1493,7 +1493,7 @@ msgstr "attributen för optimeringsnivåer stämmer inte"
 
 #: cif-code.def:125
 msgid "callee refers to comdat-local symbols"
-msgstr "den anropade referarar till comdat-lokala symboler"
+msgstr "den anropade refererar till comdat-lokala symboler"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -6065,7 +6065,7 @@ msgstr "Varna för missbruk av pragman"
 
 #: c-family/c.opt:653
 msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage"
-msgstr "Warn för använding av __TIME__, __DATE__ och __TIMESTAMP__"
+msgstr "Varna för användning av __TIME__, __DATE__ och __TIMESTAMP__"
 
 #: c-family/c.opt:657
 msgid "Warn if a property for an Objective-C object has no assign semantics specified"
@@ -12220,7 +12220,7 @@ msgstr "-dumpdir <kat>\tAnge katalognamn att användas för dumpar"
 
 #: common.opt:811
 msgid "Aggressively optimize loops using language constraints"
-msgstr "Optimera aggresivt slingor med användning av språkbegränsningar"
+msgstr "Optimera aggressivt slingor med användning av språkbegränsningar"
 
 #: common.opt:815
 msgid "Align the start of functions"
@@ -13449,7 +13449,7 @@ msgstr "okänd kostnadsmodell för vektorisering %qs"
 
 #: common.opt:2332
 msgid "Enables the dynamic vectorizer cost model.  Preserved for backward compatibility."
-msgstr "Aktivera den dynamiska kostnadsmodellen för vekoriseraren.  Bevarad för bakåtkompatibilitet."
+msgstr "Aktivera den dynamiska kostnadsmodellen för vektoriseraren.  Bevarad för bakåtkompatibilitet."
 
 #: common.opt:2336
 msgid "Enables the unlimited vectorizer cost model.  Preserved for backward compatibility."
@@ -19151,7 +19151,7 @@ msgstr "längden stämmer inte i uttryck"
 #: c/c-array-notation.c:721 cp/cp-array-notation.c:610
 #, gcc-internal-format
 msgid "rank mismatch between %qE and %qE"
-msgstr "ordingen stämmer inte mellan %qE och %qE"
+msgstr "ordningen stämmer inte mellan %qE och %qE"
 
 #. Here the original expression is printed as a "heads-up"
 #. to the programmer.  This is because since there is no
@@ -25782,7 +25782,7 @@ msgstr "felaktig DISPOSE-konstruktion: %d"
 msgid "too much stack space to dispose of: %d"
 msgstr "för mycket stackutrymme att göra av med: %d"
 
-# Förmodligen en felstavning i orginalet, men tills jag vet säkert
+# Förmodligen en felstavning i originalet, men tills jag vet säkert
 # behåller jag den
 #: config/v850/v850.c:2788
 #, gcc-internal-format, gfc-internal-format
@@ -28130,7 +28130,7 @@ msgstr "den andra matchen är här"
 #: c/c-parser.c:6884
 #, gcc-internal-format
 msgid "%<_Generic%> selector of type %qT is not compatible with any association"
-msgstr "%<_Generic%>-väljare av typ %qT är inte kompatiblem med någon association"
+msgstr "%<_Generic%>-väljare av typ %qT är inte kompatibel med någon association"
 
 #: c/c-parser.c:7039 c/c-parser.c:7519 c/c-parser.c:7538
 #, gcc-internal-format
@@ -28185,7 +28185,7 @@ msgstr "-fcilkplus måste vara aktiverat för att använda %<_Cilk_spawn%>"
 #: c/c-parser.c:7505 cp/parser.c:5807
 #, gcc-internal-format
 msgid "consecutive %<_Cilk_spawn%> keywords are not permitted"
-msgstr "konsektiva %<_Cilk_spawn%>-nyckelord är inte tillåtet"
+msgstr "konsekutiva %<_Cilk_spawn%>-nyckelord är inte tillåtet"
 
 #: c/c-parser.c:7573
 #, gcc-internal-format
@@ -31055,7 +31055,7 @@ msgstr "%qD kan inte vara en skalär när %qD inte är det"
 #: cp/cp-array-notation.c:849 cp/cp-array-notation.c:855
 #, gcc-internal-format
 msgid "rank mismatch with controlling expression of parent if-statement"
-msgstr "ordingen stämmer inte med det styrande uttrycket i förälder-if-satsen"
+msgstr "ordningen stämmer inte med det styrande uttrycket i förälder-if-satsen"
 
 #: cp/cp-array-notation.c:1250
 #, gcc-internal-format
@@ -31090,7 +31090,7 @@ msgstr "startindex och längdfält är nödvändiga för att använda vektornota
 #: cp/cp-array-notation.c:1422
 #, gcc-internal-format
 msgid "array notation cannot be used with function type"
-msgstr "vektornotation kan inte användas användas med en funktionstyp"
+msgstr "vektornotation kan inte användas med en funktionstyp"
 
 #: cp/cp-array-notation.c:1432
 #, gcc-internal-format
@@ -31100,7 +31100,7 @@ msgstr "ordningen på en vektornotations trippels startindex är inte noll"
 #: cp/cp-array-notation.c:1438
 #, gcc-internal-format
 msgid "rank of an array notation triplet%'s length is not zero"
-msgstr "ordingen på en vektornotations trippels längd är inte noll"
+msgstr "ordningen på en vektornotations trippels längd är inte noll"
 
 #: cp/cp-array-notation.c:1443
 #, gcc-internal-format
@@ -31450,7 +31450,7 @@ msgstr "standardtypkonvertering kan inte härleda mallargumentet för %qD"
 #: cp/cvt.c:1659
 #, gcc-internal-format
 msgid "ambiguous default type conversion from %qT"
-msgstr "tvetydig standartypkonvertering från %qT"
+msgstr "tvetydig standardtypkonvertering från %qT"
 
 #: cp/cvt.c:1661
 #, gcc-internal-format
@@ -33747,7 +33747,7 @@ msgstr "%qD är redan definierad i klassen %qT"
 #: cp/decl.c:14531 cp/decl2.c:4673
 #, gcc-internal-format
 msgid "use of %qD before deduction of %<auto%>"
-msgstr "använding av %qD före härledning av %<auto%>"
+msgstr "användning av %qD före härledning av %<auto%>"
 
 #: cp/decl2.c:322
 #, gcc-internal-format
@@ -36027,7 +36027,7 @@ msgstr "användning av %<auto%> i lambdaparameterdeklarationer är endast tillg�
 #: cp/parser.c:14516
 #, gcc-internal-format
 msgid "use of %<auto%> in parameter declaration only available with -std=c++1y or -std=gnu++1y"
-msgstr "använding av %<auto%> i parameterdeklarationer är endast tillgängligt med -std=c++1y eller -std=gnu++1y"
+msgstr "användning av %<auto%> i parameterdeklarationer är endast tillgängligt med -std=c++1y eller -std=gnu++1y"
 
 #: cp/parser.c:14521
 #, gcc-internal-format
@@ -37288,7 +37288,7 @@ msgstr "  men %d behövs"
 #: cp/pt.c:4861
 #, gcc-internal-format
 msgid "template arguments to %qD do not match original template %qD"
-msgstr "mallargument till %qD stämmer inte med orginalmallen %qD"
+msgstr "mallargument till %qD stämmer inte med originalmallen %qD"
 
 #: cp/pt.c:4865
 #, gcc-internal-format
@@ -38326,7 +38326,7 @@ msgstr "det går inte att applicera %<offsetof%> på destrueraren %<~%T%>"
 #: cp/semantics.c:3800
 #, gcc-internal-format
 msgid "second operand of %<offsetof%> is neither a single identifier nor a sequence of member accesses and array references"
-msgstr "andra operanden till %<offsetof%> är varken en ensam idientifierare eller en sekvens av medlemsåtkomster och vektorreferenser"
+msgstr "andra operanden till %<offsetof%> är varken en ensam identifierare eller en sekvens av medlemsåtkomster och vektorreferenser"
 
 #: cp/semantics.c:3808
 #, gcc-internal-format
@@ -48120,7 +48120,7 @@ msgstr "Variabeln ”%s” vid %L av TYPE(C_PTR) eller TYPE(C_FUNPTR) får inte 
 #: fortran/resolve.c:13229
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable '%s' at %L with coarray component shall be a nonpointer, nonallocatable scalar, which is not a coarray"
-msgstr "Variabeln ”%s” vid %L med co-vektorkomponent skall vara en skalär som inte är en pekare eller allokerbar och inte en co-vaktor"
+msgstr "Variabeln ”%s” vid %L med co-vektorkomponent skall vara en skalär som inte är en pekare eller allokerbar och inte en co-vektor"
 
 #: fortran/resolve.c:13244
 #, gcc-internal-format, gfc-internal-format
@@ -49576,12 +49576,12 @@ msgstr "tidigare definition här"
 #: lto/lto-symtab.c:404
 #, gcc-internal-format
 msgid "type of %qD does not match original declaration"
-msgstr "typen på %qD stämmer inte med orginaldeklarationen"
+msgstr "typen på %qD stämmer inte med originaldeklarationen"
 
 #: lto/lto-symtab.c:412
 #, gcc-internal-format
 msgid "alignment of %qD is bigger than original declaration"
-msgstr "justering av %qD är större än orginaldeklarationen"
+msgstr "justering av %qD är större än originaldeklarationen"
 
 #: lto/lto-symtab.c:418 lto/lto-symtab.c:517
 #, gcc-internal-format
