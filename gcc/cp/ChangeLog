@@ -1,3 +1,9 @@
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/43395
+	* typeck.c (maybe_warn_about_returning_address_of_local): Distinguish
+	between label and variable when warning about returning local address.
+
 2014-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60980

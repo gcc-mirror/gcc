@@ -8310,8 +8310,9 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	warning (OPT_Wreturn_local_addr, "reference to local variable %q+D returned",
 		 whats_returned);
       else
-	warning (OPT_Wreturn_local_addr, "address of local variable %q+D returned",
-		 whats_returned);
+	warning (OPT_Wreturn_local_addr, "address of %s %q+D returned",
+		 TREE_CODE (whats_returned) == LABEL_DECL
+		 ? "label" : "local variable", whats_returned);
       return;
     }
 }
