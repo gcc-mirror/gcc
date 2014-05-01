@@ -1816,7 +1816,7 @@ evaluate_stmt (gimple stmt)
 		      {
 			val.lattice_val = CONSTANT;
 			val.value = build_int_cst (ptr_type_node, 0);
-			val.mask = double_int::from_shwi (-aligni);
+			val.mask = -aligni;
 		      }
 		  }
 		break;

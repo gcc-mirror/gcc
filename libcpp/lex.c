@@ -270,7 +270,8 @@ search_line_acc_char (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
    extensions used, so SSE4.2 executables cannot run on machines that
    don't support that extension.  */
 
-#if (GCC_VERSION >= 4005) && (defined(__i386__) || defined(__x86_64__)) && !(defined(__sun__) && defined(__svr4__))
+#if 0
+/* #if (GCC_VERSION >= 4005) && (defined(__i386__) || defined(__x86_64__)) && !(defined(__sun__) && defined(__svr4__)) */
 
 /* Replicated character data to be shared between implementations.
    Recall that outside of a context with vector support we can't
