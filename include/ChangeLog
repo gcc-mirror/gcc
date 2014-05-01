@@ -1,3 +1,7 @@
+2014-05-01  Steve Ellcey  <sellcey@mips.com>
+
+	* include/longlong.h: Use 'defined()' to check __mips16.
+
 2014-04-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* longlong.h (__i386__): Remove W_TYPE_SIZE==64 handling.
