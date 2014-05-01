@@ -1,5 +1,18 @@
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/60257
+	* c-typeck.c (warning_init): Add location_t parameter.  Call
+	warning_at instead of warning.
+	(push_init_level): Pass input_location to warning_init.
+	(add_pending_init): Add location_t parameter.  Pass loc to
+	warning_init.
+	(set_nonincremental_init): Pass input_location to add_pending_init.
+	(set_nonincremental_init_from_string): Likewise.
+	(output_init_element): Pass loc to warning_init and to
+	add_pending_init.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/43395
 	* c-typeck.c (c_finish_return): Distinguish between label and variable
 	when warning about returning local address.
