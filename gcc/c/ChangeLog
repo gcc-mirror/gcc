@@ -1,5 +1,11 @@
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/60915
+	* c-parser.c (c_parser_declaration_or_fndef): Give better error if
+	function-definition has an attribute after the declarator.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/60257
 	* c-typeck.c (warning_init): Add location_t parameter.  Call
 	warning_at instead of warning.

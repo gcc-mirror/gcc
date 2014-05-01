@@ -1688,7 +1688,19 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  if (c_parser_next_token_is_keyword (parser, RID_ASM))
 	    asm_name = c_parser_simple_asm_expr (parser);
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-	    postfix_attrs = c_parser_attributes (parser);
+	    {
+	      postfix_attrs = c_parser_attributes (parser);
+	      if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
+		{
+		  /* This means there is an attribute specifier after
+		     the declarator in a function definition.  Provide
+		     some more information for the user.  */
+		  error_at (here, "attributes should be specified before the "
+			    "declarator in a function definition");
+		  c_parser_skip_to_end_of_block_or_statement (parser);
+		  return;
+		}
+	    }
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
 	      tree d;
