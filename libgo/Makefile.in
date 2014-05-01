@@ -4357,7 +4357,7 @@ s-version: Makefile
 	rm -f version.go.tmp
 	echo "package runtime" > version.go.tmp
 	echo 'const defaultGoroot = "$(prefix)"' >> version.go.tmp
-	echo 'const theVersion = "'`$(CC) --version | sed 1q`'"' >> version.go.tmp
+	echo 'const theVersion = "'`$(GOC) --version | sed 1q`'"' >> version.go.tmp
 	echo 'const theGoarch = "'$(GOARCH)'"' >> version.go.tmp
 	echo 'const theGoos = "'$(GOOS)'"' >> version.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change version.go.tmp version.go
