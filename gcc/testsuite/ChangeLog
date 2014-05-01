@@ -1,5 +1,10 @@
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
+	PR c/60915
+	* gcc.dg/pr60915.c: New test.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/60257
 	* gcc.dg/pr60257.c: New test.
 
