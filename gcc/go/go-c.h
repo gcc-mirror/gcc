@@ -46,6 +46,8 @@ extern void go_write_globals (void);
 
 extern void go_preserve_from_gc (tree);
 
+extern bool saw_errors (void);
+
 extern const char *go_localize_identifier (const char*);
 
 extern unsigned int go_field_alignment (tree);
