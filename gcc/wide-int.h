@@ -518,7 +518,6 @@ namespace wi
   BINARY_FUNCTION udiv_floor (const T1 &, const T2 &);
   BINARY_FUNCTION sdiv_floor (const T1 &, const T2 &);
   BINARY_FUNCTION div_ceil (const T1 &, const T2 &, signop, bool * = 0);
-  BINARY_FUNCTION udiv_ceil (const T1 &, const T2 &);
   BINARY_FUNCTION div_round (const T1 &, const T2 &, signop, bool * = 0);
   BINARY_FUNCTION divmod_trunc (const T1 &, const T2 &, signop,
 				WI_BINARY_RESULT (T1, T2) *);
@@ -2581,14 +2580,6 @@ wi::div_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   if (wi::neg_p (x, sgn) == wi::neg_p (y, sgn) && remainder != 0)
     return quotient + 1;
   return quotient;
-}
-
-/* Return X / Y, rouding towards +inf.  Treat X and Y as unsigned values.  */
-template <typename T1, typename T2>
-inline WI_BINARY_RESULT (T1, T2)
-wi::udiv_ceil (const T1 &x, const T2 &y)
-{
-  return div_ceil (x, y, UNSIGNED);
 }
 
 /* Return X / Y, rouding towards nearest with ties away from zero.
