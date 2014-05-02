@@ -1754,21 +1754,19 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
     }
 }
 
-/* Compute the size to increment a pointer by.  */
+/* Compute the size to increment a pointer by.  When a function type or void
+   type or incomplete type is passed, size_one_node is returned.
+   This function does not emit any diagnostics; the caller is responsible
+   for that.  */
 
 static tree
 c_size_in_bytes (const_tree type)
 {
   enum tree_code code = TREE_CODE (type);
 
-  if (code == FUNCTION_TYPE || code == VOID_TYPE || code == ERROR_MARK)
+  if (code == FUNCTION_TYPE || code == VOID_TYPE || code == ERROR_MARK
+      || !COMPLETE_TYPE_P (type))
     return size_one_node;
-
-  if (!COMPLETE_OR_VOID_TYPE_P (type))
-    {
-      error ("arithmetic on pointer to an incomplete type");
-      return size_one_node;
-    }
 
   /* Convert in case a char is more than one unit.  */
   return size_binop_loc (input_location, CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
@@ -3530,7 +3528,6 @@ pointer_diff (location_t loc, tree op0, tree op1)
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");
 
-  /* This generates an error if op0 is pointer to incomplete type.  */
   op1 = c_size_in_bytes (target_type);
 
   if (pointer_to_zero_sized_aggr_p (TREE_TYPE (orig_op1)))
@@ -4004,16 +4001,18 @@ build_unary_op (location_t location,
 
 	if (typecode == POINTER_TYPE)
 	  {
-	    /* If pointer target is an undefined struct,
+	    /* If pointer target is an incomplete type,
 	       we just cannot know how to do the arithmetic.  */
 	    if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (argtype)))
 	      {
 		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 		  error_at (location,
-			    "increment of pointer to unknown structure");
+			    "increment of pointer to an incomplete type %qT",
+			    TREE_TYPE (argtype));
 		else
 		  error_at (location,
-			    "decrement of pointer to unknown structure");
+			    "decrement of pointer to an incomplete type %qT",
+			    TREE_TYPE (argtype));
 	      }
 	    else if (TREE_CODE (TREE_TYPE (argtype)) == FUNCTION_TYPE
 		     || TREE_CODE (TREE_TYPE (argtype)) == VOID_TYPE)
