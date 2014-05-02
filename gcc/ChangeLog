@@ -1,3 +1,14 @@
+2014-02-26  Kito Cheng  <kito@0xlab.org>
+
+	* defaults.h (HONOR_REG_ALLOC_ORDER): Change HONOR_REG_ALLOC_ORDER
+	to a C expression marco.
+	* ira-color.c (HONOR_REG_ALLOC_ORDER) : Ditto.
+	* config/arm/arm.h (HONOR_REG_ALLOC_ORDER): Ditto.
+	* config/nds32/nds32.h (HONOR_REG_ALLOC_ORDER): Ditto.
+	* doc/tm.texi (HONOR_REG_ALLOC_ORDER): Update document for
+	HONOR_REG_ALLOC_ORDER.
+	* doc/tm.texi.in (HONOR_REG_ALLOC_ORDER): Ditto.
+
 2014-05-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/arc/arc.c (TARGET_LRA_P): Undef before redefine.
