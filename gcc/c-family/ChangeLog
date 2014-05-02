@@ -1,3 +1,7 @@
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wsizeof-pointer-memaccess): Describe option.
+
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c/43245
