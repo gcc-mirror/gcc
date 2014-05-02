@@ -1,5 +1,7 @@
 2014-05-02  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (vague_linkage_p): Local statics have vague linkage.
+
 	PR c++/60992
 	* lambda.c (lambda_capture_field_type): Wrap anything dependent
 	other than 'this'.
