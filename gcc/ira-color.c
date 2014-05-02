@@ -1599,7 +1599,6 @@ check_hard_reg_p (ira_allocno_t a, int hard_regno,
     }
   return j == nregs;
 }
-#ifndef HONOR_REG_ALLOC_ORDER
 
 /* Return number of registers needed to be saved and restored at
    function prologue/epilogue if we allocate HARD_REGNO to hold value
@@ -1618,7 +1617,6 @@ calculate_saved_nregs (int hard_regno, enum machine_mode mode)
       nregs++;
   return nregs;
 }
-#endif
 
 /* Choose a hard register for allocno A.  If RETRY_P is TRUE, it means
    that the function called from function
@@ -1653,11 +1651,9 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
   enum reg_class aclass;
   enum machine_mode mode;
   static int costs[FIRST_PSEUDO_REGISTER], full_costs[FIRST_PSEUDO_REGISTER];
-#ifndef HONOR_REG_ALLOC_ORDER
   int saved_nregs;
   enum reg_class rclass;
   int add_cost;
-#endif
 #ifdef STACK_REGS
   bool no_stack_reg_p;
 #endif
@@ -1823,19 +1819,20 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	continue;
       cost = costs[i];
       full_cost = full_costs[i];
-#ifndef HONOR_REG_ALLOC_ORDER
-      if ((saved_nregs = calculate_saved_nregs (hard_regno, mode)) != 0)
-	/* We need to save/restore the hard register in
-	   epilogue/prologue.  Therefore we increase the cost.  */
+      if (!HONOR_REG_ALLOC_ORDER)
 	{
-	  rclass = REGNO_REG_CLASS (hard_regno);
-	  add_cost = ((ira_memory_move_cost[mode][rclass][0]
-		       + ira_memory_move_cost[mode][rclass][1])
-		      * saved_nregs / hard_regno_nregs[hard_regno][mode] - 1);
-	  cost += add_cost;
-	  full_cost += add_cost;
+	  if ((saved_nregs = calculate_saved_nregs (hard_regno, mode)) != 0)
+	  /* We need to save/restore the hard register in
+	     epilogue/prologue.  Therefore we increase the cost.  */
+	  {
+	    rclass = REGNO_REG_CLASS (hard_regno);
+	    add_cost = ((ira_memory_move_cost[mode][rclass][0]
+		         + ira_memory_move_cost[mode][rclass][1])
+		        * saved_nregs / hard_regno_nregs[hard_regno][mode] - 1);
+	    cost += add_cost;
+	    full_cost += add_cost;
+	  }
 	}
-#endif
       if (min_cost > cost)
 	min_cost = cost;
       if (min_full_cost > full_cost)
