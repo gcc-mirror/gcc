@@ -1,3 +1,13 @@
+2014-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59476
+	* python/libstdcxx/v6/printers.py (get_value_from_Rb_tree_node): New
+	function to handle both C++03 and C++11 _Rb_tree_node implementations.
+	(StdRbtreeIteratorPrinter, StdMapPrinter, StdSetPrinter): Use it.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Update comment to
+	refer to...
+	* testsuite/libstdc++-prettyprinters/simple11.cc: New.
+
 2014-04-27  Lars Gullik Bjønnes  <larsbj@gullik.org>
 
 	PR libstdc++/60710
