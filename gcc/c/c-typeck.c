@@ -9273,10 +9273,14 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 		  && !DECL_EXTERNAL (inner)
 		  && !TREE_STATIC (inner)
 		  && DECL_CONTEXT (inner) == current_function_decl)
-		warning_at (loc,
-			    OPT_Wreturn_local_addr, "function returns address "
-			    "of %s", TREE_CODE (inner) == LABEL_DECL
-				     ? "label" : "local variable");
+		{
+		  if (TREE_CODE (inner) == LABEL_DECL)
+		    warning_at (loc, OPT_Wreturn_local_addr,
+				"function returns address of label");
+		  else
+		    warning_at (loc, OPT_Wreturn_local_addr,
+				"function returns address of local variable");
+		}
 	      break;
 
 	    default:

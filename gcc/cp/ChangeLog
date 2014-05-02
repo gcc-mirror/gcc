@@ -1,3 +1,8 @@
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (maybe_warn_about_returning_address_of_local): Separate
+	warning_at calls.
+
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c/43395
