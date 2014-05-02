@@ -1,3 +1,12 @@
+2014-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60992
+	* lambda.c (lambda_capture_field_type): Wrap anything dependent
+	other than 'this' or a VLA.
+	(is_this): New.
+	* pt.c (tsubst_copy) [VAR_DECL]: Also build a new VAR_DECL if
+	the operand was static or constant.
+
 2014-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60980

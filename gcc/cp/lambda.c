@@ -201,6 +201,13 @@ lambda_function (tree lambda)
   return lambda;
 }
 
+static inline bool
+is_this (tree t)
+{
+  return (TREE_CODE (t) == PARM_DECL
+	  && DECL_NAME (t) == this_identifier);
+}
+
 /* Returns the type to use for the FIELD_DECL corresponding to the
    capture of EXPR.
    The caller should add REFERENCE_TYPE for capture by reference.  */
@@ -216,8 +223,9 @@ lambda_capture_field_type (tree expr, bool explicit_init_p)
     }
   else
     type = non_reference (unlowered_expr_type (expr));
-  if (!type || WILDCARD_TYPE_P (type) || type_uses_auto (type)
-      || DECL_PACK_P (expr))
+  if (type_dependent_expression_p (expr)
+      && !is_this (tree_strip_nop_conversions (expr))
+      && !array_of_runtime_bound_p (type))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
