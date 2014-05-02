@@ -1,5 +1,13 @@
 2014-05-02  Marek Polacek  <polacek@redhat.com>
 
+	PR c/25801
+	* c-typeck.c (c_size_in_bytes): Update comment.  Don't call error.
+	Return size_one_node when the type is not complete.
+	(pointer_diff): Remove comment.
+	(build_unary_op): Improve error messages.
+
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
 	* c-typeck.c (c_finish_return): Separate warning_at calls.
 
 2014-05-02  Marek Polacek  <polacek@redhat.com>
