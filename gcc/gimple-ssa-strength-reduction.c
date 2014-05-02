@@ -735,15 +735,18 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = Y * c
 	     ============================
 	     X = (B + i') * (S * c)  */
-	  base = base_cand->base_expr;
-	  index = base_cand->index;
 	  temp = tree_to_double_int (base_cand->stride)
 		 * tree_to_double_int (stride_in);
-	  stride = double_int_to_tree (TREE_TYPE (stride_in), temp);
-	  ctype = base_cand->cand_type;
-	  if (has_single_use (base_in))
-	    savings = (base_cand->dead_savings 
-		       + stmt_cost (base_cand->cand_stmt, speed));
+	  if (double_int_fits_to_tree_p (TREE_TYPE (stride_in), temp))
+	    {
+	      base = base_cand->base_expr;
+	      index = base_cand->index;
+	      stride = double_int_to_tree (TREE_TYPE (stride_in), temp);
+	      ctype = base_cand->cand_type;
+	      if (has_single_use (base_in))
+		savings = (base_cand->dead_savings 
+			   + stmt_cost (base_cand->cand_stmt, speed));
+	    }
 	}
       else if (base_cand->kind == CAND_ADD
 	       && operand_equal_p (base_cand->stride, integer_one_node, 0))

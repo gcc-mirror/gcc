@@ -1,3 +1,10 @@
+2014-05-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/60930
+	* gimple-ssa-strength-reduction.c (create_mul_imm_cand):  Reject
+	creating a multiply candidate by folding two constant
+	multiplicands when the result overflows.
+
 2014-05-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.h (TARGET_SIMD): Take AARCH64_ISA_SIMD
