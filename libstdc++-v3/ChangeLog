@@ -8,6 +8,11 @@
 	refer to...
 	* testsuite/libstdc++-prettyprinters/simple11.cc: New.
 
+	PR libstdc++/61036
+	* include/bits/shared_ptr_base.h (__shared_ptr::__shared_ptr(_Tp1*)):
+	Check the correct type in the static assertion.
+	* testsuite/20_util/shared_ptr/cons/61036.cc: New.
+
 2014-04-27  Lars Gullik Bjønnes  <larsbj@gullik.org>
 
 	PR libstdc++/60710
