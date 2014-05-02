@@ -1,3 +1,7 @@
+2014-05-02  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* hwint.h (zext_hwi): Fix signed overflow for prec == 63.
+
 2014-05-02  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_1): Tidy bit-flip
