@@ -1,3 +1,9 @@
+2014-05-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_SIMD): Take AARCH64_ISA_SIMD
+	into account.
+	(TARGET_FLOAT): Take AARCH64_ISA_FP into account.
+
 2014-04-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from mainline
