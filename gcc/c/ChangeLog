@@ -1,3 +1,9 @@
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60784
+	* c-typeck.c (push_init_level): Set constructor_designated to
+	p->designated for structures.
+
 2014-05-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60915

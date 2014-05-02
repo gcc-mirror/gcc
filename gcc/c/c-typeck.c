@@ -7270,6 +7270,9 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
 	  push_member_name (constructor_fields);
 	  constructor_depth++;
 	}
+      /* If upper initializer is designated, then mark this as
+	 designated too to prevent bogus warnings.  */
+      constructor_designated = p->designated;
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
