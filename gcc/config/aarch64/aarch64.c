@@ -8180,8 +8180,9 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       unsigned i, nelt = d->nelt;
       rtx x;
 
+      gcc_assert (nelt == (nelt & -nelt));
       for (i = 0; i < nelt; ++i)
-	d->perm[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
+	d->perm[i] ^= nelt; /* Keep the same index, but in the other vector.  */
 
       x = d->op0;
       d->op0 = d->op1;
