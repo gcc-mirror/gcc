@@ -1,3 +1,11 @@
+2014-05-01  Jeff Law  <law@redhat.com>
+
+	Revert:
+
+	2014-04-24  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+	* c-parser.c (c_parser_sizeof_expression): Reorganize slightly to
+	avoid goto.
+
 2014-05-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60784
@@ -87,11 +95,6 @@
 	output_init_element.
 	(process_init_element): Add location_t parameter.  Pass loc to
 	output_init_element.
-
-2014-04-24  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
-
-	* c-parser.c (c_parser_sizeof_expression): Reorganize slightly to
-	avoid goto.
 
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
