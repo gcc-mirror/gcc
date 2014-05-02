@@ -1,3 +1,7 @@
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Describe -fsanitize=float-divide-by-zero.
+
 2014-02-26  Kito Cheng  <kito@0xlab.org>
 
 	* defaults.h (HONOR_REG_ALLOC_ORDER): Change HONOR_REG_ALLOC_ORDER
