@@ -1,3 +1,12 @@
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* c-tree.h (error_init): Remove declaration.
+	(pedwarn_init): Likewise.
+	* c-typeck.c (error_init): Make static and move above.
+	(pedwarn_init): Likewise.
+	(warning_init): Move above.
+	(maybe_warn_string_init): Likewise.
+
 2014-05-01  Jeff Law  <law@redhat.com>
 
 	Revert:

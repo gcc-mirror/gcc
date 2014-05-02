@@ -602,8 +602,6 @@ extern tree build_compound_expr (location_t, tree, tree);
 extern tree c_cast_expr (location_t, struct c_type_name *, tree);
 extern tree build_c_cast (location_t, tree, tree);
 extern void store_init_value (location_t, tree, tree, tree);
-extern void error_init (const char *);
-extern void pedwarn_init (location_t, int opt, const char *);
 extern void maybe_warn_string_init (tree, struct c_expr);
 extern void start_init (tree, tree, int);
 extern void finish_init (void);
