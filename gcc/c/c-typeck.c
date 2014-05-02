@@ -5542,6 +5542,72 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
   return ret;
 }
 
+/* Issue an error message for a bad initializer component.
+   GMSGID identifies the message.
+   The component name is taken from the spelling stack.  */
+
+static void
+error_init (const char *gmsgid)
+{
+  char *ofwhat;
+
+  /* The gmsgid may be a format string with %< and %>. */
+  error (gmsgid);
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  if (*ofwhat)
+    error ("(near initialization for %qs)", ofwhat);
+}
+
+/* Issue a pedantic warning for a bad initializer component.  OPT is
+   the option OPT_* (from options.h) controlling this warning or 0 if
+   it is unconditionally given.  GMSGID identifies the message.  The
+   component name is taken from the spelling stack.  */
+
+static void
+pedwarn_init (location_t location, int opt, const char *gmsgid)
+{
+  char *ofwhat;
+
+  /* The gmsgid may be a format string with %< and %>. */
+  pedwarn (location, opt, gmsgid);
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  if (*ofwhat)
+    pedwarn (location, opt, "(near initialization for %qs)", ofwhat);
+}
+
+/* Issue a warning for a bad initializer component.
+
+   OPT is the OPT_W* value corresponding to the warning option that
+   controls this warning.  GMSGID identifies the message.  The
+   component name is taken from the spelling stack.  */
+
+static void
+warning_init (location_t loc, int opt, const char *gmsgid)
+{
+  char *ofwhat;
+
+  /* The gmsgid may be a format string with %< and %>. */
+  warning_at (loc, opt, gmsgid);
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  if (*ofwhat)
+    warning_at (loc, opt, "(near initialization for %qs)", ofwhat);
+}
+
+/* If TYPE is an array type and EXPR is a parenthesized string
+   constant, warn if pedantic that EXPR is being used to initialize an
+   object of type TYPE.  */
+
+void
+maybe_warn_string_init (tree type, struct c_expr expr)
+{
+  if (pedantic
+      && TREE_CODE (type) == ARRAY_TYPE
+      && TREE_CODE (expr.value) == STRING_CST
+      && expr.original_code != STRING_CST)
+    pedwarn_init (input_location, OPT_Wpedantic,
+		  "array initialized from parenthesized string constant");
+}
+
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  If ORIGTYPE is not NULL_TREE, it is the
    original type of RHS; this differs from TREE_TYPE (RHS) for enum
@@ -6405,72 +6471,6 @@ print_spelling (char *buffer)
       }
   *d++ = '\0';
   return buffer;
-}
-
-/* Issue an error message for a bad initializer component.
-   GMSGID identifies the message.
-   The component name is taken from the spelling stack.  */
-
-void
-error_init (const char *gmsgid)
-{
-  char *ofwhat;
-
-  /* The gmsgid may be a format string with %< and %>. */
-  error (gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    error ("(near initialization for %qs)", ofwhat);
-}
-
-/* Issue a pedantic warning for a bad initializer component.  OPT is
-   the option OPT_* (from options.h) controlling this warning or 0 if
-   it is unconditionally given.  GMSGID identifies the message.  The
-   component name is taken from the spelling stack.  */
-
-void
-pedwarn_init (location_t location, int opt, const char *gmsgid)
-{
-  char *ofwhat;
-
-  /* The gmsgid may be a format string with %< and %>. */
-  pedwarn (location, opt, gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    pedwarn (location, opt, "(near initialization for %qs)", ofwhat);
-}
-
-/* Issue a warning for a bad initializer component.
-
-   OPT is the OPT_W* value corresponding to the warning option that
-   controls this warning.  GMSGID identifies the message.  The
-   component name is taken from the spelling stack.  */
-
-static void
-warning_init (location_t loc, int opt, const char *gmsgid)
-{
-  char *ofwhat;
-
-  /* The gmsgid may be a format string with %< and %>. */
-  warning_at (loc, opt, gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    warning_at (loc, opt, "(near initialization for %qs)", ofwhat);
-}
-
-/* If TYPE is an array type and EXPR is a parenthesized string
-   constant, warn if pedantic that EXPR is being used to initialize an
-   object of type TYPE.  */
-
-void
-maybe_warn_string_init (tree type, struct c_expr expr)
-{
-  if (pedantic
-      && TREE_CODE (type) == ARRAY_TYPE
-      && TREE_CODE (expr.value) == STRING_CST
-      && expr.original_code != STRING_CST)
-    pedwarn_init (input_location, OPT_Wpedantic,
-		  "array initialized from parenthesized string constant");
 }
 
 /* Digest the parser output INIT as an initializer for type TYPE.
