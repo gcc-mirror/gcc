@@ -516,6 +516,7 @@ Warn about missing fields in struct initializers
 
 Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious length parameters to certain string functions if the argument uses sizeof
 
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
