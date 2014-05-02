@@ -8155,10 +8155,11 @@ maybe_initialize_constexpr_call_table (void)
 
 /* Return true if T designates the implied `this' parameter.  */
 
-static inline bool
+bool
 is_this_parameter (tree t)
 {
-  return t == current_class_ptr;
+  return (TREE_CODE (t) == PARM_DECL
+	  && DECL_NAME (t) == this_identifier);
 }
 
 /* We have an expression tree T that represents a call, either CALL_EXPR
