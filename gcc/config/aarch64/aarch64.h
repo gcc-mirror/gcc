@@ -32,7 +32,7 @@
       else						\
 	builtin_define ("__AARCH64EL__");		\
 							\
-      if (!TARGET_GENERAL_REGS_ONLY)			\
+      if (TARGET_SIMD)					\
 	builtin_define ("__ARM_NEON");			\
 							\
       switch (aarch64_cmodel)				\
@@ -83,9 +83,9 @@
 #define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 
 /* AdvSIMD is supported in the default configuration, unless disabled by
-   -mgeneral-regs-only.  */
-#define TARGET_SIMD !TARGET_GENERAL_REGS_ONLY
-#define TARGET_FLOAT !TARGET_GENERAL_REGS_ONLY
+   -mgeneral-regs-only or by the +nosimd extension.  */
+#define TARGET_SIMD (!TARGET_GENERAL_REGS_ONLY && AARCH64_ISA_SIMD)
+#define TARGET_FLOAT (!TARGET_GENERAL_REGS_ONLY && AARCH64_ISA_FP)
 
 #define UNITS_PER_WORD		8
 
@@ -185,8 +185,8 @@ extern unsigned long aarch64_isa_flags;
 extern unsigned long aarch64_tune_flags;
 #define AARCH64_TUNE_SLOWMUL       (aarch64_tune_flags & AARCH64_FL_SLOWMUL)
 
-/* Crypto is an optional feature.  */
-#define TARGET_CRYPTO AARCH64_ISA_CRYPTO
+/* Crypto is an optional extension to AdvSIMD.  */
+#define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
 
 /* Standard register usage.  */
 
