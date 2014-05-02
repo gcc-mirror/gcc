@@ -8309,10 +8309,12 @@ maybe_warn_about_returning_address_of_local (tree retval)
       if (TREE_CODE (valtype) == REFERENCE_TYPE)
 	warning (OPT_Wreturn_local_addr, "reference to local variable %q+D returned",
 		 whats_returned);
+      else if (TREE_CODE (whats_returned) == LABEL_DECL)
+	warning (OPT_Wreturn_local_addr, "address of label %q+D returned",
+		 whats_returned);
       else
-	warning (OPT_Wreturn_local_addr, "address of %s %q+D returned",
-		 TREE_CODE (whats_returned) == LABEL_DECL
-		 ? "label" : "local variable", whats_returned);
+	warning (OPT_Wreturn_local_addr, "address of local variable %q+D "
+		 "returned", whats_returned);
       return;
     }
 }
