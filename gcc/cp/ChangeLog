@@ -1,3 +1,10 @@
+2014-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58582
+	* decl.c (grokfndecl): Check duplicate_decls return value for
+	error_mark_node.
+	* pt.c (instantiate_decl): A deleted function is defined.
+
 2014-05-02  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (vague_linkage_p): Local statics have vague linkage.

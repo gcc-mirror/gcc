@@ -1,3 +1,10 @@
+2014-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58582
+	* g++.dg/cpp0x/deleted4.C: New.
+	* g++.dg/cpp0x/deleted5.C: Likewise.
+	* g++.dg/cpp0x/deleted6.C: Likewise.
+
 2014-05-03  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/61025
