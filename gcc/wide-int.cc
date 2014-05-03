@@ -1141,8 +1141,7 @@ wi::add_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
    HOST_HALF_WIDE_INTs of RESULT.  The rest of RESULT is filled by
    uncompressing the top bit of INPUT[IN_LEN - 1].  */
 static void
-wi_unpack (unsigned HOST_HALF_WIDE_INT *result,
-	   const unsigned HOST_WIDE_INT *input,
+wi_unpack (unsigned HOST_HALF_WIDE_INT *result, const HOST_WIDE_INT *input,
 	   unsigned int in_len, unsigned int out_len,
 	   unsigned int prec, signop sgn)
 {
@@ -1160,19 +1159,23 @@ wi_unpack (unsigned HOST_HALF_WIDE_INT *result,
   else
     mask = 0;
 
-  for (i = 0; i < in_len; i++)
+  for (i = 0; i < blocks_needed - 1; i++)
     {
-      HOST_WIDE_INT x = input[i];
-      if (i == blocks_needed - 1 && small_prec)
-	{
-	  if (sgn == SIGNED)
-	    x = sext_hwi (x, small_prec);
-	  else
-	    x = zext_hwi (x, small_prec);
-	}
+      HOST_WIDE_INT x = safe_uhwi (input, in_len, i);
       result[j++] = x;
       result[j++] = x >> HOST_BITS_PER_HALF_WIDE_INT;
     }
+
+  HOST_WIDE_INT x = safe_uhwi (input, in_len, i);
+  if (small_prec)
+    {
+      if (sgn == SIGNED)
+	x = sext_hwi (x, small_prec);
+      else
+	x = zext_hwi (x, small_prec);
+    }
+  result[j++] = x;
+  result[j++] = x >> HOST_BITS_PER_HALF_WIDE_INT;
 
   /* Smear the sign bit.  */
   while (j < out_len)
@@ -1332,10 +1335,8 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
     }
 
   /* We do unsigned mul and then correct it.  */
-  wi_unpack (u, (const unsigned HOST_WIDE_INT *) op1val, op1len,
-	     half_blocks_needed, prec, SIGNED);
-  wi_unpack (v, (const unsigned HOST_WIDE_INT *) op2val, op2len,
-	     half_blocks_needed, prec, SIGNED);
+  wi_unpack (u, op1val, op1len, half_blocks_needed, prec, SIGNED);
+  wi_unpack (v, op2val, op2len, half_blocks_needed, prec, SIGNED);
 
   /* The 2 is for a full mult.  */
   memset (r, 0, half_blocks_needed * 2
@@ -1531,7 +1532,7 @@ divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
 		   unsigned HOST_HALF_WIDE_INT *b_remainder,
 		   unsigned HOST_HALF_WIDE_INT *b_dividend,
 		   unsigned HOST_HALF_WIDE_INT *b_divisor,
-		   unsigned int m, unsigned int n)
+		   int m, int n)
 {
   /* The "digits" are a HOST_HALF_WIDE_INT which the size of half of a
      HOST_WIDE_INT and stored in the lower bits of each word.  This
@@ -1542,7 +1543,8 @@ divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
   unsigned HOST_WIDE_INT qhat;   /* Estimate of quotient digit.  */
   unsigned HOST_WIDE_INT rhat;   /* A remainder.  */
   unsigned HOST_WIDE_INT p;      /* Product of two digits.  */
-  HOST_WIDE_INT s, i, j, t, k;
+  HOST_WIDE_INT t, k;
+  int i, j, s;
 
   /* Single digit divisor.  */
   if (n == 1)
@@ -1769,26 +1771,17 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 	}
     }
 
-  wi_unpack (b_dividend, (const unsigned HOST_WIDE_INT *) dividend.get_val (),
-	     dividend.get_len (), dividend_blocks_needed, dividend_prec, sgn);
-  wi_unpack (b_divisor, (const unsigned HOST_WIDE_INT *) divisor.get_val (),
-	     divisor.get_len (), divisor_blocks_needed, divisor_prec, sgn);
+  wi_unpack (b_dividend, dividend.get_val (), dividend.get_len (),
+	     dividend_blocks_needed, dividend_prec, sgn);
+  wi_unpack (b_divisor, divisor.get_val (), divisor.get_len (),
+	     divisor_blocks_needed, divisor_prec, sgn);
 
-  if (wi::neg_p (dividend, sgn))
-    m = dividend_blocks_needed;
-  else
-    m = 2 * dividend.get_len ();
+  m = dividend_blocks_needed;
+  while (m > 1 && b_dividend[m - 1] == 0)
+    m--;
 
-  if (wi::neg_p (divisor, sgn))
-    n = divisor_blocks_needed;
-  else
-    n = 2 * divisor.get_len ();
-
-  /* We need to find the top non zero block of b_divisor.  At most the
-     top two blocks are zero.  */
-  if (b_divisor[n - 1] == 0)
-    n--;
-  if (b_divisor[n - 1] == 0)
+  n = divisor_blocks_needed;
+  while (n > 1 && b_divisor[n - 1] == 0)
     n--;
 
   memset (b_quotient, 0, sizeof (b_quotient));
