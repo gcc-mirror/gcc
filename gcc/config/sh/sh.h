@@ -267,9 +267,25 @@ extern int code_for_indirect_jump_scratch;
 #define SUBTARGET_ASM_RELAX_SPEC "%{m4*:-isa=sh4-up}"
 #endif
 
+/* Define which ISA type to pass to the assembler.
+   For SH4 we pass SH4A to allow using some instructions that are available
+   on some SH4 variants, but officially are part of the SH4A ISA.  */
 #define SH_ASM_SPEC \
  "%(subtarget_asm_endian_spec) %{mrelax:-relax %(subtarget_asm_relax_spec)} \
 %(subtarget_asm_isa_spec) %(subtarget_asm_spec) \
+%{m1:--isa=sh} \
+%{m2:--isa=sh2} \
+%{m2e:--isa=sh2e} \
+%{m3:--isa=sh3} \
+%{m3e:--isa=sh3e} \
+%{m4:--isa=sh4a} \
+%{m4-single:--isa=sh4a} \
+%{m4-single-only:--isa=sh4a} \
+%{m4-nofpu:--isa=sh4a-nofpu} \
+%{m4a:--isa=sh4a} \
+%{m4a-single:--isa=sh4a} \
+%{m4a-single-only:--isa=sh4a} \
+%{m4a-nofpu:--isa=sh4a-nofpu} \
 %{m2a:--isa=sh2a} \
 %{m2a-single:--isa=sh2a} \
 %{m2a-single-only:--isa=sh2a} \
