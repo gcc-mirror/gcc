@@ -1,3 +1,13 @@
+2014-05-03  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/61025
+	* gfortran.dg/coarray_lib_this_image_1.f90: Adjust the dg-final
+	regexps for -m32.
+	* gfortran.dg/coarray_lib_this_image_2.f90: Likewise.
+	* gfortran.dg/coarray_poly_7.f90: Likewise.
+	* gfortran.dg/coarray_poly_8.f90: Likewise.
+	* gfortran.dg/coarray_poly_9.f90: Likewise.
+
 2014-05-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/25801
