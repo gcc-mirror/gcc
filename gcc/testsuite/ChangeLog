@@ -4,9 +4,9 @@
 	* gfortran.dg/coarray_lib_this_image_1.f90: Adjust the dg-final
 	regexps for -m32.
 	* gfortran.dg/coarray_lib_this_image_2.f90: Likewise.
+	* gfortran.dg/coarray_poly_6.f90: Likewise.
 	* gfortran.dg/coarray_poly_7.f90: Likewise.
 	* gfortran.dg/coarray_poly_8.f90: Likewise.
-	* gfortran.dg/coarray_poly_9.f90: Likewise.
 
 2014-05-02  Marek Polacek  <polacek@redhat.com>
 
@@ -70,9 +70,9 @@
 
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/coarray_poly_6.f90
 	* gfortran.dg/coarray_poly_7.f90
 	* gfortran.dg/coarray_poly_8.f90
-	* gfortran.dg/coarray_poly_9.f90
 
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
