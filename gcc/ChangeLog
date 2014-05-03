@@ -1,5 +1,9 @@
 2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.h (SH_ASM_SPEC): Handle m1, m2*, m3* and m4* cases.
+
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.h (ROUND_ADVANCE): Delete macro.
 	(ROUND_REG, PASS_IN_REG_P): Move and rename macros to ...
 	* config/sh/sh.c (sh_round_reg, sh_pass_in_reg_p): ... these new
