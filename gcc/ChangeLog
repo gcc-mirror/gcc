@@ -1,5 +1,17 @@
 2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.h (ROUND_ADVANCE): Delete macro.
+	(ROUND_REG, PASS_IN_REG_P): Move and rename macros to ...
+	* config/sh/sh.c (sh_round_reg, sh_pass_in_reg_p): ... these new
+	functions.
+	(sh_arg_partial_bytes, sh_function_arg, sh_function_arg_advance,
+	sh_setup_incoming_varargs): Replace usage of PASS_IN_REG_P with
+	sh_pass_in_reg_p.
+	Replace usage of ROUND_REG with sh_round_reg.
+	Use CEIL instead of ROUND_ADVANCE.
+
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/61026
 	* config/sh/sh.c: Include stdlib headers before everything else.
 
