@@ -19,6 +19,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <sstream>
+#include <vector>
+#include <algorithm>
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -69,10 +73,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "pass_manager.h"
 #include "context.h"
-
-#include <sstream>
-#include <vector>
-#include <algorithm>
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 

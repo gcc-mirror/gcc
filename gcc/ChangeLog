@@ -1,3 +1,8 @@
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61026
+	* config/sh/sh.c: Include stdlib headers before everything else.
+
 2014-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_adjust_omp_clauses_1): Handle
