@@ -1,3 +1,7 @@
+2014-05-03  Denis Chertykov  <chertykov@gmail.com>
+
+	* config/avr/avr.c (avr_adjust_insn_length): Handle JUMP_TABLE_DATA.
+
 2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (SH_ASM_SPEC): Handle m1, m2*, m3* and m4* cases.
