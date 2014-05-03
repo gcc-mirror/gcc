@@ -1,8 +1,15 @@
+2014-05-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from 4.9
+	PR libfortran/56919
+	* intrinsics/system_clock.c (GF_CLOCK_MONOTONIC): Check
+	_POSIX_MONOTONIC_CLOCK as well.
+
 2014-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	Backport from mainline
 	PR libfortran/60810
-	io/unit.c (is_trim_ok): If internal unit is array, do not trim.
+	* io/unit.c (is_trim_ok): If internal unit is array, do not trim.
 
 2014-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
