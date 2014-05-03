@@ -32,7 +32,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* POSIX states that CLOCK_REALTIME must be present if clock_gettime
    is available, others are optional.  */
 #if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_CLOCK_GETTIME_LIBRT)
-#ifdef CLOCK_MONOTONIC
+#if defined(CLOCK_MONOTONIC) && defined(_POSIX_MONOTONIC_CLOCK) \
+  && _POSIX_MONOTONIC_CLOCK >= 0
 #define GF_CLOCK_MONOTONIC CLOCK_MONOTONIC
 #else
 #define GF_CLOCK_MONOTONIC CLOCK_REALTIME
