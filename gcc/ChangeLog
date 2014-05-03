@@ -1,3 +1,9 @@
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Back port from mainline
+	PR target/61026
+	* config/sh/sh.c: Include stdlib headers before everything else.
+
 2014-05-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/60930
