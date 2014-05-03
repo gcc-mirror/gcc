@@ -1,3 +1,17 @@
+2014-05-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_isa_rev): New variable.
+	(mips_set_architecture): Set it.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Set __mips_isa_rev
+	from mips_isa_rev.
+	(ISA_HAS_MUL3, ISA_HAS_FP_CONDMOVE, ISA_HAS_8CC, ISA_HAS_FP4)
+	(ISA_HAS_PAIRED_SINGLE, ISA_HAS_MADD_MSUB, ISA_HAS_FP_RECIP_RSQRT)
+	(ISA_HAS_CLZ_CLO, ISA_HAS_ROR, ISA_HAS_WSBH, ISA_HAS_PREFETCH)
+	(ISA_HAS_SEB_SEH, ISA_HAS_EXT_INS, ISA_HAS_MXHC1)
+	(ISA_HAS_HILO_INTERLOCKS, ISA_HAS_SYNCI, MIN_FPRS_PER_FMT): Reexpress
+	conditions in terms of mips_isa_rev.
+	(mips_isa_rev): Declare.
+
 2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh-mem.cc: Use tabs instead of spaces.
