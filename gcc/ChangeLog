@@ -1,3 +1,10 @@
+2014-05-03  Joey Ye  <joey.ye@arm.com>
+
+	Backport from mainline r209463
+	2014-04-17  Joey Ye  <joey.ye@arm.com>
+
+	* opts.c (OPT_fif_conversion, OPT_fif_conversion2): Disable for Og.
+
 2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Back port from mainline
