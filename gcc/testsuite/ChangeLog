@@ -1,3 +1,10 @@
+2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/pack02.c (dg-options): Add -mhard-float.
+	(dg-require-effective-target): Change target to powerpc_fprs.
+	* gcc.target/powerpc/pack03.c (dg-options): Add -mhard-dfp.
+	(dg-require-effective-target): Change target to dfprt.
+
 2014-05-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/60930
