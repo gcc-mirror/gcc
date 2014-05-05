@@ -931,7 +931,7 @@ class Sink_expression : public Expression
  public:
   Sink_expression(Location location)
     : Expression(EXPRESSION_SINK, location),
-      type_(NULL), var_(NULL_TREE)
+      type_(NULL), bvar_(NULL)
   { }
 
  protected:
@@ -959,7 +959,7 @@ class Sink_expression : public Expression
   // The type of this sink variable.
   Type* type_;
   // The temporary variable we generate.
-  tree var_;
+  Bvariable* bvar_;
 };
 
 // Return the type of a sink expression.
@@ -987,13 +987,24 @@ Sink_expression::do_determine_type(const Type_context* context)
 tree
 Sink_expression::do_get_tree(Translate_context* context)
 {
-  if (this->var_ == NULL_TREE)
+  Location loc = this->location();
+  Gogo* gogo = context->gogo();
+  if (this->bvar_ == NULL)
     {
       go_assert(this->type_ != NULL && !this->type_->is_sink_type());
+      Named_object* fn = context->function();
+      go_assert(fn != NULL);
+      Bfunction* fn_ctx = fn->func_value()->get_or_make_decl(gogo, fn);
       Btype* bt = this->type_->get_backend(context->gogo());
-      this->var_ = create_tmp_var(type_to_tree(bt), "blank");
+      Bstatement* decl;
+      this->bvar_ =
+	gogo->backend()->temporary_variable(fn_ctx, context->bblock(), bt, NULL,
+					    false, loc, &decl);
+      Bexpression* var_ref = gogo->backend()->var_expression(this->bvar_, loc);
+      var_ref = gogo->backend()->compound_expression(decl, var_ref, loc);
+      return expr_to_tree(var_ref);
     }
-  return this->var_;
+  return expr_to_tree(gogo->backend()->var_expression(this->bvar_, loc));
 }
 
 // Ast dump for sink expression.
