@@ -3963,6 +3963,8 @@ Define this macro if the code for function profiling should come before
 the function prologue.  Normally, the profiling code comes after.
 @end defmac
 
+@hook TARGET_KEEP_LEAF_WHEN_PROFILED
+
 @node Tail Calls
 @subsection Permitting tail calls
 @cindex tail calls

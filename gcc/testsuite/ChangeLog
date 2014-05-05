@@ -1,5 +1,9 @@
 2014-05-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* gcc.target/s390/leaf-profile.c: New testcase.
+
+2014-05-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* gcc.dg/hoist-register-pressure-1.c: Replace int with long.
 	Disable asm scan for s390.
 	* gcc.dg/hoist-register-pressure-2.c: Likewise.
