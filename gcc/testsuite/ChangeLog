@@ -1,3 +1,10 @@
+2014-05-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/hoist-register-pressure-1.c: Replace int with long.
+	Disable asm scan for s390.
+	* gcc.dg/hoist-register-pressure-2.c: Likewise.
+	* gcc.dg/hoist-register-pressure-3.c: Likewise.
+
 2014-05-05  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/60363
