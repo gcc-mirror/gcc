@@ -890,16 +890,16 @@ Set_and_use_temporary_expression::do_address_taken(bool)
 tree
 Set_and_use_temporary_expression::do_get_tree(Translate_context* context)
 {
-  Bvariable* bvar = this->statement_->get_backend_variable(context);
-  tree var_tree = var_to_tree(bvar);
-  tree expr_tree = this->expr_->get_tree(context);
-  if (var_tree == error_mark_node || expr_tree == error_mark_node)
-    return error_mark_node;
   Location loc = this->location();
-  return build2_loc(loc.gcc_location(), COMPOUND_EXPR, TREE_TYPE(var_tree),
-		    build2_loc(loc.gcc_location(), MODIFY_EXPR, void_type_node,
-			       var_tree, expr_tree),
-		    var_tree);
+  Gogo* gogo = context->gogo();
+  Bvariable* bvar = this->statement_->get_backend_variable(context);
+  Bexpression* var_ref = gogo->backend()->var_expression(bvar, loc);
+
+  Bexpression* bexpr = tree_to_expr(this->expr_->get_tree(context));
+  Bstatement* set = gogo->backend()->assignment_statement(var_ref, bexpr, loc);
+  var_ref = gogo->backend()->var_expression(bvar, loc);
+  Bexpression* ret = gogo->backend()->compound_expression(set, var_ref, loc);
+  return expr_to_tree(ret);
 }
 
 // Dump.
@@ -931,7 +931,7 @@ class Sink_expression : public Expression
  public:
   Sink_expression(Location location)
     : Expression(EXPRESSION_SINK, location),
-      type_(NULL), var_(NULL_TREE)
+      type_(NULL), bvar_(NULL)
   { }
 
  protected:
@@ -959,7 +959,7 @@ class Sink_expression : public Expression
   // The type of this sink variable.
   Type* type_;
   // The temporary variable we generate.
-  tree var_;
+  Bvariable* bvar_;
 };
 
 // Return the type of a sink expression.
@@ -987,13 +987,24 @@ Sink_expression::do_determine_type(const Type_context* context)
 tree
 Sink_expression::do_get_tree(Translate_context* context)
 {
-  if (this->var_ == NULL_TREE)
+  Location loc = this->location();
+  Gogo* gogo = context->gogo();
+  if (this->bvar_ == NULL)
     {
       go_assert(this->type_ != NULL && !this->type_->is_sink_type());
+      Named_object* fn = context->function();
+      go_assert(fn != NULL);
+      Bfunction* fn_ctx = fn->func_value()->get_or_make_decl(gogo, fn);
       Btype* bt = this->type_->get_backend(context->gogo());
-      this->var_ = create_tmp_var(type_to_tree(bt), "blank");
+      Bstatement* decl;
+      this->bvar_ =
+	gogo->backend()->temporary_variable(fn_ctx, context->bblock(), bt, NULL,
+					    false, loc, &decl);
+      Bexpression* var_ref = gogo->backend()->var_expression(this->bvar_, loc);
+      var_ref = gogo->backend()->compound_expression(decl, var_ref, loc);
+      return expr_to_tree(var_ref);
     }
-  return this->var_;
+  return expr_to_tree(gogo->backend()->var_expression(this->bvar_, loc));
 }
 
 // Ast dump for sink expression.
@@ -14815,28 +14826,27 @@ class Struct_field_offset_expression : public Expression
 tree
 Struct_field_offset_expression::do_get_tree(Translate_context* context)
 {
-  tree type_tree = type_to_tree(this->type_->get_backend(context->gogo()));
-  if (type_tree == error_mark_node)
-    return error_mark_node;
-
-  tree val_type_tree = type_to_tree(this->type()->get_backend(context->gogo()));
-  go_assert(val_type_tree != error_mark_node);
-
   const Struct_field_list* fields = this->type_->fields();
-  tree struct_field_tree = TYPE_FIELDS(type_tree);
   Struct_field_list::const_iterator p;
+  unsigned i = 0;
   for (p = fields->begin();
        p != fields->end();
-       ++p, struct_field_tree = DECL_CHAIN(struct_field_tree))
-    {
-      go_assert(struct_field_tree != NULL_TREE);
-      if (&*p == this->field_)
-	break;
-    }
+       ++p, ++i)
+    if (&*p == this->field_)
+      break;
   go_assert(&*p == this->field_);
 
-  return fold_convert_loc(BUILTINS_LOCATION, val_type_tree,
-			  byte_position(struct_field_tree));
+  Gogo* gogo = context->gogo();
+  Btype* btype = this->type_->get_backend(gogo);
+
+  size_t offset = gogo->backend()->type_field_offset(btype, i);
+  mpz_t offsetval;
+  mpz_init_set_ui(offsetval, offset);
+  Type* uptr_type = Type::lookup_integer_type("uintptr");
+  Expression* ret = Expression::make_integer(&offsetval, uptr_type,
+					     Linemap::predeclared_location());
+  mpz_clear(offsetval);
+  return ret->get_tree(context);
 }
 
 // Dump ast representation for a struct field offset expression.

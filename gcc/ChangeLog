@@ -1,3 +1,14 @@
+2014-05-05  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/61065
+	* opts.c (common_handle_option): Call error_at instead of warning_at.
+
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Don't reset TODO_verify_ssa
+	from last_verified if update_ssa ran.  Move TODO_verify_rtl_sharing
+	under the TODO_verify_il umbrella.
+
 2014-05-05  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (execute_function_todo): Move TODO_verify_flow under
