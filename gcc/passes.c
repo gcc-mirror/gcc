@@ -1783,11 +1783,11 @@ execute_function_todo (function *fn, void *data)
 	    /* IPA passes leave stmts to be fixed up, so make sure to
 	       not verify SSA operands whose verifier will choke on that.  */
 	    verify_ssa (true, !from_ipa_pass);
-	}
-      if (flags & TODO_verify_flow)
-	verify_flow_info ();
-      if (flags & TODO_verify_il)
-	{
+	  /* IPA passes leave basic-blocks unsplit, so make sure to
+	     not trip on that.  */
+	  if ((cfun->curr_properties & PROP_cfg)
+	      && !from_ipa_pass)
+	    verify_flow_info ();
 	  if (current_loops
 	      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	    verify_loop_closed_ssa (false);
