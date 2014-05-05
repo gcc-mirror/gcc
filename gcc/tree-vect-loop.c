@@ -3791,8 +3791,12 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   /* Set phi nodes arguments.  */
   FOR_EACH_VEC_ELT (reduction_phis, i, phi)
     {
-      tree vec_init_def = vec_initial_defs[i];
-      tree def = vect_defs[i];
+      tree vec_init_def, def;
+      gimple_seq stmts;
+      vec_init_def = force_gimple_operand (vec_initial_defs[i], &stmts,
+					   true, NULL_TREE);
+      gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+      def = vect_defs[i];
       for (j = 0; j < ncopies; j++)
         {
           /* Set the loop-entry arg of the reduction-phi.  */

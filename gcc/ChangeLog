@@ -1,3 +1,32 @@
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60895
+	* tree-inline.c (declare_return_variable): Use mark_addressable.
+
+	2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60750
+	* tree-ssa-operands.c (maybe_add_call_vops): Also add VDEFs
+	for noreturn calls.
+	* tree-cfgcleanup.c (fixup_noreturn_call): Do not remove VDEFs.
+
+	2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59817
+	PR tree-optimization/60453
+	* graphite-scop-detection.c (graphite_can_represent_scev): Complete
+	recursion to catch all CHRECs in the scalar evolution and restrict
+	the predicate for the remains appropriately.
+
+	2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60836
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Force
+	initial PHI args to be gimple values.
+
 2014-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

@@ -203,7 +203,14 @@ graphite_can_represent_scev (tree scev)
 
   switch (TREE_CODE (scev))
     {
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+      return graphite_can_represent_scev (TREE_OPERAND (scev, 0));
+
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       return graphite_can_represent_scev (TREE_OPERAND (scev, 0))
 	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
@@ -225,13 +232,15 @@ graphite_can_represent_scev (tree scev)
       if (!evolution_function_right_is_integer_cst (scev)
 	  || !graphite_can_represent_init (scev))
 	return false;
+      return graphite_can_represent_scev (CHREC_LEFT (scev));
 
     default:
       break;
     }
 
   /* Only affine functions can be represented.  */
-  if (!scev_is_linear_expression (scev))
+  if (tree_contains_chrecs (scev, NULL)
+      || !scev_is_linear_expression (scev))
     return false;
 
   return true;

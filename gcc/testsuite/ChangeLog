@@ -1,3 +1,30 @@
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60895
+	* g++.dg/torture/pr60895.C: New testcase.
+
+	2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60750
+	* g++.dg/torture/pr60750.C: New testcase.
+	* gcc.dg/tree-ssa/20040517-1.c: Adjust.
+
+	2014-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59817
+	PR tree-optimization/60453
+	* gfortran.dg/graphite/pr59817.f: New testcase.
+	* gcc.dg/graphite/pr59817-1.c: Likewise.
+	* gcc.dg/graphite/pr59817-2.c: Likewise.
+
+	2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60836
+	* g++.dg/vect/pr60836.cc: New testcase.
+
 2014-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

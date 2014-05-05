@@ -2841,7 +2841,8 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	{
 	  var = return_slot;
 	  gcc_assert (TREE_CODE (var) != SSA_NAME);
-	  TREE_ADDRESSABLE (var) |= TREE_ADDRESSABLE (result);
+	  if (TREE_ADDRESSABLE (result))
+	    mark_addressable (var);
 	}
       if ((TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
            || TREE_CODE (TREE_TYPE (result)) == VECTOR_TYPE)
