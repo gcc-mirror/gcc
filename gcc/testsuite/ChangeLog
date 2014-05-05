@@ -1,3 +1,8 @@
+2014-05-05  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/60363
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Revert XFAIL test.
+
 2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/pack02.c (dg-options): Add -mhard-float.
