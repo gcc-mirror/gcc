@@ -760,16 +760,24 @@ Var_expression::do_get_tree(Translate_context* context)
 							  context->function());
   bool is_in_heap;
   Location loc = this->location();
+  Btype* btype;
+  Gogo* gogo = context->gogo();
   if (this->variable_->is_variable())
-    is_in_heap = this->variable_->var_value()->is_in_heap();
+    {
+      is_in_heap = this->variable_->var_value()->is_in_heap();
+      btype = this->variable_->var_value()->type()->get_backend(gogo);
+    }
   else if (this->variable_->is_result_variable())
-    is_in_heap = this->variable_->result_var_value()->is_in_heap();
+    {
+      is_in_heap = this->variable_->result_var_value()->is_in_heap();
+      btype = this->variable_->result_var_value()->type()->get_backend(gogo);
+    }
   else
     go_unreachable();
 
   Bexpression* ret = context->backend()->var_expression(bvar, loc);
   if (is_in_heap)
-    ret = context->backend()->indirect_expression(ret, true, loc);
+    ret = context->backend()->indirect_expression(btype, ret, true, loc);
   return expr_to_tree(ret);
 }
 
@@ -4168,20 +4176,7 @@ Unary_expression::do_get_tree(Translate_context* context)
 
 	      }
 	  }
-
-	// If the type of EXPR is a recursive pointer type, then we
-	// need to insert a cast before indirecting.
-        tree expr = expr_to_tree(bexpr);
-        tree target_type_tree = TREE_TYPE(TREE_TYPE(expr));
-        if (VOID_TYPE_P(target_type_tree))
-          {
-            tree ind = type_to_tree(pbtype);
-            expr = fold_convert_loc(loc.gcc_location(),
-                                    build_pointer_type(ind), expr);
-            bexpr = tree_to_expr(expr);
-          }
-
-        ret = gogo->backend()->indirect_expression(bexpr, false, loc);
+        ret = gogo->backend()->indirect_expression(pbtype, bexpr, false, loc);
       }
       break;
 
@@ -10329,7 +10324,10 @@ Array_index_expression::do_get_tree(Translate_context* context)
               array_type->get_value_pointer(gogo, this->array_);
 	  Bexpression* ptr = tree_to_expr(valptr->get_tree(context));
           ptr = gogo->backend()->pointer_offset_expression(ptr, start, loc);
-	  ret = gogo->backend()->indirect_expression(ptr, true, loc);
+
+	  Type* ele_type = this->array_->type()->array_type()->element_type();
+	  Btype* ele_btype = ele_type->get_backend(gogo);
+	  ret = gogo->backend()->indirect_expression(ele_btype, ptr, true, loc);
 	}
       return expr_to_tree(ret);
     }
@@ -10667,7 +10665,9 @@ String_index_expression::do_get_tree(Translate_context* context)
       Bexpression* bstart = tree_to_expr(start->get_tree(context));
       Bexpression* ptr = tree_to_expr(bytes->get_tree(context));
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
-      Bexpression* index = gogo->backend()->indirect_expression(ptr, true, loc);
+      Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
+      Bexpression* index = 
+	gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
 
       Btype* byte_btype = bytes->type()->points_to()->get_backend(gogo);
       Bexpression* index_error = tree_to_expr(bad_index->get_tree(context));
@@ -13816,7 +13816,9 @@ Heap_expression::do_get_tree(Translate_context* context)
     gogo->backend()->temporary_variable(fndecl, context->bblock(), btype,
 					space, true, loc, &decl);
   space = gogo->backend()->var_expression(space_temp, loc);
-  Bexpression* ref = gogo->backend()->indirect_expression(space, true, loc);
+  Btype* expr_btype = this->expr_->type()->get_backend(gogo);
+  Bexpression* ref =
+    gogo->backend()->indirect_expression(expr_btype, space, true, loc);
 
   Bexpression* bexpr = tree_to_expr(this->expr_->get_tree(context));
   Bstatement* assn = gogo->backend()->assignment_statement(ref, bexpr, loc);

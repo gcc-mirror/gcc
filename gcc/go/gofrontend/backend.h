@@ -253,9 +253,11 @@ class Backend
 
   // Create an expression that indirects through the pointer expression EXPR
   // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
-  // is known to point to a valid memory location.
+  // is known to point to a valid memory location.  BTYPE is the expected type
+  // of the indirected EXPR.
   virtual Bexpression*
-  indirect_expression(Bexpression* expr, bool known_valid, Location) = 0;
+  indirect_expression(Btype* btype, Bexpression* expr, bool known_valid,
+		      Location) = 0;
 
   // Return an expression that declares a constant named NAME with the
   // constant value VAL in BTYPE.
