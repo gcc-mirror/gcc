@@ -1,3 +1,11 @@
+2014-05-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/picochip/picochip-protos.h (picochip_regno_nregs): Change
+	int argument to enum machine_mode.
+	(picochip_class_max_nregs): Ditto.
+	* config/picochip/picochip.c (picochip_regno_nregs): Ditto.
+	(picochip_class_max_nregs): Ditto.
+
 2014-05-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* target.def: Add new target hook.
