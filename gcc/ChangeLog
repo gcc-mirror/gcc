@@ -1,3 +1,20 @@
+2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (RS6000_BTM_HARD_FLOAT): New define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_HARD_FLOAT.
+	(TARGET_EXTRA_BUILTINS): Add TARGET_HARD_FLOAT.
+	* config/rs6000/rs6000-builtin.def (BU_MISC_1):
+	Use RS6000_BTM_HARD_FLOAT.
+	(BU_MISC_2): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Handle
+	RS6000_BTM_HARD_FLOAT.
+	(rs6000_option_override_internal): Enforce -mhard-float if -mhard-dfp
+	is explicitly used.
+	(rs6000_invalid_builtin): Add hard floating builtin support.
+	(rs6000_expand_builtin): Relax the gcc_assert to allow the new
+	hard float builtins.
+	(rs6000_builtin_mask_names): Add RS6000_BTM_HARD_FLOAT.
+
 2014-05-03  Joey Ye  <joey.ye@arm.com>
 
 	Backport from mainline r209463

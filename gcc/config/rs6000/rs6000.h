@@ -623,7 +623,8 @@ extern int rs6000_vector_align[];
 				      || TARGET_CMPB	  /* ISA 2.05 */ \
 				      || TARGET_POPCNTD	  /* ISA 2.06 */ \
 				      || TARGET_ALTIVEC			 \
-				      || TARGET_VSX)))
+				      || TARGET_VSX			 \
+				      || TARGET_HARD_FLOAT)))
 
 /* E500 cores only support plain "sync", not lwsync.  */
 #define TARGET_NO_LWSYNC (rs6000_cpu == PROCESSOR_PPC8540 \
@@ -2499,6 +2500,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_POPCNTD	MASK_POPCNTD	/* Target supports ISA 2.06.  */
 #define RS6000_BTM_CELL		MASK_FPRND	/* Target is cell powerpc.  */
 #define RS6000_BTM_DFP		MASK_DFP	/* Decimal floating point.  */
+#define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2511,7 +2513,8 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_HTM			\
 				 | RS6000_BTM_POPCNTD			\
 				 | RS6000_BTM_CELL			\
-				 | RS6000_BTM_DFP)
+				 | RS6000_BTM_DFP			\
+				 | RS6000_BTM_HARD_FLOAT)
 
 /* Define builtin enum index.  */
 
