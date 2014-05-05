@@ -1,3 +1,8 @@
+2014-05-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60965
+	* g++.dg/ipa/devirt-32.C: New testcase.
+
 2014-05-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61010
