@@ -1447,6 +1447,15 @@ default_get_reg_raw_mode (int regno)
   return reg_raw_mode[regno];
 }
 
+/* Return true if a leaf function should stay leaf even with profiling
+   enabled.  */
+
+bool
+default_keep_leaf_when_profiled ()
+{
+  return false;
+}
+
 /* Return true if the state of option OPTION should be stored in PCH files
    and checked by default_pch_valid_p.  Store the option's current state
    in STATE if so.  */

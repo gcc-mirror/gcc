@@ -1,3 +1,13 @@
+2014-05-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* target.def: Add new target hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_keep_leaf_when_profiled): Add prototype.
+	* targhooks.c (default_keep_leaf_when_profiled): New function.
+
+	* config/s390/s390.c (s390_keep_leaf_when_profiled): New function.
+	(TARGET_KEEP_LEAF_WHEN_PROFILED): Define.
+
 2014-05-05  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/60363
