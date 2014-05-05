@@ -890,16 +890,16 @@ Set_and_use_temporary_expression::do_address_taken(bool)
 tree
 Set_and_use_temporary_expression::do_get_tree(Translate_context* context)
 {
-  Bvariable* bvar = this->statement_->get_backend_variable(context);
-  tree var_tree = var_to_tree(bvar);
-  tree expr_tree = this->expr_->get_tree(context);
-  if (var_tree == error_mark_node || expr_tree == error_mark_node)
-    return error_mark_node;
   Location loc = this->location();
-  return build2_loc(loc.gcc_location(), COMPOUND_EXPR, TREE_TYPE(var_tree),
-		    build2_loc(loc.gcc_location(), MODIFY_EXPR, void_type_node,
-			       var_tree, expr_tree),
-		    var_tree);
+  Gogo* gogo = context->gogo();
+  Bvariable* bvar = this->statement_->get_backend_variable(context);
+  Bexpression* var_ref = gogo->backend()->var_expression(bvar, loc);
+
+  Bexpression* bexpr = tree_to_expr(this->expr_->get_tree(context));
+  Bstatement* set = gogo->backend()->assignment_statement(var_ref, bexpr, loc);
+  var_ref = gogo->backend()->var_expression(bvar, loc);
+  Bexpression* ret = gogo->backend()->compound_expression(set, var_ref, loc);
+  return expr_to_tree(ret);
 }
 
 // Dump.
