@@ -1,3 +1,13 @@
+2014-05-05  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/60363
+	* gcc/tree-ssa-threadupdate.c (get_value_locus_in_path): New.
+	(copy_phi_args): New parameters.  Call get_value_locus_in_path.
+	(update_destination_phis): New parameter.
+	(create_edge_and_update_destination_phis): Ditto.
+	(ssa_fix_duplicate_block_edges): Pass new arguments.
+	(thread_single_edge): Ditto.
+
 2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.h (RS6000_BTM_HARD_FLOAT): New define.
