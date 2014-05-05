@@ -5142,6 +5142,22 @@ FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and the PIC_OFFSET_TABLE_REGNUM.",
  void, (bitmap regs),
  hook_void_bitmap)
 
+/* Targets should define this target hook to mark that non-callee clobbers are
+   present in CALL_INSN_FUNCTION_USAGE for all the calls in the current
+   function.  */
+DEFHOOKPOD
+(call_fusage_contains_non_callee_clobbers,
+ "set to true if all the calls in the current function contain clobbers in\n\
+CALL_INSN_FUNCTION_USAGE for the registers that are clobbered by the call\n\
+rather than by the callee, and are not already set or clobbered in the call\n\
+pattern.  Examples of such registers are registers used in PLTs and stubs,\n\
+and temporary registers used in the call instruction but not present in the\n\
+rtl pattern.  Another way to formulate it is the registers not present in the\n\
+rtl pattern that are clobbered by the call assuming the callee does not\n\
+clobber any register.  The default version of this hook is set to false.",
+ bool, 
+ false)
+
 /* Fill in additional registers set up by prologue into a regset.  */
 DEFHOOK
 (set_up_by_prologue,

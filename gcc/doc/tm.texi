@@ -3091,6 +3091,7 @@ This describes the stack layout and calling conventions.
 * Profiling::
 * Tail Calls::
 * Stack Smashing Protection::
+* Miscellaneous Register Hooks::
 @end menu
 
 @node Frame Layout
@@ -5019,6 +5020,21 @@ normally defined in @file{libgcc2.c}.
 @deftypefn {Common Target Hook} bool TARGET_SUPPORTS_SPLIT_STACK (bool @var{report}, struct gcc_options *@var{opts})
 Whether this target supports splitting the stack when the options described in @var{opts} have been passed.  This is called after options have been parsed, so the target may reject splitting the stack in some configurations.  The default version of this hook returns false.  If @var{report} is true, this function may issue a warning or error; if @var{report} is false, it must simply return a value
 @end deftypefn
+
+@node Miscellaneous Register Hooks
+@subsection Miscellaneous register hooks
+@cindex miscellaneous register hooks
+
+@deftypevr {Target Hook} bool TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
+set to true if all the calls in the current function contain clobbers in
+CALL_INSN_FUNCTION_USAGE for the registers that are clobbered by the call
+rather than by the callee, and are not already set or clobbered in the call
+pattern.  Examples of such registers are registers used in PLTs and stubs,
+and temporary registers used in the call instruction but not present in the
+rtl pattern.  Another way to formulate it is the registers not present in the
+rtl pattern that are clobbered by the call assuming the callee does not
+clobber any register.  The default version of this hook is set to false.
+@end deftypevr
 
 @node Varargs
 @section Implementing the Varargs Macros
