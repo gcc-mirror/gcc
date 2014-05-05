@@ -1,3 +1,11 @@
+2014-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60960
+	* gcc.c-torture/execute/pr60960.c: New test.
+
 2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/pack02.c (dg-options): Add -mhard-float.

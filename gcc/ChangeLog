@@ -1,3 +1,12 @@
+2014-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60960
+	* tree-vect-generic.c (expand_vector_operation): Only call
+	expand_vector_divmod if type's mode satisfies VECTOR_MODE_P.
+
 2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.h (RS6000_BTM_HARD_FLOAT): New define.
