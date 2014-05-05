@@ -14815,28 +14815,27 @@ class Struct_field_offset_expression : public Expression
 tree
 Struct_field_offset_expression::do_get_tree(Translate_context* context)
 {
-  tree type_tree = type_to_tree(this->type_->get_backend(context->gogo()));
-  if (type_tree == error_mark_node)
-    return error_mark_node;
-
-  tree val_type_tree = type_to_tree(this->type()->get_backend(context->gogo()));
-  go_assert(val_type_tree != error_mark_node);
-
   const Struct_field_list* fields = this->type_->fields();
-  tree struct_field_tree = TYPE_FIELDS(type_tree);
   Struct_field_list::const_iterator p;
+  unsigned i = 0;
   for (p = fields->begin();
        p != fields->end();
-       ++p, struct_field_tree = DECL_CHAIN(struct_field_tree))
-    {
-      go_assert(struct_field_tree != NULL_TREE);
-      if (&*p == this->field_)
-	break;
-    }
+       ++p, ++i)
+    if (&*p == this->field_)
+      break;
   go_assert(&*p == this->field_);
 
-  return fold_convert_loc(BUILTINS_LOCATION, val_type_tree,
-			  byte_position(struct_field_tree));
+  Gogo* gogo = context->gogo();
+  Btype* btype = this->type_->get_backend(gogo);
+
+  size_t offset = gogo->backend()->type_field_offset(btype, i);
+  mpz_t offsetval;
+  mpz_init_set_ui(offsetval, offset);
+  Type* uptr_type = Type::lookup_integer_type("uintptr");
+  Expression* ret = Expression::make_integer(&offsetval, uptr_type,
+					     Linemap::predeclared_location());
+  mpz_clear(offsetval);
+  return ret->get_tree(context);
 }
 
 // Dump ast representation for a struct field offset expression.
