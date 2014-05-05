@@ -14095,9 +14095,13 @@ Type_info_expression::do_get_tree(Translate_context* context)
     default:
       go_unreachable();
     }
-  tree val_type_tree = type_to_tree(this->type()->get_backend(gogo));
-  go_assert(val_type_tree != error_mark_node);
-  return build_int_cstu(val_type_tree, val);
+  mpz_t cst;
+  mpz_init_set_ui(cst, val);
+  Btype* int_btype = this->type()->get_backend(gogo);
+  Bexpression* ret =
+    gogo->backend()->integer_constant_expression(int_btype, cst);
+  mpz_clear(cst);
+  return expr_to_tree(ret);
 }
 
 // Dump ast representation for a type info expression.
