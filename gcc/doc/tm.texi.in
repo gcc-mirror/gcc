@@ -2720,6 +2720,7 @@ This describes the stack layout and calling conventions.
 * Profiling::
 * Tail Calls::
 * Stack Smashing Protection::
+* Miscellaneous Register Hooks::
 @end menu
 
 @node Frame Layout
@@ -3986,6 +3987,12 @@ the function prologue.  Normally, the profiling code comes after.
 @hook TARGET_STACK_PROTECT_FAIL
 
 @hook TARGET_SUPPORTS_SPLIT_STACK
+
+@node Miscellaneous Register Hooks
+@subsection Miscellaneous register hooks
+@cindex miscellaneous register hooks
+
+@hook TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 
 @node Varargs
 @section Implementing the Varargs Macros

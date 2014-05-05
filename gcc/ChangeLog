@@ -1,3 +1,13 @@
+2014-05-05  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* target.def (call_fusage_contains_non_callee_clobbers): New DEFHOOKPOD.
+	* doc/tm.texi.in (@node Stack and Calling): Add Miscellaneous Register
+	Hooks to @menu.
+	(@node Miscellaneous Register Hooks): New node.
+	(@hook TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS): New hook.
+	* doc/tm.texi: Regenerate.
+
 2014-05-05  Marek Polacek  <polacek@redhat.com>
 
 	PR driver/61065
