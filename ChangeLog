@@ -1,3 +1,7 @@
+2014-05-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config.sub, config.guess: Import from upstream.
+
 2014-04-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* MAINTAINERS (Write After Approval): Put myself in correct order.

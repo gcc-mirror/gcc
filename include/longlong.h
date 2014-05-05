@@ -848,7 +848,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
 #define UMUL_TIME 10
 #define UDIV_TIME 100
 
-#if (__mips == 32 || __mips == 64) && ! __mips16
+#if (__mips == 32 || __mips == 64) && ! defined (__mips16)
 #define count_leading_zeros(COUNT,X)	((COUNT) = __builtin_clz (X))
 #define COUNT_LEADING_ZEROS_0 32
 #endif
