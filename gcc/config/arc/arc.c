@@ -552,6 +552,7 @@ static void arc_finalize_pic (void);
 
 #define TARGET_INSN_LENGTH_PARAMETERS arc_insn_length_parameters
 
+#undef TARGET_LRA_P
 #define TARGET_LRA_P arc_lra_p
 #define TARGET_REGISTER_PRIORITY arc_register_priority
 /* Stores with scaled offsets have different displacement ranges.  */
@@ -996,7 +997,7 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
   if (GET_MODE_CLASS (mode) == MODE_INT
       && y == const0_rtx
       && (op == EQ || op == NE
-	  || ((op == LT || op == GE) && GET_MODE_SIZE (GET_MODE (x)) <= 4))))
+	  || ((op == LT || op == GE) && GET_MODE_SIZE (GET_MODE (x)) <= 4)))
     return CC_ZNmode;
 
   /* add.f for if (a+b) */

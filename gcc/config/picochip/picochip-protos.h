@@ -53,8 +53,8 @@ extern bool ok_to_peephole_ldw(rtx opnd0, rtx opnd1, rtx opnd2, rtx opnd3);
 
 extern rtx gen_min_reg(rtx opnd1,rtx opnd2);
 
-extern int picochip_regno_nregs (int regno, int mode);
-extern int picochip_class_max_nregs (int klass, int mode);
+extern int picochip_regno_nregs (int regno, enum machine_mode mode);
+extern int picochip_class_max_nregs (int klass, enum machine_mode mode);
 
 extern void picochip_order_regs_for_local_alloc (void);
 

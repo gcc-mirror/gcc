@@ -5582,6 +5582,12 @@ expand_omp_for_generic (struct omp_region *region,
     {
       stmt = gimple_build_assign (endvar, iend);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+      if (useless_type_conversion_p (TREE_TYPE (fd->loop.v), TREE_TYPE (iend)))
+	stmt = gimple_build_assign (fd->loop.v, iend);
+      else
+	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, iend,
+					     NULL_TREE);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
     }
   if (fd->collapse > 1)
     expand_omp_for_init_vars (fd, &gsi, counts, inner_stmt, startvar);
@@ -5998,6 +6004,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
     {
       stmt = gimple_build_assign (endvar, e);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+      if (useless_type_conversion_p (TREE_TYPE (fd->loop.v), TREE_TYPE (e)))
+	stmt = gimple_build_assign (fd->loop.v, e);
+      else
+	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, e,
+					     NULL_TREE);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
     }
   if (fd->collapse > 1)
     expand_omp_for_init_vars (fd, &gsi, counts, inner_stmt, startvar);
@@ -6382,6 +6394,12 @@ expand_omp_for_static_chunk (struct omp_region *region,
   if (endvar)
     {
       stmt = gimple_build_assign (endvar, e);
+      gsi_insert_after (&si, stmt, GSI_CONTINUE_LINKING);
+      if (useless_type_conversion_p (TREE_TYPE (fd->loop.v), TREE_TYPE (e)))
+	stmt = gimple_build_assign (fd->loop.v, e);
+      else
+	stmt = gimple_build_assign_with_ops (NOP_EXPR, fd->loop.v, e,
+					     NULL_TREE);
       gsi_insert_after (&si, stmt, GSI_CONTINUE_LINKING);
     }
   if (fd->collapse > 1)

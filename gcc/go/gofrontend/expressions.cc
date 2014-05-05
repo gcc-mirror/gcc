@@ -6736,12 +6736,9 @@ Bound_method_expression::do_get_tree(Translate_context* context)
   Expression* ret = Expression::make_struct_composite_literal(st, vals, loc);
   ret = Expression::make_heap_expression(ret, loc);
 
-  tree ret_tree = ret->get_tree(context);
-
-  Expression* nil_check = NULL;
-
   // See whether the expression or any embedded pointers are nil.
 
+  Expression* nil_check = NULL;
   Expression* expr = this->expr_;
   if (this->method_->field_indexes() != NULL)
     {
@@ -6764,26 +6761,19 @@ Bound_method_expression::do_get_tree(Translate_context* context)
 	nil_check = Expression::make_binary(OPERATOR_OROR, nil_check, n, loc);
     }
 
+  Bexpression* bme = tree_to_expr(ret->get_tree(context));
   if (nil_check != NULL)
     {
-      tree nil_check_tree = nil_check->get_tree(context);
-      Expression* crash_expr =
-	context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
-      tree crash = crash_expr->get_tree(context);
-      if (ret_tree == error_mark_node
-	  || nil_check_tree == error_mark_node
-	  || crash == error_mark_node)
-	return error_mark_node;
-
-      ret_tree = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-				 TREE_TYPE(ret_tree),
-				 build3_loc(loc.gcc_location(), COND_EXPR,
-					    void_type_node, nil_check_tree,
-					    crash, NULL_TREE),
-				 ret_tree);
+      Gogo* gogo = context->gogo();
+      Expression* crash =
+	gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
+      Bexpression* bcrash = tree_to_expr(crash->get_tree(context));
+      Btype* btype = ret->type()->get_backend(gogo);
+      Bexpression* bcheck = tree_to_expr(nil_check->get_tree(context));
+      bme = gogo->backend()->conditional_expression(btype, bcheck, bcrash,
+						    bme, loc);
     }
-
-  return ret_tree;
+  return expr_to_tree(bme);
 }
 
 // Dump ast representation of a bound method expression.
@@ -13798,30 +13788,31 @@ class Heap_expression : public Expression
 tree
 Heap_expression::do_get_tree(Translate_context* context)
 {
-  tree expr_tree = this->expr_->get_tree(context);
-  if (expr_tree == error_mark_node || TREE_TYPE(expr_tree) == error_mark_node)
+  if (this->expr_->is_error_expression() || this->expr_->type()->is_error())
     return error_mark_node;
 
-  Expression* alloc =
-      Expression::make_allocation(this->expr_->type(), this->location());
-
+  Location loc = this->location();
   Gogo* gogo = context->gogo();
-  Btype* btype = this->expr_->type()->get_backend(gogo);
-  size_t expr_size = gogo->backend()->type_size(btype);
-  tree space = alloc->get_tree(context);
-  if (expr_size == 0)
-    return space;
+  Btype* btype = this->type()->get_backend(gogo);
+  Expression* alloc = Expression::make_allocation(this->expr_->type(), loc);
+  Bexpression* space = tree_to_expr(alloc->get_tree(context));
 
-  space = save_expr(space);
-  tree ref = build_fold_indirect_ref_loc(this->location().gcc_location(),
-                                         space);
-  TREE_THIS_NOTRAP(ref) = 1;
-  tree ret = build2(COMPOUND_EXPR,
-                    type_to_tree(this->type()->get_backend(gogo)),
-		    build2(MODIFY_EXPR, void_type_node, ref, expr_tree),
-		    space);
-  SET_EXPR_LOCATION(ret, this->location().gcc_location());
-  return ret;
+  Bstatement* decl;
+  Named_object* fn = context->function();
+  go_assert(fn != NULL);
+  Bfunction* fndecl = fn->func_value()->get_or_make_decl(gogo, fn);
+  Bvariable* space_temp =
+    gogo->backend()->temporary_variable(fndecl, context->bblock(), btype,
+					space, true, loc, &decl);
+  space = gogo->backend()->var_expression(space_temp, loc);
+  Bexpression* ref = gogo->backend()->indirect_expression(space, true, loc);
+
+  Bexpression* bexpr = tree_to_expr(this->expr_->get_tree(context));
+  Bstatement* assn = gogo->backend()->assignment_statement(ref, bexpr, loc);
+  decl = gogo->backend()->compound_statement(decl, assn);
+  space = gogo->backend()->var_expression(space_temp, loc);
+  Bexpression* ret = gogo->backend()->compound_expression(decl, space, loc);
+  return expr_to_tree(ret);
 }
 
 // Dump ast representation for a heap expression.

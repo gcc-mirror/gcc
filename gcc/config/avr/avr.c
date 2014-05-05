@@ -7778,8 +7778,8 @@ avr_adjust_insn_length (rtx insn, int len)
      the length need not/must not be adjusted for these insns.
      It is easier to state this in an insn attribute "adjust_len" than
      to clutter up code here...  */
-
-  if (-1 == recog_memoized (insn))
+  
+  if (JUMP_TABLE_DATA_P (insn) || recog_memoized (insn) == -1)
     {
       return len;
     }

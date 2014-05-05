@@ -11334,7 +11334,6 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
 	  int width = TYPE_PRECISION (type), w;
-	  bool try_simplify = true;
 	  wide_int c1 = TREE_OPERAND (arg0, 1);
 	  wide_int c2 = arg1;
 
@@ -11368,20 +11367,7 @@ fold_binary_loc (location_t loc,
 		}
 	    }
 
-	  /* If X is a tree of the form (Y * K1) & K2, this might conflict
-	     with that optimization from the BIT_AND_EXPR optimizations.
-	     This could end up in an infinite recursion.  */
-	  if (TREE_CODE (TREE_OPERAND (arg0, 0)) == MULT_EXPR
-	      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
-	                    == INTEGER_CST)
-	  {
-	    tree t = TREE_OPERAND (TREE_OPERAND (arg0, 0), 1);
-	    wide_int masked = mask_with_tz (type, c3, t);
-
-	    try_simplify = (masked != c1);
-	  }
-
-	  if (try_simplify && c3 != c1)
+	  if (c3 != c1)
 	    return fold_build2_loc (loc, BIT_IOR_EXPR, type,
 				    fold_build2_loc (loc, BIT_AND_EXPR, type,
 						     TREE_OPERAND (arg0, 0),
@@ -11770,14 +11756,23 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (arg0) == MULT_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  wide_int masked = mask_with_tz (type, arg1, TREE_OPERAND (arg0, 1));
+	  wide_int warg1 = arg1;
+	  wide_int masked = mask_with_tz (type, warg1, TREE_OPERAND (arg0, 1));
 
 	  if (masked == 0)
 	    return omit_two_operands_loc (loc, type, build_zero_cst (type),
 	                                  arg0, arg1);
-	  else if (masked != arg1)
-	    return fold_build2_loc (loc, code, type, op0,
-	                            wide_int_to_tree (type, masked));
+	  else if (masked != warg1)
+	    {
+	      /* Avoid the transform if arg1 is a mask of some
+	         mode which allows further optimizations.  */
+	      int pop = wi::popcount (warg1);
+	      if (!(pop >= BITS_PER_UNIT
+		    && exact_log2 (pop) != -1
+		    && wi::mask (pop, false, warg1.get_precision ()) == warg1))
+		return fold_build2_loc (loc, code, type, op0,
+					wide_int_to_tree (type, masked));
+	    }
 	}
 
       /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,

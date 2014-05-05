@@ -19,6 +19,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <sstream>
+#include <vector>
+#include <algorithm>
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -69,10 +73,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "pass_manager.h"
 #include "context.h"
-
-#include <sstream>
-#include <vector>
-#include <algorithm>
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -8809,6 +8809,54 @@ sh_callee_copies (cumulative_args_t cum, enum machine_mode mode,
 	      % SH_MIN_ALIGN_FOR_CALLEE_COPY == 0));
 }
 
+/* Round a register number up to a proper boundary for an arg of mode
+   MODE.
+   The SH doesn't care about double alignment, so we only
+   round doubles to even regs when asked to explicitly.  */
+static int
+sh_round_reg (const CUMULATIVE_ARGS& cum, machine_mode mode)
+{
+  /* FIXME: This used to be a macro and has been copy pasted into this
+     function as is.  Make this more readable.  */
+  return
+  (((TARGET_ALIGN_DOUBLE
+      || ((TARGET_SH4 || TARGET_SH2A_DOUBLE)
+	  && (mode == DFmode || mode == DCmode)
+	  && cum.arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (mode)))
+     && GET_MODE_UNIT_SIZE (mode) > UNITS_PER_WORD)
+    ? (cum.arg_count[(int) GET_SH_ARG_CLASS (mode)]
+       + (cum.arg_count[(int) GET_SH_ARG_CLASS (mode)] & 1))
+    : cum.arg_count[(int) GET_SH_ARG_CLASS (mode)]);
+}
+
+/* Return true if arg of the specified mode should be be passed in a register
+   or false otherwise.  */
+static bool
+sh_pass_in_reg_p (const CUMULATIVE_ARGS& cum, machine_mode mode,
+		  const_tree type)
+{
+  /* FIXME: This used to be a macro and has been copy pasted into this
+     function as is.  Make this more readable.  */
+  return
+  ((type == 0
+    || (! TREE_ADDRESSABLE (type)
+	&& (! (TARGET_HITACHI || cum.renesas_abi)
+	    || ! (AGGREGATE_TYPE_P (type)
+		  || (!TARGET_FPU_ANY
+		      && (GET_MODE_CLASS (mode) == MODE_FLOAT
+			  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (SFmode)))))))
+   && ! cum.force_mem
+   && (TARGET_SH2E
+       ? ((mode) == BLKmode
+	  ? ((cum.arg_count[(int) SH_ARG_INT] * UNITS_PER_WORD
+	      + int_size_in_bytes (type))
+	     <= NPARM_REGS (SImode) * UNITS_PER_WORD)
+	  : ((sh_round_reg (cum, mode)
+	      + HARD_REGNO_NREGS (BASE_ARG_REG (mode), mode))
+	     <= NPARM_REGS (mode)))
+       : sh_round_reg (cum, mode) < NPARM_REGS (mode)));
+}
+
 static int
 sh_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 		      tree type, bool named ATTRIBUTE_UNUSED)
@@ -8817,14 +8865,14 @@ sh_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
   int words = 0;
 
   if (!TARGET_SH5
-      && PASS_IN_REG_P (*cum, mode, type)
+      && sh_pass_in_reg_p (*cum, mode, type)
       && !(TARGET_SH4 || TARGET_SH2A_DOUBLE)
-      && (ROUND_REG (*cum, mode)
+      && (sh_round_reg (*cum, mode)
 	  + (mode != BLKmode
-	     ? ROUND_ADVANCE (GET_MODE_SIZE (mode))
-	     : ROUND_ADVANCE (int_size_in_bytes (type)))
+	     ? CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+	     : CEIL (int_size_in_bytes (type), UNITS_PER_WORD))
 	  > NPARM_REGS (mode)))
-    words = NPARM_REGS (mode) - ROUND_REG (*cum, mode);
+    words = NPARM_REGS (mode) - sh_round_reg (*cum, mode);
 
   else if (!TARGET_SHCOMPACT
 	   && SH5_WOULD_BE_PARTIAL_NREGS (*cum, mode, type, named))
@@ -8861,23 +8909,23 @@ sh_function_arg (cumulative_args_t ca_v, enum machine_mode mode,
     return GEN_INT (ca->renesas_abi ? 1 : 0);
 
   if (! TARGET_SH5
-      && PASS_IN_REG_P (*ca, mode, type)
+      && sh_pass_in_reg_p (*ca, mode, type)
       && (named || ! (TARGET_HITACHI || ca->renesas_abi)))
     {
       int regno;
 
       if (mode == SCmode && TARGET_SH4 && TARGET_LITTLE_ENDIAN
-	  && (! FUNCTION_ARG_SCmode_WART || (ROUND_REG (*ca, mode) & 1)))
+	  && (! FUNCTION_ARG_SCmode_WART || (sh_round_reg (*ca, mode) & 1)))
 	{
 	  rtx r1 = gen_rtx_EXPR_LIST (VOIDmode,
 				      gen_rtx_REG (SFmode,
 						   BASE_ARG_REG (mode)
-						   + (ROUND_REG (*ca, mode) ^ 1)),
+						   + (sh_round_reg (*ca, mode) ^ 1)),
 				      const0_rtx);
 	  rtx r2 = gen_rtx_EXPR_LIST (VOIDmode,
 				      gen_rtx_REG (SFmode,
 						   BASE_ARG_REG (mode)
-						   + ((ROUND_REG (*ca, mode) + 1) ^ 1)),
+						   + ((sh_round_reg (*ca, mode) + 1) ^ 1)),
 				      GEN_INT (4));
 	  return gen_rtx_PARALLEL(SCmode, gen_rtvec(2, r1, r2));
 	}
@@ -8890,7 +8938,7 @@ sh_function_arg (cumulative_args_t ca_v, enum machine_mode mode,
 	  && mode == SFmode)
 	return gen_rtx_REG (mode, ca->free_single_fp_reg);
 
-      regno = (BASE_ARG_REG (mode) + ROUND_REG (*ca, mode))
+      regno = (BASE_ARG_REG (mode) + sh_round_reg (*ca, mode))
 	       ^ (mode == SFmode && TARGET_SH4
 		  && TARGET_LITTLE_ENDIAN
 		  && ! TARGET_HITACHI && ! ca->renesas_abi);
@@ -9070,20 +9118,20 @@ sh_function_arg_advance (cumulative_args_t ca_v, enum machine_mode mode,
 	 register, because the next SF value will use it, and not the
 	 SF that follows the DF.  */
       if (mode == DFmode
-	  && ROUND_REG (*ca, DFmode) != ROUND_REG (*ca, SFmode))
+	  && sh_round_reg (*ca, DFmode) != sh_round_reg (*ca, SFmode))
 	{
-	  ca->free_single_fp_reg = (ROUND_REG (*ca, SFmode)
+	  ca->free_single_fp_reg = (sh_round_reg (*ca, SFmode)
 				    + BASE_ARG_REG (mode));
 	}
     }
 
   if (! ((TARGET_SH4 || TARGET_SH2A) || ca->renesas_abi)
-      || PASS_IN_REG_P (*ca, mode, type))
+      || sh_pass_in_reg_p (*ca, mode, type))
     (ca->arg_count[(int) GET_SH_ARG_CLASS (mode)]
-     = (ROUND_REG (*ca, mode)
+     = (sh_round_reg (*ca, mode)
 	+ (mode == BLKmode
-	   ? ROUND_ADVANCE (int_size_in_bytes (type))
-	   : ROUND_ADVANCE (GET_MODE_SIZE (mode)))));
+	   ? CEIL (int_size_in_bytes (type), UNITS_PER_WORD)
+	   : CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD))));
 }
 
 /* The Renesas calling convention doesn't quite fit into this scheme since
@@ -9178,10 +9226,10 @@ sh_setup_incoming_varargs (cumulative_args_t ca,
     {
       int named_parm_regs, anon_parm_regs;
 
-      named_parm_regs = (ROUND_REG (*get_cumulative_args (ca), mode)
+      named_parm_regs = (sh_round_reg (*get_cumulative_args (ca), mode)
 			 + (mode == BLKmode
-			    ? ROUND_ADVANCE (int_size_in_bytes (type))
-			    : ROUND_ADVANCE (GET_MODE_SIZE (mode))));
+			    ? CEIL (int_size_in_bytes (type), UNITS_PER_WORD)
+			    : CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD)));
       anon_parm_regs = NPARM_REGS (SImode) - named_parm_regs;
       if (anon_parm_regs > 0)
 	*pretend_arg_size = anon_parm_regs * 4;

@@ -3039,7 +3039,8 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_P8_VECTOR)		    ? RS6000_BTM_P8_VECTOR : 0)
 	  | ((TARGET_CRYPTO)		    ? RS6000_BTM_CRYPTO	   : 0)
 	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
-	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0));
+	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
+	  | ((TARGET_HARD_FLOAT)	    ? RS6000_BTM_HARD_FLOAT : 0));
 }
 
 /* Override command line options.  Mostly we process the processor type and
@@ -3394,6 +3395,13 @@ rs6000_option_override_internal (bool global_init_p)
       if (rs6000_isa_flags_explicit & OPTION_MASK_VSX_TIMODE)
 	error ("-mvsx-timode requires -mvsx");
       rs6000_isa_flags &= ~OPTION_MASK_VSX_TIMODE;
+    }
+
+  if (TARGET_DFP && !TARGET_HARD_FLOAT)
+    {
+      if (rs6000_isa_flags_explicit & OPTION_MASK_DFP)
+	error ("-mhard-dfp requires -mhard-float");
+      rs6000_isa_flags &= ~OPTION_MASK_DFP;
     }
 
   /* The quad memory instructions only works in 64-bit mode. In 32-bit mode,
@@ -13551,6 +13559,8 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
     error ("Builtin function %s requires the -mhard-dfp option", name);
   else if ((fnmask & RS6000_BTM_P8_VECTOR) != 0)
     error ("Builtin function %s requires the -mpower8-vector option", name);
+  else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
+    error ("Builtin function %s requires the -mhard-float option", name);
   else
     error ("Builtin function %s is not supported with the current options",
 	   name);
@@ -13739,7 +13749,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	return ret;
     }  
 
-  gcc_assert (TARGET_ALTIVEC || TARGET_VSX || TARGET_SPE || TARGET_PAIRED_FLOAT);
+  unsigned attr = rs6000_builtin_info[uns_fcode].attr & RS6000_BTC_TYPE_MASK;
+  gcc_assert (attr == RS6000_BTC_UNARY
+	      || attr == RS6000_BTC_BINARY
+	      || attr == RS6000_BTC_TERNARY);
 
   /* Handle simple unary operations.  */
   d = bdesc_1arg;
@@ -31304,6 +31317,7 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "crypto",		 RS6000_BTM_CRYPTO,	false, false },
   { "htm",		 RS6000_BTM_HTM,	false, false },
   { "hard-dfp",		 RS6000_BTM_DFP,	false, false },
+  { "hard-float",	 RS6000_BTM_HARD_FLOAT,	false, false },
 };
 
 /* Option variables that we want to support inside attribute((target)) and

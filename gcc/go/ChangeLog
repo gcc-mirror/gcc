@@ -1,5 +1,19 @@
 2014-04-30  Chris Manghane  <cmang@google.com>
 
+	* go-backend.c: #include "diagnostics.h".
+	(saw_errors): New function.
+	* go-c.h (saw_errors): Declare.
+	* Make-lang.in (GO_OBJS): Remove go/gogo-tree.o.
+
+2014-04-30  Chris Manghane  <cmang@google.com>
+
+	* go-lang.c (go_langhook_type_for_size): Do it here, rather than
+	calling into Go frontend.
+	(go_langhook_type_for_mode): Likewise.
+	* go-c.h (go_type_for_size, go_type_for_mode): Don't declare.
+
+2014-04-30  Chris Manghane  <cmang@google.com>
+
 	* go-gcc.cc: #include "langhooks.h".
 	(Gcc_backend::Gcc_backend): Add constructor.
 	(Gcc_backend::lookup_function): New function.

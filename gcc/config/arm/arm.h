@@ -1152,7 +1152,7 @@ extern int arm_regs_in_sequence[];
 
 /* Tell IRA to use the order we define rather than messing it up with its
    own cost calculations.  */
-#define HONOR_REG_ALLOC_ORDER
+#define HONOR_REG_ALLOC_ORDER 1
 
 /* Interrupt functions can only use registers that have already been
    saved by the prologue, even if they would normally be

@@ -2044,8 +2044,8 @@ Normally, IRA tries to estimate the costs for saving a register in the
 prologue and restoring it in the epilogue.  This discourages it from
 using call-saved registers.  If a machine wants to ensure that IRA
 allocates registers in the order given by REG_ALLOC_ORDER even if some
-call-saved registers appear earlier than call-used ones, this macro
-should be defined.
+call-saved registers appear earlier than call-used ones, then define this
+macro as a C expression to nonzero. Default is 0.
 @end defmac
 
 @defmac IRA_HARD_REGNO_ADD_COST_MULTIPLIER (@var{regno})
@@ -4952,6 +4952,10 @@ implementations.  If you define this macro, you must not use the
 Define this macro if the code for function profiling should come before
 the function prologue.  Normally, the profiling code comes after.
 @end defmac
+
+@deftypefn {Target Hook} bool TARGET_KEEP_LEAF_WHEN_PROFILED (void)
+This target hook returns true if the target wants the leaf flag for the current function to stay true even if it calls mcount.  This might make sense for targets using the leaf flag only to determine whether a stack frame needs to be generated or not and for which the call to mcount is generated before the function prologue.
+@end deftypefn
 
 @node Tail Calls
 @subsection Permitting tail calls

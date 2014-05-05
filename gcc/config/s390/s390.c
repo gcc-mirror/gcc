@@ -10158,6 +10158,14 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     return const0_rtx;
 }
 
+/* We call mcount before the function prologue.  So a profiled leaf
+   function should stay a leaf function.  */
+
+static bool
+s390_keep_leaf_when_profiled ()
+{
+  return true;
+}
 
 /* Output assembly code for the trampoline template to
    stdio stream FILE.
@@ -12160,6 +12168,9 @@ s390_option_override (void)
 #define TARGET_FUNCTION_VALUE s390_function_value
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE s390_libcall_value
+
+#undef TARGET_KEEP_LEAF_WHEN_PROFILED
+#define TARGET_KEEP_LEAF_WHEN_PROFILED s390_keep_leaf_when_profiled
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS s390_fixed_condition_code_regs

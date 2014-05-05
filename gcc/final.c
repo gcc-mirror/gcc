@@ -4255,7 +4255,9 @@ leaf_function_p (void)
 {
   rtx insn;
 
-  if (crtl->profile || profile_arc_flag)
+  /* Some back-ends (e.g. s390) want leaf functions to stay leaf
+     functions even if they call mcount.  */
+  if (crtl->profile && !targetm.keep_leaf_when_profiled ())
     return 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

@@ -41,13 +41,12 @@ extern void go_parse_input_files (const char**, unsigned int,
 				  bool require_return_statement);
 extern void go_write_globals (void);
 
-extern tree go_type_for_size (unsigned int bits, int unsignedp);
-extern tree go_type_for_mode (enum machine_mode, int unsignedp);
-
 /* Functions defined in the GCC interface called by the Go frontend
    proper.  */
 
 extern void go_preserve_from_gc (tree);
+
+extern bool saw_errors (void);
 
 extern const char *go_localize_identifier (const char*);
 

@@ -553,7 +553,7 @@ enum nds32_builtins
 
 /* Tell IRA to use the order we define rather than messing it up with its
    own cost calculations.  */
-#define HONOR_REG_ALLOC_ORDER
+#define HONOR_REG_ALLOC_ORDER 1
 
 /* The number of consecutive hard regs needed starting at
    reg "regno" for holding a value of mode "mode".  */

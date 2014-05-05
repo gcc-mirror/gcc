@@ -1,3 +1,175 @@
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Move TODO_verify_flow under
+	the TODO_verify_ul umbrella.
+
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61010
+	* fold-const.c (fold_binary_loc): Consistently avoid
+	canonicalizing X & CST away from a CST that is the mask
+	of a mode.
+
+2014-05-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/picochip/picochip-protos.h (picochip_regno_nregs): Change
+	int argument to enum machine_mode.
+	(picochip_class_max_nregs): Ditto.
+	* config/picochip/picochip.c (picochip_regno_nregs): Ditto.
+	(picochip_class_max_nregs): Ditto.
+
+2014-05-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* target.def: Add new target hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_keep_leaf_when_profiled): Add prototype.
+	* targhooks.c (default_keep_leaf_when_profiled): New function.
+
+	* config/s390/s390.c (s390_keep_leaf_when_profiled): New function.
+	(TARGET_KEEP_LEAF_WHEN_PROFILED): Define.
+
+2014-05-05  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/60363
+	* gcc/tree-ssa-threadupdate.c (get_value_locus_in_path): New.
+	(copy_phi_args): New parameters.  Call get_value_locus_in_path.
+	(update_destination_phis): New parameter.
+	(create_edge_and_update_destination_phis): Ditto.
+	(ssa_fix_duplicate_block_edges): Pass new arguments.
+	(thread_single_edge): Ditto.
+
+2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (RS6000_BTM_HARD_FLOAT): New define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_HARD_FLOAT.
+	(TARGET_EXTRA_BUILTINS): Add TARGET_HARD_FLOAT.
+	* config/rs6000/rs6000-builtin.def (BU_MISC_1):
+	Use RS6000_BTM_HARD_FLOAT.
+	(BU_MISC_2): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Handle
+	RS6000_BTM_HARD_FLOAT.
+	(rs6000_option_override_internal): Enforce -mhard-float if -mhard-dfp
+	is explicitly used.
+	(rs6000_invalid_builtin): Add hard floating builtin support.
+	(rs6000_expand_builtin): Relax the gcc_assert to allow the new
+	hard float builtins.
+	(rs6000_builtin_mask_names): Add RS6000_BTM_HARD_FLOAT.
+
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh_optimize_sett_clrt.cc (sh_optimize_sett_clrt::execute):
+	Add missing function* argument.
+
+2014-05-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lra-constraints.c (valid_address_p): Move earlier in file.
+	Add a constraint argument to the address_info version.
+	(satisfies_memory_constraint_p): New function.
+	(satisfies_address_constraint_p): Likewise.
+	(process_alt_operands, curr_insn_transform): Use them.
+	(process_address): Pass the constraint to valid_address_p when
+	checking address operands.
+
+2014-05-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_isa_rev): New variable.
+	(mips_set_architecture): Set it.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Set __mips_isa_rev
+	from mips_isa_rev.
+	(ISA_HAS_MUL3, ISA_HAS_FP_CONDMOVE, ISA_HAS_8CC, ISA_HAS_FP4)
+	(ISA_HAS_PAIRED_SINGLE, ISA_HAS_MADD_MSUB, ISA_HAS_FP_RECIP_RSQRT)
+	(ISA_HAS_CLZ_CLO, ISA_HAS_ROR, ISA_HAS_WSBH, ISA_HAS_PREFETCH)
+	(ISA_HAS_SEB_SEH, ISA_HAS_EXT_INS, ISA_HAS_MXHC1)
+	(ISA_HAS_HILO_INTERLOCKS, ISA_HAS_SYNCI, MIN_FPRS_PER_FMT): Reexpress
+	conditions in terms of mips_isa_rev.
+	(mips_isa_rev): Declare.
+
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh-mem.cc: Use tabs instead of spaces.
+	(prob_unlikely, prob_likely): Make variables const.
+
+2014-05-03  Denis Chertykov  <chertykov@gmail.com>
+
+	* config/avr/avr.c (avr_adjust_insn_length): Handle JUMP_TABLE_DATA.
+
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (SH_ASM_SPEC): Handle m1, m2*, m3* and m4* cases.
+
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (ROUND_ADVANCE): Delete macro.
+	(ROUND_REG, PASS_IN_REG_P): Move and rename macros to ...
+	* config/sh/sh.c (sh_round_reg, sh_pass_in_reg_p): ... these new
+	functions.
+	(sh_arg_partial_bytes, sh_function_arg, sh_function_arg_advance,
+	sh_setup_incoming_varargs): Replace usage of PASS_IN_REG_P with
+	sh_pass_in_reg_p.
+	Replace usage of ROUND_REG with sh_round_reg.
+	Use CEIL instead of ROUND_ADVANCE.
+
+2014-05-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61026
+	* config/sh/sh.c: Include stdlib headers before everything else.
+
+2014-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Handle
+	GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE.
+	(gimplify_adjust_omp_clauses): Simd region is never
+	directly nested in combined parallel.  Instead, for linear
+	with copyin/copyout, if in combined for simd loop, make decl
+	firstprivate/lastprivate on OMP_FOR.
+	* omp-low.c (expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk): When setting endvar, also set
+	fd->loop.v to the same value.
+
+2014-05-02  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* hwint.h (zext_hwi): Fix signed overflow for prec == 63.
+
+2014-05-02  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_1): Tidy bit-flip
+	expression.
+
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Describe -fsanitize=float-divide-by-zero.
+
+2014-02-26  Kito Cheng  <kito@0xlab.org>
+
+	* defaults.h (HONOR_REG_ALLOC_ORDER): Change HONOR_REG_ALLOC_ORDER
+	to a C expression marco.
+	* ira-color.c (HONOR_REG_ALLOC_ORDER) : Ditto.
+	* config/arm/arm.h (HONOR_REG_ALLOC_ORDER): Ditto.
+	* config/nds32/nds32.h (HONOR_REG_ALLOC_ORDER): Ditto.
+	* doc/tm.texi (HONOR_REG_ALLOC_ORDER): Update document for
+	HONOR_REG_ALLOC_ORDER.
+	* doc/tm.texi.in (HONOR_REG_ALLOC_ORDER): Ditto.
+
+2014-05-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/arc/arc.c (TARGET_LRA_P): Undef before redefine.
+
+2014-05-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/arc/arc.c (arc_select_cc_mode): Fix typo.
+
+2014-05-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* tree-if-conv.c (is_cond_scalar_reduction): New function.
+	(convert_scalar_cond_reduction): Likewise.
+	(predicate_scalar_phi): Add recognition and transformation
+	of simple conditioanl reduction to be vectorizable.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/43245
+	* doc/invoke.texi: Document -Wdiscarded-qualifiers.
+
 2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (vuzp1_f32, vuzp1_p8, vuzp1_p16, vuzp1_s8,

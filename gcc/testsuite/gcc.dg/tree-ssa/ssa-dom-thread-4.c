@@ -75,6 +75,6 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
       -> "kill_elt->indx == b_elt->indx" in the second condition,
 	 skipping the known-true "b_elt && kill_elt" in the second
 	 condition.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 4 "dom1" { target logical_op_short_circuit xfail logical_op_short_circuit } } } */
+/* { dg-final { scan-tree-dump-times "Threaded" 4 "dom1" { target logical_op_short_circuit } } } */
 /* { dg-final { cleanup-tree-dump "dom1" } } */
 

@@ -1386,6 +1386,144 @@ find_phi_replacement_condition (basic_block bb, tree *cond,
   return first_edge->src;
 }
 
+/* Returns true if def-stmt for phi argument ARG is simple increment/decrement
+   which is in predicated basic block.
+   In fact, the following PHI pattern is searching:
+      loop-header:
+	reduc_1 = PHI <..., reduc_2>
+      ...
+	if (...)
+	  reduc_3 = ...
+	reduc_2 = PHI <reduc_1, reduc_3>
+
+   REDUC, OP0 and OP1 contain reduction stmt and its operands.  */
+
+static bool
+is_cond_scalar_reduction (gimple phi, gimple *reduc,
+			  tree *op0, tree *op1)
+{
+  tree lhs, r_op1, r_op2;
+  tree arg_0, arg_1;
+  gimple stmt;
+  gimple header_phi = NULL;
+  enum tree_code reduction_op;
+  struct loop *loop = gimple_bb (phi)->loop_father;
+  edge latch_e = loop_latch_edge (loop);
+
+  arg_0 = PHI_ARG_DEF (phi, 0);
+  arg_1 = PHI_ARG_DEF (phi, 1);
+  if (TREE_CODE (arg_0) != SSA_NAME || TREE_CODE (arg_1) != SSA_NAME)
+    return false;
+
+  if (gimple_code (SSA_NAME_DEF_STMT (arg_0)) == GIMPLE_PHI)
+    {
+      lhs = arg_1;
+      header_phi = SSA_NAME_DEF_STMT (arg_0);
+      stmt = SSA_NAME_DEF_STMT (arg_1);
+    }
+  else if (gimple_code (SSA_NAME_DEF_STMT (arg_1)) == GIMPLE_PHI)
+    {
+      lhs = arg_0;
+      header_phi = SSA_NAME_DEF_STMT (arg_1);
+      stmt = SSA_NAME_DEF_STMT (arg_0);
+    }
+  else
+    return false;
+  if (gimple_bb (header_phi) != loop->header)
+    return false;
+
+  if (PHI_ARG_DEF_FROM_EDGE (header_phi, latch_e) != PHI_RESULT (phi))
+    return false;
+
+  if (gimple_code (stmt) != GIMPLE_ASSIGN
+      || gimple_has_volatile_ops (stmt))
+    return false;
+
+  if (!is_predicated (gimple_bb (stmt)))
+    return false;
+
+  if (!has_single_use (lhs))
+    return false;
+
+  reduction_op = gimple_assign_rhs_code (stmt);
+  if (reduction_op != PLUS_EXPR && reduction_op != MINUS_EXPR)
+    return false;
+  r_op1 = gimple_assign_rhs1 (stmt);
+  r_op2 = gimple_assign_rhs2 (stmt);
+
+  /* Make R_OP1 to hold reduction variable.  */
+  if (r_op2 == PHI_RESULT (header_phi)
+      && reduction_op == PLUS_EXPR)
+    {
+      tree tmp = r_op1;
+      r_op1 = r_op2;
+      r_op2 = tmp;
+    }
+  else if (r_op1 != PHI_RESULT (header_phi))
+    return false;
+
+  *op0 = r_op1; *op1 = r_op2;
+  *reduc = stmt;
+  return true;
+}
+
+/* Converts conditional scalar reduction into unconditional form, e.g.
+     bb_4
+       if (_5 != 0) goto bb_5 else goto bb_6
+     end_bb_4
+     bb_5
+       res_6 = res_13 + 1;
+     end_bb_5
+     bb_6
+       # res_2 = PHI <res_13(4), res_6(5)>
+     end_bb_6
+
+   will be converted into sequence
+    _ifc__1 = _5 != 0 ? 1 : 0;
+    res_2 = res_13 + _ifc__1;
+  Argument SWAP tells that arguments of conditional expression should be
+  swapped.
+  Returns rhs of resulting PHI assignment.  */
+
+static tree
+convert_scalar_cond_reduction (gimple reduc, gimple_stmt_iterator *gsi,
+			       tree cond, tree op0, tree op1, bool swap)
+{
+  gimple_stmt_iterator stmt_it;
+  gimple new_assign;
+  tree rhs;
+  tree rhs1 = gimple_assign_rhs1 (reduc);
+  tree tmp = make_temp_ssa_name (TREE_TYPE (rhs1), NULL, "_ifc_");
+  tree c;
+  tree zero = build_zero_cst (TREE_TYPE (rhs1));
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Found cond scalar reduction.\n");
+      print_gimple_stmt (dump_file, reduc, 0, TDF_SLIM);
+    }
+
+  /* Build cond expression using COND and constant operand
+     of reduction rhs.  */
+  c = fold_build_cond_expr (TREE_TYPE (rhs1),
+			    unshare_expr (cond),
+			    swap ? zero : op1,
+			    swap ? op1 : zero);
+
+  /* Create assignment stmt and insert it at GSI.  */
+  new_assign = gimple_build_assign (tmp, c);
+  gsi_insert_before (gsi, new_assign, GSI_SAME_STMT);
+  /* Build rhs for unconditional increment/decrement.  */
+  rhs = fold_build2 (gimple_assign_rhs_code (reduc),
+		     TREE_TYPE (rhs1), op0, tmp);
+
+  /* Delete original reduction stmt.  */
+  stmt_it = gsi_for_stmt (reduc);
+  gsi_remove (&stmt_it, true);
+  release_defs (reduc);
+  return rhs;
+}
+
 /* Replace a scalar PHI node with a COND_EXPR using COND as condition.
    This routine does not handle PHI nodes with more than two
    arguments.
@@ -1428,6 +1566,9 @@ predicate_scalar_phi (gimple phi, tree cond,
   else
     {
       tree arg_0, arg_1;
+      tree op0, op1;
+      gimple reduc;
+
       /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
       if (EDGE_PRED (bb, 1)->src == true_bb)
 	{
@@ -1439,10 +1580,14 @@ predicate_scalar_phi (gimple phi, tree cond,
 	  arg_0 = gimple_phi_arg_def (phi, 0);
 	  arg_1 = gimple_phi_arg_def (phi, 1);
 	}
-
-      /* Build new RHS using selected condition and arguments.  */
-      rhs = fold_build_cond_expr (TREE_TYPE (res), unshare_expr (cond),
-				  arg_0, arg_1);
+      if (is_cond_scalar_reduction (phi, &reduc, &op0, &op1))
+	/* Convert reduction stmt into vectorizable form.  */
+	rhs = convert_scalar_cond_reduction (reduc, gsi, cond, op0, op1,
+					     true_bb != gimple_bb (reduc));
+      else
+	/* Build new RHS using selected condition and arguments.  */
+	rhs = fold_build_cond_expr (TREE_TYPE (res), unshare_expr (cond),
+				    arg_0, arg_1);
     }
 
   new_stmt = gimple_build_assign (res, rhs);

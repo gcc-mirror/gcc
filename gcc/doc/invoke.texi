@@ -242,6 +242,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wdisabled-optimization  @gol
+-Wno-discarded-qualifiers @gol
 -Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
 -Wno-endif-labels -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
@@ -4182,6 +4183,15 @@ This option is only active when @option{-ftree-vrp} is active
 (default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
 
+@item -Wno-discarded-qualifiers
+@opindex Wno-discarded-qualifiers
+@opindex Wdiscarded-qualifiers
+Do not warn if type qualifiers on pointers are being discarded.
+Typically, the compiler will warn if a @code{const char *} variable is
+passed to a function that takes @code{char *} parameter.  This option
+can be used to suppress such a warning.  This warning is only supported
+for C.
+
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero
 @opindex Wdiv-by-zero
@@ -5382,6 +5392,14 @@ a++;
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
+
+@item -fsanitize=float-divide-by-zero
+@opindex fsanitize=float-divide-by-zero
+
+Detect floating-point division by zero.  Unlike other similar options,
+@option{-fsanitize=float-divide-by-zero} is not enabled by
+@option{-fsanitize=undefined}, since floating-point division by zero can
+be a legitimate way of obtaining infinities and NaNs.
 
 @item -fsanitize-recover
 @opindex fsanitize-recover

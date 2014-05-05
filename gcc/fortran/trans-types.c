@@ -1298,7 +1298,14 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 {
   tree lbound[GFC_MAX_DIMENSIONS];
   tree ubound[GFC_MAX_DIMENSIONS];
-  int n;
+  int n, corank;
+
+  /* Assumed-shape arrays do not have codimension information stored in the
+     descriptor.  */
+  corank = as->corank;
+  if (as->type == AS_ASSUMED_SHAPE ||
+      (as->type == AS_ASSUMED_RANK && akind == GFC_ARRAY_ALLOCATABLE))
+    corank = 0;
 
   if (as->type == AS_ASSUMED_RANK)
     for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
@@ -1317,14 +1324,14 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
       ubound[n] = gfc_conv_array_bound (as->upper[n]);
     }
 
-  for (n = as->rank; n < as->rank + as->corank; n++)
+  for (n = as->rank; n < as->rank + corank; n++)
     {
       if (as->type != AS_DEFERRED && as->lower[n] == NULL)
         lbound[n] = gfc_index_one_node;
       else
         lbound[n] = gfc_conv_array_bound (as->lower[n]);
 
-      if (n < as->rank + as->corank - 1)
+      if (n < as->rank + corank - 1)
 	ubound[n] = gfc_conv_array_bound (as->upper[n]);
     }
 
@@ -1336,7 +1343,7 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 		       : GFC_ARRAY_ASSUMED_RANK;
   return gfc_get_array_type_bounds (type, as->rank == -1
 					  ? GFC_MAX_DIMENSIONS : as->rank,
-				    as->corank, lbound,
+				    corank, lbound,
 				    ubound, 0, akind, restricted);
 }
 

@@ -60,7 +60,6 @@ GO_OBJS = \
 	go/go-linemap.o \
 	go/go-optimize.o \
 	go/go.o \
-	go/gogo-tree.o \
 	go/gogo.o \
 	go/import.o \
 	go/import-archive.o \

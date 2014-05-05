@@ -5773,6 +5773,7 @@ extern bool is_sub_constant_expr (tree);
 extern bool reduced_constant_expression_p (tree);
 extern void explain_invalid_constexpr_fn (tree);
 extern vec<tree> cx_error_context (void);
+extern bool is_this_parameter (tree);
 
 enum {
   BCS_NO_SCOPE = 1,

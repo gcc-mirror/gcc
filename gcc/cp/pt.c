@@ -12629,13 +12629,17 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		}
 	      else
 		{
-		  /* This can happen for a variable used in a late-specified
-		     return type of a local lambda.  Just make a dummy decl
-		     since it's only used for its type.  */
-		  if (cp_unevaluated_operand)
-		    return tsubst_decl (t, args, complain);
-		  gcc_assert (errorcount || sorrycount);
-		  return error_mark_node;
+		  /* This can happen for a variable used in a
+		     late-specified return type of a local lambda, or for a
+		     local static or constant.  Building a new VAR_DECL
+		     should be OK in all those cases.  */
+		  r = tsubst_decl (t, args, complain);
+		  if (decl_constant_var_p (r))
+		    /* A use of a local constant must decay to its value.  */
+		    return integral_constant_value (r);
+		  gcc_assert (cp_unevaluated_operand || TREE_STATIC (r)
+			      || errorcount || sorrycount);
+		  return r;
 		}
 	    }
 	}
@@ -19616,7 +19620,8 @@ instantiate_decl (tree d, int defer_ok,
 
   if (TREE_CODE (d) == FUNCTION_DECL)
     pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE
-		       || DECL_DEFAULTED_OUTSIDE_CLASS_P (code_pattern));
+		       || DECL_DEFAULTED_OUTSIDE_CLASS_P (code_pattern)
+		       || DECL_DELETED_FN (code_pattern));
   else
     pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
 
@@ -19858,14 +19863,17 @@ instantiate_decl (tree d, int defer_ok,
 		       tf_warning_or_error, tmpl,
 		       /*integral_constant_expression_p=*/false);
 
-	  /* Set the current input_location to the end of the function
-	     so that finish_function knows where we are.  */
-	  input_location
-	    = DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
+	  if (DECL_STRUCT_FUNCTION (code_pattern))
+	    {
+	      /* Set the current input_location to the end of the function
+		 so that finish_function knows where we are.  */
+	      input_location
+		= DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
 
-	  /* Remember if we saw an infinite loop in the template.  */
-	  current_function_infinite_loop
-	    = DECL_STRUCT_FUNCTION (code_pattern)->language->infinite_loop;
+	      /* Remember if we saw an infinite loop in the template.  */
+	      current_function_infinite_loop
+		= DECL_STRUCT_FUNCTION (code_pattern)->language->infinite_loop;
+	    }
 	}
 
       /* We don't need the local specializations any more.  */

@@ -344,7 +344,7 @@ zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
   else
     {
       gcc_checking_assert (prec < HOST_BITS_PER_WIDE_INT);
-      return src & (((HOST_WIDE_INT) 1 << prec) - 1);
+      return src & (((unsigned HOST_WIDE_INT) 1 << prec) - 1);
     }
 }
 

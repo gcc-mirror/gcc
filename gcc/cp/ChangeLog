@@ -1,3 +1,35 @@
+2014-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58582
+	* decl.c (grokfndecl): Check duplicate_decls return value for
+	error_mark_node.
+	* pt.c (instantiate_decl): A deleted function is defined.
+
+2014-05-02  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (vague_linkage_p): Local statics have vague linkage.
+
+	PR c++/60992
+	* lambda.c (lambda_capture_field_type): Wrap anything dependent
+	other than 'this'.
+	(add_capture): Check for VLA before calling it.
+	* semantics.c (is_this_parameter): Accept any 'this' parameter, not
+	just the current one.  Make non-static.
+	* cp-tree.h: Declare it.
+	* pt.c (tsubst_copy) [VAR_DECL]: Also build a new VAR_DECL if
+	the operand was static or constant.
+
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (maybe_warn_about_returning_address_of_local): Separate
+	warning_at calls.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/43395
+	* typeck.c (maybe_warn_about_returning_address_of_local): Distinguish
+	between label and variable when warning about returning local address.
+
 2014-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60980
