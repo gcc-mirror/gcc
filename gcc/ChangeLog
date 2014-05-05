@@ -1,3 +1,8 @@
+2014-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60965
+	* ipa-devirt.c (get_class_context): Allow POD to change to non-POD.
+
 2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.h (RS6000_BTM_HARD_FLOAT): New define.

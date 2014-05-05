@@ -1,3 +1,9 @@
+2014-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60965
+	* g++.dg/ipa/devirt-31.C: New testcase.
+	* g++.dg/ipa/devirt-11.C: Adjust testcase.
+
 2014-05-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/pack02.c (dg-options): Add -mhard-float.
