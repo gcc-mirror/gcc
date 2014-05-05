@@ -1743,7 +1743,6 @@ execute_function_todo (function *fn, void *data)
     {
       unsigned update_flags = flags & TODO_update_ssa_any;
       update_ssa (update_flags);
-      cfun->last_verified &= ~TODO_verify_ssa;
     }
 
   if (flag_tree_pta && (flags & TODO_rebuild_alias))
@@ -1791,9 +1790,9 @@ execute_function_todo (function *fn, void *data)
 	  if (current_loops
 	      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	    verify_loop_closed_ssa (false);
+	  if (cfun->curr_properties & PROP_rtl)
+	    verify_rtl_sharing ();
 	}
-      if (flags & TODO_verify_rtl_sharing)
-	verify_rtl_sharing ();
 
       /* Make sure verifiers don't change dominator state.  */
       gcc_assert (dom_info_state (fn, CDI_DOMINATORS) == pre_verify_state);
