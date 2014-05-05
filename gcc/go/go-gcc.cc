@@ -229,7 +229,7 @@ class Gcc_backend : public Backend
   var_expression(Bvariable* var, Location);
 
   Bexpression*
-  indirect_expression(Bexpression* expr, bool known_valid, Location);
+  indirect_expression(Btype*, Bexpression* expr, bool known_valid, Location);
 
   Bexpression*
   named_constant_expression(Btype* btype, const std::string& name,
@@ -1147,14 +1147,26 @@ Gcc_backend::var_expression(Bvariable* var, Location)
 // An expression that indirectly references an expression.
 
 Bexpression*
-Gcc_backend::indirect_expression(Bexpression* expr, bool known_valid,
-                                 Location location)
+Gcc_backend::indirect_expression(Btype* btype, Bexpression* expr,
+				 bool known_valid, Location location)
 {
+  tree expr_tree = expr->get_tree();
+  tree type_tree = btype->get_tree();
+  if (expr_tree == error_mark_node || type_tree == error_mark_node)
+    return this->error_expression();
+
+  // If the type of EXPR is a recursive pointer type, then we
+  // need to insert a cast before indirecting.
+  tree target_type_tree = TREE_TYPE(TREE_TYPE(expr_tree));
+  if (VOID_TYPE_P(target_type_tree))
+    expr_tree = fold_convert_loc(location.gcc_location(),
+				 build_pointer_type(type_tree), expr_tree);
+
   tree ret = build_fold_indirect_ref_loc(location.gcc_location(),
-                                         expr->get_tree());
+                                         expr_tree);
   if (known_valid)
     TREE_THIS_NOTRAP(ret) = 1;
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // Return an expression that declares a constant named NAME with the
@@ -2406,16 +2418,17 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 				Location location,
 				Bstatement** pstatement)
 {
+  gcc_assert(function != NULL);
+  tree decl = function->get_tree();
   tree type_tree = btype->get_tree();
   tree init_tree = binit == NULL ? NULL_TREE : binit->get_tree();
-  if (type_tree == error_mark_node || init_tree == error_mark_node)
+  if (type_tree == error_mark_node
+      || init_tree == error_mark_node
+      || decl == error_mark_node)
     {
       *pstatement = this->error_statement();
       return this->error_variable();
     }
-
-  gcc_assert(function != NULL);
-  tree decl = function->get_tree();
 
   tree var;
   // We can only use create_tmp_var if the type is not addressable.

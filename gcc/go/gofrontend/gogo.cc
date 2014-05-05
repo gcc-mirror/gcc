@@ -5210,7 +5210,10 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
       Bvariable* bvar = no->get_backend_variable(gogo, named_function);
       Bexpression* val = gogo->backend()->var_expression(bvar, location);
       if (no->result_var_value()->is_in_heap())
-        val = gogo->backend()->indirect_expression(val, true, location);
+	{
+	  Btype* bt = no->result_var_value()->type()->get_backend(gogo);
+	  val = gogo->backend()->indirect_expression(bt, val, true, location);
+	}
       vals[i] = val;
     }
   return gogo->backend()->return_statement(this->fndecl_, vals, location);
