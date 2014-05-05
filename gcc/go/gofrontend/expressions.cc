@@ -6736,12 +6736,9 @@ Bound_method_expression::do_get_tree(Translate_context* context)
   Expression* ret = Expression::make_struct_composite_literal(st, vals, loc);
   ret = Expression::make_heap_expression(ret, loc);
 
-  tree ret_tree = ret->get_tree(context);
-
-  Expression* nil_check = NULL;
-
   // See whether the expression or any embedded pointers are nil.
 
+  Expression* nil_check = NULL;
   Expression* expr = this->expr_;
   if (this->method_->field_indexes() != NULL)
     {
@@ -6764,26 +6761,19 @@ Bound_method_expression::do_get_tree(Translate_context* context)
 	nil_check = Expression::make_binary(OPERATOR_OROR, nil_check, n, loc);
     }
 
+  Bexpression* bme = tree_to_expr(ret->get_tree(context));
   if (nil_check != NULL)
     {
-      tree nil_check_tree = nil_check->get_tree(context);
-      Expression* crash_expr =
-	context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
-      tree crash = crash_expr->get_tree(context);
-      if (ret_tree == error_mark_node
-	  || nil_check_tree == error_mark_node
-	  || crash == error_mark_node)
-	return error_mark_node;
-
-      ret_tree = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-				 TREE_TYPE(ret_tree),
-				 build3_loc(loc.gcc_location(), COND_EXPR,
-					    void_type_node, nil_check_tree,
-					    crash, NULL_TREE),
-				 ret_tree);
+      Gogo* gogo = context->gogo();
+      Expression* crash =
+	gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
+      Bexpression* bcrash = tree_to_expr(crash->get_tree(context));
+      Btype* btype = ret->type()->get_backend(gogo);
+      Bexpression* bcheck = tree_to_expr(nil_check->get_tree(context));
+      bme = gogo->backend()->conditional_expression(btype, bcheck, bcrash,
+						    bme, loc);
     }
-
-  return ret_tree;
+  return expr_to_tree(bme);
 }
 
 // Dump ast representation of a bound method expression.
