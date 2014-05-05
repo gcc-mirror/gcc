@@ -1501,9 +1501,9 @@ common_handle_option (struct gcc_options *opts,
 		}
 
 	    if (! found)
-	      warning_at (loc, 0,
-			  "unrecognized argument to -fsanitize= option: %q.*s",
-			  (int) len, p);
+	      error_at (loc,
+			"unrecognized argument to -fsanitize= option: %q.*s",
+			(int) len, p);
 
 	    if (comma == NULL)
 	      break;
