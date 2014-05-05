@@ -1,3 +1,10 @@
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61010
+	* fold-const.c (fold_binary_loc): Consistently avoid
+	canonicalizing X & CST away from a CST that is the mask
+	of a mode.
+
 2014-05-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/picochip/picochip-protos.h (picochip_regno_nregs): Change
