@@ -3288,8 +3288,8 @@ bfin_local_alignment (tree type, unsigned align)
      memcpy can use 32 bit loads/stores.  */
   if (TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (TREE_INT_CST_LOW (TYPE_SIZE (type)) > 8
-	  || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 32)
+      && wi::gtu_p (TYPE_SIZE (type), 8)
+      && align < 32)
     return 32;
   return align;
 }
@@ -3371,15 +3371,14 @@ find_prev_insn_start (rtx insn)
 /* Implement TARGET_CAN_USE_DOLOOP_P.  */
 
 static bool
-bfin_can_use_doloop_p (double_int, double_int iterations_max,
+bfin_can_use_doloop_p (const widest_int &, const widest_int &iterations_max,
 		       unsigned int, bool)
 {
   /* Due to limitations in the hardware (an initial loop count of 0
      does not loop 2^32 times) we must avoid to generate a hardware
      loops when we cannot rule out this case.  */
   if (!flag_unsafe_loop_optimizations
-      && (iterations_max.high != 0
-	  || iterations_max.low >= 0xFFFFFFFF))
+      && wi::geu_p (iterations_max, 0xFFFFFFFF))
     return false;
   return true;
 }

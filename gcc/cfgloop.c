@@ -336,7 +336,8 @@ alloc_loop (void)
   loop->exits = ggc_alloc_cleared_loop_exit ();
   loop->exits->next = loop->exits->prev = loop->exits;
   loop->can_be_parallel = false;
-
+  loop->nb_iterations_upper_bound = 0;
+  loop->nb_iterations_estimate = 0;
   return loop;
 }
 
@@ -1787,21 +1788,21 @@ get_loop_location (struct loop *loop)
    I_BOUND times.  */
 
 void
-record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
-		    bool upper)
+record_niter_bound (struct loop *loop, const widest_int &i_bound,
+		    bool realistic, bool upper)
 {
   /* Update the bounds only when there is no previous estimation, or when the
      current estimation is smaller.  */
   if (upper
       && (!loop->any_upper_bound
-	  || i_bound.ult (loop->nb_iterations_upper_bound)))
+	  || wi::ltu_p (i_bound, loop->nb_iterations_upper_bound)))
     {
       loop->any_upper_bound = true;
       loop->nb_iterations_upper_bound = i_bound;
     }
   if (realistic
       && (!loop->any_estimate
-	  || i_bound.ult (loop->nb_iterations_estimate)))
+	  || wi::ltu_p (i_bound, loop->nb_iterations_estimate)))
     {
       loop->any_estimate = true;
       loop->nb_iterations_estimate = i_bound;
@@ -1811,7 +1812,8 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
      number of iterations, use the upper bound instead.  */
   if (loop->any_upper_bound
       && loop->any_estimate
-      && loop->nb_iterations_upper_bound.ult (loop->nb_iterations_estimate))
+      && wi::ltu_p (loop->nb_iterations_upper_bound,
+		    loop->nb_iterations_estimate))
     loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
@@ -1822,13 +1824,13 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
 HOST_WIDE_INT
 get_estimated_loop_iterations_int (struct loop *loop)
 {
-  double_int nit;
+  widest_int nit;
   HOST_WIDE_INT hwi_nit;
 
   if (!get_estimated_loop_iterations (loop, &nit))
     return -1;
 
-  if (!nit.fits_shwi ())
+  if (!wi::fits_shwi_p (nit))
     return -1;
   hwi_nit = nit.to_shwi ();
 
@@ -1859,7 +1861,7 @@ max_stmt_executions_int (struct loop *loop)
    returns true.  */
 
 bool
-get_estimated_loop_iterations (struct loop *loop, double_int *nit)
+get_estimated_loop_iterations (struct loop *loop, widest_int *nit)
 {
   /* Even if the bound is not recorded, possibly we can derrive one from
      profile.  */
@@ -1867,7 +1869,7 @@ get_estimated_loop_iterations (struct loop *loop, double_int *nit)
     {
       if (loop->header->count)
 	{
-          *nit = gcov_type_to_double_int
+          *nit = gcov_type_to_wide_int
 		   (expected_loop_iterations_unbounded (loop) + 1);
 	  return true;
 	}
@@ -1883,7 +1885,7 @@ get_estimated_loop_iterations (struct loop *loop, double_int *nit)
    false, otherwise returns true.  */
 
 bool
-get_max_loop_iterations (struct loop *loop, double_int *nit)
+get_max_loop_iterations (struct loop *loop, widest_int *nit)
 {
   if (!loop->any_upper_bound)
     return false;
@@ -1899,13 +1901,13 @@ get_max_loop_iterations (struct loop *loop, double_int *nit)
 HOST_WIDE_INT
 get_max_loop_iterations_int (struct loop *loop)
 {
-  double_int nit;
+  widest_int nit;
   HOST_WIDE_INT hwi_nit;
 
   if (!get_max_loop_iterations (loop, &nit))
     return -1;
 
-  if (!nit.fits_shwi ())
+  if (!wi::fits_shwi_p (nit))
     return -1;
   hwi_nit = nit.to_shwi ();
 

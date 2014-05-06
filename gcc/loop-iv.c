@@ -2625,8 +2625,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  max = (up - down) / inc + 1;
 	  if (!desc->infinite
 	      && !desc->assumptions)
-	    record_niter_bound (loop, double_int::from_uhwi (max),
-			        false, true);
+	    record_niter_bound (loop, max, false, true);
 
 	  if (iv0.step == const0_rtx)
 	    {
@@ -2665,8 +2664,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       iv1.step = const0_rtx;
       if (INTVAL (iv0.step) < 0)
 	{
-	  iv0.step = simplify_gen_unary (NEG, comp_mode, iv0.step, mode);
-	  iv1.base = simplify_gen_unary (NEG, comp_mode, iv1.base, mode);
+	  iv0.step = simplify_gen_unary (NEG, comp_mode, iv0.step, comp_mode);
+	  iv1.base = simplify_gen_unary (NEG, comp_mode, iv1.base, comp_mode);
 	}
       iv0.step = lowpart_subreg (mode, iv0.step, comp_mode);
 
@@ -2840,8 +2839,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       desc->niter = val & GET_MODE_MASK (desc->mode);
       if (!desc->infinite
 	  && !desc->assumptions)
-        record_niter_bound (loop, double_int::from_uhwi (desc->niter),
-			    false, true);
+        record_niter_bound (loop, desc->niter, false, true);
     }
   else
     {
@@ -2850,8 +2848,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	goto zero_iter_simplify;
       if (!desc->infinite
 	  && !desc->assumptions)
-	record_niter_bound (loop, double_int::from_uhwi (max),
-			    false, true);
+	record_niter_bound (loop, max, false, true);
 
       /* simplify_using_initial_values does a copy propagation on the registers
 	 in the expression for the number of iterations.  This prolongs life
@@ -2876,8 +2873,7 @@ zero_iter_simplify:
 zero_iter:
   desc->const_iter = true;
   desc->niter = 0;
-  record_niter_bound (loop, double_int_zero,
-		      true, true);
+  record_niter_bound (loop, 0, true, true);
   desc->noloop_assumptions = NULL_RTX;
   desc->niter_expr = const0_rtx;
   return;

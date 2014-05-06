@@ -222,6 +222,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-affine.h"
 #include "tree-inline.h"
+#include "wide-int-print.h"
 
 /* The maximum number of iterations between the considered memory
    references.  */
@@ -249,7 +250,7 @@ typedef struct dref_d
   unsigned distance;
 
   /* Number of iterations offset from the first reference in the component.  */
-  double_int offset;
+  widest_int offset;
 
   /* Number of the reference in a component, in dominance ordering.  */
   unsigned pos;
@@ -365,7 +366,7 @@ dump_dref (FILE *file, dref ref)
 	       DR_IS_READ (ref->ref) ? "" : ", write");
 
       fprintf (file, "      offset ");
-      dump_double_int (file, ref->offset, false);
+      print_decs (ref->offset, file);
       fprintf (file, "\n");
 
       fprintf (file, "      distance %u\n", ref->distance);
@@ -638,7 +639,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
   tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset,
 				  &name_expansions);
-  aff_combination_const (&delta, type, tree_to_double_int (DR_INIT (dr)));
+  aff_combination_const (&delta, type, wi::to_widest (DR_INIT (dr)));
   aff_combination_add (offset, &delta);
 }
 
@@ -650,7 +651,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
 static bool
 determine_offset (struct data_reference *a, struct data_reference *b,
-		  double_int *off)
+		  widest_int *off)
 {
   aff_tree diff, baseb, step;
   tree typea, typeb;
@@ -671,7 +672,7 @@ determine_offset (struct data_reference *a, struct data_reference *b,
     {
       /* If the references have loop invariant address, check that they access
 	 exactly the same location.  */
-      *off = double_int_zero;
+      *off = 0;
       return (operand_equal_p (DR_OFFSET (a), DR_OFFSET (b), 0)
 	      && operand_equal_p (DR_INIT (a), DR_INIT (b), 0));
     }
@@ -680,7 +681,7 @@ determine_offset (struct data_reference *a, struct data_reference *b,
      is a multiple of step.  */
   aff_combination_dr_offset (a, &diff);
   aff_combination_dr_offset (b, &baseb);
-  aff_combination_scale (&baseb, double_int_minus_one);
+  aff_combination_scale (&baseb, -1);
   aff_combination_add (&diff, &baseb);
 
   tree_to_aff_combination_expand (DR_STEP (a), TREE_TYPE (DR_STEP (a)),
@@ -757,7 +758,7 @@ split_data_refs_to_components (struct loop *loop,
 
   FOR_EACH_VEC_ELT (depends, i, ddr)
     {
-      double_int dummy_off;
+      widest_int dummy_off;
 
       if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
 	continue;
@@ -827,7 +828,7 @@ split_data_refs_to_components (struct loop *loop,
       dataref = XCNEW (struct dref_d);
       dataref->ref = dr;
       dataref->stmt = DR_STMT (dr);
-      dataref->offset = double_int_zero;
+      dataref->offset = 0;
       dataref->distance = 0;
 
       dataref->always_accessed
@@ -883,7 +884,7 @@ suitable_component_p (struct loop *loop, struct component *comp)
   first = comp->refs[0];
   ok = suitable_reference_p (first->ref, &comp->comp_step);
   gcc_assert (ok);
-  first->offset = double_int_zero;
+  first->offset = 0;
 
   for (i = 1; comp->refs.iterate (i, &a); i++)
     {
@@ -947,7 +948,7 @@ order_drefs (const void *a, const void *b)
 {
   const dref *const da = (const dref *) a;
   const dref *const db = (const dref *) b;
-  int offcmp = (*da)->offset.scmp ((*db)->offset);
+  int offcmp = wi::cmps ((*da)->offset, (*db)->offset);
 
   if (offcmp != 0)
     return offcmp;
@@ -969,16 +970,15 @@ static void
 add_ref_to_chain (chain_p chain, dref ref)
 {
   dref root = get_chain_root (chain);
-  double_int dist;
 
-  gcc_assert (root->offset.sle (ref->offset));
-  dist = ref->offset - root->offset;
-  if (double_int::from_uhwi (MAX_DISTANCE).ule (dist))
+  gcc_assert (wi::les_p (root->offset, ref->offset));
+  widest_int dist = ref->offset - root->offset;
+  if (wi::leu_p (MAX_DISTANCE, dist))
     {
       free (ref);
       return;
     }
-  gcc_assert (dist.fits_uhwi ());
+  gcc_assert (wi::fits_uhwi_p (dist));
 
   chain->refs.safe_push (ref);
 
@@ -1073,7 +1073,7 @@ valid_initializer_p (struct data_reference *ref,
 		     unsigned distance, struct data_reference *root)
 {
   aff_tree diff, base, step;
-  double_int off;
+  widest_int off;
 
   /* Both REF and ROOT must be accessing the same object.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (ref), DR_BASE_ADDRESS (root), 0))
@@ -1093,7 +1093,7 @@ valid_initializer_p (struct data_reference *ref,
      -DISTANCE-th iteration.  */
   aff_combination_dr_offset (root, &diff);
   aff_combination_dr_offset (ref, &base);
-  aff_combination_scale (&base, double_int_minus_one);
+  aff_combination_scale (&base, -1);
   aff_combination_add (&diff, &base);
 
   tree_to_aff_combination_expand (DR_STEP (root), TREE_TYPE (DR_STEP (root)),
@@ -1101,7 +1101,7 @@ valid_initializer_p (struct data_reference *ref,
   if (!aff_combination_constant_multiple_p (&diff, &step, &off))
     return false;
 
-  if (off != double_int::from_uhwi (distance))
+  if (off != distance)
     return false;
 
   return true;
@@ -1229,7 +1229,7 @@ determine_roots_comp (struct loop *loop,
   unsigned i;
   dref a;
   chain_p chain = NULL;
-  double_int last_ofs = double_int_zero;
+  widest_int last_ofs = 0;
 
   /* Invariants are handled specially.  */
   if (comp->comp_step == RS_INVARIANT)
@@ -1244,7 +1244,7 @@ determine_roots_comp (struct loop *loop,
   FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
       if (!chain || DR_IS_WRITE (a->ref)
-	  || double_int::from_uhwi (MAX_DISTANCE).ule (a->offset - last_ofs))
+	  || wi::leu_p (MAX_DISTANCE, a->offset - last_ofs))
 	{
 	  if (nontrivial_chain_p (chain))
 	    {

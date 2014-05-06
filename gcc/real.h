@@ -21,6 +21,9 @@
 #define GCC_REAL_H
 
 #include "machmode.h"
+#include "signop.h"
+#include "wide-int.h"
+#include "insn-modes.h"
 
 /* An expanded form of the represented number.  */
 
@@ -267,18 +270,12 @@ extern void real_to_hexadecimal (char *, const REAL_VALUE_TYPE *,
 
 /* Render R as an integer.  */
 extern HOST_WIDE_INT real_to_integer (const REAL_VALUE_TYPE *);
-extern void real_to_integer2 (HOST_WIDE_INT *, HOST_WIDE_INT *,
-			      const REAL_VALUE_TYPE *);
 
 /* Initialize R from a decimal or hexadecimal string.  Return -1 if
    the value underflows, +1 if overflows, and 0 otherwise.  */
 extern int real_from_string (REAL_VALUE_TYPE *, const char *);
 /* Wrapper to allow different internal representation for decimal floats. */
 extern void real_from_string3 (REAL_VALUE_TYPE *, const char *, enum machine_mode);
-
-/* Initialize R from an integer pair HIGH/LOW.  */
-extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
-			       unsigned HOST_WIDE_INT, HOST_WIDE_INT, int);
 
 extern long real_to_target_fmt (long *, const REAL_VALUE_TYPE *,
 				const struct real_format *);
@@ -361,12 +358,6 @@ extern const struct real_format arm_half_format;
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) \
   ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_FLOAT, 0)))
 
-#define REAL_VALUE_FROM_INT(r, lo, hi, mode) \
-  real_from_integer (&(r), mode, lo, hi, 0)
-
-#define REAL_VALUE_FROM_UNSIGNED_INT(r, lo, hi, mode) \
-  real_from_integer (&(r), mode, lo, hi, 1)
-
 /* Real values to IEEE 754 decimal floats.  */
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
@@ -382,9 +373,6 @@ extern const struct real_format arm_half_format;
 
 extern REAL_VALUE_TYPE real_value_truncate (enum machine_mode,
 					    REAL_VALUE_TYPE);
-
-#define REAL_VALUE_TO_INT(plow, phigh, r) \
-  real_to_integer2 (plow, phigh, &(r))
 
 extern REAL_VALUE_TYPE real_value_negate (const REAL_VALUE_TYPE *);
 extern REAL_VALUE_TYPE real_value_abs (const REAL_VALUE_TYPE *);
@@ -485,4 +473,12 @@ extern bool real_isinteger (const REAL_VALUE_TYPE *c, enum machine_mode mode);
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  BUF must be large enough to contain the result.  */
 extern void get_max_float (const struct real_format *, char *, size_t);
+
+#ifndef GENERATOR_FILE
+/* real related routines.  */
+extern wide_int real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
+extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
+			       const wide_int_ref &, signop);
+#endif
+
 #endif /* ! GCC_REAL_H */

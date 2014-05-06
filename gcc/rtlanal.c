@@ -3173,6 +3173,8 @@ commutative_operand_precedence (rtx op)
   /* Constants always come the second operand.  Prefer "nice" constants.  */
   if (code == CONST_INT)
     return -8;
+  if (code == CONST_WIDE_INT)
+    return -8;
   if (code == CONST_DOUBLE)
     return -7;
   if (code == CONST_FIXED)
@@ -3184,6 +3186,8 @@ commutative_operand_precedence (rtx op)
     {
     case RTX_CONST_OBJ:
       if (code == CONST_INT)
+        return -6;
+      if (code == CONST_WIDE_INT)
         return -6;
       if (code == CONST_DOUBLE)
         return -5;
@@ -5382,7 +5386,10 @@ get_address_mode (rtx mem)
 /* Split up a CONST_DOUBLE or integer constant rtx
    into two rtx's for single words,
    storing in *FIRST the word that comes first in memory in the target
-   and in *SECOND the other.  */
+   and in *SECOND the other.
+
+   TODO: This function needs to be rewritten to work on any size
+   integer.  */
 
 void
 split_double (rtx value, rtx *first, rtx *second)
@@ -5457,6 +5464,22 @@ split_double (rtx value, rtx *first, rtx *second)
 	      *first = value;
 	      *second = high;
 	    }
+	}
+    }
+  else if (GET_CODE (value) == CONST_WIDE_INT)
+    {
+      /* All of this is scary code and needs to be converted to
+	 properly work with any size integer.  */
+      gcc_assert (CONST_WIDE_INT_NUNITS (value) == 2);
+      if (WORDS_BIG_ENDIAN)
+	{
+	  *first = GEN_INT (CONST_WIDE_INT_ELT (value, 1));
+	  *second = GEN_INT (CONST_WIDE_INT_ELT (value, 0));
+	}
+      else
+	{
+	  *first = GEN_INT (CONST_WIDE_INT_ELT (value, 0));
+	  *second = GEN_INT (CONST_WIDE_INT_ELT (value, 1));
 	}
     }
   else if (!CONST_DOUBLE_P (value))

@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "context.h"
 #include "pass_manager.h"
+#include "wide-int.h"
 
 /* Which cpu we're compiling for (A5, ARC600, ARC601, ARC700).  */
 static const char *arc_cpu_string = "";
@@ -391,7 +392,8 @@ static bool arc_return_in_memory (const_tree, const_tree);
 static void arc_init_simd_builtins (void);
 static bool arc_vector_mode_supported_p (enum machine_mode);
 
-static bool arc_can_use_doloop_p (double_int, double_int, unsigned int, bool);
+static bool arc_can_use_doloop_p (const widest_int &, const widest_int &,
+				  unsigned int, bool);
 static const char *arc_invalid_within_doloop (const_rtx);
 
 static void output_short_suffix (FILE *file);
@@ -5700,7 +5702,7 @@ arc_pass_by_reference (cumulative_args_t ca_v ATTRIBUTE_UNUSED,
 /* Implement TARGET_CAN_USE_DOLOOP_P.  */
 
 static bool
-arc_can_use_doloop_p (double_int iterations, double_int,
+arc_can_use_doloop_p (const widest_int &iterations, const widest_int &,
 		      unsigned int loop_depth, bool entered_at_top)
 {
   if (loop_depth > 1)
@@ -5708,9 +5710,8 @@ arc_can_use_doloop_p (double_int iterations, double_int,
   /* Setting up the loop with two sr instructions costs 6 cycles.  */
   if (TARGET_ARC700
       && !entered_at_top
-      && iterations.high == 0
-      && iterations.low > 0
-      && iterations.low <= (flag_pic ? 6 : 3))
+      && wi::gtu_p (iterations, 0)
+      && wi::leu_p (iterations, flag_pic ? 6 : 3))
     return false;
   return true;
 }

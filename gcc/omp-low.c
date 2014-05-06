@@ -2541,9 +2541,7 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
 	      if (tem != TREE_TYPE (t))
 		{
 		  if (TREE_CODE (t) == INTEGER_CST)
-		    *tp = build_int_cst_wide (tem,
-					      TREE_INT_CST_LOW (t),
-					      TREE_INT_CST_HIGH (t));
+		    *tp = wide_int_to_tree (tem, t);
 		  else
 		    TREE_TYPE (t) = tem;
 		}

@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-pretty-print.h"
 #include "tree-cfg.h"
+#include "wide-int.h"
+#include "wide-int-print.h"
 
 static unsigned int queue (dump_info_p, const_tree, int);
 static void dump_index (dump_info_p, unsigned int);
@@ -561,9 +563,8 @@ dequeue_and_dump (dump_info_p di)
       break;
 
     case INTEGER_CST:
-      if (TREE_INT_CST_HIGH (t))
-	dump_int (di, "high", TREE_INT_CST_HIGH (t));
-      dump_int (di, "low", TREE_INT_CST_LOW (t));
+      fprintf (di->stream, "int: ");
+      print_decs (t, di->stream);
       break;
 
     case STRING_CST:

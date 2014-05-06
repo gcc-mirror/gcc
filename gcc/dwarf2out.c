@@ -357,6 +357,16 @@ dump_struct_debug (tree type, enum debug_info_usage usage,
 
 #endif
 
+/* Get the number of HOST_WIDE_INTs needed to represent the precision
+   of the number.  */
+
+static unsigned int
+get_full_len (const wide_int &op)
+{
+  return ((op.get_precision () + HOST_BITS_PER_WIDE_INT - 1)
+	  / HOST_BITS_PER_WIDE_INT);
+}
+
 static bool
 should_emit_struct_debug (tree type, enum debug_info_usage usage)
 {
@@ -1392,6 +1402,9 @@ dw_val_equal_p (dw_val_node *a, dw_val_node *b)
       return (a->v.val_double.high == b->v.val_double.high
 	      && a->v.val_double.low == b->v.val_double.low);
 
+    case dw_val_class_wide_int:
+      return *a->v.val_wide == *b->v.val_wide;
+
     case dw_val_class_vec:
       {
 	size_t a_len = a->v.val_vec.elt_size * a->v.val_vec.length;
@@ -1648,6 +1661,10 @@ size_of_loc_descr (dw_loc_descr_ref loc)
 	  case dw_val_class_const_double:
 	    size += HOST_BITS_PER_DOUBLE_INT / BITS_PER_UNIT;
 	    break;
+	  case dw_val_class_wide_int:
+	    size += (get_full_len (*loc->dw_loc_oprnd2.v.val_wide)
+		     * HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT);
+	    break;
 	  default:
 	    gcc_unreachable ();
 	  }
@@ -1823,6 +1840,20 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 				 first, NULL);
 	    dw2_asm_output_data (HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR,
 				 second, NULL);
+	  }
+	  break;
+	case dw_val_class_wide_int:
+	  {
+	    int i;
+	    int len = get_full_len (*val2->v.val_wide);
+	    if (WORDS_BIG_ENDIAN)
+	      for (i = len - 1; i >= 0; --i)
+		dw2_asm_output_data (HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR,
+				     val2->v.val_wide->elt (i), NULL);
+	    else
+	      for (i = 0; i < len; ++i)
+		dw2_asm_output_data (HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR,
+				     val2->v.val_wide->elt (i), NULL);
 	  }
 	  break;
 	case dw_val_class_addr:
@@ -2032,6 +2063,21 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 		}
 	      dw2_asm_output_data (l, first, NULL);
 	      dw2_asm_output_data (l, second, NULL);
+	    }
+	    break;
+	  case dw_val_class_wide_int:
+	    {
+	      int i;
+	      int len = get_full_len (*val2->v.val_wide);
+	      l = HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR;
+
+	      dw2_asm_output_data (1, len * l, NULL);
+	      if (WORDS_BIG_ENDIAN)
+		for (i = len - 1; i >= 0; --i)
+		  dw2_asm_output_data (l, val2->v.val_wide->elt (i), NULL);
+	      else
+		for (i = 0; i < len; ++i)
+		  dw2_asm_output_data (l, val2->v.val_wide->elt (i), NULL);
 	    }
 	    break;
 	  default:
@@ -3126,7 +3172,7 @@ static void add_AT_location_description	(dw_die_ref, enum dwarf_attribute,
 static void add_data_member_location_attribute (dw_die_ref, tree);
 static bool add_const_value_attribute (dw_die_ref, rtx);
 static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
-static void insert_double (double_int, unsigned char *);
+static void insert_wide_int (const wide_int &, unsigned char *, int);
 static void insert_float (const_rtx, unsigned char *);
 static rtx rtl_for_decl_location (tree);
 static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool,
@@ -3756,6 +3802,21 @@ AT_unsigned (dw_attr_ref a)
 {
   gcc_assert (a && AT_class (a) == dw_val_class_unsigned_const);
   return a->dw_attr_val.v.val_unsigned;
+}
+
+/* Add an unsigned wide integer attribute value to a DIE.  */
+
+static inline void
+add_AT_wide (dw_die_ref die, enum dwarf_attribute attr_kind,
+	     const wide_int& w)
+{
+  dw_attr_node attr;
+
+  attr.dw_attr = attr_kind;
+  attr.dw_attr_val.val_class = dw_val_class_wide_int;
+  attr.dw_attr_val.v.val_wide = ggc_alloc_cleared_wide_int ();
+  *attr.dw_attr_val.v.val_wide = w;
+  add_dwarf_attr (die, &attr);
 }
 
 /* Add an unsigned double integer attribute value to a DIE.  */
@@ -5332,6 +5393,21 @@ print_die (dw_die_ref die, FILE *outfile)
 		   a->dw_attr_val.v.val_double.high,
 		   a->dw_attr_val.v.val_double.low);
 	  break;
+	case dw_val_class_wide_int:
+	  {
+	    int i = a->dw_attr_val.v.val_wide->get_len ();
+	    fprintf (outfile, "constant (");
+	    gcc_assert (i > 0);
+	    if (a->dw_attr_val.v.val_wide->elt (i - 1) == 0)
+	      fprintf (outfile, "0x");
+	    fprintf (outfile, HOST_WIDE_INT_PRINT_HEX,
+		     a->dw_attr_val.v.val_wide->elt (--i));
+	    while (--i >= 0)
+	      fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX,
+		       a->dw_attr_val.v.val_wide->elt (i));
+	    fprintf (outfile, ")");
+	    break;
+	  }
 	case dw_val_class_vec:
 	  fprintf (outfile, "floating-point or vector constant");
 	  break;
@@ -5504,6 +5580,9 @@ attr_checksum (dw_attr_ref at, struct md5_ctx *ctx, int *mark)
       break;
     case dw_val_class_const_double:
       CHECKSUM (at->dw_attr_val.v.val_double);
+      break;
+    case dw_val_class_wide_int:
+      CHECKSUM (*at->dw_attr_val.v.val_wide);
       break;
     case dw_val_class_vec:
       CHECKSUM_BLOCK (at->dw_attr_val.v.val_vec.array,
@@ -5780,6 +5859,12 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
       CHECKSUM_ULEB128 (DW_FORM_block);
       CHECKSUM_ULEB128 (sizeof (at->dw_attr_val.v.val_double));
       CHECKSUM (at->dw_attr_val.v.val_double);
+      break;
+
+    case dw_val_class_wide_int:
+      CHECKSUM_ULEB128 (DW_FORM_block);
+      CHECKSUM_ULEB128 (sizeof (*at->dw_attr_val.v.val_wide));
+      CHECKSUM (*at->dw_attr_val.v.val_wide);
       break;
 
     case dw_val_class_vec:
@@ -6264,6 +6349,8 @@ same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
     case dw_val_class_const_double:
       return v1->v.val_double.high == v2->v.val_double.high
 	     && v1->v.val_double.low == v2->v.val_double.low;
+    case dw_val_class_wide_int:
+      return *v1->v.val_wide == *v2->v.val_wide;
     case dw_val_class_vec:
       if (v1->v.val_vec.length != v2->v.val_vec.length
 	  || v1->v.val_vec.elt_size != v2->v.val_vec.elt_size)
@@ -7819,6 +7906,13 @@ size_of_die (dw_die_ref die)
 	  if (HOST_BITS_PER_WIDE_INT >= 64)
 	    size++; /* block */
 	  break;
+	case dw_val_class_wide_int:
+	  size += (get_full_len (*a->dw_attr_val.v.val_wide)
+		   * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR);
+	  if (get_full_len (*a->dw_attr_val.v.val_wide) * HOST_BITS_PER_WIDE_INT
+	      > 64)
+	    size++; /* block */
+	  break;
 	case dw_val_class_vec:
 	  size += constant_size (a->dw_attr_val.v.val_vec.length
 				 * a->dw_attr_val.v.val_vec.elt_size)
@@ -8185,6 +8279,20 @@ value_format (dw_attr_ref a)
 	case 32:
 	  return DW_FORM_data8;
 	case 64:
+	default:
+	  return DW_FORM_block1;
+	}
+    case dw_val_class_wide_int:
+      switch (get_full_len (*a->dw_attr_val.v.val_wide) * HOST_BITS_PER_WIDE_INT)
+	{
+	case 8:
+	  return DW_FORM_data1;
+	case 16:
+	  return DW_FORM_data2;
+	case 32:
+	  return DW_FORM_data4;
+	case 64:
+	  return DW_FORM_data8;
 	default:
 	  return DW_FORM_block1;
 	}
@@ -8624,6 +8732,32 @@ output_die (dw_die_ref die)
                                  first, "%s", name);
 	    dw2_asm_output_data (HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR,
 				 second, NULL);
+	  }
+	  break;
+
+	case dw_val_class_wide_int:
+	  {
+	    int i;
+	    int len = get_full_len (*a->dw_attr_val.v.val_wide);
+	    int l = HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR;
+	    if (len * HOST_BITS_PER_WIDE_INT > 64)
+	      dw2_asm_output_data (1, get_full_len (*a->dw_attr_val.v.val_wide) * l,
+				   NULL);
+
+	    if (WORDS_BIG_ENDIAN)
+	      for (i = len - 1; i >= 0; --i)
+		{
+		  dw2_asm_output_data (l, a->dw_attr_val.v.val_wide->elt (i),
+				       name);
+		  name = NULL;
+		}
+	    else
+	      for (i = 0; i < len; ++i)
+		{
+		  dw2_asm_output_data (l, a->dw_attr_val.v.val_wide->elt (i),
+				       name);
+		  name = NULL;
+		}
 	  }
 	  break;
 
@@ -10320,19 +10454,19 @@ simple_type_size_in_bits (const_tree type)
     return TYPE_ALIGN (type);
 }
 
-/* Similarly, but return a double_int instead of UHWI.  */
+/* Similarly, but return an offset_int instead of UHWI.  */
 
-static inline double_int
-double_int_type_size_in_bits (const_tree type)
+static inline offset_int
+offset_int_type_size_in_bits (const_tree type)
 {
   if (TREE_CODE (type) == ERROR_MARK)
-    return double_int::from_uhwi (BITS_PER_WORD);
+    return BITS_PER_WORD;
   else if (TYPE_SIZE (type) == NULL_TREE)
-    return double_int_zero;
+    return 0;
   else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
-    return tree_to_double_int (TYPE_SIZE (type));
+    return wi::to_offset (TYPE_SIZE (type));
   else
-    return double_int::from_uhwi (TYPE_ALIGN (type));
+    return TYPE_ALIGN (type);
 }
 
 /*  Given a pointer to a tree node for a subrange type, return a pointer
@@ -11826,9 +11960,7 @@ clz_loc_descriptor (rtx rtl, enum machine_mode mode,
   rtx msb;
 
   if (GET_MODE_CLASS (mode) != MODE_INT
-      || GET_MODE (XEXP (rtl, 0)) != mode
-      || (GET_CODE (rtl) == CLZ
-	  && GET_MODE_BITSIZE (mode) > HOST_BITS_PER_DOUBLE_INT))
+      || GET_MODE (XEXP (rtl, 0)) != mode)
     return NULL;
 
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
@@ -11872,9 +12004,9 @@ clz_loc_descriptor (rtx rtl, enum machine_mode mode,
     msb = GEN_INT ((unsigned HOST_WIDE_INT) 1
 		   << (GET_MODE_BITSIZE (mode) - 1));
   else
-    msb = immed_double_const (0, (unsigned HOST_WIDE_INT) 1
-				  << (GET_MODE_BITSIZE (mode)
-				      - HOST_BITS_PER_WIDE_INT - 1), mode);
+    msb = immed_wide_int_const
+      (wi::set_bit_in_zero (GET_MODE_PRECISION (mode) - 1,
+			    GET_MODE_PRECISION (mode)), mode);
   if (GET_CODE (msb) == CONST_INT && INTVAL (msb) < 0)
     tmp = new_loc_descr (HOST_BITS_PER_WIDE_INT == 32
 			 ? DW_OP_const4u : HOST_BITS_PER_WIDE_INT == 64
@@ -12800,10 +12932,14 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	{
 	  dw_die_ref type_die;
 
-	  /* Note that a CONST_DOUBLE rtx could represent either an integer
-	     or a floating-point constant.  A CONST_DOUBLE is used whenever
-	     the constant requires more than one word in order to be
-	     adequately represented.  We output CONST_DOUBLEs as blocks.  */
+	  /* Note that if TARGET_SUPPORTS_WIDE_INT == 0, a
+	     CONST_DOUBLE rtx could represent either a large integer
+	     or a floating-point constant.  If TARGET_SUPPORTS_WIDE_INT != 0,
+	     the value is always a floating point constant.
+
+	     When it is an integer, a CONST_DOUBLE is used whenever
+	     the constant requires 2 HWIs to be adequately represented.
+	     We output CONST_DOUBLEs as blocks.  */
 	  if (mode == VOIDmode
 	      || (GET_MODE (rtl) == VOIDmode
 		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
@@ -12816,7 +12952,16 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
 	  mem_loc_result->dw_loc_oprnd1.v.val_die_ref.die = type_die;
 	  mem_loc_result->dw_loc_oprnd1.v.val_die_ref.external = 0;
-	  if (SCALAR_FLOAT_MODE_P (mode))
+#if TARGET_SUPPORTS_WIDE_INT == 0
+	  if (!SCALAR_FLOAT_MODE_P (mode))
+	    {
+	      mem_loc_result->dw_loc_oprnd2.val_class
+		= dw_val_class_const_double;
+	      mem_loc_result->dw_loc_oprnd2.v.val_double
+		= rtx_to_double_int (rtl);
+	    }
+	  else
+#endif
 	    {
 	      unsigned int length = GET_MODE_SIZE (mode);
 	      unsigned char *array
@@ -12828,13 +12973,26 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	      mem_loc_result->dw_loc_oprnd2.v.val_vec.elt_size = 4;
 	      mem_loc_result->dw_loc_oprnd2.v.val_vec.array = array;
 	    }
-	  else
-	    {
-	      mem_loc_result->dw_loc_oprnd2.val_class
-		= dw_val_class_const_double;
-	      mem_loc_result->dw_loc_oprnd2.v.val_double
-		= rtx_to_double_int (rtl);
-	    }
+	}
+      break;
+
+    case CONST_WIDE_INT:
+      if (!dwarf_strict)
+	{
+	  dw_die_ref type_die;
+
+	  type_die = base_type_for_mode (mode,
+					 GET_MODE_CLASS (mode) == MODE_INT);
+	  if (type_die == NULL)
+	    return NULL;
+	  mem_loc_result = new_loc_descr (DW_OP_GNU_const_type, 0, 0);
+	  mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	  mem_loc_result->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+	  mem_loc_result->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	  mem_loc_result->dw_loc_oprnd2.val_class
+	    = dw_val_class_wide_int;
+	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc_cleared_wide_int ();
+	  *mem_loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
 	}
       break;
 
@@ -13305,7 +13463,15 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	     adequately represented.  We output CONST_DOUBLEs as blocks.  */
 	  loc_result = new_loc_descr (DW_OP_implicit_value,
 				      GET_MODE_SIZE (mode), 0);
-	  if (SCALAR_FLOAT_MODE_P (mode))
+#if TARGET_SUPPORTS_WIDE_INT == 0
+	  if (!SCALAR_FLOAT_MODE_P (mode))
+	    {
+	      loc_result->dw_loc_oprnd2.val_class = dw_val_class_const_double;
+	      loc_result->dw_loc_oprnd2.v.val_double
+	        = rtx_to_double_int (rtl);
+	    }
+	  else
+#endif
 	    {
 	      unsigned int length = GET_MODE_SIZE (mode);
 	      unsigned char *array
@@ -13317,12 +13483,20 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	      loc_result->dw_loc_oprnd2.v.val_vec.elt_size = 4;
 	      loc_result->dw_loc_oprnd2.v.val_vec.array = array;
 	    }
-	  else
-	    {
-	      loc_result->dw_loc_oprnd2.val_class = dw_val_class_const_double;
-	      loc_result->dw_loc_oprnd2.v.val_double
-	        = rtx_to_double_int (rtl);
-	    }
+	}
+      break;
+
+    case CONST_WIDE_INT:
+      if (mode == VOIDmode)
+	mode = GET_MODE (rtl);
+
+      if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
+	{
+	  loc_result = new_loc_descr (DW_OP_implicit_value,
+				      GET_MODE_SIZE (mode), 0);
+	  loc_result->dw_loc_oprnd2.val_class = dw_val_class_wide_int;
+	  loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc_cleared_wide_int ();
+	  *loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
 	}
       break;
 
@@ -13338,6 +13512,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	    ggc_alloc_atomic (length * elt_size);
 	  unsigned int i;
 	  unsigned char *p;
+	  enum machine_mode imode = GET_MODE_INNER (mode);
 
 	  gcc_assert (mode == GET_MODE (rtl) || VOIDmode == GET_MODE (rtl));
 	  switch (GET_MODE_CLASS (mode))
@@ -13346,15 +13521,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	      for (i = 0, p = array; i < length; i++, p += elt_size)
 		{
 		  rtx elt = CONST_VECTOR_ELT (rtl, i);
-		  double_int val = rtx_to_double_int (elt);
-
-		  if (elt_size <= sizeof (HOST_WIDE_INT))
-		    insert_int (val.to_shwi (), elt_size, p);
-		  else
-		    {
-		      gcc_assert (elt_size == 2 * sizeof (HOST_WIDE_INT));
-		      insert_double (val, p);
-		    }
+		  insert_wide_int (std::make_pair (elt, imode), p, elt_size);
 		}
 	      break;
 
@@ -14676,15 +14843,10 @@ simple_decl_align_in_bits (const_tree decl)
 
 /* Return the result of rounding T up to ALIGN.  */
 
-static inline double_int
-round_up_to_align (double_int t, unsigned int align)
+static inline offset_int
+round_up_to_align (const offset_int &t, unsigned int align)
 {
-  double_int alignd = double_int::from_uhwi (align);
-  t += alignd;
-  t += double_int_minus_one;
-  t = t.div (alignd, true, TRUNC_DIV_EXPR);
-  t *= alignd;
-  return t;
+  return wi::udiv_trunc (t + align - 1, align) * align;
 }
 
 /* Given a pointer to a FIELD_DECL, compute and return the byte offset of the
@@ -14697,9 +14859,9 @@ round_up_to_align (double_int t, unsigned int align)
 static HOST_WIDE_INT
 field_byte_offset (const_tree decl)
 {
-  double_int object_offset_in_bits;
-  double_int object_offset_in_bytes;
-  double_int bitpos_int;
+  offset_int object_offset_in_bits;
+  offset_int object_offset_in_bytes;
+  offset_int bitpos_int;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return 0;
@@ -14712,21 +14874,21 @@ field_byte_offset (const_tree decl)
   if (TREE_CODE (bit_position (decl)) != INTEGER_CST)
     return 0;
 
-  bitpos_int = tree_to_double_int (bit_position (decl));
+  bitpos_int = wi::to_offset (bit_position (decl));
 
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   if (PCC_BITFIELD_TYPE_MATTERS)
     {
       tree type;
       tree field_size_tree;
-      double_int deepest_bitpos;
-      double_int field_size_in_bits;
+      offset_int deepest_bitpos;
+      offset_int field_size_in_bits;
       unsigned int type_align_in_bits;
       unsigned int decl_align_in_bits;
-      double_int type_size_in_bits;
+      offset_int type_size_in_bits;
 
       type = field_type (decl);
-      type_size_in_bits = double_int_type_size_in_bits (type);
+      type_size_in_bits = offset_int_type_size_in_bits (type);
       type_align_in_bits = simple_type_align_in_bits (type);
 
       field_size_tree = DECL_SIZE (decl);
@@ -14738,7 +14900,7 @@ field_byte_offset (const_tree decl)
 
       /* If the size of the field is not constant, use the type size.  */
       if (TREE_CODE (field_size_tree) == INTEGER_CST)
-	field_size_in_bits = tree_to_double_int (field_size_tree);
+	field_size_in_bits = wi::to_offset (field_size_tree);
       else
 	field_size_in_bits = type_size_in_bits;
 
@@ -14802,7 +14964,7 @@ field_byte_offset (const_tree decl)
       object_offset_in_bits
 	= round_up_to_align (object_offset_in_bits, type_align_in_bits);
 
-      if (object_offset_in_bits.ugt (bitpos_int))
+      if (wi::gtu_p (object_offset_in_bits, bitpos_int))
 	{
 	  object_offset_in_bits = deepest_bitpos - type_size_in_bits;
 
@@ -14816,8 +14978,7 @@ field_byte_offset (const_tree decl)
     object_offset_in_bits = bitpos_int;
 
   object_offset_in_bytes
-    = object_offset_in_bits.div (double_int::from_uhwi (BITS_PER_UNIT),
-				 true, TRUNC_DIV_EXPR);
+    = wi::lrshift (object_offset_in_bits, LOG2_BITS_PER_UNIT);
   return object_offset_in_bytes.to_shwi ();
 }
 
@@ -14993,22 +15154,36 @@ extract_int (const unsigned char *src, unsigned int size)
   return val;
 }
 
-/* Writes double_int values to dw_vec_const array.  */
+/* Writes wide_int values to dw_vec_const array.  */
 
 static void
-insert_double (double_int val, unsigned char *dest)
+insert_wide_int (const wide_int &val, unsigned char *dest, int elt_size)
 {
-  unsigned char *p0 = dest;
-  unsigned char *p1 = dest + sizeof (HOST_WIDE_INT);
+  int i;
 
-  if (WORDS_BIG_ENDIAN)
+  if (elt_size <= HOST_BITS_PER_WIDE_INT/BITS_PER_UNIT)
     {
-      p0 = p1;
-      p1 = dest;
+      insert_int ((HOST_WIDE_INT) val.elt (0), elt_size, dest);
+      return;
     }
 
-  insert_int ((HOST_WIDE_INT) val.low, sizeof (HOST_WIDE_INT), p0);
-  insert_int ((HOST_WIDE_INT) val.high, sizeof (HOST_WIDE_INT), p1);
+  /* We'd have to extend this code to support odd sizes.  */
+  gcc_assert (elt_size % (HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT) == 0);
+
+  int n = elt_size / (HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT);
+
+  if (WORDS_BIG_ENDIAN)
+    for (i = n - 1; i >= 0; i--)
+      {
+	insert_int ((HOST_WIDE_INT) val.elt (i), sizeof (HOST_WIDE_INT), dest);
+	dest += sizeof (HOST_WIDE_INT);
+      }
+  else
+    for (i = 0; i < n; i++)
+      {
+	insert_int ((HOST_WIDE_INT) val.elt (i), sizeof (HOST_WIDE_INT), dest);
+	dest += sizeof (HOST_WIDE_INT);
+      }
 }
 
 /* Writes floating point values to dw_vec_const array.  */
@@ -15053,6 +15228,11 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       }
       return true;
 
+    case CONST_WIDE_INT:
+      add_AT_wide (die, DW_AT_const_value,
+		   std::make_pair (rtl, GET_MODE (rtl)));
+      return true;
+
     case CONST_DOUBLE:
       /* Note that a CONST_DOUBLE rtx could represent either an integer or a
 	 floating-point constant.  A CONST_DOUBLE is used whenever the
@@ -15061,7 +15241,10 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       {
 	enum machine_mode mode = GET_MODE (rtl);
 
-	if (SCALAR_FLOAT_MODE_P (mode))
+	if (TARGET_SUPPORTS_WIDE_INT == 0 && !SCALAR_FLOAT_MODE_P (mode))
+	  add_AT_double (die, DW_AT_const_value,
+			 CONST_DOUBLE_HIGH (rtl), CONST_DOUBLE_LOW (rtl));
+	else
 	  {
 	    unsigned int length = GET_MODE_SIZE (mode);
 	    unsigned char *array = (unsigned char *) ggc_alloc_atomic (length);
@@ -15069,9 +15252,6 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	    insert_float (rtl, array);
 	    add_AT_vec (die, DW_AT_const_value, length / 4, 4, array);
 	  }
-	else
-	  add_AT_double (die, DW_AT_const_value,
-			 CONST_DOUBLE_HIGH (rtl), CONST_DOUBLE_LOW (rtl));
       }
       return true;
 
@@ -15084,6 +15264,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	  (length * elt_size);
 	unsigned int i;
 	unsigned char *p;
+	enum machine_mode imode = GET_MODE_INNER (mode);
 
 	switch (GET_MODE_CLASS (mode))
 	  {
@@ -15091,15 +15272,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	    for (i = 0, p = array; i < length; i++, p += elt_size)
 	      {
 		rtx elt = CONST_VECTOR_ELT (rtl, i);
-		double_int val = rtx_to_double_int (elt);
-
-		if (elt_size <= sizeof (HOST_WIDE_INT))
-		  insert_int (val.to_shwi (), elt_size, p);
-		else
-		  {
-		    gcc_assert (elt_size == 2 * sizeof (HOST_WIDE_INT));
-		    insert_double (val, p);
-		  }
+		insert_wide_int (std::make_pair (elt, imode), p, elt_size);
 	      }
 	    break;
 
@@ -16237,7 +16410,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	   consumers will treat DW_FORM_data[1248] as unsigned values,
 	   regardless of the underlying type.  */
 	else if (prec <= HOST_BITS_PER_WIDE_INT
-		 || TREE_INT_CST_HIGH (bound) == 0)
+		 || tree_fits_uhwi_p (bound))
 	  {
 	    if (TYPE_UNSIGNED (TREE_TYPE (bound)))
 	      add_AT_unsigned (subrange_die, bound_attr,
@@ -16250,8 +16423,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	     the precision of its type.  The precision and signedness
 	     of the type will be necessary to re-interpret it
 	     unambiguously.  */
-	  add_AT_double (subrange_die, bound_attr, TREE_INT_CST_HIGH (bound),
-		         TREE_INT_CST_LOW (bound));
+	  add_AT_wide (subrange_die, bound_attr, bound);
       }
       break;
 
@@ -17410,8 +17582,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	    /* Enumeration constants may be wider than HOST_WIDE_INT.  Handle
 	       that here.  TODO: This should be re-worked to use correct
 	       signed/unsigned double tags for all cases.  */
-	    add_AT_double (enum_die, DW_AT_const_value,
-			   TREE_INT_CST_HIGH (value), TREE_INT_CST_LOW (value));
+	    add_AT_wide (enum_die, DW_AT_const_value, value);
 	}
 
       add_gnat_descriptive_type_attribute (type_die, type, context_die);
@@ -23549,6 +23720,9 @@ hash_loc_operands (dw_loc_descr_ref loc, hashval_t hash)
 	  hash = iterative_hash_object (val2->v.val_double.low, hash);
 	  hash = iterative_hash_object (val2->v.val_double.high, hash);
 	  break;
+	case dw_val_class_wide_int:
+	  hash = iterative_hash_object (*val2->v.val_wide, hash);
+	  break;
 	case dw_val_class_addr:
 	  hash = iterative_hash_rtx (val2->v.val_addr, hash);
 	  break;
@@ -23637,6 +23811,9 @@ hash_loc_operands (dw_loc_descr_ref loc, hashval_t hash)
 	  case dw_val_class_const_double:
 	    hash = iterative_hash_object (val2->v.val_double.low, hash);
 	    hash = iterative_hash_object (val2->v.val_double.high, hash);
+	    break;
+	  case dw_val_class_wide_int:
+	    hash = iterative_hash_object (*val2->v.val_wide, hash);
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -23786,6 +23963,8 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
 	case dw_val_class_const_double:
 	  return valx2->v.val_double.low == valy2->v.val_double.low
 		 && valx2->v.val_double.high == valy2->v.val_double.high;
+	case dw_val_class_wide_int:
+	  return *valx2->v.val_wide == *valy2->v.val_wide;
 	case dw_val_class_addr:
 	  return rtx_equal_p (valx2->v.val_addr, valy2->v.val_addr);
 	default:
@@ -23829,6 +24008,8 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
 	case dw_val_class_const_double:
 	  return valx2->v.val_double.low == valy2->v.val_double.low
 		 && valx2->v.val_double.high == valy2->v.val_double.high;
+	case dw_val_class_wide_int:
+	  return *valx2->v.val_wide == *valy2->v.val_wide;
 	default:
 	  gcc_unreachable ();
 	}

@@ -4969,6 +4969,15 @@ num_insns_constant (rtx op, enum machine_mode mode)
       else
 	return num_insns_constant_wide (INTVAL (op));
 
+    case CONST_WIDE_INT:
+      {
+	int i;
+	int ins = CONST_WIDE_INT_NUNITS (op) - 1;
+	for (i = 0; i < CONST_WIDE_INT_NUNITS (op); i++)
+	  ins += num_insns_constant_wide (CONST_WIDE_INT_ELT (op, i));
+	return ins;
+      }
+
       case CONST_DOUBLE:
 	if (mode == SFmode || mode == SDmode)
 	  {
@@ -5143,8 +5152,6 @@ easy_altivec_constant (rtx op, enum machine_mode mode)
 
   else if (mode == V2DImode)
     {
-      /* In case the compiler is built 32-bit, CONST_DOUBLE constants are not
-	 easy.  */
       if (GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_INT
 	  || GET_CODE (CONST_VECTOR_ELT (op, 1)) != CONST_INT)
 	return false;
@@ -5309,9 +5316,7 @@ paired_expand_vector_init (rtx target, rtx vals)
   for (i = 0; i < n_elts; ++i)
     {
       x = XVECEXP (vals, 0, i);
-      if (!(CONST_INT_P (x)
-	    || GET_CODE (x) == CONST_DOUBLE
-	    || GET_CODE (x) == CONST_FIXED))
+      if (!CONSTANT_P (x))
 	++n_var;
     }
   if (n_var == 0)
@@ -5463,9 +5468,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
   for (i = 0; i < n_elts; ++i)
     {
       x = XVECEXP (vals, 0, i);
-      if (!(CONST_INT_P (x)
-	    || GET_CODE (x) == CONST_DOUBLE
-	    || GET_CODE (x) == CONST_FIXED))
+      if (!CONSTANT_P (x))
 	++n_var, one_var = i;
       else if (x != CONST0_RTX (inner_mode))
 	all_const_zero = false;
@@ -6703,6 +6706,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && TARGET_NO_TOC
 	   && ! flag_pic
 	   && GET_CODE (x) != CONST_INT
+	   && GET_CODE (x) != CONST_WIDE_INT
 	   && GET_CODE (x) != CONST_DOUBLE
 	   && CONSTANT_P (x)
 	   && GET_MODE_NUNITS (mode) == 1
@@ -8167,21 +8171,12 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
     }
 
   /* Sanity checks.  Check that we get CONST_DOUBLE only when we should.  */
-  if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && ! FLOAT_MODE_P (mode)
+  if (CONST_WIDE_INT_P (operands[1])
       && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
     {
-      /* FIXME.  This should never happen.  */
-      /* Since it seems that it does, do the safe thing and convert
-	 to a CONST_INT.  */
-      operands[1] = gen_int_mode (CONST_DOUBLE_LOW (operands[1]), mode);
+      /* This should be fixed with the introduction of CONST_WIDE_INT.  */
+      gcc_unreachable ();
     }
-  gcc_assert (GET_CODE (operands[1]) != CONST_DOUBLE
-	      || FLOAT_MODE_P (mode)
-	      || ((CONST_DOUBLE_HIGH (operands[1]) != 0
-		   || CONST_DOUBLE_LOW (operands[1]) < 0)
-		  && (CONST_DOUBLE_HIGH (operands[1]) != -1
-		      || CONST_DOUBLE_LOW (operands[1]) >= 0)));
 
   /* Check if GCC is setting up a block move that will end up using FP
      registers as temporaries.  We must make sure this is acceptable.  */
@@ -8697,8 +8692,10 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	int count;
 	tree index = TYPE_DOMAIN (type);
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
 	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep);
@@ -8715,9 +8712,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -8729,8 +8724,10 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	int sub_count;
 	tree field;
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
 	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
@@ -8745,9 +8742,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -8761,9 +8756,10 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	int sub_count;
 	tree field;
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
-	  return -1;
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 
 	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	  {
@@ -8777,9 +8773,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -12474,16 +12468,14 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Check whether the 2nd and 3rd arguments are integer constants and in
 	 range and prepare arguments.  */
       STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
+      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
 	{
 	  error ("argument 2 must be 0 or 1");
 	  return const0_rtx;
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg2), 0, 15))
+      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg1, 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
 	  return const0_rtx;
@@ -17456,6 +17448,7 @@ rs6000_output_move_128bit (rtx operands[])
   /* Constants.  */
   else if (dest_regno >= 0
 	   && (GET_CODE (src) == CONST_INT
+	       || GET_CODE (src) == CONST_WIDE_INT
 	       || GET_CODE (src) == CONST_DOUBLE
 	       || GET_CODE (src) == CONST_VECTOR))
     {
@@ -18495,8 +18488,7 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
       if (TARGET_RELOCATABLE
 	  && in_section != toc_section
 	  && !recurse
-	  && GET_CODE (x) != CONST_INT
-	  && GET_CODE (x) != CONST_DOUBLE
+	  && !CONST_SCALAR_INT_P (x)
 	  && CONSTANT_P (x))
 	{
 	  char buf[256];
@@ -25243,6 +25235,15 @@ rs6000_hash_constant (rtx k)
     case LABEL_REF:
       return result * 1231 + (unsigned) INSN_UID (XEXP (k, 0));
 
+    case CONST_WIDE_INT:
+      {
+	int i;
+	flen = CONST_WIDE_INT_NUNITS (k);
+	for (i = 0; i < flen; i++)
+	  result = result * 613 + CONST_WIDE_INT_ELT (k, i);
+	return result;
+      }
+
     case CONST_DOUBLE:
       if (mode != VOIDmode)
 	return real_hash (CONST_DOUBLE_REAL_VALUE (k)) * result;
@@ -25447,7 +25448,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
   /* If we're going to put a double constant in the TOC, make sure it's
      aligned properly when strict alignment is on.  */
-  if (GET_CODE (x) == CONST_DOUBLE
+  if ((CONST_DOUBLE_P (x) || CONST_WIDE_INT_P (x))
       && STRICT_ALIGNMENT
       && GET_MODE_BITSIZE (mode) >= 64
       && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)) {
@@ -29453,6 +29454,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       /* FALLTHRU */
 
     case CONST_DOUBLE:
+    case CONST_WIDE_INT:
     case CONST:
     case HIGH:
     case SYMBOL_REF:
@@ -30092,7 +30094,7 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
   gcc_assert (code != CODE_FOR_nothing);
 
   /* Load up the constant 1.5 either as a scalar, or as a vector.  */
-  real_from_integer (&dconst3_2, VOIDmode, 3, 0, 0);
+  real_from_integer (&dconst3_2, VOIDmode, 3, SIGNED);
   SET_REAL_EXP (&dconst3_2, REAL_EXP (&dconst3_2) - 1);
 
   halfthree = rs6000_load_constant_and_splat (mode, dconst3_2);

@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "obstack.h"
 #include "debug.h"
+#include "wide-int-print.h"
 
 /* We dump this information from the debug hooks.  This gives us a
    stable and maintainable API to hook into.  In order to work
@@ -961,7 +962,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	  const char *name;
 	  struct macro_hash_value *mhval;
 	  void **slot;
-	  char buf[100];
+	  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
 	  name = IDENTIFIER_POINTER (TREE_PURPOSE (element));
 
@@ -982,10 +983,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
 		      tree_to_uhwi (TREE_VALUE (element)));
 	  else
-	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		     ((unsigned HOST_WIDE_INT)
-		      TREE_INT_CST_HIGH (TREE_VALUE (element))),
-		     TREE_INT_CST_LOW (TREE_VALUE (element)));
+	    print_hex (element, buf);
 
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;

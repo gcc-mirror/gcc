@@ -814,21 +814,20 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		tree bit_offset = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1));
 		if (TREE_INT_CST_LOW (bit_offset) % BITS_PER_UNIT == 0)
 		  {
-		    double_int off
-		      = tree_to_double_int (this_offset)
-			+ tree_to_double_int (bit_offset)
-			.rshift (BITS_PER_UNIT == 8
-				   ? 3 : exact_log2 (BITS_PER_UNIT));
-		    if (off.fits_shwi ()
+		    offset_int off
+		      = (wi::to_offset (this_offset)
+			 + wi::lrshift (wi::to_offset (bit_offset),
+					LOG2_BITS_PER_UNIT));
+		    if (wi::fits_shwi_p (off)
 			/* Probibit value-numbering zero offset components
 			   of addresses the same before the pass folding
 			   __builtin_object_size had a chance to run
 			   (checking cfun->after_inlining does the
 			   trick here).  */
 			&& (TREE_CODE (orig) != ADDR_EXPR
-			    || !off.is_zero ()
+			    || off != 0
 			    || cfun->after_inlining))
-		      temp.off = off.low;
+		      temp.off = off.to_shwi ();
 		  }
 	      }
 	  }
@@ -844,11 +843,11 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	      && TREE_CODE (temp.op1) == INTEGER_CST
 	      && TREE_CODE (temp.op2) == INTEGER_CST)
 	    {
-	      double_int off = tree_to_double_int (temp.op0);
-	      off += -tree_to_double_int (temp.op1);
-	      off *= tree_to_double_int (temp.op2);
-	      if (off.fits_shwi ())
-		temp.off = off.low;
+	      offset_int off = ((wi::to_offset (temp.op0)
+				 - wi::to_offset (temp.op1))
+				* wi::to_offset (temp.op2));
+	      if (wi::fits_shwi_p (off))
+		temp.off = off.to_shwi();
 	    }
 	  break;
 	case VAR_DECL:
@@ -1168,10 +1167,9 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
-      double_int off = tree_to_double_int (mem_op->op0);
-      off = off.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
-      off += double_int::from_shwi (addr_offset);
-      mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
+      offset_int off = offset_int::from (mem_op->op0, SIGNED);
+      off += addr_offset;
+      mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
       if (tree_fits_shwi_p (mem_op->op0))
 	mem_op->off = tree_to_shwi (mem_op->op0);
@@ -1191,7 +1189,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
   vn_reference_op_t mem_op = &(*ops)[i - 1];
   gimple def_stmt;
   enum tree_code code;
-  double_int off;
+  offset_int off;
 
   def_stmt = SSA_NAME_DEF_STMT (op->op0);
   if (!is_gimple_assign (def_stmt))
@@ -1202,8 +1200,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       && code != POINTER_PLUS_EXPR)
     return;
 
-  off = tree_to_double_int (mem_op->op0);
-  off = off.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+  off = offset_int::from (mem_op->op0, SIGNED);
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1220,7 +1217,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  || TREE_CODE (addr_base) != MEM_REF)
 	return;
 
-      off += double_int::from_shwi (addr_offset);
+      off += addr_offset;
       off += mem_ref_offset (addr_base);
       op->op0 = TREE_OPERAND (addr_base, 0);
     }
@@ -1233,11 +1230,11 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  || TREE_CODE (ptroff) != INTEGER_CST)
 	return;
 
-      off += tree_to_double_int (ptroff);
+      off += wi::to_offset (ptroff);
       op->op0 = ptr;
     }
 
-  mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
+  mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
   if (tree_fits_shwi_p (mem_op->op0))
     mem_op->off = tree_to_shwi (mem_op->op0);
   else
@@ -1391,11 +1388,11 @@ valueize_refs_1 (vec<vn_reference_op_s> orig, bool *valueized_anything)
 	       && TREE_CODE (vro->op1) == INTEGER_CST
 	       && TREE_CODE (vro->op2) == INTEGER_CST)
 	{
-	  double_int off = tree_to_double_int (vro->op0);
-	  off += -tree_to_double_int (vro->op1);
-	  off *= tree_to_double_int (vro->op2);
-	  if (off.fits_shwi ())
-	    vro->off = off.low;
+	  offset_int off = ((wi::to_offset (vro->op0)
+			     - wi::to_offset (vro->op1))
+			    * wi::to_offset (vro->op2));
+	  if (wi::fits_shwi_p (off))
+	    vro->off = off.to_shwi ();
 	}
     }
 

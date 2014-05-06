@@ -733,8 +733,11 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
-      v = iterative_hash_host_wide_int (TREE_INT_CST_LOW (t), v);
-      v = iterative_hash_host_wide_int (TREE_INT_CST_HIGH (t), v);
+      int i;
+      v = iterative_hash_host_wide_int (TREE_INT_CST_NUNITS (t), v);
+      v = iterative_hash_host_wide_int (TREE_INT_CST_EXT_NUNITS (t), v);
+      for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	v = iterative_hash_host_wide_int (TREE_INT_CST_ELT (t, i), v);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
@@ -1608,6 +1611,21 @@ output_ssa_names (struct output_block *ob, struct function *fn)
 }
 
 
+/* Output a wide-int.  */
+
+static void
+streamer_write_wi (struct output_block *ob,
+		   const widest_int &w)
+{
+  int len = w.get_len ();
+
+  streamer_write_uhwi (ob, w.get_precision ());
+  streamer_write_uhwi (ob, len);
+  for (int i = 0; i < len; i++)
+    streamer_write_hwi (ob, w.elt (i));
+}
+
+
 /* Output the cfg.  */
 
 static void
@@ -1680,16 +1698,10 @@ output_cfg (struct output_block *ob, struct function *fn)
 			   loop_estimation, EST_LAST, loop->estimate_state);
       streamer_write_hwi (ob, loop->any_upper_bound);
       if (loop->any_upper_bound)
-	{
-	  streamer_write_uhwi (ob, loop->nb_iterations_upper_bound.low);
-	  streamer_write_hwi (ob, loop->nb_iterations_upper_bound.high);
-	}
+	streamer_write_wi (ob, loop->nb_iterations_upper_bound);
       streamer_write_hwi (ob, loop->any_estimate);
       if (loop->any_estimate)
-	{
-	  streamer_write_uhwi (ob, loop->nb_iterations_estimate.low);
-	  streamer_write_hwi (ob, loop->nb_iterations_estimate.high);
-	}
+	streamer_write_wi (ob, loop->nb_iterations_estimate);
 
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);

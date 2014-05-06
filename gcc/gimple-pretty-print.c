@@ -1755,7 +1755,7 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
   if (!POINTER_TYPE_P (TREE_TYPE (node))
       && SSA_NAME_RANGE_INFO (node))
     {
-      double_int min, max, nonzero_bits;
+      wide_int min, max, nonzero_bits;
       value_range_type range_type = get_range_info (node, &min, &max);
 
       if (range_type == VR_VARYING)
@@ -1764,22 +1764,16 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
 	{
 	  pp_printf (buffer, "# RANGE ");
 	  pp_printf (buffer, "%s[", range_type == VR_RANGE ? "" : "~");
-	  pp_double_int (buffer, min, TYPE_UNSIGNED (TREE_TYPE (node)));
+	  pp_wide_int (buffer, min, TYPE_SIGN (TREE_TYPE (node)));
 	  pp_printf (buffer, ", ");
-	  pp_double_int (buffer, max, TYPE_UNSIGNED (TREE_TYPE (node)));
+	  pp_wide_int (buffer, max, TYPE_SIGN (TREE_TYPE (node)));
 	  pp_printf (buffer, "]");
 	}
       nonzero_bits = get_nonzero_bits (node);
-      if (nonzero_bits != double_int_minus_one
-	  && (nonzero_bits
-	      != double_int::mask (TYPE_PRECISION (TREE_TYPE (node)))))
+      if (nonzero_bits != -1)
 	{
 	  pp_string (buffer, " NONZERO ");
-	  sprintf (pp_buffer (buffer)->digit_buffer,
-		   HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		   (unsigned HOST_WIDE_INT) nonzero_bits.high,
-		   nonzero_bits.low);
-	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
+	  pp_wide_int (buffer, nonzero_bits, UNSIGNED);
 	}
       newline_and_indent (buffer, spc);
     }

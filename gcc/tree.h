@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_H
 
 #include "tree-core.h"
+#include "wide-int.h"
 
 /* These includes are required here because they provide declarations
    used by inline functions in this file.
@@ -207,6 +208,8 @@ along with GCC; see the file COPYING3.  If not see
 #define CASE_FLT_FN_REENT(FN) case FN##_R: case FN##F_R: case FN##L_R
 #define CASE_INT_FN(FN) case FN: case FN##L: case FN##LL: case FN##IMAX
 
+#define NULL_TREE (tree) NULL
+
 /* Define accessors for the fields that all tree nodes have
    (though some fields are not used for all kinds of nodes).  */
 
@@ -278,6 +281,9 @@ along with GCC; see the file COPYING3.  If not see
 #define NON_TYPE_CHECK(T) \
 (non_type_check ((T), __FILE__, __LINE__, __FUNCTION__))
 
+#define TREE_INT_CST_ELT_CHECK(T, I) \
+(*tree_int_cst_elt_check ((T), (I), __FILE__, __LINE__, __FUNCTION__))
+
 #define TREE_VEC_ELT_CHECK(T, I) \
 (*(CONST_CAST2 (tree *, typeof (T)*, \
      tree_vec_elt_check ((T), (I), __FILE__, __LINE__, __FUNCTION__))))
@@ -333,6 +339,9 @@ extern void tree_not_class_check_failed (const_tree,
 					 const enum tree_code_class,
 					 const char *, int, const char *)
     ATTRIBUTE_NORETURN;
+extern void tree_int_cst_elt_check_failed (int, int, const char *,
+					   int, const char *)
+    ATTRIBUTE_NORETURN;
 extern void tree_vec_elt_check_failed (int, int, const char *,
 				       int, const char *)
     ATTRIBUTE_NORETURN;
@@ -370,6 +379,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_RANGE_CHECK(T, CODE1, CODE2)	(T)
 #define EXPR_CHECK(T)				(T)
 #define NON_TYPE_CHECK(T)			(T)
+#define TREE_INT_CST_ELT_CHECK(T, I)		((T)->int_cst.val[I])
 #define TREE_VEC_ELT_CHECK(T, I)		((T)->vec.a[I])
 #define TREE_OPERAND_CHECK(T, I)		((T)->exp.operands[I])
 #define TREE_OPERAND_CHECK_CODE(T, CODE, I)	((T)->exp.operands[I])
@@ -738,6 +748,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* In integral and pointer types, means an unsigned type.  */
 #define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->base.u.bits.unsigned_flag)
 
+/* Same as TYPE_UNSIGNED but converted to SIGNOP.  */
+#define TYPE_SIGN(NODE) ((signop) TYPE_UNSIGNED (NODE))
+
 /* True if overflow wraps around for the given integral type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
 #define TYPE_OVERFLOW_WRAPS(TYPE) \
@@ -872,25 +885,15 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Define additional fields and accessors for nodes representing constants.  */
 
-/* In an INTEGER_CST node.  These two together make a 2-word integer.
-   If the data type is signed, the value is sign-extended to 2 words
-   even though not all of them may really be in use.
-   In an unsigned constant shorter than 2 words, the extra bits are 0.  */
-#define TREE_INT_CST(NODE) (INTEGER_CST_CHECK (NODE)->int_cst.int_cst)
-#define TREE_INT_CST_LOW(NODE) (TREE_INT_CST (NODE).low)
-#define TREE_INT_CST_HIGH(NODE) (TREE_INT_CST (NODE).high)
-
-#define INT_CST_LT(A, B)				\
-  (TREE_INT_CST_HIGH (A) < TREE_INT_CST_HIGH (B)	\
-   || (TREE_INT_CST_HIGH (A) == TREE_INT_CST_HIGH (B)	\
-       && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
-
-#define INT_CST_LT_UNSIGNED(A, B)				\
-  (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)		\
-    < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))		\
-   || (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)		\
-	== (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
-       && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
+#define TREE_INT_CST_NUNITS(NODE) \
+  (INTEGER_CST_CHECK (NODE)->base.u.int_length.unextended)
+#define TREE_INT_CST_EXT_NUNITS(NODE) \
+  (INTEGER_CST_CHECK (NODE)->base.u.int_length.extended)
+#define TREE_INT_CST_OFFSET_NUNITS(NODE) \
+  (INTEGER_CST_CHECK (NODE)->base.u.int_length.offset)
+#define TREE_INT_CST_ELT(NODE, I) TREE_INT_CST_ELT_CHECK (NODE, I)
+#define TREE_INT_CST_LOW(NODE) \
+  ((unsigned HOST_WIDE_INT) TREE_INT_CST_ELT (NODE, 0))
 
 #define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
 #define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))
@@ -2901,6 +2904,30 @@ non_type_check (tree __t, const char *__f, int __l, const char *__g)
   return __t;
 }
 
+inline const HOST_WIDE_INT *
+tree_int_cst_elt_check (const_tree __t, int __i,
+			const char *__f, int __l, const char *__g)
+{
+  if (TREE_CODE (__t) != INTEGER_CST)
+    tree_check_failed (__t, __f, __l, __g, INTEGER_CST, 0);
+  if (__i < 0 || __i >= __t->base.u.int_length.extended)
+    tree_int_cst_elt_check_failed (__i, __t->base.u.int_length.extended,
+				   __f, __l, __g);
+  return &CONST_CAST_TREE (__t)->int_cst.val[__i];
+}
+
+inline HOST_WIDE_INT *
+tree_int_cst_elt_check (tree __t, int __i,
+			const char *__f, int __l, const char *__g)
+{
+  if (TREE_CODE (__t) != INTEGER_CST)
+    tree_check_failed (__t, __f, __l, __g, INTEGER_CST, 0);
+  if (__i < 0 || __i >= __t->base.u.int_length.extended)
+    tree_int_cst_elt_check_failed (__i, __t->base.u.int_length.extended,
+				   __f, __l, __g);
+  return &CONST_CAST_TREE (__t)->int_cst.val[__i];
+}
+
 inline tree *
 tree_vec_elt_check (tree __t, int __i,
                     const char *__f, int __l, const char *__g)
@@ -3391,8 +3418,6 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define int128_integer_type_node	integer_types[itk_int128]
 #define int128_unsigned_type_node	integer_types[itk_unsigned_int128]
 
-#define NULL_TREE (tree) NULL
-
 /* True if NODE is an erroneous expression.  */
 
 #define error_operand_p(NODE)					\
@@ -3406,9 +3431,9 @@ extern tree decl_assembler_name (tree);
 
 extern size_t tree_size (const_tree);
 
-/* Compute the number of bytes occupied by a tree with code CODE.  This
-   function cannot be used for TREE_VEC codes, which are of variable
-   length.  */
+/* Compute the number of bytes occupied by a tree with code CODE.
+   This function cannot be used for TREE_VEC or INTEGER_CST nodes,
+   which are of variable length.  */
 extern size_t tree_code_size (enum tree_code);
 
 /* Allocate and return a new UID from the DECL_UID namespace.  */
@@ -3437,6 +3462,12 @@ extern tree build_case_label (tree, tree, tree);
 /* Make a BINFO.  */
 extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
 #define make_tree_binfo(t) make_tree_binfo_stat (t MEM_STAT_INFO)
+
+/* Make an INTEGER_CST.  */
+
+extern tree make_int_cst_stat (int, int MEM_STAT_DECL);
+#define make_int_cst(LEN, EXT_LEN) \
+  make_int_cst_stat (LEN, EXT_LEN MEM_STAT_INFO)
 
 /* Make a TREE_VEC.  */
 
@@ -3535,27 +3566,17 @@ extern tree build_var_debug_value_stat (tree, tree MEM_STAT_DECL);
 
 /* Constructs double_int from tree CST.  */
 
-static inline double_int
-tree_to_double_int (const_tree cst)
-{
-  return TREE_INT_CST (cst);
-}
-
 extern tree double_int_to_tree (tree, double_int);
-extern bool double_int_fits_to_tree_p (const_tree, double_int);
-extern tree force_fit_type_double (tree, double_int, int, bool);
+
+extern tree wide_int_to_tree (tree type, const wide_int_ref &cst);
+extern tree force_fit_type (tree, const wide_int_ref &, int, bool);
 
 /* Create an INT_CST node with a CST value zero extended.  */
 
-static inline tree
-build_int_cstu (tree type, unsigned HOST_WIDE_INT cst)
-{
-  return double_int_to_tree (type, double_int::from_uhwi (cst));
-}
-
+/* static inline */
 extern tree build_int_cst (tree, HOST_WIDE_INT);
+extern tree build_int_cstu (tree type, unsigned HOST_WIDE_INT cst);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);
-extern tree build_int_cst_wide (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 extern tree make_vector_stat (unsigned MEM_STAT_DECL);
 #define make_vector(n) make_vector_stat (n MEM_STAT_INFO)
 extern tree build_vector_stat (tree, tree * MEM_STAT_DECL);
@@ -3637,8 +3658,7 @@ extern tree chain_index (int, tree);
 extern int attribute_list_equal (const_tree, const_tree);
 extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
-extern int tree_int_cst_lt (const_tree, const_tree);
-extern int tree_int_cst_compare (const_tree, const_tree);
+
 extern bool tree_fits_shwi_p (const_tree)
 #ifndef ENABLE_TREE_CHECKING
   ATTRIBUTE_PURE /* tree_fits_shwi_p is pure only when checking is disabled.  */
@@ -3668,7 +3688,7 @@ tree_to_uhwi (const_tree t)
 #endif
 extern int tree_int_cst_sgn (const_tree);
 extern int tree_int_cst_sign_bit (const_tree);
-extern unsigned int tree_int_cst_min_precision (tree, bool);
+extern unsigned int tree_int_cst_min_precision (tree, signop);
 extern tree strip_array_types (tree);
 extern tree excess_precision_type (tree);
 extern bool valid_constant_size_p (const_tree);
@@ -4518,6 +4538,180 @@ opts_for_fn (const_tree fndecl)
 #define ANON_AGGRNAME_FORMAT "__anon_%d"
 #endif	/* NO_DOLLAR_IN_LABEL */
 #endif	/* NO_DOT_IN_LABEL */
+
+/* The tree and const_tree overload templates.   */
+namespace wi
+{
+  template <>
+  struct int_traits <const_tree>
+  {
+    static const enum precision_type precision_type = VAR_PRECISION;
+    static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = false;
+    static unsigned int get_precision (const_tree);
+    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
+				      const_tree);
+  };
+
+  template <>
+  struct int_traits <tree> : public int_traits <const_tree> {};
+
+  template <int N>
+  class extended_tree
+  {
+  private:
+    const_tree m_t;
+
+  public:
+    extended_tree (const_tree);
+
+    unsigned int get_precision () const;
+    const HOST_WIDE_INT *get_val () const;
+    unsigned int get_len () const;
+  };
+
+  template <>
+  template <int N>
+  struct int_traits <extended_tree <N> >
+  {
+    static const enum precision_type precision_type = CONST_PRECISION;
+    static const bool host_dependent_precision = false;
+    static const bool is_sign_extended = true;
+    static const unsigned int precision = N;
+  };
+
+  generic_wide_int <extended_tree <WIDE_INT_MAX_PRECISION> >
+  to_widest (const_tree);
+
+  generic_wide_int <extended_tree <ADDR_MAX_PRECISION> > to_offset (const_tree);
+}
+
+inline unsigned int
+wi::int_traits <const_tree>::get_precision (const_tree tcst)
+{
+  return TYPE_PRECISION (TREE_TYPE (tcst));
+}
+
+/* Convert the tree_cst X into a wide_int of PRECISION.  */
+inline wi::storage_ref
+wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
+					unsigned int precision, const_tree x)
+{
+  return wi::storage_ref (&TREE_INT_CST_ELT (x, 0), TREE_INT_CST_NUNITS (x),
+			  precision);
+}
+
+inline generic_wide_int <wi::extended_tree <WIDE_INT_MAX_PRECISION> >
+wi::to_widest (const_tree t)
+{
+  return t;
+}
+
+inline generic_wide_int <wi::extended_tree <ADDR_MAX_PRECISION> >
+wi::to_offset (const_tree t)
+{
+  return t;
+}
+
+template <int N>
+inline wi::extended_tree <N>::extended_tree (const_tree t)
+  : m_t (t)
+{
+  gcc_checking_assert (TYPE_PRECISION (TREE_TYPE (t)) <= N);
+}
+
+template <int N>
+inline unsigned int
+wi::extended_tree <N>::get_precision () const
+{
+  return N;
+}
+
+template <int N>
+inline const HOST_WIDE_INT *
+wi::extended_tree <N>::get_val () const
+{
+  return &TREE_INT_CST_ELT (m_t, 0);
+}
+
+template <int N>
+inline unsigned int
+wi::extended_tree <N>::get_len () const
+{
+  if (N == ADDR_MAX_PRECISION)
+    return TREE_INT_CST_OFFSET_NUNITS (m_t);
+  else if (N >= WIDE_INT_MAX_PRECISION)
+    return TREE_INT_CST_EXT_NUNITS (m_t);
+  else
+    /* This class is designed to be used for specific output precisions
+       and needs to be as fast as possible, so there is no fallback for
+       other casees.  */
+    gcc_unreachable ();
+}
+
+namespace wi
+{
+  template <typename T>
+  bool fits_to_tree_p (const T &x, const_tree);
+
+  wide_int min_value (const_tree);
+  wide_int max_value (const_tree);
+  wide_int from_mpz (const_tree, mpz_t, bool);
+}
+
+template <typename T>
+bool
+wi::fits_to_tree_p (const T &x, const_tree type)
+{
+  if (TYPE_SIGN (type) == UNSIGNED)
+    return eq_p (x, zext (x, TYPE_PRECISION (type)));
+  else
+    return eq_p (x, sext (x, TYPE_PRECISION (type)));
+}
+
+/* Produce the smallest number that is represented in TYPE.  The precision
+   and sign are taken from TYPE.  */
+inline wide_int
+wi::min_value (const_tree type)
+{
+  return min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+/* Produce the largest number that is represented in TYPE.  The precision
+   and sign are taken from TYPE.  */
+inline wide_int
+wi::max_value (const_tree type)
+{
+  return max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+/* Return true if INTEGER_CST T1 is less than INTEGER_CST T2,
+   extending both according to their respective TYPE_SIGNs.  */
+
+inline bool
+tree_int_cst_lt (const_tree t1, const_tree t2)
+{
+  return wi::lts_p (wi::to_widest (t1), wi::to_widest (t2));
+}
+
+/* Return true if INTEGER_CST T1 is less than or equal to INTEGER_CST T2,
+   extending both according to their respective TYPE_SIGNs.  */
+
+inline bool
+tree_int_cst_le (const_tree t1, const_tree t2)
+{
+  return wi::les_p (wi::to_widest (t1), wi::to_widest (t2));
+}
+
+/* Returns -1 if T1 < T2, 0 if T1 == T2, and 1 if T1 > T2.  T1 and T2
+   are both INTEGER_CSTs and their values are extended according to their
+   respective TYPE_SIGNs.  */
+
+inline int
+tree_int_cst_compare (const_tree t1, const_tree t2)
+{
+  return wi::cmps (wi::to_widest (t1), wi::to_widest (t2));
+}
 
 /* FIXME - These declarations belong in builtins.h, expr.h and emit-rtl.h,
    but none of these files are allowed to be included from front ends.

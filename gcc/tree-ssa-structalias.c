@@ -3065,14 +3065,13 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   else
     {
       /* Sign-extend the offset.  */
-      double_int soffset = tree_to_double_int (offset)
-			   .sext (TYPE_PRECISION (TREE_TYPE (offset)));
-      if (!soffset.fits_shwi ())
+      offset_int soffset = offset_int::from (offset, SIGNED);
+      if (!wi::fits_shwi_p (soffset))
 	rhsoffset = UNKNOWN_OFFSET;
       else
 	{
 	  /* Make sure the bit-offset also fits.  */
-	  HOST_WIDE_INT rhsunitoffset = soffset.low;
+	  HOST_WIDE_INT rhsunitoffset = soffset.to_shwi ();
 	  rhsoffset = rhsunitoffset * BITS_PER_UNIT;
 	  if (rhsunitoffset != rhsoffset / BITS_PER_UNIT)
 	    rhsoffset = UNKNOWN_OFFSET;

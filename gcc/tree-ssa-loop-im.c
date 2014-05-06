@@ -1601,7 +1601,7 @@ mem_refs_may_alias_p (mem_ref_p mem1, mem_ref_p mem2,
   /* Perform BASE + OFFSET analysis -- if MEM1 and MEM2 are based on the same
      object and their offset differ in such a way that the locations cannot
      overlap, then they cannot alias.  */
-  double_int size1, size2;
+  widest_int size1, size2;
   aff_tree off1, off2;
 
   /* Perform basic offset and type-based disambiguation.  */
@@ -1617,7 +1617,7 @@ mem_refs_may_alias_p (mem_ref_p mem1, mem_ref_p mem2,
   get_inner_reference_aff (mem2->mem.ref, &off2, &size2);
   aff_combination_expand (&off1, ttae_cache);
   aff_combination_expand (&off2, ttae_cache);
-  aff_combination_scale (&off1, double_int_minus_one);
+  aff_combination_scale (&off1, -1);
   aff_combination_add (&off2, &off1);
 
   if (aff_comb_cannot_overlap_p (&off2, size1, size2))

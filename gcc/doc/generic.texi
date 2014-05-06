@@ -1022,10 +1022,15 @@ As this example indicates, the operands are zero-indexed.
 @node Constant expressions
 @subsection Constant expressions
 @tindex INTEGER_CST
-@findex TREE_INT_CST_HIGH
-@findex TREE_INT_CST_LOW
 @findex tree_int_cst_lt
 @findex tree_int_cst_equal
+@tindex tree_fits_uhwi_p
+@tindex tree_fits_shwi_p
+@tindex tree_to_uhwi
+@tindex tree_to_shwi
+@tindex TREE_INT_CST_NUNITS
+@tindex TREE_INT_CST_ELT
+@tindex TREE_INT_CST_LOW
 @tindex REAL_CST
 @tindex FIXED_CST
 @tindex COMPLEX_CST
@@ -1044,36 +1049,18 @@ These nodes represent integer constants.  Note that the type of these
 constants is obtained with @code{TREE_TYPE}; they are not always of type
 @code{int}.  In particular, @code{char} constants are represented with
 @code{INTEGER_CST} nodes.  The value of the integer constant @code{e} is
-given by
-@smallexample
-((TREE_INT_CST_HIGH (e) << HOST_BITS_PER_WIDE_INT)
-+ TREE_INST_CST_LOW (e))
-@end smallexample
-@noindent
-HOST_BITS_PER_WIDE_INT is at least thirty-two on all platforms.  Both
-@code{TREE_INT_CST_HIGH} and @code{TREE_INT_CST_LOW} return a
-@code{HOST_WIDE_INT}.  The value of an @code{INTEGER_CST} is interpreted
-as a signed or unsigned quantity depending on the type of the constant.
-In general, the expression given above will overflow, so it should not
-be used to calculate the value of the constant.
+represented in an array of HOST_WIDE_INT.   There are enough elements
+in the array to represent the value without taking extra elements for
+redundant 0s or -1.  The number of elements used to represent @code{e}
+is available via @code{TREE_INT_CST_NUNITS}. Element @code{i} can be
+extracted by using @code{TREE_INT_CST_ELT (e, i)}.
+@code{TREE_INT_CST_LOW} is a shorthand for @code{TREE_INT_CST_ELT (e, 0)}.
 
-The variable @code{integer_zero_node} is an integer constant with value
-zero.  Similarly, @code{integer_one_node} is an integer constant with
-value one.  The @code{size_zero_node} and @code{size_one_node} variables
-are analogous, but have type @code{size_t} rather than @code{int}.
-
-The function @code{tree_int_cst_lt} is a predicate which holds if its
-first argument is less than its second.  Both constants are assumed to
-have the same signedness (i.e., either both should be signed or both
-should be unsigned.)  The full width of the constant is used when doing
-the comparison; the usual rules about promotions and conversions are
-ignored.  Similarly, @code{tree_int_cst_equal} holds if the two
-constants are equal.  The @code{tree_int_cst_sgn} function returns the
-sign of a constant.  The value is @code{1}, @code{0}, or @code{-1}
-according on whether the constant is greater than, equal to, or less
-than zero.  Again, the signedness of the constant's type is taken into
-account; an unsigned constant is never less than zero, no matter what
-its bit-pattern.
+The functions @code{tree_fits_shwi_p} and @code{tree_fits_uhwi_p}
+can be used to tell if the value is small enough to fit in a
+signed HOST_WIDE_INT or an unsigned HOST_WIDE_INT respectively.
+The value can then be extracted using @code{tree_to_shwi} and
+@code{tree_to_uhwi}.
 
 @item REAL_CST
 

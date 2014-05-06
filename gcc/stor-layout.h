@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_STOR_LAYOUT_H
 #define GCC_STOR_LAYOUT_H
 
-extern void set_min_and_max_values_for_integral_type (tree, int, bool);
+extern void set_min_and_max_values_for_integral_type (tree, int, signop);
 extern void fixup_signed_type (tree);
 extern void internal_reference_types (void);
 extern unsigned int update_alignment_for_field (record_layout_info, tree,

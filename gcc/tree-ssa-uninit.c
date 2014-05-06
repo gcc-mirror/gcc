@@ -854,12 +854,11 @@ is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
       if (cmpc == EQ_EXPR)
         result = tree_int_cst_equal (val, boundary);
       else if (cmpc == LT_EXPR)
-        result = INT_CST_LT_UNSIGNED (val, boundary);
+        result = tree_int_cst_lt (val, boundary);
       else
         {
           gcc_assert (cmpc == LE_EXPR);
-          result = (tree_int_cst_equal (val, boundary)
-                    || INT_CST_LT_UNSIGNED (val, boundary));
+          result = tree_int_cst_le (val, boundary);
         }
     }
   else
@@ -867,12 +866,12 @@ is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
       if (cmpc == EQ_EXPR)
         result = tree_int_cst_equal (val, boundary);
       else if (cmpc == LT_EXPR)
-        result = INT_CST_LT (val, boundary);
+        result = tree_int_cst_lt (val, boundary);
       else
         {
           gcc_assert (cmpc == LE_EXPR);
           result = (tree_int_cst_equal (val, boundary)
-                    || INT_CST_LT (val, boundary));
+                    || tree_int_cst_lt (val, boundary));
         }
     }
 

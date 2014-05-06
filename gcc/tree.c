@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "debug.h"
 #include "intl.h"
+#include "wide-int.h"
 
 /* Tree code classes.  */
 
@@ -576,7 +577,7 @@ init_ttree (void)
   int_cst_hash_table = htab_create_ggc (1024, int_cst_hash_hash,
 					int_cst_hash_eq, NULL);
 
-  int_cst_node = make_node (INTEGER_CST);
+  int_cst_node = make_int_cst (1, 1);
 
   cl_option_hash_table = htab_create_ggc (64, cl_option_hash_hash,
 					  cl_option_hash_eq, NULL);
@@ -603,7 +604,7 @@ decl_assembler_name (tree decl)
 
 /* Compute the number of bytes occupied by a tree with code CODE.
    This function cannot be used for nodes that have variable sizes,
-   including TREE_VEC, STRING_CST, and CALL_EXPR.  */
+   including TREE_VEC, INTEGER_CST, STRING_CST, and CALL_EXPR.  */
 size_t
 tree_code_size (enum tree_code code)
 {
@@ -651,7 +652,7 @@ tree_code_size (enum tree_code code)
     case tcc_constant:  /* a constant */
       switch (code)
 	{
-	case INTEGER_CST:	return sizeof (struct tree_int_cst);
+	case INTEGER_CST:	gcc_unreachable ();
 	case REAL_CST:		return sizeof (struct tree_real_cst);
 	case FIXED_CST:		return sizeof (struct tree_fixed_cst);
 	case COMPLEX_CST:	return sizeof (struct tree_complex);
@@ -698,6 +699,10 @@ tree_size (const_tree node)
   const enum tree_code code = TREE_CODE (node);
   switch (code)
     {
+    case INTEGER_CST:
+      return (sizeof (struct tree_int_cst)
+	      + (TREE_INT_CST_EXT_NUNITS (node) - 1) * sizeof (HOST_WIDE_INT));
+
     case TREE_BINFO:
       return (offsetof (struct tree_binfo, base_binfos)
 	      + vec<tree, va_gc>
@@ -830,8 +835,9 @@ allocate_decl_uid (void)
 
 /* Return a newly allocated node of code CODE.  For decl and type
    nodes, some other fields are initialized.  The rest of the node is
-   initialized to zero.  This function cannot be used for TREE_VEC or
-   OMP_CLAUSE nodes, which is enforced by asserts in tree_code_size.
+   initialized to zero.  This function cannot be used for TREE_VEC,
+   INTEGER_CST or OMP_CLAUSE nodes, which is enforced by asserts in
+   tree_code_size.
 
    Achoo!  I got a code in the node.  */
 
@@ -1019,6 +1025,53 @@ copy_list (tree list)
 }
 
 
+/* Return the value that TREE_INT_CST_EXT_NUNITS should have for an
+   INTEGER_CST with value CST and type TYPE.   */
+
+static unsigned int
+get_int_cst_ext_nunits (tree type, const wide_int &cst)
+{
+  gcc_checking_assert (cst.get_precision () == TYPE_PRECISION (type));
+  /* We need an extra zero HWI if CST is an unsigned integer with its
+     upper bit set, and if CST occupies a whole number of HWIs.  */
+  if (TYPE_UNSIGNED (type)
+      && wi::neg_p (cst)
+      && (cst.get_precision () % HOST_BITS_PER_WIDE_INT) == 0)
+    return cst.get_precision () / HOST_BITS_PER_WIDE_INT + 1;
+  return cst.get_len ();
+}
+
+/* Return a new INTEGER_CST with value CST and type TYPE.  */
+
+static tree
+build_new_int_cst (tree type, const wide_int &cst)
+{
+  unsigned int len = cst.get_len ();
+  unsigned int ext_len = get_int_cst_ext_nunits (type, cst);
+  tree nt = make_int_cst (len, ext_len);
+
+  if (len < ext_len)
+    {
+      --ext_len;
+      TREE_INT_CST_ELT (nt, ext_len) = 0;
+      for (unsigned int i = len; i < ext_len; ++i)
+	TREE_INT_CST_ELT (nt, i) = -1;
+    }
+  else if (TYPE_UNSIGNED (type)
+	   && cst.get_precision () < len * HOST_BITS_PER_WIDE_INT)
+    {
+      len--;
+      TREE_INT_CST_ELT (nt, len)
+	= zext_hwi (cst.elt (len),
+		    cst.get_precision () % HOST_BITS_PER_WIDE_INT);
+    }
+
+  for (unsigned int i = 0; i < len; i++)
+    TREE_INT_CST_ELT (nt, i) = cst.elt (i);
+  TREE_TYPE (nt) = type;
+  return nt;
+}
+
 /* Create an INT_CST node with a LOW value sign extended to TYPE.  */
 
 tree
@@ -1028,7 +1081,13 @@ build_int_cst (tree type, HOST_WIDE_INT low)
   if (!type)
     type = integer_type_node;
 
-  return double_int_to_tree (type, double_int::from_shwi (low));
+  return wide_int_to_tree (type, wi::shwi (low, TYPE_PRECISION (type)));
+}
+
+tree
+build_int_cstu (tree type, unsigned HOST_WIDE_INT cst)
+{
+  return wide_int_to_tree (type, wi::uhwi (cst, TYPE_PRECISION (type)));
 }
 
 /* Create an INT_CST node with a LOW value sign extended to TYPE.  */
@@ -1037,8 +1096,7 @@ tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
 {
   gcc_assert (type);
-
-  return double_int_to_tree (type, double_int::from_shwi (low));
+  return wide_int_to_tree (type, wi::shwi (low, TYPE_PRECISION (type)));
 }
 
 /* Constructs tree in type TYPE from with value given by CST.  Signedness
@@ -1047,28 +1105,10 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
 tree
 double_int_to_tree (tree type, double_int cst)
 {
-  bool sign_extended_type = !TYPE_UNSIGNED (type);
-
-  cst = cst.ext (TYPE_PRECISION (type), !sign_extended_type);
-
-  return build_int_cst_wide (type, cst.low, cst.high);
+  return wide_int_to_tree (type, widest_int::from (cst, TYPE_SIGN (type)));
 }
 
-/* Returns true if CST fits into range of TYPE.  Signedness of CST is assumed
-   to be the same as the signedness of TYPE.  */
-
-bool
-double_int_fits_to_tree_p (const_tree type, double_int cst)
-{
-  bool sign_extended_type = !TYPE_UNSIGNED (type);
-
-  double_int ext
-    = cst.ext (TYPE_PRECISION (type), !sign_extended_type);
-
-  return cst == ext;
-}
-
-/* We force the double_int CST to the range of the type TYPE by sign or
+/* We force the wide_int CST to the range of the type TYPE by sign or
    zero extending it.  OVERFLOWABLE indicates if we are interested in
    overflow of the value, when >0 we are only interested in signed
    overflow, for <0 we are interested in any overflow.  OVERFLOWED
@@ -1079,34 +1119,32 @@ double_int_fits_to_tree_p (const_tree type, double_int cst)
         OVERFLOWED is nonzero,
         or OVERFLOWABLE is >0 and signed overflow occurs
         or OVERFLOWABLE is <0 and any overflow occurs
-   We return a new tree node for the extended double_int.  The node
+   We return a new tree node for the extended wide_int.  The node
    is shared if no overflow flags are set.  */
 
 
 tree
-force_fit_type_double (tree type, double_int cst, int overflowable,
-		       bool overflowed)
+force_fit_type (tree type, const wide_int_ref &cst,
+		int overflowable, bool overflowed)
 {
-  bool sign_extended_type = !TYPE_UNSIGNED (type);
+  signop sign = TYPE_SIGN (type);
 
   /* If we need to set overflow flags, return a new unshared node.  */
-  if (overflowed || !double_int_fits_to_tree_p (type, cst))
+  if (overflowed || !wi::fits_to_tree_p (cst, type))
     {
       if (overflowed
 	  || overflowable < 0
-	  || (overflowable > 0 && sign_extended_type))
+	  || (overflowable > 0 && sign == SIGNED))
 	{
-	  tree t = make_node (INTEGER_CST);
-	  TREE_INT_CST (t)
-	    = cst.ext (TYPE_PRECISION (type), !sign_extended_type);
-	  TREE_TYPE (t) = type;
+	  wide_int tmp = wide_int::from (cst, TYPE_PRECISION (type), sign);
+	  tree t = build_new_int_cst (type, tmp);
 	  TREE_OVERFLOW (t) = 1;
 	  return t;
 	}
     }
 
   /* Else build a shared node.  */
-  return double_int_to_tree (type, cst);
+  return wide_int_to_tree (type, cst);
 }
 
 /* These are the hash table functions for the hash table of INTEGER_CST
@@ -1118,9 +1156,13 @@ static hashval_t
 int_cst_hash_hash (const void *x)
 {
   const_tree const t = (const_tree) x;
+  hashval_t code = htab_hash_pointer (TREE_TYPE (t));
+  int i;
 
-  return (TREE_INT_CST_HIGH (t) ^ TREE_INT_CST_LOW (t)
-	  ^ htab_hash_pointer (TREE_TYPE (t)));
+  for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+    code ^= TREE_INT_CST_ELT (t, i);
+
+  return code;
 }
 
 /* Return nonzero if the value represented by *X (an INTEGER_CST tree node)
@@ -1132,121 +1174,167 @@ int_cst_hash_eq (const void *x, const void *y)
   const_tree const xt = (const_tree) x;
   const_tree const yt = (const_tree) y;
 
-  return (TREE_TYPE (xt) == TREE_TYPE (yt)
-	  && TREE_INT_CST_HIGH (xt) == TREE_INT_CST_HIGH (yt)
-	  && TREE_INT_CST_LOW (xt) == TREE_INT_CST_LOW (yt));
+  if (TREE_TYPE (xt) != TREE_TYPE (yt)
+      || TREE_INT_CST_NUNITS (xt) != TREE_INT_CST_NUNITS (yt)
+      || TREE_INT_CST_EXT_NUNITS (xt) != TREE_INT_CST_EXT_NUNITS (yt))
+    return false;
+
+  for (int i = 0; i < TREE_INT_CST_NUNITS (xt); i++)
+    if (TREE_INT_CST_ELT (xt, i) != TREE_INT_CST_ELT (yt, i))
+      return false;
+
+  return true;
 }
 
-/* Create an INT_CST node of TYPE and value HI:LOW.
+/* Create an INT_CST node of TYPE and value CST.
    The returned node is always shared.  For small integers we use a
-   per-type vector cache, for larger ones we use a single hash table.  */
+   per-type vector cache, for larger ones we use a single hash table.
+   The value is extended from its precision according to the sign of
+   the type to be a multiple of HOST_BITS_PER_WIDE_INT.  This defines
+   the upper bits and ensures that hashing and value equality based
+   upon the underlying HOST_WIDE_INTs works without masking.  */
 
 tree
-build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
+wide_int_to_tree (tree type, const wide_int_ref &pcst)
 {
   tree t;
   int ix = -1;
   int limit = 0;
 
   gcc_assert (type);
+  unsigned int prec = TYPE_PRECISION (type);
+  signop sgn = TYPE_SIGN (type);
 
-  switch (TREE_CODE (type))
+  /* Verify that everything is canonical.  */
+  int l = pcst.get_len ();
+  if (l > 1)
     {
-    case NULLPTR_TYPE:
-      gcc_assert (hi == 0 && low == 0);
-      /* Fallthru.  */
-
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-      /* Cache NULL pointer.  */
-      if (!hi && !low)
-	{
-	  limit = 1;
-	  ix = 0;
-	}
-      break;
-
-    case BOOLEAN_TYPE:
-      /* Cache false or true.  */
-      limit = 2;
-      if (!hi && low < 2)
-	ix = low;
-      break;
-
-    case INTEGER_TYPE:
-    case OFFSET_TYPE:
-      if (TYPE_UNSIGNED (type))
-	{
-	  /* Cache 0..N */
-	  limit = INTEGER_SHARE_LIMIT;
-	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
-	    ix = low;
-	}
-      else
-	{
-	  /* Cache -1..N */
-	  limit = INTEGER_SHARE_LIMIT + 1;
-	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
-	    ix = low + 1;
-	  else if (hi == -1 && low == -(unsigned HOST_WIDE_INT)1)
-	    ix = 0;
-	}
-      break;
-
-    case ENUMERAL_TYPE:
-      break;
-
-    default:
-      gcc_unreachable ();
+      if (pcst.elt (l - 1) == 0)
+	gcc_checking_assert (pcst.elt (l - 2) < 0);
+      if (pcst.elt (l - 1) == (HOST_WIDE_INT) -1)
+	gcc_checking_assert (pcst.elt (l - 2) >= 0);
     }
 
-  if (ix >= 0)
+  wide_int cst = wide_int::from (pcst, prec, sgn);
+  unsigned int ext_len = get_int_cst_ext_nunits (type, cst);
+
+  if (ext_len == 1)
     {
-      /* Look for it in the type's vector of small shared ints.  */
-      if (!TYPE_CACHED_VALUES_P (type))
+      /* We just need to store a single HOST_WIDE_INT.  */
+      HOST_WIDE_INT hwi;
+      if (TYPE_UNSIGNED (type))
+	hwi = cst.to_uhwi ();
+      else
+	hwi = cst.to_shwi ();
+
+      switch (TREE_CODE (type))
 	{
-	  TYPE_CACHED_VALUES_P (type) = 1;
-	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
+	case NULLPTR_TYPE:
+	  gcc_assert (hwi == 0);
+	  /* Fallthru.  */
+
+	case POINTER_TYPE:
+	case REFERENCE_TYPE:
+	  /* Cache NULL pointer.  */
+	  if (hwi == 0)
+	    {
+	      limit = 1;
+	      ix = 0;
+	    }
+	  break;
+
+	case BOOLEAN_TYPE:
+	  /* Cache false or true.  */
+	  limit = 2;
+	  if (hwi < 2)
+	    ix = hwi;
+	  break;
+
+	case INTEGER_TYPE:
+	case OFFSET_TYPE:
+	  if (TYPE_SIGN (type) == UNSIGNED)
+	    {
+	      /* Cache [0, N).  */
+	      limit = INTEGER_SHARE_LIMIT;
+	      if (IN_RANGE (hwi, 0, INTEGER_SHARE_LIMIT - 1))
+		ix = hwi;
+	    }
+	  else
+	    {
+	      /* Cache [-1, N).  */
+	      limit = INTEGER_SHARE_LIMIT + 1;
+	      if (IN_RANGE (hwi, -1, INTEGER_SHARE_LIMIT - 1))
+		ix = hwi + 1;
+	    }
+	  break;
+
+	case ENUMERAL_TYPE:
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
 
-      t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
-      if (t)
+      if (ix >= 0)
 	{
-	  /* Make sure no one is clobbering the shared constant.  */
-	  gcc_assert (TREE_TYPE (t) == type);
-	  gcc_assert (TREE_INT_CST_LOW (t) == low);
-	  gcc_assert (TREE_INT_CST_HIGH (t) == hi);
+	  /* Look for it in the type's vector of small shared ints.  */
+	  if (!TYPE_CACHED_VALUES_P (type))
+	    {
+	      TYPE_CACHED_VALUES_P (type) = 1;
+	      TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
+	    }
+
+	  t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
+	  if (t)
+	    /* Make sure no one is clobbering the shared constant.  */
+	    gcc_checking_assert (TREE_TYPE (t) == type
+				 && TREE_INT_CST_NUNITS (t) == 1
+				 && TREE_INT_CST_OFFSET_NUNITS (t) == 1
+				 && TREE_INT_CST_EXT_NUNITS (t) == 1
+				 && TREE_INT_CST_ELT (t, 0) == hwi);
+	  else
+	    {
+	      /* Create a new shared int.  */
+	      t = build_new_int_cst (type, cst);
+	      TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+	    }
 	}
       else
 	{
-	  /* Create a new shared int.  */
-	  t = make_node (INTEGER_CST);
+	  /* Use the cache of larger shared ints, using int_cst_node as
+	     a temporary.  */
+	  void **slot;
 
-	  TREE_INT_CST_LOW (t) = low;
-	  TREE_INT_CST_HIGH (t) = hi;
-	  TREE_TYPE (t) = type;
+	  TREE_INT_CST_ELT (int_cst_node, 0) = hwi;
+	  TREE_TYPE (int_cst_node) = type;
 
-	  TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+	  slot = htab_find_slot (int_cst_hash_table, int_cst_node, INSERT);
+	  t = (tree) *slot;
+	  if (!t)
+	    {
+	      /* Insert this one into the hash table.  */
+	      t = int_cst_node;
+	      *slot = t;
+	      /* Make a new node for next time round.  */
+	      int_cst_node = make_int_cst (1, 1);
+	    }
 	}
     }
   else
     {
-      /* Use the cache of larger shared ints.  */
+      /* The value either hashes properly or we drop it on the floor
+	 for the gc to take care of.  There will not be enough of them
+	 to worry about.  */
       void **slot;
 
-      TREE_INT_CST_LOW (int_cst_node) = low;
-      TREE_INT_CST_HIGH (int_cst_node) = hi;
-      TREE_TYPE (int_cst_node) = type;
-
-      slot = htab_find_slot (int_cst_hash_table, int_cst_node, INSERT);
+      tree nt = build_new_int_cst (type, cst);
+      slot = htab_find_slot (int_cst_hash_table, nt, INSERT);
       t = (tree) *slot;
       if (!t)
 	{
 	  /* Insert this one into the hash table.  */
-	  t = int_cst_node;
+	  t = nt;
 	  *slot = t;
-	  /* Make a new node for next time round.  */
-	  int_cst_node = make_node (INTEGER_CST);
 	}
     }
 
@@ -1257,23 +1345,22 @@ void
 cache_integer_cst (tree t)
 {
   tree type = TREE_TYPE (t);
-  HOST_WIDE_INT hi = TREE_INT_CST_HIGH (t);
-  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (t);
   int ix = -1;
   int limit = 0;
+  int prec = TYPE_PRECISION (type);
 
   gcc_assert (!TREE_OVERFLOW (t));
 
   switch (TREE_CODE (type))
     {
     case NULLPTR_TYPE:
-      gcc_assert (hi == 0 && low == 0);
+      gcc_assert (integer_zerop (t));
       /* Fallthru.  */
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       /* Cache NULL pointer.  */
-      if (!hi && !low)
+      if (integer_zerop (t))
 	{
 	  limit = 1;
 	  ix = 0;
@@ -1283,8 +1370,8 @@ cache_integer_cst (tree t)
     case BOOLEAN_TYPE:
       /* Cache false or true.  */
       limit = 2;
-      if (!hi && low < 2)
-	ix = low;
+      if (wi::ltu_p (t, 2))
+	ix = TREE_INT_CST_ELT (t, 0);
       break;
 
     case INTEGER_TYPE:
@@ -1293,17 +1380,35 @@ cache_integer_cst (tree t)
 	{
 	  /* Cache 0..N */
 	  limit = INTEGER_SHARE_LIMIT;
-	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
-	    ix = low;
+
+	  /* This is a little hokie, but if the prec is smaller than
+	     what is necessary to hold INTEGER_SHARE_LIMIT, then the
+	     obvious test will not get the correct answer.  */
+	  if (prec < HOST_BITS_PER_WIDE_INT)
+	    {
+	      if (tree_to_uhwi (t) < (unsigned HOST_WIDE_INT) INTEGER_SHARE_LIMIT)
+		ix = tree_to_uhwi (t);
+	    }
+	  else if (wi::ltu_p (t, INTEGER_SHARE_LIMIT))
+	    ix = tree_to_uhwi (t);
 	}
       else
 	{
 	  /* Cache -1..N */
 	  limit = INTEGER_SHARE_LIMIT + 1;
-	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
-	    ix = low + 1;
-	  else if (hi == -1 && low == -(unsigned HOST_WIDE_INT)1)
+
+	  if (integer_minus_onep (t))
 	    ix = 0;
+	  else if (!wi::neg_p (t))
+	    {
+	      if (prec < HOST_BITS_PER_WIDE_INT)
+		{
+		  if (tree_to_shwi (t) < INTEGER_SHARE_LIMIT)
+		    ix = tree_to_shwi (t) + 1;
+		}
+	      else if (wi::ltu_p (t, INTEGER_SHARE_LIMIT))
+		ix = tree_to_shwi (t) + 1;
+	    }
 	}
       break;
 
@@ -1335,13 +1440,10 @@ cache_integer_cst (tree t)
       /* If there is already an entry for the number verify it's the
          same.  */
       if (*slot)
-	{
-	  gcc_assert (TREE_INT_CST_LOW ((tree)*slot) == low
-		      && TREE_INT_CST_HIGH ((tree)*slot) == hi);
-	  return;
-	}
-      /* Otherwise insert this one into the hash table.  */
-      *slot = t;
+	gcc_assert (wi::eq_p (tree (*slot), t));
+      else
+	/* Otherwise insert this one into the hash table.  */
+	*slot = t;
     }
 }
 
@@ -1352,18 +1454,10 @@ cache_integer_cst (tree t)
 tree
 build_low_bits_mask (tree type, unsigned bits)
 {
-  double_int mask;
-
   gcc_assert (bits <= TYPE_PRECISION (type));
 
-  if (bits == TYPE_PRECISION (type)
-      && !TYPE_UNSIGNED (type))
-    /* Sign extended all-ones mask.  */
-    mask = double_int_minus_one;
-  else
-    mask = double_int::mask (bits);
-
-  return build_int_cst_wide (type, mask.low, mask.high);
+  return wide_int_to_tree (type, wi::mask (bits, false,
+					   TYPE_PRECISION (type)));
 }
 
 /* Checks that X is integer constant that can be expressed in (unsigned)
@@ -1378,8 +1472,7 @@ cst_and_fits_in_hwi (const_tree x)
   if (TYPE_PRECISION (TREE_TYPE (x)) > HOST_BITS_PER_WIDE_INT)
     return false;
 
-  return (TREE_INT_CST_HIGH (x) == 0
-	  || TREE_INT_CST_HIGH (x) == -1);
+  return TREE_INT_CST_NUNITS (x) == 1;
 }
 
 /* Build a newly constructed TREE_VEC node of length LEN.  */
@@ -1619,9 +1712,8 @@ real_value_from_int_cst (const_tree type, const_tree i)
      bitwise comparisons to see if two values are the same.  */
   memset (&d, 0, sizeof d);
 
-  real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode,
-		     TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i),
-		     TYPE_UNSIGNED (TREE_TYPE (i)));
+  real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode, i,
+		     TYPE_SIGN (TREE_TYPE (i)));
   return d;
 }
 
@@ -1859,6 +1951,38 @@ build_case_label (tree low_value, tree high_value, tree label_decl)
   return t;
 }
 
+/* Build a newly constructed INTEGER_CST node.  LEN and EXT_LEN are the
+   values of TREE_INT_CST_NUNITS and TREE_INT_CST_EXT_NUNITS respectively.
+   The latter determines the length of the HOST_WIDE_INT vector.  */
+
+tree
+make_int_cst_stat (int len, int ext_len MEM_STAT_DECL)
+{
+  tree t;
+  int length = ((ext_len - 1) * sizeof (HOST_WIDE_INT)
+		+ sizeof (struct tree_int_cst));
+
+  gcc_assert (len);
+  record_node_allocation_statistics (INTEGER_CST, length);
+
+  t = ggc_alloc_cleared_tree_node_stat (length PASS_MEM_STAT);
+
+  TREE_SET_CODE (t, INTEGER_CST);
+  TREE_INT_CST_NUNITS (t) = len;
+  TREE_INT_CST_EXT_NUNITS (t) = ext_len;
+  /* to_offset can only be applied to trees that are offset_int-sized
+     or smaller.  EXT_LEN is correct if it fits, otherwise the constant
+     must be exactly the precision of offset_int and so LEN is correct.  */
+  if (ext_len <= OFFSET_INT_ELTS)
+    TREE_INT_CST_OFFSET_NUNITS (t) = ext_len;
+  else
+    TREE_INT_CST_OFFSET_NUNITS (t) = len;
+
+  TREE_CONSTANT (t) = 1;
+
+  return t;
+}
+
 /* Build a newly constructed TREE_VEC node of length LEN.  */
 
 tree
@@ -1910,8 +2034,7 @@ integer_zerop (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      return (TREE_INT_CST_LOW (expr) == 0
-	      && TREE_INT_CST_HIGH (expr) == 0);
+      return wi::eq_p (expr, 0);
     case COMPLEX_CST:
       return (integer_zerop (TREE_REALPART (expr))
 	      && integer_zerop (TREE_IMAGPART (expr)));
@@ -1939,8 +2062,7 @@ integer_onep (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      return (TREE_INT_CST_LOW (expr) == 1
-	      && TREE_INT_CST_HIGH (expr) == 0);
+      return wi::eq_p (wi::to_widest (expr), 1);
     case COMPLEX_CST:
       return (integer_onep (TREE_REALPART (expr))
 	      && integer_zerop (TREE_IMAGPART (expr)));
@@ -1963,9 +2085,6 @@ integer_onep (const_tree expr)
 int
 integer_all_onesp (const_tree expr)
 {
-  int prec;
-  int uns;
-
   STRIP_NOPS (expr);
 
   if (TREE_CODE (expr) == COMPLEX_CST
@@ -1985,35 +2104,7 @@ integer_all_onesp (const_tree expr)
   else if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
 
-  uns = TYPE_UNSIGNED (TREE_TYPE (expr));
-  if (TREE_INT_CST_LOW (expr) == ~(unsigned HOST_WIDE_INT) 0
-      && TREE_INT_CST_HIGH (expr) == -1)
-    return 1;
-  if (!uns)
-    return 0;
-
-  prec = TYPE_PRECISION (TREE_TYPE (expr));
-  if (prec >= HOST_BITS_PER_WIDE_INT)
-    {
-      HOST_WIDE_INT high_value;
-      int shift_amount;
-
-      shift_amount = prec - HOST_BITS_PER_WIDE_INT;
-
-      /* Can not handle precisions greater than twice the host int size.  */
-      gcc_assert (shift_amount <= HOST_BITS_PER_WIDE_INT);
-      if (shift_amount == HOST_BITS_PER_WIDE_INT)
-	/* Shifting by the host word size is undefined according to the ANSI
-	   standard, so we must handle this as a special case.  */
-	high_value = -1;
-      else
-	high_value = ((HOST_WIDE_INT) 1 << shift_amount) - 1;
-
-      return (TREE_INT_CST_LOW (expr) == ~(unsigned HOST_WIDE_INT) 0
-	      && TREE_INT_CST_HIGH (expr) == high_value);
-    }
-  else
-    return TREE_INT_CST_LOW (expr) == ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
+  return wi::max_value (TYPE_PRECISION (TREE_TYPE (expr)), UNSIGNED) == expr;
 }
 
 /* Return 1 if EXPR is the integer constant minus one.  */
@@ -2036,9 +2127,6 @@ integer_minus_onep (const_tree expr)
 int
 integer_pow2p (const_tree expr)
 {
-  int prec;
-  unsigned HOST_WIDE_INT high, low;
-
   STRIP_NOPS (expr);
 
   if (TREE_CODE (expr) == COMPLEX_CST
@@ -2049,29 +2137,7 @@ integer_pow2p (const_tree expr)
   if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
 
-  prec = TYPE_PRECISION (TREE_TYPE (expr));
-  high = TREE_INT_CST_HIGH (expr);
-  low = TREE_INT_CST_LOW (expr);
-
-  /* First clear all bits that are beyond the type's precision in case
-     we've been sign extended.  */
-
-  if (prec == HOST_BITS_PER_DOUBLE_INT)
-    ;
-  else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
-  else
-    {
-      high = 0;
-      if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~(HOST_WIDE_INT_M1U << prec);
-    }
-
-  if (high == 0 && low == 0)
-    return 0;
-
-  return ((high == 0 && (low & (low - 1)) == 0)
-	  || (low == 0 && (high & (high - 1)) == 0));
+  return wi::popcount (expr) == 1;
 }
 
 /* Return 1 if EXPR is an integer constant other than zero or a
@@ -2083,8 +2149,7 @@ integer_nonzerop (const_tree expr)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == INTEGER_CST
-	   && (TREE_INT_CST_LOW (expr) != 0
-	       || TREE_INT_CST_HIGH (expr) != 0))
+	   && !wi::eq_p (expr, 0))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && (integer_nonzerop (TREE_REALPART (expr))
 		  || integer_nonzerop (TREE_IMAGPART (expr)))));
@@ -2105,34 +2170,12 @@ fixed_zerop (const_tree expr)
 int
 tree_log2 (const_tree expr)
 {
-  int prec;
-  HOST_WIDE_INT high, low;
-
   STRIP_NOPS (expr);
 
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
-  prec = TYPE_PRECISION (TREE_TYPE (expr));
-  high = TREE_INT_CST_HIGH (expr);
-  low = TREE_INT_CST_LOW (expr);
-
-  /* First clear all bits that are beyond the type's precision in case
-     we've been sign extended.  */
-
-  if (prec == HOST_BITS_PER_DOUBLE_INT)
-    ;
-  else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
-  else
-    {
-      high = 0;
-      if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~(HOST_WIDE_INT_M1U << prec);
-    }
-
-  return (high != 0 ? HOST_BITS_PER_WIDE_INT + exact_log2 (high)
-	  : exact_log2 (low));
+  return wi::exact_log2 (expr);
 }
 
 /* Similar, but return the largest integer Y such that 2 ** Y is less
@@ -2141,35 +2184,12 @@ tree_log2 (const_tree expr)
 int
 tree_floor_log2 (const_tree expr)
 {
-  int prec;
-  HOST_WIDE_INT high, low;
-
   STRIP_NOPS (expr);
 
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
-  prec = TYPE_PRECISION (TREE_TYPE (expr));
-  high = TREE_INT_CST_HIGH (expr);
-  low = TREE_INT_CST_LOW (expr);
-
-  /* First clear all bits that are beyond the type's precision in case
-     we've been sign extended.  Ignore if type's precision hasn't been set
-     since what we are doing is setting it.  */
-
-  if (prec == HOST_BITS_PER_DOUBLE_INT || prec == 0)
-    ;
-  else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
-  else
-    {
-      high = 0;
-      if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~(HOST_WIDE_INT_M1U << prec);
-    }
-
-  return (high != 0 ? HOST_BITS_PER_WIDE_INT + floor_log2 (high)
-	  : floor_log2 (low));
+  return wi::floor_log2 (expr);
 }
 
 /* Return number of known trailing zero bits in EXPR, or, if the value of
@@ -2186,10 +2206,10 @@ tree_ctz (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      ret1 = tree_to_double_int (expr).trailing_zeros ();
+      ret1 = wi::ctz (expr);
       return MIN (ret1, prec);
     case SSA_NAME:
-      ret1 = get_nonzero_bits (expr).trailing_zeros ();
+      ret1 = wi::ctz (get_nonzero_bits (expr));
       return MIN (ret1, prec);
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -2657,14 +2677,11 @@ int_size_in_bytes (const_tree type)
 
   type = TYPE_MAIN_VARIANT (type);
   t = TYPE_SIZE_UNIT (type);
-  if (t == 0
-      || TREE_CODE (t) != INTEGER_CST
-      || TREE_INT_CST_HIGH (t) != 0
-      /* If the result would appear negative, it's too big to represent.  */
-      || (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0)
-    return -1;
 
-  return TREE_INT_CST_LOW (t);
+  if (t && tree_fits_uhwi_p (t))
+    return TREE_INT_CST_LOW (t);
+  else
+    return -1;
 }
 
 /* Return the maximum size of TYPE (in bytes) as a wide integer
@@ -4312,11 +4329,10 @@ build_simple_mem_ref_loc (location_t loc, tree ptr)
 
 /* Return the constant offset of a MEM_REF or TARGET_MEM_REF tree T.  */
 
-double_int
+offset_int
 mem_ref_offset (const_tree t)
 {
-  tree toff = TREE_OPERAND (t, 1);
-  return tree_to_double_int (toff).sext (TYPE_PRECISION (TREE_TYPE (toff)));
+  return offset_int::from (TREE_OPERAND (t, 1), SIGNED);
 }
 
 /* Return an invariant ADDR_EXPR of type TYPE taking the address of BASE
@@ -4540,6 +4556,8 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
     {
       hashval_t hashcode = 0;
       tree ntype;
+      int i;
+      tree t;
       enum tree_code code = TREE_CODE (ttype);
 
       /* Building a distinct copy of a tagged type is inappropriate; it
@@ -4581,10 +4599,9 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 					      hashcode);
 	  break;
 	case INTEGER_TYPE:
-	  hashcode = iterative_hash_object
-	    (TREE_INT_CST_LOW (TYPE_MAX_VALUE (ntype)), hashcode);
-	  hashcode = iterative_hash_object
-	    (TREE_INT_CST_HIGH (TYPE_MAX_VALUE (ntype)), hashcode);
+	  t = TYPE_MAX_VALUE (ntype);
+	  for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	    hashcode = iterative_hash_object (TREE_INT_CST_ELT (t, i), hashcode);
 	  break;
 	case REAL_TYPE:
 	case FIXED_POINT_TYPE:
@@ -6630,6 +6647,8 @@ type_hash_eq (const void *va, const void *vb)
     case INTEGER_TYPE:
     case REAL_TYPE:
     case BOOLEAN_TYPE:
+      if (TYPE_PRECISION (a->type) != TYPE_PRECISION (b->type))
+	return false;
       return ((TYPE_MAX_VALUE (a->type) == TYPE_MAX_VALUE (b->type)
 	       || tree_int_cst_equal (TYPE_MAX_VALUE (a->type),
 				      TYPE_MAX_VALUE (b->type)))
@@ -6928,52 +6947,10 @@ tree_int_cst_equal (const_tree t1, const_tree t2)
 
   if (TREE_CODE (t1) == INTEGER_CST
       && TREE_CODE (t2) == INTEGER_CST
-      && TREE_INT_CST_LOW (t1) == TREE_INT_CST_LOW (t2)
-      && TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2))
+      && wi::to_widest (t1) == wi::to_widest (t2))
     return 1;
 
   return 0;
-}
-
-/* Nonzero if integer constants T1 and T2 represent values that satisfy <.
-   The precise way of comparison depends on their data type.  */
-
-int
-tree_int_cst_lt (const_tree t1, const_tree t2)
-{
-  if (t1 == t2)
-    return 0;
-
-  if (TYPE_UNSIGNED (TREE_TYPE (t1)) != TYPE_UNSIGNED (TREE_TYPE (t2)))
-    {
-      int t1_sgn = tree_int_cst_sgn (t1);
-      int t2_sgn = tree_int_cst_sgn (t2);
-
-      if (t1_sgn < t2_sgn)
-	return 1;
-      else if (t1_sgn > t2_sgn)
-	return 0;
-      /* Otherwise, both are non-negative, so we compare them as
-	 unsigned just in case one of them would overflow a signed
-	 type.  */
-    }
-  else if (!TYPE_UNSIGNED (TREE_TYPE (t1)))
-    return INT_CST_LT (t1, t2);
-
-  return INT_CST_LT_UNSIGNED (t1, t2);
-}
-
-/* Returns -1 if T1 < T2, 0 if T1 == T2, and 1 if T1 > T2.  */
-
-int
-tree_int_cst_compare (const_tree t1, const_tree t2)
-{
-  if (tree_int_cst_lt (t1, t2))
-    return -1;
-  else if (tree_int_cst_lt (t2, t1))
-    return 1;
-  else
-    return 0;
 }
 
 /* Return true if T is an INTEGER_CST whose numerical value (extended
@@ -6984,11 +6961,7 @@ tree_fits_shwi_p (const_tree t)
 {
   return (t != NULL_TREE
 	  && TREE_CODE (t) == INTEGER_CST
-	  && ((TREE_INT_CST_HIGH (t) == 0
-	       && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) >= 0)
-	      || (TREE_INT_CST_HIGH (t) == -1
-		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0
-		  && !TYPE_UNSIGNED (TREE_TYPE (t)))));
+	  && wi::fits_shwi_p (wi::to_widest (t)));
 }
 
 /* Return true if T is an INTEGER_CST whose numerical value (extended
@@ -6999,7 +6972,7 @@ tree_fits_uhwi_p (const_tree t)
 {
   return (t != NULL_TREE
 	  && TREE_CODE (t) == INTEGER_CST
-	  && TREE_INT_CST_HIGH (t) == 0);
+	  && wi::fits_uhwi_p (wi::to_widest (t)));
 }
 
 /* T is an INTEGER_CST whose numerical value (extended according to
@@ -7030,17 +7003,8 @@ int
 tree_int_cst_sign_bit (const_tree t)
 {
   unsigned bitno = TYPE_PRECISION (TREE_TYPE (t)) - 1;
-  unsigned HOST_WIDE_INT w;
 
-  if (bitno < HOST_BITS_PER_WIDE_INT)
-    w = TREE_INT_CST_LOW (t);
-  else
-    {
-      w = TREE_INT_CST_HIGH (t);
-      bitno -= HOST_BITS_PER_WIDE_INT;
-    }
-
-  return (w >> bitno) & 1;
+  return wi::extract_uhwi (t, bitno, 1);
 }
 
 /* Return an indication of the sign of the integer constant T.
@@ -7050,11 +7014,11 @@ tree_int_cst_sign_bit (const_tree t)
 int
 tree_int_cst_sgn (const_tree t)
 {
-  if (TREE_INT_CST_LOW (t) == 0 && TREE_INT_CST_HIGH (t) == 0)
+  if (wi::eq_p (t, 0))
     return 0;
   else if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return 1;
-  else if (TREE_INT_CST_HIGH (t) < 0)
+  else if (wi::neg_p (t))
     return -1;
   else
     return 1;
@@ -7064,7 +7028,7 @@ tree_int_cst_sgn (const_tree t)
    signed or unsigned type, UNSIGNEDP says which.  */
 
 unsigned int
-tree_int_cst_min_precision (tree value, bool unsignedp)
+tree_int_cst_min_precision (tree value, signop sgn)
 {
   /* If the value is negative, compute its negative minus 1.  The latter
      adjustment is because the absolute value of the largest negative value
@@ -7082,7 +7046,7 @@ tree_int_cst_min_precision (tree value, bool unsignedp)
   if (integer_zerop (value))
     return 1;
   else
-    return tree_floor_log2 (value) + 1 + !unsignedp;
+    return tree_floor_log2 (value) + 1 + (sgn == SIGNED ? 1 : 0) ;
 }
 
 /* Return truthvalue of whether T1 is the same tree structure as T2.
@@ -7125,8 +7089,7 @@ simple_cst_equal (const_tree t1, const_tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return (TREE_INT_CST_LOW (t1) == TREE_INT_CST_LOW (t2)
-	      && TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2));
+      return wi::to_widest (t1) == wi::to_widest (t2);
 
     case REAL_CST:
       return REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
@@ -7262,7 +7225,7 @@ compare_tree_int (const_tree t, unsigned HOST_WIDE_INT u)
 {
   if (tree_int_cst_sgn (t) < 0)
     return -1;
-  else if (TREE_INT_CST_HIGH (t) != 0)
+  else if (!tree_fits_uhwi_p (t))
     return 1;
   else if (TREE_INT_CST_LOW (t) == u)
     return 0;
@@ -7398,8 +7361,9 @@ iterative_hash_expr (const_tree t, hashval_t val)
     /* Alas, constants aren't shared, so we can't rely on pointer
        identity.  */
     case INTEGER_CST:
-      val = iterative_hash_host_wide_int (TREE_INT_CST_LOW (t), val);
-      return iterative_hash_host_wide_int (TREE_INT_CST_HIGH (t), val);
+      for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	val = iterative_hash_host_wide_int (TREE_INT_CST_ELT (t, i), val);
+      return val;
     case REAL_CST:
       {
 	unsigned int val2 = real_hash (TREE_REAL_CST_PTR (t));
@@ -8547,11 +8511,8 @@ bool
 int_fits_type_p (const_tree c, const_tree type)
 {
   tree type_low_bound, type_high_bound;
-  bool ok_for_low_bound, ok_for_high_bound, unsc;
-  double_int dc, dd;
-
-  dc = tree_to_double_int (c);
-  unsc = TYPE_UNSIGNED (TREE_TYPE (c));
+  bool ok_for_low_bound, ok_for_high_bound;
+  signop sgn_c = TYPE_SIGN (TREE_TYPE (c));
 
 retry:
   type_low_bound = TYPE_MIN_VALUE (type);
@@ -8560,7 +8521,7 @@ retry:
   /* If at least one bound of the type is a constant integer, we can check
      ourselves and maybe make a decision. If no such decision is possible, but
      this type is a subtype, try checking against that.  Otherwise, use
-     double_int_fits_to_tree_p, which checks against the precision.
+     fits_to_tree_p, which checks against the precision.
 
      Compute the status for each possibly constant bound, and return if we see
      one does not match. Use ok_for_xxx_bound for this purpose, assigning -1
@@ -8570,18 +8531,7 @@ retry:
   /* Check if c >= type_low_bound.  */
   if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
     {
-      dd = tree_to_double_int (type_low_bound);
-      if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_low_bound)))
-	{
-	  int c_neg = (!unsc && dc.is_negative ());
-	  int t_neg = (unsc && dd.is_negative ());
-
-	  if (c_neg && !t_neg)
-	    return false;
-	  if ((c_neg || !t_neg) && dc.ult (dd))
-	    return false;
-	}
-      else if (dc.cmp (dd, unsc) < 0)
+      if (tree_int_cst_lt (c, type_low_bound))
 	return false;
       ok_for_low_bound = true;
     }
@@ -8591,18 +8541,7 @@ retry:
   /* Check if c <= type_high_bound.  */
   if (type_high_bound && TREE_CODE (type_high_bound) == INTEGER_CST)
     {
-      dd = tree_to_double_int (type_high_bound);
-      if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_high_bound)))
-	{
-	  int c_neg = (!unsc && dc.is_negative ());
-	  int t_neg = (unsc && dd.is_negative ());
-
-	  if (t_neg && !c_neg)
-	    return false;
-	  if ((t_neg || !c_neg) && dc.ugt (dd))
-	    return false;
-	}
-      else if (dc.cmp (dd, unsc) > 0)
+      if (tree_int_cst_lt (type_high_bound, c))
 	return false;
       ok_for_high_bound = true;
     }
@@ -8616,7 +8555,7 @@ retry:
   /* Perform some generic filtering which may allow making a decision
      even if the bounds are not constant.  First, negative integers
      never fit in unsigned types, */
-  if (TYPE_UNSIGNED (type) && !unsc && dc.is_negative ())
+  if (TYPE_UNSIGNED (type) && sgn_c == SIGNED && wi::neg_p (c))
     return false;
 
   /* Second, narrower types always fit in wider ones.  */
@@ -8624,16 +8563,21 @@ retry:
     return true;
 
   /* Third, unsigned integers with top bit set never fit signed types.  */
-  if (! TYPE_UNSIGNED (type) && unsc)
+  if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED)
     {
       int prec = GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (c))) - 1;
-      if (prec < HOST_BITS_PER_WIDE_INT)
+      if (prec < TYPE_PRECISION (TREE_TYPE (c)))
 	{
-	  if (((((unsigned HOST_WIDE_INT) 1) << prec) & dc.low) != 0)
+	  /* When a tree_cst is converted to a wide-int, the precision
+	     is taken from the type.  However, if the precision of the
+	     mode underneath the type is smaller than that, it is
+	     possible that the value will not fit.  The test below
+	     fails if any bit is set between the sign bit of the
+	     underlying mode and the top bit of the type.  */
+	  if (wi::ne_p (wi::zext (c, prec - 1), c))
 	    return false;
-        }
-      else if (((((unsigned HOST_WIDE_INT) 1)
-		 << (prec - HOST_BITS_PER_WIDE_INT)) & dc.high) != 0)
+	}
+      else if (wi::neg_p (c))
 	return false;
     }
 
@@ -8648,8 +8592,8 @@ retry:
       goto retry;
     }
 
-  /* Or to double_int_fits_to_tree_p, if nothing else.  */
-  return double_int_fits_to_tree_p (type, dc);
+  /* Or to fits_to_tree_p, if nothing else.  */
+  return wi::fits_to_tree_p (c, type);
 }
 
 /* Stores bounds of an integer TYPE in MIN and MAX.  If TYPE has non-constant
@@ -8662,33 +8606,25 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
 {
   if (!POINTER_TYPE_P (type) && TYPE_MIN_VALUE (type)
       && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
-    mpz_set_double_int (min, tree_to_double_int (TYPE_MIN_VALUE (type)),
-			TYPE_UNSIGNED (type));
+    wi::to_mpz (TYPE_MIN_VALUE (type), min, TYPE_SIGN (type));
   else
     {
       if (TYPE_UNSIGNED (type))
 	mpz_set_ui (min, 0);
       else
 	{
-	  double_int mn;
-	  mn = double_int::mask (TYPE_PRECISION (type) - 1);
-	  mn = (mn + double_int_one).sext (TYPE_PRECISION (type));
-	  mpz_set_double_int (min, mn, false);
+	  wide_int mn = wi::min_value (TYPE_PRECISION (type), SIGNED);
+	  wi::to_mpz (mn, min, SIGNED);
 	}
     }
 
   if (!POINTER_TYPE_P (type) && TYPE_MAX_VALUE (type)
       && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
-    mpz_set_double_int (max, tree_to_double_int (TYPE_MAX_VALUE (type)),
-			TYPE_UNSIGNED (type));
+    wi::to_mpz (TYPE_MAX_VALUE (type), max, TYPE_SIGN (type));
   else
     {
-      if (TYPE_UNSIGNED (type))
-	mpz_set_double_int (max, double_int::mask (TYPE_PRECISION (type)),
-			    true);
-      else
-	mpz_set_double_int (max, double_int::mask (TYPE_PRECISION (type) - 1),
-			    true);
+      wide_int mn = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      wi::to_mpz (mn, max, TYPE_SIGN (type));
     }
 }
 
@@ -9357,6 +9293,18 @@ tree_contains_struct_check_failed (const_tree node,
    (dynamically sized) vector.  */
 
 void
+tree_int_cst_elt_check_failed (int idx, int len, const char *file, int line,
+			       const char *function)
+{
+  internal_error
+    ("tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d",
+     idx + 1, len, function, trim_filename (file), line);
+}
+
+/* Similar to above, except that the check is for the bounds of a TREE_VEC's
+   (dynamically sized) vector.  */
+
+void
 tree_vec_elt_check_failed (int idx, int len, const char *file, int line,
 			   const char *function)
 {
@@ -9607,13 +9555,11 @@ build_common_tree_nodes (bool signed_char, bool short_double)
 #endif
 
   /* Define a boolean type.  This type only represents boolean values but
-     may be larger than char depending on the value of BOOL_TYPE_SIZE.
-     Front ends which want to override this size (i.e. Java) can redefine
-     boolean_type_node before calling build_common_tree_nodes_2.  */
+     may be larger than char depending on the value of BOOL_TYPE_SIZE.  */
   boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
   TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
-  TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
   TYPE_PRECISION (boolean_type_node) = 1;
+  TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
 
   /* Define what type to use for size_t.  */
   if (strcmp (SIZE_TYPE, "unsigned int") == 0)
@@ -10509,8 +10455,7 @@ int_cst_value (const_tree x)
   unsigned HOST_WIDE_INT val = TREE_INT_CST_LOW (x);
 
   /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
-  gcc_assert (TREE_INT_CST_HIGH (x) == 0
-	      || TREE_INT_CST_HIGH (x) == -1);
+  gcc_assert (cst_and_fits_in_hwi (x));
 
   if (bits < HOST_BITS_PER_WIDE_INT)
     {
@@ -10534,12 +10479,16 @@ widest_int_cst_value (const_tree x)
 
 #if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
   gcc_assert (HOST_BITS_PER_WIDEST_INT >= HOST_BITS_PER_DOUBLE_INT);
-  val |= (((unsigned HOST_WIDEST_INT) TREE_INT_CST_HIGH (x))
-	  << HOST_BITS_PER_WIDE_INT);
+  gcc_assert (TREE_INT_CST_NUNITS (x) == 2);
+
+  if (TREE_INT_CST_NUNITS (x) == 1)
+    val = HOST_WIDE_INT (val);
+  else
+    val |= (((unsigned HOST_WIDEST_INT) TREE_INT_CST_ELT (x, 1))
+	    << HOST_BITS_PER_WIDE_INT);
 #else
   /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
-  gcc_assert (TREE_INT_CST_HIGH (x) == 0
-	      || TREE_INT_CST_HIGH (x) == -1);
+  gcc_assert (TREE_INT_CST_NUNITS (x) == 1);
 #endif
 
   if (bits < HOST_BITS_PER_WIDEST_INT)
@@ -10625,7 +10574,6 @@ truth_type_for (tree type)
 tree
 upper_bound_in_type (tree outer, tree inner)
 {
-  double_int high;
   unsigned int det = 0;
   unsigned oprec = TYPE_PRECISION (outer);
   unsigned iprec = TYPE_PRECISION (inner);
@@ -10669,21 +10617,8 @@ upper_bound_in_type (tree outer, tree inner)
       gcc_unreachable ();
     }
 
-  /* Compute 2^^prec - 1.  */
-  if (prec <= HOST_BITS_PER_WIDE_INT)
-    {
-      high.high = 0;
-      high.low = ((~(unsigned HOST_WIDE_INT) 0)
-	    >> (HOST_BITS_PER_WIDE_INT - prec));
-    }
-  else
-    {
-      high.high = ((~(unsigned HOST_WIDE_INT) 0)
-	    >> (HOST_BITS_PER_DOUBLE_INT - prec));
-      high.low = ~(unsigned HOST_WIDE_INT) 0;
-    }
-
-  return double_int_to_tree (outer, high);
+  return wide_int_to_tree (outer,
+			   wi::mask (prec, false, TYPE_PRECISION (outer)));
 }
 
 /* Returns the smallest value obtainable by casting something in INNER type to
@@ -10692,7 +10627,6 @@ upper_bound_in_type (tree outer, tree inner)
 tree
 lower_bound_in_type (tree outer, tree inner)
 {
-  double_int low;
   unsigned oprec = TYPE_PRECISION (outer);
   unsigned iprec = TYPE_PRECISION (inner);
 
@@ -10703,7 +10637,7 @@ lower_bound_in_type (tree outer, tree inner)
 	 contains all values of INNER type.  In particular, both INNER
 	 and OUTER types have zero in common.  */
       || (oprec > iprec && TYPE_UNSIGNED (inner)))
-    low.low = low.high = 0;
+    return build_int_cst (outer, 0);
   else
     {
       /* If we are widening a signed type to another signed type, we
@@ -10711,21 +10645,10 @@ lower_bound_in_type (tree outer, tree inner)
 	 precision or narrowing to a signed type, we want to obtain
 	 -2^(oprec-1).  */
       unsigned prec = oprec > iprec ? iprec : oprec;
-
-      if (prec <= HOST_BITS_PER_WIDE_INT)
-	{
-	  low.high = ~(unsigned HOST_WIDE_INT) 0;
-	  low.low = (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
-	}
-      else
-	{
-	  low.high = ((~(unsigned HOST_WIDE_INT) 0)
-		<< (prec - HOST_BITS_PER_WIDE_INT - 1));
-	  low.low = 0;
-	}
+      return wide_int_to_tree (outer,
+			       wi::mask (prec - 1, true,
+					 TYPE_PRECISION (outer)));
     }
-
-  return double_int_to_tree (outer, low);
 }
 
 /* Return nonzero if two operands that are suitable for PHI nodes are
@@ -10744,42 +10667,12 @@ operand_equal_for_phi_arg_p (const_tree arg0, const_tree arg1)
   return operand_equal_p (arg0, arg1, 0);
 }
 
-/* Returns number of zeros at the end of binary representation of X.
-
-   ??? Use ffs if available?  */
+/* Returns number of zeros at the end of binary representation of X.  */
 
 tree
 num_ending_zeros (const_tree x)
 {
-  unsigned HOST_WIDE_INT fr, nfr;
-  unsigned num, abits;
-  tree type = TREE_TYPE (x);
-
-  if (TREE_INT_CST_LOW (x) == 0)
-    {
-      num = HOST_BITS_PER_WIDE_INT;
-      fr = TREE_INT_CST_HIGH (x);
-    }
-  else
-    {
-      num = 0;
-      fr = TREE_INT_CST_LOW (x);
-    }
-
-  for (abits = HOST_BITS_PER_WIDE_INT / 2; abits; abits /= 2)
-    {
-      nfr = fr >> abits;
-      if (nfr << abits == fr)
-	{
-	  num += abits;
-	  fr = nfr;
-	}
-    }
-
-  if (num > TYPE_PRECISION (type))
-    num = TYPE_PRECISION (type);
-
-  return build_int_cst_type (type, num);
+  return build_int_cst (TREE_TYPE (x), wi::ctz (x));
 }
 
 
@@ -12320,8 +12213,7 @@ drop_tree_overflow (tree t)
 
   /* For tree codes with a sharing machinery re-build the result.  */
   if (TREE_CODE (t) == INTEGER_CST)
-    return build_int_cst_wide (TREE_TYPE (t),
-			       TREE_INT_CST_LOW (t), TREE_INT_CST_HIGH (t));
+    return wide_int_to_tree (TREE_TYPE (t), t);
 
   /* Otherwise, as all tcc_constants are possibly shared, copy the node
      and drop the flag.  */

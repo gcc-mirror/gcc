@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "value-prof.h"
 #include "predict.h"
+#include "wide-int-print.h"
 
 #include <new>                           // For placement-new.
 
@@ -1238,9 +1239,22 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
 	  pp_string (buffer, "B"); /* pseudo-unit */
 	}
+      else if (tree_fits_shwi_p (node))
+	pp_wide_integer (buffer, tree_to_shwi (node));
+      else if (tree_fits_uhwi_p (node))
+	pp_unsigned_wide_integer (buffer, tree_to_uhwi (node));
       else
-	pp_double_int (buffer, tree_to_double_int (node),
-		       TYPE_UNSIGNED (TREE_TYPE (node)));
+	{
+	  wide_int val = node;
+
+	  if (wi::neg_p (val, TYPE_SIGN (TREE_TYPE (node))))
+	    {
+	      pp_minus (buffer);
+	      val = -val;
+	    }
+	  print_hex (val, pp_buffer (buffer)->digit_buffer);
+	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
+	}
       if (TREE_OVERFLOW (node))
 	pp_string (buffer, "(OVF)");
       break;
@@ -1489,7 +1503,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	tree field, val;
 	bool is_struct_init = false;
 	bool is_array_init = false;
-	double_int curidx = double_int_zero;
+	widest_int curidx;
 	pp_left_brace (buffer);
 	if (TREE_CLOBBER_P (node))
 	  pp_string (buffer, "CLOBBER");
@@ -1504,7 +1518,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  {
 	    tree minv = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (node)));
 	    is_array_init = true;
-	    curidx = tree_to_double_int (minv);
+	    curidx = wi::to_widest (minv);
 	  }
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node), ix, field, val)
 	  {
@@ -1518,7 +1532,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		  }
 		else if (is_array_init
 			 && (TREE_CODE (field) != INTEGER_CST
-			     || tree_to_double_int (field) != curidx))
+			     || curidx != wi::to_widest (field)))
 		  {
 		    pp_left_bracket (buffer);
 		    if (TREE_CODE (field) == RANGE_EXPR)
@@ -1529,17 +1543,17 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 			dump_generic_node (buffer, TREE_OPERAND (field, 1), spc,
 					   flags, false);
 			if (TREE_CODE (TREE_OPERAND (field, 1)) == INTEGER_CST)
-			  curidx = tree_to_double_int (TREE_OPERAND (field, 1));
+			  curidx = wi::to_widest (TREE_OPERAND (field, 1));
 		      }
 		    else
 		      dump_generic_node (buffer, field, spc, flags, false);
 		    if (TREE_CODE (field) == INTEGER_CST)
-		      curidx = tree_to_double_int (field);
+		      curidx = wi::to_widest (field);
 		    pp_string (buffer, "]=");
 		  }
 	      }
             if (is_array_init)
-	      curidx += double_int_one;
+	      curidx += 1;
 	    if (val && TREE_CODE (val) == ADDR_EXPR)
 	      if (TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL)
 		val = TREE_OPERAND (val, 0);

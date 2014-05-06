@@ -38,7 +38,7 @@ void decimal_real_convert (REAL_VALUE_TYPE *, enum machine_mode, const REAL_VALU
 void decimal_real_to_decimal (char *, const REAL_VALUE_TYPE *, size_t, size_t, int);
 void decimal_do_fix_trunc (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 void decimal_real_maxval (REAL_VALUE_TYPE *, int, enum machine_mode);
-void decimal_real_to_integer2 (HOST_WIDE_INT *, HOST_WIDE_INT *, const REAL_VALUE_TYPE *);
+wide_int decimal_real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
 HOST_WIDE_INT decimal_real_to_integer (const REAL_VALUE_TYPE *);
 
 #ifdef TREE_CODE

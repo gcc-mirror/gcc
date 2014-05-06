@@ -612,7 +612,7 @@ write_one_predicate_function (struct pred_data *p)
   add_mode_tests (p);
 
   /* A normal predicate can legitimately not look at enum machine_mode
-     if it accepts only CONST_INTs and/or CONST_DOUBLEs.  */
+     if it accepts only CONST_INTs and/or CONST_WIDE_INT and/or CONST_DOUBLEs.  */
   printf ("int\n%s (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)\n{\n",
 	  p->name);
   write_predicate_stmts (p->exp);
@@ -1075,12 +1075,17 @@ write_tm_constrs_h (void)
 	if (needs_ival)
 	  puts ("  if (CONST_INT_P (op))\n"
 		"    ival = INTVAL (op);");
+#if TARGET_SUPPORTS_WIDE_INT
+	if (needs_lval || needs_hval)
+	  error ("you can't use lval or hval");
+#else
 	if (needs_hval)
 	  puts ("  if (GET_CODE (op) == CONST_DOUBLE && mode == VOIDmode)"
 		"    hval = CONST_DOUBLE_HIGH (op);");
 	if (needs_lval)
 	  puts ("  if (GET_CODE (op) == CONST_DOUBLE && mode == VOIDmode)"
 		"    lval = CONST_DOUBLE_LOW (op);");
+#endif
 	if (needs_rval)
 	  puts ("  if (GET_CODE (op) == CONST_DOUBLE && mode != VOIDmode)"
 		"    rval = CONST_DOUBLE_REAL_VALUE (op);");

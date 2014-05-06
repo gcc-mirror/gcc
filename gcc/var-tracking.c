@@ -3555,6 +3555,23 @@ loc_cmp (rtx x, rtx y)
       default:
 	gcc_unreachable ();
       }
+  if (CONST_WIDE_INT_P (x))
+    {
+      /* Compare the vector length first.  */
+      if (CONST_WIDE_INT_NUNITS (x) >= CONST_WIDE_INT_NUNITS (y))
+	return 1;
+      else if (CONST_WIDE_INT_NUNITS (x) < CONST_WIDE_INT_NUNITS (y))
+	return -1;
+
+      /* Compare the vectors elements.  */;
+      for (j = CONST_WIDE_INT_NUNITS (x) - 1; j >= 0 ; j--)
+	{
+	  if (CONST_WIDE_INT_ELT (x, j) < CONST_WIDE_INT_ELT (y, j))
+	    return -1;
+	  if (CONST_WIDE_INT_ELT (x, j) > CONST_WIDE_INT_ELT (y, j))
+	    return 1;
+	}
+    }
 
   return 0;
 }

@@ -152,8 +152,9 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_int_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
-  TREE_INT_CST_LOW (expr) = bp_unpack_var_len_unsigned (bp);
-  TREE_INT_CST_HIGH (expr) = bp_unpack_var_len_int (bp);
+  int i;
+  for (i = 0; i < TREE_INT_CST_EXT_NUNITS (expr); i++)
+    TREE_INT_CST_ELT (expr, i) = bp_unpack_var_len_int (bp);
 }
 
 
@@ -602,6 +603,12 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
     {
       unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
       result = make_tree_binfo (len);
+    }
+  else if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+    {
+      unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
+      unsigned HOST_WIDE_INT ext_len = streamer_read_uhwi (ib);
+      result = make_int_cst (len, ext_len);
     }
   else if (code == CALL_EXPR)
     {

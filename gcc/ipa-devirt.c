@@ -1362,7 +1362,7 @@ get_polymorphic_call_info (tree fndecl,
 		{
 		  base_pointer = TREE_OPERAND (base, 0);
 		  context->offset
-		     += offset2 + mem_ref_offset (base).low * BITS_PER_UNIT;
+		    += offset2 + mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
 		  context->outer_type = NULL;
 		}
 	      /* We found base object.  In this case the outer_type

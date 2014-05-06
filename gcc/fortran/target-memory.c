@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "trans-types.h"
 #include "target-memory.h"
+#include "wide-int.h"
 
 /* --------------------------------------------------------------- */
 /* Calculate the size of an expression.  */
@@ -430,7 +431,7 @@ gfc_interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
 {
   tree t = native_interpret_expr (gfc_get_logical_type (kind), buffer,
 				  buffer_size);
-  *logical = tree_to_double_int (t).is_zero () ? 0 : 1;
+  *logical = wi::eq_p (t, 0) ? 0 : 1;
   return size_logical (kind);
 }
 
