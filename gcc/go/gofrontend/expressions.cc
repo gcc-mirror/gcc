@@ -760,16 +760,24 @@ Var_expression::do_get_tree(Translate_context* context)
 							  context->function());
   bool is_in_heap;
   Location loc = this->location();
+  Btype* btype;
+  Gogo* gogo = context->gogo();
   if (this->variable_->is_variable())
-    is_in_heap = this->variable_->var_value()->is_in_heap();
+    {
+      is_in_heap = this->variable_->var_value()->is_in_heap();
+      btype = this->variable_->var_value()->type()->get_backend(gogo);
+    }
   else if (this->variable_->is_result_variable())
-    is_in_heap = this->variable_->result_var_value()->is_in_heap();
+    {
+      is_in_heap = this->variable_->result_var_value()->is_in_heap();
+      btype = this->variable_->result_var_value()->type()->get_backend(gogo);
+    }
   else
     go_unreachable();
 
   Bexpression* ret = context->backend()->var_expression(bvar, loc);
   if (is_in_heap)
-    ret = context->backend()->indirect_expression(ret, true, loc);
+    ret = context->backend()->indirect_expression(btype, ret, true, loc);
   return expr_to_tree(ret);
 }
 
@@ -4105,20 +4113,47 @@ Unary_expression::do_get_tree(Translate_context* context)
 	    }
 	}
 
-      if (this->is_gc_root_)
+      static unsigned int counter;
+      char buf[100];
+      if (this->is_gc_root_ || this->is_slice_init_)
 	{
-	  // Build a decl for a GC root variable.  GC roots are mutable, so they
-	  // cannot be represented as an immutable_struct in the backend.
-	  Bvariable* gc_root = gogo->backend()->gc_root_variable(btype, bexpr);
-	  bexpr = gogo->backend()->var_expression(gc_root, loc);
+	  bool copy_to_heap = false;
+	  if (this->is_gc_root_)
+	    {
+	      // Build a decl for a GC root variable.  GC roots are mutable, so
+	      // they cannot be represented as an immutable_struct in the
+	      // backend.
+	      static unsigned int root_counter;
+	      snprintf(buf, sizeof buf, "gc%u", root_counter);
+	      ++root_counter;
+	    }
+	  else
+	    {
+	      // Build a decl for a slice value initializer.  An immutable slice
+	      // value initializer may have to be copied to the heap if it
+	      // contains pointers in a non-constant context.
+	      snprintf(buf, sizeof buf, "C%u", counter);
+	      ++counter;
+
+	      Array_type* at = this->expr_->type()->array_type();
+	      go_assert(at != NULL);
+
+	      // If we are not copying the value to the heap, we will only
+	      // initialize the value once, so we can use this directly
+	      // rather than copying it.  In that case we can't make it
+	      // read-only, because the program is permitted to change it.
+	      copy_to_heap = (at->element_type()->has_pointer()
+			      && !context->is_const());
+	    }
+	  Bvariable* implicit =
+	    gogo->backend()->implicit_variable(buf, btype, bexpr, copy_to_heap);
+	  bexpr = gogo->backend()->var_expression(implicit, loc);
 	}
       else if ((this->expr_->is_composite_literal()
            || this->expr_->string_expression() != NULL)
           && this->expr_->is_immutable())
         {
 	  // Build a decl for a constant constructor.
-          static unsigned int counter;
-          char buf[100];
           snprintf(buf, sizeof buf, "C%u", counter);
           ++counter;
 
@@ -4168,20 +4203,7 @@ Unary_expression::do_get_tree(Translate_context* context)
 
 	      }
 	  }
-
-	// If the type of EXPR is a recursive pointer type, then we
-	// need to insert a cast before indirecting.
-        tree expr = expr_to_tree(bexpr);
-        tree target_type_tree = TREE_TYPE(TREE_TYPE(expr));
-        if (VOID_TYPE_P(target_type_tree))
-          {
-            tree ind = type_to_tree(pbtype);
-            expr = fold_convert_loc(loc.gcc_location(),
-                                    build_pointer_type(ind), expr);
-            bexpr = tree_to_expr(expr);
-          }
-
-        ret = gogo->backend()->indirect_expression(bexpr, false, loc);
+        ret = gogo->backend()->indirect_expression(pbtype, bexpr, false, loc);
       }
       break;
 
@@ -5410,7 +5432,7 @@ Binary_expression::lower_compare_to_memcmp(Gogo*, Statement_inserter* inserter)
 }
 
 Expression*
-Binary_expression::do_flatten(Gogo*, Named_object*,
+Binary_expression::do_flatten(Gogo* gogo, Named_object*,
                               Statement_inserter* inserter)
 {
   Location loc = this->location();
@@ -5440,11 +5462,9 @@ Binary_expression::do_flatten(Gogo*, Named_object*,
                       left_type->integer_type() != NULL)
                      || this->op_ == OPERATOR_MOD);
 
-  // FIXME: go_check_divide_zero and go_check_divide_overflow are globals
-  // defined in gcc/go/lang.opt.  These should be defined in go_create_gogo
-  // and accessed from the Gogo* passed to do_flatten.
   if (is_shift_op
-      || (is_idiv_op && (go_check_divide_zero || go_check_divide_overflow)))
+      || (is_idiv_op
+	  && (gogo->check_divide_by_zero() || gogo->check_divide_overflow())))
     {
       if (!this->left_->is_variable())
         {
@@ -6024,7 +6044,7 @@ Binary_expression::do_get_tree(Translate_context* context)
   // Add checks for division by zero and division overflow as needed.
   if (is_idiv_op)
     {
-      if (go_check_divide_zero)
+      if (gogo->check_divide_by_zero())
 	{
 	  // right == 0
           Bexpression* zero_expr =
@@ -6043,7 +6063,7 @@ Binary_expression::do_get_tree(Translate_context* context)
                                                         crash_expr, ret, loc);
 	}
 
-      if (go_check_divide_overflow)
+      if (gogo->check_divide_overflow())
 	{
 	  // right == -1
 	  // FIXME: It would be nice to say that this test is expected
@@ -10329,7 +10349,10 @@ Array_index_expression::do_get_tree(Translate_context* context)
               array_type->get_value_pointer(gogo, this->array_);
 	  Bexpression* ptr = tree_to_expr(valptr->get_tree(context));
           ptr = gogo->backend()->pointer_offset_expression(ptr, start, loc);
-	  ret = gogo->backend()->indirect_expression(ptr, true, loc);
+
+	  Type* ele_type = this->array_->type()->array_type()->element_type();
+	  Btype* ele_btype = ele_type->get_backend(gogo);
+	  ret = gogo->backend()->indirect_expression(ele_btype, ptr, true, loc);
 	}
       return expr_to_tree(ret);
     }
@@ -10667,7 +10690,9 @@ String_index_expression::do_get_tree(Translate_context* context)
       Bexpression* bstart = tree_to_expr(start->get_tree(context));
       Bexpression* ptr = tree_to_expr(bytes->get_tree(context));
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
-      Bexpression* index = gogo->backend()->indirect_expression(ptr, true, loc);
+      Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
+      Bexpression* index = 
+	gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
 
       Btype* byte_btype = bytes->type()->points_to()->get_backend(gogo);
       Bexpression* index_error = tree_to_expr(bad_index->get_tree(context));
@@ -12450,6 +12475,7 @@ Slice_construction_expression::do_get_tree(Translate_context* context)
       return error_mark_node;
     }
 
+  Location loc = this->location();
   Type* element_type = array_type->element_type();
   if (this->valtype_ == NULL)
     {
@@ -12464,35 +12490,24 @@ Slice_construction_expression::do_get_tree(Translate_context* context)
           else
             mpz_init_set_ui(lenval, this->indexes()->back() + 1);
         }
-      Location loc = this->location();
       Type* int_type = Type::lookup_integer_type("int");
       length = Expression::make_integer(&lenval, int_type, loc);
       mpz_clear(lenval);
       this->valtype_ = Type::make_array_type(element_type, length);
     }
 
-  tree values;
-  Gogo* gogo = context->gogo();
-  Btype* val_btype = this->valtype_->get_backend(gogo);
+  Expression_list* vals = this->vals();
   if (this->vals() == NULL || this->vals()->empty())
     {
-      // We need to create a unique value.
-      Btype* int_btype = Type::lookup_integer_type("int")->get_backend(gogo);
-      Bexpression* zero = gogo->backend()->zero_expression(int_btype);
-      std::vector<unsigned long> index(1, 0);
-      std::vector<Bexpression*> val(1, zero);
-      Bexpression* ctor =
-	gogo->backend()->array_constructor_expression(val_btype, index, val,
-						      this->location());
-      values = expr_to_tree(ctor);
+      // We need to create a unique value for the empty array literal.
+      vals = new Expression_list;
+      vals->push_back(NULL);
     }
-  else
-    values = expr_to_tree(this->get_constructor(context, val_btype));
+  Expression* array_val =
+    new Fixed_array_construction_expression(this->valtype_, this->indexes(),
+					    vals, loc);
 
-  if (values == error_mark_node)
-    return error_mark_node;
-
-  bool is_constant_initializer = TREE_CONSTANT(values);
+  bool is_constant_initializer = array_val->is_immutable();
 
   // We have to copy the initial values into heap memory if we are in
   // a function or if the values are not constants.  We also have to
@@ -12503,89 +12518,22 @@ Slice_construction_expression::do_get_tree(Translate_context* context)
 		       || (element_type->has_pointer()
 			   && !context->is_const()));
 
-  if (is_constant_initializer)
-    {
-      tree tmp = build_decl(this->location().gcc_location(), VAR_DECL,
-			    create_tmp_var_name("C"), TREE_TYPE(values));
-      DECL_EXTERNAL(tmp) = 0;
-      TREE_PUBLIC(tmp) = 0;
-      TREE_STATIC(tmp) = 1;
-      DECL_ARTIFICIAL(tmp) = 1;
-      if (copy_to_heap)
-	{
-	  // If we are not copying the value to the heap, we will only
-	  // initialize the value once, so we can use this directly
-	  // rather than copying it.  In that case we can't make it
-	  // read-only, because the program is permitted to change it.
-	  TREE_READONLY(tmp) = 1;
-	  TREE_CONSTANT(tmp) = 1;
-	}
-      DECL_INITIAL(tmp) = values;
-      rest_of_decl_compilation(tmp, 1, 0);
-      values = tmp;
-    }
-
-  tree space;
-  tree set;
+  Expression* space;
   if (!copy_to_heap)
     {
-      // the initializer will only run once.
-      space = build_fold_addr_expr(values);
-      set = NULL_TREE;
+      // The initializer will only run once.
+      space = Expression::make_unary(OPERATOR_AND, array_val, loc);
+      space->unary_expression()->set_is_slice_init();
     }
   else
-    {
-      Expression* alloc =
-          context->gogo()->allocate_memory(this->valtype_, this->location());
-      space = save_expr(alloc->get_tree(context));
-
-      tree s = fold_convert(build_pointer_type(TREE_TYPE(values)), space);
-      tree ref = build_fold_indirect_ref_loc(this->location().gcc_location(),
-                                             s);
-      TREE_THIS_NOTRAP(ref) = 1;
-      set = build2(MODIFY_EXPR, void_type_node, ref, values);
-    }
+    space = Expression::make_heap_expression(array_val, loc);
 
   // Build a constructor for the slice.
 
-  tree type_tree = type_to_tree(this->type()->get_backend(context->gogo()));
-  if (type_tree == error_mark_node)
-    return error_mark_node;
-  go_assert(TREE_CODE(type_tree) == RECORD_TYPE);
-
-  vec<constructor_elt, va_gc> *init;
-  vec_alloc(init, 3);
-
-  constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = init->quick_push(empty);
-  tree field = TYPE_FIELDS(type_tree);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
-  elt->index = field;
-  elt->value = fold_convert(TREE_TYPE(field), space);
-
-  tree length_tree = this->valtype_->array_type()->length()->get_tree(context);
-  elt = init->quick_push(empty);
-  field = DECL_CHAIN(field);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__count") == 0);
-  elt->index = field;
-  elt->value = fold_convert(TREE_TYPE(field), length_tree);
-
-  elt = init->quick_push(empty);
-  field = DECL_CHAIN(field);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),"__capacity") == 0);
-  elt->index = field;
-  elt->value = fold_convert(TREE_TYPE(field), length_tree);
-
-  tree constructor = build_constructor(type_tree, init);
-  if (constructor == error_mark_node)
-    return error_mark_node;
-  if (!copy_to_heap)
-    TREE_CONSTANT(constructor) = 1;
-
-  if (set == NULL_TREE)
-    return constructor;
-  else
-    return build2(COMPOUND_EXPR, type_tree, set, constructor);
+  Expression* len = this->valtype_->array_type()->length();
+  Expression* slice_val =
+    Expression::make_slice_value(this->type(), space, len, len, loc);
+  return slice_val->get_tree(context);
 }
 
 // Make a slice composite literal.  This is used by the type
@@ -13816,7 +13764,9 @@ Heap_expression::do_get_tree(Translate_context* context)
     gogo->backend()->temporary_variable(fndecl, context->bblock(), btype,
 					space, true, loc, &decl);
   space = gogo->backend()->var_expression(space_temp, loc);
-  Bexpression* ref = gogo->backend()->indirect_expression(space, true, loc);
+  Btype* expr_btype = this->expr_->type()->get_backend(gogo);
+  Bexpression* ref =
+    gogo->backend()->indirect_expression(expr_btype, space, true, loc);
 
   Bexpression* bexpr = tree_to_expr(this->expr_->get_tree(context));
   Bstatement* assn = gogo->backend()->assignment_statement(ref, bexpr, loc);
@@ -14095,9 +14045,13 @@ Type_info_expression::do_get_tree(Translate_context* context)
     default:
       go_unreachable();
     }
-  tree val_type_tree = type_to_tree(this->type()->get_backend(gogo));
-  go_assert(val_type_tree != error_mark_node);
-  return build_int_cstu(val_type_tree, val);
+  mpz_t cst;
+  mpz_init_set_ui(cst, val);
+  Btype* int_btype = this->type()->get_backend(gogo);
+  Bexpression* ret =
+    gogo->backend()->integer_constant_expression(int_btype, cst);
+  mpz_clear(cst);
+  return expr_to_tree(ret);
 }
 
 // Dump ast representation for a type info expression.
@@ -14796,6 +14750,10 @@ class Struct_field_offset_expression : public Expression
   { }
 
  protected:
+  bool
+  do_is_immutable() const
+  { return true; }
+
   Type*
   do_type()
   { return Type::lookup_integer_type("uintptr"); }

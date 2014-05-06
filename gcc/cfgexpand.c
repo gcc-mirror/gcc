@@ -5558,8 +5558,7 @@ const pass_data pass_data_expand =
     | PROP_gimple_lvec ), /* properties_required */
   PROP_rtl, /* properties_provided */
   ( PROP_ssa | PROP_trees ), /* properties_destroyed */
-  ( TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts ), /* todo_flags_start */
+  0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
 

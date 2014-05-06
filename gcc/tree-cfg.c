@@ -359,7 +359,7 @@ const pass_data pass_data_build_cfg =
   ( PROP_cfg | PROP_loops ), /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_stmts, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_build_cfg : public gimple_opt_pass
@@ -8098,7 +8098,7 @@ const pass_data pass_data_split_crit_edges =
   PROP_no_crit_edges, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_split_crit_edges : public gimple_opt_pass
@@ -8410,7 +8410,7 @@ execute_fixup_cfg (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
-  int todo = gimple_in_ssa_p (cfun) ? TODO_verify_ssa : 0;
+  int todo = 0;
   gcov_type count_scale;
   edge e;
   edge_iterator ei;

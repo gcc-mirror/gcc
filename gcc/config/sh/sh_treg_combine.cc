@@ -600,7 +600,6 @@ const pass_data sh_treg_combine::default_pass_data =
   0,			// properties_destroyed
   0,			// todo_flags_start
   TODO_df_finish | TODO_df_verify	// todo_flags_finish
-  | TODO_verify_rtl_sharing
 };
 
 sh_treg_combine::sh_treg_combine (gcc::context* ctx, bool split_insns,

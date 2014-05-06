@@ -813,7 +813,7 @@ ipa_lower_emutls (void)
   access_vars.release ();
   free_varpool_node_set (tls_vars);
 
-  return TODO_verify_all;
+  return 0;
 }
 
 namespace {

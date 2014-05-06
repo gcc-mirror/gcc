@@ -2357,8 +2357,7 @@ const pass_data pass_data_ccp =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_update_address_taken
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  TODO_update_address_taken, /* todo_flags_finish */
 };
 
 class pass_ccp : public gimple_opt_pass
@@ -2629,7 +2628,7 @@ const pass_data pass_data_fold_builtins =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_update_ssa ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_fold_builtins : public gimple_opt_pass

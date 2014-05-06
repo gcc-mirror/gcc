@@ -1100,7 +1100,7 @@ const pass_data pass_data_tail_recursion =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_tail_recursion : public gimple_opt_pass
@@ -1141,7 +1141,7 @@ const pass_data pass_data_tail_calls =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_tail_calls : public gimple_opt_pass

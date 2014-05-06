@@ -1171,14 +1171,11 @@ class Type
   static tree
   build_receive_return_type(tree type);
 
-  // A hash table we use to avoid infinite recursion.
-  typedef Unordered_set_hash(const Named_type*, Type_hash_identical,
-			     Type_identical) Types_seen;
-
   // Add all methods for TYPE to the list of methods for THIS.
   static void
   add_methods_for_type(const Type* type, const Method::Field_indexes*,
-		       unsigned int depth, bool, bool, Types_seen*,
+		       unsigned int depth, bool, bool,
+		       std::vector<const Named_type*>*,
 		       Methods**);
 
   static void
@@ -1189,7 +1186,8 @@ class Type
   static void
   add_embedded_methods_for_type(const Type* type,
 				const Method::Field_indexes*,
-				unsigned int depth, bool, bool, Types_seen*,
+				unsigned int depth, bool, bool,
+				std::vector<const Named_type*>*,
 				Methods**);
 
   static void
@@ -2305,7 +2303,7 @@ class Array_type : public Type
  public:
   Array_type(Type* element_type, Expression* length)
     : Type(TYPE_ARRAY),
-      element_type_(element_type), length_(length), length_tree_(NULL)
+      element_type_(element_type), length_(length), blength_(NULL)
   { }
 
   // Return the element type.
@@ -2313,7 +2311,7 @@ class Array_type : public Type
   element_type() const
   { return this->element_type_; }
 
-  // Return the length.  This will return NULL for an open array.
+  // Return the length.  This will return NULL for a slice.
   Expression*
   length() const
   { return this->length_; }
@@ -2407,9 +2405,6 @@ class Array_type : public Type
   bool
   verify_length();
 
-  tree
-  get_length_tree(Gogo*);
-
   Expression*
   array_type_descriptor(Gogo*, Named_type*);
 
@@ -2420,8 +2415,9 @@ class Array_type : public Type
   Type* element_type_;
   // The number of elements.  This may be NULL.
   Expression* length_;
-  // The length as a tree.  We only want to compute this once.
-  tree length_tree_;
+  // The backend representation of the length.
+  // We only want to compute this once.
+  Bexpression* blength_;
 };
 
 // The type of a map.

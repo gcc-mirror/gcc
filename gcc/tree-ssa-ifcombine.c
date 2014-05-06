@@ -736,7 +736,7 @@ const pass_data pass_data_tree_ifcombine =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_tree_ifcombine : public gimple_opt_pass

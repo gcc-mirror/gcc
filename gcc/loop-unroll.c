@@ -1026,7 +1026,7 @@ split_edge_and_insert (edge e, rtx insns)
      CFG.  For this purpose we used to set the BB_SUPERBLOCK flag on BB
      and call break_superblocks when going out of cfglayout mode.  But it
      turns out that this never happens; and that if it does ever happen,
-     the TODO_verify_flow at the end of the RTL loop passes would fail.
+     the verify_flow_info at the end of the RTL loop passes would fail.
 
      There are two reasons why we expected we could have control flow insns
      in INSNS.  The first is when a comparison has to be done in parts, and

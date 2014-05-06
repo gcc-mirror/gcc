@@ -5833,12 +5833,12 @@ dump_solution_for_var (FILE *file, unsigned int var)
   fprintf (file, "\n");
 }
 
-/* Print the points-to solution for VAR to stdout.  */
+/* Print the points-to solution for VAR to stderr.  */
 
 DEBUG_FUNCTION void
 debug_solution_for_var (unsigned int var)
 {
-  dump_solution_for_var (stdout, var);
+  dump_solution_for_var (stderr, var);
 }
 
 /* Create varinfo structures for all of the variables in the

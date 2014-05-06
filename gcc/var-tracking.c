@@ -10374,7 +10374,7 @@ const pass_data pass_data_variable_tracking =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_rtl_sharing | TODO_verify_flow ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_variable_tracking : public rtl_opt_pass

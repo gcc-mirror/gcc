@@ -742,7 +742,7 @@ avr_allocate_stack_slots_for_args (void)
 /* Return true if register FROM can be eliminated via register TO.  */
 
 static bool
-avr_can_eliminate (const int from, const int to)
+avr_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
   return ((frame_pointer_needed && to == FRAME_POINTER_REGNUM)
           || !frame_pointer_needed);

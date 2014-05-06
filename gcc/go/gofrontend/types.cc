@@ -245,7 +245,7 @@ Type::points_to() const
   return ptype == NULL ? NULL : ptype->points_to();
 }
 
-// Return whether this is an open array type.
+// Return whether this is a slice type.
 
 bool
 Type::is_slice_type() const
@@ -5839,54 +5839,6 @@ Array_type::write_equal_function(Gogo* gogo, Named_type* name)
   gogo->add_statement(s);
 }
 
-// Get a tree for the length of a fixed array.  The length may be
-// computed using a function call, so we must only evaluate it once.
-
-tree
-Array_type::get_length_tree(Gogo* gogo)
-{
-  go_assert(this->length_ != NULL);
-  if (this->length_tree_ == NULL_TREE)
-    {
-      Numeric_constant nc;
-      mpz_t val;
-      if (this->length_->numeric_constant_value(&nc) && nc.to_int(&val))
-	{
-	  if (mpz_sgn(val) < 0)
-	    {
-	      this->length_tree_ = error_mark_node;
-	      return this->length_tree_;
-	    }
-	  Type* t = nc.type();
-	  if (t == NULL)
-	    t = Type::lookup_integer_type("int");
-	  else if (t->is_abstract())
-	    t = t->make_non_abstract_type();
-          Btype* btype = t->get_backend(gogo);
-          Bexpression* iexpr =
-              gogo->backend()->integer_constant_expression(btype, val);
-	  this->length_tree_ = expr_to_tree(iexpr);
-	  mpz_clear(val);
-	}
-      else
-	{
-	  // Make up a translation context for the array length
-	  // expression.  FIXME: This won't work in general.
-	  Translate_context context(gogo, NULL, NULL, NULL);
-	  tree len = this->length_->get_tree(&context);
-	  if (len != error_mark_node)
-	    {
-	      Type* int_type = Type::lookup_integer_type("int");
-	      tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
-	      len = convert_to_integer(int_type_tree, len);
-	      len = save_expr(len);
-	    }
-	  this->length_tree_ = len;
-	}
-    }
-  return this->length_tree_;
-}
-
 // Get the backend representation of the fields of a slice.  This is
 // not declared in types.h so that types.h doesn't have to #include
 // backend.h.
@@ -5927,7 +5879,7 @@ get_backend_slice_fields(Gogo* gogo, Array_type* type, bool use_placeholder,
 
 // Get a tree for the type of this array.  A fixed array is simply
 // represented as ARRAY_TYPE with the appropriate index--i.e., it is
-// just like an array in C.  An open array is a struct with three
+// just like an array in C.  A slice is a struct with three
 // fields: a data pointer, the length, and the capacity.
 
 Btype*
@@ -5958,12 +5910,48 @@ Array_type::get_backend_element(Gogo* gogo, bool use_placeholder)
     return this->element_type_->get_backend(gogo);
 }
 
-// Return the backend representation of the length.
+// Return the backend representation of the length. The length may be
+// computed using a function call, so we must only evaluate it once.
 
 Bexpression*
 Array_type::get_backend_length(Gogo* gogo)
 {
-  return tree_to_expr(this->get_length_tree(gogo));
+  go_assert(this->length_ != NULL);
+  if (this->blength_ == NULL)
+    {
+      Numeric_constant nc;
+      mpz_t val;
+      if (this->length_->numeric_constant_value(&nc) && nc.to_int(&val))
+	{
+	  if (mpz_sgn(val) < 0)
+	    {
+	      this->blength_ = gogo->backend()->error_expression();
+	      return this->blength_;
+	    }
+	  Type* t = nc.type();
+	  if (t == NULL)
+	    t = Type::lookup_integer_type("int");
+	  else if (t->is_abstract())
+	    t = t->make_non_abstract_type();
+          Btype* btype = t->get_backend(gogo);
+          this->blength_ =
+	    gogo->backend()->integer_constant_expression(btype, val);
+	  mpz_clear(val);
+	}
+      else
+	{
+	  // Make up a translation context for the array length
+	  // expression.  FIXME: This won't work in general.
+	  Translate_context context(gogo, NULL, NULL, NULL);
+	  this->blength_ = tree_to_expr(this->length_->get_tree(&context));
+
+	  Btype* ibtype = Type::lookup_integer_type("int")->get_backend(gogo);
+	  this->blength_ =
+	    gogo->backend()->convert_expression(ibtype, this->blength_,
+						this->length_->location());
+	}
+    }
+  return this->blength_;
 }
 
 // Finish backend representation of the array.
@@ -5997,7 +5985,7 @@ Array_type::get_value_pointer(Gogo*, Expression* array) const
                                    array->location());
     }
 
-  // Open array.
+  // Slice.
   return Expression::make_slice_info(array,
                                      Expression::SLICE_INFO_VALUE_POINTER,
                                      array->location());
@@ -6012,7 +6000,7 @@ Array_type::get_length(Gogo*, Expression* array) const
   if (this->length_ != NULL)
     return this->length_;
 
-  // This is an open array.  We need to read the length field.
+  // This is a slice.  We need to read the length field.
   return Expression::make_slice_info(array, Expression::SLICE_INFO_LENGTH,
                                      array->location());
 }
@@ -6026,7 +6014,7 @@ Array_type::get_capacity(Gogo*, Expression* array) const
   if (this->length_ != NULL)
     return this->length_;
 
-  // This is an open array.  We need to read the capacity field.
+  // This is a slice.  We need to read the capacity field.
   return Expression::make_slice_info(array, Expression::SLICE_INFO_CAPACITY,
                                      array->location());
 }
@@ -8936,9 +8924,8 @@ Type::finalize_methods(Gogo* gogo, const Type* type, Location location,
 		       Methods** all_methods)
 {
   *all_methods = NULL;
-  Types_seen types_seen;
-  Type::add_methods_for_type(type, NULL, 0, false, false, &types_seen,
-			     all_methods);
+  std::vector<const Named_type*> seen;
+  Type::add_methods_for_type(type, NULL, 0, false, false, &seen, all_methods);
   Type::build_stub_methods(gogo, type, *all_methods, location);
 }
 
@@ -8956,7 +8943,7 @@ Type::add_methods_for_type(const Type* type,
 			   unsigned int depth,
 			   bool is_embedded_pointer,
 			   bool needs_stub_method,
-			   Types_seen* types_seen,
+			   std::vector<const Named_type*>* seen,
 			   Methods** methods)
 {
   // Pointer types may not have methods.
@@ -8966,19 +8953,24 @@ Type::add_methods_for_type(const Type* type,
   const Named_type* nt = type->named_type();
   if (nt != NULL)
     {
-      std::pair<Types_seen::iterator, bool> ins = types_seen->insert(nt);
-      if (!ins.second)
-	return;
-    }
+      for (std::vector<const Named_type*>::const_iterator p = seen->begin();
+	   p != seen->end();
+	   ++p)
+	{
+	  if (*p == nt)
+	    return;
+	}
 
-  if (nt != NULL)
-    Type::add_local_methods_for_type(nt, field_indexes, depth,
-				     is_embedded_pointer, needs_stub_method,
-				     methods);
+      seen->push_back(nt);
+
+      Type::add_local_methods_for_type(nt, field_indexes, depth,
+				       is_embedded_pointer, needs_stub_method,
+				       methods);
+    }
 
   Type::add_embedded_methods_for_type(type, field_indexes, depth,
 				      is_embedded_pointer, needs_stub_method,
-				      types_seen, methods);
+				      seen, methods);
 
   // If we are called with depth > 0, then we are looking at an
   // anonymous field of a struct.  If such a field has interface type,
@@ -8987,6 +8979,9 @@ Type::add_methods_for_type(const Type* type,
   // following the usual rules for an interface type.
   if (depth > 0)
     Type::add_interface_methods_for_type(type, field_indexes, depth, methods);
+
+  if (nt != NULL)
+      seen->pop_back();
 }
 
 // Add the local methods for the named type NT to *METHODS.  The
@@ -9032,7 +9027,7 @@ Type::add_embedded_methods_for_type(const Type* type,
 				    unsigned int depth,
 				    bool is_embedded_pointer,
 				    bool needs_stub_method,
-				    Types_seen* types_seen,
+				    std::vector<const Named_type*>* seen,
 				    Methods** methods)
 {
   // Look for anonymous fields in TYPE.  TYPE has fields if it is a
@@ -9076,7 +9071,7 @@ Type::add_embedded_methods_for_type(const Type* type,
 				 (needs_stub_method
 				  || is_pointer
 				  || i > 0),
-				 types_seen,
+				 seen,
 				 methods);
     }
 }

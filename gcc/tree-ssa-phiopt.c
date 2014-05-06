@@ -2206,8 +2206,7 @@ const pass_data pass_data_phiopt =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_phiopt : public gimple_opt_pass
@@ -2247,8 +2246,7 @@ const pass_data pass_data_cselim =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_cselim : public gimple_opt_pass

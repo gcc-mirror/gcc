@@ -2312,7 +2312,7 @@ const pass_data pass_data_build_ssa =
   PROP_ssa, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_remove_unused_locals ), /* todo_flags_finish */
+  TODO_remove_unused_locals, /* todo_flags_finish */
 };
 
 class pass_build_ssa : public gimple_opt_pass

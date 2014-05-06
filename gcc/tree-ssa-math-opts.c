@@ -519,8 +519,7 @@ const pass_data pass_data_cse_reciprocals =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_cse_reciprocals : public gimple_opt_pass
@@ -1416,8 +1415,7 @@ const pass_data pass_data_cse_sincos =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_cse_sincos : public gimple_opt_pass
@@ -2086,8 +2084,7 @@ pass_optimize_bswap::execute (function *fun)
   statistics_counter_event (fun, "64-bit bswap implementations found",
 			    bswap_stats.found_64bit);
 
-  return (changed ? TODO_update_ssa | TODO_verify_ssa
-	  | TODO_verify_stmts : 0);
+  return (changed ? TODO_update_ssa : 0);
 }
 
 } // anon namespace
@@ -2788,8 +2785,7 @@ const pass_data pass_data_optimize_widening_mul =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_verify_stmts
-    | TODO_update_ssa ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_optimize_widening_mul : public gimple_opt_pass

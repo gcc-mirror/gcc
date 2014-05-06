@@ -1,3 +1,120 @@
+2014-05-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/avr/avr.c (avr_can_eliminate): Mark unused argument.
+
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (TODO_verify_ssa, TODO_verify_flow,
+	TODO_verify_stmts, TODO_verify_rtl_sharing): Remove.
+	(TODO_verify_all): Adjust.
+	* asan.c: Remove references to TODO_verify_ssa, TODO_verify_flow,
+	TODO_verify_stmts and TODO_verify_rtl_sharing.
+	* bb-reorder.c: Likewise.
+	* cfgexpand.c: Likewise.
+	* cprop.c: Likewise.
+	* cse.c: Likewise.
+	* function.c: Likewise.
+	* fwprop.c: Likewise.
+	* gcse.c: Likewise.
+	* gimple-ssa-isolate-paths.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* ipa-split.c: Likewise.
+	* loop-init.c: Likewise.
+	* loop-unroll.c: Likewise.
+	* lower-subreg.c: Likewise.
+	* modulo-sched.c: Likewise.
+	* postreload-gcse.c: Likewise.
+	* predict.c: Likewise.
+	* recog.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* store-motion.c: Likewise.
+	* tracer.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-call-cdce.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-complex.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-emutls.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-object-size.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-pass.h: Likewise.
+	* tree-sra.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssa-copyrename.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+	* tree-ssa-dse.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-ifcombine.c: Likewise.
+	* tree-ssa-loop-ch.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-ssa-loop.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-phiprop.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sink.c: Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* tree-ssa-tail-merge.c: Likewise.
+	* tree-ssa-uncprop.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vectorizer.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* tsan.c: Likewise.
+	* var-tracking.c: Likewise.
+	* bt-load.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* combine-stack-adj.c: Likewise.
+	* combine.c: Likewise.
+	* compare-elim.c: Likewise.
+	* config/epiphany/resolve-sw-modes.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sh/sh_treg_combine.cc: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* dce.c: Likewise.
+	* dse.c: Likewise.
+	* final.c: Likewise.
+	* ifcvt.c: Likewise.
+	* mode-switching.c: Likewise.
+	* passes.c: Likewise.
+	* postreload.c: Likewise.
+	* ree.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regcprop.c: Likewise.
+	* regrename.c: Likewise.
+	* web.c: Likewise.
+
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61070
+	* bitmap.c (debug_bitmap): Dump to stderr, not stdout.
+	* tree-ssa-structalias.c (dump_solution_for_var): Likewise.
+
+2014-05-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60965
+	* ipa-devirt.c (get_class_context): Allow POD to change to non-POD.
+
+2014-05-05  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* target.def (call_fusage_contains_non_callee_clobbers): New DEFHOOKPOD.
+	* doc/tm.texi.in (@node Stack and Calling): Add Miscellaneous Register
+	Hooks to @menu.
+	(@node Miscellaneous Register Hooks): New node.
+	(@hook TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS): New hook.
+	* doc/tm.texi: Regenerate.
+
 2014-05-05  Marek Polacek  <polacek@redhat.com>
 
 	PR driver/61065

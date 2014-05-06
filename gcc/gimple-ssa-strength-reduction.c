@@ -3601,7 +3601,7 @@ const pass_data pass_data_strength_reduction =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_strength_reduction : public gimple_opt_pass
