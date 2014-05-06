@@ -1,3 +1,9 @@
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	* c-opts.c (c_common_post_options): For -freestanding,
+	-fno-hosted and -fno-builtin disable pattern recognition
+	if not enabled explicitely.
+
 2014-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline

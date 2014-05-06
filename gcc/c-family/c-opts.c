@@ -840,6 +840,12 @@ c_common_post_options (const char **pfilename)
   if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
     flag_exceptions = 1;
 
+  /* If -ffreestanding, -fno-hosted or -fno-builtin then disable
+     pattern recognition.  */
+  if (!global_options_set.x_flag_tree_loop_distribute_patterns
+      && flag_no_builtin)
+    flag_tree_loop_distribute_patterns = 0;
+
   /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative
      in that standard.  */
