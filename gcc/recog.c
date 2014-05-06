@@ -3832,7 +3832,7 @@ const pass_data pass_data_peephole2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing | 0 ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_peephole2 : public rtl_opt_pass
@@ -4036,7 +4036,7 @@ const pass_data pass_data_split_before_sched2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_split_before_sched2 : public rtl_opt_pass
@@ -4084,7 +4084,7 @@ const pass_data pass_data_split_for_shorten_branches =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_split_for_shorten_branches : public rtl_opt_pass

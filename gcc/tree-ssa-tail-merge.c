@@ -1732,7 +1732,6 @@ tail_merge_optimize (unsigned int todo)
 	  dump_function_to_file (current_function_decl, dump_file, dump_flags);
 	}
 
-      todo |= (TODO_verify_ssa | TODO_verify_stmts | TODO_verify_flow);
       mark_virtual_operands_for_renaming (cfun);
     }
 

@@ -230,15 +230,11 @@ protected:
 
 /* To-do flags.  */
 #define TODO_do_not_ggc_collect		(1 << 1)
-#define TODO_verify_ssa			(1 << 2)
-#define TODO_verify_flow		(1 << 3)
-#define TODO_verify_stmts		(1 << 4)
 #define TODO_cleanup_cfg        	(1 << 5)
 #define TODO_verify_il			(1 << 6)
 #define TODO_dump_symtab		(1 << 7)
 #define TODO_remove_functions		(1 << 8)
 #define TODO_rebuild_frequencies	(1 << 9)
-#define TODO_verify_rtl_sharing         (1 << 10)
 
 /* To-do flags for calls to update_ssa.  */
 
@@ -309,9 +305,7 @@ protected:
      | TODO_update_ssa_full_phi		\
      | TODO_update_ssa_only_virtuals)
 
-#define TODO_verify_all \
-  (TODO_verify_ssa | TODO_verify_flow | TODO_verify_stmts | TODO_verify_il \
-   | TODO_verify_rtl_sharing)
+#define TODO_verify_all TODO_verify_il
 
 
 /* Register pass info. */

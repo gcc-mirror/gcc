@@ -792,7 +792,7 @@ const pass_data pass_data_ud_rtl_dce =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_ud_rtl_dce : public rtl_opt_pass
@@ -1224,7 +1224,7 @@ const pass_data pass_data_fast_rtl_dce =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_fast_rtl_dce : public rtl_opt_pass

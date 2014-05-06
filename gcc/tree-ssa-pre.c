@@ -4705,7 +4705,7 @@ const pass_data pass_data_pre =
   0, /* properties_provided */
   PROP_no_crit_edges, /* properties_destroyed */
   TODO_rebuild_alias, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_pre : public gimple_opt_pass
@@ -4772,7 +4772,6 @@ pass_pre::execute (function *fun)
 
   clear_expression_ids ();
   remove_dead_inserted_code ();
-  todo |= TODO_verify_flow;
 
   scev_finalize ();
   fini_pre ();
@@ -4821,7 +4820,7 @@ const pass_data pass_data_fre =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_fre : public gimple_opt_pass

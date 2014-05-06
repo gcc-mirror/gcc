@@ -1668,7 +1668,7 @@ const pass_data pass_data_lower_complex =
   PROP_gimple_lcx, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_stmts ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_lower_complex : public gimple_opt_pass
@@ -1706,7 +1706,7 @@ const pass_data pass_data_lower_complex_O0 =
   PROP_gimple_lcx, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_stmts ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_lower_complex_O0 : public gimple_opt_pass

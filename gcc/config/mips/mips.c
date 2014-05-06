@@ -16543,7 +16543,7 @@ const pass_data pass_data_mips_machine_reorg2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_mips_machine_reorg2 : public rtl_opt_pass

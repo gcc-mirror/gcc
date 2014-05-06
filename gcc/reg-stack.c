@@ -3353,7 +3353,7 @@ const pass_data pass_data_stack_regs_run =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_stack_regs_run : public rtl_opt_pass
