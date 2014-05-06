@@ -317,94 +317,6 @@ in_mem_p (int regno)
   return get_reg_class (regno) == NO_REGS;
 }
 
-/* Return 1 if ADDR is a valid memory address for mode MODE in address
-   space AS, and check that each pseudo has the proper kind of hard
-   reg.	 */
-static int
-valid_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-		 rtx addr, addr_space_t as)
-{
-#ifdef GO_IF_LEGITIMATE_ADDRESS
-  lra_assert (ADDR_SPACE_GENERIC_P (as));
-  GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
-  return 0;
-
- win:
-  return 1;
-#else
-  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as);
-#endif
-}
-
-/* Return whether address AD is valid.  If CONSTRAINT is null,
-   check for general addresses, otherwise check the extra constraint
-   CONSTRAINT.  */
-static bool
-valid_address_p (struct address_info *ad, const char *constraint = 0)
-{
-  /* Some ports do not check displacements for eliminable registers,
-     so we replace them temporarily with the elimination target.  */
-  rtx saved_base_reg = NULL_RTX;
-  rtx saved_index_reg = NULL_RTX;
-  rtx *base_term = strip_subreg (ad->base_term);
-  rtx *index_term = strip_subreg (ad->index_term);
-  if (base_term != NULL)
-    {
-      saved_base_reg = *base_term;
-      lra_eliminate_reg_if_possible (base_term);
-      if (ad->base_term2 != NULL)
-	*ad->base_term2 = *ad->base_term;
-    }
-  if (index_term != NULL)
-    {
-      saved_index_reg = *index_term;
-      lra_eliminate_reg_if_possible (index_term);
-    }
-  bool ok_p = (constraint
-#ifdef EXTRA_CONSTRAINT_STR
-	       ? EXTRA_CONSTRAINT_STR (*ad->outer, constraint[0], constraint)
-#else
-	       ? false
-#endif
-	       : valid_address_p (ad->mode, *ad->outer, ad->as));
-  if (saved_base_reg != NULL_RTX)
-    {
-      *base_term = saved_base_reg;
-      if (ad->base_term2 != NULL)
-	*ad->base_term2 = *ad->base_term;
-    }
-  if (saved_index_reg != NULL_RTX)
-    *index_term = saved_index_reg;
-  return ok_p;
-}
-
-#ifdef EXTRA_CONSTRAINT_STR
-/* Return true if, after elimination, OP satisfies extra memory constraint
-   CONSTRAINT.  */
-static bool
-satisfies_memory_constraint_p (rtx op, const char *constraint)
-{
-  struct address_info ad;
-
-  if (!MEM_P (op))
-    return false;
-
-  decompose_mem_address (&ad, op);
-  return valid_address_p (&ad, constraint);
-}
-
-/* Return true if, after elimination, OP satisfies extra address constraint
-   CONSTRAINT.  */
-static bool
-satisfies_address_constraint_p (rtx op, const char *constraint)
-{
-  struct address_info ad;
-
-  decompose_lea_address (&ad, &op);
-  return valid_address_p (&ad, constraint);
-}
-#endif
-
 /* Initiate equivalences for LRA.  As we keep original equivalences
    before any elimination, we need to make copies otherwise any change
    in insns might change the equivalences.  */
@@ -2029,7 +1941,7 @@ process_alt_operands (int only_alternative)
 #ifdef EXTRA_CONSTRAINT_STR
 		      if (EXTRA_MEMORY_CONSTRAINT (c, p))
 			{
-			  if (satisfies_memory_constraint_p (op, p))
+			  if (EXTRA_CONSTRAINT_STR (op, c, p))
 			    win = true;
 			  else if (spilled_pseudo_p (op))
 			    win = true;
@@ -2048,7 +1960,7 @@ process_alt_operands (int only_alternative)
 			}
 		      if (EXTRA_ADDRESS_CONSTRAINT (c, p))
 			{
-			  if (satisfies_address_constraint_p (op, p))
+			  if (EXTRA_CONSTRAINT_STR (op, c, p))
 			    win = true;
 
 			  /* If we didn't already win, we can reload
@@ -2664,6 +2576,60 @@ process_alt_operands (int only_alternative)
   return ok_p;
 }
 
+/* Return 1 if ADDR is a valid memory address for mode MODE in address
+   space AS, and check that each pseudo has the proper kind of hard
+   reg.	 */
+static int
+valid_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+		 rtx addr, addr_space_t as)
+{
+#ifdef GO_IF_LEGITIMATE_ADDRESS
+  lra_assert (ADDR_SPACE_GENERIC_P (as));
+  GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
+  return 0;
+
+ win:
+  return 1;
+#else
+  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as);
+#endif
+}
+
+/* Return whether address AD is valid.  */
+
+static bool
+valid_address_p (struct address_info *ad)
+{
+  /* Some ports do not check displacements for eliminable registers,
+     so we replace them temporarily with the elimination target.  */
+  rtx saved_base_reg = NULL_RTX;
+  rtx saved_index_reg = NULL_RTX;
+  rtx *base_term = strip_subreg (ad->base_term);
+  rtx *index_term = strip_subreg (ad->index_term);
+  if (base_term != NULL)
+    {
+      saved_base_reg = *base_term;
+      lra_eliminate_reg_if_possible (base_term);
+      if (ad->base_term2 != NULL)
+	*ad->base_term2 = *ad->base_term;
+    }
+  if (index_term != NULL)
+    {
+      saved_index_reg = *index_term;
+      lra_eliminate_reg_if_possible (index_term);
+    }
+  bool ok_p = valid_address_p (ad->mode, *ad->outer, ad->as);
+  if (saved_base_reg != NULL_RTX)
+    {
+      *base_term = saved_base_reg;
+      if (ad->base_term2 != NULL)
+	*ad->base_term2 = *ad->base_term;
+    }
+  if (saved_index_reg != NULL_RTX)
+    *index_term = saved_index_reg;
+  return ok_p;
+}
+
 /* Make reload base reg + disp from address AD.  Return the new pseudo.  */
 static rtx
 base_plus_disp_to_reg (struct address_info *ad)
@@ -2866,7 +2832,7 @@ process_address (int nop, rtx *before, rtx *after)
      EXTRA_CONSTRAINT_STR for the validation.  */
   if (constraint[0] != 'p'
       && EXTRA_ADDRESS_CONSTRAINT (constraint[0], constraint)
-      && valid_address_p (&ad, constraint))
+      && EXTRA_CONSTRAINT_STR (op, constraint[0], constraint))
     return change_p;
 #endif
 
@@ -3573,7 +3539,7 @@ curr_insn_transform (void)
 		  break;
 #ifdef EXTRA_CONSTRAINT_STR
 		if (EXTRA_MEMORY_CONSTRAINT (c, constraint)
-		    && satisfies_memory_constraint_p (tem, constraint))
+		    && EXTRA_CONSTRAINT_STR (tem, c, constraint))
 		  break;
 #endif
 	      }

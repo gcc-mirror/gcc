@@ -1,3 +1,16 @@
+2014-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Revert:
+	2014-05-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lra-constraints.c (valid_address_p): Move earlier in file.
+	Add a constraint argument to the address_info version.
+	(satisfies_memory_constraint_p): New function.
+	(satisfies_address_constraint_p): Likewise.
+	(process_alt_operands, curr_insn_transform): Use them.
+	(process_address): Pass the constraint to valid_address_p when
+	checking address operands.
+
 2014-05-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* lto-cgraph.c (compute_ltrans_boundary): Make node variables local
