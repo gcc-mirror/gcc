@@ -1,3 +1,7 @@
+2014-05-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/avr/avr.c (avr_can_eliminate): Mark unused argument.
+
 2014-05-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (TODO_verify_ssa, TODO_verify_flow,
