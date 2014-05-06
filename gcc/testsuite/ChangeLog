@@ -1,3 +1,11 @@
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57417
+	* gcc.dg/torture/pr57417.c: New testcase.
+
 2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20140425-1.c: New test.

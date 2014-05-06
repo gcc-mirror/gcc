@@ -1,3 +1,12 @@
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57417
+	* tree-ssa-sccvn.c (set_ssa_val_to): Compare addresses using
+	get_addr_base_and_unit_offset.
+
 2014-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/60941

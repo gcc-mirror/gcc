@@ -2483,6 +2483,7 @@ static inline bool
 set_ssa_val_to (tree from, tree to)
 {
   tree currval = SSA_VAL (from);
+  HOST_WIDE_INT toff, coff;
 
   if (from != to)
     {
@@ -2518,7 +2519,17 @@ set_ssa_val_to (tree from, tree to)
       print_generic_expr (dump_file, to, 0);
     }
 
-  if (currval != to  && !operand_equal_p (currval, to, OEP_PURE_SAME))
+  if (currval != to
+      && !operand_equal_p (currval, to, OEP_PURE_SAME)
+      /* ???  For addresses involving volatile objects or types operand_equal_p
+	 does not reliably detect ADDR_EXPRs as equal.  We know we are only
+	 getting invariant gimple addresses here, so can use
+	 get_addr_base_and_unit_offset to do this comparison.  */
+      && !(TREE_CODE (currval) == ADDR_EXPR
+	   && TREE_CODE (to) == ADDR_EXPR
+	   && (get_addr_base_and_unit_offset (TREE_OPERAND (currval, 0), &coff)
+	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
+	   && coff == toff))
     {
       VN_INFO (from)->valnum = to;
       if (dump_file && (dump_flags & TDF_DETAILS))
