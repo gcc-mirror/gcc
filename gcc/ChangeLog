@@ -1,3 +1,11 @@
+2014-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* emit-rtl.c (init_derived_machine_modes): New functionm, split
+	out from...
+	(init_emit_once): ...here.
+	* rtl.h (init_derived_machine_modes): Declare.
+	* toplev.c (do_compile): Call it even if no_backend.
+
 2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
