@@ -747,9 +747,9 @@ class Expression
     return this->do_must_eval_subexpressions_in_order(skip);
   }
 
-  // Return the tree for this expression.
-  tree
-  get_tree(Translate_context*);
+  // Return the backend representation for this expression.
+  Bexpression*
+  get_backend(Translate_context*);
 
   // Return an expression handling any conversions which must be done during
   // assignment.
@@ -883,9 +883,9 @@ class Expression
   do_must_eval_subexpressions_in_order(int* /* skip */) const
   { return false; }
 
-  // Child class implements conversion to tree.
-  virtual tree
-  do_get_tree(Translate_context*) = 0;
+  // Child class implements conversion to backend representation.
+  virtual Bexpression*
+  do_get_backend(Translate_context*) = 0;
 
   // Child class implements export.
   virtual void
@@ -1068,8 +1068,8 @@ class Parser_expression : public Expression
   do_check_types(Gogo*)
   { go_unreachable(); }
 
-  tree
-  do_get_tree(Translate_context*)
+  Bexpression*
+  do_get_backend(Translate_context*)
   { go_unreachable(); }
 };
 
@@ -1109,8 +1109,8 @@ class Var_expression : public Expression
   void
   do_address_taken(bool);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1161,8 +1161,8 @@ class Temporary_reference_expression : public Expression
   void
   do_address_taken(bool);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1221,8 +1221,8 @@ class Set_and_use_temporary_expression : public Expression
   void
   do_address_taken(bool);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1277,8 +1277,8 @@ class String_expression : public Expression
   do_copy()
   { return this; }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   // Write string literal to a string dump.
   static void
@@ -1410,8 +1410,8 @@ class Unary_expression : public Expression
   do_is_addressable() const
   { return this->op_ == OPERATOR_MULT; }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_export(Export*) const;
@@ -1534,8 +1534,8 @@ class Binary_expression : public Expression
 				   this->right_->copy(), this->location());
   }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_export(Export*) const;
@@ -1715,8 +1715,8 @@ class Call_expression : public Expression
   bool
   do_must_eval_in_order() const;
 
-  virtual tree
-  do_get_tree(Translate_context*);
+  virtual Bexpression*
+  do_get_backend(Translate_context*);
 
   virtual bool
   do_is_recover_call() const;
@@ -1834,8 +1834,8 @@ class Func_expression : public Expression
 					   this->location());
   }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1881,8 +1881,8 @@ class Func_descriptor_expression : public Expression
   do_is_addressable() const
   { return true; }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context* context) const;
@@ -2124,8 +2124,8 @@ class Map_index_expression : public Expression
 
   // A map index expression is an lvalue but it is not addressable.
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2210,8 +2210,8 @@ class Bound_method_expression : public Expression
 				       this->function_, this->location());
   }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2313,8 +2313,8 @@ class Field_reference_expression : public Expression
   do_issue_nil_check()
   { this->expr_->issue_nil_check(); }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2392,8 +2392,8 @@ class Interface_field_reference_expression : public Expression
 						      this->location());
   }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2458,8 +2458,8 @@ class Type_guard_expression : public Expression
 				     this->location());
   }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2518,8 +2518,8 @@ class Receive_expression : public Expression
   do_must_eval_in_order() const
   { return true; }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bexpression*
+  do_get_backend(Translate_context*);
 
   void
   do_dump_expression(Ast_dump_context*) const;

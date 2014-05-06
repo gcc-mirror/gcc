@@ -1096,7 +1096,7 @@ class Function
   Bstatement*
   return_value(Gogo*, Named_object*, Location) const;
 
-  // Get a tree for the variable holding the defer stack.
+  // Get an expression for the variable holding the defer stack.
   Expression*
   defer_stack(Location);
 
