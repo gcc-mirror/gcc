@@ -8966,9 +8966,8 @@ Type::finalize_methods(Gogo* gogo, const Type* type, Location location,
 		       Methods** all_methods)
 {
   *all_methods = NULL;
-  Types_seen types_seen;
-  Type::add_methods_for_type(type, NULL, 0, false, false, &types_seen,
-			     all_methods);
+  std::vector<const Named_type*> seen;
+  Type::add_methods_for_type(type, NULL, 0, false, false, &seen, all_methods);
   Type::build_stub_methods(gogo, type, *all_methods, location);
 }
 
@@ -8986,7 +8985,7 @@ Type::add_methods_for_type(const Type* type,
 			   unsigned int depth,
 			   bool is_embedded_pointer,
 			   bool needs_stub_method,
-			   Types_seen* types_seen,
+			   std::vector<const Named_type*>* seen,
 			   Methods** methods)
 {
   // Pointer types may not have methods.
@@ -8996,19 +8995,24 @@ Type::add_methods_for_type(const Type* type,
   const Named_type* nt = type->named_type();
   if (nt != NULL)
     {
-      std::pair<Types_seen::iterator, bool> ins = types_seen->insert(nt);
-      if (!ins.second)
-	return;
-    }
+      for (std::vector<const Named_type*>::const_iterator p = seen->begin();
+	   p != seen->end();
+	   ++p)
+	{
+	  if (*p == nt)
+	    return;
+	}
 
-  if (nt != NULL)
-    Type::add_local_methods_for_type(nt, field_indexes, depth,
-				     is_embedded_pointer, needs_stub_method,
-				     methods);
+      seen->push_back(nt);
+
+      Type::add_local_methods_for_type(nt, field_indexes, depth,
+				       is_embedded_pointer, needs_stub_method,
+				       methods);
+    }
 
   Type::add_embedded_methods_for_type(type, field_indexes, depth,
 				      is_embedded_pointer, needs_stub_method,
-				      types_seen, methods);
+				      seen, methods);
 
   // If we are called with depth > 0, then we are looking at an
   // anonymous field of a struct.  If such a field has interface type,
@@ -9017,6 +9021,9 @@ Type::add_methods_for_type(const Type* type,
   // following the usual rules for an interface type.
   if (depth > 0)
     Type::add_interface_methods_for_type(type, field_indexes, depth, methods);
+
+  if (nt != NULL)
+      seen->pop_back();
 }
 
 // Add the local methods for the named type NT to *METHODS.  The
@@ -9062,7 +9069,7 @@ Type::add_embedded_methods_for_type(const Type* type,
 				    unsigned int depth,
 				    bool is_embedded_pointer,
 				    bool needs_stub_method,
-				    Types_seen* types_seen,
+				    std::vector<const Named_type*>* seen,
 				    Methods** methods)
 {
   // Look for anonymous fields in TYPE.  TYPE has fields if it is a
@@ -9106,7 +9113,7 @@ Type::add_embedded_methods_for_type(const Type* type,
 				 (needs_stub_method
 				  || is_pointer
 				  || i > 0),
-				 types_seen,
+				 seen,
 				 methods);
     }
 }
