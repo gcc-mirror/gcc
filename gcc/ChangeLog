@@ -1,3 +1,7 @@
+2014-05-06  Mike Stump  <mikestump@comcast.net>
+
+	* wide-int.h (wi::int_traits <HOST_WIDE_INT>): Always define.
+
 2014-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/sse.md (*mov<mode>_internal)
