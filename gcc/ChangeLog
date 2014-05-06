@@ -1,3 +1,26 @@
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60849
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Only allow effective
+	boolean results for comparisons.
+
+	2014-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60766
+	* tree-ssa-loop-ivopts.c (cand_value_at): Compute in an
+	unsigned type.
+	(may_eliminate_iv): Convert cand_value_at result to desired
+	type.
+
+	2014-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60903
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Properly apply
+	IRREDUCIBLE_LOOP loop flags to newly created BBs and edges.
+
 2014-05-05  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

@@ -2067,6 +2067,7 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
   gimple_stmt_iterator gsi;
   gimple stmt;
   struct prev_flag_edges *prev_edges = (struct prev_flag_edges *) ex->aux;
+  bool irr = ex->flags & EDGE_IRREDUCIBLE_LOOP;
 
   /* ?? Insert store after previous store if applicable.  See note
      below.  */
@@ -2081,8 +2082,9 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
   old_dest = ex->dest;
   new_bb = split_edge (ex);
   then_bb = create_empty_bb (new_bb);
-  if (current_loops && new_bb->loop_father)
-    add_bb_to_loop (then_bb, new_bb->loop_father);
+  if (irr)
+    then_bb->flags = BB_IRREDUCIBLE_LOOP;
+  add_bb_to_loop (then_bb, new_bb->loop_father);
 
   gsi = gsi_start_bb (new_bb);
   stmt = gimple_build_cond (NE_EXPR, flag, boolean_false_node,
@@ -2094,9 +2096,12 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
   stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
-  make_edge (new_bb, then_bb, EDGE_TRUE_VALUE);
-  make_edge (new_bb, old_dest, EDGE_FALSE_VALUE);
-  then_old_edge = make_edge (then_bb, old_dest, EDGE_FALLTHRU);
+  make_edge (new_bb, then_bb,
+	     EDGE_TRUE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
+  make_edge (new_bb, old_dest,
+	     EDGE_FALSE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
+  then_old_edge = make_edge (then_bb, old_dest,
+			     EDGE_FALLTHRU | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
 
   set_immediate_dominator (CDI_DOMINATORS, then_bb, new_bb);
 
