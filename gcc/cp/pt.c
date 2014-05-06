@@ -462,9 +462,13 @@ maybe_begin_member_template_processing (tree decl)
   bool nsdmi = TREE_CODE (decl) == FIELD_DECL;
 
   if (nsdmi)
-    decl = (CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl))
-	    ? CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (decl))
-	    : NULL_TREE);
+    {
+      tree ctx = DECL_CONTEXT (decl);
+      decl = (CLASSTYPE_TEMPLATE_INFO (ctx)
+	      /* Disregard full specializations (c++/60999).  */
+	      && uses_template_parms (ctx)
+	      ? CLASSTYPE_TI_TEMPLATE (ctx) : NULL_TREE);
+    }
 
   if (inline_needs_template_parms (decl, nsdmi))
     {
