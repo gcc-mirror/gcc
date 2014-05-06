@@ -80,7 +80,7 @@ namespace __gnu_debug
     ~_Safe_local_iterator_base() { this->_M_detach(); }
 
     _Safe_unordered_container_base*
-    _M_get_container() const _GLIBCXX_NOEXCEPT;
+    _M_get_container() const noexcept;
 
   public:
     /** Attaches this iterator to the given container, detaching it
@@ -132,15 +132,16 @@ namespace __gnu_debug
 
   protected:
     // Initialize with a version number of 1 and no iterators
-    _Safe_unordered_container_base()
+    _Safe_unordered_container_base() noexcept
     : _M_local_iterators(nullptr), _M_const_local_iterators(nullptr)
     { }
 
-    // Initialize with a version number of 1 and no iterators
+    // Copy constructor does not copy iterators.
     _Safe_unordered_container_base(const _Safe_unordered_container_base&)
     noexcept
     : _Safe_unordered_container_base() { }
 
+    // When moved unordered containers iterators are swapped.
     _Safe_unordered_container_base(_Safe_unordered_container_base&& __x)
     noexcept
     : _Safe_unordered_container_base()
@@ -148,7 +149,7 @@ namespace __gnu_debug
 
     /** Notify all iterators that reference this container that the
 	container is being destroyed. */
-    ~_Safe_unordered_container_base()
+    ~_Safe_unordered_container_base() noexcept
     { this->_M_detach_all(); }
 
     /** Detach all iterators, leaving them singular. */
@@ -161,7 +162,7 @@ namespace __gnu_debug
      *  one container now reference the other container.
      */
     void
-    _M_swap(_Safe_unordered_container_base& __x);
+    _M_swap(_Safe_unordered_container_base& __x) noexcept;
 
   public:
     /** Attach an iterator to this container. */

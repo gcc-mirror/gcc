@@ -66,6 +66,8 @@ void test02()
   v1.emplace(std::piecewise_construct,
 	     std::make_tuple(1), std::make_tuple(1));
 
+  auto it = v1.begin();
+
   test_type v2(alloc_type(2));
   v2.emplace(std::piecewise_construct,
 	     std::make_tuple(2), std::make_tuple(2));
@@ -79,6 +81,8 @@ void test02()
 
   VERIFY( counter_type::move_assign_count == 0 );
   VERIFY( counter_type::destructor_count == 2 );
+
+  VERIFY( it == v2.begin() );
 }
 
 int main()

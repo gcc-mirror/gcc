@@ -69,12 +69,12 @@ namespace __gnu_debug
       typedef std::iterator_traits<_Iterator> _Traits;
 
     public:
-      typedef _Iterator                           iterator_type;
-      typedef typename _Traits::iterator_category iterator_category;
-      typedef typename _Traits::value_type        value_type;
-      typedef typename _Traits::difference_type   difference_type;
-      typedef typename _Traits::reference         reference;
-      typedef typename _Traits::pointer           pointer;
+      typedef _Iterator					iterator_type;
+      typedef typename _Traits::iterator_category	iterator_category;
+      typedef typename _Traits::value_type		value_type;
+      typedef typename _Traits::difference_type		difference_type;
+      typedef typename _Traits::reference		reference;
+      typedef typename _Traits::pointer			pointer;
 
       /// @post the iterator is singular and unattached
       _Safe_local_iterator() : _M_current() { }

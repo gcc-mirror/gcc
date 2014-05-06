@@ -33,7 +33,138 @@
 
 #include <forward_list>
 #include <debug/safe_sequence.h>
+#include <debug/safe_container.h>
 #include <debug/safe_iterator.h>
+
+namespace __gnu_debug
+{
+  /// Special iterators swap and invalidation for forward_list because of the
+  /// before_begin iterator.
+  template<typename _SafeSequence>
+    class _Safe_forward_list
+    : public _Safe_sequence<_SafeSequence>
+    {
+      _SafeSequence&
+      _M_this() noexcept
+      { return *static_cast<_SafeSequence*>(this); }
+
+      static void
+      _M_swap_aux(_Safe_sequence_base& __lhs,
+		  _Safe_iterator_base*& __lhs_iterators,
+		  _Safe_sequence_base& __rhs,
+		  _Safe_iterator_base*& __rhs_iterators);
+
+      void _M_swap_single(_Safe_sequence_base&) noexcept;
+
+    protected:
+      void
+      _M_invalidate_all()
+      {
+	using _Base_const_iterator = __decltype(_M_this()._M_base().cend());
+	this->_M_invalidate_if([this](_Base_const_iterator __it)
+	{
+	  return __it != _M_this()._M_base().cbefore_begin()
+	    && __it != _M_this()._M_base().cend(); });
+      }
+
+      void _M_swap(_Safe_sequence_base&) noexcept;
+    };
+
+   template<typename _SafeSequence>
+    void
+    _Safe_forward_list<_SafeSequence>::
+    _M_swap_aux(_Safe_sequence_base& __lhs,
+		_Safe_iterator_base*& __lhs_iterators,
+		_Safe_sequence_base& __rhs,
+		_Safe_iterator_base*& __rhs_iterators)
+    {
+      using const_iterator = typename _SafeSequence::const_iterator;
+      _Safe_iterator_base* __bbegin_its = 0;
+      _Safe_iterator_base* __last_bbegin = 0;
+      _SafeSequence& __rseq = static_cast<_SafeSequence&>(__rhs);
+
+      for (_Safe_iterator_base* __iter = __lhs_iterators; __iter;)
+	{
+	  // Even iterator is cast to const_iterator, not a problem.
+	  const_iterator* __victim = static_cast<const_iterator*>(__iter);
+	  __iter = __iter->_M_next;
+	  if (__victim->base() == __rseq._M_base().cbefore_begin())
+	    {
+	      __victim->_M_unlink();
+	      if (__lhs_iterators == __victim)
+		__lhs_iterators = __victim->_M_next;
+	      if (__bbegin_its)
+		{
+		  __victim->_M_next = __bbegin_its;
+		  __bbegin_its->_M_prior = __victim;
+		}
+	      else
+		__last_bbegin = __victim;
+	      __bbegin_its = __victim;
+	    }
+	  else
+	    __victim->_M_sequence = &__lhs;
+	}
+
+      if (__bbegin_its)
+	{
+	  if (__rhs_iterators)
+	    {
+	      __rhs_iterators->_M_prior = __last_bbegin;
+	      __last_bbegin->_M_next = __rhs_iterators;
+	    }
+	  __rhs_iterators = __bbegin_its;
+	}
+    }
+
+   template<typename _SafeSequence>
+    void
+    _Safe_forward_list<_SafeSequence>::
+    _M_swap_single(_Safe_sequence_base& __other) noexcept
+    {
+      std::swap(_M_this()._M_iterators, __other._M_iterators);
+      std::swap(_M_this()._M_const_iterators, __other._M_const_iterators);
+      // Useless, always 1 on forward_list
+      //std::swap(_M_this()_M_version, __other._M_version);
+      _Safe_iterator_base* __this_its = _M_this()._M_iterators;
+      _M_swap_aux(__other, __other._M_iterators,
+		  _M_this(), _M_this()._M_iterators);
+      _Safe_iterator_base* __this_const_its = _M_this()._M_const_iterators;
+      _M_swap_aux(__other, __other._M_const_iterators,
+		  _M_this(), _M_this()._M_const_iterators);
+      _M_swap_aux(_M_this(), __this_its,
+		  __other, __other._M_iterators);
+      _M_swap_aux(_M_this(), __this_const_its,
+		  __other, __other._M_const_iterators);
+    }
+
+  /* Special forward_list _M_swap version that does not swap the
+   * before-begin ownership.*/
+   template<typename _SafeSequence>
+    void
+    _Safe_forward_list<_SafeSequence>::
+    _M_swap(_Safe_sequence_base& __other) noexcept
+    {
+      // We need to lock both sequences to swap
+      using namespace __gnu_cxx;
+      __mutex *__this_mutex = &_M_this()._M_get_mutex();
+      __mutex *__other_mutex =
+	&static_cast<_SafeSequence&>(__other)._M_get_mutex();
+      if (__this_mutex == __other_mutex)
+	{
+	  __scoped_lock __lock(*__this_mutex);
+	  _M_swap_single(__other);
+	}
+      else
+	{
+	  __scoped_lock __l1(__this_mutex < __other_mutex
+			     ? *__this_mutex : *__other_mutex);
+	  __scoped_lock __l2(__this_mutex < __other_mutex
+			     ? *__other_mutex : *__this_mutex);
+	  _M_swap_single(__other);
+	}
+    }
+}
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -42,133 +173,102 @@ namespace __debug
   /// Class std::forward_list with safety/checking/debug instrumentation.
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
     class forward_list
-    : public _GLIBCXX_STD_C::forward_list<_Tp, _Alloc>,
-      public __gnu_debug::_Safe_sequence<forward_list<_Tp, _Alloc> >
+    : public __gnu_debug::_Safe_container<
+	forward_list<_Tp, _Alloc>, _Alloc, __gnu_debug::_Safe_forward_list>,
+      public _GLIBCXX_STD_C::forward_list<_Tp, _Alloc>
     {
-      typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc> _Base;
+      typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc>		_Base;
+      typedef __gnu_debug::_Safe_container<
+	forward_list, _Alloc, __gnu_debug::_Safe_forward_list>	_Safe;
 
-      typedef typename _Base::iterator       _Base_iterator;
-      typedef typename _Base::const_iterator _Base_const_iterator;
-
-      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
-        rebind<_GLIBCXX_STD_C::_Fwd_list_node<_Tp>>::other _Node_alloc_type;
-
-      typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
+      typedef typename _Base::iterator		_Base_iterator;
+      typedef typename _Base::const_iterator	_Base_const_iterator;
 
     public:
-      typedef typename _Base::reference             reference;
-      typedef typename _Base::const_reference       const_reference;
+      typedef typename _Base::reference		reference;
+      typedef typename _Base::const_reference	const_reference;
 
-      typedef __gnu_debug::_Safe_iterator<_Base_iterator,
-					  forward_list> iterator;
-      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,
-					  forward_list> const_iterator;
+      typedef __gnu_debug::_Safe_iterator<
+	_Base_iterator, forward_list>		iterator;
+      typedef __gnu_debug::_Safe_iterator<
+	_Base_const_iterator, forward_list>	const_iterator;
 
-      typedef typename _Base::size_type             size_type;
-      typedef typename _Base::difference_type       difference_type;
+      typedef typename _Base::size_type		size_type;
+      typedef typename _Base::difference_type	difference_type;
 
-      typedef _Tp                                   value_type;
-      typedef _Alloc                                allocator_type;
-      typedef typename _Base::pointer               pointer;
-      typedef typename _Base::const_pointer         const_pointer;
+      typedef _Tp				value_type;
+      typedef typename _Base::allocator_type	allocator_type;
+      typedef typename _Base::pointer		pointer;
+      typedef typename _Base::const_pointer	const_pointer;
 
       // 23.2.3.1 construct/copy/destroy:
       explicit
-      forward_list(const _Alloc& __al = _Alloc())
+      forward_list(const allocator_type& __al = allocator_type())
       : _Base(__al) { }
 
-      forward_list(const forward_list& __list, const _Alloc& __al)
+      forward_list(const forward_list& __list, const allocator_type& __al)
       : _Base(__list, __al)
       { }
 
-      forward_list(forward_list&& __list, const _Alloc& __al)
-      : _Base(std::move(__list._M_base()), __al)
-      {
-	if (__list.get_allocator() == __al)
-	  this->_M_swap(__list);
-	else
-	  __list._M_invalidate_all();
-      }
+      forward_list(forward_list&& __list, const allocator_type& __al)
+	: _Safe(std::move(__list._M_safe()), __al),
+	  _Base(std::move(__list._M_base()), __al)
+      { }
 
       explicit
-      forward_list(size_type __n, const _Alloc& __al = _Alloc())
+      forward_list(size_type __n, const allocator_type& __al = allocator_type())
       : _Base(__n, __al)
       { }
 
       forward_list(size_type __n, const _Tp& __value,
-                   const _Alloc& __al = _Alloc())
+		   const allocator_type& __al = allocator_type())
       : _Base(__n, __value, __al)
       { }
 
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 	forward_list(_InputIterator __first, _InputIterator __last,
-                     const _Alloc& __al = _Alloc())
-        : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+		     const allocator_type& __al = allocator_type())
+	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
 								     __last)),
 		__gnu_debug::__base(__last), __al)
-        { }
+	{ }
 
-      forward_list(const forward_list& __list)
-      : _Base(__list)
-      { }
+      forward_list(const forward_list&) = default;
 
-      forward_list(forward_list&& __list) noexcept
-      : _Base(std::move(__list._M_base()))
-      {
-	this->_M_swap(__list);
-      }
+      forward_list(forward_list&&) = default;
 
       forward_list(std::initializer_list<_Tp> __il,
-                   const _Alloc& __al = _Alloc())
+		   const allocator_type& __al = allocator_type())
       : _Base(__il, __al)
       { }
 
-      ~forward_list() noexcept
-      { }
+      ~forward_list() = default;
 
       forward_list&
-      operator=(const forward_list& __list)
-      {
-	static_cast<_Base&>(*this) = __list;
-	this->_M_invalidate_all();
-	return *this;
-      }
+      operator=(const forward_list&) = default;
 
       forward_list&
-      operator=(forward_list&& __list)
-      noexcept(_Node_alloc_traits::_S_nothrow_move())
-      {
-	__glibcxx_check_self_move_assign(__list);
-	bool __xfer_memory = _Node_alloc_traits::_S_propagate_on_move_assign()
-	    || __list.get_allocator() == this->get_allocator();
-	static_cast<_Base&>(*this) = std::move(__list);
-	if (__xfer_memory)
-	  this->_M_swap(__list);
-	else
-	  this->_M_invalidate_all();
-	__list._M_invalidate_all();
-	return *this;
-      }
+      operator=(forward_list&&) = default;
 
       forward_list&
       operator=(std::initializer_list<_Tp> __il)
       {
-	static_cast<_Base&>(*this) = __il;
+	_M_base() = __il;
 	this->_M_invalidate_all();
-        return *this;
+	return *this;
       }
 
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 	void
-        assign(_InputIterator __first, _InputIterator __last)
-        {
+	assign(_InputIterator __first, _InputIterator __last)
+	{
 	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::assign(__gnu_debug::__base(__first),
 			__gnu_debug::__base(__last));
 	  this->_M_invalidate_all();
-        }
+	}
 
       void
       assign(size_type __n, const _Tp& __val)
@@ -292,16 +392,16 @@ namespace __debug
 
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
-        iterator
-        insert_after(const_iterator __pos,
-                     _InputIterator __first, _InputIterator __last)
-        {
+	iterator
+	insert_after(const_iterator __pos,
+		     _InputIterator __first, _InputIterator __last)
+	{
 	  __glibcxx_check_insert_range_after(__pos, __first, __last);
 	  return iterator(_Base::insert_after(__pos.base(),
 					      __gnu_debug::__base(__first),
 					      __gnu_debug::__base(__last)),
 			  this);
-        }
+	}
 
       iterator
       insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
@@ -347,12 +447,10 @@ namespace __debug
 
       void
       swap(forward_list& __list)
-      noexcept(_Node_alloc_traits::_S_nothrow_swap())
+	noexcept( noexcept(declval<_Base>().swap(__list)) )
       {
-	if (!_Node_alloc_traits::_S_propagate_on_swap())
-	  __glibcxx_check_equal_allocs(__list);
+	_Safe::_M_swap(__list);
 	_Base::swap(__list);
-	this->_M_swap(__list);
       }
 
       void
@@ -380,7 +478,7 @@ namespace __debug
 	  {
 	    this->_M_revalidate_singular();
 	    __throw_exception_again;
-          }
+	  }
       }
 
       void
@@ -408,7 +506,7 @@ namespace __debug
 	  {
 	    this->_M_revalidate_singular();
 	    __throw_exception_again;
-          }
+	  }
       }
 
       void
@@ -422,7 +520,7 @@ namespace __debug
       void
       splice_after(const_iterator __pos, forward_list&& __list)
       {
-        __glibcxx_check_insert_after(__pos);
+	__glibcxx_check_insert_after(__pos);
 	_GLIBCXX_DEBUG_VERIFY(&__list != this,
 			      _M_message(__gnu_debug::__msg_self_splice)
 			      ._M_sequence(*this, "this"));
@@ -477,7 +575,7 @@ namespace __debug
       splice_after(const_iterator __pos, forward_list&& __list,
 		   const_iterator __before, const_iterator __last)
       {
-        __glibcxx_check_insert_after(__pos);
+	__glibcxx_check_insert_after(__pos);
 	__glibcxx_check_valid_range(__before, __last);
 	_GLIBCXX_DEBUG_VERIFY(__before._M_attached_to(&__list),
 			      _M_message(__gnu_debug::__msg_splice_other)
@@ -508,8 +606,8 @@ namespace __debug
 				  ._M_iterator(__before, "before")
 				  ._M_iterator(__last, "last"));
 	    _GLIBCXX_DEBUG_VERIFY(&__list != this || __tmp != __pos.base(),
-                                  _M_message(__gnu_debug::__msg_splice_overlap)
-                                  ._M_iterator(__tmp, "position")
+				  _M_message(__gnu_debug::__msg_splice_overlap)
+				  ._M_iterator(__tmp, "position")
 				  ._M_iterator(__before, "before")
 				  ._M_iterator(__last, "last"));
 	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -542,8 +640,8 @@ namespace __debug
       }
 
       template<typename _Pred>
-        void
-        remove_if(_Pred __pred)
+	void
+	remove_if(_Pred __pred)
 	{
 	  _Base_iterator __x = _Base::before_begin();
 	  _Base_iterator __old = __x++;
@@ -574,8 +672,8 @@ namespace __debug
       }
 
       template<typename _BinPred>
-        void
-        unique(_BinPred __binary_pred)
+	void
+	unique(_BinPred __binary_pred)
 	{
 	  _Base_iterator __first = _Base::begin();
 	  _Base_iterator __last = _Base::end();
@@ -613,8 +711,8 @@ namespace __debug
       { merge(std::move(__list)); }
 
       template<typename _Comp>
-        void
-        merge(forward_list&& __list, _Comp __comp)
+	void
+	merge(forward_list&& __list, _Comp __comp)
 	{
 	  if (this != &__list)
 	  {
@@ -624,7 +722,7 @@ namespace __debug
 	    this->_M_transfer_from_if(__list,
 				      [&__list](_Base_const_iterator __it)
 	      {
-	        return __it != __list._M_base().cbefore_begin()
+		return __it != __list._M_base().cbefore_begin()
 		       && __it != __list._M_base().cend();
 	      });
 	    _Base::merge(std::move(__list._M_base()), __comp);
@@ -632,141 +730,57 @@ namespace __debug
 	}
 
       template<typename _Comp>
-        void
-        merge(forward_list& __list, _Comp __comp)
-        { merge(std::move(__list), __comp); }
+	void
+	merge(forward_list& __list, _Comp __comp)
+	{ merge(std::move(__list), __comp); }
 
       using _Base::sort;
       using _Base::reverse;
 
       _Base&
-      _M_base() noexcept       { return *this; }
+      _M_base() noexcept { return *this; }
 
       const _Base&
       _M_base() const noexcept { return *this; }
-
-    private:
-      void
-      _M_invalidate_all()
-      {
-	this->_M_invalidate_if([this](_Base_const_iterator __it)
-	  {
-	    return __it != this->_M_base().cbefore_begin()
-		   && __it != this->_M_base().cend();
-	  });
-      }
-      typedef __gnu_debug::_Safe_iterator_base _Safe_iterator_base;
-      static void
-      _M_swap_aux(forward_list& __lhs,
-		  _Safe_iterator_base*& __lhs_iterators,
-		  forward_list& __rhs,
-		  _Safe_iterator_base*& __rhs_iterators);
-      void _M_swap(forward_list& __list);
     };
-
-   template<typename _Tp, typename _Alloc>
-    void
-    forward_list<_Tp, _Alloc>::
-    _M_swap_aux(forward_list<_Tp, _Alloc>& __lhs,
-		__gnu_debug::_Safe_iterator_base*& __lhs_iterators,
-		forward_list<_Tp, _Alloc>& __rhs,
-		__gnu_debug::_Safe_iterator_base*& __rhs_iterators)
-    {
-      using __gnu_debug::_Safe_iterator_base;
-      _Safe_iterator_base* __bbegin_its = 0;
-      _Safe_iterator_base* __last_bbegin = 0;
-      for (_Safe_iterator_base* __iter = __lhs_iterators; __iter;)
-	{
-	  // Even iterator are casted to const_iterator, not a problem.
-	  const_iterator* __victim = static_cast<const_iterator*>(__iter);
-	  __iter = __iter->_M_next;
-	  if (__victim->base() == __rhs._M_base().cbefore_begin())
-	    {
-	      __victim->_M_unlink();
-	      if (__lhs_iterators == __victim)
-		__lhs_iterators = __victim->_M_next;
-	      if (__bbegin_its)
-		{
-		  __victim->_M_next = __bbegin_its;
-		  __bbegin_its->_M_prior = __victim;
-		}
-	      else
-		__last_bbegin = __victim;
-	      __bbegin_its = __victim;
-	    }
-	  else
-	    __victim->_M_sequence = &__lhs;
-	}
-
-      if (__bbegin_its)
-	{
-	  if (__rhs_iterators)
-	    {
-	      __rhs_iterators->_M_prior = __last_bbegin;
-	      __last_bbegin->_M_next = __rhs_iterators;
-	    }
-	  __rhs_iterators = __bbegin_its;
-	}
-    }
-
-  /* Special forward_list _M_swap version that do not swap the
-   * before-begin ownership.*/
-  template<typename _Tp, typename _Alloc>
-    void
-    forward_list<_Tp, _Alloc>::
-    _M_swap(forward_list<_Tp, _Alloc>& __list)
-    {
-      __gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
-      std::swap(this->_M_iterators, __list._M_iterators);
-      std::swap(this->_M_const_iterators, __list._M_const_iterators);
-      // Useless, always 1 on forward_list
-      //std::swap(this->_M_version, __list._M_version);
-      _Safe_iterator_base* __this_its = this->_M_iterators;
-      _M_swap_aux(__list, __list._M_iterators, *this, this->_M_iterators);
-      _Safe_iterator_base* __this_const_its = this->_M_const_iterators;
-      _M_swap_aux(__list, __list._M_const_iterators, *this,
-		  this->_M_const_iterators);
-      _M_swap_aux(*this, __this_its, __list, __list._M_iterators);
-      _M_swap_aux(*this, __this_const_its, __list, __list._M_const_iterators);
-    }
 
   template<typename _Tp, typename _Alloc>
     bool
     operator==(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return __lx._M_base() == __ly._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<(const forward_list<_Tp, _Alloc>& __lx,
-              const forward_list<_Tp, _Alloc>& __ly)
+	      const forward_list<_Tp, _Alloc>& __ly)
     { return __lx._M_base() < __ly._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
     operator!=(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return !(__lx == __ly); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>(const forward_list<_Tp, _Alloc>& __lx,
-              const forward_list<_Tp, _Alloc>& __ly)
+	      const forward_list<_Tp, _Alloc>& __ly)
     { return (__ly < __lx); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>=(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return !(__lx < __ly); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<=(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return !(__ly < __lx); }
 
   /// See std::forward_list::swap().

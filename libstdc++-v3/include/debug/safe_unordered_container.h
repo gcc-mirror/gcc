@@ -57,7 +57,31 @@ namespace __gnu_debug
   template<typename _Container>
     class _Safe_unordered_container : public _Safe_unordered_container_base
     {
-    public:
+    private:
+      _Container&
+      _M_cont() noexcept
+      { return *static_cast<_Container*>(this); }
+
+    protected:
+      void
+      _M_invalidate_locals()
+      {
+	auto __local_end = _M_cont()._M_base().end(0);
+	this->_M_invalidate_local_if(
+		[__local_end](__decltype(_M_cont()._M_base().cend(0)) __it)
+		{ return __it != __local_end; });
+      }
+
+      void
+      _M_invalidate_all()
+      {
+	auto __end = _M_cont()._M_base().end();
+	this->_M_invalidate_if(
+		[__end](__decltype(_M_cont()._M_base().cend()) __it)
+		{ return __it != __end; });
+	_M_invalidate_locals();
+      }
+
       /** Invalidates all iterators @c x that reference this container,
 	  are not singular, and for which @c __pred(x) returns @c
 	  true. @c __pred will be invoked with the normal iterators nested

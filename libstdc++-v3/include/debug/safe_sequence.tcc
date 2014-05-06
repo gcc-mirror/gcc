@@ -37,11 +37,11 @@ namespace __gnu_debug
       _Safe_sequence<_Sequence>::
       _M_invalidate_if(_Predicate __pred)
       {
-        typedef typename _Sequence::iterator iterator;
-        typedef typename _Sequence::const_iterator const_iterator;
+	typedef typename _Sequence::iterator iterator;
+	typedef typename _Sequence::const_iterator const_iterator;
 
 	__gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
-        for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
+	for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
 	  {
 	    iterator* __victim = static_cast<iterator*>(__iter);
 	    __iter = __iter->_M_next;
@@ -51,7 +51,7 @@ namespace __gnu_debug
 	      }
 	  }
 
-        for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2;)
+	for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2;)
 	  {
 	    const_iterator* __victim = static_cast<const_iterator*>(__iter2);
 	    __iter2 = __iter2->_M_next;
@@ -68,8 +68,8 @@ namespace __gnu_debug
       _Safe_sequence<_Sequence>::
       _M_transfer_from_if(_Safe_sequence& __from, _Predicate __pred)
       {
-        typedef typename _Sequence::iterator iterator;
-        typedef typename _Sequence::const_iterator const_iterator;
+	typedef typename _Sequence::iterator iterator;
+	typedef typename _Sequence::const_iterator const_iterator;
 
 	_Safe_iterator_base* __transfered_iterators = 0;
 	_Safe_iterator_base* __transfered_const_iterators = 0;
@@ -79,7 +79,7 @@ namespace __gnu_debug
 	  // We lock __from first and detach iterator(s) to transfer
 	  __gnu_cxx::__scoped_lock sentry(__from._M_get_mutex());
 
-          for (_Safe_iterator_base* __iter = __from._M_iterators; __iter;)
+	  for (_Safe_iterator_base* __iter = __from._M_iterators; __iter;)
 	    {
 	      iterator* __victim = static_cast<iterator*>(__iter);
 	      __iter = __iter->_M_next;

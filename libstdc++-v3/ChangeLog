@@ -1,3 +1,125 @@
+2014-05-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/macros.h [__glibcxx_check_equal_allocs]: Add
+	parameter to pass the 2 instances to check allocator equality.
+	* include/debug/safe_container.h: New, define _Safe_container<>.
+	* include/Makefile.am: Add previous.
+	* include/debug/deque (std::__debug::deque<>): Inherit
+	_Safe_container<>. Use default implementation for all special
+	functions.
+	* include/debug/forward_list (std::__debug::forward_list<>):
+	Likewise.
+	* include/debug/list (std::__debug::list<>): Likewise.
+	* include/debug/map.h (std::__debug::map<>): Likewise.
+	* include/debug/multimap.h (std::__debug::multimap<>): Likewise.
+	* include/debug/set.h (std::__debug::set<>): Likewise.
+	* include/debug/multiset.h (std::__debug::multiset<>): Likewise.
+	* include/debug/string (std::__debug::basic_string<>): Likewise.
+	* include/debug/unordered_map
+	(std::__debug::unordered_map<>): Likewise.
+	(std::__debug::unordered_multimap<>): Likewise.
+	* include/debug/unordered_set
+	(std::__debug::unordered_set<>): Likewise.
+	(std::__debug::unordered_multiset<>): Likewise.
+	* include/debug/vector (std::__debug::vector<>): Likewise.
+	* include/debug/safe_base.h (_Safe_sequence_base()): Add
+	noexcept.
+	(_Safe_sequence_base(_Safe_sequence_base&&): Remove.
+	(~_Safe_sequence_base()): Add noexcept.
+	* include/debug/safe_sequence.h
+	(std::__debug::_Safe_node_sequence<>): New.
+	* include/debug/safe_unordered_base.h
+	(_Safe_unordered_container_base()): Add noexcept.
+	(~_Safe_unordered_container_base()): Likewise.
+	(_M_swap(_Safe_unordered_container_base&)): Likewise.
+	* include/debug/safe_unordered_container.h:
+	(_Safe_unordered_container<>::_M_invalidate_locals()): New.
+	(_Safe_unordered_container<>::_M_invalidate_all()): New.
+	* src/c++11/debug.cc: Limit includes, adapt methods noexcept
+	qualifications.
+	* testsuite/util/debug/checks.h (check_construct1): Just implement
+	an invalid constructor invocation  and no other operations
+	potentially not supported by some types of container.
+	(check_construct2): Likewise.
+	(check_construct3): Likewise.
+	* testsuite/23_containers/forward_list/allocator/move.cc: Add
+	check on iterators to make sure they are correctly moved in debug
+	mode.
+	* testsuite/23_containers/forward_list/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/map/allocator/move.cc: Likewise.
+	* testsuite/23_containers/map/allocator/move_assign.cc: Likewise.
+	* testsuite/23_containers/multimap/allocator/move.cc: Likewise.
+	* testsuite/23_containers/multimap/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/allocator/move.cc: Likewise.
+	* testsuite/23_containers/multiset/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/set/allocator/move.cc: Likewise.
+	* testsuite/23_containers/set/allocator/move_assign.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/allocator/move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/construct1_neg.cc:
+	New.
+	* testsuite/23_containers/forward_list/debug/construct2_neg.cc:
+	New.
+	* testsuite/23_containers/forward_list/debug/construct3_neg.cc:
+	New.
+	* testsuite/23_containers/forward_list/debug/construct4_neg.cc:
+	New.
+	* testsuite/23_containers/forward_list/debug/move_assign_neg.cc:
+	New.
+	* testsuite/23_containers/forward_list/debug/move_neg.cc: New.
+	* testsuite/23_containers/map/debug/construct5_neg.cc: New.
+	* testsuite/23_containers/map/debug/move_assign_neg.cc: New.
+	* testsuite/23_containers/map/debug/move_neg.cc: New.
+	* testsuite/23_containers/multimap/debug/construct5_neg.cc: New.
+	* testsuite/23_containers/multimap/debug/move_assign_neg.cc: New.
+	* testsuite/23_containers/multimap/debug/move_neg.cc: New.
+	* testsuite/23_containers/multiset/debug/construct5_neg.cc: New.
+	* testsuite/23_containers/multiset/debug/move_assign_neg.cc: New.
+	* testsuite/23_containers/multiset/debug/move_neg.cc: New.
+	* testsuite/23_containers/set/debug/construct5_neg.cc: New.
+	* testsuite/23_containers/set/debug/move_assign_neg.cc: New.
+	* testsuite/23_containers/set/debug/move_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/construct5_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_map/debug/move_assign_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_map/debug/move_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/construct5_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/debug/move_assign_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/debug/move_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/debug/construct5_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/debug/move_assign_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/debug/move_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_set/debug/construct5_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_set/debug/move_assign_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_set/debug/move_neg.cc: New.
+	* testsuite/23_containers/vector/debug/move_neg.cc: New.
+
 2014-05-05  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt

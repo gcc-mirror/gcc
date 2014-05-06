@@ -58,7 +58,7 @@ namespace __gnu_debug
   /** Iterators that derive from _Safe_iterator_base can be determined singular
    *  or non-singular.
    **/
-  inline bool 
+  inline bool
   __check_singular_aux(const _Safe_iterator_base* __x)
   { return __x->_M_singular(); }
 
@@ -127,12 +127,12 @@ namespace __gnu_debug
       typedef std::iterator_traits<_Iterator> _Traits;
 
     public:
-      typedef _Iterator                           iterator_type;
-      typedef typename _Traits::iterator_category iterator_category;
-      typedef typename _Traits::value_type        value_type;
-      typedef typename _Traits::difference_type   difference_type;
-      typedef typename _Traits::reference         reference;
-      typedef typename _Traits::pointer           pointer;
+      typedef _Iterator					iterator_type;
+      typedef typename _Traits::iterator_category	iterator_category;
+      typedef typename _Traits::value_type		value_type;
+      typedef typename _Traits::difference_type		difference_type;
+      typedef typename _Traits::reference		reference;
+      typedef typename _Traits::pointer			pointer;
 
       /// @post the iterator is singular and unattached
       _Safe_iterator() _GLIBCXX_NOEXCEPT : _M_current() { }
@@ -191,13 +191,13 @@ namespace __gnu_debug
        *  constant iterator.
       */
       template<typename _MutableIterator>
-        _Safe_iterator(
-          const _Safe_iterator<_MutableIterator,
-          typename __gnu_cxx::__enable_if<(std::__are_same<_MutableIterator,
-                      typename _Sequence::iterator::iterator_type>::__value),
-                   _Sequence>::__type>& __x) _GLIBCXX_NOEXCEPT
+	_Safe_iterator(
+	  const _Safe_iterator<_MutableIterator,
+	  typename __gnu_cxx::__enable_if<(std::__are_same<_MutableIterator,
+		      typename _Sequence::iterator::iterator_type>::__value),
+		   _Sequence>::__type>& __x) _GLIBCXX_NOEXCEPT
 	: _Safe_iterator_base(__x, _M_constant()), _M_current(__x.base())
-        {
+	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
@@ -497,7 +497,7 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator==(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-               const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
       _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
@@ -531,7 +531,7 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator!=(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-               const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
       _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
@@ -599,7 +599,7 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator<=(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-               const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
       _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
@@ -667,7 +667,7 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence>
     inline bool
     operator>=(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-               const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
     _GLIBCXX_NOEXCEPT
     {
       _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
