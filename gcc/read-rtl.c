@@ -811,6 +811,29 @@ validate_const_int (const char *string)
     fatal_with_file_and_line ("invalid decimal constant \"%s\"\n", string);
 }
 
+static void
+validate_const_wide_int (const char *string)
+{
+  const char *cp;
+  int valid = 1;
+
+  cp = string;
+  while (*cp && ISSPACE (*cp))
+    cp++;
+  /* Skip the leading 0x.  */
+  if (cp[0] == '0' || cp[1] == 'x')
+    cp += 2;
+  else
+    valid = 0;
+  if (*cp == 0)
+    valid = 0;
+  for (; *cp; cp++)
+    if (! ISXDIGIT (*cp))
+      valid = 0;
+  if (!valid)
+    fatal_with_file_and_line ("invalid hex constant \"%s\"\n", string);
+}
+
 /* Record that PTR uses iterator ITERATOR.  */
 
 static void
@@ -1326,6 +1349,54 @@ read_rtx_code (const char *code_name)
       default:
 	gcc_unreachable ();
       }
+
+  if (CONST_WIDE_INT_P (return_rtx))
+    {
+      read_name (&name);
+      validate_const_wide_int (name.string);
+      {
+	const char *s = name.string;
+	int len;
+	int index = 0;
+	int gs = HOST_BITS_PER_WIDE_INT/4;
+	int pos;
+	char * buf = XALLOCAVEC (char, gs + 1);
+	unsigned HOST_WIDE_INT wi;
+	int wlen;
+
+	/* Skip the leading spaces.  */
+	while (*s && ISSPACE (*s))
+	  s++;
+
+	/* Skip the leading 0x.  */
+	gcc_assert (s[0] == '0');
+	gcc_assert (s[1] == 'x');
+	s += 2;
+
+	len = strlen (s);
+	pos = len - gs;
+	wlen = (len + gs - 1) / gs;	/* Number of words needed */
+
+	return_rtx = const_wide_int_alloc (wlen);
+
+	while (pos > 0)
+	  {
+#if HOST_BITS_PER_WIDE_INT == 64
+	    sscanf (s + pos, "%16" HOST_WIDE_INT_PRINT "x", &wi);
+#else
+	    sscanf (s + pos, "%8" HOST_WIDE_INT_PRINT "x", &wi);
+#endif
+	    CWI_ELT (return_rtx, index++) = wi;
+	    pos -= gs;
+	  }
+	strncpy (buf, s, gs - pos);
+	buf [gs - pos] = 0;
+	sscanf (buf, "%" HOST_WIDE_INT_PRINT "x", &wi);
+	CWI_ELT (return_rtx, index++) = wi;
+	/* TODO: After reading, do we want to canonicalize with:
+	   value = lookup_const_wide_int (value); ? */
+      }
+    }
 
   c = read_skip_spaces ();
   /* Syntactic sugar for AND and IOR, allowing Lisp-like

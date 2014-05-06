@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "diagnostic-core.h"
+#include "wide-int.h"
 
 /* Compare two fixed objects for bitwise identity.  */
 
@@ -113,6 +114,7 @@ fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, enum machine_mode mode)
   REAL_VALUE_TYPE real_value, fixed_value, base_value;
   unsigned int fbit;
   enum fixed_value_range_code temp;
+  bool fail;
 
   f->mode = mode;
   fbit = GET_MODE_FBIT (mode);
@@ -127,8 +129,10 @@ fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, enum machine_mode mode)
 	     "large fixed-point constant implicitly truncated to fixed-point type");
   real_2expN (&base_value, fbit, mode);
   real_arithmetic (&fixed_value, MULT_EXPR, &real_value, &base_value);
-  real_to_integer2 ((HOST_WIDE_INT *)&f->data.low, &f->data.high,
-		    &fixed_value);
+  wide_int w = real_to_integer (&fixed_value, &fail,
+				GET_MODE_PRECISION (mode));
+  f->data.low = w.elt (0);
+  f->data.high = w.elt (1);
 
   if (temp == FIXED_MAX_EPS && ALL_FRACT_MODE_P (f->mode))
     {
@@ -153,9 +157,12 @@ fixed_to_decimal (char *str, const FIXED_VALUE_TYPE *f_orig,
 {
   REAL_VALUE_TYPE real_value, base_value, fixed_value;
 
+  signop sgn = UNSIGNED_FIXED_POINT_MODE_P (f_orig->mode) ? UNSIGNED : SIGNED;
   real_2expN (&base_value, GET_MODE_FBIT (f_orig->mode), f_orig->mode);
-  real_from_integer (&real_value, VOIDmode, f_orig->data.low, f_orig->data.high,
-		     UNSIGNED_FIXED_POINT_MODE_P (f_orig->mode));
+  real_from_integer (&real_value, VOIDmode,
+		     wide_int::from (f_orig->data,
+				     GET_MODE_PRECISION (f_orig->mode), sgn),
+		     sgn);
   real_arithmetic (&fixed_value, RDIV_EXPR, &real_value, &base_value);
   real_to_decimal (str, &fixed_value, buf_size, 0, 1);
 }
@@ -1041,12 +1048,17 @@ fixed_convert_from_real (FIXED_VALUE_TYPE *f, enum machine_mode mode,
   int i_f_bits = GET_MODE_IBIT (mode) + GET_MODE_FBIT (mode);
   unsigned int fbit = GET_MODE_FBIT (mode);
   enum fixed_value_range_code temp;
+  bool fail;
 
   real_value = *a;
   f->mode = mode;
   real_2expN (&base_value, fbit, mode);
   real_arithmetic (&fixed_value, MULT_EXPR, &real_value, &base_value);
-  real_to_integer2 ((HOST_WIDE_INT *)&f->data.low, &f->data.high, &fixed_value);
+
+  wide_int w = real_to_integer (&fixed_value, &fail,
+				GET_MODE_PRECISION (mode));
+  f->data.low = w.elt (0);
+  f->data.high = w.elt (1);
   temp = check_real_for_fixed_mode (&real_value, mode);
   if (temp == FIXED_UNDERFLOW) /* Minimum.  */
     {
@@ -1091,9 +1103,11 @@ real_convert_from_fixed (REAL_VALUE_TYPE *r, enum machine_mode mode,
 {
   REAL_VALUE_TYPE base_value, fixed_value, real_value;
 
+  signop sgn = UNSIGNED_FIXED_POINT_MODE_P (f->mode) ? UNSIGNED : SIGNED;
   real_2expN (&base_value, GET_MODE_FBIT (f->mode), f->mode);
-  real_from_integer (&fixed_value, VOIDmode, f->data.low, f->data.high,
-		     UNSIGNED_FIXED_POINT_MODE_P (f->mode));
+  real_from_integer (&fixed_value, VOIDmode,
+		     wide_int::from (f->data, GET_MODE_PRECISION (f->mode),
+				     sgn), sgn);
   real_arithmetic (&real_value, RDIV_EXPR, &fixed_value, &base_value);
   real_convert (r, mode, &real_value);
 }

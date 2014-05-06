@@ -692,88 +692,39 @@ stabstr_U (unsigned HOST_WIDE_INT num)
 static void
 stabstr_O (tree cst)
 {
-  unsigned HOST_WIDE_INT high = TREE_INT_CST_HIGH (cst);
-  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (cst);
-
-  char buf[128];
-  char *p = buf + sizeof buf;
-
-  /* GDB wants constants with no extra leading "1" bits, so
-     we need to remove any sign-extension that might be
-     present.  */
-  {
-    const unsigned int width = TYPE_PRECISION (TREE_TYPE (cst));
-    if (width == HOST_BITS_PER_DOUBLE_INT)
-      ;
-    else if (width > HOST_BITS_PER_WIDE_INT)
-      high &= (((HOST_WIDE_INT) 1 << (width - HOST_BITS_PER_WIDE_INT)) - 1);
-    else if (width == HOST_BITS_PER_WIDE_INT)
-      high = 0;
-    else
-      high = 0, low &= (((HOST_WIDE_INT) 1 << width) - 1);
-  }
+  int prec = TYPE_PRECISION (TREE_TYPE (cst));
+  int res_pres = prec % 3;
+  int i;
+  unsigned int digit;
 
   /* Leading zero for base indicator.  */
   stabstr_C ('0');
 
   /* If the value is zero, the base indicator will serve as the value
      all by itself.  */
-  if (high == 0 && low == 0)
+  if (wi::eq_p (cst, 0))
     return;
 
-  /* If the high half is zero, we need only print the low half normally.  */
-  if (high == 0)
-    NUMBER_FMT_LOOP (p, low, 8);
-  else
+  /* GDB wants constants with no extra leading "1" bits, so
+     we need to remove any sign-extension that might be
+     present.  */
+  if (res_pres == 1)
     {
-      /* When high != 0, we need to print enough zeroes from low to
-	 give the digits from high their proper place-values.  Hence
-	 NUMBER_FMT_LOOP cannot be used.  */
-      const int n_digits = HOST_BITS_PER_WIDE_INT / 3;
-      int i;
-
-      for (i = 1; i <= n_digits; i++)
-	{
-	  unsigned int digit = low % 8;
-	  low /= 8;
-	  *--p = '0' + digit;
-	}
-
-      /* Octal digits carry exactly three bits of information.  The
-	 width of a HOST_WIDE_INT is not normally a multiple of three.
-	 Therefore, the next digit printed probably needs to carry
-	 information from both low and high.  */
-      if (HOST_BITS_PER_WIDE_INT % 3 != 0)
-	{
-	  const int n_leftover_bits = HOST_BITS_PER_WIDE_INT % 3;
-	  const int n_bits_from_high = 3 - n_leftover_bits;
-
-	  const unsigned HOST_WIDE_INT
-	    low_mask = (((unsigned HOST_WIDE_INT)1) << n_leftover_bits) - 1;
-	  const unsigned HOST_WIDE_INT
-	    high_mask = (((unsigned HOST_WIDE_INT)1) << n_bits_from_high) - 1;
-
-	  unsigned int digit;
-
-	  /* At this point, only the bottom n_leftover_bits bits of low
-	     should be set.  */
-	  gcc_assert (!(low & ~low_mask));
-
-	  digit = (low | ((high & high_mask) << n_leftover_bits));
-	  high >>= n_bits_from_high;
-
-	  *--p = '0' + digit;
-	}
-
-      /* Now we can format high in the normal manner.  However, if
-	 the only bits of high that were set were handled by the
-	 digit split between low and high, high will now be zero, and
-	 we don't want to print extra digits in that case.  */
-      if (high)
-	NUMBER_FMT_LOOP (p, high, 8);
+      digit = wi::extract_uhwi (cst, prec - 1, 1);
+      stabstr_C ('0' + digit);
+    }
+  else if (res_pres == 2)
+    {
+      digit = wi::extract_uhwi (cst, prec - 2, 2);
+      stabstr_C ('0' + digit);
     }
 
-  obstack_grow (&stabstr_ob, p, (buf + sizeof buf) - p);
+  prec -= res_pres;
+  for (i = prec - 3; i >= 0; i = i - 3)
+    {
+      digit = wi::extract_uhwi (cst, i, 3);
+      stabstr_C ('0' + digit);
+    }
 }
 
 /* Called whenever it is safe to break a stabs string into multiple
@@ -2301,10 +2252,7 @@ dbxout_type (tree type, int full)
           if (TREE_CODE (value) == CONST_DECL)
             value = DECL_INITIAL (value);
 
-	  if (TREE_INT_CST_HIGH (value) == 0)
-	    stabstr_D (TREE_INT_CST_LOW (value));
-	  else if (TREE_INT_CST_HIGH (value) == -1
-		   && (HOST_WIDE_INT) TREE_INT_CST_LOW (value) < 0)
+	  if (cst_and_fits_in_hwi (value))
 	    stabstr_D (TREE_INT_CST_LOW (value));
 	  else
 	    stabstr_O (value);

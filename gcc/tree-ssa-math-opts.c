@@ -1148,7 +1148,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      multiplication sequence when profitable.  */
   c = TREE_REAL_CST (arg1);
   n = real_to_integer (&c);
-  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
   c_is_int = real_identical (&c, &cint);
 
   if (c_is_int
@@ -1194,7 +1194,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   /* Optimize pow(x,0.75) = sqrt(x) * sqrt(sqrt(x)) unless we are
      optimizing for space.  Don't do this optimization if we don't have
      a hardware sqrt insn.  */
-  real_from_integer (&dconst3_4, VOIDmode, 3, 0, 0);
+  real_from_integer (&dconst3_4, VOIDmode, 3, SIGNED);
   SET_REAL_EXP (&dconst3_4, REAL_EXP (&dconst3_4) - 2);
 
   if (flag_unsafe_math_optimizations
@@ -1258,7 +1258,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      Do not calculate the powi factor when n/2 = 0.  */
   real_arithmetic (&c2, MULT_EXPR, &c, &dconst2);
   n = real_to_integer (&c2);
-  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
   c2_is_int = real_identical (&c2, &cint);
 
   if (flag_unsafe_math_optimizations
@@ -1306,11 +1306,11 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      different from pow(x, 1./3.) due to rounding and behavior with
      negative x, we need to constrain this transformation to unsafe
      math and positive x or finite math.  */
-  real_from_integer (&dconst3, VOIDmode, 3, 0, 0);
+  real_from_integer (&dconst3, VOIDmode, 3, SIGNED);
   real_arithmetic (&c2, MULT_EXPR, &c, &dconst3);
   real_round (&c2, mode, &c2);
   n = real_to_integer (&c2);
-  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
   real_arithmetic (&c2, RDIV_EXPR, &cint, &dconst3);
   real_convert (&c2, mode, &c2);
 

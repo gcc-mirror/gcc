@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "dumpfile.h"
 #include "tree-pass.h"
+#include "wide-int.h"
 #include "context.h"
 #include "pass_manager.h"
 #include "target-globals.h"
@@ -26582,14 +26583,12 @@ ix86_data_alignment (tree type, int align, bool opt)
       && TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
     {
-      if ((TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align_compat
-	   || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
+      if (wi::geu_p (TYPE_SIZE (type), max_align_compat)
 	  && align < max_align_compat)
 	align = max_align_compat;
-      if ((TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
-	   || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
-	  && align < max_align)
-	align = max_align;
+       if (wi::geu_p (TYPE_SIZE (type), max_align)
+	   && align < max_align)
+	 align = max_align;
     }
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
@@ -26599,8 +26598,8 @@ ix86_data_alignment (tree type, int align, bool opt)
       if ((opt ? AGGREGATE_TYPE_P (type) : TREE_CODE (type) == ARRAY_TYPE)
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 128
-	      || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+	  && wi::geu_p (TYPE_SIZE (type), 128)
+	  && align < 128)
 	return 128;
     }
 
@@ -26709,13 +26708,13 @@ ix86_local_alignment (tree exp, enum machine_mode mode,
       && TARGET_SSE)
     {
       if (AGGREGATE_TYPE_P (type)
-	   && (va_list_type_node == NULL_TREE
-	       || (TYPE_MAIN_VARIANT (type)
-		   != TYPE_MAIN_VARIANT (va_list_type_node)))
-	   && TYPE_SIZE (type)
-	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	   && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 16
-	       || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+	  && (va_list_type_node == NULL_TREE
+	      || (TYPE_MAIN_VARIANT (type)
+		  != TYPE_MAIN_VARIANT (va_list_type_node)))
+	  && TYPE_SIZE (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && wi::geu_p (TYPE_SIZE (type), 16)
+	  && align < 128)
 	return 128;
     }
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -41375,7 +41374,7 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
   e2 = gen_reg_rtx (mode);
   e3 = gen_reg_rtx (mode);
 
-  real_from_integer (&r, VOIDmode, -3, -1, 0);
+  real_from_integer (&r, VOIDmode, -3, SIGNED);
   mthree = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
 
   real_arithmetic (&r, NEGATE_EXPR, &dconsthalf, NULL);

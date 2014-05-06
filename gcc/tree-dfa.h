@@ -102,11 +102,10 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		double_int doffset
-		  = (TREE_INT_CST (index) - TREE_INT_CST (low_bound))
-		    .sext (TYPE_PRECISION (TREE_TYPE (index)));
-		doffset *= tree_to_double_int (unit_size);
-		byte_offset += doffset.to_shwi ();
+		offset_int woffset
+		  = offset_int::from (wi::sub (index, low_bound), SIGNED);
+		woffset *= wi::to_offset (unit_size);
+		byte_offset += woffset.to_shwi ();
 	      }
 	    else
 	      return NULL_TREE;
@@ -135,9 +134,8 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	      {
 		if (!integer_zerop (TREE_OPERAND (exp, 1)))
 		  {
-		    double_int off = mem_ref_offset (exp);
-		    gcc_assert (off.high == -1 || off.high == 0);
-		    byte_offset += off.to_shwi ();
+		    offset_int off = mem_ref_offset (exp);
+		    byte_offset += off.to_short_addr ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }
@@ -158,9 +156,8 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		  return NULL_TREE;
 		if (!integer_zerop (TMR_OFFSET (exp)))
 		  {
-		    double_int off = mem_ref_offset (exp);
-		    gcc_assert (off.high == -1 || off.high == 0);
-		    byte_offset += off.to_shwi ();
+		    offset_int off = mem_ref_offset (exp);
+		    byte_offset += off.to_short_addr ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }

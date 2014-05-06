@@ -205,7 +205,7 @@ check_pow (gimple pow_call)
         return false;
       if (REAL_VALUES_LESS (bcv, dconst1))
         return false;
-      real_from_integer (&mv, TYPE_MODE (TREE_TYPE (base)), 256, 0, 1);
+      real_from_integer (&mv, TYPE_MODE (TREE_TYPE (base)), 256, UNSIGNED);
       if (REAL_VALUES_LESS (mv, bcv))
         return false;
       return true;
@@ -422,7 +422,7 @@ gen_conditions_for_pow_cst_base (tree base, tree expn,
   REAL_VALUE_TYPE bcv = TREE_REAL_CST (base);
   gcc_assert (!REAL_VALUES_EQUAL (bcv, dconst1)
               && !REAL_VALUES_LESS (bcv, dconst1));
-  real_from_integer (&mv, TYPE_MODE (TREE_TYPE (base)), 256, 0, 1);
+  real_from_integer (&mv, TYPE_MODE (TREE_TYPE (base)), 256, UNSIGNED);
   gcc_assert (!REAL_VALUES_LESS (mv, bcv));
 
   exp_domain = get_domain (0, false, false,

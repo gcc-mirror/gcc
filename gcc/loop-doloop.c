@@ -409,7 +409,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   basic_block loop_end = desc->out_edge->src;
   enum machine_mode mode;
   rtx true_prob_val;
-  double_int iterations;
+  widest_int iterations;
 
   jump_insn = BB_END (loop_end);
 
@@ -461,9 +461,9 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       /* Determine if the iteration counter will be non-negative.
 	 Note that the maximum value loaded is iterations_max - 1.  */
       if (get_max_loop_iterations (loop, &iterations)
-	  && (iterations.ule (double_int_one.llshift
-			       (GET_MODE_PRECISION (mode) - 1,
-				GET_MODE_PRECISION (mode)))))
+	  && wi::leu_p (iterations,
+			wi::set_bit_in_zero <widest_int>
+			(GET_MODE_PRECISION (mode) - 1)))
 	nonneg = 1;
       break;
 
@@ -597,7 +597,7 @@ doloop_optimize (struct loop *loop)
   enum machine_mode mode;
   rtx doloop_seq, doloop_pat, doloop_reg;
   rtx count;
-  double_int iterations, iterations_max;
+  widest_int iterations, iterations_max;
   rtx start_label;
   rtx condition;
   unsigned level, est_niter;
@@ -655,11 +655,12 @@ doloop_optimize (struct loop *loop)
     }
 
   if (desc->const_iter)
-    iterations = rtx_to_double_int (desc->niter_expr);
+    iterations = widest_int::from (std::make_pair (desc->niter_expr, mode),
+				   UNSIGNED);
   else
-    iterations = double_int_zero;
+    iterations = 0;
   if (!get_max_loop_iterations (loop, &iterations_max))
-    iterations_max = double_int_zero;
+    iterations_max = 0;
   level = get_loop_level (loop) + 1;
   entered_at_top = (loop->latch == desc->in_edge->dest
 		    && contains_no_active_insn_p (loop->latch));
@@ -688,7 +689,7 @@ doloop_optimize (struct loop *loop)
 	 computed, we must be sure that the number of iterations fits into
 	 the new mode.  */
       && (word_mode_size >= GET_MODE_PRECISION (mode)
-	  || iterations_max.ule (double_int::from_shwi (word_mode_max))))
+ 	  || wi::leu_p (iterations_max, word_mode_max)))
     {
       if (word_mode_size > GET_MODE_PRECISION (mode))
 	count = simplify_gen_unary (ZERO_EXTEND, word_mode, count, mode);

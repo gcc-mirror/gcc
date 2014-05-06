@@ -345,6 +345,9 @@ DEF_RTL_EXPR(TRAP_IF, "trap_if", "ee", RTX_EXTRA)
 /* numeric integer constant */
 DEF_RTL_EXPR(CONST_INT, "const_int", "w", RTX_CONST_OBJ)
 
+/* numeric integer constant */
+DEF_RTL_EXPR(CONST_WIDE_INT, "const_wide_int", "", RTX_CONST_OBJ)
+
 /* fixed-point constant */
 DEF_RTL_EXPR(CONST_FIXED, "const_fixed", "www", RTX_CONST_OBJ)
 

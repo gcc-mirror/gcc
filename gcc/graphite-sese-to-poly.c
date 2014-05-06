@@ -73,8 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 static inline void
 tree_int_to_gmp (tree t, mpz_t res)
 {
-  double_int di = tree_to_double_int (t);
-  mpz_set_double_int (res, di, TYPE_UNSIGNED (TREE_TYPE (t)));
+  wi::to_mpz (t, res, TYPE_SIGN (TREE_TYPE (t)));
 }
 
 /* Returns the index of the PHI argument defined in the outermost
@@ -1025,7 +1024,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   /* loop_i <= expr_nb_iters */
   else if (!chrec_contains_undetermined (nb_iters))
     {
-      double_int nit;
+      widest_int nit;
       isl_pw_aff *aff;
       isl_set *valid;
       isl_local_space *ls;
@@ -1061,7 +1060,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 	  isl_constraint *c;
 
 	  mpz_init (g);
-	  mpz_set_double_int (g, nit, false);
+	  wi::to_mpz (nit, g, SIGNED);
 	  mpz_sub_ui (g, g, 1);
 	  approx = extract_affine_gmp (g, isl_set_get_space (inner));
 	  x = isl_pw_aff_ge_set (approx, aff);

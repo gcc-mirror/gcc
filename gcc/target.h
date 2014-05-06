@@ -50,7 +50,7 @@
 
 #include "insn-modes.h"
 #include "insn-codes.h"
-#include "double-int.h"
+#include "wide-int.h"
 
 #ifdef ENABLE_CHECKING
 

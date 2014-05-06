@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
+#include "wide-int.h"
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
@@ -2620,8 +2621,7 @@ cp_tree_equal (tree t1, tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return TREE_INT_CST_LOW (t1) == TREE_INT_CST_LOW (t2)
-	&& TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2);
+      return tree_int_cst_equal (t1, t2);
 
     case REAL_CST:
       return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));

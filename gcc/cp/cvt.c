@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "decl.h"
 #include "target.h"
+#include "wide-int.h"
 
 static tree cp_convert_to_pointer (tree, tree, tsubst_flags_t);
 static tree convert_to_pointer_force (tree, tree, tsubst_flags_t);
@@ -582,9 +583,7 @@ ignore_overflows (tree expr, tree orig)
     {
       gcc_assert (!TREE_OVERFLOW (orig));
       /* Ensure constant sharing.  */
-      expr = build_int_cst_wide (TREE_TYPE (expr),
-				 TREE_INT_CST_LOW (expr),
-				 TREE_INT_CST_HIGH (expr));
+      expr = wide_int_to_tree (TREE_TYPE (expr), expr);
     }
   return expr;
 }

@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "target-def.h"
 #include "gimplify.h"
+#include "wide-int-print.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -4122,9 +4123,12 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	{
 	  /* Convert primop1 to target type, but do not introduce
 	     additional overflow.  We know primop1 is an int_cst.  */
-	  primop1 = force_fit_type_double (*restype_ptr,
-					   tree_to_double_int (primop1),
-					   0, TREE_OVERFLOW (primop1));
+	  primop1 = force_fit_type (*restype_ptr,
+				    wide_int::from
+				      (primop1,
+				       TYPE_PRECISION (*restype_ptr),
+				       TYPE_SIGN (TREE_TYPE (primop1))),
+				    0, TREE_OVERFLOW (primop1));
 	}
       if (type != *restype_ptr)
 	{
@@ -4132,20 +4136,10 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	  maxval = convert (*restype_ptr, maxval);
 	}
 
-      if (unsignedp && unsignedp0)
-	{
-	  min_gt = INT_CST_LT_UNSIGNED (primop1, minval);
-	  max_gt = INT_CST_LT_UNSIGNED (primop1, maxval);
-	  min_lt = INT_CST_LT_UNSIGNED (minval, primop1);
-	  max_lt = INT_CST_LT_UNSIGNED (maxval, primop1);
-	}
-      else
-	{
-	  min_gt = INT_CST_LT (primop1, minval);
-	  max_gt = INT_CST_LT (primop1, maxval);
-	  min_lt = INT_CST_LT (minval, primop1);
-	  max_lt = INT_CST_LT (maxval, primop1);
-	}
+      min_gt = tree_int_cst_lt (primop1, minval);
+      max_gt = tree_int_cst_lt (primop1, maxval);
+      min_lt = tree_int_cst_lt (minval, primop1);
+      max_lt = tree_int_cst_lt (maxval, primop1);
 
       val = 0;
       /* This used to be a switch, but Genix compiler can't handle that.  */
@@ -4434,8 +4428,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 			      convert (TREE_TYPE (intop), size_exp), 1);
     intop = convert (sizetype, t);
     if (TREE_OVERFLOW_P (intop) && !TREE_OVERFLOW (t))
-      intop = build_int_cst_wide (TREE_TYPE (intop), TREE_INT_CST_LOW (intop),
-				  TREE_INT_CST_HIGH (intop));
+      intop = wide_int_to_tree (TREE_TYPE (intop), intop);
   }
 
   /* Create the sum or difference.  */
@@ -5512,7 +5505,7 @@ c_common_nodes_and_builtins (void)
   }
 
   /* This node must not be shared.  */
-  void_zero_node = make_node (INTEGER_CST);
+  void_zero_node = make_int_cst (1, 1);
   TREE_TYPE (void_zero_node) = void_type_node;
 
   void_list_node = build_void_list_node ();
@@ -5719,7 +5712,7 @@ c_common_nodes_and_builtins (void)
 
   /* Create the built-in __null node.  It is important that this is
      not shared.  */
-  null_node = make_node (INTEGER_CST);
+  null_node = make_int_cst (1, 1);
   TREE_TYPE (null_node) = c_common_type_for_size (POINTER_SIZE, 0);
 
   /* Since builtin_types isn't gc'ed, don't export these nodes.  */
@@ -6097,22 +6090,14 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
 static void
 match_case_to_enum_1 (tree key, tree type, tree label)
 {
-  char buf[2 + 2*HOST_BITS_PER_WIDE_INT/4 + 1];
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
-  /* ??? Not working too hard to print the double-word value.
-     Should perhaps be done with %lwd in the diagnostic routines?  */
-  if (TREE_INT_CST_HIGH (key) == 0)
-    snprintf (buf, sizeof (buf), HOST_WIDE_INT_PRINT_UNSIGNED,
-	      TREE_INT_CST_LOW (key));
-  else if (!TYPE_UNSIGNED (type)
-	   && TREE_INT_CST_HIGH (key) == -1
-	   && TREE_INT_CST_LOW (key) != 0)
-    snprintf (buf, sizeof (buf), "-" HOST_WIDE_INT_PRINT_UNSIGNED,
-	      -TREE_INT_CST_LOW (key));
+  if (tree_fits_uhwi_p (key))
+    print_dec (key, buf, UNSIGNED);
+  else if (tree_fits_shwi_p (key))
+    print_dec (key, buf, SIGNED);
   else
-    snprintf (buf, sizeof (buf), HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-	      (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (key),
-	      (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (key));
+    print_hex (key, buf);
 
   if (TYPE_NAME (type) == 0)
     warning_at (DECL_SOURCE_LOCATION (CASE_LABEL (label)),
@@ -8849,13 +8834,14 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
 static bool
 get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 {
-  /* Verify the arg number is a constant.  */
-  if (TREE_CODE (arg_num_expr) != INTEGER_CST
-      || TREE_INT_CST_HIGH (arg_num_expr) != 0)
+  /* Verify the arg number is a small constant.  */
+  if (tree_fits_uhwi_p (arg_num_expr))
+    {
+      *valp = TREE_INT_CST_LOW (arg_num_expr);
+      return true;
+    }
+  else
     return false;
-
-  *valp = TREE_INT_CST_LOW (arg_num_expr);
-  return true;
 }
 
 /* Handle a "nothrow" attribute; arguments as in

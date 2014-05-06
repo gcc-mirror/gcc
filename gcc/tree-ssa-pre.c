@@ -1599,11 +1599,11 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		&& TREE_CODE (op[1]) == INTEGER_CST
 		&& TREE_CODE (op[2]) == INTEGER_CST)
 	      {
-		double_int off = tree_to_double_int (op[0]);
-		off += -tree_to_double_int (op[1]);
-		off *= tree_to_double_int (op[2]);
-		if (off.fits_shwi ())
-		  newop.off = off.low;
+		offset_int off = ((wi::to_offset (op[0])
+				   - wi::to_offset (op[1]))
+				  * wi::to_offset (op[2]));
+		if (wi::fits_shwi_p (off))
+		  newop.off = off.to_shwi ();
 	      }
 	    newoperands[j] = newop;
 	    /* If it transforms from an SSA_NAME to an address, fold with

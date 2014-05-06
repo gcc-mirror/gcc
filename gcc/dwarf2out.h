@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DWARF2OUT_H 1
 
 #include "dwarf2.h"	/* ??? Remove this once only used by dwarf2foo.c.  */
+#include "wide-int.h"
 
 typedef struct die_struct *dw_die_ref;
 typedef const struct die_struct *const_dw_die_ref;
@@ -29,6 +30,7 @@ typedef struct dw_val_node *dw_val_ref;
 typedef struct dw_cfi_node *dw_cfi_ref;
 typedef struct dw_loc_descr_node *dw_loc_descr_ref;
 typedef struct dw_loc_list_struct *dw_loc_list_ref;
+typedef wide_int *wide_int_ptr;
 
 
 /* Call frames are described using a sequence of Call Frame
@@ -136,6 +138,7 @@ enum dw_val_class
   dw_val_class_const,
   dw_val_class_unsigned_const,
   dw_val_class_const_double,
+  dw_val_class_wide_int,
   dw_val_class_vec,
   dw_val_class_flag,
   dw_val_class_die_ref,
@@ -176,6 +179,7 @@ struct GTY(()) dw_val_node {
       HOST_WIDE_INT GTY ((default)) val_int;
       unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
       double_int GTY ((tag ("dw_val_class_const_double"))) val_double;
+      wide_int_ptr GTY ((tag ("dw_val_class_wide_int"))) val_wide;
       dw_vec_const GTY ((tag ("dw_val_class_vec"))) val_vec;
       struct dw_val_die_union
 	{

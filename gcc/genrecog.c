@@ -586,6 +586,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 		 && GET_CODE (src) != PC
 		 && GET_CODE (src) != CC0
 		 && !CONST_INT_P (src)
+		 && !CONST_WIDE_INT_P (src)
 		 && GET_CODE (src) != CALL)
 	  {
 	    const char *which;
@@ -770,13 +771,14 @@ add_to_sequence (rtx pattern, struct decision_head *last,
 
 	       We can optimize the generated code a little if either
 	       (a) the predicate only accepts one code, or (b) the
-	       predicate does not allow CONST_INT, in which case it
-	       can match only if the modes match.  */
+	       predicate does not allow CONST_INT or CONST_WIDE_INT,
+	       in which case it can match only if the modes match.  */
 	    pred = lookup_predicate (pred_name);
 	    if (pred)
 	      {
 		test->u.pred.data = pred;
-		allows_const_int = pred->codes[CONST_INT];
+		allows_const_int = (pred->codes[CONST_INT]
+				    || pred->codes[CONST_WIDE_INT]);
 		if (was_code == MATCH_PARALLEL
 		    && pred->singleton != PARALLEL)
 		  error_with_line (pattern_lineno,

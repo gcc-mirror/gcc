@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "tree-nested.h"
+#include "wide-int.h"
 
 /* This maps Fortran intrinsic math functions to external library or GCC
    builtin functions.  */
@@ -987,12 +988,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
       if (INTEGER_CST_P (dim_arg))
 	{
-	  int hi, co_dim;
-
-	  hi = TREE_INT_CST_HIGH (dim_arg);
-	  co_dim = TREE_INT_CST_LOW (dim_arg);
-	  if (hi || co_dim < 1
-	      || co_dim > GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc)))
+	  if (wi::ltu_p (dim_arg, 1)
+	      || wi::gtu_p (dim_arg, GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))))
 	    gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		       "dimension index", expr->value.function.isym->name,
 		       &expr->where);
@@ -1352,14 +1349,9 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
   if (INTEGER_CST_P (bound))
     {
-      int hi, low;
-
-      hi = TREE_INT_CST_HIGH (bound);
-      low = TREE_INT_CST_LOW (bound);
-      if (hi || low < 0
-	  || ((!as || as->type != AS_ASSUMED_RANK)
-	      && low >= GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)))
-	  || low > GFC_MAX_DIMENSIONS)
+      if (((!as || as->type != AS_ASSUMED_RANK)
+	   && wi::geu_p (bound, GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))))
+	  || wi::gtu_p (bound, GFC_MAX_DIMENSIONS))
 	gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		   "dimension index", upper ? "UBOUND" : "LBOUND",
 		   &expr->where);
@@ -1554,11 +1546,8 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
       if (INTEGER_CST_P (bound))
 	{
-	  int hi, low;
-
-	  hi = TREE_INT_CST_HIGH (bound);
-	  low = TREE_INT_CST_LOW (bound);
-	  if (hi || low < 1 || low > GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc)))
+	  if (wi::ltu_p (bound, 1)
+	      || wi::gtu_p (bound, GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))))
 	    gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		       "dimension index", expr->value.function.isym->name,
 		       &expr->where);

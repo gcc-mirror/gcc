@@ -332,7 +332,8 @@ hook_bool_rtx_int_int_int_intp_bool_false (rtx a ATTRIBUTE_UNUSED,
 }
 
 bool
-hook_bool_dint_dint_uint_bool_true (double_int, double_int, unsigned int, bool)
+hook_bool_wint_wint_uint_bool_true (const widest_int &, const widest_int &,
+				    unsigned int, bool)
 {
   return true;
 }

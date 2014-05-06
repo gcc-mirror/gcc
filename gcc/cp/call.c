@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "timevar.h"
 #include "cgraph.h"
+#include "wide-int.h"
 
 /* The various kinds of conversion.  */
 
@@ -6576,8 +6577,7 @@ type_passed_as (tree type)
   else if (targetm.calls.promote_prototypes (type)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
-	   && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
-				   TYPE_SIZE (integer_type_node)))
+	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
     type = integer_type_node;
 
   return type;
@@ -6617,8 +6617,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   else if (targetm.calls.promote_prototypes (type)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
-	   && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
-				   TYPE_SIZE (integer_type_node)))
+	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
     val = cp_perform_integral_promotions (val, complain);
   if ((complain & tf_warning)
       && warn_suggest_attribute_format)

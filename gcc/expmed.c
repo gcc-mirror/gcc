@@ -62,13 +62,25 @@ static rtx extract_fixed_bit_field (enum machine_mode, rtx,
 static rtx extract_fixed_bit_field_1 (enum machine_mode, rtx,
 				      unsigned HOST_WIDE_INT,
 				      unsigned HOST_WIDE_INT, rtx, int);
-static rtx mask_rtx (enum machine_mode, int, int, int);
 static rtx lshift_value (enum machine_mode, unsigned HOST_WIDE_INT, int);
 static rtx extract_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, int);
 static void do_cmp_and_jump (rtx, rtx, enum rtx_code, enum machine_mode, rtx);
 static rtx expand_smod_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
+
+/* Return a constant integer mask value of mode MODE with BITSIZE ones
+   followed by BITPOS zeros, or the complement of that if COMPLEMENT.
+   The mask is truncated if necessary to the width of mode MODE.  The
+   mask is zero-extended if BITSIZE+BITPOS is too small for MODE.  */
+
+static inline rtx
+mask_rtx (enum machine_mode mode, int bitpos, int bitsize, bool complement)
+{
+  return immed_wide_int_const
+    (wi::shifted_mask (bitpos, bitsize, complement,
+		       GET_MODE_PRECISION (mode)), mode);
+}
 
 /* Test whether a value is zero of a power of two.  */
 #define EXACT_POWER_OF_2_OR_ZERO_P(x) \
@@ -1885,26 +1897,6 @@ extract_fixed_bit_field_1 (enum machine_mode tmode, rtx op0,
   return expand_shift (RSHIFT_EXPR, mode, op0,
 		       GET_MODE_BITSIZE (mode) - bitsize, target, 0);
 }
-
-/* Return a constant integer (CONST_INT or CONST_DOUBLE) mask value
-   of mode MODE with BITSIZE ones followed by BITPOS zeros, or the
-   complement of that if COMPLEMENT.  The mask is truncated if
-   necessary to the width of mode MODE.  The mask is zero-extended if
-   BITSIZE+BITPOS is too small for MODE.  */
-
-static rtx
-mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
-{
-  double_int mask;
-
-  mask = double_int::mask (bitsize);
-  mask = mask.llshift (bitpos, HOST_BITS_PER_DOUBLE_INT);
-
-  if (complement)
-    mask = ~mask;
-
-  return immed_double_int_const (mask, mode);
-}
 
 /* Return a constant integer (CONST_INT or CONST_DOUBLE) rtx with the value
    VALUE << BITPOS.  */
@@ -1913,12 +1905,7 @@ static rtx
 lshift_value (enum machine_mode mode, unsigned HOST_WIDE_INT value,
 	      int bitpos)
 {
-  double_int val;
-  
-  val = double_int::from_uhwi (value);
-  val = val.llshift (bitpos, HOST_BITS_PER_DOUBLE_INT);
-
-  return immed_double_int_const (val, mode);
+  return immed_wide_int_const (wi::lshift (value, bitpos), mode);
 }
 
 /* Extract a bit field that is split across two words
@@ -3154,38 +3141,22 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	 only if the constant value exactly fits in an `unsigned int' without
 	 any truncation.  This means that multiplying by negative values does
 	 not work; results are off by 2^32 on a 32 bit machine.  */
-
       if (CONST_INT_P (scalar_op1))
 	{
 	  coeff = INTVAL (scalar_op1);
 	  is_neg = coeff < 0;
 	}
+#if TARGET_SUPPORTS_WIDE_INT
+      else if (CONST_WIDE_INT_P (scalar_op1))
+#else
       else if (CONST_DOUBLE_AS_INT_P (scalar_op1))
+#endif
 	{
-	  /* If we are multiplying in DImode, it may still be a win
-	     to try to work with shifts and adds.  */
-	  if (CONST_DOUBLE_HIGH (scalar_op1) == 0
-	      && (CONST_DOUBLE_LOW (scalar_op1) > 0
-		  || (CONST_DOUBLE_LOW (scalar_op1) < 0
-		      && EXACT_POWER_OF_2_OR_ZERO_P
-			   (CONST_DOUBLE_LOW (scalar_op1)))))
-	    {
-	      coeff = CONST_DOUBLE_LOW (scalar_op1);
-	      is_neg = false;
-	    }
-	  else if (CONST_DOUBLE_LOW (scalar_op1) == 0)
-	    {
-	      coeff = CONST_DOUBLE_HIGH (scalar_op1);
-	      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
-		{
-		  int shift = floor_log2 (coeff) + HOST_BITS_PER_WIDE_INT;
-		  if (shift < HOST_BITS_PER_DOUBLE_INT - 1
-		      || mode_bitsize <= HOST_BITS_PER_DOUBLE_INT)
-		    return expand_shift (LSHIFT_EXPR, mode, op0,
-					 shift, target, unsignedp);
-		}
-	      goto skip_synth;
-	    }
+	  int shift = wi::exact_log2 (std::make_pair (scalar_op1, mode));
+	  /* Perfect power of 2 (other than 1, which is handled above).  */
+	  if (shift > 0)
+	    return expand_shift (LSHIFT_EXPR, mode, op0,
+				 shift, target, unsignedp);
 	  else
 	    goto skip_synth;
 	}
@@ -3362,7 +3333,6 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
 		   unsigned HOST_WIDE_INT *multiplier_ptr,
 		   int *post_shift_ptr, int *lgup_ptr)
 {
-  double_int mhigh, mlow;
   int lgup, post_shift;
   int pow, pow2;
 
@@ -3374,23 +3344,13 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   pow = n + lgup;
   pow2 = n + lgup - precision;
 
-  /* We could handle this with some effort, but this case is much
-     better handled directly with a scc insn, so rely on caller using
-     that.  */
-  gcc_assert (pow != HOST_BITS_PER_DOUBLE_INT);
-
   /* mlow = 2^(N + lgup)/d */
-  double_int val = double_int_zero.set_bit (pow);
-  mlow = val.div (double_int::from_uhwi (d), true, TRUNC_DIV_EXPR); 
+  wide_int val = wi::set_bit_in_zero (pow, HOST_BITS_PER_DOUBLE_INT);
+  wide_int mlow = wi::udiv_trunc (val, d);
 
   /* mhigh = (2^(N + lgup) + 2^(N + lgup - precision))/d */
-  val |= double_int_zero.set_bit (pow2);
-  mhigh = val.div (double_int::from_uhwi (d), true, TRUNC_DIV_EXPR);
-
-  gcc_assert (!mhigh.high || val.high - d < d);
-  gcc_assert (mhigh.high <= 1 && mlow.high <= 1);
-  /* Assert that mlow < mhigh.  */
-  gcc_assert (mlow.ult (mhigh));
+  val |= wi::set_bit_in_zero (pow2, HOST_BITS_PER_DOUBLE_INT);
+  wide_int mhigh = wi::udiv_trunc (val, d);
 
   /* If precision == N, then mlow, mhigh exceed 2^N
      (but they do not exceed 2^(N+1)).  */
@@ -3398,14 +3358,15 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   /* Reduce to lowest terms.  */
   for (post_shift = lgup; post_shift > 0; post_shift--)
     {
-      int shft = HOST_BITS_PER_WIDE_INT - 1;
-      unsigned HOST_WIDE_INT ml_lo = (mlow.high << shft) | (mlow.low >> 1);
-      unsigned HOST_WIDE_INT mh_lo = (mhigh.high << shft) | (mhigh.low >> 1);
+      unsigned HOST_WIDE_INT ml_lo = wi::extract_uhwi (mlow, 1,
+						       HOST_BITS_PER_WIDE_INT);
+      unsigned HOST_WIDE_INT mh_lo = wi::extract_uhwi (mhigh, 1,
+						       HOST_BITS_PER_WIDE_INT);
       if (ml_lo >= mh_lo)
 	break;
 
-      mlow = double_int::from_uhwi (ml_lo);
-      mhigh = double_int::from_uhwi (mh_lo);
+      mlow = wi::uhwi (ml_lo, HOST_BITS_PER_DOUBLE_INT);
+      mhigh = wi::uhwi (mh_lo, HOST_BITS_PER_DOUBLE_INT);
     }
 
   *post_shift_ptr = post_shift;
@@ -3413,13 +3374,13 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   if (n < HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT mask = ((unsigned HOST_WIDE_INT) 1 << n) - 1;
-      *multiplier_ptr = mhigh.low & mask;
-      return mhigh.low >= mask;
+      *multiplier_ptr = mhigh.to_uhwi () & mask;
+      return mhigh.to_uhwi () >= mask;
     }
   else
     {
-      *multiplier_ptr = mhigh.low;
-      return mhigh.high;
+      *multiplier_ptr = mhigh.to_uhwi ();
+      return wi::extract_uhwi (mhigh, HOST_BITS_PER_WIDE_INT, 1);
     }
 }
 
@@ -3686,9 +3647,9 @@ expmed_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
 static rtx
 expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 {
-  unsigned HOST_WIDE_INT masklow, maskhigh;
   rtx result, temp, shift, label;
   int logd;
+  int prec = GET_MODE_PRECISION (mode);
 
   logd = floor_log2 (d);
   result = gen_reg_rtx (mode);
@@ -3701,8 +3662,8 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 				      mode, 0, -1);
       if (signmask)
 	{
+	  HOST_WIDE_INT masklow = ((HOST_WIDE_INT) 1 << logd) - 1;
 	  signmask = force_reg (mode, signmask);
-	  masklow = ((HOST_WIDE_INT) 1 << logd) - 1;
 	  shift = GEN_INT (GET_MODE_BITSIZE (mode) - logd);
 
 	  /* Use the rtx_cost of a LSHIFTRT instruction to determine
@@ -3749,19 +3710,11 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
      modulus.  By including the signbit in the operation, many targets
      can avoid an explicit compare operation in the following comparison
      against zero.  */
-
-  masklow = ((HOST_WIDE_INT) 1 << logd) - 1;
-  if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-    {
-      masklow |= HOST_WIDE_INT_M1U << (GET_MODE_BITSIZE (mode) - 1);
-      maskhigh = -1;
-    }
-  else
-    maskhigh = HOST_WIDE_INT_M1U
-		 << (GET_MODE_BITSIZE (mode) - HOST_BITS_PER_WIDE_INT - 1);
+  wide_int mask = wi::mask (logd, false, prec);
+  mask = wi::set_bit (mask, prec - 1);
 
   temp = expand_binop (mode, and_optab, op0,
-		       immed_double_const (masklow, maskhigh, mode),
+		       immed_wide_int_const (mask, mode),
 		       result, 1, OPTAB_LIB_WIDEN);
   if (temp != result)
     emit_move_insn (result, temp);
@@ -3771,10 +3724,10 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 
   temp = expand_binop (mode, sub_optab, result, const1_rtx, result,
 		       0, OPTAB_LIB_WIDEN);
-  masklow = HOST_WIDE_INT_M1U << logd;
-  maskhigh = -1;
+
+  mask = wi::mask (logd, true, prec);
   temp = expand_binop (mode, ior_optab, temp,
-		       immed_double_const (masklow, maskhigh, mode),
+		       immed_wide_int_const (mask, mode),
 		       result, 1, OPTAB_LIB_WIDEN);
   temp = expand_binop (mode, add_optab, temp, const1_rtx, result,
 		       0, OPTAB_LIB_WIDEN);
@@ -5013,24 +4966,16 @@ make_tree (tree type, rtx x)
   switch (GET_CODE (x))
     {
     case CONST_INT:
-      {
-	HOST_WIDE_INT hi = 0;
-
-	if (INTVAL (x) < 0
-	    && !(TYPE_UNSIGNED (type)
-		 && (GET_MODE_BITSIZE (TYPE_MODE (type))
-		     < HOST_BITS_PER_WIDE_INT)))
-	  hi = -1;
-
-	t = build_int_cst_wide (type, INTVAL (x), hi);
-
-	return t;
-      }
+    case CONST_WIDE_INT:
+      t = wide_int_to_tree (type, std::make_pair (x, TYPE_MODE (type)));
+      return t;
 
     case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-	t = build_int_cst_wide (type,
-				CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x));
+      STATIC_ASSERT (HOST_BITS_PER_WIDE_INT * 2 <= MAX_BITSIZE_MODE_ANY_INT);
+      if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (x) == VOIDmode)
+	t = wide_int_to_tree (type,
+			      wide_int::from_array (&CONST_DOUBLE_LOW (x), 2,
+						    HOST_BITS_PER_WIDE_INT * 2));
       else
 	{
 	  REAL_VALUE_TYPE d;

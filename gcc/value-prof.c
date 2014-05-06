@@ -834,9 +834,17 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
   else
     prob = 0;
 
-  tree_val = build_int_cst_wide (get_gcov_type (),
-				 (unsigned HOST_WIDE_INT) val,
-				 val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1);
+  if (sizeof (gcov_type) == sizeof (HOST_WIDE_INT))
+    tree_val = build_int_cst (get_gcov_type (), val);
+  else
+    {
+      HOST_WIDE_INT a[2];
+      a[0] = (unsigned HOST_WIDE_INT) val;
+      a[1] = val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1;
+
+      tree_val = wide_int_to_tree (get_gcov_type (), wide_int::from_array (a, 2,
+	TYPE_PRECISION (get_gcov_type ()), false));
+    }
   result = gimple_divmod_fixed_value (stmt, tree_val, prob, count, all);
 
   if (dump_file)
@@ -1745,9 +1753,18 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     default:
       gcc_unreachable ();
     }
-  tree_val = build_int_cst_wide (get_gcov_type (),
-				 (unsigned HOST_WIDE_INT) val,
-				 val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1);
+  if (sizeof (gcov_type) == sizeof (HOST_WIDE_INT))
+    tree_val = build_int_cst (get_gcov_type (), val);
+  else
+    {
+      HOST_WIDE_INT a[2];
+      a[0] = (unsigned HOST_WIDE_INT) val;
+      a[1] = val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1;
+
+      tree_val = wide_int_to_tree (get_gcov_type (), wide_int::from_array (a, 2,
+	TYPE_PRECISION (get_gcov_type ()), false));
+    }
+
   if (dump_file)
     {
       fprintf (dump_file, "Single value %i stringop transformation on ",

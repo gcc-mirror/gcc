@@ -257,13 +257,24 @@ DEFTREECODE (LANG_TYPE, "lang_type", tcc_type, 0)
 
 /* First, the constants.  */
 
-/* Contents are in TREE_INT_CST_LOW and TREE_INT_CST_HIGH fields,
-   32 bits each, giving us a 64 bit constant capability.  INTEGER_CST
-   nodes can be shared, and therefore should be considered read only.
-   They should be copied, before setting a flag such as TREE_OVERFLOW.
-   If an INTEGER_CST has TREE_OVERFLOW already set, it is known to be unique.
-   INTEGER_CST nodes are created for the integral types, for pointer
-   types and for vector and float types in some circumstances.  */
+/* Contents are in an array of HOST_WIDE_INTs.
+
+   We often access these constants both in their native precision and
+   in wider precisions (with the constant being implicitly extended
+   according to TYPE_SIGN).  In each case, the useful part of the array
+   may be as wide as the precision requires but may be shorter when all
+   of the upper bits are sign bits.  The length of the array when accessed
+   in the constant's native precision is given by TREE_INT_CST_NUNITS.
+   The length of the array when accessed in wider precisions is given
+   by TREE_INT_CST_EXT_NUNITS.  Each element can be obtained using
+   TREE_INT_CST_ELT.
+
+   INTEGER_CST nodes can be shared, and therefore should be considered
+   read only.  They should be copied before setting a flag such as
+   TREE_OVERFLOW.  If an INTEGER_CST has TREE_OVERFLOW already set,
+   it is known to be unique.  INTEGER_CST nodes are created for the
+   integral types, for pointer types and for vector and float types in
+   some circumstances.  */
 DEFTREECODE (INTEGER_CST, "integer_cst", tcc_constant, 0)
 
 /* Contents are in TREE_REAL_CST field.  */

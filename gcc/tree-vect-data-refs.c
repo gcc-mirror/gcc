@@ -2898,15 +2898,13 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
 	     */
 
-	  HOST_WIDE_INT
-	  min_seg_len_b = (TREE_CODE (dr_b1->seg_len) == INTEGER_CST) ?
-			     TREE_INT_CST_LOW (dr_b1->seg_len) :
-			     vect_factor;
+	  HOST_WIDE_INT  min_seg_len_b = (tree_fits_shwi_p (dr_b1->seg_len)
+					  ? tree_to_shwi (dr_b1->seg_len)
+					  : vect_factor);
 
 	  if (diff <= min_seg_len_b
-	      || (TREE_CODE (dr_a1->seg_len) == INTEGER_CST
-		  && diff - (HOST_WIDE_INT) TREE_INT_CST_LOW (dr_a1->seg_len) <
-		     min_seg_len_b))
+	      || (tree_fits_shwi_p (dr_a1->seg_len)
+		  && diff - tree_to_shwi (dr_a1->seg_len) < min_seg_len_b))
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -2999,8 +2997,8 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	{
 	  if (off == NULL_TREE)
 	    {
-	      double_int moff = mem_ref_offset (base);
-	      off = double_int_to_tree (sizetype, moff);
+	      offset_int moff = mem_ref_offset (base);
+	      off = wide_int_to_tree (sizetype, moff);
 	    }
 	  else
 	    off = size_binop (PLUS_EXPR, off,

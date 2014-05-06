@@ -19,7 +19,7 @@
 
 ;; Return 1 for anything except PARALLEL.
 (define_predicate "any_operand"
-  (match_code "const_int,const_double,const,symbol_ref,label_ref,subreg,reg,mem"))
+  (match_code "const_int,const_double,const_wide_int,const,symbol_ref,label_ref,subreg,reg,mem"))
 
 ;; Return 1 for any PARALLEL.
 (define_predicate "any_parallel_operand"
@@ -601,7 +601,7 @@
 
 ;; Return 1 if operand is constant zero (scalars and vectors).
 (define_predicate "zero_constant"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_double,const_wide_int,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
 ;; Return 1 if operand is 0.0.
@@ -796,7 +796,7 @@
 ;; Return 1 if op is a constant that is not a logical operand, but could
 ;; be split into one.
 (define_predicate "non_logical_cint_operand"
-  (and (match_code "const_int,const_double")
+  (and (match_code "const_int,const_wide_int")
        (and (not (match_operand 0 "logical_operand"))
 	    (match_operand 0 "reg_or_logical_cint_operand"))))
 
@@ -1073,7 +1073,7 @@
 ;; Return 1 if this operand is a valid input for a move insn.
 (define_predicate "input_operand"
   (match_code "symbol_ref,const,reg,subreg,mem,
-	       const_double,const_vector,const_int")
+	       const_double,const_wide_int,const_vector,const_int")
 {
   /* Memory is always valid.  */
   if (memory_operand (op, mode))
@@ -1086,8 +1086,7 @@
 
   /* Allow any integer constant.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
-      && (GET_CODE (op) == CONST_INT
-	  || GET_CODE (op) == CONST_DOUBLE))
+      && CONST_SCALAR_INT_P (op))
     return 1;
 
   /* Allow easy vector constants.  */
@@ -1126,7 +1125,7 @@
 ;; Return 1 if this operand is a valid input for a vsx_splat insn.
 (define_predicate "splat_input_operand"
   (match_code "symbol_ref,const,reg,subreg,mem,
-	       const_double,const_vector,const_int")
+	       const_double,const_wide_int,const_vector,const_int")
 {
   if (MEM_P (op))
     {

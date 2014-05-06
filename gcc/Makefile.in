@@ -1464,6 +1464,8 @@ OBJS = \
 	vmsdbgout.o \
 	vtable-verify.o \
 	web.o \
+	wide-int.o \
+	wide-int-print.o \
 	xcoffout.o \
 	$(out_object_file) \
 	$(EXTRA_OBJS) \
@@ -2229,7 +2231,7 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
-  $(srcdir)/alias.h $(srcdir)/coverage.c $(srcdir)/rtl.h \
+  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/coverage.c $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
@@ -2240,6 +2242,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
   $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/ipa-utils.h \
   $(srcdir)/dbxout.c \
+  $(srcdir)/signop.h \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \
   $(srcdir)/dwarf2cfi.c \
@@ -2442,10 +2445,9 @@ gengtype-state.o build/gengtype-state.o: gengtype-state.c $(SYSTEM_H) \
 gengtype-state.o: $(CONFIG_H)
 CFLAGS-gengtype-state.o += -DGENERATOR_FILE
 build/gengtype-state.o: $(BCONFIG_H)
-
 gengtype.o build/gengtype.o : gengtype.c $(SYSTEM_H) gengtype.h 	\
-  rtl.def insn-notes.def errors.h double-int.h version.h $(HASHTAB_H) \
-  $(OBSTACK_H) $(XREGEX_H)
+  rtl.def insn-notes.def errors.h double-int.h version.h     		\
+  $(HASHTAB_H) $(OBSTACK_H) $(XREGEX_H)
 gengtype.o: $(CONFIG_H)
 CFLAGS-gengtype.o += -DGENERATOR_FILE
 build/gengtype.o: $(BCONFIG_H)
@@ -3752,7 +3754,7 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c; \
+	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c *.cc; \
 	etags --include TAGS.sub $$incs)
 
 # -----------------------------------------------------

@@ -35,13 +35,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "dumpfile.h"
 #include "cfgexpand.h"
+#include "wide-int-print.h"
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
-double_int
-double_int_ext_for_comb (double_int cst, aff_tree *comb)
+widest_int
+wide_int_ext_for_comb (const widest_int &cst, aff_tree *comb)
 {
-  return cst.sext (TYPE_PRECISION (comb->type));
+  return wi::sext (cst, TYPE_PRECISION (comb->type));
 }
 
 /* Initializes affine combination COMB so that its value is zero in TYPE.  */
@@ -49,19 +50,22 @@ double_int_ext_for_comb (double_int cst, aff_tree *comb)
 static void
 aff_combination_zero (aff_tree *comb, tree type)
 {
+  int i;
   comb->type = type;
-  comb->offset = double_int_zero;
+  comb->offset = 0;
   comb->n = 0;
+  for (i = 0; i < MAX_AFF_ELTS; i++)
+    comb->elts[i].coef = 0;
   comb->rest = NULL_TREE;
 }
 
 /* Sets COMB to CST.  */
 
 void
-aff_combination_const (aff_tree *comb, tree type, double_int cst)
+aff_combination_const (aff_tree *comb, tree type, const widest_int &cst)
 {
   aff_combination_zero (comb, type);
-  comb->offset = double_int_ext_for_comb (cst, comb);
+  comb->offset = wide_int_ext_for_comb (cst, comb);;
 }
 
 /* Sets COMB to single element ELT.  */
@@ -73,37 +77,34 @@ aff_combination_elt (aff_tree *comb, tree type, tree elt)
 
   comb->n = 1;
   comb->elts[0].val = elt;
-  comb->elts[0].coef = double_int_one;
+  comb->elts[0].coef = 1;
 }
 
 /* Scales COMB by SCALE.  */
 
 void
-aff_combination_scale (aff_tree *comb, double_int scale)
+aff_combination_scale (aff_tree *comb, const widest_int &scale_in)
 {
   unsigned i, j;
 
-  scale = double_int_ext_for_comb (scale, comb);
-  if (scale.is_one ())
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
+  if (scale == 1)
     return;
 
-  if (scale.is_zero ())
+  if (scale == 0)
     {
       aff_combination_zero (comb, comb->type);
       return;
     }
 
-  comb->offset
-    = double_int_ext_for_comb (scale * comb->offset, comb);
+  comb->offset = wide_int_ext_for_comb (scale * comb->offset, comb);
   for (i = 0, j = 0; i < comb->n; i++)
     {
-      double_int new_coef;
-
-      new_coef
-	= double_int_ext_for_comb (scale * comb->elts[i].coef, comb);
+      widest_int new_coef
+	= wide_int_ext_for_comb (scale * comb->elts[i].coef, comb);
       /* A coefficient may become zero due to overflow.  Remove the zero
 	 elements.  */
-      if (new_coef.is_zero ())
+      if (new_coef == 0)
 	continue;
       comb->elts[j].coef = new_coef;
       comb->elts[j].val = comb->elts[i].val;
@@ -125,30 +126,28 @@ aff_combination_scale (aff_tree *comb, double_int scale)
 	}
       else
 	comb->rest = fold_build2 (MULT_EXPR, type, comb->rest,
-				  double_int_to_tree (type, scale));
+				  wide_int_to_tree (type, scale));
     }
 }
 
 /* Adds ELT * SCALE to COMB.  */
 
 void
-aff_combination_add_elt (aff_tree *comb, tree elt, double_int scale)
+aff_combination_add_elt (aff_tree *comb, tree elt, const widest_int &scale_in)
 {
   unsigned i;
   tree type;
 
-  scale = double_int_ext_for_comb (scale, comb);
-  if (scale.is_zero ())
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
+  if (scale == 0)
     return;
 
   for (i = 0; i < comb->n; i++)
     if (operand_equal_p (comb->elts[i].val, elt, 0))
       {
-	double_int new_coef;
-
-	new_coef = comb->elts[i].coef + scale;
-	new_coef = double_int_ext_for_comb (new_coef, comb);
-	if (!new_coef.is_zero ())
+	widest_int new_coef
+	  = wide_int_ext_for_comb (comb->elts[i].coef + scale, comb);
+	if (new_coef != 0)
 	  {
 	    comb->elts[i].coef = new_coef;
 	    return;
@@ -160,7 +159,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, double_int scale)
 	if (comb->rest)
 	  {
 	    gcc_assert (comb->n == MAX_AFF_ELTS - 1);
-	    comb->elts[comb->n].coef = double_int_one;
+	    comb->elts[comb->n].coef = 1;
 	    comb->elts[comb->n].val = comb->rest;
 	    comb->rest = NULL_TREE;
 	    comb->n++;
@@ -179,12 +178,12 @@ aff_combination_add_elt (aff_tree *comb, tree elt, double_int scale)
   if (POINTER_TYPE_P (type))
     type = sizetype;
 
-  if (scale.is_one ())
+  if (scale == 1)
     elt = fold_convert (type, elt);
   else
     elt = fold_build2 (MULT_EXPR, type,
 		       fold_convert (type, elt),
-		       double_int_to_tree (type, scale));
+		       wide_int_to_tree (type, scale));
 
   if (comb->rest)
     comb->rest = fold_build2 (PLUS_EXPR, type, comb->rest,
@@ -196,9 +195,9 @@ aff_combination_add_elt (aff_tree *comb, tree elt, double_int scale)
 /* Adds CST to C.  */
 
 static void
-aff_combination_add_cst (aff_tree *c, double_int cst)
+aff_combination_add_cst (aff_tree *c, const widest_int &cst)
 {
-  c->offset = double_int_ext_for_comb (c->offset + cst, c);
+  c->offset = wide_int_ext_for_comb (c->offset + cst, c);
 }
 
 /* Adds COMB2 to COMB1.  */
@@ -212,7 +211,7 @@ aff_combination_add (aff_tree *comb1, aff_tree *comb2)
   for (i = 0; i < comb2->n; i++)
     aff_combination_add_elt (comb1, comb2->elts[i].val, comb2->elts[i].coef);
   if (comb2->rest)
-    aff_combination_add_elt (comb1, comb2->rest, double_int_one);
+    aff_combination_add_elt (comb1, comb2->rest, 1);
 }
 
 /* Converts affine combination COMB to TYPE.  */
@@ -237,13 +236,12 @@ aff_combination_convert (aff_tree *comb, tree type)
   if (TYPE_PRECISION (type) == TYPE_PRECISION (comb_type))
     return;
 
-  comb->offset = double_int_ext_for_comb (comb->offset, comb);
+  comb->offset = wide_int_ext_for_comb (comb->offset, comb);
   for (i = j = 0; i < comb->n; i++)
     {
-      double_int new_coef = double_int_ext_for_comb (comb->elts[i].coef, comb);
-      if (new_coef.is_zero ())
+      if (comb->elts[i].coef == 0)
 	continue;
-      comb->elts[j].coef = new_coef;
+      comb->elts[j].coef = comb->elts[i].coef;
       comb->elts[j].val = fold_convert (type, comb->elts[i].val);
       j++;
     }
@@ -251,7 +249,7 @@ aff_combination_convert (aff_tree *comb, tree type)
   comb->n = j;
   if (comb->n < MAX_AFF_ELTS && comb->rest)
     {
-      comb->elts[comb->n].coef = double_int_one;
+      comb->elts[comb->n].coef = 1;
       comb->elts[comb->n].val = comb->rest;
       comb->rest = NULL_TREE;
       comb->n++;
@@ -276,7 +274,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
   switch (code)
     {
     case INTEGER_CST:
-      aff_combination_const (comb, type, tree_to_double_int (expr));
+      aff_combination_const (comb, type, wi::to_widest (expr));
       return;
 
     case POINTER_PLUS_EXPR:
@@ -290,7 +288,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
       tree_to_aff_combination (TREE_OPERAND (expr, 1), type, &tmp);
       if (code == MINUS_EXPR)
-	aff_combination_scale (&tmp, double_int_minus_one);
+	aff_combination_scale (&tmp, -1);
       aff_combination_add (comb, &tmp);
       return;
 
@@ -299,19 +297,19 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       if (TREE_CODE (cst) != INTEGER_CST)
 	break;
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, tree_to_double_int (cst));
+      aff_combination_scale (comb, wi::to_widest (cst));
       return;
 
     case NEGATE_EXPR:
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, double_int_minus_one);
+      aff_combination_scale (comb, -1);
       return;
 
     case BIT_NOT_EXPR:
       /* ~x = -x - 1 */
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, double_int_minus_one);
-      aff_combination_add_cst (comb, double_int_minus_one);
+      aff_combination_scale (comb, -1);
+      aff_combination_add_cst (comb, -1);
       return;
 
     case ADDR_EXPR:
@@ -329,11 +327,10 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 				  false);
       if (bitpos % BITS_PER_UNIT != 0)
 	break;
-      aff_combination_const (comb, type,
-			     double_int::from_uhwi (bitpos / BITS_PER_UNIT));
+      aff_combination_const (comb, type, bitpos / BITS_PER_UNIT);
       core = build_fold_addr_expr (core);
       if (TREE_CODE (core) == ADDR_EXPR)
-	aff_combination_add_elt (comb, core, double_int_one);
+	aff_combination_add_elt (comb, core, 1);
       else
 	{
 	  tree_to_aff_combination (core, type, &tmp);
@@ -376,25 +373,25 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
    combination COMB.  */
 
 static tree
-add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
-		 aff_tree *comb)
+add_elt_to_tree (tree expr, tree type, tree elt, const widest_int &scale_in,
+		 aff_tree *comb ATTRIBUTE_UNUSED)
 {
   enum tree_code code;
   tree type1 = type;
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
 
-  scale = double_int_ext_for_comb (scale, comb);
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
 
-  if (scale.is_minus_one ()
+  if (scale == -1
       && POINTER_TYPE_P (TREE_TYPE (elt)))
     {
       elt = convert_to_ptrofftype (elt);
       elt = fold_build1 (NEGATE_EXPR, TREE_TYPE (elt), elt);
-      scale = double_int_one;
+      scale = 1;
     }
 
-  if (scale.is_one ())
+  if (scale == 1)
     {
       if (!expr)
 	{
@@ -412,7 +409,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
 			  expr, fold_convert (type1, elt));
     }
 
-  if (scale.is_minus_one ())
+  if (scale == -1)
     {
       if (!expr)
 	return fold_build1 (NEGATE_EXPR, type1,
@@ -431,9 +428,9 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
   elt = fold_convert (type1, elt);
   if (!expr)
     return fold_build2 (MULT_EXPR, type1, elt,
-			double_int_to_tree (type1, scale));
+			wide_int_to_tree (type1, scale));
 
-  if (scale.is_negative ())
+  if (wi::neg_p (scale))
     {
       code = MINUS_EXPR;
       scale = -scale;
@@ -442,7 +439,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
     code = PLUS_EXPR;
 
   elt = fold_build2 (MULT_EXPR, type1, elt,
-		     double_int_to_tree (type1, scale));
+		     wide_int_to_tree (type1, scale));
   if (POINTER_TYPE_P (TREE_TYPE (expr)))
     {
       if (code == MINUS_EXPR)
@@ -460,7 +457,7 @@ aff_combination_to_tree (aff_tree *comb)
   tree type = comb->type;
   tree expr = NULL_TREE;
   unsigned i;
-  double_int off, sgn;
+  widest_int off, sgn;
   tree type1 = type;
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
@@ -472,21 +469,21 @@ aff_combination_to_tree (aff_tree *comb)
 			    comb);
 
   if (comb->rest)
-    expr = add_elt_to_tree (expr, type, comb->rest, double_int_one, comb);
+    expr = add_elt_to_tree (expr, type, comb->rest, 1, comb);
 
   /* Ensure that we get x - 1, not x + (-1) or x + 0xff..f if x is
      unsigned.  */
-  if (comb->offset.is_negative ())
+  if (wi::neg_p (comb->offset))
     {
       off = -comb->offset;
-      sgn = double_int_minus_one;
+      sgn = -1;
     }
   else
     {
       off = comb->offset;
-      sgn = double_int_one;
+      sgn = 1;
     }
-  return add_elt_to_tree (expr, type, double_int_to_tree (type1, off), sgn,
+  return add_elt_to_tree (expr, type, wide_int_to_tree (type1, off), sgn,
 			  comb);
 }
 
@@ -513,7 +510,7 @@ aff_combination_remove_elt (aff_tree *comb, unsigned m)
     comb->elts[m] = comb->elts[comb->n];
   if (comb->rest)
     {
-      comb->elts[comb->n].coef = double_int_one;
+      comb->elts[comb->n].coef = 1;
       comb->elts[comb->n].val = comb->rest;
       comb->rest = NULL_TREE;
       comb->n++;
@@ -525,7 +522,7 @@ aff_combination_remove_elt (aff_tree *comb, unsigned m)
 
 
 static void
-aff_combination_add_product (aff_tree *c, double_int coef, tree val,
+aff_combination_add_product (aff_tree *c, const widest_int &coef, tree val,
 			     aff_tree *r)
 {
   unsigned i;
@@ -576,7 +573,7 @@ aff_combination_mult (aff_tree *c1, aff_tree *c2, aff_tree *r)
   for (i = 0; i < c2->n; i++)
     aff_combination_add_product (c1, c2->elts[i].coef, c2->elts[i].val, r);
   if (c2->rest)
-    aff_combination_add_product (c1, double_int_one, c2->rest, r);
+    aff_combination_add_product (c1, 1, c2->rest, r);
   aff_combination_add_product (c1, c2->offset, NULL, r);
 }
 
@@ -623,7 +620,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
   aff_tree to_add, current, curre;
   tree e, rhs;
   gimple def;
-  double_int scale;
+  widest_int scale;
   void **slot;
   struct name_expansion *exp;
 
@@ -768,25 +765,24 @@ free_affine_expand_cache (struct pointer_map_t **cache)
    is set to true.  */
 
 static bool
-double_int_constant_multiple_p (double_int val, double_int div,
-				bool *mult_set, double_int *mult)
+wide_int_constant_multiple_p (const widest_int &val, const widest_int &div,
+			      bool *mult_set, widest_int *mult)
 {
-  double_int rem, cst;
+  widest_int rem, cst;
 
-  if (val.is_zero ())
+  if (val == 0)
     {
-      if (*mult_set && !mult->is_zero ())
+      if (*mult_set && mult != 0)
 	return false;
       *mult_set = true;
-      *mult = double_int_zero;
+      *mult = 0;
       return true;
     }
 
-  if (div.is_zero ())
+  if (div == 0)
     return false;
 
-  cst = val.sdivmod (div, FLOOR_DIV_EXPR, &rem);
-  if (!rem.is_zero ())
+  if (!wi::multiple_of_p (val, div, SIGNED, &cst))
     return false;
 
   if (*mult_set && *mult != cst)
@@ -802,14 +798,14 @@ double_int_constant_multiple_p (double_int val, double_int div,
 
 bool
 aff_combination_constant_multiple_p (aff_tree *val, aff_tree *div,
-				     double_int *mult)
+				     widest_int *mult)
 {
   bool mult_set = false;
   unsigned i;
 
-  if (val->n == 0 && val->offset.is_zero ())
+  if (val->n == 0 && val->offset == 0)
     {
-      *mult = double_int_zero;
+      *mult = 0;
       return true;
     }
   if (val->n != div->n)
@@ -818,8 +814,8 @@ aff_combination_constant_multiple_p (aff_tree *val, aff_tree *div,
   if (val->rest || div->rest)
     return false;
 
-  if (!double_int_constant_multiple_p (val->offset, div->offset,
-				       &mult_set, mult))
+  if (!wide_int_constant_multiple_p (val->offset, div->offset,
+				     &mult_set, mult))
     return false;
 
   for (i = 0; i < div->n; i++)
@@ -828,8 +824,8 @@ aff_combination_constant_multiple_p (aff_tree *val, aff_tree *div,
 	      = aff_combination_find_elt (val, div->elts[i].val, NULL);
       if (!elt)
 	return false;
-      if (!double_int_constant_multiple_p (elt->coef, div->elts[i].coef,
-					   &mult_set, mult))
+      if (!wide_int_constant_multiple_p (elt->coef, div->elts[i].coef,
+					 &mult_set, mult))
 	return false;
     }
 
@@ -843,13 +839,13 @@ static void
 print_aff (FILE *file, aff_tree *val)
 {
   unsigned i;
-  bool uns = TYPE_UNSIGNED (val->type);
+  signop sgn = TYPE_SIGN (val->type);
   if (POINTER_TYPE_P (val->type))
-    uns = false;
+    sgn = SIGNED;
   fprintf (file, "{\n  type = ");
   print_generic_expr (file, val->type, TDF_VOPS|TDF_MEMSYMS);
   fprintf (file, "\n  offset = ");
-  dump_double_int (file, val->offset, uns);
+  print_dec (val->offset, file, sgn);
   if (val->n > 0)
     {
       fprintf (file, "\n  elements = {\n");
@@ -859,7 +855,7 @@ print_aff (FILE *file, aff_tree *val)
 	  print_generic_expr (file, val->elts[i].val, TDF_VOPS|TDF_MEMSYMS);
 
 	  fprintf (file, " * ");
-	  dump_double_int (file, val->elts[i].coef, uns);
+	  print_dec (val->elts[i].coef, file, sgn);
 	  if (i != val->n - 1)
 	    fprintf (file, ", \n");
 	}
@@ -887,7 +883,7 @@ debug_aff (aff_tree *val)
    which REF refers.  */
 
 tree
-get_inner_reference_aff (tree ref, aff_tree *addr, double_int *size)
+get_inner_reference_aff (tree ref, aff_tree *addr, widest_int *size)
 {
   HOST_WIDE_INT bitsize, bitpos;
   tree toff;
@@ -908,11 +904,10 @@ get_inner_reference_aff (tree ref, aff_tree *addr, double_int *size)
       aff_combination_add (addr, &tmp);
     }
 
-  aff_combination_const (&tmp, sizetype,
-			 double_int::from_shwi (bitpos / BITS_PER_UNIT));
+  aff_combination_const (&tmp, sizetype, bitpos / BITS_PER_UNIT);
   aff_combination_add (addr, &tmp);
 
-  *size = double_int::from_shwi ((bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
+  *size = (bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
 
   return base;
 }
@@ -921,26 +916,23 @@ get_inner_reference_aff (tree ref, aff_tree *addr, double_int *size)
    size SIZE2 at position DIFF cannot overlap.  */
 
 bool
-aff_comb_cannot_overlap_p (aff_tree *diff, double_int size1, double_int size2)
+aff_comb_cannot_overlap_p (aff_tree *diff, const widest_int &size1,
+			   const widest_int &size2)
 {
-  double_int d, bound;
-
   /* Unless the difference is a constant, we fail.  */
   if (diff->n != 0)
     return false;
 
-  d = diff->offset;
-  if (d.is_negative ())
+  if (wi::neg_p (diff->offset))
     {
       /* The second object is before the first one, we succeed if the last
 	 element of the second object is before the start of the first one.  */
-      bound = d + size2 + double_int_minus_one;
-      return bound.is_negative ();
+      return wi::neg_p (diff->offset + size2 - 1);
     }
   else
     {
       /* We succeed if the second object starts after the first one ends.  */
-      return size1.sle (d);
+      return wi::les_p (size1, diff->offset);
     }
 }
 

@@ -666,8 +666,7 @@ declare_one_free_variable (const void *var0, void **map0,
 
   /* Maybe promote to int.  */
   if (INTEGRAL_TYPE_P (var_type) && COMPLETE_TYPE_P (var_type)
-      && INT_CST_LT_UNSIGNED (TYPE_SIZE (var_type),
-			      TYPE_SIZE (integer_type_node)))
+      && tree_int_cst_lt (TYPE_SIZE (var_type), TYPE_SIZE (integer_type_node)))
     arg_type = integer_type_node;
   else
     arg_type = var_type;
