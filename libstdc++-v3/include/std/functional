@@ -2181,8 +2181,15 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	using _Invoke = decltype(__callable_functor(std::declval<_Functor&>())
 				 (std::declval<_ArgTypes>()...) );
 
+      // Used so the return type convertibility checks aren't done when
+      // performing overload resolution for copy construction/assignment.
+      template<typename _Tp>
+	using _NotSelf = __not_<is_same<_Tp, function>>;
+
       template<typename _Functor>
-	using _Callable = __check_func_return_type<_Invoke<_Functor>, _Res>;
+	using _Callable
+	  = __and_<_NotSelf<_Functor>,
+		   __check_func_return_type<_Invoke<_Functor>, _Res>>;
 
       template<typename _Cond, typename _Tp>
 	using _Requires = typename enable_if<_Cond::value, _Tp>::type;
@@ -2323,7 +2330,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor>
-	_Requires<_Callable<_Functor>, function&>
+	_Requires<_Callable<typename decay<_Functor>::type>, function&>
 	operator=(_Functor&& __f)
 	{
 	  function(std::forward<_Functor>(__f)).swap(*this);

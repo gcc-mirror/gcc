@@ -1,3 +1,13 @@
+2014-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2014-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60594
+	* include/std/functional (function::_Callable): Exclude own type
+	from the callable checks.
+	* testsuite/20_util/function/60594.cc: New.
+
 2014-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60497
