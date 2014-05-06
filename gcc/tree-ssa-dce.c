@@ -1522,7 +1522,7 @@ const pass_data pass_data_dce =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_dce : public gimple_opt_pass
@@ -1560,7 +1560,7 @@ const pass_data pass_data_dce_loop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_dce_loop : public gimple_opt_pass
@@ -1598,7 +1598,7 @@ const pass_data pass_data_cd_dce =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_verify_flow ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_cd_dce : public gimple_opt_pass

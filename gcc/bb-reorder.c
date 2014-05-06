@@ -2315,7 +2315,7 @@ const pass_data pass_data_reorder_blocks =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_reorder_blocks : public rtl_opt_pass
@@ -2385,7 +2385,7 @@ const pass_data pass_data_duplicate_computed_gotos =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_duplicate_computed_gotos : public rtl_opt_pass
@@ -2749,7 +2749,7 @@ pass_partition_blocks::execute (function *fun)
       df_analyze ();
     }
 
-  return TODO_verify_flow | TODO_verify_rtl_sharing;
+  return 0;
 }
 
 } // anon namespace

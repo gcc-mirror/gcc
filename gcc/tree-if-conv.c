@@ -2144,8 +2144,7 @@ const pass_data pass_data_if_conversion =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_stmts | TODO_verify_flow
-    | TODO_verify_ssa ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_if_conversion : public gimple_opt_pass

@@ -2506,8 +2506,7 @@ const pass_data pass_data_asan =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_flow | TODO_verify_stmts
-    | TODO_update_ssa ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_asan : public gimple_opt_pass
@@ -2545,8 +2544,7 @@ const pass_data pass_data_asan_O0 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_flow | TODO_verify_stmts
-    | TODO_update_ssa ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_asan_O0 : public gimple_opt_pass
@@ -2585,8 +2583,7 @@ const pass_data pass_data_sanopt =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_flow | TODO_verify_stmts
-    | TODO_update_ssa ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_sanopt : public gimple_opt_pass

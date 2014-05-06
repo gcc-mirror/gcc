@@ -1659,7 +1659,7 @@ const pass_data pass_data_split_functions =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_all, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_split_functions : public gimple_opt_pass
@@ -1719,7 +1719,7 @@ const pass_data pass_data_feedback_split_functions =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_all, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_feedback_split_functions : public gimple_opt_pass

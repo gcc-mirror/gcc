@@ -57,7 +57,7 @@ const pass_data pass_data_tree_loop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_tree_loop : public gimple_opt_pass
@@ -398,7 +398,7 @@ const pass_data pass_data_tree_loop_done =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_cleanup_cfg | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_cleanup_cfg, /* todo_flags_finish */
 };
 
 class pass_tree_loop_done : public gimple_opt_pass

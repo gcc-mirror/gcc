@@ -1702,7 +1702,7 @@ const pass_data pass_data_lower_subreg =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_lower_subreg : public rtl_opt_pass
@@ -1745,8 +1745,7 @@ const pass_data pass_data_lower_subreg2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_lower_subreg2 : public rtl_opt_pass

@@ -599,8 +599,7 @@ const pass_data pass_data_slp_vectorize =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_update_ssa
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_slp_vectorize : public gimple_opt_pass

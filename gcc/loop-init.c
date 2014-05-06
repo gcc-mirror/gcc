@@ -382,7 +382,7 @@ const pass_data pass_data_rtl_loop_init =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_rtl_loop_init : public rtl_opt_pass
@@ -421,7 +421,7 @@ const pass_data pass_data_rtl_loop_done =
   0, /* properties_provided */
   PROP_loops, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_flow | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_rtl_loop_done : public rtl_opt_pass
@@ -478,8 +478,7 @@ const pass_data pass_data_rtl_move_loop_invariants =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_verify | TODO_df_finish
-    | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+  ( TODO_df_verify | TODO_df_finish ), /* todo_flags_finish */
 };
 
 class pass_rtl_move_loop_invariants : public rtl_opt_pass
@@ -522,7 +521,7 @@ const pass_data pass_data_rtl_unroll_and_peel_loops =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_rtl_unroll_and_peel_loops : public rtl_opt_pass
@@ -585,7 +584,7 @@ const pass_data pass_data_rtl_doloop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_rtl_doloop : public rtl_opt_pass
