@@ -1,3 +1,13 @@
+2014-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/sse.md (*mov<mode>_internal)
+	(*<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>)
+	(*<sse2_avx_avx512f>_loaddqu<mode><mask_name>)
+	(<sse>_andnot<mode>3, <code><mode>3, *andnot<mode>3)
+	(*<code><mode>3, *andnot<mode>3<mask_name>)
+	(<mask_codefor><code><mode>3<mask_name>): Only consider
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL for modes of size 16.
+
 2014-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Revert:
