@@ -1,3 +1,32 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* call.c: Include wide-int.h.
+	(type_passed_as): Use tree_int_cst_lt instead of INT_CST_LT_UNSIGNED.
+	(convert_for_arg_passing): Likewise.
+	* class.c: Include wide-int.h.
+	(walk_subobject_offsets): Use tree_int_cst_lt instead of INT_CST_LT.
+	(end_of_class): Use tree_int_cst_lt instead of INT_CST_LT_UNSIGNED.
+	(include_empty_classes): Likewise
+	(layout_class_type): Use tree_int_cst_lt instead of INT_CST_LT.
+	* cvt.c: Include wide-int.h.
+	(ignore_overflows): Use wide_int_to_tree.
+	* decl.c: Include wide-int.h.
+	(check_array_designated_initializer): Use wide-int interfaces.
+	(compute_array_index_type): Use tree_int_cst_lt instead of INT_CST_LT.
+	(finish_enum_value_list): Use signop.
+	(build_enumerator): Use wide-int interfaces.
+	* init.c: Include wide-int.h.
+	(build_new_1): Use wide-int interfaces.
+	* mangle.c: Include wide-int.h.
+	(write_integer_cst): Use wide-int interfaces.
+	(write_array_type): Likewise.
+	* tree.c: Include wide-int.h.
+	(cp_tree_equal): Use tree_int_cst_equal.
+	* typeck2.c: Include wide-int.h.
+	(process_init_constructor_array): Use wide-int interfaces.
+
 2014-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58582

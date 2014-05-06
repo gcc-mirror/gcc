@@ -1,3 +1,28 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* target-memory.c: Include wide-int.h.
+	(gfc_interpret_logical): Use wide-int interfaces.
+	* trans-array.c: Include wide-int.h.
+	(gfc_conv_array_initializer): Use wide-int interfaces.
+	* trans-const.c: Include wide-int.h.
+	(gfc_conv_string_init): Use wide-int interfaces.
+	(gfc_conv_mpz_to_tree): Likewise.
+	(gfc_conv_tree_to_mpz): Likewise.
+	* trans-decl.c (gfc_can_put_var_on_stack): Use tree_fits_uhwi_p.
+	* trans-expr.c: Include wide-int.h.
+	(gfc_conv_cst_int_power): Use wide-int interfaces.
+	(gfc_string_to_single_character): Likewise.
+	(gfc_optimize_len_trim): Likewise.
+	* trans-intrinsic.c: Include wide-int.h.
+	(trans_this_image): Use wide-int interfaces.
+	(gfc_conv_intrinsic_bound): Likewise.
+	(conv_intrinsic_cobound): Likewise.
+	* trans-types.c (gfc_init_types): Likewise.
+	(gfc_get_array_type_bounds): Pass an integer of the correct type
+	instead of using integer_one_node.
+
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-decl.c (create_function_arglist): Add hidden coarray arguments

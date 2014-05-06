@@ -1,3 +1,29 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-ada-spec.c: Include wide-int.h.
+	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
+	(dump_generic_ada_node): Use wide-int interfaces.
+	* c-common.c: Include wide-int-print.h.
+	(shorten_compare): Use wide-int interfaces and tree_int_cst_lt.
+	(pointer_int_sum): Use wide-int interfaces.
+	(c_common_nodes_and_builtins): Use make_int_cst.
+	(match_case_to_enum_1): Use tree_fits_uhwi_p and tree_fits_shwi_p.
+	(handle_alloc_size_attribute): Use wide-int interfaces.
+	(get_nonnull_operand): Likewise.
+	* c-format.c (get_constant): Use tree_fits_uhwi_p.
+	* c-lex.c: Include wide-int.h.
+	(narrowest_unsigned_type): Take a widest_int rather than two
+	HOST_WIDE_INTs.
+	(narrowest_signed_type): Likewise.
+	(interpret_integer): Update accordingly.  Use wide-int interfaces.
+	(lex_charconst): Use wide-int interfaces.
+	* c-pretty-print.c: Include wide-int.h.
+	(pp_c_integer_constant): Use wide-int interfaces.
+	* cilk.c (declare_one_free_variable): Use tree_int_cst_lt instead of
+	INT_CST_LT_UNSIGNED.
+
 2014-05-06  Richard Biener  <rguenther@suse.de>
 
 	* c-opts.c (c_common_post_options): For -freestanding,
