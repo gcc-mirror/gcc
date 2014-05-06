@@ -381,7 +381,7 @@ class Gcc_backend : public Backend
 		     Location, Bstatement**);
 
   Bvariable*
-  gc_root_variable(Btype*, Bexpression*);
+  implicit_variable(const std::string&, Btype*, Bexpression*, bool);
 
   Bvariable*
   immutable_struct(const std::string&, bool, bool, Btype*, Location);
@@ -2476,10 +2476,12 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
   return new Bvariable(var);
 }
 
-// Make a GC root variable.
+// Create an implicit variable that is compiler-defined.  This is used when
+// generating GC root variables and storing the values of a slice initializer.
 
 Bvariable*
-Gcc_backend::gc_root_variable(Btype* type, Bexpression* init)
+Gcc_backend::implicit_variable(const std::string& name, Btype* type,
+			       Bexpression* init, bool is_constant)
 {
   tree type_tree = type->get_tree();
   tree init_tree = init->get_tree();
@@ -2487,11 +2489,16 @@ Gcc_backend::gc_root_variable(Btype* type, Bexpression* init)
     return this->error_variable();
 
   tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
-                         create_tmp_var_name("gc"), type_tree);
+                         get_identifier_from_string(name), type_tree);
   DECL_EXTERNAL(decl) = 0;
   TREE_PUBLIC(decl) = 0;
   TREE_STATIC(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
+  if (is_constant)
+    {
+      TREE_READONLY(decl) = 1;
+      TREE_CONSTANT(decl) = 1;
+    }
   DECL_INITIAL(decl) = init_tree;
   rest_of_decl_compilation(decl, 1, 0);
 
