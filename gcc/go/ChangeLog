@@ -1,5 +1,10 @@
 2014-05-05  Chris Manghane  <cmang@google.com>
 
+	* go-gcc.cc (Gcc_backend::implicit_variable): Rename from
+	gc_root_variable.  Add name and is_constant parameters.
+
+2014-05-05  Chris Manghane  <cmang@google.com>
+
 	* go-gcc.cc (Gcc_backend::indirect_expression): Add btype
 	parameter.
 	(Gcc_backend::temporary_variable): Check for erroneous function.

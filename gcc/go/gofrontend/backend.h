@@ -536,11 +536,16 @@ class Backend
 		     bool address_is_taken, Location location,
 		     Bstatement** pstatement) = 0;
 
-  // Create a GC root variable. TYPE is the __go_gc_root_list struct described
-  // in Gogo::register_gc_vars.  INIT is the composite literal consisting of a
-  // pointer to the next GC root and the global variables registered.
+  // Create an implicit variable that is compiler-defined.  This is used when
+  // generating GC root variables and storing the values of a slice constructor.
+  // NAME is the name of the variable, either gc# for GC roots or C# for slice
+  // initializers.  TYPE is the type of the implicit variable with an initial
+  // value INIT.  IS_CONSTANT is true if the implicit variable should be treated
+  // like it is immutable.  For slice initializers, if the values must be copied
+  // to the heap, the variable IS_CONSTANT.
   virtual Bvariable*
-  gc_root_variable(Btype* type, Bexpression* init) = 0;
+  implicit_variable(const std::string& name, Btype* type, Bexpression* init,
+		    bool is_constant) = 0;
 
   // Create a named immutable initialized data structure.  This is
   // used for type descriptors, map descriptors, and function
