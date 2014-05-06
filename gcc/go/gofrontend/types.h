@@ -1171,14 +1171,11 @@ class Type
   static tree
   build_receive_return_type(tree type);
 
-  // A hash table we use to avoid infinite recursion.
-  typedef Unordered_set_hash(const Named_type*, Type_hash_identical,
-			     Type_identical) Types_seen;
-
   // Add all methods for TYPE to the list of methods for THIS.
   static void
   add_methods_for_type(const Type* type, const Method::Field_indexes*,
-		       unsigned int depth, bool, bool, Types_seen*,
+		       unsigned int depth, bool, bool,
+		       std::vector<const Named_type*>*,
 		       Methods**);
 
   static void
@@ -1189,7 +1186,8 @@ class Type
   static void
   add_embedded_methods_for_type(const Type* type,
 				const Method::Field_indexes*,
-				unsigned int depth, bool, bool, Types_seen*,
+				unsigned int depth, bool, bool,
+				std::vector<const Named_type*>*,
 				Methods**);
 
   static void
