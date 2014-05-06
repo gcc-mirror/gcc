@@ -1442,7 +1442,6 @@ namespace wi
   struct int_traits <unsigned int>
     : public primitive_int_traits <unsigned int, false> {};
 
-#if HOST_BITS_PER_INT != HOST_BITS_PER_WIDE_INT
   template <>
   struct int_traits <HOST_WIDE_INT>
     : public primitive_int_traits <HOST_WIDE_INT, true> {};
@@ -1450,7 +1449,6 @@ namespace wi
   template <>
   struct int_traits <unsigned HOST_WIDE_INT>
     : public primitive_int_traits <unsigned HOST_WIDE_INT, false> {};
-#endif
 }
 
 namespace wi
