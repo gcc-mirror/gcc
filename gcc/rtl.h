@@ -2734,6 +2734,7 @@ extern int get_max_insn_count (void);
 extern int in_sequence_p (void);
 extern void init_emit (void);
 extern void init_emit_regs (void);
+extern void init_derived_machine_modes (void);
 extern void init_emit_once (void);
 extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);

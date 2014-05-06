@@ -5720,6 +5720,30 @@ init_emit_regs (void)
     }
 }
 
+/* Initialize global machine_mode variables.  */
+
+void
+init_derived_machine_modes (void)
+{
+  byte_mode = VOIDmode;
+  word_mode = VOIDmode;
+
+  for (enum machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
+	  && byte_mode == VOIDmode)
+	byte_mode = mode;
+
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
+	  && word_mode == VOIDmode)
+	word_mode = mode;
+    }
+
+  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
+}
+
 /* Create some permanent unique rtl objects shared between all functions.  */
 
 void
@@ -5747,36 +5771,6 @@ init_emit_once (void)
   reg_attrs_htab = htab_create_ggc (37, reg_attrs_htab_hash,
 				    reg_attrs_htab_eq, NULL);
 
-  /* Compute the word and byte modes.  */
-
-  byte_mode = VOIDmode;
-  word_mode = VOIDmode;
-  double_mode = VOIDmode;
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
-	  && byte_mode == VOIDmode)
-	byte_mode = mode;
-
-      if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
-	  && word_mode == VOIDmode)
-	word_mode = mode;
-    }
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
-	  && double_mode == VOIDmode)
-	double_mode = mode;
-    }
-
-  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
-
 #ifdef INIT_EXPANDERS
   /* This is to initialize {init|mark|free}_machine_status before the first
      call to push_function_context_to.  This is needed by the Chill front
@@ -5798,6 +5792,8 @@ init_emit_once (void)
     const_true_rtx = const_int_rtx[STORE_FLAG_VALUE + MAX_SAVED_CONST_INT];
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
+
+  double_mode = mode_for_size (DOUBLE_TYPE_SIZE, MODE_FLOAT, 0);
 
   real_from_integer (&dconst0, double_mode, 0, SIGNED);
   real_from_integer (&dconst1, double_mode, 1, SIGNED);
