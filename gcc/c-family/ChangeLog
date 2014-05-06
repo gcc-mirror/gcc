@@ -1,3 +1,9 @@
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	* c-opts.c (c_common_post_options): For -freestanding,
+	-fno-hosted and -fno-builtin disable pattern recognition
+	if not enabled explicitely.
+
 2014-05-02  Marek Polacek  <polacek@redhat.com>
 
 	* c.opt (Wsizeof-pointer-memaccess): Describe option.
