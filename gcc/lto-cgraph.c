@@ -770,7 +770,6 @@ add_references (lto_symtab_encoder_t encoder,
 lto_symtab_encoder_t 
 compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 {
-  struct cgraph_node *node;
   struct cgraph_edge *edge;
   int i;
   lto_symtab_encoder_t encoder;
@@ -785,7 +784,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
   for (lsei = lsei_start_function_in_partition (in_encoder);
        !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))
     {
-      node = lsei_cgraph_node (lsei);
+      struct cgraph_node *node = lsei_cgraph_node (lsei);
       add_node_to (encoder, node, true);
       lto_set_symtab_encoder_in_partition (encoder, node);
       add_references (encoder, &node->ref_list);
@@ -809,7 +808,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (DECL_ABSTRACT_ORIGIN (vnode->decl))
 	{
 	  varpool_node *origin_node
-	  = varpool_get_node (DECL_ABSTRACT_ORIGIN (node->decl));
+	    = varpool_get_node (DECL_ABSTRACT_ORIGIN (vnode->decl));
 	  lto_set_symtab_encoder_in_partition (encoder, origin_node);
 	}
     }
@@ -836,7 +835,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
   for (lsei = lsei_start_function_in_partition (encoder);
        !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))
     {
-      node = lsei_cgraph_node (lsei);
+      struct cgraph_node *node = lsei_cgraph_node (lsei);
       for (edge = node->callees; edge; edge = edge->next_callee)
 	{
 	  struct cgraph_node *callee = edge->callee;
