@@ -23,8 +23,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <debug/debug.h>
-#include <debug/safe_sequence.h>
-#include <debug/safe_unordered_container.h>
+#include <debug/safe_base.h>
+#include <debug/safe_unordered_base.h>
 #include <debug/safe_iterator.h>
 #include <debug/safe_local_iterator.h>
 #include <algorithm>
@@ -235,7 +235,7 @@ namespace __gnu_debug
 
   void
   _Safe_sequence_base::
-  _M_swap(_Safe_sequence_base& __x)
+  _M_swap(_Safe_sequence_base& __x) noexcept
   {
     // We need to lock both sequences to swap
     using namespace __gnu_cxx;
@@ -382,7 +382,7 @@ namespace __gnu_debug
 
   _Safe_unordered_container_base*
   _Safe_local_iterator_base::
-  _M_get_container() const _GLIBCXX_NOEXCEPT
+  _M_get_container() const noexcept
   { return static_cast<_Safe_unordered_container_base*>(_M_sequence); }
 
   void
@@ -455,7 +455,7 @@ namespace __gnu_debug
 
   void
   _Safe_unordered_container_base::
-  _M_swap(_Safe_unordered_container_base& __x)
+  _M_swap(_Safe_unordered_container_base& __x) noexcept
   {
     // We need to lock both containers to swap
     using namespace __gnu_cxx;

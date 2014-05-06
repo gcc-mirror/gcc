@@ -179,10 +179,8 @@ namespace __gnu_test
 
       val_type *first = &v.front() + 1;
       val_type *last = first + 2;
-      cont_type c1(first, last);
-      VERIFY(c1.size() == 2);
 
-      cont_type c2(last, first); // Expected failure
+      cont_type c(last, first); // Expected failure
     } 
 
   // Check that invalid range of debug random iterators is detected
@@ -206,10 +204,8 @@ namespace __gnu_test
 
       typename vector_type::iterator first = v.begin() + 1;
       typename vector_type::iterator last = first + 2;
-      cont_type c1(first, last);
-      VERIFY(c1.size() == 2);
 
-      cont_type c2(last, first); // Expected failure
+      cont_type c(last, first); // Expected failure
     }
 
   // Check that invalid range of debug not random iterators is detected
@@ -233,10 +229,8 @@ namespace __gnu_test
 
       typename list_type::iterator first = l.begin(); ++first;
       typename list_type::iterator last = first; ++last; ++last;
-      cont_type c1(first, last);
-      VERIFY(c1.size() == 2);
 
-      cont_type c2(last, first); // Expected failure
+      cont_type c(last, first); // Expected failure
     }
 
   template <typename _Cont>

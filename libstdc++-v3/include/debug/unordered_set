@@ -35,6 +35,7 @@
 # include <unordered_set>
 
 #include <debug/safe_unordered_container.h>
+#include <debug/safe_container.h>
 #include <debug/safe_iterator.h>
 #include <debug/safe_local_iterator.h>
 
@@ -48,37 +49,38 @@ namespace __debug
 	   typename _Pred = std::equal_to<_Value>,
 	   typename _Alloc = std::allocator<_Value> >
     class unordered_set
-    : public _GLIBCXX_STD_C::unordered_set<_Value, _Hash, _Pred, _Alloc>,
-      public __gnu_debug::_Safe_unordered_container<unordered_set<_Value, _Hash,
-						       _Pred, _Alloc> >
+    : public __gnu_debug::_Safe_container<
+	unordered_set<_Value, _Hash, _Pred, _Alloc>, _Alloc,
+	__gnu_debug::_Safe_unordered_container>,
+      public _GLIBCXX_STD_C::unordered_set<_Value, _Hash, _Pred, _Alloc>
     {
-      typedef _GLIBCXX_STD_C::unordered_set<_Value, _Hash,
-					    _Pred, _Alloc> _Base;
-      typedef __gnu_debug::_Safe_unordered_container<unordered_set> _Safe_base;
-      typedef typename _Base::const_iterator _Base_const_iterator;
-      typedef typename _Base::iterator _Base_iterator;
+      typedef _GLIBCXX_STD_C::unordered_set<
+	_Value, _Hash, _Pred, _Alloc>					_Base;
+      typedef __gnu_debug::_Safe_container<
+	unordered_set, _Alloc, __gnu_debug::_Safe_unordered_container>	_Safe;
+
+      typedef typename _Base::const_iterator	   _Base_const_iterator;
+      typedef typename _Base::iterator		   _Base_iterator;
       typedef typename _Base::const_local_iterator _Base_const_local_iterator;
-      typedef typename _Base::local_iterator _Base_local_iterator;
+      typedef typename _Base::local_iterator	   _Base_local_iterator;
 
-      typedef __gnu_cxx::__alloc_traits<typename
-					_Base::allocator_type> _Alloc_traits;
     public:
-      typedef typename _Base::size_type       size_type;
-      typedef typename _Base::hasher          hasher;
-      typedef typename _Base::key_equal       key_equal;
-      typedef typename _Base::allocator_type  allocator_type;
+      typedef typename _Base::size_type			size_type;
+      typedef typename _Base::hasher			hasher;
+      typedef typename _Base::key_equal			key_equal;
+      typedef typename _Base::allocator_type		allocator_type;
 
-      typedef typename _Base::key_type        key_type;
-      typedef typename _Base::value_type      value_type;
+      typedef typename _Base::key_type			key_type;
+      typedef typename _Base::value_type		value_type;
 
-      typedef __gnu_debug::_Safe_iterator<_Base_iterator,
-					  unordered_set> iterator;
-      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,
-					  unordered_set> const_iterator;
-      typedef __gnu_debug::_Safe_local_iterator<_Base_local_iterator,
-					  unordered_set> local_iterator;
-      typedef __gnu_debug::_Safe_local_iterator<_Base_const_local_iterator,
-					  unordered_set> const_local_iterator;
+      typedef __gnu_debug::_Safe_iterator<
+	_Base_iterator, unordered_set>			iterator;
+      typedef __gnu_debug::_Safe_iterator<
+	_Base_const_iterator, unordered_set>		const_iterator;
+      typedef __gnu_debug::_Safe_local_iterator<
+	_Base_local_iterator, unordered_set>		local_iterator;
+      typedef __gnu_debug::_Safe_local_iterator<
+	_Base_const_local_iterator, unordered_set>	const_local_iterator;
 
       explicit
       unordered_set(size_type __n = 10,
@@ -88,10 +90,10 @@ namespace __debug
       : _Base(__n, __hf, __eql, __a) { }
 
       template<typename _InputIterator>
-        unordered_set(_InputIterator __first, _InputIterator __last, 
+	unordered_set(_InputIterator __first, _InputIterator __last,
 		      size_type __n = 0,
-		      const hasher& __hf = hasher(), 
-		      const key_equal& __eql = key_equal(), 
+		      const hasher& __hf = hasher(),
+		      const key_equal& __eql = key_equal(),
 		      const allocator_type& __a = allocator_type())
 	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
 								     __last)),
@@ -101,24 +103,22 @@ namespace __debug
       unordered_set(const unordered_set&) = default;
 
       unordered_set(const _Base& __x)
-	: _Base(__x) { }
+      : _Base(__x) { }
 
       unordered_set(unordered_set&&) = default;
 
       explicit
       unordered_set(const allocator_type& __a)
-	: _Base(__a)
-      { }
+      : _Base(__a) { }
 
       unordered_set(const unordered_set& __uset,
 		    const allocator_type& __a)
-	: _Base(__uset._M_base(), __a)
-      { }
+      : _Base(__uset, __a) { }
 
       unordered_set(unordered_set&& __uset,
 		    const allocator_type& __a)
-	: _Base(std::move(__uset._M_base()), __a)
-      { }
+      : _Safe(std::move(__uset._M_safe()), __a),
+	_Base(std::move(__uset._M_base()), __a) { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 0,
@@ -127,31 +127,13 @@ namespace __debug
 		    const allocator_type& __a = allocator_type())
       : _Base(__l, __n, __hf, __eql, __a) { }
 
-      ~unordered_set() noexcept { }
+      ~unordered_set() = default;
 
       unordered_set&
-      operator=(const unordered_set& __x)
-      {
-	_M_base() = __x._M_base();
-	this->_M_invalidate_all();
-	return *this;
-      }
+      operator=(const unordered_set&) = default;
 
       unordered_set&
-      operator=(unordered_set&& __x)
-      noexcept(_Alloc_traits::_S_nothrow_move())
-      {
-	__glibcxx_check_self_move_assign(__x);
-	bool __xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
-	    || __x.get_allocator() == this->get_allocator();
-	_M_base() = std::move(__x._M_base());
-	if (__xfer_memory)
-	  this->_M_swap(__x);
-	else
-	  this->_M_invalidate_all();
-	__x._M_invalidate_all();
-	return *this;
-      }
+      operator=(unordered_set&&) = default;
 
       unordered_set&
       operator=(initializer_list<value_type> __l)
@@ -163,12 +145,10 @@ namespace __debug
 
       void
       swap(unordered_set& __x)
-      noexcept(_Alloc_traits::_S_nothrow_swap())
+	noexcept( noexcept(declval<_Base>().swap(__x)) )
       {
-	if (!_Alloc_traits::_S_propagate_on_swap())
-	  __glibcxx_check_equal_allocs(__x);
+	_Safe::_M_swap(__x);
 	_Base::swap(__x);
-	_Safe_base::_M_swap(__x);
       }
 
       void
@@ -178,7 +158,7 @@ namespace __debug
 	this->_M_invalidate_all();
       }
 
-      iterator 
+      iterator
       begin() noexcept
       { return iterator(_Base::begin(), this); }
 
@@ -290,8 +270,8 @@ namespace __debug
       insert(const value_type& __obj)
       {
 	size_type __bucket_count = this->bucket_count();
-	typedef std::pair<_Base_iterator, bool> __pair_type;
-	  __pair_type __res = _Base::insert(__obj);
+	std::pair<_Base_iterator, bool> __res
+	  = _Base::insert(__obj);
 	_M_check_rehashed(__bucket_count);
 	return std::make_pair(iterator(__res.first, this), __res.second);
       }
@@ -310,8 +290,8 @@ namespace __debug
       insert(value_type&& __obj)
       {
 	size_type __bucket_count = this->bucket_count();
-	typedef std::pair<typename _Base::iterator, bool> __pair_type;
-	  __pair_type __res = _Base::insert(std::move(__obj));
+	std::pair<_Base_iterator, bool> __res
+	  = _Base::insert(std::move(__obj));
 	_M_check_rehashed(__bucket_count);
 	return std::make_pair(iterator(__res.first, this), __res.second);
       }
@@ -356,8 +336,8 @@ namespace __debug
       std::pair<iterator, iterator>
       equal_range(const key_type& __key)
       {
-	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
-	__pair_type __res = _Base::equal_range(__key);
+	std::pair<_Base_iterator, _Base_iterator> __res
+	  = _Base::equal_range(__key);
 	return std::make_pair(iterator(__res.first, this),
 			      iterator(__res.second, this));
       }
@@ -439,36 +419,17 @@ namespace __debug
       }
 
       _Base&
-      _M_base() noexcept       { return *this; }
+      _M_base() noexcept { return *this; }
 
       const _Base&
       _M_base() const noexcept { return *this; }
 
     private:
       void
-      _M_invalidate_locals()
-      {
-	_Base_local_iterator __local_end = _Base::end(0);
-	this->_M_invalidate_local_if(
-			[__local_end](_Base_const_local_iterator __it)
-			{ return __it != __local_end; });
-      }
-
-      void
-      _M_invalidate_all()
-      {
-	_Base_iterator __end = _Base::end();
-	this->_M_invalidate_if(
-			[__end](_Base_const_iterator __it)
-			{ return __it != __end; });
-	_M_invalidate_locals();
-      }
-
-      void
       _M_check_rehashed(size_type __prev_count)
       {
 	if (__prev_count != this->bucket_count())
-	  _M_invalidate_locals();
+	  this->_M_invalidate_locals();
       }
     };
 
@@ -497,37 +458,36 @@ namespace __debug
 	   typename _Pred = std::equal_to<_Value>,
 	   typename _Alloc = std::allocator<_Value> >
     class unordered_multiset
-    : public _GLIBCXX_STD_C::unordered_multiset<_Value, _Hash, _Pred, _Alloc>,
-      public __gnu_debug::_Safe_unordered_container<
-		unordered_multiset<_Value, _Hash, _Pred, _Alloc> >
+    : public __gnu_debug::_Safe_container<
+	unordered_multiset<_Value, _Hash, _Pred, _Alloc>, _Alloc,
+	__gnu_debug::_Safe_unordered_container>,
+      public _GLIBCXX_STD_C::unordered_multiset<_Value, _Hash, _Pred, _Alloc>
     {
-      typedef _GLIBCXX_STD_C::unordered_multiset<_Value, _Hash,
-						 _Pred, _Alloc> _Base;
-      typedef __gnu_debug::_Safe_unordered_container<unordered_multiset>
-		_Safe_base;
-      typedef typename _Base::const_iterator _Base_const_iterator;
-      typedef typename _Base::iterator _Base_iterator;
-      typedef typename _Base::const_local_iterator _Base_const_local_iterator;
-      typedef typename _Base::local_iterator _Base_local_iterator;
-
-      typedef __gnu_cxx::__alloc_traits<typename
-					_Base::allocator_type> _Alloc_traits;
+      typedef _GLIBCXX_STD_C::unordered_multiset<
+	_Value, _Hash, _Pred, _Alloc>				_Base;
+      typedef __gnu_debug::_Safe_container<unordered_multiset,
+	_Alloc, __gnu_debug::_Safe_unordered_container>		_Safe;
+      typedef typename _Base::const_iterator	_Base_const_iterator;
+      typedef typename _Base::iterator		_Base_iterator;
+      typedef typename _Base::const_local_iterator
+						_Base_const_local_iterator;
+      typedef typename _Base::local_iterator	_Base_local_iterator;
 
     public:
-      typedef typename _Base::size_type       size_type;
-      typedef typename _Base::hasher          hasher;
-      typedef typename _Base::key_equal       key_equal;
-      typedef typename _Base::allocator_type  allocator_type;
+      typedef typename _Base::size_type			size_type;
+      typedef typename _Base::hasher			hasher;
+      typedef typename _Base::key_equal			key_equal;
+      typedef typename _Base::allocator_type		allocator_type;
 
-      typedef typename _Base::key_type        key_type;
-      typedef typename _Base::value_type      value_type;
+      typedef typename _Base::key_type			key_type;
+      typedef typename _Base::value_type		value_type;
 
-      typedef __gnu_debug::_Safe_iterator<_Base_iterator,
-					  unordered_multiset> iterator;
-      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,
-					  unordered_multiset> const_iterator;
+      typedef __gnu_debug::_Safe_iterator<
+	_Base_iterator, unordered_multiset>		iterator;
+      typedef __gnu_debug::_Safe_iterator<
+	_Base_const_iterator, unordered_multiset>	const_iterator;
       typedef __gnu_debug::_Safe_local_iterator<
-	_Base_local_iterator, unordered_multiset> local_iterator;
+	_Base_local_iterator, unordered_multiset>	local_iterator;
       typedef __gnu_debug::_Safe_local_iterator<
 	_Base_const_local_iterator, unordered_multiset> const_local_iterator;
 
@@ -539,10 +499,10 @@ namespace __debug
       : _Base(__n, __hf, __eql, __a) { }
 
       template<typename _InputIterator>
-        unordered_multiset(_InputIterator __first, _InputIterator __last, 
+	unordered_multiset(_InputIterator __first, _InputIterator __last,
 			   size_type __n = 0,
-			   const hasher& __hf = hasher(), 
-			   const key_equal& __eql = key_equal(), 
+			   const hasher& __hf = hasher(),
+			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
 	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
 								     __last)),
@@ -551,25 +511,23 @@ namespace __debug
 
       unordered_multiset(const unordered_multiset&) = default;
 
-      unordered_multiset(const _Base& __x) 
+      unordered_multiset(const _Base& __x)
       : _Base(__x) { }
 
       unordered_multiset(unordered_multiset&&) = default;
 
       explicit
       unordered_multiset(const allocator_type& __a)
-	: _Base(__a)
-      { }
+      : _Base(__a) { }
 
       unordered_multiset(const unordered_multiset& __uset,
 			 const allocator_type& __a)
-	: _Base(__uset._M_base(), __a)
-      { }
-      
+      : _Base(__uset, __a) { }
+
       unordered_multiset(unordered_multiset&& __uset,
 			 const allocator_type& __a)
-	: _Base(std::move(__uset._M_base()), __a)
-      { }
+      : _Safe(std::move(__uset._M_safe()), __a),
+	_Base(std::move(__uset._M_base()), __a) { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 0,
@@ -578,48 +536,28 @@ namespace __debug
 			 const allocator_type& __a = allocator_type())
       : _Base(__l, __n, __hf, __eql, __a) { }
 
-      ~unordered_multiset() noexcept { }
+      ~unordered_multiset() = default;
 
       unordered_multiset&
-      operator=(const unordered_multiset& __x)
-      {
-	_M_base() = __x._M_base();
-	this->_M_invalidate_all();
-	return *this;
-      }
+      operator=(const unordered_multiset&) = default;
 
       unordered_multiset&
-      operator=(unordered_multiset&& __x)
-      noexcept(_Alloc_traits::_S_nothrow_move())
-      {
-	__glibcxx_check_self_move_assign(__x);
-	bool __xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
-	    || __x.get_allocator() == this->get_allocator();
-	_M_base() = std::move(__x._M_base());
-	if (__xfer_memory)
-	  this->_M_swap(__x);
-	else
-	  this->_M_invalidate_all();
-	__x._M_invalidate_all();
-	return *this;
-      }
+      operator=(unordered_multiset&&) = default;
 
       unordered_multiset&
       operator=(initializer_list<value_type> __l)
       {
-	_M_base() = __l;
+	this->_M_base() = __l;
 	this->_M_invalidate_all();
 	return *this;
       }
 
       void
       swap(unordered_multiset& __x)
-      noexcept(_Alloc_traits::_S_nothrow_swap())
+	noexcept( noexcept(declval<_Base>().swap(__x)) )
       {
-	if (!_Alloc_traits::_S_propagate_on_swap())
-	  __glibcxx_check_equal_allocs(__x);
+	_Safe::_M_swap(__x);
 	_Base::swap(__x);
-	_Safe_base::_M_swap(__x);
       }
 
       void
@@ -751,7 +689,7 @@ namespace __debug
       {
 	__glibcxx_check_insert(__hint);
 	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __it = _Base::insert(__hint.base(), __obj); 
+	_Base_iterator __it = _Base::insert(__hint.base(), __obj);
 	_M_check_rehashed(__bucket_count);
 	return iterator(__it, this);
       }
@@ -760,7 +698,7 @@ namespace __debug
       insert(value_type&& __obj)
       {
 	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __it = _Base::insert(std::move(__obj)); 
+	_Base_iterator __it = _Base::insert(std::move(__obj));
 	_M_check_rehashed(__bucket_count);
 	return iterator(__it, this);
       }
@@ -770,7 +708,7 @@ namespace __debug
       {
 	__glibcxx_check_insert(__hint);
 	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __it = _Base::insert(__hint.base(), std::move(__obj)); 
+	_Base_iterator __it = _Base::insert(__hint.base(), std::move(__obj));
 	_M_check_rehashed(__bucket_count);
 	return iterator(__it, this);
       }
@@ -805,8 +743,8 @@ namespace __debug
       std::pair<iterator, iterator>
       equal_range(const key_type& __key)
       {
-	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
-	__pair_type __res = _Base::equal_range(__key);
+	std::pair<_Base_iterator, _Base_iterator> __res
+	  = _Base::equal_range(__key);
 	return std::make_pair(iterator(__res.first, this),
 			      iterator(__res.second, this));
       }
@@ -878,35 +816,17 @@ namespace __debug
       }
 
       _Base&
-      _M_base() noexcept       { return *this; }
+      _M_base() noexcept	{ return *this; }
 
       const _Base&
-      _M_base() const noexcept { return *this; }
+      _M_base() const noexcept	{ return *this; }
 
     private:
-      void
-      _M_invalidate_locals()
-      {
-	_Base_local_iterator __local_end = _Base::end(0);
-	this->_M_invalidate_local_if(
-			[__local_end](_Base_const_local_iterator __it)
-			{ return __it != __local_end; });
-      }
-
-      void
-      _M_invalidate_all()
-      {
-	_Base_iterator __end = _Base::end();
-	this->_M_invalidate_if([__end](_Base_const_iterator __it)
-			{ return __it != __end; });
-	_M_invalidate_locals();
-      }
-
       void
       _M_check_rehashed(size_type __prev_count)
       {
 	if (__prev_count != this->bucket_count())
-	  _M_invalidate_locals();
+	  this->_M_invalidate_locals();
       }
     };
 

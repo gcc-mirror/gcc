@@ -31,70 +31,82 @@
 
 #include <string>
 #include <debug/safe_sequence.h>
+#include <debug/safe_container.h>
 #include <debug/safe_iterator.h>
 
 namespace __gnu_debug
 {
   /// Class std::basic_string with safety/checking/debug instrumentation.
   template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
-            typename _Allocator = std::allocator<_CharT> >
+	   typename _Allocator = std::allocator<_CharT> >
     class basic_string
-    : public std::basic_string<_CharT, _Traits, _Allocator>,
-      public __gnu_debug::_Safe_sequence<basic_string<_CharT, _Traits,
-						      _Allocator> >
+    : public __gnu_debug::_Safe_container<
+	basic_string<_CharT, _Traits, _Allocator>,
+	_Allocator, _Safe_sequence, false>,
+      public std::basic_string<_CharT, _Traits, _Allocator>
     {
-      typedef std::basic_string<_CharT, _Traits, _Allocator> _Base;
-      typedef __gnu_debug::_Safe_sequence<basic_string>     _Safe_base;
+      typedef std::basic_string<_CharT, _Traits, _Allocator>	_Base;
+      typedef __gnu_debug::_Safe_container<
+	basic_string, _Allocator, _Safe_sequence, false>	_Safe;
 
   public:
     // types:
-    typedef _Traits				       traits_type;
-    typedef typename _Traits::char_type		       value_type;
-    typedef _Allocator				       allocator_type;
-    typedef typename _Base::size_type                  size_type;
-    typedef typename _Base::difference_type            difference_type;
-    typedef typename _Base::reference                  reference;
-    typedef typename _Base::const_reference            const_reference;
-    typedef typename _Base::pointer                    pointer;
-    typedef typename _Base::const_pointer              const_pointer;
+    typedef _Traits					traits_type;
+    typedef typename _Traits::char_type			value_type;
+    typedef _Allocator					allocator_type;
+    typedef typename _Base::size_type			size_type;
+    typedef typename _Base::difference_type		difference_type;
+    typedef typename _Base::reference			reference;
+    typedef typename _Base::const_reference		const_reference;
+    typedef typename _Base::pointer			pointer;
+    typedef typename _Base::const_pointer		const_pointer;
 
-    typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, basic_string>
-                                                       iterator;
-    typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
-                                         basic_string> const_iterator;
+    typedef __gnu_debug::_Safe_iterator<
+      typename _Base::iterator, basic_string>		iterator;
+    typedef __gnu_debug::_Safe_iterator<
+      typename _Base::const_iterator, basic_string>	const_iterator;
 
-    typedef std::reverse_iterator<iterator>            reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
+    typedef std::reverse_iterator<iterator>		reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
 
     using _Base::npos;
 
     // 21.3.1 construct/copy/destroy:
     explicit basic_string(const _Allocator& __a = _Allocator())
     // _GLIBCXX_NOEXCEPT
-    : _Base(__a)
-    { }
+    : _Base(__a) { }
 
-    // Provides conversion from a release-mode string to a debug-mode string
-    basic_string(const _Base& __base) : _Base(__base) { }
-
-    // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 42. string ctors specify wrong default allocator
+#if __cplusplus < 201103L
     basic_string(const basic_string& __str)
-    : _Base(__str, 0, _Base::npos, __str.get_allocator())
+    : _Base(__str) { }
+
+    ~basic_string() { }
+#else
+    basic_string(const basic_string&) = default;
+    basic_string(basic_string&&) = default;
+
+    basic_string(std::initializer_list<_CharT> __l,
+		 const _Allocator& __a = _Allocator())
+    : _Base(__l, __a)
     { }
+
+    ~basic_string() = default;
+#endif // C++11
+
+    // Provides conversion from a normal-mode string to a debug-mode string
+    basic_string(const _Base& __base)
+    : _Base(__base) { }
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 42. string ctors specify wrong default allocator
     basic_string(const basic_string& __str, size_type __pos,
-		   size_type __n = _Base::npos,
-		   const _Allocator& __a = _Allocator())
-    : _Base(__str, __pos, __n, __a)
-    { }
+		 size_type __n = _Base::npos,
+		 const _Allocator& __a = _Allocator())
+    : _Base(__str, __pos, __n, __a) { }
 
     basic_string(const _CharT* __s, size_type __n,
 		   const _Allocator& __a = _Allocator())
-    : _Base(__gnu_debug::__check_string(__s, __n), __n, __a)
-    { }
+    : _Base(__gnu_debug::__check_string(__s, __n), __n, __a) { }
 
     basic_string(const _CharT* __s, const _Allocator& __a = _Allocator())
     : _Base(__gnu_debug::__check_string(__s), __a)
@@ -102,43 +114,36 @@ namespace __gnu_debug
 
     basic_string(size_type __n, _CharT __c,
 		   const _Allocator& __a = _Allocator())
-    : _Base(__n, __c, __a)
-    { }
+    : _Base(__n, __c, __a) { }
 
     template<typename _InputIterator>
       basic_string(_InputIterator __begin, _InputIterator __end,
 		   const _Allocator& __a = _Allocator())
       : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__begin,
 								   __end)),
-	      __gnu_debug::__base(__end), __a)
-      { }
+	      __gnu_debug::__base(__end), __a) { }
 
-#if __cplusplus >= 201103L
-    basic_string(basic_string&& __str) // noexcept
-    : _Base(std::move(__str))
-    { }
-
-    basic_string(std::initializer_list<_CharT> __l,
-		 const _Allocator& __a = _Allocator())
-    : _Base(__l, __a)
-    { }
-#endif // C++11
-
-    ~basic_string() _GLIBCXX_NOEXCEPT { }
-
+#if __cplusplus < 201103L
     basic_string&
     operator=(const basic_string& __str)
     {
-      *static_cast<_Base*>(this) = __str;
-      this->_M_invalidate_all();
+      this->_M_safe() = __str;
+      _M_base() = __str;
       return *this;
     }
+#else
+    basic_string&
+    operator=(const basic_string&) = default;
+
+    basic_string&
+    operator=(basic_string&&) = default;
+#endif
 
     basic_string&
     operator=(const _CharT* __s)
     {
       __glibcxx_check_string(__s);
-      *static_cast<_Base*>(this) = __s;
+      _M_base() = __s;
       this->_M_invalidate_all();
       return *this;
     }
@@ -146,25 +151,16 @@ namespace __gnu_debug
     basic_string&
     operator=(_CharT __c)
     {
-      *static_cast<_Base*>(this) = __c;
+      _M_base() = __c;
       this->_M_invalidate_all();
       return *this;
     }
 
 #if __cplusplus >= 201103L
     basic_string&
-    operator=(basic_string&& __str)
-    {
-      __glibcxx_check_self_move_assign(__str);
-      *static_cast<_Base*>(this) = std::move(__str);
-      this->_M_invalidate_all();
-      return *this;
-    }
-
-    basic_string&
     operator=(std::initializer_list<_CharT> __l)
     {
-      *static_cast<_Base*>(this) = __l;
+      _M_base() = __l;
       this->_M_invalidate_all();
       return *this;
     }
@@ -576,7 +572,7 @@ namespace __gnu_debug
       // 151. can't currently clear() empty container
       __glibcxx_check_erase_range(__first, __last);
       typename _Base::iterator __res = _Base::erase(__first.base(),
-						       __last.base());
+						    __last.base());
       this->_M_invalidate_all();
       return iterator(__res, this);
     }
@@ -704,12 +700,10 @@ namespace __gnu_debug
     }
 
     void
-    swap(basic_string<_CharT,_Traits,_Allocator>& __x)
+    swap(basic_string& __x)
     {
+      _Safe::_M_swap(__x);
       _Base::swap(__x);
-      this->_M_swap(__x);
-      this->_M_invalidate_all();
-      __x._M_invalidate_all();
     }
 
     // 21.3.6 string operations:
@@ -801,7 +795,7 @@ namespace __gnu_debug
     { return _Base::find_first_of(__c, __pos); }
 
     size_type
-    find_last_of(const basic_string& __str, 
+    find_last_of(const basic_string& __str,
 		 size_type __pos = _Base::npos) const _GLIBCXX_NOEXCEPT
     { return _Base::find_last_of(__str, __pos); }
 
@@ -910,19 +904,19 @@ namespace __gnu_debug
     //  5. string::compare specification questionable
     int
     compare(size_type __pos1, size_type __n1,const _CharT* __s,
-	      size_type __n2) const
+	    size_type __n2) const
     {
       __glibcxx_check_string_len(__s, __n2);
       return _Base::compare(__pos1, __n1, __s, __n2);
     }
 
     _Base&
-    _M_base() _GLIBCXX_NOEXCEPT       { return *this; }
+    _M_base() _GLIBCXX_NOEXCEPT		{ return *this; }
 
     const _Base&
-    _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
+    _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
 
-    using _Safe_base::_M_invalidate_all;
+    using _Safe::_M_invalidate_all;
   };
 
   template<typename _CharT, typename _Traits, typename _Allocator>

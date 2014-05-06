@@ -52,7 +52,7 @@ namespace __gnu_debug
   public:
     /** The sequence this iterator references; may be NULL to indicate
 	a singular iterator. */
-    _Safe_sequence_base* _M_sequence;
+    _Safe_sequence_base*	_M_sequence;
 
     /** The version number of this iterator. The sentinel value 0 is
      *  used to indicate an invalidated iterator (i.e., one that is
@@ -61,15 +61,15 @@ namespace __gnu_debug
      *  referenced by _M_sequence for the iterator to be
      *  non-singular.
      */
-    unsigned int         _M_version;
+    unsigned int		_M_version;
 
     /** Pointer to the previous iterator in the sequence's list of
 	iterators. Only valid when _M_sequence != NULL. */
-    _Safe_iterator_base* _M_prior;
+    _Safe_iterator_base*	_M_prior;
 
     /** Pointer to the next iterator in the sequence's list of
 	iterators. Only valid when _M_sequence != NULL. */
-    _Safe_iterator_base* _M_next;
+    _Safe_iterator_base*	_M_next;
 
   protected:
     /** Initializes the iterator and makes it singular. */
@@ -104,7 +104,8 @@ namespace __gnu_debug
     ~_Safe_iterator_base() { this->_M_detach(); }
 
     /** For use in _Safe_iterator. */
-    __gnu_cxx::__mutex& _M_get_mutex() throw ();
+    __gnu_cxx::__mutex&
+    _M_get_mutex() throw ();
 
   public:
     /** Attaches this iterator to the given sequence, detaching it
@@ -112,30 +113,37 @@ namespace __gnu_debug
      *	new sequence is the NULL pointer, the iterator is left
      *	unattached.
      */
-    void _M_attach(_Safe_sequence_base* __seq, bool __constant);
+    void
+    _M_attach(_Safe_sequence_base* __seq, bool __constant);
 
     /** Likewise, but not thread-safe. */
-    void _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ();
+    void
+    _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ();
 
     /** Detach the iterator for whatever sequence it is attached to,
      *	if any.
     */
-    void _M_detach();
+    void
+    _M_detach();
 
     /** Likewise, but not thread-safe. */
-    void _M_detach_single() throw ();
+    void
+    _M_detach_single() throw ();
 
     /** Determines if we are attached to the given sequence. */
-    bool _M_attached_to(const _Safe_sequence_base* __seq) const
+    bool
+    _M_attached_to(const _Safe_sequence_base* __seq) const
     { return _M_sequence == __seq; }
 
     /** Is this iterator singular? */
-    _GLIBCXX_PURE bool _M_singular() const throw ();
+    _GLIBCXX_PURE bool
+    _M_singular() const throw ();
 
     /** Can we compare this iterator to the given iterator @p __x?
 	Returns true if both iterators are nonsingular and reference
 	the same sequence. */
-    _GLIBCXX_PURE bool _M_can_compare(const _Safe_iterator_base& __x) const throw ();
+    _GLIBCXX_PURE bool
+    _M_can_compare(const _Safe_iterator_base& __x) const throw ();
 
     /** Invalidate the iterator, making it singular. */
     void
@@ -188,17 +196,13 @@ namespace __gnu_debug
 
   protected:
     // Initialize with a version number of 1 and no iterators
-    _Safe_sequence_base()
+    _Safe_sequence_base() _GLIBCXX_NOEXCEPT
     : _M_iterators(0), _M_const_iterators(0), _M_version(1)
     { }
 
 #if __cplusplus >= 201103L
     _Safe_sequence_base(const _Safe_sequence_base&) noexcept
-      : _Safe_sequence_base() { }
-
-    _Safe_sequence_base(_Safe_sequence_base&& __x) noexcept
-      : _Safe_sequence_base()
-    { _M_swap(__x); }
+    : _Safe_sequence_base() { }
 #endif
 
     /** Notify all iterators that reference this sequence that the
@@ -231,10 +235,11 @@ namespace __gnu_debug
      *  one container now reference the other container.
      */
     void
-    _M_swap(_Safe_sequence_base& __x);
+    _M_swap(_Safe_sequence_base& __x) _GLIBCXX_USE_NOEXCEPT;
 
     /** For use in _Safe_sequence. */
-    __gnu_cxx::__mutex& _M_get_mutex() throw ();
+    __gnu_cxx::__mutex&
+    _M_get_mutex() throw ();
 
   public:
     /** Invalidates all iterators. */

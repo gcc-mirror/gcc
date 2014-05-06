@@ -347,10 +347,10 @@ _GLIBCXX_DEBUG_VERIFY(_F > 0.0f,					\
 		      _M_message(__gnu_debug::__msg_valid_load_factor)	\
                       ._M_sequence(*this, "this"))
 
-#define __glibcxx_check_equal_allocs(_Other)				\
-_GLIBCXX_DEBUG_VERIFY(this->get_allocator() == _Other.get_allocator(),	\
+#define __glibcxx_check_equal_allocs(_This, _Other)			\
+_GLIBCXX_DEBUG_VERIFY(_This.get_allocator() == _Other.get_allocator(),	\
 		      _M_message(__gnu_debug::__msg_equal_allocs)	\
-		      ._M_sequence(*this, "this"))
+		      ._M_sequence(_This, "this"))
 
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
 #  define __glibcxx_check_string(_String) _GLIBCXX_DEBUG_ASSERT(_String != 0)
