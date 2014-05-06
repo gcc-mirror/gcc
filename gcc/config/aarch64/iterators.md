@@ -564,6 +564,32 @@
 
 (define_mode_attr VSTRUCT_DREG [(OI "TI") (CI "EI") (XI "OI")])
 
+;; Mode of pair of elements for each vector mode, to define transfer
+;; size for structure lane/dup loads and stores.
+(define_mode_attr V_TWO_ELEM [(V8QI "HI")   (V16QI "HI")
+                              (V4HI "SI")   (V8HI "SI")
+                              (V2SI "V2SI") (V4SI "V2SI")
+                              (DI "V2DI")   (V2DI "V2DI")
+                              (V2SF "V2SF") (V4SF "V2SF")
+                              (DF "V2DI")   (V2DF "V2DI")])
+
+;; Similar, for three elements.
+(define_mode_attr V_THREE_ELEM [(V8QI "BLK") (V16QI "BLK")
+                                (V4HI "BLK") (V8HI "BLK")
+                                (V2SI "BLK") (V4SI "BLK")
+                                (DI "EI")    (V2DI "EI")
+                                (V2SF "BLK") (V4SF "BLK")
+                                (DF "EI")    (V2DF "EI")])
+
+;; Similar, for four elements.
+(define_mode_attr V_FOUR_ELEM [(V8QI "SI")   (V16QI "SI")
+                               (V4HI "V4HI") (V8HI "V4HI")
+                               (V2SI "V4SI") (V4SI "V4SI")
+                               (DI "OI")     (V2DI "OI")
+                               (V2SF "V4SF") (V4SF "V4SF")
+                               (DF "OI")     (V2DF "OI")])
+
+
 ;; Mode for atomic operation suffixes
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])

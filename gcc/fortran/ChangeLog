@@ -1,4 +1,44 @@
-2014-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (create_function_arglist): Add hidden coarray arguments
+	also for polymorphic coarrays.
+	* trans-expr.c (gfc_conv_procedure_call): Pass hidden coarray arguments
+	also for polymorphic coarrays.
+
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_function): Don't do
+	assumed-size check for lcobound/ucobound.
+	* trans-types.c (gfc_build_array_type): Only build an array
+	descriptor with codimensions for allocatable coarrays.
+
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_init_coarray_decl): Remove.
+	* parse.c (translate_all_program_units): Remove call to it.
+	(gfc_parse_file): Update call.
+	* trans.h (gfor_fndecl_caf_this_image,
+	gfor_fndecl_caf_num_images): Add.
+	(gfort_gvar_caf_num_images,
+	gfort_gvar_caf_this_image): Remove.
+	* trans-decl.c (gfor_fndecl_caf_this_image,
+	gfor_fndecl_caf_num_images): Add.
+	(gfort_gvar_caf_num_images,
+	gfort_gvar_caf_this_image): Remove.
+	(gfc_build_builtin_function_decls): Init new decl.
+	(gfc_init_coarray_dec): Remove.
+	(create_main_function): Change calls.
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	conv_intrinsic_cobound): Generate call to new library function
+	instead of to a static variable.
+	* trans-stmt.c (gfc_trans_sync): Ditto.
+
+2014-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (get_tree_for_caf_expr): Fix handling of polymorphic
+	and derived-type coarrays.
+
+2014-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/59604
 	PR fortran/58003

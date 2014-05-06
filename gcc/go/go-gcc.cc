@@ -34,6 +34,7 @@
 #include "basic-block.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
+#include "langhooks.h"
 #include "toplev.h"
 #include "output.h"
 #include "real.h"
@@ -131,6 +132,8 @@ class Blabel : public Gcc_tree
 class Gcc_backend : public Backend
 {
  public:
+  Gcc_backend();
+
   // Types.
 
   Btype*
@@ -425,6 +428,9 @@ class Gcc_backend : public Backend
   bool
   function_set_body(Bfunction* function, Bstatement* code_stmt);
 
+  Bfunction*
+  lookup_builtin(const std::string&);
+
   void
   write_global_definitions(const std::vector<Btype*>&,
                            const std::vector<Bexpression*>&,
@@ -459,6 +465,14 @@ class Gcc_backend : public Backend
 
   tree
   non_zero_size_type(tree);
+
+private:
+  void
+  define_builtin(built_in_function bcode, const char* name, const char* libname,
+		 tree fntype, bool const_p);
+
+  // A mapping of the GCC built-ins exposed to GCCGo.
+  std::map<std::string, Bfunction*> builtin_functions_;
 };
 
 // A helper function.
@@ -467,6 +481,172 @@ static inline tree
 get_identifier_from_string(const std::string& str)
 {
   return get_identifier_with_length(str.data(), str.length());
+}
+
+// Define the built-in functions that are exposed to GCCGo.
+
+Gcc_backend::Gcc_backend()
+{
+  /* We need to define the fetch_and_add functions, since we use them
+     for ++ and --.  */
+  tree t = this->integer_type(BITS_PER_UNIT, 1)->get_tree();
+  tree p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
+  this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_1, "__sync_fetch_and_add_1",
+		       NULL, build_function_type_list(t, p, t, NULL_TREE),
+		       false);
+
+  t = this->integer_type(BITS_PER_UNIT * 2, 1)->get_tree();
+  p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
+  this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_2, "__sync_fetch_and_add_2",
+		       NULL, build_function_type_list(t, p, t, NULL_TREE),
+		       false);
+
+  t = this->integer_type(BITS_PER_UNIT * 4, 1)->get_tree();
+  p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
+  this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_4, "__sync_fetch_and_add_4",
+		       NULL, build_function_type_list(t, p, t, NULL_TREE),
+		       false);
+
+  t = this->integer_type(BITS_PER_UNIT * 8, 1)->get_tree();
+  p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
+  this->define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_8, "__sync_fetch_and_add_8",
+		       NULL, build_function_type_list(t, p, t, NULL_TREE),
+		       false);
+
+  // We use __builtin_expect for magic import functions.
+  this->define_builtin(BUILT_IN_EXPECT, "__builtin_expect", NULL,
+		       build_function_type_list(long_integer_type_node,
+						long_integer_type_node,
+						long_integer_type_node,
+						NULL_TREE),
+		       true);
+
+  // We use __builtin_memcmp for struct comparisons.
+  this->define_builtin(BUILT_IN_MEMCMP, "__builtin_memcmp", "memcmp",
+		       build_function_type_list(integer_type_node,
+						const_ptr_type_node,
+						const_ptr_type_node,
+						size_type_node,
+						NULL_TREE),
+		       false);
+
+  // We provide some functions for the math library.
+  tree math_function_type = build_function_type_list(double_type_node,
+						     double_type_node,
+						     NULL_TREE);
+  tree math_function_type_long =
+    build_function_type_list(long_double_type_node, long_double_type_node,
+			     long_double_type_node, NULL_TREE);
+  tree math_function_type_two = build_function_type_list(double_type_node,
+							 double_type_node,
+							 double_type_node,
+							 NULL_TREE);
+  tree math_function_type_long_two =
+    build_function_type_list(long_double_type_node, long_double_type_node,
+			     long_double_type_node, NULL_TREE);
+  this->define_builtin(BUILT_IN_ACOS, "__builtin_acos", "acos",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_ACOSL, "__builtin_acosl", "acosl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_ASIN, "__builtin_asin", "asin",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_ASINL, "__builtin_asinl", "asinl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_ATAN, "__builtin_atan", "atan",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_ATANL, "__builtin_atanl", "atanl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_ATAN2, "__builtin_atan2", "atan2",
+		       math_function_type_two, true);
+  this->define_builtin(BUILT_IN_ATAN2L, "__builtin_atan2l", "atan2l",
+		       math_function_type_long_two, true);
+  this->define_builtin(BUILT_IN_CEIL, "__builtin_ceil", "ceil",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_CEILL, "__builtin_ceill", "ceill",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_COS, "__builtin_cos", "cos",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_COSL, "__builtin_cosl", "cosl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_EXP, "__builtin_exp", "exp",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_EXPL, "__builtin_expl", "expl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_EXPM1, "__builtin_expm1", "expm1",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_EXPM1L, "__builtin_expm1l", "expm1l",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_FABS, "__builtin_fabs", "fabs",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_FABSL, "__builtin_fabsl", "fabsl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_FLOOR, "__builtin_floor", "floor",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_FLOORL, "__builtin_floorl", "floorl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_FMOD, "__builtin_fmod", "fmod",
+		       math_function_type_two, true);
+  this->define_builtin(BUILT_IN_FMODL, "__builtin_fmodl", "fmodl",
+		       math_function_type_long_two, true);
+  this->define_builtin(BUILT_IN_LDEXP, "__builtin_ldexp", "ldexp",
+		       build_function_type_list(double_type_node,
+						double_type_node,
+						integer_type_node,
+						NULL_TREE),
+		       true);
+  this->define_builtin(BUILT_IN_LDEXPL, "__builtin_ldexpl", "ldexpl",
+		       build_function_type_list(long_double_type_node,
+						long_double_type_node,
+						integer_type_node,
+						NULL_TREE),
+		       true);
+  this->define_builtin(BUILT_IN_LOG, "__builtin_log", "log",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_LOGL, "__builtin_logl", "logl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_LOG1P, "__builtin_log1p", "log1p",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_LOG1PL, "__builtin_log1pl", "log1pl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_LOG10, "__builtin_log10", "log10",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_LOG10L, "__builtin_log10l", "log10l",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_LOG2, "__builtin_log2", "log2",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_LOG2L, "__builtin_log2l", "log2l",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_SIN, "__builtin_sin", "sin",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_SINL, "__builtin_sinl", "sinl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_SQRT, "__builtin_sqrt", "sqrt",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_SQRTL, "__builtin_sqrtl", "sqrtl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_TAN, "__builtin_tan", "tan",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_TANL, "__builtin_tanl", "tanl",
+		       math_function_type_long, true);
+  this->define_builtin(BUILT_IN_TRUNC, "__builtin_trunc", "trunc",
+		       math_function_type, true);
+  this->define_builtin(BUILT_IN_TRUNCL, "__builtin_truncl", "truncl",
+		       math_function_type_long, true);
+
+  // We use __builtin_return_address in the thunk we build for
+  // functions which call recover.
+  this->define_builtin(BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
+		       NULL,
+		       build_function_type_list(ptr_type_node,
+						unsigned_type_node,
+						NULL_TREE),
+		       false);
+
+  // The compiler uses __builtin_trap for some exception handling
+  // cases.
+  this->define_builtin(BUILT_IN_TRAP, "__builtin_trap", NULL,
+		       build_function_type(void_type_node, void_list_node),
+		       false);
 }
 
 // Get an unnamed integer type.
@@ -2598,6 +2778,17 @@ Gcc_backend::function_set_body(Bfunction* function, Bstatement* code_stmt)
   return true;
 }
 
+// Look up a named built-in function in the current backend implementation.
+// Returns NULL if no built-in function by that name exists.
+
+Bfunction*
+Gcc_backend::lookup_builtin(const std::string& name)
+{
+  if (this->builtin_functions_.count(name) != 0)
+    return this->builtin_functions_[name];
+  return NULL;
+}
+
 // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
 // FUNCTION_DECLS, and VARIABLE_DECLS declared globally.
 
@@ -2680,16 +2871,38 @@ Gcc_backend::write_global_definitions(
   delete[] defs;
 }
 
-// The single backend.
+// Define a builtin function.  BCODE is the builtin function code
+// defined by builtins.def.  NAME is the name of the builtin function.
+// LIBNAME is the name of the corresponding library function, and is
+// NULL if there isn't one.  FNTYPE is the type of the function.
+// CONST_P is true if the function has the const attribute.
 
-static Gcc_backend gcc_backend;
+void
+Gcc_backend::define_builtin(built_in_function bcode, const char* name,
+			    const char* libname, tree fntype, bool const_p)
+{
+  tree decl = add_builtin_function(name, fntype, bcode, BUILT_IN_NORMAL,
+				   libname, NULL_TREE);
+  if (const_p)
+    TREE_READONLY(decl) = 1;
+  set_builtin_decl(bcode, decl, true);
+  this->builtin_functions_[name] = this->make_function(decl);
+  if (libname != NULL)
+    {
+      decl = add_builtin_function(libname, fntype, bcode, BUILT_IN_NORMAL,
+				  NULL, NULL_TREE);
+      if (const_p)
+	TREE_READONLY(decl) = 1;
+      this->builtin_functions_[libname] = this->make_function(decl);
+    }
+}
 
 // Return the backend generator.
 
 Backend*
 go_get_backend()
 {
-  return &gcc_backend;
+  return new Gcc_backend();
 }
 
 // FIXME: Temporary functions while converting to the new backend

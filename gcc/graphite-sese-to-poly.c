@@ -2470,7 +2470,7 @@ rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 	    gsi_next (gsi);
 	  }
 
-	rewrite_cross_bb_scalar_dependence (scop, zero_dim_array,
+	rewrite_cross_bb_scalar_dependence (scop, unshare_expr (zero_dim_array),
 					    def, use_stmt);
       }
 

@@ -1,3 +1,23 @@
+2014-05-05  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt
+	(CXXABI_1.3.9): Remove __float128 symbols.
+
+2014-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59476
+	* python/libstdcxx/v6/printers.py (get_value_from_Rb_tree_node): New
+	function to handle both C++03 and C++11 _Rb_tree_node implementations.
+	(StdRbtreeIteratorPrinter, StdMapPrinter, StdSetPrinter): Use it.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Update comment to
+	refer to...
+	* testsuite/libstdc++-prettyprinters/simple11.cc: New.
+
+	PR libstdc++/61036
+	* include/bits/shared_ptr_base.h (__shared_ptr::__shared_ptr(_Tp1*)):
+	Check the correct type in the static assertion.
+	* testsuite/20_util/shared_ptr/cons/61036.cc: New.
+
 2014-04-27  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_automaton.h (_NFA<>::_M_insert_repeat):

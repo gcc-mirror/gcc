@@ -79,8 +79,8 @@ class sh_optimize_sett_clrt : public rtl_opt_pass
 public:
   sh_optimize_sett_clrt (gcc::context* ctx, const char* name);
   virtual ~sh_optimize_sett_clrt (void);
-  virtual bool gate (function *);
-  virtual unsigned int execute (void);
+  virtual bool gate (function*);
+  virtual unsigned int execute (function* fun);
 
 private:
   static const pass_data default_pass_data;
@@ -161,13 +161,13 @@ sh_optimize_sett_clrt::~sh_optimize_sett_clrt (void)
 }
 
 bool
-sh_optimize_sett_clrt::gate (function *)
+sh_optimize_sett_clrt::gate (function*)
 {
   return optimize > 0;
 }
 
 unsigned int
-sh_optimize_sett_clrt::execute (void)
+sh_optimize_sett_clrt::execute (function* fun)
 {
   unsigned int ccr0 = INVALID_REGNUM;
   unsigned int ccr1 = INVALID_REGNUM;
@@ -205,7 +205,7 @@ sh_optimize_sett_clrt::execute (void)
   // Look for insns that set the ccreg to a constant value and see if it can
   // be optimized.
   basic_block bb;
-  FOR_EACH_BB_REVERSE_FN (bb, cfun)
+  FOR_EACH_BB_REVERSE_FN (bb, fun)
     for (rtx next_i, i = NEXT_INSN (BB_HEAD (bb));
 	 i != NULL_RTX && i != BB_END (bb); i = next_i)
       {

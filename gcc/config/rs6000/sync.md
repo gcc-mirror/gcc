@@ -107,10 +107,17 @@
   "isync"
   [(set_attr "type" "isync")])
 
+;; Types that we should provide atomic instructions for.
+(define_mode_iterator AINT [QI
+			    HI
+			    SI
+			    (DI "TARGET_POWERPC64")
+			    (TI "TARGET_SYNC_TI")])
+
 ;; The control dependency used for load dependency described
 ;; in B.2.3 of the Power ISA 2.06B.
 (define_insn "loadsync_<mode>"
-  [(unspec_volatile:BLK [(match_operand:INT1 0 "register_operand" "r")]
+  [(unspec_volatile:BLK [(match_operand:AINT 0 "register_operand" "r")]
 			UNSPECV_ISYNC)
    (clobber (match_scratch:CC 1 "=y"))]
   ""
@@ -118,18 +125,56 @@
   [(set_attr "type" "isync")
    (set_attr "length" "12")])
 
+(define_insn "load_quadpti"
+  [(set (match_operand:PTI 0 "quad_int_reg_operand" "=&r")
+	(unspec:PTI
+	 [(match_operand:TI 1 "quad_memory_operand" "wQ")] UNSPEC_LSQ))]
+  "TARGET_SYNC_TI
+   && !reg_mentioned_p (operands[0], operands[1])"
+  "lq %0,%1"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
 (define_expand "atomic_load<mode>"
-  [(set (match_operand:INT1 0 "register_operand" "")		;; output
-	(match_operand:INT1 1 "memory_operand" ""))		;; memory
+  [(set (match_operand:AINT 0 "register_operand" "")		;; output
+	(match_operand:AINT 1 "memory_operand" ""))		;; memory
    (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
   ""
 {
+  if (<MODE>mode == TImode && !TARGET_SYNC_TI)
+    FAIL;
+
   enum memmodel model = (enum memmodel) INTVAL (operands[2]);
 
   if (model == MEMMODEL_SEQ_CST)
     emit_insn (gen_hwsync ());
 
-  emit_move_insn (operands[0], operands[1]);
+  if (<MODE>mode != TImode)
+    emit_move_insn (operands[0], operands[1]);
+  else
+    {
+      rtx op0 = operands[0];
+      rtx op1 = operands[1];
+      rtx pti_reg = gen_reg_rtx (PTImode);
+
+      // Can't have indexed address for 'lq'
+      if (indexed_address (XEXP (op1, 0), TImode))
+	{
+	  rtx old_addr = XEXP (op1, 0);
+	  rtx new_addr = force_reg (Pmode, old_addr);
+	  operands[1] = op1 = replace_equiv_address (op1, new_addr);
+	}
+
+      emit_insn (gen_load_quadpti (pti_reg, op1));
+
+      if (WORDS_BIG_ENDIAN)
+	emit_move_insn (op0, gen_lowpart (TImode, pti_reg));
+      else
+	{
+	  emit_move_insn (gen_lowpart (DImode, op0), gen_highpart (DImode, pti_reg));
+	  emit_move_insn (gen_highpart (DImode, op0), gen_lowpart (DImode, pti_reg));
+	}
+    }
 
   switch (model)
     {
@@ -146,12 +191,24 @@
   DONE;
 })
 
+(define_insn "store_quadpti"
+  [(set (match_operand:PTI 0 "quad_memory_operand" "=wQ")
+	(unspec:PTI
+	 [(match_operand:PTI 1 "quad_int_reg_operand" "r")] UNSPEC_LSQ))]
+  "TARGET_SYNC_TI"
+  "stq %1,%0"
+  [(set_attr "type" "store")
+   (set_attr "length" "4")])
+
 (define_expand "atomic_store<mode>"
-  [(set (match_operand:INT1 0 "memory_operand" "")		;; memory
-	(match_operand:INT1 1 "register_operand" ""))		;; input
+  [(set (match_operand:AINT 0 "memory_operand" "")		;; memory
+	(match_operand:AINT 1 "register_operand" ""))		;; input
    (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
   ""
 {
+  if (<MODE>mode == TImode && !TARGET_SYNC_TI)
+    FAIL;
+
   enum memmodel model = (enum memmodel) INTVAL (operands[2]);
   switch (model)
     {
@@ -166,7 +223,33 @@
     default:
       gcc_unreachable ();
     }
-  emit_move_insn (operands[0], operands[1]);
+  if (<MODE>mode != TImode)
+    emit_move_insn (operands[0], operands[1]);
+  else
+    {
+      rtx op0 = operands[0];
+      rtx op1 = operands[1];
+      rtx pti_reg = gen_reg_rtx (PTImode);
+
+      // Can't have indexed address for 'stq'
+      if (indexed_address (XEXP (op0, 0), TImode))
+	{
+	  rtx old_addr = XEXP (op0, 0);
+	  rtx new_addr = force_reg (Pmode, old_addr);
+	  operands[0] = op0 = replace_equiv_address (op0, new_addr);
+	}
+
+      if (WORDS_BIG_ENDIAN)
+	emit_move_insn (pti_reg, gen_lowpart (PTImode, op1));
+      else
+	{
+	  emit_move_insn (gen_lowpart (DImode, pti_reg), gen_highpart (DImode, op1));
+	  emit_move_insn (gen_highpart (DImode, pti_reg), gen_lowpart (DImode, op1));
+	}
+
+      emit_insn (gen_store_quadpti (gen_lowpart (PTImode, op0), pti_reg));
+    }
+
   DONE;
 })
 
@@ -179,14 +262,6 @@
 			      (HI "TARGET_SYNC_HI_QI")
 			      SI
 			      (DI "TARGET_POWERPC64")])
-
-;; Types that we should provide atomic instructions for.
-
-(define_mode_iterator AINT [QI
-			    HI
-			    SI
-			    (DI "TARGET_POWERPC64")
-			    (TI "TARGET_SYNC_TI")])
 
 (define_insn "load_locked<mode>"
   [(set (match_operand:ATOMIC 0 "int_reg_operand" "=r")

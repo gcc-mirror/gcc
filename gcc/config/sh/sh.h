@@ -267,9 +267,25 @@ extern int code_for_indirect_jump_scratch;
 #define SUBTARGET_ASM_RELAX_SPEC "%{m4*:-isa=sh4-up}"
 #endif
 
+/* Define which ISA type to pass to the assembler.
+   For SH4 we pass SH4A to allow using some instructions that are available
+   on some SH4 variants, but officially are part of the SH4A ISA.  */
 #define SH_ASM_SPEC \
  "%(subtarget_asm_endian_spec) %{mrelax:-relax %(subtarget_asm_relax_spec)} \
 %(subtarget_asm_isa_spec) %(subtarget_asm_spec) \
+%{m1:--isa=sh} \
+%{m2:--isa=sh2} \
+%{m2e:--isa=sh2e} \
+%{m3:--isa=sh3} \
+%{m3e:--isa=sh3e} \
+%{m4:--isa=sh4a} \
+%{m4-single:--isa=sh4a} \
+%{m4-single-only:--isa=sh4a} \
+%{m4-nofpu:--isa=sh4a-nofpu} \
+%{m4a:--isa=sh4a} \
+%{m4a-single:--isa=sh4a} \
+%{m4a-single-only:--isa=sh4a} \
+%{m4a-nofpu:--isa=sh4a-nofpu} \
 %{m2a:--isa=sh2a} \
 %{m2a-single:--isa=sh2a} \
 %{m2a-single-only:--isa=sh2a} \
@@ -1361,24 +1377,6 @@ struct sh_args {
 			   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
    ? SH_ARG_FLOAT : SH_ARG_INT)
 
-#define ROUND_ADVANCE(SIZE) \
-  (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* Round a register number up to a proper boundary for an arg of mode
-   MODE.
-
-   The SH doesn't care about double alignment, so we only
-   round doubles to even regs when asked to explicitly.  */
-#define ROUND_REG(CUM, MODE) \
-   (((TARGET_ALIGN_DOUBLE						\
-      || ((TARGET_SH4 || TARGET_SH2A_DOUBLE) 				\
-	  && ((MODE) == DFmode || (MODE) == DCmode)			\
-	  && (CUM).arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (MODE)))	\
-     && GET_MODE_UNIT_SIZE ((MODE)) > UNITS_PER_WORD)			\
-    ? ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)]			\
-       + ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)] & 1))		\
-    : (CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)])
-
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.
@@ -1393,27 +1391,6 @@ struct sh_args {
 
 #define INIT_CUMULATIVE_LIBCALL_ARGS(CUM, MODE, LIBNAME) \
   sh_init_cumulative_args (& (CUM), NULL_TREE, (LIBNAME), NULL_TREE, 0, (MODE))
-
-/* Return boolean indicating arg of mode MODE will be passed in a reg.
-   This macro is only used in this file.  */
-#define PASS_IN_REG_P(CUM, MODE, TYPE) \
-  (((TYPE) == 0 \
-    || (! TREE_ADDRESSABLE ((TYPE)) \
-	&& (! (TARGET_HITACHI || (CUM).renesas_abi) \
-	    || ! (AGGREGATE_TYPE_P (TYPE) \
-		  || (!TARGET_FPU_ANY \
-		      && (GET_MODE_CLASS (MODE) == MODE_FLOAT \
-			  && GET_MODE_SIZE (MODE) > GET_MODE_SIZE (SFmode))))))) \
-   && ! (CUM).force_mem \
-   && (TARGET_SH2E \
-       ? ((MODE) == BLKmode \
-	  ? (((CUM).arg_count[(int) SH_ARG_INT] * UNITS_PER_WORD \
-	      + int_size_in_bytes (TYPE)) \
-	     <= NPARM_REGS (SImode) * UNITS_PER_WORD) \
-	  : ((ROUND_REG((CUM), (MODE)) \
-	      + HARD_REGNO_NREGS (BASE_ARG_REG (MODE), (MODE))) \
-	     <= NPARM_REGS (MODE))) \
-       : ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)))
 
 /* By accident we got stuck with passing SCmode on SH4 little endian
    in two registers that are nominally successive - which is different from

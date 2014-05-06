@@ -1718,7 +1718,19 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  if (c_parser_next_token_is_keyword (parser, RID_ASM))
 	    asm_name = c_parser_simple_asm_expr (parser);
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-	    postfix_attrs = c_parser_attributes (parser);
+	    {
+	      postfix_attrs = c_parser_attributes (parser);
+	      if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
+		{
+		  /* This means there is an attribute specifier after
+		     the declarator in a function definition.  Provide
+		     some more information for the user.  */
+		  error_at (here, "attributes should be specified before the "
+			    "declarator in a function definition");
+		  c_parser_skip_to_end_of_block_or_statement (parser);
+		  return;
+		}
+	    }
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
 	      tree d;
@@ -6734,51 +6746,54 @@ c_parser_sizeof_expression (c_parser *parser)
 	  return ret;
 	}
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
-	expr = c_parser_postfix_expression_after_paren_type (parser,
-							     type_name,
-							     expr_loc);
-      else
 	{
-	  /* sizeof ( type-name ).  */
-	  c_inhibit_evaluation_warnings--;
-	  in_sizeof--;
-	  /* Handle upc_*_sizeof (type) operations.  */
-	  switch (keyword)
-	    {
-	    case RID_UPC_BLOCKSIZEOF:
-	      return upc_blocksizeof_type (expr_loc, type_name);
-	    case RID_UPC_ELEMSIZEOF:
-	      return upc_elemsizeof_type (expr_loc, type_name);
-	    case RID_UPC_LOCALSIZEOF:
-	      return upc_localsizeof_type (expr_loc, type_name);
-	    default: break;
-	    }
-	  return c_expr_sizeof_type (expr_loc, type_name);
+	  expr = c_parser_postfix_expression_after_paren_type (parser,
+							       type_name,
+							       expr_loc);
+	  goto sizeof_expr;
 	}
+      /* sizeof ( type-name ).  */
+      c_inhibit_evaluation_warnings--;
+      in_sizeof--;
+      /* Handle upc_*_sizeof (type) operations.  */
+      switch (keyword)
+        {
+        case RID_UPC_BLOCKSIZEOF:
+          return upc_blocksizeof_type (expr_loc, type_name);
+        case RID_UPC_ELEMSIZEOF:
+          return upc_elemsizeof_type (expr_loc, type_name);
+        case RID_UPC_LOCALSIZEOF:
+          return upc_localsizeof_type (expr_loc, type_name);
+        default: break;
+        }
+      return c_expr_sizeof_type (expr_loc, type_name);
     }
   else
     {
       expr_loc = c_parser_peek_token (parser)->location;
       expr = c_parser_unary_expression (parser);
+    sizeof_expr:
+      c_inhibit_evaluation_warnings--;
+      in_sizeof--;
+      mark_exp_read (expr.value);
+      if (TREE_CODE (expr.value) == COMPONENT_REF
+	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
+	error_at (expr_loc, "%<sizeof%> applied to a bit-field");
+      /* Handle upc_*_sizeof (expr) operations.  */
+      switch (keyword)
+        {
+        case RID_UPC_BLOCKSIZEOF:
+          return upc_blocksizeof_expr (expr_loc, expr);
+        case RID_UPC_ELEMSIZEOF:
+          return upc_elemsizeof_expr (expr_loc, expr);
+        case RID_UPC_LOCALSIZEOF:
+          return upc_localsizeof_expr (expr_loc, expr);
+        case RID_SIZEOF:
+          return c_expr_sizeof_expr (expr_loc, expr);
+        default: break;
+        }
+      return c_expr_sizeof_expr (expr_loc, expr);
     }
-  c_inhibit_evaluation_warnings--;
-  in_sizeof--;
-  mark_exp_read (expr.value);
-  if (TREE_CODE (expr.value) == COMPONENT_REF
-      && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
-    error_at (expr_loc, "%<sizeof%> applied to a bit-field");
-  /* Handle upc_*_sizeof (expr) operations.  */
-  switch (keyword)
-    {
-    case RID_UPC_BLOCKSIZEOF:
-      return upc_blocksizeof_expr (expr_loc, expr);
-    case RID_UPC_ELEMSIZEOF:
-      return upc_elemsizeof_expr (expr_loc, expr);
-    case RID_UPC_LOCALSIZEOF:
-      return upc_localsizeof_expr (expr_loc, expr);
-    default: break;
-    }
-  return c_expr_sizeof_expr (expr_loc, expr);
 }
 
 /* Parse an alignof expression.  */

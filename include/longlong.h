@@ -483,7 +483,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
 #define UDIV_TIME 40
 #endif /* 80x86 */
 
-#if (defined (__x86_64__) || defined (__i386__)) && W_TYPE_SIZE == 64
+#if defined (__x86_64__) && W_TYPE_SIZE == 64
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add{q} {%5,%1|%1,%5}\n\tadc{q} {%3,%0|%0,%3}"		\
 	   : "=r" ((UDItype) (sh)),					\
@@ -848,7 +848,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
 #define UMUL_TIME 10
 #define UDIV_TIME 100
 
-#if (__mips == 32 || __mips == 64) && ! __mips16
+#if (__mips == 32 || __mips == 64) && ! defined (__mips16)
 #define count_leading_zeros(COUNT,X)	((COUNT) = __builtin_clz (X))
 #define COUNT_LEADING_ZEROS_0 32
 #endif

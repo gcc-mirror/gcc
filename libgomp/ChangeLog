@@ -1,3 +1,10 @@
+2014-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/simd-10.c: New test.
+	* testsuite/libgomp.c/simd-11.c: New test.
+	* testsuite/libgomp.c/simd-12.c: New test.
+	* testsuite/libgomp.c/simd-13.c: New test.
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c++/atomic-14.C: Allow seq_cst and

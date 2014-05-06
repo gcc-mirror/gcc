@@ -104,14 +104,15 @@ static void push_string (const char *);
 static void push_member_name (tree);
 static int spelling_length (void);
 static char *print_spelling (char *);
-static void warning_init (int, const char *);
+static void warning_init (location_t, int, const char *);
 static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
 static void output_init_element (location_t, tree, tree, bool, tree, tree, int,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
 static int set_designator (int, struct obstack *);
 static void push_range_stack (tree, struct obstack *);
-static void add_pending_init (tree, tree, tree, bool, struct obstack *);
+static void add_pending_init (location_t, tree, tree, tree, bool,
+			      struct obstack *);
 static void set_nonincremental_init (struct obstack *);
 static void set_nonincremental_init_from_string (tree, struct obstack *);
 static tree find_init_member (tree, struct obstack *);
@@ -1797,21 +1798,19 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
     }
 }
 
-/* Compute the size to increment a pointer by.  */
+/* Compute the size to increment a pointer by.  When a function type or void
+   type or incomplete type is passed, size_one_node is returned.
+   This function does not emit any diagnostics; the caller is responsible
+   for that.  */
 
 static tree
 c_size_in_bytes (const_tree type)
 {
   enum tree_code code = TREE_CODE (type);
 
-  if (code == FUNCTION_TYPE || code == VOID_TYPE || code == ERROR_MARK)
+  if (code == FUNCTION_TYPE || code == VOID_TYPE || code == ERROR_MARK
+      || !COMPLETE_TYPE_P (type))
     return size_one_node;
-
-  if (!COMPLETE_OR_VOID_TYPE_P (type))
-    {
-      error ("arithmetic on pointer to an incomplete type");
-      return size_one_node;
-    }
 
   /* Convert in case a char is more than one unit.  */
   return size_binop_loc (input_location, CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
@@ -2155,7 +2154,8 @@ default_conversion (tree exp)
 
   if (code == VOID_TYPE)
     {
-      error ("void value not ignored as it ought to be");
+      error_at (EXPR_LOC_OR_LOC (exp, input_location),
+		"void value not ignored as it ought to be");
       return error_mark_node;
     }
 
@@ -3611,7 +3611,6 @@ pointer_diff (location_t loc, tree op0, tree op1)
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");
 
-  /* This generates an error if op0 is pointer to incomplete type.  */
   op1 = c_size_in_bytes (target_type);
 
   if (pointer_to_zero_sized_aggr_p (TREE_TYPE (orig_op1)))
@@ -4085,16 +4084,18 @@ build_unary_op (location_t location,
 
 	if (typecode == POINTER_TYPE)
 	  {
-	    /* If pointer target is an undefined struct,
+	    /* If pointer target is an incomplete type,
 	       we just cannot know how to do the arithmetic.  */
 	    if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (argtype)))
 	      {
 		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 		  error_at (location,
-			    "increment of pointer to unknown structure");
+			    "increment of pointer to an incomplete type %qT",
+			    TREE_TYPE (argtype));
 		else
 		  error_at (location,
-			    "decrement of pointer to unknown structure");
+			    "decrement of pointer to an incomplete type %qT",
+			    TREE_TYPE (argtype));
 	      }
 	    else if (TREE_CODE (TREE_TYPE (argtype)) == FUNCTION_TYPE
 		     || TREE_CODE (TREE_TYPE (argtype)) == VOID_TYPE)
@@ -5706,6 +5707,72 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
   return ret;
 }
 
+/* Issue an error message for a bad initializer component.
+   GMSGID identifies the message.
+   The component name is taken from the spelling stack.  */
+
+static void
+error_init (const char *gmsgid)
+{
+  char *ofwhat;
+
+  /* The gmsgid may be a format string with %< and %>. */
+  error (gmsgid);
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  if (*ofwhat)
+    error ("(near initialization for %qs)", ofwhat);
+}
+
+/* Issue a pedantic warning for a bad initializer component.  OPT is
+   the option OPT_* (from options.h) controlling this warning or 0 if
+   it is unconditionally given.  GMSGID identifies the message.  The
+   component name is taken from the spelling stack.  */
+
+static void
+pedwarn_init (location_t location, int opt, const char *gmsgid)
+{
+  char *ofwhat;
+
+  /* The gmsgid may be a format string with %< and %>. */
+  pedwarn (location, opt, gmsgid);
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  if (*ofwhat)
+    pedwarn (location, opt, "(near initialization for %qs)", ofwhat);
+}
+
+/* Issue a warning for a bad initializer component.
+
+   OPT is the OPT_W* value corresponding to the warning option that
+   controls this warning.  GMSGID identifies the message.  The
+   component name is taken from the spelling stack.  */
+
+static void
+warning_init (location_t loc, int opt, const char *gmsgid)
+{
+  char *ofwhat;
+
+  /* The gmsgid may be a format string with %< and %>. */
+  warning_at (loc, opt, gmsgid);
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  if (*ofwhat)
+    warning_at (loc, opt, "(near initialization for %qs)", ofwhat);
+}
+
+/* If TYPE is an array type and EXPR is a parenthesized string
+   constant, warn if pedantic that EXPR is being used to initialize an
+   object of type TYPE.  */
+
+void
+maybe_warn_string_init (tree type, struct c_expr expr)
+{
+  if (pedantic
+      && TREE_CODE (type) == ARRAY_TYPE
+      && TREE_CODE (expr.value) == STRING_CST
+      && expr.original_code != STRING_CST)
+    pedwarn_init (input_location, OPT_Wpedantic,
+		  "array initialized from parenthesized string constant");
+}
+
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  If ORIGTYPE is not NULL_TREE, it is the
    original type of RHS; this differs from TREE_TYPE (RHS) for enum
@@ -6047,7 +6114,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     vice-versa.  */
 		  if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		      & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		    WARN_FOR_QUALIFIERS (location, 0,
+		    WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 					 G_("passing argument %d of %qE "
 					    "makes %q#v qualified function "
 					    "pointer from unqualified"),
@@ -6063,7 +6130,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		}
 	      else if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
 		       & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
-		WARN_FOR_QUALIFIERS (location, 0,
+		WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 				     G_("passing argument %d of %qE discards "
 					"%qv qualifier from pointer target type"),
 				     G_("assignment discards %qv qualifier "
@@ -6281,7 +6348,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
 		{
-		  WARN_FOR_QUALIFIERS (location, 0,
+		  WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 				       G_("passing argument %d of %qE discards "
 					  "%qv qualifier from pointer target type"),
 				       G_("assignment discards %qv qualifier "
@@ -6318,7 +6385,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		WARN_FOR_QUALIFIERS (location, 0,
+		WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
 				     G_("passing argument %d of %qE makes "
 					"%q#v qualified function pointer "
 					"from unqualified"),
@@ -6659,72 +6726,6 @@ print_spelling (char *buffer)
       }
   *d++ = '\0';
   return buffer;
-}
-
-/* Issue an error message for a bad initializer component.
-   GMSGID identifies the message.
-   The component name is taken from the spelling stack.  */
-
-void
-error_init (const char *gmsgid)
-{
-  char *ofwhat;
-
-  /* The gmsgid may be a format string with %< and %>. */
-  error (gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    error ("(near initialization for %qs)", ofwhat);
-}
-
-/* Issue a pedantic warning for a bad initializer component.  OPT is
-   the option OPT_* (from options.h) controlling this warning or 0 if
-   it is unconditionally given.  GMSGID identifies the message.  The
-   component name is taken from the spelling stack.  */
-
-void
-pedwarn_init (location_t location, int opt, const char *gmsgid)
-{
-  char *ofwhat;
-
-  /* The gmsgid may be a format string with %< and %>. */
-  pedwarn (location, opt, gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    pedwarn (location, opt, "(near initialization for %qs)", ofwhat);
-}
-
-/* Issue a warning for a bad initializer component.
-
-   OPT is the OPT_W* value corresponding to the warning option that
-   controls this warning.  GMSGID identifies the message.  The
-   component name is taken from the spelling stack.  */
-
-static void
-warning_init (int opt, const char *gmsgid)
-{
-  char *ofwhat;
-
-  /* The gmsgid may be a format string with %< and %>. */
-  warning (opt, gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    warning (opt, "(near initialization for %qs)", ofwhat);
-}
-
-/* If TYPE is an array type and EXPR is a parenthesized string
-   constant, warn if pedantic that EXPR is being used to initialize an
-   object of type TYPE.  */
-
-void
-maybe_warn_string_init (tree type, struct c_expr expr)
-{
-  if (pedantic
-      && TREE_CODE (type) == ARRAY_TYPE
-      && TREE_CODE (expr.value) == STRING_CST
-      && expr.original_code != STRING_CST)
-    pedwarn_init (input_location, OPT_Wpedantic,
-		  "array initialized from parenthesized string constant");
 }
 
 /* Digest the parser output INIT as an initializer for type TYPE.
@@ -7527,6 +7528,9 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
 	  push_member_name (constructor_fields);
 	  constructor_depth++;
 	}
+      /* If upper initializer is designated, then mark this as
+	 designated too to prevent bogus warnings.  */
+      constructor_designated = p->designated;
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -7558,7 +7562,8 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
   if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned)
     {
       missing_braces_mentioned = 1;
-      warning_init (OPT_Wmissing_braces, "missing braces around initializer");
+      warning_init (input_location, OPT_Wmissing_braces,
+		    "missing braces around initializer");
     }
 
   if (TREE_CODE (constructor_type) == RECORD_TYPE
@@ -7619,7 +7624,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
   else
     {
       if (constructor_type != error_mark_node)
-	warning_init (0, "braces around scalar initializer");
+	warning_init (input_location, 0, "braces around scalar initializer");
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
     }
@@ -8034,8 +8039,8 @@ set_init_label (tree fieldname, struct obstack * braced_init_obstack)
    existing initializer.  */
 
 static void
-add_pending_init (tree purpose, tree value, tree origtype, bool implicit,
-		  struct obstack * braced_init_obstack)
+add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
+		  bool implicit, struct obstack *braced_init_obstack)
 {
   struct init_node *p, **q, *r;
 
@@ -8056,9 +8061,12 @@ add_pending_init (tree purpose, tree value, tree origtype, bool implicit,
 	      if (!implicit)
 		{
 		  if (TREE_SIDE_EFFECTS (p->value))
-		    warning_init (0, "initialized field with side-effects overwritten");
+		    warning_init (loc, 0,
+				  "initialized field with side-effects "
+				  "overwritten");
 		  else if (warn_override_init)
-		    warning_init (OPT_Woverride_init, "initialized field overwritten");
+		    warning_init (loc, OPT_Woverride_init,
+				  "initialized field overwritten");
 		}
 	      p->value = value;
 	      p->origtype = origtype;
@@ -8083,9 +8091,12 @@ add_pending_init (tree purpose, tree value, tree origtype, bool implicit,
 	      if (!implicit)
 		{
 		  if (TREE_SIDE_EFFECTS (p->value))
-		    warning_init (0, "initialized field with side-effects overwritten");
+		    warning_init (loc, 0,
+				  "initialized field with side-effects "
+				  "overwritten");
 		  else if (warn_override_init)
-		    warning_init (OPT_Woverride_init, "initialized field overwritten");
+		    warning_init (loc, OPT_Woverride_init,
+				  "initialized field overwritten");
 		}
 	      p->value = value;
 	      p->origtype = origtype;
@@ -8274,10 +8285,8 @@ set_nonincremental_init (struct obstack * braced_init_obstack)
     return;
 
   FOR_EACH_CONSTRUCTOR_ELT (constructor_elements, ix, index, value)
-    {
-      add_pending_init (index, value, NULL_TREE, true,
-			braced_init_obstack);
-    }
+    add_pending_init (input_location, index, value, NULL_TREE, true,
+		      braced_init_obstack);
   constructor_elements = NULL;
   if (TREE_CODE (constructor_type) == RECORD_TYPE)
     {
@@ -8370,7 +8379,7 @@ set_nonincremental_init_from_string (tree str,
 	}
 
       value = build_int_cst_wide (type, val[1], val[0]);
-      add_pending_init (purpose, value, NULL_TREE, true,
+      add_pending_init (input_location, purpose, value, NULL_TREE, true,
                         braced_init_obstack);
     }
 
@@ -8514,12 +8523,12 @@ output_init_element (location_t loc, tree value, tree origtype,
 	  value = error_mark_node;
 	}
       else if (require_constant_elements)
-	pedwarn (input_location, 0,
+	pedwarn (loc, OPT_Wpedantic,
 		 "initializer element is not computable at load time");
     }
   else if (!maybe_const
 	   && (require_constant_value || require_constant_elements))
-    pedwarn_init (input_location, 0,
+    pedwarn_init (loc, OPT_Wpedantic,
 		  "initializer element is not a constant expression");
 
   /* Issue -Wc++-compat warnings about initializing a bitfield with
@@ -8536,7 +8545,7 @@ output_init_element (location_t loc, tree value, tree origtype,
       if (checktype != error_mark_node
 	  && (TYPE_MAIN_VARIANT (checktype)
 	      != TYPE_MAIN_VARIANT (DECL_BIT_FIELD_TYPE (field))))
-	warning_init (OPT_Wc___compat,
+	warning_init (loc, OPT_Wc___compat,
 		      "enum conversion in initialization is invalid in C++");
     }
 
@@ -8572,7 +8581,7 @@ output_init_element (location_t loc, tree value, tree origtype,
 	  && tree_int_cst_lt (field, constructor_unfilled_index))
 	set_nonincremental_init (braced_init_obstack);
 
-      add_pending_init (field, value, origtype, implicit,
+      add_pending_init (loc, field, value, origtype, implicit,
 			braced_init_obstack);
       return;
     }
@@ -8599,7 +8608,7 @@ output_init_element (location_t loc, tree value, tree origtype,
 	    }
 	}
 
-      add_pending_init (field, value, origtype, implicit,
+      add_pending_init (loc, field, value, origtype, implicit,
 			braced_init_obstack);
       return;
     }
@@ -8609,10 +8618,11 @@ output_init_element (location_t loc, tree value, tree origtype,
       if (!implicit)
 	{
 	  if (TREE_SIDE_EFFECTS (constructor_elements->last ().value))
-	    warning_init (0,
+	    warning_init (loc, 0,
 			  "initialized field with side-effects overwritten");
 	  else if (warn_override_init)
-	    warning_init (OPT_Woverride_init, "initialized field overwritten");
+	    warning_init (loc, OPT_Woverride_init,
+			  "initialized field overwritten");
 	}
 
       /* We can have just one union field set.  */
@@ -9521,9 +9531,14 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 		  && !DECL_EXTERNAL (inner)
 		  && !TREE_STATIC (inner)
 		  && DECL_CONTEXT (inner) == current_function_decl)
-		warning_at (loc,
-			    OPT_Wreturn_local_addr, "function returns address "
-			    "of local variable");
+		{
+		  if (TREE_CODE (inner) == LABEL_DECL)
+		    warning_at (loc, OPT_Wreturn_local_addr,
+				"function returns address of label");
+		  else
+		    warning_at (loc, OPT_Wreturn_local_addr,
+				"function returns address of local variable");
+		}
 	      break;
 
 	    default:
@@ -10675,7 +10690,7 @@ build_binary_op (location_t location, enum tree_code code,
 		{
 		  int_const = false;
 		  if (c_inhibit_evaluation_warnings == 0)
-		    warning (0, "right shift count is negative");
+		    warning_at (location, 0, "right shift count is negative");
 		}
 	      else
 		{
@@ -10686,7 +10701,8 @@ build_binary_op (location_t location, enum tree_code code,
 		    {
 		      int_const = false;
 		      if (c_inhibit_evaluation_warnings == 0)
-			warning (0, "right shift count >= width of type");
+			warning_at (location, 0, "right shift count >= width "
+				    "of type");
 		    }
 		}
 	    }
@@ -10728,14 +10744,15 @@ build_binary_op (location_t location, enum tree_code code,
 		{
 		  int_const = false;
 		  if (c_inhibit_evaluation_warnings == 0)
-		    warning (0, "left shift count is negative");
+		    warning_at (location, 0, "left shift count is negative");
 		}
 
 	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		{
 		  int_const = false;
 		  if (c_inhibit_evaluation_warnings == 0)
-		    warning (0, "left shift count >= width of type");
+		    warning_at (location, 0, "left shift count >= width of "
+				"type");
 		}
 	    }
 
@@ -11333,7 +11350,8 @@ build_binary_op (location_t location, enum tree_code code,
 	return error_mark_node;
     }
 
-  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE))
+  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE
+			| SANITIZE_FLOAT_DIVIDE))
       && current_function_decl != 0
       && !lookup_attribute ("no_sanitize_undefined",
 			    DECL_ATTRIBUTES (current_function_decl))
@@ -11344,7 +11362,8 @@ build_binary_op (location_t location, enum tree_code code,
       op1 = c_save_expr (op1);
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
-      if (doing_div_or_mod && (flag_sanitize & SANITIZE_DIVIDE))
+      if (doing_div_or_mod && (flag_sanitize & (SANITIZE_DIVIDE
+						| SANITIZE_FLOAT_DIVIDE)))
 	instrument_expr = ubsan_instrument_division (location, op0, op1);
       else if (doing_shift && (flag_sanitize & SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);

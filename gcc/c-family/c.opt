@@ -355,6 +355,10 @@ Wdeprecated
 C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
 
+Wdiscarded-qualifiers
+C ObjC Var(warn_discarded_qualifiers) Init(1) Warning
+Warn if type qualifiers on pointers are discarded
+
 Wdiv-by-zero
 C ObjC C++ ObjC++ Var(warn_div_by_zero) Init(1) Warning
 Warn about compile-time integer division by zero
@@ -512,6 +516,7 @@ Warn about missing fields in struct initializers
 
 Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious length parameters to certain string functions if the argument uses sizeof
 
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning

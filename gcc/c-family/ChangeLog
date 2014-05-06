@@ -1,3 +1,17 @@
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wsizeof-pointer-memaccess): Describe option.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/43245
+	* c.opt (Wdiscarded-qualifiers): Add.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_division): Handle REAL_TYPEs.  Perform
+	INT_MIN / -1 sanitization only for integer types.
+
 2014-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/18079

@@ -70,6 +70,7 @@ with the flag @option{-fdump-tree-gimple}.
 
 @menu
 * Tuple representation::
+* Class hierarchy of GIMPLE statements::
 * GIMPLE instruction set::
 * GIMPLE Exception Handling::
 * Temporaries::
@@ -287,35 +288,135 @@ reduce memory utilization further by removing these sets).
 @end itemize
 
 All the other tuples are defined in terms of these three basic
-ones. Each tuple will add some fields. The main gimple type
-is defined to be the union of all these structures (@code{GTY} markers
-elided for clarity):
+ones. Each tuple will add some fields.
+
+
+@node Class hierarchy of GIMPLE statements
+@section Class hierarchy of GIMPLE statements
+@cindex GIMPLE class hierarchy
+
+The following diagram shows the C++ inheritance hierarchy of statement
+kinds, along with their relationships to @code{GSS_} values (layouts) and
+@code{GIMPLE_} values (codes):
 
 @smallexample
-union gimple_statement_d
-@{
-  struct gimple_statement_base gsbase;
-  struct gimple_statement_with_ops gsops;
-  struct gimple_statement_with_memory_ops gsmem;
-  struct gimple_statement_omp omp;
-  struct gimple_statement_bind gimple_bind;
-  struct gimple_statement_catch gimple_catch;
-  struct gimple_statement_eh_filter gimple_eh_filter;
-  struct gimple_statement_phi gimple_phi;
-  struct gimple_statement_resx gimple_resx;
-  struct gimple_statement_try gimple_try;
-  struct gimple_statement_wce gimple_wce;
-  struct gimple_statement_asm gimple_asm;
-  struct gimple_statement_omp_critical gimple_omp_critical;
-  struct gimple_statement_omp_for gimple_omp_for;
-  struct gimple_statement_omp_parallel gimple_omp_parallel;
-  struct gimple_statement_omp_task gimple_omp_task;
-  struct gimple_statement_omp_sections gimple_omp_sections;
-  struct gimple_statement_omp_single gimple_omp_single;
-  struct gimple_statement_omp_continue gimple_omp_continue;
-  struct gimple_statement_omp_atomic_load gimple_omp_atomic_load;
-  struct gimple_statement_omp_atomic_store gimple_omp_atomic_store;
-@};
+   gimple_statement_base
+     |    layout: GSS_BASE
+     |    used for 4 codes: GIMPLE_ERROR_MARK
+     |                      GIMPLE_NOP
+     |                      GIMPLE_OMP_SECTIONS_SWITCH
+     |                      GIMPLE_PREDICT
+     |
+     + gimple_statement_with_ops_base
+     |   |    (no GSS layout)
+     |   |
+     |   + gimple_statement_with_ops
+     |   |        layout: GSS_WITH_OPS
+     |   |        Used for 5 codes: GIMPLE_COND
+     |   |                          GIMPLE_DEBUG
+     |   |                          GIMPLE_GOTO
+     |   |                          GIMPLE_LABEL
+     |   |                          GIMPLE_SWITCH
+     |   |
+     |   + gimple_statement_with_memory_ops_base
+     |       |    layout: GSS_WITH_MEM_OPS_BASE
+     |       |
+     |       + gimple_statement_with_memory_ops
+     |       |        layout: GSS_WITH_MEM_OPS.
+     |       |        used for codes GIMPLE_ASSIGN and GIMPLE_RETURN.
+     |       |
+     |       + gimple_statement_call
+     |       |        layout: GSS_CALL, code: GIMPLE_CALL
+     |       |
+     |       + gimple_statement_asm
+     |       |        layout: GSS_ASM, code: GIMPLE_ASM
+     |       |
+     |       + gimple_statement_transaction
+     |                layout: GSS_TRANSACTION, code: GIMPLE_TRANSACTION
+     |
+     + gimple_statement_omp
+     |   |    layout: GSS_OMP.  Used for code GIMPLE_OMP_SECTION
+     |   |
+     |   + gimple_statement_omp_critical
+     |   |        layout: GSS_OMP_CRITICAL, code: GIMPLE_OMP_CRITICAL
+     |   |
+     |   + gimple_statement_omp_for
+     |   |        layout: GSS_OMP_FOR, code: GIMPLE_OMP_FOR
+     |   |
+     |   + gimple_statement_omp_parallel_layout
+     |   |   |    layout: GSS_OMP_PARALLEL_LAYOUT
+     |   |   |
+     |   |   + gimple_statement_omp_taskreg
+     |   |   |   |
+     |   |   |   + gimple_statement_omp_parallel
+     |   |   |   |        code: GIMPLE_OMP_PARALLEL
+     |   |   |   |
+     |   |   |   + gimple_statement_omp_task
+     |   |   |            code: GIMPLE_OMP_TASK
+     |   |   |
+     |   |   + gimple_statement_omp_target
+     |   |            code: GIMPLE_OMP_TARGET
+     |   |
+     |   + gimple_statement_omp_sections
+     |   |        layout: GSS_OMP_SECTIONS, code: GIMPLE_OMP_SECTIONS
+     |   |
+     |   + gimple_statement_omp_single_layout
+     |       |    layout: GSS_OMP_SINGLE_LAYOUT
+     |       |
+     |       + gimple_statement_omp_single
+     |       |        code: GIMPLE_OMP_SINGLE
+     |       |
+     |       + gimple_statement_omp_teams
+     |                code: GIMPLE_OMP_TEAMS
+     |
+     + gimple_statement_bind
+     |        layout: GSS_BIND, code: GIMPLE_BIND
+     |
+     + gimple_statement_catch
+     |        layout: GSS_CATCH, code: GIMPLE_CATCH
+     |
+     + gimple_statement_eh_filter
+     |        layout: GSS_EH_FILTER, code: GIMPLE_EH_FILTER
+     |
+     + gimple_statement_eh_else
+     |        layout: GSS_EH_ELSE, code: GIMPLE_EH_ELSE
+     |
+     + gimple_statement_eh_mnt
+     |        layout: GSS_EH_MNT, code: GIMPLE_EH_MUST_NOT_THROW
+     |
+     + gimple_statement_phi
+     |        layout: GSS_PHI, code: GIMPLE_PHI
+     |
+     + gimple_statement_eh_ctrl
+     |   |    layout: GSS_EH_CTRL
+     |   |
+     |   + gimple_statement_resx
+     |   |        code: GIMPLE_RESX
+     |   |
+     |   + gimple_statement_eh_dispatch
+     |            code: GIMPLE_EH_DISPATCH
+     |
+     + gimple_statement_try
+     |        layout: GSS_TRY, code: GIMPLE_TRY
+     |
+     + gimple_statement_wce
+     |        layout: GSS_WCE, code: GIMPLE_WITH_CLEANUP_EXPR
+     |
+     + gimple_statement_omp_continue
+     |        layout: GSS_OMP_CONTINUE, code: GIMPLE_OMP_CONTINUE
+     |
+     + gimple_statement_omp_atomic_load
+     |        layout: GSS_OMP_ATOMIC_LOAD, code: GIMPLE_OMP_ATOMIC_LOAD
+     |
+     + gimple_statement_omp_atomic_store_layout
+         |    layout: GSS_OMP_ATOMIC_STORE_LAYOUT,
+         |    code: GIMPLE_OMP_ATOMIC_STORE
+         |
+         + gimple_statement_omp_atomic_store
+         |        code: GIMPLE_OMP_ATOMIC_STORE
+         |
+         + gimple_statement_omp_return
+                  code: GIMPLE_OMP_RETURN
 @end smallexample
 
 

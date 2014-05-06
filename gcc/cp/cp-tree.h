@@ -579,8 +579,10 @@ struct GTY (()) tree_default_arg {
   (((struct tree_deferred_noexcept *)DEFERRED_NOEXCEPT_CHECK (NODE))->args)
 #define DEFERRED_NOEXCEPT_SPEC_P(NODE)				\
   ((NODE) && (TREE_PURPOSE (NODE))				\
-  && (TREE_CODE (TREE_PURPOSE (NODE)) == DEFERRED_NOEXCEPT	\
-      || is_overloaded_fn (TREE_PURPOSE (NODE))))
+   && (TREE_CODE (TREE_PURPOSE (NODE)) == DEFERRED_NOEXCEPT))
+#define UNEVALUATED_NOEXCEPT_SPEC_P(NODE)				\
+  (DEFERRED_NOEXCEPT_SPEC_P (NODE)					\
+   && DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (NODE)) == NULL_TREE)
 
 struct GTY (()) tree_deferred_noexcept {
   struct tree_base base;
@@ -4359,8 +4361,6 @@ extern int comparing_specializations;
    sizeof can be nested.  */
 
 extern int cp_unevaluated_operand;
-extern tree cp_convert_range_for (tree, tree, tree, bool);
-extern bool parsing_nsdmi (void);
 
 /* in pt.c  */
 
@@ -5420,6 +5420,7 @@ extern tree get_type_value			(tree);
 extern tree build_zero_init			(tree, tree, bool);
 extern tree build_value_init			(tree, tsubst_flags_t);
 extern tree build_value_init_noctor		(tree, tsubst_flags_t);
+extern tree get_nsdmi				(tree, bool);
 extern tree build_offset_ref			(tree, tree, bool,
 						 tsubst_flags_t);
 extern tree throw_bad_array_new_length		(void);
@@ -5468,6 +5469,9 @@ extern tree make_thunk				(tree, bool, tree, tree);
 extern void finish_thunk			(tree);
 extern void use_thunk				(tree, bool);
 extern bool trivial_fn_p			(tree);
+extern tree get_defaulted_eh_spec		(tree);
+extern tree unevaluated_noexcept_spec		(void);
+extern void after_nsdmi_defaulted_late_checks   (tree);
 extern bool maybe_explain_implicit_delete	(tree);
 extern void explain_implicit_non_constexpr	(tree);
 extern void deduce_inheriting_ctor		(tree);
@@ -5488,6 +5492,11 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
+
+/* In parser.c */
+extern tree cp_convert_range_for (tree, tree, tree, bool);
+extern bool parsing_nsdmi (void);
+extern void inject_this_parameter (tree, cp_cv_quals);
 
 /* in pt.c */
 extern bool check_template_shadow		(tree);
@@ -5764,6 +5773,7 @@ extern bool is_sub_constant_expr (tree);
 extern bool reduced_constant_expression_p (tree);
 extern void explain_invalid_constexpr_fn (tree);
 extern vec<tree> cx_error_context (void);
+extern bool is_this_parameter (tree);
 
 enum {
   BCS_NO_SCOPE = 1,
@@ -6162,7 +6172,7 @@ extern tree build_x_arrow			(location_t, tree,
 extern tree build_m_component_ref		(tree, tree, tsubst_flags_t);
 extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
 extern tree add_exception_specifier		(tree, tree, int);
-extern tree merge_exception_specifiers		(tree, tree, tree);
+extern tree merge_exception_specifiers		(tree, tree);
 
 /* in mangle.c */
 extern void init_mangle				(void);

@@ -3913,10 +3913,7 @@ package body Exp_Disp is
 
          pragma Assert (Related_Type (Node (Elmt)) = Typ);
 
-         Get_External_Name
-           (Entity     => Node (Elmt),
-            Has_Suffix => True);
-
+         Get_External_Name (Node (Elmt));
          Set_Interface_Name (DT,
            Make_String_Literal (Loc,
              Strval => String_From_Name_Buffer));
@@ -7088,7 +7085,7 @@ package body Exp_Disp is
 
          Set_Scope (DT, Current_Scope);
 
-         Get_External_Name (DT, True);
+         Get_External_Name (DT);
          Set_Interface_Name (DT,
            Make_String_Literal (Loc, Strval => String_From_Name_Buffer));
 

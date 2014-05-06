@@ -192,6 +192,7 @@ static GTY(()) tree signed_size_type_node;
 /* Flags needed to process builtins.def.  */
 int flag_isoc94;
 int flag_isoc99;
+int flag_isoc11;
 
 /* Attribute handlers.  */
 

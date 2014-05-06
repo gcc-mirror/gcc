@@ -250,7 +250,7 @@ void *
 pool_alloc (alloc_pool pool)
 {
   alloc_pool_list header;
-#ifdef ENABLE_VALGRIND_CHECKING
+#ifdef ENABLE_VALGRIND_ANNOTATIONS
   int size;
 #endif
 
@@ -265,7 +265,7 @@ pool_alloc (alloc_pool pool)
     }
 
   gcc_checking_assert (pool);
-#ifdef ENABLE_VALGRIND_CHECKING
+#ifdef ENABLE_VALGRIND_ANNOTATIONS
   size = pool->elt_size - offsetof (allocation_object, u.data);
 #endif
 
@@ -334,7 +334,7 @@ void
 pool_free (alloc_pool pool, void *ptr)
 {
   alloc_pool_list header;
-#if defined(ENABLE_VALGRIND_CHECKING) || defined(ENABLE_CHECKING)
+#if defined(ENABLE_VALGRIND_ANNOTATIONS) || defined(ENABLE_CHECKING)
   int size;
   size = pool->elt_size - offsetof (allocation_object, u.data);
 #endif

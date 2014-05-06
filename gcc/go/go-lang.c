@@ -288,7 +288,38 @@ go_langhook_parse_file (void)
 static tree
 go_langhook_type_for_size (unsigned int bits, int unsignedp)
 {
-  return go_type_for_size (bits, unsignedp);
+  tree type;
+  if (unsignedp)
+    {
+      if (bits == INT_TYPE_SIZE)
+        type = unsigned_type_node;
+      else if (bits == CHAR_TYPE_SIZE)
+        type = unsigned_char_type_node;
+      else if (bits == SHORT_TYPE_SIZE)
+        type = short_unsigned_type_node;
+      else if (bits == LONG_TYPE_SIZE)
+        type = long_unsigned_type_node;
+      else if (bits == LONG_LONG_TYPE_SIZE)
+        type = long_long_unsigned_type_node;
+      else
+        type = make_unsigned_type(bits);
+    }
+  else
+    {
+      if (bits == INT_TYPE_SIZE)
+        type = integer_type_node;
+      else if (bits == CHAR_TYPE_SIZE)
+        type = signed_char_type_node;
+      else if (bits == SHORT_TYPE_SIZE)
+        type = short_integer_type_node;
+      else if (bits == LONG_TYPE_SIZE)
+        type = long_integer_type_node;
+      else if (bits == LONG_LONG_TYPE_SIZE)
+        type = long_long_integer_type_node;
+      else
+        type = make_signed_type(bits);
+    }
+  return type;
 }
 
 static tree
@@ -309,9 +340,40 @@ go_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
 
-  type = go_type_for_mode (mode, unsignedp);
-  if (type)
-    return type;
+  // FIXME: This static_cast should be in machmode.h.
+  enum mode_class mc = static_cast<enum mode_class>(GET_MODE_CLASS(mode));
+  if (mc == MODE_INT)
+    return go_langhook_type_for_size(GET_MODE_BITSIZE(mode), unsignedp);
+  else if (mc == MODE_FLOAT)
+    {
+      switch (GET_MODE_BITSIZE (mode))
+	{
+	case 32:
+	  return float_type_node;
+	case 64:
+	  return double_type_node;
+	default:
+	  // We have to check for long double in order to support
+	  // i386 excess precision.
+	  if (mode == TYPE_MODE(long_double_type_node))
+	    return long_double_type_node;
+	}
+    }
+  else if (mc == MODE_COMPLEX_FLOAT)
+    {
+      switch (GET_MODE_BITSIZE (mode))
+	{
+	case 64:
+	  return complex_float_type_node;
+	case 128:
+	  return complex_double_type_node;
+	default:
+	  // We have to check for long double in order to support
+	  // i386 excess precision.
+	  if (mode == TYPE_MODE(complex_long_double_type_node))
+	    return complex_long_double_type_node;
+	}
+    }
 
 #if HOST_BITS_PER_WIDE_INT >= 64
   /* The middle-end and some backends rely on TImode being supported

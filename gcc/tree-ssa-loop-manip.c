@@ -598,7 +598,7 @@ verify_loop_closed_ssa (bool verify_ssa_p)
     return;
 
   if (verify_ssa_p)
-    verify_ssa (false);
+    verify_ssa (false, true);
 
   timevar_push (TV_VERIFY_LOOP_CLOSED);
 

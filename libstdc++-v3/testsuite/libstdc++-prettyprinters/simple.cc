@@ -1,4 +1,4 @@
-// If you modify this, please update debug.cc as well.
+// If you modify this, please update simple11.cc and debug.cc as well.
 
 // { dg-do run }
 // { dg-options "-g -O0" }

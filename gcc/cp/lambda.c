@@ -216,8 +216,8 @@ lambda_capture_field_type (tree expr, bool explicit_init_p)
     }
   else
     type = non_reference (unlowered_expr_type (expr));
-  if (!type || WILDCARD_TYPE_P (type) || type_uses_auto (type)
-      || DECL_PACK_P (expr))
+  if (type_dependent_expression_p (expr)
+      && !is_this_parameter (tree_strip_nop_conversions (expr)))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -455,7 +455,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   if (TREE_CODE (initializer) == TREE_LIST)
     initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
 						   tf_warning_or_error);
-  type = lambda_capture_field_type (initializer, explicit_init_p);
+  type = TREE_TYPE (initializer);
   if (array_of_runtime_bound_p (type))
     {
       vla = true;
@@ -482,15 +482,19 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 		"variable size", TREE_TYPE (type));
       type = error_mark_node;
     }
-  else if (by_reference_p)
-    {
-      type = build_reference_type (type);
-      if (!real_lvalue_p (initializer))
-	error ("cannot capture %qE by reference", initializer);
-    }
   else
-    /* Capture by copy requires a complete type.  */
-    type = complete_type (type);
+    {
+      type = lambda_capture_field_type (initializer, explicit_init_p);
+      if (by_reference_p)
+	{
+	  type = build_reference_type (type);
+	  if (!real_lvalue_p (initializer))
+	    error ("cannot capture %qE by reference", initializer);
+	}
+      else
+	/* Capture by copy requires a complete type.  */
+	type = complete_type (type);
+    }
 
   /* Add __ to the beginning of the field name so that user code
      won't find the field with name lookup.  We can't just leave the name

@@ -1,3 +1,85 @@
+2014-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58582
+	* decl.c (grokfndecl): Check duplicate_decls return value for
+	error_mark_node.
+	* pt.c (instantiate_decl): A deleted function is defined.
+
+2014-05-02  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (vague_linkage_p): Local statics have vague linkage.
+
+	PR c++/60992
+	* lambda.c (lambda_capture_field_type): Wrap anything dependent
+	other than 'this'.
+	(add_capture): Check for VLA before calling it.
+	* semantics.c (is_this_parameter): Accept any 'this' parameter, not
+	just the current one.  Make non-static.
+	* cp-tree.h: Declare it.
+	* pt.c (tsubst_copy) [VAR_DECL]: Also build a new VAR_DECL if
+	the operand was static or constant.
+
+2014-05-02  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (maybe_warn_about_returning_address_of_local): Separate
+	warning_at calls.
+
+2014-05-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/43395
+	* typeck.c (maybe_warn_about_returning_address_of_local): Distinguish
+	between label and variable when warning about returning local address.
+
+2014-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60980
+	* init.c (build_value_init): Don't try to call an array constructor.
+
+	PR c++/60951
+	* typeck2.c (massage_init_elt): Use maybe_constant_init.
+
+2014-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Call ubsan_instrument_division
+	even when SANITIZE_FLOAT_DIVIDE is on.  Set doing_div_or_mod even
+	for non-integer types.
+
+2014-04-29  Jason Merrill  <jason@redhat.com>
+
+	DR 1351
+	Represent the unevaluated exception specification of an implicitly
+	declared or deleted function with a simple placeholder, not a list
+	of functions.
+	* cp-tree.h (UNEVALUATED_NOEXCEPT_SPEC_P): New.
+	* except.c (unevaluated_noexcept_spec): New.
+	* class.c (deduce_noexcept_on_destructor): Use it.
+	* decl.c (check_redeclaration_exception_specification): Call
+	maybe_instantiate_noexcept.
+	(duplicate_decls): Call it before merge_types.
+	(start_preparsed_function): Call maybe_instantiate_noexcept.
+	* decl2.c (mark_used): Call maybe_instantiate_noexcept earlier.
+	* init.c (get_nsdmi): Factor out of perform_member_init.
+	* method.c (process_subob_fn): Call maybe_instantiate_noexcept.
+	(walk_field_subobs): Consider NSDMI for EH spec.
+	(get_defaulted_eh_spec): New.
+	(implicitly_declare_fn): Use unevaluated_noexcept_spec.
+	(defaulted_late_check): Defer EH checking in non-template classes.
+	(after_nsdmi_defaulted_late_checks): New.
+	* parser.c (cp_parser_class_specifier_1): Use it.
+	(unparsed_classes): New macro.
+	* parser.h (cp_unparsed_functions_entry_d): Add classes field.
+	* pt.c (maybe_instantiate_noexcept): Use get_defaulted_eh_spec.
+	Remove list-of-functions handling.
+	* typeck2.c (merge_exception_specifiers): Remove list-of-functions
+	handling and FN parameter.
+	* typeck.c (merge_types): Adjust.
+
+2014-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59120
+	* parser.c (cp_parser_alias_declaration): Check return value of
+	cp_parser_require.
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_atomic): Allow seq_cst before

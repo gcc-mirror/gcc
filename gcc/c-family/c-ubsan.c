@@ -46,15 +46,21 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
   gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (op0))
 	      == TYPE_MAIN_VARIANT (TREE_TYPE (op1)));
 
-  /* TODO: REAL_TYPE is not supported yet.  */
-  if (TREE_CODE (type) != INTEGER_TYPE)
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && (flag_sanitize & SANITIZE_DIVIDE))
+    t = fold_build2 (EQ_EXPR, boolean_type_node,
+		     op1, build_int_cst (type, 0));
+  else if (TREE_CODE (type) == REAL_TYPE
+	   && (flag_sanitize & SANITIZE_FLOAT_DIVIDE))
+    t = fold_build2 (EQ_EXPR, boolean_type_node,
+		     op1, build_real (type, dconst0));
+  else
     return NULL_TREE;
 
-  t = fold_build2 (EQ_EXPR, boolean_type_node,
-		    op1, build_int_cst (type, 0));
-
   /* We check INT_MIN / -1 only for signed types.  */
-  if (!TYPE_UNSIGNED (type))
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && (flag_sanitize & SANITIZE_DIVIDE)
+      && !TYPE_UNSIGNED (type))
     {
       tree x;
       tt = fold_build2 (EQ_EXPR, boolean_type_node, op1,

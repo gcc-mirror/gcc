@@ -676,8 +676,10 @@ proc go-gc-tests { } {
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		set dg-do-what-default "link"
-		set go_compile_args $del
-		go-torture-execute [lrange $last 1 end]
+		set go_compile_args ""
+		append go_compile_args [lrange $last 2 end]
+		append go_compile_args $del
+		go-torture-execute [lindex $last 1]
 		foreach f $del {
 		    file delete $f
 		}

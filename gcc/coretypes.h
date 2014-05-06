@@ -194,7 +194,8 @@ enum function_class {
   function_c94,
   function_c99_misc,
   function_c99_math_complex,
-  function_sincos
+  function_sincos,
+  function_c11_misc
 };
 
 /* Memory model types for the __atomic* builtins. 

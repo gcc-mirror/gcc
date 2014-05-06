@@ -585,6 +585,10 @@ const struct mips_cpu_info *mips_tune_info;
 /* The ISA level associated with mips_arch.  */
 int mips_isa;
 
+/* The ISA revision level.  This is 0 for MIPS I to V and N for
+   MIPS{32,64}rN.  */
+int mips_isa_rev;
+
 /* The architecture selected by -mipsN, or null if -mipsN wasn't used.  */
 static const struct mips_cpu_info *mips_isa_option_info;
 
@@ -16900,6 +16904,10 @@ mips_set_architecture (const struct mips_cpu_info *info)
       mips_arch_info = info;
       mips_arch = info->cpu;
       mips_isa = info->isa;
+      if (mips_isa < 32)
+	mips_isa_rev = 0;
+      else
+	mips_isa_rev = (mips_isa & 31) + 1;
     }
 }
 

@@ -175,6 +175,8 @@ bool aarch64_is_extend_from_extract (enum machine_mode, rtx, rtx);
 bool aarch64_is_long_call_p (rtx);
 bool aarch64_label_mentioned_p (rtx);
 bool aarch64_legitimate_pic_operand_p (rtx);
+bool aarch64_modes_tieable_p (enum machine_mode mode1,
+			      enum machine_mode mode2);
 bool aarch64_move_imm (HOST_WIDE_INT, enum machine_mode);
 bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
 			    enum machine_mode);

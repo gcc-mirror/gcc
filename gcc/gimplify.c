@@ -6273,9 +6273,17 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  OMP_CLAUSE_CHAIN (clause) = nc;
 	}
     }
+  if (code == OMP_CLAUSE_FIRSTPRIVATE && (flags & GOVD_LASTPRIVATE) != 0)
+    {
+      tree nc = build_omp_clause (input_location, OMP_CLAUSE_LASTPRIVATE);
+      OMP_CLAUSE_DECL (nc) = decl;
+      OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (nc) = 1;
+      OMP_CLAUSE_CHAIN (nc) = *list_p;
+      OMP_CLAUSE_CHAIN (clause) = nc;
+      lang_hooks.decls.omp_finish_clause (nc);
+    }
   *list_p = clause;
   lang_hooks.decls.omp_finish_clause (clause);
-
   return 0;
 }
 
@@ -6314,18 +6322,17 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
 		  && ctx->outer_context
 		  && !(OMP_CLAUSE_LINEAR_NO_COPYIN (c)
-		       && OMP_CLAUSE_LINEAR_NO_COPYOUT (c))
-		  && !is_global_var (decl))
+		       && OMP_CLAUSE_LINEAR_NO_COPYOUT (c)))
 		{
-		  if (ctx->outer_context->region_type == ORT_COMBINED_PARALLEL)
+		  if (ctx->outer_context->combined_loop
+		      && !OMP_CLAUSE_LINEAR_NO_COPYIN (c))
 		    {
 		      n = splay_tree_lookup (ctx->outer_context->variables,
 					     (splay_tree_key) decl);
 		      if (n == NULL
 			  || (n->value & GOVD_DATA_SHARE_CLASS) == 0)
 			{
-			  int flags = OMP_CLAUSE_LINEAR_NO_COPYIN (c)
-				      ? GOVD_LASTPRIVATE : GOVD_SHARED;
+			  int flags = GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE;
 			  if (n == NULL)
 			    omp_add_variable (ctx->outer_context, decl,
 					      flags | GOVD_SEEN);
@@ -6333,7 +6340,7 @@ gimplify_adjust_omp_clauses (tree *list_p)
 			    n->value |= flags | GOVD_SEEN;
 			}
 		    }
-		  else
+		  else if (!is_global_var (decl))
 		    omp_notice_variable (ctx->outer_context, decl, true);
 		}
 	    }

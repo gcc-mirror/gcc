@@ -1147,8 +1147,6 @@ Gogo::write_globals()
           Bstatement* var_init_stmt = NULL;
 	  if (!var->has_pre_init())
 	    {
-              Bexpression* var_binit = var->get_init(this, NULL);
-
               // If the backend representation of the variable initializer is
               // constant, we can just set the initial value using
               // global_var_set_init instead of during the init() function.
@@ -1167,6 +1165,13 @@ Gogo::write_globals()
                   is_constant_initializer =
                       init_cast->is_immutable() && !var_type->has_pointer();
                 }
+
+	      // Non-constant variable initializations might need to create
+	      // temporary variables, which will need the initialization
+	      // function as context.
+              if (!is_constant_initializer && init_fndecl == NULL)
+		init_fndecl = this->initialization_function_decl();
+              Bexpression* var_binit = var->get_init(this, init_fndecl);
 
               if (var_binit == NULL)
 		;
@@ -4853,6 +4858,66 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 				    this->location());
     }
   return this->fndecl_;
+}
+
+// Get the backend representation.
+
+Bfunction*
+Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
+{
+  if (this->fndecl_ == NULL)
+    {
+      // Let Go code use an asm declaration to pick up a builtin
+      // function.
+      if (!this->asm_name_.empty())
+	{
+	  Bfunction* builtin_decl =
+	    gogo->backend()->lookup_builtin(this->asm_name_);
+	  if (builtin_decl != NULL)
+	    {
+	      this->fndecl_ = builtin_decl;
+	      return this->fndecl_;
+	    }
+	}
+
+      std::string asm_name;
+      if (this->asm_name_.empty())
+        {
+          asm_name = (no->package() == NULL
+                                  ? gogo->pkgpath_symbol()
+                                  : no->package()->pkgpath_symbol());
+          asm_name.append(1, '.');
+          asm_name.append(Gogo::unpack_hidden_name(no->name()));
+          if (this->fntype_->is_method())
+            {
+              asm_name.append(1, '.');
+              Type* rtype = this->fntype_->receiver()->type();
+              asm_name.append(rtype->mangled_name(gogo));
+            }
+        }
+
+      Btype* functype = this->fntype_->get_backend_fntype(gogo);
+      this->fndecl_ =
+          gogo->backend()->function(functype, no->get_id(gogo), asm_name,
+                                    true, true, true, false, false,
+                                    this->location());
+    }
+
+  return this->fndecl_;
+}
+
+// Build the descriptor for a function declaration.  This won't
+// necessarily happen if the package has just a declaration for the
+// function and no other reference to it, but we may still need the
+// descriptor for references from other packages.
+void
+Function_declaration::build_backend_descriptor(Gogo* gogo)
+{
+  if (this->descriptor_ != NULL)
+    {
+      Translate_context context(gogo, NULL, NULL, NULL);
+      this->descriptor_->get_tree(&context);
+    }
 }
 
 // Return the function's decl after it has been built.

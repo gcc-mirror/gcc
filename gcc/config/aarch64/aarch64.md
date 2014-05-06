@@ -98,6 +98,9 @@
     UNSPEC_ST2
     UNSPEC_ST3
     UNSPEC_ST4
+    UNSPEC_ST2_LANE
+    UNSPEC_ST3_LANE
+    UNSPEC_ST4_LANE
     UNSPEC_TLS
     UNSPEC_TLSDESC
     UNSPEC_USHL_2S
@@ -2410,6 +2413,25 @@
 (define_expand "mov<GPF:mode><GPI:mode>cc"
   [(set (match_operand:GPI 0 "register_operand" "")
 	(if_then_else:GPI (match_operand 1 "aarch64_comparison_operator" "")
+			  (match_operand:GPF 2 "register_operand" "")
+			  (match_operand:GPF 3 "register_operand" "")))]
+  ""
+  {
+    rtx ccreg;
+    enum rtx_code code = GET_CODE (operands[1]);
+
+    if (code == UNEQ || code == LTGT)
+      FAIL;
+
+    ccreg = aarch64_gen_compare_reg (code, XEXP (operands[1], 0),
+				  XEXP (operands[1], 1));
+    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+  }
+)
+
+(define_expand "mov<mode>cc"
+  [(set (match_operand:GPF 0 "register_operand" "")
+	(if_then_else:GPF (match_operand 1 "aarch64_comparison_operator" "")
 			  (match_operand:GPF 2 "register_operand" "")
 			  (match_operand:GPF 3 "register_operand" "")))]
   ""

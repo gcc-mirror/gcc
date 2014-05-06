@@ -88,7 +88,7 @@ else
   nover_glibgo_toolexecdir='${libdir}/gcc/${host_alias}'
   nover_glibgo_toolexeclibdir='${libdir}'
 fi
-multi_os_directory=`$CC -print-multi-os-directory`
+multi_os_directory=`$GOC -print-multi-os-directory`
 case $multi_os_directory in
   .) ;; # Avoid trailing /.
   *) nover_glibgo_toolexeclibdir=${nover_glibgo_toolexeclibdir}/${multi_os_directory} ;;
