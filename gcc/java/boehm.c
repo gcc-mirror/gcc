@@ -101,17 +101,17 @@ mark_reference_fields (tree field,
 
 	  *last_set_index = count;
 	     
-	  /* First word in object corresponds to most significant byte of 
-	     bitmap. 
-	     
-	     In the case of a multiple-word record, we set pointer 
-	     bits for all words in the record. This is conservative, but the 
-	     size_words != 1 case is impossible in regular java code. */
-	  for (i = 0; i < size_words; ++i)
-	    *mask = wi::set_bit (*mask, ubit - count - i - 1);
-
 	  if (count >= ubit - 2)
 	    *pointer_after_end = 1;
+	  else
+	    /* First word in object corresponds to most significant byte of 
+	       bitmap. 
+	     
+	       In the case of a multiple-word record, we set pointer 
+	       bits for all words in the record. This is conservative, but the 
+	       size_words != 1 case is impossible in regular java code. */
+	    for (i = 0; i < size_words; ++i)
+	      *mask = wi::set_bit (*mask, ubit - count - i - 1);
 
 	  /* If we saw a non-reference field earlier, then we can't
 	     use the count representation.  We keep track of that in
