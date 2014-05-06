@@ -1168,9 +1168,6 @@ class Type
   method_constructor(Gogo*, Type* method_type, const std::string& name,
 		     const Method*, bool only_value_methods) const;
 
-  static tree
-  build_receive_return_type(tree type);
-
   // Add all methods for TYPE to the list of methods for THIS.
   static void
   add_methods_for_type(const Type* type, const Method::Field_indexes*,
@@ -2755,9 +2752,9 @@ class Interface_type : public Type
 };
 
 // The value we keep for a named type.  This lets us get the right
-// name when we convert to trees.  Note that we don't actually keep
+// name when we convert to backend.  Note that we don't actually keep
 // the name here; the name is in the Named_object which points to
-// this.  This object exists to hold a unique tree which represents
+// this.  This object exists to hold a unique backend representation for
 // the type.
 
 class Named_type : public Type

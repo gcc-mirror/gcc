@@ -6,12 +6,6 @@
 
 #include "go-system.h"
 
-#include "toplev.h"
-#include "intl.h"
-#include "tree.h"
-#include "real.h"
-#include "convert.h"
-
 #include "go-c.h"
 #include "gogo.h"
 #include "operator.h"
@@ -897,7 +891,7 @@ Type::hash_string(const std::string& s, unsigned int h)
 
 Type::Type_btypes Type::type_btypes;
 
-// Return a tree representing this type.
+// Return the backend representation for this type.
 
 Btype*
 Type::get_backend(Gogo* gogo)
@@ -952,7 +946,7 @@ Type::get_backend(Gogo* gogo)
       // We have already created a backend representation for this
       // type.  This can happen when an unnamed type is defined using
       // a named type which in turns uses an identical unnamed type.
-      // Use the tree we created earlier and ignore the one we just
+      // Use the representation we created earlier and ignore the one we just
       // built.
       if (this->btype_ == bt)
 	this->btype_ = ins.first->second.btype;
@@ -1301,7 +1295,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
 
   Translate_context context(gogo, NULL, NULL, NULL);
   context.set_is_const();
-  Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
+  Bexpression* binitializer = initializer->get_backend(&context);
 
   gogo->backend()->immutable_struct_set_init(this->type_descriptor_var_,
 					     var_name, false, is_common,
@@ -4936,7 +4930,7 @@ get_backend_struct_fields(Gogo* gogo, const Struct_field_list* fields,
   go_assert(i == fields->size());
 }
 
-// Get the tree for a struct type.
+// Get the backend representation for a struct type.
 
 Btype*
 Struct_type::do_get_backend(Gogo* gogo)
@@ -5877,9 +5871,9 @@ get_backend_slice_fields(Gogo* gogo, Array_type* type, bool use_placeholder,
   p->location = ploc;
 }
 
-// Get a tree for the type of this array.  A fixed array is simply
-// represented as ARRAY_TYPE with the appropriate index--i.e., it is
-// just like an array in C.  A slice is a struct with three
+// Get the backend representation for the type of this array.  A fixed array is
+// simply represented as ARRAY_TYPE with the appropriate index--i.e., it is
+// just like an array in C.  An open array is a struct with three
 // fields: a data pointer, the length, and the capacity.
 
 Btype*
@@ -5943,7 +5937,7 @@ Array_type::get_backend_length(Gogo* gogo)
 	  // Make up a translation context for the array length
 	  // expression.  FIXME: This won't work in general.
 	  Translate_context context(gogo, NULL, NULL, NULL);
-	  this->blength_ = tree_to_expr(this->length_->get_tree(&context));
+	  this->blength_ = this->length_->get_backend(&context);
 
 	  Btype* ibtype = Type::lookup_integer_type("int")->get_backend(gogo);
 	  this->blength_ =
@@ -6466,7 +6460,7 @@ Map_type::map_descriptor(Gogo* gogo)
 
   Translate_context context(gogo, NULL, NULL, NULL);
   context.set_is_const();
-  Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
+  Bexpression* binitializer = initializer->get_backend(&context);
 
   gogo->backend()->immutable_struct_set_init(bvar, mangled_name, false, true,
 					     map_descriptor_btype, bloc,
@@ -6581,8 +6575,8 @@ Channel_type::is_identical(const Channel_type* t,
 	  && this->may_receive_ == t->may_receive_);
 }
 
-// Return the tree for a channel type.  A channel is a pointer to a
-// __go_channel struct.  The __go_channel struct is defined in
+// Return the backend representation for a channel type.  A channel is a pointer
+// to a __go_channel struct.  The __go_channel struct is defined in
 // libgo/runtime/channel.h.
 
 Btype*
@@ -7364,8 +7358,8 @@ get_backend_interface_fields(Gogo* gogo, Interface_type* type,
   (*bfields)[1].location = Linemap::predeclared_location();
 }
 
-// Return a tree for an interface type.  An interface is a pointer to
-// a struct.  The struct has three fields.  The first field is a
+// Return the backend representation for an interface type.  An interface is a
+// pointer to a struct.  The struct has three fields.  The first field is a
 // pointer to the type descriptor for the dynamic type of the object.
 // The second field is a pointer to a table of methods for the
 // interface to be used with the object.  The third field is the value
@@ -8416,7 +8410,7 @@ Named_type::convert(Gogo* gogo)
   this->verify();
 
   // Convert all the dependencies.  If they refer indirectly back to
-  // this type, they will pick up the intermediate tree we just
+  // this type, they will pick up the intermediate representation we just
   // created.
   for (std::vector<Named_type*>::const_iterator p = this->dependencies_.begin();
        p != this->dependencies_.end();
@@ -8612,7 +8606,7 @@ Named_type::create_placeholder(Gogo* gogo)
     }
 }
 
-// Get a tree for a named type.
+// Get the backend representation for a named type.
 
 Btype*
 Named_type::do_get_backend(Gogo* gogo)
@@ -8648,7 +8642,7 @@ Named_type::do_get_backend(Gogo* gogo)
 
   go_assert(bt != NULL);
 
-  // Complete the tree.
+  // Complete the backend representation.
   Type* base = this->type_->base();
   Btype* bt1;
   switch (base->classification())

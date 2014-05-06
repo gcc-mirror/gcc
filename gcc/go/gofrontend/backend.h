@@ -247,6 +247,10 @@ class Backend
   virtual Bexpression*
   error_expression() = 0;
 
+  // Create a nil pointer expression.
+  virtual Bexpression*
+  nil_pointer_expression() = 0;
+
   // Create a reference to a variable.
   virtual Bexpression*
   var_expression(Bvariable* var, Location) = 0;
@@ -280,6 +284,10 @@ class Backend
   // Return an expression for the string value VAL.
   virtual Bexpression*
   string_constant_expression(const std::string& val) = 0;
+
+  // Return an expression for the boolean value VAL.
+  virtual Bexpression*
+  boolean_constant_expression(bool val) = 0;
 
   // Return an expression for the real part of BCOMPLEX.
   virtual Bexpression*
@@ -686,20 +694,5 @@ class Backend
 // The backend interface has to define this function.
 
 extern Backend* go_get_backend();
-
-// FIXME: Temporary helper functions while converting to new backend
-// interface.
-
-extern Btype* tree_to_type(tree);
-extern Bexpression* tree_to_expr(tree);
-extern Bstatement* tree_to_stat(tree);
-extern Bfunction* tree_to_function(tree);
-extern Bblock* tree_to_block(tree);
-extern tree type_to_tree(Btype*);
-extern tree expr_to_tree(Bexpression*);
-extern tree stat_to_tree(Bstatement*);
-extern tree block_to_tree(Bblock*);
-extern tree var_to_tree(Bvariable*);
-extern tree function_to_tree(Bfunction*);
 
 #endif // !defined(GO_BACKEND_H)
