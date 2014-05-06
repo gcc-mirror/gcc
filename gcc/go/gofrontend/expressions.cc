@@ -5432,7 +5432,7 @@ Binary_expression::lower_compare_to_memcmp(Gogo*, Statement_inserter* inserter)
 }
 
 Expression*
-Binary_expression::do_flatten(Gogo*, Named_object*,
+Binary_expression::do_flatten(Gogo* gogo, Named_object*,
                               Statement_inserter* inserter)
 {
   Location loc = this->location();
@@ -5462,11 +5462,9 @@ Binary_expression::do_flatten(Gogo*, Named_object*,
                       left_type->integer_type() != NULL)
                      || this->op_ == OPERATOR_MOD);
 
-  // FIXME: go_check_divide_zero and go_check_divide_overflow are globals
-  // defined in gcc/go/lang.opt.  These should be defined in go_create_gogo
-  // and accessed from the Gogo* passed to do_flatten.
   if (is_shift_op
-      || (is_idiv_op && (go_check_divide_zero || go_check_divide_overflow)))
+      || (is_idiv_op
+	  && (gogo->check_divide_by_zero() || gogo->check_divide_overflow())))
     {
       if (!this->left_->is_variable())
         {
@@ -6046,7 +6044,7 @@ Binary_expression::do_get_tree(Translate_context* context)
   // Add checks for division by zero and division overflow as needed.
   if (is_idiv_op)
     {
-      if (go_check_divide_zero)
+      if (gogo->check_divide_by_zero())
 	{
 	  // right == 0
           Bexpression* zero_expr =
@@ -6065,7 +6063,7 @@ Binary_expression::do_get_tree(Translate_context* context)
                                                         crash_expr, ret, loc);
 	}
 
-      if (go_check_divide_overflow)
+      if (gogo->check_divide_overflow())
 	{
 	  // right == -1
 	  // FIXME: It would be nice to say that this test is expected
