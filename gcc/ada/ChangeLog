@@ -1,3 +1,12 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/cuintp.c (UI_From_gnu): Use wide-int interfaces.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use TYPE_SIGN.
+	(annotate_value): Use wide-int interfaces.
+	* gcc-interface/utils.c (get_nonnull_operand): Use tree_fits_uhwi_p.
+
 2014-04-28  Richard Henderson  <rth@redhat.com>
 
 	* gcc-interface/Makefile.in: Support aarch64-linux.

@@ -1,3 +1,10 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lto.c (compare_tree_sccs_1): Use wide-int interfaces.
+	* lto-lang.c (get_nonnull_operand): Likewise.
+
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60092

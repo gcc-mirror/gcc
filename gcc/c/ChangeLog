@@ -1,3 +1,14 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-decl.c (check_bitfield_type_and_width): Use TYPE_SIGN.
+	(finish_enum): Use wide-int interfaces.
+	* c-parser.c (c_parser_cilk_clause_vectorlength): Likewise.
+	* c-typeck.c (build_c_cast): Likewise.
+	(set_nonincremental_init_from_string): Likewise.
+	(c_tree_equal): Likewise.
+
 2014-05-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/25801

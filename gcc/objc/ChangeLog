@@ -1,3 +1,10 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* objc-act.c: Include wide-int.h.
+	(objc_decl_method_attributes): Use wide-int interfaces.
+
 2014-04-24  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	PR objc/56044
