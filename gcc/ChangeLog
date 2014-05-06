@@ -1,3 +1,9 @@
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61070
+	* bitmap.c (debug_bitmap): Dump to stderr, not stdout.
+	* tree-ssa-structalias.c (dump_solution_for_var): Likewise.
+
 2014-05-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60965
