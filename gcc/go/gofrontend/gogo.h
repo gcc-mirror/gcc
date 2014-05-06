@@ -215,7 +215,27 @@ class Gogo
   // Set the relative import path from a command line option.
   void
   set_relative_import_path(const std::string& s)
-  {this->relative_import_path_ = s; }
+  { this->relative_import_path_ = s; }
+
+  // Return whether to check for division by zero in binary operations.
+  bool
+  check_divide_by_zero() const
+  { return this->check_divide_by_zero_; }
+
+  // Set the option to check division by zero from a command line option.
+  void
+  set_check_divide_by_zero(bool b)
+  { this->check_divide_by_zero_ = b; }
+
+  // Return whether to check for division overflow in binary operations.
+  bool
+  check_divide_overflow() const
+  { return this->check_divide_overflow_; }
+
+  // Set the option to check division overflow from a command line option.
+  void
+  set_check_divide_overflow(bool b)
+  { this->check_divide_overflow_ = b; }
 
   // Return the priority to use for the package we are compiling.
   // This is two more than the largest priority of any package we
@@ -716,6 +736,12 @@ class Gogo
   // The relative import path, from the -fgo-relative-import-path
   // option.
   std::string relative_import_path_;
+  // Whether or not to check for division by zero, from the
+  // -fgo-check-divide-zero option.
+  bool check_divide_by_zero_;
+  // Whether or not to check for division overflow, from the
+  // -fgo-check-divide-overflow option.
+  bool check_divide_overflow_;
   // A list of types to verify.
   std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
