@@ -1,3 +1,9 @@
+2014-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60999
+	* pt.c (maybe_begin_member_template_processing): Use
+	uses_template_parms.
+
 2014-05-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60992
