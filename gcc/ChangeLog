@@ -4,6 +4,10 @@
 	2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57623
+	* config/i386/i386.md (bmi_bextr_<mode>): Swap predicates and
+	constraints of operand 1 and 2.
+
+	PR target/57623
 	* config/i386/i386.md (bmi2_bzhi_<mode>3): Swap AND arguments
 	to match RTL canonicalization.  Swap predicates and
 	constraints of operand 1 and 2.
