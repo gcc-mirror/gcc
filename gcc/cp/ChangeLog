@@ -1,4 +1,13 @@
+2014-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58325
+	* init.c (build_vec_delete): Call mark_rvalue_use on base.
+
 2014-02-26  Fabien Chêne  <fabien@gcc.gnu.org>
+
         PR c++/37140
         * parser.c (cp_parser_nonclass_name): Call strip_using_decl and
 	move the code handling dependent USING_DECLs...

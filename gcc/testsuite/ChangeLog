@@ -1,6 +1,11 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58325
+	* g++.dg/warn/Wunused-var-21.C: New test.
+
 	2013-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58277
