@@ -736,21 +736,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _Container>::__type>& __i) _GLIBCXX_NOEXCEPT
         : _M_current(__i.base()) { }
 
-#if __cplusplus >= 201103L
-      __normal_iterator<typename _Container::pointer, _Container>
-      _M_const_cast() const noexcept
-      {
-	using _PTraits = std::pointer_traits<typename _Container::pointer>;
-	return __normal_iterator<typename _Container::pointer, _Container>
-	  (_PTraits::pointer_to(const_cast<typename _PTraits::element_type&>
-				(*_M_current)));
-      }
-#else
-      __normal_iterator
-      _M_const_cast() const
-      { return *this; }
-#endif
-
       // Forward iterator requirements
       reference
       operator*() const _GLIBCXX_NOEXCEPT

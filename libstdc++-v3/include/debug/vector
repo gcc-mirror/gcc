@@ -602,7 +602,7 @@ namespace __debug
 	  }
 	else
 #if __cplusplus >= 201103L
-	  return iterator(__first.base()._M_const_cast(), this);
+	  return begin() + (__first.base() - cbegin().base());
 #else
 	  return __first;
 #endif
