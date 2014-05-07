@@ -1,3 +1,14 @@
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vtrn1_f32, vtrn1_p8, vtrn1_p16, vtrn1_s8,
+	vtrn1_s16, vtrn1_s32, vtrn1_u8, vtrn1_u16, vtrn1_u32, vtrn1q_f32,
+	vtrn1q_f64, vtrn1q_p8, vtrn1q_p16, vtrn1q_s8, vtrn1q_s16, vtrn1q_s32,
+	vtrn1q_s64, vtrn1q_u8, vtrn1q_u16, vtrn1q_u32, vtrn1q_u64, vtrn2_f32,
+	vtrn2_p8, vtrn2_p16, vtrn2_s8, vtrn2_s16, vtrn2_s32, vtrn2_u8,
+	vtrn2_u16, vtrn2_u32, vtrn2q_f32, vtrn2q_f64, vtrn2q_p8, vtrn2q_p16,
+	vtrn2q_s8, vtrn2q_s16, vtrn2q_s32, vtrn2q_s64, vtrn2q_u8, vtrn2q_u16,
+	vtrn2q_u32, vtrn2q_u64): Replace temporary asm with __builtin_shuffle.
+
 2014-05-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* loop-unswitch.c: Delete.
