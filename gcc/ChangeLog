@@ -1,3 +1,8 @@
+2014-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (HONOR_REG_ALLOC_ORDER): Have it in favor
+	of using optimize_size.
+
 2014-05-06  Mike Stump  <mikestump@comcast.net>
 
 	* wide-int.h (wi::int_traits <HOST_WIDE_INT>): Always define.
