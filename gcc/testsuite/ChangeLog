@@ -1,6 +1,11 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59297
+	* g++.dg/gomp/pr59297.C: New test.
+
 	2013-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59014

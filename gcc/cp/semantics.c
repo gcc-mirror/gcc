@@ -4977,7 +4977,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 	}
       stmt = build2 (OMP_ATOMIC, void_type_node, integer_zero_node, stmt);
     }
-  add_stmt (stmt);
+  finish_expr_stmt (stmt);
 }
 
 void
@@ -8592,6 +8592,12 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	  error ("non-constant array initialization");
 	  diagnose_non_constexpr_vec_init (t);
 	}
+      return false;
+
+    case OMP_ATOMIC:
+    case OMP_ATOMIC_READ:
+    case OMP_ATOMIC_CAPTURE_OLD:
+    case OMP_ATOMIC_CAPTURE_NEW:
       return false;
 
     default:

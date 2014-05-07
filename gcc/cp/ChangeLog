@@ -1,10 +1,21 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59297
+	* semantics.c (finish_omp_atomic): Call finish_expr_stmt
+	rather than add_stmt.
+
 	2013-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58325
 	* init.c (build_vec_delete): Call mark_rvalue_use on base.
+
+	2013-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56930
+	* semantics.c (potential_constant_expression_1): Handle OMP_ATOMIC*.
 
 2014-02-26  Fabien Chêne  <fabien@gcc.gnu.org>
 
