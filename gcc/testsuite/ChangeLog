@@ -1,3 +1,9 @@
+2014-05-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/60884
+	* gcc.target/sh/pr53976-1.c (test_02): Remove inappropriate test case.
+	(test_03): Rename to test_02.
+
 2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61083
