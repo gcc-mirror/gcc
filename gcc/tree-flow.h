@@ -466,6 +466,7 @@ extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 void remove_edge_and_dominated_blocks (edge);
 bool tree_node_can_be_shared (tree);
+extern unsigned int split_critical_edges (void);
 
 /* In tree-cfgcleanup.c  */
 extern bitmap cfgcleanup_altered_bbs;
