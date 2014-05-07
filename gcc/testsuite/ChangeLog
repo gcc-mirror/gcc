@@ -1,3 +1,7 @@
+2014-05-07  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/epiphany/isr-arg.c: New file.
+
 2014-05-07  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR tree-optimization/52252
