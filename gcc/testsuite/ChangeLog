@@ -3,6 +3,12 @@
 	PR libfortran/61049
 	* gfortran.dg/list_read_13.f: New test.
 
+2014-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60999
+	* g++.dg/cpp0x/nsdmi-template9.C: New.
+	* g++.dg/cpp0x/nsdmi-template10.C: Likewise.
+
 2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
