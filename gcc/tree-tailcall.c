@@ -576,6 +576,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   if (!tail_recursion && (m || a))
     return;
 
+  /* For pointers don't allow additions or multiplications.  */
+  if ((m || a)
+      && POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
+    return;
+
   nw = XNEW (struct tailcall);
 
   nw->call_gsi = gsi;

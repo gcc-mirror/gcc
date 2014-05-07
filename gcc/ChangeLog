@@ -1,6 +1,12 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58209
+	* tree-tailcall.c (find_tail_calls): Give up for pointer result types
+	if m or a is non-NULL.
+
 	2013-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57777
