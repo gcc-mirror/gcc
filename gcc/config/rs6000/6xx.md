@@ -48,17 +48,17 @@
 ;; Four insns can be dispatched per cycle.
 
 (define_insn_reservation "ppc604-load" 2
-  (and (eq_attr "type" "load,load_ext,load_ext_u,load_ext_ux,load_ux,load_u")
+  (and (eq_attr "type" "load")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "lsu_6xx")
 
 (define_insn_reservation "ppc604-fpload" 3
-  (and (eq_attr "type" "fpload,fpload_ux,fpload_u")
+  (and (eq_attr "type" "fpload")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "lsu_6xx")
 
 (define_insn_reservation "ppc604-store" 3
-  (and (eq_attr "type" "store,fpstore,store_ux,store_u,fpstore_ux,fpstore_u")
+  (and (eq_attr "type" "store,fpstore")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "lsu_6xx")
 

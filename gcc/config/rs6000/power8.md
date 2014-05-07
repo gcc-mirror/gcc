@@ -80,51 +80,68 @@
 ; LS Unit
 (define_insn_reservation "power8-load" 3
   (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,LU_or_LSU_power8")
 
 (define_insn_reservation "power8-load-update" 3
-  (and (eq_attr "type" "load_u,load_ux")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,LU_or_LSU_power8+FXU_power8")
 
 (define_insn_reservation "power8-load-ext" 3
-  (and (eq_attr "type" "load_ext")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,LU_or_LSU_power8,FXU_power8")
 
 (define_insn_reservation "power8-load-ext-update" 3
-  (and (eq_attr "type" "load_ext_u,load_ext_ux")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power8"))
   "DU_both_power8,LU_or_LSU_power8+FXU_power8,FXU_power8")
 
 (define_insn_reservation "power8-fpload" 5
-  (and (eq_attr "type" "fpload,vecload")
+  (and (ior (eq_attr "type" "vecload")
+	    (and (eq_attr "type" "fpload")
+		 (eq_attr "update" "no")))
        (eq_attr "cpu" "power8"))
   "DU_any_power8,LU_power8")
 
 (define_insn_reservation "power8-fpload-update" 5
-  (and (eq_attr "type" "fpload_u,fpload_ux")
+  (and (eq_attr "type" "fpload")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,LU_power8+FXU_power8")
 
 (define_insn_reservation "power8-store" 5 ; store-forwarding latency
-  (and (eq_attr "type" "store,store_u")
+  (and (eq_attr "type" "store")
+       (not (and (eq_attr "update" "yes")
+		 (eq_attr "indexed" "yes")))
        (eq_attr "cpu" "power8"))
   "DU_any_power8,LSU_power8+LU_power8")
 
 (define_insn_reservation "power8-store-update-indexed" 5
-  (and (eq_attr "type" "store_ux")
+  (and (eq_attr "type" "store")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "yes")
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,LSU_power8+LU_power8")
 
 (define_insn_reservation "power8-fpstore" 5
   (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,LSU_power8+VSU_power8")
 
 (define_insn_reservation "power8-fpstore-update" 5
-  (and (eq_attr "type" "fpstore_u,fpstore_ux")
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,LSU_power8+VSU_power8")
 

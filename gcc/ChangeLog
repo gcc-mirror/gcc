@@ -1,3 +1,101 @@
+2014-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (indexed_address_mem): New.
+	* config/rs6000/rs6000.md (type): Remove load_ext, load_ext_u,
+	load_ext_ux, load_ux, load_u, store_ux, store_u, fpload_ux, fpload_u,
+	fpstore_ux, fpstore_u.
+	(sign_extend, indexed, update): New.
+	(cell_micro): Adjust.
+	(*zero_extend<mode>di2_internal1, *zero_extendsidi2_lfiwzx,
+	*extendsidi2_lfiwax, *extendsidi2_nocell, *extendsfdf2_fpr,
+	*movsi_internal1, *movsi_internal1_single, *movhi_internal,
+	*movqi_internal, *movcc_internal1, mov<mode>_hardfloat,
+	*mov<mode>_softfloat, *mov<mode>_hardfloat32, *mov<mode>_hardfloat64,
+	*mov<mode>_softfloat64, *movdi_internal32, *movdi_internal64,
+	*mov<mode>_string, *ldmsi8, *ldmsi7, *ldmsi6, *ldmsi5, *ldmsi4,
+	*ldmsi3, *stmsi8, *stmsi7, *stmsi6, *stmsi5, *stmsi4, *stmsi3,
+	*movdi_update1, movdi_<mode>_update, movdi_<mode>_update_stack,
+	*movsi_update1, *movsi_update2, movsi_update, movsi_update_stack,
+	*movhi_update1, *movhi_update2, *movhi_update3, *movhi_update4,
+	*movqi_update1, *movqi_update2, *movqi_update3, *movsf_update1,
+	*movsf_update2, *movsf_update3, *movsf_update4, *movdf_update1,
+	*movdf_update2, load_toc_aix_si, load_toc_aix_di, probe_stack_<mode>,
+	*stmw, *lmw, as well as 10 anonymous patterns): Adjust.
+
+	* config/rs6000/dfp.md (movsd_store, movsd_load): Adjust.
+	* config/rs6000/vsx.md (*vsx_movti_32bit, *vsx_extract_<mode>_load,
+	*vsx_extract_<mode>_store): Adjust.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost, is_microcoded_insn,
+	is_cracked_insn, insn_must_be_first_in_group,
+	insn_must_be_last_in_group): Adjust.
+
+	* config/rs6000/40x.md (ppc403-load, ppc403-store, ppc405-float):
+	Adjust.
+	* config/rs6000/440.md (ppc440-load, ppc440-store, ppc440-fpload,
+	ppc440-fpstore): Adjust.
+	* config/rs6000/476.md (ppc476-load, ppc476-store, ppc476-fpload,
+	ppc476-fpstore): Adjust.
+	* config/rs6000/601.md (ppc601-load, ppc601-store, ppc601-fpload,
+	ppc601-fpstore): Adjust.
+	* config/rs6000/603.md (ppc603-load, ppc603-store, ppc603-fpload):
+	Adjust.
+	* config/rs6000/6xx.md (ppc604-load, ppc604-store, ppc604-fpload):
+	Adjust.
+	* config/rs6000/7450.md (ppc7450-load, ppc7450-store, ppc7450-fpload,
+	ppc7450-fpstore): Adjust.
+	* config/rs6000/7xx.md (ppc750-load, ppc750-store): Adjust.
+	* config/rs6000/8540.md (ppc8540_load, ppc8540_store): Adjust.
+	* config/rs6000/a2.md (ppca2-load, ppca2-fp-load, ppca2-fp-store):
+	Adjust.
+	* config/rs6000/cell.md (cell-load, cell-load-ux, cell-load-ext,
+	cell-fpload, cell-fpload-update, cell-store, cell-store-update,
+	cell-fpstore, cell-fpstore-update): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_load, ppce300c3_fpload,
+	ppce300c3_store, ppce300c3_fpstore): Adjust.
+	* config/rs6000/e500mc.md (e500mc_load, e500mc_fpload, e500mc_store,
+	e500mc_fpstore): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_load, e500mc64_fpload,
+	e500mc64_store, e500mc64_fpstore): Adjust.
+	* config/rs6000/e5500.md (e5500_load, e5500_fpload, e5500_store,
+	e5500_fpstore): Adjust.
+	* config/rs6000/e6500.md (e6500_load, e6500_fpload, e6500_store,
+	e6500_fpstore): Adjust.
+	* config/rs6000/mpc.md (mpccore-load, mpccore-store, mpccore-fpload):
+	Adjust.
+	* config/rs6000/power4.md (power4-load, power4-load-ext,
+	power4-load-ext-update, power4-load-ext-update-indexed,
+	power4-load-update-indexed, power4-load-update, power4-fpload,
+	power4-fpload-update, power4-store, power4-store-update,
+	power4-store-update-indexed, power4-fpstore, power4-fpstore-update):
+	Adjust.
+	* config/rs6000/power5.md (power5-load, power5-load-ext,
+	power5-load-ext-update, power5-load-ext-update-indexed,
+	power5-load-update-indexed, power5-load-update, power5-fpload,
+	power5-fpload-update, power5-store, power5-store-update,
+	power5-store-update-indexed, power5-fpstore, power5-fpstore-update):
+	Adjust.
+	* config/rs6000/power6.md (power6-load, power6-load-ext,
+	power6-load-update, power6-load-update-indexed,
+	power6-load-ext-update, power6-load-ext-update-indexed, power6-fpload,
+	power6-fpload-update, power6-store, power6-store-update,
+	power6-store-update-indexed, power6-fpstore, power6-fpstore-update):
+	Adjust.
+	* config/rs6000/power7.md (power7-load, power7-load-ext,
+	power7-load-update, power7-load-update-indexed,
+	power7-load-ext-update, power7-load-ext-update-indexed, power7-fpload,
+	power7-fpload-update, power7-store, power7-store-update,
+	power7-store-update-indexed, power7-fpstore, power7-fpstore-update):
+	Adjust.
+	* config/rs6000/power8.md (power8-load, power8-load-update,
+	power8-load-ext, power8-load-ext-update, power8-fpload,
+	power8-fpload-update, power8-store, power8-store-update-indexed,
+	power8-fpstore, power8-fpstore-update): Adjust.
+	* config/rs6000/rs64.md (rs64a-load, rs64a-store, rs64a-fpload):
+	Adjust.
+	* config/rs6000/titan.md (titan_lsu_load, titan_lsu_fpload,
+	titan_lsu_store, titan_lsu_fpstore): Adjust.
+	* config/rs6000/xfpu.md (fp-load, fp-store): Adjust.
+
 2014-05-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/60884

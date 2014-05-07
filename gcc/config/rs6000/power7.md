@@ -58,66 +58,91 @@
 ; LS Unit
 (define_insn_reservation "power7-load" 2
   (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power7"))
   "DU_power7,LSU_power7")
 
 (define_insn_reservation "power7-load-ext" 3
-  (and (eq_attr "type" "load_ext")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,LSU_power7,FXU_power7")
 
 (define_insn_reservation "power7-load-update" 2
-  (and (eq_attr "type" "load_u")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "no")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,LSU_power7+FXU_power7")
 
 (define_insn_reservation "power7-load-update-indexed" 3
-  (and (eq_attr "type" "load_ux")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "yes")
        (eq_attr "cpu" "power7"))
   "DU4_power7,FXU_power7,LSU_power7+FXU_power7")
 
 (define_insn_reservation "power7-load-ext-update" 4
-  (and (eq_attr "type" "load_ext_u")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "no")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,LSU_power7+FXU_power7,FXU_power7")
 
 (define_insn_reservation "power7-load-ext-update-indexed" 4
-  (and (eq_attr "type" "load_ext_ux")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "yes")
        (eq_attr "cpu" "power7"))
   "DU4_power7,FXU_power7,LSU_power7+FXU_power7,FXU_power7")
 
 (define_insn_reservation "power7-fpload" 3
   (and (eq_attr "type" "fpload")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power7"))
   "DU_power7,LSU_power7")
 
 (define_insn_reservation "power7-fpload-update" 3
-  (and (eq_attr "type" "fpload_u,fpload_ux")
+  (and (eq_attr "type" "fpload")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,LSU_power7+FXU_power7")
 
 (define_insn_reservation "power7-store" 6 ; store-forwarding latency
   (and (eq_attr "type" "store")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power7"))
   "DU_power7,LSU_power7+FXU_power7")
 
 (define_insn_reservation "power7-store-update" 6
-  (and (eq_attr "type" "store_u")
+  (and (eq_attr "type" "store")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "no")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,LSU_power7+FXU_power7,FXU_power7")
 
 (define_insn_reservation "power7-store-update-indexed" 6
-  (and (eq_attr "type" "store_ux")
+  (and (eq_attr "type" "store")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "yes")
        (eq_attr "cpu" "power7"))
   "DU4_power7,LSU_power7+FXU_power7,FXU_power7")
 
 (define_insn_reservation "power7-fpstore" 6
   (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power7"))
   "DU_power7,LSU_power7+VSU_power7")
 
 (define_insn_reservation "power7-fpstore-update" 6
-  (and (eq_attr "type" "fpstore_u,fpstore_ux")
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power7"))
   "DU_power7,LSU_power7+VSU_power7+FXU_power7")
 

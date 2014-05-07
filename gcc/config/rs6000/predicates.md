@@ -751,6 +751,13 @@
 		&& GET_CODE (XEXP (op, 0)) == PRE_MODIFY
 		&& indexed_address (XEXP (XEXP (op, 0), 1), mode))"))
 
+;; Return 1 if the operand is a MEM with an indexed-form address.
+(define_special_predicate "indexed_address_mem"
+  (match_test "(MEM_P (op)
+		&& (indexed_address (XEXP (op, 0), mode)
+		    || (GET_CODE (XEXP (op, 0)) == PRE_MODIFY
+			&& indexed_address (XEXP (XEXP (op, 0), 1), mode))))"))
+
 ;; Used for the destination of the fix_truncdfsi2 expander.
 ;; If stfiwx will be used, the result goes to memory; otherwise,
 ;; we're going to emit a store and a load of a subreg, so the dest is a
