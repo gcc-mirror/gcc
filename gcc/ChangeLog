@@ -1,6 +1,13 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59014
+	* tree-vrp.c (register_edge_assert_for_1): Don't look
+	through conversions from non-integral types or through
+	narrowing conversions.
+
 	2013-11-14  Jakub Jelinek  <jakub@redhat.com>
 		    Uros Bizjak  <ubizjak@gmail.com>
 
