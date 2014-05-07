@@ -1,5 +1,54 @@
 2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
 
+	gcc.target/aarch64/simd/ext_f32.x: New file.
+	gcc.target/aarch64/simd/ext_f32_1.c: New file.
+	gcc.target/aarch64/simd/ext_p16.x: New file.
+	gcc.target/aarch64/simd/ext_p16_1.c: New file.
+	gcc.target/aarch64/simd/ext_p8.x: New file.
+	gcc.target/aarch64/simd/ext_p8_1.c: New file.
+	gcc.target/aarch64/simd/ext_s16.x: New file.
+	gcc.target/aarch64/simd/ext_s16_1.c: New file.
+	gcc.target/aarch64/simd/ext_s32.x: New file.
+	gcc.target/aarch64/simd/ext_s32_1.c: New file.
+	gcc.target/aarch64/simd/ext_s64.x: New file.
+	gcc.target/aarch64/simd/ext_s64_1.c: New file.
+	gcc.target/aarch64/simd/ext_s8.x: New file.
+	gcc.target/aarch64/simd/ext_s8_1.c: New file.
+	gcc.target/aarch64/simd/ext_u16.x: New file.
+	gcc.target/aarch64/simd/ext_u16_1.c: New file.
+	gcc.target/aarch64/simd/ext_u32.x: New file.
+	gcc.target/aarch64/simd/ext_u32_1.c: New file.
+	gcc.target/aarch64/simd/ext_u64.x: New file.
+	gcc.target/aarch64/simd/ext_u64_1.c: New file.
+	gcc.target/aarch64/simd/ext_u8.x: New file.
+	gcc.target/aarch64/simd/ext_u8_1.c: New file.
+	gcc.target/aarch64/simd/ext_f64.c: New file.
+	gcc.target/aarch64/simd/extq_f32.x: New file.
+	gcc.target/aarch64/simd/extq_f32_1.c: New file.
+	gcc.target/aarch64/simd/extq_p16.x: New file.
+	gcc.target/aarch64/simd/extq_p16_1.c: New file.
+	gcc.target/aarch64/simd/extq_p8.x: New file.
+	gcc.target/aarch64/simd/extq_p8_1.c: New file.
+	gcc.target/aarch64/simd/extq_s16.x: New file.
+	gcc.target/aarch64/simd/extq_s16_1.c: New file.
+	gcc.target/aarch64/simd/extq_s32.x: New file.
+	gcc.target/aarch64/simd/extq_s32_1.c: New file.
+	gcc.target/aarch64/simd/extq_s64.x: New file.
+	gcc.target/aarch64/simd/extq_s64_1.c: New file.
+	gcc.target/aarch64/simd/extq_s8.x: New file.
+	gcc.target/aarch64/simd/extq_s8_1.c: New file.
+	gcc.target/aarch64/simd/extq_u16.x: New file.
+	gcc.target/aarch64/simd/extq_u16_1.c: New file.
+	gcc.target/aarch64/simd/extq_u32.x: New file.
+	gcc.target/aarch64/simd/extq_u32_1.c: New file.
+	gcc.target/aarch64/simd/extq_u64.x: New file.
+	gcc.target/aarch64/simd/extq_u64_1.c: New file.
+	gcc.target/aarch64/simd/extq_u8.x: New file.
+	gcc.target/aarch64/simd/extq_u8_1.c: New file.
+	gcc.target/aarch64/simd/extq_f64.c: New file.
+
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/vtrns32.c: Expect zip[12] insn rather than trn[12].
 	* gcc.target/aarch64/vtrnu32.c: Likewise.
 	* gcc.target/aarch64/vtrnf32.c: Likewise.
