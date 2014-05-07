@@ -1,3 +1,12 @@
+2014-05-07  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* tree-vect-data-refs.c (vect_grouped_load_supported): New
+	check for loads group of length 3.
+	(vect_permute_load_chain): New permutations for loads group of
+	length 3.
+	* tree-vect-stmts.c (vect_model_load_cost): Change cost
+	of vec_perm_shuffle for the new permutations.
+
 2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (vtrn1_f32, vtrn1_p8, vtrn1_p16, vtrn1_s8,

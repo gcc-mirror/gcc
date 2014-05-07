@@ -1,3 +1,8 @@
+2014-05-07  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR tree-optimization/52252
+	* gcc.dg/vect/pr52252-ld.c: Test on loads group of size 3.
+
 2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/simd/vrev16p8_1.c: New file.
