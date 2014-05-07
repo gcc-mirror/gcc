@@ -1,3 +1,7 @@
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Always set need_64bit_hwint to yes.
+
 2014-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.h (HONOR_REG_ALLOC_ORDER): Have it in favor
