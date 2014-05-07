@@ -1,5 +1,18 @@
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
+	Backport from mainline
+	2013-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59330
+	* gcc.dg/torture/pr59330.c: New testcase.
+
+	2014-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59715
+	* gcc.dg/torture/pr59715.c: New testcase.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57864
 	* gcc.dg/torture/pr57864.c: New testcase.
 

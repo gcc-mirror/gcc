@@ -1,5 +1,27 @@
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
+	Backport from mainline
+	2013-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59334
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Fix bug
+	in previous commit.
+
+	2013-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59330
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Simplify
+	and fix delayed marking of free calls not necessary.
+
+	2014-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59715
+	* tree-cfg.h (split_critical_edges): Declare.
+	* tree-cfg.c (split_critical_edges): Export.
+	* tree-ssa-sink.c (execute_sink_code): Split critical edges.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57864
 	* tree-ssa-pre.c (phi_translate_1): Backport NAME case
 	simplification from mainline.  Do not lookup the VN

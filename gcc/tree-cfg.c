@@ -109,7 +109,6 @@ static int locus_map_eq (const void *, const void *);
 static void assign_discriminator (location_t, basic_block);
 static edge gimple_redirect_edge_and_branch (edge, basic_block);
 static edge gimple_try_redirect_by_replacing_jump (edge, basic_block);
-static unsigned int split_critical_edges (void);
 
 /* Various helpers.  */
 static inline bool stmt_starts_bb_p (gimple, gimple);
@@ -7399,7 +7398,7 @@ struct cfg_hooks gimple_cfg_hooks = {
 
 /* Split all critical edges.  */
 
-static unsigned int
+unsigned int
 split_critical_edges (void)
 {
   basic_block bb;
