@@ -1835,7 +1835,7 @@ ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
 /* If the call in statement CALL may clobber the memory reference REF
    return true, otherwise return false.  */
 
-static bool
+bool
 call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 {
   tree base;
@@ -2318,7 +2318,9 @@ stmt_kills_ref_p (gimple stmt, tree ref)
 static bool
 maybe_skip_until (gimple phi, tree target, ao_ref *ref,
 		  tree vuse, unsigned int *cnt, bitmap *visited,
-		  bool abort_on_visited)
+		  bool abort_on_visited,
+		  void *(*translate)(ao_ref *, tree, void *, bool),
+		  void *data)
 {
   basic_block bb = gimple_bb (phi);
 
@@ -2338,7 +2340,8 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
 	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (def_stmt))))
 	    return !abort_on_visited;
 	  vuse = get_continuation_for_phi (def_stmt, ref, cnt,
-					   visited, abort_on_visited);
+					   visited, abort_on_visited,
+					   translate, data);
 	  if (!vuse)
 	    return false;
 	  continue;
@@ -2350,7 +2353,13 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
 	  /* A clobbering statement or the end of the IL ends it failing.  */
 	  ++*cnt;
 	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
-	    return false;
+	    {
+	      if (translate
+		  && (*translate) (ref, vuse, data, true) == NULL)
+		;
+	      else
+		return false;
+	    }
 	}
       /* If we reach a new basic-block see if we already skipped it
          in a previous walk that ended successfully.  */
@@ -2372,7 +2381,9 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
 static tree
 get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
 			    ao_ref *ref, unsigned int *cnt,
-			    bitmap *visited, bool abort_on_visited)
+			    bitmap *visited, bool abort_on_visited,
+			    void *(*translate)(ao_ref *, tree, void *, bool),
+			    void *data)
 {
   gimple def0 = SSA_NAME_DEF_STMT (arg0);
   gimple def1 = SSA_NAME_DEF_STMT (arg1);
@@ -2386,7 +2397,7 @@ get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
 				  gimple_bb (def1), gimple_bb (def0))))
     {
       if (maybe_skip_until (phi, arg0, ref, arg1, cnt,
-			    visited, abort_on_visited))
+			    visited, abort_on_visited, translate, data))
 	return arg0;
     }
   else if (gimple_nop_p (def1)
@@ -2394,7 +2405,7 @@ get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
 			      gimple_bb (def0), gimple_bb (def1)))
     {
       if (maybe_skip_until (phi, arg1, ref, arg0, cnt,
-			    visited, abort_on_visited))
+			    visited, abort_on_visited, translate, data))
 	return arg1;
     }
   /* Special case of a diamond:
@@ -2414,8 +2425,12 @@ get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
 	   && common_vuse == gimple_vuse (def1))
     {
       *cnt += 2;
-      if (!stmt_may_clobber_ref_p_1 (def0, ref)
-	  && !stmt_may_clobber_ref_p_1 (def1, ref))
+      if ((!stmt_may_clobber_ref_p_1 (def0, ref)
+	   || (translate
+	       && (*translate) (ref, arg0, data, true) == NULL))
+	  && (!stmt_may_clobber_ref_p_1 (def1, ref)
+	      || (translate
+		  && (*translate) (ref, arg1, data, true) == NULL)))
 	return common_vuse;
     }
 
@@ -2432,7 +2447,9 @@ get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
 tree
 get_continuation_for_phi (gimple phi, ao_ref *ref,
 			  unsigned int *cnt, bitmap *visited,
-			  bool abort_on_visited)
+			  bool abort_on_visited,
+			  void *(*translate)(ao_ref *, tree, void *, bool),
+			  void *data)
 {
   unsigned nargs = gimple_phi_num_args (phi);
 
@@ -2470,7 +2487,8 @@ get_continuation_for_phi (gimple phi, ao_ref *ref,
 	{
 	  arg1 = PHI_ARG_DEF (phi, i);
 	  arg0 = get_continuation_for_phi_1 (phi, arg0, arg1, ref,
-					     cnt, visited, abort_on_visited);
+					     cnt, visited, abort_on_visited,
+					     translate, data);
 	  if (!arg0)
 	    return NULL_TREE;
 	}
@@ -2502,7 +2520,8 @@ get_continuation_for_phi (gimple phi, ao_ref *ref,
 void *
 walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 			void *(*walker)(ao_ref *, tree, unsigned int, void *),
-			void *(*translate)(ao_ref *, tree, void *), void *data)
+			void *(*translate)(ao_ref *, tree, void *, bool),
+			void *data)
 {
   bitmap visited = NULL;
   void *res;
@@ -2532,7 +2551,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	break;
       else if (gimple_code (def_stmt) == GIMPLE_PHI)
 	vuse = get_continuation_for_phi (def_stmt, ref, &cnt,
-					 &visited, translated);
+					 &visited, translated, translate, data);
       else
 	{
 	  cnt++;
@@ -2540,7 +2559,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	    {
 	      if (!translate)
 		break;
-	      res = (*translate) (ref, vuse, data);
+	      res = (*translate) (ref, vuse, data, false);
 	      /* Failed lookup and translation.  */
 	      if (res == (void *)-1)
 		{

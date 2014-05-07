@@ -1,3 +1,22 @@
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61034
+	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Export.
+	(maybe_skip_until): Use translate to take into account
+	lattices when trying to do disambiguations.
+	(get_continuation_for_phi_1): Likewise.
+	(get_continuation_for_phi): Adjust for added translate
+	arguments.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-alias.h (get_continuation_for_phi): Adjust
+	prototype.
+	(walk_non_aliased_vuses): Likewise.
+	(call_may_clobber_ref_p_1): Declare.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Also
+	disambiguate against calls.  Stop early if we are
+	only supposed to disambiguate.
+	* tree-ssa-pre.c (translate_vuse_through_block): Adjust.
+
 2014-05-07  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.c (epiphany_handle_interrupt_attribute):

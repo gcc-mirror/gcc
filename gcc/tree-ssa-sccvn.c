@@ -1542,7 +1542,8 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
    of VUSE.  */
 
 static void *
-vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
+vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
+		       bool disambiguate_only)
 {
   vn_reference_t vr = (vn_reference_t)vr_;
   gimple def_stmt = SSA_NAME_DEF_STMT (vuse);
@@ -1580,6 +1581,39 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  lhs_ref_ok = true;
 	}
     }
+  else if (gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL)
+	   && gimple_call_num_args (def_stmt) <= 4)
+    {
+      /* For builtin calls valueize its arguments and call the
+         alias oracle again.  Valueization may improve points-to
+	 info of pointers and constify size and position arguments.
+	 Originally this was motivated by PR61034 which has
+	 conditional calls to free falsely clobbering ref because
+	 of imprecise points-to info of the argument.  */
+      tree oldargs[4];
+      bool valueized_anything;
+      for (unsigned i = 0; i < gimple_call_num_args (def_stmt); ++i)
+	{
+	  oldargs[i] = gimple_call_arg (def_stmt, i);
+	  if (TREE_CODE (oldargs[i]) == SSA_NAME
+	      && VN_INFO (oldargs[i])->valnum != oldargs[i])
+	    {
+	      gimple_call_set_arg (def_stmt, i, VN_INFO (oldargs[i])->valnum);
+	      valueized_anything = true;
+	    }
+	}
+      if (valueized_anything)
+	{
+	  bool res = call_may_clobber_ref_p_1 (def_stmt, ref);
+	  for (unsigned i = 0; i < gimple_call_num_args (def_stmt); ++i)
+	    gimple_call_set_arg (def_stmt, i, oldargs[i]);
+	  if (!res)
+	    return NULL;
+	}
+    }
+
+  if (disambiguate_only)
+    return (void *)-1;
 
   base = ao_ref_base (ref);
   offset = ref->offset;
