@@ -1,3 +1,10 @@
+2014-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61023
+	* include/bits/stl_tree.h (_Rb_tree::_M_move_assign): Copy the
+	comparison function.
+	* testsuite/23_containers/set/cons/61023.cc: New.
+
 2014-05-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
