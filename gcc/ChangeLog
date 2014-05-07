@@ -1,3 +1,9 @@
+2014-05-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cfgloop.h (unswitch_loops): Remove.
+	* doc/passes.texi: Remove references to loop-unswitch.c
+	* timevar.def (TV_LOOP_UNSWITCH): Remove.
+
 2014-05-07  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* tree-vect-data-refs.c (vect_grouped_load_supported): New
