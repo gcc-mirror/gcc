@@ -1,3 +1,7 @@
+2014-05-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* loop-unswitch.c: Delete.
+
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
 	* config.gcc: Always set need_64bit_hwint to yes.
@@ -2294,7 +2298,6 @@
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (OBJS): Remove loop-unswitch.o.
-	* loop-unswitch.c: Delete.
 	* tree-pass.h (make_pass_rtl_unswitch): Remove.
 	* passes.def (pass_rtl_unswitch): Likewise.
 	* loop-init.c (gate_rtl_unswitch): Likewise.
