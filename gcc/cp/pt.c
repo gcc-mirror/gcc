@@ -19542,6 +19542,7 @@ instantiate_decl (tree d, int defer_ok,
   int saved_unevaluated_operand = cp_unevaluated_operand;
   int saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
   bool external_p;
+  bool deleted_p;
   tree fn_context;
   bool nested;
 
@@ -19623,11 +19624,17 @@ instantiate_decl (tree d, int defer_ok,
     args = gen_args;
 
   if (TREE_CODE (d) == FUNCTION_DECL)
-    pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE
-		       || DECL_DEFAULTED_OUTSIDE_CLASS_P (code_pattern)
-		       || DECL_DELETED_FN (code_pattern));
+    {
+      deleted_p = DECL_DELETED_FN (code_pattern);
+      pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE
+			 || DECL_DEFAULTED_OUTSIDE_CLASS_P (code_pattern)
+			 || deleted_p);
+    }
   else
-    pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
+    {
+      deleted_p = false;
+      pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
+    }
 
   /* We may be in the middle of deferred access check.  Disable it now.  */
   push_deferring_access_checks (dk_no_deferred);
@@ -19671,7 +19678,10 @@ instantiate_decl (tree d, int defer_ok,
 	 elsewhere, we don't want to instantiate the entire data
 	 member, but we do want to instantiate the initializer so that
 	 we can substitute that elsewhere.  */
-      || (external_p && VAR_P (d)))
+      || (external_p && VAR_P (d))
+      /* Handle here a deleted function too, avoid generating
+	 its body (c++/61080).  */
+      || deleted_p)
     {
       /* The definition of the static data member is now required so
 	 we must substitute the initializer.  */
@@ -19867,17 +19877,14 @@ instantiate_decl (tree d, int defer_ok,
 		       tf_warning_or_error, tmpl,
 		       /*integral_constant_expression_p=*/false);
 
-	  if (DECL_STRUCT_FUNCTION (code_pattern))
-	    {
-	      /* Set the current input_location to the end of the function
-		 so that finish_function knows where we are.  */
-	      input_location
-		= DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
+	  /* Set the current input_location to the end of the function
+	     so that finish_function knows where we are.  */
+	  input_location
+	    = DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
 
-	      /* Remember if we saw an infinite loop in the template.  */
-	      current_function_infinite_loop
-		= DECL_STRUCT_FUNCTION (code_pattern)->language->infinite_loop;
-	    }
+	  /* Remember if we saw an infinite loop in the template.  */
+	  current_function_infinite_loop
+	    = DECL_STRUCT_FUNCTION (code_pattern)->language->infinite_loop;
 	}
 
       /* We don't need the local specializations any more.  */
