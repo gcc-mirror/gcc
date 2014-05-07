@@ -841,19 +841,28 @@
     return false;
 
   /* VSIB addressing doesn't support (%rip).  */
-  if (parts.disp && GET_CODE (parts.disp) == CONST)
+  if (parts.disp)
     {
-      disp = XEXP (parts.disp, 0);
-      if (GET_CODE (disp) == PLUS)
-	disp = XEXP (disp, 0);
-      if (GET_CODE (disp) == UNSPEC)
-	switch (XINT (disp, 1))
-	  {
-	  case UNSPEC_GOTPCREL:
-	  case UNSPEC_PCREL:
-	  case UNSPEC_GOTNTPOFF:
-	    return false;
-	  }
+      disp = parts.disp;
+      if (GET_CODE (disp) == CONST)
+	{
+	  disp = XEXP (disp, 0);
+	  if (GET_CODE (disp) == PLUS)
+	    disp = XEXP (disp, 0);
+	  if (GET_CODE (disp) == UNSPEC)
+	    switch (XINT (disp, 1))
+	      {
+	      case UNSPEC_GOTPCREL:
+	      case UNSPEC_PCREL:
+	      case UNSPEC_GOTNTPOFF:
+		return false;
+	      }
+	}
+      if (TARGET_64BIT
+	  && flag_pic
+	  && (GET_CODE (disp) == SYMBOL_REF
+	      || GET_CODE (disp) == LABEL_REF))
+	return false;
     }
 
   return true;
