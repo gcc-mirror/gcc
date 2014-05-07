@@ -1,3 +1,8 @@
+2014-05-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	PR tree-optimization/61095
+	* tree-ssanames.c (get_nonzero_bits): Fix type extension in wi::shwi.
+
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61034
