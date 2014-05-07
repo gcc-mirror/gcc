@@ -1,3 +1,12 @@
+2014-05-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple.h (gimple_builtin_call_types_compatible_p): Accept a
+	const_gimple, rather than a gimple.
+	(gimple_call_builtin_p): Likewise, for the three variants.
+
+	* gimple.c (gimple_builtin_call_types_compatible_p): Likewise.
+	(gimple_call_builtin_p): Likewise, for the three variants.
+
 2014-05-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	PR tree-optimization/61095
