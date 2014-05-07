@@ -1,5 +1,11 @@
 2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* gcc.target/aarch64/vtrns32.c: Expect zip[12] insn rather than trn[12].
+	* gcc.target/aarch64/vtrnu32.c: Likewise.
+	* gcc.target/aarch64/vtrnf32.c: Likewise.
+
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* gcc.target/aarch64/simd/vtrnf32_1.c: New file.
 	* gcc.target/aarch64/simd/vtrnf32.x: New file.
 	* gcc.target/aarch64/simd/vtrnp16_1.c: New file.
