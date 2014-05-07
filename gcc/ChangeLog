@@ -1,6 +1,12 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/58809
+	* fold-const.c (fold_range_test): Return 0 if the type is not
+	an integral type.
+
 	2013-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59011
