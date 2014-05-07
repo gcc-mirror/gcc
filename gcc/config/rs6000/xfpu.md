@@ -118,12 +118,12 @@
   "Xfpu_issue*2,Xfpu_mul,nothing*7,Xfpu_addsub")
 
 (define_insn_reservation "fp-load" 10                   ;; FIXME. Is double/single precision the same ?
-  (and (eq_attr "type" "fpload, fpload_ux, fpload_u")
+  (and (eq_attr "type" "fpload")
        (eq_attr "cpu" "ppc405"))
   "Xfpu_issue*10")
 
-(define_insn_reservation "fp-store" 4 
-  (and (eq_attr "type" "fpstore, fpstore_ux, fpstore_u")
+(define_insn_reservation "fp-store" 4
+  (and (eq_attr "type" "fpstore")
        (eq_attr "cpu" "ppc405"))
   "Xfpu_issue*4")
 

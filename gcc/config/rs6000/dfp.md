@@ -37,14 +37,7 @@
    || gpc_reg_operand (operands[1], SDmode))
    && TARGET_HARD_FLOAT && TARGET_FPRS"
   "stfd%U0%X0 %1,%0"
-  [(set (attr "type")
-      (if_then_else
-	(match_test "update_indexed_address_mem (operands[0], VOIDmode)")
-	(const_string "fpstore_ux")
-	(if_then_else
-	  (match_test "update_address_mem (operands[0], VOIDmode)")
-	  (const_string "fpstore_u")
-	  (const_string "fpstore"))))
+  [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
 
 (define_insn "movsd_load"
@@ -55,14 +48,7 @@
    || gpc_reg_operand (operands[1], DDmode))
    && TARGET_HARD_FLOAT && TARGET_FPRS"
   "lfd%U1%X1 %0,%1"
-  [(set (attr "type")
-      (if_then_else
-	(match_test "update_indexed_address_mem (operands[1], VOIDmode)")
-	(const_string "fpload_ux")
-	(if_then_else
-	  (match_test "update_address_mem (operands[1], VOIDmode)")
-	  (const_string "fpload_u")
-	  (const_string "fpload"))))
+  [(set_attr "type" "fpload")
    (set_attr "length" "4")])
 
 ;; Hardware support for decimal floating point operations.

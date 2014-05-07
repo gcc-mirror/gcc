@@ -57,49 +57,68 @@
 ; Load/store
 (define_insn_reservation "power5-load" 4 ; 3
   (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power5"))
   "lsq_power5")
 
 (define_insn_reservation "power5-load-ext" 5
-  (and (eq_attr "type" "load_ext")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5,nothing,nothing,iu2_power5")
 
 (define_insn_reservation "power5-load-ext-update" 5
-  (and (eq_attr "type" "load_ext_u")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "no")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5+du3_power5+du4_power5,\
    lsu1_power5+iu2_power5,nothing,nothing,iu2_power5")
 
 (define_insn_reservation "power5-load-ext-update-indexed" 5
-  (and (eq_attr "type" "load_ext_ux")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "yes")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5+du3_power5+du4_power5,\
    iu1_power5,lsu2_power5+iu1_power5,nothing,nothing,iu2_power5")
 
 (define_insn_reservation "power5-load-update-indexed" 3
-  (and (eq_attr "type" "load_ux")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "yes")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5+du3_power5+du4_power5,\
    iu1_power5,lsu2_power5+iu2_power5")
 
 (define_insn_reservation "power5-load-update" 4 ; 3
-  (and (eq_attr "type" "load_u")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "no")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5+iu2_power5")
 
 (define_insn_reservation "power5-fpload" 6 ; 5
   (and (eq_attr "type" "fpload")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power5"))
   "lsq_power5")
 
 (define_insn_reservation "power5-fpload-update" 6 ; 5
-  (and (eq_attr "type" "fpload_u,fpload_ux")
+  (and (eq_attr "type" "fpload")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5+iu2_power5")
 
 (define_insn_reservation "power5-store" 12
   (and (eq_attr "type" "store")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power5"))
   "((du1_power5,lsu1_power5)\
     |(du2_power5,lsu2_power5)\
@@ -108,18 +127,23 @@
     (iu1_power5|iu2_power5)")
 
 (define_insn_reservation "power5-store-update" 12
-  (and (eq_attr "type" "store_u")
+  (and (eq_attr "type" "store")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "no")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5+iu2_power5,iu1_power5")
 
 (define_insn_reservation "power5-store-update-indexed" 12
-  (and (eq_attr "type" "store_ux")
+  (and (eq_attr "type" "store")
+       (eq_attr "update" "yes")
+       (eq_attr "indexed" "yes")
        (eq_attr "cpu" "power5"))
    "du1_power5+du2_power5+du3_power5+du4_power5,\
     iu1_power5,lsu2_power5+iu2_power5,iu2_power5")
 
 (define_insn_reservation "power5-fpstore" 12
   (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "power5"))
   "((du1_power5,lsu1_power5)\
     |(du2_power5,lsu2_power5)\
@@ -128,7 +152,8 @@
     (fpu1_power5|fpu2_power5)")
 
 (define_insn_reservation "power5-fpstore-update" 12
-  (and (eq_attr "type" "fpstore_u,fpstore_ux")
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,lsu1_power5+iu2_power5,fpu1_power5")
 
