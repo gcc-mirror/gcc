@@ -180,6 +180,18 @@ enum {
 #ifdef TIOCSCTTY
   TIOCSCTTY_val = TIOCSCTTY,
 #endif
+#ifdef TIOCGPTN
+  TIOCGPTN_val = TIOCGPTN,
+#endif
+#ifdef TIOCSPTLCK
+  TIOCSPTLCK_val = TIOCSPTLCK,
+#endif
+#ifdef TIOCGDEV
+  TIOCGDEV_val = TIOCGDEV,
+#endif
+#ifdef TIOCSIG
+  TIOCSIG_val = TIOCSIG,
+#endif
 };
 EOF
 
@@ -776,6 +788,26 @@ fi
 if ! grep '^const TIOCSCTTY' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TIOCSCTTY_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TIOCSCTTY = _TIOCSCTTY_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCGPTN' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCGPTN_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCGPTN = _TIOCGPTN_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCSPTLCK' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCSPTLCK_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCSPTLCK = _TIOCSPTLCK_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCGDEV' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCGDEV_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCGDEV = _TIOCGDEV_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCSIG' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCSIG_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCSIG = _TIOCSIG_val' >> ${OUT}
   fi
 fi
 
