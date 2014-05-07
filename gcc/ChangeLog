@@ -1,3 +1,8 @@
+2014-05-07  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_handle_interrupt_attribute):
+	Emit an error when the function has arguments.
+
 2014-05-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cfgloop.h (unswitch_loops): Remove.
