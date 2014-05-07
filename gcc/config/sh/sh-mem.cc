@@ -568,7 +568,7 @@ sh_expand_strlen (rtx *operands)
 
   addr1 = adjust_automodify_address (addr1, SImode, current_addr, 0);
 
-  /*start long loop.  */
+  /* start long loop.  */
   emit_label (L_loop_long);
 
   /* tmp1 is aligned, OK to load.  */
@@ -589,29 +589,15 @@ sh_expand_strlen (rtx *operands)
   addr1 = adjust_address (addr1, QImode, 0);
 
   /* unroll remaining bytes.  */
-  emit_insn (gen_extendqisi2 (tmp1, addr1));
-  emit_insn (gen_cmpeqsi_t (tmp1, const0_rtx));
-  jump = emit_jump_insn (gen_branch_true (L_return));
-  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+  for (int i = 0; i < 4; ++i)
+    {
+      emit_insn (gen_extendqisi2 (tmp1, addr1));
+      emit_move_insn (current_addr, plus_constant (Pmode, current_addr, 1));
+      emit_insn (gen_cmpeqsi_t (tmp1, const0_rtx));
+      jump = emit_jump_insn (gen_branch_true (L_return));
+      add_int_reg_note (jump, REG_BR_PROB, prob_likely);
+    }
 
-  emit_move_insn (current_addr, plus_constant (Pmode, current_addr, 1));
-
-  emit_insn (gen_extendqisi2 (tmp1, addr1));
-  emit_insn (gen_cmpeqsi_t (tmp1, const0_rtx));
-  jump = emit_jump_insn (gen_branch_true (L_return));
-  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
-
-  emit_move_insn (current_addr, plus_constant (Pmode, current_addr, 1));
-
-  emit_insn (gen_extendqisi2 (tmp1, addr1));
-  emit_insn (gen_cmpeqsi_t (tmp1, const0_rtx));
-  jump = emit_jump_insn (gen_branch_true (L_return));
-  add_int_reg_note (jump, REG_BR_PROB, prob_likely);
-
-  emit_move_insn (current_addr, plus_constant (Pmode, current_addr, 1));
-
-  emit_insn (gen_extendqisi2 (tmp1, addr1));
-  jump = emit_jump_insn (gen_jump_compact (L_return));
   emit_barrier_after (jump);
 
   /* start byte loop.  */
@@ -626,10 +612,9 @@ sh_expand_strlen (rtx *operands)
 
   /* end loop.  */
 
-  emit_insn (gen_addsi3 (start_addr, start_addr, GEN_INT (1)));
-
   emit_label (L_return);
 
+  emit_insn (gen_addsi3 (start_addr, start_addr, GEN_INT (1)));
   emit_insn (gen_subsi3 (operands[0], current_addr, start_addr));
 
   return true;

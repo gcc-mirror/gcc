@@ -24,14 +24,7 @@ test_01 (long long a, long long b)
 }
 
 int
-test_02 (const char* a)
-{
-  /* Must not see a sett after the inlined strlen.  */
-  return __builtin_strlen (a);
-}
-
-int
-test_03 (int a, int b, int c, int d)
+test_02 (int a, int b, int c, int d)
 {
   /* One of the blocks should have a sett and the other one should not.  */
   if (d > 4)
