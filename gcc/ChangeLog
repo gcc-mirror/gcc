@@ -1,3 +1,13 @@
+2014-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57623
+	* config/i386/i386.md (bmi2_bzhi_<mode>3): Swap AND arguments
+	to match RTL canonicalization.  Swap predicates and
+	constraints of operand 1 and 2.
+
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

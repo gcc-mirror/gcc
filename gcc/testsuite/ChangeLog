@@ -1,3 +1,11 @@
+2014-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57623
+	* gcc.target/i386/bmi2-bzhi-1.c: New test.
+
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
