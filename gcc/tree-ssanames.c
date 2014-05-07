@@ -271,7 +271,8 @@ get_nonzero_bits (const_tree name)
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
       if (pi && pi->align)
-	return wi::shwi (-(int) pi->align | pi->misalign, precision);
+	return wi::shwi (-(HOST_WIDE_INT) pi->align
+			 | (HOST_WIDE_INT) pi->misalign, precision);
       return wi::shwi (-1, precision);
     }
 
