@@ -1,3 +1,42 @@
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/vtrnf32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnf32.x: New file.
+	* gcc.target/aarch64/simd/vtrnp16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnp16.x: New file.
+	* gcc.target/aarch64/simd/vtrnp8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnp8.x: New file.
+	* gcc.target/aarch64/simd/vtrnqf32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqf32.x: New file.
+	* gcc.target/aarch64/simd/vtrnqp16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqp16.x: New file.
+	* gcc.target/aarch64/simd/vtrnqp8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqp8.x: New file.
+	* gcc.target/aarch64/simd/vtrnqs16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqs16.x: New file.
+	* gcc.target/aarch64/simd/vtrnqs32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqs32.x: New file.
+	* gcc.target/aarch64/simd/vtrnqs8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqs8.x: New file.
+	* gcc.target/aarch64/simd/vtrnqu16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqu16.x: New file.
+	* gcc.target/aarch64/simd/vtrnqu32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqu32.x: New file.
+	* gcc.target/aarch64/simd/vtrnqu8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqu8.x: New file.
+	* gcc.target/aarch64/simd/vtrns16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrns16.x: New file.
+	* gcc.target/aarch64/simd/vtrns32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrns32.x: New file.
+	* gcc.target/aarch64/simd/vtrns8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrns8.x: New file.
+	* gcc.target/aarch64/simd/vtrnu16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnu16.x: New file.
+	* gcc.target/aarch64/simd/vtrnu32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnu32.x: New file.
+	* gcc.target/aarch64/simd/vtrnu8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnu8.x: New file.
+
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57864
