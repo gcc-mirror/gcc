@@ -1,3 +1,9 @@
+2014-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/61049
+	* io/list_read.c (list_formatted_read_scalar): Use eat_separator
+	and delete extraneous code.
+
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/libcaf.h (_gfortran_caf_this_image, _gfortran_caf_num_images):
