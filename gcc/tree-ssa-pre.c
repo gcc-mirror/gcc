@@ -1756,39 +1756,26 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 
     case NAME:
       {
-	gimple phi = NULL;
-	edge e;
-	gimple def_stmt;
 	tree name = PRE_EXPR_NAME (expr);
-
-	def_stmt = SSA_NAME_DEF_STMT (name);
+	gimple def_stmt = SSA_NAME_DEF_STMT (name);
+	/* If the SSA name is defined by a PHI node in this block,
+	   translate it.  */
 	if (gimple_code (def_stmt) == GIMPLE_PHI
 	    && gimple_bb (def_stmt) == phiblock)
-	  phi = def_stmt;
-	else
-	  return expr;
-
-	e = find_edge (pred, gimple_bb (phi));
-	if (e)
 	  {
-	    tree def = PHI_ARG_DEF (phi, e->dest_idx);
-	    pre_expr newexpr;
-
-	    if (TREE_CODE (def) == SSA_NAME)
-	      def = VN_INFO (def)->valnum;
+	    edge e = find_edge (pred, gimple_bb (def_stmt));
+	    tree def = PHI_ARG_DEF (def_stmt, e->dest_idx);
 
 	    /* Handle constant. */
 	    if (is_gimple_min_invariant (def))
 	      return get_or_alloc_expr_for_constant (def);
 
-	    if (TREE_CODE (def) == SSA_NAME && ssa_undefined_value_p (def))
-	      return NULL;
-
-	    newexpr = get_or_alloc_expr_for_name (def);
-	    return newexpr;
+	    return get_or_alloc_expr_for_name (def);
 	  }
+	/* Otherwise return it unchanged - it will get cleaned if its
+	   value is not available in PREDs AVAIL_OUT set of expressions.  */
+	return expr;
       }
-      return expr;
 
     default:
       gcc_unreachable ();
