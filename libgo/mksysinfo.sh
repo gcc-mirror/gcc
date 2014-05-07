@@ -163,6 +163,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_NETINET_ICMP6_H)
 #include <netinet/icmp6.h>
 #endif
+#if defined(HAVE_SCHED_H)
+#include <sched.h>
+#endif
 
 /* Constants that may only be defined as expressions on some systems,
    expressions too complex for -fdump-go-spec to handle.  These are
@@ -1129,6 +1132,10 @@ grep '^type _inotify_event ' gen-sysinfo.go | \
       -e 's/\[\]/[0]/' \
       -e 's/\[0\]byte/[0]int8/' \
     >> ${OUT}
+
+# The GNU/Linux CLONE flags.
+grep '^const _CLONE_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(CLONE_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The Solaris 11 Update 1 _zone_net_addr_t struct.
 grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
