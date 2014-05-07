@@ -1,6 +1,16 @@
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59164
+	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust
+	check whether we can create an epilogue loop to reflect the
+	cases where we create one.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2013-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59334

@@ -1466,7 +1466,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
 
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       || LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0
-      || LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
+      || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "epilog loop required.");
