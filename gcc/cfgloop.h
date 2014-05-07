@@ -711,8 +711,6 @@ extern void loop_optimizer_init (unsigned);
 extern void loop_optimizer_finalize (void);
 
 /* Optimization passes.  */
-extern void unswitch_loops (void);
-
 enum
 {
   UAP_PEEL = 1,		/* Enables loop peeling.  */
