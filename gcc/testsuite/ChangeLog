@@ -1,6 +1,11 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59011
+	* gcc.dg/pr59011.c: New test.
+
 	2013-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59297
