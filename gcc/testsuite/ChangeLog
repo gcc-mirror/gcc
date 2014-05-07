@@ -1,3 +1,8 @@
+2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61083
+	* g++.dg/cpp0x/sfinae50.C: New.
+
 2014-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57864

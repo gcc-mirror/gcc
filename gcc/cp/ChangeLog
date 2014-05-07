@@ -1,3 +1,9 @@
+2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61083
+	* pt.c (convert_nontype_argument): Protect all the error calls
+	with complain & tf_error.
+
 2014-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60999
