@@ -922,6 +922,24 @@ merge_memattrs (rtx x, rtx y)
 	  set_mem_align (y, MEM_ALIGN (x));
 	}
     }
+  if (code == MEM)
+    {
+      if (MEM_READONLY_P (x) != MEM_READONLY_P (y))
+	{
+	  MEM_READONLY_P (x) = 0;
+	  MEM_READONLY_P (y) = 0;
+	}
+      if (MEM_NOTRAP_P (x) != MEM_NOTRAP_P (y))
+	{
+	  MEM_NOTRAP_P (x) = 0;
+	  MEM_NOTRAP_P (y) = 0;
+	}
+      if (MEM_VOLATILE_P (x) != MEM_VOLATILE_P (y))
+	{
+	  MEM_VOLATILE_P (x) = 1;
+	  MEM_VOLATILE_P (y) = 1;
+	}
+    }
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)

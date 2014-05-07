@@ -1,6 +1,11 @@
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58365
+	* gcc.c-torture/execute/pr58365.c: New test.
+
 	2013-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58325
