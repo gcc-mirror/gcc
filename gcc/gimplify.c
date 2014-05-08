@@ -2329,8 +2329,8 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   parms = NULL_TREE;
   if (fndecl)
     parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-  else if (POINTER_TYPE_P (TREE_TYPE (CALL_EXPR_FN (*expr_p))))
-    parms = TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (*expr_p))));
+  else
+    parms = TYPE_ARG_TYPES (TREE_TYPE (fnptrtype));
 
   if (fndecl && DECL_ARGUMENTS (fndecl))
     p = DECL_ARGUMENTS (fndecl);
