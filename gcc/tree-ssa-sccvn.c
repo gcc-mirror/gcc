@@ -414,8 +414,8 @@ vn_get_expr_for (tree name)
   if (!is_gimple_assign (def_stmt))
     return vn->valnum;
 
-  /* FIXME tuples.  This is incomplete and likely will miss some
-     simplifications.  */
+  /* Note that we can valueize here because we clear the cached
+     simplified expressions after each optimistic iteration.  */
   code = gimple_assign_rhs_code (def_stmt);
   switch (TREE_CODE_CLASS (code))
     {
@@ -427,20 +427,21 @@ vn_get_expr_for (tree name)
 				      0)) == SSA_NAME)
 	expr = fold_build1 (code,
 			    gimple_expr_type (def_stmt),
-			    TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0));
+			    vn_valueize (TREE_OPERAND
+					   (gimple_assign_rhs1 (def_stmt), 0)));
       break;
 
     case tcc_unary:
       expr = fold_build1 (code,
 			  gimple_expr_type (def_stmt),
-			  gimple_assign_rhs1 (def_stmt));
+			  vn_valueize (gimple_assign_rhs1 (def_stmt)));
       break;
 
     case tcc_binary:
       expr = fold_build2 (code,
 			  gimple_expr_type (def_stmt),
-			  gimple_assign_rhs1 (def_stmt),
-			  gimple_assign_rhs2 (def_stmt));
+			  vn_valueize (gimple_assign_rhs1 (def_stmt)),
+			  vn_valueize (gimple_assign_rhs2 (def_stmt)));
       break;
 
     case tcc_exceptional:
@@ -2759,7 +2760,6 @@ defs_to_varying (gimple stmt)
 }
 
 static bool expr_has_constants (tree expr);
-static tree valueize_expr (tree expr);
 
 /* Visit a copy between LHS and RHS, return true if the value number
    changed.  */
@@ -2900,7 +2900,7 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
 	   || TREE_CODE (val) == VIEW_CONVERT_EXPR)
 	  && TREE_CODE (TREE_OPERAND (val, 0)) == SSA_NAME)
         {
-	  tree tem = valueize_expr (vn_get_expr_for (TREE_OPERAND (val, 0)));
+	  tree tem = vn_get_expr_for (TREE_OPERAND (val, 0));
 	  if ((CONVERT_EXPR_P (tem)
 	       || TREE_CODE (tem) == VIEW_CONVERT_EXPR)
 	      && (tem = fold_unary_ignore_overflow (TREE_CODE (val),
@@ -3210,26 +3210,6 @@ stmt_has_constants (gimple stmt)
   return false;
 }
 
-/* Replace SSA_NAMES in expr with their value numbers, and return the
-   result.
-   This is performed in place. */
-
-static tree
-valueize_expr (tree expr)
-{
-  switch (TREE_CODE_CLASS (TREE_CODE (expr)))
-    {
-    case tcc_binary:
-      TREE_OPERAND (expr, 1) = vn_valueize (TREE_OPERAND (expr, 1));
-      /* Fallthru.  */
-    case tcc_unary:
-      TREE_OPERAND (expr, 0) = vn_valueize (TREE_OPERAND (expr, 0));
-      break;
-    default:;
-    }
-  return expr;
-}
-
 /* Simplify the binary expression RHS, and return the result if
    simplified. */
 
@@ -3250,7 +3230,7 @@ simplify_binary_expression (gimple stmt)
       if (VN_INFO (op0)->has_constants
 	  || TREE_CODE_CLASS (code) == tcc_comparison
 	  || code == COMPLEX_EXPR)
-	op0 = valueize_expr (vn_get_expr_for (op0));
+	op0 = vn_get_expr_for (op0);
       else
 	op0 = vn_valueize (op0);
     }
@@ -3259,7 +3239,7 @@ simplify_binary_expression (gimple stmt)
     {
       if (VN_INFO (op1)->has_constants
 	  || code == COMPLEX_EXPR)
-	op1 = valueize_expr (vn_get_expr_for (op1));
+	op1 = vn_get_expr_for (op1);
       else
 	op1 = vn_valueize (op1);
     }
@@ -3321,7 +3301,7 @@ simplify_unary_expression (gimple stmt)
 
   orig_op0 = op0;
   if (VN_INFO (op0)->has_constants)
-    op0 = valueize_expr (vn_get_expr_for (op0));
+    op0 = vn_get_expr_for (op0);
   else if (CONVERT_EXPR_CODE_P (code)
 	   || code == REALPART_EXPR
 	   || code == IMAGPART_EXPR
@@ -3330,7 +3310,7 @@ simplify_unary_expression (gimple stmt)
     {
       /* We want to do tree-combining on conversion-like expressions.
          Make sure we feed only SSA_NAMEs or constants to fold though.  */
-      tree tem = valueize_expr (vn_get_expr_for (op0));
+      tree tem = vn_get_expr_for (op0);
       if (UNARY_CLASS_P (tem)
 	  || BINARY_CLASS_P (tem)
 	  || TREE_CODE (tem) == VIEW_CONVERT_EXPR

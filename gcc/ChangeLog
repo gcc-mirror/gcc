@@ -1,5 +1,15 @@
 2014-05-08  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (vn_get_expr_for): Valueize operands before
+	folding the expression.
+	(valueize_expr): Remove.
+	(visit_reference_op_load): Do not valueize the result of
+	vn_get_expr_for.
+	(simplify_binary_expression): Likewise.
+	(simplify_unary_expression): Likewise.
+
+2014-05-08  Richard Biener  <rguenther@suse.de>
+
 	* gimplify.c (gimplify_call_expr): Use saved fnptrtype for
 	looking at TYPE_ARG_TYPES.
 
