@@ -1,3 +1,8 @@
+2014-05-08  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* gcc.target/i386/pr58066.c: New test.
+
 2014-05-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/i386/avx256-unaligned-load-2.c,
