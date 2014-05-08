@@ -328,7 +328,14 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       if (bitpos % BITS_PER_UNIT != 0)
 	break;
       aff_combination_const (comb, type, bitpos / BITS_PER_UNIT);
-      core = build_fold_addr_expr (core);
+      if (TREE_CODE (core) == MEM_REF)
+	{
+	  aff_combination_add_cst (comb, wi::to_widest (TREE_OPERAND (core, 1)));
+	  core = TREE_OPERAND (core, 0);
+	}
+      else
+	core = build_fold_addr_expr (core);
+
       if (TREE_CODE (core) == ADDR_EXPR)
 	aff_combination_add_elt (comb, core, 1);
       else
