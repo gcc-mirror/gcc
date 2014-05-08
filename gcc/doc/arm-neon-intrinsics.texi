@@ -2,8 +2,6 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
-@c This file is generated automatically using gcc/config/arm/neon-docgen.ml
-@c Please do not edit manually.
 @subsubsection Addition
 
 @itemize @bullet

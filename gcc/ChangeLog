@@ -1,5 +1,12 @@
 2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	* config/arm/arm_neon.h: Update comment.
+	* config/arm/neon-docgen.ml: Delete.
+	* config/arm/neon-gen.ml: Delete.
+	* doc/arm-neon-intrinsics.texi: Update comment.
+
+2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	* config/arm/arm_neon_builtins.def (vadd, vsub): Only define the v2sf
 	and v4sf versions.
 	(vand, vorr, veor, vorn, vbic): Remove.
