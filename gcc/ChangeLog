@@ -1,3 +1,11 @@
+2014-05-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/59100
+	* tree-ssa-phiopt.c: Include tree-inline.h.
+	(neutral_element_p, absorbing_element_p): New functions.
+	(value_replacement): Handle conditional binary operations with a
+	neutral or absorbing element.
+
 2014-05-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_get_expr_for): Valueize operands before
