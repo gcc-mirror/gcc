@@ -1,3 +1,9 @@
+2014-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61077
+	* c-common.c (check_main_parameter_types): Warn for _Atomic-qualified
+	parameter type of main.
+
 2014-05-07  DJ Delorie  <dj@redhat.com>
 
 	* c-cppbuiltin.c (print_bits_of_hex): New.
