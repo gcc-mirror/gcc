@@ -1,3 +1,9 @@
+2014-05-07  DJ Delorie  <dj@redhat.com>
+
+	* c-cppbuiltin.c (print_bits_of_hex): New.
+	(builtin_define_type_minmax): Print values using hex so as not to
+	require a pre-computed list of string values.
+
 2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
