@@ -1,5 +1,10 @@
 2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/59952
+	* config/i386/i386.c (PTA_HASWELL): Remove PTA_RTM.
+
+2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/61092
 	* config/alpha/alpha.c: Include gimple-iterator.h.
 	(alpha_gimple_fold_builtin): New function.  Move
