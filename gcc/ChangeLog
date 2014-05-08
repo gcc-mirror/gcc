@@ -1,3 +1,8 @@
+2014-05-08  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-affine.c (tree_to_aff_combination): Handle MEM_REF for
+	core part of address expressions.
+
 2014-05-08  Alan Modra  <amodra@gmail.com>
 
 	PR target/60737
