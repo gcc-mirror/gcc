@@ -402,7 +402,7 @@ language standard, and warnings are given for the Fortran 77 features
 that are permitted but obsolescent in later standards. @samp{-std=f2008ts}
 allows the Fortran 2008 standard including the additions of the 
 Technical Specification (TS) 29113 on Further Interoperability of Fortran
-with C.
+with C and TS 18508 on Additional Parallel Features in Fortran.
 
 @end table
 

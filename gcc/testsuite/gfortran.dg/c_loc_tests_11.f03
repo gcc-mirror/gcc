@@ -43,7 +43,7 @@ contains
     integer(c_int), intent(in) :: handle    
     get_foo_address = c_loc(foo_pool(handle)%v)
 
-    get_foo_address = c_loc(foo_pool2(handle)%v) ! { dg-error "TS 29113: Noninteroperable array at .1. as argument to C_LOC: Expression is a noninteroperable derived type" }
+    get_foo_address = c_loc(foo_pool2(handle)%v) ! { dg-error "TS 29113/TS 18508: Noninteroperable array at .1. as argument to C_LOC: Expression is a noninteroperable derived type" }
   end function get_foo_address
 
     

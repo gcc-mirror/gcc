@@ -1,3 +1,27 @@
+2014-05-08  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (check_co_minmaxsum, gfc_check_co_minmax,
+	gfc_check_co_sum): New.
+	* error.c (gfc_notify_std): Update -std=f2008ts.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_CO_MAX,
+	GFC_ISYM_CO_MIN, GFC_ISYM_CO_SUM.
+	* intrinsic.h (gfc_check_co_minmax,
+	gfc_check_co_sum): Declare.
+	* intrinsic.c (add_subroutines): Add co_min, co_max
+	and co_sum.
+	(gfc_check_intrinsic_standard): Update text for
+	-std=f2008ts.
+	* intrinsic.texi (CO_MIN, CO_MAX, CO_SUM): Document
+	them.
+	* invoke.texi (-std=f2008ts): Update wording.
+	* trans.h (gfor_fndecl_co_max,
+	gfor_fndecl_co_min, gfor_fndecl_co_sum): Define.
+	* trans-decl.c (gfor_fndecl_co_max,
+	gfor_fndecl_co_min, gfor_fndecl_co_sum): Define.
+	(gfc_build_builtin_function_decls): Assign to it.
+	* trans-intrinsic.c (conv_co_minmaxsum): New.
+	(gfc_conv_intrinsic_subroutine): Call it.
+
 2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>

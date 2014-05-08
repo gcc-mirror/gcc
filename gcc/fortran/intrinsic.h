@@ -49,6 +49,8 @@ bool gfc_check_chdir (gfc_expr *);
 bool gfc_check_chmod (gfc_expr *, gfc_expr *);
 bool gfc_check_cmplx (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_complex (gfc_expr *, gfc_expr *);
+bool gfc_check_co_minmax (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+bool gfc_check_co_sum (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_count (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_cshift (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_ctime (gfc_expr *);

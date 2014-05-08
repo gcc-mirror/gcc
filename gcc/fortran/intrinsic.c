@@ -3004,7 +3004,7 @@ add_subroutines (void)
 {
   /* Argument names as in the standard (to be used as argument keywords).  */
   const char
-    *h = "harvest", *dt = "date", *vl = "values", *pt = "put",
+    *a = "a", *h = "harvest", *dt = "date", *vl = "values", *pt = "put",
     *c = "count", *tm = "time", *tp = "topos", *gt = "get",
     *t = "to", *zn = "zone", *fp = "frompos", *cm = "count_max",
     *f = "from", *sz = "size", *ln = "len", *cr = "count_rate",
@@ -3013,7 +3013,8 @@ add_subroutines (void)
     *trim_name = "trim_name", *ut = "unit", *han = "handler",
     *sec = "seconds", *res = "result", *of = "offset", *md = "mode",
     *whence = "whence", *pos = "pos", *ptr = "ptr", *p1 = "path1",
-    *p2 = "path2", *msk = "mask", *old = "old";
+    *p2 = "path2", *msk = "mask", *old = "old", *result_image = "result_image",
+    *stat = "stat", *errmsg = "errmsg";
 
   int di, dr, dc, dl, ii;
 
@@ -3208,6 +3209,31 @@ add_subroutines (void)
 	      "cptr", BT_VOID, 0, REQUIRED, INTENT_IN,
 	      "fptr", BT_UNKNOWN, 0, REQUIRED, INTENT_OUT);
   make_from_module();
+
+  /* Coarray collectives.  */
+  add_sym_4s ("co_max", GFC_ISYM_CO_MAX, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_co_minmax, NULL, NULL,
+	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
+	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
+  add_sym_4s ("co_min", GFC_ISYM_CO_MIN, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_co_minmax, NULL, NULL,
+	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
+	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
+  add_sym_4s ("co_sum", GFC_ISYM_CO_SUM, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_co_sum, NULL, NULL,
+	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
+	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
 
   /* More G77 compatibility garbage.  */
   add_sym_3s ("alarm", GFC_ISYM_ALARM, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
@@ -4160,7 +4186,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
       break;
 
     case GFC_STD_F2008_TS:
-      symstd_msg = "new in TS 29113";
+      symstd_msg = "new in TS 29113/TS 18508";
       break;
 
     case GFC_STD_GNU:

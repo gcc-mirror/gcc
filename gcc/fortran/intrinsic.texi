@@ -86,6 +86,9 @@ Some basic guidelines for editing this document:
 * @code{CHDIR}:         CHDIR,     Change working directory
 * @code{CHMOD}:         CHMOD,     Change access permissions of files
 * @code{CMPLX}:         CMPLX,     Complex conversion function
+* @code{CO_MAX}:        CO_MAX,    Maximal value on the current set of images
+* @code{CO_MIN}:        CO_MIN,    Minimal value on the current set of images
+* @code{CO_SUM}:        CO_SUM,    Sum of values on the current set of images
 * @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT, Get number of command line arguments
 * @code{COMPILER_OPTIONS}: COMPILER_OPTIONS, Options passed to the compiler
 * @code{COMPILER_VERSION}: COMPILER_VERSION, Compiler version string
@@ -2807,6 +2810,168 @@ end program test_cmplx
 
 @item @emph{See also}:
 @ref{COMPLEX}
+@end table
+
+
+
+@node CO_MAX
+@section @code{CO_MAX} --- Maximal value on the current set of images
+@fnindex CO_MAX
+@cindex Collectives, maximal value
+
+@table @asis
+@item @emph{Description}:
+@code{CO_MAX} determines element-wise the maximal value of @var{A} on all
+images of the current team.  If @var{RESULT_IMAGE} is present, the maximum
+values are returned on in @var{A} on the specified image only and the value
+of @var{A} on the other images become undefined.  If @var{RESULT_IMAGE} is
+not present, the value is returned on all images.  If the execution was
+successful and @var{STAT} is present, it is assigned the value zero.  If the
+execution failed, @var{STAT} gets assigned a nonzero value and, if present,
+@var{ERRMSG} gets assigned a value describing the occurred error.
+
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
+
+@item @emph{Class}:
+Collective subroutine
+
+@item @emph{Syntax}:
+@code{CALL CO_MAX(A [, RESULT_IMAGE, STAT, ERRMSG])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A}            @tab shall be an integer, real or character variable,
+which has the same type and type parameters on all images of the team.
+@item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
+present, it shall have the same the same value on all images and refer to an
+image of the current team.
+@item @var{STAT}         @tab (optional) a scalar integer variable
+@item @var{ERRMSG}       @tab (optional) a scalar character variable
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test
+  integer :: val
+  val = this_image ()
+  call co_max (val, result_image=1)
+  if (this_image() == 1) then
+    write(*,*) "Maximal value", val  ! prints num_images()
+  end if
+end program test
+@end smallexample
+
+@item @emph{See also}:
+@ref{CO_MIN}, @ref{CO_SUM}
+@end table
+
+
+
+@node CO_MIN
+@section @code{CO_MIN} --- Minimal value on the current set of images
+@fnindex CO_MIN
+@cindex Collectives, minimal value
+
+@table @asis
+@item @emph{Description}:
+@code{CO_MIN} determines element-wise the minimal value of @var{A} on all
+images of the current team.  If @var{RESULT_IMAGE} is present, the minimal
+values are returned on in @var{A} on the specified image only and the value
+of @var{A} on the other images become undefined.  If @var{RESULT_IMAGE} is
+not present, the value is returned on all images.  If the execution was
+successful and @var{STAT} is present, it is assigned the value zero.  If the
+execution failed, @var{STAT} gets assigned a nonzero value and, if present,
+@var{ERRMSG} gets assigned a value describing the occurred error.
+
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
+
+@item @emph{Class}:
+Collective subroutine
+
+@item @emph{Syntax}:
+@code{CALL CO_MIN(A [, RESULT_IMAGE, STAT, ERRMSG])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A}            @tab shall be an integer, real or character variable,
+which has the same type and type parameters on all images of the team.
+@item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
+present, it shall have the same the same value on all images and refer to an
+image of the current team.
+@item @var{STAT}         @tab (optional) a scalar integer variable
+@item @var{ERRMSG}       @tab (optional) a scalar character variable
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test
+  integer :: val
+  val = this_image ()
+  call co_min (val, result_image=1)
+  if (this_image() == 1) then
+    write(*,*) "Minimal value", val  ! prints 1
+  end if
+end program test
+@end smallexample
+
+@item @emph{See also}:
+@ref{CO_MAX}, @ref{CO_SUM}
+@end table
+
+
+
+@node CO_SUM
+@section @code{CO_SUM} --- Sum of values on the current set of images
+@fnindex CO_SUM
+@cindex Collectives, sum of values
+
+@table @asis
+@item @emph{Description}:
+@code{CO_SUM} sums up the values of each element of @var{A} on all
+images of the current team.  If @var{RESULT_IMAGE} is present, the summed-up
+values are returned on in @var{A} on the specified image only and the value
+of @var{A} on the other images become undefined.  If @var{RESULT_IMAGE} is
+not present, the value is returned on all images.  If the execution was
+successful and @var{STAT} is present, it is assigned the value zero.  If the
+execution failed, @var{STAT} gets assigned a nonzero value and, if present,
+@var{ERRMSG} gets assigned a value describing the occurred error.
+
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
+
+@item @emph{Class}:
+Collective subroutine
+
+@item @emph{Syntax}:
+@code{CALL CO_MIN(A [, RESULT_IMAGE, STAT, ERRMSG])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A}            @tab shall be an integer, real or complex variable,
+which has the same type and type parameters on all images of the team.
+@item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
+present, it shall have the same the same value on all images and refer to an
+image of the current team.
+@item @var{STAT}         @tab (optional) a scalar integer variable
+@item @var{ERRMSG}       @tab (optional) a scalar character variable
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test
+  integer :: val
+  val = this_image ()
+  call co_sum (val, result_image=1)
+  if (this_image() == 1) then
+    write(*,*) "The sum is ", val ! prints (n**2 + n)/2, with n = num_images()
+  end if
+end program test
+@end smallexample
+
+@item @emph{See also}:
+@ref{CO_MAX}, @ref{CO_MIN}
 @end table
 
 

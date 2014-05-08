@@ -1,3 +1,9 @@
+2014-05-08  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (caf_vector_t, _gfortran_caf_co_sum,
+	_gfortran_caf_co_min, _gfortran_caf_co_max): Declare
+	* caf/single.c
+
 2014-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/61049
