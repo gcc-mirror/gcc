@@ -1288,6 +1288,50 @@ builtin_define_type_max (const char *macro, tree type)
   builtin_define_type_minmax (NULL, macro, type);
 }
 
+/* Given a value with COUNT LSBs set, fill BUF with a hexidecimal
+   representation of that value.  For example, a COUNT of 10 would
+   return "0x3ff".  */
+
+static void
+print_bits_of_hex (char *buf, int bufsz, int count)
+{
+  gcc_assert (bufsz > 3);
+  *buf++ = '0';
+  *buf++ = 'x';
+  bufsz -= 2;
+
+  gcc_assert (count > 0);
+
+  switch (count % 4) {
+  case 0:
+    break;
+  case 1:
+    *buf++ = '1';
+    bufsz --;
+    count -= 1;
+    break;
+  case 2:
+    *buf++ = '3';
+    bufsz --;
+    count -= 2;
+    break;
+  case 3:
+    *buf++ = '7';
+    bufsz --;
+    count -= 3;
+    break;
+  }
+  while (count >= 4)
+    {
+      gcc_assert (bufsz > 1);
+      *buf++ = 'f';
+      bufsz --;
+      count -= 4;
+    }
+  gcc_assert (bufsz > 0);
+  *buf++ = 0;
+}
+
 /* Define MIN_MACRO (if not NULL) and MAX_MACRO for TYPE based on the
    precision of the type.  */
 
@@ -1295,32 +1339,17 @@ static void
 builtin_define_type_minmax (const char *min_macro, const char *max_macro,
 			    tree type)
 {
-  static const char *const values[]
-    = { "127", "255",
-	"32767", "65535",
-	"2147483647", "4294967295",
-	"9223372036854775807", "18446744073709551615",
-	"170141183460469231731687303715884105727",
-	"340282366920938463463374607431768211455" };
+#define PBOH_SZ (MAX_BITSIZE_MODE_ANY_INT/4+4)
+  char value[PBOH_SZ];
 
-  const char *value, *suffix;
+  const char *suffix;
   char *buf;
-  size_t idx;
+  int bits;
 
-  /* Pre-rendering the values mean we don't have to futz with printing a
-     multi-word decimal value.  There are also a very limited number of
-     precisions that we support, so it's really a waste of time.  */
-  switch (TYPE_PRECISION (type))
-    {
-    case 8:	idx = 0; break;
-    case 16:	idx = 2; break;
-    case 32:	idx = 4; break;
-    case 64:	idx = 6; break;
-    case 128:	idx = 8; break;
-    default:    gcc_unreachable ();
-    }
+  bits = TYPE_PRECISION (type) + (TYPE_UNSIGNED (type) ? 0 : -1);
 
-  value = values[idx + TYPE_UNSIGNED (type)];
+  print_bits_of_hex (value, PBOH_SZ, bits);
+
   suffix = type_suffix (type);
 
   buf = (char *) alloca (strlen (max_macro) + 1 + strlen (value)
