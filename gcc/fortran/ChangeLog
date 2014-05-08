@@ -1,5 +1,22 @@
 2014-05-08  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_CAF_GET
+	and GFC_ISYM_CAF_SEND.
+	* intrinsic.c (add_functions): Add only internally
+	accessible caf_get and caf_send functions.
+	* resolve.c (add_caf_get_intrinsic,
+	remove_caf_get_intrinsic): New functions.
+	(resolve_variable): Resolve expression rank and
+	prepare for add_caf_get_intrinsic call.
+	(gfc_resolve_expr): For variables, remove rank
+	resolution.
+	(resolve_ordinary_assign): Prepare call to
+	GFC_ISYM_CAF_SEND.
+	(resolve_code): Avoid call to GFC_ISYM_CAF_GET for
+	the LHS of an assignment.
+
+2014-05-08  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-intrinsic.c (conv_co_minmaxsum): Change condition style.
 
 2014-05-08  Tobias Burnus  <burnus@net-b.de>

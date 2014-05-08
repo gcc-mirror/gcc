@@ -2756,7 +2756,7 @@ add_functions (void)
   make_generic ("size", GFC_ISYM_SIZE, GFC_STD_F95);
 
   /* Obtain the stride for a given dimensions; to be used only internally.
-     "make_from_module" makes inaccessible for external users.  */
+     "make_from_module" makes it inaccessible for external users.  */
   add_sym_2 (GFC_PREFIX ("stride"), GFC_ISYM_STRIDE, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_INTEGER, gfc_index_integer_kind, GFC_STD_GNU,
 	     NULL, NULL, gfc_resolve_stride,
@@ -2994,6 +2994,13 @@ add_functions (void)
 	     x, BT_UNKNOWN, 0, REQUIRED);
 		
   make_generic ("loc", GFC_ISYM_LOC, GFC_STD_GNU);
+
+  /* The following function is internally used for coarray libray functions.
+     "make_from_module" makes it inaccessible for external users.  */
+  add_sym_1 (GFC_PREFIX ("caf_get"), GFC_ISYM_CAF_GET, CLASS_IMPURE, ACTUAL_NO,
+	     BT_REAL, dr, GFC_STD_GNU, NULL, NULL, NULL,
+	     x, BT_REAL, dr, REQUIRED);
+  make_from_module();
 }
 
 
@@ -3234,6 +3241,15 @@ add_subroutines (void)
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+
+  /* The following subroutine is internally used for coarray libray functions.
+     "make_from_module" makes it inaccessible for external users.  */
+  add_sym_2s (GFC_PREFIX ("caf_send"), GFC_ISYM_CAF_SEND, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_GNU, NULL, NULL, NULL,
+	      "x", BT_REAL, dr, REQUIRED, INTENT_OUT,
+	      "y", BT_REAL, dr, REQUIRED, INTENT_IN);
+  make_from_module();
+
 
   /* More G77 compatibility garbage.  */
   add_sym_3s ("alarm", GFC_ISYM_ALARM, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
