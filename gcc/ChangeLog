@@ -1,3 +1,11 @@
+2014-05-08  Alan Modra  <amodra@gmail.com>
+
+	PR target/60737
+	* config/rs6000/rs6000.c (expand_block_move): Allow 64-bit
+	loads and stores when -mno-strict-align at any alignment.
+	(expand_block_clear): Similarly.  Also correct calculation of
+	instruction count.
+
 2014-05-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR middle-end/39246
