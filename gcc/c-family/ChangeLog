@@ -1,5 +1,12 @@
 2014-05-08  Marek Polacek  <polacek@redhat.com>
 
+	PR c/61053
+	* c-common.c (min_align_of_type): New function factored out from...
+	(c_sizeof_or_alignof_type): ...here.
+	* c-common.h (min_align_of_type): Declare.
+
+2014-05-08  Marek Polacek  <polacek@redhat.com>
+
 	PR c/61077
 	* c-common.c (check_main_parameter_types): Warn for _Atomic-qualified
 	parameter type of main.
