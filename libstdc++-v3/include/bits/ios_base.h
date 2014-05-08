@@ -780,6 +780,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   protected:
     ios_base() throw ();
 
+#if __cplusplus < 201103L
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 50.  Copy constructor and assignment operator of ios_base
   private:
@@ -787,6 +788,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ios_base&
     operator=(const ios_base&);
+#else
+  public:
+    ios_base(const ios_base&) = delete;
+
+    ios_base&
+    operator=(const ios_base&) = delete;
+#endif
   };
 
   // [27.4.5.1] fmtflags manipulators
