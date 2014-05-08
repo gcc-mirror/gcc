@@ -117,7 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *       from the sequence).
   */
   template<typename _CharT, typename _Traits>
-    class basic_streambuf 
+    class basic_streambuf
     {
     public:
       //@{
@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// This is a non-standard type.
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       //@}
-      
+
       friend class basic_ios<char_type, traits_type>;
       friend class basic_istream<char_type, traits_type>;
       friend class basic_ostream<char_type, traits_type>;
@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __copy_streambufs_eof<>(basic_streambuf*, basic_streambuf*, bool&);
 
       template<bool _IsMove, typename _CharT2>
-        friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, 
+        friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
 					       _CharT2*>::__type
         __copy_move_a2(istreambuf_iterator<_CharT2>,
 		       istreambuf_iterator<_CharT2>, _CharT2*);
@@ -189,12 +189,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char_type* 		_M_out_end;    ///< End of put area.
 
       /// Current locale setting.
-      locale 			_M_buf_locale;	
+      locale 			_M_buf_locale;
 
   public:
       /// Destructor deallocates no buffer space.
-      virtual 
-      ~basic_streambuf() 
+      virtual
+      ~basic_streambuf()
       { }
 
       // [27.5.2.2.1] locales
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls the derived imbue(__loc).
       */
-      locale 
+      locale
       pubimbue(const locale& __loc)
       {
 	locale __tmp(this->getloc());
@@ -222,9 +222,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  is returned.  Otherwise the global locale in effect at the time
        *  of construction is returned.
       */
-      locale   
+      locale
       getloc() const
-      { return _M_buf_locale; } 
+      { return _M_buf_locale; }
 
       // [27.5.2.2.2] buffer management and positioning
       //@{
@@ -236,7 +236,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  and returning the result unchanged.
       */
       basic_streambuf*
-      pubsetbuf(char_type* __s, streamsize __n) 
+      pubsetbuf(char_type* __s, streamsize __n)
       { return this->setbuf(__s, __n); }
 
       /**
@@ -247,8 +247,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls virtual seekoff function.
       */
-      pos_type 
-      pubseekoff(off_type __off, ios_base::seekdir __way, 
+      pos_type
+      pubseekoff(off_type __off, ios_base::seekdir __way,
 		 ios_base::openmode __mode = ios_base::in | ios_base::out)
       { return this->seekoff(__off, __way, __mode); }
 
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls virtual seekpos function.
       */
-      pos_type 
+      pos_type
       pubseekpos(pos_type __sp,
 		 ios_base::openmode __mode = ios_base::in | ios_base::out)
       { return this->seekpos(__sp, __mode); }
@@ -267,7 +267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Calls virtual sync function.
       */
-      int 
+      int
       pubsync() { return this->sync(); }
       //@}
 
@@ -280,9 +280,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  available for reading before the buffer must be refilled.
        *  Otherwise returns the derived @c showmanyc().
       */
-      streamsize 
-      in_avail() 
-      { 
+      streamsize
+      in_avail()
+      {
 	const streamsize __ret = this->egptr() - this->gptr();
 	return __ret ? __ret : this->showmanyc();
       }
@@ -294,11 +294,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Calls @c sbumpc(), and if that function returns
        *  @c traits::eof(), so does this function.  Otherwise, @c sgetc().
       */
-      int_type 
+      int_type
       snextc()
       {
 	int_type __ret = traits_type::eof();
-	if (__builtin_expect(!traits_type::eq_int_type(this->sbumpc(), 
+	if (__builtin_expect(!traits_type::eq_int_type(this->sbumpc(),
 						       __ret), true))
 	  __ret = this->sgetc();
 	return __ret;
@@ -312,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  and increments the read pointer, otherwise calls and returns
        *  @c uflow().
       */
-      int_type 
+      int_type
       sbumpc()
       {
 	int_type __ret;
@@ -321,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __ret = traits_type::to_int_type(*this->gptr());
 	    this->gbump(1);
 	  }
-	else 
+	else
 	  __ret = this->uflow();
 	return __ret;
       }
@@ -331,16 +331,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  The next character, or eof.
        *
        *  If the input read position is available, returns that character,
-       *  otherwise calls and returns @c underflow().  Does not move the 
+       *  otherwise calls and returns @c underflow().  Does not move the
        *  read position after fetching the character.
       */
-      int_type 
+      int_type
       sgetc()
       {
 	int_type __ret;
 	if (__builtin_expect(this->gptr() < this->egptr(), true))
 	  __ret = traits_type::to_int_type(*this->gptr());
-	else 
+	else
 	  __ret = this->underflow();
 	return __ret;
       }
@@ -353,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns xsgetn(__s,__n).  The effect is to fill @a __s[0] through
        *  @a __s[__n-1] with characters from the input sequence, if possible.
       */
-      streamsize 
+      streamsize
       sgetn(char_type* __s, streamsize __n)
       { return this->xsgetn(__s, __n); }
 
@@ -368,15 +368,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the next character fetched from the input stream will be @a
        *  __c.
       */
-      int_type 
+      int_type
       sputbackc(char_type __c)
       {
 	int_type __ret;
 	const bool __testpos = this->eback() < this->gptr();
-	if (__builtin_expect(!__testpos || 
+	if (__builtin_expect(!__testpos ||
 			     !traits_type::eq(__c, this->gptr()[-1]), false))
 	  __ret = this->pbackfail(traits_type::to_int_type(__c));
-	else 
+	else
 	  {
 	    this->gbump(-1);
 	    __ret = traits_type::to_int_type(*this->gptr());
@@ -393,7 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  calls and returns pbackfail().  The effect is to @a unget
        *  the last character @a gotten.
       */
-      int_type 
+      int_type
       sungetc()
       {
 	int_type __ret;
@@ -402,7 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    this->gbump(-1);
 	    __ret = traits_type::to_int_type(*this->gptr());
 	  }
-	else 
+	else
 	  __ret = this->pbackfail();
 	return __ret;
       }
@@ -420,7 +420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the position, and returns @c traits::to_int_type(__c).  If a write
        *  position is not available, returns @c overflow(__c).
       */
-      int_type 
+      int_type
       sputc(char_type __c)
       {
 	int_type __ret;
@@ -446,7 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Returns xsputn(__s,__n).  The effect is to write @a __s[0] through
        *  @a __s[__n-1] to the output sequence, if possible.
       */
-      streamsize 
+      streamsize
       sputn(const char_type* __s, streamsize __n)
       { return this->xsputn(__s, __n); }
 
@@ -461,9 +461,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  - this is not an error
       */
       basic_streambuf()
-      : _M_in_beg(0), _M_in_cur(0), _M_in_end(0), 
+      : _M_in_beg(0), _M_in_cur(0), _M_in_end(0),
       _M_out_beg(0), _M_out_cur(0), _M_out_end(0),
-      _M_buf_locale(locale()) 
+      _M_buf_locale(locale())
       { }
 
       // [27.5.2.3.1] get area access
@@ -478,13 +478,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  - gptr() returns the next pointer for the input sequence
        *  - egptr() returns the end pointer for the input sequence
       */
-      char_type* 
+      char_type*
       eback() const { return _M_in_beg; }
 
-      char_type* 
+      char_type*
       gptr()  const { return _M_in_cur;  }
 
-      char_type* 
+      char_type*
       egptr() const { return _M_in_end; }
       //@}
 
@@ -494,7 +494,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This just advances the read position without returning any data.
       */
-      void 
+      void
       gbump(int __n) { _M_in_cur += __n; }
 
       /**
@@ -505,7 +505,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @post  @a __gbeg == @c eback(), @a __gnext == @c gptr(), and
        *         @a __gend == @c egptr()
       */
-      void 
+      void
       setg(char_type* __gbeg, char_type* __gnext, char_type* __gend)
       {
 	_M_in_beg = __gbeg;
@@ -525,13 +525,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  - pptr() returns the next pointer for the output sequence
        *  - epptr() returns the end pointer for the output sequence
       */
-      char_type* 
+      char_type*
       pbase() const { return _M_out_beg; }
 
-      char_type* 
+      char_type*
       pptr() const { return _M_out_cur; }
 
-      char_type* 
+      char_type*
       epptr() const { return _M_out_end; }
       //@}
 
@@ -541,7 +541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This just advances the write position without returning any data.
       */
-      void 
+      void
       pbump(int __n) { _M_out_cur += __n; }
 
       /**
@@ -551,10 +551,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @post  @a __pbeg == @c pbase(), @a __pbeg == @c pptr(), and
        *         @a __pend == @c epptr()
       */
-      void 
+      void
       setp(char_type* __pbeg, char_type* __pend)
-      { 
-	_M_out_beg = _M_out_cur = __pbeg; 
+      {
+	_M_out_beg = _M_out_cur = __pbeg;
 	_M_out_end = __pend;
       }
 
@@ -572,8 +572,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @note  Base class version does nothing.
       */
-      virtual void 
-      imbue(const locale& __loc) 
+      virtual void
+      imbue(const locale& __loc)
       { }
 
       // [27.5.2.4.2] buffer management and positioning
@@ -581,27 +581,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Manipulates the buffer.
        *
        *  Each derived class provides its own appropriate behavior.  See
-       *  the next-to-last paragraph of 
+       *  the next-to-last paragraph of
        *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
        *  for more on this function.
        *
        *  @note  Base class version does nothing, returns @c this.
       */
-      virtual basic_streambuf<char_type,_Traits>* 
+      virtual basic_streambuf<char_type,_Traits>*
       setbuf(char_type*, streamsize)
       {	return this; }
-      
-      /**
-       *  @brief  Alters the stream positions.
-       *
-       *  Each derived class provides its own appropriate behavior.
-       *  @note  Base class version does nothing, returns a @c pos_type
-       *         that represents an invalid stream position.
-      */
-      virtual pos_type 
-      seekoff(off_type, ios_base::seekdir,
-	      ios_base::openmode /*__mode*/ = ios_base::in | ios_base::out)
-      { return pos_type(off_type(-1)); } 
 
       /**
        *  @brief  Alters the stream positions.
@@ -610,10 +598,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  Base class version does nothing, returns a @c pos_type
        *         that represents an invalid stream position.
       */
-      virtual pos_type 
-      seekpos(pos_type, 
+      virtual pos_type
+      seekoff(off_type, ios_base::seekdir,
 	      ios_base::openmode /*__mode*/ = ios_base::in | ios_base::out)
-      { return pos_type(off_type(-1)); } 
+      { return pos_type(off_type(-1)); }
+
+      /**
+       *  @brief  Alters the stream positions.
+       *
+       *  Each derived class provides its own appropriate behavior.
+       *  @note  Base class version does nothing, returns a @c pos_type
+       *         that represents an invalid stream position.
+      */
+      virtual pos_type
+      seekpos(pos_type,
+	      ios_base::openmode /*__mode*/ = ios_base::in | ios_base::out)
+      { return pos_type(off_type(-1)); }
 
       /**
        *  @brief  Synchronizes the buffer arrays with the controlled sequences.
@@ -623,7 +623,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  including the definition of @a failure.
        *  @note  Base class version does nothing, returns zero.
       */
-      virtual int 
+      virtual int
       sync() { return 0; }
 
       // [27.5.2.4.3] get area
@@ -645,7 +645,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @note  The standard adds that <em>the morphemes of @c showmanyc are
        *         @b es-how-many-see, not @b show-manic.</em>
       */
-      virtual streamsize 
+      virtual streamsize
       showmanyc() { return 0; }
 
       /**
@@ -661,7 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  It is expected that derived classes provide a more efficient
        *  implementation by overriding this definition.
       */
-      virtual streamsize 
+      virtual streamsize
       xsgetn(char_type* __s, streamsize __n);
 
       /**
@@ -683,7 +683,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @note  Base class version does nothing, returns eof().
       */
-      virtual int_type 
+      virtual int_type
       underflow()
       { return traits_type::eof(); }
 
@@ -696,18 +696,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the new character, like @c underflow() does.  However, this
        *  function also moves the read position forward by one.
       */
-      virtual int_type 
-      uflow() 
+      virtual int_type
+      uflow()
       {
 	int_type __ret = traits_type::eof();
-	const bool __testeof = traits_type::eq_int_type(this->underflow(), 
+	const bool __testeof = traits_type::eq_int_type(this->underflow(),
 							__ret);
 	if (!__testeof)
 	  {
 	    __ret = traits_type::to_int_type(*this->gptr());
 	    this->gbump(1);
 	  }
-	return __ret;    
+	return __ret;
       }
 
       // [27.5.2.4.4] putback
@@ -720,7 +720,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @note  Base class version does nothing, returns eof().
       */
-      virtual int_type 
+      virtual int_type
       pbackfail(int_type __c  = traits_type::eof())
       { return traits_type::eof(); }
 
@@ -738,7 +738,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  It is expected that derived classes provide a more efficient
        *  implementation by overriding this definition.
       */
-      virtual streamsize 
+      virtual streamsize
       xsputn(const char_type* __s, streamsize __n);
 
       /**
@@ -764,7 +764,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @note  Base class version does nothing, returns eof().
       */
-      virtual int_type 
+      virtual int_type
       overflow(int_type __c  = traits_type::eof())
       { return traits_type::eof(); }
 
@@ -779,35 +779,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  See http://gcc.gnu.org/ml/libstdc++/2002-05/msg00168.html
        */
-      void 
-      stossc() 
+      void
+      stossc()
       {
-	if (this->gptr() < this->egptr()) 
+	if (this->gptr() < this->egptr())
 	  this->gbump(1);
-	else 
+	else
 	  this->uflow();
       }
 #endif
 
       // Also used by specializations for char and wchar_t in src.
-      void 
+      void
       __safe_gbump(streamsize __n) { _M_in_cur += __n; }
 
       void
       __safe_pbump(streamsize __n) { _M_out_cur += __n; }
 
+#if __cplusplus < 201103L
     private:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // Side effect of DR 50. 
+      // Side effect of DR 50.
       basic_streambuf(const basic_streambuf& __sb)
-      : _M_in_beg(__sb._M_in_beg), _M_in_cur(__sb._M_in_cur), 
-      _M_in_end(__sb._M_in_end), _M_out_beg(__sb._M_out_beg), 
-      _M_out_cur(__sb._M_out_cur), _M_out_end(__sb._M_out_cur),
-      _M_buf_locale(__sb._M_buf_locale) 
+      : _M_in_beg(__sb._M_in_beg), _M_in_cur(__sb._M_in_cur),
+      _M_in_end(__sb._M_in_end), _M_out_beg(__sb._M_out_beg),
+      _M_out_cur(__sb._M_out_cur), _M_out_end(__sb._M_out_end),
+      _M_buf_locale(__sb._M_buf_locale)
       { }
 
       basic_streambuf&
-      operator=(const basic_streambuf&) { return *this; };
+      operator=(const basic_streambuf&) { return *this; }
+#else
+    protected:
+      basic_streambuf(const basic_streambuf&) = default;
+
+      basic_streambuf&
+      operator=(const basic_streambuf&) = default;
+
+      void
+      swap(basic_streambuf& __sb)
+      {
+	std::swap(_M_in_beg, __sb._M_in_beg);
+	std::swap(_M_in_cur, __sb._M_in_cur);
+	std::swap(_M_in_end, __sb._M_in_end);
+	std::swap(_M_out_beg, __sb._M_out_beg);
+	std::swap(_M_out_cur, __sb._M_out_cur);
+	std::swap(_M_out_end, __sb._M_out_end);
+	std::swap(_M_buf_locale, __sb._M_buf_locale);
+      }
+#endif
     };
 
   // Explicit specialization declarations, defined in src/streambuf.cc.
