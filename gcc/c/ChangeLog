@@ -1,5 +1,11 @@
 2014-05-08  Marek Polacek  <polacek@redhat.com>
 
+	PR c/61053
+	* c-decl.c (grokdeclarator): Use min_align_of_type instead of
+	TYPE_ALIGN_UNIT.
+
+2014-05-08  Marek Polacek  <polacek@redhat.com>
+
 	PR c/61077
 	* c-decl.c (start_function): Warn for _Atomic-qualified return type
 	of main.
