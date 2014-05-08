@@ -831,12 +831,15 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
     {
       tree x;
       gimple t;
+      location_t loc;
 
+      loc = gimple_location (stmt);
       r = extract_component (gsi, rhs, 0, false);
       i = extract_component (gsi, rhs, 1, false);
 
       x = build1 (REALPART_EXPR, inner_type, unshare_expr (lhs));
       t = gimple_build_assign (x, r);
+      gimple_set_location (t, loc);
       gsi_insert_before (gsi, t, GSI_SAME_STMT);
 
       if (stmt == gsi_stmt (*gsi))
@@ -849,6 +852,7 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
 	{
 	  x = build1 (IMAGPART_EXPR, inner_type, unshare_expr (lhs));
 	  t = gimple_build_assign (x, i);
+	  gimple_set_location (t, loc);
 	  gsi_insert_before (gsi, t, GSI_SAME_STMT);
 
 	  stmt = gsi_stmt (*gsi);
