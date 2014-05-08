@@ -10,4 +10,4 @@ int test (const char *s1, const char *s2)
   return __builtin_ia32_pcmpistri128 (s1chars, s2chars, 0);
 }
 
-/* { dg-final { scan-assembler-times "movdqu" 1 } } */
+/* { dg-final { scan-assembler-times "movdqu|movups" 1 } } */
