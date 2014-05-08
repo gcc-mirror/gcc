@@ -7605,11 +7605,10 @@ conv_co_minmaxsum (gfc_code *code)
     fndecl = gfor_fndecl_co_max;
   else if (code->resolved_isym->id == GFC_ISYM_CO_MIN)
     fndecl = gfor_fndecl_co_min;
+  else if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
+    fndecl = gfor_fndecl_co_sum;
   else
-    {
-      gcc_assert (code->resolved_isym->id == GFC_ISYM_CO_SUM);
-      fndecl = gfor_fndecl_co_sum;
-    }
+    gcc_unreachable ();
 
   if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
     fndecl = build_call_expr_loc (input_location, fndecl, 6, array, vec,

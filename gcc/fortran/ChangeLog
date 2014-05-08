@@ -1,5 +1,9 @@
 2014-05-08  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-intrinsic.c (conv_co_minmaxsum): Change condition style.
+
+2014-05-08  Tobias Burnus  <burnus@net-b.de>
+
 	* check.c (check_co_minmaxsum, gfc_check_co_minmax,
 	gfc_check_co_sum): New.
 	* error.c (gfc_notify_std): Update -std=f2008ts.
