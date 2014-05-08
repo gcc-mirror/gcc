@@ -1,3 +1,13 @@
+2014-05-08  Gary Benson  <gbenson@redhat.com>
+
+	* cp-demangle.c (struct d_component_stack): New structure.
+	(struct d_print_info): New field component_stack.
+	(d_print_init): Initialize the above.
+	(d_print_comp_inner): Renamed from d_print_comp.
+	Do not restore template stack if it would cause a loop.
+	(d_print_comp): New function.
+	* testsuite/demangle-expected: New test cases.
+
 2014-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/56781
