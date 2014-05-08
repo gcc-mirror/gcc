@@ -2193,6 +2193,20 @@ check_main_parameter_types (tree decl)
       if (type == void_type_node || type == error_mark_node )
 	break;
 
+      tree t = type;
+      if (TYPE_ATOMIC (t))
+	  pedwarn (input_location, OPT_Wmain,
+		   "%<_Atomic%>-qualified parameter type %qT of %q+D",
+		   type, decl);
+      while (POINTER_TYPE_P (t))
+	{
+	  t = TREE_TYPE (t);
+	  if (TYPE_ATOMIC (t))
+	    pedwarn (input_location, OPT_Wmain,
+		     "%<_Atomic%>-qualified parameter type %qT of %q+D",
+		     type, decl);
+	}
+
       ++argct;
       switch (argct)
 	{

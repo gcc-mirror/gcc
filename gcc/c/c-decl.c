@@ -8045,6 +8045,9 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
 	  != integer_type_node)
 	pedwarn (loc, OPT_Wmain, "return type of %qD is not %<int%>", decl1);
+      else if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (decl1))))
+	pedwarn (loc, OPT_Wmain, "%<_Atomic%>-qualified return type of %qD",
+		 decl1);
 
       check_main_parameter_types (decl1);
 
