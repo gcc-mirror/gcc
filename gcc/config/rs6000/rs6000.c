@@ -15443,7 +15443,7 @@ expand_block_clear (rtx operands[])
      load zero and three to do clearing.  */
   if (TARGET_ALTIVEC && align >= 128)
     clear_step = 16;
-  else if (TARGET_POWERPC64 && align >= 32)
+  else if (TARGET_POWERPC64 && (align >= 64 || !STRICT_ALIGNMENT))
     clear_step = 8;
   else if (TARGET_SPE && align >= 64)
     clear_step = 8;
@@ -15471,12 +15471,27 @@ expand_block_clear (rtx operands[])
           mode = V2SImode;
         }
       else if (bytes >= 8 && TARGET_POWERPC64
-	       /* 64-bit loads and stores require word-aligned
-		  displacements.  */
-	       && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
+	       && (align >= 64 || !STRICT_ALIGNMENT))
 	{
 	  clear_bytes = 8;
 	  mode = DImode;
+	  if (offset == 0 && align < 64)
+	    {
+	      rtx addr;
+
+	      /* If the address form is reg+offset with offset not a
+		 multiple of four, reload into reg indirect form here
+		 rather than waiting for reload.  This way we get one
+		 reload, not one per store.  */
+	      addr = XEXP (orig_dest, 0);
+	      if ((GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM)
+		  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+		  && (INTVAL (XEXP (addr, 1)) & 3) != 0)
+		{
+		  addr = copy_addr_to_reg (addr);
+		  orig_dest = replace_equiv_address (orig_dest, addr);
+		}
+	    }
 	}
       else if (bytes >= 4 && (align >= 32 || !STRICT_ALIGNMENT))
 	{			/* move 4 bytes */
@@ -15604,13 +15619,36 @@ expand_block_move (rtx operands[])
 	  gen_func.movmemsi = gen_movmemsi_4reg;
 	}
       else if (bytes >= 8 && TARGET_POWERPC64
-	       /* 64-bit loads and stores require word-aligned
-		  displacements.  */
-	       && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
+	       && (align >= 64 || !STRICT_ALIGNMENT))
 	{
 	  move_bytes = 8;
 	  mode = DImode;
 	  gen_func.mov = gen_movdi;
+	  if (offset == 0 && align < 64)
+	    {
+	      rtx addr;
+
+	      /* If the address form is reg+offset with offset not a
+		 multiple of four, reload into reg indirect form here
+		 rather than waiting for reload.  This way we get one
+		 reload, not one per load and/or store.  */
+	      addr = XEXP (orig_dest, 0);
+	      if ((GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM)
+		  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+		  && (INTVAL (XEXP (addr, 1)) & 3) != 0)
+		{
+		  addr = copy_addr_to_reg (addr);
+		  orig_dest = replace_equiv_address (orig_dest, addr);
+		}
+	      addr = XEXP (orig_src, 0);
+	      if ((GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM)
+		  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+		  && (INTVAL (XEXP (addr, 1)) & 3) != 0)
+		{
+		  addr = copy_addr_to_reg (addr);
+		  orig_src = replace_equiv_address (orig_src, addr);
+		}
+	    }
 	}
       else if (TARGET_STRING && bytes > 4 && !TARGET_POWERPC64)
 	{			/* move up to 8 bytes at a time */
