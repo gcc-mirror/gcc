@@ -37,7 +37,7 @@ namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
 {
   using namespace __gnu_cxx;
 
-  // Extern declarations for global objects in src/globals.cc.
+  // Extern declarations for global objects in src/c++98/globals.cc.
   extern stdio_sync_filebuf<char> buf_cout_sync;
   extern stdio_sync_filebuf<char> buf_cin_sync;
   extern stdio_sync_filebuf<char> buf_cerr_sync;
