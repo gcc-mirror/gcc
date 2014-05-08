@@ -1052,8 +1052,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 	vscanf("%i", args);
 	vsnprintf(fmt, 0, "%i", args);
 	vsscanf(fmt, "%i", args);
-      }],
-     [snprintf("12", 0, "%i");],
+	snprintf(fmt, 0, "%i");
+      }], [],
      [glibcxx_cv_c99_stdio=yes], [glibcxx_cv_c99_stdio=no])
   ])
   AC_MSG_RESULT($glibcxx_cv_c99_stdio)
