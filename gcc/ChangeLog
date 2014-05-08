@@ -1,12 +1,19 @@
+2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61092
+	* config/alpha/alpha.c: Include gimple-iterator.h.
+	(alpha_gimple_fold_builtin): New function.  Move
+	ALPHA_BUILTIN_UMULH folding from ...
+	(alpha_fold_builtin): ... here.
+	(TARGET_GIMPLE_FOLD_BUILTIN): New define.
+
 2014-05-08  Wei Mi  <wmi@google.com>
 
 	PR target/58066
-	* config/i386/i386.c (ix86_compute_frame_layout):
-	Update preferred_stack_boundary for call, expanded from
-	tls descriptor.
-	* config/i386/i386.md:
-	(*tls_global_dynamic_32_gnu): Update RTX to depend on
-	SP register.
+	* config/i386/i386.c (ix86_compute_frame_layout): Update
+	preferred_stack_boundary for call, expanded from tls descriptor.
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Update RTX
+	to depend on SP register.
 	(*tls_local_dynamic_base_32_gnu): Ditto.
 	(*tls_local_dynamic_32_once): Ditto.
 	(tls_global_dynamic_64_<mode>): Set
@@ -171,7 +178,7 @@
 2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* wide-int.cc (UTItype): Define.
- 	(UDWtype): Define for appropriate W_TYPE_SIZE.
+	(UDWtype): Define for appropriate W_TYPE_SIZE.
 
 2014-05-08  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -353,16 +360,13 @@
 	(maybe_skip_until): Use translate to take into account
 	lattices when trying to do disambiguations.
 	(get_continuation_for_phi_1): Likewise.
-	(get_continuation_for_phi): Adjust for added translate
-	arguments.
+	(get_continuation_for_phi): Adjust for added translate arguments.
 	(walk_non_aliased_vuses): Likewise.
-	* tree-ssa-alias.h (get_continuation_for_phi): Adjust
-	prototype.
+	* tree-ssa-alias.h (get_continuation_for_phi): Adjust prototype.
 	(walk_non_aliased_vuses): Likewise.
 	(call_may_clobber_ref_p_1): Declare.
-	* tree-ssa-sccvn.c (vn_reference_lookup_3): Also
-	disambiguate against calls.  Stop early if we are
-	only supposed to disambiguate.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Also disambiguate against
+	calls.  Stop early if we are only supposed to disambiguate.
 	* tree-ssa-pre.c (translate_vuse_through_block): Adjust.
 
 2014-05-07  Joern Rennecke  <joern.rennecke@embecosm.com>
@@ -1337,9 +1341,10 @@
 	* ipa-devirt.c (get_class_context): Allow POD to change to non-POD.
 
 2014-05-05  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
-	* target.def (call_fusage_contains_non_callee_clobbers): New DEFHOOKPOD.
+	* target.def (call_fusage_contains_non_callee_clobbers): New
+	DEFHOOKPOD.
 	* doc/tm.texi.in (@node Stack and Calling): Add Miscellaneous Register
 	Hooks to @menu.
 	(@node Miscellaneous Register Hooks): New node.
@@ -1365,9 +1370,8 @@
 2014-05-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61010
-	* fold-const.c (fold_binary_loc): Consistently avoid
-	canonicalizing X & CST away from a CST that is the mask
-	of a mode.
+	* fold-const.c (fold_binary_loc): Consistently avoid canonicalizing
+	X & CST away from a CST that is the mask of a mode.
 
 2014-05-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
@@ -1686,8 +1690,7 @@
 
 	* doc/invoke.texi: Fix typo.
 	* tree-vrp.c: Fix typos.
-	* gimple.c (infer_nonnull_range): Reorder operands of an &&
-	condition.
+	* gimple.c (infer_nonnull_range): Reorder operands of an && condition.
 
 2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
@@ -1814,8 +1817,7 @@
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (execute_pass_list): Adjust prototype.
-	* passes.c (pass_manager::execute_early_local_passes):
-	Adjust.
+	* passes.c (pass_manager::execute_early_local_passes): Adjust.
 	(do_per_function): Change callback signature, push all actual
 	work to the callbals.
 	(do_per_function_toporder): Likewise.
@@ -1866,18 +1868,18 @@
 
 2014-04-25  Cary Coutant  <ccoutant@google.com>
 
-        PR debug/60929
+	PR debug/60929
 	* dwarf2out.c (should_move_die_to_comdat): A type definition
-        can contain a subprogram definition, but don't move it to a
-        comdat unit.
+	can contain a subprogram definition, but don't move it to a
+	comdat unit.
 	(clone_as_declaration): Copy DW_AT_abstract_origin attribute.
-        (generate_skeleton_bottom_up): Remove DW_AT_object_pointer attribute
-        from original DIE.
+	(generate_skeleton_bottom_up): Remove DW_AT_object_pointer attribute
+	from original DIE.
 	(clone_tree_hash): Rename to...
 	(clone_tree_partial): ...this; change callers.  Copy
-        DW_TAG_subprogram DIEs as declarations.
+	DW_TAG_subprogram DIEs as declarations.
 	(copy_decls_walk): Don't copy children of a declaration into a
-        type unit.
+	type unit.
 
 2014-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1895,8 +1897,7 @@
 
 2014-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-	* config/arm/arm.c (arm_cortex_a8_tune): Initialise
-	T16-related fields.
+	* config/arm/arm.c (arm_cortex_a8_tune): Initialise T16-related fields.
 
 2014-04-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -1922,7 +1923,7 @@
 	clobbers.
 
 2014-04-25  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* rtlanal.c (find_all_hard_reg_sets): Add bool implicit parameter and
 	handle.
@@ -1980,8 +1981,7 @@
 2014-04-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* doc/extend.texi (PowerPC Built-in Functions): Document new
-	powerpc extended divide, bcd, pack/unpack 128-bit, builtin
-	functions.
+	powerpc extended divide, bcd, pack/unpack 128-bit, builtin functions.
 	(PowerPC AltiVec/VSX Built-in Functions): Likewise.
 
 	* config/rs6000/predicates.md (const_0_to_3_operand): New
@@ -2041,8 +2041,7 @@
 	support for decimal floating point builtin functions.
 	(rs6000_expand_ternop_builtin): Add checks for the new builtin
 	functions that take constant arguments.
-	(rs6000_invalid_builtin): Add decimal floating point builtin
-	support.
+	(rs6000_invalid_builtin): Add decimal floating point builtin support.
 	(rs6000_init_builtins): Setup long double, _Decimal64, and
 	_Decimal128 types for new builtin functions.
 	(builtin_function_type): Set the unsigned flags appropriately for
@@ -2093,8 +2092,7 @@
 	builtin functions.
 	(UNSPEC_CDTBCD): Likewise.
 	(UNSPEC_CBCDTD): Likewise.
-	(UNSPEC_DIVE): Add support for new extended divide builtin
-	functions.
+	(UNSPEC_DIVE): Add support for new extended divide builtin functions.
 	(UNSPEC_DIVEO): Likewise.
 	(UNSPEC_DIVEU): Likewise.
 	(UNSPEC_DIVEUO): Likewise.
@@ -2107,8 +2105,7 @@
 	(addg6s): Add new BCD builtin functions.
 	(cdtbcd): Likewise.
 	(cbcdtd): Likewise.
-	(UNSPEC_DIV_EXTEND): Add support for new extended divide
-	instructions.
+	(UNSPEC_DIV_EXTEND): Add support for new extended divide instructions.
 	(div_extend): Likewise.
 	(div<div_extend>_<mode>"): Likewise.
 	(FP128_64): Add support for new builtin functions to pack/unpack
@@ -2164,7 +2161,7 @@
 	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Enable for bigendian.
 
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* reg-notes.def (REG_NOTE (CALL_DECL)): New reg-note REG_CALL_DECL.
 	* calls.c (expand_call, emit_library_call_value_1): Add REG_CALL_DECL
@@ -2173,14 +2170,14 @@
 	* emit-rtl.c (try_split): Same.
 
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* common.opt (fuse-caller-save): New option.
 
 2014-04-24  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Reverse order of elements
-	for big-endian.
+	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Reverse order of
+	elements for big-endian.
 
 2014-04-24  Richard Biener  <rguenther@suse.de>
 
@@ -2345,12 +2342,9 @@
 	(is_a_helper <const gimple_statement_catch *>::test): ...this.
 	(is_a_helper <const gimple_statement_resx>::test): Convert to...
 	(is_a_helper <const gimple_statement_resx *>::test): ...this.
-	(is_a_helper <const gimple_statement_eh_dispatch>::test):
-	Convert to...
-	(is_a_helper <const gimple_statement_eh_dispatch *>::test):
-	...this.
-	(is_a_helper <const gimple_statement_eh_filter>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_eh_dispatch>::test): Convert to...
+	(is_a_helper <const gimple_statement_eh_dispatch *>::test): ...this.
+	(is_a_helper <const gimple_statement_eh_filter>::test): Convert to...
 	(is_a_helper <const gimple_statement_eh_filter *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_atomic_load>::test):
 	Convert to...
@@ -2360,8 +2354,7 @@
 	Convert to...
 	(is_a_helper <const gimple_statement_omp_atomic_store *>::test):
 	...this.
-	(is_a_helper <const gimple_statement_omp_return>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_return>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_return *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_continue>::test): Convert
 	to...
@@ -2371,43 +2364,35 @@
 	(is_a_helper <const gimple_statement_omp_critical *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_for>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_for *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_taskreg>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_taskreg>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_taskreg *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_parallel>::test): Convert
 	to...
 	(is_a_helper <const gimple_statement_omp_parallel *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_target>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_target>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_target *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_sections>::test): Convert
 	to...
 	(is_a_helper <const gimple_statement_omp_sections *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_single>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_single>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_single *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_teams>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_teams>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_teams *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_task>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_task>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_task *>::test): ...this.
 	(is_a_helper <const gimple_statement_phi>::test): Convert to...
 	(is_a_helper <const gimple_statement_phi *>::test): ...this.
-	(is_a_helper <const gimple_statement_transaction>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_transaction>::test): Convert to...
 	(is_a_helper <const gimple_statement_transaction *>::test): ...this.
-	(is_a_helper <const gimple_statement_with_ops>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_with_ops>::test): Convert to...
 	(is_a_helper <const gimple_statement_with_ops *>::test): ...this.
 	(is_a_helper <gimple_statement_with_ops>::test): Convert to...
 	(is_a_helper <gimple_statement_with_ops *>::test): ...this.
-	(is_a_helper <const gimple_statement_with_memory_ops>::test):
-	Convert to...
+	(is_a_helper <const gimple_statement_with_memory_ops>::test): Convert
+	to...
 	(is_a_helper <const gimple_statement_with_memory_ops *>::test):
 	...this.
-	(is_a_helper <gimple_statement_with_memory_ops>::test): Convert
-	to...
+	(is_a_helper <gimple_statement_with_memory_ops>::test): Convert to...
 	(is_a_helper <gimple_statement_with_memory_ops *>::test): ...this.
 
 	(gimple_use_ops): Update for removal of implicit pointer from the
@@ -2628,7 +2613,7 @@
 	invalidate outputs from statements that do not produce useful
 	outputs for threading.
 
-2014-04-23 Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+2014-04-23  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
 
 	* config/aarch64/aarch64.md (stack_protect_set, stack_protect_test)
 	(stack_protect_set_<mode>, stack_protect_test_<mode>): Add
@@ -2657,41 +2642,41 @@
 
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/aarch64/aarch64.md (rev16<mode>2): New pattern.
-       (rev16<mode>2_alt): Likewise.
-       * config/aarch64/aarch64.c (aarch64_rtx_costs): Handle rev16 case.
-       * config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p): New.
-       (aarch_rev16_shleft_mask_imm_p): Likewise.
-       (aarch_rev16_p_1): Likewise.
-       (aarch_rev16_p): Likewise.
-       * config/arm/aarch-common-protos.h (aarch_rev16_p): Declare extern.
-       (aarch_rev16_shright_mask_imm_p): Likewise.
-       (aarch_rev16_shleft_mask_imm_p): Likewise.
+	* config/aarch64/aarch64.md (rev16<mode>2): New pattern.
+	(rev16<mode>2_alt): Likewise.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle rev16 case.
+	* config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p): New.
+	(aarch_rev16_shleft_mask_imm_p): Likewise.
+	(aarch_rev16_p_1): Likewise.
+	(aarch_rev16_p): Likewise.
+	* config/arm/aarch-common-protos.h (aarch_rev16_p): Declare extern.
+	(aarch_rev16_shright_mask_imm_p): Likewise.
+	(aarch_rev16_shleft_mask_imm_p): Likewise.
 
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/arm/aarch-common-protos.h (alu_cost_table): Add rev field.
-       * config/arm/aarch-cost-tables.h (generic_extra_costs): Specify
-       rev cost.
-       (cortex_a53_extra_costs): Likewise.
-       (cortex_a57_extra_costs): Likewise.
-       * config/arm/arm.c (cortexa9_extra_costs): Likewise.
-       (cortexa7_extra_costs): Likewise.
-       (cortexa8_extra_costs): Likewise.
-       (cortexa12_extra_costs): Likewise.
-       (cortexa15_extra_costs): Likewise.
-       (v7m_extra_costs): Likewise.
-       (arm_new_rtx_costs): Handle BSWAP.
+	* config/arm/aarch-common-protos.h (alu_cost_table): Add rev field.
+	* config/arm/aarch-cost-tables.h (generic_extra_costs): Specify
+	rev cost.
+	(cortex_a53_extra_costs): Likewise.
+	(cortex_a57_extra_costs): Likewise.
+	* config/arm/arm.c (cortexa9_extra_costs): Likewise.
+	(cortexa7_extra_costs): Likewise.
+	(cortexa8_extra_costs): Likewise.
+	(cortexa12_extra_costs): Likewise.
+	(cortexa15_extra_costs): Likewise.
+	(v7m_extra_costs): Likewise.
+	(arm_new_rtx_costs): Handle BSWAP.
 
 2013-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/arm/arm.c (cortexa8_extra_costs): New table.
-       (arm_cortex_a8_tune): New tuning struct.
-       * config/arm/arm-cores.def (cortex-a8): Use cortex_a8 tuning struct.
+	* config/arm/arm.c (cortexa8_extra_costs): New table.
+	(arm_cortex_a8_tune): New tuning struct.
+	* config/arm/arm-cores.def (cortex-a8): Use cortex_a8 tuning struct.
 
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/arm/arm.c (arm_new_rtx_costs): Handle FMA.
+	* config/arm/arm.c (arm_new_rtx_costs): Handle FMA.
 
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
@@ -2727,8 +2712,7 @@
 	(has_32bit_hwmult): Rename to use_32bit_hwmult.  Add support for
 	-mhwmult command line option.
 	(msp430_hwmult_enabled): Delete.
-	(msp43o_output_labelref): Add support for -mhwmult command line
-	option.
+	(msp43o_output_labelref): Add support for -mhwmult command line option.
 	* config/msp430/msp430.md (mulhisi3, umulhisi3, mulsidi3)
 	(umulsidi3): Likewise.
 	* config/msp430/msp430.opt (mmcu): Add Report attribute.
@@ -3144,8 +3128,7 @@
 
 	* gcc/config/aarch64/aarch64-simd.md (aarch64_s<optab><mode>):
 	Pattern extended.
-	* config/aarch64/aarch64-simd-builtins.def (sqneg): Iterator
-	extended.
+	* config/aarch64/aarch64-simd-builtins.def (sqneg): Iterator extended.
 	(sqabs): Likewise.
 	* config/aarch64/arm_neon.h (vqneg_s64): New intrinsic.
 	(vqnegd_s64): Likewise.
@@ -3262,12 +3245,9 @@
 
 2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
 
-	* config/aarch64/aarch64-builtins.c (BUILTIN_VDQF_DF): Macro
-	added.
-	* config/aarch64/aarch64-simd-builtins.def (frintn): Use added
-	macro.
-	* config/aarch64/aarch64-simd.md (<frint_pattern>): Comment
-	corrected.
+	* config/aarch64/aarch64-builtins.c (BUILTIN_VDQF_DF): Macro added.
+	* config/aarch64/aarch64-simd-builtins.def (frintn): Use added macro.
+	* config/aarch64/aarch64-simd.md (<frint_pattern>): Comment corrected.
 	* config/aarch64/aarch64.md (<frint_pattern>): Likewise.
 	* config/aarch64/arm_neon.h (vrnd_f64): Added.
 	(vrnda_f64): Likewise.
