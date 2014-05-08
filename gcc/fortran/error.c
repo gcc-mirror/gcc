@@ -878,7 +878,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
   switch (std)
   {
     case GFC_STD_F2008_TS:
-      msg2 = "TS 29113:";
+      msg2 = "TS 29113/TS 18508:";
       break;
     case GFC_STD_F2008_OBS:
       msg2 = _("Fortran 2008 obsolescent feature:");

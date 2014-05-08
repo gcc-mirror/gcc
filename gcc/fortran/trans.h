@@ -709,6 +709,9 @@ extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_images;
 extern GTY(()) tree gfor_fndecl_caf_error_stop;
 extern GTY(()) tree gfor_fndecl_caf_error_stop_str;
+extern GTY(()) tree gfor_fndecl_co_max;
+extern GTY(()) tree gfor_fndecl_co_min;
+extern GTY(()) tree gfor_fndecl_co_sum;
 
 
 /* Math functions.  Many other math functions are handled in

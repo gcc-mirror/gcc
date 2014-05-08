@@ -5,5 +5,5 @@
 !
 !
 subroutine foo(x)
-  integer :: x(..)  ! { dg-error "TS 29113: Assumed-rank array" }
+  integer :: x(..)  ! { dg-error "TS 29113/TS 18508: Assumed-rank array" }
 end subroutine foo

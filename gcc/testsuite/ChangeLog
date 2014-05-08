@@ -1,3 +1,20 @@
+2014-05-08  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_collectives_1.f90: New.
+	* gfortran.dg/coarray_collectives_2.f90: New.
+	* gfortran.dg/coarray_collectives_3.f90: New.
+	* gfortran.dg/coarray_collectives_4.f90: New.
+	* gfortran.dg/coarray_collectives_5.f90: New.
+	* gfortran.dg/coarray_collectives_6.f90: New.
+	* gfortran.dg/coarray/collectives_1.f90: New.
+	* gfortran.dg/assumed_rank_5.f90: Update dg-error.
+	* gfortran.dg/assumed_type_4.f90: Update dg-error.
+	* gfortran.dg/bind_c_array_params.f03: Update dg-error.
+	* gfortran.dg/bind_c_usage_28.f90: Update dg-error.
+	* gfortran.dg/c_funloc_tests_5.f03: Update dg-error.
+	* gfortran.dg/c_funloc_tests_6.f90: Update dg-error.
+	* gfortran.dg/c_loc_tests_11.f03: Update dg-error.
+
 2014-05-08  Wei Mi  <wmi@google.com>
 
 	PR target/58066
@@ -564,7 +581,7 @@
 
 2014-04-28  Martin Jambor  <mjambor@suse.cz>
 
-        * gcc.dg/tree-ssa/sra-14.c: New test.
+	* gcc.dg/tree-ssa/sra-14.c: New test.
 
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
@@ -613,10 +630,10 @@
 
 2014-04-25  Cary Coutant  <ccoutant@google.com>
 
-        PR debug/60929
-        * g++.dg/debug/dwarf2/dwarf4-nested.C: New test case.
-        * g++.dg/debug/dwarf2/dwarf4-typedef.C: Add
-        -fdebug-types-section flag.
+	PR debug/60929
+	* g++.dg/debug/dwarf2/dwarf4-nested.C: New test case.
+	* g++.dg/debug/dwarf2/dwarf4-typedef.C: Add
+	-fdebug-types-section flag.
 
 2014-04-25  Jiong Wang  <jiong.wang@arm.com>
 

@@ -26,6 +26,6 @@ cfp = c_loc (int)   ! { dg-error "Can't convert TYPE.c_ptr. to TYPE.c_funptr." }
 call c_f_pointer (cfp, int)     ! { dg-error "Argument CPTR at .1. to C_F_POINTER shall have the type TYPE.C_PTR." }
 call c_f_procpointer (cp, fsub) ! { dg-error "Argument CPTR at .1. to C_F_PROCPOINTER shall have the type TYPE.C_FUNPTR." }
 
-cfp = c_funloc (noCsub) ! { dg-error "TS 29113: Noninteroperable procedure at .1. to C_FUNLOC" }
-call c_f_procpointer (cfp, fint) ! { dg-error "TS 29113: Noninteroperable procedure pointer at .1. to C_F_PROCPOINTER" }
+cfp = c_funloc (noCsub) ! { dg-error "TS 29113/TS 18508: Noninteroperable procedure at .1. to C_FUNLOC" }
+call c_f_procpointer (cfp, fint) ! { dg-error "TS 29113/TS 18508: Noninteroperable procedure pointer at .1. to C_F_PROCPOINTER" }
 end
