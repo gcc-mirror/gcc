@@ -1,3 +1,9 @@
+2014-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcc/61097
+	* config/t-slibgcc-sld: Only build and install libgcc-unwind.map
+	if --enable-shared.
+
 2014-04-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Work around for current cygwin32 build problems.

@@ -4,6 +4,8 @@
 SHLIB_LDFLAGS = -Wl,-h,$(SHLIB_SONAME) -Wl,-z,text -Wl,-z,defs \
 	-Wl,-M,$(SHLIB_MAP)
 
+ifeq ($(enable_shared),yes)
+
 # Linker mapfile to enforce direct binding to libgcc_s unwinder
 # (PR target/59788).
 libgcc-unwind.map: libgcc-std.ver
@@ -26,3 +28,5 @@ install-libgcc-unwind-map: libgcc-unwind.map
 	$(INSTALL_DATA) $< $(DESTDIR)$(slibdir)
 
 install: install-libgcc-unwind-map
+
+endif
