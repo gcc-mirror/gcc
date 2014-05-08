@@ -1,3 +1,9 @@
+2014-05-08  Matthias Klose  <doko@ubuntu.com>
+
+	PR driver/61106
+	* gcc-dg/unused-8a.c: New.
+	* gcc-dg/unused-8b.c: Likewise.
+
 2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61083
