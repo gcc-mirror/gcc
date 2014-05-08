@@ -1246,6 +1246,7 @@ tree_ssa_strip_useless_type_conversions (tree exp)
 bool
 ssa_undefined_value_p (tree t)
 {
+  gimple def_stmt;
   tree var = SSA_NAME_VAR (t);
 
   if (!var)
@@ -1262,7 +1263,22 @@ ssa_undefined_value_p (tree t)
     return false;
 
   /* The value is undefined iff its definition statement is empty.  */
-  return gimple_nop_p (SSA_NAME_DEF_STMT (t));
+  def_stmt = SSA_NAME_DEF_STMT (t);
+  if (gimple_nop_p (def_stmt))
+    return true;
+
+  /* Check if the complex was not only partially defined.  */
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == COMPLEX_EXPR)
+    {
+      tree rhs1, rhs2;
+
+      rhs1 = gimple_assign_rhs1 (def_stmt);
+      rhs2 = gimple_assign_rhs2 (def_stmt);
+      return (TREE_CODE (rhs1) == SSA_NAME && ssa_undefined_value_p (rhs1))
+	     || (TREE_CODE (rhs2) == SSA_NAME && ssa_undefined_value_p (rhs2));
+    }
+  return false;
 }
 
 
