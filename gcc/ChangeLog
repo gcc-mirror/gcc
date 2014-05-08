@@ -1,3 +1,9 @@
+2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59952
+	* config/i386/i386.c (ix86_option_override_internal): Remove PTA_RTM
+	from core-avx2.
+
 2014-05-08  Charles Baylis  <charles.baylis@linaro.org>
 
 	Backport from mainline
@@ -1211,19 +1217,19 @@
 	(altivec_expand_stvex_be): New function.
 
 	Backport from mainline
-        2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Relax assert
 	to permit subregs.
 
 	Backport from mainline
-        2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	* config/rs6000/vector.md (*vector_unordered<mode>): Change split
 	to use canonical form for nor<mode>3.
 
 2014-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
-        2014-02-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	2014-02-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.opt (-mlra): Add switch to enable the LRA
 	register allocator.
@@ -3601,9 +3607,9 @@
 
 2014-03-26  Martin Jambor  <mjambor@suse.cz>
 
-      PR ipa/60419
-      * ipa.c (symtab_remove_unreachable_nodes): Clear thunk and
-      alias flags of nodes in the border.
+	PR ipa/60419
+	* ipa.c (symtab_remove_unreachable_nodes): Clear thunk and
+	alias flags of nodes in the border.
 
 2014-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -3812,13 +3818,13 @@
 	Backport from mainline
 	2014-02-21  Richard Biener  <rguenther@suse.de>
 
-        PR tree-optimization/60276
-        * tree-vectorizer.h (struct _stmt_vec_info): Add min_neg_dist field.
-        (STMT_VINFO_MIN_NEG_DIST): New macro.
-        * tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Record
-        STMT_VINFO_MIN_NEG_DIST.
-        * tree-vect-stmts.c (vectorizable_load): Verify if assumptions
-        made for negative dependence distances still hold.
+	PR tree-optimization/60276
+	* tree-vectorizer.h (struct _stmt_vec_info): Add min_neg_dist field.
+	(STMT_VINFO_MIN_NEG_DIST): New macro.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Record
+	STMT_VINFO_MIN_NEG_DIST.
+	* tree-vect-stmts.c (vectorizable_load): Verify if assumptions
+	made for negative dependence distances still hold.
 
 2014-02-25  Richard Biener  <rguenther@suse.de>
 
