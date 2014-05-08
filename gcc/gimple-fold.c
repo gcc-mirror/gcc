@@ -2635,22 +2635,7 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
               /* Handle unary operators that can appear in GIMPLE form.
                  Note that we know the single operand must be a constant,
                  so this should almost always return a simplified RHS.  */
-	      tree lhs = gimple_assign_lhs (stmt);
               tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
-
-	      /* Conversions are useless for CCP purposes if they are
-		 value-preserving.  Thus the restrictions that
-		 useless_type_conversion_p places for restrict qualification
-		 of pointer types should not apply here.
-		 Substitution later will only substitute to allowed places.  */
-	      if (CONVERT_EXPR_CODE_P (subcode)
-		  && POINTER_TYPE_P (TREE_TYPE (lhs))
-		  && POINTER_TYPE_P (TREE_TYPE (op0))
-		  && TYPE_ADDR_SPACE (TREE_TYPE (lhs))
-		     == TYPE_ADDR_SPACE (TREE_TYPE (op0))
-		  && TYPE_MODE (TREE_TYPE (lhs))
-		     == TYPE_MODE (TREE_TYPE (op0)))
-		return op0;
 
               return
 		fold_unary_ignore_overflow_loc (loc, subcode,
