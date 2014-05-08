@@ -1,3 +1,10 @@
+2014-05-08  Joshua Gay  <jgay@gnu.org>
+
+	PR libstdc++/61117
+	* doc/xml/faq.xml (faq.license.what_restrictions): Replace "open
+	source" with "free software".
+	* doc/html/faq.html: Likewise.
+
 2014-05-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/57394
