@@ -1,3 +1,9 @@
+2014-05-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	PR driver/61106
+	* optc-gen.awk: Fix option handling for -Wunused-parameter.
+
 2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59952
