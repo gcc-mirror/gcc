@@ -406,11 +406,13 @@ for (i = 0; i < n_enabledby; i++) {
         if (opt_var_name != "") {
             condition = "!opts_set->x_" opt_var_name
             if (thisenableif[j] != "") {
-                condition = condition " && (" thisenableif[j] ")"
+                value = "(" thisenableif[j] ")"
+            } else {
+                value = "value"
             }
             print "      if (" condition ")"
             print "        handle_generated_option (opts, opts_set,"
-            print "                                 " opt_enum(thisenable[j]) ", NULL, value,"
+            print "                                 " opt_enum(thisenable[j]) ", NULL, " value ","
             print "                                 lang_mask, kind, loc, handlers, dc);"
         } else {
             print "#error " thisenable[j] " does not have a Var() flag"
