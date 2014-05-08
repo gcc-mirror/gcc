@@ -1,3 +1,8 @@
+2014-05-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/iostream: Fix URL in comment.
+	* src/c++98/ios_init.cc: Fix path in comment.
+
 2014-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61023
