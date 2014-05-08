@@ -1,3 +1,12 @@
+2014-05-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/39246
+	* gcc.dg/uninit-13.c: Move warning on the actual source line where
+	the uninitialized complex is used.
+	* gcc.dg/uninit-17.c: New test to check partial initialization of
+	complex with branches.
+	* gcc.dg/uninit-17-O0.c: Likewise.
+
 2014-05-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/60884

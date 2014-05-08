@@ -1,3 +1,17 @@
+2014-05-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/39246
+	* tree-complex.c (expand_complex_move): Keep line info when expanding
+	complex move.
+	* tree-ssa-uninit.c (warn_uninit): New argument. Ignore assignment
+	of complex expression. Use new argument to display correct location
+	for values coming from phi statement.
+	(warn_uninitialized_vars): Adapt to new signature of warn_uninit.
+	(warn_uninitialized_phi): Pass location of phi argument to
+	warn_uninit.
+	* tree-ssa.c (ssa_undefined_value_p): For SSA_NAME initialized by a
+	COMPLEX_EXPR, recurse on each part of the COMPLEX_EXPR.
+
 2014-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/predicates.md (indexed_address_mem): New.
