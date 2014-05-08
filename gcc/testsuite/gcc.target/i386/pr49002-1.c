@@ -13,4 +13,4 @@ void foo(const __m128d *from, __m256d *to, int s)
 
 /* Ensure we load into xmm, not ymm.  */
 /* { dg-final { scan-assembler-not "vmovapd\[\t \]*\[^,\]*,\[\t \]*%ymm" } } */
-/* { dg-final { scan-assembler "vmovapd\[\t \]*\[^,\]*,\[\t \]*%xmm" } } */
+/* { dg-final { scan-assembler "vmovap\[ds\]\[\t \]*\[^,\]*,\[\t \]*%xmm" } } */
