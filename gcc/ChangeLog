@@ -1,5 +1,15 @@
 2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	* config/arm/arm_neon_builtins.def (vadd, vsub): Only define the v2sf
+	and v4sf versions.
+	(vand, vorr, veor, vorn, vbic): Remove.
+	* config/arm/neon.md (neon_vadd, neon_vsub, neon_vadd_unspec): Adjust
+	iterator.
+	(neon_vsub_unspec): Likewise.
+	(neon_vorr, neon_vand, neon_vbic, neon_veor, neon_vorn): Remove.
+
+2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	* config/arm/arm_neon.h (vadd_s8): GNU C implementation
 	(vadd_s16): Likewise.
 	(vadd_s32): Likewise.
