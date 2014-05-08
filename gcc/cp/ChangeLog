@@ -1,3 +1,9 @@
+2014-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/13981
+	* typeck.c (convert_for_assignment): Provide an inform for pointers
+	to incomplete class types.
+
 2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61083

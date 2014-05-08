@@ -8094,6 +8094,14 @@ convert_for_assignment (tree type, tree rhs,
 		    default:
 		      gcc_unreachable();
 		  }
+	      if (TYPE_PTR_P (rhstype)
+		  && TYPE_PTR_P (type)
+		  && CLASS_TYPE_P (TREE_TYPE (rhstype))
+		  && CLASS_TYPE_P (TREE_TYPE (type))
+		  && !COMPLETE_TYPE_P (TREE_TYPE (rhstype)))
+		inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL
+					      (TREE_TYPE (rhstype))),
+			"class type %qT is incomplete", TREE_TYPE (rhstype));
 	    }
 	  return error_mark_node;
 	}
