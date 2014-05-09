@@ -1,3 +1,10 @@
+2014-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/22434
+	* call.c (build_conditional_expr_1): Don't try to pool cv-quals
+	if we didn't find a conversion.
+	Don't accept a bad conversion too early.
+
 2014-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/13981

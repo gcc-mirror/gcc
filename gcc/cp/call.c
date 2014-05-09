@@ -4714,7 +4714,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 		      arg2_type, arg3_type);
 	  result = error_mark_node;
 	}
-      else if (conv2 && (!conv2->bad_p || !conv3))
+      else if (conv2 && !conv2->bad_p)
 	{
 	  arg2 = convert_like (conv2, arg2, complain);
 	  arg2 = convert_from_reference (arg2);
@@ -4727,7 +4727,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  if (error_operand_p (arg2))
 	    result = error_mark_node;
 	}
-      else if (conv3 && (!conv3->bad_p || !conv2))
+      else if (conv3 && !conv3->bad_p)
 	{
 	  arg3 = convert_like (conv3, arg3, complain);
 	  arg3 = convert_from_reference (arg3);
@@ -4757,7 +4757,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	 conditional expression failing altogether, even though,
 	 according to this step, the one operand could be converted to
 	 the type of the other.  */
-      if ((conv2 || conv3)
+      if (((conv2 && !conv2->bad_p)
+	   || (conv3 && !conv3->bad_p))
 	  && CLASS_TYPE_P (arg2_type)
 	  && cp_type_quals (arg2_type) != cp_type_quals (arg3_type))
 	arg2_type = arg3_type =
