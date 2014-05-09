@@ -430,8 +430,8 @@
       }
 
     // Input and output of the libgcc function
-    const unsigned int regno_in[]  = { -1, 22, 22, -1, 18 };
-    const unsigned int regno_out[] = { -1, 24, 24, -1, 22 };
+    const unsigned int regno_in[]  = { -1U, 22, 22, -1U, 18 };
+    const unsigned int regno_out[] = { -1U, 24, 24, -1U, 22 };
 
     operands[3] = gen_rtx_REG (<MODE>mode, regno_out[(size_t) GET_MODE_SIZE (<MODE>mode)]);
     operands[4] = gen_rtx_REG (<MODE>mode,  regno_in[(size_t) GET_MODE_SIZE (<MODE>mode)]);

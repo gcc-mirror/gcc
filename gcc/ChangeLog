@@ -1,5 +1,10 @@
 2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr-fixed.md (round<mode>3): Use -1U instead of -1 in
+	unsigned int initializers for regno_in, regno_out.
+
+2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/61055
 	* config/avr/avr.md (cc): Add new attribute set_vzn.
 	(addqi3, addqq3, adduqq3, subqi3, subqq3, subuqq3, negqi2) [cc]:
