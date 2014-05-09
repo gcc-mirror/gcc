@@ -1,5 +1,10 @@
 2014-05-09  Jason Merrill  <jason@redhat.com>
 
+	DR 587
+	PR c++/51317
+	* call.c (build_conditional_expr_1, conditional_conversion): Handle
+	non-class lvalues and xvalues that differ only in cv-qualifiers.
+
 	DR 5
 	PR c++/60019
 	* call.c (build_user_type_conversion_1): The copy-init temporary
