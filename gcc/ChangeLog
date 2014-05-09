@@ -1,3 +1,7 @@
+2014-05-09  Teresa Johnson  <tejohnson@google.com>
+
+	* cgraphunit.c (analyze_functions): Use correct dump file.
+
 2014-05-09  Florian Weimer  <fweimer@redhat.com>
 
 	* cfgexpand.c (stack_protect_decl_p): New function, extracted from
