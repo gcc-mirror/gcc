@@ -1,5 +1,10 @@
 2014-05-09  Jason Merrill  <jason@redhat.com>
 
+	DR 5
+	PR c++/60019
+	* call.c (build_user_type_conversion_1): The copy-init temporary
+	is cv-unqualified.
+
 	PR c++/58714
 	* tree.c (stabilize_expr): A stabilized prvalue is an xvalue.
 
