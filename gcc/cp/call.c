@@ -4382,19 +4382,30 @@ conditional_conversion (tree e1, tree e2, tsubst_flags_t complain)
      If E2 is an lvalue: E1 can be converted to match E2 if E1 can be
      implicitly converted (clause _conv_) to the type "lvalue reference to
      T2", subject to the constraint that in the conversion the
-     reference must bind directly (_dcl.init.ref_) to an lvalue.  */
-  if (real_lvalue_p (e2))
+     reference must bind directly (_dcl.init.ref_) to an lvalue.
+
+     If E2 is an xvalue: E1 can be converted to match E2 if E1 can be
+     implicitly converted to the type "rvalue reference to T2", subject to
+     the constraint that the reference must bind directly.  */
+  if (lvalue_or_rvalue_with_address_p (e2))
     {
-      conv = implicit_conversion (build_reference_type (t2),
+      tree rtype = cp_build_reference_type (t2, !real_lvalue_p (e2));
+      conv = implicit_conversion (rtype,
 				  t1,
 				  e1,
 				  /*c_cast_p=*/false,
 				  LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND
 				  |LOOKUP_ONLYCONVERTING,
 				  complain);
-      if (conv)
+      if (conv && !conv->bad_p)
 	return conv;
     }
+
+  /* If E2 is a prvalue or if neither of the conversions above can be done
+     and at least one of the operands has (possibly cv-qualified) class
+     type: */
+  if (!CLASS_TYPE_P (t1) && !CLASS_TYPE_P (t2))
+    return NULL;
 
   /* [expr.cond]
 
@@ -4690,10 +4701,17 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
   /* [expr.cond]
 
      Otherwise, if the second and third operand have different types,
-     and either has (possibly cv-qualified) class type, an attempt is
-     made to convert each of those operands to the type of the other.  */
+     and either has (possibly cv-qualified) class type, or if both are
+     glvalues of the same value category and the same type except for
+     cv-qualification, an attempt is made to convert each of those operands
+     to the type of the other.  */
   else if (!same_type_p (arg2_type, arg3_type)
-	   && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)))
+	    && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)
+		|| (same_type_ignoring_top_level_qualifiers_p (arg2_type,
+							       arg3_type)
+		    && lvalue_or_rvalue_with_address_p (arg2)
+		    && lvalue_or_rvalue_with_address_p (arg3)
+		    && real_lvalue_p (arg2) == real_lvalue_p (arg3))))
     {
       conversion *conv2;
       conversion *conv3;
