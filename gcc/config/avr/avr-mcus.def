@@ -291,7 +291,7 @@ AVR_MCU ("atxmega192a3",     ARCH_AVRXMEGA6, AVR_ISA_NONE, "__AVR_ATxmega192A3__
 AVR_MCU ("atxmega192d3",     ARCH_AVRXMEGA6, AVR_ISA_NONE, "__AVR_ATxmega192D3__",     0x2000, 4, "x192d3")
 AVR_MCU ("atxmega256a3",     ARCH_AVRXMEGA6, AVR_ISA_NONE, "__AVR_ATxmega256A3__",     0x2000, 5, "x256a3")
 AVR_MCU ("atxmega256a3b",    ARCH_AVRXMEGA6, AVR_ISA_NONE, "__AVR_ATxmega256A3B__",    0x2000, 5, "x256a3b")
-AVR_MCU ("atxmega256a3bu",   ARCH_AVRXMEGA6, AVR_ISA_NONE, "__AVR_ATxmega258A3BU__",   0x2000, 5, "x256a3bu")
+AVR_MCU ("atxmega256a3bu",   ARCH_AVRXMEGA6, AVR_ISA_NONE, "__AVR_ATxmega256A3BU__",   0x2000, 5, "x256a3bu")
 AVR_MCU ("atxmega256d3",     ARCH_AVRXMEGA6, AVR_ISA_NONE, "__AVR_ATxmega256D3__",     0x2000, 5, "x256d3")
 AVR_MCU ("atxmega128a3u",    ARCH_AVRXMEGA6, AVR_ISA_RMW, "__AVR_ATxmega128A3U__",    0x2000, 3, "x128a3u")
 AVR_MCU ("atxmega128b1",     ARCH_AVRXMEGA6, AVR_ISA_RMW,  "__AVR_ATxmega128B1__",     0x2000, 3, "x128b1")

@@ -1,3 +1,10 @@
+2014-04-16  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
+
+	Backport from 2014-04-16 trunk r209446
+	2014-04-16  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
+
+	* config/avr/avr-mcus.def: Correct typo for atxmega256a3bu macro.
+
 2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2014-05-09 trunk r210267
