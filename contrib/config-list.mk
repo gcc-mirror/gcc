@@ -80,8 +80,10 @@ LIST = aarch64-elf aarch64-linux-gnu \
 LOGFILES = $(patsubst %,log/%-make.out,$(LIST))
 all: $(LOGFILES)
 config: $(LIST)
+show:
+	@echo $(LIST)
 
-.PHONY: make-log-dir all config
+.PHONY: make-log-dir all config show
 
 empty=
 
