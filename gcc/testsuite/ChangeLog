@@ -1,3 +1,8 @@
+2014-05-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61009
+	* g++.dg/tree-ssa/pr61009.C: New test.
+
 2014-05-08  Matthias Klose  <doko@ubuntu.com>
 
 	PR driver/61106

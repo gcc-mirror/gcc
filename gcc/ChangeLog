@@ -1,3 +1,13 @@
+2014-05-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61009
+	* tree-ssa-threadedge.c (thread_through_normal_block): Return a
+	tri-state rather than a boolean.  When a block is too big to
+	thread through, inform caller via negative return value.
+	(thread_across_edge): If a block was too big for normal threading,
+	then it's too big for a joiner too, so remove temporary equivalences
+	and return immediately.
+
 2014-05-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Matthias Klose  <doko@ubuntu.com>
 
