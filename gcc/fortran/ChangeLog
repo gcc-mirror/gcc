@@ -1,3 +1,9 @@
+2014-05-09  Mike Stump  <mikestump@comcast.net>
+
+	PR fortran/61109
+	* trans-array.c (gfc_conv_array_initializer): Fix wide-int
+	conversion bug.
+
 2014-05-08  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.h (gfc_isym_id): Add GFC_ISYM_CAF_GET

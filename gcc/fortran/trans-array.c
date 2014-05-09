@@ -5405,7 +5405,6 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	gfc_conv_structure (&se, expr, 1);
 
       wtmp = wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1;
-      gcc_assert (wtmp != 0);
       /* This will probably eat buckets of memory for large arrays.  */
       while (wtmp != 0)
         {
