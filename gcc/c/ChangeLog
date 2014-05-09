@@ -1,5 +1,31 @@
 2014-05-09  Marek Polacek  <polacek@redhat.com>
 
+	PR c/61096
+	* c-parser.c (c_parser_braced_init): Pass brace_loc to push_init_level.
+	(c_parser_initelt): Pass location to set_init_label.  Pass array index
+	location to set_init_index.
+	* c-tree.h (push_init_level): Update declaration.
+	(pop_init_level): Likewise.
+	(set_init_index): Likewise.
+	(set_init_label): Likewise.
+	* c-typeck.c (error_init): Add location parameter.  Call error_at
+	instead of error.
+	(digest_init): Pass init_loc to error_init.
+	(really_start_incremental_init):
+	(push_init_level): Add location parameter.  Pass loc to pop_init_level
+	and error_init.
+	(pop_init_level): Likewise.
+	(set_designator): Add location parameter.  Pass loc to pop_init_level,
+	push_init_level, and error_init.
+	(set_init_index): Add location parameter.  Pass loc to error_init and
+	set_designator.
+	(set_init_label): Likewise.
+	(output_init_element): Pass loc to error_init.
+	(process_init_element): Pass loc to error_init, pop_init_level,
+	pedwarn_init, and push_init_level.
+
+2014-05-09  Marek Polacek  <polacek@redhat.com>
+
 	PR c/50459
 	* c-parser.c (c_parser_attributes): Parse the arguments as an
 	expression-list if the attribute takes identifier.
