@@ -1,3 +1,14 @@
+2014-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/50459
+	* c-c++-common/attributes-1.c: Move test line to a new test.
+	* c-c++-common/attributes-2.c: New test.
+	* c-c++-common/pr50459.c: New test.
+	* c-c++-common/pr59280.c: Add "undeclared" to dg-error.
+	* gcc.dg/nonnull-2.c: Likewise.
+	* gcc.dg/pr55570.c: Modify dg-error.
+	* gcc.dg/tm/wrap-2.c: Likewise.
+
 2014-05-08  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/61009

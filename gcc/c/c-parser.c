@@ -3955,11 +3955,16 @@ c_parser_attributes (c_parser *parser)
 	     In objective-c the identifier may be a classname.  */
 	  if (c_parser_next_token_is (parser, CPP_NAME)
 	      && (c_parser_peek_token (parser)->id_kind == C_ID_ID
-		  || (c_dialect_objc () 
-		      && c_parser_peek_token (parser)->id_kind == C_ID_CLASSNAME))
+		  || (c_dialect_objc ()
+		      && c_parser_peek_token (parser)->id_kind
+			 == C_ID_CLASSNAME))
 	      && ((c_parser_peek_2nd_token (parser)->type == CPP_COMMA)
 		  || (c_parser_peek_2nd_token (parser)->type
-		      == CPP_CLOSE_PAREN)))
+		      == CPP_CLOSE_PAREN))
+	      && (attribute_takes_identifier_p (attr_name)
+		  || (c_dialect_objc ()
+		      && c_parser_peek_token (parser)->id_kind
+			 == C_ID_CLASSNAME)))
 	    {
 	      tree arg1 = c_parser_peek_token (parser)->value;
 	      c_parser_consume_token (parser);

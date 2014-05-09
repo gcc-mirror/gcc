@@ -9,8 +9,6 @@ typedef char vec __attribute__((vector_size(bar))); /* { dg-warning "ignored" } 
 void f1(char*) __attribute__((nonnull(bar))); /* { dg-error "invalid operand" } */
 void f2(char*) __attribute__((nonnull(1,bar))); /* { dg-error "invalid operand" } */
 
-void g() __attribute__((aligned(bar))); /* { dg-error "invalid value|not an integer" } */
-
 void foo(void);
 void* my_calloc(unsigned, unsigned) __attribute__((alloc_size(1,foo))); /* { dg-warning "outside range" } */
 void* my_realloc(void*, unsigned) __attribute__((alloc_size(foo))); /* { dg-warning "outside range" } */

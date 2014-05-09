@@ -1,3 +1,15 @@
+2014-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/50459
+	* c-common.c (check_user_alignment): Return -1 if alignment is error
+	node.
+	(handle_aligned_attribute): Don't call default_conversion on
+	FUNCTION_DECLs.
+	(handle_vector_size_attribute): Likewise.
+	(handle_tm_wrap_attribute): Handle case when wrap_decl is error node.
+	(handle_sentinel_attribute): Call default_conversion and allow even
+	integral types as an argument.
+
 2014-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61053
