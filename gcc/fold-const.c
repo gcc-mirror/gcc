@@ -11358,7 +11358,7 @@ fold_binary_loc (location_t loc,
 	  wide_int c3 = c1.and_not (c2);
 	  for (w = BITS_PER_UNIT; w <= width; w <<= 1)
 	    {
-	      wide_int mask = wi::mask (width - w, false,
+	      wide_int mask = wi::mask (w, false,
 					TYPE_PRECISION (type));
 	      if (((c1 | c2) & mask) == mask && c1.and_not (mask) == 0)
 		{

@@ -1,3 +1,8 @@
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	PR middle-end/61111
+	* fold-const.c (fold_binary_loc): Changed width of mask.
+
 2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-fixed.md (round<mode>3): Use -1U instead of -1 in
