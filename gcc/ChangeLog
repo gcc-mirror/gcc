@@ -6,7 +6,7 @@
 	(expand_used_vars): Call stack_protect_decl_p and
 	stack_protect_return_slot_p for -fstack-protector-strong.
 
-2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+2014-05-09  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR middle-end/61111
 	* fold-const.c (fold_binary_loc): Changed width of mask.
