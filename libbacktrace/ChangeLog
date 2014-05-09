@@ -1,3 +1,12 @@
+2014-05-08  Ian Lance Taylor  <iant@google.com>
+
+	Backport from mainline:
+	* mmap.c (backtrace_free): If freeing a large aligned block of
+	memory, call munmap rather than holding onto it.
+	(backtrace_vector_grow): When growing a vector, double the number
+	of pages requested.  When releasing the old version of a grown
+	vector, pass the correct size to backtrace_free.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.
