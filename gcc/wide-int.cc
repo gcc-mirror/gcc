@@ -34,12 +34,6 @@ typedef unsigned HOST_WIDE_INT UWtype;
 typedef unsigned int UQItype __attribute__ ((mode (QI)));
 typedef unsigned int USItype __attribute__ ((mode (SI)));
 typedef unsigned int UDItype __attribute__ ((mode (DI)));
-typedef unsigned int UTItype __attribute__ ((mode (TI)));
-#if W_TYPE_SIZE == 32
-# define UDWtype       UDItype
-#elif W_TYPE_SIZE == 64
-# define UDWtype       UTItype
-#endif
 #include "longlong.h"
 #endif
 
