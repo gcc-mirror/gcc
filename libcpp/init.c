@@ -27,7 +27,11 @@ along with this program; see the file COPYING3.  If not see
 #include "filenames.h"
 
 #ifndef ENABLE_CANONICAL_SYSTEM_HEADERS
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+#define ENABLE_CANONICAL_SYSTEM_HEADERS 1
+#else
 #define ENABLE_CANONICAL_SYSTEM_HEADERS 0
+#endif
 #endif
 
 static void init_library (void);
