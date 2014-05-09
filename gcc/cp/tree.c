@@ -3785,6 +3785,10 @@ stabilize_expr (tree exp, tree* initp)
     {
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
+      if (CLASS_TYPE_P (TREE_TYPE (exp)))
+	exp = move (exp);
+      else
+	exp = rvalue (exp);
     }
   else
     {

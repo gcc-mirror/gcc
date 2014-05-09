@@ -1,5 +1,8 @@
 2014-05-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58714
+	* tree.c (stabilize_expr): A stabilized prvalue is an xvalue.
+
 	PR c++/54348
 	* call.c (build_conditional_expr_1): If overload resolution finds
 	no match, just say "different types".
