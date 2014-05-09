@@ -1,3 +1,10 @@
+2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2014-05-09 trunk r210267
+
+	PR target/61055
+	* gcc.target/avr/torture/pr61055.c: New test.
+
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

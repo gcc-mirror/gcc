@@ -90,7 +90,7 @@
 (include "constraints.md")
   
 ;; Condition code settings.
-(define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber,
+(define_attr "cc" "none,set_czn,set_vzn,set_zn,set_n,compare,clobber,
                    out_plus, out_plus_noclobber,ldi"
   (const_string "none"))
 
@@ -1056,7 +1056,7 @@
 	inc %0\;inc %0
 	dec %0\;dec %0"
   [(set_attr "length" "1,1,1,1,2,2")
-   (set_attr "cc" "set_czn,set_czn,set_zn,set_zn,set_zn,set_zn")])
+   (set_attr "cc" "set_czn,set_czn,set_vzn,set_vzn,set_vzn,set_vzn")])
 
 
 (define_expand "addhi3"
@@ -3876,7 +3876,7 @@
   ""
   "neg %0"
   [(set_attr "length" "1")
-   (set_attr "cc" "set_zn")])
+   (set_attr "cc" "set_vzn")])
 
 (define_insn "*negqihi2"
   [(set (match_operand:HI 0 "register_operand"                        "=r")
