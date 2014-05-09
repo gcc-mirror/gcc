@@ -1,3 +1,9 @@
+2014-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61096
+	* gcc.dg/pr61096-1.c: New test.
+	* gcc.dg/pr61096-2.c: New test.
+
 2014-05-09  Florian Weimer  <fweimer@redhat.com>
 
 	* gcc.dg/fstack-protector-strong.c: Add coverage for return slots.

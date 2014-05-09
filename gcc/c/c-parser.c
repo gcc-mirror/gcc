@@ -4143,7 +4143,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
   gcc_assert (c_parser_next_token_is (parser, CPP_OPEN_BRACE));
   c_parser_consume_token (parser);
   if (nested_p)
-    push_init_level (0, &braced_init_obstack);
+    push_init_level (brace_loc, 0, &braced_init_obstack);
   else
     really_start_incremental_init (type);
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
@@ -4173,12 +4173,12 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, "expected %<}%>");
-      pop_init_level (0, &braced_init_obstack);
+      pop_init_level (brace_loc, 0, &braced_init_obstack);
       obstack_free (&braced_init_obstack, NULL);
       return ret;
     }
   c_parser_consume_token (parser);
-  ret = pop_init_level (0, &braced_init_obstack);
+  ret = pop_init_level (brace_loc, 0, &braced_init_obstack);
   obstack_free (&braced_init_obstack, NULL);
   return ret;
 }
@@ -4195,7 +4195,8 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
       && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
     {
       /* Old-style structure member designator.  */
-      set_init_label (c_parser_peek_token (parser)->value,
+      set_init_label (c_parser_peek_token (parser)->location,
+		      c_parser_peek_token (parser)->value,
 		      braced_init_obstack);
       /* Use the colon as the error location.  */
       pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_Wpedantic,
@@ -4224,7 +4225,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is (parser, CPP_NAME))
 		{
-		  set_init_label (c_parser_peek_token (parser)->value,
+		  set_init_label (des_loc, c_parser_peek_token (parser)->value,
 				  braced_init_obstack);
 		  c_parser_consume_token (parser);
 		}
@@ -4245,6 +4246,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	    {
 	      tree first, second;
 	      location_t ellipsis_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
+	      location_t array_index_loc = UNKNOWN_LOCATION;
 	      /* ??? Following the old parser, [ objc-receiver
 		 objc-message-args ] is accepted as an initializer,
 		 being distinguished from a designator by what follows
@@ -4322,6 +4324,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 		  return;
 		}
 	      c_parser_consume_token (parser);
+	      array_index_loc = c_parser_peek_token (parser)->location;
 	      first = c_parser_expr_no_commas (parser, NULL).value;
 	      mark_exp_read (first);
 	    array_desig_after_first:
@@ -4337,7 +4340,8 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	      if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		{
 		  c_parser_consume_token (parser);
-		  set_init_index (first, second, braced_init_obstack);
+		  set_init_index (array_index_loc, first, second,
+				  braced_init_obstack);
 		  if (second)
 		    pedwarn (ellipsis_loc, OPT_Wpedantic,
 			     "ISO C forbids specifying range of elements to initialize");
