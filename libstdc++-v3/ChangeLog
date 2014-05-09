@@ -1,3 +1,12 @@
+2014-05-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.20): Correct regex_error export.
+	(GLIBCXX_3.4.21): Export base object constructor for regex_error.
+	* acinclude.m4 (libtool_VERSION): Bump.
+	* configure: Regenerate.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.21 version.
+	* testsuite/28_regex/regex_error/base.cc: New.
+
 2014-05-08  Joshua Gay  <jgay@gnu.org>
 
 	PR libstdc++/61117
