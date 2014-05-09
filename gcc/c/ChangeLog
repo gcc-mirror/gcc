@@ -1,3 +1,9 @@
+2014-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/50459
+	* c-parser.c (c_parser_attributes): Parse the arguments as an
+	expression-list if the attribute takes identifier.
+
 2014-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61053

@@ -7443,6 +7443,8 @@ check_user_alignment (const_tree align, bool allow_zero)
 {
   int i;
 
+  if (error_operand_p (align))
+    return -1;
   if (TREE_CODE (align) != INTEGER_CST
       || !INTEGRAL_TYPE_P (TREE_TYPE (align)))
     {
@@ -7564,7 +7566,8 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   if (args)
     {
       align_expr = TREE_VALUE (args);
-      if (align_expr && TREE_CODE (align_expr) != IDENTIFIER_NODE)
+      if (align_expr && TREE_CODE (align_expr) != IDENTIFIER_NODE
+	  && TREE_CODE (align_expr) != FUNCTION_DECL)
 	align_expr = default_conversion (align_expr);
     }
   else
@@ -8429,9 +8432,11 @@ handle_tm_wrap_attribute (tree *node, tree name, tree args,
   else
     {
       tree wrap_decl = TREE_VALUE (args);
-      if (TREE_CODE (wrap_decl) != IDENTIFIER_NODE
-	  && TREE_CODE (wrap_decl) != VAR_DECL
-	  && TREE_CODE (wrap_decl) != FUNCTION_DECL)
+      if (error_operand_p (wrap_decl))
+        ;
+      else if (TREE_CODE (wrap_decl) != IDENTIFIER_NODE
+	       && TREE_CODE (wrap_decl) != VAR_DECL
+	       && TREE_CODE (wrap_decl) != FUNCTION_DECL)
 	error ("%qE argument not an identifier", name);
       else
 	{
@@ -8558,7 +8563,8 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   *no_add_attrs = true;
 
   size = TREE_VALUE (args);
-  if (size && TREE_CODE (size) != IDENTIFIER_NODE)
+  if (size && TREE_CODE (size) != IDENTIFIER_NODE
+      && TREE_CODE (size) != FUNCTION_DECL)
     size = default_conversion (size);
 
   if (!tree_fits_uhwi_p (size))
@@ -8970,8 +8976,12 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
   if (args)
     {
       tree position = TREE_VALUE (args);
+      if (position && TREE_CODE (position) != IDENTIFIER_NODE
+	  && TREE_CODE (position) != FUNCTION_DECL)
+	position = default_conversion (position);
 
-      if (TREE_CODE (position) != INTEGER_CST)
+      if (TREE_CODE (position) != INTEGER_CST
+          || !INTEGRAL_TYPE_P (TREE_TYPE (position)))
 	{
 	  warning (OPT_Wattributes,
 		   "requested position is not an integer constant");
