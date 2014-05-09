@@ -3834,7 +3834,7 @@
 2013-04-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* libsupc++/exception (get_terminate(), get_unexpected()): Declare.
-	* libsupc++/eh_terminate.cc (get_terminate() , set_unexpected()):
+	* libsupc++/eh_terminate.cc (get_terminate(), get_unexpected()):
 	Define.
 	(set_terminate(terminate_handler)): Set atomically.
 	(set_unexpected(terminate_handler)): Likewise.
