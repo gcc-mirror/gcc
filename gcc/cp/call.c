@@ -4710,8 +4710,16 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  || (conv3 && conv3->kind == ck_ambig))
 	{
 	  if (complain & tf_error)
-	    error_at (loc, "operands to ?: have different types %qT and %qT",
-		      arg2_type, arg3_type);
+	    {
+	      error_at (loc, "operands to ?: have different types %qT and %qT",
+			arg2_type, arg3_type);
+	      if (conv2 && !conv2->bad_p && conv3 && !conv3->bad_p)
+		inform (loc, "  and each type can be converted to the other");
+	      else if (conv2 && conv2->kind == ck_ambig)
+		convert_like (conv2, arg2, complain);
+	      else
+		convert_like (conv3, arg3, complain);
+	    }
 	  result = error_mark_node;
 	}
       else if (conv2 && !conv2->bad_p)
@@ -4818,10 +4826,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       if (!any_viable_p)
 	{
           if (complain & tf_error)
-            {
-              op_error (loc, COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
-              print_z_candidates (loc, candidates);
-            }
+	    error_at (loc, "operands to ?: have different types %qT and %qT",
+		      arg2_type, arg3_type);
 	  return error_mark_node;
 	}
       cand = tourney (candidates, complain);

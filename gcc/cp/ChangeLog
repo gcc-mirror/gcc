@@ -1,5 +1,12 @@
 2014-05-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54348
+	* call.c (build_conditional_expr_1): If overload resolution finds
+	no match, just say "different types".
+
+	PR c++/32019
+	* call.c (build_conditional_expr_1): Improve ambiguity diagnostic.
+
 	PR c++/22434
 	* call.c (build_conditional_expr_1): Don't try to pool cv-quals
 	if we didn't find a conversion.
