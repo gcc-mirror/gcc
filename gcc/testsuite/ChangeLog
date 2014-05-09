@@ -1,3 +1,9 @@
+2014-05-09  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/fstack-protector-strong.c: Add coverage for return slots.
+	* g++.dg/fstack-protector-strong.C: Likewise.
+	* gcc.target/i386/ssp-strong-reg.c: New file.
+
 2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/61055

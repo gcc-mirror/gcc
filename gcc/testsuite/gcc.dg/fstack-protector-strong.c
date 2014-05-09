@@ -131,4 +131,22 @@ foo10 ()
   return bb.three;
 }
 
-/* { dg-final { scan-assembler-times "stack_chk_fail" 10 } } */
+struct B
+{
+  /* Discourage passing this struct in registers. */
+  int a1, a2, a3, a4, a5, a6, a7, a8, a9, a10;
+};
+
+struct B global3 (void);
+
+int foo11 ()
+{
+  return global3 ().a1;
+}
+
+void foo12 ()
+{
+  global3 ();
+}
+
+/* { dg-final { scan-assembler-times "stack_chk_fail" 12 } } */
