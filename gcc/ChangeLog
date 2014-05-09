@@ -1,3 +1,11 @@
+2014-05-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Revert:
+	2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* wide-int.cc (UTItype): Define.
+	(UDWtype): Define for appropriate W_TYPE_SIZE.
+
 2014-05-09  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (GTFILES): Remove tree-ssa-propagate.c.
