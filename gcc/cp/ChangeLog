@@ -1,3 +1,11 @@
+2014-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_nontype_argument_function): Add tsubst_flags_t
+	parameter.
+	(convert_nontype_argument): Adjust calls.
+	(coerce_template_parameter_pack): Add missing complain & tf_error
+	check.
+
 2014-05-09  Jason Merrill  <jason@redhat.com>
 
 	DR 587
