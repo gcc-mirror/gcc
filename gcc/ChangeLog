@@ -1,3 +1,13 @@
+2014-05-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* builtins.c (expand_builtin_setjmp_receiver): Emit a use of
+	the hard frame pointer.  Synchronize commentary with mainline.
+	* cse.c (cse_insn): Only check for volatile asms.
+	* cselib.c (cselib_process_insn): Likewise.
+	* dse.c (scan_insn): Likewise.
+	* stmt.c (expand_nl_goto_receiver): Emit a use and a clobber of
+	the hard frame pointer.
+
 2014-05-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Matthias Klose  <doko@ubuntu.com>
 
