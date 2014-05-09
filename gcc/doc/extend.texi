@@ -65,11 +65,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Alignment::           Inquiring about the alignment of a type or variable.
 * Inline::              Defining inline functions (as fast as macros).
 * Volatiles::           What constitutes an access to a volatile object.
-* Extended Asm::        Assembler instructions with C expressions as operands.
-                        (With them you can define ``built-in'' functions.)
-* Constraints::         Constraints for asm operands
-* Asm Labels::          Specifying the assembler name to use for a C symbol.
-* Explicit Reg Vars::   Defining variables residing in specified registers.
+* Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
 * Alternate Keywords::  @code{__const__}, @code{__asm__}, etc., for header files.
 * Incomplete Enums::    @code{enum foo;}, with details to follow.
 * Function Names::      Printable strings which are the name of the current
@@ -6137,491 +6133,948 @@ bit-fields are only partially accessed, if they straddle a storage unit
 boundary.  For these reasons it is unwise to use volatile bit-fields to
 access hardware.
 
+@node Using Assembly Language with C
+@section How to Use Inline Assembly Language in C Code
+
+GCC provides various extensions that allow you to embed assembler within 
+C code.
+
+@menu
+* Basic Asm::          Inline assembler with no operands.
+* Extended Asm::       Inline assembler with operands.
+* Constraints::        Constraints for @code{asm} operands
+* Asm Labels::         Specifying the assembler name to use for a C symbol.
+* Explicit Reg Vars::  Defining variables residing in specified registers.
+* Size of an asm::     How GCC calculates the size of an @code{asm} block.
+@end menu
+
+@node Basic Asm
+@subsection Basic Asm --- Assembler Instructions with No Operands
+@cindex basic @code{asm}
+
+The @code{asm} keyword allows you to embed assembler instructions within 
+C code.
+
+@example
+asm [ volatile ] ( AssemblerInstructions )
+@end example
+
+To create headers compatible with ISO C, write @code{__asm__} instead of 
+@code{asm} (@pxref{Alternate Keywords}).
+
+By definition, a Basic @code{asm} statement is one with no operands. 
+@code{asm} statements that contain one or more colons (used to delineate 
+operands) are considered to be Extended (for example, @code{asm("int $3")} 
+is Basic, and @code{asm("int $3" : )} is Extended). @xref{Extended Asm}.
+
+@subsubheading Qualifiers
+@emph{volatile}
+@*
+This optional qualifier has no effect. All Basic @code{asm} blocks are 
+implicitly volatile.
+
+@subsubheading Parameters
+@emph{AssemblerInstructions}
+@*
+This is a literal string that specifies the assembler code. The string can 
+contain any instructions recognized by the assembler, including directives. 
+GCC does not parse the assembler instructions themselves and 
+does not know what they mean or even whether they are valid assembler input. 
+The compiler copies it verbatim to the assembly language output file, without 
+processing dialects or any of the "%" operators that are available with
+Extended @code{asm}. This results in minor differences between Basic 
+@code{asm} strings and Extended @code{asm} templates. For example, to refer to 
+registers you might use %%eax in Extended @code{asm} and %eax in Basic 
+@code{asm}.
+
+You may place multiple assembler instructions together in a single @code{asm} 
+string, separated by the characters normally used in assembly code for the 
+system. A combination that works in most places is a newline to break the 
+line, plus a tab character (written as "\n\t").
+Some assemblers allow semicolons as a line separator. However, 
+note that some assembler dialects use semicolons to start a comment. 
+
+Do not expect a sequence of @code{asm} statements to remain perfectly 
+consecutive after compilation. If certain instructions need to remain 
+consecutive in the output, put them in a single multi-instruction asm 
+statement. Note that GCC's optimizers can move @code{asm} statements 
+relative to other code, including across jumps.
+
+@code{asm} statements may not perform jumps into other @code{asm} statements. 
+GCC does not know about these jumps, and therefore cannot take 
+account of them when deciding how to optimize. Jumps from @code{asm} to C 
+labels are only supported in Extended @code{asm}.
+
+@subsubheading Remarks
+Using Extended @code{asm} will typically produce smaller, safer, and more 
+efficient code, and in most cases it is a better solution. When writing 
+inline assembly language outside of C functions, however, you must use Basic 
+@code{asm}. Extended @code{asm} statements have to be inside a C function.
+
+Under certain circumstances, GCC may duplicate (or remove duplicates of) your 
+assembly code when optimizing. This can lead to unexpected duplicate 
+symbol errors during compilation if your assembly code defines symbols or 
+labels.
+
+Safely accessing C data and calling functions from Basic @code{asm} is more 
+complex than it may appear. To access C data, it is better to use Extended 
+@code{asm}.
+
+Since GCC does not parse the AssemblerInstructions, it has no 
+visibility of any symbols it references. This may result in GCC discarding 
+those symbols as unreferenced.
+
+Unlike Extended @code{asm}, all Basic @code{asm} blocks are implicitly 
+volatile. @xref{Volatile}.  Similarly, Basic @code{asm} blocks are not treated 
+as though they used a "memory" clobber (@pxref{Clobbers}).
+
+All Basic @code{asm} blocks use the assembler dialect specified by the 
+@option{-masm} command-line option. Basic @code{asm} provides no
+mechanism to provide different assembler strings for different dialects.
+
+Here is an example of Basic @code{asm} for i386:
+
+@example
+/* Note that this code will not compile with -masm=intel */
+#define DebugBreak() asm("int $3")
+@end example
+
 @node Extended Asm
-@section Assembler Instructions with C Expression Operands
+@subsection Extended Asm - Assembler Instructions with C Expression Operands
+@cindex @code{asm} keyword
 @cindex extended @code{asm}
-@cindex @code{asm} expressions
 @cindex assembler instructions
-@cindex registers
 
-In an assembler instruction using @code{asm}, you can specify the
-operands of the instruction using C expressions.  This means you need not
-guess which registers or memory locations contain the data you want
-to use.
+The @code{asm} keyword allows you to embed assembler instructions within C 
+code. With Extended @code{asm} you can read and write C variables from 
+assembler and perform jumps from assembler code to C labels.
 
-You must specify an assembler instruction template much like what
-appears in a machine description, plus an operand constraint string for
-each operand.
+@example
+@ifhtml
+asm [volatile] ( AssemblerTemplate : [OutputOperands] [ : [InputOperands] [ : [Clobbers] ] ] )
 
-For example, here is how to use the 68881's @code{fsinx} instruction:
+asm [volatile] goto ( AssemblerTemplate : : [InputOperands] : [Clobbers] : GotoLabels )
+@end ifhtml
+@ifnothtml
+asm [volatile] ( AssemblerTemplate 
+                 : [OutputOperands] 
+                 [ : [InputOperands] 
+                 [ : [Clobbers] ] ])
 
-@smallexample
-asm ("fsinx %1,%0" : "=f" (result) : "f" (angle));
-@end smallexample
+asm [volatile] goto ( AssemblerTemplate 
+                      : 
+                      : [InputOperands] 
+                      : [Clobbers] 
+                      : GotoLabels)
+@end ifnothtml
+@end example
 
-@noindent
-Here @code{angle} is the C expression for the input operand while
-@code{result} is that of the output operand.  Each has @samp{"f"} as its
-operand constraint, saying that a floating-point register is required.
-The @samp{=} in @samp{=f} indicates that the operand is an output; all
-output operands' constraints must use @samp{=}.  The constraints use the
-same language used in the machine description (@pxref{Constraints}).
+To create headers compatible with ISO C, write @code{__asm__} instead of 
+@code{asm} and @code{__volatile__} instead of @code{volatile} 
+(@pxref{Alternate Keywords}). There is no alternate for @code{goto}.
 
-Each operand is described by an operand-constraint string followed by
-the C expression in parentheses.  A colon separates the assembler
-template from the first output operand and another separates the last
-output operand from the first input, if any.  Commas separate the
-operands within each group.  The total number of operands is currently
-limited to 30; this limitation may be lifted in some future version of
-GCC@.
+By definition, Extended @code{asm} is an @code{asm} statement that contains 
+operands. To separate the classes of operands, you use colons. Basic 
+@code{asm} statements contain no colons. (So, for example, 
+@code{asm("int $3")} is Basic @code{asm}, and @code{asm("int $3" : )} is 
+Extended @code{asm}. @pxref{Basic Asm}.)
 
-If there are no output operands but there are input operands, you must
-place two consecutive colons surrounding the place where the output
-operands would go.
+@subsubheading Qualifiers
+@emph{volatile}
+@*
+The typical use of Extended @code{asm} statements is to manipulate input 
+values to produce output values. However, your @code{asm} statements may 
+also produce side effects. If so, you may need to use the @code{volatile} 
+qualifier to disable certain optimizations. @xref{Volatile}.
 
-As of GCC version 3.1, it is also possible to specify input and output
-operands using symbolic names which can be referenced within the
-assembler code.  These names are specified inside square brackets
-preceding the constraint string, and can be referenced inside the
-assembler code using @code{%[@var{name}]} instead of a percentage sign
-followed by the operand number.  Using named operands the above example
-could look like:
+@emph{goto}
+@*
+This qualifier informs the compiler that the @code{asm} statement may 
+perform a jump to one of the labels listed in the GotoLabels section. 
+@xref{GotoLabels}.
 
-@smallexample
-asm ("fsinx %[angle],%[output]"
-     : [output] "=f" (result)
-     : [angle] "f" (angle));
-@end smallexample
+@subsubheading Parameters
+@emph{AssemblerTemplate}
+@*
+This is a literal string that contains the assembler code. It is a 
+combination of fixed text and tokens that refer to the input, output, 
+and goto parameters. @xref{AssemblerTemplate}.
 
-@noindent
-Note that the symbolic operand names have no relation whatsoever to
-other C identifiers.  You may use any name you like, even those of
-existing C symbols, but you must ensure that no two operands within the same
-assembler construct use the same symbolic name.
+@emph{OutputOperands}
+@*
+A comma-separated list of the C variables modified by the instructions in the 
+AssemblerTemplate. @xref{OutputOperands}.
 
-Output operand expressions must be lvalues; the compiler can check this.
-The input operands need not be lvalues.  The compiler cannot check
-whether the operands have data types that are reasonable for the
-instruction being executed.  It does not parse the assembler instruction
-template and does not know what it means or even whether it is valid
-assembler input.  The extended @code{asm} feature is most often used for
-machine instructions the compiler itself does not know exist.  If
-the output expression cannot be directly addressed (for example, it is a
-bit-field), your constraint must allow a register.  In that case, GCC
-uses the register as the output of the @code{asm}, and then stores
-that register into the output.
+@emph{InputOperands}
+@*
+A comma-separated list of C expressions read by the instructions in the 
+AssemblerTemplate. @xref{InputOperands}.
 
-The ordinary output operands must be write-only; GCC assumes that
-the values in these operands before the instruction are dead and need
-not be generated.  Extended asm supports input-output or read-write
-operands.  Use the constraint character @samp{+} to indicate such an
-operand and list it with the output operands.
+@emph{Clobbers}
+@*
+A comma-separated list of registers or other values changed by the 
+AssemblerTemplate, beyond those listed as outputs. @xref{Clobbers}.
 
-You may, as an alternative, logically split its function into two
-separate operands, one input operand and one write-only output
-operand.  The connection between them is expressed by constraints
-that say they need to be in the same location when the instruction
-executes.  You can use the same C expression for both operands, or
-different expressions.  For example, here we write the (fictitious)
-@samp{combine} instruction with @code{bar} as its read-only source
-operand and @code{foo} as its read-write destination:
+@emph{GotoLabels}
+@*
+When you are using the @code{goto} form of @code{asm}, this section contains 
+the list of all C labels to which the AssemblerTemplate may jump. 
+@xref{GotoLabels}.
 
-@smallexample
-asm ("combine %2,%0" : "=r" (foo) : "0" (foo), "g" (bar));
-@end smallexample
+@subsubheading Remarks
+The @code{asm} statement allows you to include assembly instructions directly 
+within C code. This may help you to maximize performance in time-sensitive 
+code or to access assembly instructions that are not readily available to C 
+programs.
 
-@noindent
-The constraint @samp{"0"} for operand 1 says that it must occupy the
-same location as operand 0.  A number in constraint is allowed only in
-an input operand and it must refer to an output operand.
+Note that Extended @code{asm} statements must be inside a function. Only 
+Basic @code{asm} may be outside functions (@pxref{Basic Asm}).
 
-Only a number in the constraint can guarantee that one operand is in
-the same place as another.  The mere fact that @code{foo} is the value
-of both operands is not enough to guarantee that they are in the
-same place in the generated assembler code.  The following does not
-work reliably:
+While the uses of @code{asm} are many and varied, it may help to think of an 
+@code{asm} statement as a series of low-level instructions that convert input 
+parameters to output parameters. So a simple (if not particularly useful) 
+example for i386 using @code{asm} might look like this:
 
-@smallexample
-asm ("combine %2,%0" : "=r" (foo) : "r" (foo), "g" (bar));
-@end smallexample
+@example
+int src = 1;
+int dst;   
 
-Various optimizations or reloading could cause operands 0 and 1 to be in
-different registers; GCC knows no reason not to do so.  For example, the
-compiler might find a copy of the value of @code{foo} in one register and
-use it for operand 1, but generate the output operand 0 in a different
-register (copying it afterward to @code{foo}'s own address).  Of course,
-since the register for operand 1 is not even mentioned in the assembler
-code, the result will not work, but GCC can't tell that.
+asm ("mov %1, %0\n\t"
+    "add $1, %0"
+    : "=r" (dst) 
+    : "r" (src));
 
-As of GCC version 3.1, one may write @code{[@var{name}]} instead of
-the operand number for a matching constraint.  For example:
+printf("%d\n", dst);
+@end example
 
-@smallexample
-asm ("cmoveq %1,%2,%[result]"
-     : [result] "=r"(result)
-     : "r" (test), "r"(new), "[result]"(old));
-@end smallexample
+This code will copy @var{src} to @var{dst} and add 1 to @var{dst}.
 
-Sometimes you need to make an @code{asm} operand be a specific register,
-but there's no matching constraint letter for that register @emph{by
-itself}.  To force the operand into that register, use a local variable
-for the operand and specify the register in the variable declaration.
-@xref{Explicit Reg Vars}.  Then for the @code{asm} operand, use any
-register constraint letter that matches the register:
+@anchor{Volatile}
+@subsubsection Volatile
+@cindex volatile @code{asm}
+@cindex @code{asm} volatile
 
-@smallexample
-register int *p1 asm ("r0") = @dots{};
-register int *p2 asm ("r1") = @dots{};
-register int *result asm ("r0");
-asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
-@end smallexample
+GCC's optimizers sometimes discard @code{asm} statements if they determine 
+there is no need for the output variables. Also, the optimizers may move 
+code out of loops if they believe that the code will always return the same 
+result (i.e. none of its input values change between calls). Using the 
+@code{volatile} qualifier disables these optimizations. @code{asm} statements 
+that have no output operands are implicitly volatile.
 
-@anchor{Example of asm with clobbered asm reg}
-In the above example, beware that a register that is call-clobbered by
-the target ABI will be overwritten by any function call in the
-assignment, including library calls for arithmetic operators.
-Also a register may be clobbered when generating some operations,
-like variable shift, memory copy or memory move on x86.
-Assuming it is a call-clobbered register, this may happen to @code{r0}
-above by the assignment to @code{p2}.  If you have to use such a
-register, use temporary variables for expressions between the register
-assignment and use:
+Examples:
 
-@smallexample
-int t1 = @dots{};
-register int *p1 asm ("r0") = @dots{};
-register int *p2 asm ("r1") = t1;
-register int *result asm ("r0");
-asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
-@end smallexample
+This i386 code demonstrates a case that does not use (or require) the 
+@code{volatile} qualifier. If it is performing assertion checking, this code 
+uses @code{asm} to perform the validation. Otherwise, @var{dwRes} is 
+unreferenced by any code. As a result, the optimizers can discard the 
+@code{asm} statement, which in turn removes the need for the entire 
+@code{DoCheck} routine. By omitting the @code{volatile} qualifier when it 
+isn't needed you allow the optimizers to produce the most efficient code 
+possible.
 
-Some instructions clobber specific hard registers.  To describe this,
-write a third colon after the input operands, followed by the names of
-the clobbered hard registers (given as strings).  Here is a realistic
-example for the VAX:
-
-@smallexample
-asm volatile ("movc3 %0,%1,%2"
-              : /* @r{no outputs} */
-              : "g" (from), "g" (to), "g" (count)
-              : "r0", "r1", "r2", "r3", "r4", "r5");
-@end smallexample
-
-You may not write a clobber description in a way that overlaps with an
-input or output operand.  For example, you may not have an operand
-describing a register class with one member if you mention that register
-in the clobber list.  Variables declared to live in specific registers
-(@pxref{Explicit Reg Vars}), and used as asm input or output operands must
-have no part mentioned in the clobber description.
-There is no way for you to specify that an input
-operand is modified without also specifying it as an output
-operand.  Note that if all the output operands you specify are for this
-purpose (and hence unused), you then also need to specify
-@code{volatile} for the @code{asm} construct, as described below, to
-prevent GCC from deleting the @code{asm} statement as unused.
-
-If you refer to a particular hardware register from the assembler code,
-you probably have to list the register after the third colon to
-tell the compiler the register's value is modified.  In some assemblers,
-the register names begin with @samp{%}; to produce one @samp{%} in the
-assembler code, you must write @samp{%%} in the input.
-
-If your assembler instruction can alter the condition code register, add
-@samp{cc} to the list of clobbered registers.  GCC on some machines
-represents the condition codes as a specific hardware register;
-@samp{cc} serves to name this register.  On other machines, the
-condition code is handled differently, and specifying @samp{cc} has no
-effect.  But it is valid no matter what the machine.
-
-If your assembler instructions access memory in an unpredictable
-fashion, add @samp{memory} to the list of clobbered registers.  This
-causes GCC to not keep memory values cached in registers across the
-assembler instruction and not optimize stores or loads to that memory.
-You also should add the @code{volatile} keyword if the memory
-affected is not listed in the inputs or outputs of the @code{asm}, as
-the @samp{memory} clobber does not count as a side-effect of the
-@code{asm}.  If you know how large the accessed memory is, you can add
-it as input or output but if this is not known, you should add
-@samp{memory}.  As an example, if you access ten bytes of a string, you
-can use a memory input like:
-
-@smallexample
-@{"m"( (@{ struct @{ char x[10]; @} *p = (void *)ptr ; *p; @}) )@}.
-@end smallexample
-
-Note that in the following example the memory input is necessary,
-otherwise GCC might optimize the store to @code{x} away:
-@smallexample
-int foo ()
+@example
+void DoCheck(uint32_t dwSomeValue)
 @{
-  int x = 42;
-  int *y = &x;
-  int result;
-  asm ("magic stuff accessing an 'int' pointed to by '%1'"
-       : "=&d" (result) : "a" (y), "m" (*y));
-  return result;
+   uint32_t dwRes;
+
+   // Assumes dwSomeValue is not zero.
+   asm ("bsfl %1,%0"
+     : "=r" (dwRes)
+     : "r" (dwSomeValue)
+     : "cc");
+
+   assert(dwRes > 3);
 @}
-@end smallexample
+@end example
 
-You can put multiple assembler instructions together in a single
-@code{asm} template, separated by the characters normally used in assembly
-code for the system.  A combination that works in most places is a newline
-to break the line, plus a tab character to move to the instruction field
-(written as @samp{\n\t}).  Sometimes semicolons can be used, if the
-assembler allows semicolons as a line-breaking character.  Note that some
-assembler dialects use semicolons to start a comment.
-The input operands are guaranteed not to use any of the clobbered
-registers, and neither do the output operands' addresses, so you can
-read and write the clobbered registers as many times as you like.  Here
-is an example of multiple instructions in a template; it assumes the
-subroutine @code{_foo} accepts arguments in registers 9 and 10:
+The next example shows a case where the optimizers can recognize that the input 
+(@var{dwSomeValue}) never changes during the execution of the function and can 
+therefore move the @code{asm} outside the loop to produce more efficient code. 
+Again, using @code{volatile} disables this type of optimization.
 
-@smallexample
-asm ("movl %0,r9\n\tmovl %1,r10\n\tcall _foo"
-     : /* no outputs */
-     : "g" (from), "g" (to)
-     : "r9", "r10");
-@end smallexample
+@example
+void do_print(uint32_t dwSomeValue)
+@{
+   uint32_t dwRes;
 
-Unless an output operand has the @samp{&} constraint modifier, GCC
-may allocate it in the same register as an unrelated input operand, on
-the assumption the inputs are consumed before the outputs are produced.
-This assumption may be false if the assembler code actually consists of
-more than one instruction.  In such a case, use @samp{&} for each output
-operand that may not overlap an input.  @xref{Modifiers}.
+   for (uint32_t x=0; x < 5; x++)
+   @{
+      // Assumes dwSomeValue is not zero.
+      asm ("bsfl %1,%0"
+        : "=r" (dwRes)
+        : "r" (dwSomeValue)
+        : "cc");
 
-If you want to test the condition code produced by an assembler
-instruction, you must include a branch and a label in the @code{asm}
-construct, as follows:
+      printf("%u: %u %u\n", x, dwSomeValue, dwRes);
+   @}
+@}
+@end example
 
-@smallexample
-asm ("clr %0\n\tfrob %1\n\tbeq 0f\n\tmov #1,%0\n0:"
-     : "g" (result)
-     : "g" (input));
-@end smallexample
+The following example demonstrates a case where you need to use the 
+@code{volatile} qualifier. It uses the i386 RDTSC instruction, which reads 
+the computer's time-stamp counter. Without the @code{volatile} qualifier, 
+the optimizers might assume that the @code{asm} block will always return the 
+same value and therefore optimize away the second call.
 
-@noindent
-This assumes your assembler supports local labels, as the GNU assembler
-and most Unix assemblers do.
+@example
+uint64_t msr;
 
-Speaking of labels, jumps from one @code{asm} to another are not
-supported.  The compiler's optimizers do not know about these jumps, and
-therefore they cannot take account of them when deciding how to
-optimize.  @xref{Extended asm with goto}.
+asm volatile ( "rdtsc\n\t"    // Returns the time in EDX:EAX.
+        "shl $32, %%rdx\n\t"  // Shift the upper bits left.
+        "or %%rdx, %0"        // 'Or' in the lower bits.
+        : "=a" (msr)
+        : 
+        : "rdx");
 
-@cindex macros containing @code{asm}
-Usually the most convenient way to use these @code{asm} instructions is to
-encapsulate them in macros that look like functions.  For example,
+printf("msr: %llx\n", msr);
 
-@smallexample
-#define sin(x)       \
-(@{ double __value, __arg = (x);   \
-   asm ("fsinx %1,%0": "=f" (__value): "f" (__arg));  \
-   __value; @})
-@end smallexample
+// Do other work...
 
-@noindent
-Here the variable @code{__arg} is used to make sure that the instruction
-operates on a proper @code{double} value, and to accept only those
-arguments @code{x} that can convert automatically to a @code{double}.
+// Reprint the timestamp
+asm volatile ( "rdtsc\n\t"    // Returns the time in EDX:EAX.
+        "shl $32, %%rdx\n\t"  // Shift the upper bits left.
+        "or %%rdx, %0"        // 'Or' in the lower bits.
+        : "=a" (msr)
+        : 
+        : "rdx");
 
-Another way to make sure the instruction operates on the correct data
-type is to use a cast in the @code{asm}.  This is different from using a
-variable @code{__arg} in that it converts more different types.  For
-example, if the desired type is @code{int}, casting the argument to
-@code{int} accepts a pointer with no complaint, while assigning the
-argument to an @code{int} variable named @code{__arg} warns about
-using a pointer unless the caller explicitly casts it.
+printf("msr: %llx\n", msr);
+@end example
 
-If an @code{asm} has output operands, GCC assumes for optimization
-purposes the instruction has no side effects except to change the output
-operands.  This does not mean instructions with a side effect cannot be
-used, but you must be careful, because the compiler may eliminate them
-if the output operands aren't used, or move them out of loops, or
-replace two with one if they constitute a common subexpression.  Also,
-if your instruction does have a side effect on a variable that otherwise
-appears not to change, the old value of the variable may be reused later
-if it happens to be found in a register.
+GCC's optimizers will not treat this code like the non-volatile code in the 
+earlier examples. They do not move it out of loops or omit it on the 
+assumption that the result from a previous call is still valid.
 
-You can prevent an @code{asm} instruction from being deleted
-by writing the keyword @code{volatile} after
-the @code{asm}.  For example:
+Note that the compiler can move even volatile @code{asm} instructions relative 
+to other code, including across jump instructions. For example, on many 
+targets there is a system register that controls the rounding mode of 
+floating-point operations. Setting it with a volatile @code{asm}, as in the 
+following PowerPC example, will not work reliably.
 
-@smallexample
-#define get_and_set_priority(new)              \
-(@{ int __old;                                  \
-   asm volatile ("get_and_set_priority %0, %1" \
-                 : "=g" (__old) : "g" (new));  \
-   __old; @})
-@end smallexample
+@example
+asm volatile("mtfsf 255, %0" : : "f" (fpenv));
+sum = x + y;
+@end example
 
-@noindent
-The @code{volatile} keyword indicates that the instruction has
-important side-effects.  GCC does not delete a volatile @code{asm} if
-it is reachable.  (The instruction can still be deleted if GCC can
-prove that control flow never reaches the location of the
-instruction.)  Note that even a volatile @code{asm} instruction
-can be moved relative to other code, including across jump
-instructions.  For example, on many targets there is a system
-register that can be set to control the rounding mode of
-floating-point operations.  You might try
-setting it with a volatile @code{asm}, like this PowerPC example:
+The compiler may move the addition back before the volatile @code{asm}. To 
+make it work as expected, add an artificial dependency to the @code{asm} by 
+referencing a variable in the subsequent code, for example: 
 
-@smallexample
-       asm volatile("mtfsf 255,%0" : : "f" (fpenv));
-       sum = x + y;
-@end smallexample
+@example
+asm volatile ("mtfsf 255,%1" : "=X" (sum) : "f" (fpenv));
+sum = x + y;
+@end example
 
-@noindent
-This does not work reliably, as the compiler may move the addition back
-before the volatile @code{asm}.  To make it work you need to add an
-artificial dependency to the @code{asm} referencing a variable in the code
-you don't want moved, for example:
+Under certain circumstances, GCC may duplicate (or remove duplicates of) your 
+assembly code when optimizing. This can lead to unexpected duplicate symbol 
+errors during compilation if your asm code defines symbols or labels. Using %= 
+(@pxref{AssemblerTemplate}) may help resolve this problem.
 
-@smallexample
-    asm volatile ("mtfsf 255,%1" : "=X"(sum): "f"(fpenv));
-    sum = x + y;
-@end smallexample
+@anchor{AssemblerTemplate}
+@subsubsection Assembler Template
+@cindex @code{asm} assembler template
 
-Similarly, you can't expect a
-sequence of volatile @code{asm} instructions to remain perfectly
-consecutive.  If you want consecutive output, use a single @code{asm}.
-Also, GCC performs some optimizations across a volatile @code{asm}
-instruction; GCC does not ``forget everything'' when it encounters
-a volatile @code{asm} instruction the way some other compilers do.
+An assembler template is a literal string containing assembler instructions. 
+The compiler will replace any references to inputs, outputs, and goto labels 
+in the template, and then output the resulting string to the assembler. The 
+string can contain any instructions recognized by the assembler, including 
+directives. GCC does not parse the assembler instructions 
+themselves and does not know what they mean or even whether they are valid 
+assembler input. However, it does count the statements 
+(@pxref{Size of an asm}).
 
-An @code{asm} instruction without any output operands is treated
-identically to a volatile @code{asm} instruction.
+You may place multiple assembler instructions together in a single @code{asm} 
+string, separated by the characters normally used in assembly code for the 
+system. A combination that works in most places is a newline to break the 
+line, plus a tab character to move to the instruction field (written as 
+"\n\t"). Some assemblers allow semicolons as a line separator. However, note 
+that some assembler dialects use semicolons to start a comment. 
 
-It is a natural idea to look for a way to give access to the condition
-code left by the assembler instruction.  However, when we attempted to
-implement this, we found no way to make it work reliably.  The problem
-is that output operands might need reloading, which result in
-additional following ``store'' instructions.  On most machines, these
-instructions alter the condition code before there is time to
-test it.  This problem doesn't arise for ordinary ``test'' and
-``compare'' instructions because they don't have any output operands.
+Do not expect a sequence of @code{asm} statements to remain perfectly 
+consecutive after compilation, even when you are using the @code{volatile} 
+qualifier. If certain instructions need to remain consecutive in the output, 
+put them in a single multi-instruction asm statement.
 
-For reasons similar to those described above, it is not possible to give
-an assembler instruction access to the condition code left by previous
-instructions.
+Accessing data from C programs without using input/output operands (such as 
+by using global symbols directly from the assembler template) may not work as 
+expected. Similarly, calling functions directly from an assembler template 
+requires a detailed understanding of the target assembler and ABI.
 
-@anchor{Extended asm with goto}
-As of GCC version 4.5, @code{asm goto} may be used to have the assembly
-jump to one or more C labels.  In this form, a fifth section after the
-clobber list contains a list of all C labels to which the assembly may jump.
-Each label operand is implicitly self-named.  The @code{asm} is also assumed
-to fall through to the next statement.
+Since GCC does not parse the AssemblerTemplate, it has no visibility of any 
+symbols it references. This may result in GCC discarding those symbols as 
+unreferenced unless they are also listed as input, output, or goto operands.
 
-This form of @code{asm} is restricted to not have outputs.  This is due
-to a internal restriction in the compiler that control transfer instructions
-cannot have outputs.  This restriction on @code{asm goto} may be lifted
-in some future version of the compiler.  In the meantime, @code{asm goto}
-may include a memory clobber, and so leave outputs in memory.
+GCC can support multiple assembler dialects (for example, GCC for i386 
+supports "att" and "intel" dialects) for inline assembler. In builds that 
+support this capability, the @option{-masm} option controls which dialect 
+GCC uses as its default. The hardware-specific documentation for the 
+@option{-masm} option contains the list of supported dialects, as well as the 
+default dialect if the option is not specified. This information may be 
+important to understand, since assembler code that works correctly when 
+compiled using one dialect will likely fail if compiled using another.
 
-@smallexample
+@subsubheading Using braces in @code{asm} templates
+
+If your code needs to support multiple assembler dialects (for example, if 
+you are writing public headers that need to support a variety of compilation 
+options), use constructs of this form:
+
+@example
+@{ dialect0 | dialect1 | dialect2... @}
+@end example
+
+This construct outputs 'dialect0' when using dialect #0 to compile the code, 
+'dialect1' for dialect #1, etc. If there are fewer alternatives within the 
+braces than the number of dialects the compiler supports, the construct 
+outputs nothing.
+
+For example, if an i386 compiler supports two dialects (att, intel), an 
+assembler template such as this:
+
+@example
+"bt@{l %[Offset],%[Base] | %[Base],%[Offset]@}; jc %l2"
+@end example
+
+would produce the output:
+
+@example
+For att: "btl %[Offset],%[Base] ; jc %l2"
+For intel: "bt %[Base],%[Offset]; jc %l2"
+@end example
+
+Using that same compiler, this code:
+
+@example
+"xchg@{l@}\t@{%%@}ebx, %1"
+@end example
+
+would produce 
+
+@example
+For att: "xchgl\t%%ebx, %1"
+For intel: "xchg\tebx, %1"
+@end example
+
+There is no support for nesting dialect alternatives. Also, there is no 
+``escape'' for an open brace (@{), so do not use open braces in an Extended 
+@code{asm} template other than as a dialect indicator.
+
+@subsubheading Other format strings
+
+In addition to the tokens described by the input, output, and goto operands, 
+there are a few special cases:
+
+@itemize
+@item
+"%%" outputs a single "%" into the assembler code.
+
+@item
+"%=" outputs a number that is unique to each instance of the @code{asm} 
+statement in the entire compilation. This option is useful when creating local 
+labels and referring to them multiple times in a single template that 
+generates multiple assembler instructions. 
+
+@end itemize
+
+@anchor{OutputOperands}
+@subsubsection Output Operands
+@cindex @code{asm} output operands
+
+An @code{asm} statement has zero or more output operands indicating the names
+of C variables modified by the assembler code.
+
+In this i386 example, @var{old} (referred to in the template string as 
+@code{%0}) and @var{*Base} (as @code{%1}) are outputs and @var{Offset} 
+(@code{%2}) is an input:
+
+@example
+bool old;
+
+__asm__ ("btsl %2,%1\n\t" // Turn on zero-based bit #Offset in Base.
+         "sbb %0,%0"      // Use the CF to calculate old.
+   : "=r" (old), "+rm" (*Base)
+   : "Ir" (Offset)
+   : "cc");
+
+return old;
+@end example
+
+Operands use this format:
+
+@example
+[ [asmSymbolicName] ] "constraint" (cvariablename)
+@end example
+
+@emph{asmSymbolicName}
+@*
+
+When not using asmSymbolicNames, use the (zero-based) position of the operand 
+in the list of operands in the assembler template. For example if there are 
+three output operands, use @code{%0} in the template to refer to the first, 
+@code{%1} for the second, and @code{%2} for the third. When using an 
+asmSymbolicName, reference it by enclosing the name in square brackets 
+(i.e. @code{%[Value]}). The scope of the name is the @code{asm} statement 
+that contains the definition. Any valid C variable name is acceptable, 
+including names already defined in the surrounding code. No two operands 
+within the same @code{asm} statement can use the same symbolic name.
+
+@emph{constraint}
+@*
+Output constraints must begin with either @code{"="} (a variable overwriting an 
+existing value) or @code{"+"} (when reading and writing). When using 
+@code{"="}, do not assume the location will contain the existing value (except 
+when tying the variable to an input; @pxref{InputOperands,,Input Operands}).
+
+After the prefix, there must be one or more additional constraints 
+(@pxref{Constraints}) that describe where the value resides. Common 
+constraints include @code{"r"} for register and @code{"m"} for memory. 
+When you list more than one possible location (for example @code{"=rm"}), the 
+compiler chooses the most efficient one based on the current context. If you 
+list as many alternates as the @code{asm} statement allows, you will permit 
+the optimizers to produce the best possible code. If you must use a specific
+register, but your Machine Constraints do not provide sufficient 
+control to select the specific register you want, Local Reg Vars may provide 
+a solution (@pxref{Local Reg Vars}).
+
+@emph{cvariablename}
+@*
+Specifies the C variable name of the output (enclosed by parentheses). Accepts 
+any (non-constant) variable within scope.
+
+Remarks:
+
+The total number of input + output + goto operands has a limit of 30. Commas 
+separate the operands. When the compiler selects the registers to use to 
+represent the output operands, it will not use any of the clobbered registers 
+(@pxref{Clobbers}).
+
+Output operand expressions must be lvalues. The compiler cannot check whether 
+the operands have data types that are reasonable for the instruction being 
+executed. For output expressions that are not directly addressable (for 
+example a bit-field), the constraint must allow a register. In that case, GCC 
+uses the register as the output of the @code{asm}, and then stores that 
+register into the output. 
+
+Unless an output operand has the '@code{&}' constraint modifier 
+(@pxref{Modifiers}), GCC may allocate it in the same register as an unrelated 
+input operand, on the assumption that the assembler code will consume its 
+inputs before producing outputs. This assumption may be false if the assembler 
+code actually consists of more than one instruction. In this case, use 
+'@code{&}' on each output operand that must not overlap an input.
+
+The same problem can occur if one output parameter (@var{a}) allows a register 
+constraint and another output parameter (@var{b}) allows a memory constraint.
+The code generated by GCC to access the memory address in @var{b} can contain
+registers which @emph{might} be shared by @var{a}, and GCC considers those 
+registers to be inputs to the asm. As above, GCC assumes that such input
+registers are consumed before any outputs are written. This assumption may 
+result in incorrect behavior if the asm writes to @var{a} before using 
+@var{b}. Combining the `@code{&}' constraint with the register constraint 
+ensures that modifying @var{a} will not affect what address is referenced by 
+@var{b}. Omitting the `@code{&}' constraint means that the location of @var{b} 
+will be undefined if @var{a} is modified before using @var{b}.
+
+@code{asm} supports operand modifiers on operands (for example @code{%k2} 
+instead of simply @code{%2}). Typically these qualifiers are hardware 
+dependent. The list of supported modifiers for i386 is found at 
+@ref{i386Operandmodifiers,i386 Operand modifiers}.
+
+If the C code that follows the @code{asm} makes no use of any of the output 
+operands, use @code{volatile} for the @code{asm} statement to prevent the 
+optimizers from discarding the @code{asm} statement as unneeded 
+(see @ref{Volatile}).
+
+Examples:
+
+This code makes no use of the optional asmSymbolicName. Therefore it 
+references the first output operand as @code{%0} (were there a second, it 
+would be @code{%1}, etc). The number of the first input operand is one greater 
+than that of the last output operand. In this i386 example, that makes 
+@var{Mask} @code{%1}:
+
+@example
+uint32_t Mask = 1234;
+uint32_t Index;
+
+  asm ("bsfl %1, %0"
+     : "=r" (Index)
+     : "r" (Mask)
+     : "cc");
+@end example
+
+That code overwrites the variable Index ("="), placing the value in a register 
+("r"). The generic "r" constraint instead of a constraint for a specific 
+register allows the compiler to pick the register to use, which can result 
+in more efficient code. This may not be possible if an assembler instruction 
+requires a specific register.
+
+The following i386 example uses the asmSymbolicName operand. It produces the 
+same result as the code above, but some may consider it more readable or more 
+maintainable since reordering index numbers is not necessary when adding or 
+removing operands. The names aIndex and aMask are only used to emphasize which 
+names get used where. It is acceptable to reuse the names Index and Mask.
+
+@example
+uint32_t Mask = 1234;
+uint32_t Index;
+
+  asm ("bsfl %[aMask], %[aIndex]"
+     : [aIndex] "=r" (Index)
+     : [aMask] "r" (Mask)
+     : "cc");
+@end example
+
+Here are some more examples of output operands.
+
+@example
+uint32_t c = 1;
+uint32_t d;
+uint32_t *e = &c;
+
+asm ("mov %[e], %[d]"
+   : [d] "=rm" (d)
+   : [e] "rm" (*e));
+@end example
+
+Here, @var{d} may either be in a register or in memory. Since the compiler 
+might already have the current value of the uint32_t pointed to by @var{e} 
+in a register, you can enable it to choose the best location
+for @var{d} by specifying both constraints.
+
+@anchor{InputOperands}
+@subsubsection Input Operands
+@cindex @code{asm} input operands
+@cindex @code{asm} expressions
+
+Input operands make inputs from C variables and expressions available to the 
+assembly code.
+
+Specify input operands by using the format:
+
+@example
+[ [asmSymbolicName] ] "constraint" (cexpression)
+@end example
+
+@emph{asmSymbolicName}
+@*
+When not using asmSymbolicNames, use the (zero-based) position of the operand 
+in the list of operands, including outputs, in the assembler template. For 
+example, if there are two output parameters and three inputs, @code{%2} refers 
+to the first input, @code{%3} to the second, and @code{%4} to the third.
+When using an asmSymbolicName, reference it by enclosing the name in square 
+brackets (e.g. @code{%[Value]}). The scope of the name is the @code{asm} 
+statement that contains the definition. Any valid C variable name is 
+acceptable, including names already defined in the surrounding code. No two 
+operands within the same @code{asm} statement can use the same symbolic name.
+
+@emph{constraint}
+@*
+Input constraints must be a string containing one or more constraints 
+(@pxref{Constraints}). When you give more than one possible constraint 
+(for example, @code{"irm"}), the compiler will choose the most efficient 
+method based on the current context. Input constraints may not begin with 
+either "=" or "+". If you must use a specific register, but your Machine
+Constraints do not provide sufficient control to select the specific 
+register you want, Local Reg Vars may provide a solution 
+(@pxref{Local Reg Vars}).
+
+Input constraints can also be digits (for example, @code{"0"}). This indicates 
+that the specified input will be in the same place as the output constraint 
+at the (zero-based) index in the output constraint list. When using 
+asmSymbolicNames for the output operands, you may use these names (enclosed 
+in brackets []) instead of digits.
+
+@emph{cexpression}
+@*
+This is the C variable or expression being passed to the @code{asm} statement 
+as input.
+
+When the compiler selects the registers to use to represent the input 
+operands, it will not use any of the clobbered registers (@pxref{Clobbers}).
+
+If there are no output operands but there are input operands, place two 
+consecutive colons where the output operands would go:
+
+@example
+__asm__ ("some instructions"
+   : /* No outputs. */
+   : "r" (Offset / 8);
+@end example
+
+@strong{Warning:} Do @emph{not} modify the contents of input-only operands 
+(except for inputs tied to outputs). The compiler assumes that on exit from 
+the @code{asm} statement these operands will contain the same values as they 
+had before executing the assembler. It is @emph{not} possible to use Clobbers 
+to inform the compiler that the values in these inputs are changing. One 
+common work-around is to tie the changing input variable to an output variable 
+that never gets used. Note, however, that if the code that follows the 
+@code{asm} statement makes no use of any of the output operands, the GCC 
+optimizers may discard the @code{asm} statement as unneeded 
+(see @ref{Volatile}).
+
+Remarks:
+
+The total number of input + output + goto operands has a limit of 30.
+
+@code{asm} supports operand modifiers on operands (for example @code{%k2} 
+instead of simply @code{%2}). Typically these qualifiers are hardware 
+dependent. The list of supported modifiers for i386 is found at 
+@ref{i386Operandmodifiers,i386 Operand modifiers}.
+
+Examples:
+
+In this example using the fictitious @code{combine} instruction, the 
+constraint @code{"0"} for input operand 1 says that it must occupy the same 
+location as output operand 0. Only input operands may use numbers in 
+constraints, and they must each refer to an output operand. Only a number (or 
+the symbolic assembler name) in the constraint can guarantee that one operand 
+is in the same place as another. The mere fact that @var{foo} is the value of 
+both operands is not enough to guarantee that they are in the same place in 
+the generated assembler code.
+
+@example
+asm ("combine %2, %0" 
+   : "=r" (foo) 
+   : "0" (foo), "g" (bar));
+@end example
+
+Here is an example using symbolic names.
+
+@example
+asm ("cmoveq %1, %2, %[result]" 
+   : [result] "=r"(result) 
+   : "r" (test), "r" (new), "[result]" (old));
+@end example
+
+@anchor{Clobbers}
+@subsubsection Clobbers
+@cindex @code{asm} clobbers
+
+While the compiler is aware of changes to entries listed in the output 
+operands, the assembler code may modify more than just the outputs. For 
+example, calculations may require additional registers, or the processor may 
+overwrite a register as a side effect of a particular assembler instruction. 
+In order to inform the compiler of these changes, list them in the clobber 
+list. Clobber list items are either register names or the special clobbers 
+(listed below). Each clobber list item is enclosed in double quotes and 
+separated by commas.
+
+Clobber descriptions may not in any way overlap with an input or output 
+operand. For example, you may not have an operand describing a register class 
+with one member when listing that register in the clobber list. Variables 
+declared to live in specific registers (@pxref{Explicit Reg Vars}), and used 
+as @code{asm} input or output operands, must have no part mentioned in the 
+clobber description. In particular, there is no way to specify that input 
+operands get modified without also specifying them as output operands.
+
+When the compiler selects which registers to use to represent input and output 
+operands, it will not use any of the clobbered registers. As a result, 
+clobbered registers are available for any use in the assembler code.
+
+Here is a realistic example for the VAX showing the use of clobbered 
+registers: 
+
+@example
+asm volatile ("movc3 %0, %1, %2"
+                   : /* No outputs. */
+                   : "g" (from), "g" (to), "g" (count)
+                   : "r0", "r1", "r2", "r3", "r4", "r5");
+@end example
+
+Also, there are two special clobber arguments:
+
+@enumerate
+@item
+The @code{"cc"} clobber indicates that the assembler code modifies the flags 
+register. On some machines, GCC represents the condition codes as a specific 
+hardware register; "cc" serves to name this register. On other machines, 
+condition code handling is different, and specifying "cc" has no effect. But 
+it is valid no matter what the machine.
+
+@item
+The "memory" clobber tells the compiler that the assembly code performs memory 
+reads or writes to items other than those listed in the input and output 
+operands (for example accessing the memory pointed to by one of the input 
+parameters). To ensure memory contains correct values, GCC may need to flush 
+specific register values to memory before executing the @code{asm}. Further, 
+the compiler will not assume that any values read from memory before an 
+@code{asm} will remain unchanged after that @code{asm}; it will reload them as 
+needed. This effectively forms a read/write memory barrier for the compiler.
+
+Note that this clobber does not prevent the @emph{processor} from doing 
+speculative reads past the @code{asm} statement. To prevent that, you need 
+processor-specific fence instructions.
+
+Flushing registers to memory has performance implications and may be an issue 
+for time-sensitive code. One trick to avoid this is available if the size of 
+the memory being accessed is known at compile time. For example, if accessing 
+ten bytes of a string, use a memory input like: 
+
+@code{@{"m"( (@{ struct @{ char x[10]; @} *p = (void *)ptr ; *p; @}) )@}}.
+
+@end enumerate
+
+@anchor{GotoLabels}
+@subsubsection Goto Labels
+@cindex @code{asm} goto labels
+
+@code{asm goto} allows assembly code to jump to one or more C labels. The 
+GotoLabels section in an @code{asm goto} statement contains a comma-separated 
+list of all C labels to which the assembler code may jump. GCC assumes that 
+@code{asm} execution falls through to the next statement (if this is not the 
+case, consider using the @code{__builtin_unreachable} intrinsic after the 
+@code{asm} statement). The total number of input + output + goto operands has 
+a limit of 30.
+
+An @code{asm goto} statement can not have outputs (which means that the 
+statement is implicitly volatile). This is due to an internal restriction of 
+the compiler: control transfer instructions cannot have outputs. If the 
+assembler code does modify anything, use the "memory" clobber to force the 
+optimizers to flush all register values to memory, and reload them if 
+necessary, after the @code{asm} statement.
+
+To reference a label, prefix it with @code{%l} (that's a lowercase L) followed 
+by its (zero-based) position in GotoLabels plus the number of input 
+arguments.  For example, if the @code{asm} has three inputs and references two 
+labels, refer to the first label as @code{%l3} and the second as @code{%l4}).
+
+@code{asm} statements may not perform jumps into other @code{asm} statements. 
+GCC's optimizers do not know about these jumps; therefore they cannot take 
+account of them when deciding how to optimize.
+
+Example code for i386 might look like:
+
+@example
+asm goto (
+    "btl %1, %0\n\t"
+    "jc %l2"
+    : /* No outputs. */
+    : "r" (p1), "r" (p2) 
+    : "cc" 
+    : carry);
+
+return 0;
+
+carry:
+return 1;
+@end example
+
+The following example shows an @code{asm goto} that uses the memory clobber.
+
+@example
 int frob(int x)
 @{
   int y;
   asm goto ("frob %%r5, %1; jc %l[error]; mov (%2), %%r5"
-            : : "r"(x), "r"(&y) : "r5", "memory" : error);
+            : /* No outputs. */
+            : "r"(x), "r"(&y)
+            : "r5", "memory" 
+            : error);
   return y;
- error:
+error:
   return -1;
 @}
-@end smallexample
+@end example
 
-@noindent
-In this (inefficient) example, the @code{frob} instruction sets the
-carry bit to indicate an error.  The @code{jc} instruction detects
-this and branches to the @code{error} label.  Finally, the output
-of the @code{frob} instruction (@code{%r5}) is stored into the memory
-for variable @code{y}, which is later read by the @code{return} statement.
+@anchor{i386Operandmodifiers}
+@subsubsection i386 Operand modifiers
 
-@smallexample
-void doit(void)
+Input, output, and goto operands for extended @code{asm} statements can use 
+modifiers to affect the code output to the assembler. For example, the 
+following code uses the "h" and "b" modifiers for i386:
+
+@example
+uint16_t  num;
+asm volatile ("xchg %h0, %b0" : "+a" (num) );
+@end example
+
+These modifiers generate this assembler code:
+
+@example
+xchg %ah, %al
+@end example
+
+The rest of this discussion uses the following code for illustrative purposes.
+
+@example
+int main()
 @{
-  int i = 0;
-  asm goto ("mfsr %%r1, 123; jmp %%r1;"
-            ".pushsection doit_table;"
-            ".long %l0, %l1, %l2, %l3;"
-            ".popsection"
-            : : : "r1" : label1, label2, label3, label4);
-  __builtin_unreachable ();
+   int iInt = 1;
 
- label1:
-  f1();
-  return;
- label2:
-  f2();
-  return;
- label3:
-  i = 1;
- label4:
-  f3(i);
+top:
+
+   asm volatile goto ("some assembler instructions here"
+   : /* No outputs. */
+   : "q" (iInt), "X" (sizeof(unsigned char) + 1)
+   : /* No clobbers. */
+   : top);
 @}
-@end smallexample
+@end example
 
-@noindent
-In this (also inefficient) example, the @code{mfsr} instruction reads
-an address from some out-of-band machine register, and the following
-@code{jmp} instruction branches to that address.  The address read by
-the @code{mfsr} instruction is assumed to have been previously set via
-some application-specific mechanism to be one of the four values stored
-in the @code{doit_table} section.  Finally, the @code{asm} is followed
-by a call to @code{__builtin_unreachable} to indicate that the @code{asm}
-does not in fact fall through.
+With no modifiers, this is what the output from the operands would be for the 
+att and intel dialects of assembler:
 
-@smallexample
-#define TRACE1(NUM)                         \
-  do @{                                      \
-    asm goto ("0: nop;"                     \
-              ".pushsection trace_table;"   \
-              ".long 0b, %l0;"              \
-              ".popsection"                 \
-              : : : : trace#NUM);           \
-    if (0) @{ trace#NUM: trace(); @}          \
-  @} while (0)
-#define TRACE  TRACE1(__COUNTER__)
-@end smallexample
+@multitable {Operand} {masm=att} {OFFSET FLAT:.L2}
+@headitem Operand @tab masm=att @tab masm=intel
+@item @code{%0}
+@tab @code{%eax}
+@tab @code{eax}
+@item @code{%1}
+@tab @code{$2}
+@tab @code{2}
+@item @code{%2}
+@tab @code{$.L2}
+@tab @code{OFFSET FLAT:.L2}
+@end multitable
 
-@noindent
-In this example (which in fact inspired the @code{asm goto} feature)
-we want on rare occasions to call the @code{trace} function; on other
-occasions we'd like to keep the overhead to the absolute minimum.
-The normal code path consists of a single @code{nop} instruction.
-However, we record the address of this @code{nop} together with the
-address of a label that calls the @code{trace} function.  This allows
-the @code{nop} instruction to be patched at run time to be an
-unconditional branch to the stored label.  It is assumed that an
-optimizing compiler moves the labeled block out of line, to
-optimize the fall through path from the @code{asm}.
+The table below shows the list of supported modifiers and their effects.
 
-If you are writing a header file that should be includable in ISO C
-programs, write @code{__asm__} instead of @code{asm}.  @xref{Alternate
-Keywords}.
+@multitable {Modifier} {Print the opcode suffix for the size of th} {Operand} {masm=att} {masm=intel}
+@headitem Modifier @tab Description @tab Operand @tab @option{masm=att} @tab @option{masm=intel}
+@item @code{z}
+@tab Print the opcode suffix for the size of the current integer operand (one of @code{b}/@code{w}/@code{l}/@code{q}).
+@tab @code{%z0}
+@tab @code{l}
+@tab 
+@item @code{b}
+@tab Print the QImode name of the register.
+@tab @code{%b0}
+@tab @code{%al}
+@tab @code{al}
+@item @code{h}
+@tab Print the QImode name for a ``high'' register.
+@tab @code{%h0}
+@tab @code{%ah}
+@tab @code{ah}
+@item @code{w}
+@tab Print the HImode name of the register.
+@tab @code{%w0}
+@tab @code{%ax}
+@tab @code{ax}
+@item @code{k}
+@tab Print the SImode name of the register.
+@tab @code{%k0}
+@tab @code{%eax}
+@tab @code{eax}
+@item @code{q}
+@tab Print the DImode name of the register.
+@tab @code{%q0}
+@tab @code{%rax}
+@tab @code{rax}
+@item @code{l}
+@tab Print the label name with no punctuation.
+@tab @code{%l2}
+@tab @code{.L2}
+@tab @code{.L2}
+@item @code{c}
+@tab Require a constant operand and print the constant expression with no punctuation.
+@tab @code{%c1}
+@tab @code{2}
+@tab @code{2}
+@end multitable
 
-@subsection Size of an @code{asm}
-
-Some targets require that GCC track the size of each instruction used in
-order to generate correct code.  Because the final length of an
-@code{asm} is only known by the assembler, GCC must make an estimate as
-to how big it will be.  The estimate is formed by counting the number of
-statements in the pattern of the @code{asm} and multiplying that by the
-length of the longest instruction on that processor.  Statements in the
-@code{asm} are identified by newline characters and whatever statement
-separator characters are supported by the assembler; on most processors
-this is the @samp{;} character.
-
-Normally, GCC's estimate is perfectly adequate to ensure that correct
-code is generated, but it is possible to confuse the compiler if you use
-pseudo instructions or assembler macros that expand into multiple real
-instructions or if you use assembler directives that expand to more
-space in the object file than is needed for a single instruction.
-If this happens then the assembler produces a diagnostic saying that
-a label is unreachable.
-
-@subsection i386 floating-point asm operands
+@anchor{i386floatingpointasmoperands}
+@subsubsection i386 floating-point asm operands
 
 On i386 targets, there are several rules on the usage of stack-like registers
 in the operands of an @code{asm}.  These rules apply only to the operands
@@ -6715,10 +7168,34 @@ for the compiler to know that @code{fyl2xp1} pops both inputs.
 asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 @end smallexample
 
+@lowersections
 @include md.texi
+@raisesections
+
+@node Size of an asm
+@subsection Size of an @code{asm}
+
+Some targets require that GCC track the size of each instruction used
+in order to generate correct code.  Because the final length of the
+code produced by an @code{asm} statement is only known by the
+assembler, GCC must make an estimate as to how big it will be.  It
+does this by counting the number of instructions in the pattern of the
+@code{asm} and multiplying that by the length of the longest
+instruction supported by that processor.  (When working out the number
+of instructions, it assumes that any occurrence of a newline or of
+whatever statement separator character is supported by the assembler --
+typically @samp{;} --- indicates the end of an instruction.)
+
+Normally, GCC's estimate is adequate to ensure that correct
+code is generated, but it is possible to confuse the compiler if you use
+pseudo instructions or assembler macros that expand into multiple real
+instructions, or if you use assembler directives that expand to more
+space in the object file than is needed for a single instruction.
+If this happens then the assembler may produce a diagnostic saying that
+a label is unreachable.
 
 @node Asm Labels
-@section Controlling Names Used in Assembler Code
+@subsection Controlling Names Used in Assembler Code
 @cindex assembler names for identifiers
 @cindex names used in assembler code
 @cindex identifiers, names in assembler code
@@ -6766,7 +7243,7 @@ does not as yet have the ability to store static variables in registers.
 Perhaps that will be added.
 
 @node Explicit Reg Vars
-@section Variables in Specified Registers
+@subsection Variables in Specified Registers
 @cindex explicit register variables
 @cindex variables in specified registers
 @cindex specified registers
@@ -6806,7 +7283,7 @@ specified for that operand in the @code{asm}.)
 @end menu
 
 @node Global Reg Vars
-@subsection Defining Global Register Variables
+@subsubsection Defining Global Register Variables
 @cindex global register variables
 @cindex registers, global variables in
 
@@ -6903,7 +7380,7 @@ On the 68000, a2 @dots{} a5 should be suitable, as should d2 @dots{} d7.
 Of course, it does not do to use more than a few of those.
 
 @node Local Reg Vars
-@subsection Specifying Registers for Local Variables
+@subsubsection Specifying Registers for Local Variables
 @cindex local variables, specifying registers
 @cindex specifying registers for local variables
 @cindex registers for local variables
@@ -6946,21 +7423,37 @@ Stores into local register variables may be deleted when they appear to be dead
 according to dataflow analysis.  References to local register variables may
 be deleted or moved or simplified.
 
-As for global register variables, it's recommended that you choose a
+As with global register variables, it is recommended that you choose a
 register that is normally saved and restored by function calls on
-your machine, so that library routines will not clobber it.  A common
-pitfall is to initialize multiple call-clobbered registers with
-arbitrary expressions, where a function call or library call for an
-arithmetic operator overwrites a register value from a previous
-assignment, for example @code{r0} below:
+your machine, so that library routines will not clobber it.  
+
+Sometimes when writing inline @code{asm} code, you need to make an operand be a 
+specific register, but there's no matching constraint letter for that 
+register. To force the operand into that register, create a local variable 
+and specify the register in the variable's declaration. Then use the local 
+variable for the asm operand and specify any constraint letter that matches 
+the register:
+
 @smallexample
 register int *p1 asm ("r0") = @dots{};
 register int *p2 asm ("r1") = @dots{};
+register int *result asm ("r0");
+asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
 @end smallexample
 
-@noindent
-In those cases, a solution is to use a temporary variable for
-each arbitrary expression.   @xref{Example of asm with clobbered asm reg}.
+@emph{Warning:} In the above example, be aware that a register (for example r0) can be 
+call-clobbered by subsequent code, including function calls and library calls 
+for arithmetic operators on other variables (for example the initialization 
+of p2). In this case, use temporary variables for expressions between the 
+register assignments:
+
+@smallexample
+int t1 = @dots{};
+register int *p1 asm ("r0") = @dots{};
+register int *p2 asm ("r1") = t1;
+register int *result asm ("r0");
+asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
+@end smallexample
 
 @node Alternate Keywords
 @section Alternate Keywords
