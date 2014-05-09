@@ -153,7 +153,7 @@ static sbitmap bb_in_list;
    definition has changed.  SSA edges are def-use edges in the SSA
    web.  For each D-U edge, we store the target statement or PHI node
    U.  */
-static GTY(()) vec<gimple, va_gc> *interesting_ssa_edges;
+static vec<gimple> interesting_ssa_edges;
 
 /* Identical to INTERESTING_SSA_EDGES.  For performance reasons, the
    list of SSA edges is split into two.  One contains all SSA edges
@@ -169,7 +169,7 @@ static GTY(()) vec<gimple, va_gc> *interesting_ssa_edges;
    don't use a separate worklist for VARYING edges, we end up with
    situations where lattice values move from
    UNDEFINED->INTERESTING->VARYING instead of UNDEFINED->VARYING.  */
-static GTY(()) vec<gimple, va_gc> *varying_ssa_edges;
+static vec<gimple> varying_ssa_edges;
 
 
 /* Return true if the block worklist empty.  */
@@ -271,9 +271,9 @@ add_ssa_edge (tree var, bool is_varying)
 	{
 	  gimple_set_plf (use_stmt, STMT_IN_SSA_EDGE_WORKLIST, true);
 	  if (is_varying)
-	    vec_safe_push (varying_ssa_edges, use_stmt);
+	    varying_ssa_edges.safe_push (use_stmt);
 	  else
-	    vec_safe_push (interesting_ssa_edges, use_stmt);
+	    interesting_ssa_edges.safe_push (use_stmt);
 	}
     }
 }
@@ -369,15 +369,15 @@ simulate_stmt (gimple stmt)
    SSA edge is added to it in simulate_stmt.  */
 
 static void
-process_ssa_edge_worklist (vec<gimple, va_gc> **worklist)
+process_ssa_edge_worklist (vec<gimple> *worklist)
 {
   /* Drain the entire worklist.  */
-  while ((*worklist)->length () > 0)
+  while (worklist->length () > 0)
     {
       basic_block bb;
 
       /* Pull the statement to simulate off the worklist.  */
-      gimple stmt = (*worklist)->pop ();
+      gimple stmt = worklist->pop ();
 
       /* If this statement was already visited by simulate_block, then
 	 we don't need to visit it again here.  */
@@ -492,8 +492,8 @@ ssa_prop_init (void)
   basic_block bb;
 
   /* Worklists of SSA edges.  */
-  vec_alloc (interesting_ssa_edges, 20);
-  vec_alloc (varying_ssa_edges, 20);
+  interesting_ssa_edges.create (20);
+  varying_ssa_edges.create (20);
 
   executable_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (executable_blocks);
@@ -535,8 +535,8 @@ ssa_prop_init (void)
 static void
 ssa_prop_fini (void)
 {
-  vec_free (interesting_ssa_edges);
-  vec_free (varying_ssa_edges);
+  interesting_ssa_edges.release ();
+  varying_ssa_edges.release ();
   cfg_blocks.release ();
   sbitmap_free (bb_in_list);
   sbitmap_free (executable_blocks);
@@ -859,8 +859,8 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
 
   /* Iterate until the worklists are empty.  */
   while (!cfg_blocks_empty_p ()
-	 || interesting_ssa_edges->length () > 0
-	 || varying_ssa_edges->length () > 0)
+	 || interesting_ssa_edges.length () > 0
+	 || varying_ssa_edges.length () > 0)
     {
       if (!cfg_blocks_empty_p ())
 	{
@@ -1464,5 +1464,3 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
   else
     gcc_unreachable ();
 }
-
-#include "gt-tree-ssa-propagate.h"

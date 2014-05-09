@@ -1,3 +1,11 @@
+2014-05-09  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (GTFILES): Remove tree-ssa-propagate.c.
+	* tree-ssa-propagate.c: Do not include gt-tree-ssa-propagate.h.
+	(interesting_ssa_edges, varying_ssa_edges): Move out of GC space.
+	(add_ssa_edge, process_ssa_edge_worklist, ssa_prop_init,
+	ssa_propagate): Adjust.
+
 2014-05-08  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/61009
