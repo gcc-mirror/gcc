@@ -1675,7 +1675,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       object = maybe_dummy_object (scope, NULL);
     }
 
-  object = maybe_resolve_dummy (object);
+  object = maybe_resolve_dummy (object, true);
   if (object == error_mark_node)
     return error_mark_node;
 
@@ -2434,7 +2434,7 @@ finish_this_expr (void)
 
       /* In a lambda expression, 'this' refers to the captured 'this'.  */
       if (LAMBDA_TYPE_P (type))
-        result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type));
+        result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type), true);
       else
         result = current_class_ptr;
     }

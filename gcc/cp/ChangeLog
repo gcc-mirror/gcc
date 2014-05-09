@@ -1,3 +1,17 @@
+2014-05-09  Momchil Velikov  <momchil.velikov@gmail.com>
+
+	PR c++/60463
+	PR c++/60755
+	* lambda.c (lambda_expr_this_capture): Add new parameter
+	add_capture_p controlling whether the functions will try to
+	capture 'this' via the default capture.
+	(maybe_resolve_dummy): Likewise.
+	* cp-tree.h: Adjust prototypes.
+	* call.c, semantics.c: Change callers of these functions.
+	* call.c (build_new_method_call_1): Use the actual 'this' that
+	would be potentially captured for the overload resolution, instead
+	of the dummy object.
+
 2014-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (convert_nontype_argument_function): Add tsubst_flags_t
