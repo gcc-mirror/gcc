@@ -624,11 +624,12 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
   return var;
 }
 
-/* Return the capture pertaining to a use of 'this' in LAMBDA, in the form of an
-   INDIRECT_REF, possibly adding it through default capturing.  */
+/* Return the capture pertaining to a use of 'this' in LAMBDA, in the
+   form of an INDIRECT_REF, possibly adding it through default
+   capturing, if ADD_CAPTURE_P is false.  */
 
 tree
-lambda_expr_this_capture (tree lambda)
+lambda_expr_this_capture (tree lambda, bool add_capture_p)
 {
   tree result;
 
@@ -648,7 +649,8 @@ lambda_expr_this_capture (tree lambda)
 
   /* Try to default capture 'this' if we can.  */
   if (!this_capture
-      && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE)
+      && (!add_capture_p
+          || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE))
     {
       tree lambda_stack = NULL_TREE;
       tree init = NULL_TREE;
@@ -708,9 +710,14 @@ lambda_expr_this_capture (tree lambda)
 	}
 
       if (init)
-	this_capture = add_default_capture (lambda_stack,
-					    /*id=*/this_identifier,
-					    init);
+        {
+          if (add_capture_p)
+	    this_capture = add_default_capture (lambda_stack,
+					        /*id=*/this_identifier,
+					        init);
+          else
+	    this_capture = init;
+        }
     }
 
   if (!this_capture)
@@ -742,7 +749,7 @@ lambda_expr_this_capture (tree lambda)
    'this' capture.  */
 
 tree
-maybe_resolve_dummy (tree object)
+maybe_resolve_dummy (tree object, bool add_capture_p)
 {
   if (!is_dummy_object (object))
     return object;
@@ -758,7 +765,7 @@ maybe_resolve_dummy (tree object)
     {
       /* In a lambda, need to go through 'this' capture.  */
       tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);
-      tree cap = lambda_expr_this_capture (lam);
+      tree cap = lambda_expr_this_capture (lam, add_capture_p);
       object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
 				     RO_NULL, tf_warning_or_error);
     }
