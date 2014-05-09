@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "is-a.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimplify.h"
 #include "gimple-ssa.h"
 #include "stringpool.h"
@@ -7042,9 +7043,6 @@ alpha_fold_builtin (tree fndecl, int n_args, tree *op,
     case ALPHA_BUILTIN_MSKQH:
       return alpha_fold_builtin_mskxx (op, opint, op_const, 0xff, true);
 
-    case ALPHA_BUILTIN_UMULH:
-      return fold_build2 (MULT_HIGHPART_EXPR, alpha_dimode_u, op[0], op[1]);
-
     case ALPHA_BUILTIN_ZAP:
       opint[1] ^= 0xff;
       /* FALLTHRU */
@@ -7093,6 +7091,49 @@ alpha_fold_builtin (tree fndecl, int n_args, tree *op,
     default:
       return NULL;
     }
+}
+
+bool
+alpha_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  bool changed = false;
+  gimple stmt = gsi_stmt (*gsi);
+  tree call = gimple_call_fn (stmt);
+  gimple new_stmt = NULL;
+
+  if (call)
+    {
+      tree fndecl = gimple_call_fndecl (stmt);
+
+      if (fndecl)
+	{
+	  tree arg0, arg1;
+
+	  switch (DECL_FUNCTION_CODE (fndecl))
+	    {
+	    case ALPHA_BUILTIN_UMULH:
+	      arg0 = gimple_call_arg (stmt, 0);
+	      arg1 = gimple_call_arg (stmt, 1);
+
+	      new_stmt
+		= gimple_build_assign_with_ops (MULT_HIGHPART_EXPR,
+						gimple_call_lhs (stmt),
+						arg0,
+						arg1);
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
+
+  if (new_stmt)
+    {
+      gsi_replace (gsi, new_stmt, true);
+      changed = true;
+    }
+
+  return changed;
 }
 
 /* This page contains routines that are used to determine what the function
@@ -9790,6 +9831,8 @@ alpha_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 #define TARGET_EXPAND_BUILTIN alpha_expand_builtin
 #undef  TARGET_FOLD_BUILTIN
 #define TARGET_FOLD_BUILTIN alpha_fold_builtin
+#undef  TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN alpha_gimple_fold_builtin
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL alpha_function_ok_for_sibcall

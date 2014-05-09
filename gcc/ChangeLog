@@ -1,4 +1,16 @@
-2014-04-16  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
+2014-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61092
+	* config/alpha/alpha.c: Include gimple-iterator.h.
+	(alpha_gimple_fold_builtin): New function.  Move
+	ALPHA_BUILTIN_UMULH folding from ...
+	(alpha_fold_builtin): ... here.
+	(TARGET_GIMPLE_FOLD_BUILTIN): New define.
+
+2014-05-09  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
 
 	Backport from 2014-04-16 trunk r209446
 	2014-04-16  Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
