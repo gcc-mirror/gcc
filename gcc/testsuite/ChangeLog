@@ -1,3 +1,8 @@
+2014-05-10  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/pedwarn-init.c: New test.
+	* gcc.dg/init-string-1.c: Adjust dg-error.
+
 2014-05-10  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/target-supports.exp

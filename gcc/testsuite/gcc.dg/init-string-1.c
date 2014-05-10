@@ -30,7 +30,7 @@ struct s j = {
   1,
   (L"j")
 }; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "parenthesized|near init" "paren array" { target *-*-* } 32 } */
+/* { dg-error "parenthesized|near init" "paren array" { target *-*-* } 31 } */
 struct s k = {
   (("k")), /* { dg-bogus "warning" "warning in place of error" } */
   /* { dg-error "parenthesized|near init" "paren array" { target *-*-* } 35 } */
@@ -48,7 +48,7 @@ struct s m = {
   .c = L"m",
   .a = ("m")
 }; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "parenthesized|near init" "paren array" { target *-*-* } 50 } */
+/* { dg-error "parenthesized|near init" "paren array" { target *-*-* } 49 } */
 
 char *n = (char []){ "n" };
 

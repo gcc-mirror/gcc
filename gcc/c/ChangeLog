@@ -1,3 +1,18 @@
+2014-05-10  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Pass init_loc to
+	maybe_warn_string_init.
+	(c_parser_postfix_expression_after_paren_type): Pass type_loc to
+	maybe_warn_string_init.
+	* c-tree.h (maybe_warn_string_init): Update declaration.
+	* c-typeck.c (maybe_warn_string_init): Add location parameter.
+	Call pedwarn_init with loc instead of with input_location.
+	(digest_init): Pass init_loc to maybe_warn_string_init.
+	(pop_init_level): Call pedwarn_init with loc instead of with
+	input_location.
+	(set_init_index): Likewise.
+	(process_init_element): Likewise.
+
 2014-05-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61096
