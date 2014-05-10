@@ -1777,9 +1777,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		}
 	      if (d != error_mark_node)
 		{
-		  maybe_warn_string_init (TREE_TYPE (d), init);
+		  maybe_warn_string_init (init_loc, TREE_TYPE (d), init);
 		  finish_decl (d, init_loc, init.value,
-		      	       init.original_type, asm_name);
+			       init.original_type, asm_name);
 		}
 	    }
 	  else
@@ -7599,7 +7599,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
     }
   init = c_parser_braced_init (parser, type, false);
   finish_init ();
-  maybe_warn_string_init (type, init);
+  maybe_warn_string_init (type_loc, type, init);
 
   if (type != error_mark_node
       && !ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (type))

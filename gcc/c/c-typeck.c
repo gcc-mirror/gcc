@@ -5596,13 +5596,13 @@ warning_init (location_t loc, int opt, const char *gmsgid)
    object of type TYPE.  */
 
 void
-maybe_warn_string_init (tree type, struct c_expr expr)
+maybe_warn_string_init (location_t loc, tree type, struct c_expr expr)
 {
   if (pedantic
       && TREE_CODE (type) == ARRAY_TYPE
       && TREE_CODE (expr.value) == STRING_CST
       && expr.original_code != STRING_CST)
-    pedwarn_init (input_location, OPT_Wpedantic,
+    pedwarn_init (loc, OPT_Wpedantic,
 		  "array initialized from parenthesized string constant");
 }
 
@@ -5657,14 +5657,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
      compile time.  */
-#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)             	 \
+#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)		 \
   do {                                                                   \
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
         if (pedwarn (LOCATION, OPT, AR, parmnum, rname))                 \
           inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-	      	  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
+		  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
                   "expected %qT but argument is of type %qT",            \
                   type, rhstype);                                        \
         break;                                                           \
@@ -5675,7 +5675,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
         pedwarn_init (LOCATION, OPT, IN);                                \
         break;                                                           \
       case ic_return:                                                    \
-        pedwarn (LOCATION, OPT, RE);                                 	 \
+        pedwarn (LOCATION, OPT, RE);					 \
         break;                                                           \
       default:                                                           \
         gcc_unreachable ();                                              \
@@ -6541,7 +6541,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  expr.value = inside_init;
 	  expr.original_code = (strict_string ? STRING_CST : ERROR_MARK);
 	  expr.original_type = NULL;
-	  maybe_warn_string_init (type, expr);
+	  maybe_warn_string_init (init_loc, type, expr);
 
 	  if (TYPE_DOMAIN (type) && !TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
 	    pedwarn_init (init_loc, OPT_Wpedantic,
@@ -7430,7 +7430,7 @@ pop_init_level (location_t loc, int implicit,
 	  if (constructor_depth > 2)
 	    error_init (loc, "initialization of flexible array member in a nested context");
 	  else
-	    pedwarn_init (input_location, OPT_Wpedantic,
+	    pedwarn_init (loc, OPT_Wpedantic,
 			  "initialization of a flexible array member");
 
 	  /* We have already issued an error message for the existence
@@ -7650,7 +7650,7 @@ push_range_stack (tree range_end, struct obstack * braced_init_obstack)
 
 void
 set_init_index (location_t loc, tree first, tree last,
-		struct obstack * braced_init_obstack)
+		struct obstack *braced_init_obstack)
 {
   if (set_designator (loc, 1, braced_init_obstack))
     return;
@@ -7668,7 +7668,7 @@ set_init_index (location_t loc, tree first, tree last,
     {
       first = c_fully_fold (first, false, NULL);
       if (TREE_CODE (first) == INTEGER_CST)
-	pedwarn_init (input_location, OPT_Wpedantic,
+	pedwarn_init (loc, OPT_Wpedantic,
 		      "array index in initializer is not "
 		      "an integer constant expression");
     }
@@ -7677,7 +7677,7 @@ set_init_index (location_t loc, tree first, tree last,
     {
       last = c_fully_fold (last, false, NULL);
       if (TREE_CODE (last) == INTEGER_CST)
-	pedwarn_init (input_location, OPT_Wpedantic,
+	pedwarn_init (loc, OPT_Wpedantic,
 		      "array index in initializer is not "
 		      "an integer constant expression");
     }
@@ -8745,7 +8745,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 
 	  if (constructor_fields == 0)
 	    {
-	      pedwarn_init (input_location, 0,
+	      pedwarn_init (loc, 0,
 			    "excess elements in union initializer");
 	      break;
 	    }
@@ -8835,7 +8835,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      && (tree_int_cst_lt (constructor_max_index, constructor_index)
 		  || integer_all_onesp (constructor_max_index)))
 	    {
-	      pedwarn_init (input_location, 0,
+	      pedwarn_init (loc, 0,
 			    "excess elements in array initializer");
 	      break;
 	    }
@@ -8869,7 +8869,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	    always have a fixed size derived from their type.  */
 	  if (tree_int_cst_lt (constructor_max_index, constructor_index))
 	    {
-	      pedwarn_init (input_location, 0,
+	      pedwarn_init (loc, 0,
 			    "excess elements in vector initializer");
 	      break;
 	    }
@@ -8901,7 +8901,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       else if (constructor_type != error_mark_node
 	       && constructor_fields == 0)
 	{
-	  pedwarn_init (input_location, 0,
+	  pedwarn_init (loc, 0,
 			"excess elements in scalar initializer");
 	  break;
 	}
@@ -9413,7 +9413,7 @@ do_case (location_t loc, tree low_value, tree high_value)
     {
       low_value = c_fully_fold (low_value, false, NULL);
       if (TREE_CODE (low_value) == INTEGER_CST)
-	pedwarn (input_location, OPT_Wpedantic,
+	pedwarn (loc, OPT_Wpedantic,
 		 "case label is not an integer constant expression");
     }
 
