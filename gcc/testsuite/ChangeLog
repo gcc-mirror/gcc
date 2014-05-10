@@ -1,3 +1,8 @@
+2014-05-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-14.c: Relax criteria for passing the test.
+
 2014-05-10  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/pedwarn-init.c: New test.
