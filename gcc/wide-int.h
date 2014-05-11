@@ -530,6 +530,9 @@ namespace wi
   BINARY_FUNCTION mod_round (const T1 &, const T2 &, signop, bool * = 0);
 
   template <typename T1, typename T2>
+  bool multiple_of_p (const T1 &, const T2 &, signop);
+
+  template <typename T1, typename T2>
   bool multiple_of_p (const T1 &, const T2 &, signop,
 		      WI_BINARY_RESULT (T1, T2) *);
 
@@ -2789,6 +2792,15 @@ wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 	}
     }
   return remainder;
+}
+
+/* Return true if X is a multiple of Y.  Treat X and Y as having the
+   signedness given by SGN.  */
+template <typename T1, typename T2>
+inline bool
+wi::multiple_of_p (const T1 &x, const T2 &y, signop sgn)
+{
+  return wi::mod_trunc (x, y, sgn) == 0;
 }
 
 /* Return true if X is a multiple of Y, storing X / Y in *RES if so.
