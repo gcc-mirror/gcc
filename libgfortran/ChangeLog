@@ -1,3 +1,10 @@
+2014-05-10  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	Backport from Trunk.
+	PR libfortran/61049
+	* io/list_read.c (list_formatted_read_scalar): Use eat_separator
+	and delete extraneous code.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.
