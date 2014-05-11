@@ -3790,6 +3790,111 @@ mio_full_f2k_derived (gfc_symbol *sym)
   mio_rparen ();
 }
 
+static const mstring omp_declare_simd_clauses[] =
+{
+    minit ("INBRANCH", 0),
+    minit ("NOTINBRANCH", 1),
+    minit ("SIMDLEN", 2),
+    minit ("UNIFORM", 3),
+    minit ("LINEAR", 4),
+    minit ("ALIGNED", 5),
+    minit (NULL, -1)
+};
+
+/* Handle !$omp declare simd.  */
+
+static void
+mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
+{
+  if (iomode == IO_OUTPUT)
+    {
+      if (*odsp == NULL)
+	return;
+    }
+  else if (peek_atom () != ATOM_LPAREN)
+    return;
+
+  gfc_omp_declare_simd *ods = *odsp;
+
+  mio_lparen ();
+  if (iomode == IO_OUTPUT)
+    {
+      write_atom (ATOM_NAME, "OMP_DECLARE_SIMD");
+      if (ods->clauses)
+	{
+	  gfc_omp_namelist *n;
+
+	  if (ods->clauses->inbranch)
+	    mio_name (0, omp_declare_simd_clauses);
+	  if (ods->clauses->notinbranch)
+	    mio_name (1, omp_declare_simd_clauses);
+	  if (ods->clauses->simdlen_expr)
+	    {
+	      mio_name (2, omp_declare_simd_clauses);
+	      mio_expr (&ods->clauses->simdlen_expr);
+	    }
+	  for (n = ods->clauses->lists[OMP_LIST_UNIFORM]; n; n = n->next)
+	    {
+	      mio_name (3, omp_declare_simd_clauses);
+	      mio_symbol_ref (&n->sym);
+	    }
+	  for (n = ods->clauses->lists[OMP_LIST_LINEAR]; n; n = n->next)
+	    {
+	      mio_name (4, omp_declare_simd_clauses);
+	      mio_symbol_ref (&n->sym);
+	      mio_expr (&n->expr);
+	    }
+	  for (n = ods->clauses->lists[OMP_LIST_ALIGNED]; n; n = n->next)
+	    {
+	      mio_name (5, omp_declare_simd_clauses);
+	      mio_symbol_ref (&n->sym);
+	      mio_expr (&n->expr);
+	    }
+	}
+    }
+  else
+    {
+      gfc_omp_namelist **ptrs[3] = { NULL, NULL, NULL };
+
+      require_atom (ATOM_NAME);
+      *odsp = ods = gfc_get_omp_declare_simd ();
+      ods->where = gfc_current_locus;
+      ods->proc_name = ns->proc_name;
+      if (peek_atom () == ATOM_NAME)
+	{
+	  ods->clauses = gfc_get_omp_clauses ();
+	  ptrs[0] = &ods->clauses->lists[OMP_LIST_UNIFORM];
+	  ptrs[1] = &ods->clauses->lists[OMP_LIST_LINEAR];
+	  ptrs[2] = &ods->clauses->lists[OMP_LIST_ALIGNED];
+	}
+      while (peek_atom () == ATOM_NAME)
+	{
+	  gfc_omp_namelist *n;
+	  int t = mio_name (0, omp_declare_simd_clauses);
+
+	  switch (t)
+	    {
+	    case 0: ods->clauses->inbranch = true; break;
+	    case 1: ods->clauses->notinbranch = true; break;
+	    case 2: mio_expr (&ods->clauses->simdlen_expr); break;
+	    case 3:
+	    case 4:
+	    case 5:
+	      *ptrs[t - 3] = n = gfc_get_omp_namelist ();
+	      ptrs[t - 3] = &n->next;
+	      mio_symbol_ref (&n->sym);
+	      if (t != 3)
+		mio_expr (&n->expr);
+	      break;
+	    }
+	}
+    }
+
+  mio_omp_declare_simd (ns, &ods->next);
+
+  mio_rparen ();
+}
+
 
 /* Unlike most other routines, the address of the symbol node is already
    fixed on input and the name/module has already been filled in.
@@ -3863,6 +3968,11 @@ mio_symbol (gfc_symbol *sym)
 
   if (sym->attr.flavor == FL_DERIVED)
     mio_integer (&(sym->hash_value));
+
+  if (sym->formal_ns
+      && sym->formal_ns->proc_name == sym
+      && sym->formal_ns->entries == NULL)
+    mio_omp_declare_simd (sym->formal_ns, &sym->formal_ns->omp_declare_simd);
 
   mio_rparen ();
 }

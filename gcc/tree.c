@@ -253,7 +253,7 @@ unsigned const char omp_clause_num_ops[] =
   4, /* OMP_CLAUSE_REDUCTION  */
   1, /* OMP_CLAUSE_COPYIN  */
   1, /* OMP_CLAUSE_COPYPRIVATE  */
-  2, /* OMP_CLAUSE_LINEAR  */
+  3, /* OMP_CLAUSE_LINEAR  */
   2, /* OMP_CLAUSE_ALIGNED  */
   1, /* OMP_CLAUSE_DEPEND  */
   1, /* OMP_CLAUSE_UNIFORM  */
@@ -10960,8 +10960,13 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	    WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 	  }
 
-	case OMP_CLAUSE_ALIGNED:
 	case OMP_CLAUSE_LINEAR:
+	  WALK_SUBTREE (OMP_CLAUSE_DECL (*tp));
+	  WALK_SUBTREE (OMP_CLAUSE_LINEAR_STEP (*tp));
+	  WALK_SUBTREE (OMP_CLAUSE_LINEAR_STMT (*tp));
+	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
+
+	case OMP_CLAUSE_ALIGNED:
 	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_MAP:

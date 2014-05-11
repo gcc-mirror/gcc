@@ -2595,7 +2595,10 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       && o != NULL
       && o->state == COMP_OMP_STRUCTURED_BLOCK
       && (o->head->op == EXEC_OMP_DO
-	  || o->head->op == EXEC_OMP_PARALLEL_DO))
+	  || o->head->op == EXEC_OMP_PARALLEL_DO
+	  || o->head->op == EXEC_OMP_SIMD
+	  || o->head->op == EXEC_OMP_DO_SIMD
+	  || o->head->op == EXEC_OMP_PARALLEL_DO_SIMD))
     {
       int collapse = 1;
       gcc_assert (o->head->next != NULL
@@ -4558,6 +4561,22 @@ gfc_free_namelist (gfc_namelist *name)
 
   for (; name; name = n)
     {
+      n = name->next;
+      free (name);
+    }
+}
+
+
+/* Free an OpenMP namelist structure.  */
+
+void
+gfc_free_omp_namelist (gfc_omp_namelist *name)
+{
+  gfc_omp_namelist *n;
+
+  for (; name; name = n)
+    {
+      gfc_free_expr (name->expr);
       n = name->next;
       free (name);
     }
