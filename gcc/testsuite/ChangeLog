@@ -1,3 +1,9 @@
+2014-05-10  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	Backport from trunk.
+	PR libfortran/61049
+	* gfortran.dg/list_read_13.f: New test.
+
 2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2014-05-09 trunk r210267
