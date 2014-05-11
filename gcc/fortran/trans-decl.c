@@ -3264,7 +3264,7 @@ gfc_build_builtin_function_decls (void)
 
       gfor_fndecl_caf_num_images = gfc_build_library_function_decl (
 		   get_identifier (PREFIX("caf_num_images")), integer_type_node,
-		   2, integer_type_node, boolean_type_node);
+		   2, integer_type_node, integer_type_node);
 
       gfor_fndecl_caf_register = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_register")), "...WWW", pvoid_type_node, 6,

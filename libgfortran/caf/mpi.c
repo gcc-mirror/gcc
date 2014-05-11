@@ -123,7 +123,7 @@ _gfortran_caf_this_image (int distance __attribute__ ((unused)))
 
 int
 _gfortran_caf_num_images (int distance __attribute__ ((unused)),
-			  bool failed __attribute__ ((unused)))
+			  int failed __attribute__ ((unused)))
 {
   return caf_num_images;
 }
