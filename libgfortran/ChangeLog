@@ -1,3 +1,10 @@
+2014-05-11  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_num_images): Change type of
+	second argument to int.
+	* caf/mpi.c (_gfortran_caf_num_images): Ditto.
+	* caf/single.c (_gfortran_caf_num_images): Ditto.
+
 2014-05-08  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/libcaf.h (caf_vector_t, _gfortran_caf_co_sum,
