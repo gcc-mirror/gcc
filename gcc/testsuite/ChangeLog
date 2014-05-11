@@ -1,3 +1,7 @@
+2014-05-11  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.c-torture/execute/20101011-1.c [__MMIX__] (DO_TEST): Define as 0.
+
 2014-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/gomp/affinity-1.f90: New test.

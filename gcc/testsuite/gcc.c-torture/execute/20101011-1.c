@@ -42,6 +42,10 @@
 #elif defined (__CRIS__)
   /* No SIGFPE for CRIS integer division.  */
 # define DO_TEST 0
+#elif defined (__MMIX__)
+/* By default we emit a sequence with DIVU, which "never signals an
+   exceptional condition, even when dividing by zero".  */
+# define DO_TEST 0
 #elif defined (__arc__)
   /* No SIGFPE for ARC integer division.  */
 # define DO_TEST 0
