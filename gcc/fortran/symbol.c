@@ -3468,6 +3468,7 @@ gfc_free_namespace (gfc_namespace *ns)
   free_tb_tree (ns->tb_sym_root);
   free_tb_tree (ns->tb_uop_root);
   gfc_free_finalizer_list (ns->finalizers);
+  gfc_free_omp_declare_simd_list (ns->omp_declare_simd);
   gfc_free_charlen (ns->cl_list, NULL);
   free_st_labels (ns->st_labels);
 

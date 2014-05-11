@@ -2112,6 +2112,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
+	    case EXEC_OMP_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 
 	      in_omp_workshare = false;
@@ -2128,9 +2129,11 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      /* Fall through  */
 	      
 	    case EXEC_OMP_DO:
+	    case EXEC_OMP_DO_SIMD:
 	    case EXEC_OMP_SECTIONS:
 	    case EXEC_OMP_SINGLE:
 	    case EXEC_OMP_END_SINGLE:
+	    case EXEC_OMP_SIMD:
 	    case EXEC_OMP_TASK:
 
 	      /* Come to this label only from the
@@ -2144,7 +2147,24 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (co->ext.omp_clauses->final_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_threads);
 		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
+		  WALK_SUBEXPR (co->ext.omp_clauses->safelen_expr);
+		  WALK_SUBEXPR (co->ext.omp_clauses->simdlen_expr);
 		}
+	      {
+		gfc_omp_namelist *n;
+		for (n = co->ext.omp_clauses->lists[OMP_LIST_ALIGNED];
+		     n; n = n->next)
+		  WALK_SUBEXPR (n->expr);
+		for (n = co->ext.omp_clauses->lists[OMP_LIST_LINEAR];
+		     n; n = n->next)
+		  WALK_SUBEXPR (n->expr);
+		for (n = co->ext.omp_clauses->lists[OMP_LIST_DEPEND_IN];
+		     n; n = n->next)
+		  WALK_SUBEXPR (n->expr);
+		for (n = co->ext.omp_clauses->lists[OMP_LIST_DEPEND_OUT];
+		     n; n = n->next)
+		  WALK_SUBEXPR (n->expr);
+	      }
 	      break;
 	    default:
 	      break;

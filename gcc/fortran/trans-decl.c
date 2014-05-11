@@ -1850,6 +1850,11 @@ module_sym:
   if (DECL_CONTEXT (fndecl) == NULL_TREE)
     pushdecl_top_level (fndecl);
 
+  if (sym->formal_ns
+      && sym->formal_ns->proc_name == sym
+      && sym->formal_ns->omp_declare_simd)
+    gfc_trans_omp_declare_simd (sym->formal_ns);
+
   return fndecl;
 }
 
@@ -2555,6 +2560,9 @@ gfc_create_function_decl (gfc_namespace * ns, bool global)
 
   /* Now create the read argument list.  */
   create_function_arglist (ns->proc_name);
+
+  if (ns->omp_declare_simd)
+    gfc_trans_omp_declare_simd (ns);
 }
 
 /* Return the decl used to hold the function return value.  If
