@@ -1,3 +1,13 @@
+2014-05-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR tree-optimization/61136
+	* wide-int.h (multiple_of_p): Define a version that doesn't return
+	the quotient.
+	* fold-const.c (extract_muldiv_1): Use wi::multiple_of_p instead of an
+	integer_zerop/const_binop pair.
+	(multiple_of_p): Likewise, converting both operands to widest_int
+	precision.
+
 2014-05-09  Teresa Johnson  <tejohnson@google.com>
 
 	* cgraphunit.c (analyze_functions): Use correct dump file.

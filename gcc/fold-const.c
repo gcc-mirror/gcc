@@ -5708,7 +5708,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       /* For a constant, we can always simplify if we are a multiply
 	 or (for divide and modulus) if it is a multiple of our constant.  */
       if (code == MULT_EXPR
-	  || integer_zerop (const_binop (TRUNC_MOD_EXPR, t, c)))
+	  || wi::multiple_of_p (t, c, TYPE_SIGN (type)))
 	return const_binop (code, fold_convert (ctype, t),
 			    fold_convert (ctype, c));
       break;
@@ -5888,7 +5888,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       /* If it's a multiply or a division/modulus operation of a multiple
          of our constant, do the operation and verify it doesn't overflow.  */
       if (code == MULT_EXPR
-	  || integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c)))
+	  || wi::multiple_of_p (op1, c, TYPE_SIGN (type)))
 	{
 	  op1 = const_binop (code, fold_convert (ctype, op1),
 			     fold_convert (ctype, c));
@@ -5932,7 +5932,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  /* If the multiplication can overflow we cannot optimize this.  */
 	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (t))
 	  && TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
-	  && integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c)))
+	  && wi::multiple_of_p (op1, c, TYPE_SIGN (type)))
 	{
 	  *strict_overflow_p = true;
 	  return omit_one_operand (type, integer_zero_node, op0);
@@ -5989,7 +5989,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 		  && code != FLOOR_MOD_EXPR && code != ROUND_MOD_EXPR
 		  && code != MULT_EXPR)))
 	{
-	  if (integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c)))
+	  if (wi::multiple_of_p (op1, c, TYPE_SIGN (type)))
 	    {
 	      if (TYPE_OVERFLOW_UNDEFINED (ctype))
 		*strict_overflow_p = true;
@@ -5998,7 +5998,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 						const_binop (TRUNC_DIV_EXPR,
 							     op1, c)));
 	    }
-	  else if (integer_zerop (const_binop (TRUNC_MOD_EXPR, c, op1)))
+	  else if (wi::multiple_of_p (c, op1, TYPE_SIGN (type)))
 	    {
 	      if (TYPE_OVERFLOW_UNDEFINED (ctype))
 		*strict_overflow_p = true;
@@ -15314,8 +15314,8 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	      && (tree_int_cst_sgn (top) < 0
 		  || tree_int_cst_sgn (bottom) < 0)))
 	return 0;
-      return integer_zerop (int_const_binop (TRUNC_MOD_EXPR,
-					     top, bottom));
+      return wi::multiple_of_p (wi::to_widest (top), wi::to_widest (bottom),
+				SIGNED);
 
     default:
       return 0;
