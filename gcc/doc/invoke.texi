@@ -216,6 +216,8 @@ Objective-C and Objective-C++ Dialects}.
 -fobjc-gc @gol
 -fobjc-nilcheck @gol
 -fobjc-std=objc1 @gol
+-fno-local-ivars @gol
+-fivar-visibility=@var{public|protected|private|package} @gol
 -freplace-objc-classes @gol
 -fzero-link @gol
 -gen-decls @gol
@@ -262,7 +264,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
--Wreturn-type  -Wsequence-point  -Wshadow @gol
+-Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
 -Wsizeof-pointer-memaccess @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
@@ -2977,6 +2979,22 @@ for individual class implementations to be modified during program execution.
 The GNU runtime currently always retains calls to @code{objc_get_class("@dots{}")}
 regardless of command-line options.
 
+@item -fno-local-ivars
+@opindex fno-local-ivars
+@opindex flocal-ivars
+By default instance variables in Objective-C can be accessed as if
+they were local variables from within the methods of the class they're
+declared in.  This can lead to shadowing between instance variables
+and other variables declared either locally inside a class method or
+globally with the same name.  Specifying the @option{-fno-local-ivars}
+flag disables this behavior thus avoiding variable shadowing issues.
+
+@item -fivar-visibility=@var{public|protected|private|package}
+@opindex fivar-visibility
+Set the default instance variable visibility to the specified option
+so that instance variables declared outside the scope of any access
+modifier directives default to the specified visibility.
+
 @item -gen-decls
 @opindex gen-decls
 Dump interface declarations for all classes seen in the source file to a
@@ -4360,10 +4378,17 @@ Do not warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
 @item -Wshadow
 @opindex Wshadow
 @opindex Wno-shadow
-Warn whenever a local variable or type declaration shadows another variable,
-parameter, type, or class member (in C++), or whenever a built-in function
-is shadowed. Note that in C++, the compiler warns if a local variable
-shadows an explicit typedef, but not if it shadows a struct/class/enum.
+Warn whenever a local variable or type declaration shadows another
+variable, parameter, type, class member (in C++), or instance variable
+(in Objective-C) or whenever a built-in function is shadowed. Note
+that in C++, the compiler warns if a local variable shadows an
+explicit typedef, but not if it shadows a struct/class/enum.
+
+@item -Wno-shadow-ivar @r{(Objective-C only)}
+@opindex Wno-shadow-ivar
+@opindex Wshadow-ivar
+Do not warn whenever a local variable shadows an instance variable in an
+Objective-C method.
 
 @item -Wlarger-than=@var{len}
 @opindex Wlarger-than=@var{len}
