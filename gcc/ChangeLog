@@ -1,3 +1,11 @@
+2014-05-12  Mike Stump  <mikestump@comcast.net>
+
+	PR other/31778
+	* genattrtab.c (filename): Add.
+	(convert_set_attr_alternative): Improve error message.
+	(check_defs): Restore read_md_filename for error messages.
+	(gen_insn): Save filename.
+
 2014-05-12  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	* doc/invoke.texi: Document new switches -Wno-shadow-ivar,

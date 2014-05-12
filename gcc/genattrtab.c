@@ -139,6 +139,7 @@ struct insn_def
   rtx def;			/* The DEFINE_...  */
   int insn_code;		/* Instruction number.  */
   int insn_index;		/* Expression number in file, for errors.  */
+  const char *filename;		/* Filename.  */
   int lineno;			/* Line number.  */
   int num_alternatives;		/* Number of alternatives.  */
   int vec_idx;			/* Index of attribute vector in `def'.  */
@@ -1066,7 +1067,8 @@ convert_set_attr_alternative (rtx exp, struct insn_def *id)
   if (XVECLEN (exp, 1) != num_alt)
     {
       error_with_line (id->lineno,
-		       "bad number of entries in SET_ATTR_ALTERNATIVE");
+		       "bad number of entries in SET_ATTR_ALTERNATIVE, was %d expected %d",
+		       XVECLEN (exp, 1), num_alt);
       return NULL_RTX;
     }
 
@@ -1137,6 +1139,7 @@ check_defs (void)
       if (XVEC (id->def, id->vec_idx) == NULL)
 	continue;
 
+      read_md_filename = id->filename;
       for (i = 0; i < XVECLEN (id->def, id->vec_idx); i++)
 	{
 	  value = XVECEXP (id->def, id->vec_idx, i);
@@ -3280,6 +3283,7 @@ gen_insn (rtx exp, int lineno)
   id->next = defs;
   defs = id;
   id->def = exp;
+  id->filename = read_md_filename;
   id->lineno = lineno;
 
   switch (GET_CODE (exp))
