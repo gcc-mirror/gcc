@@ -3,7 +3,7 @@
 
 class A;	// { dg-error "forward declaration" }
 
-int f (A);			// { dg-error "initializing" }
+int f (A);			// { dg-message "initializing" }
 const A &make ();
 
 int

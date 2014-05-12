@@ -7,7 +7,7 @@ namespace N1 {
     X();			// { dg-message "note" }
     explicit X(const X&);
   };
-  void f(X);			// { dg-error "initializing" }
+  void f(X);			// { dg-message "initializing" }
   int foo() 
   { 
     X x; 
@@ -24,7 +24,7 @@ namespace N2 {
   };
 
   template <class T>
-  void f(T ) {}			// { dg-error "initializing" }
+  void f(T) {}			// { dg-message "initializing" }
   
   template <class T>
   int foo() 

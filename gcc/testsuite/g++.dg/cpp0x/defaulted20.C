@@ -10,7 +10,7 @@ struct B {
   B(B&&) = default;	// { dg-error "implicitly deleted|use of deleted" }
 };
 
-void g(B);			// { dg-error "argument 1" }
+void g(B);			// { dg-message "argument 1" }
 B&& f();
 
 int main()

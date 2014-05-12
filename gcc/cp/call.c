@@ -6256,8 +6256,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	return expr;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && fn && complain)
-	emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (fn), 0,
-			 "  initializing argument %P of %qD", argnum, fn);
+	inform (DECL_SOURCE_LOCATION (fn),
+		"  initializing argument %P of %qD", argnum, fn);
       return build_cplus_new (totype, expr, complain);
 
     case ck_ref_bind:

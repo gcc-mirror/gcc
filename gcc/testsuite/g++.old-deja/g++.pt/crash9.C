@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 
 template <class T>
-void f(T) {}			// { dg-error "initializing" }
+void f(T) {}			// { dg-message "initializing" }
 
 class C;    // { dg-error "forward declaration" }
 
