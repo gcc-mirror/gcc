@@ -1,3 +1,9 @@
+2014-05-12  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/60991
+	* config/avr/avr.c (avr_out_store_psi): Use correct constant
+	to restore Y.
+
 2014-05-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/arm/arm.h (License): Add GCC Runtime Library Exception.
