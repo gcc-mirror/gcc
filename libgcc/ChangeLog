@@ -1,3 +1,7 @@
+2014-05-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/arm/bpabi-lib.h (License): Add GCC Runtime Library Exception.
+
 2014-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgcc/61097
