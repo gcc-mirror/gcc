@@ -1,5 +1,10 @@
 2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/60054
+	* g++.dg/cpp1y/pr60054.C: New.
+
+2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51199
 	* g++.dg/template/pr51199.C: New.
 
