@@ -1,3 +1,12 @@
+2014-05-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60834
+	* frontend-passes.c (in_assoc_list):  New variable.
+	(optimize_namespace):  Initialize in_assoc_list
+	(combine_array_constructor): Don't try to combine
+	assoc lists.
+	(gfc_code_walker):  Keep track of in_assoc_list.
+
 2014-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (gfc_statement): Add ST_OMP_CANCEL,
