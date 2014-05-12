@@ -1,3 +1,11 @@
+2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cvt.c (cp_convert_to_pointer): Don't call error_at if
+	complain & tf_error is false.
+
+	* decl.c (make_unbound_class_template): Prefer inform for
+	"declared here"-type message.
+
 2014-05-09  Momchil Velikov  <momchil.velikov@gmail.com>
 
 	PR c++/60463

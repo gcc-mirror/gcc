@@ -3490,8 +3490,9 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
 	{
 	  if (complain & tf_error)
 	    {
-	      error ("template parameters do not match template");
-	      error ("%q+D declared here", tmpl);
+	      error ("template parameters do not match template %qD", tmpl);
+	      inform (DECL_SOURCE_LOCATION (tmpl),
+		      "%qD declared here", tmpl);
 	    }
 	  return error_mark_node;
 	}

@@ -198,8 +198,9 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
 						       complain);
 	    }
 	}
-      error_at (loc, "cannot convert %qE from type %qT to type %qT",
-		expr, intype, type);
+      if (complain & tf_error)
+	error_at (loc, "cannot convert %qE from type %qT to type %qT",
+		  expr, intype, type);
       return error_mark_node;
     }
 
