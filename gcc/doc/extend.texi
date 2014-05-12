@@ -16885,11 +16885,9 @@ adding a call to the @code{.init} section.
 @node Symbol-Renaming Pragmas
 @subsection Symbol-Renaming Pragmas
 
-For compatibility with the Solaris system headers, GCC
-supports two @code{#pragma} directives that change the name used in
-assembly for a given declaration. To get this effect
-on all platforms supported by GCC, use the asm labels extension (@pxref{Asm
-Labels}).
+GCC supports a @code{#pragma} directive that changes the name used in
+assembly for a given declaration. This effect can also be achieved
+using the asm labels extension (@pxref{Asm Labels}).
 
 @table @code
 @item redefine_extname @var{oldname} @var{newname}
@@ -16901,17 +16899,17 @@ is defined if this pragma is available (currently on all platforms).
 @end table
 
 This pragma and the asm labels extension interact in a complicated
-manner.  Here are some corner cases you may want to be aware of.
+manner.  Here are some corner cases you may want to be aware of:
 
 @enumerate
-@item Both pragmas silently apply only to declarations with external
+@item This pragma silently applies only to declarations with external
 linkage.  Asm labels do not have this restriction.
 
-@item In C++, both pragmas silently apply only to declarations with
+@item In C++, this pragma silently applies only to declarations with
 ``C'' linkage.  Again, asm labels do not have this restriction.
 
-@item If any of the three ways of changing the assembly name of a
-declaration is applied to a declaration whose assembly name has
+@item If either of the ways of changing the assembly name of a
+declaration are applied to a declaration whose assembly name has
 already been determined (either by a previous use of one of these
 features, or because the compiler needed the assembly name in order to
 generate code), and the new name is different, a warning issues and
