@@ -1,3 +1,10 @@
+2014-05-12  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	* doc/invoke.texi: Document new switches -Wno-shadow-ivar,
+	-fno-local-ivars and -fivar-visibility.
+	* c-family/c.opt: Make -Wshadow also implicitly enable
+	-Wshadow-ivar.
+
 2014-05-12  David Wohlferd <dw@LimeGreenSocks.com>
 
 	* doc/tm.texi: Remove reference to deleted macro.

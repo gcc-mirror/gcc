@@ -1,3 +1,16 @@
+2014-05-12  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	* objc.dg/shadow-1.m: New test.
+	* objc.dg/shadow-2.m: New test.
+	* objc.dg/ivar-scope-1.m: New test.
+	* objc.dg/ivar-scope-2.m: New test.
+	* objc.dg/ivar-scope-3.m: New test.
+	* objc.dg/ivar-scope-4.m: New test.
+	* objc.dg/ivar-visibility-1.m: New test.
+	* objc.dg/ivar-visibility-2.m: New test.
+	* objc.dg/ivar-visibility-3.m: New test.
+	* objc.dg/ivar-visibility-4.m: New test.
+
 2014-05-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60127
