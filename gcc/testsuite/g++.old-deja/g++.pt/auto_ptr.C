@@ -44,7 +44,7 @@ struct Derived : Base { Derived() {} };
 
 auto_ptr<Derived> f() { auto_ptr<Derived> null(0); return null; }
 void g(auto_ptr<Derived>) { }
-void h(auto_ptr<Base>) { }	// { dg-error "initializing" }
+void h(auto_ptr<Base>) { }	// { dg-message "initializing" }
 
 int main() {
     auto_ptr<Base> x(f());

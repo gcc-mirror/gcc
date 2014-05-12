@@ -14,7 +14,7 @@ struct B : A
   B(B&);  // { dg-message "note" "" }
 };
 
-void foo(B);			// { dg-error "initializing" }
+void foo(B);			// { dg-message "initializing" }
 
 void bar()
 {

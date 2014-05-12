@@ -10,7 +10,7 @@ struct B
 
 struct A
 {
-  A (B);			// { dg-error "initializing" }
+  A (B);			// { dg-message "initializing" }
 };
 
 B

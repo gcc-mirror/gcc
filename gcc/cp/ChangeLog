@@ -1,3 +1,8 @@
+2014-05-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_like_real): Use inform for identifying the
+	declaration point.
+
 2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cvt.c (cp_convert_to_pointer): Don't call error_at if

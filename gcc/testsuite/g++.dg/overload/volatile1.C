@@ -3,7 +3,7 @@
 
 struct A { };
 
-void f (A);			// { dg-error "argument 1" }
+void f (A);			// { dg-message "" }
 void (*g)(A);
 
 int main()
