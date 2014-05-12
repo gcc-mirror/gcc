@@ -1,5 +1,11 @@
 2014-05-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR libfortran/61035
+	* intrinsics/getcwd.c (getcwd_i4_sub): Avoid potentially large
+	stack allocation, avoid extra copying in the common case.
+
+2014-05-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* configure.ac (AM_CFLAGS): Use -std=gnu11.
 	(CFLAGS): Likewise.
 	* configure: Regenerated.
