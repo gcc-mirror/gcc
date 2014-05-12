@@ -1,3 +1,8 @@
+2014-05-12  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/sibcall-3.c: MSP430 doesn't have sibcall.
+	* gcc.dg/sibcall-4.c: Likewise.
+
 2014-05-12  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	* objc.dg/shadow-1.m: New test.
