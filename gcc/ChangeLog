@@ -1,3 +1,8 @@
+2014-05-12  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* doc/extend.texi: Reflect current numbers of pragmas.  Remove
+	reference to Solaris.
+
 2014-05-12  Mike Stump  <mikestump@comcast.net>
 
 	PR other/31778
