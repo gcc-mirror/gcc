@@ -3987,7 +3987,7 @@ avr_out_store_psi (rtx insn, rtx *op, int *plen)
                                 "std Y+61,%A1"    CR_TAB
                                 "std Y+62,%B1"    CR_TAB
                                 "std Y+63,%C1"    CR_TAB
-                                "sbiw r28,%o0-60", op, plen, -5);
+                                "sbiw r28,%o0-61", op, plen, -5);
 
           return avr_asm_len ("subi r28,lo8(-%o0)" CR_TAB
                               "sbci r29,hi8(-%o0)" CR_TAB
