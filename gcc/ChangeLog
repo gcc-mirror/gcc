@@ -1,3 +1,8 @@
+2014-05-12  David Wohlferd <dw@LimeGreenSocks.com>
+
+	* doc/tm.texi: Remove reference to deleted macro.
+	* doc/tm.texi.in: Likewise.
+
 2014-05-12  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/60991

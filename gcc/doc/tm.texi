@@ -10067,9 +10067,6 @@ Another note: according to the MIPS spec, coprocessor 1 (if present) is
 the FPU@.  One accesses COP1 registers through standard mips
 floating-point support; they are not included in this mechanism.
 
-There is one macro used in defining the MIPS coprocessor interface which
-you may want to override in subtargets; it is described below.
-
 @node PCH Target
 @section Parameters for Precompiled Header Validity Checking
 @cindex parameters, precompiled headers
