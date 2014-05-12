@@ -1,3 +1,8 @@
+2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51199
+	* g++.dg/template/pr51199.C: New.
+
 2014-05-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/20101011-1.c [__MMIX__] (DO_TEST): Define as 0.
