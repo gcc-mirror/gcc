@@ -2169,6 +2169,12 @@ resolve_omp_do (gfc_code *code)
 		     "at %L", name, &do_code->loc);
 	  break;
 	}
+      if (do_code->op == EXEC_DO_CONCURRENT)
+	{
+	  gfc_error ("%s cannot be a DO CONCURRENT loop at %L", name,
+		     &do_code->loc);
+	  break;
+	}
       gcc_assert (do_code->op == EXEC_DO);
       if (do_code->ext.iterator->var->ts.type != BT_INTEGER)
 	gfc_error ("%s iteration variable must be of type integer at %L",
