@@ -5754,7 +5754,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  && TREE_CODE (type) == ENUMERAL_TYPE
 	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
 	{
-	  WARN_FOR_ASSIGNMENT (input_location, OPT_Wc___compat,
+	  WARN_FOR_ASSIGNMENT (location, OPT_Wc___compat,
 			       G_("enum conversion when passing argument "
 				  "%d of %qE is invalid in C++"),
 			       G_("enum conversion in assignment is "
