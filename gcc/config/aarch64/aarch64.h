@@ -824,6 +824,11 @@ do {									     \
 
 #define SHIFT_COUNT_TRUNCATED !TARGET_SIMD
 
+/* Choose appropriate mode for caller saves, so we do the minimum
+   required size of load/store.  */
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
+  aarch64_hard_regno_caller_save_mode ((REGNO), (NREGS), (MODE))
+
 /* Callee only saves lower 64-bits of a 128-bit register.  Tell the
    compiler the callee clobbers the top 64-bits when restoring the
    bottom 64-bits.  */

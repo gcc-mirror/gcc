@@ -424,6 +424,24 @@ aarch64_hard_regno_mode_ok (unsigned regno, enum machine_mode mode)
   return 0;
 }
 
+/* Implement HARD_REGNO_CALLER_SAVE_MODE.  */
+enum machine_mode
+aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned nregs,
+				     enum machine_mode mode)
+{
+  /* Handle modes that fit within single registers.  */
+  if (nregs == 1 && GET_MODE_SIZE (mode) <= 16)
+    {
+      if (GET_MODE_SIZE (mode) >= 4)
+        return mode;
+      else
+        return SImode;
+    }
+  /* Fall back to generic for multi-reg and very large modes.  */
+  else
+    return choose_hard_reg_mode (regno, nregs, false);
+}
+
 /* Return true if calls to DECL should be treated as
    long-calls (ie called via a register).  */
 static bool
