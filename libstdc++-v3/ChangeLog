@@ -6,6 +6,21 @@
 	* testsuite/20_util/tuple/60497.cc: Test accessing rvalues.
 	* testsuite/20_util/tuple/comparison_operators/overloaded.cc: New.
 
+	PR libstdc++/60497
+	* include/debug/array (get): Qualify call to other get overload.
+	* include/profile/array (get): Likewise.
+	* include/std/array (get): Likewise.
+	* include/std/functional (_Mu, _Bind, _Bind_result): Qualify std::get.
+	* include/std/mutex (unique_lock, call_once): Use __addressof.
+	(__unlock_impl): Remove unused template.
+	(__try_to_lock): Declare inline.
+	(__try_lock_impl::__do_try_lock): Qualify function calls.
+	(lock): Avoid narrowing conversion.
+	* testsuite/20_util/bind/60497.cc: New.
+	* testsuite/23_containers/array/element_access/60497.cc: New.
+	* testsuite/30_threads/call_once/60497.cc: New.
+	* testsuite/30_threads/unique_lock/cons/60497.cc: New.
+
 2014-05-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.20): Correct regex_error export.
