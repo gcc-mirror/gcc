@@ -204,7 +204,8 @@ lambda_function (tree lambda)
 static inline bool
 is_this (tree t)
 {
-  return (TREE_CODE (t) == PARM_DECL
+  return ((TREE_CODE (t) == PARM_DECL
+	   || TREE_CODE (t) == VAR_DECL)
 	  && DECL_NAME (t) == this_identifier);
 }
 

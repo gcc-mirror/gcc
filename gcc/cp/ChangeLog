@@ -1,5 +1,8 @@
 2014-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61151
+	* lambda.c (is_this): Allow capture proxies too.
+
 	DR 5
 	PR c++/60019
 	* call.c (build_user_type_conversion_1): The copy-init temporary
