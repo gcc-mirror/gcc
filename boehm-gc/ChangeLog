@@ -1,3 +1,11 @@
+2014-05-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix current cygwin-64 build problems.
+	* include/gc_config_macros.h (GC_PTHREADS): Use __CYGWIN__ instead
+	of __CYGWIN32__ here.
+	* win32_threads.c (GC_push_all_stacks): Push all X86_64 registers.
+	(GC_get_thread_stack_base): Get the stack base for X86_64.
+
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620

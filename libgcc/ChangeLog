@@ -1,3 +1,8 @@
+2014-05-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* unwind-seh.c (_Unwind_Backtrace): Uncommented, finished
+	implementation.
+
 2014-05-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/arm/bpabi-lib.h (License): Add GCC Runtime Library Exception.

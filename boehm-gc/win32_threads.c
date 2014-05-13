@@ -365,7 +365,11 @@ void GC_push_all_stacks()
 #       define PUSH1(reg) GC_push_one((word)context.reg)
 #       define PUSH2(r1,r2) PUSH1(r1), PUSH1(r2)
 #       define PUSH4(r1,r2,r3,r4) PUSH2(r1,r2), PUSH2(r3,r4)
-#       if defined(I386)
+#       if defined(__x86_64__) 
+          PUSH4(Rdi,Rsi,Rbx,Rdx), PUSH2(Rcx,Rax), PUSH1(Rbp);
+          PUSH4(R8,R9,R10,R11), PUSH4(R12,R13,R14,R15);
+          sp = (ptr_t)context.Rsp;
+#       elif defined(I386)
           PUSH4(Edi,Esi,Ebx,Edx), PUSH2(Ecx,Eax), PUSH1(Ebp);
 	  sp = (ptr_t)context.Esp;
 #       elif defined(ARM32)
@@ -755,8 +759,12 @@ int GC_pthread_detach(pthread_t thread)
 
 GC_PTR GC_get_thread_stack_base()
 {
+#ifdef __x86_64__
+  return ((NT_TIB*)NtCurrentTeb())->StackBase;
+#else
   extern GC_PTR _tlsbase __asm__ ("%fs:4");
   return _tlsbase;
+#endif
 }
 
 #else /* !CYGWIN32 */
