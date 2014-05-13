@@ -6,6 +6,7 @@
 // it (yet).
 
 // This checks we warn when being pedantic.
+// { dg-options "-pedantic" }
 
 typedef void (*PF)(void);
 typedef void *PV;
