@@ -109,6 +109,10 @@ extern const char * const rtx_format[NUM_RTX_CODE];
 extern const enum rtx_class rtx_class[NUM_RTX_CODE];
 #define GET_RTX_CLASS(CODE)		(rtx_class[(int) (CODE)])
 
+/* True if CODE is part of the insn chain (i.e. has INSN_UID, PREV_INSN
+   and NEXT_INSN fields).  */
+#define INSN_CHAIN_CODE_P(CODE) IN_RANGE (CODE, DEBUG_INSN, NOTE)
+
 extern const unsigned char rtx_code_size[NUM_RTX_CODE];
 extern const unsigned char rtx_next[NUM_RTX_CODE];
 
@@ -354,6 +358,9 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
 
     /* The ORIGINAL_REGNO of a REG.  */
     unsigned int original_regno;
+
+    /* The INSN_UID of an RTX_INSN-class code.  */
+    int insn_uid;
 
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
@@ -817,15 +824,12 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	\
+#define RTL_INSN_CHAIN_FLAG_CHECK(NAME, RTX) 				\
   __extension__								\
 ({ __typeof (RTX) const _rtx = (RTX);					\
-   if (GET_CODE (_rtx) != C1 && GET_CODE (_rtx) != C2			\
-       && GET_CODE (_rtx) != C3 && GET_CODE (_rtx) != C4		\
-       && GET_CODE (_rtx) != C5 && GET_CODE (_rtx) != C6		\
-       && GET_CODE (_rtx) != C7 && GET_CODE (_rtx) != C8)		\
-     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
-			     __FUNCTION__);				\
+   if (!INSN_CHAIN_CODE_P (GET_CODE (_rtx)))				\
+     rtl_check_failed_flag (NAME, _rtx, __FILE__, __LINE__,		\
+			    __FUNCTION__);				\
    _rtx; })
 
 extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
@@ -839,10 +843,10 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define RTL_FLAG_CHECK2(NAME, RTX, C1, C2)				(RTX)
 #define RTL_FLAG_CHECK3(NAME, RTX, C1, C2, C3)				(RTX)
 #define RTL_FLAG_CHECK4(NAME, RTX, C1, C2, C3, C4)			(RTX)
-#define RTL_FLAG_CHECK5(NAME, RTX, C1, C2, C3, C4, C5)		(RTX)
+#define RTL_FLAG_CHECK5(NAME, RTX, C1, C2, C3, C4, C5)			(RTX)
 #define RTL_FLAG_CHECK6(NAME, RTX, C1, C2, C3, C4, C5, C6)		(RTX)
 #define RTL_FLAG_CHECK7(NAME, RTX, C1, C2, C3, C4, C5, C6, C7)		(RTX)
-#define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	(RTX)
+#define RTL_INSN_CHAIN_FLAG_CHECK(NAME, RTX) 				(RTX)
 #endif
 
 #define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rt_int)
@@ -899,18 +903,19 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* Holds a unique number for each insn.
    These are not necessarily sequentially increasing.  */
-#define INSN_UID(INSN)  XINT (INSN, 0)
+#define INSN_UID(INSN) \
+  (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_UID", (INSN))->u2.insn_uid)
 
 /* Chain insns together in sequence.  */
-#define PREV_INSN(INSN)	XEXP (INSN, 1)
-#define NEXT_INSN(INSN)	XEXP (INSN, 2)
+#define PREV_INSN(INSN)	XEXP (INSN, 0)
+#define NEXT_INSN(INSN)	XEXP (INSN, 1)
 
-#define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 3)
+#define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 2)
 
 /* The body of an insn.  */
-#define PATTERN(INSN)	XEXP (INSN, 4)
+#define PATTERN(INSN)	XEXP (INSN, 3)
 
-#define INSN_LOCATION(INSN) XUINT (INSN, 5)
+#define INSN_LOCATION(INSN) XUINT (INSN, 4)
 
 #define INSN_HAS_LOCATION(INSN) ((LOCATION_LOCUS (INSN_LOCATION (INSN)))\
   != UNKNOWN_LOCATION)
@@ -921,7 +926,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* Code number of instruction, from when it was recognized.
    -1 means this instruction has not been recognized yet.  */
-#define INSN_CODE(INSN) XINT (INSN, 6)
+#define INSN_CODE(INSN) XINT (INSN, 5)
 
 #define RTX_FRAME_RELATED_P(RTX)					\
   (RTL_FLAG_CHECK6 ("RTX_FRAME_RELATED_P", (RTX), DEBUG_INSN, INSN,	\
@@ -929,9 +934,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* 1 if RTX is an insn that has been deleted.  */
 #define INSN_DELETED_P(RTX)						\
-  (RTL_FLAG_CHECK8 ("INSN_DELETED_P", (RTX), DEBUG_INSN, INSN,		\
-		    CALL_INSN, JUMP_INSN, JUMP_TABLE_DATA,		\
-		    CODE_LABEL, BARRIER, NOTE)->volatil)
+  (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_DELETED_P", (RTX))->volatil)
 
 /* 1 if RTX is a call to a const function.  Built from ECF_CONST and
    TREE_READONLY.  */
@@ -981,7 +984,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
    chain pointer and the first operand is the REG being described.
    The mode field of the EXPR_LIST contains not a real machine mode
    but a value from enum reg_note.  */
-#define REG_NOTES(INSN)	XEXP(INSN, 7)
+#define REG_NOTES(INSN)	XEXP(INSN, 6)
 
 /* In an ENTRY_VALUE this is the DECL_INCOMING_RTL of the argument in
    question.  */
@@ -1012,12 +1015,12 @@ extern const char * const reg_note_name[];
      CLOBBER expressions document the registers explicitly clobbered
    by this CALL_INSN.
      Pseudo registers can not be mentioned in this list.  */
-#define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 8)
+#define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 7)
 
 /* The label-number of a code-label.  The assembler label
    is made from `L' and the label-number printed in decimal.
    Label numbers are unique in a compilation.  */
-#define CODE_LABEL_NUMBER(INSN)	XINT (INSN, 6)
+#define CODE_LABEL_NUMBER(INSN)	XINT (INSN, 5)
 
 /* In a NOTE that is a line number, this is a string for the file name that the
    line is in.  We use the same field to record block numbers temporarily in
@@ -1026,19 +1029,19 @@ extern const char * const reg_note_name[];
    */
 
 /* Opaque data.  */
-#define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 4, NOTE)
-#define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 4, NOTE)
+#define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 3, NOTE)
+#define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 3, NOTE)
 #define SET_INSN_DELETED(INSN) set_insn_deleted (INSN);
-#define NOTE_BLOCK(INSN)	XCTREE (INSN, 4, NOTE)
-#define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 4, NOTE)
-#define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 4, NOTE)
-#define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 4, NOTE)
-#define NOTE_CFI(INSN)		XCCFI (INSN, 4, NOTE)
-#define NOTE_LABEL_NUMBER(INSN)	XCINT (INSN, 4, NOTE)
+#define NOTE_BLOCK(INSN)	XCTREE (INSN, 3, NOTE)
+#define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 3, NOTE)
+#define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 3, NOTE)
+#define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 3, NOTE)
+#define NOTE_CFI(INSN)		XCCFI (INSN, 3, NOTE)
+#define NOTE_LABEL_NUMBER(INSN)	XCINT (INSN, 3, NOTE)
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
-#define NOTE_KIND(INSN) XCINT (INSN, 5, NOTE)
+#define NOTE_KIND(INSN) XCINT (INSN, 4, NOTE)
 
 /* Nonzero if INSN is a note marking the beginning of a basic block.  */
 #define NOTE_INSN_BASIC_BLOCK_P(INSN) \
@@ -1121,11 +1124,11 @@ extern const char * const note_insn_name[NOTE_INSN_MAX];
 
 /* The name of a label, in case it corresponds to an explicit label
    in the input source code.  */
-#define LABEL_NAME(RTX) XCSTR (RTX, 7, CODE_LABEL)
+#define LABEL_NAME(RTX) XCSTR (RTX, 6, CODE_LABEL)
 
 /* In jump.c, each label contains a count of the number
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
-#define LABEL_NUSES(RTX) XCINT (RTX, 5, CODE_LABEL)
+#define LABEL_NUSES(RTX) XCINT (RTX, 4, CODE_LABEL)
 
 /* Labels carry a two-bit field composed of the ->jump and ->call
    bits.  This field indicates whether the label is an alternate
@@ -1180,12 +1183,12 @@ enum label_kind
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
    be decremented and possibly the label can be deleted.  */
-#define JUMP_LABEL(INSN)   XCEXP (INSN, 8, JUMP_INSN)
+#define JUMP_LABEL(INSN)   XCEXP (INSN, 7, JUMP_INSN)
 
 /* Once basic blocks are found, each CODE_LABEL starts a chain that
    goes through all the LABEL_REFs that jump to that label.  The chain
    eventually winds up at the CODE_LABEL: it is circular.  */
-#define LABEL_REFS(LABEL) XCEXP (LABEL, 4, CODE_LABEL)
+#define LABEL_REFS(LABEL) XCEXP (LABEL, 3, CODE_LABEL)
 
 /* For a REG rtx, REGNO extracts the register number.  REGNO can only
    be used on RHS.  Use SET_REGNO to change the value.  */

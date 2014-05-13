@@ -1,5 +1,30 @@
 2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.def (DEBUG_INSN, INSN, JUMP_INSN, CALL_INSN, JUMP_TABLE_DATA)
+	(BARRIER, CODE_LABEL, NOTE): Remove first "i" field.
+	* rtl.h (rtx_def): Add insn_uid to u2 field.
+	(RTX_FLAG_CHECK8): Delete in favor of...
+	(RTL_INSN_CHAIN_FLAG_CHECK): ...this new macro.
+	(INSN_DELETED_P): Update accordingly.
+	(INSN_UID): Use u2.insn_uid.
+	(INSN_CHAIN_CODE_P): Define.
+	(PREV_INSN, NEXT_INSN, BLOCK_FOR_INSN, PATTERN, INSN_LOCATION)
+	(INSN_CODE, REG_NOTES, CALL_INSN_FUNCTION_USAGE, CODE_LABEL_NUMBER)
+	(NOTE_DATA, NOTE_DELETED_LABEL_NAME, NOTE_BLOCK, NOTE_EH_HANDLER)
+	(NOTE_BASIC_BLOCK, NOTE_VAR_LOCATION, NOTE_CFI, NOTE_LABEL_NUMBER)
+	(NOTE_KIND, LABEL_NAME, LABEL_NUSES, JUMP_LABEL, LABEL_REFS): Lower
+	indices accordingly.
+	* print-rtl.c (print_rtx): Print INSN_UIDs before the main loop.
+	Update indices for insn-chain rtxes.
+	* gengtype.c (gen_rtx_next): Adjust test for insn-chain rtxes.
+	(adjust_field_rtx_def): Lower '0' indices for all insn-chain rtxes.
+	* emit-rtl.c (gen_label_rtx): Update gen_rtx_LABEL call.
+	* caller-save.c (init_caller_save): Update gen_rtx_INSN calls.
+	* combine.c (try_combine): Likewise.
+	* ira.c (setup_prohibited_mode_move_regs): Likewise.
+
+2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.def (REG): Remove middle field.
 	* rtl.h (rtx_def): Add orignal_regno to u2.
 	(ORIGINAL_REGNO): Use it instead of field 1.

@@ -2451,7 +2451,7 @@ set_mem_attrs_for_spill (rtx mem)
 rtx
 gen_label_rtx (void)
 {
-  return gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX, NULL_RTX,
+  return gen_rtx_CODE_LABEL (VOIDmode, NULL_RTX, NULL_RTX,
 			     NULL, label_num++, NULL);
 }
 
