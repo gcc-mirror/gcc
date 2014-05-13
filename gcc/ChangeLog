@@ -1,3 +1,44 @@
+2014-05-13  Christian Bruel  <christian.bruel@st.com>
+
+	* target.def (mode_switching): New hook vector.
+	(mode_emit, mode_needed, mode_after, mode_entry): New hooks.
+	(mode_exit, modepriority_to_mode): Likewise.
+	* mode-switching.c (MODE_NEEDED, MODE_AFTER, MODE_ENTRY): Hookify.
+	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
+	(default_priority_to_mode): Define.
+	* targhooks.h (default_priority_to_mode): Declare.
+	* target.h: Include tm.h and hard-reg-set.h.
+	* doc/tm.texi.in (EMIT_MODE_SET, MODE_NEEDED, MODE_AFTER, MODE_ENTRY)
+	(MODE_EXIT, MODE_PRIORITY_TO_MODE): Delete and hookify.
+	* doc/tm.texi Regenerate.
+	* config/sh/sh.h (MODE_NEEDED, MODE_AFTER, MODE_ENTRY): Delete
+	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
+	* config/sh/sh.c (sh_emit_mode_set, sh_mode_priority): Hookify.
+	(sh_mode_needed, sh_mode_after, sh_mode_entry, sh_mode_exit): Likewise.
+	* config/i386/i386.h (MODE_NEEDED, MODE_AFTER, MODE_ENTRY): Delete
+	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
+	* config/i386/i386-protos.h (ix86_mode_needed, ix86_mode_after)
+	(ix86_mode_entrym, ix86_emit_mode_set): Remove external declaration.
+	* config/i386/i386.c (ix86_mode_needed, ix86_mode_after, ix86_mode_exit,
+	(ix86_mode_entry, ix86_mode_priority, ix86_emit_mode_set): Hookify.
+	* config/epiphany/epiphany.h (MODE_NEEDED, MODE_AFTER, MODE_ENTRY):
+	Delete
+	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
+	* config/sh/sh.h (MODE_NEEDED, MODE_AFTER, MODE_ENTRY): Delete
+	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
+	* config/sh/sh.c (sh4_emit_mode_set, sh4_mode_needed): Hookify.
+	(sh4_mode_after, sh4_mode_entry, sh4_mode_exit): Likewise.
+	* config/epiphany/epiphany-protos.h (epiphany_mode_needed)
+	(emit_set_fp_mode, epiphany_mode_entry_exit, epiphany_mode_after)
+	(epiphany_mode_priority_to_mode): Remove declaration.
+	* config/epiphany/epiphany.c (emit_set_fp_mode): Hookify.
+	(epiphany_mode_needed, epiphany_mode_priority_to_mode): Likewise.
+	(epiphany_mode_entry, epiphany_mode_exit, epiphany_mode_after):
+	Likewise.
+	(epiphany_mode_priority_to_mode): Change priority type. Hookify.
+	(epiphany_mode_needed, epiphany_mode_entry_exit): Hookify.
+	(epiphany_mode_after, epiphany_mode_entry, emit_set_fp_mode): Hookify.
+
 2014-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/61060

@@ -51,6 +51,8 @@
 #include "insn-modes.h"
 #include "insn-codes.h"
 #include "wide-int.h"
+#include "tm.h"
+#include "hard-reg-set.h"
 
 #ifdef ENABLE_CHECKING
 

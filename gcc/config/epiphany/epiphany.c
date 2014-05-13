@@ -152,6 +152,20 @@ static rtx frame_insn (rtx);
 /* We further restrict the minimum to be a multiple of eight.  */
 #define TARGET_MIN_ANCHOR_OFFSET (optimize_size ? 0 : -2040)
 
+/* Mode switching hooks.  */
+
+#define TARGET_MODE_EMIT emit_set_fp_mode
+
+#define TARGET_MODE_NEEDED epiphany_mode_needed
+
+#define TARGET_MODE_PRIORITY epiphany_mode_priority
+
+#define TARGET_MODE_ENTRY epiphany_mode_entry
+
+#define TARGET_MODE_EXIT epiphany_mode_exit
+
+#define TARGET_MODE_AFTER epiphany_mode_after
+
 #include "target-def.h"
 
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -2319,8 +2333,8 @@ epiphany_optimize_mode_switching (int entity)
   gcc_unreachable ();
 }
 
-int
-epiphany_mode_priority_to_mode (int entity, unsigned priority)
+static int
+epiphany_mode_priority (int entity, int priority)
 {
   if (entity == EPIPHANY_MSW_ENTITY_AND || entity == EPIPHANY_MSW_ENTITY_OR
       || entity== EPIPHANY_MSW_ENTITY_CONFIG)
@@ -2428,7 +2442,7 @@ epiphany_mode_needed (int entity, rtx insn)
   }
 }
 
-int
+static int
 epiphany_mode_entry_exit (int entity, bool exit)
 {
   int normal_mode = epiphany_normal_fp_mode ;
@@ -2513,6 +2527,18 @@ epiphany_mode_after (int entity, int last_mode, rtx insn)
       return fp_mode;
     }
   return last_mode;
+}
+
+static int
+epiphany_mode_entry (int entity)
+{
+  return epiphany_mode_entry_exit (entity, false);
+}
+
+static int
+epiphany_mode_exit (int entity)
+{
+  return epiphany_mode_entry_exit (entity, true);
 }
 
 void

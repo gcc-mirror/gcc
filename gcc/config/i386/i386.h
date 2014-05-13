@@ -2312,43 +2312,6 @@ enum avx_u128_state
 #define NUM_MODES_FOR_MODE_SWITCHING \
   { AVX_U128_ANY, I387_CW_ANY, I387_CW_ANY, I387_CW_ANY, I387_CW_ANY }
 
-/* ENTITY is an integer specifying a mode-switched entity.  If
-   `OPTIMIZE_MODE_SWITCHING' is defined, you must define this macro to
-   return an integer value not larger than the corresponding element
-   in `NUM_MODES_FOR_MODE_SWITCHING', to denote the mode that ENTITY
-   must be switched into prior to the execution of INSN.  */
-
-#define MODE_NEEDED(ENTITY, I) ix86_mode_needed ((ENTITY), (I))
-
-/* If this macro is defined, it is evaluated for every INSN during
-   mode switching.  It determines the mode that an insn results in (if
-   different from the incoming mode).  */
-
-#define MODE_AFTER(ENTITY, MODE, I) ix86_mode_after ((ENTITY), (MODE), (I))
-
-/* If this macro is defined, it is evaluated for every ENTITY that
-   needs mode switching.  It should evaluate to an integer, which is
-   a mode that ENTITY is assumed to be switched to at function entry.  */
-
-#define MODE_ENTRY(ENTITY) ix86_mode_entry (ENTITY)
-
-/* If this macro is defined, it is evaluated for every ENTITY that
-   needs mode switching.  It should evaluate to an integer, which is
-   a mode that ENTITY is assumed to be switched to at function exit.  */
-
-#define MODE_EXIT(ENTITY) ix86_mode_exit (ENTITY)
-
-/* This macro specifies the order in which modes for ENTITY are
-   processed.  0 is the highest priority.  */
-
-#define MODE_PRIORITY_TO_MODE(ENTITY, N) (N)
-
-/* Generate one or more insns to set ENTITY to MODE.  HARD_REG_LIVE
-   is the set of hard registers live at the point where the insn(s)
-   are to be inserted.  */
-
-#define EMIT_MODE_SET(ENTITY, MODE, HARD_REGS_LIVE) \
-  ix86_emit_mode_set ((ENTITY), (MODE), (HARD_REGS_LIVE))
 
 /* Avoid renaming of stack registers, as doing so in combination with
    scheduling just increases amount of live registers at time and in
