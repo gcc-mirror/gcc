@@ -1,5 +1,10 @@
 2014-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60713
+	* typeck2.c (PICFLAG_SIDE_EFFECTS): New.
+	(picflag_from_initializer): Return it.
+	(process_init_constructor): Handle it.
+
 	PR c++/60628
 	* decl.c (create_array_type_for_decl): Complain about array of auto.
 
