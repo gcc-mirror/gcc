@@ -1249,8 +1249,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = tree_tp, subname = "rt_tree";
 	      else if (i == REG && aindex == 1)
 		t = reg_attrs_tp, subname = "rt_reg";
-	      else if (i == SCRATCH && aindex == 0)
-		t = scalar_tp, subname = "rt_int";
 	      else if (i == SYMBOL_REF && aindex == 1)
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == SYMBOL_REF && aindex == 2)

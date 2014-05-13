@@ -384,11 +384,10 @@ DEF_RTL_EXPR(PC, "pc", "", RTX_OBJ)
 DEF_RTL_EXPR(REG, "reg", "i0", RTX_OBJ)
 
 /* A scratch register.  This represents a register used only within a
-   single insn.  It will be turned into a REG during register allocation
+   single insn.  It will be replaced by a REG during register allocation
    or reload unless the constraint indicates that the register won't be
-   needed, in which case it can remain a SCRATCH.  This code is
-   marked as having one operand so it can be turned into a REG.  */
-DEF_RTL_EXPR(SCRATCH, "scratch", "0", RTX_OBJ)
+   needed, in which case it can remain a SCRATCH.  */
+DEF_RTL_EXPR(SCRATCH, "scratch", "", RTX_OBJ)
 
 /* A reference to a part of another value.  The first operand is the
    complete value and the second is the byte offset of the selected part.   */
