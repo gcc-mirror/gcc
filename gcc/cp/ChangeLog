@@ -1,3 +1,9 @@
+2014-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60367
+	* call.c (convert_default_arg): Remove special handling for
+	CONSTRUCTOR.
+
 2014-04-28  Daniel Gutson  <daniel.gutson@tallertechnologies.com>
 
 	* typeck.c (build_reinterpret_cast_1): Pass proper argument to
