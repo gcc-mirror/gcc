@@ -1,3 +1,14 @@
+2014-05-13  Jeff Law  <law@redhat.com>
+
+	Backport from mainline
+	2014-04-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Make sure to
+	invalidate outputs from statements that do not produce useful
+	outputs for threading.
+
 2014-05-13  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60973

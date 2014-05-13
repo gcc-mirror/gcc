@@ -1,3 +1,11 @@
+2014-05-13  Jeff Law  <law@redhat.com>
+
+	Backport from mainline
+	2014-04-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/60902
+	* gcc.target/i386/pr60902.c: New test.
+
 2014-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/61060
