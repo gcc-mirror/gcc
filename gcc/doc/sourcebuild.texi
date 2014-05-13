@@ -1601,6 +1601,13 @@ MIPS target supports @code{-mpaired-single}.
 @subsubsection PowerPC-specific attributes
 
 @table @code
+
+@item dfp_hw
+PowerPC target supports executing hardware DFP instructions.
+
+@item p8vector_hw
+PowerPC target supports executing VSX instructions (ISA 2.07).
+
 @item powerpc64
 Test system supports executing 64-bit instructions.
 
@@ -1610,11 +1617,23 @@ PowerPC target supports AltiVec.
 @item powerpc_altivec_ok
 PowerPC target supports @code{-maltivec}.
 
+@item powerpc_eabi_ok
+PowerPC target supports @code{-meabi}.
+
+@item powerpc_elfv2
+PowerPC target supports @code{-mabi=elfv2}.
+
 @item powerpc_fprs
 PowerPC target supports floating-point registers.
 
 @item powerpc_hard_double
 PowerPC target supports hardware double-precision floating-point.
+
+@item powerpc_htm_ok
+PowerPC target supports @code{-mhtm}
+
+@item powerpc_p8vector_ok
+PowerPC target supports @code{-mpower8-vector}
 
 @item powerpc_ppu_ok
 PowerPC target supports @code{-mcpu=cell}.
@@ -1629,9 +1648,6 @@ PowerPC target supports PowerPC SPE.
 @item powerpc_spu
 PowerPC target supports PowerPC SPU.
 
-@item spu_auto_overlay
-SPU target has toolchain that supports automatic overlay generation.
-
 @item powerpc_vsx_ok
 PowerPC target supports @code{-mvsx}.
 
@@ -1639,8 +1655,17 @@ PowerPC target supports @code{-mvsx}.
 Including the options used to compile this particular test, the
 PowerPC target supports PowerPC 405.
 
+@item ppc_recip_hw
+PowerPC target supports executing reciprocal estimate instructions.
+
+@item spu_auto_overlay
+SPU target has toolchain that supports automatic overlay generation.
+
 @item vmx_hw
 PowerPC target supports executing AltiVec instructions.
+
+@item vsx_hw
+PowerPC target supports executing VSX instructions (ISA 2.06).
 @end table
 
 @subsubsection Other hardware attributes
