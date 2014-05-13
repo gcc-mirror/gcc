@@ -7515,15 +7515,16 @@ annotate_value (tree gnu_size)
 
     case BIT_AND_EXPR:
       tcode = Bit_And_Expr;
-      /* For negative values, build NEGATE_EXPR of the opposite.  Such values
-	 appear in expressions containing aligning patterns.  Note that, since
-	 sizetype is unsigned, we have to jump through some hoops.   */
+      /* For negative values in sizetype, build NEGATE_EXPR of the opposite.
+	 Such values appear in expressions with aligning patterns.  Note that,
+	 since sizetype is unsigned, we have to jump through some hoops.   */
       if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
 	{
 	  tree op1 = TREE_OPERAND (gnu_size, 1);
-	  if (wi::neg_p (op1))
+	  wide_int signed_op1 = wi::sext (op1, TYPE_PRECISION (sizetype));
+	  if (wi::neg_p (signed_op1))
 	    {
-	      op1 = wide_int_to_tree (sizetype, wi::neg (op1));
+	      op1 = wide_int_to_tree (sizetype, wi::neg (signed_op1));
 	      pre_op1 = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
 	    }
 	}
