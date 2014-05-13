@@ -1,5 +1,19 @@
 2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.def (SYMBOL_REF): Remove middle "0" field.
+	* rtl.h (block_symbol): Reduce number of fields to 2.
+	(rtx_def): Add u2.symbol_ref_flags.
+	(SYMBOL_REF_FLAGS): Use it.
+	(SYMBOL_REF_DATA, SET_SYMBOL_REF_DECL, SYMBOL_REF_DECL)
+	(SET_SYMBOL_REF_CONSTANT, SYMBOL_REF_CONSTANT): Lower index.
+	* gengtype.c (adjust_field_rtx_def): Remove SYMBOL_REF_FLAGS handling.
+	Lower index of SYMBOL_REF_DATA.
+	* print-rtl.c (print_rtx): Lower index for SYMBOL_REF_DATA.
+	Print SYMBOL_REF_FLAGS at the same time.
+	* genattrtab.c (attr_rtx_1): Only initialize 1 "0" SYMBOL_REF field.
+
+2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.def (VAR_LOCATION): Remove "i" field.
 	* rtl.h (rtx_def): Add u2.var_location_status.
 	(PAT_VAR_LOCATION_STATUS): Use it.

@@ -473,10 +473,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	  rt_val = rtx_alloc (code);
 	  XSTR (rt_val, 0) = arg0;
 	  if (code == SYMBOL_REF)
-	    {
-	      X0EXP (rt_val, 1) = NULL_RTX;
-	      X0EXP (rt_val, 2) = NULL_RTX;
-	    }
+	    X0EXP (rt_val, 1) = NULL_RTX;
 	}
     }
   else if (GET_RTX_LENGTH (code) == 2
