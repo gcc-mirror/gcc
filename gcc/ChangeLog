@@ -1,3 +1,11 @@
+2014-05-13  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_hard_regno_caller_save_mode): New prototype.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_caller_save_mode):
+	New function.
+	* config/aarch64/aarch64.h (HARD_REGNO_CALLER_SAVE_MODE): New macro.
+
 2014-05-13  Christian Bruel  <christian.bruel@st.com>
 
 	* target.def (mode_switching): New hook vector.

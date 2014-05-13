@@ -202,6 +202,8 @@ enum aarch64_symbol_type aarch64_classify_symbol (rtx,
 enum aarch64_symbol_type aarch64_classify_tls_symbol (rtx);
 enum reg_class aarch64_regno_regclass (unsigned);
 int aarch64_asm_preferred_eh_data_format (int, int);
+enum machine_mode aarch64_hard_regno_caller_save_mode (unsigned, unsigned,
+						       enum machine_mode);
 int aarch64_hard_regno_mode_ok (unsigned, enum machine_mode);
 int aarch64_hard_regno_nregs (unsigned, enum machine_mode);
 int aarch64_simd_attr_length_move (rtx);
