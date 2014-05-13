@@ -1353,6 +1353,7 @@ OBJS = \
 	sel-sched-dump.o \
 	sel-sched.o \
 	sese.o \
+	shrink-wrap.o \
 	simplify-rtx.o \
 	sparseset.o \
 	sreal.o \
