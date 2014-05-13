@@ -1,5 +1,15 @@
 2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.def (VAR_LOCATION): Remove "i" field.
+	* rtl.h (rtx_def): Add u2.var_location_status.
+	(PAT_VAR_LOCATION_STATUS): Use it.
+	(gen_rtx_VAR_LOCATION): Declare.
+	* gengenrtl.c (excluded_rtx): Add VAR_LOCATION.
+	* emit-rtl.c (gen_rtx_VAR_LOCATION): New function.
+	* var-tracking.c (emit_note_insn_var_location): Remove casts.
+
+2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.def (scratch): Fix outdated comment and remove "0" field.
 	* gengtype.c (adjust_field_rtx_def): Update accordingly.
 
