@@ -1,3 +1,8 @@
+2014-05-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (contain_complex_addr_expr): New.
+	(alloc_iv): Lower base expressions containing ADDR_EXPR.
+
 2014-05-13  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64-protos.h

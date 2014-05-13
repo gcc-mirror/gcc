@@ -1,3 +1,7 @@
+2014-05-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ivopts-lower_base.c: New test.
+
 2014-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/61060
