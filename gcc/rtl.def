@@ -747,9 +747,7 @@ DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", RTX_UNARY)
 DEF_RTL_EXPR(FMA, "fma", "eee", RTX_TERNARY)
 
 /* Information about the variable and its location.  */
-/* Changed 'te' to 'tei'; the 'i' field is for recording
-   initialization status of variables.  */
-DEF_RTL_EXPR(VAR_LOCATION, "var_location", "tei", RTX_EXTRA)
+DEF_RTL_EXPR(VAR_LOCATION, "var_location", "te", RTX_EXTRA)
 
 /* Used in VAR_LOCATION for a pointer to a decl that is no longer
    addressable.  */

@@ -362,6 +362,9 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
     /* The INSN_UID of an RTX_INSN-class code.  */
     int insn_uid;
 
+    /* The PAT_VAR_LOCATION_STATUS of a VAR_LOCATION.  */
+    enum var_init_status var_location_status;
+
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
     unsigned int num_elem;
@@ -1055,7 +1058,8 @@ extern const char * const reg_note_name[];
    can be unknown, uninitialized or initialized.  See enumeration
    type below.  */
 #define PAT_VAR_LOCATION_STATUS(PAT) \
-  ((enum var_init_status) (XCINT ((PAT), 2, VAR_LOCATION)))
+  (RTL_FLAG_CHECK1 ("PAT_VAR_LOCATION_STATUS", PAT, VAR_LOCATION) \
+   ->u2.var_location_status)
 
 /* Accessors for a NOTE_INSN_VAR_LOCATION.  */
 #define NOTE_VAR_LOCATION_DECL(NOTE) \
@@ -2561,6 +2565,8 @@ extern rtx gen_raw_REG (enum machine_mode, int);
 extern rtx gen_rtx_REG (enum machine_mode, unsigned);
 extern rtx gen_rtx_SUBREG (enum machine_mode, rtx, int);
 extern rtx gen_rtx_MEM (enum machine_mode, rtx);
+extern rtx gen_rtx_VAR_LOCATION (enum machine_mode, tree, rtx,
+				 enum var_init_status);
 
 #define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (N))
 
