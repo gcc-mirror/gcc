@@ -104,7 +104,8 @@ go_langhook_init (void)
      build_common_builtin_nodes (because it calls, indirectly,
      go_type_for_size).  */
   go_create_gogo (INT_TYPE_SIZE, POINTER_SIZE, go_pkgpath, go_prefix,
-		  go_relative_import_path);
+		  go_relative_import_path, go_check_divide_zero,
+		  go_check_divide_overflow);
 
   build_common_builtin_nodes ();
 

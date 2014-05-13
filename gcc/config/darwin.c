@@ -1299,22 +1299,17 @@ darwin_mergeable_constant_section (tree exp,
     {
       tree size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
 
-      if (TREE_CODE (size) == INTEGER_CST
-	  && TREE_INT_CST_LOW (size) == 4
-	  && TREE_INT_CST_HIGH (size) == 0)
-        return darwin_sections[literal4_section];
-      else if (TREE_CODE (size) == INTEGER_CST
-	       && TREE_INT_CST_LOW (size) == 8
-	       && TREE_INT_CST_HIGH (size) == 0)
-        return darwin_sections[literal8_section];
-      else if (HAVE_GAS_LITERAL16
-	       && TARGET_64BIT
-               && TREE_CODE (size) == INTEGER_CST
-               && TREE_INT_CST_LOW (size) == 16
-               && TREE_INT_CST_HIGH (size) == 0)
-        return darwin_sections[literal16_section];
-      else
-        return readonly_data_section;
+      if (TREE_CODE (size) == INTEGER_CST)
+	{
+	  if (wi::eq_p (size, 4))
+	    return darwin_sections[literal4_section];
+	  else if (wi::eq_p (size, 8))
+	    return darwin_sections[literal8_section];
+	  else if (HAVE_GAS_LITERAL16
+		   && TARGET_64BIT
+		   && wi::eq_p (size, 16))
+	    return darwin_sections[literal16_section];
+	}
     }
 
   return readonly_data_section;
@@ -1741,16 +1736,19 @@ machopic_select_rtx_section (enum machine_mode mode, rtx x,
 {
   if (GET_MODE_SIZE (mode) == 8
       && (GET_CODE (x) == CONST_INT
+	  || GET_CODE (x) == CONST_WIDE_INT
 	  || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal8_section];
   else if (GET_MODE_SIZE (mode) == 4
 	   && (GET_CODE (x) == CONST_INT
+	       || GET_CODE (x) == CONST_WIDE_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal4_section];
   else if (HAVE_GAS_LITERAL16
 	   && TARGET_64BIT
 	   && GET_MODE_SIZE (mode) == 16
 	   && (GET_CODE (x) == CONST_INT
+	       || GET_CODE (x) == CONST_WIDE_INT
 	       || GET_CODE (x) == CONST_DOUBLE
 	       || GET_CODE (x) == CONST_VECTOR))
     return darwin_sections[literal16_section];

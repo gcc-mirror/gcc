@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree-pass.h"
 #include "context.h"
+#include "wide-int.h"
 
 /* Processor costs */
 
@@ -1128,7 +1129,7 @@ const pass_data pass_data_work_around_errata =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_work_around_errata : public rtl_opt_pass
@@ -10930,30 +10931,30 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  && TREE_CODE (arg2) == INTEGER_CST)
 	{
 	  bool overflow = false;
-	  double_int result = TREE_INT_CST (arg2);
-	  double_int tmp;
+	  wide_int result = arg2;
+	  wide_int tmp;
 	  unsigned i;
 
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
-	      double_int e0 = TREE_INT_CST (VECTOR_CST_ELT (arg0, i));
-	      double_int e1 = TREE_INT_CST (VECTOR_CST_ELT (arg1, i));
+	      tree e0 = VECTOR_CST_ELT (arg0, i);
+	      tree e1 = VECTOR_CST_ELT (arg1, i);
 
 	      bool neg1_ovf, neg2_ovf, add1_ovf, add2_ovf;
 
-	      tmp = e1.neg_with_overflow (&neg1_ovf);
-	      tmp = e0.add_with_sign (tmp, false, &add1_ovf);
-	      if (tmp.is_negative ())
-		tmp = tmp.neg_with_overflow (&neg2_ovf);
+	      tmp = wi::neg (e1, &neg1_ovf);
+	      tmp = wi::add (e0, tmp, SIGNED, &add1_ovf);
+	      if (wi::neg_p (tmp))
+		tmp = wi::neg (tmp, &neg2_ovf);
 	      else
 		neg2_ovf = false;
-	      result = result.add_with_sign (tmp, false, &add2_ovf);
+	      result = wi::add (result, tmp, SIGNED, &add2_ovf);
 	      overflow |= neg1_ovf | neg2_ovf | add1_ovf | add2_ovf;
 	    }
 
 	  gcc_assert (!overflow);
 
-	  return build_int_cst_wide (rtype, result.low, result.high);
+	  return wide_int_to_tree (rtype, result);
 	}
 
     default:

@@ -1051,7 +1051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(const_iterator __position, size_type __n, const value_type& __x)
       {
 	difference_type __offset = __position - cbegin();
-	_M_fill_insert(__position._M_const_cast(), __n, __x);
+	_M_fill_insert(begin() + __offset, __n, __x);
 	return begin() + __offset;
       }
 #else
@@ -1096,7 +1096,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       _InputIterator __last)
         {
 	  difference_type __offset = __position - cbegin();
-	  _M_insert_dispatch(__position._M_const_cast(),
+	  _M_insert_dispatch(begin() + __offset,
 			     __first, __last, __false_type());
 	  return begin() + __offset;
 	}
@@ -1144,10 +1144,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __position)
+      { return _M_erase(begin() + (__position - cbegin())); }
 #else
       erase(iterator __position)
+      { return _M_erase(__position); }
 #endif
-      { return _M_erase(__position._M_const_cast()); }
 
       /**
        *  @brief  Remove a range of elements.
@@ -1170,10 +1171,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __first, const_iterator __last)
+      {
+	const auto __beg = begin();
+	const auto __cbeg = cbegin();
+	return _M_erase(__beg + (__first - __cbeg), __beg + (__last - __cbeg));
+      }
 #else
       erase(iterator __first, iterator __last)
+      { return _M_erase(__first, __last); }
 #endif
-      { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
 
       /**
        *  @brief  Swaps data with another %vector.

@@ -553,7 +553,7 @@ const pass_data pass_data_uncprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_uncprop : public gimple_opt_pass

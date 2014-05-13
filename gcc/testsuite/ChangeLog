@@ -1,3 +1,383 @@
+2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60054
+	* g++.dg/cpp1y/pr60054.C: New.
+
+2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51199
+	* g++.dg/template/pr51199.C: New.
+
+2014-05-11  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.c-torture/execute/20101011-1.c [__MMIX__] (DO_TEST): Define as 0.
+
+2014-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/affinity-1.f90: New test.
+
+2014-05-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/torture/pr61136.c: New test.
+
+2014-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59705
+	* g++.dg/cpp0x/sfinae51.C: New.
+
+	PR c++/58353
+	* g++.dg/cpp0x/variadic157.C: New.
+
+2014-05-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-14.c: Relax criteria for passing the test.
+
+2014-05-10  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/pedwarn-init.c: New test.
+	* gcc.dg/init-string-1.c: Adjust dg-error.
+
+2014-05-10  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_logical_op_short_circuit): Add mmix-*-*
+	to the list.
+
+2014-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61096
+	* gcc.dg/pr61096-1.c: New test.
+	* gcc.dg/pr61096-2.c: New test.
+
+2014-05-09  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/fstack-protector-strong.c: Add coverage for return slots.
+	* g++.dg/fstack-protector-strong.C: Likewise.
+	* gcc.target/i386/ssp-strong-reg.c: New file.
+
+2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/61055
+	* gcc.target/avr/torture/pr61055.c: New test.
+
+2014-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/50459
+	* c-c++-common/attributes-1.c: Move test line to a new test.
+	* c-c++-common/attributes-2.c: New test.
+	* c-c++-common/pr50459.c: New test.
+	* c-c++-common/pr59280.c: Add "undeclared" to dg-error.
+	* gcc.dg/nonnull-2.c: Likewise.
+	* gcc.dg/pr55570.c: Modify dg-error.
+	* gcc.dg/tm/wrap-2.c: Likewise.
+
+2014-05-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61009
+	* g++.dg/tree-ssa/pr61009.C: New test.
+
+2014-05-08  Matthias Klose  <doko@ubuntu.com>
+
+	PR driver/61106
+	* gcc-dg/unused-8a.c: New.
+	* gcc-dg/unused-8b.c: Likewise.
+
+2014-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61053
+	* gcc.dg/pr61053.c: New test.
+
+2014-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61077
+	* gcc.dg/pr61077.c: New test.
+
+2014-05-08  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_collectives_1.f90: New.
+	* gfortran.dg/coarray_collectives_2.f90: New.
+	* gfortran.dg/coarray_collectives_3.f90: New.
+	* gfortran.dg/coarray_collectives_4.f90: New.
+	* gfortran.dg/coarray_collectives_5.f90: New.
+	* gfortran.dg/coarray_collectives_6.f90: New.
+	* gfortran.dg/coarray/collectives_1.f90: New.
+	* gfortran.dg/assumed_rank_5.f90: Update dg-error.
+	* gfortran.dg/assumed_type_4.f90: Update dg-error.
+	* gfortran.dg/bind_c_array_params.f03: Update dg-error.
+	* gfortran.dg/bind_c_usage_28.f90: Update dg-error.
+	* gfortran.dg/c_funloc_tests_5.f03: Update dg-error.
+	* gfortran.dg/c_funloc_tests_6.f90: Update dg-error.
+	* gfortran.dg/c_loc_tests_11.f03: Update dg-error.
+
+2014-05-08  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* gcc.target/i386/pr58066.c: New test.
+
+2014-05-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/avx256-unaligned-load-2.c,
+	gcc.target/i386/pr49002-1.c, gcc.target/i386/pr53712.c,
+	gcc.target/i386/pr53907.c, gcc.target/i386/pr59539-1.c: Allow
+	packed-single instructions.
+
+2014-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/13981
+	* g++.dg/diagnostic/pr13981.C: New.
+
+2014-05-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/59100
+	* gcc.dg/tree-ssa/phi-opt-12.c: New file.
+	* gcc.dg/tree-ssa/phi-opt-13.c: Likewise.
+
+2014-05-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR tree-optimization/61095
+	* gcc.dg/torture/pr61095.c: New test.
+
+2014-05-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/39246
+	* gcc.dg/uninit-13.c: Move warning on the actual source line where
+	the uninitialized complex is used.
+	* gcc.dg/uninit-17.c: New test to check partial initialization of
+	complex with branches.
+	* gcc.dg/uninit-17-O0.c: Likewise.
+
+2014-05-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/60884
+	* gcc.target/sh/pr53976-1.c (test_02): Remove inappropriate test case.
+	(test_03): Rename to test_02.
+
+2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61083
+	* g++.dg/cpp0x/sfinae50.C: New.
+
+2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61080
+	* g++.dg/cpp0x/deleted7.C: New.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61034
+	* g++.dg/tree-ssa/pr61034.C: New testcase.
+
+2014-05-07  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/epiphany/isr-arg.c: New file.
+
+2014-05-07  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR tree-optimization/52252
+	* gcc.dg/vect/pr52252-ld.c: Test on loads group of size 3.
+
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/vrev16p8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev16p8.x: New file.
+	* gcc.target/aarch64/simd/vrev16qp8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev16qp8.x: New file.
+	* gcc.target/aarch64/simd/vrev16qs8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev16qs8.x: New file.
+	* gcc.target/aarch64/simd/vrev16qu8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev16qu8.x: New file.
+	* gcc.target/aarch64/simd/vrev16s8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev16s8.x: New file.
+	* gcc.target/aarch64/simd/vrev16u8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev16u8.x: New file.
+	* gcc.target/aarch64/simd/vrev32p16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32p16.x: New file.
+	* gcc.target/aarch64/simd/vrev32p8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32p8.x: New file.
+	* gcc.target/aarch64/simd/vrev32qp16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32qp16.x: New file.
+	* gcc.target/aarch64/simd/vrev32qp8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32qp8.x: New file.
+	* gcc.target/aarch64/simd/vrev32qs16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32qs16.x: New file.
+	* gcc.target/aarch64/simd/vrev32qs8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32qs8.x: New file.
+	* gcc.target/aarch64/simd/vrev32qu16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32qu16.x: New file.
+	* gcc.target/aarch64/simd/vrev32qu8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32qu8.x: New file.
+	* gcc.target/aarch64/simd/vrev32s16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32s16.x: New file.
+	* gcc.target/aarch64/simd/vrev32s8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32s8.x: New file.
+	* gcc.target/aarch64/simd/vrev32u16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32u16.x: New file.
+	* gcc.target/aarch64/simd/vrev32u8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev32u8.x: New file.
+	* gcc.target/aarch64/simd/vrev64f32_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64f32.x: New file.
+	* gcc.target/aarch64/simd/vrev64p16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64p16.x: New file.
+	* gcc.target/aarch64/simd/vrev64p8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64p8.x: New file.
+	* gcc.target/aarch64/simd/vrev64qf32_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qf32.x: New file.
+	* gcc.target/aarch64/simd/vrev64qp16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qp16.x: New file.
+	* gcc.target/aarch64/simd/vrev64qp8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qp8.x: New file.
+	* gcc.target/aarch64/simd/vrev64qs16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qs16.x: New file.
+	* gcc.target/aarch64/simd/vrev64qs32_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qs32.x: New file.
+	* gcc.target/aarch64/simd/vrev64qs8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qs8.x: New file.
+	* gcc.target/aarch64/simd/vrev64qu16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qu16.x: New file.
+	* gcc.target/aarch64/simd/vrev64qu32_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qu32.x: New file.
+	* gcc.target/aarch64/simd/vrev64qu8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64qu8.x: New file.
+	* gcc.target/aarch64/simd/vrev64s16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64s16.x: New file.
+	* gcc.target/aarch64/simd/vrev64s32_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64s32.x: New file.
+	* gcc.target/aarch64/simd/vrev64s8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64s8.x: New file.
+	* gcc.target/aarch64/simd/vrev64u16_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64u16.x: New file.
+	* gcc.target/aarch64/simd/vrev64u32_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64u32.x: New file.
+	* gcc.target/aarch64/simd/vrev64u8_1.c: New file.
+	* gcc.target/aarch64/simd/vrev64u8.x: New file.
+
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	gcc.target/aarch64/simd/ext_f32.x: New file.
+	gcc.target/aarch64/simd/ext_f32_1.c: New file.
+	gcc.target/aarch64/simd/ext_p16.x: New file.
+	gcc.target/aarch64/simd/ext_p16_1.c: New file.
+	gcc.target/aarch64/simd/ext_p8.x: New file.
+	gcc.target/aarch64/simd/ext_p8_1.c: New file.
+	gcc.target/aarch64/simd/ext_s16.x: New file.
+	gcc.target/aarch64/simd/ext_s16_1.c: New file.
+	gcc.target/aarch64/simd/ext_s32.x: New file.
+	gcc.target/aarch64/simd/ext_s32_1.c: New file.
+	gcc.target/aarch64/simd/ext_s64.x: New file.
+	gcc.target/aarch64/simd/ext_s64_1.c: New file.
+	gcc.target/aarch64/simd/ext_s8.x: New file.
+	gcc.target/aarch64/simd/ext_s8_1.c: New file.
+	gcc.target/aarch64/simd/ext_u16.x: New file.
+	gcc.target/aarch64/simd/ext_u16_1.c: New file.
+	gcc.target/aarch64/simd/ext_u32.x: New file.
+	gcc.target/aarch64/simd/ext_u32_1.c: New file.
+	gcc.target/aarch64/simd/ext_u64.x: New file.
+	gcc.target/aarch64/simd/ext_u64_1.c: New file.
+	gcc.target/aarch64/simd/ext_u8.x: New file.
+	gcc.target/aarch64/simd/ext_u8_1.c: New file.
+	gcc.target/aarch64/simd/ext_f64.c: New file.
+	gcc.target/aarch64/simd/extq_f32.x: New file.
+	gcc.target/aarch64/simd/extq_f32_1.c: New file.
+	gcc.target/aarch64/simd/extq_p16.x: New file.
+	gcc.target/aarch64/simd/extq_p16_1.c: New file.
+	gcc.target/aarch64/simd/extq_p8.x: New file.
+	gcc.target/aarch64/simd/extq_p8_1.c: New file.
+	gcc.target/aarch64/simd/extq_s16.x: New file.
+	gcc.target/aarch64/simd/extq_s16_1.c: New file.
+	gcc.target/aarch64/simd/extq_s32.x: New file.
+	gcc.target/aarch64/simd/extq_s32_1.c: New file.
+	gcc.target/aarch64/simd/extq_s64.x: New file.
+	gcc.target/aarch64/simd/extq_s64_1.c: New file.
+	gcc.target/aarch64/simd/extq_s8.x: New file.
+	gcc.target/aarch64/simd/extq_s8_1.c: New file.
+	gcc.target/aarch64/simd/extq_u16.x: New file.
+	gcc.target/aarch64/simd/extq_u16_1.c: New file.
+	gcc.target/aarch64/simd/extq_u32.x: New file.
+	gcc.target/aarch64/simd/extq_u32_1.c: New file.
+	gcc.target/aarch64/simd/extq_u64.x: New file.
+	gcc.target/aarch64/simd/extq_u64_1.c: New file.
+	gcc.target/aarch64/simd/extq_u8.x: New file.
+	gcc.target/aarch64/simd/extq_u8_1.c: New file.
+	gcc.target/aarch64/simd/extq_f64.c: New file.
+
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vtrns32.c: Expect zip[12] insn rather than trn[12].
+	* gcc.target/aarch64/vtrnu32.c: Likewise.
+	* gcc.target/aarch64/vtrnf32.c: Likewise.
+
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/simd/vtrnf32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnf32.x: New file.
+	* gcc.target/aarch64/simd/vtrnp16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnp16.x: New file.
+	* gcc.target/aarch64/simd/vtrnp8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnp8.x: New file.
+	* gcc.target/aarch64/simd/vtrnqf32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqf32.x: New file.
+	* gcc.target/aarch64/simd/vtrnqp16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqp16.x: New file.
+	* gcc.target/aarch64/simd/vtrnqp8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqp8.x: New file.
+	* gcc.target/aarch64/simd/vtrnqs16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqs16.x: New file.
+	* gcc.target/aarch64/simd/vtrnqs32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqs32.x: New file.
+	* gcc.target/aarch64/simd/vtrnqs8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqs8.x: New file.
+	* gcc.target/aarch64/simd/vtrnqu16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqu16.x: New file.
+	* gcc.target/aarch64/simd/vtrnqu32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqu32.x: New file.
+	* gcc.target/aarch64/simd/vtrnqu8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnqu8.x: New file.
+	* gcc.target/aarch64/simd/vtrns16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrns16.x: New file.
+	* gcc.target/aarch64/simd/vtrns32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrns32.x: New file.
+	* gcc.target/aarch64/simd/vtrns8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrns8.x: New file.
+	* gcc.target/aarch64/simd/vtrnu16_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnu16.x: New file.
+	* gcc.target/aarch64/simd/vtrnu32_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnu32.x: New file.
+	* gcc.target/aarch64/simd/vtrnu8_1.c: New file.
+	* gcc.target/aarch64/simd/vtrnu8.x: New file.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57864
+	* gcc.dg/torture/pr57864.c: New testcase.
+
+2014-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/61049
+	* gfortran.dg/list_read_13.f: New test.
+
+2014-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60999
+	* g++.dg/cpp0x/nsdmi-template9.C: New.
+	* g++.dg/cpp0x/nsdmi-template10.C: Likewise.
+
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/tree-ssa/pr45427.c: Update to look for 0x0 instead of 0.
+
+2014-05-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60965
+	* g++.dg/ipa/devirt-32.C: New testcase.
+
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61010
+	* gcc.dg/torture/pr61010.c: New testcase.
+
 2014-05-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/leaf-profile.c: New testcase.
@@ -296,7 +676,7 @@
 
 2014-04-28  Martin Jambor  <mjambor@suse.cz>
 
-        * gcc.dg/tree-ssa/sra-14.c: New test.
+	* gcc.dg/tree-ssa/sra-14.c: New test.
 
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
@@ -345,10 +725,10 @@
 
 2014-04-25  Cary Coutant  <ccoutant@google.com>
 
-        PR debug/60929
-        * g++.dg/debug/dwarf2/dwarf4-nested.C: New test case.
-        * g++.dg/debug/dwarf2/dwarf4-typedef.C: Add
-        -fdebug-types-section flag.
+	PR debug/60929
+	* g++.dg/debug/dwarf2/dwarf4-nested.C: New test case.
+	* g++.dg/debug/dwarf2/dwarf4-typedef.C: Add
+	-fdebug-types-section flag.
 
 2014-04-25  Jiong Wang  <jiong.wang@arm.com>
 

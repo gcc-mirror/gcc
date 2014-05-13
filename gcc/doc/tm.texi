@@ -3092,6 +3092,7 @@ This describes the stack layout and calling conventions.
 * Profiling::
 * Tail Calls::
 * Stack Smashing Protection::
+* Miscellaneous Register Hooks::
 @end menu
 
 @node Frame Layout
@@ -5020,6 +5021,21 @@ normally defined in @file{libgcc2.c}.
 @deftypefn {Common Target Hook} bool TARGET_SUPPORTS_SPLIT_STACK (bool @var{report}, struct gcc_options *@var{opts})
 Whether this target supports splitting the stack when the options described in @var{opts} have been passed.  This is called after options have been parsed, so the target may reject splitting the stack in some configurations.  The default version of this hook returns false.  If @var{report} is true, this function may issue a warning or error; if @var{report} is false, it must simply return a value
 @end deftypefn
+
+@node Miscellaneous Register Hooks
+@subsection Miscellaneous register hooks
+@cindex miscellaneous register hooks
+
+@deftypevr {Target Hook} bool TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
+set to true if all the calls in the current function contain clobbers in
+CALL_INSN_FUNCTION_USAGE for the registers that are clobbered by the call
+rather than by the callee, and are not already set or clobbered in the call
+pattern.  Examples of such registers are registers used in PLTs and stubs,
+and temporary registers used in the call instruction but not present in the
+rtl pattern.  Another way to formulate it is the registers not present in the
+rtl pattern that are clobbered by the call assuming the callee does not
+clobber any register.  The default version of this hook is set to false.
+@end deftypevr
 
 @node Varargs
 @section Implementing the Varargs Macros
@@ -9689,18 +9705,6 @@ Returns the negative of the floating point value @var{x}.
 Returns the absolute value of @var{x}.
 @end deftypefn
 
-@deftypefn Macro void REAL_VALUE_TO_INT (HOST_WIDE_INT @var{low}, HOST_WIDE_INT @var{high}, REAL_VALUE_TYPE @var{x})
-Converts a floating point value @var{x} into a double-precision integer
-which is then stored into @var{low} and @var{high}.  If the value is not
-integral, it is truncated.
-@end deftypefn
-
-@deftypefn Macro void REAL_VALUE_FROM_INT (REAL_VALUE_TYPE @var{x}, HOST_WIDE_INT @var{low}, HOST_WIDE_INT @var{high}, enum machine_mode @var{mode})
-Converts a double-precision integer found in @var{low} and @var{high},
-into a floating point value which is then stored into @var{x}.  The
-value is truncated to fit in mode @var{mode}.
-@end deftypefn
-
 @node Mode Switching
 @section Mode Switching Instructions
 @cindex mode switching
@@ -11077,7 +11081,7 @@ function version at run-time for a given set of function versions.
 body must be generated.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (double_int @var{iterations}, double_int @var{iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})
+@deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (const widest_int @var{&iterations}, const widest_int @var{&iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})
 Return true if it is possible to use low-overhead loops (@code{doloop_end}
 and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the
 exact number of iterations, or 0 if not known.  @var{iterations_max} gives
@@ -11493,3 +11497,49 @@ If defined, this function returns an appropriate alignment in bits for an atomic
 @deftypefn {Target Hook} void TARGET_ATOMIC_ASSIGN_EXPAND_FENV (tree *@var{hold}, tree *@var{clear}, tree *@var{update})
 ISO C11 requires atomic compound assignments that may raise floating-point exceptions to raise exceptions corresponding to the arithmetic operation whose result was successfully stored in a compare-and-exchange sequence.  This requires code equivalent to calls to @code{feholdexcept}, @code{feclearexcept} and @code{feupdateenv} to be generated at appropriate points in the compare-and-exchange sequence.  This hook should set @code{*@var{hold}} to an expression equivalent to the call to @code{feholdexcept}, @code{*@var{clear}} to an expression equivalent to the call to @code{feclearexcept} and @code{*@var{update}} to an expression equivalent to the call to @code{feupdateenv}.  The three expressions are @code{NULL_TREE} on entry to the hook and may be left as @code{NULL_TREE} if no code is required in a particular place.  The default implementation leaves all three expressions as @code{NULL_TREE}.  The @code{__atomic_feraiseexcept} function from @code{libatomic} may be of use as part of the code generated in @code{*@var{update}}.
 @end deftypefn
+
+@defmac TARGET_SUPPORTS_WIDE_INT
+
+On older ports, large integers are stored in @code{CONST_DOUBLE} rtl
+objects.  Newer ports define @code{TARGET_SUPPORTS_WIDE_INT} to be nonzero
+to indicate that large integers are stored in
+@code{CONST_WIDE_INT} rtl objects.  The @code{CONST_WIDE_INT} allows
+very large integer constants to be represented.  @code{CONST_DOUBLE}
+is limited to twice the size of the host's @code{HOST_WIDE_INT}
+representation.
+
+Converting a port mostly requires looking for the places where
+@code{CONST_DOUBLE}s are used with @code{VOIDmode} and replacing that
+code with code that accesses @code{CONST_WIDE_INT}s.  @samp{"grep -i
+const_double"} at the port level gets you to 95% of the changes that
+need to be made.  There are a few places that require a deeper look.
+
+@itemize @bullet
+@item
+There is no equivalent to @code{hval} and @code{lval} for
+@code{CONST_WIDE_INT}s.  This would be difficult to express in the md
+language since there are a variable number of elements.
+
+Most ports only check that @code{hval} is either 0 or -1 to see if the
+value is small.  As mentioned above, this will no longer be necessary
+since small constants are always @code{CONST_INT}.  Of course there
+are still a few exceptions, the alpha's constraint used by the zap
+instruction certainly requires careful examination by C code.
+However, all the current code does is pass the hval and lval to C
+code, so evolving the c code to look at the @code{CONST_WIDE_INT} is
+not really a large change.
+
+@item
+Because there is no standard template that ports use to materialize
+constants, there is likely to be some futzing that is unique to each
+port in this code.
+
+@item
+The rtx costs may have to be adjusted to properly account for larger
+constants that are represented as @code{CONST_WIDE_INT}.
+@end itemize
+
+All and all it does not take long to convert ports that the
+maintainer is familiar with.
+
+@end defmac

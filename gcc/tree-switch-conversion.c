@@ -446,7 +446,13 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
         if (const & csui) goto target  */
   for (k = 0; k < count; k++)
     {
-      tmp = build_int_cst_wide (word_type_node, test[k].lo, test[k].hi);
+      HOST_WIDE_INT a[2];
+
+      a[0] = test[k].lo;
+      a[1] = test[k].hi;
+      tmp = wide_int_to_tree (word_type_node,
+			      wide_int::from_array (a, 2,
+						    TYPE_PRECISION (word_type_node)));
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
@@ -886,7 +892,8 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      info->constructors[k]->quick_push (elt);
 	    }
 
-	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
+	  pos = int_const_binop (PLUS_EXPR, pos,
+				 build_int_cst (TREE_TYPE (pos), 1));
 	}
       gcc_assert (tree_int_cst_equal (pos, CASE_LOW (cs)));
 
@@ -911,7 +918,8 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      elt.value = unshare_expr_without_location (val);
 	      info->constructors[j]->quick_push (elt);
 
-	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
+	      pos = int_const_binop (PLUS_EXPR, pos,
+				     build_int_cst (TREE_TYPE (pos), 1));
 	    } while (!tree_int_cst_lt (high, pos)
 		     && tree_int_cst_lt (low, pos));
 	  j++;
@@ -966,26 +974,26 @@ array_value_type (gimple swtch, tree type, int num,
 
   FOR_EACH_VEC_SAFE_ELT (info->constructors[num], i, elt)
     {
-      double_int cst;
+      wide_int cst;
 
       if (TREE_CODE (elt->value) != INTEGER_CST)
 	return type;
 
-      cst = TREE_INT_CST (elt->value);
+      cst = elt->value;
       while (1)
 	{
 	  unsigned int prec = GET_MODE_BITSIZE (mode);
 	  if (prec > HOST_BITS_PER_WIDE_INT)
 	    return type;
 
-	  if (sign >= 0 && cst == cst.zext (prec))
+	  if (sign >= 0 && cst == wi::zext (cst, prec))
 	    {
-	      if (sign == 0 && cst == cst.sext (prec))
+	      if (sign == 0 && cst == wi::sext (cst, prec))
 		break;
 	      sign = 1;
 	      break;
 	    }
-	  if (sign <= 0 && cst == cst.sext (prec))
+	  if (sign <= 0 && cst == wi::sext (cst, prec))
 	    {
 	      sign = -1;
 	      break;
@@ -1427,9 +1435,7 @@ const pass_data pass_data_convert_switch =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_convert_switch : public gimple_opt_pass

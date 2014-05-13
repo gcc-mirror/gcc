@@ -2117,7 +2117,7 @@ debug_bitmap_file (FILE *file, const_bitmap head)
 DEBUG_FUNCTION void
 debug_bitmap (const_bitmap head)
 {
-  debug_bitmap_file (stdout, head);
+  debug_bitmap_file (stderr, head);
 }
 
 /* Function to print out the contents of a bitmap.  Unlike debug_bitmap_file,

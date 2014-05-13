@@ -207,5 +207,6 @@ extern bool default_member_type_forces_blk (const_tree, enum machine_mode);
 extern void default_atomic_assign_expand_fenv (tree *, tree *, tree *);
 extern tree build_va_arg_indirect_ref (tree);
 extern tree std_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
-extern bool can_use_doloop_if_innermost (double_int, double_int,
+extern bool can_use_doloop_if_innermost (const widest_int &,
+					 const widest_int &,
 					 unsigned int, bool);

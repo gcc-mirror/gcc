@@ -428,6 +428,23 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       pp_scalar (pp, HOST_WIDE_INT_PRINT_HEX,
 		 (unsigned HOST_WIDE_INT) INTVAL (x));
       break;
+
+    case CONST_WIDE_INT:
+      {
+	const char *sep = "<";
+	int i;
+	for (i = CONST_WIDE_INT_NUNITS (x) - 1; i >= 0; i--)
+	  {
+	    pp_string (pp, sep);
+	    sep = ",";
+	    sprintf (tmp, HOST_WIDE_INT_PRINT_HEX,
+		     (unsigned HOST_WIDE_INT) CONST_WIDE_INT_ELT (x, i));
+	    pp_string (pp, tmp);
+	  }
+        pp_greater (pp);
+      }
+      break;
+
     case CONST_DOUBLE:
       if (FLOAT_MODE_P (GET_MODE (x)))
 	{

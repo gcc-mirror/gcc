@@ -2898,15 +2898,13 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
 	     */
 
-	  HOST_WIDE_INT
-	  min_seg_len_b = (TREE_CODE (dr_b1->seg_len) == INTEGER_CST) ?
-			     TREE_INT_CST_LOW (dr_b1->seg_len) :
-			     vect_factor;
+	  HOST_WIDE_INT  min_seg_len_b = (tree_fits_shwi_p (dr_b1->seg_len)
+					  ? tree_to_shwi (dr_b1->seg_len)
+					  : vect_factor);
 
 	  if (diff <= min_seg_len_b
-	      || (TREE_CODE (dr_a1->seg_len) == INTEGER_CST
-		  && diff - (HOST_WIDE_INT) TREE_INT_CST_LOW (dr_a1->seg_len) <
-		     min_seg_len_b))
+	      || (tree_fits_shwi_p (dr_a1->seg_len)
+		  && diff - tree_to_shwi (dr_a1->seg_len) < min_seg_len_b))
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -2999,8 +2997,8 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	{
 	  if (off == NULL_TREE)
 	    {
-	      double_int moff = mem_ref_offset (base);
-	      off = double_int_to_tree (sizetype, moff);
+	      offset_int moff = mem_ref_offset (base);
+	      off = wide_int_to_tree (sizetype, moff);
 	    }
 	  else
 	    off = size_binop (PLUS_EXPR, off,
@@ -4812,36 +4810,76 @@ vect_grouped_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
   enum machine_mode mode = TYPE_MODE (vectype);
 
-  /* vect_permute_load_chain requires the group size to be a power of two.  */
-  if (exact_log2 (count) == -1)
+  /* vect_permute_load_chain requires the group size to be equal to 3 or
+     be a power of two.  */
+  if (count != 3 && exact_log2 (count) == -1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "the size of the group of accesses"
-                         " is not a power of 2\n");
+			 "the size of the group of accesses"
+			 " is not a power of 2 or not equal to 3\n");
       return false;
     }
 
   /* Check that the permutation is supported.  */
   if (VECTOR_MODE_P (mode))
     {
-      unsigned int i, nelt = GET_MODE_NUNITS (mode);
+      unsigned int i, j, nelt = GET_MODE_NUNITS (mode);
       unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
 
-      for (i = 0; i < nelt; i++)
-	sel[i] = i * 2;
-      if (can_vec_perm_p (mode, false, sel))
+      if (count == 3)
 	{
-	  for (i = 0; i < nelt; i++)
-	    sel[i] = i * 2 + 1;
-	  if (can_vec_perm_p (mode, false, sel))
-	    return true;
+	  unsigned int k;
+	  for (k = 0; k < 3; k++)
+	    {
+	      for (i = 0; i < nelt; i++)
+		if (3 * i + k < 2 * nelt)
+		  sel[i] = 3 * i + k;
+		else
+		  sel[i] = 0;
+	      if (!can_vec_perm_p (mode, false, sel))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "shuffle of 3 loads is not supported by"
+				     " target\n");
+		    return false;
+		}
+	      for (i = 0, j = 0; i < nelt; i++)
+		if (3 * i + k < 2 * nelt)
+		  sel[i] = i;
+		else
+		  sel[i] = nelt + ((nelt + k) % 3) + 3 * (j++);
+	      if (!can_vec_perm_p (mode, false, sel))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "shuffle of 3 loads is not supported by"
+				     " target\n");
+		  return false;
+		}
+	    }
+	  return true;
 	}
+      else
+	{
+	  /* If length is not equal to 3 then only power of 2 is supported.  */
+	  gcc_assert (exact_log2 (count) != -1);
+	  for (i = 0; i < nelt; i++)
+	    sel[i] = i * 2;
+	  if (can_vec_perm_p (mode, false, sel))
+	    {
+	      for (i = 0; i < nelt; i++)
+		sel[i] = i * 2 + 1;
+	      if (can_vec_perm_p (mode, false, sel))
+		return true;
+	    }
+        }
     }
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                     "extract even/odd not supported by target\n");
+		     "extract even/odd not supported by target\n");
   return false;
 }
 
@@ -4859,8 +4897,9 @@ vect_load_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
 /* Function vect_permute_load_chain.
 
    Given a chain of interleaved loads in DR_CHAIN of LENGTH that must be
-   a power of 2, generate extract_even/odd stmts to reorder the input data
-   correctly.  Return the final references for loads in RESULT_CHAIN.
+   a power of 2 or equal to 3, generate extract_even/odd stmts to reorder
+   the input data correctly.  Return the final references for loads in
+   RESULT_CHAIN.
 
    E.g., LENGTH is 4 and the scalar type is short, i.e., VF is 8.
    The input is 4 vectors each containing 8 elements. We assign a number to each
@@ -4941,6 +4980,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
 {
   tree data_ref, first_vect, second_vect;
   tree perm_mask_even, perm_mask_odd;
+  tree perm3_mask_low, perm3_mask_high;
   gimple perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   unsigned int i, j, log_length = exact_log2 (length);
@@ -4951,44 +4991,97 @@ vect_permute_load_chain (vec<tree> dr_chain,
   memcpy (result_chain->address (), dr_chain.address (),
 	  length * sizeof (tree));
 
-  for (i = 0; i < nelt; ++i)
-    sel[i] = i * 2;
-  perm_mask_even = vect_gen_perm_mask (vectype, sel);
-  gcc_assert (perm_mask_even != NULL);
-
-  for (i = 0; i < nelt; ++i)
-    sel[i] = i * 2 + 1;
-  perm_mask_odd = vect_gen_perm_mask (vectype, sel);
-  gcc_assert (perm_mask_odd != NULL);
-
-  for (i = 0; i < log_length; i++)
+  if (length == 3)
     {
-      for (j = 0; j < length; j += 2)
+      unsigned int k;
+
+      for (k = 0; k < 3; k++)
 	{
-	  first_vect = dr_chain[j];
-	  second_vect = dr_chain[j+1];
+	  for (i = 0; i < nelt; i++)
+	    if (3 * i + k < 2 * nelt)
+	      sel[i] = 3 * i + k;
+	    else
+	      sel[i] = 0;
+	  perm3_mask_low = vect_gen_perm_mask (vectype, sel);
+	  gcc_assert (perm3_mask_low != NULL);
 
-	  /* data_ref = permute_even (first_data_ref, second_data_ref);  */
-	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_even");
+	  for (i = 0, j = 0; i < nelt; i++)
+	    if (3 * i + k < 2 * nelt)
+	      sel[i] = i;
+	    else
+	      sel[i] = nelt + ((nelt + k) % 3) + 3 * (j++);
+
+	  perm3_mask_high = vect_gen_perm_mask (vectype, sel);
+	  gcc_assert (perm3_mask_high != NULL);
+
+	  first_vect = dr_chain[0];
+	  second_vect = dr_chain[1];
+
+	  /* Create interleaving stmt (low part of):
+	     low = VEC_PERM_EXPR <first_vect, second_vect2, {k, 3 + k, 6 + k,
+							     ...}>  */
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_suffle3_low");
 	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
 						    first_vect, second_vect,
-						    perm_mask_even);
+						    perm3_mask_low);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	  (*result_chain)[j/2] = data_ref;
 
-	  /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
-	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_odd");
+	  /* Create interleaving stmt (high part of):
+	     high = VEC_PERM_EXPR <first_vect, second_vect2, {k, 3 + k, 6 + k,
+							      ...}>  */
+	  first_vect = data_ref;
+	  second_vect = dr_chain[2];
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_suffle3_high");
 	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
 						    first_vect, second_vect,
-						    perm_mask_odd);
+						    perm3_mask_high);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	  (*result_chain)[j/2+length/2] = data_ref;
+	  (*result_chain)[k] = data_ref;
 	}
-      memcpy (dr_chain.address (), result_chain->address (),
-	      length * sizeof (tree));
+    }
+  else
+    {
+      /* If length is not equal to 3 then only power of 2 is supported.  */
+      gcc_assert (exact_log2 (length) != -1);
+
+      for (i = 0; i < nelt; ++i)
+	sel[i] = i * 2;
+      perm_mask_even = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (perm_mask_even != NULL);
+
+      for (i = 0; i < nelt; ++i)
+	sel[i] = i * 2 + 1;
+      perm_mask_odd = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (perm_mask_odd != NULL);
+
+      for (i = 0; i < log_length; i++)
+	{
+	  for (j = 0; j < length; j += 2)
+	    {
+	      first_vect = dr_chain[j];
+	      second_vect = dr_chain[j+1];
+
+	      /* data_ref = permute_even (first_data_ref, second_data_ref);  */
+	      data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_even");
+	      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+							first_vect, second_vect,
+							perm_mask_even);
+	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      (*result_chain)[j/2] = data_ref;
+
+	      /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
+	      data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_odd");
+	      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+							first_vect, second_vect,
+							perm_mask_odd);
+	      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	      (*result_chain)[j/2+length/2] = data_ref;
+	    }
+	  memcpy (dr_chain.address (), result_chain->address (),
+		  length * sizeof (tree));
+	}
     }
 }
-
 
 /* Function vect_transform_grouped_load.
 

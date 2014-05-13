@@ -1212,8 +1212,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
-      compare_values (TREE_INT_CST_LOW);
-      compare_values (TREE_INT_CST_HIGH);
+      if (!wi::eq_p (t1, t2))
+	return false;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))

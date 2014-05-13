@@ -2738,7 +2738,7 @@ decode_addr_const (tree exp, struct addr_const *value)
       else if (TREE_CODE (target) == MEM_REF
 	       && TREE_CODE (TREE_OPERAND (target, 0)) == ADDR_EXPR)
 	{
-	  offset += mem_ref_offset (target).low;
+	  offset += mem_ref_offset (target).to_short_addr ();
 	  target = TREE_OPERAND (TREE_OPERAND (target, 0), 0);
 	}
       else if (TREE_CODE (target) == INDIRECT_REF
@@ -2818,8 +2818,8 @@ const_hash_1 (const tree exp)
   switch (code)
     {
     case INTEGER_CST:
-      p = (char *) &TREE_INT_CST (exp);
-      len = sizeof TREE_INT_CST (exp);
+      p = (char *) &TREE_INT_CST_ELT (exp, 0);
+      len = TREE_INT_CST_NUNITS (exp) * sizeof (HOST_WIDE_INT);
       break;
 
     case REAL_CST:
@@ -3520,6 +3520,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
   enum rtx_code code;
   hashval_t h, *hp;
   rtx x;
+  int i;
 
   x = *xp;
   code = GET_CODE (x);
@@ -3530,11 +3531,11 @@ const_rtx_hash_1 (rtx *xp, void *data)
     {
     case CONST_INT:
       hwi = INTVAL (x);
+
     fold_hwi:
       {
 	int shift = sizeof (hashval_t) * CHAR_BIT;
 	const int n = sizeof (HOST_WIDE_INT) / sizeof (hashval_t);
-	int i;
 
 	h ^= (hashval_t) hwi;
 	for (i = 1; i < n; ++i)
@@ -3545,8 +3546,16 @@ const_rtx_hash_1 (rtx *xp, void *data)
       }
       break;
 
+    case CONST_WIDE_INT:
+      hwi = GET_MODE_PRECISION (mode);
+      {
+	for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
+	  hwi ^= CONST_WIDE_INT_ELT (x, i);
+	goto fold_hwi;
+      }
+
     case CONST_DOUBLE:
-      if (mode == VOIDmode)
+      if (TARGET_SUPPORTS_WIDE_INT == 0 && mode == VOIDmode)
 	{
 	  hwi = CONST_DOUBLE_LOW (x) ^ CONST_DOUBLE_HIGH (x);
 	  goto fold_hwi;
@@ -4639,8 +4648,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	exp = build1 (ADDR_EXPR, saved_type, TREE_OPERAND (exp, 0));
       /* Likewise for constant ints.  */
       else if (TREE_CODE (exp) == INTEGER_CST)
-	exp = build_int_cst_wide (saved_type, TREE_INT_CST_LOW (exp),
-				  TREE_INT_CST_HIGH (exp));
+	exp = wide_int_to_tree (saved_type, exp);
 
     }
 
@@ -4779,7 +4787,7 @@ array_size_for_constructor (tree val)
   tree max_index;
   unsigned HOST_WIDE_INT cnt;
   tree index, value, tmp;
-  double_int i;
+  offset_int i;
 
   /* This code used to attempt to handle string constants that are not
      arrays of single-bytes, but nothing else does, so there's no point in
@@ -4801,14 +4809,13 @@ array_size_for_constructor (tree val)
 
   /* Compute the total number of array elements.  */
   tmp = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)));
-  i = tree_to_double_int (max_index) - tree_to_double_int (tmp);
-  i += double_int_one;
+  i = wi::to_offset (max_index) - wi::to_offset (tmp) + 1;
 
   /* Multiply by the array element unit size to find number of bytes.  */
-  i *= tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
+  i *= wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
 
-  gcc_assert (i.fits_uhwi ());
-  return i.low;
+  gcc_assert (wi::fits_uhwi_p (i));
+  return i.to_uhwi ();
 }
 
 /* Other datastructures + helpers for output_constructor.  */
@@ -4888,11 +4895,10 @@ output_constructor_regular_field (oc_local_state *local)
 	 sign-extend the result because Ada has negative DECL_FIELD_OFFSETs
 	 but we are using an unsigned sizetype.  */
       unsigned prec = TYPE_PRECISION (sizetype);
-      double_int idx = tree_to_double_int (local->index)
-		       - tree_to_double_int (local->min_index);
-      idx = idx.sext (prec);
-      fieldpos = (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (local->val)))
-		  * idx.low);
+      offset_int idx = wi::sext (wi::to_offset (local->index)
+				 - wi::to_offset (local->min_index), prec);
+      fieldpos = (idx * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (local->val))))
+	.to_short_addr ();
     }
   else if (local->field != NULL_TREE)
     fieldpos = int_byte_position (local->field);
@@ -5084,22 +5090,13 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 	     the word boundary in the INTEGER_CST. We can
 	     only select bits from the LOW or HIGH part
 	     not from both.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT
-	      && shift + this_time > HOST_BITS_PER_WIDE_INT)
-	    {
-	      this_time = shift + this_time - HOST_BITS_PER_WIDE_INT;
-	      shift = HOST_BITS_PER_WIDE_INT;
-	    }
+	  if ((shift / HOST_BITS_PER_WIDE_INT)
+ 	      != ((shift + this_time) / HOST_BITS_PER_WIDE_INT))
+	    this_time = (shift + this_time) & (HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Now get the bits from the appropriate constant word.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT)
-	    value = TREE_INT_CST_LOW (local->val);
-	  else
-	    {
-	      gcc_assert (shift < HOST_BITS_PER_DOUBLE_INT);
-	      value = TREE_INT_CST_HIGH (local->val);
-	      shift -= HOST_BITS_PER_WIDE_INT;
-	    }
+	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
+	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Get the result. This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
@@ -5119,19 +5116,13 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 	     the word boundary in the INTEGER_CST. We can
 	     only select bits from the LOW or HIGH part
 	     not from both.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT
-	      && shift + this_time > HOST_BITS_PER_WIDE_INT)
+	  if ((shift / HOST_BITS_PER_WIDE_INT)
+	      != ((shift + this_time) / HOST_BITS_PER_WIDE_INT))
 	    this_time = (HOST_BITS_PER_WIDE_INT - shift);
 
 	  /* Now get the bits from the appropriate constant word.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT)
-	    value = TREE_INT_CST_LOW (local->val);
-	  else
-	    {
-	      gcc_assert (shift < HOST_BITS_PER_DOUBLE_INT);
-	      value = TREE_INT_CST_HIGH (local->val);
-	      shift -= HOST_BITS_PER_WIDE_INT;
-	    }
+	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
+	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Get the result. This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */

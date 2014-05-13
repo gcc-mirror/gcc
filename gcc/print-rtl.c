@@ -629,6 +629,11 @@ print_rtx (const_rtx in_rtx)
 	  fprintf (outfile, " [%s]", s);
 	}
       break;
+
+    case CONST_WIDE_INT:
+      fprintf (outfile, " ");
+      cwi_output_hex (outfile, in_rtx);
+      break;
 #endif
 
     case CODE_LABEL:

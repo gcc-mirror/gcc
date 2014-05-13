@@ -3656,8 +3656,7 @@ const pass_data pass_data_live_range_shrinkage =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_live_range_shrinkage : public rtl_opt_pass
@@ -3705,8 +3704,7 @@ const pass_data pass_data_sched =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_sched : public rtl_opt_pass
@@ -3753,8 +3751,7 @@ const pass_data pass_data_sched2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_sched2 : public rtl_opt_pass

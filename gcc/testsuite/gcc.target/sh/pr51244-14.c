@@ -8,11 +8,12 @@
 	tst	r0,r0
 	bf/s	.L35
    where the negated T bit store did not combine properly.  Since there are
-   other movt insns we only check for the xor and the extu.  */
+   other movt insns and the sequence will try to utilize the 'movt_movrt'
+   patterns, we only check for the extu.  */
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
-/* { dg-final { scan-assembler-not "xor|extu" } } */
+/* { dg-final { scan-assembler-not "extu" } } */
 
 typedef struct transaction_s transaction_t;
 

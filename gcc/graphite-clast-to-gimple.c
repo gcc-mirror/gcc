@@ -75,14 +75,13 @@ gmp_cst_to_tree (tree type, mpz_t val)
 {
   tree t = type ? type : integer_type_node;
   mpz_t tmp;
-  double_int di;
 
   mpz_init (tmp);
   mpz_set (tmp, val);
-  di = mpz_get_double_int (t, tmp, true);
+  wide_int wi = wi::from_mpz (t, tmp, true);
   mpz_clear (tmp);
 
-  return double_int_to_tree (t, di);
+  return wide_int_to_tree (t, wi);
 }
 
 /* Sets RES to the min of V1 and V2.  */

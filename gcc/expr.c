@@ -711,64 +711,32 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
   if (mode == oldmode)
     return x;
 
-  /* There is one case that we must handle specially: If we are converting
-     a CONST_INT into a mode whose size is twice HOST_BITS_PER_WIDE_INT and
-     we are to interpret the constant as unsigned, gen_lowpart will do
-     the wrong if the constant appears negative.  What we want to do is
-     make the high-order word of the constant zero, not all ones.  */
-
-  if (unsignedp && GET_MODE_CLASS (mode) == MODE_INT
-      && GET_MODE_BITSIZE (mode) == HOST_BITS_PER_DOUBLE_INT
-      && CONST_INT_P (x) && INTVAL (x) < 0)
+  if (CONST_SCALAR_INT_P (x) && GET_MODE_CLASS (mode) == MODE_INT)
     {
-      double_int val = double_int::from_uhwi (INTVAL (x));
-
-      /* We need to zero extend VAL.  */
-      if (oldmode != VOIDmode)
-	val = val.zext (GET_MODE_BITSIZE (oldmode));
-
-      return immed_double_int_const (val, mode);
+      /* If the caller did not tell us the old mode, then there is not
+	 much to do with respect to canonicalization.  We have to
+	 assume that all the bits are significant.  */
+      if (GET_MODE_CLASS (oldmode) != MODE_INT)
+	oldmode = MAX_MODE_INT;
+      wide_int w = wide_int::from (std::make_pair (x, oldmode),
+				   GET_MODE_PRECISION (mode),
+				   unsignedp ? UNSIGNED : SIGNED);
+      return immed_wide_int_const (w, mode);
     }
 
   /* We can do this with a gen_lowpart if both desired and current modes
      are integer, and this is either a constant integer, a register, or a
-     non-volatile MEM.  Except for the constant case where MODE is no
-     wider than HOST_BITS_PER_WIDE_INT, we must be narrowing the operand.  */
+     non-volatile MEM. */
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_CLASS (oldmode) == MODE_INT
+      && GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (oldmode)
+      && ((MEM_P (x) && !MEM_VOLATILE_P (x) && direct_load[(int) mode])
+          || (REG_P (x)
+              && (!HARD_REGISTER_P (x)
+                  || HARD_REGNO_MODE_OK (REGNO (x), mode))
+              && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x)))))
 
-  if ((CONST_INT_P (x)
-       && GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT)
-      || (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_CLASS (oldmode) == MODE_INT
-	  && (CONST_DOUBLE_AS_INT_P (x) 
-	      || (GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (oldmode)
-		  && ((MEM_P (x) && ! MEM_VOLATILE_P (x)
-		       && direct_load[(int) mode])
-		      || (REG_P (x)
-			  && (! HARD_REGISTER_P (x)
-			      || HARD_REGNO_MODE_OK (REGNO (x), mode))
-			  && TRULY_NOOP_TRUNCATION_MODES_P (mode,
-							    GET_MODE (x))))))))
-    {
-      /* ?? If we don't know OLDMODE, we have to assume here that
-	 X does not need sign- or zero-extension.   This may not be
-	 the case, but it's the best we can do.  */
-      if (CONST_INT_P (x) && oldmode != VOIDmode
-	  && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (oldmode))
-	{
-	  HOST_WIDE_INT val = INTVAL (x);
-
-	  /* We must sign or zero-extend in this case.  Start by
-	     zero-extending, then sign extend if we need to.  */
-	  val &= GET_MODE_MASK (oldmode);
-	  if (! unsignedp
-	      && val_signbit_known_set_p (oldmode, val))
-	    val |= ~GET_MODE_MASK (oldmode);
-
-	  return gen_int_mode (val, mode);
-	}
-
-      return gen_lowpart (mode, x);
-    }
+   return gen_lowpart (mode, x);
 
   /* Converting from integer constant into mode is always equivalent to an
      subreg operation.  */
@@ -1794,6 +1762,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 	    {
 	      rtx first, second;
 
+	      /* TODO: const_wide_int can have sizes other than this...  */
 	      gcc_assert (2 * len == ssize);
 	      split_double (src, &first, &second);
 	      if (i)
@@ -5330,8 +5299,8 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
      the same as that of TARGET, adjust the constant.  This is needed, for
-     example, in case it is a CONST_DOUBLE and we want only a word-sized
-     value.  */
+     example, in case it is a CONST_DOUBLE or CONST_WIDE_INT and we want 
+     only a word-sized value.  */
   if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode
       && TREE_CODE (exp) != ERROR_MARK
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
@@ -6692,7 +6661,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   enum machine_mode mode = VOIDmode;
   bool blkmode_bitfield = false;
   tree offset = size_zero_node;
-  double_int bit_offset = double_int_zero;
+  offset_int bit_offset = 0;
 
   /* First get the mode, signedness, and size.  We do this from just the
      outermost expression.  */
@@ -6755,7 +6724,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += tree_to_double_int (TREE_OPERAND (exp, 2));
+	  bit_offset += wi::to_offset (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -6770,7 +6739,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      break;
 
 	    offset = size_binop (PLUS_EXPR, offset, this_offset);
-	    bit_offset += tree_to_double_int (DECL_FIELD_BIT_OFFSET (field));
+	    bit_offset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 
 	    /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
 	  }
@@ -6802,7 +6771,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	  break;
 
 	case IMAGPART_EXPR:
-	  bit_offset += double_int::from_uhwi (*pbitsize);
+	  bit_offset += *pbitsize;
 	  break;
 
 	case VIEW_CONVERT_EXPR:
@@ -6823,9 +6792,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      tree off = TREE_OPERAND (exp, 1);
 	      if (!integer_zerop (off))
 		{
-		  double_int boff, coff = mem_ref_offset (exp);
-		  boff = coff.lshift (BITS_PER_UNIT == 8
-				      ? 3 : exact_log2 (BITS_PER_UNIT));
+		  offset_int boff, coff = mem_ref_offset (exp);
+		  boff = wi::lshift (coff, LOG2_BITS_PER_UNIT);
 		  bit_offset += boff;
 		}
 	      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -6849,11 +6817,11 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
      this conversion.  */
   if (TREE_CODE (offset) == INTEGER_CST)
     {
-      double_int tem = tree_to_double_int (offset);
-      tem = tem.sext (TYPE_PRECISION (sizetype));
-      tem = tem.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
+      offset_int tem = wi::sext (wi::to_offset (offset),
+				 TYPE_PRECISION (sizetype));
+      tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
       tem += bit_offset;
-      if (tem.fits_shwi ())
+      if (wi::fits_shwi_p (tem))
 	{
 	  *pbitpos = tem.to_shwi ();
 	  *poffset = offset = NULL_TREE;
@@ -6864,20 +6832,16 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   if (offset)
     {
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
-      if (bit_offset.is_negative ())
+      if (wi::neg_p (bit_offset))
         {
-	  double_int mask
-	    = double_int::mask (BITS_PER_UNIT == 8
-			       ? 3 : exact_log2 (BITS_PER_UNIT));
-	  double_int tem = bit_offset.and_not (mask);
+	  offset_int mask = wi::mask <offset_int> (LOG2_BITS_PER_UNIT, false);
+	  offset_int tem = bit_offset.and_not (mask);
 	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;
-	  tem = tem.arshift (BITS_PER_UNIT == 8
-			     ? 3 : exact_log2 (BITS_PER_UNIT),
-			     HOST_BITS_PER_DOUBLE_INT);
+	  tem = wi::arshift (tem, LOG2_BITS_PER_UNIT);
 	  offset = size_binop (PLUS_EXPR, offset,
-			       double_int_to_tree (sizetype, tem));
+			       wide_int_to_tree (sizetype, tem));
 	}
 
       *pbitpos = bit_offset.to_shwi ();
@@ -7813,11 +7777,12 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
 
   /* All elts simple constants => refer to a constant in memory.  But
      if this is a non-BLKmode mode, let it store a field at a time
-     since that should make a CONST_INT or CONST_DOUBLE when we
-     fold.  Likewise, if we have a target we can use, it is best to
-     store directly into the target unless the type is large enough
-     that memcpy will be used.  If we are making an initializer and
-     all operands are constant, put it in memory as well.
+     since that should make a CONST_INT, CONST_WIDE_INT or
+     CONST_DOUBLE when we fold.  Likewise, if we have a target we can
+     use, it is best to store directly into the target unless the type
+     is large enough that memcpy will be used.  If we are making an
+     initializer and all operands are constant, put it in memory as
+     well.
 
      FIXME: Avoid trying to fill vector constructors piece-meal.
      Output them with output_constant_def below unless we're sure
@@ -8294,17 +8259,18 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	      && TREE_CONSTANT (treeop1))
 	    {
 	      rtx constant_part;
+	      HOST_WIDE_INT wc;
+	      enum machine_mode wmode = TYPE_MODE (TREE_TYPE (treeop1));
 
 	      op1 = expand_expr (treeop1, subtarget, VOIDmode,
 				 EXPAND_SUM);
-	      /* Use immed_double_const to ensure that the constant is
+	      /* Use wi::shwi to ensure that the constant is
 		 truncated according to the mode of OP1, then sign extended
 		 to a HOST_WIDE_INT.  Using the constant directly can result
 		 in non-canonical RTL in a 64x32 cross compile.  */
-	      constant_part
-		= immed_double_const (TREE_INT_CST_LOW (treeop0),
-				      (HOST_WIDE_INT) 0,
-				      TYPE_MODE (TREE_TYPE (treeop1)));
+	      wc = TREE_INT_CST_LOW (treeop0);
+	      constant_part =
+		immed_wide_int_const (wi::shwi (wc, wmode), wmode);
 	      op1 = plus_constant (mode, op1, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op1 = force_operand (op1, target);
@@ -8316,6 +8282,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 		   && TREE_CONSTANT (treeop0))
 	    {
 	      rtx constant_part;
+	      HOST_WIDE_INT wc;
+	      enum machine_mode wmode = TYPE_MODE (TREE_TYPE (treeop0));
 
 	      op0 = expand_expr (treeop0, subtarget, VOIDmode,
 				 (modifier == EXPAND_INITIALIZER
@@ -8330,14 +8298,13 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 		    return simplify_gen_binary (PLUS, mode, op0, op1);
 		  goto binop2;
 		}
-	      /* Use immed_double_const to ensure that the constant is
+	      /* Use wi::shwi to ensure that the constant is
 		 truncated according to the mode of OP1, then sign extended
 		 to a HOST_WIDE_INT.  Using the constant directly can result
 		 in non-canonical RTL in a 64x32 cross compile.  */
+	      wc = TREE_INT_CST_LOW (treeop1);
 	      constant_part
-		= immed_double_const (TREE_INT_CST_LOW (treeop1),
-				      (HOST_WIDE_INT) 0,
-				      TYPE_MODE (TREE_TYPE (treeop0)));
+		= immed_wide_int_const (wi::shwi (wc, wmode), wmode);
 	      op0 = plus_constant (mode, op0, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op0 = force_operand (op0, target);
@@ -8860,10 +8827,14 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	 for unsigned bitfield expand this as XOR with a proper constant
 	 instead.  */
       if (reduce_bit_field && TYPE_UNSIGNED (type))
-	temp = expand_binop (mode, xor_optab, op0,
-			     immed_double_int_const
-			       (double_int::mask (TYPE_PRECISION (type)), mode),
-			     target, 1, OPTAB_LIB_WIDEN);
+	{
+	  wide_int mask = wi::mask (TYPE_PRECISION (type),
+				    false, GET_MODE_PRECISION (mode));
+
+	  temp = expand_binop (mode, xor_optab, op0,
+			       immed_wide_int_const (mask, mode),
+			       target, 1, OPTAB_LIB_WIDEN);
+	}
       else
 	temp = expand_unop (mode, one_cmpl_optab, op0, target, 1);
       gcc_assert (temp);
@@ -9534,9 +9505,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return decl_rtl;
 
     case INTEGER_CST:
-      temp = immed_double_const (TREE_INT_CST_LOW (exp),
-				 TREE_INT_CST_HIGH (exp), mode);
-
+      /* Given that TYPE_PRECISION (type) is not always equal to
+         GET_MODE_PRECISION (TYPE_MODE (type)), we need to extend from
+         the former to the latter according to the signedness of the
+         type. */
+      temp = immed_wide_int_const (wide_int::from
+				   (exp,
+				    GET_MODE_PRECISION (TYPE_MODE (type)),
+				    TYPE_SIGN (type)),
+				   TYPE_MODE (type));
       return temp;
 
     case VECTOR_CST:
@@ -9723,7 +9700,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	   might end up in a register.  */
 	if (mem_ref_refers_to_non_mem_p (exp))
 	  {
-	    HOST_WIDE_INT offset = mem_ref_offset (exp).low;
+	    HOST_WIDE_INT offset = mem_ref_offset (exp).to_short_addr ();
 	    base = TREE_OPERAND (base, 0);
 	    if (offset == 0
 		&& tree_fits_uhwi_p (TYPE_SIZE (type))
@@ -9758,8 +9735,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	op0 = memory_address_addr_space (mode, op0, as);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
 	  {
-	    rtx off
-	      = immed_double_int_const (mem_ref_offset (exp), address_mode);
+	    rtx off = immed_wide_int_const (mem_ref_offset (exp), address_mode);
 	    op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
 	    op0 = memory_address_addr_space (mode, op0, as);
 	  }
@@ -10649,9 +10625,10 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
     }
   else if (TYPE_UNSIGNED (type))
     {
-      rtx mask = immed_double_int_const (double_int::mask (prec),
-					 GET_MODE (exp));
-      return expand_and (GET_MODE (exp), exp, mask, target);
+      enum machine_mode mode = GET_MODE (exp);
+      rtx mask = immed_wide_int_const
+	(wi::mask (prec, false, GET_MODE_PRECISION (mode)), mode);
+      return expand_and (mode, exp, mask, target);
     }
   else
     {
@@ -11226,8 +11203,7 @@ const_vector_from_tree (tree exp)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
-	RTVEC_ELT (v, i) = immed_double_int_const (tree_to_double_int (elt),
-						   inner);
+	RTVEC_ELT (v, i) = immed_wide_int_const (elt, inner);
     }
 
   return gen_rtx_CONST_VECTOR (mode, v);

@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "dfp.h"
+#include "wide-int.h"
 
 /* The order of the following headers is important for making sure
    decNumber structure is large enough to hold decimal128 digits.  */
@@ -604,11 +605,11 @@ decimal_real_to_integer (const REAL_VALUE_TYPE *r)
   return real_to_integer (&to);
 }
 
-/* Likewise, but to an integer pair, HI+LOW.  */
+/* Likewise, but returns a wide_int with PRECISION.  *FAIL is set if the
+   value does not fit.  */
 
-void
-decimal_real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
-			  const REAL_VALUE_TYPE *r)
+wide_int
+decimal_real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 {
   decContext set;
   decNumber dn, dn2, dn3;
@@ -628,7 +629,7 @@ decimal_real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
      function.  */
   decNumberToString (&dn, string);
   real_from_string (&to, string);
-  real_to_integer2 (plow, phigh, &to);
+  return real_to_integer (&to, fail, precision);
 }
 
 /* Perform the decimal floating point operation described by CODE.

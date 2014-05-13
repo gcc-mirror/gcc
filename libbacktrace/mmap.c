@@ -164,6 +164,26 @@ backtrace_free (struct backtrace_state *state, void *addr, size_t size,
 {
   int locked;
 
+  /* If we are freeing a large aligned block, just release it back to
+     the system.  This case arises when growing a vector for a large
+     binary with lots of debug info.  Calling munmap here may cause us
+     to call mmap again if there is also a large shared library; we
+     just live with that.  */
+  if (size >= 16 * 4096)
+    {
+      size_t pagesize;
+
+      pagesize = getpagesize ();
+      if (((uintptr_t) addr & (pagesize - 1)) == 0
+	  && (size & (pagesize - 1)) == 0)
+	{
+	  /* If munmap fails for some reason, just add the block to
+	     the freelist.  */
+	  if (munmap (addr, size) == 0)
+	    return;
+	}
+    }
+
   /* If we can acquire the lock, add the new space to the free list.
      If we can't acquire the lock, just leak the memory.
      __sync_lock_test_and_set returns the old state of the lock, so we
@@ -209,14 +229,18 @@ backtrace_vector_grow (struct backtrace_state *state,size_t size,
 	    alc = pagesize;
 	}
       else
-	alc = (alc + pagesize - 1) & ~ (pagesize - 1);
+	{
+	  alc *= 2;
+	  alc = (alc + pagesize - 1) & ~ (pagesize - 1);
+	}
       base = backtrace_alloc (state, alc, error_callback, data);
       if (base == NULL)
 	return NULL;
       if (vec->base != NULL)
 	{
 	  memcpy (base, vec->base, vec->size);
-	  backtrace_free (state, vec->base, vec->alc, error_callback, data);
+	  backtrace_free (state, vec->base, vec->size + vec->alc,
+			  error_callback, data);
 	}
       vec->base = base;
       vec->alc = alc - vec->size;

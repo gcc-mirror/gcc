@@ -57,11 +57,13 @@ static tree
 build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
 {
   int width = tree_to_uhwi (TYPE_SIZE (inner_type));
-  int n = HOST_BITS_PER_WIDE_INT / width;
-  unsigned HOST_WIDE_INT low, high, mask;
-  tree ret;
+  int n = (TYPE_PRECISION (type) + HOST_BITS_PER_WIDE_INT - 1) 
+    / HOST_BITS_PER_WIDE_INT;
+  unsigned HOST_WIDE_INT low, mask;
+  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  int i;
 
-  gcc_assert (n);
+  gcc_assert (n && n <= WIDE_INT_MAX_ELTS);
 
   if (width == HOST_BITS_PER_WIDE_INT)
     low = value;
@@ -71,17 +73,12 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
       low = (unsigned HOST_WIDE_INT) ~0 / mask * (value & mask);
     }
 
-  if (TYPE_PRECISION (type) < HOST_BITS_PER_WIDE_INT)
-    low &= ((HOST_WIDE_INT)1 << TYPE_PRECISION (type)) - 1, high = 0;
-  else if (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT)
-    high = 0;
-  else if (TYPE_PRECISION (type) == HOST_BITS_PER_DOUBLE_INT)
-    high = low;
-  else
-    gcc_unreachable ();
+  for (i = 0; i < n; i++)
+    a[i] = low;
 
-  ret = build_int_cst_wide (type, low, high);
-  return ret;
+  gcc_assert (TYPE_PRECISION (type) <= MAX_BITSIZE_MODE_ANY_INT);
+  return wide_int_to_tree
+    (type, wide_int::from_array (a, n, TYPE_PRECISION (type)));
 }
 
 static GTY(()) tree vector_inner_type;
@@ -415,7 +412,8 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   unsigned HOST_WIDE_INT *mulc = XALLOCAVEC (unsigned HOST_WIDE_INT, nunits);
   int prec = TYPE_PRECISION (TREE_TYPE (type));
   int dummy_int;
-  unsigned int i, unsignedp = TYPE_UNSIGNED (TREE_TYPE (type));
+  unsigned int i;
+  signop sign_p = TYPE_SIGN (TREE_TYPE (type));
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
   tree *vec;
   tree cur_op, mulcst, tem;
@@ -457,7 +455,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       if (mode == -2)
 	continue;
-      if (unsignedp)
+      if (sign_p == UNSIGNED)
 	{
 	  unsigned HOST_WIDE_INT mh;
 	  unsigned HOST_WIDE_INT d = TREE_INT_CST_LOW (cst) & mask;
@@ -586,7 +584,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   if (use_pow2)
     {
       tree addend = NULL_TREE;
-      if (!unsignedp)
+      if (sign_p == SIGNED)
 	{
 	  tree uns_type;
 
@@ -638,7 +636,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       if (code == TRUNC_DIV_EXPR)
 	{
-	  if (unsignedp)
+	  if (sign_p == UNSIGNED)
 	    {
 	      /* q = op0 >> shift;  */
 	      cur_op = add_rshift (gsi, type, op0, shifts);
@@ -672,7 +670,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  if (op != unknown_optab
 	      && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
 	    {
-	      if (unsignedp)
+	      if (sign_p == UNSIGNED)
 		/* r = op0 & mask;  */
 		return gimplify_build2 (gsi, BIT_AND_EXPR, type, op0, mask);
 	      else if (addend != NULL_TREE)
@@ -713,7 +711,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   switch (mode)
     {
     case 0:
-      gcc_assert (unsignedp);
+      gcc_assert (sign_p == UNSIGNED);
       /* t1 = oprnd0 >> pre_shift;
 	 t2 = t1 h* ml;
 	 q = t2 >> post_shift;  */
@@ -722,7 +720,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	return NULL_TREE;
       break;
     case 1:
-      gcc_assert (unsignedp);
+      gcc_assert (sign_p == UNSIGNED);
       for (i = 0; i < nunits; i++)
 	{
 	  shift_temps[i] = 1;
@@ -733,7 +731,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
     case 3:
     case 4:
     case 5:
-      gcc_assert (!unsignedp);
+      gcc_assert (sign_p == SIGNED);
       for (i = 0; i < nunits; i++)
 	shift_temps[i] = prec - 1;
       break;
@@ -1567,9 +1565,7 @@ const pass_data pass_data_lower_vector =
   PROP_gimple_lvec, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts
-    | TODO_verify_flow
+  ( TODO_update_ssa
     | TODO_cleanup_cfg ), /* todo_flags_finish */
 };
 
@@ -1614,9 +1610,7 @@ const pass_data pass_data_lower_vector_ssa =
   PROP_gimple_lvec, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts
-    | TODO_verify_flow
+  ( TODO_update_ssa
     | TODO_cleanup_cfg ), /* todo_flags_finish */
 };
 

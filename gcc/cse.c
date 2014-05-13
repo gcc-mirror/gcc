@@ -2336,15 +2336,20 @@ hash_rtx_cb (const_rtx x, enum machine_mode mode,
                + (unsigned int) INTVAL (x));
       return hash;
 
+    case CONST_WIDE_INT:
+      for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
+	hash += CONST_WIDE_INT_ELT (x, i);
+      return hash;
+
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
       hash += (unsigned int) code + (unsigned int) GET_MODE (x);
-      if (GET_MODE (x) != VOIDmode)
-	hash += real_hash (CONST_DOUBLE_REAL_VALUE (x));
-      else
+      if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (x) == VOIDmode)
 	hash += ((unsigned int) CONST_DOUBLE_LOW (x)
 		 + (unsigned int) CONST_DOUBLE_HIGH (x));
+      else
+	hash += real_hash (CONST_DOUBLE_REAL_VALUE (x));
       return hash;
 
     case CONST_FIXED:
@@ -3779,6 +3784,7 @@ equiv_constant (rtx x)
 
       /* See if we previously assigned a constant value to this SUBREG.  */
       if ((new_rtx = lookup_as_function (x, CONST_INT)) != 0
+	  || (new_rtx = lookup_as_function (x, CONST_WIDE_INT)) != 0
           || (new_rtx = lookup_as_function (x, CONST_DOUBLE)) != 0
           || (new_rtx = lookup_as_function (x, CONST_FIXED)) != 0)
         return new_rtx;
@@ -7497,8 +7503,7 @@ const pass_data pass_data_cse =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_cse : public rtl_opt_pass
@@ -7570,8 +7575,7 @@ const pass_data pass_data_cse2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_cse2 : public rtl_opt_pass
@@ -7645,8 +7649,7 @@ const pass_data pass_data_cse_after_global_opts =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_cse_after_global_opts : public rtl_opt_pass

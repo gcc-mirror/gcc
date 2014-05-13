@@ -25,7 +25,6 @@
 #include "system.h"
 #include "errors.h"		/* for fatal */
 #include "getopt.h"
-#include "double-int.h"
 #include "version.h"		/* for version_string & pkgversion_string.  */
 #include "hashtab.h"
 #include "xregex.h"
@@ -535,7 +534,7 @@ do_typedef (const char *s, type_p t, struct fileloc *pos)
   for (p = typedefs; p != NULL; p = p->next)
     if (strcmp (p->name, s) == 0)
       {
-	if (p->type != t)
+	if (p->type != t && strcmp (s, "result_type") != 0)
 	  {
 	    error_at_line (pos, "type `%s' previously defined", s);
 	    error_at_line (&p->line, "previously defined here");
@@ -1766,7 +1765,7 @@ open_base_files (void)
     static const char *const ifiles[] = {
       "config.h", "system.h", "coretypes.h", "tm.h",
       "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
-      "tree.h", "rtl.h", "function.h", "insn-config.h", "expr.h",
+      "tree.h", "rtl.h", "wide-int.h", "function.h", "insn-config.h", "expr.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
       "pointer-set.h", "hash-table.h", "vec.h", "ggc.h", "basic-block.h",
@@ -5670,6 +5669,8 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("REAL_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("FIXED_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("double_int", &pos));
+      POS_HERE (do_scalar_typedef ("offset_int", &pos));
+      POS_HERE (do_scalar_typedef ("widest_int", &pos));
       POS_HERE (do_scalar_typedef ("uint64_t", &pos));
       POS_HERE (do_scalar_typedef ("uint8", &pos));
       POS_HERE (do_scalar_typedef ("uintptr_t", &pos));

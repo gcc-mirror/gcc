@@ -13,4 +13,4 @@ foo (void *p1, void *p2)
   return _mm_movemask_epi8 (result);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqu" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu|vmovups" 1 } } */

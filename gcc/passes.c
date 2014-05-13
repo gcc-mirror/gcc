@@ -549,7 +549,7 @@ const pass_data pass_data_postreload =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_postreload : public rtl_opt_pass
@@ -1743,7 +1743,6 @@ execute_function_todo (function *fn, void *data)
     {
       unsigned update_flags = flags & TODO_update_ssa_any;
       update_ssa (update_flags);
-      cfun->last_verified &= ~TODO_verify_ssa;
     }
 
   if (flag_tree_pta && (flags & TODO_rebuild_alias))
@@ -1783,17 +1782,17 @@ execute_function_todo (function *fn, void *data)
 	    /* IPA passes leave stmts to be fixed up, so make sure to
 	       not verify SSA operands whose verifier will choke on that.  */
 	    verify_ssa (true, !from_ipa_pass);
-	}
-      if (flags & TODO_verify_flow)
-	verify_flow_info ();
-      if (flags & TODO_verify_il)
-	{
+	  /* IPA passes leave basic-blocks unsplit, so make sure to
+	     not trip on that.  */
+	  if ((cfun->curr_properties & PROP_cfg)
+	      && !from_ipa_pass)
+	    verify_flow_info ();
 	  if (current_loops
 	      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	    verify_loop_closed_ssa (false);
+	  if (cfun->curr_properties & PROP_rtl)
+	    verify_rtl_sharing ();
 	}
-      if (flags & TODO_verify_rtl_sharing)
-	verify_rtl_sharing ();
 
       /* Make sure verifiers don't change dominator state.  */
       gcc_assert (dom_info_state (fn, CDI_DOMINATORS) == pre_verify_state);

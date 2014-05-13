@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "optabs.h"
 #include "tree-scalar-evolution.h"
+#include "tree-inline.h"
 
 #ifndef HAVE_conditional_move
 #define HAVE_conditional_move (0)
@@ -559,7 +560,7 @@ jump_function_from_stmt (tree *arg, gimple stmt)
 						&offset);
       if (tem
 	  && TREE_CODE (tem) == MEM_REF
-	  && (mem_ref_offset (tem) + double_int::from_shwi (offset)).is_zero ())
+	  && (mem_ref_offset (tem) + offset) == 0)
 	{
 	  *arg = TREE_OPERAND (tem, 0);
 	  return true;
@@ -659,6 +660,64 @@ operand_equal_for_value_replacement (const_tree arg0, const_tree arg1,
   return false;
 }
 
+/* Returns true if ARG is a neutral element for operation CODE
+   on the RIGHT side.  */
+
+static bool
+neutral_element_p (tree_code code, tree arg, bool right)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      return integer_zerop (arg);
+
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case MINUS_EXPR:
+    case POINTER_PLUS_EXPR:
+      return right && integer_zerop (arg);
+
+    case MULT_EXPR:
+      return integer_onep (arg);
+
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      return right && integer_onep (arg);
+
+    case BIT_AND_EXPR:
+      return integer_all_onesp (arg);
+
+    default:
+      return false;
+    }
+}
+
+/* Returns true if ARG is an absorbing element for operation CODE.  */
+
+static bool
+absorbing_element_p (tree_code code, tree arg)
+{
+  switch (code)
+    {
+    case BIT_IOR_EXPR:
+      return integer_all_onesp (arg);
+
+    case MULT_EXPR:
+    case BIT_AND_EXPR:
+      return integer_zerop (arg);
+
+    default:
+      return false;
+    }
+}
+
 /*  The function value_replacement does the main work of doing the value
     replacement.  Return non-zero if the replacement is done.  Otherwise return
     0.  If we remove the middle basic block, return 2.
@@ -683,9 +742,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* If there is a statement in MIDDLE_BB that defines one of the PHI
      arguments, then adjust arg0 or arg1.  */
-  gsi = gsi_after_labels (middle_bb);
-  if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
-    gsi_next_nondebug (&gsi);
+  gsi = gsi_start_nondebug_after_labels_bb (middle_bb);
   while (!gsi_end_p (gsi))
     {
       gimple stmt = gsi_stmt (gsi);
@@ -781,6 +838,55 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
 
     }
+
+  /* Now optimize (x != 0) ? x + y : y to just y.
+     The following condition is too restrictive, there can easily be another
+     stmt in middle_bb, for instance a CONVERT_EXPR for the second argument.  */
+  gimple assign = last_and_only_stmt (middle_bb);
+  if (!assign || gimple_code (assign) != GIMPLE_ASSIGN
+      || gimple_assign_rhs_class (assign) != GIMPLE_BINARY_RHS
+      || (!INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	  && !POINTER_TYPE_P (TREE_TYPE (arg0))))
+    return 0;
+
+  /* Size-wise, this is always profitable.  */
+  if (optimize_bb_for_speed_p (cond_bb)
+      /* The special case is useless if it has a low probability.  */
+      && profile_status_for_fn (cfun) != PROFILE_ABSENT
+      && EDGE_PRED (middle_bb, 0)->probability < PROB_EVEN
+      /* If assign is cheap, there is no point avoiding it.  */
+      && estimate_num_insns (assign, &eni_time_weights)
+	 >= 3 * estimate_num_insns (cond, &eni_time_weights))
+    return 0;
+
+  tree lhs = gimple_assign_lhs (assign);
+  tree rhs1 = gimple_assign_rhs1 (assign);
+  tree rhs2 = gimple_assign_rhs2 (assign);
+  enum tree_code code_def = gimple_assign_rhs_code (assign);
+  tree cond_lhs = gimple_cond_lhs (cond);
+  tree cond_rhs = gimple_cond_rhs (cond);
+
+  if (((code == NE_EXPR && e1 == false_edge)
+	|| (code == EQ_EXPR && e1 == true_edge))
+      && arg0 == lhs
+      && ((arg1 == rhs1
+	   && operand_equal_for_phi_arg_p (rhs2, cond_lhs)
+	   && neutral_element_p (code_def, cond_rhs, true))
+	  || (arg1 == rhs2
+	      && operand_equal_for_phi_arg_p (rhs1, cond_lhs)
+	      && neutral_element_p (code_def, cond_rhs, false))
+	  || (operand_equal_for_phi_arg_p (arg1, cond_rhs)
+	      && (operand_equal_for_phi_arg_p (rhs2, cond_lhs)
+		  || operand_equal_for_phi_arg_p (rhs1, cond_lhs))
+	      && absorbing_element_p (code_def, cond_rhs))))
+    {
+      gsi = gsi_for_stmt (cond);
+      gimple_stmt_iterator gsi_from = gsi_for_stmt (assign);
+      gsi_move_before (&gsi_from, &gsi);
+      replace_phi_edge_with_variable (cond_bb, e1, phi, lhs);
+      return 2;
+    }
+
   return 0;
 }
 
@@ -2206,8 +2312,7 @@ const pass_data pass_data_phiopt =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_phiopt : public gimple_opt_pass
@@ -2247,8 +2352,7 @@ const pass_data pass_data_cselim =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_cselim : public gimple_opt_pass

@@ -95,13 +95,12 @@
 
 ;; Loads.
 (define_insn_reservation "titan_lsu_load" 3
-  (and (eq_attr "type" "load,load_ext,load_ext_u,load_ext_ux,load_ux,load_u,\
-			load_l,sync")
+  (and (eq_attr "type" "load,load_l,sync")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_lsu_sh")
 
 (define_insn_reservation "titan_lsu_fpload" 12
-  (and (eq_attr "type" "fpload,fpload_ux,fpload_u")
+  (and (eq_attr "type" "fpload")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_lsu_sh")
 
@@ -115,12 +114,12 @@
 
 ;; Stores.
 (define_insn_reservation "titan_lsu_store" 12
-  (and (eq_attr "type" "store,store_ux,store_u,store_c")
+  (and (eq_attr "type" "store,store_c")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_lsu_sh")
 
 (define_insn_reservation "titan_lsu_fpstore" 12
-  (and (eq_attr "type" "fpstore,fpstore_ux,fpstore_u")
+  (and (eq_attr "type" "fpstore")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_lsu_sh")
 

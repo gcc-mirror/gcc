@@ -197,6 +197,23 @@ require2 (int t1, int t2)
   return v;
 }
 
+/* If the next token does not have one of the codes T1, T2 or T3, report a
+   parse error; otherwise return the token's value.  */
+static const char *
+require3 (int t1, int t2, int t3)
+{
+  int u = token ();
+  const char *v = advance ();
+  if (u != t1 && u != t2 && u != t3)
+    {
+      parse_error ("expected %s, %s or %s, have %s",
+		   print_token (t1, 0), print_token (t2, 0),
+		   print_token (t3, 0), print_token (u, v));
+      return 0;
+    }
+  return v;
+}
+
 /* Near-terminals.  */
 
 /* C-style string constant concatenation: STRING+
@@ -243,18 +260,45 @@ require_template_declaration (const char *tmpl_name)
   str = concat (tmpl_name, "<", (char *) 0);
 
   /* Read the comma-separated list of identifiers.  */
-  while (token () != '>')
+  int depth = 1;
+  while (depth > 0)
     {
-      const char *id = require2 (ID, ',');
+      if (token () == ENUM)
+	{
+	  advance ();
+	  str = concat (str, "enum ", (char *) 0);
+	  continue;
+	}
+      if (token () == NUM)
+	{
+	  str = concat (str, advance (), (char *) 0);
+	  continue;
+	}
+      if (token () == ':')
+	{
+	  advance ();
+	  str = concat (str, ":", (char *) 0);
+	  continue;
+	}
+      if (token () == '<')
+	{
+	  advance ();
+	  str = concat (str, "<", (char *) 0);
+	  depth += 1;
+	  continue;
+	}
+      if (token () == '>')
+	{
+	  advance ();
+	  str = concat (str, ">", (char *) 0);
+	  depth -= 1;
+	  continue;
+	}
+      const char *id = require3 (SCALAR, ID, ',');
       if (id == NULL)
 	id = ",";
       str = concat (str, id, (char *) 0);
     }
-
-  /* Recognize the closing '>'.  */
-  require ('>');
-  str = concat (str, ">", (char *) 0);
-
   return str;
 }
 

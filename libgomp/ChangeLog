@@ -1,3 +1,23 @@
+2014-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/cancel-do-1.f90: New test.
+	* testsuite/libgomp.fortran/cancel-do-2.f90: New test.
+	* testsuite/libgomp.fortran/cancel-parallel-1.f90: New test.
+	* testsuite/libgomp.fortran/cancel-parallel-3.f90: New test.
+	* testsuite/libgomp.fortran/cancel-sections-1.f90: New test.
+	* testsuite/libgomp.fortran/cancel-taskgroup-2.f90: New test.
+	* testsuite/libgomp.fortran/declare-simd-1.f90: New test.
+	* testsuite/libgomp.fortran/declare-simd-2.f90: New test.
+	* testsuite/libgomp.fortran/declare-simd-3.f90: New test.
+	* testsuite/libgomp.fortran/depend-1.f90: New test.
+	* testsuite/libgomp.fortran/depend-2.f90: New test.
+	* testsuite/libgomp.fortran/omp_atomic5.f90: New test.
+	* testsuite/libgomp.fortran/simd1.f90: New test.
+	* testsuite/libgomp.fortran/simd2.f90: New test.
+	* testsuite/libgomp.fortran/simd3.f90: New test.
+	* testsuite/libgomp.fortran/simd4.f90: New test.
+	* testsuite/libgomp.fortran/taskgroup1.f90: New test.
+
 2014-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/simd-10.c: New test.

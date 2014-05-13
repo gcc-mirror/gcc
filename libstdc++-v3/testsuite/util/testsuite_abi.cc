@@ -200,6 +200,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.18");
       known_versions.push_back("GLIBCXX_3.4.19");
       known_versions.push_back("GLIBCXX_3.4.20");
+      known_versions.push_back("GLIBCXX_3.4.21");
       known_versions.push_back("CXXABI_1.3");
       known_versions.push_back("CXXABI_LDBL_1.3");
       known_versions.push_back("CXXABI_1.3.1");
@@ -227,7 +228,7 @@ check_version(symbol& test, bool added)
 	test.version_status = symbol::incompatible;
 
       // Check that added symbols are added in the latest pre-release version.
-      bool latestp = (test.version_name == "GLIBCXX_3.4.20"
+      bool latestp = (test.version_name == "GLIBCXX_3.4.21"
 		     || test.version_name == "CXXABI_1.3.9"
 		     || test.version_name == "CXXABI_TM_1");
       if (added && !latestp)

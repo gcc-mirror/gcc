@@ -126,6 +126,9 @@ rtx cc0_rtx;
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
      htab_t const_int_htab;
 
+static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
+     htab_t const_wide_int_htab;
+
 /* A hash table storing register attribute structures.  */
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct reg_attrs)))
      htab_t reg_attrs_htab;
@@ -147,6 +150,11 @@ static void set_used_decls (tree);
 static void mark_label_nuses (rtx);
 static hashval_t const_int_htab_hash (const void *);
 static int const_int_htab_eq (const void *, const void *);
+#if TARGET_SUPPORTS_WIDE_INT
+static hashval_t const_wide_int_htab_hash (const void *);
+static int const_wide_int_htab_eq (const void *, const void *);
+static rtx lookup_const_wide_int (rtx);
+#endif
 static hashval_t const_double_htab_hash (const void *);
 static int const_double_htab_eq (const void *, const void *);
 static rtx lookup_const_double (rtx);
@@ -181,6 +189,43 @@ const_int_htab_eq (const void *x, const void *y)
   return (INTVAL ((const_rtx) x) == *((const HOST_WIDE_INT *) y));
 }
 
+#if TARGET_SUPPORTS_WIDE_INT
+/* Returns a hash code for X (which is a really a CONST_WIDE_INT).  */
+
+static hashval_t
+const_wide_int_htab_hash (const void *x)
+{
+  int i;
+  HOST_WIDE_INT hash = 0;
+  const_rtx xr = (const_rtx) x;
+
+  for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)
+    hash += CONST_WIDE_INT_ELT (xr, i);
+
+  return (hashval_t) hash;
+}
+
+/* Returns nonzero if the value represented by X (which is really a
+   CONST_WIDE_INT) is the same as that given by Y (which is really a
+   CONST_WIDE_INT).  */
+
+static int
+const_wide_int_htab_eq (const void *x, const void *y)
+{
+  int i;
+  const_rtx xr = (const_rtx) x;
+  const_rtx yr = (const_rtx) y;
+  if (CONST_WIDE_INT_NUNITS (xr) != CONST_WIDE_INT_NUNITS (yr))
+    return 0;
+
+  for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)
+    if (CONST_WIDE_INT_ELT (xr, i) != CONST_WIDE_INT_ELT (yr, i))
+      return 0;
+
+  return 1;
+}
+#endif
+
 /* Returns a hash code for X (which is really a CONST_DOUBLE).  */
 static hashval_t
 const_double_htab_hash (const void *x)
@@ -188,7 +233,7 @@ const_double_htab_hash (const void *x)
   const_rtx const value = (const_rtx) x;
   hashval_t h;
 
-  if (GET_MODE (value) == VOIDmode)
+  if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (value) == VOIDmode)
     h = CONST_DOUBLE_LOW (value) ^ CONST_DOUBLE_HIGH (value);
   else
     {
@@ -208,7 +253,7 @@ const_double_htab_eq (const void *x, const void *y)
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;
-  if (GET_MODE (a) == VOIDmode)
+  if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (a) == VOIDmode)
     return (CONST_DOUBLE_LOW (a) == CONST_DOUBLE_LOW (b)
 	    && CONST_DOUBLE_HIGH (a) == CONST_DOUBLE_HIGH (b));
   else
@@ -446,6 +491,7 @@ const_fixed_from_fixed_value (FIXED_VALUE_TYPE value, enum machine_mode mode)
   return lookup_const_fixed (fixed);
 }
 
+#if TARGET_SUPPORTS_WIDE_INT == 0
 /* Constructs double_int from rtx CST.  */
 
 double_int
@@ -465,17 +511,70 @@ rtx_to_double_int (const_rtx cst)
   
   return r;
 }
+#endif
 
+#if TARGET_SUPPORTS_WIDE_INT
+/* Determine whether CONST_WIDE_INT WINT already exists in the hash table.
+   If so, return its counterpart; otherwise add it to the hash table and
+   return it.  */
 
-/* Return a CONST_DOUBLE or CONST_INT for a value specified as
-   a double_int.  */
+static rtx
+lookup_const_wide_int (rtx wint)
+{
+  void **slot = htab_find_slot (const_wide_int_htab, wint, INSERT);
+  if (*slot == 0)
+    *slot = wint;
+
+  return (rtx) *slot;
+}
+#endif
+
+/* Return an rtx constant for V, given that the constant has mode MODE.
+   The returned rtx will be a CONST_INT if V fits, otherwise it will be
+   a CONST_DOUBLE (if !TARGET_SUPPORTS_WIDE_INT) or a CONST_WIDE_INT
+   (if TARGET_SUPPORTS_WIDE_INT).  */
 
 rtx
-immed_double_int_const (double_int i, enum machine_mode mode)
+immed_wide_int_const (const wide_int_ref &v, enum machine_mode mode)
 {
-  return immed_double_const (i.low, i.high, mode);
+  unsigned int len = v.get_len ();
+  unsigned int prec = GET_MODE_PRECISION (mode);
+
+  /* Allow truncation but not extension since we do not know if the
+     number is signed or unsigned.  */
+  gcc_assert (prec <= v.get_precision ());
+
+  if (len < 2 || prec <= HOST_BITS_PER_WIDE_INT)
+    return gen_int_mode (v.elt (0), mode);
+
+#if TARGET_SUPPORTS_WIDE_INT
+  {
+    unsigned int i;
+    rtx value;
+    unsigned int blocks_needed
+      = (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
+
+    if (len > blocks_needed)
+      len = blocks_needed;
+
+    value = const_wide_int_alloc (len);
+
+    /* It is so tempting to just put the mode in here.  Must control
+       myself ... */
+    PUT_MODE (value, VOIDmode);
+    CWI_PUT_NUM_ELEM (value, len);
+
+    for (i = 0; i < len; i++)
+      CONST_WIDE_INT_ELT (value, i) = v.elt (i);
+
+    return lookup_const_wide_int (value);
+  }
+#else
+  return immed_double_const (v.elt (0), v.elt (1), mode);
+#endif
 }
 
+#if TARGET_SUPPORTS_WIDE_INT == 0
 /* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair
    of ints: I0 is the low-order word and I1 is the high-order word.
    For values that are larger than HOST_BITS_PER_DOUBLE_INT, the
@@ -527,6 +626,7 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
 
   return lookup_const_double (value);
 }
+#endif
 
 rtx
 gen_rtx_REG (enum machine_mode mode, unsigned int regno)
@@ -5620,36 +5720,15 @@ init_emit_regs (void)
     }
 }
 
-/* Create some permanent unique rtl objects shared between all functions.  */
+/* Initialize global machine_mode variables.  */
 
 void
-init_emit_once (void)
+init_derived_machine_modes (void)
 {
-  int i;
-  enum machine_mode mode;
-  enum machine_mode double_mode;
-
-  /* Initialize the CONST_INT, CONST_DOUBLE, CONST_FIXED, and memory attribute
-     hash tables.  */
-  const_int_htab = htab_create_ggc (37, const_int_htab_hash,
-				    const_int_htab_eq, NULL);
-
-  const_double_htab = htab_create_ggc (37, const_double_htab_hash,
-				       const_double_htab_eq, NULL);
-
-  const_fixed_htab = htab_create_ggc (37, const_fixed_htab_hash,
-				      const_fixed_htab_eq, NULL);
-
-  reg_attrs_htab = htab_create_ggc (37, reg_attrs_htab_hash,
-				    reg_attrs_htab_eq, NULL);
-
-  /* Compute the word and byte modes.  */
-
   byte_mode = VOIDmode;
   word_mode = VOIDmode;
-  double_mode = VOIDmode;
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+  for (enum machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
@@ -5662,16 +5741,35 @@ init_emit_once (void)
 	word_mode = mode;
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
-	  && double_mode == VOIDmode)
-	double_mode = mode;
-    }
-
   ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
+}
+
+/* Create some permanent unique rtl objects shared between all functions.  */
+
+void
+init_emit_once (void)
+{
+  int i;
+  enum machine_mode mode;
+  enum machine_mode double_mode;
+
+  /* Initialize the CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
+     CONST_FIXED, and memory attribute hash tables.  */
+  const_int_htab = htab_create_ggc (37, const_int_htab_hash,
+				    const_int_htab_eq, NULL);
+
+#if TARGET_SUPPORTS_WIDE_INT
+  const_wide_int_htab = htab_create_ggc (37, const_wide_int_htab_hash,
+					 const_wide_int_htab_eq, NULL);
+#endif
+  const_double_htab = htab_create_ggc (37, const_double_htab_hash,
+				       const_double_htab_eq, NULL);
+
+  const_fixed_htab = htab_create_ggc (37, const_fixed_htab_hash,
+				      const_fixed_htab_eq, NULL);
+
+  reg_attrs_htab = htab_create_ggc (37, reg_attrs_htab_hash,
+				    reg_attrs_htab_eq, NULL);
 
 #ifdef INIT_EXPANDERS
   /* This is to initialize {init|mark|free}_machine_status before the first
@@ -5695,9 +5793,11 @@ init_emit_once (void)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  REAL_VALUE_FROM_INT (dconst0,   0,  0, double_mode);
-  REAL_VALUE_FROM_INT (dconst1,   1,  0, double_mode);
-  REAL_VALUE_FROM_INT (dconst2,   2,  0, double_mode);
+  double_mode = mode_for_size (DOUBLE_TYPE_SIZE, MODE_FLOAT, 0);
+
+  real_from_integer (&dconst0, double_mode, 0, SIGNED);
+  real_from_integer (&dconst1, double_mode, 1, SIGNED);
+  real_from_integer (&dconst2, double_mode, 2, SIGNED);
 
   dconstm1 = dconst1;
   dconstm1.sign = 1;

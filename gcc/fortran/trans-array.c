@@ -90,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "trans-const.h"
 #include "dependency.h"
+#include "wide-int.h"
 
 static bool gfc_get_array_constructor_size (mpz_t *, gfc_constructor_base);
 
@@ -5380,9 +5381,8 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 {
   gfc_constructor *c;
   tree tmp;
+  offset_int wtmp;
   gfc_se se;
-  HOST_WIDE_INT hi;
-  unsigned HOST_WIDE_INT lo;
   tree index, range;
   vec<constructor_elt, va_gc> *v = NULL;
 
@@ -5404,20 +5404,12 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       else
 	gfc_conv_structure (&se, expr, 1);
 
-      tmp = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-      gcc_assert (tmp && INTEGER_CST_P (tmp));
-      hi = TREE_INT_CST_HIGH (tmp);
-      lo = TREE_INT_CST_LOW (tmp);
-      lo++;
-      if (lo == 0)
-	hi++;
+      wtmp = wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1;
       /* This will probably eat buckets of memory for large arrays.  */
-      while (hi != 0 || lo != 0)
+      while (wtmp != 0)
         {
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, se.expr);
-          if (lo == 0)
-            hi--;
-          lo--;
+	  wtmp -= 1;
         }
       break;
 

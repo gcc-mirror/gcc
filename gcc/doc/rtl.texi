@@ -1540,17 +1540,21 @@ Similarly, there is only one object for the integer whose value is
 
 @findex const_double
 @item (const_double:@var{m} @var{i0} @var{i1} @dots{})
-Represents either a floating-point constant of mode @var{m} or an
-integer constant too large to fit into @code{HOST_BITS_PER_WIDE_INT}
-bits but small enough to fit within twice that number of bits (GCC
-does not provide a mechanism to represent even larger constants).  In
-the latter case, @var{m} will be @code{VOIDmode}.  For integral values
-constants for modes with more bits than twice the number in
-@code{HOST_WIDE_INT} the implied high order bits of that constant are
-copies of the top bit of @code{CONST_DOUBLE_HIGH}.  Note however that
-integral values are neither inherently signed nor inherently unsigned;
-where necessary, signedness is determined by the rtl operation
-instead.
+This represents either a floating-point constant of mode @var{m} or
+(on older ports that do not define
+@code{TARGET_SUPPORTS_WIDE_INT}) an integer constant too large to fit
+into @code{HOST_BITS_PER_WIDE_INT} bits but small enough to fit within
+twice that number of bits.  In the latter case, @var{m} will be
+@code{VOIDmode}.  For integral values constants for modes with more
+bits than twice the number in @code{HOST_WIDE_INT} the implied high
+order bits of that constant are copies of the top bit of
+@code{CONST_DOUBLE_HIGH}.  Note however that integral values are
+neither inherently signed nor inherently unsigned; where necessary,
+signedness is determined by the rtl operation instead.
+
+On more modern ports, @code{CONST_DOUBLE} only represents floating
+point values.  New ports define @code{TARGET_SUPPORTS_WIDE_INT} to
+make this designation.
 
 @findex CONST_DOUBLE_LOW
 If @var{m} is @code{VOIDmode}, the bits of the value are stored in
@@ -1564,6 +1568,37 @@ represent a floating point number, but not precisely in the target
 machine's or host machine's floating point format.  To convert them to
 the precise bit pattern used by the target machine, use the macro
 @code{REAL_VALUE_TO_TARGET_DOUBLE} and friends (@pxref{Data Output}).
+
+@findex CONST_WIDE_INT
+@item (const_wide_int:@var{m} @var{nunits} @var{elt0} @dots{})
+This contains an array of @code{HOST_WIDE_INT}s that is large enough
+to hold any constant that can be represented on the target.  This form
+of rtl is only used on targets that define
+@code{TARGET_SUPPORTS_WIDE_INT} to be nonzero and then
+@code{CONST_DOUBLE}s are only used to hold floating-point values.  If
+the target leaves @code{TARGET_SUPPORTS_WIDE_INT} defined as 0,
+@code{CONST_WIDE_INT}s are not used and @code{CONST_DOUBLE}s are as
+they were before.
+
+The values are stored in a compressed format.  The higher-order
+0s or -1s are not represented if they are just the logical sign
+extension of the number that is represented.
+
+@findex CONST_WIDE_INT_VEC
+@item CONST_WIDE_INT_VEC (@var{code})
+Returns the entire array of @code{HOST_WIDE_INT}s that are used to
+store the value.  This macro should be rarely used.
+
+@findex CONST_WIDE_INT_NUNITS
+@item CONST_WIDE_INT_NUNITS (@var{code})
+The number of @code{HOST_WIDE_INT}s used to represent the number.
+Note that this generally is smaller than the number of
+@code{HOST_WIDE_INT}s implied by the mode size.
+
+@findex CONST_WIDE_INT_ELT
+@item CONST_WIDE_INT_NUNITS (@var{code},@var{i})
+Returns the @code{i}th element of the array.   Element 0 is contains
+the low order bits of the constant.
 
 @findex const_fixed
 @item (const_fixed:@var{m} @dots{})

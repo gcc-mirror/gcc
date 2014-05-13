@@ -2376,7 +2376,7 @@ validate_type (tree type1, tree type2)
    a decl of a builtin function.  */
 
 bool
-gimple_builtin_call_types_compatible_p (gimple stmt, tree fndecl)
+gimple_builtin_call_types_compatible_p (const_gimple stmt, tree fndecl)
 {
   gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN);
 
@@ -2405,7 +2405,7 @@ gimple_builtin_call_types_compatible_p (gimple stmt, tree fndecl)
 /* Return true when STMT is builtins call.  */
 
 bool
-gimple_call_builtin_p (gimple stmt)
+gimple_call_builtin_p (const_gimple stmt)
 {
   tree fndecl;
   if (is_gimple_call (stmt)
@@ -2418,7 +2418,7 @@ gimple_call_builtin_p (gimple stmt)
 /* Return true when STMT is builtins call to CLASS.  */
 
 bool
-gimple_call_builtin_p (gimple stmt, enum built_in_class klass)
+gimple_call_builtin_p (const_gimple stmt, enum built_in_class klass)
 {
   tree fndecl;
   if (is_gimple_call (stmt)
@@ -2431,7 +2431,7 @@ gimple_call_builtin_p (gimple stmt, enum built_in_class klass)
 /* Return true when STMT is builtins call to CODE of CLASS.  */
 
 bool
-gimple_call_builtin_p (gimple stmt, enum built_in_function code)
+gimple_call_builtin_p (const_gimple stmt, enum built_in_function code)
 {
   tree fndecl;
   if (is_gimple_call (stmt)
@@ -2777,11 +2777,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> labels,
 		  low = CASE_HIGH (labels[i - 1]);
 		  if (!low)
 		    low = CASE_LOW (labels[i - 1]);
-		  if ((TREE_INT_CST_LOW (low) + 1
-		       != TREE_INT_CST_LOW (high))
-		      || (TREE_INT_CST_HIGH (low)
-			  + (TREE_INT_CST_LOW (high) == 0)
-			  != TREE_INT_CST_HIGH (high)))
+		  if (wi::add (low, 1) != high)
 		    break;
 		}
 	      if (i == len)

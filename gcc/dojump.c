@@ -166,6 +166,7 @@ static bool
 prefer_and_bit_test (enum machine_mode mode, int bitnum)
 {
   bool speed_p;
+  wide_int mask = wi::set_bit_in_zero (bitnum, GET_MODE_PRECISION (mode));
 
   if (and_test == 0)
     {
@@ -186,8 +187,7 @@ prefer_and_bit_test (enum machine_mode mode, int bitnum)
     }
 
   /* Fill in the integers.  */
-  XEXP (and_test, 1)
-    = immed_double_int_const (double_int_zero.set_bit (bitnum), mode);
+  XEXP (and_test, 1) = immed_wide_int_const (mask, mode);
   XEXP (XEXP (shift_test, 0), 1) = GEN_INT (bitnum);
 
   speed_p = optimize_insn_for_speed_p ();

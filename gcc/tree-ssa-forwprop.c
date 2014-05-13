@@ -829,9 +829,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  double_int off = mem_ref_offset (lhs);
+	  offset_int off = mem_ref_offset (lhs);
 	  tree new_ptr;
-	  off += double_int::from_shwi (def_rhs_offset);
+	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
 	    {
 	      off += mem_ref_offset (def_rhs_base);
@@ -841,7 +841,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	    new_ptr = build_fold_addr_expr (def_rhs_base);
 	  TREE_OPERAND (lhs, 0) = new_ptr;
 	  TREE_OPERAND (lhs, 1)
-	    = double_int_to_tree (TREE_TYPE (TREE_OPERAND (lhs, 1)), off);
+	    = wide_int_to_tree (TREE_TYPE (TREE_OPERAND (lhs, 1)), off);
 	  tidy_after_forward_propagate_addr (use_stmt);
 	  /* Continue propagating into the RHS if this was not the only use.  */
 	  if (single_use_p)
@@ -920,9 +920,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  double_int off = mem_ref_offset (rhs);
+	  offset_int off = mem_ref_offset (rhs);
 	  tree new_ptr;
-	  off += double_int::from_shwi (def_rhs_offset);
+	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
 	    {
 	      off += mem_ref_offset (def_rhs_base);
@@ -932,7 +932,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	    new_ptr = build_fold_addr_expr (def_rhs_base);
 	  TREE_OPERAND (rhs, 0) = new_ptr;
 	  TREE_OPERAND (rhs, 1)
-	    = double_int_to_tree (TREE_TYPE (TREE_OPERAND (rhs, 1)), off);
+	    = wide_int_to_tree (TREE_TYPE (TREE_OPERAND (rhs, 1)), off);
 	  fold_stmt_inplace (use_stmt_gsi);
 	  tidy_after_forward_propagate_addr (use_stmt);
 	  return res;
@@ -1445,8 +1445,8 @@ constant_pointer_difference (tree p1, tree p2)
 		{
 		  p = TREE_OPERAND (q, 0);
 		  off = size_binop (PLUS_EXPR, off,
-				    double_int_to_tree (sizetype,
-							mem_ref_offset (q)));
+				    wide_int_to_tree (sizetype,
+						      mem_ref_offset (q)));
 		}
 	      else
 		{
@@ -2837,7 +2837,7 @@ associate_pointerplus_align (gimple_stmt_iterator *gsi)
   if (gimple_assign_rhs1 (def_stmt) != ptr)
     return false;
 
-  algn = double_int_to_tree (TREE_TYPE (ptr), ~tree_to_double_int (algn));
+  algn = wide_int_to_tree (TREE_TYPE (ptr), wi::bit_not (algn));
   gimple_assign_set_rhs_with_ops (gsi, BIT_AND_EXPR, ptr, algn);
   fold_stmt_inplace (gsi);
   update_stmt (stmt);
@@ -3098,8 +3098,10 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	  tree tem;
 	  tem = fold_build2 (BIT_AND_EXPR, inside_type,
 			     defop0,
-			     double_int_to_tree
-			       (inside_type, double_int::mask (inter_prec)));
+			     wide_int_to_tree
+			     (inside_type,
+			      wi::mask (inter_prec, false,
+					TYPE_PRECISION (inside_type))));
 	  if (!useless_type_conversion_p (type, inside_type))
 	    {
 	      tem = force_gimple_operand_gsi (gsi, tem, true, NULL_TREE, true,
@@ -3580,7 +3582,7 @@ const pass_data pass_data_forwprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_forwprop : public gimple_opt_pass

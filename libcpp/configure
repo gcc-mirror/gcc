@@ -7171,7 +7171,7 @@ case $target in
 	tilegx*-*-* | tilepro*-*-* )
 		need_64bit_hwint=yes ;;
 	*)
-		need_64bit_hwint=no ;;
+		need_64bit_hwint=yes ;;
 esac
 
 case $need_64bit_hwint:$ac_cv_sizeof_long in

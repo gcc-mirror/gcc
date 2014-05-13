@@ -650,8 +650,7 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
   
   node = cgraph_create_node (alias);
   gcc_checking_assert (!virtual_offset
-		       || tree_to_double_int (virtual_offset) ==
-			     double_int::from_shwi (virtual_value));
+		       || wi::eq_p (virtual_offset, virtual_value));
   node->thunk.fixed_offset = fixed_offset;
   node->thunk.this_adjusting = this_adjusting;
   node->thunk.virtual_value = virtual_value;

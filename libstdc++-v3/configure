@@ -16900,11 +16900,12 @@ else
 	vscanf("%i", args);
 	vsnprintf(fmt, 0, "%i", args);
 	vsscanf(fmt, "%i", args);
+	snprintf(fmt, 0, "%i");
       }
 int
 main ()
 {
-snprintf("12", 0, "%i");
+
   ;
   return 0;
 }
@@ -16930,11 +16931,12 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 	vscanf("%i", args);
 	vsnprintf(fmt, 0, "%i", args);
 	vsscanf(fmt, "%i", args);
+	snprintf(fmt, 0, "%i");
       }
 int
 main ()
 {
-snprintf("12", 0, "%i");
+
   ;
   return 0;
 }
@@ -77916,7 +77918,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:20:0
+libtool_VERSION=6:21:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in

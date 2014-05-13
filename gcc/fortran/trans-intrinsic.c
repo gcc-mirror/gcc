@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "tree-nested.h"
+#include "wide-int.h"
 
 /* This maps Fortran intrinsic math functions to external library or GCC
    builtin functions.  */
@@ -987,12 +988,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
       if (INTEGER_CST_P (dim_arg))
 	{
-	  int hi, co_dim;
-
-	  hi = TREE_INT_CST_HIGH (dim_arg);
-	  co_dim = TREE_INT_CST_LOW (dim_arg);
-	  if (hi || co_dim < 1
-	      || co_dim > GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc)))
+	  if (wi::ltu_p (dim_arg, 1)
+	      || wi::gtu_p (dim_arg, GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))))
 	    gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		       "dimension index", expr->value.function.isym->name,
 		       &expr->where);
@@ -1352,14 +1349,9 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
   if (INTEGER_CST_P (bound))
     {
-      int hi, low;
-
-      hi = TREE_INT_CST_HIGH (bound);
-      low = TREE_INT_CST_LOW (bound);
-      if (hi || low < 0
-	  || ((!as || as->type != AS_ASSUMED_RANK)
-	      && low >= GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)))
-	  || low > GFC_MAX_DIMENSIONS)
+      if (((!as || as->type != AS_ASSUMED_RANK)
+	   && wi::geu_p (bound, GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))))
+	  || wi::gtu_p (bound, GFC_MAX_DIMENSIONS))
 	gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		   "dimension index", upper ? "UBOUND" : "LBOUND",
 		   &expr->where);
@@ -1554,11 +1546,8 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
       if (INTEGER_CST_P (bound))
 	{
-	  int hi, low;
-
-	  hi = TREE_INT_CST_HIGH (bound);
-	  low = TREE_INT_CST_LOW (bound);
-	  if (hi || low < 1 || low > GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc)))
+	  if (wi::ltu_p (bound, 1)
+	      || wi::gtu_p (bound, GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))))
 	    gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		       "dimension index", expr->value.function.isym->name,
 		       &expr->where);
@@ -7520,6 +7509,123 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
 
 
 static tree
+conv_co_minmaxsum (gfc_code *code)
+{
+  gfc_se argse;
+  stmtblock_t block, post_block;
+  tree fndecl, array, vec, strlen, image_index, stat, errmsg, errmsg_len;
+
+  gfc_start_block (&block);
+  gfc_init_block (&post_block);
+
+  /* stat.  */
+  if (code->ext.actual->next->next->expr)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, code->ext.actual->next->next->expr);
+      gfc_add_block_to_block (&block, &argse.pre);
+      gfc_add_block_to_block (&post_block, &argse.post);
+      stat = argse.expr;
+      if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+	stat = gfc_build_addr_expr (NULL_TREE, stat);
+    }
+  else if (gfc_option.coarray == GFC_FCOARRAY_SINGLE)
+    stat = NULL_TREE;
+  else
+    stat = null_pointer_node;
+
+  /* Early exit for GFC_FCOARRAY_SINGLE.  */
+  if (gfc_option.coarray == GFC_FCOARRAY_SINGLE)
+    {
+      if (stat != NULL_TREE)
+	gfc_add_modify (&block, stat,
+			fold_convert (TREE_TYPE (stat), integer_zero_node));
+      return gfc_finish_block (&block);
+    }
+
+  /* Handle the array.  */
+  gfc_init_se (&argse, NULL);
+  if (code->ext.actual->expr->rank == 0)
+    {
+      symbol_attribute attr;
+      gfc_clear_attr (&attr);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, code->ext.actual->expr);
+      gfc_add_block_to_block (&block, &argse.pre);
+      gfc_add_block_to_block (&post_block, &argse.post);
+      array = gfc_conv_scalar_to_descriptor (&argse, argse.expr, attr);
+      array = gfc_build_addr_expr (NULL_TREE, array);
+    }
+  else
+    {
+      argse.want_pointer = 1;
+      gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
+      array = argse.expr;
+    }
+  gfc_add_block_to_block (&block, &argse.pre);
+  gfc_add_block_to_block (&post_block, &argse.post);
+
+  if (code->ext.actual->expr->ts.type == BT_CHARACTER)
+    strlen = argse.string_length;
+  else
+    strlen = integer_zero_node;
+
+  vec = null_pointer_node;
+
+  /* image_index.  */
+  if (code->ext.actual->next->expr)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, code->ext.actual->next->expr);
+      gfc_add_block_to_block (&block, &argse.pre);
+      gfc_add_block_to_block (&post_block, &argse.post);
+      image_index = fold_convert (integer_type_node, argse.expr);
+    }
+  else
+    image_index = integer_zero_node;
+
+  /* errmsg.  */
+  if (code->ext.actual->next->next->next->expr)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, code->ext.actual->next->next->next->expr);
+      gfc_add_block_to_block (&block, &argse.pre);
+      gfc_add_block_to_block (&post_block, &argse.post);
+      errmsg = argse.expr;
+      errmsg_len = fold_convert (integer_type_node, argse.string_length);
+    }
+  else
+    {
+      errmsg = null_pointer_node;
+      errmsg_len = integer_zero_node;
+    }
+
+  /* Generate the function call.  */
+  if (code->resolved_isym->id == GFC_ISYM_CO_MAX)
+    fndecl = gfor_fndecl_co_max;
+  else if (code->resolved_isym->id == GFC_ISYM_CO_MIN)
+    fndecl = gfor_fndecl_co_min;
+  else if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
+    fndecl = gfor_fndecl_co_sum;
+  else
+    gcc_unreachable ();
+
+  if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
+    fndecl = build_call_expr_loc (input_location, fndecl, 6, array, vec,
+				  image_index, stat, errmsg, errmsg_len);
+  else
+    fndecl = build_call_expr_loc (input_location, fndecl, 7, array, vec,
+				  image_index, stat, errmsg, strlen,
+				  errmsg_len);
+  gfc_add_expr_to_block (&block, fndecl);
+  gfc_add_block_to_block (&block, &post_block);
+
+  /* Add CALL to CO_SUM/MIN/MAX: array descriptor, vector descriptor, stat, errmsg, strlen, errmsglen */
+  return gfc_finish_block (&block);
+}
+
+
+static tree
 conv_intrinsic_atomic_def (gfc_code *code)
 {
   gfc_se atom, value;
@@ -7814,6 +7920,11 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
       res = conv_isocbinding_subroutine (code);
       break;
 
+    case GFC_ISYM_CO_MIN:
+    case GFC_ISYM_CO_MAX:
+    case GFC_ISYM_CO_SUM:
+      res = conv_co_minmaxsum (code);
+      break;
 
     default:
       res = NULL_TREE;

@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RTL_H
 #define GCC_RTL_H
 
+#include <utility>
 #include "statistics.h"
 #include "machmode.h"
 #include "input.h"
@@ -28,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fixed-value.h"
 #include "alias.h"
 #include "hashtab.h"
+#include "wide-int.h"
 #include "flags.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
@@ -248,6 +250,16 @@ struct GTY(()) object_block {
   vec<rtx, va_gc> *anchors;
 };
 
+struct GTY((variable_size)) hwivec_def {
+  HOST_WIDE_INT elem[1];
+};
+
+/* Number of elements of the HWIVEC if RTX is a CONST_WIDE_INT.  */
+#define CWI_GET_NUM_ELEM(RTX)					\
+  ((int)RTL_FLAG_CHECK1("CWI_GET_NUM_ELEM", (RTX), CONST_WIDE_INT)->u2.num_elem)
+#define CWI_PUT_NUM_ELEM(RTX, NUM)					\
+  (RTL_FLAG_CHECK1("CWI_PUT_NUM_ELEM", (RTX), CONST_WIDE_INT)->u2.num_elem = (NUM))
+
 /* RTL expression ("rtx").  */
 
 struct GTY((chain_next ("RTX_NEXT (&%h)"),
@@ -334,6 +346,17 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a VALUE or DEBUG_EXPR is NO_LOC_P in var-tracking.c.  */
   unsigned return_val : 1;
 
+  union {
+    /* The final union field is aligned to 64 bits on LP64 hosts,
+       giving a 32-bit gap after the fields above.  We optimize the
+       layout for that case and use the gap for extra code-specific
+       information.  */
+
+    /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
+       HOST_WIDE_INTs in the hwivec_def.  */
+    unsigned GTY ((tag ("CONST_WIDE_INT"))) num_elem:32;
+  } GTY ((desc ("GET_CODE (&%0)"))) u2;
+
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
      by the `code' field, according to rtl.def.  */
@@ -343,6 +366,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
     struct block_symbol block_sym;
     struct real_value rv;
     struct fixed_value fv;
+    struct hwivec_def hwiv;
   } GTY ((special ("rtx_def"), desc ("GET_CODE (&%0)"))) u;
 };
 
@@ -398,12 +422,38 @@ struct GTY((variable_size)) rtvec_def {
 /* Predicate yielding nonzero iff X is an rtx for a memory location.  */
 #define MEM_P(X) (GET_CODE (X) == MEM)
 
+#if TARGET_SUPPORTS_WIDE_INT
+
+/* Match CONST_*s that can represent compile-time constant integers.  */
+#define CASE_CONST_SCALAR_INT \
+   case CONST_INT: \
+   case CONST_WIDE_INT
+
+/* Match CONST_*s for which pointer equality corresponds to value
+   equality.  */
+#define CASE_CONST_UNIQUE \
+   case CONST_INT: \
+   case CONST_WIDE_INT: \
+   case CONST_DOUBLE: \
+   case CONST_FIXED
+
+/* Match all CONST_* rtxes.  */
+#define CASE_CONST_ANY \
+   case CONST_INT: \
+   case CONST_WIDE_INT: \
+   case CONST_DOUBLE: \
+   case CONST_FIXED: \
+   case CONST_VECTOR
+
+#else
+
 /* Match CONST_*s that can represent compile-time constant integers.  */
 #define CASE_CONST_SCALAR_INT \
    case CONST_INT: \
    case CONST_DOUBLE
 
-/* Match CONST_*s for which pointer equality corresponds to value equality.  */
+/* Match CONST_*s for which pointer equality corresponds to value
+   equality.  */
 #define CASE_CONST_UNIQUE \
    case CONST_INT: \
    case CONST_DOUBLE: \
@@ -415,9 +465,13 @@ struct GTY((variable_size)) rtvec_def {
    case CONST_DOUBLE: \
    case CONST_FIXED: \
    case CONST_VECTOR
+#endif
 
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
+
+/* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
+#define CONST_WIDE_INT_P(X) (GET_CODE (X) == CONST_WIDE_INT)
 
 /* Predicate yielding nonzero iff X is an rtx for a constant fixed-point.  */
 #define CONST_FIXED_P(X) (GET_CODE (X) == CONST_FIXED)
@@ -431,8 +485,13 @@ struct GTY((variable_size)) rtvec_def {
   (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == VOIDmode)
 
 /* Predicate yielding true iff X is an rtx for a integer const.  */
+#if TARGET_SUPPORTS_WIDE_INT
+#define CONST_SCALAR_INT_P(X) \
+  (CONST_INT_P (X) || CONST_WIDE_INT_P (X))
+#else
 #define CONST_SCALAR_INT_P(X) \
   (CONST_INT_P (X) || CONST_DOUBLE_AS_INT_P (X))
+#endif
 
 /* Predicate yielding true iff X is an rtx for a double-int.  */
 #define CONST_DOUBLE_AS_FLOAT_P(X) \
@@ -593,6 +652,15 @@ struct GTY((variable_size)) rtvec_def {
 			       __FUNCTION__);				\
      &_rtx->u.hwint[_n]; }))
 
+#define CWI_ELT(RTX, I) __extension__					\
+(*({ __typeof (RTX) const _cwi = (RTX);					\
+     int _max = CWI_GET_NUM_ELEM (_cwi);				\
+     const int _i = (I);						\
+     if (_i < 0 || _i >= _max)						\
+       cwi_check_failed_bounds (_cwi, _i, __FILE__, __LINE__,		\
+				__FUNCTION__);				\
+     &_cwi->u.hwiv.elem[_i]; }))
+
 #define XCWINT(RTX, N, C) __extension__					\
 (*({ __typeof (RTX) const _rtx = (RTX);					\
      if (GET_CODE (_rtx) != (C))					\
@@ -629,6 +697,11 @@ struct GTY((variable_size)) rtvec_def {
 				    __FUNCTION__);			\
    &_symbol->u.block_sym; })
 
+#define HWIVEC_CHECK(RTX,C) __extension__				\
+({ __typeof (RTX) const _symbol = (RTX);				\
+   RTL_CHECKC1 (_symbol, 0, C);						\
+   &_symbol->u.hwiv; })
+
 extern void rtl_check_failed_bounds (const_rtx, int, const char *, int,
 				     const char *)
     ATTRIBUTE_NORETURN;
@@ -649,6 +722,9 @@ extern void rtl_check_failed_code_mode (const_rtx, enum rtx_code, enum machine_m
     ATTRIBUTE_NORETURN;
 extern void rtl_check_failed_block_symbol (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
+extern void cwi_check_failed_bounds (const_rtx, int, const char *, int,
+				     const char *)
+    ATTRIBUTE_NORETURN;
 extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 				       const char *)
     ATTRIBUTE_NORETURN;
@@ -661,12 +737,14 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 #define RTL_CHECKC2(RTX, N, C1, C2) ((RTX)->u.fld[N])
 #define RTVEC_ELT(RTVEC, I)	    ((RTVEC)->elem[I])
 #define XWINT(RTX, N)		    ((RTX)->u.hwint[N])
+#define CWI_ELT(RTX, I)		    ((RTX)->u.hwiv.elem[I])
 #define XCWINT(RTX, N, C)	    ((RTX)->u.hwint[N])
 #define XCMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
 #define XCNMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
 #define XCNMPRV(RTX, C, M)	    (&(RTX)->u.rv)
 #define XCNMPFV(RTX, C, M)	    (&(RTX)->u.fv)
 #define BLOCK_SYMBOL_CHECK(RTX)	    (&(RTX)->u.block_sym)
+#define HWIVEC_CHECK(RTX,C)	    (&(RTX)->u.hwiv)
 
 #endif
 
@@ -1153,9 +1231,19 @@ rhs_regno (const_rtx x)
 #define INTVAL(RTX) XCWINT (RTX, 0, CONST_INT)
 #define UINTVAL(RTX) ((unsigned HOST_WIDE_INT) INTVAL (RTX))
 
+/* For a CONST_WIDE_INT, CONST_WIDE_INT_NUNITS is the number of
+   elements actually needed to represent the constant.
+   CONST_WIDE_INT_ELT gets one of the elements.  0 is the least
+   significant HOST_WIDE_INT.  */
+#define CONST_WIDE_INT_VEC(RTX) HWIVEC_CHECK (RTX, CONST_WIDE_INT)
+#define CONST_WIDE_INT_NUNITS(RTX) CWI_GET_NUM_ELEM (RTX)
+#define CONST_WIDE_INT_ELT(RTX, N) CWI_ELT (RTX, N)
+
 /* For a CONST_DOUBLE:
+#if TARGET_SUPPORTS_WIDE_INT == 0
    For a VOIDmode, there are two integers CONST_DOUBLE_LOW is the
      low-order word and ..._HIGH the high-order.
+#endif
    For a float, there is a REAL_VALUE_TYPE structure, and
      CONST_DOUBLE_REAL_VALUE(r) is a pointer to it.  */
 #define CONST_DOUBLE_LOW(r) XCMWINT (r, 0, CONST_DOUBLE, VOIDmode)
@@ -1309,6 +1397,94 @@ struct address_info {
   /* True if this is an RTX_AUTOINC address.  */
   bool autoinc_p;
 };
+
+/* This is used to bundle an rtx and a mode together so that the pair
+   can be used with the wi:: routines.  If we ever put modes into rtx
+   integer constants, this should go away and then just pass an rtx in.  */
+typedef std::pair <rtx, enum machine_mode> rtx_mode_t;
+
+namespace wi
+{
+  template <>
+  struct int_traits <rtx_mode_t>
+  {
+    static const enum precision_type precision_type = VAR_PRECISION;
+    static const bool host_dependent_precision = false;
+    /* This ought to be true, except for the special case that BImode
+       is canonicalized to STORE_FLAG_VALUE, which might be 1.  */
+    static const bool is_sign_extended = false;
+    static unsigned int get_precision (const rtx_mode_t &);
+    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
+				      const rtx_mode_t &);
+  };
+}
+
+inline unsigned int
+wi::int_traits <rtx_mode_t>::get_precision (const rtx_mode_t &x)
+{
+  return GET_MODE_PRECISION (x.second);
+}
+
+inline wi::storage_ref
+wi::int_traits <rtx_mode_t>::decompose (HOST_WIDE_INT *,
+					unsigned int precision,
+					const rtx_mode_t &x)
+{
+  gcc_checking_assert (precision == get_precision (x));
+  switch (GET_CODE (x.first))
+    {
+    case CONST_INT:
+      if (precision < HOST_BITS_PER_WIDE_INT)
+	/* Nonzero BImodes are stored as STORE_FLAG_VALUE, which on many
+	   targets is 1 rather than -1.  */
+	gcc_checking_assert (INTVAL (x.first)
+			     == sext_hwi (INTVAL (x.first), precision)
+			     || (x.second == BImode && INTVAL (x.first) == 1));
+
+      return wi::storage_ref (&INTVAL (x.first), 1, precision);
+
+    case CONST_WIDE_INT:
+      return wi::storage_ref (&CONST_WIDE_INT_ELT (x.first, 0),
+			      CONST_WIDE_INT_NUNITS (x.first), precision);
+
+#if TARGET_SUPPORTS_WIDE_INT == 0
+    case CONST_DOUBLE:
+      return wi::storage_ref (&CONST_DOUBLE_LOW (x.first), 2, precision);
+#endif
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+namespace wi
+{
+  hwi_with_prec shwi (HOST_WIDE_INT, enum machine_mode mode);
+  wide_int min_value (enum machine_mode, signop);
+  wide_int max_value (enum machine_mode, signop);
+}
+
+inline wi::hwi_with_prec
+wi::shwi (HOST_WIDE_INT val, enum machine_mode mode)
+{
+  return shwi (val, GET_MODE_PRECISION (mode));
+}
+
+/* Produce the smallest number that is represented in MODE.  The precision
+   is taken from MODE and the sign from SGN.  */
+inline wide_int
+wi::min_value (enum machine_mode mode, signop sgn)
+{
+  return min_value (GET_MODE_PRECISION (mode), sgn);
+}
+
+/* Produce the largest number that is represented in MODE.  The precision
+   is taken from MODE and the sign from SGN.  */
+inline wide_int
+wi::max_value (enum machine_mode mode, signop sgn)
+{
+  return max_value (GET_MODE_PRECISION (mode), sgn);
+}
 
 extern void init_rtlanal (void);
 extern int rtx_cost (rtx, enum rtx_code, int, bool);
@@ -1765,6 +1941,12 @@ extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT);
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
 #define rtx_alloc(c) rtx_alloc_stat (c MEM_STAT_INFO)
+extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
+#define rtx_alloc_v(c, SZ) rtx_alloc_stat_v (c MEM_STAT_INFO, SZ)
+#define const_wide_int_alloc(NWORDS)				\
+  rtx_alloc_v (CONST_WIDE_INT,					\
+	       (sizeof (struct hwivec_def)			\
+		+ ((NWORDS)-1) * sizeof (HOST_WIDE_INT)))	\
 
 extern rtvec rtvec_alloc (int);
 extern rtvec shallow_copy_rtvec (rtvec);
@@ -1821,10 +2003,17 @@ extern void start_sequence (void);
 extern void push_to_sequence (rtx);
 extern void push_to_sequence2 (rtx, rtx);
 extern void end_sequence (void);
+#if TARGET_SUPPORTS_WIDE_INT == 0
 extern double_int rtx_to_double_int (const_rtx);
-extern rtx immed_double_int_const (double_int, enum machine_mode);
+#endif
+extern void cwi_output_hex (FILE *, const_rtx);
+#ifndef GENERATOR_FILE
+extern rtx immed_wide_int_const (const wide_int_ref &, enum machine_mode);
+#endif
+#if TARGET_SUPPORTS_WIDE_INT == 0
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
+#endif
 
 /* In loop-iv.c  */
 
@@ -2545,6 +2734,7 @@ extern int get_max_insn_count (void);
 extern int in_sequence_p (void);
 extern void init_emit (void);
 extern void init_emit_regs (void);
+extern void init_derived_machine_modes (void);
 extern void init_emit_once (void);
 extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);

@@ -295,27 +295,27 @@ reload_cse_simplify_set (rtx set, rtx insn)
 #ifdef LOAD_EXTEND_OP
 	  if (extend_op != UNKNOWN)
 	    {
-	      HOST_WIDE_INT this_val;
+	      wide_int result;
 
-	      /* ??? I'm lazy and don't wish to handle CONST_DOUBLE.  Other
-		 constants, such as SYMBOL_REF, cannot be extended.  */
-	      if (!CONST_INT_P (this_rtx))
+	      if (!CONST_SCALAR_INT_P (this_rtx))
 		continue;
 
-	      this_val = INTVAL (this_rtx);
 	      switch (extend_op)
 		{
 		case ZERO_EXTEND:
-		  this_val &= GET_MODE_MASK (GET_MODE (src));
+		  result = wide_int::from (std::make_pair (this_rtx,
+							   GET_MODE (src)),
+					   BITS_PER_WORD, UNSIGNED);
 		  break;
 		case SIGN_EXTEND:
-		  /* ??? In theory we're already extended.  */
-		  if (this_val == trunc_int_for_mode (this_val, GET_MODE (src)))
-		    break;
+		  result = wide_int::from (std::make_pair (this_rtx,
+							   GET_MODE (src)),
+					   BITS_PER_WORD, SIGNED);
+		  break;
 		default:
 		  gcc_unreachable ();
 		}
-	      this_rtx = GEN_INT (this_val);
+	      this_rtx = immed_wide_int_const (result, word_mode);
 	    }
 #endif
 	  this_cost = set_src_cost (this_rtx, speed);
@@ -2328,7 +2328,7 @@ const pass_data pass_data_postreload_cse =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing | 0 ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_postreload_cse : public rtl_opt_pass

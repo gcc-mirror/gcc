@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-live.h"
 #include "omp-low.h"
 #include "tree-cfgcleanup.h"
+#include "wide-int.h"
+#include "wide-int-print.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -357,7 +359,7 @@ const pass_data pass_data_build_cfg =
   ( PROP_cfg | PROP_loops ), /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_stmts, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_build_cfg : public gimple_opt_pass
@@ -1542,12 +1544,12 @@ group_case_labels_stmt (gimple stmt)
 	{
 	  tree merge_case = gimple_switch_label (stmt, i);
 	  basic_block merge_bb = label_to_block (CASE_LABEL (merge_case));
-	  double_int bhp1 = tree_to_double_int (base_high) + double_int_one;
+	  wide_int bhp1 = wi::add (base_high, 1);
 
 	  /* Merge the cases if they jump to the same place,
 	     and their ranges are consecutive.  */
 	  if (merge_bb == base_bb
-	      && tree_to_double_int (CASE_LOW (merge_case)) == bhp1)
+	      && wi::eq_p (CASE_LOW (merge_case), bhp1))
 	    {
 	      base_high = CASE_HIGH (merge_case) ?
 		  CASE_HIGH (merge_case) : CASE_LOW (merge_case);
@@ -3651,7 +3653,7 @@ verify_gimple_assign_binary (gimple stmt)
 	   only allow shifting by a constant multiple of the element size.  */
 	if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
 	    && (TREE_CODE (rhs2) != INTEGER_CST
-		|| !div_if_zero_remainder (EXACT_DIV_EXPR, rhs2,
+		|| !div_if_zero_remainder (rhs2,
 					   TYPE_SIZE (TREE_TYPE (rhs1_type)))))
 	  {
 	    error ("non-element sized vector shift of floating point vector");
@@ -7335,13 +7337,13 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
   if (loop->any_upper_bound)
     {
       fprintf (file, ", upper_bound = ");
-      dump_double_int (file, loop->nb_iterations_upper_bound, true);
+      print_decu (loop->nb_iterations_upper_bound, file);
     }
 
   if (loop->any_estimate)
     {
       fprintf (file, ", estimate = ");
-      dump_double_int (file, loop->nb_iterations_estimate, true);
+      print_decu (loop->nb_iterations_estimate, file);
     }
   fprintf (file, ")\n");
 
@@ -8096,7 +8098,7 @@ const pass_data pass_data_split_crit_edges =
   PROP_no_crit_edges, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_split_crit_edges : public gimple_opt_pass
@@ -8408,7 +8410,7 @@ execute_fixup_cfg (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
-  int todo = gimple_in_ssa_p (cfun) ? TODO_verify_ssa : 0;
+  int todo = 0;
   gcov_type count_scale;
   edge e;
   edge_iterator ei;

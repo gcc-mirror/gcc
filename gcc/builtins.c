@@ -413,7 +413,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	  bitpos += ptr_bitpos;
 	  if (TREE_CODE (exp) == MEM_REF
 	      || TREE_CODE (exp) == TARGET_MEM_REF)
-	    bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
+	    bitpos += mem_ref_offset (exp).to_short_addr () * BITS_PER_UNIT;
 	}
     }
   else if (TREE_CODE (exp) == STRING_CST)
@@ -672,20 +672,24 @@ c_getstr (tree src)
   return TREE_STRING_POINTER (src) + tree_to_uhwi (offset_node);
 }
 
-/* Return a CONST_INT or CONST_DOUBLE corresponding to target reading
+/* Return a constant integer corresponding to target reading
    GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
 
 static rtx
 c_readstr (const char *str, enum machine_mode mode)
 {
-  HOST_WIDE_INT c[2];
   HOST_WIDE_INT ch;
   unsigned int i, j;
+  HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
 
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
+  unsigned int len = (GET_MODE_PRECISION (mode) + HOST_BITS_PER_WIDE_INT - 1)
+    / HOST_BITS_PER_WIDE_INT;
 
-  c[0] = 0;
-  c[1] = 0;
+  gcc_assert (len <= MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT);
+  for (i = 0; i < len; i++)
+    tmp[i] = 0;
+
   ch = 1;
   for (i = 0; i < GET_MODE_SIZE (mode); i++)
     {
@@ -696,13 +700,14 @@ c_readstr (const char *str, enum machine_mode mode)
 	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
-      gcc_assert (j < HOST_BITS_PER_DOUBLE_INT);
 
       if (ch)
 	ch = (unsigned char) str[i];
-      c[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
+      tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }
-  return immed_double_const (c[0], c[1], mode);
+
+  wide_int c = wide_int::from_array (tmp, len, GET_MODE_PRECISION (mode));
+  return immed_wide_int_const (c, mode);
 }
 
 /* Cast a target constant CST to target CHAR and if that value fits into
@@ -718,7 +723,9 @@ target_char_cast (tree cst, char *p)
       || CHAR_TYPE_SIZE > HOST_BITS_PER_WIDE_INT)
     return 1;
 
+  /* Do not care if it fits or not right here.  */
   val = TREE_INT_CST_LOW (cst);
+
   if (CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT)
     val &= (((unsigned HOST_WIDE_INT) 1) << CHAR_TYPE_SIZE) - 1;
 
@@ -3128,7 +3135,7 @@ determine_block_size (tree len, rtx len_rtx,
     }
   else
     {
-      double_int min, max;
+      wide_int min, max;
       enum value_range_type range_type = VR_UNDEFINED;
 
       /* Determine bounds from the type.  */
@@ -3146,18 +3153,18 @@ determine_block_size (tree len, rtx len_rtx,
 	range_type = get_range_info (len, &min, &max);
       if (range_type == VR_RANGE)
 	{
-	  if (min.fits_uhwi () && *min_size < min.to_uhwi ())
+	  if (wi::fits_uhwi_p (min) && *min_size < min.to_uhwi ())
 	    *min_size = min.to_uhwi ();
-	  if (max.fits_uhwi () && *max_size > max.to_uhwi ())
+	  if (wi::fits_uhwi_p (max) && *max_size > max.to_uhwi ())
 	    *probable_max_size = *max_size = max.to_uhwi ();
 	}
       else if (range_type == VR_ANTI_RANGE)
 	{
 	  /* Anti range 0...N lets us to determine minimal size to N+1.  */
-	  if (min.is_zero ())
+	  if (min == 0)
 	    {
-	      if ((max + double_int_one).fits_uhwi ())
-		*min_size = (max + double_int_one).to_uhwi ();
+	      if (wi::fits_uhwi_p (max) && max.to_uhwi () + 1 != 0)
+		*min_size = max.to_uhwi () + 1;
 	    }
 	  /* Code like
 
@@ -3168,9 +3175,8 @@ determine_block_size (tree len, rtx len_rtx,
 	     Produce anti range allowing negative values of N.  We still
 	     can use the information and make a guess that N is not negative.
 	     */
-	   else if (!max.ule (double_int_one.lshift (30))
-	            && min.fits_uhwi ())
-	     *probable_max_size = min.to_uhwi () - 1;
+	  else if (!wi::leu_p (max, 1 << 30) && wi::fits_uhwi_p (min))
+	    *probable_max_size = min.to_uhwi () - 1;
 	}
     }
   gcc_checking_assert (*max_size <=
@@ -4943,12 +4949,12 @@ expand_builtin_signbit (tree exp, rtx target)
 
   if (bitpos < GET_MODE_BITSIZE (rmode))
     {
-      double_int mask = double_int_zero.set_bit (bitpos);
+      wide_int mask = wi::set_bit_in_zero (bitpos, GET_MODE_PRECISION (rmode));
 
       if (GET_MODE_SIZE (imode) > GET_MODE_SIZE (rmode))
 	temp = gen_lowpart (rmode, temp);
       temp = expand_binop (rmode, and_optab, temp,
-			   immed_double_int_const (mask, rmode),
+			   immed_wide_int_const (mask, rmode),
 			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
   else
@@ -8012,8 +8018,8 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	{
 	  tree itype = TREE_TYPE (TREE_TYPE (fndecl));
 	  tree ftype = TREE_TYPE (arg);
-	  double_int val;
 	  REAL_VALUE_TYPE r;
+	  bool fail = false;
 
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
@@ -8039,9 +8045,9 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	      gcc_unreachable ();
 	    }
 
-	  real_to_integer2 ((HOST_WIDE_INT *)&val.low, &val.high, &r);
-	  if (double_int_fits_to_tree_p (itype, val))
-	    return double_int_to_tree (itype, val);
+	  wide_int val = real_to_integer (&r, &fail, TYPE_PRECISION (itype));
+	  if (!fail)
+	    return wide_int_to_tree (itype, val);
 	}
     }
 
@@ -8074,94 +8080,39 @@ fold_builtin_bitop (tree fndecl, tree arg)
   /* Optimize for constant argument.  */
   if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
-      HOST_WIDE_INT hi, width, result;
-      unsigned HOST_WIDE_INT lo;
-      tree type;
-
-      type = TREE_TYPE (arg);
-      width = TYPE_PRECISION (type);
-      lo = TREE_INT_CST_LOW (arg);
-
-      /* Clear all the bits that are beyond the type's precision.  */
-      if (width > HOST_BITS_PER_WIDE_INT)
-	{
-	  hi = TREE_INT_CST_HIGH (arg);
-	  if (width < HOST_BITS_PER_DOUBLE_INT)
-	    hi &= ~(HOST_WIDE_INT_M1U << (width - HOST_BITS_PER_WIDE_INT));
-	}
-      else
-	{
-	  hi = 0;
-	  if (width < HOST_BITS_PER_WIDE_INT)
-	    lo &= ~(HOST_WIDE_INT_M1U << width);
-	}
+      tree type = TREE_TYPE (arg);
+      int result;
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
 	CASE_INT_FN (BUILT_IN_FFS):
-	  if (lo != 0)
-	    result = ffs_hwi (lo);
-	  else if (hi != 0)
-	    result = HOST_BITS_PER_WIDE_INT + ffs_hwi (hi);
-	  else
-	    result = 0;
+	  result = wi::ffs (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLZ):
-	  if (hi != 0)
-	    result = width - floor_log2 (hi) - 1 - HOST_BITS_PER_WIDE_INT;
-	  else if (lo != 0)
-	    result = width - floor_log2 (lo) - 1;
+	  if (wi::ne_p (arg, 0))
+	    result = wi::clz (arg);
 	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = width;
+	    result = TYPE_PRECISION (type);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CTZ):
-	  if (lo != 0)
-	    result = ctz_hwi (lo);
-	  else if (hi != 0)
-	    result = HOST_BITS_PER_WIDE_INT + ctz_hwi (hi);
+	  if (wi::ne_p (arg, 0))
+	    result = wi::ctz (arg);
 	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = width;
+	    result = TYPE_PRECISION (type);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLRSB):
-	  if (width > 2 * HOST_BITS_PER_WIDE_INT)
-	    return NULL_TREE;
-	  if (width > HOST_BITS_PER_WIDE_INT
-	      && (hi & ((unsigned HOST_WIDE_INT) 1
-			<< (width - HOST_BITS_PER_WIDE_INT - 1))) != 0)
-	    {
-	      hi = ~hi & ~(HOST_WIDE_INT_M1U
-			   << (width - HOST_BITS_PER_WIDE_INT - 1));
-	      lo = ~lo;
-	    }
-	  else if (width <= HOST_BITS_PER_WIDE_INT
-		   && (lo & ((unsigned HOST_WIDE_INT) 1 << (width - 1))) != 0)
-	    lo = ~lo & ~(HOST_WIDE_INT_M1U << (width - 1));
-	  if (hi != 0)
-	    result = width - floor_log2 (hi) - 2 - HOST_BITS_PER_WIDE_INT;
-	  else if (lo != 0)
-	    result = width - floor_log2 (lo) - 2;
-	  else
-	    result = width - 1;
+	  result = wi::clrsb (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_POPCOUNT):
-	  result = 0;
-	  while (lo)
-	    result++, lo &= lo - 1;
-	  while (hi)
-	    result++, hi &= (unsigned HOST_WIDE_INT) hi - 1;
+	  result = wi::popcount (arg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_PARITY):
-	  result = 0;
-	  while (lo)
-	    result++, lo &= lo - 1;
-	  while (hi)
-	    result++, hi &= (unsigned HOST_WIDE_INT) hi - 1;
-	  result &= 1;
+	  result = wi::parity (arg);
 	  break;
 
 	default:
@@ -8185,13 +8136,7 @@ fold_builtin_bswap (tree fndecl, tree arg)
   /* Optimize constant value.  */
   if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
-      HOST_WIDE_INT hi, width, r_hi = 0;
-      unsigned HOST_WIDE_INT lo, r_lo = 0;
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
-
-      width = TYPE_PRECISION (type);
-      lo = TREE_INT_CST_LOW (arg);
-      hi = TREE_INT_CST_HIGH (arg);
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
@@ -8199,35 +8144,16 @@ fold_builtin_bswap (tree fndecl, tree arg)
 	  case BUILT_IN_BSWAP32:
 	  case BUILT_IN_BSWAP64:
 	    {
-	      int s;
-
-	      for (s = 0; s < width; s += 8)
-		{
-		  int d = width - s - 8;
-		  unsigned HOST_WIDE_INT byte;
-
-		  if (s < HOST_BITS_PER_WIDE_INT)
-		    byte = (lo >> s) & 0xff;
-		  else
-		    byte = (hi >> (s - HOST_BITS_PER_WIDE_INT)) & 0xff;
-
-		  if (d < HOST_BITS_PER_WIDE_INT)
-		    r_lo |= byte << d;
-		  else
-		    r_hi |= byte << (d - HOST_BITS_PER_WIDE_INT);
-		}
+	      signop sgn = TYPE_SIGN (type);
+	      tree result =
+		wide_int_to_tree (type,
+				  wide_int::from (arg, TYPE_PRECISION (type),
+						  sgn).bswap ());
+	      return result;
 	    }
-
-	    break;
-
 	default:
 	  gcc_unreachable ();
 	}
-
-      if (width < HOST_BITS_PER_WIDE_INT)
-	return build_int_cst (type, r_lo);
-      else
-	return build_int_cst_wide (type, r_lo, r_hi);
     }
 
   return NULL_TREE;
@@ -8289,7 +8215,7 @@ fold_builtin_logarithm (location_t loc, tree fndecl, tree arg,
 	    /* Prepare to do logN(exp10(exponent) -> exponent*logN(10).  */
 	    {
 	      REAL_VALUE_TYPE dconst10;
-	      real_from_integer (&dconst10, VOIDmode, 10, 0, 0);
+	      real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
 	      x = build_real (type, dconst10);
 	    }
 	    exponent = CALL_EXPR_ARG (arg, 0);
@@ -8442,7 +8368,7 @@ fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
 
       /* Check for an integer exponent.  */
       n = real_to_integer (&c);
-      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+      real_from_integer (&cint, VOIDmode, n, SIGNED);
       if (real_identical (&c, &cint))
 	{
 	  /* Attempt to evaluate pow at compile-time, unless this should
@@ -8814,20 +8740,18 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	      else if (TREE_CODE (src_base) == MEM_REF
 		       && TREE_CODE (dest_base) == MEM_REF)
 		{
-		  double_int off;
 		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return NULL_TREE;
-		  off = mem_ref_offset (src_base) +
-					double_int::from_shwi (src_offset);
-		  if (!off.fits_shwi ())
+		  offset_int off = mem_ref_offset (src_base) + src_offset;
+		  if (!wi::fits_shwi_p (off))
 		    return NULL_TREE;
-		  src_offset = off.low;
-		  off = mem_ref_offset (dest_base) +
-					double_int::from_shwi (dest_offset);
-		  if (!off.fits_shwi ())
+		  src_offset = off.to_shwi ();
+
+		  off = mem_ref_offset (dest_base) + dest_offset;
+		  if (!wi::fits_shwi_p (off))
 		    return NULL_TREE;
-		  dest_offset = off.low;
+		  dest_offset = off.to_shwi ();
 		  if (ranges_overlap_p (src_offset, maxsize,
 					dest_offset, maxsize))
 		    return NULL_TREE;
@@ -12690,8 +12614,7 @@ fold_builtin_object_size (tree ptr, tree ost)
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
       bytes = compute_builtin_object_size (ptr, object_size_type);
-      if (double_int_fits_to_tree_p (size_type_node,
-				     double_int::from_uhwi (bytes)))
+      if (wi::fits_to_tree_p (bytes, size_type_node))
 	return build_int_cstu (size_type_node, bytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
@@ -12701,8 +12624,7 @@ fold_builtin_object_size (tree ptr, tree ost)
        it.  */
       bytes = compute_builtin_object_size (ptr, object_size_type);
       if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2 ? -1 : 0)
-          && double_int_fits_to_tree_p (size_type_node,
-					double_int::from_uhwi (bytes)))
+          && wi::fits_to_tree_p (bytes, size_type_node))
 	return build_int_cstu (size_type_node, bytes);
     }
 

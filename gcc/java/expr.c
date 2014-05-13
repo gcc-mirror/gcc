@@ -46,6 +46,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "tree-iterator.h"
 #include "target.h"
+#include "wide-int.h"
 
 static void flush_quick_stack (void);
 static void push_value (tree);
@@ -1051,7 +1052,7 @@ build_newarray (int atype_value, tree length)
   tree prim_type = decode_newarray_type (atype_value);
   tree type
     = build_java_array_type (prim_type,
-			     tree_fits_shwi_p (length) == INTEGER_CST
+			     tree_fits_shwi_p (length)
 			     ? tree_to_shwi (length) : -1);
 
   /* Pass a reference to the primitive type class and save the runtime
@@ -1260,7 +1261,7 @@ expand_java_pushc (int ival, tree type)
   else if (type == float_type_node || type == double_type_node)
     {
       REAL_VALUE_TYPE x;
-      REAL_VALUE_FROM_INT (x, ival, 0, TYPE_MODE (type));
+      real_from_integer (&x, TYPE_MODE (type), ival, SIGNED);
       value = build_real (type, x);
     }
   else
@@ -1717,7 +1718,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
 	  tree field_offset = byte_position (field_decl);
 	  if (! page_size)
 	    page_size = size_int (4096); 	      
-	  check = ! INT_CST_LT_UNSIGNED (field_offset, page_size);
+	  check = !tree_int_cst_lt (field_offset, page_size);
 	}
 
       if (base_type != TREE_TYPE (self_value))

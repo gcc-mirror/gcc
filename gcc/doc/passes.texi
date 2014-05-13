@@ -474,10 +474,7 @@ merging and induction variable elimination.  The pass is implemented in
 Loop unswitching.  This pass moves the conditional jumps that are invariant
 out of the loops.  To achieve this, a duplicate of the loop is created for
 each possible outcome of conditional jump(s).  The pass is implemented in
-@file{tree-ssa-loop-unswitch.c}.  This pass should eventually replace the
-RTL level loop unswitching in @file{loop-unswitch.c}, but currently
-the RTL level pass is not completely redundant yet due to deficiencies
-in tree level alias analysis.
+@file{tree-ssa-loop-unswitch.c}.
 
 The optimizations also use various utility functions contained in
 @file{tree-ssa-loop-manip.c}, @file{cfgloop.c}, @file{cfgloopanal.c} and
@@ -793,8 +790,8 @@ The source files @file{cfgloopanal.c} and @file{cfgloopmanip.c} contain
 generic loop analysis and manipulation code.  Initialization and finalization
 of loop structures is handled by @file{loop-init.c}.
 A loop invariant motion pass is implemented in @file{loop-invariant.c}.
-Basic block level optimizations---unrolling, peeling and unswitching loops---
-are implemented in @file{loop-unswitch.c} and @file{loop-unroll.c}.
+Basic block level optimizations---unrolling, and peeling loops---
+are implemented in @file{loop-unroll.c}.
 Replacing of the exit condition of loops by special machine-dependent
 instructions is handled by @file{loop-doloop.c}.
 

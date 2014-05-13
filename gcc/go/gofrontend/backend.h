@@ -247,15 +247,21 @@ class Backend
   virtual Bexpression*
   error_expression() = 0;
 
+  // Create a nil pointer expression.
+  virtual Bexpression*
+  nil_pointer_expression() = 0;
+
   // Create a reference to a variable.
   virtual Bexpression*
   var_expression(Bvariable* var, Location) = 0;
 
   // Create an expression that indirects through the pointer expression EXPR
   // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
-  // is known to point to a valid memory location.
+  // is known to point to a valid memory location.  BTYPE is the expected type
+  // of the indirected EXPR.
   virtual Bexpression*
-  indirect_expression(Bexpression* expr, bool known_valid, Location) = 0;
+  indirect_expression(Btype* btype, Bexpression* expr, bool known_valid,
+		      Location) = 0;
 
   // Return an expression that declares a constant named NAME with the
   // constant value VAL in BTYPE.
@@ -278,6 +284,10 @@ class Backend
   // Return an expression for the string value VAL.
   virtual Bexpression*
   string_constant_expression(const std::string& val) = 0;
+
+  // Return an expression for the boolean value VAL.
+  virtual Bexpression*
+  boolean_constant_expression(bool val) = 0;
 
   // Return an expression for the real part of BCOMPLEX.
   virtual Bexpression*
@@ -534,11 +544,16 @@ class Backend
 		     bool address_is_taken, Location location,
 		     Bstatement** pstatement) = 0;
 
-  // Create a GC root variable. TYPE is the __go_gc_root_list struct described
-  // in Gogo::register_gc_vars.  INIT is the composite literal consisting of a
-  // pointer to the next GC root and the global variables registered.
+  // Create an implicit variable that is compiler-defined.  This is used when
+  // generating GC root variables and storing the values of a slice constructor.
+  // NAME is the name of the variable, either gc# for GC roots or C# for slice
+  // initializers.  TYPE is the type of the implicit variable with an initial
+  // value INIT.  IS_CONSTANT is true if the implicit variable should be treated
+  // like it is immutable.  For slice initializers, if the values must be copied
+  // to the heap, the variable IS_CONSTANT.
   virtual Bvariable*
-  gc_root_variable(Btype* type, Bexpression* init) = 0;
+  implicit_variable(const std::string& name, Btype* type, Bexpression* init,
+		    bool is_constant) = 0;
 
   // Create a named immutable initialized data structure.  This is
   // used for type descriptors, map descriptors, and function
@@ -679,20 +694,5 @@ class Backend
 // The backend interface has to define this function.
 
 extern Backend* go_get_backend();
-
-// FIXME: Temporary helper functions while converting to new backend
-// interface.
-
-extern Btype* tree_to_type(tree);
-extern Bexpression* tree_to_expr(tree);
-extern Bstatement* tree_to_stat(tree);
-extern Bfunction* tree_to_function(tree);
-extern Bblock* tree_to_block(tree);
-extern tree type_to_tree(Btype*);
-extern tree expr_to_tree(Bexpression*);
-extern tree stat_to_tree(Bstatement*);
-extern tree block_to_tree(Bblock*);
-extern tree var_to_tree(Bvariable*);
-extern tree function_to_tree(Bfunction*);
 
 #endif // !defined(GO_BACKEND_H)

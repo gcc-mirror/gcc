@@ -2541,9 +2541,7 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
 	      if (tem != TREE_TYPE (t))
 		{
 		  if (TREE_CODE (t) == INTEGER_CST)
-		    *tp = build_int_cst_wide (tem,
-					      TREE_INT_CST_LOW (t),
-					      TREE_INT_CST_HIGH (t));
+		    *tp = wide_int_to_tree (tem, t);
 		  else
 		    TREE_TYPE (t) = tem;
 		}
@@ -3407,8 +3405,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			    = gimple_build_assign (unshare_expr (lvar), iv);
 			  gsi_insert_before_without_update (&gsi, g,
 							    GSI_SAME_STMT);
-			  tree stept = POINTER_TYPE_P (TREE_TYPE (x))
-				       ? sizetype : TREE_TYPE (x);
+			  tree stept = POINTER_TYPE_P (TREE_TYPE (iv))
+				       ? sizetype : TREE_TYPE (iv);
 			  tree t = fold_convert (stept,
 						 OMP_CLAUSE_LINEAR_STEP (c));
 			  enum tree_code code = PLUS_EXPR;
@@ -8418,10 +8416,14 @@ maybe_add_implicit_barrier_cancel (omp_context *ctx, gimple_seq *body)
       && gimple_code (ctx->outer->stmt) == GIMPLE_OMP_PARALLEL
       && ctx->outer->cancellable)
     {
-      tree lhs = create_tmp_var (boolean_type_node, NULL);
+      tree fndecl = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);
+      tree c_bool_type = TREE_TYPE (TREE_TYPE (fndecl));
+      tree lhs = create_tmp_var (c_bool_type, NULL);
       gimple_omp_return_set_lhs (omp_return, lhs);
       tree fallthru_label = create_artificial_label (UNKNOWN_LOCATION);
-      gimple g = gimple_build_cond (NE_EXPR, lhs, boolean_false_node,
+      gimple g = gimple_build_cond (NE_EXPR, lhs,
+				    fold_convert (c_bool_type,
+						  boolean_false_node),
 				    ctx->outer->cancel_label, fallthru_label);
       gimple_seq_add_stmt (body, g);
       gimple_seq_add_stmt (body, gimple_build_label (fallthru_label));
@@ -10127,21 +10129,23 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  }
 		break;
 	      }
-	    tree lhs;
-	    lhs = create_tmp_var (boolean_type_node, NULL);
 	    if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_GOMP_BARRIER)
 	      {
 		fndecl = builtin_decl_explicit (BUILT_IN_GOMP_BARRIER_CANCEL);
 		gimple_call_set_fndecl (stmt, fndecl);
 		gimple_call_set_fntype (stmt, TREE_TYPE (fndecl));
 	      }
+	    tree lhs;
+	    lhs = create_tmp_var (TREE_TYPE (TREE_TYPE (fndecl)), NULL);
 	    gimple_call_set_lhs (stmt, lhs);
 	    tree fallthru_label;
 	    fallthru_label = create_artificial_label (UNKNOWN_LOCATION);
 	    gimple g;
 	    g = gimple_build_label (fallthru_label);
 	    gsi_insert_after (gsi_p, g, GSI_SAME_STMT);
-	    g = gimple_build_cond (NE_EXPR, lhs, boolean_false_node,
+	    g = gimple_build_cond (NE_EXPR, lhs,
+				   fold_convert (TREE_TYPE (lhs),
+						 boolean_false_node),
 				   cctx->cancel_label, fallthru_label);
 	    gsi_insert_after (gsi_p, g, GSI_SAME_STMT);
 	    break;

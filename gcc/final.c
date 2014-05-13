@@ -80,6 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-pretty-print.h" /* for dump_function_header */
 #include "asan.h"
+#include "wide-int-print.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -860,7 +861,7 @@ const pass_data pass_data_compute_alignments =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_compute_alignments : public rtl_opt_pass
@@ -3885,8 +3886,21 @@ output_addr_const (FILE *file, rtx x)
       output_addr_const (file, XEXP (x, 0));
       break;
 
+    case CONST_WIDE_INT:
+      /* We do not know the mode here so we have to use a round about
+	 way to build a wide-int to get it printed properly.  */
+      {
+	wide_int w = wide_int::from_array (&CONST_WIDE_INT_ELT (x, 0),
+					   CONST_WIDE_INT_NUNITS (x),
+					   CONST_WIDE_INT_NUNITS (x)
+					   * HOST_BITS_PER_WIDE_INT,
+					   false);
+	print_decs (w, file);
+      }
+      break;
+
     case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
+      if (CONST_DOUBLE_AS_INT_P (x))
 	{
 	  /* We can use %d if the number is one word and positive.  */
 	  if (CONST_DOUBLE_HIGH (x))

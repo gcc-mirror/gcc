@@ -92,32 +92,39 @@
 ;;   these instr are not simulated
 (define_insn_reservation "cell-load" 2
   (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "cell"))
   "slot01,lsu_cell")
 
 ;; ldux, ldu, lbzux, lbzu, hardware breaks it down to two instrs,
 ;;  if with 32bytes alignment, CMC
 (define_insn_reservation "cell-load-ux" 2
-  (and (eq_attr "type" "load_ux,load_u")
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "no")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "cell"))
   "slot01,fxu_cell+lsu_cell")
 
 ;; lha, lhax, lhau, lhaux, lwa, lwax, lwaux, MC, latency unknown
 ;;   11/7, 11/8, 11/12
 (define_insn_reservation "cell-load-ext" 2
-  (and (eq_attr "type" "load_ext,load_ext_u,load_ext_ux")
-       (eq_attr "cpu" "cell")) 
+  (and (eq_attr "type" "load")
+       (eq_attr "sign_extend" "yes")
+       (eq_attr "cpu" "cell"))
   "slot01,fxu_cell+lsu_cell")
 
 ;;lfs,lfsx,lfd,lfdx, 1 cycle
 (define_insn_reservation "cell-fpload" 1
   (and (eq_attr "type" "fpload")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "cell"))
   "vsu2_cell+lsu_cell+slot01")
 
 ;; lfsu,lfsux,lfdu,lfdux 1cycle(fpr) 2 cycle(gpr)
 (define_insn_reservation "cell-fpload-update" 1
-  (and (eq_attr "type" "fpload,fpload_u,fpload_ux")
+  (and (eq_attr "type" "fpload")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "cell"))
   "fxu_cell+vsu2_cell+lsu_cell+slot01")
 
@@ -129,22 +136,26 @@
 ;;st? stw(MC)
 (define_insn_reservation "cell-store" 1
   (and (eq_attr "type" "store")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "cell"))
   "lsu_cell+slot01")
 
 ;;stdux, stdu, (hardware breaks into store and add) 2 for update reg
 (define_insn_reservation "cell-store-update" 1
-  (and (eq_attr "type" "store_ux,store_u")
+  (and (eq_attr "type" "store")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "cell"))
   "fxu_cell+lsu_cell+slot01")
 
 (define_insn_reservation "cell-fpstore" 1
   (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "no")
        (eq_attr "cpu" "cell"))
   "vsu2_cell+lsu_cell+slot01")
 
 (define_insn_reservation "cell-fpstore-update" 1
-  (and (eq_attr "type" "fpstore_ux,fpstore_u")
+  (and (eq_attr "type" "fpstore")
+       (eq_attr "update" "yes")
        (eq_attr "cpu" "cell"))
   "vsu2_cell+fxu_cell+lsu_cell+slot01")
 

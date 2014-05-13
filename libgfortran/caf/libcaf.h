@@ -65,12 +65,23 @@ typedef struct caf_static_t {
 }
 caf_static_t;
 
+typedef struct caf_vector_t {
+  size_t nvec;  /* size of the vector; 0 means dim triplet.  */
+  union {
+    struct {
+      ptrdiff_t lower_bound, upper_bound, stride;
+    } triplet;
+    ptrdiff_t *vector;
+  } u;
+}
+caf_vector_t;
+
 
 void _gfortran_caf_init (int *, char ***);
 void _gfortran_caf_finalize (void);
 
 int _gfortran_caf_this_image (int);
-int _gfortran_caf_num_images (int, bool);
+int _gfortran_caf_num_images (int, int);
 
 void *_gfortran_caf_register (size_t, caf_register_t, caf_token_t *, int *,
 			      char *, int);
@@ -91,5 +102,11 @@ void _gfortran_caf_end_critical (void)  { }
 void _gfortran_caf_error_stop_str (const char *, int32_t)
      __attribute__ ((noreturn));
 void _gfortran_caf_error_stop (int32_t) __attribute__ ((noreturn));
+
+void _gfortran_caf_co_sum (void *, caf_vector_t *, int, int *, char *, int);
+void _gfortran_caf_co_min (void *, caf_vector_t *, int, int *, char *, int,
+			   int);
+void _gfortran_caf_co_max (void *, caf_vector_t *, int, int *, char *, int,
+			   int);
 
 #endif  /* LIBCAF_H  */

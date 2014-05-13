@@ -490,7 +490,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	 into unreachable (or trap when debugging experience is supposed
 	 to be good).  */
       if (!elt->is_exit
-	  && elt->bound.ult (double_int::from_uhwi (npeeled)))
+	  && wi::ltu_p (elt->bound, npeeled))
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (elt->stmt);
 	  gimple stmt = gimple_build_call
@@ -507,7 +507,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	}
       /* If we know the exit will be taken after peeling, update.  */
       else if (elt->is_exit
-	       && elt->bound.ule (double_int::from_uhwi (npeeled)))
+	       && wi::leu_p (elt->bound, npeeled))
 	{
 	  basic_block bb = gimple_bb (elt->stmt);
 	  edge exit_edge = EDGE_SUCC (bb, 0);
@@ -547,7 +547,7 @@ remove_redundant_iv_tests (struct loop *loop)
       /* Exit is pointless if it won't be taken before loop reaches
 	 upper bound.  */
       if (elt->is_exit && loop->any_upper_bound
-          && loop->nb_iterations_upper_bound.ult (elt->bound))
+          && wi::ltu_p (loop->nb_iterations_upper_bound, elt->bound))
 	{
 	  basic_block bb = gimple_bb (elt->stmt);
 	  edge exit_edge = EDGE_SUCC (bb, 0);
@@ -564,8 +564,8 @@ remove_redundant_iv_tests (struct loop *loop)
 	      || !integer_zerop (niter.may_be_zero)
 	      || !niter.niter
 	      || TREE_CODE (niter.niter) != INTEGER_CST
-	      || !loop->nb_iterations_upper_bound.ult
-		   (tree_to_double_int (niter.niter)))
+	      || !wi::ltu_p (loop->nb_iterations_upper_bound,
+			     wi::to_widest (niter.niter)))
 	    continue;
 	  
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -946,7 +946,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
      by find_loop_niter_by_eval.  Be sure to keep it for future.  */
   if (niter && TREE_CODE (niter) == INTEGER_CST)
     {
-      record_niter_bound (loop, tree_to_double_int (niter),
+      record_niter_bound (loop, wi::to_widest (niter),
 			  exit == single_likely_exit (loop), true);
     }
 
@@ -1366,7 +1366,7 @@ const pass_data pass_data_complete_unrolli =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_complete_unrolli : public gimple_opt_pass

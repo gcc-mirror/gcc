@@ -63,6 +63,8 @@ void test02()
   test_type v1(alloc_type(1));
   v1.emplace(0);
 
+  auto it = v1.begin();
+
   test_type v2(alloc_type(2));
   v2.emplace(0);
 
@@ -76,6 +78,8 @@ void test02()
   VERIFY( counter_type::move_count == 0 );
   VERIFY( counter_type::copy_count == 0 );
   VERIFY( counter_type::destructor_count == 1 );
+
+  VERIFY( it == v2.begin() );
 }
 
 int main()

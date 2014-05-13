@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
+#include "wide-int.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -109,7 +110,7 @@ static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
 static void output_init_element (location_t, tree, tree, bool, tree, tree, int,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
-static int set_designator (int, struct obstack *);
+static int set_designator (location_t, int, struct obstack *);
 static void push_range_stack (tree, struct obstack *);
 static void add_pending_init (location_t, tree, tree, tree, bool,
 			      struct obstack *);
@@ -5286,9 +5287,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	    }
 	  else if (TREE_OVERFLOW (value))
 	    /* Reset VALUE's overflow flags, ensuring constant sharing.  */
-	    value = build_int_cst_wide (TREE_TYPE (value),
-					TREE_INT_CST_LOW (value),
-					TREE_INT_CST_HIGH (value));
+	    value = wide_int_to_tree (TREE_TYPE (value), value);
 	}
     }
 
@@ -5712,15 +5711,15 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
    The component name is taken from the spelling stack.  */
 
 static void
-error_init (const char *gmsgid)
+error_init (location_t loc, const char *gmsgid)
 {
   char *ofwhat;
 
   /* The gmsgid may be a format string with %< and %>. */
-  error (gmsgid);
+  error_at (loc, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
-    error ("(near initialization for %qs)", ofwhat);
+    error_at (loc, "(near initialization for %qs)", ofwhat);
 }
 
 /* Issue a pedantic warning for a bad initializer component.  OPT is
@@ -5763,13 +5762,13 @@ warning_init (location_t loc, int opt, const char *gmsgid)
    object of type TYPE.  */
 
 void
-maybe_warn_string_init (tree type, struct c_expr expr)
+maybe_warn_string_init (location_t loc, tree type, struct c_expr expr)
 {
   if (pedantic
       && TREE_CODE (type) == ARRAY_TYPE
       && TREE_CODE (expr.value) == STRING_CST
       && expr.original_code != STRING_CST)
-    pedwarn_init (input_location, OPT_Wpedantic,
+    pedwarn_init (loc, OPT_Wpedantic,
 		  "array initialized from parenthesized string constant");
 }
 
@@ -5824,14 +5823,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
      compile time.  */
-#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)             	 \
+#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)		 \
   do {                                                                   \
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
         if (pedwarn (LOCATION, OPT, AR, parmnum, rname))                 \
           inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-	      	  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
+		  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
                   "expected %qT but argument is of type %qT",            \
                   type, rhstype);                                        \
         break;                                                           \
@@ -5842,7 +5841,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
         pedwarn_init (LOCATION, OPT, IN);                                \
         break;                                                           \
       case ic_return:                                                    \
-        pedwarn (LOCATION, OPT, RE);                                 	 \
+        pedwarn (LOCATION, OPT, RE);					 \
         break;                                                           \
       default:                                                           \
         gcc_unreachable ();                                              \
@@ -6798,7 +6797,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  expr.value = inside_init;
 	  expr.original_code = (strict_string ? STRING_CST : ERROR_MARK);
 	  expr.original_type = NULL;
-	  maybe_warn_string_init (type, expr);
+	  maybe_warn_string_init (init_loc, type, expr);
 
 	  if (TYPE_DOMAIN (type) && !TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
 	    pedwarn_init (init_loc, OPT_Wpedantic,
@@ -6812,7 +6811,8 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	    {
 	      if (typ2 != char_type_node)
 		{
-		  error_init ("char-array initialized from wide string");
+		  error_init (init_loc, "char-array initialized from wide "
+			      "string");
 		  return error_mark_node;
 		}
 	    }
@@ -6820,14 +6820,14 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	    {
 	      if (typ2 == char_type_node)
 		{
-		  error_init ("wide character array initialized from non-wide "
-			      "string");
+		  error_init (init_loc, "wide character array initialized "
+			      "from non-wide string");
 		  return error_mark_node;
 		}
 	      else if (!comptypes(typ1, typ2))
 		{
-		  error_init ("wide character array initialized from "
-			      "incompatible wide string");
+		  error_init (init_loc, "wide character array initialized "
+			      "from incompatible wide string");
 		  return error_mark_node;
 		}
 	    }
@@ -6860,7 +6860,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	}
       else if (INTEGRAL_TYPE_P (typ1))
 	{
-	  error_init ("array of inappropriate type initialized "
+	  error_init (init_loc, "array of inappropriate type initialized "
 		      "from string constant");
 	  return error_mark_node;
 	}
@@ -6928,7 +6928,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		  (init_loc, inside_init);
 	      else
 		{
-		  error_init ("invalid use of non-lvalue array");
+		  error_init (init_loc, "invalid use of non-lvalue array");
 		  return error_mark_node;
 		}
 	    }
@@ -6954,7 +6954,8 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       if (code == ARRAY_TYPE && TREE_CODE (inside_init) != STRING_CST
 	  && TREE_CODE (inside_init) != CONSTRUCTOR)
 	{
-	  error_init ("array initialized from non-constant array expression");
+	  error_init (init_loc, "array initialized from non-constant array "
+		      "expression");
 	  return error_mark_node;
 	}
 
@@ -6968,7 +6969,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	    = valid_compound_expr_initializer (inside_init,
 					       TREE_TYPE (inside_init));
 	  if (inside_init == error_mark_node)
-	    error_init ("initializer element is not constant");
+	    error_init (init_loc, "initializer element is not constant");
 	  else
 	    pedwarn_init (init_loc, OPT_Wpedantic,
 			  "initializer element is not constant");
@@ -6979,7 +6980,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	       && !initializer_constant_valid_p (inside_init,
 						 TREE_TYPE (inside_init)))
 	{
-	  error_init ("initializer element is not constant");
+	  error_init (init_loc, "initializer element is not constant");
 	  inside_init = error_mark_node;
 	}
       else if (require_constant && !maybe_const)
@@ -7019,14 +7020,15 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	;
       else if (require_constant && !TREE_CONSTANT (inside_init))
 	{
-	  error_init ("initializer element is not constant");
+	  error_init (init_loc, "initializer element is not constant");
 	  inside_init = error_mark_node;
 	}
       else if (require_constant
 	       && !initializer_constant_valid_p (inside_init,
 						 TREE_TYPE (inside_init)))
 	{
-	  error_init ("initializer element is not computable at load time");
+	  error_init (init_loc, "initializer element is not computable at "
+		      "load time");
 	  inside_init = error_mark_node;
 	}
       else if (require_constant && !maybe_const)
@@ -7040,11 +7042,11 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
   if (COMPLETE_TYPE_P (type) && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
-      error_init ("variable-sized object may not be initialized");
+      error_init (init_loc, "variable-sized object may not be initialized");
       return error_mark_node;
     }
 
-  error_init ("invalid initializer");
+  error_init (init_loc, "invalid initializer");
   return error_mark_node;
 }
 
@@ -7425,7 +7427,8 @@ really_start_incremental_init (tree type)
    IMPLICIT is 1 (or 2 if the push is because of designator list).  */
 
 void
-push_init_level (int implicit, struct obstack * braced_init_obstack)
+push_init_level (location_t loc, int implicit,
+		 struct obstack *braced_init_obstack)
 {
   struct constructor_stack *p;
   tree value = NULL_TREE;
@@ -7444,14 +7447,14 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
 	       || TREE_CODE (constructor_type) == UNION_TYPE)
 	      && constructor_fields == 0)
 	    process_init_element (input_location,
-				  pop_init_level (1, braced_init_obstack),
+				  pop_init_level (loc, 1, braced_init_obstack),
 				  true, braced_init_obstack);
 	  else if (TREE_CODE (constructor_type) == ARRAY_TYPE
 		   && constructor_max_index
 		   && tree_int_cst_lt (constructor_max_index,
 				       constructor_index))
 	    process_init_element (input_location,
-				  pop_init_level (1, braced_init_obstack),
+				  pop_init_level (loc, 1, braced_init_obstack),
 				  true, braced_init_obstack);
 	  else
 	    break;
@@ -7541,7 +7544,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
 
   if (constructor_type == 0)
     {
-      error_init ("extra brace group at end of initializer");
+      error_init (loc, "extra brace group at end of initializer");
       constructor_fields = 0;
       constructor_unfilled_fields = 0;
       return;
@@ -7642,7 +7645,8 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
    Otherwise, return a CONSTRUCTOR expression as the value.  */
 
 struct c_expr
-pop_init_level (int implicit, struct obstack * braced_init_obstack)
+pop_init_level (location_t loc, int implicit,
+		struct obstack *braced_init_obstack)
 {
   struct constructor_stack *p;
   struct c_expr ret;
@@ -7656,7 +7660,7 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
 	 pop any inner levels that didn't have explicit braces.  */
       while (constructor_stack->implicit)
 	process_init_element (input_location,
-			      pop_init_level (1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack),
 			      true, braced_init_obstack);
       gcc_assert (!constructor_range_stack);
     }
@@ -7683,9 +7687,9 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
 	  gcc_assert (!TYPE_SIZE (constructor_type));
 
 	  if (constructor_depth > 2)
-	    error_init ("initialization of flexible array member in a nested context");
+	    error_init (loc, "initialization of flexible array member in a nested context");
 	  else
-	    pedwarn_init (input_location, OPT_Wpedantic,
+	    pedwarn_init (loc, OPT_Wpedantic,
 			  "initialization of a flexible array member");
 
 	  /* We have already issued an error message for the existence
@@ -7745,12 +7749,12 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
       if (vec_safe_is_empty (constructor_elements))
 	{
 	  if (!constructor_erroneous)
-	    error_init ("empty scalar initializer");
+	    error_init (loc, "empty scalar initializer");
 	  ret.value = error_mark_node;
 	}
       else if (vec_safe_length (constructor_elements) != 1)
 	{
-	  error_init ("extra elements in scalar initializer");
+	  error_init (loc, "extra elements in scalar initializer");
 	  ret.value = (*constructor_elements)[0].value;
 	}
       else
@@ -7813,7 +7817,8 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
    ARRAY argument is nonzero for array ranges.  Returns zero for success.  */
 
 static int
-set_designator (int array, struct obstack * braced_init_obstack)
+set_designator (location_t loc, int array,
+		struct obstack *braced_init_obstack)
 {
   tree subtype;
   enum tree_code subcode;
@@ -7836,7 +7841,7 @@ set_designator (int array, struct obstack * braced_init_obstack)
 	 braces.  */
       while (constructor_stack->implicit)
 	process_init_element (input_location,
-			      pop_init_level (1, braced_init_obstack),
+			      pop_init_level (loc, 1, braced_init_obstack),
 			      true, braced_init_obstack);
       constructor_designated = 1;
       return 0;
@@ -7860,17 +7865,17 @@ set_designator (int array, struct obstack * braced_init_obstack)
   subcode = TREE_CODE (subtype);
   if (array && subcode != ARRAY_TYPE)
     {
-      error_init ("array index in non-array initializer");
+      error_init (loc, "array index in non-array initializer");
       return 1;
     }
   else if (!array && subcode != RECORD_TYPE && subcode != UNION_TYPE)
     {
-      error_init ("field name not in record or union initializer");
+      error_init (loc, "field name not in record or union initializer");
       return 1;
     }
 
   constructor_designated = 1;
-  push_init_level (2, braced_init_obstack);
+  push_init_level (loc, 2, braced_init_obstack);
   return 0;
 }
 
@@ -7903,10 +7908,10 @@ push_range_stack (tree range_end, struct obstack * braced_init_obstack)
    of indices, running from FIRST through LAST.  */
 
 void
-set_init_index (tree first, tree last,
-		struct obstack * braced_init_obstack)
+set_init_index (location_t loc, tree first, tree last,
+		struct obstack *braced_init_obstack)
 {
-  if (set_designator (1, braced_init_obstack))
+  if (set_designator (loc, 1, braced_init_obstack))
     return;
 
   designator_erroneous = 1;
@@ -7914,7 +7919,7 @@ set_init_index (tree first, tree last,
   if (!INTEGRAL_TYPE_P (TREE_TYPE (first))
       || (last && !INTEGRAL_TYPE_P (TREE_TYPE (last))))
     {
-      error_init ("array index in initializer not of integer type");
+      error_init (loc, "array index in initializer not of integer type");
       return;
     }
 
@@ -7922,7 +7927,7 @@ set_init_index (tree first, tree last,
     {
       first = c_fully_fold (first, false, NULL);
       if (TREE_CODE (first) == INTEGER_CST)
-	pedwarn_init (input_location, OPT_Wpedantic,
+	pedwarn_init (loc, OPT_Wpedantic,
 		      "array index in initializer is not "
 		      "an integer constant expression");
     }
@@ -7931,22 +7936,22 @@ set_init_index (tree first, tree last,
     {
       last = c_fully_fold (last, false, NULL);
       if (TREE_CODE (last) == INTEGER_CST)
-	pedwarn_init (input_location, OPT_Wpedantic,
+	pedwarn_init (loc, OPT_Wpedantic,
 		      "array index in initializer is not "
 		      "an integer constant expression");
     }
 
   if (TREE_CODE (first) != INTEGER_CST)
-    error_init ("nonconstant array index in initializer");
+    error_init (loc, "nonconstant array index in initializer");
   else if (last != 0 && TREE_CODE (last) != INTEGER_CST)
-    error_init ("nonconstant array index in initializer");
+    error_init (loc, "nonconstant array index in initializer");
   else if (TREE_CODE (constructor_type) != ARRAY_TYPE)
-    error_init ("array index in non-array initializer");
+    error_init (loc, "array index in non-array initializer");
   else if (tree_int_cst_sgn (first) == -1)
-    error_init ("array index in initializer exceeds array bounds");
+    error_init (loc, "array index in initializer exceeds array bounds");
   else if (constructor_max_index
 	   && tree_int_cst_lt (constructor_max_index, first))
-    error_init ("array index in initializer exceeds array bounds");
+    error_init (loc, "array index in initializer exceeds array bounds");
   else
     {
       constant_expression_warning (first);
@@ -7965,7 +7970,7 @@ set_init_index (tree first, tree last,
 	    last = 0;
 	  else if (tree_int_cst_lt (last, first))
 	    {
-	      error_init ("empty index range in initializer");
+	      error_init (loc, "empty index range in initializer");
 	      last = 0;
 	    }
 	  else
@@ -7974,7 +7979,8 @@ set_init_index (tree first, tree last,
 	      if (constructor_max_index != 0
 		  && tree_int_cst_lt (constructor_max_index, last))
 		{
-		  error_init ("array index range in initializer exceeds array bounds");
+		  error_init (loc, "array index range in initializer exceeds "
+			      "array bounds");
 		  last = 0;
 		}
 	    }
@@ -7990,11 +7996,12 @@ set_init_index (tree first, tree last,
 /* Within a struct initializer, specify the next field to be initialized.  */
 
 void
-set_init_label (tree fieldname, struct obstack * braced_init_obstack)
+set_init_label (location_t loc, tree fieldname,
+		struct obstack *braced_init_obstack)
 {
   tree field;
 
-  if (set_designator (0, braced_init_obstack))
+  if (set_designator (loc, 0, braced_init_obstack))
     return;
 
   designator_erroneous = 1;
@@ -8002,7 +8009,7 @@ set_init_label (tree fieldname, struct obstack * braced_init_obstack)
   if (TREE_CODE (constructor_type) != RECORD_TYPE
       && TREE_CODE (constructor_type) != UNION_TYPE)
     {
-      error_init ("field name not in record or union initializer");
+      error_init (loc, "field name not in record or union initializer");
       return;
     }
 
@@ -8021,7 +8028,7 @@ set_init_label (tree fieldname, struct obstack * braced_init_obstack)
 	field = TREE_CHAIN (field);
 	if (field)
 	  {
-	    if (set_designator (0, braced_init_obstack))
+	    if (set_designator (loc, 0, braced_init_obstack))
 	      return;
 	  }
       }
@@ -8337,20 +8344,20 @@ set_nonincremental_init_from_string (tree str,
     {
       if (wchar_bytes == 1)
 	{
-	  val[1] = (unsigned char) *p++;
-	  val[0] = 0;
+	  val[0] = (unsigned char) *p++;
+	  val[1] = 0;
 	}
       else
 	{
-	  val[0] = 0;
 	  val[1] = 0;
+	  val[0] = 0;
 	  for (byte = 0; byte < wchar_bytes; byte++)
 	    {
 	      if (BYTES_BIG_ENDIAN)
 		bitpos = (wchar_bytes - byte - 1) * charwidth;
 	      else
 		bitpos = byte * charwidth;
-	      val[bitpos < HOST_BITS_PER_WIDE_INT]
+	      val[bitpos % HOST_BITS_PER_WIDE_INT]
 		|= ((unsigned HOST_WIDE_INT) ((unsigned char) *p++))
 		   << (bitpos % HOST_BITS_PER_WIDE_INT);
 	    }
@@ -8361,24 +8368,26 @@ set_nonincremental_init_from_string (tree str,
 	  bitpos = ((wchar_bytes - 1) * charwidth) + HOST_BITS_PER_CHAR;
 	  if (bitpos < HOST_BITS_PER_WIDE_INT)
 	    {
-	      if (val[1] & (((HOST_WIDE_INT) 1) << (bitpos - 1)))
+	      if (val[0] & (((HOST_WIDE_INT) 1) << (bitpos - 1)))
 		{
-		  val[1] |= ((HOST_WIDE_INT) -1) << bitpos;
-		  val[0] = -1;
+		  val[0] |= ((HOST_WIDE_INT) -1) << bitpos;
+		  val[1] = -1;
 		}
 	    }
 	  else if (bitpos == HOST_BITS_PER_WIDE_INT)
 	    {
-	      if (val[1] < 0)
-		val[0] = -1;
+	      if (val[0] < 0)
+		val[1] = -1;
 	    }
-	  else if (val[0] & (((HOST_WIDE_INT) 1)
+	  else if (val[1] & (((HOST_WIDE_INT) 1)
 			     << (bitpos - 1 - HOST_BITS_PER_WIDE_INT)))
-	    val[0] |= ((HOST_WIDE_INT) -1)
+	    val[1] |= ((HOST_WIDE_INT) -1)
 		      << (bitpos - HOST_BITS_PER_WIDE_INT);
 	}
 
-      value = build_int_cst_wide (type, val[1], val[0]);
+      value = wide_int_to_tree (type,
+				wide_int::from_array (val, 2,
+						      HOST_BITS_PER_WIDE_INT * 2));
       add_pending_init (input_location, purpose, value, NULL_TREE, true,
                         braced_init_obstack);
     }
@@ -8519,7 +8528,7 @@ output_init_element (location_t loc, tree value, tree origtype,
     {
       if (require_constant_value)
 	{
-	  error_init ("initializer element is not constant");
+	  error_init (loc, "initializer element is not constant");
 	  value = error_mark_node;
 	}
       else if (require_constant_elements)
@@ -8840,14 +8849,14 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       && integer_zerop (constructor_unfilled_index))
     {
       if (constructor_stack->replacement_value.value)
-	error_init ("excess elements in char array initializer");
+	error_init (loc, "excess elements in char array initializer");
       constructor_stack->replacement_value = value;
       return;
     }
 
   if (constructor_stack->replacement_value.value != 0)
     {
-      error_init ("excess elements in struct initializer");
+      error_init (loc, "excess elements in struct initializer");
       return;
     }
 
@@ -8863,14 +8872,16 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       if ((TREE_CODE (constructor_type) == RECORD_TYPE
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
 	  && constructor_fields == 0)
-	process_init_element (loc, pop_init_level (1, braced_init_obstack),
+	process_init_element (loc,
+			      pop_init_level (loc, 1, braced_init_obstack),
 			      true, braced_init_obstack);
       else if ((TREE_CODE (constructor_type) == ARRAY_TYPE
 	        || TREE_CODE (constructor_type) == VECTOR_TYPE)
 	       && constructor_max_index
 	       && tree_int_cst_lt (constructor_max_index,
 				   constructor_index))
-	process_init_element (loc, pop_init_level (1, braced_init_obstack),
+	process_init_element (loc,
+			      pop_init_level (loc, 1, braced_init_obstack),
 			      true, braced_init_obstack);
       else
 	break;
@@ -8907,8 +8918,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 
 	  if (constructor_fields == 0)
 	    {
-	      pedwarn_init (input_location, 0,
-			    "excess elements in struct initializer");
+	      pedwarn_init (loc, 0, "excess elements in struct initializer");
 	      break;
 	    }
 
@@ -8923,7 +8933,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      && TYPE_SIZE (fieldtype) == NULL_TREE
 	      && DECL_CHAIN (constructor_fields) == NULL_TREE)
 	    {
-	      error_init ("non-static initialization of a flexible array member");
+	      error_init (loc, "non-static initialization of a flexible "
+			  "array member");
 	      break;
 	    }
 
@@ -8941,7 +8952,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
 		       || fieldcode == UNION_TYPE || fieldcode == VECTOR_TYPE))
 	    {
-	      push_init_level (1, braced_init_obstack);
+	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
 	    }
 
@@ -8993,7 +9004,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 
 	  if (constructor_fields == 0)
 	    {
-	      pedwarn_init (input_location, 0,
+	      pedwarn_init (loc, 0,
 			    "excess elements in union initializer");
 	      break;
 	    }
@@ -9033,7 +9044,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
 		       || fieldcode == UNION_TYPE || fieldcode == VECTOR_TYPE))
 	    {
-	      push_init_level (1, braced_init_obstack);
+	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
 	    }
 
@@ -9075,7 +9086,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
 		       || eltcode == UNION_TYPE || eltcode == VECTOR_TYPE))
 	    {
-	      push_init_level (1, braced_init_obstack);
+	      push_init_level (loc, 1, braced_init_obstack);
 	      continue;
 	    }
 
@@ -9083,7 +9094,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      && (tree_int_cst_lt (constructor_max_index, constructor_index)
 		  || integer_all_onesp (constructor_max_index)))
 	    {
-	      pedwarn_init (input_location, 0,
+	      pedwarn_init (loc, 0,
 			    "excess elements in array initializer");
 	      break;
 	    }
@@ -9117,7 +9128,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	    always have a fixed size derived from their type.  */
 	  if (tree_int_cst_lt (constructor_max_index, constructor_index))
 	    {
-	      pedwarn_init (input_location, 0,
+	      pedwarn_init (loc, 0,
 			    "excess elements in vector initializer");
 	      break;
 	    }
@@ -9149,7 +9160,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       else if (constructor_type != error_mark_node
 	       && constructor_fields == 0)
 	{
-	  pedwarn_init (input_location, 0,
+	  pedwarn_init (loc, 0,
 			"excess elements in scalar initializer");
 	  break;
 	}
@@ -9176,7 +9187,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	    {
 	      gcc_assert (constructor_stack->implicit);
 	      process_init_element (loc,
-				    pop_init_level (1, braced_init_obstack),
+				    pop_init_level (loc, 1,
+						    braced_init_obstack),
 				    true, braced_init_obstack);
 	    }
 	  for (p = range_stack;
@@ -9185,7 +9197,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	    {
 	      gcc_assert (constructor_stack->implicit);
 	      process_init_element (loc,
-				    pop_init_level (1, braced_init_obstack),
+				    pop_init_level (loc, 1,
+						    braced_init_obstack),
 				    true, braced_init_obstack);
 	    }
 
@@ -9206,7 +9219,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      p = p->next;
 	      if (!p)
 		break;
-	      push_init_level (2, braced_init_obstack);
+	      push_init_level (loc, 2, braced_init_obstack);
 	      p->stack = constructor_stack;
 	      if (p->range_end && tree_int_cst_equal (p->index, p->range_end))
 		p->index = p->range_start;
@@ -9673,7 +9686,7 @@ do_case (location_t loc, tree low_value, tree high_value)
     {
       low_value = c_fully_fold (low_value, false, NULL);
       if (TREE_CODE (low_value) == INTEGER_CST)
-	pedwarn (input_location, OPT_Wpedantic,
+	pedwarn (loc, OPT_Wpedantic,
 		 "case label is not an integer constant expression");
     }
 
@@ -12707,8 +12720,7 @@ c_tree_equal (tree t1, tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return TREE_INT_CST_LOW (t1) == TREE_INT_CST_LOW (t2)
-	&& TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2);
+      return wi::eq_p (t1, t2);
 
     case REAL_CST:
       return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));

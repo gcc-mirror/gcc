@@ -1,3 +1,14 @@
+2014-05-09  Joey Ye  <joey.ye@arm.com>
+
+	* files.c (find_file_in_dir): Always try to shorten for DOS
+	non-system headers.
+	* init.c (ENABLE_CANONICAL_SYSTEM_HEADERS): Default enabled for DOS.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac: Always set need_64bit_hwint to yes.
+	* configure: Regenerated.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lex.c: Remove Solaris 9 reference.

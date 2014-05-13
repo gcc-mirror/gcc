@@ -46,11 +46,13 @@ void test02()
   typedef std::forward_list<T, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.push_front(T());
+  auto it = v1.begin();
   test_type v2(alloc_type(2));
   v2.push_front(T());
   v2 = std::move(v1);
   VERIFY(0 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
+  VERIFY( it == v2.begin() );
 }
 
 int main()

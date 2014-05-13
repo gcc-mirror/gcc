@@ -711,6 +711,16 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 #endif
 
+#if GCC_VERSION >= 3001
+#define STATIC_CONSTANT_P(X) (__builtin_constant_p (X) && (X))
+#else
+#define STATIC_CONSTANT_P(X) (false && (X))
+#endif
+
+/* Until we can use C++11's static_assert.  */
+#define STATIC_ASSERT(X) \
+  typedef int assertion1[(X) ? 1 : -1] ATTRIBUTE_UNUSED
+
 /* Provide a fake boolean type.  We make no attempt to use the
    C99 _Bool, as it may not be available in the bootstrap compiler,
    and even if it is, it is liable to be buggy.

@@ -1197,9 +1197,7 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
       if (type && upc_shared_type_p (type))
 	{
 	  const tree u_type = build_upc_unshared_type (type);
-	  *expr_p = build_int_cst_wide (u_type,
-					TREE_INT_CST_LOW (expr),
-					TREE_INT_CST_HIGH (expr));
+	  *expr_p = wide_int_to_tree (u_type, expr);
 	}
       gcc_assert (!TREE_SHARED (expr));
       break;

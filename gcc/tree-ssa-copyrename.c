@@ -312,7 +312,7 @@ const pass_data pass_data_rename_ssa_copies =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_rename_ssa_copies : public gimple_opt_pass

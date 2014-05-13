@@ -121,14 +121,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       else
 	{
 #if __cplusplus >= 201103L
+	  const auto __pos = begin() + (__position - cbegin());
 	  if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	    {
 	      _Tp __x_copy = __x;
-	      _M_insert_aux(__position._M_const_cast(), std::move(__x_copy));
+	      _M_insert_aux(__pos, std::move(__x_copy));
 	    }
 	  else
+	    _M_insert_aux(__pos, __x);
+#else
+	    _M_insert_aux(__position, __x);
 #endif
-	    _M_insert_aux(__position._M_const_cast(), __x);
 	}
       return iterator(this->_M_impl._M_start + __n);
     }
@@ -307,7 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    ++this->_M_impl._M_finish;
 	  }
 	else
-	  _M_insert_aux(__position._M_const_cast(),
+	  _M_insert_aux(begin() + (__position - cbegin()),
 			std::forward<_Args>(__args)...);
 	return iterator(this->_M_impl._M_start + __n);
       }

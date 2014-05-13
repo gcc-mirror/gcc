@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-pass.h"
 #include "params.h"
+#include "wide-int.h"
 
 /* Build and maintain data flow information for trees.  */
 
@@ -389,10 +390,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			 HOST_WIDE_INT *psize,
 			 HOST_WIDE_INT *pmax_size)
 {
-  double_int bitsize = double_int_minus_one;
-  double_int maxsize;
+  offset_int bitsize = -1;
+  offset_int maxsize;
   tree size_tree = NULL_TREE;
-  double_int bit_offset = double_int_zero;
+  offset_int bit_offset = 0;
   bool seen_variable_array_ref = false;
 
   /* First get the final access size from just the outermost expression.  */
@@ -406,11 +407,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       if (mode == BLKmode)
 	size_tree = TYPE_SIZE (TREE_TYPE (exp));
       else
-	bitsize = double_int::from_uhwi (GET_MODE_BITSIZE (mode));
+	bitsize = int (GET_MODE_BITSIZE (mode));
     }
   if (size_tree != NULL_TREE
       && TREE_CODE (size_tree) == INTEGER_CST)
-    bitsize = tree_to_double_int (size_tree);
+    bitsize = wi::to_offset (size_tree);
 
   /* Initially, maxsize is the same as the accessed element size.
      In the following it will only grow (or become -1).  */
@@ -423,7 +424,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += tree_to_double_int (TREE_OPERAND (exp, 2));
+	  bit_offset += wi::to_offset (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -433,17 +434,16 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
-		double_int doffset = tree_to_double_int (this_offset);
-		doffset = doffset.lshift (BITS_PER_UNIT == 8
-					  ? 3 : exact_log2 (BITS_PER_UNIT));
-		doffset += tree_to_double_int (DECL_FIELD_BIT_OFFSET (field));
-		bit_offset = bit_offset + doffset;
+		offset_int woffset = wi::lshift (wi::to_offset (this_offset),
+						 LOG2_BITS_PER_UNIT);
+		woffset += wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
+		bit_offset += woffset;
 
 		/* If we had seen a variable array ref already and we just
 		   referenced the last field of a struct or a union member
 		   then we have to adjust maxsize by the padding at the end
 		   of our field.  */
-		if (seen_variable_array_ref && !maxsize.is_minus_one ())
+		if (seen_variable_array_ref && maxsize != -1)
 		  {
 		    tree stype = TREE_TYPE (TREE_OPERAND (exp, 0));
 		    tree next = DECL_CHAIN (field);
@@ -458,16 +458,13 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			    || TREE_CODE (fsize) != INTEGER_CST
 			    || ssize == NULL
 			    || TREE_CODE (ssize) != INTEGER_CST)
-			  maxsize = double_int_minus_one;
+			  maxsize = -1;
 			else
 			  {
-			    double_int tem = tree_to_double_int (ssize)
-					     - tree_to_double_int (fsize);
-			    if (BITS_PER_UNIT == 8)
-			      tem = tem.lshift (3);
-			    else
-			      tem *= double_int::from_uhwi (BITS_PER_UNIT);
-			    tem -= doffset;
+			    offset_int tem = (wi::to_offset (ssize)
+					      - wi::to_offset (fsize));
+			    tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
+			    tem -= woffset;
 			    maxsize += tem;
 			  }
 		      }
@@ -479,12 +476,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		/* We need to adjust maxsize to the whole structure bitsize.
 		   But we can subtract any constant offset seen so far,
 		   because that would get us out of the structure otherwise.  */
-		if (!maxsize.is_minus_one ()
+		if (maxsize != -1
 		    && csize
 		    && TREE_CODE (csize) == INTEGER_CST)
-		  maxsize = tree_to_double_int (csize) - bit_offset;
+		  maxsize = wi::to_offset (csize) - bit_offset;
 		else
-		  maxsize = double_int_minus_one;
+		  maxsize = -1;
 	      }
 	  }
 	  break;
@@ -502,13 +499,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		double_int doffset
-		  = (TREE_INT_CST (index) - TREE_INT_CST (low_bound))
-		    .sext (TYPE_PRECISION (TREE_TYPE (index)));
-		doffset *= tree_to_double_int (unit_size);
-		doffset = doffset.lshift (BITS_PER_UNIT == 8
-					  ? 3 : exact_log2 (BITS_PER_UNIT));
-		bit_offset = bit_offset + doffset;
+		offset_int woffset
+		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
+			      TYPE_PRECISION (TREE_TYPE (index)));
+		woffset *= wi::to_offset (unit_size);
+		woffset = wi::lshift (woffset, LOG2_BITS_PER_UNIT);
+		bit_offset += woffset;
 
 		/* An array ref with a constant index up in the structure
 		   hierarchy will constrain the size of any variable array ref
@@ -521,12 +517,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		/* We need to adjust maxsize to the whole array bitsize.
 		   But we can subtract any constant offset seen so far,
 		   because that would get us outside of the array otherwise.  */
-		if (!maxsize.is_minus_one ()
+		if (maxsize != -1
 		    && asize
 		    && TREE_CODE (asize) == INTEGER_CST)
-		  maxsize = tree_to_double_int (asize) - bit_offset;
+		  maxsize = wi::to_offset (asize) - bit_offset;
 		else
-		  maxsize = double_int_minus_one;
+		  maxsize = -1;
 
 		/* Remember that we have seen an array ref with a variable
 		   index.  */
@@ -552,8 +548,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      && (TMR_INDEX (exp) || TMR_INDEX2 (exp)))
 	    {
 	      exp = TREE_OPERAND (TMR_BASE (exp), 0);
-	      bit_offset = double_int_zero;
-	      maxsize = double_int_minus_one;
+	      bit_offset = 0;
+	      maxsize = -1;
 	      goto done;
 	    }
 	  /* Fallthru.  */
@@ -569,12 +565,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	     base type boundary.  This needs to include possible trailing
 	     padding that is there for alignment purposes.  */
 	  if (seen_variable_array_ref
-	      && !maxsize.is_minus_one ()
+	      && maxsize != -1
 	      && (TYPE_SIZE (TREE_TYPE (exp)) == NULL_TREE
 		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST
 		  || (bit_offset + maxsize
-		      == tree_to_double_int (TYPE_SIZE (TREE_TYPE (exp))))))
-	    maxsize = double_int_minus_one;
+		      == wi::to_offset (TYPE_SIZE (TREE_TYPE (exp))))))
+	    maxsize = -1;
 
 	  /* Hand back the decl for MEM[&decl, off].  */
 	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR)
@@ -583,11 +579,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
 	      else
 		{
-		  double_int off = mem_ref_offset (exp);
-		  off = off.lshift (BITS_PER_UNIT == 8
-				    ? 3 : exact_log2 (BITS_PER_UNIT));
+		  offset_int off = mem_ref_offset (exp);
+		  off = wi::lshift (off, LOG2_BITS_PER_UNIT);
 		  off += bit_offset;
-		  if (off.fits_shwi ())
+		  if (wi::fits_shwi_p (off))
 		    {
 		      bit_offset = off;
 		      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -605,15 +600,15 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
   /* We need to deal with variable arrays ending structures.  */
   if (seen_variable_array_ref
-      && !maxsize.is_minus_one ()
+      && maxsize != -1
       && (TYPE_SIZE (TREE_TYPE (exp)) == NULL_TREE
 	  || TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST
 	  || (bit_offset + maxsize
-	      == tree_to_double_int (TYPE_SIZE (TREE_TYPE (exp))))))
-    maxsize = double_int_minus_one;
+	      == wi::to_offset (TYPE_SIZE (TREE_TYPE (exp))))))
+    maxsize = -1;
 
  done:
-  if (!bitsize.fits_shwi () || bitsize.is_negative ())
+  if (!wi::fits_shwi_p (bitsize) || wi::neg_p (bitsize))
     {
       *poffset = 0;
       *psize = -1;
@@ -624,7 +619,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
   *psize = bitsize.to_shwi ();
 
-  if (!bit_offset.fits_shwi ())
+  if (!wi::fits_shwi_p (bit_offset))
     {
       *poffset = 0;
       *pmax_size = -1;
@@ -638,27 +633,27 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
     {
       /* If maxsize is unknown adjust it according to the size of the
          base decl.  */
-      if (maxsize.is_minus_one ()
+      if (maxsize == -1
 	  && DECL_SIZE (exp)
 	  && TREE_CODE (DECL_SIZE (exp)) == INTEGER_CST)
-	maxsize = tree_to_double_int (DECL_SIZE (exp)) - bit_offset;
+	maxsize = wi::to_offset (DECL_SIZE (exp)) - bit_offset;
     }
   else if (CONSTANT_CLASS_P (exp))
     {
       /* If maxsize is unknown adjust it according to the size of the
          base type constant.  */
-      if (maxsize.is_minus_one ()
+      if (maxsize == -1
 	  && TYPE_SIZE (TREE_TYPE (exp))
 	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST)
-	maxsize = tree_to_double_int (TYPE_SIZE (TREE_TYPE (exp)))
-		  - bit_offset;
+	maxsize = (wi::to_offset (TYPE_SIZE (TREE_TYPE (exp)))
+		   - bit_offset);
     }
 
   /* ???  Due to negative offsets in ARRAY_REF we can end up with
      negative bit_offset here.  We might want to store a zero offset
      in this case.  */
   *poffset = bit_offset.to_shwi ();
-  if (!maxsize.fits_shwi () || maxsize.is_negative ())
+  if (!wi::fits_shwi_p (maxsize) || wi::neg_p (maxsize))
     *pmax_size = -1;
   else
     *pmax_size = maxsize.to_shwi ();

@@ -30,6 +30,7 @@
 #define _GLIBCXX_DEBUG_MULTISET_H 1
 
 #include <debug/safe_sequence.h>
+#include <debug/safe_container.h>
 #include <debug/safe_iterator.h>
 #include <utility>
 
@@ -41,69 +42,54 @@ namespace __debug
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class multiset
-    : public _GLIBCXX_STD_C::multiset<_Key, _Compare, _Allocator>,
-      public __gnu_debug::_Safe_sequence<multiset<_Key, _Compare, _Allocator> >
+    : public __gnu_debug::_Safe_container<
+	multiset<_Key, _Compare, _Allocator>, _Allocator,
+	__gnu_debug::_Safe_node_sequence>,
+      public _GLIBCXX_STD_C::multiset<_Key, _Compare, _Allocator>
     {
-      typedef _GLIBCXX_STD_C::multiset<_Key, _Compare, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::multiset<_Key, _Compare, _Allocator>	_Base;
+      typedef __gnu_debug::_Safe_container<
+	multiset, _Allocator, __gnu_debug::_Safe_node_sequence>		_Safe;
 
-      typedef typename _Base::const_iterator _Base_const_iterator;
-      typedef typename _Base::iterator _Base_iterator;
+      typedef typename _Base::const_iterator	_Base_const_iterator;
+      typedef typename _Base::iterator		_Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
-#if __cplusplus >= 201103L
-      typedef __gnu_cxx::__alloc_traits<typename
-					_Base::allocator_type> _Alloc_traits;
-#endif
     public:
       // types:
-      typedef _Key				     key_type;
-      typedef _Key				     value_type;
-      typedef _Compare				     key_compare;
-      typedef _Compare				     value_compare;
-      typedef _Allocator			     allocator_type;
-      typedef typename _Base::reference	             reference;
-      typedef typename _Base::const_reference        const_reference;
+      typedef _Key					key_type;
+      typedef _Key					value_type;
+      typedef _Compare					key_compare;
+      typedef _Compare					value_compare;
+      typedef _Allocator				allocator_type;
+      typedef typename _Base::reference			reference;
+      typedef typename _Base::const_reference		const_reference;
 
       typedef __gnu_debug::_Safe_iterator<_Base_iterator, multiset>
-      iterator;
+							iterator;
       typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,
-					  multiset> const_iterator;
+					  multiset>	const_iterator;
 
-      typedef typename _Base::size_type              size_type;
-      typedef typename _Base::difference_type        difference_type;
-      typedef typename _Base::pointer                pointer;
-      typedef typename _Base::const_pointer          const_pointer;
-      typedef std::reverse_iterator<iterator>        reverse_iterator;
-      typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
+      typedef typename _Base::size_type			size_type;
+      typedef typename _Base::difference_type		difference_type;
+      typedef typename _Base::pointer			pointer;
+      typedef typename _Base::const_pointer		const_pointer;
+      typedef std::reverse_iterator<iterator>		reverse_iterator;
+      typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
 
       // 23.3.3.1 construct/copy/destroy:
 
+#if __cplusplus < 201103L
       multiset() : _Base() { }
-
-      explicit multiset(const _Compare& __comp,
-			const _Allocator& __a = _Allocator())
-      : _Base(__comp, __a) { }
-
-      template<typename _InputIterator>
-        multiset(_InputIterator __first, _InputIterator __last,
-		 const _Compare& __comp = _Compare(),
-		 const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
-		__gnu_debug::__base(__last),
-		__comp, __a) { }
 
       multiset(const multiset& __x)
       : _Base(__x) { }
 
-      multiset(const _Base& __x)
-      : _Base(__x) { }
-
-#if __cplusplus >= 201103L
-      multiset(multiset&& __x)
-      noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _Base(std::move(__x))
-      { this->_M_swap(__x); }
+      ~multiset() { }
+#else
+      multiset() = default;
+      multiset(const multiset&) = default;
+      multiset(multiset&&) = default;
 
       multiset(initializer_list<value_type> __l,
 	       const _Compare& __comp = _Compare(),
@@ -118,47 +104,53 @@ namespace __debug
       : _Base(__m, __a) { }
 
       multiset(multiset&& __m, const allocator_type& __a)
-      : _Base(std::move(__m._M_base()), __a) { }
+      : _Safe(std::move(__m._M_safe()), __a),
+	_Base(std::move(__m._M_base()), __a) { }
 
       multiset(initializer_list<value_type> __l, const allocator_type& __a)
 	: _Base(__l, __a)
       { }
 
       template<typename _InputIterator>
-        multiset(_InputIterator __first, _InputIterator __last,
+	multiset(_InputIterator __first, _InputIterator __last,
 		 const allocator_type& __a)
-	  : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								       __last)),
-		  __gnu_debug::__base(__last), __a)
-        { }
+	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								     __last)),
+		__gnu_debug::__base(__last), __a) { }
+
+      ~multiset() = default;
 #endif
 
-      ~multiset() _GLIBCXX_NOEXCEPT { }
+      explicit multiset(const _Compare& __comp,
+			const _Allocator& __a = _Allocator())
+      : _Base(__comp, __a) { }
 
+      template<typename _InputIterator>
+	multiset(_InputIterator __first, _InputIterator __last,
+		 const _Compare& __comp = _Compare(),
+		 const _Allocator& __a = _Allocator())
+	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								     __last)),
+		__gnu_debug::__base(__last),
+		__comp, __a) { }
+
+      multiset(const _Base& __x)
+      : _Base(__x) { }
+
+#if __cplusplus < 201103L
       multiset&
       operator=(const multiset& __x)
       {
+	this->_M_safe() = __x;
 	_M_base() = __x;
-	this->_M_invalidate_all();
 	return *this;
       }
-
-#if __cplusplus >= 201103L
+#else
       multiset&
-      operator=(multiset&& __x)
-      noexcept(_Alloc_traits::_S_nothrow_move())
-      {
-	__glibcxx_check_self_move_assign(__x);
-	bool __xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
-	    || __x.get_allocator() == this->get_allocator();
-	_M_base() = std::move(__x._M_base());
-	if (__xfer_memory)
-	  this->_M_swap(__x);
-	else
-	  this->_M_invalidate_all();
-	__x._M_invalidate_all();
-	return *this;
-      }
+      operator=(const multiset&) = default;
+
+      multiset&
+      operator=(multiset&&) = default;
 
       multiset&
       operator=(initializer_list<value_type> __l)
@@ -233,7 +225,8 @@ namespace __debug
 	iterator
 	emplace(_Args&&... __args)
 	{
-	  return iterator(_Base::emplace(std::forward<_Args>(__args)...), this);
+	  return iterator(_Base::emplace(std::forward<_Args>(__args)...),
+			  this);
 	}
 
       template<typename... _Args>
@@ -364,15 +357,11 @@ namespace __debug
       void
       swap(multiset& __x)
 #if __cplusplus >= 201103L
-      noexcept(_Alloc_traits::_S_nothrow_swap())
+	noexcept( noexcept(declval<_Base>().swap(__x)) )
 #endif
       {
-#if __cplusplus >= 201103L
-	if (!_Alloc_traits::_S_propagate_on_swap())
-	  __glibcxx_check_equal_allocs(__x);
-#endif
+	_Safe::_M_swap(__x);
 	_Base::swap(__x);
-	this->_M_swap(__x);
       }
 
       void
@@ -440,18 +429,10 @@ namespace __debug
       }
 
       _Base&
-      _M_base() _GLIBCXX_NOEXCEPT       { return *this; }
+      _M_base() _GLIBCXX_NOEXCEPT { return *this; }
 
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
-
-    private:
-      void
-      _M_invalidate_all()
-      {
-	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
-	this->_M_invalidate_if(_Not_equal(_Base::end()));
-      }
     };
 
   template<typename _Key, typename _Compare, typename _Allocator>

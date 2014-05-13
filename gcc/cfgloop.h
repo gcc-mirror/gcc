@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_CFGLOOP_H
 
 #include "double-int.h"
+#include "wide-int.h"
 #include "bitmap.h"
 #include "sbitmap.h"
 #include "function.h"
@@ -62,7 +63,7 @@ struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
         overflows (as MAX + 1 is sometimes produced as the estimate on number
 	of executions of STMT).
      b) it is consistent with the result of number_of_iterations_exit.  */
-  double_int bound;
+  widest_int bound;
 
   /* True if the statement will cause the loop to be leaved the (at most)
      BOUND + 1-st time it is executed, that is, all the statements after it
@@ -146,12 +147,12 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* An integer guaranteed to be greater or equal to nb_iterations.  Only
      valid if any_upper_bound is true.  */
-  double_int nb_iterations_upper_bound;
+  widest_int nb_iterations_upper_bound;
 
   /* An integer giving an estimate on nb_iterations.  Unlike
      nb_iterations_upper_bound, there is no guarantee that it is at least
      nb_iterations.  */
-  double_int nb_iterations_estimate;
+  widest_int nb_iterations_estimate;
 
   bool any_upper_bound;
   bool any_estimate;
@@ -710,8 +711,6 @@ extern void loop_optimizer_init (unsigned);
 extern void loop_optimizer_finalize (void);
 
 /* Optimization passes.  */
-extern void unswitch_loops (void);
-
 enum
 {
   UAP_PEEL = 1,		/* Enables loop peeling.  */
@@ -737,27 +736,27 @@ loop_outermost (struct loop *loop)
   return (*loop->superloops)[1];
 }
 
-extern void record_niter_bound (struct loop *, double_int, bool, bool);
+extern void record_niter_bound (struct loop *, const widest_int &, bool, bool);
 extern HOST_WIDE_INT get_estimated_loop_iterations_int (struct loop *);
 extern HOST_WIDE_INT get_max_loop_iterations_int (struct loop *);
-extern bool get_estimated_loop_iterations (struct loop *loop, double_int *nit);
-extern bool get_max_loop_iterations (struct loop *loop, double_int *nit);
+extern bool get_estimated_loop_iterations (struct loop *loop, widest_int *nit);
+extern bool get_max_loop_iterations (struct loop *loop, widest_int *nit);
 extern int bb_loop_depth (const_basic_block);
 
-/* Converts VAL to double_int.  */
+/* Converts VAL to widest_int.  */
 
-static inline double_int
-gcov_type_to_double_int (gcov_type val)
+static inline widest_int
+gcov_type_to_wide_int (gcov_type val)
 {
-  double_int ret;
+  HOST_WIDE_INT a[2];
 
-  ret.low = (unsigned HOST_WIDE_INT) val;
+  a[0] = (unsigned HOST_WIDE_INT) val;
   /* If HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_WIDEST_INT, avoid shifting by
      the size of type.  */
   val >>= HOST_BITS_PER_WIDE_INT - 1;
   val >>= 1;
-  ret.high = (unsigned HOST_WIDE_INT) val;
+  a[1] = (unsigned HOST_WIDE_INT) val;
 
-  return ret;
+  return widest_int::from_array (a, 2);
 }
 #endif /* GCC_CFGLOOP_H */

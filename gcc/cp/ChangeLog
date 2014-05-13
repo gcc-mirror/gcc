@@ -1,3 +1,105 @@
+2014-05-09  Momchil Velikov  <momchil.velikov@gmail.com>
+
+	PR c++/60463
+	PR c++/60755
+	* lambda.c (lambda_expr_this_capture): Add new parameter
+	add_capture_p controlling whether the functions will try to
+	capture 'this' via the default capture.
+	(maybe_resolve_dummy): Likewise.
+	* cp-tree.h: Adjust prototypes.
+	* call.c, semantics.c: Change callers of these functions.
+	* call.c (build_new_method_call_1): Use the actual 'this' that
+	would be potentially captured for the overload resolution, instead
+	of the dummy object.
+
+2014-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_nontype_argument_function): Add tsubst_flags_t
+	parameter.
+	(convert_nontype_argument): Adjust calls.
+	(coerce_template_parameter_pack): Add missing complain & tf_error
+	check.
+
+2014-05-09  Jason Merrill  <jason@redhat.com>
+
+	DR 587
+	PR c++/51317
+	* call.c (build_conditional_expr_1, conditional_conversion): Handle
+	non-class lvalues and xvalues that differ only in cv-qualifiers.
+
+	DR 5
+	PR c++/60019
+	* call.c (build_user_type_conversion_1): The copy-init temporary
+	is cv-unqualified.
+
+	PR c++/58714
+	* tree.c (stabilize_expr): A stabilized prvalue is an xvalue.
+
+	PR c++/54348
+	* call.c (build_conditional_expr_1): If overload resolution finds
+	no match, just say "different types".
+
+	PR c++/32019
+	* call.c (build_conditional_expr_1): Improve ambiguity diagnostic.
+
+	PR c++/22434
+	* call.c (build_conditional_expr_1): Don't try to pool cv-quals
+	if we didn't find a conversion.
+	Don't accept a bad conversion too early.
+
+2014-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/13981
+	* typeck.c (convert_for_assignment): Provide an inform for pointers
+	to incomplete class types.
+
+2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61083
+	* pt.c (convert_nontype_argument): Protect all the error calls
+	with complain & tf_error.
+
+2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61080
+	* pt.c (instantiate_decl): Avoid generating the body of a
+	deleted function.
+
+2014-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60999
+	* pt.c (maybe_begin_member_template_processing): Use
+	uses_template_parms.
+
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* call.c: Include wide-int.h.
+	(type_passed_as): Use tree_int_cst_lt instead of INT_CST_LT_UNSIGNED.
+	(convert_for_arg_passing): Likewise.
+	* class.c: Include wide-int.h.
+	(walk_subobject_offsets): Use tree_int_cst_lt instead of INT_CST_LT.
+	(end_of_class): Use tree_int_cst_lt instead of INT_CST_LT_UNSIGNED.
+	(include_empty_classes): Likewise
+	(layout_class_type): Use tree_int_cst_lt instead of INT_CST_LT.
+	* cvt.c: Include wide-int.h.
+	(ignore_overflows): Use wide_int_to_tree.
+	* decl.c: Include wide-int.h.
+	(check_array_designated_initializer): Use wide-int interfaces.
+	(compute_array_index_type): Use tree_int_cst_lt instead of INT_CST_LT.
+	(finish_enum_value_list): Use signop.
+	(build_enumerator): Use wide-int interfaces.
+	* init.c: Include wide-int.h.
+	(build_new_1): Use wide-int interfaces.
+	* mangle.c: Include wide-int.h.
+	(write_integer_cst): Use wide-int interfaces.
+	(write_array_type): Likewise.
+	* tree.c: Include wide-int.h.
+	(cp_tree_equal): Use tree_int_cst_equal.
+	* typeck2.c: Include wide-int.h.
+	(process_init_constructor_array): Use wide-int interfaces.
+
 2014-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58582

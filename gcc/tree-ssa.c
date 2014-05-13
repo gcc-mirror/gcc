@@ -1246,6 +1246,7 @@ tree_ssa_strip_useless_type_conversions (tree exp)
 bool
 ssa_undefined_value_p (tree t)
 {
+  gimple def_stmt;
   tree var = SSA_NAME_VAR (t);
 
   if (!var)
@@ -1262,7 +1263,22 @@ ssa_undefined_value_p (tree t)
     return false;
 
   /* The value is undefined iff its definition statement is empty.  */
-  return gimple_nop_p (SSA_NAME_DEF_STMT (t));
+  def_stmt = SSA_NAME_DEF_STMT (t);
+  if (gimple_nop_p (def_stmt))
+    return true;
+
+  /* Check if the complex was not only partially defined.  */
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == COMPLEX_EXPR)
+    {
+      tree rhs1, rhs2;
+
+      rhs1 = gimple_assign_rhs1 (def_stmt);
+      rhs2 = gimple_assign_rhs2 (def_stmt);
+      return (TREE_CODE (rhs1) == SSA_NAME && ssa_undefined_value_p (rhs1))
+	     || (TREE_CODE (rhs2) == SSA_NAME && ssa_undefined_value_p (rhs2));
+    }
+  return false;
 }
 
 
@@ -1340,9 +1356,9 @@ non_rewritable_mem_ref_base (tree ref)
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
-	  && mem_ref_offset (base).fits_uhwi ()
-	  && tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (decl)))
-	     .ugt (mem_ref_offset (base))
+	  && wi::fits_uhwi_p (mem_ref_offset (base))
+	  && wi::gtu_p (wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
+			mem_ref_offset (base))
 	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
 			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
 	return NULL_TREE;

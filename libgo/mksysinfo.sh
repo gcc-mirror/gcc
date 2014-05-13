@@ -163,6 +163,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_NETINET_ICMP6_H)
 #include <netinet/icmp6.h>
 #endif
+#if defined(HAVE_SCHED_H)
+#include <sched.h>
+#endif
 
 /* Constants that may only be defined as expressions on some systems,
    expressions too complex for -fdump-go-spec to handle.  These are
@@ -176,6 +179,18 @@ enum {
 #endif
 #ifdef TIOCSCTTY
   TIOCSCTTY_val = TIOCSCTTY,
+#endif
+#ifdef TIOCGPTN
+  TIOCGPTN_val = TIOCGPTN,
+#endif
+#ifdef TIOCSPTLCK
+  TIOCSPTLCK_val = TIOCSPTLCK,
+#endif
+#ifdef TIOCGDEV
+  TIOCGDEV_val = TIOCGDEV,
+#endif
+#ifdef TIOCSIG
+  TIOCSIG_val = TIOCSIG,
 #endif
 };
 EOF
@@ -775,6 +790,26 @@ if ! grep '^const TIOCSCTTY' ${OUT} >/dev/null 2>&1; then
     echo 'const TIOCSCTTY = _TIOCSCTTY_val' >> ${OUT}
   fi
 fi
+if ! grep '^const TIOCGPTN' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCGPTN_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCGPTN = _TIOCGPTN_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCSPTLCK' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCSPTLCK_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCSPTLCK = _TIOCSPTLCK_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCGDEV' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCGDEV_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCGDEV = _TIOCGDEV_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCSIG' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCSIG_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCSIG = _TIOCSIG_val' >> ${OUT}
+  fi
+fi
 
 # The ioctl flags for terminal control
 grep '^const _TC[GS]ET' gen-sysinfo.go | \
@@ -1129,6 +1164,10 @@ grep '^type _inotify_event ' gen-sysinfo.go | \
       -e 's/\[\]/[0]/' \
       -e 's/\[0\]byte/[0]int8/' \
     >> ${OUT}
+
+# The GNU/Linux CLONE flags.
+grep '^const _CLONE_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(CLONE_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The Solaris 11 Update 1 _zone_net_addr_t struct.
 grep '^type _zone_net_addr_t ' gen-sysinfo.go | \

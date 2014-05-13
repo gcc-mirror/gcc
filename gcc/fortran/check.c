@@ -1290,6 +1290,91 @@ gfc_check_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *kind)
 }
 
 
+static bool
+check_co_minmaxsum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
+		    gfc_expr *errmsg)
+{
+  if (!variable_check (a, 0, false))
+    return false;
+
+  if (result_image != NULL)
+    {
+      if (!type_check (result_image, 1, BT_INTEGER))
+	return false;
+      if (!scalar_check (result_image, 1))
+	return false;
+    }
+
+  if (stat != NULL)
+    {
+      if (!type_check (stat, 2, BT_INTEGER))
+	return false;
+      if (!scalar_check (stat, 2))
+	return false;
+      if (!variable_check (stat, 2, false))
+	return false;
+      if (stat->ts.kind != 4)
+	{
+	  gfc_error ("The stat= argument at %L must be a kind=4 integer "
+		     "variable", &stat->where);
+	  return false;
+	}
+    }
+
+  if (errmsg != NULL)
+    {
+      if (!type_check (errmsg, 3, BT_CHARACTER))
+	return false;
+      if (!scalar_check (errmsg, 3))
+	return false;
+      if (!variable_check (errmsg, 3, false))
+	return false;
+      if (errmsg->ts.kind != 1)
+	{
+	  gfc_error ("The errmsg= argument at %L must be a default-kind "
+		     "character variable", &errmsg->where);
+	  return false;
+	}
+    }
+
+  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_fatal_error ("Coarrays disabled at %L, use -fcoarray= to enable",
+		       &a->where);
+      return false;
+    }
+
+  return true;
+}
+
+
+bool
+gfc_check_co_minmax (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
+		     gfc_expr *errmsg)
+{
+  if (a->ts.type != BT_INTEGER && a->ts.type != BT_REAL
+      && a->ts.type != BT_CHARACTER)
+    {
+       gfc_error ("'%s' argument of '%s' intrinsic at %L shall be of type "
+		  "integer, real or character",
+		  gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		  &a->where);
+       return false;
+    }
+  return check_co_minmaxsum (a, result_image, stat, errmsg);
+}
+
+
+bool
+gfc_check_co_sum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
+		  gfc_expr *errmsg)
+{
+  if (!numeric_check (a, 0))
+    return false;
+  return check_co_minmaxsum (a, result_image, stat, errmsg);
+}
+
+
 bool
 gfc_check_complex (gfc_expr *x, gfc_expr *y)
 {

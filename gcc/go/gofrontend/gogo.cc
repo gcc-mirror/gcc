@@ -729,7 +729,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
                                                   builtin_loc, 1, root_addr);
 
   Translate_context context(this, NULL, NULL, NULL);
-  Bexpression* bcall = tree_to_expr(register_roots->get_tree(&context));
+  Bexpression* bcall = register_roots->get_backend(&context);
   init_stmts.push_back(this->backend()->expression_statement(bcall));
 }
 
@@ -4065,8 +4065,8 @@ Build_method_tables::type(Type* type)
 	      if ((*p)->implements_interface(Type::make_pointer_type(nt),
 					     NULL))
 		{
-		  nt->interface_method_table(*p, false)->get_tree(&context);
-                  nt->interface_method_table(*p, true)->get_tree(&context);
+		  nt->interface_method_table(*p, false)->get_backend(&context);
+                  nt->interface_method_table(*p, true)->get_backend(&context);
 		}
 	    }
 	  else
@@ -4074,8 +4074,8 @@ Build_method_tables::type(Type* type)
 	      if ((*p)->implements_interface(Type::make_pointer_type(st),
 					     NULL))
 		{
-		  st->interface_method_table(*p, false)->get_tree(&context);
-		  st->interface_method_table(*p, true)->get_tree(&context);
+		  st->interface_method_table(*p, false)->get_backend(&context);
+		  st->interface_method_table(*p, true)->get_backend(&context);
 		}
 	    }
 	}
@@ -4916,7 +4916,7 @@ Function_declaration::build_backend_descriptor(Gogo* gogo)
   if (this->descriptor_ != NULL)
     {
       Translate_context context(gogo, NULL, NULL, NULL);
-      this->descriptor_->get_tree(&context);
+      this->descriptor_->get_backend(&context);
     }
 }
 
@@ -4975,7 +4975,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	      parm_ref = Expression::make_unary(OPERATOR_MULT, parm_ref, loc);
 	      if ((*p)->var_value()->is_in_heap())
 		parm_ref = Expression::make_heap_expression(parm_ref, loc);
-              var_inits.push_back(tree_to_expr(parm_ref->get_tree(&context)));
+              var_inits.push_back(parm_ref->get_backend(&context));
 	    }
 	  else if ((*p)->var_value()->is_in_heap())
 	    {
@@ -4992,7 +4992,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	      Expression* var_ref =
 		  Expression::make_var_reference(parm_no, loc);
 	      var_ref = Expression::make_heap_expression(var_ref, loc);
-              var_inits.push_back(tree_to_expr(var_ref->get_tree(&context)));
+              var_inits.push_back(var_ref->get_backend(&context));
 	    }
           param_vars.push_back(parm_bvar);
 	}
@@ -5008,10 +5008,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	      init = gogo->backend()->zero_expression(btype);
 	    }
 	  else
-            {
-              Expression* alloc = Expression::make_allocation(type, loc);
-              init = tree_to_expr(alloc->get_tree(&context));
-            }
+	    init = Expression::make_allocation(type,
+					       loc)->get_backend(&context);
 
           vars.push_back(bvar);
           var_inits.push_back(init);
@@ -5034,7 +5032,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
 
       Expression* closure =
           Runtime::make_call(Runtime::GET_CLOSURE, this->location_, 0);
-      var_inits.push_back(tree_to_expr(closure->get_tree(&context)));
+      var_inits.push_back(closure->get_backend(&context));
     }
 
   if (this->block_ != NULL)
@@ -5115,7 +5113,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
   if (this->descriptor_ != NULL)
     {
       Translate_context context(gogo, NULL, NULL, NULL);
-      this->descriptor_->get_tree(&context);
+      this->descriptor_->get_backend(&context);
     }
 }
 
@@ -5138,7 +5136,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   Expression* call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
 					this->defer_stack(end_loc));
   Translate_context context(gogo, named_function, NULL, NULL);
-  Bexpression* defer = tree_to_expr(call->get_tree(&context));
+  Bexpression* defer = call->get_backend(&context);
   stmts.push_back(gogo->backend()->expression_statement(defer));
 
   Bstatement* ret_bstmt = this->return_value(gogo, named_function, end_loc);
@@ -5150,11 +5148,11 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
 
   call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
                             this->defer_stack(end_loc));
-  defer = tree_to_expr(call->get_tree(&context));
+  defer = call->get_backend(&context);
 
   call = Runtime::make_call(Runtime::UNDEFER, end_loc, 1,
         		    this->defer_stack(end_loc));
-  Bexpression* undefer = tree_to_expr(call->get_tree(&context));
+  Bexpression* undefer = call->get_backend(&context);
   Bstatement* function_defer =
       gogo->backend()->function_defer_statement(this->fndecl_, undefer, defer,
                                                 end_loc);
@@ -5170,13 +5168,12 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
       // variable to true if we are returning from this function.
 
       ret_bstmt = this->return_value(gogo, named_function, end_loc);
-      Bexpression* nil =
-          tree_to_expr(Expression::make_nil(end_loc)->get_tree(&context));
+      Bexpression* nil = Expression::make_nil(end_loc)->get_backend(&context);
       Bexpression* ret =
           gogo->backend()->compound_expression(ret_bstmt, nil, end_loc);
       Expression* ref =
 	Expression::make_temporary_reference(this->defer_stack_, end_loc);
-      Bexpression* bref = tree_to_expr(ref->get_tree(&context));
+      Bexpression* bref = ref->get_backend(&context);
       ret = gogo->backend()->conditional_expression(NULL, bref, ret, NULL,
                                                     end_loc);
       stmts.push_back(gogo->backend()->expression_statement(ret));
@@ -5210,7 +5207,10 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
       Bvariable* bvar = no->get_backend_variable(gogo, named_function);
       Bexpression* val = gogo->backend()->var_expression(bvar, location);
       if (no->result_var_value()->is_in_heap())
-        val = gogo->backend()->indirect_expression(val, true, location);
+	{
+	  Btype* bt = no->result_var_value()->type()->get_backend(gogo);
+	  val = gogo->backend()->indirect_expression(bt, val, true, location);
+	}
       vals[i] = val;
     }
   return gogo->backend()->return_statement(this->fndecl_, vals, location);
@@ -5979,7 +5979,7 @@ Variable::get_init(Gogo* gogo, Named_object* function)
     {
       Translate_context context(gogo, function, NULL, NULL);
       Expression* init = Expression::make_cast(this->type(), this->init_, loc);
-      return tree_to_expr(init->get_tree(&context));
+      return init->get_backend(&context);
     }
 }
 
@@ -6005,8 +6005,7 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
     {
       if (var_decl == NULL)
         {
-          Bexpression* init_bexpr =
-              tree_to_expr(this->init_->get_tree(&context));
+          Bexpression* init_bexpr = this->init_->get_backend(&context);
           decl_init = gogo->backend()->expression_statement(init_bexpr);
         }
       else
@@ -6014,7 +6013,7 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
           Location loc = this->location();
           Expression* val_expr =
               Expression::make_cast(this->type(), this->init_, loc);
-          Bexpression* val = tree_to_expr(val_expr->get_tree(&context));
+          Bexpression* val = val_expr->get_backend(&context);
           Bexpression* var_ref = gogo->backend()->var_expression(var_decl, loc);
           decl_init = gogo->backend()->assignment_statement(var_ref, val, loc);
 	}
@@ -6238,8 +6237,7 @@ Named_constant::get_backend(Gogo* gogo, Named_object* const_no)
       Location loc = this->location();
 
       Expression* const_ref = Expression::make_const_reference(const_no, loc);
-      Bexpression* const_decl =
-	tree_to_expr(const_ref->get_tree(&subcontext));
+      Bexpression* const_decl = const_ref->get_backend(&subcontext);
       if (type != NULL && type->is_numeric_type())
 	{
 	  Btype* btype = type->get_backend(gogo);

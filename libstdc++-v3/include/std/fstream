@@ -71,6 +71,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     class basic_filebuf : public basic_streambuf<_CharT, _Traits>
     {
+#if __cplusplus >= 201103L
+      template<typename _Tp>
+	using __chk_state = __and_<is_copy_assignable<_Tp>,
+				   is_copy_constructible<_Tp>,
+				   is_default_constructible<_Tp>>;
+
+      static_assert(__chk_state<typename _Traits::state_type>::value,
+		    "state_type must be CopyAssignable, CopyConstructible"
+		    " and DefaultConstructible");
+
+      static_assert(is_same<typename _Traits::pos_type,
+			    fpos<typename _Traits::state_type>>::value,
+		    "pos_type must be fpos<state_type>");
+#endif
     public:
       // Types:
       typedef _CharT                     	        char_type;

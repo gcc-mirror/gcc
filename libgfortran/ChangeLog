@@ -1,3 +1,22 @@
+2014-05-11  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_num_images): Change type of
+	second argument to int.
+	* caf/mpi.c (_gfortran_caf_num_images): Ditto.
+	* caf/single.c (_gfortran_caf_num_images): Ditto.
+
+2014-05-08  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (caf_vector_t, _gfortran_caf_co_sum,
+	_gfortran_caf_co_min, _gfortran_caf_co_max): Declare
+	* caf/single.c
+
+2014-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/61049
+	* io/list_read.c (list_formatted_read_scalar): Use eat_separator
+	and delete extraneous code.
+
 2014-04-30  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/libcaf.h (_gfortran_caf_this_image, _gfortran_caf_num_images):

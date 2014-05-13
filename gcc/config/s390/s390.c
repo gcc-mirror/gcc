@@ -474,9 +474,7 @@ s390_handle_hotpatch_attribute (tree *node, tree name, tree args,
 
       if (TREE_CODE (expr) != INTEGER_CST
 	  || !INTEGRAL_TYPE_P (TREE_TYPE (expr))
-	  || TREE_INT_CST_HIGH (expr) != 0
-	  || TREE_INT_CST_LOW (expr) > (unsigned int)
-	  s390_hotpatch_trampoline_halfwords_max)
+	  || wi::gtu_p (expr, s390_hotpatch_trampoline_halfwords_max))
 	{
 	  error ("requested %qE attribute is not a non-negative integer"
 		 " constant or too large (max. %d)", name,
@@ -8644,8 +8642,7 @@ const pass_data pass_data_s390_early_mach =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_verify | TODO_df_finish
-    | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+  ( TODO_df_verify | TODO_df_finish ), /* todo_flags_finish */
 };
 
 class pass_s390_early_mach : public rtl_opt_pass

@@ -984,7 +984,7 @@ analyze_functions (void)
       first_analyzed_var = varpool_first_variable ();
       first_analyzed = cgraph_first_function ();
 
-      if (changed && dump_file)
+      if (changed && cgraph_dump_file)
 	fprintf (cgraph_dump_file, "\n");
 
       /* Lower representation, build callgraph edges and references for all trivially

@@ -226,10 +226,14 @@ class Gcc_backend : public Backend
   { return this->make_expression(error_mark_node); }
 
   Bexpression*
+  nil_pointer_expression()
+  { return this->make_expression(null_pointer_node); }
+
+  Bexpression*
   var_expression(Bvariable* var, Location);
 
   Bexpression*
-  indirect_expression(Bexpression* expr, bool known_valid, Location);
+  indirect_expression(Btype*, Bexpression* expr, bool known_valid, Location);
 
   Bexpression*
   named_constant_expression(Btype* btype, const std::string& name,
@@ -246,6 +250,9 @@ class Gcc_backend : public Backend
 
   Bexpression*
   string_constant_expression(const std::string& val);
+
+  Bexpression*
+  boolean_constant_expression(bool val);
 
   Bexpression*
   real_part_expression(Bexpression* bcomplex, Location);
@@ -381,7 +388,7 @@ class Gcc_backend : public Backend
 		     Location, Bstatement**);
 
   Bvariable*
-  gc_root_variable(Btype*, Bexpression*);
+  implicit_variable(const std::string&, Btype*, Bexpression*, bool);
 
   Bvariable*
   immutable_struct(const std::string&, bool, bool, Btype*, Location);
@@ -1067,8 +1074,7 @@ Gcc_backend::type_size(Btype* btype)
   if (t == error_mark_node)
     return 1;
   t = TYPE_SIZE_UNIT(t);
-  gcc_assert(TREE_CODE(t) == INTEGER_CST);
-  gcc_assert(TREE_INT_CST_HIGH(t) == 0);
+  gcc_assert(tree_fits_uhwi_p (t));
   unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW(t);
   size_t ret = static_cast<size_t>(val_wide);
   gcc_assert(ret == val_wide);
@@ -1130,7 +1136,7 @@ Gcc_backend::zero_expression(Btype* btype)
     ret = error_mark_node;
   else
     ret = build_zero_cst(t);
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // An expression that references a variable.
@@ -1141,20 +1147,32 @@ Gcc_backend::var_expression(Bvariable* var, Location)
   tree ret = var->get_tree();
   if (ret == error_mark_node)
     return this->error_expression();
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // An expression that indirectly references an expression.
 
 Bexpression*
-Gcc_backend::indirect_expression(Bexpression* expr, bool known_valid,
-                                 Location location)
+Gcc_backend::indirect_expression(Btype* btype, Bexpression* expr,
+				 bool known_valid, Location location)
 {
+  tree expr_tree = expr->get_tree();
+  tree type_tree = btype->get_tree();
+  if (expr_tree == error_mark_node || type_tree == error_mark_node)
+    return this->error_expression();
+
+  // If the type of EXPR is a recursive pointer type, then we
+  // need to insert a cast before indirecting.
+  tree target_type_tree = TREE_TYPE(TREE_TYPE(expr_tree));
+  if (VOID_TYPE_P(target_type_tree))
+    expr_tree = fold_convert_loc(location.gcc_location(),
+				 build_pointer_type(type_tree), expr_tree);
+
   tree ret = build_fold_indirect_ref_loc(location.gcc_location(),
-                                         expr->get_tree());
+                                         expr_tree);
   if (known_valid)
     TREE_THIS_NOTRAP(ret) = 1;
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // Return an expression that declares a constant named NAME with the
@@ -1190,7 +1208,7 @@ Gcc_backend::integer_constant_expression(Btype* btype, mpz_t val)
     return this->error_expression();
 
   tree ret = double_int_to_tree(t, mpz_get_double_int(t, val, true));
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // Return a typed value as a constant floating-point number.
@@ -1208,7 +1226,7 @@ Gcc_backend::float_constant_expression(Btype* btype, mpfr_t val)
   REAL_VALUE_TYPE r2;
   real_convert(&r2, TYPE_MODE(t), &r1);
   ret = build_real(t, r2);
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // Return a typed real and imaginary value as a constant complex number.
@@ -1233,7 +1251,7 @@ Gcc_backend::complex_constant_expression(Btype* btype, mpfr_t real, mpfr_t imag)
 
   ret = build_complex(t, build_real(TREE_TYPE(t), r2),
                       build_real(TREE_TYPE(t), r4));
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // Make a constant string expression.
@@ -1251,6 +1269,15 @@ Gcc_backend::string_constant_expression(const std::string& val)
   TREE_TYPE(string_val) = string_type;
 
   return this->make_expression(string_val);
+}
+
+// Make a constant boolean expression.
+
+Bexpression*
+Gcc_backend::boolean_constant_expression(bool val)
+{
+  tree bool_cst = val ? boolean_true_node : boolean_false_node;
+  return this->make_expression(bool_cst);
 }
 
 // Return the real part of a complex expression.
@@ -1396,7 +1423,7 @@ Gcc_backend::struct_field_expression(Bexpression* bstruct, size_t index,
                              NULL_TREE);
   if (TREE_CONSTANT(struct_tree))
     TREE_CONSTANT(ret) = 1;
-  return tree_to_expr(ret);
+  return this->make_expression(ret);
 }
 
 // Return an expression that executes BSTAT before BEXPR.
@@ -2406,16 +2433,17 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 				Location location,
 				Bstatement** pstatement)
 {
+  gcc_assert(function != NULL);
+  tree decl = function->get_tree();
   tree type_tree = btype->get_tree();
   tree init_tree = binit == NULL ? NULL_TREE : binit->get_tree();
-  if (type_tree == error_mark_node || init_tree == error_mark_node)
+  if (type_tree == error_mark_node
+      || init_tree == error_mark_node
+      || decl == error_mark_node)
     {
       *pstatement = this->error_statement();
       return this->error_variable();
     }
-
-  gcc_assert(function != NULL);
-  tree decl = function->get_tree();
 
   tree var;
   // We can only use create_tmp_var if the type is not addressable.
@@ -2463,10 +2491,12 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
   return new Bvariable(var);
 }
 
-// Make a GC root variable.
+// Create an implicit variable that is compiler-defined.  This is used when
+// generating GC root variables and storing the values of a slice initializer.
 
 Bvariable*
-Gcc_backend::gc_root_variable(Btype* type, Bexpression* init)
+Gcc_backend::implicit_variable(const std::string& name, Btype* type,
+			       Bexpression* init, bool is_constant)
 {
   tree type_tree = type->get_tree();
   tree init_tree = init->get_tree();
@@ -2474,11 +2504,16 @@ Gcc_backend::gc_root_variable(Btype* type, Bexpression* init)
     return this->error_variable();
 
   tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL,
-                         create_tmp_var_name("gc"), type_tree);
+                         get_identifier_from_string(name), type_tree);
   DECL_EXTERNAL(decl) = 0;
   TREE_PUBLIC(decl) = 0;
   TREE_STATIC(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
+  if (is_constant)
+    {
+      TREE_READONLY(decl) = 1;
+      TREE_CONSTANT(decl) = 1;
+    }
   DECL_INITIAL(decl) = init_tree;
   rest_of_decl_compilation(decl, 1, 0);
 
@@ -2903,74 +2938,4 @@ Backend*
 go_get_backend()
 {
   return new Gcc_backend();
-}
-
-// FIXME: Temporary functions while converting to the new backend
-// interface.
-
-Btype*
-tree_to_type(tree t)
-{
-  return new Btype(t);
-}
-
-Bexpression*
-tree_to_expr(tree t)
-{
-  return new Bexpression(t);
-}
-
-Bstatement*
-tree_to_stat(tree t)
-{
-  return new Bstatement(t);
-}
-
-Bfunction*
-tree_to_function(tree t)
-{
-  return new Bfunction(t);
-}
-
-Bblock*
-tree_to_block(tree t)
-{
-  gcc_assert(TREE_CODE(t) == BIND_EXPR);
-  return new Bblock(t);
-}
-
-tree
-type_to_tree(Btype* bt)
-{
-  return bt->get_tree();
-}
-
-tree
-expr_to_tree(Bexpression* be)
-{
-  return be->get_tree();
-}
-
-tree
-stat_to_tree(Bstatement* bs)
-{
-  return bs->get_tree();
-}
-
-tree
-block_to_tree(Bblock* bb)
-{
-  return bb->get_tree();
-}
-
-tree
-var_to_tree(Bvariable* bv)
-{
-  return bv->get_tree();
-}
-
-tree
-function_to_tree(Bfunction* bf)
-{
-  return bf->get_tree();
 }

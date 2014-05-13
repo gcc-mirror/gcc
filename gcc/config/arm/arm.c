@@ -5121,8 +5121,10 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	int count;
 	tree index = TYPE_DOMAIN (type);
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
 	count = aapcs_vfp_sub_candidate (TREE_TYPE (type), modep);
@@ -5139,9 +5141,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -5153,8 +5153,10 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	int sub_count;
 	tree field;
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
 	for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -5169,9 +5171,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -5185,8 +5185,10 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	int sub_count;
 	tree field;
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
 	for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -5201,9 +5203,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
-	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
-		!= count * GET_MODE_BITSIZE (*modep)))
+	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
 	return count;
@@ -11920,8 +11920,8 @@ vfp3_const_double_index (rtx x)
   int sign, exponent;
   unsigned HOST_WIDE_INT mantissa, mant_hi;
   unsigned HOST_WIDE_INT mask;
-  HOST_WIDE_INT m1, m2;
   int point_pos = 2 * HOST_BITS_PER_WIDE_INT - 1;
+  bool fail;
 
   if (!TARGET_VFP3 || !CONST_DOUBLE_P (x))
     return -1;
@@ -11941,9 +11941,9 @@ vfp3_const_double_index (rtx x)
      WARNING: If there's ever a VFP version which uses more than 2 * H_W_I - 1
      bits for the mantissa, this may fail (low bits would be lost).  */
   real_ldexp (&m, &r, point_pos - exponent);
-  REAL_VALUE_TO_INT (&m1, &m2, m);
-  mantissa = m1;
-  mant_hi = m2;
+  wide_int w = real_to_integer (&m, &fail, HOST_BITS_PER_WIDE_INT * 2);
+  mantissa = w.elt (0);
+  mant_hi = w.elt (1);
 
   /* If there are bits set in the low part of the mantissa, we can't
      represent this value.  */

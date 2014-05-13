@@ -45,6 +45,6 @@ int main()
   f(a);				// { dg-error "" }
   B b2 = { a };			// { dg-error "" }
   a + true;			// { dg-error "5:no match" }
-  b ? a : true;			// { dg-error "5:no match" }
-  a ? a : true;			// { dg-error "5:no match" }
+  b ? a : true;			// { dg-error "5:?:" }
+  a ? a : true;			// { dg-error "5:?:" }
 }

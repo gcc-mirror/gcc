@@ -32,8 +32,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "parse.h"
 #include "diagnostic-core.h"
+#include "wide-int.h"
 
-static void mark_reference_fields (tree, double_int *, unsigned int,
+static void mark_reference_fields (tree, wide_int *, unsigned int,
 				   int *, int *, int *, HOST_WIDE_INT *);
 
 /* A procedure-based object descriptor.  We know that our
@@ -47,7 +48,7 @@ static void mark_reference_fields (tree, double_int *, unsigned int,
 /* Recursively mark reference fields.  */
 static void
 mark_reference_fields (tree field,
-		       double_int *mask,
+		       wide_int *mask,
 		       unsigned int ubit,
 		       int *pointer_after_end,
 		       int *all_bits_set,
@@ -100,17 +101,17 @@ mark_reference_fields (tree field,
 
 	  *last_set_index = count;
 	     
-	  /* First word in object corresponds to most significant byte of 
-	     bitmap. 
-	     
-	     In the case of a multiple-word record, we set pointer 
-	     bits for all words in the record. This is conservative, but the 
-	     size_words != 1 case is impossible in regular java code. */
-	  for (i = 0; i < size_words; ++i)
-	    *mask = (*mask).set_bit (ubit - count - i - 1);
-
 	  if (count >= ubit - 2)
 	    *pointer_after_end = 1;
+	  else
+	    /* First word in object corresponds to most significant byte of 
+	       bitmap. 
+	     
+	       In the case of a multiple-word record, we set pointer 
+	       bits for all words in the record. This is conservative, but the 
+	       size_words != 1 case is impossible in regular java code. */
+	    for (i = 0; i < size_words; ++i)
+	      *mask = wi::set_bit (*mask, ubit - count - i - 1);
 
 	  /* If we saw a non-reference field earlier, then we can't
 	     use the count representation.  We keep track of that in
@@ -136,16 +137,15 @@ get_boehm_type_descriptor (tree type)
   int last_set_index = 0;
   HOST_WIDE_INT last_view_index = -1;
   int pointer_after_end = 0;
-  double_int mask;
   tree field, value, value_type;
-
-  mask = double_int_zero;
 
   /* If the GC wasn't requested, just use a null pointer.  */
   if (! flag_use_boehm_gc)
     return null_pointer_node;
 
   value_type = java_type_for_mode (ptr_mode, 1);
+  wide_int mask = wi::zero (TYPE_PRECISION (value_type));
+
   /* If we have a type of unknown size, use a proc.  */
   if (int_size_in_bytes (type) == -1)
     goto procedure_object_descriptor;
@@ -194,22 +194,22 @@ get_boehm_type_descriptor (tree type)
          that we don't have to emit reflection data for run time
          marking. */
       count = 0;
-      mask = double_int_zero;
+      mask = wi::zero (TYPE_PRECISION (value_type));
       ++last_set_index;
       while (last_set_index)
 	{
 	  if ((last_set_index & 1))
-	    mask = mask.set_bit (log2_size + count);
+	    mask = wi::set_bit (mask, log2_size + count);
 	  last_set_index >>= 1;
 	  ++count;
 	}
-      value = double_int_to_tree (value_type, mask);
+      value = wide_int_to_tree (value_type, mask);
     }
   else if (! pointer_after_end)
     {
       /* Bottom two bits for bitmap mark type are 01.  */
-      mask = mask.set_bit (0);
-      value = double_int_to_tree (value_type, mask);
+      mask = wi::set_bit (mask, 0);
+      value = wide_int_to_tree (value_type, mask);
     }
   else
     {

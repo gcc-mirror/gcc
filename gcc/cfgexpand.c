@@ -1611,6 +1611,52 @@ record_or_union_type_has_array_p (const_tree tree_type)
   return 0;
 }
 
+/* Check if the current function has local referenced variables that
+   have their addresses taken, contain an array, or are arrays.  */
+
+static bool
+stack_protect_decl_p ()
+{
+  unsigned i;
+  tree var;
+
+  FOR_EACH_LOCAL_DECL (cfun, i, var)
+    if (!is_global_var (var))
+      {
+	tree var_type = TREE_TYPE (var);
+	if (TREE_CODE (var) == VAR_DECL
+	    && (TREE_CODE (var_type) == ARRAY_TYPE
+		|| TREE_ADDRESSABLE (var)
+		|| (RECORD_OR_UNION_TYPE_P (var_type)
+		    && record_or_union_type_has_array_p (var_type))))
+	  return true;
+      }
+  return false;
+}
+
+/* Check if the current function has calls that use a return slot.  */
+
+static bool
+stack_protect_return_slot_p ()
+{
+  basic_block bb;
+  
+  FOR_ALL_BB_FN (bb, cfun)
+    for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	 !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple stmt = gsi_stmt (gsi);
+	/* This assumes that calls to internal-only functions never
+	   use a return slot.  */
+	if (is_gimple_call (stmt)
+	    && !gimple_call_internal_p (stmt)
+	    && aggregate_value_p (TREE_TYPE (gimple_call_fntype (stmt)),
+				  gimple_call_fndecl (stmt)))
+	  return true;
+      }
+  return false;
+}
+
 /* Expand all variables used in the function.  */
 
 static rtx
@@ -1683,22 +1729,8 @@ expand_used_vars (void)
   pointer_map_destroy (ssa_name_decls);
 
   if (flag_stack_protect == SPCT_FLAG_STRONG)
-    FOR_EACH_LOCAL_DECL (cfun, i, var)
-      if (!is_global_var (var))
-	{
-	  tree var_type = TREE_TYPE (var);
-	  /* Examine local referenced variables that have their addresses taken,
-	     contain an array, or are arrays.  */
-	  if (TREE_CODE (var) == VAR_DECL
-	      && (TREE_CODE (var_type) == ARRAY_TYPE
-		  || TREE_ADDRESSABLE (var)
-		  || (RECORD_OR_UNION_TYPE_P (var_type)
-		      && record_or_union_type_has_array_p (var_type))))
-	    {
-	      gen_stack_protect_signal = true;
-	      break;
-	    }
-	}
+      gen_stack_protect_signal
+	= stack_protect_decl_p () || stack_protect_return_slot_p ();
 
   /* At this point all variables on the local_decls with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
@@ -5558,8 +5590,7 @@ const pass_data pass_data_expand =
     | PROP_gimple_lvec ), /* properties_required */
   PROP_rtl, /* properties_provided */
   ( PROP_ssa | PROP_trees ), /* properties_destroyed */
-  ( TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts ), /* todo_flags_start */
+  0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
 

@@ -3148,8 +3148,8 @@ nds32_insert_attributes (tree decl, tree *attributes)
 	      id = TREE_VALUE (id_list);
 	      /* Issue error if it is not a valid integer value.  */
 	      if (TREE_CODE (id) != INTEGER_CST
-		  || TREE_INT_CST_LOW (id) < lower_bound
-		  || TREE_INT_CST_LOW (id) > upper_bound)
+		  || wi::ltu_p (id, lower_bound)
+		  || wi::gtu_p (id, upper_bound))
 		error ("invalid id value for interrupt/exception attribute");
 
 	      /* Advance to next id.  */
@@ -3176,8 +3176,8 @@ nds32_insert_attributes (tree decl, tree *attributes)
 
 	  /* 3. Check valid integer value for reset.  */
 	  if (TREE_CODE (id) != INTEGER_CST
-	      || TREE_INT_CST_LOW (id) < lower_bound
-	      || TREE_INT_CST_LOW (id) > upper_bound)
+	      || wi::ltu_p (id, lower_bound)
+	      || wi::gtu_p (id, upper_bound))
 	    error ("invalid id value for reset attribute");
 
 	  /* 4. Check valid function for nmi/warm.  */

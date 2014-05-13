@@ -1,3 +1,43 @@
+2014-05-06  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::nil_pointer_expression): New method.
+	(Gcc_backend::boolean_constant_expression): New method.
+	(Gcc_backend::zero_expression): Use this->make_expression rather
+	than tree_to_expr.
+	(Gcc_backend::var_expression): Likewise.
+	(Gcc_backend::integer_constant_expression): Likewise.
+	(Gcc_backend::float_constant_expression): Likewise.
+	(Gcc_backend::complex_constant_expression): Likewise.
+	(Gcc_backend::struct_field_expression): Likewise.
+	(tree_to_type, tree_to_expr, tree_to_stat): Remove functions.
+	(tree_to_function, tree_to_block): Remove functions.
+	(type_to_tree, expr_to_tree, stat_to_tree): Remove functions.
+	(block_to_tree, var_to_tree, function_to_tree): Remove functions.
+
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* go-gcc.cc (Gcc_backend::type_size): Use tree_fits_uhwi_p.
+
+2014-05-06  Chris Manghane  <cmang@google.com>
+
+	* go-c.h (go_create_gogo): Update declaration to add
+	check_divide_zero and check_divide_overflow parameters.
+	* go-lang.c (go_langhook_init): Pass new arguments to
+	go_create_gogo.
+
+2014-05-05  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::implicit_variable): Rename from
+	gc_root_variable.  Add name and is_constant parameters.
+
+2014-05-05  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::indirect_expression): Add btype
+	parameter.
+	(Gcc_backend::temporary_variable): Check for erroneous function.
+
 2014-04-30  Chris Manghane  <cmang@google.com>
 
 	* go-backend.c: #include "diagnostics.h".

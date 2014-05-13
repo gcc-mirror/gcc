@@ -1165,7 +1165,7 @@ immediate_operand (rtx op, enum machine_mode mode)
 					    : mode, op));
 }
 
-/* Returns 1 if OP is an operand that is a CONST_INT.  */
+/* Returns 1 if OP is an operand that is a CONST_INT of mode MODE.  */
 
 int
 const_int_operand (rtx op, enum machine_mode mode)
@@ -1180,8 +1180,51 @@ const_int_operand (rtx op, enum machine_mode mode)
   return 1;
 }
 
+#if TARGET_SUPPORTS_WIDE_INT
+/* Returns 1 if OP is an operand that is a CONST_INT or CONST_WIDE_INT
+   of mode MODE.  */
+int
+const_scalar_int_operand (rtx op, enum machine_mode mode)
+{
+  if (!CONST_SCALAR_INT_P (op))
+    return 0;
+
+  if (CONST_INT_P (op))
+    return const_int_operand (op, mode);
+
+  if (mode != VOIDmode)
+    {
+      int prec = GET_MODE_PRECISION (mode);
+      int bitsize = GET_MODE_BITSIZE (mode);
+
+      if (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT > bitsize)
+	return 0;
+
+      if (prec == bitsize)
+	return 1;
+      else
+	{
+	  /* Multiword partial int.  */
+	  HOST_WIDE_INT x
+	    = CONST_WIDE_INT_ELT (op, CONST_WIDE_INT_NUNITS (op) - 1);
+	  return (sext_hwi (x, prec & (HOST_BITS_PER_WIDE_INT - 1)) == x);
+	}
+    }
+  return 1;
+}
+
 /* Returns 1 if OP is an operand that is a constant integer or constant
-   floating-point number.  */
+   floating-point number of MODE.  */
+
+int
+const_double_operand (rtx op, enum machine_mode mode)
+{
+  return (GET_CODE (op) == CONST_DOUBLE)
+	  && (GET_MODE (op) == mode || mode == VOIDmode);
+}
+#else
+/* Returns 1 if OP is an operand that is a constant integer or constant
+   floating-point number of MODE.  */
 
 int
 const_double_operand (rtx op, enum machine_mode mode)
@@ -1197,8 +1240,9 @@ const_double_operand (rtx op, enum machine_mode mode)
 	  && (mode == VOIDmode || GET_MODE (op) == mode
 	      || GET_MODE (op) == VOIDmode));
 }
-
-/* Return 1 if OP is a general operand that is not an immediate operand.  */
+#endif
+/* Return 1 if OP is a general operand that is not an immediate
+   operand of mode MODE.  */
 
 int
 nonimmediate_operand (rtx op, enum machine_mode mode)
@@ -3832,7 +3876,7 @@ const pass_data pass_data_peephole2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_df_finish | TODO_verify_rtl_sharing | 0 ), /* todo_flags_finish */
+  TODO_df_finish, /* todo_flags_finish */
 };
 
 class pass_peephole2 : public rtl_opt_pass
@@ -4036,7 +4080,7 @@ const pass_data pass_data_split_before_sched2 =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_flow, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_split_before_sched2 : public rtl_opt_pass
@@ -4084,7 +4128,7 @@ const pass_data pass_data_split_for_shorten_branches =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_verify_rtl_sharing, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_split_for_shorten_branches : public rtl_opt_pass

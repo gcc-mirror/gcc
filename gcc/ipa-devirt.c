@@ -1137,6 +1137,17 @@ give_up:
   context->outer_type = expected_type;
   context->offset = 0;
   context->maybe_derived_type = true;
+  context->maybe_in_construction = true;
+  /* POD can be changed to an instance of a polymorphic type by
+     placement new.  Here we play safe and assume that any
+     non-polymorphic type is POD.  */
+  if ((TREE_CODE (type) != RECORD_TYPE
+       || !TYPE_BINFO (type)
+       || !polymorphic_type_binfo_p (TYPE_BINFO (type)))
+      && (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	  || (offset + tree_to_uhwi (TYPE_SIZE (expected_type)) <=
+	      tree_to_uhwi (TYPE_SIZE (type)))))
+    return true;
   return false;
 }
 
@@ -1351,7 +1362,7 @@ get_polymorphic_call_info (tree fndecl,
 		{
 		  base_pointer = TREE_OPERAND (base, 0);
 		  context->offset
-		     += offset2 + mem_ref_offset (base).low * BITS_PER_UNIT;
+		    += offset2 + mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
 		  context->outer_type = NULL;
 		}
 	      /* We found base object.  In this case the outer_type

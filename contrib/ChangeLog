@@ -1,3 +1,12 @@
+2014-05-09  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config-list.mk (show): New target.
+
+2014-05-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* dg-extract-results.py: New file.
+	* dg-extract-results.sh: Use it if the environment seems suitable.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config-list.mk (LIST): Remove sparc-sun-solaris2.9, i686-solaris2.9.

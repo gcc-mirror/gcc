@@ -32,4 +32,52 @@ int foo2 ()
   return global_func (a);
 }
 
-/* { dg-final { scan-assembler-times "stack_chk_fail" 2 } } */
+/* Frame addressed exposed through return slot. */
+
+struct B
+{
+  /* Discourage passing this struct in registers. */
+  int a1, a2, a3, a4, a5, a6, a7, a8, a9, a10;
+  int method ();
+  B return_slot();
+};
+
+B global_func ();
+void noop ();
+
+int foo3 ()
+{
+  return global_func ().a1;
+}
+
+int foo4 ()
+{
+  try {
+    noop ();
+    return 0;
+  } catch (...) {
+    return global_func ().a1;
+  }
+}
+
+int foo5 ()
+{
+  try {
+    return global_func ().a1;
+  } catch (...) {
+    return 0;
+  }
+}
+
+int foo6 ()
+{
+  B b;
+  return b.method ();
+}
+
+int foo7 (B *p)
+{
+  return p->return_slot ().a1;
+}
+
+/* { dg-final { scan-assembler-times "stack_chk_fail" 7 } } */

@@ -2635,22 +2635,7 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
               /* Handle unary operators that can appear in GIMPLE form.
                  Note that we know the single operand must be a constant,
                  so this should almost always return a simplified RHS.  */
-	      tree lhs = gimple_assign_lhs (stmt);
               tree op0 = (*valueize) (gimple_assign_rhs1 (stmt));
-
-	      /* Conversions are useless for CCP purposes if they are
-		 value-preserving.  Thus the restrictions that
-		 useless_type_conversion_p places for restrict qualification
-		 of pointer types should not apply here.
-		 Substitution later will only substitute to allowed places.  */
-	      if (CONVERT_EXPR_CODE_P (subcode)
-		  && POINTER_TYPE_P (TREE_TYPE (lhs))
-		  && POINTER_TYPE_P (TREE_TYPE (op0))
-		  && TYPE_ADDR_SPACE (TREE_TYPE (lhs))
-		     == TYPE_ADDR_SPACE (TREE_TYPE (op0))
-		  && TYPE_MODE (TREE_TYPE (lhs))
-		     == TYPE_MODE (TREE_TYPE (op0)))
-		return op0;
 
               return
 		fold_unary_ignore_overflow_loc (loc, subcode,
@@ -2836,7 +2821,7 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
 	{
 	  if (!tree_fits_shwi_p (TREE_OPERAND (base, 1)))
 	    return NULL_TREE;
-	  *bit_offset += (mem_ref_offset (base).low
+	  *bit_offset += (mem_ref_offset (base).to_short_addr ()
 			  * BITS_PER_UNIT);
 	}
 
@@ -2931,9 +2916,10 @@ fold_array_ctor_reference (tree type, tree ctor,
 {
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
-  double_int low_bound, elt_size;
-  double_int index, max_index;
-  double_int access_index;
+  offset_int low_bound;
+  offset_int elt_size;
+  offset_int index, max_index;
+  offset_int access_index;
   tree domain_type = NULL_TREE, index_type = NULL_TREE;
   HOST_WIDE_INT inner_offset;
 
@@ -2945,32 +2931,30 @@ fold_array_ctor_reference (tree type, tree ctor,
       /* Static constructors for variably sized objects makes no sense.  */
       gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
       index_type = TREE_TYPE (TYPE_MIN_VALUE (domain_type));
-      low_bound = tree_to_double_int (TYPE_MIN_VALUE (domain_type));
+      low_bound = wi::to_offset (TYPE_MIN_VALUE (domain_type));
     }
   else
-    low_bound = double_int_zero;
+    low_bound = 0;
   /* Static constructors for variably sized objects makes no sense.  */
   gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))))
 	      == INTEGER_CST);
-  elt_size =
-    tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
-
+  elt_size = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
 
   /* We can handle only constantly sized accesses that are known to not
      be larger than size of array element.  */
   if (!TYPE_SIZE_UNIT (type)
       || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-      || elt_size.slt (tree_to_double_int (TYPE_SIZE_UNIT (type)))
-      || elt_size.is_zero ())
+      || wi::lts_p (elt_size, wi::to_offset (TYPE_SIZE_UNIT (type)))
+      || elt_size == 0)
     return NULL_TREE;
 
   /* Compute the array index we look for.  */
-  access_index = double_int::from_uhwi (offset / BITS_PER_UNIT)
-		 .udiv (elt_size, TRUNC_DIV_EXPR);
+  access_index = wi::udiv_trunc (offset_int (offset / BITS_PER_UNIT),
+				 elt_size);
   access_index += low_bound;
   if (index_type)
-    access_index = access_index.ext (TYPE_PRECISION (index_type),
-				     TYPE_UNSIGNED (index_type));
+    access_index = wi::ext (access_index, TYPE_PRECISION (index_type),
+			    TYPE_SIGN (index_type));
 
   /* And offset within the access.  */
   inner_offset = offset % (elt_size.to_uhwi () * BITS_PER_UNIT);
@@ -2980,9 +2964,10 @@ fold_array_ctor_reference (tree type, tree ctor,
   if (inner_offset + size > elt_size.to_uhwi () * BITS_PER_UNIT)
     return NULL_TREE;
 
-  index = low_bound - double_int_one;
+  index = low_bound - 1;
   if (index_type)
-    index = index.ext (TYPE_PRECISION (index_type), TYPE_UNSIGNED (index_type));
+    index = wi::ext (index, TYPE_PRECISION (index_type),
+		     TYPE_SIGN (index_type));
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
     {
@@ -2992,26 +2977,26 @@ fold_array_ctor_reference (tree type, tree ctor,
       if (cfield)
 	{
 	  if (TREE_CODE (cfield) == INTEGER_CST)
-	    max_index = index = tree_to_double_int (cfield);
+	    max_index = index = wi::to_offset (cfield);
 	  else
 	    {
 	      gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
-	      index = tree_to_double_int (TREE_OPERAND (cfield, 0));
-	      max_index = tree_to_double_int (TREE_OPERAND (cfield, 1));
+	      index = wi::to_offset (TREE_OPERAND (cfield, 0));
+	      max_index = wi::to_offset (TREE_OPERAND (cfield, 1));
 	    }
 	}
       else
 	{
-	  index += double_int_one;
+	  index += 1;
 	  if (index_type)
-	    index = index.ext (TYPE_PRECISION (index_type),
-			       TYPE_UNSIGNED (index_type));
+	    index = wi::ext (index, TYPE_PRECISION (index_type),
+			     TYPE_SIGN (index_type));
 	  max_index = index;
 	}
 
       /* Do we have match?  */
-      if (access_index.cmp (index, 1) >= 0
-	  && access_index.cmp (max_index, 1) <= 0)
+      if (wi::cmpu (access_index, index) >= 0
+	  && wi::cmpu (access_index, max_index) <= 0)
 	return fold_ctor_reference (type, cval, inner_offset, size,
 				    from_decl);
     }
@@ -3038,10 +3023,8 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       tree byte_offset = DECL_FIELD_OFFSET (cfield);
       tree field_offset = DECL_FIELD_BIT_OFFSET (cfield);
       tree field_size = DECL_SIZE (cfield);
-      double_int bitoffset;
-      double_int byte_offset_cst = tree_to_double_int (byte_offset);
-      double_int bits_per_unit_cst = double_int::from_uhwi (BITS_PER_UNIT);
-      double_int bitoffset_end, access_end;
+      offset_int bitoffset;
+      offset_int bitoffset_end, access_end;
 
       /* Variable sized objects in static constructors makes no sense,
 	 but field_size can be NULL for flexible array members.  */
@@ -3052,30 +3035,30 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 		      : TREE_CODE (TREE_TYPE (cfield)) == ARRAY_TYPE));
 
       /* Compute bit offset of the field.  */
-      bitoffset = tree_to_double_int (field_offset)
-		  + byte_offset_cst * bits_per_unit_cst;
+      bitoffset = (wi::to_offset (field_offset)
+		   + wi::lshift (wi::to_offset (byte_offset),
+				 LOG2_BITS_PER_UNIT));
       /* Compute bit offset where the field ends.  */
       if (field_size != NULL_TREE)
-	bitoffset_end = bitoffset + tree_to_double_int (field_size);
+	bitoffset_end = bitoffset + wi::to_offset (field_size);
       else
-	bitoffset_end = double_int_zero;
+	bitoffset_end = 0;
 
-      access_end = double_int::from_uhwi (offset)
-		   + double_int::from_uhwi (size);
+      access_end = offset_int (offset) + size;
 
       /* Is there any overlap between [OFFSET, OFFSET+SIZE) and
 	 [BITOFFSET, BITOFFSET_END)?  */
-      if (access_end.cmp (bitoffset, 0) > 0
+      if (wi::cmps (access_end, bitoffset) > 0
 	  && (field_size == NULL_TREE
-	      || double_int::from_uhwi (offset).slt (bitoffset_end)))
+	      || wi::lts_p (offset, bitoffset_end)))
 	{
-	  double_int inner_offset = double_int::from_uhwi (offset) - bitoffset;
+	  offset_int inner_offset = offset_int (offset) - bitoffset;
 	  /* We do have overlap.  Now see if field is large enough to
 	     cover the access.  Give up for accesses spanning multiple
 	     fields.  */
-	  if (access_end.cmp (bitoffset_end, 0) > 0)
+	  if (wi::cmps (access_end, bitoffset_end) > 0)
 	    return NULL_TREE;
-	  if (double_int::from_uhwi (offset).slt (bitoffset))
+	  if (wi::lts_p (offset, bitoffset))
 	    return NULL_TREE;
 	  return fold_ctor_reference (type, cval,
 				      inner_offset.to_uhwi (), size,
@@ -3166,37 +3149,42 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	  && TREE_CODE (idx) == INTEGER_CST)
 	{
 	  tree low_bound, unit_size;
-	  double_int doffset;
 
 	  /* If the resulting bit-offset is constant, track it.  */
 	  if ((low_bound = array_ref_low_bound (t),
 	       TREE_CODE (low_bound) == INTEGER_CST)
 	      && (unit_size = array_ref_element_size (t),
-		  tree_fits_uhwi_p (unit_size))
-	      && (doffset = (TREE_INT_CST (idx) - TREE_INT_CST (low_bound))
-			    .sext (TYPE_PRECISION (TREE_TYPE (idx))),
-		  doffset.fits_shwi ()))
+		  tree_fits_uhwi_p (unit_size)))
 	    {
-	      offset = doffset.to_shwi ();
-	      offset *= tree_to_uhwi (unit_size);
-	      offset *= BITS_PER_UNIT;
+	      offset_int woffset
+		= wi::sext (wi::to_offset (idx) - wi::to_offset (low_bound),
+			    TYPE_PRECISION (TREE_TYPE (idx)));
 
-	      base = TREE_OPERAND (t, 0);
-	      ctor = get_base_constructor (base, &offset, valueize);
-	      /* Empty constructor.  Always fold to 0.  */
-	      if (ctor == error_mark_node)
-		return build_zero_cst (TREE_TYPE (t));
-	      /* Out of bound array access.  Value is undefined,
-		 but don't fold.  */
-	      if (offset < 0)
-		return NULL_TREE;
-	      /* We can not determine ctor.  */
-	      if (!ctor)
-		return NULL_TREE;
-	      return fold_ctor_reference (TREE_TYPE (t), ctor, offset,
-					  tree_to_uhwi (unit_size)
-					  * BITS_PER_UNIT,
-					  base);
+	      if (wi::fits_shwi_p (woffset))
+		{
+		  offset = woffset.to_shwi ();
+		  /* TODO: This code seems wrong, multiply then check
+		     to see if it fits.  */
+		  offset *= tree_to_uhwi (unit_size);
+		  offset *= BITS_PER_UNIT;
+
+		  base = TREE_OPERAND (t, 0);
+		  ctor = get_base_constructor (base, &offset, valueize);
+		  /* Empty constructor.  Always fold to 0.  */
+		  if (ctor == error_mark_node)
+		    return build_zero_cst (TREE_TYPE (t));
+		  /* Out of bound array access.  Value is undefined,
+		     but don't fold.  */
+		  if (offset < 0)
+		    return NULL_TREE;
+		  /* We can not determine ctor.  */
+		  if (!ctor)
+		    return NULL_TREE;
+		  return fold_ctor_reference (TREE_TYPE (t), ctor, offset,
+					      tree_to_uhwi (unit_size)
+					      * BITS_PER_UNIT,
+					      base);
+		}
 	    }
 	}
       /* Fallthru.  */
@@ -3503,7 +3491,7 @@ gimple_val_nonnegative_real_p (tree val)
 		  if ((n & 1) == 0)
 		    {
 		      REAL_VALUE_TYPE cint;
-		      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+		      real_from_integer (&cint, VOIDmode, n, SIGNED);
 		      if (real_identical (&c, &cint))
 			return true;
 		    }
@@ -3616,9 +3604,7 @@ gimple_fold_indirect_ref (tree t)
 	  || DECL_P (TREE_OPERAND (addr, 0)))
 	return fold_build2 (MEM_REF, type,
 			    addr,
-			    build_int_cst_wide (ptype,
-						TREE_INT_CST_LOW (off),
-						TREE_INT_CST_HIGH (off)));
+			    wide_int_to_tree (ptype, off));
     }
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */

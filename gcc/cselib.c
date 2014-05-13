@@ -942,8 +942,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
   /* These won't be handled correctly by the code below.  */
   switch (GET_CODE (x))
     {
-    case CONST_DOUBLE:
-    case CONST_FIXED:
+    CASE_CONST_UNIQUE:
     case DEBUG_EXPR:
       return 0;
 
@@ -1125,15 +1124,20 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       hash += ((unsigned) CONST_INT << 7) + UINTVAL (x);
       return hash ? hash : (unsigned int) CONST_INT;
 
+    case CONST_WIDE_INT:
+      for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
+	hash += CONST_WIDE_INT_ELT (x, i);
+      return hash;
+
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
       hash += (unsigned) code + (unsigned) GET_MODE (x);
-      if (GET_MODE (x) != VOIDmode)
-	hash += real_hash (CONST_DOUBLE_REAL_VALUE (x));
-      else
+      if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (x) == VOIDmode)
 	hash += ((unsigned) CONST_DOUBLE_LOW (x)
 		 + (unsigned) CONST_DOUBLE_HIGH (x));
+      else
+	hash += real_hash (CONST_DOUBLE_REAL_VALUE (x));
       return hash ? hash : (unsigned int) CONST_DOUBLE;
 
     case CONST_FIXED:

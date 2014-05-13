@@ -1,3 +1,1486 @@
+2014-05-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/arm/arm.h (License): Add GCC Runtime Library Exception.
+	* config/arm/aout.h (License): Same.
+	* config/arm/bpabi.h (License): Same.
+	* config/arm/elf.h (License): Same.
+	* config/arm/linux-elf.h (License): Same.
+	* config/arm/linux-gas.h (License): Same.
+	* config/arm/netbsd-elf.h (License): Same.
+	* config/arm/uclinux-eabi.h (License): Same.
+	* config/arm/uclinux-elf.h (License): Same.
+	* config/arm/vxworks.h (License): Same.
+
+2014-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_STMT): Define.
+	* tree.c (omp_clause_num_ops): Increase OMP_CLAUSE_LINEAR
+	number of operands to 3.
+	(walk_tree_1): Walk all operands of OMP_CLAUSE_LINEAR.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_DEPEND.
+	* gimplify.c (gimplify_scan_omp_clauses): Handle
+	OMP_CLAUSE_LINEAR_STMT.
+	* omp-low.c (lower_rec_input_clauses): Fix typo.
+	(maybe_add_implicit_barrier_cancel, lower_omp_1): Add
+	cast between Fortran boolean_type_node and C _Bool if
+	needed.
+
+2014-05-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR tree-optimization/61136
+	* wide-int.h (multiple_of_p): Define a version that doesn't return
+	the quotient.
+	* fold-const.c (extract_muldiv_1): Use wi::multiple_of_p instead of an
+	integer_zerop/const_binop pair.
+	(multiple_of_p): Likewise, converting both operands to widest_int
+	precision.
+
+2014-05-09  Teresa Johnson  <tejohnson@google.com>
+
+	* cgraphunit.c (analyze_functions): Use correct dump file.
+
+2014-05-09  Florian Weimer  <fweimer@redhat.com>
+
+	* cfgexpand.c (stack_protect_decl_p): New function, extracted from
+	expand_used_vars.
+	(stack_protect_return_slot_p): New function.
+	(expand_used_vars): Call stack_protect_decl_p and
+	stack_protect_return_slot_p for -fstack-protector-strong.
+
+2014-05-09  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	PR middle-end/61111
+	* fold-const.c (fold_binary_loc): Changed width of mask.
+
+2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-fixed.md (round<mode>3): Use -1U instead of -1 in
+	unsigned int initializers for regno_in, regno_out.
+
+2014-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/61055
+	* config/avr/avr.md (cc): Add new attribute set_vzn.
+	(addqi3, addqq3, adduqq3, subqi3, subqq3, subuqq3, negqi2) [cc]:
+	Set cc insn attribute to set_vzn instead of set_zn for alternatives
+	with INC, DEC or NEG.
+	* config/avr/avr.c (avr_notice_update_cc): Handle SET_VZN.
+	(avr_out_plus_1): ADIW sets cc0 to CC_SET_CZN.
+	INC, DEC and ADD+ADC set cc0 to CC_CLOBBER.
+
+2014-05-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Revert:
+	2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* wide-int.cc (UTItype): Define.
+	(UDWtype): Define for appropriate W_TYPE_SIZE.
+
+2014-05-09  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (GTFILES): Remove tree-ssa-propagate.c.
+	* tree-ssa-propagate.c: Do not include gt-tree-ssa-propagate.h.
+	(interesting_ssa_edges, varying_ssa_edges): Move out of GC space.
+	(add_ssa_edge, process_ssa_edge_worklist, ssa_prop_init,
+	ssa_propagate): Adjust.
+
+2014-05-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61009
+	* tree-ssa-threadedge.c (thread_through_normal_block): Return a
+	tri-state rather than a boolean.  When a block is too big to
+	thread through, inform caller via negative return value.
+	(thread_across_edge): If a block was too big for normal threading,
+	then it's too big for a joiner too, so remove temporary equivalences
+	and return immediately.
+
+2014-05-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	PR driver/61106
+	* optc-gen.awk: Fix option handling for -Wunused-parameter.
+
+2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59952
+	* config/i386/i386.c (PTA_HASWELL): Remove PTA_RTM.
+
+2014-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61092
+	* config/alpha/alpha.c: Include gimple-iterator.h.
+	(alpha_gimple_fold_builtin): New function.  Move
+	ALPHA_BUILTIN_UMULH folding from ...
+	(alpha_fold_builtin): ... here.
+	(TARGET_GIMPLE_FOLD_BUILTIN): New define.
+
+2014-05-08  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* config/i386/i386.c (ix86_compute_frame_layout): Update
+	preferred_stack_boundary for call, expanded from tls descriptor.
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Update RTX
+	to depend on SP register.
+	(*tls_local_dynamic_base_32_gnu): Ditto.
+	(*tls_local_dynamic_32_once): Ditto.
+	(tls_global_dynamic_64_<mode>): Set
+	ix86_tls_descriptor_calls_expanded_in_cfun.
+	(tls_local_dynamic_base_64_<mode>): Ditto.
+	(tls_global_dynamic_32): Set
+	ix86_tls_descriptor_calls_expanded_in_cfun. Update RTX
+	to depend on SP register.
+	(tls_local_dynamic_base_32): Ditto.
+
+2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm_neon.h: Update comment.
+	* config/arm/neon-docgen.ml: Delete.
+	* config/arm/neon-gen.ml: Delete.
+	* doc/arm-neon-intrinsics.texi: Update comment.
+
+2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm_neon_builtins.def (vadd, vsub): Only define the v2sf
+	and v4sf versions.
+	(vand, vorr, veor, vorn, vbic): Remove.
+	* config/arm/neon.md (neon_vadd, neon_vsub, neon_vadd_unspec): Adjust
+	iterator.
+	(neon_vsub_unspec): Likewise.
+	(neon_vorr, neon_vand, neon_vbic, neon_veor, neon_vorn): Remove.
+
+2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm_neon.h (vadd_s8): GNU C implementation
+	(vadd_s16): Likewise.
+	(vadd_s32): Likewise.
+	(vadd_f32): Likewise.
+	(vadd_u8): Likewise.
+	(vadd_u16): Likewise.
+	(vadd_u32): Likewise.
+	(vadd_s64): Likewise.
+	(vadd_u64): Likewise.
+	(vaddq_s8): Likewise.
+	(vaddq_s16): Likewise.
+	(vaddq_s32): Likewise.
+	(vaddq_s64): Likewise.
+	(vaddq_f32): Likewise.
+	(vaddq_u8): Likewise.
+	(vaddq_u16): Likewise.
+	(vaddq_u32): Likewise.
+	(vaddq_u64): Likewise.
+	(vmul_s8): Likewise.
+	(vmul_s16): Likewise.
+	(vmul_s32): Likewise.
+	(vmul_f32): Likewise.
+	(vmul_u8): Likewise.
+	(vmul_u16): Likewise.
+	(vmul_u32): Likewise.
+	(vmul_p8): Likewise.
+	(vmulq_s8): Likewise.
+	(vmulq_s16): Likewise.
+	(vmulq_s32): Likewise.
+	(vmulq_f32): Likewise.
+	(vmulq_u8): Likewise.
+	(vmulq_u16): Likewise.
+	(vmulq_u32): Likewise.
+	(vsub_s8): Likewise.
+	(vsub_s16): Likewise.
+	(vsub_s32): Likewise.
+	(vsub_f32): Likewise.
+	(vsub_u8): Likewise.
+	(vsub_u16): Likewise.
+	(vsub_u32): Likewise.
+	(vsub_s64): Likewise.
+	(vsub_u64): Likewise.
+	(vsubq_s8): Likewise.
+	(vsubq_s16): Likewise.
+	(vsubq_s32): Likewise.
+	(vsubq_s64): Likewise.
+	(vsubq_f32): Likewise.
+	(vsubq_u8): Likewise.
+	(vsubq_u16): Likewise.
+	(vsubq_u32): Likewise.
+	(vsubq_u64): Likewise.
+	(vand_s8): Likewise.
+	(vand_s16): Likewise.
+	(vand_s32): Likewise.
+	(vand_u8): Likewise.
+	(vand_u16): Likewise.
+	(vand_u32): Likewise.
+	(vand_s64): Likewise.
+	(vand_u64): Likewise.
+	(vandq_s8): Likewise.
+	(vandq_s16): Likewise.
+	(vandq_s32): Likewise.
+	(vandq_s64): Likewise.
+	(vandq_u8): Likewise.
+	(vandq_u16): Likewise.
+	(vandq_u32): Likewise.
+	(vandq_u64): Likewise.
+	(vorr_s8): Likewise.
+	(vorr_s16): Likewise.
+	(vorr_s32): Likewise.
+	(vorr_u8): Likewise.
+	(vorr_u16): Likewise.
+	(vorr_u32): Likewise.
+	(vorr_s64): Likewise.
+	(vorr_u64): Likewise.
+	(vorrq_s8): Likewise.
+	(vorrq_s16): Likewise.
+	(vorrq_s32): Likewise.
+	(vorrq_s64): Likewise.
+	(vorrq_u8): Likewise.
+	(vorrq_u16): Likewise.
+	(vorrq_u32): Likewise.
+	(vorrq_u64): Likewise.
+	(veor_s8): Likewise.
+	(veor_s16): Likewise.
+	(veor_s32): Likewise.
+	(veor_u8): Likewise.
+	(veor_u16): Likewise.
+	(veor_u32): Likewise.
+	(veor_s64): Likewise.
+	(veor_u64): Likewise.
+	(veorq_s8): Likewise.
+	(veorq_s16): Likewise.
+	(veorq_s32): Likewise.
+	(veorq_s64): Likewise.
+	(veorq_u8): Likewise.
+	(veorq_u16): Likewise.
+	(veorq_u32): Likewise.
+	(veorq_u64): Likewise.
+	(vbic_s8): Likewise.
+	(vbic_s16): Likewise.
+	(vbic_s32): Likewise.
+	(vbic_u8): Likewise.
+	(vbic_u16): Likewise.
+	(vbic_u32): Likewise.
+	(vbic_s64): Likewise.
+	(vbic_u64): Likewise.
+	(vbicq_s8): Likewise.
+	(vbicq_s16): Likewise.
+	(vbicq_s32): Likewise.
+	(vbicq_s64): Likewise.
+	(vbicq_u8): Likewise.
+	(vbicq_u16): Likewise.
+	(vbicq_u32): Likewise.
+	(vbicq_u64): Likewise.
+	(vorn_s8): Likewise.
+	(vorn_s16): Likewise.
+	(vorn_s32): Likewise.
+	(vorn_u8): Likewise.
+	(vorn_u16): Likewise.
+	(vorn_u32): Likewise.
+	(vorn_s64): Likewise.
+	(vorn_u64): Likewise.
+	(vornq_s8): Likewise.
+	(vornq_s16): Likewise.
+	(vornq_s32): Likewise.
+	(vornq_s64): Likewise.
+	(vornq_u8): Likewise.
+	(vornq_u16): Likewise.
+	(vornq_u32): Likewise.
+	(vornq_u64): Likewise.
+
+2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* wide-int.cc (UTItype): Define.
+	(UDWtype): Define for appropriate W_TYPE_SIZE.
+
+2014-05-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/59100
+	* tree-ssa-phiopt.c: Include tree-inline.h.
+	(neutral_element_p, absorbing_element_p): New functions.
+	(value_replacement): Handle conditional binary operations with a
+	neutral or absorbing element.
+
+2014-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_get_expr_for): Valueize operands before
+	folding the expression.
+	(valueize_expr): Remove.
+	(visit_reference_op_load): Do not valueize the result of
+	vn_get_expr_for.
+	(simplify_binary_expression): Likewise.
+	(simplify_unary_expression): Likewise.
+
+2014-05-08  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_call_expr): Use saved fnptrtype for
+	looking at TYPE_ARG_TYPES.
+
+2014-05-08  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Remove
+	pointer propagation special-case.
+
+2014-05-08  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-affine.c (tree_to_aff_combination): Handle MEM_REF for
+	core part of address expressions.
+
+2014-05-08  Alan Modra  <amodra@gmail.com>
+
+	PR target/60737
+	* config/rs6000/rs6000.c (expand_block_move): Allow 64-bit
+	loads and stores when -mno-strict-align at any alignment.
+	(expand_block_clear): Similarly.  Also correct calculation of
+	instruction count.
+
+2014-05-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/39246
+	* tree-complex.c (expand_complex_move): Keep line info when expanding
+	complex move.
+	* tree-ssa-uninit.c (warn_uninit): New argument. Ignore assignment
+	of complex expression. Use new argument to display correct location
+	for values coming from phi statement.
+	(warn_uninitialized_vars): Adapt to new signature of warn_uninit.
+	(warn_uninitialized_phi): Pass location of phi argument to
+	warn_uninit.
+	* tree-ssa.c (ssa_undefined_value_p): For SSA_NAME initialized by a
+	COMPLEX_EXPR, recurse on each part of the COMPLEX_EXPR.
+
+2014-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (indexed_address_mem): New.
+	* config/rs6000/rs6000.md (type): Remove load_ext, load_ext_u,
+	load_ext_ux, load_ux, load_u, store_ux, store_u, fpload_ux, fpload_u,
+	fpstore_ux, fpstore_u.
+	(sign_extend, indexed, update): New.
+	(cell_micro): Adjust.
+	(*zero_extend<mode>di2_internal1, *zero_extendsidi2_lfiwzx,
+	*extendsidi2_lfiwax, *extendsidi2_nocell, *extendsfdf2_fpr,
+	*movsi_internal1, *movsi_internal1_single, *movhi_internal,
+	*movqi_internal, *movcc_internal1, mov<mode>_hardfloat,
+	*mov<mode>_softfloat, *mov<mode>_hardfloat32, *mov<mode>_hardfloat64,
+	*mov<mode>_softfloat64, *movdi_internal32, *movdi_internal64,
+	*mov<mode>_string, *ldmsi8, *ldmsi7, *ldmsi6, *ldmsi5, *ldmsi4,
+	*ldmsi3, *stmsi8, *stmsi7, *stmsi6, *stmsi5, *stmsi4, *stmsi3,
+	*movdi_update1, movdi_<mode>_update, movdi_<mode>_update_stack,
+	*movsi_update1, *movsi_update2, movsi_update, movsi_update_stack,
+	*movhi_update1, *movhi_update2, *movhi_update3, *movhi_update4,
+	*movqi_update1, *movqi_update2, *movqi_update3, *movsf_update1,
+	*movsf_update2, *movsf_update3, *movsf_update4, *movdf_update1,
+	*movdf_update2, load_toc_aix_si, load_toc_aix_di, probe_stack_<mode>,
+	*stmw, *lmw, as well as 10 anonymous patterns): Adjust.
+
+	* config/rs6000/dfp.md (movsd_store, movsd_load): Adjust.
+	* config/rs6000/vsx.md (*vsx_movti_32bit, *vsx_extract_<mode>_load,
+	*vsx_extract_<mode>_store): Adjust.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost, is_microcoded_insn,
+	is_cracked_insn, insn_must_be_first_in_group,
+	insn_must_be_last_in_group): Adjust.
+
+	* config/rs6000/40x.md (ppc403-load, ppc403-store, ppc405-float):
+	Adjust.
+	* config/rs6000/440.md (ppc440-load, ppc440-store, ppc440-fpload,
+	ppc440-fpstore): Adjust.
+	* config/rs6000/476.md (ppc476-load, ppc476-store, ppc476-fpload,
+	ppc476-fpstore): Adjust.
+	* config/rs6000/601.md (ppc601-load, ppc601-store, ppc601-fpload,
+	ppc601-fpstore): Adjust.
+	* config/rs6000/603.md (ppc603-load, ppc603-store, ppc603-fpload):
+	Adjust.
+	* config/rs6000/6xx.md (ppc604-load, ppc604-store, ppc604-fpload):
+	Adjust.
+	* config/rs6000/7450.md (ppc7450-load, ppc7450-store, ppc7450-fpload,
+	ppc7450-fpstore): Adjust.
+	* config/rs6000/7xx.md (ppc750-load, ppc750-store): Adjust.
+	* config/rs6000/8540.md (ppc8540_load, ppc8540_store): Adjust.
+	* config/rs6000/a2.md (ppca2-load, ppca2-fp-load, ppca2-fp-store):
+	Adjust.
+	* config/rs6000/cell.md (cell-load, cell-load-ux, cell-load-ext,
+	cell-fpload, cell-fpload-update, cell-store, cell-store-update,
+	cell-fpstore, cell-fpstore-update): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_load, ppce300c3_fpload,
+	ppce300c3_store, ppce300c3_fpstore): Adjust.
+	* config/rs6000/e500mc.md (e500mc_load, e500mc_fpload, e500mc_store,
+	e500mc_fpstore): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_load, e500mc64_fpload,
+	e500mc64_store, e500mc64_fpstore): Adjust.
+	* config/rs6000/e5500.md (e5500_load, e5500_fpload, e5500_store,
+	e5500_fpstore): Adjust.
+	* config/rs6000/e6500.md (e6500_load, e6500_fpload, e6500_store,
+	e6500_fpstore): Adjust.
+	* config/rs6000/mpc.md (mpccore-load, mpccore-store, mpccore-fpload):
+	Adjust.
+	* config/rs6000/power4.md (power4-load, power4-load-ext,
+	power4-load-ext-update, power4-load-ext-update-indexed,
+	power4-load-update-indexed, power4-load-update, power4-fpload,
+	power4-fpload-update, power4-store, power4-store-update,
+	power4-store-update-indexed, power4-fpstore, power4-fpstore-update):
+	Adjust.
+	* config/rs6000/power5.md (power5-load, power5-load-ext,
+	power5-load-ext-update, power5-load-ext-update-indexed,
+	power5-load-update-indexed, power5-load-update, power5-fpload,
+	power5-fpload-update, power5-store, power5-store-update,
+	power5-store-update-indexed, power5-fpstore, power5-fpstore-update):
+	Adjust.
+	* config/rs6000/power6.md (power6-load, power6-load-ext,
+	power6-load-update, power6-load-update-indexed,
+	power6-load-ext-update, power6-load-ext-update-indexed, power6-fpload,
+	power6-fpload-update, power6-store, power6-store-update,
+	power6-store-update-indexed, power6-fpstore, power6-fpstore-update):
+	Adjust.
+	* config/rs6000/power7.md (power7-load, power7-load-ext,
+	power7-load-update, power7-load-update-indexed,
+	power7-load-ext-update, power7-load-ext-update-indexed, power7-fpload,
+	power7-fpload-update, power7-store, power7-store-update,
+	power7-store-update-indexed, power7-fpstore, power7-fpstore-update):
+	Adjust.
+	* config/rs6000/power8.md (power8-load, power8-load-update,
+	power8-load-ext, power8-load-ext-update, power8-fpload,
+	power8-fpload-update, power8-store, power8-store-update-indexed,
+	power8-fpstore, power8-fpstore-update): Adjust.
+	* config/rs6000/rs64.md (rs64a-load, rs64a-store, rs64a-fpload):
+	Adjust.
+	* config/rs6000/titan.md (titan_lsu_load, titan_lsu_fpload,
+	titan_lsu_store, titan_lsu_fpstore): Adjust.
+	* config/rs6000/xfpu.md (fp-load, fp-store): Adjust.
+
+2014-05-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/60884
+	* config/sh/sh-mem.cc (sh_expand_strlen): Use loop when emitting
+	unrolled byte insns.  Emit address increments after move insns.
+
+2014-05-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple.h (gimple_builtin_call_types_compatible_p): Accept a
+	const_gimple, rather than a gimple.
+	(gimple_call_builtin_p): Likewise, for the three variants.
+
+	* gimple.c (gimple_builtin_call_types_compatible_p): Likewise.
+	(gimple_call_builtin_p): Likewise, for the three variants.
+
+2014-05-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	PR tree-optimization/61095
+	* tree-ssanames.c (get_nonzero_bits): Fix type extension in wi::shwi.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61034
+	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Export.
+	(maybe_skip_until): Use translate to take into account
+	lattices when trying to do disambiguations.
+	(get_continuation_for_phi_1): Likewise.
+	(get_continuation_for_phi): Adjust for added translate arguments.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-alias.h (get_continuation_for_phi): Adjust prototype.
+	(walk_non_aliased_vuses): Likewise.
+	(call_may_clobber_ref_p_1): Declare.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Also disambiguate against
+	calls.  Stop early if we are only supposed to disambiguate.
+	* tree-ssa-pre.c (translate_vuse_through_block): Adjust.
+
+2014-05-07  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_handle_interrupt_attribute):
+	Emit an error when the function has arguments.
+
+2014-05-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cfgloop.h (unswitch_loops): Remove.
+	* doc/passes.texi: Remove references to loop-unswitch.c
+	* timevar.def (TV_LOOP_UNSWITCH): Remove.
+
+2014-05-07  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* tree-vect-data-refs.c (vect_grouped_load_supported): New
+	check for loads group of length 3.
+	(vect_permute_load_chain): New permutations for loads group of
+	length 3.
+	* tree-vect-stmts.c (vect_model_load_cost): Change cost
+	of vec_perm_shuffle for the new permutations.
+
+2014-05-07  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vtrn1_f32, vtrn1_p8, vtrn1_p16, vtrn1_s8,
+	vtrn1_s16, vtrn1_s32, vtrn1_u8, vtrn1_u16, vtrn1_u32, vtrn1q_f32,
+	vtrn1q_f64, vtrn1q_p8, vtrn1q_p16, vtrn1q_s8, vtrn1q_s16, vtrn1q_s32,
+	vtrn1q_s64, vtrn1q_u8, vtrn1q_u16, vtrn1q_u32, vtrn1q_u64, vtrn2_f32,
+	vtrn2_p8, vtrn2_p16, vtrn2_s8, vtrn2_s16, vtrn2_s32, vtrn2_u8,
+	vtrn2_u16, vtrn2_u32, vtrn2q_f32, vtrn2q_f64, vtrn2q_p8, vtrn2q_p16,
+	vtrn2q_s8, vtrn2q_s16, vtrn2q_s32, vtrn2q_s64, vtrn2q_u8, vtrn2q_u16,
+	vtrn2q_u32, vtrn2q_u64): Replace temporary asm with __builtin_shuffle.
+
+2014-05-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* loop-unswitch.c: Delete.
+
+2014-05-07  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Always set need_64bit_hwint to yes.
+
+2014-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (HONOR_REG_ALLOC_ORDER): Have it in favor
+	of using optimize_size.
+
+2014-05-06  Mike Stump  <mikestump@comcast.net>
+
+	* wide-int.h (wi::int_traits <HOST_WIDE_INT>): Always define.
+
+2014-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/sse.md (*mov<mode>_internal)
+	(*<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>)
+	(*<sse2_avx_avx512f>_loaddqu<mode><mask_name>)
+	(<sse>_andnot<mode>3, <code><mode>3, *andnot<mode>3)
+	(*<code><mode>3, *andnot<mode>3<mask_name>)
+	(<mask_codefor><code><mode>3<mask_name>): Only consider
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL for modes of size 16.
+
+2014-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Revert:
+	2014-05-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lra-constraints.c (valid_address_p): Move earlier in file.
+	Add a constraint argument to the address_info version.
+	(satisfies_memory_constraint_p): New function.
+	(satisfies_address_constraint_p): Likewise.
+	(process_alt_operands, curr_insn_transform): Use them.
+	(process_address): Pass the constraint to valid_address_p when
+	checking address operands.
+
+2014-05-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* lto-cgraph.c (compute_ltrans_boundary): Make node variables local
+	to their respective blocks.  Fix inadvertent use of "node".
+
+2014-05-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* emit-rtl.c (init_derived_machine_modes): New functionm, split
+	out from...
+	(init_emit_once): ...here.
+	* rtl.h (init_derived_machine_modes): Declare.
+	* toplev.c (do_compile): Call it even if no_backend.
+
+2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* alias.c (ao_ref_from_mem): Use wide-int interfaces.
+	(rtx_equal_for_memref_p): Update comment.
+	(adjust_offset_for_component_ref): Use wide-int interfaces.
+	* builtins.c (get_object_alignment_2): Likewise.
+	(c_readstr): Likewise.
+	(target_char_cast): Add comment.
+	(determine_block_size): Use wide-int interfaces.
+	(expand_builtin_signbit): Likewise.
+	(fold_builtin_int_roundingfn): Likewise.
+	(fold_builtin_bitop): Likewise.
+	(fold_builtin_bswap): Likewise.
+	(fold_builtin_logarithm): Use signop.
+	(fold_builtin_pow): Likewise.
+	(fold_builtin_memory_op): Use wide-int interfaces.
+	(fold_builtin_object_size): Likewise.
+	* cfgloop.c (alloc_loop): Initialize nb_iterations_upper_bound and
+	nb_iterations_estimate.
+	(record_niter_bound): Use wide-int interfaces.
+	(get_estimated_loop_iterations_int): Likewise.
+	(get_estimated_loop_iterations): Likewise.
+	(get_max_loop_iterations): Likewise.
+	* cfgloop.h: Include wide-int.h.
+	(struct nb_iter_bound): Change bound to widest_int.
+	(struct loop): Change nb_iterations_upper_bound and
+	nb_iterations_estimate to widest_int.
+	(record_niter_bound): Switch to use widest_int.
+	(get_estimated_loop_iterations): Likewise.
+	(get_max_loop_iterations): Likewise.
+	(gcov_type_to_double_int): Rename to gcov_type_to_wide_int and
+	update for wide-int.
+	* cgraph.c (cgraph_add_thunk): Use wide-int interfaces.
+	* combine.c (try_combine): Likewise.
+	(subst): Use CONST_SCALAR_INT_P rather than CONST_INT_P.
+	* config/aarch64/aarch64.c (aapcs_vfp_sub_candidate): Use wide-int
+	interfaces.
+	(aarch64_float_const_representable_p): Likewise.
+	* config/arc/arc.c: Include wide-int.h.
+	(arc_can_use_doloop_p): Use wide-int interfaces.
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Likewise.
+	(vfp3_const_double_index): Likewise.
+	* config/avr/avr.c (avr_out_round): Likewise.
+	(avr_fold_builtin): Likewise.
+	* config/bfin/bfin.c (bfin_local_alignment): Likewise.
+	(bfin_can_use_doloop_p): Likewise.
+	* config/darwin.c (darwin_mergeable_constant_section): Likewise.
+	(machopic_select_rtx_section): Update to handle CONST_WIDE_INT.
+	* config/i386/i386.c: Include wide-int.h.
+	(ix86_data_alignment): Use wide-int interfaces.
+	(ix86_local_alignment): Likewise.
+	(ix86_emit_swsqrtsf): Update real_from_integer.
+	* config/msp430/msp430.c (msp430_attr): Use wide-int interfaces.
+	* config/nds32/nds32.c (nds32_insert_attributes): Likewise.
+	* config/rs6000/predicates.md (any_operand): Add const_wide_int.
+	(zero_constant): Likewise.
+	(input_operand): Likewise.
+	(splat_input_operand): Likewise.
+	(non_logical_cint_operand): Change const_double to const_wide_int.
+	* config/rs6000/rs6000.c (num_insns_constant): Handle CONST_WIDE_INT.
+	(easy_altivec_constant): Remove comment.
+	(paired_expand_vector_init): Use CONSTANT_P.
+	(rs6000_legitimize_address): Handle CONST_WIDE_INT.
+	(rs6000_emit_move): Update checks.
+	(rs6000_aggregate_candidate): Use wide-int interfaces.
+	(rs6000_expand_ternop_builtin): Likewise.
+	(rs6000_output_move_128bit): Handle CONST_WIDE_INT.
+	(rs6000_assemble_integer): Likewise.
+	(rs6000_hash_constant): Likewise.
+	(output_toc): Likewise.
+	(rs6000_rtx_costs): Likewise.
+	(rs6000_emit_swrsqrt); Update call to real_from_integer.
+	* config/rs6000/rs6000-c.c: Include wide-int.h.
+	(altivec_resolve_overloaded_builtin): Use wide-int interfaces.
+	* config/rs6000/rs6000.h (TARGET_SUPPORTS_WIDE_INT): New.
+	* config/rs6000/rs6000.md: Use const_scalar_int_operand.
+	Handle CONST_WIDE_INT.
+	* config/sol2-c.c (solaris_pragma_align): Change low to unsigned HWI.
+	Use tree_fits_uhwi_p.
+	* config/sparc/sparc.c: Include wide-int.h.
+	(sparc_fold_builtin): Use wide-int interfaces.
+	* config/vax/vax.c: Include wide-int.h.
+	(vax_float_literal): Use real_from_integer.
+	* coretypes.h (struct hwivec_def): New.
+	(hwivec): New.
+	(const_hwivec): New.
+	* cse.c (hash_rtx_cb): Handle CONST_WIDE_INT.
+	(equiv_constant): Handle CONST_WIDE_INT.
+	* cselib.c (rtx_equal_for_cselib_1): Use CASE_CONST_UNIQUE.
+	(cselib_hash_rtx): Handle CONST_WIDE_INT.
+	* dbxout.c (stabstr_U): Use wide-int interfaces.
+	(dbxout_type): Update to use cst_fits_shwi_p.
+	* defaults.h (LOG2_BITS_PER_UNIT): Define.
+	(TARGET_SUPPORTS_WIDE_INT): Add default.
+	* dfp.c: Include wide-int.h.
+	(decimal_real_to_integer2): Use wide-int interfaces and rename to
+	decimal_real_to_integer.
+	* dfp.h (decimal_real_to_integer2): Return a wide_int and rename to
+	decimal_real_to_integer.
+	* doc/generic.texi (Constant expressions): Update for wide_int.
+	* doc/rtl.texi (const_double): Likewise.
+	(const_wide_int, CONST_WIDE_INT, CONST_WIDE_INT_VEC): New.
+	(CONST_WIDE_INT_NUNITS, CONST_WIDE_INT_ELT): New.
+	* doc/tm.texi.in (REAL_VALUE_TO_INT): Remove.
+	(REAL_VALUE_FROM_INT): Remove.
+	(TARGET_SUPPORTS_WIDE_INT): New.
+	* doc/tm.texi: Regenerate.
+	* dojump.c (prefer_and_bit_test): Use wide-int interfaces.
+	* double-int.h: Include wide-int.h.
+	(struct wi::int_traits): New.
+	* dwarf2out.c (get_full_len): New.
+	(dw_val_equal_p): Add case dw_val_class_wide_int.
+	(size_of_loc_descr): Likewise.
+	(output_loc_operands): Likewise.
+	(insert_double): Remove.
+	(insert_wide_int): New.
+	(add_AT_wide): New.
+	(print_die): Add case dw_val_class_wide_int.
+	(attr_checksum): Likewise.
+	(attr_checksum_ordered): Likewise.
+	(same_dw_val_p): Likewise.
+	(size_of_die): Likewise.
+	(value_format): Likewise.
+	(output_die): Likewise.
+	(double_int_type_size_in_bits): Rename to offset_int_type_size_in_bits.
+	Use wide-int.
+	(clz_loc_descriptor): Use wide-int interfaces.
+	(mem_loc_descriptor): Likewise.  Handle CONST_WIDE_INT.
+	(loc_descriptor): Use wide-int interfaces.  Handle CONST_WIDE_INT.
+	(round_up_to_align): Use wide-int interfaces.
+	(field_byte_offset): Likewise.
+	(insert_double): Rename to insert_wide_int.  Use wide-int interfaces.
+	(add_const_value_attribute): Handle CONST_WIDE_INT.  Update
+	CONST_DOUBLE handling.  Use wide-int interfaces.
+	(add_bound_info): Use tree_fits_uhwi_p.  Use wide-int interfaces.
+	(gen_enumeration_type_die): Use add_AT_wide.
+	(hash_loc_operands): Add case dw_val_class_wide_int.
+	(compare_loc_operands): Likewise.
+	* dwarf2out.h: Include wide-int.h.
+	(wide_int_ptr): New.
+	(enum dw_val_class): Add dw_val_class_wide_int.
+	(struct dw_val_struct): Add val_wide.
+	* emit-rtl.c (const_wide_int_htab): New.
+	(const_wide_int_htab_hash): New.
+	(const_wide_int_htab_eq): New.
+	(lookup_const_wide_int): New.
+	(const_double_htab_hash): Use wide-int interfaces.
+	(const_double_htab_eq): Likewise.
+	(rtx_to_double_int): Conditionally compile for wide-int.
+	(immed_double_int_const): Rename to immed_wide_int_const and
+	update for wide-int.
+	(immed_double_const): Conditionally compile for wide-int.
+	(init_emit_once): Use wide-int interfaces.
+	* explow.c (plus_constant): Likewise.
+	* expmed.c (mask_rtx): Move further up file.  Use wide-int interfaces.
+	(lshift_value): Use wide-int interfaces.
+	(expand_mult): Likewise.
+	(choose_multiplier): Likewise.
+	(expand_smod_pow2): Likewise.
+	(make_tree): Likewise.
+	* expr.c (convert_modes): Consolidate handling of constants.
+	Use wide-int interfaces.
+	(emit_group_load_1): Add note.
+	(store_expr): Update comment.
+	(get_inner_reference): Use wide-int interfaces.
+	(expand_constructor): Update comment.
+	(expand_expr_real_2): Use wide-int interfaces.
+	(expand_expr_real_1): Likewise.
+	(reduce_to_bit_field_precision): Likewise.
+	(const_vector_from_tree): Likewise.
+	* final.c: Include wide-int-print.h.
+	(output_addr_const): Handle CONST_WIDE_INT.  Use CONST_DOUBLE_AS_INT_P.
+	* fixed-value.c: Include wide-int.h.
+	(fixed_from_string): Use wide-int interfaces.
+	(fixed_to_decimal): Likewise.
+	(fixed_convert_from_real): Likewise.
+	(real_convert_from_fixed): Likewise.
+	* fold-const.h (mem_ref_offset): Return an offset_int.
+	(div_if_zero_remainder): Remove code parameter.
+	* fold-const.c (div_if_zero_remainder): Remove code parameter.
+	Use wide-int interfaces.
+	(may_negate_without_overflow_p): Use wide-int interfaces.
+	(negate_expr_p): Likewise.
+	(fold_negate_expr): Likewise.
+	(int_const_binop_1): Likewise.
+	(const_binop): Likewise.
+	(fold_convert_const_int_from_int): Likewise.
+	(fold_convert_const_int_from_real): Likewise.
+	(fold_convert_const_int_from_fixed): Likewise.
+	(fold_convert_const_fixed_from_int): Likewise.
+	(all_ones_mask_p): Take an unsigned size.  Use wide-int interfaces.
+	(sign_bit_p): Use wide-int interfaces.
+	(make_range_step): Likewise.
+	(build_range_check): Likewise.  Pass an integer of the correct type
+	instead of using integer_one_node.
+	(range_predecessor): Pass an integer of the correct type instead
+	of using integer_one_node.
+	(range_successor): Likewise.
+	(merge_ranges): Likewise.
+	(unextend): Use wide-int interfaces.
+	(extract_muldiv_1): Likewise.
+	(fold_div_compare): Likewise.
+	(fold_single_bit_test): Likewise.
+	(fold_sign_changed_comparison): Likewise.
+	(try_move_mult_to_index): Update calls to div_if_zero_remainder.
+	(fold_plusminus_mult_expr): Use wide-int interfaces.
+	(native_encode_int): Likewise.
+	(native_interpret_int): Likewise.
+	(fold_unary_loc): Likewise.
+	(pointer_may_wrap_p): Likewise.
+	(size_low_cst): Likewise.
+	(mask_with_tz): Likewise.
+	(fold_binary_loc): Likewise.
+	(fold_ternary_loc): Likewise.
+	(multiple_of_p): Likewise.
+	(tree_call_nonnegative_warnv_p): Update calls to
+	tree_int_cst_min_precision and real_from_integer.
+	(fold_negate_const): Use wide-int interfaces.
+	(fold_abs_const): Likewise.
+	(fold_relational_const): Use tree_int_cst_lt.
+	(round_up_loc): Use wide-int interfaces.
+	* genemit.c (gen_exp): Add CONST_WIDE_INT case.
+	* gengenrtl.c (excluded_rtx): Add CONST_WIDE_INT case.
+	* gengtype.c: Remove include of double-int.h.
+	(do_typedef): Use wide-int interfaces.
+	(open_base_files): Add wide-int.h.
+	(main): Add offset_int and widest_int typedefs.
+	* gengtype-lex.l: Handle "^".
+	(CXX_KEYWORD): Add "static".
+	* gengtype-parse.c (require3): New.
+	(require_template_declaration): Handle constant template arguments
+	and nested templates.
+	* gengtype-state.c: Don't include "double-int.h".
+	* genpreds.c (write_one_predicate_function): Update comment.
+	(write_tm_constrs_h): Add check for hval and lval use in
+	CONST_WIDE_INT.
+	* genrecog.c (validate_pattern): Add CONST_WIDE_INT case.
+	(add_to_sequence): Likewise.
+	* gensupport.c (struct std_pred_table): Add const_scalar_int_operand
+	and const_double_operand.
+	* gimple.c (preprocess_case_label_vec_for_gimple): Use wide-int
+	interfaces.
+	* gimple-fold.c (get_base_constructor): Likewise.
+	(fold_array_ctor_reference): Likewise.
+	(fold_nonarray_ctor_reference): Likewise.
+	(fold_const_aggregate_ref_1): Likewise.
+	(gimple_val_nonnegative_real_p): Likewise.
+	(gimple_fold_indirect_ref): Likewise.
+	* gimple-pretty-print.c (dump_ssaname_info): Likewise.
+	* gimple-ssa-strength-reduction.c: Include wide-int-print.h.
+	(struct slsr_cand_d): Change index to be widest_int.
+	(struct incr_info_d): Change incr to be widest_int.
+	(alloc_cand_and_find_basis): Use wide-int interfaces.
+	(slsr_process_phi): Likewise.
+	(backtrace_base_for_ref): Likewise.  Return a widest_int.
+	(restructure_reference): Take a widest_int instead of a double_int.
+	(slsr_process_ref): Use wide-int interfaces.
+	(create_mul_ssa_cand): Likewise.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Likewise.
+	(create_add_imm_cand): Take a widest_int instead of a double_int.
+	(slsr_process_add): Use wide-int interfaces.
+	(slsr_process_cast): Likewise.
+	(slsr_process_copy): Likewise.
+	(dump_candidate): Likewise.
+	(dump_incr_vec): Likewise.
+	(replace_ref): Likewise.
+	(cand_increment): Likewise.  Return a widest_int.
+	(cand_abs_increment): Likewise.
+	(replace_mult_candidate): Take a widest_int instead of a double_int.
+	(replace_unconditional_candidate): Use wide-int interfaces.
+	(incr_vec_index): Take a widest_int instead of a double_int.
+	(create_add_on_incoming_edge): Likewise.
+	(create_phi_basis): Use wide-int interfaces.
+	(replace_conditional_candidate): Likewise.
+	(record_increment): Take a widest_int instead of a double_int.
+	(record_phi_increments): Use wide-int interfaces.
+	(phi_incr_cost): Take a widest_int instead of a double_int.
+	(lowest_cost_path): Likewise.
+	(total_savings): Likewise.
+	(analyze_increments): Use wide-int interfaces.
+	(ncd_with_phi): Take a widest_int instead of a double_int.
+	(ncd_of_cand_and_phis): Likewise.
+	(nearest_common_dominator_for_cands): Likewise.
+	(insert_initializers): Use wide-int interfaces.
+	(all_phi_incrs_profitable): Likewise.
+	(replace_one_candidate): Likewise.
+	(replace_profitable_candidates): Likewise.
+	* godump.c: Include wide-int-print.h.
+	(go_output_typedef): Use wide-int interfaces.
+	* graphite-clast-to-gimple.c (gmp_cst_to_tree): Likewise.
+	* graphite-sese-to-poly.c (tree_int_to_gmp): Likewise.
+	(build_loop_iteration_domains): Likewise.
+	* hooks.h: Include wide-int.h rather than double-int.h.
+	(hook_bool_dint_dint_uint_bool_true): Delete.
+	(hook_bool_wint_wint_uint_bool_true): Declare.
+	* hooks.c (hook_bool_dint_dint_uint_bool_true): Removed.
+	(hook_bool_wint_wint_uint_bool_true): New.
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): Use wide-int
+	interfaces.
+	(ubsan_expand_si_overflow_mul_check): Likewise.
+	* ipa-devirt.c (get_polymorphic_call_info): Likewise.
+	* ipa-prop.c (compute_complex_assign_jump_func): Likewise.
+	(get_ancestor_addr_info): Likewise.
+	(ipa_modify_call_arguments): Likewise.
+	* loop-doloop.c (doloop_modify): Likewise.
+	(doloop_optimize): Likewise.
+	* loop-iv.c (iv_number_of_iterations): Likewise.
+	* loop-unroll.c (decide_unroll_constant_iterations): Likewise.
+	(unroll_loop_constant_iterations): Likewise.
+	(decide_unroll_runtime_iterations): Likewise.
+	(unroll_loop_runtime_iterations): Likewise.
+	(decide_peel_simple): Likewise.
+	(decide_unroll_stupid): Likewise.
+	* lto-streamer-in.c (streamer_read_wi): Add.
+	(input_cfg): Use wide-int interfaces.
+	(lto_input_tree_1): Likewise.
+	* lto-streamer-out.c (streamer_write_wi): Add.
+	(hash_tree): Use wide-int interfaces.
+	(output_cfg): Likewise.
+	* Makefile.in (OBJS): Add wide-int.o and wide-int-print.o.
+	(GTFILES): Add wide-int.h and signop.h.
+	(TAGS): Look for .cc files too.
+	* omp-low.c (scan_omp_1_op): Use wide-int interfaces.
+	* optabs.c (expand_subword_shift): Likewise.
+	(expand_doubleword_shift): Likewise.
+	(expand_absneg_bit): Likewise.
+	(expand_copysign_absneg): Likewise.
+	(expand_copysign_bit): Likewise.
+	* postreload.c (reload_cse_simplify_set): Likewise.
+	* predict.c (predict_iv_comparison): Likewise.
+	* pretty-print.h: Include wide-int-print.h.
+	(pp_wide_int) New.
+	* print-rtl.c (print_rtx): Add CONST_WIDE_INT case.
+	* print-tree.c: Include wide-int-print.h.
+	(print_node_brief): Use wide-int interfaces.
+	(print_node): Likewise.
+	* read-rtl.c (validate_const_wide_int): New.
+	(read_rtx_code): Add CONST_WIDE_INT case.
+	* real.c: Include wide-int.h.
+	(real_to_integer2): Delete.
+	(real_to_integer): New function, returning a wide_int.
+	(real_from_integer): Take a wide_int rather than two HOST_WIDE_INTs.
+	(ten_to_ptwo): Update call to real_from_integer.
+	(real_digit): Likewise.
+	* real.h: Include signop.h, wide-int.h and insn-modes.h.
+	(real_to_integer2, REAL_VALUE_FROM_INT, REAL_VALUE_FROM_UNSIGNED_INT)
+	(REAL_VALUE_TO_INT): Delete.
+	(real_to_integer): Declare a wide-int form.
+	(real_from_integer): Take a wide_int rather than two HOST_WIDE_INTs.
+	* recog.c (const_int_operand): Improve comment.
+	(const_scalar_int_operand): New.
+	(const_double_operand): Add a separate definition for CONST_WIDE_INT.
+	* rtlanal.c (commutative_operand_precedence): Handle CONST_WIDE_INT.
+	(split_double): Likewise.
+	* rtl.c (DEF_RTL_EXPR): Handle CONST_WIDE_INT.
+	(rtx_size): Likewise.
+	(rtx_alloc_stat_v): New.
+	(rtx_alloc_stat): Now calls rtx_alloc_stat_v.
+	(cwi_output_hex): New.
+	(iterative_hash_rtx): Handle CONST_WIDE_INT.
+	(cwi_check_failed_bounds): New.
+	* rtl.def (CONST_WIDE_INT): New.
+	* rtl.h: Include <utility> and wide-int.h.
+	(struct hwivec_def): New.
+	(CWI_GET_NUM_ELEM): New.
+	(CWI_PUT_NUM_ELEM): New.
+	(struct rtx_def): Add num_elem and hwiv.
+	(CASE_CONST_SCALAR_INT): Modify for TARGET_SUPPORTS_WIDE_INT.
+	(CASE_CONST_UNIQUE): Likewise.
+	(CASE_CONST_ANY): Likewise.
+	(CONST_SCALAR_INT_P): Likewise.
+	(CONST_WIDE_INT_P): New.
+	(CWI_ELT): New.
+	(HWIVEC_CHECK): New.
+	(cwi_check_failed_bounds): New.
+	(CWI_ELT): New.
+	(HWIVEC_CHECK): New.
+	(CONST_WIDE_INT_VEC) New.
+	(CONST_WIDE_INT_NUNITS) New.
+	(CONST_WIDE_INT_ELT) New.
+	(rtx_mode_t): New type.
+	(wi::int_traits <rtx_mode_t>): New.
+	(wi::shwi): New.
+	(wi::min_value): New.
+	(wi::max_value): New.
+	(rtx_alloc_v) New.
+	(const_wide_int_alloc): New.
+	(immed_wide_int_const): New.
+	* sched-vis.c (print_value): Handle CONST_WIDE_INT.
+	* sel-sched-ir.c (lhs_and_rhs_separable_p): Update comment.
+	* signop.h: New file.
+	* simplify-rtx.c (mode_signbit_p): Handle CONST_WIDE_INT.
+	(simplify_const_unary_operation): Use wide-int interfaces.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	(simplify_immed_subreg): Likewise.
+	* stmt.c (expand_case): Likewise.
+	* stor-layout.h (set_min_and_max_values_for_integral_type): Take a
+	signop rather than a bool.
+	* stor-layout.c (layout_type): Use wide-int interfaces.
+	(initialize_sizetypes): Update calls to
+	set_min_and_max_values_for_integral_type.
+	(set_min_and_max_values_for_integral_type): Take a signop rather
+	than a bool.  Use wide-int interfaces.
+	(fixup_signed_type): Update accordingly.  Remove
+	HOST_BITS_PER_DOUBLE_INT limit.
+	(fixup_unsigned_type): Likewise.
+	* system.h (STATIC_CONSTANT_P): New.
+	(STATIC_ASSERT): New.
+	* target.def (can_use_doloop_p): Take widest_ints rather than
+	double_ints.
+	* target.h: Include wide-int.h rather than double-int.h.
+	* targhooks.h (can_use_doloop_if_innermost): Take widest_ints rather
+	than double_ints.
+	* targhooks.c (default_cxx_get_cookie_size): Use tree_int_cst_lt
+	rather than INT_CST_LT_UNSIGNED.
+	(can_use_doloop_if_innermost): Take widest_ints rather than
+	double_ints.
+	* tree-affine.c: Include wide-int-print.h.
+	(double_int_ext_for_comb): Delete.
+	(wide_int_ext_for_comb): New.
+	(aff_combination_zero): Use wide-int interfaces.
+	(aff_combination_const): Take a widest_int instead of a double_int.
+	(aff_combination_elt): Use wide-int interfaces.
+	(aff_combination_scale): Take a widest_int instead of a double_int.
+	(aff_combination_add_elt): Likewise.
+	(aff_combination_add_cst): Likewise.
+	(aff_combination_add): Use wide-int interfaces.
+	(aff_combination_convert): Likewise.
+	(tree_to_aff_combination): Likewise.
+	(add_elt_to_tree): Take a widest_int instead of a double_int.
+	(aff_combination_to_tree): Use wide-int interfaces.
+	(aff_combination_remove_elt): Likewise.
+	(aff_combination_add_product): Take a widest_int instead of
+	a double_int.
+	(aff_combination_mult): Use wide-int interfaces.
+	(aff_combination_expand): Likewise.
+	(double_int_constant_multiple_p): Delete.
+	(wide_int_constant_multiple_p): New.
+	(aff_combination_constant_multiple_p): Take a widest_int pointer
+	instead of a double_int pointer.
+	(print_aff): Use wide-int interfaces.
+	(get_inner_reference_aff): Take a widest_int pointer
+	instead of a double_int pointer.
+	(aff_comb_cannot_overlap_p): Take widest_ints instead of double_ints.
+	* tree-affine.h: Include wide-int.h.
+	(struct aff_comb_elt): Change type of coef to widest_int.
+	(struct affine_tree_combination): Change type of offset to widest_int.
+	(double_int_ext_for_comb): Delete.
+	(wide_int_ext_for_comb): New.
+	(aff_combination_const): Use widest_int instead of double_int.
+	(aff_combination_scale): Likewise.
+	(aff_combination_add_elt): Likewise.
+	(aff_combination_constant_multiple_p): Likewise.
+	(get_inner_reference_aff): Likewise.
+	(aff_comb_cannot_overlap_p): Likewise.
+	(aff_combination_zero_p): Use wide-int interfaces.
+	* tree.c: Include tree.h.
+	(init_ttree): Use make_int_cst.
+	(tree_code_size): Removed code for INTEGER_CST case.
+	(tree_size): Add INTEGER_CST case.
+	(make_node_stat): Update comment.
+	(get_int_cst_ext_nunits, build_new_int_cst, build_int_cstu): New.
+	(build_int_cst_type): Use wide-int interfaces.
+	(double_int_to_tree): Likewise.
+	(double_int_fits_to_tree_p): Delete.
+	(force_fit_type_double): Delete.
+	(force_fit_type): New.
+	(int_cst_hash_hash): Use wide-int interfaces.
+	(int_cst_hash_eq): Likewise.
+	(build_int_cst_wide): Delete.
+	(wide_int_to_tree): New.
+	(cache_integer_cst): Use wide-int interfaces.
+	(build_low_bits_mask): Likewise.
+	(cst_and_fits_in_hwi): Likewise.
+	(real_value_from_int_cst): Likewise.
+	(make_int_cst_stat): New.
+	(integer_zerop): Use wide_int interfaces.
+	(integer_onep): Likewise.
+	(integer_all_onesp): Likewise.
+	(integer_pow2p): Likewise.
+	(integer_nonzerop): Likewise.
+	(tree_log2): Likewise.
+	(tree_floor_log2): Likewise.
+	(tree_ctz): Likewise.
+	(int_size_in_bytes): Likewise.
+	(mem_ref_offset): Return an offset_int rather than a double_int.
+	(build_type_attribute_qual_variant): Use wide_int interfaces.
+	(type_hash_eq): Likewise
+	(tree_int_cst_equal): Likewise.
+	(tree_int_cst_lt): Delete.
+	(tree_int_cst_compare): Likewise.
+	(tree_fits_shwi_p): Use wide_int interfaces.
+	(tree_fits_uhwi_p): Likewise.
+	(tree_int_cst_sign_bit): Likewise.
+	(tree_int_cst_sgn): Likewise.
+	(tree_int_cst_min_precision): Take a signop rather than a bool.
+	(simple_cst_equal): Use wide_int interfaces.
+	(compare_tree_int): Likewise.
+	(iterative_hash_expr): Likewise.
+	(int_fits_type_p): Likewise.  Use tree_int_cst_lt rather than
+	INT_CST_LT.
+	(get_type_static_bounds): Use wide_int interfaces.
+	(tree_int_cst_elt_check_failed): New.
+	(build_common_tree_nodes): Reordered to set prec before filling in
+	value.
+	(int_cst_value): Check cst_and_fits_in_hwi.
+	(widest_int_cst_value): Use wide_int interfaces.
+	(upper_bound_in_type): Likewise.
+	(lower_bound_in_type): Likewise.
+	(num_ending_zeros): Likewise.
+	(drop_tree_overflow): Likewise.
+	* tree-call-cdce.c (check_pow): Update call to real_from_integer.
+	(gen_conditions_for_pow_cst_base): Likewise.
+	* tree-cfg.c: Include wide-int.h and wide-int-print.h.
+	(group_case_labels_stmt): Use wide-int interfaces.
+	(verify_gimple_assign_binary): Likewise.
+	(print_loop): Likewise.
+	* tree-chrec.c (tree_fold_binomial): Likewise.
+	* tree-core.h (struct tree_base): Add int_length.
+	(struct tree_int_cst): Change rep of value.
+	* tree-data-ref.c (dr_analyze_innermost): Use wide-int interfaces.
+	(dr_may_alias_p): Likewise.
+	(max_stmt_executions_tree): Likewise.
+	* tree.def (INTEGER_CST): Update comment.
+	* tree-dfa.c (get_ref_base_and_extent): Use wide-int interfaces.
+	* tree-dfa.h (get_addr_base_and_unit_offset_1): Likewise.
+	* tree-dump.c: Include wide-int.h and wide-int-print.h.
+	(dequeue_and_dump): Use wide-int interfaces.
+	* tree.h: Include wide-int.h.
+	(NULL_TREE): Moved to earlier loc in file.
+	(TREE_INT_CST_ELT_CHECK): New.
+	(tree_int_cst_elt_check_failed): New.
+	(TYPE_SIGN): New.
+	(TREE_INT_CST): Delete.
+	(TREE_INT_CST_LOW): Use wide-int interfaces.
+	(TREE_INT_CST_HIGH): Delete.
+	(TREE_INT_CST_NUNITS): New.
+	(TREE_INT_CST_EXT_NUNITS): Likewise.
+	(TREE_INT_CST_OFFSET_NUNITS): Likewise.
+	(TREE_INT_CST_ELT): Likewise.
+	(INT_CST_LT): Delete.
+	(tree_int_cst_elt_check): New (two forms).
+	(type_code_size): Update comment.
+	(make_int_cst_stat, make_int_cst): New.
+	(tree_to_double_int): Delete.
+	(double_int_fits_to_tree_p): Delete.
+	(force_fit_type_double): Delete.
+	(build_int_cstu): Replace with out-of-line function.
+	(build_int_cst_wide): Delete.
+	(tree_int_cst_lt): Define inline.
+	(tree_int_cst_le): New.
+	(tree_int_cst_compare): Define inline.
+	(tree_int_cst_min_precision): Take a signop rather than a bool.
+	(wi::int_traits <const_tree>): New.
+	(wi::int_traits <tree>): New.
+	(wi::extended_tree): New.
+	(wi::int_traits <wi::extended_tree>): New.
+	(wi::to_widest): New.
+	(wi::to_offset): New.
+	(wi::fits_to_tree_p): New.
+	(wi::min_value): New.
+	(wi::max_value): New.
+	* tree-inline.c (remap_gimple_op_r): Use wide-int interfaces.
+	(copy_tree_body_r): Likewise.
+	* tree-object-size.c (compute_object_offset): Likewise.
+	(addr_object_size): Likewise.
+	* tree-predcom.c: Include wide-int-print.h.
+	(struct dref_d): Change type of offset to widest_int.
+	(dump_dref): Call wide-int printer.
+	(aff_combination_dr_offset): Use wide-int interfaces.
+	(determine_offset): Take a widest_int pointer rather than a
+	double_int pointer.
+	(split_data_refs_to_components): Use wide-int interfaces.
+	(suitable_component_p): Likewise.
+	(order_drefs): Likewise.
+	(add_ref_to_chain): Likewise.
+	(valid_initializer_p): Likewise.
+	(determine_roots_comp): Likewise.
+	* tree-pretty-print.c: Include wide-int-print.h.
+	(dump_generic_node): Use wide-int interfaces.
+	* tree-sra.c (sra_ipa_modify_expr): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
+	(move_fixed_address_to_symbol): Likewise.
+	(move_hint_to_base): Likewise.
+	(move_pointer_to_base): Likewise.
+	(move_variant_to_index): Likewise.
+	(most_expensive_mult_to_index): Likewise.
+	(addr_to_parts): Likewise.
+	(copy_ref_info): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Likewise.
+	(indirect_refs_may_alias_p): Likewise.
+	(stmt_kills_ref_p_1): Likewise.
+	* tree-ssa.c (non_rewritable_mem_ref_base): Likewise.
+	* tree-ssa-ccp.c: Update comment at top of file.  Include
+	wide-int-print.h.
+	(struct prop_value_d): Change type of mask to widest_int.
+	(extend_mask): New function.
+	(dump_lattice_value): Use wide-int interfaces.
+	(get_default_value): Likewise.
+	(set_constant_value): Likewise.
+	(set_value_varying): Likewise.
+	(valid_lattice_transition): Likewise.
+	(set_lattice_value): Likewise.
+	(value_to_double_int): Delete.
+	(value_to_wide_int): New.
+	(get_value_from_alignment): Use wide-int interfaces.
+	(get_value_for_expr): Likewise.
+	(do_dbg_cnt): Likewise.
+	(ccp_finalize): Likewise.
+	(ccp_lattice_meet): Likewise.
+	(bit_value_unop_1): Use widest_ints rather than double_ints.
+	(bit_value_binop_1): Likewise.
+	(bit_value_unop): Use wide-int interfaces.
+	(bit_value_binop): Likewise.
+	(bit_value_assume_aligned): Likewise.
+	(evaluate_stmt): Likewise.
+	(ccp_fold_stmt): Likewise.
+	(visit_cond_stmt): Likewise.
+	(ccp_visit_stmt): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	(constant_pointer_difference): Likewise.
+	(associate_pointerplus): Likewise.
+	(combine_conversions): Likewise.
+	* tree-ssa-loop.h: Include wide-int.h.
+	(struct tree_niter_desc): Change type of max to widest_int.
+	* tree-ssa-loop-im.c (mem_refs_may_alias_p): Use wide-int interfaces.
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Likewise.
+	(remove_redundant_iv_tests): Likewise.
+	(canonicalize_loop_induction_variables): Likewise.
+	* tree-ssa-loop-ivopts.c (alloc_iv): Likewise.
+	(constant_multiple_of): Take a widest_int pointer instead of
+	a double_int pointer.
+	(get_computation_aff): Use wide-int interfaces.
+	(ptr_difference_cost): Likewise.
+	(difference_cost): Likewise.
+	(get_loop_invariant_expr_id): Likewise.
+	(get_computation_cost_at): Likewise.
+	(iv_elimination_compare_lt): Likewise.
+	(may_eliminate_iv): Likewise.
+	* tree-ssa-loop-niter.h (estimated_loop_iterations): Use widest_int
+	instead of double_int.
+	(max_loop_iterations): Likewise.
+	(max_stmt_executions): Likewise.
+	(estimated_stmt_executions): Likewise.
+	* tree-ssa-loop-niter.c: Include wide-int-print.h.
+	(split_to_var_and_offset): Use wide-int interfaces.
+	(determine_value_range): Likewise.
+	(bound_difference_of_offsetted_base): Likewise.
+	(bounds_add): Take a widest_int instead of a double_int.
+	(number_of_iterations_ne_max): Use wide-int interfaces.
+	(number_of_iterations_ne): Likewise.
+	(number_of_iterations_lt_to_ne): Likewise.
+	(assert_loop_rolls_lt): Likewise.
+	(number_of_iterations_lt): Likewise.
+	(number_of_iterations_le): Likewise.
+	(number_of_iterations_cond): Likewise.
+	(number_of_iterations_exit): Likewise.
+	(finite_loop_p): Likewise.
+	(derive_constant_upper_bound_assign): Likewise.
+	(derive_constant_upper_bound): Return a widest_int.
+	(derive_constant_upper_bound_ops): Likewise.
+	(do_warn_aggressive_loop_optimizations): Use wide-int interfaces.
+	(record_estimate): Take a widest_int rather than a double_int.
+	(record_nonwrapping_iv): Use wide-int interfaces.
+	(double_int_cmp): Delete.
+	(wide_int_cmp): New.
+	(bound_index): Take a widest_int rather than a double_int.
+	(discover_iteration_bound_by_body_walk): Use wide-int interfaces.
+	(maybe_lower_iteration_bound): Likewise.
+	(estimate_numbers_of_iterations_loop): Likewise.
+	(estimated_loop_iterations): Take a widest_int pointer than than
+	a double_int pointer.
+	(estimated_loop_iterations_int): Use wide-int interfaces.
+	(max_loop_iterations): Take a widest_int pointer than than
+	a double_int pointer.
+	(max_loop_iterations_int): Use wide-int interfaces.
+	(max_stmt_executions): Take a widest_int pointer than than
+	a double_int pointer.
+	(estimated_stmt_executions): Likewise.
+	(n_of_executions_at_most): Use wide-int interfaces.
+	(scev_probably_wraps_p): Likewise.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Update calls
+	to real_to_integer.
+	* tree-scalar-evolution.c (simplify_peeled_chrec): Use wide-int
+	interfaces.
+	* tree-ssanames.c (set_range_info): Use wide_int_refs rather than
+	double_ints.  Adjust for trailing_wide_ints <3> representation.
+	(set_nonzero_bits): Likewise.
+	(get_range_info): Return wide_ints rather than double_ints.
+	Adjust for trailing_wide_ints <3> representation.
+	(get_nonzero_bits): Likewise.
+	(duplicate_ssa_name_range_info): Adjust for trailing_wide_ints <3>
+	representation.
+	* tree-ssanames.h (struct range_info_def): Replace min, max and
+	nonzero_bits with a trailing_wide_ints <3>.
+	(set_range_info): Use wide_int_refs rather than double_ints.
+	(set_nonzero_bits): Likewise.
+	(get_range_info): Return wide_ints rather than double_ints.
+	(get_nonzero_bits): Likewise.
+	* tree-ssa-phiopt.c (jump_function_from_stmt): Use wide-int interfaces.
+	* tree-ssa-pre.c (phi_translate_1): Likewise.
+	* tree-ssa-reassoc.c (decrement_power): Use calls to real_from_integer.
+	(acceptable_pow_call): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use wide-int
+	interfaces.
+	(vn_reference_fold_indirect): Likewise.
+	(vn_reference_maybe_forwprop_address): Likewise.
+	(valueize_refs_1): Likewise.
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Likewise.
+	* tree-ssa-uninit.c (is_value_included_in): Use wide-int interfaces,
+	tree_int_cst_lt and tree_int_cst_le.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Use wide-int
+	interfaces.
+	(streamer_alloc_tree): Likewise.
+	* tree-streamer-out.c (pack_ts_int_cst_value_fields): Likewise.
+	(streamer_write_tree_header): Likewise.
+	(streamer_write_integer_cst): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+	(build_constructors): Likewise.
+	(array_value_type): Likewise.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list): Likewise.
+	(vect_check_gather): Likewise.
+	* tree-vect-generic.c (build_replicated_const): Likewise.
+	(expand_vector_divmod): Likewise.
+	* tree-vect-loop.c (vect_transform_loop): Likewise.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): Likewise.
+	(vect_do_peeling_for_alignment): Likewise.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Likewise.
+	* tree-vrp.c: Include wide-int.h.
+	(operand_less_p): Use wide-int interfaces and tree_int_cst_lt.
+	(extract_range_from_assert): Use wide-int interfaces.
+	(vrp_int_const_binop): Likewise.
+	(zero_nonzero_bits_from_vr): Take wide_int pointers rather than
+	double_int pointers.
+	(ranges_from_anti_range): Use wide-int interfaces.
+	(quad_int_cmp): Delete.
+	(quad_int_pair_sort): Likewise.
+	(extract_range_from_binary_expr_1): Use wide-int interfaces.
+	(extract_range_from_unary_expr_1): Likewise.
+	(adjust_range_with_scev): Likewise.
+	(masked_increment): Take and return wide_ints rather than double_ints.
+	(register_edge_assert_for_2): Use wide-int interfaces.
+	(check_array_ref): Likewise.
+	(search_for_addr_array): Likewise.
+	(maybe_set_nonzero_bits): Likewise.
+	(union_ranges): Pass an integer of the correct type instead of
+	using integer_one_node.
+	(intersect_ranges): Likewise.
+	(simplify_truth_ops_using_ranges): Likewise.
+	(simplify_bit_ops_using_ranges): Use wide-int interfaces.
+	(range_fits_type_p): Likewise.
+	(simplify_cond_using_ranges): Likewise.  Take a signop rather than
+	a bool.
+	(simplify_conversion_using_ranges): Use wide-int interfaces.
+	(simplify_float_conversion_using_ranges): Likewise.
+	(vrp_finalize): Likewise.
+	* value-prof.c (gimple_divmod_fixed_value_transform): Likewise.
+	(gimple_stringops_transform): Likewise.
+	* varasm.c (decode_addr_const): Likewise.
+	(const_hash_1): Likewise.
+	(const_rtx_hash_1): Likewise
+	(output_constant): Likewise.
+	(array_size_for_constructor): Likewise.
+	(output_constructor_regular_field): Likewise.
+	(output_constructor_bitfield): Likewise.
+	* var-tracking.c (loc_cmp): Handle CONST_WIDE_INT.
+	* mkconfig.sh: Include machmode.h to pick up BITS_PER_UNIT for
+	GENERATOR_FILEs.
+	* gencheck.c: Define BITS_PER_UNIT.
+	* wide-int.cc: New.
+	* wide-int.h: New.
+	* wide-int-print.cc: New.
+	* wide-int-print.h: New.
+
+2014-05-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/avr/avr.c (avr_can_eliminate): Mark unused argument.
+
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (TODO_verify_ssa, TODO_verify_flow,
+	TODO_verify_stmts, TODO_verify_rtl_sharing): Remove.
+	(TODO_verify_all): Adjust.
+	* asan.c: Remove references to TODO_verify_ssa, TODO_verify_flow,
+	TODO_verify_stmts and TODO_verify_rtl_sharing.
+	* bb-reorder.c: Likewise.
+	* cfgexpand.c: Likewise.
+	* cprop.c: Likewise.
+	* cse.c: Likewise.
+	* function.c: Likewise.
+	* fwprop.c: Likewise.
+	* gcse.c: Likewise.
+	* gimple-ssa-isolate-paths.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* ipa-split.c: Likewise.
+	* loop-init.c: Likewise.
+	* loop-unroll.c: Likewise.
+	* lower-subreg.c: Likewise.
+	* modulo-sched.c: Likewise.
+	* postreload-gcse.c: Likewise.
+	* predict.c: Likewise.
+	* recog.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* store-motion.c: Likewise.
+	* tracer.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-call-cdce.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-complex.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-emutls.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-object-size.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-pass.h: Likewise.
+	* tree-sra.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssa-copyrename.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+	* tree-ssa-dse.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-ifcombine.c: Likewise.
+	* tree-ssa-loop-ch.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-ssa-loop.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-phiprop.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sink.c: Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* tree-ssa-tail-merge.c: Likewise.
+	* tree-ssa-uncprop.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vectorizer.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* tsan.c: Likewise.
+	* var-tracking.c: Likewise.
+	* bt-load.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* combine-stack-adj.c: Likewise.
+	* combine.c: Likewise.
+	* compare-elim.c: Likewise.
+	* config/epiphany/resolve-sw-modes.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sh/sh_treg_combine.cc: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* dce.c: Likewise.
+	* dse.c: Likewise.
+	* final.c: Likewise.
+	* ifcvt.c: Likewise.
+	* mode-switching.c: Likewise.
+	* passes.c: Likewise.
+	* postreload.c: Likewise.
+	* ree.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regcprop.c: Likewise.
+	* regrename.c: Likewise.
+	* web.c: Likewise.
+
+2014-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61070
+	* bitmap.c (debug_bitmap): Dump to stderr, not stdout.
+	* tree-ssa-structalias.c (dump_solution_for_var): Likewise.
+
+2014-05-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60965
+	* ipa-devirt.c (get_class_context): Allow POD to change to non-POD.
+
+2014-05-05  Radovan Obradovic  <robradovic@mips.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* target.def (call_fusage_contains_non_callee_clobbers): New
+	DEFHOOKPOD.
+	* doc/tm.texi.in (@node Stack and Calling): Add Miscellaneous Register
+	Hooks to @menu.
+	(@node Miscellaneous Register Hooks): New node.
+	(@hook TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS): New hook.
+	* doc/tm.texi: Regenerate.
+
+2014-05-05  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/61065
+	* opts.c (common_handle_option): Call error_at instead of warning_at.
+
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Don't reset TODO_verify_ssa
+	from last_verified if update_ssa ran.  Move TODO_verify_rtl_sharing
+	under the TODO_verify_il umbrella.
+
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Move TODO_verify_flow under
+	the TODO_verify_ul umbrella.
+
+2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61010
+	* fold-const.c (fold_binary_loc): Consistently avoid canonicalizing
+	X & CST away from a CST that is the mask of a mode.
+
 2014-05-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/picochip/picochip-protos.h (picochip_regno_nregs): Change
@@ -127,7 +1610,7 @@
 
 	* doc/invoke.texi: Describe -fsanitize=float-divide-by-zero.
 
-2014-02-26  Kito Cheng  <kito@0xlab.org>
+2014-05-02  Kito Cheng  <kito@0xlab.org>
 
 	* defaults.h (HONOR_REG_ALLOC_ORDER): Change HONOR_REG_ALLOC_ORDER
 	to a C expression marco.
@@ -315,8 +1798,7 @@
 
 	* doc/invoke.texi: Fix typo.
 	* tree-vrp.c: Fix typos.
-	* gimple.c (infer_nonnull_range): Reorder operands of an &&
-	condition.
+	* gimple.c (infer_nonnull_range): Reorder operands of an && condition.
 
 2014-04-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
@@ -443,8 +1925,7 @@
 2014-04-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (execute_pass_list): Adjust prototype.
-	* passes.c (pass_manager::execute_early_local_passes):
-	Adjust.
+	* passes.c (pass_manager::execute_early_local_passes): Adjust.
 	(do_per_function): Change callback signature, push all actual
 	work to the callbals.
 	(do_per_function_toporder): Likewise.
@@ -495,18 +1976,18 @@
 
 2014-04-25  Cary Coutant  <ccoutant@google.com>
 
-        PR debug/60929
+	PR debug/60929
 	* dwarf2out.c (should_move_die_to_comdat): A type definition
-        can contain a subprogram definition, but don't move it to a
-        comdat unit.
+	can contain a subprogram definition, but don't move it to a
+	comdat unit.
 	(clone_as_declaration): Copy DW_AT_abstract_origin attribute.
-        (generate_skeleton_bottom_up): Remove DW_AT_object_pointer attribute
-        from original DIE.
+	(generate_skeleton_bottom_up): Remove DW_AT_object_pointer attribute
+	from original DIE.
 	(clone_tree_hash): Rename to...
 	(clone_tree_partial): ...this; change callers.  Copy
-        DW_TAG_subprogram DIEs as declarations.
+	DW_TAG_subprogram DIEs as declarations.
 	(copy_decls_walk): Don't copy children of a declaration into a
-        type unit.
+	type unit.
 
 2014-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -524,8 +2005,7 @@
 
 2014-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-	* config/arm/arm.c (arm_cortex_a8_tune): Initialise
-	T16-related fields.
+	* config/arm/arm.c (arm_cortex_a8_tune): Initialise T16-related fields.
 
 2014-04-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -551,7 +2031,7 @@
 	clobbers.
 
 2014-04-25  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* rtlanal.c (find_all_hard_reg_sets): Add bool implicit parameter and
 	handle.
@@ -609,8 +2089,7 @@
 2014-04-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* doc/extend.texi (PowerPC Built-in Functions): Document new
-	powerpc extended divide, bcd, pack/unpack 128-bit, builtin
-	functions.
+	powerpc extended divide, bcd, pack/unpack 128-bit, builtin functions.
 	(PowerPC AltiVec/VSX Built-in Functions): Likewise.
 
 	* config/rs6000/predicates.md (const_0_to_3_operand): New
@@ -670,8 +2149,7 @@
 	support for decimal floating point builtin functions.
 	(rs6000_expand_ternop_builtin): Add checks for the new builtin
 	functions that take constant arguments.
-	(rs6000_invalid_builtin): Add decimal floating point builtin
-	support.
+	(rs6000_invalid_builtin): Add decimal floating point builtin support.
 	(rs6000_init_builtins): Setup long double, _Decimal64, and
 	_Decimal128 types for new builtin functions.
 	(builtin_function_type): Set the unsigned flags appropriately for
@@ -722,8 +2200,7 @@
 	builtin functions.
 	(UNSPEC_CDTBCD): Likewise.
 	(UNSPEC_CBCDTD): Likewise.
-	(UNSPEC_DIVE): Add support for new extended divide builtin
-	functions.
+	(UNSPEC_DIVE): Add support for new extended divide builtin functions.
 	(UNSPEC_DIVEO): Likewise.
 	(UNSPEC_DIVEU): Likewise.
 	(UNSPEC_DIVEUO): Likewise.
@@ -736,8 +2213,7 @@
 	(addg6s): Add new BCD builtin functions.
 	(cdtbcd): Likewise.
 	(cbcdtd): Likewise.
-	(UNSPEC_DIV_EXTEND): Add support for new extended divide
-	instructions.
+	(UNSPEC_DIV_EXTEND): Add support for new extended divide instructions.
 	(div_extend): Likewise.
 	(div<div_extend>_<mode>"): Likewise.
 	(FP128_64): Add support for new builtin functions to pack/unpack
@@ -793,7 +2269,7 @@
 	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Enable for bigendian.
 
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* reg-notes.def (REG_NOTE (CALL_DECL)): New reg-note REG_CALL_DECL.
 	* calls.c (expand_call, emit_library_call_value_1): Add REG_CALL_DECL
@@ -802,14 +2278,14 @@
 	* emit-rtl.c (try_split): Same.
 
 2014-04-24  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* common.opt (fuse-caller-save): New option.
 
 2014-04-24  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Reverse order of elements
-	for big-endian.
+	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Reverse order of
+	elements for big-endian.
 
 2014-04-24  Richard Biener  <rguenther@suse.de>
 
@@ -974,12 +2450,9 @@
 	(is_a_helper <const gimple_statement_catch *>::test): ...this.
 	(is_a_helper <const gimple_statement_resx>::test): Convert to...
 	(is_a_helper <const gimple_statement_resx *>::test): ...this.
-	(is_a_helper <const gimple_statement_eh_dispatch>::test):
-	Convert to...
-	(is_a_helper <const gimple_statement_eh_dispatch *>::test):
-	...this.
-	(is_a_helper <const gimple_statement_eh_filter>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_eh_dispatch>::test): Convert to...
+	(is_a_helper <const gimple_statement_eh_dispatch *>::test): ...this.
+	(is_a_helper <const gimple_statement_eh_filter>::test): Convert to...
 	(is_a_helper <const gimple_statement_eh_filter *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_atomic_load>::test):
 	Convert to...
@@ -989,8 +2462,7 @@
 	Convert to...
 	(is_a_helper <const gimple_statement_omp_atomic_store *>::test):
 	...this.
-	(is_a_helper <const gimple_statement_omp_return>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_return>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_return *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_continue>::test): Convert
 	to...
@@ -1000,43 +2472,35 @@
 	(is_a_helper <const gimple_statement_omp_critical *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_for>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_for *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_taskreg>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_taskreg>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_taskreg *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_parallel>::test): Convert
 	to...
 	(is_a_helper <const gimple_statement_omp_parallel *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_target>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_target>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_target *>::test): ...this.
 	(is_a_helper <const gimple_statement_omp_sections>::test): Convert
 	to...
 	(is_a_helper <const gimple_statement_omp_sections *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_single>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_single>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_single *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_teams>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_teams>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_teams *>::test): ...this.
-	(is_a_helper <const gimple_statement_omp_task>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_omp_task>::test): Convert to...
 	(is_a_helper <const gimple_statement_omp_task *>::test): ...this.
 	(is_a_helper <const gimple_statement_phi>::test): Convert to...
 	(is_a_helper <const gimple_statement_phi *>::test): ...this.
-	(is_a_helper <const gimple_statement_transaction>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_transaction>::test): Convert to...
 	(is_a_helper <const gimple_statement_transaction *>::test): ...this.
-	(is_a_helper <const gimple_statement_with_ops>::test): Convert
-	to...
+	(is_a_helper <const gimple_statement_with_ops>::test): Convert to...
 	(is_a_helper <const gimple_statement_with_ops *>::test): ...this.
 	(is_a_helper <gimple_statement_with_ops>::test): Convert to...
 	(is_a_helper <gimple_statement_with_ops *>::test): ...this.
-	(is_a_helper <const gimple_statement_with_memory_ops>::test):
-	Convert to...
+	(is_a_helper <const gimple_statement_with_memory_ops>::test): Convert
+	to...
 	(is_a_helper <const gimple_statement_with_memory_ops *>::test):
 	...this.
-	(is_a_helper <gimple_statement_with_memory_ops>::test): Convert
-	to...
+	(is_a_helper <gimple_statement_with_memory_ops>::test): Convert to...
 	(is_a_helper <gimple_statement_with_memory_ops *>::test): ...this.
 
 	(gimple_use_ops): Update for removal of implicit pointer from the
@@ -1257,7 +2721,7 @@
 	invalidate outputs from statements that do not produce useful
 	outputs for threading.
 
-2014-04-23 Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+2014-04-23  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
 
 	* config/aarch64/aarch64.md (stack_protect_set, stack_protect_test)
 	(stack_protect_set_<mode>, stack_protect_test_<mode>): Add
@@ -1286,46 +2750,45 @@
 
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/aarch64/aarch64.md (rev16<mode>2): New pattern.
-       (rev16<mode>2_alt): Likewise.
-       * config/aarch64/aarch64.c (aarch64_rtx_costs): Handle rev16 case.
-       * config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p): New.
-       (aarch_rev16_shleft_mask_imm_p): Likewise.
-       (aarch_rev16_p_1): Likewise.
-       (aarch_rev16_p): Likewise.
-       * config/arm/aarch-common-protos.h (aarch_rev16_p): Declare extern.
-       (aarch_rev16_shright_mask_imm_p): Likewise.
-       (aarch_rev16_shleft_mask_imm_p): Likewise.
+	* config/aarch64/aarch64.md (rev16<mode>2): New pattern.
+	(rev16<mode>2_alt): Likewise.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle rev16 case.
+	* config/arm/aarch-common.c (aarch_rev16_shright_mask_imm_p): New.
+	(aarch_rev16_shleft_mask_imm_p): Likewise.
+	(aarch_rev16_p_1): Likewise.
+	(aarch_rev16_p): Likewise.
+	* config/arm/aarch-common-protos.h (aarch_rev16_p): Declare extern.
+	(aarch_rev16_shright_mask_imm_p): Likewise.
+	(aarch_rev16_shleft_mask_imm_p): Likewise.
 
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/arm/aarch-common-protos.h (alu_cost_table): Add rev field.
-       * config/arm/aarch-cost-tables.h (generic_extra_costs): Specify
-       rev cost.
-       (cortex_a53_extra_costs): Likewise.
-       (cortex_a57_extra_costs): Likewise.
-       * config/arm/arm.c (cortexa9_extra_costs): Likewise.
-       (cortexa7_extra_costs): Likewise.
-       (cortexa8_extra_costs): Likewise.
-       (cortexa12_extra_costs): Likewise.
-       (cortexa15_extra_costs): Likewise.
-       (v7m_extra_costs): Likewise.
-       (arm_new_rtx_costs): Handle BSWAP.
+	* config/arm/aarch-common-protos.h (alu_cost_table): Add rev field.
+	* config/arm/aarch-cost-tables.h (generic_extra_costs): Specify
+	rev cost.
+	(cortex_a53_extra_costs): Likewise.
+	(cortex_a57_extra_costs): Likewise.
+	* config/arm/arm.c (cortexa9_extra_costs): Likewise.
+	(cortexa7_extra_costs): Likewise.
+	(cortexa8_extra_costs): Likewise.
+	(cortexa12_extra_costs): Likewise.
+	(cortexa15_extra_costs): Likewise.
+	(v7m_extra_costs): Likewise.
+	(arm_new_rtx_costs): Handle BSWAP.
 
 2013-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/arm/arm.c (cortexa8_extra_costs): New table.
-       (arm_cortex_a8_tune): New tuning struct.
-       * config/arm/arm-cores.def (cortex-a8): Use cortex_a8 tuning struct.
+	* config/arm/arm.c (cortexa8_extra_costs): New table.
+	(arm_cortex_a8_tune): New tuning struct.
+	* config/arm/arm-cores.def (cortex-a8): Use cortex_a8 tuning struct.
 
 2014-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-       * config/arm/arm.c (arm_new_rtx_costs): Handle FMA.
+	* config/arm/arm.c (arm_new_rtx_costs): Handle FMA.
 
 2014-04-23  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (OBJS): Remove loop-unswitch.o.
-	* loop-unswitch.c: Delete.
 	* tree-pass.h (make_pass_rtl_unswitch): Remove.
 	* passes.def (pass_rtl_unswitch): Likewise.
 	* loop-init.c (gate_rtl_unswitch): Likewise.
@@ -1357,8 +2820,7 @@
 	(has_32bit_hwmult): Rename to use_32bit_hwmult.  Add support for
 	-mhwmult command line option.
 	(msp430_hwmult_enabled): Delete.
-	(msp43o_output_labelref): Add support for -mhwmult command line
-	option.
+	(msp43o_output_labelref): Add support for -mhwmult command line option.
 	* config/msp430/msp430.md (mulhisi3, umulhisi3, mulsidi3)
 	(umulsidi3): Likewise.
 	* config/msp430/msp430.opt (mmcu): Add Report attribute.
@@ -1774,8 +3236,7 @@
 
 	* gcc/config/aarch64/aarch64-simd.md (aarch64_s<optab><mode>):
 	Pattern extended.
-	* config/aarch64/aarch64-simd-builtins.def (sqneg): Iterator
-	extended.
+	* config/aarch64/aarch64-simd-builtins.def (sqneg): Iterator extended.
 	(sqabs): Likewise.
 	* config/aarch64/arm_neon.h (vqneg_s64): New intrinsic.
 	(vqnegd_s64): Likewise.
@@ -1892,12 +3353,9 @@
 
 2014-04-22  Alex Velenko  <Alex.Velenko@arm.com>
 
-	* config/aarch64/aarch64-builtins.c (BUILTIN_VDQF_DF): Macro
-	added.
-	* config/aarch64/aarch64-simd-builtins.def (frintn): Use added
-	macro.
-	* config/aarch64/aarch64-simd.md (<frint_pattern>): Comment
-	corrected.
+	* config/aarch64/aarch64-builtins.c (BUILTIN_VDQF_DF): Macro added.
+	* config/aarch64/aarch64-simd-builtins.def (frintn): Use added macro.
+	* config/aarch64/aarch64-simd.md (<frint_pattern>): Comment corrected.
 	* config/aarch64/aarch64.md (<frint_pattern>): Likewise.
 	* config/aarch64/arm_neon.h (vrnd_f64): Added.
 	(vrnda_f64): Likewise.

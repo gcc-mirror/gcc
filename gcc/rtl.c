@@ -109,7 +109,7 @@ const enum rtx_class rtx_class[NUM_RTX_CODE] = {
 const unsigned char rtx_code_size[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)				\
   (((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
-    || (ENUM) == CONST_FIXED)						\
+    || (ENUM) == CONST_FIXED || (ENUM) == CONST_WIDE_INT)		\
    ? RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (HOST_WIDE_INT)	\
    : RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (rtunion)),
 
@@ -181,18 +181,24 @@ shallow_copy_rtvec (rtvec vec)
 unsigned int
 rtx_size (const_rtx x)
 {
+  if (CONST_WIDE_INT_P (x))
+    return (RTX_HDR_SIZE
+	    + sizeof (struct hwivec_def)
+	    + ((CONST_WIDE_INT_NUNITS (x) - 1)
+	       * sizeof (HOST_WIDE_INT)));
   if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_HAS_BLOCK_INFO_P (x))
     return RTX_HDR_SIZE + sizeof (struct block_symbol);
   return RTX_CODE_SIZE (GET_CODE (x));
 }
 
-/* Allocate an rtx of code CODE.  The CODE is stored in the rtx;
-   all the rest is initialized to zero.  */
+/* Allocate an rtx of code CODE with EXTRA bytes in it.  The CODE is
+   stored in the rtx; all the rest is initialized to zero.  */
 
 rtx
-rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
+rtx_alloc_stat_v (RTX_CODE code MEM_STAT_DECL, int extra)
 {
-  rtx rt = ggc_alloc_rtx_def_stat (RTX_CODE_SIZE (code) PASS_MEM_STAT);
+  rtx rt = ggc_alloc_rtx_def_stat (RTX_CODE_SIZE (code) + extra
+				   PASS_MEM_STAT);
 
   /* We want to clear everything up to the FLD array.  Normally, this
      is one int, but we don't want to assume that and it isn't very
@@ -208,6 +214,31 @@ rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
     }
 
   return rt;
+}
+
+/* Allocate an rtx of code CODE.  The CODE is stored in the rtx;
+   all the rest is initialized to zero.  */
+
+rtx
+rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
+{
+  return rtx_alloc_stat_v (code PASS_MEM_STAT, 0);
+}
+
+/* Write the wide constant X to OUTFILE.  */
+
+void
+cwi_output_hex (FILE *outfile, const_rtx x)
+{
+  int i = CWI_GET_NUM_ELEM (x);
+  gcc_assert (i > 0);
+  if (CWI_ELT (x, i - 1) == 0)
+    /* The HOST_WIDE_INT_PRINT_HEX prepends a 0x only if the val is
+       non zero.  We want all numbers to have a 0x prefix.  */
+    fprintf (outfile, "0x");
+  fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, CWI_ELT (x, --i));
+  while (--i >= 0)
+    fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX, CWI_ELT (x, i));
 }
 
 
@@ -646,6 +677,10 @@ iterative_hash_rtx (const_rtx x, hashval_t hash)
       return iterative_hash_object (i, hash);
     case CONST_INT:
       return iterative_hash_object (INTVAL (x), hash);
+    case CONST_WIDE_INT:
+      for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
+	hash = iterative_hash_object (CONST_WIDE_INT_ELT (x, i), hash);
+      return hash;
     case SYMBOL_REF:
       if (XSTR (x, 0))
 	return iterative_hash (XSTR (x, 0), strlen (XSTR (x, 0)) + 1,
@@ -807,6 +842,16 @@ rtl_check_failed_block_symbol (const char *file, int line, const char *func)
   internal_error
     ("RTL check: attempt to treat non-block symbol as a block symbol "
      "in %s, at %s:%d", func, trim_filename (file), line);
+}
+
+/* XXX Maybe print the vector?  */
+void
+cwi_check_failed_bounds (const_rtx x, int n, const char *file, int line,
+			 const char *func)
+{
+  internal_error
+    ("RTL check: access of hwi elt %d of vector with last elt %d in %s, at %s:%d",
+     n, CWI_GET_NUM_ELEM (x) - 1, func, trim_filename (file), line);
 }
 
 /* XXX Maybe print the vector?  */

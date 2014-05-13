@@ -31,6 +31,7 @@
 
 #include <list>
 #include <debug/safe_sequence.h>
+#include <debug/safe_container.h>
 #include <debug/safe_iterator.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -40,38 +41,60 @@ namespace __debug
   /// Class std::list with safety/checking/debug instrumentation.
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class list
-    : public _GLIBCXX_STD_C::list<_Tp, _Allocator>,
-      public __gnu_debug::_Safe_sequence<list<_Tp, _Allocator> >
+    : public __gnu_debug::_Safe_container<
+	list<_Tp, _Allocator>, _Allocator,
+	__gnu_debug::_Safe_node_sequence, false>,
+      public _GLIBCXX_STD_C::list<_Tp, _Allocator>
     {
-      typedef _GLIBCXX_STD_C::list<_Tp, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::list<_Tp, _Allocator>			_Base;
+      typedef __gnu_debug::_Safe_container<
+	list, _Allocator, __gnu_debug::_Safe_node_sequence, false>	_Safe;
 
-      typedef typename _Base::iterator       _Base_iterator;
-      typedef typename _Base::const_iterator _Base_const_iterator;
-      typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
-      typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
+      typedef typename _Base::iterator		_Base_iterator;
+      typedef typename _Base::const_iterator	_Base_const_iterator;
+      typedef __gnu_debug::_Equal_to<_Base_const_iterator>	_Equal;
+      typedef __gnu_debug::_Not_equal_to<_Base_const_iterator>  _Not_equal;
+
     public:
-      typedef typename _Base::reference             reference;
-      typedef typename _Base::const_reference       const_reference;
+      typedef typename _Base::reference			reference;
+      typedef typename _Base::const_reference		const_reference;
 
       typedef __gnu_debug::_Safe_iterator<_Base_iterator, list>
-						    iterator;
+							iterator;
       typedef __gnu_debug::_Safe_iterator<_Base_const_iterator, list>
-						    const_iterator;
+							const_iterator;
 
-      typedef typename _Base::size_type             size_type;
-      typedef typename _Base::difference_type       difference_type;
+      typedef typename _Base::size_type			size_type;
+      typedef typename _Base::difference_type		difference_type;
 
-      typedef _Tp				    value_type;
-      typedef _Allocator			    allocator_type;
-      typedef typename _Base::pointer               pointer;
-      typedef typename _Base::const_pointer         const_pointer;
-      typedef std::reverse_iterator<iterator>       reverse_iterator;
-      typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+      typedef _Tp					value_type;
+      typedef _Allocator				allocator_type;
+      typedef typename _Base::pointer			pointer;
+      typedef typename _Base::const_pointer		const_pointer;
+      typedef std::reverse_iterator<iterator>		reverse_iterator;
+      typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
 
       // 23.2.2.1 construct/copy/destroy:
 
-      list() _GLIBCXX_NOEXCEPT
+#if __cplusplus < 201103L
+      list()
       : _Base() { }
+
+      list(const list& __x)
+      : _Base(__x) { }
+
+      ~list() { }
+#else
+      list() = default;
+      list(const list&) = default;
+      list(list&&) = default;
+
+      list(initializer_list<value_type> __l,
+	   const allocator_type& __a = allocator_type())
+      : _Base(__l, __a) { }
+
+      ~list() = default;
+#endif
 
       explicit
       list(const _Allocator& __a) _GLIBCXX_NOEXCEPT
@@ -103,51 +126,31 @@ namespace __debug
 	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
 								     __last)),
 		__gnu_debug::__base(__last), __a)
-        { }
-
-      list(const list& __x)
-      : _Base(__x) { }
+	{ }
 
       list(const _Base& __x)
       : _Base(__x) { }
 
-#if __cplusplus >= 201103L
-      list(list&& __x) noexcept
-      : _Base(std::move(__x))
-      { this->_M_swap(__x); }
-
-      list(initializer_list<value_type> __l,
-           const allocator_type& __a = allocator_type())
-        : _Base(__l, __a) { }
-#endif
-
-      ~list() _GLIBCXX_NOEXCEPT { }
-
+#if __cplusplus < 201103L
       list&
       operator=(const list& __x)
       {
-	static_cast<_Base&>(*this) = __x;
-	this->_M_invalidate_all();
+	this->_M_safe() = __x;
+	_M_base() = __x;
 	return *this;
       }
-
-#if __cplusplus >= 201103L
+#else
       list&
-      operator=(list&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	__glibcxx_check_self_move_assign(__x);
-	clear();
-	swap(__x);
-      	return *this;
-      }
+      operator=(const list&) = default;
+
+      list&
+      operator=(list&&) = default;
 
       list&
       operator=(initializer_list<value_type> __l)
       {
-	static_cast<_Base&>(*this) = __l;
 	this->_M_invalidate_all();
+	_M_base() = __l;
 	return *this;
       }
 
@@ -165,9 +168,9 @@ namespace __debug
 #else
       template<class _InputIterator>
 #endif
-        void
-        assign(_InputIterator __first, _InputIterator __last)
-        {
+	void
+	assign(_InputIterator __first, _InputIterator __last)
+	{
 	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::assign(__gnu_debug::__base(__first),
 			__gnu_debug::__base(__last));
@@ -245,16 +248,14 @@ namespace __debug
       {
 	this->_M_detach_singular();
 
-	// if __sz < size(), invalidate all iterators in [begin+__sz, end())
+	// if __sz < size(), invalidate all iterators in [begin + __sz, end())
 	_Base_iterator __victim = _Base::begin();
 	_Base_iterator __end = _Base::end();
 	for (size_type __i = __sz; __victim != __end && __i > 0; --__i)
 	  ++__victim;
 
 	for (; __victim != __end; ++__victim)
-	  {
-	    this->_M_invalidate_if(_Equal(__victim));
-	  }
+	  this->_M_invalidate_if(_Equal(__victim));
 
 	__try
 	  {
@@ -272,16 +273,14 @@ namespace __debug
       {
 	this->_M_detach_singular();
 
-	// if __sz < size(), invalidate all iterators in [begin+__sz, end())
+	// if __sz < size(), invalidate all iterators in [begin + __sz, end())
 	_Base_iterator __victim = _Base::begin();
 	_Base_iterator __end = _Base::end();
 	for (size_type __i = __sz; __victim != __end && __i > 0; --__i)
 	  ++__victim;
 
 	for (; __victim != __end; ++__victim)
-	  {
-	    this->_M_invalidate_if(_Equal(__victim));
-	  }
+	  this->_M_invalidate_if(_Equal(__victim));
 
 	__try
 	  {
@@ -299,16 +298,14 @@ namespace __debug
       {
 	this->_M_detach_singular();
 
-	// if __sz < size(), invalidate all iterators in [begin+__sz, end())
+	// if __sz < size(), invalidate all iterators in [begin + __sz, end())
 	_Base_iterator __victim = _Base::begin();
 	_Base_iterator __end = _Base::end();
 	for (size_type __i = __sz; __victim != __end && __i > 0; --__i)
 	  ++__victim;
 
 	for (; __victim != __end; ++__victim)
-	  {
-	    this->_M_invalidate_if(_Equal(__victim));
-	  }
+	  this->_M_invalidate_if(_Equal(__victim));
 
 	__try
 	  {
@@ -382,8 +379,8 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       template<typename... _Args>
-        iterator
-        emplace(const_iterator __position, _Args&&... __args)
+	iterator
+	emplace(const_iterator __position, _Args&&... __args)
 	{
 	  __glibcxx_check_insert(__position);
 	  return iterator(_Base::emplace(__position.base(),
@@ -435,9 +432,9 @@ namespace __debug
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 	iterator
-        insert(const_iterator __position, _InputIterator __first,
+	insert(const_iterator __position, _InputIterator __first,
 	       _InputIterator __last)
-        {
+	{
 	  __glibcxx_check_insert_range(__position, __first, __last);
 	  return iterator(_Base::insert(__position.base(),
 					__gnu_debug::__base(__first),
@@ -447,9 +444,9 @@ namespace __debug
 #else
       template<class _InputIterator>
 	void
-        insert(iterator __position, _InputIterator __first,
+	insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
-        {
+	{
 	  __glibcxx_check_insert_range(__position, __first, __last);
 	  _Base::insert(__position.base(), __gnu_debug::__base(__first),
 					   __gnu_debug::__base(__last));
@@ -494,7 +491,7 @@ namespace __debug
 	     __victim != __last.base(); ++__victim)
 	  {
 	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
-			          _M_message(__gnu_debug::__msg_valid_range)
+				  _M_message(__gnu_debug::__msg_valid_range)
 				  ._M_iterator(__first, "position")
 				  ._M_iterator(__last, "last"));
 	    this->_M_invalidate_if(_Equal(__victim));
@@ -504,9 +501,12 @@ namespace __debug
 
       void
       swap(list& __x)
+#if __cplusplus >= 201103L
+	noexcept( noexcept(declval<_Base>().swap(__x)) )
+#endif
       {
+	_Safe::_M_swap(__x);
 	_Base::swap(__x);
-	this->_M_swap(__x);
       }
 
       void
@@ -629,9 +629,9 @@ namespace __debug
       }
 
       template<class _Predicate>
-        void
-        remove_if(_Predicate __pred)
-        {
+	void
+	remove_if(_Predicate __pred)
+	{
 	  for (_Base_iterator __x = _Base::begin(); __x != _Base::end(); )
 	    {
 	      if (__pred(*__x))
@@ -659,9 +659,9 @@ namespace __debug
       }
 
       template<class _BinaryPredicate>
-        void
-        unique(_BinaryPredicate __binary_pred)
-        {
+	void
+	unique(_BinaryPredicate __binary_pred)
+	{
 	  _Base_iterator __first = _Base::begin();
 	  _Base_iterator __last = _Base::end();
 	  if (__first == __last)
@@ -701,13 +701,13 @@ namespace __debug
 #endif
 
       template<class _Compare>
-        void
+	void
 #if __cplusplus >= 201103L
-        merge(list&& __x, _Compare __comp)
+	merge(list&& __x, _Compare __comp)
 #else
-        merge(list& __x, _Compare __comp)
+	merge(list& __x, _Compare __comp)
 #endif
-        {
+	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 300. list::merge() specification incomplete
 	  if (this != &__x)
@@ -723,32 +723,25 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       template<typename _Compare>
-        void
-        merge(list& __x, _Compare __comp)
-        { merge(std::move(__x), __comp); }
+	void
+	merge(list& __x, _Compare __comp)
+	{ merge(std::move(__x), __comp); }
 #endif
 
       void
       sort() { _Base::sort(); }
 
       template<typename _StrictWeakOrdering>
-        void
-        sort(_StrictWeakOrdering __pred) { _Base::sort(__pred); }
+	void
+	sort(_StrictWeakOrdering __pred) { _Base::sort(__pred); }
 
       using _Base::reverse;
 
       _Base&
-      _M_base() _GLIBCXX_NOEXCEPT       { return *this; }
+      _M_base() _GLIBCXX_NOEXCEPT	{ return *this; }
 
       const _Base&
-      _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
-
-    private:
-      void
-      _M_invalidate_all()
-      {
-	this->_M_invalidate_if(_Not_equal(_Base::end()));
-      }
+      _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
     };
 
   template<typename _Tp, typename _Alloc>

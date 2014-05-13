@@ -1111,7 +1111,7 @@ decrement_power (gimple stmt)
       arg1 = gimple_call_arg (stmt, 1);
       c = TREE_REAL_CST (arg1);
       power = real_to_integer (&c) - 1;
-      real_from_integer (&cint, VOIDmode, power, 0, 0);
+      real_from_integer (&cint, VOIDmode, power, SIGNED);
       gimple_call_set_arg (stmt, 1, build_real (TREE_TYPE (arg1), cint));
       return power;
 
@@ -3704,8 +3704,7 @@ acceptable_pow_call (gimple stmt, tree *base, HOST_WIDE_INT *exponent)
 	return false;
 
       *exponent = real_to_integer (&c);
-      real_from_integer (&cint, VOIDmode, *exponent,
-			 *exponent < 0 ? -1 : 0, 0);
+      real_from_integer (&cint, VOIDmode, *exponent, SIGNED);
       if (!real_identical (&c, &cint))
 	return false;
 
@@ -4707,9 +4706,7 @@ const pass_data pass_data_reassoc =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_verify_ssa
-    | TODO_update_ssa_only_virtuals
-    | TODO_verify_flow ), /* todo_flags_finish */
+  TODO_update_ssa_only_virtuals, /* todo_flags_finish */
 };
 
 class pass_reassoc : public gimple_opt_pass

@@ -450,15 +450,28 @@ static const struct attribute_spec epiphany_attribute_table[] =
 /* Handle an "interrupt" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
-epiphany_handle_interrupt_attribute (tree *node ATTRIBUTE_UNUSED,
-				     tree name, tree args,
+epiphany_handle_interrupt_attribute (tree *node, tree name, tree args,
 				     int flags ATTRIBUTE_UNUSED,
 				     bool *no_add_attrs)
 {
   tree value;
 
   if (!args)
-    return NULL_TREE;
+    {
+      gcc_assert (DECL_P (*node));
+      tree t = TREE_TYPE (*node);
+      if (TREE_CODE (t) != FUNCTION_TYPE)
+	warning (OPT_Wattributes, "%qE attribute only applies to functions",
+		 name);
+      /* Argument handling and the stack layout for interrupt handlers
+	 don't mix.  It makes no sense in the first place, so emit an
+	 error for this.  */
+      else if (TYPE_ARG_TYPES (t)
+	       && TREE_VALUE (TYPE_ARG_TYPES (t)) != void_type_node)
+	error_at (DECL_SOURCE_LOCATION (*node),
+		  "interrupt handlers cannot have arguments");
+      return NULL_TREE;
+    }
 
   value = TREE_VALUE (args);
 

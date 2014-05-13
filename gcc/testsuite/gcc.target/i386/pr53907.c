@@ -13,4 +13,4 @@ __m128i x(char *s)
   return sz;
 }
 
-/* { dg-final { scan-assembler "movdqa" } } */
+/* { dg-final { scan-assembler "movdqa|movaps" } } */

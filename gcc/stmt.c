@@ -1237,9 +1237,7 @@ expand_case (gimple stmt)
 	 original type.  Make sure to drop overflow flags.  */
       low = fold_convert (index_type, low);
       if (TREE_OVERFLOW (low))
-	low = build_int_cst_wide (index_type,
-				  TREE_INT_CST_LOW (low),
-				  TREE_INT_CST_HIGH (low));
+	low = wide_int_to_tree (index_type, low);
 
       /* The canonical from of a case label in GIMPLE is that a simple case
 	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
@@ -1248,9 +1246,7 @@ expand_case (gimple stmt)
 	high = low;
       high = fold_convert (index_type, high);
       if (TREE_OVERFLOW (high))
-	high = build_int_cst_wide (index_type,
-				   TREE_INT_CST_LOW (high),
-				   TREE_INT_CST_HIGH (high));
+	high = wide_int_to_tree (index_type, high);
 
       basic_block case_bb = label_to_block_fn (cfun, lab);
       edge case_edge = find_edge (bb, case_bb);
