@@ -352,6 +352,9 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
        layout for that case and use the gap for extra code-specific
        information.  */
 
+    /* The ORIGINAL_REGNO of a REG.  */
+    unsigned int original_regno;
+
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
     unsigned int num_elem;
@@ -1194,7 +1197,8 @@ enum label_kind
 /* ORIGINAL_REGNO holds the number the register originally had; for a
    pseudo register turned into a hard reg this will hold the old pseudo
    register number.  */
-#define ORIGINAL_REGNO(RTX) X0UINT (RTX, 1)
+#define ORIGINAL_REGNO(RTX) \
+  (RTL_FLAG_CHECK1 ("ORIGINAL_REGNO", (RTX), REG)->u2.original_regno)
 
 /* Force the REGNO macro to only be used on the lhs.  */
 static inline unsigned int
@@ -1641,7 +1645,7 @@ do {									\
 
 /* The register attribute block.  We provide access macros for each value
    in the block and provide defaults if none specified.  */
-#define REG_ATTRS(RTX) X0REGATTR (RTX, 2)
+#define REG_ATTRS(RTX) X0REGATTR (RTX, 1)
 
 #ifndef GENERATOR_FILE
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias

@@ -216,12 +216,7 @@ print_rtx (const_rtx in_rtx)
 	   that the field has several different valid contents.  */
       case '0':
 #ifndef GENERATOR_FILE
-	if (i == 1 && REG_P (in_rtx))
-	  {
-	    if (REGNO (in_rtx) != ORIGINAL_REGNO (in_rtx))
-	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
-	  }
-	else if (i == 1 && GET_CODE (in_rtx) == SYMBOL_REF)
+	if (i == 1 && GET_CODE (in_rtx) == SYMBOL_REF)
 	  {
 	    int flags = SYMBOL_REF_FLAGS (in_rtx);
 	    if (flags)
@@ -491,6 +486,8 @@ print_rtx (const_rtx in_rtx)
 			   REG_OFFSET (in_rtx));
 		fputs (" ]", outfile);
 	      }
+	    if (REG_P (in_rtx) && REGNO (in_rtx) != ORIGINAL_REGNO (in_rtx))
+	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
 #endif
 
 	    if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
