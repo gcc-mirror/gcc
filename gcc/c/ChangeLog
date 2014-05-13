@@ -1,3 +1,9 @@
+2014-05-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61162
+	* c-typeck.c (convert_for_assignment): Pass location to
+	WARN_FOR_ASSIGNMENT instead of input_location.
+
 2014-05-10  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Pass init_loc to

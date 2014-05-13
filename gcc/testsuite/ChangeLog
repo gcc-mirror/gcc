@@ -1,5 +1,10 @@
 2014-05-13  Marek Polacek  <polacek@redhat.com>
 
+	PR c/61162
+	* gcc.dg/pr61162.c: New test.
+
+2014-05-13  Marek Polacek  <polacek@redhat.com>
+
 	* c-c++-common/pr50459.c: Move cdtor tests to a separate testcase.
 	* c-c++-common/pr50459-2.c: New test.
 
