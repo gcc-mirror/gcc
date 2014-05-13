@@ -215,12 +215,12 @@ print_rtx (const_rtx in_rtx)
 	   An exception is the third field of a NOTE, where it indicates
 	   that the field has several different valid contents.  */
       case '0':
+#ifndef GENERATOR_FILE
 	if (i == 1 && REG_P (in_rtx))
 	  {
 	    if (REGNO (in_rtx) != ORIGINAL_REGNO (in_rtx))
 	      fprintf (outfile, " [%d]", ORIGINAL_REGNO (in_rtx));
 	  }
-#ifndef GENERATOR_FILE
 	else if (i == 1 && GET_CODE (in_rtx) == SYMBOL_REF)
 	  {
 	    int flags = SYMBOL_REF_FLAGS (in_rtx);
@@ -233,7 +233,6 @@ print_rtx (const_rtx in_rtx)
 	    if (decl)
 	      print_node_brief (outfile, "", decl, dump_flags);
 	  }
-#endif
 	else if (i == 4 && NOTE_P (in_rtx))
 	  {
 	    switch (NOTE_KIND (in_rtx))
@@ -249,19 +248,15 @@ print_rtx (const_rtx in_rtx)
 
 	      case NOTE_INSN_BLOCK_BEG:
 	      case NOTE_INSN_BLOCK_END:
-#ifndef GENERATOR_FILE
 		dump_addr (outfile, " ", NOTE_BLOCK (in_rtx));
-#endif
 		sawclose = 1;
 		break;
 
 	      case NOTE_INSN_BASIC_BLOCK:
 		{
-#ifndef GENERATOR_FILE
 		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
 		  if (bb != 0)
 		    fprintf (outfile, " [bb %d]", bb->index);
-#endif
 		  break;
 	        }
 
@@ -278,28 +273,22 @@ print_rtx (const_rtx in_rtx)
 
 	      case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 		{
-#ifndef GENERATOR_FILE
 		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
 		  if (bb != 0)
 		    fprintf (outfile, " [bb %d]", bb->index);
-#endif
 		  break;
 		}
 
 	      case NOTE_INSN_VAR_LOCATION:
 	      case NOTE_INSN_CALL_ARG_LOCATION:
-#ifndef GENERATOR_FILE
 		fputc (' ', outfile);
 		print_rtx (NOTE_VAR_LOCATION (in_rtx));
-#endif
 		break;
 
 	      case NOTE_INSN_CFI:
-#ifndef GENERATOR_FILE
 		fputc ('\n', outfile);
 		output_cfi_directive (outfile, NOTE_CFI (in_rtx));
 		fputc ('\t', outfile);
-#endif
 		break;
 
 	      default:
@@ -319,20 +308,16 @@ print_rtx (const_rtx in_rtx)
 	  }
 	else if (i == 0 && GET_CODE (in_rtx) == VALUE)
 	  {
-#ifndef GENERATOR_FILE
 	    cselib_val *val = CSELIB_VAL_PTR (in_rtx);
 
 	    fprintf (outfile, " %u:%u", val->uid, val->hash);
 	    dump_addr (outfile, " @", in_rtx);
 	    dump_addr (outfile, "/", (void*)val);
-#endif
 	  }
 	else if (i == 0 && GET_CODE (in_rtx) == DEBUG_EXPR)
 	  {
-#ifndef GENERATOR_FILE
 	    fprintf (outfile, " D#%i",
 		     DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (in_rtx)));
-#endif
 	  }
 	else if (i == 0 && GET_CODE (in_rtx) == ENTRY_VALUE)
 	  {
@@ -342,6 +327,7 @@ print_rtx (const_rtx in_rtx)
 	    print_rtx (ENTRY_VALUE_EXP (in_rtx));
 	    indent -= 2;
 	  }
+#endif
 	break;
 
       case 'e':

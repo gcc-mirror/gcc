@@ -1,5 +1,10 @@
 2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* print-rtl.c (print_rtx): Guard whole '0' block with ifndef
+	GENERATOR_FILE.
+
+2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (rtx_def): Mark u2 as GTY ((skip)).
 
 2014-05-13  Bin Cheng  <bin.cheng@arm.com>
