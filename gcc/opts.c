@@ -857,9 +857,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     maybe_set_param_value (PARAM_MAX_STORES_TO_SINK, 0,
                            opts->x_param_values, opts_set->x_param_values);
 
-  /* The -gsplit-dwarf option requires -gpubnames.  */
+  /* The -gsplit-dwarf option requires -ggnu-pubnames.  */
   if (opts->x_dwarf_split_debug_info)
-    opts->x_debug_generate_pub_sections = 1;
+    opts->x_debug_generate_pub_sections = 2;
 }
 
 #define LEFT_COLUMN	27

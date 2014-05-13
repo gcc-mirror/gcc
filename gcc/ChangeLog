@@ -1,3 +1,7 @@
+2014-05-13  Cary Coutant  <ccoutant@google.com>
+
+	* opts.c (finish_options): Use -ggnu-pubnames with -gsplit-dwarf.
+
 2014-05-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype-parse.c (require3): Eliminate in favor of...
