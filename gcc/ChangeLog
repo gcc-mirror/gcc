@@ -1,3 +1,7 @@
+2014-05-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (rtx_def): Mark u2 as GTY ((skip)).
+
 2014-05-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (contain_complex_addr_expr): New.
