@@ -1,5 +1,10 @@
 2014-05-12  Jason Merrill  <jason@redhat.com>
 
+	* call.c (maybe_print_user_conv_context): New.
+	(convert_like_real): Use it.  Print call context for bad
+	user-defined conversion.
+	(build_over_call): Print call context for bad 'this' conversion.
+
 	* call.c (convert_like_real): Use inform for identifying the
 	declaration point.
 
