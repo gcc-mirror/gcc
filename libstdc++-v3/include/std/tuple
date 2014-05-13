@@ -775,7 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     >::type
     get(tuple<_Elements...>&& __t) noexcept
     { return std::forward<typename tuple_element<__i,
-	tuple<_Elements...>>::type&&>(get<__i>(__t)); }
+	tuple<_Elements...>>::type&&>(std::get<__i>(__t)); }
 
 #if __cplusplus > 201103L
   template<typename _Head, size_t __i, typename... _Tail>
@@ -815,16 +815,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr bool 
       __eq(const _Tp& __t, const _Up& __u)
       {
-	return (get<__i>(__t) == get<__i>(__u) &&
-		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__eq(__t, __u));
+	return bool(std::get<__i>(__t) == std::get<__i>(__u))
+	  && __tuple_compare<0, __i + 1, __j, _Tp, _Up>::__eq(__t, __u);
       }
      
       static constexpr bool 
       __less(const _Tp& __t, const _Up& __u)
       {
-	return ((get<__i>(__t) < get<__i>(__u))
-		|| !(get<__i>(__u) < get<__i>(__t)) &&
-		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__less(__t, __u));
+	return bool(std::get<__i>(__t) < std::get<__i>(__u))
+	  || !bool(std::get<__i>(__u) < std::get<__i>(__t))
+	  && __tuple_compare<0, __i + 1, __j, _Tp, _Up>::__less(__t, __u);
       }
     };
 
