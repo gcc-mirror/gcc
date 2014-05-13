@@ -1,3 +1,10 @@
+2014-05-13  Catherine Moore  <clm@cm00re.com>
+
+	* gcc.target/mips/near-far-1.c: Adjust expected output
+	to allow the JALS instruction.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
 2014-05-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/ivopts-lower_base.c: New test.
