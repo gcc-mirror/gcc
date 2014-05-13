@@ -429,10 +429,9 @@ DEF_RTL_EXPR(LABEL_REF, "label_ref", "u", RTX_CONST_OBJ)
 
 /* Reference to a named label:
    Operand 0: label name
-   Operand 1: flags (see SYMBOL_FLAG_* in rtl.h)
-   Operand 2: tree from which this symbol is derived, or null.
+   Operand 1: tree from which this symbol is derived, or null.
    This is either a DECL node, or some kind of constant.  */
-DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s00", RTX_CONST_OBJ)
+DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s0", RTX_CONST_OBJ)
 
 /* The condition code register is represented, in our imagination,
    as a register holding a value that can be compared to zero.

@@ -211,7 +211,7 @@ union rtunion
    if SYMBOL_REF_HAS_BLOCK_INFO_P is true.  */
 struct GTY(()) block_symbol {
   /* The usual SYMBOL_REF fields.  */
-  rtunion GTY ((skip)) fld[3];
+  rtunion GTY ((skip)) fld[2];
 
   /* The block that contains this object.  */
   struct object_block *block;
@@ -361,6 +361,9 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
 
     /* The INSN_UID of an RTX_INSN-class code.  */
     int insn_uid;
+
+    /* The SYMBOL_REF_FLAGS of a SYMBOL_REF.  */
+    unsigned int symbol_ref_flags;
 
     /* The PAT_VAR_LOCATION_STATUS of a VAR_LOCATION.  */
     enum var_init_status var_location_status;
@@ -1765,24 +1768,24 @@ do {									\
 
 /* A pointer attached to the SYMBOL_REF; either SYMBOL_REF_DECL or
    SYMBOL_REF_CONSTANT.  */
-#define SYMBOL_REF_DATA(RTX) X0ANY ((RTX), 2)
+#define SYMBOL_REF_DATA(RTX) X0ANY ((RTX), 1)
 
 /* Set RTX's SYMBOL_REF_DECL to DECL.  RTX must not be a constant
    pool symbol.  */
 #define SET_SYMBOL_REF_DECL(RTX, DECL) \
-  (gcc_assert (!CONSTANT_POOL_ADDRESS_P (RTX)), X0TREE ((RTX), 2) = (DECL))
+  (gcc_assert (!CONSTANT_POOL_ADDRESS_P (RTX)), X0TREE ((RTX), 1) = (DECL))
 
 /* The tree (decl or constant) associated with the symbol, or null.  */
 #define SYMBOL_REF_DECL(RTX) \
-  (CONSTANT_POOL_ADDRESS_P (RTX) ? NULL : X0TREE ((RTX), 2))
+  (CONSTANT_POOL_ADDRESS_P (RTX) ? NULL : X0TREE ((RTX), 1))
 
 /* Set RTX's SYMBOL_REF_CONSTANT to C.  RTX must be a constant pool symbol.  */
 #define SET_SYMBOL_REF_CONSTANT(RTX, C) \
-  (gcc_assert (CONSTANT_POOL_ADDRESS_P (RTX)), X0CONSTANT ((RTX), 2) = (C))
+  (gcc_assert (CONSTANT_POOL_ADDRESS_P (RTX)), X0CONSTANT ((RTX), 1) = (C))
 
 /* The rtx constant pool entry for a symbol, or null.  */
 #define SYMBOL_REF_CONSTANT(RTX) \
-  (CONSTANT_POOL_ADDRESS_P (RTX) ? X0CONSTANT ((RTX), 2) : NULL)
+  (CONSTANT_POOL_ADDRESS_P (RTX) ? X0CONSTANT ((RTX), 1) : NULL)
 
 /* A set of flags on a symbol_ref that are, in some respects, redundant with
    information derivable from the tree decl associated with this symbol.
@@ -1791,7 +1794,9 @@ do {									\
    this information to avoid recomputing it.  Finally, this allows space for
    the target to store more than one bit of information, as with
    SYMBOL_REF_FLAG.  */
-#define SYMBOL_REF_FLAGS(RTX)	X0INT ((RTX), 1)
+#define SYMBOL_REF_FLAGS(RTX) \
+  (RTL_FLAG_CHECK1 ("SYMBOL_REF_FLAGS", (RTX), SYMBOL_REF) \
+   ->u2.symbol_ref_flags)
 
 /* These flags are common enough to be defined for all targets.  They
    are computed by the default version of targetm.encode_section_info.  */
