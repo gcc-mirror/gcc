@@ -1,5 +1,11 @@
 2014-05-13  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
+	* fold-const.c (optimize_bit_field_compare): Use wi:: operations
+	instead of const_binop.
+	(fold_binary_loc): Likewise.
+
+2014-05-13  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
 	* tree-dfa.h (get_addr_base_and_unit_offset_1): Update array index
 	calculation to match get_ref_base_and_extent.
 
