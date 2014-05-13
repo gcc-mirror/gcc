@@ -1,3 +1,32 @@
+2014-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype-parse.c (require3): Eliminate in favor of...
+	(require4): New.
+	(require_template_declaration): Update to support optional single *
+	on a type.
+
+	* gengtype.c (get_ultimate_base_class): Add a non-const overload.
+	(create_user_defined_type): Handle a single level of explicit
+	pointerness within template arguments.
+	(struct write_types_data): Add field "kind".
+	(filter_type_name): Handle "*" character.
+	(write_user_func_for_structure_ptr): Require a write_types_data
+	rather than just a prefix string, so that we can look up the kind
+	of the wtd and use it as an index into wrote_user_func_for_ptr,
+	ensuring that such functions are written at most once.  Support
+	subclasses by invoking the marking function of the ultimate base
+	class.
+	(write_user_func_for_structure_body): Require a write_types_data
+	rather than just a prefix string, so that we can pass this to
+	write_user_func_for_structure_ptr.
+	(write_func_for_structure): Likewise.
+	(ggc_wtd): Add initializer of new "kind" field.
+	(pch_wtd): Likewise.
+
+	* gengtype.h (enum write_types_kinds): New.
+	(struct type): Add field wrote_user_func_for_ptr to the "s"
+	union member.
+
 2014-05-13  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* fold-const.c (optimize_bit_field_compare): Use wi:: operations
