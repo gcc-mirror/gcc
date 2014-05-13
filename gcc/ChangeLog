@@ -1,3 +1,15 @@
+2014-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (neon_itype): Remove NEON_RESULTPAIR.
+	(arm_init_neon_builtins): Remove handling of NEON_RESULTPAIR.
+	Remove associated type declarations and initialisations.
+	(arm_expand_neon_builtin): Likewise.
+	(neon_emit_pair_result_insn): Delete.
+	* config/arm/arm_neon_builtins (vtrn, vzip, vuzp): Delete.
+	* config/arm/neon.md (neon_vtrn<mode>): Delete.
+	(neon_vzip<mode>): Likewise.
+	(neon_vuzp<mode>): Likewise.
+
 2014-05-13  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60973

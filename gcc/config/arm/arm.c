@@ -23085,7 +23085,6 @@ typedef enum {
   NEON_FLOAT_NARROW,
   NEON_FIXCONV,
   NEON_SELECT,
-  NEON_RESULTPAIR,
   NEON_REINTERP,
   NEON_VTBL,
   NEON_VTBX,
@@ -23550,27 +23549,6 @@ arm_init_neon_builtins (void)
   tree intCI_type_node;
   tree intXI_type_node;
 
-  tree V8QI_pointer_node;
-  tree V4HI_pointer_node;
-  tree V2SI_pointer_node;
-  tree V2SF_pointer_node;
-  tree V16QI_pointer_node;
-  tree V8HI_pointer_node;
-  tree V4SI_pointer_node;
-  tree V4SF_pointer_node;
-  tree V2DI_pointer_node;
-
-  tree void_ftype_pv8qi_v8qi_v8qi;
-  tree void_ftype_pv4hi_v4hi_v4hi;
-  tree void_ftype_pv2si_v2si_v2si;
-  tree void_ftype_pv2sf_v2sf_v2sf;
-  tree void_ftype_pdi_di_di;
-  tree void_ftype_pv16qi_v16qi_v16qi;
-  tree void_ftype_pv8hi_v8hi_v8hi;
-  tree void_ftype_pv4si_v4si_v4si;
-  tree void_ftype_pv4sf_v4sf_v4sf;
-  tree void_ftype_pv2di_v2di_v2di;
-
   tree reinterp_ftype_dreg[NUM_DREG_TYPES][NUM_DREG_TYPES];
   tree reinterp_ftype_qreg[NUM_QREG_TYPES][NUM_QREG_TYPES];
   tree dreg_types[NUM_DREG_TYPES], qreg_types[NUM_QREG_TYPES];
@@ -23695,49 +23673,6 @@ arm_init_neon_builtins (void)
 					     "__builtin_neon_ci");
   (*lang_hooks.types.register_builtin_type) (intXI_type_node,
 					     "__builtin_neon_xi");
-
-  /* Pointers to vector types.  */
-  V8QI_pointer_node = build_pointer_type (V8QI_type_node);
-  V4HI_pointer_node = build_pointer_type (V4HI_type_node);
-  V2SI_pointer_node = build_pointer_type (V2SI_type_node);
-  V2SF_pointer_node = build_pointer_type (V2SF_type_node);
-  V16QI_pointer_node = build_pointer_type (V16QI_type_node);
-  V8HI_pointer_node = build_pointer_type (V8HI_type_node);
-  V4SI_pointer_node = build_pointer_type (V4SI_type_node);
-  V4SF_pointer_node = build_pointer_type (V4SF_type_node);
-  V2DI_pointer_node = build_pointer_type (V2DI_type_node);
-
-  /* Operations which return results as pairs.  */
-  void_ftype_pv8qi_v8qi_v8qi =
-    build_function_type_list (void_type_node, V8QI_pointer_node, V8QI_type_node,
-  			      V8QI_type_node, NULL);
-  void_ftype_pv4hi_v4hi_v4hi =
-    build_function_type_list (void_type_node, V4HI_pointer_node, V4HI_type_node,
-  			      V4HI_type_node, NULL);
-  void_ftype_pv2si_v2si_v2si =
-    build_function_type_list (void_type_node, V2SI_pointer_node, V2SI_type_node,
-  			      V2SI_type_node, NULL);
-  void_ftype_pv2sf_v2sf_v2sf =
-    build_function_type_list (void_type_node, V2SF_pointer_node, V2SF_type_node,
-  			      V2SF_type_node, NULL);
-  void_ftype_pdi_di_di =
-    build_function_type_list (void_type_node, intDI_pointer_node,
-			      neon_intDI_type_node, neon_intDI_type_node, NULL);
-  void_ftype_pv16qi_v16qi_v16qi =
-    build_function_type_list (void_type_node, V16QI_pointer_node,
-			      V16QI_type_node, V16QI_type_node, NULL);
-  void_ftype_pv8hi_v8hi_v8hi =
-    build_function_type_list (void_type_node, V8HI_pointer_node, V8HI_type_node,
-  			      V8HI_type_node, NULL);
-  void_ftype_pv4si_v4si_v4si =
-    build_function_type_list (void_type_node, V4SI_pointer_node, V4SI_type_node,
-  			      V4SI_type_node, NULL);
-  void_ftype_pv4sf_v4sf_v4sf =
-    build_function_type_list (void_type_node, V4SF_pointer_node, V4SF_type_node,
-  			      V4SF_type_node, NULL);
-  void_ftype_pv2di_v2di_v2di =
-    build_function_type_list (void_type_node, V2DI_pointer_node, V2DI_type_node,
-			      V2DI_type_node, NULL);
 
   if (TARGET_CRYPTO && TARGET_HARD_FLOAT)
   {
@@ -24025,25 +23960,6 @@ arm_init_neon_builtins (void)
 	      }
 
 	    ftype = build_function_type (return_type, args);
-	  }
-	  break;
-
-	case NEON_RESULTPAIR:
-	  {
-	    switch (insn_data[d->code].operand[1].mode)
-	      {
-	      case V8QImode: ftype = void_ftype_pv8qi_v8qi_v8qi; break;
-	      case V4HImode: ftype = void_ftype_pv4hi_v4hi_v4hi; break;
-	      case V2SImode: ftype = void_ftype_pv2si_v2si_v2si; break;
-	      case V2SFmode: ftype = void_ftype_pv2sf_v2sf_v2sf; break;
-	      case DImode: ftype = void_ftype_pdi_di_di; break;
-	      case V16QImode: ftype = void_ftype_pv16qi_v16qi_v16qi; break;
-	      case V8HImode: ftype = void_ftype_pv8hi_v8hi_v8hi; break;
-	      case V4SImode: ftype = void_ftype_pv4si_v4si_v4si; break;
-	      case V4SFmode: ftype = void_ftype_pv4sf_v4sf_v4sf; break;
-	      case V2DImode: ftype = void_ftype_pv2di_v2di_v2di; break;
-	      default: gcc_unreachable ();
-	      }
 	  }
 	  break;
 
@@ -25289,11 +25205,6 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
-    case NEON_RESULTPAIR:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
-        NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
-        NEON_ARG_STOP);
-
     case NEON_LANEMUL:
     case NEON_LANEMULL:
     case NEON_LANEMULH:
@@ -25353,24 +25264,6 @@ void
 neon_reinterpret (rtx dest, rtx src)
 {
   emit_move_insn (dest, gen_lowpart (GET_MODE (dest), src));
-}
-
-/* Emit code to place a Neon pair result in memory locations (with equal
-   registers).  */
-void
-neon_emit_pair_result_insn (enum machine_mode mode,
-			    rtx (*intfn) (rtx, rtx, rtx, rtx), rtx destaddr,
-                            rtx op1, rtx op2)
-{
-  rtx mem = gen_rtx_MEM (mode, destaddr);
-  rtx tmp1 = gen_reg_rtx (mode);
-  rtx tmp2 = gen_reg_rtx (mode);
-
-  emit_insn (intfn (tmp1, op1, op2, tmp2));
-
-  emit_move_insn (mem, tmp1);
-  mem = adjust_address (mem, mode, GET_MODE_SIZE (mode));
-  emit_move_insn (mem, tmp2);
 }
 
 /* Set up OPERANDS for a register copy from SRC to DEST, taking care

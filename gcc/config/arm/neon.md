@@ -4140,17 +4140,6 @@
   [(set_attr "type" "neon_permute<q>")]
 )
 
-(define_expand "neon_vtrn<mode>"
-  [(match_operand:SI 0 "s_register_operand" "r")
-   (match_operand:VDQW 1 "s_register_operand" "w")
-   (match_operand:VDQW 2 "s_register_operand" "w")]
-  "TARGET_NEON"
-{
-  neon_emit_pair_result_insn (<MODE>mode, gen_neon_vtrn<mode>_internal,
-			      operands[0], operands[1], operands[2]);
-  DONE;
-})
-
 (define_expand "neon_vzip<mode>_internal"
   [(parallel
     [(set (match_operand:VDQW 0 "s_register_operand" "")
@@ -4177,17 +4166,6 @@
   [(set_attr "type" "neon_zip<q>")]
 )
 
-(define_expand "neon_vzip<mode>"
-  [(match_operand:SI 0 "s_register_operand" "r")
-   (match_operand:VDQW 1 "s_register_operand" "w")
-   (match_operand:VDQW 2 "s_register_operand" "w")]
-  "TARGET_NEON"
-{
-  neon_emit_pair_result_insn (<MODE>mode, gen_neon_vzip<mode>_internal,
-			      operands[0], operands[1], operands[2]);
-  DONE;
-})
-
 (define_expand "neon_vuzp<mode>_internal"
   [(parallel
     [(set (match_operand:VDQW 0 "s_register_operand" "")
@@ -4213,17 +4191,6 @@
   "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set_attr "type" "neon_zip<q>")]
 )
-
-(define_expand "neon_vuzp<mode>"
-  [(match_operand:SI 0 "s_register_operand" "r")
-   (match_operand:VDQW 1 "s_register_operand" "w")
-   (match_operand:VDQW 2 "s_register_operand" "w")]
-  "TARGET_NEON"
-{
-  neon_emit_pair_result_insn (<MODE>mode, gen_neon_vuzp<mode>_internal,
-			      operands[0], operands[1], operands[2]);
-  DONE;
-})
 
 (define_expand "neon_vreinterpretv8qi<mode>"
   [(match_operand:V8QI 0 "s_register_operand" "")
