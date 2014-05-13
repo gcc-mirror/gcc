@@ -103,7 +103,8 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
 		offset_int woffset
-		  = offset_int::from (wi::sub (index, low_bound), SIGNED);
+		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
+			      TYPE_PRECISION (TREE_TYPE (index)));
 		woffset *= wi::to_offset (unit_size);
 		byte_offset += woffset.to_shwi ();
 	      }
