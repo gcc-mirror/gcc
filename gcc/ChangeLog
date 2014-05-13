@@ -1,3 +1,13 @@
+2014-05-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/sourcebuild.texi: (dfp_hw): Document.
+	(p8vector_hw): Likewise.
+	(powerpc_eabi_ok): Likewise.
+	(powerpc_elfv2): Likewise.
+	(powerpc_htm_ok): Likewise.
+	(ppc_recip_hw): Likewise.
+	(vsx_hw): Likewise.
+
 2014-05-13  Jeff Law  <law@redhat.com>
 
 	Backports fromm mainline:
