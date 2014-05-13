@@ -5,8 +5,6 @@
 enum { A = 128, B = 1 };
 void *fn1 (void) __attribute__((assume_aligned (A)));
 void *fn2 (void) __attribute__((assume_aligned (A, 4)));
-void fn3 (void) __attribute__((constructor (A)));
-void fn4 (void) __attribute__((destructor (A)));
 void *fn5 (int) __attribute__((alloc_size (B)));
 void *fn6 (int) __attribute__((alloc_align (B)));
 void fn7 (const char *, ...) __attribute__ ((sentinel (B)));

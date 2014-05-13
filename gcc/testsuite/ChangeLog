@@ -1,3 +1,8 @@
+2014-05-13  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/pr50459.c: Move cdtor tests to a separate testcase.
+	* c-c++-common/pr50459-2.c: New test.
+
 2014-05-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54310
