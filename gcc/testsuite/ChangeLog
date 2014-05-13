@@ -1,3 +1,8 @@
+2014-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61060
+	* gcc.dg/pr61060.c: New test.
+
 2014-05-12  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from mainline
