@@ -139,46 +139,46 @@ DEF_RTL_EXPR(ADDRESS, "address", "i", RTX_EXTRA)
    ---------------------------------------------------------------------- */
 
 /* An annotation for variable assignment tracking.  */
-DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "iuuBeiie", RTX_INSN)
+DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "uuBeiie", RTX_INSN)
 
 /* An instruction that cannot jump.  */
-DEF_RTL_EXPR(INSN, "insn", "iuuBeiie", RTX_INSN)
+DEF_RTL_EXPR(INSN, "insn", "uuBeiie", RTX_INSN)
 
 /* An instruction that can possibly jump.
    Fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBeiie0", RTX_INSN)
+DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "uuBeiie0", RTX_INSN)
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
    Field ( rtx->u.fld[8] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBeiiee", RTX_INSN)
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "uuBeiiee", RTX_INSN)
 
 /* Placeholder for tablejump JUMP_INSNs.  The pattern of this kind
    of rtx is always either an ADDR_VEC or an ADDR_DIFF_VEC.  These
    placeholders do not appear as real instructions inside a basic
    block, but are considered active_insn_p instructions for historical
    reasons, when jump table data was represented with JUMP_INSNs.  */
-DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "iuuBe0000", RTX_INSN)
+DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "uuBe0000", RTX_INSN)
 
 /* A marker that indicates that control will not flow through.  */
-DEF_RTL_EXPR(BARRIER, "barrier", "iuu00000", RTX_EXTRA)
+DEF_RTL_EXPR(BARRIER, "barrier", "uu00000", RTX_EXTRA)
 
 /* Holds a label that is followed by instructions.
    Operand:
-   4: is used in jump.c for the use-count of the label.
-   5: is used in the sh backend.
-   6: is a number that is unique in the entire compilation.
-   7: is the user-given name of the label, if any.  */
-DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", RTX_EXTRA)
+   3: is used in jump.c for the use-count of the label.
+   4: is used in the sh backend.
+   5: is a number that is unique in the entire compilation.
+   6: is the user-given name of the label, if any.  */
+DEF_RTL_EXPR(CODE_LABEL, "code_label", "uuB00is", RTX_EXTRA)
 
 /* Say where in the code a source line starts, for symbol table's sake.
    Operand:
-   4: note-specific data
-   5: enum insn_note
-   6: unique number if insn_note == note_insn_deleted_label.  */
-DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", RTX_EXTRA)
+   3: note-specific data
+   4: enum insn_note
+   5: unique number if insn_note == note_insn_deleted_label.  */
+DEF_RTL_EXPR(NOTE, "note", "uuB0ni", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.

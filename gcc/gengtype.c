@@ -1086,8 +1086,8 @@ gen_rtx_next (void)
       int k;
 
       rtx_next_new[i] = -1;
-      if (strncmp (rtx_format[i], "iuu", 3) == 0)
-	rtx_next_new[i] = 2;
+      if (strncmp (rtx_format[i], "uu", 2) == 0)
+	rtx_next_new[i] = 1;
       else if (i == COND_EXEC || i == SET || i == EXPR_LIST || i == INSN_LIST)
 	rtx_next_new[i] = 1;
       else
@@ -1227,19 +1227,19 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    case '0':
 	      if (i == MEM && aindex == 1)
 		t = mem_attrs_tp, subname = "rt_mem";
-	      else if (i == JUMP_INSN && aindex == 8)
+	      else if (i == JUMP_INSN && aindex == 7)
 		t = rtx_tp, subname = "rt_rtx";
-	      else if (i == CODE_LABEL && aindex == 5)
-		t = scalar_tp, subname = "rt_int";
 	      else if (i == CODE_LABEL && aindex == 4)
+		t = scalar_tp, subname = "rt_int";
+	      else if (i == CODE_LABEL && aindex == 3)
 		t = rtx_tp, subname = "rt_rtx";
 	      else if (i == LABEL_REF && (aindex == 1 || aindex == 2))
 		t = rtx_tp, subname = "rt_rtx";
-	      else if (i == NOTE && aindex == 4)
+	      else if (i == NOTE && aindex == 3)
 		t = note_union_tp, subname = "";
-	      else if (i == NOTE && aindex == 5)
+	      else if (i == NOTE && aindex == 4)
 		t = scalar_tp, subname = "rt_int";
-	      else if (i == NOTE && aindex >= 7)
+	      else if (i == NOTE && aindex >= 6)
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == ADDR_DIFF_VEC && aindex == 4)
 		t = scalar_tp, subname = "rt_int";
@@ -1255,9 +1255,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == SYMBOL_REF && aindex == 2)
 		t = symbol_union_tp, subname = "";
-	      else if (i == JUMP_TABLE_DATA && aindex >= 5)
+	      else if (i == JUMP_TABLE_DATA && aindex >= 4)
 		t = scalar_tp, subname = "rt_int";
-	      else if (i == BARRIER && aindex >= 3)
+	      else if (i == BARRIER && aindex >= 2)
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == ENTRY_VALUE && aindex == 0)
 		t = rtx_tp, subname = "rt_rtx";

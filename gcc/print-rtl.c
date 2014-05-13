@@ -187,6 +187,9 @@ print_rtx (const_rtx in_rtx)
     i = 5;
 #endif
 
+  if (INSN_CHAIN_CODE_P (GET_CODE (in_rtx)))
+    fprintf (outfile, " %d", INSN_UID (in_rtx));
+
   /* Get the format string and skip the first elements if we have handled
      them already.  */
   format_ptr = GET_RTX_FORMAT (GET_CODE (in_rtx)) + i;
@@ -228,7 +231,7 @@ print_rtx (const_rtx in_rtx)
 	    if (decl)
 	      print_node_brief (outfile, "", decl, dump_flags);
 	  }
-	else if (i == 4 && NOTE_P (in_rtx))
+	else if (i == 3 && NOTE_P (in_rtx))
 	  {
 	    switch (NOTE_KIND (in_rtx))
 	      {
@@ -290,7 +293,7 @@ print_rtx (const_rtx in_rtx)
 		break;
 	      }
 	  }
-	else if (i == 8 && JUMP_P (in_rtx) && JUMP_LABEL (in_rtx) != NULL)
+	else if (i == 7 && JUMP_P (in_rtx) && JUMP_LABEL (in_rtx) != NULL)
 	  {
 	    /* Output the JUMP_LABEL reference.  */
 	    fprintf (outfile, "\n%s%*s -> ", print_rtx_head, indent * 2, "");
@@ -328,13 +331,13 @@ print_rtx (const_rtx in_rtx)
       case 'e':
       do_e:
 	indent += 2;
-	if (i == 7 && INSN_P (in_rtx))
+	if (i == 6 && INSN_P (in_rtx))
 	  /* Put REG_NOTES on their own line.  */
 	  fprintf (outfile, "\n%s%*s",
 		   print_rtx_head, indent * 2, "");
 	if (!sawclose)
 	  fprintf (outfile, " ");
-	if (i == 8 && CALL_P (in_rtx))
+	if (i == 7 && CALL_P (in_rtx))
 	  {
 	    in_call_function_usage = true;
 	    print_rtx (XEXP (in_rtx, i));
@@ -384,7 +387,7 @@ print_rtx (const_rtx in_rtx)
 	break;
 
       case 'i':
-	if (i == 5 && INSN_P (in_rtx))
+	if (i == 4 && INSN_P (in_rtx))
 	  {
 #ifndef GENERATOR_FILE
 	    /*  Pretty-print insn locations.  Ignore scoping as it is mostly
@@ -413,7 +416,7 @@ print_rtx (const_rtx in_rtx)
 		       LOCATION_LINE (ASM_INPUT_SOURCE_LOCATION (in_rtx)));
 #endif
 	  }
-	else if (i == 6 && NOTE_P (in_rtx))
+	else if (i == 5 && NOTE_P (in_rtx))
 	  {
 	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	       other times often contains garbage from INSN->NOTE death.  */
