@@ -354,8 +354,8 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
 
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
-    unsigned GTY ((tag ("CONST_WIDE_INT"))) num_elem:32;
-  } GTY ((desc ("GET_CODE (&%0)"))) u2;
+    unsigned int num_elem;
+  } GTY ((skip)) u2;
 
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
