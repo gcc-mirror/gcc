@@ -3914,13 +3914,13 @@ perform_overload_resolution (tree fn,
    functions.  */
 
 static void
-print_error_for_call_failure (tree fn, vec<tree, va_gc> *args, bool any_viable_p,
+print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
 			      struct z_candidate *candidates)
 {
   tree name = DECL_NAME (OVL_CURRENT (fn));
   location_t loc = location_of (name);
 
-  if (!any_viable_p)
+  if (!any_strictly_viable (candidates))
     error_at (loc, "no matching function for call to %<%D(%A)%>",
 	      name, build_tree_list_vec (args));
   else
@@ -3964,7 +3964,7 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
       if (!fn)
 	{
 	  if (complain & tf_error)
-	    print_error_for_call_failure (orig_fn, *args, false, NULL);
+	    print_error_for_call_failure (orig_fn, *args, NULL);
 	  return error_mark_node;
 	}
     }
@@ -3984,7 +3984,7 @@ build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p,
 	    return cp_build_function_call_vec (candidates->fn, args, complain);
 	  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
 	    fn = TREE_OPERAND (fn, 0);
-	  print_error_for_call_failure (fn, *args, any_viable_p, candidates);
+	  print_error_for_call_failure (fn, *args, candidates);
 	}
       result = error_mark_node;
     }
@@ -4066,7 +4066,7 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
   if (!cand)
     {
       if (complain & tf_error)
-	print_error_for_call_failure (fns, *args, any_viable_p, candidates);
+	print_error_for_call_failure (fns, *args, candidates);
       return error_mark_node;
     }
 
@@ -7898,8 +7898,12 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      arglist = build_tree_list_vec (user_args);
 	      if (skip_first_for_error)
 		arglist = TREE_CHAIN (arglist);
-	      error ("call of overloaded %<%s(%A)%> is ambiguous", pretty_name,
-		     arglist);
+	      if (!any_strictly_viable (candidates))
+		error ("no matching function for call to %<%s(%A)%>",
+		       pretty_name, arglist);
+	      else
+		error ("call of overloaded %<%s(%A)%> is ambiguous",
+		       pretty_name, arglist);
 	      print_z_candidates (location_of (name), candidates);
 	      if (free_p)
 		free (pretty_name);
