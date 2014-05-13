@@ -278,7 +278,7 @@ namespace __debug
     get(array<_Tp, _Nm>&& __arr) noexcept
     {
       static_assert(_Int < _Nm, "index is out of bounds");
-      return std::move(get<_Int>(__arr));
+      return std::move(__debug::get<_Int>(__arr));
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
