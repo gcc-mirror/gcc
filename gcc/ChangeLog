@@ -1,3 +1,9 @@
+2014-05-13  Catherine Moore  <clm@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* configure.ac: Fix assembly for explicit JALR relocation check.
+	* configure: Regenerate.
+
 2014-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (neon_itype): Remove NEON_RESULTPAIR.
