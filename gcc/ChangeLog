@@ -1,3 +1,18 @@
+2014-05-13  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* Makefile.in: add shrink-wrap.o.
+	* config/i386/i386.c: include "shrink-wrap.h"
+	* function.c: Likewise.
+	(requires_stack_frame_p, next_block_for_reg,
+	move_insn_for_shrink_wrap, prepare_shrink_wrap,
+	dup_block_and_redirect): Move to shrink-wrap.c
+	(thread_prologue_and_epilogue_insns): Extract three code segments
+	as functions in shrink-wrap.c
+	* function.h: Move #ifdef HAVE_simple_return ... #endif block to
+	shrink-wrap.h
+	* shrink-wrap.c: New file.
+	* shrink-wrap.h: New file.
+
 2014-05-12  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/extend.texi: Reflect current numbers of pragmas.  Remove
