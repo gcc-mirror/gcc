@@ -5373,5 +5373,43 @@ bool, false)
 
 /* Leave the boolean fields at the end.  */
 
+/* Functions related to mode switching.  */
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_MODE_"
+HOOK_VECTOR (TARGET_TOGGLE_, mode_switching)
+
+DEFHOOK
+(emit,
+ "Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.",
+ void, (int entity, int mode, HARD_REG_SET regs_live), NULL)
+
+DEFHOOK
+(needed,
+ "@var{entity} is an integer specifying a mode-switched entity. If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.",
+ int, (int entity, rtx insn), NULL)
+
+DEFHOOK
+(after,
+ "@var{entity} is an integer specifying a mode-switched entity.  If this macro is defined, it is evaluated for every @var{insn} during mode switching.  It determines the mode that an insn results in (if different from the incoming mode).",
+ int, (int entity, int mode, rtx insn), NULL)
+
+DEFHOOK
+(entry,
+ "If this macro is defined, it is evaluated for every @var{entity} that needs mode switching.  It should evaluate to an integer, which is a mode that @var{entity} is assumed to be switched to at function entry.  If @code{TARGET_MODE_ENTRY} is defined then @code{TARGET_MODE_EXIT} must be defined.",
+ int, (int entity), NULL)
+
+DEFHOOK
+(exit,
+ "If this macro is defined, it is evaluated for every @var{entity} that needs mode switching.  It should evaluate to an integer, which is a mode that @var{entity} is assumed to be switched to at function exit.  If @code{TARGET_MODE_EXIT} is defined then @code{TARGET_MODE_ENTRY} must be defined.",
+ int, (int entity), NULL)
+
+DEFHOOK
+(priority,
+ "This macro specifies the order in which modes for @var{entity} are processed. 0 is the highest priority, @code{NUM_MODES_FOR_MODE_SWITCHING[@var{entity}] - 1} the lowest.  The value of the macro should be an integer designating a mode for @var{entity}.  For any fixed @var{entity}, @code{mode_priority} (@var{entity}, @var{n}) shall be a bijection in 0 @dots{} @code{num_modes_for_mode_switching[@var{entity}] - 1}.",
+ int, (int entity, int n), NULL)
+
+HOOK_VECTOR_END (mode_switching)
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
+
