@@ -966,9 +966,14 @@ thread_around_empty_blocks (edge taken_edge,
    SIMPLIFY is a pass-specific function used to simplify statements.
 
    Our caller is responsible for restoring the state of the expression
-   and const_and_copies stacks.  */
+   and const_and_copies stacks.
 
-static bool
+   Positive return value is success.  Zero return value is failure, but
+   the block can still be duplicated as a joiner in a jump thread path,
+   negative indicates the block should not be duplicated and thus is not
+   suitable for a joiner in a jump threading path.  */
+
+static int
 thread_through_normal_block (edge e,
 			     gimple dummy_cond,
 			     bool handle_dominating_asserts,
@@ -990,7 +995,7 @@ thread_through_normal_block (edge e,
   /* PHIs create temporary equivalences.  */
   if (!record_temporary_equivalences_from_phis (e, stack, *backedge_seen_p,
 						src_map, dst_map))
-    return false;
+    return 0;
 
   /* Now walk each statement recording any context sensitive
      temporary equivalences we can detect.  */
@@ -998,8 +1003,16 @@ thread_through_normal_block (edge e,
     = record_temporary_equivalences_from_stmts_at_dest (e, stack, simplify,
 							*backedge_seen_p,
 							src_map, dst_map);
+
+  /* If we didn't look at all the statements, the most likely reason is
+     there were too many and thus duplicating this block is not profitable.
+
+     Also note if we do not look at all the statements, then we may not
+     have invalidated equivalences that are no longer valid if we threaded
+     around a loop.  Thus we must signal to our caller that this block
+     is not suitable for use as a joiner in a threading path.  */
   if (!stmt)
-    return false;
+    return -1;
 
   /* If we stopped at a COND_EXPR or SWITCH_EXPR, see if we know which arm
      will be taken.  */
@@ -1023,7 +1036,7 @@ thread_through_normal_block (edge e,
 	  if (dest == NULL
 	      || dest == e->dest
 	      || bitmap_bit_p (visited, dest->index))
-	    return false;
+	    return 0;
 
 	  /* Only push the EDGE_START_JUMP_THREAD marker if this is
 	     first edge on the path.  */
@@ -1057,10 +1070,10 @@ thread_through_normal_block (edge e,
 				      visited,
 				      path,
 				      backedge_seen_p);
-	  return true;
+	  return 1;
 	}
     }
-  return false;
+  return 0;
 }
 
 /* We are exiting E->src, see if E->dest ends with a conditional
@@ -1112,9 +1125,12 @@ thread_across_edge (gimple dummy_cond,
   if (backedge_seen)
     simplify = dummy_simplify;
 
-  if (thread_through_normal_block (e, dummy_cond, handle_dominating_asserts,
-				   stack, simplify, path, visited,
-				   &backedge_seen, src_map, dst_map))
+  int threaded = thread_through_normal_block (e, dummy_cond,
+					      handle_dominating_asserts,
+					      stack, simplify, path,
+					      visited, &backedge_seen,
+					      src_map, dst_map);
+  if (threaded > 0)
     {
       propagate_threaded_block_debug_into (path->last ()->e->dest,
 					   e->dest);
@@ -1127,10 +1143,27 @@ thread_across_edge (gimple dummy_cond,
     }
   else
     {
-      /* There should be no edges on the path, so no need to walk through
-	 the vector entries.  */
+      /* Negative and zero return values indicate no threading was possible,
+	 thus there should be no edges on the thread path and no need to walk
+	 through the vector entries.  */
       gcc_assert (path->length () == 0);
       path->release ();
+
+      /* A negative status indicates the target block was deemed too big to
+	 duplicate.  Just quit now rather than trying to use the block as
+	 a joiner in a jump threading path.
+
+	 This prevents unnecessary code growth, but more importantly if we
+	 do not look at all the statements in the block, then we may have
+	 missed some invalidations if we had traversed a backedge!  */
+      if (threaded < 0)
+	{
+	  BITMAP_FREE (visited);
+	  BITMAP_FREE (src_map);
+	  BITMAP_FREE (dst_map);
+	  remove_temporary_equivalences (stack);
+	  return;
+	}
     }
 
  /* We were unable to determine what out edge from E->dest is taken.  However,
@@ -1212,7 +1245,7 @@ thread_across_edge (gimple dummy_cond,
 					       handle_dominating_asserts,
 					       stack, simplify, path, visited,
 					       &backedge_seen,
-					       src_map, dst_map);
+					       src_map, dst_map) > 0;
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */

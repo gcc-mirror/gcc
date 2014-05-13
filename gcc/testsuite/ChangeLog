@@ -1,6 +1,12 @@
 2014-05-13  Jeff Law  <law@redhat.com>
 
-	Backport from mainline
+	Backports from mainline
+
+	2014-05-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61009
+	* g++.dg/tree-ssa/pr61009.C: New test.
+
 	2014-04-23  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/60902
