@@ -1,3 +1,12 @@
+2014-05-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix current cygwin-64 build problems.
+	* src/java_raw_api.c: Remove if !defined(FFI_NO_RAW_API).
+	* src/x86/ffi.c: Add if defined(__CYGWIN__).
+	* src/x86/win64.S (ffi_closure_win64, ffi_call_win64): Added
+	handling for FFI_TYPE_UINT64, FFI_TYPE_POINTER and FFI_TYPE_INT.
+	Added SEH information.  Fixed formatting.
+
 2014-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620

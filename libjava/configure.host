@@ -365,6 +365,13 @@ EOF
 esac
 
 case "${host}" in
+  x86_64-*-cygwin* | x86_64-*-mingw*)
+	# Win32 DLLs are limited to 64k exported symbols each.
+	enable_libgcj_sublibs_default=yes
+	libgcj_sublib_ltflags='$(lt_host_flags) \
+	    -Wl,-u,_ZN3org4ietf4jgss10GSSManagerC1Ev,-L..,-lgcj-noncore-dummy'
+	libgcj_sublib_core_extra_deps=libgcj-noncore-dummy.dll.a
+  ;;
   *-cygwin* | *-mingw*)
 	fallback_backtrace_h=sysdep/i386/backtrace.h  
 	# We need a frame pointer on Windows, so override BACKTRACESPEC

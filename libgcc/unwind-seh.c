@@ -431,43 +431,40 @@ _Unwind_DeleteException (struct _Unwind_Exception *exc)
 /* Perform stack backtrace through unwind data.  */
 
 _Unwind_Reason_Code
-_Unwind_Backtrace(_Unwind_Trace_Fn trace ATTRIBUTE_UNUSED,
-		  void *trace_argument ATTRIBUTE_UNUSED)
+_Unwind_Backtrace(_Unwind_Trace_Fn trace,
+		  void *trace_argument)
 {
-#if 0
   UNWIND_HISTORY_TABLE ms_history;
   CONTEXT ms_context;
   struct _Unwind_Context gcc_context;
+  DISPATCHER_CONTEXT disp_context;
 
   memset (&ms_history, 0, sizeof(ms_history));
   memset (&gcc_context, 0, sizeof(gcc_context));
+  memset (&disp_context, 0, sizeof(disp_context));
 
   ms_context.ContextFlags = CONTEXT_ALL;
   RtlCaptureContext (&ms_context);
 
-  gcc_context.disp.ContextRecord = &ms_context;
-  gcc_context.disp.HistoryTable = &ms_history;
+  gcc_context.disp = &disp_context;
+  gcc_context.disp->ContextRecord = &ms_context;
+  gcc_context.disp->HistoryTable = &ms_history;
 
   while (1)
     {
-      gcc_context.disp.ControlPc = ms_context.Rip;
-      gcc_context.disp.FunctionEntry
-	= RtlLookupFunctionEntry (ms_context.Rip, &gcc_context.disp.ImageBase,
+      gcc_context.disp->ControlPc = ms_context.Rip;
+      gcc_context.disp->FunctionEntry
+	= RtlLookupFunctionEntry (ms_context.Rip, &gcc_context.disp->ImageBase,
 				  &ms_history);
 
-      if (gcc_context.disp.FunctionEntry)
-	{
-	  gcc_context.disp.LanguageHandler
-	    = RtlVirtualUnwind (0, gcc_context.disp.ImageBase, ms_context.Rip,
-				gcc_context.disp.FunctionEntry, &ms_context,
-				&gcc_context.disp.HandlerData,
-				&gcc_context.disp.EstablisherFrame, NULL);
-	}
-      else
-	{
-	  ms_context.Rip = *(ULONG_PTR *)ms_context.Rsp;
-	  ms_context.Rsp += 8;
-	}
+      if (!gcc_context.disp->FunctionEntry)
+	return _URC_END_OF_STACK;
+
+      gcc_context.disp->LanguageHandler
+	= RtlVirtualUnwind (0, gcc_context.disp->ImageBase, ms_context.Rip,
+			    gcc_context.disp->FunctionEntry, &ms_context,
+			    &gcc_context.disp->HandlerData,
+			    &gcc_context.disp->EstablisherFrame, NULL);
 
       /* Call trace function.  */
       if (trace (&gcc_context, trace_argument) != _URC_NO_REASON)
@@ -477,8 +474,5 @@ _Unwind_Backtrace(_Unwind_Trace_Fn trace ATTRIBUTE_UNUSED,
       if (ms_context.Rip == 0)
 	return _URC_END_OF_STACK;
     }
-#else
-  return _URC_END_OF_STACK;
-#endif
 }
 #endif /* __SEH__  && !defined (__USING_SJLJ_EXCEPTIONS__)  */
