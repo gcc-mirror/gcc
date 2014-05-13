@@ -1,3 +1,8 @@
+2014-05-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54310
+	* g++.dg/template/pr54310.C: New.
+
 2014-05-13  Nathan Sidwell  <nathan@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
