@@ -492,7 +492,7 @@ int test2_67()
     const          A ca = a; // { dg-error "deleted" }
           volatile A va;
     const volatile A cva = a; // { dg-error "deleted" }
-    sink_2_67(a);            // { dg-error "ambiguous" }
+    sink_2_67(a);            // { dg-error "no match" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 495 }
     sink_2_67(ca);	     // { dg-error "lvalue" }
     sink_2_67(va);	     // { dg-error "lvalue" }

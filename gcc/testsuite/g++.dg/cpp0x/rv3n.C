@@ -930,7 +930,7 @@ int test3_678()
     const          A ca = a; // { dg-error "deleted" }
           volatile A va;
     const volatile A cva = a; // { dg-error "deleted" }
-    sink_3_678(a);          // { dg-error "ambiguous" }
+    sink_3_678(a);          // { dg-error "no match" }
     // { dg-message "candidate" "candidate note" { target *-*-* } 933 }
     sink_3_678(ca);	    // { dg-error "lvalue" }
     sink_3_678(va);	    // { dg-error "lvalue" }

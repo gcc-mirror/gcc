@@ -1,5 +1,9 @@
 2014-05-13  Jason Merrill  <jason@redhat.com>
 
+	* call.c (print_error_for_call_failure): Say "no match" rather
+	than "ambiguous" if there were no strict matches.
+	(build_new_method_call_1): Likewise.
+
 	PR c++/61151
 	* semantics.c (is_this_parameter): Allow capture proxies too.
 
