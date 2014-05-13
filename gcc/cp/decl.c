@@ -8475,6 +8475,14 @@ create_array_type_for_decl (tree name, tree type, tree size)
       return error_mark_node;
     }
 
+  /* 8.3.4p1: ...if the type of the identifier of D contains the auto
+     type-specifier, the program is ill-formed.  */
+  if (type_uses_auto (type))
+    {
+      error ("%qD declared as array of %qT", name, type);
+      return error_mark_node;
+    }
+
   /* Figure out the index type for the array.  */
   if (size)
     itype = compute_array_index_type (name, size, tf_warning_or_error);

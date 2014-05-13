@@ -1,5 +1,8 @@
 2014-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60628
+	* decl.c (create_array_type_for_decl): Complain about array of auto.
+
 	PR c++/60367
 	* call.c (convert_default_arg): Remove special handling for
 	CONSTRUCTOR.
