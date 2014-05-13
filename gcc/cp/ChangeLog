@@ -1,3 +1,10 @@
+2014-05-13  Jason Merrill  <jason@redhat.com>
+
+	DR 5
+	PR c++/60019
+	* call.c (build_user_type_conversion_1): The copy-init temporary
+	is cv-unqualified.
+
 2014-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61083

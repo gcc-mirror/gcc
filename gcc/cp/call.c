@@ -3677,11 +3677,20 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
       return cand;
     }
 
+  tree convtype;
+  if (!DECL_CONSTRUCTOR_P (cand->fn))
+    convtype = non_reference (TREE_TYPE (TREE_TYPE (cand->fn)));
+  else if (cand->second_conv->kind == ck_rvalue)
+    /* DR 5: [in the first step of copy-initialization]...if the function
+       is a constructor, the call initializes a temporary of the
+       cv-unqualified version of the destination type. */
+    convtype = cv_unqualified (totype);
+  else
+    convtype = totype;
   /* Build the user conversion sequence.  */
   conv = build_conv
     (ck_user,
-     (DECL_CONSTRUCTOR_P (cand->fn)
-      ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
+     convtype,
      build_identity_conv (TREE_TYPE (expr), expr));
   conv->cand = cand;
   if (cand->viable == -1)
