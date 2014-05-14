@@ -270,8 +270,6 @@
 	(mode_exit, modepriority_to_mode): Likewise.
 	* mode-switching.c (MODE_NEEDED, MODE_AFTER, MODE_ENTRY): Hookify.
 	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
-	(default_priority_to_mode): Define.
-	* targhooks.h (default_priority_to_mode): Declare.
 	* target.h: Include tm.h and hard-reg-set.h.
 	* doc/tm.texi.in (EMIT_MODE_SET, MODE_NEEDED, MODE_AFTER, MODE_ENTRY)
 	(MODE_EXIT, MODE_PRIORITY_TO_MODE): Delete and hookify.
@@ -289,10 +287,6 @@
 	* config/epiphany/epiphany.h (MODE_NEEDED, MODE_AFTER, MODE_ENTRY):
 	Delete
 	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
-	* config/sh/sh.h (MODE_NEEDED, MODE_AFTER, MODE_ENTRY): Delete
-	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
-	* config/sh/sh.c (sh4_emit_mode_set, sh4_mode_needed): Hookify.
-	(sh4_mode_after, sh4_mode_entry, sh4_mode_exit): Likewise.
 	* config/epiphany/epiphany-protos.h (epiphany_mode_needed)
 	(emit_set_fp_mode, epiphany_mode_entry_exit, epiphany_mode_after)
 	(epiphany_mode_priority_to_mode): Remove declaration.
