@@ -1,3 +1,9 @@
+2014-05-14  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	PR target/61084
+	* config/sparc/sparc.md: Fix types of low and high in DI constant
+	splitter.  Use gen_int_mode in some other splitters.
+
 2014-05-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60897
