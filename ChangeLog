@@ -1,3 +1,7 @@
+2014-05-15  Torvald Riegel  <triegel@redhat.com>
+
+	* MAINTAINERS (libitm): Add myself as maintainer.
+
 2014-05-07  Charles Baylis  <charles.baylis@linaro.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
