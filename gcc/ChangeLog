@@ -1,3 +1,8 @@
+2014-05-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (nios2_cbranch): Fix paste-o in
+	length attribute computation.
+
 2014-05-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR debug/61188
