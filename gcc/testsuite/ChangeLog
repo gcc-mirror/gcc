@@ -1,3 +1,8 @@
+2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60901
+	* gcc.target/i386/pr60901.c: New test. 
+
 2014-05-14  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/61100

@@ -1,3 +1,9 @@
+2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60901
+	* config/i386/i386.c (ix86_dependencies_evaluation_hook): Check that
+	bb predecessor belongs to the same scheduling region.  Adjust comment.
+
 2014-05-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* doc/sourcebuild.texi: (dfp_hw): Document.
