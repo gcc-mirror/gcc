@@ -1230,14 +1230,14 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   template<std::size_t _Ind, typename... _Tp>
     inline auto
     __volget(volatile tuple<_Tp...>& __tuple)
-    -> typename tuple_element<_Ind, tuple<_Tp...>>::type volatile&
+    -> __tuple_element_t<_Ind, tuple<_Tp...>> volatile&
     { return std::get<_Ind>(const_cast<tuple<_Tp...>&>(__tuple)); }
 
   // std::get<I> for const-volatile-qualified tuples
   template<std::size_t _Ind, typename... _Tp>
     inline auto
     __volget(const volatile tuple<_Tp...>& __tuple)
-    -> typename tuple_element<_Ind, tuple<_Tp...>>::type const volatile&
+    -> __tuple_element_t<_Ind, tuple<_Tp...>> const volatile&
     { return std::get<_Ind>(const_cast<const tuple<_Tp...>&>(__tuple)); }
 
   /// Type of the function object returned from bind().

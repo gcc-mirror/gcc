@@ -1,3 +1,18 @@
+2014-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (__add_c_ref, __add_ref, __add_r_ref): Remove.
+	(__tuple_element_t): Define.
+	(tuple_element): Use __tuple_element_t.
+	(__cv_tuple_size): Define.
+	(tuple_size<cv _Tp>): Use __cv_tuple_size.
+	(get, __get_helper, __get_helper2): Remove uses of __add_ref etc.
+	(get<_Tp>(tuple<_Types...>&&)): Use forward instead of move.
+	(__tuple_compare): Remove size check, re-order parameters.
+	(operator==, operator<): Use static_assert to check requirements.
+	* include/std/functional (__volget): use __tuple_element_t.
+	* testsuite/20_util/tuple/element_access/get_by_type.cc: Test rvalues.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error.
+
 2014-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60497
