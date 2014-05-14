@@ -24,6 +24,6 @@ int main()
   Enum e = enumerator1;
   Struct s;
   int x = funct(e+1);// { dg-error "invalid" }
-  int y = s.getI(e+1);// { dg-error "match|conv" }
+  int y = s.getI(e+1);// { dg-error "invalid" }
   return x+y;
 }

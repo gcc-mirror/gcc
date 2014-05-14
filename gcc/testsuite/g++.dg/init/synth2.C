@@ -1,7 +1,7 @@
 // PR c++/34180
 
 struct G {
-  G();				// { dg-message "" "candidate" }
+  G();
   G(G&);			// { dg-message "" "candidate" }
 };
 

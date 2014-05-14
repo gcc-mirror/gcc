@@ -4,7 +4,7 @@ struct A;
 
 struct B
 {
-  B (A const &);		// { dg-message "note" }
+  B (A const &);
   B (B &);			// { dg-message "note" }
 };
 
@@ -16,5 +16,5 @@ struct A
 B
 f (B const& b)
 {
-  return b;			// { dg-error "matching" "matching" }
+  return b;			// { dg-error "" }
 }

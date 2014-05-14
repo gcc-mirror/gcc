@@ -1540,15 +1540,11 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      [8.5.3/5 dcl.init.ref] is changed to also require direct bindings for
      const and rvalue references to rvalues of compatible class type.
      We should also do direct bindings for non-class xvalues.  */
-  if (compatible_p
-      && (is_lvalue
-	  || (((CP_TYPE_CONST_NON_VOLATILE_P (to)
-		&& !(flags & LOOKUP_NO_RVAL_BIND))
-	       || TYPE_REF_IS_RVALUE (rto))
-	      && (gl_kind
-		  || (!(flags & LOOKUP_NO_TEMP_BIND)
-		      && (CLASS_TYPE_P (from)
-			  || TREE_CODE (from) == ARRAY_TYPE))))))
+  if (related_p
+      && (gl_kind
+	  || (!(flags & LOOKUP_NO_TEMP_BIND)
+	      && (CLASS_TYPE_P (from)
+		  || TREE_CODE (from) == ARRAY_TYPE))))
     {
       /* [dcl.init.ref]
 
@@ -1603,6 +1599,16 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
           && !(flags & LOOKUP_PREFER_RVALUE))
 	conv->bad_p = true;
 
+      /* Nor the reverse.  */
+      if (!is_lvalue && !TYPE_REF_IS_RVALUE (rto)
+	  && (!CP_TYPE_CONST_NON_VOLATILE_P (to)
+	      || (flags & LOOKUP_NO_RVAL_BIND))
+	  && TREE_CODE (to) != FUNCTION_TYPE)
+	conv->bad_p = true;
+
+      if (!compatible_p)
+	conv->bad_p = true;
+
       return conv;
     }
   /* [class.conv.fct] A conversion function is never used to convert a
@@ -1646,24 +1652,6 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      of the underlying type with the argument expression.  Any
      difference in top-level cv-qualification is subsumed by the
      initialization itself and does not constitute a conversion.  */
-
-  /* [dcl.init.ref]
-
-     Otherwise, the reference shall be an lvalue reference to a
-     non-volatile const type, or the reference shall be an rvalue
-     reference.  */
-  if (!CP_TYPE_CONST_NON_VOLATILE_P (to) && !TYPE_REF_IS_RVALUE (rto))
-    return NULL;
-
-  /* [dcl.init.ref]
-
-     Otherwise, a temporary of type "cv1 T1" is created and
-     initialized from the initializer expression using the rules for a
-     non-reference copy initialization.  If T1 is reference-related to
-     T2, cv1 must be the same cv-qualification as, or greater
-     cv-qualification than, cv2; otherwise, the program is ill-formed.  */
-  if (related_p && !at_least_as_qualified_p (to, from))
-    return NULL;
 
   /* We're generating a temporary now, but don't bind any more in the
      conversion (specifically, don't slice the temporary returned by a
@@ -1709,6 +1697,24 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      creation of a temporary.  */
   conv->need_temporary_p = true;
   conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
+
+  /* [dcl.init.ref]
+
+     Otherwise, the reference shall be an lvalue reference to a
+     non-volatile const type, or the reference shall be an rvalue
+     reference.  */
+  if (!CP_TYPE_CONST_NON_VOLATILE_P (to) && !TYPE_REF_IS_RVALUE (rto))
+    conv->bad_p = true;
+
+  /* [dcl.init.ref]
+
+     Otherwise, a temporary of type "cv1 T1" is created and
+     initialized from the initializer expression using the rules for a
+     non-reference copy initialization.  If T1 is reference-related to
+     T2, cv1 must be the same cv-qualification as, or greater
+     cv-qualification than, cv2; otherwise, the program is ill-formed.  */
+  if (related_p && !at_least_as_qualified_p (to, from))
+    conv->bad_p = true;
 
   return conv;
 }
@@ -6334,12 +6340,20 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
 	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
-	    gcc_assert (TYPE_REF_IS_RVALUE (ref_type)
-			&& (real_lvalue_p (expr)
-			    || next_conversion(convs)->kind == ck_rvalue));
-
-	    error_at (loc, "cannot bind %qT lvalue to %qT",
-		      TREE_TYPE (expr), totype);
+	    tree extype = TREE_TYPE (expr);
+	    if (TYPE_REF_IS_RVALUE (ref_type)
+		&& real_lvalue_p (expr))
+	      error_at (loc, "cannot bind %qT lvalue to %qT",
+			extype, totype);
+	    else if (!TYPE_REF_IS_RVALUE (ref_type) && !real_lvalue_p (expr)
+		     && !CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (ref_type)))
+	      error_at (loc, "invalid initialization of non-const reference of "
+			"type %qT from an rvalue of type %qT", totype, extype);
+	    else if (!reference_compatible_p (TREE_TYPE (totype), extype))
+	      error_at (loc, "binding %qT to reference of type %qT "
+			"discards qualifiers", extype, totype);
+	    else
+	      gcc_unreachable ();
 	    maybe_print_user_conv_context (convs);
 	    if (fn)
 	      inform (input_location,
@@ -8230,6 +8244,12 @@ compare_ics (conversion *ics1, conversion *ics2)
   conversion *ref_conv1;
   conversion *ref_conv2;
 
+  /* Compare badness before stripping the reference conversion.  */
+  if (ics1->bad_p > ics2->bad_p)
+    return -1;
+  else if (ics1->bad_p < ics2->bad_p)
+    return 1;
+
   /* Handle implicit object parameters.  */
   maybe_handle_implicit_object (&ics1);
   maybe_handle_implicit_object (&ics2);
@@ -8258,30 +8278,18 @@ compare_ics (conversion *ics1, conversion *ics2)
      --a user-defined conversion sequence (_over.ics.user_) is a
        better conversion sequence than an ellipsis conversion sequence
        (_over.ics.ellipsis_).  */
-  rank1 = CONVERSION_RANK (ics1);
-  rank2 = CONVERSION_RANK (ics2);
+  /* Use BAD_CONVERSION_RANK because we already checked for a badness
+     mismatch.  If both ICS are bad, we try to make a decision based on
+     what would have happened if they'd been good.  This is not an
+     extension, we'll still give an error when we build up the call; this
+     just helps us give a more helpful error message.  */
+  rank1 = BAD_CONVERSION_RANK (ics1);
+  rank2 = BAD_CONVERSION_RANK (ics2);
 
   if (rank1 > rank2)
     return -1;
   else if (rank1 < rank2)
     return 1;
-
-  if (rank1 == cr_bad)
-    {
-      /* Both ICS are bad.  We try to make a decision based on what would
-	 have happened if they'd been good.  This is not an extension,
-	 we'll still give an error when we build up the call; this just
-	 helps us give a more helpful error message.  */
-      rank1 = BAD_CONVERSION_RANK (ics1);
-      rank2 = BAD_CONVERSION_RANK (ics2);
-
-      if (rank1 > rank2)
-	return -1;
-      else if (rank1 < rank2)
-	return 1;
-
-      /* We couldn't make up our minds; try to figure it out below.  */
-    }
 
   if (ics1->ellipsis_p)
     /* Both conversions are ellipsis conversions.  */
@@ -8602,13 +8610,30 @@ compare_ics (conversion *ics1, conversion *ics2)
 	      || (TYPE_REF_IS_RVALUE (ref_conv1->type)
 		  != TYPE_REF_IS_RVALUE (ref_conv2->type))))
 	{
+	  if (ref_conv1->bad_p
+	      && !same_type_p (TREE_TYPE (ref_conv1->type),
+			       TREE_TYPE (ref_conv2->type)))
+	    /* Don't prefer a bad conversion that drops cv-quals to a bad
+	       conversion with the wrong rvalueness.  */
+	    return 0;
 	  return (ref_conv1->rvaluedness_matches_p
 		  - ref_conv2->rvaluedness_matches_p);
 	}
 
       if (same_type_ignoring_top_level_qualifiers_p (to_type1, to_type2))
-	return comp_cv_qualification (TREE_TYPE (ref_conv2->type),
-				      TREE_TYPE (ref_conv1->type));
+	{
+	  int q1 = cp_type_quals (TREE_TYPE (ref_conv1->type));
+	  int q2 = cp_type_quals (TREE_TYPE (ref_conv2->type));
+	  if (ref_conv1->bad_p)
+	    {
+	      /* Prefer the one that drops fewer cv-quals.  */
+	      tree ftype = next_conversion (ref_conv1)->type;
+	      int fquals = cp_type_quals (ftype);
+	      q1 ^= fquals;
+	      q2 ^= fquals;
+	    }
+	  return comp_cv_qualification (q2, q1);
+	}
     }
 
   /* Neither conversion sequence is better than the other.  */

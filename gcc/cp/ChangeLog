@@ -1,5 +1,16 @@
 2014-05-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/20332
+	PR c++/21631
+	* call.c (reference_binding): Treat lvalue/rvalue mismatch and
+	dropped cv-quals as a bad conversion.
+	(convert_like_real) [ck_ref_bind]: Explain them.
+	(compare_ics): Check badness before stripping reference
+	bindings.  Handle comparing bad reference bindings.
+	* typeck.c (comp_cv_qualification): Add overload that just takes
+	integers.
+	* cp-tree.h: Declare it.
+
 	* call.c (struct conversion_info): Rename 'from_type' to 'from'.
 	(arg_conversion_rejection, bad_arg_conversion_rejection)
 	(explicit_conversion_rejection, template_conversion_rejection): Adjust.

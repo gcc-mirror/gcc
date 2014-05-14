@@ -6,9 +6,9 @@
 
 struct A
 {
-  A(A&); // { dg-message "note" }
-  template <class T> A(T); 	// { dg-message "note" }
+  A(A&);			// { dg-message "A::A" }
+  template <class T> A(T); 	// { dg-message "A::A" }
 };
 
-A a = 0; // { dg-error "no matching function" }
+A a = 0; // { dg-error "" }
 

@@ -16,5 +16,5 @@ public:
 void
 test(B &b1, const B &b2)
 {
-        b1 = b2;// { dg-error "match" }
+        b1 = b2;// { dg-error "const" }
 }
