@@ -1,3 +1,18 @@
+2014-05-14  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/clflushopt-1.c: New.
+	* gcc.target/i386/xsavec-1.c: Ditto.
+	* gcc.target/i386/xsavec64-1.c: Ditto.
+	* gcc.target/i386/xsaves-1.c: Ditto.
+	* gcc.target/i386/xsaves64-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Test new options.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/60866

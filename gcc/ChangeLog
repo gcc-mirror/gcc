@@ -1,3 +1,67 @@
+2014-05-14  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_CLFLUSHOPT_SET): Define.
+	(OPTION_MASK_ISA_XSAVES_SET): Ditto.
+	(OPTION_MASK_ISA_XSAVEC_SET): Ditto.
+	(OPTION_MASK_ISA_CLFLUSHOPT_UNSET): Ditto.
+	(OPTION_MASK_ISA_XSAVES_UNSET): Ditto.
+	(OPTION_MASK_ISA_XSAVEC_UNSET): Ditto.
+	(ix86_handle_option): Handle OPT_mxsavec, OPT_mxsaves,
+	OPT_mclflushopt.
+	* config.gcc (i[34567]86-*-*): Add clflushoptintrin.h,
+	xsavecintrin.h, xsavesintrin.h.
+	(x86_64-*-*): Ditto.
+	* config/i386/clflushoptintrin.h: New.
+	* config/i386/xsavecintrin.h: Ditto.
+	* config/i386/xsavesintrin.h: Ditto.
+	* config/i386/cpuid.h (bit_CLFLUSHOPT): Define.
+	(bit_XSAVES): Ditto.
+	(bit_XSAVES): Ditto.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle
+	-mclflushopt, -mxsavec, -mxsaves, -mno-xsaves, -mno-xsavec,
+	-mno-clflushopt.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_CLFLUSHOPT, OPTION_MASK_ISA_XSAVEC,
+	OPTION_MASK_ISA_XSAVES.
+	* config/i386/i386.c (ix86_target_string): Handle -mclflushopt,
+	-mxsavec, -mxsaves.
+	(PTA_CLFLUSHOPT) Define.
+	(PTA_XSAVEC): Ditto.
+	(PTA_XSAVES): Ditto.
+	(ix86_option_override_internal): Handle new options.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_builtins): Add IX86_BUILTIN_XSAVEC, IX86_BUILTIN_XSAVEC64,
+	IX86_BUILTIN_XSAVES, IX86_BUILTIN_XRSTORS, IX86_BUILTIN_XSAVES64,
+	IX86_BUILTIN_XRSTORS64, IX86_BUILTIN_CLFLUSHOPT.
+	(bdesc_special_args): Add __builtin_ia32_xsaves, __builtin_ia32_xrstors,
+	__builtin_ia32_xsavec, __builtin_ia32_xsaves64, __builtin_ia32_xrstors64,
+	__builtin_ia32_xsavec64.
+	(ix86_init_mmx_sse_builtins): Add __builtin_ia32_clflushopt.
+	(ix86_expand_builtin): Handle new builtins.
+	* config/i386/i386.h (TARGET_CLFLUSHOPT) Define.
+	(TARGET_CLFLUSHOPT_P): Ditto.
+	(TARGET_XSAVEC): Ditto.
+	(TARGET_XSAVEC_P): Ditto.
+	(TARGET_XSAVES): Ditto.
+	(TARGET_XSAVES_P): Ditto.
+	* config/i386/i386.md (ANY_XSAVE): Add UNSPECV_XSAVEC, UNSPECV_XSAVES.
+	(ANY_XSAVE64)" Add UNSPECV_XSAVEC64, UNSPECV_XSAVES64.
+	(attr xsave): Add xsavec, xsavec64, xsaves, xsaves64.
+	(ANY_XRSTOR): New.
+	(ANY_XRSTOR64): Ditto.
+	(xrstor): Ditto.
+	(xrstor): Change into <xrstor>.
+	(xrstor_rex64): Change into <xrstor>_rex64.
+	(xrstor64): Change into <xrstor>64
+	(clflushopt): New.
+	* config/i386/i386.opt (mclflushopt): New.
+	(mxsavec): Ditto.
+	(mxsaves): Ditto.
+	* config/i386/x86intrin.h: Add clflushoptintrin.h, xsavesintrin.h,
+	xsavecintrin.h.
+	* doc/invoke.texi: Document new options.
+
 2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/60866

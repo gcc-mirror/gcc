@@ -75,6 +75,7 @@
 #define bit_AVX512F	(1 << 16)
 #define bit_RDSEED	(1 << 18)
 #define bit_ADX	(1 << 19)
+#define bit_CLFLUSHOPT	(1 << 23)
 #define bit_AVX512PF	(1 << 26)
 #define bit_AVX512ER	(1 << 27)
 #define bit_AVX512CD	(1 << 28)
@@ -85,6 +86,8 @@
 
 /* Extended State Enumeration Sub-leaf (%eax == 13, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)
+#define bit_XSAVEC	(1 << 1)
+#define bit_XSAVES	(1 << 3)
 
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2014 Free Software Foundation, Inc.
+/* Copyright (C) 2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -21,64 +21,38 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef _X86INTRIN_H_INCLUDED
-#define _X86INTRIN_H_INCLUDED
+#if !defined _X86INTRIN_H_INCLUDED
+# error "Never use <xsavecintrin.h> directly; include <x86intrin.h> instead."
+#endif
 
-#include <ia32intrin.h>
+#ifndef _XSAVECINTRIN_H_INCLUDED
+#define _XSAVECINTRIN_H_INCLUDED
 
-#include <mmintrin.h>
+#ifndef __XSAVEC__
+#pragma GCC push_options
+#pragma GCC target("xsavec")
+#define __DISABLE_XSAVEC__
+#endif /* __XSAVEC__ */
 
-#include <xmmintrin.h>
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_xsavec (void *__P, long long __M)
+{
+  __builtin_ia32_xsavec (__P, __M);
+}
 
-#include <emmintrin.h>
+#ifdef __x86_64__
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_xsavec64 (void *__P, long long __M)
+{
+  __builtin_ia32_xsavec64 (__P, __M);
+}
+#endif
 
-#include <pmmintrin.h>
+#ifdef __DISABLE_XSAVEC__
+#undef __DISABLE_XSAVEC__
+#pragma GCC pop_options
+#endif /* __DISABLE_XSAVEC__ */
 
-#include <tmmintrin.h>
-
-#include <ammintrin.h>
-
-#include <smmintrin.h>
-
-#include <wmmintrin.h>
-
-/* For including AVX instructions */
-#include <immintrin.h>
-
-#include <mm3dnow.h>
-
-#include <fma4intrin.h>
-
-#include <xopintrin.h>
-
-#include <lwpintrin.h>
-
-#include <bmiintrin.h>
-
-#include <bmi2intrin.h>
-
-#include <tbmintrin.h>
-
-#include <lzcntintrin.h>
-
-#include <popcntintrin.h>
-
-#include <rdseedintrin.h>
-
-#include <prfchwintrin.h>
-
-#include <fxsrintrin.h>
-
-#include <xsaveintrin.h>
-
-#include <xsaveoptintrin.h>
-
-#include <adxintrin.h>
-
-#include <clflushoptintrin.h>
-
-#include <xsavesintrin.h>
-
-#include <xsavecintrin.h>
-
-#endif /* _X86INTRIN_H_INCLUDED */
+#endif /* _XSAVECINTRIN_H_INCLUDED */

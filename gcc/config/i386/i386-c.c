@@ -393,6 +393,12 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))
     def_or_undef (parse_in, "__SSE2_MATH__");
+  if (isa_flag & OPTION_MASK_ISA_CLFLUSHOPT)
+    def_or_undef (parse_in, "__CLFLUSHOPT__");
+  if (isa_flag & OPTION_MASK_ISA_XSAVEC)
+    def_or_undef (parse_in, "__XSAVEC__");
+  if (isa_flag & OPTION_MASK_ISA_XSAVES)
+    def_or_undef (parse_in, "__XSAVES__");
 }
 
 

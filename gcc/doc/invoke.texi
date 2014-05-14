@@ -672,6 +672,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd -msha @gol
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma -mprefetchwt1 @gol
+-mclflushopt -mxsavec -mxsaves @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
@@ -15337,6 +15338,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-aes
 @itemx -mpclmul
 @itemx -mno-pclmul
+@itemx -mclfushopt
+@itemx -mno-clflsuhopt
 @need 800
 @itemx -mfsgsbase
 @itemx -mno-fsgsbase
@@ -15375,6 +15378,10 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mrtm
 @itemx -mtbm
 @itemx -mno-tbm
+@itemx -mxsavec
+@itemx -mno-xsavec
+@itemx -mxsaves
+@itemx -mno-xsaves
 @opindex mmmx
 @opindex mno-mmx
 @opindex msse
