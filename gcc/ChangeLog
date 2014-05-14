@@ -1,3 +1,8 @@
+2014-05-14  James Norris  <jnorris@codesourcery.com>
+
+	* omp-low.c (expand_parallel_call): Remove shadow variable.
+	(expand_omp_taskreg): Likewise.
+
 2014-05-14  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* common/config/i386/i386-common.c
