@@ -2626,6 +2626,9 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mxsave",	OPTION_MASK_ISA_XSAVE },
     { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
     { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
+    { "-mclflushopt",   OPTION_MASK_ISA_CLFLUSHOPT },
+    { "-mxsavec",	OPTION_MASK_ISA_XSAVEC },
+    { "-mxsaves",	OPTION_MASK_ISA_XSAVES },
   };
 
   /* Flag options.  */
@@ -3117,6 +3120,9 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512CD		(HOST_WIDE_INT_1 << 43)
 #define PTA_SHA			(HOST_WIDE_INT_1 << 45)
 #define PTA_PREFETCHWT1		(HOST_WIDE_INT_1 << 46)
+#define PTA_CLFLUSHOPT		(HOST_WIDE_INT_1 << 47)
+#define PTA_XSAVEC		(HOST_WIDE_INT_1 << 48)
+#define PTA_XSAVES		(HOST_WIDE_INT_1 << 49)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -3674,6 +3680,15 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_PREFETCHWT1
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PREFETCHWT1))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PREFETCHWT1;
+	if (processor_alias_table[i].flags & PTA_CLFLUSHOPT
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLFLUSHOPT))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLFLUSHOPT;
+	if (processor_alias_table[i].flags & PTA_XSAVEC
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEC))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVEC;
+	if (processor_alias_table[i].flags & PTA_XSAVES
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVES))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVES;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4557,6 +4572,9 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("xsave",	OPT_mxsave),
     IX86_ATTR_ISA ("xsaveopt",	OPT_mxsaveopt),
     IX86_ATTR_ISA ("prefetchwt1", OPT_mprefetchwt1),
+    IX86_ATTR_ISA ("clflushopt",	OPT_mclflushopt),
+    IX86_ATTR_ISA ("xsavec",	OPT_mxsavec),
+    IX86_ATTR_ISA ("xsaves",	OPT_mxsaves),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -27311,6 +27329,14 @@ enum ix86_builtins
   IX86_BUILTIN_XSAVEOPT,
   IX86_BUILTIN_XSAVEOPT64,
 
+  IX86_BUILTIN_XSAVEC,
+  IX86_BUILTIN_XSAVEC64,
+
+  IX86_BUILTIN_XSAVES,
+  IX86_BUILTIN_XRSTORS,
+  IX86_BUILTIN_XSAVES64,
+  IX86_BUILTIN_XRSTORS64,
+
   /* 3DNow! Original */
   IX86_BUILTIN_FEMMS,
   IX86_BUILTIN_PAVGUSB,
@@ -28506,6 +28532,9 @@ enum ix86_builtins
   IX86_BUILTIN_SHA256MSG2,
   IX86_BUILTIN_SHA256RNDS2,
 
+  /* CLFLUSHOPT instructions.  */
+  IX86_BUILTIN_CLFLUSHOPT,
+
   /* TFmode support builtins.  */
   IX86_BUILTIN_INFQ,
   IX86_BUILTIN_HUGE_VALQ,
@@ -28965,18 +28994,24 @@ static const struct builtin_description bdesc_special_args[] =
   /* 3DNow! */
   { OPTION_MASK_ISA_3DNOW, CODE_FOR_mmx_femms, "__builtin_ia32_femms", IX86_BUILTIN_FEMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
 
-  /* FXSR, XSAVE and XSAVEOPT */
+  /* FXSR, XSAVE, XSAVEOPT, XSAVEC and XSAVES.  */
   { OPTION_MASK_ISA_FXSR, CODE_FOR_nothing, "__builtin_ia32_fxsave", IX86_BUILTIN_FXSAVE, UNKNOWN, (int) VOID_FTYPE_PVOID },
   { OPTION_MASK_ISA_FXSR, CODE_FOR_nothing, "__builtin_ia32_fxrstor", IX86_BUILTIN_FXRSTOR, UNKNOWN, (int) VOID_FTYPE_PVOID },
   { OPTION_MASK_ISA_XSAVE, CODE_FOR_nothing, "__builtin_ia32_xsave", IX86_BUILTIN_XSAVE, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
   { OPTION_MASK_ISA_XSAVE, CODE_FOR_nothing, "__builtin_ia32_xrstor", IX86_BUILTIN_XRSTOR, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
   { OPTION_MASK_ISA_XSAVEOPT, CODE_FOR_nothing, "__builtin_ia32_xsaveopt", IX86_BUILTIN_XSAVEOPT, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVES, CODE_FOR_nothing, "__builtin_ia32_xsaves", IX86_BUILTIN_XSAVES, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVES, CODE_FOR_nothing, "__builtin_ia32_xrstors", IX86_BUILTIN_XRSTORS, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVEC, CODE_FOR_nothing, "__builtin_ia32_xsavec", IX86_BUILTIN_XSAVEC, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
 
   { OPTION_MASK_ISA_FXSR | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_fxsave64", IX86_BUILTIN_FXSAVE64, UNKNOWN, (int) VOID_FTYPE_PVOID },
   { OPTION_MASK_ISA_FXSR | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_fxrstor64", IX86_BUILTIN_FXRSTOR64, UNKNOWN, (int) VOID_FTYPE_PVOID },
   { OPTION_MASK_ISA_XSAVE | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xsave64", IX86_BUILTIN_XSAVE64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
   { OPTION_MASK_ISA_XSAVE | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xrstor64", IX86_BUILTIN_XRSTOR64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
   { OPTION_MASK_ISA_XSAVEOPT | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xsaveopt64", IX86_BUILTIN_XSAVEOPT64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVES | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xsaves64", IX86_BUILTIN_XSAVES64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVES | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xrstors64", IX86_BUILTIN_XRSTORS64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVEC | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xsavec64", IX86_BUILTIN_XSAVEC64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
 
   /* SSE */
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_storeups, "__builtin_ia32_storeups", IX86_BUILTIN_STOREUPS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
@@ -31154,6 +31189,9 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_ia32_writeeflags_u64",
                VOID_FTYPE_UINT64, IX86_BUILTIN_WRITE_FLAGS);
 
+  /* CLFLUSHOPT.  */
+  def_builtin (OPTION_MASK_ISA_CLFLUSHOPT, "__builtin_ia32_clflushopt",
+	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLFLUSHOPT);
 
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
@@ -35086,6 +35124,16 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	emit_insn (gen_sse2_clflush (op0));
 	return 0;
 
+    case IX86_BUILTIN_CLFLUSHOPT:
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	op0 = expand_normal (arg0);
+	icode = CODE_FOR_clflushopt;
+	if (!insn_data[icode].operand[0].predicate (op0, Pmode))
+	  op0 = ix86_zero_extend_to_Pmode (op0);
+
+	emit_insn (gen_clflushopt (op0));
+	return 0;
+
     case IX86_BUILTIN_MONITOR:
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
@@ -35277,6 +35325,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_XRSTOR64:
     case IX86_BUILTIN_XSAVEOPT:
     case IX86_BUILTIN_XSAVEOPT64:
+    case IX86_BUILTIN_XSAVES:
+    case IX86_BUILTIN_XRSTORS:
+    case IX86_BUILTIN_XSAVES64:
+    case IX86_BUILTIN_XRSTORS64:
+    case IX86_BUILTIN_XSAVEC:
+    case IX86_BUILTIN_XSAVEC64:
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
@@ -35315,6 +35369,24 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	    case IX86_BUILTIN_XSAVEOPT64:
 	      icode = CODE_FOR_xsaveopt64;
 	      break;
+	    case IX86_BUILTIN_XSAVES:
+	      icode = CODE_FOR_xsaves_rex64;
+	      break;
+	    case IX86_BUILTIN_XRSTORS:
+	      icode = CODE_FOR_xrstors_rex64;
+	      break;
+	    case IX86_BUILTIN_XSAVES64:
+	      icode = CODE_FOR_xsaves64;
+	      break;
+	    case IX86_BUILTIN_XRSTORS64:
+	      icode = CODE_FOR_xrstors64;
+	      break;
+	    case IX86_BUILTIN_XSAVEC:
+	      icode = CODE_FOR_xsavec_rex64;
+	      break;
+	    case IX86_BUILTIN_XSAVEC64:
+	      icode = CODE_FOR_xsavec64;
+	      break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -35335,6 +35407,15 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	      break;
 	    case IX86_BUILTIN_XSAVEOPT:
 	      icode = CODE_FOR_xsaveopt;
+	      break;
+	    case IX86_BUILTIN_XSAVES:
+	      icode = CODE_FOR_xsaves;
+	      break;
+	    case IX86_BUILTIN_XRSTORS:
+	      icode = CODE_FOR_xrstors;
+	      break;
+	    case IX86_BUILTIN_XSAVEC:
+	      icode = CODE_FOR_xsavec;
 	      break;
 	    default:
 	      gcc_unreachable ();
