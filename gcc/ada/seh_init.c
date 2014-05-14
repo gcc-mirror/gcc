@@ -32,6 +32,12 @@
 /*  This unit contains support for SEH (Structured Exception Handling).
     Right now the only implementation is for Win32.  */
 
+#if defined (_WIN32) || (defined (__CYGWIN__) && defined (__SEH__))
+/* Include system headers, before system.h poisons malloc.  */
+#include <windows.h>
+#include <excpt.h>
+#endif
+
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -64,10 +70,7 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *)
   ATTRIBUTE_NORETURN;
 
 
-#if defined (_WIN32)
-
-#include <windows.h>
-#include <excpt.h>
+#if defined (_WIN32) || (defined (__CYGWIN__) && defined (__SEH__))
 
 /* Prototypes.  */
 extern void _global_unwind2 (void *);
