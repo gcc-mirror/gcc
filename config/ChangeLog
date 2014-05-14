@@ -1,3 +1,7 @@
+2014-05-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* mt-nios2-elf: New file.
+
 2014-04-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR target/43538
