@@ -9,7 +9,6 @@ template<typename... Args>
 void g(Args&&... args)
 {
   f(forward<Args...>(args...)); // { dg-error "no matching" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 11 }
 }
 
 void h()

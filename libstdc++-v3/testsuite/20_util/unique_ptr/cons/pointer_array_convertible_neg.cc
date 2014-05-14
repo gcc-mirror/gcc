@@ -35,7 +35,7 @@ struct B : A
 void
 test01()
 {
-  std::unique_ptr<B[]> B_from_A(new A[3]); //{ dg-error "invalid conversion from" }
+  std::unique_ptr<B[]> B_from_A(new A[3]); //{ dg-error "" }
 }
 
 // { dg-prune-output "include" }

@@ -31,7 +31,6 @@ X::X( int xi ) // { dg-error "14:return type specification for constructor inval
 const X X::x0( 0 );
 
 Y::Y() // { dg-error "6:no matching function for call to 'X::X\\(\\)'" }
-// { dg-message "candidate" "candidate note" { target *-*-* } 33 }
 {
     xx = X::x0;
 }

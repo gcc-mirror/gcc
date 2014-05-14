@@ -31,7 +31,6 @@ test01()
 {
   std::weak_ptr<A> p1;
   p1 < p1;  // { dg-error "no match" }
-  // { dg-error "candidate" "candidate note" { target *-*-* } 33 }
   return 0;
 }
 

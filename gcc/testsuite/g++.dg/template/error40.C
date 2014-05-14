@@ -26,7 +26,5 @@ struct B
 int main()
 {
   f(1);				// { dg-error "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 28 }
   B<A<int> >().f();		// { dg-error "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 30 }
 }

@@ -34,7 +34,6 @@ int main (int argc, char **argv)
   (ovl) (1);                // ok
   (&ovl) (1);               // ok
   (ovl) ();                 // { dg-error "" } no matching candidates
-  // { dg-message "candidate" "candidate note" { target *-*-* } 36 }
   (&ovl) ();                // { dg-error "" } not suitable for overload resolution
   
   // 13.3.1.1 indicates that the following are errors -- the primary expression

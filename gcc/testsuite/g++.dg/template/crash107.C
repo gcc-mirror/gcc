@@ -14,7 +14,5 @@ template<typename FP_> struct Vec { // { dg-message "note" }
     }
 };
 Vec<double> v(3,4,12); // { dg-error "no matching" }
-// { dg-message "note" "note" { target *-*-* } 16 }
 Vec<double> V(12,4,3);  // { dg-error "no matching" }
-// { dg-message "note" "note" { target *-*-* } 18 }
 Vec<double> c = v^V;   // { dg-message "required" }

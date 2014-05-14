@@ -32,12 +32,8 @@ int main()
 {
   A<B> a;
   a.f();			// { dg-error "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 34 }
   a.g();			// { dg-error "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 36 }
 
   f(i);				// { dg-error "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 39 }
   f(p);				// { dg-error "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 41 }
 }

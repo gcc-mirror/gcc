@@ -17,6 +17,5 @@ int main ()
   Bar b;
 
   b.f ();// { dg-error "no matching" } 
-  // { dg-message "candidate" "candidate note" { target *-*-* } 19 }
   b.f (10);
 }

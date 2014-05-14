@@ -458,9 +458,9 @@ enum rejection_reason_code {
 struct conversion_info {
   /* The index of the argument, 0-based.  */
   int n_arg;
-  /* The type of the actual argument.  */
-  tree from_type;
-  /* The type of the formal argument.  */
+  /* The actual argument or its type.  */
+  tree from;
+  /* The type of the parameter.  */
   tree to_type;
 };
   
@@ -644,7 +644,7 @@ arg_conversion_rejection (tree first_arg, int n_arg, tree from, tree to)
   struct rejection_reason *r = alloc_rejection (rr_arg_conversion);
   int adjust = first_arg != NULL_TREE;
   r->u.conversion.n_arg = n_arg - adjust;
-  r->u.conversion.from_type = from;
+  r->u.conversion.from = from;
   r->u.conversion.to_type = to;
   return r;
 }
@@ -655,7 +655,7 @@ bad_arg_conversion_rejection (tree first_arg, int n_arg, tree from, tree to)
   struct rejection_reason *r = alloc_rejection (rr_bad_arg_conversion);
   int adjust = first_arg != NULL_TREE;
   r->u.bad_conversion.n_arg = n_arg - adjust;
-  r->u.bad_conversion.from_type = from;
+  r->u.bad_conversion.from = from;
   r->u.bad_conversion.to_type = to;
   return r;
 }
@@ -665,7 +665,7 @@ explicit_conversion_rejection (tree from, tree to)
 {
   struct rejection_reason *r = alloc_rejection (rr_explicit_conversion);
   r->u.conversion.n_arg = 0;
-  r->u.conversion.from_type = from;
+  r->u.conversion.from = from;
   r->u.conversion.to_type = to;
   return r;
 }
@@ -675,7 +675,7 @@ template_conversion_rejection (tree from, tree to)
 {
   struct rejection_reason *r = alloc_rejection (rr_template_conversion);
   r->u.conversion.n_arg = 0;
-  r->u.conversion.from_type = from;
+  r->u.conversion.from = from;
   r->u.conversion.to_type = to;
   return r;
 }
@@ -2072,7 +2072,7 @@ add_function_candidate (struct z_candidate **candidates,
       if (t->bad_p)
 	{
 	  viable = -1;
-	  reason = bad_arg_conversion_rejection (first_arg, i, argtype, to_type);
+	  reason = bad_arg_conversion_rejection (first_arg, i, arg, to_type);
 	}
     }
 
@@ -2161,7 +2161,7 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
       if (t->bad_p)
 	{
 	  viable = -1;
-	  reason = bad_arg_conversion_rejection (NULL_TREE, i, argtype, convert_type);
+	  reason = bad_arg_conversion_rejection (NULL_TREE, i, arg, convert_type);
 	}
 
       if (i == 0)
@@ -2227,7 +2227,7 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
       else if (t->bad_p)
 	{
 	  viable = 0;
-	  reason = bad_arg_conversion_rejection (NULL_TREE, i, argtypes[i],
+	  reason = bad_arg_conversion_rejection (NULL_TREE, i, args[i],
 						 types[i]);
 	}
       convs[i] = t;
@@ -3120,6 +3120,7 @@ splice_viable (struct z_candidate *cands,
   struct z_candidate *viable;
   struct z_candidate **last_viable;
   struct z_candidate **cand;
+  bool found_strictly_viable = false;
 
   /* Be strict inside templates, since build_over_call won't actually
      do the conversions to get pedwarns.  */
@@ -3134,6 +3135,25 @@ splice_viable (struct z_candidate *cands,
   while (*cand)
     {
       struct z_candidate *c = *cand;
+      if (!strict_p
+	  && (c->viable == 1 || TREE_CODE (c->fn) == TEMPLATE_DECL))
+	{
+	  /* Be strict in the presence of a viable candidate.  Also if
+	     there are template candidates, so that we get deduction errors
+	     for them instead of silently preferring a bad conversion.  */
+	  strict_p = true;
+	  if (viable && !found_strictly_viable)
+	    {
+	      /* Put any spliced near matches back onto the main list so
+		 that we see them if there is no strict match.  */
+	      *any_viable_p = false;
+	      *last_viable = cands;
+	      cands = viable;
+	      viable = NULL;
+	      last_viable = &viable;
+	    }
+	}
+
       if (strict_p ? c->viable == 1 : c->viable)
 	{
 	  *last_viable = c;
@@ -3141,6 +3161,8 @@ splice_viable (struct z_candidate *cands,
 	  c->next = NULL;
 	  last_viable = &c->next;
 	  *any_viable_p = true;
+	  if (c->viable == 1)
+	    found_strictly_viable = true;
 	}
       else
 	cand = &c->next;
@@ -3195,18 +3217,37 @@ equal_functions (tree fn1, tree fn2)
 static void
 print_conversion_rejection (location_t loc, struct conversion_info *info)
 {
+  tree from = info->from;
+  if (!TYPE_P (from))
+    from = lvalue_type (from);
   if (info->n_arg == -1)
-    /* Conversion of implicit `this' argument failed.  */
-    inform (loc, "  no known conversion for implicit "
-	    "%<this%> parameter from %qT to %qT",
-	    info->from_type, info->to_type);
+    {
+      /* Conversion of implicit `this' argument failed.  */
+      if (!TYPE_P (info->from))
+	/* A bad conversion for 'this' must be discarding cv-quals.  */
+	inform (input_location, "  passing %qT as %<this%> "
+		"argument discards qualifiers",
+		from);
+      else
+	inform (loc, "  no known conversion for implicit "
+		"%<this%> parameter from %qT to %qT",
+		from, info->to_type);
+    }
+  else if (!TYPE_P (info->from))
+    {
+      if (info->n_arg >= 0)
+	inform (loc, "  conversion of argument %d would be ill-formed:",
+		info->n_arg+1);
+      perform_implicit_conversion (info->to_type, info->from,
+				   tf_warning_or_error);
+    }
   else if (info->n_arg == -2)
     /* Conversion of conversion function return value failed.  */
     inform (loc, "  no known conversion from %qT to %qT",
-	    info->from_type, info->to_type);
+	    from, info->to_type);
   else
     inform (loc, "  no known conversion for argument %d from %qT to %qT",
-	    info->n_arg+1, info->from_type, info->to_type);
+	    info->n_arg+1, from, info->to_type);
 }
 
 /* Print information about a candidate with WANT parameters and we found
@@ -3281,13 +3322,13 @@ print_z_candidate (location_t loc, const char *msgstr,
 	case rr_explicit_conversion:
 	  inform (cloc, "  return type %qT of explicit conversion function "
 		  "cannot be converted to %qT with a qualification "
-		  "conversion", r->u.conversion.from_type,
+		  "conversion", r->u.conversion.from,
 		  r->u.conversion.to_type);
 	  break;
 	case rr_template_conversion:
 	  inform (cloc, "  conversion from return type %qT of template "
 		  "conversion function specialization to %qT is not an "
-		  "exact match", r->u.conversion.from_type,
+		  "exact match", r->u.conversion.from,
 		  r->u.conversion.to_type);
 	  break;
 	case rr_template_unification:
@@ -3377,9 +3418,8 @@ print_z_candidates (location_t loc, struct z_candidate *candidates)
   for (n_candidates = 0, cand1 = candidates; cand1; cand1 = cand1->next)
     n_candidates++;
 
-  inform_n (loc, n_candidates, "candidate is:", "candidates are:");
   for (; candidates; candidates = candidates->next)
-    print_z_candidate (loc, NULL, candidates);
+    print_z_candidate (loc, "candidate:", candidates);
 }
 
 /* USER_SEQ is a user-defined conversion sequence, beginning with a
@@ -3663,7 +3703,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	}
     }
 
-  candidates = splice_viable (candidates, pedantic, &any_viable_p);
+  candidates = splice_viable (candidates, false, &any_viable_p);
   if (!any_viable_p)
     {
       if (args)
@@ -3898,7 +3938,7 @@ perform_overload_resolution (tree fn,
 		  LOOKUP_NORMAL,
 		  candidates, complain);
 
-  *candidates = splice_viable (*candidates, pedantic, any_viable_p);
+  *candidates = splice_viable (*candidates, false, any_viable_p);
   if (*any_viable_p)
     cand = tourney (*candidates, complain);
   else
@@ -4209,7 +4249,9 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	  }
     }
 
-  candidates = splice_viable (candidates, pedantic, &any_viable_p);
+  /* Be strict here because if we choose a bad conversion candidate, the
+     errors we get won't mention the call context.  */
+  candidates = splice_viable (candidates, true, &any_viable_p);
   if (!any_viable_p)
     {
       if (complain & tf_error)
@@ -4849,7 +4891,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 
 	 If the overload resolution fails, the program is
 	 ill-formed.  */
-      candidates = splice_viable (candidates, pedantic, &any_viable_p);
+      candidates = splice_viable (candidates, false, &any_viable_p);
       if (!any_viable_p)
 	{
           if (complain & tf_error)
@@ -5373,7 +5415,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
       break;
 
     default:
-      strict_p = pedantic;
+      strict_p = false;
       break;
     }
 
@@ -7851,7 +7893,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		      access_binfo, flags, &candidates, complain);
     }
   any_viable_p = false;
-  candidates = splice_viable (candidates, pedantic, &any_viable_p);
+  candidates = splice_viable (candidates, false, &any_viable_p);
 
   if (!any_viable_p)
     {

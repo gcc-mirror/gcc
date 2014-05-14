@@ -14,7 +14,5 @@ int main()
 {
   A a;
   a = B();		// { dg-error "no match" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
   a = 1.0;		// { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 18 }
 }

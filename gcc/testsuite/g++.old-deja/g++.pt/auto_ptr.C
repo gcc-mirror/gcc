@@ -52,5 +52,4 @@ int main() {
     x = y;
     g(f());
     h(f());			// { dg-error "match" "match" } no usable copy ctor
-    // { dg-message "candidate" "candidate note" { target *-*-* } 54 }
 }

@@ -32,6 +32,5 @@ static void foo(int i, int j, double x, double y) {
    std::cout << "Max(int): " << max(i,j) << " Max(double): " <<
 max(x,y) << '\n';
    std::cout << "Max(int, double): " << max(i, y) << '\n';// { dg-error "" } 
-   // { dg-message "candidate" "candidate note" { target *-*-* } 34 }
 }
 

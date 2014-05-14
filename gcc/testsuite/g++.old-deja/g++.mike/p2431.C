@@ -19,6 +19,5 @@ class C
 	{
 		B	b;
 		A a = b;// { dg-error "match" } 
-		// { dg-message "candidate" "candidate note" { target *-*-* } 21 }
 	}
 };

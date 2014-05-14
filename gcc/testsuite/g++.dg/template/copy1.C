@@ -11,5 +11,4 @@ struct A
 };
 
 A a = 0; // { dg-error "no matching function" }
-// { dg-message "candidate" "candidate note" { target *-*-* } 13 }
 

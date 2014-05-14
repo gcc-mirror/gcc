@@ -19,5 +19,4 @@ void foo(B);			// { dg-message "initializing" }
 void bar()
 {
   foo(0); // { dg-error "no matching function" "no matching" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 21 }
 }

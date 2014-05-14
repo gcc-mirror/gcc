@@ -22,7 +22,6 @@ template <typename T> void foo (int (A::*)(T));   // { dg-message "note" } candi
 void A::baz ()
 {
   foo (&A::f);  // { dg-error "ambiguous" } 
-  // { dg-message "candidate" "candidate note" { target *-*-* } 24 }
   foo (A::f);
   foo (&(A::f));
   foo (f);

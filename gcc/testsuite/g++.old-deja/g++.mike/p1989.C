@@ -197,7 +197,6 @@ List_DLS<T>::search(const T& item) const
 {
     for (Pix x=this->first(); 0 != x; this->next(x)) {
 	if (item == this->operator()(x)) // { dg-error "match" } const subversion
-	  // { dg-message "candidate" "candidate note" { target *-*-* } 199 }
 	    return x;
     }
     return 0;

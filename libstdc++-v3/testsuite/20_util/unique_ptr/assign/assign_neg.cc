@@ -46,7 +46,6 @@ void
 test03()
 {
   std::unique_ptr<int[2]> p1(new int[3]); // { dg-error "no match" }
-  // { dg-error "candidate" "candidate-note" { target *-*-* } 48 }
   std::unique_ptr<int[2]> p2 = p1; // { dg-error "deleted" }
 }
 

@@ -21,7 +21,6 @@ void bar (f_ptr_t2);		// { dg-message "note" }
 void function ()
 {
   bar (foo);			// { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 23 }
 }
 
 int main () { return 0; }
