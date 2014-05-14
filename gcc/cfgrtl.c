@@ -889,7 +889,7 @@ rtl_merge_blocks (basic_block a, basic_block b)
   BB_HEAD (b) = b_empty ? NULL_RTX : b_head;
   delete_insn_chain (del_first, del_last, true);
 
-  /* When not optimizing CFG and the edge is the only place in RTL which holds
+  /* When not optimizing and the edge is the only place in RTL which holds
      some unique locus, emit a nop with that locus in between.  */
   if (!optimize)
     {
@@ -4564,7 +4564,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
     try_redirect_by_replacing_jump (EDGE_SUCC (a, 0), b, true);
   gcc_assert (!JUMP_P (BB_END (a)));
 
-  /* When not optimizing CFG and the edge is the only place in RTL which holds
+  /* When not optimizing and the edge is the only place in RTL which holds
      some unique locus, emit a nop with that locus in between.  */
   if (!optimize)
     emit_nop_for_unique_locus_between (a, b);
