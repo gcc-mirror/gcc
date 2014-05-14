@@ -1,3 +1,25 @@
+2014-05-14  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.c (msp430_builtin): Add
+	MSP430_BUILTIN_DELAY_CYCLES.
+	(msp430_init_builtins): Register void __delay_cycles(long long).
+	(msp430_builtin_decl): Add it.
+	(cg_magic_constant): New.
+	(msp430_expand_delay_cycles): New.
+	(msp430_expand_builtin): Call it.
+	(msp430_print_operand_raw): Change integer printing from "int" to
+	HOST_WIDE_INT.
+	* config/msp430/msp430.md (define_constants): Add delay_cycles tags.
+	(delay_cycles_start): New.
+	(delay_cycles_end): New.
+	(delay_cycles_32): New.
+	(delay_cycles_32x): New.
+	(delay_cycles_16): New.
+	(delay_cycles_16x): New.
+	(delay_cycles_2): New.
+	(delay_cycles_1): New.
+	* doc/extend.texi: Document __delay_cycles().
+
 2014-05-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (nios2_cbranch): Fix paste-o in

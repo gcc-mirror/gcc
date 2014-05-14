@@ -13194,6 +13194,15 @@ This sets the indicated bits in the saved copy of the status register
 currently residing on the stack.  This only works inside interrupt
 handlers and the changes to the status register will only take affect
 once the handler returns.
+
+@item __delay_cycles (long long @var{cycles})
+This inserts an instruction sequence that takes exactly @var{cycles}
+cycles (between 0 and about 17E9) to complete.  The inserted sequence
+may use jumps, loops, or no-ops, and does not interfere with any other
+instructions.  Note that @var{cycles} must be a compile-time constant
+integer - that is, you must pass a number, not a variable that may be
+optimized to a constant later.  The number of cycles delayed by this
+builtin is exact.
 @end table
 
 @node NDS32 Built-in Functions
