@@ -1,3 +1,10 @@
+2014-05-14  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61100
+	* Makefile.am (nodist_saninclude_HEADERS): Install
+	public headers.
+	* Makefile.in: Regenerate.
+
 2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* libbacktrace/Makefile.am (libsanitizer_libbacktrace_la_SOURCES):
