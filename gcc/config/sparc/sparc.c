@@ -8539,22 +8539,6 @@ sparc_split_regreg_legitimate (rtx reg1, rtx reg2)
   return 0;
 }
 
-/* Return 1 if x and y are some kind of REG and they refer to
-   different hard registers.  This test is guaranteed to be
-   run after reload.  */
-
-int
-sparc_absnegfloat_split_legitimate (rtx x, rtx y)
-{
-  if (GET_CODE (x) != REG)
-    return 0;
-  if (GET_CODE (y) != REG)
-    return 0;
-  if (REGNO (x) == REGNO (y))
-    return 0;
-  return 1;
-}
-
 /* Return 1 if REGNO (reg1) is even and REGNO (reg1) == REGNO (reg2) - 1.
    This makes them candidates for using ldd and std insns.
 
