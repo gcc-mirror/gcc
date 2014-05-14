@@ -1,3 +1,8 @@
+2014-05-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (REG_CLASS_CONTENTS): Use unsigned suffix for
+	shifted values to avoid build warning.
+
 2014-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgcleanup.c (try_forward_edges): Use location_t for locations.
