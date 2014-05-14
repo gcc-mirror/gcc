@@ -642,8 +642,7 @@ perform_member_init (tree member, tree init)
 		     && TREE_TYPE (init) == type)
 		    /* { } mem-initializer.  */
 		    || (TREE_CODE (init) == TREE_LIST
-			&& TREE_CODE (TREE_VALUE (init)) == CONSTRUCTOR
-			&& CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init))))
+			&& DIRECT_LIST_INIT_P (TREE_VALUE (init))))
 		   && (CP_AGGREGATE_TYPE_P (type)
 		       || is_std_init_list (type)))))
     {
@@ -1515,8 +1514,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       && TREE_CODE (init) != TREE_LIST
       && !(TREE_CODE (init) == TARGET_EXPR
 	   && TARGET_EXPR_DIRECT_INIT_P (init))
-      && !(BRACE_ENCLOSED_INITIALIZER_P (init)
-	   && CONSTRUCTOR_IS_DIRECT_INIT (init)))
+      && !DIRECT_LIST_INIT_P (init))
     flags |= LOOKUP_ONLYCONVERTING;
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -1589,8 +1587,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
   /* If we have direct-initialization from an initializer list, pull
      it out of the TREE_LIST so the code below can see it.  */
   if (init && TREE_CODE (init) == TREE_LIST
-      && BRACE_ENCLOSED_INITIALIZER_P (TREE_VALUE (init))
-      && CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init)))
+      && DIRECT_LIST_INIT_P (TREE_VALUE (init)))
     {
       gcc_checking_assert ((flags & LOOKUP_ONLYCONVERTING) == 0
 			   && TREE_CHAIN (init) == NULL_TREE);
@@ -2791,8 +2788,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	{
 	  tree vecinit = NULL_TREE;
 	  if (vec_safe_length (*init) == 1
-	      && BRACE_ENCLOSED_INITIALIZER_P ((**init)[0])
-	      && CONSTRUCTOR_IS_DIRECT_INIT ((**init)[0]))
+	      && DIRECT_LIST_INIT_P ((**init)[0]))
 	    {
 	      vecinit = (**init)[0];
 	      if (CONSTRUCTOR_NELTS (vecinit) == 0)

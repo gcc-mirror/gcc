@@ -2806,8 +2806,7 @@ write_expression (tree expr)
       write_type (type);
 
       if (init && TREE_CODE (init) == TREE_LIST
-	  && TREE_CODE (TREE_VALUE (init)) == CONSTRUCTOR
-	  && CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init)))
+	  && DIRECT_LIST_INIT_P (TREE_VALUE (init)))
 	write_expression (TREE_VALUE (init));
       else
 	{

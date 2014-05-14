@@ -1,3 +1,13 @@
+2014-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (DIRECT_LIST_INIT_P): Add.
+	* call.c (convert_like_real, build_new_method_call_1): Use it.
+	* decl2.c (grokfield): Likewise.
+	* init.c (perform_member_init, build_aggr_init, expand_default_init,
+	build_new_1): Likewise.
+	* mangle.c (write_expression): Likewise.
+	* parser.c (cp_parser_late_parse_one_default_arg): Likewise.
+
 2014-05-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/20332

@@ -6119,8 +6119,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	   constructors, but actually trying to call one is an error.  */
 	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
 	    /* Unless this is for direct-list-initialization.  */
-	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
-		 && CONSTRUCTOR_IS_DIRECT_INIT (expr)))
+	    && !DIRECT_LIST_INIT_P (expr))
 	  {
 	    if (!(complain & tf_error))
 	      return error_mark_node;
@@ -7859,8 +7858,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   /* If CONSTRUCTOR_IS_DIRECT_INIT is set, this was a T{ } form
      initializer, not T({ }).  */
   if (DECL_CONSTRUCTOR_P (fn) && args != NULL && !vec_safe_is_empty (*args)
-      && BRACE_ENCLOSED_INITIALIZER_P ((**args)[0])
-      && CONSTRUCTOR_IS_DIRECT_INIT ((**args)[0]))
+      && DIRECT_LIST_INIT_P ((**args)[0]))
     {
       tree init_list = (**args)[0];
       tree init = NULL_TREE;
