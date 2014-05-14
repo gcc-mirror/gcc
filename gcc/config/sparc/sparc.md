@@ -1886,7 +1886,7 @@
   emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
 			operands[1]));
 #else
-  unsigned int low, high;
+  HOST_WIDE_INT low, high;
 
   low = trunc_int_for_mode (INTVAL (operands[1]), SImode);
   high = trunc_int_for_mode (INTVAL (operands[1]) >> 32, SImode);
@@ -4822,7 +4822,7 @@
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (ior:SI (not:SI (match_dup 3)) (match_dup 1)))]
 {
-  operands[4] = GEN_INT (~INTVAL (operands[2]));
+  operands[4] = gen_int_mode (~INTVAL (operands[2]), SImode);
 })
 
 (define_insn_and_split "*or_not_di_sp32"
@@ -4899,7 +4899,7 @@
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (not:SI (xor:SI (match_dup 3) (match_dup 1))))]
 {
-  operands[4] = GEN_INT (~INTVAL (operands[2]));
+  operands[4] = gen_int_mode (~INTVAL (operands[2]), SImode);
 })
 
 (define_split
@@ -4911,7 +4911,7 @@
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (xor:SI (match_dup 3) (match_dup 1)))]
 {
-  operands[4] = GEN_INT (~INTVAL (operands[2]));
+  operands[4] = gen_int_mode (~INTVAL (operands[2]), SImode);
 })
 
 ;; Split DImode logical operations requiring two instructions.
