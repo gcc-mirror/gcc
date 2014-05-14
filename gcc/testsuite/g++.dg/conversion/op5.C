@@ -15,6 +15,6 @@ struct B
 void
 foo (const B& b)
 {
-  const A a = b; // { dg-error "conversion from 'const B' to non-scalar type 'const A' requested" }
+  const A a = b; // { dg-error "const B" }
 }
 

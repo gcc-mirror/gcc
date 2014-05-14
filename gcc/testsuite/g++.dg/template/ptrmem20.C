@@ -13,5 +13,4 @@ template<void (A::*)()> void bar(); // { dg-message "note" }
 void baz()
 {
   bar<&B::foo>();  // { dg-error "not a valid template argument|no match" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 15 }
 }

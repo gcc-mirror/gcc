@@ -6,7 +6,6 @@ struct C
   void f() {
     int* node;
     new (&node) int(0); // { dg-error "new" }
-    // { dg-message "candidate" "candidate note" { target *-*-* } 8 }
   }
 };
 

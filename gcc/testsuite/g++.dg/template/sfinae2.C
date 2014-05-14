@@ -13,6 +13,5 @@ template<int I> void fn (char (*) [cl<I>::value] = 0 ); // { dg-error "zero-size
 void foo (void)
 {
   fn<0> ();  // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 15 }
 }
 

@@ -16,9 +16,6 @@ void
 test ()
 {
   foo <0> (0);		// { dg-error "is ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 18 }
   bar <1> (0, 1);	// { dg-error "is ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 20 }
   baz (0);		// { dg-error "is ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 22 }
 }

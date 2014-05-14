@@ -11,7 +11,6 @@ template <template <class> class TT> void f()
 {
 	TT<int> y;
 	y = 0; // { dg-error "no match" }
-	// { dg-message "candidate" "candidate note" { target *-*-* } 13 }
 }
 
 template <class T> struct C

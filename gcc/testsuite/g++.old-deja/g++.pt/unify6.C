@@ -24,9 +24,7 @@ template<class T> void foo(T const *){} // { dg-error "pointer to reference" }
 void f()
 {
   foo<int &>(); // { dg-error "" } attempt to build int & const *
-  // { dg-message "candidate" "candidate note" { target *-*-* } 26 }
   foo<void ()>(); // { dg-error "" } attempt to build void (const *)()
-  // { dg-message "candidate" "candidate note" { target *-*-* } 28 }
 }
 
 typedef void (*Fptr)();

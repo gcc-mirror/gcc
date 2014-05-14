@@ -14,5 +14,4 @@ int main()
   B b;
   (A(b));			// OK
   (A(b,1));			// { dg-error "no match" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
 }

@@ -34,6 +34,7 @@ test01()
 
   const std::tr1::shared_ptr<A> p1(new A);
   p1.reset();     // { dg-error "discards qualifiers" }
+  // { dg-error "no match" "" { target *-*-* } 36 }
 
   return 0;
 }

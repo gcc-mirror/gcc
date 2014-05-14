@@ -20,7 +20,6 @@ void h()
   using C::f;
   f('h');
   f(1);         // { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 22 }
   void f(int);  // { dg-error "previous declaration" }
 }
 

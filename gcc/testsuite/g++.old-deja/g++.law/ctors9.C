@@ -33,7 +33,6 @@ int blort(Foo& f)
 int main()
 {
   var_Foo b(2);// { dg-error "match" } 
-  // { dg-message "candidate" "candidate note" { target *-*-* } 35 }
   b->a = 0;
   int x = blort(b);
   return x;

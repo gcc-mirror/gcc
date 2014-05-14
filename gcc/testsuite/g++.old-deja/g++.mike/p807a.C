@@ -18,5 +18,5 @@ public:
 	operator A();		// { dg-message "note" } fn ref in err msg
 };
 
-B b;	     // { dg-message "candidate" }
+B b;
 A a = b;  // { dg-error "ambiguous" } should fail as it is ambigious.

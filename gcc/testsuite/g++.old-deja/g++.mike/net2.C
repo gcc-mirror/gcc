@@ -11,4 +11,3 @@ class A {			// { dg-message "note" } copy ctor candidate
 };
 
 A a(0); // { dg-error "ambiguous" }
-// { dg-message "candidate" "candidate note" { target *-*-* } 13 }

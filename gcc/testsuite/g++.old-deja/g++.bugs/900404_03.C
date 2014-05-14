@@ -23,7 +23,6 @@ char c;
 void test ()
 {
   function0 (c,c);		// { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 25 }
 }
 
 int main () { return 0; }

@@ -24,7 +24,6 @@ enum { first, last};
 
 void foo(void) {
   sanjose obj(first); // { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 26 }
 }
 
 

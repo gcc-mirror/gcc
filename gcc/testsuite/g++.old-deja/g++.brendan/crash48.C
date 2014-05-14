@@ -13,12 +13,10 @@ class bug { // { dg-message "bug::bug|candidate expects" }
 bug::bug(int size) // { dg-message "bug::bug|candidate expects" }
 {
   numbers = new internal(size * size);// { dg-error "no match" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 15 }
 }
 
 int
 main()
 {
   bug test; // { dg-error "no match" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 22 }
 }

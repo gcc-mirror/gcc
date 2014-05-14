@@ -15,5 +15,4 @@ struct S { void f( int ); };
 void f()
 {
   k( E(), (S*)0, &S::f );   // { dg-error "" } no match
-  // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
 } 

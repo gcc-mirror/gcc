@@ -17,5 +17,4 @@ B
 f (B const& b)
 {
   return b;			// { dg-error "matching" "matching" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 19 }
 }

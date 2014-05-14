@@ -18,7 +18,6 @@ extern const vector signed short *cvssp;
 void foo ()
 {
   vss = vld(i, vscp);        /* { dg-error "no matching function for call" } */
-  // { dg-message "candidate" "candidate note" { target *-*-* } 20 }
   vss = vld(i, vssp);
   vss = vld(i, cvssp);
 }

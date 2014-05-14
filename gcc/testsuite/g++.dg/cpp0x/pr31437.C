@@ -7,4 +7,3 @@ template <typename... T> struct A // { dg-message "candidates|A" }
 };
 
 A<int> a(0); // { dg-error "no matching" }
-// { dg-message "candidate" "candidate note" { target *-*-* } 9 }

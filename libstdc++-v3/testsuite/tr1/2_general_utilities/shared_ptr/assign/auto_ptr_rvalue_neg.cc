@@ -34,7 +34,7 @@ test01()
   bool test __attribute__((unused)) = true;
 
   std::tr1::shared_ptr<A> a;
-  a = source(); // { dg-error "no match" }
+  a = source(); // { dg-error "" }
 
   return 0;
 }

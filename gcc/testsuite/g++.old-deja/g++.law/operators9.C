@@ -17,5 +17,4 @@ void
 test(B &b1, const B &b2)
 {
         b1 = b2;// { dg-error "match" }
-	// { dg-message "candidate" "candidate note" { target *-*-* } 19 }
 }

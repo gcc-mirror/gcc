@@ -73,12 +73,10 @@ int main () {
   exit (0);
 
   _exit (0); // { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 75 }
   abort ();
 
   c1 ();
   C1 (); // { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 80 }
 
   c2 ();
   C2 (); // one might expect an ambiguous call error here as well, but
@@ -86,7 +84,6 @@ int main () {
 
   c3 ();
   C3 (); // { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 88 }
   C3 (0);
   C3 (0l);
 }

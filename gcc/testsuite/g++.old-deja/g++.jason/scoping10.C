@@ -10,7 +10,6 @@ struct B : public A {
   void h () {
     extern void g ();		// { dg-message "" } 
     f("foo");			// { dg-error "" } hidden
-    // { dg-message "candidate" "candidate note" { target *-*-* } 12 }
     g("foo");			// { dg-error "" } hidden
   }
 };
