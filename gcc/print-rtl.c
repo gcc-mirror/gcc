@@ -188,7 +188,12 @@ print_rtx (const_rtx in_rtx)
 #endif
 
   if (INSN_CHAIN_CODE_P (GET_CODE (in_rtx)))
-    fprintf (outfile, " %d", INSN_UID (in_rtx));
+    {
+      if (flag_dump_unnumbered)
+	fprintf (outfile, " #");
+      else
+	fprintf (outfile, " %d", INSN_UID (in_rtx));
+    }
 
   /* Get the format string and skip the first elements if we have handled
      them already.  */
