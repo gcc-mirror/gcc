@@ -4227,8 +4227,6 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
      (cond != 0) or (cond ? val : 1u).  */
   if (cond)
     {
-      gimple_stmt_iterator gsi;
-
       cond = gimple_boolify (cond);
 
       if (integer_zerop (val))
@@ -4672,7 +4670,6 @@ expand_omp_taskreg (struct omp_region *region)
 	 the region, in which case all we need to do is make the
 	 sub-graph unreachable and emit the parallel call.  */
       edge entry_succ_e, exit_succ_e;
-      gimple_stmt_iterator gsi;
 
       entry_succ_e = single_succ_edge (entry_bb);
 
@@ -4709,7 +4706,6 @@ expand_omp_taskreg (struct omp_region *region)
       if (gimple_omp_taskreg_data_arg (entry_stmt))
 	{
 	  basic_block entry_succ_bb = single_succ (entry_bb);
-	  gimple_stmt_iterator gsi;
 	  tree arg, narg;
 	  gimple parcopy_stmt = NULL;
 
