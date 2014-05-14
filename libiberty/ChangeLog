@@ -1,3 +1,10 @@
+2014-05-14  Andrew Burgess  <aburgess@broadcom.com>
+
+	* cplus-dmem.c (internal_cplus_demangle): Free any resources
+	allocated by possible previous call to gnu_special.
+	(squangle_mop_up): Reset pointers to NULL after calling free.
+	* testsuite/demangle-expected: New test case.
+
 2014-05-08  Gary Benson  <gbenson@redhat.com>
 
 	* cp-demangle.c (struct d_component_stack): New structure.
