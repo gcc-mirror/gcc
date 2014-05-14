@@ -159,7 +159,8 @@ pragma Style_Checks ("M32766");
 # include <signal.h>
 #endif
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(__CYGWIN__)
+# include <windef.h>
 # include <winbase.h>
 #endif
 
@@ -986,7 +987,7 @@ CND(VEOL2, "Alternative EOL")
 
 #endif /* HAVE_TERMIOS */
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(__CYGWIN__)
 CNU(DTR_CONTROL_ENABLE, "Enable DTR flow ctrl")
 CNU(RTS_CONTROL_ENABLE, "Enable RTS flow ctrl")
 #endif
