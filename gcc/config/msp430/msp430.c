@@ -1194,6 +1194,7 @@ enum msp430_builtin
 {
   MSP430_BUILTIN_BIC_SR,
   MSP430_BUILTIN_BIS_SR,
+  MSP430_BUILTIN_DELAY_CYCLES,
   MSP430_BUILTIN_max
 };
 
@@ -1203,6 +1204,7 @@ static void
 msp430_init_builtins (void)
 {
   tree void_ftype_int = build_function_type_list (void_type_node, integer_type_node, NULL);
+  tree void_ftype_longlong = build_function_type_list (void_type_node, long_long_integer_type_node, NULL);
 
   msp430_builtins[MSP430_BUILTIN_BIC_SR] =
     add_builtin_function ( "__bic_SR_register_on_exit", void_ftype_int,
@@ -1211,6 +1213,10 @@ msp430_init_builtins (void)
   msp430_builtins[MSP430_BUILTIN_BIS_SR] =
     add_builtin_function ( "__bis_SR_register_on_exit", void_ftype_int,
 			   MSP430_BUILTIN_BIS_SR, BUILT_IN_MD, NULL, NULL_TREE);
+
+  msp430_builtins[MSP430_BUILTIN_DELAY_CYCLES] =
+    add_builtin_function ( "__delay_cycles", void_ftype_longlong,
+			   MSP430_BUILTIN_DELAY_CYCLES, BUILT_IN_MD, NULL, NULL_TREE);
 }
 
 static tree
@@ -1220,10 +1226,124 @@ msp430_builtin_decl (unsigned code, bool initialize ATTRIBUTE_UNUSED)
     {
     case MSP430_BUILTIN_BIC_SR:
     case MSP430_BUILTIN_BIS_SR:
+    case MSP430_BUILTIN_DELAY_CYCLES:
       return msp430_builtins[code];
     default:
       return error_mark_node;
     }
+}
+
+/* These constants are really register reads, which are faster than
+   regular constants.  */
+static int
+cg_magic_constant (HOST_WIDE_INT c)
+{
+  switch (c)
+    {
+    case 0xffff:
+    case -1:
+    case 0:
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+static rtx
+msp430_expand_delay_cycles (rtx arg)
+{
+  HOST_WIDE_INT i, c, n;
+  /* extra cycles for MSP430X instructions */
+#define CYCX(M,X) (msp430x ? (X) : (M))
+
+  if (GET_CODE (arg) != CONST_INT)
+    {
+      error ("__delay_cycles() only takes constant arguments");
+      return NULL_RTX;
+    }
+
+  c = INTVAL (arg);
+
+  if (HOST_BITS_PER_WIDE_INT > 32)
+    {
+      if (c < 0)
+	{
+	  error ("__delay_cycles only takes non-negative cycle counts.");
+	  return NULL_RTX;
+	}
+    }
+
+  emit_insn (gen_delay_cycles_start (arg));
+
+  /* For 32-bit loops, there's 13(16) + 5(min(x,0x10000) + 6x cycles.  */
+  if (c > 3 * 0xffff + CYCX (7, 10))
+    {
+      n = c;
+      /* There's 4 cycles in the short (i>0xffff) loop and 7 in the long (x<=0xffff) loop */
+      if (c >= 0x10000 * 7 + CYCX (14, 16))
+	{
+	  i = 0x10000;
+	  c -= CYCX (14, 16) + 7 * 0x10000;
+	  i += c / 4;
+	  c %= 4;
+	  if ((unsigned long long) i > 0xffffffffULL)
+	    {
+	      error ("__delay_cycles is limited to 32-bit loop counts.");
+	      return NULL_RTX;
+	    }
+	}
+      else
+	{
+	  i = (c - CYCX (14, 16)) / 7;
+	  c -= CYCX (14, 16) + i * 7;
+	}
+
+      if (cg_magic_constant (i & 0xffff))
+	c ++;
+      if (cg_magic_constant ((i >> 16) & 0xffff))
+	c ++;
+
+      if (msp430x)
+	emit_insn (gen_delay_cycles_32x (GEN_INT (i), GEN_INT (n - c)));
+      else
+	emit_insn (gen_delay_cycles_32 (GEN_INT (i), GEN_INT (n - c)));
+    }
+
+  /* For 16-bit loops, there's 7(10) + 3x cycles - so the max cycles is 0x30004(7).  */
+  if (c > 12)
+    {
+      n = c;
+      i = (c - CYCX (7, 10)) / 3;
+      c -= CYCX (7, 10) + i * 3;
+
+      if (cg_magic_constant (i))
+	c ++;
+
+      if (msp430x)
+	emit_insn (gen_delay_cycles_16x (GEN_INT (i), GEN_INT (n - c)));
+      else
+	emit_insn (gen_delay_cycles_16 (GEN_INT (i), GEN_INT (n - c)));
+    }
+
+  while (c > 1)
+    {
+      emit_insn (gen_delay_cycles_2 ());
+      c -= 2;
+    }
+
+  if (c)
+    {
+      emit_insn (gen_delay_cycles_1 ());
+      c -= 1;
+    }
+
+  emit_insn (gen_delay_cycles_end (arg));
+
+  return NULL_RTX;
 }
 
 static rtx
@@ -1236,6 +1356,9 @@ msp430_expand_builtin (tree exp,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   rtx arg1 = expand_normal (CALL_EXPR_ARG (exp, 0));
+
+  if (fcode == MSP430_BUILTIN_DELAY_CYCLES)
+    return msp430_expand_delay_cycles (arg1);
 
   if (! msp430_is_interrupt_func ())
     {
