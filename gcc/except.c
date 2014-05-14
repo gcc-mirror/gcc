@@ -949,7 +949,7 @@ static basic_block
 emit_to_new_bb_before (rtx seq, rtx insn)
 {
   rtx last;
-  basic_block bb, prev_bb;
+  basic_block bb;
   edge e;
   edge_iterator ei;
 
@@ -964,8 +964,7 @@ emit_to_new_bb_before (rtx seq, rtx insn)
   last = emit_insn_before (seq, insn);
   if (BARRIER_P (last))
     last = PREV_INSN (last);
-  prev_bb = BLOCK_FOR_INSN (insn)->prev_bb;
-  bb = create_basic_block (seq, last, prev_bb);
+  bb = create_basic_block (seq, last, BLOCK_FOR_INSN (insn)->prev_bb);
   update_bb_for_insn (bb);
   bb->flags |= BB_SUPERBLOCK;
   return bb;

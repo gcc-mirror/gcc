@@ -1,3 +1,10 @@
+2014-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgcleanup.c (try_forward_edges): Use location_t for locations.
+	* cfgrtl.c (rtl_merge_blocks): Fix comment.
+	(cfg_layout_merge_blocks): Likewise.
+	* except.c (emit_to_new_bb_before): Remove prev_bb local variable.
+
 2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/60901
