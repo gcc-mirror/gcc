@@ -1,0 +1,5 @@
+# We build library code with -mno-gpopt so that it can be linked with
+# larger executables with small-data sections that exceed the 16-bit
+# offset range for GP-relative addressing.
+CFLAGS_FOR_TARGET += -mno-gpopt
+CXXFLAGS_FOR_TARGET += -mno-gpopt
