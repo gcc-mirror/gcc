@@ -9,11 +9,11 @@ struct X {
   }
 };
 
-void add_one (X & ref) { /* { dg-message "in passing argument" } */
+void add_one (X & ref) { /* { dg-message "argument" } */
   ++ ref.x;
 }
 
 void foo() {
   X const a (2);
-  add_one(a); /* { dg-error "invalid initialization of reference of type" } */
+  add_one(a); /* { dg-error "discards qualifiers" } */
 }

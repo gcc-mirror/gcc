@@ -18,6 +18,6 @@ class C
 	C()
 	{
 		B	b;
-		A a = b;// { dg-error "match" } 
+		A a = b;// { dg-error "rvalue" }
 	}
 };

@@ -8,7 +8,7 @@
 
 
 const int ic = 1;
-void f(int& arg)  // { dg-message "passing argument 1" }
+void f(int& arg)  // { dg-message "argument 1" }
 {
         if (arg) ;
 }
@@ -16,7 +16,7 @@ const int& icr = ic;
 
 int main(void)
 {
-  f(icr);   // { dg-error "invalid initialization" }
+  f(icr);   // { dg-error "const" }
 
   return 0;
 }

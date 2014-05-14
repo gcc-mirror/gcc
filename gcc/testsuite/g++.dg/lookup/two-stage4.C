@@ -3,15 +3,15 @@
 
 template<class T> struct wrap {};
 
-template<typename T> bool& operator==(wrap<T>, wrap<T>);
+template<typename T> bool operator==(wrap<T>, wrap<T>);
 
 template<typename T>
 void g(T, wrap<wrap<int> > x)
 {
-  bool& b = x == x; // { dg-bogus "invalid initialization of reference" "" { xfail *-*-*} }
+  bool b = x == x; // { dg-bogus "" "" { xfail *-*-* } }
 }
 
-template<typename T> int& operator==(wrap<wrap<T> >, wrap<wrap<T> >);
+template<typename T> void operator==(wrap<wrap<T> >, wrap<wrap<T> >);
 
 void h()
 {
