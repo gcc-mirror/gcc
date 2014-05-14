@@ -1,3 +1,12 @@
+2014-05-14  Matthias Klose  <doko@ubuntu.com>
+
+	Revert:
+	2014-05-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+		    Matthias Klose  <doko@ubuntu.com>
+
+	PR driver/61106
+	* optc-gen.awk: Fix option handling for -Wunused-parameter.
+
 2014-05-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* doc/sourcebuild.texi: (dfp_hw): Document.

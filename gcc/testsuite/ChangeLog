@@ -1,3 +1,8 @@
+2014-05-14  Matthias Klose  <doko@ubuntu.com>
+
+	PR driver/61106
+	* gcc-dg/unused-8a.c: Remove.
+
 2014-05-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* lib/target-support.exp (check_dfp_hw_available): New function.
