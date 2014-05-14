@@ -41,4 +41,8 @@ main()
   get<1>(b)=5;
   VERIFY(get<int>(b)==1 && get<int&>(b)==5 && get<const int&>(b)==2);
   VERIFY(j==5);
+  // test rvalue overload:
+  VERIFY(get<int>(std::move(b))==1);
+  VERIFY(get<int&>(std::move(b))==5);
+  VERIFY(get<const int&>(std::move(b))==2);
 }
