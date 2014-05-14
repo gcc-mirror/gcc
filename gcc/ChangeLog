@@ -1,3 +1,27 @@
+2014-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (sparc_absnegfloat_split_legitimate):
+	Delete.
+	* config/sparc/sparc.c (sparc_absnegfloat_split_legitimate): Likewise.
+	* config/sparc/sparc.md (fptype_ut699): New attribute.
+	(in_branch_delay): Return false if -mfix-ut699 is specified and
+	fptype_ut699 is set to single.
+	(truncdfsf2): Add fptype_ut699 attribute.
+	(fix_truncdfsi2): Likewise.
+	(floatsisf2): Change fptype attribute.
+	(fix_truncsfsi2): Likewise.
+	(negtf2_notv9): Delete.
+	(negtf2_v9): Likewise.
+	(negtf2_hq): New instruction.
+	(negtf2): New instruction and splitter.
+	(negdf2_notv9): Rewrite.
+	(abstf2_notv9): Delete.
+	(abstf2_hq_v9): Likewise.
+	(abstf2_v9): Likewise.
+	(abstf2_hq): New instruction.
+	(abstf2): New instruction and splitter.
+	(absdf2_notv9): Rewrite.
+
 2014-05-14  Cary Coutant  <ccoutant@google.com>
 
         PR debug/61013
