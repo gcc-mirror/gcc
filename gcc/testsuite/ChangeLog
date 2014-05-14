@@ -1,3 +1,11 @@
+2014-05-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* lib/target-support.exp (check_dfp_hw_available): New function.
+	(is-effective-target): Check $arg for dfp_hw.
+	(is-effective-target-keyword): Likewise.
+	* gcc.target/powerpc/pack03.c: (dg-require-effective-target):
+	Change target to dfp_hw.
+
 2014-05-12  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from mainline

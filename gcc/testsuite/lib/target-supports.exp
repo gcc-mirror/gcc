@@ -1884,6 +1884,32 @@ proc check_effective_target_dfprt { } {
     }]
 }
 
+# Return 1 if the target supports executing DFP hardware instructions,
+# 0 otherwise.  Cache the result.
+
+proc check_dfp_hw_available { } {
+    return [check_cached_effective_target dfp_hw_available {
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    check_runtime_nocache dfp_hw_available {
+		volatile _Decimal64 r;
+		volatile _Decimal64 a = 4.0DD;
+		volatile _Decimal64 b = 2.0DD;
+		int main()
+		{
+		  asm volatile ("dadd %0,%1,%2" : "=d" (r) : "d" (a), "d" (b));
+		  asm volatile ("dsub %0,%1,%2" : "=d" (r) : "d" (a), "d" (b));
+		  asm volatile ("dmul %0,%1,%2" : "=d" (r) : "d" (a), "d" (b));
+		  asm volatile ("ddiv %0,%1,%2" : "=d" (r) : "d" (a), "d" (b));
+		  return 0;
+		}
+	    } "-mcpu=power6 -mhard-float"
+	}
+    }]
+}
+
 # Return 1 if the target supports compiling and assembling UCN, 0 otherwise.
 
 proc check_effective_target_ucn_nocache { } {
@@ -4591,6 +4617,7 @@ proc is-effective-target { arg } {
 	  "vsx_hw"         { set selected [check_vsx_hw_available] }
 	  "p8vector_hw"    { set selected [check_p8vector_hw_available] }
 	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
+	  "dfp_hw"         { set selected [check_dfp_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
@@ -4613,6 +4640,7 @@ proc is-effective-target-keyword { arg } {
 	  "vsx_hw"         { return 1 }
 	  "p8vector_hw"    { return 1 }
 	  "ppc_recip_hw"   { return 1 }
+	  "dfp_hw"         { return 1 }
 	  "named_sections" { return 1 }
 	  "gc_sections"    { return 1 }
 	  "cxa_atexit"     { return 1 }
