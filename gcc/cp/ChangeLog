@@ -1,3 +1,7 @@
+2014-05-15  Jason Merrill  <jason@redhat.com>
+
+	* call.c (print_conversion_rejection): Use loc consistently.
+
 2014-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (DIRECT_LIST_INIT_P): Add.

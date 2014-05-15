@@ -3231,7 +3231,7 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
       /* Conversion of implicit `this' argument failed.  */
       if (!TYPE_P (info->from))
 	/* A bad conversion for 'this' must be discarding cv-quals.  */
-	inform (input_location, "  passing %qT as %<this%> "
+	inform (loc, "  passing %qT as %<this%> "
 		"argument discards qualifiers",
 		from);
       else
@@ -3243,7 +3243,7 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
     {
       if (info->n_arg >= 0)
 	inform (loc, "  conversion of argument %d would be ill-formed:",
-		info->n_arg+1);
+		info->n_arg + 1);
       perform_implicit_conversion (info->to_type, info->from,
 				   tf_warning_or_error);
     }
@@ -3253,7 +3253,7 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
 	    from, info->to_type);
   else
     inform (loc, "  no known conversion for argument %d from %qT to %qT",
-	    info->n_arg+1, from, info->to_type);
+	    info->n_arg + 1, from, info->to_type);
 }
 
 /* Print information about a candidate with WANT parameters and we found
