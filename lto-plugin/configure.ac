@@ -7,9 +7,21 @@ AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_SYS_LARGEFILE
 ACX_PROG_CC_WARNING_OPTS([-Wall], [ac_lto_plugin_warn_cflags])
+
+# Check whether -static-libgcc is supported.
+saved_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -static-libgcc"
+AC_MSG_CHECKING([for -static-libgcc])
+AC_LINK_IFELSE([
+  int main() {}], [have_static_libgcc=yes], [have_static_libgcc=no])
+AC_MSG_RESULT($have_static_libgcc); 
+LDFLAGS="$saved_LDFLAGS"
 # Need -Wc to get it through libtool.
-if test "x$GCC" = xyes; then ac_lto_plugin_ldflags="-Wc,-static-libgcc"; fi
+if test "x$have_static_libgcc" = xyes; then
+   ac_lto_plugin_ldflags="-Wc,-static-libgcc"
+fi
 AC_SUBST(ac_lto_plugin_ldflags)
+
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

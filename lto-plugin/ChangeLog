@@ -1,3 +1,9 @@
+2014-05-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR lto/60981
+	* configure.ac: Check for -static-libgcc.
+	* configure: Regenerate.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.
