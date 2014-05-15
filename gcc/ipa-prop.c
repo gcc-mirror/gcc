@@ -3650,6 +3650,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
 
   TREE_TYPE (fndecl) = new_type;
   DECL_VIRTUAL_P (fndecl) = 0;
+  DECL_LANG_SPECIFIC (fndecl) = NULL;
   otypes.release ();
   oparms.release ();
 }
