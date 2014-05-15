@@ -1,3 +1,7 @@
+2014-05-15  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* shrink-wrap-loop.c: New test case.
+
 2014-05-14  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/arm/simd/vtrnqf32_1.c: New file.

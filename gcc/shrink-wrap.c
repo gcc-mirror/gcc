@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
-
+#include "regcprop.h"
 
 #ifdef HAVE_simple_return
 
@@ -319,6 +319,15 @@ prepare_shrink_wrap (basic_block entry_block)
   HARD_REG_SET uses, defs;
   df_ref *ref;
   bool split_p = false;
+
+  if (JUMP_P (BB_END (entry_block)))
+    {
+      /* To have more shrink-wrapping opportunities, prepare_shrink_wrap tries
+	 to sink the copies from parameter to callee saved register out of
+	 entry block.  copyprop_hardreg_forward_bb_without_debug_insn is called
+	 to release some dependences.  */
+      copyprop_hardreg_forward_bb_without_debug_insn (entry_block);
+    }
 
   CLEAR_HARD_REG_SET (uses);
   CLEAR_HARD_REG_SET (defs);
