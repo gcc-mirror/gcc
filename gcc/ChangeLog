@@ -1,3 +1,12 @@
+2014-05-15  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* shrink-wrap.h: Update comment.
+	* shrink-wrap.c: Update comment.
+	(next_block_for_reg): Rename to live_edge_for_reg.
+	(live_edge_for_reg): Allow live_edge->dest has two predecessors.
+	(move_insn_for_shrink_wrap): Split live_edge.
+	(prepre_shrink_wrap): One more parameter for move_insn_for_shrink_wrap.
+
 2014-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (sparc_absnegfloat_split_legitimate):
