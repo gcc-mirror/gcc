@@ -1,3 +1,8 @@
+2014-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/61090
+	* gcc.dg/tree-ssa/pr61090.c: New test.
+
 2014-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61158
