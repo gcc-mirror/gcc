@@ -2812,7 +2812,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	{
 	  tree ref;
 
-	  ref = build_ref_for_model (loc, orig_expr, 0, access, NULL, false);
+	  ref = build_ref_for_model (loc, orig_expr, 0, access, gsi, false);
 
 	  if (write)
 	    {
