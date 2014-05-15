@@ -2877,16 +2877,20 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       else if (jfunc->type == IPA_JF_PASS_THROUGH
 	       && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
 	{
-	  if (ici->agg_contents
-	      && !ipa_get_jf_pass_through_agg_preserved (jfunc))
+	  if ((ici->agg_contents
+	       && !ipa_get_jf_pass_through_agg_preserved (jfunc))
+	      || (ici->polymorphic
+		  && !ipa_get_jf_pass_through_type_preserved (jfunc)))
 	    ici->param_index = -1;
 	  else
 	    ici->param_index = ipa_get_jf_pass_through_formal_id (jfunc);
 	}
       else if (jfunc->type == IPA_JF_ANCESTOR)
 	{
-	  if (ici->agg_contents
-	      && !ipa_get_jf_ancestor_agg_preserved (jfunc))
+	  if ((ici->agg_contents
+	       && !ipa_get_jf_ancestor_agg_preserved (jfunc))
+	      || (ici->polymorphic
+		  && !ipa_get_jf_ancestor_type_preserved (jfunc)))
 	    ici->param_index = -1;
 	  else
 	    {

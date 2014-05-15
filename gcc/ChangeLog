@@ -1,5 +1,11 @@
 2014-05-15  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/61085
+	* ipa-prop.c (update_indirect_edges_after_inlining): Check
+	type_preserved flag when the indirect edge is polymorphic.
+
+2014-05-15  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/61090
 	* tree-sra.c (sra_modify_expr): Pass the current gsi to
 	build_ref_for_model.

@@ -1,5 +1,10 @@
 2014-05-15  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/61085
+	* g++.dg/ipa/pr61085.C: New test.
+
+2014-05-15  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/61090
 	* gcc.dg/tree-ssa/pr61090.c: New test.
 
