@@ -27,7 +27,7 @@
 	(add_function_candidate): Pass actual argument, rather than type, to
 	bad_arg_conversion_rejection.
 	(print_conversion_rejection): Explain what's wrong with the conversion.
-	(print_z_candidate): Say "candidate:" before each candidate.
+	(print_z_candidates): Say "candidate:" before each candidate.
 	(splice_viable): Be strict if we see a viable or template candidate.
 	(build_user_type_conversion_1): Pass false to strict parameter.
 	(perform_overload_resolution, build_conditional_expr_1): Likewise.
