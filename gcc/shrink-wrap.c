@@ -1,4 +1,4 @@
-/* Expands front end tree to back end RTL for GCC.
+/* Shrink-wrapping related optimizations.
    Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -110,12 +110,12 @@ requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
   return false;
 }
 
-/* See whether BB has a single successor that uses [REGNO, END_REGNO),
-   and if BB is its only predecessor.  Return that block if so,
-   otherwise return null.  */
+/* See whether there has a single live edge from BB, which dest uses
+   [REGNO, END_REGNO).  Return the live edge if its dest bb has
+   one or two predecessors.  Otherwise return NULL.  */
 
-static basic_block
-next_block_for_reg (basic_block bb, int regno, int end_regno)
+static edge
+live_edge_for_reg (basic_block bb, int regno, int end_regno)
 {
   edge e, live_edge;
   edge_iterator ei;
@@ -148,25 +148,30 @@ next_block_for_reg (basic_block bb, int regno, int end_regno)
   if (live_edge->flags & EDGE_ABNORMAL)
     return NULL;
 
-  if (EDGE_COUNT (live_edge->dest->preds) > 1)
+  /* When live_edge->dest->preds == 2, we can create a new block on
+     the edge to make it meet the requirement.  */
+  if (EDGE_COUNT (live_edge->dest->preds) > 2)
     return NULL;
 
-  return live_edge->dest;
+  return live_edge;
 }
 
 /* Try to move INSN from BB to a successor.  Return true on success.
    USES and DEFS are the set of registers that are used and defined
-   after INSN in BB.  */
+   after INSN in BB.  SPLIT_P indicates whether a live edge from BB
+   is splitted or not.  */
 
 static bool
 move_insn_for_shrink_wrap (basic_block bb, rtx insn,
 			   const HARD_REG_SET uses,
-			   const HARD_REG_SET defs)
+			   const HARD_REG_SET defs,
+			   bool *split_p)
 {
   rtx set, src, dest;
   bitmap live_out, live_in, bb_uses, bb_defs;
   unsigned int i, dregno, end_dregno, sregno, end_sregno;
   basic_block next_block;
+  edge live_edge;
 
   /* Look for a simple register copy.  */
   set = single_set (insn);
@@ -191,9 +196,23 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
     return false;
 
   /* See whether there is a successor block to which we could move INSN.  */
-  next_block = next_block_for_reg (bb, dregno, end_dregno);
-  if (!next_block)
+  live_edge = live_edge_for_reg (bb, dregno, end_dregno);
+  if (!live_edge)
     return false;
+
+  next_block = live_edge->dest;
+  /* Create a new basic block on the edge.  */
+  if (EDGE_COUNT (next_block->preds) == 2)
+    {
+      next_block = split_edge (live_edge);
+
+      bitmap_copy (df_get_live_in (next_block), df_get_live_out (bb));
+      df_set_bb_dirty (next_block);
+
+      /* We should not split more than once for a function.  */
+      gcc_assert (!(*split_p));
+      *split_p = true;
+    }
 
   /* At this point we are committed to moving INSN, but let's try to
      move it as far as we can.  */
@@ -212,7 +231,9 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
 	{
 	  for (i = dregno; i < end_dregno; i++)
 	    {
-	      if (REGNO_REG_SET_P (bb_uses, i) || REGNO_REG_SET_P (bb_defs, i)
+	      if (*split_p
+		  || REGNO_REG_SET_P (bb_uses, i)
+		  || REGNO_REG_SET_P (bb_defs, i)
 		  || REGNO_REG_SET_P (&DF_LIVE_BB_INFO (bb)->gen, i))
 		next_block = NULL;
 	      CLEAR_REGNO_REG_SET (live_out, i);
@@ -223,7 +244,8 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
 	     Either way, SRC is now live on entry.  */
 	  for (i = sregno; i < end_sregno; i++)
 	    {
-	      if (REGNO_REG_SET_P (bb_defs, i)
+	      if (*split_p
+		  || REGNO_REG_SET_P (bb_defs, i)
 		  || REGNO_REG_SET_P (&DF_LIVE_BB_INFO (bb)->gen, i))
 		next_block = NULL;
 	      SET_REGNO_REG_SET (live_out, i);
@@ -252,21 +274,31 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
       /* If we don't need to add the move to BB, look for a single
 	 successor block.  */
       if (next_block)
-	next_block = next_block_for_reg (next_block, dregno, end_dregno);
+	{
+	  live_edge = live_edge_for_reg (next_block, dregno, end_dregno);
+	  if (!live_edge || EDGE_COUNT (live_edge->dest->preds) > 1)
+	    break;
+	  next_block = live_edge->dest;
+	}
     }
   while (next_block);
 
-  /* BB now defines DEST.  It only uses the parts of DEST that overlap SRC
-     (next loop).  */
-  for (i = dregno; i < end_dregno; i++)
+  /* For the new created basic block, there is no dataflow info at all.
+     So skip the following dataflow update and check.  */
+  if (!(*split_p))
     {
-      CLEAR_REGNO_REG_SET (bb_uses, i);
-      SET_REGNO_REG_SET (bb_defs, i);
-    }
+      /* BB now defines DEST.  It only uses the parts of DEST that overlap SRC
+	 (next loop).  */
+      for (i = dregno; i < end_dregno; i++)
+	{
+	  CLEAR_REGNO_REG_SET (bb_uses, i);
+	  SET_REGNO_REG_SET (bb_defs, i);
+	}
 
-  /* BB now uses SRC.  */
-  for (i = sregno; i < end_sregno; i++)
-    SET_REGNO_REG_SET (bb_uses, i);
+      /* BB now uses SRC.  */
+      for (i = sregno; i < end_sregno; i++)
+	SET_REGNO_REG_SET (bb_uses, i);
+    }
 
   emit_insn_after (PATTERN (insn), bb_note (bb));
   delete_insn (insn);
@@ -286,12 +318,14 @@ prepare_shrink_wrap (basic_block entry_block)
   rtx insn, curr, x;
   HARD_REG_SET uses, defs;
   df_ref *ref;
+  bool split_p = false;
 
   CLEAR_HARD_REG_SET (uses);
   CLEAR_HARD_REG_SET (defs);
   FOR_BB_INSNS_REVERSE_SAFE (entry_block, insn, curr)
     if (NONDEBUG_INSN_P (insn)
-	&& !move_insn_for_shrink_wrap (entry_block, insn, uses, defs))
+	&& !move_insn_for_shrink_wrap (entry_block, insn, uses, defs,
+				       &split_p))
       {
 	/* Add all defined registers to DEFs.  */
 	for (ref = DF_INSN_DEFS (insn); *ref; ref++)

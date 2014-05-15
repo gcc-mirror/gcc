@@ -1,4 +1,4 @@
-/* Structure for saving state for a nested function.
+/* Shrink-wrapping related functions.
    Copyright (C) 1989-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
