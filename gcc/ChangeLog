@@ -1,5 +1,11 @@
 2014-05-15  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/61085
+	* ipa-prop.c (update_indirect_edges_after_inlining): Check
+	type_preserved flag when the indirect edge is polymorphic.
+
+2014-05-15  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/60897
 	* ipa-prop.c (ipa_modify_formal_parameters): Reset DECL_LANG_SPECIFIC.
 
