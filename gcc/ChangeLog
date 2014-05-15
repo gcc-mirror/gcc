@@ -1,3 +1,9 @@
+2014-05-14  Cary Coutant  <ccoutant@google.com>
+
+        PR debug/61013
+	* opts.c (common_handle_option): Don't special-case "-g".
+	(set_debug_level): Default to at least level 2 with "-g".
+
 2014-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (sparc_absnegfloat_split_legitimate):

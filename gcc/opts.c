@@ -1820,13 +1820,8 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_g:
-      /* -g by itself should force -g2.  */
-      if (*arg == '\0')
-	set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, "2", opts, opts_set,
-			 loc);
-      else
-	set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg, opts, opts_set,
-			 loc);
+      set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg, opts, opts_set,
+                       loc);
       break;
 
     case OPT_gcoff:
@@ -2076,10 +2071,12 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg,
       opts_set->x_write_symbols = type;
     }
 
-  /* A debug flag without a level defaults to level 2.  */
+  /* A debug flag without a level defaults to level 2.
+     If off or at level 1, set it to level 2, but if already
+     at level 3, don't lower it.  */ 
   if (*arg == '\0')
     {
-      if (!opts->x_debug_info_level)
+      if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL)
 	opts->x_debug_info_level = DINFO_LEVEL_NORMAL;
     }
   else
