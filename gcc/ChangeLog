@@ -1,5 +1,15 @@
 2014-05-15  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
+	* regcprop.h: New file.
+	* regcprop.c (skip_debug_insn_p): New decl.
+	(replace_oldest_value_reg): Check skip_debug_insn_p.
+	(copyprop_hardreg_forward_bb_without_debug_insn.): New function.
+	* shrink-wrap.c: include regcprop.h
+	(prepare_shrink_wrap):
+	Call copyprop_hardreg_forward_bb_without_debug_insn.
+
+2014-05-15  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
 	* shrink-wrap.h: Update comment.
 	* shrink-wrap.c: Update comment.
 	(next_block_for_reg): Rename to live_edge_for_reg.
