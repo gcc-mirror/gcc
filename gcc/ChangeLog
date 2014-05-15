@@ -1,3 +1,10 @@
+2014-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61158
+	* fold-const.c (fold_binary_loc): If X is zero-extended and
+	shiftc >= prec, make sure zerobits is all ones instead of
+	invoking undefined behavior.
+
 2014-05-14  Cary Coutant  <ccoutant@google.com>
 
         PR debug/61013
