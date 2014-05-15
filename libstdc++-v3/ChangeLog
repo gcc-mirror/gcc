@@ -1,5 +1,22 @@
 2014-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/60326
+	* include/std/type_traits (__make_unsigned, __make_signed): Define
+	specializations for wchar_t, char16_t and char32_t.
+	* testsuite/20_util/make_signed/requirements/typedefs-4.cc: New.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Correct
+	test for make_unsigned<volatile wchar_t>.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2014-05-15  Jonthan Wakely  <jwakely@redhat.com>
+
 	* include/std/tuple (tuple_size<cv _Tp>): Implement LWG 2313.
 	* include/std/array (tuple_size, tuple_element): Add Doxygen comments.
 	* include/std/utility (tuple_size, tuple_element): Likewise.

@@ -41,6 +41,15 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+# if defined (__UINT_LEAST16_TYPE__) && defined(__UINT_LEAST32_TYPE__)
+  typedef __UINT_LEAST16_TYPE__ uint_least16_t;
+  typedef __UINT_LEAST32_TYPE__ uint_least32_t;
+# else
+#  include <cstdint>
+# endif
+#endif
+
   /**
    * @defgroup metaprogramming Metaprogramming
    * @ingroup utilities
@@ -1583,6 +1592,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<long long>
     { typedef unsigned long long __type; };
 
+#if defined(_GLIBCXX_USE_WCHAR_T) && !defined(__WCHAR_UNSIGNED__)
+  template<>
+    struct __make_unsigned<wchar_t> : __make_unsigned<__WCHAR_TYPE__>
+    { };
+#endif
+
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
   template<>
     struct __make_unsigned<__int128>
@@ -1664,6 +1679,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __make_signed<unsigned long long>
     { typedef signed long long __type; };
+
+#if defined(_GLIBCXX_USE_WCHAR_T) && defined(__WCHAR_UNSIGNED__)
+  template<>
+    struct __make_signed<wchar_t> : __make_signed<__WCHAR_TYPE__>
+    { };
+#endif
+
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  template<>
+    struct __make_signed<char16_t> : __make_signed<uint_least16_t>
+    { };
+  template<>
+    struct __make_signed<char32_t> : __make_signed<uint_least32_t>
+    { };
+#endif
 
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
   template<>
