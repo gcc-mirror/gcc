@@ -15,7 +15,7 @@
 	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
 	Likewise.
 
-2014-05-15  Jonthan Wakely  <jwakely@redhat.com>
+2014-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/tuple (tuple_size<cv _Tp>): Implement LWG 2313.
 	* include/std/array (tuple_size, tuple_element): Add Doxygen comments.
