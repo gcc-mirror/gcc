@@ -693,18 +693,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct tuple_size;
 
-  template<typename _Tp, typename _Ts = tuple_size<_Tp>>
-    using __cv_tuple_size = integral_constant<
-             typename remove_cv<decltype(_Ts::value)>::type, _Ts::value>;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2313. tuple_size should always derive from integral_constant<size_t, N>
+  template<typename _Tp>
+    struct tuple_size<const _Tp>
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
 
   template<typename _Tp>
-    struct tuple_size<const _Tp> : __cv_tuple_size<_Tp> { };
+    struct tuple_size<volatile _Tp>
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
 
   template<typename _Tp>
-    struct tuple_size<volatile _Tp> : __cv_tuple_size<_Tp> { };
-
-  template<typename _Tp>
-    struct tuple_size<const volatile _Tp> : __cv_tuple_size<_Tp> { };
+    struct tuple_size<const volatile _Tp>
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
 
   /// class tuple_size
   template<typename... _Elements>

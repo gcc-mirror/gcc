@@ -84,14 +84,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class tuple_element;
 
    // Various functions which give std::pair a tuple-like interface.
+
+  /// Partial specialization for std::pair
   template<class _Tp1, class _Tp2>
     struct tuple_size<std::pair<_Tp1, _Tp2>>
     : public integral_constant<std::size_t, 2> { };
 
+  /// Partial specialization for std::pair
   template<class _Tp1, class _Tp2>
     struct tuple_element<0, std::pair<_Tp1, _Tp2>>
     { typedef _Tp1 type; };
  
+  /// Partial specialization for std::pair
   template<class _Tp1, class _Tp2>
     struct tuple_element<1, std::pair<_Tp1, _Tp2>>
     { typedef _Tp2 type; };

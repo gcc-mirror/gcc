@@ -1,3 +1,11 @@
+2014-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (tuple_size<cv _Tp>): Implement LWG 2313.
+	* include/std/array (tuple_size, tuple_element): Add Doxygen comments.
+	* include/std/utility (tuple_size, tuple_element): Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Adjust dg-error line number.
+
 2014-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/tuple (__add_c_ref, __add_ref, __add_r_ref): Remove.
