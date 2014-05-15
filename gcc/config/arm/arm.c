@@ -50,6 +50,7 @@
 #include "except.h"
 #include "tm_p.h"
 #include "target.h"
+#include "sched-int.h"
 #include "target-def.h"
 #include "debug.h"
 #include "langhooks.h"
@@ -2944,7 +2945,7 @@ arm_option_override (void)
      prefer_neon_for_64bits = true;
 
   /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
                          global_options.x_param_values,
                          global_options_set.x_param_values);
 

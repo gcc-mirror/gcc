@@ -1,3 +1,8 @@
+2014-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_option_override): Use the SCHED_PRESSURE_MODEL
+	enum name for PARAM_SCHED_PRESSURE_ALGORITHM.
+
 2014-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61158
