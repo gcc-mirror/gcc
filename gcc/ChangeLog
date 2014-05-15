@@ -1,12 +1,19 @@
+2014-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61158
+	* fold-const.c (fold_binary_loc): If X is zero-extended and
+	shiftc >= prec, make sure zerobits is all ones instead of
+	invoking undefined behavior.
+
 2014-05-15  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* regcprop.h: New file.
 	* regcprop.c (skip_debug_insn_p): New decl.
 	(replace_oldest_value_reg): Check skip_debug_insn_p.
-	(copyprop_hardreg_forward_bb_without_debug_insn.): New function.
-	* shrink-wrap.c: include regcprop.h
-	(prepare_shrink_wrap):
-	Call copyprop_hardreg_forward_bb_without_debug_insn.
+	(copyprop_hardreg_forward_bb_without_debug_insn): New function.
+	* shrink-wrap.c: Include regcprop.h.
+	(prepare_shrink_wrap): Call
+	copyprop_hardreg_forward_bb_without_debug_insn.
 
 2014-05-15  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
