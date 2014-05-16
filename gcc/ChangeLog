@@ -1,5 +1,11 @@
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.c (cortexa57_addrcost_table): New.
+	(cortexa57_vector_cost): Likewise.
+	(cortexa57_tunings): Use them.
+
+2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-protos.h (scale_addr_mode_cost): New.
 	(cpu_addrcost_table): Use it.
 	* config/aarch64/aarch64.c (generic_addrcost_table): Initialize it.
