@@ -4868,7 +4868,7 @@ static bool
 aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 		   int param ATTRIBUTE_UNUSED, int *cost, bool speed)
 {
-  rtx op0, op1;
+  rtx op0, op1, op2;
   const struct cpu_cost_table *extra_cost
     = aarch64_tune_params->insn_extra_cost;
   enum machine_mode mode = GET_MODE (x);
@@ -5093,16 +5093,77 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	  goto cost_logic;
 	}
 
-      /* Comparisons can work if the order is swapped.
-	 Canonicalization puts the more complex operation first, but
-	 we want it in op1.  */
-      if (! (REG_P (op0)
-	     || (GET_CODE (op0) == SUBREG && REG_P (SUBREG_REG (op0)))))
-	{
-	  op0 = XEXP (x, 1);
-	  op1 = XEXP (x, 0);
-	}
-      goto cost_minus;
+      if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
+        {
+          /* TODO: A write to the CC flags possibly costs extra, this
+	     needs encoding in the cost tables.  */
+
+          /* CC_ZESWPmode supports zero extend for free.  */
+          if (GET_MODE (x) == CC_ZESWPmode && GET_CODE (op0) == ZERO_EXTEND)
+            op0 = XEXP (op0, 0);
+
+          /* ANDS.  */
+          if (GET_CODE (op0) == AND)
+            {
+              x = op0;
+              goto cost_logic;
+            }
+
+          if (GET_CODE (op0) == PLUS)
+            {
+	      /* ADDS (and CMN alias).  */
+              x = op0;
+              goto cost_plus;
+            }
+
+          if (GET_CODE (op0) == MINUS)
+            {
+	      /* SUBS.  */
+              x = op0;
+              goto cost_minus;
+            }
+
+          if (GET_CODE (op1) == NEG)
+            {
+	      /* CMN.  */
+	      if (speed)
+		*cost += extra_cost->alu.arith;
+
+              *cost += rtx_cost (op0, COMPARE, 0, speed);
+	      *cost += rtx_cost (XEXP (op1, 0), NEG, 1, speed);
+              return true;
+            }
+
+          /* CMP.
+
+	     Compare can freely swap the order of operands, and
+             canonicalization puts the more complex operation first.
+             But the integer MINUS logic expects the shift/extend
+             operation in op1.  */
+          if (! (REG_P (op0)
+                 || (GET_CODE (op0) == SUBREG && REG_P (SUBREG_REG (op0)))))
+          {
+            op0 = XEXP (x, 1);
+            op1 = XEXP (x, 0);
+          }
+          goto cost_minus;
+        }
+
+      if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+        {
+	  /* FCMP.  */
+	  if (speed)
+	    *cost += extra_cost->fp[mode == DFmode].compare;
+
+          if (CONST_DOUBLE_P (op1) && aarch64_float_const_zero_rtx_p (op1))
+            {
+              /* FCMP supports constant 0.0 for no extra cost. */
+              return true;
+            }
+          return false;
+        }
+
+      return false;
 
     case MINUS:
       {
@@ -5173,6 +5234,7 @@ cost_minus:
 	op0 = XEXP (x, 0);
 	op1 = XEXP (x, 1);
 
+cost_plus:
 	if (GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMPARE
 	    || GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMM_COMPARE)
 	  {
@@ -5503,6 +5565,81 @@ cost_minus:
 	    *cost += extra_cost->fp[mode == DFmode].div;
 	}
       return false;  /* All arguments need to be in registers.  */
+
+    case IF_THEN_ELSE:
+      op2 = XEXP (x, 2);
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+
+      if (GET_CODE (op1) == PC || GET_CODE (op2) == PC)
+        {
+          /* Conditional branch.  */
+          if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+	    return true;
+	  else
+	    {
+	      if (GET_CODE (op0) == NE
+		  || GET_CODE (op0) == EQ)
+		{
+		  rtx inner = XEXP (op0, 0);
+		  rtx comparator = XEXP (op0, 1);
+
+		  if (comparator == const0_rtx)
+		    {
+		      /* TBZ/TBNZ/CBZ/CBNZ.  */
+		      if (GET_CODE (inner) == ZERO_EXTRACT)
+			/* TBZ/TBNZ.  */
+			*cost += rtx_cost (XEXP (inner, 0), ZERO_EXTRACT,
+					   0, speed);
+		      else
+			/* CBZ/CBNZ.  */
+			*cost += rtx_cost (inner, GET_CODE (op0), 0, speed);
+
+		      return true;
+		    }
+		}
+	      else if (GET_CODE (op0) == LT
+		       || GET_CODE (op0) == GE)
+		{
+		  rtx comparator = XEXP (op0, 1);
+
+		  /* TBZ/TBNZ.  */
+		  if (comparator == const0_rtx)
+		    return true;
+		}
+	    }
+        }
+      else if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+        {
+          /* It's a conditional operation based on the status flags,
+             so it must be some flavor of CSEL.  */
+
+          /* CSNEG, CSINV, and CSINC are handled for free as part of CSEL.  */
+          if (GET_CODE (op1) == NEG
+              || GET_CODE (op1) == NOT
+              || (GET_CODE (op1) == PLUS && XEXP (op1, 1) == const1_rtx))
+            op1 = XEXP (op1, 0);
+
+          *cost += rtx_cost (op1, IF_THEN_ELSE, 1, speed);
+          *cost += rtx_cost (op2, IF_THEN_ELSE, 2, speed);
+          return true;
+        }
+
+      /* We don't know what this is, cost all operands.  */
+      return false;
+
+    case EQ:
+    case NE:
+    case GT:
+    case GTU:
+    case LT:
+    case LTU:
+    case GE:
+    case GEU:
+    case LE:
+    case LEU:
+
+      return false; /* All arguments must be in registers.  */
 
     default:
       break;
