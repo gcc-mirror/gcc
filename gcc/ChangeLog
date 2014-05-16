@@ -1,3 +1,7 @@
+2014-05-16  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* ira-costs.c: Fix typo in comment.
+
 2014-05-16  David Wohlferd <dw@LimeGreenSocks.com>
 
 	 * doc/extend.texi: (Visibility Pragmas) Fix misplaced @xref

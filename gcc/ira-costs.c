@@ -1909,7 +1909,7 @@ find_costs_and_classes (FILE *dump_file)
 
 /* Process moves involving hard regs to modify allocno hard register
    costs.  We can do this only after determining allocno class.  If a
-   hard register forms a register class, than moves with the hard
+   hard register forms a register class, then moves with the hard
    register are already taken into account in class costs for the
    allocno.  */
 static void
