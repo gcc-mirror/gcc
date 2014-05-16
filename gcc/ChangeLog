@@ -1,3 +1,8 @@
+2014-05-16  Dehao Chen  <dehao@google.com>
+
+	* ira-int.h (REG_FREQ_FROM_EDGE_FREQ): Use optimize_function_for_size_p.
+	* regs.h (REG_FREQ_FROM_BB): Likewise.
+
 2014-05-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
