@@ -5787,7 +5787,11 @@ cost_plus:
 
       /* Fall through.  */
     default:
-      break;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "\nFailed to cost RTX.  Assuming default cost.\n");
+
+      return true;
     }
   return false;
 }
