@@ -1,3 +1,7 @@
+2014-05-16  David Wohlferd <dw@LimeGreenSocks.com>
+
+	 * doc/extend.texi: (Visibility Pragmas) Fix misplaced @xref
+
 2014-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varpool.c (dump_varpool_node): Dump write-only flag.
