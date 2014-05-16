@@ -4833,6 +4833,35 @@ aarch64_address_cost (rtx x,
   return cost;
 }
 
+/* Return true if the RTX X in mode MODE is a zero or sign extract
+   usable in an ADD or SUB (extended register) instruction.  */
+static bool
+aarch64_rtx_arith_op_extract_p (rtx x, enum machine_mode mode)
+{
+  /* Catch add with a sign extract.
+     This is add_<optab><mode>_multp2.  */
+  if (GET_CODE (x) == SIGN_EXTRACT
+      || GET_CODE (x) == ZERO_EXTRACT)
+    {
+      rtx op0 = XEXP (x, 0);
+      rtx op1 = XEXP (x, 1);
+      rtx op2 = XEXP (x, 2);
+
+      if (GET_CODE (op0) == MULT
+	  && CONST_INT_P (op1)
+	  && op2 == const0_rtx
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && aarch64_is_extend_from_extract (mode,
+					     XEXP (op0, 1),
+					     op1))
+	{
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* Calculate the cost of calculating X, storing it in *COST.  Result
    is true if the total cost of the operation has now been calculated.  */
 static bool
@@ -5097,6 +5126,18 @@ cost_minus:
 
 	  }
 
+	/* Look for SUB (extended register).  */
+        if (aarch64_rtx_arith_op_extract_p (op1, mode))
+	  {
+	    if (speed)
+	      *cost += extra_cost->alu.arith_shift;
+
+	    *cost += rtx_cost (XEXP (XEXP (op1, 0), 0),
+			       (enum rtx_code) GET_CODE (op1),
+			       0, speed);
+	    return true;
+	  }
+
 	rtx new_op1 = aarch64_strip_extend (op1);
 
 	/* Cost this as an FMA-alike operation.  */
@@ -5150,6 +5191,18 @@ cost_minus:
 	    if (speed)
 	      /* ADD (immediate).  */
 	      *cost += extra_cost->alu.arith;
+	    return true;
+	  }
+
+	/* Look for ADD (extended register).  */
+        if (aarch64_rtx_arith_op_extract_p (op0, mode))
+	  {
+	    if (speed)
+	      *cost += extra_cost->alu.arith_shift;
+
+	    *cost += rtx_cost (XEXP (XEXP (op0, 0), 0),
+			       (enum rtx_code) GET_CODE (op0),
+			       0, speed);
 	    return true;
 	  }
 
@@ -5406,7 +5459,13 @@ cost_minus:
 
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
-      *cost += rtx_cost (XEXP (x, 0), ZERO_EXTRACT, 0, speed);
+      /* UBFX/SBFX.  */
+      if (speed)
+	*cost += extra_cost->alu.bfx;
+
+      /* We can trust that the immediates used will be correct (there
+	 are no by-register forms), so we need only cost op0.  */
+      *cost += rtx_cost (XEXP (x, 0), (enum rtx_code) code, 0, speed);
       return true;
 
     case MULT:
@@ -9112,7 +9171,7 @@ aarch64_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 #define TARGET_RETURN_IN_MSB aarch64_return_in_msb
 
 #undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS aarch64_rtx_costs
+#define TARGET_RTX_COSTS aarch64_rtx_costs_wrapper
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE aarch64_sched_issue_rate
