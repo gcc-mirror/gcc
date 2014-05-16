@@ -5339,21 +5339,59 @@ cost_minus:
 	*cost += extra_cost->alu.extend;
       return false;
 
+    case ASHIFT:
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+
+      if (CONST_INT_P (op1))
+        {
+	  /* LSL (immediate), UBMF, UBFIZ and friends.  These are all
+	     aliases.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift;
+
+          /* We can incorporate zero/sign extend for free.  */
+          if (GET_CODE (op0) == ZERO_EXTEND
+              || GET_CODE (op0) == SIGN_EXTEND)
+            op0 = XEXP (op0, 0);
+
+          *cost += rtx_cost (op0, ASHIFT, 0, speed);
+          return true;
+        }
+      else
+        {
+	  /* LSLV.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift_reg;
+
+	  return false;  /* All arguments need to be in registers.  */
+        }
+
     case ROTATE:
-      if (!CONST_INT_P (XEXP (x, 1)))
-	*cost += COSTS_N_INSNS (2);
-      /* Fall through.  */
     case ROTATERT:
     case LSHIFTRT:
-    case ASHIFT:
     case ASHIFTRT:
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
 
-      /* Shifting by a register often takes an extra cycle.  */
-      if (speed && !CONST_INT_P (XEXP (x, 1)))
-	*cost += extra_cost->alu.arith_shift_reg;
+      if (CONST_INT_P (op1))
+	{
+	  /* ASR (immediate) and friends.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift;
 
-      *cost += rtx_cost (XEXP (x, 0), ASHIFT, 0, speed);
-      return true;
+	  *cost += rtx_cost (op0, (enum rtx_code) code, 0, speed);
+	  return true;
+	}
+      else
+	{
+
+	  /* ASR (register) and friends.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift_reg;
+
+	  return false;  /* All arguments need to be in registers.  */
+	}
 
     case HIGH:
       if (!CONSTANT_P (XEXP (x, 0)))
