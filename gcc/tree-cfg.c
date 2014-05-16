@@ -8431,7 +8431,7 @@ execute_fixup_cfg (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       bb->count = apply_scale (bb->count, count_scale);
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple stmt = gsi_stmt (gsi);
 	  tree decl = is_gimple_call (stmt)
@@ -8457,9 +8457,46 @@ execute_fixup_cfg (void)
 		todo |= TODO_cleanup_cfg;
 	     }
 
+	  /* Remove stores to variables we marked write-only.
+	     Keep access when store has side effect, i.e. in case when source
+	     is volatile.  */
+	  if (gimple_store_p (stmt)
+	      && !gimple_has_side_effects (stmt))
+	    {
+	      tree lhs = get_base_address (gimple_get_lhs (stmt));
+
+	      if (TREE_CODE (lhs) == VAR_DECL
+		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
+		  && varpool_get_node (lhs)->writeonly)
+		{
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (&gsi, true);
+		  release_defs (stmt);
+	          todo |= TODO_update_ssa | TODO_cleanup_cfg;
+	          continue;
+		}
+	    }
+	  /* For calls we can simply remove LHS when it is known
+	     to be write-only.  */
+	  if (is_gimple_call (stmt)
+	      && gimple_get_lhs (stmt))
+	    {
+	      tree lhs = get_base_address (gimple_get_lhs (stmt));
+
+	      if (TREE_CODE (lhs) == VAR_DECL
+		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
+		  && varpool_get_node (lhs)->writeonly)
+		{
+		  gimple_call_set_lhs (stmt, NULL);
+		  update_stmt (stmt);
+	          todo |= TODO_update_ssa | TODO_cleanup_cfg;
+		}
+	    }
+
 	  if (maybe_clean_eh_stmt (stmt)
 	      && gimple_purge_dead_eh_edges (bb))
 	    todo |= TODO_cleanup_cfg;
+	  gsi_next (&gsi);
 	}
 
       FOR_EACH_EDGE (e, ei, bb->succs)

@@ -76,6 +76,8 @@ public:
   /* Set once the definition was analyzed.  The list of references and
      other properties are built during analysis.  */
   unsigned analyzed : 1;
+  /* Set for write-only variables.  */
+  unsigned writeonly : 1;
 
 
   /*** Visibility and linkage flags.  ***/

@@ -10,6 +10,7 @@ typedef struct
 
 int set_names (void)
 {
+  __attribute__ ((used))
   static tx_typ tt1;
   int ln;
   for (ln = 0; ln < 8; ln++)

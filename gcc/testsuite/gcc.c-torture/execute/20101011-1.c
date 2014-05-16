@@ -92,7 +92,7 @@ sigfpe (int signum __attribute__ ((unused)))
    eliminate the assignment to the global k.  */
 static int i;
 static int j;
-int k;
+int k __attribute__ ((used));
 
 int
 main ()
