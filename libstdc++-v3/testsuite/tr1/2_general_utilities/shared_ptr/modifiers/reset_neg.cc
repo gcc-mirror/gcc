@@ -33,8 +33,7 @@ test01()
   bool test __attribute__((unused)) = true;
 
   const std::tr1::shared_ptr<A> p1(new A);
-  p1.reset();     // { dg-error "discards qualifiers" }
-  // { dg-error "no match" "" { target *-*-* } 36 }
+  p1.reset();     // { dg-error "no match" }
 
   return 0;
 }
