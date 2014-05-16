@@ -1,3 +1,9 @@
+2014-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51640
+	* parser.c (cp_parser_diagnose_invalid_type_name): Early return
+	when cp_parser_lookup_name sets ambiguous_decls.
+
 2014-05-15  Jason Merrill  <jason@redhat.com>
 
 	* call.c (print_conversion_rejection): Use loc consistently.

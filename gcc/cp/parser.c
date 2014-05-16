@@ -2880,13 +2880,21 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 				      tree scope, tree id,
 				      location_t location)
 {
-  tree decl, old_scope;
+  tree decl, old_scope, ambiguous_decls;
   cp_parser_commit_to_tentative_parse (parser);
   /* Try to lookup the identifier.  */
   old_scope = parser->scope;
   parser->scope = scope;
-  decl = cp_parser_lookup_name_simple (parser, id, location);
+  decl = cp_parser_lookup_name (parser, id, none_type,
+				/*is_template=*/false,
+				/*is_namespace=*/false,
+				/*check_dependency=*/true,
+				&ambiguous_decls, location);
   parser->scope = old_scope;
+  if (ambiguous_decls)
+    /* If the lookup was ambiguous, an error will already have
+       been issued.  */
+    return;
   /* If the lookup found a template-name, it means that the user forgot
   to specify an argument list. Emit a useful error message.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
