@@ -142,6 +142,7 @@ static bool aarch64_const_vec_all_same_int_p (rtx,
 
 static bool aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 						 const unsigned char *sel);
+static int aarch64_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
@@ -4870,7 +4871,19 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	{
 	case MEM:
 	  if (speed)
-	    *cost += extra_cost->ldst.store;
+	    {
+	      rtx address = XEXP (op0, 0);
+	      if (GET_MODE_CLASS (mode) == MODE_INT)
+		*cost += extra_cost->ldst.store;
+	      else if (mode == SFmode)
+		*cost += extra_cost->ldst.storef;
+	      else if (mode == DFmode)
+		*cost += extra_cost->ldst.stored;
+
+	      *cost +=
+		COSTS_N_INSNS (aarch64_address_cost (address, mode,
+						     0, speed));
+	    }
 
 	  *cost += rtx_cost (op1, SET, 1, speed);
 	  return true;
@@ -4983,7 +4996,22 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 
     case MEM:
       if (speed)
-	*cost += extra_cost->ldst.load;
+	{
+	  /* For loads we want the base cost of a load, plus an
+	     approximation for the additional cost of the addressing
+	     mode.  */
+	  rtx address = XEXP (x, 0);
+	  if (GET_MODE_CLASS (mode) == MODE_INT)
+	    *cost += extra_cost->ldst.load;
+	  else if (mode == SFmode)
+	    *cost += extra_cost->ldst.loadf;
+	  else if (mode == DFmode)
+	    *cost += extra_cost->ldst.loadd;
+
+	  *cost +=
+		COSTS_N_INSNS (aarch64_address_cost (address, mode,
+						     0, speed));
+	}
 
       return true;
 
