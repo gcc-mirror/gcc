@@ -1,3 +1,10 @@
+2014-05-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/predicates.md (negt_reg_shl31_operand): Match additional
+	patterns.
+	* config/sh/sh.md (*negt_msb): Merge SH2A and non-SH2A variants.
+
 2014-05-16  Dehao Chen  <dehao@google.com>
 
 	* ira-int.h (REG_FREQ_FROM_EDGE_FREQ): Use optimize_function_for_size_p.
