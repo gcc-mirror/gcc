@@ -750,7 +750,7 @@ arc_init (void)
       error ("-mmul32x16 supported only for ARC600 or ARC601");
 
   if (!TARGET_DPFP && TARGET_DPFP_DISABLE_LRSR)
-      error ("-mno-dpfp-lrsr suppforted only with -mdpfp");
+      error ("-mno-dpfp-lrsr supported only with -mdpfp");
 
   /* FPX-1. No fast and compact together.  */
   if ((TARGET_DPFP_FAST_SET && TARGET_DPFP_COMPACT_SET)

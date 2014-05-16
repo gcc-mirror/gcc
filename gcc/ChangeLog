@@ -1,3 +1,11 @@
+2014-02-07  Benno Schulenberg  <bensberg@justemail.net>
+
+	* config/arc/arc.c (arc_init): Fix typo in error message.
+	* config/i386/i386.c (ix86_expand_builtin): Likewise.
+	(split_stack_prologue_scratch_regno): Likewise.
+	* fortran/check.c (gfc_check_fn_rc2008): Remove duplicate
+	word from error message.
+
 2014-05-16  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
 	* ira-costs.c: Fix typo in comment.
