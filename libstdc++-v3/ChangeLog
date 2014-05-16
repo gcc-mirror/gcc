@@ -1,3 +1,12 @@
+2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Fix
+	test for 32-bit target.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/modifiers/reset_neg.cc:
+	Fix test.
+
 2014-05-16  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
 
 	PR libstdc++/60758
