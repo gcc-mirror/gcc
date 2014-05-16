@@ -624,6 +624,77 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   return changed;
 }
 
+/* Process references to VNODE and set flags WRITTEN, ADDRESS_TAKEN, READ
+   as needed, also clear EXPLICIT_REFS if the references to given variable
+   do not need to be explicit.  */
+
+void
+process_references (varpool_node *vnode,
+		    bool *written, bool *address_taken,
+		    bool *read, bool *explicit_refs)
+{
+  int i;
+  struct ipa_ref *ref;
+
+  if (!varpool_all_refs_explicit_p (vnode)
+      || TREE_THIS_VOLATILE (vnode->decl))
+    *explicit_refs = false;
+
+  for (i = 0; ipa_ref_list_referring_iterate (&vnode->ref_list,
+					     i, ref)
+	      && *explicit_refs && (!*written || !*address_taken || !*read); i++)
+    switch (ref->use)
+      {
+      case IPA_REF_ADDR:
+	*address_taken = true;
+	break;
+      case IPA_REF_LOAD:
+	*read = true;
+	break;
+      case IPA_REF_STORE:
+	*written = true;
+	break;
+      case IPA_REF_ALIAS:
+	process_references (varpool (ref->referring), written, address_taken,
+			    read, explicit_refs);
+	break;
+      }
+}
+
+/* Set TREE_READONLY bit.  */
+
+bool
+set_readonly_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
+{
+  TREE_READONLY (vnode->decl) = true;
+  return false;
+}
+
+/* Set writeonly bit and clear the initalizer, since it will not be needed.  */
+
+bool
+set_writeonly_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
+{
+  vnode->writeonly = true;
+  if (optimize)
+    {
+      DECL_INITIAL (vnode->decl) = NULL;
+      if (!vnode->alias)
+	ipa_remove_all_references (&vnode->ref_list);
+    }
+  return false;
+}
+
+/* Clear addressale bit of VNODE.  */
+
+bool
+clear_addressable_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
+{
+  vnode->address_taken = false;
+  TREE_ADDRESSABLE (vnode->decl) = 0;
+  return false;
+}
+
 /* Discover variables that have no longer address taken or that are read only
    and update their flags.
 
@@ -640,43 +711,40 @@ ipa_discover_readonly_nonaddressable_vars (void)
   if (dump_file)
     fprintf (dump_file, "Clearing variable flags:");
   FOR_EACH_VARIABLE (vnode)
-    if (vnode->definition && varpool_all_refs_explicit_p (vnode)
+    if (!vnode->alias
 	&& (TREE_ADDRESSABLE (vnode->decl)
+	    || !vnode->writeonly
 	    || !TREE_READONLY (vnode->decl)))
       {
 	bool written = false;
 	bool address_taken = false;
-	int i;
-        struct ipa_ref *ref;
-        for (i = 0; ipa_ref_list_referring_iterate (&vnode->ref_list,
-						   i, ref)
-		    && (!written || !address_taken); i++)
-	  switch (ref->use)
-	    {
-	    case IPA_REF_ADDR:
-	      address_taken = true;
-	      break;
-	    case IPA_REF_LOAD:
-	      break;
-	    case IPA_REF_STORE:
-	      written = true;
-	      break;
-	    }
-	if (TREE_ADDRESSABLE (vnode->decl) && !address_taken)
+	bool read = false;
+	bool explicit_refs = true;
+
+	process_references (vnode, &written, &address_taken, &read, &explicit_refs);
+	if (!explicit_refs)
+	  continue;
+	if (!address_taken)
 	  {
-	    if (dump_file)
+	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (addressable)", vnode->name ());
-	    TREE_ADDRESSABLE (vnode->decl) = 0;
+	    varpool_for_node_and_aliases (vnode, clear_addressable_bit, NULL, true);
 	  }
-	if (!TREE_READONLY (vnode->decl) && !address_taken && !written
+	if (!address_taken && !written
 	    /* Making variable in explicit section readonly can cause section
 	       type conflict. 
 	       See e.g. gcc.c-torture/compile/pr23237.c */
 	    && DECL_SECTION_NAME (vnode->decl) == NULL)
 	  {
-	    if (dump_file)
+	    if (!TREE_READONLY (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (read-only)", vnode->name ());
-	    TREE_READONLY (vnode->decl) = 1;
+	    varpool_for_node_and_aliases (vnode, set_readonly_bit, NULL, true);
+	  }
+	if (!vnode->writeonly && !read && !address_taken)
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, " %s (write-only)", vnode->name ());
+	    varpool_for_node_and_aliases (vnode, set_writeonly_bit, NULL, true);
 	  }
       }
   if (dump_file)

@@ -1,3 +1,20 @@
+2014-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/20101011-1.c: Update testcase.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Update testcase.
+	* gcc.dg/tree-ssa/writeonly.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dse-6.c: Update testcase.
+	* gcc.dg/tree-ssa/pr21559.c: Update testcase.
+	* gcc.dg/debug/pr35154.c: Update testcase.
+	* gcc.target/i386/vectorize1.c: Update testcase.
+	* ipa.c (process_references): New function.
+	(set_readonly_bit): New function.
+	(set_writeonly_bit): New function.
+	(clear_addressable_bit): New function.
+	(ipa_discover_readonly_nonaddressable_var): Mark write only variables; fix
+	handling of aliases.
+	* cgraph.h (struct varpool_node): Add writeonly flag.
+
 2014-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51640

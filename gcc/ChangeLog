@@ -1,3 +1,10 @@
+2014-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varpool.c (dump_varpool_node): Dump write-only flag.
+	* lto-cgraph.c (lto_output_varpool_node, input_varpool_node): Stream
+	write-only flag.
+	* tree-cfg.c (execute_fixup_cfg): Remove statements setting write-only variables.
+
 2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60969
