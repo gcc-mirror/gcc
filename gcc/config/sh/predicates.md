@@ -1132,6 +1132,28 @@
 (define_predicate "negt_reg_shl31_operand"
   (match_code "plus,minus,if_then_else")
 {
+  /* (minus:SI (const_int -2147483648)  ;; 0xffffffff80000000
+	       (ashift:SI (match_operand:SI 1 "t_reg_operand")
+			  (const_int 31)))
+  */
+  if (GET_CODE (op) == MINUS && satisfies_constraint_Jhb (XEXP (op, 0))
+      && GET_CODE (XEXP (op, 1)) == ASHIFT
+      && t_reg_operand (XEXP (XEXP (op, 1), 0), SImode)
+      && CONST_INT_P (XEXP (XEXP (op, 1), 1))
+      && INTVAL (XEXP (XEXP (op, 1), 1)) == 31)
+    return true;
+
+  /* (plus:SI (ashift:SI (match_operand:SI 1 "t_reg_operand")
+			 (const_int 31))
+	      (const_int -2147483648))  ;; 0xffffffff80000000
+  */
+  if (GET_CODE (op) == PLUS && satisfies_constraint_Jhb (XEXP (op, 1))
+      && GET_CODE (XEXP (op, 0)) == ASHIFT
+      && t_reg_operand (XEXP (XEXP (op, 0), 0), SImode)
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1))
+      && INTVAL (XEXP (XEXP (op, 0), 1)) == 31)
+    return true;
+
   /* (plus:SI (mult:SI (match_operand:SI 1 "t_reg_operand")
 		       (const_int -2147483648))  ;; 0xffffffff80000000
 	      (const_int -2147483648))

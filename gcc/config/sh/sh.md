@@ -11568,34 +11568,34 @@ label:
 ;; Store inverted T bit as MSB in a reg.
 ;; T = 0: 0x80000000 -> reg
 ;; T = 1: 0x00000000 -> reg
-;; On SH2A we can get away without clobbering the T_REG.
+;; On SH2A we can get away without clobbering the T_REG using the movrt insn.
+;; On non SH2A we resort to the following sequence:
+;;	movt	Rn
+;;	tst	Rn,Rn
+;;	rotcr	Rn
+;; The T bit value will be modified during the sequence, but the rotcr insn
+;; will restore its original value.
 (define_insn_and_split "*negt_msb"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(match_operand:SI 1 "negt_reg_shl31_operand"))]
-  "TARGET_SH2A"
+  "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
   rtx tmp = gen_reg_rtx (SImode);
-  emit_insn (gen_movrt (tmp, get_t_reg_rtx ()));
-  emit_insn (gen_rotrsi3 (operands[0], tmp, const1_rtx));
-  DONE;
-})
 
-(define_insn_and_split "*negt_msb"
-  [(set (match_operand:SI 0 "arith_reg_dest")
-	(match_operand:SI 1 "negt_reg_shl31_operand"))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && !TARGET_SH2A"
-  "#"
-  "&& can_create_pseudo_p ()"
-  [(const_int 0)]
-{
-  rtx tmp = gen_reg_rtx (SImode);
-  emit_move_insn (tmp, get_t_reg_rtx ());
-  emit_insn (gen_cmpeqsi_t (tmp, const0_rtx));
-  emit_insn (gen_rotcr (operands[0], tmp, get_t_reg_rtx ()));
+  if (TARGET_SH2A)
+    {
+      emit_insn (gen_movrt (tmp, get_t_reg_rtx ()));
+      emit_insn (gen_rotrsi3 (operands[0], tmp, const1_rtx));
+    }
+  else
+    {
+      emit_move_insn (tmp, get_t_reg_rtx ());
+      emit_insn (gen_cmpeqsi_t (tmp, const0_rtx));
+      emit_insn (gen_rotcr (operands[0], tmp, get_t_reg_rtx ()));
+    }
   DONE;
 })
 
