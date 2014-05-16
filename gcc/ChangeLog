@@ -1,3 +1,9 @@
+2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60969
+	* ira-costs.c (record_reg_classes): Allow only memory for pseudo.
+	Calculate costs for this case.
+
 2014-05-15  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/61193
