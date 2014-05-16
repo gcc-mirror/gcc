@@ -5508,15 +5508,44 @@ cost_plus:
 	  return false;  /* All arguments need to be in registers.  */
 	}
 
-    case HIGH:
-      if (!CONSTANT_P (XEXP (x, 0)))
-	*cost += rtx_cost (XEXP (x, 0), HIGH, 0, speed);
+    case SYMBOL_REF:
+
+      if (aarch64_cmodel == AARCH64_CMODEL_LARGE)
+	{
+	  /* LDR.  */
+	  if (speed)
+	    *cost += extra_cost->ldst.load;
+	}
+      else if (aarch64_cmodel == AARCH64_CMODEL_SMALL
+	       || aarch64_cmodel == AARCH64_CMODEL_SMALL_PIC)
+	{
+	  /* ADRP, followed by ADD.  */
+	  *cost += COSTS_N_INSNS (1);
+	  if (speed)
+	    *cost += 2 * extra_cost->alu.arith;
+	}
+      else if (aarch64_cmodel == AARCH64_CMODEL_TINY
+	       || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC)
+	{
+	  /* ADR.  */
+	  if (speed)
+	    *cost += extra_cost->alu.arith;
+	}
+
+      if (flag_pic)
+	{
+	  /* One extra load instruction, after accessing the GOT.  */
+	  *cost += COSTS_N_INSNS (1);
+	  if (speed)
+	    *cost += extra_cost->ldst.load;
+	}
       return true;
 
+    case HIGH:
     case LO_SUM:
-      if (!CONSTANT_P (XEXP (x, 1)))
-	*cost += rtx_cost (XEXP (x, 1), LO_SUM, 1, speed);
-      *cost += rtx_cost (XEXP (x, 0), LO_SUM, 0, speed);
+      /* ADRP/ADD (immediate).  */
+      if (speed)
+	*cost += extra_cost->alu.arith;
       return true;
 
     case ZERO_EXTRACT:
