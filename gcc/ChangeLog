@@ -1,6 +1,16 @@
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
+	* config/aarch64/aarch64.c (aarch64_strip_shift_or_extend): Rename
+	to...
+	(aarch64_strip_extend): ...this, don't strip shifts, check RTX is
+	well formed.
+	(aarch64_rtx_mult_cost): New.
+	(aarch64_rtx_costs): Use it, refactor as appropriate.
+
+2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
 	* config/aarch64/aarch64.c (aarch64_build_constant): Conditionally
 	emit instructions, return number of instructions which would
 	be emitted.
