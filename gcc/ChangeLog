@@ -1,5 +1,14 @@
 2014-05-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* config/sh/sh.c (sh_eval_treg_value): Handle t_reg_operand and
+	negt_reg_operand cases.
+	* config/sh/sh.md (*cset_zero): Likewise by using cbranch_treg_value
+	predicate.
+	* config/sh/predicates.md (cbranch_treg_value): Simplify.
+
+2014-05-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.c (sh_option_override): Set branch cost to 2 for all
 	target variants.
 
