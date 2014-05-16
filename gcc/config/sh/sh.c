@@ -929,15 +929,16 @@ sh_option_override (void)
     sh_divsi3_libfunc = "__sdivsi3_1";
   else
     sh_divsi3_libfunc = "__sdivsi3";
+
   if (sh_branch_cost == -1)
     {
-      sh_branch_cost = 1;
-
       /*  The SH1 does not have delay slots, hence we get a pipeline stall
 	  at every branch.  The SH4 is superscalar, so the single delay slot
-	  is not sufficient to keep both pipelines filled.  */
-      if (! TARGET_SH2 || TARGET_HARD_SH4)
-	sh_branch_cost = 2;
+	  is not sufficient to keep both pipelines filled.
+	  In any case, set the default branch cost to '2', as it results in
+	  slightly overall smaller code and also enables some if conversions
+	  that are required for matching special T bit related insns.  */
+      sh_branch_cost = 2;
     }
 
   /* Set -mzdcbranch for SH4 / SH4A if not otherwise specified by the user.  */

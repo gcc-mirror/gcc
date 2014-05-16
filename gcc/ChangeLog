@@ -1,3 +1,8 @@
+2014-05-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_option_override): Set branch cost to 2 for all
+	target variants.
+
 2014-05-16  David Malcolm  <dmalcolm@redhat.com>
 
 	Revert:
