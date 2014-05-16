@@ -1,4 +1,10 @@
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Philip Tomsich  <philipp.tomsich@theobroma-systems.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Improve costing
+	for SET RTX.
+
+2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Set default costs.
 
