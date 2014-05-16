@@ -1,3 +1,8 @@
+2014-05-16  Dehao Chen  <dehao@google.com>
+
+	* cfghooks.c (make_forwarder_block): Use direct computation to
+	get fall-through edge's count and frequency.
+
 2014-02-07  Benno Schulenberg  <bensberg@justemail.net>
 
 	* config/arc/arc.c (arc_init): Fix typo in error message.
