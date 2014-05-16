@@ -193,6 +193,7 @@ namespace __parse_int
 				  _Pow / (_Base * __valid_digit::value),
 				  _Digs...>;
       using type = __ull_constant<_Pow * __digit::value + __next::type::value>;
+      static_assert((type::value / _Pow) == __digit::value, "overflow");
     };
 
   template<unsigned _Base, unsigned long long _Pow, char _Dig>

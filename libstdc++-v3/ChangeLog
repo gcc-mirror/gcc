@@ -1,4 +1,14 @@
-2014-05-15  Ed Smith-Rowland  <3dw4rd@verizon.net>
+2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/parse_numbers.h (__parse_int::_Number_help): Check for
+	overflow.
+	* include/std/chrono (chrono_literals::__select_type::_Select_type):
+	Remove.
+	(chrono_literals::_Checked_integral_constant): Define.
+	Simplify UDL operator templates and check for overflow.
+	* testsuite/20_util/duration/literals/range.cc: New.
+
+2014-05-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61166
