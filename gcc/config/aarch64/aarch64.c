@@ -171,6 +171,15 @@ __extension__
 #endif
 static const struct cpu_addrcost_table generic_addrcost_table =
 {
+#if HAVE_DESIGNATED_INITIALIZERS
+  .addr_scale_costs =
+#endif
+    {
+      NAMED_PARAM (qi, 0),
+      NAMED_PARAM (hi, 0),
+      NAMED_PARAM (si, 0),
+      NAMED_PARAM (ti, 0),
+    },
   NAMED_PARAM (pre_modify, 0),
   NAMED_PARAM (post_modify, 0),
   NAMED_PARAM (register_offset, 0),
@@ -4550,6 +4559,101 @@ aarch64_strip_shift_or_extend (rtx x)
   return aarch64_strip_shift (x);
 }
 
+static int
+aarch64_address_cost (rtx x,
+		      enum machine_mode mode,
+		      addr_space_t as ATTRIBUTE_UNUSED,
+		      bool speed)
+{
+  enum rtx_code c = GET_CODE (x);
+  const struct cpu_addrcost_table *addr_cost = aarch64_tune_params->addr_cost;
+  struct aarch64_address_info info;
+  int cost = 0;
+  info.shift = 0;
+
+  if (!aarch64_classify_address (&info, x, mode, c, false))
+    {
+      if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF)
+	{
+	  /* This is a CONST or SYMBOL ref which will be split
+	     in a different way depending on the code model in use.
+	     Cost it through the generic infrastructure.  */
+	  int cost_symbol_ref = rtx_cost (x, MEM, 1, speed);
+	  /* Divide through by the cost of one instruction to
+	     bring it to the same units as the address costs.  */
+	  cost_symbol_ref /= COSTS_N_INSNS (1);
+	  /* The cost is then the cost of preparing the address,
+	     followed by an immediate (possibly 0) offset.  */
+	  return cost_symbol_ref + addr_cost->imm_offset;
+	}
+      else
+	{
+	  /* This is most likely a jump table from a case
+	     statement.  */
+	  return addr_cost->register_offset;
+	}
+    }
+
+  switch (info.type)
+    {
+      case ADDRESS_LO_SUM:
+      case ADDRESS_SYMBOLIC:
+      case ADDRESS_REG_IMM:
+	cost += addr_cost->imm_offset;
+	break;
+
+      case ADDRESS_REG_WB:
+	if (c == PRE_INC || c == PRE_DEC || c == PRE_MODIFY)
+	  cost += addr_cost->pre_modify;
+	else if (c == POST_INC || c == POST_DEC || c == POST_MODIFY)
+	  cost += addr_cost->post_modify;
+	else
+	  gcc_unreachable ();
+
+	break;
+
+      case ADDRESS_REG_REG:
+	cost += addr_cost->register_offset;
+	break;
+
+      case ADDRESS_REG_UXTW:
+      case ADDRESS_REG_SXTW:
+	cost += addr_cost->register_extend;
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+
+
+  if (info.shift > 0)
+    {
+      /* For the sake of calculating the cost of the shifted register
+	 component, we can treat same sized modes in the same way.  */
+      switch (GET_MODE_BITSIZE (mode))
+	{
+	  case 16:
+	    cost += addr_cost->addr_scale_costs.hi;
+	    break;
+
+	  case 32:
+	    cost += addr_cost->addr_scale_costs.si;
+	    break;
+
+	  case 64:
+	    cost += addr_cost->addr_scale_costs.di;
+	    break;
+
+	  /* We can't tell, or this is a 128-bit vector.  */
+	  default:
+	    cost += addr_cost->addr_scale_costs.ti;
+	    break;
+	}
+    }
+
+  return cost;
+}
+
 /* Calculate the cost of calculating X, storing it in *COST.  Result
    is true if the total cost of the operation has now been calculated.  */
 static bool
@@ -4884,37 +4988,6 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
       break;
     }
   return false;
-}
-
-static int
-aarch64_address_cost (rtx x ATTRIBUTE_UNUSED,
-		  enum machine_mode mode ATTRIBUTE_UNUSED,
-		  addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
-{
-  enum rtx_code c  = GET_CODE (x);
-  const struct cpu_addrcost_table *addr_cost = aarch64_tune_params->addr_cost;
-
-  if (c == PRE_INC || c == PRE_DEC || c == PRE_MODIFY)
-    return addr_cost->pre_modify;
-
-  if (c == POST_INC || c == POST_DEC || c == POST_MODIFY)
-    return addr_cost->post_modify;
-
-  if (c == PLUS)
-    {
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	return addr_cost->imm_offset;
-      else if (GET_CODE (XEXP (x, 0)) == MULT
-	       || GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	       || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
-	return addr_cost->register_extend;
-
-      return addr_cost->register_offset;
-    }
-  else if (c == MEM || c == LABEL_REF || c == SYMBOL_REF)
-    return addr_cost->imm_offset;
-
-  return 0;
 }
 
 static int
