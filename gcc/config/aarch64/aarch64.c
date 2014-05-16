@@ -4843,6 +4843,21 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
     = aarch64_tune_params->insn_extra_cost;
   enum machine_mode mode = GET_MODE (x);
 
+  /* By default, assume that everything has equivalent cost to the
+     cheapest instruction.  Any additional costs are applied as a delta
+     above this default.  */
+  *cost = COSTS_N_INSNS (1);
+
+  /* TODO: The cost infrastructure currently does not handle
+     vector operations.  Assume that all vector operations
+     are equally expensive.  */
+  if (VECTOR_MODE_P (mode))
+    {
+      if (speed)
+	*cost += extra_cost->vect.alu;
+      return true;
+    }
+
   switch (code)
     {
     case SET:
