@@ -1,3 +1,9 @@
+2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60969
+	* ira-costs.c (record_reg_classes): Allow only memory for pseudo.
+	Calculate costs for this case.
+
 2014-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const (fold_unary_loc) <NON_LVALUE_EXPR>: New case.
