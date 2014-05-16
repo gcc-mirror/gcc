@@ -1,3 +1,9 @@
+2014-05-16  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR libstdc++/60758
+	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Change r4 to lr in save/restore
+	and add unwind directives.
+
 2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/parse_numbers.h (__parse_int::_Number_help): Check for
