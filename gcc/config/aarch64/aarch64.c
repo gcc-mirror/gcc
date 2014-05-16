@@ -4711,24 +4711,18 @@ aarch64_rtx_mult_cost (rtx x, int code, int outer, bool speed)
     {
       if (speed)
 	{
-	  /* Floating-point FMA can also support negations of the
+	  /* Floating-point FMA/FMUL can also support negations of the
 	     operands.  */
 	  if (GET_CODE (op0) == NEG)
-	    {
-	      maybe_fma = true;
-	      op0 = XEXP (op0, 0);
-	    }
+	    op0 = XEXP (op0, 0);
 	  if (GET_CODE (op1) == NEG)
-	    {
-	      maybe_fma = true;
-	      op1 = XEXP (op1, 0);
-	    }
+	    op1 = XEXP (op1, 0);
 
 	  if (maybe_fma)
 	    /* FMADD/FNMADD/FNMSUB/FMSUB.  */
 	    cost += extra_cost->fp[mode == DFmode].fma;
 	  else
-	    /* FMUL.  */
+	    /* FMUL/FNMUL.  */
 	    cost += extra_cost->fp[mode == DFmode].mult;
 	}
 
