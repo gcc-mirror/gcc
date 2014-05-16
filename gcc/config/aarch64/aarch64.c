@@ -2547,12 +2547,22 @@ aarch64_final_eh_return_addr (void)
 				       - 2 * UNITS_PER_WORD));
 }
 
-/* Output code to build up a constant in a register.  */
-static void
-aarch64_build_constant (int regnum, HOST_WIDE_INT val)
+/* Possibly output code to build up a constant in a register.  For
+   the benefit of the costs infrastructure, returns the number of
+   instructions which would be emitted.  GENERATE inhibits or
+   enables code generation.  */
+
+static int
+aarch64_build_constant (int regnum, HOST_WIDE_INT val, bool generate)
 {
+  int insns = 0;
+
   if (aarch64_bitmask_imm (val, DImode))
-    emit_move_insn (gen_rtx_REG (Pmode, regnum), GEN_INT (val));
+    {
+      if (generate)
+	emit_move_insn (gen_rtx_REG (Pmode, regnum), GEN_INT (val));
+      insns = 1;
+    }
   else
     {
       int i;
@@ -2583,15 +2593,19 @@ aarch64_build_constant (int regnum, HOST_WIDE_INT val)
 	 the same.  */
       if (ncount < zcount)
 	{
-	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			  GEN_INT (val | ~(HOST_WIDE_INT) 0xffff));
+	  if (generate)
+	    emit_move_insn (gen_rtx_REG (Pmode, regnum),
+			    GEN_INT (val | ~(HOST_WIDE_INT) 0xffff));
 	  tval = 0xffff;
+	  insns++;
 	}
       else
 	{
-	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			  GEN_INT (val & 0xffff));
+	  if (generate)
+	    emit_move_insn (gen_rtx_REG (Pmode, regnum),
+			    GEN_INT (val & 0xffff));
 	  tval = 0;
+	  insns++;
 	}
 
       val >>= 16;
@@ -2599,11 +2613,17 @@ aarch64_build_constant (int regnum, HOST_WIDE_INT val)
       for (i = 16; i < 64; i += 16)
 	{
 	  if ((val & 0xffff) != tval)
-	    emit_insn (gen_insv_immdi (gen_rtx_REG (Pmode, regnum),
-				       GEN_INT (i), GEN_INT (val & 0xffff)));
+	    {
+	      if (generate)
+		emit_insn (gen_insv_immdi (gen_rtx_REG (Pmode, regnum),
+					   GEN_INT (i),
+					   GEN_INT (val & 0xffff)));
+	      insns++;
+	    }
 	  val >>= 16;
 	}
     }
+  return insns;
 }
 
 static void
@@ -2618,7 +2638,7 @@ aarch64_add_constant (int regnum, int scratchreg, HOST_WIDE_INT delta)
 
   if (mdelta >= 4096 * 4096)
     {
-      aarch64_build_constant (scratchreg, delta);
+      (void) aarch64_build_constant (scratchreg, delta, true);
       emit_insn (gen_add3_insn (this_rtx, this_rtx, scratch_rtx));
     }
   else if (mdelta > 0)
@@ -2692,7 +2712,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  addr = plus_constant (Pmode, temp0, vcall_offset);
       else
 	{
-	  aarch64_build_constant (IP1_REGNUM, vcall_offset);
+	  (void) aarch64_build_constant (IP1_REGNUM, vcall_offset, true);
 	  addr = gen_rtx_PLUS (Pmode, temp0, temp1);
 	}
 
@@ -4705,6 +4725,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
   rtx op0, op1;
   const struct cpu_cost_table *extra_cost
     = aarch64_tune_params->insn_extra_cost;
+  enum machine_mode mode = GET_MODE (x);
 
   switch (code)
     {
@@ -4750,6 +4771,57 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	  break;
 	}
       return false;
+
+    case CONST_INT:
+      /* If an instruction can incorporate a constant within the
+	 instruction, the instruction's expression avoids calling
+	 rtx_cost() on the constant.  If rtx_cost() is called on a
+	 constant, then it is usually because the constant must be
+	 moved into a register by one or more instructions.
+
+	 The exception is constant 0, which can be expressed
+	 as XZR/WZR and is therefore free.  The exception to this is
+	 if we have (set (reg) (const0_rtx)) in which case we must cost
+	 the move.  However, we can catch that when we cost the SET, so
+	 we don't need to consider that here.  */
+      if (x == const0_rtx)
+	*cost = 0;
+      else
+	{
+	  /* To an approximation, building any other constant is
+	     proportionally expensive to the number of instructions
+	     required to build that constant.  This is true whether we
+	     are compiling for SPEED or otherwise.  */
+	  *cost = COSTS_N_INSNS (aarch64_build_constant (0,
+							 INTVAL (x),
+							 false));
+	}
+      return true;
+
+    case CONST_DOUBLE:
+      if (speed)
+	{
+	  /* mov[df,sf]_aarch64.  */
+	  if (aarch64_float_const_representable_p (x))
+	    /* FMOV (scalar immediate).  */
+	    *cost += extra_cost->fp[mode == DFmode].fpconst;
+	  else if (!aarch64_float_const_zero_rtx_p (x))
+	    {
+	      /* This will be a load from memory.  */
+	      if (mode == DFmode)
+		*cost += extra_cost->ldst.loadd;
+	      else
+		*cost += extra_cost->ldst.loadf;
+	    }
+	  else
+	    /* Otherwise this is +0.0.  We get this using MOVI d0, #0
+	       or MOV v0.s[0], wzr - neither of which are modeled by the
+	       cost tables.  Just use the default cost.  */
+	    {
+	    }
+	}
+
+      return true;
 
     case MEM:
       if (speed)

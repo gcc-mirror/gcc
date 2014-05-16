@@ -1,4 +1,15 @@
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
+	* config/aarch64/aarch64.c (aarch64_build_constant): Conditionally
+	emit instructions, return number of instructions which would
+	be emitted.
+	(aarch64_add_constant): Update call to aarch64_build_constant.
+	(aarch64_output_mi_thunk): Likewise.
+	(aarch64_rtx_costs): Estimate cost of a CONST_INT, cost
+	a CONST_DOUBLE.
+
+2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs_wrapper): New.
 	(TARGET_RTX_COSTS): Call it.
