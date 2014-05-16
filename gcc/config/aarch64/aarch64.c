@@ -5641,6 +5641,89 @@ cost_plus:
 
       return false; /* All arguments must be in registers.  */
 
+    case FMA:
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+      op2 = XEXP (x, 2);
+
+      if (speed)
+	*cost += extra_cost->fp[mode == DFmode].fma;
+
+      /* FMSUB, FNMADD, and FNMSUB are free.  */
+      if (GET_CODE (op0) == NEG)
+        op0 = XEXP (op0, 0);
+
+      if (GET_CODE (op2) == NEG)
+        op2 = XEXP (op2, 0);
+
+      /* aarch64_fnma4_elt_to_64v2df has the NEG as operand 1,
+	 and the by-element operand as operand 0.  */
+      if (GET_CODE (op1) == NEG)
+        op1 = XEXP (op1, 0);
+
+      /* Catch vector-by-element operations.  The by-element operand can
+	 either be (vec_duplicate (vec_select (x))) or just
+	 (vec_select (x)), depending on whether we are multiplying by
+	 a vector or a scalar.
+
+	 Canonicalization is not very good in these cases, FMA4 will put the
+	 by-element operand as operand 0, FNMA4 will have it as operand 1.  */
+      if (GET_CODE (op0) == VEC_DUPLICATE)
+	op0 = XEXP (op0, 0);
+      else if (GET_CODE (op1) == VEC_DUPLICATE)
+	op1 = XEXP (op1, 0);
+
+      if (GET_CODE (op0) == VEC_SELECT)
+	op0 = XEXP (op0, 0);
+      else if (GET_CODE (op1) == VEC_SELECT)
+	op1 = XEXP (op1, 0);
+
+      /* If the remaining parameters are not registers,
+         get the cost to put them into registers.  */
+      *cost += rtx_cost (op0, FMA, 0, speed);
+      *cost += rtx_cost (op1, FMA, 1, speed);
+      *cost += rtx_cost (op2, FMA, 2, speed);
+      return true;
+
+    case FLOAT_EXTEND:
+      if (speed)
+	*cost += extra_cost->fp[mode == DFmode].widen;
+      return false;
+
+    case FLOAT_TRUNCATE:
+      if (speed)
+	*cost += extra_cost->fp[mode == DFmode].narrow;
+      return false;
+
+    case ABS:
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	{
+	  /* FABS and FNEG are analogous.  */
+	  if (speed)
+	    *cost += extra_cost->fp[mode == DFmode].neg;
+	}
+      else
+	{
+	  /* Integer ABS will either be split to
+	     two arithmetic instructions, or will be an ABS
+	     (scalar), which we don't model.  */
+	  *cost = COSTS_N_INSNS (2);
+	  if (speed)
+	    *cost += 2 * extra_cost->alu.arith;
+	}
+      return false;
+
+    case SMAX:
+    case SMIN:
+      if (speed)
+	{
+	  /* FMAXNM/FMINNM/FMAX/FMIN.
+	     TODO: This may not be accurate for all implementations, but
+	     we do not model this in the cost tables.  */
+	  *cost += extra_cost->fp[mode == DFmode].addsub;
+	}
+      return false;
+
     default:
       break;
     }
