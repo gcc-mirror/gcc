@@ -42,9 +42,8 @@ along with GCC; see the file COPYING3.  If not see
    profile driven feedback is available and the function is never
    executed, frequency is always equivalent.  Otherwise rescale the
    edge frequency.  */
-#define REG_FREQ_FROM_EDGE_FREQ(freq)					   \
-  (optimize_size || (flag_branch_probabilities				   \
-		     && !ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)		   \
+#define REG_FREQ_FROM_EDGE_FREQ(freq)				   \
+  (optimize_function_for_size_p (cfun)				   \
    ? REG_FREQ_MAX : (freq * REG_FREQ_MAX / BB_FREQ_MAX)		   \
    ? (freq * REG_FREQ_MAX / BB_FREQ_MAX) : 1)
 
