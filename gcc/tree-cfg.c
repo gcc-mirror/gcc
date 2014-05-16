@@ -7089,12 +7089,6 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
   struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
 
   current_function_decl = fndecl;
-
-  /* Print the return type of the function: */
-  print_generic_expr (file, TREE_TYPE (TREE_TYPE (fun->decl)),
-		      dump_flags | TDF_SLIM);
-  fprintf (file, "\n");
-
   fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");
 
   arg = DECL_ARGUMENTS (fndecl);

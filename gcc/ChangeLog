@@ -1,3 +1,12 @@
+2014-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert:
+	2014-04-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-cfg.c (dump_function_to_file): Dump the return type of
+	functions, in a line to itself before the function body, mimicking
+	the layout of a C function.
+
 2014-05-16  Dehao Chen  <dehao@google.com>
 
 	* cfghooks.c (make_forwarder_block): Use direct computation to
