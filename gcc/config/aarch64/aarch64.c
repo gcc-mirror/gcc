@@ -4861,6 +4861,8 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
   switch (code)
     {
     case SET:
+      /* The cost depends entirely on the operands to SET.  */
+      *cost = 0;
       op0 = SET_DEST (x);
       op1 = SET_SRC (x);
 
@@ -4870,23 +4872,33 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	  if (speed)
 	    *cost += extra_cost->ldst.store;
 
-	  if (op1 != const0_rtx)
-	    *cost += rtx_cost (op1, SET, 1, speed);
+	  *cost += rtx_cost (op1, SET, 1, speed);
 	  return true;
 
 	case SUBREG:
 	  if (! REG_P (SUBREG_REG (op0)))
 	    *cost += rtx_cost (SUBREG_REG (op0), SET, 0, speed);
+
 	  /* Fall through.  */
 	case REG:
-	  /* Cost is just the cost of the RHS of the set.  */
-	  *cost += rtx_cost (op1, SET, 1, true);
+	  /* const0_rtx is in general free, but we will use an
+	     instruction to set a register to 0.  */
+          if (REG_P (op1) || op1 == const0_rtx)
+            {
+              /* The cost is 1 per register copied.  */
+              int n_minus_1 = (GET_MODE_SIZE (GET_MODE (op0)) - 1)
+			      / UNITS_PER_WORD;
+              *cost = COSTS_N_INSNS (n_minus_1 + 1);
+            }
+          else
+	    /* Cost is just the cost of the RHS of the set.  */
+	    *cost += rtx_cost (op1, SET, 1, speed);
 	  return true;
 
-	case ZERO_EXTRACT:  /* Bit-field insertion.  */
+	case ZERO_EXTRACT:
 	case SIGN_EXTRACT:
-	  /* Strip any redundant widening of the RHS to meet the width of
-	     the target.  */
+	  /* Bit-field insertion.  Strip any redundant widening of
+	     the RHS to meet the width of the target.  */
 	  if (GET_CODE (op1) == SUBREG)
 	    op1 = SUBREG_REG (op1);
 	  if ((GET_CODE (op1) == ZERO_EXTEND
@@ -4895,10 +4907,25 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	      && (GET_MODE_BITSIZE (GET_MODE (XEXP (op1, 0)))
 		  >= INTVAL (XEXP (op0, 1))))
 	    op1 = XEXP (op1, 0);
-	  *cost += rtx_cost (op1, SET, 1, speed);
+
+          if (CONST_INT_P (op1))
+            {
+              /* MOV immediate is assumed to always be cheap.  */
+              *cost = COSTS_N_INSNS (1);
+            }
+          else
+            {
+              /* BFM.  */
+	      if (speed)
+		*cost += extra_cost->alu.bfi;
+              *cost += rtx_cost (op1, (enum rtx_code) code, 1, speed);
+            }
+
 	  return true;
 
 	default:
+	  /* We can't make sense of this, assume default cost.  */
+          *cost = COSTS_N_INSNS (1);
 	  break;
 	}
       return false;
