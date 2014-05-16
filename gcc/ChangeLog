@@ -1,3 +1,7 @@
+2014-05-16  Dehao Chen  <dehao@google.com>
+
+	* tree-cfg.c (gimple_merge_blocks): Updates bb count with max count.
+
 2014-05-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
