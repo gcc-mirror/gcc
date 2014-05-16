@@ -1,3 +1,9 @@
+2014-03-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_arith_op_extract_p): New.
+	(aarch64_rtx_costs): Improve costs for SIGN/ZERO_EXTRACT.
+
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
