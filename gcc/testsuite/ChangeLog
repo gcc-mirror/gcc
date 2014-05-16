@@ -1,5 +1,10 @@
 2014-05-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/61194
+	* gcc.dg/vect/pr61194.c: New testcase.
+
+2014-05-16  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/ssa-fre-39.c: New testcase.
 	* gcc.dg/tree-ssa/ssa-fre-40.c: Likewise.
 	* gcc.dg/tree-ssa/ssa-pre-8.c: One more elimination.

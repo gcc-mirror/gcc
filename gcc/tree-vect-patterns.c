@@ -2889,7 +2889,12 @@ adjust_bool_pattern (tree var, tree out_type, tree trueval,
      S5  e_b = c_b | d_b;
      S6  f_T = (TYPE) e_b;
 
-   where type 'TYPE' is an integral type.
+   where type 'TYPE' is an integral type.  Or a similar pattern
+   ending in
+
+     S6  f_Y = e_b ? r_Y : s_Y;
+
+   as results from if-conversion of a complex condition.
 
    Input:
 
@@ -2963,6 +2968,45 @@ vect_recog_bool_pattern (vec<gimple> *stmts, tree *type_in,
       else
 	pattern_stmt
 	  = gimple_build_assign_with_ops (NOP_EXPR, lhs, rhs, NULL_TREE);
+      *type_out = vectype;
+      *type_in = vectype;
+      stmts->safe_push (last_stmt);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+                         "vect_recog_bool_pattern: detected:\n");
+
+      return pattern_stmt;
+    }
+  else if (rhs_code == COND_EXPR
+	   && TREE_CODE (var) == SSA_NAME)
+    {
+      vectype = get_vectype_for_scalar_type (TREE_TYPE (lhs));
+      if (vectype == NULL_TREE)
+	return NULL;
+
+      /* Build a scalar type for the boolean result that when
+         vectorized matches the vector type of the result in
+	 size and number of elements.  */
+      unsigned prec
+	= wi::udiv_trunc (TYPE_SIZE (vectype),
+			  TYPE_VECTOR_SUBPARTS (vectype)).to_uhwi ();
+      tree type
+	= build_nonstandard_integer_type (prec,
+					  TYPE_UNSIGNED (TREE_TYPE (var)));
+      if (get_vectype_for_scalar_type (type) == NULL_TREE)
+	return NULL;
+
+      if (!check_bool_pattern (var, loop_vinfo, bb_vinfo))
+	return NULL;
+
+      rhs = adjust_bool_pattern (var, type, NULL_TREE, stmts);
+      lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
+      pattern_stmt 
+	  = gimple_build_assign_with_ops (COND_EXPR, lhs,
+					  build2 (NE_EXPR, boolean_type_node,
+						  rhs, build_int_cst (type, 0)),
+					  gimple_assign_rhs2 (last_stmt),
+					  gimple_assign_rhs3 (last_stmt));
       *type_out = vectype;
       *type_in = vectype;
       stmts->safe_push (last_stmt);
