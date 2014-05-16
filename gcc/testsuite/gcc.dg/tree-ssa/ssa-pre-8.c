@@ -17,7 +17,9 @@ foo (__SIZE_TYPE__ i, struct s *array)
   return 0;
 }
 /* We should eliminate two address calculations, and one load.  */
+/* We also elimiate the PHI node feeding the return because the case
+   returning 1 is unreachable.  */
 /* We used to eliminate a cast but that was before POINTER_PLUS_EXPR
    was added.  */
-/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "fre1"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 4" 1 "fre1"} } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -1,5 +1,12 @@
 2014-05-16  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/ssa-fre-39.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-40.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-8.c: One more elimination.
+	* gcc.dg/tree-ssa/struct-aliasing-2.c: Scan cddce1 dump.
+
+2014-05-16  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/ssa-fre-41.c: New testcase.
 
 2014-05-15  Martin Jambor  <mjambor@suse.cz>

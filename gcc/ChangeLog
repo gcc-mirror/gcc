@@ -1,5 +1,19 @@
 2014-05-16  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c: Include tree-cfg.h and domwalk.h.
+	(set_ssa_val_to): Handle unexpected sets to VN_TOP.
+	(visit_phi): Ignore edges marked as not executable.
+	(class cond_dom_walker): New.
+	(cond_dom_walker::before_dom_children): Value-number
+	control statements and mark successor edges as not
+	executable if possible.
+	(run_scc_vn): First walk all control statements in
+	dominator order, marking edges as not executable.
+	* tree-inline.c (copy_edges_for_bb): Be not confused
+	about random edge flags.
+
+2014-05-16  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.c (visit_use): Also constant-fold calls.
 
 2014-05-15  Peter Bergner  <bergner@vnet.ibm.com>
