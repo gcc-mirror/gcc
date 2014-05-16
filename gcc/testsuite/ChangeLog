@@ -1,3 +1,8 @@
+2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60969
+	* g++.dg/pr60969.C: New.
+
 2014-05-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61194
