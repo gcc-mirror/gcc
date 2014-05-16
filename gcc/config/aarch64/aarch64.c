@@ -5206,23 +5206,78 @@ cost_minus:
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
 
+      if (code == AND
+          && GET_CODE (op0) == MULT
+          && CONST_INT_P (XEXP (op0, 1))
+          && CONST_INT_P (op1)
+          && aarch64_uxt_size (exact_log2 (INTVAL (XEXP (op0, 1))),
+                               INTVAL (op1)) != 0)
+        {
+          /* This is a UBFM/SBFM.  */
+          *cost += rtx_cost (XEXP (op0, 0), ZERO_EXTRACT, 0, speed);
+	  if (speed)
+	    *cost += extra_cost->alu.bfx;
+          return true;
+        }
+
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
 	{
+	  /* We possibly get the immediate for free, this is not
+	     modelled.  */
 	  if (CONST_INT_P (op1)
 	      && aarch64_bitmask_imm (INTVAL (op1), GET_MODE (x)))
 	    {
-	      *cost += rtx_cost (op0, AND, 0, speed);
+	      *cost += rtx_cost (op0, (enum rtx_code) code, 0, speed);
+
+	      if (speed)
+		*cost += extra_cost->alu.logical;
+
+	      return true;
 	    }
 	  else
 	    {
+	      rtx new_op0 = op0;
+
+	      /* Handle ORN, EON, or BIC.  */
 	      if (GET_CODE (op0) == NOT)
 		op0 = XEXP (op0, 0);
-	      op0 = aarch64_strip_shift (op0);
-	      *cost += (rtx_cost (op0, AND, 0, speed)
-			+ rtx_cost (op1, AND, 1, speed));
+
+	      new_op0 = aarch64_strip_shift (op0);
+
+	      /* If we had a shift on op0 then this is a logical-shift-
+		 by-register/immediate operation.  Otherwise, this is just
+		 a logical operation.  */
+	      if (speed)
+		{
+		  if (new_op0 != op0)
+		    {
+		      /* Shift by immediate.  */
+		      if (CONST_INT_P (XEXP (op0, 1)))
+			*cost += extra_cost->alu.log_shift;
+		      else
+			*cost += extra_cost->alu.log_shift_reg;
+		    }
+		  else
+		    *cost += extra_cost->alu.logical;
+		}
+
+	      /* In both cases we want to cost both operands.  */
+	      *cost += rtx_cost (new_op0, (enum rtx_code) code, 0, speed)
+		       + rtx_cost (op1, (enum rtx_code) code, 1, speed);
+
+	      return true;
 	    }
-	  return true;
 	}
+      return false;
+
+    case NOT:
+      /* MVN.  */
+      if (speed)
+	*cost += extra_cost->alu.logical;
+
+      /* The logical instruction could have the shifted register form,
+         but the cost is the same if the shift is processed as a separate
+         instruction, so we don't bother with it here.  */
       return false;
 
     case ZERO_EXTEND:
