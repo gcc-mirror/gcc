@@ -1,3 +1,9 @@
+2014-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/61187
+	* io/unix.c (raw_close): Check if s->fd is -1.
+	(fd_to_stream): Check return value of fstat(), handle error.
+
 2014-05-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/61035
