@@ -17084,8 +17084,7 @@ TODO - Remember to fix this}.
 
 This pragma allows the user to set the visibility for multiple
 declarations without having to give each a visibility attribute
-@xref{Function Attributes}, for more information about visibility and
-the attribute syntax.
+(@pxref{Function Attributes}).
 
 In C++, @samp{#pragma GCC visibility} affects only namespace-scope
 declarations.  Class members and template specializations are not
