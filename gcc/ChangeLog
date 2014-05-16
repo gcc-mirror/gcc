@@ -1,3 +1,8 @@
+2014-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const (fold_unary_loc) <NON_LVALUE_EXPR>: New case.
+	<CASE_CONVERT>: Pass arg0 instead of op0 to fold_convert_const.
+
 2014-05-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61194
