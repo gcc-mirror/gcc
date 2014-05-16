@@ -46,12 +46,17 @@ extern "C" {
 
 typedef char TM_buff_type[16];
 
+/* Compatibility macro with s390.  This macro can be used to determine
+   whether a transaction was successfully started from the __TM_begin()
+   and __TM_simple_begin() intrinsic functions below.  */
+#define _HTM_TBEGIN_STARTED     1
+
 extern __inline long
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __TM_simple_begin (void)
 {
   if (__builtin_expect (__builtin_tbegin (0), 1))
-    return 1;
+    return _HTM_TBEGIN_STARTED;
   return 0;
 }
 
@@ -61,7 +66,7 @@ __TM_begin (void* const TM_buff)
 {
   *_TEXASRL_PTR (TM_buff) = 0;
   if (__builtin_expect (__builtin_tbegin (0), 1))
-    return 1;
+    return _HTM_TBEGIN_STARTED;
 #ifdef __powerpc64__
   *_TEXASR_PTR (TM_buff) = __builtin_get_texasr ();
 #else
