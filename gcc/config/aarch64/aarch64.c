@@ -5281,21 +5281,62 @@ cost_minus:
       return false;
 
     case ZERO_EXTEND:
-      if ((GET_MODE (x) == DImode
-	   && GET_MODE (XEXP (x, 0)) == SImode)
-	  || GET_CODE (XEXP (x, 0)) == MEM)
+
+      op0 = XEXP (x, 0);
+      /* If a value is written in SI mode, then zero extended to DI
+	 mode, the operation will in general be free as a write to
+	 a 'w' register implicitly zeroes the upper bits of an 'x'
+	 register.  However, if this is
+
+	   (set (reg) (zero_extend (reg)))
+
+	 we must cost the explicit register move.  */
+      if (mode == DImode
+	  && GET_MODE (op0) == SImode
+	  && outer == SET)
 	{
-	  *cost += rtx_cost (XEXP (x, 0), ZERO_EXTEND, 0, speed);
+	  int op_cost = rtx_cost (XEXP (x, 0), ZERO_EXTEND, 0, speed);
+
+	  if (!op_cost && speed)
+	    /* MOV.  */
+	    *cost += extra_cost->alu.extend;
+	  else
+	    /* Free, the cost is that of the SI mode operation.  */
+	    *cost = op_cost;
+
 	  return true;
 	}
+      else if (MEM_P (XEXP (x, 0)))
+	{
+	  /* All loads can zero extend to any size for free.  */
+	  *cost = rtx_cost (XEXP (x, 0), ZERO_EXTEND, param, speed);
+	  return true;
+	}
+
+      /* UXTB/UXTH.  */
+      if (speed)
+	*cost += extra_cost->alu.extend;
+
       return false;
 
     case SIGN_EXTEND:
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	{
-	  *cost += rtx_cost (XEXP (x, 0), SIGN_EXTEND, 0, speed);
+	  /* LDRSH.  */
+	  if (speed)
+	    {
+	      rtx address = XEXP (XEXP (x, 0), 0);
+	      *cost += extra_cost->ldst.load_sign_extend;
+
+	      *cost +=
+		COSTS_N_INSNS (aarch64_address_cost (address, mode,
+						     0, speed));
+	    }
 	  return true;
 	}
+
+      if (speed)
+	*cost += extra_cost->alu.extend;
       return false;
 
     case ROTATE:
