@@ -1,3 +1,9 @@
+2014-05-16  Iain Sandoe  <iain@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+        * testsuite/libstdc++-abi/abi.exp: Defer setting of baseline_subdir
+        until after checking that the test is eligible to be run.
+
 2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Fix
