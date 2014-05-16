@@ -11844,7 +11844,7 @@ split_stack_prologue_scratch_regno (void)
 	      if (regparm >= 2)
 		{
 		  sorry ("-fsplit-stack does not support 2 register "
-			 " parameters for a nested function");
+			 "parameters for a nested function");
 		  return INVALID_REGNUM;
 		}
 	      return DX_REG;
