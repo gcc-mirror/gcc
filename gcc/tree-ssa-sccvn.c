@@ -3566,27 +3566,69 @@ visit_use (tree use)
       else if (is_gimple_call (stmt))
 	{
 	  tree lhs = gimple_call_lhs (stmt);
-
-	  /* ???  We could try to simplify calls.  */
-
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    {
-	      if (stmt_has_constants (stmt))
-		VN_INFO (lhs)->has_constants = true;
+	      /* Try constant folding based on our current lattice.  */
+	      tree simplified = gimple_fold_stmt_to_constant_1 (stmt,
+								vn_valueize);
+	      if (simplified)
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "call ");
+		      print_gimple_expr (dump_file, stmt, 0, 0);
+		      fprintf (dump_file, " simplified to ");
+		      print_generic_expr (dump_file, simplified, 0);
+		      if (TREE_CODE (lhs) == SSA_NAME)
+			fprintf (dump_file, " has constants %d\n",
+				 expr_has_constants (simplified));
+		      else
+			fprintf (dump_file, "\n");
+		    }
+		}
+	      /* Setting value numbers to constants will occasionally
+		 screw up phi congruence because constants are not
+		 uniquely associated with a single ssa name that can be
+		 looked up.  */
+	      if (simplified
+		  && is_gimple_min_invariant (simplified))
+		{
+		  VN_INFO (lhs)->expr = simplified;
+		  VN_INFO (lhs)->has_constants = true;
+		  changed = set_ssa_val_to (lhs, simplified);
+		  if (gimple_vdef (stmt))
+		    changed |= set_ssa_val_to (gimple_vdef (stmt),
+					       gimple_vuse (stmt));
+		  goto done;
+		}
+	      else if (simplified
+		       && TREE_CODE (simplified) == SSA_NAME)
+		{
+		  changed = visit_copy (lhs, simplified);
+		  if (gimple_vdef (stmt))
+		    changed |= set_ssa_val_to (gimple_vdef (stmt),
+					       gimple_vuse (stmt));
+		  goto done;
+		}
 	      else
 		{
-		  /* We reset expr and constantness here because we may
-		     have been value numbering optimistically, and
-		     iterating.  They may become non-constant in this case,
-		     even if they were optimistically constant.  */
-		  VN_INFO (lhs)->has_constants = false;
-		  VN_INFO (lhs)->expr = NULL_TREE;
-		}
+		  if (stmt_has_constants (stmt))
+		    VN_INFO (lhs)->has_constants = true;
+		  else
+		    {
+		      /* We reset expr and constantness here because we may
+			 have been value numbering optimistically, and
+			 iterating.  They may become non-constant in this case,
+			 even if they were optimistically constant.  */
+		      VN_INFO (lhs)->has_constants = false;
+		      VN_INFO (lhs)->expr = NULL_TREE;
+		    }
 
-	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-		{
-		  changed = defs_to_varying (stmt);
-		  goto done;
+		  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+		    {
+		      changed = defs_to_varying (stmt);
+		      goto done;
+		    }
 		}
 	    }
 

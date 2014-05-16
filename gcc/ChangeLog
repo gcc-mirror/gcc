@@ -1,3 +1,7 @@
+2014-05-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_use): Also constant-fold calls.
+
 2014-05-15  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/61193
