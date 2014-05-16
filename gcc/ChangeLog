@@ -1,6 +1,12 @@
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Cost FMA,
+	FLOAT_EXTEND, FLOAT_TRUNCATE, ABS, SMAX, and SMIN.
+
+2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
+
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Cost comparison
 	operators.
 
