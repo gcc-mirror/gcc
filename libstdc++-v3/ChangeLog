@@ -1,3 +1,11 @@
+2014-05-15  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61166
+	* include/bits/parse_numbers.h: Use integral_constant to remove
+	duplication and simplify.
+	* testsuite/20_util/duration/literals/61166.cc: New.
+
 2014-05-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60326
