@@ -5724,6 +5724,39 @@ cost_plus:
 	}
       return false;
 
+    case TRUNCATE:
+
+      /* Decompose <su>muldi3_highpart.  */
+      if (/* (truncate:DI  */
+	  mode == DImode
+	  /*   (lshiftrt:TI  */
+          && GET_MODE (XEXP (x, 0)) == TImode
+          && GET_CODE (XEXP (x, 0)) == LSHIFTRT
+	  /*      (mult:TI  */
+          && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
+	  /*        (ANY_EXTEND:TI (reg:DI))
+	            (ANY_EXTEND:TI (reg:DI)))  */
+          && ((GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == ZERO_EXTEND
+               && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == ZERO_EXTEND)
+              || (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SIGN_EXTEND
+                  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == SIGN_EXTEND))
+          && GET_MODE (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 0)) == DImode
+          && GET_MODE (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 1), 0)) == DImode
+	  /*     (const_int 64)  */
+          && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+          && UINTVAL (XEXP (XEXP (x, 0), 1)) == 64)
+        {
+          /* UMULH/SMULH.  */
+	  if (speed)
+	    *cost += extra_cost->mult[mode == DImode].extend;
+          *cost += rtx_cost (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 0),
+			     MULT, 0, speed);
+          *cost += rtx_cost (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 1), 0),
+			     MULT, 1, speed);
+          return true;
+        }
+
+      /* Fall through.  */
     default:
       break;
     }
