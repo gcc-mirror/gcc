@@ -11624,14 +11624,22 @@ label:
 
 (define_insn "*cset_zero"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(if_then_else:SI (match_operand:SI 1 "t_reg_operand")
+	(if_then_else:SI (match_operand:SI 1 "cbranch_treg_value")
 			 (match_operand:SI 2 "arith_reg_operand" "0")
 			 (const_int 0)))]
   "TARGET_SH1 && TARGET_ZDCBRANCH"
 {
-  return       "bt	0f"	"\n"
-	 "	mov	#0,%0"	"\n"
-	 "0:";
+  int tval = sh_eval_treg_value (operands[1]);
+  if (tval == true)
+    return     "bt	0f"	"\n"
+	   "	mov	#0,%0"	"\n"
+	   "0:";
+  else if (tval == false)
+    return     "bf	0f"	"\n"
+	   "	mov	#0,%0"	"\n"
+	   "0:";
+  else
+    gcc_unreachable ();
 }
   [(set_attr "type" "arith") ;; poor approximation
    (set_attr "length" "4")])

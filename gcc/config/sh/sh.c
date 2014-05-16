@@ -2250,7 +2250,12 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 int
 sh_eval_treg_value (rtx op)
 {
-  enum rtx_code code = GET_CODE (op);
+  if (t_reg_operand (op, GET_MODE (op)))
+    return 1;
+  if (negt_reg_operand (op, GET_MODE (op)))
+    return 0;
+
+  rtx_code code = GET_CODE (op);
   if ((code != EQ && code != NE) || !CONST_INT_P (XEXP (op, 1)))
     return -1;
 
