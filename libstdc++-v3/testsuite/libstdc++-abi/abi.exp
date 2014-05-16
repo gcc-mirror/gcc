@@ -24,8 +24,6 @@ if { [string match "*-*-darwin*" $target_triplet] } {
     set lib $blddir/src/.libs/libstdc++.so
 }
 
-set baseline_subdir "[eval exec $cxx $baseline_subdir_switch]"
-
 # Build the support objects.
 v3-build_support
 
@@ -34,6 +32,8 @@ if { (${v3-symver} == 0) || ![info exists baseline_dir] \
 	 || ![file exists $lib] } {
     return
 }
+
+set baseline_subdir "[eval exec $cxx $baseline_subdir_switch]"
 
 set baseline_file \
     [file join $baseline_dir $baseline_subdir "baseline_symbols.txt"]
