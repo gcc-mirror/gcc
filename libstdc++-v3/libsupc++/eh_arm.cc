@@ -199,27 +199,33 @@ asm (".global __cxa_end_cleanup\n"
 "	nop		5\n");
 #else
 // Assembly wrapper to call __gnu_end_cleanup without clobbering r1-r3.
-// Also push r4 to preserve stack alignment.
+// Also push lr to preserve stack alignment and to allow backtracing.
 #ifdef __thumb__
 asm ("  .pushsection .text.__cxa_end_cleanup\n"
 "	.global __cxa_end_cleanup\n"
 "	.type __cxa_end_cleanup, \"function\"\n"
 "	.thumb_func\n"
 "__cxa_end_cleanup:\n"
-"	push\t{r1, r2, r3, r4}\n"
+"	.fnstart\n"
+"	push\t{r1, r2, r3, lr}\n"
+"	.save\t{r1, r2, r3, lr}\n"
 "	bl\t__gnu_end_cleanup\n"
-"	pop\t{r1, r2, r3, r4}\n"
+"	pop\t{r1, r2, r3, lr}\n"
 "	bl\t_Unwind_Resume @ Never returns\n"
+"	.fnend\n"
 "	.popsection\n");
 #else
 asm ("  .pushsection .text.__cxa_end_cleanup\n"
 "	.global __cxa_end_cleanup\n"
 "	.type __cxa_end_cleanup, \"function\"\n"
 "__cxa_end_cleanup:\n"
-"	stmfd\tsp!, {r1, r2, r3, r4}\n"
+"	.fnstart\n"
+"	stmfd\tsp!, {r1, r2, r3, lr}\n"
+"	.save\t{r1, r2, r3, lr}\n"
 "	bl\t__gnu_end_cleanup\n"
-"	ldmfd\tsp!, {r1, r2, r3, r4}\n"
+"	ldmfd\tsp!, {r1, r2, r3, lr}\n"
 "	bl\t_Unwind_Resume @ Never returns\n"
+"	.fnend\n"
 "	.popsection\n");
 #endif
 #endif
