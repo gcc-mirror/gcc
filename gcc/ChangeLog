@@ -1,3 +1,10 @@
+2014-05-15  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/61193
+	* config/rs6000/htmxlintrin.h (_HTM_TBEGIN_STARTED): New define.
+	(__TM_simple_begin): Use it.
+	(__TM_begin): Likewise.
+
 2014-05-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61085
