@@ -1,5 +1,10 @@
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle the case
+	where we were unable to cost an RTX.
+
+2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Cost SYMBOL_REF,
 	HIGH, LO_SUM.
 
