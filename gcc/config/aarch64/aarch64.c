@@ -63,6 +63,7 @@
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "config/arm/aarch-cost-tables.h"
+#include "dumpfile.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
@@ -5029,6 +5030,26 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
       break;
     }
   return false;
+}
+
+/* Wrapper around aarch64_rtx_costs, dumps the partial, or total cost
+   calculated for X.  This cost is stored in *COST.  Returns true
+   if the total cost of X was calculated.  */
+static bool
+aarch64_rtx_costs_wrapper (rtx x, int code, int outer,
+		   int param, int *cost, bool speed)
+{
+  bool result = aarch64_rtx_costs (x, code, outer, param, cost, speed);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      print_rtl_single (dump_file, x);
+      fprintf (dump_file, "\n%s cost: %d (%s)\n",
+	       speed ? "Hot" : "Cold",
+	       *cost, result ? "final" : "partial");
+    }
+
+  return result;
 }
 
 static int
