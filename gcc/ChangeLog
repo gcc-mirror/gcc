@@ -35,7 +35,8 @@
 
 2014-05-16  Dehao Chen  <dehao@google.com>
 
-	* ira-int.h (REG_FREQ_FROM_EDGE_FREQ): Use optimize_function_for_size_p.
+	* ira-int.h (REG_FREQ_FROM_EDGE_FREQ): Use
+	optimize_function_for_size_p.
 	* regs.h (REG_FREQ_FROM_BB): Likewise.
 
 2014-05-16  Oleg Endo  <olegendo@gcc.gnu.org>
@@ -66,7 +67,7 @@
 	* cfghooks.c (make_forwarder_block): Use direct computation to
 	get fall-through edge's count and frequency.
 
-2014-02-07  Benno Schulenberg  <bensberg@justemail.net>
+2014-05-16  Benno Schulenberg  <bensberg@justemail.net>
 
 	* config/arc/arc.c (arc_init): Fix typo in error message.
 	* config/i386/i386.c (ix86_expand_builtin): Likewise.
@@ -80,14 +81,22 @@
 
 2014-05-16  David Wohlferd <dw@LimeGreenSocks.com>
 
-	 * doc/extend.texi: (Visibility Pragmas) Fix misplaced @xref
+	* doc/extend.texi: (Visibility Pragmas) Fix misplaced @xref
 
 2014-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varpool.c (dump_varpool_node): Dump write-only flag.
 	* lto-cgraph.c (lto_output_varpool_node, input_varpool_node): Stream
 	write-only flag.
-	* tree-cfg.c (execute_fixup_cfg): Remove statements setting write-only variables.
+	* tree-cfg.c (execute_fixup_cfg): Remove statements setting
+	write-only variables.
+	* ipa.c (process_references): New function.
+	(set_readonly_bit): New function.
+	(set_writeonly_bit): New function.
+	(clear_addressable_bit): New function.
+	(ipa_discover_readonly_nonaddressable_var): Mark write only variables;
+	fix handling of aliases.
+	* cgraph.h (struct varpool_node): Add writeonly flag.
 
 2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -201,7 +210,7 @@
 	be emitted.
 	(aarch64_add_constant): Update call to aarch64_build_constant.
 	(aarch64_output_mi_thunk): Likewise.
-	(aarch64_rtx_costs): Estimate cost of a CONST_INT, cost
+	(aarch64_rtx_costs): Estimate cost of a CONST_INT, cost of
 	a CONST_DOUBLE.
 
 2014-05-16  James Greenhalgh  <james.greenhalgh@arm.com>
@@ -317,7 +326,7 @@
 
 2014-05-14  Cary Coutant  <ccoutant@google.com>
 
-        PR debug/61013
+	PR debug/61013
 	* opts.c (common_handle_option): Don't special-case "-g".
 	(set_debug_level): Default to at least level 2 with "-g".
 
@@ -378,8 +387,7 @@
 	(OPTION_MASK_ISA_CLFLUSHOPT_UNSET): Ditto.
 	(OPTION_MASK_ISA_XSAVES_UNSET): Ditto.
 	(OPTION_MASK_ISA_XSAVEC_UNSET): Ditto.
-	(ix86_handle_option): Handle OPT_mxsavec, OPT_mxsaves,
-	OPT_mclflushopt.
+	(ix86_handle_option): Handle OPT_mxsavec, OPT_mxsaves, OPT_mclflushopt.
 	* config.gcc (i[34567]86-*-*): Add clflushoptintrin.h,
 	xsavecintrin.h, xsavesintrin.h.
 	(x86_64-*-*): Ditto.
@@ -405,9 +413,9 @@
 	(ix86_builtins): Add IX86_BUILTIN_XSAVEC, IX86_BUILTIN_XSAVEC64,
 	IX86_BUILTIN_XSAVES, IX86_BUILTIN_XRSTORS, IX86_BUILTIN_XSAVES64,
 	IX86_BUILTIN_XRSTORS64, IX86_BUILTIN_CLFLUSHOPT.
-	(bdesc_special_args): Add __builtin_ia32_xsaves, __builtin_ia32_xrstors,
-	__builtin_ia32_xsavec, __builtin_ia32_xsaves64, __builtin_ia32_xrstors64,
-	__builtin_ia32_xsavec64.
+	(bdesc_special_args): Add __builtin_ia32_xsaves,
+	__builtin_ia32_xrstors, __builtin_ia32_xsavec, __builtin_ia32_xsaves64,
+	__builtin_ia32_xrstors64, __builtin_ia32_xsavec64.
 	(ix86_init_mmx_sse_builtins): Add __builtin_ia32_clflushopt.
 	(ix86_expand_builtin): Handle new builtins.
 	* config/i386/i386.h (TARGET_CLFLUSHOPT) Define.
@@ -494,8 +502,7 @@
 	rather than just a prefix string, so that we can look up the kind
 	of the wtd and use it as an index into wrote_user_func_for_ptr,
 	ensuring that such functions are written at most once.  Support
-	subclasses by invoking the marking function of the ultimate base
-	class.
+	subclasses by invoking the marking function of the ultimate base class.
 	(write_user_func_for_structure_body): Require a write_types_data
 	rather than just a prefix string, so that we can pass this to
 	write_user_func_for_structure_ptr.
@@ -648,10 +655,11 @@
 	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
 	* config/i386/i386-protos.h (ix86_mode_needed, ix86_mode_after)
 	(ix86_mode_entrym, ix86_emit_mode_set): Remove external declaration.
-	* config/i386/i386.c (ix86_mode_needed, ix86_mode_after, ix86_mode_exit,
-	(ix86_mode_entry, ix86_mode_priority, ix86_emit_mode_set): Hookify.
+	* config/i386/i386.c (ix86_mode_needed, ix86_mode_after,
+	(ix86_mode_exit, ix86_mode_entry, ix86_mode_priority)
+	(ix86_emit_mode_set): Hookify.
 	* config/epiphany/epiphany.h (MODE_NEEDED, MODE_AFTER, MODE_ENTRY):
-	Delete
+	Delete.
 	(MODE_EXIT, MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
 	* config/epiphany/epiphany-protos.h (epiphany_mode_needed)
 	(emit_set_fp_mode, epiphany_mode_entry_exit, epiphany_mode_after)
@@ -660,7 +668,7 @@
 	(epiphany_mode_needed, epiphany_mode_priority_to_mode): Likewise.
 	(epiphany_mode_entry, epiphany_mode_exit, epiphany_mode_after):
 	Likewise.
-	(epiphany_mode_priority_to_mode): Change priority type. Hookify.
+	(epiphany_mode_priority_to_mode): Change priority type.  Hookify.
 	(epiphany_mode_needed, epiphany_mode_entry_exit): Hookify.
 	(epiphany_mode_after, epiphany_mode_entry, emit_set_fp_mode): Hookify.
 
@@ -706,7 +714,7 @@
 	* c-family/c.opt: Make -Wshadow also implicitly enable
 	-Wshadow-ivar.
 
-2014-05-12  David Wohlferd <dw@LimeGreenSocks.com>
+2014-05-12  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/tm.texi: Remove reference to deleted macro.
 	* doc/tm.texi.in: Likewise.
