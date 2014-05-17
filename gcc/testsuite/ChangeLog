@@ -1,3 +1,8 @@
+2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60854
+	* g++.dg/torture/pr60854.C: New testcase.
+
 2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/pr60969.C: Compile for all ilp32 x86 targets.

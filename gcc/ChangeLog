@@ -1,3 +1,9 @@
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60854
+	* ipa.c (symtab_remove_unreachable_nodes): Mark targets of
+	external aliases alive, too.
+
 2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (free): Mention Alpha.  Also enabled at -Os.
