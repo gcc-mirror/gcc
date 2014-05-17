@@ -1,5 +1,5 @@
-/* { dg-do compile { target i?86-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -march=pentium4" } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O2 -ftree-vectorize -march=pentium4 -mfpmath=387" } */
 
 struct A
 {
@@ -28,3 +28,5 @@ foo (A &s, A &t, A &u, A &v, int y, int z)
     }
   return x;
 }
+
+/* { dg-final { scan-assembler-not "%mm" } } */
