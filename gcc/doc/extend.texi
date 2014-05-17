@@ -7172,28 +7172,6 @@ asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 @include md.texi
 @raisesections
 
-@node Size of an asm
-@subsection Size of an @code{asm}
-
-Some targets require that GCC track the size of each instruction used
-in order to generate correct code.  Because the final length of the
-code produced by an @code{asm} statement is only known by the
-assembler, GCC must make an estimate as to how big it will be.  It
-does this by counting the number of instructions in the pattern of the
-@code{asm} and multiplying that by the length of the longest
-instruction supported by that processor.  (When working out the number
-of instructions, it assumes that any occurrence of a newline or of
-whatever statement separator character is supported by the assembler --
-typically @samp{;} --- indicates the end of an instruction.)
-
-Normally, GCC's estimate is adequate to ensure that correct
-code is generated, but it is possible to confuse the compiler if you use
-pseudo instructions or assembler macros that expand into multiple real
-instructions, or if you use assembler directives that expand to more
-space in the object file than is needed for a single instruction.
-If this happens then the assembler may produce a diagnostic saying that
-a label is unreachable.
-
 @node Asm Labels
 @subsection Controlling Names Used in Assembler Code
 @cindex assembler names for identifiers
@@ -7276,6 +7254,28 @@ output of the assembler instruction directly into a particular register.
 (This works provided the register you specify fits the constraints
 specified for that operand in the @code{asm}.)
 @end itemize
+
+@node Size of an asm
+@subsection Size of an @code{asm}
+
+Some targets require that GCC track the size of each instruction used
+in order to generate correct code.  Because the final length of the
+code produced by an @code{asm} statement is only known by the
+assembler, GCC must make an estimate as to how big it will be.  It
+does this by counting the number of instructions in the pattern of the
+@code{asm} and multiplying that by the length of the longest
+instruction supported by that processor.  (When working out the number
+of instructions, it assumes that any occurrence of a newline or of
+whatever statement separator character is supported by the assembler --
+typically @samp{;} --- indicates the end of an instruction.)
+
+Normally, GCC's estimate is adequate to ensure that correct
+code is generated, but it is possible to confuse the compiler if you use
+pseudo instructions or assembler macros that expand into multiple real
+instructions, or if you use assembler directives that expand to more
+space in the object file than is needed for a single instruction.
+If this happens then the assembler may produce a diagnostic saying that
+a label is unreachable.
 
 @menu
 * Global Reg Vars::
