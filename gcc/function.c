@@ -1459,8 +1459,8 @@ instantiate_virtual_regs_in_rtx (rtx *loc, void *data)
       new_rtx = instantiate_new_reg (XEXP (x, 0), &offset);
       if (new_rtx)
 	{
-	  new_rtx = plus_constant (GET_MODE (x), new_rtx, offset);
-	  *loc = simplify_gen_binary (PLUS, GET_MODE (x), new_rtx, XEXP (x, 1));
+	  XEXP (x, 0) = new_rtx;
+	  *loc = plus_constant (GET_MODE (x), x, offset, true);
 	  if (changed)
 	    *changed = true;
 	  return -1;
@@ -1622,7 +1622,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	      continue;
 
 	    start_sequence ();
-	    x = replace_equiv_address (x, addr);
+	    x = replace_equiv_address (x, addr, true);
 	    /* It may happen that the address with the virtual reg
 	       was valid (e.g. based on the virtual stack reg, which might
 	       be acceptable to the predicates with all offsets), whereas
@@ -1635,7 +1635,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	    if (!safe_insn_predicate (insn_code, i, x))
 	      {
 		addr = force_reg (GET_MODE (addr), addr);
-		x = replace_equiv_address (x, addr);
+		x = replace_equiv_address (x, addr, true);
 	      }
 	    seq = get_insns ();
 	    end_sequence ();

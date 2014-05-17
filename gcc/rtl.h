@@ -1952,7 +1952,7 @@ extern int currently_expanding_to_rtl;
 
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
-extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT);
+extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT, bool = false);
 
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);

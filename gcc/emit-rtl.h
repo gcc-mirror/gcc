@@ -52,10 +52,10 @@ extern tree get_spill_slot_decl (bool);
    ADDR.  The caller is asserting that the actual piece of memory pointed
    to is the same, just the form of the address is being changed, such as
    by putting something into a register.  */
-extern rtx replace_equiv_address (rtx, rtx);
+extern rtx replace_equiv_address (rtx, rtx, bool = false);
 
 /* Likewise, but the reference is not required to be valid.  */
-extern rtx replace_equiv_address_nv (rtx, rtx);
+extern rtx replace_equiv_address_nv (rtx, rtx, bool = false);
 
 extern rtx gen_blockage (void);
 extern rtvec gen_rtvec (int, ...);
