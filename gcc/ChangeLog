@@ -1,3 +1,12 @@
+2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-04-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60969
+	* config/i386/i386.md (*movsf_internal): Set MODE to SI for
+	alternative 12.
+
 2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60969
