@@ -365,12 +365,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_set_result(function<_Ptr_type()> __res, bool __ignore_failure = false)
       {
-        bool __set = __ignore_failure;
+	unique_lock<mutex> __lock(_M_mutex, defer_lock);
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
-        call_once(_M_once, &_State_baseV2::_M_do_set, this, ref(__res),
-            ref(__set));
-        if (!__set)
+	call_once(_M_once, &_State_baseV2::_M_do_set, this,
+		  ref(__res), ref(__lock));
+	if (__lock.owns_lock())
+	  _M_cond.notify_all();
+	else if (!__ignore_failure)
           __throw_future_error(int(future_errc::promise_already_satisfied));
       }
 
@@ -478,15 +480,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       void
-      _M_do_set(function<_Ptr_type()>& __f, bool& __set)
+      _M_do_set(function<_Ptr_type()>& __f, unique_lock<mutex>& __lock)
       {
-        _Ptr_type __res = __f();
-        {
-          lock_guard<mutex> __lock(_M_mutex);
-          _M_result.swap(__res);
-        }
-        _M_cond.notify_all();
-        __set = true;
+        _Ptr_type __res = __f(); // do not hold lock while running setter
+	__lock.lock();
+        _M_result.swap(__res);
       }
 
       bool _M_ready() const noexcept { return static_cast<bool>(_M_result); }
@@ -495,6 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void _M_complete_async() { }
 
       // Return true if state contains a deferred function.
+      // Caller must own _M_mutex.
       virtual bool _M_has_deferred() const { return false; }
     };
 
