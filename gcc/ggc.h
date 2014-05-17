@@ -279,11 +279,4 @@ ggc_alloc_cleared_gimple_statement_stat (size_t s CXX_MEM_STAT_INFO)
     ggc_internal_cleared_alloc (s PASS_MEM_STAT);
 }
 
-static inline struct simd_clone *
-ggc_alloc_cleared_simd_clone_stat (size_t s CXX_MEM_STAT_INFO)
-{
-  return (struct simd_clone *)
-    ggc_internal_cleared_alloc (s PASS_MEM_STAT);
-}
-
 #endif

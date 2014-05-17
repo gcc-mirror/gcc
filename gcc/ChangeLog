@@ -1,5 +1,9 @@
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* ggc.h (ggc_alloc_cleared_simd_clone_stat): Remove function.
+
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* alias.c (record_alias_subset): Adjust.
 	* bitmap.c (bitmap_element_allocate): Likewise.
 	(bitmap_gc_alloc_stat): Likewise.
