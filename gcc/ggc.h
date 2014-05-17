@@ -136,13 +136,30 @@ extern void gt_pch_save (FILE *f);
 /* Allocation.  */
 
 /* The internal primitive.  */
-extern void *ggc_internal_alloc (size_t CXX_MEM_STAT_INFO) ATTRIBUTE_MALLOC;
+extern void *ggc_internal_alloc (size_t, void (*)(void *), size_t,
+				 size_t CXX_MEM_STAT_INFO)
+     ATTRIBUTE_MALLOC;
+
+     static inline
+     void *
+     ggc_internal_alloc (size_t s CXX_MEM_STAT_INFO)
+{
+  return ggc_internal_alloc (s, NULL, 0, 1 PASS_MEM_STAT);
+}
 
 extern size_t ggc_round_alloc_size (size_t requested_size);
 
 /* Allocates cleared memory.  */
-extern void *ggc_internal_cleared_alloc (size_t CXX_MEM_STAT_INFO)
-  ATTRIBUTE_MALLOC;
+extern void *ggc_internal_cleared_alloc (size_t, void (*)(void *),
+					 size_t, size_t
+					 CXX_MEM_STAT_INFO) ATTRIBUTE_MALLOC;
+
+static inline
+void *
+ggc_internal_cleared_alloc (size_t s CXX_MEM_STAT_INFO)
+{
+  return ggc_internal_cleared_alloc (s, NULL, 0, 1 PASS_MEM_STAT);
+}
 
 /* Resize a block.  */
 extern void *ggc_realloc (void *, size_t CXX_MEM_STAT_INFO);
@@ -157,25 +174,57 @@ extern void dump_ggc_loc_statistics (bool);
     ((T *) ggc_realloc ((P), (N) * sizeof (T) MEM_STAT_INFO))
 
 template<typename T>
+void
+finalize (void *p)
+{
+  static_cast<T *> (p)->~T ();
+}
+
+template<typename T>
+static inline bool
+need_finalization_p ()
+{
+#if GCC_VERSION >= 4003
+  return !__has_trivial_destructor (T);
+#else
+  return true;
+#endif
+}
+
+template<typename T>
 static inline T *
 ggc_alloc (ALONE_CXX_MEM_STAT_INFO)
 {
-  return static_cast<T *> (ggc_internal_alloc (sizeof (T) PASS_MEM_STAT));
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_alloc (sizeof (T), finalize<T>, 0, 1
+						 PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_alloc (sizeof (T), NULL, 0, 1
+						 PASS_MEM_STAT));
 }
 
 template<typename T>
 static inline T *
 ggc_cleared_alloc (ALONE_CXX_MEM_STAT_INFO)
 {
-  return static_cast<T *> (ggc_internal_cleared_alloc (sizeof (T)
-						       PASS_MEM_STAT));
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_cleared_alloc (sizeof (T),
+							 finalize<T>, 0, 1
+							 PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_cleared_alloc (sizeof (T), NULL, 0, 1
+							 PASS_MEM_STAT));
 }
 
 template<typename T>
 static inline T *
 ggc_vec_alloc (size_t c CXX_MEM_STAT_INFO)
 {
-    return static_cast<T *> (ggc_internal_alloc (c * sizeof (T)
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_alloc (c * sizeof (T), finalize<T>,
+						 sizeof (T), c PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_alloc (c * sizeof (T), NULL, 0, 0
 						 PASS_MEM_STAT));
 }
 
@@ -183,8 +232,14 @@ template<typename T>
 static inline T *
 ggc_cleared_vec_alloc (size_t c CXX_MEM_STAT_INFO)
 {
-    return static_cast<T *> (ggc_internal_cleared_alloc (c * sizeof (T)
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_cleared_alloc (c * sizeof (T),
+							 finalize<T>,
+							 sizeof (T), c
 							 PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_cleared_alloc (c * sizeof (T), NULL,
+							 0, 0 PASS_MEM_STAT));
 }
 
 static inline void *

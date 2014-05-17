@@ -174,9 +174,10 @@ ggc_mark_roots (void)
 
 /* Allocate a block of memory, then clear it.  */
 void *
-ggc_internal_cleared_alloc (size_t size MEM_STAT_DECL)
+ggc_internal_cleared_alloc (size_t size, void (*f)(void *), size_t s, size_t n
+			    MEM_STAT_DECL)
 {
-  void *buf = ggc_internal_alloc (size PASS_MEM_STAT);
+  void *buf = ggc_internal_alloc (size, f, s, n PASS_MEM_STAT);
   memset (buf, 0, size);
   return buf;
 }
