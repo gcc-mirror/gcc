@@ -1,5 +1,10 @@
 2014-05-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/rs6000/rs6000.c (rs6000_real_tls_symbol_ref_p): New function.
+	(rs6000_delegitimize_address): Use it.
+
+2014-05-17  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* emit-rtl.h (replace_equiv_address, replace_equiv_address_nv): Add an
 	inplace argument.  Store the new address in the original MEM when true.
 	* emit-rtl.c (change_address_1): Likewise.
