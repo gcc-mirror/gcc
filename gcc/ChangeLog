@@ -1,5 +1,29 @@
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* ggc-common.c (ggc_internal_cleared_alloc): Adjust.
+	* ggc-none.c (ggc_internal_alloc): Assert if a finalizer is passed.
+	(ggc_internal_cleared_alloc): Likewise.
+	* ggc-page.c (finalizer): New class.
+(vec_finalizer): Likewise.
+	(globals::finalizers): New member.
+(globals::vec_finalizers): Likewise.
+	(ggc_internal_alloc): Record the finalizer if any for the block being
+	allocated.
+	(ggc_handle_finalizers): New function.
+	(ggc_collect): Call ggc_handle_finalizers.
+	* ggc.h (ggc_internal_alloc): Add arguments to allow installing a
+	finalizer.
+	(ggc_internal_cleared_alloc): Likewise.
+	(finalize): New function.
+	(need_finalization_p): Likewise.
+	(ggc_alloc): Install the type's destructor as the finalizer if it
+	might do something.
+	(ggc_cleared_alloc): Likewise.
+	(ggc_vec_alloc): Likewise.
+	(ggc_cleared_vec_alloc): Likewise.
+
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* ggc.h (ggc_alloc_cleared_simd_clone_stat): Remove function.
 
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
