@@ -5009,7 +5009,7 @@ write_typed_alloc_def (outf_p f,
 	   (two_args ? ", " : ""),
 	   (quantity == vector) ? "n" : "");
   oprintf (f, "((%s%s *)", type_specifier, type_name);
-  oprintf (f, "(ggc_internal_%salloc_stat (", allocator_type);
+  oprintf (f, "(ggc_internal_%salloc (", allocator_type);
   if (variable_size)
     oprintf (f, "SIZE");
   else

@@ -1202,7 +1202,7 @@ ggc_round_alloc_size (size_t requested_size)
 /* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
 void *
-ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_alloc (size_t size MEM_STAT_DECL)
 {
   size_t order, word, bit, object_offset, object_size;
   struct page_entry *entry;

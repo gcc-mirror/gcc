@@ -16048,7 +16048,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
       if (size > 0 && (int) size == size)
 	{
 	  unsigned char *array = (unsigned char *)
-	    ggc_alloc_cleared_atomic (size);
+	    ggc_internal_cleared_alloc (size);
 
 	  if (native_encode_initializer (init, array, size))
 	    {

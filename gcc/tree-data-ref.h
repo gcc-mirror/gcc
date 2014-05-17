@@ -565,7 +565,7 @@ lambda_vector_gcd (lambda_vector vector, int size)
 static inline lambda_vector
 lambda_vector_new (int size)
 {
-  return (lambda_vector) ggc_alloc_cleared_atomic (sizeof (int) * size);
+  return (lambda_vector) ggc_internal_cleared_alloc (sizeof (int) * size);
 }
 
 /* Clear out vector VEC1 of length SIZE.  */

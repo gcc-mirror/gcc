@@ -2016,7 +2016,7 @@ grow_tree_vec_stat (tree v, int len MEM_STAT_DECL)
 
   record_node_allocation_statistics (TREE_VEC, length - oldlength);
 
-  v = (tree) ggc_realloc_stat (v, length PASS_MEM_STAT);
+  v = (tree) ggc_realloc (v, length PASS_MEM_STAT);
 
   TREE_VEC_LENGTH (v) = len;
 

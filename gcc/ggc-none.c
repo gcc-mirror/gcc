@@ -41,13 +41,13 @@ ggc_round_alloc_size (size_t requested_size)
 }
 
 void *
-ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_alloc (size_t size MEM_STAT_DECL)
 {
   return xmalloc (size);
 }
 
 void *
-ggc_internal_cleared_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_cleared_alloc (size_t size MEM_STAT_DECL)
 {
   return xcalloc (size, 1);
 }

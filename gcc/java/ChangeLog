@@ -1,3 +1,7 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* constants.c (set_constant_entry): Adjust.
+
 2014-05-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* boehm.c (mark_reference_fields): Don't update the mask when

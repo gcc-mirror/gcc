@@ -1,3 +1,42 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* dwarf2out.c (tree_add_const_value_attribute): Call
+	ggc_internal_cleared_alloc instead of ggc_alloc_cleared_atomic.
+	* gengtype.c (write_typed_alloc_def): Call ggc_internal_<x>alloc
+	instead of ggc_internal_<x>alloc_stat.
+	* ggc-common.c (ggc_internal_cleared_alloc): Drop _stat suffix.
+	(ggc_realloc): Likewise.
+	* ggc-none.c (ggc_internal_alloc): Likewise.
+	(ggc_internal_cleared_alloc): Likewise.
+	* ggc-page.c: Likewise.
+	* ggc.h (ggc_internal_alloc_stat): Likewise.
+	(ggc_internal_alloc): Remove macro.
+	(ggc_internal_cleared_alloc_stat): Drop _stat suffix.
+	(ggc_internal_cleared_alloc): Remove macro.
+	(GGC_RESIZEVEC): Adjust.
+	(ggc_resizevar): Remove macro.
+	(ggc_internal_vec_alloc_stat): Drop _stat suffix.
+	(ggc_internal_cleared_vec_alloc_stat): Likewise.
+	(ggc_internal_vec_cleared_alloc): Remove macro.
+	(ggc_alloc_atomic_stat): Drop _stat suffix.
+	(ggc_alloc_atomic): Remove macro.
+	(ggc_alloc_cleared_atomic): Remove macro.
+	(ggc_alloc_string_stat): Drop _stat suffix.
+	(ggc_alloc_string): Remove macro.
+	(ggc_alloc_rtx_def_stat): Adjust.
+	(ggc_alloc_tree_node_stat): Likewise.
+	(ggc_alloc_cleared_tree_node_stat): Likewise.
+	(ggc_alloc_cleared_gimple_statement_stat): Likewise.
+	(ggc_alloc_cleared_simd_clone_stat): Likewise.
+	* gimple.c (gimple_build_omp_for): Likewise.
+	(gimple_copy): Likewise.
+	* stringpool.c (ggc_alloc_string_stat): Drop _stat suffix.
+	* toplev.c (realloc_for_line_map): Adjust.
+	* tree-data-ref.h (lambda_vector_new): Likewise.
+	* tree-phinodes.c (allocate_phi_node): Likewise.
+	* tree.c (grow_tree_vec_stat): Likewise.
+	* vec.h (va_gc::reserve): Adjust.
+
 2014-05-17  Ajit Agarwal <ajitkum@xilinx.com>
 
 	* config/microblaze/microblaze.c
