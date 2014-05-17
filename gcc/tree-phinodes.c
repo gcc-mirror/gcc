@@ -124,7 +124,7 @@ allocate_phi_node (size_t len)
   else
     {
       phi = static_cast <gimple_statement_phi *> (
-	ggc_internal_alloc_stat (size MEM_STAT_INFO));
+	ggc_internal_alloc (size));
       if (GATHER_STATISTICS)
 	{
 	  enum gimple_alloc_kind kind = gimple_alloc_kind (GIMPLE_PHI);

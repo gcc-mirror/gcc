@@ -28,8 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
 #include "ggc.h"
+#include "rtl.h"
 #ifdef GENERATOR_FILE
 # include "errors.h"
 #else

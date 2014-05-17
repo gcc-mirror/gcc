@@ -46,8 +46,8 @@ set_constant_entry (CPool *cpool, int index, int tag, jword value)
   if (cpool->data == NULL)
     {
       cpool->capacity = 100;
-      cpool->tags = (uint8 *) ggc_alloc_cleared_atomic (sizeof (uint8)
-						* cpool->capacity);
+      cpool->tags = (uint8 *) ggc_internal_cleared_alloc (sizeof (uint8)
+							  * cpool->capacity);
       cpool->data = ggc_alloc_cleared_vec_cpool_entry (sizeof
 						       (union cpool_entry),
 						       cpool->capacity);

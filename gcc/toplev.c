@@ -957,7 +957,7 @@ init_asm_output (const char *name)
 static void *
 realloc_for_line_map (void *ptr, size_t len)
 {
-  return GGC_RESIZEVAR (void, ptr, len);
+  return ggc_realloc (ptr, len);
 }
 
 /* A helper function: used as the allocator function for
