@@ -40,10 +40,12 @@ extern void print_operand_address (FILE *, rtx);
 extern void init_cumulative_args (CUMULATIVE_ARGS *,tree, rtx);
 extern bool microblaze_legitimate_address_p (enum machine_mode, rtx, bool);
 extern int microblaze_is_interrupt_variant (void);
+extern int microblaze_is_break_handler (void);
+extern int microblaze_break_function_p (tree func);
 extern rtx microblaze_return_addr (int, rtx);
 extern int simple_memory_operand (rtx, enum machine_mode);
 extern int double_memory_operand (rtx, enum machine_mode);
-
+extern void microblaze_order_regs_for_local_alloc (void);
 extern int microblaze_regno_ok_for_base_p (int, int);
 extern HOST_WIDE_INT microblaze_initial_elimination_offset (int, int);
 extern void microblaze_declare_object (FILE *, const char *, const char *,

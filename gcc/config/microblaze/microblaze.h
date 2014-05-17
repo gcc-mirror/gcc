@@ -263,7 +263,6 @@ extern enum pipeline_type microblaze_pipe;
   1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   1, 1, 1, 1								\
 }
-
 #define GP_REG_FIRST    0
 #define GP_REG_LAST     31
 #define GP_REG_NUM      (GP_REG_LAST - GP_REG_FIRST + 1)
@@ -763,6 +762,10 @@ extern int fast_interrupt;
 extern int save_volatiles;
 
 #define INTERRUPT_HANDLER_NAME "_interrupt_handler"
+/* The function name for the function tagged with attribute break_handler
+   has been set in the RTL as _break_handler. This function name is used
+   in the generation of directives .ent .end and .global. */
+#define BREAK_HANDLER_NAME "_break_handler"
 #define FAST_INTERRUPT_NAME "_fast_interrupt"
 
 /* The following #defines are used in the headers files. Always retain these.  */
