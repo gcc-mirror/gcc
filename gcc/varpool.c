@@ -135,7 +135,7 @@ varpool_call_variable_insertion_hooks (varpool_node *node)
 varpool_node *
 varpool_create_empty_node (void)
 {   
-  varpool_node *node = ggc_alloc_cleared_varpool_node ();
+  varpool_node *node = ggc_cleared_alloc<varpool_node> ();
   node->type = SYMTAB_VARIABLE;
   return node;
 }   

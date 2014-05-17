@@ -667,7 +667,7 @@ coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
 	 list.  */
       if (!DECL_EXTERNAL (current_function_decl))
 	{
-	  item = ggc_alloc_coverage_data ();
+	  item = ggc_alloc<coverage_data> ();
 	  
 	  item->ident = current_function_funcdef_no + 1;
 	  item->lineno_checksum = lineno_checksum;

@@ -1424,7 +1424,7 @@ iq2000_va_start (tree valist, rtx nextarg)
 static struct machine_function *
 iq2000_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Detect any conflicts in the switches.  */

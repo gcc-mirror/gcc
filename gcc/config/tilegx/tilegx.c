@@ -735,7 +735,7 @@ create_temp_reg_if_possible (enum machine_mode mode, rtx default_reg)
 static struct machine_function *
 tilegx_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 

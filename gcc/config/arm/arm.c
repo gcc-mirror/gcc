@@ -26710,7 +26710,7 @@ static struct machine_function *
 arm_init_machine_status (void)
 {
   struct machine_function *machine;
-  machine = ggc_alloc_cleared_machine_function ();
+  machine = ggc_cleared_alloc<machine_function> ();
 
 #if ARM_FT_UNKNOWN != 0
   machine->func_type = ARM_FT_UNKNOWN;

@@ -2000,7 +2000,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
 	    if (!pa)
 	      {
-		pa = ggc_alloc_cleared_parm_attr_d ();
+		pa = ggc_cleared_alloc<parm_attr_d> ();
 		pa->id = gnat_param;
 		pa->dim = Dimension;
 		vec_safe_push (f_parm_attr_cache, pa);
@@ -2522,7 +2522,7 @@ push_range_check_info (tree var)
 
   if (iter)
     {
-      struct range_check_info_d *rci = ggc_alloc_range_check_info_d ();
+      struct range_check_info_d *rci = ggc_alloc<range_check_info_d> ();
       vec_safe_push (iter->checks, rci);
       return rci;
     }
@@ -2600,7 +2600,7 @@ static tree
 Loop_Statement_to_gnu (Node_Id gnat_node)
 {
   const Node_Id gnat_iter_scheme = Iteration_Scheme (gnat_node);
-  struct loop_info_d *gnu_loop_info = ggc_alloc_cleared_loop_info_d ();
+  struct loop_info_d *gnu_loop_info = ggc_cleared_alloc<loop_info_d> ();
   tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
 			       NULL_TREE, NULL_TREE, NULL_TREE);
   tree gnu_loop_label = create_artificial_label (input_location);
@@ -3617,7 +3617,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* Initialize the information structure for the function.  */
   allocate_struct_function (gnu_subprog_decl, false);
-  gnu_subprog_language = ggc_alloc_cleared_language_function ();
+  gnu_subprog_language = ggc_cleared_alloc<language_function> ();
   DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language = gnu_subprog_language;
   set_cfun (NULL);
 
@@ -5140,7 +5140,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 
   /* Save away what we've made so far and record this potential elaboration
      procedure.  */
-  info = ggc_alloc_elab_info ();
+  info = ggc_alloc<elab_info> ();
   set_current_block_context (gnu_elab_proc_decl);
   gnat_poplevel ();
   DECL_SAVED_TREE (gnu_elab_proc_decl) = end_stmt_group ();
@@ -7439,7 +7439,7 @@ start_stmt_group (void)
   if (group)
     stmt_group_free_list = group->previous;
   else
-    group = ggc_alloc_stmt_group ();
+    group = ggc_alloc<stmt_group> ();
 
   group->previous = current_stmt_group;
   group->stmt_list = group->block = group->cleanups = NULL_TREE;

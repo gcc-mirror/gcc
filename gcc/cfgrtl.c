@@ -4954,7 +4954,7 @@ init_rtl_bb_info (basic_block bb)
 {
   gcc_assert (!bb->il.x.rtl);
   bb->il.x.head_ = NULL;
-  bb->il.x.rtl = ggc_alloc_cleared_rtl_bb_info ();
+  bb->il.x.rtl = ggc_cleared_alloc<rtl_bb_info> ();
 }
 
 /* Returns true if it is possible to remove edge E by redirecting

@@ -638,7 +638,7 @@ bind (tree name, tree decl, struct c_scope *scope, bool invisible,
       binding_freelist = b->prev;
     }
   else
-    b = ggc_alloc_c_binding ();
+    b = ggc_alloc<c_binding> ();
 
   b->shadowed = 0;
   b->decl = decl;
@@ -755,7 +755,7 @@ void
 record_inline_static (location_t loc, tree func, tree decl,
 		      enum c_inline_static_type type)
 {
-  struct c_inline_static *csi = ggc_alloc_c_inline_static ();
+  c_inline_static *csi = ggc_alloc<c_inline_static> ();
   csi->location = loc;
   csi->function = func;
   csi->static_decl = decl;
@@ -952,7 +952,7 @@ push_scope (void)
 	  scope_freelist = scope->outer;
 	}
       else
-	scope = ggc_alloc_cleared_c_scope ();
+	scope = ggc_cleared_alloc<c_scope> ();
 
       /* The FLOAT_CONST_DECIMAL64 pragma applies to nested scopes.  */
       if (current_scope)
@@ -3084,12 +3084,10 @@ make_label (location_t location, tree name, bool defining,
 	    struct c_label_vars **p_label_vars)
 {
   tree label = build_decl (location, LABEL_DECL, name, void_type_node);
-  struct c_label_vars *label_vars;
-
   DECL_CONTEXT (label) = current_function_decl;
   DECL_MODE (label) = VOIDmode;
 
-  label_vars = ggc_alloc_c_label_vars ();
+  c_label_vars *label_vars = ggc_alloc<c_label_vars> ();
   label_vars->shadowed = NULL;
   set_spot_bindings (&label_vars->label_bindings, defining);
   label_vars->decls_in_scope = make_tree_vector ();
@@ -3185,9 +3183,8 @@ lookup_label_for_goto (location_t loc, tree name)
      list for possible later warnings.  */
   if (label_vars->label_bindings.scope == NULL)
     {
-      struct c_goto_bindings *g;
+      c_goto_bindings *g = ggc_alloc<c_goto_bindings> ();
 
-      g = ggc_alloc_c_goto_bindings ();
       g->loc = loc;
       set_spot_bindings (&g->goto_bindings, true);
       vec_safe_push (label_vars->gotos, g);
@@ -7423,8 +7420,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  ensure that this lives as long as the rest of the struct decl.
 	  All decls in an inline function need to be saved.  */
 
-	space = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
-	space2 = ggc_alloc_sorted_fields_type
+	space = ggc_cleared_alloc<struct lang_type> ();
+	space2 = (sorted_fields_type *) ggc_internal_alloc
 	  (sizeof (struct sorted_fields_type) + len * sizeof (tree));
 
 	len = 0;
@@ -7705,7 +7702,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   /* Record the min/max values so that we can warn about bit-field
      enumerations that are too small for the values.  */
-  lt = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
+  lt = ggc_cleared_alloc<struct lang_type> ();
   lt->enum_min = minnode;
   lt->enum_max = maxnode;
   TYPE_LANG_SPECIFIC (enumtype) = lt;
@@ -8479,7 +8476,7 @@ store_parm_decls (void)
   allocate_struct_function (fndecl, false);
 
   if (warn_unused_local_typedefs)
-    cfun->language = ggc_alloc_cleared_language_function ();
+    cfun->language = ggc_cleared_alloc<language_function> ();
 
   /* Begin the statement tree for this function.  */
   DECL_SAVED_TREE (fndecl) = push_stmt_list ();
@@ -8803,7 +8800,7 @@ c_push_function_context (void)
   /* cfun->language might have been already allocated by the use of
      -Wunused-local-typedefs.  In that case, just re-use it.  */
   if (p == NULL)
-    cfun->language = p = ggc_alloc_cleared_language_function ();
+    cfun->language = p = ggc_cleared_alloc<language_function> ();
 
   p->base.x_stmt_tree = c_stmt_tree;
   c_stmt_tree.x_cur_stmt_list = vec_safe_copy (c_stmt_tree.x_cur_stmt_list);

@@ -382,38 +382,6 @@ of pointers.  @code{reorder} functions can be expensive.  When
 possible, it is better to depend on properties of the data, like an ID
 number or the hash of a string instead.
 
-@findex variable_size
-@item variable_size
-
-The type machinery expects the types to be of constant size.  When this
-is not true, for example, with structs that have array fields or unions,
-the type machinery cannot tell how many bytes need to be allocated at
-each allocation.  The @code{variable_size} is used to mark such types.
-The type machinery then provides allocators that take a parameter
-indicating an exact size of object being allocated.  Note that the size
-must be provided in bytes whereas the @code{length} option works with
-array lengths in number of elements.
-
-For example,
-@smallexample
-struct GTY((variable_size)) sorted_fields_type @{
-  int len;
-  tree GTY((length ("%h.len"))) elts[1];
-@};
-@end smallexample
-
-Then the objects of @code{struct sorted_fields_type} are allocated in GC
-memory as follows:
-@smallexample
-  field_vec = ggc_alloc_sorted_fields_type (size);
-@end smallexample
-
-If @var{field_vec->elts} stores @var{n} elements, then @var{size}
-could be calculated as follows:
-@smallexample
-  size_t size = sizeof (struct sorted_fields_type) + n * sizeof (tree);
-@end smallexample
-
 @findex atomic
 @item atomic
 

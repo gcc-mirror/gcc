@@ -4748,7 +4748,7 @@ struct GTY(()) machine_function
 static struct machine_function *
 alpha_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Support for frame based VMS condition handlers.  */
@@ -9576,7 +9576,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
       linksym = (char *) alloca (buf_len);
       snprintf (linksym, buf_len, "$%d..%s..lk", cfun->funcdef_no, name);
 
-      al = ggc_alloc_alpha_links ();
+      al = ggc_alloc<alpha_links> ();
       al->func = func;
       al->linkage = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (linksym));
 

@@ -323,7 +323,7 @@ getdecls (void)
 void
 pushlevel (void)
 {
-  struct binding_level *newlevel = ggc_alloc_binding_level ();
+  struct binding_level *newlevel = ggc_alloc<binding_level> ();
 
   *newlevel = clear_binding_level;
 

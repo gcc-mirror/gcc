@@ -2317,7 +2317,7 @@ bfin_class_likely_spilled_p (reg_class_t rclass)
 static struct machine_function *
 bfin_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */

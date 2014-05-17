@@ -1,3 +1,41 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c (sorted_fields_type_new): Adjust.
+	* cp-cilkplus.c (cilk_install_body_with_frame_cleanup): Likewise.
+	* cp-objcp-common.c (decl_shadowed_for_var_insert): Likewise.
+	* cp-tree.h: Remove usage of variable_size gty attribute.
+	* decl.c (make_label_decl): Adjust.
+	(check_goto): Likewise.
+	(start_preparsed_function): Likewise.
+	(save_function_data): Likewise.
+	* lex.c (init_reswords): Likewise.
+	(retrofit_lang_decl): Likewise.
+	(cxx_dup_lang_specific_decl): Likewise.
+	(copy_lang_type): Likewise.
+	(cxx_make_type): Likewise.
+	* name-lookup.c (binding_entry_make): Likewise.
+	(binding_table_construct): Likewise.
+	(binding_table_new): Likewise.
+	(cxx_binding_make): Likewise.
+	(pushdecl_maybe_friend_1): Likewise.
+	(begin_scope): Likewise.
+	(push_to_top_level): Likewise.
+	* parser.c (cp_lexer_alloc): Likewise.
+	(cp_lexer_new_from_tokens): Likewise.
+	(cp_token_cache_new): Likewise.
+	(cp_parser_context_new): Likewise.
+	(cp_parser_new): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_template_id): Likewise.
+	* pt.c (maybe_process_partial_specialization): Likewise.
+	(register_specialization): Likewise.
+	(add_pending_template): Likewise.
+	(lookup_template_class_1): Likewise.
+	(push_tinst_level): Likewise.
+	* semantics.c (register_constexpr_fundef): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	* typeck2.c (abstract_virtuals_error_sfinae): Likewise.
+
 2014-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51640

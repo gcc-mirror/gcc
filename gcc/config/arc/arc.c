@@ -8722,7 +8722,7 @@ static struct machine_function *
 arc_init_machine_status (void)
 {
   struct machine_function *machine;
-  machine = ggc_alloc_cleared_machine_function ();
+  machine = ggc_cleared_alloc<machine_function> ();
   machine->fn_type = ARC_FUNCTION_UNKNOWN;
   machine->force_short_suffix = -1;
 

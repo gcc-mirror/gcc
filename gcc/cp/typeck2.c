@@ -294,7 +294,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
       slot = htab_find_slot_with_hash (abstract_pending_vars, type,
 				      (hashval_t)TYPE_UID (type), INSERT);
 
-      pat = ggc_alloc_pending_abstract_type ();
+      pat = ggc_alloc<pending_abstract_type> ();
       pat->type = type;
       pat->decl = decl;
       pat->use = use;

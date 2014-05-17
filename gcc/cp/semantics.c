@@ -8024,7 +8024,7 @@ register_constexpr_fundef (tree fun, tree body)
     htab_find_slot (constexpr_fundef_table, &entry, INSERT);
 
   gcc_assert (*slot == NULL);
-  *slot = ggc_alloc_constexpr_fundef ();
+  *slot = ggc_alloc<constexpr_fundef> ();
   **slot = entry;
 
   return fun;
@@ -8468,7 +8468,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
     {
       /* We need to keep a pointer to the entry, not just the slot, as the
 	 slot can move in the call to cxx_eval_builtin_function_call.  */
-      *slot = entry = ggc_alloc_constexpr_call ();
+      *slot = entry = ggc_alloc<constexpr_call> ();
       *entry = new_call;
     }
   /* Calls which are in progress have their result set to NULL

@@ -570,7 +570,7 @@ add_asm_node (tree asm_str)
 {
   struct asm_node *node;
 
-  node = ggc_alloc_cleared_asm_node ();
+  node = ggc_cleared_alloc<asm_node> ();
   node->asm_str = asm_str;
   node->order = symtab_order++;
   node->next = NULL;
@@ -1337,7 +1337,7 @@ init_lowered_empty_function (tree decl, bool in_ssa)
   cfun->curr_properties |= (PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_any
 			    | PROP_cfg | PROP_loops);
 
-  set_loops_for_fn (cfun, ggc_alloc_cleared_loops ());
+  set_loops_for_fn (cfun, ggc_cleared_alloc<loops> ());
   init_loops_structure (cfun, loops_for_fn (cfun), 1);
   loops_for_fn (cfun)->state |= LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
 

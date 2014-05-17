@@ -6487,7 +6487,7 @@ static struct sorted_fields_type *
 sorted_fields_type_new (int n)
 {
   struct sorted_fields_type *sft;
-  sft = ggc_alloc_sorted_fields_type (sizeof (struct sorted_fields_type)
+  sft = (sorted_fields_type *) ggc_internal_alloc (sizeof (sorted_fields_type)
 				      + n * sizeof (tree));
   sft->len = n;
 

@@ -1,5 +1,200 @@
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* alias.c (record_alias_subset): Adjust.
+	* bitmap.c (bitmap_element_allocate): Likewise.
+	(bitmap_gc_alloc_stat): Likewise.
+	* cfg.c (init_flow): Likewise.
+	(alloc_block): Likewise.
+	(unchecked_make_edge): Likewise.
+	* cfgloop.c (alloc_loop): Likewise.
+	(flow_loops_find): Likewise.
+	(rescan_loop_exit): Likewise.
+	* cfgrtl.c (init_rtl_bb_info): Likewise.
+	* cgraph.c (insert_new_cgraph_node_version): Likewise.
+	(cgraph_allocate_node): Likewise.
+	(cgraph_create_edge_1): Likewise.
+	(cgraph_allocate_init_indirect_info): Likewise.
+	* cgraphclones.c (cgraph_clone_edge): Likewise.
+	* cgraphunit.c (add_asm_node): Likewise.
+	(init_lowered_empty_function): Likewise.
+	* config/aarch64/aarch64.c (aarch64_init_machine_status):
+	Likewise.
+	* config/alpha/alpha.c (alpha_init_machine_status): Likewise.
+	(alpha_use_linkage): Likewise.
+	* config/arc/arc.c (arc_init_machine_status): Likewise.
+	* config/arm/arm.c (arm_init_machine_status): Likewise.
+	* config/avr/avr.c (avr_init_machine_status): Likewise.
+	* config/bfin/bfin.c (bfin_init_machine_status): Likewise.
+	* config/c6x/c6x.c (c6x_init_machine_status): Likewise.
+	* config/cris/cris.c (cris_init_machine_status): Likewise.
+	* config/darwin.c (machopic_indirection_name): Likewise.
+	(darwin_build_constant_cfstring): Likewise.
+	(darwin_enter_string_into_cfstring_table): Likewise.
+	* config/epiphany/epiphany.c (epiphany_init_machine_status):
+	* Likewise.
+	* config/frv/frv.c (frv_init_machine_status): Likewise.
+	* config/i386/i386.c (get_dllimport_decl): Likewise.
+	(ix86_init_machine_status): Likewise.
+	(assign_386_stack_local): Likewise.
+	* config/i386/winnt.c (i386_pe_record_external_function):
+	Likewise.
+	(i386_pe_maybe_record_exported_symbol): Likewise.
+	(i386_pe_record_stub): Likewise.
+	* config/ia64/ia64.c (ia64_init_machine_status): Likewise.
+	* config/iq2000/iq2000.c (iq2000_init_machine_status): Likewise.
+	* config/m32c/m32c.c (m32c_init_machine_status): Likewise.
+	(m32c_note_pragma_address): Likewise.
+	* config/mep/mep.c (mep_init_machine_status): Likewise.
+	(mep_note_pragma_flag): Likewise.
+	* config/mips/mips.c (mflip_mips16_use_mips16_p): Likewise.
+	(mips16_local_alias): Likewise.
+	(mips_init_machine_status): Likewise.
+	* config/mmix/mmix.c (mmix_init_machine_status): Likewise.
+	* config/moxie/moxie.c (moxie_init_machine_status): Likewise.
+	* config/msp430/msp430.c (msp430_init_machine_status): Likewise.
+	* config/nds32/nds32.c (nds32_init_machine_status): Likewise.
+	* config/nios2/nios2.c (nios2_init_machine_status): Likewise.
+	* config/pa/pa.c (pa_init_machine_status): Likewise.
+	(pa_get_deferred_plabel): Likewise.
+	* config/rl78/rl78.c (rl78_init_machine_status): Likewise.
+	* config/rs6000/rs6000.c (builtin_function_type): Likewise.
+	(rs6000_init_machine_status): Likewise.
+	(output_toc): Likewise.
+	* config/s390/s390.c (s390_init_machine_status): Likewise.
+	* config/score/score.c (score_output_external): Likewise.
+	* config/sparc/sparc.c (sparc_init_machine_status): Likewise.
+	* config/spu/spu.c (spu_init_machine_status): Likewise.
+	* config/tilegx/tilegx.c (tilegx_init_machine_status): Likewise.
+	* config/tilepro/tilepro.c (tilepro_init_machine_status):
+	* Likewise.
+	* config/xtensa/xtensa.c (xtensa_init_machine_status): Likewise.
+	* coverage.c (coverage_end_function): Likewise.
+	* dbxout.c (dbxout_init): Likewise.
+	* doc/gty.texi: Don't mention variable_size attribute.
+	* dwarf2cfi.c (new_cfi): Adjust.
+	(new_cfi_row): Likewise.
+	(copy_cfi_row): Likewise.
+	(create_cie_data): Likewise.
+	* dwarf2out.c (dwarf2out_alloc_current_fde): Likewise.
+	(new_loc_descr): Likewise.
+	(find_AT_string_in_table): Likewise.
+	(add_addr_table_entry): Likewise.
+	(new_die): Likewise.
+	(add_var_loc_to_decl): Likewise.
+	(clone_die): Likewise.
+	(clone_as_declaration): Likewise.
+	(break_out_comdat_types): Likewise.
+	(new_loc_list): Likewise.
+	(add_loc_descr_to_each): Likewise.
+	(add_location_or_const_value_attribute): Likewise.
+	(add_linkage_name): Likewise.
+	(lookup_filename): Likewise.
+	(dwarf2out_var_location): Likewise.
+	(new_line_info_table): Likewise.
+	(dwarf2out_init): Likewise.
+	(mem_loc_descriptor): Likewise.
+	(loc_descriptor): Likewise.
+	(add_const_value_attribute): Likewise.
+	(tree_add_const_value_attribute): Likewise.
+	(comp_dir_string): Likewise.
+	(dwarf2out_vms_debug_main_pointer): Likewise.
+	(string_cst_pool_decl): Likewise.
+	* emit-rtl.c (set_mem_attrs): Likewise.
+	(get_reg_attrs): Likewise.
+	(start_sequence): Likewise.
+	(init_emit): Likewise.
+	(init_emit_regs): Likewise.
+	* except.c (init_eh_for_function): Likewise.
+	(gen_eh_region): Likewise.
+	(gen_eh_region_catch): Likewise.
+	(gen_eh_landing_pad): Likewise.
+	(add_call_site): Likewise.
+	* function.c (add_frame_space): Likewise.
+	(insert_temp_slot_address): Likewise.
+	(assign_stack_temp_for_type): Likewise.
+	(get_hard_reg_initial_val): Likewise.
+	(allocate_struct_function): Likewise.
+	(prepare_function_start): Likewise.
+	(types_used_by_var_decl_insert): Likewise.
+	* gengtype.c (variable_size_p): Remove function.
+	(enum alloc_quantity): Remove enum.
+	(write_typed_alloc_def): Remove function.
+	(write_typed_struct_alloc_def): Likewise.
+	(write_typed_typedef_alloc_def): Likewise.
+	(write_typed_alloc_defns): Likewise.
+	(main): Adjust.
+	* ggc-common.c (ggc_cleared_alloc_htab_ignore_args): Adjust.
+	(ggc_cleared_alloc_ptr_array_two_args): Likewise.
+	* ggc.h (ggc_alloc): new function.
+	(ggc_cleared_alloc): Likewise.
+	(ggc_vec_alloc): Template on type of vector element, and remove
+	element size argument.
+	(ggc_cleared_vec_alloc): Likewise.
+	* gimple.c (gimple_build_omp_for): Adjust.
+	(gimple_copy): Likewise.
+	* ipa-cp.c (get_replacement_map): Likewise.
+	(find_aggregate_values_for_callers_subset): Likewise.
+	(known_aggs_to_agg_replacement_list): Likewise.
+	* ipa-devirt.c (get_odr_type): Likewise.
+	* ipa-prop.c (ipa_node_duplication_hook): Likewise.
+	(read_agg_replacement_chain): Likewise.
+	* loop-iv.c (get_simple_loop_desc): Likewise.
+	* lto-cgraph.c (input_node_opt_summary): Likewise.
+	* lto-section-in.c (lto_new_in_decl_state): Likewise.
+	* lto-streamer-in.c (lto_input_eh_catch_list): Likewise.
+	(input_eh_region): Likewise.
+	(input_eh_lp): Likewise.
+	(input_cfg): Likewise.
+	* optabs.c (set_optab_libfunc): Likewise.
+	(init_tree_optimization_optabs): Likewise.
+	(set_conv_libfunc): Likewise.
+	* passes.c (do_per_function_toporder): Likewise.
+	* rtl.h: Don't use variable_size gty attribute.
+	* sese.c (if_region_set_false_region): Adjust.
+	* stringpool.c (gt_pch_save_stringpool): Likewise.
+	* target-globals.c (save_target_globals): Likewise.
+	* toplev.c (general_init): Likewise.
+	* trans-mem.c (record_tm_replacement): Likewise.
+	(split_bb_make_tm_edge): Likewise.
+	* tree-cfg.c (move_sese_region_to_fn): Likewise.
+	* tree-data-ref.h (lambda_vector_new): Likewise.
+	* tree-eh.c (add_stmt_to_eh_lp_fn): Likewise.
+	* tree-iterator.c (tsi_link_before): Likewise.
+	(tsi_link_after): Likewise.
+	* tree-scalar-evolution.c (new_scev_info_str): Likewise.
+	* tree-ssa-loop-niter.c (record_estimate): Likewise.
+	* tree-ssa-operands.c (ssa_operand_alloc): Likewise.
+	* tree-ssa-operands.h: Don't use variable_size gty attribute.
+	* tree-ssa.c (init_tree_ssa): Adjust.
+	* tree-ssanames.c (set_range_info): Likewise.
+	(get_ptr_info): Likewise.
+	(duplicate_ssa_name_ptr_info): Likewise.
+	(duplicate_ssa_name_range_info): Likewise.
+	* tree-streamer-in.c (unpack_ts_real_cst_value_fields): Likewise.
+	(unpack_ts_fixed_cst_value_fields): Likewise.
+	* tree.c (build_fixed): Likewise.
+	(build_real): Likewise.
+	(build_string): Likewise.
+	(decl_priority_info): Likewise.
+	(decl_debug_expr_insert): Likewise.
+	(decl_value_expr_insert): Likewise.
+	(decl_debug_args_insert): Likewise.
+	(type_hash_add): Likewise.
+	(build_omp_clause): Likewise.
+	* ubsan.c (decl_for_type_insert): Likewise.
+	* varasm.c (get_unnamed_section): Likewise.
+	(get_noswitch_section): Likewise.
+	(get_section): Likewise.
+	(get_block_for_section): Likewise.
+	(create_block_symbol): Likewise.
+	(build_constant_desc): Likewise.
+	(create_constant_pool): Likewise.
+	(force_const_mem): Likewise.
+	(record_tm_clone_pair): Likewise.
+	* varpool.c (varpool_create_empty_node): Likewise.
+
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* dwarf2out.c (tree_add_const_value_attribute): Call
 	ggc_internal_cleared_alloc instead of ggc_alloc_cleared_atomic.
 	* gengtype.c (write_typed_alloc_def): Call ggc_internal_<x>alloc

@@ -6153,7 +6153,7 @@ set_optab_libfunc (optab op, enum machine_mode mode, const char *name)
     val = 0;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
-    *slot = ggc_alloc_libfunc_entry ();
+    *slot = ggc_alloc<libfunc_entry> ();
   (*slot)->op = op;
   (*slot)->mode1 = mode;
   (*slot)->mode2 = VOIDmode;
@@ -6181,7 +6181,7 @@ set_conv_libfunc (convert_optab optab, enum machine_mode tmode,
     val = 0;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
-    *slot = ggc_alloc_libfunc_entry ();
+    *slot = ggc_alloc<libfunc_entry> ();
   (*slot)->op = optab;
   (*slot)->mode1 = tmode;
   (*slot)->mode2 = fmode;
@@ -6274,8 +6274,7 @@ init_tree_optimization_optabs (tree optnode)
   if (tmp_optabs)
     memset (tmp_optabs, 0, sizeof (struct target_optabs));
   else
-    tmp_optabs = (struct target_optabs *)
-      ggc_alloc_atomic (sizeof (struct target_optabs));
+    tmp_optabs = ggc_alloc<target_optabs> ();
 
   /* Generate a new set of optabs into tmp_optabs.  */
   init_all_optabs (tmp_optabs);

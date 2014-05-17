@@ -944,7 +944,7 @@ maybe_process_partial_specialization (tree type)
 		  elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
 
 		  slot = htab_find_slot (type_specializations, &elt, INSERT);
-		  entry = ggc_alloc_spec_entry ();
+		  entry = ggc_alloc<spec_entry> ();
 		  *entry = elt;
 		  *slot = entry;
 		}
@@ -1481,7 +1481,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 
   if (slot != NULL /* !optimize_specialization_lookup_p (tmpl) */)
     {
-      spec_entry *entry = ggc_alloc_spec_entry ();
+      spec_entry *entry = ggc_alloc<spec_entry> ();
       gcc_assert (tmpl && args && spec);
       *entry = elt;
       *slot = entry;
@@ -7207,7 +7207,7 @@ add_pending_template (tree d)
   if (level)
     push_tinst_level (d);
 
-  pt = ggc_alloc_pending_template ();
+  pt = ggc_alloc<pending_template> ();
   pt->next = NULL;
   pt->tinst = current_tinst_level;
   if (last_pending_template)
@@ -7837,7 +7837,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       elt.spec = t;
       slot = htab_find_slot_with_hash (type_specializations,
 				       &elt, hash, INSERT);
-      entry = ggc_alloc_spec_entry ();
+      entry = ggc_alloc<spec_entry> ();
       *entry = elt;
       *slot = entry;
 
@@ -8262,7 +8262,7 @@ push_tinst_level (tree d)
   if (limit_bad_template_recursion (d))
     return 0;
 
-  new_level = ggc_alloc_tinst_level ();
+  new_level = ggc_alloc<tinst_level> ();
   new_level->decl = d;
   new_level->locus = input_location;
   new_level->errors = errorcount+sorrycount;

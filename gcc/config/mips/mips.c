@@ -1241,7 +1241,7 @@ mflip_mips16_use_mips16_p (tree decl)
   if (!entry)
     {
       mips16_flipper = !mips16_flipper;
-      entry = ggc_alloc_mflip_mips16_entry ();
+      entry = ggc_alloc<mflip_mips16_entry> ();
       entry->name = name;
       entry->mips16_p = mips16_flipper ? !base_is_mips16 : base_is_mips16;
       *slot = entry;
@@ -6451,7 +6451,7 @@ mips16_local_alias (rtx func)
       SYMBOL_REF_FLAGS (local) = SYMBOL_REF_FLAGS (func) | SYMBOL_FLAG_LOCAL;
 
       /* Create a new structure to represent the mapping.  */
-      alias = ggc_alloc_mips16_local_alias ();
+      alias = ggc_alloc<struct mips16_local_alias> ();
       alias->func = func;
       alias->local = local;
       *slot = alias;
@@ -16829,7 +16829,7 @@ mips_set_current_function (tree fndecl)
 static struct machine_function *
 mips_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Return the processor associated with the given ISA level, or null

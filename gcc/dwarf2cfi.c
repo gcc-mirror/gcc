@@ -356,7 +356,7 @@ need_data_align_sf_opcode (HOST_WIDE_INT off)
 static inline dw_cfi_ref
 new_cfi (void)
 {
-  dw_cfi_ref cfi = ggc_alloc_dw_cfi_node ();
+  dw_cfi_ref cfi = ggc_alloc<dw_cfi_node> ();
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = 0;
   cfi->dw_cfi_oprnd2.dw_cfi_reg_num = 0;
@@ -369,7 +369,7 @@ new_cfi (void)
 static dw_cfi_row *
 new_cfi_row (void)
 {
-  dw_cfi_row *row = ggc_alloc_cleared_dw_cfi_row ();
+  dw_cfi_row *row = ggc_cleared_alloc<dw_cfi_row> ();
 
   row->cfa.reg = INVALID_REGNUM;
 
@@ -381,7 +381,7 @@ new_cfi_row (void)
 static dw_cfi_row *
 copy_cfi_row (dw_cfi_row *src)
 {
-  dw_cfi_row *dst = ggc_alloc_dw_cfi_row ();
+  dw_cfi_row *dst = ggc_alloc<dw_cfi_row> ();
 
   *dst = *src;
   dst->reg_save = vec_safe_copy (src->reg_save);
@@ -2892,7 +2892,7 @@ create_cie_data (void)
 	case 0:
 	  break;
 	case 1:
-	  cie_return_save = ggc_alloc_reg_saved_in_data ();
+	  cie_return_save = ggc_alloc<reg_saved_in_data> ();
 	  *cie_return_save = cie_trace.regs_saved_in_regs[0];
 	  cie_trace.regs_saved_in_regs.release ();
 	  break;

@@ -56,7 +56,7 @@ next_power_of_two (size_t x)
 objc_map_t
 objc_map_alloc_ggc (size_t initial_capacity)
 {
-  objc_map_t map = (objc_map_t) ggc_internal_cleared_vec_alloc (1, sizeof (struct objc_map_private));
+  objc_map_t map = ggc_cleared_alloc<objc_map_private> ();
   if (map == NULL)
     OUT_OF_MEMORY;
   
@@ -67,8 +67,8 @@ objc_map_alloc_ggc (size_t initial_capacity)
   map->maximum_load_factor = 70;
   map->max_number_of_non_empty_slots = (initial_capacity * map->maximum_load_factor) / 100;
 
-  map->slots = (tree *)ggc_internal_cleared_vec_alloc (initial_capacity, sizeof (tree));
-  map->values = (tree *)ggc_internal_cleared_vec_alloc (initial_capacity, sizeof (tree));
+  map->slots = ggc_cleared_vec_alloc<tree> (initial_capacity);
+  map->values = ggc_cleared_vec_alloc<tree> (initial_capacity);
 
   if (map->slots == NULL)
     OUT_OF_MEMORY;
@@ -112,8 +112,8 @@ objc_map_private_resize (objc_map_t map, size_t new_number_of_slots)
   map->max_number_of_non_empty_slots = (map->number_of_slots * map->maximum_load_factor) / 100;
 
 
-  map->slots = (tree *)ggc_internal_cleared_vec_alloc (map->number_of_slots, sizeof (tree));
-  map->values = (tree *)ggc_internal_cleared_vec_alloc (map->number_of_slots, sizeof (tree));
+  map->slots = ggc_cleared_vec_alloc<tree> (map->number_of_slots);
+  map->values = ggc_cleared_vec_alloc<tree> (map->number_of_slots);
 
   if (map->slots == NULL)
     OUT_OF_MEMORY;

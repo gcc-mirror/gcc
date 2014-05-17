@@ -764,8 +764,7 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
   fndecl = build_decl (input_location, FUNCTION_DECL, name, method_type);
   DECL_CONTEXT (fndecl) = this_class;
 
-  DECL_LANG_SPECIFIC (fndecl)
-    = ggc_alloc_cleared_lang_decl(sizeof (struct lang_decl));
+  DECL_LANG_SPECIFIC (fndecl) = ggc_cleared_alloc<struct lang_decl> ();
   DECL_LANG_SPECIFIC (fndecl)->desc = LANG_DECL_FUNC;
 
   /* Initialize the static initializer test table.  */
@@ -3194,7 +3193,7 @@ java_treetreehash_new (htab_t ht, tree t)
   e = htab_find_slot_with_hash (ht, t, hv, INSERT);
   if (*e == NULL)
     {
-      tthe = ggc_alloc_cleared_treetreehash_entry ();
+      tthe = ggc_cleared_alloc<treetreehash_entry> ();
       tthe->key = t;
       *e = tthe;
     }

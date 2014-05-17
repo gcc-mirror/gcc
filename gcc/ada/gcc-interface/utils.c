@@ -245,10 +245,10 @@ void
 init_gnat_utils (void)
 {
   /* Initialize the association of GNAT nodes to GCC trees.  */
-  associate_gnat_to_gnu = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
+  associate_gnat_to_gnu = ggc_cleared_vec_alloc<tree> (max_gnat_nodes);
 
   /* Initialize the association of GNAT nodes to GCC trees as dummies.  */
-  dummy_node_table = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
+  dummy_node_table = ggc_cleared_vec_alloc<tree> (max_gnat_nodes);
 
   /* Initialize the hash table of padded types.  */
   pad_type_hash_table
@@ -428,7 +428,7 @@ gnat_pushlevel (void)
       free_binding_level = free_binding_level->chain;
     }
   else
-    newlevel = ggc_alloc_gnat_binding_level ();
+    newlevel = ggc_alloc<gnat_binding_level> ();
 
   /* Use a free BLOCK, if any; otherwise, allocate one.  */
   if (free_block_chain)
@@ -1182,7 +1182,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	      goto built;
 	    }
 
-	  h = ggc_alloc_pad_type_hash ();
+	  h = ggc_alloc<pad_type_hash> ();
 	  h->hash = hashcode;
 	  h->type = record;
 	  loc = htab_find_slot_with_hash (pad_type_hash_table, h, hashcode,

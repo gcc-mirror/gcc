@@ -232,7 +232,7 @@ ggc_cleared_alloc_htab_ignore_args (size_t c ATTRIBUTE_UNUSED,
 				    size_t n ATTRIBUTE_UNUSED)
 {
   gcc_assert (c * n == sizeof (struct htab));
-  return ggc_alloc_cleared_htab ();
+  return ggc_cleared_alloc<htab> ();
 }
 
 /* TODO: once we actually use type information in GGC, create a new tag
@@ -241,7 +241,7 @@ void *
 ggc_cleared_alloc_ptr_array_two_args (size_t c, size_t n)
 {
   gcc_assert (sizeof (PTR *) == n);
-  return ggc_internal_cleared_vec_alloc (sizeof (PTR *), c);
+  return ggc_cleared_vec_alloc<PTR *> (c);
 }
 
 /* These are for splay_tree_new_ggc.  */

@@ -199,7 +199,7 @@ set_range_info (tree name, enum value_range_type range_type,
     {
       size_t size = (sizeof (range_info_def)
 		     + trailing_wide_ints <3>::extra_size (precision));
-      ri = ggc_alloc_range_info_def (size);
+      ri = static_cast<range_info_def *> (ggc_internal_alloc (size));
       ri->ints.set_precision (precision);
       SSA_NAME_RANGE_INFO (name) = ri;
       ri->set_nonzero_bits (wi::shwi (-1, precision));
@@ -428,7 +428,7 @@ get_ptr_info (tree t)
   pi = SSA_NAME_PTR_INFO (t);
   if (pi == NULL)
     {
-      pi = ggc_alloc_cleared_ptr_info_def ();
+      pi = ggc_cleared_alloc<ptr_info_def> ();
       pt_solution_reset (&pi->pt);
       mark_ptr_info_alignment_unknown (pi);
       SSA_NAME_PTR_INFO (t) = pi;
@@ -472,7 +472,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   if (!ptr_info)
     return;
 
-  new_ptr_info = ggc_alloc_ptr_info_def ();
+  new_ptr_info = ggc_alloc<ptr_info_def> ();
   *new_ptr_info = *ptr_info;
 
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
@@ -496,7 +496,7 @@ duplicate_ssa_name_range_info (tree name, enum value_range_type range_type,
   unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
   size_t size = (sizeof (range_info_def)
 		 + trailing_wide_ints <3>::extra_size (precision));
-  new_range_info = ggc_alloc_range_info_def (size);
+  new_range_info = static_cast<range_info_def *> (ggc_internal_alloc (size));
   memcpy (new_range_info, range_info, size);
 
   gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);

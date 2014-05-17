@@ -364,7 +364,7 @@ lto_get_decl_name_mapping (struct lto_file_decl_data *decl_data,
 struct lto_in_decl_state *
 lto_new_in_decl_state (void)
 {
-  return ggc_alloc_cleared_lto_in_decl_state ();
+  return ggc_cleared_alloc<lto_in_decl_state> ();
 }
 
 /* Delete STATE and its components. */
