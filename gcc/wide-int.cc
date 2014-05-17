@@ -27,13 +27,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "dumpfile.h"
 
-#if GCC_VERSION >= 3000
 #define W_TYPE_SIZE HOST_BITS_PER_WIDE_INT
+#if GCC_VERSION >= 3000 && (W_TYPE_SIZE == 32 || defined (__SIZEOF_INT128__))
 typedef unsigned HOST_HALF_WIDE_INT UHWtype;
 typedef unsigned HOST_WIDE_INT UWtype;
 typedef unsigned int UQItype __attribute__ ((mode (QI)));
 typedef unsigned int USItype __attribute__ ((mode (SI)));
 typedef unsigned int UDItype __attribute__ ((mode (DI)));
+#if W_TYPE_SIZE == 32
+typedef unsigned int UDWtype __attribute__ ((mode (DI)));
+#else
+typedef unsigned int UDWtype __attribute__ ((mode (TI)));
+#endif
 #include "longlong.h"
 #endif
 

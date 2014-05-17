@@ -1,3 +1,8 @@
+2014-05-17  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* wide-int.cc: Only include longlong.h if W_TYPE_SIZE==32 or
+	__SIZEOF_INT128__ is defined.
+
 2014-05-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/rs6000/rs6000.c (rs6000_real_tls_symbol_ref_p): New function.
