@@ -1859,6 +1859,11 @@ clear_marks (void)
     }
 }
 
+/* Check if any blocks with a registered finalizer have become unmarked. If so
+   run the finalizer and unregister it because the block is about to be freed.
+   Note that no garantee is made about what order finalizers will run in so
+   touching other objects in gc memory is extremely unwise.  */
+
 static void
 ggc_handle_finalizers ()
 {
