@@ -1,3 +1,8 @@
+2014-05-17  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	* check.c (gfc_check_fn_rc2008): move "argument" to the right
+	place.
+
 2014-05-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60127
