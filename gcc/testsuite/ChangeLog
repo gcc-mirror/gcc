@@ -1,3 +1,9 @@
+2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/pr60969.C: Compile for all ilp32 x86 targets.
+	(dg-options): Add -mfpmath=387.
+	(dg-final): Check that no MMX registers are used.
+
 2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60969
