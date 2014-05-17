@@ -1,8 +1,18 @@
+2014-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60966
+	* include/std/future (__future_base::_State_baseV2::_M_set_result):
+	Pass lock into _M_do_set and hold it until the function returns.
+	Signal condition variable after call_once completes.
+	(__future_base::_State_baseV2::_M_do_set): Use lock argument. Do not
+	signal here.
+	* testsuite/30_threads/promise/60966.cc: New.
+
 2014-05-16  Iain Sandoe  <iain@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
-        * testsuite/libstdc++-abi/abi.exp: Defer setting of baseline_subdir
-        until after checking that the test is eligible to be run.
+	* testsuite/libstdc++-abi/abi.exp: Defer setting of baseline_subdir
+	until after checking that the test is eligible to be run.
 
 2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
