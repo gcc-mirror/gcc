@@ -1,3 +1,10 @@
+2014-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/61140
+	PR tree-optimization/61150
+	PR tree-optimization/61197
+	* tree-ssa-phiopt.c (value_replacement): Punt on multiple phis.
+
 2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (free): Mention Alpha.  Also enabled at -Os.

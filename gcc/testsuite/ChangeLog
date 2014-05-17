@@ -1,3 +1,12 @@
+2014-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/61140
+	PR tree-optimization/61150
+	PR tree-optimization/61197
+	* gcc.dg/tree-ssa/pr61140.c: New file.
+	* gcc.dg/tree-ssa/pr61150.c: New file.
+	* gcc.dg/tree-ssa/pr61197.c: New file.
+
 2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/pr60969.C: Compile for all ilp32 x86 targets.

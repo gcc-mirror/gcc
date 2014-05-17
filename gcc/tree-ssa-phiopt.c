@@ -849,6 +849,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	  && !POINTER_TYPE_P (TREE_TYPE (arg0))))
     return 0;
 
+  /* Only transform if it removes the condition.  */
+  if (!single_non_singleton_phi_for_edges (phi_nodes (gimple_bb (phi)), e0, e1))
+    return 0;
+
   /* Size-wise, this is always profitable.  */
   if (optimize_bb_for_speed_p (cond_bb)
       /* The special case is useless if it has a low probability.  */
