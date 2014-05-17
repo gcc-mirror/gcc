@@ -1,4 +1,4 @@
-2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
+2014-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60966
 	* include/std/future (__future_base::_State_baseV2::_M_set_result):
