@@ -1,3 +1,42 @@
+2014-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+
+	2014-04-28  Richard Henderson  <rth@redhat.com>
+
+	* gcc-interface/Makefile.in: Support aarch64-linux.
+
+	2014-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.ads (Get_External_Name): Add 'False' default to Has_Suffix,
+	add 'Suffix' parameter and adjust comment.
+	(Get_External_Name_With_Suffix): Delete.
+	* exp_dbug.adb (Get_External_Name_With_Suffix): Merge into...
+	(Get_External_Name): ...here.  Add 'False' default to Has_Suffix, add
+	'Suffix' parameter.
+	(Get_Encoded_Name): Remove 2nd argument in call to Get_External_Name.
+	Call Get_External_Name instead of Get_External_Name_With_Suffix.
+	(Get_Secondary_DT_External_Name): Likewise.
+	* exp_cg.adb (Write_Call_Info): Likewise.
+	* exp_disp.adb (Export_DT): Likewise.
+	(Import_DT): Likewise.
+	* comperr.ads (Compiler_Abort): Remove Code parameter and add From_GCC
+	parameter with False default.
+	* comperr.adb (Compiler_Abort): Likewise.  Adjust accordingly.
+	* types.h (Fat_Pointer): Rename into...
+	(String_Pointer): ...this.  Add comment on interfacing rules.
+	* fe.h (Compiler_Abort): Adjust for above renaming.
+	(Error_Msg_N): Likewise.
+	(Error_Msg_NE): Likewise.
+	(Get_External_Name): Likewise.  Add third parameter.
+	(Get_External_Name_With_Suffix): Delete.
+	* gcc-interface/decl.c (STDCALL_PREFIX): Define.
+	(create_concat_name): Adjust call to Get_External_Name, remove call to
+	Get_External_Name_With_Suffix, use STDCALL_PREFIX, adjust for renaming.
+	* gcc-interface/trans.c (post_error): Likewise.
+	(post_error_ne): Likewise.
+	* gcc-interface/misc.c (internal_error_function): Likewise.
+
 2014-04-22  Release Manager
 
 	* GCC 4.9.0 released.
