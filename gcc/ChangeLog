@@ -1,3 +1,7 @@
+2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/invoke.texi (free): Mention Alpha.  Also enabled at -Os.
+
 2014-05-17  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* wide-int.cc: Only include longlong.h if W_TYPE_SIZE==32 or
