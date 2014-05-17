@@ -1,5 +1,9 @@
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* ggc-page.c (ggc_handle_finalizers): Add comment.
+
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* ggc-common.c (ggc_internal_cleared_alloc): Adjust.
 	* ggc-none.c (ggc_internal_alloc): Assert if a finalizer is passed.
 	(ggc_internal_cleared_alloc): Likewise.
