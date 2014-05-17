@@ -1,5 +1,9 @@
 2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
+	* doc/invoke.texi (free): Mention Alpha.  Also enabled at -Os.
+
+2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
 	Backport from mainline
 	2014-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
