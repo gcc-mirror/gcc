@@ -1,3 +1,31 @@
+2014-05-17  Ajit Agarwal <ajitkum@xilinx.com>
+
+	* config/microblaze/microblaze.c
+	  (break_handler): New Declaration.
+	  (microblaze_break_function_p,microblaze_is_break_handler): New.
+	  (compute_frame_size): use of microblaze_break_function_p. Add 
+	    the test of break_handler.
+	  (microblaze_function_prologue) : Add the test of variable
+	  break_handler. Check the fnname by BREAK_HANDLER_NAME.
+	  (microblaze_function_epilogue) : Add the test of break_handler.
+	  (microblaze_globalize_label) : Add the test of break_handler. Check the
+	  name by BREAK_HANDLER_NAME.
+
+	* config/microblaze/microblaze.h (BREAK_HANDLER_NAME) : New macro
+
+	* config/microblaze/microblaze.md :
+	  (*<optab>,<optab>_internal): Add microblaze_is_break_handler () test.
+	  (call_internal1,call_value_intern) : Use of microblaze_break_function_p.
+	  Use of SYMBOL_REF_DECL.
+
+	* config/microblaze/microblaze-protos.h
+	  (microblaze_break_function_p,microblaze_is_break_handler) : New Declaration.
+
+	* testsuite/gcc.target/microblaze/others/break_handler.c : New.
+
+	* doc/extend.texi (MicroBlaze break_handler Functions): Document new
+	  MicroBlaze break_handler functions.
+
 2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/extend.texi (Size of an asm): Move node text according

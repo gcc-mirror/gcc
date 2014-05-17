@@ -3772,6 +3772,18 @@ registers) are saved in the function prologue.  If the function is a leaf
 function, only volatiles used by the function are saved.  A normal function
 return is generated instead of a return from interrupt.
 
+@item break_handler
+@cindex break handler functions
+Use this attribute on the MicroBlaze ports to indicate that
+the specified function is an break handler.  The compiler generates function
+entry and exit sequences suitable for use in an break handler when this
+attribute is present. The return from @code{break_handler} is done through
+the @code{rtbd} instead of @code{rtsd}.
+
+@smallexample
+void f () __attribute__ ((break_handler));
+@end smallexample
+
 @item section ("@var{section-name}")
 @cindex @code{section} function attribute
 Normally, the compiler places the code it generates in the @code{text} section.
