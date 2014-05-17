@@ -145,7 +145,6 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 #define cur_debug_insn_uid (crtl->emit.x_cur_debug_insn_uid)
 #define first_label_num (crtl->emit.x_first_label_num)
 
-static rtx change_address_1 (rtx, enum machine_mode, rtx, int);
 static void set_used_decls (tree);
 static void mark_label_nuses (rtx);
 static hashval_t const_int_htab_hash (const void *);
@@ -2010,11 +2009,15 @@ clear_mem_size (rtx mem)
 /* Return a memory reference like MEMREF, but with its mode changed to MODE
    and its address changed to ADDR.  (VOIDmode means don't change the mode.
    NULL for ADDR means don't change the address.)  VALIDATE is nonzero if the
-   returned memory location is required to be valid.  The memory
-   attributes are not changed.  */
+   returned memory location is required to be valid.  INPLACE is true if any
+   changes can be made directly to MEMREF or false if MEMREF must be treated
+   as immutable.
+
+   The memory attributes are not changed.  */
 
 static rtx
-change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
+change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate,
+		  bool inplace)
 {
   addr_space_t as;
   rtx new_rtx;
@@ -2042,6 +2045,12 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
   if (rtx_equal_p (addr, XEXP (memref, 0)) && mode == GET_MODE (memref))
     return memref;
 
+  if (inplace)
+    {
+      XEXP (memref, 0) = addr;
+      return memref;
+    }
+
   new_rtx = gen_rtx_MEM (mode, addr);
   MEM_COPY_ATTRIBUTES (new_rtx, memref);
   return new_rtx;
@@ -2053,7 +2062,7 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
 rtx
 change_address (rtx memref, enum machine_mode mode, rtx addr)
 {
-  rtx new_rtx = change_address_1 (memref, mode, addr, 1);
+  rtx new_rtx = change_address_1 (memref, mode, addr, 1, false);
   enum machine_mode mmode = GET_MODE (new_rtx);
   struct mem_attrs attrs, *defattrs;
 
@@ -2166,7 +2175,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 	addr = plus_constant (address_mode, addr, offset);
     }
 
-  new_rtx = change_address_1 (memref, mode, addr, validate);
+  new_rtx = change_address_1 (memref, mode, addr, validate, false);
 
   /* If the address is a REG, change_address_1 rightfully returns memref,
      but this would destroy memref's MEM_ATTRS.  */
@@ -2236,7 +2245,7 @@ rtx
 adjust_automodify_address_1 (rtx memref, enum machine_mode mode, rtx addr,
 			     HOST_WIDE_INT offset, int validate)
 {
-  memref = change_address_1 (memref, VOIDmode, addr, validate);
+  memref = change_address_1 (memref, VOIDmode, addr, validate, false);
   return adjust_address_1 (memref, mode, offset, validate, 0, 0, 0);
 }
 
@@ -2272,7 +2281,7 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
     }
 
   update_temp_slot_address (XEXP (memref, 0), new_rtx);
-  new_rtx = change_address_1 (memref, VOIDmode, new_rtx, 1);
+  new_rtx = change_address_1 (memref, VOIDmode, new_rtx, 1, false);
 
   /* If there are no changes, just return the original memory reference.  */
   if (new_rtx == memref)
@@ -2292,23 +2301,25 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed
    to is the same, just the form of the address is being changed, such as
-   by putting something into a register.  */
+   by putting something into a register.  INPLACE is true if any changes
+   can be made directly to MEMREF or false if MEMREF must be treated as
+   immutable.  */
 
 rtx
-replace_equiv_address (rtx memref, rtx addr)
+replace_equiv_address (rtx memref, rtx addr, bool inplace)
 {
   /* change_address_1 copies the memory attribute structure without change
      and that's exactly what we want here.  */
   update_temp_slot_address (XEXP (memref, 0), addr);
-  return change_address_1 (memref, VOIDmode, addr, 1);
+  return change_address_1 (memref, VOIDmode, addr, 1, inplace);
 }
 
 /* Likewise, but the reference is not required to be valid.  */
 
 rtx
-replace_equiv_address_nv (rtx memref, rtx addr)
+replace_equiv_address_nv (rtx memref, rtx addr, bool inplace)
 {
-  return change_address_1 (memref, VOIDmode, addr, 0);
+  return change_address_1 (memref, VOIDmode, addr, 0, inplace);
 }
 
 /* Return a memory reference like MEMREF, but with its mode widened to
