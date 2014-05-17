@@ -2225,7 +2225,7 @@ mep_register_move_cost (enum machine_mode mode, enum reg_class from, enum reg_cl
 static struct machine_function *
 mep_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 static rtx
@@ -4099,7 +4099,7 @@ mep_note_pragma_flag (const char *funcname, int flag)
 
   if (!*slot)
     {
-      *slot = ggc_alloc_pragma_entry ();
+      *slot = ggc_alloc<pragma_entry> ();
       (*slot)->flag = 0;
       (*slot)->used = 0;
       (*slot)->funcname = ggc_strdup (funcname);

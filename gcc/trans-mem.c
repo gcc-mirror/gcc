@@ -479,7 +479,7 @@ record_tm_replacement (tree from, tree to)
   if (tm_wrap_map == NULL)
     tm_wrap_map = htab_create_ggc (32, tree_map_hash, tree_map_eq, 0);
 
-  h = ggc_alloc_tree_map ();
+  h = ggc_alloc<tree_map> ();
   h->hash = htab_hash_pointer (from);
   h->base.from = from;
   h->to = to;
@@ -3070,7 +3070,7 @@ split_bb_make_tm_edge (gimple stmt, basic_block dest_bb,
   struct tm_restart_node *n = (struct tm_restart_node *) *slot;
   if (n == NULL)
     {
-      n = ggc_alloc_tm_restart_node ();
+      n = ggc_alloc<tm_restart_node> ();
       *n = dummy;
     }
   else

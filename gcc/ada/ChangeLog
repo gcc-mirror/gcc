@@ -1,3 +1,18 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* gcc-interface/ada-tree.h: Remove usage of variable_size gty
+	annotation.
+	* gcc-interface/decl.c (annotate_value): Adjust.
+	* gcc-interface/trans.c (Attribute_to_gnu): Likewise.
+	(push_range_check_info): Likewise.
+	(Loop_Statement_to_gnu): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(start_stmt_group): Likewise.
+	* gcc-interface/utils.c (init_gnat_utils): Likewise.
+	(gnat_pushlevel): Likewise.
+	(maybe_pad_type): Likewise.
+
 2014-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* seh_init.c: Fix copyright year.

@@ -1756,7 +1756,7 @@ input_node_opt_summary (struct cgraph_node *node,
   count = streamer_read_uhwi (ib_main);
   for (i = 0; i < count; i++)
     {
-      struct ipa_replace_map *map = ggc_alloc_ipa_replace_map ();
+      struct ipa_replace_map *map = ggc_alloc<ipa_replace_map> ();
 
       vec_safe_push (node->clone.tree_map, map);
       map->parm_num = streamer_read_uhwi (ib_main);

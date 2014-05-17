@@ -835,8 +835,7 @@ gimple_build_omp_for (gimple_seq body, int kind, tree clauses, size_t collapse,
   gimple_omp_for_set_clauses (p, clauses);
   gimple_omp_for_set_kind (p, kind);
   p->collapse = collapse;
-  p->iter =  static_cast <struct gimple_omp_for_iter *> (
-   ggc_internal_cleared_vec_alloc (sizeof (*p->iter), collapse));
+  p->iter =  ggc_cleared_vec_alloc<gimple_omp_for_iter> (collapse);
 
   if (pre_body)
     gimple_omp_for_set_pre_body (p, pre_body);
@@ -1664,10 +1663,8 @@ gimple_copy (gimple stmt)
 	  {
 	    gimple_statement_omp_for *omp_for_copy =
 	      as_a <gimple_statement_omp_for *> (copy);
-	    omp_for_copy->iter =
-	      static_cast <struct gimple_omp_for_iter *> (
-		  ggc_internal_vec_alloc (sizeof (struct gimple_omp_for_iter),
-					  gimple_omp_for_collapse (stmt)));
+	    omp_for_copy->iter = ggc_vec_alloc<gimple_omp_for_iter>
+	      ( gimple_omp_for_collapse (stmt));
           }
 	  for (i = 0; i < gimple_omp_for_collapse (stmt); i++)
 	    {

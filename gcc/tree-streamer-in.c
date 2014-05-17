@@ -177,7 +177,7 @@ unpack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
   for (i = 0; i < SIGSZ; i++)
     r.sig[i] = (unsigned long) bp_unpack_value (bp, HOST_BITS_PER_LONG);
 
-  rp = ggc_alloc_real_value ();
+  rp = ggc_alloc<real_value> ();
   memcpy (rp, &r, sizeof (REAL_VALUE_TYPE));
   TREE_REAL_CST_PTR (expr) = rp;
 }
@@ -189,7 +189,7 @@ unpack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
-  FIXED_VALUE_TYPE *fp = ggc_alloc_fixed_value ();
+  FIXED_VALUE_TYPE *fp = ggc_alloc<fixed_value> ();
   fp->mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
   fp->data.low = bp_unpack_var_len_int (bp);
   fp->data.high = bp_unpack_var_len_int (bp);

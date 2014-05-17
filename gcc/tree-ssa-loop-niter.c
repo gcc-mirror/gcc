@@ -2674,7 +2674,7 @@ record_estimate (struct loop *loop, tree bound, const widest_int &i_bound,
 	  || loop->nb_iterations == NULL_TREE
 	  || TREE_CODE (loop->nb_iterations) != INTEGER_CST))
     {
-      struct nb_iter_bound *elt = ggc_alloc_nb_iter_bound ();
+      struct nb_iter_bound *elt = ggc_alloc<nb_iter_bound> ();
 
       elt->bound = i_bound;
       elt->stmt = at_stmt;

@@ -491,7 +491,7 @@ get_odr_type (tree type, bool insert)
       tree binfo = TYPE_BINFO (type);
       unsigned int i;
 
-      val = ggc_alloc_cleared_odr_type_d ();
+      val = ggc_cleared_alloc<odr_type_d> ();
       val->type = type;
       val->bases = vNULL;
       val->derived_types = vNULL;

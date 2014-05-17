@@ -99,7 +99,7 @@ decl_for_type_insert (tree type, tree decl)
   struct tree_type_map *h;
   void **slot;
 
-  h = ggc_alloc_tree_type_map ();
+  h = ggc_alloc<tree_type_map> ();
   h->type.from = type;
   h->decl = decl;
   slot = htab_find_slot_with_hash (decl_tree_for_type, h, TYPE_UID (type),

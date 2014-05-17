@@ -205,7 +205,7 @@ unsigned const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 static struct machine_function *
 c6x_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */

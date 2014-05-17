@@ -118,7 +118,7 @@ cilk_install_body_with_frame_cleanup (tree fndecl, tree orig_body, void *wd)
   tree dtor = create_cilk_function_exit (frame, false, false);
   add_local_decl (cfun, frame);
 
-  cfun->language = ggc_alloc_cleared_language_function ();
+  cfun->language = ggc_cleared_alloc<language_function> ();
   
   location_t loc = EXPR_LOCATION (orig_body);
   tree list = alloc_stmt_list ();

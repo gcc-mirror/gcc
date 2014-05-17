@@ -4972,130 +4972,6 @@ write_roots (pair_p variables, bool emit_pch)
 		     "gt_pch_scalar_rtab");
 }
 
-/* TRUE if type S has the GTY variable_size annotation.  */
-
-static bool
-variable_size_p (const type_p s)
-{
-  options_p o;
-  for (o = s->u.s.opt; o; o = o->next)
-    if (strcmp (o->name, "variable_size") == 0)
-      return true;
-  return false;
-}
-
-enum alloc_quantity
-{ single, vector };
-
-/* Writes one typed allocator definition into output F for type
-   identifier TYPE_NAME with optional type specifier TYPE_SPECIFIER.
-   The allocator name will contain ALLOCATOR_TYPE.  If VARIABLE_SIZE
-   is true, the allocator will have an extra parameter specifying
-   number of bytes to allocate.  If QUANTITY is set to VECTOR, a
-   vector allocator will be output.  */
-
-static void
-write_typed_alloc_def (outf_p f, 
-                       bool variable_size, const char *type_specifier,
-                       const char *type_name, const char *allocator_type,
-                       enum alloc_quantity quantity)
-{
-  bool two_args = variable_size && (quantity == vector);
-  gcc_assert (f != NULL);
-  const char *type_name_as_id = filter_type_name (type_name);
-  oprintf (f, "#define ggc_alloc_%s%s", allocator_type, type_name_as_id);
-  oprintf (f, "(%s%s%s) ",
-	   (variable_size ? "SIZE" : ""),
-	   (two_args ? ", " : ""),
-	   (quantity == vector) ? "n" : "");
-  oprintf (f, "((%s%s *)", type_specifier, type_name);
-  oprintf (f, "(ggc_internal_%salloc (", allocator_type);
-  if (variable_size)
-    oprintf (f, "SIZE");
-  else
-    oprintf (f, "sizeof (%s%s)", type_specifier, type_name);
-  if (quantity == vector)
-    oprintf (f, ", n");
-  oprintf (f, " MEM_STAT_INFO)))\n");
-  if (type_name_as_id != type_name)
-    free (CONST_CAST (char *, type_name_as_id));
-}
-
-/* Writes a typed allocator definition into output F for a struct or
-   union S, with a given ALLOCATOR_TYPE and QUANTITY for ZONE.  */
-
-static void
-write_typed_struct_alloc_def (outf_p f,
-			      const type_p s, const char *allocator_type,
-			      enum alloc_quantity quantity)
-{
-  gcc_assert (union_or_struct_p (s));
-  write_typed_alloc_def (f, variable_size_p (s), get_type_specifier (s),
-                         s->u.s.tag, allocator_type, quantity);
-}
-
-/* Writes a typed allocator definition into output F for a typedef P,
-   with a given ALLOCATOR_TYPE and QUANTITY for ZONE.  */
-
-static void
-write_typed_typedef_alloc_def (outf_p f,
-                               const pair_p p, const char *allocator_type,
-                               enum alloc_quantity quantity)
-{
-  write_typed_alloc_def (f, variable_size_p (p->type), "", p->name,
-                         allocator_type, quantity);
-}
-
-/* Writes typed allocator definitions into output F for the types in
-   STRUCTURES and TYPEDEFS that are used by GC.  */
-
-static void
-write_typed_alloc_defns (outf_p f,
-                         const type_p structures, const pair_p typedefs)
-{
-  type_p s;
-  pair_p p;
-
-  gcc_assert (f != NULL);
-  oprintf (f,
-	   "\n/* Allocators for known structs and unions.  */\n\n");
-  for (s = structures; s; s = s->next)
-    {
-      if (!USED_BY_TYPED_GC_P (s))
-	continue;
-      gcc_assert (union_or_struct_p (s));
-      /* In plugin mode onput output ggc_alloc macro definitions
-	 relevant to plugin input files.  */
-      if (nb_plugin_files > 0 
-	  && ((s->u.s.line.file == NULL) || !s->u.s.line.file->inpisplugin))
-	continue;
-      write_typed_struct_alloc_def (f, s, "", single);
-      write_typed_struct_alloc_def (f, s, "cleared_", single);
-      write_typed_struct_alloc_def (f, s, "vec_", vector);
-      write_typed_struct_alloc_def (f, s, "cleared_vec_", vector);
-    }
-
-  oprintf (f, "\n/* Allocators for known typedefs.  */\n");
-  for (p = typedefs; p; p = p->next)
-    {
-      s = p->type;
-      if (!USED_BY_TYPED_GC_P (s) || (strcmp (p->name, s->u.s.tag) == 0))
-	continue;
-      /* In plugin mode onput output ggc_alloc macro definitions
-	 relevant to plugin input files.  */
-      if (nb_plugin_files > 0) 
-	{
-	  struct fileloc* filoc = type_fileloc (s);
-	  if (!filoc || !filoc->file->inpisplugin)
-	    continue;
-	};
-      write_typed_typedef_alloc_def (f, p, "", single);
-      write_typed_typedef_alloc_def (f, p, "cleared_", single);
-      write_typed_typedef_alloc_def (f, p, "vec_", vector);
-      write_typed_typedef_alloc_def (f, p, "cleared_vec_", vector);
-    }
-}
-
 /* Prints not-as-ugly version of a typename of T to OF.  Trades the uniquness
    guaranteee for somewhat increased readability.  If name conflicts do happen,
    this funcion will have to be adjusted to be more like
@@ -5808,7 +5684,6 @@ main (int argc, char **argv)
   open_base_files ();
 
   output_header = plugin_output ? plugin_output : header_file;
-  write_typed_alloc_defns (output_header, structures, typedefs);
   DBGPRINT_COUNT_TYPE ("structures before write_types outputheader",
 		       structures);
   DBGPRINT_COUNT_TYPE ("param_structs before write_types outputheader",

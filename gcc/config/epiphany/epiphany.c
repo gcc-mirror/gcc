@@ -982,7 +982,7 @@ epiphany_init_machine_status (void)
   /* Reset state info for each function.  */
   current_frame_info = zero_frame_info;
 
-  machine = ggc_alloc_cleared_machine_function_t ();
+  machine = ggc_cleared_alloc<machine_function_t> ();
 
   return machine;
 }

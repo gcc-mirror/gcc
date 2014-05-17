@@ -332,7 +332,7 @@ new_scev_info_str (basic_block instantiated_below, tree var)
 {
   struct scev_info_str *res;
 
-  res = ggc_alloc_scev_info_str ();
+  res = ggc_alloc<scev_info_str> ();
   res->name_version = SSA_NAME_VERSION (var);
   res->chrec = chrec_not_analyzed_yet;
   res->instantiated_below = instantiated_below->index;

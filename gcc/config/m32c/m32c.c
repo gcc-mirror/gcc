@@ -460,7 +460,7 @@ m32c_override_options_after_change (void)
 static struct machine_function *
 m32c_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Implements INIT_EXPANDERS.  We just set up to call the above
@@ -3075,7 +3075,7 @@ m32c_note_pragma_address (const char *varname, unsigned address)
 
   if (!*slot)
     {
-      *slot = ggc_alloc_pragma_entry ();
+      *slot = ggc_alloc<pragma_entry> ();
       (*slot)->varname = ggc_strdup (varname);
     }
   (*slot)->address = address;

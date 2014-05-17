@@ -13673,7 +13673,7 @@ get_dllimport_decl (tree decl, bool beimport)
   if (h)
     return h->to;
 
-  *loc = h = ggc_alloc_tree_map ();
+  *loc = h = ggc_alloc<tree_map> ();
   h->hash = in.hash;
   h->base.from = decl;
   h->to = to = build_decl (DECL_SOURCE_LOCATION (decl),
@@ -25035,7 +25035,7 @@ ix86_init_machine_status (void)
 {
   struct machine_function *f;
 
-  f = ggc_alloc_cleared_machine_function ();
+  f = ggc_cleared_alloc<machine_function> ();
   f->use_fast_prologue_epilogue_nregs = -1;
   f->call_abi = ix86_abi;
 
@@ -25059,7 +25059,7 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
     if (s->mode == mode && s->n == n)
       return validize_mem (copy_rtx (s->rtl));
 
-  s = ggc_alloc_stack_local_entry ();
+  s = ggc_alloc<stack_local_entry> ();
   s->n = n;
   s->mode = mode;
   s->rtl = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);

@@ -156,16 +156,35 @@ extern void dump_ggc_loc_statistics (bool);
 #define GGC_RESIZEVEC(T, P, N) \
     ((T *) ggc_realloc ((P), (N) * sizeof (T) MEM_STAT_INFO))
 
-static inline void *
-ggc_internal_vec_alloc (size_t s, size_t c CXX_MEM_STAT_INFO)
+template<typename T>
+static inline T *
+ggc_alloc (ALONE_CXX_MEM_STAT_INFO)
 {
-    return ggc_internal_alloc (c * s PASS_MEM_STAT);
+  return static_cast<T *> (ggc_internal_alloc (sizeof (T) PASS_MEM_STAT));
 }
 
-static inline void *
-ggc_internal_cleared_vec_alloc (size_t s, size_t c CXX_MEM_STAT_INFO)
+template<typename T>
+static inline T *
+ggc_cleared_alloc (ALONE_CXX_MEM_STAT_INFO)
 {
-    return ggc_internal_cleared_alloc (c * s PASS_MEM_STAT);
+  return static_cast<T *> (ggc_internal_cleared_alloc (sizeof (T)
+						       PASS_MEM_STAT));
+}
+
+template<typename T>
+static inline T *
+ggc_vec_alloc (size_t c CXX_MEM_STAT_INFO)
+{
+    return static_cast<T *> (ggc_internal_alloc (c * sizeof (T)
+						 PASS_MEM_STAT));
+}
+
+template<typename T>
+static inline T *
+ggc_cleared_vec_alloc (size_t c CXX_MEM_STAT_INFO)
+{
+    return static_cast<T *> (ggc_internal_cleared_alloc (c * sizeof (T)
+							 PASS_MEM_STAT));
 }
 
 static inline void *
@@ -230,7 +249,7 @@ extern void stringpool_statistics (void);
 extern void init_ggc_heuristics (void);
 
 #define ggc_alloc_rtvec_sized(NELT)				\
-  ggc_alloc_rtvec_def (sizeof (struct rtvec_def)		\
+  (rtvec_def *) ggc_internal_alloc (sizeof (struct rtvec_def)		\
 		       + ((NELT) - 1) * sizeof (rtx))		\
 
 /* Memory statistics passing versions of some allocators.  Too few of them to

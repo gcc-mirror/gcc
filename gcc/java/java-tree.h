@@ -699,8 +699,7 @@ union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
 #define MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC(T)                       \
   if (DECL_LANG_SPECIFIC (T) == NULL)                                \
     {                                                                \
-      DECL_LANG_SPECIFIC ((T))                                       \
-        = ggc_alloc_cleared_lang_decl (sizeof (struct lang_decl));   \
+      DECL_LANG_SPECIFIC ((T)) = ggc_cleared_alloc<struct lang_decl> (); \
       DECL_LANG_SPECIFIC (T)->desc = LANG_DECL_VAR;                  \
     }
 
@@ -808,7 +807,7 @@ struct GTY(()) lang_decl_var {
 
 enum lang_decl_desc {LANG_DECL_FUNC, LANG_DECL_VAR};
 
-struct GTY((variable_size)) lang_decl {
+struct GTY(()) lang_decl {
   enum lang_decl_desc desc;
   union lang_decl_u
     {
@@ -825,8 +824,7 @@ struct GTY((variable_size)) lang_decl {
 #define TYPE_CPOOL_DATA_REF(T)	(TYPE_LANG_SPECIFIC (T)->cpool_data_ref)
 #define MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC(T) \
   if (TYPE_LANG_SPECIFIC ((T)) == NULL)		\
-     TYPE_LANG_SPECIFIC ((T))			\
-       = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
+     TYPE_LANG_SPECIFIC ((T)) = ggc_cleared_alloc<struct lang_type> ();
 
 #define TYPE_DUMMY(T)		(TYPE_LANG_SPECIFIC(T)->dummy_class)
 
@@ -869,10 +867,7 @@ typedef struct GTY(()) method_entry_d {
 } method_entry;
 
 
-/* FIXME: the variable_size annotation here is needed because these types are
-   variable-sized in some other frontends.  Due to gengtype deficiency the GTY
-   options of such types have to agree across all frontends. */
-struct GTY((variable_size)) lang_type {
+struct GTY(()) lang_type {
   tree signature;
   struct JCF *jcf;
   struct CPool *cpool;

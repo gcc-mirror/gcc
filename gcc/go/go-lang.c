@@ -51,7 +51,7 @@ struct GTY(()) lang_type
 
 /* Language-dependent contents of a decl.  */
 
-struct GTY((variable_size)) lang_decl
+struct GTY(()) lang_decl
 {
   char dummy;
 };

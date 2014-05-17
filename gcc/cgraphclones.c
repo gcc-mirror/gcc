@@ -146,7 +146,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
       if (e->indirect_info)
 	{
 	  new_edge->indirect_info
-	    = ggc_alloc_cleared_cgraph_indirect_call_info ();
+	    = ggc_cleared_alloc<cgraph_indirect_call_info> ();
 	  *new_edge->indirect_info = *e->indirect_info;
 	}
     }

@@ -1,3 +1,14 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* objc-act.c (objc_build_string_object): Adjust.
+	(continue_class): Likewise.
+	* objc-act.h (ALLOC_OBJC_TYPE_LANG_SPECIFIC): Likewise.
+	* objc-map.c (objc_map_alloc_ggc): Likewise.
+	(objc_map_private_resize): Likewise.
+	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init):
+	Likewise.
+	(hash_name_enter): Likewise.
+
 2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>

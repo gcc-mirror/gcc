@@ -7578,7 +7578,7 @@ annotate_value (tree gnu_size)
       h = (struct tree_int_map **)
 	    htab_find_slot (annotate_value_cache, &in, INSERT);
       gcc_assert (!*h);
-      *h = ggc_alloc_tree_int_map ();
+      *h = ggc_alloc<tree_int_map> ();
       (*h)->base.from = gnu_size;
       (*h)->to = ret;
     }

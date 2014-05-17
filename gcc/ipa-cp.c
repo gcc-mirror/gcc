@@ -2599,7 +2599,7 @@ get_replacement_map (struct ipa_node_params *info, tree value, int parm_num)
   struct ipa_replace_map *replace_map;
 
 
-  replace_map = ggc_alloc_ipa_replace_map ();
+  replace_map = ggc_alloc<ipa_replace_map> ();
   if (dump_file)
     {
       fprintf (dump_file, "    replacing ");
@@ -3182,7 +3182,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 	  if (!item->value)
 	    continue;
 
-	  v = ggc_alloc_ipa_agg_replacement_value ();
+	  v = ggc_alloc<ipa_agg_replacement_value> ();
 	  v->index = i;
 	  v->offset = item->offset;
 	  v->value = item->value;
@@ -3212,7 +3212,7 @@ known_aggs_to_agg_replacement_list (vec<ipa_agg_jump_function> known_aggs)
     FOR_EACH_VEC_SAFE_ELT (aggjf->items, j, item)
       {
 	struct ipa_agg_replacement_value *v;
-	v = ggc_alloc_ipa_agg_replacement_value ();
+	v = ggc_alloc<ipa_agg_replacement_value> ();
 	v->index = i;
 	v->offset = item->offset;
 	v->value = item->value;

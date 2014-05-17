@@ -3315,7 +3315,7 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
     {
       struct ipa_agg_replacement_value *v;
 
-      v = ggc_alloc_ipa_agg_replacement_value ();
+      v = ggc_alloc<ipa_agg_replacement_value> ();
       memcpy (v, old_av, sizeof (*v));
       v->next = new_av;
       new_av = v;
@@ -4674,7 +4674,7 @@ read_agg_replacement_chain (struct lto_input_block *ib,
       struct ipa_agg_replacement_value *av;
       struct bitpack_d bp;
 
-      av = ggc_alloc_ipa_agg_replacement_value ();
+      av = ggc_alloc<ipa_agg_replacement_value> ();
       av->offset = streamer_read_uhwi (ib);
       av->index = streamer_read_uhwi (ib);
       av->value = stream_read_tree (ib, data_in);

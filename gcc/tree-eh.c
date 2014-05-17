@@ -82,7 +82,7 @@ add_stmt_to_eh_lp_fn (struct function *ifun, gimple t, int num)
 
   gcc_assert (num != 0);
 
-  n = ggc_alloc_throw_stmt_node ();
+  n = ggc_alloc<throw_stmt_node> ();
   n->stmt = t;
   n->lp_nr = num;
 

@@ -111,7 +111,7 @@ rl78_init_machine_status (void)
 {
   struct machine_function *m;
 
-  m = ggc_alloc_cleared_machine_function ();
+  m = ggc_cleared_alloc<machine_function> ();
   m->virt_insns_ok = 1;
 
   return m;

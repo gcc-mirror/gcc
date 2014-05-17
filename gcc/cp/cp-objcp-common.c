@@ -208,7 +208,7 @@ decl_shadowed_for_var_insert (tree from, tree to)
   struct tree_decl_map *h;
   void **loc;
 
-  h = ggc_alloc_tree_decl_map ();
+  h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (shadowed_var_for_decl, h, DECL_UID (from),

@@ -1,3 +1,20 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-decl.c (finish_struct): Adjust.
+	(finish_enum): Likewise.
+	(bind): Adjust.
+	(record_inline_static): Likewise.
+	(push_scope): Likewise.
+	(make_label): Likewise.
+	(lookup_label_for_goto): Likewise.
+	(finish_struct): Likewise.
+	(finish_enum): Likewise.
+	(store_parm_decls): Likewise.
+	(c_push_function_context): Likewise.
+	* c-lang.h: Remove usage of variable_size gty attribute.
+	* c-parser.c (c_parse_init): Adjust.
+	(c_parse_file): Likewise.
+
 2014-05-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61162
