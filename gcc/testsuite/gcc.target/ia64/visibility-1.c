@@ -11,7 +11,7 @@
 /* { dg-final { scan-assembler "gprel.*variable_m" } } */
 /* { dg-final { scan-assembler "ltoff.*variable_n" } } */
 
-static int variable_i;
+static int variable_i __attribute__ ((used));
 int variable_j __attribute__((visibility ("hidden")));
 int variable_k;
 struct A { char a[64]; };
