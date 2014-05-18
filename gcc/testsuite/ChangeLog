@@ -1,3 +1,7 @@
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum3.adb: New test.
+
 2014-04-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60854
