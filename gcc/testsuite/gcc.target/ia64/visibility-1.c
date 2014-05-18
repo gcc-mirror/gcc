@@ -15,7 +15,7 @@ static int variable_i __attribute__ ((used));
 int variable_j __attribute__((visibility ("hidden")));
 int variable_k;
 struct A { char a[64]; };
-static struct A variable_l __attribute__((section (".sbss")));
+static struct A variable_l __attribute__((used, section (".sbss")));
 struct A variable_m __attribute__((visibility ("hidden"), section(".sbss")));
 struct A variable_n __attribute__((section (".sbss")));
 
