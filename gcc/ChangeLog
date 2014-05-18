@@ -1,3 +1,12 @@
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (symtab_first_defined_symbol, symtab_next_defined_symbol):
+	New functions.
+	(FOR_EACH_DEFINED_SYMBOL): New macro.
+	(varpool_first_static_initializer, varpool_next_static_initializer,
+	varpool_first_defined_variable, varpool_next_defined_variable): Fix comments.
+	(symtab_in_same_comdat_p): Correctly deal with inline functions.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* ggc-page.c (ggc_handle_finalizers): Add comment.
