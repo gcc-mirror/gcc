@@ -4269,9 +4269,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      if (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
 		  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))
 		  && Is_Constr_Subt_For_UN_Aliased (Etype (gnat_actual))
-		  && (Is_Array_Type (Etype (gnat_actual))
-		      || (Is_Private_Type (Etype (gnat_actual))
-			  && Is_Array_Type (Full_View (Etype (gnat_actual))))))
+		  && Is_Array_Type (Underlying_Type (Etype (gnat_actual))))
 		gnu_actual = convert (gnat_to_gnu_type (Etype (gnat_actual)),
 				      gnu_actual);
 	    }
@@ -6192,8 +6190,7 @@ gnat_to_gnu (Node_Id gnat_node)
       /* These can either be operations on booleans or on modular types.
 	 Fall through for boolean types since that's the way GNU_CODES is
 	 set up.  */
-      if (IN (Ekind (Underlying_Type (Etype (gnat_node))),
-	      Modular_Integer_Kind))
+      if (Is_Modular_Integer_Type (Underlying_Type (Etype (gnat_node))))
 	{
 	  enum tree_code code
 	    = (kind == N_Op_Or ? BIT_IOR_EXPR
@@ -6236,21 +6233,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_lhs = maybe_vector_array (gnu_lhs);
 	gnu_rhs = maybe_vector_array (gnu_rhs);
 
-	/* If this is a comparison operator, convert any references to
-	   an unconstrained array value into a reference to the
-	   actual array.  */
+	/* If this is a comparison operator, convert any references to an
+	   unconstrained array value into a reference to the actual array.  */
 	if (TREE_CODE_CLASS (code) == tcc_comparison)
 	  {
 	    gnu_lhs = maybe_unconstrained_array (gnu_lhs);
 	    gnu_rhs = maybe_unconstrained_array (gnu_rhs);
 	  }
-
-	/* If the result type is a private type, its full view may be a
-	   numeric subtype. The representation we need is that of its base
-	   type, given that it is the result of an arithmetic operation.  */
-	else if (Is_Private_Type (Etype (gnat_node)))
-	  gnu_type = gnu_result_type
-	    = get_unpadded_type (Base_Type (Full_View (Etype (gnat_node))));
 
 	/* If this is a shift whose count is not guaranteed to be correct,
 	   we need to adjust the shift count.  */
@@ -6361,9 +6350,7 @@ gnat_to_gnu (Node_Id gnat_node)
       /* This case can apply to a boolean or a modular type.
 	 Fall through for a boolean operand since GNU_CODES is set
 	 up to handle this.  */
-      if (Is_Modular_Integer_Type (Etype (gnat_node))
-	  || (Is_Private_Type (Etype (gnat_node))
-	      && Is_Modular_Integer_Type (Full_View (Etype (gnat_node)))))
+      if (Is_Modular_Integer_Type (Underlying_Type (Etype (gnat_node))))
 	{
 	  gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
 	  gnu_result_type = get_unpadded_type (Etype (gnat_node));

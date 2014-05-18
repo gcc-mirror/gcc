@@ -543,10 +543,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       This is a workaround for major problems in protected type
 	       handling.  */
 	    Entity_Id Scop = Scope (Scope (gnat_entity));
-	    if ((Is_Protected_Type (Scop)
-		 || (Is_Private_Type (Scop)
-		     && Present (Full_View (Scop))
-		     && Is_Protected_Type (Full_View (Scop))))
+	    if (Is_Protected_Type (Underlying_Type (Scop))
 		&& Present (Original_Record_Component (gnat_entity)))
 	      {
 		gnu_decl
@@ -870,9 +867,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If this is an aliased object with an unconstrained nominal subtype,
 	   make a type that includes the template.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && (Is_Array_Type (Etype (gnat_entity))
-		|| (Is_Private_Type (Etype (gnat_entity))
-		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
+	    && Is_Array_Type (Underlying_Type (Etype (gnat_entity)))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array
@@ -1383,9 +1378,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   Note that we have to do that this late because of the couple of
 	   allocation adjustments that might be made just above.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && (Is_Array_Type (Etype (gnat_entity))
-		|| (Is_Private_Type (Etype (gnat_entity))
-		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
+	    && Is_Array_Type (Underlying_Type (Etype (gnat_entity)))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array

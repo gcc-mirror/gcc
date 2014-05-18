@@ -1,5 +1,12 @@
 2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use Underlying_Type in
+	lieu of more verbose construct.
+	* gcc-interface/trans.c (Call_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.  Remove obsolete code.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Do not
 	consider that regular packed arrays can never be superflat.
 
