@@ -978,6 +978,50 @@ can_replace_by_local_alias (symtab_node *node)
 	  && !symtab_can_be_discarded (node));
 }
 
+/* In LTO we can remove COMDAT groups and weak symbols.
+   Either turn them into normal symbols or external symbol depending on 
+   resolution info.  */
+
+static void
+update_visibility_by_resolution_info (symtab_node * node)
+{
+  bool define;
+
+  if (!node->externally_visible
+      || (!DECL_WEAK (node->decl) && !DECL_ONE_ONLY (node->decl))
+      || node->resolution == LDPR_UNKNOWN)
+    return;
+
+  define = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
+	    || node->resolution == LDPR_PREVAILING_DEF
+	    || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
+
+  /* The linker decisions ought to agree in the whole group.  */
+  if (node->same_comdat_group)
+    for (symtab_node *next = node->same_comdat_group;
+	 next != node; next = next->same_comdat_group)
+      gcc_assert (!node->externally_visible
+		  || define == (next->resolution == LDPR_PREVAILING_DEF_IRONLY
+			        || next->resolution == LDPR_PREVAILING_DEF
+			        || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP));
+
+  if (node->same_comdat_group)
+    for (symtab_node *next = node->same_comdat_group;
+	 next != node; next = next->same_comdat_group)
+      {
+	DECL_COMDAT_GROUP (next->decl) = NULL;
+	DECL_WEAK (next->decl) = false;
+	if (next->externally_visible
+	    && !define)
+	  DECL_EXTERNAL (next->decl) = true;
+      }
+  DECL_COMDAT_GROUP (node->decl) = NULL;
+  DECL_WEAK (node->decl) = false;
+  if (!define)
+    DECL_EXTERNAL (node->decl) = true;
+  symtab_dissolve_same_comdat_group_list (node);
+}
+
 /* Mark visibility of all functions.
 
    A local function is one whose calls can occur only in the current
@@ -1116,38 +1160,7 @@ function_and_variable_visibility (bool whole_program)
 	    DECL_EXTERNAL (node->decl) = 1;
 	}
 
-      /* If whole comdat group is used only within LTO code, we can dissolve it,
-	 we handle the unification ourselves.
-	 We keep COMDAT and weak so visibility out of DSO does not change.
-	 Later we may bring the symbols static if they are not exported.  */
-      if (DECL_ONE_ONLY (node->decl)
-	  && (node->resolution == LDPR_PREVAILING_DEF_IRONLY
-	      || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP))
-	{
-	  symtab_node *next = node;
-
-	  if (node->same_comdat_group)
-	    for (next = node->same_comdat_group;
-		 next != node;
-		 next = next->same_comdat_group)
-	      if (next->externally_visible
-		  && (next->resolution != LDPR_PREVAILING_DEF_IRONLY
-		      && next->resolution != LDPR_PREVAILING_DEF_IRONLY_EXP))
-		break;
-	  if (node == next)
-	    {
-	      if (node->same_comdat_group)
-	        for (next = node->same_comdat_group;
-		     next != node;
-		     next = next->same_comdat_group)
-		{
-		  DECL_COMDAT_GROUP (next->decl) = NULL;
-		  DECL_WEAK (next->decl) = false;
-		}
-	      DECL_COMDAT_GROUP (node->decl) = NULL;
-	      symtab_dissolve_same_comdat_group_list (node);
-	    }
-	}
+      update_visibility_by_resolution_info (node);
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {
@@ -1234,6 +1247,7 @@ function_and_variable_visibility (bool whole_program)
 	    symtab_dissolve_same_comdat_group_list (vnode);
 	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
+      update_visibility_by_resolution_info (vnode);
     }
 
   if (dump_file)

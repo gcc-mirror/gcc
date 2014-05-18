@@ -1,5 +1,10 @@
 2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa.c (update_visibility_by_resolution_info): New function.
+	(function_and_variable_visibility): Use it.
+
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.h (symtab_first_defined_symbol, symtab_next_defined_symbol):
 	New functions.
 	(FOR_EACH_DEFINED_SYMBOL): New macro.
