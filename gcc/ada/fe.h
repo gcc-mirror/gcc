@@ -56,8 +56,7 @@ extern char Fold_Lower[], Fold_Upper[];
 extern Boolean Debug_Flag_NN;
 
 /* einfo: We will be setting Esize for types, Component_Bit_Offset for fields,
-   Alignment for types and objects, Component_Size for array types, and
-   Present_Expr for N_Variant nodes.  */
+   Alignment for types and objects, Component_Size for array types.  */
 
 #define Set_Alignment			einfo__set_alignment
 #define Set_Component_Bit_Offset	einfo__set_component_bit_offset
@@ -65,7 +64,6 @@ extern Boolean Debug_Flag_NN;
 #define Set_Esize			einfo__set_esize
 #define Set_Mechanism			einfo__set_mechanism
 #define Set_RM_Size			einfo__set_rm_size
-#define Set_Present_Expr		sinfo__set_present_expr
 
 extern void Set_Alignment		(Entity_Id, Uint);
 extern void Set_Component_Bit_Offset	(Entity_Id, Uint);
@@ -73,7 +71,6 @@ extern void Set_Component_Size		(Entity_Id, Uint);
 extern void Set_Esize			(Entity_Id, Uint);
 extern void Set_Mechanism		(Entity_Id, Mechanism_Type);
 extern void Set_RM_Size			(Entity_Id, Uint);
-extern void Set_Present_Expr		(Node_Id, Uint);
 
 #define Is_Entity_Name einfo__is_entity_name
 extern Boolean Is_Entity_Name		(Node_Id);
@@ -253,11 +250,15 @@ extern Node_Id First_Actual		(Node_Id);
 extern Node_Id Next_Actual		(Node_Id);
 extern Boolean Requires_Transient_Scope (Entity_Id);
 
-/* sinfo: These functions aren't in sinfo.h since we don't make the
-   setting functions, just the retrieval functions.  */
+/* sinfo: */
 
-#define Set_Has_No_Elaboration_Code sinfo__set_has_no_elaboration_code
+#define End_Location			sinfo__end_location
+#define Set_Has_No_Elaboration_Code 	sinfo__set_has_no_elaboration_code
+#define Set_Present_Expr		sinfo__set_present_expr
+
+extern Source_Ptr End_Location 		(Node_Id);
 extern void Set_Has_No_Elaboration_Code	(Node_Id, Boolean);
+extern void Set_Present_Expr		(Node_Id, Uint);
 
 /* targparm: */
 
