@@ -1,5 +1,10 @@
 2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Rework comment and
+	set function_start_locus.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* utils.c (gnat_write_global_declarations): Adjust the flags put on
 	dummy_global.
 

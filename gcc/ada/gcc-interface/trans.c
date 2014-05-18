@@ -3574,6 +3574,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* The entry in the CI_CO_LIST that represents a function return, if any.  */
   tree gnu_return_var_elmt = NULL_TREE;
   tree gnu_result;
+  location_t locus;
   struct language_function *gnu_subprog_language;
   vec<parm_attr, va_gc> *cache;
 
@@ -3610,14 +3611,15 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       relayout_decl (gnu_result_decl);
     }
 
-  /* Set the line number in the decl to correspond to that of the body so that
-     the line number notes are written correctly.  */
-  Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (gnu_subprog_decl));
+  /* Set the line number in the decl to correspond to that of the body.  */
+  Sloc_to_locus (Sloc (gnat_node), &locus);
+  DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
 
   /* Initialize the information structure for the function.  */
   allocate_struct_function (gnu_subprog_decl, false);
   gnu_subprog_language = ggc_cleared_alloc<language_function> ();
   DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language = gnu_subprog_language;
+  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->function_start_locus = locus;
   set_cfun (NULL);
 
   begin_subprog_body (gnu_subprog_decl);
