@@ -5662,9 +5662,10 @@ gnat_write_global_declarations (void)
       dummy_global
 	= build_decl (BUILTINS_LOCATION, VAR_DECL, get_identifier (label),
 		      void_type_node);
+      DECL_HARD_REGISTER (dummy_global) = 1;
       TREE_STATIC (dummy_global) = 1;
-      TREE_ASM_WRITTEN (dummy_global) = 1;
       node = varpool_node_for_decl (dummy_global);
+      node->definition = 1;
       node->force_output = 1;
 
       while (!types_used_by_cur_var_decl->is_empty ())
