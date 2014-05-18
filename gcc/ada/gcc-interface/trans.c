@@ -2384,8 +2384,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
-  if (!Sloc_to_locus (Sloc (gnat_node) + UI_To_Int (End_Span (gnat_node)),
-      &end_locus))
+  if (!Sloc_to_locus (End_Location (gnat_node), &end_locus))
     end_locus = input_location;
   gnu_label = create_artificial_label (end_locus);
   start_stmt_group ();
