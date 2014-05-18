@@ -1,3 +1,9 @@
+2014-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libgomp.texi (Runitme Library Routines): Remove multiple @menu.
+	(Environment Variables) Move OMP_PROC_BIND and OMP_STACKSIZE node
+	texts according to their @menu entry positions.
+
 2014-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/simd-10.c: New test.

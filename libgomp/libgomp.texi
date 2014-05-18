@@ -130,10 +130,10 @@ The runtime routines described here are defined by Section 3 of the OpenMP
 specification in version 4.0.  The routines are structured in following
 three parts:
 
+@menu
 Control threads, processors and the parallel environment.  They have C
 linkage, and do not throw exceptions.
 
-@menu
 * omp_get_active_level::        Number of active parallel regions
 * omp_get_ancestor_thread_num:: Ancestor thread ID
 * omp_get_cancellation::        Whether cancellation support is enabled
@@ -162,11 +162,9 @@ linkage, and do not throw exceptions.
 * omp_set_nested::              Enable/disable nested parallel regions
 * omp_set_num_threads::         Set upper team size limit
 * omp_set_schedule::            Set the runtime scheduling method
-@end menu
 
 Initialize, set, test, unset and destroy simple and nested locks.
 
-@menu
 * omp_init_lock::            Initialize simple lock
 * omp_set_lock::             Wait for and set simple lock
 * omp_test_lock::            Test and set simple lock if available
@@ -177,11 +175,9 @@ Initialize, set, test, unset and destroy simple and nested locks.
 * omp_test_nest_lock::       Test and set nested lock if available
 * omp_unset_nest_lock::      Unset nested lock
 * omp_destroy_nest_lock::    Destroy nested lock
-@end menu
 
 Portable, thread-based, wall clock timer.
 
-@menu
 * omp_get_wtick::            Get timer precision.
 * omp_get_wtime::            Elapsed wall clock time.
 @end menu
@@ -1448,6 +1444,33 @@ level.  If undefined one thread per CPU is used.
 
 
 
+@node OMP_PROC_BIND
+@section @env{OMP_PROC_BIND} -- Whether theads may be moved between CPUs
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Specifies whether threads may be moved between processors.  If set to
+@code{TRUE}, OpenMP theads should not be moved; if set to @code{FALSE}
+they may be moved.  Alternatively, a comma separated list with the
+values @code{MASTER}, @code{CLOSE} and @code{SPREAD} can be used to specify
+the thread affinity policy for the corresponding nesting level.  With
+@code{MASTER} the worker threads are in the same place partition as the
+master thread.  With @code{CLOSE} those are kept close to the master thread
+in contiguous place partitions.  And with @code{SPREAD} a sparse distribution
+across the place partitions is used.
+
+When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
+@env{OMP_PLACES} or @env{GOMP_CPU_AFFINITY} is set and @code{FALSE} otherwise.
+
+@item @emph{See also}:
+@ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY}, @ref{omp_get_proc_bind}
+
+@item @emph{Reference}:
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.4
+@end table
+
+
+
 @node OMP_PLACES
 @section @env{OMP_PLACES} -- Specifies on which CPUs the theads should be placed
 @cindex Environment Variable
@@ -1490,29 +1513,22 @@ between CPUs following no placement policy.
 
 
 
-@node OMP_PROC_BIND
-@section @env{OMP_PROC_BIND} -- Whether theads may be moved between CPUs
+@node OMP_STACKSIZE
+@section @env{OMP_STACKSIZE} -- Set default thread stack size
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
-Specifies whether threads may be moved between processors.  If set to
-@code{TRUE}, OpenMP theads should not be moved; if set to @code{FALSE}
-they may be moved.  Alternatively, a comma separated list with the
-values @code{MASTER}, @code{CLOSE} and @code{SPREAD} can be used to specify
-the thread affinity policy for the corresponding nesting level.  With
-@code{MASTER} the worker threads are in the same place partition as the
-master thread.  With @code{CLOSE} those are kept close to the master thread
-in contiguous place partitions.  And with @code{SPREAD} a sparse distribution
-across the place partitions is used.
+Set the default thread stack size in kilobytes, unless the number
+is suffixed by @code{B}, @code{K}, @code{M} or @code{G}, in which
+case the size is, respectively, in bytes, kilobytes, megabytes
+or gigabytes.  This is different from @code{pthread_attr_setstacksize}
+which gets the number of bytes as an argument.  If the stack size cannot
+be set due to system constraints, an error is reported and the initial
+stack size is left unchanged.  If undefined, the stack size is system
+dependent.
 
-When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
-@env{OMP_PLACES} or @env{GOMP_CPU_AFFINITY} is set and @code{FALSE} otherwise.
-
-@item @emph{See also}:
-@ref{OMP_PLACES}, @ref{GOMP_CPU_AFFINITY}, @ref{omp_get_proc_bind}
-
-@item @emph{Reference}:
-@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.4
+@item @emph{Reference}: 
+@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.7
 @end table
 
 
@@ -1534,26 +1550,6 @@ dynamic scheduling and a chunk size of 1 is used.
 
 @item @emph{Reference}: 
 @uref{http://www.openmp.org/, OpenMP specification v4.0}, Sections 2.7.1 and 4.1
-@end table
-
-
-
-@node OMP_STACKSIZE
-@section @env{OMP_STACKSIZE} -- Set default thread stack size
-@cindex Environment Variable
-@table @asis
-@item @emph{Description}:
-Set the default thread stack size in kilobytes, unless the number
-is suffixed by @code{B}, @code{K}, @code{M} or @code{G}, in which
-case the size is, respectively, in bytes, kilobytes, megabytes
-or gigabytes.  This is different from @code{pthread_attr_setstacksize}
-which gets the number of bytes as an argument.  If the stack size cannot
-be set due to system constraints, an error is reported and the initial
-stack size is left unchanged.  If undefined, the stack size is system
-dependent.
-
-@item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specification v4.0}, Section 4.7
 @end table
 
 
