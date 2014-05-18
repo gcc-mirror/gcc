@@ -1,3 +1,21 @@
+2014-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/52539
+	* io/io.h (gfc_unit): New function pointers *next_char_fn_ptr
+	and *push_char_fn_ptr.
+	*io/list_read.c (next_char): Create macro with this name to call
+	the new function pointer. Split the original next_char function
+	into three new functions. (next_char_default, next_char_internal,
+	next_char_utf8): New functions. (push_char): Create macro with
+	this name to call new function pointer. Split the original
+	push_char into three new functions. (push_char_default,
+	push_char_internal, push_char4): New functions. (set_workers):
+	New function to initilize the function pointers depending on the
+	type of IO to be performed. (list_formatted_read_scalar): Use
+	set_workers function. (finish_list_read): Likewise.
+	(namelist_read): Likewise.
+	(nml_get_obj_data): Use push_char_default.
+
 2014-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/61187
