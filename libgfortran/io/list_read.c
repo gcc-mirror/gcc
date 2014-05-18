@@ -67,10 +67,17 @@ typedef unsigned char uchar;
 
 #define MSGLEN 100
 
-/* Save a character to a string buffer, enlarging it as necessary.  */
 
+/* Wrappers for calling the current worker functions.  */
+
+#define next_char(dtp) ((dtp)->u.p.current_unit->next_char_fn_ptr (dtp))
+#define push_char(dtp, c) ((dtp)->u.p.current_unit->push_char_fn_ptr (dtp, c))
+
+/* Worker function to save a default KIND=1 character to a string
+   buffer, enlarging it as necessary.  */
+   
 static void
-push_char (st_parameter_dt *dtp, char c)
+push_char_default (st_parameter_dt *dtp, int c)
 {
   char *new;
 
@@ -96,14 +103,15 @@ push_char (st_parameter_dt *dtp, char c)
 
     }
 
-  dtp->u.p.saved_string[dtp->u.p.saved_used++] = c;
+  dtp->u.p.saved_string[dtp->u.p.saved_used++] = (char) c;
 }
 
-/* Save a KIND=4 character to a string buffer, enlarging the buffer
-   as necessary.  */
 
+/* Worker function to save a KIND=4 character to a string buffer,
+   enlarging the buffer as necessary.  */
+   
 static void
-push_char4 (st_parameter_dt *dtp, gfc_char4_t c)
+push_char4 (st_parameter_dt *dtp, int c)
 {
   gfc_char4_t *new, *p = (gfc_char4_t *) dtp->u.p.saved_string;
 
@@ -118,12 +126,12 @@ push_char4 (st_parameter_dt *dtp, gfc_char4_t c)
   if (dtp->u.p.saved_used >= dtp->u.p.saved_length)
     {
       dtp->u.p.saved_length = 2 * dtp->u.p.saved_length;
-      new = realloc (p, dtp->u.p.saved_length);
+      new = realloc (p, dtp->u.p.saved_length * sizeof (gfc_char4_t));
       if (new == NULL)
 	generate_error (&dtp->common, LIBERROR_OS, NULL);
       p = new;
       
-      memset (new + dtp->u.p.saved_used, 0, 
+      memset4 (new + dtp->u.p.saved_used, 0, 
 	      dtp->u.p.saved_length - dtp->u.p.saved_used);
     }
 
@@ -162,13 +170,16 @@ free_line (st_parameter_dt *dtp)
 }
 
 
+/* Unget saves the last character so when reading the next character,
+   we need to check to see if there is a character waiting.  Similar,
+   if the line buffer is being used to read_logical, check it too.  */
+   
 static int
-next_char (st_parameter_dt *dtp)
+check_buffers (st_parameter_dt *dtp)
 {
-  ssize_t length;
-  gfc_offset record;
   int c;
 
+  c = '\0';
   if (dtp->u.p.last_char != EOF - 1)
     {
       dtp->u.p.at_eol = 0;
@@ -194,6 +205,43 @@ next_char (st_parameter_dt *dtp)
       dtp->u.p.line_buffer_pos = 0;
       dtp->u.p.line_buffer_enabled = 0;
     }
+    
+done:
+  dtp->u.p.at_eol = (c == '\n' || c == EOF);
+  return c;
+}
+
+
+/* Worker function for default character encoded file.  */
+static int
+next_char_default (st_parameter_dt *dtp)
+{
+  int c;
+
+  /* Always check the unget and line buffer first.  */
+  if ((c = check_buffers (dtp)))
+    return c;
+
+  c = fbuf_getc (dtp->u.p.current_unit);
+  if (c != EOF && is_stream_io (dtp))
+    dtp->u.p.current_unit->strm_pos++;
+
+  dtp->u.p.at_eol = (c == '\n' || c == EOF);
+  return c;
+}
+
+
+/* Worker function for internal and array I/O units.  */
+static int
+next_char_internal (st_parameter_dt *dtp)
+{
+  ssize_t length;
+  gfc_offset record;
+  int c;
+
+  /* Always check the unget and line buffer first.  */
+  if ((c = check_buffers (dtp)))
+    return c;
 
   /* Handle the end-of-record and end-of-file conditions for
      internal array unit.  */
@@ -229,58 +277,50 @@ next_char (st_parameter_dt *dtp)
 
   /* Get the next character and handle end-of-record conditions.  */
 
-  if (is_internal_unit (dtp))
+  if (dtp->common.unit) /* Check for kind=4 internal unit.  */
+   length = sread (dtp->u.p.current_unit->s, &c, sizeof (gfc_char4_t));
+  else
+   {
+     char cc;
+     length = sread (dtp->u.p.current_unit->s, &cc, 1);
+     c = cc;
+   }
+
+  if (unlikely (length < 0))
     {
-      /* Check for kind=4 internal unit.  */
-      if (dtp->common.unit)
-       length = sread (dtp->u.p.current_unit->s, &c, sizeof (gfc_char4_t));
-      else
-       {
-         char cc;
-         length = sread (dtp->u.p.current_unit->s, &cc, 1);
-         c = cc;
-       }
+      generate_error (&dtp->common, LIBERROR_OS, NULL);
+      return '\0';
+    }
 
-      if (unlikely (length < 0))
+  if (is_array_io (dtp))
+    {
+      /* Check whether we hit EOF.  */ 
+      if (unlikely (length == 0))
 	{
-	  generate_error (&dtp->common, LIBERROR_OS, NULL);
+	  generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 	  return '\0';
-	}
-
-      if (is_array_io (dtp))
-	{
-	  /* Check whether we hit EOF.  */ 
-	  if (unlikely (length == 0))
-	    {
-	      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
-	      return '\0';
-	    } 
-	  dtp->u.p.current_unit->bytes_left--;
-	}
-      else
-	{
-	  if (dtp->u.p.at_eof) 
-	    return EOF;
-	  if (length == 0)
-	    {
-	      c = '\n';
-	      dtp->u.p.at_eof = 1;
-	    }
-	}
+	} 
+      dtp->u.p.current_unit->bytes_left--;
     }
   else
     {
-      c = fbuf_getc (dtp->u.p.current_unit);
-      if (c != EOF && is_stream_io (dtp))
-	dtp->u.p.current_unit->strm_pos++;
+      if (dtp->u.p.at_eof) 
+	return EOF;
+      if (length == 0)
+	{
+	  c = '\n';
+	  dtp->u.p.at_eof = 1;
+	}
     }
+
 done:
   dtp->u.p.at_eol = (c == '\n' || c == EOF);
   return c;
 }
 
 
-static gfc_char4_t
+/* Worker function for UTF encoded files.  */
+static int
 next_char_utf8 (st_parameter_dt *dtp) 
 {
   static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
@@ -288,9 +328,12 @@ next_char_utf8 (st_parameter_dt *dtp)
   int i, nb;
   gfc_char4_t c;
 
-  c = next_char (dtp);
+  /* Always check the unget and line buffer first.  */
+  if (!(c = check_buffers (dtp)))
+    c = fbuf_getc (dtp->u.p.current_unit);
+
   if (c < 0x80)
-    return c;
+    goto utf_done;
 
   /* The number of leading 1-bits in the first byte indicates how many
      bytes follow.  */
@@ -305,11 +348,9 @@ next_char_utf8 (st_parameter_dt *dtp)
   /* Decode the bytes read.  */
   for (i = 1; i < nb; i++)
     {
-      gfc_char4_t n = next_char (dtp);
-
+      gfc_char4_t n = fbuf_getc (dtp->u.p.current_unit);
       if ((n & 0xC0) != 0x80)
 	goto invalid;
-
       c = ((c << 6) + (n & 0x3F));
     }
 
@@ -324,7 +365,9 @@ next_char_utf8 (st_parameter_dt *dtp)
   if (c > 0x7FFFFFFF || (c >= 0xD800 && c <= 0xDFFF))
     goto invalid;
 
-  return c;
+utf_done:
+  dtp->u.p.at_eol = (c == '\n' || c == (gfc_char4_t) EOF);
+  return (int) c;
       
  invalid:
   generate_error (&dtp->common, LIBERROR_READ_VALUE, "Invalid UTF-8 encoding");
@@ -1172,96 +1215,50 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 
  get_string:
 
-  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
-    for (;;)
-      {
-	if ((c = next_char_utf8 (dtp)) == EOF)
-	  goto done_eof;
-	switch (c)
-	  {
-	  case '"':
-	  case '\'':
-	    if (c != quote)
-	      {
-		push_char4 (dtp, c);
-		break;
-	      }
-  
-	    /* See if we have a doubled quote character or the end of
-	       the string.  */
-  
-	    if ((c = next_char_utf8 (dtp)) == EOF)
-	      goto done_eof;
-	    if (c == quote)
-	      {
-		push_char4 (dtp, quote);
-		break;
-	      }
-  
-	    unget_char (dtp, c);
-	    goto done;
-  
-	  CASE_SEPARATORS:
-	    if (quote == ' ')
-	      {
-		unget_char (dtp, c);
-		goto done;
-	      }
-  
-	    if (c != '\n' && c != '\r')
-	      push_char4 (dtp, c);
-	    break;
-  
-	  default:
-	    push_char4 (dtp, c);
-	    break;
-	  }
-      }
-  else
-    for (;;)
-      {
-	if ((c = next_char (dtp)) == EOF)
-	  goto done_eof;
-	switch (c)
-	  {
-	  case '"':
-	  case '\'':
-	    if (c != quote)
-	      {
-		push_char (dtp, c);
-		break;
-	      }
-  
-	    /* See if we have a doubled quote character or the end of
-	       the string.  */
-  
-	    if ((c = next_char (dtp)) == EOF)
-	      goto done_eof;
-	    if (c == quote)
-	      {
-		push_char (dtp, quote);
-		break;
-	      }
-  
-	    unget_char (dtp, c);
-	    goto done;
-  
-	  CASE_SEPARATORS:
-	    if (quote == ' ')
-	      {
-		unget_char (dtp, c);
-		goto done;
-	      }
-  
-	    if (c != '\n' && c != '\r')
+  for (;;)
+    {
+      if ((c = next_char (dtp)) == EOF)
+	goto done_eof;
+      switch (c)
+	{
+	case '"':
+	case '\'':
+	  if (c != quote)
+	    {
 	      push_char (dtp, c);
-	    break;
+	      break;
+	    }
   
-	  default:
+	  /* See if we have a doubled quote character or the end of
+	     the string.  */
+  
+	  if ((c = next_char (dtp)) == EOF)
+	    goto done_eof;
+	  if (c == quote)
+	    {
+	      push_char (dtp, quote);
+	      break;
+	    }
+  
+	  unget_char (dtp, c);
+	  goto done;
+  
+	CASE_SEPARATORS:
+	  if (quote == ' ')
+	    {
+	      unget_char (dtp, c);
+	      goto done;
+	    }
+  
+	  if (c != '\n' && c != '\r')
 	    push_char (dtp, c);
-	    break;
-	  }
-      }
+	  break;
+  
+	default:
+	  push_char (dtp, c);
+	  break;
+	}
+    }
 
   /* At this point, we have to have a separator, or else the string is
      invalid.  */
@@ -2025,6 +2022,30 @@ check_type (st_parameter_dt *dtp, bt type, int kind)
 }
 
 
+/* Initialize the function pointers to select the correct versions of
+   next_char and push_char depending on what we are doing.  */
+
+static void
+set_workers (st_parameter_dt *dtp)
+{
+  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
+    {
+      dtp->u.p.current_unit->next_char_fn_ptr = &next_char_utf8;
+      dtp->u.p.current_unit->push_char_fn_ptr = &push_char4;
+    }
+  else if (is_internal_unit (dtp))
+    {
+      dtp->u.p.current_unit->next_char_fn_ptr = &next_char_internal;
+      dtp->u.p.current_unit->push_char_fn_ptr = &push_char_default;
+    }
+  else
+    {
+      dtp->u.p.current_unit->next_char_fn_ptr = &next_char_default;
+      dtp->u.p.current_unit->push_char_fn_ptr = &push_char_default;
+    }
+
+}
+
 /* Top level data transfer subroutine for list reads.  Because we have
    to deal with repeat counts, the data item is always saved after
    reading, usually in the dtp->u.p.value[] array.  If a repeat count is
@@ -2039,6 +2060,9 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
   int err = 0;
 
   dtp->u.p.namelist_mode = 0;
+
+  /* Set the next_char and push_char worker functions.  */
+  set_workers (dtp);
 
   if (dtp->u.p.first_item)
     {
@@ -2162,7 +2186,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 		memcpy (p, dtp->u.p.saved_string, m);
 	      else
 		for (i = 0; i < m; i++)
-		  *q++ = (unsigned char) dtp->u.p.saved_string[i];
+		  *q++ = *r++;
 	    }
 	}
       else
@@ -2244,6 +2268,10 @@ finish_list_read (st_parameter_dt *dtp)
   if (!is_internal_unit (dtp))
     {
       int c;
+
+      /* Set the next_char and push_char worker functions.  */
+      set_workers (dtp);
+
       c = next_char (dtp);
       if (c == EOF)
 	{
@@ -3060,7 +3088,7 @@ get_name:
   do
     {
       if (!is_separator (c))
-	push_char (dtp, tolower(c));
+	push_char_default (dtp, tolower(c));
       if ((c = next_char (dtp)) == EOF)
 	goto nml_err_ret;
     }
@@ -3075,7 +3103,7 @@ get_name:
      are present for an object.  (iii) gives the same error message
      as (i)  */
 
-  push_char (dtp, '\0');
+  push_char_default (dtp, '\0');
 
   if (component_flag)
     {
@@ -3314,6 +3342,9 @@ namelist_read (st_parameter_dt *dtp)
   dtp->u.p.namelist_mode = 1;
   dtp->u.p.input_complete = 0;
   dtp->u.p.expanded_read = 0;
+  
+  /* Set the next_char and push_char worker functions.  */
+  set_workers (dtp);
 
   /* Look for &namelist_name .  Skip all characters, testing for $nmlname.
      Exit on success or EOF. If '?' or '=?' encountered in stdin, print
