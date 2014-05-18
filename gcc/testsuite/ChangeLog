@@ -1,3 +1,7 @@
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum3.adb: New test.
+
 2014-05-18  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.target/ia64/visibility-1.c (variable_l): Add used attribute.
