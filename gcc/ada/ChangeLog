@@ -1,5 +1,10 @@
 2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* utils.c (gnat_write_global_declarations): Adjust the flags put on
+	dummy_global.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (change_qualified_type): New static function.
 	(gnat_to_gnu_entity): Use it throughout to add qualifiers on types.
 	<E_Array_Type>: Set TYPE_VOLATILE on the array type directly.
