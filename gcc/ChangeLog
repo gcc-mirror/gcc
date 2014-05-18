@@ -8,9 +8,9 @@
 	* ggc-none.c (ggc_internal_alloc): Assert if a finalizer is passed.
 	(ggc_internal_cleared_alloc): Likewise.
 	* ggc-page.c (finalizer): New class.
-(vec_finalizer): Likewise.
+	(vec_finalizer): Likewise.
 	(globals::finalizers): New member.
-(globals::vec_finalizers): Likewise.
+	(globals::vec_finalizers): Likewise.
 	(ggc_internal_alloc): Record the finalizer if any for the block being
 	allocated.
 	(ggc_handle_finalizers): New function.
@@ -49,8 +49,7 @@
 	* cgraphclones.c (cgraph_clone_edge): Likewise.
 	* cgraphunit.c (add_asm_node): Likewise.
 	(init_lowered_empty_function): Likewise.
-	* config/aarch64/aarch64.c (aarch64_init_machine_status):
-	Likewise.
+	* config/aarch64/aarch64.c (aarch64_init_machine_status): Likewise.
 	* config/alpha/alpha.c (alpha_init_machine_status): Likewise.
 	(alpha_use_linkage): Likewise.
 	* config/arc/arc.c (arc_init_machine_status): Likewise.
@@ -62,14 +61,12 @@
 	* config/darwin.c (machopic_indirection_name): Likewise.
 	(darwin_build_constant_cfstring): Likewise.
 	(darwin_enter_string_into_cfstring_table): Likewise.
-	* config/epiphany/epiphany.c (epiphany_init_machine_status):
-	* Likewise.
+	* config/epiphany/epiphany.c (epiphany_init_machine_status): Likewise.
 	* config/frv/frv.c (frv_init_machine_status): Likewise.
 	* config/i386/i386.c (get_dllimport_decl): Likewise.
 	(ix86_init_machine_status): Likewise.
 	(assign_386_stack_local): Likewise.
-	* config/i386/winnt.c (i386_pe_record_external_function):
-	Likewise.
+	* config/i386/winnt.c (i386_pe_record_external_function): Likewise.
 	(i386_pe_maybe_record_exported_symbol): Likewise.
 	(i386_pe_record_stub): Likewise.
 	* config/ia64/ia64.c (ia64_init_machine_status): Likewise.
@@ -97,8 +94,7 @@
 	* config/sparc/sparc.c (sparc_init_machine_status): Likewise.
 	* config/spu/spu.c (spu_init_machine_status): Likewise.
 	* config/tilegx/tilegx.c (tilegx_init_machine_status): Likewise.
-	* config/tilepro/tilepro.c (tilepro_init_machine_status):
-	* Likewise.
+	* config/tilepro/tilepro.c (tilepro_init_machine_status): Likewise.
 	* config/xtensa/xtensa.c (xtensa_init_machine_status): Likewise.
 	* coverage.c (coverage_end_function): Likewise.
 	* dbxout.c (dbxout_init): Likewise.
@@ -264,33 +260,31 @@
 	* tree.c (grow_tree_vec_stat): Likewise.
 	* vec.h (va_gc::reserve): Adjust.
 
-2014-05-17  Ajit Agarwal <ajitkum@xilinx.com>
+2014-05-17  Ajit Agarwal  <ajitkum@xilinx.com>
 
-	* config/microblaze/microblaze.c
-	  (break_handler): New Declaration.
-	  (microblaze_break_function_p,microblaze_is_break_handler): New.
-	  (compute_frame_size): use of microblaze_break_function_p. Add 
-	    the test of break_handler.
-	  (microblaze_function_prologue) : Add the test of variable
-	  break_handler. Check the fnname by BREAK_HANDLER_NAME.
-	  (microblaze_function_epilogue) : Add the test of break_handler.
-	  (microblaze_globalize_label) : Add the test of break_handler. Check the
-	  name by BREAK_HANDLER_NAME.
+	* config/microblaze/microblaze.c (break_handler): New Declaration.
+	(microblaze_break_function_p,microblaze_is_break_handler): New.
+	(compute_frame_size): Use microblaze_break_function_p.
+	Add the test of break_handler.
+	(microblaze_function_prologue) : Add the test of variable
+	break_handler.  Check the fnname by BREAK_HANDLER_NAME.
+	(microblaze_function_epilogue) : Add the test of break_handler.
+	(microblaze_globalize_label) : Add the test of break_handler.
+	Check the name by BREAK_HANDLER_NAME.
 
-	* config/microblaze/microblaze.h (BREAK_HANDLER_NAME) : New macro
+	* config/microblaze/microblaze.h (BREAK_HANDLER_NAME): New macro
 
-	* config/microblaze/microblaze.md :
-	  (*<optab>,<optab>_internal): Add microblaze_is_break_handler () test.
-	  (call_internal1,call_value_intern) : Use of microblaze_break_function_p.
-	  Use of SYMBOL_REF_DECL.
+	* config/microblaze/microblaze.md (*<optab>,<optab>_internal): Add
+	microblaze_is_break_handler test.
+	(call_internal1,call_value_intern): Use microblaze_break_function_p.
+	Use SYMBOL_REF_DECL.
 
 	* config/microblaze/microblaze-protos.h
-	  (microblaze_break_function_p,microblaze_is_break_handler) : New Declaration.
+	(microblaze_break_function_p,microblaze_is_break_handler):
+	New Declaration.
 
-	* testsuite/gcc.target/microblaze/others/break_handler.c : New.
-
-	* doc/extend.texi (MicroBlaze break_handler Functions): Document new
-	  MicroBlaze break_handler functions.
+	* doc/extend.texi (MicroBlaze break_handler Functions): Document
+	new MicroBlaze break_handler functions.
 
 2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
 

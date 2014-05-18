@@ -8,6 +8,10 @@
 	PR c++/52875
 	* g++.dg/cpp0x/decltype58.C: New.
 
+2014-05-17  Ajit Agarwal  <ajitkum@xilinx.com>
+
+	* gcc.target/microblaze/others/break_handler.c: New.
+
 2014-05-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/61140
