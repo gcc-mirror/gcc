@@ -110,6 +110,10 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_reference);
+  /* Comdat privatization come last, as direct references to comdat local
+     symbols are not allowed outside of the comdat group.  Privatizing early
+     would result in missed optimizations due to this restriction.  */
+  NEXT_PASS (pass_ipa_comdats);
   TERMINATE_PASS_LIST ()
 
   /* Simple IPA passes executed after the regular passes.  In WHOPR mode the
