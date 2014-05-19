@@ -293,9 +293,8 @@ positive_overflow_infinity (tree type)
 static inline bool
 is_negative_overflow_infinity (const_tree val)
 {
-  return (needs_overflow_infinity (TREE_TYPE (val))
-	  && CONSTANT_CLASS_P (val)
-	  && TREE_OVERFLOW (val)
+  return (TREE_OVERFLOW_P (val)
+	  && needs_overflow_infinity (TREE_TYPE (val))
 	  && vrp_val_is_min (val));
 }
 
@@ -304,9 +303,8 @@ is_negative_overflow_infinity (const_tree val)
 static inline bool
 is_positive_overflow_infinity (const_tree val)
 {
-  return (needs_overflow_infinity (TREE_TYPE (val))
-	  && CONSTANT_CLASS_P (val)
-	  && TREE_OVERFLOW (val)
+  return (TREE_OVERFLOW_P (val)
+	  && needs_overflow_infinity (TREE_TYPE (val))
 	  && vrp_val_is_max (val));
 }
 
@@ -315,9 +313,8 @@ is_positive_overflow_infinity (const_tree val)
 static inline bool
 is_overflow_infinity (const_tree val)
 {
-  return (needs_overflow_infinity (TREE_TYPE (val))
-	  && CONSTANT_CLASS_P (val)
-	  && TREE_OVERFLOW (val)
+  return (TREE_OVERFLOW_P (val)
+	  && needs_overflow_infinity (TREE_TYPE (val))
 	  && (vrp_val_is_min (val) || vrp_val_is_max (val)));
 }
 
@@ -791,9 +788,7 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
     return true;
   if (!val1 || !val2 || !operand_equal_p (val1, val2, 0))
     return false;
-  if (is_overflow_infinity (val1))
-    return is_overflow_infinity (val2);
-  return true;
+  return is_overflow_infinity (val1) == is_overflow_infinity (val2);
 }
 
 /* Return true, if the bitmaps B1 and B2 are equal.  */

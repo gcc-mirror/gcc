@@ -1,3 +1,13 @@
+2014-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61184
+	* tree-vrp.c (is_negative_overflow_infinity): Use
+	TREE_OVERFLOW_P and do that check first.
+	(is_positive_overflow_infinity): Likewise.
+	(is_overflow_infinity): Likewise.
+	(vrp_operand_equal_p): Properly treat operands with
+	differing overflow as not equal.
+
 2014-05-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1): Use CONST_INT_P in

@@ -1,3 +1,8 @@
+2014-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61184
+	* c-c++-common/torture/pr61184.c: New testcase.
+
 2014-05-19  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/61195
