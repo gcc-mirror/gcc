@@ -1,3 +1,7 @@
+2014-05-19  Mike Stump  <mikestump@comcast.net>
+
+	* MAINTAINERS: Add wide-int reviewers.
+
 2014-05-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* configure.ac (target_makefile_frag): Set for nios2-*-elf*.
