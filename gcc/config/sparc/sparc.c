@@ -10915,8 +10915,8 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  && TREE_CODE (arg2) == INTEGER_CST)
 	{
 	  bool overflow = false;
-	  wide_int result = arg2;
-	  wide_int tmp;
+	  widest_int result = wi::to_widest (arg2);
+	  widest_int tmp;
 	  unsigned i;
 
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
@@ -10926,8 +10926,8 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 
 	      bool neg1_ovf, neg2_ovf, add1_ovf, add2_ovf;
 
-	      tmp = wi::neg (e1, &neg1_ovf);
-	      tmp = wi::add (e0, tmp, SIGNED, &add1_ovf);
+	      tmp = wi::neg (wi::to_widest (e1), &neg1_ovf);
+	      tmp = wi::add (wi::to_widest (e0), tmp, SIGNED, &add1_ovf);
 	      if (wi::neg_p (tmp))
 		tmp = wi::neg (tmp, &neg2_ovf);
 	      else
