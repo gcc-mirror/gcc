@@ -301,6 +301,9 @@ register allocation	Kenneth Zadeck		zadeck@naturalbridge.com
 register allocation	Seongbae Park		seongbae.park@gmail.com
 RTL optimizers		Steven Bosscher		steven@gcc.gnu.org
 selective scheduling	Andrey Belevantsev	abel@ispras.ru
+wide-int 		Kenneth Zadeck		zadeck@naturalbridge.com
+wide-int		Mike Stump		mikestump@comcast.net
+wide-int		Richard Sandiford	rdsandiford@googlemail.com
 
 Note that while reviewers can approve changes to parts of the compiler
 that they maintain, they still need approval for their own patches
