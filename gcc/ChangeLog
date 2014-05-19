@@ -1,3 +1,8 @@
+2014-05-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Use CONST_INT_P in
+	shift simplification where it was intended.
+
 2014-05-19  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/61195
