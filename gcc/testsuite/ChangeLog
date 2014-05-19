@@ -1,3 +1,8 @@
+2014-05-19  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/61195
+	* gcc.target/sh/pr61195.c: New test.
+
 2014-05-18  Wei Mi  <wmi@google.com>
 
 	PR target/58066
