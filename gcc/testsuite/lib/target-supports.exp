@@ -5318,6 +5318,9 @@ proc check_effective_target_avx512f { } {
 # Return 1 if avx instructions can be compiled.
 
 proc check_effective_target_avx { } {
+    if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	return 0
+    }
     return [check_no_compiler_messages avx object {
 	void _mm256_zeroall (void)
 	{
