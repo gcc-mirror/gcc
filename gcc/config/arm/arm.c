@@ -16716,7 +16716,7 @@ thumb1_reorg (void)
       rtx prev, insn = BB_END (bb);
       bool insn_clobbered = false;
 
-      while (insn != BB_HEAD (bb) && DEBUG_INSN_P (insn))
+      while (insn != BB_HEAD (bb) && !NONDEBUG_INSN_P (insn))
 	insn = PREV_INSN (insn);
 
       /* Find the last cbranchsi4_insn in basic block BB.  */
