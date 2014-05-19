@@ -8942,6 +8942,9 @@ instantiate_class_template_1 (tree type)
   push_deferring_access_checks (dk_no_deferred);
 
   fn_context = decl_function_context (TYPE_MAIN_DECL (type));
+  /* Also avoid push_to_top_level for a lambda in an NSDMI.  */
+  if (!fn_context && LAMBDA_TYPE_P (type) && TYPE_CLASS_SCOPE_P (type))
+    fn_context = error_mark_node;
   if (!fn_context)
     push_to_top_level ();
   /* Use #pragma pack from the template context.  */
@@ -12531,7 +12534,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	{
 	  /* We get here for a use of 'this' in an NSDMI.  */
 	  if (DECL_NAME (t) == this_identifier
-	      && at_function_scope_p ()
+	      && current_function_decl
 	      && DECL_CONSTRUCTOR_P (current_function_decl))
 	    return current_class_ptr;
 
