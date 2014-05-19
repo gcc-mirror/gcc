@@ -1,3 +1,7 @@
+2014-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree.h: Remove extraneous template <>.
+
 2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa.c (symtab_remove_unreachable_nodes): Remove
