@@ -965,7 +965,7 @@ tidy_fallthru_edges (void)
 	  s = single_succ_edge (b);
 	  if (! (s->flags & EDGE_COMPLEX)
 	      && s->dest == c
-	      && !find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
+	      && !(JUMP_P (BB_END (b)) && CROSSING_JUMP_P (BB_END (b))))
 	    tidy_fallthru_edge (s);
 	}
     }

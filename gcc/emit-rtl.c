@@ -3590,11 +3590,13 @@ try_split (rtx pat, rtx trial, int last)
      may have introduced invalid RTL sharing, so unshare the sequence now.  */
   unshare_all_rtl_in_chain (seq);
 
-  /* Mark labels.  */
+  /* Mark labels and copy flags.  */
   for (insn = insn_last; insn ; insn = PREV_INSN (insn))
     {
       if (JUMP_P (insn))
 	{
+	  if (JUMP_P (trial))
+	    CROSSING_JUMP_P (insn) = CROSSING_JUMP_P (trial);
 	  mark_jump_label (PATTERN (insn), insn, 0);
 	  njumps++;
 	  if (probability != -1
@@ -3671,7 +3673,6 @@ try_split (rtx pat, rtx trial, int last)
 	  break;
 
 	case REG_NON_LOCAL_GOTO:
-	case REG_CROSSING_JUMP:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (JUMP_P (insn))

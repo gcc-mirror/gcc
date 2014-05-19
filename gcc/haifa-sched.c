@@ -7653,7 +7653,7 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 	{
 	  /* We don't need the same note for the check because
 	     any_condjump_p (check) == true.  */
-	  add_reg_note (jump, REG_CROSSING_JUMP, NULL_RTX);
+	  CROSSING_JUMP_P (jump) = 1;
 	}
       edge_flags = EDGE_CROSSING;
     }

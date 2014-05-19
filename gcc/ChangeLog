@@ -1,5 +1,30 @@
 2014-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* reg-notes.def (CROSSING_JUMP): Likewise.
+	* rtl.h (rtx_def): Update comment for jump flag.
+	(CROSSING_JUMP_P): Define.
+	* cfgcleanup.c (try_forward_edges, try_optimize_cfg): Use it instead
+	of a REG_CROSSING_JUMP note.
+	* cfghooks.c (tidy_fallthru_edges): Likewise.
+	* cfgrtl.c (fixup_partition_crossing, rtl_verify_edges): Likewise.
+	* emit-rtl.c (try_split): Likewise.
+	* haifa-sched.c (sched_create_recovery_edges): Likewise.
+	* ifcvt.c (find_if_case_1, find_if_case_2): Likewise.
+	* jump.c (redirect_jump_2): Likewise.
+	* reorg.c (follow_jumps, fill_slots_from_thread): Likewise.
+	(relax_delay_slots): Likewise.
+	* config/arc/arc.md (jump_i, cbranchsi4_scratch, *bbit): Likewise.
+	(bbit_di): Likewise.
+	* config/arc/arc.c (arc_reorg, arc_can_follow_jump): Likewise.
+	* config/sh/sh.md (jump_compact): Likewise.
+	* bb-reorder.c (rotate_loop): Likewise.
+	(pass_duplicate_computed_gotos::execute): Likewise.
+	(add_reg_crossing_jump_notes): Rename to...
+	(update_crossing_jump_flags): ...this.
+	(pass_partition_blocks::execute): Update accordingly.
+
+2014-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* tree.h: Remove extraneous template <>.
 
 2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
