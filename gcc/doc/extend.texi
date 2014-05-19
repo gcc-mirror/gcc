@@ -55,6 +55,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Mixed Declarations::  Mixing declarations and code.
 * Function Attributes:: Declaring that functions have no side effects,
                         or that they can never return.
+* Label Attributes::    Specifying attributes on labels.
 * Attribute Syntax::    Formal syntax for attributes.
 * Function Prototypes:: Prototype declarations and old-style definitions.
 * C++ Comments::        C++ comments are recognized.
@@ -2181,7 +2182,8 @@ attributes are currently defined for functions on all targets:
 @code{error} and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
-supported for variables declarations (@pxref{Variable Attributes})
+supported for variables declarations (@pxref{Variable Attributes}),
+labels (@pxref{Label Attributes})
 and for types (@pxref{Type Attributes}).
 
 GCC plugins may provide their own attributes.
@@ -3617,8 +3619,8 @@ than 2.96.
 @cindex @code{hot} function attribute
 The @code{hot} attribute on a function is used to inform the compiler that
 the function is a hot spot of the compiled program.  The function is
-optimized more aggressively and on many target it is placed into special
-subsection of the text section so all hot functions appears close together
+optimized more aggressively and on many targets it is placed into a special
+subsection of the text section so all hot functions appear close together,
 improving locality.
 
 When profile feedback is available, via @option{-fprofile-use}, hot functions
@@ -3627,23 +3629,14 @@ are automatically detected and this attribute is ignored.
 The @code{hot} attribute on functions is not implemented in GCC versions
 earlier than 4.3.
 
-@cindex @code{hot} label attribute
-The @code{hot} attribute on a label is used to inform the compiler that
-path following the label are more likely than paths that are not so
-annotated.  This attribute is used in cases where @code{__builtin_expect}
-cannot be used, for instance with computed goto or @code{asm goto}.
-
-The @code{hot} attribute on labels is not implemented in GCC versions
-earlier than 4.8.
-
 @item cold
 @cindex @code{cold} function attribute
 The @code{cold} attribute on functions is used to inform the compiler that
 the function is unlikely to be executed.  The function is optimized for
-size rather than speed and on many targets it is placed into special
-subsection of the text section so all cold functions appears close together
+size rather than speed and on many targets it is placed into a special
+subsection of the text section so all cold functions appear close together,
 improving code locality of non-cold parts of program.  The paths leading
-to call of cold functions within code are marked as unlikely by the branch
+to calls of cold functions within code are marked as unlikely by the branch
 prediction mechanism.  It is thus useful to mark functions used to handle
 unlikely conditions, such as @code{perror}, as cold to improve optimization
 of hot functions that do call marked functions in rare occasions.
@@ -3653,15 +3646,6 @@ are automatically detected and this attribute is ignored.
 
 The @code{cold} attribute on functions is not implemented in GCC versions
 earlier than 4.3.
-
-@cindex @code{cold} label attribute
-The @code{cold} attribute on labels is used to inform the compiler that
-the path following the label is unlikely to be executed.  This attribute
-is used in cases where @code{__builtin_expect} cannot be used, for instance
-with computed goto or @code{asm goto}.
-
-The @code{cold} attribute on labels is not implemented in GCC versions
-earlier than 4.8.
 
 @item no_sanitize_address
 @itemx no_address_safety_analysis
@@ -4527,6 +4511,65 @@ attachment of attributes to their corresponding declarations, whereas
 @code{#pragma GCC} is of use for constructs that do not naturally form
 part of the grammar.  @xref{Pragmas,,Pragmas Accepted by GCC}.
 
+@node Label Attributes
+@section Label Attributes
+@cindex Label Attributes
+
+GCC allows attributes to be set on C labels.  @xref{Attribute Syntax}, for 
+details of the exact syntax for using attributes.  Other attributes are 
+available for functions (@pxref{Function Attributes}), variables 
+(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
+
+This example uses the @code{cold} label attribute to indicate the 
+@code{ErrorHandling} branch is unlikely to be taken and that the
+@code{ErrorHandling} label is unused:
+
+@smallexample
+
+   asm goto ("some asm" : : : : NoError);
+
+/* This branch (the fallthru from the asm) is less commonly used */
+ErrorHandling: 
+   __attribute__((cold, unused)); /* Semi-colon is required here */
+   printf("error\n");
+   return 0;
+
+NoError:
+   printf("no error\n");
+   return 1;
+@end smallexample
+
+@table @code
+@item unused
+@cindex @code{unused} label attribute
+This feature is intended for program-generated code that may contain 
+unused labels, but which is compiled with @option{-Wall}.  It is
+not normally appropriate to use in it human-written code, though it
+could be useful in cases where the code that jumps to the label is
+contained within an @code{#ifdef} conditional.
+
+@item hot
+@cindex @code{hot} label attribute
+The @code{hot} attribute on a label is used to inform the compiler that
+the path following the label is more likely than paths that are not so
+annotated.  This attribute is used in cases where @code{__builtin_expect}
+cannot be used, for instance with computed goto or @code{asm goto}.
+
+The @code{hot} attribute on labels is not implemented in GCC versions
+earlier than 4.8.
+
+@item cold
+@cindex @code{cold} label attribute
+The @code{cold} attribute on labels is used to inform the compiler that
+the path following the label is unlikely to be executed.  This attribute
+is used in cases where @code{__builtin_expect} cannot be used, for instance
+with computed goto or @code{asm goto}.
+
+The @code{cold} attribute on labels is not implemented in GCC versions
+earlier than 4.8.
+
+@end table
+
 @node Attribute Syntax
 @section Attribute Syntax
 @cindex attribute syntax
@@ -4550,6 +4593,8 @@ applying to functions.  @xref{Variable Attributes}, for details of the
 semantics of attributes applying to variables.  @xref{Type Attributes},
 for details of the semantics of attributes applying to structure, union
 and enumerated types.
+@xref{Label Attributes}, for details of the semantics of attributes 
+applying to labels.
 
 An @dfn{attribute specifier} is of the form
 @code{__attribute__ ((@var{attribute-list}))}.  An @dfn{attribute list}
@@ -4587,20 +4632,18 @@ with the list being a single string constant.
 An @dfn{attribute specifier list} is a sequence of one or more attribute
 specifiers, not separated by any other tokens.
 
+@subsubheading Label Attributes
+
 In GNU C, an attribute specifier list may appear after the colon following a
-label, other than a @code{case} or @code{default} label.  The only
-attribute it makes sense to use after a label is @code{unused}.  This
-feature is intended for program-generated code that may contain unused labels,
-but which is compiled with @option{-Wall}.  It is
-not normally appropriate to use in it human-written code, though it
-could be useful in cases where the code that jumps to the label is
-contained within an @code{#ifdef} conditional.  GNU C++ only permits
+label, other than a @code{case} or @code{default} label.  GNU C++ only permits
 attributes on labels if the attribute specifier is immediately
 followed by a semicolon (i.e., the label applies to an empty
 statement).  If the semicolon is missing, C++ label attributes are
 ambiguous, as it is permissible for a declaration, which could begin
 with an attribute list, to be labelled in C++.  Declarations cannot be
 labelled in C90 or C99, so the ambiguity does not arise there.
+
+@subsubheading Type Attributes
 
 An attribute specifier list may appear as part of a @code{struct},
 @code{union} or @code{enum} specifier.  It may go either immediately
@@ -4615,6 +4658,9 @@ defined is not complete until after the attribute specifiers.
 @c binding to the list of specifiers/qualifiers; and "aligned"
 @c attributes could use sizeof for the structure, but the size could be
 @c changed later by "packed" attributes.
+
+
+@subsubheading All other attributes
 
 Otherwise, an attribute specifier appears as part of a declaration,
 counting declarations of unnamed parameters and type names, and relates
@@ -4856,7 +4902,8 @@ by an attribute specification inside double parentheses.  Some
 attributes are currently defined generically for variables.
 Other attributes are defined for variables on particular target
 systems.  Other attributes are available for functions
-(@pxref{Function Attributes}) and for types (@pxref{Type Attributes}).
+(@pxref{Function Attributes}), labels (@pxref{Label Attributes}) and for 
+types (@pxref{Type Attributes}).
 Other front ends might define more attributes
 (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
@@ -5512,8 +5559,8 @@ inside double parentheses.  Seven attributes are currently defined for
 types: @code{aligned}, @code{packed}, @code{transparent_union},
 @code{unused}, @code{deprecated}, @code{visibility}, and
 @code{may_alias}.  Other attributes are defined for functions
-(@pxref{Function Attributes}) and for variables (@pxref{Variable
-Attributes}).
+(@pxref{Function Attributes}), labels (@pxref{Label 
+Attributes}) and for variables (@pxref{Variable Attributes}).
 
 You may also specify any one of these attributes with @samp{__}
 preceding and following its keyword.  This allows you to use these
@@ -6935,7 +6982,9 @@ GotoLabels section in an @code{asm goto} statement contains a comma-separated
 list of all C labels to which the assembler code may jump. GCC assumes that 
 @code{asm} execution falls through to the next statement (if this is not the 
 case, consider using the @code{__builtin_unreachable} intrinsic after the 
-@code{asm} statement). The total number of input + output + goto operands has 
+@code{asm} statement). Optimization of @code{asm goto} may be improved by 
+using the @code{hot} and @code{cold} label attributes (@pxref{Label 
+Attributes}). The total number of input + output + goto operands has 
 a limit of 30.
 
 An @code{asm goto} statement can not have outputs (which means that the 
