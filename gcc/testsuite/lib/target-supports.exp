@@ -5285,7 +5285,11 @@ proc check_avx_available { } {
 # Return true if 32- and 16-bytes vectors are available.
 
 proc check_effective_target_vect_sizes_32B_16B { } {
-  return [check_avx_available];
+  if { [check_avx_available] && ![check_prefer_avx128] } {
+     return 1;
+  } else {
+    return 0;
+  }
 }
 
 # Return true if 128-bits vectors are preferred even if 256-bits vectors

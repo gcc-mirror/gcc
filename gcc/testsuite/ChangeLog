@@ -1,3 +1,9 @@
+2014-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_sizes_32B_16B): Return false if
+	128-bit AVX vectors preferred.
+
 2014-05-19  Mike Stump  <mikestump@comcast.net>
 
 	* lib/target-supports.exp (check_effective_target_avx): Early out
