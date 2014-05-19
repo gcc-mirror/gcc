@@ -1,5 +1,13 @@
 2014-05-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/61221
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Do nothing for unreachable blocks.
+	* tree-ssa-sccvn.c (cond_dom_walker::before_dom_children):
+	Improve unreachability detection.
+
+2014-05-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/61209
 	* tree-ssa-sccvn.c (visit_phi): Avoid setting expr to VN_TOP.
 
