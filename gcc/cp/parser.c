@@ -15540,9 +15540,10 @@ cp_parser_enum_specifier (cp_parser* parser)
 	}
       else
 	{
-	  error_at (type_start_token->location, "multiple definition of %q#T", type);
-	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-		    "previous definition here");
+	  error_at (type_start_token->location,
+		    "multiple definition of %q#T", type);
+	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+		  "previous definition here");
 	  type = error_mark_node;
 	}
 

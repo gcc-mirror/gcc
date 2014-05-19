@@ -2,7 +2,7 @@
 /* { dg-options "-fopenmp" } */
 /* { dg-additional-options "-std=c99" { target c } } */
 
-struct S *p;	/* { dg-error "forward declaration" "" { target c++ } } */
+struct S *p;	/* { dg-message "forward declaration" "" { target c++ } } */
 float f;
 int j;
 

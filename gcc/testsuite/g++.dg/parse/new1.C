@@ -1,4 +1,4 @@
-struct T; // { dg-error "forward" }
+struct T; // { dg-message "forward" }
 T* manage(T* t);
 template <class Obj> struct ObjectSlot0_ {
   void create() {

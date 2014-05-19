@@ -4,7 +4,7 @@
 // a void parm. We need to distinguish between a parmlist of (void), and
 // some ill-formed ones.
 
-struct S; // { dg-error "" } forward ref
+struct S; // { dg-message "" } forward ref
 
 void f(S);            // ok
 void f(S s) {}        // { dg-error "" } incomplete type

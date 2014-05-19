@@ -1,6 +1,6 @@
 // PR c++/39475
 
-struct I; // { dg-error "forward declaration" }
+struct I; // { dg-message "forward declaration" }
 struct C { };
 
 bool nas1 = __has_nothrow_assign(I); // { dg-error "incomplete type" }

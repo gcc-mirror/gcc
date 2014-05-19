@@ -2,7 +2,7 @@
 // Origin: Ivan Godard <igodard at pacbell dot net>
 // PR c++/17447: Detect parameters of dependent types even in templates
 
-struct B;   // { dg-error "forward declaration" }
+struct B;   // { dg-message "forward declaration" }
 template<typename T> struct A {
 
     friend A& operator <<(A& a, B b) { return a; } // { dg-error "incomplete" }

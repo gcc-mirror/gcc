@@ -3,7 +3,7 @@
 
 // { dg-options "-fpermissive -w" }
 
-struct A;			// { dg-error "" }
+struct A;			// { dg-message "" }
 
 struct B
 {

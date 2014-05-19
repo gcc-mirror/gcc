@@ -1,3 +1,61 @@
+2014-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-c++-common/gomp/simd4.c: Adjust for inform.
+	* g++.dg/cpp0x/decltype-call1.C: Likewise.
+	* g++.dg/cpp0x/forw_enum6.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ice7.C: Likewise.
+	* g++.dg/cpp0x/noexcept15.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex2.C: Likewise.
+	* g++.dg/eh/spec6.C: Likewise.
+	* g++.dg/expr/cast1.C: Likewise.
+	* g++.dg/expr/dtor1.C: Likewise.
+	* g++.dg/ext/is_base_of_diagnostic.C: Likewise.
+	* g++.dg/ext/unary_trait_incomplete.C: Likewise.
+	* g++.dg/gomp/pr49223-2.C: Likewise.
+	* g++.dg/gomp/udr-4.C: Likewise.
+	* g++.dg/init/delete1.C: Likewise.
+	* g++.dg/other/crash-2.C: Likewise.
+	* g++.dg/parse/crash24.C: Likewise.
+	* g++.dg/parse/crash25.C: Likewise.
+	* g++.dg/parse/crash31.C: Likewise.
+	* g++.dg/parse/crash49.C: Likewise.
+	* g++.dg/parse/crash50.C: Likewise.
+	* g++.dg/parse/crash54.C: Likewise.
+	* g++.dg/parse/dtor7.C: Likewise.
+	* g++.dg/parse/error40.C: Likewise.
+	* g++.dg/parse/fused-params1.C: Likewise.
+	* g++.dg/parse/new1.C: Likewise.
+	* g++.dg/template/crash35.C: Likewise.
+	* g++.dg/template/crash59.C: Likewise.
+	* g++.dg/template/crash77.C: Likewise.
+	* g++.dg/template/error51.C: Likewise.
+	* g++.dg/template/incomplete1.C: Likewise.
+	* g++.dg/template/incomplete3.C: Likewise.
+	* g++.dg/template/incomplete4.C: Likewise.
+	* g++.dg/template/incomplete5.C: Likewise.
+	* g++.dg/template/inherit8.C: Likewise.
+	* g++.dg/template/instantiate1.C: Likewise.
+	* g++.dg/template/instantiate3.C: Likewis: Likewise.
+	* g++.dg/template/offsetof2.C: Likewise.
+	* g++.dg/tm/pr51928.C: Likewise.
+	* g++.dg/warn/Wdelete-incomplete-1.C: Likewise.
+	* g++.dg/warn/incomplete1.C: Likewise.
+	* g++.dg/warn/incomplete2.C: Likewise.
+	* g++.old-deja/g++.brendan/friend4.C: Likewise.
+	* g++.old-deja/g++.bugs/900121_01.C: Likewise.
+	* g++.old-deja/g++.bugs/900214_01.C: Likewise.
+	* g++.old-deja/g++.eh/catch1.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Likewise.
+	* g++.old-deja/g++.mike/p7868.C: Likewise.
+	* g++.old-deja/g++.other/crash38.C: Likewise.
+	* g++.old-deja/g++.other/enum2.C: Likewise.
+	* g++.old-deja/g++.other/incomplete.C: Likewise.
+	* g++.old-deja/g++.other/vaarg3.C: Likewise.
+	* g++.old-deja/g++.pt/crash9.C: Likewise.
+	* g++.old-deja/g++.pt/niklas01a.C: Likewise.
+	* g++.old-deja/g++.pt/typename8.C: Likewise.
+	* g++.old-deja/g++.robertl/ice990323-1.C: Likewise.
+
 2014-05-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp
