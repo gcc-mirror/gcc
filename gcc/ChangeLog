@@ -1,3 +1,8 @@
+2014-05-19  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/61195
+	* config/sh/sh.md (movsf_ie): Unset fp_mode for fmov.
+
 2014-05-19  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	PR target/61084
