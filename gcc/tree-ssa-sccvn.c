@@ -3125,12 +3125,14 @@ visit_phi (gimple phi)
       if (is_gimple_min_invariant (sameval))
 	{
 	  VN_INFO (PHI_RESULT (phi))->has_constants = true;
-	  VN_INFO (PHI_RESULT (phi))->expr = sameval;
+	  if (sameval != VN_TOP)
+	    VN_INFO (PHI_RESULT (phi))->expr = sameval;
 	}
       else
 	{
 	  VN_INFO (PHI_RESULT (phi))->has_constants = false;
-	  VN_INFO (PHI_RESULT (phi))->expr = sameval;
+	  if (sameval != VN_TOP)
+	    VN_INFO (PHI_RESULT (phi))->expr = sameval;
 	}
 
       if (TREE_CODE (sameval) == SSA_NAME)
