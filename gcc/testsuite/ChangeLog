@@ -1,3 +1,10 @@
+2014-05-18  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* gcc.target/i386/pr58066.c: Replace pattern matching of .cfi
+	directive with rtl insns. Add effective-target of fpic and
+	tls_native.
+
 2014-05-17  Xinliang David Li  <davidxl@google.com>
 
 	* g++.dg/ipa/devirt-33.C: New testcase.
