@@ -4010,6 +4010,15 @@ eliminate_dom_walker::before_dom_children (basic_block b)
   /* Mark new bb.  */
   el_avail_stack.safe_push (NULL_TREE);
 
+  /* If this block is not reachable do nothing.  */
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, b->preds)
+    if (e->flags & EDGE_EXECUTABLE)
+      break;
+  if (!e)
+    return;
+
   for (gsi = gsi_start_phis (b); !gsi_end_p (gsi);)
     {
       gimple stmt, phi = gsi_stmt (gsi);

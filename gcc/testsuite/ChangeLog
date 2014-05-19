@@ -1,5 +1,10 @@
 2014-05-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/61221
+	* gcc.dg/torture/pr61221.c: New testcase.
+
+2014-05-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/61209
 	* gfortran.dg/pr61209.f90: New testcase.
 

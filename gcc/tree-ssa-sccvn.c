@@ -4177,11 +4177,13 @@ cond_dom_walker::before_dom_children (basic_block bb)
   if (fail)
     return;
 
-  /* If any of the predecessor edges are still marked as possibly
-     executable consider this block reachable.  */
+  /* If any of the predecessor edges that do not come from blocks dominated
+     by us are still marked as possibly executable consider this block
+     reachable.  */
   bool reachable = bb == ENTRY_BLOCK_PTR_FOR_FN (cfun);
   FOR_EACH_EDGE (e, ei, bb->preds)
-    reachable |= (e->flags & EDGE_EXECUTABLE);
+    if (!dominated_by_p (CDI_DOMINATORS, e->src, bb))
+      reachable |= (e->flags & EDGE_EXECUTABLE);
 
   /* If the block is not reachable all outgoing edges are not
      executable.  */
