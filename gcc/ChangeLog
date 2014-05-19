@@ -1,3 +1,8 @@
+2014-05-19  Nick Clifton  <nickc@redhat.com>
+
+	* except.c (init_eh): Fix computation of builtin setjmp buffer
+	size to allow for targets where POINTER_SIZE > BITS_PER_WORD.
+
 2014-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61184
