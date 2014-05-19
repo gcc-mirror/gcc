@@ -4,7 +4,7 @@
  
 struct yyguts_t 
 { 
-  class TestScanner* yyextra_r; // { dg-error "forward declaration" }
+  class TestScanner* yyextra_r; // { dg-message "forward declaration" }
 }; 
     
 TestScanner::TestScanner() {} // { dg-error "invalid use" }

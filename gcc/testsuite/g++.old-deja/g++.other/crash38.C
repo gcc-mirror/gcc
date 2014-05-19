@@ -6,7 +6,7 @@
 // Bug 611. We ICEd when calling a member function returning an incomplete
 // type by value.
 
-struct X;   // { dg-error "" } forward ref
+struct X;   // { dg-message "" } forward ref
 
 struct Y
 {

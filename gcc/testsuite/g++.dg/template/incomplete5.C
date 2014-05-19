@@ -1,7 +1,7 @@
 // PR c++/33501
 // { dg-do compile }
 
-class A;	// { dg-error "forward declaration" }
+class A;	// { dg-message "forward declaration" }
 
 template <typename T> struct X
 {

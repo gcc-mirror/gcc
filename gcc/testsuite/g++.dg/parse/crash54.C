@@ -1,6 +1,6 @@
 // PR c++/42057
 
-struct A; // { dg-error "forward declaration" }
+struct A; // { dg-message "forward declaration" }
 
 struct B
 {

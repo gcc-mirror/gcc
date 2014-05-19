@@ -7,7 +7,7 @@
 
 // [except.spec] 1, a type in an exception specifier shall not be incomplete,
 // or pointer or ref to incomplete
-struct X;                         // { dg-error "" } forward declaration.*
+struct X;                         // { dg-message "" } forward declaration.*
 void fn1() throw(X);              // { dg-error "" } invalid use of undefined type
 void fn2() throw(X *);            // { dg-error "" } invalid use of undefined type
 void fn3() throw(X &);            // { dg-error "" } invalid use of undefined tyoe

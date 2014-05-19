@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-struct S;					// { dg-error "forward declaration" }
+struct S;					// { dg-message "forward declaration" }
 #pragma omp declare reduction (+:S:omp_out.s += omp_in.s) // { dg-error "invalid use of incomplete type" }
 struct S { int s; S () : s (1) {} };
 #pragma omp declare reduction (*:S:omp_out.s *= omp_in.s)

@@ -1,3 +1,8 @@
+2014-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck2.c (cxx_incomplete_type_diagnostic): Use inform.
+	* parser.c (cp_parser_enum_specifier): Likewise.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* class.c (sorted_fields_type_new): Adjust.

@@ -17,7 +17,7 @@ public:
   }
 };
 
-class B : public A< B > // { dg-error "" } forward declaration
+class B : public A< B > // { dg-message "" } forward declaration
 {
 public:
   typedef int myT;

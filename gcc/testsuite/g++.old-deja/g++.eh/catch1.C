@@ -5,7 +5,7 @@
 
 // We cannot catch an incomplete type, or ptr to one
 
-struct A; // { dg-error "" } forward decl
+struct A; // { dg-message "" } forward decl
 
 void fn()
 {
