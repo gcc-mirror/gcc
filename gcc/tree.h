@@ -4573,7 +4573,6 @@ namespace wi
     unsigned int get_len () const;
   };
 
-  template <>
   template <int N>
   struct int_traits <extended_tree <N> >
   {
