@@ -51,7 +51,7 @@ def find_type(orig, name):
         # anything fancier here.
         field = typ.fields()[0]
         if not field.is_base_class:
-            raise ValueError, "Cannot find type %s::%s" % (str(orig), name)
+            raise ValueError("Cannot find type %s::%s" % (str(orig), name))
         typ = field.type
 
 class SharedPointerPrinter:
@@ -276,7 +276,7 @@ class StdTuplePrinter:
                 # Set the actual head to the first pair.
                 self.head  = self.head.cast (nodes[0].type)
             elif len (nodes) != 0:
-                raise ValueError, "Top of tuple tree does not consist of a single node."
+                raise ValueError("Top of tuple tree does not consist of a single node.")
             self.count = 0
 
         def __iter__ (self):
@@ -289,7 +289,7 @@ class StdTuplePrinter:
                 raise StopIteration
             # Check that this iteration has an expected structure.
             if len (nodes) != 2:
-                raise ValueError, "Cannot parse more than 2 nodes in a tuple tree."
+                raise ValueError("Cannot parse more than 2 nodes in a tuple tree.")
 
             # - Left node is the next recursion parent.
             # - Right node is the actual class contained in the tuple.
@@ -389,7 +389,7 @@ def get_value_from_Rb_tree_node(node):
             return p.dereference()
     except:
         pass
-    raise ValueError, "Unsupported implementation for %s" % str(node.type)
+    raise ValueError("Unsupported implementation for %s" % str(node.type))
 
 # This is a pretty printer for std::_Rb_tree_iterator (which is
 # std::map::iterator), and has nothing to do with the RbtreeIterator
@@ -827,7 +827,7 @@ class Printer(object):
         # A small sanity check.
         # FIXME
         if not self.compiled_rx.match(name + '<>'):
-            raise ValueError, 'libstdc++ programming error: "%s" does not match' % name
+            raise ValueError('libstdc++ programming error: "%s" does not match' % name)
         printer = RxPrinter(name, function)
         self.subprinters.append(printer)
         self.lookup[name] = printer

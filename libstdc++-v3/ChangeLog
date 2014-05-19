@@ -1,3 +1,7 @@
+2014-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Use Python3 raise syntax.
+
 2014-05-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	* libsupc++/new_op.cc: Factor the calls to malloc, use __builtin_expect.
