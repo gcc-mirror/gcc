@@ -1,3 +1,8 @@
+2014-05-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (thumb1_reorg): When scanning backwards skip anything
+	that's not a proper insn.
+
 2014-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61221
