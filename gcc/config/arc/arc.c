@@ -6051,7 +6051,7 @@ arc_reorg (void)
 	    continue;
 
 	  /* Now check if the jump is beyond the s9 range.  */
-	  if (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX))
+	  if (CROSSING_JUMP_P (insn))
 	    continue;
 	  offset = branch_dest (insn) - INSN_ADDRESSES (INSN_UID (insn));
 
@@ -9206,7 +9206,7 @@ arc_decl_pretend_args (tree decl)
 
 /* Without this, gcc.dg/tree-prof/bb-reorg.c fails to assemble
   when compiling with -O2 -freorder-blocks-and-partition -fprofile-use
-  -D_PROFILE_USE; delay branch scheduling then follows a REG_CROSSING_JUMP
+  -D_PROFILE_USE; delay branch scheduling then follows a crossing jump
   to redirect two breqs.  */
 
 static bool
@@ -9216,7 +9216,7 @@ arc_can_follow_jump (const_rtx follower, const_rtx followee)
   union { const_rtx c; rtx r; } u;
 
   u.c = follower;
-  if (find_reg_note (followee, REG_CROSSING_JUMP, NULL_RTX))
+  if (CROSSING_JUMP_P (followee))
     switch (get_attr_type (u.r))
       {
       case TYPE_BRCC:

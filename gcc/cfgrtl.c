@@ -1325,8 +1325,6 @@ redirect_branch_edge (edge e, basic_block target)
 static void
 fixup_partition_crossing (edge e)
 {
-  rtx note;
-
   if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || e->dest
       == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return;
@@ -1337,10 +1335,9 @@ fixup_partition_crossing (edge e)
   if (BB_PARTITION (e->src) != BB_PARTITION (e->dest))
     {
       e->flags |= EDGE_CROSSING;
-      note = find_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
       if (JUMP_P (BB_END (e->src))
-          && !note)
-        add_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
+	  && !CROSSING_JUMP_P (BB_END (e->src)))
+	CROSSING_JUMP_P (BB_END (e->src)) = 1;
     }
   else if (BB_PARTITION (e->src) == BB_PARTITION (e->dest))
     {
@@ -1348,8 +1345,7 @@ fixup_partition_crossing (edge e)
       /* Remove the section crossing note from jump at end of
          src if it exists, and if no other successors are
          still crossing.  */
-      note = find_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
-      if (note)
+      if (JUMP_P (BB_END (e->src)) && CROSSING_JUMP_P (BB_END (e->src)))
         {
           bool has_crossing_succ = false;
           edge e2;
@@ -1361,7 +1357,7 @@ fixup_partition_crossing (edge e)
                 break;
             }
           if (!has_crossing_succ)
-            remove_note (BB_END (e->src), note);
+	    CROSSING_JUMP_P (BB_END (e->src)) = 0;
         }
     }
 }
@@ -2460,8 +2456,7 @@ rtl_verify_edges (void)
 			 e->src->index);
 		  err = 1;
 		}
-              if (JUMP_P (BB_END (bb))
-                  && !find_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX))
+              if (JUMP_P (BB_END (bb)) && !CROSSING_JUMP_P (BB_END (bb)))
 		{
 		  error ("No region crossing jump at section boundary in bb %i",
 			 bb->index);
@@ -2496,7 +2491,8 @@ rtl_verify_edges (void)
 	}
 
         if (!has_crossing_edge
-            && find_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX))
+	    && JUMP_P (BB_END (bb))
+	    && CROSSING_JUMP_P (BB_END (bb)))
           {
             print_rtl_with_bb (stderr, get_insns (), TDF_RTL | TDF_BLOCKS | TDF_DETAILS);
             error ("Region crossing jump across same section in bb %i",

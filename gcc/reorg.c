@@ -2289,8 +2289,8 @@ fill_simple_delay_slots (int non_jumps_p)
    If LABEL is not followed by a jump, return LABEL.
    If the chain loops or we can't find end, return LABEL,
    since that tells caller to avoid changing the insn.
-   If the returned label is obtained by following a REG_CROSSING_JUMP
-   jump, set *CROSSING to true, otherwise set it to false.  */
+   If the returned label is obtained by following a crossing jump,
+   set *CROSSING to true, otherwise set it to false.  */
 
 static rtx
 follow_jumps (rtx label, rtx jump, bool *crossing)
@@ -2330,8 +2330,7 @@ follow_jumps (rtx label, rtx jump, bool *crossing)
       if (!targetm.can_follow_jump (jump, insn))
 	break;
       if (!*crossing)
-	*crossing
-	  = find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX) != NULL_RTX;
+	*crossing = CROSSING_JUMP_P (jump);
       value = this_label;
     }
   if (depth == 10)
@@ -2800,7 +2799,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 	{
 	  reorg_redirect_jump (insn, label);
 	  if (crossing)
-	    set_unique_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX);
+	    CROSSING_JUMP_P (insn) = 1;
 	}
     }
 
@@ -3175,7 +3174,7 @@ relax_delay_slots (rtx first)
 	    {
 	      reorg_redirect_jump (insn, target_label);
 	      if (crossing)
-		set_unique_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX);
+		CROSSING_JUMP_P (insn) = 1;
 	    }
 
 	  /* See if this jump conditionally branches around an unconditional
@@ -3320,7 +3319,7 @@ relax_delay_slots (rtx first)
 	  reorg_redirect_jump (delay_insn, trial);
 	  target_label = trial;
 	  if (crossing)
-	    set_unique_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX);
+	    CROSSING_JUMP_P (insn) = 1;
 	}
 
       /* If the first insn at TARGET_LABEL is redundant with a previous

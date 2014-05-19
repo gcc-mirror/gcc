@@ -419,7 +419,7 @@ try_forward_edges (int mode, basic_block b)
      partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
+  if (JUMP_P (BB_END (b)) && CROSSING_JUMP_P (BB_END (b)))
     return false;
 
   for (ei = ei_start (b->succs); (e = ei_safe_edge (ei)); )
@@ -457,7 +457,8 @@ try_forward_edges (int mode, basic_block b)
 	 details.  */
 
       if (first != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && find_reg_note (BB_END (first), REG_CROSSING_JUMP, NULL_RTX))
+	  && JUMP_P (BB_END (first))
+	  && CROSSING_JUMP_P (BB_END (first)))
 	return changed;
 
       while (counter < n_basic_blocks_for_fn (cfun))
@@ -2797,7 +2798,7 @@ try_optimize_cfg (int mode)
 	      if (single_succ_p (b)
 		  && single_succ (b) != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && onlyjump_p (BB_END (b))
-		  && !find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
+		  && !CROSSING_JUMP_P (BB_END (b))
 		  && try_redirect_by_replacing_jump (single_succ_edge (b),
 						     single_succ (b),
 						     (mode & CLEANUP_CFGLAYOUT) != 0))

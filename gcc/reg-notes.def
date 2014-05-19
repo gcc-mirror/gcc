@@ -188,11 +188,6 @@ REG_NOTE (NORETURN)
    computed goto.  */
 REG_NOTE (NON_LOCAL_GOTO)
 
-/* Indicates that a jump crosses between hot and cold sections in a
-   (partitioned) assembly or .o file, and therefore should not be
-   reduced to a simpler jump by optimizations.  */
-REG_NOTE (CROSSING_JUMP)
-
 /* This kind of note is generated at each to `setjmp', and similar
    functions that can return twice.  */
 REG_NOTE (SETJMP)
