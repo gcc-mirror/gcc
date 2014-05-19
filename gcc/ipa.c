@@ -517,6 +517,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      if (!node->in_other_partition)
 		node->local.local = false;
 	      cgraph_node_remove_callees (node);
+	      symtab_remove_from_same_comdat_group (node);
 	      ipa_remove_all_references (&node->ref_list);
 	      changed = true;
 	    }
@@ -571,6 +572,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  vnode->definition = false;
 	  vnode->analyzed = false;
 	  vnode->aux = NULL;
+
+	  symtab_remove_from_same_comdat_group (vnode);
 
 	  /* Keep body if it may be useful for constant folding.  */
 	  if ((init = ctor_for_folding (vnode->decl)) == error_mark_node)
@@ -708,6 +711,8 @@ address_taken_from_non_vtable_p (symtab_node *node)
 static bool
 comdat_can_be_unshared_p_1 (symtab_node *node)
 {
+  if (!node->externally_visible)
+    return true;
   /* When address is taken, we don't know if equality comparison won't
      break eventually. Exception are virutal functions, C++
      constructors/destructors and vtables, where this is not possible by

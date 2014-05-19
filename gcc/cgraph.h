@@ -723,6 +723,7 @@ enum symbol_partitioning_class
 /* In symtab.c  */
 void symtab_register_node (symtab_node *);
 void symtab_unregister_node (symtab_node *);
+void symtab_remove_from_same_comdat_group (symtab_node *);
 void symtab_remove_node (symtab_node *);
 symtab_node *symtab_get_node (const_tree);
 symtab_node *symtab_node_for_asm (const_tree asmname);

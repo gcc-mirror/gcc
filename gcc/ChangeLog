@@ -1,5 +1,17 @@
 2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa.c (symtab_remove_unreachable_nodes): Remove
+	symbol from comdat group if its body was eliminated.
+	(comdat_can_be_unshared_p_1): Static symbols can always
+	be privatized.
+	* symtab.c (symtab_remove_from_same_comdat_group): Break out
+	from ...
+	(symtab_unregister_node): ... this one.
+	(verify_symtab_base): More strict checking of comdats.
+	* cgraph.h (symtab_remove_from_same_comdat_group): Declare.
+
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* opts.c (common_handle_option): Disable -fipa-reference coorectly
 	with -fuse-profile.
 
