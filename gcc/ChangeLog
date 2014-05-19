@@ -1,5 +1,13 @@
 2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-pass.h (make_pass_ipa_comdats): New pass.
+	* timevar.def (TV_IPA_COMDATS): New timevar.
+	* passes.def (pass_ipa_comdats): Add.
+	* Makefile.in (OBJS): Add ipa-comdats.o
+	* ipa-comdats.c: New file.
+
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa.c (update_visibility_by_resolution_info): New function.
 	(function_and_variable_visibility): Use it.
 

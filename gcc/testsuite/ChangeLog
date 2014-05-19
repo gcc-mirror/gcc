@@ -1,3 +1,7 @@
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/comdat.C: New file.
+
 2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/volatile12.ad[sb]: New test.
