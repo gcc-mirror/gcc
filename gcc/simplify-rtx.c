@@ -884,7 +884,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 so we can perform the above simplification.  */
       if (STORE_FLAG_VALUE == -1
 	  && GET_CODE (op) == ASHIFTRT
-	  && GET_CODE (XEXP (op, 1))
+	  && CONST_INT_P (XEXP (op, 1))
 	  && INTVAL (XEXP (op, 1)) == GET_MODE_PRECISION (mode) - 1)
 	return simplify_gen_relational (GE, mode, VOIDmode,
 					XEXP (op, 0), const0_rtx);
