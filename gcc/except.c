@@ -286,9 +286,22 @@ init_eh (void)
       tmp = size_int (FIRST_PSEUDO_REGISTER + 2 - 1);
 #endif
 #else
-      /* builtin_setjmp takes a pointer to 5 words.  */
-      tmp = size_int (5 * BITS_PER_WORD / POINTER_SIZE - 1);
+      /* Compute a minimally sized jump buffer.  We need room to store at
+	 least 3 pointers - stack pointer, frame pointer and return address.
+	 Plus for some targets we need room for an extra pointer - in the
+	 case of MIPS this is the global pointer.  This makes a total of four
+	 pointers, but to be safe we actually allocate room for 5.
+
+	 If pointers are smaller than words then we allocate enough room for
+	 5 words, just in case the backend needs this much room.  For more
+	 discussion on this issue see:
+	 http://gcc.gnu.org/ml/gcc-patches/2014-05/msg00313.html.  */
+      if (POINTER_SIZE > BITS_PER_WORD)
+	tmp = size_int (5 - 1);
+      else
+	tmp = size_int ((5 * BITS_PER_WORD / POINTER_SIZE) - 1);
 #endif
+
       tmp = build_index_type (tmp);
       tmp = build_array_type (ptr_type_node, tmp);
       f_jbuf = build_decl (BUILTINS_LOCATION,
