@@ -1,3 +1,8 @@
+2014-05-19  David Wohlferd <dw@LimeGreenSocks.com>
+
+	* doc/extend.texi: Create Label Attributes section,
+	move all label attributes into it and reference it.
+
 2014-05-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb1_reorg): When scanning backwards skip anything
