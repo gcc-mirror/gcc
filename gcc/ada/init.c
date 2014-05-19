@@ -556,9 +556,14 @@ __gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
-/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
-char __gnat_alternate_stack[16 * 1024]; /* 2 * SIGSTKSZ */
+#ifndef __ia64__
+#define HAVE_GNAT_ALTERNATE_STACK 1
+/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.
+   It must be larger than MINSIGSTKSZ and hopefully near 2 * SIGSTKSZ.  */
+# if 16 * 1024 < MINSIGSTKSZ
+#  error "__gnat_alternate_stack too small"
+# endif
+char __gnat_alternate_stack[16 * 1024];
 #endif
 
 #ifdef __XENO__
@@ -612,7 +617,7 @@ __gnat_install_handler (void)
     sigaction (SIGBUS,  &act, NULL);
   if (__gnat_get_interrupt_state (SIGSEGV) != 's')
     {
-#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
+#ifdef HAVE_GNAT_ALTERNATE_STACK
       /* Setup an alternate stack region for the handler execution so that
 	 stack overflows can be handled properly, avoiding a SEGV generation
 	 from stack usage by the handler itself.  */

@@ -1,3 +1,11 @@
+2014-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2014-04-22  Richard Henderson  <rth@redhat.com>
+
+	* init.c [__linux__] (HAVE_GNAT_ALTERNATE_STACK): New define.
+	(__gnat_alternate_stack): Enable for all linux except ia64.
+
 2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils.c (gnat_write_global_declarations): Adjust the flags put on
@@ -11,7 +19,6 @@
 2014-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
-
 	2014-04-28  Richard Henderson  <rth@redhat.com>
 
 	* gcc-interface/Makefile.in: Support aarch64-linux.
