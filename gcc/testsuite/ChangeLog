@@ -1,3 +1,8 @@
+2014-05-19  Mike Stump  <mikestump@comcast.net>
+
+	* lib/target-supports.exp (check_effective_target_avx): Early out
+	if not x86 to prevent x86 flags on non-x86 targets.
+
 2014-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61221
