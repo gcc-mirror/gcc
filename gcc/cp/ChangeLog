@@ -1,3 +1,13 @@
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58753
+	PR c++/58930
+	PR c++/58704
+	* typeck2.c (digest_nsdmi_init): New.
+	* parser.c (cp_parser_late_parse_one_default_arg): Use it.
+	* init.c (get_nsdmi): Likewise.
+	* cp-tree.h (digest_nsdmi_init): Declare.
+
 2014-05-20  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (get_member_function_from_ptrfunc): Don't try to look

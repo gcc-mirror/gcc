@@ -534,12 +534,16 @@ get_nsdmi (tree member, bool in_ctor)
   if (!in_ctor)
     inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
   if (DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
-    /* Do deferred instantiation of the NSDMI.  */
-    init = (tsubst_copy_and_build
-	    (DECL_INITIAL (DECL_TI_TEMPLATE (member)),
-	     DECL_TI_ARGS (member),
-	     tf_warning_or_error, member, /*function_p=*/false,
-	     /*integral_constant_expression_p=*/false));
+    {
+      /* Do deferred instantiation of the NSDMI.  */
+      init = (tsubst_copy_and_build
+	      (DECL_INITIAL (DECL_TI_TEMPLATE (member)),
+	       DECL_TI_ARGS (member),
+	       tf_warning_or_error, member, /*function_p=*/false,
+	       /*integral_constant_expression_p=*/false));
+
+      init = digest_nsdmi_init (member, init);
+    }
   else
     {
       init = DECL_INITIAL (member);
