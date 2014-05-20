@@ -1,3 +1,11 @@
+2014-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dom.c (hashable_expr_equal_p) <EXPR_CALL>: Also compare the
+	EH region of calls to pure functions that can throw an exception.
+	* tree-ssa-sccvn.c (vn_reference_eq): Remove duplicated test.
+	(copy_reference_ops_from_call): Also copy the EH region of the call if
+	it can throw an exception.
+
 2014-05-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Optimize case of

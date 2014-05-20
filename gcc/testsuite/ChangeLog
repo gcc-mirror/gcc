@@ -1,3 +1,9 @@
+2014-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt35.adb: New test.
+	* gnat.dg/opt36.adb: Likewise.
+	* gnat.dg/opt35_pkg.ad[sb]: New helper.
+
 2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60373

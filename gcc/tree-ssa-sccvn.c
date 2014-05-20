@@ -663,9 +663,6 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 {
   unsigned i, j;
 
-  if (vr1->hashcode != vr2->hashcode)
-    return false;
-
   /* Early out if this is not a hash collision.  */
   if (vr1->hashcode != vr2->hashcode)
     return false;
@@ -1125,6 +1122,7 @@ copy_reference_ops_from_call (gimple call,
   vn_reference_op_s temp;
   unsigned i;
   tree lhs = gimple_call_lhs (call);
+  int lr;
 
   /* If 2 calls have a different non-ssa lhs, vdef value numbers should be
      different.  By adding the lhs here in the vector, we ensure that the
@@ -1139,12 +1137,14 @@ copy_reference_ops_from_call (gimple call,
       result->safe_push (temp);
     }
 
-  /* Copy the type, opcode, function being called and static chain.  */
+  /* Copy the type, opcode, function, static chain and EH region, if any.  */
   memset (&temp, 0, sizeof (temp));
   temp.type = gimple_call_return_type (call);
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
+  if (stmt_could_throw_p (call) && (lr = lookup_stmt_eh_lp (call)) > 0)
+    temp.op2 = size_int (lr);
   temp.off = -1;
   result->safe_push (temp);
 
