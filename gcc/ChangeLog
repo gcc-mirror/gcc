@@ -1,3 +1,12 @@
+2014-05-20  Richard Biener  <rguenther@suse.de>
+
+	* config.gcc: Remove need_64bit_hwint.
+	* configure.ac: Do not define NEED_64BIT_HOST_WIDE_INT.
+	* hwint.h: Do not check NEED_64BIT_HOST_WIDE_INT but assume
+	it to be true.
+	* config.in: Regenerate.
+	* configure: Likewise.
+
 2014-05-19  David Wohlferd <dw@LimeGreenSocks.com>
 
 	* doc/extend.texi: Create Label Attributes section,

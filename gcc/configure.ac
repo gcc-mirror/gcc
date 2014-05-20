@@ -1372,11 +1372,6 @@ else
 	done
 fi
 
-if test x$need_64bit_hwint = xyes; then
-	AC_DEFINE(NEED_64BIT_HOST_WIDE_INT, 1,
-[Define to 1 if HOST_WIDE_INT must be 64 bits wide (see hwint.h).])
-fi
-
 if test x$use_long_long_for_widest_fast_int = xyes; then
 	AC_DEFINE(USE_LONG_LONG_FOR_WIDEST_FAST_INT, 1,
 [Define to 1 if the 'long long' (or '__int64') is wider than 'long' but still
