@@ -1,3 +1,10 @@
+2014-05-20  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.md (split): Don't allow subregs when
+	splitting SImode adds.
+	(andneghi): Fix subtraction logic.
+	* config/msp430/predicates.md (msp430_nonsubreg_or_imm_operand): New.
+
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.h (DECL_ONE_ONLY): Return true only for externally visible
