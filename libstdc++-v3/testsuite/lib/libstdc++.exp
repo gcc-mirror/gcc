@@ -282,6 +282,11 @@ proc libstdc++_init { testfile } {
     }
     append cxxflags " "
     append cxxflags [getenv CXXFLAGS]
+
+    if ![regexp "\-O" $cxxflags] {
+	append cxxflags " -g -O2"
+    }
+
     v3track cxxflags 2
 
     # Always use MO files built by this test harness.
