@@ -1,3 +1,8 @@
+2014-05-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arith_shiftsi): Do not predicate for
+	arm_restrict_it.
+
 2014-05-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb1_reorg): When scanning backwards skip anything
