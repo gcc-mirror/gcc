@@ -1,3 +1,12 @@
+2014-05-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (process_scc): Dump SCC here, when
+	iterating,
+	(extract_and_process_scc_for_name): not here.
+	(cond_dom_walker::before_dom_children): Only process
+	stmts that end the BB in interesting ways.
+	(run_scc_vn): Mark param uses as visited.
+
 2014-05-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arith_shiftsi): Do not predicate for
