@@ -754,7 +754,7 @@ optimize_mode_switching (void)
 			   point ends up first in the instruction steam.
 			   Because we made sure that NOTE_INSN_BASIC_BLOCK is
 			   only used for initially empty basic blocks, we
-			   can archive this by appending at the end of
+			   can achieve this by appending at the end of
 			   the block.  */
 			emit_insn_after
 			  (mode_set, BB_END (NOTE_BASIC_BLOCK (ptr->insn_ptr)));
