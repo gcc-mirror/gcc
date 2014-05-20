@@ -3915,7 +3915,6 @@ compute_avail (void)
 
 /* Local state for the eliminate domwalk.  */
 static vec<gimple> el_to_remove;
-static vec<gimple> el_to_update;
 static unsigned int el_todo;
 static vec<tree> el_avail;
 static vec<tree> el_avail_stack;
@@ -4155,9 +4154,14 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  print_gimple_stmt (dump_file, stmt, 0, 0);
 		}
 	      pre_stats.eliminations++;
+
+	      tree vdef = gimple_vdef (stmt);
+	      tree vuse = gimple_vuse (stmt);
 	      propagate_tree_value_into_stmt (&gsi, sprime);
 	      stmt = gsi_stmt (gsi);
 	      update_stmt (stmt);
+	      if (vdef != gimple_vdef (stmt))
+		VN_INFO (vdef)->valnum = vuse;
 
 	      /* If we removed EH side-effects from the statement, clean
 		 its EH information.  */
@@ -4255,9 +4259,14 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		sprime = fold_convert (gimple_expr_type (stmt), sprime);
 
 	      pre_stats.eliminations++;
+
+	      tree vdef = gimple_vdef (stmt);
+	      tree vuse = gimple_vuse (stmt);
 	      propagate_tree_value_into_stmt (&gsi, sprime);
 	      stmt = gsi_stmt (gsi);
 	      update_stmt (stmt);
+	      if (vdef != gimple_vdef (stmt))
+		VN_INFO (vdef)->valnum = vuse;
 
 	      /* If we removed EH side-effects from the statement, clean
 		 its EH information.  */
@@ -4371,7 +4380,11 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		}
 
 	      gimple_call_set_fn (stmt, fn);
-	      el_to_update.safe_push (stmt);
+	      tree vdef = gimple_vdef (stmt);
+	      tree vuse = gimple_vuse (stmt);
+	      update_stmt (stmt);
+	      if (vdef != gimple_vdef (stmt))
+		VN_INFO (vdef)->valnum = vuse;
 
 	      /* When changing a call into a noreturn call, cfg cleanup
 		 is needed to fix up the noreturn call.  */
@@ -4430,7 +4443,6 @@ eliminate (void)
   need_ab_cleanup = BITMAP_ALLOC (NULL);
 
   el_to_remove.create (0);
-  el_to_update.create (0);
   el_todo = 0;
   el_avail.create (0);
   el_avail_stack.create (0);
@@ -4481,13 +4493,6 @@ eliminate (void)
 	}
     }
   el_to_remove.release ();
-
-  /* We cannot update call statements with virtual operands during
-     SSA walk.  This might remove them which in turn makes our
-     VN lattice invalid.  */
-  FOR_EACH_VEC_ELT (el_to_update, i, stmt)
-    update_stmt (stmt);
-  el_to_update.release ();
 
   return el_todo;
 }
