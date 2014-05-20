@@ -1,3 +1,8 @@
+2014-05-20  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (get_member_function_from_ptrfunc): Don't try to look
+	up a virtual function in a dummy object.
+
 2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60373
