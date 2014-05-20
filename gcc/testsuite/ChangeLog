@@ -1,3 +1,7 @@
+2014-05-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsxcopy.c: New test.
+
 2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58664
