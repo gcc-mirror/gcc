@@ -1,3 +1,10 @@
+2014-05-20  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.md (split): Don't allow subregs when
+	splitting SImode adds.
+	(andneghi): Fix subtraction logic.
+	* config/msp430/predicates.md (msp430_nonsubreg_or_imm_operand): New.
+
 2014-05-20  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (TARGET_GIMPLIFY_VA_ARG_EXPR): Define.

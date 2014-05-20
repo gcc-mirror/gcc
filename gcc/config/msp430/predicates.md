@@ -73,6 +73,10 @@
 (define_predicate "msp430_nonsubreg_operand"
   (match_code "reg,mem"))
 
+(define_predicate "msp430_nonsubreg_or_imm_operand"
+  (ior (match_operand 0 "msp430_nonsubreg_operand")
+       (match_operand 0 "immediate_operand")))
+
 ; TRUE for constants which are bit positions for zero_extract
 (define_predicate "msp430_bitpos"
   (and (match_code "const_int")
