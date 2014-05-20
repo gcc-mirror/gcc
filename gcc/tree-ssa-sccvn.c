@@ -3833,6 +3833,9 @@ process_scc (vec<tree> scc)
 	}
     }
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_scc (dump_file, scc);
+
   /* Iterate over the SCC with the optimistic table until it stops
      changing.  */
   current_info = optimistic_info;
@@ -3858,6 +3861,8 @@ process_scc (vec<tree> scc)
 	changed |= visit_use (var);
     }
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Processing SCC needed %d iterations\n", iterations);
   statistics_histogram_event (cfun, "SCC iterations", iterations);
 
   /* Finally, copy the contents of the no longer used optimistic
@@ -3908,9 +3913,6 @@ extract_and_process_scc_for_name (tree name)
 
   if (scc.length () > 1)
     sort_scc (scc);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    print_scc (dump_file, scc);
 
   process_scc (scc);
 
@@ -4221,6 +4223,19 @@ cond_dom_walker::before_dom_children (basic_block bb)
   if (!stmt)
     return;
 
+  enum gimple_code code = gimple_code (stmt);
+  if (code != GIMPLE_COND
+      && code != GIMPLE_SWITCH
+      && code != GIMPLE_GOTO)
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Value-numbering operands of stmt ending BB %d: ",
+	       bb->index);
+      print_gimple_stmt (dump_file, stmt, 0, 0);
+    }
+
   /* Value-number the last stmts SSA uses.  */
   ssa_op_iter i;
   tree op;
@@ -4236,7 +4251,7 @@ cond_dom_walker::before_dom_children (basic_block bb)
      if value-numbering can prove they are not reachable.  Handling
      computed gotos is also possible.  */
   tree val;
-  switch (gimple_code (stmt))
+  switch (code)
     {
     case GIMPLE_COND:
       {
@@ -4259,8 +4274,7 @@ cond_dom_walker::before_dom_children (basic_block bb)
       val = gimple_goto_dest (stmt);
       break;
     default:
-      val = NULL_TREE;
-      break;
+      gcc_unreachable ();
     }
   if (!val)
     return;
@@ -4300,7 +4314,10 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
     {
       tree def = ssa_default_def (cfun, param);
       if (def)
-	VN_INFO (def)->valnum = def;
+	{
+	  VN_INFO (def)->visited = true;
+	  VN_INFO (def)->valnum = def;
+	}
     }
 
   /* Mark all edges as possibly executable.  */
