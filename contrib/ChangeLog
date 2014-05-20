@@ -1,3 +1,8 @@
+2014-05-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* dg-extract-results.py (parse_run): Handle warnings that are printed
+	before a test harness is run.
+
 2014-05-09  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config-list.mk (show): New target.
