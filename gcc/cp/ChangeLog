@@ -1,3 +1,10 @@
+2014-05-20  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	PR bootstrap/61210
+	* pt.c (tsubst_copy, tsubst_omp_for_iterator, tsubst_expr)
+	(tsubst_copy_and_build): Perform recursive substitutions in a
+	deterministic order.
+
 2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58664
