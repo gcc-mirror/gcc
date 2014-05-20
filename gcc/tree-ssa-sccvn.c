@@ -318,6 +318,25 @@ static int *rpo_numbers;
 
 #define SSA_VAL(x) (VN_INFO ((x))->valnum)
 
+/* Return the SSA value of the VUSE x, supporting released VDEFs
+   during elimination which will value-number the VDEF to the
+   associated VUSE (but not substitute in the whole lattice).  */
+
+static inline tree
+vuse_ssa_val (tree x)
+{
+  if (!x)
+    return NULL_TREE;
+
+  do
+    {
+      x = SSA_VAL (x);
+    }
+  while (SSA_NAME_IN_FREE_LIST (x));
+
+  return x;
+}
+
 /* This represents the top of the VN lattice, which is the universal
    value.  */
 
@@ -1495,7 +1514,7 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse,
   /* Fixup vuse and hash.  */
   if (vr->vuse)
     vr->hashcode = vr->hashcode - SSA_NAME_VERSION (vr->vuse);
-  vr->vuse = SSA_VAL (vuse);
+  vr->vuse = vuse_ssa_val (vuse);
   if (vr->vuse)
     vr->hashcode = vr->hashcode + SSA_NAME_VERSION (vr->vuse);
 
@@ -2035,7 +2054,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
     vnresult = &tmp;
   *vnresult = NULL;
 
-  vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
+  vr1.vuse = vuse_ssa_val (vuse);
   shared_lookup_references.truncate (0);
   shared_lookup_references.safe_grow (operands.length ());
   memcpy (shared_lookup_references.address (),
@@ -2090,7 +2109,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   if (vnresult)
     *vnresult = NULL;
 
-  vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
+  vr1.vuse = vuse_ssa_val (vuse);
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
