@@ -6027,6 +6027,7 @@ emit_copy_of_insn_after (rtx insn, rtx after)
 
     case JUMP_INSN:
       new_rtx = emit_jump_insn_after (copy_insn (PATTERN (insn)), after);
+      CROSSING_JUMP_P (new_rtx) = CROSSING_JUMP_P (insn);
       break;
 
     case DEBUG_INSN:
