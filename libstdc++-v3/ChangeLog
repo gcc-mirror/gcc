@@ -1,3 +1,13 @@
+2014-05-20  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR libstdc++/61223
+	Revert:
+	2014-05-16  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR libstdc++/60758
+	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Change r4 to lr in save/restore
+	and add unwind directives.
+
 2014-05-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* testsuite/lib/libstdc++.exp (load_gcc_lib): Register loaded libs.
