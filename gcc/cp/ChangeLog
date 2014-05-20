@@ -1,3 +1,10 @@
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60373
+	* decl.c (duplicate_decls): Replace pair of warning_at with
+	warning_at + inform.
+	(maybe_commonize_var): Likewise.
+
 2014-05-20  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	PR bootstrap/61210
