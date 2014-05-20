@@ -2669,7 +2669,7 @@ pass_partition_blocks::gate (function *fun)
 	  /* See gate_handle_reorder_blocks.  We should not partition if
 	     we are going to omit the reordering.  */
 	  && optimize_function_for_speed_p (fun)
-	  && !DECL_ONE_ONLY (current_function_decl)
+	  && !DECL_COMDAT_GROUP (current_function_decl)
 	  && !user_defined_section_attribute);
 }
 

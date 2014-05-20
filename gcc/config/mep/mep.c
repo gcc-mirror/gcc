@@ -4532,7 +4532,7 @@ mep_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
       else
 	encoding = 0;
 
-      if (flag_function_sections || DECL_ONE_ONLY (decl))
+      if (flag_function_sections || DECL_COMDAT_GROUP (decl))
 	mep_unique_section (decl, 0);
       else if (lookup_attribute ("vliw", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
 	{
@@ -4651,7 +4651,7 @@ mep_unique_section (tree decl, int reloc)
       name += 3;
     }
 
-  prefix = prefixes[sec][DECL_ONE_ONLY(decl)];
+  prefix = prefixes[sec][DECL_COMDAT_GROUP(decl) != NULL];
   len    = strlen (name) + strlen (prefix);
   string = (char *) alloca (len + 1);
 
