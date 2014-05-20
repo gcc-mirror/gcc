@@ -180,6 +180,9 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
+/* Define to 1 if the system has the type `long long'. */
+#undef HAVE_LONG_LONG
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -228,9 +231,8 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to the widest efficient host integer type at least as wide as the
-   target's size_t type. */
-#undef HOST_WIDE_INT
+/* Define to 1 if the system has the type `__int64'. */
+#undef HAVE___INT64
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
@@ -261,6 +263,12 @@
 
 /* The size of `long', as computed by sizeof. */
 #undef SIZEOF_LONG
+
+/* The size of `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
+
+/* The size of `__int64', as computed by sizeof. */
+#undef SIZEOF___INT64
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
