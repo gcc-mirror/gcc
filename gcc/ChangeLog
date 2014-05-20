@@ -1,3 +1,9 @@
+2014-05-20  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.md (zero_extendpsisi2): Use + constraint on
+	operand 0 in order to prevent confusion about the number of
+	registers involved.
+
 2014-05-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61221
