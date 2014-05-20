@@ -1,3 +1,16 @@
+2014-05-20  Xinliang David Li  <davidxl@google.com>
+
+	* cgraphunit.c (walk_polymorphic_call_targets): Add
+	dbgcnt and fopt-info support.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Ditto.
+	* ipa-devirt.c (ipa_devirt): Ditto.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Ditto.
+	* ipa.c (walk_polymorphic_call_targets): Ditto.
+	* gimple-fold.c (fold_gimple_assign): Ditto.
+	(gimple_fold_call): Ditto.
+	* dbgcnt.def: New counter.
+
 2014-05-20  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.md (split): Don't allow subregs when

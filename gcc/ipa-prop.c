@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "dbgcnt.h"
 
 /* Intermediate information about a parameter that is only useful during the
    run of ipa_analyze_node and is not kept afterwards.  */
@@ -2490,10 +2491,15 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 	    /* Member pointer call that goes through a VMT lookup.  */
 	    return NULL;
 
-	  if (dump_file)
-	    fprintf (dump_file, "ipa-prop: Discovered direct call to non-function"
-				" in %s/%i, making it unreachable.\n",
-		     ie->caller->name (), ie->caller->order);
+          if (dump_enabled_p ())
+	    {
+	      location_t loc = gimple_location (ie->call_stmt);
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			       "discovered direct call to non-function in %s/%i, "
+			       "making it __builtin_unreachable\n",
+                               ie->caller->name (),
+                               ie->caller->order);
+	    }
 	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 	  callee = cgraph_get_create_node (target);
 	  unreachable = true;
@@ -2527,6 +2533,10 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 	}
       callee = cgraph_get_create_node (target);
     }
+
+  if (!dbg_cnt (devirt))
+    return NULL;
+
   ipa_check_create_node_params ();
 
   /* We can not make edges to inline clones.  It is bug that someone removed
@@ -2547,6 +2557,13 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
       else
 	fprintf (dump_file, "with uid %i\n", ie->lto_stmt_uid);
      }
+  if (dump_enabled_p ())
+    {
+      location_t loc = gimple_location (ie->call_stmt);
+      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		       "converting indirect call in %s to direct call to %s\n",
+		       ie->caller->name (), callee->name ());
+    }
   ie = cgraph_make_edge_direct (ie, callee);
   es = inline_edge_summary (ie);
   es->call_stmt_size -= (eni_size_weights.indirect_call_cost

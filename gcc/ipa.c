@@ -37,6 +37,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "profile.h"
 #include "params.h"
+#include "internal-fn.h"
+#include "tree-ssa-alias.h"
+#include "gimple.h"
+#include "dbgcnt.h"
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
@@ -213,7 +217,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
      make the edge direct.  */
   if (final)
     {
-      if (targets.length () <= 1)
+      if (targets.length () <= 1 && dbg_cnt (devirt))
 	{
 	  cgraph_node *target, *node = edge->caller;
 	  if (targets.length () == 1)
@@ -222,12 +226,15 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 	    target = cgraph_get_create_node
 		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
 
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Devirtualizing call in %s/%i to %s/%i\n",
-		     edge->caller->name (),
-		     edge->caller->order,
-		     target->name (), target->order);
+	  if (dump_enabled_p ())
+            {
+              location_t locus = gimple_location (edge->call_stmt);
+              dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+                               "devirtualizing call in %s/%i to %s/%i\n",
+                               edge->caller->name (), edge->caller->order,
+                               target->name (),
+                               target->order);
+	    }
 	  edge = cgraph_make_edge_direct (edge, target);
 	  if (inline_summary_vec)
 	    inline_update_overall_summary (node);

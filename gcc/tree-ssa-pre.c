@@ -4365,18 +4365,19 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	    continue;
 	  if (gimple_call_addr_fndecl (fn) != NULL_TREE
 	      && useless_type_conversion_p (TREE_TYPE (orig_fn),
-					    TREE_TYPE (fn)))
+					    TREE_TYPE (fn))
+              && dbg_cnt (devirt))
 	    {
 	      bool can_make_abnormal_goto
 		  = stmt_can_make_abnormal_goto (stmt);
 	      bool was_noreturn = gimple_call_noreturn_p (stmt);
 
-	      if (dump_file && (dump_flags & TDF_DETAILS))
+	      if (dump_enabled_p ())
 		{
-		  fprintf (dump_file, "Replacing call target with ");
-		  print_generic_expr (dump_file, fn, 0);
-		  fprintf (dump_file, " in ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
+                  location_t loc = gimple_location (stmt);
+                  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+                                   "converting indirect call to function %s\n",
+                                   cgraph_get_node (gimple_call_addr_fndecl (fn))->name ());
 		}
 
 	      gimple_call_set_fn (stmt, fn);
