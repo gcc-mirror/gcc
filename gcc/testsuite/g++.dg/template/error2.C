@@ -7,8 +7,7 @@
 
 template<class T> struct X
 {
-  T m;	// { dg-error "void" "void" }
-	// { dg-error "incomplete type" "incomplete" { target *-*-* } 10 }
+  T m;	// { dg-error "incomplete type|invalid use" }
 };
 
 template<class T >

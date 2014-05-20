@@ -429,6 +429,25 @@ abstract_virtuals_error (abstract_class_use use, tree type)
   return abstract_virtuals_error_sfinae (use, type, tf_warning_or_error);
 }
 
+/* Print an inform about the declaration of the incomplete type TYPE.  */
+
+void
+cxx_incomplete_type_inform (const_tree type)
+{
+  location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
+  tree ptype = strip_top_quals (CONST_CAST_TREE (type));
+
+  if (current_class_type
+      && TYPE_BEING_DEFINED (current_class_type)
+      && same_type_p (ptype, current_class_type))
+    inform (loc, "definition of %q#T is not complete until "
+	    "the closing brace", ptype);
+  else if (!TYPE_TEMPLATE_INFO (ptype))
+    inform (loc, "forward declaration of %q#T", ptype);
+  else
+    inform (loc, "declaration of %q#T", ptype);
+}
+
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
    and TYPE is the type that was invalid.  DIAG_KIND indicates the
@@ -469,14 +488,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 				      "invalid use of incomplete type %q#T",
 				      type);
       if (complained)
-	{
-      	  if (!TYPE_TEMPLATE_INFO (type))
-	    inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-		    "forward declaration of %q#T", type);
-	  else
-	    inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-		    "declaration of %q#T", type);
-	}
+	cxx_incomplete_type_inform (type);
       break;
 
     case VOID_TYPE:

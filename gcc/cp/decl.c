@@ -10586,11 +10586,16 @@ grokdeclarator (const cp_declarator *declarator,
 	  }
 	else if (!staticp && !dependent_type_p (type)
 		 && !COMPLETE_TYPE_P (complete_type (type))
-		 && (TREE_CODE (type) != ARRAY_TYPE || initialized == 0))
+		 && (TREE_CODE (type) != ARRAY_TYPE
+		     || !COMPLETE_TYPE_P (TREE_TYPE (type))
+		     || initialized == 0))
 	  {
 	    if (unqualified_id)
-	      error ("field %qD has incomplete type %qT",
-		     unqualified_id, type);
+	      {
+		error ("field %qD has incomplete type %qT",
+		       unqualified_id, type);
+		cxx_incomplete_type_inform (strip_array_types (type));
+	      }
 	    else
 	      error ("name %qT has incomplete type", type);
 
