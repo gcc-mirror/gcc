@@ -1,3 +1,12 @@
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58664
+	* typeck2.c (cxx_incomplete_type_inform): New.
+	(cxx_incomplete_type_diagnostic): Use it.
+	* decl.c (grokdeclarator): Check the element type of an
+	incomplete array type; call the above.
+	* cp-tree.h (cxx_incomplete_type_inform): Declare.
+
 2014-05-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58761

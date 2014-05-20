@@ -1,3 +1,14 @@
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58664
+	* g++.dg/cpp0x/nsdmi-union6.C: New.
+	* g++.dg/parse/pr58664.C: Likewise.
+	* g++.dg/cpp0x/nsdmi6.C: Tweak.
+	* g++.dg/parse/crash31.C: Likewise.
+	* g++.dg/template/error2.C: Likewise.
+	* g++.dg/template/inherit8.C: Likewise.
+	* g++.dg/template/offsetof2.C: Likewise.
+
 2014-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-c++-common/gomp/simd4.c: Adjust for inform.
