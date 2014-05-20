@@ -369,15 +369,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
       }
 
+      // __neg should be true for \D, \S and \W only.
       void
-      _M_add_character_class(const _StringT& __s)
+      _M_add_character_class(const _StringT& __s, bool __neg)
       {
 	auto __mask = _M_traits.lookup_classname(__s.data(),
 						 __s.data() + __s.size(),
 						 __icase);
 	if (__mask == 0)
 	  __throw_regex_error(regex_constants::error_ctype);
-	_M_class_set |= __mask;
+	if (!__neg)
+	  _M_class_set |= __mask;
+	else
+	  _M_neg_class_set.push_back(__mask);
 #ifdef _GLIBCXX_DEBUG
 	_M_is_ready = false;
 #endif
@@ -387,7 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_make_range(_CharT __l, _CharT __r)
       {
 	_M_range_set.push_back(make_pair(_M_translator._M_transform(__l),
-				      _M_translator._M_transform(__r)));
+					 _M_translator._M_transform(__r)));
 #ifdef _GLIBCXX_DEBUG
 	_M_is_ready = false;
 #endif
@@ -435,6 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::vector<_CharT>                       _M_char_set;
       std::vector<_StringT>                     _M_equiv_set;
       std::vector<pair<_StrTransT, _StrTransT>> _M_range_set;
+      std::vector<_CharClassT>                  _M_neg_class_set;
       _CharClassT                               _M_class_set;
       _TransT                                   _M_translator;
       const _TraitsT&                           _M_traits;
