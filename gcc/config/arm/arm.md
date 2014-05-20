@@ -9886,6 +9886,7 @@
   "TARGET_32BIT"
   "%i1%?\\t%0, %2, %4%S3"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "shift" "4")
    (set_attr "arch" "a,t2,t2,a")
    ;; Thumb2 doesn't allow the stack pointer to be used for 
