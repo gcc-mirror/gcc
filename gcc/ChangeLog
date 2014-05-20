@@ -1,3 +1,8 @@
+2014-05-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/61243
+	* emit-rtl.c (emit_copy_of_insn_after): Copy CROSSING_JUMP_P.
+
 2014-05-20  Xinliang David Li  <davidxl@google.com>
 
 	* cgraphunit.c (walk_polymorphic_call_targets): Add
