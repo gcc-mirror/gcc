@@ -5147,7 +5147,7 @@ x86_64_elf_unique_section (tree decl, int reloc)
     {
       const char *prefix = NULL;
       /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
-      bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
+      bool one_only = DECL_COMDAT_GROUP (decl) && !HAVE_COMDAT_GROUP;
 
       switch (categorize_decl_for_section (decl, reloc))
 	{

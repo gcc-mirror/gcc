@@ -1,3 +1,25 @@
+2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.h (DECL_ONE_ONLY): Return true only for externally visible
+	symbols.
+	* except.c (switch_to_exception_section, resolve_unique_section,
+	get_named_text_section, default_function_rodata_section, 
+	align_variable, get_block_for_decl, default_section_type_flags):
+	Use DECL_COMDAT_GROUP instead of DECL_ONE_ONLY.
+	* symtab.c (symtab_add_to_same_comdat_group,
+	symtab_make_decl_local, fixup_same_cpp_alias_visibility,
+	symtab_nonoverwritable_alias, symtab_get_symbol_partitioning_class):
+	Likewise.
+	* cgraphclones.c (cgraph_create_virtual_clone): Likewise.
+	* bb-reorder.c (pass_partition_blocks::gate): Likewise.
+	* config/c6x/c6x.c (c6x_elf_unique_section): Likewise.
+	(c6x_function_in_section_p): Likewise.
+	* config/darwin.c (machopic_select_section): Likewise.
+	* config/arm/arm.c (arm_function_in_section_p): Likewise.
+	* config/mips/mips.c (mips_function_rodata_section): Likewise.
+	* config/mep/mep.c (mep_select_section): LIkewise.
+	* config/i386/i386.c (x86_64_elf_unique_section): Likewise.
+
 2014-05-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-dom.c (hashable_expr_equal_p) <EXPR_CALL>: Also compare the
