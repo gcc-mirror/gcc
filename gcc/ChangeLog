@@ -19,6 +19,10 @@
 
 2014-05-20  Nick Clifton  <nickc@redhat.com>
 
+	* config/msp430/msp430.c (TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
+	(msp430_gimplify_va_arg_expr): New function.
+	(msp430_print_operand): Handle (CONST (ZERO_EXTRACT)).
+
 	* config/msp430/msp430.md (zero_extendpsisi2): Use + constraint on
 	operand 0 in order to prevent confusion about the number of
 	registers involved.

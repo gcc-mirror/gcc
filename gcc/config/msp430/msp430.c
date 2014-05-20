@@ -730,6 +730,97 @@ msp430_get_raw_result_mode (int regno ATTRIBUTE_UNUSED)
 {
   return Pmode;
 }
+
+#undef  TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR msp430_gimplify_va_arg_expr
+
+#include "gimplify.h"
+#include "gimple-expr.h"
+
+static tree
+msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
+			  gimple_seq *post_p)
+{
+  tree addr, t, type_size, rounded_size, valist_tmp;
+  unsigned HOST_WIDE_INT align, boundary;
+  bool indirect;
+
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect)
+    type = build_pointer_type (type);
+
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
+  boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
+
+  /* When we align parameter on stack for caller, if the parameter
+     alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be
+     aligned at MAX_SUPPORTED_STACK_ALIGNMENT.  We will match callee
+     here with caller.  */
+  if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+    boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
+
+  boundary /= BITS_PER_UNIT;
+
+  /* Hoist the valist value into a temporary for the moment.  */
+  valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
+
+  /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
+     requires greater alignment, we must perform dynamic alignment.  */
+  if (boundary > align
+      && !integer_zerop (TYPE_SIZE (type)))
+    {
+      /* FIXME: This is where this function diverts from targhooks.c:
+	 std_gimplify_va_arg_expr().  It works, but I do not know why...  */
+      if (! POINTER_TYPE_P (type))
+	{
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		      fold_build_pointer_plus_hwi (valist_tmp, boundary - 1));
+	  gimplify_and_add (t, pre_p);
+
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		      fold_build2 (BIT_AND_EXPR, TREE_TYPE (valist),
+				   valist_tmp,
+				   build_int_cst (TREE_TYPE (valist), -boundary)));
+	  gimplify_and_add (t, pre_p);
+	}
+    }
+  else
+    boundary = align;
+
+  /* If the actual alignment is less than the alignment of the type,
+     adjust the type accordingly so that we don't assume strict alignment
+     when dereferencing the pointer.  */
+  boundary *= BITS_PER_UNIT;
+  if (boundary < TYPE_ALIGN (type))
+    {
+      type = build_variant_type_copy (type);
+      TYPE_ALIGN (type) = boundary;
+    }
+
+  /* Compute the rounded size of the type.  */
+  type_size = size_in_bytes (type);
+  rounded_size = round_up (type_size, align);
+
+  /* Reduce rounded_size so it's sharable with the postqueue.  */
+  gimplify_expr (&rounded_size, pre_p, post_p, is_gimple_val, fb_rvalue);
+
+  /* Get AP.  */
+  addr = valist_tmp;
+
+  /* Compute new value for AP.  */
+  t = fold_build_pointer_plus (valist_tmp, rounded_size);
+  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+  gimplify_and_add (t, pre_p);
+
+  addr = fold_convert (build_pointer_type (type), addr);
+
+  if (indirect)
+    addr = build_va_arg_indirect_ref (addr);
+
+  addr = build_va_arg_indirect_ref (addr);
+
+  return addr;
+}
 
 /* Addressing Modes */
 
@@ -2308,8 +2399,32 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       msp430_print_operand_addr (file, addr);
       break;
 
-    case CONST_INT:
     case CONST:
+      if (GET_CODE (XEXP (op, 0)) == ZERO_EXTRACT)
+	{
+	  op = XEXP (op, 0);
+	  switch (INTVAL (XEXP (op, 2)))
+	    {
+	    case 0:
+	      fprintf (file, "#lo (");
+	      msp430_print_operand_raw (file, XEXP (op, 0));
+	      fprintf (file, ")");
+	      break;
+	  
+	    case 16:
+	      fprintf (file, "#hi (");
+	      msp430_print_operand_raw (file, XEXP (op, 0));
+	      fprintf (file, ")");
+	      break;
+
+	    default:
+	      output_operand_lossage ("invalid zero extract");
+	      break;
+	    }
+	  break;
+	}
+      /* Fall through.  */
+    case CONST_INT:
     case SYMBOL_REF:
     case LABEL_REF:
       if (letter == 0)
