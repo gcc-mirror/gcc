@@ -1,3 +1,12 @@
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58753
+	PR c++/58930
+	PR c++/58704
+	* g++.dg/cpp0x/nsdmi-template11.C: New.
+	* g++.dg/cpp0x/nsdmi-template12.C: Likewise.
+	* g++.dg/cpp0x/nsdmi-template13.C: Likewise.
+
 2014-05-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt35.adb: New test.

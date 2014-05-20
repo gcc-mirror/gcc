@@ -23681,15 +23681,7 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
 	parsed_arg = check_default_argument (parmtype, parsed_arg,
 					     tf_warning_or_error);
       else
-	{
-	  int flags = LOOKUP_IMPLICIT;
-	  if (DIRECT_LIST_INIT_P (parsed_arg))
-	    flags = LOOKUP_NORMAL;
-	  parsed_arg = digest_init_flags (TREE_TYPE (decl), parsed_arg, flags);
-	  if (TREE_CODE (parsed_arg) == TARGET_EXPR)
-	    /* This represents the whole initialization.  */
-	    TARGET_EXPR_DIRECT_INIT_P (parsed_arg) = true;
-	}
+	parsed_arg = digest_nsdmi_init (decl, parsed_arg);
     }
 
   /* If the token stream has not been completely used up, then

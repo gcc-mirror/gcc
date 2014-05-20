@@ -1114,6 +1114,22 @@ digest_init_flags (tree type, tree init, int flags)
 {
   return digest_init_r (type, init, false, flags, tf_warning_or_error);
 }
+
+/* Process the initializer INIT for an NSDMI DECL (a FIELD_DECL).  */
+tree
+digest_nsdmi_init (tree decl, tree init)
+{
+  gcc_assert (TREE_CODE (decl) == FIELD_DECL);
+
+  int flags = LOOKUP_IMPLICIT;
+  if (DIRECT_LIST_INIT_P (init))
+    flags = LOOKUP_NORMAL;
+  init = digest_init_flags (TREE_TYPE (decl), init, flags);
+  if (TREE_CODE (init) == TARGET_EXPR)
+    /* This represents the whole initialization.  */
+    TARGET_EXPR_DIRECT_INIT_P (init) = true;
+  return init;
+}
 
 /* Set of flags used within process_init_constructor to describe the
    initializers.  */
