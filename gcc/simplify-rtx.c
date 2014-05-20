@@ -3419,6 +3419,31 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    }
 	}
 
+      /* If we have two nested selects that are inverses of each
+	 other, replace them with the source operand.  */
+      if (GET_CODE (trueop0) == VEC_SELECT
+	  && GET_MODE (XEXP (trueop0, 0)) == mode)
+	{
+	  rtx op0_subop1 = XEXP (trueop0, 1);
+	  gcc_assert (GET_CODE (op0_subop1) == PARALLEL);
+	  gcc_assert (XVECLEN (trueop1, 0) == GET_MODE_NUNITS (mode));
+
+	  /* Apply the outer ordering vector to the inner one.  (The inner
+	     ordering vector is expressly permitted to be of a different
+	     length than the outer one.)  If the result is { 0, 1, ..., n-1 }
+	     then the two VEC_SELECTs cancel.  */
+	  for (int i = 0; i < XVECLEN (trueop1, 0); ++i)
+	    {
+	      rtx x = XVECEXP (trueop1, 0, i);
+	      if (!CONST_INT_P (x))
+		return 0;
+	      rtx y = XVECEXP (op0_subop1, 0, INTVAL (x));
+	      if (!CONST_INT_P (y) || i != INTVAL (y))
+		return 0;
+	    }
+	  return XEXP (trueop0, 0);
+	}
+
       return 0;
     case VEC_CONCAT:
       {

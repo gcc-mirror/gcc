@@ -1,3 +1,8 @@
+2014-05-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Optimize case of
+	nested VEC_SELECTs that are inverses of each other.
+
 2014-05-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (process_scc): Dump SCC here, when
