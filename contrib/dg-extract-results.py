@@ -264,8 +264,12 @@ class Prog:
             # the harness segment, so that if a run for a particular harness
             # has been split up, we can reassemble the individual segments
             # in a sensible order.
+            #
+            # dejagnu sometimes issues warnings about the testing environment
+            # before running any tests.  Treat them as part of the header
+            # rather than as a test result.
             match = self.result_re.match (line)
-            if match:
+            if match and (harness or not line.startswith ('WARNING:')):
                 if not harness:
                     self.fatal (filename, 'saw test result before harness name')
                 name = match.group (2)
