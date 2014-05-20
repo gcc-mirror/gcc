@@ -1,3 +1,10 @@
+2014-05-20  Dehao Chen  <dehao@google.com>
+
+	* ipa-inline-transform.c (clone_inlined_nodes): Use min of edge count
+	and callee count to get clone count.
+	* tree-inline.c (expand_call_inline): Use callee count instead of bb
+	count in copy_body.
+
 2014-05-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/61243
