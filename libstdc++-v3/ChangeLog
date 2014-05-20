@@ -1,3 +1,7 @@
+2014-05-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* testsuite/lib/libstdc++.exp (load_gcc_lib): Register loaded libs.
+
 2014-05-20  Tim Shen  <timshen91@gmail.com>
 
 	PR libstdc++/61227
