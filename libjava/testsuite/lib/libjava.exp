@@ -2,8 +2,10 @@
 # Free Software Foundation
 
 proc load_gcc_lib { filename } {
-    global srcdir
+    global srcdir loaded_libs
+
     load_file $srcdir/../../gcc/testsuite/lib/$filename
+    set loaded_libs($filename) ""
 }
 
 load_lib libgloss.exp

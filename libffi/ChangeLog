@@ -1,3 +1,7 @@
+2014-05-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* testsuite/lib/libffi.exp (load_gcc_lib): Register loaded libs.
+
 2014-05-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Fix current cygwin-64 build problems.
