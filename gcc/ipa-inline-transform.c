@@ -214,6 +214,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
    it is NULL. If UPDATE_OVERALL_SUMMARY is false, do not bother to recompute overall
    size of caller after inlining. Caller is required to eventually do it via
    inline_update_overall_summary.
+   If callee_removed is non-NULL, set it to true if we removed callee node.
 
    Return true iff any new callgraph edges were discovered as a
    result of inlining.  */
@@ -221,7 +222,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 bool
 inline_call (struct cgraph_edge *e, bool update_original,
 	     vec<cgraph_edge_p> *new_edges,
-	     int *overall_size, bool update_overall_summary)
+	     int *overall_size, bool update_overall_summary,
+	     bool *callee_removed)
 {
   int old_size = 0, new_size = 0;
   struct cgraph_node *to = NULL;
@@ -260,6 +262,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	    {
 	      next_alias = cgraph_alias_target (alias);
 	      cgraph_remove_node (alias);
+	      if (callee_removed)
+		*callee_removed = true;
 	      alias = next_alias;
 	    }
 	  else

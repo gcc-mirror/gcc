@@ -1,5 +1,12 @@
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR bootstrap/60984
+	* ipa-inline-transform.c (inline_call): Use add CALLEE_REMOVED parameter.
+	* ipa-inline.c (inline_to_all_callers): If callee was removed; return.
+	(ipa_inline): Loop inline_to_all_callers until no more aliases are removed.
+
+2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/60820
 	* varpool.c (varpool_remove_node): Do not alter decls when streaming.
 

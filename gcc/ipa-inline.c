@@ -1961,6 +1961,8 @@ static bool
 inline_to_all_callers (struct cgraph_node *node, void *data)
 {
   int *num_calls = (int *)data;
+  bool callee_removed = false;
+
   while (node->callers && !node->global.inlined_to)
     {
       struct cgraph_node *caller = node->callers->caller;
@@ -1977,7 +1979,7 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
 		   inline_summary (node->callers->caller)->size);
 	}
 
-      inline_call (node->callers, true, NULL, NULL, true);
+      inline_call (node->callers, true, NULL, NULL, true, &callee_removed);
       if (dump_file)
 	fprintf (dump_file,
 		 " Inlined into %s which now has %i size\n",
@@ -1987,8 +1989,10 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "New calls found; giving up.\n");
-	  return true;
+	  return callee_removed;
 	}
+      if (callee_removed)
+	return true;
     }
   return false;
 }
@@ -2107,8 +2111,9 @@ ipa_inline (void)
 	      int num_calls = 0;
 	      cgraph_for_node_and_aliases (node, sum_callers,
 					   &num_calls, true);
-	      cgraph_for_node_and_aliases (node, inline_to_all_callers,
-					   &num_calls, true);
+	      while (cgraph_for_node_and_aliases (node, inline_to_all_callers,
+					          &num_calls, true))
+		;
 	      remove_functions = true;
 	    }
 	}
