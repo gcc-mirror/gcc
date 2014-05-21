@@ -3000,6 +3000,27 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx, int &max_vf,
   return true;
 }
 
+/* Helper function of lower_rec_input_clauses.  For a reference
+   in simd reduction, add an underlying variable it will reference.  */
+
+static void
+handle_simd_reference (location_t loc, tree new_vard, gimple_seq *ilist)
+{
+  tree z = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (new_vard)));
+  if (TREE_CONSTANT (z))
+    {
+      const char *name = NULL;
+      if (DECL_NAME (new_vard))
+	name = IDENTIFIER_POINTER (DECL_NAME (new_vard));
+
+      z = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (new_vard)), name);
+      gimple_add_tmp_var (z);
+      TREE_ADDRESSABLE (z) = 1;
+      z = build_fold_addr_expr_loc (loc, z);
+      gimplify_assign (new_vard, z, ilist);
+    }
+}
+
 /* Generate code to implement the input clauses, FIRSTPRIVATE and COPYIN,
    from the receiver (aka child) side and initializers for REFERENCE_TYPE
    private variables.  Initialization statements go in ILIST, while calls
@@ -3191,13 +3212,11 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		}
 	      else if (TREE_CONSTANT (x))
 		{
-		  /* For reduction with placeholder in SIMD loop,
-		     defer adding the initialization of the reference,
-		     because if we decide to use SIMD array for it,
-		     the initilization could cause expansion ICE.  */
-		  if (c_kind == OMP_CLAUSE_REDUCTION
-		      && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
-		      && is_simd)
+		  /* For reduction in SIMD loop, defer adding the
+		     initialization of the reference, because if we decide
+		     to use SIMD array for it, the initilization could cause
+		     expansion ICE.  */
+		  if (c_kind == OMP_CLAUSE_REDUCTION && is_simd)
 		    x = NULL_TREE;
 		  else
 		    {
@@ -3526,23 +3545,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		     But if they aren't used, we need to emit the deferred
 		     initialization now.  */
 		  else if (is_reference (var) && is_simd)
-		    {
-		      tree z
-			= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (new_vard)));
-		      if (TREE_CONSTANT (z))
-			{
-			  const char *name = NULL;
-			  if (DECL_NAME (var))
-			    name = IDENTIFIER_POINTER (DECL_NAME (new_vard));
-
-			  z = create_tmp_var_raw
-				(TREE_TYPE (TREE_TYPE (new_vard)), name);
-			  gimple_add_tmp_var (z);
-			  TREE_ADDRESSABLE (z) = 1;
-			  z = build_fold_addr_expr_loc (clause_loc, z);
-			  gimplify_assign (new_vard, z, ilist);
-			}
-		    }
+		    handle_simd_reference (clause_loc, new_vard, ilist);
 		  x = lang_hooks.decls.omp_clause_default_ctor
 				(c, new_var, unshare_expr (x));
 		  if (x)
@@ -3575,6 +3578,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (code == MINUS_EXPR)
 		    code = PLUS_EXPR;
 
+		  tree new_vard = new_var;
+		  if (is_simd && is_reference (var))
+		    {
+		      gcc_assert (TREE_CODE (new_var) == MEM_REF);
+		      new_vard = TREE_OPERAND (new_var, 0);
+		      gcc_assert (DECL_P (new_vard));
+		    }
 		  if (is_simd
 		      && lower_rec_simd_input_clauses (new_var, ctx, max_vf,
 						       idx, lane, ivar, lvar))
@@ -3586,9 +3596,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      x = build2 (code, TREE_TYPE (ref), ref, ivar);
 		      ref = build_outer_var_ref (var, ctx);
 		      gimplify_assign (ref, x, &llist[1]);
+
+		      if (new_vard != new_var)
+			{
+			  SET_DECL_VALUE_EXPR (new_vard,
+					       build_fold_addr_expr (lvar));
+			  DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
+			}
 		    }
 		  else
 		    {
+		      if (is_reference (var) && is_simd)
+			handle_simd_reference (clause_loc, new_vard, ilist);
 		      gimplify_assign (new_var, x, ilist);
 		      if (is_simd)
 			{

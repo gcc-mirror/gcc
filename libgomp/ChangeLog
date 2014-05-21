@@ -1,3 +1,8 @@
+2014-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61252
+	* testsuite/libgomp.c++/simd-9.C: New test.
+
 2014-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* libgomp.texi (Runitme Library Routines): Remove multiple @menu.
