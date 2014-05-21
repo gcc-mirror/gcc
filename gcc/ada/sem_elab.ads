@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,7 +158,7 @@ package Sem_Elab is
    --  not be generated (see detailed description in body).
 
    procedure Check_Task_Activation (N : Node_Id);
-   --  at the point at which tasks are activated in a package body, check
+   --  Tt the point at which tasks are activated in a package body, check
    --  that the bodies of the tasks are elaborated.
 
 end Sem_Elab;

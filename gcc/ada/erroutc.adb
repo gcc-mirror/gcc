@@ -1458,7 +1458,7 @@ package body Erroutc is
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
       Msg : String_Ptr;
-      Tag : String) return String_Id
+      Tag : String := "") return String_Id
    is
    begin
       --  Loop through specific warning suppression entries

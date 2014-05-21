@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -484,8 +484,8 @@ package body Exp_Pakd is
       Expr : Node_Id) return Node_Id;
    --  The packed array code does unchecked conversions which in some cases
    --  may involve non-discrete types with differing sizes. The semantics of
-   --  such conversions is potentially endian dependent, and the effect we
-   --  want here for such a conversion is to do the conversion in size as
+   --  such conversions is potentially endianness dependent, and the effect
+   --  we want here for such a conversion is to do the conversion in size as
    --  though numeric items are involved, and we extend or truncate on the
    --  left side. This happens naturally in the little-endian case, but in
    --  the big endian case we can get left justification, when what we want

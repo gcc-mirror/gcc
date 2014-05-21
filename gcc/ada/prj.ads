@@ -1534,13 +1534,19 @@ package Prj is
       In_Imported_Only : Boolean := False;
       In_Extended_Only : Boolean := False;
       Base_Name        : File_Name_Type;
-      Index            : Int := 0) return Source_Ids;
-   --  Find all source files with the given name.
-   --  If In_Extended_Only is True, it will search in project and the project
-   --     it extends, but not in the imported projects.
-   --  Elsif In_Imported_Only is True, it will search in project and the
-   --     projects it imports, but not in the others or in aggregated projects.
-   --  Else it searches in the whole tree.
+      Index            : Int     := 0) return Source_Ids;
+   --  Find all source files with the given name:
+   --
+   --    If In_Extended_Only is True, it will search in project and the project
+   --    it extends, but not in the imported projects.
+   --
+   --    If Extended_Only is False, and In_Imported_Only is True, it will
+   --    search in project and the projects it imports, but not in the others
+   --    or in aggregated projects.
+   --
+   --    If both Extended_Only and In_Imported_Only are False (the default)
+   --    then it searches the whole tree.
+   --
    --  If Index is specified, this only search for sources with that index.
 
    -----------------------

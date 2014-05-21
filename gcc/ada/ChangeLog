@@ -1,5 +1,16 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* prj.ads, sem_ch12.adb, prj.adb, exp_pakd.adb,
+	sem_elab.ads: Minor reformatting.
+	* erroutc.adb, erroutc.ads (Warning_Specifically_Suppressed): Make Tag
+	parameter optional.
+
+2014-05-21  Pascal Obry  <obry@adacore.com>
+
+	* prj-dect.adb: Allow package Install in aggregate project.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch13.adb (Analyze_Aspect_Specifications):
 	Insert_Delayed_Pragma is now used for the case of Attach_Handler.
 	* sem_prag.adb: Minor comment improvements.

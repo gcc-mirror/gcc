@@ -557,13 +557,13 @@ package Erroutc is
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
       Msg : String_Ptr;
-      Tag : String) return String_Id;
+      Tag : String := "") return String_Id;
    --  Determines if given message to be posted at given location is suppressed
    --  by specific ON/OFF Warnings pragmas specifying this particular message.
    --  If the warning is not suppressed then No_String is returned, otherwise
    --  the corresponding warning string is returned (or the null string if no
    --  Warning argument was present in the pragma). Tag is the error message
-   --  tag for the message in question.
+   --  tag for the message in question or the null string if there is no tag.
 
    function Warning_Treated_As_Error (Msg : String) return Boolean;
    --  Returns True if the warning message Msg matches any of the strings

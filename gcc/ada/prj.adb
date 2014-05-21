@@ -906,6 +906,11 @@ package body Prj is
 
       type Empty_State is null record;
       No_State : Empty_State;
+      --  This is needed for the State parameter of procedure Look_For_Sources
+      --  below, because of the instantiation For_Imported_Projects of generic
+      --  procedure For_Every_Project_Imported. As procedure Look_For_Sources
+      --  does not modify parameter State, there is no need to give its type
+      --  more than one value.
 
       procedure Look_For_Sources
         (Proj  : Project_Id;
