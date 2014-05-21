@@ -9946,6 +9946,10 @@ package body Sem_Ch12 is
       --  appear uninitialized. This is suspicious, unless the actual is a
       --  fully initialized type.
 
+      -----------------------------
+      -- Check_Initialized_Types --
+      -----------------------------
+
       procedure Check_Initialized_Types is
          Decl   : Node_Id;
          Formal : Entity_Id;
@@ -9958,11 +9962,10 @@ package body Sem_Ch12 is
                  and then Needs_Initialized_Actual (Decl))
 
               or else (Nkind (Decl) = N_Formal_Type_Declaration
-                  and then
-                    Nkind (Formal_Type_Definition (Decl)) =
-                      N_Formal_Private_Type_Definition
-                  and then Needs_Initialized_Actual
-                     (Formal_Type_Definition (Decl)))
+                        and then Nkind (Formal_Type_Definition (Decl)) =
+                                       N_Formal_Private_Type_Definition
+                        and then Needs_Initialized_Actual
+                                   (Formal_Type_Definition (Decl)))
             then
                Formal := Defining_Identifier (Decl);
                Actual := First_Entity (Act_Decl_Id);
@@ -9980,9 +9983,8 @@ package body Sem_Ch12 is
                     and then Warn_On_No_Value_Assigned
                   then
                      Error_Msg_NE
-                       ("from its use in generic unit, actual for&"
-                          & " should be fully initialized type?",
-                          Actual, Formal);
+                       ("from its use in generic unit, actual for& should "
+                        & "be fully initialized type??", Actual, Formal);
                      exit;
                   end if;
 
@@ -9993,6 +9995,9 @@ package body Sem_Ch12 is
             Next (Decl);
          end loop;
       end Check_Initialized_Types;
+
+   --  Start of processing for Instantiate_Package_Body
+
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
 
