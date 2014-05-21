@@ -1,3 +1,10 @@
+2014-05-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR C++/61038
+	* macro.c (stringify_arg (cpp_reader *, macro_arg *)):
+	Check for user-defined literal strings and user-defined literal chars
+	to escape necessary characters.
+
 2014-05-20  Richard Biener  <rguenther@suse.de>
 
 	* configure.ac: Copy gcc logic of detecting a 64bit type.
