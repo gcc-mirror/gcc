@@ -10079,6 +10079,28 @@ parameter in order to propagate them and perform devirtualization.
 @option{ipa-cp-value-list-size} is the maximum number of values and types it
 stores per one formal parameter of a function.
 
+@item ipa-cp-eval-threshold
+IPA-CP calculates its own score of cloning profitability heuristics
+and performs those cloning opportunities with scores that exceed
+@option{ipa-cp-eval-threshold}.
+
+@item ipa-max-agg-items
+IPA-CP is also capable to propagate a number of scalar values passed
+in an aggregate. @option{ipa-max-agg-items} controls the maximum
+number of such values per one parameter.
+
+@item ipa-cp-loop-hint-bonus
+When IPA-CP determines that a cloning candidate would make the number
+of iterations of a loop known, it adds a bonus of
+@option{ipa-cp-loop-hint-bonus} bonus to the profitability score of
+the candidate.
+
+@item ipa-cp-array-index-hint-bonus
+When IPA-CP determines that a cloning candidate would make the index of
+an array access known, it adds a bonus of
+@option{ipa-cp-array-index-hint-bonus} bonus to the profitability
+score of the candidate.
+
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.
