@@ -1,3 +1,7 @@
+2014-05-21  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/cpp0x/pr61038.C (operator "" _s): Use size_t.
+
 2014-05-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
@@ -6,7 +10,7 @@
 2014-05-21  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c++/60189
-	* c-c++-common/cilk-plus/CK/invalid_sync.cÑ: New test.
+	* c-c++-common/cilk-plus/CK/invalid_sync.c: New test.
 
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 

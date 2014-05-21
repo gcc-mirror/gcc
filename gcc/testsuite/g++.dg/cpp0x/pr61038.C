@@ -5,7 +5,7 @@
 #include <cstdlib>
 
 void
-operator "" _s(const char *, unsigned long)
+operator "" _s(const char *, size_t)
 { }
 
 void
