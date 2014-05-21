@@ -1161,7 +1161,8 @@ package body Sem_Ch13 is
       procedure Insert_Delayed_Pragma (Prag : Node_Id);
       --  Insert a postcondition-like pragma into the tree depending on the
       --  context. Prag must denote one of the following: Pre, Post, Depends,
-      --  Global or Contract_Cases.
+      --  Global or Contract_Cases. This procedure is also used for the case
+      --  of Attach_Handler which has similar requirements for placement.
 
       --------------------------------
       -- Decorate_Aspect_And_Pragma --
@@ -1463,7 +1464,7 @@ package body Sem_Ch13 is
 
             Check_Restriction_No_Specification_Of_Aspect (Aspect);
 
-            --  Analyze this aspect (actual analysis is delayed till later)
+            --  Mark aspect analyzed (actual analysis is delayed till later)
 
             Set_Analyzed (Aspect);
             Set_Entity (Aspect, E);
@@ -1677,6 +1678,12 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Attach_Handler);
+
+                  --  We need to insert this pragma into the tree to get proper
+                  --  processing and to look valid from a placement viewpoint.
+
+                  Insert_Delayed_Pragma (Aitem);
+                  goto Continue;
 
                --  Dynamic_Predicate, Predicate, Static_Predicate
 
