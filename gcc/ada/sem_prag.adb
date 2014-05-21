@@ -3444,9 +3444,10 @@ package body Sem_Prag is
          Indic   : Node_Id;
          Legal   : out Boolean)
       is
-         Pack_Id   : Entity_Id;
-         Placement : State_Space_Kind;
-         State_Id  : Entity_Id;
+         Pack_Id     : Entity_Id;
+         Placement   : State_Space_Kind;
+         Parent_Unit : Entity_Id;
+         State_Id    : Entity_Id;
 
       begin
          --  Assume that the pragma/option is illegal
@@ -3509,22 +3510,40 @@ package body Sem_Prag is
             if Is_Child_Unit (Pack_Id)
               and then Is_Private_Descendant (Pack_Id)
             then
+               --  A variable or state abstraction which is part of the
+               --  visible state of a private child unit (or a public
+               --  descendant thereof) shall have its Part_Of indicator
+               --  specified; the Part_Of indicator shall denote a state
+               --  abstraction declared by either the parent unit of the
+               --  private unit or by a public descendant of that parent unit.
+
+               --  Find parent unit of nearest private ancestor.
+
+               Parent_Unit := Pack_Id;
+               while Present (Parent_Unit) loop
+                  exit when Private_Present
+                              (Parent (Unit_Declaration_Node (Parent_Unit)));
+                  Parent_Unit := Scope (Parent_Unit);
+               end loop;
+
+               Parent_Unit := Scope (Parent_Unit);
+
                if not Is_Child_Or_Sibling (Pack_Id, Scope (State_Id)) then
                   Error_Msg_N
                     ("indicator Part_Of must denote an abstract state of "
                      & "parent unit or descendant (SPARK RM 7.2.6(3))", Indic);
 
-               --  If the unit is a public child of a private unit it cannot
-               --  refine the state of a private parent, only that of a
-               --  public ancestor or descendant thereof.
-
-               elsif not Private_Present
-                           (Parent (Unit_Declaration_Node (Pack_Id)))
-                 and then Is_Private_Descendant (Scope (State_Id))
+               elsif Scope (State_Id) = Parent_Unit
+                 or else (Is_Ancestor_Package (Parent_Unit, Scope (State_Id))
+                           and then
+                             not Is_Private_Descendant (Scope (State_Id)))
                then
+                  null;
+
+               else
                   Error_Msg_N
                     ("indicator Part_Of must denote the abstract state of "
-                     & "a public ancestor", State);
+                     & "parent of private ancestor", State);
                end if;
 
             --  Indicator Part_Of is not needed when the related package is not

@@ -1,5 +1,32 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads: Minor reformatting.
+	* ceinfo.adb: Deal with slight format change of einfo.ads.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): Further work on the proper
+	implementation of the SPARK 2014 rule concerning private child
+	units (LRM 7.2.6).
+
+2014-05-21  Vincent Celier  <celier@adacore.com>
+
+	* makeusg.adb: Add switch -d to usage.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Find_Actual): If an actual that is the prefix
+	of an enclosing prefixed call has been rewritten, use Nkind
+	and Sloc to identify the corresponding formal, when handling
+	deferred references.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document -gnatd.z switch.
+	* sem_eval.adb (Why_Non_Static): Test -gnatd.z switch.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads (Can_Never_Be_Null): Minor comment update.
 	* sem_prag.adb (Check_Arg_Is_Task_Dispatching_Policy): Minor
 	error message change.
