@@ -3318,7 +3318,7 @@ package body Freeze is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
-            if Is_SPARK_Volatile_Object (Rec) then
+            if Is_SPARK_Volatile (Rec) then
 
                --  A discriminated type cannot be volatile (SPARK RM C.6(4))
 
@@ -3340,7 +3340,7 @@ package body Freeze is
                Comp := First_Component (Rec);
                while Present (Comp) loop
                   if Comes_From_Source (Comp)
-                    and then Is_SPARK_Volatile_Object (Comp)
+                    and then Is_SPARK_Volatile (Comp)
                   then
                      Error_Msg_Name_1 := Chars (Rec);
                      Error_Msg_N

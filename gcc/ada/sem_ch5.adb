@@ -1986,7 +1986,7 @@ package body Sem_Ch5 is
 
       if SPARK_Mode = On
         and then not Of_Present (N)
-        and then Is_SPARK_Volatile_Object (Ent)
+        and then Is_SPARK_Volatile (Ent)
       then
          Error_Msg_N ("loop parameter cannot be volatile", Ent);
       end if;
@@ -2706,7 +2706,7 @@ package body Sem_Ch5 is
       --  when SPARK_Mode is on as it is not a standard Ada legality check
       --  (SPARK RM 7.1.3(6)).
 
-      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Id) then
+      if SPARK_Mode = On and then Is_SPARK_Volatile (Id) then
          Error_Msg_N ("loop parameter cannot be volatile", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;
