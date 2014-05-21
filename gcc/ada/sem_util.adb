@@ -11098,7 +11098,7 @@ package body Sem_Util is
    begin
       return (Ekind (E) = E_Access_Subprogram_Type
                 or else (Ekind (E) = E_Record_Type
-                           and then Present (Corresponding_Remote_Type (E))))
+                          and then Present (Corresponding_Remote_Type (E))))
         and then (Is_Remote_Call_Interface (E) or else Is_Remote_Types (E));
    end Is_Remote_Access_To_Subprogram_Type;
 

@@ -3518,7 +3518,8 @@ package body Sem_Prag is
                --  abstraction declared by either the parent unit of the
                --  private unit or by a public descendant of that parent unit.
 
-               --  Find parent unit of nearest private ancestor.
+               --  Find nearest nearest private ancestor (which can be the
+               --  current unit itself).
 
                Parent_Unit := Pack_Id;
                while Present (Parent_Unit) loop
@@ -3530,9 +3531,10 @@ package body Sem_Prag is
                Parent_Unit := Scope (Parent_Unit);
 
                if not Is_Child_Or_Sibling (Pack_Id, Scope (State_Id)) then
-                  Error_Msg_N
-                    ("indicator Part_Of must denote an abstract state of "
-                     & "parent unit or descendant (SPARK RM 7.2.6(3))", Indic);
+                  Error_Msg_NE
+                    ("indicator Part_Of must denote an abstract state of& "
+                     & "or public descendant (SPARK RM 7.2.6(3))",
+                       Indic, Parent_Unit);
 
                elsif Scope (State_Id) = Parent_Unit
                  or else (Is_Ancestor_Package (Parent_Unit, Scope (State_Id))
@@ -3542,9 +3544,10 @@ package body Sem_Prag is
                   null;
 
                else
-                  Error_Msg_N
-                    ("indicator Part_Of must denote the abstract state of "
-                     & "parent of private ancestor", State);
+                  Error_Msg_NE
+                    ("indicator Part_Of must denote an abstract state of& "
+                     & "or public descendant (SPARK RM 7.2.6(3))",
+                       Indic, Parent_Unit);
                end if;
 
             --  Indicator Part_Of is not needed when the related package is not
