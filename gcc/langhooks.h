@@ -137,6 +137,12 @@ struct lang_hooks_for_types
      return values from functions.  The argument TYPE is the top of the
      chain, and BOTTOM is the new type which we will point to.  */
   tree (*reconstruct_complex_type) (tree, tree);
+
+  /* Returns the tree that represents the underlying data type used to
+     implement the enumeration.  The default implementation will just use
+     type_for_size.  Used in dwarf2out.c to add a DW_AT_type base type
+     reference to a DW_TAG_enumeration.  */
+  tree (*enum_underlying_base_type) (const_tree);
 };
 
 /* Language hooks related to decls and the symbol table.  */

@@ -1,3 +1,9 @@
+2014-05-21  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/16063
+	* cp-lang.c (cxx_enum_underlying_base_type): New function.
+	(LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE): Define.
+
 2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	* cvt.c (convert_to_void): Use void_node instead of void_zero_node.

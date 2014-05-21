@@ -17537,6 +17537,11 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
+      if (dwarf_version >= 3 || !dwarf_strict)
+	{
+	  tree underlying = lang_hooks.types.enum_underlying_base_type (type);
+	  add_type_attribute (type_die, underlying, 0, 0, context_die);
+	}
       if (TYPE_STUB_DECL (type) != NULL_TREE)
 	{
 	  add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
