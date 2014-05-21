@@ -1,3 +1,11 @@
+2014-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61252
+	* omp-low.c (handle_simd_reference): New function.
+	(lower_rec_input_clauses): Use it.  Defer adding reference
+	initialization even for reduction without placeholder if in simd,
+	handle it properly later on.
+
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/60899
