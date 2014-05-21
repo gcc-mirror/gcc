@@ -1083,7 +1083,7 @@ finish_break_stmt (void)
      block_may_fallthru returns true when given something it does not
      understand.  */
   if (!block_may_fallthru (cur_stmt_list))
-    return void_zero_node;
+    return void_node;
   return add_stmt (build_stmt (input_location, BREAK_STMT));
 }
 
@@ -2095,7 +2095,7 @@ empty_expr_stmt_p (tree expr_stmt)
 {
   tree body = NULL_TREE;
 
-  if (expr_stmt == void_zero_node)
+  if (expr_stmt == void_node)
     return true;
 
   if (expr_stmt)

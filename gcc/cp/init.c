@@ -2120,7 +2120,7 @@ build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
   if (init == NULL)
     init_list = NULL_TREE;
   else if (init->is_empty ())
-    init_list = void_zero_node;
+    init_list = void_node;
   else
     init_list = build_tree_list_vec (init);
 
@@ -2935,7 +2935,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
 	      TARGET_EXPR_CLEANUP (begin)
 		= build3 (COND_EXPR, void_type_node, sentry,
-			  cleanup, void_zero_node);
+			  cleanup, void_node);
 
 	      end = build2 (MODIFY_EXPR, TREE_TYPE (sentry),
 			    sentry, boolean_false_node);
@@ -3598,7 +3598,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  else
 	    throw_call = throw_bad_array_new_length ();
 	  length_check = build3 (COND_EXPR, void_type_node, length_check,
-				 throw_call, void_zero_node);
+				 throw_call, void_node);
 	  finish_expr_stmt (length_check);
 	}
 
@@ -4020,7 +4020,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	}
 
       if (auto_delete != sfk_deleting_destructor)
-	return void_zero_node;
+	return void_node;
 
       return build_op_delete_call (DELETE_EXPR, addr,
 				   cxx_sizeof_nowarn (type),
@@ -4108,8 +4108,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	}
 
       if (ifexp != integer_one_node)
-	expr = build3 (COND_EXPR, void_type_node,
-		       ifexp, expr, void_zero_node);
+	expr = build3 (COND_EXPR, void_type_node, ifexp, expr, void_node);
 
       return expr;
     }
@@ -4154,7 +4153,7 @@ push_base_cleanups (void)
 	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
 		{
 		  expr = build3 (COND_EXPR, void_type_node, cond,
-				 expr, void_zero_node);
+				 expr, void_node);
 		  finish_decl_cleanup (NULL_TREE, expr);
 		}
 	    }

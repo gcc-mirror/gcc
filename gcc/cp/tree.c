@@ -2620,6 +2620,11 @@ cp_tree_equal (tree t1, tree t2)
 
   switch (code1)
     {
+    case VOID_CST:
+      /* There's only a single VOID_CST node, so we should never reach
+	 here.  */
+      gcc_unreachable ();
+
     case INTEGER_CST:
       return tree_int_cst_equal (t1, t2);
 
@@ -2947,7 +2952,7 @@ member_p (const_tree decl)
 tree
 build_dummy_object (tree type)
 {
-  tree decl = build1 (NOP_EXPR, build_pointer_type (type), void_zero_node);
+  tree decl = build1 (NOP_EXPR, build_pointer_type (type), void_node);
   return cp_build_indirect_ref (decl, RO_NULL, tf_warning_or_error);
 }
 
@@ -2997,7 +3002,7 @@ is_dummy_object (const_tree ob)
   if (INDIRECT_REF_P (ob))
     ob = TREE_OPERAND (ob, 0);
   return (TREE_CODE (ob) == NOP_EXPR
-	  && TREE_OPERAND (ob, 0) == void_zero_node);
+	  && TREE_OPERAND (ob, 0) == void_node);
 }
 
 /* Returns 1 iff type T is something we want to treat as a scalar type for
@@ -3775,7 +3780,7 @@ stabilize_expr (tree exp, tree* initp)
   else if (VOID_TYPE_P (TREE_TYPE (exp)))
     {
       init_expr = exp;
-      exp = void_zero_node;
+      exp = void_node;
     }
   /* There are no expressions with REFERENCE_TYPE, but there can be call
      arguments with such a type; just treat it as a pointer.  */

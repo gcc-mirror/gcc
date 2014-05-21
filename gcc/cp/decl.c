@@ -6830,7 +6830,7 @@ register_dtor_fn (tree decl)
 
   type = TREE_TYPE (decl);
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
-    return void_zero_node;
+    return void_node;
 
   /* If we're using "__cxa_atexit" (or "__cxa_thread_atexit" or
      "__aeabi_atexit"), and DECL is a class object, we can just pass the
@@ -7077,7 +7077,7 @@ expand_static_init (tree decl, tree init)
 
 	  TARGET_EXPR_CLEANUP (begin)
 	    = build3 (COND_EXPR, void_type_node, flag,
-		      void_zero_node,
+		      void_node,
 		      build_call_n (abort_fn, 1, guard_addr));
 	  CLEANUP_EH_ONLY (begin) = 1;
 
@@ -8425,7 +8425,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	      tree comp = build2 (LT_EXPR, boolean_type_node, itype,
 				  ssize_int (-1));
 	      comp = build3 (COND_EXPR, void_type_node, comp,
-			     throw_bad_array_length (), void_zero_node);
+			     throw_bad_array_length (), void_node);
 	      finish_expr_stmt (comp);
 	    }
 	  else if (flag_sanitize & SANITIZE_VLA)

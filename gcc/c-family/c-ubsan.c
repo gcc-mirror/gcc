@@ -95,7 +95,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
       tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
 				ubsan_encode_value (op1));
     }
-  t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_zero_node);
+  t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_node);
 
   return t;
 }
@@ -178,7 +178,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
       tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
 				ubsan_encode_value (op1));
     }
-  t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_zero_node);
+  t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_node);
 
   return t;
 }
@@ -207,7 +207,7 @@ ubsan_instrument_vla (location_t loc, tree size)
       tt = builtin_decl_explicit (bcode);
       tt = build_call_expr_loc (loc, tt, 2, data, ubsan_encode_value (size));
     }
-  t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_zero_node);
+  t = fold_build3 (COND_EXPR, void_type_node, t, tt, void_node);
 
   return t;
 }

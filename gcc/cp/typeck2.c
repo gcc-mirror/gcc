@@ -1888,7 +1888,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       if (parms == NULL_TREE)
 	{
 	  if (VOID_TYPE_P (type))
-	    return void_zero_node;
+	    return void_node;
 	  return build_value_init (cv_unqualified (type), complain);
 	}
 
