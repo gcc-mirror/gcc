@@ -1868,9 +1868,18 @@ package body Sem_Ch5 is
 
          if Of_Present (N) then
             if Has_Aspect (Typ, Aspect_Iterable) then
-               if No (Get_Iterable_Type_Primitive (Typ, Name_Element)) then
-                  Error_Msg_N ("missing Element primitive for iteration", N);
-               end if;
+               declare
+                  Elt : constant Entity_Id :=
+                          Get_Iterable_Type_Primitive (Typ, Name_Element);
+               begin
+                  if No (Elt) then
+                     Error_Msg_N
+                       ("missing Element primitive for iteration", N);
+
+                  else
+                     Set_Etype (Def_Id, Etype (Elt));
+                  end if;
+               end;
 
             --  For a predefined container, The type of the loop variable is
             --  the Iterator_Element aspect of the container type.

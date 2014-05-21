@@ -852,9 +852,9 @@ package body Sem_Warn is
          end if;
 
          if Res then
-            Error_Msg_N ("?!variable& of a generic type is potentially "
+            Error_Msg_N ("??!variable& of a generic type is potentially "
                          & "uninitialized", Ent);
-            Error_Msg_NE ("\?instantiations must provide fully initialized "
+            Error_Msg_NE ("\??instantiations must provide fully initialized "
                           & "type for&", Ent, T);
          end if;
 
