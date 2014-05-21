@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -795,9 +795,106 @@ package body Sinput.L is
       Prep_Buffer (Prep_Buffer_Last) := C;
    end Put_Char_In_Prep_Buffer;
 
-   -----------------------------------
-   -- Source_File_Is_Pragma_No_Body --
-   -----------------------------------
+   -------------------------
+   -- Source_File_Is_Body --
+   -------------------------
+
+   function Source_File_Is_Body (X : Source_File_Index) return Boolean is
+      Pcount : Natural;
+
+   begin
+      Initialize_Scanner (No_Unit, X);
+
+      --  Loop to look for subprogram or package body
+
+      loop
+         case Token is
+
+            --  PRAGMA, WITH, USE (which can appear before a body)
+
+            when Tok_Pragma | Tok_With | Tok_Use =>
+
+               --  We just want to skip any of these, do it by skipping to a
+               --  semicolon, but check for EOF, in case we have bad syntax.
+
+               loop
+                  if Token = Tok_Semicolon then
+                     Scan;
+                     exit;
+                  elsif Token = Tok_EOF then
+                     return False;
+                  else
+                     Scan;
+                  end if;
+               end loop;
+
+            --  PACKAGE
+
+            when Tok_Package =>
+               Scan; -- Past PACKAGE
+
+               --  We have a body if and only if BODY follows
+
+               return Token = Tok_Body;
+
+            --  FUNCTION or PROCEDURE
+
+            when Tok_Procedure | Tok_Function =>
+               Pcount := 0;
+
+               --  Loop through tokens following PROCEDURE or FUNCTION
+
+               loop
+                  Scan;
+
+                  case Token is
+
+                     --  For parens, count paren level (note that paren level
+                     --  can get greater than 1 if we have default parameters).
+
+                     when Tok_Left_Paren =>
+                        Pcount := Pcount + 1;
+
+                     when Tok_Right_Paren =>
+                        Pcount := Pcount - 1;
+
+                     --  EOF means something weird, probably no body
+
+                     when Tok_EOF =>
+                        return False;
+
+                     --  BEGIN or IS or END definitely means body is present
+
+                     when Tok_Begin | Tok_Is | Tok_End =>
+                        return True;
+
+                     --  Semicolon means no body present if at outside any
+                     --  parens. If within parens, ignore, since it could be
+                     --  a parameter separator.
+
+                     when Tok_Semicolon =>
+                        if Pcount = 0 then
+                           return False;
+                        end if;
+
+                     --  Skip anything else
+
+                     when others =>
+                        null;
+                  end case;
+               end loop;
+
+            --  Anything else in main scan means we don't have a body
+
+            when others =>
+               return False;
+         end case;
+      end loop;
+   end Source_File_Is_Body;
+
+   ----------------------------
+   -- Source_File_Is_No_Body --
+   ----------------------------
 
    function Source_File_Is_No_Body (X : Source_File_Index) return Boolean is
    begin
@@ -825,28 +922,5 @@ package body Sinput.L is
 
       return Token = Tok_EOF;
    end Source_File_Is_No_Body;
-
-   ----------------------------
-   -- Source_File_Is_Subunit --
-   ----------------------------
-
-   function Source_File_Is_Subunit (X : Source_File_Index) return Boolean is
-   begin
-      Initialize_Scanner (No_Unit, X);
-
-      --  We scan past junk to the first interesting compilation unit token, to
-      --  see if it is SEPARATE. We ignore WITH keywords during this and also
-      --  PRIVATE. The reason for ignoring PRIVATE is that it handles some
-      --  error situations, and also to handle PRIVATE WITH in Ada 2005 mode.
-
-      while Token = Tok_With
-        or else Token = Tok_Private
-        or else (Token not in Token_Class_Cunit and then Token /= Tok_EOF)
-      loop
-         Scan;
-      end loop;
-
-      return Token = Tok_Separate;
-   end Source_File_Is_Subunit;
 
 end Sinput.L;

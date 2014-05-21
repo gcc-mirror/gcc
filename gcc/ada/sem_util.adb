@@ -15877,6 +15877,11 @@ package body Sem_Util is
 
       if Restriction_Check_Required (No_Abort_Statements)
         and then (Is_RTE (Val, RE_Abort_Task))
+
+        --  A special extra check, don't complain about a reference from within
+        --  the Ada.Task_Identification package itself!
+
+        and then not In_Same_Extended_Unit (N, Val)
       then
          Check_Restriction (No_Abort_Statements, Post_Node);
       end if;
@@ -15892,6 +15897,10 @@ package body Sem_Util is
                   Is_RTE (Val, RE_Exchange_Handler) or else
                   Is_RTE (Val, RE_Detach_Handler)   or else
                   Is_RTE (Val, RE_Reference))
+        --  A special extra check, don't complain about a reference from within
+        --  the Ada.Interrupts package itself!
+
+        and then not In_Same_Extended_Unit (N, Val)
       then
          Check_Restriction (No_Dynamic_Attachment, Post_Node);
       end if;
