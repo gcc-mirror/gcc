@@ -737,7 +737,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	if (!address_taken)
 	  {
 	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
-	      fprintf (dump_file, " %s (addressable)", vnode->name ());
+	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
 	    varpool_for_node_and_aliases (vnode, clear_addressable_bit, NULL, true);
 	  }
 	if (!address_taken && !written
@@ -750,7 +750,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	      fprintf (dump_file, " %s (read-only)", vnode->name ());
 	    varpool_for_node_and_aliases (vnode, set_readonly_bit, NULL, true);
 	  }
-	if (!vnode->writeonly && !read && !address_taken)
+	if (!vnode->writeonly && !read && !address_taken && written)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, " %s (write-only)", vnode->name ());
