@@ -105,7 +105,7 @@ binding_entry_make (tree name, tree type)
       free_binding_entry = entry->chain;
     }
   else
-    entry = ggc_alloc_binding_entry_s ();
+    entry = ggc_alloc<binding_entry_s> ();
 
   entry->name = name;
   entry->type = type;
@@ -147,7 +147,7 @@ binding_table_construct (binding_table table, size_t chain_count)
 {
   table->chain_count = chain_count;
   table->entry_count = 0;
-  table->chain = ggc_alloc_cleared_vec_binding_entry (table->chain_count);
+  table->chain = ggc_cleared_vec_alloc<binding_entry> (table->chain_count);
 }
 
 /* Make TABLE's entries ready for reuse.  */
@@ -181,7 +181,7 @@ binding_table_free (binding_table table)
 static inline binding_table
 binding_table_new (size_t chain_count)
 {
-  binding_table table = ggc_alloc_binding_table_s ();
+  binding_table table = ggc_alloc<binding_table_s> ();
   table->chain = NULL;
   binding_table_construct (table, chain_count);
   return table;
@@ -299,7 +299,7 @@ cxx_binding_make (tree value, tree type)
       free_bindings = binding->previous;
     }
   else
-    binding = ggc_alloc_cxx_binding ();
+    binding = ggc_alloc<cxx_binding> ();
 
   cxx_binding_init (binding, value, type);
 
@@ -775,7 +775,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		      = htab_create_ggc (20, cxx_int_tree_map_hash,
 					 cxx_int_tree_map_eq, NULL);
 
-		  h = ggc_alloc_cxx_int_tree_map ();
+		  h = ggc_alloc<cxx_int_tree_map> ();
 		  h->uid = DECL_UID (x);
 		  h->to = t;
 		  loc = htab_find_slot_with_hash
@@ -1544,7 +1544,7 @@ begin_scope (scope_kind kind, tree entity)
       free_binding_level = scope->level_chain;
     }
   else
-    scope = ggc_alloc_cleared_cp_binding_level ();
+    scope = ggc_cleared_alloc<cp_binding_level> ();
 
   scope->this_entity = entity;
   scope->more_cleanups_ok = true;
@@ -6074,7 +6074,7 @@ push_to_top_level (void)
   bool need_pop;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  s = ggc_alloc_cleared_saved_scope ();
+  s = ggc_cleared_alloc<saved_scope> ();
 
   b = scope_chain ? current_binding_level : 0;
 

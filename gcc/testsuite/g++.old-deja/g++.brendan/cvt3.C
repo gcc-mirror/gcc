@@ -44,6 +44,5 @@ public:
 void
 foo (bar yylval, bar *yyvsp)
 {
-  nnyacc::assign(yylval.valueList, yyvsp[0].valueList);// { dg-error "no matching" } 
-  // { dg-message "candidate" "candidate note" { target *-*-* } 47 }
+  nnyacc::assign(yylval.valueList, yyvsp[0].valueList);// { dg-error "no matching|rvalue" }
 }

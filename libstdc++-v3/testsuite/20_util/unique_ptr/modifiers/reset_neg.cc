@@ -32,7 +32,7 @@ struct B : A
 void test01()
 {
   std::unique_ptr<B[]> up;
-  up.reset(new A[3]);		// { dg-error "invalid conversion" }
+  up.reset(new A[3]);		// { dg-error "" }
 }
 
 // { dg-prune-output "include" }

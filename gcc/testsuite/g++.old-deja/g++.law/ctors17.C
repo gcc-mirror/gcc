@@ -20,5 +20,4 @@ int main()
     X *y = new X(10, "123");
     // the compiler must reject this constructor call:
     X *x = new X("abc");// { dg-error "match" }
-    // { dg-message "candidate" "candidate note" { target *-*-* } 22 }
 }

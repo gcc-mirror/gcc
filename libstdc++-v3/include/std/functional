@@ -1120,7 +1120,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	       const _Index_tuple<_Indexes...>&) const volatile
 	-> decltype(__arg(declval<_Args>()...))
 	{
-	  return __arg(std::forward<_Args>(get<_Indexes>(__tuple))...);
+	  return __arg(std::forward<_Args>(std::get<_Indexes>(__tuple))...);
 	}
     };
 
@@ -1230,14 +1230,14 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   template<std::size_t _Ind, typename... _Tp>
     inline auto
     __volget(volatile tuple<_Tp...>& __tuple)
-    -> typename tuple_element<_Ind, tuple<_Tp...>>::type volatile&
+    -> __tuple_element_t<_Ind, tuple<_Tp...>> volatile&
     { return std::get<_Ind>(const_cast<tuple<_Tp...>&>(__tuple)); }
 
   // std::get<I> for const-volatile-qualified tuples
   template<std::size_t _Ind, typename... _Tp>
     inline auto
     __volget(const volatile tuple<_Tp...>& __tuple)
-    -> typename tuple_element<_Ind, tuple<_Tp...>>::type const volatile&
+    -> __tuple_element_t<_Ind, tuple<_Tp...>> const volatile&
     { return std::get<_Ind>(const_cast<const tuple<_Tp...>&>(__tuple)); }
 
   /// Type of the function object returned from bind().
@@ -1261,7 +1261,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
 	{
 	  return _M_f(_Mu<_Bound_args>()
-		      (get<_Indexes>(_M_bound_args), __args)...);
+		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
       // Call as const
@@ -1270,7 +1270,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	__call_c(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
 	{
 	  return _M_f(_Mu<_Bound_args>()
-		      (get<_Indexes>(_M_bound_args), __args)...);
+		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
       // Call as volatile
@@ -1393,7 +1393,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	    typename __disable_if_void<_Res>::type = 0)
 	{
 	  return _M_f(_Mu<_Bound_args>()
-		      (get<_Indexes>(_M_bound_args), __args)...);
+		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
       // Call unqualified, return void
@@ -1403,7 +1403,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	    typename __enable_if_void<_Res>::type = 0)
 	{
 	  _M_f(_Mu<_Bound_args>()
-	       (get<_Indexes>(_M_bound_args), __args)...);
+	       (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
       // Call as const
@@ -1413,7 +1413,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	    typename __disable_if_void<_Res>::type = 0) const
 	{
 	  return _M_f(_Mu<_Bound_args>()
-		      (get<_Indexes>(_M_bound_args), __args)...);
+		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
       // Call as const, return void
@@ -1423,7 +1423,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	    typename __enable_if_void<_Res>::type = 0) const
 	{
 	  _M_f(_Mu<_Bound_args>()
-	       (get<_Indexes>(_M_bound_args),  __args)...);
+	       (std::get<_Indexes>(_M_bound_args),  __args)...);
 	}
 
       // Call as volatile

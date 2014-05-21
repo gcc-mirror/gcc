@@ -1,3 +1,26 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c (add_method_1): Adjust.
+	(java_treetreehash_new): Likewise.
+	* constants.c (set_constant_entry): Likewise.
+	(cpool_for_class): Likewise.
+	* decl.c (make_binding_level): Likewise.
+	(java_dup_lang_specific_decl): Likewise.
+	* expr.c (add_type_assertion): Likewise.
+	* java-tree.h (MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC): Likewise.
+	(lang_decl): don't use variable_size gty attribute.
+	(MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC): Adjust.
+	(lang_type): Don't use variable_size gty attribute.
+	* jcf-parse.c (java_parse_file): Adjust.
+	(process_zip_dir): Likewise.
+	* jcf.h: Remove usage of variable_size gty attribute.
+	* jcf-reader.c (jcf_parse_constant_pool): Adjust.
+	(jcf_parse_bootstrap_methods): Likewise.
+
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* constants.c (set_constant_entry): Adjust.
+
 2014-05-06  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* boehm.c (mark_reference_fields): Don't update the mask when

@@ -109,6 +109,10 @@ extern const char * const rtx_format[NUM_RTX_CODE];
 extern const enum rtx_class rtx_class[NUM_RTX_CODE];
 #define GET_RTX_CLASS(CODE)		(rtx_class[(int) (CODE)])
 
+/* True if CODE is part of the insn chain (i.e. has INSN_UID, PREV_INSN
+   and NEXT_INSN fields).  */
+#define INSN_CHAIN_CODE_P(CODE) IN_RANGE (CODE, DEBUG_INSN, NOTE)
+
 extern const unsigned char rtx_code_size[NUM_RTX_CODE];
 extern const unsigned char rtx_next[NUM_RTX_CODE];
 
@@ -207,7 +211,7 @@ union rtunion
    if SYMBOL_REF_HAS_BLOCK_INFO_P is true.  */
 struct GTY(()) block_symbol {
   /* The usual SYMBOL_REF fields.  */
-  rtunion GTY ((skip)) fld[3];
+  rtunion GTY ((skip)) fld[2];
 
   /* The block that contains this object.  */
   struct object_block *block;
@@ -263,7 +267,7 @@ struct GTY((variable_size)) hwivec_def {
 /* RTL expression ("rtx").  */
 
 struct GTY((chain_next ("RTX_NEXT (&%h)"),
-	    chain_prev ("RTX_PREV (&%h)"), variable_size)) rtx_def {
+	    chain_prev ("RTX_PREV (&%h)"))) rtx_def {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
 
@@ -272,6 +276,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
 
   /* 1 in a MEM if we should keep the alias set for this mem unchanged
      when we access a component.
+     1 in a JUMP_INSN if it is a crossing jump.
      1 in a CALL_INSN if it is a sibling call.
      1 in a SET that is for a return.
      In a CODE_LABEL, part of the two-bit alternate entry field.
@@ -352,10 +357,22 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
        layout for that case and use the gap for extra code-specific
        information.  */
 
+    /* The ORIGINAL_REGNO of a REG.  */
+    unsigned int original_regno;
+
+    /* The INSN_UID of an RTX_INSN-class code.  */
+    int insn_uid;
+
+    /* The SYMBOL_REF_FLAGS of a SYMBOL_REF.  */
+    unsigned int symbol_ref_flags;
+
+    /* The PAT_VAR_LOCATION_STATUS of a VAR_LOCATION.  */
+    enum var_init_status var_location_status;
+
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
-    unsigned GTY ((tag ("CONST_WIDE_INT"))) num_elem:32;
-  } GTY ((desc ("GET_CODE (&%0)"))) u2;
+    unsigned int num_elem;
+  } GTY ((skip)) u2;
 
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
@@ -406,7 +423,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
-struct GTY((variable_size)) rtvec_def {
+struct GTY(()) rtvec_def {
   int num_elem;		/* number of elements */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 };
@@ -814,15 +831,12 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	\
+#define RTL_INSN_CHAIN_FLAG_CHECK(NAME, RTX) 				\
   __extension__								\
 ({ __typeof (RTX) const _rtx = (RTX);					\
-   if (GET_CODE (_rtx) != C1 && GET_CODE (_rtx) != C2			\
-       && GET_CODE (_rtx) != C3 && GET_CODE (_rtx) != C4		\
-       && GET_CODE (_rtx) != C5 && GET_CODE (_rtx) != C6		\
-       && GET_CODE (_rtx) != C7 && GET_CODE (_rtx) != C8)		\
-     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
-			     __FUNCTION__);				\
+   if (!INSN_CHAIN_CODE_P (GET_CODE (_rtx)))				\
+     rtl_check_failed_flag (NAME, _rtx, __FILE__, __LINE__,		\
+			    __FUNCTION__);				\
    _rtx; })
 
 extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
@@ -836,10 +850,10 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define RTL_FLAG_CHECK2(NAME, RTX, C1, C2)				(RTX)
 #define RTL_FLAG_CHECK3(NAME, RTX, C1, C2, C3)				(RTX)
 #define RTL_FLAG_CHECK4(NAME, RTX, C1, C2, C3, C4)			(RTX)
-#define RTL_FLAG_CHECK5(NAME, RTX, C1, C2, C3, C4, C5)		(RTX)
+#define RTL_FLAG_CHECK5(NAME, RTX, C1, C2, C3, C4, C5)			(RTX)
 #define RTL_FLAG_CHECK6(NAME, RTX, C1, C2, C3, C4, C5, C6)		(RTX)
 #define RTL_FLAG_CHECK7(NAME, RTX, C1, C2, C3, C4, C5, C6, C7)		(RTX)
-#define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	(RTX)
+#define RTL_INSN_CHAIN_FLAG_CHECK(NAME, RTX) 				(RTX)
 #endif
 
 #define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rt_int)
@@ -896,18 +910,19 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* Holds a unique number for each insn.
    These are not necessarily sequentially increasing.  */
-#define INSN_UID(INSN)  XINT (INSN, 0)
+#define INSN_UID(INSN) \
+  (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_UID", (INSN))->u2.insn_uid)
 
 /* Chain insns together in sequence.  */
-#define PREV_INSN(INSN)	XEXP (INSN, 1)
-#define NEXT_INSN(INSN)	XEXP (INSN, 2)
+#define PREV_INSN(INSN)	XEXP (INSN, 0)
+#define NEXT_INSN(INSN)	XEXP (INSN, 1)
 
-#define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 3)
+#define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 2)
 
 /* The body of an insn.  */
-#define PATTERN(INSN)	XEXP (INSN, 4)
+#define PATTERN(INSN)	XEXP (INSN, 3)
 
-#define INSN_LOCATION(INSN) XUINT (INSN, 5)
+#define INSN_LOCATION(INSN) XUINT (INSN, 4)
 
 #define INSN_HAS_LOCATION(INSN) ((LOCATION_LOCUS (INSN_LOCATION (INSN)))\
   != UNKNOWN_LOCATION)
@@ -918,7 +933,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* Code number of instruction, from when it was recognized.
    -1 means this instruction has not been recognized yet.  */
-#define INSN_CODE(INSN) XINT (INSN, 6)
+#define INSN_CODE(INSN) XINT (INSN, 5)
 
 #define RTX_FRAME_RELATED_P(RTX)					\
   (RTL_FLAG_CHECK6 ("RTX_FRAME_RELATED_P", (RTX), DEBUG_INSN, INSN,	\
@@ -926,9 +941,11 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* 1 if RTX is an insn that has been deleted.  */
 #define INSN_DELETED_P(RTX)						\
-  (RTL_FLAG_CHECK8 ("INSN_DELETED_P", (RTX), DEBUG_INSN, INSN,		\
-		    CALL_INSN, JUMP_INSN, JUMP_TABLE_DATA,		\
-		    CODE_LABEL, BARRIER, NOTE)->volatil)
+  (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_DELETED_P", (RTX))->volatil)
+
+/* 1 if JUMP RTX is a crossing jump.  */
+#define CROSSING_JUMP_P(RTX) \
+  (RTL_FLAG_CHECK1 ("CROSSING_JUMP_P", (RTX), JUMP_INSN)->jump)
 
 /* 1 if RTX is a call to a const function.  Built from ECF_CONST and
    TREE_READONLY.  */
@@ -978,7 +995,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
    chain pointer and the first operand is the REG being described.
    The mode field of the EXPR_LIST contains not a real machine mode
    but a value from enum reg_note.  */
-#define REG_NOTES(INSN)	XEXP(INSN, 7)
+#define REG_NOTES(INSN)	XEXP(INSN, 6)
 
 /* In an ENTRY_VALUE this is the DECL_INCOMING_RTL of the argument in
    question.  */
@@ -1009,12 +1026,12 @@ extern const char * const reg_note_name[];
      CLOBBER expressions document the registers explicitly clobbered
    by this CALL_INSN.
      Pseudo registers can not be mentioned in this list.  */
-#define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 8)
+#define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 7)
 
 /* The label-number of a code-label.  The assembler label
    is made from `L' and the label-number printed in decimal.
    Label numbers are unique in a compilation.  */
-#define CODE_LABEL_NUMBER(INSN)	XINT (INSN, 6)
+#define CODE_LABEL_NUMBER(INSN)	XINT (INSN, 5)
 
 /* In a NOTE that is a line number, this is a string for the file name that the
    line is in.  We use the same field to record block numbers temporarily in
@@ -1023,19 +1040,19 @@ extern const char * const reg_note_name[];
    */
 
 /* Opaque data.  */
-#define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 4, NOTE)
-#define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 4, NOTE)
+#define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 3, NOTE)
+#define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 3, NOTE)
 #define SET_INSN_DELETED(INSN) set_insn_deleted (INSN);
-#define NOTE_BLOCK(INSN)	XCTREE (INSN, 4, NOTE)
-#define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 4, NOTE)
-#define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 4, NOTE)
-#define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 4, NOTE)
-#define NOTE_CFI(INSN)		XCCFI (INSN, 4, NOTE)
-#define NOTE_LABEL_NUMBER(INSN)	XCINT (INSN, 4, NOTE)
+#define NOTE_BLOCK(INSN)	XCTREE (INSN, 3, NOTE)
+#define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 3, NOTE)
+#define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 3, NOTE)
+#define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 3, NOTE)
+#define NOTE_CFI(INSN)		XCCFI (INSN, 3, NOTE)
+#define NOTE_LABEL_NUMBER(INSN)	XCINT (INSN, 3, NOTE)
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
-#define NOTE_KIND(INSN) XCINT (INSN, 5, NOTE)
+#define NOTE_KIND(INSN) XCINT (INSN, 4, NOTE)
 
 /* Nonzero if INSN is a note marking the beginning of a basic block.  */
 #define NOTE_INSN_BASIC_BLOCK_P(INSN) \
@@ -1049,7 +1066,8 @@ extern const char * const reg_note_name[];
    can be unknown, uninitialized or initialized.  See enumeration
    type below.  */
 #define PAT_VAR_LOCATION_STATUS(PAT) \
-  ((enum var_init_status) (XCINT ((PAT), 2, VAR_LOCATION)))
+  (RTL_FLAG_CHECK1 ("PAT_VAR_LOCATION_STATUS", PAT, VAR_LOCATION) \
+   ->u2.var_location_status)
 
 /* Accessors for a NOTE_INSN_VAR_LOCATION.  */
 #define NOTE_VAR_LOCATION_DECL(NOTE) \
@@ -1118,11 +1136,11 @@ extern const char * const note_insn_name[NOTE_INSN_MAX];
 
 /* The name of a label, in case it corresponds to an explicit label
    in the input source code.  */
-#define LABEL_NAME(RTX) XCSTR (RTX, 7, CODE_LABEL)
+#define LABEL_NAME(RTX) XCSTR (RTX, 6, CODE_LABEL)
 
 /* In jump.c, each label contains a count of the number
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
-#define LABEL_NUSES(RTX) XCINT (RTX, 5, CODE_LABEL)
+#define LABEL_NUSES(RTX) XCINT (RTX, 4, CODE_LABEL)
 
 /* Labels carry a two-bit field composed of the ->jump and ->call
    bits.  This field indicates whether the label is an alternate
@@ -1177,12 +1195,12 @@ enum label_kind
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
    be decremented and possibly the label can be deleted.  */
-#define JUMP_LABEL(INSN)   XCEXP (INSN, 8, JUMP_INSN)
+#define JUMP_LABEL(INSN)   XCEXP (INSN, 7, JUMP_INSN)
 
 /* Once basic blocks are found, each CODE_LABEL starts a chain that
    goes through all the LABEL_REFs that jump to that label.  The chain
    eventually winds up at the CODE_LABEL: it is circular.  */
-#define LABEL_REFS(LABEL) XCEXP (LABEL, 4, CODE_LABEL)
+#define LABEL_REFS(LABEL) XCEXP (LABEL, 3, CODE_LABEL)
 
 /* For a REG rtx, REGNO extracts the register number.  REGNO can only
    be used on RHS.  Use SET_REGNO to change the value.  */
@@ -1194,7 +1212,8 @@ enum label_kind
 /* ORIGINAL_REGNO holds the number the register originally had; for a
    pseudo register turned into a hard reg this will hold the old pseudo
    register number.  */
-#define ORIGINAL_REGNO(RTX) X0UINT (RTX, 1)
+#define ORIGINAL_REGNO(RTX) \
+  (RTL_FLAG_CHECK1 ("ORIGINAL_REGNO", (RTX), REG)->u2.original_regno)
 
 /* Force the REGNO macro to only be used on the lhs.  */
 static inline unsigned int
@@ -1641,7 +1660,7 @@ do {									\
 
 /* The register attribute block.  We provide access macros for each value
    in the block and provide defaults if none specified.  */
-#define REG_ATTRS(RTX) X0REGATTR (RTX, 2)
+#define REG_ATTRS(RTX) X0REGATTR (RTX, 1)
 
 #ifndef GENERATOR_FILE
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
@@ -1754,24 +1773,24 @@ do {									\
 
 /* A pointer attached to the SYMBOL_REF; either SYMBOL_REF_DECL or
    SYMBOL_REF_CONSTANT.  */
-#define SYMBOL_REF_DATA(RTX) X0ANY ((RTX), 2)
+#define SYMBOL_REF_DATA(RTX) X0ANY ((RTX), 1)
 
 /* Set RTX's SYMBOL_REF_DECL to DECL.  RTX must not be a constant
    pool symbol.  */
 #define SET_SYMBOL_REF_DECL(RTX, DECL) \
-  (gcc_assert (!CONSTANT_POOL_ADDRESS_P (RTX)), X0TREE ((RTX), 2) = (DECL))
+  (gcc_assert (!CONSTANT_POOL_ADDRESS_P (RTX)), X0TREE ((RTX), 1) = (DECL))
 
 /* The tree (decl or constant) associated with the symbol, or null.  */
 #define SYMBOL_REF_DECL(RTX) \
-  (CONSTANT_POOL_ADDRESS_P (RTX) ? NULL : X0TREE ((RTX), 2))
+  (CONSTANT_POOL_ADDRESS_P (RTX) ? NULL : X0TREE ((RTX), 1))
 
 /* Set RTX's SYMBOL_REF_CONSTANT to C.  RTX must be a constant pool symbol.  */
 #define SET_SYMBOL_REF_CONSTANT(RTX, C) \
-  (gcc_assert (CONSTANT_POOL_ADDRESS_P (RTX)), X0CONSTANT ((RTX), 2) = (C))
+  (gcc_assert (CONSTANT_POOL_ADDRESS_P (RTX)), X0CONSTANT ((RTX), 1) = (C))
 
 /* The rtx constant pool entry for a symbol, or null.  */
 #define SYMBOL_REF_CONSTANT(RTX) \
-  (CONSTANT_POOL_ADDRESS_P (RTX) ? X0CONSTANT ((RTX), 2) : NULL)
+  (CONSTANT_POOL_ADDRESS_P (RTX) ? X0CONSTANT ((RTX), 1) : NULL)
 
 /* A set of flags on a symbol_ref that are, in some respects, redundant with
    information derivable from the tree decl associated with this symbol.
@@ -1780,7 +1799,9 @@ do {									\
    this information to avoid recomputing it.  Finally, this allows space for
    the target to store more than one bit of information, as with
    SYMBOL_REF_FLAG.  */
-#define SYMBOL_REF_FLAGS(RTX)	X0INT ((RTX), 1)
+#define SYMBOL_REF_FLAGS(RTX) \
+  (RTL_FLAG_CHECK1 ("SYMBOL_REF_FLAGS", (RTX), SYMBOL_REF) \
+   ->u2.symbol_ref_flags)
 
 /* These flags are common enough to be defined for all targets.  They
    are computed by the default version of targetm.encode_section_info.  */
@@ -1936,7 +1957,7 @@ extern int currently_expanding_to_rtl;
 
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
-extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT);
+extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT, bool = false);
 
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
@@ -2554,6 +2575,8 @@ extern rtx gen_raw_REG (enum machine_mode, int);
 extern rtx gen_rtx_REG (enum machine_mode, unsigned);
 extern rtx gen_rtx_SUBREG (enum machine_mode, rtx, int);
 extern rtx gen_rtx_MEM (enum machine_mode, rtx);
+extern rtx gen_rtx_VAR_LOCATION (enum machine_mode, tree, rtx,
+				 enum var_init_status);
 
 #define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (N))
 

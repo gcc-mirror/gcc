@@ -114,7 +114,7 @@ upc_block_factor_insert (tree type,
   gcc_assert (type && TYPE_P (type));
   gcc_assert (block_factor && INTEGRAL_TYPE_P (TREE_TYPE (block_factor)));
   gcc_assert (!(integer_zerop (block_factor) || integer_onep (block_factor)));
-  h = ggc_alloc_tree_map ();
+  h = ggc_alloc<tree_map> ();
   h->base.from = type;
   h->to = (tree) block_factor;
   loc = htab_find_slot_with_hash (upc_block_factor_for_type,

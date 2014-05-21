@@ -39,7 +39,7 @@
 #include <ffi_common.h>
 #include <stdlib.h>
 
-#if !defined(NO_JAVA_RAW_API) && !defined(FFI_NO_RAW_API)
+#if !defined(NO_JAVA_RAW_API)
 
 size_t
 ffi_java_raw_size (ffi_cif *cif)
@@ -353,4 +353,4 @@ ffi_prep_java_raw_closure (ffi_java_raw_closure* cl,
 
 #endif /* FFI_CLOSURES */
 #endif /* !FFI_NATIVE_RAW_API */
-#endif /* !FFI_NO_RAW_API */
+#endif /* !NO_JAVA_RAW_API */

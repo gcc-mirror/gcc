@@ -205,7 +205,7 @@ unsigned const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 static struct machine_function *
 c6x_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -985,7 +985,7 @@ c6x_elf_unique_section (tree decl, int reloc)
 {
   const char *prefix = NULL;
   /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
-  bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
+  bool one_only = DECL_COMDAT_GROUP (decl) && !HAVE_COMDAT_GROUP;
 
   if (c6x_in_small_data_p (decl))
     {
@@ -1202,7 +1202,7 @@ c6x_function_in_section_p (tree decl, section *section)
   if (!DECL_SECTION_NAME (decl))
     {
       /* Make sure that we will not create a unique section for DECL.  */
-      if (flag_function_sections || DECL_ONE_ONLY (decl))
+      if (flag_function_sections || DECL_COMDAT_GROUP (decl))
 	return false;
     }
 

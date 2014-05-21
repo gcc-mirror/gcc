@@ -2225,7 +2225,7 @@ mep_register_move_cost (enum machine_mode mode, enum reg_class from, enum reg_cl
 static struct machine_function *
 mep_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 static rtx
@@ -4099,7 +4099,7 @@ mep_note_pragma_flag (const char *funcname, int flag)
 
   if (!*slot)
     {
-      *slot = ggc_alloc_pragma_entry ();
+      *slot = ggc_alloc<pragma_entry> ();
       (*slot)->flag = 0;
       (*slot)->used = 0;
       (*slot)->funcname = ggc_strdup (funcname);
@@ -4532,7 +4532,7 @@ mep_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
       else
 	encoding = 0;
 
-      if (flag_function_sections || DECL_ONE_ONLY (decl))
+      if (flag_function_sections || DECL_COMDAT_GROUP (decl))
 	mep_unique_section (decl, 0);
       else if (lookup_attribute ("vliw", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
 	{
@@ -4651,7 +4651,7 @@ mep_unique_section (tree decl, int reloc)
       name += 3;
     }
 
-  prefix = prefixes[sec][DECL_ONE_ONLY(decl)];
+  prefix = prefixes[sec][DECL_COMDAT_GROUP(decl) != NULL];
   len    = strlen (name) + strlen (prefix);
   string = (char *) alloca (len + 1);
 

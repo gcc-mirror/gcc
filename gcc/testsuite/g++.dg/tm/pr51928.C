@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fgnu-tm" } */
 
-struct A; // { dg-error "forward declaration of 'struct A'" }
+struct A; // { dg-message "forward declaration of 'struct A'" }
 
 struct B
 {

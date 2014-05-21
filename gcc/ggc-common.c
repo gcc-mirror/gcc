@@ -174,22 +174,23 @@ ggc_mark_roots (void)
 
 /* Allocate a block of memory, then clear it.  */
 void *
-ggc_internal_cleared_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_cleared_alloc (size_t size, void (*f)(void *), size_t s, size_t n
+			    MEM_STAT_DECL)
 {
-  void *buf = ggc_internal_alloc_stat (size PASS_MEM_STAT);
+  void *buf = ggc_internal_alloc (size, f, s, n PASS_MEM_STAT);
   memset (buf, 0, size);
   return buf;
 }
 
 /* Resize a block of memory, possibly re-allocating it.  */
 void *
-ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
+ggc_realloc (void *x, size_t size MEM_STAT_DECL)
 {
   void *r;
   size_t old_size;
 
   if (x == NULL)
-    return ggc_internal_alloc_stat (size PASS_MEM_STAT);
+    return ggc_internal_alloc (size PASS_MEM_STAT);
 
   old_size = ggc_get_size (x);
 
@@ -211,7 +212,7 @@ ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
       return x;
     }
 
-  r = ggc_internal_alloc_stat (size PASS_MEM_STAT);
+  r = ggc_internal_alloc (size PASS_MEM_STAT);
 
   /* Since ggc_get_size returns the size of the pool, not the size of the
      individually allocated object, we'd access parts of the old object
@@ -232,7 +233,7 @@ ggc_cleared_alloc_htab_ignore_args (size_t c ATTRIBUTE_UNUSED,
 				    size_t n ATTRIBUTE_UNUSED)
 {
   gcc_assert (c * n == sizeof (struct htab));
-  return ggc_alloc_cleared_htab ();
+  return ggc_cleared_alloc<htab> ();
 }
 
 /* TODO: once we actually use type information in GGC, create a new tag
@@ -241,7 +242,7 @@ void *
 ggc_cleared_alloc_ptr_array_two_args (size_t c, size_t n)
 {
   gcc_assert (sizeof (PTR *) == n);
-  return ggc_internal_cleared_vec_alloc (sizeof (PTR *), c);
+  return ggc_cleared_vec_alloc<PTR *> (c);
 }
 
 /* These are for splay_tree_new_ggc.  */

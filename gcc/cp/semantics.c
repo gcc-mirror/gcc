@@ -8024,7 +8024,7 @@ register_constexpr_fundef (tree fun, tree body)
     htab_find_slot (constexpr_fundef_table, &entry, INSERT);
 
   gcc_assert (*slot == NULL);
-  *slot = ggc_alloc_constexpr_fundef ();
+  *slot = ggc_alloc<constexpr_fundef> ();
   **slot = entry;
 
   return fun;
@@ -8158,8 +8158,10 @@ maybe_initialize_constexpr_call_table (void)
 bool
 is_this_parameter (tree t)
 {
-  return (TREE_CODE (t) == PARM_DECL
-	  && DECL_NAME (t) == this_identifier);
+  if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
+    return false;
+  gcc_assert (TREE_CODE (t) == PARM_DECL || is_capture_proxy (t));
+  return true;
 }
 
 /* We have an expression tree T that represents a call, either CALL_EXPR
@@ -8466,7 +8468,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
     {
       /* We need to keep a pointer to the entry, not just the slot, as the
 	 slot can move in the call to cxx_eval_builtin_function_call.  */
-      *slot = entry = ggc_alloc_constexpr_call ();
+      *slot = entry = ggc_alloc<constexpr_call> ();
       *entry = new_call;
     }
   /* Calls which are in progress have their result set to NULL

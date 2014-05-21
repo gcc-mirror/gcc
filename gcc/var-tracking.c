@@ -8748,8 +8748,7 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
 
   note_vl = NULL_RTX;
   if (!complete)
-    note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl, NULL_RTX,
-				    (int) initialized);
+    note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl, NULL_RTX, initialized);
   else if (n_var_parts == 1)
     {
       rtx expr_list;
@@ -8759,8 +8758,7 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
       else
 	expr_list = loc[0];
 
-      note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl, expr_list,
-				      (int) initialized);
+      note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl, expr_list, initialized);
     }
   else if (n_var_parts)
     {
@@ -8773,7 +8771,7 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
       parallel = gen_rtx_PARALLEL (VOIDmode,
 				   gen_rtvec_v (n_var_parts, loc));
       note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl,
-				      parallel, (int) initialized);
+				      parallel, initialized);
     }
 
   if (where != EMIT_NOTE_BEFORE_INSN)

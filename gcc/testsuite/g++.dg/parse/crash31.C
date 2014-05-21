@@ -1,4 +1,4 @@
-struct A // { dg-error "forward declaration" }
+struct A // { dg-message "not complete" }
 {
   A : A; // { dg-error "expected|incomplete" }
   A : B; // { dg-error "not declared|incomplete" }

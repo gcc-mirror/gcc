@@ -29,7 +29,7 @@ struct t_0_st_0 {
   operator t_0_st_1 ();// { dg-message "note" } 
 };
 
-t_0_st_0 t_0_st_0_obj0;		// { dg-message "candidate" }
+t_0_st_0 t_0_st_0_obj0;
 
 void t_0_assignment ()
 {
@@ -63,7 +63,7 @@ struct t_1_st_0 {
   operator t_1_st_1 ();					// { dg-message "note" } 
 };
 
-t_1_st_0 t_1_st_0_obj0;		// { dg-message "candidate" }
+t_1_st_0 t_1_st_0_obj0;
 
 void t_1_assignment ()
 {
@@ -71,10 +71,8 @@ void t_1_assignment ()
   t_1_st_1 t_1_st_1_obj1;
   t_1_st_1 t_1_st_1_obj2;
 
-  t_1_st_1_obj0 = t_1_st_0_obj0;			// { dg-error "no match" } 
-  // { dg-message "candidate" "candidate note" { target *-*-* } 74 }
-  t_1_st_1_obj1 = t_1_st_1 (t_1_st_0_obj0);		// { dg-error "no match" } 
-  // { dg-message "candidate" "candidate note" { target *-*-* } 76 }
+  t_1_st_1_obj0 = t_1_st_0_obj0;			// { dg-error "no match|conversion" }
+  t_1_st_1_obj1 = t_1_st_1 (t_1_st_0_obj0);		// { dg-error "no match|rvalue" }
 }
 
 void t_1_local_init ()
@@ -98,7 +96,7 @@ struct t_2_st_0 {
   operator t_2_st_1 ();		// { dg-message "note" }
 };
 
-t_2_st_0 t_2_st_0_obj0;		// { dg-message "candidate" }
+t_2_st_0 t_2_st_0_obj0;
 
 void t_2_assignment ()
 {

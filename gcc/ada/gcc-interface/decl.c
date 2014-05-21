@@ -145,6 +145,7 @@ static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
 			       bool *);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
+static tree change_qualified_type (tree, int);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
@@ -543,10 +544,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       This is a workaround for major problems in protected type
 	       handling.  */
 	    Entity_Id Scop = Scope (Scope (gnat_entity));
-	    if ((Is_Protected_Type (Scop)
-		 || (Is_Private_Type (Scop)
-		     && Present (Full_View (Scop))
-		     && Is_Protected_Type (Full_View (Scop))))
+	    if (Is_Protected_Type (Underlying_Type (Scop))
 		&& Present (Original_Record_Component (gnat_entity)))
 	      {
 		gnu_decl
@@ -870,9 +868,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If this is an aliased object with an unconstrained nominal subtype,
 	   make a type that includes the template.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && (Is_Array_Type (Etype (gnat_entity))
-		|| (Is_Private_Type (Etype (gnat_entity))
-		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
+	    && Is_Array_Type (Underlying_Type (Etype (gnat_entity)))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array
@@ -1052,9 +1048,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   Note that we need to preserve the volatility of the renamed
 		   object through the indirection.  */
 		if (TREE_THIS_VOLATILE (gnu_expr) && !TYPE_VOLATILE (gnu_type))
-		  gnu_type = build_qualified_type (gnu_type,
-						   (TYPE_QUALS (gnu_type)
-						    | TYPE_QUAL_VOLATILE));
+		  gnu_type
+		    = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
 		gnu_type = build_reference_type (gnu_type);
 		inner_const_flag = TREE_READONLY (gnu_expr);
 		const_flag = true;
@@ -1112,9 +1107,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     || imported_p
 		     || Present (Address_Clause (gnat_entity)))))
 	    && !TYPE_VOLATILE (gnu_type))
-	  gnu_type = build_qualified_type (gnu_type,
-					   (TYPE_QUALS (gnu_type)
-					    | TYPE_QUAL_VOLATILE));
+	  gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
 
 	/* If we are defining an aliased object whose nominal subtype is
 	   unconstrained, the object is a record that contains both the
@@ -1383,9 +1376,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   Note that we have to do that this late because of the couple of
 	   allocation adjustments that might be made just above.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && (Is_Array_Type (Etype (gnat_entity))
-		|| (Is_Private_Type (Etype (gnat_entity))
-		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
+	    && Is_Array_Type (Underlying_Type (Etype (gnat_entity)))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array
@@ -1415,8 +1406,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	if (const_flag)
-	  gnu_type = build_qualified_type (gnu_type, (TYPE_QUALS (gnu_type)
-						      | TYPE_QUAL_CONST));
+	  gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_CONST);
 
 	/* Convert the expression to the type of the object except in the
 	   case where the object's type is unconstrained or the object's type
@@ -2250,6 +2240,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      SET_TYPE_MODE (tem, BLKmode);
 	  }
 
+	TYPE_VOLATILE (tem) = Treat_As_Volatile (gnat_entity);
+
 	/* If an alignment is specified, use it if valid.  But ignore it
 	   for the original type of packed array types.  If the alignment
 	   was requested with an explicit alignment clause, state so.  */
@@ -2420,8 +2412,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 we can just use the high bound of the index type.  */
 	      else if ((Nkind (gnat_index) == N_Range
 		        && cannot_be_superflat_p (gnat_index))
-		       /* Packed Array Types are never superflat.  */
-		       || Is_Packed_Array_Type (gnat_entity))
+		       /* Bit-Packed Array Types are never superflat.  */
+		       || (Is_Packed_Array_Type (gnat_entity)
+			   && Is_Bit_Packed_Array
+			      (Original_Array_Type (gnat_entity))))
 		gnu_high = gnu_max;
 
 	      /* Otherwise, if the high bound is constant but the low bound is
@@ -2600,6 +2594,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		SET_TYPE_MODE (gnu_type, BLKmode);
 	    }
 
+	  TYPE_VOLATILE (gnu_type) = Treat_As_Volatile (gnat_entity);
+
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
 	  TYPE_STUB_DECL (gnu_type)
 	    = create_type_stub_decl (gnu_entity_name, gnu_type);
@@ -2730,9 +2726,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      process_attributes (&gnu_type, &attr_list, false, gnat_entity);
 	      if (Treat_As_Volatile (gnat_entity))
 		gnu_type
-		  = build_qualified_type (gnu_type,
-					  TYPE_QUALS (gnu_type)
-					  | TYPE_QUAL_VOLATILE);
+		  = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
 	      /* Make it artificial only if the base type was artificial too.
 		 That's sort of "morally" true and will make it possible for
 		 the debugger to look it up by name in DWARF, which is needed
@@ -2840,7 +2834,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  = build_binary_op (PLUS_EXPR, gnu_string_index_type,
 			     gnu_lower_bound,
 			     int_const_binop (MINUS_EXPR, gnu_length,
-					      integer_one_node));
+					      convert (gnu_string_index_type,
+						       integer_one_node)));
 	tree gnu_index_type
 	  = create_index_type (convert (sizetype, gnu_lower_bound),
 			       convert (sizetype, gnu_upper_bound),
@@ -3222,9 +3217,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && Is_By_Reference_Type (gnat_entity))
 	  SET_TYPE_MODE (gnu_type, BLKmode);
 
-	/* We used to remove the associations of the discriminants and _Parent
-	   for validity checking but we may need them if there's a Freeze_Node
-	   for a subtype used in this record.  */
 	TYPE_VOLATILE (gnu_type) = Treat_As_Volatile (gnat_entity);
 
 	/* Fill in locations of fields.  */
@@ -3921,9 +3913,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		&& TREE_CODE (gnu_desig_type) != UNCONSTRAINED_ARRAY_TYPE)
 	      {
 		gnu_desig_type
-		  = build_qualified_type
-		    (gnu_desig_type,
-		     TYPE_QUALS (gnu_desig_type) | TYPE_QUAL_CONST);
+		  = change_qualified_type (gnu_desig_type, TYPE_QUAL_CONST);
 
 		/* Some extra processing is required if we are building a
 		   pointer to an incomplete type (in the GCC sense).  We might
@@ -4627,18 +4617,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (TREE_CODE (gnu_return_type) == VOID_TYPE)
 	  const_flag = false;
 
-	gnu_type
-	  = build_qualified_type (gnu_type,
-				  TYPE_QUALS (gnu_type)
-				  | (TYPE_QUAL_CONST * const_flag)
-				  | (TYPE_QUAL_VOLATILE * volatile_flag));
+	if (const_flag || volatile_flag)
+	  {
+	    const int quals
+	      = (const_flag ? TYPE_QUAL_CONST : 0)
+		| (volatile_flag ? TYPE_QUAL_VOLATILE : 0);
 
-	if (has_stub)
-	  gnu_stub_type
-	    = build_qualified_type (gnu_stub_type,
-				    TYPE_QUALS (gnu_stub_type)
-				    | (TYPE_QUAL_CONST * const_flag)
-				    | (TYPE_QUAL_VOLATILE * volatile_flag));
+	    gnu_type = change_qualified_type (gnu_type, quals);
+
+	    if (has_stub)
+	      gnu_stub_type = change_qualified_type (gnu_stub_type, quals);
+	  }
 
 	/* If we have a builtin decl for that function, use it.  Check if the
 	   profiles are compatible and warn if they are not.  The checker is
@@ -4904,8 +4893,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    gnu_size = NULL_TREE;
 	}
 
-      /* If the alignment hasn't already been processed and this is
-	 not an unconstrained array, see if an alignment is specified.
+      /* If the alignment has not already been processed and this is not
+	 an unconstrained array type, see if an alignment is specified.
 	 If not, we pick a default alignment for atomic objects.  */
       if (align != 0 || TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
 	;
@@ -5092,19 +5081,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		}
 	    }
 
-      if (Treat_As_Volatile (gnat_entity))
-	gnu_type
-	  = build_qualified_type (gnu_type,
-				  TYPE_QUALS (gnu_type) | TYPE_QUAL_VOLATILE);
-
       if (Is_Atomic (gnat_entity))
 	check_ok_for_atomic (gnu_type, gnat_entity, false);
 
-      if (Present (Alignment_Clause (gnat_entity)))
-	TYPE_USER_ALIGN (gnu_type) = 1;
+      /* If this is not an unconstrained array type, set some flags.  */
+      if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
+	{
+	  if (Treat_As_Volatile (gnat_entity))
+	    gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
 
-      if (Universal_Aliasing (gnat_entity))
-	TYPE_UNIVERSAL_ALIASING_P (TYPE_MAIN_VARIANT (gnu_type)) = 1;
+	  if (Present (Alignment_Clause (gnat_entity)))
+	    TYPE_USER_ALIGN (gnu_type) = 1;
+
+	  if (Universal_Aliasing (gnat_entity))
+	    TYPE_UNIVERSAL_ALIASING_P (TYPE_MAIN_VARIANT (gnu_type)) = 1;
+	}
 
       if (!gnu_decl)
 	gnu_decl = create_type_decl (gnu_entity_name, gnu_type,
@@ -5652,9 +5643,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
     }
 
   if (Has_Volatile_Components (gnat_array))
-    gnu_type
-      = build_qualified_type (gnu_type,
-			      TYPE_QUALS (gnu_type) | TYPE_QUAL_VOLATILE);
+    gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
 
   return gnu_type;
 }
@@ -5712,9 +5701,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   if (ro_param
       && TREE_CODE (gnu_param_type) != UNCONSTRAINED_ARRAY_TYPE
       && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
-    gnu_param_type = build_qualified_type (gnu_param_type,
-					   (TYPE_QUALS (gnu_param_type)
-					    | TYPE_QUAL_CONST));
+    gnu_param_type = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
   /* For foreign conventions, pass arrays as pointers to the element type.
      First check for unconstrained array and get the underlying array.  */
@@ -5764,9 +5751,8 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
       gnu_param_type = TREE_TYPE (gnu_param_type);
 
       if (ro_param)
-	gnu_param_type = build_qualified_type (gnu_param_type,
-					       (TYPE_QUALS (gnu_param_type)
-						| TYPE_QUAL_CONST));
+	gnu_param_type
+	  = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
       gnu_param_type = build_pointer_type (gnu_param_type);
     }
@@ -5803,7 +5789,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
       gnu_param_type = build_reference_type (gnu_param_type);
       if (restrict_p)
 	gnu_param_type
-	  = build_qualified_type (gnu_param_type, TYPE_QUAL_RESTRICT);
+	  = change_qualified_type (gnu_param_type, TYPE_QUAL_RESTRICT);
       by_ref = true;
     }
 
@@ -5867,6 +5853,15 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 
   Set_Mechanism (gnat_param, mech);
   return gnu_param;
+}
+
+/* Like build_qualified_type, but TYPE_QUALS is added to the existing
+   qualifiers on TYPE.  */
+
+static tree
+change_qualified_type (tree type, int type_quals)
+{
+  return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
 }
 
 /* Return true if DISCR1 and DISCR2 represent the same discriminant.  */
@@ -7515,15 +7510,16 @@ annotate_value (tree gnu_size)
 
     case BIT_AND_EXPR:
       tcode = Bit_And_Expr;
-      /* For negative values, build NEGATE_EXPR of the opposite.  Such values
-	 appear in expressions containing aligning patterns.  Note that, since
-	 sizetype is unsigned, we have to jump through some hoops.   */
+      /* For negative values in sizetype, build NEGATE_EXPR of the opposite.
+	 Such values appear in expressions with aligning patterns.  Note that,
+	 since sizetype is unsigned, we have to jump through some hoops.   */
       if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
 	{
 	  tree op1 = TREE_OPERAND (gnu_size, 1);
-	  if (wi::neg_p (op1))
+	  wide_int signed_op1 = wi::sext (op1, TYPE_PRECISION (sizetype));
+	  if (wi::neg_p (signed_op1))
 	    {
-	      op1 = wide_int_to_tree (sizetype, wi::neg (op1));
+	      op1 = wide_int_to_tree (sizetype, wi::neg (signed_op1));
 	      pre_op1 = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
 	    }
 	}
@@ -7576,7 +7572,7 @@ annotate_value (tree gnu_size)
       h = (struct tree_int_map **)
 	    htab_find_slot (annotate_value_cache, &in, INSERT);
       gcc_assert (!*h);
-      *h = ggc_alloc_tree_int_map ();
+      *h = ggc_alloc<tree_int_map> ();
       (*h)->base.from = gnu_size;
       (*h)->to = ret;
     }

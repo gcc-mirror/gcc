@@ -1,3 +1,7 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* objcp-decl.h: Adjust.
+
 2014-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* objcp-decl.h (OBJC_TYPE_NAME, OBJC_SET_TYPE_NAME): Use

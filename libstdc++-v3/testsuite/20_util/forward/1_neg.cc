@@ -28,7 +28,7 @@ template<class T, class A1, class A2>
   factory(A1&& a1, A2&& a2)
   {
     return std::shared_ptr<T>(new T(std::forward<A1>(a1),
-				    std::forward<A2>(a2))); // { dg-error "no matching function" }
+				    std::forward<A2>(a2))); // { dg-error "rvalue" }
   }
 
 struct A

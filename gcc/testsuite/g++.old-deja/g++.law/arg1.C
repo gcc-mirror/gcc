@@ -25,8 +25,6 @@ int main()
     B b;
 
     a.f(0);// { dg-error "ambiguous" }
-    // { dg-message "candidate" "candidate note" { target *-*-* } 27 }
     b.f(0);// { dg-error "ambiguous" }
-    // { dg-message "candidate" "candidate note" { target *-*-* } 29 }
 }
 

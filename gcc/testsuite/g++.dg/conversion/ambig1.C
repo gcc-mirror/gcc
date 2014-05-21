@@ -6,4 +6,3 @@ struct H {
 };
 
 int const& ref = H(); // { dg-error "ambiguous" }
-// { dg-message "candidate" "candidate note" { target *-*-* } 8 }

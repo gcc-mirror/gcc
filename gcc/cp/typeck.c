@@ -1452,11 +1452,8 @@ at_least_as_qualified_p (const_tree type1, const_tree type2)
    more cv-qualified that TYPE1, and 0 otherwise.  */
 
 int
-comp_cv_qualification (const_tree type1, const_tree type2)
+comp_cv_qualification (int q1, int q2)
 {
-  int q1 = cp_type_quals (type1);
-  int q2 = cp_type_quals (type2);
-
   if (q1 == q2)
     return 0;
 
@@ -1466,6 +1463,14 @@ comp_cv_qualification (const_tree type1, const_tree type2)
     return -1;
 
   return 0;
+}
+
+int
+comp_cv_qualification (const_tree type1, const_tree type2)
+{
+  int q1 = cp_type_quals (type1);
+  int q2 = cp_type_quals (type2);
+  return comp_cv_qualification (q1, q2);
 }
 
 /* Returns 1 if the cv-qualification signature of TYPE1 is a proper
@@ -3247,6 +3252,12 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       nonvirtual = (COMPLETE_TYPE_P (basetype)
 		    && !TYPE_POLYMORPHIC_P (basetype)
 		    && resolves_to_fixed_type_p (instance_ptr, 0));
+
+      /* If we don't really have an object (i.e. in an ill-formed
+	 conversion from PMF to pointer), we can't resolve virtual
+	 functions anyway.  */
+      if (!nonvirtual && is_dummy_object (instance_ptr))
+	nonvirtual = true;
 
       if (TREE_SIDE_EFFECTS (instance_ptr))
 	instance_ptr = instance_save_expr = save_expr (instance_ptr);

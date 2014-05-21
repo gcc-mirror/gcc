@@ -16,5 +16,5 @@ int test ()
 
 /* { dg-final { scan-assembler-not "\tjal\tlong_call_func\n" } } */
 /* { dg-final { scan-assembler-not "\tjal\tfar_func\n" } } */
-/* { dg-final { scan-assembler     "\tjal\tnear_func\n" } } */
+/* { dg-final { scan-assembler     "\tjal(|s)\tnear_func\n" } } */
 /* { dg-final { scan-assembler-not "\tjal\tnormal_func\n" } } */

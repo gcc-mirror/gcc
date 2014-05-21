@@ -4087,8 +4087,32 @@ fi
   done
 CFLAGS="$save_CFLAGS"
 
+
+# Check whether -static-libgcc is supported.
+saved_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -static-libgcc"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for -static-libgcc" >&5
+$as_echo_n "checking for -static-libgcc... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  int main() {}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  have_static_libgcc=yes
+else
+  have_static_libgcc=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_static_libgcc" >&5
+$as_echo "$have_static_libgcc" >&6; };
+LDFLAGS="$saved_LDFLAGS"
 # Need -Wc to get it through libtool.
-if test "x$GCC" = xyes; then ac_lto_plugin_ldflags="-Wc,-static-libgcc"; fi
+if test "x$have_static_libgcc" = xyes; then
+   ac_lto_plugin_ldflags="-Wc,-static-libgcc"
+fi
+
 
 case `pwd` in
   *\ * | *\	*)
@@ -10562,7 +10586,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10565 "configure"
+#line 10589 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10668,7 +10692,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10671 "configure"
+#line 10695 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

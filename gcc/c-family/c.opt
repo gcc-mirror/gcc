@@ -690,7 +690,7 @@ ObjC ObjC++ Var(warn_selector) Warning
 Warn if a selector has multiple methods
 
 Wshadow-ivar
-ObjC ObjC++ Var(warn_shadow_ivar) Init(1) Warning
+ObjC ObjC++ Var(warn_shadow_ivar) EnabledBy(Wshadow) Init(1) Warning
 Warn if a local declaration hides an instance variable
 
 Wsequence-point

@@ -48,9 +48,10 @@ along with GCC; see the file COPYING3.  If not see
      weak.  There are files compiled with -DGENERATOR_FILE that already
      include ggc.h.  We only need to provide these definitions if ggc.h
      has not been included.  Sigh.  */
+
   extern void ggc_free (void *);
   extern size_t ggc_round_alloc_size (size_t requested_size);
-  extern void *ggc_realloc_stat (void *, size_t MEM_STAT_DECL);
+  extern void *ggc_realloc (void *, size_t CXX_MEM_STAT_INFO);
 #  endif  // GCC_GGC_H
 #endif	// VEC_GC_ENABLED
 
@@ -396,7 +397,7 @@ va_gc::reserve (vec<T, A, vl_embed> *&v, unsigned reserve, bool exact
   size = vec_offset + alloc * elt_size;
 
   unsigned nelem = v ? v->length () : 0;
-  v = static_cast <vec<T, A, vl_embed> *> (::ggc_realloc_stat (v, size
+  v = static_cast <vec<T, A, vl_embed> *> (::ggc_realloc (v, size
 							       PASS_MEM_STAT));
   v->embedded_init (alloc, nelem);
 }

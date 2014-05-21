@@ -833,6 +833,9 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 
   fallthru = split_block_after_labels (bb);
   dummy = fallthru->src;
+  dummy->count = 0;
+  dummy->frequency = 0;
+  fallthru->count = 0;
   bb = fallthru->dest;
 
   /* Redirect back edges we want to keep.  */
@@ -842,19 +845,12 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 
       if (redirect_edge_p (e))
 	{
+	  dummy->frequency += EDGE_FREQUENCY (e);
+	  dummy->count += e->count;
+	  fallthru->count += e->count;
 	  ei_next (&ei);
 	  continue;
 	}
-
-      dummy->frequency -= EDGE_FREQUENCY (e);
-      dummy->count -= e->count;
-      if (dummy->frequency < 0)
-	dummy->frequency = 0;
-      if (dummy->count < 0)
-	dummy->count = 0;
-      fallthru->count -= e->count;
-      if (fallthru->count < 0)
-	fallthru->count = 0;
 
       e_src = e->src;
       jump = redirect_edge_and_branch_force (e, bb);
@@ -969,7 +965,7 @@ tidy_fallthru_edges (void)
 	  s = single_succ_edge (b);
 	  if (! (s->flags & EDGE_COMPLEX)
 	      && s->dest == c
-	      && !find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
+	      && !(JUMP_P (BB_END (b)) && CROSSING_JUMP_P (BB_END (b))))
 	    tidy_fallthru_edge (s);
 	}
     }

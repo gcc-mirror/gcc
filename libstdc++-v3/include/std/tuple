@@ -48,33 +48,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-  // Adds a const reference to a non-reference type.
-  template<typename _Tp>
-    struct __add_c_ref
-    { typedef const _Tp& type; };
-
-  template<typename _Tp>
-    struct __add_c_ref<_Tp&>
-    { typedef _Tp& type; };
-
-  // Adds a reference to a non-reference type.
-  template<typename _Tp>
-    struct __add_ref
-    { typedef _Tp& type; };
-
-  template<typename _Tp>
-    struct __add_ref<_Tp&>
-    { typedef _Tp& type; };
-
-  // Adds an rvalue reference to a non-reference type.
-  template<typename _Tp>
-    struct __add_r_ref
-    { typedef _Tp&& type; };
-
-  template<typename _Tp>
-    struct __add_r_ref<_Tp&>
-    { typedef _Tp& type; };
-
   template<std::size_t _Idx, typename _Head, bool _IsEmptyNotFinal>
     struct _Head_base;
 
@@ -689,25 +662,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Head type;
     };
 
+  // Duplicate of C++14's tuple_element_t for internal use in C++11 mode
+  template<std::size_t __i, typename _Tp>
+    using __tuple_element_t = typename tuple_element<__i, _Tp>::type;
+
   template<std::size_t __i, typename _Tp>
     struct tuple_element<__i, const _Tp>
     {
-      typedef typename
-      add_const<typename tuple_element<__i, _Tp>::type>::type type;
+      typedef typename add_const<__tuple_element_t<__i, _Tp>>::type type;
     };
 
   template<std::size_t __i, typename _Tp>
     struct tuple_element<__i, volatile _Tp>
     {
-      typedef typename
-      add_volatile<typename tuple_element<__i, _Tp>::type>::type type;
+      typedef typename add_volatile<__tuple_element_t<__i, _Tp>>::type type;
     };
 
   template<std::size_t __i, typename _Tp>
     struct tuple_element<__i, const volatile _Tp>
     {
-      typedef typename
-      add_cv<typename tuple_element<__i, _Tp>::type>::type type;
+      typedef typename add_cv<__tuple_element_t<__i, _Tp>>::type type;
     };
 
 #if __cplusplus > 201103L
@@ -719,23 +693,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct tuple_size;
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2313. tuple_size should always derive from integral_constant<size_t, N>
   template<typename _Tp>
     struct tuple_size<const _Tp>
-    : public integral_constant<
-             typename remove_cv<decltype(tuple_size<_Tp>::value)>::type,
-             tuple_size<_Tp>::value> { };
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
 
   template<typename _Tp>
     struct tuple_size<volatile _Tp>
-    : public integral_constant<
-             typename remove_cv<decltype(tuple_size<_Tp>::value)>::type,
-             tuple_size<_Tp>::value> { };
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
 
   template<typename _Tp>
     struct tuple_size<const volatile _Tp>
-    : public integral_constant<
-             typename remove_cv<decltype(tuple_size<_Tp>::value)>::type,
-             tuple_size<_Tp>::value> { };
+    : integral_constant<size_t, tuple_size<_Tp>::value> { };
 
   /// class tuple_size
   template<typename... _Elements>
@@ -743,98 +713,93 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<std::size_t, sizeof...(_Elements)> { };
 
   template<std::size_t __i, typename _Head, typename... _Tail>
-    constexpr typename __add_ref<_Head>::type
+    constexpr _Head&
     __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return _Tuple_impl<__i, _Head, _Tail...>::_M_head(__t); }
 
   template<std::size_t __i, typename _Head, typename... _Tail>
-    constexpr typename __add_c_ref<_Head>::type
+    constexpr const _Head&
     __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return _Tuple_impl<__i, _Head, _Tail...>::_M_head(__t); }
 
-  // Return a reference (const reference, rvalue reference) to the ith element
-  // of a tuple.  Any const or non-const ref elements are returned with their
-  // original type.
+  /// Return a reference to the ith element of a tuple.
   template<std::size_t __i, typename... _Elements>
-    constexpr typename __add_ref<
-                      typename tuple_element<__i, tuple<_Elements...>>::type
-                    >::type
+    constexpr __tuple_element_t<__i, tuple<_Elements...>>&
     get(tuple<_Elements...>& __t) noexcept
     { return std::__get_helper<__i>(__t); }
 
+  /// Return a const reference to the ith element of a const tuple.
   template<std::size_t __i, typename... _Elements>
-    constexpr typename __add_c_ref<
-                      typename tuple_element<__i, tuple<_Elements...>>::type
-                    >::type
+    constexpr const __tuple_element_t<__i, tuple<_Elements...>>&
     get(const tuple<_Elements...>& __t) noexcept
     { return std::__get_helper<__i>(__t); }
 
+  /// Return an rvalue reference to the ith element of a tuple rvalue.
   template<std::size_t __i, typename... _Elements>
-    constexpr typename __add_r_ref<
-                      typename tuple_element<__i, tuple<_Elements...>>::type
-                    >::type
+    constexpr __tuple_element_t<__i, tuple<_Elements...>>&&
     get(tuple<_Elements...>&& __t) noexcept
-    { return std::forward<typename tuple_element<__i,
-	tuple<_Elements...>>::type&&>(get<__i>(__t)); }
+    {
+      typedef __tuple_element_t<__i, tuple<_Elements...>> __element_type;
+      return std::forward<__element_type&&>(std::get<__i>(__t));
+    }
 
 #if __cplusplus > 201103L
   template<typename _Head, size_t __i, typename... _Tail>
-    constexpr typename __add_ref<_Head>::type
+    constexpr _Head&
     __get_helper2(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return _Tuple_impl<__i, _Head, _Tail...>::_M_head(__t); }
 
   template<typename _Head, size_t __i, typename... _Tail>
-    constexpr typename __add_c_ref<_Head>::type
+    constexpr const _Head&
     __get_helper2(const _Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return _Tuple_impl<__i, _Head, _Tail...>::_M_head(__t); }
 
+  /// Return a reference to the unique element of type _Tp of a tuple.
   template <typename _Tp, typename... _Types>
     constexpr _Tp&
     get(tuple<_Types...>& __t) noexcept
     { return std::__get_helper2<_Tp>(__t); }
 
+  /// Return a reference to the unique element of type _Tp of a tuple rvalue.
   template <typename _Tp, typename... _Types>
     constexpr _Tp&&
     get(tuple<_Types...>&& __t) noexcept
-    { return std::move(std::__get_helper2<_Tp>(__t)); }
+    { return std::forward<_Tp&&>(std::__get_helper2<_Tp>(__t)); }
 
+  /// Return a const reference to the unique element of type _Tp of a tuple.
   template <typename _Tp, typename... _Types>
     constexpr const _Tp&
     get(const tuple<_Types...>& __t) noexcept
     { return std::__get_helper2<_Tp>(__t); }
 #endif
 
-  // This class helps construct the various comparison operations on tuples
-  template<std::size_t __check_equal_size, std::size_t __i, std::size_t __j,
-	   typename _Tp, typename _Up>
-    struct __tuple_compare;
-
-  template<std::size_t __i, std::size_t __j, typename _Tp, typename _Up>
-    struct __tuple_compare<0, __i, __j, _Tp, _Up>
+  // This class performs the comparison operations on tuples
+  template<typename _Tp, typename _Up, size_t __i, size_t __size>
+    struct __tuple_compare
     {
-      static constexpr bool 
+      static constexpr bool
       __eq(const _Tp& __t, const _Up& __u)
       {
-	return (get<__i>(__t) == get<__i>(__u) &&
-		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__eq(__t, __u));
+	return bool(std::get<__i>(__t) == std::get<__i>(__u))
+	  && __tuple_compare<_Tp, _Up, __i + 1, __size>::__eq(__t, __u);
       }
-     
-      static constexpr bool 
+   
+      static constexpr bool
       __less(const _Tp& __t, const _Up& __u)
       {
-	return ((get<__i>(__t) < get<__i>(__u))
-		|| !(get<__i>(__u) < get<__i>(__t)) &&
-		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__less(__t, __u));
+	return bool(std::get<__i>(__t) < std::get<__i>(__u))
+	  || (!bool(std::get<__i>(__u) < std::get<__i>(__t))
+	      && __tuple_compare<_Tp, _Up, __i + 1, __size>::__less(__t, __u));
       }
     };
 
-  template<std::size_t __i, typename _Tp, typename _Up>
-    struct __tuple_compare<0, __i, __i, _Tp, _Up>
+  template<typename _Tp, typename _Up, size_t __size>
+    struct __tuple_compare<_Tp, _Up, __size, __size>
     {
-      static constexpr bool 
+      static constexpr bool
       __eq(const _Tp&, const _Up&) { return true; }
-     
-      static constexpr bool 
+   
+      static constexpr bool
       __less(const _Tp&, const _Up&) { return false; }
     };
 
@@ -843,10 +808,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     {
-      typedef tuple<_TElements...> _Tp;
-      typedef tuple<_UElements...> _Up;
-      return bool(__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
-	      0, tuple_size<_Tp>::value, _Tp, _Up>::__eq(__t, __u));
+      static_assert(sizeof...(_TElements) == sizeof...(_UElements),
+	  "tuple objects can only be compared if they have equal sizes.");
+      using __compare = __tuple_compare<tuple<_TElements...>,
+					tuple<_UElements...>,
+					0, sizeof...(_TElements)>;
+      return __compare::__eq(__t, __u);
     }
 
   template<typename... _TElements, typename... _UElements>
@@ -854,10 +821,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<(const tuple<_TElements...>& __t,
 	      const tuple<_UElements...>& __u)
     {
-      typedef tuple<_TElements...> _Tp;
-      typedef tuple<_UElements...> _Up;
-      return bool(__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
-	      0, tuple_size<_Tp>::value, _Tp, _Up>::__less(__t, __u));
+      static_assert(sizeof...(_TElements) == sizeof...(_UElements),
+	  "tuple objects can only be compared if they have equal sizes.");
+      using __compare = __tuple_compare<tuple<_TElements...>,
+					tuple<_UElements...>,
+					0, sizeof...(_TElements)>;
+      return __compare::__less(__t, __u);
     }
 
   template<typename... _TElements, typename... _UElements>
@@ -922,17 +891,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             <typename std::remove_reference<_Tp>::type>::type>::type
     { };
 
-  template<std::size_t, typename, typename, std::size_t>
+  template<size_t, typename, typename, size_t>
     struct __make_tuple_impl;
 
-  template<std::size_t _Idx, typename _Tuple, typename... _Tp,
-           std::size_t _Nm>
+  template<size_t _Idx, typename _Tuple, typename... _Tp, size_t _Nm>
     struct __make_tuple_impl<_Idx, tuple<_Tp...>, _Tuple, _Nm>
-    {
-      typedef typename __make_tuple_impl<_Idx + 1, tuple<_Tp...,
-	typename std::tuple_element<_Idx, _Tuple>::type>, _Tuple, _Nm>::__type
-      __type;
-    };
+    : __make_tuple_impl<_Idx + 1,
+			tuple<_Tp..., __tuple_element_t<_Idx, _Tuple>>,
+			_Tuple, _Nm>
+    { };
 
   template<std::size_t _Nm, typename _Tuple, typename... _Tp>
     struct __make_tuple_impl<_Nm, tuple<_Tp...>, _Tuple, _Nm>
@@ -942,8 +909,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tuple>
     struct __do_make_tuple
-    : public __make_tuple_impl<0, tuple<>, _Tuple,
-                               std::tuple_size<_Tuple>::value>
+    : __make_tuple_impl<0, tuple<>, _Tuple, std::tuple_size<_Tuple>::value>
     { };
 
   // Returns the std::tuple equivalent of a tuple-like type.

@@ -44,4 +44,4 @@ void test01()
 
   tuple<Type> t(allocator_arg, a, 1);
 }
-// { dg-error "no matching function" "" { target *-*-* } 118 }
+// { dg-error "no matching function" "" { target *-*-* } 91 }

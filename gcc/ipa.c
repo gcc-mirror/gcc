@@ -37,6 +37,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "profile.h"
 #include "params.h"
+#include "internal-fn.h"
+#include "tree-ssa-alias.h"
+#include "gimple.h"
+#include "dbgcnt.h"
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
@@ -213,7 +217,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
      make the edge direct.  */
   if (final)
     {
-      if (targets.length () <= 1)
+      if (targets.length () <= 1 && dbg_cnt (devirt))
 	{
 	  cgraph_node *target, *node = edge->caller;
 	  if (targets.length () == 1)
@@ -222,12 +226,15 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 	    target = cgraph_get_create_node
 		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
 
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Devirtualizing call in %s/%i to %s/%i\n",
-		     edge->caller->name (),
-		     edge->caller->order,
-		     target->name (), target->order);
+	  if (dump_enabled_p ())
+            {
+              location_t locus = gimple_location (edge->call_stmt);
+              dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+                               "devirtualizing call in %s/%i to %s/%i\n",
+                               edge->caller->name (), edge->caller->order,
+                               target->name (),
+                               target->order);
+	    }
 	  edge = cgraph_make_edge_direct (edge, target);
 	  if (inline_summary_vec)
 	    inline_update_overall_summary (node);
@@ -517,6 +524,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      if (!node->in_other_partition)
 		node->local.local = false;
 	      cgraph_node_remove_callees (node);
+	      symtab_remove_from_same_comdat_group (node);
 	      ipa_remove_all_references (&node->ref_list);
 	      changed = true;
 	    }
@@ -572,6 +580,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  vnode->analyzed = false;
 	  vnode->aux = NULL;
 
+	  symtab_remove_from_same_comdat_group (vnode);
+
 	  /* Keep body if it may be useful for constant folding.  */
 	  if ((init = ctor_for_folding (vnode->decl)) == error_mark_node)
 	    varpool_remove_initializer (vnode);
@@ -624,6 +634,77 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   return changed;
 }
 
+/* Process references to VNODE and set flags WRITTEN, ADDRESS_TAKEN, READ
+   as needed, also clear EXPLICIT_REFS if the references to given variable
+   do not need to be explicit.  */
+
+void
+process_references (varpool_node *vnode,
+		    bool *written, bool *address_taken,
+		    bool *read, bool *explicit_refs)
+{
+  int i;
+  struct ipa_ref *ref;
+
+  if (!varpool_all_refs_explicit_p (vnode)
+      || TREE_THIS_VOLATILE (vnode->decl))
+    *explicit_refs = false;
+
+  for (i = 0; ipa_ref_list_referring_iterate (&vnode->ref_list,
+					     i, ref)
+	      && *explicit_refs && (!*written || !*address_taken || !*read); i++)
+    switch (ref->use)
+      {
+      case IPA_REF_ADDR:
+	*address_taken = true;
+	break;
+      case IPA_REF_LOAD:
+	*read = true;
+	break;
+      case IPA_REF_STORE:
+	*written = true;
+	break;
+      case IPA_REF_ALIAS:
+	process_references (varpool (ref->referring), written, address_taken,
+			    read, explicit_refs);
+	break;
+      }
+}
+
+/* Set TREE_READONLY bit.  */
+
+bool
+set_readonly_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
+{
+  TREE_READONLY (vnode->decl) = true;
+  return false;
+}
+
+/* Set writeonly bit and clear the initalizer, since it will not be needed.  */
+
+bool
+set_writeonly_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
+{
+  vnode->writeonly = true;
+  if (optimize)
+    {
+      DECL_INITIAL (vnode->decl) = NULL;
+      if (!vnode->alias)
+	ipa_remove_all_references (&vnode->ref_list);
+    }
+  return false;
+}
+
+/* Clear addressale bit of VNODE.  */
+
+bool
+clear_addressable_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
+{
+  vnode->address_taken = false;
+  TREE_ADDRESSABLE (vnode->decl) = 0;
+  return false;
+}
+
 /* Discover variables that have no longer address taken or that are read only
    and update their flags.
 
@@ -640,43 +721,40 @@ ipa_discover_readonly_nonaddressable_vars (void)
   if (dump_file)
     fprintf (dump_file, "Clearing variable flags:");
   FOR_EACH_VARIABLE (vnode)
-    if (vnode->definition && varpool_all_refs_explicit_p (vnode)
+    if (!vnode->alias
 	&& (TREE_ADDRESSABLE (vnode->decl)
+	    || !vnode->writeonly
 	    || !TREE_READONLY (vnode->decl)))
       {
 	bool written = false;
 	bool address_taken = false;
-	int i;
-        struct ipa_ref *ref;
-        for (i = 0; ipa_ref_list_referring_iterate (&vnode->ref_list,
-						   i, ref)
-		    && (!written || !address_taken); i++)
-	  switch (ref->use)
-	    {
-	    case IPA_REF_ADDR:
-	      address_taken = true;
-	      break;
-	    case IPA_REF_LOAD:
-	      break;
-	    case IPA_REF_STORE:
-	      written = true;
-	      break;
-	    }
-	if (TREE_ADDRESSABLE (vnode->decl) && !address_taken)
+	bool read = false;
+	bool explicit_refs = true;
+
+	process_references (vnode, &written, &address_taken, &read, &explicit_refs);
+	if (!explicit_refs)
+	  continue;
+	if (!address_taken)
 	  {
-	    if (dump_file)
-	      fprintf (dump_file, " %s (addressable)", vnode->name ());
-	    TREE_ADDRESSABLE (vnode->decl) = 0;
+	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
+	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
+	    varpool_for_node_and_aliases (vnode, clear_addressable_bit, NULL, true);
 	  }
-	if (!TREE_READONLY (vnode->decl) && !address_taken && !written
+	if (!address_taken && !written
 	    /* Making variable in explicit section readonly can cause section
 	       type conflict. 
 	       See e.g. gcc.c-torture/compile/pr23237.c */
 	    && DECL_SECTION_NAME (vnode->decl) == NULL)
 	  {
-	    if (dump_file)
+	    if (!TREE_READONLY (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (read-only)", vnode->name ());
-	    TREE_READONLY (vnode->decl) = 1;
+	    varpool_for_node_and_aliases (vnode, set_readonly_bit, NULL, true);
+	  }
+	if (!vnode->writeonly && !read && !address_taken && written)
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, " %s (write-only)", vnode->name ());
+	    varpool_for_node_and_aliases (vnode, set_writeonly_bit, NULL, true);
 	  }
       }
   if (dump_file)
@@ -708,6 +786,8 @@ address_taken_from_non_vtable_p (symtab_node *node)
 static bool
 comdat_can_be_unshared_p_1 (symtab_node *node)
 {
+  if (!node->externally_visible)
+    return true;
   /* When address is taken, we don't know if equality comparison won't
      break eventually. Exception are virutal functions, C++
      constructors/destructors and vtables, where this is not possible by
@@ -910,6 +990,50 @@ can_replace_by_local_alias (symtab_node *node)
 	  && !symtab_can_be_discarded (node));
 }
 
+/* In LTO we can remove COMDAT groups and weak symbols.
+   Either turn them into normal symbols or external symbol depending on 
+   resolution info.  */
+
+static void
+update_visibility_by_resolution_info (symtab_node * node)
+{
+  bool define;
+
+  if (!node->externally_visible
+      || (!DECL_WEAK (node->decl) && !DECL_ONE_ONLY (node->decl))
+      || node->resolution == LDPR_UNKNOWN)
+    return;
+
+  define = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
+	    || node->resolution == LDPR_PREVAILING_DEF
+	    || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
+
+  /* The linker decisions ought to agree in the whole group.  */
+  if (node->same_comdat_group)
+    for (symtab_node *next = node->same_comdat_group;
+	 next != node; next = next->same_comdat_group)
+      gcc_assert (!node->externally_visible
+		  || define == (next->resolution == LDPR_PREVAILING_DEF_IRONLY
+			        || next->resolution == LDPR_PREVAILING_DEF
+			        || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP));
+
+  if (node->same_comdat_group)
+    for (symtab_node *next = node->same_comdat_group;
+	 next != node; next = next->same_comdat_group)
+      {
+	DECL_COMDAT_GROUP (next->decl) = NULL;
+	DECL_WEAK (next->decl) = false;
+	if (next->externally_visible
+	    && !define)
+	  DECL_EXTERNAL (next->decl) = true;
+      }
+  DECL_COMDAT_GROUP (node->decl) = NULL;
+  DECL_WEAK (node->decl) = false;
+  if (!define)
+    DECL_EXTERNAL (node->decl) = true;
+  symtab_dissolve_same_comdat_group_list (node);
+}
+
 /* Mark visibility of all functions.
 
    A local function is one whose calls can occur only in the current
@@ -1048,38 +1172,7 @@ function_and_variable_visibility (bool whole_program)
 	    DECL_EXTERNAL (node->decl) = 1;
 	}
 
-      /* If whole comdat group is used only within LTO code, we can dissolve it,
-	 we handle the unification ourselves.
-	 We keep COMDAT and weak so visibility out of DSO does not change.
-	 Later we may bring the symbols static if they are not exported.  */
-      if (DECL_ONE_ONLY (node->decl)
-	  && (node->resolution == LDPR_PREVAILING_DEF_IRONLY
-	      || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP))
-	{
-	  symtab_node *next = node;
-
-	  if (node->same_comdat_group)
-	    for (next = node->same_comdat_group;
-		 next != node;
-		 next = next->same_comdat_group)
-	      if (next->externally_visible
-		  && (next->resolution != LDPR_PREVAILING_DEF_IRONLY
-		      && next->resolution != LDPR_PREVAILING_DEF_IRONLY_EXP))
-		break;
-	  if (node == next)
-	    {
-	      if (node->same_comdat_group)
-	        for (next = node->same_comdat_group;
-		     next != node;
-		     next = next->same_comdat_group)
-		{
-		  DECL_COMDAT_GROUP (next->decl) = NULL;
-		  DECL_WEAK (next->decl) = false;
-		}
-	      DECL_COMDAT_GROUP (node->decl) = NULL;
-	      symtab_dissolve_same_comdat_group_list (node);
-	    }
-	}
+      update_visibility_by_resolution_info (node);
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {
@@ -1166,6 +1259,7 @@ function_and_variable_visibility (bool whole_program)
 	    symtab_dissolve_same_comdat_group_list (vnode);
 	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
+      update_visibility_by_resolution_info (vnode);
     }
 
   if (dump_file)

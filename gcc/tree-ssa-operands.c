@@ -276,8 +276,8 @@ ssa_operand_alloc (struct function *fn, unsigned size)
 	}
 
 
-      ptr = ggc_alloc_ssa_operand_memory_d (sizeof (void *)
-                        + gimple_ssa_operands (fn)->ssa_operand_mem_size);
+      ptr = (ssa_operand_memory_d *) ggc_internal_alloc
+	(sizeof (void *) + gimple_ssa_operands (fn)->ssa_operand_mem_size);
 
       ptr->next = gimple_ssa_operands (fn)->operand_memory;
       gimple_ssa_operands (fn)->operand_memory = ptr;

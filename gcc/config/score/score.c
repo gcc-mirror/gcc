@@ -1199,7 +1199,7 @@ score_output_external (FILE *file ATTRIBUTE_UNUSED,
 
   if (score_in_small_data_p (decl))
     {
-      p = ggc_alloc_extern_list ();
+      p = ggc_alloc<extern_list> ();
       p->next = extern_head;
       p->name = name;
       p->size = int_size_in_bytes (TREE_TYPE (decl));

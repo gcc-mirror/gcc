@@ -602,7 +602,7 @@ cp_lexer_alloc (void)
   c_common_no_more_pch ();
 
   /* Allocate the memory.  */
-  lexer = ggc_alloc_cleared_cp_lexer ();
+  lexer = ggc_cleared_alloc<cp_lexer> ();
 
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
@@ -665,7 +665,7 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 {
   cp_token *first = cache->first;
   cp_token *last = cache->last;
-  cp_lexer *lexer = ggc_alloc_cleared_cp_lexer ();
+  cp_lexer *lexer = ggc_cleared_alloc<cp_lexer> ();
 
   /* We do not own the buffer.  */
   lexer->buffer = NULL;
@@ -1240,7 +1240,7 @@ cp_lexer_stop_debugging (cp_lexer* lexer)
 static cp_token_cache *
 cp_token_cache_new (cp_token *first, cp_token *last)
 {
-  cp_token_cache *cache = ggc_alloc_cp_token_cache ();
+  cp_token_cache *cache = ggc_alloc<cp_token_cache> ();
   cache->first = first;
   cache->last = last;
   return cache;
@@ -1822,7 +1822,7 @@ cp_parser_context_new (cp_parser_context* next)
       memset (context, 0, sizeof (*context));
     }
   else
-    context = ggc_alloc_cleared_cp_parser_context ();
+    context = ggc_cleared_alloc<cp_parser_context> ();
 
   /* No errors have occurred yet in this context.  */
   context->status = CP_PARSER_STATUS_KIND_NO_ERROR;
@@ -2880,13 +2880,21 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 				      tree scope, tree id,
 				      location_t location)
 {
-  tree decl, old_scope;
+  tree decl, old_scope, ambiguous_decls;
   cp_parser_commit_to_tentative_parse (parser);
   /* Try to lookup the identifier.  */
   old_scope = parser->scope;
   parser->scope = scope;
-  decl = cp_parser_lookup_name_simple (parser, id, location);
+  decl = cp_parser_lookup_name (parser, id, none_type,
+				/*is_template=*/false,
+				/*is_namespace=*/false,
+				/*check_dependency=*/true,
+				&ambiguous_decls, location);
   parser->scope = old_scope;
+  if (ambiguous_decls)
+    /* If the lookup was ambiguous, an error will already have
+       been issued.  */
+    return;
   /* If the lookup found a template-name, it means that the user forgot
   to specify an argument list. Emit a useful error message.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -3413,7 +3421,7 @@ cp_parser_new (void)
   for (i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
     binops_by_token[binops[i].token_type] = binops[i];
 
-  parser = ggc_alloc_cleared_cp_parser ();
+  parser = ggc_cleared_alloc<cp_parser> ();
   parser->lexer = lexer;
   parser->context = cp_parser_context_new (NULL);
 
@@ -5427,7 +5435,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       token->type = CPP_NESTED_NAME_SPECIFIER;
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
-      token->u.tree_check_value = ggc_alloc_cleared_tree_check ();
+      token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
       token->u.tree_check_value->value = parser->scope;
       token->u.tree_check_value->checks = get_deferred_access_checks ();
       token->u.tree_check_value->qualifying_scope =
@@ -13502,7 +13510,7 @@ cp_parser_template_id (cp_parser *parser,
       token->type = CPP_TEMPLATE_ID;
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
-      token->u.tree_check_value = ggc_alloc_cleared_tree_check ();
+      token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
       token->u.tree_check_value->value = template_id;
       token->u.tree_check_value->checks = get_deferred_access_checks ();
       token->keyword = RID_MAX;
@@ -15532,9 +15540,10 @@ cp_parser_enum_specifier (cp_parser* parser)
 	}
       else
 	{
-	  error_at (type_start_token->location, "multiple definition of %q#T", type);
-	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-		    "previous definition here");
+	  error_at (type_start_token->location,
+		    "multiple definition of %q#T", type);
+	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+		  "previous definition here");
 	  type = error_mark_node;
 	}
 
@@ -23672,16 +23681,7 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
 	parsed_arg = check_default_argument (parmtype, parsed_arg,
 					     tf_warning_or_error);
       else
-	{
-	  int flags = LOOKUP_IMPLICIT;
-	  if (BRACE_ENCLOSED_INITIALIZER_P (parsed_arg)
-	      && CONSTRUCTOR_IS_DIRECT_INIT (parsed_arg))
-	    flags = LOOKUP_NORMAL;
-	  parsed_arg = digest_init_flags (TREE_TYPE (decl), parsed_arg, flags);
-	  if (TREE_CODE (parsed_arg) == TARGET_EXPR)
-	    /* This represents the whole initialization.  */
-	    TARGET_EXPR_DIRECT_INIT_P (parsed_arg) = true;
-	}
+	parsed_arg = digest_nsdmi_init (decl, parsed_arg);
     }
 
   /* If the token stream has not been completely used up, then

@@ -877,8 +877,8 @@
   [(set_attr "type" "control")
    (set (attr "length") 
         (if_then_else
-	    (and (ge (minus (match_dup 1) (pc)) (const_int -32768))
-	         (le (minus (match_dup 1) (pc)) (const_int 32764)))
+	    (and (ge (minus (match_dup 3) (pc)) (const_int -32768))
+	         (le (minus (match_dup 3) (pc)) (const_int 32764)))
 	    (const_int 4) (const_int 8)))])
 
 ;; Floating point comparisons

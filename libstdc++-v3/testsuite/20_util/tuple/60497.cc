@@ -35,3 +35,9 @@ auto a = std::get<0>(t);
 auto b = std::get<0>(ct);
 auto c = std::get<element_type>(t);
 auto d = std::get<element_type>(ct);
+
+// same again for rvalues
+auto e = std::get<0>(std::move(t));
+auto f = std::get<0>(std::move(ct));
+auto g = std::get<element_type>(std::move(t));
+auto h = std::get<element_type>(std::move(ct));

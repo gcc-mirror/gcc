@@ -1501,11 +1501,6 @@ else
 	done
 fi
 
-if test x$need_64bit_hwint = xyes; then
-	AC_DEFINE(NEED_64BIT_HOST_WIDE_INT, 1,
-[Define to 1 if HOST_WIDE_INT must be 64 bits wide (see hwint.h).])
-fi
-
 if test x$use_long_long_for_widest_fast_int = xyes; then
 	AC_DEFINE(USE_LONG_LONG_FOR_WIDEST_FAST_INT, 1,
 [Define to 1 if the 'long long' (or '__int64') is wider than 'long' but still
@@ -4335,8 +4330,8 @@ x:
         fi
       elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x; then
         echo '	.ent x' > conftest.s
-        echo 'x:	ld $2,%got_disp(y)($3)' >> conftest.s
-        echo '	ld $25,%call16(y)($28)' >> conftest.s
+        echo 'x:	lw $2,%got_disp(y)($3)' >> conftest.s
+        echo '	lw $25,%call16(y)($28)' >> conftest.s
         echo '	.reloc	1f,R_MIPS_JALR,y' >> conftest.s
         echo '1:	jalr $25' >> conftest.s
         echo '	.reloc	1f,R_MIPS_JALR,x' >> conftest.s

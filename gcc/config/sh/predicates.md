@@ -1119,10 +1119,8 @@
 ;; A predicate that returns true if OP is a valid construct around the T bit
 ;; that can be used as an operand for conditional branches.
 (define_predicate "cbranch_treg_value"
-  (match_code "eq,ne,reg,subreg,xor,sign_extend,zero_extend")
-{
-  return sh_eval_treg_value (op) >= 0;
-})
+  (and (match_code "eq,ne,reg,subreg,xor,sign_extend,zero_extend")
+       (match_test "sh_eval_treg_value (op) >= 0")))
 
 ;; Returns true if OP is arith_reg_operand or t_reg_operand.
 (define_predicate "arith_reg_or_t_reg_operand"
@@ -1134,6 +1132,28 @@
 (define_predicate "negt_reg_shl31_operand"
   (match_code "plus,minus,if_then_else")
 {
+  /* (minus:SI (const_int -2147483648)  ;; 0xffffffff80000000
+	       (ashift:SI (match_operand:SI 1 "t_reg_operand")
+			  (const_int 31)))
+  */
+  if (GET_CODE (op) == MINUS && satisfies_constraint_Jhb (XEXP (op, 0))
+      && GET_CODE (XEXP (op, 1)) == ASHIFT
+      && t_reg_operand (XEXP (XEXP (op, 1), 0), SImode)
+      && CONST_INT_P (XEXP (XEXP (op, 1), 1))
+      && INTVAL (XEXP (XEXP (op, 1), 1)) == 31)
+    return true;
+
+  /* (plus:SI (ashift:SI (match_operand:SI 1 "t_reg_operand")
+			 (const_int 31))
+	      (const_int -2147483648))  ;; 0xffffffff80000000
+  */
+  if (GET_CODE (op) == PLUS && satisfies_constraint_Jhb (XEXP (op, 1))
+      && GET_CODE (XEXP (op, 0)) == ASHIFT
+      && t_reg_operand (XEXP (XEXP (op, 0), 0), SImode)
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1))
+      && INTVAL (XEXP (XEXP (op, 0), 1)) == 31)
+    return true;
+
   /* (plus:SI (mult:SI (match_operand:SI 1 "t_reg_operand")
 		       (const_int -2147483648))  ;; 0xffffffff80000000
 	      (const_int -2147483648))

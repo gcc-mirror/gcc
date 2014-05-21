@@ -70,6 +70,11 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_RDSEED_SET OPTION_MASK_ISA_RDSEED
 #define OPTION_MASK_ISA_ADX_SET OPTION_MASK_ISA_ADX
 #define OPTION_MASK_ISA_PREFETCHWT1_SET OPTION_MASK_ISA_PREFETCHWT1
+#define OPTION_MASK_ISA_CLFLUSHOPT_SET OPTION_MASK_ISA_CLFLUSHOPT
+#define OPTION_MASK_ISA_XSAVES_SET \
+  (OPTION_MASK_ISA_XSAVES | OPTION_MASK_ISA_XSAVE)
+#define OPTION_MASK_ISA_XSAVEC_SET \
+  (OPTION_MASK_ISA_XSAVEC | OPTION_MASK_ISA_XSAVE)
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -156,6 +161,9 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_RDSEED_UNSET OPTION_MASK_ISA_RDSEED
 #define OPTION_MASK_ISA_ADX_UNSET OPTION_MASK_ISA_ADX
 #define OPTION_MASK_ISA_PREFETCHWT1_UNSET OPTION_MASK_ISA_PREFETCHWT1
+#define OPTION_MASK_ISA_CLFLUSHOPT_UNSET OPTION_MASK_ISA_CLFLUSHOPT
+#define OPTION_MASK_ISA_XSAVEC_UNSET OPTION_MASK_ISA_XSAVEC
+#define OPTION_MASK_ISA_XSAVES_UNSET OPTION_MASK_ISA_XSAVES
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -720,6 +728,32 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
+    case OPT_mxsavec:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVEC_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XSAVEC_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_XSAVEC_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XSAVEC_UNSET;
+	}
+      return true;
+
+    case OPT_mxsaves:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVES_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XSAVES_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_XSAVES_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XSAVES_UNSET;
+	}
+      return true;
+
     case OPT_mrdseed:
       if (value)
 	{
@@ -769,6 +803,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_PREFETCHWT1_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PREFETCHWT1_UNSET;
+	}
+      return true;
+
+    case OPT_mclflushopt:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLFLUSHOPT_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CLFLUSHOPT_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CLFLUSHOPT_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CLFLUSHOPT_UNSET;
 	}
       return true;
 

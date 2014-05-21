@@ -3877,12 +3877,14 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if ((BB_END (then_bb)
-       && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
+       && JUMP_P (BB_END (then_bb))
+       && CROSSING_JUMP_P (BB_END (then_bb)))
       || (BB_END (test_bb)
-	  && find_reg_note (BB_END (test_bb), REG_CROSSING_JUMP, NULL_RTX))
+	  && JUMP_P (BB_END (test_bb))
+	  && CROSSING_JUMP_P (BB_END (test_bb)))
       || (BB_END (else_bb)
-	  && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP,
-			    NULL_RTX)))
+	  && JUMP_P (BB_END (else_bb))
+	  && CROSSING_JUMP_P (BB_END (else_bb))))
     return FALSE;
 
   /* THEN has one successor.  */
@@ -4000,12 +4002,14 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if ((BB_END (then_bb)
-       && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
+       && JUMP_P (BB_END (then_bb))
+       && CROSSING_JUMP_P (BB_END (then_bb)))
       || (BB_END (test_bb)
-	  && find_reg_note (BB_END (test_bb), REG_CROSSING_JUMP, NULL_RTX))
+	  && JUMP_P (BB_END (test_bb))
+	  && CROSSING_JUMP_P (BB_END (test_bb)))
       || (BB_END (else_bb)
-	  && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP,
-			    NULL_RTX)))
+	  && JUMP_P (BB_END (else_bb))
+	  && CROSSING_JUMP_P (BB_END (else_bb))))
     return FALSE;
 
   /* ELSE has one successor.  */

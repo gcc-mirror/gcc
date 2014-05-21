@@ -24,5 +24,5 @@ void test01()
 {
   std::pair<int, int> p;
 
-  std::get<int>(p);  // { dg-error "ambiguous" }
+  std::get<int>(p);  // { dg-error "ambiguous|lvalue" }
 }

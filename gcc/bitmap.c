@@ -244,7 +244,7 @@ bitmap_element_allocate (bitmap head)
 	  /*  Inner list was just a singleton.  */
 	  bitmap_ggc_free = element->prev;
       else
-	element = ggc_alloc_bitmap_element ();
+	element = ggc_alloc<bitmap_element> ();
     }
 
   if (GATHER_STATISTICS)
@@ -388,7 +388,7 @@ bitmap_gc_alloc_stat (ALONE_MEM_STAT_DECL)
 {
   bitmap map;
 
-  map = ggc_alloc_bitmap_head ();
+  map = ggc_alloc<bitmap_head> ();
   bitmap_initialize_stat (map, NULL PASS_MEM_STAT);
 
   if (GATHER_STATISTICS)

@@ -145,7 +145,6 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 #define cur_debug_insn_uid (crtl->emit.x_cur_debug_insn_uid)
 #define first_label_num (crtl->emit.x_first_label_num)
 
-static rtx change_address_1 (rtx, enum machine_mode, rtx, int);
 static void set_used_decls (tree);
 static void mark_label_nuses (rtx);
 static hashval_t const_int_htab_hash (const void *);
@@ -320,7 +319,7 @@ set_mem_attrs (rtx mem, mem_attrs *attrs)
   if (!MEM_ATTRS (mem)
       || !mem_attrs_eq_p (attrs, MEM_ATTRS (mem)))
     {
-      MEM_ATTRS (mem) = ggc_alloc_mem_attrs ();
+      MEM_ATTRS (mem) = ggc_alloc<mem_attrs> ();
       memcpy (MEM_ATTRS (mem), attrs, sizeof (mem_attrs));
     }
 }
@@ -367,7 +366,7 @@ get_reg_attrs (tree decl, int offset)
   slot = htab_find_slot (reg_attrs_htab, &attrs, INSERT);
   if (*slot == 0)
     {
-      *slot = ggc_alloc_reg_attrs ();
+      *slot = ggc_alloc<reg_attrs> ();
       memcpy (*slot, &attrs, sizeof (reg_attrs));
     }
 
@@ -858,6 +857,15 @@ gen_lowpart_SUBREG (enum machine_mode mode, rtx reg)
     inmode = mode;
   return gen_rtx_SUBREG (mode, reg,
 			 subreg_lowpart_offset (mode, inmode));
+}
+
+rtx
+gen_rtx_VAR_LOCATION (enum machine_mode mode, tree decl, rtx loc,
+		      enum var_init_status status)
+{
+  rtx x = gen_rtx_fmt_te (VAR_LOCATION, mode, decl, loc);
+  PAT_VAR_LOCATION_STATUS (x) = status;
+  return x;
 }
 
 
@@ -2001,11 +2009,15 @@ clear_mem_size (rtx mem)
 /* Return a memory reference like MEMREF, but with its mode changed to MODE
    and its address changed to ADDR.  (VOIDmode means don't change the mode.
    NULL for ADDR means don't change the address.)  VALIDATE is nonzero if the
-   returned memory location is required to be valid.  The memory
-   attributes are not changed.  */
+   returned memory location is required to be valid.  INPLACE is true if any
+   changes can be made directly to MEMREF or false if MEMREF must be treated
+   as immutable.
+
+   The memory attributes are not changed.  */
 
 static rtx
-change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
+change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate,
+		  bool inplace)
 {
   addr_space_t as;
   rtx new_rtx;
@@ -2033,6 +2045,12 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
   if (rtx_equal_p (addr, XEXP (memref, 0)) && mode == GET_MODE (memref))
     return memref;
 
+  if (inplace)
+    {
+      XEXP (memref, 0) = addr;
+      return memref;
+    }
+
   new_rtx = gen_rtx_MEM (mode, addr);
   MEM_COPY_ATTRIBUTES (new_rtx, memref);
   return new_rtx;
@@ -2044,7 +2062,7 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
 rtx
 change_address (rtx memref, enum machine_mode mode, rtx addr)
 {
-  rtx new_rtx = change_address_1 (memref, mode, addr, 1);
+  rtx new_rtx = change_address_1 (memref, mode, addr, 1, false);
   enum machine_mode mmode = GET_MODE (new_rtx);
   struct mem_attrs attrs, *defattrs;
 
@@ -2157,7 +2175,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 	addr = plus_constant (address_mode, addr, offset);
     }
 
-  new_rtx = change_address_1 (memref, mode, addr, validate);
+  new_rtx = change_address_1 (memref, mode, addr, validate, false);
 
   /* If the address is a REG, change_address_1 rightfully returns memref,
      but this would destroy memref's MEM_ATTRS.  */
@@ -2227,7 +2245,7 @@ rtx
 adjust_automodify_address_1 (rtx memref, enum machine_mode mode, rtx addr,
 			     HOST_WIDE_INT offset, int validate)
 {
-  memref = change_address_1 (memref, VOIDmode, addr, validate);
+  memref = change_address_1 (memref, VOIDmode, addr, validate, false);
   return adjust_address_1 (memref, mode, offset, validate, 0, 0, 0);
 }
 
@@ -2263,7 +2281,7 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
     }
 
   update_temp_slot_address (XEXP (memref, 0), new_rtx);
-  new_rtx = change_address_1 (memref, VOIDmode, new_rtx, 1);
+  new_rtx = change_address_1 (memref, VOIDmode, new_rtx, 1, false);
 
   /* If there are no changes, just return the original memory reference.  */
   if (new_rtx == memref)
@@ -2283,23 +2301,25 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed
    to is the same, just the form of the address is being changed, such as
-   by putting something into a register.  */
+   by putting something into a register.  INPLACE is true if any changes
+   can be made directly to MEMREF or false if MEMREF must be treated as
+   immutable.  */
 
 rtx
-replace_equiv_address (rtx memref, rtx addr)
+replace_equiv_address (rtx memref, rtx addr, bool inplace)
 {
   /* change_address_1 copies the memory attribute structure without change
      and that's exactly what we want here.  */
   update_temp_slot_address (XEXP (memref, 0), addr);
-  return change_address_1 (memref, VOIDmode, addr, 1);
+  return change_address_1 (memref, VOIDmode, addr, 1, inplace);
 }
 
 /* Likewise, but the reference is not required to be valid.  */
 
 rtx
-replace_equiv_address_nv (rtx memref, rtx addr)
+replace_equiv_address_nv (rtx memref, rtx addr, bool inplace)
 {
-  return change_address_1 (memref, VOIDmode, addr, 0);
+  return change_address_1 (memref, VOIDmode, addr, 0, inplace);
 }
 
 /* Return a memory reference like MEMREF, but with its mode widened to
@@ -2451,7 +2471,7 @@ set_mem_attrs_for_spill (rtx mem)
 rtx
 gen_label_rtx (void)
 {
-  return gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX, NULL_RTX,
+  return gen_rtx_CODE_LABEL (VOIDmode, NULL_RTX, NULL_RTX,
 			     NULL, label_num++, NULL);
 }
 
@@ -3570,11 +3590,13 @@ try_split (rtx pat, rtx trial, int last)
      may have introduced invalid RTL sharing, so unshare the sequence now.  */
   unshare_all_rtl_in_chain (seq);
 
-  /* Mark labels.  */
+  /* Mark labels and copy flags.  */
   for (insn = insn_last; insn ; insn = PREV_INSN (insn))
     {
       if (JUMP_P (insn))
 	{
+	  if (JUMP_P (trial))
+	    CROSSING_JUMP_P (insn) = CROSSING_JUMP_P (trial);
 	  mark_jump_label (PATTERN (insn), insn, 0);
 	  njumps++;
 	  if (probability != -1
@@ -3651,7 +3673,6 @@ try_split (rtx pat, rtx trial, int last)
 	  break;
 
 	case REG_NON_LOCAL_GOTO:
-	case REG_CROSSING_JUMP:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (JUMP_P (insn))
@@ -5223,7 +5244,7 @@ start_sequence (void)
       free_sequence_stack = tem->next;
     }
   else
-    tem = ggc_alloc_sequence_stack ();
+    tem = ggc_alloc<sequence_stack> ();
 
   tem->next = seq_stack;
   tem->first = get_insns ();
@@ -5556,7 +5577,7 @@ init_emit (void)
   crtl->emit.regno_pointer_align
     = XCNEWVEC (unsigned char, crtl->emit.regno_pointer_align_length);
 
-  regno_reg_rtx = ggc_alloc_vec_rtx (crtl->emit.regno_pointer_align_length);
+  regno_reg_rtx = ggc_vec_alloc<rtx> (crtl->emit.regno_pointer_align_length);
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,
@@ -5706,7 +5727,7 @@ init_emit_regs (void)
   for (i = 0; i < (int) MAX_MACHINE_MODE; i++)
     {
       mode = (enum machine_mode) i;
-      attrs = ggc_alloc_cleared_mem_attrs ();
+      attrs = ggc_cleared_alloc<mem_attrs> ();
       attrs->align = BITS_PER_UNIT;
       attrs->addrspace = ADDR_SPACE_GENERIC;
       if (mode != BLKmode)
@@ -6006,6 +6027,7 @@ emit_copy_of_insn_after (rtx insn, rtx after)
 
     case JUMP_INSN:
       new_rtx = emit_jump_insn_after (copy_insn (PATTERN (insn)), after);
+      CROSSING_JUMP_P (new_rtx) = CROSSING_JUMP_P (insn);
       break;
 
     case DEBUG_INSN:

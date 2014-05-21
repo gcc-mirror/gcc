@@ -1,3 +1,16 @@
+2014-05-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* testsuite/lib/libjava.exp (load_gcc_lib): Register loaded libs.
+
+2014-05-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix current cygwin-64 build problems.
+	* configure.host: Added handling for x86_64-*-cygwin/mingw.	
+	* boehm.cc (_Jv_GCAttachThread, _Jv_GCDetachThread): Don't compile if
+	GC_WIN32_THREADS is defined.
+	* java/lang/natClass.cc (_Jv_InterfaceAssignableFrom): Rename interface
+	to source_interface.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (THREADLIBS, THREADSPEC): Remove *-*-solaris2.9

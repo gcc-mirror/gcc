@@ -2000,7 +2000,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
 	    if (!pa)
 	      {
-		pa = ggc_alloc_cleared_parm_attr_d ();
+		pa = ggc_cleared_alloc<parm_attr_d> ();
 		pa->id = gnat_param;
 		pa->dim = Dimension;
 		vec_safe_push (f_parm_attr_cache, pa);
@@ -2384,8 +2384,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
-  if (!Sloc_to_locus (Sloc (gnat_node) + UI_To_Int (End_Span (gnat_node)),
-      &end_locus))
+  if (!Sloc_to_locus (End_Location (gnat_node), &end_locus))
     end_locus = input_location;
   gnu_label = create_artificial_label (end_locus);
   start_stmt_group ();
@@ -2522,7 +2521,7 @@ push_range_check_info (tree var)
 
   if (iter)
     {
-      struct range_check_info_d *rci = ggc_alloc_range_check_info_d ();
+      struct range_check_info_d *rci = ggc_alloc<range_check_info_d> ();
       vec_safe_push (iter->checks, rci);
       return rci;
     }
@@ -2600,7 +2599,7 @@ static tree
 Loop_Statement_to_gnu (Node_Id gnat_node)
 {
   const Node_Id gnat_iter_scheme = Iteration_Scheme (gnat_node);
-  struct loop_info_d *gnu_loop_info = ggc_alloc_cleared_loop_info_d ();
+  struct loop_info_d *gnu_loop_info = ggc_cleared_alloc<loop_info_d> ();
   tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
 			       NULL_TREE, NULL_TREE, NULL_TREE);
   tree gnu_loop_label = create_artificial_label (input_location);
@@ -3575,6 +3574,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* The entry in the CI_CO_LIST that represents a function return, if any.  */
   tree gnu_return_var_elmt = NULL_TREE;
   tree gnu_result;
+  location_t locus;
   struct language_function *gnu_subprog_language;
   vec<parm_attr, va_gc> *cache;
 
@@ -3611,14 +3611,15 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       relayout_decl (gnu_result_decl);
     }
 
-  /* Set the line number in the decl to correspond to that of the body so that
-     the line number notes are written correctly.  */
-  Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (gnu_subprog_decl));
+  /* Set the line number in the decl to correspond to that of the body.  */
+  Sloc_to_locus (Sloc (gnat_node), &locus);
+  DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
 
   /* Initialize the information structure for the function.  */
   allocate_struct_function (gnu_subprog_decl, false);
-  gnu_subprog_language = ggc_alloc_cleared_language_function ();
+  gnu_subprog_language = ggc_cleared_alloc<language_function> ();
   DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language = gnu_subprog_language;
+  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->function_start_locus = locus;
   set_cfun (NULL);
 
   begin_subprog_body (gnu_subprog_decl);
@@ -4269,9 +4270,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      if (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
 		  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))
 		  && Is_Constr_Subt_For_UN_Aliased (Etype (gnat_actual))
-		  && (Is_Array_Type (Etype (gnat_actual))
-		      || (Is_Private_Type (Etype (gnat_actual))
-			  && Is_Array_Type (Full_View (Etype (gnat_actual))))))
+		  && Is_Array_Type (Underlying_Type (Etype (gnat_actual))))
 		gnu_actual = convert (gnat_to_gnu_type (Etype (gnat_actual)),
 				      gnu_actual);
 	    }
@@ -5140,7 +5139,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 
   /* Save away what we've made so far and record this potential elaboration
      procedure.  */
-  info = ggc_alloc_elab_info ();
+  info = ggc_alloc<elab_info> ();
   set_current_block_context (gnu_elab_proc_decl);
   gnat_poplevel ();
   DECL_SAVED_TREE (gnu_elab_proc_decl) = end_stmt_group ();
@@ -5597,6 +5596,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  int length = String_Length (gnat_string);
 	  int i;
 	  tree gnu_idx = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_result_type));
+	  tree gnu_one_node = convert (TREE_TYPE (gnu_idx), integer_one_node);
 	  vec<constructor_elt, va_gc> *gnu_vec;
 	  vec_alloc (gnu_vec, length);
 
@@ -5606,7 +5606,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				      Get_String_Char (gnat_string, i + 1));
 
 	      CONSTRUCTOR_APPEND_ELT (gnu_vec, gnu_idx, t);
-	      gnu_idx = int_const_binop (PLUS_EXPR, gnu_idx, integer_one_node);
+	      gnu_idx = int_const_binop (PLUS_EXPR, gnu_idx, gnu_one_node);
 	    }
 
 	  gnu_result = gnat_build_constructor (gnu_result_type, gnu_vec);
@@ -6191,8 +6191,7 @@ gnat_to_gnu (Node_Id gnat_node)
       /* These can either be operations on booleans or on modular types.
 	 Fall through for boolean types since that's the way GNU_CODES is
 	 set up.  */
-      if (IN (Ekind (Underlying_Type (Etype (gnat_node))),
-	      Modular_Integer_Kind))
+      if (Is_Modular_Integer_Type (Underlying_Type (Etype (gnat_node))))
 	{
 	  enum tree_code code
 	    = (kind == N_Op_Or ? BIT_IOR_EXPR
@@ -6235,21 +6234,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_lhs = maybe_vector_array (gnu_lhs);
 	gnu_rhs = maybe_vector_array (gnu_rhs);
 
-	/* If this is a comparison operator, convert any references to
-	   an unconstrained array value into a reference to the
-	   actual array.  */
+	/* If this is a comparison operator, convert any references to an
+	   unconstrained array value into a reference to the actual array.  */
 	if (TREE_CODE_CLASS (code) == tcc_comparison)
 	  {
 	    gnu_lhs = maybe_unconstrained_array (gnu_lhs);
 	    gnu_rhs = maybe_unconstrained_array (gnu_rhs);
 	  }
-
-	/* If the result type is a private type, its full view may be a
-	   numeric subtype. The representation we need is that of its base
-	   type, given that it is the result of an arithmetic operation.  */
-	else if (Is_Private_Type (Etype (gnat_node)))
-	  gnu_type = gnu_result_type
-	    = get_unpadded_type (Base_Type (Full_View (Etype (gnat_node))));
 
 	/* If this is a shift whose count is not guaranteed to be correct,
 	   we need to adjust the shift count.  */
@@ -6360,9 +6351,7 @@ gnat_to_gnu (Node_Id gnat_node)
       /* This case can apply to a boolean or a modular type.
 	 Fall through for a boolean operand since GNU_CODES is set
 	 up to handle this.  */
-      if (Is_Modular_Integer_Type (Etype (gnat_node))
-	  || (Is_Private_Type (Etype (gnat_node))
-	      && Is_Modular_Integer_Type (Full_View (Etype (gnat_node)))))
+      if (Is_Modular_Integer_Type (Underlying_Type (Etype (gnat_node))))
 	{
 	  gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
 	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
@@ -7438,7 +7427,7 @@ start_stmt_group (void)
   if (group)
     stmt_group_free_list = group->previous;
   else
-    group = ggc_alloc_stmt_group ();
+    group = ggc_alloc<stmt_group> ();
 
   group->previous = current_stmt_group;
   group->stmt_list = group->block = group->cleanups = NULL_TREE;
@@ -9092,7 +9081,9 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
       CONSTRUCTOR_APPEND_ELT (gnu_expr_vec, gnu_index,
 			      convert (TREE_TYPE (gnu_array_type), gnu_expr));
 
-      gnu_index = int_const_binop (PLUS_EXPR, gnu_index, integer_one_node);
+      gnu_index = int_const_binop (PLUS_EXPR, gnu_index,
+				   convert (TREE_TYPE (gnu_index),
+					    integer_one_node));
     }
 
   return gnat_build_constructor (gnu_array_type, gnu_expr_vec);

@@ -553,7 +553,7 @@ map_unshared_var (const tree var, const tree u_var)
   gcc_assert (var && TREE_CODE (var) == VAR_DECL);
   gcc_assert (u_var && TREE_CODE (u_var) == VAR_DECL);
   uid = DECL_UID (var);
-  h = ggc_alloc_uid_tree_map ();
+  h = ggc_alloc<uid_tree_map> ();
   h->uid = uid;
   h->to = u_var;
   loc = htab_find_slot_with_hash (unshared_vars, h, uid, INSERT);

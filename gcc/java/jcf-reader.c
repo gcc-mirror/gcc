@@ -341,7 +341,8 @@ jcf_parse_constant_pool (JCF* jcf)
   int i, n;
   JPOOL_SIZE (jcf) = (JCF_FILL (jcf, 2), JCF_readu2 (jcf));
   jcf->cpool.tags = (uint8 *) ggc_alloc_atomic (JPOOL_SIZE (jcf));
-  jcf->cpool.data = ggc_alloc_cpool_entry (sizeof (jword) * JPOOL_SIZE (jcf));
+  jcf->cpool.data = (cpool_entry *) ggc_internal_cleared_alloc
+    (sizeof (jword) * JPOOL_SIZE (jcf));
   jcf->cpool.tags[0] = 0;
 #ifdef HANDLE_START_CONSTANT_POOL
   HANDLE_START_CONSTANT_POOL (JPOOL_SIZE (jcf));
@@ -551,9 +552,7 @@ jcf_parse_bootstrap_methods (JCF* jcf, int attribute_length ATTRIBUTE_UNUSED)
   int i;
   uint16 num_methods = JCF_readu2 (jcf);
   jcf->bootstrap_methods.count = num_methods;
-  jcf->bootstrap_methods.methods
-    = (bootstrap_method *) ggc_alloc_atomic (num_methods
-					      * sizeof (bootstrap_method));
+  jcf->bootstrap_methods.methods = ggc_vec_alloc<bootstrap_method> (num_methods);
 #ifdef HANDLE_START_BOOTSTRAP_METHODS
   HANDLE_START_BOOTSTRAP_METHODS (jcf, num_methods);
 #endif
@@ -564,9 +563,7 @@ jcf_parse_bootstrap_methods (JCF* jcf, int attribute_length ATTRIBUTE_UNUSED)
       bootstrap_method *m = &jcf->bootstrap_methods.methods[i];
       m->method_ref = JCF_readu2 (jcf);
       m->num_arguments = JCF_readu2 (jcf);
-      m->bootstrap_arguments
-	= (unsigned *) ggc_alloc_atomic (m->num_arguments
-					 * sizeof (unsigned));
+      m->bootstrap_arguments = ggc_vec_alloc<unsigned> (m->num_arguments);
       for (j = 0; j < m->num_arguments; j++)
 	m->bootstrap_arguments[j] = JCF_readu2 (jcf);
     }

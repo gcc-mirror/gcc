@@ -1678,7 +1678,7 @@ build_fixed (tree type, FIXED_VALUE_TYPE f)
   FIXED_VALUE_TYPE *fp;
 
   v = make_node (FIXED_CST);
-  fp = ggc_alloc_fixed_value ();
+  fp = ggc_alloc<fixed_value> ();
   memcpy (fp, &f, sizeof (FIXED_VALUE_TYPE));
 
   TREE_TYPE (v) = type;
@@ -1699,7 +1699,7 @@ build_real (tree type, REAL_VALUE_TYPE d)
      Consider doing it via real_convert now.  */
 
   v = make_node (REAL_CST);
-  dp = ggc_alloc_real_value ();
+  dp = ggc_alloc<real_value> ();
   memcpy (dp, &d, sizeof (REAL_VALUE_TYPE));
 
   TREE_TYPE (v) = type;
@@ -1756,7 +1756,7 @@ build_string (int len, const char *str)
 
   record_node_allocation_statistics (STRING_CST, length);
 
-  s = ggc_alloc_tree_node (length);
+  s = (tree) ggc_internal_alloc (length);
 
   memset (s, 0, sizeof (struct tree_typed));
   TREE_SET_CODE (s, STRING_CST);
@@ -2024,7 +2024,7 @@ grow_tree_vec_stat (tree v, int len MEM_STAT_DECL)
 
   record_node_allocation_statistics (TREE_VEC, length - oldlength);
 
-  v = (tree) ggc_realloc_stat (v, length PASS_MEM_STAT);
+  v = (tree) ggc_realloc (v, length PASS_MEM_STAT);
 
   TREE_VEC_LENGTH (v) = len;
 
@@ -6463,7 +6463,7 @@ decl_priority_info (tree decl)
   h = (struct tree_priority_map *) *loc;
   if (!h)
     {
-      h = ggc_alloc_cleared_tree_priority_map ();
+      h = ggc_cleared_alloc<tree_priority_map> ();
       *loc = h;
       h->base.from = decl;
       h->init = DEFAULT_INIT_PRIORITY;
@@ -6546,7 +6546,7 @@ decl_debug_expr_insert (tree from, tree to)
   struct tree_decl_map *h;
   void **loc;
 
-  h = ggc_alloc_tree_decl_map ();
+  h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (debug_expr_for_decl, h, DECL_UID (from),
@@ -6577,7 +6577,7 @@ decl_value_expr_insert (tree from, tree to)
   struct tree_decl_map *h;
   void **loc;
 
-  h = ggc_alloc_tree_decl_map ();
+  h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (value_expr_for_decl, h, DECL_UID (from),
@@ -6618,7 +6618,7 @@ decl_debug_args_insert (tree from)
   if (debug_args_for_decl == NULL)
     debug_args_for_decl = htab_create_ggc (64, tree_vec_map_hash,
 					   tree_vec_map_eq, 0);
-  h = ggc_alloc_tree_vec_map ();
+  h = ggc_alloc<tree_vec_map> ();
   h->base.from = from;
   h->to = NULL;
   loc = htab_find_slot_with_hash (debug_args_for_decl, h, DECL_UID (from),
@@ -6803,7 +6803,7 @@ type_hash_add (hashval_t hashcode, tree type)
   struct type_hash *h;
   void **loc;
 
-  h = ggc_alloc_type_hash ();
+  h = ggc_alloc<type_hash> ();
   h->hash = hashcode;
   h->type = type;
   loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, INSERT);
@@ -10380,7 +10380,7 @@ build_omp_clause (location_t loc, enum omp_clause_code code)
 
   record_node_allocation_statistics (OMP_CLAUSE, size);
 
-  t = ggc_alloc_tree_node (size);
+  t = (tree) ggc_internal_alloc (size);
   memset (t, 0, size);
   TREE_SET_CODE (t, OMP_CLAUSE);
   OMP_CLAUSE_SET_CODE (t, code);

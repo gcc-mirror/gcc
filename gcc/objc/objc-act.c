@@ -3199,7 +3199,7 @@ objc_build_string_object (tree string)
 
   if (!desc)
     {
-      *loc = desc = ggc_alloc_string_descriptor ();
+      *loc = desc = ggc_alloc<string_descriptor> ();
       desc->literal = string;
       desc->constructor =
 	(*runtime.build_const_string_constructor) (input_location, string, length);
@@ -7032,7 +7032,7 @@ continue_class (tree klass)
 	uprivate_record = CLASS_STATIC_TEMPLATE (implementation_template);
 	objc_instance_type = build_pointer_type (uprivate_record);
 
-	imp_entry = ggc_alloc_imp_entry ();
+	imp_entry = ggc_alloc<struct imp_entry> ();
 
 	imp_entry->next = imp_list;
 	imp_entry->imp_context = klass;

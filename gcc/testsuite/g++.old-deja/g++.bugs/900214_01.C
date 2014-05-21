@@ -8,7 +8,7 @@
 
 // keywords: friends, incomplete types, function members
 
-struct A;                       // { dg-error "" } forward declaration
+struct A;                       // { dg-message "" } forward declaration
 
 struct B {
   friend void A::foo();		// { dg-error "" } type A is incomplete

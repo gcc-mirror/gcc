@@ -16,6 +16,6 @@ void Foo (float);     // { dg-message "note" } candidate
 void baz (int **p1)
 {
   Foo (p1);   // { dg-error "match" } no such function
-  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 18 }
+  // { dg-message "(candidate|incompatible cv-qualifiers|conversion)" "candidate note" { target *-*-* } 18 }
   Bar (p1);   // OK
 }

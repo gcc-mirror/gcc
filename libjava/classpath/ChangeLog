@@ -1,3 +1,9 @@
+2014-05-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix current cygwin-64 build problems.
+	* native/fdlibm/mprec.c (_REENT_CHECK_MP, _REENT_MP_FREELIST,
+	_REENT_MP_P5S, __ULong, __Long): Undefine previous definitions.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

@@ -3,7 +3,7 @@
 // Contributed by Hans Buchmann <hans dot buchmann at fhso dot ch>
 // PR c++/14033: ICE while inlining a function with incomplete parameter
 
-struct A;           // { dg-error "forward declaration" }
+struct A;           // { dg-message "forward declaration" }
 void foo(A a) {}    // { dg-error "incomplete" }
 struct A {};
 

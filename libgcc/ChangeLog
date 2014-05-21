@@ -1,3 +1,14 @@
+2014-05-21  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	PR libgcc/60166
+	* config/arm/sfp-machine.h (_FP_NANFRAC_H, _FP_NANFRAC_S)
+	(_FP_NANFRAC_D, _FP_NANSIGN_Q): Set the quiet bit.
+
+2014-05-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* unwind-seh.c (_Unwind_Backtrace): Uncommented, finished
+	implementation.
+
 2014-05-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/arm/bpabi-lib.h (License): Add GCC Runtime Library Exception.

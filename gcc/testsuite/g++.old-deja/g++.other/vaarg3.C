@@ -10,7 +10,7 @@
 
 struct X {int m;};
 struct Y { Y(const Y&); };
-struct Z;   // { dg-error "forward decl" } 
+struct Z;   // { dg-message "forward decl" }
 void fn1(va_list args)
 {
   int i = va_arg (args, int);

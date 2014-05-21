@@ -1877,6 +1877,12 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	}
     }
 
+  /* When merging two BBs, if their counts are different, the larger count
+     is selected as the new bb count. This is to handle inconsistent
+     profiles.  */
+  a->count = MAX (a->count, b->count);
+  a->frequency = MAX (a->frequency, b->frequency);
+
   /* Merge the sequences.  */
   last = gsi_last_bb (a);
   gsi_insert_seq_after (&last, bb_seq (b), GSI_NEW_STMT);
@@ -6896,7 +6902,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     }
 
   /* Initialize an empty loop tree.  */
-  struct loops *loops = ggc_alloc_cleared_loops ();
+  struct loops *loops = ggc_cleared_alloc<struct loops> ();
   init_loops_structure (dest_cfun, loops, 1);
   loops->state = LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
   set_loops_for_fn (dest_cfun, loops);
@@ -7089,12 +7095,6 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
   struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
 
   current_function_decl = fndecl;
-
-  /* Print the return type of the function: */
-  print_generic_expr (file, TREE_TYPE (TREE_TYPE (fun->decl)),
-		      dump_flags | TDF_SLIM);
-  fprintf (file, "\n");
-
   fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");
 
   arg = DECL_ARGUMENTS (fndecl);
@@ -8431,7 +8431,7 @@ execute_fixup_cfg (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       bb->count = apply_scale (bb->count, count_scale);
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple stmt = gsi_stmt (gsi);
 	  tree decl = is_gimple_call (stmt)
@@ -8457,9 +8457,46 @@ execute_fixup_cfg (void)
 		todo |= TODO_cleanup_cfg;
 	     }
 
+	  /* Remove stores to variables we marked write-only.
+	     Keep access when store has side effect, i.e. in case when source
+	     is volatile.  */
+	  if (gimple_store_p (stmt)
+	      && !gimple_has_side_effects (stmt))
+	    {
+	      tree lhs = get_base_address (gimple_get_lhs (stmt));
+
+	      if (TREE_CODE (lhs) == VAR_DECL
+		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
+		  && varpool_get_node (lhs)->writeonly)
+		{
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (&gsi, true);
+		  release_defs (stmt);
+	          todo |= TODO_update_ssa | TODO_cleanup_cfg;
+	          continue;
+		}
+	    }
+	  /* For calls we can simply remove LHS when it is known
+	     to be write-only.  */
+	  if (is_gimple_call (stmt)
+	      && gimple_get_lhs (stmt))
+	    {
+	      tree lhs = get_base_address (gimple_get_lhs (stmt));
+
+	      if (TREE_CODE (lhs) == VAR_DECL
+		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
+		  && varpool_get_node (lhs)->writeonly)
+		{
+		  gimple_call_set_lhs (stmt, NULL);
+		  update_stmt (stmt);
+	          todo |= TODO_update_ssa | TODO_cleanup_cfg;
+		}
+	    }
+
 	  if (maybe_clean_eh_stmt (stmt)
 	      && gimple_purge_dead_eh_edges (bb))
 	    todo |= TODO_cleanup_cfg;
+	  gsi_next (&gsi);
 	}
 
       FOR_EACH_EDGE (e, ei, bb->succs)

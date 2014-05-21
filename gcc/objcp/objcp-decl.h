@@ -66,8 +66,8 @@ extern tree objcp_end_compound_stmt (tree, int);
 #undef ALLOC_OBJC_TYPE_LANG_SPECIFIC
 #define ALLOC_OBJC_TYPE_LANG_SPECIFIC(NODE)				\
   do {									\
-    TYPE_LANG_SPECIFIC (NODE) = ggc_alloc_cleared_lang_type		\
-      (sizeof (struct lang_type_class));		\
+    TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *) \
+      ggc_internal_cleared_alloc (sizeof (struct lang_type_class));	\
     TYPE_LANG_SPECIFIC (NODE)->u.c.h.is_lang_type_class = 1;		\
   } while (0)
 

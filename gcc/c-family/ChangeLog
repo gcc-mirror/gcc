@@ -1,3 +1,9 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-common.h (sorted_fields_type): Remove variable_size GTY attribute.
+	* c-pragma.c (push_alignment): Adjust.
+	(handle_pragma_push_options): Likewise.
+
 2014-05-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/50459

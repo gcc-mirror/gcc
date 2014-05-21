@@ -1,3 +1,9 @@
+2014-05-19  Richard Henderson  <rth@redhat.com>
+
+	* config/aarch64/sjlj.S: New file.
+	* config/aarch64/target.h: New file.
+	* configure.tgt: Enable aarch64.
+
 2014-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/generic/asmcfi.h: Also check for

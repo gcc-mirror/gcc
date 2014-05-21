@@ -16,7 +16,5 @@ struct a {
 a::a()
 {
 	foo( &junk ); // { dg-error "match" } junk is an unqualified-id.
-	// { dg-message "candidate" "candidate note" { target *-*-* } 18 }
 	foo( &bar );  // { dg-error "match" } bar is an unqualified-id.
-	// { dg-message "candidate" "candidate note" { target *-*-* } 20 }
 }

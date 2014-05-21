@@ -986,7 +986,7 @@ nios2_handle_custom_fpu_insn_option (int fpu_insn_index)
 static struct machine_function *
 nios2_init_machine_status (void)
 {
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */

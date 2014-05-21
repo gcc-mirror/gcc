@@ -129,6 +129,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-dfa.h"
 #include "demangle.h"
+#include "dbgcnt.h"
 
 static bool odr_violation_reported = false;
 
@@ -491,7 +492,7 @@ get_odr_type (tree type, bool insert)
       tree binfo = TYPE_BINFO (type);
       unsigned int i;
 
-      val = ggc_alloc_cleared_odr_type_d ();
+      val = ggc_cleared_alloc<odr_type_d> ();
       val->type = type;
       val->bases = vNULL;
       val->derived_types = vNULL;
@@ -2067,14 +2068,17 @@ ipa_devirt (void)
 		noverwritable++;
 		continue;
 	      }
-	    else
+	    else if (dbg_cnt (devirt))
 	      {
-		if (dump_file)
-		  fprintf (dump_file,
-			   "Speculatively devirtualizing call in %s/%i to %s/%i\n\n",
-			   n->name (), n->order,
-			   likely_target->name (),
-			   likely_target->order);
+		if (dump_enabled_p ())
+                  {
+                    location_t locus = gimple_location (e->call_stmt);
+                    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+                                     "speculatively devirtualizing call in %s/%i to %s/%i\n",
+                                     n->name (), n->order,
+                                     likely_target->name (),
+                                     likely_target->order);
+                  }
 		if (!symtab_can_be_discarded (likely_target))
 		  {
 		    cgraph_node *alias;

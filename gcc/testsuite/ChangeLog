@@ -1,3 +1,396 @@
+2014-05-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR C++/61038
+	* g++.dg/cpp0x/pr61038.C: New.
+
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58753
+	PR c++/58930
+	PR c++/58704
+	* g++.dg/cpp0x/nsdmi-template11.C: New.
+	* g++.dg/cpp0x/nsdmi-template12.C: Likewise.
+	* g++.dg/cpp0x/nsdmi-template13.C: Likewise.
+
+2014-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt35.adb: New test.
+	* gnat.dg/opt36.adb: Likewise.
+	* gnat.dg/opt35_pkg.ad[sb]: New helper.
+
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60373
+	* g++.dg/cpp0x/Wattributes1.C: New.
+	* g++.dg/ext/visibility/redecl1.C: Adjust.
+	* g++.dg/ext/visibility/visibility-7.C: Likewise.
+
+2014-05-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsxcopy.c: New test.
+
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58664
+	* g++.dg/cpp0x/nsdmi-union6.C: New.
+	* g++.dg/parse/pr58664.C: Likewise.
+	* g++.dg/cpp0x/nsdmi6.C: Tweak.
+	* g++.dg/parse/crash31.C: Likewise.
+	* g++.dg/template/error2.C: Likewise.
+	* g++.dg/template/inherit8.C: Likewise.
+	* g++.dg/template/offsetof2.C: Likewise.
+
+2014-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-c++-common/gomp/simd4.c: Adjust for inform.
+	* g++.dg/cpp0x/decltype-call1.C: Likewise.
+	* g++.dg/cpp0x/forw_enum6.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ice7.C: Likewise.
+	* g++.dg/cpp0x/noexcept15.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex2.C: Likewise.
+	* g++.dg/eh/spec6.C: Likewise.
+	* g++.dg/expr/cast1.C: Likewise.
+	* g++.dg/expr/dtor1.C: Likewise.
+	* g++.dg/ext/is_base_of_diagnostic.C: Likewise.
+	* g++.dg/ext/unary_trait_incomplete.C: Likewise.
+	* g++.dg/gomp/pr49223-2.C: Likewise.
+	* g++.dg/gomp/udr-4.C: Likewise.
+	* g++.dg/init/delete1.C: Likewise.
+	* g++.dg/other/crash-2.C: Likewise.
+	* g++.dg/parse/crash24.C: Likewise.
+	* g++.dg/parse/crash25.C: Likewise.
+	* g++.dg/parse/crash31.C: Likewise.
+	* g++.dg/parse/crash49.C: Likewise.
+	* g++.dg/parse/crash50.C: Likewise.
+	* g++.dg/parse/crash54.C: Likewise.
+	* g++.dg/parse/dtor7.C: Likewise.
+	* g++.dg/parse/error40.C: Likewise.
+	* g++.dg/parse/fused-params1.C: Likewise.
+	* g++.dg/parse/new1.C: Likewise.
+	* g++.dg/template/crash35.C: Likewise.
+	* g++.dg/template/crash59.C: Likewise.
+	* g++.dg/template/crash77.C: Likewise.
+	* g++.dg/template/error51.C: Likewise.
+	* g++.dg/template/incomplete1.C: Likewise.
+	* g++.dg/template/incomplete3.C: Likewise.
+	* g++.dg/template/incomplete4.C: Likewise.
+	* g++.dg/template/incomplete5.C: Likewise.
+	* g++.dg/template/inherit8.C: Likewise.
+	* g++.dg/template/instantiate1.C: Likewise.
+	* g++.dg/template/instantiate3.C: Likewis: Likewise.
+	* g++.dg/template/offsetof2.C: Likewise.
+	* g++.dg/tm/pr51928.C: Likewise.
+	* g++.dg/warn/Wdelete-incomplete-1.C: Likewise.
+	* g++.dg/warn/incomplete1.C: Likewise.
+	* g++.dg/warn/incomplete2.C: Likewise.
+	* g++.old-deja/g++.brendan/friend4.C: Likewise.
+	* g++.old-deja/g++.bugs/900121_01.C: Likewise.
+	* g++.old-deja/g++.bugs/900214_01.C: Likewise.
+	* g++.old-deja/g++.eh/catch1.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Likewise.
+	* g++.old-deja/g++.mike/p7868.C: Likewise.
+	* g++.old-deja/g++.other/crash38.C: Likewise.
+	* g++.old-deja/g++.other/enum2.C: Likewise.
+	* g++.old-deja/g++.other/incomplete.C: Likewise.
+	* g++.old-deja/g++.other/vaarg3.C: Likewise.
+	* g++.old-deja/g++.pt/crash9.C: Likewise.
+	* g++.old-deja/g++.pt/niklas01a.C: Likewise.
+	* g++.old-deja/g++.pt/typename8.C: Likewise.
+	* g++.old-deja/g++.robertl/ice990323-1.C: Likewise.
+
+2014-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_sizes_32B_16B): Return false if
+	128-bit AVX vectors preferred.
+
+2014-05-19  Mike Stump  <mikestump@comcast.net>
+
+	* lib/target-supports.exp (check_effective_target_avx): Early out
+	if not x86 to prevent x86 flags on non-x86 targets.
+
+2014-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61221
+	* gcc.dg/torture/pr61221.c: New testcase.
+
+2014-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61209
+	* gfortran.dg/pr61209.f90: New testcase.
+
+2014-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61184
+	* c-c++-common/torture/pr61184.c: New testcase.
+
+2014-05-19  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/61195
+	* gcc.target/sh/pr61195.c: New test.
+
+2014-05-18  Wei Mi  <wmi@google.com>
+
+	PR target/58066
+	* gcc.target/i386/pr58066.c: Replace pattern matching of .cfi
+	directive with rtl insns. Add effective-target of fpic and
+	tls_native.
+
+2014-05-17  Xinliang David Li  <davidxl@google.com>
+
+	* g++.dg/ipa/devirt-33.C: New testcase.
+
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/comdat.C: New file.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile12.ad[sb]: New test.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum3.adb: New test.
+
+2014-05-18  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.target/ia64/visibility-1.c (variable_l): Add used attribute.
+
+2014-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/52539
+	* gfortran.dg/namelist_utf8.f90: New test.
+
+2014-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52875
+	* g++.dg/cpp0x/decltype58.C: New.
+
+2014-05-17  Ajit Agarwal  <ajitkum@xilinx.com>
+
+	* gcc.target/microblaze/others/break_handler.c: New.
+
+2014-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/61140
+	PR tree-optimization/61150
+	PR tree-optimization/61197
+	* gcc.dg/tree-ssa/pr61140.c: New file.
+	* gcc.dg/tree-ssa/pr61150.c: New file.
+	* gcc.dg/tree-ssa/pr61197.c: New file.
+
+2014-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/pr60969.C: Compile for all ilp32 x86 targets.
+	(dg-options): Add -mfpmath=387.
+	(dg-final): Check that no MMX registers are used.
+
+2014-05-17  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.target/ia64/visibility-1.c (variable_i): Add used attribute.
+
+2014-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert:
+	2014-04-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/tree-ssa/pr23401.c: Update the expected number of
+	occurrences of "int" in the gimple dump to reflect that the return
+	types of functions now show up in such dumps.
+	* gcc.dg/tree-ssa/pr27810.c: Likewise.
+
+2014-05-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/20101011-1.c: Update testcase.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Update testcase.
+	* gcc.dg/tree-ssa/writeonly.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dse-6.c: Update testcase.
+	* gcc.dg/tree-ssa/pr21559.c: Update testcase.
+	* gcc.dg/debug/pr35154.c: Update testcase.
+	* gcc.target/i386/vectorize1.c: Update testcase.
+
+2014-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51640
+	* g++.dg/parse/error54.C: New.
+
+2014-05-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60969
+	* g++.dg/pr60969.C: New.
+
+2014-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61194
+	* gcc.dg/vect/pr61194.c: New testcase.
+
+2014-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-39.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-40.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-8.c: One more elimination.
+	* gcc.dg/tree-ssa/struct-aliasing-2.c: Scan cddce1 dump.
+
+2014-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-41.c: New testcase.
+
+2014-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61085
+	* g++.dg/ipa/pr61085.C: New test.
+
+2014-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/61090
+	* gcc.dg/tree-ssa/pr61090.c: New test.
+
+2014-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61158
+	* gcc.dg/pr61158.c: New test.
+
+2014-05-15  Andreas Schwab  <schwab@suse.de>
+
+	* obj-c++.dg/exceptions-3.mm: Remove check for message no longer
+	emitted.
+	* obj-c++.dg/exceptions-5.mm: Likewise.
+
+2014-05-15  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* shrink-wrap-loop.c: New test case.
+
+2014-05-14  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/simd/vtrnqf32_1.c: New file.
+	* gcc.target/arm/simd/vtrnqp16_1.c: New file.
+	* gcc.target/arm/simd/vtrnqp8_1.c: New file.
+	* gcc.target/arm/simd/vtrnqs16_1.c: New file.
+	* gcc.target/arm/simd/vtrnqs32_1.c: New file.
+	* gcc.target/arm/simd/vtrnqs8_1.c: New file.
+	* gcc.target/arm/simd/vtrnqu16_1.c: New file.
+	* gcc.target/arm/simd/vtrnqu32_1.c: New file.
+	* gcc.target/arm/simd/vtrnqu8_1.c: New file.
+	* gcc.target/arm/simd/vtrnf32_1.c: New file.
+	* gcc.target/arm/simd/vtrnp16_1.c: New file.
+	* gcc.target/arm/simd/vtrnp8_1.c: New file.
+	* gcc.target/arm/simd/vtrns16_1.c: New file.
+	* gcc.target/arm/simd/vtrns32_1.c: New file.
+	* gcc.target/arm/simd/vtrns8_1.c: New file.
+	* gcc.target/arm/simd/vtrnu16_1.c: New file.
+	* gcc.target/arm/simd/vtrnu32_1.c: New file.
+	* gcc.target/arm/simd/vtrnu8_1.c: New file.
+
+2014-05-14  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/clflushopt-1.c: New.
+	* gcc.target/i386/xsavec-1.c: Ditto.
+	* gcc.target/i386/xsavec64-1.c: Ditto.
+	* gcc.target/i386/xsaves-1.c: Ditto.
+	* gcc.target/i386/xsaves64-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Test new options.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
+2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60866
+	* gcc.dg/pr60866.c: New test.
+
+2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60901
+	* gcc.target/i386/pr60901.c: New test.
+
+2014-05-14  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/61100
+	* c-c++-common/asan/asan-interface-1.c: New test.
+	* lib/asan-dg.exp (asan_include_flags): New function.
+	(asan_init): Call asan_include_flags to obtain path
+	to sanitizer headers.
+
+2014-05-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* lib/target-support.exp (check_dfp_hw_available): New function.
+	(is-effective-target): Check $arg for dfp_hw.
+	(is-effective-target-keyword): Likewise.
+	* gcc.target/powerpc/pack03.c: (dg-require-effective-target):
+	Change target to dfp_hw.
+
+2014-05-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61162
+	* gcc.dg/pr61162.c: New test.
+
+2014-05-13  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/pr50459.c: Move cdtor tests to a separate testcase.
+	* c-c++-common/pr50459-2.c: New test.
+
+2014-05-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54310
+	* g++.dg/template/pr54310.C: New.
+
+2014-05-13  Nathan Sidwell  <nathan@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/mips/loongson-simd.c: Disable micromips too.
+
+2014-05-13  Catherine Moore  <clm@cm00re.com>
+
+	* gcc.target/mips/near-far-1.c: Adjust expected output
+	to allow the JALS instruction.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
+2014-05-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ivopts-lower_base.c: New test.
+
+2014-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61060
+	* gcc.dg/pr61060.c: New test.
+
+2014-05-12  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/sibcall-3.c: MSP430 doesn't have sibcall.
+	* gcc.dg/sibcall-4.c: Likewise.
+
+2014-05-12  Dimitris Papavasiliou  <dpapavas@gmail.com>
+
+	* objc.dg/shadow-1.m: New test.
+	* objc.dg/shadow-2.m: New test.
+	* objc.dg/ivar-scope-1.m: New test.
+	* objc.dg/ivar-scope-2.m: New test.
+	* objc.dg/ivar-scope-3.m: New test.
+	* objc.dg/ivar-scope-4.m: New test.
+	* objc.dg/ivar-visibility-1.m: New test.
+	* objc.dg/ivar-visibility-2.m: New test.
+	* objc.dg/ivar-visibility-3.m: New test.
+	* objc.dg/ivar-visibility-4.m: New test.
+
+2014-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60127
+	* gfortran.dg/gomp/omp_do_concurrent.f90: New.
+
+2014-05-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60834
+	* gfortran.dg/associate_16.f90:  New test.
+
+2014-05-12  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/60991
+	* gcc.target/avr/pr60991.c: New testcase.
+
 2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60054

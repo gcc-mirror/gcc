@@ -323,16 +323,11 @@ symtab_insert_node_to_hashtable (symtab_node *node)
   *slot = node;
 }
 
-/* Remove node from symbol table.  This function is not used directly, but via
-   cgraph/varpool node removal routines.  */
+/* Remove NODE from same comdat group.   */
 
 void
-symtab_unregister_node (symtab_node *node)
+symtab_remove_from_same_comdat_group (symtab_node *node)
 {
-  void **slot;
-  ipa_remove_all_references (&node->ref_list);
-  ipa_remove_all_referring (&node->ref_list);
-
   if (node->same_comdat_group)
     {
       symtab_node *prev;
@@ -346,6 +341,19 @@ symtab_unregister_node (symtab_node *node)
 	prev->same_comdat_group = node->same_comdat_group;
       node->same_comdat_group = NULL;
     }
+}
+
+/* Remove node from symbol table.  This function is not used directly, but via
+   cgraph/varpool node removal routines.  */
+
+void
+symtab_unregister_node (symtab_node *node)
+{
+  void **slot;
+  ipa_remove_all_references (&node->ref_list);
+  ipa_remove_all_referring (&node->ref_list);
+
+  symtab_remove_from_same_comdat_group (node);
 
   if (node->previous)
     node->previous->next = node->next;
@@ -505,7 +513,7 @@ void
 symtab_add_to_same_comdat_group (symtab_node *new_node,
 				 symtab_node *old_node)
 {
-  gcc_assert (DECL_ONE_ONLY (old_node->decl));
+  gcc_assert (DECL_COMDAT_GROUP (old_node->decl));
   gcc_assert (!new_node->same_comdat_group);
   gcc_assert (new_node != old_node);
 
@@ -824,9 +832,19 @@ verify_symtab_base (symtab_node *node)
     {
       symtab_node *n = node->same_comdat_group;
 
-      if (!DECL_ONE_ONLY (n->decl))
+      if (!DECL_COMDAT_GROUP (n->decl))
 	{
-	  error ("non-DECL_ONE_ONLY node in a same_comdat_group list");
+	  error ("node is in same_comdat_group list but has no DECL_COMDAT_GROUP");
+	  error_found = true;
+	}
+      if (DECL_COMDAT_GROUP (n->decl) != DECL_COMDAT_GROUP (node->same_comdat_group->decl))
+	{
+	  error ("same_comdat_group list across different groups");
+	  error_found = true;
+	}
+      if (!n->definition)
+	{
+	  error ("Node has same_comdat_group but it is not a definition");
 	  error_found = true;
 	}
       if (n->type != node->type)
@@ -940,7 +958,7 @@ symtab_make_decl_local (tree decl)
     DECL_COMMON (decl) = 0;
   else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
-  if (DECL_ONE_ONLY (decl) || DECL_COMDAT (decl))
+  if (DECL_COMDAT_GROUP (decl) || DECL_COMDAT (decl))
     {
       DECL_SECTION_NAME (decl) = 0;
       DECL_COMDAT (decl) = 0;
@@ -1083,7 +1101,7 @@ fixup_same_cpp_alias_visibility (symtab_node *node, symtab_node *target)
       DECL_COMDAT (node->decl) = DECL_COMDAT (target->decl);
       DECL_COMDAT_GROUP (node->decl)
 	 = DECL_COMDAT_GROUP (target->decl);
-      if (DECL_ONE_ONLY (target->decl)
+      if (DECL_COMDAT_GROUP (target->decl)
 	  && !node->same_comdat_group)
 	symtab_add_to_same_comdat_group (node, target);
     }
@@ -1213,7 +1231,7 @@ symtab_nonoverwritable_alias (symtab_node *node)
 
   /* Update the properties.  */
   DECL_EXTERNAL (new_decl) = 0;
-  if (DECL_ONE_ONLY (node->decl))
+  if (DECL_COMDAT_GROUP (node->decl))
     DECL_SECTION_NAME (new_decl) = NULL;
   DECL_COMDAT_GROUP (new_decl) = 0;
   TREE_PUBLIC (new_decl) = 0;
@@ -1310,8 +1328,7 @@ symtab_get_symbol_partitioning_class (symtab_node *node)
     return SYMBOL_EXTERNAL;
 
   /* Linker discardable symbols are duplicated to every use unless they are
-     keyed.
-     Keyed symbols or those.  */
+     keyed.  */
   if (DECL_ONE_ONLY (node->decl)
       && !node->force_output
       && !node->forced_by_abi

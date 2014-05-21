@@ -93,12 +93,17 @@
 #define _reent _Jv_reent
 #define _Bigint _Jv_Bigint
 
+#undef  _REENT_CHECK_MP
 #define _REENT_CHECK_MP(x)
+#undef  _REENT_MP_FREELIST
 #define _REENT_MP_FREELIST(x) ((x)->_freelist)
+#undef  _REENT_MP_P5S
 #define _REENT_MP_P5S(x) ((x)->_p5s)
 
-typedef unsigned long __ULong;
-typedef long __Long;
+#undef  __ULong
+#define __ULong unsigned long
+#undef  __Long
+#define __Long long
 
 static void *
 mprec_calloc (void *ignore, size_t x1, size_t x2)

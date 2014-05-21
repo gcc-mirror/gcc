@@ -1870,9 +1870,9 @@ _Jv_InterfaceAssignableFrom (jclass source, jclass iface)
 {
   for (int i = 0; i < source->interface_count; i++)
     {
-      jclass interface = source->interfaces[i];
-      if (iface == interface
-          || _Jv_InterfaceAssignableFrom (interface, iface))
+      jclass source_interface = source->interfaces[i];
+      if (iface == source_interface
+          || _Jv_InterfaceAssignableFrom (source_interface, iface))
         return true;      
     }
     

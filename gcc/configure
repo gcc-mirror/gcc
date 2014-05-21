@@ -11353,12 +11353,6 @@ else
 	done
 fi
 
-if test x$need_64bit_hwint = xyes; then
-
-$as_echo "#define NEED_64BIT_HOST_WIDE_INT 1" >>confdefs.h
-
-fi
-
 if test x$use_long_long_for_widest_fast_int = xyes; then
 
 $as_echo "#define USE_LONG_LONG_FOR_WIDEST_FAST_INT 1" >>confdefs.h
@@ -18197,7 +18191,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18200 "configure"
+#line 18194 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18303,7 +18297,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18306 "configure"
+#line 18300 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26356,8 +26350,8 @@ $as_echo_n "checking assembler and linker for explicit JALR relocation... " >&6;
         fi
       elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x; then
         echo '	.ent x' > conftest.s
-        echo 'x:	ld $2,%got_disp(y)($3)' >> conftest.s
-        echo '	ld $25,%call16(y)($28)' >> conftest.s
+        echo 'x:	lw $2,%got_disp(y)($3)' >> conftest.s
+        echo '	lw $25,%call16(y)($28)' >> conftest.s
         echo '	.reloc	1f,R_MIPS_JALR,y' >> conftest.s
         echo '1:	jalr $25' >> conftest.s
         echo '	.reloc	1f,R_MIPS_JALR,x' >> conftest.s

@@ -15,7 +15,7 @@ public:
   B(void) {}
 };
 
-void f(B b) {			// { dg-error "initializing" }
+void f(B b) {			// { dg-message "initializing" }
 }
 
 void g() {

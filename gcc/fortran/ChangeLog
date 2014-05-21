@@ -1,3 +1,32 @@
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* f95-lang.c (pushlevel): Adjust.
+	* trans-decl.c (gfc_allocate_lang_decl): Adjust.
+	(gfc_find_module): Likewise.
+	* trans-types.c (gfc_get_nodesc_array_type): Likewise.
+	(gfc_get_array_type_bounds): Likewise.
+	(gfc_nonrestricted_type): Likewise.
+	* trans.h: Don't use variable_size gty attribute.
+
+2014-05-17  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	* check.c (gfc_check_fn_rc2008): move "argument" to the right
+	place.
+
+2014-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60127
+	* openmp.c (resolve_omp_do): Reject do concurrent loops.
+
+2014-05-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60834
+	* frontend-passes.c (in_assoc_list):  New variable.
+	(optimize_namespace):  Initialize in_assoc_list
+	(combine_array_constructor): Don't try to combine
+	assoc lists.
+	(gfc_code_walker):  Keep track of in_assoc_list.
+
 2014-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (gfc_statement): Add ST_OMP_CANCEL,

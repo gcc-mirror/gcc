@@ -543,9 +543,9 @@ void ucr1111(const S&&) {}
 
 int main()
 {
-  l0001(l); // { dg-error "lvalue" }
-  l0010(l); // { dg-error "lvalue" }
-  l0011(l); // { dg-error "lvalue" }
+  l0001(l); // { dg-error "" }
+  l0010(l); // { dg-error "" }
+  l0011(l); // { dg-error "" }
   l0100(l);
   l0101(l);
   l0110(l);
@@ -564,8 +564,8 @@ int main()
   cl0101(cl);
   cl0110(cl);
   cl0111(cl);
-  cl1001(cl); // { dg-error "lvalue" }
-  cl1011(cl); // { dg-error "lvalue" }
+  cl1001(cl); // { dg-error "" }
+  cl1011(cl); // { dg-error "" }
   cl1100(cl);
   cl1101(cl);
   cl1110(cl);
@@ -617,8 +617,8 @@ int main()
   ncl0101(ncl);
   ncl0110(ncl);
   ncl0111(ncl);
-  ncl1001(ncl); // { dg-error "lvalue" }
-  ncl1011(ncl); // { dg-error "lvalue" }
+  ncl1001(ncl); // { dg-error "" }
+  ncl1011(ncl); // { dg-error "" }
   ncl1100(ncl);
   ncl1101(ncl);
   ncl1110(ncl);
@@ -644,8 +644,8 @@ int main()
   ncr0101(ncr);
   ncr0110(ncr);
   ncr0111(ncr);
-  ncr1001(ncr); // { dg-error "lvalue" }
-  ncr1011(ncr); // { dg-error "lvalue" }
+  ncr1001(ncr); // { dg-error "" }
+  ncr1011(ncr); // { dg-error "" }
   ncr1100(ncr);
   ncr1101(ncr);
   ncr1110(ncr);
@@ -671,8 +671,8 @@ int main()
   ucl0101(ucl());
   ucl0110(ucl());
   ucl0111(ucl());
-  ucl1001(ucl()); // { dg-error "lvalue" }
-  ucl1011(ucl()); // { dg-error "lvalue" }
+  ucl1001(ucl()); // { dg-error "" }
+  ucl1011(ucl()); // { dg-error "" }
   ucl1100(ucl());
   ucl1101(ucl());
   ucl1110(ucl());

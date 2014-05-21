@@ -139,46 +139,46 @@ DEF_RTL_EXPR(ADDRESS, "address", "i", RTX_EXTRA)
    ---------------------------------------------------------------------- */
 
 /* An annotation for variable assignment tracking.  */
-DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "iuuBeiie", RTX_INSN)
+DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "uuBeiie", RTX_INSN)
 
 /* An instruction that cannot jump.  */
-DEF_RTL_EXPR(INSN, "insn", "iuuBeiie", RTX_INSN)
+DEF_RTL_EXPR(INSN, "insn", "uuBeiie", RTX_INSN)
 
 /* An instruction that can possibly jump.
    Fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBeiie0", RTX_INSN)
+DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "uuBeiie0", RTX_INSN)
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
    Field ( rtx->u.fld[8] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBeiiee", RTX_INSN)
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "uuBeiiee", RTX_INSN)
 
 /* Placeholder for tablejump JUMP_INSNs.  The pattern of this kind
    of rtx is always either an ADDR_VEC or an ADDR_DIFF_VEC.  These
    placeholders do not appear as real instructions inside a basic
    block, but are considered active_insn_p instructions for historical
    reasons, when jump table data was represented with JUMP_INSNs.  */
-DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "iuuBe0000", RTX_INSN)
+DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "uuBe0000", RTX_INSN)
 
 /* A marker that indicates that control will not flow through.  */
-DEF_RTL_EXPR(BARRIER, "barrier", "iuu00000", RTX_EXTRA)
+DEF_RTL_EXPR(BARRIER, "barrier", "uu00000", RTX_EXTRA)
 
 /* Holds a label that is followed by instructions.
    Operand:
-   4: is used in jump.c for the use-count of the label.
-   5: is used in the sh backend.
-   6: is a number that is unique in the entire compilation.
-   7: is the user-given name of the label, if any.  */
-DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", RTX_EXTRA)
+   3: is used in jump.c for the use-count of the label.
+   4: is used in the sh backend.
+   5: is a number that is unique in the entire compilation.
+   6: is the user-given name of the label, if any.  */
+DEF_RTL_EXPR(CODE_LABEL, "code_label", "uuB00is", RTX_EXTRA)
 
 /* Say where in the code a source line starts, for symbol table's sake.
    Operand:
-   4: note-specific data
-   5: enum insn_note
-   6: unique number if insn_note == note_insn_deleted_label.  */
-DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", RTX_EXTRA)
+   3: note-specific data
+   4: enum insn_note
+   5: unique number if insn_note == note_insn_deleted_label.  */
+DEF_RTL_EXPR(NOTE, "note", "uuB0ni", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
@@ -378,19 +378,16 @@ DEF_RTL_EXPR(PC, "pc", "", RTX_OBJ)
 /* A register.  The "operand" is the register number, accessed with
    the REGNO macro.  If this number is less than FIRST_PSEUDO_REGISTER
    than a hardware register is being referred to.  The second operand
-   holds the original register number - this will be different for a
-   pseudo register that got turned into a hard register.  The third
-   operand points to a reg_attrs structure.
+   points to a reg_attrs structure.
    This rtx needs to have as many (or more) fields as a MEM, since we
    can change REG rtx's into MEMs during reload.  */
-DEF_RTL_EXPR(REG, "reg", "i00", RTX_OBJ)
+DEF_RTL_EXPR(REG, "reg", "i0", RTX_OBJ)
 
 /* A scratch register.  This represents a register used only within a
-   single insn.  It will be turned into a REG during register allocation
+   single insn.  It will be replaced by a REG during register allocation
    or reload unless the constraint indicates that the register won't be
-   needed, in which case it can remain a SCRATCH.  This code is
-   marked as having one operand so it can be turned into a REG.  */
-DEF_RTL_EXPR(SCRATCH, "scratch", "0", RTX_OBJ)
+   needed, in which case it can remain a SCRATCH.  */
+DEF_RTL_EXPR(SCRATCH, "scratch", "", RTX_OBJ)
 
 /* A reference to a part of another value.  The first operand is the
    complete value and the second is the byte offset of the selected part.   */
@@ -432,10 +429,9 @@ DEF_RTL_EXPR(LABEL_REF, "label_ref", "u", RTX_CONST_OBJ)
 
 /* Reference to a named label:
    Operand 0: label name
-   Operand 1: flags (see SYMBOL_FLAG_* in rtl.h)
-   Operand 2: tree from which this symbol is derived, or null.
+   Operand 1: tree from which this symbol is derived, or null.
    This is either a DECL node, or some kind of constant.  */
-DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s00", RTX_CONST_OBJ)
+DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s0", RTX_CONST_OBJ)
 
 /* The condition code register is represented, in our imagination,
    as a register holding a value that can be compared to zero.
@@ -750,9 +746,7 @@ DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", RTX_UNARY)
 DEF_RTL_EXPR(FMA, "fma", "eee", RTX_TERNARY)
 
 /* Information about the variable and its location.  */
-/* Changed 'te' to 'tei'; the 'i' field is for recording
-   initialization status of variables.  */
-DEF_RTL_EXPR(VAR_LOCATION, "var_location", "tei", RTX_EXTRA)
+DEF_RTL_EXPR(VAR_LOCATION, "var_location", "te", RTX_EXTRA)
 
 /* Used in VAR_LOCATION for a pointer to a decl that is no longer
    addressable.  */

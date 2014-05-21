@@ -7384,9 +7384,9 @@ You can have multiple entities that are mode-switched, and select at run time
 which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
 return nonzero for any @var{entity} that needs mode-switching.
 If you define this macro, you also have to define
-@code{NUM_MODES_FOR_MODE_SWITCHING}, @code{MODE_NEEDED},
-@code{MODE_PRIORITY_TO_MODE} and @code{EMIT_MODE_SET}.
-@code{MODE_AFTER}, @code{MODE_ENTRY}, and @code{MODE_EXIT}
+@code{NUM_MODES_FOR_MODE_SWITCHING}, @code{TARGET_MODE_NEEDED},
+@code{TARGET_MODE_PRIORITY} and @code{TARGET_MODE_EMIT}.
+@code{TARGET_MODE_AFTER}, @code{TARGET_MODE_ENTRY}, and @code{TARGET_MODE_EXIT}
 are optional.
 @end defmac
 
@@ -7403,51 +7403,17 @@ represented as numbers 0 @dots{} N @minus{} 1.  N is used to specify that no mod
 switch is needed / supplied.
 @end defmac
 
-@defmac MODE_NEEDED (@var{entity}, @var{insn})
-@var{entity} is an integer specifying a mode-switched entity.  If
-@code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to
-return an integer value not larger than the corresponding element in
-@code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must
-be switched into prior to the execution of @var{insn}.
-@end defmac
+@hook TARGET_MODE_EMIT
 
-@defmac MODE_AFTER (@var{entity}, @var{mode}, @var{insn})
-@var{entity} is an integer specifying a mode-switched entity.  If
-this macro is defined, it is evaluated for every @var{insn} during
-mode switching.  It determines the mode that an insn results in (if
-different from the incoming mode).
-@end defmac
+@hook TARGET_MODE_NEEDED
 
-@defmac MODE_ENTRY (@var{entity})
-If this macro is defined, it is evaluated for every @var{entity} that needs
-mode switching.  It should evaluate to an integer, which is a mode that
-@var{entity} is assumed to be switched to at function entry.  If @code{MODE_ENTRY}
-is defined then @code{MODE_EXIT} must be defined.
-@end defmac
+@hook TARGET_MODE_AFTER
 
-@defmac MODE_EXIT (@var{entity})
-If this macro is defined, it is evaluated for every @var{entity} that needs
-mode switching.  It should evaluate to an integer, which is a mode that
-@var{entity} is assumed to be switched to at function exit.  If @code{MODE_EXIT}
-is defined then @code{MODE_ENTRY} must be defined.
-@end defmac
+@hook TARGET_MODE_ENTRY
 
-@defmac MODE_PRIORITY_TO_MODE (@var{entity}, @var{n})
-This macro specifies the order in which modes for @var{entity} are processed.
-0 is the highest priority, @code{NUM_MODES_FOR_MODE_SWITCHING[@var{entity}] - 1} the
-lowest.  The value of the macro should be an integer designating a mode
-for @var{entity}.  For any fixed @var{entity}, @code{mode_priority_to_mode}
-(@var{entity}, @var{n}) shall be a bijection in 0 @dots{}
-@code{num_modes_for_mode_switching[@var{entity}] - 1}.
-@end defmac
+@hook TARGET_MODE_EXIT
 
-@defmac EMIT_MODE_SET (@var{entity}, @var{mode}, @var{hard_regs_live})
-Generate one or more insns to set @var{entity} to @var{mode}.
-@var{hard_reg_live} is the set of hard registers live at the point where
-the insn(s) are to be inserted.
-Sets of a lower numbered entity will be emitted before sets of a higher
-numbered entity to a mode of the same or lower priority.
-@end defmac
+@hook TARGET_MODE_PRIORITY
 
 @node Target Attributes
 @section Defining target-specific uses of @code{__attribute__}
@@ -7565,9 +7531,6 @@ later in the function.
 Another note: according to the MIPS spec, coprocessor 1 (if present) is
 the FPU@.  One accesses COP1 registers through standard mips
 floating-point support; they are not included in this mechanism.
-
-There is one macro used in defining the MIPS coprocessor interface which
-you may want to override in subtargets; it is described below.
 
 @node PCH Target
 @section Parameters for Precompiled Header Validity Checking

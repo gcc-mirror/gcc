@@ -1,3 +1,78 @@
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Rework comment and
+	set function_start_locus.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils.c (gnat_write_global_declarations): Adjust the flags put on
+	dummy_global.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (change_qualified_type): New static function.
+	(gnat_to_gnu_entity): Use it throughout to add qualifiers on types.
+	<E_Array_Type>: Set TYPE_VOLATILE on the array type directly.
+	<E_Array_Subtype>: Likewise.
+	Do not set flags on an UNCONSTRAINED_ARRAY_TYPE directly.
+	(gnat_to_gnu_component_type): Likewise.
+	(gnat_to_gnu_param): Likewise.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Set_Present_Expr): Move around.
+	(End_Location): New macro.
+	* gcc-interface/trans.c (Case_Statement_to_gnu): Use End_Location.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use Underlying_Type in
+	lieu of more verbose construct.
+	* gcc-interface/trans.c (Call_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.  Remove obsolete code.
+
+2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Do not
+	consider that regular packed arrays can never be superflat.
+
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* gcc-interface/ada-tree.h: Remove usage of variable_size gty
+	annotation.
+	* gcc-interface/decl.c (annotate_value): Adjust.
+	* gcc-interface/trans.c (Attribute_to_gnu): Likewise.
+	(push_range_check_info): Likewise.
+	(Loop_Statement_to_gnu): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(start_stmt_group): Likewise.
+	* gcc-interface/utils.c (init_gnat_utils): Likewise.
+	(gnat_pushlevel): Likewise.
+	(maybe_pad_type): Likewise.
+
+2014-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* seh_init.c: Fix copyright year.
+
+2014-05-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* seh_init.c (__gnat_map_SEH): Compile also when __CYGWIN__ and __SEH__
+	are defined.  Move include windows.h before system.h.
+	* s-oscons-tmplt.c (DTR_CONTROL_ENABLE, RTS_CONTROL_ENABLE): Compile
+	also when __CYGWIN__ is defined.  Include windef.h before winbase.h.
+
+2014-05-14  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Convert integer_one_node
+	to the appropriate type.
+	* gcc-interface/trans.c (gnat_to_gnu): Likewise.
+	(pos_to_constructor): Likewise.
+
+2014-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value): Fix thinko in latest change.
+
 2014-05-06  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>

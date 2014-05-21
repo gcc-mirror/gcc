@@ -561,7 +561,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
     }
   else
     {
-      p = ggc_alloc_machopic_indirection ();
+      p = ggc_alloc<machopic_indirection> ();
       p->symbol = sym_ref;
       p->ptr_name = xstrdup (buffer);
       p->stub_p = stub_p;
@@ -1521,7 +1521,7 @@ machopic_select_section (tree decl,
 
   one = DECL_P (decl) 
 	&& TREE_CODE (decl) == VAR_DECL 
-	&& DECL_ONE_ONLY (decl);
+	&& DECL_COMDAT_GROUP (decl);
 
   ro = TREE_READONLY (decl) || TREE_CONSTANT (decl) ;
 
@@ -3500,7 +3500,7 @@ darwin_build_constant_cfstring (tree str)
 	      }
 	}
 
-      *loc = desc = ggc_alloc_cleared_cfstring_descriptor ();
+      *loc = desc = ggc_cleared_alloc<cfstring_descriptor> ();
       desc->literal = str;
 
       /* isa *. */
@@ -3587,7 +3587,7 @@ darwin_enter_string_into_cfstring_table (tree str)
 
   if (!*loc)
     {
-      *loc = ggc_alloc_cleared_cfstring_descriptor ();
+      *loc = ggc_cleared_alloc<cfstring_descriptor> ();
       ((struct cfstring_descriptor *)*loc)->literal = str;
     }
 }

@@ -2384,7 +2384,8 @@ extern void decl_value_expr_insert (tree, tree);
 
 /* Used in TREE_PUBLIC decls to indicate that copies of this DECL in
    multiple translation units should be merged.  */
-#define DECL_ONE_ONLY(NODE) (DECL_COMDAT_GROUP (NODE) != NULL_TREE)
+#define DECL_ONE_ONLY(NODE) (DECL_COMDAT_GROUP (NODE) != NULL_TREE \
+			     && (TREE_PUBLIC (NODE) || DECL_EXTERNAL (NODE)))
 
 /* The name of the object as the assembler will see it (but before any
    translations made by ASM_OUTPUT_LABELREF).  Often this is the same
@@ -4651,7 +4652,6 @@ namespace wi
     unsigned int get_len () const;
   };
 
-  template <>
   template <int N>
   struct int_traits <extended_tree <N> >
   {

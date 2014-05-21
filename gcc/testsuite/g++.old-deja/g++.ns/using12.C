@@ -16,5 +16,4 @@ void fn (int i)
   using foo::x;
   using baz::x;
   x(i); 	 // { dg-error "ambiguous" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 18 }
 }

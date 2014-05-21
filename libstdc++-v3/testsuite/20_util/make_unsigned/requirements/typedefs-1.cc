@@ -49,7 +49,7 @@ void test01()
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_unsigned<volatile wchar_t>::type  	test23_type;
-  static_assert(is_same<test23_type, volatile wchar_t>::value, "");
+  static_assert(is_unsigned<test23_type>::value, "");
 #endif
 
   // Chapter 48, chapter 20. Smallest rank such that new unsigned type

@@ -1945,8 +1945,10 @@
 (define_insn "*<optab>"
   [(any_return)]
   ""
-  { 
-    if (microblaze_is_interrupt_variant ())
+  {
+    if (microblaze_is_break_handler ())
+        return "rtbd\tr16, 8\;%#";
+    else if (microblaze_is_interrupt_variant ())
         return "rtid\tr14, 0\;%#";
     else
         return "rtsd\tr15, 8\;%#";
@@ -1962,8 +1964,10 @@
   [(any_return)
    (use (match_operand:SI 0 "register_operand" ""))]
   ""
-  {	
-    if (microblaze_is_interrupt_variant ())
+  {
+    if (microblaze_is_break_handler ())
+        return "rtbd\tr16,8\;%#";
+    else if (microblaze_is_interrupt_variant ())
         return "rtid\tr14,0 \;%#";
     else
         return "rtsd\tr15,8 \;%#";
@@ -2068,8 +2072,14 @@
     register rtx target2 = gen_rtx_REG (Pmode,
 			      GP_REG_FIRST + MB_ABI_SUB_RETURN_ADDR_REGNUM);
     if (GET_CODE (target) == SYMBOL_REF) {
-        gen_rtx_CLOBBER (VOIDmode, target2);
-        return "brlid\tr15,%0\;%#";
+        if (microblaze_break_function_p (SYMBOL_REF_DECL (target))) {
+            gen_rtx_CLOBBER (VOIDmode, target2);
+            return "brki\tr16,%0\;%#";
+        }
+        else {
+            gen_rtx_CLOBBER (VOIDmode, target2);
+            return "brlid\tr15,%0\;%#";
+        }
     } else if (GET_CODE (target) == CONST_INT)
         return "la\t%@,r0,%0\;brald\tr15,%@\;%#";
     else if (GET_CODE (target) == REG)
@@ -2173,13 +2183,15 @@
     if (GET_CODE (target) == SYMBOL_REF)
     {
       gen_rtx_CLOBBER (VOIDmode,target2);
-      if (SYMBOL_REF_FLAGS (target) & SYMBOL_FLAG_FUNCTION)
+      if (microblaze_break_function_p (SYMBOL_REF_DECL (target)))
+        return "brki\tr16,%1\;%#";
+      else if (SYMBOL_REF_FLAGS (target) & SYMBOL_FLAG_FUNCTION)
         {
 	  return "brlid\tr15,%1\;%#";
         }
       else
         {
-	  return "bralid\tr15,%1\;%#";
+	    return "bralid\tr15,%1\;%#";
         }
     }
     else if (GET_CODE (target) == CONST_INT)

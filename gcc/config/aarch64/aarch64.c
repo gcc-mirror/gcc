@@ -63,6 +63,7 @@
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "config/arm/aarch-cost-tables.h"
+#include "dumpfile.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
@@ -141,6 +142,7 @@ static bool aarch64_const_vec_all_same_int_p (rtx,
 
 static bool aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 						 const unsigned char *sel);
+static int aarch64_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
@@ -171,11 +173,41 @@ __extension__
 #endif
 static const struct cpu_addrcost_table generic_addrcost_table =
 {
+#if HAVE_DESIGNATED_INITIALIZERS
+  .addr_scale_costs =
+#endif
+    {
+      NAMED_PARAM (qi, 0),
+      NAMED_PARAM (hi, 0),
+      NAMED_PARAM (si, 0),
+      NAMED_PARAM (ti, 0),
+    },
   NAMED_PARAM (pre_modify, 0),
   NAMED_PARAM (post_modify, 0),
   NAMED_PARAM (register_offset, 0),
   NAMED_PARAM (register_extend, 0),
   NAMED_PARAM (imm_offset, 0)
+};
+
+#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
+__extension__
+#endif
+static const struct cpu_addrcost_table cortexa57_addrcost_table =
+{
+#if HAVE_DESIGNATED_INITIALIZERS
+  .addr_scale_costs =
+#endif
+    {
+      NAMED_PARAM (qi, 0),
+      NAMED_PARAM (hi, 1),
+      NAMED_PARAM (si, 0),
+      NAMED_PARAM (ti, 1),
+    },
+  NAMED_PARAM (pre_modify, 0),
+  NAMED_PARAM (post_modify, 0),
+  NAMED_PARAM (register_offset, 0),
+  NAMED_PARAM (register_extend, 0),
+  NAMED_PARAM (imm_offset, 0),
 };
 
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
@@ -212,6 +244,26 @@ static const struct cpu_vector_cost generic_vector_cost =
   NAMED_PARAM (cond_not_taken_branch_cost, 1)
 };
 
+/* Generic costs for vector insn classes.  */
+#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
+__extension__
+#endif
+static const struct cpu_vector_cost cortexa57_vector_cost =
+{
+  NAMED_PARAM (scalar_stmt_cost, 1),
+  NAMED_PARAM (scalar_load_cost, 4),
+  NAMED_PARAM (scalar_store_cost, 1),
+  NAMED_PARAM (vec_stmt_cost, 3),
+  NAMED_PARAM (vec_to_scalar_cost, 8),
+  NAMED_PARAM (scalar_to_vec_cost, 8),
+  NAMED_PARAM (vec_align_load_cost, 5),
+  NAMED_PARAM (vec_unalign_load_cost, 5),
+  NAMED_PARAM (vec_unalign_store_cost, 1),
+  NAMED_PARAM (vec_store_cost, 1),
+  NAMED_PARAM (cond_taken_branch_cost, 1),
+  NAMED_PARAM (cond_not_taken_branch_cost, 1)
+};
+
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
 #endif
@@ -238,9 +290,9 @@ static const struct tune_params cortexa53_tunings =
 static const struct tune_params cortexa57_tunings =
 {
   &cortexa57_extra_costs,
-  &generic_addrcost_table,
+  &cortexa57_addrcost_table,
   &generic_regmove_cost,
-  &generic_vector_cost,
+  &cortexa57_vector_cost,
   NAMED_PARAM (memmov_cost, 4),
   NAMED_PARAM (issue_rate, 3)
 };
@@ -424,6 +476,24 @@ aarch64_hard_regno_mode_ok (unsigned regno, enum machine_mode mode)
   return 0;
 }
 
+/* Implement HARD_REGNO_CALLER_SAVE_MODE.  */
+enum machine_mode
+aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned nregs,
+				     enum machine_mode mode)
+{
+  /* Handle modes that fit within single registers.  */
+  if (nregs == 1 && GET_MODE_SIZE (mode) <= 16)
+    {
+      if (GET_MODE_SIZE (mode) >= 4)
+        return mode;
+      else
+        return SImode;
+    }
+  /* Fall back to generic for multi-reg and very large modes.  */
+  else
+    return choose_hard_reg_mode (regno, nregs, false);
+}
+
 /* Return true if calls to DECL should be treated as
    long-calls (ie called via a register).  */
 static bool
@@ -444,7 +514,7 @@ aarch64_is_long_call_p (rtx sym)
    represent an expression that matches an extend operation.  The
    operands represent the paramters from
 
-   (extract (mult (reg) (mult_imm)) (extract_imm) (const_int 0)).  */
+   (extract:MODE (mult (reg) (MULT_IMM)) (EXTRACT_IMM) (const_int 0)).  */
 bool
 aarch64_is_extend_from_extract (enum machine_mode mode, rtx mult_imm,
 				rtx extract_imm)
@@ -2478,12 +2548,22 @@ aarch64_final_eh_return_addr (void)
 				       - 2 * UNITS_PER_WORD));
 }
 
-/* Output code to build up a constant in a register.  */
-static void
-aarch64_build_constant (int regnum, HOST_WIDE_INT val)
+/* Possibly output code to build up a constant in a register.  For
+   the benefit of the costs infrastructure, returns the number of
+   instructions which would be emitted.  GENERATE inhibits or
+   enables code generation.  */
+
+static int
+aarch64_build_constant (int regnum, HOST_WIDE_INT val, bool generate)
 {
+  int insns = 0;
+
   if (aarch64_bitmask_imm (val, DImode))
-    emit_move_insn (gen_rtx_REG (Pmode, regnum), GEN_INT (val));
+    {
+      if (generate)
+	emit_move_insn (gen_rtx_REG (Pmode, regnum), GEN_INT (val));
+      insns = 1;
+    }
   else
     {
       int i;
@@ -2514,15 +2594,19 @@ aarch64_build_constant (int regnum, HOST_WIDE_INT val)
 	 the same.  */
       if (ncount < zcount)
 	{
-	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			  GEN_INT (val | ~(HOST_WIDE_INT) 0xffff));
+	  if (generate)
+	    emit_move_insn (gen_rtx_REG (Pmode, regnum),
+			    GEN_INT (val | ~(HOST_WIDE_INT) 0xffff));
 	  tval = 0xffff;
+	  insns++;
 	}
       else
 	{
-	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			  GEN_INT (val & 0xffff));
+	  if (generate)
+	    emit_move_insn (gen_rtx_REG (Pmode, regnum),
+			    GEN_INT (val & 0xffff));
 	  tval = 0;
+	  insns++;
 	}
 
       val >>= 16;
@@ -2530,11 +2614,17 @@ aarch64_build_constant (int regnum, HOST_WIDE_INT val)
       for (i = 16; i < 64; i += 16)
 	{
 	  if ((val & 0xffff) != tval)
-	    emit_insn (gen_insv_immdi (gen_rtx_REG (Pmode, regnum),
-				       GEN_INT (i), GEN_INT (val & 0xffff)));
+	    {
+	      if (generate)
+		emit_insn (gen_insv_immdi (gen_rtx_REG (Pmode, regnum),
+					   GEN_INT (i),
+					   GEN_INT (val & 0xffff)));
+	      insns++;
+	    }
 	  val >>= 16;
 	}
     }
+  return insns;
 }
 
 static void
@@ -2549,7 +2639,7 @@ aarch64_add_constant (int regnum, int scratchreg, HOST_WIDE_INT delta)
 
   if (mdelta >= 4096 * 4096)
     {
-      aarch64_build_constant (scratchreg, delta);
+      (void) aarch64_build_constant (scratchreg, delta, true);
       emit_insn (gen_add3_insn (this_rtx, this_rtx, scratch_rtx));
     }
   else if (mdelta > 0)
@@ -2623,7 +2713,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  addr = plus_constant (Pmode, temp0, vcall_offset);
       else
 	{
-	  aarch64_build_constant (IP1_REGNUM, vcall_offset);
+	  (void) aarch64_build_constant (IP1_REGNUM, vcall_offset, true);
 	  addr = gen_rtx_PLUS (Pmode, temp0, temp1);
 	}
 
@@ -4489,18 +4579,19 @@ aarch64_strip_shift (rtx x)
   return x;
 }
 
-/* Helper function for rtx cost calculation.  Strip a shift or extend
+/* Helper function for rtx cost calculation.  Strip an extend
    expression from X.  Returns the inner operand if successful, or the
    original expression on failure.  We deal with a number of possible
    canonicalization variations here.  */
 static rtx
-aarch64_strip_shift_or_extend (rtx x)
+aarch64_strip_extend (rtx x)
 {
   rtx op = x;
 
   /* Zero and sign extraction of a widened value.  */
   if ((GET_CODE (op) == ZERO_EXTRACT || GET_CODE (op) == SIGN_EXTRACT)
       && XEXP (op, 2) == const0_rtx
+      && GET_CODE (XEXP (op, 0)) == MULT
       && aarch64_is_extend_from_extract (GET_MODE (op), XEXP (XEXP (op, 0), 1),
 					 XEXP (op, 1)))
     return XEXP (XEXP (op, 0), 0);
@@ -4529,7 +4620,240 @@ aarch64_strip_shift_or_extend (rtx x)
   if (op != x)
     return op;
 
-  return aarch64_strip_shift (x);
+  return x;
+}
+
+/* Helper function for rtx cost calculation.  Calculate the cost of
+   a MULT, which may be part of a multiply-accumulate rtx.  Return
+   the calculated cost of the expression, recursing manually in to
+   operands where needed.  */
+
+static int
+aarch64_rtx_mult_cost (rtx x, int code, int outer, bool speed)
+{
+  rtx op0, op1;
+  const struct cpu_cost_table *extra_cost
+    = aarch64_tune_params->insn_extra_cost;
+  int cost = 0;
+  bool maybe_fma = (outer == PLUS || outer == MINUS);
+  enum machine_mode mode = GET_MODE (x);
+
+  gcc_checking_assert (code == MULT);
+
+  op0 = XEXP (x, 0);
+  op1 = XEXP (x, 1);
+
+  if (VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  /* Integer multiply/fma.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT)
+    {
+      /* The multiply will be canonicalized as a shift, cost it as such.  */
+      if (CONST_INT_P (op1)
+	  && exact_log2 (INTVAL (op1)) > 0)
+	{
+	  if (speed)
+	    {
+	      if (maybe_fma)
+		/* ADD (shifted register).  */
+		cost += extra_cost->alu.arith_shift;
+	      else
+		/* LSL (immediate).  */
+		cost += extra_cost->alu.shift;
+	    }
+
+	  cost += rtx_cost (op0, GET_CODE (op0), 0, speed);
+
+	  return cost;
+	}
+
+      /* Integer multiplies or FMAs have zero/sign extending variants.  */
+      if ((GET_CODE (op0) == ZERO_EXTEND
+	   && GET_CODE (op1) == ZERO_EXTEND)
+	  || (GET_CODE (op0) == SIGN_EXTEND
+	      && GET_CODE (op1) == SIGN_EXTEND))
+	{
+	  cost += rtx_cost (XEXP (op0, 0), MULT, 0, speed)
+		  + rtx_cost (XEXP (op1, 0), MULT, 1, speed);
+
+	  if (speed)
+	    {
+	      if (maybe_fma)
+		/* MADD/SMADDL/UMADDL.  */
+		cost += extra_cost->mult[0].extend_add;
+	      else
+		/* MUL/SMULL/UMULL.  */
+		cost += extra_cost->mult[0].extend;
+	    }
+
+	  return cost;
+	}
+
+      /* This is either an integer multiply or an FMA.  In both cases
+	 we want to recurse and cost the operands.  */
+      cost += rtx_cost (op0, MULT, 0, speed)
+	      + rtx_cost (op1, MULT, 1, speed);
+
+      if (speed)
+	{
+	  if (maybe_fma)
+	    /* MADD.  */
+	    cost += extra_cost->mult[mode == DImode].add;
+	  else
+	    /* MUL.  */
+	    cost += extra_cost->mult[mode == DImode].simple;
+	}
+
+      return cost;
+    }
+  else
+    {
+      if (speed)
+	{
+	  /* Floating-point FMA/FMUL can also support negations of the
+	     operands.  */
+	  if (GET_CODE (op0) == NEG)
+	    op0 = XEXP (op0, 0);
+	  if (GET_CODE (op1) == NEG)
+	    op1 = XEXP (op1, 0);
+
+	  if (maybe_fma)
+	    /* FMADD/FNMADD/FNMSUB/FMSUB.  */
+	    cost += extra_cost->fp[mode == DFmode].fma;
+	  else
+	    /* FMUL/FNMUL.  */
+	    cost += extra_cost->fp[mode == DFmode].mult;
+	}
+
+      cost += rtx_cost (op0, MULT, 0, speed)
+	      + rtx_cost (op1, MULT, 1, speed);
+      return cost;
+    }
+}
+
+static int
+aarch64_address_cost (rtx x,
+		      enum machine_mode mode,
+		      addr_space_t as ATTRIBUTE_UNUSED,
+		      bool speed)
+{
+  enum rtx_code c = GET_CODE (x);
+  const struct cpu_addrcost_table *addr_cost = aarch64_tune_params->addr_cost;
+  struct aarch64_address_info info;
+  int cost = 0;
+  info.shift = 0;
+
+  if (!aarch64_classify_address (&info, x, mode, c, false))
+    {
+      if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF)
+	{
+	  /* This is a CONST or SYMBOL ref which will be split
+	     in a different way depending on the code model in use.
+	     Cost it through the generic infrastructure.  */
+	  int cost_symbol_ref = rtx_cost (x, MEM, 1, speed);
+	  /* Divide through by the cost of one instruction to
+	     bring it to the same units as the address costs.  */
+	  cost_symbol_ref /= COSTS_N_INSNS (1);
+	  /* The cost is then the cost of preparing the address,
+	     followed by an immediate (possibly 0) offset.  */
+	  return cost_symbol_ref + addr_cost->imm_offset;
+	}
+      else
+	{
+	  /* This is most likely a jump table from a case
+	     statement.  */
+	  return addr_cost->register_offset;
+	}
+    }
+
+  switch (info.type)
+    {
+      case ADDRESS_LO_SUM:
+      case ADDRESS_SYMBOLIC:
+      case ADDRESS_REG_IMM:
+	cost += addr_cost->imm_offset;
+	break;
+
+      case ADDRESS_REG_WB:
+	if (c == PRE_INC || c == PRE_DEC || c == PRE_MODIFY)
+	  cost += addr_cost->pre_modify;
+	else if (c == POST_INC || c == POST_DEC || c == POST_MODIFY)
+	  cost += addr_cost->post_modify;
+	else
+	  gcc_unreachable ();
+
+	break;
+
+      case ADDRESS_REG_REG:
+	cost += addr_cost->register_offset;
+	break;
+
+      case ADDRESS_REG_UXTW:
+      case ADDRESS_REG_SXTW:
+	cost += addr_cost->register_extend;
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+
+
+  if (info.shift > 0)
+    {
+      /* For the sake of calculating the cost of the shifted register
+	 component, we can treat same sized modes in the same way.  */
+      switch (GET_MODE_BITSIZE (mode))
+	{
+	  case 16:
+	    cost += addr_cost->addr_scale_costs.hi;
+	    break;
+
+	  case 32:
+	    cost += addr_cost->addr_scale_costs.si;
+	    break;
+
+	  case 64:
+	    cost += addr_cost->addr_scale_costs.di;
+	    break;
+
+	  /* We can't tell, or this is a 128-bit vector.  */
+	  default:
+	    cost += addr_cost->addr_scale_costs.ti;
+	    break;
+	}
+    }
+
+  return cost;
+}
+
+/* Return true if the RTX X in mode MODE is a zero or sign extract
+   usable in an ADD or SUB (extended register) instruction.  */
+static bool
+aarch64_rtx_arith_op_extract_p (rtx x, enum machine_mode mode)
+{
+  /* Catch add with a sign extract.
+     This is add_<optab><mode>_multp2.  */
+  if (GET_CODE (x) == SIGN_EXTRACT
+      || GET_CODE (x) == ZERO_EXTRACT)
+    {
+      rtx op0 = XEXP (x, 0);
+      rtx op1 = XEXP (x, 1);
+      rtx op2 = XEXP (x, 2);
+
+      if (GET_CODE (op0) == MULT
+	  && CONST_INT_P (op1)
+	  && op2 == const0_rtx
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && aarch64_is_extend_from_extract (mode,
+					     XEXP (op0, 1),
+					     op1))
+	{
+	  return true;
+	}
+    }
+
+  return false;
 }
 
 /* Calculate the cost of calculating X, storing it in *COST.  Result
@@ -4538,13 +4862,31 @@ static bool
 aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 		   int param ATTRIBUTE_UNUSED, int *cost, bool speed)
 {
-  rtx op0, op1;
+  rtx op0, op1, op2;
   const struct cpu_cost_table *extra_cost
     = aarch64_tune_params->insn_extra_cost;
+  enum machine_mode mode = GET_MODE (x);
+
+  /* By default, assume that everything has equivalent cost to the
+     cheapest instruction.  Any additional costs are applied as a delta
+     above this default.  */
+  *cost = COSTS_N_INSNS (1);
+
+  /* TODO: The cost infrastructure currently does not handle
+     vector operations.  Assume that all vector operations
+     are equally expensive.  */
+  if (VECTOR_MODE_P (mode))
+    {
+      if (speed)
+	*cost += extra_cost->vect.alu;
+      return true;
+    }
 
   switch (code)
     {
     case SET:
+      /* The cost depends entirely on the operands to SET.  */
+      *cost = 0;
       op0 = SET_DEST (x);
       op1 = SET_SRC (x);
 
@@ -4552,25 +4894,47 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	{
 	case MEM:
 	  if (speed)
-	    *cost += extra_cost->ldst.store;
+	    {
+	      rtx address = XEXP (op0, 0);
+	      if (GET_MODE_CLASS (mode) == MODE_INT)
+		*cost += extra_cost->ldst.store;
+	      else if (mode == SFmode)
+		*cost += extra_cost->ldst.storef;
+	      else if (mode == DFmode)
+		*cost += extra_cost->ldst.stored;
 
-	  if (op1 != const0_rtx)
-	    *cost += rtx_cost (op1, SET, 1, speed);
+	      *cost +=
+		COSTS_N_INSNS (aarch64_address_cost (address, mode,
+						     0, speed));
+	    }
+
+	  *cost += rtx_cost (op1, SET, 1, speed);
 	  return true;
 
 	case SUBREG:
 	  if (! REG_P (SUBREG_REG (op0)))
 	    *cost += rtx_cost (SUBREG_REG (op0), SET, 0, speed);
+
 	  /* Fall through.  */
 	case REG:
-	  /* Cost is just the cost of the RHS of the set.  */
-	  *cost += rtx_cost (op1, SET, 1, true);
+	  /* const0_rtx is in general free, but we will use an
+	     instruction to set a register to 0.  */
+          if (REG_P (op1) || op1 == const0_rtx)
+            {
+              /* The cost is 1 per register copied.  */
+              int n_minus_1 = (GET_MODE_SIZE (GET_MODE (op0)) - 1)
+			      / UNITS_PER_WORD;
+              *cost = COSTS_N_INSNS (n_minus_1 + 1);
+            }
+          else
+	    /* Cost is just the cost of the RHS of the set.  */
+	    *cost += rtx_cost (op1, SET, 1, speed);
 	  return true;
 
-	case ZERO_EXTRACT:  /* Bit-field insertion.  */
+	case ZERO_EXTRACT:
 	case SIGN_EXTRACT:
-	  /* Strip any redundant widening of the RHS to meet the width of
-	     the target.  */
+	  /* Bit-field insertion.  Strip any redundant widening of
+	     the RHS to meet the width of the target.  */
 	  if (GET_CODE (op1) == SUBREG)
 	    op1 = SUBREG_REG (op1);
 	  if ((GET_CODE (op1) == ZERO_EXTEND
@@ -4579,24 +4943,138 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	      && (GET_MODE_BITSIZE (GET_MODE (XEXP (op1, 0)))
 		  >= INTVAL (XEXP (op0, 1))))
 	    op1 = XEXP (op1, 0);
-	  *cost += rtx_cost (op1, SET, 1, speed);
+
+          if (CONST_INT_P (op1))
+            {
+              /* MOV immediate is assumed to always be cheap.  */
+              *cost = COSTS_N_INSNS (1);
+            }
+          else
+            {
+              /* BFM.  */
+	      if (speed)
+		*cost += extra_cost->alu.bfi;
+              *cost += rtx_cost (op1, (enum rtx_code) code, 1, speed);
+            }
+
 	  return true;
 
 	default:
+	  /* We can't make sense of this, assume default cost.  */
+          *cost = COSTS_N_INSNS (1);
 	  break;
 	}
       return false;
 
+    case CONST_INT:
+      /* If an instruction can incorporate a constant within the
+	 instruction, the instruction's expression avoids calling
+	 rtx_cost() on the constant.  If rtx_cost() is called on a
+	 constant, then it is usually because the constant must be
+	 moved into a register by one or more instructions.
+
+	 The exception is constant 0, which can be expressed
+	 as XZR/WZR and is therefore free.  The exception to this is
+	 if we have (set (reg) (const0_rtx)) in which case we must cost
+	 the move.  However, we can catch that when we cost the SET, so
+	 we don't need to consider that here.  */
+      if (x == const0_rtx)
+	*cost = 0;
+      else
+	{
+	  /* To an approximation, building any other constant is
+	     proportionally expensive to the number of instructions
+	     required to build that constant.  This is true whether we
+	     are compiling for SPEED or otherwise.  */
+	  *cost = COSTS_N_INSNS (aarch64_build_constant (0,
+							 INTVAL (x),
+							 false));
+	}
+      return true;
+
+    case CONST_DOUBLE:
+      if (speed)
+	{
+	  /* mov[df,sf]_aarch64.  */
+	  if (aarch64_float_const_representable_p (x))
+	    /* FMOV (scalar immediate).  */
+	    *cost += extra_cost->fp[mode == DFmode].fpconst;
+	  else if (!aarch64_float_const_zero_rtx_p (x))
+	    {
+	      /* This will be a load from memory.  */
+	      if (mode == DFmode)
+		*cost += extra_cost->ldst.loadd;
+	      else
+		*cost += extra_cost->ldst.loadf;
+	    }
+	  else
+	    /* Otherwise this is +0.0.  We get this using MOVI d0, #0
+	       or MOV v0.s[0], wzr - neither of which are modeled by the
+	       cost tables.  Just use the default cost.  */
+	    {
+	    }
+	}
+
+      return true;
+
     case MEM:
       if (speed)
-	*cost += extra_cost->ldst.load;
+	{
+	  /* For loads we want the base cost of a load, plus an
+	     approximation for the additional cost of the addressing
+	     mode.  */
+	  rtx address = XEXP (x, 0);
+	  if (GET_MODE_CLASS (mode) == MODE_INT)
+	    *cost += extra_cost->ldst.load;
+	  else if (mode == SFmode)
+	    *cost += extra_cost->ldst.loadf;
+	  else if (mode == DFmode)
+	    *cost += extra_cost->ldst.loadd;
+
+	  *cost +=
+		COSTS_N_INSNS (aarch64_address_cost (address, mode,
+						     0, speed));
+	}
 
       return true;
 
     case NEG:
-      op0 = CONST0_RTX (GET_MODE (x));
-      op1 = XEXP (x, 0);
-      goto cost_minus;
+      op0 = XEXP (x, 0);
+
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
+       {
+          if (GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMPARE
+              || GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMM_COMPARE)
+            {
+              /* CSETM.  */
+              *cost += rtx_cost (XEXP (op0, 0), NEG, 0, speed);
+              return true;
+            }
+
+	  /* Cost this as SUB wzr, X.  */
+          op0 = CONST0_RTX (GET_MODE (x));
+          op1 = XEXP (x, 0);
+          goto cost_minus;
+        }
+
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+        {
+          /* Support (neg(fma...)) as a single instruction only if
+             sign of zeros is unimportant.  This matches the decision
+             making in aarch64.md.  */
+          if (GET_CODE (op0) == FMA && !HONOR_SIGNED_ZEROS (GET_MODE (op0)))
+            {
+	      /* FNMADD.  */
+              *cost = rtx_cost (op0, NEG, 0, speed);
+              return true;
+            }
+	  if (speed)
+	    /* FNEG.  */
+	    *cost += extra_cost->fp[mode == DFmode].neg;
+          return false;
+        }
+
+      return false;
 
     case COMPARE:
       op0 = XEXP (x, 0);
@@ -4609,94 +5087,208 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	  goto cost_logic;
 	}
 
-      /* Comparisons can work if the order is swapped.
-	 Canonicalization puts the more complex operation first, but
-	 we want it in op1.  */
-      if (! (REG_P (op0)
-	     || (GET_CODE (op0) == SUBREG && REG_P (SUBREG_REG (op0)))))
-	{
-	  op0 = XEXP (x, 1);
-	  op1 = XEXP (x, 0);
-	}
-      goto cost_minus;
+      if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
+        {
+          /* TODO: A write to the CC flags possibly costs extra, this
+	     needs encoding in the cost tables.  */
+
+          /* CC_ZESWPmode supports zero extend for free.  */
+          if (GET_MODE (x) == CC_ZESWPmode && GET_CODE (op0) == ZERO_EXTEND)
+            op0 = XEXP (op0, 0);
+
+          /* ANDS.  */
+          if (GET_CODE (op0) == AND)
+            {
+              x = op0;
+              goto cost_logic;
+            }
+
+          if (GET_CODE (op0) == PLUS)
+            {
+	      /* ADDS (and CMN alias).  */
+              x = op0;
+              goto cost_plus;
+            }
+
+          if (GET_CODE (op0) == MINUS)
+            {
+	      /* SUBS.  */
+              x = op0;
+              goto cost_minus;
+            }
+
+          if (GET_CODE (op1) == NEG)
+            {
+	      /* CMN.  */
+	      if (speed)
+		*cost += extra_cost->alu.arith;
+
+              *cost += rtx_cost (op0, COMPARE, 0, speed);
+	      *cost += rtx_cost (XEXP (op1, 0), NEG, 1, speed);
+              return true;
+            }
+
+          /* CMP.
+
+	     Compare can freely swap the order of operands, and
+             canonicalization puts the more complex operation first.
+             But the integer MINUS logic expects the shift/extend
+             operation in op1.  */
+          if (! (REG_P (op0)
+                 || (GET_CODE (op0) == SUBREG && REG_P (SUBREG_REG (op0)))))
+          {
+            op0 = XEXP (x, 1);
+            op1 = XEXP (x, 0);
+          }
+          goto cost_minus;
+        }
+
+      if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+        {
+	  /* FCMP.  */
+	  if (speed)
+	    *cost += extra_cost->fp[mode == DFmode].compare;
+
+          if (CONST_DOUBLE_P (op1) && aarch64_float_const_zero_rtx_p (op1))
+            {
+              /* FCMP supports constant 0.0 for no extra cost. */
+              return true;
+            }
+          return false;
+        }
+
+      return false;
 
     case MINUS:
-      op0 = XEXP (x, 0);
-      op1 = XEXP (x, 1);
+      {
+	op0 = XEXP (x, 0);
+	op1 = XEXP (x, 1);
 
-    cost_minus:
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
-	  || (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC
-	      && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT))
-	{
-	  if (op0 != const0_rtx)
+cost_minus:
+	/* Detect valid immediates.  */
+	if ((GET_MODE_CLASS (mode) == MODE_INT
+	     || (GET_MODE_CLASS (mode) == MODE_CC
+		 && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT))
+	    && CONST_INT_P (op1)
+	    && aarch64_uimm12_shift (INTVAL (op1)))
+	  {
 	    *cost += rtx_cost (op0, MINUS, 0, speed);
 
-	  if (CONST_INT_P (op1))
-	    {
-	      if (!aarch64_uimm12_shift (INTVAL (op1)))
-		*cost += rtx_cost (op1, MINUS, 1, speed);
-	    }
-	  else
-	    {
-	      op1 = aarch64_strip_shift_or_extend (op1);
-	      *cost += rtx_cost (op1, MINUS, 1, speed);
-	    }
-	  return true;
-	}
+	    if (speed)
+	      /* SUB(S) (immediate).  */
+	      *cost += extra_cost->alu.arith;
+	    return true;
 
-      return false;
+	  }
+
+	/* Look for SUB (extended register).  */
+        if (aarch64_rtx_arith_op_extract_p (op1, mode))
+	  {
+	    if (speed)
+	      *cost += extra_cost->alu.arith_shift;
+
+	    *cost += rtx_cost (XEXP (XEXP (op1, 0), 0),
+			       (enum rtx_code) GET_CODE (op1),
+			       0, speed);
+	    return true;
+	  }
+
+	rtx new_op1 = aarch64_strip_extend (op1);
+
+	/* Cost this as an FMA-alike operation.  */
+	if ((GET_CODE (new_op1) == MULT
+	     || GET_CODE (new_op1) == ASHIFT)
+	    && code != COMPARE)
+	  {
+	    *cost += aarch64_rtx_mult_cost (new_op1, MULT,
+					    (enum rtx_code) code,
+					    speed);
+	    *cost += rtx_cost (op0, MINUS, 0, speed);
+	    return true;
+	  }
+
+	*cost += rtx_cost (new_op1, MINUS, 1, speed);
+
+	if (speed)
+	  {
+	    if (GET_MODE_CLASS (mode) == MODE_INT)
+	      /* SUB(S).  */
+	      *cost += extra_cost->alu.arith;
+	    else if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	      /* FSUB.  */
+	      *cost += extra_cost->fp[mode == DFmode].addsub;
+	  }
+	return true;
+      }
 
     case PLUS:
-      op0 = XEXP (x, 0);
-      op1 = XEXP (x, 1);
+      {
+	rtx new_op0;
 
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
-	{
-	  if (CONST_INT_P (op1) && aarch64_uimm12_shift (INTVAL (op1)))
-	    {
-	      *cost += rtx_cost (op0, PLUS, 0, speed);
-	    }
-	  else
-	    {
-	      rtx new_op0 = aarch64_strip_shift_or_extend (op0);
+	op0 = XEXP (x, 0);
+	op1 = XEXP (x, 1);
 
-	      if (new_op0 == op0
-		  && GET_CODE (op0) == MULT)
-		{
-		  if ((GET_CODE (XEXP (op0, 0)) == ZERO_EXTEND
-		       && GET_CODE (XEXP (op0, 1)) == ZERO_EXTEND)
-		      || (GET_CODE (XEXP (op0, 0)) == SIGN_EXTEND
-			  && GET_CODE (XEXP (op0, 1)) == SIGN_EXTEND))
-		    {
-		      *cost += (rtx_cost (XEXP (XEXP (op0, 0), 0), MULT, 0,
-					  speed)
-				+ rtx_cost (XEXP (XEXP (op0, 1), 0), MULT, 1,
-					    speed)
-				+ rtx_cost (op1, PLUS, 1, speed));
-		      if (speed)
-			*cost +=
-			  extra_cost->mult[GET_MODE (x) == DImode].extend_add;
-		      return true;
-		    }
+cost_plus:
+	if (GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMPARE
+	    || GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMM_COMPARE)
+	  {
+	    /* CSINC.  */
+	    *cost += rtx_cost (XEXP (op0, 0), PLUS, 0, speed);
+	    *cost += rtx_cost (op1, PLUS, 1, speed);
+	    return true;
+	  }
 
-		  *cost += (rtx_cost (XEXP (op0, 0), MULT, 0, speed)
-			    + rtx_cost (XEXP (op0, 1), MULT, 1, speed)
-			    + rtx_cost (op1, PLUS, 1, speed));
+	if (GET_MODE_CLASS (mode) == MODE_INT
+	    && CONST_INT_P (op1)
+	    && aarch64_uimm12_shift (INTVAL (op1)))
+	  {
+	    *cost += rtx_cost (op0, PLUS, 0, speed);
 
-		  if (speed)
-		    *cost += extra_cost->mult[GET_MODE (x) == DImode].add;
+	    if (speed)
+	      /* ADD (immediate).  */
+	      *cost += extra_cost->alu.arith;
+	    return true;
+	  }
 
-		  return true;
-		}
+	/* Look for ADD (extended register).  */
+        if (aarch64_rtx_arith_op_extract_p (op0, mode))
+	  {
+	    if (speed)
+	      *cost += extra_cost->alu.arith_shift;
 
-	      *cost += (rtx_cost (new_op0, PLUS, 0, speed)
-			+ rtx_cost (op1, PLUS, 1, speed));
-	    }
-	  return true;
-	}
+	    *cost += rtx_cost (XEXP (XEXP (op0, 0), 0),
+			       (enum rtx_code) GET_CODE (op0),
+			       0, speed);
+	    return true;
+	  }
 
-      return false;
+	/* Strip any extend, leave shifts behind as we will
+	   cost them through mult_cost.  */
+	new_op0 = aarch64_strip_extend (op0);
+
+	if (GET_CODE (new_op0) == MULT
+	    || GET_CODE (new_op0) == ASHIFT)
+	  {
+	    *cost += aarch64_rtx_mult_cost (new_op0, MULT, PLUS,
+					    speed);
+	    *cost += rtx_cost (op1, PLUS, 1, speed);
+	    return true;
+	  }
+
+	*cost += (rtx_cost (new_op0, PLUS, 0, speed)
+		  + rtx_cost (op1, PLUS, 1, speed));
+
+	if (speed)
+	  {
+	    if (GET_MODE_CLASS (mode) == MODE_INT)
+	      /* ADD.  */
+	      *cost += extra_cost->alu.arith;
+	    else if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	      /* FADD.  */
+	      *cost += extra_cost->fp[mode == DFmode].addsub;
+	  }
+	return true;
+      }
 
     case BSWAP:
       *cost = COSTS_N_INSNS (1);
@@ -4723,117 +5315,252 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
 
+      if (code == AND
+          && GET_CODE (op0) == MULT
+          && CONST_INT_P (XEXP (op0, 1))
+          && CONST_INT_P (op1)
+          && aarch64_uxt_size (exact_log2 (INTVAL (XEXP (op0, 1))),
+                               INTVAL (op1)) != 0)
+        {
+          /* This is a UBFM/SBFM.  */
+          *cost += rtx_cost (XEXP (op0, 0), ZERO_EXTRACT, 0, speed);
+	  if (speed)
+	    *cost += extra_cost->alu.bfx;
+          return true;
+        }
+
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
 	{
+	  /* We possibly get the immediate for free, this is not
+	     modelled.  */
 	  if (CONST_INT_P (op1)
 	      && aarch64_bitmask_imm (INTVAL (op1), GET_MODE (x)))
 	    {
-	      *cost += rtx_cost (op0, AND, 0, speed);
+	      *cost += rtx_cost (op0, (enum rtx_code) code, 0, speed);
+
+	      if (speed)
+		*cost += extra_cost->alu.logical;
+
+	      return true;
 	    }
 	  else
 	    {
+	      rtx new_op0 = op0;
+
+	      /* Handle ORN, EON, or BIC.  */
 	      if (GET_CODE (op0) == NOT)
 		op0 = XEXP (op0, 0);
-	      op0 = aarch64_strip_shift (op0);
-	      *cost += (rtx_cost (op0, AND, 0, speed)
-			+ rtx_cost (op1, AND, 1, speed));
+
+	      new_op0 = aarch64_strip_shift (op0);
+
+	      /* If we had a shift on op0 then this is a logical-shift-
+		 by-register/immediate operation.  Otherwise, this is just
+		 a logical operation.  */
+	      if (speed)
+		{
+		  if (new_op0 != op0)
+		    {
+		      /* Shift by immediate.  */
+		      if (CONST_INT_P (XEXP (op0, 1)))
+			*cost += extra_cost->alu.log_shift;
+		      else
+			*cost += extra_cost->alu.log_shift_reg;
+		    }
+		  else
+		    *cost += extra_cost->alu.logical;
+		}
+
+	      /* In both cases we want to cost both operands.  */
+	      *cost += rtx_cost (new_op0, (enum rtx_code) code, 0, speed)
+		       + rtx_cost (op1, (enum rtx_code) code, 1, speed);
+
+	      return true;
 	    }
-	  return true;
 	}
+      return false;
+
+    case NOT:
+      /* MVN.  */
+      if (speed)
+	*cost += extra_cost->alu.logical;
+
+      /* The logical instruction could have the shifted register form,
+         but the cost is the same if the shift is processed as a separate
+         instruction, so we don't bother with it here.  */
       return false;
 
     case ZERO_EXTEND:
-      if ((GET_MODE (x) == DImode
-	   && GET_MODE (XEXP (x, 0)) == SImode)
-	  || GET_CODE (XEXP (x, 0)) == MEM)
+
+      op0 = XEXP (x, 0);
+      /* If a value is written in SI mode, then zero extended to DI
+	 mode, the operation will in general be free as a write to
+	 a 'w' register implicitly zeroes the upper bits of an 'x'
+	 register.  However, if this is
+
+	   (set (reg) (zero_extend (reg)))
+
+	 we must cost the explicit register move.  */
+      if (mode == DImode
+	  && GET_MODE (op0) == SImode
+	  && outer == SET)
 	{
-	  *cost += rtx_cost (XEXP (x, 0), ZERO_EXTEND, 0, speed);
+	  int op_cost = rtx_cost (XEXP (x, 0), ZERO_EXTEND, 0, speed);
+
+	  if (!op_cost && speed)
+	    /* MOV.  */
+	    *cost += extra_cost->alu.extend;
+	  else
+	    /* Free, the cost is that of the SI mode operation.  */
+	    *cost = op_cost;
+
 	  return true;
 	}
+      else if (MEM_P (XEXP (x, 0)))
+	{
+	  /* All loads can zero extend to any size for free.  */
+	  *cost = rtx_cost (XEXP (x, 0), ZERO_EXTEND, param, speed);
+	  return true;
+	}
+
+      /* UXTB/UXTH.  */
+      if (speed)
+	*cost += extra_cost->alu.extend;
+
       return false;
 
     case SIGN_EXTEND:
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	{
-	  *cost += rtx_cost (XEXP (x, 0), SIGN_EXTEND, 0, speed);
+	  /* LDRSH.  */
+	  if (speed)
+	    {
+	      rtx address = XEXP (XEXP (x, 0), 0);
+	      *cost += extra_cost->ldst.load_sign_extend;
+
+	      *cost +=
+		COSTS_N_INSNS (aarch64_address_cost (address, mode,
+						     0, speed));
+	    }
 	  return true;
 	}
+
+      if (speed)
+	*cost += extra_cost->alu.extend;
       return false;
 
+    case ASHIFT:
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+
+      if (CONST_INT_P (op1))
+        {
+	  /* LSL (immediate), UBMF, UBFIZ and friends.  These are all
+	     aliases.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift;
+
+          /* We can incorporate zero/sign extend for free.  */
+          if (GET_CODE (op0) == ZERO_EXTEND
+              || GET_CODE (op0) == SIGN_EXTEND)
+            op0 = XEXP (op0, 0);
+
+          *cost += rtx_cost (op0, ASHIFT, 0, speed);
+          return true;
+        }
+      else
+        {
+	  /* LSLV.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift_reg;
+
+	  return false;  /* All arguments need to be in registers.  */
+        }
+
     case ROTATE:
-      if (!CONST_INT_P (XEXP (x, 1)))
-	*cost += COSTS_N_INSNS (2);
-      /* Fall through.  */
     case ROTATERT:
     case LSHIFTRT:
-    case ASHIFT:
     case ASHIFTRT:
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
 
-      /* Shifting by a register often takes an extra cycle.  */
-      if (speed && !CONST_INT_P (XEXP (x, 1)))
-	*cost += extra_cost->alu.arith_shift_reg;
+      if (CONST_INT_P (op1))
+	{
+	  /* ASR (immediate) and friends.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift;
 
-      *cost += rtx_cost (XEXP (x, 0), ASHIFT, 0, speed);
+	  *cost += rtx_cost (op0, (enum rtx_code) code, 0, speed);
+	  return true;
+	}
+      else
+	{
+
+	  /* ASR (register) and friends.  */
+	  if (speed)
+	    *cost += extra_cost->alu.shift_reg;
+
+	  return false;  /* All arguments need to be in registers.  */
+	}
+
+    case SYMBOL_REF:
+
+      if (aarch64_cmodel == AARCH64_CMODEL_LARGE)
+	{
+	  /* LDR.  */
+	  if (speed)
+	    *cost += extra_cost->ldst.load;
+	}
+      else if (aarch64_cmodel == AARCH64_CMODEL_SMALL
+	       || aarch64_cmodel == AARCH64_CMODEL_SMALL_PIC)
+	{
+	  /* ADRP, followed by ADD.  */
+	  *cost += COSTS_N_INSNS (1);
+	  if (speed)
+	    *cost += 2 * extra_cost->alu.arith;
+	}
+      else if (aarch64_cmodel == AARCH64_CMODEL_TINY
+	       || aarch64_cmodel == AARCH64_CMODEL_TINY_PIC)
+	{
+	  /* ADR.  */
+	  if (speed)
+	    *cost += extra_cost->alu.arith;
+	}
+
+      if (flag_pic)
+	{
+	  /* One extra load instruction, after accessing the GOT.  */
+	  *cost += COSTS_N_INSNS (1);
+	  if (speed)
+	    *cost += extra_cost->ldst.load;
+	}
       return true;
 
     case HIGH:
-      if (!CONSTANT_P (XEXP (x, 0)))
-	*cost += rtx_cost (XEXP (x, 0), HIGH, 0, speed);
-      return true;
-
     case LO_SUM:
-      if (!CONSTANT_P (XEXP (x, 1)))
-	*cost += rtx_cost (XEXP (x, 1), LO_SUM, 1, speed);
-      *cost += rtx_cost (XEXP (x, 0), LO_SUM, 0, speed);
+      /* ADRP/ADD (immediate).  */
+      if (speed)
+	*cost += extra_cost->alu.arith;
       return true;
 
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
-      *cost += rtx_cost (XEXP (x, 0), ZERO_EXTRACT, 0, speed);
+      /* UBFX/SBFX.  */
+      if (speed)
+	*cost += extra_cost->alu.bfx;
+
+      /* We can trust that the immediates used will be correct (there
+	 are no by-register forms), so we need only cost op0.  */
+      *cost += rtx_cost (XEXP (x, 0), (enum rtx_code) code, 0, speed);
       return true;
 
     case MULT:
-      op0 = XEXP (x, 0);
-      op1 = XEXP (x, 1);
-
-      *cost = COSTS_N_INSNS (1);
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
-	{
-	  if (CONST_INT_P (op1)
-	      && exact_log2 (INTVAL (op1)) > 0)
-	    {
-	      *cost += rtx_cost (op0, ASHIFT, 0, speed);
-	      return true;
-	    }
-
-	  if ((GET_CODE (op0) == ZERO_EXTEND
-	       && GET_CODE (op1) == ZERO_EXTEND)
-	      || (GET_CODE (op0) == SIGN_EXTEND
-		  && GET_CODE (op1) == SIGN_EXTEND))
-	    {
-	      *cost += (rtx_cost (XEXP (op0, 0), MULT, 0, speed)
-			+ rtx_cost (XEXP (op1, 0), MULT, 1, speed));
-	      if (speed)
-		*cost += extra_cost->mult[GET_MODE (x) == DImode].extend;
-	      return true;
-	    }
-
-	  if (speed)
-	    *cost += extra_cost->mult[GET_MODE (x) == DImode].simple;
-	}
-      else if (speed)
-	{
-	  if (GET_MODE (x) == DFmode)
-	    *cost += extra_cost->fp[1].mult;
-	  else if (GET_MODE (x) == SFmode)
-	    *cost += extra_cost->fp[0].mult;
-	}
-
-      return false;  /* All arguments need to be in registers.  */
+      *cost += aarch64_rtx_mult_cost (x, MULT, 0, speed);
+      /* aarch64_rtx_mult_cost always handles recursion to its
+	 operands.  */
+      return true;
 
     case MOD:
     case UMOD:
-      *cost = COSTS_N_INSNS (2);
       if (speed)
 	{
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
@@ -4850,53 +5577,237 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 
     case DIV:
     case UDIV:
-      *cost = COSTS_N_INSNS (1);
+    case SQRT:
       if (speed)
 	{
-	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
-	    *cost += extra_cost->mult[GET_MODE (x) == DImode].idiv;
-	  else if (GET_MODE (x) == DFmode)
-	    *cost += extra_cost->fp[1].div;
-	  else if (GET_MODE (x) == SFmode)
-	    *cost += extra_cost->fp[0].div;
+	  if (GET_MODE_CLASS (mode) == MODE_INT)
+	    /* There is no integer SQRT, so only DIV and UDIV can get
+	       here.  */
+	    *cost += extra_cost->mult[mode == DImode].idiv;
+	  else
+	    *cost += extra_cost->fp[mode == DFmode].div;
 	}
       return false;  /* All arguments need to be in registers.  */
 
+    case IF_THEN_ELSE:
+      op2 = XEXP (x, 2);
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+
+      if (GET_CODE (op1) == PC || GET_CODE (op2) == PC)
+        {
+          /* Conditional branch.  */
+          if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+	    return true;
+	  else
+	    {
+	      if (GET_CODE (op0) == NE
+		  || GET_CODE (op0) == EQ)
+		{
+		  rtx inner = XEXP (op0, 0);
+		  rtx comparator = XEXP (op0, 1);
+
+		  if (comparator == const0_rtx)
+		    {
+		      /* TBZ/TBNZ/CBZ/CBNZ.  */
+		      if (GET_CODE (inner) == ZERO_EXTRACT)
+			/* TBZ/TBNZ.  */
+			*cost += rtx_cost (XEXP (inner, 0), ZERO_EXTRACT,
+					   0, speed);
+		      else
+			/* CBZ/CBNZ.  */
+			*cost += rtx_cost (inner, GET_CODE (op0), 0, speed);
+
+		      return true;
+		    }
+		}
+	      else if (GET_CODE (op0) == LT
+		       || GET_CODE (op0) == GE)
+		{
+		  rtx comparator = XEXP (op0, 1);
+
+		  /* TBZ/TBNZ.  */
+		  if (comparator == const0_rtx)
+		    return true;
+		}
+	    }
+        }
+      else if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+        {
+          /* It's a conditional operation based on the status flags,
+             so it must be some flavor of CSEL.  */
+
+          /* CSNEG, CSINV, and CSINC are handled for free as part of CSEL.  */
+          if (GET_CODE (op1) == NEG
+              || GET_CODE (op1) == NOT
+              || (GET_CODE (op1) == PLUS && XEXP (op1, 1) == const1_rtx))
+            op1 = XEXP (op1, 0);
+
+          *cost += rtx_cost (op1, IF_THEN_ELSE, 1, speed);
+          *cost += rtx_cost (op2, IF_THEN_ELSE, 2, speed);
+          return true;
+        }
+
+      /* We don't know what this is, cost all operands.  */
+      return false;
+
+    case EQ:
+    case NE:
+    case GT:
+    case GTU:
+    case LT:
+    case LTU:
+    case GE:
+    case GEU:
+    case LE:
+    case LEU:
+
+      return false; /* All arguments must be in registers.  */
+
+    case FMA:
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+      op2 = XEXP (x, 2);
+
+      if (speed)
+	*cost += extra_cost->fp[mode == DFmode].fma;
+
+      /* FMSUB, FNMADD, and FNMSUB are free.  */
+      if (GET_CODE (op0) == NEG)
+        op0 = XEXP (op0, 0);
+
+      if (GET_CODE (op2) == NEG)
+        op2 = XEXP (op2, 0);
+
+      /* aarch64_fnma4_elt_to_64v2df has the NEG as operand 1,
+	 and the by-element operand as operand 0.  */
+      if (GET_CODE (op1) == NEG)
+        op1 = XEXP (op1, 0);
+
+      /* Catch vector-by-element operations.  The by-element operand can
+	 either be (vec_duplicate (vec_select (x))) or just
+	 (vec_select (x)), depending on whether we are multiplying by
+	 a vector or a scalar.
+
+	 Canonicalization is not very good in these cases, FMA4 will put the
+	 by-element operand as operand 0, FNMA4 will have it as operand 1.  */
+      if (GET_CODE (op0) == VEC_DUPLICATE)
+	op0 = XEXP (op0, 0);
+      else if (GET_CODE (op1) == VEC_DUPLICATE)
+	op1 = XEXP (op1, 0);
+
+      if (GET_CODE (op0) == VEC_SELECT)
+	op0 = XEXP (op0, 0);
+      else if (GET_CODE (op1) == VEC_SELECT)
+	op1 = XEXP (op1, 0);
+
+      /* If the remaining parameters are not registers,
+         get the cost to put them into registers.  */
+      *cost += rtx_cost (op0, FMA, 0, speed);
+      *cost += rtx_cost (op1, FMA, 1, speed);
+      *cost += rtx_cost (op2, FMA, 2, speed);
+      return true;
+
+    case FLOAT_EXTEND:
+      if (speed)
+	*cost += extra_cost->fp[mode == DFmode].widen;
+      return false;
+
+    case FLOAT_TRUNCATE:
+      if (speed)
+	*cost += extra_cost->fp[mode == DFmode].narrow;
+      return false;
+
+    case ABS:
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	{
+	  /* FABS and FNEG are analogous.  */
+	  if (speed)
+	    *cost += extra_cost->fp[mode == DFmode].neg;
+	}
+      else
+	{
+	  /* Integer ABS will either be split to
+	     two arithmetic instructions, or will be an ABS
+	     (scalar), which we don't model.  */
+	  *cost = COSTS_N_INSNS (2);
+	  if (speed)
+	    *cost += 2 * extra_cost->alu.arith;
+	}
+      return false;
+
+    case SMAX:
+    case SMIN:
+      if (speed)
+	{
+	  /* FMAXNM/FMINNM/FMAX/FMIN.
+	     TODO: This may not be accurate for all implementations, but
+	     we do not model this in the cost tables.  */
+	  *cost += extra_cost->fp[mode == DFmode].addsub;
+	}
+      return false;
+
+    case TRUNCATE:
+
+      /* Decompose <su>muldi3_highpart.  */
+      if (/* (truncate:DI  */
+	  mode == DImode
+	  /*   (lshiftrt:TI  */
+          && GET_MODE (XEXP (x, 0)) == TImode
+          && GET_CODE (XEXP (x, 0)) == LSHIFTRT
+	  /*      (mult:TI  */
+          && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
+	  /*        (ANY_EXTEND:TI (reg:DI))
+	            (ANY_EXTEND:TI (reg:DI)))  */
+          && ((GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == ZERO_EXTEND
+               && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == ZERO_EXTEND)
+              || (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SIGN_EXTEND
+                  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == SIGN_EXTEND))
+          && GET_MODE (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 0)) == DImode
+          && GET_MODE (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 1), 0)) == DImode
+	  /*     (const_int 64)  */
+          && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+          && UINTVAL (XEXP (XEXP (x, 0), 1)) == 64)
+        {
+          /* UMULH/SMULH.  */
+	  if (speed)
+	    *cost += extra_cost->mult[mode == DImode].extend;
+          *cost += rtx_cost (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 0),
+			     MULT, 0, speed);
+          *cost += rtx_cost (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 1), 0),
+			     MULT, 1, speed);
+          return true;
+        }
+
+      /* Fall through.  */
     default:
-      break;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "\nFailed to cost RTX.  Assuming default cost.\n");
+
+      return true;
     }
   return false;
 }
 
-static int
-aarch64_address_cost (rtx x ATTRIBUTE_UNUSED,
-		  enum machine_mode mode ATTRIBUTE_UNUSED,
-		  addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
+/* Wrapper around aarch64_rtx_costs, dumps the partial, or total cost
+   calculated for X.  This cost is stored in *COST.  Returns true
+   if the total cost of X was calculated.  */
+static bool
+aarch64_rtx_costs_wrapper (rtx x, int code, int outer,
+		   int param, int *cost, bool speed)
 {
-  enum rtx_code c  = GET_CODE (x);
-  const struct cpu_addrcost_table *addr_cost = aarch64_tune_params->addr_cost;
+  bool result = aarch64_rtx_costs (x, code, outer, param, cost, speed);
 
-  if (c == PRE_INC || c == PRE_DEC || c == PRE_MODIFY)
-    return addr_cost->pre_modify;
-
-  if (c == POST_INC || c == POST_DEC || c == POST_MODIFY)
-    return addr_cost->post_modify;
-
-  if (c == PLUS)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	return addr_cost->imm_offset;
-      else if (GET_CODE (XEXP (x, 0)) == MULT
-	       || GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
-	       || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
-	return addr_cost->register_extend;
-
-      return addr_cost->register_offset;
+      print_rtl_single (dump_file, x);
+      fprintf (dump_file, "\n%s cost: %d (%s)\n",
+	       speed ? "Hot" : "Cold",
+	       *cost, result ? "final" : "partial");
     }
-  else if (c == MEM || c == LABEL_REF || c == SYMBOL_REF)
-    return addr_cost->imm_offset;
 
-  return 0;
+  return result;
 }
 
 static int
@@ -5324,7 +6235,7 @@ static struct machine_function *
 aarch64_init_machine_status (void)
 {
   struct machine_function *machine;
-  machine = ggc_alloc_cleared_machine_function ();
+  machine = ggc_cleared_alloc<machine_function> ();
   return machine;
 }
 
@@ -8539,7 +9450,7 @@ aarch64_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 #define TARGET_RETURN_IN_MSB aarch64_return_in_msb
 
 #undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS aarch64_rtx_costs
+#define TARGET_RTX_COSTS aarch64_rtx_costs_wrapper
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE aarch64_sched_issue_rate

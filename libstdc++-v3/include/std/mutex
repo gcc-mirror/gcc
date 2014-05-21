@@ -400,22 +400,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       explicit unique_lock(mutex_type& __m)
-      : _M_device(&__m), _M_owns(false)
+      : _M_device(std::__addressof(__m)), _M_owns(false)
       {
 	lock();
 	_M_owns = true;
       }
 
       unique_lock(mutex_type& __m, defer_lock_t) noexcept
-      : _M_device(&__m), _M_owns(false)
+      : _M_device(std::__addressof(__m)), _M_owns(false)
       { }
 
       unique_lock(mutex_type& __m, try_to_lock_t)
-      : _M_device(&__m), _M_owns(_M_device->try_lock())
+      : _M_device(std::__addressof(__m)), _M_owns(_M_device->try_lock())
       { }
 
       unique_lock(mutex_type& __m, adopt_lock_t)
-      : _M_device(&__m), _M_owns(true)
+      : _M_device(std::__addressof(__m)), _M_owns(true)
       {
 	// XXX calling thread owns mutex
       }
@@ -423,13 +423,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Clock, typename _Duration>
 	unique_lock(mutex_type& __m,
 		    const chrono::time_point<_Clock, _Duration>& __atime)
-	: _M_device(&__m), _M_owns(_M_device->try_lock_until(__atime))
+	: _M_device(std::__addressof(__m)),
+	  _M_owns(_M_device->try_lock_until(__atime))
 	{ }
 
       template<typename _Rep, typename _Period>
 	unique_lock(mutex_type& __m,
 		    const chrono::duration<_Rep, _Period>& __rtime)
-	: _M_device(&__m), _M_owns(_M_device->try_lock_for(__rtime))
+	: _M_device(std::__addressof(__m)),
+	  _M_owns(_M_device->try_lock_for(__rtime))
 	{ }
 
       ~unique_lock()
@@ -563,37 +565,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool		_M_owns; // XXX use atomic_bool
     };
 
-  /// Partial specialization for unique_lock objects.
+  /// Swap overload for unique_lock objects.
   template<typename _Mutex>
     inline void
     swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>& __y) noexcept
     { __x.swap(__y); }
 
-  template<int _Idx>
-    struct __unlock_impl
-    {
-      template<typename... _Lock>
-	static void
-	__do_unlock(tuple<_Lock&...>& __locks)
-	{
-	  std::get<_Idx>(__locks).unlock();
-	  __unlock_impl<_Idx - 1>::__do_unlock(__locks);
-	}
-    };
-
-  template<>
-    struct __unlock_impl<-1>
-    {
-      template<typename... _Lock>
-	static void
-	__do_unlock(tuple<_Lock&...>&)
-	{ }
-    };
-
   template<typename _Lock>
-    unique_lock<_Lock>
+    inline unique_lock<_Lock>
     __try_to_lock(_Lock& __l)
-    { return unique_lock<_Lock>(__l, try_to_lock); }
+    { return unique_lock<_Lock>{__l, try_to_lock}; }
 
   template<int _Idx, bool _Continue = true>
     struct __try_lock_impl
@@ -603,11 +584,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__do_try_lock(tuple<_Lock&...>& __locks, int& __idx)
 	{
           __idx = _Idx;
-          auto __lock = __try_to_lock(std::get<_Idx>(__locks));
+          auto __lock = std::__try_to_lock(std::get<_Idx>(__locks));
           if (__lock.owns_lock())
             {
-              __try_lock_impl<_Idx + 1, _Idx + 2 < sizeof...(_Lock)>::
-                __do_try_lock(__locks, __idx);
+	      constexpr bool __cont = _Idx + 2 < sizeof...(_Lock);
+	      using __try_locker = __try_lock_impl<_Idx + 1, __cont>;
+	      __try_locker::__do_try_lock(__locks, __idx);
               if (__idx == -1)
                 __lock.release();
             }
@@ -622,7 +604,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__do_try_lock(tuple<_Lock&...>& __locks, int& __idx)
 	{
           __idx = _Idx;
-          auto __lock = __try_to_lock(std::get<_Idx>(__locks));
+          auto __lock = std::__try_to_lock(std::get<_Idx>(__locks));
           if (__lock.owns_lock())
             {
               __idx = -1;
@@ -665,16 +647,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  and unlock().  If the call exits via an exception any locks that were
    *  obtained will be released.
    */
-  template<typename _L1, typename _L2, typename ..._L3>
+  template<typename _L1, typename _L2, typename... _L3>
     void
     lock(_L1& __l1, _L2& __l2, _L3&... __l3)
     {
       while (true)
         {
+          using __try_locker = __try_lock_impl<0, sizeof...(_L3) != 0>;
           unique_lock<_L1> __first(__l1);
           int __idx;
           auto __locks = std::tie(__l2, __l3...);
-          __try_lock_impl<0, sizeof...(_L3)>::__do_try_lock(__locks, __idx);
+          __try_locker::__do_try_lock(__locks, __idx);
           if (__idx == -1)
             {
               __first.release();
@@ -735,7 +718,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_HAVE_TLS
       auto __bound_functor = std::__bind_simple(std::forward<_Callable>(__f),
           std::forward<_Args>(__args)...);
-      __once_callable = &__bound_functor;
+      __once_callable = std::__addressof(__bound_functor);
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
       unique_lock<mutex> __functor_lock(__get_once_mutex());

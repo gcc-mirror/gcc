@@ -575,6 +575,10 @@ typedef struct gfc_unit
   
   /* Formatting buffer.  */
   struct fbuf *fbuf;
+  
+  /* Function pointer, points to list_read worker functions.  */
+  int (*next_char_fn_ptr) (st_parameter_dt *);
+  void (*push_char_fn_ptr) (st_parameter_dt *, int);
 }
 gfc_unit;
 

@@ -19,6 +19,5 @@ void C::test() const
 {
    D d;
 
-   d.a(*this);	// { dg-error "match" } *this is const, so should get error
-   // { dg-message "candidate" "candidate note" { target *-*-* } 22 }
+   d.a(*this);	// { dg-error "const" } *this is const, so should get error
 }

@@ -58,7 +58,7 @@ insert_uses (void)
 	{
 	  if (!INSN_P (insn))
 	    continue;
-	  mode = MODE_NEEDED (e, insn);
+	  mode = epiphany_mode_needed (e, insn);
 	  if (mode == no_mode)
 	    continue;
 	  if (target_insert_mode_switch_use)

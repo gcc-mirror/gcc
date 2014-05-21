@@ -8,4 +8,4 @@ void bar()
 {
   foo(A<0>(), A<1>()); // { dg-error "no matching" }
 }
-// { dg-message "candidate|parameter 'N' ('0' and '1')" "" { target *-*-* } 9 }
+// { dg-message "deduced conflicting values" "" { target *-*-* } 9 }

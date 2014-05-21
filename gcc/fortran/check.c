@@ -1822,7 +1822,7 @@ gfc_check_fn_rc2008 (gfc_expr *a)
 
   if (a->ts.type == BT_COMPLEX
       && !gfc_notify_std (GFC_STD_F2008, "COMPLEX argument '%s' "
-			  "argument of '%s' intrinsic at %L", 
+			  "of '%s' intrinsic at %L", 
 			  gfc_current_intrinsic_arg[0]->name, 
 			  gfc_current_intrinsic, &a->where))
     return false;

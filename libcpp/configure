@@ -5566,6 +5566,92 @@ _ACEOF
 
 fi
 
+ac_fn_c_check_type "$LINENO" "long long" "ac_cv_type_long_long" "$ac_includes_default"
+if test "x$ac_cv_type_long_long" = x""yes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LONG_LONG 1
+_ACEOF
+
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of long long" >&5
+$as_echo_n "checking size of long long... " >&6; }
+if test "${ac_cv_sizeof_long_long+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (long long))" "ac_cv_sizeof_long_long"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type_long_long" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+{ as_fn_set_status 77
+as_fn_error "cannot compute sizeof (long long)
+See \`config.log' for more details." "$LINENO" 5; }; }
+   else
+     ac_cv_sizeof_long_long=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long_long" >&5
+$as_echo "$ac_cv_sizeof_long_long" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_LONG_LONG $ac_cv_sizeof_long_long
+_ACEOF
+
+
+fi
+
+ac_fn_c_check_type "$LINENO" "__int64" "ac_cv_type___int64" "$ac_includes_default"
+if test "x$ac_cv_type___int64" = x""yes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE___INT64 1
+_ACEOF
+
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of __int64" >&5
+$as_echo_n "checking size of __int64... " >&6; }
+if test "${ac_cv_sizeof___int64+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (__int64))" "ac_cv_sizeof___int64"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type___int64" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+{ as_fn_set_status 77
+as_fn_error "cannot compute sizeof (__int64)
+See \`config.log' for more details." "$LINENO" 5; }; }
+   else
+     ac_cv_sizeof___int64=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int64" >&5
+$as_echo "$ac_cv_sizeof___int64" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF___INT64 $ac_cv_sizeof___int64
+_ACEOF
+
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether struct tm is in sys/time.h or time.h" >&5
 $as_echo_n "checking whether struct tm is in sys/time.h or time.h... " >&6; }
 if test "${ac_cv_struct_tm+set}" = set; then :
@@ -7150,41 +7236,6 @@ if test $enable_canonical_system_headers != no; then
 $as_echo "#define ENABLE_CANONICAL_SYSTEM_HEADERS 1" >>confdefs.h
 
 fi
-
-
-case $target in
-	aarch64*-*-* | \
-	alpha*-*-* | \
-	arm*-*-* | \
-	x86_64-*-* | \
-	ia64-*-* | \
-	hppa*64*-*-* | \
-	i[34567]86-*-* | x86_64-*-solaris2.1[0-9]* | \
-	mips*-*-* | \
-	mmix-*-* | \
-	powerpc*-*-* | \
-	rs6000*-*-* | \
-	s390*-*-* | \
-	sparc*-*-* | \
-	spu-*-* | \
-	sh[123456789lbe]*-*-* | sh-*-* | \
-	tilegx*-*-* | tilepro*-*-* )
-		need_64bit_hwint=yes ;;
-	*)
-		need_64bit_hwint=yes ;;
-esac
-
-case $need_64bit_hwint:$ac_cv_sizeof_long in
-	*:8 | no:*) host_wide_int=long ;;
-	*) host_wide_int='long long' ;;
-esac
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define HOST_WIDE_INT $host_wide_int
-_ACEOF
-
 
 case $target in
   i?86-* | x86_64-*)

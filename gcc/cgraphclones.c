@@ -146,7 +146,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
       if (e->indirect_info)
 	{
 	  new_edge->indirect_info
-	    = ggc_alloc_cleared_cgraph_indirect_call_info ();
+	    = ggc_cleared_alloc<cgraph_indirect_call_info> ();
 	  *new_edge->indirect_info = *e->indirect_info;
 	}
     }
@@ -558,7 +558,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
      that is not weak also.
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
-  if (DECL_ONE_ONLY (old_decl))
+  if (DECL_COMDAT_GROUP (old_decl))
     DECL_SECTION_NAME (new_node->decl) = NULL;
   set_new_clone_decl_and_node_flags (new_node);
   new_node->clone.tree_map = tree_map;

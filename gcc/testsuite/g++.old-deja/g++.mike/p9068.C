@@ -14,7 +14,6 @@ public:
 void foo (ostream& lhs, const C& rhs)
 {
   lhs << rhs.i;		// { dg-error "match" } no such i for any opr << ()
-  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
 }
 
 int& C::i () {

@@ -279,7 +279,7 @@ lto_input_eh_catch_list (struct lto_input_block *ib, struct data_in *data_in,
       lto_tag_check_range (tag, LTO_eh_catch, LTO_eh_catch);
 
       /* Read the catch node.  */
-      n = ggc_alloc_cleared_eh_catch_d ();
+      n = ggc_cleared_alloc<eh_catch_d> ();
       n->type_list = stream_read_tree (ib, data_in);
       n->filter_list = stream_read_tree (ib, data_in);
       n->label = stream_read_tree (ib, data_in);
@@ -319,7 +319,7 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
   if (tag == LTO_null)
     return NULL;
 
-  r = ggc_alloc_cleared_eh_region_d ();
+  r = ggc_cleared_alloc<eh_region_d> ();
   r->index = streamer_read_hwi (ib);
 
   gcc_assert (r->index == ix);
@@ -396,7 +396,7 @@ input_eh_lp (struct lto_input_block *ib, struct data_in *data_in, int ix)
 
   lto_tag_check_range (tag, LTO_eh_landing_pad, LTO_eh_landing_pad);
 
-  lp = ggc_alloc_cleared_eh_landing_pad_d ();
+  lp = ggc_cleared_alloc<eh_landing_pad_d> ();
   lp->index = streamer_read_hwi (ib);
   gcc_assert (lp->index == ix);
   lp->next_lp = (eh_landing_pad) (intptr_t) streamer_read_hwi (ib);
@@ -697,7 +697,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   if (n_loops == 0)
     return;
 
-  struct loops *loops = ggc_alloc_cleared_loops ();
+  struct loops *loops = ggc_cleared_alloc<struct loops> ();
   init_loops_structure (fn, loops, n_loops);
   set_loops_for_fn (fn, loops);
 

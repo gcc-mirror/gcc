@@ -8357,9 +8357,29 @@ label:
       (const_int 2)
       (const_int 2)
       (const_int 0)])
-   (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
-					   (const_string "single")
-					   (const_string "single")))])
+  (set_attr_alternative "fp_mode"
+     [(if_then_else (eq_attr "fmovd" "yes")
+		    (const_string "single") (const_string "none"))
+      (const_string "none")
+      (const_string "single")
+      (const_string "single")
+      (const_string "none")
+      (if_then_else (eq_attr "fmovd" "yes")
+		    (const_string "single") (const_string "none"))
+      (if_then_else (eq_attr "fmovd" "yes")
+		    (const_string "single") (const_string "none"))
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")
+      (const_string "none")])])
 
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
@@ -8804,7 +8824,7 @@ label:
 (define_insn "jump_compact"
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
-  "TARGET_SH1 && !find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)"
+  "TARGET_SH1 && !CROSSING_JUMP_P (insn)"
 {
   /* The length is 16 if the delay slot is unfilled.  */
   if (get_attr_length(insn) > 4)
@@ -11568,34 +11588,34 @@ label:
 ;; Store inverted T bit as MSB in a reg.
 ;; T = 0: 0x80000000 -> reg
 ;; T = 1: 0x00000000 -> reg
-;; On SH2A we can get away without clobbering the T_REG.
+;; On SH2A we can get away without clobbering the T_REG using the movrt insn.
+;; On non SH2A we resort to the following sequence:
+;;	movt	Rn
+;;	tst	Rn,Rn
+;;	rotcr	Rn
+;; The T bit value will be modified during the sequence, but the rotcr insn
+;; will restore its original value.
 (define_insn_and_split "*negt_msb"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(match_operand:SI 1 "negt_reg_shl31_operand"))]
-  "TARGET_SH2A"
+  "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
   rtx tmp = gen_reg_rtx (SImode);
-  emit_insn (gen_movrt (tmp, get_t_reg_rtx ()));
-  emit_insn (gen_rotrsi3 (operands[0], tmp, const1_rtx));
-  DONE;
-})
 
-(define_insn_and_split "*negt_msb"
-  [(set (match_operand:SI 0 "arith_reg_dest")
-	(match_operand:SI 1 "negt_reg_shl31_operand"))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && !TARGET_SH2A"
-  "#"
-  "&& can_create_pseudo_p ()"
-  [(const_int 0)]
-{
-  rtx tmp = gen_reg_rtx (SImode);
-  emit_move_insn (tmp, get_t_reg_rtx ());
-  emit_insn (gen_cmpeqsi_t (tmp, const0_rtx));
-  emit_insn (gen_rotcr (operands[0], tmp, get_t_reg_rtx ()));
+  if (TARGET_SH2A)
+    {
+      emit_insn (gen_movrt (tmp, get_t_reg_rtx ()));
+      emit_insn (gen_rotrsi3 (operands[0], tmp, const1_rtx));
+    }
+  else
+    {
+      emit_move_insn (tmp, get_t_reg_rtx ());
+      emit_insn (gen_cmpeqsi_t (tmp, const0_rtx));
+      emit_insn (gen_rotcr (operands[0], tmp, get_t_reg_rtx ()));
+    }
   DONE;
 })
 
@@ -11624,14 +11644,22 @@ label:
 
 (define_insn "*cset_zero"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(if_then_else:SI (match_operand:SI 1 "t_reg_operand")
+	(if_then_else:SI (match_operand:SI 1 "cbranch_treg_value")
 			 (match_operand:SI 2 "arith_reg_operand" "0")
 			 (const_int 0)))]
   "TARGET_SH1 && TARGET_ZDCBRANCH"
 {
-  return       "bt	0f"	"\n"
-	 "	mov	#0,%0"	"\n"
-	 "0:";
+  int tval = sh_eval_treg_value (operands[1]);
+  if (tval == true)
+    return     "bt	0f"	"\n"
+	   "	mov	#0,%0"	"\n"
+	   "0:";
+  else if (tval == false)
+    return     "bf	0f"	"\n"
+	   "	mov	#0,%0"	"\n"
+	   "0:";
+  else
+    gcc_unreachable ();
 }
   [(set_attr "type" "arith") ;; poor approximation
    (set_attr "length" "4")])

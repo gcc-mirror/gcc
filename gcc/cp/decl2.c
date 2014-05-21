@@ -983,8 +983,7 @@ grokfield (const cp_declarator *declarator,
   if (attrlist)
     cplus_decl_attributes (&value, attrlist, 0);
 
-  if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
-      && CONSTRUCTOR_IS_DIRECT_INIT (init))
+  if (init && DIRECT_LIST_INIT_P (init))
     flags = LOOKUP_NORMAL;
   else
     flags = LOOKUP_IMPLICIT;

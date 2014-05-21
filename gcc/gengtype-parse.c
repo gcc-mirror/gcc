@@ -197,18 +197,19 @@ require2 (int t1, int t2)
   return v;
 }
 
-/* If the next token does not have one of the codes T1, T2 or T3, report a
+/* If the next token does not have one of the codes T1, T2, T3 or T4, report a
    parse error; otherwise return the token's value.  */
 static const char *
-require3 (int t1, int t2, int t3)
+require4 (int t1, int t2, int t3, int t4)
 {
   int u = token ();
   const char *v = advance ();
-  if (u != t1 && u != t2 && u != t3)
+  if (u != t1 && u != t2 && u != t3 && u != t4)
     {
-      parse_error ("expected %s, %s or %s, have %s",
+      parse_error ("expected %s, %s, %s or %s, have %s",
 		   print_token (t1, 0), print_token (t2, 0),
-		   print_token (t3, 0), print_token (u, v));
+		   print_token (t3, 0), print_token (t4, 0),
+		   print_token (u, v));
       return 0;
     }
   return v;
@@ -245,7 +246,9 @@ string_seq (void)
 
 /* The caller has detected a template declaration that starts
    with TMPL_NAME.  Parse up to the closing '>'.  This recognizes
-   simple template declarations of the form ID<ID1,ID2,...,IDn>.
+   simple template declarations of the form ID<ID1,ID2,...,IDn>,
+   potentially with a single level of indirection e.g.
+     ID<ID1 *, ID2, ID3 *, ..., IDn>.
    It does not try to parse anything more sophisticated than that.
 
    Returns the template declaration string "ID<ID1,ID2,...,IDn>".  */
@@ -254,6 +257,7 @@ static const char *
 require_template_declaration (const char *tmpl_name)
 {
   char *str;
+  int num_indirections = 0;
 
   /* Recognize the opening '<'.  */
   require ('<');
@@ -294,9 +298,21 @@ require_template_declaration (const char *tmpl_name)
 	  depth -= 1;
 	  continue;
 	}
-      const char *id = require3 (SCALAR, ID, ',');
+      const char *id = require4 (SCALAR, ID, '*', ',');
       if (id == NULL)
-	id = ",";
+	{
+	  if (T.code == '*')
+	    {
+	      id = "*";
+	      if (num_indirections++)
+		parse_error ("only one level of indirection is supported"
+			     " in template arguments");
+	    }
+	  else
+	    id = ",";
+	}
+      else
+	num_indirections = 0;
       str = concat (str, id, (char *) 0);
     }
   return str;

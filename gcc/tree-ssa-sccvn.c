@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-sccvn.h"
+#include "tree-cfg.h"
+#include "domwalk.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
    Cooper and L. Taylor Simpson in "SCC-Based Value numbering"
@@ -315,6 +317,25 @@ static vn_tables_t current_info;
 static int *rpo_numbers;
 
 #define SSA_VAL(x) (VN_INFO ((x))->valnum)
+
+/* Return the SSA value of the VUSE x, supporting released VDEFs
+   during elimination which will value-number the VDEF to the
+   associated VUSE (but not substitute in the whole lattice).  */
+
+static inline tree
+vuse_ssa_val (tree x)
+{
+  if (!x)
+    return NULL_TREE;
+
+  do
+    {
+      x = SSA_VAL (x);
+    }
+  while (SSA_NAME_IN_FREE_LIST (x));
+
+  return x;
+}
 
 /* This represents the top of the VN lattice, which is the universal
    value.  */
@@ -641,9 +662,6 @@ bool
 vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 {
   unsigned i, j;
-
-  if (vr1->hashcode != vr2->hashcode)
-    return false;
 
   /* Early out if this is not a hash collision.  */
   if (vr1->hashcode != vr2->hashcode)
@@ -1104,6 +1122,7 @@ copy_reference_ops_from_call (gimple call,
   vn_reference_op_s temp;
   unsigned i;
   tree lhs = gimple_call_lhs (call);
+  int lr;
 
   /* If 2 calls have a different non-ssa lhs, vdef value numbers should be
      different.  By adding the lhs here in the vector, we ensure that the
@@ -1118,12 +1137,14 @@ copy_reference_ops_from_call (gimple call,
       result->safe_push (temp);
     }
 
-  /* Copy the type, opcode, function being called and static chain.  */
+  /* Copy the type, opcode, function, static chain and EH region, if any.  */
   memset (&temp, 0, sizeof (temp));
   temp.type = gimple_call_return_type (call);
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
+  if (stmt_could_throw_p (call) && (lr = lookup_stmt_eh_lp (call)) > 0)
+    temp.op2 = size_int (lr);
   temp.off = -1;
   result->safe_push (temp);
 
@@ -1493,7 +1514,7 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse,
   /* Fixup vuse and hash.  */
   if (vr->vuse)
     vr->hashcode = vr->hashcode - SSA_NAME_VERSION (vr->vuse);
-  vr->vuse = SSA_VAL (vuse);
+  vr->vuse = vuse_ssa_val (vuse);
   if (vr->vuse)
     vr->hashcode = vr->hashcode + SSA_NAME_VERSION (vr->vuse);
 
@@ -2033,7 +2054,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
     vnresult = &tmp;
   *vnresult = NULL;
 
-  vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
+  vr1.vuse = vuse_ssa_val (vuse);
   shared_lookup_references.truncate (0);
   shared_lookup_references.safe_grow (operands.length ());
   memcpy (shared_lookup_references.address (),
@@ -2088,7 +2109,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   if (vnresult)
     *vnresult = NULL;
 
-  vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
+  vr1.vuse = vuse_ssa_val (vuse);
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
@@ -2661,6 +2682,25 @@ set_ssa_val_to (tree from, tree to)
   tree currval = SSA_VAL (from);
   HOST_WIDE_INT toff, coff;
 
+  /* The only thing we allow as value numbers are ssa_names
+     and invariants.  So assert that here.  We don't allow VN_TOP
+     as visiting a stmt should produce a value-number other than
+     that.
+     ???  Still VN_TOP can happen for unreachable code, so force
+     it to varying in that case.  Not all code is prepared to
+     get VN_TOP on valueization.  */
+  if (to == VN_TOP)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Forcing value number to varying on "
+		 "receiving VN_TOP\n");
+      to = from;
+    }
+
+  gcc_assert (to != NULL_TREE
+	      && (TREE_CODE (to) == SSA_NAME
+		  || is_gimple_min_invariant (to)));
+
   if (from != to)
     {
       if (currval == from)
@@ -2679,13 +2719,6 @@ set_ssa_val_to (tree from, tree to)
 	       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (to))
 	to = from;
     }
-
-  /* The only thing we allow as value numbers are VN_TOP, ssa_names
-     and invariants.  So assert that here.  */
-  gcc_assert (to != NULL_TREE
-	      && (to == VN_TOP
-		  || TREE_CODE (to) == SSA_NAME
-		  || is_gimple_min_invariant (to)));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3071,7 +3104,6 @@ visit_phi (gimple phi)
   tree result;
   tree sameval = VN_TOP;
   bool allsame = true;
-  unsigned i;
 
   /* TODO: We could check for this in init_sccvn, and replace this
      with a gcc_assert.  */
@@ -3080,27 +3112,30 @@ visit_phi (gimple phi)
 
   /* See if all non-TOP arguments have the same value.  TOP is
      equivalent to everything, so we can ignore it.  */
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
-    {
-      tree def = PHI_ARG_DEF (phi, i);
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
+    if (e->flags & EDGE_EXECUTABLE)
+      {
+	tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
 
-      if (TREE_CODE (def) == SSA_NAME)
-	def = SSA_VAL (def);
-      if (def == VN_TOP)
-	continue;
-      if (sameval == VN_TOP)
-	{
-	  sameval = def;
-	}
-      else
-	{
-	  if (!expressions_equal_p (def, sameval))
-	    {
-	      allsame = false;
-	      break;
-	    }
-	}
-    }
+	if (TREE_CODE (def) == SSA_NAME)
+	  def = SSA_VAL (def);
+	if (def == VN_TOP)
+	  continue;
+	if (sameval == VN_TOP)
+	  {
+	    sameval = def;
+	  }
+	else
+	  {
+	    if (!expressions_equal_p (def, sameval))
+	      {
+		allsame = false;
+		break;
+	      }
+	  }
+      }
 
   /* If all value numbered to the same value, the phi node has that
      value.  */
@@ -3109,12 +3144,14 @@ visit_phi (gimple phi)
       if (is_gimple_min_invariant (sameval))
 	{
 	  VN_INFO (PHI_RESULT (phi))->has_constants = true;
-	  VN_INFO (PHI_RESULT (phi))->expr = sameval;
+	  if (sameval != VN_TOP)
+	    VN_INFO (PHI_RESULT (phi))->expr = sameval;
 	}
       else
 	{
 	  VN_INFO (PHI_RESULT (phi))->has_constants = false;
-	  VN_INFO (PHI_RESULT (phi))->expr = sameval;
+	  if (sameval != VN_TOP)
+	    VN_INFO (PHI_RESULT (phi))->expr = sameval;
 	}
 
       if (TREE_CODE (sameval) == SSA_NAME)
@@ -3566,27 +3603,69 @@ visit_use (tree use)
       else if (is_gimple_call (stmt))
 	{
 	  tree lhs = gimple_call_lhs (stmt);
-
-	  /* ???  We could try to simplify calls.  */
-
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    {
-	      if (stmt_has_constants (stmt))
-		VN_INFO (lhs)->has_constants = true;
+	      /* Try constant folding based on our current lattice.  */
+	      tree simplified = gimple_fold_stmt_to_constant_1 (stmt,
+								vn_valueize);
+	      if (simplified)
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "call ");
+		      print_gimple_expr (dump_file, stmt, 0, 0);
+		      fprintf (dump_file, " simplified to ");
+		      print_generic_expr (dump_file, simplified, 0);
+		      if (TREE_CODE (lhs) == SSA_NAME)
+			fprintf (dump_file, " has constants %d\n",
+				 expr_has_constants (simplified));
+		      else
+			fprintf (dump_file, "\n");
+		    }
+		}
+	      /* Setting value numbers to constants will occasionally
+		 screw up phi congruence because constants are not
+		 uniquely associated with a single ssa name that can be
+		 looked up.  */
+	      if (simplified
+		  && is_gimple_min_invariant (simplified))
+		{
+		  VN_INFO (lhs)->expr = simplified;
+		  VN_INFO (lhs)->has_constants = true;
+		  changed = set_ssa_val_to (lhs, simplified);
+		  if (gimple_vdef (stmt))
+		    changed |= set_ssa_val_to (gimple_vdef (stmt),
+					       gimple_vuse (stmt));
+		  goto done;
+		}
+	      else if (simplified
+		       && TREE_CODE (simplified) == SSA_NAME)
+		{
+		  changed = visit_copy (lhs, simplified);
+		  if (gimple_vdef (stmt))
+		    changed |= set_ssa_val_to (gimple_vdef (stmt),
+					       gimple_vuse (stmt));
+		  goto done;
+		}
 	      else
 		{
-		  /* We reset expr and constantness here because we may
-		     have been value numbering optimistically, and
-		     iterating.  They may become non-constant in this case,
-		     even if they were optimistically constant.  */
-		  VN_INFO (lhs)->has_constants = false;
-		  VN_INFO (lhs)->expr = NULL_TREE;
-		}
+		  if (stmt_has_constants (stmt))
+		    VN_INFO (lhs)->has_constants = true;
+		  else
+		    {
+		      /* We reset expr and constantness here because we may
+			 have been value numbering optimistically, and
+			 iterating.  They may become non-constant in this case,
+			 even if they were optimistically constant.  */
+		      VN_INFO (lhs)->has_constants = false;
+		      VN_INFO (lhs)->expr = NULL_TREE;
+		    }
 
-	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-		{
-		  changed = defs_to_varying (stmt);
-		  goto done;
+		  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+		    {
+		      changed = defs_to_varying (stmt);
+		      goto done;
+		    }
 		}
 	    }
 
@@ -3754,6 +3833,9 @@ process_scc (vec<tree> scc)
 	}
     }
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_scc (dump_file, scc);
+
   /* Iterate over the SCC with the optimistic table until it stops
      changing.  */
   current_info = optimistic_info;
@@ -3779,6 +3861,8 @@ process_scc (vec<tree> scc)
 	changed |= visit_use (var);
     }
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Processing SCC needed %d iterations\n", iterations);
   statistics_histogram_event (cfun, "SCC iterations", iterations);
 
   /* Finally, copy the contents of the no longer used optimistic
@@ -3829,9 +3913,6 @@ extract_and_process_scc_for_name (tree name)
 
   if (scc.length () > 1)
     sort_scc (scc);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    print_scc (dump_file, scc);
 
   process_scc (scc);
 
@@ -4098,6 +4179,119 @@ set_hashtable_value_ids (void)
     set_value_id_for_result (vr->result, &vr->value_id);
 }
 
+class cond_dom_walker : public dom_walker
+{
+public:
+  cond_dom_walker () : dom_walker (CDI_DOMINATORS), fail (false) {}
+
+  virtual void before_dom_children (basic_block);
+
+  bool fail;
+};
+
+void
+cond_dom_walker::before_dom_children (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  if (fail)
+    return;
+
+  /* If any of the predecessor edges that do not come from blocks dominated
+     by us are still marked as possibly executable consider this block
+     reachable.  */
+  bool reachable = bb == ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (!dominated_by_p (CDI_DOMINATORS, e->src, bb))
+      reachable |= (e->flags & EDGE_EXECUTABLE);
+
+  /* If the block is not reachable all outgoing edges are not
+     executable.  */
+  if (!reachable)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Marking all outgoing edges of unreachable "
+		 "BB %d as not executable\n", bb->index);
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->flags &= ~EDGE_EXECUTABLE;
+      return;
+    }
+
+  gimple stmt = last_stmt (bb);
+  if (!stmt)
+    return;
+
+  enum gimple_code code = gimple_code (stmt);
+  if (code != GIMPLE_COND
+      && code != GIMPLE_SWITCH
+      && code != GIMPLE_GOTO)
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Value-numbering operands of stmt ending BB %d: ",
+	       bb->index);
+      print_gimple_stmt (dump_file, stmt, 0, 0);
+    }
+
+  /* Value-number the last stmts SSA uses.  */
+  ssa_op_iter i;
+  tree op;
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+    if (VN_INFO (op)->visited == false
+	&& !DFS (op))
+      {
+	fail = true;
+	return;
+      }
+
+  /* ???  We can even handle stmts with outgoing EH or ABNORMAL edges
+     if value-numbering can prove they are not reachable.  Handling
+     computed gotos is also possible.  */
+  tree val;
+  switch (code)
+    {
+    case GIMPLE_COND:
+      {
+	tree lhs = gimple_cond_lhs (stmt);
+	tree rhs = gimple_cond_rhs (stmt);
+	/* Work hard in computing the condition and take into account
+	   the valueization of the defining stmt.  */
+	if (TREE_CODE (lhs) == SSA_NAME)
+	  lhs = vn_get_expr_for (lhs);
+	if (TREE_CODE (rhs) == SSA_NAME)
+	  rhs = vn_get_expr_for (rhs);
+	val = fold_binary (gimple_cond_code (stmt),
+			   boolean_type_node, lhs, rhs);
+	break;
+      }
+    case GIMPLE_SWITCH:
+      val = gimple_switch_index (stmt);
+      break;
+    case GIMPLE_GOTO:
+      val = gimple_goto_dest (stmt);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (!val)
+    return;
+
+  edge taken = find_taken_edge (bb, vn_valueize (val));
+  if (!taken)
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Marking all edges out of BB %d but (%d -> %d) as "
+	     "not executable\n", bb->index, bb->index, taken->dest->index);
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e != taken)
+      e->flags &= ~EDGE_EXECUTABLE;
+}
+
 /* Do SCCVN.  Returns true if it finished, false if we bailed out
    due to resource constraints.  DEFAULT_VN_WALK_KIND_ specifies
    how we use the alias oracle walking during the VN process.  */
@@ -4105,6 +4299,7 @@ set_hashtable_value_ids (void)
 bool
 run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 {
+  basic_block bb;
   size_t i;
   tree param;
 
@@ -4119,9 +4314,32 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
     {
       tree def = ssa_default_def (cfun, param);
       if (def)
-	VN_INFO (def)->valnum = def;
+	{
+	  VN_INFO (def)->visited = true;
+	  VN_INFO (def)->valnum = def;
+	}
     }
 
+  /* Mark all edges as possibly executable.  */
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->flags |= EDGE_EXECUTABLE;
+    }
+
+  /* Walk all blocks in dominator order, value-numbering the last stmts
+     SSA uses and decide whether outgoing edges are not executable.  */
+  cond_dom_walker walker;
+  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  if (walker.fail)
+    {
+      free_scc_vn ();
+      return false;
+    }
+
+  /* Value-number remaining SSA names.  */
   for (i = 1; i < num_ssa_names; ++i)
     {
       tree name = ssa_name (i);

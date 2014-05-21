@@ -13,5 +13,5 @@ NOMIPS16 int test4 () { return normal_func (); }
 
 /* { dg-final { scan-assembler-not "\tj\tlong_call_func\n" } } */
 /* { dg-final { scan-assembler-not "\tj\tfar_func\n" } } */
-/* { dg-final { scan-assembler     "\tj(|al)\tnear_func\n" } } */
-/* { dg-final { scan-assembler     "\tj(|al)\tnormal_func\n" } } */
+/* { dg-final { scan-assembler     "\tj(|al|als)\tnear_func\n" } } */
+/* { dg-final { scan-assembler     "\tj(|al|als)\tnormal_func\n" } } */

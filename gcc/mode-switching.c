@@ -195,13 +195,6 @@ reg_becomes_live (rtx reg, const_rtx setter ATTRIBUTE_UNUSED, void *live)
     add_to_hard_reg_set ((HARD_REG_SET *) live, GET_MODE (reg), regno);
 }
 
-/* Make sure if MODE_ENTRY is defined the MODE_EXIT is defined
-   and vice versa.  */
-#if defined (MODE_ENTRY) != defined (MODE_EXIT)
- #error "Both MODE_ENTRY and MODE_EXIT must be defined"
-#endif
-
-#if defined (MODE_ENTRY) && defined (MODE_EXIT)
 /* Split the fallthrough edge to the exit block, so that we can note
    that there NORMAL_MODE is required.  Return the new block if it's
    inserted before the exit block.  Otherwise return null.  */
@@ -349,9 +342,11 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		    for (j = n_entities - 1; j >= 0; j--)
 		      {
 			int e = entity_map[j];
-			int mode = MODE_NEEDED (e, return_copy);
+			int mode =
+			  targetm.mode_switching.needed (e, return_copy);
 
-			if (mode != num_modes[e] && mode != MODE_EXIT (e))
+			if (mode != num_modes[e]
+			    && mode != targetm.mode_switching.exit (e))
 			  break;
 		      }
 		    if (j >= 0)
@@ -450,7 +445,6 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 
   return pre_exit;
 }
-#endif
 
 /* Find all insns that need a particular mode setting, and insert the
    necessary mode switches.  Return true if we did work.  */
@@ -472,7 +466,8 @@ optimize_mode_switching (void)
   int n_entities;
   int max_num_modes = 0;
   bool emitted ATTRIBUTE_UNUSED = false;
-  basic_block post_entry ATTRIBUTE_UNUSED, pre_exit ATTRIBUTE_UNUSED;
+  basic_block post_entry = 0;
+  basic_block pre_exit = 0;
 
   for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
     if (OPTIMIZE_MODE_SWITCHING (e))
@@ -482,9 +477,9 @@ optimize_mode_switching (void)
 	/* Create the list of segments within each basic block.
 	   If NORMAL_MODE is defined, allow for two extra
 	   blocks split from the entry and exit block.  */
-#if defined (MODE_ENTRY) && defined (MODE_EXIT)
-	entry_exit_extra = 3;
-#endif
+	if (targetm.mode_switching.entry && targetm.mode_switching.exit)
+	  entry_exit_extra = 3;
+
 	bb_info[n_entities]
 	  = XCNEWVEC (struct bb_info,
 		      last_basic_block_for_fn (cfun) + entry_exit_extra);
@@ -496,12 +491,17 @@ optimize_mode_switching (void)
   if (! n_entities)
     return 0;
 
-#if defined (MODE_ENTRY) && defined (MODE_EXIT)
-  /* Split the edge from the entry block, so that we can note that
-     there NORMAL_MODE is supplied.  */
-  post_entry = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
-  pre_exit = create_pre_exit (n_entities, entity_map, num_modes);
-#endif
+  /* Make sure if MODE_ENTRY is defined the MODE_EXIT is defined and vice versa.  */
+  gcc_assert ((targetm.mode_switching.entry && targetm.mode_switching.exit)
+	      || (!targetm.mode_switching.entry && !targetm.mode_switching.exit));
+
+  if (targetm.mode_switching.entry && targetm.mode_switching.exit)
+    {
+      /* Split the edge from the entry block, so that we can note that
+	 there NORMAL_MODE is supplied.  */
+      post_entry = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+      pre_exit = create_pre_exit (n_entities, entity_map, num_modes);
+    }
 
   df_analyze ();
 
@@ -556,7 +556,7 @@ optimize_mode_switching (void)
 	    {
 	      if (INSN_P (insn))
 		{
-		  int mode = MODE_NEEDED (e, insn);
+		  int mode = targetm.mode_switching.needed (e, insn);
 		  rtx link;
 
 		  if (mode != no_mode && mode != last_mode)
@@ -567,9 +567,10 @@ optimize_mode_switching (void)
 		      add_seginfo (info + bb->index, ptr);
 		      bitmap_clear_bit (transp[bb->index], j);
 		    }
-#ifdef MODE_AFTER
-		  last_mode = MODE_AFTER (e, last_mode, insn);
-#endif
+
+		  if (targetm.mode_switching.after)
+		    last_mode = targetm.mode_switching.after (e, last_mode, insn);
+
 		  /* Update LIVE_NOW.  */
 		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		    if (REG_NOTE_KIND (link) == REG_DEAD)
@@ -595,30 +596,30 @@ optimize_mode_switching (void)
 		bitmap_clear_bit (transp[bb->index], j);
 	    }
 	}
-#if defined (MODE_ENTRY) && defined (MODE_EXIT)
-      {
-	int mode = MODE_ENTRY (e);
+      if (targetm.mode_switching.entry && targetm.mode_switching.exit)
+	{
+	  int mode = targetm.mode_switching.entry (e);
 
-	if (mode != no_mode)
-	  {
-	    bb = post_entry;
+	  if (mode != no_mode)
+	    {
+	      bb = post_entry;
 
-	    /* By always making this nontransparent, we save
-	       an extra check in make_preds_opaque.  We also
-	       need this to avoid confusing pre_edge_lcm when
-	       antic is cleared but transp and comp are set.  */
-	    bitmap_clear_bit (transp[bb->index], j);
+	      /* By always making this nontransparent, we save
+		 an extra check in make_preds_opaque.  We also
+		 need this to avoid confusing pre_edge_lcm when
+		 antic is cleared but transp and comp are set.  */
+	      bitmap_clear_bit (transp[bb->index], j);
 
-	    /* Insert a fake computing definition of MODE into entry
-	       blocks which compute no mode. This represents the mode on
-	       entry.  */
-	    info[bb->index].computing = mode;
+	      /* Insert a fake computing definition of MODE into entry
+		 blocks which compute no mode. This represents the mode on
+		 entry.  */
+	      info[bb->index].computing = mode;
 
-	    if (pre_exit)
-	      info[pre_exit->index].seginfo->mode = MODE_EXIT (e);
-	  }
-      }
-#endif /* NORMAL_MODE */
+	      if (pre_exit)
+		info[pre_exit->index].seginfo->mode =
+		  targetm.mode_switching.exit (e);
+	    }
+	}
     }
 
   kill = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_entities);
@@ -633,7 +634,8 @@ optimize_mode_switching (void)
       bitmap_vector_clear (comp, last_basic_block_for_fn (cfun));
       for (j = n_entities - 1; j >= 0; j--)
 	{
-	  int m = current_mode[j] = MODE_PRIORITY_TO_MODE (entity_map[j], i);
+	  int m = current_mode[j] =
+	    targetm.mode_switching.priority (entity_map[j], i);
 	  struct bb_info *info = bb_info[j];
 
 	  FOR_EACH_BB_FN (bb, cfun)
@@ -688,7 +690,7 @@ optimize_mode_switching (void)
 
 	      rtl_profile_for_edge (eg);
 	      start_sequence ();
-	      EMIT_MODE_SET (entity_map[j], mode, live_at_edge);
+	      targetm.mode_switching.emit (entity_map[j], mode, live_at_edge);
 	      mode_set = get_insns ();
 	      end_sequence ();
 	      default_rtl_profile ();
@@ -736,7 +738,9 @@ optimize_mode_switching (void)
 
 		  rtl_profile_for_bb (bb);
 		  start_sequence ();
-		  EMIT_MODE_SET (entity_map[j], ptr->mode, ptr->regs_live);
+		  targetm.mode_switching.emit (entity_map[j],
+					       ptr->mode,
+					       ptr->regs_live);
 		  mode_set = get_insns ();
 		  end_sequence ();
 
@@ -750,7 +754,7 @@ optimize_mode_switching (void)
 			   point ends up first in the instruction steam.
 			   Because we made sure that NOTE_INSN_BASIC_BLOCK is
 			   only used for initially empty basic blocks, we
-			   can archive this by appending at the end of
+			   can achieve this by appending at the end of
 			   the block.  */
 			emit_insn_after
 			  (mode_set, BB_END (NOTE_BASIC_BLOCK (ptr->insn_ptr)));
@@ -777,12 +781,10 @@ optimize_mode_switching (void)
   if (need_commit)
     commit_edge_insertions ();
 
-#if defined (MODE_ENTRY) && defined (MODE_EXIT)
-  cleanup_cfg (CLEANUP_NO_INSN_DEL);
-#else
-  if (!need_commit && !emitted)
+  if (targetm.mode_switching.entry && targetm.mode_switching.exit)
+    cleanup_cfg (CLEANUP_NO_INSN_DEL);
+  else if (!need_commit && !emitted)
     return 0;
-#endif
 
   return 1;
 }

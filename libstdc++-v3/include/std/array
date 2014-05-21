@@ -281,7 +281,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     get(array<_Tp, _Nm>&& __arr) noexcept
     {
       static_assert(_Int < _Nm, "index is out of bounds");
-      return std::move(get<_Int>(__arr));
+      return std::move(_GLIBCXX_STD_C::get<_Int>(__arr));
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
@@ -306,6 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp> 
     class tuple_size;
 
+  /// Partial specialization for std::array
   template<typename _Tp, std::size_t _Nm>
     struct tuple_size<_GLIBCXX_STD_C::array<_Tp, _Nm>>
     : public integral_constant<std::size_t, _Nm> { };
@@ -314,6 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Int, typename _Tp>
     class tuple_element;
 
+  /// Partial specialization for std::array
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     struct tuple_element<_Int, _GLIBCXX_STD_C::array<_Tp, _Nm>>
     {

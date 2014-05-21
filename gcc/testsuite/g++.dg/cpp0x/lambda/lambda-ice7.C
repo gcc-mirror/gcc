@@ -1,7 +1,7 @@
 // PR c++/52487
 // { dg-do compile { target c++11 } }
 
-struct A;         // { dg-error "forward declaration" }
+struct A;         // { dg-message "forward declaration" }
 
 void foo(A& a)
 {

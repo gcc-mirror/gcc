@@ -1,3 +1,163 @@
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58753
+	PR c++/58930
+	PR c++/58704
+	* typeck2.c (digest_nsdmi_init): New.
+	* parser.c (cp_parser_late_parse_one_default_arg): Use it.
+	* init.c (get_nsdmi): Likewise.
+	* cp-tree.h (digest_nsdmi_init): Declare.
+
+2014-05-20  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (get_member_function_from_ptrfunc): Don't try to look
+	up a virtual function in a dummy object.
+
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60373
+	* decl.c (duplicate_decls): Replace pair of warning_at with
+	warning_at + inform.
+	(maybe_commonize_var): Likewise.
+
+2014-05-20  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	PR bootstrap/61210
+	* pt.c (tsubst_copy, tsubst_omp_for_iterator, tsubst_expr)
+	(tsubst_copy_and_build): Perform recursive substitutions in a
+	deterministic order.
+
+2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58664
+	* typeck2.c (cxx_incomplete_type_inform): New.
+	(cxx_incomplete_type_diagnostic): Use it.
+	* decl.c (grokdeclarator): Check the element type of an
+	incomplete array type; call the above.
+	* cp-tree.h (cxx_incomplete_type_inform): Declare.
+
+2014-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58761
+	* pt.c (tsubst_copy): Don't check at_function_scope_p.
+	(instantiate_class_template_1): Don't push_to_top_level in an nsdmi.
+
+2014-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck2.c (cxx_incomplete_type_diagnostic): Use inform.
+	* parser.c (cp_parser_enum_specifier): Likewise.
+
+2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c (sorted_fields_type_new): Adjust.
+	* cp-cilkplus.c (cilk_install_body_with_frame_cleanup): Likewise.
+	* cp-objcp-common.c (decl_shadowed_for_var_insert): Likewise.
+	* cp-tree.h: Remove usage of variable_size gty attribute.
+	* decl.c (make_label_decl): Adjust.
+	(check_goto): Likewise.
+	(start_preparsed_function): Likewise.
+	(save_function_data): Likewise.
+	* lex.c (init_reswords): Likewise.
+	(retrofit_lang_decl): Likewise.
+	(cxx_dup_lang_specific_decl): Likewise.
+	(copy_lang_type): Likewise.
+	(cxx_make_type): Likewise.
+	* name-lookup.c (binding_entry_make): Likewise.
+	(binding_table_construct): Likewise.
+	(binding_table_new): Likewise.
+	(cxx_binding_make): Likewise.
+	(pushdecl_maybe_friend_1): Likewise.
+	(begin_scope): Likewise.
+	(push_to_top_level): Likewise.
+	* parser.c (cp_lexer_alloc): Likewise.
+	(cp_lexer_new_from_tokens): Likewise.
+	(cp_token_cache_new): Likewise.
+	(cp_parser_context_new): Likewise.
+	(cp_parser_new): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_template_id): Likewise.
+	* pt.c (maybe_process_partial_specialization): Likewise.
+	(register_specialization): Likewise.
+	(add_pending_template): Likewise.
+	(lookup_template_class_1): Likewise.
+	(push_tinst_level): Likewise.
+	* semantics.c (register_constexpr_fundef): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	* typeck2.c (abstract_virtuals_error_sfinae): Likewise.
+
+2014-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51640
+	* parser.c (cp_parser_diagnose_invalid_type_name): Early return
+	when cp_parser_lookup_name sets ambiguous_decls.
+
+2014-05-15  Jason Merrill  <jason@redhat.com>
+
+	* call.c (print_conversion_rejection): Use loc consistently.
+
+2014-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (DIRECT_LIST_INIT_P): Add.
+	* call.c (convert_like_real, build_new_method_call_1): Use it.
+	* decl2.c (grokfield): Likewise.
+	* init.c (perform_member_init, build_aggr_init, expand_default_init,
+	build_new_1): Likewise.
+	* mangle.c (write_expression): Likewise.
+	* parser.c (cp_parser_late_parse_one_default_arg): Likewise.
+
+2014-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/20332
+	PR c++/21631
+	* call.c (reference_binding): Treat lvalue/rvalue mismatch and
+	dropped cv-quals as a bad conversion.
+	(convert_like_real) [ck_ref_bind]: Explain them.
+	(compare_ics): Check badness before stripping reference
+	bindings.  Handle comparing bad reference bindings.
+	* typeck.c (comp_cv_qualification): Add overload that just takes
+	integers.
+	* cp-tree.h: Declare it.
+
+	* call.c (struct conversion_info): Rename 'from_type' to 'from'.
+	(arg_conversion_rejection, bad_arg_conversion_rejection)
+	(explicit_conversion_rejection, template_conversion_rejection): Adjust.
+	(add_function_candidate): Pass actual argument, rather than type, to
+	bad_arg_conversion_rejection.
+	(print_conversion_rejection): Explain what's wrong with the conversion.
+	(print_z_candidates): Say "candidate:" before each candidate.
+	(splice_viable): Be strict if we see a viable or template candidate.
+	(build_user_type_conversion_1): Pass false to strict parameter.
+	(perform_overload_resolution, build_conditional_expr_1): Likewise.
+	(build_new_op_1, build_new_method_call_1): Likewise.
+	(build_op_call_1): Pass true to strict parameter.
+
+2014-05-13  Jason Merrill  <jason@redhat.com>
+
+	* call.c (print_error_for_call_failure): Say "no match" rather
+	than "ambiguous" if there were no strict matches.
+	(build_new_method_call_1): Likewise.
+
+	PR c++/61151
+	* semantics.c (is_this_parameter): Allow capture proxies too.
+
+2014-05-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (maybe_print_user_conv_context): New.
+	(convert_like_real): Use it.  Print call context for bad
+	user-defined conversion.
+	(build_over_call): Print call context for bad 'this' conversion.
+
+	* call.c (convert_like_real): Use inform for identifying the
+	declaration point.
+
+2014-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cvt.c (cp_convert_to_pointer): Don't call error_at if
+	complain & tf_error is false.
+
+	* decl.c (make_unbound_class_template): Prefer inform for
+	"declared here"-type message.
+
 2014-05-09  Momchil Velikov  <momchil.velikov@gmail.com>
 
 	PR c++/60463

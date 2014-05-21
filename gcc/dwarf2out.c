@@ -993,7 +993,7 @@ dwarf2out_alloc_current_fde (void)
 {
   dw_fde_ref fde;
 
-  fde = ggc_alloc_cleared_dw_fde_node ();
+  fde = ggc_cleared_alloc<dw_fde_node> ();
   fde->decl = current_function_decl;
   fde->funcdef_number = current_function_funcdef_no;
   fde->fde_index = vec_safe_length (fde_vec);
@@ -1316,7 +1316,7 @@ static inline dw_loc_descr_ref
 new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
 	       unsigned HOST_WIDE_INT oprnd2)
 {
-  dw_loc_descr_ref descr = ggc_alloc_cleared_dw_loc_descr_node ();
+  dw_loc_descr_ref descr = ggc_cleared_alloc<dw_loc_descr_node> ();
 
   descr->dw_loc_opc = op;
   descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
@@ -3814,7 +3814,7 @@ add_AT_wide (dw_die_ref die, enum dwarf_attribute attr_kind,
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_wide_int;
-  attr.dw_attr_val.v.val_wide = ggc_alloc_cleared_wide_int ();
+  attr.dw_attr_val.v.val_wide = ggc_cleared_alloc<wide_int> ();
   *attr.dw_attr_val.v.val_wide = w;
   add_dwarf_attr (die, &attr);
 }
@@ -3933,7 +3933,7 @@ find_AT_string_in_table (const char *str, htab_t table)
 				   htab_hash_string (str), INSERT);
   if (*slot == NULL)
     {
-      node = ggc_alloc_cleared_indirect_string_node ();
+      node = ggc_cleared_alloc<indirect_string_node> ();
       node->str = ggc_strdup (str);
       *slot = node;
     }
@@ -4264,7 +4264,7 @@ add_addr_table_entry (void *addr, enum ate_kind kind)
 
   if (*slot == HTAB_EMPTY_ENTRY)
     {
-      node = ggc_alloc_cleared_addr_table_entry ();
+      node = ggc_cleared_alloc<addr_table_entry> ();
       init_addr_table_entry (node, kind, addr);
       *slot = node;
     }
@@ -4840,7 +4840,7 @@ splice_child_die (dw_die_ref parent, dw_die_ref child)
 static inline dw_die_ref
 new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
 {
-  dw_die_ref die = ggc_alloc_cleared_die_node ();
+  dw_die_ref die = ggc_cleared_alloc<die_node> ();
 
   die->die_tag = tag_value;
 
@@ -4850,7 +4850,7 @@ new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
     {
       limbo_die_node *limbo_node;
 
-      limbo_node = ggc_alloc_cleared_limbo_die_node ();
+      limbo_node = ggc_cleared_alloc<limbo_die_node> ();
       limbo_node->die = die;
       limbo_node->created_for = t;
       limbo_node->next = limbo_die_list;
@@ -5167,7 +5167,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
   slot = htab_find_slot_with_hash (decl_loc_table, decl, decl_id, INSERT);
   if (*slot == NULL)
     {
-      temp = ggc_alloc_cleared_var_loc_list ();
+      temp = ggc_cleared_alloc<var_loc_list> ();
       temp->decl_id = decl_id;
       *slot = temp;
     }
@@ -5192,7 +5192,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
 	  || (NOTE_VAR_LOCATION_STATUS (temp->first->loc)
 	      != NOTE_VAR_LOCATION_STATUS (loc_note))))
     {
-      loc = ggc_alloc_cleared_var_loc_node ();
+      loc = ggc_cleared_alloc<var_loc_node> ();
       temp->first->next = loc;
       temp->last = loc;
       loc->loc = construct_piece_list (loc_note, bitpos, bitsize);
@@ -5282,7 +5282,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
 	      memset (loc, '\0', sizeof (*loc));
 	    }
 	  else
-	    loc = ggc_alloc_cleared_var_loc_node ();
+	    loc = ggc_cleared_alloc<var_loc_node> ();
 	  if (bitsize == -1 || piece_loc == NULL)
 	    loc->loc = construct_piece_list (loc_note, bitpos, bitsize);
 	  else
@@ -5299,7 +5299,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
     }
   else
     {
-      loc = ggc_alloc_cleared_var_loc_node ();
+      loc = ggc_cleared_alloc<var_loc_node> ();
       temp->first = loc;
       temp->last = loc;
       loc->loc = construct_piece_list (loc_note, bitpos, bitsize);
@@ -6955,7 +6955,7 @@ clone_die (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  clone = ggc_alloc_cleared_die_node ();
+  clone = ggc_cleared_alloc<die_node> ();
   clone->die_tag = die->die_tag;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -7001,7 +7001,7 @@ clone_as_declaration (dw_die_ref die)
       return clone;
     }
 
-  clone = ggc_alloc_cleared_die_node ();
+  clone = ggc_cleared_alloc<die_node> ();
   clone->die_tag = die->die_tag;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
@@ -7361,7 +7361,7 @@ break_out_comdat_types (dw_die_ref die)
         unit = new_die (DW_TAG_type_unit, NULL, NULL);
         add_AT_unsigned (unit, DW_AT_language,
                          get_AT_unsigned (comp_unit_die (), DW_AT_language));
-        type_node = ggc_alloc_cleared_comdat_type_node ();
+        type_node = ggc_cleared_alloc<comdat_type_node> ();
         type_node->root_die = unit;
         type_node->next = comdat_type_list;
         comdat_type_list = type_node;
@@ -8455,7 +8455,7 @@ static inline dw_loc_list_ref
 new_loc_list (dw_loc_descr_ref expr, const char *begin, const char *end,
 	      const char *section)
 {
-  dw_loc_list_ref retlist = ggc_alloc_cleared_dw_loc_list_node ();
+  dw_loc_list_ref retlist = ggc_cleared_alloc<dw_loc_list_node> ();
 
   retlist->begin = begin;
   retlist->begin_entry = NULL;
@@ -12999,8 +12999,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 #endif
 	    {
 	      unsigned int length = GET_MODE_SIZE (mode);
-	      unsigned char *array
-		  = (unsigned char*) ggc_alloc_atomic (length);
+	      unsigned char *array = ggc_vec_alloc<unsigned char> (length);
 
 	      insert_float (rtl, array);
 	      mem_loc_result->dw_loc_oprnd2.val_class = dw_val_class_vec;
@@ -13026,7 +13025,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  mem_loc_result->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  mem_loc_result->dw_loc_oprnd2.val_class
 	    = dw_val_class_wide_int;
-	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc_cleared_wide_int ();
+	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_cleared_alloc<wide_int> ();
 	  *mem_loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
 	}
       break;
@@ -13509,8 +13508,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 #endif
 	    {
 	      unsigned int length = GET_MODE_SIZE (mode);
-	      unsigned char *array
-                  = (unsigned char*) ggc_alloc_atomic (length);
+	      unsigned char *array = ggc_vec_alloc<unsigned char> (length);
 
 	      insert_float (rtl, array);
 	      loc_result->dw_loc_oprnd2.val_class = dw_val_class_vec;
@@ -13530,7 +13528,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	  loc_result = new_loc_descr (DW_OP_implicit_value,
 				      GET_MODE_SIZE (mode), 0);
 	  loc_result->dw_loc_oprnd2.val_class = dw_val_class_wide_int;
-	  loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc_cleared_wide_int ();
+	  loc_result->dw_loc_oprnd2.v.val_wide = ggc_cleared_alloc<wide_int> ();
 	  *loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
 	}
       break;
@@ -13543,8 +13541,8 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	{
 	  unsigned int elt_size = GET_MODE_UNIT_SIZE (GET_MODE (rtl));
 	  unsigned int length = CONST_VECTOR_NUNITS (rtl);
-	  unsigned char *array = (unsigned char *)
-	    ggc_alloc_atomic (length * elt_size);
+	  unsigned char *array
+	    = ggc_vec_alloc<unsigned char> (length * elt_size);
 	  unsigned int i;
 	  unsigned char *p;
 	  enum machine_mode imode = GET_MODE_INNER (mode);
@@ -14093,12 +14091,12 @@ add_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref)
   list = list->dw_loc_next;
   while (list)
     {
-      copy = ggc_alloc_dw_loc_descr_node ();
+      copy = ggc_alloc<dw_loc_descr_node> ();
       memcpy (copy, ref, sizeof (dw_loc_descr_node));
       add_loc_descr (&list->expr, copy);
       while (copy->dw_loc_next)
 	{
-	  dw_loc_descr_ref new_copy = ggc_alloc_dw_loc_descr_node ();
+	  dw_loc_descr_ref new_copy = ggc_alloc<dw_loc_descr_node> ();
 	  memcpy (new_copy, copy->dw_loc_next, sizeof (dw_loc_descr_node));
 	  copy->dw_loc_next = new_copy;
 	  copy = new_copy;
@@ -15282,7 +15280,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	else
 	  {
 	    unsigned int length = GET_MODE_SIZE (mode);
-	    unsigned char *array = (unsigned char *) ggc_alloc_atomic (length);
+	    unsigned char *array = ggc_vec_alloc<unsigned char> (length);
 
 	    insert_float (rtl, array);
 	    add_AT_vec (die, DW_AT_const_value, length / 4, 4, array);
@@ -15295,8 +15293,8 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	enum machine_mode mode = GET_MODE (rtl);
 	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
 	unsigned int length = CONST_VECTOR_NUNITS (rtl);
-	unsigned char *array = (unsigned char *) ggc_alloc_atomic
-	  (length * elt_size);
+	unsigned char *array
+	  = ggc_vec_alloc<unsigned char> (length * elt_size);
 	unsigned int i;
 	unsigned char *p;
 	enum machine_mode imode = GET_MODE_INNER (mode);
@@ -15886,7 +15884,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
 	{
 	  slot = htab_find_slot_with_hash (cached_dw_loc_list_table, decl,
 					   DECL_UID (decl), INSERT);
-	  cache = ggc_alloc_cleared_cached_dw_loc_list ();
+	  cache = ggc_cleared_alloc<cached_dw_loc_list> ();
 	  cache->decl_id = DECL_UID (decl);
 	  cache->loc_list = list;
 	  *slot = cache;
@@ -16082,8 +16080,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (init));
       if (size > 0 && (int) size == size)
 	{
-	  unsigned char *array = (unsigned char *)
-	    ggc_alloc_cleared_atomic (size);
+	  unsigned char *array = ggc_cleared_vec_alloc<unsigned char> (size);
 
 	  if (native_encode_initializer (init, array, size))
 	    {
@@ -16351,7 +16348,7 @@ comp_dir_string (void)
       int wdlen;
 
       wdlen = strlen (wd);
-      wd1 = (char *) ggc_alloc_atomic (wdlen + 2);
+      wd1 = ggc_vec_alloc<char> (wdlen + 2);
       strcpy (wd1, wd);
       wd1 [wdlen] = DIR_SEPARATOR;
       wd1 [wdlen + 1] = 0;
@@ -16852,7 +16849,7 @@ add_linkage_name (dw_die_ref die, tree decl)
 	{
 	  limbo_die_node *asm_name;
 
-	  asm_name = ggc_alloc_cleared_limbo_die_node ();
+	  asm_name = ggc_cleared_alloc<limbo_die_node> ();
 	  asm_name->die = die;
 	  asm_name->created_for = decl;
 	  asm_name->next = deferred_asm_name;
@@ -16905,7 +16902,7 @@ dwarf2out_vms_debug_main_pointer (void)
   dw_die_ref die;
 
   /* Allocate the VMS debug main subprogram die.  */
-  die = ggc_alloc_cleared_die_node ();
+  die = ggc_cleared_alloc<die_node> ();
   die->die_tag = DW_TAG_subprogram;
   add_name_attribute (die, VMS_DEBUG_MAIN_POINTER);
   ASM_GENERATE_INTERNAL_LABEL (label, PROLOGUE_END_LABEL,
@@ -21181,7 +21178,7 @@ lookup_filename (const char *file_name)
   if (*slot)
     return (struct dwarf_file_data *) *slot;
 
-  created = ggc_alloc_dwarf_file_data ();
+  created = ggc_alloc<dwarf_file_data> ();
   created->filename = file_name;
   created->emitted_number = 0;
   *slot = created;
@@ -21491,7 +21488,7 @@ dwarf2out_var_location (rtx loc_note)
   if (!var_loc_p)
     {
       struct call_arg_loc_node *ca_loc
-	= ggc_alloc_cleared_call_arg_loc_node ();
+	= ggc_cleared_alloc<call_arg_loc_node> ();
       rtx prev = prev_real_insn (loc_note), x;
       ca_loc->call_arg_loc_note = loc_note;
       ca_loc->next = NULL;
@@ -21566,7 +21563,7 @@ new_line_info_table (void)
 {
   dw_line_info_table *table;
 
-  table = ggc_alloc_cleared_dw_line_info_table_struct ();
+  table = ggc_cleared_alloc<dw_line_info_table_struct> ();
   table->file_num = 1;
   table->line_num = 1;
   table->is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
@@ -22335,7 +22332,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   vec_alloc (decl_scope_table, 256);
 
   /* Allocate the initial hunk of the abbrev_die_table.  */
-  abbrev_die_table = ggc_alloc_cleared_vec_dw_die_ref
+  abbrev_die_table = ggc_cleared_vec_alloc<dw_die_ref>
     (ABBREV_DIE_TABLE_INCREMENT);
   abbrev_die_table_allocated = ABBREV_DIE_TABLE_INCREMENT;
   /* Zero-th entry is allocated, but unused.  */
@@ -23240,7 +23237,7 @@ string_cst_pool_decl (tree t)
       len = TREE_STRING_LENGTH (t);
       vec_safe_push (used_rtx_array, rtl);
       ref = new_die (DW_TAG_dwarf_procedure, comp_unit_die (), decl);
-      array = (unsigned char *) ggc_alloc_atomic (len);
+      array = ggc_vec_alloc<unsigned char> (len);
       memcpy (array, TREE_STRING_POINTER (t), len);
       l = new_loc_descr (DW_OP_implicit_value, len, 0);
       l->dw_loc_oprnd2.val_class = dw_val_class_vec;

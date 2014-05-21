@@ -79,7 +79,7 @@ alloc_node (cpp_hash_table *table ATTRIBUTE_UNUSED)
    nul-terminated string, and the length is calculated using strlen.  */
 
 const char *
-ggc_alloc_string_stat (const char *contents, int length MEM_STAT_DECL)
+ggc_alloc_string (const char *contents, int length MEM_STAT_DECL)
 {
   char *result;
 
@@ -91,7 +91,7 @@ ggc_alloc_string_stat (const char *contents, int length MEM_STAT_DECL)
   if (length == 1 && ISDIGIT (contents[0]))
     return digit_string (contents[0] - '0');
 
-  result = (char *) ggc_alloc_atomic_stat (length + 1 PASS_MEM_STAT);
+  result = (char *) ggc_internal_cleared_alloc (length + 1 PASS_MEM_STAT);
   memcpy (result, contents, length);
   result[length] = '\0';
   return (const char *) result;
@@ -258,10 +258,10 @@ static GTY(()) struct string_pool_data * spd;
 void
 gt_pch_save_stringpool (void)
 {
-  spd = ggc_alloc_string_pool_data ();
+  spd = ggc_alloc<string_pool_data> ();
   spd->nslots = ident_hash->nslots;
   spd->nelements = ident_hash->nelements;
-  spd->entries = ggc_alloc_vec_ht_identifier_ptr (spd->nslots);
+  spd->entries = ggc_vec_alloc<ht_identifier_ptr> (spd->nslots);
   memcpy (spd->entries, ident_hash->entries,
 	  spd->nslots * sizeof (spd->entries[0]));
 }

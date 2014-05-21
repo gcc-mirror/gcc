@@ -131,7 +131,7 @@ tsi_link_before (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
     }
   else
     {
-      head = ggc_alloc_tree_statement_list_node ();
+      head = ggc_alloc<tree_statement_list_node> ();
       head->prev = NULL;
       head->next = NULL;
       head->stmt = t;
@@ -207,7 +207,7 @@ tsi_link_after (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
     }
   else
     {
-      head = ggc_alloc_tree_statement_list_node ();
+      head = ggc_alloc<tree_statement_list_node> ();
       head->prev = NULL;
       head->next = NULL;
       head->stmt = t;

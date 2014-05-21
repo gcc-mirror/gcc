@@ -202,6 +202,13 @@ static void push_regs (HARD_REG_SET *, int);
 static int calc_live_regs (HARD_REG_SET *);
 static HOST_WIDE_INT rounded_frame_size (int);
 static bool sh_frame_pointer_required (void);
+static void sh_emit_mode_set (int, int, HARD_REG_SET);
+static int sh_mode_needed (int, rtx);
+static int sh_mode_after (int, int, rtx);
+static int sh_mode_entry (int);
+static int sh_mode_exit (int);
+static int sh_mode_priority (int entity, int n);
+
 static rtx mark_constant_pool_use (rtx);
 static tree sh_handle_interrupt_handler_attribute (tree *, tree, tree,
 						   int, bool *);
@@ -564,6 +571,24 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED sh_frame_pointer_required
 
+#undef TARGET_MODE_EMIT
+#define TARGET_MODE_EMIT sh_emit_mode_set
+
+#undef TARGET_MODE_NEEDED
+#define TARGET_MODE_NEEDED sh_mode_needed
+
+#undef TARGET_MODE_AFTER
+#define TARGET_MODE_AFTER sh_mode_after
+
+#undef TARGET_MODE_ENTRY
+#define TARGET_MODE_ENTRY sh_mode_entry
+
+#undef TARGET_MODE_EXIT
+#define TARGET_MODE_EXIT sh_mode_exit
+
+#undef TARGET_MODE_PRIORITY
+#define TARGET_MODE_PRIORITY sh_mode_priority
+
 /* Return regmode weight for insn.  */
 #define INSN_REGMODE_WEIGHT(INSN, MODE)\
   regmode_weight[((MODE) == SImode) ? 0 : 1][INSN_UID (INSN)]
@@ -904,15 +929,16 @@ sh_option_override (void)
     sh_divsi3_libfunc = "__sdivsi3_1";
   else
     sh_divsi3_libfunc = "__sdivsi3";
+
   if (sh_branch_cost == -1)
     {
-      sh_branch_cost = 1;
-
       /*  The SH1 does not have delay slots, hence we get a pipeline stall
 	  at every branch.  The SH4 is superscalar, so the single delay slot
-	  is not sufficient to keep both pipelines filled.  */
-      if (! TARGET_SH2 || TARGET_HARD_SH4)
-	sh_branch_cost = 2;
+	  is not sufficient to keep both pipelines filled.
+	  In any case, set the default branch cost to '2', as it results in
+	  slightly overall smaller code and also enables some if conversions
+	  that are required for matching special T bit related insns.  */
+      sh_branch_cost = 2;
     }
 
   /* Set -mzdcbranch for SH4 / SH4A if not otherwise specified by the user.  */
@@ -2224,7 +2250,12 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 int
 sh_eval_treg_value (rtx op)
 {
-  enum rtx_code code = GET_CODE (op);
+  if (t_reg_operand (op, GET_MODE (op)))
+    return 1;
+  if (negt_reg_operand (op, GET_MODE (op)))
+    return 0;
+
+  rtx_code code = GET_CODE (op);
   if ((code != EQ && code != NE) || !CONST_INT_P (XEXP (op, 1)))
     return -1;
 
@@ -13547,6 +13578,47 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
     return extended_op;
 
   return NULL_RTX;
+}
+
+static void
+sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
+		  HARD_REG_SET regs_live)
+{
+  fpscr_set_from_mem (mode, regs_live);
+}
+
+static int
+sh_mode_needed (int entity ATTRIBUTE_UNUSED, rtx insn)
+{
+  return recog_memoized (insn) >= 0  ? get_attr_fp_mode (insn) : FP_MODE_NONE;
+}
+
+static int
+sh_mode_after (int entity ATTRIBUTE_UNUSED, int mode, rtx insn)
+{
+  if (TARGET_HITACHI && recog_memoized (insn) >= 0 &&
+      get_attr_fp_set (insn) != FP_SET_NONE)
+    return (int) get_attr_fp_set (insn);
+  else
+    return mode;
+}
+
+static int
+sh_mode_entry (int entity ATTRIBUTE_UNUSED)
+{
+  return NORMAL_MODE (entity);
+}
+
+static int
+sh_mode_exit (int entity ATTRIBUTE_UNUSED)
+{
+  return sh_cfun_attr_renesas_p () ? FP_MODE_NONE : NORMAL_MODE (entity);
+}
+
+static int
+sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
+{
+  return ((TARGET_FPU_SINGLE != 0) ^ (n) ? FP_MODE_SINGLE : FP_MODE_DOUBLE);
 }
 
 #include "gt-sh.h"

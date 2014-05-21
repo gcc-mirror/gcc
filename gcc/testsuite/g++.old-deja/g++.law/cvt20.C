@@ -9,7 +9,7 @@
 
 // Compiles fine with Sun CC 2.1
 
-void f(char *& x) // { dg-message "passing argument" }
+void f(const char *& x) // { dg-message "argument" }
 {
   x++;
 }

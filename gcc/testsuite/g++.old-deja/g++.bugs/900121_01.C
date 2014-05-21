@@ -7,7 +7,7 @@
 
 // keywords: abort, incomplete types, reference types, formal parameters
 
-struct s0;              // { dg-error "" } forward declaration
+struct s0;              // { dg-message "" } forward declaration
 
 void function (struct s0 &arg1, struct s0 &arg2)
 {

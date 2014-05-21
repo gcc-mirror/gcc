@@ -136,58 +136,117 @@ extern void gt_pch_save (FILE *f);
 /* Allocation.  */
 
 /* The internal primitive.  */
-extern void *ggc_internal_alloc_stat (size_t MEM_STAT_DECL)
-  ATTRIBUTE_MALLOC;
+extern void *ggc_internal_alloc (size_t, void (*)(void *), size_t,
+				 size_t CXX_MEM_STAT_INFO)
+     ATTRIBUTE_MALLOC;
+
+     static inline
+     void *
+     ggc_internal_alloc (size_t s CXX_MEM_STAT_INFO)
+{
+  return ggc_internal_alloc (s, NULL, 0, 1 PASS_MEM_STAT);
+}
 
 extern size_t ggc_round_alloc_size (size_t requested_size);
 
-#define ggc_internal_alloc(s) ggc_internal_alloc_stat (s MEM_STAT_INFO)
-
 /* Allocates cleared memory.  */
-extern void *ggc_internal_cleared_alloc_stat (size_t MEM_STAT_DECL)
-  ATTRIBUTE_MALLOC;
-#define ggc_internal_cleared_alloc(s) ggc_internal_cleared_alloc_stat (s MEM_STAT_INFO)
+extern void *ggc_internal_cleared_alloc (size_t, void (*)(void *),
+					 size_t, size_t
+					 CXX_MEM_STAT_INFO) ATTRIBUTE_MALLOC;
+
+static inline
+void *
+ggc_internal_cleared_alloc (size_t s CXX_MEM_STAT_INFO)
+{
+  return ggc_internal_cleared_alloc (s, NULL, 0, 1 PASS_MEM_STAT);
+}
 
 /* Resize a block.  */
-extern void *ggc_realloc_stat (void *, size_t MEM_STAT_DECL);
+extern void *ggc_realloc (void *, size_t CXX_MEM_STAT_INFO);
 
 /* Free a block.  To be used when known for certain it's not reachable.  */
 extern void ggc_free (void *);
 
 extern void dump_ggc_loc_statistics (bool);
 
-/* Reallocators.  */
+/* Reallocator.  */
 #define GGC_RESIZEVEC(T, P, N) \
-    ((T *) ggc_realloc_stat ((P), (N) * sizeof (T) MEM_STAT_INFO))
+    ((T *) ggc_realloc ((P), (N) * sizeof (T) MEM_STAT_INFO))
 
-#define GGC_RESIZEVAR(T, P, N)                          \
-    ((T *) ggc_realloc_stat ((P), (N) MEM_STAT_INFO))
-
-static inline void *
-ggc_internal_vec_alloc_stat (size_t s, size_t c MEM_STAT_DECL)
+template<typename T>
+void
+finalize (void *p)
 {
-    return ggc_internal_alloc_stat (c * s PASS_MEM_STAT);
+  static_cast<T *> (p)->~T ();
+}
+
+template<typename T>
+static inline bool
+need_finalization_p ()
+{
+#if GCC_VERSION >= 4003
+  return !__has_trivial_destructor (T);
+#else
+  return true;
+#endif
+}
+
+template<typename T>
+static inline T *
+ggc_alloc (ALONE_CXX_MEM_STAT_INFO)
+{
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_alloc (sizeof (T), finalize<T>, 0, 1
+						 PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_alloc (sizeof (T), NULL, 0, 1
+						 PASS_MEM_STAT));
+}
+
+template<typename T>
+static inline T *
+ggc_cleared_alloc (ALONE_CXX_MEM_STAT_INFO)
+{
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_cleared_alloc (sizeof (T),
+							 finalize<T>, 0, 1
+							 PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_cleared_alloc (sizeof (T), NULL, 0, 1
+							 PASS_MEM_STAT));
+}
+
+template<typename T>
+static inline T *
+ggc_vec_alloc (size_t c CXX_MEM_STAT_INFO)
+{
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_alloc (c * sizeof (T), finalize<T>,
+						 sizeof (T), c PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_alloc (c * sizeof (T), NULL, 0, 0
+						 PASS_MEM_STAT));
+}
+
+template<typename T>
+static inline T *
+ggc_cleared_vec_alloc (size_t c CXX_MEM_STAT_INFO)
+{
+  if (need_finalization_p<T> ())
+    return static_cast<T *> (ggc_internal_cleared_alloc (c * sizeof (T),
+							 finalize<T>,
+							 sizeof (T), c
+							 PASS_MEM_STAT));
+  else
+    return static_cast<T *> (ggc_internal_cleared_alloc (c * sizeof (T), NULL,
+							 0, 0 PASS_MEM_STAT));
 }
 
 static inline void *
-ggc_internal_cleared_vec_alloc_stat (size_t s, size_t c MEM_STAT_DECL)
+ggc_alloc_atomic (size_t s CXX_MEM_STAT_INFO)
 {
-    return ggc_internal_cleared_alloc_stat (c * s PASS_MEM_STAT);
+    return ggc_internal_alloc (s PASS_MEM_STAT);
 }
-
-#define ggc_internal_cleared_vec_alloc(s, c) \
-    (ggc_internal_cleared_vec_alloc_stat ((s), (c) MEM_STAT_INFO))
-
-static inline void *
-ggc_alloc_atomic_stat (size_t s MEM_STAT_DECL)
-{
-    return ggc_internal_alloc_stat (s PASS_MEM_STAT);
-}
-
-#define ggc_alloc_atomic(S)  (ggc_alloc_atomic_stat ((S) MEM_STAT_INFO))
-
-#define ggc_alloc_cleared_atomic(S)             \
-    (ggc_internal_cleared_alloc_stat ((S) MEM_STAT_INFO))
 
 extern void *ggc_cleared_alloc_htab_ignore_args (size_t, size_t)
   ATTRIBUTE_MALLOC;
@@ -213,13 +272,11 @@ extern void ggc_splay_dont_free (void *, void *);
 /* Allocate a gc-able string, and fill it with LENGTH bytes from CONTENTS.
    If LENGTH is -1, then CONTENTS is assumed to be a
    null-terminated string and the memory sized accordingly.  */
-extern const char *ggc_alloc_string_stat (const char *contents, int length
-                                          MEM_STAT_DECL);
-
-#define ggc_alloc_string(c, l) ggc_alloc_string_stat (c, l MEM_STAT_INFO)
+extern const char *ggc_alloc_string (const char *contents, int length
+                                     CXX_MEM_STAT_INFO);
 
 /* Make a copy of S, in GC-able memory.  */
-#define ggc_strdup(S) ggc_alloc_string_stat ((S), -1 MEM_STAT_INFO)
+#define ggc_strdup(S) ggc_alloc_string ((S), -1 MEM_STAT_INFO)
 
 /* Invoke the collector.  Garbage collection occurs only when this
    function is called, not during allocations.  */
@@ -247,41 +304,34 @@ extern void stringpool_statistics (void);
 extern void init_ggc_heuristics (void);
 
 #define ggc_alloc_rtvec_sized(NELT)				\
-  ggc_alloc_rtvec_def (sizeof (struct rtvec_def)		\
+  (rtvec_def *) ggc_internal_alloc (sizeof (struct rtvec_def)		\
 		       + ((NELT) - 1) * sizeof (rtx))		\
 
 /* Memory statistics passing versions of some allocators.  Too few of them to
    make gengtype produce them, so just define the needed ones here.  */
 static inline struct rtx_def *
-ggc_alloc_rtx_def_stat (size_t s MEM_STAT_DECL)
+ggc_alloc_rtx_def_stat (size_t s CXX_MEM_STAT_INFO)
 {
-  return (struct rtx_def *) ggc_internal_alloc_stat (s PASS_MEM_STAT);
+  return (struct rtx_def *) ggc_internal_alloc (s PASS_MEM_STAT);
 }
 
 static inline union tree_node *
-ggc_alloc_tree_node_stat (size_t s MEM_STAT_DECL)
+ggc_alloc_tree_node_stat (size_t s CXX_MEM_STAT_INFO)
 {
-  return (union tree_node *) ggc_internal_alloc_stat (s PASS_MEM_STAT);
+  return (union tree_node *) ggc_internal_alloc (s PASS_MEM_STAT);
 }
 
 static inline union tree_node *
-ggc_alloc_cleared_tree_node_stat (size_t s MEM_STAT_DECL)
+ggc_alloc_cleared_tree_node_stat (size_t s CXX_MEM_STAT_INFO)
 {
-  return (union tree_node *) ggc_internal_cleared_alloc_stat (s PASS_MEM_STAT);
+  return (union tree_node *) ggc_internal_cleared_alloc (s PASS_MEM_STAT);
 }
 
 static inline struct gimple_statement_base *
-ggc_alloc_cleared_gimple_statement_stat (size_t s MEM_STAT_DECL)
+ggc_alloc_cleared_gimple_statement_stat (size_t s CXX_MEM_STAT_INFO)
 {
   return (struct gimple_statement_base *)
-    ggc_internal_cleared_alloc_stat (s PASS_MEM_STAT);
-}
-
-static inline struct simd_clone *
-ggc_alloc_cleared_simd_clone_stat (size_t s MEM_STAT_DECL)
-{
-  return (struct simd_clone *)
-    ggc_internal_cleared_alloc_stat (s PASS_MEM_STAT);
+    ggc_internal_cleared_alloc (s PASS_MEM_STAT);
 }
 
 #endif

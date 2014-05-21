@@ -6803,6 +6803,16 @@ rs6000_output_dwarf_dtprel (FILE *file, int size, rtx x)
   fputs ("@dtprel+0x8000", file);
 }
 
+/* Return true if X is a symbol that refers to real (rather than emulated)
+   TLS.  */
+
+static bool
+rs6000_real_tls_symbol_ref_p (rtx x)
+{
+  return (GET_CODE (x) == SYMBOL_REF
+	  && SYMBOL_REF_TLS_MODEL (x) >= TLS_MODEL_REAL);
+}
+
 /* In the name of slightly smaller debug output, and to cater to
    general assembler lossage, recognize various UNSPEC sequences
    and turn them back into a direct symbol reference.  */
@@ -6860,7 +6870,7 @@ rs6000_delegitimize_address (rtx orig_x)
       if (TARGET_XCOFF
 	  && GET_CODE (y) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (y)
-	  && SYMBOL_REF_TLS_MODEL (get_pool_constant (y)) >= TLS_MODEL_REAL)
+	  && rs6000_real_tls_symbol_ref_p (get_pool_constant (y)))
 	return orig_x;
 #endif
 
@@ -15109,7 +15119,7 @@ builtin_function_type (enum machine_mode mode_ret, enum machine_mode mode_arg0,
   found = htab_find_slot (builtin_hash_table, &h, INSERT);
   if (*found == NULL)
     {
-      h2 = ggc_alloc_builtin_hash_struct ();
+      h2 = ggc_alloc<builtin_hash_struct> ();
       *h2 = h;
       *found = (void *)h2;
 
@@ -17641,7 +17651,7 @@ static struct machine_function *
 rs6000_init_machine_status (void)
 {
   stack_info.reload_completed = 0;
-  return ggc_alloc_cleared_machine_function ();
+  return ggc_cleared_alloc<machine_function> ();
 }
 
 #define INT_P(X) (GET_CODE (X) == CONST_INT && GET_MODE (X) == VOIDmode)
@@ -25466,7 +25476,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	toc_hash_table = htab_create_ggc (1021, toc_hash_function,
 					  toc_hash_eq, NULL);
 
-      h = ggc_alloc_toc_hash_struct ();
+      h = ggc_alloc<toc_hash_struct> ();
       h->key = x;
       h->key_mode = mode;
       h->labelno = labelno;

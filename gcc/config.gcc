@@ -164,13 +164,6 @@
 #  gas			Set to yes or no depending on whether the target
 #			system normally uses GNU as.
 #
-#  need_64bit_hwint	Set to yes if HOST_WIDE_INT must be 64 bits wide
-#			for this target.  This is true if this target
-#			supports "long" or "wchar_t" wider than 32 bits,
-#			or BITS_PER_WORD is wider than 32 bits.
-#			The setting made here must match the one made in
-#			other locations such as libcpp/configure.ac
-#
 #  configure_default_options
 #			Set to an initializer for configure_default_options
 #			in configargs.h, based on --with-cpu et cetera.
@@ -233,7 +226,6 @@ gnu_ld="$gnu_ld_flag"
 default_use_cxa_atexit=no
 default_gnu_indirect_function=no
 target_gtfiles=
-need_64bit_hwint=yes
 need_64bit_isa=
 native_system_header_dir=/usr/include
 target_type_format_char='@'
@@ -310,14 +302,12 @@ m32c*-*-*)
         ;;
 aarch64*-*-*)
 	cpu_type=aarch64
-	need_64bit_hwint=yes
 	extra_headers="arm_neon.h"
 	extra_objs="aarch64-builtins.o aarch-common.o"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
 	cpu_type=alpha
-	need_64bit_hwint=yes
 	extra_options="${extra_options} g.opt"
 	;;
 am33_2.0-*-linux*)
@@ -333,7 +323,6 @@ arm*-*-*)
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
-	need_64bit_hwint=yes
 	extra_options="${extra_options} arm/arm-tables.opt"
 	;;
 avr-*-*)
@@ -363,7 +352,6 @@ i[34567]86-*-*)
 	cpu_type=i386
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
-	need_64bit_hwint=yes
 	extra_options="${extra_options} fused-madd.opt"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
@@ -375,7 +363,8 @@ i[34567]86-*-*)
 		       rtmintrin.h xtestintrin.h rdseedintrin.h prfchwintrin.h
 		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
 		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
-		       shaintrin.h"
+		       shaintrin.h clflushoptintrin.h xsavecintrin.h
+		       xsavesintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -392,12 +381,11 @@ x86_64-*-*)
 		       rtmintrin.h xtestintrin.h rdseedintrin.h prfchwintrin.h
 		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
 		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
-		       shaintrin.h"
-	need_64bit_hwint=yes
+		       shaintrin.h clflushoptintrin.h xsavecintrin.h
+		       xsavesintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
-	need_64bit_hwint=yes
 	extra_options="${extra_options} g.opt fused-madd.opt"
 	;;
 hppa*-*-*)
@@ -420,7 +408,6 @@ microblaze*-*-*)
         ;;
 mips*-*-*)
 	cpu_type=mips
-	need_64bit_hwint=yes
 	extra_headers="loongson.h"
 	extra_options="${extra_options} g.opt mips/mips-tables.opt"
 	;;
@@ -438,7 +425,6 @@ picochip-*-*)
 powerpc*-*-*)
 	cpu_type=rs6000
 	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
-	need_64bit_hwint=yes
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[345678]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|Xe6500)
 		cpu_is_64bit=yes
@@ -447,7 +433,6 @@ powerpc*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	;;
 rs6000*-*-*)
-	need_64bit_hwint=yes
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	;;
 score*-*-*)
@@ -459,22 +444,18 @@ sparc*-*-*)
 	c_target_objs="sparc-c.o"
 	cxx_target_objs="sparc-c.o"
 	extra_headers="visintrin.h"
-	need_64bit_hwint=yes
 	;;
 spu*-*-*)
 	cpu_type=spu
-	need_64bit_hwint=yes
 	;;
 s390*-*-*)
 	cpu_type=s390
-	need_64bit_hwint=yes
 	extra_options="${extra_options} fused-madd.opt"
 	extra_headers="s390intrin.h htmintrin.h htmxlintrin.h"
 	;;
 # Note the 'l'; we need to be able to match e.g. "shle" or "shl".
 sh[123456789lbe]*-*-* | sh-*-*)
 	cpu_type=sh
-	need_64bit_hwint=yes
 	extra_options="${extra_options} fused-madd.opt"
 	extra_objs="${extra_objs} sh_treg_combine.o sh-mem.o sh_optimize_sett_clrt.o"
 	;;
@@ -491,11 +472,9 @@ xtensa*-*-*)
 	;;
 tilegx*-*-*)
 	cpu_type=tilegx
-	need_64bit_hwint=yes
 	;;
 tilepro*-*-*)
 	cpu_type=tilepro
-	need_64bit_hwint=yes
 	;;
 esac
 
@@ -683,7 +662,6 @@ case ${target} in
     *)
       default_use_cxa_atexit=yes;;
   esac
-  # need_64bit_hwint=yes # system compiler has this for all arch!
   use_gcc_stdint=wrap
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
@@ -1184,7 +1162,6 @@ hppa*64*-*-linux*)
 		 glibc-stdint.h pa/pa-linux.h pa/pa64-regs.h pa/pa-64.h \
 		 pa/pa64-linux.h"
 	gas=yes gnu_ld=yes
-	need_64bit_hwint=yes
 	;;
 hppa*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS"
@@ -1259,7 +1236,6 @@ hppa*64*-*-hpux11*)
 	esac
 	extra_options="${extra_options} pa/pa-hpux.opt \
 		       pa/pa-hpux1010.opt pa/pa64-hpux.opt hpux11.opt"
-	need_64bit_hwint=yes
 	tmake_file="t-slibgcc"
 	case x${enable_threads} in
 	x | xyes | xposix )
@@ -2092,7 +2068,6 @@ mipstx39-*-elf* | mipstx39el-*-elf*)
 	;;
 mmix-knuth-mmixware)
 	tm_file="${tm_file} newlib-stdint.h"
-	need_64bit_hwint=yes
 	use_gcc_stdint=wrap
 	;;
 mn10300-*-*)

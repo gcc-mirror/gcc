@@ -698,7 +698,7 @@ if_region_set_false_region (ifsese if_region, sese region)
 
   if (slot)
     {
-      struct loop_exit *loop_exit = ggc_alloc_cleared_loop_exit ();
+      struct loop_exit *loop_exit = ggc_cleared_alloc<struct loop_exit> ();
 
       memcpy (loop_exit, *((struct loop_exit **) slot), sizeof (struct loop_exit));
       htab_clear_slot (current_loops->exits, slot);

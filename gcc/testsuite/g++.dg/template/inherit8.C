@@ -4,7 +4,7 @@ template <typename T>
 struct A
 {
   template <typename U>
-  struct B : public A <B<U> >	// { dg-error "declaration" }
+  struct B : public A <B<U> >	// { dg-message "not complete" }
   {
     struct C : public B<U>	// { dg-error "incomplete" }
     {

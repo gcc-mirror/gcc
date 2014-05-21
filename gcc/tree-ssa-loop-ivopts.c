@@ -928,36 +928,60 @@ determine_base_object (tree expr)
     }
 }
 
+/* Return true if address expression with non-DECL_P operand appears
+   in EXPR.  */
+
+static bool
+contain_complex_addr_expr (tree expr)
+{
+  bool res = false;
+
+  STRIP_NOPS (expr);
+  switch (TREE_CODE (expr))
+    {
+    case POINTER_PLUS_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      res |= contain_complex_addr_expr (TREE_OPERAND (expr, 0));
+      res |= contain_complex_addr_expr (TREE_OPERAND (expr, 1));
+      break;
+
+    case ADDR_EXPR:
+      return (!DECL_P (TREE_OPERAND (expr, 0)));
+
+    default:
+      return false;
+    }
+
+  return res;
+}
+
 /* Allocates an induction variable with given initial value BASE and step STEP
    for loop LOOP.  */
 
 static struct iv *
 alloc_iv (tree base, tree step)
 {
-  tree base_object = base;
+  tree expr = base;
   struct iv *iv = XCNEW (struct iv);
   gcc_assert (step != NULL_TREE);
 
-  /* Lower all address expressions except ones with DECL_P as operand.
+  /* Lower address expression in base except ones with DECL_P as operand.
      By doing this:
        1) More accurate cost can be computed for address expressions;
        2) Duplicate candidates won't be created for bases in different
           forms, like &a[0] and &a.  */
-  STRIP_NOPS (base_object);
-  if (TREE_CODE (base_object) == ADDR_EXPR
-      && !DECL_P (TREE_OPERAND (base_object, 0)))
+  STRIP_NOPS (expr);
+  if ((TREE_CODE (expr) == ADDR_EXPR && !DECL_P (TREE_OPERAND (expr, 0)))
+      || contain_complex_addr_expr (expr))
     {
       aff_tree comb;
-      widest_int size;
-      base_object = get_inner_reference_aff (TREE_OPERAND (base_object, 0),
-					     &comb, &size);
-      gcc_assert (base_object != NULL_TREE);
-      base_object = build_fold_addr_expr (base_object);
+      tree_to_aff_combination (expr, TREE_TYPE (base), &comb);
       base = fold_convert (TREE_TYPE (base), aff_combination_to_tree (&comb));
     }
 
   iv->base = base;
-  iv->base_object = determine_base_object (base_object);
+  iv->base_object = determine_base_object (base);
   iv->step = step;
   iv->biv_p = false;
   iv->have_use_for = false;

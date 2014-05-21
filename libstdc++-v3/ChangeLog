@@ -1,3 +1,156 @@
+2014-05-20  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* scripts/testsuite_flags.in (cxxflags): Remove @CXXFLAGS@ since 
+	libstdc++.exp imports those flags via getenv.
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Ensure that 
+	CXXFLAGS contains a '-O' flag. 
+
+2014-05-20  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR libstdc++/61223
+	Revert:
+	2014-05-16  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR libstdc++/60758
+	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Change r4 to lr in save/restore
+	and add unwind directives.
+
+2014-05-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* testsuite/lib/libstdc++.exp (load_gcc_lib): Register loaded libs.
+
+2014-05-20  Tim Shen  <timshen91@gmail.com>
+
+	PR libstdc++/61227
+	* include/bits/regex_compiler.h
+	(_BracketMatcher<>::_M_add_character_class): Add negative character
+	class support.
+	* include/bits/regex_compiler.tcc (_BracketMatcher<>::_M_apply):
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/quoted_char.cc:
+	Add more testcases.
+
+2014-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Use Python3 raise syntax.
+
+2014-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* libsupc++/new_op.cc: Factor the calls to malloc, use __builtin_expect.
+	* libsupc++/new_opnt.cc: Likewise.
+
+2014-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60966
+	* include/std/future (__future_base::_State_baseV2::_M_set_result):
+	Pass lock into _M_do_set and hold it until the function returns.
+	Signal condition variable after call_once completes.
+	(__future_base::_State_baseV2::_M_do_set): Use lock argument. Do not
+	signal here.
+	* testsuite/30_threads/promise/60966.cc: New.
+
+2014-05-16  Iain Sandoe  <iain@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libstdc++-abi/abi.exp: Defer setting of baseline_subdir
+	until after checking that the test is eligible to be run.
+
+2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Fix
+	test for 32-bit target.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/modifiers/reset_neg.cc:
+	Fix test.
+
+2014-05-16  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR libstdc++/60758
+	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Change r4 to lr in save/restore
+	and add unwind directives.
+
+2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/parse_numbers.h (__parse_int::_Number_help): Check for
+	overflow.
+	* include/std/chrono (chrono_literals::__select_type::_Select_type):
+	Remove.
+	(chrono_literals::_Checked_integral_constant): Define.
+	Simplify UDL operator templates and check for overflow.
+	* testsuite/20_util/duration/literals/range.cc: New.
+
+2014-05-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61166
+	* include/bits/parse_numbers.h: Use integral_constant to remove
+	duplication and simplify.
+	* testsuite/20_util/duration/literals/61166.cc: New.
+
+2014-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60326
+	* include/std/type_traits (__make_unsigned, __make_signed): Define
+	specializations for wchar_t, char16_t and char32_t.
+	* testsuite/20_util/make_signed/requirements/typedefs-4.cc: New.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Correct
+	test for make_unsigned<volatile wchar_t>.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2014-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (tuple_size<cv _Tp>): Implement LWG 2313.
+	* include/std/array (tuple_size, tuple_element): Add Doxygen comments.
+	* include/std/utility (tuple_size, tuple_element): Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Adjust dg-error line number.
+
+2014-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (__add_c_ref, __add_ref, __add_r_ref): Remove.
+	(__tuple_element_t): Define.
+	(tuple_element): Use __tuple_element_t.
+	(__cv_tuple_size): Define.
+	(tuple_size<cv _Tp>): Use __cv_tuple_size.
+	(get, __get_helper, __get_helper2): Remove uses of __add_ref etc.
+	(get<_Tp>(tuple<_Types...>&&)): Use forward instead of move.
+	(__tuple_compare): Remove size check, re-order parameters.
+	(operator==, operator<): Use static_assert to check requirements.
+	* include/std/functional (__volget): use __tuple_element_t.
+	* testsuite/20_util/tuple/element_access/get_by_type.cc: Test rvalues.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error.
+
+2014-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60497
+	* include/std/tuple (get, __tuple_compare): Qualify more calls to
+	prevent ADL. Cast comparison results to bool.
+	* testsuite/20_util/tuple/60497.cc: Test accessing rvalues.
+	* testsuite/20_util/tuple/comparison_operators/overloaded.cc: New.
+
+	PR libstdc++/60497
+	* include/debug/array (get): Qualify call to other get overload.
+	* include/profile/array (get): Likewise.
+	* include/std/array (get): Likewise.
+	* include/std/functional (_Mu, _Bind, _Bind_result): Qualify std::get.
+	* include/std/mutex (unique_lock, call_once): Use __addressof.
+	(__unlock_impl): Remove unused template.
+	(__try_to_lock): Declare inline.
+	(__try_lock_impl::__do_try_lock): Qualify function calls.
+	(lock): Avoid narrowing conversion.
+	* testsuite/20_util/bind/60497.cc: New.
+	* testsuite/23_containers/array/element_access/60497.cc: New.
+	* testsuite/30_threads/call_once/60497.cc: New.
+	* testsuite/30_threads/unique_lock/cons/60497.cc: New.
+
 2014-05-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.20): Correct regex_error export.

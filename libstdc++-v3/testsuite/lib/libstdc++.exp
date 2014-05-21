@@ -38,8 +38,10 @@
 # ~/.dejagnurc or $DEJAGNU.
 
 proc load_gcc_lib { filename } {
-    global srcdir
+    global srcdir loaded_libs
+
     load_file $srcdir/../../gcc/testsuite/lib/$filename
+    set loaded_libs($filename) ""
 }
 
 # system routines
@@ -280,6 +282,11 @@ proc libstdc++_init { testfile } {
     }
     append cxxflags " "
     append cxxflags [getenv CXXFLAGS]
+
+    if ![regexp "\-O" $cxxflags] {
+	append cxxflags " -g -O2"
+    }
+
     v3track cxxflags 2
 
     # Always use MO files built by this test harness.

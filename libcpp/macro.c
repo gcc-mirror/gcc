@@ -494,6 +494,9 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 		   || token->type == CPP_STRING16 || token->type == CPP_CHAR16
 		   || token->type == CPP_UTF8STRING);
 
+      escape_it = escape_it || cpp_userdef_string_p (token->type)
+			    || cpp_userdef_char_p (token->type);
+
       /* Room for each char being written in octal, initial space and
 	 final quote and NUL.  */
       len = cpp_token_len (token);

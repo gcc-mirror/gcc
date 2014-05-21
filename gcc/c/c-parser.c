@@ -97,7 +97,7 @@ c_parse_init (void)
   if (!flag_upc)
     mask |= D_UPC;
 
-  ridpointers = ggc_alloc_cleared_vec_tree ((int) RID_MAX);
+  ridpointers = ggc_cleared_vec_alloc<tree> ((int) RID_MAX);
   for (i = 0; i < num_c_common_reswords; i++)
     {
       /* If a keyword is disabled, do not enter it into the table
@@ -14613,7 +14613,7 @@ c_parse_file (void)
   if (c_parser_peek_token (&tparser)->pragma_kind == PRAGMA_GCC_PCH_PREPROCESS)
     c_parser_pragma_pch_preprocess (&tparser);
 
-  the_parser = ggc_alloc_c_parser ();
+  the_parser = ggc_alloc<c_parser> ();
   *the_parser = tparser;
   if (tparser.tokens == &tparser.tokens_buf[0])
     the_parser->tokens = &the_parser->tokens_buf[0];

@@ -332,6 +332,41 @@ typedef struct page_table_chain
 
 #endif
 
+class finalizer
+{
+public:
+  finalizer (void *addr, void (*f)(void *)) : m_addr (addr), m_function (f) {}
+
+  void *addr () const { return m_addr; }
+
+  void call () const { m_function (m_addr); }
+
+private:
+  void *m_addr;
+  void (*m_function)(void *);
+};
+
+class vec_finalizer
+{
+public:
+  vec_finalizer (uintptr_t addr, void (*f)(void *), size_t s, size_t n) :
+    m_addr (addr), m_function (f), m_object_size (s), m_n_objects (n) {}
+
+  void call () const
+    {
+      for (size_t i = 0; i < m_n_objects; i++)
+	m_function (reinterpret_cast<void *> (m_addr + (i * m_object_size)));
+    }
+
+  void *addr () const { return reinterpret_cast<void *> (m_addr); }
+
+private:
+  uintptr_t m_addr;
+  void (*m_function)(void *);
+  size_t m_object_size;
+  size_t m_n_objects;
+  };
+
 #ifdef ENABLE_GC_ALWAYS_COLLECT
 /* List of free objects to be verified as actually free on the
    next collection.  */
@@ -424,6 +459,12 @@ static struct globals
      zero otherwise.  We allocate them all together, to enable a
      better runtime data access pattern.  */
   unsigned long **save_in_use;
+
+  /* Finalizers for single objects.  */
+  vec<finalizer> finalizers;
+
+  /* Finalizers for vectors of objects.  */
+  vec<vec_finalizer> vec_finalizers;
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
   /* List of free objects to be verified as actually free on the
@@ -1202,7 +1243,8 @@ ggc_round_alloc_size (size_t requested_size)
 /* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
 void *
-ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_alloc (size_t size, void (*f)(void *), size_t s, size_t n
+		    MEM_STAT_DECL)
 {
   size_t order, word, bit, object_offset, object_size;
   struct page_entry *entry;
@@ -1344,6 +1386,12 @@ ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
 
   /* For timevar statistics.  */
   timevar_ggc_mem_total += object_size;
+
+  if (f && n == 1)
+    G.finalizers.safe_push (finalizer (result, f));
+  else if (f)
+    G.vec_finalizers.safe_push
+      (vec_finalizer (reinterpret_cast<uintptr_t> (result), f, s, n));
 
   if (GATHER_STATISTICS)
     {
@@ -1811,6 +1859,47 @@ clear_marks (void)
     }
 }
 
+/* Check if any blocks with a registered finalizer have become unmarked. If so
+   run the finalizer and unregister it because the block is about to be freed.
+   Note that no garantee is made about what order finalizers will run in so
+   touching other objects in gc memory is extremely unwise.  */
+
+static void
+ggc_handle_finalizers ()
+{
+  if (G.context_depth != 0)
+    return;
+
+  unsigned length = G.finalizers.length ();
+  for (unsigned int i = 0; i < length;)
+    {
+      finalizer &f = G.finalizers[i];
+      if (!ggc_marked_p (f.addr ()))
+	{
+	  f.call ();
+	  G.finalizers.unordered_remove (i);
+	  length--;
+	}
+      else
+	i++;
+    }
+
+
+  length = G.vec_finalizers.length ();
+  for (unsigned int i = 0; i < length;)
+    {
+      vec_finalizer &f = G.vec_finalizers[i];
+      if (!ggc_marked_p (f.addr ()))
+	{
+	  f.call ();
+	  G.vec_finalizers.unordered_remove (i);
+	  length--;
+	}
+      else
+	i++;
+    }
+}
+
 /* Free all empty pages.  Partially empty pages need no attention
    because the `mark' bit doubles as an `unused' bit.  */
 
@@ -2075,6 +2164,7 @@ ggc_collect (void)
 
   clear_marks ();
   ggc_mark_roots ();
+  ggc_handle_finalizers ();
 
   if (GATHER_STATISTICS)
     ggc_prune_overhead_list ();

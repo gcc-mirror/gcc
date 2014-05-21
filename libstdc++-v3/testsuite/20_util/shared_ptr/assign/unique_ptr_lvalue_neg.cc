@@ -35,7 +35,7 @@ test01()
 
   std::shared_ptr<A> a;
   std::unique_ptr<A> u;
-  a = u; // { dg-error "cannot bind" }
+  a = u; // { dg-error "" }
 
   return 0;
 }

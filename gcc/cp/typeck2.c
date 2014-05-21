@@ -294,7 +294,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
       slot = htab_find_slot_with_hash (abstract_pending_vars, type,
 				      (hashval_t)TYPE_UID (type), INSERT);
 
-      pat = ggc_alloc_pending_abstract_type ();
+      pat = ggc_alloc<pending_abstract_type> ();
       pat->type = type;
       pat->decl = decl;
       pat->use = use;
@@ -429,6 +429,25 @@ abstract_virtuals_error (abstract_class_use use, tree type)
   return abstract_virtuals_error_sfinae (use, type, tf_warning_or_error);
 }
 
+/* Print an inform about the declaration of the incomplete type TYPE.  */
+
+void
+cxx_incomplete_type_inform (const_tree type)
+{
+  location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
+  tree ptype = strip_top_quals (CONST_CAST_TREE (type));
+
+  if (current_class_type
+      && TYPE_BEING_DEFINED (current_class_type)
+      && same_type_p (ptype, current_class_type))
+    inform (loc, "definition of %q#T is not complete until "
+	    "the closing brace", ptype);
+  else if (!TYPE_TEMPLATE_INFO (ptype))
+    inform (loc, "forward declaration of %q#T", ptype);
+  else
+    inform (loc, "declaration of %q#T", ptype);
+}
+
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
    and TYPE is the type that was invalid.  DIAG_KIND indicates the
@@ -438,7 +457,7 @@ void
 cxx_incomplete_type_diagnostic (const_tree value, const_tree type, 
 				diagnostic_t diag_kind)
 {
-  int decl = 0;
+  bool is_decl = false, complained = false;
 
   gcc_assert (diag_kind == DK_WARNING 
 	      || diag_kind == DK_PEDWARN 
@@ -452,10 +471,10 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 		     || TREE_CODE (value) == PARM_DECL
 		     || TREE_CODE (value) == FIELD_DECL))
     {
-      emit_diagnostic (diag_kind, input_location, 0,
-		       "%q+D has incomplete type", value);
-      decl = 1;
-    }
+      complained = emit_diagnostic (diag_kind, input_location, 0,
+				    "%q+D has incomplete type", value);
+      is_decl = true;
+    } 
  retry:
   /* We must print an error message.  Be clever about what it says.  */
 
@@ -464,15 +483,12 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-      if (!decl)
-	emit_diagnostic (diag_kind, input_location, 0,
-			 "invalid use of incomplete type %q#T", type);
-      if (!TYPE_TEMPLATE_INFO (type))
-	emit_diagnostic (diag_kind, input_location, 0,
-			 "forward declaration of %q+#T", type);
-      else
-	emit_diagnostic (diag_kind, input_location, 0,
-			 "declaration of %q+#T", type);
+      if (!is_decl)
+	complained = emit_diagnostic (diag_kind, input_location, 0,
+				      "invalid use of incomplete type %q#T",
+				      type);
+      if (complained)
+	cxx_incomplete_type_inform (type);
       break;
 
     case VOID_TYPE:
@@ -1097,6 +1113,22 @@ tree
 digest_init_flags (tree type, tree init, int flags)
 {
   return digest_init_r (type, init, false, flags, tf_warning_or_error);
+}
+
+/* Process the initializer INIT for an NSDMI DECL (a FIELD_DECL).  */
+tree
+digest_nsdmi_init (tree decl, tree init)
+{
+  gcc_assert (TREE_CODE (decl) == FIELD_DECL);
+
+  int flags = LOOKUP_IMPLICIT;
+  if (DIRECT_LIST_INIT_P (init))
+    flags = LOOKUP_NORMAL;
+  init = digest_init_flags (TREE_TYPE (decl), init, flags);
+  if (TREE_CODE (init) == TARGET_EXPR)
+    /* This represents the whole initialization.  */
+    TARGET_EXPR_DIRECT_INIT_P (init) = true;
+  return init;
 }
 
 /* Set of flags used within process_init_constructor to describe the

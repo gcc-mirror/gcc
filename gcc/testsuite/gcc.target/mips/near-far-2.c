@@ -14,7 +14,7 @@ int test ()
           + normal_func ());
 }
 
-/* { dg-final { scan-assembler-not "\tjal\tlong_call_func\n" } } */
-/* { dg-final { scan-assembler-not "\tjal\tfar_func\n" } } */
-/* { dg-final { scan-assembler     "\tjal\tnear_func\n" } } */
-/* { dg-final { scan-assembler     "\tjal\tnormal_func\n" } } */
+/* { dg-final { scan-assembler-not "\tjal(|s)\tlong_call_func\n" } } */
+/* { dg-final { scan-assembler-not "\tjal(|s)\tfar_func\n" } } */
+/* { dg-final { scan-assembler     "\tjal(|s)\tnear_func\n" } } */
+/* { dg-final { scan-assembler     "\tjal(|s)\tnormal_func\n" } } */

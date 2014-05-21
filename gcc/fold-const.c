@@ -3444,7 +3444,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 {
   HOST_WIDE_INT lbitpos, lbitsize, rbitpos, rbitsize, nbitpos, nbitsize;
   tree type = TREE_TYPE (lhs);
-  tree signed_type, unsigned_type;
+  tree unsigned_type;
   int const_p = TREE_CODE (rhs) == INTEGER_CST;
   enum machine_mode lmode, rmode, nmode;
   int lunsignedp, runsignedp;
@@ -3489,7 +3489,6 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 
   /* Set signed and unsigned types of the precision of this mode for the
      shifts below.  */
-  signed_type = lang_hooks.types.type_for_mode (nmode, 0);
   unsigned_type = lang_hooks.types.type_for_mode (nmode, 1);
 
   /* Compute the bit position and size for the new reference and our offset
@@ -3538,10 +3537,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 
   if (lunsignedp)
     {
-      if (! integer_zerop (const_binop (RSHIFT_EXPR,
-					fold_convert_loc (loc,
-							  unsigned_type, rhs),
-					size_int (lbitsize))))
+      if (wi::lrshift (rhs, lbitsize) != 0)
 	{
 	  warning (0, "comparison is always %d due to width of bit-field",
 		   code == NE_EXPR);
@@ -3550,10 +3546,8 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
     }
   else
     {
-      tree tem = const_binop (RSHIFT_EXPR,
-			      fold_convert_loc (loc, signed_type, rhs),
-			      size_int (lbitsize - 1));
-      if (! integer_zerop (tem) && ! integer_all_onesp (tem))
+      wide_int tem = wi::arshift (rhs, lbitsize - 1);
+      if (tem != 0 && tem != -1)
 	{
 	  warning (0, "comparison is always %d due to width of bit-field",
 		   code == NE_EXPR);
@@ -7856,6 +7850,11 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	return fold_convert_loc (loc, type, op0);
       return NULL_TREE;
 
+    case NON_LVALUE_EXPR:
+      if (!maybe_lvalue_p (op0))
+	return fold_convert_loc (loc, type, op0);
+      return NULL_TREE;
+
     CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
@@ -8142,7 +8141,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    }
 	}
 
-      tem = fold_convert_const (code, type, op0);
+      tem = fold_convert_const (code, type, arg0);
       return tem ? tem : NULL_TREE;
 
     case ADDR_SPACE_CONVERT_EXPR:
@@ -10394,9 +10393,8 @@ fold_binary_loc (location_t loc,
 	      && TREE_CODE (arg1) == BIT_AND_EXPR
 	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
-	      && integer_zerop (const_binop (BIT_AND_EXPR,
-					     TREE_OPERAND (arg0, 1),
-					     TREE_OPERAND (arg1, 1))))
+	      && wi::bit_and (TREE_OPERAND (arg0, 1),
+			      TREE_OPERAND (arg1, 1)) == 0)
 	    {
 	      code = BIT_IOR_EXPR;
 	      goto bit_ior;
@@ -11526,9 +11524,8 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (arg1) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
-	  && integer_zerop (const_binop (BIT_AND_EXPR,
-					 TREE_OPERAND (arg0, 1),
-					 TREE_OPERAND (arg1, 1))))
+	  && wi::bit_and (TREE_OPERAND (arg0, 1),
+			  TREE_OPERAND (arg1, 1)) == 0)
 	{
 	  code = BIT_IOR_EXPR;
 	  goto bit_ior;
@@ -12028,11 +12025,17 @@ fold_binary_loc (location_t loc,
 		      /* See if we can shorten the right shift.  */
 		      if (shiftc < prec)
 			shift_type = inner_type;
+		      /* Otherwise X >> C1 is all zeros, so we'll optimize
+			 it into (X, 0) later on by making sure zerobits
+			 is all ones.  */
 		    }
 		}
 	      zerobits = ~(unsigned HOST_WIDE_INT) 0;
-	      zerobits >>= HOST_BITS_PER_WIDE_INT - shiftc;
-	      zerobits <<= prec - shiftc;
+	      if (shiftc < prec)
+		{
+		  zerobits >>= HOST_BITS_PER_WIDE_INT - shiftc;
+		  zerobits <<= prec - shiftc;
+		}
 	      /* For arithmetic shift if sign bit could be set, zerobits
 		 can contain actually sign bits, so no transformation is
 		 possible, unless MASK masks them all away.  In that
@@ -12050,7 +12053,7 @@ fold_binary_loc (location_t loc,
 	  /* ((X << 16) & 0xff00) is (X, 0).  */
 	  if ((mask & zerobits) == mask)
 	    return omit_one_operand_loc (loc, type,
-				     build_int_cst (type, 0), arg0);
+					 build_int_cst (type, 0), arg0);
 
 	  newmask = mask | zerobits;
 	  if (newmask != mask && (newmask & (newmask + 1)) == 0)

@@ -74,10 +74,12 @@ trunc_int_for_mode (HOST_WIDE_INT c, enum machine_mode mode)
 }
 
 /* Return an rtx for the sum of X and the integer C, given that X has
-   mode MODE.  */
+   mode MODE.  INPLACE is true if X can be modified inplace or false
+   if it must be treated as immutable.  */
 
 rtx
-plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
+plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c,
+	       bool inplace)
 {
   RTX_CODE code;
   rtx y;
@@ -116,6 +118,8 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
     case CONST:
       /* If adding to something entirely constant, set a flag
 	 so that we can add a CONST around the result.  */
+      if (inplace && shared_const_p (x))
+	inplace = false;
       x = XEXP (x, 0);
       all_constant = 1;
       goto restart;
@@ -136,19 +140,25 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 
       if (CONSTANT_P (XEXP (x, 1)))
 	{
-	  x = gen_rtx_PLUS (mode, XEXP (x, 0),
-			    plus_constant (mode, XEXP (x, 1), c));
+	  rtx term = plus_constant (mode, XEXP (x, 1), c, inplace);
+	  if (term == const0_rtx)
+	    x = XEXP (x, 0);
+	  else if (inplace)
+	    XEXP (x, 1) = term;
+	  else
+	    x = gen_rtx_PLUS (mode, XEXP (x, 0), term);
 	  c = 0;
 	}
-      else if (find_constant_term_loc (&y))
+      else if (rtx *const_loc = find_constant_term_loc (&y))
 	{
-	  /* We need to be careful since X may be shared and we can't
-	     modify it in place.  */
-	  rtx copy = copy_rtx (x);
-	  rtx *const_loc = find_constant_term_loc (&copy);
-
-	  *const_loc = plus_constant (mode, *const_loc, c);
-	  x = copy;
+	  if (!inplace)
+	    {
+	      /* We need to be careful since X may be shared and we can't
+		 modify it in place.  */
+	      x = copy_rtx (x);
+	      const_loc = find_constant_term_loc (&x);
+	    }
+	  *const_loc = plus_constant (mode, *const_loc, c, true);
 	  c = 0;
 	}
       break;

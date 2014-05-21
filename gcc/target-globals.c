@@ -83,13 +83,13 @@ save_target_globals (void)
   g = (struct target_globals *) p;
   g->flag_state = &p->flag_state;
   g->regs = ggc_internal_cleared_alloc (sizeof (struct target_regs));
-  g->rtl = ggc_alloc_cleared_target_rtl ();
+  g->rtl = ggc_cleared_alloc<target_rtl> ();
   g->hard_regs
     = ggc_internal_cleared_alloc (sizeof (struct target_hard_regs));
   g->reload = ggc_internal_cleared_alloc (sizeof (struct target_reload));
   g->expmed =  ggc_internal_cleared_alloc (sizeof (struct target_expmed));
   g->optabs = &p->optabs;
-  g->libfuncs = ggc_alloc_cleared_target_libfuncs ();
+  g->libfuncs = ggc_cleared_alloc<target_libfuncs> ();
   g->cfgloop = &p->cfgloop;
   g->ira = ggc_internal_cleared_alloc (sizeof (struct target_ira));
   g->ira_int = ggc_internal_cleared_alloc (sizeof (struct target_ira_int));

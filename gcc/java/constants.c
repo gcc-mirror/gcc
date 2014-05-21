@@ -46,11 +46,8 @@ set_constant_entry (CPool *cpool, int index, int tag, jword value)
   if (cpool->data == NULL)
     {
       cpool->capacity = 100;
-      cpool->tags = (uint8 *) ggc_alloc_cleared_atomic (sizeof (uint8)
-						* cpool->capacity);
-      cpool->data = ggc_alloc_cleared_vec_cpool_entry (sizeof
-						       (union cpool_entry),
-						       cpool->capacity);
+      cpool->tags = ggc_cleared_vec_alloc<uint8> (cpool->capacity);
+      cpool->data = ggc_cleared_vec_alloc<cpool_entry> (cpool->capacity);
       cpool->count = 1;
     }
   if (index >= cpool->capacity)
@@ -338,7 +335,7 @@ cpool_for_class (tree klass)
 
   if (cpool == NULL)
     {
-      cpool = ggc_alloc_cleared_CPool ();
+      cpool = ggc_cleared_alloc<CPool> ();
       TYPE_CPOOL (klass) = cpool;
     }
   return cpool;

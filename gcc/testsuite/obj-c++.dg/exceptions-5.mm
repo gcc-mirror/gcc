@@ -73,7 +73,6 @@ int test (id object)
     {                     /* { dg-error "no matching function" "" { target *-*-* } 72 } */
       dummy++;            /* { dg-message "MyObject" "" { target *-*-* } 13 } */
     }                     /* { dg-message "candidate" "" { target *-*-* } 13 } */
-                          /* { dg-message "candidate" "" { target *-*-* } 72 } */
 
   @try { @throw object; }
   @catch (static MyObject *) /* { dg-error "storage class" } */

@@ -7,7 +7,7 @@ extern "C"
 }
 
 
-void Munge(int& x) 	// { dg-message "passing argument 1" }
+void Munge(int& x) 	// { dg-message "argument 1" }
 {
    x = 2;
 }
@@ -24,7 +24,7 @@ class A
 void
 A::Safe() const 
 {
-   Munge(i);	        // { dg-error "invalid initialization" }
+   Munge(i);	        // { dg-error "const" }
 }
 
 int main()

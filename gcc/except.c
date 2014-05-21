@@ -286,9 +286,22 @@ init_eh (void)
       tmp = size_int (FIRST_PSEUDO_REGISTER + 2 - 1);
 #endif
 #else
-      /* builtin_setjmp takes a pointer to 5 words.  */
-      tmp = size_int (5 * BITS_PER_WORD / POINTER_SIZE - 1);
+      /* Compute a minimally sized jump buffer.  We need room to store at
+	 least 3 pointers - stack pointer, frame pointer and return address.
+	 Plus for some targets we need room for an extra pointer - in the
+	 case of MIPS this is the global pointer.  This makes a total of four
+	 pointers, but to be safe we actually allocate room for 5.
+
+	 If pointers are smaller than words then we allocate enough room for
+	 5 words, just in case the backend needs this much room.  For more
+	 discussion on this issue see:
+	 http://gcc.gnu.org/ml/gcc-patches/2014-05/msg00313.html.  */
+      if (POINTER_SIZE > BITS_PER_WORD)
+	tmp = size_int (5 - 1);
+      else
+	tmp = size_int ((5 * BITS_PER_WORD / POINTER_SIZE) - 1);
 #endif
+
       tmp = build_index_type (tmp);
       tmp = build_array_type (ptr_type_node, tmp);
       f_jbuf = build_decl (BUILTINS_LOCATION,
@@ -333,7 +346,7 @@ init_eh (void)
 void
 init_eh_for_function (void)
 {
-  cfun->eh = ggc_alloc_cleared_eh_status ();
+  cfun->eh = ggc_cleared_alloc<eh_status> ();
 
   /* Make sure zero'th entries are used.  */
   vec_safe_push (cfun->eh->region_array, (eh_region)0);
@@ -350,7 +363,7 @@ gen_eh_region (enum eh_region_type type, eh_region outer)
   eh_region new_eh;
 
   /* Insert a new blank region as a leaf in the tree.  */
-  new_eh = ggc_alloc_cleared_eh_region_d ();
+  new_eh = ggc_cleared_alloc<eh_region_d> ();
   new_eh->type = type;
   new_eh->outer = outer;
   if (outer)
@@ -407,7 +420,7 @@ gen_eh_region_catch (eh_region t, tree type_or_list)
 	add_type_for_runtime (TREE_VALUE (type_node));
     }
 
-  c = ggc_alloc_cleared_eh_catch_d ();
+  c = ggc_cleared_alloc<eh_catch_d> ();
   c->type_list = type_list;
   l = t->u.eh_try.last_catch;
   c->prev_catch = l;
@@ -441,7 +454,7 @@ gen_eh_region_must_not_throw (eh_region outer)
 eh_landing_pad
 gen_eh_landing_pad (eh_region region)
 {
-  eh_landing_pad lp = ggc_alloc_cleared_eh_landing_pad_d ();
+  eh_landing_pad lp = ggc_cleared_alloc<eh_landing_pad_d> ();
 
   lp->next_lp = region->landing_pads;
   lp->region = region;
@@ -949,7 +962,7 @@ static basic_block
 emit_to_new_bb_before (rtx seq, rtx insn)
 {
   rtx last;
-  basic_block bb, prev_bb;
+  basic_block bb;
   edge e;
   edge_iterator ei;
 
@@ -964,8 +977,7 @@ emit_to_new_bb_before (rtx seq, rtx insn)
   last = emit_insn_before (seq, insn);
   if (BARRIER_P (last))
     last = PREV_INSN (last);
-  prev_bb = BLOCK_FOR_INSN (insn)->prev_bb;
-  bb = create_basic_block (seq, last, prev_bb);
+  bb = create_basic_block (seq, last, BLOCK_FOR_INSN (insn)->prev_bb);
   update_bb_for_insn (bb);
   bb->flags |= BB_SUPERBLOCK;
   return bb;
@@ -2451,7 +2463,7 @@ add_call_site (rtx landing_pad, int action, int section)
 {
   call_site_record record;
 
-  record = ggc_alloc_call_site_record_d ();
+  record = ggc_alloc<call_site_record_d> ();
   record->landing_pad = landing_pad;
   record->action = action;
 
@@ -2855,12 +2867,12 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 
 #ifdef HAVE_LD_EH_GC_SECTIONS
 	  if (flag_function_sections
-	      || (DECL_ONE_ONLY (current_function_decl) && HAVE_COMDAT_GROUP))
+	      || (DECL_COMDAT_GROUP (current_function_decl) && HAVE_COMDAT_GROUP))
 	    {
 	      char *section_name = XNEWVEC (char, strlen (fnname) + 32);
 	      /* The EH table must match the code section, so only mark
 		 it linkonce if we have COMDAT groups to tie them together.  */
-	      if (DECL_ONE_ONLY (current_function_decl) && HAVE_COMDAT_GROUP)
+	      if (DECL_COMDAT_GROUP (current_function_decl) && HAVE_COMDAT_GROUP)
 		flags |= SECTION_LINKONCE;
 	      sprintf (section_name, ".gcc_except_table.%s", fnname);
 	      s = get_section (section_name, flags, current_function_decl);
