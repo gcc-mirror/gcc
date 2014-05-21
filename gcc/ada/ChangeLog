@@ -1,3 +1,11 @@
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads (Can_Never_Be_Null): Minor comment update.
+	* sem_prag.adb (Check_Arg_Is_Task_Dispatching_Policy): Minor
+	error message change.
+	* s-arit64.adb ("abs"): New function. Use expression functions
+	for the simple conversions and arithmetic.
+
 2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Rework comment and
