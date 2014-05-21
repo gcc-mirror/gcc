@@ -4115,29 +4115,28 @@ package Einfo is
 --       Is_Primitive_Wrapper. Set to the entity being wrapper.
 
 ---------------------------
--- Renaming and aliasing --
+-- Renaming and Aliasing --
 ---------------------------
 
---  Several entity attributes relate to renaming constructs, and to the use
---  of different names to refer to the same entity. Here is a summary of
+--  Several entity attributes relate to renaming constructs, and to the use of
+--  different names to refer to the same entity. The following is a summary of
 --  these constructs and their prefered uses.
 
 --  There are three related attributes:
---
---  Renamed_Entity
---  Renamed_Object
---  Alias
---
+
+--    Renamed_Entity
+--    Renamed_Object
+--    Alias
+
 --  They all overlap because they are supposed to apply to different entity
---  kinds, and are semantically related, but they have the following intended
---  uses:
---
+--  kinds. They are semantically related, and have the following intended uses:
+
 --  a) Renamed_Entity appplies to entities in renaming declarations that rename
 --  an entity, so the value of the attribute IS an entity. This applies to
 --  generic renamings, package renamings, exception renamings, and subprograms
 --  renamings that rename a subprogram (rather than an attribute, an entry, a
 --  protected operation, etc).
---
+
 --  b) Alias applies to overloadable entities, and the value is an overloadable
 --  entity. so this is a subset of the previous one. We use the term Alias to
 --  cover both renamings and inherited operations, because both cases are
@@ -4195,56 +4194,56 @@ package Einfo is
 --  If a subprogram has an access parameter whose designated type is incomplete
 --  the subprogram has the flag set.
 
-   ------------------
-   -- Access Kinds --
-   ------------------
+------------------
+-- Access Kinds --
+------------------
 
-   --  The following entity kinds are introduced by the corresponding type
-   --  definitions:
+--  The following entity kinds are introduced by the corresponding type
+--  definitions:
 
-   --    E_Access_Type,
-   --    E_General_Access_Type,
-   --    E_Access_Subprogram_Type,
-   --    E_Anonymous_Access_Subprogram_Type,
-   --    E_Access_Protected_Subprogram_Type,
-   --    E_Anonymous_Access_Protected_Subprogram_Type
-   --    E_Anonymous_Access_Type.
+--    E_Access_Type,
+--    E_General_Access_Type,
+--    E_Access_Subprogram_Type,
+--    E_Anonymous_Access_Subprogram_Type,
+--    E_Access_Protected_Subprogram_Type,
+--    E_Anonymous_Access_Protected_Subprogram_Type
+--    E_Anonymous_Access_Type.
 
-   --  E_Access_Subtype is for an access subtype created by a subtype
-   --  declaration.
+--  E_Access_Subtype is for an access subtype created by a subtype
+--  declaration.
 
-   --  In addition, we define the kind E_Allocator_Type to label allocators.
-   --  This is because special resolution rules apply to this construct.
-   --  Eventually the constructs are labeled with the access type imposed by
-   --  the context. Gigi should never see the type E_Allocator.
+--  In addition, we define the kind E_Allocator_Type to label allocators.
+--  This is because special resolution rules apply to this construct.
+--  Eventually the constructs are labeled with the access type imposed by
+--  the context. Gigi should never see the type E_Allocator.
 
-   --  Similarly, the type E_Access_Attribute_Type is used as the initial kind
-   --  associated with an access attribute. After resolution a specific access
-   --  type will be established as determined by the context.
+--  Similarly, the type E_Access_Attribute_Type is used as the initial kind
+--  associated with an access attribute. After resolution a specific access
+--  type will be established as determined by the context.
 
-   --  Finally, the type Any_Access is used to label -null- during type
-   --  resolution. Any_Access is also replaced by the context type after
-   --  resolution.
+--  Finally, the type Any_Access is used to label -null- during type
+--  resolution. Any_Access is also replaced by the context type after
+--  resolution.
 
-   --------------------------------
-   -- Classification of Entities --
-   --------------------------------
+--------------------------------
+-- Classification of Entities --
+--------------------------------
 
-   --  The classification of program entities which follows is a refinement of
-   --  the list given in RM 3.1(1). E.g., separate entities denote subtypes of
-   --  different type classes. Ada 95 entities include class wide types,
-   --  protected types, subprogram types, generalized access types,  generic
-   --  formal derived types and generic formal packages.
+--  The classification of program entities which follows is a refinement of
+--  the list given in RM 3.1(1). E.g., separate entities denote subtypes of
+--  different type classes. Ada 95 entities include class wide types,
+--  protected types, subprogram types, generalized access types,  generic
+--  formal derived types and generic formal packages.
 
-   --  The order chosen for these kinds allows us to classify related entities
-   --  so that they are contiguous. As a result, they do not appear in the
-   --  exact same order as their order of first appearance in the LRM (For
-   --  example, private types are listed before packages). The contiguity
-   --  allows us to define useful subtypes (see below) such as type entities,
-   --  overloaded entities, etc.
+--  The order chosen for these kinds allows us to classify related entities
+--  so that they are contiguous. As a result, they do not appear in the
+--  exact same order as their order of first appearance in the LRM (For
+--  example, private types are listed before packages). The contiguity
+--  allows us to define useful subtypes (see below) such as type entities,
+--  overloaded entities, etc.
 
-   --  Each entity (explicitly or implicitly declared) has a kind, which is
-   --  a value of the following type:
+--  Each entity (explicitly or implicitly declared) has a kind, which is
+--  a value of the following type:
 
    type Entity_Kind is (
 

@@ -5518,6 +5518,16 @@ package body Sem_Util is
          while Present (Formal) and then Present (Actual) loop
             if Actual = N then
                return;
+
+            --  An actual that is the prefix in a prefixed call may have
+            --  been rewritten in the call, after the deferred reference
+            --  was collected. Check if sloc and kinds match.
+
+            elsif Sloc (Actual) = Sloc (N)
+              and then Nkind (Actual) = Nkind (N)
+            then
+               return;
+
             else
                Actual := Next_Actual (Actual);
                Formal := Next_Formal (Formal);

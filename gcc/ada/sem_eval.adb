@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5488,7 +5488,6 @@ package body Sem_Eval is
 
       procedure Why_Not_Static_List (L : List_Id) is
          N : Node_Id;
-
       begin
          if Is_Non_Empty_List (L) then
             N := First (L);
@@ -5503,9 +5502,11 @@ package body Sem_Eval is
 
    begin
       --  If in ACATS mode (debug flag 2), then suppress all these messages,
-      --  this avoids massive updates to the ACATS base line.
+      --  this avoids massive updates to the ACATS base line. But if the flag
+      --  d.z is set, then don't suppress the messages. This is a temporary
+      --  kludge to aid in doing the necessary updates to the ACATS base line.
 
-      if Debug_Flag_2 then
+      if Debug_Flag_2 and then not Debug_Flag_Dot_Z then
          return;
       end if;
 
