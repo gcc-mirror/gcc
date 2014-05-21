@@ -5,6 +5,7 @@
 
 2014-05-21  Thomas Quinot  <quinot@adacore.com>
 
+	PR ada/9535
 	* g-socket.adb (Read and Write for Datagram_Socket_Stream_Type):
 	Provide a behaviour more consistent with underlying datagram
 	socket: do not attempt to loop over Send_Socket/Receive_Socket
