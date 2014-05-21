@@ -1,6 +1,11 @@
+2014-05-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61212
+	* files.c (find_file_in_dir): Add parens around &&.
+
 2014-05-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
-	PR C++/61038
+	PR c++/61038
 	* macro.c (stringify_arg (cpp_reader *, macro_arg *)):
 	Check for user-defined literal strings and user-defined literal chars
 	to escape necessary characters.
