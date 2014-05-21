@@ -1,3 +1,9 @@
+2014-05-21  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Optimize Options): Document parameters
+	ipa-cp-eval-threshold, ipa-max-agg-items, ipa-cp-loop-hint-bonus and
+	ipa-cp-array-index-hint-bonus.
+
 2014-05-21  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/16063
