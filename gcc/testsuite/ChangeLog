@@ -1,3 +1,8 @@
+2014-05-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-3.c: New.
+
 2014-05-21  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c++/60189

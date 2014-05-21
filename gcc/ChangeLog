@@ -1,3 +1,10 @@
+2014-05-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* config/sh/sh.md (*addc_r_1): Rename to addc_t_r.  Remove empty
+	constraints.
+	(*addc_r_t): Add new insn_and_split.
+
 2014-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61252
