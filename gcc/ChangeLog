@@ -1,3 +1,8 @@
+2014-05-21  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (-flto-partition=): Document one and
+	none algorithms.
+
 2014-05-21  John Marino  <gnugcc@marino.st>
 
 	* config.gcc (*-*-dragonfly*): New target.

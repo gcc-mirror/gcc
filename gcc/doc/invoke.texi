@@ -8780,6 +8780,9 @@ as an algorithm disables partitioning and streaming completely.
 The default value is @code{balanced}. While @code{1to1} can be used
 as an workaround for various code ordering issues, the @code{max}
 partitioning is intended for internal testing only.
+The value @code{one} specifies that exactly one partition should be
+used while the value @code{none} bypasses partitioning and executes
+the link-time optimization step directly from the WPA phase.
 
 @item -flto-compression-level=@var{n}
 This option specifies the level of compression used for intermediate
