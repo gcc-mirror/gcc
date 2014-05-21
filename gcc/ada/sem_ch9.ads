@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,20 +57,6 @@ package Sem_Ch9  is
    procedure Install_Declarations (Spec : Entity_Id);
    --  Make visible in corresponding body the entities defined in a task,
    --  protected type declaration, or entry declaration.
-
-   procedure Install_Discriminants (E : Entity_Id);
-   --  Make visible the discriminants of type entity E
-
-   procedure Push_Scope_And_Install_Discriminants (E : Entity_Id);
-   --  Push scope E and makes visible the discriminants of type entity E if E
-   --  has discriminants.
-
-   procedure Uninstall_Discriminants (E : Entity_Id);
-   --  Remove visibility to the discriminants of type entity E
-
-   procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id);
-   --  Remove visibility to the discriminants of type entity E and pop the
-   --  scope stack if E has discriminants.
 
    ------------------------------
    -- Lock Free Data Structure --

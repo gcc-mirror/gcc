@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5300,7 +5300,7 @@ package body Exp_Aggr is
          --       interactions with bootstrapping. That limit is removed by
          --       use of the No_Implicit_Loops restriction.
 
-         --    b) It erroneously ends up with the resulting expressions being
+         --    b) It incorrectly ends up with the resulting expressions being
          --       considered static when they are not. For example, the
          --       following test should fail:
 

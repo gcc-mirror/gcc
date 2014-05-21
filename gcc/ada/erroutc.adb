@@ -1457,7 +1457,8 @@ package body Erroutc is
 
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
-      Msg : String_Ptr) return String_Id
+      Msg : String_Ptr;
+      Tag : String) return String_Id
    is
    begin
       --  Loop through specific warning suppression entries
@@ -1473,7 +1474,9 @@ package body Erroutc is
             if SWE.Config
               or else (SWE.Start <= Loc and then Loc <= SWE.Stop)
             then
-               if Matches (Msg.all, SWE.Msg.all) then
+               if Matches (Msg.all, SWE.Msg.all)
+                 or else Matches (Tag, SWE.Msg.all)
+               then
                   SWE.Used := True;
                   return SWE.Reason;
                end if;

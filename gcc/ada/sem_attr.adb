@@ -6172,7 +6172,7 @@ package body Sem_Attr is
                Comp_Or_Discr := Next_Entity (Comp_Or_Discr);
             end loop;
 
-            --  Diagnose possible erroneous references
+            --  Diagnose possible illegal references
 
             if Present (Comp_Or_Discr) then
                if Ekind (Comp_Or_Discr) = E_Discriminant then

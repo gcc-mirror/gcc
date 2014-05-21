@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,6 @@ with Sem_Case; use Sem_Case;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch9;  use Sem_Ch9;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
@@ -10059,6 +10058,24 @@ package body Sem_Ch13 is
       Unchecked_Conversions.Init;
    end Initialize;
 
+   ---------------------------
+   -- Install_Discriminants --
+   ---------------------------
+
+   procedure Install_Discriminants (E : Entity_Id) is
+      Disc : Entity_Id;
+      Prev : Entity_Id;
+   begin
+      Disc := First_Discriminant (E);
+      while Present (Disc) loop
+         Prev := Current_Entity (Disc);
+         Set_Current_Entity (Disc);
+         Set_Is_Immediately_Visible (Disc);
+         Set_Homonym (Disc, Prev);
+         Next_Discriminant (Disc);
+      end loop;
+   end Install_Discriminants;
+
    -------------------------
    -- Is_Operational_Item --
    -------------------------
@@ -10432,6 +10449,24 @@ package body Sem_Ch13 is
          Copy_TSS (Subp_Id, Base_Type (Ent));
       end if;
    end New_Stream_Subprogram;
+
+   ------------------------------------------
+   -- Push_Scope_And_Install_Discriminants --
+   ------------------------------------------
+
+   procedure Push_Scope_And_Install_Discriminants (E : Entity_Id) is
+   begin
+      if Has_Discriminants (E) then
+         Push_Scope (E);
+
+         --  Make discriminants visible for type declarations and protected
+         --  type declarations, not for subtype declarations (RM 13.1.1 (12/3))
+
+         if Nkind (Parent (E)) /= N_Subtype_Declaration then
+            Install_Discriminants (E);
+         end if;
+      end if;
+   end Push_Scope_And_Install_Discriminants;
 
    ------------------------
    -- Rep_Item_Too_Early --
@@ -11137,6 +11172,69 @@ package body Sem_Ch13 is
          Init_Esize (T, Sz);
       end if;
    end Set_Enum_Esize;
+
+   -----------------------------
+   -- Uninstall_Discriminants --
+   -----------------------------
+
+   procedure Uninstall_Discriminants (E : Entity_Id) is
+      Disc  : Entity_Id;
+      Prev  : Entity_Id;
+      Outer : Entity_Id;
+
+   begin
+      --  Discriminants have been made visible for type declarations and
+      --  protected type declarations, not for subtype declarations.
+
+      if Nkind (Parent (E)) /= N_Subtype_Declaration then
+         Disc := First_Discriminant (E);
+         while Present (Disc) loop
+            if Disc /= Current_Entity (Disc) then
+               Prev := Current_Entity (Disc);
+               while Present (Prev)
+                 and then Present (Homonym (Prev))
+                 and then Homonym (Prev) /= Disc
+               loop
+                  Prev := Homonym (Prev);
+               end loop;
+            else
+               Prev := Empty;
+            end if;
+
+            Set_Is_Immediately_Visible (Disc, False);
+
+            Outer := Homonym (Disc);
+            while Present (Outer) and then Scope (Outer) = E loop
+               Outer := Homonym (Outer);
+            end loop;
+
+            --  Reset homonym link of other entities, but do not modify link
+            --  between entities in current scope, so that the back-end can
+            --  have a proper count of local overloadings.
+
+            if No (Prev) then
+               Set_Name_Entity_Id (Chars (Disc), Outer);
+
+            elsif Scope (Prev) /= Scope (Disc) then
+               Set_Homonym (Prev,  Outer);
+            end if;
+
+            Next_Discriminant (Disc);
+         end loop;
+      end if;
+   end Uninstall_Discriminants;
+
+   -------------------------------------------
+   -- Uninstall_Discriminants_And_Pop_Scope --
+   -------------------------------------------
+
+   procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id) is
+   begin
+      if Has_Discriminants (E) then
+         Uninstall_Discriminants (E);
+         Pop_Scope;
+      end if;
+   end Uninstall_Discriminants_And_Pop_Scope;
 
    ------------------------------
    -- Validate_Address_Clauses --

@@ -1,5 +1,24 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* errout.adb, erroutc.adb, erroutc.ads: Allow warning tag in pragma
+	Warnings (Off, string).
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* osint.adb: Fix three error messages to say invalid instead
+	of erroneous.
+	* par-ch4.adb, exp_aggr.adb, sem_attr.adb, sem_aux.adb, sem_ch3.adb,
+	sem_ch5.adb, sem_ch6.adb, sem_ch7.adb, sem_dim.adb, sem_res.adb,
+	sem_util.adb, sem_util.ads: Fix incorrect use of erroneous in comments.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb, sem_ch13.adb, sem_ch13.ads, sem_ch9.adb,
+	sem_ch9.ads: Move discriminant manipulation routines for analysis of
+	aspect specifications from sem_ch9 to sem_ch13, where they belong.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_ugn.texi: Clearly document -gnatw.g (GNAT warnings).
 	Clearly document -gnatyg (GNAT style switches).
 	* usage.adb: Add line line for -gnatw.g (GNAT warnings) More
