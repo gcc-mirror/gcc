@@ -1,5 +1,9 @@
 2014-05-21  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* reload1.c (remove_init_insns, will_delete_init_insn_p): New static
+	functions.
+	(reload, calculate_needs_all_insns, reload_as_needed): Use them.
+
 	* config/bfin/bfin.c (split_load_immediate): Use gen_int_mode in a few
 	more places.
 
@@ -197,10 +201,6 @@
 	differing overflow as not equal.
 
 2014-05-19  Bernd Schmidt  <bernds@codesourcery.com>
-
-	* reload1.c (remove_init_insns, will_delete_init_insn_p): New static
-	functions.
-	(reload, calculate_needs_all_insns, reload_as_needed): Use them.
 
 	* simplify-rtx.c (simplify_unary_operation_1): Use CONST_INT_P in
 	shift simplification where it was intended.
