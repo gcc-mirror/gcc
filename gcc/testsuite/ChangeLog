@@ -1,3 +1,10 @@
+2014-05-21  Cesar Philippidis  <cesar@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR lto/60179
+	* lib/scanasm.exp (scan-lto-assembler): New procedure.
+	* gcc.target/nios2/custom-fp-lto.c: New test.
+
 2014-05-21  Andreas Schwab  <schwab@suse.de>
 
 	* g++.dg/cpp0x/pr61038.C (operator "" _s): Use size_t.
