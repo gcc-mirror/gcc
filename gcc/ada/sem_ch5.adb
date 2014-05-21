@@ -1875,7 +1875,6 @@ package body Sem_Ch5 is
                   if No (Elt) then
                      Error_Msg_N
                        ("missing Element primitive for iteration", N);
-
                   else
                      Set_Etype (Def_Id, Etype (Elt));
                   end if;

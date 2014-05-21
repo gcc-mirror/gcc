@@ -1527,7 +1527,7 @@ begin
          if Command_List (The_Command).VMS_Only then
             Non_VMS_Usage;
             Fail
-              ("Command """
+              ("command """
                & Command_List (The_Command).Cname.all
                & """ can only be used on VMS");
          end if;
@@ -1542,13 +1542,13 @@ begin
 
             begin
                Alternate := Alternate_Command'Value
-                 (Argument (Command_Arg));
+                              (Argument (Command_Arg));
                The_Command := Corresponding_To (Alternate);
 
             exception
                when Constraint_Error =>
                   Non_VMS_Usage;
-                  Fail ("Unknown command: " & Argument (Command_Arg));
+                  Fail ("unknown command: " & Argument (Command_Arg));
             end;
       end;
 
@@ -1578,12 +1578,9 @@ begin
 
                   exception
                      when others =>
-                        Put
-                          (Standard_Error, "Cannot open argument file """);
-                        Put
-                          (Standard_Error,
-                           The_Arg (The_Arg'First + 1 .. The_Arg'Last));
-
+                        Put (Standard_Error, "Cannot open argument file """);
+                        Put (Standard_Error,
+                             The_Arg (The_Arg'First + 1 .. The_Arg'Last));
                         Put_Line (Standard_Error, """");
                         raise Error_Exit;
                   end;
@@ -1816,7 +1813,7 @@ begin
                         end case;
                      else
                         Fail ("invalid verbosity level: "
-                                & Argv (Argv'First + 3 .. Argv'Last));
+                              & Argv (Argv'First + 3 .. Argv'Last));
                      end if;
 
                      Remove_Switch (Arg_Num);
@@ -2104,13 +2101,13 @@ begin
             end if;
          end;
 
-         if        The_Command = Bind
-           or else The_Command = Link
-           or else The_Command = Elim
+         if The_Command = Bind or else
+            The_Command = Link or else
+            The_Command = Elim
          then
             if Project.Object_Directory.Name = No_Path then
-               Fail ("project " & Get_Name_String (Project.Display_Name) &
-                     " has no object directory");
+               Fail ("project " & Get_Name_String (Project.Display_Name)
+                     & " has no object directory");
             end if;
 
             Change_Dir (Get_Name_String (Project.Object_Directory.Name));

@@ -2505,26 +2505,25 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      --  At this point, we used to have the following, but we removed it
-      --  because it was certainly wrong for generic formal parameters in
-      --  at least some cases, causing elaboration checks to be skipped.
-      --  Possibly it is helpful in some other cases, but it caused no
-      --  regressions to remove it completely.
-
       --  There is no need for elaboration checks on the new entity, which may
       --  be called before the next freezing point where the body will appear.
       --  Elaboration checks refer to the real entity, not the one created by
       --  the renaming declaration.
 
-      --  Set_Kill_Elaboration_Checks (New_S, True);
+      Set_Kill_Elaboration_Checks (New_S, True);
+
+      --  If we had a previous error, indicate a completely is present to stop
+      --  junk cascaded messages, but don't take any further action.
 
       if Etype (Nam) = Any_Type then
          Set_Has_Completion (New_S);
          return;
 
+      --  Case where name has the form of a selected component
+
       elsif Nkind (Nam) = N_Selected_Component then
 
-         --  A prefix of the form  A.B can designate an entry of task A, a
+         --  A name which has the form A.B can designate an entry of task A, a
          --  protected operation of protected object A, or finally a primitive
          --  operation of object A. In the later case, A is an object of some
          --  tagged type, or an access type that denotes one such. To further
@@ -2573,6 +2572,8 @@ package body Sem_Ch8 is
             end if;
          end;
 
+      --  Case where name is an explicit dereference X.all
+
       elsif Nkind (Nam) = N_Explicit_Dereference then
 
          --  Renamed entity is designated by access_to_subprogram expression.
@@ -2581,13 +2582,20 @@ package body Sem_Ch8 is
          Analyze_Renamed_Dereference (N, New_S, Present (Rename_Spec));
          return;
 
+      --  Indexed component
+
       elsif Nkind (Nam) = N_Indexed_Component then
          Analyze_Renamed_Family_Member (N, New_S, Present (Rename_Spec));
          return;
 
+      --  Character literal
+
       elsif Nkind (Nam) = N_Character_Literal then
          Analyze_Renamed_Character (N, New_S, Present (Rename_Spec));
          return;
+
+      --  Only remaining case is where we have a non-entity name, or a
+      --  renaming of some other non-overloadable entity.
 
       elsif not Is_Entity_Name (Nam)
         or else not Is_Overloadable (Entity (Nam))

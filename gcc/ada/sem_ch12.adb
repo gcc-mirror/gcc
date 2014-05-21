@@ -10070,7 +10070,6 @@ package body Sem_Ch12 is
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);
          Check_Generic_Actuals (Act_Decl_Id, False);
-
          Check_Initialized_Types;
 
          --  Install primitives hidden at the point of the instantiation but

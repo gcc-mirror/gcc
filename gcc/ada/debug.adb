@@ -124,7 +124,7 @@ package body Debug is
    --  d.D
    --  d.E  Turn selected errors into warnings
    --  d.F  Debug mode for GNATprove
-   --  d.G
+   --  d.G  Ignore calls through generic formal parameters for elaboration
    --  d.H
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Disable parallel SCIL generation mode
@@ -622,6 +622,11 @@ package body Debug is
 
    --  d.F  Sets GNATprove_Mode to True. This allows debugging the frontend in
    --       the special mode used by GNATprove.
+
+   --  d.G  Previously the compiler ignored calls via generic formal parameters
+   --       when doing the analysis for the static elaboration model. This is
+   --       now fixed, but we provide this debug flag to revert to the previous
+   --       situation of ignoring such calls to aid in transition.
 
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration
