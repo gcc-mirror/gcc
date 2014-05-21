@@ -7453,6 +7453,20 @@ package body Sem_Ch3 is
         and then Has_Discriminants (Parent_Type)
       then
          Parent_Base := Base_Type (Full_View (Parent_Type));
+
+      --  Handle a derived type which is the full view of a private type not
+      --  defined in a generic unit which is derived from a private type with
+      --  discriminants whose full view is a non-tagged record type.
+
+      elsif not Inside_A_Generic
+        and then Ekind (Parent_Type) = E_Private_Type
+        and then Has_Discriminants (Parent_Type)
+        and then Present (Full_View (Parent_Type))
+        and then Is_Record_Type (Full_View (Parent_Type))
+        and then not Is_Tagged_Type (Full_View (Parent_Type))
+        and then Has_Private_Declaration (Derived_Type)
+      then
+         Parent_Base := Base_Type (Full_View (Parent_Type));
       else
          Parent_Base := Base_Type (Parent_Type);
       end if;
