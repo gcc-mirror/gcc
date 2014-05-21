@@ -1,3 +1,9 @@
+2014-05-21  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb, lib-xref.ads, lib-xref.adb
+	(Enclosing_Subprogram_Or_Package): Only return a library-level
+	package.
+
 2014-05-21  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Record_Type): Initialize Parent_Base
