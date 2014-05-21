@@ -15327,7 +15327,26 @@ package body Sem_Prag is
             Arg : Node_Id;
             Exp : Node_Id;
 
+            procedure ip;
+            --  A dummy procedure called when pragma Inspection_Point is
+            --  analyzed. This is just to help debugging the front end. If
+            --  a pragma Inspection_Point is added to a source program, then
+            --  breaking on ip will get you to that point in the program.
+
+            --------
+            -- ip --
+            --------
+
+            procedure ip is
+            begin
+               null;
+            end ip;
+
+         --  Start of processing for Inspection_Point
+
          begin
+            ip;
+
             if Arg_Count > 0 then
                Arg := Arg1;
                loop

@@ -15867,12 +15867,6 @@ package body Sem_Util is
 
       Set_Entity (N, Val);
 
-      --  Remaining checks are only done on source nodes
-
-      if not Comes_From_Source (N) then
-         return;
-      end if;
-
       --  The node to post on is the selector in the case of an expanded name,
       --  and otherwise the node itself.
 
@@ -15880,6 +15874,44 @@ package body Sem_Util is
          Post_Node := Selector_Name (N);
       else
          Post_Node := N;
+      end if;
+
+      --  Check for violation of No_Fixed_IO
+
+      if Restriction_Check_Required (No_Fixed_IO)
+        and then
+          ((RTU_Loaded (Ada_Text_IO)
+             and then (Is_RTE (Val, RE_Decimal_IO)
+                         or else
+                       Is_RTE (Val, RE_Fixed_IO)))
+
+         or else
+           (RTU_Loaded (Ada_Wide_Text_IO)
+             and then (Is_RTE (Val, RO_WT_Decimal_IO)
+                         or else
+                       Is_RTE (Val, RO_WT_Fixed_IO)))
+
+         or else
+           (RTU_Loaded (Ada_Wide_Wide_Text_IO)
+             and then (Is_RTE (Val, RO_WW_Decimal_IO)
+                         or else
+                       Is_RTE (Val, RO_WW_Fixed_IO))))
+
+        --  A special extra check, don't complain about a reference from within
+        --  the Ada.Interrupts package itself!
+
+        and then not In_Same_Extended_Unit (N, Val)
+      then
+         Check_Restriction (No_Fixed_IO, Post_Node);
+      end if;
+
+      --  Remaining checks are only done on source nodes. Note that we test
+      --  for violation of No_Fixed_IO even on non-source nodes, because the
+      --  cases for checking violations of this restriction are instantiations
+      --  where the refernece in the instance has Comes_From_Source False.
+
+      if not Comes_From_Source (N) then
+         return;
       end if;
 
       --  Check for violation of No_Abort_Statements, which is triggered by
@@ -15907,6 +15939,7 @@ package body Sem_Util is
                   Is_RTE (Val, RE_Exchange_Handler) or else
                   Is_RTE (Val, RE_Detach_Handler)   or else
                   Is_RTE (Val, RE_Reference))
+
         --  A special extra check, don't complain about a reference from within
         --  the Ada.Interrupts package itself!
 
