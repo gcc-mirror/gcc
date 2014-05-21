@@ -113,13 +113,13 @@ package body Erroutc is
       N1, N2 : Error_Msg_Id;
 
       procedure Delete_Msg (Delete, Keep : Error_Msg_Id);
-      --  Called to delete message Delete, keeping message Keep. Marks all
-      --  messages of Delete with deleted flag set to True, and also makes sure
-      --  that for the error messages that are retained the preferred message
-      --  is the one retained (we prefer the shorter one in the case where one
-      --  has an Instance tag). Note that we always know that Keep has at least
-      --  as many continuations as Delete (since we always delete the shorter
-      --  sequence).
+      --  Called to delete message Delete, keeping message Keep. Marks msg
+      --  Delete and all its continuations with deleted flag set to True.
+      --  Also makes sure that for the error messages that are retained the
+      --  preferred message is the one retained (we prefer the shorter one in
+      --  the case where one has an Instance tag). Note that we always know
+      --  that Keep has at least as many continuations as Delete (since we
+      --  always delete the shorter sequence).
 
       ----------------
       -- Delete_Msg --

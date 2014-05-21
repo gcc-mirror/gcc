@@ -1010,14 +1010,11 @@ package body Errout is
                exit when
                  Errors.Table (Cur_Msg).Sfile < Errors.Table (Next_Msg).Sfile;
 
-               if Errors.Table (Cur_Msg).Sfile =
-                    Errors.Table (Next_Msg).Sfile
+               if Errors.Table (Cur_Msg).Sfile = Errors.Table (Next_Msg).Sfile
                then
                   exit when Sptr < Errors.Table (Next_Msg).Sptr
-                              or else
-                                (Sptr = Errors.Table (Next_Msg).Sptr
-                                   and then
-                                 Optr < Errors.Table (Next_Msg).Optr);
+                    or else (Sptr = Errors.Table (Next_Msg).Sptr
+                              and then Optr < Errors.Table (Next_Msg).Optr);
                end if;
 
                Prev_Msg := Next_Msg;
