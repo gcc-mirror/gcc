@@ -1,3 +1,29 @@
+2014-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Update the use of
+	Is_SPARK_Volatile.
+	* sem_ch3.adb (Analyze_Object_Contract): Update the use of
+	Is_SPARK_Volatile.
+	(Process_Discriminants): Update the use of Is_SPARK_Volatile.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Update the use
+	of Is_SPARK_Volatile.
+	(Analyze_Loop_Parameter_Specification):
+	Update the use of Is_SPARK_Volatile.
+	* sem_ch6.adb (Process_Formals): Catch an illegal use of an IN
+	formal parameter when its type is volatile.
+	* sem_prag.adb (Analyze_Global_Item): Update the use of
+	Is_SPARK_Volatile.
+	* sem_res.adb (Resolve_Entity_Name): Correct the guard which
+	determines whether an entity is a volatile source SPARK object.
+	* sem_util.adb (Has_Enabled_Property): Accout for external
+	properties being set on objects other than abstract states
+	and variables. An example would be a formal parameter.
+	(Is_SPARK_Volatile): New routine.
+	(Is_SPARK_Volatile_Object):
+	Remove the entity-specific tests. Call routine Is_SPARK_Volatile
+	when checking entities and/or types.
+	* sem_util.ads (Is_SPARK_Volatile): New routine.
+
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
 	* sem_warn.adb: Minor fix to warning messages (use ?? instead

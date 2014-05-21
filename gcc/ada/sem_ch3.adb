@@ -2988,7 +2988,7 @@ package body Sem_Ch3 is
          --  actuals in instantiations (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
-           and then Is_SPARK_Volatile_Object (Obj_Id)
+           and then Is_SPARK_Volatile (Obj_Id)
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
          then
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
@@ -3000,7 +3000,7 @@ package body Sem_Ch3 is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
-            if Is_SPARK_Volatile_Object (Obj_Id) then
+            if Is_SPARK_Volatile (Obj_Id) then
 
                --  The declaration of a volatile object must appear at the
                --  library level (SPARK RM 7.1.3(7), C.6(6)).
@@ -3030,7 +3030,7 @@ package body Sem_Ch3 is
                --  A non-volatile object cannot have volatile components
                --  (SPARK RM 7.1.3(7)).
 
-               if not Is_SPARK_Volatile_Object (Obj_Id)
+               if not Is_SPARK_Volatile (Obj_Id)
                  and then Has_Volatile_Component (Obj_Typ)
                then
                   Error_Msg_N
@@ -18051,7 +18051,7 @@ package body Sem_Ch3 is
          --  (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
-           and then Is_SPARK_Volatile_Object (Defining_Identifier (Discr))
+           and then Is_SPARK_Volatile (Defining_Identifier (Discr))
          then
             Error_Msg_N ("discriminant cannot be volatile", Discr);
          end if;

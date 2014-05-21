@@ -11511,23 +11511,35 @@ package body Sem_Ch6 is
          --  The following checks are relevant when SPARK_Mode is on as these
          --  are not standard Ada legality rules.
 
-         if SPARK_Mode = On
-           and then Ekind_In (Scope (Formal), E_Function, E_Generic_Function)
-         then
-            --  A function cannot have a parameter of mode IN OUT or OUT
-            --  (SPARK RM 6.1).
+         if SPARK_Mode = On then
+            if Ekind_In (Scope (Formal), E_Function, E_Generic_Function) then
 
-            if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+               --  A function cannot have a parameter of mode IN OUT or OUT
+               --  (SPARK RM 6.1).
+
+               if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+                  Error_Msg_N
+                    ("function cannot have parameter of mode `OUT` or "
+                     & "`IN OUT`", Formal);
+
+               --  A function cannot have a volatile formal parameter
+               --  (SPARK RM 7.1.3(10)).
+
+               elsif Is_SPARK_Volatile (Formal) then
+                  Error_Msg_N
+                    ("function cannot have a volatile formal parameter",
+                     Formal);
+               end if;
+
+            --  A procedure cannot have a formal parameter of mode IN because
+            --  it behaves as a constant (SPARK RM 7.1.3(6)).
+
+            elsif Ekind (Scope (Formal)) = E_Procedure
+              and then Ekind (Formal) = E_In_Parameter
+              and then Is_SPARK_Volatile (Formal)
+            then
                Error_Msg_N
-                 ("function cannot have parameter of mode `OUT` or `IN OUT`",
-                  Formal);
-
-            --  A function cannot have a volatile formal parameter
-            --  (SPARK RM 7.1.3(10)).
-
-            elsif Is_SPARK_Volatile_Object (Formal) then
-               Error_Msg_N
-                 ("function cannot have a volatile formal parameter", Formal);
+                 ("formal parameter of mode `IN` cannot be volatile", Formal);
             end if;
          end if;
 

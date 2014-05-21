@@ -2038,9 +2038,8 @@ package body Sem_Prag is
                --  SPARK_Mode is on as they are not standard Ada legality
                --  rules.
 
-               elsif SPARK_Mode = On
-                 and then Is_SPARK_Volatile_Object (Item_Id)
-               then
+               elsif SPARK_Mode = On and then Is_SPARK_Volatile (Item_Id) then
+
                   --  A volatile object cannot appear as a global item of a
                   --  function (SPARK RM 7.1.3(9)).
 

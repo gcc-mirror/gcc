@@ -7466,7 +7466,7 @@ package body Sem_Util is
       begin
          --  A non-volatile object can never possess external properties
 
-         if not Is_SPARK_Volatile_Object (Item_Id) then
+         if not Is_SPARK_Volatile (Item_Id) then
             return False;
 
          --  External properties related to variables come in two flavors -
@@ -7514,11 +7514,19 @@ package body Sem_Util is
    --  Start of processing for Has_Enabled_Property
 
    begin
+      --  Abstract states and variables have a flexible scheme of specifying
+      --  external properties.
+
       if Ekind (Item_Id) = E_Abstract_State then
          return State_Has_Enabled_Property;
 
-      else pragma Assert (Ekind (Item_Id) = E_Variable);
+      elsif Ekind (Item_Id) = E_Variable then
          return Variable_Has_Enabled_Property;
+
+      --  Otherwise a property is enabled when the related object is volatile
+
+      else
+         return Is_SPARK_Volatile (Item_Id);
       end if;
    end Has_Enabled_Property;
 
@@ -11413,22 +11421,26 @@ package body Sem_Util is
       end if;
    end Is_SPARK_Object_Reference;
 
+   -----------------------
+   -- Is_SPARK_Volatile --
+   -----------------------
+
+   function Is_SPARK_Volatile (Id : Entity_Id) return Boolean is
+   begin
+      return Is_Volatile (Id) or else Is_Volatile (Etype (Id));
+   end Is_SPARK_Volatile;
+
    ------------------------------
    -- Is_SPARK_Volatile_Object --
    ------------------------------
 
    function Is_SPARK_Volatile_Object (N : Node_Id) return Boolean is
    begin
-      if Nkind (N) = N_Defining_Identifier then
-         return Is_Volatile (N) or else Is_Volatile (Etype (N));
-
-      elsif Is_Entity_Name (N) then
-         return
-           Is_SPARK_Volatile_Object (Entity (N))
-             or else Is_Volatile (Etype (N));
+      if Is_Entity_Name (N) then
+         return Is_SPARK_Volatile (Entity (N));
 
       elsif Nkind (N) = N_Expanded_Name then
-         return Is_SPARK_Volatile_Object (Entity (N));
+         return Is_SPARK_Volatile (Entity (N));
 
       elsif Nkind (N) = N_Indexed_Component then
          return Is_SPARK_Volatile_Object (Prefix (N));
