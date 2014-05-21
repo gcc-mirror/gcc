@@ -1,3 +1,8 @@
+2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (ipa_discover_readonly_nonaddressable_var): Fix dumping;
+	set writeonly flag only for vars actually written to.
+
 2014-05-20  Dehao Chen  <dehao@google.com>
 
 	* ipa-inline-transform.c (clone_inlined_nodes): Use min of edge count
