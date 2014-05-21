@@ -1,5 +1,28 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* sem_elab.adb, prj-dect.adb: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* erroutc.ads: Minor comment addition.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Add documentation for use of >*> tag.
+	* restrict.adb: Make sure we use >*> tag for restriction warnings.
+
+2014-05-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* debug.adb: Add case of illegal overriding_indicator for a
+	protected subprogram body to description of -gnatd.E switch.
+	* sem_ch6.adb (Verify_Overriding_Indicator): Issue error message
+	for cases of giving overriding_indicators on protected subprogram
+	bodies, but change this to a warning if -gnatd.E is enabled. No
+	longer give a style warning about missing indicators on protected
+	subprogram bodies.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* prj.ads, sem_ch12.adb, prj.adb, exp_pakd.adb,
 	sem_elab.ads: Minor reformatting.
 	* erroutc.adb, erroutc.ads (Warning_Specifically_Suppressed): Make Tag

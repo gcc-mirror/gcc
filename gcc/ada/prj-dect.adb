@@ -215,10 +215,9 @@ package body Prj.Dect is
       Name   : constant Name_Id := Name_Of (Current_Package, In_Tree);
    begin
       if (Qualif = Aggregate and then Name /= Snames.Name_Builder)
-        or else
-         (Qualif = Aggregate_Library
-          and then Name /= Snames.Name_Builder
-          and then Name /= Snames.Name_Install)
+        or else (Qualif = Aggregate_Library
+                  and then Name /= Snames.Name_Builder
+                  and then Name /= Snames.Name_Install)
       then
          Error_Msg_Name_1 := Name;
          Error_Msg
