@@ -1,3 +1,8 @@
+2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/60820
+	* varpool.c (varpool_remove_node): Do not alter decls when streaming.
+
 2014-05-20  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.md (split): Don't allow subregs when
