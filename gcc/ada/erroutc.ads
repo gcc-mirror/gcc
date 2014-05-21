@@ -564,6 +564,10 @@ package Erroutc is
    --  the corresponding warning string is returned (or the null string if no
    --  Warning argument was present in the pragma). Tag is the error message
    --  tag for the message in question or the null string if there is no tag.
+   --
+   --  Note: we have a null default for Tag to deal with calls from an old
+   --  branch of gnat2why, which does not know about tags in the calls but
+   --  which uses the latest version of erroutc.
 
    function Warning_Treated_As_Error (Msg : String) return Boolean;
    --  Returns True if the warning message Msg matches any of the strings

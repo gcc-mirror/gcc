@@ -312,10 +312,10 @@ package Errout is
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
    --      conditional error message. If Error_Msg_Warn is True, then the
-   --      effect is the same as ? described above, and in particular << and
-   --      <X< have the effect of ?? and ?X? respectively. If Error_Msg_Warn
-   --      is False, then the < << or <X< sequence is ignored and the message
-   --      is treated as a error rather than a warning.
+   --      effect is the same as ? described above, and in particular <<
+   --      <X< and <*< have the effect of ?? ?X? and ?*? respectively. If
+   --      Error_Msg_Warn is False, then the < << or <X< sequence is ignored
+   --      and the message is treated as a error rather than a warning.
 
    --    Insertion character A-Z (Upper case letter: Ada reserved word)
    --      If two or more upper case letters appear in the message, they are

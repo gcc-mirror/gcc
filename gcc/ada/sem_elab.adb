@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2503,7 +2503,7 @@ package body Sem_Elab is
          Collect_Tasks (Declarations (N));
       end if;
 
-      --  We only perform detailed checks in all tasks are library level
+      --  We only perform detailed checks in all tasks that are library level
       --  entities. If the master is a subprogram or task, activation will
       --  depend on the activation of the master itself.
 

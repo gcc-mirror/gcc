@@ -2782,6 +2782,16 @@ package body Sem_Ch6 is
             elsif not Present (Overridden_Operation (Spec_Id)) then
                Error_Msg_NE
                  ("subprogram& is not overriding", Body_Spec, Spec_Id);
+
+            --  Overriding indicators aren't allowed for protected subprogram
+            --  bodies (see the Confirmation in Ada Comment AC95-00213). Change
+            --  this to a warning if -gnatd.E is enabled.
+
+            elsif Ekind (Scope (Spec_Id)) = E_Protected_Type then
+               Error_Msg_Warn := Error_To_Warning;
+               Error_Msg_N
+                 ("<overriding indicator not allowed for protected "
+                  & "subprogram body", Body_Spec);
             end if;
 
          elsif Must_Not_Override (Body_Spec) then
@@ -2797,20 +2807,37 @@ package body Sem_Ch6 is
                  ("subprogram & overrides predefined operator ",
                     Body_Spec, Spec_Id);
 
-            --  If this is not a primitive operation or protected subprogram,
-            --  then the overriding indicator is altogether illegal.
+            --  Overriding indicators aren't allowed for protected subprogram
+            --  bodies (see the Confirmation in Ada Comment AC95-00213). Change
+            --  this to a warning if -gnatd.E is enabled.
 
-            elsif not Is_Primitive (Spec_Id)
-              and then Ekind (Scope (Spec_Id)) /= E_Protected_Type
-            then
+            elsif Ekind (Scope (Spec_Id)) = E_Protected_Type then
+               Error_Msg_Warn := Error_To_Warning;
+
+               Error_Msg_N
+                 ("<overriding indicator not allowed " &
+                  "for protected subprogram body",
+                  Body_Spec);
+
+            --  If this is not a primitive operation, then the overriding
+            --  indicator is altogether illegal.
+
+            elsif not Is_Primitive (Spec_Id) then
                Error_Msg_N
                  ("overriding indicator only allowed " &
                   "if subprogram is primitive",
                   Body_Spec);
             end if;
 
+         --  If checking the style rule and the operation overrides, then
+         --  issue a warning about a missing overriding_indicator. Protected
+         --  subprogram bodies are excluded from this style checking, since
+         --  they aren't primitives (even though their declarations can
+         --  override) and aren't allowed to have an overriding_indicator.
+
          elsif Style_Check
            and then Present (Overridden_Operation (Spec_Id))
+           and then Ekind (Scope (Spec_Id)) /= E_Protected_Type
          then
             pragma Assert (Unit_Declaration_Node (Body_Id) = N);
             Style.Missing_Overriding (N, Body_Id);

@@ -614,6 +614,11 @@ package body Debug is
    --
    --          Errors relating to the new rules about not defining equality
    --          too late so that composition of equality can be assured.
+   --
+   --          Errors relating to overriding indicators on protected subprogram
+   --          bodies (not an Ada 2012 incompatibility, but might cause errors
+   --          for existing programs assuming they were legal because GNAT
+   --          formerly allowed them).
 
    --  d.F  Sets GNATprove_Mode to True. This allows debugging the frontend in
    --       the special mode used by GNATprove.
