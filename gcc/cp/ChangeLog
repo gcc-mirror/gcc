@@ -1,3 +1,9 @@
+2014-05-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/61133
+	* lambda.c (build_capture_proxy, add_capture): Treat normal
+	captures and init-captures identically.
+
 2014-05-21  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/16063

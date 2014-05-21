@@ -367,10 +367,7 @@ build_capture_proxy (tree member)
     object = TREE_OPERAND (object, 0);
 
   /* Remove the __ inserted by add_capture.  */
-  if (DECL_NORMAL_CAPTURE_P (member))
-    name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
-  else
-    name = DECL_NAME (member);
+  name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
 
   type = lambda_proxy_type (object);
 
@@ -500,17 +497,11 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
      won't find the field with name lookup.  We can't just leave the name
      unset because template instantiation uses the name to find
      instantiated fields.  */
-  if (!explicit_init_p)
-    {
-      buf = (char *) alloca (IDENTIFIER_LENGTH (id) + 3);
-      buf[1] = buf[0] = '_';
-      memcpy (buf + 2, IDENTIFIER_POINTER (id),
-	      IDENTIFIER_LENGTH (id) + 1);
-      name = get_identifier (buf);
-    }
-  else
-    /* But captures with explicit initializers are named.  */
-    name = id;
+  buf = (char *) alloca (IDENTIFIER_LENGTH (id) + 3);
+  buf[1] = buf[0] = '_';
+  memcpy (buf + 2, IDENTIFIER_POINTER (id),
+	  IDENTIFIER_LENGTH (id) + 1);
+  name = get_identifier (buf);
 
   /* If TREE_TYPE isn't set, we're still in the introducer, so check
      for duplicates.  */
