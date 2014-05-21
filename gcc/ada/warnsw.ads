@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,7 @@ package Warnsw is
       Ineffective_Inline_Warnings         : Boolean;
       List_Body_Required_Info             : Boolean;
       List_Inherited_Aspects              : Boolean;
+      No_Warn_On_Non_Local_Exception      : Boolean;
       Warning_Doc_Switch                  : Boolean;
       Warn_On_Ada_2005_Compatibility      : Boolean;
       Warn_On_Ada_2012_Compatibility      : Boolean;
@@ -99,6 +100,7 @@ package Warnsw is
       Warn_On_Reverse_Bit_Order           : Boolean;
       Warn_On_Standard_Redefinition       : Boolean;
       Warn_On_Suspicious_Contract         : Boolean;
+      Warn_On_Suspicious_Modulus_Value    : Boolean;
       Warn_On_Unchecked_Conversion        : Boolean;
       Warn_On_Unordered_Enumeration_Type  : Boolean;
       Warn_On_Unrecognized_Pragma         : Boolean;

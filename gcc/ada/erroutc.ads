@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,10 +64,11 @@ package Erroutc is
 
    Warning_Msg_Char : Character;
    --  Warning character, valid only if Is_Warning_Msg is True
-   --    ' '      -- ? appeared on its own in message
-   --    '?'      -- ?? appeared in message
-   --    'x'      -- ?x? appeared in message
-   --    'X'      -- ?x? appeared in message (X is upper case of x)
+   --    ' '      -- ?   appeared on its own in message
+   --    '?'      -- ??  appeared in message
+   --    'x'      -- ?x? appeared in message (x = a .. z)
+   --    'X'      -- ?X? appeared in message (X = A .. Z)
+   --    '*'      -- ?*? appeared in message
 
    Is_Style_Msg : Boolean := False;
    --  Set True to indicate if the current message is a style message
@@ -201,10 +202,11 @@ package Erroutc is
 
       Warn_Chr : Character;
       --  Warning character (note: set even if Warning_Doc_Switch is False)
-      --    ' '      -- ? appeared on its own in message or no ? in message
-      --    '?'      -- ?? appeared in message
-      --    'x'      -- ?x? appeared in message
-      --    'X'      -- ?x? appeared in message (X is upper case of x)
+      --    ' '      -- ?   appeared on its own in message
+      --    '?'      -- ??  appeared in message
+      --    'x'      -- ?x? appeared in message (x = a .. z)
+      --    'X'      -- ?X? appeared in message (X = A .. Z)
+      --    '*'      -- ?*? appeared in message
 
       Style : Boolean;
       --  True if style message (starts with "(style)")

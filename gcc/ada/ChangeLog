@@ -1,3 +1,34 @@
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Clearly document -gnatw.g (GNAT warnings).
+	Clearly document -gnatyg (GNAT style switches).
+	* usage.adb: Add line line for -gnatw.g (GNAT warnings) More
+	detail for line for -gnatyg (GNAT style switches) -gnatw.d/D is
+	available for VMS after all.
+	* warnsw.adb: Reorganize to eliminate duplicated code
+	(Restore_Warnings): Add a couple of missing entries
+	(Save_Warnings): Add a couple of missing entries.
+	* warnsw.ads: Add missing entries to Warning_Record (not clear
+	what the impact is).
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Set_Msg_Insertion_Warning): Handle ?*? (restriction
+	warning) case.
+	* errout.ads: Document ?*? (restriction warning) insertion.
+	* erroutc.adb (Get_Warning_Tag): Deal with ?*? (restriction
+	warning) case.
+	* erroutc.ads: Document use of * for restriction warning tag.
+	* restrict.adb (Restriction_Msg): Tag with ?*? instead of ??.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Push_Scope_And_Install_Discriminants): Do not
+	make discriminants immediately visible when analyzing an aspect
+	of a subtype declaration.
+	(Uninstall_Discriminants): Do not apply to the entity in a
+	subtype declaration.
+
 2014-05-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb: Code clean up.

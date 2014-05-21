@@ -4018,7 +4018,7 @@ Internal GNAT implementation mode. This should not be used for
 applications programs, it is intended only for use by the compiler
 and its run-time library. For documentation, see the GNAT sources.
 Note that @option{^-gnatg^/GNAT_INTERNAL^} implies
-@option{^-gnatwae^/WARNINGS=ALL,ERRORS^} and
+@option{^-gnatw.ge^/WARNINGS=GNAT,ERRORS^} and
 @option{^-gnatyg^/STYLE_CHECKS=GNAT^}
 so that all standard warnings and all standard style options are turned on.
 All warnings and style messages are treated as errors.
@@ -5166,6 +5166,14 @@ Manual requirement that such warnings appear).
 @emph{Suppress warnings on unrecognized pragmas.}
 @cindex @option{-gnatwG} (@command{gcc})
 This switch suppresses warnings for unrecognized pragmas.
+
+@item -gnatw.g
+@emph{Warnings used for GNAT sources}
+@cindex @option{-gnatw.g} (@command{gcc})
+This switch sets the warning categories that are used by the standard
+GNAT style. Currently this is equivalent to
+@option{-gnatwAao.sI.C.V.X}
+but more warnings may be added in the future without advanced notice.
 
 @item -gnatwh
 @emph{Activate warnings on hiding.}
@@ -6381,7 +6389,9 @@ in the source text.
 @emph{GNAT style mode.}
 The set of style check switches is set to match that used by the GNAT sources.
 This may be useful when developing code that is eventually intended to be
-incorporated into GNAT. For further details, see GNAT sources.
+incorporated into GNAT. Currently this is equivalent to @option{-gnatwydISux})
+but additional style switches may be added to this set in the future without
+advance notice.
 
 @item ^h^HTABS^
 @emph{No horizontal tabs.}

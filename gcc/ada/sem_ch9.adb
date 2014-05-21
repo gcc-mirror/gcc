@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3447,7 +3447,13 @@ package body Sem_Ch9 is
    begin
       if Has_Discriminants (E) then
          Push_Scope (E);
-         Install_Discriminants (E);
+
+         --  Make discriminants visible for type declarations and protected
+         --  type declarations, not for subtype declarations (RM 13.1.1 (12/3))
+
+         if Nkind (Parent (E)) /= N_Subtype_Declaration then
+            Install_Discriminants (E);
+         end if;
       end if;
    end Push_Scope_And_Install_Discriminants;
 
@@ -3461,40 +3467,45 @@ package body Sem_Ch9 is
       Outer : Entity_Id;
 
    begin
-      Disc := First_Discriminant (E);
-      while Present (Disc) loop
-         if Disc /= Current_Entity (Disc) then
-            Prev := Current_Entity (Disc);
-            while Present (Prev)
-              and then Present (Homonym (Prev))
-              and then Homonym (Prev) /= Disc
-            loop
-               Prev := Homonym (Prev);
+      --  Discriminants have been made visible for type declarations and
+      --  protected type declarations, not for subtype declarations.
+
+      if Nkind (Parent (E)) /= N_Subtype_Declaration then
+         Disc := First_Discriminant (E);
+         while Present (Disc) loop
+            if Disc /= Current_Entity (Disc) then
+               Prev := Current_Entity (Disc);
+               while Present (Prev)
+                 and then Present (Homonym (Prev))
+                 and then Homonym (Prev) /= Disc
+               loop
+                  Prev := Homonym (Prev);
+               end loop;
+            else
+               Prev := Empty;
+            end if;
+
+            Set_Is_Immediately_Visible (Disc, False);
+
+            Outer := Homonym (Disc);
+            while Present (Outer) and then Scope (Outer) = E loop
+               Outer := Homonym (Outer);
             end loop;
-         else
-            Prev := Empty;
-         end if;
 
-         Set_Is_Immediately_Visible (Disc, False);
+            --  Reset homonym link of other entities, but do not modify link
+            --  between entities in current scope, so that the back-end can
+            --  have a proper count of local overloadings.
 
-         Outer := Homonym (Disc);
-         while Present (Outer) and then Scope (Outer) = E loop
-            Outer := Homonym (Outer);
+            if No (Prev) then
+               Set_Name_Entity_Id (Chars (Disc), Outer);
+
+            elsif Scope (Prev) /= Scope (Disc) then
+               Set_Homonym (Prev,  Outer);
+            end if;
+
+            Next_Discriminant (Disc);
          end loop;
-
-         --  Reset homonym link of other entities, but do not modify link
-         --  between entities in current scope, so that the back-end can have
-         --  a proper count of local overloadings.
-
-         if No (Prev) then
-            Set_Name_Entity_Id (Chars (Disc), Outer);
-
-         elsif Scope (Prev) /= Scope (Disc) then
-            Set_Homonym (Prev,  Outer);
-         end if;
-
-         Next_Discriminant (Disc);
-      end loop;
+      end if;
    end Uninstall_Discriminants;
 
    -------------------------------------------

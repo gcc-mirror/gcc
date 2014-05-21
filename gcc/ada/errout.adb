@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2764,7 +2764,9 @@ package body Errout is
          elsif P + 1 <= Text'Last
            and then (Text (P) in 'a' .. 'z'
                        or else
-                     Text (P) in 'A' .. 'Z')
+                     Text (P) in 'A' .. 'Z'
+                       or else
+                     Text (P) = '*')
            and then Text (P + 1) = C
          then
             Warning_Msg_Char := Text (P);
