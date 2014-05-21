@@ -207,6 +207,11 @@ case ${host} in
   tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
   extra_parts="crt3.o crttms.o crttme.o"
   ;;
+*-*-dragonfly*)
+  tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
+  tmake_file="$tmake_file t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
+  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+  ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later
   # machine-specific sections may refine and add to this
@@ -302,7 +307,8 @@ case ${host} in
 esac
 
 case ${host} in
-*-*-darwin* | *-*-freebsd* | *-*-netbsd* | *-*-openbsd* | *-*-solaris2*)
+*-*-darwin* | *-*-dragonfly* | *-*-freebsd* | *-*-netbsd* | *-*-openbsd* | \
+  *-*-solaris2*)
   enable_execute_stack=enable-execute-stack-mprotect.c
   ;;
 i[34567]86-*-mingw* | x86_64-*-mingw*)
@@ -544,6 +550,14 @@ i[34567]86-*-elf*)
 	;;
 x86_64-*-elf*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
+	;;
+i[34567]86-*-dragonfly*)
+	tmake_file="${tmake_file} i386/t-dragonfly i386/t-crtstuff"
+	md_unwind_header=i386/dragonfly-unwind.h
+	;;
+x86_64-*-dragonfly*)
+	tmake_file="${tmake_file} i386/t-dragonfly i386/t-crtstuff"
+	md_unwind_header=i386/dragonfly-unwind.h
 	;;
 i[34567]86-*-freebsd*)
 	tmake_file="${tmake_file} i386/t-freebsd i386/t-crtstuff"
@@ -1262,6 +1276,7 @@ i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]* | \
   i[34567]86-*-cygwin* | x86_64-*-cygwin* | \
   i[34567]86-*-mingw* | x86_64-*-mingw* | \
+  i[34567]86-*-dragonfly* | x86_64-*-dragonfly* | \
   i[34567]86-*-freebsd* | x86_64-*-freebsd* | \
   i[34567]86-*-openbsd* | x86_64-*-openbsd*)
   	tmake_file="${tmake_file} t-softfp-tf"

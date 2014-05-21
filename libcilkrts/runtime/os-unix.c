@@ -54,6 +54,8 @@
 #elif defined __APPLE__
 #   include <sys/sysctl.h>
     // Uses sysconf(_SC_NPROCESSORS_ONLN) in verbose output
+#elif defined  __DragonFly__
+// No additional include files
 #elif defined  __FreeBSD__
 // No additional include files
 #elif defined __CYGWIN__
@@ -374,7 +376,7 @@ COMMON_SYSDEP int __cilkrts_hardware_cpu_count(void)
     assert((unsigned)count == count);
 
     return count;
-#elif defined  __FreeBSD__ || defined __CYGWIN__
+#elif defined  __FreeBSD__ || defined __CYGWIN__ || defined __DragonFly__
     int ncores = sysconf(_SC_NPROCESSORS_ONLN);
 
     return ncores;
@@ -401,6 +403,9 @@ COMMON_SYSDEP void __cilkrts_yield(void)
 #if __APPLE__ || __FreeBSD__ || __VXWORKS__
     // On MacOS, call sched_yield to yield quantum.  I'm not sure why we
     // don't do this on Linux also.
+    sched_yield();
+#elif defined(__DragonFly__)
+    // On DragonFly BSD, call sched_yield to yield quantum.
     sched_yield();
 #elif defined(__MIC__)
     // On MIC, pthread_yield() really trashes things.  Arch's measurements

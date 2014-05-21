@@ -1,3 +1,15 @@
+2014-05-21  John Marino  <gnugcc@marino.st>
+
+	* acinclude.m4 (*-*-dragonfly*): New target.
+	* configure: Regenerate.
+	* configure.host (*-*-dragonfly*): New target.
+	* config/locale/dragonfly/c_locale.cc: New.
+	* config/locale/dragonfly/ctype_members.cc: New.
+	* config/os/bsd/dragonfly/ctype_base.h: New.
+	* config/os/bsd/dragonfly/ctype_configure_char.cc: New.
+	* config/os/bsd/dragonfly/ctype_inline.h: New.
+	* config/os/bsd/dragonfly/os_defines.h: New.
+
 2014-05-20  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* scripts/testsuite_flags.in (cxxflags): Remove @CXXFLAGS@ since 
