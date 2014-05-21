@@ -49,22 +49,17 @@ package body System.Arith_64 is
    -----------------------
 
    function "+" (A, B : Uns32) return Uns64 is (Uns64 (A) + Uns64 (B));
-   function "+" (A : Uns64; B : Uns32) return Uns64 is
-     (A + Uns64 (B));
-   pragma Inline ("+");
+   function "+" (A : Uns64; B : Uns32) return Uns64 is (A + Uns64 (B));
    --  Length doubling additions
 
    function "*" (A, B : Uns32) return Uns64 is (Uns64 (A) * Uns64 (B));
-   pragma Inline ("*");
    --  Length doubling multiplication
 
    function "/" (A : Uns64; B : Uns32) return Uns64 is (A / Uns64 (B));
-   pragma Inline ("/");
    --  Length doubling division
 
    function "&" (Hi, Lo : Uns32) return Uns64 is
      (Shift_Left (Uns64 (Hi), 32) or Uns64 (Lo));
-   pragma Inline ("&");
    --  Concatenate hi, lo values to form 64-bit result
 
    function "abs" (X : Int64) return Uns64 is
@@ -73,35 +68,32 @@ package body System.Arith_64 is
    --  the expression of the Else, because it overflows for X = Int64'First.
 
    function "rem" (A : Uns64; B : Uns32) return Uns64 is (A rem Uns64 (B));
-   pragma Inline ("rem");
    --  Length doubling remainder
 
    function Le3 (X1, X2, X3 : Uns32; Y1, Y2, Y3 : Uns32) return Boolean;
    --  Determines if 96 bit value X1&X2&X3 <= Y1&Y2&Y3
 
    function Lo (A : Uns64) return Uns32 is (Uns32 (A and 16#FFFF_FFFF#));
-   pragma Inline (Lo);
    --  Low order half of 64-bit value
 
    function Hi (A : Uns64) return Uns32 is (Uns32 (Shift_Right (A, 32)));
-   pragma Inline (Hi);
    --  High order half of 64-bit value
 
    procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : Uns32);
    --  Computes X1&X2&X3 := X1&X2&X3 - Y1&Y1&Y3 with mod 2**96 wrap
 
-   function To_Neg_Int (A : Uns64) return Int64;
+   function To_Neg_Int (A : Uns64) return Int64 with Inline;
    --  Convert to negative integer equivalent. If the input is in the range
    --  0 .. 2 ** 63, then the corresponding negative signed integer (obtained
    --  by negating the given value) is returned, otherwise constraint error
    --  is raised.
 
-   function To_Pos_Int (A : Uns64) return Int64;
+   function To_Pos_Int (A : Uns64) return Int64 with Inline;
    --  Convert to positive integer equivalent. If the input is in the range
    --  0 .. 2 ** 63-1, then the corresponding non-negative signed integer is
    --  returned, otherwise constraint error is raised.
 
-   procedure Raise_Error;
+   procedure Raise_Error with Inline;
    pragma No_Return (Raise_Error);
    --  Raise constraint error with appropriate message
 
@@ -586,7 +578,6 @@ package body System.Arith_64 is
 
    function To_Neg_Int (A : Uns64) return Int64 is
       R : constant Int64 := -To_Int (A);
-
    begin
       if R <= 0 then
          return R;
@@ -601,7 +592,6 @@ package body System.Arith_64 is
 
    function To_Pos_Int (A : Uns64) return Int64 is
       R : constant Int64 := To_Int (A);
-
    begin
       if R >= 0 then
          return R;
