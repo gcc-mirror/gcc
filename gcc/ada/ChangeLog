@@ -1,5 +1,52 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* sem_elab.adb: Minor reformatting.
+	* s-taprop.ads: Minor comment fix.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Remove call to
+	Kill_Elaboration_Checks.
+	* errout.adb, erroutc.adb: Minor reformatting.
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Byte_Swap): Handle the case of a sub-byte
+	component. No byte swapping occurs, but this procedure also takes
+	care of appropriately justifying the argument.
+
+2014-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb: sem_ch6.adb (Analyze_Aspects_On_Body_Or_Stub):
+	New routine.
+	(Analyze_Subprogram_Body_Helper): Move the
+	analysis of aspect specifications and the processing of the
+	subprogram body contract after inlining has taken place.
+	(Diagnose_Misplaced_Aspect_Specifications): Removed.
+
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Revert previous change.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.ads, sem_eval.adb (Why_Not_Static): Messages are not
+	continuations any more.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New flag Needs_Initialized_Actual,
+	present in formal_Private_Definitions and on private extension
+	declarations of a formal derived type. Set when the use of the
+	formal type in a generic suggests that the actual should be a
+	fully initialized type.
+	* sem_warn.adb (May_Need_Initialized_Actual): new subprogram
+	to indicate that an entity of a generic type has default
+	initialization, and that the corresponing actual type in any
+	subsequent instantiation should be fully initialized.
+	* sem_ch12.adb (Check_Initialized_Type): new subprogram,
+	to emit a warning if the actual for a generic type on which
+	Needs_Initialized_Actual is set is not a fully initialized type.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* sem_elab.adb, prj-dect.adb: Minor reformatting.
 
 2014-05-21  Robert Dewar  <dewar@adacore.com>

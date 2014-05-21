@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -324,15 +324,15 @@ package System.Task_Primitives.Operations is
       Prio : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False);
    pragma Inline (Set_Priority);
-   --  Set the priority of the task specified by T to T.Current_Priority. The
-   --  priority set is what would correspond to the Ada concept of "base
-   --  priority" in the terms of the lower layer system, but the operation may
-   --  be used by the upper layer to implement changes in "active priority"
-   --  that are not due to lock effects. The effect should be consistent with
-   --  the Ada Reference Manual. In particular, when a task lowers its
-   --  priority due to the loss of inherited priority, it goes at the head of
-   --  the queue for its new priority (RM D.2.2 par 9). Loss_Of_Inheritance
-   --  helps the underlying implementation to do it right when the OS doesn't.
+   --  Set the priority of the task specified by T to Prio. The priority set
+   --  is what would correspond to the Ada concept of "base priority" in the
+   --  terms of the lower layer system, but the operation may be used by the
+   --  upper layer to implement changes in "active priority" that are not due
+   --  to lock effects. The effect should be consistent with the Ada Reference
+   --  Manual. In particular, when a task lowers its priority due to the loss
+   --  of inherited priority, it goes at the head of the queue for its new
+   --  priority (RM D.2.2 par 9). Loss_Of_Inheritance helps the underlying
+   --  implementation to do it right when the OS doesn't.
 
    function Get_Priority (T : ST.Task_Id) return System.Any_Priority;
    pragma Inline (Get_Priority);

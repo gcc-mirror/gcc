@@ -576,20 +576,26 @@ package body Exp_Pakd is
       Shift   : Uint;
 
    begin
-      pragma Assert (T_Size > 8);
+      if T_Size <= 8 then
+         Swap_F := Empty;
+         Swap_T := RTE (RE_Unsigned_8);
 
-      if T_Size <= 16 then
-         Swap_RE := RE_Bswap_16;
+      else
+         if T_Size <= 16 then
+            Swap_RE := RE_Bswap_16;
 
-      elsif T_Size <= 32 then
-         Swap_RE := RE_Bswap_32;
+         elsif T_Size <= 32 then
+            Swap_RE := RE_Bswap_32;
 
-      else pragma Assert (T_Size <= 64);
-         Swap_RE := RE_Bswap_64;
+         else pragma Assert (T_Size <= 64);
+            Swap_RE := RE_Bswap_64;
+         end if;
+
+         Swap_F := RTE (Swap_RE);
+         Swap_T := Etype (Swap_F);
+
       end if;
 
-      Swap_F := RTE (Swap_RE);
-      Swap_T := Etype (Swap_F);
       Shift := Esize (Swap_T) - T_Size;
 
       Arg := RJ_Unchecked_Convert_To (Swap_T, N);
@@ -601,10 +607,14 @@ package body Exp_Pakd is
              Right_Opnd => Make_Integer_Literal (Loc, Shift));
       end if;
 
-      Swapped :=
-        Make_Function_Call (Loc,
-          Name                   => New_Occurrence_Of (Swap_F, Loc),
-          Parameter_Associations => New_List (Arg));
+      if Present (Swap_F) then
+         Swapped :=
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Swap_F, Loc),
+             Parameter_Associations => New_List (Arg));
+      else
+         Swapped := Arg;
+      end if;
 
       if Right_Justify and then Shift > Uint_0 then
          Swapped :=

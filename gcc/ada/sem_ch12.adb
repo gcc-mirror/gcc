@@ -9941,6 +9941,58 @@ package body Sem_Ch12 is
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
 
+      procedure Check_Initialized_Types;
+      --  In a generic package body, an entity of a generic private type may
+      --  appear uninitialized. This is suspicious, unless the actual is a
+      --  fully initialized type.
+
+      procedure Check_Initialized_Types is
+         Decl   : Node_Id;
+         Formal : Entity_Id;
+         Actual : Entity_Id;
+
+      begin
+         Decl := First (Generic_Formal_Declarations (Gen_Decl));
+         while Present (Decl) loop
+            if (Nkind (Decl) = N_Private_Extension_Declaration
+                 and then Needs_Initialized_Actual (Decl))
+
+              or else (Nkind (Decl) = N_Formal_Type_Declaration
+                  and then
+                    Nkind (Formal_Type_Definition (Decl)) =
+                      N_Formal_Private_Type_Definition
+                  and then Needs_Initialized_Actual
+                     (Formal_Type_Definition (Decl)))
+            then
+               Formal := Defining_Identifier (Decl);
+               Actual := First_Entity (Act_Decl_Id);
+
+               --  For each formal there is a subtype declaration that renames
+               --  the actual and has the same name as the formal.
+
+               while Present (Actual) loop
+                  exit when Ekind (Actual) = E_Package
+                    and then Present (Renamed_Object (Actual));
+
+                  if Chars (Actual) = Chars (Formal)
+                    and then not Is_Scalar_Type (Actual)
+                    and then not Is_Fully_Initialized_Type (Actual)
+                    and then Warn_On_No_Value_Assigned
+                  then
+                     Error_Msg_NE
+                       ("from its use in generic unit, actual for&"
+                          & " should be fully initialized type?",
+                          Actual, Formal);
+                     exit;
+                  end if;
+
+                  Next_Entity (Actual);
+               end loop;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end Check_Initialized_Types;
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
 
@@ -10013,6 +10065,7 @@ package body Sem_Ch12 is
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);
          Check_Generic_Actuals (Act_Decl_Id, False);
+         Check_Initialized_Types;
 
          --  Install primitives hidden at the point of the instantiation but
          --  visible when processing the generic formals

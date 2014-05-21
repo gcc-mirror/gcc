@@ -2147,6 +2147,10 @@ package body Sem_Ch6 is
       --  chained beyond that point. It is initialized to Empty to deal with
       --  the case where there is no separate spec.
 
+      procedure Analyze_Aspects_On_Body_Or_Stub;
+      --  Analyze the aspect specifications of a subprogram body [stub]. It is
+      --  assumed that N has aspects.
+
       procedure Check_Anonymous_Return;
       --  Ada 2005: if a function returns an access type that denotes a task,
       --  or a type that contains tasks, we must create a master entity for
@@ -2168,11 +2172,6 @@ package body Sem_Ch6 is
       --  the warning checks implemented by Check_Returns. In formal mode, also
       --  verify that a function ends with a RETURN and that a procedure does
       --  not contain any RETURN.
-
-      procedure Diagnose_Misplaced_Aspect_Specifications;
-      --  It is known that subprogram body N has aspects, but they are not
-      --  properly placed. Provide specific error messages depending on the
-      --  aspects involved.
 
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
@@ -2202,6 +2201,127 @@ package body Sem_Ch6 is
       --  current scope previously. If the body itself carries an overriding
       --  indicator, check that it is consistent with the known status of the
       --  entity.
+
+      -------------------------------------
+      -- Analyze_Aspects_On_Body_Or_Stub --
+      -------------------------------------
+
+      procedure Analyze_Aspects_On_Body_Or_Stub is
+         procedure Diagnose_Misplaced_Aspects;
+         --  Subprogram body [stub] N has aspects, but they are not properly
+         --  placed. Provide precise diagnostics depending on the aspects
+         --  involved.
+
+         --------------------------------
+         -- Diagnose_Misplaced_Aspects --
+         --------------------------------
+
+         procedure Diagnose_Misplaced_Aspects is
+            Asp     : Node_Id;
+            Asp_Nam : Name_Id;
+            Asp_Id  : Aspect_Id;
+            --  The current aspect along with its name and id
+
+            procedure SPARK_Aspect_Error (Ref_Nam : Name_Id);
+            --  Emit an error message concerning SPARK aspect Asp. Ref_Nam is
+            --  the name of the refined version of the aspect.
+
+            ------------------------
+            -- SPARK_Aspect_Error --
+            ------------------------
+
+            procedure SPARK_Aspect_Error (Ref_Nam : Name_Id) is
+            begin
+               --  The corresponding spec already contains the aspect in
+               --  question and the one appearing on the body must be the
+               --  refined form:
+
+               --    procedure P with Global ...;
+               --    procedure P with Global ... is ... end P;
+               --                     ^
+               --                     Refined_Global
+
+               if Has_Aspect (Spec_Id, Asp_Id) then
+                  Error_Msg_Name_1 := Asp_Nam;
+
+                  --  Subunits cannot carry aspects that apply to a subprogram
+                  --  declaration.
+
+                  if Nkind (Parent (N)) = N_Subunit then
+                     Error_Msg_N ("aspect % cannot apply to a subunit", Asp);
+
+                  else
+                     Error_Msg_Name_2 := Ref_Nam;
+                     Error_Msg_N ("aspect % should be %", Asp);
+                  end if;
+
+               --  Otherwise the aspect must appear in the spec, not in the
+               --  body:
+
+               --    procedure P;
+               --    procedure P with Global ... is ... end P;
+
+               else
+                  Error_Msg_N
+                    ("aspect specification must appear in subprogram "
+                     & "declaration", Asp);
+               end if;
+            end SPARK_Aspect_Error;
+
+         --  Start of processing for Diagnose_Misplaced_Aspects
+
+         begin
+            --  Iterate over the aspect specifications and emit specific errors
+            --  where applicable.
+
+            Asp := First (Aspect_Specifications (N));
+            while Present (Asp) loop
+               Asp_Nam := Chars (Identifier (Asp));
+               Asp_Id  := Get_Aspect_Id (Asp_Nam);
+
+               --  Do not emit errors on aspects that can appear on a
+               --  subprogram body. This scenario occurs when the aspect
+               --  specification list contains both misplaced and properly
+               --  placed aspects.
+
+               if Aspect_On_Body_Or_Stub_OK (Asp_Id) then
+                  null;
+
+               --  Special diagnostics for SPARK aspects
+
+               elsif Asp_Nam = Name_Depends then
+                  SPARK_Aspect_Error (Name_Refined_Depends);
+
+               elsif Asp_Nam = Name_Global then
+                  SPARK_Aspect_Error (Name_Refined_Global);
+
+               elsif Asp_Nam = Name_Post then
+                  SPARK_Aspect_Error (Name_Refined_Post);
+
+               else
+                  Error_Msg_N
+                    ("aspect specification must appear in subprogram "
+                     & "declaration", Asp);
+               end if;
+
+               Next (Asp);
+            end loop;
+         end Diagnose_Misplaced_Aspects;
+
+      --  Start of processing for Analyze_Aspects_On_Body_Or_Stub
+
+      begin
+         --  Language-defined aspects cannot be associated with a subprogram
+         --  body [stub] if the subprogram has a spec. Certain implementation
+         --  defined aspects are allowed to break this rule (for list, see
+         --  table Aspect_On_Body_Or_Stub_OK).
+
+         if Present (Spec_Id) and then not Aspects_On_Body_Or_Stub_OK (N) then
+            Diagnose_Misplaced_Aspects;
+         else
+            Analyze_Aspect_Specifications (N, Body_Id);
+         end if;
+      end Analyze_Aspects_On_Body_Or_Stub;
 
       ----------------------------
       -- Check_Anonymous_Return --
@@ -2454,99 +2574,6 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Missing_Return;
-
-      ----------------------------------------------
-      -- Diagnose_Misplaced_Aspect_Specifications --
-      ----------------------------------------------
-
-      procedure Diagnose_Misplaced_Aspect_Specifications is
-         Asp     : Node_Id;
-         Asp_Nam : Name_Id;
-         Asp_Id  : Aspect_Id;
-         --  The current aspect along with its name and id
-
-         procedure SPARK_Aspect_Error (Ref_Nam : Name_Id);
-         --  Emit an error message concerning SPARK aspect Asp. Ref_Nam is the
-         --  name of the refined version of the aspect.
-
-         ------------------------
-         -- SPARK_Aspect_Error --
-         ------------------------
-
-         procedure SPARK_Aspect_Error (Ref_Nam : Name_Id) is
-         begin
-            --  The corresponding spec already contains the aspect in question
-            --  and the one appearing on the body must be the refined form:
-
-            --    procedure P with Global ...;
-            --    procedure P with Global ... is ... end P;
-            --                     ^
-            --                     Refined_Global
-
-            if Has_Aspect (Spec_Id, Asp_Id) then
-               Error_Msg_Name_1 := Asp_Nam;
-
-               --  Subunits cannot carry aspects that apply to a subprogram
-               --  declaration.
-
-               if Nkind (Parent (N)) = N_Subunit then
-                  Error_Msg_N ("aspect % cannot apply to a subunit", Asp);
-
-               else
-                  Error_Msg_Name_2 := Ref_Nam;
-                  Error_Msg_N ("aspect % should be %", Asp);
-               end if;
-
-            --  Otherwise the aspect must appear in the spec, not in the body:
-
-            --    procedure P;
-            --    procedure P with Global ... is ... end P;
-
-            else
-               Error_Msg_N
-                 ("aspect specification must appear in subprogram declaration",
-                  Asp);
-            end if;
-         end SPARK_Aspect_Error;
-
-      --  Start of processing for Diagnose_Misplaced_Aspect_Specifications
-
-      begin
-         --  Iterate over the aspect specifications and emit specific errors
-         --  where applicable.
-
-         Asp := First (Aspect_Specifications (N));
-         while Present (Asp) loop
-            Asp_Nam := Chars (Identifier (Asp));
-            Asp_Id  := Get_Aspect_Id (Asp_Nam);
-
-            --  Do not emit errors on aspects that can appear on a subprogram
-            --  body. This scenario occurs when the aspect specification list
-            --  contains both misplaced and properly placed aspects.
-
-            if Aspect_On_Body_Or_Stub_OK (Asp_Id) then
-               null;
-
-            --  Special diagnostics for SPARK aspects
-
-            elsif Asp_Nam = Name_Depends then
-               SPARK_Aspect_Error (Name_Refined_Depends);
-
-            elsif Asp_Nam = Name_Global then
-               SPARK_Aspect_Error (Name_Refined_Global);
-
-            elsif Asp_Nam = Name_Post then
-               SPARK_Aspect_Error (Name_Refined_Post);
-
-            else
-               Error_Msg_N
-                 ("aspect specification must appear in subprogram declaration",
-                  Asp);
-            end if;
-
-            Next (Asp);
-         end loop;
-      end Diagnose_Misplaced_Aspect_Specifications;
 
       -----------------------
       -- Disambiguate_Spec --
@@ -2948,21 +2975,6 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Language-defined aspects cannot appear on a subprogram body [stub] if
-      --  the subprogram has a spec. Certain implementation-defined aspects are
-      --  allowed to break this rule (see table Aspect_On_Body_Or_Stub_OK).
-
-      if Has_Aspects (N) then
-         if Present (Spec_Id)
-           and then not Aspects_On_Body_Or_Stub_OK (N)
-         then
-            Diagnose_Misplaced_Aspect_Specifications;
-
-         else
-            Analyze_Aspect_Specifications (N, Body_Id);
-         end if;
-      end if;
-
       --  Previously we scanned the body to look for nested subprograms, and
       --  rejected an inline directive if nested subprograms were present,
       --  because the back-end would generate conflicting symbols for the
@@ -3299,6 +3311,17 @@ package body Sem_Ch6 is
       Check_Eliminated (Body_Id);
 
       if Nkind (N) = N_Subprogram_Body_Stub then
+
+         --  Analyze any aspect specifications that appear on the subprogram
+         --  body stub.
+
+         if Has_Aspects (N) then
+            Analyze_Aspects_On_Body_Or_Stub;
+         end if;
+
+         --  Stop the analysis now as the stub cannot be inlined, plus it does
+         --  not have declarative or statement lists.
+
          return;
       end if;
 
@@ -3372,16 +3395,6 @@ package body Sem_Ch6 is
       HSS := Handled_Statement_Sequence (N);
       Set_Actual_Subtypes (N, Current_Scope);
 
-      --  Deal with [refined] preconditions, postconditions, Contract_Cases,
-      --  invariants and predicates associated with the body and its spec.
-      --  Note that this is not pure expansion as Expand_Subprogram_Contract
-      --  prepares the contract assertions for generic subprograms or for ASIS.
-      --  Do not generate contract checks in SPARK mode.
-
-      if not GNATprove_Mode then
-         Expand_Subprogram_Contract (N, Spec_Id, Body_Id);
-      end if;
-
       --  Add a declaration for the Protection object, renaming declarations
       --  for discriminals and privals and finally a declaration for the entry
       --  family index (if applicable). This form of early expansion is done
@@ -3407,6 +3420,22 @@ package body Sem_Ch6 is
 
       if Ada_Version >= Ada_2012 then
          Exchange_Limited_Views (Spec_Id);
+      end if;
+
+      --  Analyze any aspect specifications that appear on the subprogram body
+
+      if Has_Aspects (N) then
+         Analyze_Aspects_On_Body_Or_Stub;
+      end if;
+
+      --  Deal with [refined] preconditions, postconditions, Contract_Cases,
+      --  invariants and predicates associated with the body and its spec.
+      --  Note that this is not pure expansion as Expand_Subprogram_Contract
+      --  prepares the contract assertions for generic subprograms or for ASIS.
+      --  Do not generate contract checks in SPARK mode.
+
+      if not GNATprove_Mode then
+         Expand_Subprogram_Contract (N, Spec_Id, Body_Id);
       end if;
 
       --  Analyze the declarations (this call will analyze the precondition

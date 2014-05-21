@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2223,6 +2223,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Use_Package_Clause);
       return List2 (N);
    end Names;
+
+   function Needs_Initialized_Actual
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Private_Extension_Declaration);
+      return Flag18 (N);
+   end Needs_Initialized_Actual;
 
    function Next_Entity
       (N : Node_Id) return Node_Id is
@@ -5363,6 +5372,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Use_Package_Clause);
       Set_List2_With_Parent (N, Val);
    end Set_Names;
+
+   procedure Set_Needs_Initialized_Actual
+     (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Private_Extension_Declaration);
+      Set_Flag18 (N, Val);
+   end Set_Needs_Initialized_Actual;
 
    procedure Set_Next_Entity
       (N : Node_Id; Val : Node_Id) is

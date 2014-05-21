@@ -5530,7 +5530,7 @@ package body Sem_Eval is
 
          if Raises_Constraint_Error (Expr) then
             Error_Msg_N
-              ("\expression raises exception, cannot be static " &
+              ("!expression raises exception, cannot be static " &
                "(RM 4.9(34))", N);
             return;
          end if;
@@ -5551,7 +5551,7 @@ package body Sem_Eval is
            and then not Is_RTE (Typ, RE_Bignum)
          then
             Error_Msg_N
-              ("\static expression must have scalar or string type " &
+              ("!static expression must have scalar or string type " &
                "(RM 4.9(2))", N);
             return;
          end if;
@@ -5615,17 +5615,17 @@ package body Sem_Eval is
                                           or else
                                         Is_Aggregate (Right_Opnd (CO))))
                   then
-                     Error_Msg_N ("\aggregate (#) is never static", N);
+                     Error_Msg_N ("!aggregate (#) is never static", N);
 
                   elsif No (CV) or else not Is_Static_Expression (CV) then
                      Error_Msg_NE
-                       ("\& is not a static constant (RM 4.9(5))", N, E);
+                       ("!& is not a static constant (RM 4.9(5))", N, E);
                   end if;
                end Entity_Case;
 
             else
                Error_Msg_NE
-                 ("\& is not static constant or named number "
+                 ("!& is not static constant or named number "
                   & "(RM 4.9(5))", N, E);
             end if;
 
@@ -5634,7 +5634,7 @@ package body Sem_Eval is
          when N_Binary_Op | N_Short_Circuit | N_Membership_Test =>
             if Nkind (N) in N_Op_Shift then
                Error_Msg_N
-                ("\shift functions are never static (RM 4.9(6,18))", N);
+                ("!shift functions are never static (RM 4.9(6,18))", N);
 
             else
                Why_Not_Static (Left_Opnd (N));
@@ -5661,7 +5661,7 @@ package body Sem_Eval is
 
             if Attribute_Name (N) = Name_Size then
                Error_Msg_N
-                 ("\size attribute is only static for static scalar type "
+                 ("!size attribute is only static for static scalar type "
                   & "(RM 4.9(7,8))", N);
 
             --  Flag array cases
@@ -5674,7 +5674,7 @@ package body Sem_Eval is
                   Attribute_Name (N) /= Name_Length
                then
                   Error_Msg_N
-                    ("\static array attribute must be Length, First, or Last "
+                    ("!static array attribute must be Length, First, or Last "
                      & "(RM 4.9(8))", N);
 
                --  Since we know the expression is not-static (we already
@@ -5682,7 +5682,7 @@ package body Sem_Eval is
 
                else
                   Error_Msg_N
-                    ("\prefix is non-static array (RM 4.9(8))", Prefix (N));
+                    ("!prefix is non-static array (RM 4.9(8))", Prefix (N));
                end if;
 
                return;
@@ -5695,7 +5695,7 @@ package body Sem_Eval is
                   Is_Generic_Type (E)
             then
                Error_Msg_N
-                 ("\attribute of generic type is never static "
+                 ("!attribute of generic type is never static "
                   & "(RM 4.9(7,8))", N);
 
             elsif Is_Static_Subtype (E) then
@@ -5703,12 +5703,12 @@ package body Sem_Eval is
 
             elsif Is_Scalar_Type (E) then
                Error_Msg_N
-                 ("\prefix type for attribute is not static scalar subtype "
+                 ("!prefix type for attribute is not static scalar subtype "
                   & "(RM 4.9(7))", N);
 
             else
                Error_Msg_N
-                 ("\static attribute must apply to array/scalar type "
+                 ("!static attribute must apply to array/scalar type "
                   & "(RM 4.9(7,8))", N);
             end if;
 
@@ -5716,13 +5716,13 @@ package body Sem_Eval is
 
          when N_String_Literal =>
             Error_Msg_N
-              ("\subtype of string literal is non-static (RM 4.9(4))", N);
+              ("!subtype of string literal is non-static (RM 4.9(4))", N);
 
          --  Explicit dereference
 
          when N_Explicit_Dereference =>
             Error_Msg_N
-              ("\explicit dereference is never static (RM 4.9)", N);
+              ("!explicit dereference is never static (RM 4.9)", N);
 
          --  Function call
 
@@ -5734,7 +5734,7 @@ package body Sem_Eval is
             --  scalar arithmetic operation.
 
             if not Is_RTE (Typ, RE_Bignum) then
-               Error_Msg_N ("\non-static function call (RM 4.9(6,18))", N);
+               Error_Msg_N ("!non-static function call (RM 4.9(6,18))", N);
             end if;
 
          --  Parameter assocation (test actual parameter)
@@ -5745,12 +5745,12 @@ package body Sem_Eval is
          --  Indexed component
 
          when N_Indexed_Component =>
-            Error_Msg_N ("\indexed component is never static (RM 4.9)", N);
+            Error_Msg_N ("!indexed component is never static (RM 4.9)", N);
 
          --  Procedure call
 
          when N_Procedure_Call_Statement =>
-            Error_Msg_N ("\procedure call is never static (RM 4.9)", N);
+            Error_Msg_N ("!procedure call is never static (RM 4.9)", N);
 
          --  Qualified expression (test expression)
 
@@ -5760,7 +5760,7 @@ package body Sem_Eval is
          --  Aggregate
 
          when N_Aggregate | N_Extension_Aggregate =>
-            Error_Msg_N ("\an aggregate is never static (RM 4.9)", N);
+            Error_Msg_N ("!an aggregate is never static (RM 4.9)", N);
 
          --  Range
 
@@ -5781,12 +5781,12 @@ package body Sem_Eval is
          --  Selected component
 
          when N_Selected_Component =>
-            Error_Msg_N ("\selected component is never static (RM 4.9)", N);
+            Error_Msg_N ("!selected component is never static (RM 4.9)", N);
 
          --  Slice
 
          when N_Slice =>
-            Error_Msg_N ("\slice is never static (RM 4.9)", N);
+            Error_Msg_N ("!slice is never static (RM 4.9)", N);
 
          when N_Type_Conversion =>
             Why_Not_Static (Expression (N));
@@ -5795,7 +5795,7 @@ package body Sem_Eval is
               or else not Is_Static_Subtype (Entity (Subtype_Mark (N)))
             then
                Error_Msg_N
-                 ("\static conversion requires static scalar subtype result "
+                 ("!static conversion requires static scalar subtype result "
                   & "(RM 4.9(9))", N);
             end if;
 
@@ -5803,7 +5803,7 @@ package body Sem_Eval is
 
          when N_Unchecked_Type_Conversion =>
             Error_Msg_N
-              ("\unchecked type conversion is never static (RM 4.9)", N);
+              ("!unchecked type conversion is never static (RM 4.9)", N);
 
          --  All other cases, no reason to give
 

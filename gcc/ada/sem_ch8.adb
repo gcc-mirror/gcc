@@ -2505,12 +2505,18 @@ package body Sem_Ch8 is
          end if;
       end if;
 
+      --  At this point, we used to have the following, but we removed it
+      --  because it was certainly wrong for generic formal parameters in
+      --  at least some cases, causing elaboration checks to be skipped.
+      --  Possibly it is helpful in some other cases, but it caused no
+      --  regressions to remove it completely.
+
       --  There is no need for elaboration checks on the new entity, which may
       --  be called before the next freezing point where the body will appear.
       --  Elaboration checks refer to the real entity, not the one created by
       --  the renaming declaration.
 
-      Set_Kill_Elaboration_Checks (New_S, True);
+      --  Set_Kill_Elaboration_Checks (New_S, True);
 
       if Etype (Nam) = Any_Type then
          Set_Has_Completion (New_S);
