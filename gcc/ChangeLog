@@ -1,5 +1,8 @@
 2014-05-21  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* config/bfin/bfin.c (split_load_immediate): Use gen_int_mode in a few
+	more places.
+
 	* cfgrtl.c (cfg_layout_initialize): Weaken assert to only trigger if
 	flag_reorder_blocks_and_partition.
 	* hw-doloop.c (reorg_loops): Avoid reordering if that flag is set.
