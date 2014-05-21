@@ -1,3 +1,10 @@
+2014-05-21  Guozhi Wei  <carrot@google.com>
+
+	PR target/61202
+	* config/aarch64/arm_neon.h (vqdmulh_n_s16): Change the last operand's
+	constraint.
+	(vqdmulhq_n_s16): Likewise.
+
 2014-05-21  Martin Jambor  <mjambor@suse.cz>
 
 	* doc/invoke.texi (Optimize Options): Document parameters
