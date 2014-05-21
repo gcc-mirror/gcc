@@ -1,5 +1,9 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* sinfo.ads, sem_ch12.adb, sem_warn.adb: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* sem_elab.adb: Minor reformatting.
 	* s-taprop.ads: Minor comment fix.
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): Remove call to

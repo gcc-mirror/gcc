@@ -10953,7 +10953,7 @@ package Sinfo is
        (1 => True,    --  Expressions (List1)
         2 => False,   --  unused
         3 => True,    --  Prefix (Node3)
-        4 => False,    --  Generalized_Indexing (Node4-Sem)
+        4 => False,   --  Generalized_Indexing (Node4-Sem)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Slice =>
