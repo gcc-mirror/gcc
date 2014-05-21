@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "langhooks.h"
@@ -40,6 +41,7 @@ static enum classify_record cp_classify_record (tree type);
 static tree cp_eh_personality (void);
 static tree get_template_innermost_arguments_folded (const_tree);
 static tree get_template_argument_pack_elems_folded (const_tree);
+static tree cxx_enum_underlying_base_type (const_tree);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -81,6 +83,8 @@ static tree get_template_argument_pack_elems_folded (const_tree);
 #define LANG_HOOKS_EH_PERSONALITY cp_eh_personality
 #undef LANG_HOOKS_EH_RUNTIME_TYPE
 #define LANG_HOOKS_EH_RUNTIME_TYPE build_eh_type_type
+#undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
+#define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
 
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -217,6 +221,22 @@ static tree
 get_template_argument_pack_elems_folded (const_tree t)
 {
   return fold_cplus_constants (get_template_argument_pack_elems (t));
+}
+
+/* The C++ version of the enum_underlying_base_type langhook.
+   See also cp/semantics.c (finish_underlying_type).  */
+
+static
+tree cxx_enum_underlying_base_type (const_tree type)
+{
+  tree underlying_type = ENUM_UNDERLYING_TYPE (type);
+
+  if (! ENUM_FIXED_UNDERLYING_TYPE_P (type))
+    underlying_type
+      = c_common_type_for_mode (TYPE_MODE (underlying_type),
+                                TYPE_UNSIGNED (underlying_type));
+
+  return underlying_type;
 }
 
 #include "gt-cp-cp-lang.h"

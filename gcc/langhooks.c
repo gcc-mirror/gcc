@@ -678,3 +678,12 @@ lhd_end_section (void)
       saved_section = NULL;
     }
 }
+
+/* Default implementation of enum_underlying_base_type using type_for_size.  */
+
+tree
+lhd_enum_underlying_base_type (const_tree enum_type)
+{
+  return lang_hooks.types.type_for_size (TYPE_PRECISION (enum_type),
+					 TYPE_UNSIGNED (enum_type));
+}

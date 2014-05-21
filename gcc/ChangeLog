@@ -1,3 +1,17 @@
+2014-05-21  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/16063
+	* dwarf2out.c (gen_enumeration_type_die): Add DW_AT_type if DWARF
+	version >= 3 or not strict DWARF.
+	* langhooks.h (struct lang_hooks_for_types): Add
+	enum_underlying_base_type.
+	* langhooks.c (lhd_enum_underlying_base_type): New function.
+	* gcc/langhooks.h (struct lang_hooks_for_types): Add
+	enum_underlying_base_type.
+	* langhooks-def.h (lhd_enum_underlying_base_type): New declaration.
+	(LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE): New define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add new lang hook.
+
 2014-05-21  Richard Biener  <rguenther@suse.de>
 
 	* doc/invoke.texi (-flto-partition=): Document one and
