@@ -8369,11 +8369,6 @@ limit, then a message is output and the bind is abandoned.
 A value of zero means that no limit is enforced. The equal
 sign is optional.
 
-@ifset unw
-Furthermore, under Windows, the sources pointed to by the libraries path
-set in the registry are not searched for.
-@end ifset
-
 @item ^-n^/NOMAIN^
 @cindex @option{^-n^/NOMAIN^} (@command{gnatbind})
 No main program.

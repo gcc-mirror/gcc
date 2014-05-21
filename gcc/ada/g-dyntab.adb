@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2013, AdaCore                     --
+--                     Copyright (C) 2000-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,13 +187,24 @@ package body GNAT.Dynamic_Tables is
 
    begin
       if T.P.Max < T.P.Last_Val then
+
+         --  Now increment table length until it is sufficiently large. Use
+         --  the increment value or 10, which ever is larger (the reason
+         --  for the use of 10 here is to ensure that the table does really
+         --  increase in size (which would not be the case for a table of
+         --  length 10 increased by 3% for instance). Do the intermediate
+         --  calculation in Long_Long_Integer to avoid overflow.
+
          while T.P.Max < T.P.Last_Val loop
-            New_Length := T.P.Length * (100 + Table_Increment) / 100;
+            New_Length :=
+              Integer
+                (Long_Long_Integer (T.P.Length) *
+                  (100 + Long_Long_Integer (Table_Increment)) / 100);
 
             if New_Length > T.P.Length then
                T.P.Length := New_Length;
             else
-               T.P.Length := T.P.Length + 1;
+               T.P.Length := T.P.Length + 10;
             end if;
 
             T.P.Max := Min + T.P.Length - 1;

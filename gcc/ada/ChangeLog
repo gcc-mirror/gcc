@@ -1,3 +1,24 @@
+2014-05-21  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object):
+	This was returning False if the Object is a constant view. Fix
+	it to return True in that case, because it might be a view of
+	a variable.
+	(Has_Discriminant_Dependent_Constraint): Fix latent
+	bug; this function was crashing when passed a discriminant.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Remove misplaced section that is now obsolete.
+	* s-arit64.adb: Minor code reorganization.
+	* sem_prag.adb: Minor comment fix (remove erroneous use of the
+	term erroneous).
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* g-table.adb, g-dyntab.adb (Reallocate): Fix possible overflow in
+	computing new table size.
+
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads: Minor reformatting.

@@ -7300,39 +7300,46 @@ package body Sem_Util is
      (Comp : Entity_Id) return Boolean
    is
       Comp_Decl  : constant Node_Id := Parent (Comp);
-      Subt_Indic : constant Node_Id :=
-                     Subtype_Indication (Component_Definition (Comp_Decl));
+      Subt_Indic : Node_Id;
       Constr     : Node_Id;
       Assn       : Node_Id;
 
    begin
-      if Nkind (Subt_Indic) = N_Subtype_Indication then
-         Constr := Constraint (Subt_Indic);
+      --  Discriminants can't depend on discriminants
 
-         if Nkind (Constr) = N_Index_Or_Discriminant_Constraint then
-            Assn := First (Constraints (Constr));
-            while Present (Assn) loop
-               case Nkind (Assn) is
-                  when N_Subtype_Indication |
-                       N_Range              |
-                       N_Identifier
-                  =>
-                     if Depends_On_Discriminant (Assn) then
-                        return True;
-                     end if;
+      if Ekind (Comp) = E_Discriminant then
+         return False;
 
-                  when N_Discriminant_Association =>
-                     if Depends_On_Discriminant (Expression (Assn)) then
-                        return True;
-                     end if;
+      else
+         Subt_Indic := Subtype_Indication (Component_Definition (Comp_Decl));
 
-                  when others =>
-                     null;
+         if Nkind (Subt_Indic) = N_Subtype_Indication then
+            Constr := Constraint (Subt_Indic);
 
-               end case;
+            if Nkind (Constr) = N_Index_Or_Discriminant_Constraint then
+               Assn := First (Constraints (Constr));
+               while Present (Assn) loop
+                  case Nkind (Assn) is
+                     when N_Subtype_Indication |
+                          N_Range              |
+                          N_Identifier
+                       =>
+                        if Depends_On_Discriminant (Assn) then
+                           return True;
+                        end if;
 
-               Next (Assn);
-            end loop;
+                     when N_Discriminant_Association =>
+                        if Depends_On_Discriminant (Expression (Assn)) then
+                           return True;
+                        end if;
+
+                     when others =>
+                        null;
+                  end case;
+
+                  Next (Assn);
+               end loop;
+            end if;
          end if;
       end if;
 
@@ -9740,11 +9747,6 @@ package body Sem_Util is
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean
    is
-      P           : Node_Id;
-      Prefix_Type : Entity_Id;
-      P_Aliased   : Boolean := False;
-      Comp        : Entity_Id;
-
       function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean;
       --  Returns True if and only if Comp is declared within a variant part
 
@@ -9759,17 +9761,41 @@ package body Sem_Util is
          return Nkind (Parent (Comp_List)) = N_Variant;
       end Is_Declared_Within_Variant;
 
+      P           : Node_Id;
+      Prefix_Type : Entity_Id;
+      P_Aliased   : Boolean := False;
+      Comp        : Entity_Id;
+
+      Deref : Node_Id := Object;
+      --  Dereference node, in something like X.all.Y(2)
+
    --  Start of processing for Is_Dependent_Component_Of_Mutable_Object
 
    begin
-      if Is_Variable (Object) then
+      --  Find the dereference node if any
 
+      while Nkind_In (Deref, N_Indexed_Component,
+                             N_Selected_Component,
+                             N_Slice)
+      loop
+         Deref := Prefix (Deref);
+      end loop;
+
+      --  Ada 2005: If we have a component or slice of a dereference,
+      --  something like X.all.Y (2), and the type of X is access-to-constant,
+      --  Is_Variable will return False, because it is indeed a constant
+      --  view. But it might be a view of a variable object, so we want the
+      --  following condition to be True in that case.
+
+      if Is_Variable (Object)
+        or else (Ada_Version >= Ada_2005
+                   and then Nkind (Deref) = N_Explicit_Dereference)
+      then
          if Nkind (Object) = N_Selected_Component then
             P := Prefix (Object);
             Prefix_Type := Etype (P);
 
             if Is_Entity_Name (P) then
-
                if Ekind (Entity (P)) = E_Generic_In_Out_Parameter then
                   Prefix_Type := Base_Type (Prefix_Type);
                end if;
@@ -9801,10 +9827,10 @@ package body Sem_Util is
             --  the dereferenced case, since the access value might denote an
             --  unconstrained aliased object, whereas in Ada 95 the designated
             --  object is guaranteed to be constrained. A worst-case assumption
-            --  has to apply in Ada 2005 because we can't tell at compile time
-            --  whether the object is "constrained by its initial value"
-            --  (despite the fact that 3.10.2(26/2) and 8.5.1(5/2) are
-            --  semantic rules -- these rules are acknowledged to need fixing).
+            --  has to apply in Ada 2005 because we can't tell at compile
+            --  time whether the object is "constrained by its initial value"
+            --  (despite the fact that 3.10.2(26/2) and 8.5.1(5/2) are semantic
+            --  rules (these rules are acknowledged to need fixing).
 
             if Ada_Version < Ada_2005 then
                if Is_Access_Type (Prefix_Type)
@@ -9813,7 +9839,7 @@ package body Sem_Util is
                   return False;
                end if;
 
-            elsif Ada_Version >= Ada_2005 then
+            else pragma Assert (Ada_Version >= Ada_2005);
                if Is_Access_Type (Prefix_Type) then
 
                   --  If the access type is pool-specific, and there is no

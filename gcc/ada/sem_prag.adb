@@ -1239,7 +1239,7 @@ package body Sem_Prag is
          Is_Input   : Boolean)
       is
          procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id);
-         --  Emit an error concerning the erroneous usage of an item
+         --  Emit an error concerning the illegal usage of an item
 
          -----------------
          -- Usage_Error --
@@ -1783,10 +1783,11 @@ package body Sem_Prag is
                      Is_Last => Clause = Last_Clause);
                end if;
 
-               --  Do not normalize an erroneous clause because the inputs
-               --  and/or outputs may denote illegal items. Normalization is
-               --  disabled in ASIS mode as it alters the tree by introducing
-               --  new nodes similar to expansion.
+               --  Do not normalize a clause if errors were detected (count
+               --  of Serious_Errors has increased) because the inputs and/or
+               --  outputs may denote illegal items. Normalization is disabled
+               --  in ASIS mode as it alters the tree by introducing new nodes
+               --  similar to expansion.
 
                if Serious_Errors_Detected = Errors and then not ASIS_Mode then
                   Normalize_Clause (Clause);
@@ -2288,7 +2289,7 @@ package body Sem_Prag is
                raise Program_Error;
             end if;
 
-         --  Any other attempt to declare a global item is erroneous
+         --  Any other attempt to declare a global item is illegal
 
          else
             Error_Msg_N ("malformed global list", List);
@@ -4700,7 +4701,7 @@ package body Sem_Prag is
                               Prag := Stmt;
 
                            --  A non-pragma is separating the group from the
-                           --  current pragma, the placement is erroneous.
+                           --  current pragma, the placement is illegal.
 
                            else
                               Grouping_Error (Prag);
@@ -10584,7 +10585,7 @@ package body Sem_Prag is
                      then
                         Analyze_External_Option (Opt);
 
-                     --  When an erroneous option Part_Of is without a parent
+                     --  When an illegal option Part_Of is without a parent
                      --  state, it appears in the list of expression of the
                      --  aggregate rather than the component associations
                      --  (SPARK RM 7.1.4(9)).
@@ -10627,7 +10628,7 @@ package body Sem_Prag is
                      Next (Opt);
                   end loop;
 
-               --  Any other attempt to declare a state is erroneous
+               --  Any other attempt to declare a state is illegal
 
                else
                   Error_Msg_N ("malformed abstract state declaration", State);
@@ -25515,7 +25516,7 @@ package body Sem_Prag is
       elsif N = Name_Off then
          return Off;
 
-      --  Any other argument is erroneous
+      --  Any other argument is illegal
 
       else
          raise Program_Error;
