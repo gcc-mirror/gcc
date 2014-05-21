@@ -7,6 +7,9 @@
 	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
 	Likewise.
 
+	* config/locale/dragonfly/c_locale.cc (facet::_S_create_c_locale):
+	Fix warning.
+
 2014-05-21  John Marino  <gnugcc@marino.st>
 
 	* acinclude.m4 (*-*-dragonfly*): New target.

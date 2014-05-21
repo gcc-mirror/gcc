@@ -229,7 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     char localspec[size__s + 6 + 1];
     
     if (__s == NULL) {
-       localspec[0] = NULL;
+       localspec[0] = '\0';
     } else {
        strcpy (localspec, __s);
        char * pch = strchr (localspec, '@');
