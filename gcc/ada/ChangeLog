@@ -1,3 +1,9 @@
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+	* lib-xref-spark_specific.adb, sem_util.adb: Minor reformatting.
+	* sem_prag.adb: Minor error message improvement.
+
 2014-05-21  Yannick Moy  <moy@adacore.com>
 
 	* lib-xref-spark_specific.adb, lib-xref.ads, lib-xref.adb

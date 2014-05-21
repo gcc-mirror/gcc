@@ -23,9 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with SPARK_Xrefs; use SPARK_Xrefs;
 with Einfo;       use Einfo;
 with Nmake;       use Nmake;
+with SPARK_Xrefs; use SPARK_Xrefs;
 
 with GNAT.HTable;
 

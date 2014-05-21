@@ -489,7 +489,7 @@ package body Sem_Ch13 is
 
             --  We need to sort the component clauses on the basis of the
             --  Position values in the clause, so we can group clauses with
-            --  the same Position. together to determine the relevant machine
+            --  the same Position together to determine the relevant machine
             --  scalar size.
 
             Sort_CC : declare
@@ -537,7 +537,7 @@ package body Sem_Ch13 is
                   Comps (To) := Comps (From);
                end CP_Move;
 
-               --  Start of processing for Sort_CC
+            --  Start of processing for Sort_CC
 
             begin
                --  Collect the machine scalar relevant component clauses
