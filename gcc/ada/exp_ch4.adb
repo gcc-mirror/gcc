@@ -835,7 +835,8 @@ package body Exp_Ch4 is
             --  object Obj_Ref already references the tag of the secondary
             --  dispatch table.
 
-            if Present (Parent (Entity (Obj_Ref)))
+            if Nkind (Obj_Ref) in N_Has_Entity
+              and then Present (Entity (Obj_Ref))
               and then Present (Renamed_Object (Entity (Obj_Ref)))
               and then Is_Interface (DesigT)
             then

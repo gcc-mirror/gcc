@@ -2980,12 +2980,13 @@ package body Sem_Ch3 is
    -----------------------------
 
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id) is
-      AR_Val : Boolean := False;
-      AW_Val : Boolean := False;
-      ER_Val : Boolean := False;
-      EW_Val : Boolean := False;
-      Prag   : Node_Id;
-      Seen   : Boolean := False;
+      Obj_Typ : constant Entity_Id := Etype (Obj_Id);
+      AR_Val  : Boolean := False;
+      AW_Val  : Boolean := False;
+      ER_Val  : Boolean := False;
+      EW_Val  : Boolean := False;
+      Prag    : Node_Id;
+      Seen    : Boolean := False;
 
    begin
       if Ekind (Obj_Id) = E_Constant then
@@ -3008,26 +3009,43 @@ package body Sem_Ch3 is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
+            if Is_SPARK_Volatile_Object (Obj_Id) then
 
-            --  A non-volatile object cannot have volatile components
-            --  (SPARK RM 7.1.3(7)).
+               --  The declaration of a volatile object must appear at the
+               --  library level (SPARK RM 7.1.3(7), C.6(6)).
 
-            if not Is_SPARK_Volatile_Object (Obj_Id)
-              and then Has_Volatile_Component (Etype (Obj_Id))
-            then
-               Error_Msg_N
-                 ("non-volatile variable & cannot have volatile components",
-                  Obj_Id);
+               if not Is_Library_Level_Entity (Obj_Id) then
+                  Error_Msg_N
+                    ("volatile variable & must be declared at library level",
+                     Obj_Id);
 
-            --  The declaration of a volatile object must appear at the library
-            --  level.
+               --  An object of a discriminated type cannot be volatile
+               --  (SPARK RM C.6(4)).
 
-            elsif Is_SPARK_Volatile_Object (Obj_Id)
-              and then not Is_Library_Level_Entity (Obj_Id)
-            then
-               Error_Msg_N
-                 ("volatile variable & must be declared at library level "
-                  & "(SPARK RM 7.1.3(5))", Obj_Id);
+               elsif Has_Discriminants (Obj_Typ) then
+                  Error_Msg_N
+                    ("discriminated object & cannot be volatile", Obj_Id);
+
+               --  An object of a tagged type cannot be volatile
+               --  (SPARK RM C.6(5)).
+
+               elsif Is_Tagged_Type (Obj_Typ) then
+                  Error_Msg_N ("tagged object & cannot be volatile", Obj_Id);
+               end if;
+
+            --  The object is not volatile
+
+            else
+               --  A non-volatile object cannot have volatile components
+               --  (SPARK RM 7.1.3(7)).
+
+               if not Is_SPARK_Volatile_Object (Obj_Id)
+                 and then Has_Volatile_Component (Obj_Typ)
+               then
+                  Error_Msg_N
+                    ("non-volatile object & cannot have volatile components",
+                     Obj_Id);
+               end if;
             end if;
          end if;
 
