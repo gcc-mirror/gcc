@@ -1339,14 +1339,16 @@ package body Errout is
       Cur := First_Error_Msg;
       while Cur /= No_Error_Msg loop
          declare
-            CE : Error_Msg_Object renames Errors.Table (Cur);
+            CE  : Error_Msg_Object renames Errors.Table (Cur);
+            Tag : constant String := Get_Warning_Tag (Cur);
 
          begin
             if (CE.Warn and not CE.Deleted)
-              and then (Warning_Specifically_Suppressed (CE.Sptr, CE.Text) /=
+              and then
+                   (Warning_Specifically_Suppressed (CE.Sptr, CE.Text, Tag) /=
                                                                    No_String
-                          or else
-                        Warning_Specifically_Suppressed (CE.Optr, CE.Text) /=
+                      or else
+                    Warning_Specifically_Suppressed (CE.Optr, CE.Text, Tag) /=
                                                                    No_String)
             then
                Delete_Warning (Cur);

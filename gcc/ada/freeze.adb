@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,6 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch9;  use Sem_Ch9;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;

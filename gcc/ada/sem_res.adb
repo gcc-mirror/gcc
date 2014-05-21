@@ -4684,7 +4684,7 @@ package body Sem_Res is
          Check_Restriction (No_Task_Hierarchy, N);
       end if;
 
-      --  An erroneous allocator may be rewritten as a raise Program_Error
+      --  An illegal allocator may be rewritten as a raise Program_Error
       --  statement.
 
       if Nkind (N) = N_Allocator then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2352,7 +2352,7 @@ package body Sem_Ch5 is
       --  Analyze the subtype definition and create temporaries for the bounds.
       --  Do not evaluate the range when preanalyzing a quantified expression
       --  because bounds expressed as function calls with side effects will be
-      --  erroneously replicated.
+      --  incorrectly replicated.
 
       if Nkind (DS) = N_Range
         and then Expander_Active

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -376,7 +376,7 @@ package body Ch4 is
 
          --  If dot is at end of line and followed by nothing legal,
          --  then assume end of name and quit (dot will be taken as
-         --  an erroneous form of some other punctuation by our caller).
+         --  an incorrect form of some other punctuation by our caller).
 
          elsif Token_Is_At_Start_Of_Line then
             Restore_Scan_State (Scan_State);
@@ -770,11 +770,11 @@ package body Ch4 is
          Expr_Node := P_Expression_If_OK;
          goto LP_State_Expr;
 
-      --  LP_State_Call corresponds to the situation in which at least
-      --  one instance of Id => Expression has been encountered, so we
-      --  know that we do not have a name, but rather a call. We enter
-      --  it with the scan pointer pointing to the next argument to scan,
-      --  and Arg_List containing the list of arguments scanned so far.
+      --  LP_State_Call corresponds to the situation in which at least one
+      --  instance of Id => Expression has been encountered, so we know that
+      --  we do not have a name, but rather a call. We enter it with the
+      --  scan pointer pointing to the next argument to scan, and Arg_List
+      --  containing the list of arguments scanned so far.
 
       <<LP_State_Call>>
 
@@ -785,7 +785,7 @@ package body Ch4 is
             Ident_Node := Token_Node;
             Scan; -- past Id
 
-            --  Deal with => (allow := as erroneous substitute)
+            --  Deal with => (allow := as incorrect substitute)
 
             if Token = Tok_Arrow or else Token = Tok_Colon_Equal then
                Arg_Node := New_Node (N_Parameter_Association, Prev_Token_Ptr);

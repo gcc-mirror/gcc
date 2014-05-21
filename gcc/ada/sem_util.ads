@@ -1451,7 +1451,7 @@ package Sem_Util is
    procedure Mark_Coextensions (Context_Nod : Node_Id; Root_Nod : Node_Id);
    --  Given a node which designates the context of analysis and an origin in
    --  the tree, traverse from Root_Nod and mark all allocators as either
-   --  dynamic or static depending on Context_Nod. Any erroneous marking is
+   --  dynamic or static depending on Context_Nod. Any incorrect marking is
    --  cleaned up during resolution.
 
    function May_Be_Lvalue (N : Node_Id) return Boolean;

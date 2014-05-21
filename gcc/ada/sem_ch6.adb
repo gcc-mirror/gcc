@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2038,9 +2038,9 @@ package body Sem_Ch6 is
       Ref_Global  : Node_Id := Empty;
 
    begin
-      --  When a subprogram body declaration is erroneous, its defining entity
-      --  is left unanalyzed. There is nothing left to do in this case because
-      --  the body lacks a contract.
+      --  When a subprogram body declaration is illegal, its defining entity is
+      --  left unanalyzed. There is nothing left to do in this case because the
+      --  body lacks a contract.
 
       if not Analyzed (Body_Id) then
          return;

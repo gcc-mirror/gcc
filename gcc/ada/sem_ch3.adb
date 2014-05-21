@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -18184,7 +18184,7 @@ package body Sem_Ch3 is
 
             if Ekind (Typ) = E_Record_Type_With_Private then
 
-               --  Handle the following erroneous case:
+               --  Handle the following illegal usage:
                --      type Private_Type is tagged private;
                --   private
                --      type Private_Type is new Type_Implementing_Iface;

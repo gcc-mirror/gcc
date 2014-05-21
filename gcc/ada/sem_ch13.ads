@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -330,5 +330,28 @@ package Sem_Ch13 is
    --  aggregate, and each entry must denote a function with the proper syntax
    --  for First, Next, and Has_Element. Optionally an Element primitive may
    --  also be defined.
+
+   -----------------------------------------------------------
+   --  Visibility of Discriminants in Aspect Specifications --
+   -----------------------------------------------------------
+
+   --  The discriminants of a type are visible when analyzing the aspect
+   --  specifications of a type declaration or protected type declaration,
+   --  but not when analyzing those of a subtype declaration. The following
+   --  routines enforce this distinction.
+
+   procedure Install_Discriminants (E : Entity_Id);
+   --  Make visible the discriminants of type entity E
+
+   procedure Push_Scope_And_Install_Discriminants (E : Entity_Id);
+   --  Push scope E and makes visible the discriminants of type entity E if E
+   --  has discriminants and is not a subtype.
+
+   procedure Uninstall_Discriminants (E : Entity_Id);
+   --  Remove visibility to the discriminants of type entity E
+
+   procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id);
+   --  Remove visibility to the discriminants of type entity E and pop the
+   --  scope stack if E has discriminants and is not a subtype.
 
 end Sem_Ch13;

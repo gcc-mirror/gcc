@@ -8241,7 +8241,7 @@ package body Sem_Util is
       Index := First_Index (Typ);
       for Indx in 1 .. Ndims loop
 
-         --  In case of an erroneous index which is not a discrete type, return
+         --  In case of an illegal index which is not a discrete type, return
          --  that the type is not static.
 
          if not Is_Discrete_Type (Etype (Index))
