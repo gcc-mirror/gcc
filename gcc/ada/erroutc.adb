@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,6 +310,8 @@ package body Erroutc is
       if Warn and then Warn_Chr /= ' ' then
          if Warn_Chr = '?' then
             return "[enabled by default]";
+         elsif Warn_Chr = '*' then
+            return "[restriction warning]";
          elsif Warn_Chr in 'a' .. 'z' then
             return "[-gnatw" & Warn_Chr & ']';
          else pragma Assert (Warn_Chr in 'A' .. 'Z');

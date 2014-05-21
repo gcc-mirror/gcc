@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1047,7 +1047,7 @@ package body Restrict is
       --  Set warning message if warning
 
       if Restriction_Warnings (R) then
-         Add_Str ("??");
+         Add_Str ("?*?");
 
       --  If real violation (not warning), then mark it as non-serious unless
       --  it is a violation of No_Finalization in which case we leave it as a

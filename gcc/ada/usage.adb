@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,8 +121,8 @@ begin
    Write_Eol;
 
    --  Individual lines for switches. Write_Switch_Char outputs fourteen
-   --  characters, so the remaining message is allowed to be a maximum
-   --  of 65 characters to be comfortable in an 80 character window.
+   --  characters, so the remaining message is allowed to be a maximum of
+   --  65 characters to be comfortable in an 80 character window.
 
    --  Line for -gnata switch
 
@@ -494,16 +494,8 @@ begin
    Write_Line ("        .C*  turn off warnings for unrepped components");
    Write_Line ("        d    turn on warnings for implicit dereference");
    Write_Line ("        D*   turn off warnings for implicit dereference");
-
-   --  Switches -gnatw.d/w.D not available on VMS
-
-   if not OpenVMS_On_Target then
-      Write_Line
-        ("        .d   turn on tagging of warnings with -gnatw switch");
-      Write_Line
-        ("        .D*  turn off tagging of warnings with -gnatw switch");
-   end if;
-
+   Write_Line ("        .d   turn on tagging of warnings with -gnatw switch");
+   Write_Line ("        .D*  turn off tagging of warnings with -gnatw switch");
    Write_Line ("        e    treat all warnings (but not info) as errors");
    Write_Line ("        .e   turn on every optional info/warning " &
                                                   "(no exceptions)");
@@ -511,6 +503,7 @@ begin
    Write_Line ("        F*   turn off warnings for unreferenced formal");
    Write_Line ("        g*+  turn on warnings for unrecognized pragma");
    Write_Line ("        G    turn off warnings for unrecognized pragma");
+   Write_Line ("        .g   turn on GNAT warnings, same as Aao.sI.C.V.X");
    Write_Line ("        h    turn on warnings for hiding declarations");
    Write_Line ("        H*   turn off warnings for hiding declarations");
    Write_Line ("        .h   turn on warnings for holes in records");
@@ -640,7 +633,7 @@ begin
    Write_Line ("        d    check no DOS line terminators");
    Write_Line ("        e    check end/exit labels present");
    Write_Line ("        f    check no form feeds/vertical tabs in source");
-   Write_Line ("        g    check standard GNAT style rules");
+   Write_Line ("        g    check standard GNAT style rules, same as ydISux");
    Write_Line ("        h    check no horizontal tabs in source");
    Write_Line ("        i    check if-then layout");
    Write_Line ("        I    check mode in");
