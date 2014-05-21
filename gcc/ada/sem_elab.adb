@@ -541,6 +541,27 @@ package body Sem_Elab is
       --  warnings on the scope are also suppressed. For the internal case,
       --  we ignore this flag.
 
+      function Is_Call_Of_Generic_Formal return Boolean;
+      --  Returns True if node N is a call to a generic formal subprogram
+
+      -------------------------------
+      -- Is_Call_Of_Generic_Formal --
+      -------------------------------
+
+      function Is_Call_Of_Generic_Formal return Boolean is
+      begin
+         return Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+
+           --  For now, we detect this by looking for the strange identifier
+           --  node, whose Chars reflect the name of the generic formal, but
+           --  the Chars of the Entity references the generic actual.
+
+           and then Nkind (Name (N)) = N_Identifier
+           and then Chars (Name (N)) /= Chars (Entity (Name (N)));
+      end Is_Call_Of_Generic_Formal;
+
+   --  Start of processing for Check_A_Call
+
    begin
       --  If the call is known to be within a local Suppress Elaboration
       --  pragma, nothing to check. This can happen in task bodies.
@@ -752,8 +773,9 @@ package body Sem_Elab is
          --  However, if we are doing dynamic elaboration, we need to chase the
          --  call in the usual manner.
 
-         --  We do not handle the case of calling a generic formal correctly in
-         --  the static case.???
+         --  We also need to chase the call in the usual manner if it is a call
+         --  to a generic formal parameter, since that case was not handled as
+         --  part of the processing of the template.
 
          Inst_Caller := Instantiation (Get_Source_File_Index (Sloc (N)));
          Inst_Callee := Instantiation (Get_Source_File_Index (Sloc (Ent)));
@@ -773,14 +795,8 @@ package body Sem_Elab is
          if Unit_Caller /= No_Unit
            and then Unit_Callee /= Unit_Caller
            and then not Dynamic_Elaboration_Checks
-
-            --  This is an attempt to solve the problem of mishandling of
-            --  generic formal parameters, but it does not work right yet ???
-
-            --  and then not Used_As_Generic_Actual (Ent)
+           and then not Is_Call_Of_Generic_Formal
          then
-            --  It is here that things go wrong for calling a generic formal???
-
             E_Scope := Spec_Entity (Cunit_Entity (Unit_Caller));
 
             --  If we don't get a spec entity, just ignore call. Not quite
@@ -796,11 +812,12 @@ package body Sem_Elab is
                E_Scope := Scope (E_Scope);
             end loop;
 
-         --  For the case N is not an instance, or a call within instance, we
-         --  recompute E_Scope for the error message, since we do NOT want to
-         --  go to the unit which has the ultimate declaration in the case of
-         --  renaming and derivation and we also want to go to the generic unit
-         --  in the case of an instance, and no further.
+         --  For the case where N is not an instance, and is not a call within
+         --  instance to other than a generic formal, we recompute E_Scope
+         --  for the error message, since we do NOT want to go to the unit
+         --  which has the ultimate declaration in the case of renaming and
+         --  derivation and we also want to go to the generic unit in the
+         --  case of an instance, and no further.
 
          else
             --  Loop to carefully follow renamings and derivations one step

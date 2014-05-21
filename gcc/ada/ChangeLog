@@ -1,5 +1,29 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* sem_warn.adb: Minor fix to warning messages (use ?? instead
+	of ?).
+
+2014-05-21  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): For platforms other than VMS, recognize
+	switch --version and --help.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Is_Call_Of_Generic_Formal): New function.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Set type of
+	iterator variable when the domain of iteration is a formal
+	container and this is an element iterator.
+
+2014-05-21  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* sinfo.ads, sem_ch12.adb, sem_warn.adb: Minor reformatting.
 
 2014-05-21  Robert Dewar  <dewar@adacore.com>
