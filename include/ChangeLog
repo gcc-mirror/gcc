@@ -1,3 +1,7 @@
+2014-05-21  John Marino  <gnugcc@marino.st>
+
+	* liberty.h: Use basename function on DragonFly.
+
 2014-05-01  Steve Ellcey  <sellcey@mips.com>
 
 	* include/longlong.h: Use 'defined()' to check __mips16.

@@ -1,3 +1,14 @@
+2014-05-21  John Marino  <gnugcc@marino.st>
+
+	* config.gcc (*-*-dragonfly*): New target.
+	* configure.ac: Detect dl_iterate_phdr (*freebsd*, *dragonfly*).
+	* configure: Regenerate.
+	* config/dragonfly-stdint.h: New.
+	* config/dragonfly.h: New.
+	* config/dragonfly.opt: New.
+	* config/i386/dragonfly.h: New.
+	* ginclude/stddef.h: Detect _PTRDIFF_T_DECLARED for DragonFly.
+
 2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	* tree.def (VOID_CST): New.

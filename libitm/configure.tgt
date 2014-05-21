@@ -141,7 +141,7 @@ case "${target}" in
   *-*-gnu* | *-*-k*bsd*-gnu \
   | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* \
   | *-*-solaris2* | *-*-sysv4* | *-*-hpux11* \
-  | *-*-darwin* | *-*-aix*)
+  | *-*-darwin* | *-*-aix* | *-*-dragonfly*)
 	# POSIX system.  The OS is supported.
 	;;
 

@@ -5019,6 +5019,13 @@ case "$target" in
       gcc_cv_target_dl_iterate_phdr=no
     fi
     ;;
+  *-*-dragonfly* | *-*-freebsd*)
+    if grep dl_iterate_phdr $target_header_dir/sys/link_elf.h > /dev/null 2>&1; then
+      gcc_cv_target_dl_iterate_phdr=yes
+    else
+      gcc_cv_target_dl_iterate_phdr=no
+    fi
+    ;;
 esac
 GCC_TARGET_TEMPLATE([TARGET_DL_ITERATE_PHDR])
 if test x$gcc_cv_target_dl_iterate_phdr = xyes; then

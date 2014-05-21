@@ -260,6 +260,9 @@ case "${host_os}" in
     os_include_dir="os/djgpp"
     error_constants_dir="os/djgpp"
     ;;
+  dragonfly*)
+    os_include_dir="os/bsd/dragonfly"
+    ;;
   freebsd*)
     os_include_dir="os/bsd/freebsd"
     ;;
