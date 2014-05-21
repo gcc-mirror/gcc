@@ -175,19 +175,19 @@ extern GTY(()) int darwin_ms_struct;
     %{e*} %{r} \
     %{o*}%{!o:-o a.out} \
     %{!nostdlib:%{!nostartfiles:%S}} \
-    %{!nostdlib:%{!nostartfiles:%{fupc-link:%:include(upc-crtbegin.spec)%(upc_crtbegin)}}}\
+    %{!nostdlib:%{!nostartfiles:%{fupc:%:include(upc-crtbegin.spec)%(upc_crtbegin)}}}\
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
     %{fgnu-tm: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
-    %{fupc-link:%:include(libgupc.spec)%(link_upc)} \
+    %{fupc:%:include(libgupc.spec)%(link_upc)} \
     %{!nostdlib:%{!nodefaultlibs:\
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) %(link_gcc_c_sequence)\
     }}\
-    %{!nostdlib:%{!nostartfiles:%{fupc-link:%:include(upc-crtend.spec)%(upc_crtend)}}}\
+    %{!nostdlib:%{!nostartfiles:%{fupc:%:include(upc-crtend.spec)%(upc_crtend)}}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} %{F*} }}}}}}}"
 
 #define DSYMUTIL "\ndsymutil"

@@ -101,7 +101,7 @@ if test "$upc_runtime_model" = "portals4"; then
     LIBS="$portals4libs $LIBS"
   fi
 fi
-if test "x${have_rdynamic}" != "x"; then
+if test "x${have_rdynamic}" == "xyes"; then
   LIBS="-export-dynamic $LIBS"
 fi
 libgupc_spec="%{!fupc-pthreads*:-lgupc;:-lgupc_pt -lpthread}"

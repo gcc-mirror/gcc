@@ -1,3 +1,8 @@
+2014-04-21  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.tgt: Fix check for the presence of -rdynamic
+	compiler switch.
+
 2014-04-09  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* portals4/gupcr_atomic.upc (upc_atomic_relaxed): Fix PTS
