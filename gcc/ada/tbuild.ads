@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -205,8 +205,6 @@ package Tbuild is
    --  captures the value of an expression (e.g. an aggregate). It should be
    --  set whenever possible to point to the expression that is being captured.
    --  This is provided to get better error messages, e.g. from CodePeer.
-   --
-   --  Make_Temp_Id would probably be a better name for this function???
 
    function Make_Unsuppress_Block
      (Loc   : Source_Ptr;

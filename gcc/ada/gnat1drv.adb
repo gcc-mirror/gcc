@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -633,7 +633,6 @@ procedure Gnat1drv is
          Sname := Unit_Name (Main_Unit);
 
          --  If we do not already have a body name, then get the body name
-         --  (but how can we have a body name here???)
 
          if not Is_Body_Name (Sname) then
             Sname := Get_Body_Name (Sname);
@@ -651,19 +650,15 @@ procedure Gnat1drv is
          --  to include both in a partition, this is diagnosed at bind time. In
          --  Ada 83 mode this is not a warning case.
 
-         --  Note: if weird file names are being used, we can have a situation
-         --  where the file name that supposedly contains body in fact contains
-         --  a spec, or we can't tell what it contains. Skip the error message
-         --  in these cases.
-
-         --  Also ignore body that is nothing but pragma No_Body; (that's the
-         --  whole point of this pragma, to be used this way and to cause the
-         --  body file to be ignored in this context).
+         --  Note that in general we do not give the message if the file in
+         --  question does not look like a body. This includes weird cases,
+         --  but in particular means that if the file is just a No_Body pragma,
+         --  then we won't give the message (that's the whole point of this
+         --  pragma, to be used this way and to cause the body file to be
+         --  ignored in this context).
 
          if Src_Ind /= No_Source_File
-           and then Get_Expected_Unit_Type (Fname) = Expect_Body
-           and then not Source_File_Is_Subunit (Src_Ind)
-           and then not Source_File_Is_No_Body (Src_Ind)
+           and then Source_File_Is_Body (Src_Ind)
          then
             Errout.Finalize (Last_Call => False);
 
@@ -693,8 +688,8 @@ procedure Gnat1drv is
             else
                --  For generic instantiations, we never allow a body
 
-               if Nkind (Original_Node (Unit (Main_Unit_Node)))
-               in N_Generic_Instantiation
+               if Nkind (Original_Node (Unit (Main_Unit_Node))) in
+                                                    N_Generic_Instantiation
                then
                   Bad_Body_Error
                     ("generic instantiation for $$ does not allow a body");

@@ -1,5 +1,50 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* stand.adb (Tree_Read): Read missing entities.
+	(Tree_Write): Write missing entities.
+
+2014-05-21  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Wordsmithing edits to Coupling Metrics Control
+	section in gnatmetric chapter.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Spec moved here, since not used
+	outside Exp_Ch6 (Expand_Actuals): Deal with proper insertion of
+	post-call copy write back (see detailed comment in code).
+	* exp_ch6.ads (Expand_Actuals): Moved to body, not used outside
+	Exp_Ch6.
+	* tbuild.ads: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* stand.ads: Add warning about adding new entities and
+	Tree_Read/Tree_Write.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb (Set_Entity_With_Checks): Don't complain about
+	references to restricted entities within the units in which they
+	are declared.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Check_Bad_Body): Use Source_File_Is_Body to
+	simplify the needed test, and also deal with failure to catch
+	situations with non-standard names.
+	* sinput-l.ads, sinput-l.adb (Source_File_Is_No_Body): New function
+	(Source_File_Is_Subunit): Removed, no longer used.
+
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb
+	(Expand_Allocator_Expression.Apply_Accessibility_Check): for a
+	renaming of an access to interface object there is no need to
+	generate extra code to reference the tag.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* errout.adb, erroutc.adb, erroutc.ads: Allow warning tag in pragma
 	Warnings (Off, string).
 
