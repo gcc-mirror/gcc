@@ -1,3 +1,8 @@
+2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* c-array-notation.c (expand_array_notations): Use void_node
+	instead of void_zero_node.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* c-decl.c (finish_struct): Adjust.

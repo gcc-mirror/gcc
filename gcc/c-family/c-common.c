@@ -5524,10 +5524,6 @@ c_common_nodes_and_builtins (void)
     TYPE_NAME (void_type_node) = void_name;
   }
 
-  /* This node must not be shared.  */
-  void_zero_node = make_int_cst (1, 1);
-  TREE_TYPE (void_zero_node) = void_type_node;
-
   void_list_node = build_void_list_node ();
 
   /* Make a type to be the domain of a few array types

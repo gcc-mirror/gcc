@@ -297,8 +297,6 @@ enum c_tree_index
     CTI_C99_FUNCTION_NAME_DECL,
     CTI_SAVED_FUNCTION_NAME_DECLS,
 
-    CTI_VOID_ZERO,
-
     CTI_NULL,
 
     CTI_MAX
@@ -429,9 +427,6 @@ extern const unsigned int num_c_common_reswords;
 #define pretty_function_name_decl_node	c_global_trees[CTI_PRETTY_FUNCTION_NAME_DECL]
 #define c99_function_name_decl_node		c_global_trees[CTI_C99_FUNCTION_NAME_DECL]
 #define saved_function_name_decls	c_global_trees[CTI_SAVED_FUNCTION_NAME_DECLS]
-
-/* A node for `((void) 0)'.  */
-#define void_zero_node                  c_global_trees[CTI_VOID_ZERO]
 
 /* The node for C++ `__null'.  */
 #define null_node                       c_global_trees[CTI_NULL]

@@ -3246,6 +3246,8 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define uint32_type_node		global_trees[TI_UINT32_TYPE]
 #define uint64_type_node		global_trees[TI_UINT64_TYPE]
 
+#define void_node			global_trees[TI_VOID]
+
 #define integer_zero_node		global_trees[TI_INTEGER_ZERO]
 #define integer_one_node		global_trees[TI_INTEGER_ONE]
 #define integer_three_node              global_trees[TI_INTEGER_THREE]

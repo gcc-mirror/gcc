@@ -257,6 +257,8 @@ DEFTREECODE (LANG_TYPE, "lang_type", tcc_type, 0)
 
 /* First, the constants.  */
 
+DEFTREECODE (VOID_CST, "void_cst", tcc_constant, 0)
+
 /* Contents are in an array of HOST_WIDE_INTs.
 
    We often access these constants both in their native precision and

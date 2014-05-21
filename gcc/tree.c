@@ -383,6 +383,7 @@ tree_node_structure_for_code (enum tree_code code)
   switch (code)
     {
       /* tcc_constant cases.  */
+    case VOID_CST:		return TS_TYPED;
     case INTEGER_CST:		return TS_INT_CST;
     case REAL_CST:		return TS_REAL_CST;
     case FIXED_CST:		return TS_FIXED_CST;
@@ -652,6 +653,7 @@ tree_code_size (enum tree_code code)
     case tcc_constant:  /* a constant */
       switch (code)
 	{
+	case VOID_CST:		return sizeof (struct tree_typed);
 	case INTEGER_CST:	gcc_unreachable ();
 	case REAL_CST:		return sizeof (struct tree_real_cst);
 	case FIXED_CST:		return sizeof (struct tree_fixed_cst);
@@ -7360,6 +7362,8 @@ iterative_hash_expr (const_tree t, hashval_t val)
     {
     /* Alas, constants aren't shared, so we can't rely on pointer
        identity.  */
+    case VOID_CST:
+      return iterative_hash_hashval_t (0, val);
     case INTEGER_CST:
       for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
 	val = iterative_hash_host_wide_int (TREE_INT_CST_ELT (t, i), val);
@@ -9630,6 +9634,9 @@ build_common_tree_nodes (bool signed_char, bool short_double)
      so we might as well not have any types that claim to have it.  */
   TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
   TYPE_USER_ALIGN (void_type_node) = 0;
+
+  void_node = make_node (VOID_CST);
+  TREE_TYPE (void_node) = void_type_node;
 
   null_pointer_node = build_int_cst (build_pointer_type (void_type_node), 0);
   layout_type (TREE_TYPE (null_pointer_node));

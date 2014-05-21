@@ -1,3 +1,12 @@
+2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* tree.def (VOID_CST): New.
+	* tree-core.h (TI_VOID): New.
+	* tree.h (void_node): New.
+	* tree.c (tree_node_structure_for_code, tree_code_size)
+	(iterative_hash_expr): Handle VOID_CST.
+	(build_common_tree_nodes): Initialize void_node.
+
 2014-05-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* reload1.c (remove_init_insns, will_delete_init_insn_p): New static

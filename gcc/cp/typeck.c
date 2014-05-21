@@ -8424,7 +8424,7 @@ check_return_expr (tree retval, bool *no_warning)
       else
 	{
 	  if (!retval)
-	    retval = void_zero_node;
+	    retval = void_node;
 	  auto_node = type_uses_auto (current_function_auto_return_pattern);
 	  type = do_auto_deduction (current_function_auto_return_pattern,
 				    retval, auto_node);

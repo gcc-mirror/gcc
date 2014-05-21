@@ -181,7 +181,7 @@ replace_invariant_exprs (tree *node)
 	  if (VOID_TYPE_P (TREE_TYPE (t)))
 	    {
 	      finish_expr_stmt (t);
-	      new_var = void_zero_node;
+	      new_var = void_node;
 	    }
 	  else 
 	    new_var = get_temp_regvar (TREE_TYPE (t), t); 
@@ -1126,6 +1126,7 @@ expand_array_notation_exprs (tree t)
     {
     case ERROR_MARK:
     case IDENTIFIER_NODE:
+    case VOID_CST:
     case INTEGER_CST:
     case REAL_CST:
     case FIXED_CST:

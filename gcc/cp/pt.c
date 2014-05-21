@@ -10911,7 +10911,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		/* Set up DECL_TEMPLATE_INFO so that we can get at the
 		   NSDMI in perform_member_init.  Still set DECL_INITIAL
 		   so that we know there is one.  */
-		DECL_INITIAL (r) = void_zero_node;
+		DECL_INITIAL (r) = void_node;
 		gcc_assert (DECL_LANG_SPECIFIC (r) == NULL);
 		retrofit_lang_decl (r);
 		DECL_TEMPLATE_INFO (r) = build_template_info (t, args);
@@ -12286,6 +12286,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
       break;
 
+    case VOID_CST:
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
@@ -13053,6 +13054,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case NONTYPE_ARGUMENT_PACK:
       error ("use %<...%> to expand argument pack");
       return error_mark_node;
+
+    case VOID_CST:
+      gcc_checking_assert (t == void_node && VOID_TYPE_P (TREE_TYPE (t)));
+      return t;
 
     case INTEGER_CST:
     case REAL_CST:
@@ -14600,7 +14605,7 @@ tsubst_copy_and_build (tree t,
 	else
 	  {
 	    init_vec = make_tree_vector ();
-	    if (init == void_zero_node)
+	    if (init == void_node)
 	      gcc_assert (init_vec != NULL);
 	    else
 	      {
@@ -15261,9 +15266,9 @@ tsubst_copy_and_build (tree t,
 	cur_stmt_expr = old_stmt_expr;
 
 	/* If the resulting list of expression statement is empty,
-	   fold it further into void_zero_node.  */
+	   fold it further into void_node.  */
 	if (empty_expr_stmt_p (stmt_expr))
-	  stmt_expr = void_zero_node;
+	  stmt_expr = void_node;
 
 	RETURN (stmt_expr);
       }
@@ -21550,9 +21555,11 @@ build_non_dependent_expr (tree expr)
      cannot be used to initialize a "char *".  */
   if (TREE_CODE (expr) == STRING_CST)
     return expr;
-  /* Preserve arithmetic constants, as an optimization -- there is no
+  /* Preserve void and arithmetic constants, as an optimization -- there is no
      reason to create a new node.  */
-  if (TREE_CODE (expr) == INTEGER_CST || TREE_CODE (expr) == REAL_CST)
+  if (TREE_CODE (expr) == VOID_CST
+      || TREE_CODE (expr) == INTEGER_CST
+      || TREE_CODE (expr) == REAL_CST)
     return expr;
   /* Preserve THROW_EXPRs -- all throw-expressions have type "void".
      There is at least one place where we want to know that a
