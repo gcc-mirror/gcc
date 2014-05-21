@@ -1,5 +1,15 @@
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR tree-optimization/60899
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Cleanup;
+	assume all static symbols will have definition wile parsing and
+	check the do have definition later in compilation; check that
+	variable referring symbol will be output before concluding that
+	reference is safe; be conservative for referring local statics;
+	be more precise about when comdat is output in other partition.
+
+2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR bootstrap/60984
 	* ipa-inline-transform.c (inline_call): Use add CALLEE_REMOVED parameter.
 	* ipa-inline.c (inline_to_all_callers): If callee was removed; return.
