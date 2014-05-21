@@ -5867,6 +5867,12 @@ Conversely, this switch suppresses warnings from the @option{GCC} back end.
 The use of this switch also sets the default front end warning mode to
 @option{-gnatws}, that is, front end warnings suppressed as well.
 
+@item -Werror
+@cindex @option{-Werror}
+This switch causes warnings from the @option{GCC} back end to be treated as
+errors.  The warning string still appears, but the warning messages are
+counted as errors, and prevent the generation of an object file.
+
 @end table
 
 @noindent

@@ -5521,10 +5521,12 @@ package body Sem_Util is
 
             --  An actual that is the prefix in a prefixed call may have
             --  been rewritten in the call, after the deferred reference
-            --  was collected. Check if sloc and kinds match.
+            --  was collected. Check if sloc and kinds and names match.
 
             elsif Sloc (Actual) = Sloc (N)
+              and then Nkind (Actual) = N_Identifier
               and then Nkind (Actual) = Nkind (N)
+              and then Chars (Actual) = Chars (N)
             then
                return;
 
@@ -9789,7 +9791,7 @@ package body Sem_Util is
 
       if Is_Variable (Object)
         or else (Ada_Version >= Ada_2005
-                   and then Nkind (Deref) = N_Explicit_Dereference)
+                  and then Nkind (Deref) = N_Explicit_Dereference)
       then
          if Nkind (Object) = N_Selected_Component then
             P := Prefix (Object);
