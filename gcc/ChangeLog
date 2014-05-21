@@ -1,3 +1,9 @@
+2014-05-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* cfgrtl.c (cfg_layout_initialize): Weaken assert to only trigger if
+	flag_reorder_blocks_and_partition.
+	* hw-doloop.c (reorg_loops): Avoid reordering if that flag is set.
+
 2014-05-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
