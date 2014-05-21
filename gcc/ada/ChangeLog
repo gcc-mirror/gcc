@@ -1,5 +1,23 @@
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
+	* layout.adb: Minor reformatting.
+	* sem_prag.adb (Analyze_Pragma, case Inspection_Point): Call
+	dummy procedure ip.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.ads (Implementation_Restriction): Add entry for
+	No_Fixed_IO.
+	* rtsfind.ads: Add entries for Fixed_IO and Decimal_IO in
+	Ada.[Wide_[Wide_]Text_IO.
+	* s-rident.ads (Restriction_Id): Add entry for No_Fixed_IO.
+	* sem_attr.adb (Analyze_Attribute): Disallow fixed point types
+	for Img, Image, Value, Wide_Image, Wide_Value, Wide_Wide_Image,
+	Wide_Wide_Value if restriction No_Fixed_IO is set.
+	* sem_util.adb (Set_Entity_Checks): Check restriction No_Fixed_IO.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
 	* gnatcmd.adb: Minor error msg changes (no upper case letter
 	at start).
 	* sem_ch12.adb, sem_ch5.adb, sem_res.adb, sem_util.adb: Minor
