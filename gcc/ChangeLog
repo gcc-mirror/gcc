@@ -1,3 +1,7 @@
+2014-05-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (update_indexed_address_mem): Delete.
+
 2014-05-21  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/61272
