@@ -1,3 +1,45 @@
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb: Minor error msg changes (no upper case letter
+	at start).
+	* sem_ch12.adb, sem_ch5.adb, sem_res.adb, sem_util.adb: Minor
+	reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Debug flag -gnatd.G inhibits static elab tracing
+	via generic formals.
+	* sem_elab.adb (Is_Call_Of_Generic_Formal): Return False if
+	-gnatd.G is set.
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Revert_Storage_Order): Renamed from Byte_Swap to
+	more accurately describe that this subprogram needs to come into
+	play also in cases where no byte swapping is involved, because
+	it also takes care of some required shifts (left-justification
+	of values).
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Indicate whether
+	a Scalar_Storage_Order attribute definition is present for the
+	component's type.
+	(Freeze_Record_Type): Suppress junk warnings
+	about purportedly junk Bit_Order / Scalar_Storage_Order attribute
+	definitions.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Put back call
+	to Kill_Elaboration_Checks.
+
+2014-05-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb (Assoc_Add): Suppress the optimization of the (E
+	- C1) + C2 case, when the expression type is unsigned and C1 <
+	C2, to avoid creating a negative literal when folding.
+
 2014-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Update the use of

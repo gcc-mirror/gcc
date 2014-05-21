@@ -7500,9 +7500,7 @@ package body Sem_Util is
 
          elsif Property = Name_Effective_Writes
            and then
-             (Present (EW)
-                or else
-             (No (AR) and then No (AW) and then No (ER)))
+             (Present (EW) or else (No (AR) and then No (AW) and then No (ER)))
          then
             return True;
 

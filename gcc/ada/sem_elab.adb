@@ -552,6 +552,10 @@ package body Sem_Elab is
       begin
          return Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
 
+           --  Always return False if debug flag -gnatd.G is set
+
+           and then not Debug_Flag_Dot_GG
+
            --  For now, we detect this by looking for the strange identifier
            --  node, whose Chars reflect the name of the generic formal, but
            --  the Chars of the Entity references the generic actual.
@@ -564,10 +568,12 @@ package body Sem_Elab is
 
    begin
       --  If the call is known to be within a local Suppress Elaboration
-      --  pragma, nothing to check. This can happen in task bodies.
+      --  pragma, nothing to check. This can happen in task bodies. But
+      --  we ignore this for a call to a generic formal.
 
       if Nkind (N) in N_Subprogram_Call
         and then No_Elaboration_Check (N)
+        and then not Is_Call_Of_Generic_Formal
       then
          return;
       end if;

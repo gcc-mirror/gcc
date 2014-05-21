@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -353,7 +353,7 @@ package body Layout is
 
       elsif Nkind (L) = N_Op_Subtract then
 
-         --  (C1 - E) + C2 = (C1 + C2) + E
+         --  (C1 - E) + C2 = (C1 + C2) - E
 
          if Compile_Time_Known_Value (Sinfo.Left_Opnd (L)) then
             Rewrite_Integer
@@ -363,7 +363,14 @@ package body Layout is
 
          --  (E - C1) + C2 = E - (C1 - C2)
 
-         elsif Compile_Time_Known_Value (Sinfo.Right_Opnd (L)) then
+         --  If the type is unsigned, then only do the optimization if
+         --  C1 >= C2, to avoid creating a negative literal that can't be
+         --  used with the unsigned type.
+
+         elsif Compile_Time_Known_Value (Sinfo.Right_Opnd (L))
+           and then (not Is_Unsigned_Type (Etype (Sinfo.Right_Opnd (L)))
+                       or else Expr_Value (Sinfo.Right_Opnd (L)) >= R)
+         then
             Rewrite_Integer
               (Sinfo.Right_Opnd (L),
                Expr_Value (Sinfo.Right_Opnd (L)) - R);
