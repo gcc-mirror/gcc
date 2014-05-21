@@ -1,3 +1,11 @@
+2014-05-21  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/60189
+	* parser.c (cp_parser_postfix_expression): Move handling of cilk_sync
+	from here to...
+	(cp_parser_statement): ...here. Make sure only semicolon can go after
+	Cilk_sync.
+
 2014-05-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61151

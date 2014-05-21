@@ -5835,20 +5835,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  }
 	break;
       }
-      
-    case RID_CILK_SYNC:
-      if (flag_cilkplus)
-	{ 
-	  tree sync_expr = build_cilk_sync ();
-	  SET_EXPR_LOCATION (sync_expr, 
-			     cp_lexer_peek_token (parser->lexer)->location);
-	  finish_expr_stmt (sync_expr);
-	}
-      else
-	error_at (token->location, "-fcilkplus must be enabled to use" 
-		  " %<_Cilk_sync%>");
-      cp_lexer_consume_token (parser->lexer);
-      break;
 
     case RID_BUILTIN_SHUFFLE:
       {
@@ -9398,6 +9384,24 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_RETURN:
 	case RID_GOTO:
 	  statement = cp_parser_jump_statement (parser);
+	  break;
+
+	case RID_CILK_SYNC:
+	  cp_lexer_consume_token (parser->lexer);
+	  if (flag_cilkplus)
+	    {
+	      tree sync_expr = build_cilk_sync ();
+	      SET_EXPR_LOCATION (sync_expr,
+				 token->location);
+	      statement = finish_expr_stmt (sync_expr);
+	    }
+	  else
+	    {
+	      error_at (token->location, "-fcilkplus must be enabled to use"
+			" %<_Cilk_sync%>");
+	      statement = error_mark_node;
+	    }
+	  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 	  break;
 
 	  /* Objective-C++ exception-handling constructs.  */
