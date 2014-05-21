@@ -1,3 +1,11 @@
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb: Code clean up.
+
+2014-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Document -Werror.
+
 2014-05-21  Bob Duff  <duff@adacore.com>
 
 	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object):
