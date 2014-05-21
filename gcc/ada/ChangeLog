@@ -1,5 +1,13 @@
 2014-05-21  Javier Miranda  <miranda@adacore.com>
 
+	* sem_ch3.adb (Build_Derived_Record_Type): Initialize Parent_Base
+	to the full view of the parent type when processing a derived type
+	which is the full view of a private type not defined in a generic
+	unit which is derived from a private type with discriminants
+	whose full view is a non-tagged record type.
+
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
 	* exp_ch4.adb (Expand_Allocator_Expression.Apply_Accessibility_Check):
 	Complete previous patch.
 
