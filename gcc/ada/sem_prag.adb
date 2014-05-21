@@ -4552,7 +4552,7 @@ package body Sem_Prag is
 
             --  For pragma case (as opposed to access case), check placement.
             --  We don't need to do that for aspects, because we have the
-            --  check that they are apply an appropriate procedure.
+            --  check that they aspect applies an appropriate procedure.
 
             if not From_Aspect_Specification (N)
               and then Parent (N) /= Protected_Definition (Parent (Proc_Scope))
@@ -6387,12 +6387,11 @@ package body Sem_Prag is
             Set_Treat_As_Volatile (E);
 
          else
-            Error_Pragma_Arg
-              ("inappropriate entity for pragma%", Arg1);
+            Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
          end if;
 
-         --  The following check are only relevant when SPARK_Mode is on as
-         --  those are not a standard Ada legality rule. Pragma Volatile can
+         --  The following check is only relevant when SPARK_Mode is on as
+         --  this is not a standard Ada legality rule. Pragma Volatile can
          --  only apply to a full type declaration or an object declaration
          --  (SPARK RM C.6(1)).
 

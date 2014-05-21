@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3588,7 +3588,6 @@ package body Sem_Ch12 is
          Set_Instance_Env (Gen_Unit, Act_Decl_Id);
          Set_Defining_Unit_Name (Act_Spec, Act_Decl_Name);
          Set_Is_Generic_Instance (Act_Decl_Id);
-
          Set_Generic_Parent (Act_Spec, Gen_Unit);
 
          --  References to the generic in its own declaration or its body are
@@ -8171,8 +8170,8 @@ package body Sem_Ch12 is
 
       Must_Delay : Boolean;
 
-      function Enclosing_Subp (Id : Entity_Id) return Entity_Id;
-      --  Find subprogram (if any) that encloses instance and/or generic body
+      function In_Same_Enclosing_Subp return Boolean;
+      --  Check whether instance and generic body are within same subprogram.
 
       function True_Sloc (N : Node_Id) return Source_Ptr;
       --  If the instance is nested inside a generic unit, the Sloc of the
@@ -8182,23 +8181,39 @@ package body Sem_Ch12 is
       --  origin of a node by finding the maximum sloc of any ancestor node.
       --  Why is this not equivalent to Top_Level_Location ???
 
-      --------------------
-      -- Enclosing_Subp --
-      --------------------
+      ----------------------------
+      -- In_Same_Enclosing_Subp --
+      ----------------------------
 
-      function Enclosing_Subp (Id : Entity_Id) return Entity_Id is
+      function In_Same_Enclosing_Subp return Boolean is
          Scop : Entity_Id;
+         Subp : Entity_Id;
 
       begin
-         Scop := Scope (Id);
+         Scop := Scope (Act_Id);
          while Scop /= Standard_Standard
            and then not Is_Overloadable (Scop)
          loop
             Scop := Scope (Scop);
          end loop;
 
-         return Scop;
-      end Enclosing_Subp;
+         if Scop = Standard_Standard then
+            return False;
+         else
+            Subp := Scop;
+         end if;
+
+         Scop := Scope (Gen_Id);
+         while Scop /= Standard_Standard loop
+            if Scop = Subp then
+               return True;
+            end if;
+
+            Scop := Scope (Scop);
+         end loop;
+
+         return False;
+      end In_Same_Enclosing_Subp;
 
       ---------------
       -- True_Sloc --
@@ -8255,8 +8270,7 @@ package body Sem_Ch12 is
                                 and then True_Sloc (N) < Sloc (Orig_Body)))
           and then Is_In_Main_Unit (Gen_Unit)
           and then (Scope (Act_Id) = Scope (Gen_Id)
-                      or else
-                    Enclosing_Subp (Act_Id) = Enclosing_Subp (Gen_Id)));
+                      or else In_Same_Enclosing_Subp));
 
       --  If this is an early instantiation, the freeze node is placed after
       --  the generic body. Otherwise, if the generic appears in an instance,
