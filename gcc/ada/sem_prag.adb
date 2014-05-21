@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4021,7 +4021,7 @@ package body Sem_Prag is
 
          if not Is_Task_Dispatching_Policy_Name (Chars (Argx)) then
             Error_Pragma_Arg
-              ("& is not a valid task dispatching policy name", Argx);
+              ("& is not an allowed task dispatching policy name", Argx);
          end if;
       end Check_Arg_Is_Task_Dispatching_Policy;
 
