@@ -1,3 +1,37 @@
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression.Apply_Accessibility_Check):
+	Complete previous patch.
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Read and Write for Datagram_Socket_Stream_Type):
+	Provide a behaviour more consistent with underlying datagram
+	socket: do not attempt to loop over Send_Socket/Receive_Socket
+	iterating along the buffer.
+
+2014-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Ensure that a discriminated
+	or a tagged type is not labelled as volatile. Ensure that a
+	non-volatile type has no volatile components.
+	* sem_ch3.adb (Analyze_Object_Contract): Add local constant
+	Obj_Typ. Code reformatting.  Ensure that a discriminated or
+	tagged object is not labelled as volatile.
+	* sem_prag.adb (Process_Atomic_Shared_Volatile): Ensure that
+	pragma Volatile applies to a full type declaration or an object
+	declaration when SPARK mode is on.
+
+2014-05-21  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: For ASIS tools, reword the paragraph about
+	providing options needed for compiling the argument source for
+	the situation when a project file can be used as a tool parameter.
+
+2014-05-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_rm.texi: Minor typo fix.
+
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
 	* stand.adb (Tree_Read): Read missing entities.

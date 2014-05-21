@@ -6387,6 +6387,21 @@ package body Sem_Prag is
             Error_Pragma_Arg
               ("inappropriate entity for pragma%", Arg1);
          end if;
+
+         --  The following check are only relevant when SPARK_Mode is on as
+         --  those are not a standard Ada legality rule. Pragma Volatile can
+         --  only apply to a full type declaration or an object declaration
+         --  (SPARK RM C.6(1)).
+
+         if SPARK_Mode = On
+           and then Prag_Id = Pragma_Volatile
+           and then not Nkind_In (K, N_Full_Type_Declaration,
+                                     N_Object_Declaration)
+         then
+            Error_Pragma_Arg
+              ("argument of pragma % must denote a full type or object "
+               & "declaration", Arg1);
+         end if;
       end Process_Atomic_Shared_Volatile;
 
       -------------------------------------------

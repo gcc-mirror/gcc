@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2013, AdaCore                     --
+--                     Copyright (C) 2001-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -243,13 +243,6 @@ package body GNAT.Sockets is
    procedure Write
      (Stream : in out Stream_Socket_Stream_Type;
       Item   : Ada.Streams.Stream_Element_Array);
-
-   procedure Stream_Write
-     (Socket : Socket_Type;
-      Item   : Ada.Streams.Stream_Element_Array;
-      To     : access Sock_Addr_Type);
-   --  Common implementation for the Write operation of Datagram_Socket_Stream_
-   --  Type and Stream_Socket_Stream_Type.
 
    procedure Wait_On_Socket
      (Socket   : Socket_Type;
@@ -1732,27 +1725,12 @@ package body GNAT.Sockets is
       Item   : out Ada.Streams.Stream_Element_Array;
       Last   : out Ada.Streams.Stream_Element_Offset)
    is
-      First : Ada.Streams.Stream_Element_Offset          := Item'First;
-      Index : Ada.Streams.Stream_Element_Offset          := First - 1;
-      Max   : constant Ada.Streams.Stream_Element_Offset := Item'Last;
-
    begin
-      loop
-         Receive_Socket
-           (Stream.Socket,
-            Item (First .. Max),
-            Index,
-            Stream.From);
-
-         Last := Index;
-
-         --  Exit when all or zero data received. Zero means that the socket
-         --  peer is closed.
-
-         exit when Index < First or else Index = Max;
-
-         First := Index + 1;
-      end loop;
+      Receive_Socket
+        (Stream.Socket,
+         Item,
+         Last,
+         Stream.From);
    end Read;
 
    ----------
@@ -2419,43 +2397,6 @@ package body GNAT.Sockets is
       return Stream_Access (S);
    end Stream;
 
-   ------------------
-   -- Stream_Write --
-   ------------------
-
-   procedure Stream_Write
-     (Socket : Socket_Type;
-      Item   : Ada.Streams.Stream_Element_Array;
-      To     : access Sock_Addr_Type)
-   is
-      First : Ada.Streams.Stream_Element_Offset;
-      Index : Ada.Streams.Stream_Element_Offset;
-      Max   : constant Ada.Streams.Stream_Element_Offset := Item'Last;
-
-   begin
-      First := Item'First;
-      Index := First - 1;
-      while First <= Max loop
-         Send_Socket (Socket, Item (First .. Max), Index, To);
-
-         --  Exit when all or zero data sent. Zero means that the socket has
-         --  been closed by peer.
-
-         exit when Index < First or else Index = Max;
-
-         First := Index + 1;
-      end loop;
-
-      --  For an empty array, we have First > Max, and hence Index >= Max (no
-      --  error, the loop above is never executed). After a successful send,
-      --  Index = Max. The only remaining case, Index < Max, is therefore
-      --  always an actual send failure.
-
-      if Index < Max then
-         Raise_Socket_Error (Socket_Errno);
-      end if;
-   end Stream_Write;
-
    ----------
    -- To_C --
    ----------
@@ -2695,8 +2636,20 @@ package body GNAT.Sockets is
      (Stream : in out Datagram_Socket_Stream_Type;
       Item   : Ada.Streams.Stream_Element_Array)
    is
+      Last : Stream_Element_Offset;
+
    begin
-      Stream_Write (Stream.Socket, Item, To => Stream.To'Unrestricted_Access);
+      Send_Socket
+        (Stream.Socket,
+         Item,
+         Last,
+         Stream.To);
+
+      --  It is an error if not all of the data has been sent
+
+      if Last /= Item'Last then
+         Raise_Socket_Error (Socket_Errno);
+      end if;
    end Write;
 
    -----------
@@ -2707,8 +2660,32 @@ package body GNAT.Sockets is
      (Stream : in out Stream_Socket_Stream_Type;
       Item   : Ada.Streams.Stream_Element_Array)
    is
+      First : Ada.Streams.Stream_Element_Offset;
+      Index : Ada.Streams.Stream_Element_Offset;
+      Max   : constant Ada.Streams.Stream_Element_Offset := Item'Last;
+
    begin
-      Stream_Write (Stream.Socket, Item, To => null);
+      First := Item'First;
+      Index := First - 1;
+      while First <= Max loop
+         Send_Socket (Stream.Socket, Item (First .. Max), Index, null);
+
+         --  Exit when all or zero data sent. Zero means that the socket has
+         --  been closed by peer.
+
+         exit when Index < First or else Index = Max;
+
+         First := Index + 1;
+      end loop;
+
+      --  For an empty array, we have First > Max, and hence Index >= Max (no
+      --  error, the loop above is never executed). After a successful send,
+      --  Index = Max. The only remaining case, Index < Max, is therefore
+      --  always an actual send failure.
+
+      if Index < Max then
+         Raise_Socket_Error (Socket_Errno);
+      end if;
    end Write;
 
    Sockets_Library_Controller_Object : Sockets_Library_Controller;
