@@ -500,3 +500,13 @@ proc dg-function-on-line { args } {
 
     append final-code "$cmd\n"
 }
+
+# Look for a pattern in the .exe.ltrans0.s file produced by the
+# compiler.  See dg-scan for details.
+
+proc scan-lto-assembler { args } {
+    set testcase [testname-for-summary]
+    set output_file "[file rootname [file tail $testcase]].exe.ltrans0.s"
+    verbose "output_file: $output_file"
+    dg-scan "scan-assembler" 1 $testcase $output_file $args
+}
