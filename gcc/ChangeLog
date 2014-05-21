@@ -1,3 +1,8 @@
+2014-05-21  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/61272
+	* ubsan.c (is_ubsan_builtin_p): Turn assert into a condition.
+
 2014-05-21  Martin Jambor  <mjambor@suse.cz>
 
 	* doc/invoke.texi (Optimize Options): Document parameters

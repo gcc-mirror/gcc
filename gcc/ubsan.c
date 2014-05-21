@@ -531,9 +531,9 @@ ubsan_instrument_unreachable (location_t loc)
 bool
 is_ubsan_builtin_p (tree t)
 {
-  gcc_checking_assert (TREE_CODE (t) == FUNCTION_DECL);
-  return strncmp (IDENTIFIER_POINTER (DECL_NAME (t)),
-		  "__builtin___ubsan_", 18) == 0;
+  return TREE_CODE (t) == FUNCTION_DECL
+	 && strncmp (IDENTIFIER_POINTER (DECL_NAME (t)),
+		     "__builtin___ubsan_", 18) == 0;
 }
 
 /* Expand UBSAN_NULL internal call.  */
