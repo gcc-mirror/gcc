@@ -1,3 +1,27 @@
+2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	Improve scheduling debug output
+	* haifa-sched.c (debug_ready_list): Remove unnecessary prototype.
+	(advance_one_cycle): Update.
+	(schedule_insn, queue_to_ready): Add debug printouts.
+	(debug_ready_list_1): New static function.
+	(debug_ready_list): Update.
+	(max_issue): Add debug printouts.
+	(dump_insn_stream): New static function.
+	(schedule_block): Use it.  Also better indent printouts.
+
+2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	Fix sched_insn debug counter
+	* haifa-sched.c (schedule_insn): Update.
+	(struct haifa_saved_data): Add nonscheduled_insns_begin.
+	(save_backtrack_point, restore_backtrack_point): Update.
+	(first_nonscheduled_insn): New static function.
+	(queue_to_ready, choose_ready): Use it.
+	(schedule_block): Init nonscheduled_insns_begin.
+	(sched_emit_insn): Update.
+
+
 2014-05-22  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/aarch64/aarch64.c (aarch64_regno_regclass) : Change CORE_REGS
