@@ -1,3 +1,9 @@
+2014-05-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60969
+	* ira-costs.c (record_reg_classes): Process NO_REGS for matching
+	constraints.  Set up mem cost for NO_REGS case.
+
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* builtin-types.def: Simplify examples for DEF_FUNCTION_TYPE_*.
