@@ -1,3 +1,7 @@
+2014-05-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-ttest.c: New test.
+
 2014-05-21  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c++/60189
