@@ -1,3 +1,7 @@
+2014-05-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-ttest.c: New test.
+
 2014-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt37.ad[sb]: New test.
