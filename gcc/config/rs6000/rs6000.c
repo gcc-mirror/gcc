@@ -26796,22 +26796,25 @@ rs6000_use_sched_lookahead (void)
     }
 }
 
-/* We are choosing insn from the ready queue.  Return nonzero if INSN can be chosen.  */
+/* We are choosing insn from the ready queue.  Return zero if INSN can be
+   chosen.  */
 static int
-rs6000_use_sched_lookahead_guard (rtx insn)
+rs6000_use_sched_lookahead_guard (rtx insn, int ready_index)
 {
-  if (rs6000_cpu_attr != CPU_CELL)
-    return 1;
+  if (ready_index == 0)
+    return 0;
 
-   if (insn == NULL_RTX || !INSN_P (insn))
-     abort ();
+  if (rs6000_cpu_attr != CPU_CELL)
+    return 0;
+
+  gcc_assert (insn != NULL_RTX && INSN_P (insn));
 
   if (!reload_completed
       || is_nonpipeline_insn (insn)
       || is_microcoded_insn (insn))
-    return 0;
+    return 1;
 
-  return 1;
+  return 0;
 }
 
 /* Determine if PAT refers to memory. If so, set MEM_REF to the MEM rtx
