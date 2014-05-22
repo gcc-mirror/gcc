@@ -1,3 +1,35 @@
+2014-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/60324
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac (AC_CHECK_FUNCS_ONCE): Check for strnlen and
+	strndup.
+	* libgfortran.h (fc_strdup): New prototype.
+	* runtime/string.c (strnlen): New fallback function.
+	(strndup): New fallback function.
+	(fc_strdup): New function.
+	* io/close.c (st_close): Use fc_strdup.
+	* io/open.c (new_unit): Likewise.
+	(already_open): Likewise.
+	* io/unit.c (filename_from_unit): Likewise.
+	* io/unix.c (unpack_filename): Remove function.
+	(regular_file): Rename to regular_file2, add path argument.
+	(regular_file): New function calling regular_file2.
+	(compare_file_filename): Use fc_strdup.
+	(find_file): Likewise.
+	(delete_file): Likewise.
+	(file_exists): Likewise.
+	(file_size): Likewise.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_access): Likewise.
+	* io/unix.h (unpack_filename): Remove prototype.
+	* runtime/main.c (please_free_exe_path_when_done): Change type to
+	bool.
+	(store_exe_path): Use malloced buffer, grow as needed.
+
 2014-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/52539
