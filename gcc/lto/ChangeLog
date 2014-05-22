@@ -1,3 +1,9 @@
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/61012
+	* lto-symtab.c (lto_symtab_merge_decls_1): Do not ICE on undefined externals
+	mixed with variables.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto-tree.h: Don't use variable_size gty attribute.
