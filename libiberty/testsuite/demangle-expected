@@ -4347,3 +4347,4 @@ void post<std::function<void ()> >(std::function<void ()>&&)::{lambda()#1}*& std
 --format=auto --no-params
 _QueueNotification_QueueController__$4PPPPPPPM_A_INotice___Z
 _QueueNotification_QueueController__$4PPPPPPPM_A_INotice___Z
+_QueueNotification_QueueController__$4PPPPPPPM_A_INotice___Z

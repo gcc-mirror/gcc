@@ -1,3 +1,7 @@
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/demangle-expected: Fix last commit.
+
 2014-05-14  Andrew Burgess  <aburgess@broadcom.com>
 
 	* cplus-dmem.c (internal_cplus_demangle): Free any resources
