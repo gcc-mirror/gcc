@@ -859,8 +859,6 @@ static rtx ready_remove_first_dispatch (struct ready_list *ready);
 static void queue_to_ready (struct ready_list *);
 static int early_queue_to_ready (state_t, struct ready_list *);
 
-static void debug_ready_list (struct ready_list *);
-
 /* The following functions are used to implement multi-pass scheduling
    on the first cycle.  */
 static rtx ready_remove (struct ready_list *, int);
@@ -2971,7 +2969,7 @@ HAIFA_INLINE static void
 advance_one_cycle (void)
 {
   advance_state (curr_state);
-  if (sched_verbose >= 6)
+  if (sched_verbose >= 4)
     fprintf (sched_dump, ";;\tAdvanced a state.\n");
 }
 
@@ -3750,7 +3748,7 @@ schedule_insn (rtx insn)
   if (sched_verbose >= 1)
     {
       struct reg_pressure_data *pressure_info;
-      fprintf (sched_dump, ";;\t%3i--> %s%-40s:",
+      fprintf (sched_dump, ";;\t%3i--> %s %-40s:",
 	       clock_var, (*current_sched_info->print_insn) (insn, 1),
 	       str_pattern_slim (PATTERN (insn)));
 
@@ -4912,7 +4910,11 @@ queue_to_ready (struct ready_list *ready)
 	       && model_index (insn) == model_curr_point)
 	  && !SCHED_GROUP_P (insn)
 	  && insn != skip_insn)
-	queue_insn (insn, 1, "ready full");
+	{
+	  if (sched_verbose >= 2)
+	    fprintf (sched_dump, "keeping in queue, ready full\n");
+	  queue_insn (insn, 1, "ready full");
+	}
       else
 	{
 	  ready_add (ready, insn, false);
@@ -4957,6 +4959,9 @@ queue_to_ready (struct ready_list *ready)
 
       q_ptr = NEXT_Q_AFTER (q_ptr, stalls);
       clock_var += stalls;
+      if (sched_verbose >= 2)
+	fprintf (sched_dump, ";;\tAdvancing clock by %d cycle[s] to %d\n",
+		 stalls, clock_var);
     }
 }
 
@@ -5117,10 +5122,11 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
 }
 
 
-/* Print the ready list for debugging purposes.  Callable from debugger.  */
-
+/* Print the ready list for debugging purposes.
+   If READY_TRY is non-zero then only print insns that max_issue
+   will consider.  */
 static void
-debug_ready_list (struct ready_list *ready)
+debug_ready_list_1 (struct ready_list *ready, char *ready_try)
 {
   rtx *p;
   int i;
@@ -5134,18 +5140,29 @@ debug_ready_list (struct ready_list *ready)
   p = ready_lastpos (ready);
   for (i = 0; i < ready->n_ready; i++)
     {
+      if (ready_try != NULL && ready_try[ready->n_ready - i - 1])
+	continue;
+
       fprintf (sched_dump, "  %s:%d",
 	       (*current_sched_info->print_insn) (p[i], 0),
 	       INSN_LUID (p[i]));
       if (sched_pressure != SCHED_PRESSURE_NONE)
 	fprintf (sched_dump, "(cost=%d",
 		 INSN_REG_PRESSURE_EXCESS_COST_CHANGE (p[i]));
+      fprintf (sched_dump, ":prio=%d", INSN_PRIORITY (p[i]));
       if (INSN_TICK (p[i]) > clock_var)
 	fprintf (sched_dump, ":delay=%d", INSN_TICK (p[i]) - clock_var);
       if (sched_pressure != SCHED_PRESSURE_NONE)
 	fprintf (sched_dump, ")");
     }
   fprintf (sched_dump, "\n");
+}
+
+/* Print the ready list.  Callable from debugger.  */
+static void
+debug_ready_list (struct ready_list *ready)
+{
+  debug_ready_list_1 (ready, NULL);
 }
 
 /* Search INSN for REG_SAVE_NOTE notes and convert them back into insn
@@ -5376,6 +5393,12 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
   for (all = i = 0; i < n_ready; i++)
     if (!ready_try [i])
       all++;
+
+  if (sched_verbose >= 2)
+    {
+      fprintf (sched_dump, ";;\t\tmax_issue among %d insns:", all);
+      debug_ready_list_1 (ready, ready_try);
+    }
 
   /* I is the index of the insn to try next.  */
   i = 0;
@@ -5881,6 +5904,35 @@ verify_shadows (void)
   return earliest_fail;
 }
 
+/* Print instructions together with useful scheduling information between
+   HEAD and TAIL (inclusive).  */
+static void
+dump_insn_stream (rtx head, rtx tail)
+{
+  fprintf (sched_dump, ";;\t| insn | prio |\n");
+
+  rtx next_tail = NEXT_INSN (tail);
+  for (rtx insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+    {
+      int priority = NOTE_P (insn) ? 0 : INSN_PRIORITY (insn);
+      const char *pattern = (NOTE_P (insn)
+			     ? "note"
+			     : str_pattern_slim (PATTERN (insn)));
+
+      fprintf (sched_dump, ";;\t| %4d | %4d | %-30s ",
+	       INSN_UID (insn), priority, pattern);
+
+      if (sched_verbose >= 4)
+	{
+	  if (NOTE_P (insn) || recog_memoized (insn) < 0)
+	    fprintf (sched_dump, "nothing");
+	  else
+	    print_reservation (sched_dump, insn);
+	}
+      fprintf (sched_dump, "\n");
+    }
+}
+
 /* Use forward list scheduling to rearrange insns of block pointed to by
    TARGET_BB, possibly bringing insns from subsequent blocks in the same
    region.  */
@@ -5919,7 +5971,12 @@ schedule_block (basic_block *target_bb, state_t init_state)
 
   /* Debug info.  */
   if (sched_verbose)
-    dump_new_block_header (0, *target_bb, head, tail);
+    {
+      dump_new_block_header (0, *target_bb, head, tail);
+
+      if (sched_verbose >= 2)
+	dump_insn_stream (head, tail);
+    }
 
   if (init_state == NULL)
     state_reset (curr_state);
@@ -6047,7 +6104,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 
 	  if (sched_verbose >= 2)
 	    {
-	      fprintf (sched_dump, ";;\t\tReady list after queue_to_ready:  ");
+	      fprintf (sched_dump, ";;\t\tReady list after queue_to_ready:");
 	      debug_ready_list (&ready);
 	    }
 	  advance -= clock_var - start_clock_var;
@@ -6114,7 +6171,8 @@ schedule_block (basic_block *target_bb, state_t init_state)
 
 	      if (sched_verbose >= 2)
 		{
-		  fprintf (sched_dump, ";;\t\tReady list after ready_sort:  ");
+		  fprintf (sched_dump,
+			   ";;\t\tReady list after ready_sort:    ");
 		  debug_ready_list (&ready);
 		}
 	    }
@@ -6503,13 +6561,20 @@ schedule_block (basic_block *target_bb, state_t init_state)
       sched_extend_luids ();
     }
 
-  if (sched_verbose)
-    fprintf (sched_dump, ";;   new head = %d\n;;   new tail = %d\n\n",
-	     INSN_UID (head), INSN_UID (tail));
-
   /* Update head/tail boundaries.  */
   head = NEXT_INSN (prev_head);
   tail = last_scheduled_insn;
+
+  if (sched_verbose)
+    {
+      fprintf (sched_dump, ";;   new head = %d\n;;   new tail = %d\n",
+	       INSN_UID (head), INSN_UID (tail));
+
+      if (sched_verbose >= 2)
+	dump_insn_stream (head, tail);
+
+      fprintf (sched_dump, "\n");
+    }
 
   head = restore_other_notes (head, NULL);
 
