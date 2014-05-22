@@ -9661,6 +9661,7 @@ to those machines.  Generally these generate calls to specific machine
 instructions, but allow the compiler to schedule those calls.
 
 @menu
+* AArch64 Built-in Functions::
 * Alpha Built-in Functions::
 * Altera Nios II Built-in Functions::
 * ARC Built-in Functions::
@@ -9692,6 +9693,18 @@ instructions, but allow the compiler to schedule those calls.
 * TILE-Gx Built-in Functions::
 * TILEPro Built-in Functions::
 @end menu
+
+@node AArch64 Built-in Functions
+@subsection AArch64 Built-in Functions
+
+These built-in functions are available for the AArch64 family of
+processors.
+@smallexample
+unsigned int __builtin_aarch64_get_fpcr ()
+void __builtin_aarch64_set_fpcr (unsigned int)
+unsigned int __builtin_aarch64_get_fpsr ()
+void __builtin_aarch64_set_fpsr (unsigned int)
+@end smallexample
 
 @node Alpha Built-in Functions
 @subsection Alpha Built-in Functions

@@ -9487,6 +9487,10 @@ aarch64_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
   aarch64_autovectorize_vector_sizes
 
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV \
+  aarch64_atomic_assign_expand_fenv
+
 /* Section anchor support.  */
 
 #undef TARGET_MIN_ANCHOR_OFFSET
