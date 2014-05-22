@@ -3944,6 +3944,10 @@ schedule_insn (rtx insn)
       last_clock_var = clock_var;
     }
 
+  if (nonscheduled_insns_begin != NULL_RTX)
+    /* Indicate to debug counters that INSN is scheduled.  */
+    nonscheduled_insns_begin = insn;
+
   return advance;
 }
 
@@ -4048,6 +4052,7 @@ struct haifa_saved_data
 
   rtx last_scheduled_insn;
   rtx last_nondebug_scheduled_insn;
+  rtx nonscheduled_insns_begin;
   int cycle_issued_insns;
 
   /* Copies of state used in the inner loop of schedule_block.  */
@@ -4120,6 +4125,7 @@ save_backtrack_point (struct delay_pair *pair,
   save->cycle_issued_insns = cycle_issued_insns;
   save->last_scheduled_insn = last_scheduled_insn;
   save->last_nondebug_scheduled_insn = last_nondebug_scheduled_insn;
+  save->nonscheduled_insns_begin = nonscheduled_insns_begin;
 
   save->sched_block = sched_block;
 
@@ -4375,6 +4381,7 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
   cycle_issued_insns = save->cycle_issued_insns;
   last_scheduled_insn = save->last_scheduled_insn;
   last_nondebug_scheduled_insn = save->last_nondebug_scheduled_insn;
+  nonscheduled_insns_begin = save->nonscheduled_insns_begin;
 
   *psched_block = save->sched_block;
 
@@ -4843,6 +4850,24 @@ undo_all_replacements (void)
     }
 }
 
+/* Return first non-scheduled insn in the current scheduling block.
+   This is mostly used for debug-counter purposes.  */
+static rtx
+first_nonscheduled_insn (void)
+{
+  rtx insn = (nonscheduled_insns_begin != NULL_RTX
+	      ? nonscheduled_insns_begin
+	      : current_sched_info->prev_head);
+
+  do
+    {
+      insn = next_nonnote_nondebug_insn (insn);
+    }
+  while (QUEUE_INDEX (insn) == QUEUE_SCHEDULED);
+
+  return insn;
+}
+
 /* Move insns that became ready to fire from queue to ready list.  */
 
 static void
@@ -4855,16 +4880,9 @@ queue_to_ready (struct ready_list *ready)
   q_ptr = NEXT_Q (q_ptr);
 
   if (dbg_cnt (sched_insn) == false)
-    {
-      /* If debug counter is activated do not requeue the first
-	 nonscheduled insn.  */
-      skip_insn = nonscheduled_insns_begin;
-      do
-	{
-	  skip_insn = next_nonnote_nondebug_insn (skip_insn);
-	}
-      while (QUEUE_INDEX (skip_insn) == QUEUE_SCHEDULED);
-    }
+    /* If debug counter is activated do not requeue the first
+       nonscheduled insn.  */
+    skip_insn = first_nonscheduled_insn ();
   else
     skip_insn = NULL_RTX;
 
@@ -5491,23 +5509,21 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
 
   if (dbg_cnt (sched_insn) == false)
     {
-      rtx insn = nonscheduled_insns_begin;
-      do
-	{
-	  insn = next_nonnote_insn (insn);
-	}
-      while (QUEUE_INDEX (insn) == QUEUE_SCHEDULED);
+      if (nonscheduled_insns_begin == NULL_RTX)
+	nonscheduled_insns_begin = current_sched_info->prev_head;
+
+      rtx insn = first_nonscheduled_insn ();
 
       if (QUEUE_INDEX (insn) == QUEUE_READY)
 	/* INSN is in the ready_list.  */
 	{
-	  nonscheduled_insns_begin = insn;
 	  ready_remove_insn (insn);
 	  *insn_ptr = insn;
 	  return 0;
 	}
 
       /* INSN is in the queue.  Advance cycle to move it to the ready list.  */
+      gcc_assert (QUEUE_INDEX (insn) >= 0);
       return -1;
     }
 
@@ -5922,8 +5938,9 @@ schedule_block (basic_block *target_bb, state_t init_state)
     targetm.sched.init (sched_dump, sched_verbose, ready.veclen);
 
   /* We start inserting insns after PREV_HEAD.  */
-  last_scheduled_insn = nonscheduled_insns_begin = prev_head;
+  last_scheduled_insn = prev_head;
   last_nondebug_scheduled_insn = NULL_RTX;
+  nonscheduled_insns_begin = NULL_RTX;
 
   gcc_assert ((NOTE_P (last_scheduled_insn)
 	       || DEBUG_INSN_P (last_scheduled_insn))
@@ -5976,7 +5993,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	rtx skip_insn;
 
 	if (dbg_cnt (sched_insn) == false)
-	  skip_insn = next_nonnote_insn (nonscheduled_insns_begin);
+	  skip_insn = first_nonscheduled_insn ();
 	else
 	  skip_insn = NULL_RTX;
 
@@ -8532,7 +8549,7 @@ sched_create_empty_bb_1 (basic_block after)
 rtx
 sched_emit_insn (rtx pat)
 {
-  rtx insn = emit_insn_before (pat, nonscheduled_insns_begin);
+  rtx insn = emit_insn_before (pat, first_nonscheduled_insn ());
   haifa_init_insn (insn);
 
   if (current_sched_info->add_remove_insn)
