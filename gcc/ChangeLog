@@ -1,3 +1,7 @@
+2014-05-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/htm.md (ttest): Use correct shift value to get CR0.
+
 2014-05-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/61208
