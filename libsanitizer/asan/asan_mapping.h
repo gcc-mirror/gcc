@@ -41,10 +41,19 @@
 // || `[0x00007fff8000, 0x00008fff6fff]` || LowShadow  ||
 // || `[0x000000000000, 0x00007fff7fff]` || LowMem     ||
 //
-// Default Linux/i386 mapping:
+// Default Linux/i386 mapping on x86_64 machine:
 // || `[0x40000000, 0xffffffff]` || HighMem    ||
 // || `[0x28000000, 0x3fffffff]` || HighShadow ||
 // || `[0x24000000, 0x27ffffff]` || ShadowGap  ||
+// || `[0x20000000, 0x23ffffff]` || LowShadow  ||
+// || `[0x00000000, 0x1fffffff]` || LowMem     ||
+//
+// Default Linux/i386 mapping on i386 machine
+// (addresses starting with 0xc0000000 are reserved
+// for kernel and thus not sanitized):
+// || `[0x38000000, 0xbfffffff]` || HighMem    ||
+// || `[0x27000000, 0x37ffffff]` || HighShadow ||
+// || `[0x24000000, 0x26ffffff]` || ShadowGap  ||
 // || `[0x20000000, 0x23ffffff]` || LowShadow  ||
 // || `[0x00000000, 0x1fffffff]` || LowMem     ||
 //
@@ -54,41 +63,59 @@
 // || `[0x0bffd000, 0x0fffcfff]` || ShadowGap  ||
 // || `[0x0aaa8000, 0x0bffcfff]` || LowShadow  ||
 // || `[0x00000000, 0x0aaa7fff]` || LowMem     ||
+//
+// Shadow mapping on FreeBSD/x86-64 with SHADOW_OFFSET == 0x400000000000:
+// || `[0x500000000000, 0x7fffffffffff]` || HighMem    ||
+// || `[0x4a0000000000, 0x4fffffffffff]` || HighShadow ||
+// || `[0x480000000000, 0x49ffffffffff]` || ShadowGap  ||
+// || `[0x400000000000, 0x47ffffffffff]` || LowShadow  ||
+// || `[0x000000000000, 0x3fffffffffff]` || LowMem     ||
+//
+// Shadow mapping on FreeBSD/i386 with SHADOW_OFFSET == 0x40000000:
+// || `[0x60000000, 0xffffffff]` || HighMem    ||
+// || `[0x4c000000, 0x5fffffff]` || HighShadow ||
+// || `[0x48000000, 0x4bffffff]` || ShadowGap  ||
+// || `[0x40000000, 0x47ffffff]` || LowShadow  ||
+// || `[0x00000000, 0x3fffffff]` || LowMem     ||
 
 static const u64 kDefaultShadowScale = 3;
-static const u64 kDefaultShadowOffset32 = 1ULL << 29;
+static const u64 kDefaultShadowOffset32 = 1ULL << 29;  // 0x20000000
+static const u64 kIosShadowOffset32 = 1ULL << 30;  // 0x40000000
 static const u64 kDefaultShadowOffset64 = 1ULL << 44;
 static const u64 kDefaultShort64bitShadowOffset = 0x7FFF8000;  // < 2G.
-static const u64 kPPC64_ShadowOffset64 = 1ULL << 41;
+static const u64 kAArch64_ShadowOffset64 = 1ULL << 36;
 static const u64 kMIPS32_ShadowOffset32 = 0x0aaa8000;
+static const u64 kFreeBSD_ShadowOffset32 = 1ULL << 30;  // 0x40000000
+static const u64 kFreeBSD_ShadowOffset64 = 1ULL << 46;  // 0x400000000000
 
-#if ASAN_FLEXIBLE_MAPPING_AND_OFFSET == 1
-extern "C" SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_mapping_scale;
-extern "C" SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_mapping_offset;
-# define SHADOW_SCALE (__asan_mapping_scale)
-# define SHADOW_OFFSET (__asan_mapping_offset)
+#define SHADOW_SCALE kDefaultShadowScale
+#if SANITIZER_ANDROID
+# define SHADOW_OFFSET (0)
 #else
-# define SHADOW_SCALE kDefaultShadowScale
-# if SANITIZER_ANDROID
-#  define SHADOW_OFFSET (0)
-# else
-#  if SANITIZER_WORDSIZE == 32
-#   if defined(__mips__)
-#     define SHADOW_OFFSET kMIPS32_ShadowOffset32
-#   else
-#     define SHADOW_OFFSET kDefaultShadowOffset32
-#   endif
+# if SANITIZER_WORDSIZE == 32
+#  if defined(__mips__)
+#    define SHADOW_OFFSET kMIPS32_ShadowOffset32
+#  elif SANITIZER_FREEBSD
+#    define SHADOW_OFFSET kFreeBSD_ShadowOffset32
 #  else
-#   if defined(__powerpc64__)
-#    define SHADOW_OFFSET kPPC64_ShadowOffset64
-#   elif SANITIZER_MAC
-#    define SHADOW_OFFSET kDefaultShadowOffset64
-#   else
-#    define SHADOW_OFFSET kDefaultShort64bitShadowOffset
-#   endif
+#    if SANITIZER_IOS
+#      define SHADOW_OFFSET kIosShadowOffset32
+#    else
+#      define SHADOW_OFFSET kDefaultShadowOffset32
+#    endif
+#  endif
+# else
+#  if defined(__aarch64__)
+#    define SHADOW_OFFSET kAArch64_ShadowOffset64
+#  elif SANITIZER_FREEBSD
+#    define SHADOW_OFFSET kFreeBSD_ShadowOffset64
+#  elif SANITIZER_MAC
+#   define SHADOW_OFFSET kDefaultShadowOffset64
+#  else
+#   define SHADOW_OFFSET kDefaultShort64bitShadowOffset
 #  endif
 # endif
-#endif  // ASAN_FLEXIBLE_MAPPING_AND_OFFSET
+#endif
 
 #define SHADOW_GRANULARITY (1ULL << SHADOW_SCALE)
 #define MEM_TO_SHADOW(mem) (((mem) >> SHADOW_SCALE) + (SHADOW_OFFSET))

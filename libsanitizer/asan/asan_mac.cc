@@ -15,12 +15,12 @@
 
 #include "asan_interceptors.h"
 #include "asan_internal.h"
-#include "asan_mac.h"
 #include "asan_mapping.h"
 #include "asan_stack.h"
 #include "asan_thread.h"
 #include "sanitizer_common/sanitizer_atomic.h"
 #include "sanitizer_common/sanitizer_libc.h"
+#include "sanitizer_common/sanitizer_mac.h"
 
 #include <crt_externs.h>  // for _NSGetArgv
 #include <dlfcn.h>  // for dladdr()
@@ -51,43 +51,6 @@ void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
 # endif  // SANITIZER_WORDSIZE
 }
 
-MacosVersion cached_macos_version = MACOS_VERSION_UNINITIALIZED;
-
-MacosVersion GetMacosVersionInternal() {
-  int mib[2] = { CTL_KERN, KERN_OSRELEASE };
-  char version[100];
-  uptr len = 0, maxlen = sizeof(version) / sizeof(version[0]);
-  for (uptr i = 0; i < maxlen; i++) version[i] = '\0';
-  // Get the version length.
-  CHECK_NE(sysctl(mib, 2, 0, &len, 0, 0), -1);
-  CHECK_LT(len, maxlen);
-  CHECK_NE(sysctl(mib, 2, version, &len, 0, 0), -1);
-  switch (version[0]) {
-    case '9': return MACOS_VERSION_LEOPARD;
-    case '1': {
-      switch (version[1]) {
-        case '0': return MACOS_VERSION_SNOW_LEOPARD;
-        case '1': return MACOS_VERSION_LION;
-        case '2': return MACOS_VERSION_MOUNTAIN_LION;
-        case '3': return MACOS_VERSION_MAVERICKS;
-        default: return MACOS_VERSION_UNKNOWN;
-      }
-    }
-    default: return MACOS_VERSION_UNKNOWN;
-  }
-}
-
-MacosVersion GetMacosVersion() {
-  atomic_uint32_t *cache =
-      reinterpret_cast<atomic_uint32_t*>(&cached_macos_version);
-  MacosVersion result =
-      static_cast<MacosVersion>(atomic_load(cache, memory_order_acquire));
-  if (result == MACOS_VERSION_UNINITIALIZED) {
-    result = GetMacosVersionInternal();
-    atomic_store(cache, result, memory_order_release);
-  }
-  return result;
-}
 
 bool PlatformHasDifferentMemcpyAndMemmove() {
   // On OS X 10.7 memcpy() and memmove() are both resolved
@@ -172,12 +135,10 @@ void MaybeReexec() {
       // Set DYLD_INSERT_LIBRARIES equal to the runtime dylib name.
       setenv(kDyldInsertLibraries, info.dli_fname, /*overwrite*/0);
     }
-    if (common_flags()->verbosity >= 1) {
-      Report("exec()-ing the program with\n");
-      Report("%s=%s\n", kDyldInsertLibraries, new_env);
-      Report("to enable ASan wrappers.\n");
-      Report("Set ASAN_OPTIONS=allow_reexec=0 to disable this.\n");
-    }
+    VReport(1, "exec()-ing the program with\n");
+    VReport(1, "%s=%s\n", kDyldInsertLibraries, new_env);
+    VReport(1, "to enable ASan wrappers.\n");
+    VReport(1, "Set ASAN_OPTIONS=allow_reexec=0 to disable this.\n");
     execv(program_name, *_NSGetArgv());
   } else {
     // DYLD_INSERT_LIBRARIES is set and contains the runtime library.
@@ -236,8 +197,15 @@ void *AsanDoesNotSupportStaticLinkage() {
   return 0;
 }
 
+// No-op. Mac does not support static linkage anyway.
+void AsanCheckDynamicRTPrereqs() {}
+
+// No-op. Mac does not support static linkage anyway.
+void AsanCheckIncompatibleRT() {}
+
 bool AsanInterceptsSignal(int signum) {
-  return (signum == SIGSEGV || signum == SIGBUS) && flags()->handle_segv;
+  return (signum == SIGSEGV || signum == SIGBUS) &&
+         common_flags()->handle_segv;
 }
 
 void AsanPlatformThreadInit() {
@@ -309,11 +277,10 @@ extern "C"
 void asan_dispatch_call_block_and_release(void *block) {
   GET_STACK_TRACE_THREAD;
   asan_block_context_t *context = (asan_block_context_t*)block;
-  if (common_flags()->verbosity >= 2) {
-    Report("asan_dispatch_call_block_and_release(): "
-           "context: %p, pthread_self: %p\n",
-           block, pthread_self());
-  }
+  VReport(2,
+          "asan_dispatch_call_block_and_release(): "
+          "context: %p, pthread_self: %p\n",
+          block, pthread_self());
   asan_register_worker_thread(context->parent_tid, &stack);
   // Call the original dispatcher for the block.
   context->func(context->block);
@@ -347,10 +314,10 @@ asan_block_context_t *alloc_asan_context(void *ctxt, dispatch_function_t func,
     if (common_flags()->verbosity >= 2) {                                     \
       Report(#dispatch_x_f "(): context: %p, pthread_self: %p\n",             \
              asan_ctxt, pthread_self());                                      \
-       PRINT_CURRENT_STACK();                                                 \
-     }                                                                        \
-     return REAL(dispatch_x_f)(dq, (void*)asan_ctxt,                          \
-                               asan_dispatch_call_block_and_release);         \
+      PRINT_CURRENT_STACK();                                                  \
+    }                                                                         \
+    return REAL(dispatch_x_f)(dq, (void*)asan_ctxt,                           \
+                              asan_dispatch_call_block_and_release);          \
   }
 
 INTERCEPT_DISPATCH_X_F_3(dispatch_async_f)
@@ -386,7 +353,6 @@ INTERCEPTOR(void, dispatch_group_async_f, dispatch_group_t group,
 
 #if !defined(MISSING_BLOCKS_SUPPORT)
 extern "C" {
-// FIXME: consolidate these declarations with asan_intercepted_functions.h.
 void dispatch_async(dispatch_queue_t dq, void(^work)(void));
 void dispatch_group_async(dispatch_group_t dg, dispatch_queue_t dq,
                           void(^work)(void));

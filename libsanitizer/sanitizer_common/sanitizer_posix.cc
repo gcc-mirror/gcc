@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "sanitizer_platform.h"
-#if SANITIZER_LINUX || SANITIZER_MAC
+#if SANITIZER_POSIX
 
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
@@ -20,6 +20,14 @@
 
 #include <sys/mman.h>
 
+#if SANITIZER_LINUX
+#include <sys/utsname.h>
+#endif
+
+#if SANITIZER_LINUX && !SANITIZER_ANDROID
+#include <sys/personality.h>
+#endif
+
 namespace __sanitizer {
 
 // ------------- sanitizer_common.h
@@ -27,21 +35,65 @@ uptr GetMmapGranularity() {
   return GetPageSize();
 }
 
+#if SANITIZER_WORDSIZE == 32
+// Take care of unusable kernel area in top gigabyte.
+static uptr GetKernelAreaSize() {
+#if SANITIZER_LINUX
+  const uptr gbyte = 1UL << 30;
+
+  // Firstly check if there are writable segments
+  // mapped to top gigabyte (e.g. stack).
+  MemoryMappingLayout proc_maps(/*cache_enabled*/true);
+  uptr end, prot;
+  while (proc_maps.Next(/*start*/0, &end,
+                        /*offset*/0, /*filename*/0,
+                        /*filename_size*/0, &prot)) {
+    if ((end >= 3 * gbyte)
+        && (prot & MemoryMappingLayout::kProtectionWrite) != 0)
+      return 0;
+  }
+
+#if !SANITIZER_ANDROID
+  // Even if nothing is mapped, top Gb may still be accessible
+  // if we are running on 64-bit kernel.
+  // Uname may report misleading results if personality type
+  // is modified (e.g. under schroot) so check this as well.
+  struct utsname uname_info;
+  int pers = personality(0xffffffffUL);
+  if (!(pers & PER_MASK)
+      && uname(&uname_info) == 0
+      && internal_strstr(uname_info.machine, "64"))
+    return 0;
+#endif  // SANITIZER_ANDROID
+
+  // Top gigabyte is reserved for kernel.
+  return gbyte;
+#else
+  return 0;
+#endif  // SANITIZER_LINUX
+}
+#endif  // SANITIZER_WORDSIZE == 32
+
 uptr GetMaxVirtualAddress() {
 #if SANITIZER_WORDSIZE == 64
 # if defined(__powerpc64__)
   // On PowerPC64 we have two different address space layouts: 44- and 46-bit.
-  // We somehow need to figure our which one we are using now and choose
+  // We somehow need to figure out which one we are using now and choose
   // one of 0x00000fffffffffffUL and 0x00003fffffffffffUL.
   // Note that with 'ulimit -s unlimited' the stack is moved away from the top
   // of the address space, so simply checking the stack address is not enough.
   return (1ULL << 44) - 1;  // 0x00000fffffffffffUL
+# elif defined(__aarch64__)
+  return (1ULL << 39) - 1;
 # else
   return (1ULL << 47) - 1;  // 0x00007fffffffffffUL;
 # endif
 #else  // SANITIZER_WORDSIZE == 32
-  // FIXME: We can probably lower this on Android?
-  return (1ULL << 32) - 1;  // 0xffffffff;
+  uptr res = (1ULL << 32) - 1;  // 0xffffffff;
+  if (!common_flags()->full_address_space)
+    res -= GetKernelAreaSize();
+  CHECK_LT(reinterpret_cast<uptr>(&res), res);
+  return res;
 #endif  // SANITIZER_WORDSIZE
 }
 
@@ -60,11 +112,13 @@ void *MmapOrDie(uptr size, const char *mem_type) {
       Die();
     }
     recursion_count++;
-    Report("ERROR: %s failed to allocate 0x%zx (%zd) bytes of %s: %d\n",
+    Report("ERROR: %s failed to "
+           "allocate 0x%zx (%zd) bytes of %s (errno: %d)\n",
            SanitizerToolName, size, size, mem_type, reserrno);
     DumpProcessMap();
     CHECK("unable to mmap" && 0);
   }
+  IncreaseTotalMmap(size);
   return (void *)res;
 }
 
@@ -76,6 +130,25 @@ void UnmapOrDie(void *addr, uptr size) {
            SanitizerToolName, size, size, addr);
     CHECK("unable to unmap" && 0);
   }
+  DecreaseTotalMmap(size);
+}
+
+void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
+  uptr PageSize = GetPageSizeCached();
+  uptr p = internal_mmap(0,
+      RoundUpTo(size, PageSize),
+      PROT_READ | PROT_WRITE,
+      MAP_PRIVATE | MAP_ANON | MAP_NORESERVE,
+      -1, 0);
+  int reserrno;
+  if (internal_iserror(p, &reserrno)) {
+    Report("ERROR: %s failed to "
+           "allocate noreserve 0x%zx (%zd) bytes for '%s' (errno: %d)\n",
+           SanitizerToolName, size, size, mem_type, reserrno);
+    CHECK("unable to mmap" && 0);
+  }
+  IncreaseTotalMmap(size);
+  return (void *)p;
 }
 
 void *MmapFixedNoReserve(uptr fixed_addr, uptr size) {
@@ -87,9 +160,10 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size) {
       -1, 0);
   int reserrno;
   if (internal_iserror(p, &reserrno))
-    Report("ERROR: "
-           "%s failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
+    Report("ERROR: %s failed to "
+           "allocate 0x%zx (%zd) bytes at address %zx (errno: %d)\n",
            SanitizerToolName, size, size, fixed_addr, reserrno);
+  IncreaseTotalMmap(size);
   return (void *)p;
 }
 
@@ -102,11 +176,12 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
       -1, 0);
   int reserrno;
   if (internal_iserror(p, &reserrno)) {
-    Report("ERROR:"
-           " %s failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
+    Report("ERROR: %s failed to "
+           "allocate 0x%zx (%zd) bytes at address %zx (errno: %d)\n",
            SanitizerToolName, size, size, fixed_addr, reserrno);
     CHECK("unable to mmap" && 0);
   }
+  IncreaseTotalMmap(size);
   return (void *)p;
 }
 
@@ -157,7 +232,7 @@ void DumpProcessMap() {
   MemoryMappingLayout proc_maps(/*cache_enabled*/true);
   uptr start, end;
   const sptr kBufSize = 4095;
-  char *filename = (char*)MmapOrDie(kBufSize, __FUNCTION__);
+  char *filename = (char*)MmapOrDie(kBufSize, __func__);
   Report("Process memory map follows:\n");
   while (proc_maps.Next(&start, &end, /* file_offset */0,
                         filename, kBufSize, /* protection */0)) {
@@ -204,7 +279,7 @@ void MaybeOpenReportFile() {
   if (report_fd_pid == pid) return;
   InternalScopedBuffer<char> report_path_full(4096);
   internal_snprintf(report_path_full.data(), report_path_full.size(),
-                    "%s.%d", report_path_prefix, pid);
+                    "%s.%zu", report_path_prefix, pid);
   uptr openrv = OpenFile(report_path_full.data(), true);
   if (internal_iserror(openrv)) {
     report_fd = kStderrFd;
@@ -248,4 +323,4 @@ bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end) {
 
 }  // namespace __sanitizer
 
-#endif  // SANITIZER_LINUX || SANITIZER_MAC
+#endif  // SANITIZER_POSIX

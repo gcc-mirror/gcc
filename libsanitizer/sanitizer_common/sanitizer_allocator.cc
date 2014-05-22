@@ -17,7 +17,7 @@
 namespace __sanitizer {
 
 // ThreadSanitizer for Go uses libc malloc/free.
-#if defined(SANITIZER_GO)
+#if defined(SANITIZER_GO) || defined(SANITIZER_USE_MALLOC)
 # if SANITIZER_LINUX && !SANITIZER_ANDROID
 extern "C" void *__libc_malloc(uptr size);
 extern "C" void __libc_free(void *ptr);
@@ -115,7 +115,7 @@ void *LowLevelAllocator::Allocate(uptr size) {
   if (allocated_end_ - allocated_current_ < (sptr)size) {
     uptr size_to_allocate = Max(size, GetPageSizeCached());
     allocated_current_ =
-        (char*)MmapOrDie(size_to_allocate, __FUNCTION__);
+        (char*)MmapOrDie(size_to_allocate, __func__);
     allocated_end_ = allocated_current_ + size_to_allocate;
     if (low_level_alloc_callback) {
       low_level_alloc_callback((uptr)allocated_current_,

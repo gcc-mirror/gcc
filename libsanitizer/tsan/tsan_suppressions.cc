@@ -101,10 +101,20 @@ SuppressionType conv(ReportType typ) {
     return SuppressionThread;
   else if (typ == ReportTypeMutexDestroyLocked)
     return SuppressionMutex;
+  else if (typ == ReportTypeMutexDoubleLock)
+    return SuppressionMutex;
+  else if (typ == ReportTypeMutexBadUnlock)
+    return SuppressionMutex;
+  else if (typ == ReportTypeMutexBadReadLock)
+    return SuppressionMutex;
+  else if (typ == ReportTypeMutexBadReadUnlock)
+    return SuppressionMutex;
   else if (typ == ReportTypeSignalUnsafe)
     return SuppressionSignal;
   else if (typ == ReportTypeErrnoInSignal)
     return SuppressionNone;
+  else if (typ == ReportTypeDeadlock)
+    return SuppressionDeadlock;
   Printf("ThreadSanitizer: unknown report type %d\n", typ),
   Die();
 }

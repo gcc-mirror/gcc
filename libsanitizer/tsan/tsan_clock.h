@@ -16,6 +16,11 @@
 
 namespace __tsan {
 
+struct ClockElem {
+  u64 epoch  : kClkBits;
+  u64 reused : 64 - kClkBits;
+};
+
 // The clock that lives in sync variables (mutexes, atomics, etc).
 class SyncClock {
  public:
@@ -25,38 +30,43 @@ class SyncClock {
     return clk_.Size();
   }
 
-  void Reset() {
-    clk_.Reset();
+  u64 get(unsigned tid) const {
+    DCHECK_LT(tid, clk_.Size());
+    return clk_[tid].epoch;
   }
 
+  void Reset();
+
+  void DebugDump(int(*printf)(const char *s, ...));
+
  private:
-  Vector<u64> clk_;
+  unsigned release_store_tid_;
+  unsigned release_store_reused_;
+  static const uptr kDirtyTids = 2;
+  unsigned dirty_tids_[kDirtyTids];
+  mutable Vector<ClockElem> clk_;
   friend struct ThreadClock;
 };
 
 // The clock that lives in threads.
 struct ThreadClock {
  public:
-  ThreadClock();
+  explicit ThreadClock(unsigned tid, unsigned reused = 0);
 
   u64 get(unsigned tid) const {
     DCHECK_LT(tid, kMaxTidInClock);
-    return clk_[tid];
+    return clk_[tid].epoch;
   }
 
-  void set(unsigned tid, u64 v) {
-    DCHECK_LT(tid, kMaxTid);
-    DCHECK_GE(v, clk_[tid]);
-    clk_[tid] = v;
-    if (nclk_ <= tid)
-      nclk_ = tid + 1;
+  void set(unsigned tid, u64 v);
+
+  void set(u64 v) {
+    DCHECK_GE(v, clk_[tid_].epoch);
+    clk_[tid_].epoch = v;
   }
 
-  void tick(unsigned tid) {
-    DCHECK_LT(tid, kMaxTid);
-    clk_[tid]++;
-    if (nclk_ <= tid)
-      nclk_ = tid + 1;
+  void tick() {
+    clk_[tid_].epoch++;
   }
 
   uptr size() const {
@@ -68,9 +78,19 @@ struct ThreadClock {
   void acq_rel(SyncClock *dst);
   void ReleaseStore(SyncClock *dst) const;
 
+  void DebugReset();
+  void DebugDump(int(*printf)(const char *s, ...));
+
  private:
+  static const uptr kDirtyTids = SyncClock::kDirtyTids;
+  const unsigned tid_;
+  const unsigned reused_;
+  u64 last_acquire_;
   uptr nclk_;
-  u64 clk_[kMaxTidInClock];
+  ClockElem clk_[kMaxTidInClock];
+
+  bool IsAlreadyAcquired(const SyncClock *src) const;
+  void UpdateCurrentThread(SyncClock *dst) const;
 };
 
 }  // namespace __tsan

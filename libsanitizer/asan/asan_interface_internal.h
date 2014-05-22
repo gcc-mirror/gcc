@@ -20,7 +20,7 @@ using __sanitizer::uptr;
 extern "C" {
   // This function should be called at the very beginning of the process,
   // before any instrumented code is executed and before any call to malloc.
-  // Everytime the asan ABI changes we also change the version number in this
+  // Every time the asan ABI changes we also change the version number in this
   // name. Objects build with incompatible asan ABI version
   // will not link with run-time.
   // Changes between ABI versions:
@@ -75,7 +75,7 @@ extern "C" {
   void __asan_unpoison_memory_region(void const volatile *addr, uptr size);
 
   SANITIZER_INTERFACE_ATTRIBUTE
-  bool __asan_address_is_poisoned(void const volatile *addr);
+  int __asan_address_is_poisoned(void const volatile *addr);
 
   SANITIZER_INTERFACE_ATTRIBUTE
   uptr __asan_region_is_poisoned(uptr beg, uptr size);
@@ -85,7 +85,7 @@ extern "C" {
 
   SANITIZER_INTERFACE_ATTRIBUTE
   void __asan_report_error(uptr pc, uptr bp, uptr sp,
-                           uptr addr, bool is_write, uptr access_size);
+                           uptr addr, int is_write, uptr access_size);
 
   SANITIZER_INTERFACE_ATTRIBUTE
   int __asan_set_error_exit_code(int exit_code);
@@ -97,14 +97,10 @@ extern "C" {
   SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
   /* OPTIONAL */ void __asan_on_error();
 
-  SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
-  /* OPTIONAL */ bool __asan_symbolize(const void *pc, char *out_buffer,
-                                       int out_size);
-
   SANITIZER_INTERFACE_ATTRIBUTE
   uptr __asan_get_estimated_allocated_size(uptr size);
 
-  SANITIZER_INTERFACE_ATTRIBUTE bool __asan_get_ownership(const void *p);
+  SANITIZER_INTERFACE_ATTRIBUTE int __asan_get_ownership(const void *p);
   SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_get_allocated_size(const void *p);
   SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_get_current_allocated_bytes();
   SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_get_heap_size();
@@ -123,6 +119,29 @@ extern "C" {
   // Global flag, copy of ASAN_OPTIONS=detect_stack_use_after_return
   SANITIZER_INTERFACE_ATTRIBUTE
   extern int __asan_option_detect_stack_use_after_return;
+
+  SANITIZER_INTERFACE_ATTRIBUTE
+  extern uptr *__asan_test_only_reported_buggy_pointer;
+
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_load1(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_load2(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_load4(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_load8(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_load16(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_store1(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_store2(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_store4(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_store8(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_store16(uptr p);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_loadN(uptr p, uptr size);
+  SANITIZER_INTERFACE_ATTRIBUTE void __asan_storeN(uptr p, uptr size);
+
+  SANITIZER_INTERFACE_ATTRIBUTE
+      void* __asan_memcpy(void *dst, const void *src, uptr size);
+  SANITIZER_INTERFACE_ATTRIBUTE
+      void* __asan_memset(void *s, int c, uptr n);
+  SANITIZER_INTERFACE_ATTRIBUTE
+      void* __asan_memmove(void* dest, const void* src, uptr n);
 }  // extern "C"
 
 #endif  // ASAN_INTERFACE_INTERNAL_H

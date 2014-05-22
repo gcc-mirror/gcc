@@ -1,3 +1,9 @@
+2014-05-22  Kostya Serebryany  <kcc@google.com>
+
+	* c-c++-common/tsan/mutexset1.c: Update the test to match
+	upstream r209283.
+	* g++.dg/asan/symbolize-callback-1.C: Delete the deprecated test.
+
 2014-05-21  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/61272

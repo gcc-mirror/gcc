@@ -48,9 +48,10 @@ extern "C" {
   ((void)(addr), (void)(size))
 #endif
 
-  // Returns true iff addr is poisoned (i.e. 1-byte read/write access to this
+  // Returns 1 if addr is poisoned (i.e. 1-byte read/write access to this
   // address will result in error report from AddressSanitizer).
-  bool __asan_address_is_poisoned(void const volatile *addr);
+  // Otherwise returns 0.
+  int __asan_address_is_poisoned(void const volatile *addr);
 
   // If at least on byte in [beg, beg+size) is poisoned, return the address
   // of the first such byte. Otherwise return 0.
@@ -63,7 +64,7 @@ extern "C" {
   // However it is still a part of the interface because users may want to
   // set a breakpoint on this function in a debugger.
   void __asan_report_error(void *pc, void *bp, void *sp,
-                           void *addr, bool is_write, size_t access_size);
+                           void *addr, int is_write, size_t access_size);
 
   // Sets the exit code to use when reporting an error.
   // Returns the old value.
@@ -80,22 +81,14 @@ extern "C" {
   // the program crashes before ASan report is printed.
   void __asan_on_error();
 
-  // User may provide its own implementation for symbolization function.
-  // It should print the description of instruction at address "pc" to
-  // "out_buffer". Description should be at most "out_size" bytes long.
-  // User-specified function should return true if symbolization was
-  // successful.
-  bool __asan_symbolize(const void *pc, char *out_buffer,
-                                       int out_size);
-
   // Returns the estimated number of bytes that will be reserved by allocator
   // for request of "size" bytes. If ASan allocator can't allocate that much
   // memory, returns the maximal possible allocation size, otherwise returns
   // "size".
   size_t __asan_get_estimated_allocated_size(size_t size);
-  // Returns true if p was returned by the ASan allocator and
-  // is not yet freed.
-  bool __asan_get_ownership(const void *p);
+  // Returns 1 if p was returned by the ASan allocator and is not yet freed.
+  // Otherwise returns 0.
+  int __asan_get_ownership(const void *p);
   // Returns the number of bytes reserved for the pointer p.
   // Requires (get_ownership(p) == true) or (p == 0).
   size_t __asan_get_allocated_size(const void *p);
@@ -128,6 +121,24 @@ extern "C" {
   //   deallocation of "ptr".
   void __asan_malloc_hook(void *ptr, size_t size);
   void __asan_free_hook(void *ptr);
+
+  // The following 2 functions facilitate garbage collection in presence of
+  // asan's fake stack.
+
+  // Returns an opaque handler to be used later in __asan_addr_is_in_fake_stack.
+  // Returns NULL if the current thread does not have a fake stack.
+  void *__asan_get_current_fake_stack();
+
+  // If fake_stack is non-NULL and addr belongs to a fake frame in
+  // fake_stack, returns the address on real stack that corresponds to
+  // the fake frame and sets beg/end to the boundaries of this fake frame.
+  // Otherwise returns NULL and does not touch beg/end.
+  // If beg/end are NULL, they are not touched.
+  // This function may be called from a thread other than the owner of
+  // fake_stack, but the owner thread need to be alive.
+  void *__asan_addr_is_in_fake_stack(void *fake_stack, void *addr, void **beg,
+                                     void **end);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

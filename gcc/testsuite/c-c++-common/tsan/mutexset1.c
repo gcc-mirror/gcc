@@ -35,6 +35,6 @@ int main() {
 /* { dg-output "WARNING: ThreadSanitizer: data race.*(\n|\r\n|\r)" } */
 /* { dg-output "  Read of size 4 at 0x\[0-9a-f\]+ by thread T1 \\(mutexes: write M\[0-9\]\\):.*" } */
 /* { dg-output "  Previous write of size 4 at 0x\[0-9a-f\]+ by thread T2:.*" } */
-/* { dg-output "  Mutex M\[0-9\] created at:.*" } */
+/* { dg-output "  Mutex M\[0-9\] \\(0x.*\\) created at:.*" } */
 /* { dg-output "    #0 pthread_mutex_init.*" } */
 /* { dg-output "    #1 main (.*mutexset1.c|\\?{2}):\[0-9]+.*" } */

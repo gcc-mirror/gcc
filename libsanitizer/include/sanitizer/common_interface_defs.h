@@ -22,13 +22,28 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+  // Arguments for __sanitizer_sandbox_on_notify() below.
+  typedef struct {
+    // Enable sandbox support in sanitizer coverage.
+    int coverage_sandboxed;
+    // File descriptor to write coverage data to. If -1 is passed, a file will
+    // be pre-opened by __sanitizer_sandobx_on_notify(). This field has no
+    // effect if coverage_sandboxed == 0.
+    intptr_t coverage_fd;
+    // If non-zero, split the coverage data into well-formed blocks. This is
+    // useful when coverage_fd is a socket descriptor. Each block will contain
+    // a header, allowing data from multiple processes to be sent over the same
+    // socket.
+    unsigned int coverage_max_block_size;
+  } __sanitizer_sandbox_arguments;
+
   // Tell the tools to write their reports to "path.<pid>" instead of stderr.
   void __sanitizer_set_report_path(const char *path);
 
   // Notify the tools that the sandbox is going to be turned on. The reserved
   // parameter will be used in the future to hold a structure with functions
   // that the tools may call to bypass the sandbox.
-  void __sanitizer_sandbox_on_notify(void *reserved);
+  void __sanitizer_sandbox_on_notify(__sanitizer_sandbox_arguments *args);
 
   // This function is called by the tool when it has just finished reporting
   // an error. 'error_summary' is a one-line string that summarizes
@@ -45,6 +60,8 @@ extern "C" {
   void __sanitizer_unaligned_store32(void *p, uint32_t x);
   void __sanitizer_unaligned_store64(void *p, uint64_t x);
 
+  // Initialize coverage.
+  void __sanitizer_cov_init();
   // Record and dump coverage info.
   void __sanitizer_cov_dump();
 
@@ -54,7 +71,7 @@ extern "C" {
   // in a contiguous region of memory. The container owns the region of memory
   // [beg, end); the memory [beg, mid) is used to store the current elements
   // and the memory [mid, end) is reserved for future elements;
-  // end <= mid <= end. For example, in "std::vector<> v"
+  // beg <= mid <= end. For example, in "std::vector<> v"
   //   beg = &v[0];
   //   end = beg + v.capacity() * sizeof(v[0]);
   //   mid = beg + v.size()     * sizeof(v[0]);
@@ -82,6 +99,14 @@ extern "C" {
                                                  const void *end,
                                                  const void *old_mid,
                                                  const void *new_mid);
+  // Returns true if the contiguous container [beg, end) ir properly poisoned
+  // (e.g. with __sanitizer_annotate_contiguous_container), i.e. if
+  //  - [beg, mid) is addressable,
+  //  - [mid, end) is unaddressable.
+  // Full verification requires O(end-beg) time; this function tries to avoid
+  // such complexity by touching only parts of the container around beg/mid/end.
+  int __sanitizer_verify_contiguous_container(const void *beg, const void *mid,
+                                              const void *end);
 
   // Print the stack trace leading to this call. Useful for debugging user code.
   void __sanitizer_print_stack_trace();

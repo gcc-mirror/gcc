@@ -22,8 +22,6 @@ ReportStack *SymbolizeCode(uptr addr);
 ReportLocation *SymbolizeData(uptr addr);
 void SymbolizeFlush();
 
-ReportStack *SymbolizeCodeAddr2Line(uptr addr);
-
 ReportStack *NewReportStackEntry(uptr addr);
 
 }  // namespace __tsan

@@ -12,49 +12,35 @@
 #ifndef SANITIZER_PROCMAPS_H
 #define SANITIZER_PROCMAPS_H
 
+#include "sanitizer_common.h"
 #include "sanitizer_internal_defs.h"
 #include "sanitizer_mutex.h"
 
 namespace __sanitizer {
 
-#if SANITIZER_WINDOWS
-class MemoryMappingLayout {
- public:
-  explicit MemoryMappingLayout(bool cache_enabled) {
-    (void)cache_enabled;
-  }
-  bool GetObjectNameAndOffset(uptr addr, uptr *offset,
-                              char filename[], uptr filename_size,
-                              uptr *protection) {
-    UNIMPLEMENTED();
-  }
-};
-
-#else  // SANITIZER_WINDOWS
-#if SANITIZER_LINUX
+#if SANITIZER_FREEBSD || SANITIZER_LINUX
 struct ProcSelfMapsBuff {
   char *data;
   uptr mmaped_size;
   uptr len;
 };
-#endif  // SANITIZER_LINUX
+#endif  // SANITIZER_FREEBSD || SANITIZER_LINUX
 
 class MemoryMappingLayout {
  public:
   explicit MemoryMappingLayout(bool cache_enabled);
+  ~MemoryMappingLayout();
   bool Next(uptr *start, uptr *end, uptr *offset,
             char filename[], uptr filename_size, uptr *protection);
   void Reset();
-  // Gets the object file name and the offset in that object for a given
-  // address 'addr'. Returns true on success.
-  bool GetObjectNameAndOffset(uptr addr, uptr *offset,
-                              char filename[], uptr filename_size,
-                              uptr *protection);
   // In some cases, e.g. when running under a sandbox on Linux, ASan is unable
   // to obtain the memory mappings. It should fall back to pre-cached data
   // instead of aborting.
   static void CacheMemoryMappings();
-  ~MemoryMappingLayout();
+
+  // Stores the list of mapped objects into an array.
+  uptr DumpListOfModules(LoadedModule *modules, uptr max_modules,
+                         string_predicate_t filter);
 
   // Memory protection masks.
   static const uptr kProtectionRead = 1;
@@ -64,39 +50,10 @@ class MemoryMappingLayout {
 
  private:
   void LoadFromCache();
-  // Default implementation of GetObjectNameAndOffset.
-  // Quite slow, because it iterates through the whole process map for each
-  // lookup.
-  bool IterateForObjectNameAndOffset(uptr addr, uptr *offset,
-                                     char filename[], uptr filename_size,
-                                     uptr *protection) {
-    Reset();
-    uptr start, end, file_offset;
-    for (int i = 0; Next(&start, &end, &file_offset, filename, filename_size,
-                         protection);
-         i++) {
-      if (addr >= start && addr < end) {
-        // Don't subtract 'start' for the first entry:
-        // * If a binary is compiled w/o -pie, then the first entry in
-        //   process maps is likely the binary itself (all dynamic libs
-        //   are mapped higher in address space). For such a binary,
-        //   instruction offset in binary coincides with the actual
-        //   instruction address in virtual memory (as code section
-        //   is mapped to a fixed memory range).
-        // * If a binary is compiled with -pie, all the modules are
-        //   mapped high at address space (in particular, higher than
-        //   shadow memory of the tool), so the module can't be the
-        //   first entry.
-        *offset = (addr - (i ? start : 0)) + file_offset;
-        return true;
-      }
-    }
-    if (filename_size)
-      filename[0] = '\0';
-    return false;
-  }
 
-# if SANITIZER_LINUX
+  // FIXME: Hide implementation details for different platforms in
+  // platform-specific files.
+# if SANITIZER_FREEBSD || SANITIZER_LINUX
   ProcSelfMapsBuff proc_self_maps_;
   char *current_;
 
@@ -126,8 +83,6 @@ void GetMemoryProfile(fill_profile_f cb, uptr *stats, uptr stats_size);
 
 // Returns code range for the specified module.
 bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end);
-
-#endif  // SANITIZER_WINDOWS
 
 }  // namespace __sanitizer
 
