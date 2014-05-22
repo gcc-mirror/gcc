@@ -1,3 +1,8 @@
+2014-05-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/60324
+	* runtime/string.c: Include stdlib.h.
+
 2014-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/60324
