@@ -822,6 +822,9 @@ extern gfc_charlen_type string_len_trim_char4 (gfc_charlen_type,
 					       const gfc_char4_t *);
 export_proto(string_len_trim_char4);
 
+extern char *fc_strdup(const char *, gfc_charlen_type);
+internal_proto(fc_strdup);
+
 /* io/intrinsics.c */
 
 extern void flush_all_units (void);
