@@ -4073,7 +4073,7 @@ enum reg_class
 aarch64_regno_regclass (unsigned regno)
 {
   if (GP_REGNUM_P (regno))
-    return CORE_REGS;
+    return GENERAL_REGS;
 
   if (regno == SP_REGNUM)
     return STACK_REG;
@@ -4224,12 +4224,12 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   /* A TFmode or TImode memory access should be handled via an FP_REGS
      because AArch64 has richer addressing modes for LDR/STR instructions
      than LDP/STP instructions.  */
-  if (!TARGET_GENERAL_REGS_ONLY && rclass == CORE_REGS
+  if (!TARGET_GENERAL_REGS_ONLY && rclass == GENERAL_REGS
       && GET_MODE_SIZE (mode) == 16 && MEM_P (x))
     return FP_REGS;
 
   if (rclass == FP_REGS && (mode == TImode || mode == TFmode) && CONSTANT_P(x))
-      return CORE_REGS;
+      return GENERAL_REGS;
 
   return NO_REGS;
 }
@@ -4360,7 +4360,6 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 {
   switch (regclass)
     {
-    case CORE_REGS:
     case POINTER_REGS:
     case GENERAL_REGS:
     case ALL_REGS:

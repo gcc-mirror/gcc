@@ -1,3 +1,14 @@
+2014-05-22  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_regno_regclass) : Change CORE_REGS
+	to GENERAL_REGS.
+	(aarch64_secondary_reload) : LikeWise.
+	(aarch64_class_max_nregs) : Remove CORE_REGS.
+	* config/aarch64/aarch64.h (enum reg_class) : Remove CORE_REGS.
+	(REG_CLASS_NAMES) : Likewise.
+	(REG_CLASS_CONTENTS) : LikeWise.
+	(INDEX_REG_CLASS) : Change CORE_REGS to GENERAL_REGS.
+
 2014-05-21  Guozhi Wei  <carrot@google.com>
 
 	PR target/61202
