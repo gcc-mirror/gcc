@@ -1,3 +1,8 @@
+2014-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/61271
+	* g++.dg/cilk-plus/AN/array_function.cc: New.
+
 2014-05-22  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/alias-33.c: New testcase.
