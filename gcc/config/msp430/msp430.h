@@ -55,8 +55,8 @@ extern bool msp430x;
   "%{mcpu=*:-mcpu=%*}%{!mcpu=*:%{mmcu=*:-mmcu=%*}} " /* Pass the CPU type on to the assembler.  */ \
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
   "%{mlarge:-ml} " /* Tell the assembler if we are building for the LARGE pointer model.  */ \
-  "%{!msim:-md} %{msim:%{mlarge:-md}}" /* Copy data from ROM to RAM if necessary.  */ \
-  "%{ffunction-sections:-gdwarf-sections}" /* If function sections are being created then create DWARF line number sections as well.  */
+  "%{!msim:-md} %{msim:%{mlarge:-md}} " /* Copy data from ROM to RAM if necessary.  */ \
+  "%{ffunction-sections:-gdwarf-sections} " /* If function sections are being created then create DWARF line number sections as well.  */
 
 /* Enable linker section garbage collection by default, unless we
    are creating a relocatable binary (gc does not work) or debugging
