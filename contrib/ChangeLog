@@ -1,3 +1,7 @@
+2014-05-22  Release Manager
+
+	* GCC 4.8.3 released.
+
 2013-10-21  Mike Stump  <mikestump@comcast.net>
 
 	* gcc_update (configure): Update to handle svn 1.8.1.
