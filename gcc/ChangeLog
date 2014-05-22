@@ -1,3 +1,16 @@
+2014-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	BUILT_IN_REALLOC like BUILT_IN_STRDUP.
+	(call_may_clobber_ref_p_1): Handle BUILT_IN_REALLOC as allocation
+	and deallocation site.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Handle BUILT_IN_REALLOC similar to BUILT_IN_STRDUP with also
+	passing through the incoming points-to set.
+	(handle_lhs_call): Use flags argument instead of recomputing it.
+	(find_func_aliases_for_call): Call handle_lhs_call with proper
+	call return flags.
+
 2014-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-streamer-in.c (unpack_ts_real_cst_value_fields): Make sure

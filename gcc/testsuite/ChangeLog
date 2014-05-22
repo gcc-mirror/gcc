@@ -1,3 +1,7 @@
+2014-05-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-33.c: New testcase.
+
 2014-05-22  Kostya Serebryany  <kcc@google.com>
 
 	* c-c++-common/tsan/mutexset1.c: Update the test to match
