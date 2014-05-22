@@ -42,6 +42,10 @@ void __gcov_init (struct gcov_info *p __attribute__ ((unused))) {}
 #endif
 
 #ifdef L_gcov
+
+/* A utility function for outputing errors.  */
+static int gcov_error (const char *, ...);
+
 #include "gcov-io.c"
 
 /* The following functions can be called from outside of this file.  */
@@ -107,9 +111,6 @@ reset_gcov_dump_complete (void)
 {
   gcov_dump_complete = 0;
 }
-
-/* A utility function for outputing errors.  */
-static int gcov_error (const char *, ...);
 
 static struct gcov_fn_buffer *
 free_fn_data (const struct gcov_info *gi_ptr, struct gcov_fn_buffer *buffer,

@@ -1,3 +1,8 @@
+2014-05-22  Teresa Johnson  <tejohnson@google.com>
+
+	* libgcov-driver.c (gcov_error): Move declaration before gcov-io.c
+	include.
+
 2014-05-20  John Marino  <gnugcc@marino.st>
 
 	* config.host (*-*-dragonfly*): New target.

@@ -195,6 +195,13 @@ typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 #define GCOV_LINKAGE extern
 #endif
 
+#if IN_LIBGCOV
+#define gcov_nonruntime_assert(EXPR) ((void)(0 && (EXPR)))
+#else
+#define gcov_nonruntime_assert(EXPR) gcc_assert (EXPR)
+#define gcov_error(...) fatal_error (__VA_ARGS__)
+#endif
+
 /* File suffixes.  */
 #define GCOV_DATA_SUFFIX ".gcda"
 #define GCOV_NOTE_SUFFIX ".gcno"
