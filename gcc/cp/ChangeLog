@@ -1,3 +1,7 @@
+2014-05-22  Release Manager
+
+	* GCC 4.8.3 released.
+
 2014-05-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60708
