@@ -1,3 +1,11 @@
+2014-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61088
+	* lambda.c (add_capture): Enforce that capture by value requires
+	complete type.
+	* typeck2.c (cxx_incomplete_type_inform): Early return if
+	TYPE_MAIN_DECL is null.
+
 2014-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c/61271

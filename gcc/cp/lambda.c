@@ -453,6 +453,9 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
     initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
 						   tf_warning_or_error);
   type = TREE_TYPE (initializer);
+  if (type == error_mark_node)
+    return error_mark_node;
+
   if (array_of_runtime_bound_p (type))
     {
       vla = true;
@@ -489,8 +492,16 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	    error ("cannot capture %qE by reference", initializer);
 	}
       else
-	/* Capture by copy requires a complete type.  */
-	type = complete_type (type);
+	{
+	  /* Capture by copy requires a complete type.  */
+	  type = complete_type (type);
+	  if (!dependent_type_p (type) && !COMPLETE_TYPE_P (type))
+	    {
+	      error ("capture by copy of incomplete type %qT", type);
+	      cxx_incomplete_type_inform (type);
+	      return error_mark_node;
+	    }
+	}
     }
 
   /* Add __ to the beginning of the field name so that user code

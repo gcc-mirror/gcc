@@ -434,6 +434,9 @@ abstract_virtuals_error (abstract_class_use use, tree type)
 void
 cxx_incomplete_type_inform (const_tree type)
 {
+  if (!TYPE_MAIN_DECL (type))
+    return;
+
   location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
   tree ptype = strip_top_quals (CONST_CAST_TREE (type));
 
