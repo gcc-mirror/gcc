@@ -4225,7 +4225,7 @@ invoke_dfa_lookahead_guard (void)
       if (! have_hook || i == 0)
         r = 0;
       else
-        r = !targetm.sched.first_cycle_multipass_dfa_lookahead_guard (insn);
+        r = targetm.sched.first_cycle_multipass_dfa_lookahead_guard (insn, i);
 
       gcc_assert (INSN_CODE (insn) >= 0);
 

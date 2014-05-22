@@ -1,5 +1,30 @@
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+	Cleanup and improve multipass_dfa_lookahead_guard
+        * config/i386/i386.c (core2i7_first_cycle_multipass_filter_ready_try,)
+        (core2i7_first_cycle_multipass_begin,)
+        (core2i7_first_cycle_multipass_issue,)
+        (core2i7_first_cycle_multipass_backtrack): Update signature.
+        * config/ia64/ia64.c
+        (ia64_first_cycle_multipass_dfa_lookahead_guard_spec): Remove.
+        (ia64_first_cycle_multipass_dfa_lookahead_guard): Update signature.
+        (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC): Remove
+        hook definition.
+        (ia64_first_cycle_multipass_dfa_lookahead_guard): Merge logic from
+        ia64_first_cycle_multipass_dfa_lookahead_guard_spec.  Update return
+        values.
+        * config/rs6000/rs6000.c (rs6000_use_sched_lookahead_guard): Update
+        return values.
+        * doc/tm.texi: Regenerate.
+        * doc/tm.texi.in
+        (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC): Remove.
+        * haifa-sched.c (ready_try): Make signed to allow negative values.
+        (rebug_ready_list_1): Update.
+        (choose_ready): Simplify.
+        (sched_extend_ready_list): Update.
+
+2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
 	Remove IA64 speculation tweaking flags
         * config/ia64/ia64.c (ia64_set_sched_flags): Delete handling of
         speculation tuning flags.

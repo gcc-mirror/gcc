@@ -345,7 +345,7 @@ size_t dfa_state_size;
 
 /* The following array is used to find the best insn from ready when
    the automaton pipeline interface is used.  */
-char *ready_try = NULL;
+signed char *ready_try = NULL;
 
 /* The ready list.  */
 struct ready_list ready = {NULL, 0, 0, 0, 0};
@@ -5126,7 +5126,7 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
    If READY_TRY is non-zero then only print insns that max_issue
    will consider.  */
 static void
-debug_ready_list_1 (struct ready_list *ready, char *ready_try)
+debug_ready_list_1 (struct ready_list *ready, signed char *ready_try)
 {
   rtx *p;
   int i;
@@ -5566,10 +5566,9 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
     }
   else
     {
-      /* Try to choose the better insn.  */
+      /* Try to choose the best insn.  */
       int index = 0, i;
       rtx insn;
-      ds_t ts;
 
       insn = ready_element (ready, 0);
       if (INSN_CODE (insn) < 0)
@@ -5578,42 +5577,56 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
 	  return 0;
 	}
 
-      ts = TODO_SPEC (insn);
-      if ((ts & SPECULATIVE)
-	  && (targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
-	      && (!targetm.sched
-		  .first_cycle_multipass_dfa_lookahead_guard_spec (insn))))
-	/* Discard speculative instruction that stands first in the ready
-	   list.  */
-	{
-	  change_queue_index (insn, 1);
-	  return 1;
-	}
-
+      /* Filter the search space.  */
       for (i = 0; i < ready->n_ready; i++)
-	ready_try [i] = 0;
+	{
+	  ready_try[i] = 0;
 
-      /* Let the target filter the search space.  */
-      for (i = 1; i < ready->n_ready; i++)
-	if (!ready_try[i])
-	  {
-	    insn = ready_element (ready, i);
+	  insn = ready_element (ready, i);
 
-	    /* If this insn is recognizable we should have already
-	       recognized it earlier.
-	       ??? Not very clear where this is supposed to be done.
-	       See dep_cost_1.  */
-	    gcc_checking_assert (INSN_CODE (insn) >= 0
-				 || recog_memoized (insn) < 0);
+	  /* If this insn is recognizable we should have already
+	     recognized it earlier.
+	     ??? Not very clear where this is supposed to be done.
+	     See dep_cost_1.  */
+	  gcc_checking_assert (INSN_CODE (insn) >= 0
+			       || recog_memoized (insn) < 0);
+	  if (INSN_CODE (insn) < 0)
+	    {
+	      /* Non-recognized insns at position 0 are handled above.  */
+	      gcc_assert (i > 0);
+	      ready_try[i] = 1;
+	      continue;
+	    }
 
-	    ready_try [i]
-	      = (/* INSN_CODE check can be omitted here as it is also done later
-		    in max_issue ().  */
-		 INSN_CODE (insn) < 0
-		 || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard
-		     && !targetm.sched.first_cycle_multipass_dfa_lookahead_guard
-		     (insn)));
-	  }
+	  if (targetm.sched.first_cycle_multipass_dfa_lookahead_guard)
+	    {
+	      ready_try[i]
+		= (targetm.sched.first_cycle_multipass_dfa_lookahead_guard
+		    (insn, i));
+
+	      if (ready_try[i] < 0)
+		/* Queue instruction for several cycles.
+		   We need to restart choose_ready as we have changed
+		   the ready list.  */
+		{
+		  change_queue_index (insn, -ready_try[i]);
+		  return 1;
+		}
+
+	      /* Make sure that we didn't end up with 0'th insn filtered out.
+		 Don't be tempted to make life easier for backends and just
+		 requeue 0'th insn if (ready_try[0] == 0) and restart
+		 choose_ready.  Backends should be very considerate about
+		 requeueing instructions -- especially the highest priority
+		 one at position 0.  */
+	      gcc_assert (ready_try[i] == 0 || i > 0);
+	      if (ready_try[i])
+		continue;
+	    }
+
+	  gcc_assert (ready_try[i] == 0);
+	  /* INSN made it through the scrutiny of filters!  */
+	}
 
       if (max_issue (ready, 1, curr_state, first_cycle_insn_p, &index) == 0)
 	{
@@ -7193,8 +7206,9 @@ sched_extend_ready_list (int new_sched_ready_n_insns)
 
   gcc_assert (new_sched_ready_n_insns >= sched_ready_n_insns);
 
-  ready_try = (char *) xrecalloc (ready_try, new_sched_ready_n_insns,
-                                  sched_ready_n_insns, sizeof (*ready_try));
+  ready_try = (signed char *) xrecalloc (ready_try, new_sched_ready_n_insns,
+					 sched_ready_n_insns,
+					 sizeof (*ready_try));
 
   /* We allocate +1 element to save initial state in the choice_stack[0]
      entry.  */

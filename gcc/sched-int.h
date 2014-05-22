@@ -170,7 +170,7 @@ struct ready_list
   int n_debug;
 };
 
-extern char *ready_try;
+extern signed char *ready_try;
 extern struct ready_list ready;
 
 extern int max_issue (struct ready_list *, int, state_t, bool, int *);

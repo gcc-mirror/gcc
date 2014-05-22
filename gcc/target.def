@@ -1174,11 +1174,17 @@ DEFHOOK
  "\n\
 This hook controls what insns from the ready insn queue will be\n\
 considered for the multipass insn scheduling.  If the hook returns\n\
-zero for @var{insn}, the insn will be not chosen to\n\
-be issued.\n\
+zero for @var{insn}, the insn will be considered in multipass scheduling.\n\
+Positive return values will remove @var{insn} from consideration on\n\
+the current round of multipass scheduling.\n\
+Negative return values will remove @var{insn} from consideration for given\n\
+number of cycles.\n\
+Backends should be careful about returning non-zero for highest priority\n\
+instruction at position 0 in the ready list.  @var{ready_index} is passed\n\
+to allow backends make correct judgements.\n\
 \n\
 The default is that any ready insns can be chosen to be issued.",
- int, (rtx insn), NULL)
+ int, (rtx insn, int ready_index), NULL)
 
 /* This hook prepares the target for a new round of multipass
    scheduling.
@@ -1193,7 +1199,7 @@ DEFHOOK
 (first_cycle_multipass_begin,
  "This hook prepares the target backend for a new round of multipass\n\
 scheduling.",
- void, (void *data, char *ready_try, int n_ready, bool first_cycle_insn_p),
+ void, (void *data, signed char *ready_try, int n_ready, bool first_cycle_insn_p),
  NULL)
 
 /* This hook is called when multipass scheduling evaluates instruction INSN.
@@ -1209,7 +1215,7 @@ scheduling.",
 DEFHOOK
 (first_cycle_multipass_issue,
  "This hook is called when multipass scheduling evaluates instruction INSN.",
- void, (void *data, char *ready_try, int n_ready, rtx insn,
+ void, (void *data, signed char *ready_try, int n_ready, rtx insn,
 	const void *prev_data), NULL)
 
 /* This hook is called when multipass scheduling backtracks from evaluation of
@@ -1225,7 +1231,7 @@ DEFHOOK
 (first_cycle_multipass_backtrack,
  "This is called when multipass scheduling backtracks from evaluation of\n\
 an instruction.",
- void, (const void *data, char *ready_try, int n_ready), NULL)
+ void, (const void *data, signed char *ready_try, int n_ready), NULL)
 
 /* This hook notifies the target about the result of the concluded current
    round of multipass scheduling.
@@ -1420,26 +1426,6 @@ recovery code (a simple check).  If @var{mutate_p} is nonzero, then\n\
 a pattern for a branchy check corresponding to a simple check denoted by\n\
 @var{insn} should be generated.  In this case @var{label} can't be null.",
  rtx, (rtx insn, rtx label, unsigned int ds), NULL)
-
-/* The following member value is a pointer to a function controlling
-   what insns from the ready insn queue will be considered for the
-   multipass insn scheduling.  If the hook returns zero for the insn
-   passed as the parameter, the insn will not be chosen to be
-   issued.  This hook is used to discard speculative instructions,
-   that stand at the first position of the ready list.  */
-DEFHOOK
-(first_cycle_multipass_dfa_lookahead_guard_spec,
- "This hook is used as a workaround for\n\
-@samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD} not being\n\
-called on the first instruction of the ready list.  The hook is used to\n\
-discard speculative instructions that stand first in the ready list from\n\
-being scheduled on the current cycle.  If the hook returns @code{false},\n\
-@var{insn} will not be chosen to be issued.\n\
-For non-speculative instructions,\n\
-the hook should always return @code{true}.  For example, in the ia64 backend\n\
-the hook is used to cancel data speculative insns when the ALAT table\n\
-is nearly full.",
- bool, (const_rtx insn), NULL)
 
 /* The following member value is a pointer to a function that provides
    information about the speculation capabilities of the target.
