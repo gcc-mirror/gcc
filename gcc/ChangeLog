@@ -1,5 +1,19 @@
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+	Remove IA64 speculation tweaking flags
+        * config/ia64/ia64.c (ia64_set_sched_flags): Delete handling of
+        speculation tuning flags.
+        (msched-prefer-non-data-spec-insns,)
+        (msched-prefer-non-control-spec-insns): Obsolete options.
+        * haifa-sched.c (choose_ready): Remove handling of
+        PREFER_NON_CONTROL_SPEC and PREFER_NON_DATA_SPEC.
+        * sched-int.h (enum SPEC_SCHED_FLAGS): Remove PREFER_NON_CONTROL_SPEC
+        and PREFER_NON_DATA_SPEC.
+        * sel-sched.c (process_spec_exprs): Remove handling of
+        PREFER_NON_CONTROL_SPEC and PREFER_NON_DATA_SPEC.
+
+2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
 	Improve scheduling debug output
 	* haifa-sched.c (debug_ready_list): Remove unnecessary prototype.
 	(advance_one_cycle): Update.
