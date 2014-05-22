@@ -1,3 +1,9 @@
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
+	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
+	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.
+
 2014-05-21  Robert Dewar  <dewar@adacore.com>
 
 	* layout.adb: Minor reformatting.
