@@ -1,3 +1,8 @@
+2014-05-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/61208
+	* arm.md (arm_cmpdi_unsigned): Fix length calculation for Thumb2.
+
 2014-05-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.h (ASM_SPEC): Add spaces after inserted
