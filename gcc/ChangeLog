@@ -1,3 +1,29 @@
+2014-05-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/aarch64.c (TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New
+	define.
+	* config/aarch64/aarch64-protos.h (aarch64_atomic_assign_expand_fenv):
+	New function declaration.
+	* config/aarch64/aarch64-builtins.c (aarch64_builtins) : Add
+	AARCH64_BUILTIN_GET_FPCR, AARCH64_BUILTIN_SET_FPCR.
+	AARCH64_BUILTIN_GET_FPSR and AARCH64_BUILTIN_SET_FPSR.
+	(aarch64_init_builtins) : Initialize builtins
+	__builtins_aarch64_set_fpcr, __builtins_aarch64_get_fpcr.
+	__builtins_aarch64_set_fpsr and __builtins_aarch64_get_fpsr.
+	(aarch64_expand_builtin) : Expand builtins __builtins_aarch64_set_fpcr
+	__builtins_aarch64_get_fpcr, __builtins_aarch64_get_fpsr,
+	and __builtins_aarch64_set_fpsr.
+	(aarch64_atomic_assign_expand_fenv): New function.
+	* config/aarch64/aarch64.md (set_fpcr): New pattern.
+	(get_fpcr) : Likewise.
+	(set_fpsr) : Likewise.
+	(get_fpsr) : Likewise.
+	(unspecv): Add UNSPECV_GET_FPCR and UNSPECV_SET_FPCR, UNSPECV_GET_FPSR
+	 and UNSPECV_SET_FPSR.
+	* doc/extend.texi (AARCH64 Built-in Functions) : Document
+	__builtins_aarch64_set_fpcr, __builtins_aarch64_get_fpcr.
+	__builtins_aarch64_set_fpsr and __builtins_aarch64_get_fpsr.
+
 2014-05-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60969
