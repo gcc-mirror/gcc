@@ -1,3 +1,8 @@
+2014-05-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.h (ASM_SPEC): Add spaces after inserted
+	options.
+
 2014-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-streamer-in.c (unpack_ts_real_cst_value_fields): Make sure
