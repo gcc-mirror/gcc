@@ -1,7 +1,7 @@
 /* We shall devirtualize to B::foo since it is the only live candidate of an
    anonymous type.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-whole-program"  } */
+/* { dg-options "-O2 -fdump-ipa-whole-program-details"  } */
 namespace {
 class B {
 public:
@@ -37,7 +37,7 @@ main()
   return b->foo();
 }
 
-/* { dg-final { scan-ipa-dump "Devirtualizing" "whole-program"} } */
+/* { dg-final { scan-ipa-dump "devirtualizing" "whole-program"} } */
 /* { dg-final { scan-ipa-dump-not "builtin_unreachable" "whole-program"} } */
 /* { dg-final { scan-ipa-dump "B::foo" "whole-program"} } */
 /* { dg-final { scan-ipa-dump-not "A::foo" "whole-program"} } */

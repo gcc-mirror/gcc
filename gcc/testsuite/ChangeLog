@@ -1,3 +1,13 @@
+2014-05-22  Xinliang David Li  <davidxl@google.com>
+
+	* g++.dg/ipa/devirt-15.C: Fix expected message.
+	* g++.dg/ipa/devirt-16.C: Ditto.
+	* g++.dg/ipa/devirt-17.C: Ditto.
+	* g++.dg/ipa/devirt-26.C: Ditto.
+	* g++.dg/ipa/imm-devirt-1.C: Ditto.
+	* g++.dg/ipa/imm-devirt-2.C: Ditto.
+	* g++.dg/tree-ssa/pr8781.C:Ditto.
+
 2014-05-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/htm-ttest.c: New test.
