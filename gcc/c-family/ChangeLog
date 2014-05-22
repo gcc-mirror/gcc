@@ -1,5 +1,10 @@
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-common.h (c_omp_sharing_predetermined, c_omp_remap_decl):
+	Remove prototypes.
+	(record_types_used_by_current_var_decl): Move prototype to where
+	it belongs.
+
 	* c-common.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
 	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
 	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.

@@ -1000,6 +1000,7 @@ extern void warn_for_sign_compare (location_t,
 extern void do_warn_double_promotion (tree, tree, tree, const char *, 
 				      location_t);
 extern void set_underlying_type (tree);
+extern void record_types_used_by_current_var_decl (tree);
 extern void record_locally_defined_typedef (tree);
 extern void maybe_record_typedef_use (tree);
 extern void maybe_warn_unused_local_typedefs (void);
@@ -1207,11 +1208,6 @@ extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,
 extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
 extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
-
-/* Not in c-omp.c; provided by the front end.  */
-extern bool c_omp_sharing_predetermined (tree);
-extern tree c_omp_remap_decl (tree, bool);
-extern void record_types_used_by_current_var_decl (tree);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
 static inline tree
