@@ -59,27 +59,6 @@ namespace __tsan {
 
 const uptr kPageSize = 4096;
 
-#ifndef TSAN_GO
-ScopedInRtl::ScopedInRtl()
-    : thr_(cur_thread()) {
-  in_rtl_ = thr_->in_rtl;
-  thr_->in_rtl++;
-  errno_ = errno;
-}
-
-ScopedInRtl::~ScopedInRtl() {
-  thr_->in_rtl--;
-  errno = errno_;
-  CHECK_EQ(in_rtl_, thr_->in_rtl);
-}
-#else
-ScopedInRtl::ScopedInRtl() {
-}
-
-ScopedInRtl::~ScopedInRtl() {
-}
-#endif
-
 void FillProfileCallback(uptr start, uptr rss, bool file,
                          uptr *mem, uptr stats_size) {
   CHECK_EQ(7, stats_size);
@@ -133,7 +112,6 @@ void FlushShadowMemory() {
 
 #ifndef TSAN_GO
 static void ProtectRange(uptr beg, uptr end) {
-  ScopedInRtl in_rtl;
   CHECK_LE(beg, end);
   if (beg == end)
     return;
@@ -159,17 +137,19 @@ static void MapRodata() {
 #endif
   if (tmpdir == 0)
     return;
-  char filename[256];
-  internal_snprintf(filename, sizeof(filename), "%s/tsan.rodata.%d",
+  char name[256];
+  internal_snprintf(name, sizeof(name), "%s/tsan.rodata.%d",
                     tmpdir, (int)internal_getpid());
-  uptr openrv = internal_open(filename, O_RDWR | O_CREAT | O_EXCL, 0600);
+  uptr openrv = internal_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
   if (internal_iserror(openrv))
     return;
+  internal_unlink(name);  // Unlink it now, so that we can reuse the buffer.
   fd_t fd = openrv;
   // Fill the file with kShadowRodata.
   const uptr kMarkerSize = 512 * 1024 / sizeof(u64);
   InternalScopedBuffer<u64> marker(kMarkerSize);
-  for (u64 *p = marker.data(); p < marker.data() + kMarkerSize; p++)
+  // volatile to prevent insertion of memset
+  for (volatile u64 *p = marker.data(); p < marker.data() + kMarkerSize; p++)
     *p = kShadowRodata;
   internal_write(fd, marker.data(), marker.size());
   // Map the file into memory.
@@ -177,13 +157,12 @@ static void MapRodata() {
                             MAP_PRIVATE | MAP_ANONYMOUS, fd, 0);
   if (internal_iserror(page)) {
     internal_close(fd);
-    internal_unlink(filename);
     return;
   }
   // Map the file into shadow of .rodata sections.
   MemoryMappingLayout proc_maps(/*cache_enabled*/true);
   uptr start, end, offset, prot;
-  char name[128];
+  // Reusing the buffer 'name'.
   while (proc_maps.Next(&start, &end, &offset, name, ARRAY_SIZE(name), &prot)) {
     if (name[0] != 0 && name[0] != '['
         && (prot & MemoryMappingLayout::kProtectionRead)
@@ -200,7 +179,6 @@ static void MapRodata() {
     }
   }
   internal_close(fd);
-  internal_unlink(filename);
 }
 
 void InitializeShadowMemory() {
@@ -314,10 +292,10 @@ const char *InitializePlatform() {
     // we re-exec the program with limited stack size as a best effort.
     if (getlim(RLIMIT_STACK) == (rlim_t)-1) {
       const uptr kMaxStackSize = 32 * 1024 * 1024;
-      Report("WARNING: Program is run with unlimited stack size, which "
-             "wouldn't work with ThreadSanitizer.\n");
-      Report("Re-execing with stack size limited to %zd bytes.\n",
-             kMaxStackSize);
+      VReport(1, "Program is run with unlimited stack size, which wouldn't "
+                 "work with ThreadSanitizer.\n"
+                 "Re-execing with stack size limited to %zd bytes.\n",
+              kMaxStackSize);
       SetStackSizeLimitInBytes(kMaxStackSize);
       reexec = true;
     }
@@ -378,8 +356,19 @@ int ExtractRecvmsgFDs(void *msgp, int *fds, int nfd) {
   }
   return res;
 }
-#endif
 
+int call_pthread_cancel_with_cleanup(int(*fn)(void *c, void *m,
+    void *abstime), void *c, void *m, void *abstime,
+    void(*cleanup)(void *arg), void *arg) {
+  // pthread_cleanup_push/pop are hardcore macros mess.
+  // We can't intercept nor call them w/o including pthread.h.
+  int res;
+  pthread_cleanup_push(cleanup, arg);
+  res = fn(c, m, abstime);
+  pthread_cleanup_pop(0);
+  return res;
+}
+#endif
 
 }  // namespace __tsan
 

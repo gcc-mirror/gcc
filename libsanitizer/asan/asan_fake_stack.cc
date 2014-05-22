@@ -40,21 +40,32 @@ FakeStack *FakeStack::Create(uptr stack_size_log) {
     stack_size_log = kMinStackSizeLog;
   if (stack_size_log > kMaxStackSizeLog)
     stack_size_log = kMaxStackSizeLog;
+  uptr size = RequiredSize(stack_size_log);
   FakeStack *res = reinterpret_cast<FakeStack *>(
-      MmapOrDie(RequiredSize(stack_size_log), "FakeStack"));
+      flags()->uar_noreserve ? MmapNoReserveOrDie(size, "FakeStack")
+                             : MmapOrDie(size, "FakeStack"));
   res->stack_size_log_ = stack_size_log;
-  if (common_flags()->verbosity) {
-    u8 *p = reinterpret_cast<u8 *>(res);
-    Report("T%d: FakeStack created: %p -- %p stack_size_log: %zd \n",
-           GetCurrentTidOrInvalid(), p,
-           p + FakeStack::RequiredSize(stack_size_log), stack_size_log);
-  }
+  u8 *p = reinterpret_cast<u8 *>(res);
+  VReport(1, "T%d: FakeStack created: %p -- %p stack_size_log: %zd; "
+          "mmapped %zdK, noreserve=%d \n",
+          GetCurrentTidOrInvalid(), p,
+          p + FakeStack::RequiredSize(stack_size_log), stack_size_log,
+          size >> 10, flags()->uar_noreserve);
   return res;
 }
 
-void FakeStack::Destroy() {
+void FakeStack::Destroy(int tid) {
   PoisonAll(0);
-  UnmapOrDie(this, RequiredSize(stack_size_log_));
+  if (common_flags()->verbosity >= 2) {
+    InternalScopedString str(kNumberOfSizeClasses * 50);
+    for (uptr class_id = 0; class_id < kNumberOfSizeClasses; class_id++)
+      str.append("%zd: %zd/%zd; ", class_id, hint_position_[class_id],
+                 NumberOfFrames(stack_size_log(), class_id));
+    Report("T%d: FakeStack destroyed: %s\n", tid, str.data());
+  }
+  uptr size = RequiredSize(stack_size_log_);
+  FlushUnneededASanShadowMemory(reinterpret_cast<uptr>(this), size);
+  UnmapOrDie(this, size);
 }
 
 void FakeStack::PoisonAll(u8 magic) {
@@ -91,7 +102,7 @@ FakeFrame *FakeStack::Allocate(uptr stack_size_log, uptr class_id,
   return 0; // We are out of fake stack.
 }
 
-uptr FakeStack::AddrIsInFakeStack(uptr ptr) {
+uptr FakeStack::AddrIsInFakeStack(uptr ptr, uptr *frame_beg, uptr *frame_end) {
   uptr stack_size_log = this->stack_size_log();
   uptr beg = reinterpret_cast<uptr>(GetFrame(stack_size_log, 0, 0));
   uptr end = reinterpret_cast<uptr>(this) + RequiredSize(stack_size_log);
@@ -101,7 +112,10 @@ uptr FakeStack::AddrIsInFakeStack(uptr ptr) {
   CHECK_LE(base, ptr);
   CHECK_LT(ptr, base + (1UL << stack_size_log));
   uptr pos = (ptr - base) >> (kMinStackFrameSizeLog + class_id);
-  return base + pos * BytesInSizeClass(class_id);
+  uptr res = base + pos * BytesInSizeClass(class_id);
+  *frame_end = res + BytesInSizeClass(class_id);
+  *frame_beg = res + sizeof(FakeFrame);
+  return res;
 }
 
 void FakeStack::HandleNoReturn() {
@@ -195,14 +209,15 @@ ALWAYS_INLINE void OnFree(uptr ptr, uptr class_id, uptr size, uptr real_stack) {
 }  // namespace __asan
 
 // ---------------------- Interface ---------------- {{{1
+using namespace __asan;
 #define DEFINE_STACK_MALLOC_FREE_WITH_CLASS_ID(class_id)                       \
   extern "C" SANITIZER_INTERFACE_ATTRIBUTE uptr                                \
   __asan_stack_malloc_##class_id(uptr size, uptr real_stack) {                 \
-    return __asan::OnMalloc(class_id, size, real_stack);                       \
+    return OnMalloc(class_id, size, real_stack);                               \
   }                                                                            \
   extern "C" SANITIZER_INTERFACE_ATTRIBUTE void __asan_stack_free_##class_id(  \
       uptr ptr, uptr size, uptr real_stack) {                                  \
-    __asan::OnFree(ptr, class_id, size, real_stack);                           \
+    OnFree(ptr, class_id, size, real_stack);                                   \
   }
 
 DEFINE_STACK_MALLOC_FREE_WITH_CLASS_ID(0)
@@ -216,3 +231,23 @@ DEFINE_STACK_MALLOC_FREE_WITH_CLASS_ID(7)
 DEFINE_STACK_MALLOC_FREE_WITH_CLASS_ID(8)
 DEFINE_STACK_MALLOC_FREE_WITH_CLASS_ID(9)
 DEFINE_STACK_MALLOC_FREE_WITH_CLASS_ID(10)
+extern "C" {
+SANITIZER_INTERFACE_ATTRIBUTE
+void *__asan_get_current_fake_stack() { return GetFakeStackFast(); }
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void *__asan_addr_is_in_fake_stack(void *fake_stack, void *addr, void **beg,
+                                   void **end) {
+  FakeStack *fs = reinterpret_cast<FakeStack*>(fake_stack);
+  if (!fs) return 0;
+  uptr frame_beg, frame_end;
+  FakeFrame *frame = reinterpret_cast<FakeFrame *>(fs->AddrIsInFakeStack(
+      reinterpret_cast<uptr>(addr), &frame_beg, &frame_end));
+  if (!frame) return 0;
+  if (frame->magic != kCurrentStackFrameMagic)
+    return 0;
+  if (beg) *beg = reinterpret_cast<void*>(frame_beg);
+  if (end) *end = reinterpret_cast<void*>(frame_end);
+  return reinterpret_cast<void*>(frame->real_stack);
+}
+}  // extern "C"

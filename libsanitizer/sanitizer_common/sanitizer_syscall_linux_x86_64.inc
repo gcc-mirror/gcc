@@ -9,6 +9,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#define SYSCALL(name) __NR_ ## name
+
 static uptr internal_syscall(u64 nr) {
   u64 retval;
   asm volatile("syscall" : "=a"(retval) : "a"(nr) : "rcx", "r11",

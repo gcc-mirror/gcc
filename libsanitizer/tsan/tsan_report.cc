@@ -38,6 +38,7 @@ ReportDesc::ReportDesc()
     , locs(MBlockReportLoc)
     , mutexes(MBlockReportMutex)
     , threads(MBlockReportThread)
+    , unique_tids(MBlockReportThread)
     , sleep()
     , count() {
 }
@@ -71,10 +72,20 @@ static const char *ReportTypeString(ReportType typ) {
     return "thread leak";
   if (typ == ReportTypeMutexDestroyLocked)
     return "destroy of a locked mutex";
+  if (typ == ReportTypeMutexDoubleLock)
+    return "double lock of a mutex";
+  if (typ == ReportTypeMutexBadUnlock)
+    return "unlock of an unlocked mutex (or by a wrong thread)";
+  if (typ == ReportTypeMutexBadReadLock)
+    return "read lock of a write locked mutex";
+  if (typ == ReportTypeMutexBadReadUnlock)
+    return "read unlock of a write locked mutex";
   if (typ == ReportTypeSignalUnsafe)
     return "signal-unsafe call inside of a signal";
   if (typ == ReportTypeErrnoInSignal)
     return "signal handler spoils errno";
+  if (typ == ReportTypeDeadlock)
+    return "lock-order-inversion (potential deadlock)";
   return "";
 }
 
@@ -153,6 +164,17 @@ static void PrintLocation(const ReportLocation *loc) {
     PrintStack(loc->stack);
 }
 
+static void PrintMutexShort(const ReportMutex *rm, const char *after) {
+  Decorator d;
+  Printf("%sM%zd%s%s", d.Mutex(), rm->id, d.EndMutex(), after);
+}
+
+static void PrintMutexShortWithAddress(const ReportMutex *rm,
+                                       const char *after) {
+  Decorator d;
+  Printf("%sM%zd (%p)%s%s", d.Mutex(), rm->id, rm->addr, d.EndMutex(), after);
+}
+
 static void PrintMutex(const ReportMutex *rm) {
   Decorator d;
   if (rm->destroyed) {
@@ -161,7 +183,7 @@ static void PrintMutex(const ReportMutex *rm) {
     Printf("%s", d.EndMutex());
   } else {
     Printf("%s", d.Mutex());
-    Printf("  Mutex M%llu created at:\n", rm->id);
+    Printf("  Mutex M%llu (%p) created at:\n", rm->id, rm->addr);
     Printf("%s", d.EndMutex());
     PrintStack(rm->stack);
   }
@@ -221,10 +243,42 @@ void PrintReport(const ReportDesc *rep) {
          (int)internal_getpid());
   Printf("%s", d.EndWarning());
 
-  for (uptr i = 0; i < rep->stacks.Size(); i++) {
-    if (i)
-      Printf("  and:\n");
-    PrintStack(rep->stacks[i]);
+  if (rep->typ == ReportTypeDeadlock) {
+    char thrbuf[kThreadBufSize];
+    Printf("  Cycle in lock order graph: ");
+    for (uptr i = 0; i < rep->mutexes.Size(); i++)
+      PrintMutexShortWithAddress(rep->mutexes[i], " => ");
+    PrintMutexShort(rep->mutexes[0], "\n\n");
+    CHECK_GT(rep->mutexes.Size(), 0U);
+    CHECK_EQ(rep->mutexes.Size() * (flags()->second_deadlock_stack ? 2 : 1),
+             rep->stacks.Size());
+    for (uptr i = 0; i < rep->mutexes.Size(); i++) {
+      Printf("  Mutex ");
+      PrintMutexShort(rep->mutexes[(i + 1) % rep->mutexes.Size()],
+                      " acquired here while holding mutex ");
+      PrintMutexShort(rep->mutexes[i], " in ");
+      Printf("%s", d.ThreadDescription());
+      Printf("%s:\n", thread_name(thrbuf, rep->unique_tids[i]));
+      Printf("%s", d.EndThreadDescription());
+      if (flags()->second_deadlock_stack) {
+        PrintStack(rep->stacks[2*i]);
+        Printf("  Mutex ");
+        PrintMutexShort(rep->mutexes[i],
+                        " previously acquired by the same thread here:\n");
+        PrintStack(rep->stacks[2*i+1]);
+      } else {
+        PrintStack(rep->stacks[i]);
+        if (i == 0)
+          Printf("    Hint: use TSAN_OPTIONS=second_deadlock_stack=1 "
+                 "to get more informative warning message\n\n");
+      }
+    }
+  } else {
+    for (uptr i = 0; i < rep->stacks.Size(); i++) {
+      if (i)
+        Printf("  and:\n");
+      PrintStack(rep->stacks[i]);
+    }
   }
 
   for (uptr i = 0; i < rep->mops.Size(); i++)
@@ -236,8 +290,10 @@ void PrintReport(const ReportDesc *rep) {
   for (uptr i = 0; i < rep->locs.Size(); i++)
     PrintLocation(rep->locs[i]);
 
-  for (uptr i = 0; i < rep->mutexes.Size(); i++)
-    PrintMutex(rep->mutexes[i]);
+  if (rep->typ != ReportTypeDeadlock) {
+    for (uptr i = 0; i < rep->mutexes.Size(); i++)
+      PrintMutex(rep->mutexes[i]);
+  }
 
   for (uptr i = 0; i < rep->threads.Size(); i++)
     PrintThread(rep->threads[i]);
@@ -289,11 +345,26 @@ static void PrintThread(const ReportThread *rt) {
 
 void PrintReport(const ReportDesc *rep) {
   Printf("==================\n");
-  Printf("WARNING: DATA RACE");
-  for (uptr i = 0; i < rep->mops.Size(); i++)
-    PrintMop(rep->mops[i], i == 0);
-  for (uptr i = 0; i < rep->threads.Size(); i++)
-    PrintThread(rep->threads[i]);
+  if (rep->typ == ReportTypeRace) {
+    Printf("WARNING: DATA RACE");
+    for (uptr i = 0; i < rep->mops.Size(); i++)
+      PrintMop(rep->mops[i], i == 0);
+    for (uptr i = 0; i < rep->threads.Size(); i++)
+      PrintThread(rep->threads[i]);
+  } else if (rep->typ == ReportTypeDeadlock) {
+    Printf("WARNING: DEADLOCK\n");
+    for (uptr i = 0; i < rep->mutexes.Size(); i++) {
+      Printf("Goroutine %d lock mutex %d while holding mutex %d:\n",
+          999, rep->mutexes[i]->id,
+          rep->mutexes[(i+1) % rep->mutexes.Size()]->id);
+      PrintStack(rep->stacks[2*i]);
+      Printf("\n");
+      Printf("Mutex %d was previously locked here:\n",
+          rep->mutexes[(i+1) % rep->mutexes.Size()]->id);
+      PrintStack(rep->stacks[2*i + 1]);
+      Printf("\n");
+    }
+  }
   Printf("==================\n");
 }
 

@@ -84,15 +84,15 @@ libtsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
 	$(am__append_1) $(am__DEPENDENCIES_1)
-am__objects_1 = tsan_clock.lo tsan_interface_atomic.lo tsan_mutex.lo \
-	tsan_report.lo tsan_rtl_thread.lo tsan_symbolize.lo \
-	tsan_flags.lo tsan_interface.lo tsan_platform_linux.lo \
-	tsan_rtl.lo tsan_stat.lo tsan_sync.lo tsan_ignoreset.lo \
-	tsan_interceptors.lo tsan_md5.lo tsan_platform_mac.lo \
-	tsan_rtl_mutex.lo tsan_suppressions.lo tsan_interface_ann.lo \
-	tsan_mman.lo tsan_rtl_report.lo tsan_fd.lo \
-	tsan_interface_java.lo tsan_mutexset.lo \
-	tsan_symbolize_addr2line_linux.lo tsan_rtl_amd64.lo
+am__objects_1 = tsan_clock.lo tsan_fd.lo tsan_flags.lo \
+	tsan_ignoreset.lo tsan_interceptors.lo tsan_interface_ann.lo \
+	tsan_interface_atomic.lo tsan_interface.lo \
+	tsan_interface_java.lo tsan_md5.lo tsan_mman.lo tsan_mutex.lo \
+	tsan_mutexset.lo tsan_platform_linux.lo tsan_platform_mac.lo \
+	tsan_platform_windows.lo tsan_report.lo tsan_rtl.lo \
+	tsan_rtl_mutex.lo tsan_rtl_report.lo tsan_rtl_thread.lo \
+	tsan_stat.lo tsan_suppressions.lo tsan_symbolize.lo \
+	tsan_sync.lo tsan_rtl_amd64.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -280,32 +280,32 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libtsan.la
 tsan_files = \
-        tsan_clock.cc \
-        tsan_interface_atomic.cc \
-        tsan_mutex.cc \
-        tsan_report.cc \
-        tsan_rtl_thread.cc \
-        tsan_symbolize.cc \
-        tsan_flags.cc \
-        tsan_interface.cc \
-        tsan_platform_linux.cc \
-        tsan_rtl.cc \
-        tsan_stat.cc \
-        tsan_sync.cc \
-	tsan_ignoreset.cc \
-        tsan_interceptors.cc \
-        tsan_md5.cc \
-        tsan_platform_mac.cc \
-        tsan_rtl_mutex.cc \
-        tsan_suppressions.cc \
-        tsan_interface_ann.cc \
-        tsan_mman.cc \
-        tsan_rtl_report.cc \
+	tsan_clock.cc \
 	tsan_fd.cc \
-        tsan_interface_java.cc \
-        tsan_mutexset.cc \
-        tsan_symbolize_addr2line_linux.cc \
-        tsan_rtl_amd64.S
+	tsan_flags.cc \
+	tsan_ignoreset.cc \
+	tsan_interceptors.cc \
+	tsan_interface_ann.cc \
+	tsan_interface_atomic.cc \
+	tsan_interface.cc \
+	tsan_interface_java.cc \
+	tsan_md5.cc \
+	tsan_mman.cc \
+	tsan_mutex.cc \
+	tsan_mutexset.cc \
+	tsan_platform_linux.cc \
+	tsan_platform_mac.cc \
+	tsan_platform_windows.cc \
+	tsan_report.cc \
+	tsan_rtl.cc \
+	tsan_rtl_mutex.cc \
+	tsan_rtl_report.cc \
+	tsan_rtl_thread.cc \
+	tsan_stat.cc \
+	tsan_suppressions.cc \
+	tsan_symbolize.cc \
+	tsan_sync.cc \
+	tsan_rtl_amd64.S
 
 libtsan_la_SOURCES = $(tsan_files) 
 libtsan_la_LIBADD =  \
@@ -442,6 +442,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mutexset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_windows.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_amd64.Plo@am__quote@
@@ -451,7 +452,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_stat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_suppressions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_symbolize.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_symbolize_addr2line_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_sync.Plo@am__quote@
 
 .S.o:

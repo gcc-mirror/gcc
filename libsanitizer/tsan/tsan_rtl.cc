@@ -35,21 +35,20 @@ namespace __tsan {
 THREADLOCAL char cur_thread_placeholder[sizeof(ThreadState)] ALIGNED(64);
 #endif
 static char ctx_placeholder[sizeof(Context)] ALIGNED(64);
+Context *ctx;
 
 // Can be overriden by a front-end.
 #ifdef TSAN_EXTERNAL_HOOKS
 bool OnFinalize(bool failed);
+void OnInitialize();
 #else
 SANITIZER_INTERFACE_ATTRIBUTE
 bool WEAK OnFinalize(bool failed) {
   return failed;
 }
+SANITIZER_INTERFACE_ATTRIBUTE
+void WEAK OnInitialize() {}
 #endif
-
-static Context *ctx;
-Context *CTX() {
-  return ctx;
-}
 
 static char thread_registry_placeholder[sizeof(ThreadRegistry)];
 
@@ -74,7 +73,7 @@ Context::Context()
   , nreported()
   , nmissed_expected()
   , thread_registry(new(thread_registry_placeholder) ThreadRegistry(
-      CreateThreadContext, kMaxTid, kThreadQuarantineSize))
+      CreateThreadContext, kMaxTid, kThreadQuarantineSize, kMaxTidReuse))
   , racy_stacks(MBlockRacyStacks)
   , racy_addresses(MBlockRacyAddresses)
   , fired_suppressions(8) {
@@ -82,13 +81,15 @@ Context::Context()
 
 // The objects are allocated in TLS, so one may rely on zero-initialization.
 ThreadState::ThreadState(Context *ctx, int tid, int unique_id, u64 epoch,
+                         unsigned reuse_count,
                          uptr stk_addr, uptr stk_size,
                          uptr tls_addr, uptr tls_size)
   : fast_state(tid, epoch)
   // Do not touch these, rely on zero initialization,
   // they may be accessed before the ctor.
   // , ignore_reads_and_writes()
-  // , in_rtl()
+  // , ignore_interceptors()
+  , clock(tid, reuse_count)
 #ifndef TSAN_GO
   , jmp_bufs(MBlockJmpBuf)
 #endif
@@ -97,7 +98,11 @@ ThreadState::ThreadState(Context *ctx, int tid, int unique_id, u64 epoch,
   , stk_addr(stk_addr)
   , stk_size(stk_size)
   , tls_addr(tls_addr)
-  , tls_size(tls_size) {
+  , tls_size(tls_size)
+#ifndef TSAN_GO
+  , last_sleep_clock(tid)
+#endif
+{
 }
 
 static void MemoryProfiler(Context *ctx, fd_t fd, int i) {
@@ -113,8 +118,13 @@ static void MemoryProfiler(Context *ctx, fd_t fd, int i) {
 }
 
 static void BackgroundThread(void *arg) {
-  ScopedInRtl in_rtl;
-  Context *ctx = CTX();
+#ifndef TSAN_GO
+  // This is a non-initialized non-user thread, nothing to see here.
+  // We don't use ScopedIgnoreInterceptors, because we want ignores to be
+  // enabled even when the thread function exits (e.g. during pthread thread
+  // shutdown code).
+  cur_thread()->ignore_interceptors++;
+#endif
   const u64 kMs2Ns = 1000 * 1000;
 
   fd_t mprof_fd = kInvalidFd;
@@ -133,8 +143,10 @@ static void BackgroundThread(void *arg) {
 
   u64 last_flush = NanoTime();
   uptr last_rss = 0;
-  for (int i = 0; ; i++) {
-    SleepForSeconds(1);
+  for (int i = 0;
+      atomic_load(&ctx->stop_background_thread, memory_order_relaxed) == 0;
+      i++) {
+    SleepForMillis(100);
     u64 now = NanoTime();
 
     // Flush memory if requested.
@@ -185,6 +197,16 @@ static void BackgroundThread(void *arg) {
   }
 }
 
+static void StartBackgroundThread() {
+  ctx->background_thread = internal_start_thread(&BackgroundThread, 0);
+}
+
+static void StopBackgroundThread() {
+  atomic_store(&ctx->stop_background_thread, 1, memory_order_relaxed);
+  internal_join_thread(ctx->background_thread);
+  ctx->background_thread = 0;
+}
+
 void DontNeedShadowFor(uptr addr, uptr size) {
   uptr shadow_beg = MemToShadow(addr);
   uptr shadow_end = MemToShadow(addr + size);
@@ -192,6 +214,9 @@ void DontNeedShadowFor(uptr addr, uptr size) {
 }
 
 void MapShadow(uptr addr, uptr size) {
+  // Global data is not 64K aligned, but there are no adjacent mappings,
+  // so we can get away with unaligned mapping.
+  // CHECK_EQ(addr, addr & ~((64 << 10) - 1));  // windows wants 64K alignment
   MmapFixedNoReserve(MemToShadow(addr), size * kShadowMultiplier);
 }
 
@@ -199,6 +224,7 @@ void MapThreadTrace(uptr addr, uptr size) {
   DPrintf("#0: Mapping trace at %p-%p(0x%zx)\n", addr, addr + size, size);
   CHECK_GE(addr, kTraceMemBegin);
   CHECK_LE(addr + size, kTraceMemBegin + kTraceMemSize);
+  CHECK_EQ(addr, addr & ~((64 << 10) - 1));  // windows wants 64K alignment
   uptr addr1 = (uptr)MmapFixedNoReserve(addr, size);
   if (addr1 != addr) {
     Printf("FATAL: ThreadSanitizer can not mmap thread trace (%p/%p->%p)\n",
@@ -213,11 +239,12 @@ void Initialize(ThreadState *thr) {
   if (is_initialized)
     return;
   is_initialized = true;
+  // We are not ready to handle interceptors yet.
+  ScopedIgnoreInterceptors ignore;
   SanitizerToolName = "ThreadSanitizer";
   // Install tool-specific callbacks in sanitizer_common.
   SetCheckFailedCallback(TsanCheckFailed);
 
-  ScopedInRtl in_rtl;
 #ifndef TSAN_GO
   InitializeAllocator();
 #endif
@@ -235,19 +262,13 @@ void Initialize(ThreadState *thr) {
   InitializeSuppressions();
 #ifndef TSAN_GO
   InitializeLibIgnore();
-  // Initialize external symbolizer before internal threads are started.
-  const char *external_symbolizer = flags()->external_symbolizer_path;
-  bool external_symbolizer_started =
-      Symbolizer::Init(external_symbolizer)->IsExternalAvailable();
-  if (external_symbolizer != 0 && external_symbolizer[0] != '\0' &&
-      !external_symbolizer_started) {
-    Printf("Failed to start external symbolizer: '%s'\n",
-           external_symbolizer);
-    Die();
-  }
+  Symbolizer::Init(common_flags()->external_symbolizer_path);
   Symbolizer::Get()->AddHooks(EnterSymbolizer, ExitSymbolizer);
 #endif
-  internal_start_thread(&BackgroundThread, 0);
+  StartBackgroundThread();
+  SetSandboxingCallback(StopBackgroundThread);
+  if (flags()->detect_deadlocks)
+    ctx->dd = DDetector::Create(flags());
 
   if (ctx->flags.verbosity)
     Printf("***** Running under ThreadSanitizer v2 (pid %d) *****\n",
@@ -257,7 +278,6 @@ void Initialize(ThreadState *thr) {
   int tid = ThreadCreate(thr, 0, 0, true);
   CHECK_EQ(tid, 0);
   ThreadStart(thr, tid, internal_getpid());
-  CHECK_EQ(thr->in_rtl, 1);
   ctx->initialized = true;
 
   if (flags()->stop_on_start) {
@@ -266,10 +286,11 @@ void Initialize(ThreadState *thr) {
            (int)internal_getpid());
     while (__tsan_resumed == 0) {}
   }
+
+  OnInitialize();
 }
 
 int Finalize(ThreadState *thr) {
-  ScopedInRtl in_rtl;
   Context *ctx = __tsan::ctx;
   bool failed = false;
 
@@ -319,6 +340,38 @@ int Finalize(ThreadState *thr) {
 }
 
 #ifndef TSAN_GO
+void ForkBefore(ThreadState *thr, uptr pc) {
+  ctx->thread_registry->Lock();
+  ctx->report_mtx.Lock();
+}
+
+void ForkParentAfter(ThreadState *thr, uptr pc) {
+  ctx->report_mtx.Unlock();
+  ctx->thread_registry->Unlock();
+}
+
+void ForkChildAfter(ThreadState *thr, uptr pc) {
+  ctx->report_mtx.Unlock();
+  ctx->thread_registry->Unlock();
+
+  uptr nthread = 0;
+  ctx->thread_registry->GetNumberOfThreads(0, 0, &nthread /* alive threads */);
+  VPrintf(1, "ThreadSanitizer: forked new process with pid %d,"
+      " parent had %d threads\n", (int)internal_getpid(), (int)nthread);
+  if (nthread == 1) {
+    internal_start_thread(&BackgroundThread, 0);
+  } else {
+    // We've just forked a multi-threaded process. We cannot reasonably function
+    // after that (some mutexes may be locked before fork). So just enable
+    // ignores for everything in the hope that we will exec soon.
+    ctx->after_multithreaded_fork = true;
+    thr->ignore_interceptors++;
+    ThreadIgnoreBegin(thr, pc);
+    ThreadIgnoreSyncBegin(thr, pc);
+  }
+}
+#endif
+
 u32 CurrentStackId(ThreadState *thr, uptr pc) {
   if (thr->shadow_stack_pos == 0)  // May happen during bootstrap.
     return 0;
@@ -332,11 +385,9 @@ u32 CurrentStackId(ThreadState *thr, uptr pc) {
     thr->shadow_stack_pos--;
   return id;
 }
-#endif
 
 void TraceSwitch(ThreadState *thr) {
   thr->nomalloc++;
-  ScopedInRtl in_rtl;
   Trace *thr_trace = ThreadTrace(thr->tid);
   Lock l(&thr_trace->mtx);
   unsigned trace = (thr->fast_state.epoch() / kTracePartSize) % TraceParts();
@@ -541,16 +592,18 @@ void MemoryAccess(ThreadState *thr, uptr pc, uptr addr,
   FastState fast_state = thr->fast_state;
   if (fast_state.GetIgnoreBit())
     return;
-  fast_state.IncrementEpoch();
-  thr->fast_state = fast_state;
+  if (kCollectHistory) {
+    fast_state.IncrementEpoch();
+    thr->fast_state = fast_state;
+    // We must not store to the trace if we do not store to the shadow.
+    // That is, this call must be moved somewhere below.
+    TraceAddEvent(thr, fast_state, EventTypeMop, pc);
+  }
+
   Shadow cur(fast_state);
   cur.SetAddr0AndSizeLog(addr & 7, kAccessSizeLog);
   cur.SetWrite(kAccessIsWrite);
   cur.SetAtomic(kIsAtomic);
-
-  // We must not store to the trace if we do not store to the shadow.
-  // That is, this call must be moved somewhere below.
-  TraceAddEvent(thr, fast_state, EventTypeMop, pc);
 
   MemoryAccessImpl(thr, addr, kAccessSizeLog, kAccessIsWrite, kIsAtomic,
       shadow_mem, cur);
@@ -581,7 +634,7 @@ static void MemoryRangeSet(ThreadState *thr, uptr pc, uptr addr, uptr size,
   size = (size + (kShadowCell - 1)) & ~(kShadowCell - 1);
   // UnmapOrDie/MmapFixedNoReserve does not work on Windows,
   // so we do it only for C/C++.
-  if (kGoMode || size < 64*1024) {
+  if (kGoMode || size < common_flags()->clear_shadow_mmap_threshold) {
     u64 *p = (u64*)MemToShadow(addr);
     CHECK(IsShadowMem((uptr)p));
     CHECK(IsShadowMem((uptr)(p + size * kShadowCnt / kShadowCell - 1)));
@@ -631,8 +684,10 @@ void MemoryRangeFreed(ThreadState *thr, uptr pc, uptr addr, uptr size) {
   thr->is_freeing = true;
   MemoryAccessRange(thr, pc, addr, size, true);
   thr->is_freeing = false;
-  thr->fast_state.IncrementEpoch();
-  TraceAddEvent(thr, thr->fast_state, EventTypeMop, pc);
+  if (kCollectHistory) {
+    thr->fast_state.IncrementEpoch();
+    TraceAddEvent(thr, thr->fast_state, EventTypeMop, pc);
+  }
   Shadow s(thr->fast_state);
   s.ClearIgnoreBit();
   s.MarkAsFreed();
@@ -642,8 +697,10 @@ void MemoryRangeFreed(ThreadState *thr, uptr pc, uptr addr, uptr size) {
 }
 
 void MemoryRangeImitateWrite(ThreadState *thr, uptr pc, uptr addr, uptr size) {
-  thr->fast_state.IncrementEpoch();
-  TraceAddEvent(thr, thr->fast_state, EventTypeMop, pc);
+  if (kCollectHistory) {
+    thr->fast_state.IncrementEpoch();
+    TraceAddEvent(thr, thr->fast_state, EventTypeMop, pc);
+  }
   Shadow s(thr->fast_state);
   s.ClearIgnoreBit();
   s.SetWrite(true);
@@ -653,11 +710,12 @@ void MemoryRangeImitateWrite(ThreadState *thr, uptr pc, uptr addr, uptr size) {
 
 ALWAYS_INLINE USED
 void FuncEntry(ThreadState *thr, uptr pc) {
-  DCHECK_EQ(thr->in_rtl, 0);
   StatInc(thr, StatFuncEnter);
   DPrintf2("#%d: FuncEntry %p\n", (int)thr->fast_state.tid(), (void*)pc);
-  thr->fast_state.IncrementEpoch();
-  TraceAddEvent(thr, thr->fast_state, EventTypeFuncEnter, pc);
+  if (kCollectHistory) {
+    thr->fast_state.IncrementEpoch();
+    TraceAddEvent(thr, thr->fast_state, EventTypeFuncEnter, pc);
+  }
 
   // Shadow stack maintenance can be replaced with
   // stack unwinding during trace switch (which presumably must be faster).
@@ -683,11 +741,12 @@ void FuncEntry(ThreadState *thr, uptr pc) {
 
 ALWAYS_INLINE USED
 void FuncExit(ThreadState *thr) {
-  DCHECK_EQ(thr->in_rtl, 0);
   StatInc(thr, StatFuncExit);
   DPrintf2("#%d: FuncExit\n", (int)thr->fast_state.tid());
-  thr->fast_state.IncrementEpoch();
-  TraceAddEvent(thr, thr->fast_state, EventTypeFuncExit, 0);
+  if (kCollectHistory) {
+    thr->fast_state.IncrementEpoch();
+    TraceAddEvent(thr, thr->fast_state, EventTypeFuncExit, 0);
+  }
 
   DCHECK_GT(thr->shadow_stack_pos, thr->shadow_stack);
 #ifndef TSAN_GO
@@ -702,7 +761,8 @@ void ThreadIgnoreBegin(ThreadState *thr, uptr pc) {
   CHECK_GT(thr->ignore_reads_and_writes, 0);
   thr->fast_state.SetIgnoreBit();
 #ifndef TSAN_GO
-  thr->mop_ignore_set.Add(CurrentStackId(thr, pc));
+  if (!ctx->after_multithreaded_fork)
+    thr->mop_ignore_set.Add(CurrentStackId(thr, pc));
 #endif
 }
 
@@ -723,7 +783,8 @@ void ThreadIgnoreSyncBegin(ThreadState *thr, uptr pc) {
   thr->ignore_sync++;
   CHECK_GT(thr->ignore_sync, 0);
 #ifndef TSAN_GO
-  thr->sync_ignore_set.Add(CurrentStackId(thr, pc));
+  if (!ctx->after_multithreaded_fork)
+    thr->sync_ignore_set.Add(CurrentStackId(thr, pc));
 #endif
 }
 
@@ -733,7 +794,7 @@ void ThreadIgnoreSyncEnd(ThreadState *thr, uptr pc) {
   CHECK_GE(thr->ignore_sync, 0);
 #ifndef TSAN_GO
   if (thr->ignore_sync == 0)
-    thr->mop_ignore_set.Reset();
+    thr->sync_ignore_set.Reset();
 #endif
 }
 

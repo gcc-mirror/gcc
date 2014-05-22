@@ -98,12 +98,11 @@ bool ThreadSuspender::SuspendThread(SuspendedThreadID thread_id) {
                        &pterrno)) {
     // Either the thread is dead, or something prevented us from attaching.
     // Log this event and move on.
-    if (common_flags()->verbosity)
-      Report("Could not attach to thread %d (errno %d).\n", thread_id, pterrno);
+    VReport(1, "Could not attach to thread %d (errno %d).\n", thread_id,
+            pterrno);
     return false;
   } else {
-    if (common_flags()->verbosity)
-      Report("Attached to thread %d.\n", thread_id);
+    VReport(1, "Attached to thread %d.\n", thread_id);
     // The thread is not guaranteed to stop before ptrace returns, so we must
     // wait on it.
     uptr waitpid_status;
@@ -112,9 +111,8 @@ bool ThreadSuspender::SuspendThread(SuspendedThreadID thread_id) {
     if (internal_iserror(waitpid_status, &wperrno)) {
       // Got a ECHILD error. I don't think this situation is possible, but it
       // doesn't hurt to report it.
-      if (common_flags()->verbosity)
-        Report("Waiting on thread %d failed, detaching (errno %d).\n",
-            thread_id, wperrno);
+      VReport(1, "Waiting on thread %d failed, detaching (errno %d).\n",
+              thread_id, wperrno);
       internal_ptrace(PTRACE_DETACH, thread_id, NULL, NULL);
       return false;
     }
@@ -129,14 +127,12 @@ void ThreadSuspender::ResumeAllThreads() {
     int pterrno;
     if (!internal_iserror(internal_ptrace(PTRACE_DETACH, tid, NULL, NULL),
                           &pterrno)) {
-      if (common_flags()->verbosity)
-        Report("Detached from thread %d.\n", tid);
+      VReport(1, "Detached from thread %d.\n", tid);
     } else {
       // Either the thread is dead, or we are already detached.
       // The latter case is possible, for instance, if this function was called
       // from a signal handler.
-      if (common_flags()->verbosity)
-        Report("Could not detach from thread %d (errno %d).\n", tid, pterrno);
+      VReport(1, "Could not detach from thread %d (errno %d).\n", tid, pterrno);
     }
   }
 }
@@ -248,18 +244,18 @@ static int TracerThread(void* argument) {
   // the mask we inherited from the caller thread.
   for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
        signal_index++) {
-    __sanitizer_kernel_sigaction_t new_sigaction;
+    __sanitizer_sigaction new_sigaction;
     internal_memset(&new_sigaction, 0, sizeof(new_sigaction));
     new_sigaction.sigaction = TracerThreadSignalHandler;
     new_sigaction.sa_flags = SA_ONSTACK | SA_SIGINFO;
     internal_sigfillset(&new_sigaction.sa_mask);
-    internal_sigaction(kUnblockedSignals[signal_index], &new_sigaction, NULL);
+    internal_sigaction_norestorer(kUnblockedSignals[signal_index],
+                                  &new_sigaction, NULL);
   }
 
   int exit_code = 0;
   if (!thread_suspender.SuspendAllThreads()) {
-    if (common_flags()->verbosity)
-      Report("Failed suspending threads.\n");
+    VReport(1, "Failed suspending threads.\n");
     exit_code = 3;
   } else {
     tracer_thread_argument->callback(thread_suspender.suspended_threads_list(),
@@ -299,9 +295,9 @@ class ScopedStackSpaceWithGuard {
 
 // We have a limitation on the stack frame size, so some stuff had to be moved
 // into globals.
-static __sanitizer_kernel_sigset_t blocked_sigset;
-static __sanitizer_kernel_sigset_t old_sigset;
-static __sanitizer_kernel_sigaction_t old_sigactions
+static __sanitizer_sigset_t blocked_sigset;
+static __sanitizer_sigset_t old_sigset;
+static __sanitizer_sigaction old_sigactions
     [ARRAY_SIZE(kUnblockedSignals)];
 
 class StopTheWorldScope {
@@ -318,12 +314,12 @@ class StopTheWorldScope {
       // Remove the signal from the set of blocked signals.
       internal_sigdelset(&blocked_sigset, kUnblockedSignals[signal_index]);
       // Install the default handler.
-      __sanitizer_kernel_sigaction_t new_sigaction;
+      __sanitizer_sigaction new_sigaction;
       internal_memset(&new_sigaction, 0, sizeof(new_sigaction));
       new_sigaction.handler = SIG_DFL;
       internal_sigfillset(&new_sigaction.sa_mask);
-      internal_sigaction(kUnblockedSignals[signal_index], &new_sigaction,
-                      &old_sigactions[signal_index]);
+      internal_sigaction_norestorer(kUnblockedSignals[signal_index],
+          &new_sigaction, &old_sigactions[signal_index]);
     }
     int sigprocmask_status =
         internal_sigprocmask(SIG_BLOCK, &blocked_sigset, &old_sigset);
@@ -344,8 +340,8 @@ class StopTheWorldScope {
     // Restore the signal handlers.
     for (uptr signal_index = 0; signal_index < ARRAY_SIZE(kUnblockedSignals);
          signal_index++) {
-      internal_sigaction(kUnblockedSignals[signal_index],
-                &old_sigactions[signal_index], NULL);
+      internal_sigaction_norestorer(kUnblockedSignals[signal_index],
+                                    &old_sigactions[signal_index], NULL);
     }
     internal_sigprocmask(SIG_SETMASK, &old_sigset, &old_sigset);
   }
@@ -387,8 +383,7 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
       /* child_tidptr */);
   int local_errno = 0;
   if (internal_iserror(tracer_pid, &local_errno)) {
-    if (common_flags()->verbosity)
-      Report("Failed spawning a tracer thread (errno %d).\n", local_errno);
+    VReport(1, "Failed spawning a tracer thread (errno %d).\n", local_errno);
     tracer_thread_argument.mutex.Unlock();
   } else {
     ScopedSetTracerPID scoped_set_tracer_pid(tracer_pid);
@@ -404,11 +399,9 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
     // At this point, any signal will either be blocked or kill us, so waitpid
     // should never return (and set errno) while the tracer thread is alive.
     uptr waitpid_status = internal_waitpid(tracer_pid, NULL, __WALL);
-    if (internal_iserror(waitpid_status, &local_errno)) {
-      if (common_flags()->verbosity)
-        Report("Waiting on the tracer thread failed (errno %d).\n",
-            local_errno);
-    }
+    if (internal_iserror(waitpid_status, &local_errno))
+      VReport(1, "Waiting on the tracer thread failed (errno %d).\n",
+              local_errno);
   }
 }
 
@@ -449,9 +442,8 @@ int SuspendedThreadsList::GetRegistersAndSP(uptr index,
   int pterrno;
   if (internal_iserror(internal_ptrace(PTRACE_GETREGS, tid, NULL, &regs),
                        &pterrno)) {
-    if (common_flags()->verbosity)
-      Report("Could not get registers from thread %d (errno %d).\n",
-           tid, pterrno);
+    VReport(1, "Could not get registers from thread %d (errno %d).\n", tid,
+            pterrno);
     return -1;
   }
 
