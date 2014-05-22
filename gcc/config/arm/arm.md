@@ -7630,12 +7630,13 @@
 
 (define_insn "*arm_cmpdi_unsigned"
   [(set (reg:CC_CZ CC_REGNUM)
-	(compare:CC_CZ (match_operand:DI 0 "s_register_operand" "r")
-		       (match_operand:DI 1 "arm_di_operand"	"rDi")))]
+	(compare:CC_CZ (match_operand:DI 0 "s_register_operand" "r,r")
+		       (match_operand:DI 1 "arm_di_operand"	"rDi,rDi")))]
   "TARGET_32BIT"
   "cmp\\t%R0, %R1\;it eq\;cmpeq\\t%Q0, %Q1"
   [(set_attr "conds" "set")
-   (set_attr "length" "8")]
+   (set_attr "arch" "a,t2")
+   (set_attr "length" "8,10")]
 )
 
 (define_insn "*arm_cmpdi_zero"

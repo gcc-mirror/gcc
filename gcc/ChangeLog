@@ -1,3 +1,8 @@
+2014-05-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/61208
+	* arm.md (arm_cmpdi_unsigned): Fix length calculation for Thumb2.
+
 2013-05-22  Richard Biener  <rguenther@suse.de>
 
 	* BASE-VER: Set to 4.8.4.
