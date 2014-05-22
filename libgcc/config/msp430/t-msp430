@@ -42,7 +42,7 @@ LIB2ADD = \
 	$(srcdir)/config/msp430/floathisf.c \
 	$(srcdir)/config/msp430/cmpd.c
 
-HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections
+HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections -mhwmult=none
 
 # Local Variables:
 # mode: Makefile
