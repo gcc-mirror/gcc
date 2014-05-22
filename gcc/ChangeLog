@@ -1,3 +1,8 @@
+2014-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-streamer-in.c (unpack_ts_real_cst_value_fields): Make sure
+	all padding bits in REAL_VALUE_TYPE are cleared.
+
 2014-05-21  Guozhi Wei  <carrot@google.com>
 
 	PR target/61202
