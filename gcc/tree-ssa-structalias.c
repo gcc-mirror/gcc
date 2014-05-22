@@ -3974,7 +3974,6 @@ handle_lhs_call (gimple stmt, tree lhs, int flags, vec<ce_s> rhsc,
 
   /* If the call returns an argument unmodified override the rhs
      constraints.  */
-  flags = gimple_call_return_flags (stmt);
   if (flags & ERF_RETURNS_ARG
       && (flags & ERF_RETURN_ARG_MASK) < gimple_call_num_args (stmt))
     {
@@ -4299,9 +4298,11 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	return true;
       case BUILT_IN_STRDUP:
       case BUILT_IN_STRNDUP:
+      case BUILT_IN_REALLOC:
 	if (gimple_call_lhs (t))
 	  {
-	    handle_lhs_call (t, gimple_call_lhs (t), gimple_call_flags (t),
+	    handle_lhs_call (t, gimple_call_lhs (t),
+			     gimple_call_return_flags (t) | ERF_NOALIAS,
 			     vNULL, fndecl);
 	    get_constraint_for_ptr_offset (gimple_call_lhs (t),
 					   NULL_TREE, &lhsc);
@@ -4312,6 +4313,17 @@ find_func_aliases_for_builtin_call (struct function *fn, gimple t)
 	    process_all_all_constraints (lhsc, rhsc);
 	    lhsc.release ();
 	    rhsc.release ();
+	    /* For realloc the resulting pointer can be equal to the
+	       argument as well.  But only doing this wouldn't be
+	       correct because with ptr == 0 realloc behaves like malloc.  */
+	    if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_REALLOC)
+	      {
+		get_constraint_for (gimple_call_lhs (t), &lhsc);
+		get_constraint_for (gimple_call_arg (t, 0), &rhsc);
+		process_all_all_constraints (lhsc, rhsc);
+		lhsc.release ();
+		rhsc.release ();
+	      }
 	    return true;
 	  }
 	break;
@@ -4535,7 +4547,8 @@ find_func_aliases_for_call (struct function *fn, gimple t)
       else
 	handle_rhs_call (t, &rhsc);
       if (gimple_call_lhs (t))
-	handle_lhs_call (t, gimple_call_lhs (t), flags, rhsc, fndecl);
+	handle_lhs_call (t, gimple_call_lhs (t),
+			 gimple_call_return_flags (t), rhsc, fndecl);
       rhsc.release ();
     }
   else
