@@ -10453,7 +10453,7 @@ c_parser_omp_clause_num_teams (c_parser *parser, tree list)
 static tree
 c_parser_omp_clause_thread_limit (c_parser *parser, tree list)
 {
-  location_t num_teams_loc = c_parser_peek_token (parser)->location;
+  location_t num_thread_limit_loc = c_parser_peek_token (parser)->location;
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
@@ -10483,7 +10483,7 @@ c_parser_omp_clause_thread_limit (c_parser *parser, tree list)
       check_no_duplicate_clause (list, OMP_CLAUSE_THREAD_LIMIT,
 				 "thread_limit");
 
-      c = build_omp_clause (num_teams_loc, OMP_CLAUSE_THREAD_LIMIT);
+      c = build_omp_clause (num_thread_limit_loc, OMP_CLAUSE_THREAD_LIMIT);
       OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = t;
       OMP_CLAUSE_CHAIN (c) = list;
       list = c;
