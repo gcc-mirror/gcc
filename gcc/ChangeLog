@@ -1,3 +1,8 @@
+2014-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-forwprop.c (associate_plusminus): Extend (T)(P + A) - (T)P
+	-> (T)A transformation to integer types.
+
 2014-05-22  Teresa Johnson  <tejohnson@google.com>
 
 	* gcov-io.c (gcov_position): Use gcov_nonruntime_assert.

@@ -2642,49 +2642,47 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 		  gimple_set_modified (stmt, true);
 		}
 	    }
-	  else if (CONVERT_EXPR_CODE_P (def_code) && code == MINUS_EXPR
+	  else if (code == MINUS_EXPR
+		   && CONVERT_EXPR_CODE_P (def_code)
+		   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
 		   && TREE_CODE (rhs2) == SSA_NAME)
 	    {
-	      /* (T)(ptr + adj) - (T)ptr -> (T)adj.  */
+	      /* (T)(P + A) - (T)P -> (T)A.  */
 	      gimple def_stmt2 = SSA_NAME_DEF_STMT (rhs2);
-	      if (TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
-		  && is_gimple_assign (def_stmt2)
+	      if (is_gimple_assign (def_stmt2)
 		  && can_propagate_from (def_stmt2)
 		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt2))
 		  && TREE_CODE (gimple_assign_rhs1 (def_stmt2)) == SSA_NAME)
 		{
-		  /* Now we have (T)A - (T)ptr.  */
-		  tree ptr = gimple_assign_rhs1 (def_stmt2);
+		  /* Now we have (T)X - (T)P.  */
+		  tree p = gimple_assign_rhs1 (def_stmt2);
 		  def_stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt));
 		  if (is_gimple_assign (def_stmt2)
-		      && gimple_assign_rhs_code (def_stmt2) == POINTER_PLUS_EXPR
-		      && gimple_assign_rhs1 (def_stmt2) == ptr)
+		      && can_propagate_from (def_stmt2)
+		      && (gimple_assign_rhs_code (def_stmt2) == POINTER_PLUS_EXPR
+			  || gimple_assign_rhs_code (def_stmt2) == PLUS_EXPR)
+		      && gimple_assign_rhs1 (def_stmt2) == p)
 		    {
-		      /* And finally (T)(ptr + X) - (T)ptr.  */
-		      tree adj = gimple_assign_rhs2 (def_stmt2);
-		      /* If the conversion of the pointer adjustment to the
-		         final type requires a sign- or zero-extension we
-			 have to punt - it is not defined which one is
-			 correct.  */
-		      if (TYPE_PRECISION (TREE_TYPE (rhs1))
-			  <= TYPE_PRECISION (TREE_TYPE (adj))
-			  || (TREE_CODE (adj) == INTEGER_CST
-			      && tree_int_cst_sign_bit (adj) == 0))
+		      /* And finally (T)(P + A) - (T)P.  */
+		      tree a = gimple_assign_rhs2 (def_stmt2);
+		      /* For pointer types, if the conversion of A to the final
+			 type requires a sign- or zero-extension, then we have
+			 to punt - it is not defined which one is correct.  */
+		      if (!POINTER_TYPE_P (TREE_TYPE (rhs1))
+			  || TYPE_PRECISION (TREE_TYPE (rhs1))
+			     <= TYPE_PRECISION (TREE_TYPE (a))
+			  || (TREE_CODE (a) == INTEGER_CST
+			      && tree_int_cst_sign_bit (a) == 0))
 			{
 			  if (useless_type_conversion_p (TREE_TYPE (rhs1),
-							 TREE_TYPE (adj)))
-			    {
-			      code = TREE_CODE (adj);
-			      rhs1 = adj;
-			    }
+							 TREE_TYPE (a)))
+			    code = TREE_CODE (a);
 			  else
-			    {
-			      code = NOP_EXPR;
-			      rhs1 = adj;
-			    }
+			    code = NOP_EXPR;
+			  rhs1 = a;
 			  rhs2 = NULL_TREE;
 			  gimple_assign_set_rhs_with_ops (gsi, code, rhs1,
-							  NULL_TREE);
+							  rhs2);
 			  gcc_assert (gsi_stmt (*gsi) == stmt);
 			  gimple_set_modified (stmt, true);
 			}
