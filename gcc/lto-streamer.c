@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-streamer.h"
 #include "lto-streamer.h"
+#include "lto-section-names.h"
 #include "streamer-hooks.h"
 
 /* Statistics gathered during LTO, WPA and LTRANS.  */

@@ -1,3 +1,15 @@
+2012-05-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/darwin.c: Include "lto-section-names.h".
+	(LTO_SEGMENT_NAME): Don't define.
+	* config/i386/winnt.c: Include "lto-section-names.h".
+	* lto-streamer.c: Include "lto-section-names.h".
+	* lto-streamer.h (LTO_SECTION_NAME_PREFIX): Don't define.
+	* lto-wrapper.c: Include "lto-section-names.h".
+	(LTO_SECTION_NAME_PREFIX): Don't define.
+	* lto-section-names.h: New file.
+	* cgraphunit.c: Include "lto-section-names.h".
+
 2014-05-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/htm.md (ttest): Use correct shift value to get CR0.

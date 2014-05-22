@@ -32,12 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto.h"
 #include "tm.h"
 #include "lto-streamer.h"
+#include "lto-section-names.h"
 #include "simple-object.h"
-
-/* Segment name for LTO sections.  This is only used for Mach-O.
-   FIXME: This needs to be kept in sync with darwin.c.  */
-
-#define LTO_SEGMENT_NAME "__GNU_LTO"
 
 /* An LTO file wrapped around an simple_object.  */
 

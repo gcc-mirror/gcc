@@ -46,13 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "simple-object.h"
-
-/* From lto-streamer.h which we cannot include with -fkeep-inline-functions.
-   ???  Split out a lto-streamer-core.h.  */
-
-#define LTO_SECTION_NAME_PREFIX         ".gnu.lto_"
-
-/* End of lto-streamer.h copy.  */
+#include "lto-section-names.h"
 
 int debug;				/* true if -save-temps.  */
 int verbose;				/* true if -v.  */

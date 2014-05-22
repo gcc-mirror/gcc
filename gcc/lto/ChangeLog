@@ -1,3 +1,9 @@
+2012-05-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* lto-object.c: Include "lto-section-names.h".
+	(LTO_SEGMENT_NAME): Don't define.
+	* lto.c: Include "lto-section-names.h".
+
 2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/61012
