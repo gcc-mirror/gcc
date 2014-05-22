@@ -5567,9 +5567,8 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
   else
     {
       /* Try to choose the better insn.  */
-      int index = 0, i, n;
+      int index = 0, i;
       rtx insn;
-      int try_data = 1, try_control = 1;
       ds_t ts;
 
       insn = ready_element (ready, 0);
@@ -5579,43 +5578,10 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
 	  return 0;
 	}
 
-      if (spec_info
-	  && spec_info->flags & (PREFER_NON_DATA_SPEC
-				 | PREFER_NON_CONTROL_SPEC))
-	{
-	  for (i = 0, n = ready->n_ready; i < n; i++)
-	    {
-	      rtx x;
-	      ds_t s;
-
-	      x = ready_element (ready, i);
-	      s = TODO_SPEC (x);
-
-	      if (spec_info->flags & PREFER_NON_DATA_SPEC
-		  && !(s & DATA_SPEC))
-		{
-		  try_data = 0;
-		  if (!(spec_info->flags & PREFER_NON_CONTROL_SPEC)
-		      || !try_control)
-		    break;
-		}
-
-	      if (spec_info->flags & PREFER_NON_CONTROL_SPEC
-		  && !(s & CONTROL_SPEC))
-		{
-		  try_control = 0;
-		  if (!(spec_info->flags & PREFER_NON_DATA_SPEC) || !try_data)
-		    break;
-		}
-	    }
-	}
-
       ts = TODO_SPEC (insn);
       if ((ts & SPECULATIVE)
-	  && (((!try_data && (ts & DATA_SPEC))
-	       || (!try_control && (ts & CONTROL_SPEC)))
-	      || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
-		  && !targetm.sched
+	  && (targetm.sched.first_cycle_multipass_dfa_lookahead_guard_spec
+	      && (!targetm.sched
 		  .first_cycle_multipass_dfa_lookahead_guard_spec (insn))))
 	/* Discard speculative instruction that stands first in the ready
 	   list.  */
@@ -5624,16 +5590,8 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
 	  return 1;
 	}
 
-      ready_try[0] = 0;
-
-      for (i = 1; i < ready->n_ready; i++)
-	{
-	  insn = ready_element (ready, i);
-
-	  ready_try [i]
-	    = ((!try_data && (TODO_SPEC (insn) & DATA_SPEC))
-               || (!try_control && (TODO_SPEC (insn) & CONTROL_SPEC)));
-	}
+      for (i = 0; i < ready->n_ready; i++)
+	ready_try [i] = 0;
 
       /* Let the target filter the search space.  */
       for (i = 1; i < ready->n_ready; i++)

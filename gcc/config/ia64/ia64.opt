@@ -164,12 +164,10 @@ Target Report Var(mflag_sched_spec_control_ldc) Init(0)
 Use simple data speculation check for control speculation
 
 msched-prefer-non-data-spec-insns
-Target Report Var(mflag_sched_prefer_non_data_spec_insns) Init(0)
-If set, data speculative instructions will be chosen for schedule only if there are no other choices at the moment 
+Target Ignore Warn(switch %qs is no longer supported)
 
 msched-prefer-non-control-spec-insns
-Target Report Var(mflag_sched_prefer_non_control_spec_insns) Init(0)
-If set, control speculative instructions will be chosen for schedule only if there are no other choices at the moment 
+Target Ignore Warn(switch %qs is no longer supported)
 
 msched-count-spec-in-critical-path
 Target Report Var(mflag_sched_count_spec_in_critical_path) Init(0)

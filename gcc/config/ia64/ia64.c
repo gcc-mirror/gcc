@@ -7943,17 +7943,9 @@ ia64_set_sched_flags (spec_info_t spec_info)
 	  
 	  spec_info->flags = 0;
       
-	  if ((mask & DATA_SPEC) && mflag_sched_prefer_non_data_spec_insns)
-	    spec_info->flags |= PREFER_NON_DATA_SPEC;
-
-	  if (mask & CONTROL_SPEC)
-	    {
-	      if (mflag_sched_prefer_non_control_spec_insns)
-		spec_info->flags |= PREFER_NON_CONTROL_SPEC;
-
-	      if (sel_sched_p () && mflag_sel_sched_dont_check_control_spec)
-		spec_info->flags |= SEL_SCHED_SPEC_DONT_CHECK_CONTROL;
-	    }
+	  if ((mask & CONTROL_SPEC)
+	      && sel_sched_p () && mflag_sel_sched_dont_check_control_spec)
+	    spec_info->flags |= SEL_SCHED_SPEC_DONT_CHECK_CONTROL;
 
 	  if (sched_verbose >= 1)
 	    spec_info->dump = sched_dump;
