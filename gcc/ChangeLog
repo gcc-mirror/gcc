@@ -1,3 +1,22 @@
+2014-05-22  Teresa Johnson  <tejohnson@google.com>
+
+	* gcov-io.c (gcov_position): Use gcov_nonruntime_assert.
+	(gcov_is_error): Remove gcc_assert from IN_LIBGCOV code.
+	(gcov_rewrite): Use gcov_nonruntime_assert.
+	(gcov_open): Ditto.
+	(gcov_write_words): Ditto.
+	(gcov_write_length): Ditto.
+	(gcov_read_words): Use gcov_nonruntime_assert, and remove
+	gcc_assert from IN_LIBGCOV code.
+	(gcov_read_summary): Use gcov_error to flag profile corruption.
+	(gcov_sync): Use gcov_nonruntime_assert.
+	(gcov_seek): Remove gcc_assert from IN_LIBGCOV code.
+	(gcov_histo_index): Use gcov_nonruntime_assert.
+	(static void gcov_histogram_merge): Ditto.
+	(compute_working_sets): Ditto.
+	* gcov-io.h (gcov_nonruntime_assert): Define.
+	(gcov_error): Define for !IN_LIBGCOV
+
 2014-05-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
