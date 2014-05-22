@@ -407,6 +407,8 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
   int alt;
   int i, j, k;
   int insn_allows_mem[MAX_RECOG_OPERANDS];
+  move_table *move_in_cost, *move_out_cost;
+  short (*mem_cost)[2];
 
   for (i = 0; i < n_ops; i++)
     insn_allows_mem[i] = 0;
@@ -517,41 +519,78 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  bool in_p = recog_data.operand_type[i] != OP_OUT;
 		  bool out_p = recog_data.operand_type[i] != OP_IN;
 		  enum reg_class op_class = classes[i];
-		  move_table *move_in_cost, *move_out_cost;
 
 		  ira_init_register_move_cost_if_necessary (mode);
 		  if (! in_p)
 		    {
 		      ira_assert (out_p);
-		      move_out_cost = ira_may_move_out_cost[mode];
-		      for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+		      if (op_class == NO_REGS)
 			{
-			  rclass = cost_classes[k];
-			  pp_costs[k]
-			    = move_out_cost[op_class][rclass] * frequency;
+			  mem_cost = ira_memory_move_cost[mode];
+			  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+			    {
+			      rclass = cost_classes[k];
+			      pp_costs[k] = mem_cost[rclass][0] * frequency;
+			    }
+			}
+		      else
+			{
+			  move_out_cost = ira_may_move_out_cost[mode];
+			  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+			    {
+			      rclass = cost_classes[k];
+			      pp_costs[k]
+				= move_out_cost[op_class][rclass] * frequency;
+			    }
 			}
 		    }
 		  else if (! out_p)
 		    {
 		      ira_assert (in_p);
-		      move_in_cost = ira_may_move_in_cost[mode];
-		      for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+		      if (op_class == NO_REGS)
 			{
-			  rclass = cost_classes[k];
-			  pp_costs[k]
-			    = move_in_cost[rclass][op_class] * frequency;
+			  mem_cost = ira_memory_move_cost[mode];
+			  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+			    {
+			      rclass = cost_classes[k];
+			      pp_costs[k] = mem_cost[rclass][1] * frequency;
+			    }
+			}
+		      else
+			{
+			  move_in_cost = ira_may_move_in_cost[mode];
+			  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+			    {
+			      rclass = cost_classes[k];
+			      pp_costs[k]
+				= move_in_cost[rclass][op_class] * frequency;
+			    }
 			}
 		    }
 		  else
 		    {
-		      move_in_cost = ira_may_move_in_cost[mode];
-		      move_out_cost = ira_may_move_out_cost[mode];
-		      for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+		      if (op_class == NO_REGS)
 			{
-			  rclass = cost_classes[k];
-			  pp_costs[k] = ((move_in_cost[rclass][op_class]
-					  + move_out_cost[op_class][rclass])
-					 * frequency);
+			  mem_cost = ira_memory_move_cost[mode];
+			  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+			    {
+			      rclass = cost_classes[k];
+			      pp_costs[k] = ((mem_cost[rclass][0]
+					      + mem_cost[rclass][1])
+					     * frequency);
+			    }
+			}
+		      else
+			{
+			  move_in_cost = ira_may_move_in_cost[mode];
+			  move_out_cost = ira_may_move_out_cost[mode];
+			  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
+			    {
+			      rclass = cost_classes[k];
+			      pp_costs[k] = ((move_in_cost[rclass][op_class]
+					      + move_out_cost[op_class][rclass])
+					     * frequency);
+			    }
 			}
 		    }
 
@@ -783,8 +822,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  bool in_p = recog_data.operand_type[i] != OP_OUT;
 		  bool out_p = recog_data.operand_type[i] != OP_IN;
 		  enum reg_class op_class = classes[i];
-		  move_table *move_in_cost, *move_out_cost;
-		  short (*mem_cost)[2];
 
 		  ira_init_register_move_cost_if_necessary (mode);
 		  if (! in_p)
@@ -860,10 +897,15 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			}
 		    }
 
-		  /* If the alternative actually allows memory, make
-		     things a bit cheaper since we won't need an extra
-		     insn to load it.  */
-		  if (op_class != NO_REGS)
+		  if (op_class == NO_REGS)
+		    /* Although we don't need insn to reload from
+		       memory, still accessing memory is usually more
+		       expensive than a register.  */
+		    pp->mem_cost = frequency;
+		  else
+		    /* If the alternative actually allows memory, make
+		       things a bit cheaper since we won't need an
+		       extra insn to load it.  */
 		    pp->mem_cost
 		      = ((out_p ? ira_memory_move_cost[mode][op_class][0] : 0)
 			 + (in_p ? ira_memory_move_cost[mode][op_class][1] : 0)

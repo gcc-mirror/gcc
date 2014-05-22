@@ -1,3 +1,9 @@
+2014-05-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60969
+	* ira-costs.c (record_reg_classes): Process NO_REGS for matching
+	constraints.  Set up mem cost for NO_REGS case.
+
 2014-05-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/htm.md (ttest): Use correct shift value to get CR0.
