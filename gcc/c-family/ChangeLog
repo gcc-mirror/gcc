@@ -1,3 +1,9 @@
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-common.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
+	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
+	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.
+
 2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	* c-common.h (CTI_VOID_ZERO, void_zero_node): Delete.

@@ -1,3 +1,10 @@
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* f95-lang.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
+	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
+	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.
+	* types.def: Simplify examples for DEF_FUNCTION_TYPE_*.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* f95-lang.c (pushlevel): Adjust.
