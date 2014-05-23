@@ -39,7 +39,7 @@
   "titan_issue,titan_fxu_sh")
 
 (define_insn_reservation "titan_imul" 5
-  (and (eq_attr "type" "imul,imul2,imul3,imul_compare")
+  (and (eq_attr "type" "mul")
        (eq_attr "cpu" "titan"))       
   "titan_issue,titan_fxu_sh,nothing*5,titan_fxu_wb")  
 

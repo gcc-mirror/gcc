@@ -77,17 +77,20 @@
   "ppc750_du,iu1_7xx|iu2_7xx,iu1_7xx|iu2_7xx,iu1_7xx|iu2_7xx")
 
 (define_insn_reservation "ppc750-imul" 4
-  (and (eq_attr "type" "imul,imul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx*4")
 
 (define_insn_reservation "ppc750-imul2" 3
-  (and (eq_attr "type" "imul2")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "16")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx*2")
 
 (define_insn_reservation "ppc750-imul3" 2
-  (and (eq_attr "type" "imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx")
 
