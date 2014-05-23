@@ -26242,8 +26242,8 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 		    }
                   case TYPE_INTEGER:
                   case TYPE_ADD:
+                  case TYPE_LOGICAL:
                   case TYPE_COMPARE:
-                  case TYPE_FAST_COMPARE:
                   case TYPE_EXTS:
                   case TYPE_INSERT:
                     {
@@ -26306,8 +26306,8 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 		    }
                   case TYPE_INTEGER:
                   case TYPE_ADD:
+                  case TYPE_LOGICAL:
                   case TYPE_COMPARE:
-                  case TYPE_FAST_COMPARE:
                   case TYPE_EXTS:
                   case TYPE_INSERT:
                     {
