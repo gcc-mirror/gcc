@@ -5222,7 +5222,7 @@ finish_omp_clauses (tree clauses)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
   bitmap_head aligned_head;
-  tree c, t, *pc = &clauses;
+  tree c, t, *pc;
   bool branch_seen = false;
   bool copyprivate_seen = false;
 
