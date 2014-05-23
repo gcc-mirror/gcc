@@ -250,12 +250,14 @@
 
 ; FXU divides are not pipelined
 (define_insn_reservation "power8-idiv" 37
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,fxu0_power8*37|fxu1_power8*37")
 
 (define_insn_reservation "power8-ldiv" 68
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,fxu0_power8*68|fxu1_power8*68")
 

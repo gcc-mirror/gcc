@@ -255,12 +255,14 @@
 ; SPR move only executes in first IU.
 ; Integer division only executes in second IU.
 (define_insn_reservation "power5-idiv" 36
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu2_power5*35")
 
 (define_insn_reservation "power5-ldiv" 68
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu2_power5*67")
 

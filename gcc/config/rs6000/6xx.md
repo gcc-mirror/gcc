@@ -123,22 +123,25 @@
   "mciu_6xx*5")
 
 (define_insn_reservation "ppc604-idiv" 20
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
        (eq_attr "cpu" "ppc604,ppc604e"))
   "mciu_6xx*19")
 
 (define_insn_reservation "ppc620-idiv" 37
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "ppc620"))
   "mciu_6xx*36")
 
 (define_insn_reservation "ppc630-idiv" 21
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "ppc630"))
   "mciu_6xx*20")
 
 (define_insn_reservation "ppc620-ldiv" 37
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "ppc620,ppc630"))
   "mciu_6xx*36")
 

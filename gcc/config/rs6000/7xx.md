@@ -95,7 +95,7 @@
   "ppc750_du,iu1_7xx")
 
 (define_insn_reservation "ppc750-idiv" 19
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx*19")
 

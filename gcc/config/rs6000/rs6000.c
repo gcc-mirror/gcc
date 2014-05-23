@@ -26261,16 +26261,10 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                         return 17;
                       break;
                     }
-                  case TYPE_IDIV:
+                  case TYPE_DIV:
                     {
                       if (! store_data_bypass_p (dep_insn, insn))
-                        return 45;
-                      break;
-                    }
-                  case TYPE_LDIV:
-                    {
-                      if (! store_data_bypass_p (dep_insn, insn))
-                        return 57;
+                        return get_attr_size (dep_insn) == SIZE_32 ? 45 : 57;
                       break;
                     }
                   default:
@@ -26331,16 +26325,10 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                         return 17;
                       break;
                     }
-                  case TYPE_IDIV:
+                  case TYPE_DIV:
                     {
                       if (set_to_load_agen (dep_insn, insn))
-                        return 45;
-                      break;
-                    }
-                  case TYPE_LDIV:
-                    {
-                      if (set_to_load_agen (dep_insn, insn))
-                        return 57;
+                        return get_attr_size (dep_insn) == SIZE_32 ? 45 : 57;
                       break;
                     }
                   default:
@@ -26492,7 +26480,7 @@ is_cracked_insn (rtx insn)
 	  || type == TYPE_COMPARE || type == TYPE_DELAYED_COMPARE
 	  || (type == TYPE_MUL
 	      && get_attr_dot (insn) == DOT_YES)
-	  || type == TYPE_IDIV || type == TYPE_LDIV
+	  || type == TYPE_DIV
 	  || (type == TYPE_INSERT
 	      && get_attr_size (insn) == SIZE_32))
 	return true;
@@ -26649,7 +26637,7 @@ rs6000_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
 	break;
 
       case TYPE_MUL:
-      case TYPE_IDIV:
+      case TYPE_DIV:
 	fprintf (stderr, "priority was %#x (%d) before adjustment\n",
 		 priority, priority);
 	if (priority >= 0 && priority < 0x01000000)
@@ -26703,8 +26691,7 @@ is_nonpipeline_insn (rtx insn)
 
   type = get_attr_type (insn);
   if (type == TYPE_MUL
-      || type == TYPE_IDIV
-      || type == TYPE_LDIV
+      || type == TYPE_DIV
       || type == TYPE_SDIV
       || type == TYPE_DDIV
       || type == TYPE_SSQRT
@@ -27303,8 +27290,7 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_CR_LOGICAL:
         case TYPE_MTJMPR:
         case TYPE_MFJMPR:
-        case TYPE_IDIV:
-        case TYPE_LDIV:
+        case TYPE_DIV:
         case TYPE_LOAD_L:
         case TYPE_STORE_C:
         case TYPE_ISYNC:
@@ -27325,7 +27311,6 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_VAR_SHIFT_ROTATE:
         case TYPE_TRAP:
         case TYPE_MUL:
-        case TYPE_IDIV:
         case TYPE_INSERT:
         case TYPE_DELAYED_COMPARE:
         case TYPE_FPCOMPARE:
@@ -27338,6 +27323,11 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_LOAD_L:
         case TYPE_STORE_C:
           return true;
+        case TYPE_DIV:
+          if (get_attr_size (insn) == SIZE_32)
+            return true;
+          else
+            break;
         case TYPE_LOAD:
         case TYPE_STORE:
         case TYPE_FPLOAD:
@@ -27359,8 +27349,7 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MFCR:
         case TYPE_MFCRF:
         case TYPE_MTCR:
-        case TYPE_IDIV:
-        case TYPE_LDIV:
+        case TYPE_DIV:
         case TYPE_COMPARE:
         case TYPE_DELAYED_COMPARE:
         case TYPE_VAR_DELAYED_COMPARE:
@@ -27469,7 +27458,6 @@ insn_must_be_last_in_group (rtx insn)
       case TYPE_VAR_SHIFT_ROTATE:
       case TYPE_TRAP:
       case TYPE_MUL:
-      case TYPE_IDIV:
       case TYPE_DELAYED_COMPARE:
       case TYPE_FPCOMPARE:
       case TYPE_MFCR:
@@ -27481,6 +27469,11 @@ insn_must_be_last_in_group (rtx insn)
       case TYPE_LOAD_L:
       case TYPE_STORE_C:
         return true;
+      case TYPE_DIV:
+        if (get_attr_size (insn) == SIZE_32)
+          return true;
+        else
+          break;
       default:
         break;
     }
