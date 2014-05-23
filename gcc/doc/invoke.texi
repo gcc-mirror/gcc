@@ -10108,6 +10108,13 @@ an array access known, it adds a bonus of
 @option{ipa-cp-array-index-hint-bonus} bonus to the profitability
 score of the candidate.
 
+@item ipa-max-aa-steps
+During its analysis of function bodies, IPA-CP employs alias analysis
+in order to track values pointed to by function parameters.  In order
+not spend too much time analyzing huge functions, it will give up and
+consider all memory clobbered after examining
+@option{ipa-max-aa-steps} statements modifying memory.
+
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.

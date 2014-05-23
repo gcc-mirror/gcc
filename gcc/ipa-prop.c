@@ -60,14 +60,57 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "tree-ssanames.h"
 #include "dbgcnt.h"
+#include "domwalk.h"
 
-/* Intermediate information about a parameter that is only useful during the
-   run of ipa_analyze_node and is not kept afterwards.  */
+/* Intermediate information that we get from alias analysis about a particular
+   parameter in a particular basic_block.  When a parameter or the memory it
+   references is marked modified, we use that information in all dominatd
+   blocks without cosulting alias analysis oracle.  */
 
-struct param_analysis_info
+struct param_aa_status
 {
+  /* Set when this structure contains meaningful information.  If not, the
+     structure describing a dominating BB should be used instead.  */
+  bool valid;
+
+  /* Whether we have seen something which might have modified the data in
+     question.  PARM is for the parameter itself, REF is for data it points to
+     but using the alias type of individual accesses and PT is the same thing
+     but for computing aggregate pass-through functions using a very inclusive
+     ao_ref.  */
   bool parm_modified, ref_modified, pt_modified;
-  bitmap parm_visited_statements, pt_visited_statements;
+};
+
+/* Information related to a given BB that used only when looking at function
+   body.  */
+
+struct ipa_bb_info
+{
+  /* Call graph edges going out of this BB.  */
+  vec<cgraph_edge_p> cg_edges;
+  /* Alias analysis statuses of each formal parameter at this bb.  */
+  vec<param_aa_status> param_aa_statuses;
+};
+
+/* Structure with global information that is only used when looking at function
+   body. */
+
+struct func_body_info
+{
+  /* The node that is being analyzed.  */
+  cgraph_node *node;
+
+  /* Its info.  */
+  struct ipa_node_params *info;
+
+  /* Information about individual BBs. */
+  vec<ipa_bb_info> bb_infos;
+
+  /* Number of parameters.  */
+  int param_count;
+
+  /* Number of statements already walked by when analyzing this function.  */
+  unsigned int aa_walked;
 };
 
 /* Vector where the parameter infos are actually stored. */
@@ -511,6 +554,16 @@ ipa_binfo_from_known_type_jfunc (struct ipa_jump_func *jfunc)
 			      jfunc->value.known_type.component_type);
 }
 
+/* Get IPA BB information about the given BB.  FBI is the context of analyzis
+   of this function body.  */
+
+static struct ipa_bb_info *
+ipa_get_bb_info (struct func_body_info *fbi, basic_block bb)
+{
+  gcc_checking_assert (fbi);
+  return &fbi->bb_infos[bb->index];
+}
+
 /* Structure to be passed in between detect_type_change and
    check_stmt_for_type_change.  */
 
@@ -770,34 +823,101 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
   return true;
 }
 
-/* Return true if a load from a formal parameter PARM_LOAD is known to retrieve
-   a value known not to be modified in this function before reaching the
-   statement STMT.  PARM_AINFO is a pointer to a structure containing temporary
-   information about the parameter.  */
+/* Return true if we have already walked so many statements in AA that we
+   should really just start giving up.  */
 
 static bool
-parm_preserved_before_stmt_p (struct param_analysis_info *parm_ainfo,
-			       gimple stmt, tree parm_load)
+aa_overwalked (struct func_body_info *fbi)
 {
+  gcc_checking_assert (fbi);
+  return fbi->aa_walked > (unsigned) PARAM_VALUE (PARAM_IPA_MAX_AA_STEPS);
+}
+
+/* Find the nearest valid aa status for parameter specified by INDEX that
+   dominates BB.  */
+
+static struct param_aa_status *
+find_dominating_aa_status (struct func_body_info *fbi, basic_block bb,
+			   int index)
+{
+  while (true)
+    {
+      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+      if (!bb)
+	return NULL;
+      struct ipa_bb_info *bi = ipa_get_bb_info (fbi, bb);
+      if (!bi->param_aa_statuses.is_empty ()
+	  && bi->param_aa_statuses[index].valid)
+	return &bi->param_aa_statuses[index];
+    }
+}
+
+/* Get AA status structure for the given BB and parameter with INDEX.  Allocate
+   structures and/or intialize the result with a dominating description as
+   necessary.  */
+
+static struct param_aa_status *
+parm_bb_aa_status_for_bb (struct func_body_info *fbi, basic_block bb,
+			  int index)
+{
+  gcc_checking_assert (fbi);
+  struct ipa_bb_info *bi = ipa_get_bb_info (fbi, bb);
+  if (bi->param_aa_statuses.is_empty ())
+    bi->param_aa_statuses.safe_grow_cleared (fbi->param_count);
+  struct param_aa_status *paa = &bi->param_aa_statuses[index];
+  if (!paa->valid)
+    {
+      gcc_checking_assert (!paa->parm_modified
+			   && !paa->ref_modified
+			   && !paa->pt_modified);
+      struct param_aa_status *dom_paa;
+      dom_paa = find_dominating_aa_status (fbi, bb, index);
+      if (dom_paa)
+	*paa = *dom_paa;
+      else
+	paa->valid = true;
+    }
+
+  return paa;
+}
+
+/* Return true if a load from a formal parameter PARM_LOAD is known to retrieve
+   a value known not to be modified in this function before reaching the
+   statement STMT.  FBI holds information about the function we have so far
+   gathered but do not survive the summary building stage.  */
+
+static bool
+parm_preserved_before_stmt_p (struct func_body_info *fbi, int index,
+			      gimple stmt, tree parm_load)
+{
+  struct param_aa_status *paa;
   bool modified = false;
-  bitmap *visited_stmts;
   ao_ref refd;
 
-  if (parm_ainfo && parm_ainfo->parm_modified)
-    return false;
+  /* FIXME: FBI can be NULL if we are being called from outside
+     ipa_node_analysis or ipcp_transform_function, which currently happens
+     during inlining analysis.  It would be great to extend fbi's lifetime and
+     always have it.  Currently, we are just not afraid of too much walking in
+     that case.  */
+  if (fbi)
+    {
+      if (aa_overwalked (fbi))
+	return false;
+      paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
+      if (paa->parm_modified)
+	return false;
+    }
+  else
+    paa = NULL;
 
   gcc_checking_assert (gimple_vuse (stmt) != NULL_TREE);
   ao_ref_init (&refd, parm_load);
-  /* We can cache visited statements only when parm_ainfo is available and when
-     we are looking at a naked load of the whole parameter.  */
-  if (!parm_ainfo || TREE_CODE (parm_load) != PARM_DECL)
-    visited_stmts = NULL;
-  else
-    visited_stmts = &parm_ainfo->parm_visited_statements;
-  walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
-		      visited_stmts);
-  if (parm_ainfo && modified)
-    parm_ainfo->parm_modified = true;
+  int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified,
+				   &modified, NULL);
+  if (fbi)
+    fbi->aa_walked += walked;
+  if (paa && modified)
+    paa->parm_modified = true;
   return !modified;
 }
 
@@ -806,8 +926,8 @@ parm_preserved_before_stmt_p (struct param_analysis_info *parm_ainfo,
    modified.  Otherwise return -1.  */
 
 static int
-load_from_unmodified_param (vec<ipa_param_descriptor> descriptors,
-			    struct param_analysis_info *parms_ainfo,
+load_from_unmodified_param (struct func_body_info *fbi,
+			    vec<ipa_param_descriptor> descriptors,
 			    gimple stmt)
 {
   int index;
@@ -822,45 +942,58 @@ load_from_unmodified_param (vec<ipa_param_descriptor> descriptors,
 
   index = ipa_get_param_decl_index_1 (descriptors, op1);
   if (index < 0
-      || !parm_preserved_before_stmt_p (parms_ainfo ? &parms_ainfo[index]
-					: NULL, stmt, op1))
+      || !parm_preserved_before_stmt_p (fbi, index, stmt, op1))
     return -1;
 
   return index;
 }
 
-/* Return true if memory reference REF loads data that are known to be
-   unmodified in this function before reaching statement STMT.  PARM_AINFO, if
-   non-NULL, is a pointer to a structure containing temporary information about
-   PARM.  */
+/* Return true if memory reference REF (which must be a load through parameter
+   with INDEX) loads data that are known to be unmodified in this function
+   before reaching statement STMT.  */
 
 static bool
-parm_ref_data_preserved_p (struct param_analysis_info *parm_ainfo,
-			      gimple stmt, tree ref)
+parm_ref_data_preserved_p (struct func_body_info *fbi,
+			   int index, gimple stmt, tree ref)
 {
+  struct param_aa_status *paa;
   bool modified = false;
   ao_ref refd;
 
-  gcc_checking_assert (gimple_vuse (stmt));
-  if (parm_ainfo && parm_ainfo->ref_modified)
-    return false;
+  /* FIXME: FBI can be NULL if we are being called from outside
+     ipa_node_analysis or ipcp_transform_function, which currently happens
+     during inlining analysis.  It would be great to extend fbi's lifetime and
+     always have it.  Currently, we are just not afraid of too much walking in
+     that case.  */
+  if (fbi)
+    {
+      if (aa_overwalked (fbi))
+	return false;
+      paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
+      if (paa->ref_modified)
+	return false;
+    }
+  else
+    paa = NULL;
 
+  gcc_checking_assert (gimple_vuse (stmt));
   ao_ref_init (&refd, ref);
-  walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
-		      NULL);
-  if (parm_ainfo && modified)
-    parm_ainfo->ref_modified = true;
+  int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified,
+				   &modified, NULL);
+  if (fbi)
+    fbi->aa_walked += walked;
+  if (paa && modified)
+    paa->ref_modified = true;
   return !modified;
 }
 
-/* Return true if the data pointed to by PARM is known to be unmodified in this
-   function before reaching call statement CALL into which it is passed.
-   PARM_AINFO is a pointer to a structure containing temporary information
-   about PARM.  */
+/* Return true if the data pointed to by PARM (which is a parameter with INDEX)
+   is known to be unmodified in this function before reaching call statement
+   CALL into which it is passed.  FBI describes the function body.  */
 
 static bool
-parm_ref_data_pass_through_p (struct param_analysis_info *parm_ainfo,
-			       gimple call, tree parm)
+parm_ref_data_pass_through_p (struct func_body_info *fbi, int index,
+			      gimple call, tree parm)
 {
   bool modified = false;
   ao_ref refd;
@@ -869,17 +1002,21 @@ parm_ref_data_pass_through_p (struct param_analysis_info *parm_ainfo,
      function because it is not goin to use it.  But do not cache the result
      either.  Also, no such calculations for non-pointers.  */
   if (!gimple_vuse (call)
-      || !POINTER_TYPE_P (TREE_TYPE (parm)))
+      || !POINTER_TYPE_P (TREE_TYPE (parm))
+      || aa_overwalked (fbi))
     return false;
 
-  if (parm_ainfo->pt_modified)
+  struct param_aa_status *paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (call),
+							  index);
+  if (paa->pt_modified)
     return false;
 
   ao_ref_init_from_ptr_and_size (&refd, parm, NULL_TREE);
-  walk_aliased_vdefs (&refd, gimple_vuse (call), mark_modified, &modified,
-		      parm_ainfo ? &parm_ainfo->pt_visited_statements : NULL);
+  int walked = walk_aliased_vdefs (&refd, gimple_vuse (call), mark_modified,
+				   &modified, NULL);
+  fbi->aa_walked += walked;
   if (modified)
-    parm_ainfo->pt_modified = true;
+    paa->pt_modified = true;
   return !modified;
 }
 
@@ -894,10 +1031,11 @@ parm_ref_data_pass_through_p (struct param_analysis_info *parm_ainfo,
    reference respectively.  */
 
 static bool
-ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor> descriptors,
-			  struct param_analysis_info *parms_ainfo, gimple stmt,
-			  tree op, int *index_p, HOST_WIDE_INT *offset_p,
-			  HOST_WIDE_INT *size_p, bool *by_ref_p)
+ipa_load_from_parm_agg_1 (struct func_body_info *fbi,
+			  vec<ipa_param_descriptor> descriptors,
+			  gimple stmt, tree op, int *index_p,
+			  HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
+			  bool *by_ref_p)
 {
   int index;
   HOST_WIDE_INT size, max_size;
@@ -910,8 +1048,7 @@ ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor> descriptors,
     {
       int index = ipa_get_param_decl_index_1 (descriptors, base);
       if (index >= 0
-	  && parm_preserved_before_stmt_p (parms_ainfo ? &parms_ainfo[index]
-					   : NULL, stmt, op))
+	  && parm_preserved_before_stmt_p (fbi, index, stmt, op))
 	{
 	  *index_p = index;
 	  *by_ref_p = false;
@@ -950,12 +1087,11 @@ ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor> descriptors,
       */
 
       gimple def = SSA_NAME_DEF_STMT (TREE_OPERAND (base, 0));
-      index = load_from_unmodified_param (descriptors, parms_ainfo, def);
+      index = load_from_unmodified_param (fbi, descriptors, def);
     }
 
   if (index >= 0
-      && parm_ref_data_preserved_p (parms_ainfo ? &parms_ainfo[index] : NULL,
-				    stmt, op))
+      && parm_ref_data_preserved_p (fbi, index, stmt, op))
     {
       *index_p = index;
       *by_ref_p = true;
@@ -974,7 +1110,7 @@ ipa_load_from_parm_agg (struct ipa_node_params *info, gimple stmt,
 			tree op, int *index_p, HOST_WIDE_INT *offset_p,
 			bool *by_ref_p)
 {
-  return ipa_load_from_parm_agg_1 (info->descriptors, NULL, stmt, op, index_p,
+  return ipa_load_from_parm_agg_1 (NULL, info->descriptors, stmt, op, index_p,
 				   offset_p, NULL, by_ref_p);
 }
 
@@ -1032,8 +1168,8 @@ ipa_load_from_parm_agg (struct ipa_node_params *info, gimple stmt,
    only needed for intraprocedural analysis.  */
 
 static void
-compute_complex_assign_jump_func (struct ipa_node_params *info,
-				  struct param_analysis_info *parms_ainfo,
+compute_complex_assign_jump_func (struct func_body_info *fbi,
+				  struct ipa_node_params *info,
 				  struct ipa_jump_func *jfunc,
 				  gimple call, gimple stmt, tree name,
 				  tree param_type)
@@ -1049,13 +1185,13 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
       if (SSA_NAME_IS_DEFAULT_DEF (op1))
 	index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op1));
       else
-	index = load_from_unmodified_param (info->descriptors, parms_ainfo,
+	index = load_from_unmodified_param (fbi, info->descriptors,
 					    SSA_NAME_DEF_STMT (op1));
       tc_ssa = op1;
     }
   else
     {
-      index = load_from_unmodified_param (info->descriptors, parms_ainfo, stmt);
+      index = load_from_unmodified_param (fbi, info->descriptors, stmt);
       tc_ssa = gimple_assign_lhs (stmt);
     }
 
@@ -1076,8 +1212,7 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
 	}
       else if (gimple_assign_single_p (stmt))
 	{
-	  bool agg_p = parm_ref_data_pass_through_p (&parms_ainfo[index],
-						     call, tc_ssa);
+	  bool agg_p = parm_ref_data_pass_through_p (fbi, index, call, tc_ssa);
 	  bool type_p = false;
 
 	  if (param_type && POINTER_TYPE_P (param_type))
@@ -1116,7 +1251,7 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
       if (type_p || jfunc->type == IPA_JF_UNKNOWN)
 	ipa_set_ancestor_jf (jfunc, offset,
 			     type_p ? TREE_TYPE (param_type) : NULL, index,
-			     parm_ref_data_pass_through_p (&parms_ainfo[index],
+			     parm_ref_data_pass_through_p (fbi, index,
 							   call, ssa), type_p);
     }
 }
@@ -1188,8 +1323,8 @@ get_ancestor_addr_info (gimple assign, tree *obj_p, HOST_WIDE_INT *offset)
      return D.1879_6;  */
 
 static void
-compute_complex_ancestor_jump_func (struct ipa_node_params *info,
-				    struct param_analysis_info *parms_ainfo,
+compute_complex_ancestor_jump_func (struct func_body_info *fbi,
+				    struct ipa_node_params *info,
 				    struct ipa_jump_func *jfunc,
 				    gimple call, gimple phi, tree param_type)
 {
@@ -1248,9 +1383,10 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
     type_p = !detect_type_change (obj, expr, TREE_TYPE (param_type),
 				  call, jfunc, offset);
   if (type_p || jfunc->type == IPA_JF_UNKNOWN)
-    ipa_set_ancestor_jf (jfunc, offset, type_p ? TREE_TYPE (param_type) : NULL, index,
-			 parm_ref_data_pass_through_p (&parms_ainfo[index],
-						       call, parm), type_p);
+    ipa_set_ancestor_jf (jfunc, offset, type_p ? TREE_TYPE (param_type) : NULL,
+			 index,
+			 parm_ref_data_pass_through_p (fbi, index, call, parm),
+			 type_p);
 }
 
 /* Given OP which is passed as an actual argument to a called function,
@@ -1595,7 +1731,7 @@ ipa_get_callee_param_type (struct cgraph_edge *e, int i)
    to this callsite.  */
 
 static void
-ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
+ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
 				     struct cgraph_edge *cs)
 {
   struct ipa_node_params *info = IPA_NODE_REF (cs->caller);
@@ -1629,7 +1765,7 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 	  /* Aggregate passed by value, check for pass-through, otherwise we
 	     will attempt to fill in aggregate contents later in this
 	     for cycle.  */
-	  if (parm_preserved_before_stmt_p (&parms_ainfo[index], call, arg))
+	  if (parm_preserved_before_stmt_p (fbi, index, call, arg))
 	    {
 	      ipa_set_jf_simple_pass_through (jfunc, index, false, false);
 	      continue;
@@ -1643,8 +1779,7 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 	      if (index >= 0)
 		{
 		  bool agg_p, type_p;
-		  agg_p = parm_ref_data_pass_through_p (&parms_ainfo[index],
-							call, arg);
+		  agg_p = parm_ref_data_pass_through_p (fbi, index, call, arg);
 		  if (param_type && POINTER_TYPE_P (param_type))
 		    type_p = !detect_type_change_ssa (arg, TREE_TYPE (param_type),
 						      call, jfunc);
@@ -1659,10 +1794,10 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 	    {
 	      gimple stmt = SSA_NAME_DEF_STMT (arg);
 	      if (is_gimple_assign (stmt))
-		compute_complex_assign_jump_func (info, parms_ainfo, jfunc,
+		compute_complex_assign_jump_func (fbi, info, jfunc,
 						  call, stmt, arg, param_type);
 	      else if (gimple_code (stmt) == GIMPLE_PHI)
-		compute_complex_ancestor_jump_func (info, parms_ainfo, jfunc,
+		compute_complex_ancestor_jump_func (fbi, info, jfunc,
 						    call, stmt, param_type);
 	    }
 	}
@@ -1693,27 +1828,29 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 }
 
 /* Compute jump functions for all edges - both direct and indirect - outgoing
-   from NODE.  Also count the actual arguments in the process.  */
+   from BB.  */
 
 static void
-ipa_compute_jump_functions (struct cgraph_node *node,
-			    struct param_analysis_info *parms_ainfo)
+ipa_compute_jump_functions_for_bb (struct func_body_info *fbi, basic_block bb)
 {
+  struct ipa_bb_info *bi = ipa_get_bb_info (fbi, bb);
+  int i;
   struct cgraph_edge *cs;
 
-  for (cs = node->callees; cs; cs = cs->next_callee)
+  FOR_EACH_VEC_ELT_REVERSE (bi->cg_edges, i, cs)
     {
-      struct cgraph_node *callee = cgraph_function_or_thunk_node (cs->callee,
-								  NULL);
-      /* We do not need to bother analyzing calls to unknown
-	 functions unless they may become known during lto/whopr.  */
-      if (!callee->definition && !flag_lto)
-	continue;
-      ipa_compute_jump_functions_for_edge (parms_ainfo, cs);
-    }
+      struct cgraph_node *callee = cs->callee;
 
-  for (cs = node->indirect_calls; cs; cs = cs->next_callee)
-    ipa_compute_jump_functions_for_edge (parms_ainfo, cs);
+      if (callee)
+	{
+	  cgraph_function_or_thunk_node (callee, NULL);
+	  /* We do not need to bother analyzing calls to unknown functions
+	     unless they may become known during lto/whopr.  */
+	  if (!callee->definition && !flag_lto)
+	    continue;
+	}
+      ipa_compute_jump_functions_for_edge (fbi, cs);
+    }
 }
 
 /* If STMT looks like a statement loading a value from a member pointer formal
@@ -1856,37 +1993,30 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt)
    passed by value or reference.  */
 
 static void
-ipa_analyze_indirect_call_uses (struct cgraph_node *node,
-				struct ipa_node_params *info,
-				struct param_analysis_info *parms_ainfo,
-				gimple call, tree target)
+ipa_analyze_indirect_call_uses (struct func_body_info *fbi, gimple call,
+				tree target)
 {
-  gimple def;
-  tree n1, n2;
-  gimple d1, d2;
-  tree rec, rec2, cond;
-  gimple branch;
-  int index;
-  basic_block bb, virt_bb, join;
+  struct ipa_node_params *info = fbi->info;
   HOST_WIDE_INT offset;
   bool by_ref;
 
   if (SSA_NAME_IS_DEFAULT_DEF (target))
     {
       tree var = SSA_NAME_VAR (target);
-      index = ipa_get_param_decl_index (info, var);
+      int index = ipa_get_param_decl_index (info, var);
       if (index >= 0)
-	ipa_note_param_call (node, index, call);
+	ipa_note_param_call (fbi->node, index, call);
       return;
     }
 
-  def = SSA_NAME_DEF_STMT (target);
+  int index;
+  gimple def = SSA_NAME_DEF_STMT (target);
   if (gimple_assign_single_p (def)
-      && ipa_load_from_parm_agg_1 (info->descriptors, parms_ainfo, def,
+      && ipa_load_from_parm_agg_1 (fbi, info->descriptors, def,
 				   gimple_assign_rhs1 (def), &index, &offset,
 				   NULL, &by_ref))
     {
-      struct cgraph_edge *cs = ipa_note_param_call (node, index, call);
+      struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
       if (cs->indirect_info->offset != offset)
 	cs->indirect_info->outer_type = NULL;
       cs->indirect_info->offset = offset;
@@ -1905,14 +2035,16 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
 
   /* First, we need to check whether one of these is a load from a member
      pointer that is a parameter to this function. */
-  n1 = PHI_ARG_DEF (def, 0);
-  n2 = PHI_ARG_DEF (def, 1);
+  tree n1 = PHI_ARG_DEF (def, 0);
+  tree n2 = PHI_ARG_DEF (def, 1);
   if (!ipa_is_ssa_with_stmt_def (n1) || !ipa_is_ssa_with_stmt_def (n2))
     return;
-  d1 = SSA_NAME_DEF_STMT (n1);
-  d2 = SSA_NAME_DEF_STMT (n2);
+  gimple d1 = SSA_NAME_DEF_STMT (n1);
+  gimple d2 = SSA_NAME_DEF_STMT (n2);
 
-  join = gimple_bb (def);
+  tree rec;
+  basic_block bb, virt_bb;
+  basic_block join = gimple_bb (def);
   if ((rec = ipa_get_stmt_member_ptr_load_param (d1, false, &offset)))
     {
       if (ipa_get_stmt_member_ptr_load_param (d2, false, NULL))
@@ -1940,7 +2072,7 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
   /* Third, let's see that the branching is done depending on the least
      significant bit of the pfn. */
 
-  branch = last_stmt (bb);
+  gimple branch = last_stmt (bb);
   if (!branch || gimple_code (branch) != GIMPLE_COND)
     return;
 
@@ -1949,7 +2081,7 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
       || !integer_zerop (gimple_cond_rhs (branch)))
     return;
 
-  cond = gimple_cond_lhs (branch);
+  tree cond = gimple_cond_lhs (branch);
   if (!ipa_is_ssa_with_stmt_def (cond))
     return;
 
@@ -1974,6 +2106,7 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
       def = SSA_NAME_DEF_STMT (cond);
     }
 
+  tree rec2;
   rec2 = ipa_get_stmt_member_ptr_load_param (def,
 					     (TARGET_PTRMEMFUNC_VBIT_LOCATION
 					      == ptrmemfunc_vbit_in_delta),
@@ -1983,9 +2116,9 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
 
   index = ipa_get_param_decl_index (info, rec);
   if (index >= 0
-      && parm_preserved_before_stmt_p (&parms_ainfo[index], call, rec))
+      && parm_preserved_before_stmt_p (fbi, index, call, rec))
     {
-      struct cgraph_edge *cs = ipa_note_param_call (node, index, call);
+      struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
       if (cs->indirect_info->offset != offset)
 	cs->indirect_info->outer_type = NULL;
       cs->indirect_info->offset = offset;
@@ -1998,16 +2131,13 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
 
 /* Analyze a CALL to an OBJ_TYPE_REF which is passed in TARGET and if the
    object referenced in the expression is a formal parameter of the caller
-   (described by INFO), create a call note for the statement. */
+   FBI->node (described by FBI->info), create a call note for the
+   statement.  */
 
 static void
-ipa_analyze_virtual_call_uses (struct cgraph_node *node,
-			       struct ipa_node_params *info, gimple call,
-			       tree target)
+ipa_analyze_virtual_call_uses (struct func_body_info *fbi,
+			       gimple call, tree target)
 {
-  struct cgraph_edge *cs;
-  struct cgraph_indirect_call_info *ii;
-  struct ipa_jump_func jfunc;
   tree obj = OBJ_TYPE_REF_OBJECT (target);
   int index;
   HOST_WIDE_INT anc_offset;
@@ -2018,8 +2148,10 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
   if (TREE_CODE (obj) != SSA_NAME)
     return;
 
+  struct ipa_node_params *info = fbi->info;
   if (SSA_NAME_IS_DEFAULT_DEF (obj))
     {
+      struct ipa_jump_func jfunc;
       if (TREE_CODE (SSA_NAME_VAR (obj)) != PARM_DECL)
 	return;
 
@@ -2032,6 +2164,7 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
     }
   else
     {
+      struct ipa_jump_func jfunc;
       gimple stmt = SSA_NAME_DEF_STMT (obj);
       tree expr;
 
@@ -2046,8 +2179,8 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
 	return;
     }
 
-  cs = ipa_note_param_call (node, index, call);
-  ii = cs->indirect_info;
+  struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index, call);
+  struct cgraph_indirect_call_info *ii = cs->indirect_info;
   ii->offset = anc_offset;
   ii->otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
   ii->otr_type = obj_type_ref_class (target);
@@ -2059,12 +2192,9 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
    containing intermediate information about each formal parameter.  */
 
 static void
-ipa_analyze_call_uses (struct cgraph_node *node,
-		       struct ipa_node_params *info,
-		       struct param_analysis_info *parms_ainfo, gimple call)
+ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
 {
   tree target = gimple_call_fn (call);
-  struct cgraph_edge *cs;
 
   if (!target
       || (TREE_CODE (target) != SSA_NAME
@@ -2073,27 +2203,25 @@ ipa_analyze_call_uses (struct cgraph_node *node,
 
   /* If we previously turned the call into a direct call, there is
      no need to analyze.  */
-  cs = cgraph_edge (node, call);
+  struct cgraph_edge *cs = cgraph_edge (fbi->node, call);
   if (cs && !cs->indirect_unknown_callee)
     return;
   if (TREE_CODE (target) == SSA_NAME)
-    ipa_analyze_indirect_call_uses (node, info, parms_ainfo, call, target);
+    ipa_analyze_indirect_call_uses (fbi, call, target);
   else if (virtual_method_call_p (target))
-    ipa_analyze_virtual_call_uses (node, info, call, target);
+    ipa_analyze_virtual_call_uses (fbi, call, target);
 }
 
 
 /* Analyze the call statement STMT with respect to formal parameters (described
-   in INFO) of caller given by NODE.  Currently it only checks whether formal
-   parameters are called.  PARMS_AINFO is a pointer to a vector containing
-   intermediate information about each formal parameter.  */
+   in INFO) of caller given by FBI->NODE.  Currently it only checks whether
+   formal parameters are called.  */
 
 static void
-ipa_analyze_stmt_uses (struct cgraph_node *node, struct ipa_node_params *info,
-		       struct param_analysis_info *parms_ainfo, gimple stmt)
+ipa_analyze_stmt_uses (struct func_body_info *fbi, gimple stmt)
 {
   if (is_gimple_call (stmt))
-    ipa_analyze_call_uses (node, info, parms_ainfo, stmt);
+    ipa_analyze_call_uses (fbi, stmt);
 }
 
 /* Callback of walk_stmt_load_store_addr_ops for the visit_load.
@@ -2117,37 +2245,43 @@ visit_ref_for_mod_analysis (gimple, tree op, tree, void *data)
   return false;
 }
 
-/* Scan the function body of NODE and inspect the uses of formal parameters.
-   Store the findings in various structures of the associated ipa_node_params
-   structure, such as parameter flags, notes etc.  PARMS_AINFO is a pointer to a
-   vector containing intermediate information about each formal parameter.   */
+/* Scan the statements in BB and inspect the uses of formal parameters.  Store
+   the findings in various structures of the associated ipa_node_params
+   structure, such as parameter flags, notes etc.  FBI holds various data about
+   the function being analyzed.  */
 
 static void
-ipa_analyze_params_uses (struct cgraph_node *node,
-			 struct param_analysis_info *parms_ainfo)
+ipa_analyze_params_uses_in_bb (struct func_body_info *fbi, basic_block bb)
 {
-  tree decl = node->decl;
-  basic_block bb;
-  struct function *func;
   gimple_stmt_iterator gsi;
-  struct ipa_node_params *info = IPA_NODE_REF (node);
-  int i;
-
-  if (ipa_get_param_count (info) == 0 || info->uses_analysis_done)
-    return;
-
-  info->uses_analysis_done = 1;
-  if (ipa_func_spec_opts_forbid_analysis_p (node))
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      for (i = 0; i < ipa_get_param_count (info); i++)
-	{
-	  ipa_set_param_used (info, i, true);
-	  ipa_set_controlled_uses (info, i, IPA_UNDESCRIBED_USE);
-	}
-      return;
-    }
+      gimple stmt = gsi_stmt (gsi);
 
-  for (i = 0; i < ipa_get_param_count (info); i++)
+      if (is_gimple_debug (stmt))
+	continue;
+
+      ipa_analyze_stmt_uses (fbi, stmt);
+      walk_stmt_load_store_addr_ops (stmt, fbi->info,
+				     visit_ref_for_mod_analysis,
+				     visit_ref_for_mod_analysis,
+				     visit_ref_for_mod_analysis);
+    }
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    walk_stmt_load_store_addr_ops (gsi_stmt (gsi), fbi->info,
+				   visit_ref_for_mod_analysis,
+				   visit_ref_for_mod_analysis,
+				   visit_ref_for_mod_analysis);
+}
+
+/* Calculate controlled uses of parameters of NODE.  */
+
+static void
+ipa_analyze_controlled_uses (struct cgraph_node *node)
+{
+  struct ipa_node_params *info = IPA_NODE_REF (node);
+
+  for (int i = 0; i < ipa_get_param_count (info); i++)
     {
       tree parm = ipa_get_param (info, i);
       int controlled_uses = 0;
@@ -2183,45 +2317,36 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 	controlled_uses = IPA_UNDESCRIBED_USE;
       ipa_set_controlled_uses (info, i, controlled_uses);
     }
-
-  func = DECL_STRUCT_FUNCTION (decl);
-  FOR_EACH_BB_FN (bb, func)
-    {
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple stmt = gsi_stmt (gsi);
-
-	  if (is_gimple_debug (stmt))
-	    continue;
-
-	  ipa_analyze_stmt_uses (node, info, parms_ainfo, stmt);
-	  walk_stmt_load_store_addr_ops (stmt, info,
-					 visit_ref_for_mod_analysis,
-					 visit_ref_for_mod_analysis,
-					 visit_ref_for_mod_analysis);
-	}
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info,
-				       visit_ref_for_mod_analysis,
-				       visit_ref_for_mod_analysis,
-				       visit_ref_for_mod_analysis);
-    }
 }
 
-/* Free stuff in PARMS_AINFO, assume there are PARAM_COUNT parameters.  */
+/* Free stuff in BI.  */
 
 static void
-free_parms_ainfo (struct param_analysis_info *parms_ainfo, int param_count)
+free_ipa_bb_info (struct ipa_bb_info *bi)
 {
-  int i;
+  bi->cg_edges.release ();
+  bi->param_aa_statuses.release ();
+}
 
-  for (i = 0; i < param_count; i++)
-    {
-      if (parms_ainfo[i].parm_visited_statements)
-	BITMAP_FREE (parms_ainfo[i].parm_visited_statements);
-      if (parms_ainfo[i].pt_visited_statements)
-	BITMAP_FREE (parms_ainfo[i].pt_visited_statements);
-    }
+/* Dominator walker driving the analysis.  */
+
+class analysis_dom_walker : public dom_walker
+{
+public:
+  analysis_dom_walker (struct func_body_info *fbi)
+    : dom_walker (CDI_DOMINATORS), m_fbi (fbi) {}
+
+  virtual void before_dom_children (basic_block);
+
+private:
+  struct func_body_info *m_fbi;
+};
+
+void
+analysis_dom_walker::before_dom_children (basic_block bb)
+{
+  ipa_analyze_params_uses_in_bb (m_fbi, bb);
+  ipa_compute_jump_functions_for_bb (m_fbi, bb);
 }
 
 /* Initialize the array describing properties of of formal parameters
@@ -2231,24 +2356,60 @@ free_parms_ainfo (struct param_analysis_info *parms_ainfo, int param_count)
 void
 ipa_analyze_node (struct cgraph_node *node)
 {
+  struct func_body_info fbi;
   struct ipa_node_params *info;
-  struct param_analysis_info *parms_ainfo;
-  int param_count;
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
   info = IPA_NODE_REF (node);
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+
+  if (info->analysis_done)
+    return;
+  info->analysis_done = 1;
+
+  if (ipa_func_spec_opts_forbid_analysis_p (node))
+    {
+      for (int i = 0; i < ipa_get_param_count (info); i++)
+	{
+	  ipa_set_param_used (info, i, true);
+	  ipa_set_controlled_uses (info, i, IPA_UNDESCRIBED_USE);
+	}
+      return;
+    }
+
+  struct function *func = DECL_STRUCT_FUNCTION (node->decl);
+  push_cfun (func);
+  calculate_dominance_info (CDI_DOMINATORS);
   ipa_initialize_node_params (node);
+  ipa_analyze_controlled_uses (node);
 
-  param_count = ipa_get_param_count (info);
-  parms_ainfo = XALLOCAVEC (struct param_analysis_info, param_count);
-  memset (parms_ainfo, 0, sizeof (struct param_analysis_info) * param_count);
+  fbi.node = node;
+  fbi.info = IPA_NODE_REF (node);
+  fbi.bb_infos = vNULL;
+  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  fbi.param_count = ipa_get_param_count (info);
+  fbi.aa_walked = 0;
 
-  ipa_analyze_params_uses (node, parms_ainfo);
-  ipa_compute_jump_functions (node, parms_ainfo);
+  for (struct cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
+    {
+      ipa_bb_info *bi = ipa_get_bb_info (&fbi, gimple_bb (cs->call_stmt));
+      bi->cg_edges.safe_push (cs);
+    }
 
-  free_parms_ainfo (parms_ainfo, param_count);
+  for (struct cgraph_edge *cs = node->indirect_calls; cs; cs = cs->next_callee)
+    {
+      ipa_bb_info *bi = ipa_get_bb_info (&fbi, gimple_bb (cs->call_stmt));
+      bi->cg_edges.safe_push (cs);
+    }
+
+  analysis_dom_walker (&fbi).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+  int i;
+  struct ipa_bb_info *bi;
+  FOR_EACH_VEC_ELT (fbi.bb_infos, i, bi)
+    free_ipa_bb_info (bi);
+  fbi.bb_infos.release ();
+  free_dominance_info (CDI_DOMINATORS);
   pop_cfun ();
 }
 
@@ -3320,7 +3481,7 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   new_info->lattices = NULL;
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
 
-  new_info->uses_analysis_done = old_info->uses_analysis_done;
+  new_info->analysis_done = old_info->analysis_done;
   new_info->node_enqueued = old_info->node_enqueued;
 
   old_av = ipa_get_agg_replacements_for_node (src);
@@ -4445,7 +4606,7 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   for (j = 0; j < ipa_get_param_count (info); j++)
     streamer_write_uhwi (ob, ipa_get_param_move_cost (info, j));
   bp = bitpack_create (ob->main_stream);
-  gcc_assert (info->uses_analysis_done
+  gcc_assert (info->analysis_done
 	      || ipa_get_param_count (info) == 0);
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
@@ -4491,7 +4652,7 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
     
   bp = streamer_read_bitpack (ib);
   if (ipa_get_param_count (info) != 0)
-    info->uses_analysis_done = true;
+    info->analysis_done = true;
   info->node_enqueued = false;
   for (k = 0; k < ipa_get_param_count (info); k++)
     ipa_set_param_used (info, k, bp_unpack_value (&bp, 1));
@@ -4841,17 +5002,129 @@ adjust_agg_replacement_values (struct cgraph_node *node,
     v->index = adj[v->index];
 }
 
+/* Dominator walker driving the ipcp modification phase.  */
 
-/* Function body transformation phase.  */
+class ipcp_modif_dom_walker : public dom_walker
+{
+public:
+  ipcp_modif_dom_walker (struct func_body_info *fbi,
+			 vec<ipa_param_descriptor> descs,
+			 struct ipa_agg_replacement_value *av,
+			 bool *sc, bool *cc)
+    : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
+      m_aggval (av), m_something_changed (sc), m_cfg_changed (cc) {}
+
+  virtual void before_dom_children (basic_block);
+
+private:
+  struct func_body_info *m_fbi;
+  vec<ipa_param_descriptor> m_descriptors;
+  struct ipa_agg_replacement_value *m_aggval;
+  bool *m_something_changed, *m_cfg_changed;
+};
+
+void
+ipcp_modif_dom_walker::before_dom_children (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      struct ipa_agg_replacement_value *v;
+      gimple stmt = gsi_stmt (gsi);
+      tree rhs, val, t;
+      HOST_WIDE_INT offset, size;
+      int index;
+      bool by_ref, vce;
+
+      if (!gimple_assign_load_p (stmt))
+	continue;
+      rhs = gimple_assign_rhs1 (stmt);
+      if (!is_gimple_reg_type (TREE_TYPE (rhs)))
+	continue;
+
+      vce = false;
+      t = rhs;
+      while (handled_component_p (t))
+	{
+	  /* V_C_E can do things like convert an array of integers to one
+	     bigger integer and similar things we do not handle below.  */
+	  if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR)
+	    {
+	      vce = true;
+	      break;
+	    }
+	  t = TREE_OPERAND (t, 0);
+	}
+      if (vce)
+	continue;
+
+      if (!ipa_load_from_parm_agg_1 (m_fbi, m_descriptors, stmt, rhs, &index,
+				     &offset, &size, &by_ref))
+	continue;
+      for (v = m_aggval; v; v = v->next)
+	if (v->index == index
+	    && v->offset == offset)
+	  break;
+      if (!v
+	  || v->by_ref != by_ref
+	  || tree_to_shwi (TYPE_SIZE (TREE_TYPE (v->value))) != size)
+	continue;
+
+      gcc_checking_assert (is_gimple_ip_invariant (v->value));
+      if (!useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (v->value)))
+	{
+	  if (fold_convertible_p (TREE_TYPE (rhs), v->value))
+	    val = fold_build1 (NOP_EXPR, TREE_TYPE (rhs), v->value);
+	  else if (TYPE_SIZE (TREE_TYPE (rhs))
+		   == TYPE_SIZE (TREE_TYPE (v->value)))
+	    val = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs), v->value);
+	  else
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "    const ");
+		  print_generic_expr (dump_file, v->value, 0);
+		  fprintf (dump_file, "  can't be converted to type of ");
+		  print_generic_expr (dump_file, rhs, 0);
+		  fprintf (dump_file, "\n");
+		}
+	      continue;
+	    }
+	}
+      else
+	val = v->value;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Modifying stmt:\n  ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	}
+      gimple_assign_set_rhs_from_tree (&gsi, val);
+      update_stmt (stmt);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "into:\n  ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      *m_something_changed = true;
+      if (maybe_clean_eh_stmt (stmt)
+	  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
+	*m_cfg_changed = true;
+    }
+
+}
+
+/* IPCP transformation phase doing propagation of aggregate values.  */
 
 unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
   vec<ipa_param_descriptor> descriptors = vNULL;
-  struct param_analysis_info *parms_ainfo;
+  struct func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
-  gimple_stmt_iterator gsi;
-  basic_block bb;
   int param_count;
   bool cfg_changed = false, something_changed = false;
 
@@ -4871,102 +5144,27 @@ ipcp_transform_function (struct cgraph_node *node)
   adjust_agg_replacement_values (node, aggval);
   if (dump_file)
     ipa_dump_agg_replacement_values (dump_file, aggval);
-  parms_ainfo = XALLOCAVEC (struct param_analysis_info, param_count);
-  memset (parms_ainfo, 0, sizeof (struct param_analysis_info) * param_count);
+
+  fbi.node = node;
+  fbi.info = NULL;
+  fbi.bb_infos = vNULL;
+  fbi.bb_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  fbi.param_count = param_count;
+  fbi.aa_walked = 0;
+
   descriptors.safe_grow_cleared (param_count);
   ipa_populate_param_decls (node, descriptors);
+  calculate_dominance_info (CDI_DOMINATORS);
+  ipcp_modif_dom_walker (&fbi, descriptors, aggval, &something_changed,
+			 &cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-	struct ipa_agg_replacement_value *v;
-	gimple stmt = gsi_stmt (gsi);
-	tree rhs, val, t;
-	HOST_WIDE_INT offset, size;
-	int index;
-	bool by_ref, vce;
-
-	if (!gimple_assign_load_p (stmt))
-	  continue;
-	rhs = gimple_assign_rhs1 (stmt);
-	if (!is_gimple_reg_type (TREE_TYPE (rhs)))
-	  continue;
-
-	vce = false;
-	t = rhs;
-	while (handled_component_p (t))
-	  {
-	    /* V_C_E can do things like convert an array of integers to one
-               bigger integer and similar things we do not handle below.  */
-            if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR)
-	      {
-		vce = true;
-		break;
-	      }
-	    t = TREE_OPERAND (t, 0);
-	  }
-	if (vce)
-	  continue;
-
-	if (!ipa_load_from_parm_agg_1 (descriptors, parms_ainfo, stmt,
-				       rhs, &index, &offset, &size, &by_ref))
-	  continue;
-	for (v = aggval; v; v = v->next)
-	  if (v->index == index
-	      && v->offset == offset)
-	    break;
-	if (!v
-	    || v->by_ref != by_ref
-	    || tree_to_shwi (TYPE_SIZE (TREE_TYPE (v->value))) != size)
-	  continue;
-
-	gcc_checking_assert (is_gimple_ip_invariant (v->value));
-	if (!useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (v->value)))
-	  {
-	    if (fold_convertible_p (TREE_TYPE (rhs), v->value))
-	      val = fold_build1 (NOP_EXPR, TREE_TYPE (rhs), v->value);
-	    else if (TYPE_SIZE (TREE_TYPE (rhs))
-		     == TYPE_SIZE (TREE_TYPE (v->value)))
-	      val = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs), v->value);
-	    else
-	      {
-		if (dump_file)
-		  {
-		    fprintf (dump_file, "    const ");
-		    print_generic_expr (dump_file, v->value, 0);
-		    fprintf (dump_file, "  can't be converted to type of ");
-		    print_generic_expr (dump_file, rhs, 0);
-		    fprintf (dump_file, "\n");
-		  }
-		continue;
-	      }
-	  }
-	else
-	  val = v->value;
-
-	if (dump_file && (dump_flags & TDF_DETAILS))
-	  {
-	    fprintf (dump_file, "Modifying stmt:\n  ");
-	    print_gimple_stmt (dump_file, stmt, 0, 0);
-	  }
-	gimple_assign_set_rhs_from_tree (&gsi, val);
-	update_stmt (stmt);
-
-	if (dump_file && (dump_flags & TDF_DETAILS))
-	  {
-	    fprintf (dump_file, "into:\n  ");
-	    print_gimple_stmt (dump_file, stmt, 0, 0);
-	    fprintf (dump_file, "\n");
-	  }
-
-	something_changed = true;
-	if (maybe_clean_eh_stmt (stmt)
-	    && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
-	  cfg_changed = true;
-      }
-
+  int i;
+  struct ipa_bb_info *bi;
+  FOR_EACH_VEC_ELT (fbi.bb_infos, i, bi)
+    free_ipa_bb_info (bi);
+  fbi.bb_infos.release ();
+  free_dominance_info (CDI_DOMINATORS);
   (*ipa_node_agg_replacements)[node->uid] = NULL;
-  free_parms_ainfo (parms_ainfo, param_count);
   descriptors.release ();
 
   if (!something_changed)
