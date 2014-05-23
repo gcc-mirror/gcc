@@ -1,3 +1,9 @@
+2014-05-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61215
+	* lra-elelimination.c (lra_eliminate_regs_1): Don't use
+	simplify_gen_subreg until final substitution.
+
 2014-05-23  Alan Modra  <amodra@gmail.com>
 
 	PR target/61231
