@@ -743,7 +743,7 @@ further processed.
 
 @node Symbol Versioning
 @section Symbol Versioning
-@comment Based on http://gcc.gnu.org/wiki/SymbolVersioning,
+@comment Based on https://gcc.gnu.org/wiki/SymbolVersioning,
 @comment as of 2006-11-05, written by Janne Blomqvist.
 
 In general, this capability exists only on a few platforms, thus there
@@ -757,15 +757,15 @@ Also, the map file is used to hide local symbols.
 Some relevant references:
 @itemize @bullet
 @item
-@uref{http://www.gnu.org/software/binutils/manual/ld-2.9.1/html_node/ld_25.html,
+@uref{https://sourceware.org/binutils/docs/ld/VERSION.html,
 GNU @command{ld} manual}
 
 @item
-@uref{http://people.redhat.com/drepper/symbol-versioning, ELF Symbol
+@uref{http://www.akkadia.org/drepper/symbol-versioning, ELF Symbol
 Versioning - Ulrich Depper}
 
 @item
-@uref{http://people.redhat.com/drepper/dsohowto.pdf, How to Write Shared
+@uref{http://www.akkadia.org/drepper/dsohowto.pdf, How to Write Shared
 Libraries - Ulrich Drepper (see Chapter 3)}
 
 @end itemize
