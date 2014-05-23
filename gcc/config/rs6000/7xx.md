@@ -62,7 +62,7 @@
 
 (define_insn_reservation "ppc750-integer" 1
   (and (ior (eq_attr "type" "integer,insert,trap,cntlz,exts,isel")
-	    (and (eq_attr "type" "add,shift")
+	    (and (eq_attr "type" "add,logical,shift")
 		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx|iu2_7xx")
@@ -101,8 +101,8 @@
   "ppc750_du,iu1_7xx*19")
 
 (define_insn_reservation "ppc750-compare" 2
-  (and (ior (eq_attr "type" "cmp,fast_compare,compare")
-	    (and (eq_attr "type" "add,shift")
+  (and (ior (eq_attr "type" "cmp,compare")
+	    (and (eq_attr "type" "add,logical,shift")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,(iu1_7xx|iu2_7xx)")

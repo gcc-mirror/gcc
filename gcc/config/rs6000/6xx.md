@@ -74,7 +74,7 @@
   
 (define_insn_reservation "ppc604-integer" 1
   (and (ior (eq_attr "type" "integer,insert,trap,cntlz,exts,isel")
-	    (and (eq_attr "type" "add,shift")
+	    (and (eq_attr "type" "add,logical,shift")
 		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "iu1_6xx|iu2_6xx")
@@ -147,8 +147,8 @@
   "mciu_6xx*36")
 
 (define_insn_reservation "ppc604-compare" 3
-  (and (ior (eq_attr "type" "cmp,fast_compare,compare")
-	    (and (eq_attr "type" "add,shift")
+  (and (ior (eq_attr "type" "cmp,compare")
+	    (and (eq_attr "type" "add,logical,shift")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "(iu1_6xx|iu2_6xx)")
