@@ -175,7 +175,7 @@
 ; FX Unit
 (define_insn_reservation "power7-integer" 1
   (and (ior (eq_attr "type" "integer,insert,trap,exts,isel,popcnt")
-	    (and (eq_attr "type" "shift")
+	    (and (eq_attr "type" "add,shift")
 		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power7"))
   "DU_power7,FXU_power7")
@@ -196,7 +196,9 @@
   "DU_power7+DU_power7+DU_power7,FXU_power7,FXU_power7,FXU_power7")
 
 (define_insn_reservation "power7-cmp" 1
-  (and (eq_attr "type" "cmp,fast_compare")
+  (and (ior (eq_attr "type" "cmp,fast_compare")
+	    (and (eq_attr "type" "add")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power7"))
   "DU_power7,FXU_power7")
 

@@ -1,5 +1,41 @@
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (type): Add "add".
+	(*add<mode>3_internal1, addsi3_high, *add<mode>3_internal2,
+	*add<mode>3_internal3, *neg<mode>2_internal, and 5 anonymous
+	define_insns): Use it.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Adjust.
+
+	* config/rs6000/40x.md (ppc403-integer, ppc403-compare): Adjust.
+	* config/rs6000/440.md (ppc440-integer, ppc440-compare): Adjust.
+	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare):
+	Adjust.
+	* config/rs6000/601.md (ppc601-integer): Adjust.
+	* config/rs6000/603.md (ppc603-integer, ppc603-compare): Adjust.
+	* config/rs6000/6xx.md (ppc604-integer, ppc604-compare): Adjust.
+	* config/rs6000/7450.md (ppc7450-integer, ppc7450-compare): Adjust.
+	* config/rs6000/7xx.md (ppc750-integer, ppc750-compare): Adjust.
+	* config/rs6000/8540.md (ppc8540_su): Adjust.
+	* config/rs6000/cell.md (cell-integer, cell-fast-cmp,
+	cell-cmp-microcoded): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_cmp, ppce300c3_iu): Adjust.
+	* config/rs6000/e500mc.md (e500mc_su): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_su, e500mc64_su2): Adjust.
+	* config/rs6000/e5500.md (e5500_sfx, e5500_sfx2): Adjust.
+	* config/rs6000/e6500.md (e6500_sfx, e6500_sfx2): Adjust.
+	* config/rs6000/mpc.md (mpccore-integer, mpccore-compare): Adjust.
+	* config/rs6000/power4.md (power4-integer, power4-cmp): Adjust.
+	* config/rs6000/power5.md (power5-integer, power5-cmp): Adjust.
+	* config/rs6000/power6.md (power6-integer, power6-fast-compare):
+	Adjust.
+	* config/rs6000/power7.md (power7-integer, power7-cmp): Adjust.
+	* config/rs6000/power8.md (power8-1cyc, power8-fast-compare):
+	Adjust.
+	* config/rs6000/rs64.md (rs64a-integer, rs64a-compare): Adjust.
+	* config/rs6000/titan.md (titan_fxu_adder, titan_fxu_alu): Adjust.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (type): Delete "var_shift_rotate",
 	"delayed_compare", "var_delayed_compare".
 	(var_shift): New attribute.

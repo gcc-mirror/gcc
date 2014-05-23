@@ -34,7 +34,9 @@
 ;; instructions. It provides its own, dedicated result-bus, so we
 ;; don't need the titan_fxu_wb reservation to complete.
 (define_insn_reservation "titan_fxu_adder" 1
-  (and (eq_attr "type" "cmp,fast_compare,trap")
+  (and (ior (eq_attr "type" "cmp,fast_compare,trap")
+	    (and (eq_attr "type" "add")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fxu_sh")
 
@@ -72,7 +74,9 @@
   "titan_issue,titan_fxu_sh")
 
 (define_insn_reservation "titan_fxu_alu" 1
-  (and (eq_attr "type" "integer,exts")
+  (and (ior (eq_attr "type" "integer,exts")
+	    (and (eq_attr "type" "add")
+		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fxu_sh,nothing,titan_fxu_wb")
 
