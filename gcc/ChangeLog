@@ -1,3 +1,8 @@
+2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.c (omp_notice_variable) <case OMP_CLAUSE_DEFAULT_NONE>:
+	Explicitly enumerate the expected region types.
+
 2014-05-23  Paul Eggert  <eggert@cs.ucla.edu>
 
 	PR other/56955
