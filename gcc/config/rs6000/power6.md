@@ -357,31 +357,40 @@
   "FXU_power6")
 
 (define_insn_reservation "power6-lmul-cmp" 16
-  (and (eq_attr "type" "lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-imul-cmp" 16
-  (and (eq_attr "type" "imul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-lmul" 16
-  (and (eq_attr "type" "lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-imul" 16
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-imul3" 16
-  (and (eq_attr "type" "imul2,imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8,16")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");

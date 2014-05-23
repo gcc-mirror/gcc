@@ -26189,12 +26189,15 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                 case TYPE_CMP:
                 case TYPE_COMPARE:
                 case TYPE_DELAYED_COMPARE:
-                case TYPE_IMUL_COMPARE:
-                case TYPE_LMUL_COMPARE:
                 case TYPE_FPCOMPARE:
                 case TYPE_CR_LOGICAL:
                 case TYPE_DELAYED_CR:
 		  return cost + 2;
+                case TYPE_MUL:
+		  if (get_attr_dot (dep_insn) == DOT_YES)
+		    return cost + 2;
+		  else
+		    break;
 		default:
 		  break;
 		}
@@ -26253,12 +26256,7 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                         return 3;
                       break;
                     }
-                  case TYPE_IMUL:
-                  case TYPE_IMUL2:
-                  case TYPE_IMUL3:
-                  case TYPE_LMUL:
-                  case TYPE_IMUL_COMPARE:
-                  case TYPE_LMUL_COMPARE:
+                  case TYPE_MUL:
                     {
                       if (! store_data_bypass_p (dep_insn, insn))
                         return 17;
@@ -26329,12 +26327,7 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                         return 3;
                       break;
                     }
-                  case TYPE_IMUL:
-                  case TYPE_IMUL2:
-                  case TYPE_IMUL3:
-                  case TYPE_LMUL:
-                  case TYPE_IMUL_COMPARE:
-                  case TYPE_LMUL_COMPARE:
+                  case TYPE_MUL:
                     {
                       if (set_to_load_agen (dep_insn, insn))
                         return 17;
@@ -26499,7 +26492,8 @@ is_cracked_insn (rtx insn)
 	      && get_attr_update (insn) == UPDATE_YES)
 	  || type == TYPE_DELAYED_CR
 	  || type == TYPE_COMPARE || type == TYPE_DELAYED_COMPARE
-	  || type == TYPE_IMUL_COMPARE || type == TYPE_LMUL_COMPARE
+	  || (type == TYPE_MUL
+	      && get_attr_dot (insn) == DOT_YES)
 	  || type == TYPE_IDIV || type == TYPE_LDIV
 	  || type == TYPE_INSERT_WORD)
 	return true;
@@ -26655,7 +26649,7 @@ rs6000_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
       default:
 	break;
 
-      case TYPE_IMUL:
+      case TYPE_MUL:
       case TYPE_IDIV:
 	fprintf (stderr, "priority was %#x (%d) before adjustment\n",
 		 priority, priority);
@@ -26709,10 +26703,7 @@ is_nonpipeline_insn (rtx insn)
     return false;
 
   type = get_attr_type (insn);
-  if (type == TYPE_IMUL
-      || type == TYPE_IMUL2
-      || type == TYPE_IMUL3
-      || type == TYPE_LMUL
+  if (type == TYPE_MUL
       || type == TYPE_IDIV
       || type == TYPE_LDIV
       || type == TYPE_SDIV
@@ -27335,15 +27326,10 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_SHIFT:
         case TYPE_VAR_SHIFT_ROTATE:
         case TYPE_TRAP:
-        case TYPE_IMUL:
-        case TYPE_IMUL2:
-        case TYPE_IMUL3:
-        case TYPE_LMUL:
+        case TYPE_MUL:
         case TYPE_IDIV:
         case TYPE_INSERT_WORD:
         case TYPE_DELAYED_COMPARE:
-        case TYPE_IMUL_COMPARE:
-        case TYPE_LMUL_COMPARE:
         case TYPE_FPCOMPARE:
         case TYPE_MFCR:
         case TYPE_MTCR:
@@ -27386,6 +27372,11 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MFJMPR:
         case TYPE_MTJMPR:
           return true;
+        case TYPE_MUL:
+          if (get_attr_dot (insn) == DOT_YES)
+            return true;
+          else
+            break;
         case TYPE_LOAD:
           if (get_attr_sign_extend (insn) == SIGN_EXTEND_YES
               || get_attr_update (insn) == UPDATE_YES)
@@ -27416,8 +27407,6 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_COMPARE:
         case TYPE_DELAYED_COMPARE:
         case TYPE_VAR_DELAYED_COMPARE:
-        case TYPE_IMUL_COMPARE:
-        case TYPE_LMUL_COMPARE:
         case TYPE_SYNC:
         case TYPE_ISYNC:
         case TYPE_LOAD_L:
@@ -27481,14 +27470,9 @@ insn_must_be_last_in_group (rtx insn)
       case TYPE_SHIFT:
       case TYPE_VAR_SHIFT_ROTATE:
       case TYPE_TRAP:
-      case TYPE_IMUL:
-      case TYPE_IMUL2:
-      case TYPE_IMUL3:
-      case TYPE_LMUL:
+      case TYPE_MUL:
       case TYPE_IDIV:
       case TYPE_DELAYED_COMPARE:
-      case TYPE_IMUL_COMPARE:
-      case TYPE_LMUL_COMPARE:
       case TYPE_FPCOMPARE:
       case TYPE_MFCR:
       case TYPE_MTCR:

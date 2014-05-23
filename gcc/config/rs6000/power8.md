@@ -228,12 +228,14 @@
 		 "power8-crlogical,power8-mfcr,power8-mfcrf,power8-branch")
 
 (define_insn_reservation "power8-mul" 4
-  (and (eq_attr "type" "imul,imul2,imul3,lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
 
 (define_insn_reservation "power8-mul-compare" 4
-  (and (eq_attr "type" "imul_compare,lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,FXU_power8")
 

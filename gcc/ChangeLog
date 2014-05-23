@@ -1,5 +1,54 @@
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (type): Add "mul".  Delete "imul",
+	"imul2", "imul3", "lmul", "imul_compare", "lmul_compare".
+	(size): New attribute.
+	(dot): New attribute.
+	(cell_micro): Adjust.
+	(mulsi3, *mulsi3_internal1, *mulsi3_internal2, mulsidi3,
+	umulsidi3, smulsi3_highpart, umulsi3_highpart, muldi3,
+	*muldi3_internal1, *muldi3_internal2, smuldi3_highpart,
+	umuldi3_highpart): Adjust.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost, is_cracked_insn,
+	rs6000_adjust_priority, is_nonpipeline_insn,
+	insn_must_be_first_in_group, insn_must_be_last_in_group): Adjust.
+
+	* config/rs6000/40x.md (ppc403-imul, ppc405-imul, ppc405-imul2,
+	ppc405-imul3): Adjust.
+	* config/rs6000/440.md (ppc440-imul, ppc440-imul2): Adjust.
+	* config/rs6000/476.md (ppc476-imul): Adjust.
+	* config/rs6000/601.md (ppc601-imul): Adjust.
+	* config/rs6000/603.md (ppc603-imul, ppc603-imul2): Adjust.
+	* config/rs6000/6xx.md (ppc604-imul, ppc604e-imul, ppc620-imul,
+	ppc620-imul2, ppc620-imul3, ppc620-lmul): Adjust.
+	* config/rs6000/7450.md (ppc7450-imul, ppc7450-imul2): Adjust.
+	* config/rs6000/7xx.md (ppc750-imul, ppc750-imul2, ppc750-imul3):
+	Adjust.
+	* config/rs6000/8540.md (ppc8540_multiply): Adjust.
+	* config/rs6000/a2.md (ppca2-imul, ppca2-lmul): Adjust.
+	* config/rs6000/cell.md (cell-lmul, cell-lmul-cmp, cell-imul23,
+	cell-imul): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_multiply): Adjust.
+	* config/rs6000/e500mc.md (e500mc_multiply): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_multiply): Adjust.
+	* config/rs6000/e5500.md (e5500_multiply, e5500_multiply_i): Adjust.
+	* config/rs6000/e6500.md (e6500_multiply, e6500_multiply_i): Adjust.
+	* config/rs6000/mpc.md (mpccore-imul): Adjust.
+	* config/rs6000/power4.md (power4-lmul-cmp, power4-imul-cmp,
+	power4-lmul, power4-imul, power4-imul3): Adjust.
+	* config/rs6000/power5.md (power5-lmul-cmp, power5-imul-cmp,
+	power5-lmul, power5-imul, power5-imul3): Adjust.
+	* config/rs6000/power6.md (power6-lmul-cmp, power6-imul-cmp,
+	power6-lmul, power6-imul, power6-imul3): Adjust.
+	* config/rs6000/power7.md (power7-mul, power7-mul-compare): Adjust.
+	* config/rs6000/power8.md (power8-mul, power8-mul-compare): Adjust.
+
+	* config/rs6000/rs64.md (rs64a-imul, rs64a-imul2, rs64a-imul3,
+	rs64a-lmul): Adjust.
+	* config/rs6000/titan.md (titan_imul): Adjust.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (type): Add new value "halfmul".
 	(*macchwc, *macchw, *macchwuc, *macchwu, *machhwc, *machhw,
 	*machhwuc, *machhwu, *maclhwc, *maclhw, *maclhwuc, *maclhwu,

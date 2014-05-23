@@ -212,25 +212,32 @@
 
 ;; mulld
 (define_insn_reservation "cell-lmul" 15
-  (and (eq_attr "type" "lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "cell"))
   "slot1,nonpipeline,nonpipeline*13")
 
 ;; mulld. is microcoded
 (define_insn_reservation "cell-lmul-cmp" 22
-  (and (eq_attr "type" "lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "cell"))
   "slot0+slot1,nonpipeline,nonpipeline*20")
 
 ;; mulli, 6 cycles
 (define_insn_reservation "cell-imul23" 6
-  (and (eq_attr "type" "imul2,imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8,16")
        (eq_attr "cpu" "cell"))
   "slot1,nonpipeline,nonpipeline*4")
 
 ;; mullw, 9
 (define_insn_reservation "cell-imul" 9
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "cell"))
   "slot1,nonpipeline,nonpipeline*7")
  

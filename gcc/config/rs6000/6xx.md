@@ -89,32 +89,36 @@
   "iu1_6xx|iu2_6xx,iu1_6xx|iu2_6xx,iu1_6xx|iu2_6xx")
 
 (define_insn_reservation "ppc604-imul" 4
-  (and (eq_attr "type" "imul,imul2,imul3,imul_compare")
+  (and (eq_attr "type" "mul")
        (eq_attr "cpu" "ppc604"))
   "mciu_6xx*2")
 
 (define_insn_reservation "ppc604e-imul" 2
-  (and (eq_attr "type" "imul,imul2,imul3,imul_compare")
+  (and (eq_attr "type" "mul")
        (eq_attr "cpu" "ppc604e"))
   "mciu_6xx")
 
 (define_insn_reservation "ppc620-imul" 5
-  (and (eq_attr "type" "imul,imul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "ppc620,ppc630"))
   "mciu_6xx*3")
 
 (define_insn_reservation "ppc620-imul2" 4
-  (and (eq_attr "type" "imul2")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "16")
        (eq_attr "cpu" "ppc620,ppc630"))
   "mciu_6xx*3")
 
 (define_insn_reservation "ppc620-imul3" 3
-  (and (eq_attr "type" "imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8")
        (eq_attr "cpu" "ppc620,ppc630"))
   "mciu_6xx*3")
 
 (define_insn_reservation "ppc620-lmul" 7
-  (and (eq_attr "type" "lmul,lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "ppc620,ppc630"))
   "mciu_6xx*5")
 

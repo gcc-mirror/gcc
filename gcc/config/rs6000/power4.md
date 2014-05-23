@@ -261,7 +261,9 @@
 (define_bypass 4 "power4-compare" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr,power4-mfcrf")
 
 (define_insn_reservation "power4-lmul-cmp" 7
-  (and (eq_attr "type" "lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4|du2_power4+du3_power4|du3_power4+du4_power4),\
    ((iu1_power4*6,iu2_power4)\
@@ -271,7 +273,9 @@
 (define_bypass 10 "power4-lmul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr,power4-mfcrf")
 
 (define_insn_reservation "power4-imul-cmp" 5
-  (and (eq_attr "type" "imul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4|du2_power4+du3_power4|du3_power4+du4_power4),\
    ((iu1_power4*4,iu2_power4)\
@@ -281,19 +285,24 @@
 (define_bypass 8 "power4-imul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr,power4-mfcrf")
 
 (define_insn_reservation "power4-lmul" 7
-  (and (eq_attr "type" "lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power4"))
   "(du1_power4|du2_power4|du3_power4|du4_power4),\
    (iu1_power4*6|iu2_power4*6)")
 
 (define_insn_reservation "power4-imul" 5
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power4"))
   "(du1_power4|du2_power4|du3_power4|du4_power4),\
    (iu1_power4*4|iu2_power4*4)")
 
 (define_insn_reservation "power4-imul3" 4
-  (and (eq_attr "type" "imul2,imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8,16")
        (eq_attr "cpu" "power4"))
   "(du1_power4|du2_power4|du3_power4|du4_power4),\
    (iu1_power4*3|iu2_power4*3)")
