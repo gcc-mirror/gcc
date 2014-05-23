@@ -1,3 +1,8 @@
+2014-05-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac [with_newlib] (HAVE_STRNLEN, HAVE_STRNDUP): Define.
+	* configure: Regenerate.
+
 2014-05-23  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/60324
