@@ -1,3 +1,10 @@
+2014-05-23  Alan Modra  <amodra@gmail.com>
+
+	PR target/61231
+	* config/rs6000/rs6000.c (mem_operand_gpr): Handle SImode.
+	* config/rs6000/rs6000.md (extendsidi2_lfiwax, extendsidi2_nocell):
+	Use "Y" constraint rather than "m".
+
 2014-05-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/aarch64/aarch64.c (TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New
