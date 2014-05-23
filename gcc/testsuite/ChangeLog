@@ -1,3 +1,7 @@
+2014-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/lambda-init9.C: New.
+
 2014-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/61266
