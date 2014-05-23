@@ -1,3 +1,47 @@
+2014-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/53787
+	* params.def (PARAM_IPA_MAX_AA_STEPS): New param.
+	* ipa-prop.h (ipa_node_params): Rename uses_analysis_done to
+	analysis_done, update all uses.
+	* ipa-prop.c: Include domwalk.h
+	(param_analysis_info): Removed.
+	(param_aa_status): New type.
+	(ipa_bb_info): Likewise.
+	(func_body_info): Likewise.
+	(ipa_get_bb_info): New function.
+	(aa_overwalked): Likewise.
+	(find_dominating_aa_status): Likewise.
+	(parm_bb_aa_status_for_bb): Likewise.
+	(parm_preserved_before_stmt_p): Changed to use new param AA info.
+	(load_from_unmodified_param): Accept func_body_info as a parameter
+	instead of parms_ainfo.
+	(parm_ref_data_preserved_p): Changed to use new param AA info.
+	(parm_ref_data_pass_through_p): Likewise.
+	(ipa_load_from_parm_agg_1): Likewise.  Update callers.
+	(compute_complex_assign_jump_func): Changed to use new param AA info.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+	(ipa_compute_jump_functions): Removed.
+	(ipa_compute_jump_functions_for_bb): New function.
+	(ipa_analyze_indirect_call_uses): Likewise, moved variable
+	declarations down.
+	(ipa_analyze_virtual_call_uses): Accept func_body_info instead of node
+	and info, moved variable declarations down.
+	(ipa_analyze_call_uses): Accept and pass on func_body_info instead of
+	node and info.
+	(ipa_analyze_stmt_uses): Likewise.
+	(ipa_analyze_params_uses): Removed.
+	(ipa_analyze_params_uses_in_bb): New function.
+	(ipa_analyze_controlled_uses): Likewise.
+	(free_ipa_bb_info): Likewise.
+	(analysis_dom_walker): New class.
+	(ipa_analyze_node): Handle node-specific forbidden analysis,
+	initialize and free func_body_info, use dominator walker.
+	(ipcp_modif_dom_walker): New class.
+	(ipcp_transform_function): Create and free func_body_info, use
+	ipcp_modif_dom_walker, moved a lot of functionality there.
+
 2014-05-23  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
