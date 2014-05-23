@@ -1,5 +1,8 @@
 2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gimple.h (enum gf_mask): Add and use GF_OMP_FOR_SIMD.
+	* omp-low.c: Update accordingly.
+
 	* gimple.h (enum gf_mask): Rewrite "<< 0" shift expressions used
 	for GF_OMP_FOR_KIND_MASK, GF_OMP_FOR_KIND_FOR,
 	GF_OMP_FOR_KIND_DISTRIBUTE, GF_OMP_FOR_KIND_SIMD,
