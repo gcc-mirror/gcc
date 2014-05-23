@@ -1,3 +1,8 @@
+2014-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	* gfc-internals.texi: Change URLs to HTTPS; fix broken links.
+	* gfortran.texi: Ditto.
+
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* f95-lang.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)

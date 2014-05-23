@@ -482,16 +482,17 @@ At present, the GNU Fortran compiler passes the
 NIST Fortran 77 Test Suite}, and produces acceptable results on the
 @uref{http://www.netlib.org/lapack/faq.html#1.21, LAPACK Test Suite}.
 It also provides respectable performance on 
-the @uref{http://www.polyhedron.com/pb05.html, Polyhedron Fortran
+the @uref{http://www.polyhedron.com/fortran-compiler-comparisons/polyhedron-benchmark-suite,
+Polyhedron Fortran
 compiler benchmarks} and the
-@uref{http://www.llnl.gov/asci_benchmarks/asci/limited/lfk/README.html,
+@uref{http://www.netlib.org/benchmark/livermore,
 Livermore Fortran Kernels test}.  It has been used to compile a number of
 large real-world programs, including
 @uref{http://mysite.verizon.net/serveall/moene.pdf, the HIRLAM
 weather-forecasting code} and
-@uref{http://www.theochem.uwa.edu.au/tonto/, the Tonto quantum 
-chemistry package}; see @url{http://gcc.gnu.org/@/wiki/@/GfortranApps} for an
-extended list.
+@uref{http://physical-chemistry.scb.uwa.edu.au/tonto/wiki/index.php/Main_Page,
+the Tonto quantum chemistry package}; see
+@url{https://gcc.gnu.org/@/wiki/@/GfortranApps} for an extended list.
 
 Among other things, the GNU Fortran compiler is intended as a replacement
 for G77.  At this point, nearly all programs that could be compiled with
@@ -798,7 +799,7 @@ compile option was used.
 
 GNU Fortran supports several Fortran 2003 features; an incomplete
 list can be found below.  See also the
-@uref{http://gcc.gnu.org/wiki/Fortran2003, wiki page} about Fortran 2003.
+@uref{https://gcc.gnu.org/wiki/Fortran2003, wiki page} about Fortran 2003.
 
 @itemize
 @item Procedure pointers including procedure-pointer components with
@@ -984,7 +985,7 @@ Electrotechnical Commission (IEC).  This group is known as
 @uref{http://www.nag.co.uk/sc22wg5/, WG5}.
 
 The GNU Fortran compiler supports several of the new features of Fortran 2008;
-the @uref{http://gcc.gnu.org/wiki/Fortran2008Status, wiki} has some information
+the @uref{https://gcc.gnu.org/wiki/Fortran2008Status, wiki} has some information
 about the current Fortran 2008 implementation status.  In particular, the
 following is implemented.
 
@@ -1087,7 +1088,7 @@ arrays are supported for named constants (@code{PARAMETER}).
 
 GNU Fortran supports some of the new features of the Technical
 Specification (TS) 29113 on Further Interoperability of Fortran with C.
-The @uref{http://gcc.gnu.org/wiki/TS29113Status, wiki} has some information
+The @uref{https://gcc.gnu.org/wiki/TS29113Status, wiki} has some information
 about the current TS 29113 implementation status.  In particular, the
 following is implemented.
 
@@ -1967,7 +1968,7 @@ C
 @end smallexample
 
 For details refer to the g77 manual
-@uref{http://gcc.gnu.org/@/onlinedocs/@/gcc-3.4.6/@/g77/@/index.html#Top}.
+@uref{https://gcc.gnu.org/@/onlinedocs/@/gcc-3.4.6/@/g77/@/index.html#Top}.
 
 Also, @code{c_by_val.f} and its partner @code{c_by_val.c} of the
 GNU Fortran testsuite are worth a look.
@@ -1987,7 +1988,7 @@ aims at listing these extensions and offering advice on how best make
 code that uses them running with the GNU Fortran compiler.
 
 @c More can be found here:
-@c   -- http://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
+@c   -- https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
 @c   -- the list of Fortran and libgfortran bugs closed as WONTFIX:
 @c      http://tinyurl.com/2u4h5y
 
@@ -3303,7 +3304,7 @@ keep code private on request.
 Find bugs and write more test cases! Test cases are especially very
 welcome, because it allows us to concentrate on fixing bugs instead of
 isolating them.  Going through the bugzilla database at
-@url{http://gcc.gnu.org/@/bugzilla/} to reduce testcases posted there and
+@url{https://gcc.gnu.org/@/bugzilla/} to reduce testcases posted there and
 add more information (for example, for which version does the testcase
 work, for which versions does it fail?) is also very helpful.
 
