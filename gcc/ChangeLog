@@ -1,3 +1,17 @@
+2014-05-23  Jiong Wang   <jiong.wang@arm.com>
+
+	* config/aarch64/predicates.md (aarch64_call_insn_operand): New
+	predicate.
+	* config/aarch64/constraints.md ("Ucs", "Usf"):  New constraints.
+	* config/aarch64/aarch64.md (*sibcall_insn, *sibcall_value_insn):
+	Adjust for tailcalling through registers.
+	* config/aarch64/aarch64.h (enum reg_class): New caller save
+	register class.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	* config/aarch64/aarch64.c (aarch64_function_ok_for_sibcall):
+	Allow tailcalling without decls.
+
 2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimplify.c (omp_notice_variable) <case OMP_CLAUSE_DEFAULT_NONE>:

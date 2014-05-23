@@ -523,6 +523,10 @@
 	      (use (match_operand 2 "" ""))])]
   ""
   {
+    if (!REG_P (XEXP (operands[0], 0))
+       && (GET_CODE (XEXP (operands[0], 0)) != SYMBOL_REF))
+     XEXP (operands[0], 0) = force_reg (Pmode, XEXP (operands[0], 0));
+
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
   }
@@ -536,31 +540,38 @@
 	      (use (match_operand 3 "" ""))])]
   ""
   {
+    if (!REG_P (XEXP (operands[1], 0))
+       && (GET_CODE (XEXP (operands[1], 0)) != SYMBOL_REF))
+     XEXP (operands[1], 0) = force_reg (Pmode, XEXP (operands[1], 0));
+
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
   }
 )
 
 (define_insn "*sibcall_insn"
-  [(call (mem:DI (match_operand:DI 0 "" "X"))
+  [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "Ucs, Usf"))
 	 (match_operand 1 "" ""))
    (return)
    (use (match_operand 2 "" ""))]
-  "GET_CODE (operands[0]) == SYMBOL_REF"
-  "b\\t%a0"
-  [(set_attr "type" "branch")]
-
+  "SIBLING_CALL_P (insn)"
+  "@
+   br\\t%0
+   b\\t%a0"
+  [(set_attr "type" "branch, branch")]
 )
 
 (define_insn "*sibcall_value_insn"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand 1 "" "X"))
+	(call (mem:DI (match_operand 1 "aarch64_call_insn_operand" "Ucs, Usf"))
 	      (match_operand 2 "" "")))
    (return)
    (use (match_operand 3 "" ""))]
-  "GET_CODE (operands[1]) == SYMBOL_REF"
-  "b\\t%a1"
-  [(set_attr "type" "branch")]
+  "SIBLING_CALL_P (insn)"
+  "@
+   br\\t%1
+   b\\t%a1"
+  [(set_attr "type" "branch, branch")]
 )
 
 ;; Call subroutine returning any type.
