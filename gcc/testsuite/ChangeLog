@@ -1,3 +1,8 @@
+2014-05-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61215
+	* gcc.target/i386/pr61215.c: New.
+
 2014-05-23  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
