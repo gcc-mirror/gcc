@@ -166,8 +166,9 @@
 
 ;; Integer latency is 2 cycles
 (define_insn_reservation "cell-integer" 2
-  (and (ior (eq_attr "type" "integer,shift,trap,\
-			     var_shift_rotate,cntlz,exts,isel")
+  (and (ior (eq_attr "type" "integer,trap,cntlz,exts,isel")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "no"))
 	    (and (eq_attr "type" "insert")
 		 (eq_attr "size" "64")))
        (eq_attr "cpu" "cell"))
@@ -200,17 +201,19 @@
 
 ;; add, addo, sub, subo, alter cr0, rldcli, rlwinm 
 (define_insn_reservation "cell-fast-cmp" 2
-  (and (and (eq_attr "type" "fast_compare,delayed_compare,compare,\
-			    var_delayed_compare")
-            (eq_attr "cpu" "cell"))
-        (eq_attr "cell_micro" "not"))
+  (and (ior (eq_attr "type" "fast_compare,compare")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "yes")))
+       (eq_attr "cpu" "cell")
+       (eq_attr "cell_micro" "not"))
   "slot01,fxu_cell")
 
 (define_insn_reservation "cell-cmp-microcoded" 9
-  (and (and (eq_attr "type" "fast_compare,delayed_compare,compare,\
-			    var_delayed_compare")
-            (eq_attr "cpu" "cell"))
-        (eq_attr "cell_micro" "always"))
+  (and (ior (eq_attr "type" "fast_compare,compare")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "yes")))
+       (eq_attr "cpu" "cell")
+       (eq_attr "cell_micro" "always"))
   "slot0+slot1,fxu_cell,fxu_cell*7")
 
 ;; mulld

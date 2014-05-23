@@ -1,5 +1,70 @@
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (type): Delete "var_shift_rotate",
+	"delayed_compare", "var_delayed_compare".
+	(var_shift): New attribute.
+	(cell_micro): Adjust.
+	(*andsi3_internal2_mc, *andsi3_internal3_mc, *andsi3_internal4,
+	*andsi3_internal5_mc, *extzvsi_internal1, *extzvsi_internal2,
+	rotlsi3, *rotlsi3_64, *rotlsi3_internal2, *rotlsi3_internal3,
+	*rotlsi3_internal4, *rotlsi3_internal5, *rotlsi3_internal6,
+	*rotlsi3_internal8le, *rotlsi3_internal8be, *rotlsi3_internal9le,
+	*rotlsi3_internal9be, *rotlsi3_internal10le, *rotlsi3_internal10be,
+	*rotlsi3_internal11le, *rotlsi3_internal11be, *rotlsi3_internal12le,
+	*rotlsi3_internal12be, ashlsi3, *ashlsi3_64, lshrsi3, *lshrsi3_64,
+	*lshiftrt_internal2le, *lshiftrt_internal2be, *lshiftrt_internal3le,
+	*lshiftrt_internal3be, *lshiftrt_internal5le, *lshiftrt_internal5be,
+	*lshiftrt_internal5le, *lshiftrt_internal5be, ashrsi3, *ashrsi3_64,
+	rotldi3, *rotldi3_internal2, *rotldi3_internal3, *rotldi3_internal4,
+	*rotldi3_internal5, *rotldi3_internal6, *rotldi3_internal7le,
+	*rotldi3_internal7be, *rotldi3_internal8le, *rotldi3_internal8be,
+	*rotldi3_internal9le, *rotldi3_internal9be, *rotldi3_internal10le,
+	*rotldi3_internal10be, *rotldi3_internal11le, *rotldi3_internal11be,
+	*rotldi3_internal12le, *rotldi3_internal12be, *rotldi3_internal13le,
+	*rotldi3_internal13be, *rotldi3_internal14le, *rotldi3_internal14be,
+	*rotldi3_internal15le, *rotldi3_internal15be, *ashldi3_internal1,
+	*ashldi3_internal2, *ashldi3_internal3, *lshrdi3_internal1,
+	*lshrdi3_internal2, *lshrdi3_internal3, *ashrdi3_internal1,
+	*ashrdi3_internal2, *ashrdi3_internal3, *anddi3_internal2_mc,
+	*anddi3_internal3_mc, as well as 11 anonymous define_insns): Adjust.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost, is_cracked_insn,
+	insn_must_be_first_in_group, insn_must_be_last_in_group): Adjust.
+
+	* config/rs6000/40x.md (ppc403-integer, ppc403-compare): Adjust.
+	* config/rs6000/440.md (ppc440-integer): Adjust.
+	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare):
+	Adjust.
+	* config/rs6000/601.md (ppc601-integer, ppc601-compare): Adjust.
+	* config/rs6000/603.md (ppc603-integer, ppc603-compare): Adjust.
+	* config/rs6000/6xx.md (ppc604-integer, ppc604-compare): Adjust.
+	* config/rs6000/7450.md (ppc7450-integer, ppc7450-compare):
+	Adjust.
+	* config/rs6000/7xx.md (ppc750-integer, ppc750-compare): Adjust.
+	* config/rs6000/8540.md (ppc8540_su): Adjust.
+	* config/rs6000/cell.md (cell-integer, cell-fast-cmp,
+	cell-cmp-microcoded): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_cmp): Adjust.
+	* config/rs6000/e500mc.md (e500mc_su): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_su, e500mc64_su2,
+	e500mc64_delayed): Adjust.
+	* config/rs6000/e5500.md (e5500_sfx, e5500_delayed): Adjust.
+	* config/rs6000/e6500.md (e6500_sfx, e6500_delayed): Adjust.
+	* config/rs6000/mpc.md (mpccore-integer, mpccore-compare): Adjust.
+	* config/rs6000/power4.md (power4-integer, power4-compare):
+	Adjust.
+	* config/rs6000/power5.md (power5-integer, power5-compare):
+	Adjust.
+	* config/rs6000/power6.md (power6-shift, power6-var-rotate,
+	power6-delayed-compare, power6-var-delayed-compare): Adjust.
+	* config/rs6000/power7.md (power7-integer, power7-compare):
+	Adjust.
+	* config/rs6000/power8.md (power8-1cyc, power8-compare): Adjust.
+	Adjust comment.
+	* config/rs6000/rs64.md (rs64a-integer, rs64a-compare): Adjust.
+	* config/rs6000/titan.md (titan_fxu_shift_and_rotate): Adjust.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (type): Delete "idiv", "ldiv".  Add
 	"div".
 	(bits): New mode_attr.
