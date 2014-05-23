@@ -167,7 +167,7 @@
 ;; Integer latency is 2 cycles
 (define_insn_reservation "cell-integer" 2
   (and (ior (eq_attr "type" "integer,trap,cntlz,exts,isel")
-	    (and (eq_attr "type" "shift")
+	    (and (eq_attr "type" "add,shift")
 		 (eq_attr "dot" "no"))
 	    (and (eq_attr "type" "insert")
 		 (eq_attr "size" "64")))
@@ -202,7 +202,7 @@
 ;; add, addo, sub, subo, alter cr0, rldcli, rlwinm 
 (define_insn_reservation "cell-fast-cmp" 2
   (and (ior (eq_attr "type" "fast_compare,compare")
-	    (and (eq_attr "type" "shift")
+	    (and (eq_attr "type" "add,shift")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "cell")
        (eq_attr "cell_micro" "not"))
@@ -210,7 +210,7 @@
 
 (define_insn_reservation "cell-cmp-microcoded" 9
   (and (ior (eq_attr "type" "fast_compare,compare")
-	    (and (eq_attr "type" "shift")
+	    (and (eq_attr "type" "add,shift")
 		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "cell")
        (eq_attr "cell_micro" "always"))

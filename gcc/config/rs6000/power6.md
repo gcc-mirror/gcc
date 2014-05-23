@@ -222,7 +222,9 @@
   "LSU_power6")
 
 (define_insn_reservation "power6-integer" 1
-  (and (eq_attr "type" "integer")
+  (and (ior (eq_attr "type" "integer")
+	    (and (eq_attr "type" "add")
+		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
@@ -336,7 +338,9 @@
   "FXU_power6")
 
 (define_insn_reservation "power6-fast-compare" 1
-  (and (eq_attr "type" "fast_compare")
+  (and (ior (eq_attr "type" "fast_compare")
+	    (and (eq_attr "type" "add")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
