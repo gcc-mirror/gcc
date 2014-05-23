@@ -1,5 +1,34 @@
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/440.md (ppc440-integer): Include shift without
+	dot.
+	(ppc440-compare): Include shift with dot.
+	* config/rs6000/e300c2c3.md (ppce300c3_iu): Include shift without
+	dot.
+	* config/rs6000/e5500.md (e5500_sfx2): Include constant shift
+	without dot.
+	* config/rs6000/e6500.md (e6500_sfx): Exclude constant shift
+	without dot.
+	(e6500_sfx2): Include it.
+	* config/rs6000/rs6000.md ( *zero_extend<mode>di2_internal1,
+	*zero_extend<mode>di2_internal2, *zero_extend<mode>di2_internal3,
+	*zero_extendsidi2_lfiwzx, andsi3_mc, andsi3_nomc,
+	andsi3_internal0_nomc, extzvsi_internal, extzvdi_internal,
+	*extzvdi_internal1, *extzvdi_internal2, rotlsi3, *rotlsi3_64,
+	*rotlsi3_internal4, *rotlsi3_internal7le, *rotlsi3_internal7be,
+	*rotlsi3_internal10le, *rotlsi3_internal10be, rlwinm,
+	*lshiftrt_internal1le, *lshiftrt_internal1be,
+	*lshiftrt_internal4le, *lshiftrt_internal4be, rotldi3,
+	*rotldi3_internal4, *rotldi3_internal7le, *rotldi3_internal7be,
+	*rotldi3_internal10le, *rotldi3_internal10be,
+	*rotldi3_internal13le, *rotldi3_internal13be, *ashldi3_internal4,
+	ashldi3_internal5, *ashldi3_internal6, *ashldi3_internal7,
+	ashldi3_internal8, *ashldi3_internal9, anddi3_mc, anddi3_nomc,
+	*anddi3_internal2_mc, *anddi3_internal3_mc, and 4 anonymous
+	define_insns): Use type "shift" in the appropriate alternatives.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (type): Add "logical".  Delete
 	"fast_compare".
 	(dot): Adjust comment.
