@@ -1,3 +1,8 @@
+2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (expand_omp_for_static_chunk): Rename variable si to
+	gsi, and variables v_* to v*.
+
 2014-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* varasm.c (output_constructor_bitfield): Fix thinkos in latest change.
