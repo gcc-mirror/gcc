@@ -5427,6 +5427,13 @@ Detect floating-point division by zero.  Unlike other similar options,
 @option{-fsanitize=undefined}, since floating-point division by zero can
 be a legitimate way of obtaining infinities and NaNs.
 
+@item -fsanitize=float-cast-overflow
+@opindex fsanitize=float-cast-overflow
+
+This option enables floating-point type to integer conversion checking.
+We check that the result of the conversion does not overflow.
+This option does not work well with @code{FE_INVALID} exceptions enabled.
+
 @item -fsanitize-recover
 @opindex fsanitize-recover
 By default @option{-fsanitize=undefined} sanitization (and its suboptions
