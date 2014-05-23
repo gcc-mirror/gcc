@@ -168,8 +168,9 @@
 
 ; FX Unit
 (define_insn_reservation "power8-1cyc" 1
-  (and (eq_attr "type" "integer,insert,shift,trap,\
-                        var_shift_rotate,exts,isel")
+  (and (ior (eq_attr "type" "integer,insert,trap,exts,isel")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
 
@@ -211,10 +212,11 @@
   "DU_any_power8,FXU_power8")
 
 ; compare : rldicl./exts./etc
-; delayed_compare : rlwinm./slwi./etc
-; var_delayed_compare : rlwnm./slw./etc
+; shift with dot : rlwinm./slwi./rlwnm./slw./etc
 (define_insn_reservation "power8-compare" 2
-  (and (eq_attr "type" "compare,delayed_compare,var_delayed_compare")
+  (and (ior (eq_attr "type" "compare")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,FXU_power8,FXU_power8")
 

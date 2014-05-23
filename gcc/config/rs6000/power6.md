@@ -238,6 +238,8 @@
 
 (define_insn_reservation "power6-shift" 1
   (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "no")
+       (eq_attr "dot" "no")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
@@ -287,7 +289,9 @@
   "store_data_bypass_p")
 
 (define_insn_reservation "power6-var-rotate" 4
-  (and (eq_attr "type" "var_shift_rotate")
+  (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "yes")
+       (eq_attr "dot" "no")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
@@ -349,12 +353,16 @@
   "store_data_bypass_p")
 
 (define_insn_reservation "power6-delayed-compare" 2 ; N/A
-  (and (eq_attr "type" "delayed_compare")
+  (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "no")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
 (define_insn_reservation "power6-var-delayed-compare" 4
-  (and (eq_attr "type" "var_delayed_compare")
+  (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "yes")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 

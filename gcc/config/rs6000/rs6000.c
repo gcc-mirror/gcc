@@ -26188,13 +26188,18 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                 {
                 case TYPE_CMP:
                 case TYPE_COMPARE:
-                case TYPE_DELAYED_COMPARE:
                 case TYPE_FPCOMPARE:
                 case TYPE_CR_LOGICAL:
                 case TYPE_DELAYED_CR:
 		  return cost + 2;
                 case TYPE_MUL:
 		  if (get_attr_dot (dep_insn) == DOT_YES)
+		    return cost + 2;
+		  else
+		    break;
+                case TYPE_SHIFT:
+		  if (get_attr_dot (dep_insn) == DOT_YES
+		      && get_attr_var_shift (dep_insn) == VAR_SHIFT_NO)
 		    return cost + 2;
 		  else
 		    break;
@@ -26228,18 +26233,17 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                                == SIGN_EXTEND_YES ? 6 : 4;
                       break;
                     }
-                  case TYPE_VAR_SHIFT_ROTATE:
-                  case TYPE_VAR_DELAYED_COMPARE:
+                  case TYPE_SHIFT:
                     {
                       if (! store_data_bypass_p (dep_insn, insn))
-                        return 6;
+                        return get_attr_var_shift (dep_insn) == VAR_SHIFT_YES ?
+                               6 : 3;
                       break;
 		    }
                   case TYPE_INTEGER:
                   case TYPE_COMPARE:
                   case TYPE_FAST_COMPARE:
                   case TYPE_EXTS:
-                  case TYPE_SHIFT:
                   case TYPE_INSERT:
                     {
                       if (! store_data_bypass_p (dep_insn, insn))
@@ -26292,18 +26296,17 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                                == SIGN_EXTEND_YES ? 6 : 4;
                       break;
                     }
-                  case TYPE_VAR_SHIFT_ROTATE:
-                  case TYPE_VAR_DELAYED_COMPARE:
+                  case TYPE_SHIFT:
                     {
                       if (set_to_load_agen (dep_insn, insn))
-                        return 6;
+                        return get_attr_var_shift (dep_insn) == VAR_SHIFT_YES ?
+                               6 : 3;
                       break;
-                    }
+		    }
                   case TYPE_INTEGER:
                   case TYPE_COMPARE:
                   case TYPE_FAST_COMPARE:
                   case TYPE_EXTS:
-                  case TYPE_SHIFT:
                   case TYPE_INSERT:
                     {
                       if (set_to_load_agen (dep_insn, insn))
@@ -26477,7 +26480,10 @@ is_cracked_insn (rtx insn)
 	  || ((type == TYPE_FPLOAD || type == TYPE_FPSTORE)
 	      && get_attr_update (insn) == UPDATE_YES)
 	  || type == TYPE_DELAYED_CR
-	  || type == TYPE_COMPARE || type == TYPE_DELAYED_COMPARE
+	  || type == TYPE_COMPARE
+	  || (type == TYPE_SHIFT
+	      && get_attr_dot (insn) == DOT_YES
+	      && get_attr_var_shift (insn) == VAR_SHIFT_NO)
 	  || (type == TYPE_MUL
 	      && get_attr_dot (insn) == DOT_YES)
 	  || type == TYPE_DIV
@@ -27307,12 +27313,9 @@ insn_must_be_first_in_group (rtx insn)
         {
         case TYPE_EXTS:
         case TYPE_CNTLZ:
-        case TYPE_SHIFT:
-        case TYPE_VAR_SHIFT_ROTATE:
         case TYPE_TRAP:
         case TYPE_MUL:
         case TYPE_INSERT:
-        case TYPE_DELAYED_COMPARE:
         case TYPE_FPCOMPARE:
         case TYPE_MFCR:
         case TYPE_MTCR:
@@ -27323,6 +27326,12 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_LOAD_L:
         case TYPE_STORE_C:
           return true;
+        case TYPE_SHIFT:
+          if (get_attr_dot (insn) == DOT_NO
+              || get_attr_var_shift (insn) == VAR_SHIFT_NO)
+            return true;
+          else
+            break;
         case TYPE_DIV:
           if (get_attr_size (insn) == SIZE_32)
             return true;
@@ -27351,8 +27360,6 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MTCR:
         case TYPE_DIV:
         case TYPE_COMPARE:
-        case TYPE_DELAYED_COMPARE:
-        case TYPE_VAR_DELAYED_COMPARE:
         case TYPE_ISYNC:
         case TYPE_LOAD_L:
         case TYPE_STORE_C:
@@ -27360,6 +27367,7 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MTJMPR:
           return true;
         case TYPE_MUL:
+        case TYPE_SHIFT:
           if (get_attr_dot (insn) == DOT_YES)
             return true;
           else
@@ -27392,8 +27400,6 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MFCRF:
         case TYPE_MTCR:
         case TYPE_COMPARE:
-        case TYPE_DELAYED_COMPARE:
-        case TYPE_VAR_DELAYED_COMPARE:
         case TYPE_SYNC:
         case TYPE_ISYNC:
         case TYPE_LOAD_L:
@@ -27402,6 +27408,12 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_MFJMPR:
         case TYPE_MTJMPR:
           return true;
+        case TYPE_SHIFT:
+        case TYPE_MUL:
+          if (get_attr_dot (insn) == DOT_YES)
+            return true;
+          else
+            break;
         case TYPE_LOAD:
           if (get_attr_sign_extend (insn) == SIGN_EXTEND_YES
               || get_attr_update (insn) == UPDATE_YES)
@@ -27454,11 +27466,8 @@ insn_must_be_last_in_group (rtx insn)
       {
       case TYPE_EXTS:
       case TYPE_CNTLZ:
-      case TYPE_SHIFT:
-      case TYPE_VAR_SHIFT_ROTATE:
       case TYPE_TRAP:
       case TYPE_MUL:
-      case TYPE_DELAYED_COMPARE:
       case TYPE_FPCOMPARE:
       case TYPE_MFCR:
       case TYPE_MTCR:
@@ -27469,6 +27478,12 @@ insn_must_be_last_in_group (rtx insn)
       case TYPE_LOAD_L:
       case TYPE_STORE_C:
         return true;
+      case TYPE_SHIFT:
+        if (get_attr_dot (insn) == DOT_NO
+            || get_attr_var_shift (insn) == VAR_SHIFT_NO)
+          return true;
+        else
+          break;
       case TYPE_DIV:
         if (get_attr_size (insn) == SIZE_32)
           return true;
