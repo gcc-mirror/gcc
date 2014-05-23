@@ -1,3 +1,7 @@
+2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_target): Return bool values.
+
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_thread_limit): Rename
