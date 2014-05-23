@@ -12720,15 +12720,19 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context)
 	  c_parser_consume_token (parser);
 	  strcpy (p_name, "#pragma omp target");
 	  if (!flag_openmp)  /* flag_openmp_simd  */
-	    return c_parser_omp_teams (loc, parser, p_name,
-				       OMP_TARGET_CLAUSE_MASK, cclauses);
+	    {
+	      tree stmt = c_parser_omp_teams (loc, parser, p_name,
+					      OMP_TARGET_CLAUSE_MASK,
+					      cclauses);
+	      return stmt != NULL_TREE;
+	    }
 	  keep_next_level ();
 	  tree block = c_begin_compound_stmt (true);
 	  tree ret = c_parser_omp_teams (loc, parser, p_name,
 					 OMP_TARGET_CLAUSE_MASK, cclauses);
 	  block = c_end_compound_stmt (loc, block, true);
-	  if (ret == NULL)
-	    return ret;
+	  if (ret == NULL_TREE)
+	    return false;
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
@@ -12739,7 +12743,7 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context)
       else if (!flag_openmp)  /* flag_openmp_simd  */
 	{
 	  c_parser_skip_to_pragma_eol (parser);
-	  return NULL_TREE;
+	  return false;
 	}
       else if (strcmp (p, "data") == 0)
 	{

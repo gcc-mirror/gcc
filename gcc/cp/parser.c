@@ -30337,8 +30337,12 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  strcpy (p_name, "#pragma omp target");
 	  if (!flag_openmp)  /* flag_openmp_simd  */
-	    return cp_parser_omp_teams (parser, pragma_tok, p_name,
-					OMP_TARGET_CLAUSE_MASK, cclauses);
+	    {
+	      tree stmt = cp_parser_omp_teams (parser, pragma_tok, p_name,
+					       OMP_TARGET_CLAUSE_MASK,
+					       cclauses);
+	      return stmt != NULL_TREE;
+	    }
 	  keep_next_level (true);
 	  tree sb = begin_omp_structured_block ();
 	  unsigned save = cp_parser_begin_omp_structured_block (parser);
@@ -30346,8 +30350,8 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 					  OMP_TARGET_CLAUSE_MASK, cclauses);
 	  cp_parser_end_omp_structured_block (parser, save);
 	  tree body = finish_omp_structured_block (sb);
-	  if (ret == NULL)
-	    return ret;
+	  if (ret == NULL_TREE)
+	    return false;
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
@@ -30358,7 +30362,7 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
       else if (!flag_openmp)  /* flag_openmp_simd  */
 	{
 	  cp_parser_require_pragma_eol (parser, pragma_tok);
-	  return NULL_TREE;
+	  return false;
 	}
       else if (strcmp (p, "data") == 0)
 	{
