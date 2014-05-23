@@ -7548,6 +7548,8 @@ ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn, int ready_index)
 	  || !is_load_p (insn)
 	  || mem_ops_in_group[current_cycle % 4] < ia64_max_memory_insns))
     return 0;
+
+  return 1;
 }
 
 /* The following variable value is pseudo-insn used by the DFA insn

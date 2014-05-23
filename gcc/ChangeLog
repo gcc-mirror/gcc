@@ -1,3 +1,9 @@
+2014-05-23  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	Fix bootstrap error on ia64
+	* config/ia64/ia64.c (ia64_first_cycle_multipass_dfa_lookahead_guard):
+	Return default value.
+
 2014-05-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/54733
