@@ -565,6 +565,16 @@ lra_eliminate_regs_1 (rtx insn, rtx x, enum machine_mode mem_mode,
 	      alter_subreg (&x, false);
 	      return x;
 	    }
+	  else if (! subst_p)
+	    {
+	      /* LRA can transform subregs itself.  So don't call
+		 simplify_gen_subreg until LRA transformations are
+		 finished.  Function simplify_gen_subreg can do
+		 non-trivial transformations (like truncation) which
+		 might make LRA work to fail.  */
+	      SUBREG_REG (x) = new_rtx;
+	      return x;
+	    }
 	  else
 	    return simplify_gen_subreg (GET_MODE (x), new_rtx,
 					GET_MODE (new_rtx), SUBREG_BYTE (x));
