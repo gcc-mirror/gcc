@@ -174,7 +174,7 @@
 
 ; FX Unit
 (define_insn_reservation "power7-integer" 1
-  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
+  (and (eq_attr "type" "integer,insert,shift,trap,\
                         var_shift_rotate,exts,isel,popcnt")
        (eq_attr "cpu" "power7"))
   "DU_power7,FXU_power7")

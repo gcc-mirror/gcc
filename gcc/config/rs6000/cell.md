@@ -166,8 +166,10 @@
 
 ;; Integer latency is 2 cycles
 (define_insn_reservation "cell-integer" 2
-  (and (eq_attr "type" "integer,insert_dword,shift,trap,\
-			var_shift_rotate,cntlz,exts,isel")
+  (and (ior (eq_attr "type" "integer,shift,trap,\
+			     var_shift_rotate,cntlz,exts,isel")
+	    (and (eq_attr "type" "insert")
+		 (eq_attr "size" "64")))
        (eq_attr "cpu" "cell"))
   "slot01,fxu_cell")
 
@@ -185,7 +187,8 @@
 
 ;; rlwimi, alter cr0  
 (define_insn_reservation "cell-insert" 2
-  (and (eq_attr "type" "insert_word")
+  (and (eq_attr "type" "insert")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "cell"))
  "slot01,fxu_cell")
 

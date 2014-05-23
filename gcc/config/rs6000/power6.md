@@ -247,12 +247,14 @@
   "FXU_power6")
 
 (define_insn_reservation "power6-insert" 1
-  (and (eq_attr "type" "insert_word")
+  (and (eq_attr "type" "insert")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "FX2_power6")
 
 (define_insn_reservation "power6-insert-dword" 1
-  (and (eq_attr "type" "insert_dword")
+  (and (eq_attr "type" "insert")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "FX2_power6")
 

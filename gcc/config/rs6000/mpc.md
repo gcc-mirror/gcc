@@ -41,7 +41,7 @@
   "lsu_mpc")
 
 (define_insn_reservation "mpccore-integer" 1
-  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
+  (and (eq_attr "type" "integer,insert,shift,trap,\
                         var_shift_rotate,cntlz,exts,isel")
        (eq_attr "cpu" "mpccore"))
   "iu_mpc")

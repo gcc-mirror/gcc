@@ -1,5 +1,41 @@
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (type): Delete "insert_word",
+	"insert_dword".  Add "insert".
+	(size): Update comment.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost, is_cracked_insn,
+	insn_must_be_first_in_group): Adjust.
+	(insvsi_internal, *insvsi_internal1, *insvsi_internal2,
+	*insvsi_internal3, *insvsi_internal4, *insvsi_internal5,
+	*insvsi_internal6, insvdi_internal): Adjust.
+
+	* config/rs6000/40x.md (ppc403-integer): Adjust.
+	* config/rs6000/440.md (ppc440-integer): Adjust.
+	* config/rs6000/476.md (ppc476-simple-integer): Adjust.
+	* config/rs6000/601.md (ppc601-integer): Adjust.
+	* config/rs6000/603.md (ppc603-integer): Adjust.
+	* config/rs6000/6xx.md (ppc604-integer): Adjust.
+	* config/rs6000/7450.md (ppc7450-integer): Adjust.
+	* config/rs6000/7xx.md (ppc750-integer): Adjust.
+	* config/rs6000/8540.md (ppc8540_su): Adjust.
+	* config/rs6000/cell.md (cell-integer, cell-insert): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_iu): Adjust.
+	* config/rs6000/e500mc.md (e500mc_su): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_su): Adjust.
+	* config/rs6000/e5500.md (e5500_sfx): Adjust.
+	* config/rs6000/e6500.md (e6500_sfx): Adjust.
+	* config/rs6000/mpc.md (mpccore-integer): Adjust.
+	* config/rs6000/power4.md (power4-integer, power4-insert): Adjust.
+	* config/rs6000/power5.md (power5-integer, power5-insert): Adjust.
+	* config/rs6000/power6.md (power6-insert, power6-insert-dword):
+	Adjust.
+	* config/rs6000/power7.md (power7-integer): Adjust.
+	* config/rs6000/power8.md (power8-1cyc): Adjust.
+	* config/rs6000/rs64.md (rs64a-integer): Adjust.
+	* config/rs6000/titan.md (titan_fxu_shift_and_rotate): Adjust.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (type): Add "mul".  Delete "imul",
 	"imul2", "imul3", "lmul", "imul_compare", "lmul_compare".
 	(size): New attribute.

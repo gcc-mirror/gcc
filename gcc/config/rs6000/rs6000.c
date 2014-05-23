@@ -26240,8 +26240,7 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                   case TYPE_FAST_COMPARE:
                   case TYPE_EXTS:
                   case TYPE_SHIFT:
-                  case TYPE_INSERT_WORD:
-                  case TYPE_INSERT_DWORD:
+                  case TYPE_INSERT:
                     {
                       if (! store_data_bypass_p (dep_insn, insn))
                         return 3;
@@ -26311,8 +26310,7 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                   case TYPE_FAST_COMPARE:
                   case TYPE_EXTS:
                   case TYPE_SHIFT:
-                  case TYPE_INSERT_WORD:
-                  case TYPE_INSERT_DWORD:
+                  case TYPE_INSERT:
                     {
                       if (set_to_load_agen (dep_insn, insn))
                         return 3;
@@ -26495,7 +26493,8 @@ is_cracked_insn (rtx insn)
 	  || (type == TYPE_MUL
 	      && get_attr_dot (insn) == DOT_YES)
 	  || type == TYPE_IDIV || type == TYPE_LDIV
-	  || type == TYPE_INSERT_WORD)
+	  || (type == TYPE_INSERT
+	      && get_attr_size (insn) == SIZE_32))
 	return true;
     }
 
@@ -27320,7 +27319,6 @@ insn_must_be_first_in_group (rtx insn)
 
       switch (type)
         {
-        case TYPE_INSERT_DWORD:
         case TYPE_EXTS:
         case TYPE_CNTLZ:
         case TYPE_SHIFT:
@@ -27328,7 +27326,7 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_TRAP:
         case TYPE_MUL:
         case TYPE_IDIV:
-        case TYPE_INSERT_WORD:
+        case TYPE_INSERT:
         case TYPE_DELAYED_COMPARE:
         case TYPE_FPCOMPARE:
         case TYPE_MFCR:

@@ -51,7 +51,7 @@
 (define_bypass 2 "titan_mulhw" "titan_mulhw")
 
 (define_insn_reservation "titan_fxu_shift_and_rotate" 2
-  (and (eq_attr "type" "insert_word,shift,var_shift_rotate,cntlz")
+  (and (eq_attr "type" "insert,shift,var_shift_rotate,cntlz")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fxu_sh,nothing*2,titan_fxu_wb")
 
