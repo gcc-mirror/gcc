@@ -73,7 +73,7 @@
   "lsu_6xx")
   
 (define_insn_reservation "ppc604-integer" 1
-  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
+  (and (eq_attr "type" "integer,insert,shift,trap,\
                         var_shift_rotate,cntlz,exts,isel")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "iu1_6xx|iu2_6xx")
