@@ -1,3 +1,9 @@
+2014-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/61266
+	* gcc.dg/Wstrict-overflow-18.c: Revert un-XFAILing and
+	adjust testcase to reflect reality.
+
 2014-05-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/54733
