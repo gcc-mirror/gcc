@@ -6118,7 +6118,8 @@ mem_operand_gpr (rtx op, enum machine_mode mode)
     return false;
 
   extra = GET_MODE_SIZE (mode) - UNITS_PER_WORD;
-  gcc_assert (extra >= 0);
+  if (extra < 0)
+    extra = 0;
 
   if (GET_CODE (addr) == LO_SUM)
     /* For lo_sum addresses, we must allow any offset except one that
