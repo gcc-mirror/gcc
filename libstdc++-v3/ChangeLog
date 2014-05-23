@@ -1,3 +1,9 @@
+2014-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60793
+	* testsuite/*: Use 's/\*-\*-freebsd\* /&*-*-dragonfly* /' to add
+	dragonfly target selector to all tests that run on freebsd.
+
 2014-05-21  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/61143
