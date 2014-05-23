@@ -19,7 +19,7 @@
 
 
 // { dg-do link }
-// { dg-options "-D_XOPEN_SOURCE" { target *-*-freebsd* } }
+// { dg-options "-D_XOPEN_SOURCE" { target *-*-freebsd* *-*-dragonfly* } }
 
 #include <cmath>
 
