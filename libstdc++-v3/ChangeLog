@@ -4,6 +4,11 @@
 	* testsuite/*: Use 's/\*-\*-freebsd\* /&*-*-dragonfly* /' to add
 	dragonfly target selector to all tests that run on freebsd.
 
+	* testsuite/23_containers/vector/capacity/resize/1.cc: Add xfail for
+	dragonfly.
+	* testsuite/30_threads/call_once/60497.cc: Add target selectors.
+	* testsuite/30_threads/condition_variable/members/53841.cc: Likewise.
+
 2014-05-21  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/61143
