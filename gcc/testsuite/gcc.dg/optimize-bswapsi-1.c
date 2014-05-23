@@ -1,4 +1,5 @@
-/* { dg-do compile { target arm*-*-* alpha*-*-* i?86-*-* powerpc*-*-* rs6000-*-* x86_64-*-* s390*-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target bswap32 } */
 /* { dg-require-effective-target stdint_types } */
 /* { dg-options "-O2 -fdump-tree-bswap" } */
 /* { dg-options "-O2 -fdump-tree-bswap -march=z900" { target s390-*-* } } */
