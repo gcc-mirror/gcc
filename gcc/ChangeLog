@@ -1,5 +1,21 @@
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (type): Add new value "halfmul".
+	(*macchwc, *macchw, *macchwuc, *macchwu, *machhwc, *machhw,
+	*machhwuc, *machhwu, *maclhwc, *maclhw, *maclhwuc, *maclhwu,
+	*nmacchwc, *nmacchw, *nmachhwc, *nmachhw, *nmaclhwc, *nmaclhw,
+	*mulchwc, *mulchw, *mulchwuc, *mulchwu, *mulhhwc, *mulhhw,
+	*mulhhwuc, *mulhhwu, *mullhwc, *mullhw, *mullhwuc, *mullhwu):
+	Use it.
+	* config/rs6000/40x.md (ppc405-imul3): Add type halfmul.
+	* config/rs6000/440.md (ppc440-imul2): Add type halfmul.
+	* config/rs6000/476.md (ppc476-imul): Add type halfmul.
+	* config/rs6000/titan.md: Delete nonsensical comment.
+	(titan_imul): Add type imul3.
+	(titan_mulhw): Remove type imul3; add type halfmul.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (type): Reorder, reformat.
 
 2014-05-23  Martin Jambor  <mjambor@suse.cz>
