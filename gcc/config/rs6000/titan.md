@@ -38,17 +38,13 @@
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fxu_sh")
 
-;; Keep the titan_imul and titan_mulhw (half-word) rules in order, to
-;; ensure the proper match: the half-word instructions are tagged as
-;; imul3 only, whereas regular multiplys will always carry a imul tag.
-
 (define_insn_reservation "titan_imul" 5
-  (and (eq_attr "type" "imul,imul2,imul_compare")
+  (and (eq_attr "type" "imul,imul2,imul3,imul_compare")
        (eq_attr "cpu" "titan"))       
   "titan_issue,titan_fxu_sh,nothing*5,titan_fxu_wb")  
 
 (define_insn_reservation "titan_mulhw" 4
-  (and (eq_attr "type" "imul3")
+  (and (eq_attr "type" "halfmul")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fxu_sh,nothing*4,titan_fxu_wb")
 
