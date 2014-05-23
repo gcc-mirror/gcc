@@ -1,5 +1,8 @@
 2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* semantics.c (finish_omp_clauses): Remove duplicated variable
+	initialization.
+
 	* parser.c (cp_parser_omp_target): Return bool values.
 
 2014-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
