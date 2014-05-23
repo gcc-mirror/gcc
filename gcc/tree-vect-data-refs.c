@@ -2332,6 +2332,12 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   if (loop_vinfo && dr_step == 0)
     {
       GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
+      if (nested_in_vect_loop_p (loop, stmt))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "zero step in inner loop of nest");
+	  return false;
+	}
       return DR_IS_READ (dr);
     }
 
