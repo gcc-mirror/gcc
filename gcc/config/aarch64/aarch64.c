@@ -1268,18 +1268,10 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 }
 
 static bool
-aarch64_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
+aarch64_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
+				 tree exp ATTRIBUTE_UNUSED)
 {
-  /* Indirect calls are not currently supported.  */
-  if (decl == NULL)
-    return false;
-
-  /* Cannot tail-call to long-calls, since these are outside of the
-     range of a branch instruction (we could handle this if we added
-     support for indirect tail-calls.  */
-  if (aarch64_decl_is_long_call_p (decl))
-    return false;
-
+  /* Currently, always true.  */
   return true;
 }
 
@@ -4360,6 +4352,7 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 {
   switch (regclass)
     {
+    case CALLER_SAVE_REGS:
     case POINTER_REGS:
     case GENERAL_REGS:
     case ALL_REGS:
