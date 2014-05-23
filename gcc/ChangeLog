@@ -1,3 +1,7 @@
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (type): Reorder, reformat.
+
 2014-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/53787
