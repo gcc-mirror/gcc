@@ -410,7 +410,8 @@
   "store_data_bypass_p")
 
 (define_insn_reservation "power6-idiv" 44
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*44+iu2_power6*44+fpu1_power6*44)\
   |(iu1_power6*44+iu2_power6*44+fpu2_power6*44)");
@@ -425,7 +426,8 @@
 ;  "store_data_bypass_p")
 
 (define_insn_reservation "power6-ldiv" 56
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*56+iu2_power6*56+fpu1_power6*56)\
   |(iu1_power6*56+iu2_power6*56+fpu2_power6*56)");

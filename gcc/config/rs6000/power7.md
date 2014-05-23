@@ -219,12 +219,14 @@
   "DU2F_power7,FXU_power7,nothing*3,FXU_power7")
 
 (define_insn_reservation "power7-idiv" 36
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,iu1_power7*36|iu2_power7*36")
 
 (define_insn_reservation "power7-ldiv" 68
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,iu1_power7*68|iu2_power7*68")
 

@@ -246,12 +246,14 @@
  
 ;; divide
 (define_insn_reservation "cell-idiv" 32
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "cell"))
   "slot1,nonpipeline,nonpipeline*30")
 
 (define_insn_reservation "cell-ldiv" 64
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "cell"))
   "slot1,nonpipeline,nonpipeline*62")
 

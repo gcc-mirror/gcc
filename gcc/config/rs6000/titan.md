@@ -67,7 +67,7 @@
 ;; through its latency and initial disptach bottlenecks (i.e. issue
 ;; slots and fxu scheduler availability)
 (define_insn_reservation "titan_fxu_div" 34
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fxu_sh")
 

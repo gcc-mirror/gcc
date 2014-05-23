@@ -1,5 +1,42 @@
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (type): Delete "idiv", "ldiv".  Add
+	"div".
+	(bits): New mode_attr.
+	(idiv_ldiv): Delete mode_attr.
+	(udiv<mode>3, *div<mode>3, div<div_extend>_<mode>): Adjust.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost, is_cracked_insn,
+	rs6000_adjust_priority, is_nonpipeline_insn,
+	insn_must_be_first_in_group, insn_must_be_last_in_group): Adjust.
+
+	* config/rs6000/40x.md (ppc403-idiv): Adjust.
+	* config/rs6000/440.md (ppc440-idiv): Adjust.
+	* config/rs6000/476.md (ppc476-idiv): Adjust.
+	* config/rs6000/601.md (ppc601-idiv): Adjust.
+	* config/rs6000/603.md (ppc603-idiv): Adjust.
+	* config/rs6000/6xx.md (ppc604-idiv, ppc620-idiv, ppc630-idiv,
+	ppc620-ldiv): Adjust.
+	* config/rs6000/7450.md (ppc7450-idiv): Adjust.
+	* config/rs6000/7xx.md (ppc750-idiv): Adjust.
+	* config/rs6000/8540.md (ppc8540_divide): Adjust.
+	* config/rs6000/a2.md (ppca2-idiv, ppca2-ldiv): Adjust.
+	* config/rs6000/cell.md (cell-idiv, cell-ldiv): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_divide): Adjust.
+	* config/rs6000/e500mc.md (e500mc_divide): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_divide): Adjust.
+	* config/rs6000/e5500.md (e5500_divide, e5500_divide_d): Adjust.
+	* config/rs6000/e6500.md (e6500_divide, e6500_divide_d): Adjust.
+	* config/rs6000/mpc.md (mpccore-idiv): Adjust.
+	* config/rs6000/power4.md (power4-idiv, power4-ldiv): Adjust.
+	* config/rs6000/power5.md (power5-idiv, power5-ldiv): Adjust.
+	* config/rs6000/power6.md (power6-idiv, power6-ldiv): Adjust.
+	* config/rs6000/power7.md (power7-idiv, power7-ldiv): Adjust.
+	* config/rs6000/power8.md (power8-idiv, power8-ldiv): Adjust.
+	* config/rs6000/rs64.md (rs64a-idiv, rs64a-ldiv): Adjust.
+	* config/rs6000/titan.md (titan_fxu_div): Adjust.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (type): Delete "insert_word",
 	"insert_dword".  Add "insert".
 	(size): Update comment.

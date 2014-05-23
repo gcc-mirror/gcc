@@ -63,7 +63,7 @@
 
 ; Divide latency varies greatly from 2-11, use 6 as average
 (define_insn_reservation "mpccore-idiv" 6
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
        (eq_attr "cpu" "mpccore"))
   "mciu_mpc*6")
 
