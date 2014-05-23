@@ -1,3 +1,11 @@
+2014-05-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/61143
+	* include/bits/hashtable.h: Fix move semantic to leave hashtable in a
+	usable state.
+	* testsuite/23_containers/unordered_set/61143.cc: New.
+	* testsuite/23_containers/unordered_set/modifiers/swap.cc: New.
+
 2014-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60966
