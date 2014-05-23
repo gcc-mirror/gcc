@@ -1,3 +1,7 @@
+2014-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.c (output_constructor_bitfield): Fix thinkos in latest change.
+
 2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimple.h (enum gf_mask): Add and use GF_OMP_FOR_SIMD.
