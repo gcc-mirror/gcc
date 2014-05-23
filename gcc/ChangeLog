@@ -1,3 +1,10 @@
+2014-05-23  Paul Eggert  <eggert@cs.ucla.edu>
+
+	PR other/56955
+	* doc/extend.texi (Function Attributes): Fix  __attribute__ ((malloc))
+	documentation; the old documentation didn't clearly state the
+	constraints on the contents of the pointed-to storage.
+
 2014-05-23  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	Fix bootstrap error on ia64
