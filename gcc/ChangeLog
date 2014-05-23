@@ -1,3 +1,18 @@
+2014-05-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/54733
+	* tree-ssa-math-opts.c (nop_stats): New "bswap_stats" structure.
+	(CMPNOP): Define.
+	(find_bswap_or_nop_load): New.
+	(find_bswap_1): Renamed to ...
+	(find_bswap_or_nop_1): This. Also add support for memory source.
+	(find_bswap): Renamed to ...
+	(find_bswap_or_nop): This. Also add support for memory source and
+	detection of bitwise operations equivalent to load in host endianness.
+	(execute_optimize_bswap): Likewise. Also move its leading comment back
+	in place and split statement transformation into ...
+	(bswap_replace): This.
+
 2014-05-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61215
