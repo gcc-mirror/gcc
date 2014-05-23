@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "target.h"
 #include "langhooks.h"
+#include "ubsan.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.
    EXPR must be pointer, reference, integer, enumeral, or literal zero;
@@ -394,6 +395,7 @@ convert_to_integer (tree type, tree expr)
   tree intype = TREE_TYPE (expr);
   unsigned int inprec = element_precision (intype);
   unsigned int outprec = element_precision (type);
+  location_t loc = EXPR_LOCATION (expr);
 
   /* An INTEGER_TYPE cannot be incomplete, but an ENUMERAL_TYPE can
      be.  Consider `enum E = { a, b = (enum E) 3 };'.  */
@@ -844,7 +846,17 @@ convert_to_integer (tree type, tree expr)
       return build1 (CONVERT_EXPR, type, expr);
 
     case REAL_TYPE:
-      return build1 (FIX_TRUNC_EXPR, type, expr);
+      if (flag_sanitize & SANITIZE_FLOAT_CAST)
+	{
+	  expr = save_expr (expr);
+	  tree check = ubsan_instrument_float_cast (loc, type, expr);
+	  expr = build1 (FIX_TRUNC_EXPR, type, expr);
+	  if (check == NULL)
+	    return expr;
+	  return fold_build2 (COMPOUND_EXPR, TREE_TYPE (expr), check, expr);
+	}
+      else
+	return build1 (FIX_TRUNC_EXPR, type, expr);
 
     case FIXED_POINT_TYPE:
       return build1 (FIXED_CONVERT_EXPR, type, expr);

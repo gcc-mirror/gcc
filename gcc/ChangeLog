@@ -1,3 +1,23 @@
+2014-05-23  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def: Change SANITIZE_FLOAT_DIVIDE to SANITIZE_NONDEFAULT.
+	* gcc.c (sanitize_spec_function): Likewise.
+	* convert.c (convert_to_integer): Include "ubsan.h".  Add
+	floating-point to integer instrumentation.
+	* doc/invoke.texi: Document -fsanitize=float-cast-overflow.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_FLOAT_CAST and
+	SANITIZE_NONDEFAULT.
+	* opts.c (common_handle_option): Handle -fsanitize=float-cast-overflow.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_FLOAT_CAST_OVERFLOW,
+	BUILT_IN_UBSAN_HANDLE_FLOAT_CAST_OVERFLOW_ABORT): Add.
+	* ubsan.c: Include "realmpfr.h" and "dfp.h".
+	(get_ubsan_type_info_for_type): Handle REAL_TYPEs.
+	(ubsan_type_descriptor): Set tkind to 0xffff for types other than
+	float/double/long double.
+	(ubsan_instrument_float_cast): New function.
+	* ubsan.h (ubsan_instrument_float_cast): Declare.
+
 2014-05-23  Jiong Wang   <jiong.wang@arm.com>
 
 	* config/aarch64/predicates.md (aarch64_call_insn_operand): New

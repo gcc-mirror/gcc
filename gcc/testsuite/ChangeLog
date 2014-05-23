@@ -1,3 +1,21 @@
+2014-05-23  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/float-cast-overflow-1.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-10.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-2.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-3.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-4.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-5.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-6.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-7.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-7.h: New file.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-9.c: New test.
+	* c-c++-common/ubsan/float-cast.h: New file.
+	* g++.dg/ubsan/float-cast-overflow-bf.C: New test.
+	* gcc.dg/ubsan/float-cast-overflow-bf.c: New test.
+
 2014-05-23  Jiong Wang   <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/tail_indirect_call_1.c: New.
