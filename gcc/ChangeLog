@@ -1,5 +1,8 @@
 2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gimplify.c (omp_notice_variable) <case OMP_CLAUSE_DEFAULT_NONE>:
+	Rewrite check for ORT_PARALLEL and ORT_COMBINED_PARALLEL.
+
 	* omp-low.c (expand_omp_for_static_chunk): Rename variable si to
 	gsi, and variables v_* to v*.
 

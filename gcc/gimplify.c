@@ -5683,8 +5683,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       switch (default_kind)
 	{
 	case OMP_CLAUSE_DEFAULT_NONE:
-	  if (ctx->region_type == ORT_PARALLEL
-	      || ctx->region_type == ORT_COMBINED_PARALLEL)
+	  if ((ctx->region_type & ORT_PARALLEL) != 0)
 	    {
 	      error ("%qE not specified in enclosing parallel",
 		     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
