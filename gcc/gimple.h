@@ -94,8 +94,10 @@ enum gf_mask {
     GF_OMP_FOR_KIND_MASK	= (1 << 2) - 1,
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
-    GF_OMP_FOR_KIND_SIMD	= 2,
-    GF_OMP_FOR_KIND_CILKSIMD	= 3,
+    /* Flag for SIMD variants of OMP_FOR kinds.  */
+    GF_OMP_FOR_SIMD		= 1 << 1,
+    GF_OMP_FOR_KIND_SIMD	= GF_OMP_FOR_SIMD | 0,
+    GF_OMP_FOR_KIND_CILKSIMD	= GF_OMP_FOR_SIMD | 1,
     GF_OMP_FOR_COMBINED		= 1 << 2,
     GF_OMP_FOR_COMBINED_INTO	= 1 << 3,
     GF_OMP_TARGET_KIND_MASK	= (1 << 2) - 1,

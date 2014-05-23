@@ -298,7 +298,7 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
   int i;
   struct omp_for_data_loop dummy_loop;
   location_t loc = gimple_location (for_stmt);
-  bool simd = gimple_omp_for_kind (for_stmt) & GF_OMP_FOR_KIND_SIMD;
+  bool simd = gimple_omp_for_kind (for_stmt) & GF_OMP_FOR_SIMD;
   bool distribute = gimple_omp_for_kind (for_stmt)
 		    == GF_OMP_FOR_KIND_DISTRIBUTE;
 
@@ -1020,7 +1020,7 @@ build_outer_var_ref (tree var, omp_context *ctx)
       x = build_receiver_ref (var, by_ref, ctx);
     }
   else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	   && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD)
+	   && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
     {
       /* #pragma omp simd isn't a worksharing construct, and can reference even
 	 private vars in its linear etc. clauses.  */
@@ -2249,7 +2249,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
   if (ctx != NULL)
     {
       if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD)
+	  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
 	{
 	  error_at (gimple_location (stmt),
 		    "OpenMP constructs may not be nested inside simd region");
@@ -2272,7 +2272,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
   switch (gimple_code (stmt))
     {
     case GIMPLE_OMP_FOR:
-      if (gimple_omp_for_kind (stmt) & GF_OMP_FOR_KIND_SIMD)
+      if (gimple_omp_for_kind (stmt) & GF_OMP_FOR_SIMD)
 	return true;
       if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
 	{
@@ -2598,7 +2598,7 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	  if (setjmp_or_longjmp_p (fndecl)
 	      && ctx
 	      && gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD)
+	      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
 	    {
 	      remove = true;
 	      error_at (gimple_location (stmt),
@@ -3034,7 +3034,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   bool reduction_omp_orig_ref = false;
   int pass;
   bool is_simd = (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-		  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD);
+		  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD);
   int max_vf = 0;
   tree lane = NULL_TREE, idx = NULL_TREE;
   tree ivar = NULL_TREE, lvar = NULL_TREE;
@@ -3774,7 +3774,7 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
     }
 
   if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD)
+      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
     {
       simduid = find_omp_clause (orig_clauses, OMP_CLAUSE__SIMDUID_);
       if (simduid)
@@ -3877,7 +3877,7 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
 
   /* SIMD reductions are handled in lower_rec_input_clauses.  */
   if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD)
+      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
     return;
 
   /* First see if there is exactly one reduction clause.  Use OMP_ATOMIC
@@ -6925,7 +6925,7 @@ expand_omp_for (struct omp_region *region, gimple inner_stmt)
        original loops from being detected.  Fix that up.  */
     loops_state_set (LOOPS_NEED_FIXUP);
 
-  if (gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_KIND_SIMD)
+  if (gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_SIMD)
     expand_omp_simd (region, &fd);
   else if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	   && !fd.have_ordered)
