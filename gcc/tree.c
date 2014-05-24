@@ -972,14 +972,20 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	}
       /* DECL_DEBUG_EXPR is copied explicitely by callers.  */
       if (TREE_CODE (node) == VAR_DECL)
-	DECL_HAS_DEBUG_EXPR_P (t) = 0;
+	{
+	  DECL_HAS_DEBUG_EXPR_P (t) = 0;
+	  t->decl_with_vis.symtab_node = NULL;
+	}
       if (TREE_CODE (node) == VAR_DECL && DECL_HAS_INIT_PRIORITY_P (node))
 	{
 	  SET_DECL_INIT_PRIORITY (t, DECL_INIT_PRIORITY (node));
 	  DECL_HAS_INIT_PRIORITY_P (t) = 1;
 	}
       if (TREE_CODE (node) == FUNCTION_DECL)
-	DECL_STRUCT_FUNCTION (t) = NULL;
+	{
+	  DECL_STRUCT_FUNCTION (t) = NULL;
+	  t->decl_with_vis.symtab_node = NULL;
+	}
     }
   else if (TREE_CODE_CLASS (code) == tcc_type)
     {
@@ -5238,7 +5244,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       else if (TREE_CODE (t) == VAR_DECL)
 	{
 	  fld_worklist_push (DECL_SECTION_NAME (t), fld);
-	  fld_worklist_push (DECL_COMDAT_GROUP (t), fld);
 	}
 
       if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)

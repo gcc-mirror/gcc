@@ -2323,7 +2323,7 @@ extern void decl_value_expr_insert (tree, tree);
   (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.comdat_flag)
 
 #define DECL_COMDAT_GROUP(NODE) \
-  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.comdat_group)
+  decl_comdat_group (NODE)
 
 /* Used in TREE_PUBLIC decls to indicate that copies of this DECL in
    multiple translation units should be merged.  */

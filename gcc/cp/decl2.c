@@ -2093,7 +2093,14 @@ constrain_visibility (tree decl, int visibility, bool tmpl)
 	  TREE_PUBLIC (decl) = 0;
 	  DECL_WEAK (decl) = 0;
 	  DECL_COMMON (decl) = 0;
-	  DECL_COMDAT_GROUP (decl) = NULL_TREE;
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == VAR_DECL)
+	    {
+	      struct symtab_node *snode = symtab_get_node (decl);
+
+	      if (snode)
+	        snode->set_comdat_group (NULL);
+	    }
 	  DECL_INTERFACE_KNOWN (decl) = 1;
 	  if (DECL_LANG_SPECIFIC (decl))
 	    DECL_NOT_REALLY_EXTERN (decl) = 1;

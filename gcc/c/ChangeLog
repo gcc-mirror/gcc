@@ -1,3 +1,8 @@
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-decl.c (merge_decls): Preserve symtab node pointers.
+	(duplicate_decls): Free new decl.
+
 2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-typeck.c (c_finish_omp_clauses): Remove duplicated variable

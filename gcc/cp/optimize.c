@@ -285,7 +285,7 @@ maybe_thunk_body (tree fn, bool force)
   else if (HAVE_COMDAT_GROUP)
     {
       tree comdat_group = cdtor_comdat_group (fns[1], fns[0]);
-      DECL_COMDAT_GROUP (fns[0]) = comdat_group;
+      cgraph_get_create_node (fns[0])->set_comdat_group (comdat_group);
       symtab_add_to_same_comdat_group (cgraph_get_create_node (fns[1]),
 				       cgraph_get_create_node (fns[0]));
       symtab_add_to_same_comdat_group (symtab_get_node (fn),
@@ -473,7 +473,7 @@ maybe_clone_body (tree fn)
 	 name of fn was corrupted by write_mangled_name by adding *INTERNAL*
 	 to it. By doing so, it also corrupted the comdat group. */
       if (DECL_ONE_ONLY (fn))
-	DECL_COMDAT_GROUP (clone) = cxx_comdat_group (clone);
+	cgraph_get_create_node (clone)->set_comdat_group (cxx_comdat_group (clone));
       DECL_SECTION_NAME (clone) = DECL_SECTION_NAME (fn);
       DECL_USE_TEMPLATE (clone) = DECL_USE_TEMPLATE (fn);
       DECL_EXTERNAL (clone) = DECL_EXTERNAL (fn);
@@ -550,7 +550,7 @@ maybe_clone_body (tree fn)
 		 into the same, *[CD]5* comdat group instead of
 		 *[CD][12]*.  */
 	      comdat_group = cdtor_comdat_group (fns[1], fns[0]);
-	      DECL_COMDAT_GROUP (fns[0]) = comdat_group;
+	      cgraph_get_create_node (fns[0])->set_comdat_group (comdat_group);
 	      symtab_add_to_same_comdat_group (symtab_get_node (clone),
 					       symtab_get_node (fns[0]));
 	    }

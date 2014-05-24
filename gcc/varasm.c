@@ -5919,17 +5919,23 @@ supports_one_only (void)
 void
 make_decl_one_only (tree decl, tree comdat_group)
 {
+  struct symtab_node *symbol;
   gcc_assert (TREE_CODE (decl) == VAR_DECL
 	      || TREE_CODE (decl) == FUNCTION_DECL);
 
   TREE_PUBLIC (decl) = 1;
+
+  if (TREE_CODE (decl) == VAR_DECL)
+    symbol = varpool_node_for_decl (decl);
+  else
+    symbol = cgraph_get_create_node (decl);
 
   if (SUPPORTS_ONE_ONLY)
     {
 #ifdef MAKE_DECL_ONE_ONLY
       MAKE_DECL_ONE_ONLY (decl);
 #endif
-      DECL_COMDAT_GROUP (decl) = comdat_group;
+      symbol->set_comdat_group (comdat_group);
     }
   else if (TREE_CODE (decl) == VAR_DECL
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))

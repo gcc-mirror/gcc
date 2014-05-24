@@ -99,6 +99,7 @@
 #include "tree-pass.h"
 #include "df.h"
 #include "bb-reorder.h"
+#include "cgraph.h"
 #include "except.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but

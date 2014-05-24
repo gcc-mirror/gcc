@@ -1,3 +1,9 @@
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_symtab_merge_symbols): Update code setting
+	symtab pointer.
+	* lto.c (compare_tree_sccs_1): Do not compare comdat groups.
+
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lto-lang.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
