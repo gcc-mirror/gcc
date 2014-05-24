@@ -1,3 +1,8 @@
+2014-05-24  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.c-torture/execute/bswap-2.c (main): Handle more bitfield
+	layouts.
+
 2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	* gfortran.dg/gfortran.dg/bind_c_array_params_2.f90:
