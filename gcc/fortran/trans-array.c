@@ -2282,9 +2282,6 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	}
     }
 
-  if (TREE_CODE (*loop_ubound0) == VAR_DECL)
-    dynamic = true;
-
   gfc_trans_create_temp_array (&outer_loop->pre, &outer_loop->post, ss, type,
 			       NULL_TREE, dynamic, true, false, where);
 

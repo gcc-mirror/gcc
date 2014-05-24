@@ -786,8 +786,9 @@ typedef struct
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1;
 
-  /* This is a temporary selector for SELECT TYPE.  */
-  unsigned select_type_temporary:1;
+  /* This is a temporary selector for SELECT TYPE or an associate
+     variable for SELECT_TYPE or ASSOCIATE.  */
+  unsigned select_type_temporary:1, associate_var:1;
 
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
   unsigned ext_attr:EXT_ATTR_NUM;

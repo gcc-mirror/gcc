@@ -493,7 +493,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     return SUCCESS;
 
   attr->class_ok = attr->dummy || attr->pointer || attr->allocatable
-		   || attr->select_type_temporary;
+		   || attr->select_type_temporary || attr->associate_var;
   
   if (!attr->class_ok)
     /* We can not build the class container yet.  */

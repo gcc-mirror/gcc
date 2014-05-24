@@ -7991,6 +7991,13 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	 has no corank.  */
       sym->as->corank = 0;
     }
+
+  /* Mark this as an associate variable.  */
+  sym->attr.associate_var = 1;
+
+  /* If the target is a good class object, so is the associate variable.  */
+  if (sym->ts.type == BT_CLASS && gfc_expr_attr (target).class_ok)
+    sym->attr.class_ok = 1;
 }
 
 

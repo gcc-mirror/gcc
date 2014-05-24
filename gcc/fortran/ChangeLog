@@ -1,3 +1,25 @@
+2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	Backport r195492 and r195815
+	2013-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55789
+	PR fortran/56047
+	* gfortran.h : Add associate_var to symbol_attr.
+	* resolve.c (resolve_assoc_var): Set associate_var attribute.
+	If the target class_ok is set, set it for the associate
+	variable.
+	* check.c (allocatable_check): Associate variables should not
+	have the allocatable attribute even if their symbols do.
+	* class.c (gfc_build_class_symbol): Symbols with associate_var
+	set will always have a good class container.
+
+	2013-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55789
+	* trans-array.c (trans_array_constructor): Remove condition
+	'dynamic' = true if the loop ubound is a VAR_DECL.
+
 2014-03-29  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60677
