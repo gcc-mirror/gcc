@@ -1,3 +1,19 @@
+2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	Backport r195492 and r195815
+	2013-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55789                                                                
+	* gfortran.dg/associate_14.f90: New test.                                               
+
+	PR fortran/56047                                                                                
+	* gfortran.dg/associate_13.f90: New test.                                                               
+
+	2013-02-06  Paul Thomas <pault@gcc.gnu.org> 
+
+	PR fortran/55789
+	* gfortran.dg/array_constructor_41.f90: New test.
+
 2014-05-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
