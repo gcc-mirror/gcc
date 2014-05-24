@@ -391,11 +391,19 @@ Interprocedural points-to information is located in
 
 @item Profiling
 
-This pass rewrites the function in order to collect runtime block
+This pass instruments the function in order to collect runtime block
 and value profiling data.  Such data may be fed back into the compiler
 on a subsequent run so as to allow optimization based on expected
-execution frequencies.  The pass is located in @file{predict.c} and
-is described by @code{pass_profile}.
+execution frequencies.  The pass is located in @file{tree-profile.c} and
+is described by @code{pass_ipa_tree_profile}.
+
+@item Static profile estimation
+
+This pass implements series of heuristics to guess propababilities
+of branches.  The resulting predictions are turned into edge profile
+by propagating branches across the control flow graphs.
+The pass is located in @file{tree-profile.c} and is described by
+@code{pass_profile}.
 
 @item Lower complex arithmetic
 
