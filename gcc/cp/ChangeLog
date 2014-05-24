@@ -1,5 +1,11 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* rtti.c: Include tm_p.h
+	(emit_tinfo_decl): Force RTTI data to be aligned to required
+	ABI alignment only.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* class.c (build_vtable): Align vtables to TARGET_VTABLE_ENTRY_ALIGN
 	ignoring other target adjustments.
 
