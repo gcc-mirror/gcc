@@ -144,6 +144,8 @@ extern enum insn_code find_widening_optab_handler_and_mode (optab,
 							    enum machine_mode,
 							    int,
 							    enum machine_mode *);
+extern enum insn_code widening_optab_handler (optab, enum machine_mode,
+					      enum machine_mode);
 
 /* An extra flag to control optab_for_tree_code's behavior.  This is needed to
    distinguish between machines with a vector shift that takes a scalar for the
@@ -272,25 +274,6 @@ convert_optab_handler (convert_optab op, enum machine_mode to_mode,
 {
   unsigned scode = (op << 16) | (from_mode << 8) | to_mode;
   gcc_assert (op > unknown_optab && op <= LAST_CONV_OPTAB);
-  return raw_optab_handler (scode);
-}
-
-/* Like optab_handler, but for widening_operations that have a
-   TO_MODE and a FROM_MODE.  */
-
-static inline enum insn_code
-widening_optab_handler (optab op, enum machine_mode to_mode,
-			enum machine_mode from_mode)
-{
-  unsigned scode = (op << 16) | to_mode;
-  if (to_mode != from_mode && from_mode != VOIDmode)
-    {
-      /* ??? Why does find_widening_optab_handler_and_mode attempt to
-	 widen things that can't be widened?  E.g. add_optab... */
-      if (op > LAST_CONV_OPTAB)
-	return CODE_FOR_nothing;
-      scode |= from_mode << 8;
-    }
   return raw_optab_handler (scode);
 }
 

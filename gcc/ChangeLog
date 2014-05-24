@@ -1,5 +1,12 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gengtype-state.c (fatal_reading_state): Bring offline.
+	* optabs.c (widening_optab_handler): Bring offline.
+	* optabs.h (widening_optab_handler): Likewise.
+	* final.c (get_attr_length_1): Likewise.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* sched-int.h (sd_iterator_cond): Manually tail recurse.
 
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
