@@ -1,5 +1,10 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Be sure
+	that var decl is available.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-core.h (tree_decl_with_vis): Replace comdat_group by
 	symtab_node pointer.
 	* tree.c (copy_node_stat): Be sure tonot copy
