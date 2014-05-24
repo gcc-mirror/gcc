@@ -33,6 +33,6 @@ program main
   print *,x
 end program main
 
-! { dg-final { scan-ipa-dump "Creating a specialized node of bar/\[0-9\]*\\." "cp" } }
+! { dg-final { scan-ipa-dump "Creating a specialized node of \[^\n\r\]*bar/\[0-9\]*\\." "cp" } }
 ! { dg-final { scan-ipa-dump-times "Aggregate replacements\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=" 2 "cp" } }
 ! { dg-final { cleanup-ipa-dump "cp" } }

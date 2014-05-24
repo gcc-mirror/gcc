@@ -12,5 +12,5 @@ subroutine foo (x, y, z, n)
   end do
 end subroutine
 
-! { dg-final { scan-tree-dump "bar " "optimized" } }
+! { dg-final { scan-tree-dump "bar\[ _\]" "optimized" } }
 ! { dg-final { cleanup-tree-dump "optimized" } }
