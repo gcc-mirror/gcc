@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 
-#   Copyright (C) 1999, 2000, 2001, 2003, 2010 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2014 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -337,7 +337,7 @@ while(<$inf>) {
                 $_ = "\n=item $1\n";
             }
 	} else {
-	    $_ = "\n=item $ic\n";
+	    $_ = "\n=item Z\&LT;\&GT;$ic\n";
 	    $ic =~ y/A-Ya-y/B-Zb-z/;
 	    $ic =~ s/(\d+)/$1 + 1/eg;
 	}
