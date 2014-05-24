@@ -16,7 +16,7 @@ integer :: aa(4,4)
 call test(aa)
 end
 
-! { dg-final { scan-assembler-times "myBindC" 1 { target { ! { hppa*-*-hpux* } } } } }
-! { dg-final { scan-assembler-times "myBindC,%r2" 1 { target { hppa*-*-hpux* } } } }
+! { dg-final { scan-assembler-times "call\[^\n\r\]*myBindC" 1 { target { ! { hppa*-*-hpux* } } } } }
+! { dg-final { scan-assembler-times "call\[^\n\r\]*myBindC,%r2" 1 { target { hppa*-*-hpux* } } } }
 ! { dg-final { scan-tree-dump-times "test \\\(&parm\\." 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
