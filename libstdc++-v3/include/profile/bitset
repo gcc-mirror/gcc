@@ -35,7 +35,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
-  /// Class std::bitset wrapper with performance instrumentation.
+  /// Class std::bitset wrapper with performance instrumentation, none at the
+  /// moment.
   template<size_t _Nb>
     class bitset
     : public _GLIBCXX_STD_C::bitset<_Nb>
@@ -43,60 +44,13 @@ namespace __profile
       typedef _GLIBCXX_STD_C::bitset<_Nb> _Base;
 
     public:
-      // bit reference:
-      class reference
-      : private _Base::reference
-      {
-	typedef typename _Base::reference _Base_ref;
-
-	friend class bitset;
-	reference();
-
-	reference(const _Base_ref& __base, bitset* __seq) _GLIBCXX_NOEXCEPT
-	: _Base_ref(__base)
-	{ }
-
-      public:
-	reference(const reference& __x) _GLIBCXX_NOEXCEPT
-	: _Base_ref(__x)
-	{ }
-
-	reference&
-	operator=(bool __x) _GLIBCXX_NOEXCEPT
-	{
-	  *static_cast<_Base_ref*>(this) = __x;
-	  return *this;
-	}
-
-	reference&
-	operator=(const reference& __x) _GLIBCXX_NOEXCEPT
-	{
-	  *static_cast<_Base_ref*>(this) = __x;
-	  return *this;
-	}
-
-	bool
-	operator~() const _GLIBCXX_NOEXCEPT
-	{
-	  return ~(*static_cast<const _Base_ref*>(this));
-	}
-
-	operator bool() const _GLIBCXX_NOEXCEPT
-	{
-	  return *static_cast<const _Base_ref*>(this);
-	}
-
-	reference&
-	flip() _GLIBCXX_NOEXCEPT
-	{
-	  _Base_ref::flip();
-	  return *this;
-	}
-      };
-
       // 23.3.5.1 constructors:
-      _GLIBCXX_CONSTEXPR bitset() _GLIBCXX_NOEXCEPT
+#if __cplusplus < 201103L
+      bitset()
       : _Base() { }
+#else
+      constexpr bitset() = default;
+#endif
 
 #if __cplusplus >= 201103L
       constexpr bitset(unsigned long long __val) noexcept
@@ -106,8 +60,8 @@ namespace __profile
       : _Base(__val) { }
 
       template<typename _CharT, typename _Traits, typename _Alloc>
-        explicit
-        bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __str,
+	explicit
+	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __str,
 	       typename std::basic_string<_CharT, _Traits, _Alloc>::size_type
 	       __pos = 0,
 	       typename std::basic_string<_CharT, _Traits, _Alloc>::size_type
@@ -129,8 +83,8 @@ namespace __profile
 
 #if __cplusplus >= 201103L
       template<typename _CharT>
-        explicit
-        bitset(const _CharT* __str,
+	explicit
+	bitset(const _CharT* __str,
 	       typename std::basic_string<_CharT>::size_type __n
 	       = std::basic_string<_CharT>::npos,
 	       _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
@@ -221,92 +175,6 @@ namespace __profile
 	return *this;
       }
 
-      // element access:
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 11. Bitset minor problems
-      reference
-      operator[](size_t __pos)
-      {
-	return reference(_M_base()[__pos], this);
-      }
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 11. Bitset minor problems
-      _GLIBCXX_CONSTEXPR bool
-      operator[](size_t __pos) const
-      {
-	return _Base::operator[](__pos);
-      }
-
-      using _Base::to_ulong;
-#if __cplusplus >= 201103L
-      using _Base::to_ullong;
-#endif
-
-      template <typename _CharT, typename _Traits, typename _Alloc>
-        std::basic_string<_CharT, _Traits, _Alloc>
-        to_string() const
-        { return _M_base().template to_string<_CharT, _Traits, _Alloc>(); }
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 396. what are characters zero and one.
-      template<class _CharT, class _Traits, class _Alloc>
-	std::basic_string<_CharT, _Traits, _Alloc>
-	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
-	{
-	  return _M_base().template
-	    to_string<_CharT, _Traits, _Alloc>(__zero, __one);
-	}
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 434. bitset::to_string() hard to use.
-      template<typename _CharT, typename _Traits>
-        std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
-        to_string() const
-        { return to_string<_CharT, _Traits, std::allocator<_CharT> >(); }
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 853. to_string needs updating with zero and one.
-      template<class _CharT, class _Traits>
-	std::basic_string<_CharT, _Traits, std::allocator<_CharT> >
-	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
-	{ return to_string<_CharT, _Traits,
-	                   std::allocator<_CharT> >(__zero, __one); }
-
-      template<typename _CharT>
-        std::basic_string<_CharT, std::char_traits<_CharT>,
-                          std::allocator<_CharT> >
-        to_string() const
-        {
-          return to_string<_CharT, std::char_traits<_CharT>,
-                           std::allocator<_CharT> >();
-        }
-
-      template<class _CharT>
-	std::basic_string<_CharT, std::char_traits<_CharT>,
-	                  std::allocator<_CharT> >
-	to_string(_CharT __zero, _CharT __one = _CharT('1')) const
-	{
-	  return to_string<_CharT, std::char_traits<_CharT>,
-	                   std::allocator<_CharT> >(__zero, __one);
-	}
-
-      std::basic_string<char, std::char_traits<char>, std::allocator<char> >
-      to_string() const
-      {
-	return to_string<char,std::char_traits<char>,std::allocator<char> >();
-      }
-
-      std::basic_string<char, std::char_traits<char>, std::allocator<char> >
-      to_string(char __zero, char __one = '1') const
-      {
-	return to_string<char, std::char_traits<char>,
-	                 std::allocator<char> >(__zero, __one);
-      }
-
-      using _Base::count;
-      using _Base::size;
-
       bool
       operator==(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return _M_base() == __rhs; }
@@ -314,11 +182,6 @@ namespace __profile
       bool
       operator!=(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return _M_base() != __rhs; }
-
-      using _Base::test;
-      using _Base::all;
-      using _Base::any;
-      using _Base::none;
 
       bitset<_Nb>
       operator<<(size_t __pos) const _GLIBCXX_NOEXCEPT

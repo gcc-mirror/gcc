@@ -816,6 +816,7 @@ profile_headers = \
 	${profile_srcdir}/map.h \
 	${profile_srcdir}/multimap.h \
 	${profile_srcdir}/multiset.h \
+	${profile_srcdir}/ordered_base.h \
 	${profile_srcdir}/set \
 	${profile_srcdir}/set.h \
 	${profile_srcdir}/iterator_tracker.h
