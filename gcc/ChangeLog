@@ -1,3 +1,7 @@
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* sched-int.h (sd_iterator_cond): Manually tail recurse.
+
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/440.md (ppc440-integer): Include shift without
