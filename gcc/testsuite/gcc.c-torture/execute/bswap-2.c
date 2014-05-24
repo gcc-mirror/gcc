@@ -74,11 +74,11 @@ main ()
     return 0;
   bfin.inval = (struct ok) { 0x83, 0x85, 0x87, 0x89 };
   out = partial_read_le32 (bfin);
-  if (out != 0x09070503 && out != 0x88868482)
+  if (out != 0x09070503 && out != 0x88868482 && out != 0x78306141)
     __builtin_abort ();
   bfin.inval = (struct ok) { 0x83, 0x85, 0x87, 0x89 };
   out = partial_read_be32 (bfin);
-  if (out != 0x03050709 && out != 0x82848688)
+  if (out != 0x03050709 && out != 0x82848688 && out != 0x41613078)
     __builtin_abort ();
   out = fake_read_le32 (cin, &cin[2]);
   if (out != 0x89018583)
