@@ -2507,8 +2507,18 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     switch (TREE_CODE (olddecl))
       {
       case FUNCTION_DECL:
-      case FIELD_DECL:
       case VAR_DECL:
+	{
+	  struct symtab_node *snode = olddecl->decl_with_vis.symtab_node;
+
+	  memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
+		  (char *) newdecl + sizeof (struct tree_decl_common),
+		  tree_code_size (TREE_CODE (olddecl)) - sizeof (struct tree_decl_common));
+	  olddecl->decl_with_vis.symtab_node = snode;
+	  break;
+	}
+
+      case FIELD_DECL:
       case PARM_DECL:
       case LABEL_DECL:
       case RESULT_DECL:
@@ -2561,6 +2571,9 @@ duplicate_decls (tree newdecl, tree olddecl)
     }
 
   merge_decls (newdecl, olddecl, newtype, oldtype);
+
+  /* The NEWDECL will no longer be needed.  */
+  ggc_free (newdecl);
   return true;
 }
 

@@ -283,7 +283,6 @@ static void
 set_new_clone_decl_and_node_flags (cgraph_node *new_node)
 {
   DECL_EXTERNAL (new_node->decl) = 0;
-  DECL_COMDAT_GROUP (new_node->decl) = 0;
   TREE_PUBLIC (new_node->decl) = 0;
   DECL_COMDAT (new_node->decl) = 0;
   DECL_WEAK (new_node->decl) = 0;
@@ -558,7 +557,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
      that is not weak also.
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
-  if (DECL_COMDAT_GROUP (old_decl))
+  if (old_node->get_comdat_group ())
     DECL_SECTION_NAME (new_node->decl) = NULL;
   set_new_clone_decl_and_node_flags (new_node);
   new_node->clone.tree_map = tree_map;

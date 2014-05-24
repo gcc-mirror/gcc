@@ -9183,7 +9183,7 @@ ix86_code_end (void)
 #endif
       if (USE_HIDDEN_LINKONCE)
 	{
-	  DECL_COMDAT_GROUP (decl) = DECL_ASSEMBLER_NAME (decl);
+	  cgraph_create_node (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
 
 	  targetm.asm_out.unique_section (decl, 0);
 	  switch_to_section (get_named_section (decl, NULL, 0));

@@ -1,5 +1,55 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-core.h (tree_decl_with_vis): Replace comdat_group by
+	symtab_node pointer.
+	* tree.c (copy_node_stat): Be sure tonot copy
+	symtab_node pointer.
+	(find_decls_types_r): Do not walk COMDAT_GROUP.
+	* tree.h (DECL_COMDAT_GROUP): Revamp to use decl_comdat_group.
+	* varasm.c (make_decl_one_only): Use set_comdat_group;
+	create node if needed.
+	* ipa-inline-transform.c (save_inline_function_body): Update
+	way we decl->symtab mapping.
+	* symtab.c (symtab_hash, hash_node, eq_node
+	symtab_insert_node_to_hashtable): Remove.
+	(symtab_register_node): Update.
+	(symtab_unregister_node): Update.
+	(symtab_get_node): Reimplement as inline function.
+	(symtab_add_to_same_comdat_group): Update.
+	(symtab_dissolve_same_comdat_group_list): Update.
+	(dump_symtab_base): Update.
+	(verify_symtab_base): Update.
+	(symtab_make_decl_local): Update.
+	(fixup_same_cpp_alias_visibility): Update.
+	(symtab_nonoverwritable_alias): Update.
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Update.
+	* ipa.c (update_visibility_by_resolution_info): UPdate.
+	* bb-reorder.c: Include cgraph.h
+	* lto-streamer-out.c (DFS_write_tree_body, hash_tree): Do not deal
+	with comdat groups.
+	* ipa-comdats.c (set_comdat_group, ipa_comdats): Update.
+	* cgraph.c (cgraph_get_create_node): Update.
+	* cgraph.h (struct symtab_node): Add get_comdat_group, set_comdat_group
+	and comdat_group_.
+	(symtab_get_node): Make inline.
+	(symtab_insert_node_to_hashtable): Remove.
+	(symtab_can_be_discarded): Update.
+	(decl_comdat_group): New function.
+	* tree-streamer-in.c (lto_input_ts_decl_with_vis_tree_pointers): Update.
+	* lto-cgraph.c (lto_output_node, lto_output_varpool_node): Stream out
+	comdat group name.
+	(read_comdat_group): New function.
+	(input_node, input_varpool_node): Use it.
+	* trans-mem.c (ipa_tm_create_version_alias): Update code creating
+	comdat groups.
+	* mips.c (mips_start_unique_function): Likewise.
+	(ix86_code_end): Likewise.
+	(rs6000_code_end): Likweise.
+	* tree-streamer-out.c (DECL_COMDAT_GROUP): Do not stream
+	comdat group.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gengtype-state.c (fatal_reading_state): Bring offline.
 	* optabs.c (widening_optab_handler): Bring offline.
 	* optabs.h (widening_optab_handler): Likewise.

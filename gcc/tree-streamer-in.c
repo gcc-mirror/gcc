@@ -760,7 +760,6 @@ lto_input_ts_decl_with_vis_tree_pointers (struct lto_input_block *ib,
     }
 
   DECL_SECTION_NAME (expr) = stream_read_tree (ib, data_in);
-  DECL_COMDAT_GROUP (expr) = stream_read_tree (ib, data_in);
 }
 
 

@@ -2065,8 +2065,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   /* Merge the storage class information.  */
   merge_weak (newdecl, olddecl);
 
-  if (DECL_ONE_ONLY (olddecl))
-    DECL_COMDAT_GROUP (newdecl) = DECL_COMDAT_GROUP (olddecl);
+  if ((TREE_CODE (olddecl) == FUNCTION_DECL || TREE_CODE (olddecl) == VAR_DECL)
+      && (DECL_EXTERNAL (olddecl) || TREE_PUBLIC (olddecl) || TREE_STATIC (olddecl))
+      && DECL_ONE_ONLY (olddecl))
+    {
+      struct symtab_node *symbol;
+      if (TREE_CODE (olddecl) == FUNCTION_DECL)
+	symbol = cgraph_get_create_node (newdecl);
+      else
+	symbol = varpool_node_for_decl (newdecl);
+      symbol->set_comdat_group (symtab_get_node (olddecl)->get_comdat_group ());
+    }
 
   DECL_DEFER_OUTPUT (newdecl) |= DECL_DEFER_OUTPUT (olddecl);
   TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
@@ -2376,6 +2385,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       int function_size;
+      struct symtab_node *snode = symtab_get_node (olddecl);
 
       function_size = sizeof (struct tree_decl_common);
 
@@ -2386,6 +2396,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
 	      (char *) newdecl + sizeof (struct tree_decl_common),
 	      sizeof (struct tree_function_decl) - sizeof (struct tree_decl_common));
+
+      /* Preserve symtab node mapping.  */
+      olddecl->decl_with_vis.symtab_node = snode;
+
       if (new_template_info)
 	/* If newdecl is a template instantiation, it is possible that
 	   the following sequence of events has occurred:
@@ -2415,6 +2429,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   else
     {
       size_t size = tree_code_size (TREE_CODE (olddecl));
+
       memcpy ((char *) olddecl + sizeof (struct tree_common),
 	      (char *) newdecl + sizeof (struct tree_common),
 	      sizeof (struct tree_decl_common) - sizeof (struct tree_common));
@@ -2428,10 +2443,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	case TYPE_DECL:
 	case CONST_DECL:
 	  {
+            struct symtab_node *snode = NULL;
+
+            if (TREE_CODE (olddecl) == VAR_DECL
+		&& (TREE_STATIC (olddecl) || TREE_PUBLIC (olddecl) || DECL_EXTERNAL (olddecl)))
+	      snode = symtab_get_node (olddecl);
 	    memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
 		    (char *) newdecl + sizeof (struct tree_decl_common),
 		    size - sizeof (struct tree_decl_common)
 		    + TREE_CODE_LENGTH (TREE_CODE (newdecl)) * sizeof (char *));
+            if (TREE_CODE (olddecl) == VAR_DECL)
+	      olddecl->decl_with_vis.symtab_node = snode;
 	  }
 	  break;
 	default:
@@ -2466,7 +2488,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   /* The NEWDECL will no longer be needed.  Because every out-of-class
      declaration of a member results in a call to duplicate_decls,
-     freeing these nodes represents in a significant savings.  */
+     freeing these nodes represents in a significant savings.
+
+     Before releasing the node, be sore to remove function from symbol
+     table that might have been inserted there to record comdat group.
+     Be sure to however do not free DECL_STRUCT_FUNCTION becuase this
+     structure is shared in between newdecl and oldecl.  */
+  if (TREE_CODE (newdecl) == FUNCTION_DECL)
+    DECL_STRUCT_FUNCTION (newdecl) = NULL;
+  if (TREE_CODE (newdecl) == FUNCTION_DECL
+      || TREE_CODE (newdecl) == VAR_DECL)
+    {
+      struct symtab_node *snode = symtab_get_node (newdecl);
+      if (snode)
+	symtab_remove_node (snode);
+    }
   ggc_free (newdecl);
 
   return olddecl;

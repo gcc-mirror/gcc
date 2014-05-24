@@ -662,7 +662,6 @@ write_ts_decl_with_vis_tree_pointers (struct output_block *ob, tree expr,
     stream_write_tree (ob, NULL_TREE, false);
 
   stream_write_tree (ob, DECL_SECTION_NAME (expr), ref_p);
-  stream_write_tree (ob, DECL_COMDAT_GROUP (expr), ref_p);
 }
 
 

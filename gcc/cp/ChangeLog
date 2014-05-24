@@ -1,5 +1,14 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* optmize.c (maybe_thunk_body): Use set_comdat_group.
+	(maybe_clone_body): Likewise.
+	* decl.c (duplicate_decls): Update code duplicating comdat group;
+	do not copy symtab pointer; before freeing newdecl remove it
+	from symtab.
+	* decl2.c (constrain_visibility): Use set_comdat_group.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* rtti.c: Include tm_p.h
 	(emit_tinfo_decl): Force RTTI data to be aligned to required
 	ABI alignment only.

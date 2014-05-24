@@ -1021,13 +1021,13 @@ update_visibility_by_resolution_info (symtab_node * node)
     for (symtab_node *next = node->same_comdat_group;
 	 next != node; next = next->same_comdat_group)
       {
-	DECL_COMDAT_GROUP (next->decl) = NULL;
+	next->set_comdat_group (NULL);
 	DECL_WEAK (next->decl) = false;
 	if (next->externally_visible
 	    && !define)
 	  DECL_EXTERNAL (next->decl) = true;
       }
-  DECL_COMDAT_GROUP (node->decl) = NULL;
+  node->set_comdat_group (NULL);
   DECL_WEAK (node->decl) = false;
   if (!define)
     DECL_EXTERNAL (node->decl) = true;
@@ -1135,11 +1135,12 @@ function_and_variable_visibility (bool whole_program)
 		     next != node;
 		     next = next->same_comdat_group)
 		{
+		  next->set_comdat_group (NULL);
 		  symtab_make_decl_local (next->decl);
 		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
 					|| next->unique_name
 					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-					&& TREE_PUBLIC (next->decl));
+				       && TREE_PUBLIC (next->decl));
 		}
 	      /* cgraph_externally_visible_p has already checked all other nodes
 	         in the group and they will all be made local.  We need to
@@ -1147,6 +1148,8 @@ function_and_variable_visibility (bool whole_program)
 	         segfault though. */
 	      symtab_dissolve_same_comdat_group_list (node);
 	    }
+	  if (TREE_PUBLIC (node->decl))
+	    node->set_comdat_group (NULL);
 	  symtab_make_decl_local (node->decl);
 	}
 
@@ -1163,8 +1166,7 @@ function_and_variable_visibility (bool whole_program)
 	    {
 	      gcc_checking_assert (DECL_COMDAT (node->decl)
 				   == DECL_COMDAT (decl_node->decl));
-	      gcc_checking_assert (DECL_COMDAT_GROUP (node->decl)
-				   == DECL_COMDAT_GROUP (decl_node->decl));
+	      gcc_checking_assert (symtab_in_same_comdat_p (node, decl_node));
 	      gcc_checking_assert (node->same_comdat_group);
 	    }
 	  node->forced_by_abi = decl_node->forced_by_abi;
@@ -1254,9 +1256,28 @@ function_and_variable_visibility (bool whole_program)
 	  vnode->unique_name = ((vnode->resolution == LDPR_PREVAILING_DEF_IRONLY
 				       || vnode->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
 				       && TREE_PUBLIC (vnode->decl));
+	  if (vnode->same_comdat_group && TREE_PUBLIC (vnode->decl))
+	    {
+	      symtab_node *next = vnode;
+
+	      /* Set all members of comdat group local.  */
+	      if (vnode->same_comdat_group)
+		for (next = vnode->same_comdat_group;
+		     next != vnode;
+		     next = next->same_comdat_group)
+		{
+		  next->set_comdat_group (NULL);
+		  symtab_make_decl_local (next->decl);
+		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
+					|| next->unique_name
+					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+				       && TREE_PUBLIC (next->decl));
+		}
+	      symtab_dissolve_same_comdat_group_list (vnode);
+	    }
+	  if (TREE_PUBLIC (vnode->decl))
+	    vnode->set_comdat_group (NULL);
 	  symtab_make_decl_local (vnode->decl);
-	  if (vnode->same_comdat_group)
-	    symtab_dissolve_same_comdat_group_list (vnode);
 	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
       update_visibility_by_resolution_info (vnode);

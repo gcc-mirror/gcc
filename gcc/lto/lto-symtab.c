@@ -644,7 +644,7 @@ lto_symtab_merge_symbols (void)
 		       && cnode2 != cnode)
 		cgraph_remove_node (cnode2);
 
-	      symtab_insert_node_to_hashtable (node);
+	      node->decl->decl_with_vis.symtab_node = node;
 	    }
 	}
     }

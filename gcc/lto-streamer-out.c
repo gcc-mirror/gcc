@@ -535,7 +535,6 @@ DFS_write_tree_body (struct output_block *ob,
       if (DECL_ASSEMBLER_NAME_SET_P (expr))
 	DFS_follow_tree_edge (DECL_ASSEMBLER_NAME (expr));
       DFS_follow_tree_edge (DECL_SECTION_NAME (expr));
-      DFS_follow_tree_edge (DECL_COMDAT_GROUP (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
@@ -974,7 +973,6 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
       if (DECL_ASSEMBLER_NAME_SET_P (t))
 	visit (DECL_ASSEMBLER_NAME (t));
       visit (DECL_SECTION_NAME (t));
-      visit (DECL_COMDAT_GROUP (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
