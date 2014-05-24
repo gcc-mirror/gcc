@@ -157,7 +157,7 @@ namespace __profile
       _Unordered_profile()
       {
 	auto& __uc = _M_conjure();
-        __profcxx_hashtable_construct(&__uc, __uc.bucket_count());
+	__profcxx_hashtable_construct(&__uc, __uc.bucket_count());
 	__profcxx_hashtable_construct2(&__uc);
       }
       _Unordered_profile(const _Unordered_profile&)
@@ -168,8 +168,8 @@ namespace __profile
       ~_Unordered_profile() noexcept
       {
 	auto& __uc = _M_conjure();
-        __profcxx_hashtable_destruct(&__uc, __uc.bucket_count(), __uc.size());
-        _M_profile_destruct();
+	__profcxx_hashtable_destruct(&__uc, __uc.bucket_count(), __uc.size());
+	_M_profile_destruct();
       }
 
       _Unordered_profile&
@@ -210,6 +210,7 @@ namespace __profile
 	  auto __lend = __uc.end(__bkt);
 	  for (++__it, ++__lit; __lit != __lend; ++__it, ++__lit)
 	    ++__chain;
+
 	  if (__chain)
 	    {
 	      ++__chain;
@@ -245,6 +246,7 @@ namespace __profile
 		  __pit = __it;
 		}
 	    }
+
 	  if (__chain)
 	    {
 	      ++__chain;

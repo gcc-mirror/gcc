@@ -1,6 +1,6 @@
-// -*- C++ -*-
+// Profiling unordered containers implementation details -*- C++ -*-
 
-// Copyright (C) 2009-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,39 +21,45 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-/** @file profile/base.h
- *  @brief Sequential helper functions.
+/** @file profile/ordered_base.h
  *  This file is a GNU profile extension to the Standard C++ Library.
  */
 
-// Written by Lixia Liu
+#ifndef _GLIBCXX_PROFILE_ORDERED
+#define _GLIBCXX_PROFILE_ORDERED 1
 
-#ifndef _GLIBCXX_PROFILE_BASE_H
-#define _GLIBCXX_PROFILE_BASE_H 1
-
-#include <functional>
-#include <profile/impl/profiler.h>
-
-// Profiling mode namespaces.
-
-/**
- * @namespace std::__profile
- * @brief GNU profile code, replaces standard behavior with profile behavior.
- */
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace __profile { }
-}
-
-/**
- * @namespace __gnu_profile
- * @brief GNU profile code for public use.
- */
-namespace __gnu_profile
+namespace __profile
 {
-  // Import all the profile versions of components in namespace std.
-  using namespace std::__profile;
-}
+  template<typename _Cont>
+    class _Ordered_profile
+    {
+      _Cont&
+      _M_conjure()
+      { return *static_cast<_Cont*>(this); }
 
+    public:
+      _Ordered_profile() _GLIBCXX_NOEXCEPT
+      { __profcxx_map_to_unordered_map_construct(&_M_conjure()); }
 
-#endif /* _GLIBCXX_PROFILE_BASE_H */
+#if __cplusplus >= 201103L
+      _Ordered_profile(const _Ordered_profile&) noexcept
+      : _Ordered_profile() { }
+      _Ordered_profile(_Ordered_profile&&) noexcept
+      : _Ordered_profile() { }
+
+      _Ordered_profile&
+      operator=(const _Ordered_profile&) = default;
+      _Ordered_profile&
+      operator=(_Ordered_profile&&) = default;
+#endif
+
+      ~_Ordered_profile()
+      { __profcxx_map_to_unordered_map_destruct(&_M_conjure()); }
+    };
+
+} // namespace __profile
+} // namespace std
+
+#endif
