@@ -1,3 +1,8 @@
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (build_vtable): Align vtables to TARGET_VTABLE_ENTRY_ALIGN
+	ignoring other target adjustments.
+
 2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* semantics.c (finish_omp_clauses): Remove duplicated variable
