@@ -114,7 +114,8 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 	  && (vnode = varpool_get_node (from_decl)) != NULL
 	  && vnode->definition)
       || (flag_ltrans
-	  && symtab_get_node (from_decl)->in_other_partition))
+	  && (vnode = varpool_get_node (from_decl)) != NULL
+	  && vnode->in_other_partition))
     return true;
   /* We are folding reference from external vtable.  The vtable may reffer
      to a symbol keyed to other compilation unit.  The other compilation
