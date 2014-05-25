@@ -9676,18 +9676,32 @@ REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
 Returns the number of images.
 
 @item @emph{Standard}:
-Fortran 2008 and later
+Fortran 2008 and later. With @var{DISTANCE} or @var{FAILED} argument, 
+Technical Specification (TS) 18508 or later
+
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = NUM_IMAGES()}
+@code{RESULT = NUM_IMAGES(DISTANCE, FAILED)}
 
-@item @emph{Arguments}: None.
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{DISTANCE} @tab (optional, intent(in)) Nonnegative scalar integer
+@item @var{FAILED}   @tab (optional, intent(in)) Scalar logical expression
+@end multitable
 
 @item @emph{Return value}:
-Scalar default-kind integer.
+Scalar default-kind integer.  If @var{DISTANCE} is not present or has value 0,
+the number of images in the current team is returned. For values smaller or
+equal distance to the initial team, it returns the number of images index
+on the ancestor team which has a distance of @var{DISTANCE} from the invoking
+team. If @var{DISTANCE} is larger than the distance to the initial team, the
+number of images of the initial team is returned. If @var{FAILED} is not present
+the total number of images is returned; if it has the value @code{.TRUE.},
+the number of failed images is returned, otherwise, the number of images which
+do have not the failed status.
 
 @item @emph{Example}:
 @smallexample
@@ -12422,7 +12436,8 @@ end program test_tanh
 Returns the cosubscript for this image.
 
 @item @emph{Standard}:
-Fortran 2008 and later
+Fortran 2008 and later. With @var{DISTANCE} argument, 
+Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Transformational function
@@ -12430,11 +12445,14 @@ Transformational function
 @item @emph{Syntax}:
 @multitable @columnfractions .80
 @item @code{RESULT = THIS_IMAGE()}
+@item @code{RESULT = THIS_IMAGE(DISTANCE)}
 @item @code{RESULT = THIS_IMAGE(COARRAY [, DIM])}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
+@item @var{DISTANCE} @tab (optional, intent(in)) Nonnegative scalar integer
+(not permitted together with @var{COARRAY}).
 @item @var{COARRAY} @tab Coarray of any type  (optional; if @var{DIM}
 present, required).
 @item @var{DIM}     @tab default integer scalar (optional). If present,
@@ -12443,12 +12461,17 @@ present, required).
 
 
 @item @emph{Return value}:
-Default integer. If @var{COARRAY} is not present, it is scalar and its value
-is the index of the invoking image. Otherwise, if @var{DIM} is not present,
-a rank-1 array with corank elements is returned, containing the cosubscripts
-for @var{COARRAY} specifying the invoking image. If @var{DIM} is present,
-a scalar is returned, with the value of the @var{DIM} element of
-@code{THIS_IMAGE(COARRAY)}.
+Default integer. If @var{COARRAY} is not present, it is scalar; if
+@var{DISTANCE} is not present or has value 0, its value is the image index on
+the invoking image for the current team, for values smaller or equal
+distance to the initial team, it returns the image index on the ancestor team
+which has a distance of @var{DISTANCE} from the invoking team. If
+@var{DISTANCE} is larger than the distance to the initial team, the image
+index of the initial team is returned. Otherwise when the @var{COARRAY} is
+present, if @var{DIM} is not present, a rank-1 array with corank elements is
+returned, containing the cosubscripts for @var{COARRAY} specifying the invoking
+image. If @var{DIM} is present, a scalar is returned, with the value of
+the @var{DIM} element of @code{THIS_IMAGE(COARRAY)}.
 
 @item @emph{Example}:
 @smallexample
@@ -12461,6 +12484,10 @@ IF (THIS_IMAGE() == 1) THEN
     WRITE(*,'(2(a,i0))') 'value[', i, '] is ', value[i]
   END DO
 END IF
+
+! Check whether the current image is the initial image
+IF (THIS_IMAGE(HUGE(1)) /= THIS_IMAGE())
+  error stop "something is rotten here"
 @end smallexample
 
 @item @emph{See also}:

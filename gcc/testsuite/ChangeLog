@@ -1,3 +1,9 @@
+2014-05-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_10.f90: Update dg-warning.
+	* gfortran.dg/coarray_this_image_1.f90: New.
+	* gfortran.dg/coarray_this_image_2.f90: New.
+
 2014-05-24  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/61173

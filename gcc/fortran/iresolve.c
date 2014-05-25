@@ -2590,10 +2590,11 @@ gfc_resolve_image_index (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
 
 
 void
-gfc_resolve_this_image (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
+gfc_resolve_this_image (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
+			gfc_expr *distance ATTRIBUTE_UNUSED)
 {
   static char this_image[] = "__this_image";
-  if (array)
+  if (array && gfc_is_coarray (array))
     resolve_bound (f, array, dim, NULL, "__this_image", true);
   else
     {

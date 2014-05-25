@@ -21,7 +21,7 @@ subroutine this_image_check()
   integer,save :: z(4)[*], i
 
   j = this_image(a,dim=3) ! { dg-error "not a valid codimension index" }
-  j = this_image(dim=3) ! { dg-error "DIM argument without ARRAY argument" }
+  j = this_image(dim=3) ! { dg-error "DIM argument without COARRAY argument" }
   i = image_index(i, [ 1 ]) ! { dg-error "Expected coarray variable" }
   i = image_index(z, 2) ! { dg-error "must be a rank one array" }
 end subroutine this_image_check
