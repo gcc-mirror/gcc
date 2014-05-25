@@ -1,5 +1,20 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p, address_taken_from_non_vtable_p,
+	comdat_can_be_unshared_p_1, comdat_can_be_unshared_p, cgraph_externally_visible_p,
+	varpool_externally_visible_p, can_replace_by_local_alias,
+	update_visibility_by_resolution_info, function_and_variable_visibility,
+	pass_data_ipa_function_and_variable_visibility,
+	make_pass_ipa_function_and_variable_visibility,
+	whole_program_function_and_variable_visibility,
+	pass_data_ipa_whole_program_visibility,
+	make_pass_ipa_whole_program_visibility): Move to ipa-visibility.c
+	* cgraph.h (cgraph_local_node_p): Declare.
+	* ipa-visibility.c: New file.
+	* Makefile.in (OBJS): Add ipa-visiblity.o
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gimple-fold.c (can_refer_decl_in_current_unit_p): Be sure
 	that var decl is available.
 

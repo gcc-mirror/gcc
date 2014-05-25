@@ -963,6 +963,10 @@ void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
 bool varpool_externally_visible_p (varpool_node *);
 
+/* In ipa-visibility.c */
+bool cgraph_local_node_p (struct cgraph_node *);
+
+
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
 bool cgraph_optimize_for_size_p (struct cgraph_node *);
