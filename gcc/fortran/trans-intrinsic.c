@@ -934,15 +934,30 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
        lbound, ubound, extent, ml;
   gfc_se argse;
   int rank, corank;
+  gfc_expr *distance = expr->value.function.actual->next->next->expr;
+
+  if (expr->value.function.actual->expr
+      && !gfc_is_coarray (expr->value.function.actual->expr))
+    distance = expr->value.function.actual->expr;
 
   /* The case -fcoarray=single is handled elsewhere.  */
   gcc_assert (gfc_option.coarray != GFC_FCOARRAY_SINGLE);
 
   /* Argument-free version: THIS_IMAGE().  */
-  if (expr->value.function.actual->expr == NULL)
+  if (distance || expr->value.function.actual->expr == NULL)
     {
+      if (distance)
+	{
+	  gfc_init_se (&argse, NULL);
+	  gfc_conv_expr_val (&argse, distance);
+	  gfc_add_block_to_block (&se->pre, &argse.pre);
+	  gfc_add_block_to_block (&se->post, &argse.post);
+	  tmp = fold_convert (integer_type_node, argse.expr);
+	}
+      else
+	tmp = integer_zero_node;
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1,
-				 integer_zero_node);
+				 tmp);
       se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
 			       tmp);
       return;
@@ -1262,11 +1277,35 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 
 
 static void
-trans_num_images (gfc_se * se)
+trans_num_images (gfc_se * se, gfc_expr *expr)
 {
-  tree tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
-				  integer_zero_node,
-				  build_int_cst (integer_type_node, -1));
+  tree tmp, distance, failed;
+  gfc_se argse;
+
+  if (expr->value.function.actual->expr)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, expr->value.function.actual->expr);
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+      distance = fold_convert (integer_type_node, argse.expr);
+    }
+  else
+    distance = integer_zero_node;
+
+  if (expr->value.function.actual->next->expr)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, expr->value.function.actual->next->expr);
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+      failed = fold_convert (integer_type_node, argse.expr);
+    }
+  else
+    failed = build_int_cst (integer_type_node, -1);
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
+			     distance, failed);
   se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
@@ -7099,7 +7138,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_NUM_IMAGES:
-      trans_num_images (se);
+      trans_num_images (se, expr);
       break;
 
     case GFC_ISYM_ACCESS:
