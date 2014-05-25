@@ -419,15 +419,15 @@ namespace __profile
        * operations have equivalent insertion cost so we do not update metrics
        * about it.
        * Note that to find out if hint has been used is libstdc++
-       * implementation dependant.
+       * implementation dependent.
        */
       bool
       _M_hint_used(const_iterator __hint, iterator __res)
       {
-	return (__hint == __res ||
-		(__hint == this->end() && ++__res == this->end()) ||
-		(__hint != this->end() && (++__hint == __res ||
-					   ++__res == --__hint)));
+	return (__hint == __res
+		|| (__hint == this->end() && ++__res == this->end())
+		|| (__hint != this->end() && (++__hint == __res
+					      || ++__res == --__hint)));
       }
     };
 
