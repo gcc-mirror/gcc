@@ -67,3 +67,8 @@ ggc_free (void *p)
 {
   free (p);
 }
+
+void
+ggc_grow (void)
+{
+}

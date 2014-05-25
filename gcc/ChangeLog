@@ -1,5 +1,11 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ggc.h (ggc_grow): New function.
+	* ggc-none.c (ggc_grow): New function.
+	* ggc-page.c (ggc_grow): Likewise.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p, address_taken_from_non_vtable_p,
 	comdat_can_be_unshared_p_1, comdat_can_be_unshared_p, cgraph_externally_visible_p,
 	varpool_externally_visible_p, can_replace_by_local_alias,
