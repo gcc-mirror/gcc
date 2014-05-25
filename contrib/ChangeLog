@@ -1,3 +1,8 @@
+2014-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* dg-extract-results.py (Named): Remove __cmp__ method.
+	(output_variation): Use a key to sort variation.harnesses.
+
 2014-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* texi2pod.pl: Force .pod file to not be a numbered list.
