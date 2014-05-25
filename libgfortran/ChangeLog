@@ -1,3 +1,10 @@
+2014-05-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from trunk.
+	PR libfortran/61187
+	* io/unix.c (raw_close): Check if s->fd is -1.
+	(fd_to_stream): Check return value of fstat(), handle error.
+
 2014-05-22  Release Manager
 
 	* GCC 4.8.3 released.
