@@ -343,6 +343,36 @@ can_replace_by_local_alias (symtab_node *node)
 	  && !symtab_can_be_discarded (node));
 }
 
+/* Return true if we can replace refernece to NODE by local alias
+   within a virtual table.  Generally we can replace function pointers
+   and virtual table pointers.  */
+
+bool
+can_replace_by_local_alias_in_vtable (symtab_node *node)
+{
+  if (is_a <varpool_node *> (node)
+      && !DECL_VIRTUAL_P (node->decl))
+    return false;
+  return can_replace_by_local_alias (node);
+}
+
+/* walk_tree callback that rewrites initializer references.   */
+
+static tree
+update_vtable_references (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+{
+  if (TREE_CODE (*tp) == VAR_DECL
+      || TREE_CODE (*tp) == FUNCTION_DECL)
+    {
+      if (can_replace_by_local_alias_in_vtable (symtab_get_node (*tp)))
+	*tp = symtab_nonoverwritable_alias (symtab_get_node (*tp))->decl;
+      *walk_subtrees = 0;
+    }
+  else if (IS_TYPE_OR_DECL_P (*tp))
+    *walk_subtrees = 0;
+  return NULL;
+}
+
 /* In LTO we can remove COMDAT groups and weak symbols.
    Either turn them into normal symbols or external symbol depending on 
    resolution info.  */
@@ -625,6 +655,34 @@ function_and_variable_visibility (bool whole_program)
 	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
       update_visibility_by_resolution_info (vnode);
+
+      /* Update virutal tables to point to local aliases where possible.  */
+      if (DECL_VIRTUAL_P (vnode->decl)
+	  && !DECL_EXTERNAL (vnode->decl))
+	{
+	  int i;
+	  struct ipa_ref *ref;
+	  bool found = false;
+
+	  /* See if there is something to update.  */
+	  for (i = 0; ipa_ref_list_referring_iterate (&vnode->ref_list,
+						      i, ref); i++)
+	    if (ref->use == IPA_REF_ADDR
+		&& can_replace_by_local_alias_in_vtable (ref->referred))
+	      {
+	        found = true;
+		break;
+	      }
+	  if (found)
+	    {
+	      struct pointer_set_t *visited_nodes = pointer_set_create ();
+	      walk_tree (&DECL_INITIAL (vnode->decl),
+			 update_vtable_references, NULL, visited_nodes);
+	      pointer_set_destroy (visited_nodes);
+	      ipa_remove_all_references (&vnode->ref_list);
+	      record_references_in_initializer (vnode->decl, false);
+	    }
+	}
     }
 
   if (dump_file)

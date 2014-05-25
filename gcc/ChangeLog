@@ -1,5 +1,12 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-visibility.c (can_replace_by_local_alias_in_vtable): New function.
+	(update_vtable_references): New function.
+	(function_and_variable_visibility): Rewrite also vtable initializers.
+	* varpool.c (cgraph_variable_initializer_availability): Remove assert.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ggc.h (ggc_grow): New function.
 	* ggc-none.c (ggc_grow): New function.
 	* ggc-page.c (ggc_grow): Likewise.
