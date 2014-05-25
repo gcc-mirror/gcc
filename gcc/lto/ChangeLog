@@ -1,5 +1,9 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto.c (read_cgraph_and_symbols): Grow ggc memory after streaming.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-symtab.c (lto_symtab_merge_symbols): Update code setting
 	symtab pointer.
 	* lto.c (compare_tree_sccs_1): Do not compare comdat groups.
