@@ -1,3 +1,9 @@
+2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/61310
+	* intrinsics.texi (CTIME): Remove mention of locale-dependent
+	behavior.
+
 2014-05-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55117
