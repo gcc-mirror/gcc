@@ -1,3 +1,9 @@
+2014-05-26  Michael Tautschnig  <mt@debian.org>
+
+	PR target/61249
+	* doc/extend.texi: Fix parameter lists of __builtin_ia32_vfrczs[sd],
+	__builtin_ia32_mpsadbw256.
+
 2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	PR rtl-optimization/61278
@@ -12,7 +18,8 @@
 
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
-	* symtab.c (symtab_nonoverwritable_alias): Copy READONLY flag for variables.
+	* symtab.c (symtab_nonoverwritable_alias): Copy READONLY flag
+	for variables.
 
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -29,8 +36,9 @@
 
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p, address_taken_from_non_vtable_p,
-	comdat_can_be_unshared_p_1, comdat_can_be_unshared_p, cgraph_externally_visible_p,
+	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p,
+	address_taken_from_non_vtable_p, comdat_can_be_unshared_p_1,
+	comdat_can_be_unshared_p, cgraph_externally_visible_p,
 	varpool_externally_visible_p, can_replace_by_local_alias,
 	update_visibility_by_resolution_info, function_and_variable_visibility,
 	pass_data_ipa_function_and_variable_visibility,
@@ -51,8 +59,7 @@
 
 	* tree-core.h (tree_decl_with_vis): Replace comdat_group by
 	symtab_node pointer.
-	* tree.c (copy_node_stat): Be sure tonot copy
-	symtab_node pointer.
+	* tree.c (copy_node_stat): Be sure to not copy symtab_node pointer.
 	(find_decls_types_r): Do not walk COMDAT_GROUP.
 	* tree.h (DECL_COMDAT_GROUP): Revamp to use decl_comdat_group.
 	* varasm.c (make_decl_one_only): Use set_comdat_group;
@@ -84,7 +91,8 @@
 	(symtab_insert_node_to_hashtable): Remove.
 	(symtab_can_be_discarded): Update.
 	(decl_comdat_group): New function.
-	* tree-streamer-in.c (lto_input_ts_decl_with_vis_tree_pointers): Update.
+	* tree-streamer-in.c (lto_input_ts_decl_with_vis_tree_pointers):
+	Update.
 	* lto-cgraph.c (lto_output_node, lto_output_varpool_node): Stream out
 	comdat group name.
 	(read_comdat_group): New function.
@@ -94,8 +102,7 @@
 	* mips.c (mips_start_unique_function): Likewise.
 	(ix86_code_end): Likewise.
 	(rs6000_code_end): Likweise.
-	* tree-streamer-out.c (DECL_COMDAT_GROUP): Do not stream
-	comdat group.
+	* tree-streamer-out.c (DECL_COMDAT_GROUP): Do not stream comdat group.
 
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -110,11 +117,9 @@
 
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
-	* config/rs6000/440.md (ppc440-integer): Include shift without
-	dot.
+	* config/rs6000/440.md (ppc440-integer): Include shift without dot.
 	(ppc440-compare): Include shift with dot.
-	* config/rs6000/e300c2c3.md (ppce300c3_iu): Include shift without
-	dot.
+	* config/rs6000/e300c2c3.md (ppce300c3_iu): Include shift without dot.
 	* config/rs6000/e5500.md (e5500_sfx2): Include constant shift
 	without dot.
 	* config/rs6000/e6500.md (e6500_sfx): Exclude constant shift
@@ -148,54 +153,12 @@
 	anddi3_mc, *anddi3_internal2_mc, *anddi3_internal3_mc,
 	*booldi3_internal2, *booldi3_internal3, *boolcdi3_internal2,
 	*boolcdi3_internal3, *boolccdi3_internal2, *boolccdi3_internal3,
-	*mov<mode>_internal2, and 10 anonymous define_insns): Use
-	"logical".
-	* config/rs6000/rs6000.c (rs6000_adjust_cost): Adjust.
-
-	* config/rs6000/40x.md: (ppc403-integer, ppc403-compare): Adjust.
-	* config/rs6000/440.md: (ppc440-integer, ppc440-compare): Adjust.
-	* config/rs6000/476.md: (ppc476-simple-integer, ppc476-compare):
-	Adjust.
-	* config/rs6000/603.md: (ppc603-integer, ppc603-compare): Adjust.
-	* config/rs6000/6xx.md: (ppc604-integer, ppc604-compare): Adjust.
-	* config/rs6000/7450.md: (ppc7450-integer, ppc7450-compare):
-	Adjust.
-	* config/rs6000/7xx.md: (ppc750-integer, ppc750-compare): Adjust.
-	* config/rs6000/8540.md: (ppc8540_su): Adjust.
-	* config/rs6000/cell.md: (cell-integer, cell-fast-cmp,
-	cell-cmp-microcoded): Adjust.
-	* config/rs6000/e300c2c3.md: (ppce300c3_cmp, ppce300c3_iu):
-	Adjust.
-	* config/rs6000/e500mc.md: (e500mc_su): Adjust.
-	* config/rs6000/e500mc64.md: (e500mc64_su, e500mc64_su2): Adjust.
-	* config/rs6000/e5500.md: (e5500_sfx, e5500_sfx2): Adjust.
-	* config/rs6000/e6500.md: (e6500_sfx, e6500_sfx2): Adjust.
-	* config/rs6000/mpc.md: (mpccore-integer, mpccore-compare):
-	Adjust.
-	* config/rs6000/power4.md: (power4-integer, power4-cmp): Adjust.
-	* config/rs6000/power5.md: (power5-integer, power5-cmp): Adjust.
-	* config/rs6000/power6.md: (power6-integer, power6-fast-compare):
-	Adjust.
-	* config/rs6000/power7.md: (power7-integer, power7-cmp): Adjust.
-	* config/rs6000/power8.md: (power8-1cyc, power8-fast-compare):
-	Adjust.  Adjust comment.
-	* config/rs6000/rs64.md: (rs64a-integer, rs64a-compare): Adjust.
-	* config/rs6000/titan.md: (titan_fxu_adder, titan_fxu_alu):
-	Adjust.
-
-2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
-
-	* config/rs6000/rs6000.md (type): Add "add".
-	(*add<mode>3_internal1, addsi3_high, *add<mode>3_internal2,
-	*add<mode>3_internal3, *neg<mode>2_internal, and 5 anonymous
-	define_insns): Use it.
+	*mov<mode>_internal2, and 10 anonymous define_insns): Use "logical".
 	* config/rs6000/rs6000.c (rs6000_adjust_cost): Adjust.
 
 	* config/rs6000/40x.md (ppc403-integer, ppc403-compare): Adjust.
 	* config/rs6000/440.md (ppc440-integer, ppc440-compare): Adjust.
-	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare):
-	Adjust.
-	* config/rs6000/601.md (ppc601-integer): Adjust.
+	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare): Adjust.
 	* config/rs6000/603.md (ppc603-integer, ppc603-compare): Adjust.
 	* config/rs6000/6xx.md (ppc604-integer, ppc604-compare): Adjust.
 	* config/rs6000/7450.md (ppc7450-integer, ppc7450-compare): Adjust.
@@ -215,7 +178,41 @@
 	Adjust.
 	* config/rs6000/power7.md (power7-integer, power7-cmp): Adjust.
 	* config/rs6000/power8.md (power8-1cyc, power8-fast-compare):
+	Adjust.  Adjust comment.
+	* config/rs6000/rs64.md (rs64a-integer, rs64a-compare): Adjust.
+	* config/rs6000/titan.md (titan_fxu_adder, titan_fxu_alu): Adjust.
+
+2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (type): Add "add".
+	(*add<mode>3_internal1, addsi3_high, *add<mode>3_internal2,
+	*add<mode>3_internal3, *neg<mode>2_internal, and 5 anonymous
+	define_insns): Use it.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Adjust.
+
+	* config/rs6000/40x.md (ppc403-integer, ppc403-compare): Adjust.
+	* config/rs6000/440.md (ppc440-integer, ppc440-compare): Adjust.
+	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare): Adjust.
+	* config/rs6000/601.md (ppc601-integer): Adjust.
+	* config/rs6000/603.md (ppc603-integer, ppc603-compare): Adjust.
+	* config/rs6000/6xx.md (ppc604-integer, ppc604-compare): Adjust.
+	* config/rs6000/7450.md (ppc7450-integer, ppc7450-compare): Adjust.
+	* config/rs6000/7xx.md (ppc750-integer, ppc750-compare): Adjust.
+	* config/rs6000/8540.md (ppc8540_su): Adjust.
+	* config/rs6000/cell.md (cell-integer, cell-fast-cmp,
+	cell-cmp-microcoded): Adjust.
+	* config/rs6000/e300c2c3.md (ppce300c3_cmp, ppce300c3_iu): Adjust.
+	* config/rs6000/e500mc.md (e500mc_su): Adjust.
+	* config/rs6000/e500mc64.md (e500mc64_su, e500mc64_su2): Adjust.
+	* config/rs6000/e5500.md (e5500_sfx, e5500_sfx2): Adjust.
+	* config/rs6000/e6500.md (e6500_sfx, e6500_sfx2): Adjust.
+	* config/rs6000/mpc.md (mpccore-integer, mpccore-compare): Adjust.
+	* config/rs6000/power4.md (power4-integer, power4-cmp): Adjust.
+	* config/rs6000/power5.md (power5-integer, power5-cmp): Adjust.
+	* config/rs6000/power6.md (power6-integer, power6-fast-compare):
 	Adjust.
+	* config/rs6000/power7.md (power7-integer, power7-cmp): Adjust.
+	* config/rs6000/power8.md (power8-1cyc, power8-fast-compare): Adjust.
 	* config/rs6000/rs64.md (rs64a-integer, rs64a-compare): Adjust.
 	* config/rs6000/titan.md (titan_fxu_adder, titan_fxu_alu): Adjust.
 
@@ -253,13 +250,11 @@
 
 	* config/rs6000/40x.md (ppc403-integer, ppc403-compare): Adjust.
 	* config/rs6000/440.md (ppc440-integer): Adjust.
-	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare):
-	Adjust.
+	* config/rs6000/476.md (ppc476-simple-integer, ppc476-compare): Adjust.
 	* config/rs6000/601.md (ppc601-integer, ppc601-compare): Adjust.
 	* config/rs6000/603.md (ppc603-integer, ppc603-compare): Adjust.
 	* config/rs6000/6xx.md (ppc604-integer, ppc604-compare): Adjust.
-	* config/rs6000/7450.md (ppc7450-integer, ppc7450-compare):
-	Adjust.
+	* config/rs6000/7450.md (ppc7450-integer, ppc7450-compare): Adjust.
 	* config/rs6000/7xx.md (ppc750-integer, ppc750-compare): Adjust.
 	* config/rs6000/8540.md (ppc8540_su): Adjust.
 	* config/rs6000/cell.md (cell-integer, cell-fast-cmp,
@@ -271,14 +266,11 @@
 	* config/rs6000/e5500.md (e5500_sfx, e5500_delayed): Adjust.
 	* config/rs6000/e6500.md (e6500_sfx, e6500_delayed): Adjust.
 	* config/rs6000/mpc.md (mpccore-integer, mpccore-compare): Adjust.
-	* config/rs6000/power4.md (power4-integer, power4-compare):
-	Adjust.
-	* config/rs6000/power5.md (power5-integer, power5-compare):
-	Adjust.
+	* config/rs6000/power4.md (power4-integer, power4-compare): Adjust.
+	* config/rs6000/power5.md (power5-integer, power5-compare): Adjust.
 	* config/rs6000/power6.md (power6-shift, power6-var-rotate,
 	power6-delayed-compare, power6-var-delayed-compare): Adjust.
-	* config/rs6000/power7.md (power7-integer, power7-compare):
-	Adjust.
+	* config/rs6000/power7.md (power7-integer, power7-compare): Adjust.
 	* config/rs6000/power8.md (power8-1cyc, power8-compare): Adjust.
 	Adjust comment.
 	* config/rs6000/rs64.md (rs64a-integer, rs64a-compare): Adjust.
@@ -286,8 +278,7 @@
 
 2014-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
-	* config/rs6000/rs6000.md (type): Delete "idiv", "ldiv".  Add
-	"div".
+	* config/rs6000/rs6000.md (type): Delete "idiv", "ldiv".  Add "div".
 	(bits): New mode_attr.
 	(idiv_ldiv): Delete mode_attr.
 	(udiv<mode>3, *div<mode>3, div<div_extend>_<mode>): Adjust.
@@ -350,8 +341,7 @@
 	* config/rs6000/mpc.md (mpccore-integer): Adjust.
 	* config/rs6000/power4.md (power4-integer, power4-insert): Adjust.
 	* config/rs6000/power5.md (power5-integer, power5-insert): Adjust.
-	* config/rs6000/power6.md (power6-insert, power6-insert-dword):
-	Adjust.
+	* config/rs6000/power6.md (power6-insert, power6-insert-dword): Adjust.
 	* config/rs6000/power7.md (power7-integer): Adjust.
 	* config/rs6000/power8.md (power8-1cyc): Adjust.
 	* config/rs6000/rs64.md (rs64a-integer): Adjust.
@@ -413,8 +403,7 @@
 	*machhwuc, *machhwu, *maclhwc, *maclhw, *maclhwuc, *maclhwu,
 	*nmacchwc, *nmacchw, *nmachhwc, *nmachhw, *nmaclhwc, *nmaclhw,
 	*mulchwc, *mulchw, *mulchwuc, *mulchwu, *mulhhwc, *mulhhw,
-	*mulhhwuc, *mulhhwu, *mullhwc, *mullhw, *mullhwuc, *mullhwu):
-	Use it.
+	*mulhhwuc, *mulhhwu, *mullhwc, *mullhw, *mullhwuc, *mullhwu): Use it.
 	* config/rs6000/40x.md (ppc405-imul3): Add type halfmul.
 	* config/rs6000/440.md (ppc440-imul2): Add type halfmul.
 	* config/rs6000/476.md (ppc476-imul): Add type halfmul.
@@ -631,8 +620,7 @@
 
 2014-05-22  Nick Clifton  <nickc@redhat.com>
 
-	* config/msp430/msp430.h (ASM_SPEC): Add spaces after inserted
-	options.
+	* config/msp430/msp430.h (ASM_SPEC): Add spaces after inserted options.
 
 2014-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -679,41 +667,41 @@
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	Cleanup and improve multipass_dfa_lookahead_guard
-        * config/i386/i386.c (core2i7_first_cycle_multipass_filter_ready_try,)
-        (core2i7_first_cycle_multipass_begin,)
-        (core2i7_first_cycle_multipass_issue,)
-        (core2i7_first_cycle_multipass_backtrack): Update signature.
-        * config/ia64/ia64.c
-        (ia64_first_cycle_multipass_dfa_lookahead_guard_spec): Remove.
-        (ia64_first_cycle_multipass_dfa_lookahead_guard): Update signature.
-        (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC): Remove
-        hook definition.
-        (ia64_first_cycle_multipass_dfa_lookahead_guard): Merge logic from
-        ia64_first_cycle_multipass_dfa_lookahead_guard_spec.  Update return
-        values.
-        * config/rs6000/rs6000.c (rs6000_use_sched_lookahead_guard): Update
-        return values.
-        * doc/tm.texi: Regenerate.
-        * doc/tm.texi.in
-        (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC): Remove.
-        * haifa-sched.c (ready_try): Make signed to allow negative values.
-        (rebug_ready_list_1): Update.
-        (choose_ready): Simplify.
-        (sched_extend_ready_list): Update.
+	* config/i386/i386.c (core2i7_first_cycle_multipass_filter_ready_try,)
+	(core2i7_first_cycle_multipass_begin,)
+	(core2i7_first_cycle_multipass_issue,)
+	(core2i7_first_cycle_multipass_backtrack): Update signature.
+	* config/ia64/ia64.c
+	(ia64_first_cycle_multipass_dfa_lookahead_guard_spec): Remove.
+	(ia64_first_cycle_multipass_dfa_lookahead_guard): Update signature.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC): Remove
+	hook definition.
+	(ia64_first_cycle_multipass_dfa_lookahead_guard): Merge logic from
+	ia64_first_cycle_multipass_dfa_lookahead_guard_spec.  Update return
+	values.
+	* config/rs6000/rs6000.c (rs6000_use_sched_lookahead_guard): Update
+	return values.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC): Remove.
+	* haifa-sched.c (ready_try): Make signed to allow negative values.
+	(rebug_ready_list_1): Update.
+	(choose_ready): Simplify.
+	(sched_extend_ready_list): Update.
 
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	Remove IA64 speculation tweaking flags
-        * config/ia64/ia64.c (ia64_set_sched_flags): Delete handling of
-        speculation tuning flags.
-        (msched-prefer-non-data-spec-insns,)
-        (msched-prefer-non-control-spec-insns): Obsolete options.
-        * haifa-sched.c (choose_ready): Remove handling of
-        PREFER_NON_CONTROL_SPEC and PREFER_NON_DATA_SPEC.
-        * sched-int.h (enum SPEC_SCHED_FLAGS): Remove PREFER_NON_CONTROL_SPEC
-        and PREFER_NON_DATA_SPEC.
-        * sel-sched.c (process_spec_exprs): Remove handling of
-        PREFER_NON_CONTROL_SPEC and PREFER_NON_DATA_SPEC.
+	* config/ia64/ia64.c (ia64_set_sched_flags): Delete handling of
+	speculation tuning flags.
+	(msched-prefer-non-data-spec-insns,)
+	(msched-prefer-non-control-spec-insns): Obsolete options.
+	* haifa-sched.c (choose_ready): Remove handling of
+	PREFER_NON_CONTROL_SPEC and PREFER_NON_DATA_SPEC.
+	* sched-int.h (enum SPEC_SCHED_FLAGS): Remove PREFER_NON_CONTROL_SPEC
+	and PREFER_NON_DATA_SPEC.
+	* sel-sched.c (process_spec_exprs): Remove handling of
+	PREFER_NON_CONTROL_SPEC and PREFER_NON_DATA_SPEC.
 
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
@@ -788,8 +776,7 @@
 
 2014-05-21  Richard Biener  <rguenther@suse.de>
 
-	* doc/invoke.texi (-flto-partition=): Document one and
-	none algorithms.
+	* doc/invoke.texi (-flto-partition=): Document one and none algorithms.
 
 2014-05-21  John Marino  <gnugcc@marino.st>
 
@@ -852,9 +839,11 @@
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/60984
-	* ipa-inline-transform.c (inline_call): Use add CALLEE_REMOVED parameter.
+	* ipa-inline-transform.c (inline_call): Use add CALLEE_REMOVED
+	parameter.
 	* ipa-inline.c (inline_to_all_callers): If callee was removed; return.
-	(ipa_inline): Loop inline_to_all_callers until no more aliases are removed.
+	(ipa_inline): Loop inline_to_all_callers until no more aliases
+	are removed.
 
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -879,8 +868,7 @@
 	dbgcnt and fopt-info support.
 	* ipa-prop.c (ipa_make_edge_direct_to_target): Ditto.
 	* ipa-devirt.c (ipa_devirt): Ditto.
-	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
-	Ditto.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children): Ditto.
 	* ipa.c (walk_polymorphic_call_targets): Ditto.
 	* gimple-fold.c (fold_gimple_assign): Ditto.
 	(gimple_fold_call): Ditto.
@@ -898,7 +886,7 @@
 	* tree.h (DECL_ONE_ONLY): Return true only for externally visible
 	symbols.
 	* except.c (switch_to_exception_section, resolve_unique_section,
-	get_named_text_section, default_function_rodata_section, 
+	get_named_text_section, default_function_rodata_section,
 	align_variable, get_block_for_decl, default_section_type_flags):
 	Use DECL_COMDAT_GROUP instead of DECL_ONE_ONLY.
 	* symtab.c (symtab_add_to_same_comdat_group,
@@ -930,8 +918,7 @@
 
 2014-05-20  Richard Biener  <rguenther@suse.de>
 
-	* tree-ssa-sccvn.c (process_scc): Dump SCC here, when
-	iterating,
+	* tree-ssa-sccvn.c (process_scc): Dump SCC here, when iterating,
 	(extract_and_process_scc_for_name): not here.
 	(cond_dom_walker::before_dom_children): Only process
 	stmts that end the BB in interesting ways.
@@ -1062,10 +1049,8 @@
 
 	* ipa.c (symtab_remove_unreachable_nodes): Remove
 	symbol from comdat group if its body was eliminated.
-	(comdat_can_be_unshared_p_1): Static symbols can always
-	be privatized.
-	* symtab.c (symtab_remove_from_same_comdat_group): Break out
-	from ...
+	(comdat_can_be_unshared_p_1): Static symbols can always be privatized.
+	* symtab.c (symtab_remove_from_same_comdat_group): Break out from ...
 	(symtab_unregister_node): ... this one.
 	(verify_symtab_base): More strict checking of comdats.
 	* cgraph.h (symtab_remove_from_same_comdat_group): Declare.
@@ -1089,7 +1074,8 @@
 	New functions.
 	(FOR_EACH_DEFINED_SYMBOL): New macro.
 	(varpool_first_static_initializer, varpool_next_static_initializer,
-	varpool_first_defined_variable, varpool_next_defined_variable): Fix comments.
+	varpool_first_defined_variable, varpool_next_defined_variable):
+	Fix comments.
 	(symtab_in_same_comdat_p): Correctly deal with inline functions.
 
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>

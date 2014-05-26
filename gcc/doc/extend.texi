@@ -11904,7 +11904,7 @@ used. All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-v32qi __builtin_ia32_mpsadbw256 (v32qi,v32qi,v32qi,int)
+v32qi __builtin_ia32_mpsadbw256 (v32qi,v32qi,int)
 v32qi __builtin_ia32_pabsb256 (v32qi)
 v16hi __builtin_ia32_pabsw256 (v16hi)
 v8si __builtin_ia32_pabsd256 (v8si)
@@ -12139,8 +12139,8 @@ The following built-in functions are available when @option{-mxop} is used.
 @smallexample
 v2df __builtin_ia32_vfrczpd (v2df)
 v4sf __builtin_ia32_vfrczps (v4sf)
-v2df __builtin_ia32_vfrczsd (v2df, v2df)
-v4sf __builtin_ia32_vfrczss (v4sf, v4sf)
+v2df __builtin_ia32_vfrczsd (v2df)
+v4sf __builtin_ia32_vfrczss (v4sf)
 v4df __builtin_ia32_vfrczpd256 (v4df)
 v8sf __builtin_ia32_vfrczps256 (v8sf)
 v2di __builtin_ia32_vpcmov (v2di, v2di, v2di)
