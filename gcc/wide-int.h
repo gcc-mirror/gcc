@@ -1446,12 +1446,22 @@ namespace wi
     : public primitive_int_traits <unsigned int, false> {};
 
   template <>
-  struct int_traits <HOST_WIDE_INT>
-    : public primitive_int_traits <HOST_WIDE_INT, true> {};
+  struct int_traits <long>
+    : public primitive_int_traits <long, true> {};
 
   template <>
-  struct int_traits <unsigned HOST_WIDE_INT>
-    : public primitive_int_traits <unsigned HOST_WIDE_INT, false> {};
+  struct int_traits <unsigned long>
+    : public primitive_int_traits <unsigned long, false> {};
+
+#if defined HAVE_LONG_LONG
+  template <>
+  struct int_traits <long long>
+    : public primitive_int_traits <long long, true> {};
+
+  template <>
+  struct int_traits <unsigned long long>
+    : public primitive_int_traits <unsigned long long, false> {};
+#endif
 }
 
 namespace wi
