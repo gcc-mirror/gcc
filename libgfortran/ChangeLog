@@ -1,5 +1,13 @@
 2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* libgfortran.h (xrealloc): New prototype.
+	* runtime/memory.c (xrealloc): New function.
+	* io/fbuf.c (fbuf_alloc): Use xrealloc.
+	* io/list_read.c (push_char_default): Likewise.
+	(push_char4): Likewise.
+
+2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/61310
 	* intrinsics/ctime.c (strctime): Rename to gf_ctime, use snprintf
 	instead of strftime.

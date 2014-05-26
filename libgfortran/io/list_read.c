@@ -79,7 +79,7 @@ typedef unsigned char uchar;
 static void
 push_char_default (st_parameter_dt *dtp, int c)
 {
-  char *new;
+
 
   if (dtp->u.p.saved_string == NULL)
     {
@@ -92,13 +92,11 @@ push_char_default (st_parameter_dt *dtp, int c)
   if (dtp->u.p.saved_used >= dtp->u.p.saved_length)
     {
       dtp->u.p.saved_length = 2 * dtp->u.p.saved_length;
-      new = realloc (dtp->u.p.saved_string, dtp->u.p.saved_length);
-      if (new == NULL)
-	generate_error (&dtp->common, LIBERROR_OS, NULL);
-      dtp->u.p.saved_string = new;
+      dtp->u.p.saved_string = 
+	xrealloc (dtp->u.p.saved_string, dtp->u.p.saved_length);
       
       // Also this should not be necessary.
-      memset (new + dtp->u.p.saved_used, 0, 
+      memset (dtp->u.p.saved_string + dtp->u.p.saved_used, 0, 
 	      dtp->u.p.saved_length - dtp->u.p.saved_used);
 
     }
@@ -126,10 +124,7 @@ push_char4 (st_parameter_dt *dtp, int c)
   if (dtp->u.p.saved_used >= dtp->u.p.saved_length)
     {
       dtp->u.p.saved_length = 2 * dtp->u.p.saved_length;
-      new = realloc (p, dtp->u.p.saved_length * sizeof (gfc_char4_t));
-      if (new == NULL)
-	generate_error (&dtp->common, LIBERROR_OS, NULL);
-      p = new;
+      p = xrealloc (p, dtp->u.p.saved_length * sizeof (gfc_char4_t));
       
       memset4 (new + dtp->u.p.saved_used, 0, 
 	      dtp->u.p.saved_length - dtp->u.p.saved_used);
