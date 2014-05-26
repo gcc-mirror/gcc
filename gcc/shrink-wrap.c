@@ -179,7 +179,12 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
     return false;
   src = SET_SRC (set);
   dest = SET_DEST (set);
-  if (!REG_P (dest) || !REG_P (src))
+  if (!REG_P (dest) || !REG_P (src)
+      /* STACK or FRAME related adjustment might be part of prologue.
+	 So keep them in the entry block.  */
+      || dest == stack_pointer_rtx
+      || dest == frame_pointer_rtx
+      || dest == hard_frame_pointer_rtx)
     return false;
 
   /* Make sure that the source register isn't defined later in BB.  */
@@ -204,6 +209,10 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
   /* Create a new basic block on the edge.  */
   if (EDGE_COUNT (next_block->preds) == 2)
     {
+      /* split_edge for a block with only one successor is meaningless.  */
+      if (EDGE_COUNT (bb->succs) == 1)
+	return false;
+
       next_block = split_edge (live_edge);
 
       bitmap_copy (df_get_live_in (next_block), df_get_live_out (bb));

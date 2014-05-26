@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { x86_64-*-* } || { arm_thumb2 } } } } */
+/* { dg-do compile { target { { x86_64-*-* && lp64 } || { arm_thumb2 } } } } */
 /* { dg-options "-O2 -fdump-rtl-pro_and_epilogue"  } */
 
 int foo (int *p1, int *p2);

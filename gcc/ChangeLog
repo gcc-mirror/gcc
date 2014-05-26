@@ -1,3 +1,11 @@
+ChangeLog:
+2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	PR rtl-optimization/61220
+	Part of PR rtl-optimization/61225
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Skip SP and FP adjustment
+	insn; skip split_edge for a block with only one successor.
+
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c (symtab_nonoverwritable_alias): Copy READONLY flag for variables.
