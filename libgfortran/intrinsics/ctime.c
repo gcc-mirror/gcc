@@ -31,31 +31,53 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 
-/* strftime-like function that fills a C string with %c format which
-   is identical to ctime in the default locale. As ctime and ctime_r
-   are poorly specified and their usage not recommended, the
-   implementation instead uses strftime.  */
+/* Maximum space a ctime-like string might need. A "normal" ctime
+   string is 26 bytes, and in our case 24 bytes as we don't include
+   the trailing newline and null. However, the longest possible year
+   number is -2,147,481,748 (1900 - 2,147,483,648, since tm_year is a
+   32-bit signed integer) so an extra 7 bytes are needed. */
+#define CTIME_BUFSZ 31
 
-static size_t
-strctime (char *s, size_t max, const time_t *timep)
+
+/* Thread-safe ctime-like function that fills a Fortran
+   string. ctime_r is a portability headache and marked as obsolescent
+   in POSIX 2008, which recommends strftime in its place. However,
+   strftime(..., "%c",...)  doesn't produce ctime-like output on
+   MinGW, so do it manually with snprintf.  */
+
+static int
+gf_ctime (char *s, size_t max, const time_t timev)
 {
   struct tm ltm;
   int failed;
+  char buf[CTIME_BUFSZ + 1];
   /* Some targets provide a localtime_r based on a draft of the POSIX
      standard where the return type is int rather than the
      standardized struct tm*.  */
-  __builtin_choose_expr (__builtin_classify_type (localtime_r (timep, &ltm)) 
+  __builtin_choose_expr (__builtin_classify_type (localtime_r (&timev, &ltm)) 
 			 == 5,
-			 failed = localtime_r (timep, &ltm) == NULL,
-			 failed = localtime_r (timep, &ltm) != 0);
+			 failed = localtime_r (&timev, &ltm) == NULL,
+			 failed = localtime_r (&timev, &ltm) != 0);
   if (failed)
-    return 0;
-  return strftime (s, max, "%c", &ltm);
+    goto blank;
+  int n = snprintf (buf, sizeof (buf), 
+		    "%3.3s %3.3s%3d %.2d:%.2d:%.2d %d",
+		    "SunMonTueWedThuFriSat" + ltm.tm_wday * 3,
+		    "JanFebMarAprMayJunJulAugSepOctNovDec" + ltm.tm_mon * 3,
+		    ltm.tm_mday, ltm.tm_hour, ltm.tm_min, ltm.tm_sec, 
+		    1900 + ltm.tm_year);
+  if (n < 0)
+    goto blank;
+  if ((size_t) n <= max)
+    {
+      cf_strcpy (s, max, buf);
+      return n;
+    }
+ blank:
+  memset (s, ' ', max);
+  return 0;
 }
 
-/* In the default locale, the date and time representation fits in 26
-   bytes. However, other locales might need more space.  */
-#define CSZ 100
 
 extern void fdate (char **, gfc_charlen_type *);
 export_proto(fdate);
@@ -64,8 +86,8 @@ void
 fdate (char ** date, gfc_charlen_type * date_len)
 {
   time_t now = time(NULL);
-  *date = xmalloc (CSZ);
-  *date_len = strctime (*date, CSZ, &now);
+  *date = xmalloc (CTIME_BUFSZ);
+  *date_len = gf_ctime (*date, CTIME_BUFSZ, now);
 }
 
 
@@ -76,10 +98,7 @@ void
 fdate_sub (char * date, gfc_charlen_type date_len)
 {
   time_t now = time(NULL);
-  char *s = xmalloc (date_len + 1);
-  size_t n = strctime (s, date_len + 1, &now);
-  fstrcpy (date, date_len, s, n);
-  free (s);
+  gf_ctime (date, date_len, now);
 }
 
 
@@ -91,8 +110,8 @@ void
 PREFIX(ctime) (char ** date, gfc_charlen_type * date_len, GFC_INTEGER_8 t)
 {
   time_t now = t;
-  *date = xmalloc (CSZ);
-  *date_len = strctime (*date, CSZ, &now);
+  *date = xmalloc (CTIME_BUFSZ);
+  *date_len = gf_ctime (*date, CTIME_BUFSZ, now);
 }
 
 
@@ -103,8 +122,5 @@ void
 ctime_sub (GFC_INTEGER_8 * t, char * date, gfc_charlen_type date_len)
 {
   time_t now = *t;
-  char *s = xmalloc (date_len + 1);
-  size_t n = strctime (s, date_len + 1, &now);
-  fstrcpy (date, date_len, s, n);
-  free (s);
+  gf_ctime (date, date_len, now);
 }
