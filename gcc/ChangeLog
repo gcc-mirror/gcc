@@ -1,3 +1,20 @@
+2014-05-26  Alan Modra  <amodra@gmail.com>
+
+	PR target/61098
+	* config/rs6000/rs6000.c (rs6000_emit_set_const): Remove unneeded
+	params and return a bool.  Remove dead code.  Update comment.
+	Assert we have a const_int source.  Remove bogus code from
+	32-bit HWI days.  Move !TARGET_POWERPC64 handling, and correct
+	handling of constants > 2G and reg_equal note, from..
+	(rs6000_emit_set_long_const): ..here.  Remove unneeded param and
+	return value.  Update comment.  If we can, use a new pseudo
+	for intermediate calculations.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_set_const): Update
+	prototype.
+	* config/rs6000/rs6000.md (movsi_internal1_single+1): Update
+	call to rs6000_emit_set_const in splitter.
+	(movdi_internal64+2, +3): Likewise.
+
 2014-05-26  Richard Biener  <rguenther@suse.de>
 
 	* system.h: Define __STDC_FORMAT_MACROS before
