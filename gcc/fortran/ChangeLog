@@ -1,3 +1,10 @@
+2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from mainline
+	PR libfortran/61310
+	* intrinsics.texi (CTIME): Remove mention of locale-dependent
+	behavior.
+
 2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	Backport r195492 and r195815
