@@ -1,5 +1,9 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* symtab.c (symtab_nonoverwritable_alias): Copy READONLY flag for variables.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-visibility.c (can_replace_by_local_alias_in_vtable): New function.
 	(update_vtable_references): New function.
 	(function_and_variable_visibility): Rewrite also vtable initializers.
