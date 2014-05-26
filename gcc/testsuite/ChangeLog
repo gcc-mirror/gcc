@@ -1,5 +1,10 @@
 2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
+	* gcc.dg/lto/pr61278_0.c: New test.
+	* gcc.dg/lto/pr61278_1.c: New test.
+
+2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
 	* gcc.dg/pr61220.c: New test.
 	* gcc.dg/shrink-wrap-loop.c: Disable for x86_64 -m32 mode.
 
