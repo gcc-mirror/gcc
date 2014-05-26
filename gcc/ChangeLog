@@ -1,3 +1,9 @@
+2014-05-26  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	PR rtl-optimization/61222
+	* combine.c (simplify_shift_const_1): When moving a PLUS outside
+	the shift, truncate the PLUS operand to the result mode.
+
 2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61271

@@ -1,3 +1,9 @@
+2014-05-26  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	PR rtl-optimization/61222
+	* gcc.c-torture/compile/pr61222-1.c: New test.
+	* gcc.c-torture/compile/pr61222-2.c: Likewise.
+
 2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-c++-common/cilk-plus/AN/pr61191.c: Fix dg-error directives.
