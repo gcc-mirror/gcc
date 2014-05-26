@@ -213,8 +213,15 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
       if (EDGE_COUNT (bb->succs) == 1)
 	return false;
 
+      /* If DF_LIVE doesn't exist, i.e. at -O1, just give up.  */
+      if (!df_live)
+	return false;
+
       next_block = split_edge (live_edge);
 
+      /* We create a new basic block.  Call df_grow_bb_info to make sure
+	 all data structures are allocated.  */
+      df_grow_bb_info (df_live);
       bitmap_copy (df_get_live_in (next_block), df_get_live_out (bb));
       df_set_bb_dirty (next_block);
 
