@@ -1163,9 +1163,13 @@ symtab_nonoverwritable_alias (symtab_node *node)
 				 (new_decl, node->decl);
     }
   else
-    new_node = varpool_create_variable_alias (new_decl, node->decl);
+    {
+      TREE_READONLY (new_decl) = TREE_READONLY (node->decl);
+      new_node = varpool_create_variable_alias (new_decl, node->decl);
+    }
   symtab_resolve_alias (new_node, node);  
-  gcc_assert (decl_binds_to_current_def_p (new_decl));
+  gcc_assert (decl_binds_to_current_def_p (new_decl)
+	      && targetm.binds_local_p (new_decl));
   return new_node;
 }
 
