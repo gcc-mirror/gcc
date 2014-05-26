@@ -1,3 +1,8 @@
+2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.dg/pr61220.c: New test.
+	* gcc.dg/shrink-wrap-loop.c: Disable for x86_64 -m32 mode.
+
 2014-05-25  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_10.f90: Update dg-warning.
