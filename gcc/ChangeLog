@@ -1,3 +1,9 @@
+2014-05-26  Michael Tautschnig  <mt@debian.org>
+
+	PR target/61249
+	* doc/extend.texi: Fix parameter lists of __builtin_ia32_vfrczs[sd],
+	__builtin_ia32_mpsadbw256.
+
 2014-05-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61215
@@ -28,8 +34,7 @@
 
 2014-05-22  Nick Clifton  <nickc@redhat.com>
 
-	* config/msp430/msp430.h (ASM_SPEC): Add spaces after inserted
-	options.
+	* config/msp430/msp430.h (ASM_SPEC): Add spaces after inserted options.
 
 2014-05-22  Jakub Jelinek  <jakub@redhat.com>
 
@@ -60,9 +65,11 @@
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/60984
-	* ipa-inline-transform.c (inline_call): Use add CALLEE_REMOVED parameter.
+	* ipa-inline-transform.c (inline_call): Use add CALLEE_REMOVED
+	parameter.
 	* ipa-inline.c (inline_to_all_callers): If callee was removed; return.
-	(ipa_inline): Loop inline_to_all_callers until no more aliases are removed.
+	(ipa_inline): Loop inline_to_all_callers until no more aliases
+	are removed.
 
 2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -100,10 +107,8 @@
 
 	* ipa.c (symtab_remove_unreachable_nodes): Remove
 	symbol from comdat group if its body was eliminated.
-	(comdat_can_be_unshared_p_1): Static symbols can always
-	be privatized.
-	* symtab.c (symtab_remove_from_same_comdat_group): Break out
-	from ...
+	(comdat_can_be_unshared_p_1): Static symbols can always be privatized.
+	* symtab.c (symtab_remove_from_same_comdat_group): Break out from ...
 	(symtab_unregister_node): ... this one.
 	(verify_symtab_base): More strict checking of comdats.
 	* cgraph.h (symtab_remove_from_same_comdat_group): Declare.
@@ -165,7 +170,7 @@
 
 2014-05-14  Cary Coutant  <ccoutant@google.com>
 
-        PR debug/61013
+	PR debug/61013
 	* opts.c (common_handle_option): Don't special-case "-g".
 	(set_debug_level): Default to at least level 2 with "-g".
 
