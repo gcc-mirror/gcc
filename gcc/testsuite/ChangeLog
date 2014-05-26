@@ -1,3 +1,7 @@
+2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/lto/pr61278_1.c: Remove dg directives.
+
 2014-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/55117
