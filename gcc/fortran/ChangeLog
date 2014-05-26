@@ -1,3 +1,7 @@
+2014-05-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Project Status): Fix broken link.
+
 2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/61310
