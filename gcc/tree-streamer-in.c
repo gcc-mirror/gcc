@@ -568,7 +568,7 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
   enum tree_code code;
   tree result;
 #ifdef LTO_STREAMER_DEBUG
-  HOST_WIDEST_INT orig_address_in_writer;
+  HOST_WIDE_INT orig_address_in_writer;
 #endif
 
   result = NULL_TREE;

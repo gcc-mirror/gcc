@@ -444,7 +444,7 @@ tag_counters (const char *filename ATTRIBUTE_UNUSED,
 
 	  count = gcov_read_counter ();
 	  printf (" ");
-	  printf (HOST_WIDEST_INT_PRINT_DEC, count);
+	  printf ("%"PRId64, count);
 	}
     }
 }
@@ -467,12 +467,12 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
       printf ("\t\tcounts=%u, runs=%u",
 	      summary.ctrs[ix].num, summary.ctrs[ix].runs);
 
-      printf (", sum_all=" HOST_WIDEST_INT_PRINT_DEC,
-	      (HOST_WIDEST_INT)summary.ctrs[ix].sum_all);
-      printf (", run_max=" HOST_WIDEST_INT_PRINT_DEC,
-	      (HOST_WIDEST_INT)summary.ctrs[ix].run_max);
-      printf (", sum_max=" HOST_WIDEST_INT_PRINT_DEC,
-	      (HOST_WIDEST_INT)summary.ctrs[ix].sum_max);
+      printf (", sum_all=%"PRId64,
+	      (int64_t)summary.ctrs[ix].sum_all);
+      printf (", run_max=%"PRId64,
+	      (int64_t)summary.ctrs[ix].run_max);
+      printf (", sum_max=%"PRId64,
+	      (int64_t)summary.ctrs[ix].sum_max);
       if (ix != GCOV_COUNTER_ARCS)
         continue;
       printf ("\n");
@@ -486,11 +486,11 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
           printf ("\n");
           print_prefix (filename, 0, 0);
           printf ("\t\t%d: num counts=%u, min counter="
-              HOST_WIDEST_INT_PRINT_DEC ", cum_counter="
-              HOST_WIDEST_INT_PRINT_DEC,
+              "%"PRId64 ", cum_counter="
+              "%"PRId64,
 	      h_ix, histo_bucket->num_counters,
-              (HOST_WIDEST_INT)histo_bucket->min_value,
-              (HOST_WIDEST_INT)histo_bucket->cum_value);
+              (int64_t)histo_bucket->min_value,
+              (int64_t)histo_bucket->cum_value);
         }
       if (flag_dump_working_sets)
         dump_working_sets (filename, &summary.ctrs[ix]);
@@ -522,9 +522,9 @@ dump_working_sets (const char *filename ATTRIBUTE_UNUSED,
       printf ("\n");
       print_prefix (filename, 0, 0);
       printf ("\t\t%u.%02u%%: num counts=%u, min counter="
-               HOST_WIDEST_INT_PRINT_DEC,
+               "%"PRId64,
                pct / 100, pct - (pct / 100 * 100),
                ws_info->num_counters,
-               (HOST_WIDEST_INT)ws_info->min_counter);
+               (int64_t)ws_info->min_counter);
     }
 }

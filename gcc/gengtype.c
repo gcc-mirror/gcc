@@ -5582,6 +5582,7 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("double_int", &pos));
       POS_HERE (do_scalar_typedef ("offset_int", &pos));
       POS_HERE (do_scalar_typedef ("widest_int", &pos));
+      POS_HERE (do_scalar_typedef ("int64_t", &pos));
       POS_HERE (do_scalar_typedef ("uint64_t", &pos));
       POS_HERE (do_scalar_typedef ("uint8", &pos));
       POS_HERE (do_scalar_typedef ("uintptr_t", &pos));

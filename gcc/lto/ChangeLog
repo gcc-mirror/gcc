@@ -1,3 +1,8 @@
+2014-05-26  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (lto_parse_hex): Use int64_t.
+	(lto_resolution_read): Likewise.
+
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (read_cgraph_and_symbols): Grow ggc memory after streaming.

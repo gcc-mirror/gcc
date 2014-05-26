@@ -172,8 +172,8 @@ typedef unsigned gcov_position_t;
 /* gcov_type is typedef'd elsewhere for the compiler */
 #if IN_GCOV
 #define GCOV_LINKAGE static
-typedef HOST_WIDEST_INT gcov_type;
-typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
+typedef int64_t gcov_type;
+typedef uint64_t gcov_type_unsigned;
 #if IN_GCOV > 0
 #include <sys/types.h>
 #endif

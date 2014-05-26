@@ -1411,9 +1411,9 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 	{
 	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  fprintf (dump_file,
-		   "Basic block %d: count = " HOST_WIDEST_INT_PRINT_DEC
+		   "Basic block %d: count = %" PRId64
 		   " loop-depth = %d idom = %d\n",
-		   i, (HOST_WIDEST_INT) bb->count, bb_loop_depth (bb),
+		   i, (int64_t) bb->count, bb_loop_depth (bb),
 		   get_immediate_dominator (CDI_DOMINATORS, bb)->index);
 	}
     }

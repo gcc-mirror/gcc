@@ -400,7 +400,7 @@ struct GTY(()) niter_desc
   bool const_iter;
 
   /* Number of iterations if constant.  */
-  unsigned HOST_WIDEST_INT niter;
+  uint64_t niter;
 
   /* Assumptions under that the rest of the information is valid.  */
   rtx assumptions;

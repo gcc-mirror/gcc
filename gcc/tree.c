@@ -10481,40 +10481,6 @@ int_cst_value (const_tree x)
   return val;
 }
 
-/* Return value of a constant X and sign-extend it.  */
-
-HOST_WIDEST_INT
-widest_int_cst_value (const_tree x)
-{
-  unsigned bits = TYPE_PRECISION (TREE_TYPE (x));
-  unsigned HOST_WIDEST_INT val = TREE_INT_CST_LOW (x);
-
-#if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
-  gcc_assert (HOST_BITS_PER_WIDEST_INT >= HOST_BITS_PER_DOUBLE_INT);
-  gcc_assert (TREE_INT_CST_NUNITS (x) == 2);
-
-  if (TREE_INT_CST_NUNITS (x) == 1)
-    val = HOST_WIDE_INT (val);
-  else
-    val |= (((unsigned HOST_WIDEST_INT) TREE_INT_CST_ELT (x, 1))
-	    << HOST_BITS_PER_WIDE_INT);
-#else
-  /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
-  gcc_assert (TREE_INT_CST_NUNITS (x) == 1);
-#endif
-
-  if (bits < HOST_BITS_PER_WIDEST_INT)
-    {
-      bool negative = ((val >> (bits - 1)) & 1) != 0;
-      if (negative)
-	val |= (~(unsigned HOST_WIDEST_INT) 0) << (bits - 1) << 1;
-      else
-	val &= ~((~(unsigned HOST_WIDEST_INT) 0) << (bits - 1) << 1);
-    }
-
-  return val;
-}
-
 /* If TYPE is an integral or pointer type, return an integer type with
    the same precision which is unsigned iff UNSIGNEDP is true, or itself
    if TYPE is already an integer type of signedness UNSIGNEDP.  */

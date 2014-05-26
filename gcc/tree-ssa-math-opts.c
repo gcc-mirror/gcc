@@ -1620,7 +1620,7 @@ make_pass_cse_sincos (gcc::context *ctxt)
    still have a size of 2 but this time a range of 1.  */
 
 struct symbolic_number {
-  unsigned HOST_WIDEST_INT n;
+  uint64_t n;
   int size;
   tree base_addr;
   tree offset;
@@ -1633,14 +1633,14 @@ struct symbolic_number {
 /* The number which the find_bswap_or_nop_1 result should match in
    order to have a nop.  The number is masked according to the size of
    the symbolic number before using it.  */
-#define CMPNOP (sizeof (HOST_WIDEST_INT) < 8 ? 0 : \
-  (unsigned HOST_WIDEST_INT)0x08070605 << 32 | 0x04030201)
+#define CMPNOP (sizeof (int64_t) < 8 ? 0 : \
+  (uint64_t)0x08070605 << 32 | 0x04030201)
 
 /* The number which the find_bswap_or_nop_1 result should match in
    order to have a byte swap.  The number is masked according to the
    size of the symbolic number before using it.  */
-#define CMPXCHG (sizeof (HOST_WIDEST_INT) < 8 ? 0 : \
-  (unsigned HOST_WIDEST_INT)0x01020304 << 32 | 0x05060708)
+#define CMPXCHG (sizeof (int64_t) < 8 ? 0 : \
+  (uint64_t)0x01020304 << 32 | 0x05060708)
 
 /* Perform a SHIFT or ROTATE operation by COUNT bits on symbolic
    number N.  Return false if the requested operation is not permitted
@@ -1656,8 +1656,8 @@ do_shift_rotate (enum tree_code code,
 
   /* Zero out the extra bits of N in order to avoid them being shifted
      into the significant bits.  */
-  if (n->size < (int)sizeof (HOST_WIDEST_INT))
-    n->n &= ((unsigned HOST_WIDEST_INT)1 << (n->size * BITS_PER_UNIT)) - 1;
+  if (n->size < (int)sizeof (int64_t))
+    n->n &= ((uint64_t)1 << (n->size * BITS_PER_UNIT)) - 1;
 
   switch (code)
     {
@@ -1677,8 +1677,8 @@ do_shift_rotate (enum tree_code code,
       return false;
     }
   /* Zero unused bits for size.  */
-  if (n->size < (int)sizeof (HOST_WIDEST_INT))
-    n->n &= ((unsigned HOST_WIDEST_INT)1 << (n->size * BITS_PER_UNIT)) - 1;
+  if (n->size < (int)sizeof (int64_t))
+    n->n &= ((uint64_t)1 << (n->size * BITS_PER_UNIT)) - 1;
   return true;
 }
 
@@ -1829,8 +1829,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  n->range = n->size;
 	  n->n = CMPNOP;
 
-	  if (n->size < (int)sizeof (HOST_WIDEST_INT))
-	    n->n &= ((unsigned HOST_WIDEST_INT)1 <<
+	  if (n->size < (int)sizeof (int64_t))
+	    n->n &= ((uint64_t)1 <<
 		     (n->size * BITS_PER_UNIT)) - 1;
 
 	  if (!source_expr1)
@@ -1845,8 +1845,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	case BIT_AND_EXPR:
 	  {
 	    int i;
-	    unsigned HOST_WIDEST_INT val = widest_int_cst_value (rhs2);
-	    unsigned HOST_WIDEST_INT tmp = val;
+	    uint64_t val = int_cst_value (rhs2);
+	    uint64_t tmp = val;
 
 	    /* Only constants masking full bytes are allowed.  */
 	    for (i = 0; i < n->size; i++, tmp >>= BITS_PER_UNIT)
@@ -1871,11 +1871,11 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    if (type_size % BITS_PER_UNIT != 0)
 	      return NULL_TREE;
 
-	    if (type_size / BITS_PER_UNIT < (int)(sizeof (HOST_WIDEST_INT)))
+	    if (type_size / BITS_PER_UNIT < (int)(sizeof (int64_t)))
 	      {
 		/* If STMT casts to a smaller type mask out the bits not
 		   belonging to the target type.  */
-		n->n &= ((unsigned HOST_WIDEST_INT)1 << type_size) - 1;
+		n->n &= ((uint64_t)1 << type_size) - 1;
 	      }
 	    n->size = type_size / BITS_PER_UNIT;
 	    if (!n->base_addr)
@@ -1894,7 +1894,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
     {
       int i;
       struct symbolic_number n1, n2;
-      unsigned HOST_WIDEST_INT mask;
+      uint64_t mask;
       tree source_expr2;
 
       if (code != BIT_IOR_EXPR)
@@ -1924,7 +1924,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
 	  if (source_expr1 != source_expr2)
 	    {
-	      HOST_WIDEST_INT inc, mask;
+	      int64_t inc, mask;
 	      unsigned i;
 	      HOST_WIDE_INT off_sub;
 	      struct symbolic_number *n_ptr;
@@ -1950,7 +1950,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	      off_sub = n2.bytepos - n1.bytepos;
 
 	      /* Check that the range of memory covered < biggest int size.  */
-	      if (off_sub + n2.range > (int) sizeof (HOST_WIDEST_INT))
+	      if (off_sub + n2.range > (int) sizeof (int64_t))
 	        return NULL_TREE;
 	      n->range = n2.range + off_sub;
 
@@ -1962,7 +1962,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 		n_ptr = &n1;
 	      else
 		n_ptr = &n2;
-	      for (i = 0; i < sizeof (HOST_WIDEST_INT); i++, inc <<= 8,
+	      for (i = 0; i < sizeof (int64_t); i++, inc <<= 8,
 		   mask <<= 8)
 		{
 		  if (n_ptr->n & mask)
@@ -1984,7 +1984,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  n->size = n1.size;
 	  for (i = 0, mask = 0xff; i < n->size; i++, mask <<= BITS_PER_UNIT)
 	    {
-	      unsigned HOST_WIDEST_INT masked1, masked2;
+	      uint64_t masked1, masked2;
 
 	      masked1 = n1.n & mask;
 	      masked2 = n2.n & mask;
@@ -2018,8 +2018,8 @@ find_bswap_or_nop (gimple stmt, struct symbolic_number *n, bool *bswap)
 /* The number which the find_bswap_or_nop_1 result should match in order
    to have a full byte swap.  The number is shifted to the right
    according to the size of the symbolic number before using it.  */
-  unsigned HOST_WIDEST_INT cmpxchg = CMPXCHG;
-  unsigned HOST_WIDEST_INT cmpnop = CMPNOP;
+  uint64_t cmpxchg = CMPXCHG;
+  uint64_t cmpnop = CMPNOP;
 
   tree source_expr;
   int limit;
@@ -2040,19 +2040,19 @@ find_bswap_or_nop (gimple stmt, struct symbolic_number *n, bool *bswap)
   if (n->base_addr)
     {
       int rsize;
-      unsigned HOST_WIDEST_INT tmpn;
+      uint64_t tmpn;
 
       for (tmpn = n->n, rsize = 0; tmpn; tmpn >>= BITS_PER_UNIT, rsize++);
       n->range = rsize;
     }
 
   /* Zero out the extra bits of N and CMP*.  */
-  if (n->range < (int)sizeof (HOST_WIDEST_INT))
+  if (n->range < (int)sizeof (int64_t))
     {
-      unsigned HOST_WIDEST_INT mask;
+      uint64_t mask;
 
-      mask = ((unsigned HOST_WIDEST_INT)1 << (n->range * BITS_PER_UNIT)) - 1;
-      cmpxchg >>= (sizeof (HOST_WIDEST_INT) - n->range) * BITS_PER_UNIT;
+      mask = ((uint64_t)1 << (n->range * BITS_PER_UNIT)) - 1;
+      cmpxchg >>= (sizeof (int64_t) - n->range) * BITS_PER_UNIT;
       cmpnop &= mask;
     }
 
@@ -2266,9 +2266,6 @@ pass_optimize_bswap::execute (function *fun)
   tree bswap16_type = NULL_TREE, bswap32_type = NULL_TREE, bswap64_type = NULL_TREE;
 
   if (BITS_PER_UNIT != 8)
-    return 0;
-
-  if (sizeof (HOST_WIDEST_INT) < 8)
     return 0;
 
   bswap16_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP16)

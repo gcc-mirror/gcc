@@ -2002,10 +2002,10 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
 /* Custom version of strtoll, which is not portable.  */
 
-static HOST_WIDEST_INT
+static int64_t
 lto_parse_hex (const char *p)
 {
-  HOST_WIDEST_INT ret = 0;
+  int64_t ret = 0;
 
   for (; *p != '\0'; ++p)
     {
@@ -2057,7 +2057,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
     {
       int t;
       char offset_p[17];
-      HOST_WIDEST_INT offset;
+      int64_t offset;
       t = fscanf (resolution, "@0x%16s", offset_p);
       if (t != 1)
         internal_error ("could not parse file offset");

@@ -3487,12 +3487,6 @@ pp_double_int (pretty_printer *pp, double_int d, bool uns)
     pp_wide_integer (pp, d.low);
   else if (d.fits_uhwi ())
     pp_unsigned_wide_integer (pp, d.low);
-  else if (HOST_BITS_PER_DOUBLE_INT == HOST_BITS_PER_WIDEST_INT)
-    pp_scalar (pp,
-	       uns
-	       ? HOST_WIDEST_INT_PRINT_UNSIGNED : HOST_WIDEST_INT_PRINT_DEC,
-	       (HOST_WIDEST_INT) ((((unsigned HOST_WIDEST_INT) d.high << 1)
-				   << (HOST_BITS_PER_WIDE_INT - 1)) | d.low));
   else
     {
       unsigned HOST_WIDE_INT low = d.low;
