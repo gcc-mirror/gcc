@@ -3343,10 +3343,8 @@ end program test_cshift
 @table @asis
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
-@code{TIME8}, to a string. Unless the application has called
-@code{setlocale}, the output will be in the default locale, of length
-24 and of the form @samp{Sat Aug 19 18:13:14 1995}. In other locales,
-a longer string may result.
+@code{TIME8}, to a string. The output will be of the form @samp{Sat
+Aug 19 18:13:14 1995}.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
