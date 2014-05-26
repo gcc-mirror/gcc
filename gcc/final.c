@@ -1925,7 +1925,7 @@ dump_basic_block_info (FILE *file, rtx insn, basic_block *start_to_bb,
       if (bb->frequency)
         fprintf (file, " freq:%d", bb->frequency);
       if (bb->count)
-        fprintf (file, " count:" HOST_WIDEST_INT_PRINT_DEC,
+        fprintf (file, " count:%"PRId64,
                  bb->count);
       fprintf (file, " seq:%d", (*bb_seqn)++);
       fprintf (file, "\n%s PRED:", ASM_COMMENT_START);

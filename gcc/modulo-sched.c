@@ -396,7 +396,7 @@ doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
    this constant.  Otherwise return 0.  */
 static rtx
 const_iteration_count (rtx count_reg, basic_block pre_header,
-		       HOST_WIDEST_INT * count)
+		       int64_t * count)
 {
   rtx insn;
   rtx head, tail;
@@ -1450,16 +1450,16 @@ sms_schedule (void)
 	      if (profile_info && flag_branch_probabilities)
 	    	{
 	      	  fprintf (dump_file, "SMS loop-count ");
-	      	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
-	             	   (HOST_WIDEST_INT) bb->count);
+	      	  fprintf (dump_file, "%"PRId64,
+	             	   (int64_t) bb->count);
 	      	  fprintf (dump_file, "\n");
                   fprintf (dump_file, "SMS trip-count ");
-                  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
-                           (HOST_WIDEST_INT) trip_count);
+                  fprintf (dump_file, "%"PRId64,
+                           (int64_t) trip_count);
                   fprintf (dump_file, "\n");
 	      	  fprintf (dump_file, "SMS profile-sum-max ");
-	      	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
-	          	   (HOST_WIDEST_INT) profile_info->sum_max);
+	      	  fprintf (dump_file, "%"PRId64,
+	          	   (int64_t) profile_info->sum_max);
 	      	  fprintf (dump_file, "\n");
 	    	}
 	    }
@@ -1540,7 +1540,7 @@ sms_schedule (void)
       rtx head, tail;
       rtx count_reg, count_init;
       int mii, rec_mii, stage_count, min_cycle;
-      HOST_WIDEST_INT loop_count = 0;
+      int64_t loop_count = 0;
       bool opt_sc_p;
 
       if (! (g = g_arr[loop->num]))
@@ -1571,12 +1571,12 @@ sms_schedule (void)
 	  if (profile_info && flag_branch_probabilities)
 	    {
 	      fprintf (dump_file, "SMS loop-count ");
-	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
-	               (HOST_WIDEST_INT) bb->count);
+	      fprintf (dump_file, "%"PRId64,
+	               (int64_t) bb->count);
 	      fprintf (dump_file, "\n");
 	      fprintf (dump_file, "SMS profile-sum-max ");
-	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
-	               (HOST_WIDEST_INT) profile_info->sum_max);
+	      fprintf (dump_file, "%"PRId64,
+	               (int64_t) profile_info->sum_max);
 	      fprintf (dump_file, "\n");
 	    }
 	  fprintf (dump_file, "SMS doloop\n");
@@ -1602,7 +1602,7 @@ sms_schedule (void)
       if (dump_file && count_init)
         {
           fprintf (dump_file, "SMS const-doloop ");
-          fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
+          fprintf (dump_file, "%"PRId64,
 		     loop_count);
           fprintf (dump_file, "\n");
         }
@@ -1663,9 +1663,9 @@ sms_schedule (void)
 		  fprintf (dump_file, "SMS failed... \n");
 		  fprintf (dump_file, "SMS sched-failed (stage-count=%d,"
 			   " loop-count=", stage_count);
-		  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, loop_count);
+		  fprintf (dump_file, "%"PRId64, loop_count);
 		  fprintf (dump_file, ", trip-count=");
-		  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, trip_count);
+		  fprintf (dump_file, "%"PRId64, trip_count);
 		  fprintf (dump_file, ")\n");
 		}
 	      break;

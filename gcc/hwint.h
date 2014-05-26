@@ -135,17 +135,21 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 #define HOST_WIDE_INT_PRINT_HEX "%#" HOST_WIDE_INT_PRINT "x"
 #define HOST_WIDE_INT_PRINT_HEX_PURE "%" HOST_WIDE_INT_PRINT "x"
 
-/* Set HOST_WIDEST_INT.  This is a 64-bit type.  */
-
-#define HOST_WIDEST_INT			      HOST_WIDE_INT
-#define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER_WIDE_INT
-#define HOST_WIDEST_INT_PRINT		      HOST_WIDE_INT_PRINT
-#define HOST_WIDEST_INT_PRINT_DEC	      HOST_WIDE_INT_PRINT_DEC
-#define HOST_WIDEST_INT_PRINT_DEC_C	      HOST_WIDE_INT_PRINT_DEC_C
-#define HOST_WIDEST_INT_PRINT_UNSIGNED	      HOST_WIDE_INT_PRINT_UNSIGNED
-#define HOST_WIDEST_INT_PRINT_HEX	      HOST_WIDE_INT_PRINT_HEX
-#define HOST_WIDEST_INT_PRINT_DOUBLE_HEX      HOST_WIDE_INT_PRINT_DOUBLE_HEX
-#define HOST_WIDEST_INT_C(X)		      HOST_WIDE_INT (X)
+/* Provide C99 <inttypes.h> style format definitions for 64bits.  */
+#ifndef HAVE_INTTYPES_H
+#undef PRId64
+#define PRId64 HOST_WIDE_INT_PRINT "d"
+#undef PRIi64
+#define PRIi64 HOST_WIDE_INT_PRINT "i"
+#undef PRIo64
+#define PRIo64 HOST_WIDE_INT_PRINT "o"
+#undef PRIu64
+#define PRIu64 HOST_WIDE_INT_PRINT "u"
+#undef PRIx64
+#define PRIx64 HOST_WIDE_INT_PRINT "x"
+#undef PRIX64
+#define PRIX64 HOST_WIDE_INT_PRINT "X"
+#endif
 
 /* Define HOST_WIDEST_FAST_INT to the widest integer type supported
    efficiently in hardware.  (That is, the widest integer type that fits

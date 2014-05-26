@@ -1,5 +1,85 @@
 2014-05-26  Richard Biener  <rguenther@suse.de>
 
+	* system.h: Define __STDC_FORMAT_MACROS before
+	including inttypes.h.
+	* hwint.h (HOST_WIDEST_INT, HOST_BITS_PER_WIDEST_INT,
+	HOST_WIDEST_INT_PRINT, HOST_WIDEST_INT_PRINT_DEC,
+	HOST_WIDEST_INT_PRINT_DEC_C, HOST_WIDEST_INT_PRINT_UNSIGNED,
+	HOST_WIDEST_INT_PRINT_HEX, HOST_WIDEST_INT_PRINT_DOUBLE_HEX,
+	HOST_WIDEST_INT_C): Remove.
+	(PRId64, PRIi64, PRIo64, PRIu64, PRIx64, PRIX64): Define
+	if C99 inttypes.h is not available.
+	* coretypes.h (gcov_type, gcov_type_unsigned): Use [u]int64_t.
+	* gcov-io.h (gcov_type, gcov_type_unsigned): Likewise.
+	* gcov-io.c (gcov_histo_index): Drop non-64bit hwi case.
+	* cfgloop.h (struct niter_desc): Use uint64_t for niter field.
+	* bitmap.c (struct bitmap_descriptor_d): Use uint64_t for counters.
+	(struct output_info): Likewise.
+	(print_statistics): Adjust.
+	(dump_bitmap_statistics): Likewise.
+	* bt-load.c (migrate_btr_defs): Print with PRId64.
+	* cfg.c (dump_edge_info, dump_bb_info): Likewise.
+	(MAX_SAFE_MULTIPLIER): Adjust.
+	* cfghooks.c (dump_bb_for_graph): Print with PRId64.
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee,
+	dump_cgraph_node): Likewise.
+	* final.c (dump_basic_block_info): Likewise.
+	* gcov-dump.c (tag_counters, tag_summary, dump_working_sets): Likewise.
+	* gcov.c (format_gcov): Likewise.
+	* ipa-cp.c (good_cloning_opportunity_p): Likewise.  Use int64_t
+	for calculation.
+	(get_clone_agg_value): Use HOST_WIDE_INT for offset.
+	* ipa-inline.c (compute_max_insns): Use int64_t for calcuation.
+	(inline_small_functions, dump_overall_stats, dump_inline_stats):
+	Use PRId64 for dumping.
+	* ipa-profile.c (dump_histogram, ipa_profile): Likewise.
+	* ira-color.c (struct allocno_hard_regs): Use int64_t for cost.
+	(add_allocno_hard_regs): Adjust.
+	* loop-doloop.c (doloop_modify): Print using PRId64.
+	* loop-iv.c (inverse): Compute in uint64_t.
+	(determine_max_iter, iv_number_of_iterations): Likewise.
+	* loop-unroll.c (decide_peel_completely, decide_peel_simple):
+	Print using PRId64.
+	* lto-streamer-out.c (write_symbol): Use uint64_t.
+	* mcf.c (CAP_INFINITY): Use int64_t maximum.
+	(dump_fixup_edge, create_fixup_graph, cancel_negative_cycle,
+	find_max_flow, adjust_cfg_counts): Use int64_t and dump with PRId64.
+	* modulo-sched.c (const_iteration_count): Use int64_t.
+	(sms_schedule): Dump using PRId64.
+	* predict.c (dump_prediction): Likewise.
+	* pretty-print.h (pp_widest_integer): Remove.
+	* profile.c (get_working_sets, is_edge_inconsistent,
+	is_inconsistent, read_profile_edge_counts): Dump using PRId64.
+	* tree-pretty-print.c (pp_double_int): Remove case handling
+	HOST_BITS_PER_DOUBLE_INT == HOST_BITS_PER_WIDEST_INT.
+	* tree-ssa-math-opts.c (struct symbolic_number): Use uint64_t
+	and adjust users.
+	(pass_optimize_bswap::execute): Remove restriction on hosts.
+	* tree-streamer-in.c (streamer_alloc_tree): Use HOST_WIDE_INT.
+	* tree-streamer-out.c (streamer_write_tree_header): Likewise.
+	* tree.c (widest_int_cst_value): Remove.
+	* tree.h (widest_int_cst_value): Likewise.
+	* value-prof.c (dump_histogram_value): Print using PRId64.
+	* gengtype.c (main): Also inject int64_t.
+	* ggc-page.c (struct max_alignment): Use int64_t.
+	* alloc-pool.c (struct allocation_object_def): Likewise.
+	* ira-conflicts.c (build_conflict_bit_table): Use uint64_t
+	for computation.
+	* doc/tm.texi.in: Remove reference to HOST_WIDEST_INT.
+	* doc/tm.texi: Regenerated.
+	* gengtype-lex.l (IWORD): Handle [u]int64_t.
+	* config/sh/sh.c (expand_cbranchdi4): Use gcov_type.
+	* config/mmix/mmix-protos.h (mmix_intval, mmix_shiftable_wyde_value,
+	mmix_output_register_setting): Use [u]int64_t in prototypes.
+	* config/mmix/mmix.c (mmix_print_operand, mmix_output_register_setting,
+	mmix_shiftable_wyde_value, mmix_output_shiftvalue_op_from_str,
+	mmix_output_octa, mmix_output_shifted_value): Adjust.
+	(mmix_intval): Adjust.  Remove unreachable case.
+	* config/mmix/mmix.md (*nonlocal_goto_receiver_expanded): Use
+	int64_t.
+
+2014-05-26  Richard Biener  <rguenther@suse.de>
+
 	* configure.ac: Drop __int64 type check.  Insist that we
 	found uint64_t and int64_t.
 	* hwint.h (HOST_BITS_PER___INT64): Remove.

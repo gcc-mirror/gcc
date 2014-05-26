@@ -491,6 +491,7 @@ extern void *realloc (void *, size_t);
 #endif
 
 #ifdef HAVE_INTTYPES_H
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #endif
 
@@ -1070,7 +1071,7 @@ helper_const_non_const_cast (const char *p)
 #define DEBUG_VARIABLE
 #endif
 
-/* Get definitions of HOST_WIDE_INT and HOST_WIDEST_INT.  */
+/* Get definitions of HOST_WIDE_INT.  */
 #include "hwint.h"
 
 #endif /* ! GCC_SYSTEM_H */

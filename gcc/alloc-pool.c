@@ -43,7 +43,7 @@ typedef struct allocation_object_def
 	 the allocated object may be even smaller than this structure.
 	 We do not care about alignment for floating-point types.  */
       char *align_p;
-      HOST_WIDEST_INT align_i;
+      int64_t align_i;
     } u;
 } allocation_object;
 

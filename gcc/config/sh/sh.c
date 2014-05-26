@@ -2088,12 +2088,11 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	    lsw_taken_prob = prob ? REG_BR_PROB_BASE : 0;
 	  else
 	    {
-	      gcc_assert (HOST_BITS_PER_WIDEST_INT >= 64);
 	      lsw_taken_prob
 		= (prob
 		   ? (REG_BR_PROB_BASE
-		      - ((HOST_WIDEST_INT) REG_BR_PROB_BASE * rev_prob
-			 / ((HOST_WIDEST_INT) prob << 32)))
+		      - ((gcov_type) REG_BR_PROB_BASE * rev_prob
+			 / ((gcov_type) prob << 32)))
 		   : 0);
 	    }
 	}

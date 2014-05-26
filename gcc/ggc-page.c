@@ -156,7 +156,7 @@ along with GCC; see the file COPYING3.  If not see
 struct max_alignment {
   char c;
   union {
-    HOST_WIDEST_INT i;
+    int64_t i;
     void *p;
   } u;
 };

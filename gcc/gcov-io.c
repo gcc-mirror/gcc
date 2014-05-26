@@ -718,20 +718,8 @@ gcov_histo_index (gcov_type value)
       r = sizeof (long long) * __CHAR_BIT__ - 1 - __builtin_clzll (v);
 #else
       /* We use floor_log2 from hwint.c, which takes a HOST_WIDE_INT
-         that is either 32 or 64 bits, and gcov_type_unsigned may be 64 bits.
-         Need to check for the case where gcov_type_unsigned is 64 bits
-         and HOST_WIDE_INT is 32 bits and handle it specially.  */
-#if HOST_BITS_PER_WIDEST_INT == HOST_BITS_PER_WIDE_INT
+         that is 64 bits and gcov_type_unsigned is 64 bits.  */
       r = floor_log2 (v);
-#elif HOST_BITS_PER_WIDEST_INT == 2 * HOST_BITS_PER_WIDE_INT
-      HOST_WIDE_INT hwi_v = v >> HOST_BITS_PER_WIDE_INT;
-      if (hwi_v)
-        r = floor_log2 (hwi_v) + HOST_BITS_PER_WIDE_INT;
-      else
-        r = floor_log2 ((HOST_WIDE_INT)v);
-#else
-      gcc_unreachable ();
-#endif
 #endif
     }
 

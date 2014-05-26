@@ -1308,12 +1308,12 @@ iv_analysis_done (void)
 
 /* Computes inverse to X modulo (1 << MOD).  */
 
-static unsigned HOST_WIDEST_INT
-inverse (unsigned HOST_WIDEST_INT x, int mod)
+static uint64_t
+inverse (uint64_t x, int mod)
 {
-  unsigned HOST_WIDEST_INT mask =
-	  ((unsigned HOST_WIDEST_INT) 1 << (mod - 1) << 1) - 1;
-  unsigned HOST_WIDEST_INT rslt = 1;
+  uint64_t mask =
+	  ((uint64_t) 1 << (mod - 1) << 1) - 1;
+  uint64_t rslt = 1;
   int i;
 
   for (i = 0; i < mod - 1; i++)
@@ -2263,13 +2263,13 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
    a number of fields in DESC already filled in.  OLD_NITER is the original
    expression for the number of iterations, before we tried to simplify it.  */
 
-static unsigned HOST_WIDEST_INT
+static uint64_t
 determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
 {
   rtx niter = desc->niter_expr;
   rtx mmin, mmax, cmp;
-  unsigned HOST_WIDEST_INT nmax, inc;
-  unsigned HOST_WIDEST_INT andmax = 0;
+  uint64_t nmax, inc;
+  uint64_t andmax = 0;
 
   /* We used to look for constant operand 0 of AND,
      but canonicalization should always make this impossible.  */
@@ -2312,7 +2312,7 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
   if (andmax)
     nmax = MIN (nmax, andmax);
   if (dump_file)
-    fprintf (dump_file, ";; Determined upper bound "HOST_WIDEST_INT_PRINT_DEC".\n",
+    fprintf (dump_file, ";; Determined upper bound %"PRId64".\n",
 	     nmax);
   return nmax;
 }
@@ -2331,8 +2331,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   enum rtx_code cond;
   enum machine_mode mode, comp_mode;
   rtx mmin, mmax, mode_mmin, mode_mmax;
-  unsigned HOST_WIDEST_INT s, size, d, inv, max;
-  HOST_WIDEST_INT up, down, inc, step_val;
+  uint64_t s, size, d, inv, max;
+  int64_t up, down, inc, step_val;
   int was_sharp = false;
   rtx old_niter;
   bool step_is_pow2;
@@ -2679,7 +2679,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  d *= 2;
 	  size--;
 	}
-      bound = GEN_INT (((unsigned HOST_WIDEST_INT) 1 << (size - 1 ) << 1) - 1);
+      bound = GEN_INT (((uint64_t) 1 << (size - 1 ) << 1) - 1);
 
       tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
       tmp = simplify_gen_binary (UMOD, mode, tmp1, gen_int_mode (d, mode));
@@ -2833,7 +2833,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
   if (CONST_INT_P (desc->niter_expr))
     {
-      unsigned HOST_WIDEST_INT val = INTVAL (desc->niter_expr);
+      uint64_t val = INTVAL (desc->niter_expr);
 
       desc->const_iter = true;
       desc->niter = val & GET_MODE_MASK (desc->mode);

@@ -34,11 +34,11 @@ struct bitmap_descriptor_d
   const char *file;
   int line;
   int created;
-  unsigned HOST_WIDEST_INT allocated;
-  unsigned HOST_WIDEST_INT peak;
-  unsigned HOST_WIDEST_INT current;
-  unsigned HOST_WIDEST_INT nsearches;
-  unsigned HOST_WIDEST_INT search_iter;
+  uint64_t allocated;
+  uint64_t peak;
+  uint64_t current;
+  uint64_t nsearches;
+  uint64_t search_iter;
 };
 
 typedef struct bitmap_descriptor_d *bitmap_descriptor;
@@ -2144,8 +2144,8 @@ bitmap_print (FILE *file, const_bitmap head, const char *prefix,
 /* Used to accumulate statistics about bitmap sizes.  */
 struct output_info
 {
-  unsigned HOST_WIDEST_INT size;
-  unsigned HOST_WIDEST_INT count;
+  uint64_t size;
+  uint64_t count;
 };
 
 /* Called via hash_table::traverse.  Output bitmap descriptor pointed out by
@@ -2165,10 +2165,8 @@ print_statistics (bitmap_descriptor_d **slot, output_info *i)
       sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
       s[41] = 0;
       fprintf (stderr,
-	       "%-41s %9u"
-	       " %15"HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d"
-	       " %15"HOST_WIDEST_INT_PRINT"d"
-	       " %10"HOST_WIDEST_INT_PRINT"d %10"HOST_WIDEST_INT_PRINT"d\n",
+	       "%-41s %9u %15"PRId64" %15"PRId64" %15"PRId64
+	       " %10"PRId64" %10"PRId64"\n",
 	       s, d->created,
 	       d->allocated, d->peak, d->current,
 	       d->nsearches, d->search_iter);
@@ -2201,7 +2199,7 @@ dump_bitmap_statistics (void)
   bitmap_desc_hash.traverse <output_info *, print_statistics> (&info);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   fprintf (stderr,
-	   "%-41s %9"HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d\n",
+	   "%-41s %9"PRId64" %15"PRId64"\n",
 	   "Total", info.count, info.size);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
 }
