@@ -2013,7 +2013,7 @@
 2013-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* src/c++98/compatibility.cc (_ZTIe): Use
-	reinterpret_cast<const cast *> to avoid -Wcast-qual warnings.
+	reinterpret_cast<const void *> to avoid -Wcast-qual warnings.
 	(_ZTIPe): Ditto.
 	(ZTIPKe): Ditto.
 
