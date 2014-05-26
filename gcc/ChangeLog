@@ -1,3 +1,11 @@
+2014-05-26  Richard Biener  <rguenther@suse.de>
+
+	* wide-int.h (wi::int_traits <long>, wi::int_traits <unsigned long>,
+	wi::int_traits <long long>, wi::int_traits <unsigned long long>):
+	Provide specializations.
+	(wi::int_traits <HOST_WIDE_INT>,
+	wi::int_traits <unsigned HOST_WIDE_INT>): Remove specializations.
+
 2014-05-26  Alan Modra  <amodra@gmail.com>
 
 	PR target/61098
