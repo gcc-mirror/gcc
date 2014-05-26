@@ -1,3 +1,9 @@
+2014-05-26  Michael Tautschnig  <mt@debian.org>
+
+	PR target/61249
+	* doc/extend.texi (X86 Built-in Functions): Fix parameter lists of
+	__builtin_ia32_vfrczs[sd] and __builtin_ia32_mpsadbw256.
+
 2014-05-23  Alan Modra  <amodra@gmail.com>
 
 	PR target/61231
