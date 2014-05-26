@@ -2557,6 +2557,38 @@ err_ret:
   return false;
 }
 
+
+static bool
+extended_look_ahead (char *p, char *q)
+{
+  char *r, *s;
+
+  /* Scan ahead to find a '%' in the p string.  */
+  for(r = p, s = q; *r && *s; s++)
+    if ((*s == '%' || *s == '+') && strcmp (r + 1, s + 1) == 0)
+      return true;
+  return false;
+}
+
+
+static bool
+strcmp_extended_type (char *p, char *q)
+{
+  char *r, *s;
+  
+  for (r = p, s = q; *r && *s; r++, s++)
+    {
+      if (*r != *s)
+	{
+	  if (*r == '%' && *s == '+' && extended_look_ahead (r, s))
+	    return true;
+	  break;
+	}
+    }
+  return false;
+}
+
+
 static namelist_info *
 find_nml_node (st_parameter_dt *dtp, char * var_name)
 {
@@ -2564,6 +2596,11 @@ find_nml_node (st_parameter_dt *dtp, char * var_name)
   while (t != NULL)
     {
       if (strcmp (var_name, t->var_name) == 0)
+	{
+	  t->touched = 1;
+	  return t;
+	}
+      if (strcmp_extended_type (var_name, t->var_name))
 	{
 	  t->touched = 1;
 	  return t;
