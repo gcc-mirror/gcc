@@ -1,3 +1,18 @@
+2014-05-26  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac: Drop __int64 type check.  Insist that we
+	found uint64_t and int64_t.
+	* hwint.h (HOST_BITS_PER___INT64): Remove.
+	(HOST_BITS_PER_WIDE_INT): Define to 64 and remove
+	__int64 case.
+	(HOST_WIDE_INT_PRINT_*): Remove 32bit case.
+	(HOST_WIDEST_INT*): Define to HOST_WIDE_INT*.
+	(HOST_WIDEST_FAST_INT): Remove __int64 case.
+	* vmsdbg.h (struct _DST_SRC_COMMAND): Use int64_t
+	for dst_q_src_df_rms_cdt.
+	* configure: Regenerate.
+	* config.in: Likewise.
+
 2014-05-26  Michael Tautschnig  <mt@debian.org>
 
 	PR target/61249

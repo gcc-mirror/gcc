@@ -820,23 +820,9 @@ extern int cpp_defined (cpp_reader *, const unsigned char *, int);
 /* A preprocessing number.  Code assumes that any unused high bits of
    the double integer are set to zero.  */
 
-/* Find a type with at least 64bit precision, mimicking hwint.h.
-   This type has to be equal to unsigned HOST_WIDE_INT, see
+/* This type has to be equal to unsigned HOST_WIDE_INT, see
    gcc/c-family/c-lex.c.  */
-#if SIZEOF_LONG >= 8
-typedef unsigned long cpp_num_part;
-#else
-# if SIZEOF_LONG_LONG >= 8
-typedef unsigned long long cpp_num_part;
-# else
-#  if SIZEOF___INT64 >= 8
-typedef unsigned __int64 cpp_num_part;
-#  else
-    #error "This line should be impossible to reach"
-#  endif
-# endif
-#endif
-
+typedef uint64_t cpp_num_part;
 typedef struct cpp_num cpp_num;
 struct cpp_num
 {

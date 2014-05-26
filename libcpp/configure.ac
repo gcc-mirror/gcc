@@ -64,8 +64,10 @@ AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_UINTPTR_T
 AC_CHECK_TYPE(ptrdiff_t, int)
-AC_CHECK_TYPES([long long], [AC_CHECK_SIZEOF(long long)])
-AC_CHECK_TYPES([__int64], [AC_CHECK_SIZEOF(__int64)])
+AC_TYPE_UINT64_T
+if test x"$ac_cv_c_uint64_t" = x"no"; then
+  AC_MSG_ERROR([uint64_t not found])
+fi
 AC_STRUCT_TM
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
