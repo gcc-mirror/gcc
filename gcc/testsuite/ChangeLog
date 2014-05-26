@@ -1,3 +1,9 @@
+2014-05-26  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/61191
+	* c-c++-common/cilk-plus/AN/pr61191.c: Check for correct handling of
+	the case with syntax error.
+
 2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.dg/lto/pr61278_0.c: New test.
