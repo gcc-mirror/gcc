@@ -1,3 +1,8 @@
+2014-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/55117
+	* gfortran.dg/namelist_85.f90: New test.
+
 2014-05-26  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c/61191
