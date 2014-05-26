@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1010,14 +1010,11 @@ package body Errout is
                exit when
                  Errors.Table (Cur_Msg).Sfile < Errors.Table (Next_Msg).Sfile;
 
-               if Errors.Table (Cur_Msg).Sfile =
-                    Errors.Table (Next_Msg).Sfile
+               if Errors.Table (Cur_Msg).Sfile = Errors.Table (Next_Msg).Sfile
                then
                   exit when Sptr < Errors.Table (Next_Msg).Sptr
-                              or else
-                                (Sptr = Errors.Table (Next_Msg).Sptr
-                                   and then
-                                 Optr < Errors.Table (Next_Msg).Optr);
+                    or else (Sptr = Errors.Table (Next_Msg).Sptr
+                              and then Optr < Errors.Table (Next_Msg).Optr);
                end if;
 
                Prev_Msg := Next_Msg;
@@ -1339,14 +1336,16 @@ package body Errout is
       Cur := First_Error_Msg;
       while Cur /= No_Error_Msg loop
          declare
-            CE : Error_Msg_Object renames Errors.Table (Cur);
+            CE  : Error_Msg_Object renames Errors.Table (Cur);
+            Tag : constant String := Get_Warning_Tag (Cur);
 
          begin
             if (CE.Warn and not CE.Deleted)
-              and then (Warning_Specifically_Suppressed (CE.Sptr, CE.Text) /=
+              and then
+                   (Warning_Specifically_Suppressed (CE.Sptr, CE.Text, Tag) /=
                                                                    No_String
-                          or else
-                        Warning_Specifically_Suppressed (CE.Optr, CE.Text) /=
+                      or else
+                    Warning_Specifically_Suppressed (CE.Optr, CE.Text, Tag) /=
                                                                    No_String)
             then
                Delete_Warning (Cur);
@@ -2764,7 +2763,9 @@ package body Errout is
          elsif P + 1 <= Text'Last
            and then (Text (P) in 'a' .. 'z'
                        or else
-                     Text (P) in 'A' .. 'Z')
+                     Text (P) in 'A' .. 'Z'
+                       or else
+                     Text (P) = '*')
            and then Text (P + 1) = C
          then
             Warning_Msg_Char := Text (P);

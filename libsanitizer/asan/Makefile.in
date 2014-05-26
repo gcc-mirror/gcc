@@ -88,12 +88,13 @@ libasan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_2) \
 	$(am__append_3) $(am__DEPENDENCIES_1)
-am__objects_1 = asan_allocator2.lo asan_dll_thunk.lo \
-	asan_fake_stack.lo asan_globals.lo asan_interceptors.lo \
-	asan_linux.lo asan_mac.lo asan_malloc_linux.lo \
-	asan_malloc_mac.lo asan_malloc_win.lo asan_new_delete.lo \
-	asan_poisoning.lo asan_posix.lo asan_report.lo asan_rtl.lo \
-	asan_stack.lo asan_stats.lo asan_thread.lo asan_win.lo
+am__objects_1 = asan_activation.lo asan_allocator2.lo \
+	asan_dll_thunk.lo asan_fake_stack.lo asan_globals.lo \
+	asan_interceptors.lo asan_linux.lo asan_mac.lo \
+	asan_malloc_linux.lo asan_malloc_mac.lo asan_malloc_win.lo \
+	asan_new_delete.lo asan_poisoning.lo asan_posix.lo \
+	asan_report.lo asan_rtl.lo asan_stack.lo asan_stats.lo \
+	asan_thread.lo asan_win.lo
 am_libasan_la_OBJECTS = $(am__objects_1)
 libasan_la_OBJECTS = $(am_libasan_la_OBJECTS)
 libasan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -272,6 +273,7 @@ ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libasan.la
 nodist_toolexeclib_HEADERS = libasan_preinit.o
 asan_files = \
+	asan_activation.cc \
 	asan_allocator2.cc \
 	asan_dll_thunk.cc \
 	asan_fake_stack.cc \
@@ -412,6 +414,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_activation.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_allocator2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_dll_thunk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_fake_stack.Plo@am__quote@

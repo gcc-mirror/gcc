@@ -36,6 +36,10 @@ class MutexSet {
   uptr Size() const;
   Desc Get(uptr i) const;
 
+  void operator=(const MutexSet &other) {
+    internal_memcpy(this, &other, sizeof(*this));
+  }
+
  private:
 #ifndef TSAN_GO
   uptr size_;
@@ -43,6 +47,7 @@ class MutexSet {
 #endif
 
   void RemovePos(uptr i);
+  MutexSet(const MutexSet&);
 };
 
 // Go does not have mutexes, so do not spend memory and time.

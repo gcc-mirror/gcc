@@ -141,6 +141,18 @@ public:
   /* Circular list of nodes in the same comdat group if non-NULL.  */
   symtab_node *same_comdat_group;
 
+  /* Return comdat group.  */
+  tree get_comdat_group ()
+    {
+      return comdat_group_;
+    }
+
+  /* Set comdat group.  */
+  void set_comdat_group (tree group)
+    {
+      comdat_group_ = group;
+    }
+
   /* Vectors of referring and referenced entities.  */
   struct ipa_ref_list ref_list;
 
@@ -153,6 +165,9 @@ public:
   struct lto_file_decl_data * lto_file_data;
 
   PTR GTY ((skip)) aux;
+
+  /* Comdat group the symbol is in.  Can be private if GGC allowed that.  */
+  tree comdat_group_;
 };
 
 enum availability
@@ -727,9 +742,7 @@ void symtab_register_node (symtab_node *);
 void symtab_unregister_node (symtab_node *);
 void symtab_remove_from_same_comdat_group (symtab_node *);
 void symtab_remove_node (symtab_node *);
-symtab_node *symtab_get_node (const_tree);
 symtab_node *symtab_node_for_asm (const_tree asmname);
-void symtab_insert_node_to_hashtable (symtab_node *);
 void symtab_add_to_same_comdat_group (symtab_node *, symtab_node *);
 void symtab_dissolve_same_comdat_group_list (symtab_node *node);
 void dump_symtab (FILE *);
@@ -950,6 +963,10 @@ void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
 bool varpool_externally_visible_p (varpool_node *);
 
+/* In ipa-visibility.c */
+bool cgraph_local_node_p (struct cgraph_node *);
+
+
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
 bool cgraph_optimize_for_size_p (struct cgraph_node *);
@@ -988,6 +1005,28 @@ void varpool_remove_initializer (varpool_node *);
 
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);
+
+/* Return symbol table node associated with DECL, if any,
+   and NULL otherwise.  */
+
+static inline symtab_node *
+symtab_get_node (const_tree decl)
+{
+#ifdef ENABLE_CHECKING
+  /* Check that we are called for sane type of object - functions
+     and static or external variables.  */
+  gcc_checking_assert (TREE_CODE (decl) == FUNCTION_DECL
+		       || (TREE_CODE (decl) == VAR_DECL
+			   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)
+			       || in_lto_p)));
+  /* Check that the mapping is sane - perhaps this check can go away,
+     but at the moment frontends tends to corrupt the mapping by calling
+     memcpy/memset on the tree nodes.  */
+  gcc_checking_assert (!decl->decl_with_vis.symtab_node
+		       || decl->decl_with_vis.symtab_node->decl == decl);
+#endif
+  return decl->decl_with_vis.symtab_node;
+}
 
 /* Return callgraph node for given symbol and check it is a function. */
 static inline struct cgraph_node *
@@ -1548,7 +1587,7 @@ static inline bool
 symtab_can_be_discarded (symtab_node *node)
 {
   return (DECL_EXTERNAL (node->decl)
-	  || (DECL_ONE_ONLY (node->decl)
+	  || (node->get_comdat_group ()
 	      && node->resolution != LDPR_PREVAILING_DEF
 	      && node->resolution != LDPR_PREVAILING_DEF_IRONLY
 	      && node->resolution != LDPR_PREVAILING_DEF_IRONLY_EXP));
@@ -1580,6 +1619,16 @@ symtab_in_same_comdat_p (symtab_node *one, symtab_node *two)
 	two = cn->global.inlined_to;
     }
 
-  return DECL_COMDAT_GROUP (one->decl) == DECL_COMDAT_GROUP (two->decl);
+  return one->get_comdat_group () == two->get_comdat_group ();
+}
+
+/* Return comdat group of DECL.  */
+static inline tree
+decl_comdat_group (tree node)
+{
+  struct symtab_node *snode = symtab_get_node (node);
+  if (!snode)
+    return NULL;
+  return snode->get_comdat_group ();
 }
 #endif  /* GCC_CGRAPH_H  */

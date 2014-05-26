@@ -1594,6 +1594,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	/* These read memory pointed to by the first argument.  */
 	case BUILT_IN_STRDUP:
 	case BUILT_IN_STRNDUP:
+	case BUILT_IN_REALLOC:
 	  {
 	    ao_ref dref;
 	    tree size = NULL_TREE;
@@ -1990,6 +1991,15 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	  {
 	    tree ptr = gimple_call_arg (call, 0);
 	    return ptr_deref_may_alias_ref_p_1 (ptr, ref);
+	  }
+	/* Realloc serves both as allocation point and deallocation point.  */
+	case BUILT_IN_REALLOC:
+	  {
+	    tree ptr = gimple_call_arg (call, 0);
+	    /* Unix98 specifies that errno is set on allocation failure.  */
+	    return ((flag_errno_math
+		     && targetm.ref_may_alias_errno (ref))
+		    || ptr_deref_may_alias_ref_p_1 (ptr, ref));
 	  }
 	case BUILT_IN_GAMMA_R:
 	case BUILT_IN_GAMMAF_R:

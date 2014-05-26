@@ -1,3 +1,18 @@
+2014-05-23  Marek Polacek  <polacek@redhat.com>
+
+	* ubsan/ubsan_value.cc (getFloatValue): Handle 96-bit
+	floating-point types.
+
+2014-05-22  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r209283.
+	* asan/Makefile.am (asan_files): Added new files.
+	* asan/Makefile.in: Regenerate.
+	* tsan/Makefile.am (tsan_files): Added new files.
+	* tsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Added new files.
+	* sanitizer_common/Makefile.in: Regenerate.
+
 2014-05-14  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/61100

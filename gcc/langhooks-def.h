@@ -62,6 +62,7 @@ extern size_t lhd_tree_size (enum tree_code);
 extern HOST_WIDE_INT lhd_to_target_charset (HOST_WIDE_INT);
 extern tree lhd_expr_to_decl (tree, bool *, bool *);
 extern tree lhd_builtin_function (tree);
+extern tree lhd_enum_underlying_base_type (const_tree);
 
 /* Declarations of default tree inlining hooks.  */
 extern void lhd_initialize_diagnostics (diagnostic_context *);
@@ -178,6 +179,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_UPC_TOGGLE_KEYWORDS  lhd_do_nothing_b
 #define LANG_HOOKS_UPC_PTS_STRUCT_INIT_TYPE  lhd_do_nothing
 #define LANG_HOOKS_UPC_BUILD_INIT_FUNC lhd_do_nothing_t
+#define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE lhd_enum_underlying_base_type
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -196,7 +198,8 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_GET_ARRAY_DESCR_INFO, \
   LANG_HOOKS_GET_SUBRANGE_BOUNDS, \
   LANG_HOOKS_DESCRIPTIVE_TYPE, \
-  LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE \
+  LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE, \
+  LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE \
 }
 
 /* Declaration hooks.  */

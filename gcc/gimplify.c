@@ -5683,7 +5683,13 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       switch (default_kind)
 	{
 	case OMP_CLAUSE_DEFAULT_NONE:
-	  if ((ctx->region_type & ORT_TASK) != 0)
+	  if ((ctx->region_type & ORT_PARALLEL) != 0)
+	    {
+	      error ("%qE not specified in enclosing parallel",
+		     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
+	      error_at (ctx->location, "enclosing parallel");
+	    }
+	  else if ((ctx->region_type & ORT_TASK) != 0)
 	    {
 	      error ("%qE not specified in enclosing task",
 		     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
@@ -5696,11 +5702,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	      error_at (ctx->location, "enclosing teams construct");
 	    }
 	  else
-	    {
-	      error ("%qE not specified in enclosing parallel",
-		     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
-	      error_at (ctx->location, "enclosing parallel");
-	    }
+	    gcc_unreachable ();
 	  /* FALLTHRU */
 	case OMP_CLAUSE_DEFAULT_SHARED:
 	  flags |= GOVD_SHARED;

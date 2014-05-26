@@ -222,7 +222,9 @@
   "LSU_power6")
 
 (define_insn_reservation "power6-integer" 1
-  (and (eq_attr "type" "integer")
+  (and (ior (eq_attr "type" "integer")
+	    (and (eq_attr "type" "add,logical")
+		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
@@ -238,6 +240,8 @@
 
 (define_insn_reservation "power6-shift" 1
   (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "no")
+       (eq_attr "dot" "no")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
@@ -247,12 +251,14 @@
   "FXU_power6")
 
 (define_insn_reservation "power6-insert" 1
-  (and (eq_attr "type" "insert_word")
+  (and (eq_attr "type" "insert")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "FX2_power6")
 
 (define_insn_reservation "power6-insert-dword" 1
-  (and (eq_attr "type" "insert_dword")
+  (and (eq_attr "type" "insert")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "FX2_power6")
 
@@ -285,7 +291,9 @@
   "store_data_bypass_p")
 
 (define_insn_reservation "power6-var-rotate" 4
-  (and (eq_attr "type" "var_shift_rotate")
+  (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "yes")
+       (eq_attr "dot" "no")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
@@ -330,7 +338,8 @@
   "FXU_power6")
 
 (define_insn_reservation "power6-fast-compare" 1
-  (and (eq_attr "type" "fast_compare")
+  (and (eq_attr "type" "add,logical")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
@@ -347,41 +356,54 @@
   "store_data_bypass_p")
 
 (define_insn_reservation "power6-delayed-compare" 2 ; N/A
-  (and (eq_attr "type" "delayed_compare")
+  (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "no")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
 (define_insn_reservation "power6-var-delayed-compare" 4
-  (and (eq_attr "type" "var_delayed_compare")
+  (and (eq_attr "type" "shift")
+       (eq_attr "var_shift" "yes")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power6"))
   "FXU_power6")
 
 (define_insn_reservation "power6-lmul-cmp" 16
-  (and (eq_attr "type" "lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-imul-cmp" 16
-  (and (eq_attr "type" "imul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-lmul" 16
-  (and (eq_attr "type" "lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-imul" 16
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
 
 (define_insn_reservation "power6-imul3" 16
-  (and (eq_attr "type" "imul2,imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8,16")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*16+iu2_power6*16+fpu1_power6*16)\
   |(iu1_power6*16+iu2_power6*16+fpu2_power6*16)");
@@ -399,7 +421,8 @@
   "store_data_bypass_p")
 
 (define_insn_reservation "power6-idiv" 44
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*44+iu2_power6*44+fpu1_power6*44)\
   |(iu1_power6*44+iu2_power6*44+fpu2_power6*44)");
@@ -414,7 +437,8 @@
 ;  "store_data_bypass_p")
 
 (define_insn_reservation "power6-ldiv" 56
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power6"))
   "(iu1_power6*56+iu2_power6*56+fpu1_power6*56)\
   |(iu1_power6*56+iu2_power6*56+fpu2_power6*56)");

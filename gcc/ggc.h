@@ -282,6 +282,9 @@ extern const char *ggc_alloc_string (const char *contents, int length
    function is called, not during allocations.  */
 extern void ggc_collect	(void);
 
+/* Assume that all GGC memory is reachable and grow the limits for next collection. */
+extern void ggc_grow (void);
+
 /* Register an additional root table.  This can be useful for some
    plugins.  Does nothing if the passed pointer is NULL. */
 extern void ggc_register_root_tab (const struct ggc_root_tab *);

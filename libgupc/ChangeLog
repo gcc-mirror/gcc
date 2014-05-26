@@ -72,13 +72,13 @@
 	with #pragma upc upc_code.
 	* smp/gcc-upc-lib.in: Ditto.
 
-2013-11-03  Nenad Vukicevic <nenad@intrepid.com>
+2013-11-03  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* portals4/gupcr_atomic.upc (gupcr_set_optype_val): Add missing
 	break on case statement.
 	(gupcr_negate_atomic_type): Ditto.
 
-2013-10-23  Nenad Vukicevic <nenad@intrepid.com>
+2013-10-23  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Rework checking of GDB availability for backtracing.
 	Usage of GDB backtracing is enabled only if GDB was found or the
@@ -88,7 +88,7 @@
 	is available.
 	* configure: Re-generate.
 
-2013-10-04  Nenad Vukicevic <nenad@intrepid.com>
+2013-10-04  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add UPC backtrace to Portals4 runtime.
 	* Makefile.am: UPC_BACKTRACE_SUP is common define now.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,18 +64,15 @@ package Sinput.L is
    --  Called on completing the parsing of a source file. This call completes
    --  the source file table entry for the current source file.
 
+   function Source_File_Is_Body (X : Source_File_Index) return Boolean;
+   --  Returns true if the designated source file contains a subprogram body
+   --  or a package body. This is a limited scan just to determine the answer
+   --  to this question..
+
    function Source_File_Is_No_Body (X : Source_File_Index) return Boolean;
    --  Returns true if the designated source file contains pragma No_Body;
    --  and no other tokens. If the source file contains anything other than
    --  this sequence of three tokens, then False is returned.
-
-   function Source_File_Is_Subunit (X : Source_File_Index) return Boolean;
-   --  This function determines if a source file represents a subunit. It
-   --  works by scanning for the first compilation unit token, and returning
-   --  True if it is the token SEPARATE. It will return False otherwise,
-   --  meaning that the file cannot possibly be a legal subunit. This
-   --  function does NOT do a complete parse of the file, or build a
-   --  tree. It is used in the main driver in the check for bad bodies.
 
    -------------------------------------------------
    -- Subprograms for Dealing With Instantiations --

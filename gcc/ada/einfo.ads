@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -518,19 +518,19 @@ package Einfo is
 --       Export pragma).
 
 --    Can_Never_Be_Null (Flag38)
---       This flag is defined in all entities, but can only be set in an object
---       which can never have a null value. Set for constant access values
---       initialized to a non-null value. This is also set for all access
---       parameters in Ada 83 and Ada 95 modes, and for access parameters
---       that explicitly exclude null in Ada 2005.
+--       This flag is defined in all entities. It is set in an object which can
+--       never have a null value. Set for constant access values initialized to
+--       a non-null value. This is also set for all access parameters in Ada 83
+--       and Ada 95 modes, and for access parameters that explicitly exclude
+--       exclude null in Ada 2005 mode.
 --
 --       This is used to avoid unnecessary resetting of the Is_Known_Non_Null
 --       flag for such entities. In Ada 2005 mode, this is also used when
 --       determining subtype conformance of subprogram profiles to ensure
 --       that two formals have the same null-exclusion status.
 --
---       ??? This is also set on some access types, eg the Etype of the
---       anonymous access type of a controlling formal.
+--       This is also set on some access types, e.g. the Etype of the anonymous
+--       access type of a controlling formal.
 
 --    Can_Use_Internal_Rep (Flag229) [base type only]
 --       Defined in Access_Subprogram_Kind nodes. This flag is set by the
@@ -4114,6 +4114,53 @@ package Einfo is
 --       Defined in functions and procedures which have been classified as
 --       Is_Primitive_Wrapper. Set to the entity being wrapper.
 
+---------------------------
+-- Renaming and Aliasing --
+---------------------------
+
+--  Several entity attributes relate to renaming constructs, and to the use of
+--  different names to refer to the same entity. The following is a summary of
+--  these constructs and their prefered uses.
+
+--  There are three related attributes:
+
+--    Renamed_Entity
+--    Renamed_Object
+--    Alias
+
+--  They all overlap because they are supposed to apply to different entity
+--  kinds. They are semantically related, and have the following intended uses:
+
+--  a) Renamed_Entity appplies to entities in renaming declarations that rename
+--  an entity, so the value of the attribute IS an entity. This applies to
+--  generic renamings, package renamings, exception renamings, and subprograms
+--  renamings that rename a subprogram (rather than an attribute, an entry, a
+--  protected operation, etc).
+
+--  b) Alias applies to overloadable entities, and the value is an overloadable
+--  entity. so this is a subset of the previous one. We use the term Alias to
+--  cover both renamings and inherited operations, because both cases are
+--  handled in the same way when expanding a call. namely the Alias of a given
+--  subprogram is the subprogram that will actually be called.
+
+--  Both a) and b) are set transitively, so that in fact it is not necessary to
+--  traverse chains of renamings when looking for the original entity: it's
+--  there in one step (this is done when analyzing renaming declarations other
+--  than object renamings in sem_ch8).
+
+--  c) Renamed_Object applies to constants and variables. Given that the name
+--  in an object renaming declaration is not necessarily an entity name, the
+--  value of the attribute is the tree for that name, eg AR (1).Comp. The case
+--  when that name is in fact an entity is not handled specially. This is why
+--  in a few cases we need to use a loop to trace a chain of object renamings
+--  where all of them happen to be entities. So:
+
+--    X : integer;
+--    Y : integer renames X;   -- renamed object is the identifier X
+--    Z : integer renames Y;   -- renamed object is the identifier Y
+
+--  The front-end does not store explicitly the fact that Z renames X.
+
 --------------------------------------
 -- Delayed Freezing and Elaboration --
 --------------------------------------
@@ -4147,56 +4194,56 @@ package Einfo is
 --  If a subprogram has an access parameter whose designated type is incomplete
 --  the subprogram has the flag set.
 
-   ------------------
-   -- Access Kinds --
-   ------------------
+------------------
+-- Access Kinds --
+------------------
 
-   --  The following entity kinds are introduced by the corresponding type
-   --  definitions:
+--  The following entity kinds are introduced by the corresponding type
+--  definitions:
 
-   --    E_Access_Type,
-   --    E_General_Access_Type,
-   --    E_Access_Subprogram_Type,
-   --    E_Anonymous_Access_Subprogram_Type,
-   --    E_Access_Protected_Subprogram_Type,
-   --    E_Anonymous_Access_Protected_Subprogram_Type
-   --    E_Anonymous_Access_Type.
+--    E_Access_Type,
+--    E_General_Access_Type,
+--    E_Access_Subprogram_Type,
+--    E_Anonymous_Access_Subprogram_Type,
+--    E_Access_Protected_Subprogram_Type,
+--    E_Anonymous_Access_Protected_Subprogram_Type
+--    E_Anonymous_Access_Type.
 
-   --  E_Access_Subtype is for an access subtype created by a subtype
-   --  declaration.
+--  E_Access_Subtype is for an access subtype created by a subtype
+--  declaration.
 
-   --  In addition, we define the kind E_Allocator_Type to label allocators.
-   --  This is because special resolution rules apply to this construct.
-   --  Eventually the constructs are labeled with the access type imposed by
-   --  the context. Gigi should never see the type E_Allocator.
+--  In addition, we define the kind E_Allocator_Type to label allocators.
+--  This is because special resolution rules apply to this construct.
+--  Eventually the constructs are labeled with the access type imposed by
+--  the context. Gigi should never see the type E_Allocator.
 
-   --  Similarly, the type E_Access_Attribute_Type is used as the initial kind
-   --  associated with an access attribute. After resolution a specific access
-   --  type will be established as determined by the context.
+--  Similarly, the type E_Access_Attribute_Type is used as the initial kind
+--  associated with an access attribute. After resolution a specific access
+--  type will be established as determined by the context.
 
-   --  Finally, the type Any_Access is used to label -null- during type
-   --  resolution. Any_Access is also replaced by the context type after
-   --  resolution.
+--  Finally, the type Any_Access is used to label -null- during type
+--  resolution. Any_Access is also replaced by the context type after
+--  resolution.
 
-   --------------------------------
-   -- Classification of Entities --
-   --------------------------------
+--------------------------------
+-- Classification of Entities --
+--------------------------------
 
-   --  The classification of program entities which follows is a refinement of
-   --  the list given in RM 3.1(1). E.g., separate entities denote subtypes of
-   --  different type classes. Ada 95 entities include class wide types,
-   --  protected types, subprogram types, generalized access types,  generic
-   --  formal derived types and generic formal packages.
+--  The classification of program entities which follows is a refinement of
+--  the list given in RM 3.1(1). E.g., separate entities denote subtypes of
+--  different type classes. Ada 95 entities include class wide types,
+--  protected types, subprogram types, generalized access types,  generic
+--  formal derived types and generic formal packages.
 
-   --  The order chosen for these kinds allows us to classify related entities
-   --  so that they are contiguous. As a result, they do not appear in the
-   --  exact same order as their order of first appearance in the LRM (For
-   --  example, private types are listed before packages). The contiguity
-   --  allows us to define useful subtypes (see below) such as type entities,
-   --  overloaded entities, etc.
+--  The order chosen for these kinds allows us to classify related entities
+--  so that they are contiguous. As a result, they do not appear in the
+--  exact same order as their order of first appearance in the LRM (For
+--  example, private types are listed before packages). The contiguity
+--  allows us to define useful subtypes (see below) such as type entities,
+--  overloaded entities, etc.
 
-   --  Each entity (explicitly or implicitly declared) has a kind, which is
-   --  a value of the following type:
+--  Each entity (explicitly or implicitly declared) has a kind, which is
+--  a value of the following type:
 
    type Entity_Kind is (
 

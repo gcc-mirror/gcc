@@ -1830,6 +1830,8 @@
 ;; We allow a reg or 0 for one of the operands in order to be able to
 ;; do 'reg + T' sequences.  Reload will load the constant 0 into the reg
 ;; as needed.
+;; FIXME: The load of constant 0 should be split out before reload, or else
+;; it will be difficult to hoist or combine the constant load.
 (define_insn "*addc"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(plus:SI (plus:SI (match_operand:SI 1 "arith_reg_operand" "%0")
@@ -1898,10 +1900,10 @@
 ;; can be scheduled much better since the load of the constant can be
 ;; done earlier, before any comparison insns that store the result in
 ;; the T bit.
-(define_insn_and_split "*addc_r_1"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(plus:SI (match_operand:SI 1 "t_reg_operand" "")
-		 (match_operand:SI 2 "arith_reg_operand" "")))
+(define_insn_and_split "*addc_t_r"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (match_operand:SI 1 "t_reg_operand")
+		 (match_operand:SI 2 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
@@ -1909,6 +1911,19 @@
   [(parallel [(set (match_dup 0)
 		   (plus:SI (plus:SI (match_dup 2) (const_int 0))
 			    (match_dup 1)))
+	      (clobber (reg:SI T_REG))])])
+
+(define_insn_and_split "*addc_r_t"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand")
+		 (match_operand:SI 2 "t_reg_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (plus:SI (match_dup 1) (const_int 0))
+			    (match_dup 2)))
 	      (clobber (reg:SI T_REG))])])
 
 ;; Use shlr-addc to do 'reg + (reg & 1)'.

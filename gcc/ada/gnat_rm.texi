@@ -15746,7 +15746,7 @@ end Overwrite_Array;
 @end smallexample
 
 @noindent
-then the program compiles without the waraning and when run will generate
+then the program compiles without the warning and when run will generate
 the output @code{X was not clobbered}.
 
 @node Effect of Convention on Representation

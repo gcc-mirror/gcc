@@ -24,6 +24,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 #include <string.h>
+#include <stdlib.h>
 
 
 /* Given a fortran string, return its length exclusive of the trailing
@@ -87,6 +88,49 @@ cf_strcpy (char *dest, gfc_charlen_type dest_len, const char *src)
       memset (&dest[src_len], ' ', dest_len - src_len);
       return src_len;
     }
+}
+
+
+#ifndef HAVE_STRNLEN
+static size_t
+strnlen (const char *s, size_t maxlen)
+{
+  for (size_t ii = 0; ii < maxlen; ii++)
+    {
+      if (s[ii] == '\0')
+	return ii;
+    }
+  return maxlen;
+}
+#endif
+
+
+#ifndef HAVE_STRNDUP
+static char *
+strndup (const char *s, size_t n)
+{
+  size_t len = strnlen (s, n);
+  char *p = malloc (len + 1);
+  if (!p)
+    return NULL;
+  memcpy (p, s, len);
+  p[len] = '\0';
+  return p;
+}
+#endif
+
+
+/* Duplicate a non-null-terminated Fortran string to a malloced
+   null-terminated C string.  */
+
+char *
+fc_strdup (const char *src, gfc_charlen_type src_len)
+{
+  gfc_charlen_type n = fstrlen (src, src_len);
+  char *p = strndup (src, n);
+  if (!p)
+    os_error ("Memory allocation failed in fc_strdup");
+  return p;
 }
 
 

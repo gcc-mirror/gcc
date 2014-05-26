@@ -46,13 +46,9 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc> _Base;
 
-      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
-        rebind<_GLIBCXX_STD_C::_Fwd_list_node<_Tp>>::other _Node_alloc_type;
-
-      typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
-
     public:
-      typedef typename _Base::size_type             size_type;
+      typedef typename _Base::size_type		size_type;
+      typedef typename _Base::const_iterator	const_iterator;
 
       // 23.2.3.1 construct/copy/destroy:
       explicit
@@ -73,98 +69,135 @@ namespace __profile
       { }
 
       forward_list(size_type __n, const _Tp& __value,
-                   const _Alloc& __al = _Alloc())
+		   const _Alloc& __al = _Alloc())
       : _Base(__n, __value, __al)
       { }
 
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
-        forward_list(_InputIterator __first, _InputIterator __last,
-                     const _Alloc& __al = _Alloc())
-        : _Base(__first, __last, __al)
-        { }
+	forward_list(_InputIterator __first, _InputIterator __last,
+		     const _Alloc& __al = _Alloc())
+	: _Base(__first, __last, __al)
+	{ }
 
-      forward_list(const forward_list& __list)
-      : _Base(__list)
-      { }
-
-      forward_list(forward_list&& __list) noexcept
-      : _Base(std::move(__list)) { }
+      forward_list(const forward_list&) = default;
+      forward_list(forward_list&&) = default;
 
       forward_list(std::initializer_list<_Tp> __il,
-                   const _Alloc& __al = _Alloc())
+		   const _Alloc& __al = _Alloc())
       : _Base(__il, __al)
       { }
 
-      ~forward_list() noexcept
-      { }
+      ~forward_list() = default;
 
       forward_list&
-      operator=(const forward_list& __list)
-      {
-	static_cast<_Base&>(*this) = __list;
-	return *this;
-      }
+      operator=(const forward_list&) = default;
 
       forward_list&
-      operator=(forward_list&& __list)
-      noexcept(_Node_alloc_traits::_S_nothrow_move())
-      {
-	static_cast<_Base&>(*this) = std::move(__list);
-	return *this;
-      }
+      operator=(forward_list&&) = default;
 
       forward_list&
       operator=(std::initializer_list<_Tp> __il)
       {
-	static_cast<_Base&>(*this) = __il;
-        return *this;
+	_M_base() = __il;
+	return *this;
       }
 
+      void
+      swap(forward_list& __fl)
+	noexcept( noexcept(declval<_Base>().swap(__fl)) )
+      { _Base::swap(__fl); }
+
+      void
+      splice_after(const_iterator __pos, forward_list&& __fl)
+      { _Base::splice_after(__pos, std::move(__fl)); }
+
+      void
+      splice_after(const_iterator __pos, forward_list& __list)
+      { _Base::splice_after(__pos, __list); }
+
+      void
+      splice_after(const_iterator __pos, forward_list&& __list,
+		   const_iterator __i)
+      { _Base::splice_after(__pos, std::move(__list), __i); }
+
+      void
+      splice_after(const_iterator __pos, forward_list& __list,
+		   const_iterator __i)
+      { _Base::splice_after(__pos, __list, __i); }
+
+      void
+      splice_after(const_iterator __pos, forward_list&& __list,
+		   const_iterator __before, const_iterator __last)
+      { _Base::splice_after(__pos, std::move(__list), __before, __last); }
+
+      void
+      splice_after(const_iterator __pos, forward_list& __list,
+		   const_iterator __before, const_iterator __last)
+      { _Base::splice_after(__pos, __list, __before, __last); }
+
+      void
+      merge(forward_list&& __list)
+      { _Base::merge(std::move(__list)); }
+
+      void
+      merge(forward_list& __list)
+      { _Base::merge(__list); }
+
+      template<typename _Comp>
+	void
+	merge(forward_list&& __list, _Comp __comp)
+	{ _Base::merge(std::move(__list), __comp); }
+
+      template<typename _Comp>
+	void
+	merge(forward_list& __list, _Comp __comp)
+	{ _Base::merge(__list, __comp); }
+
       _Base&
-      _M_base() noexcept       { return *this; }
+      _M_base() noexcept	{ return *this; }
 
       const _Base&
-      _M_base() const noexcept { return *this; }
+      _M_base() const noexcept	{ return *this; }
     };
 
   template<typename _Tp, typename _Alloc>
     inline bool
     operator==(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return __lx._M_base() == __ly._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<(const forward_list<_Tp, _Alloc>& __lx,
-              const forward_list<_Tp, _Alloc>& __ly)
+	      const forward_list<_Tp, _Alloc>& __ly)
     { return __lx._M_base() < __ly._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
     operator!=(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return !(__lx == __ly); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>(const forward_list<_Tp, _Alloc>& __lx,
-              const forward_list<_Tp, _Alloc>& __ly)
+	      const forward_list<_Tp, _Alloc>& __ly)
     { return (__ly < __lx); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator>=(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return !(__lx < __ly); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<=(const forward_list<_Tp, _Alloc>& __lx,
-               const forward_list<_Tp, _Alloc>& __ly)
+	       const forward_list<_Tp, _Alloc>& __ly)
     { return !(__ly < __lx); }
 
   /// See std::forward_list::swap().

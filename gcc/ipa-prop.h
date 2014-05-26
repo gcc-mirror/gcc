@@ -371,8 +371,9 @@ struct ipa_node_params
   /* If this node is an ipa-cp clone, these are the known values that describe
      what it has been specialized for.  */
   vec<tree> known_vals;
-  /* Whether the param uses analysis has already been performed.  */
-  unsigned uses_analysis_done : 1;
+  /* Whether the param uses analysis and jump function computation has already
+     been performed.  */
+  unsigned analysis_done : 1;
   /* Whether the function is enqueued in ipa-cp propagation stack.  */
   unsigned node_enqueued : 1;
   /* Whether we should create a specialized version based on values that are

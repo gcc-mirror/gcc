@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1524,6 +1524,30 @@ package Prj is
    --     projects it imports, but not in the others or in aggregated projects.
    --  Else it searches in the whole tree.
    --  If Index is specified, this only search for a source with that index.
+
+   type Source_Ids is array (Positive range <>) of Source_Id;
+   No_Sources : constant Source_Ids := (1 .. 0 => No_Source);
+
+   function Find_All_Sources
+     (In_Tree          : Project_Tree_Ref;
+      Project          : Project_Id;
+      In_Imported_Only : Boolean := False;
+      In_Extended_Only : Boolean := False;
+      Base_Name        : File_Name_Type;
+      Index            : Int     := 0) return Source_Ids;
+   --  Find all source files with the given name:
+   --
+   --    If In_Extended_Only is True, it will search in project and the project
+   --    it extends, but not in the imported projects.
+   --
+   --    If Extended_Only is False, and In_Imported_Only is True, it will
+   --    search in project and the projects it imports, but not in the others
+   --    or in aggregated projects.
+   --
+   --    If both Extended_Only and In_Imported_Only are False (the default)
+   --    then it searches the whole tree.
+   --
+   --  If Index is specified, this only search for sources with that index.
 
    -----------------------
    -- Project_Tree_Data --

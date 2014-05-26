@@ -174,8 +174,9 @@
 
 ; FX Unit
 (define_insn_reservation "power7-integer" 1
-  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
-                        var_shift_rotate,exts,isel,popcnt")
+  (and (ior (eq_attr "type" "integer,insert,trap,exts,isel,popcnt")
+	    (and (eq_attr "type" "add,logical,shift")
+		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power7"))
   "DU_power7,FXU_power7")
 
@@ -195,34 +196,42 @@
   "DU_power7+DU_power7+DU_power7,FXU_power7,FXU_power7,FXU_power7")
 
 (define_insn_reservation "power7-cmp" 1
-  (and (eq_attr "type" "cmp,fast_compare")
+  (and (ior (eq_attr "type" "cmp")
+	    (and (eq_attr "type" "add,logical")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power7"))
   "DU_power7,FXU_power7")
 
 (define_insn_reservation "power7-compare" 2
-  (and (eq_attr "type" "compare,delayed_compare,var_delayed_compare")
+  (and (ior (eq_attr "type" "compare")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power7"))
   "DU2F_power7,FXU_power7,FXU_power7")
 
 (define_bypass 3 "power7-cmp,power7-compare" "power7-crlogical,power7-delayedcr")
 
 (define_insn_reservation "power7-mul" 4
-  (and (eq_attr "type" "imul,imul2,imul3,lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
        (eq_attr "cpu" "power7"))
   "DU_power7,FXU_power7")
 
 (define_insn_reservation "power7-mul-compare" 5
-  (and (eq_attr "type" "imul_compare,lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,FXU_power7,nothing*3,FXU_power7")
 
 (define_insn_reservation "power7-idiv" 36
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,iu1_power7*36|iu2_power7*36")
 
 (define_insn_reservation "power7-ldiv" 68
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power7"))
   "DU2F_power7,iu1_power7*68|iu2_power7*68")
 

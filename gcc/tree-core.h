@@ -414,6 +414,8 @@ enum tree_index {
   TI_UINT32_TYPE,
   TI_UINT64_TYPE,
 
+  TI_VOID,
+
   TI_INTEGER_ZERO,
   TI_INTEGER_ONE,
   TI_INTEGER_THREE,
@@ -1468,7 +1470,7 @@ struct GTY(()) tree_decl_with_vis {
  struct tree_decl_with_rtl common;
  tree assembler_name;
  tree section_name;
- tree comdat_group;
+ struct symtab_node *symtab_node;
 
  /* Belong to VAR_DECL exclusively.  */
  unsigned defer_output : 1;

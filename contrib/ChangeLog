@@ -1,3 +1,12 @@
+2014-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* dg-extract-results.py (Named): Remove __cmp__ method.
+	(output_variation): Use a key to sort variation.harnesses.
+
+2014-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* texi2pod.pl: Force .pod file to not be a numbered list.
+
 2014-05-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* dg-extract-results.py (parse_run): Handle warnings that are printed
@@ -90,7 +99,7 @@
 2013-08-03  Caroline Tice  <cmtice@google.com>
 
 	* gcc_update: Add libvtv files.
-	
+
 2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* update-copyright.py: Add libgupc to the default list. Add
@@ -282,7 +291,7 @@
 2012-08-24   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/x86_64-unknown-linux-gnu.xfail: Update.
-	
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/x86_64-unknown-linux-gnu.xfail: New.
@@ -683,7 +692,7 @@
 2009-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/40704
-	* test_summary: Filter out "\r". 
+	* test_summary: Filter out "\r".
 
 2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -756,7 +765,7 @@
 2008-03-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* patch_tester.sh (initialization): Initialize svnpatch and stop.
-	(usage): Add -svnpath and -stop.	
+	(usage): Add -svnpath and -stop.
 	(makedir): New.
 	(argument handling): Process -stop and -svnpath.
 	(setup code): Use makedir, error out if initial svn checkout fails.
@@ -827,7 +836,7 @@
 
 	* texi2pod.pl: Handle @asis.
 	(postprocess): Move @gccoptlist{} after all formatting commands.
-	
+
 2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Avoid spurious errors when .stripped files
@@ -989,14 +998,14 @@
 
 2005-10-28  Daniel Berlin  <dberlin@dberlin.org>
 	    Ben Elliston  <bje@au1.ibm.com>
-	
+
 	* gcc_update: Update for svn.
 	* newcvsroot: Ditto.
 	* gcc_build: Ditto.
 
 2005-10-21  Mark Mitchell  <mark@codesourcery.com>
 
-	* texi2pod.pl: Substitue for @value even when part of @include. 
+	* texi2pod.pl: Substitue for @value even when part of @include.
 
 2005-10-21  Bob Wilson  <bob.wilson@acm.org>
 

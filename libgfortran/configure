@@ -2599,6 +2599,8 @@ as_fn_append ac_func_list " getegid"
 as_fn_append ac_func_list " secure_getenv"
 as_fn_append ac_func_list " __secure_getenv"
 as_fn_append ac_func_list " mkostemp"
+as_fn_append ac_func_list " strnlen"
+as_fn_append ac_func_list " strndup"
 as_fn_append ac_header_list " math.h"
 # Check that the precious variables saved in the cache have kept the same
 # value.
@@ -12344,7 +12346,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12347 "configure"
+#line 12349 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12450,7 +12452,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12453 "configure"
+#line 12455 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16474,6 +16476,12 @@ $as_echo "#define HAVE_LOCALTIME_R 1" >>confdefs.h
 $as_echo "#define HAVE_GMTIME_R 1" >>confdefs.h
 
 
+$as_echo "#define HAVE_STRNLEN 1" >>confdefs.h
+
+
+$as_echo "#define HAVE_STRNDUP 1" >>confdefs.h
+
+
    # At some point, we should differentiate between architectures
    # like x86, which have long double versions, and alpha/powerpc/etc.,
    # which don't. For the time being, punt.
@@ -16498,6 +16506,10 @@ _ACEOF
 
 fi
 done
+
+
+
+
 
 
 

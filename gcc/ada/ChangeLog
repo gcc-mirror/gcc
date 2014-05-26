@@ -1,3 +1,437 @@
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
+	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
+	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb: Minor reformatting.
+	* sem_prag.adb (Analyze_Pragma, case Inspection_Point): Call
+	dummy procedure ip.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.ads (Implementation_Restriction): Add entry for
+	No_Fixed_IO.
+	* rtsfind.ads: Add entries for Fixed_IO and Decimal_IO in
+	Ada.[Wide_[Wide_]Text_IO.
+	* s-rident.ads (Restriction_Id): Add entry for No_Fixed_IO.
+	* sem_attr.adb (Analyze_Attribute): Disallow fixed point types
+	for Img, Image, Value, Wide_Image, Wide_Value, Wide_Wide_Image,
+	Wide_Wide_Value if restriction No_Fixed_IO is set.
+	* sem_util.adb (Set_Entity_Checks): Check restriction No_Fixed_IO.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb: Minor error msg changes (no upper case letter
+	at start).
+	* sem_ch12.adb, sem_ch5.adb, sem_res.adb, sem_util.adb: Minor
+	reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Debug flag -gnatd.G inhibits static elab tracing
+	via generic formals.
+	* sem_elab.adb (Is_Call_Of_Generic_Formal): Return False if
+	-gnatd.G is set.
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Revert_Storage_Order): Renamed from Byte_Swap to
+	more accurately describe that this subprogram needs to come into
+	play also in cases where no byte swapping is involved, because
+	it also takes care of some required shifts (left-justification
+	of values).
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Indicate whether
+	a Scalar_Storage_Order attribute definition is present for the
+	component's type.
+	(Freeze_Record_Type): Suppress junk warnings
+	about purportedly junk Bit_Order / Scalar_Storage_Order attribute
+	definitions.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Put back call
+	to Kill_Elaboration_Checks.
+
+2014-05-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb (Assoc_Add): Suppress the optimization of the (E
+	- C1) + C2 case, when the expression type is unsigned and C1 <
+	C2, to avoid creating a negative literal when folding.
+
+2014-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Update the use of
+	Is_SPARK_Volatile.
+	* sem_ch3.adb (Analyze_Object_Contract): Update the use of
+	Is_SPARK_Volatile.
+	(Process_Discriminants): Update the use of Is_SPARK_Volatile.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Update the use
+	of Is_SPARK_Volatile.
+	(Analyze_Loop_Parameter_Specification):
+	Update the use of Is_SPARK_Volatile.
+	* sem_ch6.adb (Process_Formals): Catch an illegal use of an IN
+	formal parameter when its type is volatile.
+	* sem_prag.adb (Analyze_Global_Item): Update the use of
+	Is_SPARK_Volatile.
+	* sem_res.adb (Resolve_Entity_Name): Correct the guard which
+	determines whether an entity is a volatile source SPARK object.
+	* sem_util.adb (Has_Enabled_Property): Accout for external
+	properties being set on objects other than abstract states
+	and variables. An example would be a formal parameter.
+	(Is_SPARK_Volatile): New routine.
+	(Is_SPARK_Volatile_Object):
+	Remove the entity-specific tests. Call routine Is_SPARK_Volatile
+	when checking entities and/or types.
+	* sem_util.ads (Is_SPARK_Volatile): New routine.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb: Minor fix to warning messages (use ?? instead
+	of ?).
+
+2014-05-21  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): For platforms other than VMS, recognize
+	switch --version and --help.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Is_Call_Of_Generic_Formal): New function.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Set type of
+	iterator variable when the domain of iteration is a formal
+	container and this is an element iterator.
+
+2014-05-21  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, sem_ch12.adb, sem_warn.adb: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb: Minor reformatting.
+	* s-taprop.ads: Minor comment fix.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Remove call to
+	Kill_Elaboration_Checks.
+	* errout.adb, erroutc.adb: Minor reformatting.
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Byte_Swap): Handle the case of a sub-byte
+	component. No byte swapping occurs, but this procedure also takes
+	care of appropriately justifying the argument.
+
+2014-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb: sem_ch6.adb (Analyze_Aspects_On_Body_Or_Stub):
+	New routine.
+	(Analyze_Subprogram_Body_Helper): Move the
+	analysis of aspect specifications and the processing of the
+	subprogram body contract after inlining has taken place.
+	(Diagnose_Misplaced_Aspect_Specifications): Removed.
+
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Revert previous change.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.ads, sem_eval.adb (Why_Not_Static): Messages are not
+	continuations any more.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New flag Needs_Initialized_Actual,
+	present in formal_Private_Definitions and on private extension
+	declarations of a formal derived type. Set when the use of the
+	formal type in a generic suggests that the actual should be a
+	fully initialized type.
+	* sem_warn.adb (May_Need_Initialized_Actual): new subprogram
+	to indicate that an entity of a generic type has default
+	initialization, and that the corresponing actual type in any
+	subsequent instantiation should be fully initialized.
+	* sem_ch12.adb (Check_Initialized_Type): new subprogram,
+	to emit a warning if the actual for a generic type on which
+	Needs_Initialized_Actual is set is not a fully initialized type.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb, prj-dect.adb: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* erroutc.ads: Minor comment addition.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Add documentation for use of >*> tag.
+	* restrict.adb: Make sure we use >*> tag for restriction warnings.
+
+2014-05-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* debug.adb: Add case of illegal overriding_indicator for a
+	protected subprogram body to description of -gnatd.E switch.
+	* sem_ch6.adb (Verify_Overriding_Indicator): Issue error message
+	for cases of giving overriding_indicators on protected subprogram
+	bodies, but change this to a warning if -gnatd.E is enabled. No
+	longer give a style warning about missing indicators on protected
+	subprogram bodies.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* prj.ads, sem_ch12.adb, prj.adb, exp_pakd.adb,
+	sem_elab.ads: Minor reformatting.
+	* erroutc.adb, erroutc.ads (Warning_Specifically_Suppressed): Make Tag
+	parameter optional.
+
+2014-05-21  Pascal Obry  <obry@adacore.com>
+
+	* prj-dect.adb: Allow package Install in aggregate project.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Insert_Delayed_Pragma is now used for the case of Attach_Handler.
+	* sem_prag.adb: Minor comment improvements.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Install_Body): When checking whether freezing of
+	instantiation must be delayed, verify that the common enclosing
+	subprogram to generic and instance is in fact an overloadable
+	entity.
+
+2014-05-21  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Mains.Complete_Mains.Do_Complete): Look for all
+	mains with the same name and fail if there is more than one.
+	* prj.ads, prj.adb (Find_All_Sources): New function
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+	* lib-xref-spark_specific.adb, sem_util.adb: Minor reformatting.
+	* sem_prag.adb: Minor error message improvement.
+
+2014-05-21  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb, lib-xref.ads, lib-xref.adb
+	(Enclosing_Subprogram_Or_Package): Only return a library-level
+	package.
+
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Initialize Parent_Base
+	to the full view of the parent type when processing a derived type
+	which is the full view of a private type not defined in a generic
+	unit which is derived from a private type with discriminants
+	whose full view is a non-tagged record type.
+
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression.Apply_Accessibility_Check):
+	Complete previous patch.
+
+2014-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	PR ada/9535
+	* g-socket.adb (Read and Write for Datagram_Socket_Stream_Type):
+	Provide a behaviour more consistent with underlying datagram
+	socket: do not attempt to loop over Send_Socket/Receive_Socket
+	iterating along the buffer.
+
+2014-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Ensure that a discriminated
+	or a tagged type is not labelled as volatile. Ensure that a
+	non-volatile type has no volatile components.
+	* sem_ch3.adb (Analyze_Object_Contract): Add local constant
+	Obj_Typ. Code reformatting.  Ensure that a discriminated or
+	tagged object is not labelled as volatile.
+	* sem_prag.adb (Process_Atomic_Shared_Volatile): Ensure that
+	pragma Volatile applies to a full type declaration or an object
+	declaration when SPARK mode is on.
+
+2014-05-21  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: For ASIS tools, reword the paragraph about
+	providing options needed for compiling the argument source for
+	the situation when a project file can be used as a tool parameter.
+
+2014-05-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_rm.texi: Minor typo fix.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* stand.adb (Tree_Read): Read missing entities.
+	(Tree_Write): Write missing entities.
+
+2014-05-21  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Wordsmithing edits to Coupling Metrics Control
+	section in gnatmetric chapter.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Spec moved here, since not used
+	outside Exp_Ch6 (Expand_Actuals): Deal with proper insertion of
+	post-call copy write back (see detailed comment in code).
+	* exp_ch6.ads (Expand_Actuals): Moved to body, not used outside
+	Exp_Ch6.
+	* tbuild.ads: Minor reformatting.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* stand.ads: Add warning about adding new entities and
+	Tree_Read/Tree_Write.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb (Set_Entity_With_Checks): Don't complain about
+	references to restricted entities within the units in which they
+	are declared.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Check_Bad_Body): Use Source_File_Is_Body to
+	simplify the needed test, and also deal with failure to catch
+	situations with non-standard names.
+	* sinput-l.ads, sinput-l.adb (Source_File_Is_No_Body): New function
+	(Source_File_Is_Subunit): Removed, no longer used.
+
+2014-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb
+	(Expand_Allocator_Expression.Apply_Accessibility_Check): for a
+	renaming of an access to interface object there is no need to
+	generate extra code to reference the tag.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb, erroutc.adb, erroutc.ads: Allow warning tag in pragma
+	Warnings (Off, string).
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* osint.adb: Fix three error messages to say invalid instead
+	of erroneous.
+	* par-ch4.adb, exp_aggr.adb, sem_attr.adb, sem_aux.adb, sem_ch3.adb,
+	sem_ch5.adb, sem_ch6.adb, sem_ch7.adb, sem_dim.adb, sem_res.adb,
+	sem_util.adb, sem_util.ads: Fix incorrect use of erroneous in comments.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb, sem_ch13.adb, sem_ch13.ads, sem_ch9.adb,
+	sem_ch9.ads: Move discriminant manipulation routines for analysis of
+	aspect specifications from sem_ch9 to sem_ch13, where they belong.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Clearly document -gnatw.g (GNAT warnings).
+	Clearly document -gnatyg (GNAT style switches).
+	* usage.adb: Add line line for -gnatw.g (GNAT warnings) More
+	detail for line for -gnatyg (GNAT style switches) -gnatw.d/D is
+	available for VMS after all.
+	* warnsw.adb: Reorganize to eliminate duplicated code
+	(Restore_Warnings): Add a couple of missing entries
+	(Save_Warnings): Add a couple of missing entries.
+	* warnsw.ads: Add missing entries to Warning_Record (not clear
+	what the impact is).
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Set_Msg_Insertion_Warning): Handle ?*? (restriction
+	warning) case.
+	* errout.ads: Document ?*? (restriction warning) insertion.
+	* erroutc.adb (Get_Warning_Tag): Deal with ?*? (restriction
+	warning) case.
+	* erroutc.ads: Document use of * for restriction warning tag.
+	* restrict.adb (Restriction_Msg): Tag with ?*? instead of ??.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Push_Scope_And_Install_Discriminants): Do not
+	make discriminants immediately visible when analyzing an aspect
+	of a subtype declaration.
+	(Uninstall_Discriminants): Do not apply to the entity in a
+	subtype declaration.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb: Code clean up.
+
+2014-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Document -Werror.
+
+2014-05-21  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object):
+	This was returning False if the Object is a constant view. Fix
+	it to return True in that case, because it might be a view of
+	a variable.
+	(Has_Discriminant_Dependent_Constraint): Fix latent
+	bug; this function was crashing when passed a discriminant.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Remove misplaced section that is now obsolete.
+	* s-arit64.adb: Minor code reorganization.
+	* sem_prag.adb: Minor comment fix (remove erroneous use of the
+	term erroneous).
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* g-table.adb, g-dyntab.adb (Reallocate): Fix possible overflow in
+	computing new table size.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	* ceinfo.adb: Deal with slight format change of einfo.ads.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): Further work on the proper
+	implementation of the SPARK 2014 rule concerning private child
+	units (LRM 7.2.6).
+
+2014-05-21  Vincent Celier  <celier@adacore.com>
+
+	* makeusg.adb: Add switch -d to usage.
+
+2014-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Find_Actual): If an actual that is the prefix
+	of an enclosing prefixed call has been rewritten, use Nkind
+	and Sloc to identify the corresponding formal, when handling
+	deferred references.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document -gnatd.z switch.
+	* sem_eval.adb (Why_Non_Static): Test -gnatd.z switch.
+
+2014-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads (Can_Never_Be_Null): Minor comment update.
+	* sem_prag.adb (Check_Arg_Is_Task_Dispatching_Policy): Minor
+	error message change.
+	* s-arit64.adb ("abs"): New function. Use expression functions
+	for the simple conversions and arithmetic.
+
 2014-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Rework comment and

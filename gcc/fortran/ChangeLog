@@ -1,3 +1,32 @@
+2014-05-25  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_num_images): New.
+	(gfc_check_this_image): Handle distance argument.
+	* intrinsic.c (add_functions): Update this_image and num_images
+	for new distance and failed arguments.
+	* intrinsic.texi (THIS_IMAGE, NUM_IMAGES): Document the new
+	arguments.
+	* intrinsic.h (gfc_check_num_images): New.
+	(gfc_check_this_image, gfc_simplify_num_images,
+	gfc_simplify_this_image, gfc_resolve_this_image): Update prototype.
+	* iresolve.c (gfc_resolve_this_image): Handle distance argument.
+	* simplify.c (gfc_simplify_num_images, gfc_simplify_this_image):
+	Handle new arguments.
+	* trans-intrinsic.c (trans_this_image, trans_num_images): Ditto.
+	(gfc_conv_intrinsic_function): Update trans_num_images call.
+
+2014-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	* gfc-internals.texi: Change URLs to HTTPS; fix broken links.
+	* gfortran.texi: Ditto.
+
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* f95-lang.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
+	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
+	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.
+	* types.def: Simplify examples for DEF_FUNCTION_TYPE_*.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* f95-lang.c (pushlevel): Adjust.

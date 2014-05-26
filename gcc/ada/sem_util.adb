@@ -5518,6 +5518,18 @@ package body Sem_Util is
          while Present (Formal) and then Present (Actual) loop
             if Actual = N then
                return;
+
+            --  An actual that is the prefix in a prefixed call may have
+            --  been rewritten in the call, after the deferred reference
+            --  was collected. Check if sloc and kinds and names match.
+
+            elsif Sloc (Actual) = Sloc (N)
+              and then Nkind (Actual) = N_Identifier
+              and then Nkind (Actual) = Nkind (N)
+              and then Chars (Actual) = Chars (N)
+            then
+               return;
+
             else
                Actual := Next_Actual (Actual);
                Formal := Next_Formal (Formal);
@@ -7290,39 +7302,46 @@ package body Sem_Util is
      (Comp : Entity_Id) return Boolean
    is
       Comp_Decl  : constant Node_Id := Parent (Comp);
-      Subt_Indic : constant Node_Id :=
-                     Subtype_Indication (Component_Definition (Comp_Decl));
+      Subt_Indic : Node_Id;
       Constr     : Node_Id;
       Assn       : Node_Id;
 
    begin
-      if Nkind (Subt_Indic) = N_Subtype_Indication then
-         Constr := Constraint (Subt_Indic);
+      --  Discriminants can't depend on discriminants
 
-         if Nkind (Constr) = N_Index_Or_Discriminant_Constraint then
-            Assn := First (Constraints (Constr));
-            while Present (Assn) loop
-               case Nkind (Assn) is
-                  when N_Subtype_Indication |
-                       N_Range              |
-                       N_Identifier
-                  =>
-                     if Depends_On_Discriminant (Assn) then
-                        return True;
-                     end if;
+      if Ekind (Comp) = E_Discriminant then
+         return False;
 
-                  when N_Discriminant_Association =>
-                     if Depends_On_Discriminant (Expression (Assn)) then
-                        return True;
-                     end if;
+      else
+         Subt_Indic := Subtype_Indication (Component_Definition (Comp_Decl));
 
-                  when others =>
-                     null;
+         if Nkind (Subt_Indic) = N_Subtype_Indication then
+            Constr := Constraint (Subt_Indic);
 
-               end case;
+            if Nkind (Constr) = N_Index_Or_Discriminant_Constraint then
+               Assn := First (Constraints (Constr));
+               while Present (Assn) loop
+                  case Nkind (Assn) is
+                     when N_Subtype_Indication |
+                          N_Range              |
+                          N_Identifier
+                       =>
+                        if Depends_On_Discriminant (Assn) then
+                           return True;
+                        end if;
 
-               Next (Assn);
-            end loop;
+                     when N_Discriminant_Association =>
+                        if Depends_On_Discriminant (Expression (Assn)) then
+                           return True;
+                        end if;
+
+                     when others =>
+                        null;
+                  end case;
+
+                  Next (Assn);
+               end loop;
+            end if;
          end if;
       end if;
 
@@ -7447,7 +7466,7 @@ package body Sem_Util is
       begin
          --  A non-volatile object can never possess external properties
 
-         if not Is_SPARK_Volatile_Object (Item_Id) then
+         if not Is_SPARK_Volatile (Item_Id) then
             return False;
 
          --  External properties related to variables come in two flavors -
@@ -7481,9 +7500,7 @@ package body Sem_Util is
 
          elsif Property = Name_Effective_Writes
            and then
-             (Present (EW)
-                or else
-             (No (AR) and then No (AW) and then No (ER)))
+             (Present (EW) or else (No (AR) and then No (AW) and then No (ER)))
          then
             return True;
 
@@ -7495,11 +7512,19 @@ package body Sem_Util is
    --  Start of processing for Has_Enabled_Property
 
    begin
+      --  Abstract states and variables have a flexible scheme of specifying
+      --  external properties.
+
       if Ekind (Item_Id) = E_Abstract_State then
          return State_Has_Enabled_Property;
 
-      else pragma Assert (Ekind (Item_Id) = E_Variable);
+      elsif Ekind (Item_Id) = E_Variable then
          return Variable_Has_Enabled_Property;
+
+      --  Otherwise a property is enabled when the related object is volatile
+
+      else
+         return Is_SPARK_Volatile (Item_Id);
       end if;
    end Has_Enabled_Property;
 
@@ -8222,7 +8247,7 @@ package body Sem_Util is
       Index := First_Index (Typ);
       for Indx in 1 .. Ndims loop
 
-         --  In case of an erroneous index which is not a discrete type, return
+         --  In case of an illegal index which is not a discrete type, return
          --  that the type is not static.
 
          if not Is_Discrete_Type (Etype (Index))
@@ -9730,11 +9755,6 @@ package body Sem_Util is
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean
    is
-      P           : Node_Id;
-      Prefix_Type : Entity_Id;
-      P_Aliased   : Boolean := False;
-      Comp        : Entity_Id;
-
       function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean;
       --  Returns True if and only if Comp is declared within a variant part
 
@@ -9749,17 +9769,41 @@ package body Sem_Util is
          return Nkind (Parent (Comp_List)) = N_Variant;
       end Is_Declared_Within_Variant;
 
+      P           : Node_Id;
+      Prefix_Type : Entity_Id;
+      P_Aliased   : Boolean := False;
+      Comp        : Entity_Id;
+
+      Deref : Node_Id := Object;
+      --  Dereference node, in something like X.all.Y(2)
+
    --  Start of processing for Is_Dependent_Component_Of_Mutable_Object
 
    begin
-      if Is_Variable (Object) then
+      --  Find the dereference node if any
 
+      while Nkind_In (Deref, N_Indexed_Component,
+                             N_Selected_Component,
+                             N_Slice)
+      loop
+         Deref := Prefix (Deref);
+      end loop;
+
+      --  Ada 2005: If we have a component or slice of a dereference,
+      --  something like X.all.Y (2), and the type of X is access-to-constant,
+      --  Is_Variable will return False, because it is indeed a constant
+      --  view. But it might be a view of a variable object, so we want the
+      --  following condition to be True in that case.
+
+      if Is_Variable (Object)
+        or else (Ada_Version >= Ada_2005
+                  and then Nkind (Deref) = N_Explicit_Dereference)
+      then
          if Nkind (Object) = N_Selected_Component then
             P := Prefix (Object);
             Prefix_Type := Etype (P);
 
             if Is_Entity_Name (P) then
-
                if Ekind (Entity (P)) = E_Generic_In_Out_Parameter then
                   Prefix_Type := Base_Type (Prefix_Type);
                end if;
@@ -9791,10 +9835,10 @@ package body Sem_Util is
             --  the dereferenced case, since the access value might denote an
             --  unconstrained aliased object, whereas in Ada 95 the designated
             --  object is guaranteed to be constrained. A worst-case assumption
-            --  has to apply in Ada 2005 because we can't tell at compile time
-            --  whether the object is "constrained by its initial value"
-            --  (despite the fact that 3.10.2(26/2) and 8.5.1(5/2) are
-            --  semantic rules -- these rules are acknowledged to need fixing).
+            --  has to apply in Ada 2005 because we can't tell at compile
+            --  time whether the object is "constrained by its initial value"
+            --  (despite the fact that 3.10.2(26/2) and 8.5.1(5/2) are semantic
+            --  rules (these rules are acknowledged to need fixing).
 
             if Ada_Version < Ada_2005 then
                if Is_Access_Type (Prefix_Type)
@@ -9803,7 +9847,7 @@ package body Sem_Util is
                   return False;
                end if;
 
-            elsif Ada_Version >= Ada_2005 then
+            else pragma Assert (Ada_Version >= Ada_2005);
                if Is_Access_Type (Prefix_Type) then
 
                   --  If the access type is pool-specific, and there is no
@@ -11060,7 +11104,7 @@ package body Sem_Util is
    begin
       return (Ekind (E) = E_Access_Subprogram_Type
                 or else (Ekind (E) = E_Record_Type
-                           and then Present (Corresponding_Remote_Type (E))))
+                          and then Present (Corresponding_Remote_Type (E))))
         and then (Is_Remote_Call_Interface (E) or else Is_Remote_Types (E));
    end Is_Remote_Access_To_Subprogram_Type;
 
@@ -11375,22 +11419,26 @@ package body Sem_Util is
       end if;
    end Is_SPARK_Object_Reference;
 
+   -----------------------
+   -- Is_SPARK_Volatile --
+   -----------------------
+
+   function Is_SPARK_Volatile (Id : Entity_Id) return Boolean is
+   begin
+      return Is_Volatile (Id) or else Is_Volatile (Etype (Id));
+   end Is_SPARK_Volatile;
+
    ------------------------------
    -- Is_SPARK_Volatile_Object --
    ------------------------------
 
    function Is_SPARK_Volatile_Object (N : Node_Id) return Boolean is
    begin
-      if Nkind (N) = N_Defining_Identifier then
-         return Is_Volatile (N) or else Is_Volatile (Etype (N));
-
-      elsif Is_Entity_Name (N) then
-         return
-           Is_SPARK_Volatile_Object (Entity (N))
-             or else Is_Volatile (Etype (N));
+      if Is_Entity_Name (N) then
+         return Is_SPARK_Volatile (Entity (N));
 
       elsif Nkind (N) = N_Expanded_Name then
-         return Is_SPARK_Volatile_Object (Entity (N));
+         return Is_SPARK_Volatile (Entity (N));
 
       elsif Nkind (N) = N_Indexed_Component then
          return Is_SPARK_Volatile_Object (Prefix (N));
@@ -15819,12 +15867,6 @@ package body Sem_Util is
 
       Set_Entity (N, Val);
 
-      --  Remaining checks are only done on source nodes
-
-      if not Comes_From_Source (N) then
-         return;
-      end if;
-
       --  The node to post on is the selector in the case of an expanded name,
       --  and otherwise the node itself.
 
@@ -15834,11 +15876,54 @@ package body Sem_Util is
          Post_Node := N;
       end if;
 
+      --  Check for violation of No_Fixed_IO
+
+      if Restriction_Check_Required (No_Fixed_IO)
+        and then
+          ((RTU_Loaded (Ada_Text_IO)
+             and then (Is_RTE (Val, RE_Decimal_IO)
+                         or else
+                       Is_RTE (Val, RE_Fixed_IO)))
+
+         or else
+           (RTU_Loaded (Ada_Wide_Text_IO)
+             and then (Is_RTE (Val, RO_WT_Decimal_IO)
+                         or else
+                       Is_RTE (Val, RO_WT_Fixed_IO)))
+
+         or else
+           (RTU_Loaded (Ada_Wide_Wide_Text_IO)
+             and then (Is_RTE (Val, RO_WW_Decimal_IO)
+                         or else
+                       Is_RTE (Val, RO_WW_Fixed_IO))))
+
+        --  A special extra check, don't complain about a reference from within
+        --  the Ada.Interrupts package itself!
+
+        and then not In_Same_Extended_Unit (N, Val)
+      then
+         Check_Restriction (No_Fixed_IO, Post_Node);
+      end if;
+
+      --  Remaining checks are only done on source nodes. Note that we test
+      --  for violation of No_Fixed_IO even on non-source nodes, because the
+      --  cases for checking violations of this restriction are instantiations
+      --  where the refernece in the instance has Comes_From_Source False.
+
+      if not Comes_From_Source (N) then
+         return;
+      end if;
+
       --  Check for violation of No_Abort_Statements, which is triggered by
       --  call to Ada.Task_Identification.Abort_Task.
 
       if Restriction_Check_Required (No_Abort_Statements)
         and then (Is_RTE (Val, RE_Abort_Task))
+
+        --  A special extra check, don't complain about a reference from within
+        --  the Ada.Task_Identification package itself!
+
+        and then not In_Same_Extended_Unit (N, Val)
       then
          Check_Restriction (No_Abort_Statements, Post_Node);
       end if;
@@ -15854,6 +15939,11 @@ package body Sem_Util is
                   Is_RTE (Val, RE_Exchange_Handler) or else
                   Is_RTE (Val, RE_Detach_Handler)   or else
                   Is_RTE (Val, RE_Reference))
+
+        --  A special extra check, don't complain about a reference from within
+        --  the Ada.Interrupts package itself!
+
+        and then not In_Same_Extended_Unit (N, Val)
       then
          Check_Restriction (No_Dynamic_Attachment, Post_Node);
       end if;

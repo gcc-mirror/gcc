@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,6 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch9;  use Sem_Ch9;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -91,16 +90,19 @@ package body Freeze is
    --  performed only after the object has been frozen.
 
    procedure Check_Component_Storage_Order
-     (Encl_Type : Entity_Id;
-      Comp      : Entity_Id;
-      ADC       : Node_Id);
+     (Encl_Type        : Entity_Id;
+      Comp             : Entity_Id;
+      ADC              : Node_Id;
+      Comp_ADC_Present : out Boolean);
    --  For an Encl_Type that has a Scalar_Storage_Order attribute definition
    --  clause, verify that the component type has an explicit and compatible
    --  attribute/aspect. For arrays, Comp is Empty; for records, it is the
    --  entity of the component under consideration. For an Encl_Type that
    --  does not have a Scalar_Storage_Order attribute definition clause,
    --  verify that the component also does not have such a clause.
-   --  ADC is the attribute definition clause if present (or Empty).
+   --  ADC is the attribute definition clause if present (or Empty). On return,
+   --  Comp_ADC_Present is set True if the component has a Scalar_Storage_Order
+   --  attribute definition clause.
 
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
@@ -1071,9 +1073,10 @@ package body Freeze is
    -----------------------------------
 
    procedure Check_Component_Storage_Order
-     (Encl_Type : Entity_Id;
-      Comp      : Entity_Id;
-      ADC       : Node_Id)
+     (Encl_Type        : Entity_Id;
+      Comp             : Entity_Id;
+      ADC              : Node_Id;
+      Comp_ADC_Present : out Boolean)
    is
       Comp_Type : Entity_Id;
       Comp_ADC  : Node_Id;
@@ -1125,12 +1128,13 @@ package body Freeze is
       Comp_ADC := Get_Attribute_Definition_Clause
                     (First_Subtype (Comp_Type),
                      Attribute_Scalar_Storage_Order);
+      Comp_ADC_Present := Present (Comp_ADC);
 
       --  Case of enclosing type not having explicit SSO: component cannot
       --  have it either.
 
       if No (ADC) then
-         if Present (Comp_ADC) then
+         if Comp_ADC_Present then
             Error_Msg_N
               ("composite type must have explicit scalar storage order",
                Err_Node);
@@ -2351,14 +2355,19 @@ package body Freeze is
 
             --  Check for scalar storage order
 
-            Check_Component_Storage_Order
-              (Encl_Type => Arr,
-               Comp      => Empty,
-               ADC       => Get_Attribute_Definition_Clause
-                              (First_Subtype (Arr),
-                               Attribute_Scalar_Storage_Order));
+            declare
+               Dummy : Boolean;
+            begin
+               Check_Component_Storage_Order
+                 (Encl_Type        => Arr,
+                  Comp             => Empty,
+                  ADC              => Get_Attribute_Definition_Clause
+                                        (First_Subtype (Arr),
+                                         Attribute_Scalar_Storage_Order),
+                  Comp_ADC_Present => Dummy);
+            end;
 
-            --  Processing that is done only for subtypes
+         --  Processing that is done only for subtypes
 
          else
             --  Acquire alignment from base type
@@ -2550,8 +2559,8 @@ package body Freeze is
       procedure Freeze_Record_Type (Rec : Entity_Id) is
          Comp : Entity_Id;
          IR   : Node_Id;
-         ADC  : Node_Id;
          Prev : Entity_Id;
+         ADC  : Node_Id;
 
          Junk : Boolean;
          pragma Warnings (Off, Junk);
@@ -2560,6 +2569,9 @@ package body Freeze is
          --  Set True if the record type scope Rec has been pushed on the scope
          --  stack. Needed for the analysis of delayed aspects specified to the
          --  components of Rec.
+
+         SSO_ADC : Node_Id;
+         --  Scalar_Storage_Order attribute definition clause for the record
 
          Unplaced_Component : Boolean := False;
          --  Set True if we find at least one component with no component
@@ -2574,6 +2586,10 @@ package body Freeze is
          --  Set True if we find at least one component which is aliased. This
          --  is used to prevent Implicit_Packing of the record, since packing
          --  cannot modify the size of alignment of an aliased component.
+
+         SSO_ADC_Component : Boolean := False;
+         --  Set True if we find at least one component whose type has a
+         --  Scalar_Storage_Order attribute definition clause.
 
          All_Scalar_Components : Boolean := True;
          --  Set False if we encounter a component of a non-scalar type
@@ -3015,56 +3031,80 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         ADC := Get_Attribute_Definition_Clause
-                  (Rec, Attribute_Scalar_Storage_Order);
+         SSO_ADC := Get_Attribute_Definition_Clause
+                      (Rec, Attribute_Scalar_Storage_Order);
 
-         if Present (ADC) then
+         --  Check consistent attribute setting on component types
+
+         declare
+            Comp_ADC_Present : Boolean;
+         begin
+            Comp := First_Component (Rec);
+            while Present (Comp) loop
+               Check_Component_Storage_Order
+                 (Encl_Type        => Rec,
+                  Comp             => Comp,
+                  ADC              => SSO_ADC,
+                  Comp_ADC_Present => Comp_ADC_Present);
+               SSO_ADC_Component := SSO_ADC_Component or Comp_ADC_Present;
+               Next_Component (Comp);
+            end loop;
+         end;
+
+         if Present (SSO_ADC) then
 
             --  Check compatibility of Scalar_Storage_Order with Bit_Order, if
             --  the former is specified.
 
             if Reverse_Bit_Order (Rec) /= Reverse_Storage_Order (Rec) then
 
-               --  Note: report error on Rec, not on ADC, as ADC may apply to
-               --  an ancestor type.
+               --  Note: report error on Rec, not on SSO_ADC, as ADC may apply
+               --  to some ancestor type.
 
-               Error_Msg_Sloc := Sloc (ADC);
+               Error_Msg_Sloc := Sloc (SSO_ADC);
                Error_Msg_N
                  ("scalar storage order for& specified# inconsistent with "
                   & "bit order", Rec);
             end if;
 
-            --  Warn if there is a Scalar_Storage_Order but no component clause
-            --  (or pragma Pack).
+            --  Warn if there is an Scalar_Storage_Order attribute definition
+            --  clause but no component clause, no component that itself has
+            --  such an attribute definition, and no pragma Pack.
 
-            if not (Placed_Component or else Is_Packed (Rec)) then
+            if not (Placed_Component
+                      or else
+                    SSO_ADC_Component
+                      or else
+                    Is_Packed (Rec))
+            then
                Error_Msg_N
                  ("??scalar storage order specified but no component clause",
-                  ADC);
+                  SSO_ADC);
             end if;
          end if;
 
-         --  Check consistent attribute setting on component types
-
-         Comp := First_Component (Rec);
-         while Present (Comp) loop
-            Check_Component_Storage_Order
-              (Encl_Type => Rec, Comp => Comp, ADC => ADC);
-            Next_Component (Comp);
-         end loop;
-
-         --  Deal with Bit_Order aspect specifying a non-default bit order
+         --  Deal with Bit_Order aspect
 
          ADC := Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
 
          if Present (ADC) and then Base_Type (Rec) = Rec then
-            if not (Placed_Component or else Is_Packed (Rec)) then
+            if not (Placed_Component
+                      or else
+                    Present (SSO_ADC)
+                      or else
+                    Is_Packed (Rec))
+            then
+               --  Warn if clause has no effect when no component clause is
+               --  present, but suppress warning if the Bit_Order is required
+               --  due to the presence of a Scalar_Storage_Order attribute.
+
                Error_Msg_N
                  ("??bit order specification has no effect", ADC);
                Error_Msg_N
                  ("\??since no component clauses were specified", ADC);
 
-            --  Here is where we do the processing for reversed bit order
+            --  Here is where we do the processing to adjust component clauses
+            --  for reversed bit order.
 
             elsif Reverse_Bit_Order (Rec)
               and then not Reverse_Storage_Order (Rec)
@@ -3312,6 +3352,45 @@ package body Freeze is
                     ("\use explicit pragma Pack "
                      & "or use pragma Implicit_Packing", Sz);
                end;
+            end if;
+         end if;
+
+         --  The following checks are only relevant when SPARK_Mode is on as
+         --  they are not standard Ada legality rules.
+
+         if SPARK_Mode = On then
+            if Is_SPARK_Volatile (Rec) then
+
+               --  A discriminated type cannot be volatile (SPARK RM C.6(4))
+
+               if Has_Discriminants (Rec) then
+                  Error_Msg_N ("discriminated type & cannot be volatile", Rec);
+
+               --  A tagged type cannot be volatile (SPARK RM C.6(5))
+
+               elsif Is_Tagged_Type (Rec) then
+                  Error_Msg_N ("tagged type & cannot be volatile", Rec);
+               end if;
+
+            --  A non-volatile record type cannot contain volatile components
+            --  (SPARK RM C.6(2)). The check is performed at freeze point
+            --  because the volatility status of the record type and its
+            --  components is clearly known.
+
+            else
+               Comp := First_Component (Rec);
+               while Present (Comp) loop
+                  if Comes_From_Source (Comp)
+                    and then Is_SPARK_Volatile (Comp)
+                  then
+                     Error_Msg_Name_1 := Chars (Rec);
+                     Error_Msg_N
+                       ("component & of non-volatile record type % cannot be "
+                        & "volatile", Comp);
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
             end if;
          end if;
 

@@ -1,4 +1,8 @@
-2014-05-21  Nenad Vukicevic <nenad@intrepid.com>
+2014-05-26  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 210928 into gupc branch.
+
+2014-05-21  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Fix linker spec
 	on Darwin, replace -fupc-link with -fupc option.

@@ -1,3 +1,31 @@
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (read_cgraph_and_symbols): Grow ggc memory after streaming.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_symtab_merge_symbols): Update code setting
+	symtab pointer.
+	* lto.c (compare_tree_sccs_1): Do not compare comdat groups.
+
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
+	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
+	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.
+
+2012-05-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* lto-object.c: Include "lto-section-names.h".
+	(LTO_SEGMENT_NAME): Don't define.
+	* lto.c: Include "lto-section-names.h".
+
+2014-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/61012
+	* lto-symtab.c (lto_symtab_merge_decls_1): Do not ICE on undefined externals
+	mixed with variables.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto-tree.h: Don't use variable_size gty attribute.

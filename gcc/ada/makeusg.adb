@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,6 +84,11 @@ begin
 
    Write_Str ("  -C=mapp  Cache source mappings: " &
               "invoke compiler with mapping file mapp");
+   Write_Eol;
+
+   --  Line for -d
+
+   Write_Str ("  -d       Display compilation progress");
    Write_Eol;
 
    --  Line for -D

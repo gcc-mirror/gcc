@@ -3502,8 +3502,6 @@ process_pipelined_exprs (av_set_t *av_ptr)
 static void
 process_spec_exprs (av_set_t *av_ptr)
 {
-  bool try_data_p = true;
-  bool try_control_p = true;
   expr_t expr;
   av_set_iterator si;
 
@@ -3528,34 +3526,6 @@ process_spec_exprs (av_set_t *av_ptr)
         {
           av_set_iter_remove (&si);
           continue;
-        }
-
-      if ((spec_info->flags & PREFER_NON_DATA_SPEC)
-          && !(ds & BEGIN_DATA))
-        try_data_p = false;
-
-      if ((spec_info->flags & PREFER_NON_CONTROL_SPEC)
-          && !(ds & BEGIN_CONTROL))
-        try_control_p = false;
-    }
-
-  FOR_EACH_EXPR_1 (expr, si, av_ptr)
-    {
-      ds_t ds;
-
-      ds = EXPR_SPEC_DONE_DS (expr);
-
-      if (ds & SPECULATIVE)
-        {
-          if ((ds & BEGIN_DATA) && !try_data_p)
-            /* We don't want any data speculative instructions right
-               now.  */
-            av_set_iter_remove (&si);
-
-          if ((ds & BEGIN_CONTROL) && !try_control_p)
-            /* We don't want any control speculative instructions right
-               now.  */
-            av_set_iter_remove (&si);
         }
     }
 }
@@ -4255,7 +4225,7 @@ invoke_dfa_lookahead_guard (void)
       if (! have_hook || i == 0)
         r = 0;
       else
-        r = !targetm.sched.first_cycle_multipass_dfa_lookahead_guard (insn);
+        r = targetm.sched.first_cycle_multipass_dfa_lookahead_guard (insn, i);
 
       gcc_assert (INSN_CODE (insn) >= 0);
 

@@ -2812,7 +2812,7 @@ write_expression (tree expr)
 	{
 	  if (init)
 	    write_string ("pi");
-	  if (init && init != void_zero_node)
+	  if (init && init != void_node)
 	    for (t = init; t; t = TREE_CHAIN (t))
 	      write_expression (TREE_VALUE (t));
 	  write_char ('E');

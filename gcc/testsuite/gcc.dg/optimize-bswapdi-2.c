@@ -1,6 +1,6 @@
-/* { dg-do compile { target arm*-*-* alpha*-*-* ia64*-*-* x86_64-*-* s390x-*-* powerpc*-*-* rs6000-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target bswap64 } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -fdump-tree-bswap" } */
 
 #include <stdint.h>

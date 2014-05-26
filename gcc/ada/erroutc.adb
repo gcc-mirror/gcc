@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,13 +113,13 @@ package body Erroutc is
       N1, N2 : Error_Msg_Id;
 
       procedure Delete_Msg (Delete, Keep : Error_Msg_Id);
-      --  Called to delete message Delete, keeping message Keep. Marks all
-      --  messages of Delete with deleted flag set to True, and also makes sure
-      --  that for the error messages that are retained the preferred message
-      --  is the one retained (we prefer the shorter one in the case where one
-      --  has an Instance tag). Note that we always know that Keep has at least
-      --  as many continuations as Delete (since we always delete the shorter
-      --  sequence).
+      --  Called to delete message Delete, keeping message Keep. Marks msg
+      --  Delete and all its continuations with deleted flag set to True.
+      --  Also makes sure that for the error messages that are retained the
+      --  preferred message is the one retained (we prefer the shorter one in
+      --  the case where one has an Instance tag). Note that we always know
+      --  that Keep has at least as many continuations as Delete (since we
+      --  always delete the shorter sequence).
 
       ----------------
       -- Delete_Msg --
@@ -310,6 +310,8 @@ package body Erroutc is
       if Warn and then Warn_Chr /= ' ' then
          if Warn_Chr = '?' then
             return "[enabled by default]";
+         elsif Warn_Chr = '*' then
+            return "[restriction warning]";
          elsif Warn_Chr in 'a' .. 'z' then
             return "[-gnatw" & Warn_Chr & ']';
          else pragma Assert (Warn_Chr in 'A' .. 'Z');
@@ -1455,7 +1457,8 @@ package body Erroutc is
 
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
-      Msg : String_Ptr) return String_Id
+      Msg : String_Ptr;
+      Tag : String := "") return String_Id
    is
    begin
       --  Loop through specific warning suppression entries
@@ -1471,7 +1474,9 @@ package body Erroutc is
             if SWE.Config
               or else (SWE.Start <= Loc and then Loc <= SWE.Stop)
             then
-               if Matches (Msg.all, SWE.Msg.all) then
+               if Matches (Msg.all, SWE.Msg.all)
+                 or else Matches (Tag, SWE.Msg.all)
+               then
                   SWE.Used := True;
                   return SWE.Reason;
                end if;

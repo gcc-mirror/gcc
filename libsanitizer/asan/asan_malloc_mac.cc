@@ -22,10 +22,10 @@
 #include "asan_allocator.h"
 #include "asan_interceptors.h"
 #include "asan_internal.h"
-#include "asan_mac.h"
 #include "asan_report.h"
 #include "asan_stack.h"
 #include "asan_stats.h"
+#include "sanitizer_common/sanitizer_mac.h"
 
 // Similar code is used in Google Perftools,
 // http://code.google.com/p/google-perftools.
@@ -39,7 +39,7 @@ static malloc_zone_t asan_zone;
 
 INTERCEPTOR(malloc_zone_t *, malloc_create_zone,
                              vm_size_t start_size, unsigned zone_flags) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   GET_STACK_TRACE_MALLOC;
   uptr page_size = GetPageSizeCached();
   uptr allocated_size = RoundUpTo(sizeof(asan_zone), page_size);
@@ -58,34 +58,34 @@ INTERCEPTOR(malloc_zone_t *, malloc_create_zone,
 }
 
 INTERCEPTOR(malloc_zone_t *, malloc_default_zone, void) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   return &asan_zone;
 }
 
 INTERCEPTOR(malloc_zone_t *, malloc_default_purgeable_zone, void) {
   // FIXME: ASan should support purgeable allocations.
   // https://code.google.com/p/address-sanitizer/issues/detail?id=139
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   return &asan_zone;
 }
 
 INTERCEPTOR(void, malloc_make_purgeable, void *ptr) {
   // FIXME: ASan should support purgeable allocations. Ignoring them is fine
   // for now.
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
 }
 
 INTERCEPTOR(int, malloc_make_nonpurgeable, void *ptr) {
   // FIXME: ASan should support purgeable allocations. Ignoring them is fine
   // for now.
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   // Must return 0 if the contents were not purged since the last call to
   // malloc_make_purgeable().
   return 0;
 }
 
 INTERCEPTOR(void, malloc_set_zone_name, malloc_zone_t *zone, const char *name) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   // Allocate |strlen("asan-") + 1 + internal_strlen(name)| bytes.
   size_t buflen = 6 + (name ? internal_strlen(name) : 0);
   InternalScopedBuffer<char> new_name(buflen);
@@ -100,44 +100,44 @@ INTERCEPTOR(void, malloc_set_zone_name, malloc_zone_t *zone, const char *name) {
 }
 
 INTERCEPTOR(void *, malloc, size_t size) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   GET_STACK_TRACE_MALLOC;
   void *res = asan_malloc(size, &stack);
   return res;
 }
 
 INTERCEPTOR(void, free, void *ptr) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   if (!ptr) return;
   GET_STACK_TRACE_FREE;
   asan_free(ptr, &stack, FROM_MALLOC);
 }
 
 INTERCEPTOR(void *, realloc, void *ptr, size_t size) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   GET_STACK_TRACE_MALLOC;
   return asan_realloc(ptr, size, &stack);
 }
 
 INTERCEPTOR(void *, calloc, size_t nmemb, size_t size) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   GET_STACK_TRACE_MALLOC;
   return asan_calloc(nmemb, size, &stack);
 }
 
 INTERCEPTOR(void *, valloc, size_t size) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   GET_STACK_TRACE_MALLOC;
   return asan_memalign(GetPageSizeCached(), size, &stack, FROM_MALLOC);
 }
 
 INTERCEPTOR(size_t, malloc_good_size, size_t size) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   return asan_zone.introspect->good_size(&asan_zone, size);
 }
 
 INTERCEPTOR(int, posix_memalign, void **memptr, size_t alignment, size_t size) {
-  if (!asan_inited) __asan_init();
+  ENSURE_ASAN_INITED();
   CHECK(memptr);
   GET_STACK_TRACE_MALLOC;
   void *result = asan_memalign(alignment, size, &stack, FROM_MALLOC);
@@ -157,7 +157,7 @@ size_t mz_size(malloc_zone_t* zone, const void* ptr) {
 }
 
 void *mz_malloc(malloc_zone_t *zone, size_t size) {
-  if (!asan_inited) {
+  if (UNLIKELY(!asan_inited)) {
     CHECK(system_malloc_zone);
     return malloc_zone_malloc(system_malloc_zone, size);
   }
@@ -166,7 +166,7 @@ void *mz_malloc(malloc_zone_t *zone, size_t size) {
 }
 
 void *mz_calloc(malloc_zone_t *zone, size_t nmemb, size_t size) {
-  if (!asan_inited) {
+  if (UNLIKELY(!asan_inited)) {
     // Hack: dlsym calls calloc before REAL(calloc) is retrieved from dlsym.
     const size_t kCallocPoolSize = 1024;
     static uptr calloc_memory_for_dlsym[kCallocPoolSize];
@@ -182,7 +182,7 @@ void *mz_calloc(malloc_zone_t *zone, size_t nmemb, size_t size) {
 }
 
 void *mz_valloc(malloc_zone_t *zone, size_t size) {
-  if (!asan_inited) {
+  if (UNLIKELY(!asan_inited)) {
     CHECK(system_malloc_zone);
     return malloc_zone_valloc(system_malloc_zone, size);
   }
@@ -240,7 +240,7 @@ void mz_destroy(malloc_zone_t* zone) {
 #if defined(MAC_OS_X_VERSION_10_6) && \
     MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 void *mz_memalign(malloc_zone_t *zone, size_t align, size_t size) {
-  if (!asan_inited) {
+  if (UNLIKELY(!asan_inited)) {
     CHECK(system_malloc_zone);
     return malloc_zone_memalign(system_malloc_zone, align, size);
   }

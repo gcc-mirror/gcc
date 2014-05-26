@@ -5,9 +5,8 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file is shared between AddressSanitizer and ThreadSanitizer
-// run-time libraries and implements mac-specific functions from
-// sanitizer_libc.h.
+// This file is shared between various sanitizers' runtime libraries and
+// implements OSX-specific functions.
 //===----------------------------------------------------------------------===//
 
 #include "sanitizer_platform.h"
@@ -21,20 +20,22 @@
 #include <stdio.h>
 
 #include "sanitizer_common.h"
+#include "sanitizer_flags.h"
 #include "sanitizer_internal_defs.h"
 #include "sanitizer_libc.h"
+#include "sanitizer_mac.h"
 #include "sanitizer_placement_new.h"
 #include "sanitizer_procmaps.h"
 
 #include <crt_externs.h>  // for _NSGetEnviron
 #include <fcntl.h>
-#include <mach-o/dyld.h>
-#include <mach-o/loader.h>
 #include <pthread.h>
 #include <sched.h>
+#include <signal.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/sysctl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <libkern/OSAtomic.h>
@@ -118,6 +119,16 @@ uptr internal_getpid() {
   return getpid();
 }
 
+int internal_sigaction(int signum, const void *act, void *oldact) {
+  return sigaction(signum,
+                   (struct sigaction *)act, (struct sigaction *)oldact);
+}
+
+int internal_fork() {
+  // TODO(glider): this may call user's pthread_atfork() handlers which is bad.
+  return fork();
+}
+
 // ----------------- sanitizer_common.h
 bool FileExists(const char *filename) {
   struct stat st;
@@ -136,6 +147,20 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
   CHECK(stack_top);
   CHECK(stack_bottom);
   uptr stacksize = pthread_get_stacksize_np(pthread_self());
+  // pthread_get_stacksize_np() returns an incorrect stack size for the main
+  // thread on Mavericks. See
+  // https://code.google.com/p/address-sanitizer/issues/detail?id=261
+  if ((GetMacosVersion() == MACOS_VERSION_MAVERICKS) && at_initialization &&
+      stacksize == (1 << 19))  {
+    struct rlimit rl;
+    CHECK_EQ(getrlimit(RLIMIT_STACK, &rl), 0);
+    // Most often rl.rlim_cur will be the desired 8M.
+    if (rl.rlim_cur < kMaxThreadStackSize) {
+      stacksize = rl.rlim_cur;
+    } else {
+      stacksize = kMaxThreadStackSize;
+    }
+  }
   void *stackaddr = pthread_get_stackaddr_np(pthread_self());
   *stack_top = (uptr)stackaddr;
   *stack_bottom = *stack_top - stacksize;
@@ -169,154 +194,13 @@ void ReExec() {
   UNIMPLEMENTED();
 }
 
-void PrepareForSandboxing() {
+void PrepareForSandboxing(__sanitizer_sandbox_arguments *args) {
+  (void)args;
   // Nothing here for now.
 }
 
 uptr GetPageSize() {
   return sysconf(_SC_PAGESIZE);
-}
-
-// ----------------- sanitizer_procmaps.h
-
-MemoryMappingLayout::MemoryMappingLayout(bool cache_enabled) {
-  Reset();
-}
-
-MemoryMappingLayout::~MemoryMappingLayout() {
-}
-
-// More information about Mach-O headers can be found in mach-o/loader.h
-// Each Mach-O image has a header (mach_header or mach_header_64) starting with
-// a magic number, and a list of linker load commands directly following the
-// header.
-// A load command is at least two 32-bit words: the command type and the
-// command size in bytes. We're interested only in segment load commands
-// (LC_SEGMENT and LC_SEGMENT_64), which tell that a part of the file is mapped
-// into the task's address space.
-// The |vmaddr|, |vmsize| and |fileoff| fields of segment_command or
-// segment_command_64 correspond to the memory address, memory size and the
-// file offset of the current memory segment.
-// Because these fields are taken from the images as is, one needs to add
-// _dyld_get_image_vmaddr_slide() to get the actual addresses at runtime.
-
-void MemoryMappingLayout::Reset() {
-  // Count down from the top.
-  // TODO(glider): as per man 3 dyld, iterating over the headers with
-  // _dyld_image_count is thread-unsafe. We need to register callbacks for
-  // adding and removing images which will invalidate the MemoryMappingLayout
-  // state.
-  current_image_ = _dyld_image_count();
-  current_load_cmd_count_ = -1;
-  current_load_cmd_addr_ = 0;
-  current_magic_ = 0;
-  current_filetype_ = 0;
-}
-
-// static
-void MemoryMappingLayout::CacheMemoryMappings() {
-  // No-op on Mac for now.
-}
-
-void MemoryMappingLayout::LoadFromCache() {
-  // No-op on Mac for now.
-}
-
-// Next and NextSegmentLoad were inspired by base/sysinfo.cc in
-// Google Perftools, http://code.google.com/p/google-perftools.
-
-// NextSegmentLoad scans the current image for the next segment load command
-// and returns the start and end addresses and file offset of the corresponding
-// segment.
-// Note that the segment addresses are not necessarily sorted.
-template<u32 kLCSegment, typename SegmentCommand>
-bool MemoryMappingLayout::NextSegmentLoad(
-    uptr *start, uptr *end, uptr *offset,
-    char filename[], uptr filename_size, uptr *protection) {
-  if (protection)
-    UNIMPLEMENTED();
-  const char* lc = current_load_cmd_addr_;
-  current_load_cmd_addr_ += ((const load_command *)lc)->cmdsize;
-  if (((const load_command *)lc)->cmd == kLCSegment) {
-    const sptr dlloff = _dyld_get_image_vmaddr_slide(current_image_);
-    const SegmentCommand* sc = (const SegmentCommand *)lc;
-    if (start) *start = sc->vmaddr + dlloff;
-    if (end) *end = sc->vmaddr + sc->vmsize + dlloff;
-    if (offset) {
-      if (current_filetype_ == /*MH_EXECUTE*/ 0x2) {
-        *offset = sc->vmaddr;
-      } else {
-        *offset = sc->fileoff;
-      }
-    }
-    if (filename) {
-      internal_strncpy(filename, _dyld_get_image_name(current_image_),
-                       filename_size);
-    }
-    return true;
-  }
-  return false;
-}
-
-bool MemoryMappingLayout::Next(uptr *start, uptr *end, uptr *offset,
-                               char filename[], uptr filename_size,
-                               uptr *protection) {
-  for (; current_image_ >= 0; current_image_--) {
-    const mach_header* hdr = _dyld_get_image_header(current_image_);
-    if (!hdr) continue;
-    if (current_load_cmd_count_ < 0) {
-      // Set up for this image;
-      current_load_cmd_count_ = hdr->ncmds;
-      current_magic_ = hdr->magic;
-      current_filetype_ = hdr->filetype;
-      switch (current_magic_) {
-#ifdef MH_MAGIC_64
-        case MH_MAGIC_64: {
-          current_load_cmd_addr_ = (char*)hdr + sizeof(mach_header_64);
-          break;
-        }
-#endif
-        case MH_MAGIC: {
-          current_load_cmd_addr_ = (char*)hdr + sizeof(mach_header);
-          break;
-        }
-        default: {
-          continue;
-        }
-      }
-    }
-
-    for (; current_load_cmd_count_ >= 0; current_load_cmd_count_--) {
-      switch (current_magic_) {
-        // current_magic_ may be only one of MH_MAGIC, MH_MAGIC_64.
-#ifdef MH_MAGIC_64
-        case MH_MAGIC_64: {
-          if (NextSegmentLoad<LC_SEGMENT_64, struct segment_command_64>(
-                  start, end, offset, filename, filename_size, protection))
-            return true;
-          break;
-        }
-#endif
-        case MH_MAGIC: {
-          if (NextSegmentLoad<LC_SEGMENT, struct segment_command>(
-                  start, end, offset, filename, filename_size, protection))
-            return true;
-          break;
-        }
-      }
-    }
-    // If we get here, no more load_cmd's in this image talk about
-    // segments.  Go on to the next image.
-  }
-  return false;
-}
-
-bool MemoryMappingLayout::GetObjectNameAndOffset(uptr addr, uptr *offset,
-                                                 char filename[],
-                                                 uptr filename_size,
-                                                 uptr *protection) {
-  return IterateForObjectNameAndOffset(addr, offset, filename, filename_size,
-                                       protection);
 }
 
 BlockingMutex::BlockingMutex(LinkerInitialized) {
@@ -377,32 +261,49 @@ void GetThreadStackAndTls(bool main, uptr *stk_addr, uptr *stk_size,
 uptr GetListOfModules(LoadedModule *modules, uptr max_modules,
                       string_predicate_t filter) {
   MemoryMappingLayout memory_mapping(false);
-  memory_mapping.Reset();
-  uptr cur_beg, cur_end, cur_offset;
-  InternalScopedBuffer<char> module_name(kMaxPathLength);
-  uptr n_modules = 0;
-  for (uptr i = 0;
-       n_modules < max_modules &&
-           memory_mapping.Next(&cur_beg, &cur_end, &cur_offset,
-                               module_name.data(), module_name.size(), 0);
-       i++) {
-    const char *cur_name = module_name.data();
-    if (cur_name[0] == '\0')
-      continue;
-    if (filter && !filter(cur_name))
-      continue;
-    LoadedModule *cur_module = 0;
-    if (n_modules > 0 &&
-        0 == internal_strcmp(cur_name, modules[n_modules - 1].full_name())) {
-      cur_module = &modules[n_modules - 1];
-    } else {
-      void *mem = &modules[n_modules];
-      cur_module = new(mem) LoadedModule(cur_name, cur_beg);
-      n_modules++;
+  return memory_mapping.DumpListOfModules(modules, max_modules, filter);
+}
+
+bool IsDeadlySignal(int signum) {
+  return (signum == SIGSEGV || signum == SIGBUS) && common_flags()->handle_segv;
+}
+
+MacosVersion cached_macos_version = MACOS_VERSION_UNINITIALIZED;
+
+MacosVersion GetMacosVersionInternal() {
+  int mib[2] = { CTL_KERN, KERN_OSRELEASE };
+  char version[100];
+  uptr len = 0, maxlen = sizeof(version) / sizeof(version[0]);
+  for (uptr i = 0; i < maxlen; i++) version[i] = '\0';
+  // Get the version length.
+  CHECK_NE(sysctl(mib, 2, 0, &len, 0, 0), -1);
+  CHECK_LT(len, maxlen);
+  CHECK_NE(sysctl(mib, 2, version, &len, 0, 0), -1);
+  switch (version[0]) {
+    case '9': return MACOS_VERSION_LEOPARD;
+    case '1': {
+      switch (version[1]) {
+        case '0': return MACOS_VERSION_SNOW_LEOPARD;
+        case '1': return MACOS_VERSION_LION;
+        case '2': return MACOS_VERSION_MOUNTAIN_LION;
+        case '3': return MACOS_VERSION_MAVERICKS;
+        default: return MACOS_VERSION_UNKNOWN;
+      }
     }
-    cur_module->addAddressRange(cur_beg, cur_end);
+    default: return MACOS_VERSION_UNKNOWN;
   }
-  return n_modules;
+}
+
+MacosVersion GetMacosVersion() {
+  atomic_uint32_t *cache =
+      reinterpret_cast<atomic_uint32_t*>(&cached_macos_version);
+  MacosVersion result =
+      static_cast<MacosVersion>(atomic_load(cache, memory_order_acquire));
+  if (result == MACOS_VERSION_UNINITIALIZED) {
+    result = GetMacosVersionInternal();
+    atomic_store(cache, result, memory_order_release);
+  }
+  return result;
 }
 
 }  // namespace __sanitizer

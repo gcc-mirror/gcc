@@ -169,8 +169,7 @@ static int ia64_first_cycle_multipass_dfa_lookahead (void);
 static void ia64_dependencies_evaluation_hook (rtx, rtx);
 static void ia64_init_dfa_pre_cycle_insn (void);
 static rtx ia64_dfa_pre_cycle_insn (void);
-static int ia64_first_cycle_multipass_dfa_lookahead_guard (rtx);
-static bool ia64_first_cycle_multipass_dfa_lookahead_guard_spec (const_rtx);
+static int ia64_first_cycle_multipass_dfa_lookahead_guard (rtx, int);
 static int ia64_dfa_new_cycle (FILE *, int, rtx, int, int, int *);
 static void ia64_h_i_d_extended (void);
 static void * ia64_alloc_sched_context (void);
@@ -495,10 +494,6 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_SCHED_GEN_SPEC_CHECK
 #define TARGET_SCHED_GEN_SPEC_CHECK ia64_gen_spec_check
-
-#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC
-#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC\
-  ia64_first_cycle_multipass_dfa_lookahead_guard_spec
 
 #undef TARGET_SCHED_SKIP_RTX_P
 #define TARGET_SCHED_SKIP_RTX_P ia64_skip_rtx_p
@@ -7531,32 +7526,30 @@ ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
   return 1;
 }
 
-/* We are choosing insn from the ready queue.  Return nonzero if INSN
+/* We are choosing insn from the ready queue.  Return zero if INSN
    can be chosen.  */
 
 static int
-ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn)
+ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn, int ready_index)
 {
   gcc_assert (insn && INSN_P (insn));
-  return ((!reload_completed
-	   || !safe_group_barrier_needed (insn))
-	  && ia64_first_cycle_multipass_dfa_lookahead_guard_spec (insn)
-	  && (!mflag_sched_mem_insns_hard_limit
-	      || !is_load_p (insn)
-	      || mem_ops_in_group[current_cycle % 4] < ia64_max_memory_insns));
-}
 
-/* We are choosing insn from the ready queue.  Return nonzero if INSN
-   can be chosen.  */
+  /* Size of ALAT is 32.  As far as we perform conservative
+     data speculation, we keep ALAT half-empty.  */
+  if ((TODO_SPEC (insn) & BEGIN_DATA) && pending_data_specs >= 16)
+    return ready_index == 0 ? -1 : 1;
 
-static bool
-ia64_first_cycle_multipass_dfa_lookahead_guard_spec (const_rtx insn)
-{
-  gcc_assert (insn  && INSN_P (insn));
-  /* Size of ALAT is 32.  As far as we perform conservative data speculation,
-     we keep ALAT half-empty.  */
-  return (pending_data_specs < 16
-	  || !(TODO_SPEC (insn) & BEGIN_DATA));
+  if (ready_index == 0)
+    return 0;
+
+  if ((!reload_completed
+       || !safe_group_barrier_needed (insn))
+      && (!mflag_sched_mem_insns_hard_limit
+	  || !is_load_p (insn)
+	  || mem_ops_in_group[current_cycle % 4] < ia64_max_memory_insns))
+    return 0;
+
+  return 1;
 }
 
 /* The following variable value is pseudo-insn used by the DFA insn
@@ -7943,17 +7936,9 @@ ia64_set_sched_flags (spec_info_t spec_info)
 	  
 	  spec_info->flags = 0;
       
-	  if ((mask & DATA_SPEC) && mflag_sched_prefer_non_data_spec_insns)
-	    spec_info->flags |= PREFER_NON_DATA_SPEC;
-
-	  if (mask & CONTROL_SPEC)
-	    {
-	      if (mflag_sched_prefer_non_control_spec_insns)
-		spec_info->flags |= PREFER_NON_CONTROL_SPEC;
-
-	      if (sel_sched_p () && mflag_sel_sched_dont_check_control_spec)
-		spec_info->flags |= SEL_SCHED_SPEC_DONT_CHECK_CONTROL;
-	    }
+	  if ((mask & CONTROL_SPEC)
+	      && sel_sched_p () && mflag_sel_sched_dont_check_control_spec)
+	    spec_info->flags |= SEL_SCHED_SPEC_DONT_CHECK_CONTROL;
 
 	  if (sched_verbose >= 1)
 	    spec_info->dump = sched_dump;

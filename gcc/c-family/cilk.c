@@ -997,6 +997,7 @@ extract_free_variables (tree t, struct wrapper_data *wd,
     {
     case ERROR_MARK:
     case IDENTIFIER_NODE:
+    case VOID_CST:
     case INTEGER_CST:
     case REAL_CST:
     case FIXED_CST:

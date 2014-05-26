@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3588,7 +3588,6 @@ package body Sem_Ch12 is
          Set_Instance_Env (Gen_Unit, Act_Decl_Id);
          Set_Defining_Unit_Name (Act_Spec, Act_Decl_Name);
          Set_Is_Generic_Instance (Act_Decl_Id);
-
          Set_Generic_Parent (Act_Spec, Gen_Unit);
 
          --  References to the generic in its own declaration or its body are
@@ -8171,8 +8170,8 @@ package body Sem_Ch12 is
 
       Must_Delay : Boolean;
 
-      function Enclosing_Subp (Id : Entity_Id) return Entity_Id;
-      --  Find subprogram (if any) that encloses instance and/or generic body
+      function In_Same_Enclosing_Subp return Boolean;
+      --  Check whether instance and generic body are within same subprogram.
 
       function True_Sloc (N : Node_Id) return Source_Ptr;
       --  If the instance is nested inside a generic unit, the Sloc of the
@@ -8182,23 +8181,39 @@ package body Sem_Ch12 is
       --  origin of a node by finding the maximum sloc of any ancestor node.
       --  Why is this not equivalent to Top_Level_Location ???
 
-      --------------------
-      -- Enclosing_Subp --
-      --------------------
+      ----------------------------
+      -- In_Same_Enclosing_Subp --
+      ----------------------------
 
-      function Enclosing_Subp (Id : Entity_Id) return Entity_Id is
+      function In_Same_Enclosing_Subp return Boolean is
          Scop : Entity_Id;
+         Subp : Entity_Id;
 
       begin
-         Scop := Scope (Id);
+         Scop := Scope (Act_Id);
          while Scop /= Standard_Standard
            and then not Is_Overloadable (Scop)
          loop
             Scop := Scope (Scop);
          end loop;
 
-         return Scop;
-      end Enclosing_Subp;
+         if Scop = Standard_Standard then
+            return False;
+         else
+            Subp := Scop;
+         end if;
+
+         Scop := Scope (Gen_Id);
+         while Scop /= Standard_Standard loop
+            if Scop = Subp then
+               return True;
+            else
+               Scop := Scope (Scop);
+            end if;
+         end loop;
+
+         return False;
+      end In_Same_Enclosing_Subp;
 
       ---------------
       -- True_Sloc --
@@ -8242,10 +8257,10 @@ package body Sem_Ch12 is
       --  the generic body appears textually later, and the generic body is
       --  also in the main unit.
 
-      --  If instance is nested within a subprogram, and the generic body is
-      --  not, the instance is delayed because the enclosing body is. If
-      --  instance and body are within the same scope, or the same sub-
-      --  program body, indicate explicitly that the instance is delayed.
+      --  If instance is nested within a subprogram, and the generic body
+      --  is not, the instance is delayed because the enclosing body is. If
+      --  instance and body are within the same scope, or the same subprogram
+      --  body, indicate explicitly that the instance is delayed.
 
       Must_Delay :=
         (Gen_Unit = Act_Unit
@@ -8255,8 +8270,7 @@ package body Sem_Ch12 is
                                 and then True_Sloc (N) < Sloc (Orig_Body)))
           and then Is_In_Main_Unit (Gen_Unit)
           and then (Scope (Act_Id) = Scope (Gen_Id)
-                      or else
-                    Enclosing_Subp (Act_Id) = Enclosing_Subp (Gen_Id)));
+                      or else In_Same_Enclosing_Subp));
 
       --  If this is an early instantiation, the freeze node is placed after
       --  the generic body. Otherwise, if the generic appears in an instance,
@@ -8294,14 +8308,14 @@ package body Sem_Ch12 is
                --    package Inst is new ...
 
                --  In this particular scenario, the freeze node for Inst must
-               --  be inserted in the same manner as that of Parent_Inst -
+               --  be inserted in the same manner as that of Parent_Inst,
                --  before the next source body or at the end of the declarative
                --  list (body not available). If body P did not exist and
                --  Parent_Inst was frozen after Inst, either by a body
-               --  following Inst or at the end of the declarative region, the
-               --  freeze node for Inst must be inserted after that of
-               --  Parent_Inst. This relation is established by comparing the
-               --  Slocs of Parent_Inst freeze node and Inst.
+               --  following Inst or at the end of the declarative region,
+               --  the freeze node for Inst must be inserted after that of
+               --  Parent_Inst. This relation is established by comparing
+               --  the Slocs of Parent_Inst freeze node and Inst.
 
                if List_Containing (Get_Package_Instantiation_Node (Par)) =
                   List_Containing (N)
@@ -9927,6 +9941,63 @@ package body Sem_Ch12 is
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
 
+      procedure Check_Initialized_Types;
+      --  In a generic package body, an entity of a generic private type may
+      --  appear uninitialized. This is suspicious, unless the actual is a
+      --  fully initialized type.
+
+      -----------------------------
+      -- Check_Initialized_Types --
+      -----------------------------
+
+      procedure Check_Initialized_Types is
+         Decl   : Node_Id;
+         Formal : Entity_Id;
+         Actual : Entity_Id;
+
+      begin
+         Decl := First (Generic_Formal_Declarations (Gen_Decl));
+         while Present (Decl) loop
+            if (Nkind (Decl) = N_Private_Extension_Declaration
+                 and then Needs_Initialized_Actual (Decl))
+
+              or else (Nkind (Decl) = N_Formal_Type_Declaration
+                        and then Nkind (Formal_Type_Definition (Decl)) =
+                                       N_Formal_Private_Type_Definition
+                        and then Needs_Initialized_Actual
+                                   (Formal_Type_Definition (Decl)))
+            then
+               Formal := Defining_Identifier (Decl);
+               Actual := First_Entity (Act_Decl_Id);
+
+               --  For each formal there is a subtype declaration that renames
+               --  the actual and has the same name as the formal.
+
+               while Present (Actual) loop
+                  exit when Ekind (Actual) = E_Package
+                    and then Present (Renamed_Object (Actual));
+
+                  if Chars (Actual) = Chars (Formal)
+                    and then not Is_Scalar_Type (Actual)
+                    and then not Is_Fully_Initialized_Type (Actual)
+                    and then Warn_On_No_Value_Assigned
+                  then
+                     Error_Msg_NE
+                       ("from its use in generic unit, actual for& should "
+                        & "be fully initialized type??", Actual, Formal);
+                     exit;
+                  end if;
+
+                  Next_Entity (Actual);
+               end loop;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end Check_Initialized_Types;
+
+   --  Start of processing for Instantiate_Package_Body
+
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
 
@@ -9999,6 +10070,7 @@ package body Sem_Ch12 is
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);
          Check_Generic_Actuals (Act_Decl_Id, False);
+         Check_Initialized_Types;
 
          --  Install primitives hidden at the point of the instantiation but
          --  visible when processing the generic formals

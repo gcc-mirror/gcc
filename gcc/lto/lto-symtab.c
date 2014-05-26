@@ -447,7 +447,12 @@ lto_symtab_merge_decls_1 (symtab_node *first)
      cgraph or a varpool node.  */
   if (!prevailing)
     {
-      prevailing = first;
+      for (prevailing = first;
+	   prevailing; prevailing = prevailing->next_sharing_asm_name)
+	if (lto_symtab_symbol_p (prevailing))
+	  break;
+      if (!prevailing)
+	return;
       /* For variables chose with a priority variant with vnode
 	 attached (i.e. from unit where external declaration of
 	 variable is actually used).
@@ -639,7 +644,7 @@ lto_symtab_merge_symbols (void)
 		       && cnode2 != cnode)
 		cgraph_remove_node (cnode2);
 
-	      symtab_insert_node_to_hashtable (node);
+	      node->decl->decl_with_vis.symtab_node = node;
 	    }
 	}
     }

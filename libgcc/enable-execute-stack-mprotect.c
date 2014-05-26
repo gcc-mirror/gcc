@@ -33,20 +33,7 @@ static int need_enable_exec_stack;
 static void check_enabling (void) __attribute__ ((unused));
 extern void __enable_execute_stack (void *);
 
-#if defined __FreeBSD__
-#include <sys/sysctl.h>
-
-static void __attribute__ ((constructor))
-check_enabling (void)
-{
-  int prot = 0;
-  size_t len = sizeof (prot);
-
-  sysctlbyname ("kern.stackprot", &prot, &len, NULL, 0);
-  if (prot != STACK_PROT_RWX)
-    need_enable_exec_stack = 1;
-}
-#elif defined __sun__ && defined __svr4__
+#if defined __sun__ && defined __svr4__
 static void __attribute__ ((constructor))
 check_enabling (void)
 {

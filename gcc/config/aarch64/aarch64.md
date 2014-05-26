@@ -112,6 +112,10 @@
 
 (define_c_enum "unspecv" [
     UNSPECV_EH_RETURN		; Represent EH_RETURN
+    UNSPECV_GET_FPCR		; Represent fetch of FPCR content.
+    UNSPECV_SET_FPCR		; Represent assign of FPCR content.
+    UNSPECV_GET_FPSR		; Represent fetch of FPSR content.
+    UNSPECV_SET_FPSR		; Represent assign of FPSR content.
   ]
 )
 
@@ -519,6 +523,10 @@
 	      (use (match_operand 2 "" ""))])]
   ""
   {
+    if (!REG_P (XEXP (operands[0], 0))
+       && (GET_CODE (XEXP (operands[0], 0)) != SYMBOL_REF))
+     XEXP (operands[0], 0) = force_reg (Pmode, XEXP (operands[0], 0));
+
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
   }
@@ -532,31 +540,38 @@
 	      (use (match_operand 3 "" ""))])]
   ""
   {
+    if (!REG_P (XEXP (operands[1], 0))
+       && (GET_CODE (XEXP (operands[1], 0)) != SYMBOL_REF))
+     XEXP (operands[1], 0) = force_reg (Pmode, XEXP (operands[1], 0));
+
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
   }
 )
 
 (define_insn "*sibcall_insn"
-  [(call (mem:DI (match_operand:DI 0 "" "X"))
+  [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "Ucs, Usf"))
 	 (match_operand 1 "" ""))
    (return)
    (use (match_operand 2 "" ""))]
-  "GET_CODE (operands[0]) == SYMBOL_REF"
-  "b\\t%a0"
-  [(set_attr "type" "branch")]
-
+  "SIBLING_CALL_P (insn)"
+  "@
+   br\\t%0
+   b\\t%a0"
+  [(set_attr "type" "branch, branch")]
 )
 
 (define_insn "*sibcall_value_insn"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand 1 "" "X"))
+	(call (mem:DI (match_operand 1 "aarch64_call_insn_operand" "Ucs, Usf"))
 	      (match_operand 2 "" "")))
    (return)
    (use (match_operand 3 "" ""))]
-  "GET_CODE (operands[1]) == SYMBOL_REF"
-  "b\\t%a1"
-  [(set_attr "type" "branch")]
+  "SIBLING_CALL_P (insn)"
+  "@
+   br\\t%1
+   b\\t%a1"
+  [(set_attr "type" "branch, branch")]
 )
 
 ;; Call subroutine returning any type.
@@ -3884,6 +3899,37 @@
   "ldr\t%x3, %x1\;ldr\t%x0, %x2\;eor\t%x0, %x3, %x0"
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
+
+;; Write Floating-point Control Register.
+(define_insn "set_fpcr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPCR)]
+  ""
+  "msr\\tfpcr, %0\;isb"
+  [(set_attr "type" "mrs")])
+
+;; Read Floating-point Control Register.
+(define_insn "get_fpcr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FPCR))]
+  ""
+  "mrs\\t%0, fpcr"
+  [(set_attr "type" "mrs")])
+
+;; Write Floating-point Status Register.
+(define_insn "set_fpsr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPSR)]
+  ""
+  "msr\\tfpsr, %0"
+  [(set_attr "type" "mrs")])
+
+;; Read Floating-point Status Register.
+(define_insn "get_fpsr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FPSR))]
+  ""
+  "mrs\\t%0, fpsr"
+  [(set_attr "type" "mrs")])
+
 
 ;; AdvSIMD Stuff
 (include "aarch64-simd.md")

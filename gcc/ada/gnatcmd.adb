@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@ with Sdefault;
 with Sinput.P;
 with Snames;   use Snames;
 with Stringt;
+with Switch;   use Switch;
 with Table;
 with Targparm;
 with Tempdir;
@@ -1382,6 +1383,9 @@ procedure GNATCmd is
       end if;
    end Set_Library_For;
 
+   procedure Check_Version_And_Help is
+     new Check_Version_And_Help_G (Non_VMS_Usage);
+
 --  Start of processing for GNATCmd
 
 begin
@@ -1488,122 +1492,125 @@ begin
    --  If not on VMS, scan the command line directly
 
    else
-      if Argument_Count = 0 then
-         Non_VMS_Usage;
-         return;
-      else
-         begin
-            loop
-               if Argument_Count > Command_Arg
-                 and then Argument (Command_Arg) = "-v"
-               then
-                  Verbose_Mode := True;
-                  Command_Arg := Command_Arg + 1;
+      --  First, scan to detect --version and/or --help
 
-               elsif Argument_Count > Command_Arg
-                 and then Argument (Command_Arg) = "-dn"
-               then
-                  Keep_Temporary_Files := True;
-                  Command_Arg := Command_Arg + 1;
+      Check_Version_And_Help ("GNAT", "1996");
 
-               else
-                  exit;
-               end if;
-            end loop;
+      begin
+         loop
+            if Command_Arg <= Argument_Count
+              and then Argument (Command_Arg) = "-v"
+            then
+               Verbose_Mode := True;
+               Command_Arg := Command_Arg + 1;
 
-            The_Command := Real_Command_Type'Value (Argument (Command_Arg));
+            elsif Command_Arg <= Argument_Count
+              and then Argument (Command_Arg) = "-dn"
+            then
+               Keep_Temporary_Files := True;
+               Command_Arg := Command_Arg + 1;
 
-            if Command_List (The_Command).VMS_Only then
-               Non_VMS_Usage;
-               Fail
-                 ("Command """
-                  & Command_List (The_Command).Cname.all
-                  & """ can only be used on VMS");
+            else
+               exit;
             end if;
+         end loop;
 
-         exception
-            when Constraint_Error =>
+         --  If there is no command, just output the usage
 
-               --  Check if it is an alternate command
+         if Command_Arg > Argument_Count then
+            Non_VMS_Usage;
+            return;
+         end if;
 
-               declare
-                  Alternate : Alternate_Command;
+         The_Command := Real_Command_Type'Value (Argument (Command_Arg));
 
-               begin
-                  Alternate := Alternate_Command'Value
-                                              (Argument (Command_Arg));
-                  The_Command := Corresponding_To (Alternate);
+         if Command_List (The_Command).VMS_Only then
+            Non_VMS_Usage;
+            Fail
+              ("command """
+               & Command_List (The_Command).Cname.all
+               & """ can only be used on VMS");
+         end if;
 
-               exception
-                  when Constraint_Error =>
-                     Non_VMS_Usage;
-                     Fail ("Unknown command: " & Argument (Command_Arg));
-               end;
-         end;
+      exception
+         when Constraint_Error =>
 
-         --  Get the arguments from the command line and from the eventual
-         --  argument file(s) specified on the command line.
+            --  Check if it is an alternate command
 
-         for Arg in Command_Arg + 1 .. Argument_Count loop
             declare
-               The_Arg : constant String := Argument (Arg);
+               Alternate : Alternate_Command;
 
             begin
-               --  Check if an argument file is specified
+               Alternate := Alternate_Command'Value
+                              (Argument (Command_Arg));
+               The_Command := Corresponding_To (Alternate);
 
-               if The_Arg (The_Arg'First) = '@' then
-                  declare
-                     Arg_File : Ada.Text_IO.File_Type;
-                     Line     : String (1 .. 256);
-                     Last     : Natural;
+            exception
+               when Constraint_Error =>
+                  Non_VMS_Usage;
+                  Fail ("unknown command: " & Argument (Command_Arg));
+            end;
+      end;
+
+      --  Get the arguments from the command line and from the eventual
+      --  argument file(s) specified on the command line.
+
+      for Arg in Command_Arg + 1 .. Argument_Count loop
+         declare
+            The_Arg : constant String := Argument (Arg);
+
+         begin
+            --  Check if an argument file is specified
+
+            if The_Arg (The_Arg'First) = '@' then
+               declare
+                  Arg_File : Ada.Text_IO.File_Type;
+                  Line     : String (1 .. 256);
+                  Last     : Natural;
+
+               begin
+                  --  Open the file and fail if the file cannot be found
 
                   begin
-                     --  Open the file and fail if the file cannot be found
+                     Open
+                       (Arg_File, In_File,
+                        The_Arg (The_Arg'First + 1 .. The_Arg'Last));
 
-                     begin
-                        Open
-                          (Arg_File, In_File,
-                           The_Arg (The_Arg'First + 1 .. The_Arg'Last));
-
-                     exception
-                        when others =>
-                           Put
-                             (Standard_Error, "Cannot open argument file """);
-                           Put
-                             (Standard_Error,
-                              The_Arg (The_Arg'First + 1 .. The_Arg'Last));
-
-                           Put_Line (Standard_Error, """");
-                           raise Error_Exit;
-                     end;
-
-                     --  Read line by line and put the content of each non-
-                     --  empty line in the Last_Switches table.
-
-                     while not End_Of_File (Arg_File) loop
-                        Get_Line (Arg_File, Line, Last);
-
-                        if Last /= 0 then
-                           Last_Switches.Increment_Last;
-                           Last_Switches.Table (Last_Switches.Last) :=
-                             new String'(Line (1 .. Last));
-                        end if;
-                     end loop;
-
-                     Close (Arg_File);
+                  exception
+                     when others =>
+                        Put (Standard_Error, "Cannot open argument file """);
+                        Put (Standard_Error,
+                             The_Arg (The_Arg'First + 1 .. The_Arg'Last));
+                        Put_Line (Standard_Error, """");
+                        raise Error_Exit;
                   end;
 
-               else
-                  --  It is not an argument file; just put the argument in
-                  --  the Last_Switches table.
+                  --  Read line by line and put the content of each non-
+                  --  empty line in the Last_Switches table.
 
-                  Last_Switches.Increment_Last;
-                  Last_Switches.Table (Last_Switches.Last) :=
-                    new String'(The_Arg);
-               end if;
-            end;
-         end loop;
-      end if;
+                  while not End_Of_File (Arg_File) loop
+                     Get_Line (Arg_File, Line, Last);
+
+                     if Last /= 0 then
+                        Last_Switches.Increment_Last;
+                        Last_Switches.Table (Last_Switches.Last) :=
+                          new String'(Line (1 .. Last));
+                     end if;
+                  end loop;
+
+                  Close (Arg_File);
+               end;
+
+            else
+               --  It is not an argument file; just put the argument in
+               --  the Last_Switches table.
+
+               Last_Switches.Increment_Last;
+               Last_Switches.Table (Last_Switches.Last) :=
+                 new String'(The_Arg);
+            end if;
+         end;
+      end loop;
    end if;
 
    declare
@@ -1806,7 +1813,7 @@ begin
                         end case;
                      else
                         Fail ("invalid verbosity level: "
-                                & Argv (Argv'First + 3 .. Argv'Last));
+                              & Argv (Argv'First + 3 .. Argv'Last));
                      end if;
 
                      Remove_Switch (Arg_Num);
@@ -2094,13 +2101,13 @@ begin
             end if;
          end;
 
-         if        The_Command = Bind
-           or else The_Command = Link
-           or else The_Command = Elim
+         if The_Command = Bind or else
+            The_Command = Link or else
+            The_Command = Elim
          then
             if Project.Object_Directory.Name = No_Path then
-               Fail ("project " & Get_Name_String (Project.Display_Name) &
-                     " has no object directory");
+               Fail ("project " & Get_Name_String (Project.Display_Name)
+                     & " has no object directory");
             end if;
 
             Change_Dir (Get_Name_String (Project.Object_Directory.Name));

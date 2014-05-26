@@ -89,11 +89,15 @@ uptr internal_waitpid(int pid, int *status, int options);
 uptr internal_getpid();
 uptr internal_getppid();
 
+int internal_fork();
+
 // Threading
 uptr internal_sched_yield();
 
 // Error handling
 bool internal_iserror(uptr retval, int *rverrno = 0);
+
+int internal_sigaction(int signum, const void *act, void *oldact);
 
 }  // namespace __sanitizer
 

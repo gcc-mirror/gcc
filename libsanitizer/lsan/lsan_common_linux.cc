@@ -17,6 +17,7 @@
 #include <link.h>
 
 #include "sanitizer_common/sanitizer_common.h"
+#include "sanitizer_common/sanitizer_flags.h"
 #include "sanitizer_common/sanitizer_linux.h"
 #include "sanitizer_common/sanitizer_stackdepot.h"
 
@@ -41,11 +42,11 @@ void InitializePlatformSpecificModules() {
     return;
   }
   if (num_matches == 0)
-    Report("LeakSanitizer: Dynamic linker not found. "
-           "TLS will not be handled correctly.\n");
+    VReport(1, "LeakSanitizer: Dynamic linker not found. "
+            "TLS will not be handled correctly.\n");
   else if (num_matches > 1)
-    Report("LeakSanitizer: Multiple modules match \"%s\". "
-           "TLS will not be handled correctly.\n", kLinkerName);
+    VReport(1, "LeakSanitizer: Multiple modules match \"%s\". "
+            "TLS will not be handled correctly.\n", kLinkerName);
   linker = 0;
 }
 
@@ -81,6 +82,7 @@ static int ProcessGlobalRegionsCallback(struct dl_phdr_info *info, size_t size,
 
 // Scans global variables for heap pointers.
 void ProcessGlobalRegions(Frontier *frontier) {
+  if (!flags()->use_globals) return;
   // FIXME: dl_iterate_phdr acquires a linker lock, so we run a risk of
   // deadlocking by running this under StopTheWorld. However, the lock is
   // reentrant, so we should be able to fix this by acquiring the lock before
@@ -127,6 +129,21 @@ static void ProcessPlatformSpecificAllocationsCb(uptr chunk, void *arg) {
 
 // Handles dynamically allocated TLS blocks by treating all chunks allocated
 // from ld-linux.so as reachable.
+// Dynamic TLS blocks contain the TLS variables of dynamically loaded modules.
+// They are allocated with a __libc_memalign() call in allocate_and_init()
+// (elf/dl-tls.c). Glibc won't tell us the address ranges occupied by those
+// blocks, but we can make sure they come from our own allocator by intercepting
+// __libc_memalign(). On top of that, there is no easy way to reach them. Their
+// addresses are stored in a dynamically allocated array (the DTV) which is
+// referenced from the static TLS. Unfortunately, we can't just rely on the DTV
+// being reachable from the static TLS, and the dynamic TLS being reachable from
+// the DTV. This is because the initial DTV is allocated before our interception
+// mechanism kicks in, and thus we don't recognize it as allocated memory. We
+// can't special-case it either, since we don't know its size.
+// Our solution is to include in the root set all allocations made from
+// ld-linux.so (which is where allocate_and_init() is implemented). This is
+// guaranteed to include all dynamic TLS blocks (and possibly other allocations
+// which we don't care about).
 void ProcessPlatformSpecificAllocations(Frontier *frontier) {
   if (!flags()->use_tls) return;
   if (!linker) return;

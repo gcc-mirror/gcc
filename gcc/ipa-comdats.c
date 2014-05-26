@@ -202,8 +202,8 @@ set_comdat_group (symtab_node *symbol,
 {
   symtab_node *head = (symtab_node *)head_p;
 
-  gcc_assert (!DECL_COMDAT_GROUP (symbol->decl));
-  DECL_COMDAT_GROUP (symbol->decl) = DECL_COMDAT_GROUP (head->decl);
+  gcc_assert (!symbol->get_comdat_group ());
+  symbol->set_comdat_group (head->get_comdat_group ());
   symtab_add_to_same_comdat_group (symbol, head);
   return false;
 }
@@ -218,6 +218,7 @@ ipa_comdats (void)
   symtab_node *symbol;
   bool comdat_group_seen = false;
   symtab_node *first = (symtab_node *) (void *) 1;
+  tree group;
 
   /* Start the dataflow by assigning comdat group to symbols that are in comdat
      groups already.  All other externally visible symbols must stay, we use
@@ -226,10 +227,10 @@ ipa_comdats (void)
   FOR_EACH_DEFINED_SYMBOL (symbol)
     if (!symtab_real_symbol_p (symbol))
       ;
-    else if (DECL_COMDAT_GROUP (symbol->decl))
+    else if ((group = symbol->get_comdat_group ()) != NULL)
       {
-        *map.insert (symbol) = DECL_COMDAT_GROUP (symbol->decl);
-        *comdat_head_map.insert (DECL_COMDAT_GROUP (symbol->decl)) = symbol;
+        *map.insert (symbol) = group;
+        *comdat_head_map.insert (group) = symbol;
 	comdat_group_seen = true;
 
 	/* Mark the symbol so we won't waste time visiting it for dataflow.  */
@@ -313,7 +314,7 @@ ipa_comdats (void)
   FOR_EACH_DEFINED_SYMBOL (symbol)
     {
       symbol->aux = NULL; 
-      if (!DECL_COMDAT_GROUP (symbol->decl)
+      if (!symbol->get_comdat_group ()
 	  && !symbol->alias
 	  && symtab_real_symbol_p (symbol))
 	{

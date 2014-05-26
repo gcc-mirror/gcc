@@ -168,8 +168,9 @@
 
 ; FX Unit
 (define_insn_reservation "power8-1cyc" 1
-  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
-                        var_shift_rotate,exts,isel")
+  (and (ior (eq_attr "type" "integer,insert,trap,exts,isel")
+	    (and (eq_attr "type" "add,logical,shift")
+		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
 
@@ -204,17 +205,19 @@
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
 
-; fast_compare : add./and./nor./etc
+; add/logical with dot : add./and./nor./etc
 (define_insn_reservation "power8-fast-compare" 2
-  (and (eq_attr "type" "fast_compare")
+  (and (eq_attr "type" "add,logical")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
 
 ; compare : rldicl./exts./etc
-; delayed_compare : rlwinm./slwi./etc
-; var_delayed_compare : rlwnm./slw./etc
+; shift with dot : rlwinm./slwi./rlwnm./slw./etc
 (define_insn_reservation "power8-compare" 2
-  (and (eq_attr "type" "compare,delayed_compare,var_delayed_compare")
+  (and (ior (eq_attr "type" "compare")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,FXU_power8,FXU_power8")
 
@@ -228,12 +231,14 @@
 		 "power8-crlogical,power8-mfcr,power8-mfcrf,power8-branch")
 
 (define_insn_reservation "power8-mul" 4
-  (and (eq_attr "type" "imul,imul2,imul3,lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,FXU_power8")
 
 (define_insn_reservation "power8-mul-compare" 4
-  (and (eq_attr "type" "imul_compare,lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
        (eq_attr "cpu" "power8"))
   "DU_cracked_power8,FXU_power8")
 
@@ -248,12 +253,14 @@
 
 ; FXU divides are not pipelined
 (define_insn_reservation "power8-idiv" 37
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,fxu0_power8*37|fxu1_power8*37")
 
 (define_insn_reservation "power8-ldiv" 68
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power8"))
   "DU_any_power8,fxu0_power8*68|fxu1_power8*68")
 

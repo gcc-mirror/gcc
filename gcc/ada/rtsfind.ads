@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,8 +108,9 @@ package Rtsfind is
    --  ambiguities).
 
    type RTU_Id is (
-      --  Runtime packages, for list of accessible entities in each
-      --  package see declarations in the runtime entity table below.
+
+      --  Runtime packages, for list of accessible entities in each package,
+      --  see declarations in the runtime entity table below.
 
       RTU_Null,
       --  Used as a null entry (will cause an error if referenced)
@@ -132,6 +133,9 @@ package Rtsfind is
       Ada_Tags,
       Ada_Task_Identification,
       Ada_Task_Termination,
+      Ada_Text_IO,
+      Ada_Wide_Text_IO,
+      Ada_Wide_Wide_Text_IO,
 
       --  Children of Ada.Calendar
 
@@ -700,6 +704,15 @@ package Rtsfind is
      RE_Abort_Task,                      -- Ada.Task_Identification
      RE_Current_Task,                    -- Ada.Task_Identification
      RO_AT_Task_Id,                      -- Ada.Task_Identification
+
+     RE_Decimal_IO,                      -- Ada.Text_IO
+     RE_Fixed_IO,                        -- Ada.Text_IO
+
+     RO_WT_Decimal_IO,                   -- Ada.Wide_Text_IO
+     RO_WT_Fixed_IO,                     -- Ada.Wide_Text_IO
+
+     RO_WW_Decimal_IO,                   -- Ada.Wide_Wide_Text_IO
+     RO_WW_Fixed_IO,                     -- Ada.Wide_Wide_Text_IO
 
      RE_Integer_8,                       -- Interfaces
      RE_Integer_16,                      -- Interfaces
@@ -1972,6 +1985,15 @@ package Rtsfind is
      RE_Abort_Task                       => Ada_Task_Identification,
      RE_Current_Task                     => Ada_Task_Identification,
      RO_AT_Task_Id                       => Ada_Task_Identification,
+
+     RE_Decimal_IO                       => Ada_Text_IO,
+     RE_Fixed_IO                         => Ada_Text_IO,
+
+     RO_WT_Decimal_IO                    => Ada_Wide_Text_IO,
+     RO_WT_Fixed_IO                      => Ada_Wide_Text_IO,
+
+     RO_WW_Decimal_IO                    => Ada_Wide_Wide_Text_IO,
+     RO_WW_Fixed_IO                      => Ada_Wide_Wide_Text_IO,
 
      RE_Integer_8                        => Interfaces,
      RE_Integer_16                       => Interfaces,

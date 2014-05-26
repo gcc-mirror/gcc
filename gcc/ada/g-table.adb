@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2013, AdaCore                     --
+--                     Copyright (C) 1998-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,21 +196,25 @@ package body GNAT.Table is
    ----------------
 
    procedure Reallocate is
-      New_Size : size_t;
+      New_Size   : size_t;
+      New_Length : Long_Long_Integer;
 
    begin
       if Max < Last_Val then
          pragma Assert (not Locked);
 
+         --  Now increment table length until it is sufficiently large. Use
+         --  the increment value or 10, which ever is larger (the reason
+         --  for the use of 10 here is to ensure that the table does really
+         --  increase in size (which would not be the case for a table of
+         --  length 10 increased by 3% for instance). Do the intermediate
+         --  calculation in Long_Long_Integer to avoid overflow.
+
          while Max < Last_Val loop
-
-            --  Increase length using the table increment factor, but make
-            --  sure that we add at least ten elements (this avoids a loop
-            --  for silly small increment values)
-
-            Length := Integer'Max
-                        (Length * (100 + Table_Increment) / 100,
-                         Length + 10);
+            New_Length :=
+              Long_Long_Integer (Length) *
+                (100 + Long_Long_Integer (Table_Increment)) / 100;
+            Length := Integer'Max (Integer (New_Length), Length + 10);
             Max := Min + Length - 1;
          end loop;
       end if;

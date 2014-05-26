@@ -932,6 +932,15 @@ pp_c_string_literal (c_pretty_printer *pp, tree s)
   pp_doublequote (pp);
 }
 
+/* Pretty-print a VOID_CST (void_node).  */
+
+static void
+pp_c_void_constant (c_pretty_printer *pp)
+{
+  pp_c_type_cast (pp, void_type_node);
+  pp_string (pp, "0");
+}
+
 /* Pretty-print an INTEGER literal.  */
 
 static void
@@ -1162,6 +1171,10 @@ c_pretty_printer::constant (tree e)
 
   switch (code)
     {
+    case VOID_CST:
+      pp_c_void_constant (this);
+      break;
+
     case INTEGER_CST:
       {
 	tree type = TREE_TYPE (e);
@@ -1267,6 +1280,7 @@ c_pretty_printer::primary_expression (tree e)
       translate_string ("<return-value>");
       break;
 
+    case VOID_CST:
     case INTEGER_CST:
     case REAL_CST:
     case FIXED_CST:
@@ -2157,6 +2171,10 @@ c_pretty_printer::expression (tree e)
 {
   switch (TREE_CODE (e))
     {
+    case VOID_CST:
+      pp_c_void_constant (this);
+      break;
+
     case INTEGER_CST:
       pp_c_integer_constant (this, e);
       break;

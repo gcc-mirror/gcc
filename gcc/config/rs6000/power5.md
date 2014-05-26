@@ -166,8 +166,11 @@
 
 ; Integer latency is 2 cycles
 (define_insn_reservation "power5-integer" 2
-  (and (eq_attr "type" "integer,insert_dword,shift,trap,\
-                        var_shift_rotate,cntlz,exts,isel,popcnt")
+  (and (ior (eq_attr "type" "integer,trap,cntlz,exts,isel,popcnt")
+	    (and (eq_attr "type" "add,logical,shift")
+		 (eq_attr "dot" "no"))
+	    (and (eq_attr "type" "insert")
+		 (eq_attr "size" "64")))
        (eq_attr "cpu" "power5"))
   "iq_power5")
 
@@ -194,48 +197,62 @@
     |(iu1_power5,nothing,iu2_power5,nothing,iu2_power5))")
 
 (define_insn_reservation "power5-insert" 4
-  (and (eq_attr "type" "insert_word")
+  (and (eq_attr "type" "insert")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu1_power5,nothing,iu2_power5")
 
 (define_insn_reservation "power5-cmp" 3
-  (and (eq_attr "type" "cmp,fast_compare")
+  (and (ior (eq_attr "type" "cmp")
+	    (and (eq_attr "type" "add,logical")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power5"))
   "iq_power5")
 
 (define_insn_reservation "power5-compare" 2
-  (and (eq_attr "type" "compare,delayed_compare,var_delayed_compare")
+  (and (ior (eq_attr "type" "compare")
+	    (and (eq_attr "type" "shift")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu1_power5,iu2_power5")
 
 (define_bypass 4 "power5-compare" "power5-branch,power5-crlogical,power5-delayedcr,power5-mfcr,power5-mfcrf")
 
 (define_insn_reservation "power5-lmul-cmp" 7
-  (and (eq_attr "type" "lmul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu1_power5*6,iu2_power5")
 
 (define_bypass 10 "power5-lmul-cmp" "power5-branch,power5-crlogical,power5-delayedcr,power5-mfcr,power5-mfcrf")
 
 (define_insn_reservation "power5-imul-cmp" 5
-  (and (eq_attr "type" "imul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "yes")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu1_power5*4,iu2_power5")
 
 (define_bypass 8 "power5-imul-cmp" "power5-branch,power5-crlogical,power5-delayedcr,power5-mfcr,power5-mfcrf")
 
 (define_insn_reservation "power5-lmul" 7
-  (and (eq_attr "type" "lmul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power5"))
   "(du1_power5|du2_power5|du3_power5|du4_power5),(iu1_power5*6|iu2_power5*6)")
 
 (define_insn_reservation "power5-imul" 5
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "mul")
+       (eq_attr "dot" "no")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power5"))
   "(du1_power5|du2_power5|du3_power5|du4_power5),(iu1_power5*4|iu2_power5*4)")
 
 (define_insn_reservation "power5-imul3" 4
-  (and (eq_attr "type" "imul2,imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8,16")
        (eq_attr "cpu" "power5"))
   "(du1_power5|du2_power5|du3_power5|du4_power5),(iu1_power5*3|iu2_power5*3)")
 
@@ -243,12 +260,14 @@
 ; SPR move only executes in first IU.
 ; Integer division only executes in second IU.
 (define_insn_reservation "power5-idiv" 36
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu2_power5*35")
 
 (define_insn_reservation "power5-ldiv" 68
-  (and (eq_attr "type" "ldiv")
+  (and (eq_attr "type" "div")
+       (eq_attr "size" "64")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu2_power5*67")
 

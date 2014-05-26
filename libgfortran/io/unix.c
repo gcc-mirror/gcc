@@ -114,9 +114,6 @@ id_from_fd (const int fd)
     typeof (b) _b = (b);	\
     _a < _b ? _a : _b; })
 
-#ifndef PATH_MAX
-#define PATH_MAX 1024
-#endif
 
 /* These flags aren't defined on all targets (mingw32), so provide them
    here.  */
@@ -1060,26 +1057,6 @@ unit_to_fd (int unit)
 }
 
 
-/* unpack_filename()-- Given a fortran string and a pointer to a
- * buffer that is PATH_MAX characters, convert the fortran string to a
- * C string in the buffer.  Returns nonzero if this is not possible.  */
-
-int
-unpack_filename (char *cstring, const char *fstring, int len)
-{
-  if (fstring == NULL)
-    return EFAULT;
-  len = fstrlen (fstring, len);
-  if (len >= PATH_MAX)
-    return ENAMETOOLONG;
-
-  memmove (cstring, fstring, len);
-  cstring[len] = '\0';
-
-  return 0;
-}
-
-
 /* Set the close-on-exec flag for an existing fd, if the system
    supports such.  */
 
@@ -1244,27 +1221,18 @@ tempfile (st_parameter_open *opp)
 }
 
 
-/* regular_file()-- Open a regular file.
+/* regular_file2()-- Open a regular file.
  * Change flags->action if it is ACTION_UNSPECIFIED on entry,
  * unless an error occurs.
  * Returns the descriptor, which is less than zero on error. */
 
 static int
-regular_file (st_parameter_open *opp, unit_flags *flags)
+regular_file2 (const char *path, st_parameter_open *opp, unit_flags *flags)
 {
-  char path[min(PATH_MAX, opp->file_len + 1)];
   int mode;
   int rwflag;
   int crflag, crflag2;
   int fd;
-  int err;
-
-  err = unpack_filename (path, opp->file, opp->file_len);
-  if (err)
-    {
-      errno = err;		/* Fake an OS error */
-      return -1;
-    }
 
 #ifdef __CYGWIN__
   if (opp->file_len == 7)
@@ -1404,6 +1372,18 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
 }
 
 
+/* Wrapper around regular_file2, to make sure we free the path after
+   we're done.  */
+
+static int
+regular_file (st_parameter_open *opp, unit_flags *flags)
+{
+  char *path = fc_strdup (opp->file, opp->file_len);
+  int fd = regular_file2 (path, opp, flags);
+  free (path);
+  return fd;
+}
+
 /* open_external()-- Open an external file, unix specific version.
  * Change flags->action if it is ACTION_UNSPECIFIED on entry.
  * Returns NULL on operating system error. */
@@ -1494,8 +1474,8 @@ error_stream (void)
 int
 compare_file_filename (gfc_unit *u, const char *name, int len)
 {
-  char path[min(PATH_MAX, len + 1)];
   struct stat st;
+  int ret;
 #ifdef HAVE_WORKING_STAT
   unix_stream *s;
 #else
@@ -1504,18 +1484,21 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
 # endif
 #endif
 
-  if (unpack_filename (path, name, len))
-    return 0;			/* Can't be the same */
+  char *path = fc_strdup (name, len);
 
   /* If the filename doesn't exist, then there is no match with the
    * existing file. */
 
   if (stat (path, &st) < 0)
-    return 0;
+    {
+      ret = 0;
+      goto done;
+    }
 
 #ifdef HAVE_WORKING_STAT
   s = (unix_stream *) (u->s);
-  return (st.st_dev == s->st_dev) && (st.st_ino == s->st_ino);
+  ret = (st.st_dev == s->st_dev) && (st.st_ino == s->st_ino);
+  goto done;
 #else
 
 # ifdef __MINGW32__
@@ -1525,13 +1508,20 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
   id1 = id_from_path (path);
   id2 = id_from_fd (((unix_stream *) (u->s))->fd);
   if (id1 || id2)
-    return (id1 == id2);
+    {
+      ret = (id1 == id2);
+      goto done;
+    }
 # endif
 
   if (len != u->file_len)
-    return 0;
-  return (memcmp(path, u->file, len) == 0);
+    ret = 0;
+  else
+    ret = (memcmp(path, u->file, len) == 0);
 #endif
+ done:
+  free (path);
+  return ret;
 }
 
 
@@ -1594,18 +1584,19 @@ find_file0 (gfc_unit *u, FIND_FILE0_DECL)
 gfc_unit *
 find_file (const char *file, gfc_charlen_type file_len)
 {
-  char path[min(PATH_MAX, file_len + 1)];
   struct stat st[1];
   gfc_unit *u;
 #if defined(__MINGW32__) && !HAVE_WORKING_STAT
   uint64_t id = 0ULL;
 #endif
 
-  if (unpack_filename (path, file, file_len))
-    return NULL;
+  char *path = fc_strdup (file, file_len);
 
   if (stat (path, &st[0]) < 0)
-    return NULL;
+    {
+      u = NULL;
+      goto done;
+    }
 
 #if defined(__MINGW32__) && !HAVE_WORKING_STAT
   id = id_from_path (path);
@@ -1621,7 +1612,7 @@ retry:
 	{
 	  /* assert (u->closed == 0); */
 	  __gthread_mutex_unlock (&unit_lock);
-	  return u;
+	  goto done;
 	}
 
       inc_waiting_locked (u);
@@ -1641,6 +1632,8 @@ retry:
 
       dec_waiting_unlocked (u);
     }
+ done:
+  free (path);
   return u;
 }
 
@@ -1713,16 +1706,10 @@ flush_all_units (void)
 int
 delete_file (gfc_unit * u)
 {
-  char path[min(PATH_MAX, u->file_len + 1)];
-  int err = unpack_filename (path, u->file, u->file_len);
-
-  if (err)
-    {				/* Shouldn't be possible */
-      errno = err;
-      return 1;
-    }
-
-  return unlink (path);
+  char *path = fc_strdup (u->file, u->file_len);
+  int err = unlink (path);
+  free (path);
+  return err;
 }
 
 
@@ -1732,12 +1719,10 @@ delete_file (gfc_unit * u)
 int
 file_exists (const char *file, gfc_charlen_type file_len)
 {
-  char path[min(PATH_MAX, file_len + 1)];
-
-  if (unpack_filename (path, file, file_len))
-    return 0;
-
-  return !(access (path, F_OK));
+  char *path = fc_strdup (file, file_len);
+  int res = !(access (path, F_OK));
+  free (path);
+  return res;
 }
 
 
@@ -1746,15 +1731,12 @@ file_exists (const char *file, gfc_charlen_type file_len)
 GFC_IO_INT
 file_size (const char *file, gfc_charlen_type file_len)
 {
-  char path[min(PATH_MAX, file_len + 1)];
+  char *path = fc_strdup (file, file_len);
   struct stat statbuf;
-
-  if (unpack_filename (path, file, file_len))
+  int err = stat (path, &statbuf);
+  free (path);
+  if (err == -1)
     return -1;
-
-  if (stat (path, &statbuf) < 0)
-    return -1;
-
   return (GFC_IO_INT) statbuf.st_size;
 }
 
@@ -1767,11 +1749,15 @@ static const char yes[] = "YES", no[] = "NO", unknown[] = "UNKNOWN";
 const char *
 inquire_sequential (const char *string, int len)
 {
-  char path[min(PATH_MAX, len + 1)];
   struct stat statbuf;
 
-  if (string == NULL ||
-      unpack_filename (path, string, len) || stat (path, &statbuf) < 0)
+  if (string == NULL)
+    return unknown;
+
+  char *path = fc_strdup (string, len);
+  int err = stat (path, &statbuf);
+  free (path);
+  if (err == -1)
     return unknown;
 
   if (S_ISREG (statbuf.st_mode) ||
@@ -1791,11 +1777,15 @@ inquire_sequential (const char *string, int len)
 const char *
 inquire_direct (const char *string, int len)
 {
-  char path[min(PATH_MAX, len + 1)];
   struct stat statbuf;
 
-  if (string == NULL ||
-      unpack_filename (path, string, len) || stat (path, &statbuf) < 0)
+  if (string == NULL)
+    return unknown;
+
+  char *path = fc_strdup (string, len);
+  int err = stat (path, &statbuf);
+  free (path);
+  if (err == -1)
     return unknown;
 
   if (S_ISREG (statbuf.st_mode) || S_ISBLK (statbuf.st_mode))
@@ -1815,11 +1805,15 @@ inquire_direct (const char *string, int len)
 const char *
 inquire_formatted (const char *string, int len)
 {
-  char path[min(PATH_MAX, len + 1)];
   struct stat statbuf;
 
-  if (string == NULL ||
-      unpack_filename (path, string, len) || stat (path, &statbuf) < 0)
+  if (string == NULL)
+    return unknown;
+
+  char *path = fc_strdup (string, len);
+  int err = stat (path, &statbuf);
+  free (path);
+  if (err == -1)
     return unknown;
 
   if (S_ISREG (statbuf.st_mode) ||
@@ -1850,10 +1844,12 @@ inquire_unformatted (const char *string, int len)
 static const char *
 inquire_access (const char *string, int len, int mode)
 {
-  char path[min(PATH_MAX, len + 1)];
-
-  if (string == NULL || unpack_filename (path, string, len) ||
-      access (path, mode) < 0)
+  if (string == NULL)
+    return no;
+  char *path = fc_strdup (string, len);
+  int res = access (path, mode);
+  free (path);
+  if (res == -1)
     return no;
 
   return yes;

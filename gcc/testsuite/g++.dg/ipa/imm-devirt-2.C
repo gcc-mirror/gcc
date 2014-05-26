@@ -91,5 +91,5 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Replacing call target" "fre1"  } } */
+/* { dg-final { scan-tree-dump "converting indirect call to function" "fre1"  } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

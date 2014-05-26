@@ -408,7 +408,7 @@ extern unsigned long aarch64_tune_flags;
 enum reg_class
 {
   NO_REGS,
-  CORE_REGS,
+  CALLER_SAVE_REGS,
   GENERAL_REGS,
   STACK_REG,
   POINTER_REGS,
@@ -423,7 +423,7 @@ enum reg_class
 #define REG_CLASS_NAMES				\
 {						\
   "NO_REGS",					\
-  "CORE_REGS",					\
+  "CALLER_SAVE_REGS",				\
   "GENERAL_REGS",				\
   "STACK_REG",					\
   "POINTER_REGS",				\
@@ -435,7 +435,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0x7fffffff, 0x00000000, 0x00000003 },	/* CORE_REGS */		\
+  { 0x0007ffff, 0x00000000, 0x00000000 },	/* CALLER_SAVE_REGS */	\
   { 0x7fffffff, 0x00000000, 0x00000003 },	/* GENERAL_REGS */	\
   { 0x80000000, 0x00000000, 0x00000000 },	/* STACK_REG */		\
   { 0xffffffff, 0x00000000, 0x00000003 },	/* POINTER_REGS */	\
@@ -446,7 +446,7 @@ enum reg_class
 
 #define REGNO_REG_CLASS(REGNO)	aarch64_regno_regclass (REGNO)
 
-#define INDEX_REG_CLASS	CORE_REGS
+#define INDEX_REG_CLASS	GENERAL_REGS
 #define BASE_REG_CLASS  POINTER_REGS
 
 /* Register pairs used to eliminate unneeded registers that point into

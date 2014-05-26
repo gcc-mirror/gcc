@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -303,7 +303,7 @@ package body Restrict is
          Error_Msg_Node_1 := N;
          Error_Msg_Warn := No_Use_Of_Attribute_Warning (A_Id);
          Error_Msg_N
-           ("<violation of restriction `No_Use_Of_Attribute '='> &`#", N);
+           ("<*<violation of restriction `No_Use_Of_Attribute '='> &`#", N);
       end if;
    end Check_Restriction_No_Use_Of_Attribute;
 
@@ -336,7 +336,7 @@ package body Restrict is
          Error_Msg_Node_1 := Id;
          Error_Msg_Warn := No_Use_Of_Pragma_Warning (P_Id);
          Error_Msg_N
-           ("<violation of restriction `No_Use_Of_Pragma '='> &`#", Id);
+           ("<*<violation of restriction `No_Use_Of_Pragma '='> &`#", Id);
       end if;
    end Check_Restriction_No_Use_Of_Pragma;
 
@@ -645,7 +645,7 @@ package body Restrict is
 
             if No_Dependences.Table (J).Warn then
                Error_Msg
-                 ("??violation of restriction `No_Dependence '='> &`#",
+                 ("?*?violation of restriction `No_Dependence '='> &`#",
                   Sloc (Err));
             else
                Error_Msg
@@ -691,7 +691,7 @@ package body Restrict is
          Error_Msg_Node_1 := Id;
          Error_Msg_Warn := No_Specification_Of_Aspect_Warning (A_Id);
          Error_Msg_N
-           ("<violation of restriction `No_Specification_Of_Aspect '='> &`#",
+           ("<*<violation of restriction `No_Specification_Of_Aspect '='> &`#",
             Id);
       end if;
    end Check_Restriction_No_Specification_Of_Aspect;
@@ -1047,7 +1047,7 @@ package body Restrict is
       --  Set warning message if warning
 
       if Restriction_Warnings (R) then
-         Add_Str ("??");
+         Add_Str ("?*?");
 
       --  If real violation (not warning), then mark it as non-serious unless
       --  it is a violation of No_Finalization in which case we leave it as a

@@ -15,7 +15,6 @@
 #include "asan_allocator.h"
 #include "asan_internal.h"
 #include "asan_fake_stack.h"
-#include "asan_stack.h"
 #include "asan_stats.h"
 #include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_libc.h"
@@ -76,12 +75,12 @@ class AsanThread {
     return addr >= stack_bottom_ && addr < stack_top_;
   }
 
-  void DeleteFakeStack() {
+  void DeleteFakeStack(int tid) {
     if (!fake_stack_) return;
     FakeStack *t = fake_stack_;
     fake_stack_ = 0;
     SetTLSFakeStack(0);
-    t->Destroy();
+    t->Destroy(tid);
   }
 
   bool has_fake_stack() {

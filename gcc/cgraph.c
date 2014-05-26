@@ -565,7 +565,7 @@ cgraph_get_create_node (tree decl)
       first_clone->clone_of = node;
       node->clones = first_clone;
       symtab_prevail_in_asm_name_hash (node);
-      symtab_insert_node_to_hashtable (node);
+      node->decl->decl_with_vis.symtab_node = node;
       if (dump_file)
 	fprintf (dump_file, "Introduced new external node "
 		 "(%s/%i) and turned into root of the clone tree.\n",
@@ -2267,6 +2267,7 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
       node->externally_visible = false;
       node->forced_by_abi = false;
       node->local.local = true;
+      node->set_comdat_group (NULL);
       node->unique_name = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
 				  || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
       node->resolution = LDPR_PREVAILING_DEF_IRONLY;

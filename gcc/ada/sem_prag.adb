@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1239,7 +1239,7 @@ package body Sem_Prag is
          Is_Input   : Boolean)
       is
          procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id);
-         --  Emit an error concerning the erroneous usage of an item
+         --  Emit an error concerning the illegal usage of an item
 
          -----------------
          -- Usage_Error --
@@ -1783,10 +1783,11 @@ package body Sem_Prag is
                      Is_Last => Clause = Last_Clause);
                end if;
 
-               --  Do not normalize an erroneous clause because the inputs
-               --  and/or outputs may denote illegal items. Normalization is
-               --  disabled in ASIS mode as it alters the tree by introducing
-               --  new nodes similar to expansion.
+               --  Do not normalize a clause if errors were detected (count
+               --  of Serious_Errors has increased) because the inputs and/or
+               --  outputs may denote illegal items. Normalization is disabled
+               --  in ASIS mode as it alters the tree by introducing new nodes
+               --  similar to expansion.
 
                if Serious_Errors_Detected = Errors and then not ASIS_Mode then
                   Normalize_Clause (Clause);
@@ -2037,9 +2038,8 @@ package body Sem_Prag is
                --  SPARK_Mode is on as they are not standard Ada legality
                --  rules.
 
-               elsif SPARK_Mode = On
-                 and then Is_SPARK_Volatile_Object (Item_Id)
-               then
+               elsif SPARK_Mode = On and then Is_SPARK_Volatile (Item_Id) then
+
                   --  A volatile object cannot appear as a global item of a
                   --  function (SPARK RM 7.1.3(9)).
 
@@ -2288,7 +2288,7 @@ package body Sem_Prag is
                raise Program_Error;
             end if;
 
-         --  Any other attempt to declare a global item is erroneous
+         --  Any other attempt to declare a global item is illegal
 
          else
             Error_Msg_N ("malformed global list", List);
@@ -3444,9 +3444,10 @@ package body Sem_Prag is
          Indic   : Node_Id;
          Legal   : out Boolean)
       is
-         Pack_Id   : Entity_Id;
-         Placement : State_Space_Kind;
-         State_Id  : Entity_Id;
+         Pack_Id     : Entity_Id;
+         Placement   : State_Space_Kind;
+         Parent_Unit : Entity_Id;
+         State_Id    : Entity_Id;
 
       begin
          --  Assume that the pragma/option is illegal
@@ -3509,22 +3510,43 @@ package body Sem_Prag is
             if Is_Child_Unit (Pack_Id)
               and then Is_Private_Descendant (Pack_Id)
             then
+               --  A variable or state abstraction which is part of the
+               --  visible state of a private child unit (or a public
+               --  descendant thereof) shall have its Part_Of indicator
+               --  specified; the Part_Of indicator shall denote a state
+               --  abstraction declared by either the parent unit of the
+               --  private unit or by a public descendant of that parent unit.
+
+               --  Find nearest nearest private ancestor (which can be the
+               --  current unit itself).
+
+               Parent_Unit := Pack_Id;
+               while Present (Parent_Unit) loop
+                  exit when Private_Present
+                              (Parent (Unit_Declaration_Node (Parent_Unit)));
+                  Parent_Unit := Scope (Parent_Unit);
+               end loop;
+
+               Parent_Unit := Scope (Parent_Unit);
+
                if not Is_Child_Or_Sibling (Pack_Id, Scope (State_Id)) then
-                  Error_Msg_N
-                    ("indicator Part_Of must denote an abstract state of "
-                     & "parent unit or descendant (SPARK RM 7.2.6(3))", Indic);
+                  Error_Msg_NE
+                    ("indicator Part_Of must denote an abstract state of& "
+                     & "or public descendant (SPARK RM 7.2.6(3))",
+                       Indic, Parent_Unit);
 
-               --  If the unit is a public child of a private unit it cannot
-               --  refine the state of a private parent, only that of a
-               --  public ancestor or descendant thereof.
-
-               elsif not Private_Present
-                           (Parent (Unit_Declaration_Node (Pack_Id)))
-                 and then Is_Private_Descendant (Scope (State_Id))
+               elsif Scope (State_Id) = Parent_Unit
+                 or else (Is_Ancestor_Package (Parent_Unit, Scope (State_Id))
+                           and then
+                             not Is_Private_Descendant (Scope (State_Id)))
                then
-                  Error_Msg_N
-                    ("indicator Part_Of must denote the abstract state of "
-                     & "a public ancestor", State);
+                  null;
+
+               else
+                  Error_Msg_NE
+                    ("indicator Part_Of must denote an abstract state of& "
+                     & "or public descendant (SPARK RM 7.2.6(3))",
+                       Indic, Parent_Unit);
                end if;
 
             --  Indicator Part_Of is not needed when the related package is not
@@ -4021,7 +4043,7 @@ package body Sem_Prag is
 
          if not Is_Task_Dispatching_Policy_Name (Chars (Argx)) then
             Error_Pragma_Arg
-              ("& is not a valid task dispatching policy name", Argx);
+              ("& is not an allowed task dispatching policy name", Argx);
          end if;
       end Check_Arg_Is_Task_Dispatching_Policy;
 
@@ -4529,7 +4551,7 @@ package body Sem_Prag is
 
             --  For pragma case (as opposed to access case), check placement.
             --  We don't need to do that for aspects, because we have the
-            --  check that they are apply an appropriate procedure.
+            --  check that they aspect applies an appropriate procedure.
 
             if not From_Aspect_Specification (N)
               and then Parent (N) /= Protected_Definition (Parent (Proc_Scope))
@@ -4681,7 +4703,7 @@ package body Sem_Prag is
                               Prag := Stmt;
 
                            --  A non-pragma is separating the group from the
-                           --  current pragma, the placement is erroneous.
+                           --  current pragma, the placement is illegal.
 
                            else
                               Grouping_Error (Prag);
@@ -6364,8 +6386,22 @@ package body Sem_Prag is
             Set_Treat_As_Volatile (E);
 
          else
+            Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
+         end if;
+
+         --  The following check is only relevant when SPARK_Mode is on as
+         --  this is not a standard Ada legality rule. Pragma Volatile can
+         --  only apply to a full type declaration or an object declaration
+         --  (SPARK RM C.6(1)).
+
+         if SPARK_Mode = On
+           and then Prag_Id = Pragma_Volatile
+           and then not Nkind_In (K, N_Full_Type_Declaration,
+                                     N_Object_Declaration)
+         then
             Error_Pragma_Arg
-              ("inappropriate entity for pragma%", Arg1);
+              ("argument of pragma % must denote a full type or object "
+               & "declaration", Arg1);
          end if;
       end Process_Atomic_Shared_Volatile;
 
@@ -10565,7 +10601,7 @@ package body Sem_Prag is
                      then
                         Analyze_External_Option (Opt);
 
-                     --  When an erroneous option Part_Of is without a parent
+                     --  When an illegal option Part_Of is without a parent
                      --  state, it appears in the list of expression of the
                      --  aggregate rather than the component associations
                      --  (SPARK RM 7.1.4(9)).
@@ -10608,7 +10644,7 @@ package body Sem_Prag is
                      Next (Opt);
                   end loop;
 
-               --  Any other attempt to declare a state is erroneous
+               --  Any other attempt to declare a state is illegal
 
                else
                   Error_Msg_N ("malformed abstract state declaration", State);
@@ -15291,7 +15327,26 @@ package body Sem_Prag is
             Arg : Node_Id;
             Exp : Node_Id;
 
+            procedure ip;
+            --  A dummy procedure called when pragma Inspection_Point is
+            --  analyzed. This is just to help debugging the front end. If
+            --  a pragma Inspection_Point is added to a source program, then
+            --  breaking on ip will get you to that point in the program.
+
+            --------
+            -- ip --
+            --------
+
+            procedure ip is
+            begin
+               null;
+            end ip;
+
+         --  Start of processing for Inspection_Point
+
          begin
+            ip;
+
             if Arg_Count > 0 then
                Arg := Arg1;
                loop
@@ -25496,7 +25551,7 @@ package body Sem_Prag is
       elsif N = Name_Off then
          return Off;
 
-      --  Any other argument is erroneous
+      --  Any other argument is illegal
 
       else
          raise Program_Error;

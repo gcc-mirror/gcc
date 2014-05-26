@@ -44,7 +44,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 namespace __profile
 {
   /** @brief Unordered_set wrapper with performance instrumentation.  */
-  template<typename _Key, 
+  template<typename _Key,
 	   typename _Hash = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
 	   typename _Alloc =  std::allocator<_Key> >
@@ -62,18 +62,18 @@ namespace __profile
       _M_base() const noexcept { return *this; }
 
     public:
-      typedef typename _Base::size_type       size_type;
-      typedef typename _Base::hasher          hasher;
-      typedef typename _Base::key_equal       key_equal;
-      typedef typename _Base::allocator_type  allocator_type;
-      typedef typename _Base::key_type        key_type;
-      typedef typename _Base::value_type      value_type;
-      typedef typename _Base::difference_type difference_type;
-      typedef typename _Base::reference       reference;
-      typedef typename _Base::const_reference const_reference;
+      typedef typename _Base::size_type		size_type;
+      typedef typename _Base::hasher		hasher;
+      typedef typename _Base::key_equal		key_equal;
+      typedef typename _Base::allocator_type	allocator_type;
+      typedef typename _Base::key_type		key_type;
+      typedef typename _Base::value_type	value_type;
+      typedef typename _Base::difference_type	difference_type;
+      typedef typename _Base::reference		reference;
+      typedef typename _Base::const_reference	const_reference;
 
-      typedef typename _Base::iterator iterator;
-      typedef typename _Base::const_iterator const_iterator;
+      typedef typename _Base::iterator		iterator;
+      typedef typename _Base::const_iterator	const_iterator;
 
       explicit
       unordered_set(size_type __n = 10,
@@ -84,7 +84,7 @@ namespace __profile
       { }
 
       template<typename _InputIterator>
-        unordered_set(_InputIterator __f, _InputIterator __l,
+	unordered_set(_InputIterator __f, _InputIterator __l,
 		      size_type __n = 0,
 		      const hasher& __hf = hasher(),
 		      const key_equal& __eql = key_equal(),
@@ -144,10 +144,10 @@ namespace __profile
       void
       clear() noexcept
       {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
-                                     _Base::size());
-        this->_M_profile_destruct();
-        _Base::clear();
+	__profcxx_hashtable_destruct(this, _Base::bucket_count(),
+				     _Base::size());
+	this->_M_profile_destruct();
+	_Base::clear();
       }
 
       template<typename... _Args>
@@ -174,63 +174,63 @@ namespace __profile
 
       void
       insert(std::initializer_list<value_type> __l)
-      { 
-        size_type __old_size = _Base::bucket_count();
-        _Base::insert(__l); 
-        _M_profile_resize(__old_size); 
+      {
+	size_type __old_size = _Base::bucket_count();
+	_Base::insert(__l);
+	_M_profile_resize(__old_size);
       }
 
       std::pair<iterator, bool>
       insert(const value_type& __obj)
       {
-        size_type __old_size = _Base::bucket_count();
-        std::pair<iterator, bool> __res = _Base::insert(__obj);
-        _M_profile_resize(__old_size); 
-        return __res;
+	size_type __old_size = _Base::bucket_count();
+	std::pair<iterator, bool> __res = _Base::insert(__obj);
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       iterator
       insert(const_iterator __iter, const value_type& __v)
-      { 
-        size_type __old_size = _Base::bucket_count(); 
-        iterator __res = _Base::insert(__iter, __v);
-        _M_profile_resize(__old_size); 
-        return __res;
+      {
+	size_type __old_size = _Base::bucket_count();
+	iterator __res = _Base::insert(__iter, __v);
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       std::pair<iterator, bool>
       insert(value_type&& __obj)
       {
-        size_type __old_size = _Base::bucket_count();
-        std::pair<iterator, bool> __res = _Base::insert(std::move(__obj));
-        _M_profile_resize(__old_size); 
-        return __res;
+	size_type __old_size = _Base::bucket_count();
+	std::pair<iterator, bool> __res = _Base::insert(std::move(__obj));
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       iterator
       insert(const_iterator __iter, value_type&& __v)
-      { 
-        size_type __old_size = _Base::bucket_count();
-        iterator __res = _Base::insert(__iter, std::move(__v));
-        _M_profile_resize(__old_size); 
-        return __res;
+      {
+	size_type __old_size = _Base::bucket_count();
+	iterator __res = _Base::insert(__iter, std::move(__v));
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       template<typename _InputIter>
-        void
-        insert(_InputIter __first, _InputIter __last)
-        {
-	  size_type __old_size = _Base::bucket_count(); 
+	void
+	insert(_InputIter __first, _InputIter __last)
+	{
+	  size_type __old_size = _Base::bucket_count();
 	  _Base::insert(__first, __last);
-	  _M_profile_resize(__old_size); 
+	  _M_profile_resize(__old_size);
 	}
 
       void
       rehash(size_type __n)
       {
-        size_type __old_size = _Base::bucket_count();
-        _Base::rehash(__n);
-        _M_profile_resize(__old_size); 
+	size_type __old_size = _Base::bucket_count();
+	_Base::rehash(__n);
+	_M_profile_resize(__old_size);
       }
 
     private:
@@ -287,10 +287,10 @@ namespace __profile
 
     public:
       typedef typename _Base::size_type       size_type;
-      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::hasher	  hasher;
       typedef typename _Base::key_equal       key_equal;
       typedef typename _Base::allocator_type  allocator_type;
-      typedef typename _Base::key_type        key_type;
+      typedef typename _Base::key_type	key_type;
       typedef typename _Base::value_type      value_type;
       typedef typename _Base::difference_type difference_type;
       typedef typename _Base::reference       reference;
@@ -308,7 +308,7 @@ namespace __profile
       { }
 
       template<typename _InputIterator>
-        unordered_multiset(_InputIterator __f, _InputIterator __l,
+	unordered_multiset(_InputIterator __f, _InputIterator __l,
 			   size_type __n = 0,
 			   const hasher& __hf = hasher(),
 			   const key_equal& __eql = key_equal(),
@@ -368,10 +368,10 @@ namespace __profile
       void
       clear() noexcept
       {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
-                                     _Base::size());
-        this->_M_profile_destruct();
-        _Base::clear();
+	__profcxx_hashtable_destruct(this, _Base::bucket_count(),
+				     _Base::size());
+	this->_M_profile_destruct();
+	_Base::clear();
       }
 
       template<typename... _Args>
@@ -397,63 +397,63 @@ namespace __profile
 
       void
       insert(std::initializer_list<value_type> __l)
-      { 
-        size_type __old_size = _Base::bucket_count();
-        _Base::insert(__l); 
-        _M_profile_resize(__old_size); 
+      {
+	size_type __old_size = _Base::bucket_count();
+	_Base::insert(__l);
+	_M_profile_resize(__old_size);
       }
 
       iterator
       insert(const value_type& __obj)
       {
-        size_type __old_size = _Base::bucket_count();
-        iterator __res = _Base::insert(__obj);
-        _M_profile_resize(__old_size); 
-        return __res;
+	size_type __old_size = _Base::bucket_count();
+	iterator __res = _Base::insert(__obj);
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       iterator
       insert(const_iterator __iter, const value_type& __v)
       {
-        size_type __old_size = _Base::bucket_count(); 
-        iterator __res = _Base::insert(__iter, __v);
-        _M_profile_resize(__old_size); 
-        return __res;
+	size_type __old_size = _Base::bucket_count();
+	iterator __res = _Base::insert(__iter, __v);
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       iterator
       insert(value_type&& __obj)
       {
 	size_type __old_size = _Base::bucket_count();
-        iterator __res = _Base::insert(std::move(__obj));
-        _M_profile_resize(__old_size); 
-        return __res;
+	iterator __res = _Base::insert(std::move(__obj));
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       iterator
       insert(const_iterator __iter, value_type&& __v)
       {
-        size_type __old_size = _Base::bucket_count(); 
-        iterator __res = _Base::insert(__iter, std::move(__v));
-        _M_profile_resize(__old_size); 
-        return __res;
+	size_type __old_size = _Base::bucket_count();
+	iterator __res = _Base::insert(__iter, std::move(__v));
+	_M_profile_resize(__old_size);
+	return __res;
       }
 
       template<typename _InputIter>
-        void
-        insert(_InputIter __first, _InputIter __last)
-        {
-	  size_type __old_size = _Base::bucket_count(); 
+	void
+	insert(_InputIter __first, _InputIter __last)
+	{
+	  size_type __old_size = _Base::bucket_count();
 	  _Base::insert(__first, __last);
-	  _M_profile_resize(__old_size); 
+	  _M_profile_resize(__old_size);
 	}
 
       void
       rehash(size_type __n)
       {
-        size_type __old_size = _Base::bucket_count();
-        _Base::rehash(__n);
-        _M_profile_resize(__old_size); 
+	size_type __old_size = _Base::bucket_count();
+	_Base::rehash(__n);
+	_M_profile_resize(__old_size);
       }
 
     private:
@@ -461,8 +461,8 @@ namespace __profile
       _M_profile_resize(size_type __old_size)
       {
 	size_type __new_size = _Base::bucket_count();
-        if (__old_size != __new_size)
-          __profcxx_hashtable_resize(this, __old_size, __new_size);
+	if (__old_size != __new_size)
+	  __profcxx_hashtable_resize(this, __old_size, __new_size);
       }
    };
 

@@ -4684,7 +4684,7 @@ package body Sem_Res is
          Check_Restriction (No_Task_Hierarchy, N);
       end if;
 
-      --  An erroneous allocator may be rewritten as a raise Program_Error
+      --  An illegal allocator may be rewritten as a raise Program_Error
       --  statement.
 
       if Nkind (N) = N_Allocator then
@@ -6579,11 +6579,11 @@ package body Sem_Res is
       --  standard Ada legality rules.
 
       if SPARK_Mode = On
-        and then Ekind_In (E, E_Abstract_State, E_Variable)
-        and then Is_SPARK_Volatile_Object (E)
+        and then Is_Object (E)
+        and then Is_SPARK_Volatile (E)
+        and then Comes_From_Source (E)
         and then
-          (Async_Writers_Enabled (E)
-             or else Effective_Reads_Enabled (E))
+          (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
       then
          --  The volatile object can appear on either side of an assignment
 

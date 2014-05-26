@@ -24,12 +24,14 @@ void EnterSymbolizer() {
   ThreadState *thr = cur_thread();
   CHECK(!thr->in_symbolizer);
   thr->in_symbolizer = true;
+  thr->ignore_interceptors++;
 }
 
 void ExitSymbolizer() {
   ThreadState *thr = cur_thread();
   CHECK(thr->in_symbolizer);
   thr->in_symbolizer = false;
+  thr->ignore_interceptors--;
 }
 
 ReportStack *NewReportStackEntry(uptr addr) {
@@ -103,13 +105,11 @@ ReportStack *SymbolizeCode(uptr addr) {
     ent->col = col;
     return ent;
   }
-  if (!Symbolizer::Get()->IsAvailable())
-    return SymbolizeCodeAddr2Line(addr);
   static const uptr kMaxAddrFrames = 16;
   InternalScopedBuffer<AddressInfo> addr_frames(kMaxAddrFrames);
   for (uptr i = 0; i < kMaxAddrFrames; i++)
     new(&addr_frames[i]) AddressInfo();
-  uptr addr_frames_num = Symbolizer::Get()->SymbolizeCode(
+  uptr addr_frames_num = Symbolizer::Get()->SymbolizePC(
       addr, addr_frames.data(), kMaxAddrFrames);
   if (addr_frames_num == 0)
     return NewReportStackEntry(addr);
@@ -129,8 +129,6 @@ ReportStack *SymbolizeCode(uptr addr) {
 }
 
 ReportLocation *SymbolizeData(uptr addr) {
-  if (!Symbolizer::Get()->IsAvailable())
-    return 0;
   DataInfo info;
   if (!Symbolizer::Get()->SymbolizeData(addr, &info))
     return 0;
@@ -148,8 +146,6 @@ ReportLocation *SymbolizeData(uptr addr) {
 }
 
 void SymbolizeFlush() {
-  if (!Symbolizer::Get()->IsAvailable())
-    return;
   Symbolizer::Get()->Flush();
 }
 

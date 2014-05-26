@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1029,8 +1029,10 @@ package body Lib.Xref is
             Ref := Sloc (Nod);
             Def := Sloc (Ent);
 
-            Ref_Scope := SPARK_Specific.Enclosing_Subprogram_Or_Package (Nod);
-            Ent_Scope := SPARK_Specific.Enclosing_Subprogram_Or_Package (Ent);
+            Ref_Scope :=
+              SPARK_Specific.Enclosing_Subprogram_Or_Library_Package (Nod);
+            Ent_Scope :=
+              SPARK_Specific.Enclosing_Subprogram_Or_Library_Package (Ent);
 
             --  Since we are reaching through renamings in SPARK mode, we may
             --  end up with standard constants. Ignore those.

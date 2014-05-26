@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -624,8 +624,12 @@ package Lib.Xref is
 
    package SPARK_Specific is
 
-      function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id;
-      --  Return the closest enclosing subprogram of package
+      function Enclosing_Subprogram_Or_Library_Package
+        (N : Node_Id) return Entity_Id;
+      --  Return the closest enclosing subprogram of package. Only return a
+      --  library level package. If the package is enclosed in a subprogram,
+      --  return the subprogram. This ensures that GNATprove can distinguish
+      --  local variables from global variables.
 
       procedure Generate_Dereference
         (N   : Node_Id;

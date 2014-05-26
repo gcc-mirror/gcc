@@ -170,7 +170,7 @@ struct ready_list
   int n_debug;
 };
 
-extern char *ready_try;
+extern signed char *ready_try;
 extern struct ready_list ready;
 
 extern int max_issue (struct ready_list *, int, state_t, bool, int *);
@@ -1141,9 +1141,7 @@ enum SCHED_FLAGS {
 
 enum SPEC_SCHED_FLAGS {
   COUNT_SPEC_IN_CRITICAL_PATH = 1,
-  PREFER_NON_DATA_SPEC = COUNT_SPEC_IN_CRITICAL_PATH << 1,
-  PREFER_NON_CONTROL_SPEC = PREFER_NON_DATA_SPEC << 1,
-  SEL_SCHED_SPEC_DONT_CHECK_CONTROL = PREFER_NON_CONTROL_SPEC << 1
+  SEL_SCHED_SPEC_DONT_CHECK_CONTROL = COUNT_SPEC_IN_CRITICAL_PATH << 1
 };
 
 #define NOTE_NOT_BB_P(NOTE) (NOTE_P (NOTE) && (NOTE_KIND (NOTE)	\
@@ -1552,34 +1550,37 @@ sd_iterator_start (rtx insn, sd_list_types_def types)
 static inline bool
 sd_iterator_cond (sd_iterator_def *it_ptr, dep_t *dep_ptr)
 {
-  dep_link_t link = *it_ptr->linkp;
-
-  if (link != NULL)
+  while (true)
     {
-      *dep_ptr = DEP_LINK_DEP (link);
-      return true;
-    }
-  else
-    {
-      sd_list_types_def types = it_ptr->types;
+      dep_link_t link = *it_ptr->linkp;
 
-      if (types != SD_LIST_NONE)
-	/* Switch to next list.  */
+      if (link != NULL)
 	{
-	  deps_list_t list;
-
-	  sd_next_list (it_ptr->insn,
-			&it_ptr->types, &list, &it_ptr->resolved_p);
-
-	  it_ptr->linkp = &DEPS_LIST_FIRST (list);
-
-	  if (list)
-	    return sd_iterator_cond (it_ptr, dep_ptr);
+	  *dep_ptr = DEP_LINK_DEP (link);
+	  return true;
 	}
+      else
+	{
+	  sd_list_types_def types = it_ptr->types;
 
-      *dep_ptr = NULL;
-      return false;
-    }
+	  if (types != SD_LIST_NONE)
+	    /* Switch to next list.  */
+	    {
+	      deps_list_t list;
+
+	      sd_next_list (it_ptr->insn,
+			    &it_ptr->types, &list, &it_ptr->resolved_p);
+
+	      it_ptr->linkp = &DEPS_LIST_FIRST (list);
+
+	      if (list)
+		continue;
+	    }
+
+	  *dep_ptr = NULL;
+	  return false;
+	}
+   }
 }
 
 /* Advance iterator.  */

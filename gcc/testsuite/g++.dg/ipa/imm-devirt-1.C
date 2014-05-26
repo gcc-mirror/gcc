@@ -58,5 +58,5 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Replacing call target with foo" "fre1"  } } */
+/* { dg-final { scan-tree-dump "converting indirect call to function virtual int B::foo" "fre1"  } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

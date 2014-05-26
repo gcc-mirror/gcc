@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1700,6 +1700,12 @@ package Sinfo is
    --    cause freezing even though they normally would. This flag is also
    --    present in an N_Subtype_Indication node, since we also use these in
    --    calls to Freeze_Expression.
+
+   --  Needs_Initialized_Actual (Flag18-Sem)
+   --    Present in formal_private_type_definitions and on private extension
+   --    declarations. Set when the use of a formal type in a generic suggests
+   --    that the actual should be a fully initialized type, to avoid potential
+   --    use of uninitialized values.
 
    --  Next_Entity (Node2-Sem)
    --    Present in defining identifiers, defining character literals and
@@ -5280,6 +5286,7 @@ package Sinfo is
       --  Synchronized_Present (Flag7)
       --  Subtype_Indication (Node5)
       --  Interface_List (List2) (set to No_List if none)
+      --  Needs_Initialized_Actual (Flag18-Sem)
 
       ---------------------
       -- 8.4  Use Clause --
@@ -6705,6 +6712,7 @@ package Sinfo is
       --  Abstract_Present (Flag4)
       --  Tagged_Present (Flag15)
       --  Limited_Present (Flag17)
+      --  Needs_Initialized_Actual (Flag18-Sem)
 
       --------------------------------------------
       -- 12.5.1  Formal Derived Type Definition --
@@ -8930,7 +8938,6 @@ package Sinfo is
 
    function Generalized_Indexing
      (N : Node_Id) return Node_Id;    -- Node4
-
    function Generic_Associations
      (N : Node_Id) return List_Id;    -- List3
 
@@ -9194,6 +9201,9 @@ package Sinfo is
 
    function Names
      (N : Node_Id) return List_Id;    -- List2
+
+   function Needs_Initialized_Actual
+     (N : Node_Id) return Boolean;    -- Flag18
 
    function Next_Entity
      (N : Node_Id) return Node_Id;    -- Node2
@@ -10193,6 +10203,9 @@ package Sinfo is
 
    procedure Set_Names
      (N : Node_Id; Val : List_Id);            -- List2
+
+   procedure Set_Needs_Initialized_Actual
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Next_Entity
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -12483,6 +12496,7 @@ package Sinfo is
    pragma Inline (Must_Override);
    pragma Inline (Name);
    pragma Inline (Names);
+   pragma Inline (Needs_Initialized_Actual);
    pragma Inline (Next_Entity);
    pragma Inline (Next_Exit_Statement);
    pragma Inline (Next_Implicit_With);
@@ -12812,6 +12826,7 @@ package Sinfo is
    pragma Inline (Set_Must_Override);
    pragma Inline (Set_Name);
    pragma Inline (Set_Names);
+   pragma Inline (Set_Needs_Initialized_Actual);
    pragma Inline (Set_Next_Entity);
    pragma Inline (Set_Next_Exit_Statement);
    pragma Inline (Set_Next_Implicit_With);

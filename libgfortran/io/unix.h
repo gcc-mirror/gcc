@@ -185,8 +185,4 @@ internal_proto(stream_isatty);
 extern int stream_ttyname (stream *, char *, size_t);
 internal_proto(stream_ttyname);
 
-extern int unpack_filename (char *, const char *, int);
-internal_proto(unpack_filename);
-
-
 #endif

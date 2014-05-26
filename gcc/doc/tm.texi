@@ -6717,26 +6717,32 @@ schedules to choose the best one.
 The default is no multipass scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD (rtx @var{insn})
+@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD (rtx @var{insn}, int @var{ready_index})
 
 This hook controls what insns from the ready insn queue will be
 considered for the multipass insn scheduling.  If the hook returns
-zero for @var{insn}, the insn will be not chosen to
-be issued.
+zero for @var{insn}, the insn will be considered in multipass scheduling.
+Positive return values will remove @var{insn} from consideration on
+the current round of multipass scheduling.
+Negative return values will remove @var{insn} from consideration for given
+number of cycles.
+Backends should be careful about returning non-zero for highest priority
+instruction at position 0 in the ready list.  @var{ready_index} is passed
+to allow backends make correct judgements.
 
 The default is that any ready insns can be chosen to be issued.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BEGIN (void *@var{data}, char *@var{ready_try}, int @var{n_ready}, bool @var{first_cycle_insn_p})
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BEGIN (void *@var{data}, signed char *@var{ready_try}, int @var{n_ready}, bool @var{first_cycle_insn_p})
 This hook prepares the target backend for a new round of multipass
 scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE (void *@var{data}, char *@var{ready_try}, int @var{n_ready}, rtx @var{insn}, const void *@var{prev_data})
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE (void *@var{data}, signed char *@var{ready_try}, int @var{n_ready}, rtx @var{insn}, const void *@var{prev_data})
 This hook is called when multipass scheduling evaluates instruction INSN.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BACKTRACK (const void *@var{data}, char *@var{ready_try}, int @var{n_ready})
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BACKTRACK (const void *@var{data}, signed char *@var{ready_try}, int @var{n_ready})
 This is called when multipass scheduling backtracks from evaluation of
 an instruction.
 @end deftypefn
@@ -6842,19 +6848,6 @@ be emitted, or a null pointer, when requested check doesn't branch to
 recovery code (a simple check).  If @var{mutate_p} is nonzero, then
 a pattern for a branchy check corresponding to a simple check denoted by
 @var{insn} should be generated.  In this case @var{label} can't be null.
-@end deftypefn
-
-@deftypefn {Target Hook} bool TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC (const_rtx @var{insn})
-This hook is used as a workaround for
-@samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD} not being
-called on the first instruction of the ready list.  The hook is used to
-discard speculative instructions that stand first in the ready list from
-being scheduled on the current cycle.  If the hook returns @code{false},
-@var{insn} will not be chosen to be issued.
-For non-speculative instructions,
-the hook should always return @code{true}.  For example, in the ia64 backend
-the hook is used to cancel data speculative insns when the ALAT table
-is nearly full.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_SET_SCHED_FLAGS (struct spec_info_def *@var{spec_info})

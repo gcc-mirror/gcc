@@ -1,4 +1,4 @@
-//===-- sanitizer_symbolizer_libbacktrace.h -------------------------------===//
+//===-- sanitizer_symbolizer_libbacktrace.h ---------------------*- C++ -*-===//
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
@@ -9,6 +9,8 @@
 // run-time libraries.
 // Header for libbacktrace symbolizer.
 //===----------------------------------------------------------------------===//
+#ifndef SANITIZER_SYMBOLIZER_LIBBACKTRACE_H
+#define SANITIZER_SYMBOLIZER_LIBBACKTRACE_H
 
 #include "sanitizer_platform.h"
 #include "sanitizer_common.h"
@@ -16,6 +18,10 @@
 
 #ifndef SANITIZER_LIBBACKTRACE
 # define SANITIZER_LIBBACKTRACE 0
+#endif
+
+#ifndef SANITIZER_CP_DEMANGLE
+# define SANITIZER_CP_DEMANGLE 0
 #endif
 
 namespace __sanitizer {
@@ -29,7 +35,8 @@ class LibbacktraceSymbolizer {
 
   bool SymbolizeData(DataInfo *info);
 
-  const char *Demangle(const char *name);
+  // May return NULL if demangling failed.
+  static char *Demangle(const char *name, bool always_alloc = false);
 
  private:
   explicit LibbacktraceSymbolizer(void *state) : state_(state) {}
@@ -38,3 +45,4 @@ class LibbacktraceSymbolizer {
 };
 
 }  // namespace __sanitizer
+#endif  // SANITIZER_SYMBOLIZER_LIBBACKTRACE_H

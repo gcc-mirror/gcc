@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,6 +112,7 @@ package System.Rident is
       No_Exception_Registration,                 -- GNAT
       No_Exceptions,                             -- (RM H.4(12))
       No_Finalization,                           -- GNAT
+      No_Fixed_IO,                               -- GNAT
       No_Fixed_Point,                            -- (RM H.4(15))
       No_Floating_Point,                         -- (RM H.4(14))
       No_IO,                                     -- (RM H.4(20))

@@ -2380,7 +2380,7 @@ extern void decl_value_expr_insert (tree, tree);
   (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.comdat_flag)
 
 #define DECL_COMDAT_GROUP(NODE) \
-  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.comdat_group)
+  decl_comdat_group (NODE)
 
 /* Used in TREE_PUBLIC decls to indicate that copies of this DECL in
    multiple translation units should be merged.  */
@@ -3302,6 +3302,8 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define uint16_type_node		global_trees[TI_UINT16_TYPE]
 #define uint32_type_node		global_trees[TI_UINT32_TYPE]
 #define uint64_type_node		global_trees[TI_UINT64_TYPE]
+
+#define void_node			global_trees[TI_VOID]
 
 #define integer_zero_node		global_trees[TI_INTEGER_ZERO]
 #define integer_one_node		global_trees[TI_INTEGER_ONE]

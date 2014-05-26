@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Interfaces; use Interfaces;
+
 with Ada.Unchecked_Conversion;
 
 package body System.Arith_64 is
@@ -47,105 +48,54 @@ package body System.Arith_64 is
    -- Local Subprograms --
    -----------------------
 
-   function "+" (A, B : Uns32) return Uns64;
-   function "+" (A : Uns64; B : Uns32) return Uns64;
-   pragma Inline ("+");
+   function "+" (A, B : Uns32) return Uns64 is (Uns64 (A) + Uns64 (B));
+   function "+" (A : Uns64; B : Uns32) return Uns64 is (A + Uns64 (B));
    --  Length doubling additions
 
-   function "*" (A, B : Uns32) return Uns64;
-   pragma Inline ("*");
+   function "*" (A, B : Uns32) return Uns64 is (Uns64 (A) * Uns64 (B));
    --  Length doubling multiplication
 
-   function "/" (A : Uns64; B : Uns32) return Uns64;
-   pragma Inline ("/");
+   function "/" (A : Uns64; B : Uns32) return Uns64 is (A / Uns64 (B));
    --  Length doubling division
 
-   function "rem" (A : Uns64; B : Uns32) return Uns64;
-   pragma Inline ("rem");
-   --  Length doubling remainder
-
-   function "&" (Hi, Lo : Uns32) return Uns64;
-   pragma Inline ("&");
+   function "&" (Hi, Lo : Uns32) return Uns64 is
+     (Shift_Left (Uns64 (Hi), 32) or Uns64 (Lo));
    --  Concatenate hi, lo values to form 64-bit result
+
+   function "abs" (X : Int64) return Uns64 is
+     (if X = Int64'First then 2**63 else Uns64 (Int64'(abs X)));
+   --  Convert absolute value of X to unsigned. Note that we can't just use
+   --  the expression of the Else, because it overflows for X = Int64'First.
+
+   function "rem" (A : Uns64; B : Uns32) return Uns64 is (A rem Uns64 (B));
+   --  Length doubling remainder
 
    function Le3 (X1, X2, X3 : Uns32; Y1, Y2, Y3 : Uns32) return Boolean;
    --  Determines if 96 bit value X1&X2&X3 <= Y1&Y2&Y3
 
-   function Lo (A : Uns64) return Uns32;
-   pragma Inline (Lo);
+   function Lo (A : Uns64) return Uns32 is (Uns32 (A and 16#FFFF_FFFF#));
    --  Low order half of 64-bit value
 
-   function Hi (A : Uns64) return Uns32;
-   pragma Inline (Hi);
+   function Hi (A : Uns64) return Uns32 is (Uns32 (Shift_Right (A, 32)));
    --  High order half of 64-bit value
 
    procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : Uns32);
    --  Computes X1&X2&X3 := X1&X2&X3 - Y1&Y1&Y3 with mod 2**96 wrap
 
-   function To_Neg_Int (A : Uns64) return Int64;
+   function To_Neg_Int (A : Uns64) return Int64 with Inline;
    --  Convert to negative integer equivalent. If the input is in the range
    --  0 .. 2 ** 63, then the corresponding negative signed integer (obtained
    --  by negating the given value) is returned, otherwise constraint error
    --  is raised.
 
-   function To_Pos_Int (A : Uns64) return Int64;
+   function To_Pos_Int (A : Uns64) return Int64 with Inline;
    --  Convert to positive integer equivalent. If the input is in the range
    --  0 .. 2 ** 63-1, then the corresponding non-negative signed integer is
    --  returned, otherwise constraint error is raised.
 
-   procedure Raise_Error;
+   procedure Raise_Error with Inline;
    pragma No_Return (Raise_Error);
    --  Raise constraint error with appropriate message
-
-   ---------
-   -- "&" --
-   ---------
-
-   function "&" (Hi, Lo : Uns32) return Uns64 is
-   begin
-      return Shift_Left (Uns64 (Hi), 32) or Uns64 (Lo);
-   end "&";
-
-   ---------
-   -- "*" --
-   ---------
-
-   function "*" (A, B : Uns32) return Uns64 is
-   begin
-      return Uns64 (A) * Uns64 (B);
-   end "*";
-
-   ---------
-   -- "+" --
-   ---------
-
-   function "+" (A, B : Uns32) return Uns64 is
-   begin
-      return Uns64 (A) + Uns64 (B);
-   end "+";
-
-   function "+" (A : Uns64; B : Uns32) return Uns64 is
-   begin
-      return A + Uns64 (B);
-   end "+";
-
-   ---------
-   -- "/" --
-   ---------
-
-   function "/" (A : Uns64; B : Uns32) return Uns64 is
-   begin
-      return A / Uns64 (B);
-   end "/";
-
-   -----------
-   -- "rem" --
-   -----------
-
-   function "rem" (A : Uns64; B : Uns32) return Uns64 is
-   begin
-      return A rem Uns64 (B);
-   end "rem";
 
    --------------------------
    -- Add_With_Ovflo_Check --
@@ -178,13 +128,13 @@ package body System.Arith_64 is
       Q, R    : out Int64;
       Round   : Boolean)
    is
-      Xu  : constant Uns64 := To_Uns (abs X);
-      Yu  : constant Uns64 := To_Uns (abs Y);
+      Xu  : constant Uns64 := abs X;
+      Yu  : constant Uns64 := abs Y;
 
       Yhi : constant Uns32 := Hi (Yu);
       Ylo : constant Uns32 := Lo (Yu);
 
-      Zu  : constant Uns64 := To_Uns (abs Z);
+      Zu  : constant Uns64 := abs Z;
       Zhi : constant Uns32 := Hi (Zu);
       Zlo : constant Uns32 := Lo (Zu);
 
@@ -260,15 +210,6 @@ package body System.Arith_64 is
       end if;
    end Double_Divide;
 
-   --------
-   -- Hi --
-   --------
-
-   function Hi (A : Uns64) return Uns32 is
-   begin
-      return Uns32 (Shift_Right (A, 32));
-   end Hi;
-
    ---------
    -- Le3 --
    ---------
@@ -288,25 +229,16 @@ package body System.Arith_64 is
       end if;
    end Le3;
 
-   --------
-   -- Lo --
-   --------
-
-   function Lo (A : Uns64) return Uns32 is
-   begin
-      return Uns32 (A and 16#FFFF_FFFF#);
-   end Lo;
-
    -------------------------------
    -- Multiply_With_Ovflo_Check --
    -------------------------------
 
    function Multiply_With_Ovflo_Check (X, Y : Int64) return Int64 is
-      Xu  : constant Uns64 := To_Uns (abs X);
+      Xu  : constant Uns64 := abs X;
       Xhi : constant Uns32 := Hi (Xu);
       Xlo : constant Uns32 := Lo (Xu);
 
-      Yu  : constant Uns64 := To_Uns (abs Y);
+      Yu  : constant Uns64 := abs Y;
       Yhi : constant Uns32 := Hi (Yu);
       Ylo : constant Uns32 := Lo (Yu);
 
@@ -373,15 +305,15 @@ package body System.Arith_64 is
       Q, R    : out Int64;
       Round   : Boolean)
    is
-      Xu  : constant Uns64 := To_Uns (abs X);
+      Xu  : constant Uns64 := abs X;
       Xhi : constant Uns32 := Hi (Xu);
       Xlo : constant Uns32 := Lo (Xu);
 
-      Yu  : constant Uns64 := To_Uns (abs Y);
+      Yu  : constant Uns64 := abs Y;
       Yhi : constant Uns32 := Hi (Yu);
       Ylo : constant Uns32 := Lo (Yu);
 
-      Zu  : Uns64 := To_Uns (abs Z);
+      Zu  : Uns64 := abs Z;
       Zhi : Uns32 := Hi (Zu);
       Zlo : Uns32 := Lo (Zu);
 
@@ -646,7 +578,6 @@ package body System.Arith_64 is
 
    function To_Neg_Int (A : Uns64) return Int64 is
       R : constant Int64 := -To_Int (A);
-
    begin
       if R <= 0 then
          return R;
@@ -661,7 +592,6 @@ package body System.Arith_64 is
 
    function To_Pos_Int (A : Uns64) return Int64 is
       R : constant Int64 := To_Int (A);
-
    begin
       if R >= 0 then
          return R;

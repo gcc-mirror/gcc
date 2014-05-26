@@ -3627,6 +3627,16 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Check_Enum_Image;
          Validate_Non_Static_Attribute_Function_Call;
+
+         --  Check restriction No_Fixed_IO. Note the check of Comes_From_Source
+         --  to avoid giving a duplicate message for Img expanded into Image.
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Comes_From_Source (N)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
       end Image;
 
       ---------
@@ -3646,6 +3656,14 @@ package body Sem_Attr is
          end if;
 
          Check_Enum_Image;
+
+         --  Check restriction No_Fixed_IO
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
       end Img;
 
       -----------
@@ -6172,7 +6190,7 @@ package body Sem_Attr is
                Comp_Or_Discr := Next_Entity (Comp_Or_Discr);
             end loop;
 
-            --  Diagnose possible erroneous references
+            --  Diagnose possible illegal references
 
             if Present (Comp_Or_Discr) then
                if Ekind (Comp_Or_Discr) = E_Discriminant then
@@ -6458,6 +6476,14 @@ package body Sem_Attr is
 
          Set_Etype (N, P_Base_Type);
          Validate_Non_Static_Attribute_Function_Call;
+
+         --  Check restriction No_Fixed_IO
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
       end Value;
 
       ----------------
@@ -6498,6 +6524,14 @@ package body Sem_Attr is
          Check_E1;
          Resolve (E1, P_Base_Type);
          Validate_Non_Static_Attribute_Function_Call;
+
+         --  Check restriction No_Fixed_IO
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
       end Wide_Image;
 
       ---------------------
@@ -6511,6 +6545,14 @@ package body Sem_Attr is
          Check_E1;
          Resolve (E1, P_Base_Type);
          Validate_Non_Static_Attribute_Function_Call;
+
+         --  Check restriction No_Fixed_IO
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
       end Wide_Wide_Image;
 
       ----------------
@@ -6528,6 +6570,14 @@ package body Sem_Attr is
 
          Set_Etype (N, P_Type);
          Validate_Non_Static_Attribute_Function_Call;
+
+         --  Check restriction No_Fixed_IO
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
       end Wide_Value;
 
       ---------------------
@@ -6544,6 +6594,14 @@ package body Sem_Attr is
 
          Set_Etype (N, P_Type);
          Validate_Non_Static_Attribute_Function_Call;
+
+         --  Check restriction No_Fixed_IO
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
       end Wide_Wide_Value;
 
       ---------------------

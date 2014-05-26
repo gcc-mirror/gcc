@@ -341,7 +341,7 @@ save_inline_function_body (struct cgraph_node *node)
   /* first_clone will be turned into real function.  */
   first_clone = node->clones;
   first_clone->decl = copy_node (node->decl);
-  symtab_insert_node_to_hashtable (first_clone);
+  first_clone->decl->decl_with_vis.symtab_node = first_clone;
   gcc_assert (first_clone == cgraph_get_node (first_clone->decl));
 
   /* Now reshape the clone tree, so all other clones descends from

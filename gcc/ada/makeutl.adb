@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1732,7 +1732,7 @@ package body Makeutl is
                --  no need to process them in turn.
 
                J := Names.Last;
-               loop
+               Main_Loop : loop
                   declare
                      File        : Main_Info       := Names.Table (J);
                      Main_Id     : File_Name_Type  := File.File;
@@ -1798,16 +1798,53 @@ package body Makeutl is
                         --  search for the base name though, and if needed
                         --  check later that we found the correct file.
 
-                        Source := Find_Source
-                          (In_Tree          => File.Tree,
-                           Project          => File.Project,
-                           Base_Name        => Main_Id,
-                           Index            => File.Index,
-                           In_Imported_Only => True);
+                        declare
+                           Sources : constant Source_Ids :=
+                                       Find_All_Sources
+                                         (In_Tree          => File.Tree,
+                                          Project          => File.Project,
+                                          Base_Name        => Main_Id,
+                                          Index            => File.Index,
+                                          In_Imported_Only => True);
+
+                        begin
+                           if Is_Absolute then
+                              for J in Sources'Range loop
+                                 if File_Name_Type (Sources (J).Path.Name) =
+                                                                    File.File
+                                 then
+                                    Source := Sources (J);
+                                    exit;
+                                 end if;
+                              end loop;
+
+                           elsif Sources'Length > 1 then
+
+                              --  This is only allowed if the units are from
+                              --  the same multi-unit source file.
+
+                              Source := Sources (1);
+
+                              for J in 2 .. Sources'Last loop
+                                 if Sources (J).Path /= Source.Path
+                                   or else Sources (J).Index = Source.Index
+                                 then
+                                    Error_Msg_File_1 := Main_Id;
+                                    Prj.Err.Error_Msg
+                                      (Flags, "several main sources {",
+                                       No_Location, File.Project);
+                                    exit Main_Loop;
+                                 end if;
+                              end loop;
+
+                           elsif Sources'Length = 1 then
+                              Source := Sources (Sources'First);
+                           end if;
+                        end;
 
                         if Source = No_Source then
                            Source := Find_File_Add_Extension
-                             (File.Tree, Get_Name_String (Main_Id));
+                                       (File.Tree, Get_Name_String (Main_Id));
                         end if;
 
                         if Is_Absolute
@@ -1883,8 +1920,8 @@ package body Makeutl is
                   end;
 
                   J := J - 1;
-                  exit when J < Names.First;
-               end loop;
+                  exit Main_Loop when J < Names.First;
+               end loop Main_Loop;
             end if;
 
             if Total_Errors_Detected > 0 then

@@ -1,3 +1,25 @@
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-decl.c (merge_decls): Preserve symtab node pointers.
+	(duplicate_decls): Free new decl.
+
+2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Remove duplicated variable
+	initialization.
+
+	* c-parser.c (c_parser_omp_target): Return bool values.
+
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_thread_limit): Rename
+	num_teams_loc variable to num_thread_limit_loc.
+
+2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* c-array-notation.c (expand_array_notations): Use void_node
+	instead of void_zero_node.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* c-decl.c (finish_struct): Adjust.

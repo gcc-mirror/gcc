@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,10 +64,11 @@ package Erroutc is
 
    Warning_Msg_Char : Character;
    --  Warning character, valid only if Is_Warning_Msg is True
-   --    ' '      -- ? appeared on its own in message
-   --    '?'      -- ?? appeared in message
-   --    'x'      -- ?x? appeared in message
-   --    'X'      -- ?x? appeared in message (X is upper case of x)
+   --    ' '      -- ?   appeared on its own in message
+   --    '?'      -- ??  appeared in message
+   --    'x'      -- ?x? appeared in message (x = a .. z)
+   --    'X'      -- ?X? appeared in message (X = A .. Z)
+   --    '*'      -- ?*? appeared in message
 
    Is_Style_Msg : Boolean := False;
    --  Set True to indicate if the current message is a style message
@@ -201,10 +202,11 @@ package Erroutc is
 
       Warn_Chr : Character;
       --  Warning character (note: set even if Warning_Doc_Switch is False)
-      --    ' '      -- ? appeared on its own in message or no ? in message
-      --    '?'      -- ?? appeared in message
-      --    'x'      -- ?x? appeared in message
-      --    'X'      -- ?x? appeared in message (X is upper case of x)
+      --    ' '      -- ?   appeared on its own in message
+      --    '?'      -- ??  appeared in message
+      --    'x'      -- ?x? appeared in message (x = a .. z)
+      --    'X'      -- ?X? appeared in message (X = A .. Z)
+      --    '*'      -- ?*? appeared in message
 
       Style : Boolean;
       --  True if style message (starts with "(style)")
@@ -554,12 +556,18 @@ package Erroutc is
 
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
-      Msg : String_Ptr) return String_Id;
+      Msg : String_Ptr;
+      Tag : String := "") return String_Id;
    --  Determines if given message to be posted at given location is suppressed
    --  by specific ON/OFF Warnings pragmas specifying this particular message.
    --  If the warning is not suppressed then No_String is returned, otherwise
    --  the corresponding warning string is returned (or the null string if no
-   --  Warning argument was present in the pragma).
+   --  Warning argument was present in the pragma). Tag is the error message
+   --  tag for the message in question or the null string if there is no tag.
+   --
+   --  Note: we have a null default for Tag to deal with calls from an old
+   --  branch of gnat2why, which does not know about tags in the calls but
+   --  which uses the latest version of erroutc.
 
    function Warning_Treated_As_Error (Msg : String) return Boolean;
    --  Returns True if the warning message Msg matches any of the strings

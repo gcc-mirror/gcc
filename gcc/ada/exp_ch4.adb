@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -831,13 +831,26 @@ package body Exp_Ch4 is
 
             --  Step 2: Create the accessibility comparison
 
+            --  Reference the tag: for a renaming of an access to an interface
+            --  object Obj_Ref already references the tag of the secondary
+            --  dispatch table.
+
+            if Nkind (Obj_Ref) in N_Has_Entity
+              and then Present (Entity (Obj_Ref))
+              and then Present (Renamed_Object (Entity (Obj_Ref)))
+              and then Is_Interface (DesigT)
+            then
+               null;
+
             --  Generate:
             --    Ref'Tag
 
-            Obj_Ref :=
-              Make_Attribute_Reference (Loc,
-                Prefix         => Obj_Ref,
-                Attribute_Name => Name_Tag);
+            else
+               Obj_Ref :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => Obj_Ref,
+                   Attribute_Name => Name_Tag);
+            end if;
 
             --  For tagged types, determine the accessibility level by looking
             --  at the type specific data of the dispatch table. Generate:

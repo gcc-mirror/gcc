@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -889,12 +889,119 @@ package body Prj is
       return Result;
    end Find_Source;
 
+   ----------------------
+   -- Find_All_Sources --
+   ----------------------
+
+   function Find_All_Sources
+     (In_Tree          : Project_Tree_Ref;
+      Project          : Project_Id;
+      In_Imported_Only : Boolean := False;
+      In_Extended_Only : Boolean := False;
+      Base_Name        : File_Name_Type;
+      Index            : Int := 0) return Source_Ids
+   is
+      Result : Source_Ids (1 .. 1_000);
+      Last   : Natural := 0;
+
+      type Empty_State is null record;
+      No_State : Empty_State;
+      --  This is needed for the State parameter of procedure Look_For_Sources
+      --  below, because of the instantiation For_Imported_Projects of generic
+      --  procedure For_Every_Project_Imported. As procedure Look_For_Sources
+      --  does not modify parameter State, there is no need to give its type
+      --  more than one value.
+
+      procedure Look_For_Sources
+        (Proj  : Project_Id;
+         Tree  : Project_Tree_Ref;
+         State : in out Empty_State);
+      --  Look for Base_Name in the sources of Proj
+
+      ----------------------
+      -- Look_For_Sources --
+      ----------------------
+
+      procedure Look_For_Sources
+        (Proj  : Project_Id;
+         Tree  : Project_Tree_Ref;
+         State : in out Empty_State)
+      is
+         Iterator : Source_Iterator;
+         Src : Source_Id;
+
+      begin
+         State := No_State;
+
+         Iterator := For_Each_Source (In_Tree => Tree, Project => Proj);
+         while Element (Iterator) /= No_Source loop
+            if Element (Iterator).File = Base_Name
+              and then (Index = 0
+                        or else
+                          (Element (Iterator).Unit /= No_Unit_Index
+                           and then
+                           Element (Iterator).Index = Index))
+            then
+               Src := Element (Iterator);
+
+               --  If the source has been excluded, continue looking. We will
+               --  get the excluded source only if there is no other source
+               --  with the same base name that is not locally removed.
+
+               if not Element (Iterator).Locally_Removed then
+                  Last := Last + 1;
+                  Result (Last) := Src;
+               end if;
+            end if;
+
+            Next (Iterator);
+         end loop;
+      end Look_For_Sources;
+
+      procedure For_Imported_Projects is new For_Every_Project_Imported
+        (State => Empty_State, Action => Look_For_Sources);
+
+      Proj : Project_Id;
+
+   --  Start of processing for Find_All_Sources
+
+   begin
+      if In_Extended_Only then
+         Proj := Project;
+         while Proj /= No_Project loop
+            Look_For_Sources (Proj, In_Tree, No_State);
+            exit when Last > 0;
+            Proj := Proj.Extends;
+         end loop;
+
+      elsif In_Imported_Only then
+         Look_For_Sources (Project, In_Tree, No_State);
+
+         if Last = 0 then
+            For_Imported_Projects
+              (By                 => Project,
+               Tree               => In_Tree,
+               Include_Aggregated => False,
+               With_State         => No_State);
+         end if;
+
+      else
+         Look_For_Sources (No_Project, In_Tree, No_State);
+      end if;
+
+      return Result (1 .. Last);
+   end Find_All_Sources;
+
    ----------
    -- Hash --
    ----------
 
    function Hash is new GNAT.HTable.Hash (Header_Num => Header_Num);
    --  Used in implementation of other functions Hash below
+
+   ----------
+   -- Hash --
+   ----------
 
    function Hash (Name : File_Name_Type) return Header_Num is
    begin

@@ -1,3 +1,161 @@
+2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.dg/lto/pr61278_0.c: New test.
+	* gcc.dg/lto/pr61278_1.c: New test.
+
+2014-05-26  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.dg/pr61220.c: New test.
+	* gcc.dg/shrink-wrap-loop.c: Disable for x86_64 -m32 mode.
+
+2014-05-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_10.f90: Update dg-warning.
+	* gfortran.dg/coarray_this_image_1.f90: New.
+	* gfortran.dg/coarray_this_image_2.f90: New.
+
+2014-05-24  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/61173
+	gfortran.dg/arrayio_14.f90: New test.
+
+2014-05-24  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.c-torture/execute/bswap-2.c (main): Handle more bitfield
+	layouts.
+
+2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	* gfortran.dg/gfortran.dg/bind_c_array_params_2.f90:
+	Adjust regexp for -flto.
+	* gfortran.dg/gfortran.dg/pr48636-2.f90: Likewise.
+	* gfortran.dg/pr52835.f90: Likewise.
+
+2014-05-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61215
+	* gcc.target/i386/pr61215.c: New.
+
+2014-05-23  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/float-cast-overflow-1.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-10.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-2.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-3.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-4.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-5.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-6.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-7.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-7.h: New file.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-9.c: New test.
+	* c-c++-common/ubsan/float-cast.h: New file.
+	* g++.dg/ubsan/float-cast-overflow-bf.C: New test.
+	* gcc.dg/ubsan/float-cast-overflow-bf.c: New test.
+
+2014-05-23  Jiong Wang   <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/tail_indirect_call_1.c: New.
+
+2014-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/lambda-init9.C: New.
+
+2014-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/61266
+	* gcc.dg/Wstrict-overflow-18.c: Revert un-XFAILing and
+	adjust testcase to reflect reality.
+
+2014-05-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/54733
+	* gcc.dg/optimize-bswapdi-3.c: New test to check extension of bswap
+	optimization to support memory sources and bitwise operations
+	equivalent to load in host endianness.
+	* gcc.dg/optimize-bswaphi-1.c: Likewise.
+	* gcc.dg/optimize-bswapsi-2.c: Likewise.
+	* gcc.c-torture/execute/bswap-2.c: Likewise.
+
+2014-05-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp: New effective targets for architectures
+	capable of performing byte swap.
+	* gcc.dg/optimize-bswapdi-1.c: Convert to new bswap target.
+	* gcc.dg/optimize-bswapdi-2.c: Likewise.
+	* gcc.dg/optimize-bswapsi-1.c: Likewise.
+
+2014-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61088
+	* g++.dg/cpp0x/lambda/lambda-ice13.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ice7.C: Adjust.
+
+2014-05-22  Xinliang David Li  <davidxl@google.com>
+
+	* g++.dg/ipa/devirt-15.C: Fix expected message.
+	* g++.dg/ipa/devirt-16.C: Ditto.
+	* g++.dg/ipa/devirt-17.C: Ditto.
+	* g++.dg/ipa/devirt-26.C: Ditto.
+	* g++.dg/ipa/imm-devirt-1.C: Ditto.
+	* g++.dg/ipa/imm-devirt-2.C: Ditto.
+	* g++.dg/tree-ssa/pr8781.C:Ditto.
+
+2014-05-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-ttest.c: New test.
+
+2014-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt37.ad[sb]: New test.
+
+2014-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/61271
+	* g++.dg/cilk-plus/AN/array_function.cc: New.
+
+2014-05-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-33.c: New testcase.
+
+2014-05-22  Kostya Serebryany  <kcc@google.com>
+
+	* c-c++-common/tsan/mutexset1.c: Update the test to match
+	upstream r209283.
+	* g++.dg/asan/symbolize-callback-1.C: Delete the deprecated test.
+
+2014-05-21  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/61272
+	* g++.dg/ubsan/pr61272.C: New test.
+
+2014-05-21  Cesar Philippidis  <cesar@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR lto/60179
+	* lib/scanasm.exp (scan-lto-assembler): New procedure.
+	* gcc.target/nios2/custom-fp-lto.c: New test.
+
+2014-05-21  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/cpp0x/pr61038.C (operator "" _s): Use size_t.
+
+2014-05-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-3.c: New.
+
+2014-05-21  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c++/60189
+	* c-c++-common/cilk-plus/CK/invalid_sync.c: New test.
+
+2014-05-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/60899
+	g++.dg/ipa/devirt-11.C: Update template.
+
 2014-05-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR C++/61038

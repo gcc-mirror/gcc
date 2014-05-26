@@ -42,8 +42,7 @@ bar ()
   baz ();
   c + d;
 }
-/* While inlining function called once we should devirtualize a new call to fn2
-   and two to fn3. While doing so the new symbol for fn2 needs to be
-   introduced.  */
-/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 3 "inline"  } } */
+/* While inlining function called once we should devirtualize a new call to fn3.
+   Because fn2 is already removed, we should not devirtualize.  */
+/* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 1 "inline"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */

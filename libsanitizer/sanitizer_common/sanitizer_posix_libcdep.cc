@@ -12,12 +12,15 @@
 
 #include "sanitizer_platform.h"
 
-#if SANITIZER_LINUX || SANITIZER_MAC
+#if SANITIZER_POSIX
 #include "sanitizer_common.h"
+#include "sanitizer_flags.h"
+#include "sanitizer_platform_limits_posix.h"
 #include "sanitizer_stacktrace.h"
 
 #include <errno.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
@@ -49,7 +52,7 @@ void DisableCoreDumper() {
 bool StackSizeIsUnlimited() {
   struct rlimit rlim;
   CHECK_EQ(0, getrlimit(RLIMIT_STACK, &rlim));
-  return (rlim.rlim_cur == (uptr)-1);
+  return ((uptr)rlim.rlim_cur == (uptr)-1);
 }
 
 void SetStackSizeLimitInBytes(uptr limit) {
@@ -87,6 +90,59 @@ int internal_isatty(fd_t fd) {
   return isatty(fd);
 }
 
+#ifndef SANITIZER_GO
+// TODO(glider): different tools may require different altstack size.
+static const uptr kAltStackSize = SIGSTKSZ * 4;  // SIGSTKSZ is not enough.
+
+void SetAlternateSignalStack() {
+  stack_t altstack, oldstack;
+  CHECK_EQ(0, sigaltstack(0, &oldstack));
+  // If the alternate stack is already in place, do nothing.
+  // Android always sets an alternate stack, but it's too small for us.
+  if (!SANITIZER_ANDROID && !(oldstack.ss_flags & SS_DISABLE)) return;
+  // TODO(glider): the mapped stack should have the MAP_STACK flag in the
+  // future. It is not required by man 2 sigaltstack now (they're using
+  // malloc()).
+  void* base = MmapOrDie(kAltStackSize, __func__);
+  altstack.ss_sp = (char*) base;
+  altstack.ss_flags = 0;
+  altstack.ss_size = kAltStackSize;
+  CHECK_EQ(0, sigaltstack(&altstack, 0));
+}
+
+void UnsetAlternateSignalStack() {
+  stack_t altstack, oldstack;
+  altstack.ss_sp = 0;
+  altstack.ss_flags = SS_DISABLE;
+  altstack.ss_size = kAltStackSize;  // Some sane value required on Darwin.
+  CHECK_EQ(0, sigaltstack(&altstack, &oldstack));
+  UnmapOrDie(oldstack.ss_sp, oldstack.ss_size);
+}
+
+typedef void (*sa_sigaction_t)(int, siginfo_t *, void *);
+static void MaybeInstallSigaction(int signum,
+                                  SignalHandlerType handler) {
+  if (!IsDeadlySignal(signum))
+    return;
+  struct sigaction sigact;
+  internal_memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_sigaction = (sa_sigaction_t)handler;
+  sigact.sa_flags = SA_SIGINFO;
+  if (common_flags()->use_sigaltstack) sigact.sa_flags |= SA_ONSTACK;
+  CHECK_EQ(0, internal_sigaction(signum, &sigact, 0));
+  VReport(1, "Installed the sigaction for signal %d\n", signum);
+}
+
+void InstallDeadlySignalHandlers(SignalHandlerType handler) {
+  // Set the alternate signal stack for the main thread.
+  // This will cause SetAlternateSignalStack to be called twice, but the stack
+  // will be actually set only once.
+  if (common_flags()->use_sigaltstack) SetAlternateSignalStack();
+  MaybeInstallSigaction(SIGSEGV, handler);
+  MaybeInstallSigaction(SIGBUS, handler);
+}
+#endif  // SANITIZER_GO
+
 }  // namespace __sanitizer
 
-#endif
+#endif  // SANITIZER_POSIX

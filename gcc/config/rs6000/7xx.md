@@ -61,8 +61,9 @@
   "ppc750_du,lsu_7xx")
 
 (define_insn_reservation "ppc750-integer" 1
-  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,\
-                        trap,var_shift_rotate,cntlz,exts,isel")
+  (and (ior (eq_attr "type" "integer,insert,trap,cntlz,exts,isel")
+	    (and (eq_attr "type" "add,logical,shift")
+		 (eq_attr "dot" "no")))
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx|iu2_7xx")
 
@@ -77,28 +78,32 @@
   "ppc750_du,iu1_7xx|iu2_7xx,iu1_7xx|iu2_7xx,iu1_7xx|iu2_7xx")
 
 (define_insn_reservation "ppc750-imul" 4
-  (and (eq_attr "type" "imul,imul_compare")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "32")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx*4")
 
 (define_insn_reservation "ppc750-imul2" 3
-  (and (eq_attr "type" "imul2")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "16")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx*2")
 
 (define_insn_reservation "ppc750-imul3" 2
-  (and (eq_attr "type" "imul3")
+  (and (eq_attr "type" "mul")
+       (eq_attr "size" "8")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx")
 
 (define_insn_reservation "ppc750-idiv" 19
-  (and (eq_attr "type" "idiv")
+  (and (eq_attr "type" "div")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,iu1_7xx*19")
 
 (define_insn_reservation "ppc750-compare" 2
-  (and (eq_attr "type" "cmp,fast_compare,compare,delayed_compare,\
-                        var_delayed_compare")
+  (and (ior (eq_attr "type" "cmp,compare")
+	    (and (eq_attr "type" "add,logical,shift")
+		 (eq_attr "dot" "yes")))
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,(iu1_7xx|iu2_7xx)")
 

@@ -786,7 +786,6 @@ unit_truncate (gfc_unit * u, gfc_offset pos, st_parameter_common * common)
 char *
 filename_from_unit (int n)
 {
-  char *filename;
   gfc_unit *u;
   int c;
 
@@ -805,11 +804,7 @@ filename_from_unit (int n)
 
   /* Get the filename.  */
   if (u != NULL)
-    {
-      filename = (char *) xmalloc (u->file_len + 1);
-      unpack_filename (filename, u->file, u->file_len);
-      return filename;
-    }
+    return fc_strdup (u->file, u->file_len);
   else
     return (char *) NULL;
 }

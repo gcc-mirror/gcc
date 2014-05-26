@@ -4601,7 +4601,7 @@ gfc_simplify_null (gfc_expr *mold)
 
 
 gfc_expr *
-gfc_simplify_num_images (void)
+gfc_simplify_num_images (gfc_expr *distance ATTRIBUTE_UNUSED, gfc_expr *failed)
 {
   gfc_expr *result;
 
@@ -4614,10 +4614,18 @@ gfc_simplify_num_images (void)
   if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
+  if (failed && failed->expr_type != EXPR_CONSTANT)
+    return NULL;
+
   /* FIXME: gfc_current_locus is wrong.  */
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 				  &gfc_current_locus);
-  mpz_set_si (result->value.integer, 1);
+
+  if (failed && failed->value.logical != 0)
+    mpz_set_si (result->value.integer, 0);
+  else
+    mpz_set_si (result->value.integer, 1);
+
   return result;
 }
 
@@ -6389,12 +6397,15 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
 
 
 gfc_expr *
-gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim)
+gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim,
+			 gfc_expr *distance ATTRIBUTE_UNUSED)
 {
   if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
-  if (coarray == NULL)
+  /* If no coarray argument has been passed or when the first argument
+     is actually a distance argment.  */
+  if (coarray == NULL || !gfc_is_coarray (coarray))
     {
       gfc_expr *result;
       /* FIXME: gfc_current_locus is wrong.  */

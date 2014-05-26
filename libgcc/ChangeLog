@@ -1,3 +1,21 @@
+2014-05-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/t-msp430 (HOST_LIBGCC2_CFLAGS): Add
+	-mhwmult=none.
+
+2014-05-22  Teresa Johnson  <tejohnson@google.com>
+
+	* libgcov-driver.c (gcov_error): Move declaration before gcov-io.c
+	include.
+
+2014-05-20  John Marino  <gnugcc@marino.st>
+
+	* config.host (*-*-dragonfly*): New target.
+	* crtstuff.c: Make dl_iterate_support generic on *bsd.
+	* enable-execute-stack-mprotect.c: Always mprotect on FreeBSD.
+	* unwind-dw2-fde-dip.c: Add dl_iterate_phr support for DragonFly.
+	* config/i386/dragonfly-unwind.h: New.
+
 2014-05-21  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	PR libgcc/60166

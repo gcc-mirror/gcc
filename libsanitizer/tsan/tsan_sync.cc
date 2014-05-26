@@ -15,10 +15,13 @@
 
 namespace __tsan {
 
+void DDMutexInit(ThreadState *thr, uptr pc, SyncVar *s);
+
 SyncVar::SyncVar(uptr addr, u64 uid)
   : mtx(MutexTypeSyncVar, StatMtxSyncVar)
   , addr(addr)
   , uid(uid)
+  , creation_stack_id()
   , owner_tid(kInvalidTid)
   , last_lock()
   , recursion()
@@ -60,9 +63,11 @@ SyncVar* SyncTab::Create(ThreadState *thr, uptr pc, uptr addr) {
   void *mem = internal_alloc(MBlockSync, sizeof(SyncVar));
   const u64 uid = atomic_fetch_add(&uid_gen_, 1, memory_order_relaxed);
   SyncVar *res = new(mem) SyncVar(addr, uid);
-#ifndef TSAN_GO
-  res->creation_stack_id = CurrentStackId(thr, pc);
-#endif
+  res->creation_stack_id = 0;
+  if (!kGoMode)  // Go does not use them
+    res->creation_stack_id = CurrentStackId(thr, pc);
+  if (flags()->detect_deadlocks)
+    DDMutexInit(thr, pc, res);
   return res;
 }
 

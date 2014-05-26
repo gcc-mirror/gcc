@@ -15,6 +15,7 @@ toolexeclib_LTLIBRARIES = libasan.la
 nodist_toolexeclib_HEADERS = libasan_preinit.o
 
 asan_files = \
+	asan_activation.cc \
 	asan_allocator2.cc \
 	asan_dll_thunk.cc \
 	asan_fake_stack.cc \

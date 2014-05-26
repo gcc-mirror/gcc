@@ -4018,7 +4018,7 @@ Internal GNAT implementation mode. This should not be used for
 applications programs, it is intended only for use by the compiler
 and its run-time library. For documentation, see the GNAT sources.
 Note that @option{^-gnatg^/GNAT_INTERNAL^} implies
-@option{^-gnatwae^/WARNINGS=ALL,ERRORS^} and
+@option{^-gnatw.ge^/WARNINGS=GNAT,ERRORS^} and
 @option{^-gnatyg^/STYLE_CHECKS=GNAT^}
 so that all standard warnings and all standard style options are turned on.
 All warnings and style messages are treated as errors.
@@ -5167,6 +5167,14 @@ Manual requirement that such warnings appear).
 @cindex @option{-gnatwG} (@command{gcc})
 This switch suppresses warnings for unrecognized pragmas.
 
+@item -gnatw.g
+@emph{Warnings used for GNAT sources}
+@cindex @option{-gnatw.g} (@command{gcc})
+This switch sets the warning categories that are used by the standard
+GNAT style. Currently this is equivalent to
+@option{-gnatwAao.sI.C.V.X}
+but more warnings may be added in the future without advanced notice.
+
 @item -gnatwh
 @emph{Activate warnings on hiding.}
 @cindex @option{-gnatwh} (@command{gcc})
@@ -5867,6 +5875,12 @@ Conversely, this switch suppresses warnings from the @option{GCC} back end.
 The use of this switch also sets the default front end warning mode to
 @option{-gnatws}, that is, front end warnings suppressed as well.
 
+@item -Werror
+@cindex @option{-Werror}
+This switch causes warnings from the @option{GCC} back end to be treated as
+errors.  The warning string still appears, but the warning messages are
+counted as errors, and prevent the generation of an object file.
+
 @end table
 
 @noindent
@@ -6375,7 +6389,9 @@ in the source text.
 @emph{GNAT style mode.}
 The set of style check switches is set to match that used by the GNAT sources.
 This may be useful when developing code that is eventually intended to be
-incorporated into GNAT. For further details, see GNAT sources.
+incorporated into GNAT. Currently this is equivalent to @option{-gnatwydISux})
+but additional style switches may be added to this set in the future without
+advance notice.
 
 @item ^h^HTABS^
 @emph{No horizontal tabs.}
@@ -8368,11 +8384,6 @@ continues in this case. If the number of errors reaches this
 limit, then a message is output and the bind is abandoned.
 A value of zero means that no limit is enforced. The equal
 sign is optional.
-
-@ifset unw
-Furthermore, under Windows, the sources pointed to by the libraries path
-set in the registry are not searched for.
-@end ifset
 
 @item ^-n^/NOMAIN^
 @cindex @option{^-n^/NOMAIN^} (@command{gnatbind})
@@ -14118,21 +14129,17 @@ Support for @option{--pp-old} will be removed in some future version.
 
 To produce a reformatted file, @command{gnatpp} invokes the Ada
 compiler and generates and uses the ASIS tree for the input source;
-thus the input must be legal Ada code.
+thus the input must be legal Ada code, and the tool should have all the
+information needed to compile the input source. To provide this information,
+you may specify as a tool parameter the project file the input source belongs to
+(or you may call @command{gnatpp}
+through the @command{gnat} driver (see @ref{The GNAT Driver and
+Project Files}). Another possibility is to specify the source search
+path and needed configuration files in @option{-cargs} section of @command{gnatpp}
+call, see the description of the @command{gnatpp} switches below.
 
 @command{gnatpp} cannot process sources that contain
 preprocessing directives.
-
-If the compilation unit contained in the input source depends
-semantically upon units located outside the current directory, you
-have to provide the source search path when invoking
-@command{gnatpp}. If these units are contained in files with names
-that do not follow the GNAT file naming rules, you have to provide a
-configuration file describing the corresponding naming scheme; see the
-description of the @command{gnatpp} switches below. Another
-possibility is to use a project file and to call @command{gnatpp}
-through the @command{gnat} driver (see @ref{The GNAT Driver and
-Project Files}).
 
 The @command{gnatpp} command has the form
 
@@ -15568,23 +15575,16 @@ metrics are computed and output.
 * Switches for gnatmetric::
 @end menu
 
-@command{gnatmetric} generates and uses the ASIS
-tree for the input source and thus requires the input to be syntactically and
-semantically legal.
-If this condition is not met, @command{gnatmetric} will generate
-an error message; no metric information for this file will be
-computed and reported.
-
-If the compilation unit contained in the input source depends semantically
-upon units in files located outside the current directory, you have to provide
-the source search path when invoking @command{gnatmetric}.
-If it depends semantically upon units that are contained
-in files with names that do not follow the GNAT file naming rules, you have to
-provide the configuration file describing the corresponding naming scheme (see
-the description of the @command{gnatmetric} switches below.)
-Alternatively, you may use a project file and invoke @command{gnatmetric}
-through the @command{gnat} driver (see @ref{The GNAT Driver and Project Files}),
-or you can directly specify a project file as a @command{gnatmetric} parameter.
+To compute program metrics, @command{gnatmetric} invokes the Ada
+compiler and generates and uses the ASIS tree for the input source;
+thus the input must be legal Ada code, and the tool should have all the
+information needed to compile the input source. To provide this information,
+you may specify as a tool parameter the project file the input source belongs to
+(or you may call @command{gnatmetric}
+through the @command{gnat} driver (see @ref{The GNAT Driver and
+Project Files}). Another possibility is to specify the source search
+path and needed configuration files in @option{-cargs} section of @command{gnatmetric}
+call, see the description of the @command{gnatmetric} switches below.
 
 The @command{gnatmetric} command has the form
 
@@ -16221,50 +16221,48 @@ Do not report the extra exit points for subprogram bodies
 @cindex Coupling metrics control in @command{gnatmetric}
 
 @noindent
-@cindex Coupling metrics (in in @command{gnatmetric})
+@cindex Coupling metrics (in @command{gnatmetric})
 Coupling metrics measure the dependencies between a given entity and other
-entities the program consists of. The goal of these metrics is to estimate the
-stability of the whole program considered as the collection of entities
-(modules, classes etc.).
+entities in the program. This information is useful since high coupling
+may signal potential issues with maintainability as the program evolves.
 
-Gnatmetric computes the following coupling metrics:
+@command{gnatmetric} computes the following coupling metrics:
 
 @itemize @bullet
 
 @item
-@emph{object-oriented coupling} - for classes in traditional object-oriented
+@emph{object-oriented coupling}, for classes in traditional object-oriented
 sense;
 
 @item
-@emph{unit coupling} - for all the program units making up a program;
+@emph{unit coupling}, for all the program units making up a program;
 
 @item
-@emph{control coupling} - this metric counts dependencies between a unit and
-only those units that define subprograms;
+@emph{control coupling}, reflecting dependencies between a unit and
+other units that contain subprograms.
 @end itemize
 
 @noindent
 Two kinds of coupling metrics are computed:
 
-@table @asis
-@item fan-out coupling (efferent coupling)
+@itemize @bullet
+@item fan-out coupling (``efferent coupling''):
 @cindex fan-out coupling
 @cindex efferent coupling
-the number of entities the given entity depends upon. It
-estimates in what extent the given entity depends on the changes in
-``external world''
+the number of entities the given entity depends upon. This metric
+reflects how the given entity depends on the changes in the
+``external world''.
 
-@item fan-in coupling (afferent coupling)
+@item fan-in coupling (``afferent'' coupling):
 @cindex fan-in coupling
 @cindex afferent coupling
 the number of entities that depend on a given entity.
-It estimates in what extent the ``external world'' depends on the changes in a
-given entity
-@end table
+This metric reflects how the ``external world'' depends on the changes in a
+given entity.
+@end itemize
 
 @noindent
-
-Object-oriented coupling metrics are metrics that measure the dependencies
+Object-oriented coupling metrics measure the dependencies
 between a given class (or a group of classes) and the other classes in the
 program. In this subsection the term ``class'' is used in its traditional
 object-oriented programming sense (an instantiable module that contains data
@@ -16281,68 +16279,78 @@ that depend upon @code{K}.
 A category's fan-in coupling is the number of classes outside the
 category that depend on classes belonging to the category.
 
-Ada's implementation of the object-oriented paradigm does not use the
-traditional class notion, so the definition of the coupling
+Ada's object-oriented paradigm separates the instantiable entity
+(type) from the module (package), so the definition of the coupling
 metrics for Ada maps the class and class category notions
 onto Ada constructs.
 
-For the coupling metrics, several kinds of modules -- a library package,
-a library generic package, and a library generic package instantiation --
-that define a tagged type or an interface type are
-considered to be a class. A category consists of a library package (or
+For the coupling metrics, several kinds of modules that define a tagged type
+or an interface type  -- library packages, library generic packages, and
+library generic package instantiations -- are considered to be classes.
+A category consists of a library package (or
 a library generic package) that defines a tagged or an interface type,
 together with all its descendant (generic) packages that define tagged
-or interface types. That is a
-category is an Ada hierarchy of library-level program units. So class coupling
-in case of Ada is called as tagged coupling, and category coupling - as
-hierarchy coupling.
+or interface types. Thus a
+category is an Ada hierarchy of library-level program units. Class
+coupling in Ada is referred to as ``tagged coupling'', and category coupling
+is referred to as ``hierarchy coupling''.
 
-For any package counted as a class, its body and subunits (if any) are
-considered together with its spec when counting the dependencies, and coupling
-metrics are reported for spec units only. For dependencies between classes,
-the Ada semantic dependencies are considered. For object-oriented coupling
-metrics, only dependencies on units that are considered as classes, are
+For any package serving as a class, its body and subunits (if any) are
+considered together with its spec when computing dependencies, and coupling
+metrics are reported for spec units only. Dependencies between classes
+mean Ada semantic dependencies. For object-oriented coupling
+metrics, only dependencies on units treated as classes are
 considered.
 
-For unit and control coupling also not compilation units but program units are
-counted. That is, for a package, its spec, its body and its subunits (if any)
-are considered as making up one unit, and the dependencies that are counted
-are the dependencies of all these compilation units collected together as
-the dependencies as a (whole) unit. And metrics are reported for spec
-compilation units only (or for a subprogram body unit in case if there is no
+Similarly, for unit and control coupling an entity is considered to be the
+conceptual construct consisting of the entity's specification, body, and
+any subunits (transitively).
+@command{gnatmetric} computes
+the dependencies of all these units as a whole, but
+metrics are only reported for spec
+units (or for a subprogram body unit in case if there is no
 separate spec for the given subprogram).
 
-For unit coupling, dependencies between all kinds of program units are
-considered. For control coupling, for each unit the dependencies of this unit
-upon units that define subprograms are counted, so control fan-out coupling
-is reported for all units, but control fan-in coupling - only for the units
+For unit coupling, dependencies are computed between all kinds of program
+units. For control coupling, the dependencies of a given unit are limited to
+those units that define subprograms. Thus control fan-out coupling is reported
+for all units, but control fan-in coupling is only reported for units
 that define subprograms.
 
 The following simple example illustrates the difference between unit coupling
 and control coupling metrics:
 
 @smallexample @c ada
+@group
 package Lib_1 is
     function F_1 (I : Integer) return Integer;
 end Lib_1;
+@end group
 
+@group
 package Lib_2 is
     type T_2 is new Integer;
 end Lib_2;
+@end group
 
+@group
 package body Lib_1 is
     function F_1 (I : Integer) return Integer is
     begin
        return I + 1;
     end F_1;
 end Lib_1;
+@end group
 
+@group
 with Lib_2; use Lib_2;
 package Pack is
     Var : T_2;
     function Fun (I : Integer) return Integer;
 end Pack;
+@end group
 
+@group
 with Lib_1; use Lib_1;
 package body Pack is
     function Fun (I : Integer) return Integer is
@@ -16350,13 +16358,15 @@ package body Pack is
        return F_1 (I);
     end Fun;
 end Pack;
+@end group
 @end smallexample
 
 @noindent
-if we apply @command{gnatmetric} with @code{--coupling-all} option to these
-units, the result will be:
+If we apply @command{gnatmetric} with the @option{--coupling-all} option to
+these units, the result will be:
 
 @smallexample
+@group
 Coupling metrics:
 =================
     Unit Lib_1 (C:\customers\662\L406-007\lib_1.ads)
@@ -16364,46 +16374,50 @@ Coupling metrics:
        control fan-in coupling   : 1
        unit fan-out coupling     : 0
        unit fan-in coupling      : 1
+@end group
 
+@group
     Unit Pack (C:\customers\662\L406-007\pack.ads)
        control fan-out coupling  : 1
        control fan-in coupling   : 0
        unit fan-out coupling     : 2
        unit fan-in coupling      : 0
+@end group
 
+@group
     Unit Lib_2 (C:\customers\662\L406-007\lib_2.ads)
        control fan-out coupling  : 0
        unit fan-out coupling     : 0
        unit fan-in coupling      : 1
+@end group
 @end smallexample
 
 @noindent
 The result does not contain values for object-oriented
-coupling because none of the argument unit contains a tagged type and
+coupling because none of the argument units contains a tagged type and
 therefore none of these units can be treated as a class.
 
-@code{Pack} (considered as a program unit, that is spec+body) depends on two
-units - @code{Lib_1} @code{and Lib_2}, therefore it has unit fan-out coupling
-equals to 2. And nothing depend on it, so its unit fan-in coupling is 0 as
-well as control fan-in coupling. Only one of the units @code{Pack} depends
+The @code{Pack} package (spec and body) depends on two
+units -- @code{Lib_1} @code{and Lib_2} -- and so its unit fan-out coupling
+is 2. Since nothing depends on it, its unit fan-in coupling is 0, as
+is its control fan-in coupling. Only one of the units @code{Pack} depends
 upon defines a subprogram, so its control fan-out coupling is 1.
 
-@code{Lib_2} depends on nothing, so fan-out metrics for it are 0. It does
-not define a subprogram, so control fan-in metric cannot be applied to it,
-and there is one unit that depends on it (@code{Pack}), so it has
-unit fan-in coupling equals to 1.
+@code{Lib_2} depends on nothing, so its fan-out metrics are 0. It does
+not define any subprograms, so it has no control fan-in metric.
+One unit (@code{Pack}) depends on it , so its unit fan-in coupling is 1.
 
 @code{Lib_1} is similar to @code{Lib_2}, but it does define a subprogram.
-So it has control fan-in coupling equals to 1 (because there is a unit
+Its control fan-in coupling is 1 (because there is one unit
 depending on it).
 
 When computing coupling metrics, @command{gnatmetric} counts only
 dependencies between units that are arguments of the @command{gnatmetric}
-call. Coupling metrics are program-wide (or project-wide) metrics, so to
-get a valid result, you should call @command{gnatmetric} for
-the whole set of sources that make up your program. It can be done
-by calling @command{gnatmetric} from the GNAT driver with @option{-U}
-option (see @ref{The GNAT Driver and Project Files} for details).
+invocation. Coupling metrics are program-wide (or project-wide) metrics, so
+you should invoke @command{gnatmetric} for
+the complete set of sources comprising your program. This can be done
+by invoking @command{gnatmetric} with the corresponding project file
+and with the @option{-U} option.
 
 By default, all the coupling metrics are disabled. You can use the following
 switches to specify the coupling metrics to be computed and reported:
@@ -19290,15 +19304,16 @@ For full details, refer to @cite{GNATcheck Reference Manual} document.
 @command{gnatstub} creates body stubs, that is, empty but compilable bodies
 for library unit declarations.
 
-Note: to invoke @code{gnatstub} with a project file, use the @code{gnat}
-driver (see @ref{The GNAT Driver and Project Files}).
-
-To create a body stub, @command{gnatstub} has to compile the library
-unit declaration. Therefore, bodies can be created only for legal
-library units. Moreover, if a library unit depends semantically upon
-units located outside the current directory, you have to provide
-the source search path when calling @command{gnatstub}, see the description
-of @command{gnatstub} switches below.
+To create a body stub, @command{gnatstub} invokes the Ada
+compiler and generates and uses the ASIS tree for the input source;
+thus the input must be legal Ada code, and the tool should have all the
+information needed to compile the input source. To provide this information,
+you may specify as a tool parameter the project file the input source belongs to
+(or you may call @command{gnatstub}
+through the @command{gnat} driver (see @ref{The GNAT Driver and
+Project Files}). Another possibility is to specify the source search
+path and needed configuration files in @option{-cargs} section of @command{gnatstub}
+call, see the description of the @command{gnatstub} switches below.
 
 By default, all the program unit body stubs generated by @code{gnatstub}
 raise the predefined @code{Program_Error} exception, which will catch

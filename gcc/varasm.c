@@ -5082,24 +5082,27 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
       this_time = MIN (end_offset - next_offset, BITS_PER_UNIT - next_bit);
       if (BYTES_BIG_ENDIAN)
 	{
-	  /* On big-endian machine, take the most significant bits
-	     first (of the bits that are significant)
-	     and put them into bytes from the most significant end.  */
+	  /* On big-endian machine, take the most significant bits (of the
+	     bits that are significant) first and put them into bytes from
+	     the most significant end.  */
 	  shift = end_offset - next_offset - this_time;
 
 	  /* Don't try to take a bunch of bits that cross
-	     the word boundary in the INTEGER_CST. We can
-	     only select bits from the LOW or HIGH part
-	     not from both.  */
+	     the word boundary in the INTEGER_CST.  We can
+	     only select bits from one element.  */
 	  if ((shift / HOST_BITS_PER_WIDE_INT)
- 	      != ((shift + this_time) / HOST_BITS_PER_WIDE_INT))
-	    this_time = (shift + this_time) & (HOST_BITS_PER_WIDE_INT - 1);
+	      != ((shift + this_time - 1) / HOST_BITS_PER_WIDE_INT))
+	    {
+	      const int end = shift + this_time - 1;
+	      shift = end & -HOST_BITS_PER_WIDE_INT;
+	      this_time = end - shift + 1;
+	    }
 
 	  /* Now get the bits from the appropriate constant word.  */
 	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
 	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
 
-	  /* Get the result. This works only when:
+	  /* Get the result.  This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 	  local->byte |= (((value >> shift)
 			   & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
@@ -5107,25 +5110,24 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 	}
       else
 	{
-	  /* On little-endian machines,
-	     take first the least significant bits of the value
-	     and pack them starting at the least significant
+	  /* On little-endian machines, take the least significant bits of
+	     the value first and pack them starting at the least significant
 	     bits of the bytes.  */
 	  shift = next_offset - byte_relative_ebitpos;
 
 	  /* Don't try to take a bunch of bits that cross
-	     the word boundary in the INTEGER_CST. We can
-	     only select bits from the LOW or HIGH part
-	     not from both.  */
+	     the word boundary in the INTEGER_CST.  We can
+	     only select bits from one element.  */
 	  if ((shift / HOST_BITS_PER_WIDE_INT)
-	      != ((shift + this_time) / HOST_BITS_PER_WIDE_INT))
-	    this_time = (HOST_BITS_PER_WIDE_INT - shift);
+	      != ((shift + this_time - 1) / HOST_BITS_PER_WIDE_INT))
+	    this_time
+	      = HOST_BITS_PER_WIDE_INT - (shift & (HOST_BITS_PER_WIDE_INT - 1));
 
 	  /* Now get the bits from the appropriate constant word.  */
 	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
 	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
 
-	  /* Get the result. This works only when:
+	  /* Get the result.  This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 	  local->byte |= (((value >> shift)
 			   & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
@@ -5917,17 +5919,23 @@ supports_one_only (void)
 void
 make_decl_one_only (tree decl, tree comdat_group)
 {
+  struct symtab_node *symbol;
   gcc_assert (TREE_CODE (decl) == VAR_DECL
 	      || TREE_CODE (decl) == FUNCTION_DECL);
 
   TREE_PUBLIC (decl) = 1;
+
+  if (TREE_CODE (decl) == VAR_DECL)
+    symbol = varpool_node_for_decl (decl);
+  else
+    symbol = cgraph_get_create_node (decl);
 
   if (SUPPORTS_ONE_ONLY)
     {
 #ifdef MAKE_DECL_ONE_ONLY
       MAKE_DECL_ONE_ONLY (decl);
 #endif
-      DECL_COMDAT_GROUP (decl) = comdat_group;
+      symbol->set_comdat_group (comdat_group);
     }
   else if (TREE_CODE (decl) == VAR_DECL
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))

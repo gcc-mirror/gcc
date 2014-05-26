@@ -1268,18 +1268,10 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 }
 
 static bool
-aarch64_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
+aarch64_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
+				 tree exp ATTRIBUTE_UNUSED)
 {
-  /* Indirect calls are not currently supported.  */
-  if (decl == NULL)
-    return false;
-
-  /* Cannot tail-call to long-calls, since these are outside of the
-     range of a branch instruction (we could handle this if we added
-     support for indirect tail-calls.  */
-  if (aarch64_decl_is_long_call_p (decl))
-    return false;
-
+  /* Currently, always true.  */
   return true;
 }
 
@@ -4073,7 +4065,7 @@ enum reg_class
 aarch64_regno_regclass (unsigned regno)
 {
   if (GP_REGNUM_P (regno))
-    return CORE_REGS;
+    return GENERAL_REGS;
 
   if (regno == SP_REGNUM)
     return STACK_REG;
@@ -4224,12 +4216,12 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   /* A TFmode or TImode memory access should be handled via an FP_REGS
      because AArch64 has richer addressing modes for LDR/STR instructions
      than LDP/STP instructions.  */
-  if (!TARGET_GENERAL_REGS_ONLY && rclass == CORE_REGS
+  if (!TARGET_GENERAL_REGS_ONLY && rclass == GENERAL_REGS
       && GET_MODE_SIZE (mode) == 16 && MEM_P (x))
     return FP_REGS;
 
   if (rclass == FP_REGS && (mode == TImode || mode == TFmode) && CONSTANT_P(x))
-      return CORE_REGS;
+      return GENERAL_REGS;
 
   return NO_REGS;
 }
@@ -4360,7 +4352,7 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 {
   switch (regclass)
     {
-    case CORE_REGS:
+    case CALLER_SAVE_REGS:
     case POINTER_REGS:
     case GENERAL_REGS:
     case ALL_REGS:
@@ -9487,6 +9479,10 @@ aarch64_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
   aarch64_autovectorize_vector_sizes
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV \
+  aarch64_atomic_assign_expand_fenv
 
 /* Section anchor support.  */
 

@@ -1,7 +1,7 @@
 /* We shall devirtualize to unreachable.  No anonymous type method should surivve
    reachability.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-whole-program"  } */
+/* { dg-options "-O2 -fdump-ipa-whole-program-details"  } */
 namespace {
 class B {
 public:
@@ -32,7 +32,7 @@ main()
   return b->foo();
 }
 
-/* { dg-final { scan-ipa-dump "Devirtualizing" "whole-program"} } */
+/* { dg-final { scan-ipa-dump "devirtualizing" "whole-program"} } */
 /* { dg-final { scan-ipa-dump "builtin_unreachable" "whole-program"} } */
 /* { dg-final { scan-ipa-dump-not "A::foo" "whole-program"} } */
 /* { dg-final { scan-ipa-dump-not "A::foo" "whole-program"} } */

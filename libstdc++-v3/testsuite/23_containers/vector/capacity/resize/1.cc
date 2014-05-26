@@ -22,7 +22,7 @@
 
 // This fails on some versions of Darwin 8 because malloc doesn't return
 // NULL even if an allocation fails (filed as Radar 3884894).
-// { dg-do run { xfail *-*-darwin8.[0-4].* } }
+// { dg-do run { xfail *-*-darwin8.[0-4].* *-*-dragonfly* } }
 
 #include <vector>
 #include <stdexcept>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,6 +120,7 @@ package Restrict is
       No_Exception_Propagation           => True,
       No_Exception_Registration          => True,
       No_Finalization                    => True,
+      No_Fixed_IO                        => True,
       No_Implementation_Attributes       => True,
       No_Implementation_Pragmas          => True,
       No_Implicit_Conditionals           => True,

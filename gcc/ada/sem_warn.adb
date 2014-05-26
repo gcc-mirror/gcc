@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -766,6 +766,14 @@ package body Sem_Warn is
       --  For an entry formal entity from an entry declaration, find the
       --  corresponding body formal from the given accept statement.
 
+      function May_Need_Initialized_Actual (Ent : Entity_Id) return Boolean;
+      --  If an entity of a generic type has default initialization, then the
+      --  corresponding actual type should be fully initialized, or else there
+      --  will be uninitialized components in the instantiation, that might go
+      --  unreported. This predicate allows the compiler to emit an appropriate
+      --  warning in the generic itself. In a sense, the use of a type that
+      --  requires full initialization is a weak part of the generic contract.
+
       function Missing_Subunits return Boolean;
       --  We suppress warnings when there are missing subunits, because this
       --  may generate too many false positives: entities in a parent may only
@@ -814,6 +822,44 @@ package body Sem_Warn is
 
          raise Program_Error;
       end Body_Formal;
+
+      -----------------------------------
+      --   May_Need_Initialized_Actual --
+      -----------------------------------
+
+      function May_Need_Initialized_Actual (Ent : Entity_Id) return Boolean is
+         T   : constant Entity_Id := Etype (Ent);
+         Par : constant Node_Id   := Parent (T);
+         Res : Boolean;
+
+      begin
+         if not Is_Generic_Type (T) then
+            Res := False;
+
+         elsif (Nkind (Par)) = N_Private_Extension_Declaration then
+            Set_Needs_Initialized_Actual (Par);
+            Res := True;
+
+         elsif (Nkind (Par)) = N_Formal_Type_Declaration
+           and then Nkind (Formal_Type_Definition (Par))
+              = N_Formal_Private_Type_Definition
+         then
+            Set_Needs_Initialized_Actual (Formal_Type_Definition (Par));
+            Res := True;
+
+         else
+            Res := False;
+         end if;
+
+         if Res then
+            Error_Msg_N ("??!variable& of a generic type is potentially "
+                         & "uninitialized", Ent);
+            Error_Msg_NE ("\??instantiations must provide fully initialized "
+                          & "type for&", Ent, T);
+         end if;
+
+         return Res;
+      end May_Need_Initialized_Actual;
 
       ----------------------
       -- Missing_Subunits --
@@ -1266,6 +1312,7 @@ package body Sem_Warn is
                         if not Has_Unmodified (E1)
                           and then not Warnings_Off_E1
                           and then not Is_Junk_Name (Chars (E1))
+                          and then not May_Need_Initialized_Actual (E1)
                         then
                            Output_Reference_Error
                              ("?v?variable& is read but never assigned!");
@@ -1274,6 +1321,7 @@ package body Sem_Warn is
                      elsif not Has_Unreferenced (E1)
                        and then not Warnings_Off_E1
                        and then not Is_Junk_Name (Chars (E1))
+                       and then not May_Need_Initialized_Actual (E1)
                      then
                         Output_Reference_Error -- CODEFIX
                           ("?v?variable& is never read and never assigned!");
@@ -1403,6 +1451,7 @@ package body Sem_Warn is
                   end if;
 
                   goto Continue;
+
                end if;
             end if;
 

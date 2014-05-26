@@ -959,6 +959,12 @@ DEFPARAM (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS,
 	  "index known.",
 	  48, 0, 0)
 
+DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
+	  "ipa-max-aa-steps",
+	  "Maximum number of statements that will be visited by IPA formal "
+	  "parameter analysis based on alias analysis in any given function",
+	  25000, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,

@@ -1,3 +1,26 @@
+2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-common.h (c_omp_sharing_predetermined, c_omp_remap_decl):
+	Remove prototypes.
+	(record_types_used_by_current_var_decl): Move prototype to where
+	it belongs.
+
+	* c-common.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)
+	(DEF_FUNCTION_TYPE_7, DEF_FUNCTION_TYPE_8)
+	(DEF_FUNCTION_TYPE_VAR_5): Cosmetic fixes.
+
+2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* c-common.h (CTI_VOID_ZERO, void_zero_node): Delete.
+	* c-common.c (c_common_nodes_and_builtins): Don't initialize
+	void_zero_node.
+	* c-pretty-print.c (pp_c_void_constant): New function.
+	(c_pretty_printer::constant, c_pretty_printer::primary_expression)
+	(c_pretty_printer::expression): Handle VOID_CST.
+	* cilk.c (extract_free_variables): Likewise.
+	* c-ubsan.c (ubsan_instrument_division, ubsan_instrument_shift)
+	(ubsan_instrument_vla): Use void_node instead of void_zero_node.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* c-common.h (sorted_fields_type): Remove variable_size GTY attribute.

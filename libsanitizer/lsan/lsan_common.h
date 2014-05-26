@@ -19,7 +19,7 @@
 #include "sanitizer_common/sanitizer_platform.h"
 #include "sanitizer_common/sanitizer_symbolizer.h"
 
-#if SANITIZER_LINUX && defined(__x86_64__)
+#if SANITIZER_LINUX && defined(__x86_64__) && (SANITIZER_WORDSIZE == 64)
 #define CAN_SANITIZE_LEAKS 1
 #else
 #define CAN_SANITIZE_LEAKS 0
@@ -49,6 +49,8 @@ struct Flags {
   int max_leaks;
   // If nonzero kill the process with this exit code upon finding leaks.
   int exitcode;
+  // Print matched suppressions after leak checking.
+  bool print_suppressions;
   // Suppressions file name.
   const char* suppressions;
 
@@ -61,12 +63,13 @@ struct Flags {
   bool use_registers;
   // TLS and thread-specific storage.
   bool use_tls;
+  // Regions added via __lsan_register_root_region().
+  bool use_root_regions;
 
   // Consider unaligned pointers valid.
   bool use_unaligned;
-
-  // User-visible verbosity.
-  int verbosity;
+  // Consider pointers found in poisoned memory to be valid.
+  bool use_poisoned;
 
   // Debug logging.
   bool log_pointers;
@@ -77,6 +80,7 @@ extern Flags lsan_flags;
 inline Flags *flags() { return &lsan_flags; }
 
 struct Leak {
+  u32 id;
   uptr hit_count;
   uptr total_size;
   u32 stack_trace_id;
@@ -84,17 +88,31 @@ struct Leak {
   bool is_suppressed;
 };
 
+struct LeakedObject {
+  u32 leak_id;
+  uptr addr;
+  uptr size;
+};
+
 // Aggregates leaks by stack trace prefix.
 class LeakReport {
  public:
-  LeakReport() : leaks_(1) {}
-  void Add(u32 stack_trace_id, uptr leaked_size, ChunkTag tag);
-  void PrintLargest(uptr max_leaks);
+  LeakReport() : next_id_(0), leaks_(1), leaked_objects_(1) {}
+  void AddLeakedChunk(uptr chunk, u32 stack_trace_id, uptr leaked_size,
+                      ChunkTag tag);
+  void ReportTopLeaks(uptr max_leaks);
   void PrintSummary();
-  bool IsEmpty() { return leaks_.size() == 0; }
-  uptr ApplySuppressions();
+  void ApplySuppressions();
+  uptr UnsuppressedLeakCount();
+
+
  private:
+  void PrintReportForLeak(uptr index);
+  void PrintLeakedObjectsForLeak(uptr index);
+
+  u32 next_id_;
   InternalMmapVector<Leak> leaks_;
+  InternalMmapVector<LeakedObject> leaked_objects_;
 };
 
 typedef InternalMmapVector<uptr> Frontier;
@@ -119,6 +137,15 @@ void InitCommonLsan();
 void DoLeakCheck();
 bool DisabledInThisThread();
 
+// Special case for "new T[0]" where T is a type with DTOR.
+// new T[0] will allocate one word for the array size (0) and store a pointer
+// to the end of allocated chunk.
+inline bool IsSpecialCaseOfOperatorNew0(uptr chunk_beg, uptr chunk_size,
+                                        uptr addr) {
+  return chunk_size == sizeof(uptr) && chunk_beg + chunk_size == addr &&
+         *reinterpret_cast<uptr *>(chunk_beg) == 0;
+}
+
 // The following must be implemented in the parent tool.
 
 void ForEachChunk(ForEachChunkCallback callback, void *arg);
@@ -127,6 +154,8 @@ void GetAllocatorGlobalRange(uptr *begin, uptr *end);
 // Wrappers for allocator's ForceLock()/ForceUnlock().
 void LockAllocator();
 void UnlockAllocator();
+// Returns true if [addr, addr + sizeof(void *)) is poisoned.
+bool WordIsPoisoned(uptr addr);
 // Wrappers for ThreadRegistry access.
 void LockThreadRegistry();
 void UnlockThreadRegistry();

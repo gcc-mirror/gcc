@@ -5427,6 +5427,13 @@ Detect floating-point division by zero.  Unlike other similar options,
 @option{-fsanitize=undefined}, since floating-point division by zero can
 be a legitimate way of obtaining infinities and NaNs.
 
+@item -fsanitize=float-cast-overflow
+@opindex fsanitize=float-cast-overflow
+
+This option enables floating-point type to integer conversion checking.
+We check that the result of the conversion does not overflow.
+This option does not work well with @code{FE_INVALID} exceptions enabled.
+
 @item -fsanitize-recover
 @opindex fsanitize-recover
 By default @option{-fsanitize=undefined} sanitization (and its suboptions
@@ -8780,6 +8787,9 @@ as an algorithm disables partitioning and streaming completely.
 The default value is @code{balanced}. While @code{1to1} can be used
 as an workaround for various code ordering issues, the @code{max}
 partitioning is intended for internal testing only.
+The value @code{one} specifies that exactly one partition should be
+used while the value @code{none} bypasses partitioning and executes
+the link-time optimization step directly from the WPA phase.
 
 @item -flto-compression-level=@var{n}
 This option specifies the level of compression used for intermediate
@@ -10075,6 +10085,35 @@ IPA-CP attempts to track all possible values and types passed to a function's
 parameter in order to propagate them and perform devirtualization.
 @option{ipa-cp-value-list-size} is the maximum number of values and types it
 stores per one formal parameter of a function.
+
+@item ipa-cp-eval-threshold
+IPA-CP calculates its own score of cloning profitability heuristics
+and performs those cloning opportunities with scores that exceed
+@option{ipa-cp-eval-threshold}.
+
+@item ipa-max-agg-items
+IPA-CP is also capable to propagate a number of scalar values passed
+in an aggregate. @option{ipa-max-agg-items} controls the maximum
+number of such values per one parameter.
+
+@item ipa-cp-loop-hint-bonus
+When IPA-CP determines that a cloning candidate would make the number
+of iterations of a loop known, it adds a bonus of
+@option{ipa-cp-loop-hint-bonus} bonus to the profitability score of
+the candidate.
+
+@item ipa-cp-array-index-hint-bonus
+When IPA-CP determines that a cloning candidate would make the index of
+an array access known, it adds a bonus of
+@option{ipa-cp-array-index-hint-bonus} bonus to the profitability
+score of the candidate.
+
+@item ipa-max-aa-steps
+During its analysis of function bodies, IPA-CP employs alias analysis
+in order to track values pointed to by function parameters.  In order
+not spend too much time analyzing huge functions, it will give up and
+consider all memory clobbered after examining
+@option{ipa-max-aa-steps} statements modifying memory.
 
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.

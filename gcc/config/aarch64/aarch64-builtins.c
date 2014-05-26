@@ -394,6 +394,12 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 enum aarch64_builtins
 {
   AARCH64_BUILTIN_MIN,
+
+  AARCH64_BUILTIN_GET_FPCR,
+  AARCH64_BUILTIN_SET_FPCR,
+  AARCH64_BUILTIN_GET_FPSR,
+  AARCH64_BUILTIN_SET_FPSR,
+
   AARCH64_SIMD_BUILTIN_BASE,
 #include "aarch64-simd-builtins.def"
   AARCH64_SIMD_BUILTIN_MAX = AARCH64_SIMD_BUILTIN_BASE
@@ -775,6 +781,24 @@ aarch64_init_simd_builtins (void)
 void
 aarch64_init_builtins (void)
 {
+  tree ftype_set_fpr
+    = build_function_type_list (void_type_node, unsigned_type_node, NULL);
+  tree ftype_get_fpr
+    = build_function_type_list (unsigned_type_node, NULL);
+
+  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR]
+    = add_builtin_function ("__builtin_aarch64_get_fpcr", ftype_get_fpr,
+			    AARCH64_BUILTIN_GET_FPCR, BUILT_IN_MD, NULL, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR]
+    = add_builtin_function ("__builtin_aarch64_set_fpcr", ftype_set_fpr,
+			    AARCH64_BUILTIN_SET_FPCR, BUILT_IN_MD, NULL, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPSR]
+    = add_builtin_function ("__builtin_aarch64_get_fpsr", ftype_get_fpr,
+			    AARCH64_BUILTIN_GET_FPSR, BUILT_IN_MD, NULL, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPSR]
+    = add_builtin_function ("__builtin_aarch64_set_fpsr", ftype_set_fpr,
+			    AARCH64_BUILTIN_SET_FPSR, BUILT_IN_MD, NULL, NULL_TREE);
+
   if (TARGET_SIMD)
     aarch64_init_simd_builtins ();
 }
@@ -987,6 +1011,36 @@ aarch64_expand_builtin (tree exp,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   int fcode = DECL_FUNCTION_CODE (fndecl);
+  int icode;
+  rtx pat, op0;
+  tree arg0;
+
+  switch (fcode)
+    {
+    case AARCH64_BUILTIN_GET_FPCR:
+    case AARCH64_BUILTIN_SET_FPCR:
+    case AARCH64_BUILTIN_GET_FPSR:
+    case AARCH64_BUILTIN_SET_FPSR:
+      if ((fcode == AARCH64_BUILTIN_GET_FPCR)
+	  || (fcode == AARCH64_BUILTIN_GET_FPSR))
+	{
+	  icode = (fcode == AARCH64_BUILTIN_GET_FPSR) ?
+	    CODE_FOR_get_fpsr : CODE_FOR_get_fpcr;
+	  target = gen_reg_rtx (SImode);
+	  pat = GEN_FCN (icode) (target);
+	}
+      else
+	{
+	  target = NULL_RTX;
+	  icode = (fcode == AARCH64_BUILTIN_SET_FPSR) ?
+	    CODE_FOR_set_fpsr : CODE_FOR_set_fpcr;
+	  arg0 = CALL_EXPR_ARG (exp, 0);
+	  op0 = expand_normal (arg0);
+	  pat = GEN_FCN (icode) (op0);
+	}
+      emit_insn (pat);
+      return target;
+    }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE)
     return aarch64_simd_expand_builtin (fcode, exp, target);
@@ -1259,6 +1313,106 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
   return changed;
 }
+
+void
+aarch64_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  const unsigned AARCH64_FE_INVALID = 1;
+  const unsigned AARCH64_FE_DIVBYZERO = 2;
+  const unsigned AARCH64_FE_OVERFLOW = 4;
+  const unsigned AARCH64_FE_UNDERFLOW = 8;
+  const unsigned AARCH64_FE_INEXACT = 16;
+  const unsigned HOST_WIDE_INT AARCH64_FE_ALL_EXCEPT = (AARCH64_FE_INVALID
+							| AARCH64_FE_DIVBYZERO
+							| AARCH64_FE_OVERFLOW
+							| AARCH64_FE_UNDERFLOW
+							| AARCH64_FE_INEXACT);
+  const unsigned HOST_WIDE_INT AARCH64_FE_EXCEPT_SHIFT = 8;
+  tree fenv_cr, fenv_sr, get_fpcr, set_fpcr, mask_cr, mask_sr;
+  tree ld_fenv_cr, ld_fenv_sr, masked_fenv_cr, masked_fenv_sr, hold_fnclex_cr;
+  tree hold_fnclex_sr, new_fenv_var, reload_fenv, restore_fnenv, get_fpsr, set_fpsr;
+  tree update_call, atomic_feraiseexcept, hold_fnclex, masked_fenv, ld_fenv;
+
+  /* Generate the equivalence of :
+       unsigned int fenv_cr;
+       fenv_cr = __builtin_aarch64_get_fpcr ();
+
+       unsigned int fenv_sr;
+       fenv_sr = __builtin_aarch64_get_fpsr ();
+
+       Now set all exceptions to non-stop
+       unsigned int mask_cr
+		= ~(AARCH64_FE_ALL_EXCEPT << AARCH64_FE_EXCEPT_SHIFT);
+       unsigned int masked_cr;
+       masked_cr = fenv_cr & mask_cr;
+
+       And clear all exception flags
+       unsigned int maske_sr = ~AARCH64_FE_ALL_EXCEPT;
+       unsigned int masked_cr;
+       masked_sr = fenv_sr & mask_sr;
+
+       __builtin_aarch64_set_cr (masked_cr);
+       __builtin_aarch64_set_sr (masked_sr);  */
+
+  fenv_cr = create_tmp_var (unsigned_type_node, NULL);
+  fenv_sr = create_tmp_var (unsigned_type_node, NULL);
+
+  get_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR];
+  set_fpcr = aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR];
+  get_fpsr = aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPSR];
+  set_fpsr = aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPSR];
+
+  mask_cr = build_int_cst (unsigned_type_node,
+			   ~(AARCH64_FE_ALL_EXCEPT << AARCH64_FE_EXCEPT_SHIFT));
+  mask_sr = build_int_cst (unsigned_type_node,
+			   ~(AARCH64_FE_ALL_EXCEPT));
+
+  ld_fenv_cr = build2 (MODIFY_EXPR, unsigned_type_node,
+		    fenv_cr, build_call_expr (get_fpcr, 0));
+  ld_fenv_sr = build2 (MODIFY_EXPR, unsigned_type_node,
+		    fenv_sr, build_call_expr (get_fpsr, 0));
+
+  masked_fenv_cr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_cr, mask_cr);
+  masked_fenv_sr = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_sr, mask_sr);
+
+  hold_fnclex_cr = build_call_expr (set_fpcr, 1, masked_fenv_cr);
+  hold_fnclex_sr = build_call_expr (set_fpsr, 1, masked_fenv_sr);
+
+  hold_fnclex = build2 (COMPOUND_EXPR, void_type_node, hold_fnclex_cr,
+			hold_fnclex_sr);
+  masked_fenv = build2 (COMPOUND_EXPR, void_type_node, masked_fenv_cr,
+			masked_fenv_sr);
+  ld_fenv = build2 (COMPOUND_EXPR, void_type_node, ld_fenv_cr, ld_fenv_sr);
+
+  *hold = build2 (COMPOUND_EXPR, void_type_node,
+		  build2 (COMPOUND_EXPR, void_type_node, masked_fenv, ld_fenv),
+		  hold_fnclex);
+
+  /* Store the value of masked_fenv to clear the exceptions:
+     __builtin_aarch64_set_fpsr (masked_fenv_sr);  */
+
+  *clear = build_call_expr (set_fpsr, 1, masked_fenv_sr);
+
+  /* Generate the equivalent of :
+       unsigned int new_fenv_var;
+       new_fenv_var = __builtin_aarch64_get_fpsr ();
+
+       __builtin_aarch64_set_fpsr (fenv_sr);
+
+       __atomic_feraiseexcept (new_fenv_var);  */
+
+  new_fenv_var = create_tmp_var (unsigned_type_node, NULL);
+  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
+			new_fenv_var, build_call_expr (get_fpsr, 0));
+  restore_fnenv = build_call_expr (set_fpsr, 1, fenv_sr);
+  atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  update_call = build_call_expr (atomic_feraiseexcept, 1,
+				 fold_convert (integer_type_node, new_fenv_var));
+  *update = build2 (COMPOUND_EXPR, void_type_node,
+		    build2 (COMPOUND_EXPR, void_type_node,
+			    reload_fenv, restore_fnenv), update_call);
+}
+
 
 #undef AARCH64_CHECK_BUILTIN_MODE
 #undef AARCH64_FIND_FRINT_VARIANT

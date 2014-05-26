@@ -63,7 +63,7 @@ static void unref(ThreadState *thr, uptr pc, FdSync *s) {
       CHECK_NE(s, &fdctx.globsync);
       CHECK_NE(s, &fdctx.filesync);
       CHECK_NE(s, &fdctx.socksync);
-      SyncVar *v = CTX()->synctab.GetAndRemove(thr, pc, (uptr)s);
+      SyncVar *v = ctx->synctab.GetAndRemove(thr, pc, (uptr)s);
       if (v)
         DestroyAndFree(v);
       internal_free(s);
@@ -283,13 +283,13 @@ void FdSocketConnect(ThreadState *thr, uptr pc, int fd) {
   init(thr, pc, fd, &fdctx.socksync);
 }
 
-uptr File2addr(char *path) {
+uptr File2addr(const char *path) {
   (void)path;
   static u64 addr;
   return (uptr)&addr;
 }
 
-uptr Dir2addr(char *path) {
+uptr Dir2addr(const char *path) {
   (void)path;
   static u64 addr;
   return (uptr)&addr;

@@ -306,4 +306,5 @@ extern void aarch64_split_combinev16qi (rtx operands[3]);
 extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool
 aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
+void aarch64_atomic_assign_expand_fenv (tree *, tree *, tree *);
 #endif /* GCC_AARCH64_PROTOS_H */

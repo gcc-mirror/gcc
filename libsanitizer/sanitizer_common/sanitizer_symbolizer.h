@@ -25,23 +25,30 @@ namespace __sanitizer {
 
 struct AddressInfo {
   uptr address;
+
   char *module;
   uptr module_offset;
+
+  static const uptr kUnknown = ~(uptr)0;
   char *function;
+  uptr function_offset;
+
   char *file;
   int line;
   int column;
 
   AddressInfo() {
     internal_memset(this, 0, sizeof(AddressInfo));
+    function_offset = kUnknown;
   }
 
-  // Deletes all strings and sets all fields to zero.
+  // Deletes all strings and resets all fields.
   void Clear() {
     InternalFree(module);
     InternalFree(function);
     InternalFree(file);
     internal_memset(this, 0, sizeof(AddressInfo));
+    function_offset = kUnknown;
   }
 
   void FillAddressAndModuleInfo(uptr addr, const char *mod_name,
@@ -77,22 +84,20 @@ class Symbolizer {
   /// reasons as this function will check $PATH for an external symbolizer.  Not
   /// thread safe.
   static Symbolizer *Init(const char* path_to_external = 0);
-  /// Initialize the symbolizer in a disabled state.  Not thread safe.
-  static Symbolizer *Disable();
   // Fills at most "max_frames" elements of "frames" with descriptions
   // for a given address (in all inlined functions). Returns the number
   // of descriptions actually filled.
-  virtual uptr SymbolizeCode(uptr address, AddressInfo *frames,
-                             uptr max_frames) {
+  virtual uptr SymbolizePC(uptr address, AddressInfo *frames, uptr max_frames) {
     return 0;
   }
   virtual bool SymbolizeData(uptr address, DataInfo *info) {
     return false;
   }
-  virtual bool IsAvailable() {
+  virtual bool GetModuleNameAndOffsetForPC(uptr pc, const char **module_name,
+                                           uptr *module_address) {
     return false;
   }
-  virtual bool IsExternalAvailable() {
+  virtual bool CanReturnFileLineInfo() {
     return false;
   }
   // Release internal caches (if any).
@@ -119,6 +124,8 @@ class Symbolizer {
   /// Create a symbolizer and store it to symbolizer_ without checking if one
   /// already exists.  Not thread safe.
   static Symbolizer *CreateAndStore(const char *path_to_external);
+  /// Initialize the symbolizer in a disabled state.  Not thread safe.
+  static Symbolizer *Disable();
 
   static Symbolizer *symbolizer_;
   static StaticSpinMutex init_mu_;

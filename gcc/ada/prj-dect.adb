@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,8 +214,10 @@ package body Prj.Dect is
                  Project_Qualifier_Of (Project, In_Tree);
       Name   : constant Name_Id := Name_Of (Current_Package, In_Tree);
    begin
-      if Qualif in Aggregate_Project
-        and then Name /= Snames.Name_Builder
+      if (Qualif = Aggregate and then Name /= Snames.Name_Builder)
+        or else (Qualif = Aggregate_Library
+                  and then Name /= Snames.Name_Builder
+                  and then Name /= Snames.Name_Install)
       then
          Error_Msg_Name_1 := Name;
          Error_Msg

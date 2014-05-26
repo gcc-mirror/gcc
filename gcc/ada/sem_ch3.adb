@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -919,19 +919,16 @@ package body Sem_Ch3 is
       --  include an expression that is an allocator, whose expansion needs the
       --  proper Master for the created tasks.
 
-      if Nkind (Related_Nod) = N_Object_Declaration
-        and then Expander_Active
+      if Nkind (Related_Nod) = N_Object_Declaration and then Expander_Active
       then
-         if Is_Interface (Desig_Type)
-           and then Is_Limited_Record (Desig_Type)
+         if Is_Interface (Desig_Type) and then Is_Limited_Record (Desig_Type)
          then
             Build_Class_Wide_Master (Anon_Type);
 
          --  Similarly, if the type is an anonymous access that designates
          --  tasks, create a master entity for it in the current context.
 
-         elsif Has_Task (Desig_Type)
-           and then Comes_From_Source (Related_Nod)
+         elsif Has_Task (Desig_Type) and then Comes_From_Source (Related_Nod)
          then
             Build_Master_Entity (Defining_Identifier (Related_Nod));
             Build_Master_Renaming (Anon_Type);
@@ -1205,8 +1202,7 @@ package body Sem_Ch3 is
             --  use previous subprogram type as the designated type, and then
             --  remove scope added above.
 
-            if ASIS_Mode
-              and then Present (Scope (Defining_Identifier (F)))
+            if ASIS_Mode and then Present (Scope (Defining_Identifier (F)))
             then
                Set_Etype                    (T_Name, T_Name);
                Init_Size_Align              (T_Name);
@@ -1355,8 +1351,7 @@ package body Sem_Ch3 is
       --  its own context, allowing the following circularity that cannot be
       --  detected earlier
 
-      elsif Is_Class_Wide_Type (Full_Desig)
-        and then Etype (Full_Desig) = T
+      elsif Is_Class_Wide_Type (Full_Desig) and then Etype (Full_Desig) = T
       then
          Error_Msg_N
            ("access type cannot designate its own classwide type", S);
@@ -1755,9 +1750,8 @@ package body Sem_Ch3 is
 
          case Nkind (Constr) is
             when N_Attribute_Reference =>
-               return
-                 Attribute_Name (Constr) = Name_Access
-                   and then Prefix (Constr) = Scope (Entity (Prefix (Constr)));
+               return Attribute_Name (Constr) = Name_Access
+                 and then Prefix (Constr) = Scope (Entity (Prefix (Constr)));
 
             when N_Discriminant_Association =>
                return Denotes_Discriminant (Expression (Constr));
@@ -2319,9 +2313,7 @@ package body Sem_Ch3 is
             --  ??? a cleaner approach may be possible and/or this solution
             --  could be extended to general-purpose late primitives, TBD.
 
-            if not ASIS_Mode
-              and then not Body_Seen
-              and then not Is_Body (Decl)
+            if not ASIS_Mode and then not Body_Seen and then not Is_Body (Decl)
             then
                Body_Seen := True;
 
@@ -2472,8 +2464,7 @@ package body Sem_Ch3 is
       --  imported through a LIMITED WITH clause, it appears as incomplete
       --  but has no full view.
 
-      if Ekind (Prev) = E_Incomplete_Type
-        and then Present (Full_View (Prev))
+      if Ekind (Prev) = E_Incomplete_Type and then Present (Full_View (Prev))
       then
          T := Full_View (Prev);
       else
@@ -2980,12 +2971,13 @@ package body Sem_Ch3 is
    -----------------------------
 
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id) is
-      AR_Val : Boolean := False;
-      AW_Val : Boolean := False;
-      ER_Val : Boolean := False;
-      EW_Val : Boolean := False;
-      Prag   : Node_Id;
-      Seen   : Boolean := False;
+      Obj_Typ : constant Entity_Id := Etype (Obj_Id);
+      AR_Val  : Boolean := False;
+      AW_Val  : Boolean := False;
+      ER_Val  : Boolean := False;
+      EW_Val  : Boolean := False;
+      Prag    : Node_Id;
+      Seen    : Boolean := False;
 
    begin
       if Ekind (Obj_Id) = E_Constant then
@@ -2996,7 +2988,7 @@ package body Sem_Ch3 is
          --  actuals in instantiations (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
-           and then Is_SPARK_Volatile_Object (Obj_Id)
+           and then Is_SPARK_Volatile (Obj_Id)
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
          then
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
@@ -3008,26 +3000,43 @@ package body Sem_Ch3 is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
+            if Is_SPARK_Volatile (Obj_Id) then
 
-            --  A non-volatile object cannot have volatile components
-            --  (SPARK RM 7.1.3(7)).
+               --  The declaration of a volatile object must appear at the
+               --  library level (SPARK RM 7.1.3(7), C.6(6)).
 
-            if not Is_SPARK_Volatile_Object (Obj_Id)
-              and then Has_Volatile_Component (Etype (Obj_Id))
-            then
-               Error_Msg_N
-                 ("non-volatile variable & cannot have volatile components",
-                  Obj_Id);
+               if not Is_Library_Level_Entity (Obj_Id) then
+                  Error_Msg_N
+                    ("volatile variable & must be declared at library level",
+                     Obj_Id);
 
-            --  The declaration of a volatile object must appear at the library
-            --  level.
+               --  An object of a discriminated type cannot be volatile
+               --  (SPARK RM C.6(4)).
 
-            elsif Is_SPARK_Volatile_Object (Obj_Id)
-              and then not Is_Library_Level_Entity (Obj_Id)
-            then
-               Error_Msg_N
-                 ("volatile variable & must be declared at library level "
-                  & "(SPARK RM 7.1.3(5))", Obj_Id);
+               elsif Has_Discriminants (Obj_Typ) then
+                  Error_Msg_N
+                    ("discriminated object & cannot be volatile", Obj_Id);
+
+               --  An object of a tagged type cannot be volatile
+               --  (SPARK RM C.6(5)).
+
+               elsif Is_Tagged_Type (Obj_Typ) then
+                  Error_Msg_N ("tagged object & cannot be volatile", Obj_Id);
+               end if;
+
+            --  The object is not volatile
+
+            else
+               --  A non-volatile object cannot have volatile components
+               --  (SPARK RM 7.1.3(7)).
+
+               if not Is_SPARK_Volatile (Obj_Id)
+                 and then Has_Volatile_Component (Obj_Typ)
+               then
+                  Error_Msg_N
+                    ("non-volatile object & cannot have volatile components",
+                     Obj_Id);
+               end if;
             end if;
          end if;
 
@@ -3178,7 +3187,6 @@ package body Sem_Ch3 is
 
          if Present (Prev_Entity)
            and then
-
              --  If the homograph is an implicit subprogram, it is overridden
              --  by the current declaration.
 
@@ -3256,12 +3264,11 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks
 
-      if Ada_Version >= Ada_2005
-        and then Can_Never_Be_Null (T)
-      then
+      if Ada_Version >= Ada_2005 and then Can_Never_Be_Null (T) then
+
          --  In case of aggregates we must also take care of the correct
          --  initialization of nested aggregates bug this is done at the
-         --  point of the analysis of the aggregate (see sem_aggr.adb)
+         --  point of the analysis of the aggregate (see sem_aggr.adb).
 
          if Present (Expression (N))
            and then Nkind (Expression (N)) = N_Aggregate
@@ -3505,9 +3512,7 @@ package body Sem_Ch3 is
                Set_Current_Value (Id, E);
             end if;
 
-         elsif Is_Scalar_Type (T)
-           and then Is_OK_Static_Expression (E)
-         then
+         elsif Is_Scalar_Type (T) and then Is_OK_Static_Expression (E) then
             Set_Is_Known_Valid (Id);
          end if;
 
@@ -3516,9 +3521,7 @@ package body Sem_Ch3 is
          if Is_Access_Type (T) then
             if Known_Non_Null (E) then
                Set_Is_Known_Non_Null (Id, True);
-            elsif Known_Null (E)
-              and then not Can_Never_Be_Null (Id)
-            then
+            elsif Known_Null (E) and then not Can_Never_Be_Null (Id) then
                Set_Is_Known_Null (Id, True);
             end if;
          end if;
@@ -3955,9 +3958,7 @@ package body Sem_Ch3 is
          declare
             Val : constant Node_Id := Constant_Value (Entity (E));
          begin
-            if Present (Val)
-              and then Nkind (Val) = N_String_Literal
-            then
+            if Present (Val) and then Nkind (Val) = N_String_Literal then
                Rewrite (E, New_Copy (Val));
             end if;
          end;
@@ -4009,8 +4010,7 @@ package body Sem_Ch3 is
 
       --  Deal with setting In_Private_Part flag if in private part
 
-      if Ekind (Scope (Id)) = E_Package
-        and then In_Private_Part (Scope (Id))
+      if Ekind (Scope (Id)) = E_Package and then In_Private_Part (Scope (Id))
       then
          Set_In_Private_Part (Id);
       end if;
@@ -4107,8 +4107,8 @@ package body Sem_Ch3 is
 
             pragma Assert (Prev = T
               or else (Ekind (Prev) = E_Incomplete_Type
-                         and then Present (Full_View (Prev))
-                         and then Full_View (Prev) = T));
+                        and then Present (Full_View (Prev))
+                        and then Full_View (Prev) = T));
          end;
       end if;
 
@@ -4193,9 +4193,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-443): Synchronized private extension or a rewritten
       --  synchronized formal derived type.
 
-      if Ada_Version >= Ada_2005
-        and then Synchronized_Present (N)
-      then
+      if Ada_Version >= Ada_2005 and then Synchronized_Present (N) then
          Set_Is_Limited_Record (T);
 
          --  Formal derived type case
@@ -4206,9 +4204,9 @@ package body Sem_Ch3 is
             --  interface.
 
             if (not Is_Tagged_Type (Parent_Type)
-                  or else not Is_Limited_Type (Parent_Type))
+                 or else not Is_Limited_Type (Parent_Type))
               and then
-               (not Is_Interface (Parent_Type)
+                (not Is_Interface (Parent_Type)
                   or else not Is_Synchronized_Interface (Parent_Type))
             then
                Error_Msg_NE ("parent type of & must be tagged limited " &
@@ -4246,8 +4244,7 @@ package body Sem_Ch3 is
          else
             if not Is_Interface (Parent_Type)
               or else (not Is_Limited_Interface (Parent_Type)
-                         and then
-                       not Is_Synchronized_Interface (Parent_Type))
+                        and then not Is_Synchronized_Interface (Parent_Type))
             then
                Error_Msg_NE
                  ("parent type of & must be limited interface", N, T);
@@ -4441,9 +4438,7 @@ package body Sem_Ch3 is
          --  Subtype of unconstrained array without constraint is not allowed
          --  in SPARK.
 
-         if Is_Array_Type (T)
-           and then not Is_Constrained (T)
-         then
+         if Is_Array_Type (T) and then not Is_Constrained (T) then
             Check_SPARK_Restriction
               ("subtype of unconstrained array must have constraint", N);
          end if;
@@ -4730,11 +4725,11 @@ package body Sem_Ch3 is
 
       if Present (Generic_Parent_Type (N))
         and then
-          (Nkind
-            (Parent (Generic_Parent_Type (N))) /= N_Formal_Type_Declaration
+          (Nkind (Parent (Generic_Parent_Type (N))) /=
+                                              N_Formal_Type_Declaration
             or else Nkind
-              (Formal_Type_Definition (Parent (Generic_Parent_Type (N))))
-                /= N_Formal_Private_Type_Definition)
+              (Formal_Type_Definition (Parent (Generic_Parent_Type (N)))) /=
+                                              N_Formal_Private_Type_Definition)
       then
          if Is_Tagged_Type (Id) then
 
@@ -4755,9 +4750,7 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      if Is_Private_Type (T)
-        and then Present (Full_View (T))
-      then
+      if Is_Private_Type (T) and then Present (Full_View (T)) then
          Conditional_Delay (Id, Full_View (T));
 
       --  The subtypes of components or subcomponents of protected types
@@ -4789,8 +4782,7 @@ package body Sem_Ch3 is
 
          --  In the array case, check compatibility for each index
 
-         elsif Is_Array_Type (Etype (Id))
-           and then Present (First_Index (Id))
+         elsif Is_Array_Type (Etype (Id)) and then Present (First_Index (Id))
          then
             --  This really should be a subprogram that finds the indications
             --  to check???
@@ -4805,7 +4797,7 @@ package body Sem_Ch3 is
             begin
                while Present (Subt_Index) loop
                   if ((Nkind (Subt_Index) = N_Identifier
-                         and then Ekind (Entity (Subt_Index)) in Scalar_Kind)
+                        and then Ekind (Entity (Subt_Index)) in Scalar_Kind)
                        or else Nkind (Subt_Index) = N_Subtype_Indication)
                     and then
                       Nkind (Scalar_Range (Etype (Subt_Index))) = N_Range
@@ -5212,9 +5204,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute to the
       --  array type to ensure that objects of this type are initialized.
 
-      if Ada_Version >= Ada_2005
-        and then Can_Never_Be_Null (Element_Type)
-      then
+      if Ada_Version >= Ada_2005 and then Can_Never_Be_Null (Element_Type) then
          Set_Can_Never_Be_Null (T);
 
          if Null_Exclusion_Present (Component_Definition (Def))
@@ -5274,9 +5264,7 @@ package body Sem_Ch3 is
       --  types created for packed entities do not need such, they are
       --  compatible with the user-defined type.
 
-      if Number_Dimensions (T) = 1
-         and then not Is_Packed_Array_Type (T)
-      then
+      if Number_Dimensions (T) = 1 and then not Is_Packed_Array_Type (T) then
          New_Concatenation_Op (T);
       end if;
 
@@ -5568,6 +5556,8 @@ package body Sem_Ch3 is
 
       if Null_Exclusion_Present (Type_Definition (N)) then
          Set_Can_Never_Be_Null (Derived_Type);
+
+         --  What is with the "AND THEN FALSE" here ???
 
          if Can_Never_Be_Null (Parent_Type)
            and then False
@@ -18061,7 +18051,7 @@ package body Sem_Ch3 is
          --  (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
-           and then Is_SPARK_Volatile_Object (Defining_Identifier (Discr))
+           and then Is_SPARK_Volatile (Defining_Identifier (Discr))
          then
             Error_Msg_N ("discriminant cannot be volatile", Discr);
          end if;
@@ -18184,7 +18174,7 @@ package body Sem_Ch3 is
 
             if Ekind (Typ) = E_Record_Type_With_Private then
 
-               --  Handle the following erroneous case:
+               --  Handle the following illegal usage:
                --      type Private_Type is tagged private;
                --   private
                --      type Private_Type is new Type_Implementing_Iface;

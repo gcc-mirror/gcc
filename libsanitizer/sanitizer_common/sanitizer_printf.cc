@@ -14,6 +14,7 @@
 
 
 #include "sanitizer_common.h"
+#include "sanitizer_flags.h"
 #include "sanitizer_libc.h"
 
 #include <stdio.h>
@@ -92,11 +93,14 @@ static int AppendSignedDecimal(char **buff, const char *buff_end, s64 num,
                       minimal_num_length, pad_with_zero, negative);
 }
 
-static int AppendString(char **buff, const char *buff_end, const char *s) {
+static int AppendString(char **buff, const char *buff_end, int precision,
+                        const char *s) {
   if (s == 0)
     s = "<null>";
   int result = 0;
   for (; *s; s++) {
+    if (precision >= 0 && result >= precision)
+      break;
     result += AppendChar(buff, buff_end, *s);
   }
   return result;
@@ -104,7 +108,7 @@ static int AppendString(char **buff, const char *buff_end, const char *s) {
 
 static int AppendPointer(char **buff, const char *buff_end, u64 ptr_value) {
   int result = 0;
-  result += AppendString(buff, buff_end, "0x");
+  result += AppendString(buff, buff_end, -1, "0x");
   result += AppendUnsigned(buff, buff_end, ptr_value, 16,
                            (SANITIZER_WORDSIZE == 64) ? 12 : 8, true);
   return result;
@@ -113,7 +117,7 @@ static int AppendPointer(char **buff, const char *buff_end, u64 ptr_value) {
 int VSNPrintf(char *buff, int buff_length,
               const char *format, va_list args) {
   static const char *kPrintfFormatsHelp =
-    "Supported Printf formats: %([0-9]*)?(z|ll)?{d,u,x}; %p; %s; %c\n";
+    "Supported Printf formats: %([0-9]*)?(z|ll)?{d,u,x}; %p; %(\\.\\*)?s; %c\n";
   RAW_CHECK(format);
   RAW_CHECK(buff_length > 0);
   const char *buff_end = &buff[buff_length - 1];
@@ -133,6 +137,12 @@ int VSNPrintf(char *buff, int buff_length,
         width = width * 10 + *cur++ - '0';
       }
     }
+    bool have_precision = (cur[0] == '.' && cur[1] == '*');
+    int precision = -1;
+    if (have_precision) {
+      cur += 2;
+      precision = va_arg(args, int);
+    }
     bool have_z = (*cur == 'z');
     cur += have_z;
     bool have_ll = !have_z && (cur[0] == 'l' && cur[1] == 'l');
@@ -140,6 +150,8 @@ int VSNPrintf(char *buff, int buff_length,
     s64 dval;
     u64 uval;
     bool have_flags = have_width | have_z | have_ll;
+    // Only %s supports precision for now
+    CHECK(!(precision >= 0 && *cur != 's'));
     switch (*cur) {
       case 'd': {
         dval = have_ll ? va_arg(args, s64)
@@ -165,7 +177,7 @@ int VSNPrintf(char *buff, int buff_length,
       }
       case 's': {
         RAW_CHECK_MSG(!have_flags, kPrintfFormatsHelp);
-        result += AppendString(&buff, buff_end, va_arg(args, char*));
+        result += AppendString(&buff, buff_end, precision, va_arg(args, char*));
         break;
       }
       case 'c': {
@@ -258,6 +270,7 @@ static void SharedPrintfCode(bool append_pid, const char *format,
     break;
   }
   RawWrite(buffer);
+  AndroidLogWrite(buffer);
   CallPrintfAndReportCallback(buffer);
   // If we had mapped any memory, clean up.
   if (buffer != local_buffer)
@@ -265,6 +278,7 @@ static void SharedPrintfCode(bool append_pid, const char *format,
   va_end(args2);
 }
 
+FORMAT(1, 2)
 void Printf(const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -273,6 +287,7 @@ void Printf(const char *format, ...) {
 }
 
 // Like Printf, but prints the current PID before the output string.
+FORMAT(1, 2)
 void Report(const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -284,6 +299,7 @@ void Report(const char *format, ...) {
 // Returns the number of symbols that should have been written to buffer
 // (not including trailing '\0'). Thus, the string is truncated
 // iff return value is not less than "length".
+FORMAT(3, 4)
 int internal_snprintf(char *buffer, uptr length, const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -292,6 +308,7 @@ int internal_snprintf(char *buffer, uptr length, const char *format, ...) {
   return needed_length;
 }
 
+FORMAT(2, 3)
 void InternalScopedString::append(const char *format, ...) {
   CHECK_LT(length_, size());
   va_list args;
@@ -299,6 +316,7 @@ void InternalScopedString::append(const char *format, ...) {
   VSNPrintf(data() + length_, size() - length_, format, args);
   va_end(args);
   length_ += internal_strlen(data() + length_);
+  CHECK_LT(length_, size());
 }
 
 }  // namespace __sanitizer

@@ -1,3 +1,85 @@
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* optmize.c (maybe_thunk_body): Use set_comdat_group.
+	(maybe_clone_body): Likewise.
+	* decl.c (duplicate_decls): Update code duplicating comdat group;
+	do not copy symtab pointer; before freeing newdecl remove it
+	from symtab.
+	* decl2.c (constrain_visibility): Use set_comdat_group.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* rtti.c: Include tm_p.h
+	(emit_tinfo_decl): Force RTTI data to be aligned to required
+	ABI alignment only.
+
+2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (build_vtable): Align vtables to TARGET_VTABLE_ENTRY_ALIGN
+	ignoring other target adjustments.
+
+2014-05-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* semantics.c (finish_omp_clauses): Remove duplicated variable
+	initialization.
+
+	* parser.c (cp_parser_omp_target): Return bool values.
+
+2014-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61088
+	* lambda.c (add_capture): Enforce that capture by value requires
+	complete type.
+	* typeck2.c (cxx_incomplete_type_inform): Early return if
+	TYPE_MAIN_DECL is null.
+
+2014-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/61271
+	* cp-array-notation.c (cilkplus_an_triplet_types_ok_p): Fix condition.
+
+2014-05-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/61133
+	* lambda.c (build_capture_proxy, add_capture): Treat normal
+	captures and init-captures identically.
+
+2014-05-21  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/16063
+	* cp-lang.c (cxx_enum_underlying_base_type): New function.
+	(LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE): Define.
+
+2014-05-21  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* cvt.c (convert_to_void): Use void_node instead of void_zero_node.
+	* cp-array-notation.c (replace_invariant_exprs): Likewise.
+	(expand_array_notation): Handle VOID_CST.
+	* error.c (dump_expr): Likewise.
+	* cxx-pretty-print.c (cxx_pretty_printer::primary_expression)
+	(cxx_pretty_printer::expression): Likewise.
+	(pp_cxx_new_expression): Use void_node instead of void_zero_node.
+	* decl.c (register_dtor_fn): Likewise.
+	* init.c (build_raw_new_expr, build_new_1, build_vec_init)
+	(build_delete, push_base_cleanups): Likewise.
+	* mangle.c (write_expression): Likewise.
+	* semantics.c (finish_break_stmt, empty_expr_stmt_p): Likewise.
+	* pt.c (tsubst_decl, tsubst_copy_and_build): Likewise.
+	(tsubst, tsubst_copy, build_non_dependent_expr): Handle VOID_CST.
+	* tree.c (cp_tree_equal): Likewise.
+	(build_dummy_object, is_dummy_object, stabilize_expr): Use void_node
+	instead of void_zero_node.
+	* typeck.c (check_return_expr): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+
+2014-05-21  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/60189
+	* parser.c (cp_parser_postfix_expression): Move handling of cilk_sync
+	from here to...
+	(cp_parser_statement): ...here. Make sure only semicolon can go after
+	Cilk_sync.
+
 2014-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58753

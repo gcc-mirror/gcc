@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "cp-tree.h"
@@ -1596,6 +1597,12 @@ emit_tinfo_decl (tree decl)
       DECL_INITIAL (decl) = init;
       mark_used (decl);
       cp_finish_decl (decl, init, false, NULL_TREE, 0);
+      /* Avoid targets optionally bumping up the alignment to improve
+	 vector instruction accesses, tinfo are never accessed this way.  */
+#ifdef DATA_ABI_ALIGNMENT
+      DECL_ALIGN (decl) = DATA_ABI_ALIGNMENT (decl, TYPE_ALIGN (TREE_TYPE (decl)));
+      DECL_USER_ALIGN (decl) = true;
+#endif
       return true;
     }
   else

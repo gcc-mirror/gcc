@@ -1,3 +1,7 @@
+2014-05-21  John Marino  <gnugcc@marino.st>
+
+	* runtime/os-unix.c (__DragonFly__): New target.
+
 2014-04-11  Barry Tannenbaum  <barry.m.tannenbaum@intel.com>
 
 	PR other/60644

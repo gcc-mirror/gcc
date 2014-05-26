@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1868,9 +1868,17 @@ package body Sem_Ch5 is
 
          if Of_Present (N) then
             if Has_Aspect (Typ, Aspect_Iterable) then
-               if No (Get_Iterable_Type_Primitive (Typ, Name_Element)) then
-                  Error_Msg_N ("missing Element primitive for iteration", N);
-               end if;
+               declare
+                  Elt : constant Entity_Id :=
+                          Get_Iterable_Type_Primitive (Typ, Name_Element);
+               begin
+                  if No (Elt) then
+                     Error_Msg_N
+                       ("missing Element primitive for iteration", N);
+                  else
+                     Set_Etype (Def_Id, Etype (Elt));
+                  end if;
+               end;
 
             --  For a predefined container, The type of the loop variable is
             --  the Iterator_Element aspect of the container type.
@@ -1977,7 +1985,7 @@ package body Sem_Ch5 is
 
       if SPARK_Mode = On
         and then not Of_Present (N)
-        and then Is_SPARK_Volatile_Object (Ent)
+        and then Is_SPARK_Volatile (Ent)
       then
          Error_Msg_N ("loop parameter cannot be volatile", Ent);
       end if;
@@ -2352,7 +2360,7 @@ package body Sem_Ch5 is
       --  Analyze the subtype definition and create temporaries for the bounds.
       --  Do not evaluate the range when preanalyzing a quantified expression
       --  because bounds expressed as function calls with side effects will be
-      --  erroneously replicated.
+      --  incorrectly replicated.
 
       if Nkind (DS) = N_Range
         and then Expander_Active
@@ -2697,7 +2705,7 @@ package body Sem_Ch5 is
       --  when SPARK_Mode is on as it is not a standard Ada legality check
       --  (SPARK RM 7.1.3(6)).
 
-      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Id) then
+      if SPARK_Mode = On and then Is_SPARK_Volatile (Id) then
          Error_Msg_N ("loop parameter cannot be volatile", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;

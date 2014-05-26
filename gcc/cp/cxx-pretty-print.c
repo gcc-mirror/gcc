@@ -403,6 +403,7 @@ cxx_pretty_printer::primary_expression (tree t)
 {
   switch (TREE_CODE (t))
     {
+    case VOID_CST:
     case INTEGER_CST:
     case REAL_CST:
     case COMPLEX_CST:
@@ -690,7 +691,7 @@ pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
 	  pp_left_paren (pp);
 	  if (TREE_CODE (init) == TREE_LIST)
 	    pp_c_expression_list (pp, init);
-	  else if (init == void_zero_node)
+	  else if (init == void_node)
 	    ;			/* OK, empty initializer list.  */
 	  else
 	    pp->expression (init);
@@ -1028,6 +1029,7 @@ cxx_pretty_printer::expression (tree t)
   switch (TREE_CODE (t))
     {
     case STRING_CST:
+    case VOID_CST:
     case INTEGER_CST:
     case REAL_CST:
     case COMPLEX_CST:

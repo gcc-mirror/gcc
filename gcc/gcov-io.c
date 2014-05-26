@@ -67,7 +67,7 @@ GCOV_LINKAGE struct gcov_var
 static inline gcov_position_t
 gcov_position (void)
 {
-  gcc_assert (gcov_var.mode > 0); 
+  gcov_nonruntime_assert (gcov_var.mode > 0); 
   return gcov_var.start + gcov_var.offset;
 }
 
@@ -83,7 +83,6 @@ gcov_is_error (void)
 GCOV_LINKAGE inline void
 gcov_rewrite (void)
 {
-  gcc_assert (gcov_var.mode > 0); 
   gcov_var.mode = -1; 
   gcov_var.start = 0;
   gcov_var.offset = 0;
@@ -133,7 +132,7 @@ gcov_open (const char *name, int mode)
   s_flock.l_pid = getpid ();
 #endif
 
-  gcc_assert (!gcov_var.file);
+  gcov_nonruntime_assert (!gcov_var.file);
   gcov_var.start = 0;
   gcov_var.offset = gcov_var.length = 0;
   gcov_var.overread = -1u;
@@ -297,14 +296,13 @@ gcov_write_words (unsigned words)
 {
   gcov_unsigned_t *result;
 
-  gcc_assert (gcov_var.mode < 0);
+  gcov_nonruntime_assert (gcov_var.mode < 0);
 #if IN_LIBGCOV
   if (gcov_var.offset >= GCOV_BLOCK_SIZE)
     {
       gcov_write_block (GCOV_BLOCK_SIZE);
       if (gcov_var.offset)
 	{
-	  gcc_assert (gcov_var.offset == 1);
 	  memcpy (gcov_var.buffer, gcov_var.buffer + GCOV_BLOCK_SIZE, 4);
 	}
     }
@@ -399,9 +397,9 @@ gcov_write_length (gcov_position_t position)
   gcov_unsigned_t length;
   gcov_unsigned_t *buffer;
 
-  gcc_assert (gcov_var.mode < 0);
-  gcc_assert (position + 2 <= gcov_var.start + gcov_var.offset);
-  gcc_assert (position >= gcov_var.start);
+  gcov_nonruntime_assert (gcov_var.mode < 0);
+  gcov_nonruntime_assert (position + 2 <= gcov_var.start + gcov_var.offset);
+  gcov_nonruntime_assert (position >= gcov_var.start);
   offset = position - gcov_var.start;
   length = gcov_var.offset - offset - 2;
   buffer = (gcov_unsigned_t *) &gcov_var.buffer[offset];
@@ -487,14 +485,13 @@ gcov_read_words (unsigned words)
   const gcov_unsigned_t *result;
   unsigned excess = gcov_var.length - gcov_var.offset;
 
-  gcc_assert (gcov_var.mode > 0);
+  gcov_nonruntime_assert (gcov_var.mode > 0);
   if (excess < words)
     {
       gcov_var.start += gcov_var.offset;
 #if IN_LIBGCOV
       if (excess)
 	{
-	  gcc_assert (excess == 1);
 	  memcpy (gcov_var.buffer, gcov_var.buffer + gcov_var.offset, 4);
 	}
 #else
@@ -503,7 +500,6 @@ gcov_read_words (unsigned words)
       gcov_var.offset = 0;
       gcov_var.length = excess;
 #if IN_LIBGCOV
-      gcc_assert (!gcov_var.length || gcov_var.length == 1);
       excess = GCOV_BLOCK_SIZE;
 #else
       if (gcov_var.length + words > gcov_var.alloc)
@@ -620,7 +616,9 @@ gcov_read_summary (struct gcov_summary *summary)
           while (!cur_bitvector)
             {
               h_ix = bv_ix * 32;
-              gcc_assert (bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE);
+              if (bv_ix >= GCOV_HISTOGRAM_BITVECTOR_SIZE)
+                gcov_error ("corrupted profile info: summary histogram "
+                            "bitvector is corrupt");
               cur_bitvector = histo_bitvector[bv_ix++];
             }
           while (!(cur_bitvector & 0x1))
@@ -628,7 +626,9 @@ gcov_read_summary (struct gcov_summary *summary)
               h_ix++;
               cur_bitvector >>= 1;
             }
-          gcc_assert (h_ix < GCOV_HISTOGRAM_SIZE);
+          if (h_ix >= GCOV_HISTOGRAM_SIZE)
+            gcov_error ("corrupted profile info: summary histogram "
+                        "index is corrupt");
 
           csum->histogram[h_ix].num_counters = gcov_read_unsigned ();
           csum->histogram[h_ix].min_value = gcov_read_counter ();
@@ -648,7 +648,7 @@ gcov_read_summary (struct gcov_summary *summary)
 GCOV_LINKAGE void
 gcov_sync (gcov_position_t base, gcov_unsigned_t length)
 {
-  gcc_assert (gcov_var.mode > 0);
+  gcov_nonruntime_assert (gcov_var.mode > 0);
   base += length;
   if (base - gcov_var.start <= gcov_var.length)
     gcov_var.offset = base - gcov_var.start;
@@ -667,7 +667,6 @@ gcov_sync (gcov_position_t base, gcov_unsigned_t length)
 GCOV_LINKAGE void
 gcov_seek (gcov_position_t base)
 {
-  gcc_assert (gcov_var.mode < 0);
   if (gcov_var.offset)
     gcov_write_block (gcov_var.offset);
   fseek (gcov_var.file, base << 2, SEEK_SET);
@@ -742,7 +741,7 @@ gcov_histo_index (gcov_type value)
   if (r < 2)
     return (unsigned)value;
 
-  gcc_assert (r < 64);
+  gcov_nonruntime_assert (r < 64);
 
   /* Find the two next most significant bits to determine which
      of the four linear sub-buckets to select.  */
@@ -859,7 +858,7 @@ static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
           /* The merged counters get placed in the new merged histogram
              at the entry for the merged min_value.  */
           tmp_i = gcov_histo_index (merge_min);
-          gcc_assert (tmp_i < GCOV_HISTOGRAM_SIZE);
+          gcov_nonruntime_assert (tmp_i < GCOV_HISTOGRAM_SIZE);
           tmp_histo[tmp_i].num_counters += merge_num;
           tmp_histo[tmp_i].cum_value += merge_cum;
           if (!tmp_histo[tmp_i].min_value ||
@@ -873,7 +872,7 @@ static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
         }
     }
 
-  gcc_assert (tgt_i < 0);
+  gcov_nonruntime_assert (tgt_i < 0);
 
   /* In the case where there were more counters in the source histogram,
      accumulate the remaining unmerged cumulative counter values. Add
@@ -890,8 +889,8 @@ static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
     }
   /* At this point, tmp_i should be the smallest non-zero entry in the
      tmp_histo.  */
-  gcc_assert (tmp_i >= 0 && tmp_i < GCOV_HISTOGRAM_SIZE
-	      && tmp_histo[tmp_i].num_counters > 0);
+  gcov_nonruntime_assert (tmp_i >= 0 && tmp_i < GCOV_HISTOGRAM_SIZE
+                          && tmp_histo[tmp_i].num_counters > 0);
   tmp_histo[tmp_i].cum_value += src_cum;
 
   /* Finally, copy the merged histogram into tgt_histo.  */
@@ -1003,6 +1002,6 @@ compute_working_sets (const struct gcov_ctr_summary *summary,
          using a temporary above.  */
       cum += histo_bucket->cum_value;
     }
-  gcc_assert (ws_ix == NUM_GCOV_WORKING_SETS);
+  gcov_nonruntime_assert (ws_ix == NUM_GCOV_WORKING_SETS);
 }
 #endif /* IN_GCOV <= 0 && !IN_LIBGCOV */

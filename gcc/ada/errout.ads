@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,10 +60,12 @@ package Errout is
    --  Exception raised if Raise_Exception_On_Error is true
 
    Warning_Doc_Switch : Boolean renames Err_Vars.Warning_Doc_Switch;
-   --  If this is set True, then the ??/?x?/?X? sequences in error messages
-   --  are active (see errout.ads for details). If this switch is False, then
-   --  these sequences are ignored (i.e. simply equivalent to a single ?). The
-   --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
+   --  If this is set True, then the ??/?*?/?x?/?X? sequences in error messages
+   --  generate appropriate tags for the output error messages. If this switch
+   --  is False, then these sequences are still recognized (for the purposes
+   --  of implementing pragmas Warnings (Off,..) and Warning_As_Pragma(...) but
+   --  do not result in adding the error message tag. The -gnatw.d switch sets
+   --  this flag True, -gnatw.D sets this flag False.
 
    -----------------------------------
    -- Suppression of Error Messages --
@@ -281,7 +283,7 @@ package Errout is
    --      messages, and the usual style is to include it, since it makes it
    --      clear that the continuation is part of a warning message.
    --
-   --      Note: this usage is obsolete, use ??, ?x? or ?X? instead to specify
+   --      Note: this usage is obsolete, use ?? ?*? ?x? ?X? instead to specify
    --      the string to be added when Warn_Doc_Switch is set to True. If this
    --      switch is True, then for simple ? messages it has no effect. This
    --      simple form is to ease transition and will be removed later.
@@ -302,13 +304,18 @@ package Errout is
    --      letter corresponding to the lower case letter x in the message.
    --      For continuations, use this on each continuation message.
 
+   --    Insertion character ?*? (restriction warning)
+   --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
+   --      "[restriction warning]" at the end of the warning message. For
+   --      continuations, use this on each continuation message.
+
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
    --      conditional error message. If Error_Msg_Warn is True, then the
-   --      effect is the same as ? described above, and in particular << and
-   --      <X< have the effect of ?? and ?X? respectively. If Error_Msg_Warn
-   --      is False, then the < << or <X< sequence is ignored and the message
-   --      is treated as a error rather than a warning.
+   --      effect is the same as ? described above, and in particular <<
+   --      <X< and <*< have the effect of ?? ?X? and ?*? respectively. If
+   --      Error_Msg_Warn is False, then the < << or <X< sequence is ignored
+   --      and the message is treated as a error rather than a warning.
 
    --    Insertion character A-Z (Upper case letter: Ada reserved word)
    --      If two or more upper case letters appear in the message, they are

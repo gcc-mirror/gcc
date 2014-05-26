@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -484,8 +484,8 @@ package body Exp_Pakd is
       Expr : Node_Id) return Node_Id;
    --  The packed array code does unchecked conversions which in some cases
    --  may involve non-discrete types with differing sizes. The semantics of
-   --  such conversions is potentially endian dependent, and the effect we
-   --  want here for such a conversion is to do the conversion in size as
+   --  such conversions is potentially endianness dependent, and the effect
+   --  we want here for such a conversion is to do the conversion in size as
    --  though numeric items are involved, and we extend or truncate on the
    --  left side. This happens naturally in the little-endian case, but in
    --  the big endian case we can get left justification, when what we want
@@ -543,25 +543,19 @@ package body Exp_Pakd is
    --  array type on the fly). Such actions are inserted into the tree
    --  directly using Insert_Action.
 
-   function Byte_Swap
-     (N             : Node_Id;
-      Left_Justify  : Boolean := False;
-      Right_Justify : Boolean := False) return Node_Id;
-   --  Wrap N in a call to a byte swapping function, with appropriate type
-   --  conversions. If Left_Justify is set True, the value is left justified
-   --  before swapping. If Right_Justify is set True, the value is right
-   --  justified after swapping. The Etype of the returned node is an
-   --  integer type of an appropriate power-of-2 size.
+   function Revert_Storage_Order (N : Node_Id) return Node_Id;
+   --  Perform appropriate justification and byte ordering adjustments for N,
+   --  an element of a packed array type, when both the component type and
+   --  the enclosing packed array type have reverse scalar storage order.
+   --  On little-endian targets, the value is left justified before byte
+   --  swapping. The Etype of the returned expression is an integer type of
+   --  an appropriate power-of-2 size.
 
-   ---------------
-   -- Byte_Swap --
-   ---------------
+   --------------------------
+   -- Revert_Storage_Order --
+   --------------------------
 
-   function Byte_Swap
-     (N             : Node_Id;
-      Left_Justify  : Boolean := False;
-      Right_Justify : Boolean := False) return Node_Id
-   is
+   function Revert_Storage_Order (N : Node_Id) return Node_Id is
       Loc     : constant Source_Ptr := Sloc (N);
       T       : constant Entity_Id := Etype (N);
       T_Size  : constant Uint := RM_Size (T);
@@ -571,51 +565,59 @@ package body Exp_Pakd is
       Swap_T  : Entity_Id;
       --  Swapping function
 
-      Arg     : Node_Id;
-      Swapped : Node_Id;
-      Shift   : Uint;
+      Arg      : Node_Id;
+      Adjusted : Node_Id;
+      Shift    : Uint;
 
    begin
-      pragma Assert (T_Size > 8);
+      if T_Size <= 8 then
 
-      if T_Size <= 16 then
-         Swap_RE := RE_Bswap_16;
+         --  Array component size is less than a byte: no swapping needed
 
-      elsif T_Size <= 32 then
-         Swap_RE := RE_Bswap_32;
+         Swap_F := Empty;
+         Swap_T := RTE (RE_Unsigned_8);
 
-      else pragma Assert (T_Size <= 64);
-         Swap_RE := RE_Bswap_64;
+      else
+         --  Select byte swapping function depending on array component size
+
+         if T_Size <= 16 then
+            Swap_RE := RE_Bswap_16;
+
+         elsif T_Size <= 32 then
+            Swap_RE := RE_Bswap_32;
+
+         else pragma Assert (T_Size <= 64);
+            Swap_RE := RE_Bswap_64;
+         end if;
+
+         Swap_F := RTE (Swap_RE);
+         Swap_T := Etype (Swap_F);
+
       end if;
 
-      Swap_F := RTE (Swap_RE);
-      Swap_T := Etype (Swap_F);
       Shift := Esize (Swap_T) - T_Size;
 
       Arg := RJ_Unchecked_Convert_To (Swap_T, N);
 
-      if Left_Justify and then Shift > Uint_0 then
+      if not Bytes_Big_Endian and then Shift > Uint_0 then
          Arg :=
            Make_Op_Shift_Left (Loc,
              Left_Opnd  => Arg,
              Right_Opnd => Make_Integer_Literal (Loc, Shift));
       end if;
 
-      Swapped :=
-        Make_Function_Call (Loc,
-          Name                   => New_Occurrence_Of (Swap_F, Loc),
-          Parameter_Associations => New_List (Arg));
-
-      if Right_Justify and then Shift > Uint_0 then
-         Swapped :=
-           Make_Op_Shift_Right (Loc,
-             Left_Opnd  => Swapped,
-             Right_Opnd => Make_Integer_Literal (Loc, Shift));
+      if Present (Swap_F) then
+         Adjusted :=
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Swap_F, Loc),
+             Parameter_Associations => New_List (Arg));
+      else
+         Adjusted := Arg;
       end if;
 
-      Set_Etype (Swapped, Swap_T);
-      return Swapped;
-   end Byte_Swap;
+      Set_Etype (Adjusted, Swap_T);
+      return Adjusted;
+   end Revert_Storage_Order;
 
    ------------------------------
    -- Compute_Linear_Subscript --
@@ -2085,15 +2087,10 @@ package body Exp_Pakd is
          --  it back to its expected endianness after extraction.
 
          if Reverse_Storage_Order (Atyp)
-           and then Esize (Atyp) > 8
            and then (Is_Record_Type (Ctyp) or else Is_Array_Type (Ctyp))
            and then Reverse_Storage_Order (Ctyp)
          then
-            Arg :=
-              Byte_Swap
-                (Arg,
-                 Left_Justify  => not Bytes_Big_Endian,
-                 Right_Justify => False);
+            Arg := Revert_Storage_Order (Arg);
          end if;
 
          --  We needed to analyze this before we do the unchecked convert

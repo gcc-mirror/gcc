@@ -282,7 +282,7 @@ state_writer::state_writer ()
 
 
 /* Fatal message while reading state.  */
-static inline void 
+static void 
 fatal_reading_state (struct state_token_st* tok, const char*msg)
 {
   if (tok)
