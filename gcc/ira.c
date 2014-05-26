@@ -4979,17 +4979,6 @@ split_live_ranges_for_shrink_wrap (void)
 	   use;
 	   use = DF_REF_NEXT_REG (use))
 	{
-	  if (NONDEBUG_INSN_P (DF_REF_INSN (use))
-	      && GET_CODE (DF_REF_REG (use)) == SUBREG)
-	    {
-	      /* This is necessary to avoid hitting an assert at
-		 postreload.c:2294 in libstc++ testcases on x86_64-linux.  I'm
-		 not really sure what the probblem actually is there.  */
-	      bitmap_clear (&need_new);
-	      bitmap_clear (&reachable);
-	      return false;
-	    }
-
 	  int ubbi = DF_REF_BB (use)->index;
 	  if (bitmap_bit_p (&reachable, ubbi))
 	    bitmap_set_bit (&need_new, ubbi);
