@@ -488,8 +488,7 @@ compiler benchmarks} and the
 @uref{http://www.netlib.org/benchmark/livermore,
 Livermore Fortran Kernels test}.  It has been used to compile a number of
 large real-world programs, including
-@uref{http://mysite.verizon.net/serveall/moene.pdf, the HIRLAM
-weather-forecasting code} and
+@uref{http://hirlam.org/, the HARMONIE and HIRLAM weather forecasting code} and
 @uref{http://physical-chemistry.scb.uwa.edu.au/tonto/wiki/index.php/Main_Page,
 the Tonto quantum chemistry package}; see
 @url{https://gcc.gnu.org/@/wiki/@/GfortranApps} for an extended list.
