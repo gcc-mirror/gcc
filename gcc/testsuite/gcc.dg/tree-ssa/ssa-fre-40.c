@@ -14,3 +14,4 @@ int foo (int *p)
    aliasing store via *p is not reachable.  */
 
 /* { dg-final { scan-tree-dump-not "= x;" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

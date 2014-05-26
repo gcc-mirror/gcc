@@ -1,3 +1,7 @@
+2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/ssa-fre-40.c: Cleanup fre1 tree dump.
+
 2014-05-26  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	PR rtl-optimization/61222
