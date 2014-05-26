@@ -1,3 +1,8 @@
+2014-05-26  Martin Jambor  <mjambor@suse.cz>
+
+	* ira.c (split_live_ranges_for_shrink_wrap): Remove bailout on
+	subreg uses.
+
 2014-05-26  Richard Biener  <rguenther@suse.de>
 
 	* wide-int.h (wi::int_traits <long>, wi::int_traits <unsigned long>,
