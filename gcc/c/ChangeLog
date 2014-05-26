@@ -1,3 +1,9 @@
+2014-05-26  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/61191
+	* c-array-notation.c (fix_builtin_array_notation_fn): Check invalid
+	function parameters.
+
 2014-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_atomic): Allow seq_cst before

@@ -229,6 +229,8 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
   /* Fully fold any EXCESSIVE_PRECISION EXPR that can occur in the function
      parameter.  */
   func_parm = c_fully_fold (func_parm, false, NULL);
+  if (func_parm == error_mark_node)
+    return error_mark_node;
   
   location = EXPR_LOCATION (an_builtin_fn);
   
