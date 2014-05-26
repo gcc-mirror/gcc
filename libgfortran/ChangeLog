@@ -8,6 +8,7 @@
 	(fdate_sub): Likewise.
 	(ctime): Likewise.
 	(ctime_sub): Likewise.
+
 2014-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from trunk:
