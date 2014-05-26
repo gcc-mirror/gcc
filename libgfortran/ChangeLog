@@ -1,3 +1,13 @@
+2014-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/55117
+	* io/list_read.c (extended_look_ahead): New helper function to
+	scan the namelist name and look for matches with the new '+'
+	extended type parent indicator.  (str_comp_extended): New
+	helper function to compare the namelist name with the varname
+	namelist. (find_nml_name): Use the new helper functions to match
+	the extended type varnames.	
+
 2014-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/61173

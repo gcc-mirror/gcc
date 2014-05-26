@@ -1,3 +1,10 @@
+2014-05-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55117
+	* trans-io.c (nml_full_name, transfer_namelist_element): Insert
+	a '+' rather then '%' to differentiate namelist variable names
+	that are based on extended derived types.
+
 2014-05-25  Tobias Burnus  <burnus@net-b.de>
 
 	* check.c (gfc_check_num_images): New.

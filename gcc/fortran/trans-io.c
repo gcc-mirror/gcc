@@ -1452,10 +1452,10 @@ gfc_trans_wait (gfc_code * code)
 
 
 /* nml_full_name builds up the fully qualified name of a
-   derived type component.  */
+   derived type component. '+' is used to denote a type extension.  */
 
 static char*
-nml_full_name (const char* var_name, const char* cmp_name)
+nml_full_name (const char* var_name, const char* cmp_name, bool parent)
 {
   int full_name_length;
   char * full_name;
@@ -1463,7 +1463,7 @@ nml_full_name (const char* var_name, const char* cmp_name)
   full_name_length = strlen (var_name) + strlen (cmp_name) + 1;
   full_name = XCNEWVEC (char, full_name_length + 1);
   strcpy (full_name, var_name);
-  full_name = strcat (full_name, "%");
+  full_name = strcat (full_name, parent ? "+" : "%");
   full_name = strcat (full_name, cmp_name);
   return full_name;
 }
@@ -1634,7 +1634,8 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
       for (cmp = ts->u.derived->components; cmp; cmp = cmp->next)
 	{
-	  char *full_name = nml_full_name (var_name, cmp->name);
+	  char *full_name = nml_full_name (var_name, cmp->name,
+					   ts->u.derived->attr.extension);
 	  transfer_namelist_element (block,
 				     full_name,
 				     NULL, cmp, expr);
