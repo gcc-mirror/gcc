@@ -5862,49 +5862,6 @@ _ACEOF
 
 fi
 
-ac_fn_c_check_type "$LINENO" "__int64" "ac_cv_type___int64" "$ac_includes_default"
-if test "x$ac_cv_type___int64" = x""yes; then :
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE___INT64 1
-_ACEOF
-
-# The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of __int64" >&5
-$as_echo_n "checking size of __int64... " >&6; }
-if test "${ac_cv_sizeof___int64+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (__int64))" "ac_cv_sizeof___int64"        "$ac_includes_default"; then :
-
-else
-  if test "$ac_cv_type___int64" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-{ as_fn_set_status 77
-as_fn_error "cannot compute sizeof (__int64)
-See \`config.log' for more details." "$LINENO" 5; }; }
-   else
-     ac_cv_sizeof___int64=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int64" >&5
-$as_echo "$ac_cv_sizeof___int64" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF___INT64 $ac_cv_sizeof___int64
-_ACEOF
-
-
-fi
-
 ac_fn_c_find_intX_t "$LINENO" "8" "ac_cv_c_int8_t"
 case $ac_cv_c_int8_t in #(
   no|yes) ;; #(
@@ -6269,6 +6226,9 @@ fi
 
 
 
+if test x"$ac_cv_c_uint64_t" = x"no" -o x"$ac_cv_c_int64_t" = x"no"; then
+  as_fn_error "uint64_t or int64_t not found" "$LINENO" 5
+fi
 
 # ---------------------
 # Warnings and checking
@@ -17988,7 +17948,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17991 "configure"
+#line 17951 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18094,7 +18054,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18097 "configure"
+#line 18057 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

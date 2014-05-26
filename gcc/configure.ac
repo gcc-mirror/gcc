@@ -311,8 +311,10 @@ AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_TYPES([long long], [AC_CHECK_SIZEOF(long long)])
-AC_CHECK_TYPES([__int64], [AC_CHECK_SIZEOF(__int64)])
 GCC_STDINT_TYPES
+if test x"$ac_cv_c_uint64_t" = x"no" -o x"$ac_cv_c_int64_t" = x"no"; then
+  AC_MSG_ERROR([uint64_t or int64_t not found])
+fi
 
 # ---------------------
 # Warnings and checking
@@ -1374,7 +1376,7 @@ fi
 
 if test x$use_long_long_for_widest_fast_int = xyes; then
 	AC_DEFINE(USE_LONG_LONG_FOR_WIDEST_FAST_INT, 1,
-[Define to 1 if the 'long long' (or '__int64') is wider than 'long' but still
+[Define to 1 if the 'long long' type is wider than 'long' but still
 efficiently supported by the host hardware.])
 fi
 
