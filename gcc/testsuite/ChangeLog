@@ -1,3 +1,7 @@
+2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aliasing1.adb (dg-final): Robustify pattern matching.
+
 2014-05-24  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	Backport r195492 and r195815
