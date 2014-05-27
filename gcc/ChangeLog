@@ -1,3 +1,7 @@
+2014-05-27  Richard Biener  <rguenther@suse.de>
+
+	* system.h (__STDC_FORMAT_MACROS): Define as very first thing.
+
 2014-05-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR libgcc/61152
