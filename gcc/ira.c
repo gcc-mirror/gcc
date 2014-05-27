@@ -1774,23 +1774,20 @@ setup_prohibited_mode_move_regs (void)
 static bool
 commutative_constraint_p (const char *str)
 {
-  int curr_alt, c;
-  bool ignore_p;
+  int c;
 
-  for (ignore_p = false, curr_alt = 0;;)
+  alternative_mask enabled = recog_data.enabled_alternatives;
+  for (;;)
     {
       c = *str;
       if (c == '\0')
 	break;
       str += CONSTRAINT_LEN (c, str);
-      if (c == '#' || !recog_data.alternative_enabled_p[curr_alt])
-	ignore_p = true;
+      if (c == '#')
+	enabled &= ~ALTERNATIVE_BIT (0);
       else if (c == ',')
-	{
-	  curr_alt++;
-	  ignore_p = false;
-	}
-      else if (! ignore_p)
+	enabled >>= 1;
+      else if (enabled & 1)
 	{
 	  /* Usually `%' is the first constraint character but the
 	     documentation does not require this.  */

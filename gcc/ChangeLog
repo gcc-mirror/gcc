@@ -1,5 +1,10 @@
 2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira.c (commutative_operand): Adjust for change to recog_data.
+	[Missing from previous commit.]
+
+2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* system.h (TEST_BIT): New macro.
 	* recog.h (alternative_mask): New type.
 	(ALL_ALTERNATIVES, ALTERNATIVE_BIT): New macros.
