@@ -1,6 +1,6 @@
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
-	* optmize.c (maybe_thunk_body): Use set_comdat_group.
+	* optimize.c (maybe_thunk_body): Use set_comdat_group.
 	(maybe_clone_body): Likewise.
 	* decl.c (duplicate_decls): Update code duplicating comdat group;
 	do not copy symtab pointer; before freeing newdecl remove it
