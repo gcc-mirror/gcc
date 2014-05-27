@@ -1,3 +1,9 @@
+2014-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/61319
+	* c-c++-common/ubsan/float-cast.h: Conditionally define LLONG_MAX,
+	LLONG_MIN, and ULLONG_MAX.
+
 2014-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_bswap):
