@@ -1,3 +1,7 @@
+2014-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* intrinsics/getcwd.c: Include stdlib.h.
+
 2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* libgfortran.h (xrealloc): New prototype.
@@ -301,7 +305,7 @@
 	line_buffer_pos for line_buffer look ahead.
 	(read_logical, read_integer, parse_real, read_real, check_type):
 	Adjust location of free_line to after generating error messages
-	to retain the correct item count for the message. 
+	to retain the correct item count for the message.
 
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -324,7 +328,7 @@
 	checks for library ok. (new_unit): Do cleanup after error.
 	(st_open): Do proper return after error.
 	* io/transfer.c (data_transfer_init): Likewise.
-	
+
 2013-12-11  Tobias Burnus  <burnus@net-b.de>
 
 	* config/fpu-387.h (sigill_hdlr, get_fpu_rounding_mode): Emit SSE
