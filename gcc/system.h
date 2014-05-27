@@ -22,6 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SYSTEM_H
 #define GCC_SYSTEM_H
 
+/* Define this so that inttypes.h defines the PRI?64 macros even
+   when compiling with a C++ compiler.  Define it here so in the
+   event inttypes.h gets pulled in by another header it is already
+   defined.  */
+#define __STDC_FORMAT_MACROS
+
 /* We must include stdarg.h before stdio.h.  */
 #include <stdarg.h>
 
@@ -491,7 +497,6 @@ extern void *realloc (void *, size_t);
 #endif
 
 #ifdef HAVE_INTTYPES_H
-#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #endif
 
