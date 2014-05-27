@@ -1,5 +1,9 @@
 2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/aliasing1.adb (dg-final): Robustify pattern matching.
+
+2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/overflow_fixed.adb: New test.
 
 2014-05-27  Marek Polacek  <polacek@redhat.com>
