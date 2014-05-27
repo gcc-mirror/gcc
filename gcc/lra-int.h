@@ -227,7 +227,7 @@ struct lra_insn_recog_data
      ending with a negative value.  */
   int *arg_hard_regs;
   /* Alternative enabled for the insn.	NULL for debug insns.  */
-  bool *alternative_enabled_p;
+  alternative_mask enabled_alternatives;
   /* The following member value is always NULL for a debug insn.  */
   struct lra_insn_reg *regs;
 };

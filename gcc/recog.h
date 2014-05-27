@@ -20,8 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RECOG_H
 #define GCC_RECOG_H
 
-/* Random number that should be large enough for all purposes.  */
+/* Random number that should be large enough for all purposes.  Also define
+   a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
+   bit giving an invalid value that can be used to mean "uninitialized".  */
 #define MAX_RECOG_ALTERNATIVES 30
+typedef unsigned int alternative_mask;
+
+/* A mask of all alternatives.  */
+#define ALL_ALTERNATIVES ((alternative_mask) -1)
+
+/* A mask containing just alternative X.  */
+#define ALTERNATIVE_BIT(X) ((alternative_mask) 1 << (X))
 
 /* Types of operands.  */
 enum op_type {
@@ -235,11 +244,11 @@ struct recog_data_d
   /* True if insn is ASM_OPERANDS.  */
   bool is_asm;
 
-  /* Specifies whether an insn alternative is enabled using the
-     `enabled' attribute in the insn pattern definition.  For back
-     ends not using the `enabled' attribute the array fields are
-     always set to `true' in expand_insn.  */
-  bool alternative_enabled_p [MAX_RECOG_ALTERNATIVES];
+  /* Specifies whether an insn alternative is enabled using the `enabled'
+     attribute in the insn pattern definition.  For back ends not using
+     the `enabled' attribute the bits are always set to 1 in expand_insn.
+     Bits beyond the last alternative are also set to 1.  */
+  alternative_mask enabled_alternatives;
 
   /* In case we are caching, hold insn data was generated for.  */
   rtx insn;
@@ -360,5 +369,26 @@ struct insn_data_d
 
 extern const struct insn_data_d insn_data[];
 extern int peep2_current_count;
+
+#ifndef GENERATOR_FILE
+#include "insn-codes.h"
+
+/* Target-dependent globals.  */
+struct target_recog {
+  bool x_initialized;
+  alternative_mask x_enabled_alternatives[LAST_INSN_CODE];
+};
+
+extern struct target_recog default_target_recog;
+#if SWITCHABLE_TARGET
+extern struct target_recog *this_target_recog;
+#else
+#define this_target_recog (&default_target_recog)
+#endif
+
+alternative_mask get_enabled_alternatives (rtx);
+
+void recog_init ();
+#endif
 
 #endif /* GCC_RECOG_H */

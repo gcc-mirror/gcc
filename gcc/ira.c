@@ -1844,7 +1844,8 @@ ira_setup_alts (rtx insn, HARD_REG_SET &alts)
 	}
       for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
 	{
-	  if (! recog_data.alternative_enabled_p[nalt] || TEST_HARD_REG_BIT (alts, nalt))
+	  if (!TEST_BIT (recog_data.enabled_alternatives, nalt)
+	      || TEST_HARD_REG_BIT (alts, nalt))
 	    continue;
 
 	  for (nop = 0; nop < recog_data.n_operands; nop++)

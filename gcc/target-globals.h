@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 extern struct target_flag_state *this_target_flag_state;
 extern struct target_regs *this_target_regs;
 extern struct target_rtl *this_target_rtl;
+extern struct target_recog *this_target_recog;
 extern struct target_hard_regs *this_target_hard_regs;
 extern struct target_reload *this_target_reload;
 extern struct target_expmed *this_target_expmed;
@@ -43,6 +44,7 @@ struct GTY(()) target_globals {
   struct target_flag_state *GTY((skip)) flag_state;
   void *GTY((atomic)) regs;
   struct target_rtl *rtl;
+  void *GTY((atomic)) recog;
   void *GTY((atomic)) hard_regs;
   void *GTY((atomic)) reload;
   void *GTY((atomic)) expmed;
@@ -70,6 +72,7 @@ restore_target_globals (struct target_globals *g)
   this_target_flag_state = g->flag_state;
   this_target_regs = (struct target_regs *) g->regs;
   this_target_rtl = g->rtl;
+  this_target_recog = (struct target_recog *) g->recog;
   this_target_hard_regs = (struct target_hard_regs *) g->hard_regs;
   this_target_reload = (struct target_reload *) g->reload;
   this_target_expmed = (struct target_expmed *) g->expmed;

@@ -743,22 +743,17 @@ mark_hard_reg_early_clobbers (rtx insn, bool live_p)
 static enum reg_class
 single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 {
-  int curr_alt, c;
-  bool ignore_p;
+  int c;
   enum reg_class cl, next_cl;
 
   cl = NO_REGS;
-  for (ignore_p = false, curr_alt = 0;
-       (c = *constraints);
-       constraints += CONSTRAINT_LEN (c, constraints))
-    if (c == '#' || !recog_data.alternative_enabled_p[curr_alt])
-      ignore_p = true;
+  alternative_mask enabled = recog_data.enabled_alternatives;
+  for (; (c = *constraints); constraints += CONSTRAINT_LEN (c, constraints))
+    if (c == '#')
+      enabled &= ~ALTERNATIVE_BIT (0);
     else if (c == ',')
-      {
-	curr_alt++;
-	ignore_p = false;
-      }
-    else if (! ignore_p)
+      enabled >>= 1;
+    else if (enabled & 1)
       switch (c)
 	{
 	case ' ':
@@ -887,8 +882,7 @@ single_reg_operand_class (int op_num)
 void
 ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 {
-  int i, curr_alt, c, regno = 0;
-  bool ignore_p;
+  int i, c, regno = 0;
   enum reg_class cl;
   rtx op;
   enum machine_mode mode;
@@ -909,17 +903,13 @@ ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 	  mode = (GET_CODE (op) == SCRATCH
 		  ? GET_MODE (op) : PSEUDO_REGNO_MODE (regno));
 	  cl = NO_REGS;
-	  for (ignore_p = false, curr_alt = 0;
-	       (c = *p);
-	       p += CONSTRAINT_LEN (c, p))
-	    if (c == '#' || !recog_data.alternative_enabled_p[curr_alt])
-	      ignore_p = true;
+	  alternative_mask enabled = recog_data.enabled_alternatives;
+	  for (; (c = *p); p += CONSTRAINT_LEN (c, p))
+	    if (c == '#')
+	      enabled &= ~ALTERNATIVE_BIT (0);
 	    else if (c == ',')
-	      {
-		curr_alt++;
-		ignore_p = false;
-	      }
-	    else if (! ignore_p)
+	      enabled >>= 1;
+	    else if (enabled & 1)
 	      switch (c)
 		{
 		case 'r':
