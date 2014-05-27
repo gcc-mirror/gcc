@@ -1,3 +1,7 @@
+2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aliasing1.adb (dg-final): Robustify pattern matching.
+
 2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-c++-common/cilk-plus/AN/pr61191.c: Fix dg-error directives.
