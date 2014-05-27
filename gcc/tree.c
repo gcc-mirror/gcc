@@ -603,6 +603,16 @@ decl_assembler_name (tree decl)
   return DECL_WITH_VIS_CHECK (decl)->decl_with_vis.assembler_name;
 }
 
+/* Return comdat group of DECL.  */
+tree
+decl_comdat_group (tree node)
+{
+  struct symtab_node *snode = symtab_get_node (node);
+  if (!snode)
+    return NULL;
+  return snode->get_comdat_group ();
+}
+
 /* Compute the number of bytes occupied by a tree with code CODE.
    This function cannot be used for nodes that have variable sizes,
    including TREE_VEC, INTEGER_CST, STRING_CST, and CALL_EXPR.  */
