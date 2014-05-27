@@ -35,7 +35,7 @@ namespace __detail
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_DEBUG
-  std::ostream&
+  inline std::ostream&
   _State_base::_M_print(std::ostream& ostr) const
   {
     switch (_M_opcode)
@@ -66,7 +66,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // Prints graphviz dot commands for state.
-  std::ostream&
+  inline std::ostream&
   _State_base::_M_dot(std::ostream& __ostr, _StateIdT __id) const
   {
     switch (_M_opcode)
