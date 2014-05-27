@@ -1,3 +1,19 @@
+2014-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR libgcc/61152
+	* config/arm/arm.h (License): Add note to COPYING.RUNTIME.
+	* config/arm/arm-cores.def (License): Same.
+	* config/arm/arm-opts.h (License): Same.
+	* config/arm/aout.h (License): Same.
+	* config/arm/bpabi.h (License): Same.
+	* config/arm/elf.h (License): Same.
+	* config/arm/linux-elf.h (License): Same.
+	* config/arm/linux-gas.h (License): Same.
+	* config/arm/netbsd-elf.h (License): Same.
+	* config/arm/uclinux-eabi.h (License): Same.
+	* config/arm/uclinux-elf.h (License): Same.
+	* config/arm/vxworks.h (License): Same.
+
 2014-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon.md (neon_bswap<mode>): New pattern.
