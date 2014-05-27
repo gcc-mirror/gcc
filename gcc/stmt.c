@@ -774,24 +774,20 @@ static void
 dump_case_nodes (FILE *f, struct case_node *root,
 		 int indent_step, int indent_level)
 {
-  HOST_WIDE_INT low, high;
-
   if (root == 0)
     return;
   indent_level++;
 
   dump_case_nodes (f, root->left, indent_step, indent_level);
 
-  low = tree_to_shwi (root->low);
-  high = tree_to_shwi (root->high);
-
   fputs (";; ", f);
-  if (high == low)
-    fprintf (f, "%*s" HOST_WIDE_INT_PRINT_DEC,
-	     indent_step * indent_level, "", low);
-  else
-    fprintf (f, "%*s" HOST_WIDE_INT_PRINT_DEC " ... " HOST_WIDE_INT_PRINT_DEC,
-	     indent_step * indent_level, "", low, high);
+  fprintf (f, "%*s", indent_step * indent_level, "");
+  print_dec (root->low, f, TYPE_SIGN (TREE_TYPE (root->low)));
+  if (!tree_int_cst_equal (root->low, root->high))
+    {
+      fprintf (f, " ... ");
+      print_dec (root->high, f, TYPE_SIGN (TREE_TYPE (root->high)));
+    }
   fputs ("\n", f);
 
   dump_case_nodes (f, root->right, indent_step, indent_level);
