@@ -1,3 +1,10 @@
+2014-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2014-05-27 mainline r210322.
+
+	PR libgcc/61152
+	* config/arm/bpabi-lib.h (License): Add GCC Runtime Library Exception.
+
 2014-05-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/t-msp430 (HOST_LIBGCC2_CFLAGS): Add
