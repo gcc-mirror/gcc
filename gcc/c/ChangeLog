@@ -1,3 +1,12 @@
+2014-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56724
+	* c-typeck.c (convert_arguments): Get location of a parameter.  Change
+	error and warning calls to error_at and warning_at.  Pass location of
+	a parameter to it.  Call warning_at with OPT_Wtraditional_conversion.
+	(convert_for_assignment): Add parameter to WARN_FOR_ASSIGNMENT and
+	WARN_FOR_QUALIFIERS.  Pass expr_loc to those.
+
 2014-05-26  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c/61191

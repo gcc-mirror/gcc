@@ -3072,6 +3072,12 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
       bool excess_precision = false;
       bool npc;
       tree parmval;
+      /* Some __atomic_* builtins have additional hidden argument at
+	 position 0.  */
+      location_t ploc
+	= !arg_loc.is_empty () && values->length () == arg_loc.length ()
+	  ? expansion_point_location_if_in_system_header (arg_loc[parmnum])
+	  : input_location;
 
       if (type == void_type_node)
 	{
@@ -3114,7 +3120,8 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 
 	  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
 	    {
-	      error ("type of formal parameter %d is incomplete", parmnum + 1);
+	      error_at (ploc, "type of formal parameter %d is incomplete",
+			parmnum + 1);
 	      parmval = val;
 	    }
 	  else
@@ -3129,34 +3136,40 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 
 		  if (INTEGRAL_TYPE_P (type)
 		      && TREE_CODE (valtype) == REAL_TYPE)
-		    warning (0, "passing argument %d of %qE as integer "
-			     "rather than floating due to prototype",
-			     argnum, rname);
+		    warning_at (ploc, OPT_Wtraditional_conversion,
+				"passing argument %d of %qE as integer rather "
+				"than floating due to prototype",
+				argnum, rname);
 		  if (INTEGRAL_TYPE_P (type)
 		      && TREE_CODE (valtype) == COMPLEX_TYPE)
-		    warning (0, "passing argument %d of %qE as integer "
-			     "rather than complex due to prototype",
-			     argnum, rname);
+		    warning_at (ploc, OPT_Wtraditional_conversion,
+				"passing argument %d of %qE as integer rather "
+				"than complex due to prototype",
+				argnum, rname);
 		  else if (TREE_CODE (type) == COMPLEX_TYPE
 			   && TREE_CODE (valtype) == REAL_TYPE)
-		    warning (0, "passing argument %d of %qE as complex "
-			     "rather than floating due to prototype",
-			     argnum, rname);
+		    warning_at (ploc, OPT_Wtraditional_conversion,
+				"passing argument %d of %qE as complex rather "
+				"than floating due to prototype",
+				argnum, rname);
 		  else if (TREE_CODE (type) == REAL_TYPE
 			   && INTEGRAL_TYPE_P (valtype))
-		    warning (0, "passing argument %d of %qE as floating "
-			     "rather than integer due to prototype",
-			     argnum, rname);
+		    warning_at (ploc, OPT_Wtraditional_conversion,
+				"passing argument %d of %qE as floating rather "
+				"than integer due to prototype",
+				argnum, rname);
 		  else if (TREE_CODE (type) == COMPLEX_TYPE
 			   && INTEGRAL_TYPE_P (valtype))
-		    warning (0, "passing argument %d of %qE as complex "
-			     "rather than integer due to prototype",
-			     argnum, rname);
+		    warning_at (ploc, OPT_Wtraditional_conversion,
+				"passing argument %d of %qE as complex rather "
+				"than integer due to prototype",
+				argnum, rname);
 		  else if (TREE_CODE (type) == REAL_TYPE
 			   && TREE_CODE (valtype) == COMPLEX_TYPE)
-		    warning (0, "passing argument %d of %qE as floating "
-			     "rather than complex due to prototype",
-			     argnum, rname);
+		    warning_at (ploc, OPT_Wtraditional_conversion,
+				"passing argument %d of %qE as floating rather "
+				"than complex due to prototype",
+				argnum, rname);
 		  /* ??? At some point, messages should be written about
 		     conversions between complex types, but that's too messy
 		     to do now.  */
@@ -3167,9 +3180,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 			 since without a prototype it would be `double'.  */
 		      if (formal_prec == TYPE_PRECISION (float_type_node)
 			  && type != dfloat32_type_node)
-			warning (0, "passing argument %d of %qE as %<float%> "
-				 "rather than %<double%> due to prototype",
-				 argnum, rname);
+			warning_at (ploc, 0,
+				    "passing argument %d of %qE as %<float%> "
+				    "rather than %<double%> due to prototype",
+				    argnum, rname);
 
 		      /* Warn if mismatch between argument and prototype
 			 for decimal float types.  Warn of conversions with
@@ -3192,9 +3206,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 				   || (type == dfloat64_type_node
 				       && (valtype
 					   != dfloat32_type_node))))
-			warning (0, "passing argument %d of %qE as %qT "
-				 "rather than %qT due to prototype",
-				 argnum, rname, type, valtype);
+			warning_at (ploc, 0,
+				    "passing argument %d of %qE as %qT "
+				    "rather than %qT due to prototype",
+				    argnum, rname, type, valtype);
 
 		    }
 		  /* Detect integer changing in width or signedness.
@@ -3213,10 +3228,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 			   and the actual arg is that enum type.  */
 			;
 		      else if (formal_prec != TYPE_PRECISION (type1))
-			warning (OPT_Wtraditional_conversion,
-				 "passing argument %d of %qE "
-				 "with different width due to prototype",
-				 argnum, rname);
+			warning_at (ploc, OPT_Wtraditional_conversion,
+				    "passing argument %d of %qE "
+				    "with different width due to prototype",
+				    argnum, rname);
 		      else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
 			;
 		      /* Don't complain if the formal parameter type
@@ -3237,14 +3252,15 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 			       && TYPE_UNSIGNED (valtype))
 			;
 		      else if (TYPE_UNSIGNED (type))
-			warning (OPT_Wtraditional_conversion,
-				 "passing argument %d of %qE "
-				 "as unsigned due to prototype",
-				 argnum, rname);
+			warning_at (ploc, OPT_Wtraditional_conversion,
+				    "passing argument %d of %qE "
+				    "as unsigned due to prototype",
+				    argnum, rname);
 		      else
-			warning (OPT_Wtraditional_conversion,
-				 "passing argument %d of %qE "
-				 "as signed due to prototype", argnum, rname);
+			warning_at (ploc, OPT_Wtraditional_conversion,
+				    "passing argument %d of %qE "
+				    "as signed due to prototype",
+				    argnum, rname);
 		    }
 		}
 
@@ -3253,13 +3269,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	      if (excess_precision)
 		val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
 	      origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
-	      bool arg_loc_ok = !arg_loc.is_empty ()
-				/* Some __atomic_* builtins have additional
-				   hidden argument at position 0.  */
-				&& values->length () == arg_loc.length ();
-	      parmval = convert_for_assignment (loc,
-						arg_loc_ok ? arg_loc[parmnum]
-						: UNKNOWN_LOCATION, type,
+	      parmval = convert_for_assignment (loc, ploc, type,
 						val, origtype, ic_argpass,
 						npc, fundecl, function,
 						parmnum + 1);
@@ -3283,10 +3293,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	    {
 	      /* Convert `float' to `double'.  */
 	      if (warn_double_promotion && !c_inhibit_evaluation_warnings)
-		warning_at (arg_loc[parmnum], OPT_Wdouble_promotion,
-			 "implicit conversion from %qT to %qT when passing "
-			 "argument to function",
-			 valtype, double_type_node);
+		warning_at (ploc, OPT_Wdouble_promotion,
+			    "implicit conversion from %qT to %qT when passing "
+			    "argument to function",
+			    valtype, double_type_node);
 	      parmval = convert (double_type_node, val);
 	    }
 	}
@@ -5657,14 +5667,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
      compile time.  */
-#define WARN_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)		 \
+#define WARN_FOR_ASSIGNMENT(LOCATION, PLOC, OPT, AR, AS, IN, RE)	 \
   do {                                                                   \
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (pedwarn (LOCATION, OPT, AR, parmnum, rname))                 \
+        if (pedwarn (PLOC, OPT, AR, parmnum, rname))			 \
           inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-		  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
+		  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,		 \
                   "expected %qT but argument is of type %qT",            \
                   type, rhstype);                                        \
         break;                                                           \
@@ -5687,25 +5697,25 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
      compile time.  It is the same as WARN_FOR_ASSIGNMENT but with an
      extra parameter to enumerate qualifiers.  */
 
-#define WARN_FOR_QUALIFIERS(LOCATION, OPT, AR, AS, IN, RE, QUALS)        \
+#define WARN_FOR_QUALIFIERS(LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS)  \
   do {                                                                   \
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (pedwarn (LOCATION, OPT, AR, parmnum, rname, QUALS))          \
+        if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		 \
           inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-	      	  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
+		  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,		 \
                   "expected %qT but argument is of type %qT",            \
                   type, rhstype);                                        \
         break;                                                           \
       case ic_assign:                                                    \
-        pedwarn (LOCATION, OPT, AS, QUALS);                          \
+        pedwarn (LOCATION, OPT, AS, QUALS);				 \
         break;                                                           \
       case ic_init:                                                      \
-        pedwarn (LOCATION, OPT, IN, QUALS);                          \
+        pedwarn (LOCATION, OPT, IN, QUALS);				 \
         break;                                                           \
       case ic_return:                                                    \
-        pedwarn (LOCATION, OPT, RE, QUALS);                        	 \
+        pedwarn (LOCATION, OPT, RE, QUALS);				 \
         break;                                                           \
       default:                                                           \
         gcc_unreachable ();                                              \
@@ -5754,7 +5764,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  && TREE_CODE (type) == ENUMERAL_TYPE
 	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
 	{
-	  WARN_FOR_ASSIGNMENT (location, OPT_Wc___compat,
+	  WARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wc___compat,
 			       G_("enum conversion when passing argument "
 				  "%d of %qE is invalid in C++"),
 			       G_("enum conversion in assignment is "
@@ -5917,7 +5927,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     vice-versa.  */
 		  if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		      & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		    WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
+		    WARN_FOR_QUALIFIERS (location, expr_loc,
+					 OPT_Wdiscarded_qualifiers,
 					 G_("passing argument %d of %qE "
 					    "makes %q#v qualified function "
 					    "pointer from unqualified"),
@@ -5933,7 +5944,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		}
 	      else if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
 		       & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
-		WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
+		WARN_FOR_QUALIFIERS (location, expr_loc,
+				     OPT_Wdiscarded_qualifiers,
 				     G_("passing argument %d of %qE discards "
 					"%qv qualifier from pointer target type"),
 				     G_("assignment discards %qv qualifier "
@@ -6095,7 +6107,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		  (VOID_TYPE_P (ttr)
 		   && !null_pointer_constant
 		   && TREE_CODE (ttl) == FUNCTION_TYPE)))
-	    WARN_FOR_ASSIGNMENT (location, OPT_Wpedantic,
+	    WARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpedantic,
 				 G_("ISO C forbids passing argument %d of "
 				    "%qE between function pointer "
 				    "and %<void *%>"),
@@ -6114,7 +6126,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
 		{
-		  WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
+		  WARN_FOR_QUALIFIERS (location, expr_loc,
+				       OPT_Wdiscarded_qualifiers,
 				       G_("passing argument %d of %qE discards "
 					  "%qv qualifier from pointer target type"),
 				       G_("assignment discards %qv qualifier "
@@ -6132,7 +6145,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		;
 	      /* If there is a mismatch, do warn.  */
 	      else if (warn_pointer_sign)
-		WARN_FOR_ASSIGNMENT (location, OPT_Wpointer_sign,
+		WARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpointer_sign,
 				     G_("pointer targets in passing argument "
 					"%d of %qE differ in signedness"),
 				     G_("pointer targets in assignment "
@@ -6151,7 +6164,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		WARN_FOR_QUALIFIERS (location, OPT_Wdiscarded_qualifiers,
+		WARN_FOR_QUALIFIERS (location, expr_loc,
+				     OPT_Wdiscarded_qualifiers,
 				     G_("passing argument %d of %qE makes "
 					"%q#v qualified function pointer "
 					"from unqualified"),
@@ -6167,7 +6181,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       else
 	/* Avoid warning about the volatile ObjC EH puts on decls.  */
 	if (!objc_ok)
-	  WARN_FOR_ASSIGNMENT (location, 0,
+	  WARN_FOR_ASSIGNMENT (location, expr_loc, 0,
 			       G_("passing argument %d of %qE from "
 				  "incompatible pointer type"),
 			       G_("assignment from incompatible pointer type"),
@@ -6190,7 +6204,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	 or one that results from arithmetic, even including
 	 a cast to integer type.  */
       if (!null_pointer_constant)
-	WARN_FOR_ASSIGNMENT (location, 0,
+	WARN_FOR_ASSIGNMENT (location, expr_loc, 0,
 			     G_("passing argument %d of %qE makes "
 				"pointer from integer without a cast"),
 			     G_("assignment makes pointer from integer "
@@ -6204,7 +6218,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {
-      WARN_FOR_ASSIGNMENT (location, 0,
+      WARN_FOR_ASSIGNMENT (location, expr_loc, 0,
 			   G_("passing argument %d of %qE makes integer "
 			      "from pointer without a cast"),
 			   G_("assignment makes integer from pointer "

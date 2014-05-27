@@ -1,3 +1,12 @@
+2014-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56724
+	* gcc.dg/pr56724-1.c: New test.
+	* gcc.dg/pr56724-2.c: New test.
+	* gcc.dg/wtr-conversion-1.c: Use -Wtraditional-conversion instead of
+	-Wtraditional.
+	* gcc.dg/dfp/wtr-conversion-1.c: Likewise.
+
 2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/fold-compare-8.c: New test.
