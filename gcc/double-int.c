@@ -588,7 +588,7 @@ div_and_round_double (unsigned code, int uns,
 		 == (unsigned HOST_WIDE_INT) htwice)
 		&& (labs_den <= ltwice)))
 	  {
-	    if (*hquo < 0)
+	    if (quo_neg)
 	      /* quo = quo - 1;  */
 	      add_double (*lquo, *hquo,
 			  (HOST_WIDE_INT) -1, (HOST_WIDE_INT) -1, lquo, hquo);
