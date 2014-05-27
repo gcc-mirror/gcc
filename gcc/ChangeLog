@@ -1,3 +1,7 @@
+2014-05-27  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c: Add include of cgraph.h.
+
 2014-05-27  Richard Biener  <rguenther@suse.de>
 
 	* system.h (__STDC_FORMAT_MACROS): Define as very first thing.
