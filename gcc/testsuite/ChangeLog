@@ -1,3 +1,11 @@
+2014-05-27  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR testsuite/61319
+	* c-c++-common/ubsan/float-cast-overflow-1.c: Make the sign of
+	-nan optional.
+	* c-c++-common/ubsan/float-cast-overflow-2.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-4.c: Likewise.
+
 2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/ssa-fre-40.c: Cleanup fre1 tree dump.
