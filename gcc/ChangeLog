@@ -1,3 +1,10 @@
+2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_comparison): Clean up and extend X +- C1 CMP C2
+	to X CMP C2 -+ C1 transformation to EQ_EXPR/NE_EXPR.
+	Add X - Y CMP 0 to X CMP Y transformation.
+	(fold_binary_loc) <EQ_EXPR/NE_EXPR>: Remove same transformations.
+
 2014-05-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* stmt.c (dump_case_nodes): Don't convert values to HOST_WIDE_INT
