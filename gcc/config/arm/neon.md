@@ -2547,6 +2547,14 @@
   [(set_attr "type" "neon_qabs<q>")]
 )
 
+(define_insn "neon_bswap<mode>"
+  [(set (match_operand:VDQHSD 0 "register_operand" "=w")
+        (bswap:VDQHSD (match_operand:VDQHSD 1 "register_operand" "w")))]
+  "TARGET_NEON"
+  "vrev<V_sz_elem>.8\\t%<V_reg>0, %<V_reg>1"
+  [(set_attr "type" "neon_rev<q>")]
+)
+
 (define_expand "neon_vneg<mode>"
   [(match_operand:VDQW 0 "s_register_operand" "")
    (match_operand:VDQW 1 "s_register_operand" "")
