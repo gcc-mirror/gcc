@@ -6919,14 +6919,15 @@ vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code code,
   vr0 = (TREE_CODE (op0) == SSA_NAME) ? get_value_range (op0) : NULL;
   vr1 = (TREE_CODE (op1) == SSA_NAME) ? get_value_range (op1) : NULL;
 
+  tree res = NULL_TREE;
   if (vr0 && vr1)
-    return compare_ranges (code, vr0, vr1, strict_overflow_p);
-  else if (vr0 && vr1 == NULL)
-    return compare_range_with_value (code, vr0, op1, strict_overflow_p);
-  else if (vr0 == NULL && vr1)
-    return (compare_range_with_value
+    res = compare_ranges (code, vr0, vr1, strict_overflow_p);
+  if (!res && vr0)
+    res = compare_range_with_value (code, vr0, op1, strict_overflow_p);
+  if (!res && vr1)
+    res = (compare_range_with_value
 	    (swap_tree_comparison (code), vr1, op0, strict_overflow_p));
-  return NULL;
+  return res;
 }
 
 /* Helper function for vrp_evaluate_conditional_warnv. */

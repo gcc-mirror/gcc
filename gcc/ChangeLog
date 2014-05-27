@@ -1,3 +1,8 @@
+2014-05-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_evaluate_conditional_warnv_with_ops_using_ranges):
+	Try using literal operands when comparing value-ranges failed.
+
 2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira.c (commutative_operand): Adjust for change to recog_data.
