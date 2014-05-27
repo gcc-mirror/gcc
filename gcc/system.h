@@ -1071,6 +1071,9 @@ helper_const_non_const_cast (const char *p)
 #define DEBUG_VARIABLE
 #endif
 
+/* General macro to extract bit Y of X.  */
+#define TEST_BIT(X, Y) (((X) >> (Y)) & 1)
+
 /* Get definitions of HOST_WIDE_INT.  */
 #include "hwint.h"
 

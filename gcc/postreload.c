@@ -584,7 +584,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 		     alternative yet and the operand being replaced is not
 		     a cheap CONST_INT.  */
 		  if (op_alt_regno[i][j] == -1
-		      && recog_data.alternative_enabled_p[j]
+		      && TEST_BIT (recog_data.enabled_alternatives, j)
 		      && reg_fits_class_p (testreg, rclass, 0, mode)
 		      && (!CONST_INT_P (recog_data.operand[i])
 			  || (set_src_cost (recog_data.operand[i],

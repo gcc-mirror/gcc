@@ -1,5 +1,44 @@
 2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* system.h (TEST_BIT): New macro.
+	* recog.h (alternative_mask): New type.
+	(ALL_ALTERNATIVES, ALTERNATIVE_BIT): New macros.
+	(recog_data_d): Replace alternative_enabled_p array with
+	enabled_alternatives.
+	(target_recog): New structure.
+	(default_target_recog, this_target_recog): Declare.
+	(get_enabled_alternatives, recog_init): Likewise.
+	* recog.c (default_target_recog, this_target_recog): New variables.
+	(get_enabled_alternatives): New function.
+	(extract_insn): Use it.
+	(recog_init): New function.
+	(preprocess_constraints, constrain_operands): Adjust for change to
+	recog_data.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* ira-costs.c (record_reg_classes): Likewise.
+	* ira-lives.c (single_reg_class): Likewise.  Fix bug in which
+	all alternatives after a disabled one would be skipped.
+	(ira_implicitly_set_insn_hard_regs): Likewise.
+	* ira.c (ira_setup_alts): Adjust for change to recog_data.
+	* lra-int.h (lra_insn_recog_data): Replace alternative_enabled_p
+	with enabled_alternatives.
+	* lra.c (free_insn_recog_data): Update accordingly.
+	(lra_update_insn_recog_data): Likewise.
+	(lra_set_insn_recog_data): Likewise.  Use get_enabled_alternatives.
+	* lra-constraints.c (process_alt_operands): Likewise.  Handle
+	only_alternative as part of the enabled mask.
+	* target-globals.h (this_target_recog): Declare.
+	(target_globals): Add a recog field.
+	(restore_target_globals): Restore this_target_recog.
+	* target-globals.c: Include recog.h.
+	(default_target_globals): Initialize recog field.
+	(save_target_globals): Likewise.
+	* reginfo.c (reinit_regs): Call recog_init.
+	* toplev.c (backend_init_target): Likewise.
+
+2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gencodes.c (main): Make LAST_INSN_CODE higher than any insn code,
 	rather than any named insn's code.
 
