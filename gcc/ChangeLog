@@ -1,7 +1,7 @@
 2014-05-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2014-05-12 mainline r210322.
-	Backport from 2014-05-27 mainline r210959.
+	Backport from 2014-05-27 mainline r210959, r210969.
 
 	PR libgcc/61152
 	* config/arm/arm.h (License): Add GCC Runtime Library Exception.
