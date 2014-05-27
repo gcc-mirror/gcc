@@ -1,3 +1,9 @@
+2014-05-27  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc_main.c (__upc_run_threads): Set O_APPEND flag
+	on stdout/stderr to fix occasional garbled output when
+	output from multiple threads is saved to a file.
+
 2014-04-21  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.tgt: Fix check for the presence of -rdynamic
