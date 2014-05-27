@@ -1,3 +1,14 @@
+2014-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.md (neon_bswap<mode>): New pattern.
+	* config/arm/arm.c (neon_itype): Add NEON_BSWAP.
+	(arm_init_neon_builtins): Handle NEON_BSWAP.
+	Define required type nodes.
+	(arm_expand_neon_builtin): Handle NEON_BSWAP.
+	(arm_builtin_vectorized_function): Handle BUILTIN_BSWAP builtins.
+	* config/arm/arm_neon_builtins.def (bswap): Define builtins.
+	* config/arm/iterators.md (VDQHSD): New mode iterator.
+
 2014-05-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_evaluate_conditional_warnv_with_ops_using_ranges):

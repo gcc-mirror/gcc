@@ -116,6 +116,9 @@
 ;; Vector modes including 64-bit integer elements, but no floats.
 (define_mode_iterator VDQIX [V8QI V16QI V4HI V8HI V2SI V4SI DI V2DI])
 
+;; Vector modes for H, S and D types.
+(define_mode_iterator VDQHSD [V4HI V8HI V2SI V4SI V2DI])
+
 ;; Vector modes for float->int conversions.
 (define_mode_iterator VCVTF [V2SF V4SF])
 

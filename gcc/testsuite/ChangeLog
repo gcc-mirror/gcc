@@ -1,3 +1,8 @@
+2014-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_bswap):
+	Specify arm*-*-* support.
+
 2014-05-27  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR testsuite/61319
