@@ -50,6 +50,7 @@ int
 main (int argc, char **argv)
 {
   rtx desc;
+  int last = 1;
 
   progname = "gencodes";
 
@@ -82,13 +83,16 @@ enum insn_code {\n\
 	break;
 
       if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	gen_insn (desc, insn_code_number);
+	{
+	  gen_insn (desc, insn_code_number);
+	  last = insn_code_number + 1;
+	}
     }
 
-  puts ("  LAST_INSN_CODE\n\
+  printf ("  LAST_INSN_CODE = %d\n\
 };\n\
 \n\
-#endif /* GCC_INSN_CODES_H */");
+#endif /* GCC_INSN_CODES_H */\n", last);
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))
     return FATAL_EXIT_CODE;
