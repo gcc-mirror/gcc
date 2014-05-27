@@ -1,3 +1,8 @@
+2014-05-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* stmt.c (dump_case_nodes): Don't convert values to HOST_WIDE_INT
+	before printing.
+
 2014-05-27  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.c: Add include of cgraph.h.
