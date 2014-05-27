@@ -1621,14 +1621,4 @@ symtab_in_same_comdat_p (symtab_node *one, symtab_node *two)
 
   return one->get_comdat_group () == two->get_comdat_group ();
 }
-
-/* Return comdat group of DECL.  */
-static inline tree
-decl_comdat_group (tree node)
-{
-  struct symtab_node *snode = symtab_get_node (node);
-  if (!snode)
-    return NULL;
-  return snode->get_comdat_group ();
-}
 #endif  /* GCC_CGRAPH_H  */

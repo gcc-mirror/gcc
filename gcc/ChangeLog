@@ -1,3 +1,9 @@
+2014-05-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.h (decl_comdat_group): Declare.
+	* cgraph.h (symtab_in_same_comdat_p): Move offline to ...
+	* tree.c (decl_comdat_group): Here.
+
 2014-05-26  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	PR rtl-optimization/61222
