@@ -1117,7 +1117,8 @@ runtime_needm(void)
 	if(runtime_needextram) {
 		// Can happen if C/C++ code calls Go from a global ctor.
 		// Can not throw, because scheduler is not initialized yet.
-		runtime_write(2, "fatal error: cgo callback before cgo call\n",
+		int rv __attribute__((unused));
+		rv = runtime_write(2, "fatal error: cgo callback before cgo call\n",
 			sizeof("fatal error: cgo callback before cgo call\n")-1);
 		runtime_exit(1);
 	}
