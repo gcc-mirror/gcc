@@ -728,7 +728,7 @@
 
 ;; Compare to *anddi_notdi_di.
 (define_insn "bicdi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?=&r,?&r")
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r")
         (and:DI (not:DI (match_operand:DI 2 "s_register_operand" "w,r,0"))
 		(match_operand:DI 1 "s_register_operand" "w,0,r")))]
   "TARGET_NEON"

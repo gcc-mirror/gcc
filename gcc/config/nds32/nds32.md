@@ -261,7 +261,7 @@
 
 (define_insn "add<mode>3"
   [(set (match_operand:QIHISI 0 "register_operand"                   "=   d,    l,    d,    l,  d, l,    k,    l,    r, r")
-	(plus:QIHISI (match_operand:QIHISI 1 "register_operand"      "    0,    l,    0,    l, %0, l,    0,    k,    r, r")
+	(plus:QIHISI (match_operand:QIHISI 1 "register_operand"      "%   0,    l,    0,    l,  0, l,    0,    k,    r, r")
 		     (match_operand:QIHISI 2 "nds32_rimm15s_operand" " In05, In03, Iu05, Iu03,  r, l, Is10, Iu06, Is15, r")))]
   ""
 {
@@ -382,9 +382,9 @@
 ;; Multiplication instructions.
 
 (define_insn "mulsi3"
-  [(set (match_operand:SI 0 "register_operand"          "= w, r")
-	(mult:SI (match_operand:SI 1 "register_operand" " %0, r")
-		 (match_operand:SI 2 "register_operand" "  w, r")))]
+  [(set (match_operand:SI 0 "register_operand"          "=w, r")
+	(mult:SI (match_operand:SI 1 "register_operand" "%0, r")
+		 (match_operand:SI 2 "register_operand" " w, r")))]
   ""
   "@
   mul33\t%0, %2
@@ -489,9 +489,9 @@
 )
 
 (define_insn "andsi3"
-  [(set (match_operand:SI 0 "register_operand"         "= w, r,    l,    l,    l,    l,    l,    l,    r,   r,     r,    r,    r")
-	(and:SI (match_operand:SI 1 "register_operand" " %0, r,    l,    l,    l,    l,    0,    0,    r,   r,     r,    r,    r")
-		(match_operand:SI 2 "general_operand"  "  w, r, Izeb, Izeh, Ixls, Ix11, Ibms, Ifex, Izeb, Izeh, Iu15, Ii15, Ic15")))]
+  [(set (match_operand:SI 0 "register_operand"         "=w, r,    l,    l,    l,    l,    l,    l,    r,   r,     r,    r,    r")
+	(and:SI (match_operand:SI 1 "register_operand" "%0, r,    l,    l,    l,    l,    0,    0,    r,   r,     r,    r,    r")
+		(match_operand:SI 2 "general_operand"  " w, r, Izeb, Izeh, Ixls, Ix11, Ibms, Ifex, Izeb, Izeh, Iu15, Ii15, Ic15")))]
   ""
 {
   HOST_WIDE_INT mask = INTVAL (operands[2]);
@@ -585,9 +585,9 @@
 ;; For V3/V3M ISA, we have 'or33' instruction.
 ;; So we can identify 'or Rt3,Rt3,Ra3' case and set its length to be 2.
 (define_insn "iorsi3"
-  [(set (match_operand:SI 0 "register_operand"         "= w, r,    r,    r")
-	(ior:SI (match_operand:SI 1 "register_operand" " %0, r,    r,    r")
-		(match_operand:SI 2 "general_operand"  "  w, r, Iu15, Ie15")))]
+  [(set (match_operand:SI 0 "register_operand"         "=w, r,    r,    r")
+	(ior:SI (match_operand:SI 1 "register_operand" "%0, r,    r,    r")
+		(match_operand:SI 2 "general_operand"  " w, r, Iu15, Ie15")))]
   ""
 {
   int one_position;
@@ -645,9 +645,9 @@
 ;; For V3/V3M ISA, we have 'xor33' instruction.
 ;; So we can identify 'xor Rt3,Rt3,Ra3' case and set its length to be 2.
 (define_insn "xorsi3"
-  [(set (match_operand:SI 0 "register_operand"         "= w, r,    r,    r")
-	(xor:SI (match_operand:SI 1 "register_operand" " %0, r,    r,    r")
-		(match_operand:SI 2 "general_operand"  "  w, r, Iu15, It15")))]
+  [(set (match_operand:SI 0 "register_operand"         "=w, r,    r,    r")
+	(xor:SI (match_operand:SI 1 "register_operand" "%0, r,    r,    r")
+		(match_operand:SI 2 "general_operand"  " w, r, Iu15, It15")))]
   ""
 {
   int one_position;

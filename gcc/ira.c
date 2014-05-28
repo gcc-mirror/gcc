@@ -1770,34 +1770,6 @@ setup_prohibited_mode_move_regs (void)
 
 
 
-/* Return TRUE if the operand constraint STR is commutative.  */
-static bool
-commutative_constraint_p (const char *str)
-{
-  int c;
-
-  alternative_mask enabled = recog_data.enabled_alternatives;
-  for (;;)
-    {
-      c = *str;
-      if (c == '\0')
-	break;
-      str += CONSTRAINT_LEN (c, str);
-      if (c == '#')
-	enabled &= ~ALTERNATIVE_BIT (0);
-      else if (c == ',')
-	enabled >>= 1;
-      else if (enabled & 1)
-	{
-	  /* Usually `%' is the first constraint character but the
-	     documentation does not require this.  */
-	  if (c == '%')
-	    return true;
-	}
-    }
-  return false;
-}
-
 /* Setup possible alternatives in ALTS for INSN.  */
 void
 ira_setup_alts (rtx insn, HARD_REG_SET &alts)
@@ -2099,10 +2071,9 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
       if (use_commut_op_p)
 	break;
       use_commut_op_p = true;
-      if (commutative_constraint_p (recog_data.constraints[op_num]))
+      if (recog_data.constraints[op_num][0] == '%')
 	str = recog_data.constraints[op_num + 1];
-      else if (op_num > 0 && commutative_constraint_p (recog_data.constraints
-						       [op_num - 1]))
+      else if (op_num > 0 && recog_data.constraints[op_num - 1][0] == '%')
 	str = recog_data.constraints[op_num - 1];
       else
 	break;
