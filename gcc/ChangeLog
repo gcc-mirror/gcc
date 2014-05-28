@@ -1,5 +1,16 @@
 2014-05-28  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR libgcc/61152
+	* config/dbx.h (License): Add Runtime Library Exception.
+	* config/newlib-stdint.h (License): Same.
+	* config/rtems.h (License): Same
+	* config/initfini-array.h (License): Same
+	* config/v850/v850.h (License): Same.
+	* config/v850/v850-opts.h (License): Same
+	* config/v850/rtems.h (License): Same.
+
+2014-05-28  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/61044
 	* doc/extend.texi (Local Labels): Note that label differences are
 	not supported for AVR.
