@@ -13815,7 +13815,7 @@ vqdmulh_n_s16 (int16x4_t a, int16_t b)
   int16x4_t result;
   __asm__ ("sqdmulh %0.4h,%1.4h,%2.h[0]"
            : "=w"(result)
-           : "w"(a), "w"(b)
+           : "w"(a), "x"(b)
            : /* No clobbers */);
   return result;
 }
@@ -13837,7 +13837,7 @@ vqdmulhq_n_s16 (int16x8_t a, int16_t b)
   int16x8_t result;
   __asm__ ("sqdmulh %0.8h,%1.8h,%2.h[0]"
            : "=w"(result)
-           : "w"(a), "w"(b)
+           : "w"(a), "x"(b)
            : /* No clobbers */);
   return result;
 }
