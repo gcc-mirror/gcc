@@ -1,3 +1,11 @@
+2014-05-26  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* rtl.h (set_for_reg_notes): Declare.
+	* emit-rtl.c (set_for_reg_notes): New function.
+	(set_unique_reg_note): Use it.
+	* optabs.c (add_equal_note): Likewise
+
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* MAINTAINERS: Update my affiliation/email.
