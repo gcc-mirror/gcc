@@ -1,5 +1,8 @@
 2014-05-28  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst) [ARRAY_TYPE]: Check for array of array of unknown
+	bound.
+
 	PR c++/61242
 	* call.c (build_aggr_conv): Ignore passed in flags.
 	(build_array_conv, build_complex_conv): Likewise.
