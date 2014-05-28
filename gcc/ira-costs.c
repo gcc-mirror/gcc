@@ -2238,6 +2238,7 @@ ira_tune_allocno_costs (void)
   ira_allocno_object_iterator oi;
   ira_object_t obj;
   bool skip_p;
+  HARD_REG_SET *crossed_calls_clobber_regs;
 
   FOR_EACH_ALLOCNO (a, ai)
     {
@@ -2272,17 +2273,24 @@ ira_tune_allocno_costs (void)
 		continue;
 	      rclass = REGNO_REG_CLASS (regno);
 	      cost = 0;
-	      if (ira_hard_reg_set_intersection_p (regno, mode, call_used_reg_set)
-		  || HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
-		cost += (ALLOCNO_CALL_FREQ (a)
-			 * (ira_memory_move_cost[mode][rclass][0]
-			    + ira_memory_move_cost[mode][rclass][1]));
+	      crossed_calls_clobber_regs
+		= &(ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
+	      if (ira_hard_reg_set_intersection_p (regno, mode,
+						   *crossed_calls_clobber_regs))
+		{
+		  if (ira_hard_reg_set_intersection_p (regno, mode,
+						       call_used_reg_set)
+		      || HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
+		    cost += (ALLOCNO_CALL_FREQ (a)
+			     * (ira_memory_move_cost[mode][rclass][0]
+				+ ira_memory_move_cost[mode][rclass][1]));
 #ifdef IRA_HARD_REGNO_ADD_COST_MULTIPLIER
-	      cost += ((ira_memory_move_cost[mode][rclass][0]
-			+ ira_memory_move_cost[mode][rclass][1])
-		       * ALLOCNO_FREQ (a)
-		       * IRA_HARD_REGNO_ADD_COST_MULTIPLIER (regno) / 2);
+		  cost += ((ira_memory_move_cost[mode][rclass][0]
+			    + ira_memory_move_cost[mode][rclass][1])
+			   * ALLOCNO_FREQ (a)
+			   * IRA_HARD_REGNO_ADD_COST_MULTIPLIER (regno) / 2);
 #endif
+		}
 	      if (INT_MAX - cost < reg_costs[j])
 		reg_costs[j] = INT_MAX;
 	      else
