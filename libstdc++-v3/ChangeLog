@@ -5,6 +5,13 @@
 	inline specifier.
 	(_State_base::_M_dot): Likewise.
 
+2014-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/map.h: Fix typo in comment; minor formatting fix.
+	* include/profile/multimap.h: Likewise.
+	* include/profile/set.h: Likewise.
+	* include/profile/multiset.h: Likewise.
+
 2014-05-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/profile/array: Clean useless white chars.
