@@ -1,3 +1,15 @@
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* cgraph.h (struct cgraph_rtl_info): Add function_used_regs
+	and function_used_regs_valid fields.
+	* final.c: Move include of hard-reg-set.h to before rtl.h to declare
+	find_all_hard_reg_sets.
+	(collect_fn_hard_reg_usage, get_call_fndecl, get_call_cgraph_rtl_info)
+	(get_call_reg_set_usage): New function.
+	(rest_of_handle_final): Use collect_fn_hard_reg_usage.
+	* regs.h (get_call_reg_set_usage): Declare.
+
 2014-05-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR libgcc/61152
