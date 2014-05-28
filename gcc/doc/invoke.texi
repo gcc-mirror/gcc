@@ -873,7 +873,7 @@ Objective-C and Objective-C++ Dialects}.
 See RS/6000 and PowerPC Options.
 
 @emph{RL78 Options}
-@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78}
+@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78 -m64bit-doubles -m32bit-doubles}
 
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -18924,6 +18924,14 @@ default is @code{none}, which uses software multiplication functions.
 The @code{g13} option is for the hardware multiply/divide peripheral
 only on the RL78/G13 targets.  The @code{rl78} option is for the
 standard hardware multiplication defined in the RL78 software manual.
+
+@item -m64bit-doubles
+@itemx -m32bit-doubles
+@opindex m64bit-doubles
+@opindex m32bit-doubles
+Make the @code{double} data type be 64 bits (@option{-m64bit-doubles})
+or 32 bits (@option{-m32bit-doubles}) in size.  The default is
+@option{-m32bit-doubles}.
 
 @end table
 
