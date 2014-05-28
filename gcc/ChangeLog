@@ -1,6 +1,12 @@
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
+	* opts.c (default_options_table): Add OPT_LEVELS_2_PLUS entry with
+	OPT_fuse_caller_save.
+
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
 	* df-scan.c (df_get_call_refs): Use get_call_reg_set_usage.
 	* caller-save.c (setup_save_areas, save_call_clobbered_regs): Use
 	get_call_reg_set_usage.
