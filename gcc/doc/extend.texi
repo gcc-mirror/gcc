@@ -375,6 +375,8 @@ goto *(&&foo + array[i]);
 This is more friendly to code living in shared libraries, as it reduces
 the number of dynamic relocations that are needed, and by consequence,
 allows the data to be read-only.
+This alternative with label differences is not supported for the AVR target,
+please use the first approach for AVR programs.
 
 The @code{&&foo} expressions for the same label might have different
 values if the containing function is inlined or cloned.  If a program
