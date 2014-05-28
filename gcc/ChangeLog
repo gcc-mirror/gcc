@@ -1,3 +1,16 @@
+2014-05-28  Tom de Vries  <tom@codesourcery.com>
+
+	* lra-int.h (struct lra_reg): Add field actual_call_used_reg_set.
+	* lra.c (initialize_lra_reg_info_element): Add init of
+	actual_call_used_reg_set field.
+	(lra): Call lra_create_live_ranges before lra_inheritance for
+	-fuse-caller-save.
+	* lra-assigns.c (lra_assign): Allow call_used_regs to cross calls for
+	-fuse-caller-save.
+	* lra-constraints.c (need_for_call_save_p): Use actual_call_used_reg_set
+	instead of call_used_reg_set for -fuse-caller-save.
+	* lra-lives.c (process_bb_lives): Calculate actual_call_used_reg_set.
+
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
