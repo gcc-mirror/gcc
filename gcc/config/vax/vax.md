@@ -423,7 +423,7 @@
   "vax_expand_addsub_di_operands (operands, MINUS); DONE;")
 
 (define_insn "sbcdi3"
-  [(set (match_operand:DI 0 "nonimmediate_addsub_di_operand" "=Rr,=Rr")
+  [(set (match_operand:DI 0 "nonimmediate_addsub_di_operand" "=Rr,Rr")
 	(minus:DI (match_operand:DI 1 "general_addsub_di_operand" "0,I")
 		  (match_operand:DI 2 "general_addsub_di_operand" "nRr,Rr")))]
   "TARGET_QMATH"

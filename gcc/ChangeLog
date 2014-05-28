@@ -1,5 +1,27 @@
 2014-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/md.texi: Document that the % constraint character must
+	be at the beginning of the string.
+	* genoutput.c (validate_insn_alternatives): Check that '=',
+	'+' and '%' only appear at the beginning of a constraint.
+	* ira.c (commutative_constraint_p): Delete.
+	(ira_get_dup_out_num): Expect the '%' commutativity marker to be
+	at the start of the string.
+	* config/alpha/alpha.md (*movmemdi_1, *clrmemdi_1): Remove
+	duplicate '='s.
+	* config/arm/neon.md (bicdi3_neon): Likewise.
+	* config/iq2000/iq2000.md (addsi3_internal, subsi3_internal, sgt_si)
+	(slt_si, sltu_si): Likewise.
+	* config/vax/vax.md (sbcdi3): Likewise.
+	* config/h8300/h8300.md (*cmpstz): Remove duplicate '+'.
+	* config/arc/arc.md (mulsi_600, mulsidi_600, umulsidi_600)
+	(mul64): Move '%' to beginning of constraint.
+	* config/arm/arm.md (*xordi3_insn): Likewise.
+	* config/nds32/nds32.md (add<mode>3, mulsi3, andsi3, iorsi3)
+	(xorsi3): Likewise.
+
+2014-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/md.texi: Document the restrictions on the "enabled" attribute.
 
 2014-05-28  Jason Merrill  <jason@redhat.com>

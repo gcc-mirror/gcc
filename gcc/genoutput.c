@@ -781,6 +781,11 @@ validate_insn_alternatives (struct data *d)
 
 	for (p = d->operand[start].constraint; (c = *p); p += len)
 	  {
+	    if ((c == '%' || c == '=' || c == '+')
+		&& p != d->operand[start].constraint)
+	      error_with_line (d->lineno,
+			       "character '%c' can only be used at the"
+			       " beginning of a constraint string", c);
 #ifdef USE_MD_CONSTRAINTS
 	    if (ISSPACE (c) || strchr (indep_constraints, c))
 	      len = 1;

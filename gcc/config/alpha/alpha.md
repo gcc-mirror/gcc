@@ -4764,7 +4764,7 @@
   "operands[4] = gen_rtx_SYMBOL_REF (Pmode, \"OTS$MOVE\");")
 
 (define_insn "*movmemdi_1"
-  [(set (match_operand:BLK 0 "memory_operand" "=m,=m")
+  [(set (match_operand:BLK 0 "memory_operand" "=m,m")
 	(match_operand:BLK 1 "memory_operand" "m,m"))
    (use (match_operand:DI 2 "nonmemory_operand" "r,i"))
    (use (match_operand:DI 3 "immediate_operand"))
@@ -4831,7 +4831,7 @@
 })
 
 (define_insn "*clrmemdi_1"
-  [(set (match_operand:BLK 0 "memory_operand" "=m,=m")
+  [(set (match_operand:BLK 0 "memory_operand" "=m,m")
 		   (const_int 0))
    (use (match_operand:DI 1 "nonmemory_operand" "r,i"))
    (use (match_operand:DI 2 "immediate_operand"))

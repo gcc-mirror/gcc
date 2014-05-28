@@ -3169,7 +3169,7 @@
 
 (define_insn_and_split "*xordi3_insn"
   [(set (match_operand:DI         0 "s_register_operand" "=w,&r,&r,&r,&r,?w")
-	(xor:DI (match_operand:DI 1 "s_register_operand" "w ,%0,r ,0 ,r ,w")
+	(xor:DI (match_operand:DI 1 "s_register_operand" "%w ,0,r ,0 ,r ,w")
 		(match_operand:DI 2 "arm_xordi_operand"  "w ,r ,r ,Dg,Dg,w")))]
   "TARGET_32BIT && !TARGET_IWMMXT"
 {
