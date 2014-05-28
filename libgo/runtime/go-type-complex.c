@@ -4,12 +4,12 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include <complex.h>
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
 #include "runtime.h"
 #include "go-type.h"
-
-/* The 64-bit type.  */
-
-typedef unsigned int DItype __attribute__ ((mode (DI)));
 
 /* Hash function for float types.  */
 
@@ -18,69 +18,67 @@ __go_type_hash_complex (const void *vkey, uintptr_t key_size)
 {
   if (key_size == 8)
     {
-      union
-      {
-	unsigned char a[8];
-	__complex float cf;
-	DItype di;
-      } ucf;
-      __complex float cf;
+      const complex float *cfp;
+      complex float cf;
       float cfr;
       float cfi;
+      uint64_t fi;
 
-      __builtin_memcpy (ucf.a, vkey, 8);
-      cf = ucf.cf;
-      cfr = __builtin_crealf (cf);
-      cfi = __builtin_cimagf (cf);
-      if (__builtin_isinff (cfr) || __builtin_isinff (cfi))
+      cfp = (const complex float *) vkey;
+      cf = *cfp;
+
+      cfr = crealf (cf);
+      cfi = cimagf (cf);
+
+      if (isinf (cfr) || isinf (cfi))
 	return 0;
 
       /* NaN != NaN, so the hash code of a NaN is irrelevant.  Make it
 	 random so that not all NaNs wind up in the same place.  */
-      if (__builtin_isnanf (cfr) || __builtin_isnanf (cfi))
+      if (isnan (cfr) || isnan (cfi))
 	return runtime_fastrand1 ();
 
       /* Avoid negative zero.  */
       if (cfr == 0 && cfi == 0)
 	return 0;
       else if (cfr == 0)
-	ucf.cf = cfi * 1.0iF;
+	cf = cfi * I;
       else if (cfi == 0)
-	ucf.cf = cfr;
+	cf = cfr;
 
-      return ucf.di;
+      memcpy (&fi, &cf, 8);
+      return (uintptr_t) cfi;
     }
   else if (key_size == 16)
     {
-      union
-      {
-	unsigned char a[16];
-	__complex double cd;
-	DItype adi[2];
-      } ucd;
-      __complex double cd;
+      const complex double *cdp;
+      complex double cd;
       double cdr;
       double cdi;
+      uint64_t di[2];
 
-      __builtin_memcpy (ucd.a, vkey, 16);
-      cd = ucd.cd;
-      cdr = __builtin_crealf (cd);
-      cdi = __builtin_cimagf (cd);
-      if (__builtin_isinf (cdr) || __builtin_isinf (cdi))
+      cdp = (const complex double *) vkey;
+      cd = *cdp;
+
+      cdr = creal (cd);
+      cdi = cimag (cd);
+
+      if (isinf (cdr) || isinf (cdi))
 	return 0;
 
-      if (__builtin_isnan (cdr) || __builtin_isnan (cdi))
+      if (isnan (cdr) || isnan (cdi))
 	return runtime_fastrand1 ();
 
       /* Avoid negative zero.  */
       if (cdr == 0 && cdi == 0)
 	return 0;
       else if (cdr == 0)
-	ucd.cd = cdi * 1.0i;
+	cd = cdi * I;
       else if (cdi == 0)
-	ucd.cd = cdr;
+	cd = cdr;
 
-      return ucd.adi[0] ^ ucd.adi[1];
+      memcpy (&di, &cd, 16);
+      return di[0] ^ di[1];
     }
   else
     runtime_throw ("__go_type_hash_complex: invalid complex size");
@@ -93,35 +91,23 @@ __go_type_equal_complex (const void *vk1, const void *vk2, uintptr_t key_size)
 {
   if (key_size == 8)
     {
-      union
-      {
-	unsigned char a[8];
-	__complex float cf;
-      } ucf;
-      __complex float cf1;
-      __complex float cf2;
+      const complex float *cfp1;
+      const complex float *cfp2;
+      
+      cfp1 = (const complex float *) vk1;
+      cfp2 = (const complex float *) vk2;
 
-      __builtin_memcpy (ucf.a, vk1, 8);
-      cf1 = ucf.cf;
-      __builtin_memcpy (ucf.a, vk2, 8);
-      cf2 = ucf.cf;
-      return cf1 == cf2;
+      return *cfp1 == *cfp2;
     }
   else if (key_size == 16)
     {
-      union
-      {
-	unsigned char a[16];
-	__complex double cd;
-      } ucd;
-      __complex double cd1;
-      __complex double cd2;
+      const complex double *cdp1;
+      const complex double *cdp2;
+      
+      cdp1 = (const complex double *) vk1;
+      cdp2 = (const complex double *) vk2;
 
-      __builtin_memcpy (ucd.a, vk1, 16);
-      cd1 = ucd.cd;
-      __builtin_memcpy (ucd.a, vk2, 16);
-      cd2 = ucd.cd;
-      return cd1 == cd2;
+      return *cdp1 == *cdp2;
     }
   else
     runtime_throw ("__go_type_equal_complex: invalid complex size");

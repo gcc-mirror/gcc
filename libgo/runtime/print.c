@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include <complex.h>
+#include <math.h>
 #include <stdarg.h>
 #include "runtime.h"
 #include "array.h"
@@ -105,7 +107,7 @@ go_vprintf(const char *s, va_list va)
 			runtime_printfloat(va_arg(va, float64));
 			break;
 		case 'C':
-			runtime_printcomplex(va_arg(va, __complex double));
+			runtime_printcomplex(va_arg(va, complex double));
 			break;
 		case 'i':
 			runtime_printiface(va_arg(va, Iface));
@@ -174,13 +176,12 @@ runtime_printfloat(double v)
 		gwrite("NaN", 3);
 		return;
 	}
-	i = __builtin_isinf_sign(v);
-	if(i > 0) {
-		gwrite("+Inf", 4);
-		return;
-	}
-	if(i < 0) {
-		gwrite("-Inf", 4);
+	if(isinf(v)) {
+		if(signbit(v)) {
+			gwrite("-Inf", 4);
+		} else {
+			gwrite("+Inf", 4);
+		}
 		return;
 	}
 
@@ -243,11 +244,11 @@ runtime_printfloat(double v)
 }
 
 void
-runtime_printcomplex(__complex double v)
+runtime_printcomplex(complex double v)
 {
 	gwrite("(", 1);
-	runtime_printfloat(__builtin_creal(v));
-	runtime_printfloat(__builtin_cimag(v));
+	runtime_printfloat(creal(v));
+	runtime_printfloat(cimag(v));
 	gwrite("i)", 2);
 }
 
