@@ -1,5 +1,12 @@
 2014-05-28  Richard Biener  <rguenther@suse.de>
 
+	* hwint.h (*_HALF_WIDE_INT*): Move to ...
+	* wide-int.cc (HOST_BITS_PER_HALF_WIDE_INT, HOST_HALF_WIDE_INT):
+	... here and remove the rest.
+	* hwint.h (HOST_WIDE_INT_PRINT_*): Define in terms of PRI*64.
+
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/61335
 	* tree-vrp.c (vrp_visit_phi_node): If the compare of old and
 	new range fails, drop to varying.
