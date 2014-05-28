@@ -1,0 +1,58 @@
+# Copyright (C) 2014 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Clear hardware capabilities on Solaris.
+if [istarget *-*-solaris2*] {
+    set clearcap_ldflags "-mclear-hwcap"
+}
+
+#
+# clearcap-init -- called at the start of each subdir of tests
+#
+
+proc clearcap-init { args } {
+    global TEST_ALWAYS_FLAGS
+    global ALWAYS_CXXFLAGS
+    global clearcap_saved_TEST_ALWAYS_FLAGS
+    global clearcap_ldflags
+
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set clearcap_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
+    }
+    if [info exists clearcap_ldflags] {
+	if [info exists ALWAYS_CXXFLAGS] {
+	    set ALWAYS_CXXFLAGS [concat "{ldflags=$clearcap_ldflags}" $ALWAYS_CXXFLAGS]
+	} else {
+	    append TEST_ALWAYS_FLAGS " $clearcap_ldflags"
+	}
+    }
+    return 0
+}
+
+#
+# clearcap-finish -- called at the start of each subdir of tests
+#
+
+proc clearcap-finish { args } {
+    global TEST_ALWAYS_FLAGS
+    global clearcap_saved_TEST_ALWAYS_FLAGS
+
+    if [info exists clearcap_saved_TEST_ALWAYS_FLAGS] {
+	set TEST_ALWAYS_FLAGS $clearcap_saved_TEST_ALWAYS_FLAGS
+    } else {
+	unset TEST_ALWAYS_FLAGS
+    }
+}

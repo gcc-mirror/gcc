@@ -1,0 +1,2 @@
+# Clear all hardware capabilities emitted by Sun as.
+hwcap_1 = V0x0 OVERRIDE;

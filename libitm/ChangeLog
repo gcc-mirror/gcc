@@ -1,3 +1,10 @@
+2014-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (LIBITM_CHECK_LINKER_HWCAP): Check for
+	-mclear-hwcap instead.
+	* configure: Regenerate.
+	* clearcap.map: Remove.
+
 2014-05-21  John Marino  <gnugcc@marino.st>
 
 	* configure.tgt (*-*-dragonfly*): New target.
