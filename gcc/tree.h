@@ -3432,6 +3432,7 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 
 extern tree decl_assembler_name (tree);
 extern tree decl_comdat_group (tree);
+extern tree decl_comdat_group_id (tree);
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
    looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */

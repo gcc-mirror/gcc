@@ -147,6 +147,13 @@ public:
       return comdat_group_;
     }
 
+  tree get_comdat_group_id ()
+    {
+      if (comdat_group_ && TREE_CODE (comdat_group_) != IDENTIFIER_NODE)
+	comdat_group_ = DECL_ASSEMBLER_NAME (comdat_group_);
+      return comdat_group_;
+    }
+
   /* Set comdat group.  */
   void set_comdat_group (tree group)
     {

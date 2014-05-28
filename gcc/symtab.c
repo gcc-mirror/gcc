@@ -560,7 +560,7 @@ dump_symtab_base (FILE *f, symtab_node *node)
     fprintf (f, " comdat");
   if (node->get_comdat_group ())
     fprintf (f, " comdat_group:%s",
-	     IDENTIFIER_POINTER (node->get_comdat_group ()));
+	     IDENTIFIER_POINTER (node->get_comdat_group_id ()));
   if (DECL_ONE_ONLY (node->decl))
     fprintf (f, " one_only");
   if (DECL_SECTION_NAME (node->decl))
@@ -1062,7 +1062,7 @@ symtab_resolve_alias (symtab_node *node, symtab_node *target)
   node->analyzed = true;
   ipa_record_reference (node, target, IPA_REF_ALIAS, NULL);
 
-  /* Alias targets become reudndant after alias is resolved into an reference.
+  /* Alias targets become redundant after alias is resolved into an reference.
      We do not want to keep it around or we would have to mind updating them
      when renaming symbols.  */
   node->alias_target = NULL;
