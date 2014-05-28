@@ -1,7 +1,0 @@
-# clear all hardware capabilities emitted by Sun as: the tests here
-# guard against execution at runtime
-# uses mapfile v2 syntax which is the only way to clear AT_SUN_CAP_HW2 flags
-$mapfile_version 2
-CAPABILITY {
-  HW = ;
-};

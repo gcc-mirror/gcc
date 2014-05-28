@@ -35,3 +35,10 @@ sol2-stubs.o: $(srcdir)/config/sol2-stubs.c
 sol2.o: $(srcdir)/config/sol2.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+# Install clearcap.map if present.
+install: install-clearcap-map
+
+# Ignore failures: file only exists if linker supports it.
+install-clearcap-map:
+	-$(INSTALL_DATA) clearcap.map $(DESTDIR)$(libdir)

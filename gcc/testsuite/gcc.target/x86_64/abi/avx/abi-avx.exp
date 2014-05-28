@@ -20,6 +20,7 @@
 load_lib c-torture.exp
 load_lib target-supports.exp
 load_lib torture-options.exp
+load_lib clearcap.exp
 
 if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
      || ![is-effective-target lp64]
@@ -28,20 +29,10 @@ if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
 }
 
 
-# If the linker used understands -M <mapfile>, pass it to clear hardware
-# capabilities set by the Sun assembler.
-set flags ""
-set clearcap_ldflags "-Wl,-M,$srcdir/gcc.target/i386/clearcap.map"
-
-if [check_no_compiler_messages mapfile executable {
-	int main (void) { return 0; }
-  } $clearcap_ldflags ] {
-  set flags $clearcap_ldflags
-}
-
 torture-init
+clearcap-init
 set-torture-options $C_TORTURE_OPTIONS
-set additional_flags "-W -Wall -mavx $flags"
+set additional_flags "-W -Wall -mavx"
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
     if {[runtest_file_p $runtests $src]} {
@@ -58,4 +49,5 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
     }
 }
 
+clearcap-finish
 torture-finish

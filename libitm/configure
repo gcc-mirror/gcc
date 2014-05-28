@@ -16739,10 +16739,10 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
 
 
   ac_save_LDFLAGS="$LDFLAGS"
-  LDFLAGS="$LFLAGS -Wl,-M,$srcdir/clearcap.map"
+  LDFLAGS="$LFLAGS -mclear-hwcap"
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-M,mapfile" >&5
-$as_echo_n "checking for ld that supports -Wl,-M,mapfile... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -mclear-hwcap" >&5
+$as_echo_n "checking for -mclear-hwcap... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -16762,7 +16762,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
   if test "$ac_hwcap_ldflags" = "yes"; then
-    HWCAP_LDFLAGS="-Wl,-M,$srcdir/clearcap.map $HWCAP_LDFLAGS"
+    HWCAP_LDFLAGS="-mclear-hwcap $HWCAP_LDFLAGS"
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_ldflags" >&5
 $as_echo "$ac_hwcap_ldflags" >&6; }

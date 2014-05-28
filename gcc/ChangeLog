@@ -1,3 +1,19 @@
+2014-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac ($gcc_cv_ld_clearcap): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.opt (mclear-hwcap): New option.
+	* config/sol2.h (LINK_CLEARCAP_SPEC): Define.
+	* config/sol2-clearcap.map: Moved here from
+	testsuite/gcc.target/i386/clearcap.map.
+	* config/sol2-clearcapv2.map: Move here from
+	gcc.target/i386/clearcapv2.map.
+	* config/t-sol2 (install): Depend on install-clearcap-map.
+	(install-clearcap-map): New target.
+	* doc/invoke.texi (Option Summary, Solaris 2 Options): Document
+	-mclear-hwcap.
+
 2014-05-28  Richard Biener  <rguenther@suse.de>
 
 	* hwint.h (*_HALF_WIDE_INT*): Move to ...
