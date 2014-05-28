@@ -1,3 +1,7 @@
+2014-05-28  Pedro Alves  <palves@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-05-28  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/vxworks.h (VXCPU_FOR_8548): New. Default to PPC85XX.
