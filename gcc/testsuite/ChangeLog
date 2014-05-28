@@ -1,3 +1,10 @@
+2014-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/overflow_fixed.adb: New test.
+
 2014-05-28  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
