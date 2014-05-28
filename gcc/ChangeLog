@@ -1,3 +1,12 @@
+2014-05-27  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.md (stack_protect_set_<mode>):
+	Use <w> for the register in assembly template.
+	(stack_protect_test): Use the mode of operands[0] for the
+	result.
+	(stack_protect_test_<mode>): Use <w> for the register
+	in assembly template.
+
 2014-05-27  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.c (add_vector_labels): New.

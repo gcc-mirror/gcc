@@ -3859,7 +3859,7 @@
 	 UNSPEC_SP_SET))
    (set (match_scratch:PTR 2 "=&r") (const_int 0))]
   ""
-  "ldr\\t%x2, %1\;str\\t%x2, %0\;mov\t%x2,0"
+  "ldr\\t%<w>2, %1\;str\\t%<w>2, %0\;mov\t%<w>2,0"
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
 
@@ -3869,10 +3869,10 @@
    (match_operand 2)]
   ""
 {
-
-  rtx result = gen_reg_rtx (Pmode);
-
+  rtx result;
   enum machine_mode mode = GET_MODE (operands[0]);
+
+  result = gen_reg_rtx(mode);
 
   emit_insn ((mode == DImode
 	      ? gen_stack_protect_test_di
@@ -3896,7 +3896,7 @@
 	 UNSPEC_SP_TEST))
    (clobber (match_scratch:PTR 3 "=&r"))]
   ""
-  "ldr\t%x3, %x1\;ldr\t%x0, %x2\;eor\t%x0, %x3, %x0"
+  "ldr\t%<w>3, %x1\;ldr\t%<w>0, %x2\;eor\t%<w>0, %<w>3, %<w>0"
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
 
