@@ -8323,8 +8323,14 @@ vrp_visit_phi_node (gimple phi)
       && edges == old_edges
       && lhs_vr->type != VR_UNDEFINED)
     {
+      /* Compare old and new ranges, fall back to varying if the
+         values are not comparable.  */
       int cmp_min = compare_values (lhs_vr->min, vr_result.min);
+      if (cmp_min == -2)
+	goto varying;
       int cmp_max = compare_values (lhs_vr->max, vr_result.max);
+      if (cmp_max == -2)
+	goto varying;
 
       /* For non VR_RANGE or for pointers fall back to varying if
 	 the range changed.  */

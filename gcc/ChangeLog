@@ -1,3 +1,9 @@
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61335
+	* tree-vrp.c (vrp_visit_phi_node): If the compare of old and
+	new range fails, drop to varying.
+
 2014-05-28  Tom de Vries  <tom@codesourcery.com>
 
 	* lra-int.h (struct lra_reg): Add field actual_call_used_reg_set.
