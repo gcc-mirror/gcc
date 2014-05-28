@@ -429,8 +429,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
--fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
--fwhole-program -fwpa -fuse-ld=@var{linker} -fuse-linker-plugin @gol
+-fuse-caller-save -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
+-fweb -fwhole-program -fwpa -fuse-ld=@var{linker} -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os -Ofast -Og}
 
@@ -7740,6 +7740,14 @@ Tracks stack adjustments (pushes and pops) and stack memory references
 and then tries to find ways to combine them.
 
 Enabled by default at @option{-O1} and higher.
+
+@item -fuse-caller-save
+Use caller save registers for allocation if those registers are not used by
+any called function.  In that case it is not necessary to save and restore
+them around calls.  This is only possible if called functions are part of
+same compilation unit as current function and they are compiled before it.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fconserve-stack
 @opindex fconserve-stack

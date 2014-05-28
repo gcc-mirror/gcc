@@ -1,6 +1,13 @@
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
+	* doc/invoke.texi (@item Optimization Options): Add -fuse-caller-save to
+	gccoptlist.
+	(@item -fuse-caller-save): New item.
+
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
 	* opts.c (default_options_table): Add OPT_LEVELS_2_PLUS entry with
 	OPT_fuse_caller_save.
 
