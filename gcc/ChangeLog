@@ -1,3 +1,15 @@
+2014-05-27  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (add_vector_labels): New.
+	(rx_output_function_prologue): Call it.
+	(rx_handle_func_attribute): Don't require empty arguments.
+	(rx_handle_vector_attribute): New.
+	(rx_attribute_table): Add "vector" attribute.
+	* doc/extend.texi (interrupt, vector): Document new/changed
+	RX-specific attributes.
+
+	* config/rx/rx.c (rx_adjust_insn_length): Skip for non-insns.
+
 2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* double-int.c (div_and_round_double) <ROUND_DIV_EXPR>: Use the proper

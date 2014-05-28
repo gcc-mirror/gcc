@@ -1810,9 +1810,68 @@ rx_expand_prologue (void)
 }
 
 static void
+add_vector_labels (FILE *file, const char *aname)
+{
+  tree vec_attr;
+  tree val_attr;
+  const char *vname = "vect";
+  const char *s;
+  int vnum;
+
+  /* This node is for the vector/interrupt tag itself */
+  vec_attr = lookup_attribute (aname, DECL_ATTRIBUTES (current_function_decl));
+  if (!vec_attr)
+    return;
+
+  /* Now point it at the first argument */
+  vec_attr = TREE_VALUE (vec_attr);
+
+  /* Iterate through the arguments.  */
+  while (vec_attr)
+    {
+      val_attr = TREE_VALUE (vec_attr);
+      switch (TREE_CODE (val_attr))
+	{
+	case STRING_CST:
+	  s = TREE_STRING_POINTER (val_attr);
+	  goto string_id_common;
+
+	case IDENTIFIER_NODE:
+	  s = IDENTIFIER_POINTER (val_attr);
+
+	string_id_common:
+	  if (strcmp (s, "$default") == 0)
+	    {
+	      fprintf (file, "\t.global\t$tableentry$default$%s\n", vname);
+	      fprintf (file, "$tableentry$default$%s:\n", vname);
+	    }
+	  else
+	    vname = s;
+	  break;
+
+	case INTEGER_CST:
+	  vnum = TREE_INT_CST_LOW (val_attr);
+
+	  fprintf (file, "\t.global\t$tableentry$%d$%s\n", vnum, vname);
+	  fprintf (file, "$tableentry$%d$%s:\n", vnum, vname);
+	  break;
+
+	default:
+	  ;
+	}
+
+      vec_attr = TREE_CHAIN (vec_attr);
+    }
+
+}
+
+static void
 rx_output_function_prologue (FILE * file,
 			     HOST_WIDE_INT frame_size ATTRIBUTE_UNUSED)
 {
+  add_vector_labels (file, "interrupt");
+  add_vector_labels (file, "vector");
+
   if (is_fast_interrupt_func (NULL_TREE))
     asm_fprintf (file, "\t; Note: Fast Interrupt Handler\n");
 
@@ -2602,7 +2661,6 @@ rx_handle_func_attribute (tree * node,
 			  bool * no_add_attrs)
 {
   gcc_assert (DECL_P (* node));
-  gcc_assert (args == NULL_TREE);
 
   if (TREE_CODE (* node) != FUNCTION_DECL)
     {
@@ -2618,6 +2676,28 @@ rx_handle_func_attribute (tree * node,
   return NULL_TREE;
 }
 
+/* Check "vector" attribute.  */
+
+static tree
+rx_handle_vector_attribute (tree * node,
+			    tree   name,
+			    tree   args,
+			    int    flags ATTRIBUTE_UNUSED,
+			    bool * no_add_attrs)
+{
+  gcc_assert (DECL_P (* node));
+  gcc_assert (args != NULL_TREE);
+
+  if (TREE_CODE (* node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      * no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Table of RX specific attributes.  */
 const struct attribute_spec rx_attribute_table[] =
 {
@@ -2625,9 +2705,11 @@ const struct attribute_spec rx_attribute_table[] =
      affects_type_identity.  */
   { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute,
     false },
-  { "interrupt",      0, 0, true, false, false, rx_handle_func_attribute,
+  { "interrupt",      0, -1, true, false, false, rx_handle_func_attribute,
     false },
   { "naked",          0, 0, true, false, false, rx_handle_func_attribute,
+    false },
+  { "vector",         1, -1, true, false, false, rx_handle_vector_attribute,
     false },
   { NULL,             0, 0, false, false, false, NULL, false }
 };
@@ -3154,6 +3236,9 @@ rx_adjust_insn_length (rtx insn, int current_length)
   rtx extend, mem, offset;
   bool zero;
   int factor;
+
+  if (!INSN_P (insn))
+    return current_length;
 
   switch (INSN_CODE (insn))
     {
