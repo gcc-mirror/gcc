@@ -1,3 +1,21 @@
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61045
+	* gcc.dg/pr61045.c: New testcase.
+
+	2014-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61010
+	* gcc.dg/torture/pr61010.c: New testcase.
+
+	2014-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60979
+	* gcc.dg/graphite/pr60979.c: New testcase.
+
 2014-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/clearcap.exp: New file.
