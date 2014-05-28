@@ -1,3 +1,9 @@
+2014-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expr.c (expand_assignment): Fold the bitpos in the to_rtx if
+	sufficiently aligned and an offset is used at the same time.
+	(expand_expr_real_1): Likewise.
+
 2014-05-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61045
