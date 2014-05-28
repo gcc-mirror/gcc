@@ -228,7 +228,7 @@ add_equal_note (rtx insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
       return 0;
     }
 
-  set = single_set (last_insn);
+  set = set_for_reg_notes (last_insn);
   if (set == NULL_RTX)
     return 1;
 

@@ -2197,6 +2197,7 @@ extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 					       bool);
 
 /* In emit-rtl.c  */
+extern rtx set_for_reg_notes (rtx);
 extern rtx set_unique_reg_note (rtx, enum reg_note, rtx);
 extern rtx set_dst_reg_note (rtx, enum reg_note, rtx, rtx);
 extern void set_insn_deleted (rtx);

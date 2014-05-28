@@ -5086,6 +5086,45 @@ gen_use (rtx x)
   return seq;
 }
 
+/* Notes like REG_EQUAL and REG_EQUIV refer to a set in an instruction.
+   Return the set in INSN that such notes describe, or NULL if the notes
+   have no meaning for INSN.  */
+
+rtx
+set_for_reg_notes (rtx insn)
+{
+  rtx pat, reg;
+
+  if (!INSN_P (insn))
+    return NULL_RTX;
+
+  pat = PATTERN (insn);
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      /* We do not use single_set because that ignores SETs of unused
+	 registers.  REG_EQUAL and REG_EQUIV notes really do require the
+	 PARALLEL to have a single SET.  */
+      if (multiple_sets (insn))
+	return NULL_RTX;
+      pat = XVECEXP (pat, 0, 0);
+    }
+
+  if (GET_CODE (pat) != SET)
+    return NULL_RTX;
+
+  reg = SET_DEST (pat);
+
+  /* Notes apply to the contents of a STRICT_LOW_PART.  */
+  if (GET_CODE (reg) == STRICT_LOW_PART)
+    reg = XEXP (reg, 0);
+
+  /* Check that we have a register.  */
+  if (!(REG_P (reg) || GET_CODE (reg) == SUBREG))
+    return NULL_RTX;
+
+  return pat;
+}
+
 /* Place a note of KIND on insn INSN with DATUM as the datum. If a
    note of this type already exists, remove it first.  */
 
@@ -5098,39 +5137,26 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
     {
     case REG_EQUAL:
     case REG_EQUIV:
-      /* Don't add REG_EQUAL/REG_EQUIV notes if the insn
-	 has multiple sets (some callers assume single_set
-	 means the insn only has one set, when in fact it
-	 means the insn only has one * useful * set).  */
-      if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
-	{
-	  gcc_assert (!note);
-	  return NULL_RTX;
-	}
+      if (!set_for_reg_notes (insn))
+	return NULL_RTX;
 
       /* Don't add ASM_OPERAND REG_EQUAL/REG_EQUIV notes.
 	 It serves no useful purpose and breaks eliminate_regs.  */
       if (GET_CODE (datum) == ASM_OPERANDS)
 	return NULL_RTX;
-
-      if (note)
-	{
-	  XEXP (note, 0) = datum;
-	  df_notes_rescan (insn);
-	  return note;
-	}
       break;
 
     default:
-      if (note)
-	{
-	  XEXP (note, 0) = datum;
-	  return note;
-	}
       break;
     }
 
-  add_reg_note (insn, kind, datum);
+  if (note)
+    XEXP (note, 0) = datum;
+  else
+    {
+      add_reg_note (insn, kind, datum);
+      note = REG_NOTES (insn);
+    }
 
   switch (kind)
     {
@@ -5142,14 +5168,14 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
       break;
     }
 
-  return REG_NOTES (insn);
+  return note;
 }
 
 /* Like set_unique_reg_note, but don't do anything unless INSN sets DST.  */
 rtx
 set_dst_reg_note (rtx insn, enum reg_note kind, rtx datum, rtx dst)
 {
-  rtx set = single_set (insn);
+  rtx set = set_for_reg_notes (insn);
 
   if (set && SET_DEST (set) == dst)
     return set_unique_reg_note (insn, kind, datum);
