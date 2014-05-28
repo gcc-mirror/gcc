@@ -1,6 +1,28 @@
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
+	* df-scan.c (df_get_call_refs): Use get_call_reg_set_usage.
+	* caller-save.c (setup_save_areas, save_call_clobbered_regs): Use
+	get_call_reg_set_usage.
+	* resource.c (mark_set_resources, mark_target_live_regs): Use
+	get_call_reg_set_usage.
+	* ira-int.h (struct ira_allocno): Add crossed_calls_clobbered_regs
+	field.
+	(ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS): Define.
+	* ira-lives.c (process_bb_node_lives): Use get_call_reg_set_usage.
+	Calculate ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	* ira-build.c (ira_create_allocno): Init
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	(create_cap_allocno, propagate_allocno_info)
+	(propagate_some_info_from_allocno)
+	(copy_info_to_removed_store_destinations): Handle
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	* ira-costs.c (ira_tune_allocno_costs): Use
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS to adjust costs.
+
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
 	* cgraph.h (struct cgraph_rtl_info): Add function_used_regs
 	and function_used_regs_valid fields.
 	* final.c: Move include of hard-reg-set.h to before rtl.h to declare

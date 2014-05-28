@@ -374,6 +374,8 @@ struct ira_allocno
   /* The number of calls across which it is live, but which should not
      affect register preferences.  */
   int cheap_calls_crossed_num;
+  /* Registers clobbered by intersected calls.  */
+   HARD_REG_SET crossed_calls_clobbered_regs;
   /* Array of usage costs (accumulated and the one updated during
      coloring) for each hard register of the allocno class.  The
      member value can be NULL if all costs are the same and equal to
@@ -417,6 +419,8 @@ struct ira_allocno
 #define ALLOCNO_CALL_FREQ(A) ((A)->call_freq)
 #define ALLOCNO_CALLS_CROSSED_NUM(A) ((A)->calls_crossed_num)
 #define ALLOCNO_CHEAP_CALLS_CROSSED_NUM(A) ((A)->cheap_calls_crossed_num)
+#define ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS(A) \
+  ((A)->crossed_calls_clobbered_regs)
 #define ALLOCNO_MEM_OPTIMIZED_DEST(A) ((A)->mem_optimized_dest)
 #define ALLOCNO_MEM_OPTIMIZED_DEST_P(A) ((A)->mem_optimized_dest_p)
 #define ALLOCNO_SOMEWHERE_RENAMED_P(A) ((A)->somewhere_renamed_p)

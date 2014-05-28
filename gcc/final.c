@@ -4781,9 +4781,6 @@ collect_fn_hard_reg_usage (void)
 
   /* Be conservative - mark fixed and global registers as used.  */
   IOR_HARD_REG_SET (node->function_used_regs, fixed_reg_set);
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (global_regs[i])
-      SET_HARD_REG_BIT (node->function_used_regs, i);
 
 #ifdef STACK_REGS
   /* Handle STACK_REGS conservatively, since the df-framework does not
