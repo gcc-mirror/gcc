@@ -1,3 +1,8 @@
+2014-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR bootstrap/PR61146
+	* wide-int.cc: Do not include longlong.h when compiling with clang.
+
 2014-05-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-propagate.c (add_control_edge): Print less vertical space.
