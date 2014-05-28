@@ -1,3 +1,8 @@
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61045
+	* gcc.dg/pr61045.c: New testcase.
+
 2014-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/clearcap.exp: New file.
