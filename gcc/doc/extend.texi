@@ -3089,6 +3089,28 @@ On RL78, use @code{brk_interrupt} instead of @code{interrupt} for
 handlers intended to be used with the @code{BRK} opcode (i.e.@: those
 that must end with @code{RETB} instead of @code{RETI}).
 
+On RX targets, you may specify one or more vector numbers as arguments
+to the attribute, as well as naming an alternate table name.
+Parameters are handled sequentially, so one handler can be assigned to
+multiple entries in multiple tables.  One may also pass the magic
+string @code{"$default"} which causes the function to be used for any
+unfilled slots in the current table.
+
+This example shows a simple assignment of a function to one vector in
+the default table (note that preprocessor macros may be used for
+chip-specific symbolic vector names):
+@smallexample
+void __attribute__ ((interrupt (5))) txd1_handler ();
+@end smallexample
+
+This example assigns a function to two slots in the default table
+(using preprocessor macros defined elsewhere) and makes it the default
+for the @code{dct} table:
+@smallexample
+void __attribute__ ((interrupt (RXD1_VECT,RXD2_VECT,"dct","$default")))
+	txd1_handler ();
+@end smallexample
+
 @item interrupt_handler
 @cindex interrupt handler functions on the Blackfin, m68k, H8/300 and SH processors
 Use this attribute on the Blackfin, m68k, H8/300, H8/300H, H8S, and SH to
@@ -4290,6 +4312,13 @@ inline assembly.
 When applied to a member function of a C++ class template, the
 attribute also means that the function is instantiated if the
 class itself is instantiated.
+
+@item vector
+@cindex @code{vector} attibute
+This RX attribute is similar to the @code{attribute}, including its
+parameters, but does not make the function an interrupt-handler type
+function (i.e. it retains the normal C function calling ABI).  See the
+@code{interrupt} attribute for a description of its arguments.
 
 @item version_id
 @cindex @code{version_id} attribute
