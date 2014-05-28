@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "go-assert.h"
+#include <complex.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -710,7 +711,7 @@ void	runtime_printpointer(void*);
 void	runtime_printuint(uint64);
 void	runtime_printhex(uint64);
 void	runtime_printslice(Slice);
-void	runtime_printcomplex(__complex double);
+void	runtime_printcomplex(complex double);
 void reflect_call(const struct __go_func_type *, FuncVal *, _Bool, _Bool,
 		  void **, void **)
   __asm__ (GOSYM_PREFIX "reflect.call");
