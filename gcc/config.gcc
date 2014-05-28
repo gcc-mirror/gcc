@@ -2313,7 +2313,7 @@ powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
 	extra_headers=ppc-asm.h
 	case ${target} in
 	  *-vxworksae*)
-	    tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/e500.h"
+	    tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/e500.h rs6000/vxworksae.h"
 	    tmake_file="${tmake_file} rs6000/t-vxworksae"
 	    ;;
 	  *-vxworks*)
