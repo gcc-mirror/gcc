@@ -1,3 +1,9 @@
+2014-05-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/61044
+	* doc/extend.texi (Local Labels): Note that label differences are
+	not supported for AVR.
+
 2014-05-26  Michael Tautschnig  <mt@debian.org>
 
 	PR target/61249
