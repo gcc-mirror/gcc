@@ -1,3 +1,10 @@
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	* hwint.h (HOST_WIDE_INT_PRINT_*): Define in terms of PRI*64.
+
 2014-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* expr.c (expand_assignment): Fold the bitpos in the to_rtx if
