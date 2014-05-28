@@ -301,7 +301,7 @@ add_control_edge (edge e)
   cfg_blocks_add (bb);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Adding Destination of edge (%d -> %d) to worklist\n\n",
+    fprintf (dump_file, "\nAdding Destination of edge (%d -> %d) to worklist\n",
 	e->src->index, e->dest->index);
 }
 

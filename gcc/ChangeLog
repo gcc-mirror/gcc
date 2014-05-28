@@ -1,5 +1,14 @@
 2014-05-28  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-propagate.c (add_control_edge): Print less vertical space.
+	* tree-vrp.c (extract_range_from_ssa_name): Also copy VR_UNDEFINED.
+	(vrp_visit_assignment_or_call): Print less vertical space.
+	(vrp_visit_stmt): Likewise.
+	(vrp_visit_phi_node): Likewise.  For a PHI argument with
+	VR_VARYING range consider recording it as copy.
+
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
 	Revert
 	2014-05-28  Richard Biener  <rguenther@suse.de>
 
