@@ -18,6 +18,7 @@
 
 # Load support procs.
 load_lib gcc-dg.exp
+load_lib clearcap.exp
 
 # Set up flags used for tests that don't specify options.
 global DEFAULT_VECTCFLAGS
@@ -41,30 +42,9 @@ if ![check_vect_support_and_set_flags] {
 # These flags are used for all targets.
 lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model" "-fno-common"
 
-# If the linker used understands -M <mapfile>, pass it to clear hardware
-# capabilities set by the Sun assembler.
-# Try mapfile syntax v2 first which is the only way to clear hwcap_2 flags.
-set clearcap_ldflags "-Wl,-M,$srcdir/gcc.target/i386/clearcapv2.map"
-
-if ![check_no_compiler_messages mapfilev2 executable {
-    int main (void) { return 0; }
-} $clearcap_ldflags ] {
-    # If this doesn't work, fall back to the less capable v1 syntax.
-    set clearcap_ldflags "-Wl,-M,$srcdir/gcc.target/i386/clearcap.map"
-
-    if ![check_no_compiler_messages mapfile executable {
-	int main (void) { return 0; }
-    } $clearcap_ldflags ] {
-	unset clearcap_ldflags
-    }
-}
-
-if [info exists clearcap_ldflags] {
-    lappend DEFAULT_VECTCFLAGS $clearcap_ldflags
-}
-
 # Initialize `dg'.
 dg-init
+clearcap-init
 
 global VEC_FLAGS
 set VEC_FLAGS $DEFAULT_VECTCFLAGS
@@ -308,4 +288,5 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-sra-bb-slp-*.\[cS\]]
 set dg-do-what-default ${save-dg-do-what-default}
 
 # All done.
+clearcap-finish
 dg-finish

@@ -1,3 +1,16 @@
+2014-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/clearcap.exp: New file.
+	* gcc.dg/vect/vect.exp: Load clearcap.exp.
+	Remove clearcap_ldflags handling.
+	Call clearcap-init, clearcap-finish.
+	* gcc.target/i386/i386.exp: Likewise.
+	* gcc.target/i386/clearcap.map: Move to ../config/sol2-clearcap.map.
+	* gcc.target/i386/clearcapv2.map: Move to
+	../config/sol2-clearcapv2.map.
+	* gcc.target/x86_64/abi/avx/abi-avx.exp: Likewise.
+	* gcc.target/x86_64/abi/avx512f/abi-avx512f.exp: Likewise.
+
 2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aliasing1.adb (dg-final): Robustify pattern matching.
