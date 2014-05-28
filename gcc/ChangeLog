@@ -1,3 +1,10 @@
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61045
+	* fold-const.c (fold_comparison): When folding
+	X +- C1 CMP Y +- C2 to X CMP Y +- C2 +- C1 also ensure
+	the sign of the remaining constant operand stays the same.
+
 2014-05-28  Kaushik Phatak  <kaushik.phatak@kpit.com>
 
 	* config/rl78/rl78.h (TARGET_CPU_CPP_BUILTINS): Define

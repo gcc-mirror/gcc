@@ -9239,7 +9239,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
   /* Transform comparisons of the form X +- C1 CMP Y +- C2 to
      X CMP Y +- C2 +- C1 for signed X, Y.  This is valid if
      the resulting offset is smaller in absolute value than the
-     original one.  */
+     original one and has the same sign.  */
   if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))
       && (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
       && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
@@ -9258,32 +9258,35 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 				      "a comparison");
 
       /* Put the constant on the side where it doesn't overflow and is
-	 of lower absolute value than before.  */
+	 of lower absolute value and of same sign than before.  */
       cst = int_const_binop (TREE_CODE (arg0) == TREE_CODE (arg1)
 			     ? MINUS_EXPR : PLUS_EXPR,
 			     const2, const1);
       if (!TREE_OVERFLOW (cst)
-	  && tree_int_cst_compare (const2, cst) == tree_int_cst_sgn (const2))
+	  && tree_int_cst_compare (const2, cst) == tree_int_cst_sgn (const2)
+	  && tree_int_cst_sgn (cst) == tree_int_cst_sgn (const2))
 	{
 	  fold_overflow_warning (warnmsg, WARN_STRICT_OVERFLOW_COMPARISON);
 	  return fold_build2_loc (loc, code, type,
-			      variable1,
-			      fold_build2_loc (loc,
-					   TREE_CODE (arg1), TREE_TYPE (arg1),
-					   variable2, cst));
+				  variable1,
+				  fold_build2_loc (loc, TREE_CODE (arg1),
+						   TREE_TYPE (arg1),
+						   variable2, cst));
 	}
 
       cst = int_const_binop (TREE_CODE (arg0) == TREE_CODE (arg1)
 			     ? MINUS_EXPR : PLUS_EXPR,
 			     const1, const2);
       if (!TREE_OVERFLOW (cst)
-	  && tree_int_cst_compare (const1, cst) == tree_int_cst_sgn (const1))
+	  && tree_int_cst_compare (const1, cst) == tree_int_cst_sgn (const1)
+	  && tree_int_cst_sgn (cst) == tree_int_cst_sgn (const1))
 	{
 	  fold_overflow_warning (warnmsg, WARN_STRICT_OVERFLOW_COMPARISON);
 	  return fold_build2_loc (loc, code, type,
-			      fold_build2_loc (loc, TREE_CODE (arg0), TREE_TYPE (arg0),
-					   variable1, cst),
-			      variable2);
+				  fold_build2_loc (loc, TREE_CODE (arg0),
+						   TREE_TYPE (arg0),
+						   variable1, cst),
+				  variable2);
 	}
     }
 
