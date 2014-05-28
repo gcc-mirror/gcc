@@ -890,7 +890,9 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   if (ctor == error_mark_node)
     return NULL;
 
-  flags |= LOOKUP_NO_NARROWING;
+  /* The conversions within the init-list aren't affected by the enclosing
+     context; they're always simple copy-initialization.  */
+  flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
   for (; field; field = next_initializable_field (DECL_CHAIN (field)))
     {
@@ -963,6 +965,8 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	return NULL;
     }
 
+  flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
+
   FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
     {
       conversion *sub
@@ -1006,6 +1010,8 @@ build_complex_conv (tree type, tree ctor, int flags,
 
   if (len != 2)
     return NULL;
+
+  flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
   FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
     {
