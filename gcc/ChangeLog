@@ -1,3 +1,17 @@
+2014-05-28  Kaushik Phatak  <kaushik.phatak@kpit.com>
+
+	* config/rl78/rl78.h (TARGET_CPU_CPP_BUILTINS): Define
+	__RL78_64BIT_DOUBLES__ or __RL78_32BIT_DOUBLES__.
+	(ASM_SPEC): Pass -m64bit-doubles or -m32bit-doubles on
+	to the assembler.
+	(DOUBLE_TYPE_SIZE): Use 64 bit if TARGET_64BIT_DOUBLES
+	is true.
+	* gcc/config/rl78/rl78.opt (m64bit-doubles): New option.
+	(m32bit-doubles) Likewise.
+	* gcc/config/rl78/t-rl78: Add 64-bit-double multilib.
+	* doc/invoke.texi: Document -m32bit-doubles and -m64bit-doubles
+	option for RL78.
+
 2014-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac ($gcc_cv_ld_clearcap): New test.
