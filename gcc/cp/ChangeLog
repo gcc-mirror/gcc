@@ -1,5 +1,9 @@
 2014-05-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47202
+	* decl.c (cxx_comdat_group): Return a decl.
+	* optimize.c (cdtor_comdat_group): Get its DECL_ASSEMBLER_NAME.
+
 	* pt.c (tsubst) [ARRAY_TYPE]: Check for array of array of unknown
 	bound.
 

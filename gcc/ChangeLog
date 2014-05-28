@@ -1,3 +1,14 @@
+2014-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47202
+	* cgraph.h (symtab_node::get_comdat_group_id): New.
+	* cgraphunit.c (analyze_functions): Call it.
+	* symtab.c (dump_symtab_node): Likewise.
+	* tree.c (decl_comdat_group_id): New.
+	* tree.h: Declare it.
+	* lto-streamer-out.c (write_symbol): Use it.
+	* trans-mem.c (ipa_tm_create_version_alias): Likewise.
+
 2014-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR bootstrap/PR61146

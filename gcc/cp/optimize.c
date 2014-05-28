@@ -170,6 +170,8 @@ cdtor_comdat_group (tree complete, tree base)
     complete_name = cxx_comdat_group (complete);
   if (base_name == NULL)
     base_name = cxx_comdat_group (base);
+  complete_name = DECL_ASSEMBLER_NAME (complete_name);
+  base_name = DECL_ASSEMBLER_NAME (base_name);
   gcc_assert (IDENTIFIER_LENGTH (complete_name)
 	      == IDENTIFIER_LENGTH (base_name));
   grp_name = XALLOCAVEC (char, IDENTIFIER_LENGTH (complete_name) + 1);

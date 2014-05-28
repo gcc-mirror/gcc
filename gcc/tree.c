@@ -603,7 +603,9 @@ decl_assembler_name (tree decl)
   return DECL_WITH_VIS_CHECK (decl)->decl_with_vis.assembler_name;
 }
 
-/* Return comdat group of DECL.  */
+/* When the target supports COMDAT groups, this indicates which group the
+   DECL is associated with.  This can be either an IDENTIFIER_NODE or a
+   decl, in which case its DECL_ASSEMBLER_NAME identifies the group.  */
 tree
 decl_comdat_group (tree node)
 {
@@ -611,6 +613,16 @@ decl_comdat_group (tree node)
   if (!snode)
     return NULL;
   return snode->get_comdat_group ();
+}
+
+/* Likewise, but make sure it's been reduced to an IDENTIFIER_NODE.  */
+tree
+decl_comdat_group_id (tree node)
+{
+  struct symtab_node *snode = symtab_get_node (node);
+  if (!snode)
+    return NULL;
+  return snode->get_comdat_group_id ();
 }
 
 /* Compute the number of bytes occupied by a tree with code CODE.
