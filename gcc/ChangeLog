@@ -1,3 +1,7 @@
+2014-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/md.texi: Document the restrictions on the "enabled" attribute.
+
 2014-05-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47202
