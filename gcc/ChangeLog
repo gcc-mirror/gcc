@@ -1,3 +1,8 @@
+2014-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* final.c (collect_fn_hard_reg_usage): Guard variable declaration
+	with #ifdef STACK_REGS.
+
 2014-05-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varasm.c (get_variable_section): Walk aliases.
