@@ -2674,6 +2674,13 @@
 	(expand_used_vars): Call stack_protect_decl_p and
 	stack_protect_return_slot_p for -fstack-protector-strong.
 
+2014-05-09  David Wohlferd <LimeGreenSocks@yahoo.com>
+	Andrew Haley <aph@redhat.com>
+	Richard Sandiford <rdsandiford@googlemail.com>
+
+	* doc/extend.texi: Rewrite inline asm page / re-org asm-related
+	pages.
+
 2014-05-09  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR middle-end/61111
