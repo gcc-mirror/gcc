@@ -21271,7 +21271,15 @@ arm_print_condition (FILE *stream)
 }
 
 
-/* If CODE is 'd', then the X is a condition operand and the instruction
+/* Globally reserved letters: acln
+   Puncutation letters currently used: @_|?().!#
+   Lower case letters currently used: bcdefhimpqtvwxyz
+   Upper case letters currently used: ABCDFGHJKLMNOPQRSTU
+   Letters previously used, but now deprecated/obsolete: sVWXYZ.
+
+   Note that the global reservation for 'c' is only for CONSTANT_ADDRESS_P.
+
+   If CODE is 'd', then the X is a condition operand and the instruction
    should only be executed if the condition is true.
    if CODE is 'D', then the X is a condition operand and the instruction
    should only be executed if the condition is false: however, if the mode
@@ -21409,6 +21417,19 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  putc ('~', stream);
 	  output_addr_const (stream, x);
 	}
+      return;
+
+    case 'b':
+      /* Print the log2 of a CONST_INT.  */
+      {
+	HOST_WIDE_INT val;
+
+	if (!CONST_INT_P (x)
+	    || (val = exact_log2 (INTVAL (x) & 0xffffffff)) < 0)
+	  output_operand_lossage ("Unsupported operand for code '%c'", code);
+	else
+	  fprintf (stream, "#" HOST_WIDE_INT_PRINT_DEC, val);
+      }
       return;
 
     case 'L':
