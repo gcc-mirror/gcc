@@ -1,3 +1,30 @@
+2014-05-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	gcc.target/arm/simd/vextQf32_1.c: New file.
+	gcc.target/arm/simd/vextQp16_1.c: New file.
+	gcc.target/arm/simd/vextQp8_1.c: New file.
+	gcc.target/arm/simd/vextQs16_1.c: New file.
+	gcc.target/arm/simd/vextQs32_1.c: New file.
+	gcc.target/arm/simd/vextQs64_1.c: New file.
+	gcc.target/arm/simd/vextQs8_1.c: New file.
+	gcc.target/arm/simd/vextQu16_1.c: New file.
+	gcc.target/arm/simd/vextQu32_1.c: New file.
+	gcc.target/arm/simd/vextQu64_1.c: New file.
+	gcc.target/arm/simd/vextQu8_1.c: New file.
+	gcc.target/arm/simd/vextQp64_1.c: New file.
+	gcc.target/arm/simd/vextf32_1.c: New file.
+	gcc.target/arm/simd/vextp16_1.c: New file.
+	gcc.target/arm/simd/vextp8_1.c: New file.
+	gcc.target/arm/simd/vexts16_1.c: New file.
+	gcc.target/arm/simd/vexts32_1.c: New file.
+	gcc.target/arm/simd/vexts64_1.c: New file.
+	gcc.target/arm/simd/vexts8_1.c: New file.
+	gcc.target/arm/simd/vextu16_1.c: New file.
+	gcc.target/arm/simd/vextu32_1.c: New file.
+	gcc.target/arm/simd/vextu64_1.c: New file.
+	gcc.target/arm/simd/vextu8_1.c: New file.
+	gcc.target/arm/simd/vextp64_1.c: New file.
+
 2014-05-29  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
