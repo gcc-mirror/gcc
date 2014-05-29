@@ -193,8 +193,15 @@ fi
 if $do_latex; then
     cd ${outdir}/${mode}
 
-    # Also drop in the header file and style sheet
-    doxygen -w latex header.tex doxygen.sty
+    # Grrr, Doxygen 1.8.x changed the -w latex options.
+    need_footer=`doxygen -h | sed -n -e '/-w latex/s=.*footer.*=true=p'`
+
+    # Also drop in the header file (maybe footer file) and style sheet
+    if $need_footer; then
+      doxygen -w latex header.tex footer.tex doxygen.sty
+    else
+      doxygen -w latex header.tex doxygen.sty
+    fi
     
     echo ::
     echo :: LaTeX pages begin with
