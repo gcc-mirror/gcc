@@ -1,3 +1,8 @@
+2014-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr2/bool_set: Use UTF-8 for accented characters.
+	* scripts/run_doxygen: Handle Doxygen 1.8.x change.
+
 2014-05-08  Joshua Gay  <jgay@gnu.org>
 
 	PR libstdc++/61117
