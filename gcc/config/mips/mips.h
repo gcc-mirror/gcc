@@ -2175,6 +2175,13 @@ enum reg_class
 #define FP_ARG_FIRST (FP_REG_FIRST + 12)
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 
+/* Temporary register that is used when restoring $gp after a call.  $4 and $5
+   are used for returning complex double values in soft-float code, so $6 is the
+   first suitable candidate for TARGET_MIPS16.  For !TARGET_MIPS16 we can use
+   $gp itself as the temporary.  */
+#define POST_CALL_TMP_REG \
+  (TARGET_MIPS16 ? GP_ARG_FIRST + 2 : PIC_OFFSET_TABLE_REGNUM)
+
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  When FP registers
    are 32 bits, we can't directly reference the odd numbered ones.  */

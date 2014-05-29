@@ -1,3 +1,12 @@
+2014-05-29  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* config/mips/mips.h (POST_CALL_TMP_REG): Define.
+	* config/mips/mips.c (mips_emit_call_insn): Add POST_CALL_TMP_REG
+	clobber.
+	(mips_split_call): Use POST_CALL_TMP_REG.
+	(TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS): Redefine to true.
+
 2014-05-29  Tom de Vries  <tom@codesourcery.com>
 
 	* final.c (collect_fn_hard_reg_usage): Guard variable declaration

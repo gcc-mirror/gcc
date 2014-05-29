@@ -1,3 +1,13 @@
+2014-05-29  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/mips/mips.exp: Add use-caller-save to -ffoo/-fno-foo
+	options.
+	* gcc.target/mips/fuse-caller-save.h: New include file.
+	* gcc.target/mips/fuse-caller-save.c: New test.
+	* gcc.target/mips/fuse-caller-save-mips16.c: Same.
+	* gcc.target/mips/fuse-caller-save-micromips.c: Same.
+
 2014-05-29  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* gcc.dg/vect/pr52252-ld.c: Fix target and options for the test.
