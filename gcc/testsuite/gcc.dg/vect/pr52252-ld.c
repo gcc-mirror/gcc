@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -g -ftree-vectorize -mssse3 -fdump-tree-vect-details" { target { i?86-*-* x86_64-*-* } } } */
-
+/* { dg-additional-options "-mssse3" { target { i?86-*-* x86_64-*-* } } } */
 #define byte unsigned char
 
 void
@@ -26,5 +25,5 @@ matrix_mul (byte *in, byte *out, int size)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
