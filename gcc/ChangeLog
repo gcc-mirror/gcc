@@ -1,3 +1,7 @@
+2014-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* rtl.h (BLOCK_SYMBOL_CHECK): Use SYMBOL_REF_FLAGS.
+
 2014-05-29  Richard Earnshaw <rearnsha@arm.com>
 	Richard Sandiford  <rdsandiford@googlemail.com>
 
