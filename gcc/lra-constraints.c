@@ -2787,9 +2787,14 @@ equiv_address_substitution (struct address_info *ad)
 
    Add reloads to the lists *BEFORE and *AFTER.  We might need to add
    reloads to *AFTER because of inc/dec, {pre, post} modify in the
-   address.  Return true for any RTL change.  */
+   address.  Return true for any RTL change.
+
+   The function is a helper function which does not produce all
+   transformations which can be necessary.  It does just basic steps.
+   To do all necessary transformations use function
+   process_address.  */
 static bool
-process_address (int nop, rtx *before, rtx *after)
+process_address_1 (int nop, rtx *before, rtx *after)
 {
   struct address_info ad;
   rtx new_reg;
@@ -2987,6 +2992,18 @@ process_address (int nop, rtx *before, rtx *after)
   *before = get_insns ();
   end_sequence ();
   return true;
+}
+
+/* Do address reloads until it is necessary.  Use process_address_1 as
+   a helper function.  Return true for any RTL changes.  */
+static bool
+process_address (int nop, rtx *before, rtx *after)
+{
+  bool res = false;
+
+  while (process_address_1 (nop, before, after))
+    res = true;
+  return res;
 }
 
 /* Emit insns to reload VALUE into a new register.  VALUE is an
@@ -3273,7 +3290,7 @@ curr_insn_transform (void)
 	change_p = true;
 	lra_update_dup (curr_id, i);
       }
-
+  
   if (change_p)
     /* If we've changed the instruction then any alternative that
        we chose previously may no longer be valid.  */

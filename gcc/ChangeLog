@@ -1,3 +1,10 @@
+2014-05-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61325
+	* lra-constraints.c (process_address): Rename to
+	process_address_1.
+	(process_address): New function.
+
 2014-05-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
