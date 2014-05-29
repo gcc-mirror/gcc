@@ -1,3 +1,9 @@
+2014-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60834
+	Backport from mainline
+	* gfortran.dg/associate_16.f90:  New test.
+
 2014-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline

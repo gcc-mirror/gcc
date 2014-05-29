@@ -1,3 +1,13 @@
+2014-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60834
+	Backport from mainline
+	* frontend-passes.c (in_assoc_list):  New variable.
+	(optimize_namespace):  Initialize in_assoc_list
+	(combine_array_constructor): Don't try to combine
+	assoc lists.
+	(gfc_code_walker):  Keep track of in_assoc_list.
+
 2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from mainline
