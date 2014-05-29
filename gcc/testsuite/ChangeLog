@@ -1,3 +1,8 @@
+2014-05-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61325
+	* gcc.target/aarch64/pr61325.c: New.
+
 2014-05-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	gcc.target/arm/simd/vextQf32_1.c: New file.
