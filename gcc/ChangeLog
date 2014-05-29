@@ -1,3 +1,13 @@
+2014-05-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61271
+	* config/i386/i386.c (ix86_rtx_costs)
+	<case CONST_INT, case CONST, case LABEL_REF, case SYMBOL_REF>:
+	Fix condition.
+
 2014-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
