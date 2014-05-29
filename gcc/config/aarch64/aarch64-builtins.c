@@ -169,6 +169,10 @@ aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
 #define TYPES_BINOP (aarch64_types_binop_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_binopv_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_none, qualifier_none };
+#define TYPES_BINOPV (aarch64_types_binopv_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_binopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned };
 #define TYPES_BINOPU (aarch64_types_binopu_qualifiers)

@@ -1,3 +1,22 @@
+2014-05-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_types_binopv_qualifiers,
+	TYPES_BINOPV): New static data.
+	* config/aarch64/aarch64-simd-builtins.def (im_lane_bound): New builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_ext, aarch64_im_lane_boundsi):
+	New patterns.
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_const_1): Match
+	patterns for EXT.
+	(aarch64_evpc_ext): New function.
+
+	* config/aarch64/iterators.md (UNSPEC_EXT): New enum element.
+
+	* config/aarch64/arm_neon.h (vext_f32, vext_f64, vext_p8, vext_p16,
+	vext_s8, vext_s16, vext_s32, vext_s64, vext_u8, vext_u16, vext_u32,
+	vext_u64, vextq_f32, vextq_f64, vextq_p8, vextq_p16, vextq_s8,
+	vextq_s16, vextq_s32, vextq_s64, vextq_u8, vextq_u16, vextq_u32,
+	vextq_u64): Replace __asm with __builtin_shuffle and im_lane_boundsi.
+
 2014-05-29  Tom de Vries  <tom@codesourcery.com>
 
 	* rtl.h (BLOCK_SYMBOL_CHECK): Use SYMBOL_REF_FLAGS.
