@@ -5661,318 +5661,6 @@ vcvtxd_f32_f64 (float64_t a)
   return result;
 }
 
-#define vext_f32(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x2_t b_ = (b);                                            \
-       float32x2_t a_ = (a);                                            \
-       float32x2_t result;                                              \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*4"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_f64(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x1_t b_ = (b);                                            \
-       float64x1_t a_ = (a);                                            \
-       float64x1_t result;                                              \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*8"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_p8(a, b, c)                                                \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x8_t b_ = (b);                                              \
-       poly8x8_t a_ = (a);                                              \
-       poly8x8_t result;                                                \
-       __asm__ ("ext %0.8b,%1.8b,%2.8b,%3"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_p16(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x4_t b_ = (b);                                             \
-       poly16x4_t a_ = (a);                                             \
-       poly16x4_t result;                                               \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*2"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_s8(a, b, c)                                                \
-  __extension__                                                         \
-    ({                                                                  \
-       int8x8_t b_ = (b);                                               \
-       int8x8_t a_ = (a);                                               \
-       int8x8_t result;                                                 \
-       __asm__ ("ext %0.8b,%1.8b,%2.8b,%3"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_s16(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x4_t b_ = (b);                                              \
-       int16x4_t a_ = (a);                                              \
-       int16x4_t result;                                                \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*2"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_s32(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x2_t b_ = (b);                                              \
-       int32x2_t a_ = (a);                                              \
-       int32x2_t result;                                                \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*4"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_s64(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x1_t b_ = (b);                                              \
-       int64x1_t a_ = (a);                                              \
-       int64x1_t result;                                                \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*8"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_u8(a, b, c)                                                \
-  __extension__                                                         \
-    ({                                                                  \
-       uint8x8_t b_ = (b);                                              \
-       uint8x8_t a_ = (a);                                              \
-       uint8x8_t result;                                                \
-       __asm__ ("ext %0.8b,%1.8b,%2.8b,%3"                              \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_u16(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x4_t b_ = (b);                                             \
-       uint16x4_t a_ = (a);                                             \
-       uint16x4_t result;                                               \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*2"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_u32(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x2_t b_ = (b);                                             \
-       uint32x2_t a_ = (a);                                             \
-       uint32x2_t result;                                               \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*4"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vext_u64(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x1_t b_ = (b);                                             \
-       uint64x1_t a_ = (a);                                             \
-       uint64x1_t result;                                               \
-       __asm__ ("ext %0.8b, %1.8b, %2.8b, #%3*8"                        \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_f32(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t b_ = (b);                                            \
-       float32x4_t a_ = (a);                                            \
-       float32x4_t result;                                              \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*4"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_f64(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x2_t b_ = (b);                                            \
-       float64x2_t a_ = (a);                                            \
-       float64x2_t result;                                              \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*8"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_p8(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x16_t b_ = (b);                                             \
-       poly8x16_t a_ = (a);                                             \
-       poly8x16_t result;                                               \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3"                       \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_p16(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x8_t b_ = (b);                                             \
-       poly16x8_t a_ = (a);                                             \
-       poly16x8_t result;                                               \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*2"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_s8(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       int8x16_t b_ = (b);                                              \
-       int8x16_t a_ = (a);                                              \
-       int8x16_t result;                                                \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3"                       \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_s16(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x8_t b_ = (b);                                              \
-       int16x8_t a_ = (a);                                              \
-       int16x8_t result;                                                \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*2"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_s32(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t b_ = (b);                                              \
-       int32x4_t a_ = (a);                                              \
-       int32x4_t result;                                                \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*4"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_s64(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x2_t b_ = (b);                                              \
-       int64x2_t a_ = (a);                                              \
-       int64x2_t result;                                                \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*8"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_u8(a, b, c)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       uint8x16_t b_ = (b);                                             \
-       uint8x16_t a_ = (a);                                             \
-       uint8x16_t result;                                               \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3"                       \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_u16(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x8_t b_ = (b);                                             \
-       uint16x8_t a_ = (a);                                             \
-       uint16x8_t result;                                               \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*2"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_u32(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t b_ = (b);                                             \
-       uint32x4_t a_ = (a);                                             \
-       uint32x4_t result;                                               \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*4"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vextq_u64(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x2_t b_ = (b);                                             \
-       uint64x2_t a_ = (a);                                             \
-       uint64x2_t result;                                               \
-       __asm__ ("ext %0.16b, %1.16b, %2.16b, #%3*8"                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vfma_f32 (float32x2_t a, float32x2_t b, float32x2_t c)
 {
@@ -17442,6 +17130,292 @@ __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vdupd_laneq_u64 (uint64x2_t __a, const int __b)
 {
   return __aarch64_vgetq_lane_u64 (__a, __b);
+}
+
+/* vext  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vext_f32 (float32x2_t __a, float32x2_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 2);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint32x2_t) {2-__c, 3-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint32x2_t) {__c, __c+1});
+#endif
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vext_f64 (float64x1_t __a, float64x1_t __b, __const int __c)
+{
+  /* The only possible index to the assembler instruction returns element 0.  */
+  __builtin_aarch64_im_lane_boundsi (__c, 1);
+  return __a;
+}
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vext_p8 (poly8x8_t __a, poly8x8_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 8);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint8x8_t)
+      {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
+#else
+  return __builtin_shuffle (__a, __b,
+      (uint8x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vext_p16 (poly16x4_t __a, poly16x4_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 4);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a,
+      (uint16x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint16x4_t) {__c, __c+1, __c+2, __c+3});
+#endif
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vext_s8 (int8x8_t __a, int8x8_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 8);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint8x8_t)
+      {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
+#else
+  return __builtin_shuffle (__a, __b,
+      (uint8x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vext_s16 (int16x4_t __a, int16x4_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 4);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a,
+      (uint16x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint16x4_t) {__c, __c+1, __c+2, __c+3});
+#endif
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vext_s32 (int32x2_t __a, int32x2_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 2);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint32x2_t) {2-__c, 3-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint32x2_t) {__c, __c+1});
+#endif
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vext_s64 (int64x1_t __a, int64x1_t __b, __const int __c)
+{
+  /* The only possible index to the assembler instruction returns element 0.  */
+  __builtin_aarch64_im_lane_boundsi (__c, 1);
+  return __a;
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vext_u8 (uint8x8_t __a, uint8x8_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 8);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint8x8_t)
+      {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
+#else
+  return __builtin_shuffle (__a, __b,
+      (uint8x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vext_u16 (uint16x4_t __a, uint16x4_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 4);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a,
+      (uint16x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint16x4_t) {__c, __c+1, __c+2, __c+3});
+#endif
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vext_u32 (uint32x2_t __a, uint32x2_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 2);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint32x2_t) {2-__c, 3-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint32x2_t) {__c, __c+1});
+#endif
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vext_u64 (uint64x1_t __a, uint64x1_t __b, __const int __c)
+{
+  /* The only possible index to the assembler instruction returns element 0.  */
+  __builtin_aarch64_im_lane_boundsi (__c, 1);
+  return __a;
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vextq_f32 (float32x4_t __a, float32x4_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 4);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a,
+      (uint32x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint32x4_t) {__c, __c+1, __c+2, __c+3});
+#endif
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vextq_f64 (float64x2_t __a, float64x2_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 2);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint64x2_t) {2-__c, 3-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint64x2_t) {__c, __c+1});
+#endif
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vextq_p8 (poly8x16_t __a, poly8x16_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 16);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint8x16_t)
+      {16-__c, 17-__c, 18-__c, 19-__c, 20-__c, 21-__c, 22-__c, 23-__c,
+       24-__c, 25-__c, 26-__c, 27-__c, 28-__c, 29-__c, 30-__c, 31-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint8x16_t)
+      {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7,
+       __c+8, __c+9, __c+10, __c+11, __c+12, __c+13, __c+14, __c+15});
+#endif
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vextq_p16 (poly16x8_t __a, poly16x8_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 8);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint16x8_t)
+      {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
+#else
+  return __builtin_shuffle (__a, __b,
+      (uint16x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vextq_s8 (int8x16_t __a, int8x16_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 16);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint8x16_t)
+      {16-__c, 17-__c, 18-__c, 19-__c, 20-__c, 21-__c, 22-__c, 23-__c,
+       24-__c, 25-__c, 26-__c, 27-__c, 28-__c, 29-__c, 30-__c, 31-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint8x16_t)
+      {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7,
+       __c+8, __c+9, __c+10, __c+11, __c+12, __c+13, __c+14, __c+15});
+#endif
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vextq_s16 (int16x8_t __a, int16x8_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 8);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint16x8_t)
+      {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
+#else
+  return __builtin_shuffle (__a, __b,
+      (uint16x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vextq_s32 (int32x4_t __a, int32x4_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 4);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a,
+      (uint32x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint32x4_t) {__c, __c+1, __c+2, __c+3});
+#endif
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vextq_s64 (int64x2_t __a, int64x2_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 2);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint64x2_t) {2-__c, 3-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint64x2_t) {__c, __c+1});
+#endif
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vextq_u8 (uint8x16_t __a, uint8x16_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 16);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint8x16_t)
+      {16-__c, 17-__c, 18-__c, 19-__c, 20-__c, 21-__c, 22-__c, 23-__c,
+       24-__c, 25-__c, 26-__c, 27-__c, 28-__c, 29-__c, 30-__c, 31-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint8x16_t)
+      {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7,
+       __c+8, __c+9, __c+10, __c+11, __c+12, __c+13, __c+14, __c+15});
+#endif
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vextq_u16 (uint16x8_t __a, uint16x8_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 8);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint16x8_t)
+      {8-__c, 9-__c, 10-__c, 11-__c, 12-__c, 13-__c, 14-__c, 15-__c});
+#else
+  return __builtin_shuffle (__a, __b,
+      (uint16x8_t) {__c, __c+1, __c+2, __c+3, __c+4, __c+5, __c+6, __c+7});
+#endif
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vextq_u32 (uint32x4_t __a, uint32x4_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 4);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a,
+      (uint32x4_t) {4-__c, 5-__c, 6-__c, 7-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint32x4_t) {__c, __c+1, __c+2, __c+3});
+#endif
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vextq_u64 (uint64x2_t __a, uint64x2_t __b, __const int __c)
+{
+  __builtin_aarch64_im_lane_boundsi (__c, 2);
+#ifdef __AARCH64EB__
+  return __builtin_shuffle (__b, __a, (uint64x2_t) {2-__c, 3-__c});
+#else
+  return __builtin_shuffle (__a, __b, (uint64x2_t) {__c, __c+1});
+#endif
 }
 
 /* vfma_lane  */

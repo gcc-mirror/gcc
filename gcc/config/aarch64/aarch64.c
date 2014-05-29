@@ -8990,6 +8990,70 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize patterns for the EXT insn.  */
+
+static bool
+aarch64_evpc_ext (struct expand_vec_perm_d *d)
+{
+  unsigned int i, nelt = d->nelt;
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+  rtx offset;
+
+  unsigned int location = d->perm[0]; /* Always < nelt.  */
+
+  /* Check if the extracted indices are increasing by one.  */
+  for (i = 1; i < nelt; i++)
+    {
+      unsigned int required = location + i;
+      if (d->one_vector_p)
+        {
+          /* We'll pass the same vector in twice, so allow indices to wrap.  */
+	  required &= (nelt - 1);
+	}
+      if (d->perm[i] != required)
+        return false;
+    }
+
+  /* The mid-end handles masks that just return one of the input vectors.  */
+  gcc_assert (location != 0);
+
+  switch (d->vmode)
+    {
+    case V16QImode: gen = gen_aarch64_extv16qi; break;
+    case V8QImode: gen = gen_aarch64_extv8qi; break;
+    case V4HImode: gen = gen_aarch64_extv4hi; break;
+    case V8HImode: gen = gen_aarch64_extv8hi; break;
+    case V2SImode: gen = gen_aarch64_extv2si; break;
+    case V4SImode: gen = gen_aarch64_extv4si; break;
+    case V2SFmode: gen = gen_aarch64_extv2sf; break;
+    case V4SFmode: gen = gen_aarch64_extv4sf; break;
+    case V2DImode: gen = gen_aarch64_extv2di; break;
+    case V2DFmode: gen = gen_aarch64_extv2df; break;
+    default:
+      return false;
+    }
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* After setup, we want the high elements of the first vector (stored
+         at the LSB end of the register), and the low elements of the second
+         vector (stored at the MSB end of the register). So swap.  */
+      rtx temp = d->op0;
+      d->op0 = d->op1;
+      d->op1 = temp;
+      /* location != 0 (above), so safe to assume (nelt - location) < nelt.  */
+      location = nelt - location;
+    }
+
+  offset = GEN_INT (location);
+  emit_insn (gen (d->target, d->op0, d->op1, offset));
+  return true;
+}
+
 static bool
 aarch64_evpc_dup (struct expand_vec_perm_d *d)
 {
@@ -9094,7 +9158,9 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 
   if (TARGET_SIMD)
     {
-      if (aarch64_evpc_zip (d))
+      if (aarch64_evpc_ext (d))
+	return true;
+      else if (aarch64_evpc_zip (d))
 	return true;
       else if (aarch64_evpc_uzp (d))
 	return true;
