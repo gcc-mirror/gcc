@@ -1,3 +1,8 @@
+2014-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varasm.c (get_variable_section): Walk aliases.
+	(place_block_symbol): Walk aliases.
+
 2014-05-28  Tom de Vries  <tom@codesourcery.com>
 
 	Revert:
