@@ -1,3 +1,16 @@
+2014-05-29  Richard Earnshaw <rearnsha@arm.com>
+	Richard Sandiford  <rdsandiford@googlemail.com>
+
+        * arm/iterators.md (shiftable_ops): New code iterator.
+        (t2_binop0, arith_shift_insn): New code attributes.
+	* arm/predicates.md (shift_nomul_operator): New predicate.
+        * arm/arm.md (insn_enabled): Delete.
+        (enabled): Remove insn_enabled test.
+        (*arith_shiftsi): Delete.  Replace with ...
+        (*<arith_shift_insn>_multsi): ... new pattern.
+	(*<arith_shift_insn>_shiftsi): ... new pattern.
+	* config/arm/arm.c (arm_print_operand): Handle operand format 'b'.
+
 2014-05-29  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
