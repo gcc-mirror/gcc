@@ -1,3 +1,10 @@
+2014-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr2/bool_set: Use UTF-8 for accented characters.
+	* scripts/run_doxygen: Handle Doxygen 1.8.x change.
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.8.6 format. Set
+	QUIET=YES, remove obsolete SYMBOL_CACHE_SIZE tag.
+
 2014-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61329
