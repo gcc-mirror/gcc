@@ -11,7 +11,9 @@
 
 //static Lock debuglock;
 
-static void go_vprintf(const char*, va_list);
+// Clang requires this function to not be inlined (see below).
+static void go_vprintf(const char*, va_list)
+__attribute__((noinline));
 
 // write to goroutine-local buffer if diverting output,
 // or else standard error.
@@ -60,6 +62,24 @@ runtime_prints(const char *s)
 {
 	gwrite(s, runtime_findnull((const byte*)s));
 }
+
+#if defined (__clang__) && (defined (__i386__) || defined (__x86_64__))
+// LLVM's code generator does not currently support split stacks for vararg
+// functions, so we disable the feature for this function under Clang. This
+// appears to be OK as long as:
+// - this function only calls non-inlined, internal-linkage (hence no dynamic
+//   loader) functions compiled with split stacks (i.e. go_vprintf), which can
+//   allocate more stack space as required;
+// - this function itself does not occupy more than BACKOFF bytes of stack space
+//   (see libgcc/config/i386/morestack.S).
+// These conditions are currently known to be satisfied by Clang on x86-32 and
+// x86-64. Note that signal handlers receive slightly less stack space than they
+// would normally do if they happen to be called while this function is being
+// run. If this turns out to be a problem we could consider increasing BACKOFF.
+void
+runtime_printf(const char *s, ...)
+__attribute__((no_split_stack));
+#endif
 
 void
 runtime_printf(const char *s, ...)
