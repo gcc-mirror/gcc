@@ -4750,7 +4750,9 @@ static void
 collect_fn_hard_reg_usage (void)
 {
   rtx insn;
+#ifdef STACK_REGS
   int i;
+#endif
   struct cgraph_rtl_info *node;
 
   /* ??? To be removed when all the ports have been fixed.  */
