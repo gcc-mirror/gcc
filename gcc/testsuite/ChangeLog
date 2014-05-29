@@ -1,3 +1,7 @@
+2014-05-29  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* gcc.dg/vect/pr52252-ld.c: Fix target and options for the test.
+
 2014-05-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61045
