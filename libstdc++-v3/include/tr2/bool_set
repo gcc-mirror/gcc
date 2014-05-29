@@ -44,7 +44,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  bool_set
    *
    *  See N2136, Bool_set: multi-valued logic
-   *  by Hervé Brönnimann, Guillaume Melquiond, Sylvain Pion.
+   *  by HervÃ© BrÃ¶nnimann, Guillaume Melquiond, Sylvain Pion.
    *
    *  The implicit conversion to bool is slippery!  I may use the new
    *  explicit conversion.  This has been specialized in the language
