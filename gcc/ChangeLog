@@ -1,3 +1,9 @@
+2014-05-29  Mike Stump  <mikestump@comcast.net>
+
+	PR debug/61352
+	* collect2.c (maybe_run_lto_and_relink): Be sure to always run
+	post ld passes when lto is used.
+
 2014-05-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61325
