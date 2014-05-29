@@ -2848,6 +2848,15 @@ mips_emit_call_insn (rtx pattern, rtx orig_addr, rtx addr, bool lazy_p)
 	       gen_rtx_REG (Pmode, GOT_VERSION_REGNUM));
       emit_insn (gen_update_got_version ());
     }
+
+  if (TARGET_MIPS16
+      && TARGET_EXPLICIT_RELOCS
+      && TARGET_CALL_CLOBBERED_GP)
+    {
+      rtx post_call_tmp_reg = gen_rtx_REG (word_mode, POST_CALL_TMP_REG);
+      clobber_reg (&CALL_INSN_FUNCTION_USAGE (insn), post_call_tmp_reg);
+    }
+
   return insn;
 }
 
@@ -7104,10 +7113,8 @@ mips_split_call (rtx insn, rtx call_pattern)
 {
   emit_call_insn (call_pattern);
   if (!find_reg_note (insn, REG_NORETURN, 0))
-    /* Pick a temporary register that is suitable for both MIPS16 and
-       non-MIPS16 code.  $4 and $5 are used for returning complex double
-       values in soft-float code, so $6 is the first suitable candidate.  */
-    mips_restore_gp_from_cprestore_slot (gen_rtx_REG (Pmode, GP_ARG_FIRST + 2));
+    mips_restore_gp_from_cprestore_slot (gen_rtx_REG (Pmode,
+						      POST_CALL_TMP_REG));
 }
 
 /* Return true if a call to DECL may need to use JALX.  */
@@ -19142,6 +19149,9 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV mips_atomic_assign_expand_fenv
+
+#undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
+#define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
