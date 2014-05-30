@@ -1,3 +1,11 @@
+2014-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60992
+	* pt.c (tsubst_init): Split out from...
+	(tsubst_expr) [DECL_EXPR]: Here.
+	(tsubst_copy) [VAR_DECL]: Use it.
+	* semantics.c (finish_id_expression): Return the decl for static/const.
+
 2014-05-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47202

@@ -3166,12 +3166,7 @@ finish_id_expression (tree id_expression,
       else if (TREE_STATIC (decl)
 	       /* It's not a use (3.2) if we're in an unevaluated context.  */
 	       || cp_unevaluated_operand)
-	{
-	  if (processing_template_decl)
-	    /* For a use of an outer static/unevaluated var, return the id
-	       so that we'll look it up again in the instantiation.  */
-	    return id_expression;
-	}
+	/* OK */;
       else
 	{
 	  tree context = DECL_CONTEXT (decl);
@@ -3190,13 +3185,13 @@ finish_id_expression (tree id_expression,
 	     the complexity of the problem"
 
 	     FIXME update for final resolution of core issue 696.  */
-	  if (decl_constant_var_p (decl))
+	  if (decl_maybe_constant_var_p (decl))
 	    {
 	      if (processing_template_decl)
 		/* In a template, the constant value may not be in a usable
-		   form, so look it up again at instantiation time.  */
-		return id_expression;
-	      else
+		   form, so wait until instantiation time.  */
+		return decl;
+	      else if (decl_constant_var_p (decl))
 		return integral_constant_value (decl);
 	    }
 
