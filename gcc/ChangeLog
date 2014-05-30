@@ -1,3 +1,8 @@
+2014-05-30  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/xmmintrin.h (_mm_pause): Move out of scope of pragma
+	target("sse").
+
 2014-05-30  Tom de Vries  <tom@codesourcery.com>
 
 	* config/i386/i386.c (TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS):
