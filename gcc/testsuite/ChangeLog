@@ -1,3 +1,9 @@
+2014-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/fuse-caller-save.c: New test.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Run with -fno-use-caller-save.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Same.
+
 2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
 
 	gcc.target/arm/simd/vrev16p8_1.c: New file.
