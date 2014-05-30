@@ -3,6 +3,9 @@
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Adjust regexp to
 	work with previous versions of Tcl.
 
+	* doc/xml/manual/appendix_contributing.xml (list.copyright): Replace
+	Benjamin's old email address.
+
 2014-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/tr2/bool_set: Use UTF-8 for accented characters.
