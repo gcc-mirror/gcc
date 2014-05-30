@@ -19696,6 +19696,11 @@ instantiate_decl (tree d, int defer_ok,
   if (external_p && !always_instantiate_p (d))
     return d;
 
+  /* Any local class members should be instantiated from the TAG_DEFN
+     with defer_ok == 0.  */
+  gcc_checking_assert (!defer_ok || !decl_function_context (d)
+		       || LAMBDA_TYPE_P (DECL_CONTEXT (d)));
+
   gen_tmpl = most_general_template (tmpl);
   gen_args = DECL_TI_ARGS (d);
 
