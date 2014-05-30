@@ -12513,6 +12513,37 @@ tsubst_qualified_id (tree qualified_id, tree args,
   return expr;
 }
 
+/* tsubst the initializer for a VAR_DECL.  INIT is the unsubstituted
+   initializer, DECL is the substituted VAR_DECL.  Other arguments are as
+   for tsubst.  */
+
+static tree
+tsubst_init (tree init, tree decl, tree args,
+	     tsubst_flags_t complain, tree in_decl)
+{
+  if (!init)
+    return NULL_TREE;
+
+  init = tsubst_expr (init, args, complain, in_decl, false);
+
+  if (!init)
+    {
+      /* If we had an initializer but it
+	 instantiated to nothing,
+	 value-initialize the object.  This will
+	 only occur when the initializer was a
+	 pack expansion where the parameter packs
+	 used in that expansion were of length
+	 zero.  */
+      init = build_value_init (TREE_TYPE (decl),
+			       complain);
+      if (TREE_CODE (init) == AGGR_INIT_EXPR)
+	init = get_target_expr_sfinae (init, complain);
+    }
+
+  return init;
+}
+
 /* Like tsubst, but deals with expressions.  This function just replaces
    template parms; to finish processing the resultant expression, use
    tsubst_copy_and_build or tsubst_expr.  */
@@ -12670,11 +12701,34 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		     local static or constant.  Building a new VAR_DECL
 		     should be OK in all those cases.  */
 		  r = tsubst_decl (t, args, complain);
-		  if (decl_constant_var_p (r))
-		    /* A use of a local constant must decay to its value.  */
-		    return integral_constant_value (r);
+		  if (decl_maybe_constant_var_p (r))
+		    {
+		      /* We can't call cp_finish_decl, so handle the
+			 initializer by hand.  */
+		      tree init = tsubst_init (DECL_INITIAL (t), r, args,
+					       complain, in_decl);
+		      if (!processing_template_decl)
+			init = maybe_constant_init (init);
+		      if (processing_template_decl
+			  ? potential_constant_expression (init)
+			  : reduced_constant_expression_p (init))
+			DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
+			  = TREE_CONSTANT (r) = true;
+		      DECL_INITIAL (r) = init;
+		    }
 		  gcc_assert (cp_unevaluated_operand || TREE_STATIC (r)
+			      || decl_constant_var_p (r)
 			      || errorcount || sorrycount);
+		  if (!processing_template_decl)
+		    {
+		      if (TREE_STATIC (r))
+			rest_of_decl_compilation (r, toplevel_bindings_p (),
+						  at_eof);
+		      else if (decl_constant_var_p (r))
+			/* A use of a local constant decays to its value.
+			   FIXME update for core DR 696.  */
+			return integral_constant_value (r);
+		    }
 		  return r;
 		}
 	    }
@@ -13544,26 +13598,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			init = cp_fname_init (name, &TREE_TYPE (decl));
 		      }
 		    else
-		      {
-			tree t = RECUR (init);
-
-			if (init && !t)
-			  {
-			    /* If we had an initializer but it
-			       instantiated to nothing,
-			       value-initialize the object.  This will
-			       only occur when the initializer was a
-			       pack expansion where the parameter packs
-			       used in that expansion were of length
-			       zero.  */
-			    init = build_value_init (TREE_TYPE (decl),
-						     complain);
-			    if (TREE_CODE (init) == AGGR_INIT_EXPR)
-			      init = get_target_expr_sfinae (init, complain);
-			  }
-			else
-			  init = t;
-		      }
+		      init = tsubst_init (init, decl, args, complain, in_decl);
 
 		    if (VAR_P (decl))
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
