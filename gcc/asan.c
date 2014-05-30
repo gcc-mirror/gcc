@@ -1319,7 +1319,7 @@ asan_protect_global (tree decl)
    IS_STORE is either 1 (for a store) or 0 (for a load).  */
 
 static tree
-report_error_func (bool is_store, HOST_WIDE_INT size_in_bytes)
+report_error_func (bool is_store, HOST_WIDE_INT size_in_bytes, bool slow_p)
 {
   static enum built_in_function report[2][6]
     = { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
@@ -1329,7 +1329,8 @@ report_error_func (bool is_store, HOST_WIDE_INT size_in_bytes)
 	  BUILT_IN_ASAN_REPORT_STORE4, BUILT_IN_ASAN_REPORT_STORE8,
 	  BUILT_IN_ASAN_REPORT_STORE16, BUILT_IN_ASAN_REPORT_STORE_N } };
   if ((size_in_bytes & (size_in_bytes - 1)) != 0
-      || size_in_bytes > 16)
+      || size_in_bytes > 16
+      || slow_p)
     return builtin_decl_implicit (report[is_store][5]);
   return builtin_decl_implicit (report[is_store][exact_log2 (size_in_bytes)]);
 }
@@ -1508,7 +1509,8 @@ build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
 
 static void
 build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
-		  bool before_p, bool is_store, HOST_WIDE_INT size_in_bytes)
+		  bool before_p, bool is_store, HOST_WIDE_INT size_in_bytes,
+		  bool slow_p = false)
 {
   gimple_stmt_iterator gsi;
   basic_block then_bb, else_bb;
@@ -1522,9 +1524,15 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
   HOST_WIDE_INT real_size_in_bytes = size_in_bytes;
   tree sz_arg = NULL_TREE;
 
-  if ((size_in_bytes & (size_in_bytes - 1)) != 0
-      || size_in_bytes > 16)
-    real_size_in_bytes = 1;
+  if (size_in_bytes == 1)
+    slow_p = false;
+  else if ((size_in_bytes & (size_in_bytes - 1)) != 0
+	   || size_in_bytes > 16
+	   || slow_p)
+    {
+      real_size_in_bytes = 1;
+      slow_p = true;
+    }
 
   /* Get an iterator on the point where we can add the condition
      statement for the instrumentation.  */
@@ -1582,8 +1590,8 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
       t = gimple_assign_lhs (gimple_seq_last (seq));
       gimple_seq_set_location (seq, location);
       gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
-      /* For weird access sizes, check first and last byte.  */
-      if (real_size_in_bytes != size_in_bytes)
+      /* For weird access sizes or misaligned, check first and last byte.  */
+      if (slow_p)
 	{
 	  g = gimple_build_assign_with_ops (PLUS_EXPR,
 					    make_ssa_name (uintptr_type, NULL),
@@ -1626,7 +1634,7 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
 
   /* Generate call to the run-time library (e.g. __asan_report_load8).  */
   gsi = gsi_start_bb (then_bb);
-  g = gimple_build_call (report_error_func (is_store, size_in_bytes),
+  g = gimple_build_call (report_error_func (is_store, size_in_bytes, slow_p),
 			 sz_arg ? 2 : 1, base_addr, sz_arg);
   gimple_set_location (g, location);
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
@@ -1722,8 +1730,31 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   base = build_fold_addr_expr (t);
   if (!has_mem_ref_been_instrumented (base, size_in_bytes))
     {
+      bool slow_p = false;
+      if (size_in_bytes > 1)
+	{
+	  if ((size_in_bytes & (size_in_bytes - 1)) != 0
+	      || size_in_bytes > 16)
+	    slow_p = true;
+	  else
+	    {
+	      unsigned int align = get_object_alignment (t);
+	      if (align < size_in_bytes * BITS_PER_UNIT)
+		{
+		  /* On non-strict alignment targets, if
+		     16-byte access is just 8-byte aligned,
+		     this will result in misaligned shadow
+		     memory 2 byte load, but otherwise can
+		     be handled using one read.  */
+		  if (size_in_bytes != 16
+		      || STRICT_ALIGNMENT
+		      || align < 8 * BITS_PER_UNIT)
+		    slow_p = true;
+		}
+	    }
+	}
       build_check_stmt (location, base, iter, /*before_p=*/true,
-			is_store, size_in_bytes);
+			is_store, size_in_bytes, slow_p);
       update_mem_ref_hash_table (base, size_in_bytes);
       update_mem_ref_hash_table (t, size_in_bytes);
     }
