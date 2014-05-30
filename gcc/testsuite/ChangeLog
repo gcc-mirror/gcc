@@ -1,3 +1,42 @@
+2014-04-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	gcc.target/arm/simd/vrev16p8_1.c: New file.
+	gcc.target/arm/simd/vrev16qp8_1.c: New file.
+	gcc.target/arm/simd/vrev16qs8_1.c: New file.
+	gcc.target/arm/simd/vrev16qu8_1.c: New file.
+	gcc.target/arm/simd/vrev16s8_1.c: New file.
+	gcc.target/arm/simd/vrev16u8_1.c: New file.
+	gcc.target/arm/simd/vrev32p16_1.c: New file.
+	gcc.target/arm/simd/vrev32p8_1.c: New file.
+	gcc.target/arm/simd/vrev32qp16_1.c: New file.
+	gcc.target/arm/simd/vrev32qp8_1.c: New file.
+	gcc.target/arm/simd/vrev32qs16_1.c: New file.
+	gcc.target/arm/simd/vrev32qs8_1.c: New file.
+	gcc.target/arm/simd/vrev32qu16_1.c: New file.
+	gcc.target/arm/simd/vrev32qu8_1.c: New file.
+	gcc.target/arm/simd/vrev32s16_1.c: New file.
+	gcc.target/arm/simd/vrev32s8_1.c: New file.
+	gcc.target/arm/simd/vrev32u16_1.c: New file.
+	gcc.target/arm/simd/vrev32u8_1.c: New file.
+	gcc.target/arm/simd/vrev64f32_1.c: New file.
+	gcc.target/arm/simd/vrev64p16_1.c: New file.
+	gcc.target/arm/simd/vrev64p8_1.c: New file.
+	gcc.target/arm/simd/vrev64qf32_1.c: New file.
+	gcc.target/arm/simd/vrev64qp16_1.c: New file.
+	gcc.target/arm/simd/vrev64qp8_1.c: New file.
+	gcc.target/arm/simd/vrev64qs16_1.c: New file.
+	gcc.target/arm/simd/vrev64qs32_1.c: New file.
+	gcc.target/arm/simd/vrev64qs8_1.c: New file.
+	gcc.target/arm/simd/vrev64qu16_1.c: New file.
+	gcc.target/arm/simd/vrev64qu32_1.c: New file.
+	gcc.target/arm/simd/vrev64qu8_1.c: New file.
+	gcc.target/arm/simd/vrev64s16_1.c: New file.
+	gcc.target/arm/simd/vrev64s32_1.c: New file.
+	gcc.target/arm/simd/vrev64s8_1.c: New file.
+	gcc.target/arm/simd/vrev64u16_1.c: New file.
+	gcc.target/arm/simd/vrev64u32_1.c: New file.
+	gcc.target/arm/simd/vrev64u8_1.c: New file.
+
 2014-05-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61325
