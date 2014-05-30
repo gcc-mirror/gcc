@@ -66,139 +66,139 @@ EnumValue
 Enum(avr_mcu) String(avr25) Value(13)
 
 EnumValue
-Enum(avr_mcu) String(ata6289) Value(14)
+Enum(avr_mcu) String(ata5272) Value(14)
 
 EnumValue
-Enum(avr_mcu) String(ata5272) Value(15)
+Enum(avr_mcu) String(attiny13) Value(15)
 
 EnumValue
-Enum(avr_mcu) String(attiny13) Value(16)
+Enum(avr_mcu) String(attiny13a) Value(16)
 
 EnumValue
-Enum(avr_mcu) String(attiny13a) Value(17)
+Enum(avr_mcu) String(attiny2313) Value(17)
 
 EnumValue
-Enum(avr_mcu) String(attiny2313) Value(18)
+Enum(avr_mcu) String(attiny2313a) Value(18)
 
 EnumValue
-Enum(avr_mcu) String(attiny2313a) Value(19)
+Enum(avr_mcu) String(attiny24) Value(19)
 
 EnumValue
-Enum(avr_mcu) String(attiny24) Value(20)
+Enum(avr_mcu) String(attiny24a) Value(20)
 
 EnumValue
-Enum(avr_mcu) String(attiny24a) Value(21)
+Enum(avr_mcu) String(attiny4313) Value(21)
 
 EnumValue
-Enum(avr_mcu) String(attiny4313) Value(22)
+Enum(avr_mcu) String(attiny44) Value(22)
 
 EnumValue
-Enum(avr_mcu) String(attiny44) Value(23)
+Enum(avr_mcu) String(attiny44a) Value(23)
 
 EnumValue
-Enum(avr_mcu) String(attiny44a) Value(24)
+Enum(avr_mcu) String(attiny84) Value(24)
 
 EnumValue
-Enum(avr_mcu) String(attiny84) Value(25)
+Enum(avr_mcu) String(attiny84a) Value(25)
 
 EnumValue
-Enum(avr_mcu) String(attiny84a) Value(26)
+Enum(avr_mcu) String(attiny25) Value(26)
 
 EnumValue
-Enum(avr_mcu) String(attiny25) Value(27)
+Enum(avr_mcu) String(attiny45) Value(27)
 
 EnumValue
-Enum(avr_mcu) String(attiny45) Value(28)
+Enum(avr_mcu) String(attiny85) Value(28)
 
 EnumValue
-Enum(avr_mcu) String(attiny85) Value(29)
+Enum(avr_mcu) String(attiny261) Value(29)
 
 EnumValue
-Enum(avr_mcu) String(attiny261) Value(30)
+Enum(avr_mcu) String(attiny261a) Value(30)
 
 EnumValue
-Enum(avr_mcu) String(attiny261a) Value(31)
+Enum(avr_mcu) String(attiny461) Value(31)
 
 EnumValue
-Enum(avr_mcu) String(attiny461) Value(32)
+Enum(avr_mcu) String(attiny461a) Value(32)
 
 EnumValue
-Enum(avr_mcu) String(attiny461a) Value(33)
+Enum(avr_mcu) String(attiny861) Value(33)
 
 EnumValue
-Enum(avr_mcu) String(attiny861) Value(34)
+Enum(avr_mcu) String(attiny861a) Value(34)
 
 EnumValue
-Enum(avr_mcu) String(attiny861a) Value(35)
+Enum(avr_mcu) String(attiny43u) Value(35)
 
 EnumValue
-Enum(avr_mcu) String(attiny43u) Value(36)
+Enum(avr_mcu) String(attiny87) Value(36)
 
 EnumValue
-Enum(avr_mcu) String(attiny87) Value(37)
+Enum(avr_mcu) String(attiny48) Value(37)
 
 EnumValue
-Enum(avr_mcu) String(attiny48) Value(38)
+Enum(avr_mcu) String(attiny88) Value(38)
 
 EnumValue
-Enum(avr_mcu) String(attiny88) Value(39)
+Enum(avr_mcu) String(at86rf401) Value(39)
 
 EnumValue
-Enum(avr_mcu) String(at86rf401) Value(40)
+Enum(avr_mcu) String(avr3) Value(40)
 
 EnumValue
-Enum(avr_mcu) String(avr3) Value(41)
+Enum(avr_mcu) String(at43usb355) Value(41)
 
 EnumValue
-Enum(avr_mcu) String(at43usb355) Value(42)
+Enum(avr_mcu) String(at76c711) Value(42)
 
 EnumValue
-Enum(avr_mcu) String(at76c711) Value(43)
+Enum(avr_mcu) String(avr31) Value(43)
 
 EnumValue
-Enum(avr_mcu) String(avr31) Value(44)
+Enum(avr_mcu) String(atmega103) Value(44)
 
 EnumValue
-Enum(avr_mcu) String(atmega103) Value(45)
+Enum(avr_mcu) String(at43usb320) Value(45)
 
 EnumValue
-Enum(avr_mcu) String(at43usb320) Value(46)
+Enum(avr_mcu) String(avr35) Value(46)
 
 EnumValue
-Enum(avr_mcu) String(avr35) Value(47)
+Enum(avr_mcu) String(ata5505) Value(47)
 
 EnumValue
-Enum(avr_mcu) String(ata5505) Value(48)
+Enum(avr_mcu) String(at90usb82) Value(48)
 
 EnumValue
-Enum(avr_mcu) String(at90usb82) Value(49)
+Enum(avr_mcu) String(at90usb162) Value(49)
 
 EnumValue
-Enum(avr_mcu) String(at90usb162) Value(50)
+Enum(avr_mcu) String(atmega8u2) Value(50)
 
 EnumValue
-Enum(avr_mcu) String(atmega8u2) Value(51)
+Enum(avr_mcu) String(atmega16u2) Value(51)
 
 EnumValue
-Enum(avr_mcu) String(atmega16u2) Value(52)
+Enum(avr_mcu) String(atmega32u2) Value(52)
 
 EnumValue
-Enum(avr_mcu) String(atmega32u2) Value(53)
+Enum(avr_mcu) String(attiny167) Value(53)
 
 EnumValue
-Enum(avr_mcu) String(attiny167) Value(54)
+Enum(avr_mcu) String(attiny1634) Value(54)
 
 EnumValue
-Enum(avr_mcu) String(attiny1634) Value(55)
+Enum(avr_mcu) String(avr4) Value(55)
 
 EnumValue
-Enum(avr_mcu) String(avr4) Value(56)
+Enum(avr_mcu) String(ata6285) Value(56)
 
 EnumValue
-Enum(avr_mcu) String(ata6285) Value(57)
+Enum(avr_mcu) String(ata6286) Value(57)
 
 EnumValue
-Enum(avr_mcu) String(ata6286) Value(58)
+Enum(avr_mcu) String(ata6289) Value(58)
 
 EnumValue
 Enum(avr_mcu) String(atmega8) Value(59)
