@@ -1,3 +1,9 @@
+2014-05-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.c (ira_get_dup_out_num): Check for output operands at
+	the start of the loop.  Handle cases where an included alternative
+	follows an excluded one.
+
 2014-05-29  Mike Stump  <mikestump@comcast.net>
 
 	PR debug/61352
