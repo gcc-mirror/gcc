@@ -329,7 +329,7 @@
    movw%?\\t%0, %L1\\t%@ movhi
    str%(h%)\\t%1, %0\\t%@ movhi
    ldr%(h%)\\t%0, %1\\t%@ movhi"
-  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mov_reg,store1,load1")
+  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mov_imm,store1,load1")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no")
    (set_attr "length" "2,4,2,4,4,4")

@@ -1,3 +1,9 @@
+2014-05-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/thumb2.md (*thumb2_movhi_insn): Set type of movw
+	to mov_imm.
+	* config/arm/vfp.md (*thumb2_movsi_vfp): Likewise.
+
 2014-05-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira.c (ira_get_dup_out_num): Check for output operands at
