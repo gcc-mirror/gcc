@@ -1,3 +1,10 @@
+2014-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61011
+	* configure.ac (--disable-libstdcxx): Set noconfigdirs correctly.
+	Disable libcilkrts, libitm, libsanitizer when not building libstdc++.
+	* configure: Regenerate.
+
 2014-05-28  Pedro Alves  <palves@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
