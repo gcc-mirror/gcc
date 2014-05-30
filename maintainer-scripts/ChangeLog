@@ -1,3 +1,7 @@
+2014-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* generate_libstdcxx_web_docs: New script.
+
 2014-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Enable snapshots from gcc-4_9-branch.

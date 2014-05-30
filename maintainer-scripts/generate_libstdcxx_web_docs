@@ -1,0 +1,56 @@
+#!/bin/bash
+# Generate the libstdc++ onlinedocs for a GCC release
+# i.e. http://gcc.gnu.org/onlinedocs/gcc-x.y.z/libstdc++*
+
+SRCDIR=${1}
+DOCSDIR=${2}
+
+if ! [ $# -eq 2 -a -x "${SRCDIR}/configure" -a -d "${DOCSDIR}" ]
+then
+  echo "Usage: $0 <gcc src dir> <doc output dir>" >&2
+  exit 1
+fi
+
+set -e
+
+# Check we have some of the required tools
+for i in doxygen dot dblatex pdflatex makeindex
+do
+  echo -n "Checking for $i... "
+  which $i
+done
+
+start=$PWD
+WORKDIR=`mktemp -d $PWD/build.XXXXXX`
+DESTDIR=`mktemp -d $PWD/dest.XXXXXX`
+cd $WORKDIR
+disabled_libs=
+for dir in ${SRCDIR}/lib*
+do
+  dir="${dir##*/}"
+  [ $dir == 'libstdc++-v3' ] || disabled_libs="$disabled_libs --disable-$dir"
+done
+set -x
+${SRCDIR}/configure --enable-languages=c,c++ --disable-gcc $disabled_libs --docdir=/docs
+eval `grep '^target=' config.log`
+make configure-target
+make -C $target/libstdc++-v3 doc-install-html doc-install-xml doc-install-pdf DESTDIR=$DESTDIR
+cd $DESTDIR/docs
+mkdir libstdc++
+for which in api manual
+do
+  if [ -f libstdc++-$which-single.xml ] # Only needed for GCC 4.7.x
+  then
+    mv libstdc++-$which-single.xml libstdc++-$which.xml
+  fi
+  gzip --best libstdc++-$which.xml
+  gzip --best libstdc++-$which.pdf
+  mv libstdc++-$which{.html,-html}
+  tar czf libstdc++-$which-html.tar.gz libstdc++-$which-html
+  mv libstdc++-$which-html libstdc++/$which
+done
+mv *.gz libstdc++ $DOCSDIR/
+cd $start
+rm -r $WORKDIR
+rm -r $DESTDIR
+
