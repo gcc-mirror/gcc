@@ -1,5 +1,11 @@
 2014-05-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* asan.c (report_error_func): Add SLOW_P argument, use
+	BUILT_IN_ASAN_*_N if set.
+	(build_check_stmt): Likewise.
+	(instrument_derefs): If T has insufficient alignment,
+	force same handling as for odd sizes.
+
 	* sanitizer.def (BUILT_IN_ASAN_REPORT_LOAD_N,
 	BUILT_IN_ASAN_REPORT_STORE_N): New.
 	* asan.c (struct asan_mem_ref): Change access_size type to

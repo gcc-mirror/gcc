@@ -1,5 +1,8 @@
 2014-05-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/asan/misalign-1.c: New test.
+	* c-c++-common/asan/misalign-2.c: New test.
+
 	* g++.dg/asan/asan_test.C: Add -std=c++11 and
 	-DSANITIZER_USE_DEJAGNU_GTEST=1 to dg-options, remove
 	-DASAN_USE_DEJAGNU_GTEST=1.
