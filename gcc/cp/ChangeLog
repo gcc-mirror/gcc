@@ -1,5 +1,9 @@
 2014-05-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56947
+	* pt.c (instantiate_decl): Check that defer_ok is not set for
+	local class members.
+
 	PR c++/60992
 	* pt.c (tsubst_init): Split out from...
 	(tsubst_expr) [DECL_EXPR]: Here.
