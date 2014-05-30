@@ -6,6 +6,9 @@
 	* doc/xml/manual/appendix_contributing.xml (list.copyright): Replace
 	Benjamin's old email address.
 
+	* doc/xml/manual/appendix_contributing.xml (list.copyright): Add
+	Paolo's address too.
+
 2014-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/tr2/bool_set: Use UTF-8 for accented characters.
