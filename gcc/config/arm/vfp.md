@@ -100,7 +100,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no,no,no")
-   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_reg,load1,load1,store1,store1,f_mcr,f_mrc,fmov,f_loads,f_stores")
+   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_imm,load1,load1,store1,store1,f_mcr,f_mrc,fmov,f_loads,f_stores")
    (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4,4,4")
    (set_attr "pool_range"     "*,*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
