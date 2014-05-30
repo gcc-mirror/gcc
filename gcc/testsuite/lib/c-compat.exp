@@ -28,6 +28,7 @@ global compat_skip_list
 # compilers for compatibility tests.
 
 load_lib target-supports.exp
+load_lib target-libpath.exp
 
 #
 # compat-use-alt-compiler -- make the alternate compiler the default
@@ -47,6 +48,7 @@ proc compat-use-alt-compiler { } {
 	if { $compat_alt_color == 0 } then {
 	    regsub -- "-fdiagnostics-color=never" $TEST_ALWAYS_FLAGS "" TEST_ALWAYS_FLAGS
 	}
+	restore_gcc_exec_prefix_env_var
     }
 }
 
@@ -64,6 +66,7 @@ proc compat-use-tst-compiler { } {
     if { $compat_same_alt == 0 } then {
 	set GCC_UNDER_TEST $compat_save_gcc_under_test
 	set TEST_ALWAYS_FLAGS $compat_save_TEST_ALWAYS_FLAGS
+	set_gcc_exec_prefix_env_var
     }
 }
 

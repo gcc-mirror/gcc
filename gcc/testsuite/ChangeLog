@@ -1,5 +1,17 @@
 2014-05-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* lib/target-libpath.exp (set_gcc_exec_prefix_env_var,
+	restore_gcc_exec_prefix_env_var): New procedures.
+	(set_ld_library_path_env_vars,
+	restore_ld_library_path_env_vars): Use them.
+	* lib/c-compat.exp: Load target-libpath.exp.
+	(compat-use-alt-compiler): Call restore_gcc_exec_prefix_env_var.
+	(compat-use-tst-compiler): Call set_gcc_exec_prefix_env_var.
+	* g++.dg/compat/compat.exp (compat-use-alt-compiler): Call
+	restore_gcc_exec_prefix_env_var.
+	* g++.dg/compat/struct-layout-1.exp (compat-use-alt-compiler):
+	Likewise.
+
 	* c-c++-common/asan/misalign-1.c: New test.
 	* c-c++-common/asan/misalign-2.c: New test.
 
