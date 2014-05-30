@@ -47272,6 +47272,9 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #undef TARGET_MODE_PRIORITY
 #define TARGET_MODE_PRIORITY ix86_mode_priority
 
+#undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
+#define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-i386.h"

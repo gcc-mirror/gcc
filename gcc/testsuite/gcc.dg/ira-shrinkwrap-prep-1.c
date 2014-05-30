@@ -1,5 +1,5 @@
 /* { dg-do compile { target { { x86_64-*-* && lp64 } || { powerpc*-*-* && lp64 } } } } */
-/* { dg-options "-O3 -fdump-rtl-ira -fdump-rtl-pro_and_epilogue"  } */
+/* { dg-options "-O3 -fdump-rtl-ira -fdump-rtl-pro_and_epilogue -fno-use-caller-save"  } */
 
 long __attribute__((noinline, noclone))
 foo (long a)

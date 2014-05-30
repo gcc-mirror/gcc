@@ -1,5 +1,10 @@
 2014-05-30  Tom de Vries  <tom@codesourcery.com>
 
+	* config/i386/i386.c (TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS):
+	Redefine as true.
+
+2014-05-30  Tom de Vries  <tom@codesourcery.com>
+
 	* lra-int.h (struct lra_reg): Add field actual_call_used_reg_set.
 	* lra.c (initialize_lra_reg_info_element): Add init of
 	actual_call_used_reg_set field.
