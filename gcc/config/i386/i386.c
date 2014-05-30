@@ -38893,7 +38893,16 @@ x86_output_mi_thunk (FILE *file,
      For our purposes here, we can get away with (ab)using a jump pattern,
      because we're going to do no optimization.  */
   if (MEM_P (fnaddr))
-    emit_jump_insn (gen_indirect_jump (fnaddr));
+    {
+      if (sibcall_insn_operand (fnaddr, word_mode))
+	{
+	  tmp = gen_rtx_CALL (VOIDmode, fnaddr, const0_rtx);
+          tmp = emit_call_insn (tmp);
+          SIBLING_CALL_P (tmp) = 1;
+	}
+      else
+	emit_jump_insn (gen_indirect_jump (fnaddr));
+    }
   else
     {
       if (ix86_cmodel == CM_LARGE_PIC && SYMBOLIC_CONST (fnaddr))
