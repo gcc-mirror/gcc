@@ -1,3 +1,13 @@
+2014-05-30  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/60104
+	* config/i386/i386.c (x86_output_mi_thunk): Add memory case
+	for sibling-tail-calls.
+	* config/i386/i386.md (sibcall_insn_operand): Add memory-constrain
+	to its use.
+	* config/i386/predicates.md (sibcall_memory_operand): New predicate.
+	(sibcall_insn_operand): Add check for sibcall_memory_operand.
+
 2014-05-30  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
 
 	* config/avr/avr-mcus.def: Change ATA6289 ISA to AVR4
