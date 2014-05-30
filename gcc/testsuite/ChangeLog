@@ -1,3 +1,7 @@
+2014-05-30  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.target/i386/pause-2.c: New test.
+
 2014-05-30  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/i386/fuse-caller-save.c: New test.
