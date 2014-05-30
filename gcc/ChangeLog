@@ -1,3 +1,21 @@
+2014-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer.def (BUILT_IN_ASAN_REPORT_LOAD_N,
+	BUILT_IN_ASAN_REPORT_STORE_N): New.
+	* asan.c (struct asan_mem_ref): Change access_size type to
+	HOST_WIDE_INT.
+	(asan_mem_ref_init, asan_mem_ref_new, get_mem_refs_of_builtin_call,
+	update_mem_ref_hash_table): Likewise.
+	(asan_mem_ref_hasher::hash): Hash in a HWI.
+	(report_error_func): Change size_in_bytes argument to HWI.
+	Use *_N builtins if size_in_bytes is larger than 16 or not power of
+	two.
+	(build_shadow_mem_access): New function.
+	(build_check_stmt): Use it.  Change size_in_bytes argument to HWI.
+	Handle size_in_bytes not power of two or larger than 16.
+	(instrument_derefs): Don't give up if size_in_bytes is not
+	power of two or is larger than 16.
+
 2014-05-30  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/60104
