@@ -283,7 +283,7 @@ proc libstdc++_init { testfile } {
     append cxxflags " "
     append cxxflags [getenv CXXFLAGS]
 
-    if ![regexp "\-O" $cxxflags] {
+    if ![regexp ".*-O" $cxxflags] {
 	append cxxflags " -g -O2"
     }
 
