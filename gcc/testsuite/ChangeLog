@@ -1,3 +1,21 @@
+2014-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/asan/asan_test.C: Add -std=c++11 and
+	-DSANITIZER_USE_DEJAGNU_GTEST=1 to dg-options, remove
+	-DASAN_USE_DEJAGNU_GTEST=1.
+	* g++.dg/asan/asan_mem_test.cc: Updated from upstream
+	r209283.
+	* g++.dg/asan/asan_oob_test.cc: Likewise.
+	* g++.dg/asan/sanitizer_test_utils.h: Likewise.
+	* g++.dg/asan/asan_str_test.cc: Likewise.
+	* g++.dg/asan/asan_test_utils.h: Likewise.
+	* g++.dg/asan/sanitizer_test_config.h: Likewise.
+	* g++.dg/asan/asan_test.cc: Likewise.  Allow size 12
+	for long double.
+	* g++.dg/asan/sanitizer_pthread_wrappers.h: New file.
+	Imported from upstream r209283.
+	* g++.dg/asan/asan_test_config.h: Likewise.
+
 2014-05-30  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.target/i386/pause-2.c: New test.
