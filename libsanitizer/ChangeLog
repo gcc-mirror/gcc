@@ -1,3 +1,13 @@
+2014-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_stacktrace.cc: Cherry pick upstream
+	r209879.
+	* sanitizer_common/sanitizer_common.h: Likewise.
+	* asan/asan_mapping.h: Likewise.
+	* asan/asan_linux.cc: Likewise.
+	* tsan/tsan_mman.cc: Cherry pick upstream r209744.
+	* sanitizer_common/sanitizer_allocator.h: Likewise.
+
 2014-05-23  Marek Polacek  <polacek@redhat.com>
 
 	* ubsan/ubsan_value.cc (getFloatValue): Handle 96-bit
