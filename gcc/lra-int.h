@@ -77,6 +77,10 @@ struct lra_reg
   /* The following fields are defined only for pseudos.	 */
   /* Hard registers with which the pseudo conflicts.  */
   HARD_REG_SET conflict_hard_regs;
+  /* Call used registers with which the pseudo conflicts, taking into account
+     the registers used by functions called from calls which cross the
+     pseudo.  */
+  HARD_REG_SET actual_call_used_reg_set;
   /* We assign hard registers to reload pseudos which can occur in few
      places.  So two hard register preferences are enough for them.
      The following fields define the preferred hard registers.	If

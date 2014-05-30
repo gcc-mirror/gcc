@@ -1427,6 +1427,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].no_stack_p = false;
 #endif
   CLEAR_HARD_REG_SET (lra_reg_info[i].conflict_hard_regs);
+  CLEAR_HARD_REG_SET (lra_reg_info[i].actual_call_used_reg_set);
   lra_reg_info[i].preferred_hard_regno1 = -1;
   lra_reg_info[i].preferred_hard_regno2 = -1;
   lra_reg_info[i].preferred_hard_regno_profit1 = 0;
@@ -2344,7 +2345,18 @@ lra (FILE *f)
 	  lra_eliminate (false, false);
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
-	    lra_inheritance ();
+	    {
+	      if (flag_use_caller_save)
+		{
+		  if (live_p)
+		    lra_clear_live_ranges ();
+		  /* As a side-effect of lra_create_live_ranges, we calculate
+		     actual_call_used_reg_set,  which is needed during
+		     lra_inheritance.  */
+		  lra_create_live_ranges (true);
+		}
+	      lra_inheritance ();
+	    }
 	  if (live_p)
 	    lra_clear_live_ranges ();
 	  /* We need live ranges for lra_assign -- so build them.  */
