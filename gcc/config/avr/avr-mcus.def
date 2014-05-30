@@ -72,7 +72,6 @@ AVR_MCU ("at90c8534",            ARCH_AVR2, AVR_ISA_NONE, "__AVR_AT90C8534__",  
 AVR_MCU ("at90s8535",            ARCH_AVR2, AVR_ISA_NONE, "__AVR_AT90S8535__",         0x0060, 1, "s8535")
 /* Classic + MOVW, <= 8K.  */
 AVR_MCU ("avr25",                ARCH_AVR25, AVR_ISA_NONE, NULL,                       0x0060, 1, "tn85")
-AVR_MCU ("ata6289",              ARCH_AVR25, AVR_ISA_NONE, "__AVR_ATA6289__",          0x0100, 1, "a6289")
 AVR_MCU ("ata5272",              ARCH_AVR25, AVR_ISA_NONE, "__AVR_ATA5272__",          0x0100, 1, "a5272")
 AVR_MCU ("attiny13",             ARCH_AVR25, AVR_SHORT_SP, "__AVR_ATtiny13__",         0x0060, 1, "tn13")
 AVR_MCU ("attiny13a",            ARCH_AVR25, AVR_SHORT_SP, "__AVR_ATtiny13A__",        0x0060, 1, "tn13a")
@@ -121,6 +120,7 @@ AVR_MCU ("attiny1634",           ARCH_AVR35, AVR_ISA_NONE, "__AVR_ATtiny1634__",
 AVR_MCU ("avr4",                 ARCH_AVR4, AVR_ISA_NONE,  NULL,                       0x0060, 1, "m8")
 AVR_MCU ("ata6285",              ARCH_AVR4, AVR_ISA_NONE,  "__AVR_ATA6285__",          0x0100, 1, "a6285")
 AVR_MCU ("ata6286",              ARCH_AVR4, AVR_ISA_NONE,  "__AVR_ATA6286__",          0x0100, 1, "a6286")
+AVR_MCU ("ata6289",              ARCH_AVR4, AVR_ISA_NONE, "__AVR_ATA6289__",           0x0100, 1, "a6289")
 AVR_MCU ("atmega8",              ARCH_AVR4, AVR_ISA_NONE,  "__AVR_ATmega8__",          0x0060, 1, "m8")
 AVR_MCU ("atmega8a",             ARCH_AVR4, AVR_ISA_NONE,  "__AVR_ATmega8A__",         0x0060, 1, "m8a")
 AVR_MCU ("atmega48",             ARCH_AVR4, AVR_ISA_NONE,  "__AVR_ATmega48__",         0x0100, 1, "m48")
