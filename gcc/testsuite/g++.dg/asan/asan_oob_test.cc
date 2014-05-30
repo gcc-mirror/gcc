@@ -97,7 +97,6 @@ TEST(AddressSanitizer, OOBRightTest) {
   }
 }
 
-#if ASAN_ALLOCATOR_VERSION == 2  // Broken with the asan_allocator1
 TEST(AddressSanitizer, LargeOOBRightTest) {
   size_t large_power_of_two = 1 << 19;
   for (size_t i = 16; i <= 256; i *= 2) {
@@ -107,7 +106,6 @@ TEST(AddressSanitizer, LargeOOBRightTest) {
     delete [] p;
   }
 }
-#endif  // ASAN_ALLOCATOR_VERSION == 2
 
 TEST(AddressSanitizer, DISABLED_DemoOOBLeftLow) {
   oob_test<U1>(10, -1);

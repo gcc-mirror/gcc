@@ -12,24 +12,28 @@
 #ifndef ASAN_TEST_UTILS_H
 #define ASAN_TEST_UTILS_H
 
-#if !defined(ASAN_EXTERNAL_TEST_CONFIG)
+#if !defined(SANITIZER_EXTERNAL_TEST_CONFIG)
 # define INCLUDED_FROM_ASAN_TEST_UTILS_H
 # include "asan_test_config.h"
 # undef INCLUDED_FROM_ASAN_TEST_UTILS_H
 #endif
 
 #include "sanitizer_test_utils.h"
+#include "sanitizer_pthread_wrappers.h"
+
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
-#include <pthread.h>
 #include <stdint.h>
-#include <setjmp.h>
 #include <assert.h>
 #include <algorithm>
-#include <sys/mman.h>
+
+#if !defined(_WIN32)
+# include <strings.h>
+# include <sys/mman.h>
+# include <setjmp.h>
+#endif
 
 #ifdef __linux__
 # include <sys/prctl.h>
@@ -39,17 +43,9 @@
 #include <unistd.h>
 #endif
 
-#if defined(__i386__) || defined(__x86_64__)
-#include <emmintrin.h>
-#endif
-
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
 #include <malloc.h>
 #endif
-
-// Check that pthread_create/pthread_join return success.
-#define PTHREAD_CREATE(a, b, c, d) ASSERT_EQ(0, pthread_create(a, b, c, d))
-#define PTHREAD_JOIN(a, b) ASSERT_EQ(0, pthread_join(a, b))
 
 #if ASAN_HAS_EXCEPTIONS
 # define ASAN_THROW(x) throw (x)

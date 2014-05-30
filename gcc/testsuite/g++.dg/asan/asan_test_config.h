@@ -19,12 +19,6 @@
 #include <string>
 #include <map>
 
-#if ASAN_USE_DEJAGNU_GTEST
-# include "dejagnu-gtest.h"
-#else
-# include "gtest/gtest.h"
-#endif
-
 using std::string;
 using std::vector;
 using std::map;
@@ -42,11 +36,11 @@ using std::map;
 #endif
 
 #ifndef ASAN_NEEDS_SEGV
-# error "please define ASAN_NEEDS_SEGV"
-#endif
-
-#ifndef ASAN_LOW_MEMORY
-# define ASAN_LOW_MEMORY 0
+# if defined(_WIN32)
+#  define ASAN_NEEDS_SEGV 0
+# else
+#  define ASAN_NEEDS_SEGV 1
+# endif
 #endif
 
 #ifndef ASAN_AVOID_EXPENSIVE_TESTS
