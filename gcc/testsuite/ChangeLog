@@ -1,3 +1,7 @@
+2014-05-31  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/sibcall-4.c: Add missing closing brace.
+
 2014-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/target-libpath.exp (set_gcc_exec_prefix_env_var,

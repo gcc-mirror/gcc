@@ -1,5 +1,5 @@
 /* Testcase for PR target/46219.  */
-/* { dg-do compile { xfail { *-*-* } } */
+/* { dg-do compile { xfail { *-*-* } } } */
 /* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2" } */
 
