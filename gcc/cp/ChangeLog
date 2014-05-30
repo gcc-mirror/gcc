@@ -1,3 +1,9 @@
+2014-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56947
+	* pt.c (instantiate_decl): Don't defer instantiation of a nested
+	function.
+
 2014-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

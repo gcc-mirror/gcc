@@ -18191,6 +18191,7 @@ instantiate_decl (tree d, int defer_ok,
      if the variable has a constant value the referring expression can
      take advantage of that fact.  */
   if (TREE_CODE (d) == VAR_DECL
+      || decl_function_context (d)
       || DECL_DECLARED_CONSTEXPR_P (d))
     defer_ok = 0;
 
