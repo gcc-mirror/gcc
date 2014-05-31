@@ -1,3 +1,9 @@
+2014-05-31  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md (beq0_di, bne0_di): Make the "o" constraint
+	a separate alternative where the scratch operand 2 is marked as
+	early clobber.
+
 2014-05-31  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/arm/arm.c (TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New define.
