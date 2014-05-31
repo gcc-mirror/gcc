@@ -9702,6 +9702,7 @@ instructions, but allow the compiler to schedule those calls.
 * ARM iWMMXt Built-in Functions::
 * ARM NEON Intrinsics::
 * ARM ACLE Intrinsics::
+* ARM Floating Point Status and Control Intrinsics::
 * AVR Built-in Functions::
 * Blackfin Built-in Functions::
 * FR-V Built-in Functions::
@@ -10517,6 +10518,17 @@ These built-in intrinsics for the ARMv8-A CRC32 extension are available when
 the @option{-march=armv8-a+crc} switch is used:
 
 @include arm-acle-intrinsics.texi
+
+@node ARM Floating Point Status and Control Intrinsics
+@subsection ARM Floating Point Status and Control Intrinsics
+
+These built-in functions are available for the ARM family of
+processors with floating-point unit.
+
+@smallexample
+unsigned int __builtin_arm_get_fpscr ()
+void __builtin_arm_set_fpscr (unsigned int)
+@end smallexample
 
 @node AVR Built-in Functions
 @subsection AVR Built-in Functions

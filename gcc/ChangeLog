@@ -1,3 +1,21 @@
+2014-05-31  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/arm/arm.c (TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New define.
+	(arm_builtins) : Add ARM_BUILTIN_GET_FPSCR and ARM_BUILTIN_SET_FPSCR.
+	(bdesc_2arg) : Add description for builtins __builtins_arm_set_fpscr
+	and __builtins_arm_get_fpscr.
+	(arm_init_builtins) : Initialize builtins __builtins_arm_set_fpscr and
+	__builtins_arm_get_fpscr.
+	(arm_expand_builtin) : Expand builtins __builtins_arm_set_fpscr and
+	__builtins_arm_ldfpscr.
+	(arm_atomic_assign_expand_fenv): New function.
+	* config/arm/vfp.md (set_fpscr): New pattern.
+	(get_fpscr) : Likewise.
+	* config/arm/unspecs.md (unspecv): Add VUNSPEC_GET_FPSCR and
+	VUNSPEC_SET_FPSCR.
+	* doc/extend.texi (AARCH64 Built-in Functions) : Document
+	__builtins_arm_set_fpscr, __builtins_arm_get_fpscr.
+
 2014-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c (report_error_func): Add SLOW_P argument, use

@@ -1322,6 +1322,22 @@
    (set_attr "conds" "unconditional")]
 )
 
+;; Write Floating-point Status and Control Register.
+(define_insn "set_fpscr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] VUNSPEC_SET_FPSCR)]
+  "TARGET_VFP"
+  "mcr\\tp10, 7, %0, cr1, cr0, 0\\t @SET_FPSCR"
+  [(set_attr "type" "mrs")])
+
+;; Read Floating-point Status and Control Register.
+(define_insn "get_fpscr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec_volatile:SI [(const_int 0)] VUNSPEC_GET_FPSCR))]
+  "TARGET_VFP"
+  "mrc\\tp10, 7, %0, cr1, cr0, 0\\t @GET_FPSCR"
+  [(set_attr "type" "mrs")])
+
+
 ;; Unimplemented insns:
 ;; fldm*
 ;; fstm*
