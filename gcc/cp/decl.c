@@ -8817,6 +8817,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool template_parm_flag = false;
   bool typedef_p = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
+  bool late_return_type_p = false;
   source_location saved_loc = input_location;
   const char *errmsg;
 
@@ -9659,6 +9660,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      (type, declarator->u.function.late_return_type);
 	    if (type == error_mark_node)
 	      return error_mark_node;
+
+	    if (declarator->u.function.late_return_type)
+	      late_return_type_p = true;
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -10590,6 +10594,10 @@ grokdeclarator (const cp_declarator *declarator,
 	      decl_function_context (TYPE_MAIN_DECL (ctype)) : NULL_TREE;
 	    publicp = (! friendp || ! staticp)
 	      && function_context == NULL_TREE;
+
+	    if (late_return_type_p)
+	      TYPE_HAS_LATE_RETURN_TYPE (type) = 1;
+
 	    decl = grokfndecl (ctype, type,
 			       TREE_CODE (unqualified_id) != TEMPLATE_ID_EXPR
 			       ? unqualified_id : dname,
@@ -10813,6 +10821,9 @@ grokdeclarator (const cp_declarator *declarator,
 	/* Record whether the function is public.  */
 	publicp = (ctype != NULL_TREE
 		   || storage_class != sc_static);
+
+	if (late_return_type_p)
+	  TYPE_HAS_LATE_RETURN_TYPE (type) = 1;
 
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
 			   virtualp, flags, memfn_quals, rqual, raises,
@@ -14421,6 +14432,8 @@ static_fn_type (tree memfntype)
 	    (fntype, TYPE_ATTRIBUTES (memfntype)));
   fntype = (build_exception_variant
 	    (fntype, TYPE_RAISES_EXCEPTIONS (memfntype)));
+  if (TYPE_HAS_LATE_RETURN_TYPE (memfntype))
+    TYPE_HAS_LATE_RETURN_TYPE (fntype) = 1;
   return fntype;
 }
 
