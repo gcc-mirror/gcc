@@ -119,6 +119,7 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals,
   tree raises;
   tree attrs;
   int type_quals;
+  bool late_return_type_p;
 
   if (fntype == error_mark_node || ctype == error_mark_node)
     return error_mark_node;
@@ -130,6 +131,7 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals,
   ctype = cp_build_qualified_type (ctype, type_quals);
   raises = TYPE_RAISES_EXCEPTIONS (fntype);
   attrs = TYPE_ATTRIBUTES (fntype);
+  late_return_type_p = TYPE_HAS_LATE_RETURN_TYPE (fntype);
   fntype = build_method_type_directly (ctype, TREE_TYPE (fntype),
 				       (TREE_CODE (fntype) == METHOD_TYPE
 					? TREE_CHAIN (TYPE_ARG_TYPES (fntype))
@@ -140,6 +142,8 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals,
     fntype = build_ref_qualified_type (fntype, rqual);
   if (raises)
     fntype = build_exception_variant (fntype, raises);
+  if (late_return_type_p)
+    TYPE_HAS_LATE_RETURN_TYPE (fntype) = 1;
 
   return fntype;
 }
@@ -154,6 +158,7 @@ change_return_type (tree new_ret, tree fntype)
   tree args = TYPE_ARG_TYPES (fntype);
   tree raises = TYPE_RAISES_EXCEPTIONS (fntype);
   tree attrs = TYPE_ATTRIBUTES (fntype);
+  bool late_return_type_p = TYPE_HAS_LATE_RETURN_TYPE (fntype);
 
   if (new_ret == error_mark_node)
     return fntype;
@@ -175,6 +180,8 @@ change_return_type (tree new_ret, tree fntype)
     newtype = build_exception_variant (newtype, raises);
   if (attrs)
     newtype = cp_build_type_attribute_variant (newtype, attrs);
+  if (late_return_type_p)
+    TYPE_HAS_LATE_RETURN_TYPE (newtype) = 1;
 
   return newtype;
 }
@@ -1276,6 +1283,7 @@ tree
 cp_reconstruct_complex_type (tree type, tree bottom)
 {
   tree inner, outer;
+  bool late_return_type_p = false;
 
   if (TYPE_PTR_P (type))
     {
@@ -1301,6 +1309,7 @@ cp_reconstruct_complex_type (tree type, tree bottom)
     }
   else if (TREE_CODE (type) == FUNCTION_TYPE)
     {
+      late_return_type_p = TYPE_HAS_LATE_RETURN_TYPE (type);
       inner = cp_reconstruct_complex_type (TREE_TYPE (type), bottom);
       outer = build_function_type (inner, TYPE_ARG_TYPES (type));
       outer = apply_memfn_quals (outer,
@@ -1309,6 +1318,7 @@ cp_reconstruct_complex_type (tree type, tree bottom)
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
     {
+      late_return_type_p = TYPE_HAS_LATE_RETURN_TYPE (type);
       inner = cp_reconstruct_complex_type (TREE_TYPE (type), bottom);
       /* The build_method_type_directly() routine prepends 'this' to argument list,
 	 so we must compensate by getting rid of it.  */
@@ -1327,7 +1337,12 @@ cp_reconstruct_complex_type (tree type, tree bottom)
 
   if (TYPE_ATTRIBUTES (type))
     outer = cp_build_type_attribute_variant (outer, TYPE_ATTRIBUTES (type));
-  return cp_build_qualified_type (outer, cp_type_quals (type));
+  outer = cp_build_qualified_type (outer, cp_type_quals (type));
+
+  if (late_return_type_p)
+    TYPE_HAS_LATE_RETURN_TYPE (outer) = 1;
+
+  return outer;
 }
 
 /* Replaces any constexpr expression that may be into the attributes

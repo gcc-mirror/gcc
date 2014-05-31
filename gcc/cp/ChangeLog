@@ -1,3 +1,19 @@
+2014-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1227
+	PR c++/57543
+	* cp-tree.h (TYPE_HAS_LATE_RETURN_TYPE): Add.
+	* pt.c (tsubst_function_type): Inject the this parameter; do the
+	substitutions in the order mandated by the DR.
+	(copy_default_args_to_explicit_spec): Copy TYPE_HAS_LATE_RETURN_TYPE.
+	* decl.c (grokdeclarator): Maybe set TYPE_HAS_LATE_RETURN_TYPE.
+	(static_fn_type): Copy it.
+	* decl2.c (build_memfn_type, change_return_type,
+	cp_reconstruct_complex_type): Likewise.
+	* parser.c (cp_parser_lambda_declarator_opt): Likewise.
+	* tree.c (strip_typedefs): Likewise.
+	* typeck.c (merge_types): Likewise.
+
 2014-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56947
