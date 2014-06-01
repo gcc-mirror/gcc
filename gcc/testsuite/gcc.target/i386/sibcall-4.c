@@ -12,4 +12,4 @@ void male_indirect_jump (long offset)
   dispatch[offset](offset);
 }
 
-/* { dg-final { scan-assembler-not "jmp[ \t]*.%eax" } } */
+/* { dg-final { scan-assembler-not "jmp\[ \t\]*.%eax" } } */

@@ -13,4 +13,4 @@ void bar (int a)
   return foo (a);
 }
 
-/* { dg-final { scan-assembler-not "jmp[ \t]*.%eax" } } */
+/* { dg-final { scan-assembler-not "jmp\[ \t\]*.%eax" } } */

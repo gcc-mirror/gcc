@@ -34,4 +34,4 @@ ira_traverse_loop_tree (int bb_p, ira_loop_tree_node_t loop_node,
   if (postorder_func)
     (*postorder_func) (loop_node);
 }
-/* { dg-final { scan-assembler "jmp[ \t]*.%eax" } } */
+/* { dg-final { scan-assembler "jmp\[ \t\]*.%eax" } } */
