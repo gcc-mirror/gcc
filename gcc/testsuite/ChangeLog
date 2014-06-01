@@ -51,6 +51,14 @@
 	Imported from upstream r209283.
 	* g++.dg/asan/asan_test_config.h: Likewise.
 
+2014-05-30  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/60104
+	* gcc.target/i386/sibcall-1.c: New test.
+	* gcc.target/i386/sibcall-2.c: New test.
+	* gcc.target/i386/sibcall-3.c: New test.
+	* gcc.target/i386/sibcall-4.c: New test.
+
 2014-05-30  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.target/i386/pause-2.c: New test.
