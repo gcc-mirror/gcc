@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++1y" }
 
-// Copyright (C) 2013-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,29 +17,37 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// string_view operations
+// basic_string_view::to_string
 
 #include <experimental/string_view>
+#include <algorithm>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
-int
+bool
 test01()
 {
   bool test [[gnu::unused]] = true;
 
-  std::experimental::wstring_view empty;
+  const char str_lit[] = "123456789A";
+  const std::experimental::string_view sv(str_lit);
+  char buffer[4] = { 0 };
 
-  VERIFY( empty.size() == 0 );
-  const std::experimental::wstring_view::value_type* p = empty.data();
-  VERIFY( p == nullptr );
+  auto s1 = sv.to_string();
+  VERIFY( s1 == str_lit );
+  using test_alloc = __gnu_test::tracker_allocator<char>;
+  auto s2 = sv.to_string( test_alloc{} );
+  static_assert( std::is_same<decltype(s2)::allocator_type, test_alloc>::value,
+                 "to_string() uses custom allocator" );
+  VERIFY( std::equal(s1.begin(), s1.end(), s2.begin(), s2.end()) );
+  auto s3 = static_cast<std::string>(sv);
+  VERIFY( s3 == s1 );
 
-  return 0;
+  return test;
 }
 
 int
 main()
-{ 
+{
   test01();
-
-  return 0;
 }
