@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-options "-O2 -ftree-vectorize -march=pentium4 -mfpmath=387" } */
 
 struct A
