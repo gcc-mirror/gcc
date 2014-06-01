@@ -1,8 +1,15 @@
+2014-06-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Bw): Rename from 'w'.
+	(Bz): Rename from 'z'.
+	* config/i386/i386.md: Change 'w' to 'Bw' and 'z' to 'Bz' globally.
+
 2014-06-01  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/61377
-	* constrains.md (define_constrain): New 'Bs' constraint.
-	* i386.md (sibcall_insn_operand): Use Bs instead of m constraint.
+	* config/i386/constrains.md (define_constrain): New 'Bs' constraint.
+	* config/i386/i386.md (sibcall_insn_operand): Use Bs
+	instead of m constraint.
 
 2014-05-31  Andreas Schwab  <schwab@linux-m68k.org>
 
