@@ -1,3 +1,8 @@
+2014-06-01  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/61377
+	* gcc.target/i386/sibcall-6.c: New test.
+
 2014-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1227
