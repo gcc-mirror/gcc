@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;     B     H
+;;;           H
 ;;;           h j
 
 ;; Integer register constraints.
@@ -143,6 +143,14 @@
 (define_register_constraint "Yf"
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
  "@internal Any x87 register when 80387 FP arithmetic is enabled.")
+
+;; We use the B prefix to denote any number of internal memory operands:
+;;  s  Sibling memory operand.
+
+(define_constraint "Bs"
+  "@internal Sibcall memory operand."
+  (and (not (match_test "TARGET_X32"))
+       (match_operand 0 "sibcall_memory_operand")))
 
 (define_register_constraint "v" "TARGET_SSE ? ALL_SSE_REGS : NO_REGS"
  "Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).")
