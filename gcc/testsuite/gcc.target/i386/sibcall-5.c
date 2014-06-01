@@ -1,6 +1,5 @@
 /* Check that indirect sibcalls understand regparm.  */
-/* { dg-do run } */
-/* { dg-require-effective-target ia32 } */
+/* { dg-do run { target ia32 } } */
 /* { dg-options "-O2" } */
 
 extern void abort (void);

@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target ia32 } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2" } */
 
 extern int (*foo)(int);
