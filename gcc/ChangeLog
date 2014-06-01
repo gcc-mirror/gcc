@@ -1,3 +1,9 @@
+2014-06-01  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/61377
+	* constrains.md (define_constrain): New 'Bs' constraint.
+	* i386.md (sibcall_insn_operand): Use Bs instead of m constraint.
+
 2014-05-31  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.md (beq0_di, bne0_di): Make the "o" constraint
