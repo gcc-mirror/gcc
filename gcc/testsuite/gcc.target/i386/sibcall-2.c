@@ -13,4 +13,4 @@ int foo (int a)
   return (a < 0 ? doo1 : doo2) (a);
 }
 
-/* { dg-final { scan-assembler-not "call[ \t]*.%eax" } } */
+/* { dg-final { scan-assembler-not "call\[ \t\]*.%eax" } } */

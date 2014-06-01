@@ -1,5 +1,13 @@
 2014-06-01  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/sibcall-2.c (dg-final): Properly escape '[' and ']'
+	in scan-assembler-not string.
+	* gcc.target/i386/sibcall-3.c (dg-final): Ditto.
+	* gcc.target/i386/sibcall-4.c (dg-final): Ditto.
+	* gcc.target/i386/sibcall-6.c (dg-final): Ditto.
+
+2014-06-01  Uros Bizjak  <ubizjak@gmail.com>
+
 	* g++.dg/pr60969.C (dg-do compile): Change ilp32 target to ia32.
 
 2014-06-01  Kai Tietz  <ktietz@redhat.com>
