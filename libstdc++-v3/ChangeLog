@@ -19,6 +19,12 @@
 	Likewise.
 	* testsuite/experimental/string_view/operations/to_string/1.cc: New.
 
+	* include/bits/uses_allocator.h (__uses_allocator_helper): Simplify.
+	(__uses_allocator_arg): Remove unused type.
+	(__uses_alloc0): Turn into a trivial type.
+	(__uses_alloc): Add missing template parameter in primary template.
+	(__uses_alloc_impl): Rename to __uses_alloc_t.
+
 2014-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Adjust regexp to
