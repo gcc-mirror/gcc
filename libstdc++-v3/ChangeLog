@@ -1,3 +1,24 @@
+2014-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61374
+	* include/experimental/string_view (operator basic_string): Correct
+	order of arguments.
+	(to_string): Replace with member function.
+	Add inline specifiers. Remove unused header. Remove _S_empty_rep and
+	allow _M_str to be null.
+	* testsuite/experimental/string_view/cons/char/1.cc: Adjust to new
+	default constructor semantics.
+	* testsuite/experimental/string_view/cons/wchar_t/1.cc: Likewise.
+	* testsuite/experimental/string_view/operations/copy/char/1.cc: Fix
+	copyright dates. Remove unused header.
+	* testsuite/experimental/string_view/operations/copy/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/data/char/1.cc:
+	Fix copyright dates. Adjust to new default constructor semantics.
+	* testsuite/experimental/string_view/operations/data/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/to_string/1.cc: New.
+
 2014-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Adjust regexp to

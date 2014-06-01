@@ -39,7 +39,6 @@
 # include <bits/c++14_warning.h>
 #else
 
-#include <debug/debug.h>
 #include <string>
 #include <limits>
 
@@ -66,18 +65,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *    _CharT*    _M_str
    *    size_t     _M_len
    *  @endcode
-   *
-   *  A basic_string_view represents an empty string with a static constexpr
-   *  length one string:
-   *
-   *  @code
-   *    static constexpr value_type _S_empty_str[1]{0};
-   *  @endcode
    */
-  template<typename _CharT, typename _Traits = char_traits<_CharT>>
+  template<typename _CharT, typename _Traits = std::char_traits<_CharT>>
     class basic_string_view
     {
-
     public:
 
       // types
@@ -99,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       basic_string_view() noexcept
-      : _M_len{0}, _M_str{_S_empty_str}
+      : _M_len{0}, _M_str{nullptr}
       { }
 
       constexpr basic_string_view(const basic_string_view&) noexcept = default;
@@ -112,12 +103,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr basic_string_view(const _CharT* __str)
       : _M_len{__str == nullptr ? 0 : traits_type::length(__str)},
-	_M_str{__str == nullptr ? _S_empty_str : __str}
+	_M_str{__str}
       { }
 
       constexpr basic_string_view(const _CharT* __str, size_type __len)
-      : _M_len{__str == nullptr ? 0 :__len},
-        _M_str{__str == nullptr ? _S_empty_str : __str}
+      : _M_len{__len},
+        _M_str{__str}
       { }
 
       basic_string_view&
@@ -143,19 +134,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       const_reverse_iterator
       rbegin() const noexcept
-      { return std::reverse_iterator<const_iterator>(this->end()); }
+      { return const_reverse_iterator(this->end()); }
 
       const_reverse_iterator
       rend() const noexcept
-      { return std::reverse_iterator<const_iterator>(this->begin()); }
+      { return const_reverse_iterator(this->begin()); }
 
       const_reverse_iterator
       crbegin() const noexcept
-      { return std::reverse_iterator<const_iterator>(this->end()); }
+      { return const_reverse_iterator(this->end()); }
 
       const_reverse_iterator
       crend() const noexcept
-      { return std::reverse_iterator<const_iterator>(this->begin()); }
+      { return const_reverse_iterator(this->begin()); }
 
       // [string.view.capacity], capacity
 
@@ -169,8 +160,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr size_type
       max_size() const noexcept
-      { return ((npos - sizeof(size_type) - sizeof(void*))
-		/ sizeof(value_type) / 4); }
+      {
+	return (npos - sizeof(size_type) - sizeof(void*))
+		/ sizeof(value_type) / 4;
+      }
 
       constexpr bool
       empty() const noexcept
@@ -195,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					     "(which is %zu) >= this->size() "
 					     "(which is %zu)"),
 					 __pos, this->size()),
-		_S_empty_str[0]);
+		*this->_M_str);
       }
 
       constexpr const _CharT&
@@ -219,11 +212,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->_M_str; }
 
       // [string.view.modifiers], modifiers:
+
       void
       clear() noexcept
       {
 	this->_M_len = 0;
-	this->_M_str = _S_empty_str;
+	this->_M_str = nullptr;
       }
 
       void
@@ -251,8 +245,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Allocator>
         explicit operator basic_string<_CharT, _Traits, _Allocator>() const
         {
-	  return basic_string<_CharT, _Traits, _Allocator>
-					(this->_M_len, this->_M_str);
+	  return { this->_M_str, this->_M_len };
+	}
+
+      template<typename _Allocator = std::allocator<_CharT>>
+	basic_string<_CharT, _Traits, _Allocator>
+	to_string(const _Allocator& __alloc = _Allocator()) const
+	{
+	  return { this->_M_str, this->_M_len, __alloc };
 	}
 
       size_type
@@ -431,8 +431,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     : static_cast<int>(difference_type{__n1 - __n2});
       }
 
-      static constexpr value_type _S_empty_str[1]{};
-
       size_t	    _M_len;
       const _CharT* _M_str;
     };
@@ -456,131 +454,119 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator==(basic_string_view<_CharT, _Traits> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator==(basic_string_view<_CharT, _Traits> __x,
                __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
     { return __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator==(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator!=(basic_string_view<_CharT, _Traits> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return !(__x == __y); }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator!=(basic_string_view<_CharT, _Traits> __x,
                __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
     { return !(__x == __y); }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator!=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return !(__x == __y); }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator< (basic_string_view<_CharT, _Traits> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) < 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator< (basic_string_view<_CharT, _Traits> __x,
                __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
     { return __x.compare(__y) < 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator< (__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) < 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator> (basic_string_view<_CharT, _Traits> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) > 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator> (basic_string_view<_CharT, _Traits> __x,
                __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
     { return __x.compare(__y) > 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator> (__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) > 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator<=(basic_string_view<_CharT, _Traits> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) <= 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator<=(basic_string_view<_CharT, _Traits> __x,
                __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
     { return __x.compare(__y) <= 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator<=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) <= 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator>=(basic_string_view<_CharT, _Traits> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) >= 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator>=(basic_string_view<_CharT, _Traits> __x,
                __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
     { return __x.compare(__y) >= 0; }
 
   template<typename _CharT, typename _Traits>
-    bool
+    inline bool
     operator>=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) >= 0; }
 
-  // [string.view.comparison], sufficient additional overloads of comparison functions
-
-  // [string.view.nonmem], other non-member basic_string_view functions
-  template<typename _CharT, typename _Traits = char_traits<_CharT>,
-           typename _Allocator = allocator<_CharT>>
-    basic_string<_CharT, _Traits, _Allocator>
-    to_string(basic_string_view<_CharT, _Traits> __str,
-	      const _Allocator& __alloc = _Allocator())
-    {
-      return basic_string<_CharT, _Traits, _Allocator>
-			(__str.begin(), __str.end(), __alloc);
-    }
-
+  // [string.view.io], Inserters and extractors
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-      operator<<(basic_ostream<_CharT, _Traits>& __os,
-                 basic_string_view<_CharT,_Traits> __str)
-      { return __ostream_insert(__os, __str.data(), __str.size()); }
+    inline basic_ostream<_CharT, _Traits>&
+    operator<<(basic_ostream<_CharT, _Traits>& __os,
+	       basic_string_view<_CharT,_Traits> __str)
+    { return __ostream_insert(__os, __str.data(), __str.size()); }
 
 
   // basic_string_view typedef names
