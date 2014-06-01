@@ -1,5 +1,12 @@
 2014-06-01  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/sibcall-2.c: Xfail dg-final scan-assembler-not,
+	not compilation.
+	* gcc.target/i386/sibcall-4.c: Ditto.
+	* gcc.target/i386/fuse-caller-save.c: Add -mregparm=1 for ia32 target.
+
+2014-06-01  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/sibcall-2.c (dg-final): Properly escape '[' and ']'
 	in scan-assembler-not string.
 	* gcc.target/i386/sibcall-3.c (dg-final): Ditto.

@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fuse-caller-save" } */
+/* { dg-additional-options "-mregparm=1" { target ia32 } } */
+
 /* Testing -fuse-caller-save optimization option.  */
 
 static int __attribute__((noinline))
