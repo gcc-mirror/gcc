@@ -340,17 +340,25 @@ argv_to_cmdline (char *const *argv)
   char *p;
   size_t cmdline_len;
   int i, j, k;
+  int needs_quotes;
 
   cmdline_len = 0;
   for (i = 0; argv[i]; i++)
     {
-      /* We quote every last argument.  This simplifies the problem;
-	 we need only escape embedded double-quotes and immediately
+      /* We only quote arguments that contain spaces, \t or " characters to
+	 prevent wasting 2 chars per argument of the CreateProcess 32k char
+	 limit.  We need only escape embedded double-quotes and immediately
 	 preceeding backslash characters.  A sequence of backslach characters
 	 that is not follwed by a double quote character will not be
 	 escaped.  */
+      needs_quotes = 0;
       for (j = 0; argv[i][j]; j++)
 	{
+	  if (argv[i][j] == ' ' || argv[i][j] == '\t' || argv[i][j] == '"')
+	    {
+	      needs_quotes = 1;
+	    }
+
 	  if (argv[i][j] == '"')
 	    {
 	      /* Escape preceeding backslashes.  */
@@ -362,16 +370,33 @@ argv_to_cmdline (char *const *argv)
 	}
       /* Trailing backslashes also need to be escaped because they will be
          followed by the terminating quote.  */
-      for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
-	cmdline_len++;
+      if (needs_quotes)
+        {
+          for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
+            cmdline_len++;
+        }
       cmdline_len += j;
-      cmdline_len += 3;  /* for leading and trailing quotes and space */
+      /* for leading and trailing quotes and space */
+      cmdline_len += needs_quotes * 2 + 1;
     }
   cmdline = XNEWVEC (char, cmdline_len);
   p = cmdline;
   for (i = 0; argv[i]; i++)
     {
-      *p++ = '"';
+      needs_quotes = 0;
+      for (j = 0; argv[i][j]; j++)
+        {
+          if (argv[i][j] == ' ' || argv[i][j] == '\t' || argv[i][j] == '"')
+            {
+              needs_quotes = 1;
+              break;
+            }
+        }
+
+      if (needs_quotes)
+        {
+          *p++ = '"';
+        }
       for (j = 0; argv[i][j]; j++)
 	{
 	  if (argv[i][j] == '"')
@@ -382,9 +407,12 @@ argv_to_cmdline (char *const *argv)
 	    }
 	  *p++ = argv[i][j];
 	}
-      for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
-	*p++ = '\\';
-      *p++ = '"';
+      if (needs_quotes)
+        {
+          for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
+            *p++ = '\\';
+          *p++ = '"';
+        }
       *p++ = ' ';
     }
   p[-1] = '\0';
