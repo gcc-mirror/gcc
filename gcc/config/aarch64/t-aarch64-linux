@@ -22,10 +22,7 @@ LIB1ASMSRC   = aarch64/lib1funcs.asm
 LIB1ASMFUNCS = _aarch64_sync_cache_range
 
 AARCH_BE = $(if $(findstring TARGET_BIG_ENDIAN_DEFAULT=1, $(tm_defines)),_be)
-MULTILIB_OSDIRNAMES = .=../lib64$(call if_multiarch,:aarch64$(AARCH_BE)-linux-gnu)
+MULTILIB_OSDIRNAMES = mabi.lp64=../lib64$(call if_multiarch,:aarch64$(AARCH_BE)-linux-gnu)
 MULTIARCH_DIRNAME = $(call if_multiarch,aarch64$(AARCH_BE)-linux-gnu)
 
-# Disable the multilib for linux-gnu targets for the time being; focus
-# on the baremetal targets.
-MULTILIB_OPTIONS    =
-MULTILIB_DIRNAMES   =
+MULTILIB_OSDIRNAMES += mabi.ilp32=../libilp32
