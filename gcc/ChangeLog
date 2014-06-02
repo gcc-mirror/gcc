@@ -1,3 +1,10 @@
+2014-06-02  Richard Henderson  <rth@redhat.com>
+
+	PR target/61336
+	* config/alpha/alpha.c (print_operand_address): Allow symbolic
+	addresses inside asms.  Use output_operand_lossage instead of
+	gcc_unreachable.
+
 2014-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61239
