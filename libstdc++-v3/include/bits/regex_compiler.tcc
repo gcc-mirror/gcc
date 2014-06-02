@@ -37,9 +37,9 @@
 // When compiling, states are *chained* instead of tree- or graph-constructed.
 // It's more like structured programs: there's if statement and loop statement.
 //
-// For alternative structure(say "a|b"), aka "if statement", two branchs should
-// be constructed. However, these two shall merge to an "end_tag" at the end of
-// this operator:
+// For alternative structure (say "a|b"), aka "if statement", two branches
+// should be constructed. However, these two shall merge to an "end_tag" at
+// the end of this operator:
 //
 //                branch1
 //              /        \
@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (_M_match_token(_ScannerT::_S_token_line_end))
 	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_line_end()));
       else if (_M_match_token(_ScannerT::_S_token_word_bound))
-	// _M_value[0] == 'n' means it's negtive, say "not word boundary".
+	// _M_value[0] == 'n' means it's negative, say "not word boundary".
 	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
 	      _M_insert_word_bound(_M_value[0] == 'n')));
       else if (_M_match_token(_ScannerT::_S_token_subexpr_lookahead_begin))
@@ -256,7 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      auto __end = _M_nfa._M_insert_dummy();
 	      // _M_alt is the "match more" branch, and _M_next is the
 	      // "match less" one. Switch _M_alt and _M_next of all created
-	      // nodes. This is a hacking but IMO works well.
+	      // nodes. This is a hack but IMO works well.
 	      std::stack<_StateIdT> __stack;
 	      for (long __i = 0; __i < __n; ++__i)
 		{
@@ -511,12 +511,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _BracketMatcher<_TraitsT, __icase, __collate>::
     _M_apply(_CharT __ch, false_type) const
     {
-      bool __ret = false;
-      if (std::find(_M_char_set.begin(), _M_char_set.end(),
-		    _M_translator._M_translate(__ch))
-	  != _M_char_set.end())
-	__ret = true;
-      else
+      bool __ret = std::binary_search(_M_char_set.begin(), _M_char_set.end(),
+				      _M_translator._M_translate(__ch));
+      if (!__ret)
 	{
 	  auto __s = _M_translator._M_transform(__ch);
 	  for (auto& __it : _M_range_set)

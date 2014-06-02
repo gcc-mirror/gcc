@@ -35,7 +35,7 @@ namespace __detail
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
-    bool __dfs_mode>
+	   bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_search()
     {
@@ -45,7 +45,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do
 	{
 	  _M_current = __cur;
-	  if (_M_main<false>())
+	  if (_M_main(_Match_mode::_Prefix))
 	    return true;
 	}
       // Continue when __cur == _M_end
@@ -53,8 +53,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-  // This function operates in different modes, DFS mode or BFS mode, indicated
-  // by template parameter __dfs_mode. See _M_main for details.
+  // The _M_main function operates in different modes, DFS mode or BFS mode,
+  // indicated by template parameter __dfs_mode, and dispatches to one of the
+  // _M_main_dispatch overloads.
   //
   // ------------------------------------------------------------
   //
@@ -62,12 +63,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //
   // It applies a Depth-First-Search (aka backtracking) on given NFA and input
   // string.
-  // At the very beginning the executor stands in the start state, then it tries
-  // every possible state transition in current state recursively. Some state
-  // transitions consume input string, say, a single-char-matcher or a
+  // At the very beginning the executor stands in the start state, then it
+  // tries every possible state transition in current state recursively. Some
+  // state transitions consume input string, say, a single-char-matcher or a
   // back-reference matcher; some don't, like assertion or other anchor nodes.
-  // When the input is exhausted and/or the current state is an accepting state,
-  // the whole executor returns true.
+  // When the input is exhausted and/or the current state is an accepting
+  // state, the whole executor returns true.
   //
   // TODO: This approach is exponentially slow for certain input.
   //       Try to compile the NFA to a DFA.
@@ -75,6 +76,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Time complexity: \Omega(match_length), O(2^(_M_nfa.size()))
   // Space complexity: \theta(match_results.size() + match_length)
   //
+  template<typename _BiIter, typename _Alloc, typename _TraitsT,
+	   bool __dfs_mode>
+    bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
+    _M_main_dispatch(_Match_mode __match_mode, __dfs)
+    {
+      _M_has_sol = false;
+      _M_cur_results = _M_results;
+      _M_dfs(__match_mode, _M_states._M_start);
+      return _M_has_sol;
+    }
+
   // ------------------------------------------------------------
   //
   // BFS mode:
@@ -84,11 +96,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //
   // It first computes epsilon closure (states that can be achieved without
   // consuming characters) for every state that's still matching,
-  // using the same DFS algorithm, but doesn't re-enter states (find a true in
-  // _M_visited), nor follows _S_opcode_match.
+  // using the same DFS algorithm, but doesn't re-enter states (using
+  // _M_states._M_visited to check), nor follow _S_opcode_match.
   //
-  // Then apply DFS using every _S_opcode_match (in _M_match_queue) as the start
-  // state.
+  // Then apply DFS using every _S_opcode_match (in _M_states._M_match_queue)
+  // as the start state.
   //
   // It significantly reduces potential duplicate states, so has a better
   // upper bound; but it requires more overhead.
@@ -98,60 +110,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Space complexity: \Omega(_M_nfa.size() + match_results.size())
   //                   O(_M_nfa.size() * match_results.size())
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
-    bool __dfs_mode>
-  template<bool __match_mode>
+	   bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_main()
+    _M_main_dispatch(_Match_mode __match_mode, __bfs)
     {
-      if (__dfs_mode)
+      _M_states._M_queue(_M_states._M_start, _M_results);
+      bool __ret = false;
+      while (1)
 	{
 	  _M_has_sol = false;
-	  _M_cur_results = _M_results;
-	  _M_dfs<__match_mode>(_M_start_state);
-	  return _M_has_sol;
-	}
-      else
-	{
-	  _M_match_queue->push_back(make_pair(_M_start_state, _M_results));
-	  bool __ret = false;
-	  while (1)
+	  if (_M_states._M_match_queue.empty())
+	    break;
+	  std::fill_n(_M_states._M_visited_states.get(), _M_nfa.size(), false);
+	  auto __old_queue = std::move(_M_states._M_match_queue);
+	  for (auto& __task : __old_queue)
 	    {
-	      _M_has_sol = false;
-	      if (_M_match_queue->empty())
-		break;
-	      _M_visited->assign(_M_visited->size(), false);
-	      auto _M_old_queue = std::move(*_M_match_queue);
-	      for (auto __task : _M_old_queue)
-		{
-		  _M_cur_results = __task.second;
-		  _M_dfs<__match_mode>(__task.first);
-		}
-	      if (!__match_mode)
-		__ret |= _M_has_sol;
-	      if (_M_current == _M_end)
-		break;
-	      ++_M_current;
+	      _M_cur_results = std::move(__task.second);
+	      _M_dfs(__match_mode, __task.first);
 	    }
-	  if (__match_mode)
-	    __ret = _M_has_sol;
-	  return __ret;
+	  if (__match_mode == _Match_mode::_Prefix)
+	    __ret |= _M_has_sol;
+	  if (_M_current == _M_end)
+	    break;
+	  ++_M_current;
 	}
+      if (__match_mode == _Match_mode::_Exact)
+	__ret = _M_has_sol;
+      return __ret;
     }
 
   // Return whether now match the given sub-NFA.
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
-    bool __dfs_mode>
+	   bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_lookahead(_State<_TraitsT> __state)
     {
       _ResultsVec __what(_M_cur_results.size());
-      auto __sub = std::unique_ptr<_Executor>(new _Executor(_M_current,
-							    _M_end,
-							    __what,
-							    _M_re,
-							    _M_flags));
-      __sub->_M_start_state = __state._M_alt;
-      if (__sub->_M_search_from_first())
+      _Executor __sub(_M_current, _M_end, __what, _M_re, _M_flags);
+      __sub._M_states._M_start = __state._M_alt;
+      if (__sub._M_search_from_first())
 	{
 	  for (size_t __i = 0; __i < __what.size(); __i++)
 	    if (__what[__i].matched)
@@ -169,9 +166,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // we need to spare one more time for potential group capture.
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
-  template<bool __match_mode>
     void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_rep_once_more(_StateIdT __i)
+    _M_rep_once_more(_Match_mode __match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       auto& __rep_count = _M_rep_count[__i];
@@ -180,7 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto __back = __rep_count;
 	  __rep_count.first = _M_current;
 	  __rep_count.second = 1;
-	  _M_dfs<__match_mode>(__state._M_alt);
+	  _M_dfs(__match_mode, __state._M_alt);
 	  __rep_count = __back;
 	}
       else
@@ -188,24 +184,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__rep_count.second < 2)
 	    {
 	      __rep_count.second++;
-	      _M_dfs<__match_mode>(__state._M_alt);
+	      _M_dfs(__match_mode, __state._M_alt);
 	      __rep_count.second--;
 	    }
 	}
     };
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
-    bool __dfs_mode>
-  template<bool __match_mode>
+	   bool __dfs_mode>
     void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
-    _M_dfs(_StateIdT __i)
+    _M_dfs(_Match_mode __match_mode, _StateIdT __i)
     {
-      if (!__dfs_mode)
-	{
-	  if ((*_M_visited)[__i])
-	    return;
-	  (*_M_visited)[__i] = true;
-	}
+      if (_M_states._M_visited(__i))
+	return;
 
       const auto& __state = _M_nfa[__i];
       // Every change on _M_cur_results and _M_current will be rolled back after
@@ -221,33 +212,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // Greedy.
 	    if (!__state._M_neg)
 	      {
-		_M_rep_once_more<__match_mode>(__i);
+		_M_rep_once_more(__match_mode, __i);
 		// If it's DFS executor and already accepted, we're done.
 		if (!__dfs_mode || !_M_has_sol)
-		  _M_dfs<__match_mode>(__state._M_next);
+		  _M_dfs(__match_mode, __state._M_next);
 	      }
 	    else // Non-greedy mode
 	      {
 		if (__dfs_mode)
 		  {
 		    // vice-versa.
-		    _M_dfs<__match_mode>(__state._M_next);
+		    _M_dfs(__match_mode, __state._M_next);
 		    if (!_M_has_sol)
-		      _M_rep_once_more<__match_mode>(__i);
+		      _M_rep_once_more(__match_mode, __i);
 		  }
 		else
 		  {
 		    // DON'T attempt anything, because there's already another
-		    // state with higher priority accepted. This state cannot be
-		    // better by attempting its next node.
+		    // state with higher priority accepted. This state cannot
+		    // be better by attempting its next node.
 		    if (!_M_has_sol)
 		      {
-			_M_dfs<__match_mode>(__state._M_next);
+			_M_dfs(__match_mode, __state._M_next);
 			// DON'T attempt anything if it's already accepted. An
 			// accepted state *must* be better than a solution that
 			// matches a non-greedy quantifier one more time.
 			if (!_M_has_sol)
-			  _M_rep_once_more<__match_mode>(__i);
+			  _M_rep_once_more(__match_mode, __i);
 		      }
 		  }
 	      }
@@ -258,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    auto& __res = _M_cur_results[__state._M_subexpr];
 	    auto __back = __res.first;
 	    __res.first = _M_current;
-	    _M_dfs<__match_mode>(__state._M_next);
+	    _M_dfs(__match_mode, __state._M_next);
 	    __res.first = __back;
 	  }
 	  break;
@@ -268,27 +259,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    auto __back = __res;
 	    __res.second = _M_current;
 	    __res.matched = true;
-	    _M_dfs<__match_mode>(__state._M_next);
+	    _M_dfs(__match_mode, __state._M_next);
 	    __res = __back;
 	  }
 	  break;
 	case _S_opcode_line_begin_assertion:
 	  if (_M_at_begin())
-	    _M_dfs<__match_mode>(__state._M_next);
+	    _M_dfs(__match_mode, __state._M_next);
 	  break;
 	case _S_opcode_line_end_assertion:
 	  if (_M_at_end())
-	    _M_dfs<__match_mode>(__state._M_next);
+	    _M_dfs(__match_mode, __state._M_next);
 	  break;
 	case _S_opcode_word_boundary:
 	  if (_M_word_boundary(__state) == !__state._M_neg)
-	    _M_dfs<__match_mode>(__state._M_next);
+	    _M_dfs(__match_mode, __state._M_next);
 	  break;
 	// Here __state._M_alt offers a single start node for a sub-NFA.
 	// We recursively invoke our algorithm to match the sub-NFA.
 	case _S_opcode_subexpr_lookahead:
 	  if (_M_lookahead(__state) == !__state._M_neg)
-	    _M_dfs<__match_mode>(__state._M_next);
+	    _M_dfs(__match_mode, __state._M_next);
 	  break;
 	case _S_opcode_match:
 	  if (__dfs_mode)
@@ -296,14 +287,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (_M_current != _M_end && __state._M_matches(*_M_current))
 		{
 		  ++_M_current;
-		  _M_dfs<__match_mode>(__state._M_next);
+		  _M_dfs(__match_mode, __state._M_next);
 		  --_M_current;
 		}
 	    }
 	  else
 	    if (__state._M_matches(*_M_current))
-	      _M_match_queue->push_back(make_pair(__state._M_next,
-						  _M_cur_results));
+	      _M_states._M_queue(__state._M_next, _M_cur_results);
 	  break;
 	// First fetch the matched result from _M_cur_results as __submatch;
 	// then compare it with
@@ -328,11 +318,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  {
 		    auto __backup = _M_current;
 		    _M_current = __last;
-		    _M_dfs<__match_mode>(__state._M_next);
+		    _M_dfs(__match_mode, __state._M_next);
 		    _M_current = __backup;
 		  }
 		else
-		  _M_dfs<__match_mode>(__state._M_next);
+		  _M_dfs(__match_mode, __state._M_next);
 	      }
 	  }
 	  break;
@@ -340,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__dfs_mode)
 	    {
 	      _GLIBCXX_DEBUG_ASSERT(!_M_has_sol);
-	      if (__match_mode)
+	      if (__match_mode == _Match_mode::_Exact)
 		_M_has_sol = _M_current == _M_end;
 	      else
 		_M_has_sol = true;
@@ -355,7 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (_M_current == _M_begin
 		  && (_M_flags & regex_constants::match_not_null))
 		break;
-	      if (!__match_mode || _M_current == _M_end)
+	      if (__match_mode == _Match_mode::_Prefix || _M_current == _M_end)
 		if (!_M_has_sol)
 		  {
 		    _M_has_sol = true;
@@ -364,9 +354,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  break;
 	case _S_opcode_alternative:
-	  _M_dfs<__match_mode>(__state._M_alt);
+	  _M_dfs(__match_mode, __state._M_alt);
 	  if (!__dfs_mode || !_M_has_sol)
-	    _M_dfs<__match_mode>(__state._M_next);
+	    _M_dfs(__match_mode, __state._M_next);
 	  break;
 	default:
 	  _GLIBCXX_DEBUG_ASSERT(false);
@@ -375,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Return whether now is at some word boundary.
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
-    bool __dfs_mode>
+	   bool __dfs_mode>
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_word_boundary(_State<_TraitsT> __state) const
     {
