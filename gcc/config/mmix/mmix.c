@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "df.h"
 #include "tm-constrs.h"
+#include "builtins.h"
 
 /* First some local helper definitions.  */
 #define MMIX_FIRST_GLOBAL_REGNUM 32

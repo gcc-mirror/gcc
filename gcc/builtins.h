@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_BUILTINS_H
 #define GCC_BUILTINS_H
 
+#include <mpc.h>
+
 /* Target-dependent globals.  */
 struct target_builtins {
   /* For each register that may be used for calling a function, this
@@ -44,6 +46,54 @@ extern struct target_builtins *this_target_builtins;
 #define this_target_builtins (&default_target_builtins)
 #endif
 
+/* Non-zero if __builtin_constant_p should be folded right away.  */
+extern bool force_folding_builtin_constant_p;
+
+extern bool is_builtin_fn (tree);
+extern bool get_object_alignment_1 (tree, unsigned int *,
+				    unsigned HOST_WIDE_INT *);
+extern unsigned int get_object_alignment (tree);
+extern bool get_pointer_alignment_1 (tree, unsigned int *,
+				     unsigned HOST_WIDE_INT *);
+extern unsigned int get_pointer_alignment (tree);
+extern tree c_strlen (tree, int);
+extern void expand_builtin_setjmp_setup (rtx, rtx);
+extern void expand_builtin_setjmp_receiver (rtx);
+extern tree mathfn_built_in (tree, enum built_in_function fn);
+extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+extern rtx expand_builtin_saveregs (void);
+extern tree std_build_builtin_va_list (void);
+extern tree std_fn_abi_va_list (tree);
+extern tree std_canonical_va_list_type (tree);
+extern void std_expand_builtin_va_start (tree, rtx);
+extern void expand_builtin_trap (void);
+extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern enum built_in_function builtin_mathfn_code (const_tree);
+extern tree fold_builtin_expect (location_t, tree, tree, tree);
+extern tree fold_builtin_strcpy (location_t, tree, tree, tree, tree);
+extern tree fold_builtin_strncpy (location_t, tree, tree, tree, tree, tree);
+extern tree fold_fma (location_t, tree, tree, tree, tree);
+extern bool avoid_folding_inline_builtin (tree);
+extern tree fold_call_expr (location_t, tree, bool);
+extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
 extern bool validate_gimple_arglist (const_gimple, ...);
+extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern tree fold_builtin_strcat (location_t, tree, tree, tree);
+extern tree fold_builtin_fputs (location_t, tree, tree, bool, bool, tree);
+extern bool fold_builtin_next_arg (tree, bool);
+extern tree fold_builtin_memory_chk (location_t, tree, tree, tree, tree, tree,
+				     tree, bool, enum built_in_function);
+extern tree fold_builtin_stxcpy_chk (location_t, tree, tree, tree, tree, tree,
+				     bool, enum built_in_function);
+extern tree fold_builtin_stxncpy_chk (location_t, tree, tree, tree, tree, tree,
+				      bool, enum built_in_function);
+extern tree gimple_fold_builtin_snprintf_chk (gimple, tree,
+					      enum built_in_function);
+extern tree do_mpc_arg2 (tree, tree, tree, int, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
+extern tree fold_call_stmt (gimple, bool);
+extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
+extern bool is_simple_builtin (tree);
+extern bool is_inexpensive_builtin (tree);
 
 #endif

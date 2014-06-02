@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
 #include "optabs.h"
+#include "builtins.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */

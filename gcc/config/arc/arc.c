@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "wide-int.h"
+#include "builtins.h"
 
 /* Which cpu we're compiling for (A5, ARC600, ARC601, ARC700).  */
 static const char *arc_cpu_string = "";

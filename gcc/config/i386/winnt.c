@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
+#include "builtins.h"
 
 /* i386/PE specific attribute support.
 

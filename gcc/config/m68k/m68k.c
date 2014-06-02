@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "opts.h"
 #include "optabs.h"
+#include "builtins.h"
 
 enum reg_class regno_reg_class[] =
 {

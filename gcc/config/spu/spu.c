@@ -66,6 +66,7 @@
 #include "df.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
+#include "builtins.h"
 
 /* Builtin types, data and prototypes. */
 

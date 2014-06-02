@@ -46,6 +46,7 @@
 #include "target-def.h"
 #include "tm-constrs.h"
 #include "opts.h"
+#include "builtins.h"
 
 /* Array of valid operand punctuation characters.  */
 static char m32r_punct_chars[256];

@@ -39,6 +39,7 @@
 #include "output.h"
 #include "real.h"
 #include "realmpfr.h"
+#include "builtins.h"
 
 #include "go-c.h"
 

@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "predict.h"
 #include "params.h"
+#include "builtins.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.

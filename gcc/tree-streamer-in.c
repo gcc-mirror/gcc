@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "streamer-hooks.h"
 #include "lto-streamer.h"
+#include "builtins.h"
 
 /* Read a STRING_CST from the string table in DATA_IN using input
    block IB.  */

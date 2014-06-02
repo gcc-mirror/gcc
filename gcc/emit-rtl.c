@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "params.h"
 #include "target.h"
+#include "builtins.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET

@@ -114,6 +114,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "target.h"
 #include "gimple-pretty-print.h"
+#include "builtins.h"
 
 /* FIXME: RTL headers have to be included here for optabs.  */
 #include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */

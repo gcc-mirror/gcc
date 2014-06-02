@@ -1,3 +1,99 @@
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* expr.h: Remove prototypes of functions defined in builtins.c.
+	* tree.h: (build_call_expr_*, build_string_literal): Add prototypes.
+	Remove prototypes of functions defined in builtins.c.
+	* builtins.h: Update prototype list to include all exported functions.
+	* builtins.c: (default_libc_has_function, gnu_libc_has_function,
+	no_c99_libc_has_function): Move to targhooks.c
+	(build_string_literal, build_call_expr_loc_array,
+	build_call_expr_loc_vec, build_call_expr_loc, build_call_expr): Move
+	to tree.c.
+	(expand_builtin_object_size, fold_builtin_object_size): Make static.
+	* targhooks.c (default_libc_has_function, gnu_libc_has_function,
+	no_c99_libc_has_function): Relocate from builtins.c.
+	* tree.c: Include builtins.h.
+	(build_call_expr_loc_array, build_call_expr_loc_vec,
+	build_call_expr_loc, build_call_expr, build_string_literal): Relocate
+	from builtins.c.
+	* fold-const.h (fold_fma): Move prototype to builtins.h.
+	* realmpfr.h (do_mpc_arg2): Move prototype to builtins.h.
+	* asan.c: Include builtins.h.
+	* cfgexpand.c: Likewise.
+	* convert.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* fold-const.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* gimplify.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* stmt.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-object-size.c: Likewise.
+	* tree-sra.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-streamer-in.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* config/aarch64/aarch64.c: Likewise.
+	* config/alpha/alpha.c: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/avr/avr.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/c6x/c6x.c: Likewise.
+	* config/cr16/cr16.c: Likewise.
+	* config/cris/cris.c: Likewise.
+	* config/epiphany/epiphany.c: Likewise.
+	* config/fr30/fr30.c: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/lm32/lm32.c: Likewise.
+	* config/m32c/m32c.c: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/microblaze/microblaze.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/moxie/moxie.c: Likewise.
+	* config/msp430/msp430.c: Likewise.
+	* config/nds32/nds32.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pdp11/pdp11.c: Likewise.
+	* config/picochip/picochip.c: Likewise.
+	* config/rl78/rl78.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rx/rx.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/score/score.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/tilegx/tilegx.c: Likewise.
+	* config/tilepro/tilepro.c: Likewise.
+	* config/v850/v850.c: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+
 2014-06-02  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/61094

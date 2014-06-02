@@ -61,6 +61,7 @@
 #include "gimple.h"
 #include "df.h"
 #include "tm-constrs.h"
+#include "builtins.h"
 
 /* Prototypes */
 

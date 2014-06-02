@@ -154,6 +154,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "params.h"
 #include "wide-int-print.h"
+#include "builtins.h"
 
 
 /* Possible lattice values.  */

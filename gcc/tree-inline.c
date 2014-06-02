@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "target.h"
 #include "cfgloop.h"
+#include "builtins.h"
 
 #include "rtl.h"	/* FIXME: For asm_str_count.  */
 

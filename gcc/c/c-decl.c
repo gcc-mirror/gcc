@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "c-family/c-ada-spec.h"
 #include "cilk.h"
+#include "builtins.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context

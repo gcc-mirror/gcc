@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cilk.h"
 #include "wide-int.h"
+#include "builtins.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {

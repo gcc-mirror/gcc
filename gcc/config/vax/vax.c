@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "wide-int.h"
+#include "builtins.h"
 
 static void vax_option_override (void);
 static bool vax_legitimate_address_p (enum machine_mode, rtx, bool);

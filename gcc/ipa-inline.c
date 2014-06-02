@@ -122,6 +122,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "sreal.h"
 #include "cilk.h"
+#include "builtins.h"
 
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;

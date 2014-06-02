@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "dbgcnt.h"
 #include "domwalk.h"
+#include "builtins.h"
 
 /* Intermediate information that we get from alias analysis about a particular
    parameter in a particular basic_block.  When a parameter or the memory it

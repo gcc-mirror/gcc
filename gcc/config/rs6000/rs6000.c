@@ -79,6 +79,7 @@
 #include "dumpfile.h"
 #include "cgraph.h"
 #include "target-globals.h"
+#include "builtins.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif

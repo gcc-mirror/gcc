@@ -45,6 +45,7 @@
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "builtins.h"
 
 /*}}}*/
 /*{{{  Function Prologues & Epilogues */ 
