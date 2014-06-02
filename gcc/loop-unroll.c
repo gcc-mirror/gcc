@@ -548,7 +548,7 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
 	{
 	  fprintf (dump_file,
 		   ";; Not peeling loop completely, rolls too much (");
-	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter);
+	  fprintf (dump_file, "%"PRId64, desc->niter);
 	  fprintf (dump_file, " iterations > %d [maximum peelings])\n", npeel);
 	}
       return;
@@ -1429,8 +1429,8 @@ decide_peel_simple (struct loop *loop, int flags)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, ";; Not peeling loop, rolls too much (");
-	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
-		       (HOST_WIDEST_INT) (iterations.to_shwi () + 1));
+	      fprintf (dump_file, "%"PRId64,
+		       (int64_t) (iterations.to_shwi () + 1));
 	      fprintf (dump_file, " iterations > %d [maximum peelings])\n",
 		       npeel);
 	    }

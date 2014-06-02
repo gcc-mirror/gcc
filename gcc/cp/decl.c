@@ -8817,6 +8817,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool template_parm_flag = false;
   bool typedef_p = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
+  bool late_return_type_p = false;
   source_location saved_loc = input_location;
   const char *errmsg;
 
@@ -9659,6 +9660,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      (type, declarator->u.function.late_return_type);
 	    if (type == error_mark_node)
 	      return error_mark_node;
+
+	    if (declarator->u.function.late_return_type)
+	      late_return_type_p = true;
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -10590,6 +10594,10 @@ grokdeclarator (const cp_declarator *declarator,
 	      decl_function_context (TYPE_MAIN_DECL (ctype)) : NULL_TREE;
 	    publicp = (! friendp || ! staticp)
 	      && function_context == NULL_TREE;
+
+	    if (late_return_type_p)
+	      TYPE_HAS_LATE_RETURN_TYPE (type) = 1;
+
 	    decl = grokfndecl (ctype, type,
 			       TREE_CODE (unqualified_id) != TEMPLATE_ID_EXPR
 			       ? unqualified_id : dname,
@@ -10813,6 +10821,9 @@ grokdeclarator (const cp_declarator *declarator,
 	/* Record whether the function is public.  */
 	publicp = (ctype != NULL_TREE
 		   || storage_class != sc_static);
+
+	if (late_return_type_p)
+	  TYPE_HAS_LATE_RETURN_TYPE (type) = 1;
 
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
 			   virtualp, flags, memfn_quals, rqual, raises,
@@ -14421,6 +14432,8 @@ static_fn_type (tree memfntype)
 	    (fntype, TYPE_ATTRIBUTES (memfntype)));
   fntype = (build_exception_variant
 	    (fntype, TYPE_RAISES_EXCEPTIONS (memfntype)));
+  if (TYPE_HAS_LATE_RETURN_TYPE (memfntype))
+    TYPE_HAS_LATE_RETURN_TYPE (fntype) = 1;
   return fntype;
 }
 
@@ -14484,18 +14497,17 @@ cp_missing_noreturn_ok_p (tree decl)
   return DECL_MAIN_P (decl);
 }
 
-/* Return the COMDAT group into which DECL should be placed.  */
+/* Return the decl used to identify the COMDAT group into which DECL should
+   be placed.  */
 
 tree
 cxx_comdat_group (tree decl)
 {
-  tree name;
-
   /* Virtual tables, construction virtual tables, and virtual table
      tables all go in a single COMDAT group, named after the primary
      virtual table.  */
   if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
-    name = DECL_ASSEMBLER_NAME (CLASSTYPE_VTABLES (DECL_CONTEXT (decl)));
+    decl = CLASSTYPE_VTABLES (DECL_CONTEXT (decl));
   /* For all other DECLs, the COMDAT group is the mangled name of the
      declaration itself.  */
   else
@@ -14513,10 +14525,9 @@ cxx_comdat_group (tree decl)
 	  else
 	    break;
 	}
-      name = DECL_ASSEMBLER_NAME (decl);
     }
 
-  return name;
+  return decl;
 }
 
 /* Returns the return type for FN as written by the user, which may include

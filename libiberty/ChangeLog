@@ -1,3 +1,13 @@
+2014-06-01  Ray Donnelly  <mingw.android@gmail.com>
+
+	* pex-win32.c (argv_to_cmdline): Don't quote
+	args unnecessarily
+
+2014-05-28  Pedro Alves  <palves@redhat.com>
+
+	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_FUNCTION_PARAM
+	and DEMANGLE_COMPONENT_NUMBER.
+
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/demangle-expected: Fix last commit.

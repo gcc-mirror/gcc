@@ -990,8 +990,8 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
      and the writer do not agree on a streamed node, the pointer
      value for EXPR can be used to track down the differences in
      the debugger.  */
-  gcc_assert ((HOST_WIDEST_INT) (intptr_t) expr == (intptr_t) expr);
-  streamer_write_hwi (ob, (HOST_WIDEST_INT) (intptr_t) expr);
+  gcc_assert ((HOST_WIDE_INT) (intptr_t) expr == (intptr_t) expr);
+  streamer_write_hwi (ob, (HOST_WIDE_INT) (intptr_t) expr);
 #endif
 
   /* The text in strings and identifiers are completely emitted in

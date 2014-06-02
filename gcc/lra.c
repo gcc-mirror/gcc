@@ -724,8 +724,6 @@ free_insn_recog_data (lra_insn_recog_data_t data)
     free (data->dup_loc);
   if (data->arg_hard_regs != NULL)
     free (data->arg_hard_regs);
-  if (HAVE_ATTR_enabled && data->alternative_enabled_p != NULL)
-    free (data->alternative_enabled_p);
   if (data->icode < 0 && NONDEBUG_INSN_P (data->insn))
     {
       if (data->insn_static_data->operand_alternative != NULL)
@@ -1072,7 +1070,7 @@ lra_set_insn_recog_data (rtx insn)
       data->insn_static_data = &debug_insn_static_data;
       data->dup_loc = NULL;
       data->arg_hard_regs = NULL;
-      data->alternative_enabled_p = NULL;
+      data->enabled_alternatives = ALL_ALTERNATIVES;
       data->operand_loc = XNEWVEC (rtx *, 1);
       data->operand_loc[0] = &INSN_VAR_LOCATION_LOC (insn);
       return data;
@@ -1132,7 +1130,7 @@ lra_set_insn_recog_data (rtx insn)
 	  = (insn_static_data->operand[i].constraint[0] == '=' ? OP_OUT
 	     : insn_static_data->operand[i].constraint[0] == '+' ? OP_INOUT
 	     : OP_IN);
-      data->alternative_enabled_p = NULL;
+      data->enabled_alternatives = ALL_ALTERNATIVES;
     }
   else
     {
@@ -1159,27 +1157,7 @@ lra_set_insn_recog_data (rtx insn)
 	  memcpy (locs, recog_data.dup_loc, n * sizeof (rtx *));
 	}
       data->dup_loc = locs;
-      if (HAVE_ATTR_enabled)
-	{
-	  bool *bp;
-
-	  n = insn_static_data->n_alternatives;
-	  lra_assert (n >= 0);
-	  data->alternative_enabled_p = bp = XNEWVEC (bool, n);
-	  /* Cache the insn because we don't want to call extract_insn
-	     from get_attr_enabled as extract_insn modifies
-	     which_alternative.  The attribute enabled should not depend
-	     on insn operands, operand modes, operand types, and operand
-	     constraints.  It should depend on the architecture.  If it
-	     is not true, we should rewrite this file code to use
-	     extract_insn instead of less expensive insn_extract.  */
-	  recog_data.insn = insn;
-	  for (i = 0; i < n; i++)
-	    {
-	      which_alternative = i;
-	      bp[i] = get_attr_enabled (insn);
-	    }
-	}
+      data->enabled_alternatives = get_enabled_alternatives (insn);
     }
   if (GET_CODE (PATTERN (insn)) == CLOBBER || GET_CODE (PATTERN (insn)) == USE)
     insn_static_data->hard_regs = NULL;
@@ -1370,18 +1348,19 @@ lra_update_insn_recog_data (rtx insn)
 #ifdef ENABLE_CHECKING
       {
 	int i;
-	bool *bp;
+	alternative_mask enabled;
 
 	n = insn_static_data->n_alternatives;
-	bp = data->alternative_enabled_p;
-	lra_assert (n >= 0 && bp != NULL);
+	enabled = data->enabled_alternatives;
+	lra_assert (n >= 0);
 	/* Cache the insn to prevent extract_insn call from
 	   get_attr_enabled.  */
 	recog_data.insn = insn;
 	for (i = 0; i < n; i++)
 	  {
 	    which_alternative = i;
-	    lra_assert (bp[i] == get_attr_enabled (insn));
+	    lra_assert (TEST_BIT (enabled, i)
+			== (bool) get_attr_enabled (insn));
 	  }
       }
 #endif
@@ -1448,6 +1427,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].no_stack_p = false;
 #endif
   CLEAR_HARD_REG_SET (lra_reg_info[i].conflict_hard_regs);
+  CLEAR_HARD_REG_SET (lra_reg_info[i].actual_call_used_reg_set);
   lra_reg_info[i].preferred_hard_regno1 = -1;
   lra_reg_info[i].preferred_hard_regno2 = -1;
   lra_reg_info[i].preferred_hard_regno_profit1 = 0;
@@ -2365,7 +2345,18 @@ lra (FILE *f)
 	  lra_eliminate (false, false);
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
-	    lra_inheritance ();
+	    {
+	      if (flag_use_caller_save)
+		{
+		  if (live_p)
+		    lra_clear_live_ranges ();
+		  /* As a side-effect of lra_create_live_ranges, we calculate
+		     actual_call_used_reg_set,  which is needed during
+		     lra_inheritance.  */
+		  lra_create_live_ranges (true);
+		}
+	      lra_inheritance ();
+	    }
 	  if (live_p)
 	    lra_clear_live_ranges ();
 	  /* We need live ranges for lra_assign -- so build them.  */

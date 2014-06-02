@@ -61,6 +61,11 @@ static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx, bool);
 static void validate_replace_src_1 (rtx *, void *);
 static rtx split_insn (rtx);
 
+struct target_recog default_target_recog;
+#if SWITCHABLE_TARGET
+struct target_recog *this_target_recog = &default_target_recog;
+#endif
+
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
    the functions in optabs.c and expmed.c (most of the time).
@@ -2137,6 +2142,48 @@ mode_dependent_address_p (rtx addr, addr_space_t addrspace)
   return targetm.mode_dependent_address_p (addr, addrspace);
 }
 
+/* Return the mask of operand alternatives that are allowed for INSN.
+   This mask depends only on INSN and on the current target; it does not
+   depend on things like the values of operands.  */
+
+alternative_mask
+get_enabled_alternatives (rtx insn)
+{
+  /* Quick exit for asms and for targets that don't use the "enabled"
+     attribute.  */
+  int code = INSN_CODE (insn);
+  if (code < 0 || !HAVE_ATTR_enabled)
+    return ALL_ALTERNATIVES;
+
+  /* Calling get_attr_enabled can be expensive, so cache the mask
+     for speed.  */
+  if (this_target_recog->x_enabled_alternatives[code])
+    return this_target_recog->x_enabled_alternatives[code];
+
+  /* Temporarily install enough information for get_attr_enabled to assume
+     that the insn operands are already cached.  As above, the attribute
+     mustn't depend on the values of operands, so we don't provide their
+     real values here.  */
+  rtx old_insn = recog_data.insn;
+  int old_alternative = which_alternative;
+
+  recog_data.insn = insn;
+  alternative_mask enabled = ALL_ALTERNATIVES;
+  int n_alternatives = insn_data[code].n_alternatives;
+  for (int i = 0; i < n_alternatives; i++)
+    {
+      which_alternative = i;
+      if (!get_attr_enabled (insn))
+	enabled &= ~ALTERNATIVE_BIT (i);
+    }
+
+  recog_data.insn = old_insn;
+  which_alternative = old_alternative;
+
+  this_target_recog->x_enabled_alternatives[code] = enabled;
+  return enabled;
+}
+
 /* Like extract_insn, but save insn extracted and don't extract again, when
    called again for the same insn expecting that recog_data still contain the
    valid information.  This is used primary by gen_attr infrastructure that
@@ -2269,19 +2316,7 @@ extract_insn (rtx insn)
 
   gcc_assert (recog_data.n_alternatives <= MAX_RECOG_ALTERNATIVES);
 
-  if (INSN_CODE (insn) < 0)
-    for (i = 0; i < recog_data.n_alternatives; i++)
-      recog_data.alternative_enabled_p[i] = true;
-  else
-    {
-      recog_data.insn = insn;
-      for (i = 0; i < recog_data.n_alternatives; i++)
-	{
-	  which_alternative = i;
-	  recog_data.alternative_enabled_p[i]
-	    = HAVE_ATTR_enabled ? get_attr_enabled (insn) : 1;
-	}
-    }
+  recog_data.enabled_alternatives = get_enabled_alternatives (insn);
 
   recog_data.insn = NULL;
   which_alternative = -1;
@@ -2314,7 +2349,7 @@ preprocess_constraints (void)
 	  op_alt[j].matches = -1;
 	  op_alt[j].matched = -1;
 
-	  if (!recog_data.alternative_enabled_p[j])
+	  if (!TEST_BIT (recog_data.enabled_alternatives, j))
 	    {
 	      p = skip_alternative (p);
 	      continue;
@@ -2490,7 +2525,7 @@ constrain_operands (int strict)
       int lose = 0;
       funny_match_index = 0;
 
-      if (!recog_data.alternative_enabled_p[which_alternative])
+      if (!TEST_BIT (recog_data.enabled_alternatives, which_alternative))
 	{
 	  int i;
 
@@ -4163,4 +4198,20 @@ rtl_opt_pass *
 make_pass_split_for_shorten_branches (gcc::context *ctxt)
 {
   return new pass_split_for_shorten_branches (ctxt);
+}
+
+/* (Re)initialize the target information after a change in target.  */
+
+void
+recog_init ()
+{
+  /* The information is zero-initialized, so we don't need to do anything
+     first time round.  */
+  if (!this_target_recog->x_initialized)
+    {
+      this_target_recog->x_initialized = true;
+      return;
+    }
+  memset (this_target_recog->x_enabled_alternatives, 0,
+	  sizeof (this_target_recog->x_enabled_alternatives));
 }

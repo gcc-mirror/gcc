@@ -410,3 +410,6 @@
   /* Implemented by aarch64_crypto_pmull<mode>.  */
   VAR1 (BINOPP, crypto_pmull, 0, di)
   VAR1 (BINOPP, crypto_pmull, 0, v2di)
+
+  /* Meta-op to check lane bounds of immediate in aarch64_expand_builtin.  */
+  VAR1 (BINOPV, im_lane_bound, 0, si)

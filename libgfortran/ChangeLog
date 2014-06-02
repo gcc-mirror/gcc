@@ -1,3 +1,35 @@
+2014-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* intrinsics/getcwd.c: Include stdlib.h.
+
+2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h (xrealloc): New prototype.
+	* runtime/memory.c (xrealloc): New function.
+	* io/fbuf.c (fbuf_alloc): Use xrealloc.
+	* io/list_read.c (push_char_default): Likewise.
+	(push_char4): Likewise.
+
+2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/61310
+	* intrinsics/ctime.c (strctime): Rename to gf_ctime, use snprintf
+	instead of strftime.
+	(fdate): Use gf_ctime.
+	(fdate_sub): Likewise.
+	(ctime): Likewise.
+	(ctime_sub): Likewise.
+
+2014-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/55117
+	* io/list_read.c (extended_look_ahead): New helper function to
+	scan the namelist name and look for matches with the new '+'
+	extended type parent indicator.  (str_comp_extended): New
+	helper function to compare the namelist name with the varname
+	namelist. (find_nml_name): Use the new helper functions to match
+	the extended type varnames.
+
 2014-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/61173
@@ -273,7 +305,7 @@
 	line_buffer_pos for line_buffer look ahead.
 	(read_logical, read_integer, parse_real, read_real, check_type):
 	Adjust location of free_line to after generating error messages
-	to retain the correct item count for the message. 
+	to retain the correct item count for the message.
 
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -296,7 +328,7 @@
 	checks for library ok. (new_unit): Do cleanup after error.
 	(st_open): Do proper return after error.
 	* io/transfer.c (data_transfer_init): Likewise.
-	
+
 2013-12-11  Tobias Burnus  <burnus@net-b.de>
 
 	* config/fpu-387.h (sigill_hdlr, get_fpu_rounding_mode): Emit SSE

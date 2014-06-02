@@ -1748,13 +1748,13 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
   if (max_count)
     {
       int factor = (count_sum * 1000) / max_count;
-      HOST_WIDEST_INT evaluation = (((HOST_WIDEST_INT) time_benefit * factor)
+      int64_t evaluation = (((int64_t) time_benefit * factor)
 				    / size_cost);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
 		 "size: %i, count_sum: " HOST_WIDE_INT_PRINT_DEC
-		 ") -> evaluation: " HOST_WIDEST_INT_PRINT_DEC
+		 ") -> evaluation: " "%"PRId64
 		 ", threshold: %i\n",
 		 time_benefit, size_cost, (HOST_WIDE_INT) count_sum,
 		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
@@ -1763,13 +1763,13 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
     }
   else
     {
-      HOST_WIDEST_INT evaluation = (((HOST_WIDEST_INT) time_benefit * freq_sum)
+      int64_t evaluation = (((int64_t) time_benefit * freq_sum)
 				    / size_cost);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
 		 "size: %i, freq_sum: %i) -> evaluation: "
-		 HOST_WIDEST_INT_PRINT_DEC ", threshold: %i\n",
+		 "%"PRId64 ", threshold: %i\n",
 		 time_benefit, size_cost, freq_sum, evaluation,
 		 PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
 
@@ -2459,7 +2459,7 @@ ipcp_edge_removal_hook (struct cgraph_edge *cs, void *)
    parameter with the given INDEX.  */
 
 static tree
-get_clone_agg_value (struct cgraph_node *node, HOST_WIDEST_INT offset,
+get_clone_agg_value (struct cgraph_node *node, HOST_WIDE_INT offset,
 		     int index)
 {
   struct ipa_agg_replacement_value *aggval;

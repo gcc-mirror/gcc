@@ -270,6 +270,7 @@
     UNSPEC_UZP2		; Used in vector permute patterns.
     UNSPEC_TRN1		; Used in vector permute patterns.
     UNSPEC_TRN2		; Used in vector permute patterns.
+    UNSPEC_EXT		; Used in aarch64-simd.md.
     UNSPEC_AESE		; Used in aarch64-simd.md.
     UNSPEC_AESD         ; Used in aarch64-simd.md.
     UNSPEC_AESMC        ; Used in aarch64-simd.md.

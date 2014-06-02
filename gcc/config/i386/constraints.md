@@ -18,8 +18,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;     B     H
-;;;           h j
+;;;           H
+;;;           h j            w  z
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -91,6 +91,9 @@
 (define_register_constraint "x" "TARGET_SSE ? SSE_REGS : NO_REGS"
  "Any SSE register.")
 
+(define_register_constraint "v" "TARGET_SSE ? ALL_SSE_REGS : NO_REGS"
+ "Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).")
+
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  z	First SSE register.
 ;;  i	SSE2 inter-unit moves to SSE register enabled
@@ -144,17 +147,24 @@
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
  "@internal Any x87 register when 80387 FP arithmetic is enabled.")
 
-(define_register_constraint "v" "TARGET_SSE ? ALL_SSE_REGS : NO_REGS"
- "Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).")
+;; We use the B prefix to denote any number of internal operands:
+;;  s  Sibcall memory operand, not valid for TARGET_X32
+;;  w  Call memory operand, not valid for TARGET_X32
+;;  z  Constant call address operand.
 
-(define_constraint "z"
-  "@internal Constant call address operand."
-  (match_operand 0 "constant_call_address_operand"))
+(define_constraint "Bs"
+  "@internal Sibcall memory operand."
+  (and (not (match_test "TARGET_X32"))
+       (match_operand 0 "sibcall_memory_operand")))
 
-(define_constraint "w"
+(define_constraint "Bw"
   "@internal Call memory operand."
   (and (not (match_test "TARGET_X32"))
        (match_operand 0 "memory_operand")))
+
+(define_constraint "Bz"
+  "@internal Constant call address operand."
+  (match_operand 0 "constant_call_address_operand"))
 
 ;; Integer constant constraints.
 (define_constraint "I"

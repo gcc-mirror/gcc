@@ -310,7 +310,7 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
     internal_error ("%s does not support dump_bb_for_graph",
 		    cfg_hooks->name);
   if (bb->count)
-    pp_printf (pp, "COUNT:" HOST_WIDEST_INT_PRINT_DEC, bb->count);
+    pp_printf (pp, "COUNT:" "%"PRId64, bb->count);
   pp_printf (pp, " FREQ:%i |", bb->frequency);
   pp_write_text_to_stream (pp);
   if (!(dump_flags & TDF_SLIM))

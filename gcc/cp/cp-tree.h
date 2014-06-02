@@ -125,7 +125,7 @@ c-common.h, not after.
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
    1: TYPE_HAS_USER_CONSTRUCTOR.
-   2: unused
+   2: TYPE_HAS_LATE_RETURN_TYPE (in FUNCTION_TYPE, METHOD_TYPE)
    3: TYPE_FOR_JAVA.
    4: TYPE_HAS_NONTRIVIAL_DESTRUCTOR
    5: CLASS_TYPE_P (in RECORD_TYPE and UNION_TYPE)
@@ -3403,6 +3403,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero for a class type means that the class type has a
    user-declared constructor.  */
 #define TYPE_HAS_USER_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1 (NODE))
+
+/* Nonzero means that the FUNCTION_TYPE or METHOD_TYPE has a
+   late-specified return type.  */
+#define TYPE_HAS_LATE_RETURN_TYPE(NODE) \
+  (TYPE_LANG_FLAG_2 (FUNC_OR_METHOD_CHECK (NODE)))
 
 /* When appearing in an INDIRECT_REF, it means that the tree structure
    underneath is actually a call to a constructor.  This is needed

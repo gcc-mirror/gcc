@@ -21,8 +21,9 @@
    permissions described in the GCC Runtime Library Exception, version
    3.1, as published by the Free Software Foundation.
 
-   You should have received a copy of the GNU General Public License
-   along with GCC; see the file COPYING3.  If not see
+   You should have received a copy of the GNU General Public License and
+   a copy of the GCC Runtime Library Exception along with this program;
+   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
 #ifndef GCC_ARM_H
@@ -2394,5 +2395,5 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #endif
 
 #define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
-
+#define TARGET_SUPPORTS_WIDE_INT 1
 #endif /* ! GCC_ARM_H */

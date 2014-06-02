@@ -1068,7 +1068,7 @@ static tree rs6000_handle_longcall_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_altivec_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_struct_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
-static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+static void rs6000_emit_set_long_const (rtx, HOST_WIDE_INT);
 static int rs6000_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool rs6000_debug_rtx_costs (rtx, int, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, enum machine_mode, addr_space_t,
@@ -7849,53 +7849,50 @@ rs6000_conditional_register_usage (void)
 }
 
 
-/* Try to output insns to set TARGET equal to the constant C if it can
-   be done in less than N insns.  Do all computations in MODE.
-   Returns the place where the output has been placed if it can be
-   done and the insns have been emitted.  If it would take more than N
-   insns, zero is returned and no insns and emitted.  */
+/* Output insns to set DEST equal to the constant SOURCE as a series of
+   lis, ori and shl instructions and return TRUE.  */
 
-rtx
-rs6000_emit_set_const (rtx dest, enum machine_mode mode,
-		       rtx source, int n ATTRIBUTE_UNUSED)
+bool
+rs6000_emit_set_const (rtx dest, rtx source)
 {
-  rtx result, insn, set;
-  HOST_WIDE_INT c0, c1;
+  enum machine_mode mode = GET_MODE (dest);
+  rtx temp, insn, set;
+  HOST_WIDE_INT c;
 
+  gcc_checking_assert (CONST_INT_P (source));
+  c = INTVAL (source);
   switch (mode)
     {
-    case  QImode:
+    case QImode:
     case HImode:
-      if (dest == NULL)
-	dest = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (VOIDmode, dest, source));
-      return dest;
+      return true;
 
     case SImode:
-      result = !can_create_pseudo_p () ? dest : gen_reg_rtx (SImode);
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (SImode);
 
-      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (result),
-			      GEN_INT (INTVAL (source)
-				       & (~ (HOST_WIDE_INT) 0xffff))));
+      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (temp),
+			      GEN_INT (c & ~(HOST_WIDE_INT) 0xffff)));
       emit_insn (gen_rtx_SET (VOIDmode, dest,
-			      gen_rtx_IOR (SImode, copy_rtx (result),
-					   GEN_INT (INTVAL (source) & 0xffff))));
-      result = dest;
+			      gen_rtx_IOR (SImode, copy_rtx (temp),
+					   GEN_INT (c & 0xffff))));
       break;
 
     case DImode:
-      switch (GET_CODE (source))
+      if (!TARGET_POWERPC64)
 	{
-	case CONST_INT:
-	  c0 = INTVAL (source);
-	  c1 = -(c0 < 0);
-	  break;
+	  rtx hi, lo;
 
-	default:
-	  gcc_unreachable ();
+	  hi = operand_subword_force (copy_rtx (dest), WORDS_BIG_ENDIAN == 0,
+				      DImode);
+	  lo = operand_subword_force (dest, WORDS_BIG_ENDIAN != 0,
+				      DImode);
+	  emit_move_insn (hi, GEN_INT (c >> 32));
+	  c = ((c & 0xffffffff) ^ 0x80000000) - 0x80000000;
+	  emit_move_insn (lo, GEN_INT (c));
 	}
-
-      result = rs6000_emit_set_long_const (dest, c0, c1);
+      else
+	rs6000_emit_set_long_const (dest, c);
       break;
 
     default:
@@ -7905,107 +7902,103 @@ rs6000_emit_set_const (rtx dest, enum machine_mode mode,
   insn = get_last_insn ();
   set = single_set (insn);
   if (! CONSTANT_P (SET_SRC (set)))
-    set_unique_reg_note (insn, REG_EQUAL, source);
+    set_unique_reg_note (insn, REG_EQUAL, GEN_INT (c));
 
-  return result;
+  return true;
 }
 
-/* Having failed to find a 3 insn sequence in rs6000_emit_set_const,
-   fall back to a straight forward decomposition.  We do this to avoid
-   exponential run times encountered when looking for longer sequences
-   with rs6000_emit_set_const.  */
-static rtx
-rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
-{
-  if (!TARGET_POWERPC64)
-    {
-      rtx operand1, operand2;
+/* Subroutine of rs6000_emit_set_const, handling PowerPC64 DImode.
+   Output insns to set DEST equal to the constant C as a series of
+   lis, ori and shl instructions.  */
 
-      operand1 = operand_subword_force (dest, WORDS_BIG_ENDIAN == 0,
-					DImode);
-      operand2 = operand_subword_force (copy_rtx (dest), WORDS_BIG_ENDIAN != 0,
-					DImode);
-      emit_move_insn (operand1, GEN_INT (c1));
-      emit_move_insn (operand2, GEN_INT (c2));
+static void
+rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
+{
+  rtx temp;
+  HOST_WIDE_INT ud1, ud2, ud3, ud4;
+
+  ud1 = c & 0xffff;
+  c = c >> 16;
+  ud2 = c & 0xffff;
+  c = c >> 16;
+  ud3 = c & 0xffff;
+  c = c >> 16;
+  ud4 = c & 0xffff;
+
+  if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
+      || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
+    emit_move_insn (dest, GEN_INT ((ud1 ^ 0x8000) - 0x8000));
+
+  else if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000))
+	   || (ud4 == 0 && ud3 == 0 && ! (ud2 & 0x8000)))
+    {
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+
+      emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
+		      GEN_INT (((ud2 << 16) ^ 0x80000000) - 0x80000000));
+      if (ud1 != 0)
+	emit_move_insn (dest,
+			gen_rtx_IOR (DImode, copy_rtx (temp),
+				     GEN_INT (ud1)));
+    }
+  else if (ud3 == 0 && ud4 == 0)
+    {
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+
+      gcc_assert (ud2 & 0x8000);
+      emit_move_insn (copy_rtx (temp),
+		      GEN_INT (((ud2 << 16) ^ 0x80000000) - 0x80000000));
+      if (ud1 != 0)
+	emit_move_insn (copy_rtx (temp),
+			gen_rtx_IOR (DImode, copy_rtx (temp),
+				     GEN_INT (ud1)));
+      emit_move_insn (dest,
+		      gen_rtx_ZERO_EXTEND (DImode,
+					   gen_lowpart (SImode,
+							copy_rtx (temp))));
+    }
+  else if ((ud4 == 0xffff && (ud3 & 0x8000))
+	   || (ud4 == 0 && ! (ud3 & 0x8000)))
+    {
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+
+      emit_move_insn (copy_rtx (temp),
+		      GEN_INT (((ud3 << 16) ^ 0x80000000) - 0x80000000));
+      if (ud2 != 0)
+	emit_move_insn (copy_rtx (temp),
+			gen_rtx_IOR (DImode, copy_rtx (temp),
+				     GEN_INT (ud2)));
+      emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
+		      gen_rtx_ASHIFT (DImode, copy_rtx (temp),
+				      GEN_INT (16)));
+      if (ud1 != 0)
+	emit_move_insn (dest,
+			gen_rtx_IOR (DImode, copy_rtx (temp),
+				     GEN_INT (ud1)));
     }
   else
     {
-      HOST_WIDE_INT ud1, ud2, ud3, ud4;
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
 
-      ud1 = c1 & 0xffff;
-      ud2 = (c1 & 0xffff0000) >> 16;
-      c2 = c1 >> 32;
-      ud3 = c2 & 0xffff;
-      ud4 = (c2 & 0xffff0000) >> 16;
+      emit_move_insn (copy_rtx (temp),
+		      GEN_INT (((ud4 << 16) ^ 0x80000000) - 0x80000000));
+      if (ud3 != 0)
+	emit_move_insn (copy_rtx (temp),
+			gen_rtx_IOR (DImode, copy_rtx (temp),
+				     GEN_INT (ud3)));
 
-      if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
-	  || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
-	emit_move_insn (dest, GEN_INT ((ud1 ^ 0x8000) - 0x8000));
-
-      else if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000))
-	       || (ud4 == 0 && ud3 == 0 && ! (ud2 & 0x8000)))
-	{
-	  emit_move_insn (dest, GEN_INT (((ud2 << 16) ^ 0x80000000)
-					 - 0x80000000));
-	  if (ud1 != 0)
-	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest),
-					 GEN_INT (ud1)));
-	}
-      else if (ud3 == 0 && ud4 == 0)
-	{
-	  gcc_assert (ud2 & 0x8000);
-	  emit_move_insn (dest, GEN_INT (((ud2 << 16) ^ 0x80000000)
-					 - 0x80000000));
-	  if (ud1 != 0)
-	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest),
-					 GEN_INT (ud1)));
-	  emit_move_insn (copy_rtx (dest),
-			  gen_rtx_ZERO_EXTEND (DImode,
-					       gen_lowpart (SImode,
-							    copy_rtx (dest))));
-	}
-      else if ((ud4 == 0xffff && (ud3 & 0x8000))
-	       || (ud4 == 0 && ! (ud3 & 0x8000)))
-	{
-	  emit_move_insn (dest, GEN_INT (((ud3 << 16) ^ 0x80000000)
-					 - 0x80000000));
-	  if (ud2 != 0)
-	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest),
-					 GEN_INT (ud2)));
-	  emit_move_insn (copy_rtx (dest),
-			  gen_rtx_ASHIFT (DImode, copy_rtx (dest),
-					  GEN_INT (16)));
-	  if (ud1 != 0)
-	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest),
-					 GEN_INT (ud1)));
-	}
-      else
-	{
-	  emit_move_insn (dest, GEN_INT (((ud4 << 16) ^ 0x80000000)
-					 - 0x80000000));
-	  if (ud3 != 0)
-	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest),
-					 GEN_INT (ud3)));
-
-	  emit_move_insn (copy_rtx (dest),
-			  gen_rtx_ASHIFT (DImode, copy_rtx (dest),
-					  GEN_INT (32)));
-	  if (ud2 != 0)
-	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest),
-					 GEN_INT (ud2 << 16)));
-	  if (ud1 != 0)
-	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest),
-					 GEN_INT (ud1)));
-	}
+      emit_move_insn (ud2 != 0 || ud1 != 0 ? copy_rtx (temp) : dest,
+		      gen_rtx_ASHIFT (DImode, copy_rtx (temp),
+				      GEN_INT (32)));
+      if (ud2 != 0)
+	emit_move_insn (ud1 != 0 ? copy_rtx (temp) : dest,
+			gen_rtx_IOR (DImode, copy_rtx (temp),
+				     GEN_INT (ud2 << 16)));
+      if (ud1 != 0)
+	emit_move_insn (dest,
+			gen_rtx_IOR (DImode, copy_rtx (temp),
+				     GEN_INT (ud1)));
     }
-  return dest;
 }
 
 /* Helper for the following.  Get rid of [r+r] memory refs

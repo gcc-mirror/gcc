@@ -58,3 +58,17 @@ xcalloc (size_t nmemb, size_t size)
 
   return p;
 }
+
+
+void *
+xrealloc (void *ptr, size_t size)
+{
+  if (size == 0)
+    size = 1;
+
+  void *newp = realloc (ptr, size);
+  if (!newp)
+    os_error ("Memory allocation failure in xrealloc");
+
+  return newp;
+}

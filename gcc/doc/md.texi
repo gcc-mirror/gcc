@@ -1589,7 +1589,10 @@ See, for example, the @samp{mulsi3} insn of the ARM@.
 Declares the instruction to be commutative for this operand and the
 following operand.  This means that the compiler may interchange the
 two operands if that is the cheapest way to make all operands fit the
-constraints.
+constraints.  @samp{%} applies to all alternatives and must appear as
+the first character in the constraint.  Only input operands can use
+@samp{%}.
+
 @ifset INTERNALS
 This is often used in patterns for addition instructions
 that really have only two operands: the result must go in one of the
@@ -4094,11 +4097,11 @@ Unsigned constant valid for BccUI instructions
 @subsection Disable insn alternatives using the @code{enabled} attribute
 @cindex enabled
 
-The @code{enabled} insn attribute may be used to disable certain insn
-alternatives for machine-specific reasons.  This is useful when adding
-new instructions to an existing pattern which are only available for
-certain cpu architecture levels as specified with the @code{-march=}
-option.
+The @code{enabled} insn attribute may be used to disable insn
+alternatives that are not available for the current subtarget.
+This is useful when adding new instructions to an existing pattern
+which are only available for certain cpu architecture levels as
+specified with the @code{-march=} option.
 
 If an insn alternative is disabled, then it will never be used.  The
 compiler treats the constraints for the disabled alternative as
@@ -4112,6 +4115,10 @@ in the machine description files:
 A definition of the @code{enabled} insn attribute.  The attribute is
 defined as usual using the @code{define_attr} command.  This
 definition should be based on other insn attributes and/or target flags.
+The attribute must be a static property of the subtarget; that is, it
+must not depend on the current operands or any other dynamic context
+(for example, the location of the insn within the body of a loop).
+
 The @code{enabled} attribute is a numeric attribute and should evaluate to
 @code{(const_int 1)} for an enabled alternative and to
 @code{(const_int 0)} otherwise.

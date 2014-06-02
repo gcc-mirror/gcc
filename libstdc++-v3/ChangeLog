@@ -1,3 +1,62 @@
+2014-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61374
+	* include/experimental/string_view (operator basic_string): Correct
+	order of arguments.
+	(to_string): Replace with member function.
+	Add inline specifiers. Remove unused header. Remove _S_empty_rep and
+	allow _M_str to be null.
+	* testsuite/experimental/string_view/cons/char/1.cc: Adjust to new
+	default constructor semantics.
+	* testsuite/experimental/string_view/cons/wchar_t/1.cc: Likewise.
+	* testsuite/experimental/string_view/operations/copy/char/1.cc: Fix
+	copyright dates. Remove unused header.
+	* testsuite/experimental/string_view/operations/copy/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/data/char/1.cc:
+	Fix copyright dates. Adjust to new default constructor semantics.
+	* testsuite/experimental/string_view/operations/data/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/to_string/1.cc: New.
+
+	* include/bits/uses_allocator.h (__uses_allocator_helper): Simplify.
+	(__uses_allocator_arg): Remove unused type.
+	(__uses_alloc0): Turn into a trivial type.
+	(__uses_alloc): Add missing template parameter in primary template.
+	(__uses_alloc_impl): Rename to __uses_alloc_t.
+
+2014-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Adjust regexp to
+	work with previous versions of Tcl.
+
+	* doc/xml/manual/appendix_contributing.xml (list.copyright): Replace
+	Benjamin's old email address.
+
+	* doc/xml/manual/appendix_contributing.xml (list.copyright): Add
+	Paolo's address too.
+
+2014-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr2/bool_set: Use UTF-8 for accented characters.
+	* scripts/run_doxygen: Handle Doxygen 1.8.x change.
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.8.6 format. Set
+	QUIET=YES, remove obsolete SYMBOL_CACHE_SIZE tag.
+
+2014-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61329
+	* include/bits/regex_automaton.tcc (_State_base::_M_print): Add
+	inline specifier.
+	(_State_base::_M_dot): Likewise.
+
+2014-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/map.h: Fix typo in comment; minor formatting fix.
+	* include/profile/multimap.h: Likewise.
+	* include/profile/set.h: Likewise.
+	* include/profile/multiset.h: Likewise.
+
 2014-05-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/profile/array: Clean useless white chars.

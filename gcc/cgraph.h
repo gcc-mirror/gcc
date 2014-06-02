@@ -147,6 +147,13 @@ public:
       return comdat_group_;
     }
 
+  tree get_comdat_group_id ()
+    {
+      if (comdat_group_ && TREE_CODE (comdat_group_) != IDENTIFIER_NODE)
+	comdat_group_ = DECL_ASSEMBLER_NAME (comdat_group_);
+      return comdat_group_;
+    }
+
   /* Set comdat group.  */
   void set_comdat_group (tree group)
     {
@@ -249,6 +256,13 @@ struct GTY(()) cgraph_global_info {
 
 struct GTY(()) cgraph_rtl_info {
    unsigned int preferred_incoming_stack_boundary;
+
+  /* Call unsaved hard registers really used by the corresponding
+     function (including ones used by functions called by the
+     function).  */
+  HARD_REG_SET function_used_regs;
+  /* Set if function_used_regs is valid.  */
+  unsigned function_used_regs_valid: 1;
 };
 
 /* Represent which DECL tree (or reference to such tree)
@@ -1620,15 +1634,5 @@ symtab_in_same_comdat_p (symtab_node *one, symtab_node *two)
     }
 
   return one->get_comdat_group () == two->get_comdat_group ();
-}
-
-/* Return comdat group of DECL.  */
-static inline tree
-decl_comdat_group (tree node)
-{
-  struct symtab_node *snode = symtab_get_node (node);
-  if (!snode)
-    return NULL;
-  return snode->get_comdat_group ();
 }
 #endif  /* GCC_CGRAPH_H  */

@@ -1058,7 +1058,7 @@ the default value is @code{BIGGEST_ALIGNMENT}.
 
 On systems that use ELF, the default (in @file{config/elfos.h}) is
 the largest supported 32-bit ELF section alignment representable on
-a 32-bit host e.g. @samp{(((unsigned HOST_WIDEST_INT) 1 << 28) * 8)}.
+a 32-bit host e.g. @samp{(((uint64_t) 1 << 28) * 8)}.
 On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac

@@ -3,7 +3,7 @@
    Based on gcc.dg/wtr-conversion-1.c  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wtraditional" } */
+/* { dg-options "-Wtraditional-conversion" } */
 
 extern void foo_i (int);
 extern void foo_f (float);

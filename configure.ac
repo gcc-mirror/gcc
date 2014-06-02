@@ -436,7 +436,7 @@ AS_HELP_STRING([--disable-libstdcxx],
 ENABLE_LIBSTDCXX=$enableval,
 ENABLE_LIBSTDCXX=default)
 [if test "${ENABLE_LIBSTDCXX}" = "no" ; then
-  noconfigdirs="$noconfigdirs libstdc++-v3"
+  noconfigdirs="$noconfigdirs target-libstdc++-v3"
 fi]
 
 # Save it here so that, even in case of --enable-libgcj, if the Java
@@ -2079,9 +2079,17 @@ AS_HELP_STRING(
   fi
 ],[])
 
-# Disable libitm, libsanitizer, libvtv if we're not building C++
+# Disable libcilkrts, libitm, libsanitizer, libvtv if we're not building C++
 case ,${enable_languages}, in
-  *,c++,*) ;;
+  *,c++,*)
+    # Disable libcilkrts, libitm, libsanitizer if we're not building libstdc++
+    case "${noconfigdirs}" in
+      *target-libstdc++-v3*)
+        noconfigdirs="$noconfigdirs target-libcilkrts target-libitm target-libsanitizer"
+        ;;
+      *) ;;
+    esac
+    ;;
   *)
     noconfigdirs="$noconfigdirs target-libcilkrts target-libitm target-libsanitizer target-libvtv"
     ;;

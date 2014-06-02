@@ -30,6 +30,8 @@ toolexeclibgodir = $(nover_glibgo_toolexeclibdir)/go/$(gcc_version)/$(target_ali
 LIBFFI = @LIBFFI@
 LIBFFIINCS = @LIBFFIINCS@
 
+LIBATOMIC = @LIBATOMIC@
+
 WARN_CFLAGS = $(WARN_FLAGS) $(WERROR)
 
 # -I/-D flags to pass when compiling.
@@ -1949,8 +1951,7 @@ libgo_la_LDFLAGS = \
 
 libgo_la_LIBADD = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
-	../libatomic/libatomic_convenience.la \
-	$(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
+	$(LIBATOMIC) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgobegin_a_SOURCES = \
 	runtime/go-main.c

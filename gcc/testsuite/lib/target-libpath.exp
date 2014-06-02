@@ -28,6 +28,21 @@ set orig_gcc_exec_prefix_checked 0
 
 
 #######################################
+# proc set_gcc_exec_prefix_env_var { }
+#######################################
+
+proc set_gcc_exec_prefix_env_var { } {
+  global TEST_GCC_EXEC_PREFIX
+  global env
+
+  # Set GCC_EXEC_PREFIX for the compiler under test to pick up files not in
+  # the build tree from a specified location (normally the install tree).
+  if [info exists TEST_GCC_EXEC_PREFIX] {
+    setenv GCC_EXEC_PREFIX "$TEST_GCC_EXEC_PREFIX"
+  }
+}
+
+#######################################
 # proc set_ld_library_path_env_vars { }
 #######################################
 
@@ -49,7 +64,6 @@ proc set_ld_library_path_env_vars { } {
   global orig_ld_library_path_64
   global orig_dyld_library_path
   global orig_gcc_exec_prefix
-  global TEST_GCC_EXEC_PREFIX
   global env
 
   # Save the original GCC_EXEC_PREFIX.
@@ -61,11 +75,7 @@ proc set_ld_library_path_env_vars { } {
     set orig_gcc_exec_prefix_checked 1
   }
 
-  # Set GCC_EXEC_PREFIX for the compiler under test to pick up files not in
-  # the build tree from a specified location (normally the install tree).
-  if [info exists TEST_GCC_EXEC_PREFIX] {
-    setenv GCC_EXEC_PREFIX "$TEST_GCC_EXEC_PREFIX"
-  }
+  set_gcc_exec_prefix_env_var
 
   # Setting the ld library path causes trouble when testing cross-compilers.
   if { [is_remote target] } {
@@ -164,6 +174,22 @@ proc set_ld_library_path_env_vars { } {
 }
 
 #######################################
+# proc restore_gcc_exec_prefix_env_var { }
+#######################################
+
+proc restore_gcc_exec_prefix_env_var { } {
+  global orig_gcc_exec_prefix_saved
+  global orig_gcc_exec_prefix
+  global env
+
+  if { $orig_gcc_exec_prefix_saved } {
+    setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
+  } elseif [info exists env(GCC_EXEC_PREFIX)] {
+    unsetenv GCC_EXEC_PREFIX
+  }
+}
+
+#######################################
 # proc restore_ld_library_path_env_vars { }
 #######################################
 
@@ -175,21 +201,15 @@ proc restore_ld_library_path_env_vars { } {
   global orig_ld_library_path_32_saved
   global orig_ld_library_path_64_saved
   global orig_dyld_library_path_saved
-  global orig_gcc_exec_prefix_saved
   global orig_ld_library_path
   global orig_ld_run_path
   global orig_shlib_path
   global orig_ld_library_path_32
   global orig_ld_library_path_64
   global orig_dyld_library_path
-  global orig_gcc_exec_prefix
   global env
 
-  if { $orig_gcc_exec_prefix_saved } {
-    setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
-  } elseif [info exists env(GCC_EXEC_PREFIX)] {
-    unsetenv GCC_EXEC_PREFIX
-  }
+  restore_gcc_exec_prefix_env_var
 
   if { $orig_environment_saved == 0 } {
     return

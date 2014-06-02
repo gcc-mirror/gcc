@@ -3010,7 +3010,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
     {
       int swapped;
 
-      if (!recog_data.alternative_enabled_p[this_alternative_number])
+      if (!TEST_BIT (recog_data.enabled_alternatives, this_alternative_number))
 	{
 	  int i;
 

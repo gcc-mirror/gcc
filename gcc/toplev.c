@@ -1601,6 +1601,9 @@ backend_init_target (void)
   /* Depends on HARD_FRAME_POINTER_REGNUM.  */
   init_reload ();
 
+  /* Depends on the enabled attribute.  */
+  recog_init ();
+
   /* The following initialization functions need to generate rtl, so
      provide a dummy function context for them.  */
   init_dummy_function_start ();

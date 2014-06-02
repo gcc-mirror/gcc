@@ -116,6 +116,9 @@
 ;; Vector modes including 64-bit integer elements, but no floats.
 (define_mode_iterator VDQIX [V8QI V16QI V4HI V8HI V2SI V4SI DI V2DI])
 
+;; Vector modes for H, S and D types.
+(define_mode_iterator VDQHSD [V4HI V8HI V2SI V4SI V2DI])
+
 ;; Vector modes for float->int conversions.
 (define_mode_iterator VCVTF [V2SF V4SF])
 
@@ -190,6 +193,20 @@
 
 ;; Right shifts
 (define_code_iterator rshifts [ashiftrt lshiftrt])
+
+;; Binary operators whose second operand can be shifted.
+(define_code_iterator shiftable_ops [plus minus ior xor and])
+
+;; plus and minus are the only shiftable_ops for which Thumb2 allows
+;; a stack pointer opoerand.  The minus operation is a candidate for an rsub
+;; and hence only plus is supported.
+(define_code_attr t2_binop0
+  [(plus "rk") (minus "r") (ior "r") (xor "r") (and "r")])
+
+;; The instruction to use when a shiftable_ops has a shift operation as
+;; its first operand.
+(define_code_attr arith_shift_insn
+  [(plus "add") (minus "rsb") (ior "orr") (xor "eor") (and "and")])
 
 ;;----------------------------------------------------------------------------
 ;; Int iterators

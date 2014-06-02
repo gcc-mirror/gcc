@@ -3504,6 +3504,8 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
    || ((NODE) && TREE_TYPE ((NODE)) == error_mark_node))
 
 extern tree decl_assembler_name (tree);
+extern tree decl_comdat_group (tree);
+extern tree decl_comdat_group_id (tree);
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
    looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */
@@ -4348,7 +4350,6 @@ extern tree build_range_type (tree, tree, tree);
 extern tree build_nonshared_range_type (tree, tree, tree);
 extern bool subrange_type_for_debug_p (const_tree, tree *, tree *);
 extern HOST_WIDE_INT int_cst_value (const_tree);
-extern HOST_WIDEST_INT widest_int_cst_value (const_tree);
 extern tree tree_block (tree);
 extern void tree_set_block (tree, tree);
 extern location_t *block_nonartificial_location (tree);

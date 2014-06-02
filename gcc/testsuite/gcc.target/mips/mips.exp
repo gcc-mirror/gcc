@@ -305,6 +305,7 @@ foreach option {
     tree-vectorize
     unroll-all-loops
     unroll-loops
+    use-caller-save
 } {
     lappend mips_option_groups $option "-f(no-|)$option"
 }

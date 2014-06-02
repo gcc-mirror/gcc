@@ -122,6 +122,21 @@ fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
 
+# See if the user wants to configure without libatomic. This is useful if we are
+# on an architecture for which libgo does not need an atomic support library and
+# libatomic does not support our C compiler.
+AC_ARG_WITH(libatomic,
+  AS_HELP_STRING([--without-libatomic],
+                 [don't use libatomic]),
+  [:],
+  [with_libatomic=${with_libatomic_default-yes}])
+
+LIBATOMIC=
+if test "$with_libatomic" != no; then
+   LIBATOMIC=../libatomic/libatomic_convenience.la
+fi
+AC_SUBST(LIBATOMIC)
+
 # Used to tell GNU make to include a file without telling automake to
 # include it.
 go_include="-include"

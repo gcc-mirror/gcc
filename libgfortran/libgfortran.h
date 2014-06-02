@@ -771,6 +771,8 @@ internal_proto(xmalloc);
 extern void *xcalloc (size_t, size_t) __attribute__ ((malloc));
 internal_proto(xcalloc);
 
+extern void *xrealloc (void *, size_t);
+internal_proto(xrealloc);
 
 /* environ.c */
 

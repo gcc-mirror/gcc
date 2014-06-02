@@ -1,3 +1,29 @@
+2014-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61011
+	* configure.ac (--disable-libstdcxx): Set noconfigdirs correctly.
+	Disable libcilkrts, libitm, libsanitizer when not building libstdc++.
+	* configure: Regenerate.
+
+2014-05-28  Pedro Alves  <palves@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-05-28  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (VXCPU_FOR_8548): New. Default to PPC85XX.
+	(CPP_SPEC): Add entry for -mcpu=8548.
+	* config/rs6000/vxworksae.h: Reinstate. Override	VXCPU_FOR_8548.
+	* config.gcc (powerpc-wrs-vxworksae, tm_file): Add back vxworksae.h.
+
+2014-05-26  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* rtl.h (set_for_reg_notes): Declare.
+	* emit-rtl.c (set_for_reg_notes): New function.
+	(set_unique_reg_note): Use it.
+	* optabs.c (add_equal_note): Likewise
+
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* MAINTAINERS: Update my affiliation/email.

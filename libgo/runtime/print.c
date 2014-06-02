@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include <complex.h>
+#include <math.h>
 #include <stdarg.h>
 #include "runtime.h"
 #include "array.h"
@@ -9,7 +11,9 @@
 
 //static Lock debuglock;
 
-static void go_vprintf(const char*, va_list);
+// Clang requires this function to not be inlined (see below).
+static void go_vprintf(const char*, va_list)
+__attribute__((noinline));
 
 // write to goroutine-local buffer if diverting output,
 // or else standard error.
@@ -59,6 +63,24 @@ runtime_prints(const char *s)
 	gwrite(s, runtime_findnull((const byte*)s));
 }
 
+#if defined (__clang__) && (defined (__i386__) || defined (__x86_64__))
+// LLVM's code generator does not currently support split stacks for vararg
+// functions, so we disable the feature for this function under Clang. This
+// appears to be OK as long as:
+// - this function only calls non-inlined, internal-linkage (hence no dynamic
+//   loader) functions compiled with split stacks (i.e. go_vprintf), which can
+//   allocate more stack space as required;
+// - this function itself does not occupy more than BACKOFF bytes of stack space
+//   (see libgcc/config/i386/morestack.S).
+// These conditions are currently known to be satisfied by Clang on x86-32 and
+// x86-64. Note that signal handlers receive slightly less stack space than they
+// would normally do if they happen to be called while this function is being
+// run. If this turns out to be a problem we could consider increasing BACKOFF.
+void
+runtime_printf(const char *s, ...)
+__attribute__((no_split_stack));
+#endif
+
 void
 runtime_printf(const char *s, ...)
 {
@@ -105,7 +127,7 @@ go_vprintf(const char *s, va_list va)
 			runtime_printfloat(va_arg(va, float64));
 			break;
 		case 'C':
-			runtime_printcomplex(va_arg(va, __complex double));
+			runtime_printcomplex(va_arg(va, complex double));
 			break;
 		case 'i':
 			runtime_printiface(va_arg(va, Iface));
@@ -174,13 +196,12 @@ runtime_printfloat(double v)
 		gwrite("NaN", 3);
 		return;
 	}
-	i = __builtin_isinf_sign(v);
-	if(i > 0) {
-		gwrite("+Inf", 4);
-		return;
-	}
-	if(i < 0) {
-		gwrite("-Inf", 4);
+	if(isinf(v)) {
+		if(signbit(v)) {
+			gwrite("-Inf", 4);
+		} else {
+			gwrite("+Inf", 4);
+		}
 		return;
 	}
 
@@ -243,11 +264,11 @@ runtime_printfloat(double v)
 }
 
 void
-runtime_printcomplex(__complex double v)
+runtime_printcomplex(complex double v)
 {
 	gwrite("(", 1);
-	runtime_printfloat(__builtin_creal(v));
-	runtime_printfloat(__builtin_cimag(v));
+	runtime_printfloat(creal(v));
+	runtime_printfloat(cimag(v));
 	gwrite("i)", 2);
 }
 

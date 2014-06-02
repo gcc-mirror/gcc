@@ -200,17 +200,9 @@
 	  (const_string "yes")]
 	 (const_string "no")))
 
-; Allows an insn to disable certain alternatives for reasons other than
-; arch support.
-(define_attr "insn_enabled" "no,yes"
-  (const_string "yes"))
-
 ; Enable all alternatives that are both arch_enabled and insn_enabled.
  (define_attr "enabled" "no,yes"
-   (cond [(eq_attr "insn_enabled" "no")
-	  (const_string "no")
-
-	  (and (eq_attr "predicable_short_it" "no")
+   (cond [(and (eq_attr "predicable_short_it" "no")
 	       (and (eq_attr "predicated" "yes")
 	            (match_test "arm_restrict_it")))
 	  (const_string "no")
@@ -3169,7 +3161,7 @@
 
 (define_insn_and_split "*xordi3_insn"
   [(set (match_operand:DI         0 "s_register_operand" "=w,&r,&r,&r,&r,?w")
-	(xor:DI (match_operand:DI 1 "s_register_operand" "w ,%0,r ,0 ,r ,w")
+	(xor:DI (match_operand:DI 1 "s_register_operand" "%w ,0,r ,0 ,r ,w")
 		(match_operand:DI 2 "arm_xordi_operand"  "w ,r ,r ,Dg,Dg,w")))]
   "TARGET_32BIT && !TARGET_IWMMXT"
 {
@@ -5998,7 +5990,7 @@
 
 (define_split
   [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
-	(match_operand:ANY64 1 "const_double_operand" ""))]
+	(match_operand:ANY64 1 "immediate_operand" ""))]
   "TARGET_32BIT
    && reload_completed
    && (arm_const_double_inline_cost (operands[1])
@@ -9876,38 +9868,34 @@
 
 ;; Patterns to allow combination of arithmetic, cond code and shifts
 
-(define_insn "*arith_shiftsi"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r")
-        (match_operator:SI 1 "shiftable_operator"
-          [(match_operator:SI 3 "shift_operator"
-             [(match_operand:SI 4 "s_register_operand" "r,r,r,r")
-              (match_operand:SI 5 "shift_amount_operand" "M,M,M,r")])
-           (match_operand:SI 2 "s_register_operand" "rk,rk,r,rk")]))]
+(define_insn "*<arith_shift_insn>_multsi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(shiftable_ops:SI
+	 (mult:SI (match_operand:SI 2 "s_register_operand" "r,r")
+		  (match_operand:SI 3 "power_of_two_operand" ""))
+	 (match_operand:SI 1 "s_register_operand" "rk,<t2_binop0>")))]
   "TARGET_32BIT"
-  "%i1%?\\t%0, %2, %4%S3"
+  "<arith_shift_insn>%?\\t%0, %1, %2, lsl %b3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "shift" "4")
-   (set_attr "arch" "a,t2,t2,a")
-   ;; Thumb2 doesn't allow the stack pointer to be used for 
-   ;; operand1 for all operations other than add and sub. In this case 
-   ;; the minus operation is a candidate for an rsub and hence needs
-   ;; to be disabled.
-   ;; We have to make sure to disable the fourth alternative if
-   ;; the shift_operator is MULT, since otherwise the insn will
-   ;; also match a multiply_accumulate pattern and validate_change
-   ;; will allow a replacement of the constant with a register
-   ;; despite the checks done in shift_operator.
-   (set_attr_alternative "insn_enabled"
-			 [(const_string "yes")
-			  (if_then_else
-			   (match_operand:SI 1 "add_operator" "")
-			   (const_string "yes") (const_string "no"))
-			  (const_string "yes")
-			  (if_then_else
-			   (match_operand:SI 3 "mult_operator" "")
-			   (const_string "no") (const_string "yes"))])
-   (set_attr "type" "alu_shift_imm,alu_shift_imm,alu_shift_imm,alu_shift_reg")])
+   (set_attr "arch" "a,t2")
+   (set_attr "type" "alu_shift_imm")])
+
+(define_insn "*<arith_shift_insn>_shiftsi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
+	(shiftable_ops:SI
+	 (match_operator:SI 2 "shift_nomul_operator"
+	  [(match_operand:SI 3 "s_register_operand" "r,r,r")
+	   (match_operand:SI 4 "shift_amount_operand" "M,M,r")])
+	 (match_operand:SI 1 "s_register_operand" "rk,<t2_binop0>,rk")))]
+  "TARGET_32BIT && GET_CODE (operands[3]) != MULT"
+  "<arith_shift_insn>%?\\t%0, %1, %3%S2"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "shift" "4")
+   (set_attr "arch" "a,t2,a")
+   (set_attr "type" "alu_shift_imm,alu_shift_imm,alu_shift_reg")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")

@@ -43,8 +43,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef USED_FOR_TARGET
 
-typedef HOST_WIDEST_INT gcov_type;
-typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
+typedef int64_t gcov_type;
+typedef uint64_t gcov_type_unsigned;
 
 struct bitmap_head;
 typedef struct bitmap_head *bitmap;

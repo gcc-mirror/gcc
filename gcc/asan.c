@@ -251,8 +251,8 @@ struct asan_mem_ref
   /* The expression of the beginning of the memory region.  */
   tree start;
 
-  /* The size of the access (can be 1, 2, 4, 8, 16 for now).  */
-  char access_size;
+  /* The size of the access.  */
+  HOST_WIDE_INT access_size;
 };
 
 static alloc_pool asan_mem_ref_alloc_pool;
@@ -274,7 +274,7 @@ asan_mem_ref_get_alloc_pool ()
 /* Initializes an instance of asan_mem_ref.  */
 
 static void
-asan_mem_ref_init (asan_mem_ref *ref, tree start, char access_size)
+asan_mem_ref_init (asan_mem_ref *ref, tree start, HOST_WIDE_INT access_size)
 {
   ref->start = start;
   ref->access_size = access_size;
@@ -287,7 +287,7 @@ asan_mem_ref_init (asan_mem_ref *ref, tree start, char access_size)
    access to the referenced memory.  */
 
 static asan_mem_ref*
-asan_mem_ref_new (tree start, char access_size)
+asan_mem_ref_new (tree start, HOST_WIDE_INT access_size)
 {
   asan_mem_ref *ref =
     (asan_mem_ref *) pool_alloc (asan_mem_ref_get_alloc_pool ());
@@ -334,7 +334,7 @@ inline hashval_t
 asan_mem_ref_hasher::hash (const asan_mem_ref *mem_ref)
 {
   hashval_t h = iterative_hash_expr (mem_ref->start, 0);
-  h = iterative_hash_hashval_t (h, mem_ref->access_size);
+  h = iterative_hash_host_wide_int (mem_ref->access_size, h);
   return h;
 }
 
@@ -392,7 +392,7 @@ free_mem_ref_resources ()
 /* Return true iff the memory reference REF has been instrumented.  */
 
 static bool
-has_mem_ref_been_instrumented (tree ref, char access_size)
+has_mem_ref_been_instrumented (tree ref, HOST_WIDE_INT access_size)
 {
   asan_mem_ref r;
   asan_mem_ref_init (&r, ref, access_size);
@@ -480,7 +480,7 @@ get_mem_refs_of_builtin_call (const gimple call,
   tree source0 = NULL_TREE, source1 = NULL_TREE,
     dest = NULL_TREE, len = NULL_TREE;
   bool is_store = true, got_reference_p = false;
-  char access_size = 1;
+  HOST_WIDE_INT access_size = 1;
 
   switch (DECL_FUNCTION_CODE (callee))
     {
@@ -842,7 +842,7 @@ has_stmt_been_instrumented_p (gimple stmt)
 /*  Insert a memory reference into the hash table.  */
 
 static void
-update_mem_ref_hash_table (tree ref, char access_size)
+update_mem_ref_hash_table (tree ref, HOST_WIDE_INT access_size)
 {
   hash_table <asan_mem_ref_hasher> ht = get_mem_ref_hash_table ();
 
@@ -1315,20 +1315,23 @@ asan_protect_global (tree decl)
   return true;
 }
 
-/* Construct a function tree for __asan_report_{load,store}{1,2,4,8,16}.
-   IS_STORE is either 1 (for a store) or 0 (for a load).
-   SIZE_IN_BYTES is one of 1, 2, 4, 8, 16.  */
+/* Construct a function tree for __asan_report_{load,store}{1,2,4,8,16,_n}.
+   IS_STORE is either 1 (for a store) or 0 (for a load).  */
 
 static tree
-report_error_func (bool is_store, int size_in_bytes)
+report_error_func (bool is_store, HOST_WIDE_INT size_in_bytes, bool slow_p)
 {
-  static enum built_in_function report[2][5]
+  static enum built_in_function report[2][6]
     = { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
 	  BUILT_IN_ASAN_REPORT_LOAD4, BUILT_IN_ASAN_REPORT_LOAD8,
-	  BUILT_IN_ASAN_REPORT_LOAD16 },
+	  BUILT_IN_ASAN_REPORT_LOAD16, BUILT_IN_ASAN_REPORT_LOAD_N },
 	{ BUILT_IN_ASAN_REPORT_STORE1, BUILT_IN_ASAN_REPORT_STORE2,
 	  BUILT_IN_ASAN_REPORT_STORE4, BUILT_IN_ASAN_REPORT_STORE8,
-	  BUILT_IN_ASAN_REPORT_STORE16 } };
+	  BUILT_IN_ASAN_REPORT_STORE16, BUILT_IN_ASAN_REPORT_STORE_N } };
+  if ((size_in_bytes & (size_in_bytes - 1)) != 0
+      || size_in_bytes > 16
+      || slow_p)
+    return builtin_decl_implicit (report[is_store][5]);
   return builtin_decl_implicit (report[is_store][exact_log2 (size_in_bytes)]);
 }
 
@@ -1450,6 +1453,47 @@ insert_if_then_before_iter (gimple cond,
   gsi_insert_after (&cond_insert_point, cond, GSI_NEW_STMT);
 }
 
+/* Build
+   (base_addr >> ASAN_SHADOW_SHIFT) + targetm.asan_shadow_offset ().  */
+
+static tree
+build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
+			 tree base_addr, tree shadow_ptr_type)
+{
+  tree t, uintptr_type = TREE_TYPE (base_addr);
+  tree shadow_type = TREE_TYPE (shadow_ptr_type);
+  gimple g;
+
+  t = build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT);
+  g = gimple_build_assign_with_ops (RSHIFT_EXPR,
+				    make_ssa_name (uintptr_type, NULL),
+				    base_addr, t);
+  gimple_set_location (g, location);
+  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+
+  t = build_int_cst (uintptr_type, targetm.asan_shadow_offset ());
+  g = gimple_build_assign_with_ops (PLUS_EXPR,
+				    make_ssa_name (uintptr_type, NULL),
+				    gimple_assign_lhs (g), t);
+  gimple_set_location (g, location);
+  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+
+  g = gimple_build_assign_with_ops (NOP_EXPR,
+				    make_ssa_name (shadow_ptr_type, NULL),
+				    gimple_assign_lhs (g), NULL_TREE);
+  gimple_set_location (g, location);
+  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+
+  t = build2 (MEM_REF, shadow_type, gimple_assign_lhs (g),
+	      build_int_cst (shadow_ptr_type, 0));
+  g = gimple_build_assign_with_ops (MEM_REF,
+				    make_ssa_name (shadow_type, NULL),
+				    t, NULL_TREE);
+  gimple_set_location (g, location);
+  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+  return gimple_assign_lhs (g);
+}
+
 /* Instrument the memory access instruction BASE.  Insert new
    statements before or after ITER.
 
@@ -1457,8 +1501,7 @@ insert_if_then_before_iter (gimple cond,
    SSA_NAME, or a non-SSA expression.  LOCATION is the source code
    location.  IS_STORE is TRUE for a store, FALSE for a load.
    BEFORE_P is TRUE for inserting the instrumentation code before
-   ITER, FALSE for inserting it after ITER.  SIZE_IN_BYTES is one of
-   1, 2, 4, 8, 16.
+   ITER, FALSE for inserting it after ITER.
 
    If BEFORE_P is TRUE, *ITER is arranged to still point to the
    statement it was pointing to prior to calling this function,
@@ -1466,7 +1509,8 @@ insert_if_then_before_iter (gimple cond,
 
 static void
 build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
-		  bool before_p, bool is_store, int size_in_bytes)
+		  bool before_p, bool is_store, HOST_WIDE_INT size_in_bytes,
+		  bool slow_p = false)
 {
   gimple_stmt_iterator gsi;
   basic_block then_bb, else_bb;
@@ -1477,6 +1521,18 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
   tree uintptr_type
     = build_nonstandard_integer_type (TYPE_PRECISION (TREE_TYPE (base)), 1);
   tree base_ssa = base;
+  HOST_WIDE_INT real_size_in_bytes = size_in_bytes;
+  tree sz_arg = NULL_TREE;
+
+  if (size_in_bytes == 1)
+    slow_p = false;
+  else if ((size_in_bytes & (size_in_bytes - 1)) != 0
+	   || size_in_bytes > 16
+	   || slow_p)
+    {
+      real_size_in_bytes = 1;
+      slow_p = true;
+    }
 
   /* Get an iterator on the point where we can add the condition
      statement for the instrumentation.  */
@@ -1509,51 +1565,24 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
 
   /* Build
      (base_addr >> ASAN_SHADOW_SHIFT) + targetm.asan_shadow_offset ().  */
+  shadow = build_shadow_mem_access (&gsi, location, base_addr,
+				    shadow_ptr_type);
 
-  t = build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT);
-  g = gimple_build_assign_with_ops (RSHIFT_EXPR,
-				    make_ssa_name (uintptr_type, NULL),
-				    base_addr, t);
-  gimple_set_location (g, location);
-  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-
-  t = build_int_cst (uintptr_type, targetm.asan_shadow_offset ());
-  g = gimple_build_assign_with_ops (PLUS_EXPR,
-				    make_ssa_name (uintptr_type, NULL),
-				    gimple_assign_lhs (g), t);
-  gimple_set_location (g, location);
-  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-
-  g = gimple_build_assign_with_ops (NOP_EXPR,
-				    make_ssa_name (shadow_ptr_type, NULL),
-				    gimple_assign_lhs (g), NULL_TREE);
-  gimple_set_location (g, location);
-  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-
-  t = build2 (MEM_REF, shadow_type, gimple_assign_lhs (g),
-	      build_int_cst (shadow_ptr_type, 0));
-  g = gimple_build_assign_with_ops (MEM_REF,
-				    make_ssa_name (shadow_type, NULL),
-				    t, NULL_TREE);
-  gimple_set_location (g, location);
-  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-  shadow = gimple_assign_lhs (g);
-
-  if (size_in_bytes < 8)
+  if (real_size_in_bytes < 8)
     {
       /* Slow path for 1, 2 and 4 byte accesses.
 	 Test (shadow != 0)
-	      & ((base_addr & 7) + (size_in_bytes - 1)) >= shadow).  */
+	      & ((base_addr & 7) + (real_size_in_bytes - 1)) >= shadow).  */
       gimple_seq seq = NULL;
       gimple shadow_test = build_assign (NE_EXPR, shadow, 0);
       gimple_seq_add_stmt (&seq, shadow_test);
       gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, base_addr, 7));
       gimple_seq_add_stmt (&seq, build_type_cast (shadow_type,
                                                   gimple_seq_last (seq)));
-      if (size_in_bytes > 1)
+      if (real_size_in_bytes > 1)
         gimple_seq_add_stmt (&seq,
                              build_assign (PLUS_EXPR, gimple_seq_last (seq),
-                                           size_in_bytes - 1));
+					   real_size_in_bytes - 1));
       gimple_seq_add_stmt (&seq, build_assign (GE_EXPR, gimple_seq_last (seq),
                                                shadow));
       gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, shadow_test,
@@ -1561,6 +1590,39 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
       t = gimple_assign_lhs (gimple_seq_last (seq));
       gimple_seq_set_location (seq, location);
       gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
+      /* For weird access sizes or misaligned, check first and last byte.  */
+      if (slow_p)
+	{
+	  g = gimple_build_assign_with_ops (PLUS_EXPR,
+					    make_ssa_name (uintptr_type, NULL),
+					    base_addr,
+					    build_int_cst (uintptr_type,
+							   size_in_bytes - 1));
+	  gimple_set_location (g, location);
+	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+	  tree base_end_addr = gimple_assign_lhs (g);
+
+	  shadow = build_shadow_mem_access (&gsi, location, base_end_addr,
+					    shadow_ptr_type);
+	  seq = NULL;
+	  shadow_test = build_assign (NE_EXPR, shadow, 0);
+	  gimple_seq_add_stmt (&seq, shadow_test);
+	  gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR,
+						   base_end_addr, 7));
+	  gimple_seq_add_stmt (&seq, build_type_cast (shadow_type,
+						      gimple_seq_last (seq)));
+	  gimple_seq_add_stmt (&seq, build_assign (GE_EXPR,
+						   gimple_seq_last (seq),
+						   shadow));
+	  gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, shadow_test,
+						   gimple_seq_last (seq)));
+	  gimple_seq_add_stmt (&seq, build_assign (BIT_IOR_EXPR, t,
+						   gimple_seq_last (seq)));
+	  t = gimple_assign_lhs (gimple_seq_last (seq));
+	  gimple_seq_set_location (seq, location);
+	  gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
+	  sz_arg = build_int_cst (pointer_sized_int_node, size_in_bytes);
+	}
     }
   else
     t = shadow;
@@ -1572,8 +1634,8 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
 
   /* Generate call to the run-time library (e.g. __asan_report_load8).  */
   gsi = gsi_start_bb (then_bb);
-  g = gimple_build_call (report_error_func (is_store, size_in_bytes),
-			 1, base_addr);
+  g = gimple_build_call (report_error_func (is_store, size_in_bytes, slow_p),
+			 sz_arg ? 2 : 1, base_addr, sz_arg);
   gimple_set_location (g, location);
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 
@@ -1611,8 +1673,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     }
 
   size_in_bytes = int_size_in_bytes (type);
-  if ((size_in_bytes & (size_in_bytes - 1)) != 0
-      || (unsigned HOST_WIDE_INT) size_in_bytes - 1 >= 16)
+  if (size_in_bytes <= 0)
     return;
 
   HOST_WIDE_INT bitsize, bitpos;
@@ -1621,7 +1682,8 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   int volatilep = 0, unsignedp = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset,
 				    &mode, &unsignedp, &volatilep, false);
-  if (bitpos % (size_in_bytes * BITS_PER_UNIT)
+  if (((size_in_bytes & (size_in_bytes - 1)) == 0
+       && (bitpos % (size_in_bytes * BITS_PER_UNIT)))
       || bitsize != size_in_bytes * BITS_PER_UNIT)
     {
       if (TREE_CODE (t) == COMPONENT_REF
@@ -1634,6 +1696,8 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 	}
       return;
     }
+  if (bitpos % BITS_PER_UNIT)
+    return;
 
   if (TREE_CODE (inner) == VAR_DECL
       && offset == NULL_TREE
@@ -1666,8 +1730,31 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   base = build_fold_addr_expr (t);
   if (!has_mem_ref_been_instrumented (base, size_in_bytes))
     {
+      bool slow_p = false;
+      if (size_in_bytes > 1)
+	{
+	  if ((size_in_bytes & (size_in_bytes - 1)) != 0
+	      || size_in_bytes > 16)
+	    slow_p = true;
+	  else
+	    {
+	      unsigned int align = get_object_alignment (t);
+	      if (align < size_in_bytes * BITS_PER_UNIT)
+		{
+		  /* On non-strict alignment targets, if
+		     16-byte access is just 8-byte aligned,
+		     this will result in misaligned shadow
+		     memory 2 byte load, but otherwise can
+		     be handled using one read.  */
+		  if (size_in_bytes != 16
+		      || STRICT_ALIGNMENT
+		      || align < 8 * BITS_PER_UNIT)
+		    slow_p = true;
+		}
+	    }
+	}
       build_check_stmt (location, base, iter, /*before_p=*/true,
-			is_store, size_in_bytes);
+			is_store, size_in_bytes, slow_p);
       update_mem_ref_hash_table (base, size_in_bytes);
       update_mem_ref_hash_table (t, size_in_bytes);
     }

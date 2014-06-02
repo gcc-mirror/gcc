@@ -1613,7 +1613,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	 conditional calls to free falsely clobbering ref because
 	 of imprecise points-to info of the argument.  */
       tree oldargs[4];
-      bool valueized_anything;
+      bool valueized_anything = false;
       for (unsigned i = 0; i < gimple_call_num_args (def_stmt); ++i)
 	{
 	  oldargs[i] = gimple_call_arg (def_stmt, i);

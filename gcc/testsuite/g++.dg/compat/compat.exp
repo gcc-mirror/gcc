@@ -55,6 +55,7 @@ proc compat-use-alt-compiler { } {
 	set ALWAYS_CXXFLAGS ""
 	set ld_library_path $alt_ld_library_path
 	set_ld_library_path_env_vars
+	restore_gcc_exec_prefix_env_var
     }
 }
 

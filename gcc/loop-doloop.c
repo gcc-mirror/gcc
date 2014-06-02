@@ -417,7 +417,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     {
       fprintf (dump_file, "Doloop: Inserting doloop pattern (");
       if (desc->const_iter)
-	fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter);
+	fprintf (dump_file, "%"PRId64, desc->niter);
       else
 	fputs ("runtime", dump_file);
       fputs (" iterations).\n", dump_file);

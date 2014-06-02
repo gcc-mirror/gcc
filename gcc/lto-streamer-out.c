@@ -2241,7 +2241,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
   enum gcc_plugin_symbol_kind kind;
   enum gcc_plugin_symbol_visibility visibility;
   unsigned slot_num;
-  unsigned HOST_WIDEST_INT size;
+  uint64_t size;
   const char *comdat;
   unsigned char c;
 
@@ -2329,7 +2329,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
     size = 0;
 
   if (DECL_ONE_ONLY (t))
-    comdat = IDENTIFIER_POINTER (DECL_COMDAT_GROUP (t));
+    comdat = IDENTIFIER_POINTER (decl_comdat_group_id (t));
   else
     comdat = "";
 

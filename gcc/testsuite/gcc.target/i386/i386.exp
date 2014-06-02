@@ -23,6 +23,7 @@ if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
 
 # Load support procs.
 load_lib gcc-dg.exp
+load_lib clearcap.exp
 
 # Return 1 if attribute ms_hook_prologue is supported.
 proc check_effective_target_ms_hook_prologue { } {
@@ -307,39 +308,6 @@ proc check_effective_target_sha { } {
     } "-O2 -msha" ]
 }
 
-# If the linker used understands -M <mapfile>, pass it to clear hardware
-# capabilities set by the Sun assembler.
-# Try mapfile syntax v2 first which is the only way to clear hwcap_2 flags.
-set clearcap_ldflags "-Wl,-M,$srcdir/$subdir/clearcapv2.map"
-
-if ![check_no_compiler_messages mapfilev2 executable {
-    int main (void) { return 0; }
-} $clearcap_ldflags ] {
-    # If this doesn't work, fall back to the less capable v1 syntax.
-    set clearcap_ldflags "-Wl,-M,$srcdir/$subdir/clearcap.map"
-
-    if ![check_no_compiler_messages mapfile executable {
-	int main (void) { return 0; }
-    } $clearcap_ldflags ] {
-	unset clearcap_ldflags
-    }
-}
-
-if [info exists clearcap_ldflags] {
-  if { [info procs gcc_target_compile] != [list] \
-	&& [info procs saved_gcc_target_compile] == [list] } {
-    rename gcc_target_compile saved_gcc_target_compile
-
-    proc gcc_target_compile { source dest type options } {
-      global clearcap_ldflags
-      # Always pass -Wl,-M,<mapfile>, but don't let it show up in gcc.sum.
-      lappend options "additional_flags=$clearcap_ldflags"
-
-      return [saved_gcc_target_compile $source $dest $type $options]
-    }
-  }
-}
-
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
@@ -348,6 +316,7 @@ if ![info exists DEFAULT_CFLAGS] then {
 
 # Initialize `dg'.
 dg-init
+clearcap-init
 
 # Special case compilation of vect-args.c so we don't have to
 # replicate it 10 times.
@@ -367,4 +336,5 @@ set tests [prune $tests $srcdir/$subdir/vect-args.c]
 dg-runtest $tests "" $DEFAULT_CFLAGS
 
 # All done.
+clearcap-finish
 dg-finish

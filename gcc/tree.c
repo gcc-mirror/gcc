@@ -608,6 +608,28 @@ decl_assembler_name (tree decl)
   return DECL_WITH_VIS_CHECK (decl)->decl_with_vis.assembler_name;
 }
 
+/* When the target supports COMDAT groups, this indicates which group the
+   DECL is associated with.  This can be either an IDENTIFIER_NODE or a
+   decl, in which case its DECL_ASSEMBLER_NAME identifies the group.  */
+tree
+decl_comdat_group (tree node)
+{
+  struct symtab_node *snode = symtab_get_node (node);
+  if (!snode)
+    return NULL;
+  return snode->get_comdat_group ();
+}
+
+/* Likewise, but make sure it's been reduced to an IDENTIFIER_NODE.  */
+tree
+decl_comdat_group_id (tree node)
+{
+  struct symtab_node *snode = symtab_get_node (node);
+  if (!snode)
+    return NULL;
+  return snode->get_comdat_group_id ();
+}
+
 /* Compute the number of bytes occupied by a tree with code CODE.
    This function cannot be used for nodes that have variable sizes,
    including TREE_VEC, INTEGER_CST, STRING_CST, and CALL_EXPR.  */
@@ -10542,40 +10564,6 @@ int_cst_value (const_tree x)
 	val |= (~(unsigned HOST_WIDE_INT) 0) << (bits - 1) << 1;
       else
 	val &= ~((~(unsigned HOST_WIDE_INT) 0) << (bits - 1) << 1);
-    }
-
-  return val;
-}
-
-/* Return value of a constant X and sign-extend it.  */
-
-HOST_WIDEST_INT
-widest_int_cst_value (const_tree x)
-{
-  unsigned bits = TYPE_PRECISION (TREE_TYPE (x));
-  unsigned HOST_WIDEST_INT val = TREE_INT_CST_LOW (x);
-
-#if HOST_BITS_PER_WIDEST_INT > HOST_BITS_PER_WIDE_INT
-  gcc_assert (HOST_BITS_PER_WIDEST_INT >= HOST_BITS_PER_DOUBLE_INT);
-  gcc_assert (TREE_INT_CST_NUNITS (x) == 2);
-
-  if (TREE_INT_CST_NUNITS (x) == 1)
-    val = HOST_WIDE_INT (val);
-  else
-    val |= (((unsigned HOST_WIDEST_INT) TREE_INT_CST_ELT (x, 1))
-	    << HOST_BITS_PER_WIDE_INT);
-#else
-  /* Make sure the sign-extended value will fit in a HOST_WIDE_INT.  */
-  gcc_assert (TREE_INT_CST_NUNITS (x) == 1);
-#endif
-
-  if (bits < HOST_BITS_PER_WIDEST_INT)
-    {
-      bool negative = ((val >> (bits - 1)) & 1) != 0;
-      if (negative)
-	val |= (~(unsigned HOST_WIDEST_INT) 0) << (bits - 1) << 1;
-      else
-	val &= ~((~(unsigned HOST_WIDEST_INT) 0) << (bits - 1) << 1);
     }
 
   return val;

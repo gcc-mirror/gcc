@@ -3306,7 +3306,10 @@ proc check_effective_target_vect_bswap { } {
 	verbose "check_effective_target_vect_bswap: using cached result" 2
     } else {
 	set et_vect_bswap_saved 0
-	if { [istarget aarch64*-*-*] } {
+	if { [istarget aarch64*-*-*]
+             || ([istarget arm*-*-*]
+                && [check_effective_target_arm_neon])
+	   } {
 	   set et_vect_bswap_saved 1
 	}
     }

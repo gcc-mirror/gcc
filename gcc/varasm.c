@@ -1083,6 +1083,9 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 {
   addr_space_t as = ADDR_SPACE_GENERIC;
   int reloc;
+  symtab_node *snode = symtab_get_node (decl);
+  if (snode)
+    decl = symtab_alias_ultimate_target (snode)->decl;
 
   if (TREE_TYPE (decl) != error_mark_node)
     as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
@@ -7097,7 +7100,16 @@ place_block_symbol (rtx symbol)
     }
   else
     {
+      struct symtab_node *snode;
       decl = SYMBOL_REF_DECL (symbol);
+
+      snode = symtab_get_node (decl);
+      if (snode->alias)
+	{
+	  rtx target = DECL_RTL (symtab_alias_ultimate_target (snode)->decl);
+	  SYMBOL_REF_BLOCK_OFFSET (symbol) = SYMBOL_REF_BLOCK_OFFSET (target);
+	  return;
+	}
       alignment = get_variable_align (decl);
       size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
       if ((flag_sanitize & SANITIZE_ADDRESS)

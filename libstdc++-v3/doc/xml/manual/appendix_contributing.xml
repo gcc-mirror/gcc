@@ -110,12 +110,14 @@
     </para>
 
     <para>
-      Please contact Benjamin Kosnik at
-      <email>bkoz+assign@redhat.com</email> if you are confused
-      about the assignment or have general licensing questions. When
-      requesting an assignment form from
-      <email>mailto:assign@gnu.org</email>, please cc the libstdc++
-      maintainer above so that progress can be monitored.
+      Please contact
+      Paolo Carlini at <email>paolo.carlini@oracle.com</email>
+      or
+      Jonathan Wakely at <email>jwakely+assign@redhat.com</email>
+      if you are confused about the assignment or have general licensing
+      questions. When requesting an assignment form from
+      <email>assign@gnu.org</email>, please CC the libstdc++
+      maintainers above so that progress can be monitored.
     </para>
   </section>
 

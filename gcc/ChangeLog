@@ -1,10 +1,677 @@
+2014-06-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/61154
+	* config/arm/arm.h (TARGET_SUPPORTS_WIDE_INT): Define.
+	* config/arm/arm.md (mov64 splitter): Replace const_double_operand
+	with immediate_operand.
+
+2014-06-02  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.c
+	(ia64_first_cycle_multipass_dfa_lookahead_guard): Check
+	pending_data_specs first.
+
+2014-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61378
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Initialize
+	valueized_anything.
+
+2014-06-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Bw): Rename from 'w'.
+	(Bz): Rename from 'z'.
+	* config/i386/i386.md: Change 'w' to 'Bw' and 'z' to 'Bz' globally.
+
+2014-06-01  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/61377
+	* config/i386/constrains.md (define_constrain): New 'Bs' constraint.
+	* config/i386/i386.md (sibcall_insn_operand): Use Bs
+	instead of m constraint.
+
+2014-05-31  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md (beq0_di, bne0_di): Make the "o" constraint
+	a separate alternative where the scratch operand 2 is marked as
+	early clobber.
+
+2014-05-31  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/arm/arm.c (TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New define.
+	(arm_builtins) : Add ARM_BUILTIN_GET_FPSCR and ARM_BUILTIN_SET_FPSCR.
+	(bdesc_2arg) : Add description for builtins __builtins_arm_set_fpscr
+	and __builtins_arm_get_fpscr.
+	(arm_init_builtins) : Initialize builtins __builtins_arm_set_fpscr and
+	__builtins_arm_get_fpscr.
+	(arm_expand_builtin) : Expand builtins __builtins_arm_set_fpscr and
+	__builtins_arm_ldfpscr.
+	(arm_atomic_assign_expand_fenv): New function.
+	* config/arm/vfp.md (set_fpscr): New pattern.
+	(get_fpscr) : Likewise.
+	* config/arm/unspecs.md (unspecv): Add VUNSPEC_GET_FPSCR and
+	VUNSPEC_SET_FPSCR.
+	* doc/extend.texi (AARCH64 Built-in Functions) : Document
+	__builtins_arm_set_fpscr, __builtins_arm_get_fpscr.
+
+2014-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (report_error_func): Add SLOW_P argument, use
+	BUILT_IN_ASAN_*_N if set.
+	(build_check_stmt): Likewise.
+	(instrument_derefs): If T has insufficient alignment,
+	force same handling as for odd sizes.
+
+	* sanitizer.def (BUILT_IN_ASAN_REPORT_LOAD_N,
+	BUILT_IN_ASAN_REPORT_STORE_N): New.
+	* asan.c (struct asan_mem_ref): Change access_size type to
+	HOST_WIDE_INT.
+	(asan_mem_ref_init, asan_mem_ref_new, get_mem_refs_of_builtin_call,
+	update_mem_ref_hash_table): Likewise.
+	(asan_mem_ref_hasher::hash): Hash in a HWI.
+	(report_error_func): Change size_in_bytes argument to HWI.
+	Use *_N builtins if size_in_bytes is larger than 16 or not power of
+	two.
+	(build_shadow_mem_access): New function.
+	(build_check_stmt): Use it.  Change size_in_bytes argument to HWI.
+	Handle size_in_bytes not power of two or larger than 16.
+	(instrument_derefs): Don't give up if size_in_bytes is not
+	power of two or is larger than 16.
+
+2014-05-30  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/60104
+	* config/i386/i386.c (x86_output_mi_thunk): Add memory case
+	for sibling-tail-calls.
+	* config/i386/i386.md (sibcall_insn_operand): Add memory-constrain
+	to its use.
+	* config/i386/predicates.md (sibcall_memory_operand): New predicate.
+	(sibcall_insn_operand): Add check for sibcall_memory_operand.
+
+2014-05-30  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+
+	* config/avr/avr-mcus.def: Change ATA6289 ISA to AVR4
+	* config/avr/avr-tables.opt: Regenerate.
+	* config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2014-05-30  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/xmmintrin.h (_mm_pause): Move out of scope of pragma
+	target("sse").
+
+2014-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	* config/i386/i386.c (TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS):
+	Redefine as true.
+
+2014-05-30  Tom de Vries  <tom@codesourcery.com>
+
+	* lra-int.h (struct lra_reg): Add field actual_call_used_reg_set.
+	* lra.c (initialize_lra_reg_info_element): Add init of
+	actual_call_used_reg_set field.
+	(lra): Call lra_create_live_ranges before lra_inheritance for
+	-fuse-caller-save.
+	* lra-assigns.c (lra_assign): Allow call_used_regs to cross calls for
+	-fuse-caller-save.
+	* lra-constraints.c (need_for_call_save_p): Use actual_call_used_reg_set
+	instead of call_used_reg_set for -fuse-caller-save.
+	* lra-lives.c (process_bb_lives): Calculate actual_call_used_reg_set.
+
+2014-05-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/thumb2.md (*thumb2_movhi_insn): Set type of movw
+	to mov_imm.
+	* config/arm/vfp.md (*thumb2_movsi_vfp): Likewise.
+
+2014-05-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.c (ira_get_dup_out_num): Check for output operands at
+	the start of the loop.  Handle cases where an included alternative
+	follows an excluded one.
+
+2014-05-29  Mike Stump  <mikestump@comcast.net>
+
+	PR debug/61352
+	* collect2.c (maybe_run_lto_and_relink): Be sure to always run
+	post ld passes when lto is used.
+
+2014-05-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61325
+	* lra-constraints.c (process_address): Rename to
+	process_address_1.
+	(process_address): New function.
+
+2014-05-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_types_binopv_qualifiers,
+	TYPES_BINOPV): New static data.
+	* config/aarch64/aarch64-simd-builtins.def (im_lane_bound): New builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_ext, aarch64_im_lane_boundsi):
+	New patterns.
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_const_1): Match
+	patterns for EXT.
+	(aarch64_evpc_ext): New function.
+
+	* config/aarch64/iterators.md (UNSPEC_EXT): New enum element.
+
+	* config/aarch64/arm_neon.h (vext_f32, vext_f64, vext_p8, vext_p16,
+	vext_s8, vext_s16, vext_s32, vext_s64, vext_u8, vext_u16, vext_u32,
+	vext_u64, vextq_f32, vextq_f64, vextq_p8, vextq_p16, vextq_s8,
+	vextq_s16, vextq_s32, vextq_s64, vextq_u8, vextq_u16, vextq_u32,
+	vextq_u64): Replace __asm with __builtin_shuffle and im_lane_boundsi.
+
+2014-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* rtl.h (BLOCK_SYMBOL_CHECK): Use SYMBOL_REF_FLAGS.
+
+2014-05-29  Richard Earnshaw <rearnsha@arm.com>
+	Richard Sandiford  <rdsandiford@googlemail.com>
+
+        * arm/iterators.md (shiftable_ops): New code iterator.
+        (t2_binop0, arith_shift_insn): New code attributes.
+	* arm/predicates.md (shift_nomul_operator): New predicate.
+        * arm/arm.md (insn_enabled): Delete.
+        (enabled): Remove insn_enabled test.
+        (*arith_shiftsi): Delete.  Replace with ...
+        (*<arith_shift_insn>_multsi): ... new pattern.
+	(*<arith_shift_insn>_shiftsi): ... new pattern.
+	* config/arm/arm.c (arm_print_operand): Handle operand format 'b'.
+
+2014-05-29  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* config/mips/mips.h (POST_CALL_TMP_REG): Define.
+	* config/mips/mips.c (mips_emit_call_insn): Add POST_CALL_TMP_REG
+	clobber.
+	(mips_split_call): Use POST_CALL_TMP_REG.
+	(TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS): Redefine to true.
+
+2014-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* final.c (collect_fn_hard_reg_usage): Guard variable declaration
+	with #ifdef STACK_REGS.
+
+2014-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varasm.c (get_variable_section): Walk aliases.
+	(place_block_symbol): Walk aliases.
+
+2014-05-28  Tom de Vries  <tom@codesourcery.com>
+
+	Revert:
+	2014-05-28  Tom de Vries  <tom@codesourcery.com>
+
+	* lra-int.h (struct lra_reg): Add field actual_call_used_reg_set.
+	* lra.c (initialize_lra_reg_info_element): Add init of
+	actual_call_used_reg_set field.
+	(lra): Call lra_create_live_ranges before lra_inheritance for
+	-fuse-caller-save.
+	* lra-assigns.c (lra_assign): Allow call_used_regs to cross calls for
+	-fuse-caller-save.
+	* lra-constraints.c (need_for_call_save_p): Use actual_call_used_reg_set
+	instead of call_used_reg_set for -fuse-caller-save.
+	* lra-lives.c (process_bb_lives): Calculate actual_call_used_reg_set.
+
+2014-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/md.texi: Document that the % constraint character must
+	be at the beginning of the string.
+	* genoutput.c (validate_insn_alternatives): Check that '=',
+	'+' and '%' only appear at the beginning of a constraint.
+	* ira.c (commutative_constraint_p): Delete.
+	(ira_get_dup_out_num): Expect the '%' commutativity marker to be
+	at the start of the string.
+	* config/alpha/alpha.md (*movmemdi_1, *clrmemdi_1): Remove
+	duplicate '='s.
+	* config/arm/neon.md (bicdi3_neon): Likewise.
+	* config/iq2000/iq2000.md (addsi3_internal, subsi3_internal, sgt_si)
+	(slt_si, sltu_si): Likewise.
+	* config/vax/vax.md (sbcdi3): Likewise.
+	* config/h8300/h8300.md (*cmpstz): Remove duplicate '+'.
+	* config/arc/arc.md (mulsi_600, mulsidi_600, umulsidi_600)
+	(mul64): Move '%' to beginning of constraint.
+	* config/arm/arm.md (*xordi3_insn): Likewise.
+	* config/nds32/nds32.md (add<mode>3, mulsi3, andsi3, iorsi3)
+	(xorsi3): Likewise.
+
+2014-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/md.texi: Document the restrictions on the "enabled" attribute.
+
+2014-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47202
+	* cgraph.h (symtab_node::get_comdat_group_id): New.
+	* cgraphunit.c (analyze_functions): Call it.
+	* symtab.c (dump_symtab_node): Likewise.
+	* tree.c (decl_comdat_group_id): New.
+	* tree.h: Declare it.
+	* lto-streamer-out.c (write_symbol): Use it.
+	* trans-mem.c (ipa_tm_create_version_alias): Likewise.
+
+2014-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR bootstrap/PR61146
+	* wide-int.cc: Do not include longlong.h when compiling with clang.
+
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-propagate.c (add_control_edge): Print less vertical space.
+	* tree-vrp.c (extract_range_from_ssa_name): Also copy VR_UNDEFINED.
+	(vrp_visit_assignment_or_call): Print less vertical space.
+	(vrp_visit_stmt): Likewise.
+	(vrp_visit_phi_node): Likewise.  For a PHI argument with
+	VR_VARYING range consider recording it as copy.
+
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	* hwint.h (HOST_WIDE_INT_PRINT_*): Define in terms of PRI*64.
+
+2014-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expr.c (expand_assignment): Fold the bitpos in the to_rtx if
+	sufficiently aligned and an offset is used at the same time.
+	(expand_expr_real_1): Likewise.
+
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61045
+	* fold-const.c (fold_comparison): When folding
+	X +- C1 CMP Y +- C2 to X CMP Y +- C2 +- C1 also ensure
+	the sign of the remaining constant operand stays the same.
+
+2014-05-28  Kaushik Phatak  <kaushik.phatak@kpit.com>
+
+	* config/rl78/rl78.h (TARGET_CPU_CPP_BUILTINS): Define
+	__RL78_64BIT_DOUBLES__ or __RL78_32BIT_DOUBLES__.
+	(ASM_SPEC): Pass -m64bit-doubles or -m32bit-doubles on
+	to the assembler.
+	(DOUBLE_TYPE_SIZE): Use 64 bit if TARGET_64BIT_DOUBLES
+	is true.
+	* gcc/config/rl78/rl78.opt (m64bit-doubles): New option.
+	(m32bit-doubles) Likewise.
+	* gcc/config/rl78/t-rl78: Add 64-bit-double multilib.
+	* doc/invoke.texi: Document -m32bit-doubles and -m64bit-doubles
+	option for RL78.
+
+2014-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac ($gcc_cv_ld_clearcap): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.opt (mclear-hwcap): New option.
+	* config/sol2.h (LINK_CLEARCAP_SPEC): Define.
+	* config/sol2-clearcap.map: Moved here from
+	testsuite/gcc.target/i386/clearcap.map.
+	* config/sol2-clearcapv2.map: Move here from
+	gcc.target/i386/clearcapv2.map.
+	* config/t-sol2 (install): Depend on install-clearcap-map.
+	(install-clearcap-map): New target.
+	* doc/invoke.texi (Option Summary, Solaris 2 Options): Document
+	-mclear-hwcap.
+
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	* hwint.h (*_HALF_WIDE_INT*): Move to ...
+	* wide-int.cc (HOST_BITS_PER_HALF_WIDE_INT, HOST_HALF_WIDE_INT):
+	... here and remove the rest.
+	* hwint.h (HOST_WIDE_INT_PRINT_*): Define in terms of PRI*64.
+
+2014-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61335
+	* tree-vrp.c (vrp_visit_phi_node): If the compare of old and
+	new range fails, drop to varying.
+
+2014-05-28  Tom de Vries  <tom@codesourcery.com>
+
+	* lra-int.h (struct lra_reg): Add field actual_call_used_reg_set.
+	* lra.c (initialize_lra_reg_info_element): Add init of
+	actual_call_used_reg_set field.
+	(lra): Call lra_create_live_ranges before lra_inheritance for
+	-fuse-caller-save.
+	* lra-assigns.c (lra_assign): Allow call_used_regs to cross calls for
+	-fuse-caller-save.
+	* lra-constraints.c (need_for_call_save_p): Use actual_call_used_reg_set
+	instead of call_used_reg_set for -fuse-caller-save.
+	* lra-lives.c (process_bb_lives): Calculate actual_call_used_reg_set.
+
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* doc/invoke.texi (@item Optimization Options): Add -fuse-caller-save to
+	gccoptlist.
+	(@item -fuse-caller-save): New item.
+
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* opts.c (default_options_table): Add OPT_LEVELS_2_PLUS entry with
+	OPT_fuse_caller_save.
+
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* df-scan.c (df_get_call_refs): Use get_call_reg_set_usage.
+	* caller-save.c (setup_save_areas, save_call_clobbered_regs): Use
+	get_call_reg_set_usage.
+	* resource.c (mark_set_resources, mark_target_live_regs): Use
+	get_call_reg_set_usage.
+	* ira-int.h (struct ira_allocno): Add crossed_calls_clobbered_regs
+	field.
+	(ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS): Define.
+	* ira-lives.c (process_bb_node_lives): Use get_call_reg_set_usage.
+	Calculate ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	* ira-build.c (ira_create_allocno): Init
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	(create_cap_allocno, propagate_allocno_info)
+	(propagate_some_info_from_allocno)
+	(copy_info_to_removed_store_destinations): Handle
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	* ira-costs.c (ira_tune_allocno_costs): Use
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS to adjust costs.
+
+2014-05-28  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* cgraph.h (struct cgraph_rtl_info): Add function_used_regs
+	and function_used_regs_valid fields.
+	* final.c: Move include of hard-reg-set.h to before rtl.h to declare
+	find_all_hard_reg_sets.
+	(collect_fn_hard_reg_usage, get_call_fndecl, get_call_cgraph_rtl_info)
+	(get_call_reg_set_usage): New function.
+	(rest_of_handle_final): Use collect_fn_hard_reg_usage.
+	* regs.h (get_call_reg_set_usage): Declare.
+
+2014-05-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR libgcc/61152
+	* config/dbx.h (License): Add Runtime Library Exception.
+	* config/newlib-stdint.h (License): Same.
+	* config/rtems.h (License): Same
+	* config/initfini-array.h (License): Same
+	* config/v850/v850.h (License): Same.
+	* config/v850/v850-opts.h (License): Same
+	* config/v850/rtems.h (License): Same.
+
+2014-05-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/61044
+	* doc/extend.texi (Local Labels): Note that label differences are
+	not supported for AVR.
+
+2014-05-27  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.md (stack_protect_set_<mode>):
+	Use <w> for the register in assembly template.
+	(stack_protect_test): Use the mode of operands[0] for the
+	result.
+	(stack_protect_test_<mode>): Use <w> for the register
+	in assembly template.
+
+2014-05-27  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (add_vector_labels): New.
+	(rx_output_function_prologue): Call it.
+	(rx_handle_func_attribute): Don't require empty arguments.
+	(rx_handle_vector_attribute): New.
+	(rx_attribute_table): Add "vector" attribute.
+	* doc/extend.texi (interrupt, vector): Document new/changed
+	RX-specific attributes.
+
+	* config/rx/rx.c (rx_adjust_insn_length): Skip for non-insns.
+
+2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* double-int.c (div_and_round_double) <ROUND_DIV_EXPR>: Use the proper
+	predicate to detect a negative quotient.
+
+2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_comparison): Clean up and extend X +- C1 CMP C2
+	to X CMP C2 -+ C1 transformation to EQ_EXPR/NE_EXPR.
+	Add X - Y CMP 0 to X CMP Y transformation.
+	(fold_binary_loc) <EQ_EXPR/NE_EXPR>: Remove same transformations.
+
+2014-05-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* stmt.c (dump_case_nodes): Don't convert values to HOST_WIDE_INT
+	before printing.
+
+2014-05-27  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c: Add include of cgraph.h.
+
+2014-05-27  Richard Biener  <rguenther@suse.de>
+
+	* system.h (__STDC_FORMAT_MACROS): Define as very first thing.
+
+2014-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR libgcc/61152
+	* config/arm/arm.h (License): Add note to COPYING.RUNTIME.
+	* config/arm/arm-cores.def (License): Same.
+	* config/arm/arm-opts.h (License): Same.
+	* config/arm/aout.h (License): Same.
+	* config/arm/bpabi.h (License): Same.
+	* config/arm/elf.h (License): Same.
+	* config/arm/linux-elf.h (License): Same.
+	* config/arm/linux-gas.h (License): Same.
+	* config/arm/netbsd-elf.h (License): Same.
+	* config/arm/uclinux-eabi.h (License): Same.
+	* config/arm/uclinux-elf.h (License): Same.
+	* config/arm/vxworks.h (License): Same.
+
+2014-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.md (neon_bswap<mode>): New pattern.
+	* config/arm/arm.c (neon_itype): Add NEON_BSWAP.
+	(arm_init_neon_builtins): Handle NEON_BSWAP.
+	Define required type nodes.
+	(arm_expand_neon_builtin): Handle NEON_BSWAP.
+	(arm_builtin_vectorized_function): Handle BUILTIN_BSWAP builtins.
+	* config/arm/arm_neon_builtins.def (bswap): Define builtins.
+	* config/arm/iterators.md (VDQHSD): New mode iterator.
+
+2014-05-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_evaluate_conditional_warnv_with_ops_using_ranges):
+	Try using literal operands when comparing value-ranges failed.
+
+2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.c (commutative_operand): Adjust for change to recog_data.
+	[Missing from previous commit.]
+
+2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* system.h (TEST_BIT): New macro.
+	* recog.h (alternative_mask): New type.
+	(ALL_ALTERNATIVES, ALTERNATIVE_BIT): New macros.
+	(recog_data_d): Replace alternative_enabled_p array with
+	enabled_alternatives.
+	(target_recog): New structure.
+	(default_target_recog, this_target_recog): Declare.
+	(get_enabled_alternatives, recog_init): Likewise.
+	* recog.c (default_target_recog, this_target_recog): New variables.
+	(get_enabled_alternatives): New function.
+	(extract_insn): Use it.
+	(recog_init): New function.
+	(preprocess_constraints, constrain_operands): Adjust for change to
+	recog_data.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* ira-costs.c (record_reg_classes): Likewise.
+	* ira-lives.c (single_reg_class): Likewise.  Fix bug in which
+	all alternatives after a disabled one would be skipped.
+	(ira_implicitly_set_insn_hard_regs): Likewise.
+	* ira.c (ira_setup_alts): Adjust for change to recog_data.
+	* lra-int.h (lra_insn_recog_data): Replace alternative_enabled_p
+	with enabled_alternatives.
+	* lra.c (free_insn_recog_data): Update accordingly.
+	(lra_update_insn_recog_data): Likewise.
+	(lra_set_insn_recog_data): Likewise.  Use get_enabled_alternatives.
+	* lra-constraints.c (process_alt_operands): Likewise.  Handle
+	only_alternative as part of the enabled mask.
+	* target-globals.h (this_target_recog): Declare.
+	(target_globals): Add a recog field.
+	(restore_target_globals): Restore this_target_recog.
+	* target-globals.c: Include recog.h.
+	(default_target_globals): Initialize recog field.
+	(save_target_globals): Likewise.
+	* reginfo.c (reinit_regs): Call recog_init.
+	* toplev.c (backend_init_target): Likewise.
+
+2014-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gencodes.c (main): Make LAST_INSN_CODE higher than any insn code,
+	rather than any named insn's code.
+
+2014-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR libgcc/61152
+	* config/arm/arm-opts.h (License): Add GCC Runtime Library Exception.
+	* config/arm/arm-cores.def (License): Same.
+
+2014-05-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.h (decl_comdat_group): Declare.
+	* cgraph.h (symtab_in_same_comdat_p): Move offline to ...
+	* tree.c (decl_comdat_group): Here.
+
+2014-05-26  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	PR rtl-optimization/61222
+	* combine.c (simplify_shift_const_1): When moving a PLUS outside
+	the shift, truncate the PLUS operand to the result mode.
+
+2014-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61271
+	* config/i386/i386.c (ix86_rtx_costs)
+	<case CONST_INT, case CONST, case LABEL_REF, case SYMBOL_REF>:
+	Fix condition.
+
+2014-05-26  Martin Jambor  <mjambor@suse.cz>
+
+	* ira.c (split_live_ranges_for_shrink_wrap): Remove bailout on
+	subreg uses.
+
+2014-05-26  Richard Biener  <rguenther@suse.de>
+
+	* wide-int.h (wi::int_traits <long>, wi::int_traits <unsigned long>,
+	wi::int_traits <long long>, wi::int_traits <unsigned long long>):
+	Provide specializations.
+	(wi::int_traits <HOST_WIDE_INT>,
+	wi::int_traits <unsigned HOST_WIDE_INT>): Remove specializations.
+
+2014-05-26  Alan Modra  <amodra@gmail.com>
+
+	PR target/61098
+	* config/rs6000/rs6000.c (rs6000_emit_set_const): Remove unneeded
+	params and return a bool.  Remove dead code.  Update comment.
+	Assert we have a const_int source.  Remove bogus code from
+	32-bit HWI days.  Move !TARGET_POWERPC64 handling, and correct
+	handling of constants > 2G and reg_equal note, from..
+	(rs6000_emit_set_long_const): ..here.  Remove unneeded param and
+	return value.  Update comment.  If we can, use a new pseudo
+	for intermediate calculations.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_set_const): Update
+	prototype.
+	* config/rs6000/rs6000.md (movsi_internal1_single+1): Update
+	call to rs6000_emit_set_const in splitter.
+	(movdi_internal64+2, +3): Likewise.
+
+2014-05-26  Richard Biener  <rguenther@suse.de>
+
+	* system.h: Define __STDC_FORMAT_MACROS before
+	including inttypes.h.
+	* hwint.h (HOST_WIDEST_INT, HOST_BITS_PER_WIDEST_INT,
+	HOST_WIDEST_INT_PRINT, HOST_WIDEST_INT_PRINT_DEC,
+	HOST_WIDEST_INT_PRINT_DEC_C, HOST_WIDEST_INT_PRINT_UNSIGNED,
+	HOST_WIDEST_INT_PRINT_HEX, HOST_WIDEST_INT_PRINT_DOUBLE_HEX,
+	HOST_WIDEST_INT_C): Remove.
+	(PRId64, PRIi64, PRIo64, PRIu64, PRIx64, PRIX64): Define
+	if C99 inttypes.h is not available.
+	* coretypes.h (gcov_type, gcov_type_unsigned): Use [u]int64_t.
+	* gcov-io.h (gcov_type, gcov_type_unsigned): Likewise.
+	* gcov-io.c (gcov_histo_index): Drop non-64bit hwi case.
+	* cfgloop.h (struct niter_desc): Use uint64_t for niter field.
+	* bitmap.c (struct bitmap_descriptor_d): Use uint64_t for counters.
+	(struct output_info): Likewise.
+	(print_statistics): Adjust.
+	(dump_bitmap_statistics): Likewise.
+	* bt-load.c (migrate_btr_defs): Print with PRId64.
+	* cfg.c (dump_edge_info, dump_bb_info): Likewise.
+	(MAX_SAFE_MULTIPLIER): Adjust.
+	* cfghooks.c (dump_bb_for_graph): Print with PRId64.
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee,
+	dump_cgraph_node): Likewise.
+	* final.c (dump_basic_block_info): Likewise.
+	* gcov-dump.c (tag_counters, tag_summary, dump_working_sets): Likewise.
+	* gcov.c (format_gcov): Likewise.
+	* ipa-cp.c (good_cloning_opportunity_p): Likewise.  Use int64_t
+	for calculation.
+	(get_clone_agg_value): Use HOST_WIDE_INT for offset.
+	* ipa-inline.c (compute_max_insns): Use int64_t for calcuation.
+	(inline_small_functions, dump_overall_stats, dump_inline_stats):
+	Use PRId64 for dumping.
+	* ipa-profile.c (dump_histogram, ipa_profile): Likewise.
+	* ira-color.c (struct allocno_hard_regs): Use int64_t for cost.
+	(add_allocno_hard_regs): Adjust.
+	* loop-doloop.c (doloop_modify): Print using PRId64.
+	* loop-iv.c (inverse): Compute in uint64_t.
+	(determine_max_iter, iv_number_of_iterations): Likewise.
+	* loop-unroll.c (decide_peel_completely, decide_peel_simple):
+	Print using PRId64.
+	* lto-streamer-out.c (write_symbol): Use uint64_t.
+	* mcf.c (CAP_INFINITY): Use int64_t maximum.
+	(dump_fixup_edge, create_fixup_graph, cancel_negative_cycle,
+	find_max_flow, adjust_cfg_counts): Use int64_t and dump with PRId64.
+	* modulo-sched.c (const_iteration_count): Use int64_t.
+	(sms_schedule): Dump using PRId64.
+	* predict.c (dump_prediction): Likewise.
+	* pretty-print.h (pp_widest_integer): Remove.
+	* profile.c (get_working_sets, is_edge_inconsistent,
+	is_inconsistent, read_profile_edge_counts): Dump using PRId64.
+	* tree-pretty-print.c (pp_double_int): Remove case handling
+	HOST_BITS_PER_DOUBLE_INT == HOST_BITS_PER_WIDEST_INT.
+	* tree-ssa-math-opts.c (struct symbolic_number): Use uint64_t
+	and adjust users.
+	(pass_optimize_bswap::execute): Remove restriction on hosts.
+	* tree-streamer-in.c (streamer_alloc_tree): Use HOST_WIDE_INT.
+	* tree-streamer-out.c (streamer_write_tree_header): Likewise.
+	* tree.c (widest_int_cst_value): Remove.
+	* tree.h (widest_int_cst_value): Likewise.
+	* value-prof.c (dump_histogram_value): Print using PRId64.
+	* gengtype.c (main): Also inject int64_t.
+	* ggc-page.c (struct max_alignment): Use int64_t.
+	* alloc-pool.c (struct allocation_object_def): Likewise.
+	* ira-conflicts.c (build_conflict_bit_table): Use uint64_t
+	for computation.
+	* doc/tm.texi.in: Remove reference to HOST_WIDEST_INT.
+	* doc/tm.texi: Regenerated.
+	* gengtype-lex.l (IWORD): Handle [u]int64_t.
+	* config/sh/sh.c (expand_cbranchdi4): Use gcov_type.
+	* config/mmix/mmix-protos.h (mmix_intval, mmix_shiftable_wyde_value,
+	mmix_output_register_setting): Use [u]int64_t in prototypes.
+	* config/mmix/mmix.c (mmix_print_operand, mmix_output_register_setting,
+	mmix_shiftable_wyde_value, mmix_output_shiftvalue_op_from_str,
+	mmix_output_octa, mmix_output_shifted_value): Adjust.
+	(mmix_intval): Adjust.  Remove unreachable case.
+	* config/mmix/mmix.md (*nonlocal_goto_receiver_expanded): Use int64_t.
+
 2014-05-26  Richard Biener  <rguenther@suse.de>
 
 	* configure.ac: Drop __int64 type check.  Insist that we
 	found uint64_t and int64_t.
 	* hwint.h (HOST_BITS_PER___INT64): Remove.
-	(HOST_BITS_PER_WIDE_INT): Define to 64 and remove
-	__int64 case.
+	(HOST_BITS_PER_WIDE_INT): Define to 64 and remove __int64 case.
 	(HOST_WIDE_INT_PRINT_*): Remove 32bit case.
 	(HOST_WIDEST_INT*): Define to HOST_WIDE_INT*.
 	(HOST_WIDEST_FAST_INT): Remove __int64 case.
@@ -2126,6 +2793,7 @@
 
 2014-05-12  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR libgcc/61152
 	* config/arm/arm.h (License): Add GCC Runtime Library Exception.
 	* config/arm/aout.h (License): Same.
 	* config/arm/bpabi.h (License): Same.
@@ -2173,6 +2841,13 @@
 	(stack_protect_return_slot_p): New function.
 	(expand_used_vars): Call stack_protect_decl_p and
 	stack_protect_return_slot_p for -fstack-protector-strong.
+
+2014-05-09  David Wohlferd <LimeGreenSocks@yahoo.com>
+	Andrew Haley <aph@redhat.com>
+	Richard Sandiford <rdsandiford@googlemail.com>
+
+	* doc/extend.texi: Rewrite inline asm page / re-org asm-related
+	pages.
 
 2014-05-09  Kenneth Zadeck  <zadeck@naturalbridge.com>
 

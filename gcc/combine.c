@@ -10349,9 +10349,10 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	  /* (ashift (plus foo C) N) is (plus (ashift foo N) C').  */
 	  if (code == ASHIFT
 	      && CONST_INT_P (XEXP (varop, 1))
-	      && (new_rtx = simplify_const_binary_operation (ASHIFT, result_mode,
-							 XEXP (varop, 1),
-							 GEN_INT (count))) != 0
+	      && (new_rtx = simplify_const_binary_operation
+		  (ASHIFT, result_mode,
+		   gen_int_mode (INTVAL (XEXP (varop, 1)), result_mode),
+		   GEN_INT (count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, PLUS,
 				  INTVAL (new_rtx), result_mode, &complement_p))
@@ -10368,9 +10369,10 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	  if (code == LSHIFTRT
 	      && CONST_INT_P (XEXP (varop, 1))
 	      && mode_signbit_p (result_mode, XEXP (varop, 1))
-	      && (new_rtx = simplify_const_binary_operation (code, result_mode,
-							 XEXP (varop, 1),
-							 GEN_INT (count))) != 0
+	      && (new_rtx = simplify_const_binary_operation
+		  (code, result_mode,
+		   gen_int_mode (INTVAL (XEXP (varop, 1)), result_mode),
+		   GEN_INT (count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
 				  INTVAL (new_rtx), result_mode, &complement_p))

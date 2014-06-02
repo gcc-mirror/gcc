@@ -974,6 +974,8 @@ analyze_functions (void)
 	   node != first_analyzed
 	   && node != first_analyzed_var; node = node->next)
 	{
+	  /* Convert COMDAT group designators to IDENTIFIER_NODEs.  */
+	  node->get_comdat_group_id ();
 	  if (decide_is_symbol_needed (node))
 	    {
 	      enqueue_node (node);

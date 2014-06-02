@@ -1,6 +1,6 @@
-! { dg-do run }
+! { dg-do run { target vect_simd_clones } }
 ! { dg-options "-fno-inline" }
-  ! { dg-additional-sources declare-simd-3.f90 }
+! { dg-additional-sources declare-simd-3.f90 }
 ! { dg-additional-options "-msse2" { target sse2_runtime } }
 ! { dg-additional-options "-mavx" { target avx_runtime } }
 

@@ -1,6 +1,47 @@
+2014-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1227
+	PR c++/57543
+	* cp-tree.h (TYPE_HAS_LATE_RETURN_TYPE): Add.
+	* pt.c (tsubst_function_type): Inject the this parameter; do the
+	substitutions in the order mandated by the DR.
+	(copy_default_args_to_explicit_spec): Copy TYPE_HAS_LATE_RETURN_TYPE.
+	* decl.c (grokdeclarator): Maybe set TYPE_HAS_LATE_RETURN_TYPE.
+	(static_fn_type): Copy it.
+	* decl2.c (build_memfn_type, change_return_type,
+	cp_reconstruct_complex_type): Likewise.
+	* parser.c (cp_parser_lambda_declarator_opt): Likewise.
+	* tree.c (strip_typedefs): Likewise.
+	* typeck.c (merge_types): Likewise.
+
+2014-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56947
+	* pt.c (instantiate_decl): Check that defer_ok is not set for
+	local class members.
+
+	PR c++/60992
+	* pt.c (tsubst_init): Split out from...
+	(tsubst_expr) [DECL_EXPR]: Here.
+	(tsubst_copy) [VAR_DECL]: Use it.
+	* semantics.c (finish_id_expression): Return the decl for static/const.
+
+2014-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47202
+	* decl.c (cxx_comdat_group): Return a decl.
+	* optimize.c (cdtor_comdat_group): Get its DECL_ASSEMBLER_NAME.
+
+	* pt.c (tsubst) [ARRAY_TYPE]: Check for array of array of unknown
+	bound.
+
+	PR c++/61242
+	* call.c (build_aggr_conv): Ignore passed in flags.
+	(build_array_conv, build_complex_conv): Likewise.
+
 2014-05-23  Jan Hubicka  <hubicka@ucw.cz>
 
-	* optmize.c (maybe_thunk_body): Use set_comdat_group.
+	* optimize.c (maybe_thunk_body): Use set_comdat_group.
 	(maybe_clone_body): Likewise.
 	* decl.c (duplicate_decls): Update code duplicating comdat group;
 	do not copy symtab pointer; before freeing newdecl remove it
