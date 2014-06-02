@@ -507,6 +507,8 @@ struct ATTRIBUTE_PACKED ext_modified
   /* Kind of modification of the insn.  */
   ENUM_BITFIELD(ext_modified_kind) kind : 2;
 
+  unsigned int do_not_reextend : 1;
+
   /* True if the insn is scheduled to be deleted.  */
   unsigned int deleted : 1;
 };
@@ -712,8 +714,10 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
      register than the source operand, then additional restrictions
      are needed.  Note we have to handle cases where we have nested
      extensions in the source operand.  */
-  if (REGNO (SET_DEST (PATTERN (cand->insn)))
-      != REGNO (get_extended_src_reg (SET_SRC (PATTERN (cand->insn)))))
+  bool copy_needed
+    = (REGNO (SET_DEST (PATTERN (cand->insn)))
+       != REGNO (get_extended_src_reg (SET_SRC (PATTERN (cand->insn)))));
+  if (copy_needed)
     {
       /* In theory we could handle more than one reaching def, it
 	 just makes the code to update the insn stream more complex.  */
@@ -722,7 +726,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 
       /* We require the candidate not already be modified.  It may,
 	 for example have been changed from a (sign_extend (reg))
-	 into (zero_extend (sign_extend (reg)).
+	 into (zero_extend (sign_extend (reg))).
 
 	 Handling that case shouldn't be terribly difficult, but the code
 	 here and the code to emit copies would need auditing.  Until
@@ -776,6 +780,31 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 			      def_insn, cand->insn)
 	  || reg_set_between_p (SET_DEST (PATTERN (cand->insn)),
 				def_insn, cand->insn))
+	return false;
+
+      /* We must be able to copy between the two registers.   Generate,
+	 recognize and verify constraints of the copy.  Also fail if this
+	 generated more than one insn.
+
+         This generates garbage since we throw away the insn when we're
+	 done, only to recreate it later if this test was successful.  */
+      start_sequence ();
+      rtx sub_rtx = *get_sub_rtx (def_insn);
+      rtx pat = PATTERN (cand->insn);
+      rtx new_dst = gen_rtx_REG (GET_MODE (SET_DEST (sub_rtx)),
+                                 REGNO (XEXP (SET_SRC (pat), 0)));
+      rtx new_src = gen_rtx_REG (GET_MODE (SET_DEST (sub_rtx)),
+                                 REGNO (SET_DEST (pat)));
+      emit_move_insn (new_dst, new_src);
+
+      rtx insn = get_insns();
+      end_sequence ();
+      if (NEXT_INSN (insn))
+	return false;
+      if (recog_memoized (insn) == -1)
+	return false;
+      extract_insn (insn);
+      if (!constrain_operands (1))
 	return false;
     }
 
@@ -843,11 +872,15 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
             fprintf (dump_file, "All merges were successful.\n");
 
 	  FOR_EACH_VEC_ELT (state->modified_list, i, def_insn)
-	    if (state->modified[INSN_UID (def_insn)].kind == EXT_MODIFIED_NONE)
-	      state->modified[INSN_UID (def_insn)].kind
-		= (cand->code == ZERO_EXTEND
-		   ? EXT_MODIFIED_ZEXT : EXT_MODIFIED_SEXT);
+	    {
+	      ext_modified *modified = &state->modified[INSN_UID (def_insn)];
+	      if (modified->kind == EXT_MODIFIED_NONE)
+		modified->kind = (cand->code == ZERO_EXTEND ? EXT_MODIFIED_ZEXT
+						            : EXT_MODIFIED_SEXT);
 
+	      if (copy_needed)
+		modified->do_not_reextend = 1;
+	    }
           return true;
         }
       else
