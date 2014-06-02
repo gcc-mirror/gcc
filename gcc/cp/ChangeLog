@@ -1,3 +1,9 @@
+2014-06-02  Siva Chandra Reddy  <sivachandra@google.com>
+
+        PR debug/57519
+        * class.c (handle_using_decl): Pass the correct scope to
+        cp_emit_debug_info_for_using.
+
 2014-06-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/59483
