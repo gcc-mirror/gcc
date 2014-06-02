@@ -1,3 +1,8 @@
+2014-06-02  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/61094
+	* g++.dg/pr61094: New test.
+
 2014-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/xop-rotate1-vector.c (dg-options): Add -mno-avx2.
