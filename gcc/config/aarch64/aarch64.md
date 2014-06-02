@@ -3904,7 +3904,7 @@
 (define_insn "set_fpcr"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_SET_FPCR)]
   ""
-  "msr\\tfpcr, %0\;isb"
+  "msr\\tfpcr, %0"
   [(set_attr "type" "mrs")])
 
 ;; Read Floating-point Control Register.
