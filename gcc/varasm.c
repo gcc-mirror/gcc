@@ -114,7 +114,6 @@ static hashval_t const_desc_hash (const void *);
 static int const_desc_eq (const void *, const void *);
 static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
-static tree copy_constant (tree);
 static void output_constant_def_contents (rtx);
 static void output_addressed_constants (tree);
 static unsigned HOST_WIDE_INT output_constant (tree, unsigned HOST_WIDE_INT,
@@ -3103,71 +3102,6 @@ compare_constant (const tree t1, const tree t2)
   gcc_unreachable ();
 }
 
-/* Make a copy of the whole tree structure for a constant.  This
-   handles the same types of nodes that compare_constant handles.  */
-
-static tree
-copy_constant (tree exp)
-{
-  switch (TREE_CODE (exp))
-    {
-    case ADDR_EXPR:
-      /* For ADDR_EXPR, we do not want to copy the decl whose address
-	 is requested.  We do want to copy constants though.  */
-      if (CONSTANT_CLASS_P (TREE_OPERAND (exp, 0)))
-	return build1 (TREE_CODE (exp), TREE_TYPE (exp),
-		       copy_constant (TREE_OPERAND (exp, 0)));
-      else
-	return copy_node (exp);
-
-    case INTEGER_CST:
-    case REAL_CST:
-    case FIXED_CST:
-    case STRING_CST:
-      return copy_node (exp);
-
-    case COMPLEX_CST:
-      return build_complex (TREE_TYPE (exp),
-			    copy_constant (TREE_REALPART (exp)),
-			    copy_constant (TREE_IMAGPART (exp)));
-
-    case PLUS_EXPR:
-    case POINTER_PLUS_EXPR:
-    case MINUS_EXPR:
-      return build2 (TREE_CODE (exp), TREE_TYPE (exp),
-		     copy_constant (TREE_OPERAND (exp, 0)),
-		     copy_constant (TREE_OPERAND (exp, 1)));
-
-    CASE_CONVERT:
-    case VIEW_CONVERT_EXPR:
-      return build1 (TREE_CODE (exp), TREE_TYPE (exp),
-		     copy_constant (TREE_OPERAND (exp, 0)));
-
-    case VECTOR_CST:
-      return build_vector (TREE_TYPE (exp), VECTOR_CST_ELTS (exp));
-
-    case CONSTRUCTOR:
-      {
-	tree copy = copy_node (exp);
-	vec<constructor_elt, va_gc> *v;
-	unsigned HOST_WIDE_INT idx;
-	tree purpose, value;
-
-	vec_alloc (v, vec_safe_length (CONSTRUCTOR_ELTS (exp)));
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (exp), idx, purpose, value)
-	  {
-	    constructor_elt ce = {purpose, copy_constant (value)};
-	    v->quick_push (ce);
-	  }
-	CONSTRUCTOR_ELTS (copy) = v;
-	return copy;
-      }
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /* Return the section into which constant EXP should be placed.  */
 
 static section *
@@ -3208,7 +3142,7 @@ build_constant_desc (tree exp)
   tree decl;
 
   desc = ggc_alloc<constant_descriptor_tree> ();
-  desc->value = copy_constant (exp);
+  desc->value = exp;
 
   /* Create a string containing the label name, in LABEL.  */
   labelno = const_labelno++;
