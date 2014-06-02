@@ -189,7 +189,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	~_Unlock() noexcept(false)
 	{
 	  if (uncaught_exception())
-	    __try { _M_lock.lock(); } __catch(...) { }
+	    {
+	      __try
+	      { _M_lock.lock(); }
+	      __catch(const __cxxabiv1::__forced_unwind&)
+	      { __throw_exception_again; }
+	      __catch(...)
+	      { }
+	    }
 	  else
 	    _M_lock.lock();
 	}

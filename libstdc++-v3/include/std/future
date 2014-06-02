@@ -1230,6 +1230,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    _M_result->_M_set(_M_fn());
 	  }
+	__catch(const __cxxabiv1::__forced_unwind&)
+	  {
+	    __throw_exception_again; // will cause broken_promise
+	  }
 	__catch(...)
 	  {
 	    _M_result->_M_error = current_exception();
@@ -1248,6 +1252,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__try
 	  {
 	    _M_fn();
+	  }
+	__catch(const __cxxabiv1::__forced_unwind&)
+	  {
+	    __throw_exception_again; // will cause broken_promise
 	  }
 	__catch(...)
 	  {
@@ -1509,7 +1517,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn))
       {
 	_M_thread = std::thread{ [this] {
-	  _M_set_result(_S_task_setter(_M_result, _M_fn));
+	    __try
+	      {
+		_M_set_result(_S_task_setter(_M_result, _M_fn));
+	      }
+	    __catch (const __cxxabiv1::__forced_unwind&)
+	      {
+		// make the shared state ready on thread cancellation
+		if (static_cast<bool>(_M_result))
+		  this->_M_break_promise(std::move(_M_result));
+		__throw_exception_again;
+	      }
         } };
       }
 
