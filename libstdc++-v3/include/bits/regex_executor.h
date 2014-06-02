@@ -42,8 +42,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   /**
-   * @brief Takes a regex and an input string in and
-   * do the matching.
+   * @brief Takes a regex and an input string and does the matching.
    *
    * The %_Executor class has two modes: DFS mode and BFS mode, controlled
    * by the template parameter %__dfs_mode.
@@ -52,6 +51,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   bool __dfs_mode>
     class _Executor
     {
+      using __search_mode = integral_constant<bool, __dfs_mode>;
+      using __dfs = true_type;
+      using __bfs = false_type;
+
+      enum class _Match_mode : unsigned char { _Exact, _Prefix };
+
     public:
       typedef typename iterator_traits<_BiIter>::value_type _CharT;
       typedef basic_regex<_CharT, _TraitsT>                 _RegexT;
@@ -71,24 +76,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_re(__re),
       _M_nfa(*__re._M_automaton),
       _M_results(__results),
-      _M_match_queue(__dfs_mode ? nullptr
-		     : new vector<pair<_StateIdT, _ResultsVec>>()),
       _M_rep_count(_M_nfa.size()),
-      _M_visited(__dfs_mode ? nullptr : new vector<bool>(_M_nfa.size())),
+      _M_states(_M_nfa._M_start(), _M_nfa.size()),
       _M_flags((__flags & regex_constants::match_prev_avail)
 	       ? (__flags
 		  & ~regex_constants::match_not_bol
 		  & ~regex_constants::match_not_bow)
-	       : __flags),
-      _M_start_state(_M_nfa._M_start())
+	       : __flags)
       { }
 
-      // Set matched when string exactly match the pattern.
+      // Set matched when string exactly matches the pattern.
       bool
       _M_match()
       {
 	_M_current = _M_begin;
-	return _M_main<true>();
+	return _M_main(_Match_mode::_Exact);
       }
 
       // Set matched when some prefix of the string matches the pattern.
@@ -96,24 +98,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_search_from_first()
       {
 	_M_current = _M_begin;
-	return _M_main<false>();
+	return _M_main(_Match_mode::_Prefix);
       }
 
       bool
       _M_search();
 
     private:
-      template<bool __match_mode>
-	void
-	_M_rep_once_more(_StateIdT);
+      void
+      _M_rep_once_more(_Match_mode __match_mode, _StateIdT);
 
-      template<bool __match_mode>
-	void
-	_M_dfs(_StateIdT __start);
+      void
+      _M_dfs(_Match_mode __match_mode, _StateIdT __start);
 
-      template<bool __match_mode>
-	bool
-	_M_main();
+      bool
+      _M_main(_Match_mode __match_mode)
+      { return _M_main_dispatch(__match_mode, __search_mode{}); }
+
+      bool
+      _M_main_dispatch(_Match_mode __match_mode, __dfs);
+
+      bool
+      _M_main_dispatch(_Match_mode __match_mode, __bfs);
 
       bool
       _M_is_word(_CharT __ch) const
@@ -144,6 +150,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_lookahead(_State<_TraitsT> __state);
 
+       // Holds additional information used in BFS-mode.
+      template<typename _SearchMode, typename _ResultsVec>
+	struct _State_info;
+
+      template<typename _ResultsVec>
+	struct _State_info<__bfs, _ResultsVec>
+	{
+	  explicit
+	  _State_info(_StateIdT __start, size_t __n)
+	  : _M_start(__start), _M_visited_states(new bool[__n]())
+	  { }
+
+	  bool _M_visited(_StateIdT __i)
+	  {
+	    if (_M_visited_states[__i])
+	      return true;
+	    _M_visited_states[__i] = true;
+	    return false;
+	  }
+
+	  void _M_queue(_StateIdT __i, const _ResultsVec& __res)
+	  { _M_match_queue.emplace_back(__i, __res); }
+
+	  // Saves states that need to be considered for the next character.
+	  vector<pair<_StateIdT, _ResultsVec>>	_M_match_queue;
+	  // Indicates which states are already visited.
+	  unique_ptr<bool[]>			_M_visited_states;
+	  // To record current solution.
+	  _StateIdT _M_start;
+	};
+
+      template<typename _ResultsVec>
+	struct _State_info<__dfs, _ResultsVec>
+	{
+	  explicit
+	  _State_info(_StateIdT __start, size_t) : _M_start(__start)
+	  { }
+
+	  // Dummy implementations for DFS mode.
+	  bool _M_visited(_StateIdT) const { return false; }
+	  void _M_queue(_StateIdT, const _ResultsVec&) { }
+
+	  // To record current solution.
+	  _StateIdT _M_start;
+	};
+
+
     public:
       _ResultsVec                                           _M_cur_results;
       _BiIter                                               _M_current;
@@ -152,15 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _RegexT&                                        _M_re;
       const _NFAT&                                          _M_nfa;
       _ResultsVec&                                          _M_results;
-      // Used in BFS, saving states that need to be considered for the next
-      // character.
-      unique_ptr<vector<pair<_StateIdT, _ResultsVec>>>      _M_match_queue;
-      // Used in BFS, indicating that which state is already visited.
       vector<pair<_BiIter, int>>                            _M_rep_count;
-      unique_ptr<vector<bool>>                              _M_visited;
+      _State_info<__search_mode, _ResultsVec>		    _M_states;
       _FlagT                                                _M_flags;
-      // To record current solution.
-      _StateIdT                                             _M_start_state;
       // Do we have a solution so far?
       bool                                                  _M_has_sol;
     };

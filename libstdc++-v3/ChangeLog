@@ -9,6 +9,32 @@
 	* testsuite/30_threads/async/forced_unwind.cc: New.
 	* testsuite/30_threads/packaged_task/forced_unwind.cc: New.
 
+	* include/bits/regex_compiler.h (__detail::_BracketMatcher): Reorder
+	members to avoid wasted space when not using a cache.
+	(__detail::_BracketMatcher::_M_ready()): Sort and deduplicate set.
+	* include/bits/regex_compiler.tcc
+	(__detail::_BracketMatcher::_M_apply(_CharT, false_type)): Use binary
+	search on set.
+	* include/bits/regex_executor.h (__detail::_Executor::_Match_mode):
+	New enumeration type to indicate match mode.
+	(__detail::_Executor::_State_info): New type holding members only
+	needed in BFS-mode. Replace unique_ptr<vector<bool>> with
+	unique_ptr<bool[]>.
+	(__detail::_Executor::_M_rep_once_more, __detail::_Executor::_M_dfs):
+	Replace template parameter with run-time function parameter.
+	(__detail::_Executor::_M_main): Likewise. Dispatch to ...
+	(__detail::_Executor::_M_main_dispatch): New overloaded functions to
+	implement DFS and BFS mode.
+	* include/bits/regex_executor.tcc (__detail::_Executor::_M_main):
+	Split implementation into ...
+	(__detail::_Executor::_M_main_dispatch): New overloaded functions.
+	(__detail::_Executor::_M_lookahead): Create nested executor on stack.
+	(__detail::_Executor::_M_rep_once_more): Pass match mode as function
+	argument instead of template argument.
+	(__detail::_Executor::_M_dfs): Likewise.
+	* include/bits/regex_scanner.tcc: Fix typos in comments.
+	* testsuite/performance/28_regex/range.cc: New.
+
 2014-06-02  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
