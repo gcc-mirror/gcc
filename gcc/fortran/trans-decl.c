@@ -3260,7 +3260,7 @@ gfc_build_builtin_function_decls (void)
 
       gfor_fndecl_caf_init = gfc_build_library_function_decl (
 		   get_identifier (PREFIX("caf_init")),  void_type_node,
-		   4, pint_type, pppchar_type, pint_type, pint_type);
+		   2, pint_type, pppchar_type);
 
       gfor_fndecl_caf_finalize = gfc_build_library_function_decl (
 	get_identifier (PREFIX("caf_finalize")), void_type_node, 0);
