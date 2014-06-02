@@ -8466,6 +8466,9 @@ aarch64_float_const_representable_p (rtx x)
   if (!CONST_DOUBLE_P (x))
     return false;
 
+  if (GET_MODE (x) == VOIDmode)
+    return false;
+
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
   /* We cannot represent infinities, NaNs or +/-zero.  We won't
