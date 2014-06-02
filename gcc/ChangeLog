@@ -1,3 +1,9 @@
+2014-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61378
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Initialize
+	valueized_anything.
+
 2014-06-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraints.md (Bw): Rename from 'w'.
