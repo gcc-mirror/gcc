@@ -1,3 +1,14 @@
+2014-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/xop-rotate1-vector.c (dg-options): Add -mno-avx2.
+	* gcc.target/i386/xop-rotate2-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-rotate3-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-imul32widen-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-imul64-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-shift1-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-shift2-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-shift3-vector.c (dg-options): Ditto.
+
 2014-06-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61346
@@ -326,7 +337,7 @@
 	* g++.dg/ubsan/float-cast-overflow-bf.C: New test.
 	* gcc.dg/ubsan/float-cast-overflow-bf.c: New test.
 
-2014-05-23  Jiong Wang   <jiong.wang@arm.com>
+2014-05-23  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/tail_indirect_call_1.c: New.
 
@@ -563,7 +574,7 @@
 
 	PR target/58066
 	* gcc.target/i386/pr58066.c: Replace pattern matching of .cfi
-	directive with rtl insns. Add effective-target of fpic and
+	directive with rtl insns. Add effective-target fpic and
 	tls_native.
 
 2014-05-17  Xinliang David Li  <davidxl@google.com>
