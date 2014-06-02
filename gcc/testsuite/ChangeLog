@@ -1,3 +1,7 @@
+2014-06-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.target/powerpc/vsxcopy.c (dg-options): Add -mvsx.
+
 2014-06-02  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/61094
