@@ -1,3 +1,9 @@
+2014-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61239
+	* config/i386/i386.c (ix86_expand_vec_perm) [case V32QImode]: Use
+	GEN_INT (-128) instead of GEN_INT (128) to set MSB of QImode constant.
+
 2014-06-02  Tom de Vries  <tom@codesourcery.com>
 
 	* config/aarch64/aarch64.c (aarch64_float_const_representable_p): Handle
@@ -149,17 +155,17 @@
 2014-05-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61325
-	* lra-constraints.c (process_address): Rename to
-	process_address_1.
+	* lra-constraints.c (process_address): Rename to process_address_1.
 	(process_address): New function.
 
 2014-05-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_types_binopv_qualifiers,
 	TYPES_BINOPV): New static data.
-	* config/aarch64/aarch64-simd-builtins.def (im_lane_bound): New builtin.
-	* config/aarch64/aarch64-simd.md (aarch64_ext, aarch64_im_lane_boundsi):
-	New patterns.
+	* config/aarch64/aarch64-simd-builtins.def (im_lane_bound):
+	New builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_ext,
+	aarch64_im_lane_boundsi): New patterns.
 	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_const_1): Match
 	patterns for EXT.
 	(aarch64_evpc_ext): New function.
@@ -177,20 +183,20 @@
 	* rtl.h (BLOCK_SYMBOL_CHECK): Use SYMBOL_REF_FLAGS.
 
 2014-05-29  Richard Earnshaw <rearnsha@arm.com>
-	Richard Sandiford  <rdsandiford@googlemail.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
 
-        * arm/iterators.md (shiftable_ops): New code iterator.
-        (t2_binop0, arith_shift_insn): New code attributes.
+	* arm/iterators.md (shiftable_ops): New code iterator.
+	(t2_binop0, arith_shift_insn): New code attributes.
 	* arm/predicates.md (shift_nomul_operator): New predicate.
-        * arm/arm.md (insn_enabled): Delete.
-        (enabled): Remove insn_enabled test.
-        (*arith_shiftsi): Delete.  Replace with ...
-        (*<arith_shift_insn>_multsi): ... new pattern.
+	* arm/arm.md (insn_enabled): Delete.
+	(enabled): Remove insn_enabled test.
+	(*arith_shiftsi): Delete.  Replace with ...
+	(*<arith_shift_insn>_multsi): ... new pattern.
 	(*<arith_shift_insn>_shiftsi): ... new pattern.
 	* config/arm/arm.c (arm_print_operand): Handle operand format 'b'.
 
 2014-05-29  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* config/mips/mips.h (POST_CALL_TMP_REG): Define.
 	* config/mips/mips.c (mips_emit_call_insn): Add POST_CALL_TMP_REG
@@ -220,8 +226,9 @@
 	-fuse-caller-save.
 	* lra-assigns.c (lra_assign): Allow call_used_regs to cross calls for
 	-fuse-caller-save.
-	* lra-constraints.c (need_for_call_save_p): Use actual_call_used_reg_set
-	instead of call_used_reg_set for -fuse-caller-save.
+	* lra-constraints.c (need_for_call_save_p): Use
+	actual_call_used_reg_set instead of call_used_reg_set for
+	-fuse-caller-save.
 	* lra-lives.c (process_bb_lives): Calculate actual_call_used_reg_set.
 
 2014-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
@@ -301,8 +308,7 @@
 	__RL78_64BIT_DOUBLES__ or __RL78_32BIT_DOUBLES__.
 	(ASM_SPEC): Pass -m64bit-doubles or -m32bit-doubles on
 	to the assembler.
-	(DOUBLE_TYPE_SIZE): Use 64 bit if TARGET_64BIT_DOUBLES
-	is true.
+	(DOUBLE_TYPE_SIZE): Use 64 bit if TARGET_64BIT_DOUBLES is true.
 	* gcc/config/rl78/rl78.opt (m64bit-doubles): New option.
 	(m32bit-doubles) Likewise.
 	* gcc/config/rl78/t-rl78: Add 64-bit-double multilib.
@@ -347,25 +353,26 @@
 	-fuse-caller-save.
 	* lra-assigns.c (lra_assign): Allow call_used_regs to cross calls for
 	-fuse-caller-save.
-	* lra-constraints.c (need_for_call_save_p): Use actual_call_used_reg_set
-	instead of call_used_reg_set for -fuse-caller-save.
+	* lra-constraints.c (need_for_call_save_p): Use
+	actual_call_used_reg_set instead of call_used_reg_set for
+	-fuse-caller-save.
 	* lra-lives.c (process_bb_lives): Calculate actual_call_used_reg_set.
 
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
-	* doc/invoke.texi (@item Optimization Options): Add -fuse-caller-save to
-	gccoptlist.
+	* doc/invoke.texi (@item Optimization Options): Add -fuse-caller-save
+	to gccoptlist.
 	(@item -fuse-caller-save): New item.
 
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* opts.c (default_options_table): Add OPT_LEVELS_2_PLUS entry with
 	OPT_fuse_caller_save.
 
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* df-scan.c (df_get_call_refs): Use get_call_reg_set_usage.
 	* caller-save.c (setup_save_areas, save_call_clobbered_regs): Use
@@ -387,7 +394,7 @@
 	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS to adjust costs.
 
 2014-05-28  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* cgraph.h (struct cgraph_rtl_info): Add function_used_regs
 	and function_used_regs_valid fields.
@@ -419,8 +426,7 @@
 
 	* config/aarch64/aarch64.md (stack_protect_set_<mode>):
 	Use <w> for the register in assembly template.
-	(stack_protect_test): Use the mode of operands[0] for the
-	result.
+	(stack_protect_test): Use the mode of operands[0] for the result.
 	(stack_protect_test_<mode>): Use <w> for the register
 	in assembly template.
 
@@ -1171,7 +1177,7 @@
 	(ubsan_instrument_float_cast): New function.
 	* ubsan.h (ubsan_instrument_float_cast): Declare.
 
-2014-05-23  Jiong Wang   <jiong.wang@arm.com>
+2014-05-23 Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/predicates.md (aarch64_call_insn_operand): New
 	predicate.
@@ -6506,7 +6512,7 @@
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Force
 	initial PHI args to be gimple values.
 
-2014-04-17   Richard Biener  <rguenther@suse.de>
+2014-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60841
 	* tree-vect-data-refs.c (vect_analyze_data_refs): Count stmts.
@@ -6755,7 +6761,7 @@
 	gen_type_die_with_usage, gen_type_die_with_usage): Likewise.
 	* dbxout.c (dbxout_type, dbxout_symbol): Likewise.
 
-2014-04-14  Jan Hubicka   <hubicka@ucw.cz>
+2014-04-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/60820
 	* varpool.c (varpool_remove_node): Do not alter decls when streaming.
@@ -8821,7 +8827,7 @@
 	PR ipa/60306
 
 	Revert:
-	2013-12-14   Jan Hubicka  <jh@suse.cz>
+	2013-12-14  Jan Hubicka  <jh@suse.cz>
 	PR middle-end/58477
 	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers.
 
@@ -11713,7 +11719,7 @@
 	* Makefile.in: Add vec.o to OBJS-libcommon
 
 2014-01-23  Kirill Yukhin  <kirill.yukhin@intel.com>
-	    Ilya Tocar     <ilya.tocar@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm512_kmov): New.
 	* config/i386/i386.c (IX86_BUILTIN_KMOV16): Ditto.
