@@ -1,3 +1,7 @@
+2014-06-02  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.md (set_fpcr): Drop ISB after FPCR write.
+
 2014-06-02  Richard Henderson  <rth@redhat.com>
 
 	PR target/61336
