@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O2 -mxop -ftree-vectorize" } */
+/* { dg-options "-O2 -mxop -mno-avx2 -ftree-vectorize" } */
 
 extern void exit (int);
 
