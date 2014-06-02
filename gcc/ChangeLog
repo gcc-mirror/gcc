@@ -1,3 +1,8 @@
+2014-06-02  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* varasm.c (copy_constant): Delete function.
+	(build_constant_desc): Don't call it.
+
 2014-06-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/61154
