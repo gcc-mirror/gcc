@@ -1,3 +1,9 @@
+2014-06-02  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.c
+	(ia64_first_cycle_multipass_dfa_lookahead_guard): Check
+	pending_data_specs first.
+
 2014-06-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61378
