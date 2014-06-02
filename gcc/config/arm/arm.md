@@ -5990,7 +5990,7 @@
 
 (define_split
   [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
-	(match_operand:ANY64 1 "const_double_operand" ""))]
+	(match_operand:ANY64 1 "immediate_operand" ""))]
   "TARGET_32BIT
    && reload_completed
    && (arm_const_double_inline_cost (operands[1])

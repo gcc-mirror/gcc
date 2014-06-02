@@ -1,3 +1,10 @@
+2014-06-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/61154
+	* config/arm/arm.h (TARGET_SUPPORTS_WIDE_INT): Define.
+	* config/arm/arm.md (mov64 splitter): Replace const_double_operand
+	with immediate_operand.
+
 2014-06-02  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.c
