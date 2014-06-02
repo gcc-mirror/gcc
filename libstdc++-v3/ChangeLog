@@ -1,3 +1,15 @@
+2014-06-02  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* libstdc++-v3/include/std/type_traits (__strictest_alignment): New
+	helper struct.
+	(aligned_union): New struct (C++11).
+	(aligned_union_t): New type alias (C++14).
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* libstdc++-v3/testsuite/20_util/aligned_union/1.cc: New file.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+
 2014-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61374
