@@ -1,3 +1,8 @@
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Include builtins.h.
+	* c-parser.c: Likewise.
+
 2014-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/56724

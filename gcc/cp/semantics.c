@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "bitmap.h"
 #include "omp-low.h"
+#include "builtins.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\

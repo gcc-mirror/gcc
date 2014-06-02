@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-globals.h"
 #include "tree-vectorizer.h"
 #include "shrink-wrap.h"
+#include "builtins.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);
 static rtx legitimize_pe_coff_extern_decl (rtx, bool);

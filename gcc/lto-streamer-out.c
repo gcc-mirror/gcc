@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "streamer-hooks.h"
 #include "cfgloop.h"
+#include "builtins.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);

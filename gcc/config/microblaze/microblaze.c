@@ -51,6 +51,7 @@
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "cgraph.h"
+#include "builtins.h"
 
 #define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
 

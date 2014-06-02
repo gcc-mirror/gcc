@@ -50,6 +50,7 @@
 #include "target-def.h"
 #include "langhooks.h"		/* For add_builtin_function().  */
 #include "ggc.h"
+#include "builtins.h"
 
 /* ------------------------------------------------------------------------ */
 

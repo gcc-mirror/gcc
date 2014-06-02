@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "dumpfile.h"
 #include "cgraph.h"
+#include "builtins.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"

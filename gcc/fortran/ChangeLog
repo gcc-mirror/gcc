@@ -1,3 +1,8 @@
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* fortran/trans.c (trans_runtime_error_vararg): Call
+	fold_build_call_array_loc instead of fold_builtin_call_array.
+
 2014-06-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* trans-decl.c (gfc_build_builtin_function_decls): Correct number of

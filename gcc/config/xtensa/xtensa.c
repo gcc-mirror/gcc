@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "df.h"
+#include "builtins.h"
 
 
 /* Enumeration for all of the relational tests, so that we can build

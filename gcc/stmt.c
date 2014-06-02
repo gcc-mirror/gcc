@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "params.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 
 /* Functions and data structures for expanding case statements.  */

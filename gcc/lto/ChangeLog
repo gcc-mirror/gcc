@@ -1,3 +1,7 @@
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-symtab.c: Include builtins.h.
+
 2014-05-26  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (lto_parse_hex): Use int64_t.

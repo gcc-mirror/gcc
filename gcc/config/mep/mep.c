@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "opts.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 /* Structure of this file:
 

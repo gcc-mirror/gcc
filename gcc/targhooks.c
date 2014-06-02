@@ -1322,6 +1322,31 @@ default_have_conditional_execution (void)
 #endif
 }
 
+/* By default we assume that c99 functions are present at the runtime,
+   but sincos is not.  */
+bool
+default_libc_has_function (enum function_class fn_class)
+{
+  if (fn_class == function_c94
+      || fn_class == function_c99_misc
+      || fn_class == function_c99_math_complex)
+    return true;
+
+  return false;
+}
+
+bool
+gnu_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+bool
+no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 tree
 default_builtin_tm_load_store (tree ARG_UNUSED (type))
 {

@@ -61,6 +61,7 @@
 #include "opts.h"
 #include "dumpfile.h"
 #include "gimple-expr.h"
+#include "builtins.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;

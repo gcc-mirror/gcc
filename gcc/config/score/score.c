@@ -51,6 +51,7 @@
 #include "langhooks.h"
 #include "df.h"
 #include "opts.h"
+#include "builtins.h"
 
 #define SCORE_SDATA_MAX                score_sdata_max
 #define SCORE_STACK_ALIGN(LOC)         (((LOC) + 3) & ~3)

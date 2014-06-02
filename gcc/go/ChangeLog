@@ -1,3 +1,7 @@
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-gcc.cc: Include builtins.h.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* go-lang.c (struct GTY): Don't use variable_size gty attribute.

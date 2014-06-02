@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "ipa-utils.h"
 #include "ipa-inline.h"
+#include "builtins.h"
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */

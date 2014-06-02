@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "params.h"
 #include "tree-ssa-threadedge.h"
+#include "builtins.h"
 
 /* To avoid code explosion due to jump threading, we limit the
    number of statements we are going to copy.  This variable

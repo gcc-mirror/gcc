@@ -64,6 +64,7 @@
 #include "tree-vectorizer.h"
 #include "config/arm/aarch-cost-tables.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)

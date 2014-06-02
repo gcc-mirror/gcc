@@ -49,6 +49,7 @@
 #include "opts.h"
 #include "cfgloop.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 /* This is used in the am33_2.0-linux-gnu port, in which global symbol
    names are not prefixed by underscores, to tell whether to prefix a

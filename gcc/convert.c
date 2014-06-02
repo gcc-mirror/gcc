@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "target.h"
 #include "langhooks.h"
+#include "builtins.h"
 #include "ubsan.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.

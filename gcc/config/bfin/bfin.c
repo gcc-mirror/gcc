@@ -59,6 +59,7 @@
 #include "hw-doloop.h"
 #include "opts.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */

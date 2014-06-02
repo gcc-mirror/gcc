@@ -50,6 +50,7 @@
 #include "langhooks.h"
 #include "tm-constrs.h"
 #include "df.h"
+#include "builtins.h"
 
 struct lm32_frame_info
 {

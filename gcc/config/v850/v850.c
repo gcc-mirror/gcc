@@ -45,6 +45,7 @@
 #include "target-def.h"
 #include "df.h"
 #include "opts.h"
+#include "builtins.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)

@@ -61,6 +61,7 @@
 #include "tilegx-builtins.h"
 #include "tilegx-multiply.h"
 #include "diagnostic.h"
+#include "builtins.h"
 
 /* SYMBOL_REF for GOT */
 static GTY(()) rtx g_got_symbol = NULL;

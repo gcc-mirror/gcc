@@ -450,13 +450,13 @@ trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
     fntype = TREE_TYPE (gfor_fndecl_runtime_warning_at);
 
   loc = where ? where->lb->location : input_location;
-  tmp = fold_builtin_call_array (loc, TREE_TYPE (fntype),
-				 fold_build1_loc (loc, ADDR_EXPR,
+  tmp = fold_build_call_array_loc (loc, TREE_TYPE (fntype),
+				   fold_build1_loc (loc, ADDR_EXPR,
 					     build_pointer_type (fntype),
 					     error
 					     ? gfor_fndecl_runtime_error_at
 					     : gfor_fndecl_runtime_warning_at),
-				 nargs + 2, argarray);
+				   nargs + 2, argarray);
   gfc_add_expr_to_block (&block, tmp);
 
   return gfc_finish_block (&block);

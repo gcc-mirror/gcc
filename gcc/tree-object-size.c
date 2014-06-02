@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "builtins.h"
 
 struct object_size_info
 {

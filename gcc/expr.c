@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-address.h"
 #include "cfgexpand.h"
+#include "builtins.h"
 
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD

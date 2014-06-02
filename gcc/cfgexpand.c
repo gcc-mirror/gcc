@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "recog.h"
 #include "output.h"
+#include "builtins.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to

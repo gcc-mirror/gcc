@@ -46,6 +46,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
+#include "builtins.h"
 
 /* For dumping information about frame sizes.  */
 char * mcore_current_function_name = 0;
