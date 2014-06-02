@@ -1,3 +1,10 @@
+2014-06-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/59483
+	PR c++/61148
+	* search.c (accessible_p): Use current_nonlambda_class_type.
+	* semantics.c (check_accessibility_of_qualified_id): Likewise.
+
 2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* decl.c: Include builtins.h.
