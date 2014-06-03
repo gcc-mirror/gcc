@@ -1,3 +1,8 @@
+2014-06-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* g++.dg/ipa/pr61160-1.C: New test.
+
 2014-06-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61383
