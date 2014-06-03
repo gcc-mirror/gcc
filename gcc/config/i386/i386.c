@@ -7774,8 +7774,9 @@ ix86_function_value_regno_p (const unsigned int regno)
   switch (regno)
     {
     case AX_REG:
-    case DX_REG:
       return true;
+    case DX_REG:
+      return (!TARGET_64BIT || ix86_abi != MS_ABI);
     case DI_REG:
     case SI_REG:
       return TARGET_64BIT && ix86_abi != MS_ABI;
