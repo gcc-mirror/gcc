@@ -6,6 +6,13 @@
 	PR libstdc++/60734
 	* include/bits/stl_tree.h (_Rb_tree::_M_end): Fix invalid cast.
 
+	Backport from mainline
+	2014-04-24  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone()):
+	Do _M_alt before _M_next.
+	* testsuite/28_regex/basic_regex/multiple_quantifiers.cc: Add testcases.
+
 2014-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/tr2/bool_set: Use UTF-8 for accented characters.
