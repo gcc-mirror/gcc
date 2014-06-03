@@ -1,3 +1,8 @@
+2014-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61134
+	* pt.c (pack_deducible_p): Handle canonicalization.
+
 2014-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (tsubst_function_type): Initialize arg_types.
