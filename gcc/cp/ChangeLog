@@ -1,3 +1,8 @@
+2014-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60848
+	* call.c (is_std_init_list): Check CLASSTYPE_TEMPLATE_INFO.
+
 2014-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61046
