@@ -1,3 +1,8 @@
+2014-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ext/mv14.C (dg-options): Add -march=x86-64.
+	* g++.dg/ext/mv15.C (dg-options): Ditto.
+
 2014-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1423
