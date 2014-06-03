@@ -1,3 +1,22 @@
+2014-06-03  Vishnu K S <Vishnu.k_s@atmel.com>
+
+	* config/avr/avr-mcus.def: Add new avr25 devices attiny441, attiny828
+	and attiny841.
+	* config/avr/avr-tables.opt: Regenerate.
+	* config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2014-06-03  Vishnu K S <vishnu.k_s@atmel.com>
+	    Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+
+	* config/avr/avr-mcus.def (ata6616c): Add new avr25 device.
+	(ata6617c, ata664251): Add new avr35 devices.
+	(ata6612c): Add new avr4 device.
+	(ata6613c, ata6614q): Add new avr5 devices.
+	* config/avr/avr-tables.opt: Regenerate.
+	* config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2014-06-03  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc/config/aarch64/aarch64-builtins.c
