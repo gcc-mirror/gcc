@@ -1,3 +1,40 @@
+2014-06-03  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc/config/aarch64/aarch64-builtins.c
+	(aarch64_types_binop_uus_qualifiers,
+	aarch64_types_shift_to_unsigned_qualifiers,
+	aarch64_types_unsigned_shiftacc_qualifiers): Define.
+	* gcc/config/aarch64/aarch64-simd-builtins.def (uqshl, uqrshl, uqadd,
+	uqsub, usqadd, usra_n, ursra_n, uqshrn_n, uqrshrn_n, usri_n, usli_n,
+	sqshlu_n, uqshl_n): Update qualifiers.
+	* gcc/config/aarch64/arm_neon.h (vqadd_u8, vqadd_u16, vqadd_u32,
+	vqadd_u64, vqaddq_u8, vqaddq_u16, vqaddq_u32, vqaddq_u64, vqsub_u8,
+	vqsub_u16, vqsub_u32, vqsub_u64, vqsubq_u8, vqsubq_u16, vqsubq_u32,
+	vqsubq_u64, vqaddb_u8, vqaddh_u16, vqadds_u32, vqaddd_u64, vqrshl_u8,
+	vqrshl_u16, vqrshl_u32, vqrshl_u64, vqrshlq_u8, vqrshlq_u16,
+	vqrshlq_u32, vqrshlq_u64, vqrshlb_u8, vqrshlh_u16, vqrshls_u32,
+	vqrshld_u64, vqrshrn_n_u16, vqrshrn_n_u32, vqrshrn_n_u64,
+	vqrshrnh_n_u16, vqrshrns_n_u32, vqrshrnd_n_u64, vqshl_u8, vqshl_u16,
+	vqshl_u32, vqshl_u64, vqshlq_u8, vqshlq_u16, vqshlq_u32, vqshlq_u64,
+	vqshlb_u8, vqshlh_u16, vqshls_u32, vqshld_u64, vqshl_n_u8, vqshl_n_u16,
+	vqshl_n_u32, vqshl_n_u64, vqshlq_n_u8, vqshlq_n_u16, vqshlq_n_u32,
+	vqshlq_n_u64, vqshlb_n_u8, vqshlh_n_u16, vqshls_n_u32, vqshld_n_u64,
+	vqshlu_n_s8, vqshlu_n_s16, vqshlu_n_s32, vqshlu_n_s64, vqshluq_n_s8,
+	vqshluq_n_s16, vqshluq_n_s32, vqshluq_n_s64, vqshlub_n_s8,
+	vqshluh_n_s16, vqshlus_n_s32, vqshlud_n_s64, vqshrn_n_u16,
+	vqshrn_n_u32, vqshrn_n_u64, vqshrnh_n_u16, vqshrns_n_u32,
+	vqshrnd_n_u64, vqsubb_u8, vqsubh_u16, vqsubs_u32, vqsubd_u64,
+	vrsra_n_u8, vrsra_n_u16, vrsra_n_u32, vrsra_n_u64, vrsraq_n_u8,
+	vrsraq_n_u16, vrsraq_n_u32, vrsraq_n_u64, vrsrad_n_u64, vsli_n_u8,
+	vsli_n_u16, vsli_n_u32,vsli_n_u64, vsliq_n_u8, vsliq_n_u16,
+	vsliq_n_u32, vsliq_n_u64, vslid_n_u64, vsqadd_u8, vsqadd_u16,
+	vsqadd_u32, vsqadd_u64, vsqaddq_u8, vsqaddq_u16, vsqaddq_u32,
+	vsqaddq_u64, vsqaddb_u8, vsqaddh_u16, vsqadds_u32, vsqaddd_u64,
+	vsra_n_u8, vsra_n_u16, vsra_n_u32, vsra_n_u64, vsraq_n_u8,
+	vsraq_n_u16, vsraq_n_u32, vsraq_n_u64, vsrad_n_u64, vsri_n_u8,
+	vsri_n_u16, vsri_n_u32, vsri_n_u64, vsriq_n_u8, vsriq_n_u16,
+	vsriq_n_u32, vsriq_n_u64, vsrid_n_u64): Remove casts.
+
 2014-06-03  Teresa Johnson  <tejohnson@google.com>
 
 	* tree-sra.c (modify_function): Record caller nodes after rebuild.

@@ -177,6 +177,10 @@ aarch64_types_binopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned };
 #define TYPES_BINOPU (aarch64_types_binopu_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_binop_uus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none };
+#define TYPES_BINOP_UUS (aarch64_types_binop_uus_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_binopp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_poly, qualifier_poly, qualifier_poly };
 #define TYPES_BINOPP (aarch64_types_binopp_qualifiers)
@@ -203,15 +207,27 @@ aarch64_types_getlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_GETLANE (aarch64_types_getlane_qualifiers)
 #define TYPES_SHIFTIMM (aarch64_types_getlane_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_shift_to_unsigned_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_immediate };
+#define TYPES_SHIFTIMM_USS (aarch64_types_shift_to_unsigned_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate };
 #define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
+
 static enum aarch64_type_qualifiers
 aarch64_types_setlane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
 #define TYPES_SETLANE (aarch64_types_setlane_qualifiers)
 #define TYPES_SHIFTINSERT (aarch64_types_setlane_qualifiers)
 #define TYPES_SHIFTACC (aarch64_types_setlane_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_unsigned_shiftacc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_immediate };
+#define TYPES_USHIFTACC (aarch64_types_unsigned_shiftacc_qualifiers)
+
 
 static enum aarch64_type_qualifiers
 aarch64_types_combine_qualifiers[SIMD_MAX_BUILTIN_ARGS]
