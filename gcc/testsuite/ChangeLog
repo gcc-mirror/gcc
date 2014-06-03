@@ -3,6 +3,14 @@
 	Backport from mainline
 	2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/60866
+	* gcc.dg/pr60866.c: New test.
+
+2014-06-03  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2014-05-14  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/60901
 	* gcc.target/i386/pr60901.c: New test.
 
