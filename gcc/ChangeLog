@@ -1,3 +1,7 @@
+2014-06-03  Teresa Johnson  <tejohnson@google.com>
+
+	* tree-sra.c (modify_function): Record caller nodes after rebuild.
+
 2014-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61020

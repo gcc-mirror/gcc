@@ -4926,12 +4926,15 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 {
   struct cgraph_node *new_node;
   bool cfg_changed;
-  vec<cgraph_edge_p> redirect_callers = collect_callers_of_node (node);
 
   rebuild_cgraph_edges ();
   free_dominance_info (CDI_DOMINATORS);
   pop_cfun ();
 
+  /* This must be done after rebuilding cgraph edges for node above.
+     Otherwise any recursive calls to node that are recorded in
+     redirect_callers will be corrupted.  */
+  vec<cgraph_edge_p> redirect_callers = collect_callers_of_node (node);
   new_node = cgraph_function_versioning (node, redirect_callers,
 					 NULL,
 					 NULL, false, NULL, NULL, "isra");
