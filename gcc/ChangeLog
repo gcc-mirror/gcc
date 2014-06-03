@@ -1,3 +1,8 @@
+2014-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61020
+	* varpool.c (ctor_for_folding): Handle uninitialized vtables.
+
 2014-06-03  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_evpc_ext): allow and handle
