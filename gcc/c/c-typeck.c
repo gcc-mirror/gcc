@@ -9361,12 +9361,13 @@ struct c_switch *c_switch_stack;
 
 /* Start a C switch statement, testing expression EXP.  Return the new
    SWITCH_EXPR.  SWITCH_LOC is the location of the `switch'.
-   SWITCH_COND_LOC is the location of the switch's condition.  */
+   SWITCH_COND_LOC is the location of the switch's condition.
+   EXPLICIT_CAST_P is true if the expression EXP has explicit cast.  */
 
 tree
 c_start_case (location_t switch_loc,
 	      location_t switch_cond_loc,
-	      tree exp)
+	      tree exp, bool explicit_cast_p)
 {
   tree orig_type = error_mark_node;
   struct c_switch *cs;
@@ -9387,6 +9388,19 @@ c_start_case (location_t switch_loc,
       else
 	{
 	  tree type = TYPE_MAIN_VARIANT (orig_type);
+	  tree e = exp;
+
+	  /* Warn if the condition has boolean value.  */
+	  while (TREE_CODE (e) == COMPOUND_EXPR)
+	    e = TREE_OPERAND (e, 1);
+
+	  if ((TREE_CODE (type) == BOOLEAN_TYPE
+	       || truth_value_p (TREE_CODE (e)))
+	      /* Explicit cast to int suppresses this warning.  */
+	      && !(TREE_CODE (type) == INTEGER_TYPE
+		   && explicit_cast_p))
+	    warning_at (switch_cond_loc, OPT_Wswitch_bool,
+			"switch condition has boolean value");
 
 	  if (!in_system_header_at (input_location)
 	      && (type == long_integer_type_node

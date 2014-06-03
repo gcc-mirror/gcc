@@ -1,3 +1,12 @@
+2014-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60439
+	* c-parser.c (c_parser_switch_statement): Pass explicit_cast_p to
+	c_start_case.
+	* c-tree.h (c_start_case): Update.
+	* c-typeck.c (c_start_case): Add new boolean parameter.  Warn if
+	switch condition has boolean value.
+
 2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-decl.c: Include builtins.h.

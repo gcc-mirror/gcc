@@ -5197,9 +5197,13 @@ c_parser_switch_statement (c_parser *parser)
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_SWITCH));
   c_parser_consume_token (parser);
   block = c_begin_compound_stmt (flag_isoc99);
+  bool explicit_cast_p = false;
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       switch_cond_loc = c_parser_peek_token (parser)->location;
+      if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
+	  && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
+	explicit_cast_p = true;
       ce = c_parser_expression (parser);
       ce = convert_lvalue_to_rvalue (switch_cond_loc, ce, true, false);
       expr = ce.value;
@@ -5217,7 +5221,7 @@ c_parser_switch_statement (c_parser *parser)
       switch_cond_loc = UNKNOWN_LOCATION;
       expr = error_mark_node;
     }
-  c_start_case (switch_loc, switch_cond_loc, expr);
+  c_start_case (switch_loc, switch_cond_loc, expr, explicit_cast_p);
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   body = c_parser_c99_block_statement (parser);

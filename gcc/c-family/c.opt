@@ -534,6 +534,10 @@ Wswitch-enum
 C ObjC C++ ObjC++ Var(warn_switch_enum) Warning
 Warn about all enumerated switches missing a specific case
 
+Wswitch-bool
+C ObjC C++ ObjC++ Warning Init(1)
+Warn about switches with boolean controlling expression
+
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
 ;
