@@ -1311,10 +1311,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     {
       /* [conv.bool]
 
-	  An rvalue of arithmetic, unscoped enumeration, pointer, or
-	  pointer to member type can be converted to an rvalue of type
-	  bool. ... An rvalue of type std::nullptr_t can be converted
-	  to an rvalue of type bool;  */
+	  A prvalue of arithmetic, unscoped enumeration, pointer, or pointer
+	  to member type can be converted to a prvalue of type bool. ...
+	  For direct-initialization (8.5 [dcl.init]), a prvalue of type
+	  std::nullptr_t can be converted to a prvalue of type bool;  */
       if (ARITHMETIC_TYPE_P (from)
 	  || UNSCOPED_ENUM_P (from)
 	  || fcode == POINTER_TYPE
@@ -1328,6 +1328,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 		  && conv->rank < cr_pbool)
 	      || NULLPTR_TYPE_P (from))
 	    conv->rank = cr_pbool;
+	  if (NULLPTR_TYPE_P (from) && (flags & LOOKUP_ONLYCONVERTING))
+	    conv->bad_p = true;
 	  return conv;
 	}
 
@@ -6061,6 +6063,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		 && CONSTRUCTOR_NELTS (expr) == 1)
 	    expr = CONSTRUCTOR_ELT (expr, 0)->value;
 	}
+
+      /* Give a helpful error if this is bad because a conversion to bool
+	 from std::nullptr_t requires direct-initialization.  */
+      if (NULLPTR_TYPE_P (TREE_TYPE (expr))
+	  && TREE_CODE (totype) == BOOLEAN_TYPE)
+	complained = permerror (loc, "converting to %qT from %qT requires "
+				"direct-initialization",
+				totype, TREE_TYPE (expr));
 
       for (; t ; t = next_conversion (t))
 	{

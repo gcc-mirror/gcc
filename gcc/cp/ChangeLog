@@ -1,3 +1,11 @@
+2014-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1423
+	PR c++/52174
+	* call.c (standard_conversion): Convert nullptr to bool only
+	in case of direct-initialization.
+	(convert_like_real): Provide informative error message.
+
 2014-06-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60439
