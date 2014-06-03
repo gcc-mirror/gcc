@@ -1,3 +1,7 @@
+2014-06-03  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/20140528-1.c: New testcase.
+
 2014-06-03  Dehao Chen  <dehao@google.com>
 
 	* gcc.dg/tree-prof/merge_block.c: New test.
