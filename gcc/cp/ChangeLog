@@ -1,5 +1,9 @@
 2014-06-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61046
+	* decl.c (reshape_init_class): Handle un-folded
+	constant-expressions.
+
 	PR c++/61134
 	* pt.c (pack_deducible_p): Handle canonicalization.
 

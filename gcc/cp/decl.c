@@ -5294,19 +5294,18 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	  if (d->cur->index == error_mark_node)
 	    return error_mark_node;
 
-	  if (TREE_CODE (d->cur->index) == INTEGER_CST)
+	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
+	    /* We already reshaped this.  */
+	    gcc_assert (d->cur->index == field);
+	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
+	    field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
+	  else
 	    {
 	      if (complain & tf_error)
 		error ("%<[%E] =%> used in a GNU-style designated initializer"
 		       " for class %qT", d->cur->index, type);
 	      return error_mark_node;
 	    }
-
-	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
-	    /* We already reshaped this.  */
-	    gcc_assert (d->cur->index == field);
-	  else
-	    field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
 
 	  if (!field || TREE_CODE (field) != FIELD_DECL)
 	    {
