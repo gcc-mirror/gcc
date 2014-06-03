@@ -785,6 +785,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmcu -mmno-mcu @gol
 -meva -mno-eva @gol
 -mvirt -mno-virt @gol
+-mxpa -mno-xpa @gol
 -mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
@@ -17592,6 +17593,12 @@ Use (do not use) the MIPS Enhanced Virtual Addressing instructions.
 @opindex mvirt
 @opindex mno-virt
 Use (do not use) the MIPS Virtualization Application Specific instructions.
+
+@item -mxpa
+@itemx -mno-xpa
+@opindex mxpa
+@opindex mno-xpa
+Use (do not use) the MIPS eXtended Physical Address (XPA) instructions.
 
 @item -mlong64
 @opindex mlong64

@@ -1,3 +1,11 @@
+2014-06-03  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* doc/invoke.texi: Document -mxpa and -mno-xpa MIPS command line
+	options.
+	* config/mips/mips.opt (mxpa): New option.
+	* config/mips/mips.h (ASM_SPEC): Pass mxpa and mno-xpa to the 
+	assembler.
+
 2014-06-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61160
