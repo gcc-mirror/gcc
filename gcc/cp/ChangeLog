@@ -1,3 +1,7 @@
+2014-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (tsubst_function_type): Initialize arg_types.
+
 2014-06-02  Siva Chandra Reddy  <sivachandra@google.com>
 
         PR debug/57519

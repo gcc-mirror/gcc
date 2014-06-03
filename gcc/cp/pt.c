@@ -11320,7 +11320,7 @@ tsubst_function_type (tree t,
 		      tree in_decl)
 {
   tree return_type;
-  tree arg_types;
+  tree arg_types = NULL_TREE;
   tree fntype;
 
   /* The TYPE_CONTEXT is not used for function/method types.  */
