@@ -1,6 +1,25 @@
 2014-06-03  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc/config/aarch64/aarch64-builtins.c
+	(aarch64_types_binop_ssu_qualifiers): New static data.
+	(TYPES_BINOP_SSU): Define.
+	* gcc/config/aarch64/aarch64-simd-builtins.def (suqadd, ushl, urshl,
+	urshr_n, ushll_n): Use appropriate unsigned qualifiers.
+	* gcc/config/aarch64/arm_neon.h (vrshl_u8, vrshl_u16, vrshl_u32,
+	vrshl_u64, vrshlq_u8, vrshlq_u16, vrshlq_u32, vrshlq_u64, vrshld_u64,
+	vrshr_n_u8, vrshr_n_u16, vrshr_n_u32, vrshr_n_u64, vrshrq_n_u8,
+	vrshrq_n_u16, vrshrq_n_u32, vrshrq_n_u64, vrshrd_n_u64, vshll_n_u8,
+	vshll_n_u16, vshll_n_u32, vuqadd_s8, vuqadd_s16, vuqadd_s32,
+	vuqadd_s64, vuqaddq_s8, vuqaddq_s16, vuqaddq_s32, vuqaddq_s64,
+	vuqaddb_s8, vuqaddh_s16, vuqadds_s32, vuqaddd_s64): Add signedness
+	suffix to builtin function name, remove cast.
+	(vshl_s8, vshl_s16, vshl_s32, vshl_s64, vshl_u8, vshl_u16, vshl_u32,
+	vshl_u64, vshlq_s8, vshlq_s16, vshlq_s32, vshlq_s64, vshlq_u8,
+	vshlq_u16, vshlq_u32, vshlq_u64, vshld_s64, vshld_u64): Remove cast.
+
+2014-06-03  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc/config/aarch64/aarch64-builtins.c
 	(aarch64_types_binop_uus_qualifiers,
 	aarch64_types_shift_to_unsigned_qualifiers,
 	aarch64_types_unsigned_shiftacc_qualifiers): Define.
