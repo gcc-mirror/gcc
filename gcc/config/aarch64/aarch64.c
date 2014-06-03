@@ -9058,6 +9058,80 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize patterns for the REV insns.  */
+
+static bool
+aarch64_evpc_rev (struct expand_vec_perm_d *d)
+{
+  unsigned int i, j, diff, nelt = d->nelt;
+  rtx (*gen) (rtx, rtx);
+
+  if (!d->one_vector_p)
+    return false;
+
+  diff = d->perm[0];
+  switch (diff)
+    {
+    case 7:
+      switch (d->vmode)
+	{
+	case V16QImode: gen = gen_aarch64_rev64v16qi; break;
+	case V8QImode: gen = gen_aarch64_rev64v8qi;  break;
+	default:
+	  return false;
+	}
+      break;
+    case 3:
+      switch (d->vmode)
+	{
+	case V16QImode: gen = gen_aarch64_rev32v16qi; break;
+	case V8QImode: gen = gen_aarch64_rev32v8qi;  break;
+	case V8HImode: gen = gen_aarch64_rev64v8hi;  break;
+	case V4HImode: gen = gen_aarch64_rev64v4hi;  break;
+	default:
+	  return false;
+	}
+      break;
+    case 1:
+      switch (d->vmode)
+	{
+	case V16QImode: gen = gen_aarch64_rev16v16qi; break;
+	case V8QImode: gen = gen_aarch64_rev16v8qi;  break;
+	case V8HImode: gen = gen_aarch64_rev32v8hi;  break;
+	case V4HImode: gen = gen_aarch64_rev32v4hi;  break;
+	case V4SImode: gen = gen_aarch64_rev64v4si;  break;
+	case V2SImode: gen = gen_aarch64_rev64v2si;  break;
+	case V4SFmode: gen = gen_aarch64_rev64v4sf;  break;
+	case V2SFmode: gen = gen_aarch64_rev64v2sf;  break;
+	default:
+	  return false;
+	}
+      break;
+    default:
+      return false;
+    }
+
+  for (i = 0; i < nelt ; i += diff + 1)
+    for (j = 0; j <= diff; j += 1)
+      {
+	/* This is guaranteed to be true as the value of diff
+	   is 7, 3, 1 and we should have enough elements in the
+	   queue to generate this.  Getting a vector mask with a
+	   value of diff other than these values implies that
+	   something is wrong by the time we get here.  */
+	gcc_assert (i + j < nelt);
+	if (d->perm[i + j] != i + diff - j)
+	  return false;
+      }
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
+  emit_insn (gen (d->target, d->op0));
+  return true;
+}
+
 static bool
 aarch64_evpc_dup (struct expand_vec_perm_d *d)
 {
@@ -9162,7 +9236,9 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 
   if (TARGET_SIMD)
     {
-      if (aarch64_evpc_ext (d))
+      if (aarch64_evpc_rev (d))
+	return true;
+      else if (aarch64_evpc_ext (d))
 	return true;
       else if (aarch64_evpc_zip (d))
 	return true;

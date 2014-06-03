@@ -271,6 +271,9 @@
     UNSPEC_TRN1		; Used in vector permute patterns.
     UNSPEC_TRN2		; Used in vector permute patterns.
     UNSPEC_EXT		; Used in aarch64-simd.md.
+    UNSPEC_REV64	; Used in vector reverse patterns (permute).
+    UNSPEC_REV32	; Used in vector reverse patterns (permute).
+    UNSPEC_REV16	; Used in vector reverse patterns (permute).
     UNSPEC_AESE		; Used in aarch64-simd.md.
     UNSPEC_AESD         ; Used in aarch64-simd.md.
     UNSPEC_AESMC        ; Used in aarch64-simd.md.
@@ -896,6 +899,8 @@
 			      UNSPEC_TRN1 UNSPEC_TRN2
 			      UNSPEC_UZP1 UNSPEC_UZP2])
 
+(define_int_iterator REVERSE [UNSPEC_REV64 UNSPEC_REV32 UNSPEC_REV16])
+
 (define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
 			     UNSPEC_FRINTN UNSPEC_FRINTI UNSPEC_FRINTX
 			     UNSPEC_FRINTA])
@@ -1022,6 +1027,10 @@
 (define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
 			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")
 			    (UNSPEC_UZP1 "uzp") (UNSPEC_UZP2 "uzp")])
+
+; op code for REV instructions (size within which elements are reversed).
+(define_int_attr rev_op [(UNSPEC_REV64 "64") (UNSPEC_REV32 "32")
+			 (UNSPEC_REV16 "16")])
 
 (define_int_attr perm_hilo [(UNSPEC_ZIP1 "1") (UNSPEC_ZIP2 "2")
 			    (UNSPEC_TRN1 "1") (UNSPEC_TRN2 "2")

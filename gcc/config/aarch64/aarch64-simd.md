@@ -4196,6 +4196,15 @@
 }
 )
 
+(define_insn "aarch64_rev<REVERSE:rev_op><mode>"
+  [(set (match_operand:VALL 0 "register_operand" "=w")
+	(unspec:VALL [(match_operand:VALL 1 "register_operand" "w")]
+                    REVERSE))]
+  "TARGET_SIMD"
+  "rev<REVERSE:rev_op>\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "type" "neon_rev<q>")]
+)
+
 (define_insn "aarch64_st2<mode>_dreg"
   [(set (match_operand:TI 0 "aarch64_simd_struct_operand" "=Utv")
 	(unspec:TI [(match_operand:OI 1 "register_operand" "w")

@@ -10563,402 +10563,6 @@ vrecpeq_u32 (uint32x4_t a)
   return result;
 }
 
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vrev16_p8 (poly8x8_t a)
-{
-  poly8x8_t result;
-  __asm__ ("rev16 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vrev16_s8 (int8x8_t a)
-{
-  int8x8_t result;
-  __asm__ ("rev16 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vrev16_u8 (uint8x8_t a)
-{
-  uint8x8_t result;
-  __asm__ ("rev16 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vrev16q_p8 (poly8x16_t a)
-{
-  poly8x16_t result;
-  __asm__ ("rev16 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vrev16q_s8 (int8x16_t a)
-{
-  int8x16_t result;
-  __asm__ ("rev16 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vrev16q_u8 (uint8x16_t a)
-{
-  uint8x16_t result;
-  __asm__ ("rev16 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vrev32_p8 (poly8x8_t a)
-{
-  poly8x8_t result;
-  __asm__ ("rev32 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vrev32_p16 (poly16x4_t a)
-{
-  poly16x4_t result;
-  __asm__ ("rev32 %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vrev32_s8 (int8x8_t a)
-{
-  int8x8_t result;
-  __asm__ ("rev32 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vrev32_s16 (int16x4_t a)
-{
-  int16x4_t result;
-  __asm__ ("rev32 %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vrev32_u8 (uint8x8_t a)
-{
-  uint8x8_t result;
-  __asm__ ("rev32 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vrev32_u16 (uint16x4_t a)
-{
-  uint16x4_t result;
-  __asm__ ("rev32 %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vrev32q_p8 (poly8x16_t a)
-{
-  poly8x16_t result;
-  __asm__ ("rev32 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vrev32q_p16 (poly16x8_t a)
-{
-  poly16x8_t result;
-  __asm__ ("rev32 %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vrev32q_s8 (int8x16_t a)
-{
-  int8x16_t result;
-  __asm__ ("rev32 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vrev32q_s16 (int16x8_t a)
-{
-  int16x8_t result;
-  __asm__ ("rev32 %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vrev32q_u8 (uint8x16_t a)
-{
-  uint8x16_t result;
-  __asm__ ("rev32 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vrev32q_u16 (uint16x8_t a)
-{
-  uint16x8_t result;
-  __asm__ ("rev32 %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vrev64_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("rev64 %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vrev64_p8 (poly8x8_t a)
-{
-  poly8x8_t result;
-  __asm__ ("rev64 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vrev64_p16 (poly16x4_t a)
-{
-  poly16x4_t result;
-  __asm__ ("rev64 %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vrev64_s8 (int8x8_t a)
-{
-  int8x8_t result;
-  __asm__ ("rev64 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vrev64_s16 (int16x4_t a)
-{
-  int16x4_t result;
-  __asm__ ("rev64 %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vrev64_s32 (int32x2_t a)
-{
-  int32x2_t result;
-  __asm__ ("rev64 %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vrev64_u8 (uint8x8_t a)
-{
-  uint8x8_t result;
-  __asm__ ("rev64 %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vrev64_u16 (uint16x4_t a)
-{
-  uint16x4_t result;
-  __asm__ ("rev64 %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vrev64_u32 (uint32x2_t a)
-{
-  uint32x2_t result;
-  __asm__ ("rev64 %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrev64q_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("rev64 %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vrev64q_p8 (poly8x16_t a)
-{
-  poly8x16_t result;
-  __asm__ ("rev64 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vrev64q_p16 (poly16x8_t a)
-{
-  poly16x8_t result;
-  __asm__ ("rev64 %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vrev64q_s8 (int8x16_t a)
-{
-  int8x16_t result;
-  __asm__ ("rev64 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vrev64q_s16 (int16x8_t a)
-{
-  int16x8_t result;
-  __asm__ ("rev64 %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vrev64q_s32 (int32x4_t a)
-{
-  int32x4_t result;
-  __asm__ ("rev64 %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vrev64q_u8 (uint8x16_t a)
-{
-  uint8x16_t result;
-  __asm__ ("rev64 %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vrev64q_u16 (uint16x8_t a)
-{
-  uint16x8_t result;
-  __asm__ ("rev64 %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vrev64q_u32 (uint32x4_t a)
-{
-  uint32x4_t result;
-  __asm__ ("rev64 %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 #define vrshrn_high_n_s16(a, b, c)                                      \
   __extension__                                                         \
     ({                                                                  \
@@ -21412,6 +21016,234 @@ __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vrecpxd_f64 (float64_t __a)
 {
   return __builtin_aarch64_frecpxdf (__a);
+}
+
+
+/* vrev  */
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vrev16_p8 (poly8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 1, 0, 3, 2, 5, 4, 7, 6 });
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vrev16_s8 (int8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 1, 0, 3, 2, 5, 4, 7, 6 });
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vrev16_u8 (uint8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 1, 0, 3, 2, 5, 4, 7, 6 });
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vrev16q_p8 (poly8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14 });
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vrev16q_s8 (int8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14 });
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vrev16q_u8 (uint8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14 });
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vrev32_p8 (poly8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 3, 2, 1, 0, 7, 6, 5, 4 });
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vrev32_p16 (poly16x4_t a)
+{
+  return __builtin_shuffle (a, (uint16x4_t) { 1, 0, 3, 2 });
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vrev32_s8 (int8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 3, 2, 1, 0, 7, 6, 5, 4 });
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vrev32_s16 (int16x4_t a)
+{
+  return __builtin_shuffle (a, (uint16x4_t) { 1, 0, 3, 2 });
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vrev32_u8 (uint8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 3, 2, 1, 0, 7, 6, 5, 4 });
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vrev32_u16 (uint16x4_t a)
+{
+  return __builtin_shuffle (a, (uint16x4_t) { 1, 0, 3, 2 });
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vrev32q_p8 (poly8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12 });
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vrev32q_p16 (poly16x8_t a)
+{
+  return __builtin_shuffle (a, (uint16x8_t) { 1, 0, 3, 2, 5, 4, 7, 6 });
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vrev32q_s8 (int8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12 });
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vrev32q_s16 (int16x8_t a)
+{
+  return __builtin_shuffle (a, (uint16x8_t) { 1, 0, 3, 2, 5, 4, 7, 6 });
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vrev32q_u8 (uint8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12 });
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vrev32q_u16 (uint16x8_t a)
+{
+  return __builtin_shuffle (a, (uint16x8_t) { 1, 0, 3, 2, 5, 4, 7, 6 });
+}
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrev64_f32 (float32x2_t a)
+{
+  return __builtin_shuffle (a, (uint32x2_t) { 1, 0 });
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vrev64_p8 (poly8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 7, 6, 5, 4, 3, 2, 1, 0 });
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vrev64_p16 (poly16x4_t a)
+{
+  return __builtin_shuffle (a, (uint16x4_t) { 3, 2, 1, 0 });
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vrev64_s8 (int8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 7, 6, 5, 4, 3, 2, 1, 0 });
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vrev64_s16 (int16x4_t a)
+{
+  return __builtin_shuffle (a, (uint16x4_t) { 3, 2, 1, 0 });
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vrev64_s32 (int32x2_t a)
+{
+  return __builtin_shuffle (a, (uint32x2_t) { 1, 0 });
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vrev64_u8 (uint8x8_t a)
+{
+  return __builtin_shuffle (a, (uint8x8_t) { 7, 6, 5, 4, 3, 2, 1, 0 });
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vrev64_u16 (uint16x4_t a)
+{
+  return __builtin_shuffle (a, (uint16x4_t) { 3, 2, 1, 0 });
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vrev64_u32 (uint32x2_t a)
+{
+  return __builtin_shuffle (a, (uint32x2_t) { 1, 0 });
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrev64q_f32 (float32x4_t a)
+{
+  return __builtin_shuffle (a, (uint32x4_t) { 1, 0, 3, 2 });
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vrev64q_p8 (poly8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8 });
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vrev64q_p16 (poly16x8_t a)
+{
+  return __builtin_shuffle (a, (uint16x8_t) { 3, 2, 1, 0, 7, 6, 5, 4 });
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vrev64q_s8 (int8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8 });
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vrev64q_s16 (int16x8_t a)
+{
+  return __builtin_shuffle (a, (uint16x8_t) { 3, 2, 1, 0, 7, 6, 5, 4 });
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vrev64q_s32 (int32x4_t a)
+{
+  return __builtin_shuffle (a, (uint32x4_t) { 1, 0, 3, 2 });
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vrev64q_u8 (uint8x16_t a)
+{
+  return __builtin_shuffle (a,
+      (uint8x16_t) { 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8 });
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vrev64q_u16 (uint16x8_t a)
+{
+  return __builtin_shuffle (a, (uint16x8_t) { 3, 2, 1, 0, 7, 6, 5, 4 });
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vrev64q_u32 (uint32x4_t a)
+{
+  return __builtin_shuffle (a, (uint32x4_t) { 1, 0, 3, 2 });
 }
 
 /* vrnd  */
