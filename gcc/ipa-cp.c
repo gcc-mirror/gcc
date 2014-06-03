@@ -2482,7 +2482,8 @@ cgraph_edge_brings_value_p (struct cgraph_edge *cs,
 			    struct ipcp_value_source *src)
 {
   struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-  struct ipa_node_params *dst_info = IPA_NODE_REF (cs->callee);
+  cgraph_node *real_dest = cgraph_function_node (cs->callee);
+  struct ipa_node_params *dst_info = IPA_NODE_REF (real_dest);
 
   if ((dst_info->ipcp_orig_node && !dst_info->is_all_contexts_clone)
       || caller_info->node_dead)
