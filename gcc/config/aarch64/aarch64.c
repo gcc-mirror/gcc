@@ -9018,9 +9018,6 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
         return false;
     }
 
-  /* The mid-end handles masks that just return one of the input vectors.  */
-  gcc_assert (location != 0);
-
   switch (d->vmode)
     {
     case V16QImode: gen = gen_aarch64_extv16qi; break;
@@ -9041,7 +9038,10 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  if (BYTES_BIG_ENDIAN)
+  /* The case where (location == 0) is a no-op for both big- and little-endian,
+     and is removed by the mid-end at optimization levels -O1 and higher.  */
+
+  if (BYTES_BIG_ENDIAN && (location != 0))
     {
       /* After setup, we want the high elements of the first vector (stored
          at the LSB end of the register), and the low elements of the second
