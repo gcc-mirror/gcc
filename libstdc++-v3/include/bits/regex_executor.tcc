@@ -120,10 +120,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (_M_match_queue->empty())
 		break;
 	      _M_visited->assign(_M_visited->size(), false);
-	      auto _M_old_queue = std::move(*_M_match_queue);
-	      for (auto __task : _M_old_queue)
+	      auto __old_queue = std::move(*_M_match_queue);
+	      for (auto& __task : __old_queue)
 		{
-		  _M_cur_results = __task.second;
+		  _M_cur_results = std::move(__task.second);
 		  _M_dfs<__match_mode>(__task.first);
 		}
 	      if (!__match_mode)

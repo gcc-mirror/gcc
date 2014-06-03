@@ -1,5 +1,10 @@
 2014-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex_executor.tcc (_Executor<>::_M_main): Move instead
+	of copying.
+
+2014-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline
 	2014-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
