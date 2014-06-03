@@ -21,6 +21,7 @@
 
 MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64/mips64r2 mips16 msoft-float/mno-float/mfp64
 MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips64r2 mips16 sof nof f64
+MULTILIB_MATCHES = mips32r2=mips32r3 mips32r2=mips32r5 mips64r2=mips64r3 mips64r2=mips64r5
 
 # Remove stdarg.h and stddef.h from USER_H.
 USER_H = $(srcdir)/ginclude/float.h \

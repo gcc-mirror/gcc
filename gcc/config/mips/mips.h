@@ -208,8 +208,12 @@ struct mips_cpu_info {
 #define ISA_MIPS4		    (mips_isa == 4)
 #define ISA_MIPS32		    (mips_isa == 32)
 #define ISA_MIPS32R2		    (mips_isa == 33)
+#define ISA_MIPS32R3		    (mips_isa == 34)
+#define ISA_MIPS32R5		    (mips_isa == 36)
 #define ISA_MIPS64                  (mips_isa == 64)
 #define ISA_MIPS64R2		    (mips_isa == 65)
+#define ISA_MIPS64R3		    (mips_isa == 66)
+#define ISA_MIPS64R5		    (mips_isa == 68)
 
 /* Architecture target defines.  */
 #define TARGET_LOONGSON_2E          (mips_arch == PROCESSOR_LOONGSON_2E)
@@ -448,12 +452,32 @@ struct mips_cpu_info {
 	  builtin_define ("__mips=32");					\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");		\
 	}								\
+      else if (ISA_MIPS32R3)						\
+	{								\
+	  builtin_define ("__mips=32");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");		\
+	}								\
+      else if (ISA_MIPS32R5)						\
+	{								\
+	  builtin_define ("__mips=32");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");		\
+	}								\
       else if (ISA_MIPS64)						\
 	{								\
 	  builtin_define ("__mips=64");					\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");		\
 	}								\
       else if (ISA_MIPS64R2)						\
+	{								\
+	  builtin_define ("__mips=64");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");		\
+	}								\
+      else if (ISA_MIPS64R3)						\
+	{								\
+	  builtin_define ("__mips=64");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");		\
+	}								\
+      else if (ISA_MIPS64R5)						\
 	{								\
 	  builtin_define ("__mips=64");					\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");		\
@@ -699,9 +723,13 @@ struct mips_cpu_info {
      %{march=mips32|march=4kc|march=4km|march=4kp|march=4ksc:-mips32} \
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
        |march=34k*|march=74k*|march=m14k*|march=1004k*: -mips32r2} \
+     %{march=mips32r3: -mips32r3} \
+     %{march=mips32r5: -mips32r5} \
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000 \
        |march=xlr: -mips64} \
      %{march=mips64r2|march=loongson3a|march=octeon|march=xlp: -mips64r2} \
+     %{march=mips64r3: -mips64r3} \
+     %{march=mips64r5: -mips64r5} \
      %{!march=*: -" MULTILIB_ISA_DEFAULT "}}"
 
 /* A spec that infers a -mhard-float or -msoft-float setting from an
@@ -724,7 +752,8 @@ struct mips_cpu_info {
 /* Infer a -msynci setting from a -mips argument, on the assumption that
    -msynci is desired where possible.  */
 #define MIPS_ISA_SYNCI_SPEC \
-  "%{msynci|mno-synci:;:%{mips32r2|mips64r2:-msynci;:-mno-synci}}"
+  "%{msynci|mno-synci:;:%{mips32r2|mips32r3|mips32r5|mips64r2|mips64r3 \
+                          |mips64r5:-msynci;:-mno-synci}}"
 
 #if (MIPS_ABI_DEFAULT == ABI_O64 \
      || MIPS_ABI_DEFAULT == ABI_N32 \
@@ -800,7 +829,9 @@ struct mips_cpu_info {
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
 				 || ISA_MIPS4				\
 				 || ISA_MIPS64				\
-				 || ISA_MIPS64R2)
+				 || ISA_MIPS64R2			\
+				 || ISA_MIPS64R3			\
+				 || ISA_MIPS64R5)
 
 /* ISA has branch likely instructions (e.g. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
