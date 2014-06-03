@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_DEBUG_ASSERT(_M_value.size() == 1);
       _BracketMatcher<_TraitsT, __icase, __collate> __matcher
 	(_M_ctype.is(_CtypeT::upper, _M_value[0]), _M_traits);
-      __matcher._M_add_character_class(_M_value);
+      __matcher._M_add_character_class(_M_value, false);
       __matcher._M_ready();
       _M_stack.push(_StateSeqT(_M_nfa,
 	_M_nfa._M_insert_matcher(std::move(__matcher))));
@@ -428,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (_M_match_token(_ScannerT::_S_token_equiv_class_name))
 	__matcher._M_add_equivalence_class(_M_value);
       else if (_M_match_token(_ScannerT::_S_token_char_class_name))
-	__matcher._M_add_character_class(_M_value);
+	__matcher._M_add_character_class(_M_value, false);
       else if (_M_try_char()) // [a
 	{
 	  auto __ch = _M_value[0];
@@ -451,6 +451,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  __matcher._M_add_char(__ch);
 	}
+      else if (_M_match_token(_ScannerT::_S_token_quoted_class))
+	__matcher._M_add_character_class(_M_value,
+					 _M_ctype.is(_CtypeT::upper,
+						     _M_value[0]));
       else
 	__throw_regex_error(regex_constants::error_brack);
     }
@@ -527,6 +531,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     _M_traits.transform_primary(&__ch, &__ch+1))
 		   != _M_equiv_set.end())
 	    __ret = true;
+	  else
+	    {
+	      for (auto& __it : _M_neg_class_set)
+		if (!_M_traits.isctype(__ch, __it))
+		  {
+		    __ret = true;
+		    break;
+		  }
+	    }
 	}
       if (_M_is_non_matching)
 	return !__ret;
