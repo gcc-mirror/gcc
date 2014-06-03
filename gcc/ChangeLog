@@ -1,3 +1,25 @@
+2014-06-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* defaults.h (USE_MD_CONSTRAINTS, EXTRA_MEMORY_CONSTRAINT)
+	(EXTRA_ADDRESS_CONSTRAINT, DEFAULT_CONSTRAINT_LEN, CONSTRAINT_LEN)
+	(CONST_OK_FOR_CONSTRAINT_P, CONST_DOUBLE_OK_FOR_LETTER_P)
+	(REG_CLASS_FROM_CONSTRAINT, EXTRA_CONSTRAINT_STR): Delete definitions
+	in this file.
+	(REG_CLASS_FROM_LETTER, CONST_OK_FOR_LETTER_P)
+	(CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_CONSTRAINT): Move poising to...
+	* system.h: ...here and make it unconditional.
+	* target.def (conditional_register_usage): Mention
+	define_register_constraint instead of old-style constraint macros.
+	* doc/tm.texi.in: Remove documentation for old-style constraint macros.
+	* doc/tm.texi: Regenerate.
+	* genoutput.c: Remove USE_MD_CONSTRAINTS conditions and all code
+	protected by !USE_MD_CONSTRAINTS.
+	* config/frv/frv.md: Remove quote from old version of documentation.
+	* config/frv/frv.c (frv_conditional_register_usage): Likewise.
+	* config/m32r/m32r.c (easy_di_const, easy_df_const): Avoid mentioning
+	CONST_DOUBLE_OK_FOR_LETTER.
+	* config/sh/constraints.md: Likewise EXTRA_CONSTRAINT.
+
 2014-06-02  Andrew Pinski  <apinski@cavium.com>
     
 	* config/aarch64/aarch64-linux.h (GLIBC_DYNAMIC_LINKER):

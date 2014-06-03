@@ -782,25 +782,7 @@ frv_string_begins_with (const_tree name, const char *prefix)
 	  && strncmp (TREE_STRING_POINTER (name), prefix, prefix_len) == 0);
 }
 
-/* Zero or more C statements that may conditionally modify two variables
-   `fixed_regs' and `call_used_regs' (both of type `char []') after they have
-   been initialized from the two preceding macros.
-
-   This is necessary in case the fixed or call-clobbered registers depend on
-   target flags.
-
-   You need not define this macro if it has no work to do.
-
-   If the usage of an entire class of registers depends on the target flags,
-   you may indicate this to GCC by using this macro to modify `fixed_regs' and
-   `call_used_regs' to 1 for each of the registers in the classes which should
-   not be used by GCC.  Also define the macro `REG_CLASS_FROM_LETTER' to return
-   `NO_REGS' if it is called with a letter for a class that shouldn't be used.
-
-   (However, if this class is not included in `GENERAL_REGS' and all of the
-   insn patterns whose constraints permit this class are controlled by target
-   switches, then GCC will automatically avoid using these registers when the
-   target switches are opposed to them.)  */
+/* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
 static void
 frv_conditional_register_usage (void)

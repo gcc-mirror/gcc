@@ -605,7 +605,7 @@ call26_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Return 1 if OP is a DImode const we want to handle inline.
    This must match the code in the movdi pattern.
-   It is used by the 'G' CONST_DOUBLE_OK_FOR_LETTER.  */
+   It is used by the 'G' constraint.  */
 
 int
 easy_di_const (rtx op)
@@ -625,7 +625,7 @@ easy_di_const (rtx op)
 
 /* Return 1 if OP is a DFmode const we want to handle inline.
    This must match the code in the movdf pattern.
-   It is used by the 'H' CONST_DOUBLE_OK_FOR_LETTER.  */
+   It is used by the 'H' constraint.  */
 
 int
 easy_df_const (rtx op)
