@@ -771,8 +771,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
--mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2 @gol
--mips64  -mips64r2 @gol
+-mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5 @gol
+-mips64  -mips64r2  -mips64r3  -mips64r5 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
 -minterlink-compressed -mno-interlink-compressed @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
@@ -17158,7 +17158,8 @@ Generate code that runs on @var{arch}, which can be the name of a
 generic MIPS ISA, or the name of a particular processor.
 The ISA names are:
 @samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4},
-@samp{mips32}, @samp{mips32r2}, @samp{mips64} and @samp{mips64r2}.
+@samp{mips32}, @samp{mips32r2}, @samp{mips32r3}, @samp{mips32r5}, 
+@samp{mips64}, @samp{mips64r2}, @samp{mips64r3} and @samp{mips64r5}.
 The processor names are:
 @samp{4kc}, @samp{4km}, @samp{4kp}, @samp{4ksc},
 @samp{4kec}, @samp{4kem}, @samp{4kep}, @samp{4ksd},
@@ -17256,9 +17257,13 @@ Equivalent to @option{-march=mips4}.
 @opindex mips32
 Equivalent to @option{-march=mips32}.
 
-@item -mips32r2
-@opindex mips32r2
-Equivalent to @option{-march=mips32r2}.
+@item -mips32r3
+@opindex mips32r3
+Equivalent to @option{-march=mips32r3}.
+
+@item -mips32r5
+@opindex mips32r5
+Equivalent to @option{-march=mips32r5}.
 
 @item -mips64
 @opindex mips64
@@ -17267,6 +17272,14 @@ Equivalent to @option{-march=mips64}.
 @item -mips64r2
 @opindex mips64r2
 Equivalent to @option{-march=mips64r2}.
+
+@item -mips64r3
+@opindex mips64r3
+Equivalent to @option{-march=mips64r3}.
+
+@item -mips64r5
+@opindex mips64r5
+Equivalent to @option{-march=mips64r5}.
 
 @item -mips16
 @itemx -mno-mips16
@@ -17328,7 +17341,7 @@ GCC supports a variant of the o32 ABI in which floating-point registers
 are 64 rather than 32 bits wide.  You can select this combination with
 @option{-mabi=32} @option{-mfp64}.  This ABI relies on the @code{mthc1}
 and @code{mfhc1} instructions and is therefore only supported for
-MIPS32R2 processors.
+MIPS32R2, MIPS32R3 and MIPS32R5 processors.
 
 The register assignments for arguments and return values remain the
 same, but each scalar value is passed in a single 64-bit register

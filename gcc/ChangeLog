@@ -1,3 +1,29 @@
+2014-06-03  Andrew Bennett  <andrew.bennett@imgtec.com> 
+
+	* config/mips/mips-cpus.def: Add mips32r3, mips32r5, mips64r3 and
+	mips64r5.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_compute_frame_info): Changed if statement
+	to use mips_isa_rev rather than ISA_MIPS32R2.
+	* config/mips/mips.h (ISA_MIPS32R3): New define.
+	(ISA_MIPS32R5): New define.
+	(ISA_MIPS64R3): New define.
+	(ISA_MIPS64R5): New define.
+	(TARGET_CPU_CPP_BUILTINS): Added support for ISA_MIPS32R3, ISA_MIPS32R5,
+	ISA_MIPS64R3 and ISA_MIPS64R5.
+	(MIPS_ISA_LEVEL_SPEC): Added support for mips32r3, mips32r5, mips64r3
+	and mips64r5.
+	(MIPS_ISA_SYNCI_SPEC): Likewise.
+	(ISA_HAS_64BIT_REGS): Added ISA_MIPS64R3 and ISA_MIPS64R5.
+	(LINK_SPEC): Added mips32r3 and mips32r5.
+	* config/mips/t-isa3264 (MULTILIB_MATCHES): Map mips32r3 and mips32r5
+	to mips32r2; and mips64r3 and mips64r5 to mips64r2.
+	* config/mips/t-mti-elf (MULTILIB_MATCHES): Likewise.
+	* config/mips/t-mti-linux (MULTILIB_MATCHES): Likewise.
+	* config/mips/t-sde (MULTILIB_MATCHES): Likewise.
+	* config/mips/t-sdemtk (MULTILIB_MATCHES): New define.
+	* doc/invoke.texi: Document mips32r3, mips32r5, mips64r3 and mips64r5.
+
 2014-06-03  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* doc/invoke.texi: Document -mxpa and -mno-xpa MIPS command line
