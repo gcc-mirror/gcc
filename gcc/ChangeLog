@@ -1,3 +1,8 @@
+2014-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61020
+	* varpool.c (ctor_for_folding): Handle uninitialized vtables.
+
 2014-06-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61160

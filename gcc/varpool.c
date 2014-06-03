@@ -304,7 +304,16 @@ ctor_for_folding (tree decl)
   if (DECL_VIRTUAL_P (real_decl))
     {
       gcc_checking_assert (TREE_READONLY (real_decl));
-      return DECL_INITIAL (real_decl);
+      if (DECL_INITIAL (real_decl))
+	return DECL_INITIAL (real_decl);
+      else
+	{
+	  /* The C++ front end creates VAR_DECLs for vtables of typeinfo
+	     classes not defined in the current TU so that it can refer
+	     to them from typeinfo objects.  Avoid returning NULL_TREE.  */
+	  gcc_checking_assert (!COMPLETE_TYPE_P (DECL_CONTEXT (real_decl)));
+	  return error_mark_node;
+	}
     }
 
   /* If there is no constructor, we have nothing to do.  */
