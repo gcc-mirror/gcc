@@ -55,7 +55,7 @@
 ;; Z: zero in any mode
 ;;
 ;; unused CONST_INT constraint letters: LO
-;; unused EXTRA_CONSTRAINT letters: D T U Y
+;; unused "extra" constraint letters: D T U Y
 
 ;; Register constraints
 (define_register_constraint "a" "ALL_REGS"
