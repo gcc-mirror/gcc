@@ -4855,19 +4855,32 @@ aarch64_rtx_arith_op_extract_p (rtx x, enum machine_mode mode)
 static bool
 aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 {
+  rtx inner;
+  rtx comparator;
+  enum rtx_code cmpcode;
+
+  if (COMPARISON_P (op0))
+    {
+      inner = XEXP (op0, 0);
+      comparator = XEXP (op0, 1);
+      cmpcode = GET_CODE (op0);
+    }
+  else
+    {
+      inner = op0;
+      comparator = const0_rtx;
+      cmpcode = NE;
+    }
+
   if (GET_CODE (op1) == PC || GET_CODE (op2) == PC)
     {
       /* Conditional branch.  */
-      if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+      if (GET_MODE_CLASS (GET_MODE (inner)) == MODE_CC)
 	return true;
       else
 	{
-	  if (GET_CODE (op0) == NE
-	      || GET_CODE (op0) == EQ)
+	  if (cmpcode == NE || cmpcode == EQ)
 	    {
-	      rtx inner = XEXP (op0, 0);
-	      rtx comparator = XEXP (op0, 1);
-
 	      if (comparator == const0_rtx)
 		{
 		  /* TBZ/TBNZ/CBZ/CBNZ.  */
@@ -4877,23 +4890,20 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
 			 	       0, speed);
 		else
 		  /* CBZ/CBNZ.  */
-		  *cost += rtx_cost (inner, GET_CODE (op0), 0, speed);
+		  *cost += rtx_cost (inner, cmpcode, 0, speed);
 
 	        return true;
 	      }
 	    }
-	  else if (GET_CODE (op0) == LT
-		   || GET_CODE (op0) == GE)
+	  else if (cmpcode == LT || cmpcode == GE)
 	    {
-	      rtx comparator = XEXP (op0, 1);
-
 	      /* TBZ/TBNZ.  */
 	      if (comparator == const0_rtx)
 		return true;
 	    }
 	}
     }
-  else if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+  else if (GET_MODE_CLASS (GET_MODE (inner)) == MODE_CC)
     {
       /* It's a conditional operation based on the status flags,
 	 so it must be some flavor of CSEL.  */

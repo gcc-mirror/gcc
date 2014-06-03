@@ -1,4 +1,9 @@
-014-06-03  Andrew Pinski  <apinski@cavium.com>
+2014-06-03  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Allow non comparisons
+	for OP0.
+
+2014-06-03  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): New function.
 	(aarch64_rtx_costs): Use aarch64_if_then_else_costs.
