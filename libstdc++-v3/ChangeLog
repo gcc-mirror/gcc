@@ -1,3 +1,9 @@
+2014-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1423
+	PR c++/52174
+	* testsuite/20_util/is_assignable/value.cc: Update.
+
 2014-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/condition_variable (condition_variable_any::_Unlock): Do
