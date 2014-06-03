@@ -1702,6 +1702,30 @@ verify_symbolic_number_p (struct symbolic_number *n, gimple stmt)
   return true;
 }
 
+/* Initialize the symbolic number N for the bswap pass from the base element
+   SRC manipulated by the bitwise OR expression.  */
+
+static bool
+init_symbolic_number (struct symbolic_number *n, tree src)
+{
+  n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
+
+  /* Set up the symbolic number N by setting each byte to a value between 1 and
+     the byte size of rhs1.  The highest order byte is set to n->size and the
+     lowest order byte to 1.  */
+  n->size = TYPE_PRECISION (TREE_TYPE (src));
+  if (n->size % BITS_PER_UNIT != 0)
+    return false;
+  n->size /= BITS_PER_UNIT;
+  n->range = n->size;
+  n->n = CMPNOP;
+
+  if (n->size < (int)sizeof (int64_t))
+    n->n &= ((uint64_t)1 << (n->size * BITS_PER_UNIT)) - 1;
+
+  return true;
+}
+
 /* Check if STMT might be a byte swap or a nop from a memory source and returns
    the answer. If so, REF is that memory source and the base of the memory area
    accessed and the offset of the access from that base are recorded in N.  */
@@ -1714,26 +1738,27 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   HOST_WIDE_INT bitsize, bitpos;
   enum machine_mode mode;
   int unsignedp, volatilep;
+  tree offset, base_addr;
 
   if (!gimple_assign_load_p (stmt) || gimple_has_volatile_ops (stmt))
     return false;
 
-  n->base_addr = get_inner_reference (ref, &bitsize, &bitpos, &n->offset,
-				      &mode, &unsignedp, &volatilep, false);
+  base_addr = get_inner_reference (ref, &bitsize, &bitpos, &offset, &mode,
+				   &unsignedp, &volatilep, false);
 
-  if (TREE_CODE (n->base_addr) == MEM_REF)
+  if (TREE_CODE (base_addr) == MEM_REF)
     {
       offset_int bit_offset = 0;
-      tree off = TREE_OPERAND (n->base_addr, 1);
+      tree off = TREE_OPERAND (base_addr, 1);
 
       if (!integer_zerop (off))
 	{
-	  offset_int boff, coff = mem_ref_offset (n->base_addr);
+	  offset_int boff, coff = mem_ref_offset (base_addr);
 	  boff = wi::lshift (coff, LOG2_BITS_PER_UNIT);
 	  bit_offset += boff;
 	}
 
-      n->base_addr = TREE_OPERAND (n->base_addr, 0);
+      base_addr = TREE_OPERAND (base_addr, 0);
 
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
       if (wi::neg_p (bit_offset))
@@ -1744,11 +1769,11 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;
 	  tem = wi::arshift (tem, LOG2_BITS_PER_UNIT);
-	  if (n->offset)
-	    n->offset = size_binop (PLUS_EXPR, n->offset,
+	  if (offset)
+	    offset = size_binop (PLUS_EXPR, offset,
 				    wide_int_to_tree (sizetype, tem));
 	  else
-	    n->offset = wide_int_to_tree (sizetype, tem);
+	    offset = wide_int_to_tree (sizetype, tem);
 	}
 
       bitpos += bit_offset.to_shwi ();
@@ -1759,6 +1784,9 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   if (bitsize % BITS_PER_UNIT)
     return false;
 
+  init_symbolic_number (n, ref);
+  n->base_addr = base_addr;
+  n->offset = offset;
   n->bytepos = bitpos / BITS_PER_UNIT;
   n->alias_set = reference_alias_ptr_type (ref);
   n->vuse = gimple_vuse (stmt);
@@ -1817,28 +1845,12 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
       /* If find_bswap_or_nop_1 returned NULL, STMT is a leaf node and
 	 we have to initialize the symbolic number.  */
-      if (!source_expr1 || gimple_assign_load_p (rhs1_stmt))
+      if (!source_expr1)
 	{
-	  /* Set up the symbolic number N by setting each byte to a
-	     value between 1 and the byte size of rhs1.  The highest
-	     order byte is set to n->size and the lowest order
-	     byte to 1.  */
-	  n->size = TYPE_PRECISION (TREE_TYPE (rhs1));
-	  if (n->size % BITS_PER_UNIT != 0)
+	  if (gimple_assign_load_p (stmt)
+	      || !init_symbolic_number (n, rhs1))
 	    return NULL_TREE;
-	  n->size /= BITS_PER_UNIT;
-	  n->range = n->size;
-	  n->n = CMPNOP;
-
-	  if (n->size < (int)sizeof (int64_t))
-	    n->n &= ((uint64_t)1 <<
-		     (n->size * BITS_PER_UNIT)) - 1;
-
-	  if (!source_expr1)
-	    {
-	      n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
-	      source_expr1 = rhs1;
-	    }
+	  source_expr1 = rhs1;
 	}
 
       switch (code)
@@ -1916,7 +1928,10 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
 	  source_expr2 = find_bswap_or_nop_1 (rhs2_stmt, &n2, limit - 1);
 
-	  if (n1.size != n2.size || !source_expr2)
+	  if (!source_expr2)
+	    return NULL_TREE;
+
+	  if (n1.size != n2.size)
 	    return NULL_TREE;
 
 	  if (!n1.vuse != !n2.vuse ||
