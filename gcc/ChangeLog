@@ -1,3 +1,21 @@
+2014-06-03  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_rev<REVERSE:rev-op><mode>):
+	New pattern.
+	* config/aarch64/aarch64.c (aarch64_evpc_rev): New function.
+	(aarch64_expand_vec_perm_const_1): Add call to aarch64_evpc_rev.
+	* config/aarch64/iterators.md (REVERSE): New iterator.
+	(UNSPEC_REV64, UNSPEC_REV32, UNSPEC_REV16): New enum elements.
+	(rev_op): New int_attribute.
+	* config/aarch64/arm_neon.h (vrev16_p8, vrev16_s8, vrev16_u8,
+	vrev16q_p8, vrev16q_s8, vrev16q_u8, vrev32_p8, vrev32_p16, vrev32_s8,
+	vrev32_s16, vrev32_u8, vrev32_u16, vrev32q_p8, vrev32q_p16, vrev32q_s8,
+	vrev32q_s16, vrev32q_u8, vrev32q_u16, vrev64_f32, vrev64_p8,
+	vrev64_p16, vrev64_s8, vrev64_s16, vrev64_s32, vrev64_u8, vrev64_u16,
+	vrev64_u32, vrev64q_f32, vrev64q_p8, vrev64q_p16, vrev64q_s8,
+	vrev64q_s16, vrev64q_s32, vrev64q_u8, vrev64q_u16, vrev64q_u32):
+	Replace temporary __asm__ with __builtin_shuffle.
+
 2014-06-03  Andrew Bennett  <andrew.bennett@imgtec.com> 
 
 	* config/mips/mips-cpus.def: Add mips32r3, mips32r5, mips64r3 and
