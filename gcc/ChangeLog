@@ -1,3 +1,14 @@
+2014-06-03  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61328
+	* tree-ssa-math-opts.c (init_symbolic_number): Extract symbolic number
+	initialization from find_bswap_or_nop_1.
+	(find_bswap_or_nop_1): Test return value of find_bswap_or_nop_1 stored
+	in source_expr2 before using the size value the function sets. Also
+	make use of init_symbolic_number () in both the old place and
+	find_bswap_or_nop_load () to avoid reading uninitialized memory when
+	doing recursion in the GIMPLE_BINARY_RHS case.
+
 2014-06-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61383
