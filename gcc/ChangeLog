@@ -1,3 +1,8 @@
+2014-06-03  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/i386.c (ix86_function_value_regno_p): Disallow DX_REG
+	for 64-bit ms-abi.
+
 2014-06-03  Dehao Chen  <dehao@google.com>
 
 	* tree-cfg.c (gimple_merge_blocks): Only reset count when BBs are in
