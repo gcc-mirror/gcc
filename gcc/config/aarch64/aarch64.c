@@ -4849,6 +4849,70 @@ aarch64_rtx_arith_op_extract_p (rtx x, enum machine_mode mode)
   return false;
 }
 
+/* Calculate the cost of calculating (if_then_else (OP0) (OP1) (OP2)),
+   storing it in *COST.  Result is true if the total cost of the operation
+   has now been calculated.  */
+static bool
+aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
+{
+  if (GET_CODE (op1) == PC || GET_CODE (op2) == PC)
+    {
+      /* Conditional branch.  */
+      if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+	return true;
+      else
+	{
+	  if (GET_CODE (op0) == NE
+	      || GET_CODE (op0) == EQ)
+	    {
+	      rtx inner = XEXP (op0, 0);
+	      rtx comparator = XEXP (op0, 1);
+
+	      if (comparator == const0_rtx)
+		{
+		  /* TBZ/TBNZ/CBZ/CBNZ.  */
+		  if (GET_CODE (inner) == ZERO_EXTRACT)
+		    /* TBZ/TBNZ.  */
+		    *cost += rtx_cost (XEXP (inner, 0), ZERO_EXTRACT,
+			 	       0, speed);
+		else
+		  /* CBZ/CBNZ.  */
+		  *cost += rtx_cost (inner, GET_CODE (op0), 0, speed);
+
+	        return true;
+	      }
+	    }
+	  else if (GET_CODE (op0) == LT
+		   || GET_CODE (op0) == GE)
+	    {
+	      rtx comparator = XEXP (op0, 1);
+
+	      /* TBZ/TBNZ.  */
+	      if (comparator == const0_rtx)
+		return true;
+	    }
+	}
+    }
+  else if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
+    {
+      /* It's a conditional operation based on the status flags,
+	 so it must be some flavor of CSEL.  */
+
+      /* CSNEG, CSINV, and CSINC are handled for free as part of CSEL.  */
+      if (GET_CODE (op1) == NEG
+          || GET_CODE (op1) == NOT
+          || (GET_CODE (op1) == PLUS && XEXP (op1, 1) == const1_rtx))
+	op1 = XEXP (op1, 0);
+
+      *cost += rtx_cost (op1, IF_THEN_ELSE, 1, speed);
+      *cost += rtx_cost (op2, IF_THEN_ELSE, 2, speed);
+      return true;
+    }
+
+  /* We don't know what this is, cost all operands.  */
+  return false;
+}
+
 /* Calculate the cost of calculating X, storing it in *COST.  Result
    is true if the total cost of the operation has now been calculated.  */
 static bool
@@ -5583,66 +5647,8 @@ cost_plus:
       return false;  /* All arguments need to be in registers.  */
 
     case IF_THEN_ELSE:
-      op2 = XEXP (x, 2);
-      op0 = XEXP (x, 0);
-      op1 = XEXP (x, 1);
-
-      if (GET_CODE (op1) == PC || GET_CODE (op2) == PC)
-        {
-          /* Conditional branch.  */
-          if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
-	    return true;
-	  else
-	    {
-	      if (GET_CODE (op0) == NE
-		  || GET_CODE (op0) == EQ)
-		{
-		  rtx inner = XEXP (op0, 0);
-		  rtx comparator = XEXP (op0, 1);
-
-		  if (comparator == const0_rtx)
-		    {
-		      /* TBZ/TBNZ/CBZ/CBNZ.  */
-		      if (GET_CODE (inner) == ZERO_EXTRACT)
-			/* TBZ/TBNZ.  */
-			*cost += rtx_cost (XEXP (inner, 0), ZERO_EXTRACT,
-					   0, speed);
-		      else
-			/* CBZ/CBNZ.  */
-			*cost += rtx_cost (inner, GET_CODE (op0), 0, speed);
-
-		      return true;
-		    }
-		}
-	      else if (GET_CODE (op0) == LT
-		       || GET_CODE (op0) == GE)
-		{
-		  rtx comparator = XEXP (op0, 1);
-
-		  /* TBZ/TBNZ.  */
-		  if (comparator == const0_rtx)
-		    return true;
-		}
-	    }
-        }
-      else if (GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
-        {
-          /* It's a conditional operation based on the status flags,
-             so it must be some flavor of CSEL.  */
-
-          /* CSNEG, CSINV, and CSINC are handled for free as part of CSEL.  */
-          if (GET_CODE (op1) == NEG
-              || GET_CODE (op1) == NOT
-              || (GET_CODE (op1) == PLUS && XEXP (op1, 1) == const1_rtx))
-            op1 = XEXP (op1, 0);
-
-          *cost += rtx_cost (op1, IF_THEN_ELSE, 1, speed);
-          *cost += rtx_cost (op2, IF_THEN_ELSE, 2, speed);
-          return true;
-        }
-
-      /* We don't know what this is, cost all operands.  */
-      return false;
+      return aarch64_if_then_else_costs (XEXP (x, 0), XEXP (x, 1),
+					 XEXP (x, 2), cost, speed);
 
     case EQ:
     case NE:

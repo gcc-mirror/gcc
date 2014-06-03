@@ -1,3 +1,8 @@
+014-06-03  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): New function.
+	(aarch64_rtx_costs): Use aarch64_if_then_else_costs.
+
 2014-06-03  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/i386.c (ix86_function_value_regno_p): Disallow DX_REG
