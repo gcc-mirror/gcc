@@ -1880,8 +1880,11 @@ gimple_merge_blocks (basic_block a, basic_block b)
   /* When merging two BBs, if their counts are different, the larger count
      is selected as the new bb count. This is to handle inconsistent
      profiles.  */
-  a->count = MAX (a->count, b->count);
-  a->frequency = MAX (a->frequency, b->frequency);
+  if (a->loop_father == b->loop_father)
+    {
+      a->count = MAX (a->count, b->count);
+      a->frequency = MAX (a->frequency, b->frequency);
+    }
 
   /* Merge the sequences.  */
   last = gsi_last_bb (a);

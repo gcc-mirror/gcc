@@ -1,3 +1,7 @@
+2014-06-03  Dehao Chen  <dehao@google.com>
+
+	* gcc.dg/tree-prof/merge_block.c: New test.
+
 2014-06-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/ext/mv14.C (dg-options): Add -march=x86-64.

@@ -1,3 +1,8 @@
+2014-06-03  Dehao Chen  <dehao@google.com>
+
+	* tree-cfg.c (gimple_merge_blocks): Only reset count when BBs are in
+	the same loop.
+
 2014-06-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60439
