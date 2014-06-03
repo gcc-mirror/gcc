@@ -1,3 +1,9 @@
+2014-06-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* ipa-cp.c (cgraph_edge_brings_value_p): Handle edges leading to
+	thunks.
+
 2014-06-03  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
