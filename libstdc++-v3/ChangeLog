@@ -6,6 +6,17 @@
 	PR libstdc++/60734
 	* include/bits/stl_tree.h (_Rb_tree::_M_end): Fix invalid cast.
 
+	Backport from mainline
+	2014-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60966
+	* include/std/future (__future_base::_State_baseV2::_M_set_result):
+	Signal condition variable after call_once returns.
+	(__future_base::_State_baseV2::_M_do_set): Do not signal here.
+	(promise::set_value, promise::set_exception): Increment the reference
+	count on the shared state until the function returns.
+	* testsuite/30_threads/promise/60966.cc: New.
+
 2014-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/tr2/bool_set: Use UTF-8 for accented characters.

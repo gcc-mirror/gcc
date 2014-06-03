@@ -351,12 +351,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_set_result(function<_Ptr_type()> __res, bool __ignore_failure = false)
       {
-        bool __set = __ignore_failure;
+        bool __set = false;
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
         call_once(_M_once, &_State_base::_M_do_set, this, ref(__res),
             ref(__set));
-        if (!__set)
+	if (__set)
+	  _M_cond.notify_all();
+	else if (!__ignore_failure)
           __throw_future_error(int(future_errc::promise_already_satisfied));
       }
 
@@ -471,7 +473,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           lock_guard<mutex> __lock(_M_mutex);
           _M_result.swap(__res);
         }
-        _M_cond.notify_all();
         __set = true;
       }
 
@@ -983,22 +984,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       set_value(const _Res& __r)
       {
+	auto __future = _M_future;
         auto __setter = _State::__setter(this, __r);
-        _M_future->_M_set_result(std::move(__setter));
+        __future->_M_set_result(std::move(__setter));
       }
 
       void
       set_value(_Res&& __r)
       {
+	auto __future = _M_future;
         auto __setter = _State::__setter(this, std::move(__r));
-        _M_future->_M_set_result(std::move(__setter));
+        __future->_M_set_result(std::move(__setter));
       }
 
       void
       set_exception(exception_ptr __p)
       {
+	auto __future = _M_future;
         auto __setter = _State::__setter(__p, this);
-        _M_future->_M_set_result(std::move(__setter));
+        __future->_M_set_result(std::move(__setter));
       }
     };
 
@@ -1081,15 +1085,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       set_value(_Res& __r)
       {
+	auto __future = _M_future;
         auto __setter = _State::__setter(this, __r);
-        _M_future->_M_set_result(std::move(__setter));
+        __future->_M_set_result(std::move(__setter));
       }
 
       void
       set_exception(exception_ptr __p)
       {
+	auto __future = _M_future;
         auto __setter = _State::__setter(__p, this);
-        _M_future->_M_set_result(std::move(__setter));
+        __future->_M_set_result(std::move(__setter));
       }
     };
 
@@ -1166,8 +1172,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       set_exception(exception_ptr __p)
       {
+	auto __future = _M_future;
         auto __setter = _State::__setter(__p, this);
-        _M_future->_M_set_result(std::move(__setter));
+        __future->_M_set_result(std::move(__setter));
       }
     };
 
@@ -1193,8 +1200,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline void
   promise<void>::set_value()
   {
+    auto __future = _M_future;
     auto __setter = _State::__setter(this);
-    _M_future->_M_set_result(std::move(__setter));
+    __future->_M_set_result(std::move(__setter));
   }
 
 
