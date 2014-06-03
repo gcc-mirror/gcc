@@ -1,3 +1,8 @@
+2014-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61383
+	* gcc.dg/torture/pr61383-1.c: New testcase.
+
 2014-06-03  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.target/powerpc/vsxcopy.c (dg-options): Add -mvsx.
