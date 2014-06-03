@@ -1,11 +1,11 @@
 2014-06-02  Andrew Pinski  <apinski@cavium.com>
     
-	* config/aarch64/aarch64-linux.h (GLIBC_DYNAMIC_LINKER): /lib/ld-linux32-aarch64.so.1
-	is used for ILP32.
+	* config/aarch64/aarch64-linux.h (GLIBC_DYNAMIC_LINKER):
+	/lib/ld-linux32-aarch64.so.1 is used for ILP32.
 	(LINUX_TARGET_LINK_SPEC): Update linker script for ILP32.
 	file whose name depends on -mabi= and -mbig-endian.
-	* config/aarch64/t-aarch64-linux (MULTILIB_OSDIRNAMES): Handle LP64 better
-	and handle ilp32 too.
+	* config/aarch64/t-aarch64-linux (MULTILIB_OSDIRNAMES):
+	Handle LP64 better and handle ilp32 too.
 	(MULTILIB_OPTIONS): Delete.
 	(MULTILIB_DIRNAMES): Delete.
 
