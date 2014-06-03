@@ -1,5 +1,9 @@
 2014-06-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60992
+	* pt.c (tsubst_copy) [VAR_DECL]: Try lookup first.  Add a new
+	variable to local_specializations.
+
 	PR c++/60848
 	* call.c (is_std_init_list): Check CLASSTYPE_TEMPLATE_INFO.
 
