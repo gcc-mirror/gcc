@@ -1,3 +1,9 @@
+2014-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60439
+	* semantics.c (finish_switch_cond): Warn if switch condition has
+	boolean value.
+
 2014-06-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60992

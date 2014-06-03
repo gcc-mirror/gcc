@@ -271,7 +271,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
 -Wmissing-format-attribute @gol
--Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
+-Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
 -Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
@@ -3845,6 +3845,22 @@ provoke warnings when this option is used.  The only difference
 between @option{-Wswitch} and this option is that this option gives a
 warning about an omitted enumeration code even if there is a
 @code{default} label.
+
+@item -Wswitch-bool
+@opindex Wswitch-bool
+@opindex Wno-switch-bool
+Warn whenever a @code{switch} statement has an index of boolean type.
+It is possible to suppress this warning by casting the controlling
+expression to a type other than @code{bool}.  For example:
+@smallexample
+@group
+switch ((int) (a == 4))
+  @{
+  ...
+  @}
+@end group
+@end smallexample
+This warning is enabled by default for C and C++ programs.
 
 @item -Wsync-nand @r{(C and C++ only)}
 @opindex Wsync-nand

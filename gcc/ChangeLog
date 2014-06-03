@@ -1,4 +1,13 @@
-2014-06-03  Vishnu K S <Vishnu.k_s@atmel.com>
+2014-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60439
+	* doc/invoke.texi: Document -Wswitch-bool.
+	* function.c (stack_protect_epilogue): Cast controlling expression of
+	the switch to int.
+	* gengtype.c (walk_type): Generate switch expression with its
+	controlling expression cast to int.
+
+2014-06-03  Vishnu K S  <Vishnu.k_s@atmel.com>
 
 	* config/avr/avr-mcus.def: Add new avr25 devices attiny441, attiny828
 	and attiny841.
@@ -6,8 +15,8 @@
 	* config/avr/t-multilib: Regenerate.
 	* doc/avr-mmcu.texi: Regenerate.
 
-2014-06-03  Vishnu K S <vishnu.k_s@atmel.com>
-	    Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+2014-06-03  Vishnu K S  <vishnu.k_s@atmel.com>
+	    Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	* config/avr/avr-mcus.def (ata6616c): Add new avr25 device.
 	(ata6617c, ata664251): Add new avr35 devices.

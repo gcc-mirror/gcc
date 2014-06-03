@@ -1,3 +1,8 @@
+2014-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60439
+	* c.opt (Wswitch-bool): New option.
+
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-common.h (c_omp_sharing_predetermined, c_omp_remap_decl):
