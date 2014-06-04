@@ -301,7 +301,7 @@ struct visibility_flags visibility_options;
 
 static tree c_fully_fold_internal (tree expr, bool, bool *, bool *);
 static tree check_case_value (tree);
-static bool check_case_bounds (tree, tree, tree *, tree *);
+static bool check_case_bounds (location_t, tree, tree, tree *, tree *);
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocommon_attribute (tree *, tree, tree, int, bool *);
@@ -3355,7 +3355,7 @@ check_case_value (tree value)
    untouched) or false if the label is out of range.  */
 
 static bool
-check_case_bounds (tree type, tree orig_type,
+check_case_bounds (location_t loc, tree type, tree orig_type,
 		   tree *case_low_p, tree *case_high_p)
 {
   tree min_value, max_value;
@@ -3373,7 +3373,8 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_low, min_value) < 0
       && tree_int_cst_compare (case_high, min_value) < 0)
     {
-      warning (0, "case label value is less than minimum value for type");
+      warning_at (loc, 0, "case label value is less than minimum value "
+		  "for type");
       return false;
     }
 
@@ -3381,7 +3382,7 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_low, max_value) > 0
       && tree_int_cst_compare (case_high, max_value) > 0)
     {
-      warning (0, "case label value exceeds maximum value for type");
+      warning_at (loc, 0, "case label value exceeds maximum value for type");
       return false;
     }
 
@@ -3389,8 +3390,8 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_high, min_value) >= 0
       && tree_int_cst_compare (case_low, min_value) < 0)
     {
-      warning (0, "lower value in case label range"
-	       " less than minimum value for type");
+      warning_at (loc, 0, "lower value in case label range"
+		  " less than minimum value for type");
       case_low = min_value;
     }
 
@@ -3398,8 +3399,8 @@ check_case_bounds (tree type, tree orig_type,
   if (tree_int_cst_compare (case_low, max_value) <= 0
       && tree_int_cst_compare (case_high, max_value) > 0)
     {
-      warning (0, "upper value in case label range"
-	       " exceeds maximum value for type");
+      warning_at (loc, 0, "upper value in case label range"
+		  " exceeds maximum value for type");
       case_high = max_value;
     }
 
@@ -6014,7 +6015,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
      expression.  If both low_value and high_value are out of range,
      don't insert the case label and return NULL_TREE.  */
   if (low_value
-      && !check_case_bounds (type, orig_type,
+      && !check_case_bounds (loc, type, orig_type,
 			     &low_value, high_value ? &high_value : NULL))
     return NULL_TREE;
 
