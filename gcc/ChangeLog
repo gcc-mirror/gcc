@@ -1,3 +1,8 @@
+2014-06-04  Kai Tietz  <ktietz@redhat.com>
+
+	* recog.c (peep2_attempt): Copy SIBLING_CALL_P flag
+	from old call-instruction.
+
 2014-06-04  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_address)

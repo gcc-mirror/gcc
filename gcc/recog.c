@@ -3461,6 +3461,7 @@ peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
 
       CALL_INSN_FUNCTION_USAGE (new_insn)
 	= CALL_INSN_FUNCTION_USAGE (old_insn);
+      SIBLING_CALL_P (new_insn) = SIBLING_CALL_P (old_insn);
 
       for (note = REG_NOTES (old_insn);
 	   note;
