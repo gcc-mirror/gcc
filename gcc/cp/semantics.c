@@ -3869,6 +3869,7 @@ simplify_aggr_init_expr (tree *tp)
 				    aggr_init_expr_nargs (aggr_init_expr),
 				    AGGR_INIT_EXPR_ARGP (aggr_init_expr));
   TREE_NOTHROW (call_expr) = TREE_NOTHROW (aggr_init_expr);
+  CALL_EXPR_LIST_INIT_P (call_expr) = CALL_EXPR_LIST_INIT_P (aggr_init_expr);
   tree ret = call_expr;
 
   if (style == ctor)
@@ -3898,20 +3899,6 @@ simplify_aggr_init_expr (tree *tp)
 			     tf_warning_or_error);
       pop_deferring_access_checks ();
       ret = build2 (COMPOUND_EXPR, TREE_TYPE (slot), ret, slot);
-    }
-
-  /* DR 1030 says that we need to evaluate the elements of an
-     initializer-list in forward order even when it's used as arguments to
-     a constructor.  So if the target wants to evaluate them in reverse
-     order and there's more than one argument other than 'this', force
-     pre-evaluation.  */
-  if (PUSH_ARGS_REVERSED && CALL_EXPR_LIST_INIT_P (aggr_init_expr)
-      && aggr_init_expr_nargs (aggr_init_expr) > 2)
-    {
-      tree preinit;
-      stabilize_call (call_expr, &preinit);
-      if (preinit)
-	ret = build2 (COMPOUND_EXPR, TREE_TYPE (ret), preinit, ret);
     }
 
   if (AGGR_INIT_ZERO_FIRST (aggr_init_expr))

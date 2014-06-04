@@ -723,6 +723,27 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  && !seen_error ())
 	return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 
+      /* DR 1030 says that we need to evaluate the elements of an
+	 initializer-list in forward order even when it's used as arguments to
+	 a constructor.  So if the target wants to evaluate them in reverse
+	 order and there's more than one argument other than 'this', gimplify
+	 them in order.  */
+      ret = GS_OK;
+      if (PUSH_ARGS_REVERSED && CALL_EXPR_LIST_INIT_P (*expr_p)
+	  && call_expr_nargs (*expr_p) > 2)
+	{
+	  int nargs = call_expr_nargs (*expr_p);
+	  location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
+	  for (int i = 1; i < nargs; ++i)
+	    {
+	      enum gimplify_status t
+		= gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p, loc);
+	      if (t == GS_ERROR)
+		ret = GS_ERROR;
+	    }
+	}
+      break;
+
     default:
       ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p);
       break;

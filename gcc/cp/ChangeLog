@@ -1,3 +1,10 @@
+2014-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51253
+	PR c++/61382
+	* cp-gimplify.c (cp_gimplify_expr): Handle CALL_EXPR_LIST_INIT_P here.
+	* semantics.c (simplify_aggr_init_expr): Not here, just copy it.
+
 2014-06-04  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c/58942
