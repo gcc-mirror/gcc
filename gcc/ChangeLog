@@ -1,5 +1,13 @@
 2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* recog.c (preprocess_constraints): Don't skip disabled alternatives.
+	* ira-lives.c (check_and_make_def_conflict): Check for disabled
+	alternatives.
+	(make_early_clobber_and_input_conflicts): Likewise.
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Likewise.
+
+2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* recog.h (alternative_class): New function.
 	(which_op_alt): Return a const recog_op_alt.
 	* reg-stack.c (check_asm_stack_operands): Update type accordingly.

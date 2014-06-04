@@ -2352,12 +2352,6 @@ preprocess_constraints (void)
 	  op_alt[i].matches = -1;
 	  op_alt[i].matched = -1;
 
-	  if (!TEST_BIT (recog_data.enabled_alternatives, j))
-	    {
-	      p = skip_alternative (p);
-	      continue;
-	    }
-
 	  if (*p == '\0' || *p == ',')
 	    {
 	      op_alt[i].anything_ok = 1;
