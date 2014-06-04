@@ -1,3 +1,8 @@
+2014-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (stmt_may_clobber_ref_p): Improve handling
+	of accesses with non-invariant address.
+
 2014-06-04  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.h (cgraph_make_wrapper): New function introduced.

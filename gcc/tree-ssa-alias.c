@@ -2174,11 +2174,7 @@ stmt_may_clobber_ref_p (gimple stmt, tree ref)
 static bool
 stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 {
-  /* For a must-alias check we need to be able to constrain
-     the access properly.
-     FIXME: except for BUILTIN_FREE.  */
-  if (!ao_ref_base (ref)
-      || ref->max_size == -1)
+  if (!ao_ref_base (ref))
     return false;
 
   if (gimple_has_lhs (stmt)
@@ -2191,9 +2187,51 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	 might throw as well.  */
       && !stmt_can_throw_internal (stmt))
     {
-      tree base, lhs = gimple_get_lhs (stmt);
+      tree lhs = gimple_get_lhs (stmt);
+      /* If LHS is literally a base of the access we are done.  */
+      if (ref->ref)
+	{
+	  tree base = ref->ref;
+	  if (handled_component_p (base))
+	    {
+	      tree saved_lhs0 = NULL_TREE;
+	      if (handled_component_p (lhs))
+		{
+		  saved_lhs0 = TREE_OPERAND (lhs, 0);
+		  TREE_OPERAND (lhs, 0) = integer_zero_node;
+		}
+	      do
+		{
+		  /* Just compare the outermost handled component, if
+		     they are equal we have found a possible common
+		     base.  */
+		  tree saved_base0 = TREE_OPERAND (base, 0);
+		  TREE_OPERAND (base, 0) = integer_zero_node;
+		  bool res = operand_equal_p (lhs, base, 0);
+		  TREE_OPERAND (base, 0) = saved_base0;
+		  if (res)
+		    break;
+		  /* Otherwise drop handled components of the access.  */
+		  base = saved_base0;
+		}
+	      while (handled_component_p (base));
+	      if (saved_lhs0)
+		TREE_OPERAND (lhs, 0) = saved_lhs0;
+	    }
+	  /* Finally check if lhs is equal or equal to the base candidate
+	     of the access.  */
+	  if (operand_equal_p (lhs, base, 0))
+	    return true;
+	}
+
+      /* Now look for non-literal equal bases with the restriction of
+         handling constant offset and size.  */
+      /* For a must-alias check we need to be able to constrain
+	 the access properly.  */
+      if (ref->max_size == -1)
+	return false;
       HOST_WIDE_INT size, offset, max_size, ref_offset = ref->offset;
-      base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
+      tree base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == ref->base does not always hold.  */
       if (base != ref->base)
@@ -2261,6 +2299,10 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	  case BUILT_IN_MEMMOVE_CHK:
 	  case BUILT_IN_MEMSET_CHK:
 	    {
+	      /* For a must-alias check we need to be able to constrain
+		 the access properly.  */
+	      if (ref->max_size == -1)
+		return false;
 	      tree dest = gimple_call_arg (stmt, 0);
 	      tree len = gimple_call_arg (stmt, 2);
 	      if (!tree_fits_shwi_p (len))
