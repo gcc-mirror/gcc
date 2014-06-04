@@ -471,7 +471,7 @@ check_asm_stack_operands (rtx insn)
   extract_insn (insn);
   constrain_operands (1);
 
-  preprocess_constraints ();
+  preprocess_constraints (insn);
 
   get_asm_operands_in_out (body, &n_outputs, &n_inputs);
 
@@ -2029,7 +2029,7 @@ subst_asm_stack_regs (rtx insn, stack_ptr regstack)
   extract_insn (insn);
   constrain_operands (1);
 
-  preprocess_constraints ();
+  preprocess_constraints (insn);
   const operand_alternative *op_alt = which_op_alt ();
 
   get_asm_operands_in_out (body, &n_outputs, &n_inputs);

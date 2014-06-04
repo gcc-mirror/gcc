@@ -625,7 +625,7 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
   advance_p = true;
 
   int n_operands = recog_data.n_operands;
-  operand_alternative *op_alt = &recog_op_alt[alt * n_operands];
+  const operand_alternative *op_alt = &recog_op_alt[alt * n_operands];
   for (use = 0; use < n_operands; use++)
     {
       int alt1;
@@ -646,7 +646,8 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 	{
 	  if (!TEST_BIT (enabled, alt1))
 	    continue;
-	  operand_alternative *op_alt1 = &recog_op_alt[alt1 * n_operands];
+	  const operand_alternative *op_alt1
+	    = &recog_op_alt[alt1 * n_operands];
 	  if (op_alt1[use].matches == def
 	      || (use < n_operands - 1
 		  && recog_data.constraints[use][0] == '%'
@@ -692,7 +693,7 @@ make_early_clobber_and_input_conflicts (void)
   int n_alternatives = recog_data.n_alternatives;
   int n_operands = recog_data.n_operands;
   alternative_mask enabled = recog_data.enabled_alternatives;
-  operand_alternative *op_alt = recog_op_alt;
+  const operand_alternative *op_alt = recog_op_alt;
   for (alt = 0; alt < n_alternatives; alt++, op_alt += n_operands)
     if (TEST_BIT (enabled, alt))
       for (def = 0; def < n_operands; def++)
@@ -1251,7 +1252,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      }
 
 	  extract_insn (insn);
-	  preprocess_constraints ();
+	  preprocess_constraints (insn);
 	  process_single_reg_class_operands (false, freq);
 
 	  /* See which defined values die here.  */

@@ -774,7 +774,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       extract_insn (insn);
       if (! constrain_operands (1))
 	fatal_insn_not_found (insn);
-      preprocess_constraints ();
+      preprocess_constraints (insn);
       const operand_alternative *op_alt = which_op_alt ();
       n_ops = recog_data.n_operands;
       is_asm = asm_noperands (PATTERN (insn)) >= 0;
@@ -877,7 +877,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      extract_insn (insn);
 	      if (! constrain_operands (1))
 		fatal_insn_not_found (insn);
-	      preprocess_constraints ();
+	      preprocess_constraints (insn);
 	    }
 
 	  /* Otherwise, try all valid registers and see if its valid.  */
@@ -905,7 +905,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  extract_insn (insn);
 		  if (! constrain_operands (1))
 		    fatal_insn_not_found (insn);
-		  preprocess_constraints ();
+		  preprocess_constraints (insn);
 		}
 	    }
 	}

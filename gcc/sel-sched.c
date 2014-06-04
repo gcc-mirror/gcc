@@ -1019,7 +1019,7 @@ get_reg_class (rtx insn)
   extract_insn (insn);
   if (! constrain_operands (1))
     fatal_insn_not_found (insn);
-  preprocess_constraints ();
+  preprocess_constraints (insn);
   n_ops = recog_data.n_operands;
 
   const operand_alternative *op_alt = which_op_alt ();
@@ -2134,7 +2134,7 @@ implicit_clobber_conflict_p (insn_t through_insn, expr_t expr)
 
   /* Calculate implicit clobbers.  */
   extract_insn (insn);
-  preprocess_constraints ();
+  preprocess_constraints (insn);
   ira_implicitly_set_insn_hard_regs (&temp);
   AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
 

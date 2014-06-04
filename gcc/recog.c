@@ -81,8 +81,11 @@ struct recog_data_d recog_data;
 /* Contains a vector of operand_alternative structures, such that
    operand OP of alternative A is at index A * n_operands + OP.
    Set up by preprocess_constraints.  */
-struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS
-					* MAX_RECOG_ALTERNATIVES];
+const operand_alternative *recog_op_alt;
+
+/* Used to provide recog_op_alt for asms.  */
+static operand_alternative asm_op_alt[MAX_RECOG_OPERANDS
+				      * MAX_RECOG_ALTERNATIVES];
 
 /* On return from `constrain_operands', indicate which alternative
    was satisfied.  */
@@ -2324,26 +2327,23 @@ extract_insn (rtx insn)
   which_alternative = -1;
 }
 
-/* After calling extract_insn, you can use this function to extract some
-   information from the constraint strings into a more usable form.
-   The collected data is stored in recog_op_alt.  */
+/* Fill in OP_ALT_BASE for an instruction that has N_OPERANDS operands,
+   N_ALTERNATIVES alternatives and constraint strings CONSTRAINTS.
+   OP_ALT_BASE has N_ALTERNATIVES * N_OPERANDS entries and CONSTRAINTS
+   has N_OPERANDS entries.  */
+
 void
-preprocess_constraints (void)
+preprocess_constraints (int n_operands, int n_alternatives,
+			const char **constraints,
+			operand_alternative *op_alt_base)
 {
-  int i;
-
-  int n_operands = recog_data.n_operands;
-  int n_alternatives = recog_data.n_alternatives;
-  int n_entries = n_operands * n_alternatives;
-  memset (recog_op_alt, 0, n_entries * sizeof (struct operand_alternative));
-
-  for (i = 0; i < n_operands; i++)
+  for (int i = 0; i < n_operands; i++)
     {
       int j;
       struct operand_alternative *op_alt;
-      const char *p = recog_data.constraints[i];
+      const char *p = constraints[i];
 
-      op_alt = recog_op_alt;
+      op_alt = op_alt_base;
 
       for (j = 0; j < n_alternatives; j++, op_alt += n_operands)
 	{
@@ -2459,6 +2459,59 @@ preprocess_constraints (void)
 	      p += CONSTRAINT_LEN (c, p);
 	    }
 	}
+    }
+}
+
+/* Return an array of operand_alternative instructions for
+   instruction ICODE.  */
+
+const operand_alternative *
+preprocess_insn_constraints (int icode)
+{
+  gcc_checking_assert (IN_RANGE (icode, 0, LAST_INSN_CODE));
+  if (this_target_recog->x_op_alt[icode])
+    return this_target_recog->x_op_alt[icode];
+
+  int n_operands = insn_data[icode].n_operands;
+  if (n_operands == 0)
+    return 0;
+  /* Always provide at least one alternative so that which_op_alt ()
+     works correctly.  If the instruction has 0 alternatives (i.e. all
+     constraint strings are empty) then each operand in this alternative
+     will have anything_ok set.  */
+  int n_alternatives = MAX (insn_data[icode].n_alternatives, 1);
+  int n_entries = n_operands * n_alternatives;
+
+  operand_alternative *op_alt = XCNEWVEC (operand_alternative, n_entries);
+  const char **constraints = XALLOCAVEC (const char *, n_operands);
+
+  for (int i = 0; i < n_operands; ++i)
+    constraints[i] = insn_data[icode].operand[i].constraint;
+  preprocess_constraints (n_operands, n_alternatives, constraints, op_alt);
+
+  this_target_recog->x_op_alt[icode] = op_alt;
+  return op_alt;
+}
+
+/* After calling extract_insn, you can use this function to extract some
+   information from the constraint strings into a more usable form.
+   The collected data is stored in recog_op_alt.  */
+
+void
+preprocess_constraints (rtx insn)
+{
+  int icode = INSN_CODE (insn);
+  if (icode >= 0)
+    recog_op_alt = preprocess_insn_constraints (icode);
+  else
+    {
+      int n_operands = recog_data.n_operands;
+      int n_alternatives = recog_data.n_alternatives;
+      int n_entries = n_operands * n_alternatives;
+      memset (asm_op_alt, 0, n_entries * sizeof (operand_alternative));
+      preprocess_constraints (n_operands, n_alternatives,
+			      recog_data.constraints, asm_op_alt);
+      recog_op_alt = asm_op_alt;
     }
 }
 
@@ -4212,4 +4265,10 @@ recog_init ()
     }
   memset (this_target_recog->x_enabled_alternatives, 0,
 	  sizeof (this_target_recog->x_enabled_alternatives));
+  for (int i = 0; i < LAST_INSN_CODE; ++i)
+    if (this_target_recog->x_op_alt[i])
+      {
+	free (this_target_recog->x_op_alt[i]);
+	this_target_recog->x_op_alt[i] = 0;
+      }
 }

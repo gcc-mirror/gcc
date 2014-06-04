@@ -1,5 +1,38 @@
 2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* recog.h (operand_alternative): Convert reg_class, reject,
+	matched and matches into bitfields.
+	(preprocess_constraints): New overload.
+	(preprocess_insn_constraints): New function.
+	(preprocess_constraints): Take the insn as parameter.
+	(recog_op_alt): Change into a pointer.
+	(target_recog): Add x_op_alt.
+	* recog.c (asm_op_alt): New variable.
+	(recog_op_alt): Change into a pointer.
+	(preprocess_constraints): New overload, replacing the old function
+	definition with one that doesn't use global state.
+	(preprocess_insn_constraints): New function.
+	(preprocess_constraints): Use them.  Take the insn as parameter.
+	Use asm_op_alt for asms.
+	(recog_init): Free existing x_op_alt entries.
+	* ira-lives.c (check_and_make_def_conflict): Make operand_alternative
+	pointer const.
+	(make_early_clobber_and_input_conflicts): Likewise.
+	(process_bb_node_lives): Pass the insn to process_constraints.
+	* reg-stack.c (check_asm_stack_operands): Likewise.
+	(subst_asm_stack_regs): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Likewise.
+	* regrename.c (build_def_use): Likewise.
+	* sched-deps.c (sched_analyze_insn): Likewise.
+	* sel-sched.c (get_reg_class, implicit_clobber_conflict_p): Likewise.
+	* config/arm/arm.c (xscale_sched_adjust_cost): Likewise.
+	(note_invalid_constants): Likewise.
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Likewise.
+	(ix86_legitimate_combined_insn): Make operand_alternative pointer
+	const.
+
+2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* recog.c (preprocess_constraints): Don't skip disabled alternatives.
 	* ira-lives.c (check_and_make_def_conflict): Check for disabled
 	alternatives.
