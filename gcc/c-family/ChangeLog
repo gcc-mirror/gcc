@@ -1,3 +1,13 @@
+2014-06-04  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2014-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61053
+	* c-common.c (min_align_of_type): New function factored out from...
+	(c_sizeof_or_alignof_type): ...here.
+	* c-common.h (min_align_of_type): Declare.
+
 2014-05-06  Richard Biener  <rguenther@suse.de>
 
 	* c-opts.c (c_common_post_options): For -freestanding,

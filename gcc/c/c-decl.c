@@ -5911,7 +5911,7 @@ grokdeclarator (const struct c_declarator *declarator,
       else if (declspecs->align_log != -1)
 	{
 	  alignas_align = 1U << declspecs->align_log;
-	  if (alignas_align < TYPE_ALIGN_UNIT (type))
+	  if (alignas_align < min_align_of_type (type))
 	    {
 	      if (name)
 		error_at (loc, "%<_Alignas%> specifiers cannot reduce "

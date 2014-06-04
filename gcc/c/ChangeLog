@@ -1,3 +1,12 @@
+2014-06-04  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2014-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61053
+	* c-decl.c (grokdeclarator): Use min_align_of_type instead of
+	TYPE_ALIGN_UNIT.
+
 2014-05-26  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c/61191
