@@ -1,3 +1,8 @@
+2014-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/30020
+	* c-c++-common/pr30020.c: New test.
+
 2014-06-03  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.c-torture/compile/20140528-1.c: New testcase.
