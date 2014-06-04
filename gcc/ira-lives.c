@@ -624,30 +624,35 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 
   advance_p = true;
 
-  for (use = 0; use < recog_data.n_operands; use++)
+  int n_operands = recog_data.n_operands;
+  operand_alternative *op_alt = &recog_op_alt[alt * n_operands];
+  for (use = 0; use < n_operands; use++)
     {
       int alt1;
 
       if (use == def || recog_data.operand_type[use] == OP_OUT)
 	continue;
 
-      if (recog_op_alt[use][alt].anything_ok)
+      if (op_alt[use].anything_ok)
 	use_cl = ALL_REGS;
       else
-	use_cl = recog_op_alt[use][alt].cl;
+	use_cl = op_alt[use].cl;
 
       /* If there's any alternative that allows USE to match DEF, do not
 	 record a conflict.  If that causes us to create an invalid
 	 instruction due to the earlyclobber, reload must fix it up.  */
       for (alt1 = 0; alt1 < recog_data.n_alternatives; alt1++)
-	if (recog_op_alt[use][alt1].matches == def
-	    || (use < recog_data.n_operands - 1
-		&& recog_data.constraints[use][0] == '%'
-		&& recog_op_alt[use + 1][alt1].matches == def)
-	    || (use >= 1
-		&& recog_data.constraints[use - 1][0] == '%'
-		&& recog_op_alt[use - 1][alt1].matches == def))
-	  break;
+	{
+	  operand_alternative *op_alt1 = &recog_op_alt[alt1 * n_operands];
+	  if (op_alt1[use].matches == def
+	      || (use < n_operands - 1
+		  && recog_data.constraints[use][0] == '%'
+		  && op_alt1[use + 1].matches == def)
+	      || (use >= 1
+		  && recog_data.constraints[use - 1][0] == '%'
+		  && op_alt1[use - 1].matches == def))
+	    break;
+	}
 
       if (alt1 < recog_data.n_alternatives)
 	continue;
@@ -655,15 +660,15 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
       advance_p = check_and_make_def_use_conflict (dreg, orig_dreg, def_cl,
 						   use, use_cl, advance_p);
 
-      if ((use_match = recog_op_alt[use][alt].matches) >= 0)
+      if ((use_match = op_alt[use].matches) >= 0)
 	{
 	  if (use_match == def)
 	    continue;
 
-	  if (recog_op_alt[use_match][alt].anything_ok)
+	  if (op_alt[use_match].anything_ok)
 	    use_cl = ALL_REGS;
 	  else
-	    use_cl = recog_op_alt[use_match][alt].cl;
+	    use_cl = op_alt[use_match].cl;
 	  advance_p = check_and_make_def_use_conflict (dreg, orig_dreg, def_cl,
 						       use, use_cl, advance_p);
 	}
@@ -681,26 +686,29 @@ make_early_clobber_and_input_conflicts (void)
   int def, def_match;
   enum reg_class def_cl;
 
-  for (alt = 0; alt < recog_data.n_alternatives; alt++)
-    for (def = 0; def < recog_data.n_operands; def++)
+  int n_alternatives = recog_data.n_alternatives;
+  int n_operands = recog_data.n_operands;
+  operand_alternative *op_alt = recog_op_alt;
+  for (alt = 0; alt < n_alternatives; alt++, op_alt += n_operands)
+    for (def = 0; def < n_operands; def++)
       {
 	def_cl = NO_REGS;
-	if (recog_op_alt[def][alt].earlyclobber)
+	if (op_alt[def].earlyclobber)
 	  {
-	    if (recog_op_alt[def][alt].anything_ok)
+	    if (op_alt[def].anything_ok)
 	      def_cl = ALL_REGS;
 	    else
-	      def_cl = recog_op_alt[def][alt].cl;
+	      def_cl = op_alt[def].cl;
 	    check_and_make_def_conflict (alt, def, def_cl);
 	  }
-	if ((def_match = recog_op_alt[def][alt].matches) >= 0
-	    && (recog_op_alt[def_match][alt].earlyclobber
-		|| recog_op_alt[def][alt].earlyclobber))
+	if ((def_match = op_alt[def].matches) >= 0
+	    && (op_alt[def_match].earlyclobber
+		|| op_alt[def].earlyclobber))
 	  {
-	    if (recog_op_alt[def_match][alt].anything_ok)
+	    if (op_alt[def_match].anything_ok)
 	      def_cl = ALL_REGS;
 	    else
-	      def_cl = recog_op_alt[def_match][alt].cl;
+	      def_cl = op_alt[def_match].cl;
 	    check_and_make_def_conflict (alt, def, def_cl);
 	  }
       }

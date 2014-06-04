@@ -16878,6 +16878,7 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
      this insn.  */
   preprocess_constraints ();
 
+  operand_alternative *op_alt = which_op_alt ();
   for (opno = 0; opno < recog_data.n_operands; opno++)
     {
       /* Things we need to fix can only occur in inputs.  */
@@ -16888,7 +16889,7 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
 	 of constants in this alternative is really to fool reload
 	 into allowing us to accept one there.  We need to fix them up
 	 now so that we output the right code.  */
-      if (recog_op_alt[opno][which_alternative].memory_ok)
+      if (op_alt[opno].memory_ok)
 	{
 	  rtx op = recog_data.operand[opno];
 

@@ -78,9 +78,11 @@ int volatile_ok;
 
 struct recog_data_d recog_data;
 
-/* Contains a vector of operand_alternative structures for every operand.
+/* Contains a vector of operand_alternative structures, such that
+   operand OP of alternative A is at index A * n_operands + OP.
    Set up by preprocess_constraints.  */
-struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
+struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS
+					* MAX_RECOG_ALTERNATIVES];
 
 /* On return from `constrain_operands', indicate which alternative
    was satisfied.  */
@@ -2330,24 +2332,25 @@ preprocess_constraints (void)
 {
   int i;
 
-  for (i = 0; i < recog_data.n_operands; i++)
-    memset (recog_op_alt[i], 0, (recog_data.n_alternatives
-				 * sizeof (struct operand_alternative)));
+  int n_operands = recog_data.n_operands;
+  int n_alternatives = recog_data.n_alternatives;
+  int n_entries = n_operands * n_alternatives;
+  memset (recog_op_alt, 0, n_entries * sizeof (struct operand_alternative));
 
-  for (i = 0; i < recog_data.n_operands; i++)
+  for (i = 0; i < n_operands; i++)
     {
       int j;
       struct operand_alternative *op_alt;
       const char *p = recog_data.constraints[i];
 
-      op_alt = recog_op_alt[i];
+      op_alt = recog_op_alt;
 
-      for (j = 0; j < recog_data.n_alternatives; j++)
+      for (j = 0; j < n_alternatives; j++, op_alt += n_operands)
 	{
-	  op_alt[j].cl = NO_REGS;
-	  op_alt[j].constraint = p;
-	  op_alt[j].matches = -1;
-	  op_alt[j].matched = -1;
+	  op_alt[i].cl = NO_REGS;
+	  op_alt[i].constraint = p;
+	  op_alt[i].matches = -1;
+	  op_alt[i].matched = -1;
 
 	  if (!TEST_BIT (recog_data.enabled_alternatives, j))
 	    {
@@ -2357,7 +2360,7 @@ preprocess_constraints (void)
 
 	  if (*p == '\0' || *p == ',')
 	    {
-	      op_alt[j].anything_ok = 1;
+	      op_alt[i].anything_ok = 1;
 	      continue;
 	    }
 
@@ -2385,77 +2388,77 @@ preprocess_constraints (void)
 		  break;
 
 		case '?':
-		  op_alt[j].reject += 6;
+		  op_alt[i].reject += 6;
 		  break;
 		case '!':
-		  op_alt[j].reject += 600;
+		  op_alt[i].reject += 600;
 		  break;
 		case '&':
-		  op_alt[j].earlyclobber = 1;
+		  op_alt[i].earlyclobber = 1;
 		  break;
 
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 		  {
 		    char *end;
-		    op_alt[j].matches = strtoul (p, &end, 10);
-		    recog_op_alt[op_alt[j].matches][j].matched = i;
+		    op_alt[i].matches = strtoul (p, &end, 10);
+		    op_alt[op_alt[i].matches].matched = i;
 		    p = end;
 		  }
 		  continue;
 
 		case TARGET_MEM_CONSTRAINT:
-		  op_alt[j].memory_ok = 1;
+		  op_alt[i].memory_ok = 1;
 		  break;
 		case '<':
-		  op_alt[j].decmem_ok = 1;
+		  op_alt[i].decmem_ok = 1;
 		  break;
 		case '>':
-		  op_alt[j].incmem_ok = 1;
+		  op_alt[i].incmem_ok = 1;
 		  break;
 		case 'V':
-		  op_alt[j].nonoffmem_ok = 1;
+		  op_alt[i].nonoffmem_ok = 1;
 		  break;
 		case 'o':
-		  op_alt[j].offmem_ok = 1;
+		  op_alt[i].offmem_ok = 1;
 		  break;
 		case 'X':
-		  op_alt[j].anything_ok = 1;
+		  op_alt[i].anything_ok = 1;
 		  break;
 
 		case 'p':
-		  op_alt[j].is_address = 1;
-		  op_alt[j].cl = reg_class_subunion[(int) op_alt[j].cl]
+		  op_alt[i].is_address = 1;
+		  op_alt[i].cl = reg_class_subunion[(int) op_alt[i].cl]
 		      [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 					     ADDRESS, SCRATCH)];
 		  break;
 
 		case 'g':
 		case 'r':
-		  op_alt[j].cl =
-		   reg_class_subunion[(int) op_alt[j].cl][(int) GENERAL_REGS];
+		  op_alt[i].cl =
+		   reg_class_subunion[(int) op_alt[i].cl][(int) GENERAL_REGS];
 		  break;
 
 		default:
 		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
 		    {
-		      op_alt[j].memory_ok = 1;
+		      op_alt[i].memory_ok = 1;
 		      break;
 		    }
 		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
 		    {
-		      op_alt[j].is_address = 1;
-		      op_alt[j].cl
+		      op_alt[i].is_address = 1;
+		      op_alt[i].cl
 			= (reg_class_subunion
-			   [(int) op_alt[j].cl]
+			   [(int) op_alt[i].cl]
 			   [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 						  ADDRESS, SCRATCH)]);
 		      break;
 		    }
 
-		  op_alt[j].cl
+		  op_alt[i].cl
 		    = (reg_class_subunion
-		       [(int) op_alt[j].cl]
+		       [(int) op_alt[i].cl]
 		       [(int) REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)]);
 		  break;
 		}

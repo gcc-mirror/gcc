@@ -5829,11 +5829,13 @@ ix86_legitimate_combined_insn (rtx insn)
       extract_insn (insn);
       preprocess_constraints ();
 
-      for (i = 0; i < recog_data.n_operands; i++)
+      int n_operands = recog_data.n_operands;
+      int n_alternatives = recog_data.n_alternatives;
+      for (i = 0; i < n_operands; i++)
 	{
 	  rtx op = recog_data.operand[i];
 	  enum machine_mode mode = GET_MODE (op);
-	  struct operand_alternative *op_alt;
+	  operand_alternative *op_alt;
 	  int offset = 0;
 	  bool win;
 	  int j;
@@ -5868,19 +5870,19 @@ ix86_legitimate_combined_insn (rtx insn)
 	  if (!(REG_P (op) && HARD_REGISTER_P (op)))
 	    continue;
 
-	  op_alt = recog_op_alt[i];
+	  op_alt = recog_op_alt;
 
 	  /* Operand has no constraints, anything is OK.  */
- 	  win = !recog_data.n_alternatives;
+ 	  win = !n_alternatives;
 
-	  for (j = 0; j < recog_data.n_alternatives; j++)
+	  for (j = 0; j < n_alternatives; j++, op_alt += n_operands)
 	    {
-	      if (op_alt[j].anything_ok
-		  || (op_alt[j].matches != -1
+	      if (op_alt[i].anything_ok
+		  || (op_alt[i].matches != -1
 		      && operands_match_p
 			  (recog_data.operand[i],
-			   recog_data.operand[op_alt[j].matches]))
-		  || reg_fits_class_p (op, op_alt[j].cl, offset, mode))
+			   recog_data.operand[op_alt[i].matches]))
+		  || reg_fits_class_p (op, op_alt[i].cl, offset, mode))
 		{
 		  win = true;
 		  break;

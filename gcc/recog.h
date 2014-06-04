@@ -256,9 +256,20 @@ struct recog_data_d
 
 extern struct recog_data_d recog_data;
 
-/* Contains a vector of operand_alternative structures for every operand.
-   Set up by preprocess_constraints.  */
-extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
+extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS
+					       * MAX_RECOG_ALTERNATIVES];
+
+/* Return a pointer to an array in which index OP describes the constraints
+   on operand OP of the current instruction alternative (which_alternative).
+   Only valid after calling preprocess_constraints and constrain_operands.  */
+
+inline static operand_alternative *
+which_op_alt ()
+{
+  gcc_checking_assert (IN_RANGE (which_alternative, 0,
+				 recog_data.n_alternatives - 1));
+  return &recog_op_alt[which_alternative * recog_data.n_operands];
+}
 
 /* A table defined in insn-output.c that give information about
    each insn-code value.  */

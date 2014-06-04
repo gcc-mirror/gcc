@@ -1,3 +1,22 @@
+2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* recog.h (recog_op_alt): Convert to a flat array.
+	(which_op_alt): New function.
+	* recog.c (recog_op_alt): Convert to a flat array.
+	(preprocess_constraints): Update accordingly, grouping all
+	operands of the same alternative together, rather than the
+	other way around.
+	* ira-lives.c (check_and_make_def_conflict): Likewise.
+	(make_early_clobber_and_input_conflicts): Likewise.
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Likewise.
+	* reg-stack.c (check_asm_stack_operands): Use which_op_alt.
+	(subst_asm_stack_regs): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Likewise.
+	* regrename.c (hide_operands, record_out_operands): Likewise.
+	(build_def_use): Likewise.
+	* sel-sched.c (get_reg_class): Likewise.
+	* config/arm/arm.c (note_invalid_constants): Likewise.
+
 2014-06-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51253
