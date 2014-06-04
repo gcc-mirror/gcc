@@ -583,7 +583,7 @@ coverage_compute_profile_id (struct cgraph_node *n)
   return chksum & 0x7fffffff;
 }
 
-/* Compute cfg checksum for the current function.
+/* Compute cfg checksum for the function FN given as argument.
    The checksum is calculated carefully so that
    source code changes that doesn't affect the control flow graph
    won't change the checksum.
@@ -594,12 +594,12 @@ coverage_compute_profile_id (struct cgraph_node *n)
    but the compiler won't detect the change and use the wrong profile data.  */
 
 unsigned
-coverage_compute_cfg_checksum (void)
+coverage_compute_cfg_checksum (struct function *fn)
 {
   basic_block bb;
-  unsigned chksum = n_basic_blocks_for_fn (cfun);
+  unsigned chksum = n_basic_blocks_for_fn (fn);
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fn)
     {
       edge e;
       edge_iterator ei;
