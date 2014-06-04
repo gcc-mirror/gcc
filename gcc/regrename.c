@@ -1427,7 +1427,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	       unsigned HOST_WIDE_INT do_not_hide, bool inout_and_ec_only)
 {
   int i;
-  operand_alternative *op_alt = which_op_alt ();
+  const operand_alternative *op_alt = which_op_alt ();
   for (i = 0; i < n_ops; i++)
     {
       old_operands[i] = recog_data.operand[i];
@@ -1478,7 +1478,7 @@ static void
 record_out_operands (rtx insn, bool earlyclobber, insn_rr_info *insn_info)
 {
   int n_ops = recog_data.n_operands;
-  operand_alternative *op_alt = which_op_alt ();
+  const operand_alternative *op_alt = which_op_alt ();
 
   int i;
 
@@ -1489,7 +1489,7 @@ record_out_operands (rtx insn, bool earlyclobber, insn_rr_info *insn_info)
 		  ? recog_data.operand_loc[opn]
 		  : recog_data.dup_loc[i - n_ops]);
       rtx op = *loc;
-      enum reg_class cl = op_alt[opn].cl;
+      enum reg_class cl = alternative_class (op_alt, opn);
 
       struct du_head *prev_open;
 
@@ -1571,7 +1571,7 @@ build_def_use (basic_block bb)
 	  if (! constrain_operands (1))
 	    fatal_insn_not_found (insn);
 	  preprocess_constraints ();
-	  operand_alternative *op_alt = which_op_alt ();
+	  const operand_alternative *op_alt = which_op_alt ();
 	  n_ops = recog_data.n_operands;
 	  untracked_operands = 0;
 
@@ -1584,8 +1584,7 @@ build_def_use (basic_block bb)
 		      sizeof (operand_rr_info) * recog_data.n_operands);
 	    }
 
-	  /* Simplify the code below by rewriting things to reflect
-	     matching constraints.  Also promote OP_OUT to OP_INOUT in
+	  /* Simplify the code below by promoting OP_OUT to OP_INOUT in
 	     predicated instructions, but only for register operands
 	     that are already tracked, so that we can create a chain
 	     when the first SET makes a register live.  */
@@ -1595,8 +1594,6 @@ build_def_use (basic_block bb)
 	    {
 	      rtx op = recog_data.operand[i];
 	      int matches = op_alt[i].matches;
-	      if (matches >= 0)
-		op_alt[i].cl = op_alt[matches].cl;
 	      if (matches >= 0 || op_alt[i].matched >= 0
 	          || (predicated && recog_data.operand_type[i] == OP_OUT))
 		{
@@ -1681,7 +1678,7 @@ build_def_use (basic_block bb)
 	      rtx *loc = (i < n_ops
 			  ? recog_data.operand_loc[opn]
 			  : recog_data.dup_loc[i - n_ops]);
-	      enum reg_class cl = op_alt[opn].cl;
+	      enum reg_class cl = alternative_class (op_alt, opn);
 	      enum op_type type = recog_data.operand_type[opn];
 
 	      /* Don't scan match_operand here, since we've no reg class

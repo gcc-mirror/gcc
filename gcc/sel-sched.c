@@ -1022,14 +1022,7 @@ get_reg_class (rtx insn)
   preprocess_constraints ();
   n_ops = recog_data.n_operands;
 
-  operand_alternative *op_alt = which_op_alt ();
-  for (i = 0; i < n_ops; ++i)
-    {
-      int matches = op_alt[i].matches;
-      if (matches >= 0)
-	op_alt[i].cl = op_alt[matches].cl;
-    }
-
+  const operand_alternative *op_alt = which_op_alt ();
   if (asm_noperands (PATTERN (insn)) > 0)
     {
       for (i = 0; i < n_ops; i++)
@@ -1037,7 +1030,7 @@ get_reg_class (rtx insn)
 	  {
 	    rtx *loc = recog_data.operand_loc[i];
 	    rtx op = *loc;
-	    enum reg_class cl = op_alt[i].cl;
+	    enum reg_class cl = alternative_class (op_alt, i);
 
 	    if (REG_P (op)
 		&& REGNO (op) == ORIGINAL_REGNO (op))
@@ -1051,7 +1044,7 @@ get_reg_class (rtx insn)
       for (i = 0; i < n_ops + recog_data.n_dups; i++)
        {
 	 int opn = i < n_ops ? i : recog_data.dup_num[i - n_ops];
-	 enum reg_class cl = op_alt[opn].cl;
+	 enum reg_class cl = alternative_class (op_alt, opn);
 
 	 if (recog_data.operand_type[opn] == OP_OUT ||
 	     recog_data.operand_type[opn] == OP_INOUT)
