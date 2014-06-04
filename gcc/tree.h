@@ -3736,6 +3736,10 @@ extern tree merge_type_attributes (tree, tree);
    and you should never call it directly.  */
 extern tree private_lookup_attribute (const char *, size_t, tree);
 
+/* This function is a private implementation detail
+   of lookup_attribute_by_prefix() and you should never call it directly.  */
+extern tree private_lookup_attribute_by_prefix (const char *, size_t, tree);
+
 /* Given an attribute name ATTR_NAME and a list of attributes LIST,
    return a pointer to the attribute's list element if the attribute
    is part of the list, or NULL_TREE if not found.  If the attribute
@@ -3757,6 +3761,24 @@ lookup_attribute (const char *attr_name, tree list)
        will optimize the strlen() away.  */
     return private_lookup_attribute (attr_name, strlen (attr_name), list);
 }
+
+/* Given an attribute name ATTR_NAME and a list of attributes LIST,
+   return a pointer to the attribute's list first element if the attribute
+   starts with ATTR_NAME. ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
+
+static inline tree
+lookup_attribute_by_prefix (const char *attr_name, tree list)
+{
+  gcc_checking_assert (attr_name[0] != '_');
+  /* In most cases, list is NULL_TREE.  */
+  if (list == NULL_TREE)
+    return NULL_TREE;
+  else
+    return private_lookup_attribute_by_prefix (attr_name, strlen (attr_name),
+					       list);
+}
+
 
 /* This function is a private implementation detail of
    is_attribute_p() and you should never call it directly.  */
