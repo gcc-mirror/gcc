@@ -1680,6 +1680,12 @@
 #endif
 
 
+/* Define if int64_t uses long as underlying type. */
+#ifndef USED_FOR_TARGET
+#undef INT64_T_IS_LONG
+#endif
+
+
 /* Define to the linker option to ignore unused dependencies. */
 #ifndef USED_FOR_TARGET
 #undef LD_AS_NEEDED_OPTION

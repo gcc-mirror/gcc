@@ -316,6 +316,35 @@ if test x"$ac_cv_c_uint64_t" = x"no" -o x"$ac_cv_c_int64_t" = x"no"; then
   AC_MSG_ERROR([uint64_t or int64_t not found])
 fi
 
+# check what underlying integer type int64_t uses
+AC_LANG_PUSH(C++)
+AC_CACHE_CHECK(for int64_t underlying type, ac_cv_int64_t_type, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+template <typename T> struct X { };
+template <>
+struct X<long> { typedef long t; };
+]], [[X<int64_t>::t x;]])],[ac_cv_int64_t_type=long],[ac_cv_int64_t_type="long long"])])
+if test "$ac_cv_int64_t_type" = "long"; then
+  AC_DEFINE(INT64_T_IS_LONG, 1,
+  [Define if int64_t uses long as underlying type.])
+else
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+template <typename T> struct X { };
+template <>
+struct X<long long> { typedef long long t; };
+]], [[X<int64_t>::t x;]])],[],[AC_MSG_ERROR([error verifying int64_t uses long long])])
+fi
+AC_LANG_POP(C++)
+
+
+
+
 # ---------------------
 # Warnings and checking
 # ---------------------
@@ -1055,13 +1084,18 @@ LIBS="$save_LIBS"
 AC_SUBST(LDEXP_LIB)
 
 # Use <inttypes.h> only if it exists,
-# doesn't clash with <sys/types.h>, and declares intmax_t.
+# doesn't clash with <sys/types.h>, declares intmax_t and defines
+# PRId64
 AC_MSG_CHECKING(for inttypes.h)
 AC_CACHE_VAL(gcc_cv_header_inttypes_h,
 [AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-[[#include <sys/types.h>
+[[#define __STDC_FORMAT_MACROS
+#include <sys/types.h>
 #include <inttypes.h>]],
-  [[intmax_t i = -1;]])],
+  [[intmax_t i = -1;
+#ifndef PRId64
+choke me
+#endif]])],
   [gcc_cv_header_inttypes_h=yes],
   [gcc_cv_header_inttypes_h=no])])
 AC_MSG_RESULT($gcc_cv_header_inttypes_h)
