@@ -912,6 +912,8 @@ void fixup_same_cpp_alias_visibility (symtab_node *, symtab_node *target, tree);
 basic_block init_lowered_empty_function (tree, bool);
 void cgraph_reset_node (struct cgraph_node *);
 bool expand_thunk (struct cgraph_node *, bool, bool);
+void cgraph_make_wrapper (struct cgraph_node *source,
+			  struct cgraph_node *target);
 
 /* In cgraphclones.c  */
 

@@ -1,5 +1,12 @@
 2014-06-04  Martin Liska  <mliska@suse.cz>
 
+	* cgraph.h (cgraph_make_wrapper): New function introduced.
+	* cgraphunit.c (cgraph_make_wrapper): The function implementation.
+	* ipa-inline.h (inline_analyze_function): The function is global.
+	* ipa-inline-analysis.c (inline_analyze_function): Likewise.
+
+2014-06-04  Martin Liska  <mliska@suse.cz>
+
 	* tree.h (private_lookup_attribute_starting): New function.
 	(lookup_attribute_starting): Likewise.
 	* tree.c (private_lookup_attribute_starting): Likewise.
