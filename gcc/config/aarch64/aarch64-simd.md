@@ -19,8 +19,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VALL 0 "aarch64_simd_nonimmediate_operand" "")
-	(match_operand:VALL 1 "aarch64_simd_general_operand" ""))]
+  [(set (match_operand:VALL 0 "nonimmediate_operand" "")
+	(match_operand:VALL 1 "general_operand" ""))]
   "TARGET_SIMD"
   "
     if (GET_CODE (operands[0]) == MEM)
@@ -29,8 +29,8 @@
 )
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:VALL 0 "aarch64_simd_nonimmediate_operand" "")
-        (match_operand:VALL 1 "aarch64_simd_general_operand" ""))]
+  [(set (match_operand:VALL 0 "nonimmediate_operand" "")
+        (match_operand:VALL 1 "general_operand" ""))]
   "TARGET_SIMD"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
@@ -91,9 +91,9 @@
 )
 
 (define_insn "*aarch64_simd_mov<mode>"
-  [(set (match_operand:VD 0 "aarch64_simd_nonimmediate_operand"
+  [(set (match_operand:VD 0 "nonimmediate_operand"
 		"=w, m,  w, ?r, ?w, ?r, w")
-	(match_operand:VD 1 "aarch64_simd_general_operand"
+	(match_operand:VD 1 "general_operand"
 		"m,  w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)
@@ -119,9 +119,9 @@
 )
 
 (define_insn "*aarch64_simd_mov<mode>"
-  [(set (match_operand:VQ 0 "aarch64_simd_nonimmediate_operand"
+  [(set (match_operand:VQ 0 "nonimmediate_operand"
 		"=w, m,  w, ?r, ?w, ?r, w")
-	(match_operand:VQ 1 "aarch64_simd_general_operand"
+	(match_operand:VQ 1 "general_operand"
 		"m,  w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)

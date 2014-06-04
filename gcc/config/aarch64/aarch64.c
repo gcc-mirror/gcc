@@ -3158,11 +3158,11 @@ aarch64_classify_address (struct aarch64_address_info *info,
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
   bool allow_reg_index_p =
-    outer_code != PARALLEL && GET_MODE_SIZE(mode) != 16;
-
+    outer_code != PARALLEL && (GET_MODE_SIZE (mode) != 16
+			       || aarch64_vector_mode_supported_p (mode));
   /* Don't support anything other than POST_INC or REG addressing for
      AdvSIMD.  */
-  if (aarch64_vector_mode_p (mode)
+  if (aarch64_vect_struct_mode_p (mode)
       && (code != POST_INC && code != REG))
     return false;
 
@@ -4092,8 +4092,8 @@ aarch64_legitimize_reload_address (rtx *x_p,
 {
   rtx x = *x_p;
 
-  /* Do not allow mem (plus (reg, const)) if vector mode.  */
-  if (aarch64_vector_mode_p (mode)
+  /* Do not allow mem (plus (reg, const)) if vector struct mode.  */
+  if (aarch64_vect_struct_mode_p (mode)
       && GET_CODE (x) == PLUS
       && REG_P (XEXP (x, 0))
       && CONST_INT_P (XEXP (x, 1)))
