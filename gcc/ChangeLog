@@ -1,5 +1,30 @@
 2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lra-int.h (lra_static_insn_data): Make operand_alternative a
+	const pointer.
+	(target_lra_int, default_target_lra_int, this_target_lra_int)
+	(op_alt_data): Delete.
+	* lra.h (lra_init): Delete.
+	* lra.c (default_target_lra_int, this_target_lra_int): Delete.
+	(init_insn_code_data_once): Remove op_alt_data handling.
+	(finish_insn_code_data_once): Likewise.
+	(init_op_alt_data): Delete.
+	(get_static_insn_data): Initialize operand_alternative to null.
+	(free_insn_recog_data): Cast operand_alternative before freeing it.
+	(setup_operand_alternative): Take the operand_alternative as
+	parameter and assume it isn't already cached in the static
+	insn data.
+	(lra_set_insn_recog_data): Update accordingly.
+	(lra_init): Delete.
+	* ira.c (ira_init): Don't call lra_init.
+	* target-globals.h (this_target_lra_int): Declare.
+	(target_globals): Remove lra_int.
+	(restore_target_globals): Update accordingly.
+	* target-globals.c: Don't include lra-int.h.
+	(default_target_globals, save_target_globals): Remove lra_int.
+
+2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* recog.h (operand_alternative): Convert reg_class, reject,
 	matched and matches into bitfields.
 	(preprocess_constraints): New overload.

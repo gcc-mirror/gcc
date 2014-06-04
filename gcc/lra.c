@@ -553,11 +553,6 @@ finish_insn_regs (void)
 /* This page contains code dealing LRA insn info (or in other words
    LRA internal insn representation).  */
 
-struct target_lra_int default_target_lra_int;
-#if SWITCHABLE_TARGET
-struct target_lra_int *this_target_lra_int = &default_target_lra_int;
-#endif
-
 /* Map INSN_CODE -> the static insn data.  This info is valid during
    all translation unit.  */
 struct lra_static_insn_data *insn_code_data[LAST_INSN_CODE];
@@ -599,7 +594,6 @@ static void
 init_insn_code_data_once (void)
 {
   memset (insn_code_data, 0, sizeof (insn_code_data));
-  memset (op_alt_data, 0, sizeof (op_alt_data));
 }
 
 /* Called once per compiler work to finalize some LRA data related to
@@ -613,23 +607,7 @@ finish_insn_code_data_once (void)
     {
       if (insn_code_data[i] != NULL)
 	free (insn_code_data[i]);
-      if (op_alt_data[i] != NULL)
-	free (op_alt_data[i]);
     }
-}
-
-/* Initialize LRA info about operands in insn alternatives.  */
-static void
-init_op_alt_data (void)
-{
- int i;
-
-  for (i = 0; i < LAST_INSN_CODE; i++)
-    if (op_alt_data[i] != NULL)
-      {
-	free (op_alt_data[i]);
-	op_alt_data[i] = NULL;
-      }
 }
 
 /* Return static insn data, allocate and setup if necessary.  Although
@@ -650,6 +628,7 @@ get_static_insn_data (int icode, int nop, int ndup, int nalt)
 	    + sizeof (struct lra_operand_data) * nop
 	    + sizeof (int) * ndup;
   data = XNEWVAR (struct lra_static_insn_data, n_bytes);
+  data->operand_alternative = NULL;
   data->n_operands = nop;
   data->n_dups = ndup;
   data->n_alternatives = nalt;
@@ -727,7 +706,8 @@ free_insn_recog_data (lra_insn_recog_data_t data)
   if (data->icode < 0 && NONDEBUG_INSN_P (data->insn))
     {
       if (data->insn_static_data->operand_alternative != NULL)
-	free (data->insn_static_data->operand_alternative);
+	free (const_cast <operand_alternative *>
+	      (data->insn_static_data->operand_alternative));
       free_insn_regs (data->insn_static_data->hard_regs);
       free (data->insn_static_data);
     }
@@ -752,173 +732,38 @@ finish_insn_recog_data (void)
 
 /* Setup info about operands in alternatives of LRA DATA of insn.  */
 static void
-setup_operand_alternative (lra_insn_recog_data_t data)
+setup_operand_alternative (lra_insn_recog_data_t data,
+			   const operand_alternative *op_alt)
 {
-  int i, nop, nalt;
+  int i, j, nop, nalt;
   int icode = data->icode;
   struct lra_static_insn_data *static_data = data->insn_static_data;
 
-  if (icode >= 0
-      && (static_data->operand_alternative = op_alt_data[icode]) != NULL)
-    return;
   static_data->commutative = -1;
   nop = static_data->n_operands;
-  if (nop == 0)
-    {
-      static_data->operand_alternative = NULL;
-      return;
-    }
   nalt = static_data->n_alternatives;
-  static_data->operand_alternative = XNEWVEC (struct operand_alternative,
-					      nalt * nop);
-  memset (static_data->operand_alternative, 0,
-	  nalt * nop * sizeof (struct operand_alternative));
-  if (icode >= 0)
-    op_alt_data[icode] = static_data->operand_alternative;
+  static_data->operand_alternative = op_alt;
   for (i = 0; i < nop; i++)
     {
-      int j;
-      struct operand_alternative *op_alt_start, *op_alt;
-      const char *p = static_data->operand[i].constraint;
-
-      static_data->operand[i].early_clobber = 0;
-      op_alt_start = &static_data->operand_alternative[i];
-
-      for (j = 0; j < nalt; j++)
+      static_data->operand[i].early_clobber = false;
+      static_data->operand[i].is_address = false;
+      if (static_data->operand[i].constraint[0] == '%')
 	{
-	  op_alt = op_alt_start + j * nop;
-	  op_alt->cl = NO_REGS;
-	  op_alt->constraint = p;
-	  op_alt->matches = -1;
-	  op_alt->matched = -1;
-
-	  if (*p == '\0' || *p == ',')
-	    {
-	      op_alt->anything_ok = 1;
-	      continue;
-	    }
-
-	  for (;;)
-	    {
-	      char c = *p;
-	      if (c == '#')
-		do
-		  c = *++p;
-		while (c != ',' && c != '\0');
-	      if (c == ',' || c == '\0')
-		{
-		  p++;
-		  break;
-		}
-
-	      switch (c)
-		{
-		case '=': case '+': case '*':
-		case 'E': case 'F': case 'G': case 'H':
-		case 's': case 'i': case 'n':
-		case 'I': case 'J': case 'K': case 'L':
-		case 'M': case 'N': case 'O': case 'P':
-		  /* These don't say anything we care about.  */
-		  break;
-
-		case '%':
-		  /* We currently only support one commutative pair of
-		     operands.	*/
-		  if (static_data->commutative < 0)
-		    static_data->commutative = i;
-		  else
-		    lra_assert (data->icode < 0); /* Asm  */
-
-		  /* The last operand should not be marked
-		     commutative.  */
-		  lra_assert (i != nop - 1);
-		  break;
-
-		case '?':
-		  op_alt->reject += LRA_LOSER_COST_FACTOR;
-		  break;
-		case '!':
-		  op_alt->reject += LRA_MAX_REJECT;
-		  break;
-		case '&':
-		  op_alt->earlyclobber = 1;
-		  static_data->operand[i].early_clobber = 1;
-		  break;
-
-		case '0': case '1': case '2': case '3': case '4':
-		case '5': case '6': case '7': case '8': case '9':
-		  {
-		    char *end;
-		    op_alt->matches = strtoul (p, &end, 10);
-		    static_data->operand_alternative
-		      [j * nop + op_alt->matches].matched = i;
-		    p = end;
-		  }
-		  continue;
-
-		case TARGET_MEM_CONSTRAINT:
-		  op_alt->memory_ok = 1;
-		  break;
-		case '<':
-		  op_alt->decmem_ok = 1;
-		  break;
-		case '>':
-		  op_alt->incmem_ok = 1;
-		  break;
-		case 'V':
-		  op_alt->nonoffmem_ok = 1;
-		  break;
-		case 'o':
-		  op_alt->offmem_ok = 1;
-		  break;
-		case 'X':
-		  op_alt->anything_ok = 1;
-		  break;
-
-		case 'p':
-		  static_data->operand[i].is_address = true;
-		  op_alt->is_address = 1;
-		  op_alt->cl = (reg_class_subunion[(int) op_alt->cl]
-				[(int) base_reg_class (VOIDmode,
-						       ADDR_SPACE_GENERIC,
-						       ADDRESS, SCRATCH)]);
-		  break;
-
-		case 'g':
-		case 'r':
-		  op_alt->cl =
-		   reg_class_subunion[(int) op_alt->cl][(int) GENERAL_REGS];
-		  break;
-
-		default:
-		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
-		    {
-		      op_alt->memory_ok = 1;
-		      break;
-		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-		    {
-		      static_data->operand[i].is_address = true;
-		      op_alt->is_address = 1;
-		      op_alt->cl
-			= (reg_class_subunion
-			   [(int) op_alt->cl]
-			   [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-						  ADDRESS, SCRATCH)]);
-		      break;
-		    }
-
-		  op_alt->cl
-		    = (reg_class_subunion
-		       [(int) op_alt->cl]
-		       [(int)
-			REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)]);
-		  break;
-		}
-	      p += CONSTRAINT_LEN (c, p);
-	    }
+	  /* We currently only support one commutative pair of operands.  */
+	  if (static_data->commutative < 0)
+	    static_data->commutative = i;
+	  else
+	    lra_assert (icode < 0); /* Asm  */
+	  /* The last operand should not be marked commutative.  */
+	  lra_assert (i != nop - 1);
 	}
     }
+  for (j = 0; j < nalt; j++)
+    for (i = 0; i < nop; i++, op_alt++)
+      {
+	static_data->operand[i].early_clobber |= op_alt->earlyclobber;
+	static_data->operand[i].is_address |= op_alt->is_address;
+      }
 }
 
 /* Recursively process X and collect info about registers, which are
@@ -1077,12 +922,13 @@ lra_set_insn_recog_data (rtx insn)
     }
   if (icode < 0)
     {
-      int nop;
+      int nop, nalt;
       enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
       const char *constraints[MAX_RECOG_OPERANDS];
 
       nop = asm_noperands (PATTERN (insn));
       data->operand_loc = data->dup_loc = NULL;
+      nalt = 1;
       if (nop < 0)
 	{
 	  /* Its is a special insn like USE or CLOBBER.  We should
@@ -1092,7 +938,7 @@ lra_set_insn_recog_data (rtx insn)
 		      || GET_CODE (PATTERN (insn)) == CLOBBER
 		      || GET_CODE (PATTERN (insn)) == ASM_INPUT);
 	  data->insn_static_data = insn_static_data
-	    = get_static_insn_data (-1, 0, 0, 1);
+	    = get_static_insn_data (-1, 0, 0, nalt);
 	}
       else
 	{
@@ -1106,16 +952,15 @@ lra_set_insn_recog_data (rtx insn)
 	  decode_asm_operands (PATTERN (insn), NULL,
 			       data->operand_loc,
 			       constraints, operand_mode, NULL);
-	  n = 1;
 	  if (nop > 0)
 	    {
 	      const char *p =  recog_data.constraints[0];
 
 	      for (p =	constraints[0]; *p; p++)
-		n += *p == ',';
+		nalt += *p == ',';
 	    }
 	  data->insn_static_data = insn_static_data
-	    = get_static_insn_data (-1, nop, 0, n);
+	    = get_static_insn_data (-1, nop, 0, nalt);
 	  for (i = 0; i < nop; i++)
 	    {
 	      insn_static_data->operand[i].mode = operand_mode[i];
@@ -1131,6 +976,13 @@ lra_set_insn_recog_data (rtx insn)
 	     : insn_static_data->operand[i].constraint[0] == '+' ? OP_INOUT
 	     : OP_IN);
       data->enabled_alternatives = ALL_ALTERNATIVES;
+      if (nop > 0)
+	{
+	  operand_alternative *op_alt = XCNEWVEC (operand_alternative,
+						  nalt * nop);
+	  preprocess_constraints (nop, nalt, constraints, op_alt);
+	  setup_operand_alternative (data, op_alt);
+	}
     }
   else
     {
@@ -1158,6 +1010,11 @@ lra_set_insn_recog_data (rtx insn)
 	}
       data->dup_loc = locs;
       data->enabled_alternatives = get_enabled_alternatives (insn);
+      const operand_alternative *op_alt = preprocess_insn_constraints (icode);
+      if (!insn_static_data->operand_alternative)
+	setup_operand_alternative (data, op_alt);
+      else if (op_alt != insn_static_data->operand_alternative)
+	insn_static_data->operand_alternative = op_alt;
     }
   if (GET_CODE (PATTERN (insn)) == CLOBBER || GET_CODE (PATTERN (insn)) == USE)
     insn_static_data->hard_regs = NULL;
@@ -1165,7 +1022,6 @@ lra_set_insn_recog_data (rtx insn)
     insn_static_data->hard_regs
       = collect_non_operand_hard_regs (&PATTERN (insn), data,
 				       NULL, OP_IN, false);
-  setup_operand_alternative (data);
   data->arg_hard_regs = NULL;
   if (CALL_P (insn))
     {
@@ -2461,13 +2317,6 @@ void
 lra_init_once (void)
 {
   init_insn_code_data_once ();
-}
-
-/* Initialize LRA whenever register-related information is changed.  */
-void
-lra_init (void)
-{
-  init_op_alt_data ();
 }
 
 /* Called once per compiler to finish LRA data which are initialize

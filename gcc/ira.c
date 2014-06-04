@@ -1715,7 +1715,6 @@ ira_init (void)
   clarify_prohibited_class_mode_regs ();
   setup_hard_regno_aclass ();
   ira_init_costs ();
-  lra_init ();
 }
 
 /* Function called once at the end of compiler work.  */
