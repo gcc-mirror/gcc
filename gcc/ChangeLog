@@ -1,3 +1,10 @@
+2014-06-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61340
+	* ipa-pure-const.c (propagate_pure_const): Add unreachable default
+	handler for switch on an ipa_ref_use enum.
+	* ipa-reference.c (analyze_function): Likewise.
+
 2014-06-04  Kai Tietz  <ktietz@redhat.com>
 
 	* recog.c (peep2_attempt): Copy SIBLING_CALL_P flag
