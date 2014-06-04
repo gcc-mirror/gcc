@@ -1,5 +1,13 @@
 2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lra-constraints.c (valid_address_p): Move earlier in file.
+	(address_eliminator): New structure.
+	(satisfies_memory_constraint_p): New function.
+	(satisfies_address_constraint_p): Likewise.
+	(process_alt_operands, process_address, curr_insn_transform): Use them.
+
+2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lra-int.h (lra_static_insn_data): Make operand_alternative a
 	const pointer.
 	(target_lra_int, default_target_lra_int, this_target_lra_int)
