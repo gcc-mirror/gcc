@@ -1,3 +1,12 @@
+2014-06-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57230
+	* tree-ssa-strlen.c (handle_char_store): Add missing integer_zerop
+	check.
+
 2014-05-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/61044

@@ -1,3 +1,11 @@
+2014-06-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57230
+	* gcc.dg/strlenopt-23.c: New test.
+
 2014-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aliasing1.adb (dg-final): Robustify pattern matching.

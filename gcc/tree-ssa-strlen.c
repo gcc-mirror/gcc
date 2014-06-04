@@ -1693,7 +1693,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	       its length may be decreased.  */
 	    adjust_last_stmt (si, stmt, false);
 	}
-      else if (si != NULL)
+      else if (si != NULL && integer_zerop (gimple_assign_rhs1 (stmt)))
 	{
 	  si = unshare_strinfo (si);
 	  si->length = build_int_cst (size_type_node, 0);
