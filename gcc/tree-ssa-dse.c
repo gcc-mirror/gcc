@@ -198,10 +198,8 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 	  break;
 	}
     }
-  /* We deliberately stop on clobbering statements and not only on
-     killing ones to make walking cheaper.  Otherwise we can just
-     continue walking until both stores have equal reference trees.  */
-  while (!stmt_may_clobber_ref_p (temp, gimple_assign_lhs (stmt)));
+  /* Continue walking until we reach a kill.  */
+  while (!stmt_kills_ref_p (temp, gimple_assign_lhs (stmt)));
 
   *use_stmt = temp;
 
@@ -248,57 +246,49 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi)
       if (!dse_possible_dead_store_p (stmt, &use_stmt))
 	return;
 
+      /* Now we know that use_stmt kills the LHS of stmt.  */
+
       /* But only remove *this_2(D) ={v} {CLOBBER} if killed by
 	 another clobber stmt.  */
       if (gimple_clobber_p (stmt)
 	  && !gimple_clobber_p (use_stmt))
 	return;
 
-      /* If we have precisely one immediate use at this point and the
-	 stores are to the same memory location or there is a chain of
-	 virtual uses from stmt and the stmt which stores to that same
-	 memory location, then we may have found redundant store.  */
-      if ((gimple_has_lhs (use_stmt)
-	   && (operand_equal_p (gimple_assign_lhs (stmt),
-				gimple_get_lhs (use_stmt), 0)))
-	  || stmt_kills_ref_p (use_stmt, gimple_assign_lhs (stmt)))
+      basic_block bb;
+
+      /* If use_stmt is or might be a nop assignment, e.g. for
+	   struct { ... } S a, b, *p; ...
+	   b = a; b = b;
+	 or
+	   b = a; b = *p; where p might be &b,
+	 or
+           *p = a; *p = b; where p might be &b,
+	 or
+           *p = *u; *p = *v; where p might be v, then USE_STMT
+         acts as a use as well as definition, so store in STMT
+         is not dead.  */
+      if (stmt != use_stmt
+	  && ref_maybe_used_by_stmt_p (use_stmt, gimple_assign_lhs (stmt)))
+	return;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  basic_block bb;
-
-	  /* If use_stmt is or might be a nop assignment, e.g. for
-	     struct { ... } S a, b, *p; ...
-	     b = a; b = b;
-	     or
-	     b = a; b = *p; where p might be &b,
-	     or
-	     *p = a; *p = b; where p might be &b,
-	     or
-	     *p = *u; *p = *v; where p might be v, then USE_STMT
-	     acts as a use as well as definition, so store in STMT
-	     is not dead.  */
-	  if (stmt != use_stmt
-	      && ref_maybe_used_by_stmt_p (use_stmt, gimple_assign_lhs (stmt)))
-	    return;
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-            {
-              fprintf (dump_file, "  Deleted dead store '");
-              print_gimple_stmt (dump_file, gsi_stmt (*gsi), dump_flags, 0);
-              fprintf (dump_file, "'\n");
-            }
-
-	  /* Then we need to fix the operand of the consuming stmt.  */
-	  unlink_stmt_vdef (stmt);
-
-	  /* Remove the dead store.  */
-	  bb = gimple_bb (stmt);
-	  if (gsi_remove (gsi, true))
-	    bitmap_set_bit (need_eh_cleanup, bb->index);
-
-	  /* And release any SSA_NAMEs set in this statement back to the
-	     SSA_NAME manager.  */
-	  release_defs (stmt);
+	  fprintf (dump_file, "  Deleted dead store '");
+	  print_gimple_stmt (dump_file, gsi_stmt (*gsi), dump_flags, 0);
+	  fprintf (dump_file, "'\n");
 	}
+
+      /* Then we need to fix the operand of the consuming stmt.  */
+      unlink_stmt_vdef (stmt);
+
+      /* Remove the dead store.  */
+      bb = gimple_bb (stmt);
+      if (gsi_remove (gsi, true))
+	bitmap_set_bit (need_eh_cleanup, bb->index);
+
+      /* And release any SSA_NAMEs set in this statement back to the
+	 SSA_NAME manager.  */
+      release_defs (stmt);
     }
 }
 
