@@ -1195,7 +1195,7 @@ branch_prob (void)
      the checksum in only once place, since it depends on the shape
      of the control flow which can change during 
      various transformations.  */
-  cfg_checksum = coverage_compute_cfg_checksum ();
+  cfg_checksum = coverage_compute_cfg_checksum (cfun);
   lineno_checksum = coverage_compute_lineno_checksum ();
 
   /* Write the data from which gcov can reconstruct the basic block

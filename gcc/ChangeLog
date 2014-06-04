@@ -1,3 +1,9 @@
+2014-06-04  Martin Liska  <mliska@suse.cz>
+
+	* coverage.h (coverage_compute_cfg_checksum): Argument added.
+	* coverage.c (coverage_compute_cfg_checksum): Likewise.
+	* profile.c (branch_prob): Likewise.
+
 2014-06-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61340
