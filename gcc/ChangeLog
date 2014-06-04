@@ -1,5 +1,14 @@
 2014-06-04  Richard Biener  <rguenther@suse.de>
 
+	* configure.ac: Check whether the underlying type of int64_t
+	is long or long long.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* hwint.h (HOST_WIDE_INT): Match the underlying type of int64_t.
+	(HOST_WIDE_INT_PRINT_*): Define in terms of PRI*64.
+
+2014-06-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/60098
 	* tree-ssa-dse.c (dse_possible_dead_store_p): Walk until
 	we hit a kill.
