@@ -1,5 +1,11 @@
 2014-06-04  Martin Liska  <mliska@suse.cz>
 
+	* tree.h (private_lookup_attribute_starting): New function.
+	(lookup_attribute_starting): Likewise.
+	* tree.c (private_lookup_attribute_starting): Likewise.
+
+2014-06-04  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.h (expand_thunk): New argument added.
 	(address_taken_from_non_vtable_p): New global function.
 	* ipa-visibility.c (address_taken_from_non_vtable_p): Likewise.

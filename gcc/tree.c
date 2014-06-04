@@ -5759,6 +5759,44 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
   return list;
 }
 
+/* Given an attribute name ATTR_NAME and a list of attributes LIST,
+   return a pointer to the attribute's list first element if the attribute
+   starts with ATTR_NAME. ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
+
+tree
+private_lookup_attribute_by_prefix (const char *attr_name, size_t attr_len,
+				    tree list)
+{
+  while (list)
+    {
+      size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
+
+      if (attr_len > ident_len)
+	{
+	  list = TREE_CHAIN (list);
+	  continue;
+	}
+
+      const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
+
+      if (strncmp (attr_name, p, attr_len) == 0)
+	break;
+
+      /* TODO: If we made sure that attributes were stored in the
+	 canonical form without '__...__' (ie, as in 'text' as opposed
+	 to '__text__') then we could avoid the following case.  */
+      if (p[0] == '_' && p[1] == '_' &&
+	  strncmp (attr_name, p + 2, attr_len) == 0)
+	break;
+
+      list = TREE_CHAIN (list);
+    }
+
+  return list;
+}
+
+
 /* A variant of lookup_attribute() that can be used with an identifier
    as the first argument, and where the identifier can be either
    'text' or '__text__'.
