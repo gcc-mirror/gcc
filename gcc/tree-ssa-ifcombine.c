@@ -127,7 +127,11 @@ bb_no_side_effects_p (basic_block bb)
     {
       gimple stmt = gsi_stmt (gsi);
 
+      if (is_gimple_debug (stmt))
+	continue;
+
       if (gimple_has_side_effects (stmt)
+	  || gimple_could_trap_p (stmt)
 	  || gimple_vuse (stmt))
 	return false;
     }

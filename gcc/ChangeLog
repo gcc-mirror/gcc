@@ -1,3 +1,9 @@
+2014-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61383
+	* tree-ssa-ifcombine.c (bb_no_side_effects_p): Make sure
+	stmts can't trap.
+
 2014-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61020
