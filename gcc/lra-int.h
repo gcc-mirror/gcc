@@ -202,7 +202,7 @@ struct lra_static_insn_data
   /* Array [n_alternatives][n_operand] of static constraint info for
      given operand in given alternative.  This info can be changed if
      the target reg info is changed.  */
-  struct operand_alternative *operand_alternative;
+  const struct operand_alternative *operand_alternative;
 };
 
 /* LRA internal info about an insn (LRA internal insn
@@ -499,21 +499,3 @@ lra_assign_reg_val (int from, int to)
   lra_reg_info[to].val = lra_reg_info[from].val;
   lra_reg_info[to].offset = lra_reg_info[from].offset;
 }
-
-
-struct target_lra_int
-{
-  /* Map INSN_UID -> the operand alternative data (NULL if unknown).
-     We assume that this data is valid until register info is changed
-     because classes in the data can be changed.  */
-  struct operand_alternative *x_op_alt_data[LAST_INSN_CODE];
-};
-
-extern struct target_lra_int default_target_lra_int;
-#if SWITCHABLE_TARGET
-extern struct target_lra_int *this_target_lra_int;
-#else
-#define this_target_lra_int (&default_target_lra_int)
-#endif
-
-#define op_alt_data (this_target_lra_int->x_op_alt_data)
