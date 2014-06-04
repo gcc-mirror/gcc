@@ -483,6 +483,8 @@ analyze_function (struct cgraph_node *fn)
 	  break;
 	case IPA_REF_ADDR:
 	  break;
+	default:
+	  gcc_unreachable ();
 	}
     }
 
