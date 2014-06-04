@@ -3960,7 +3960,7 @@ inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
 
 /* Note function body size.  */
 
-static void
+void
 inline_analyze_function (struct cgraph_node *node)
 {
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));

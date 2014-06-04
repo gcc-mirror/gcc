@@ -2344,5 +2344,41 @@ finalize_compilation_unit (void)
   timevar_pop (TV_CGRAPH);
 }
 
+/* Creates a wrapper from SOURCE node to TARGET node. Thunk is used for this
+   kind of wrapper method.  */
+
+void
+cgraph_make_wrapper (struct cgraph_node *source, struct cgraph_node *target)
+{
+    /* Preserve DECL_RESULT so we get right by reference flag.  */
+    tree decl_result = DECL_RESULT (source->decl);
+
+    /* Remove the function's body.  */
+    cgraph_release_function_body (source);
+    cgraph_reset_node (source);
+
+    DECL_RESULT (source->decl) = decl_result;
+    DECL_INITIAL (source->decl) = NULL;
+    allocate_struct_function (source->decl, false);
+    set_cfun (NULL);
+
+    /* Turn alias into thunk and expand it into GIMPLE representation.  */
+    source->definition = true;
+    source->thunk.thunk_p = true;
+    source->thunk.this_adjusting = false;
+
+    struct cgraph_edge *e = cgraph_create_edge (source, target, NULL, 0,
+						CGRAPH_FREQ_BASE);
+
+    if (!expand_thunk (source, false, true))
+      source->analyzed = true;
+
+    e->call_stmt_cannot_inline_p = true;
+
+    /* Inline summary set-up.  */
+
+    analyze_function (source);
+    inline_analyze_function (source);
+}
 
 #include "gt-cgraphunit.h"
