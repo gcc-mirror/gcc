@@ -4528,9 +4528,7 @@ static inline bool
 may_be_aliased (const_tree var)
 {
   return (TREE_CODE (var) != CONST_DECL
-	  && (TREE_PUBLIC (var)
-	      || DECL_EXTERNAL (var)
-	      || TREE_ADDRESSABLE (var))
+	  && TREE_ADDRESSABLE (var)
 	  && !((TREE_STATIC (var) || TREE_PUBLIC (var) || DECL_EXTERNAL (var))
 	       && ((TREE_READONLY (var)
 		    && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
