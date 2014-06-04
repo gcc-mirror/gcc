@@ -256,16 +256,56 @@ found:
 	return nil;
 }
 
+static const char*
+typeinfoname(int32 typeinfo)
+{
+	if(typeinfo == TypeInfo_SingleObject)
+		return "single object";
+	else if(typeinfo == TypeInfo_Array)
+		return "array";
+	else if(typeinfo == TypeInfo_Chan)
+		return "channel";
+	// runtime_throw("typinfoname: unknown type info");
+	return "unknown";
+}
+
+static void
+printstackframes(Location *stk, int32 nstk)
+{
+	Location *loc;
+	int32 frame;
+
+	for(frame = 0; frame < nstk; frame++) {
+		loc = &stk[frame];
+		if (loc->function.len > 0) {
+			runtime_printf("\t#%d %p %S %S:%d\n", frame, loc->pc, loc->function, loc->filename, (int32)loc->lineno);
+		} else {
+			runtime_printf("\t#%d %p\n", frame, loc->pc);
+		}
+	}
+}
+
 // Called by malloc to record a profiled block.
 void
-runtime_MProf_Malloc(void *p, uintptr size)
+runtime_MProf_Malloc(void *p, uintptr size, uintptr typ)
 {
-	int32 nstk;
 	Location stk[32];
 	Bucket *b;
+	Type *type;
+	const char *name;
+	int32 nstk;
 
 	nstk = runtime_callers(1, stk, 32);
 	runtime_lock(&proflock);
+        if(runtime_debug.allocfreetrace) {
+		type = (Type*)(typ & ~3);
+		name = typeinfoname(typ & 3);
+		runtime_printf("MProf_Malloc(p=%p, size=%p, type=%p <%s", p, size, type, name);
+		if(type != nil)
+                	runtime_printf(" of %S", *type->__reflection);
+		runtime_printf(">)\n");
+		printstackframes(stk, nstk);
+	}
 	b = stkbucket(MProf, stk, nstk, true);
 	b->recent_allocs++;
 	b->recent_alloc_bytes += size;
@@ -284,6 +324,10 @@ runtime_MProf_Free(void *p, uintptr size)
 	if(b != nil) {
 		b->recent_frees++;
 		b->recent_free_bytes += size;
+		if(runtime_debug.allocfreetrace) {
+			runtime_printf("MProf_Free(p=%p, size=%p)\n", p, size);
+			printstackframes(b->stk, b->nstk);
+		}
 	}
 	runtime_unlock(&proflock);
 }

@@ -13,6 +13,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rsa"
 	"crypto/sha1"
+	_ "crypto/sha256"
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
@@ -241,32 +242,31 @@ var (
 	oidSignatureECDSAWithSHA512 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
 )
 
+var signatureAlgorithmDetails = []struct {
+	algo       SignatureAlgorithm
+	oid        asn1.ObjectIdentifier
+	pubKeyAlgo PublicKeyAlgorithm
+	hash       crypto.Hash
+}{
+	{MD2WithRSA, oidSignatureMD2WithRSA, RSA, crypto.Hash(0) /* no value for MD2 */},
+	{MD5WithRSA, oidSignatureMD5WithRSA, RSA, crypto.MD5},
+	{SHA1WithRSA, oidSignatureSHA1WithRSA, RSA, crypto.SHA1},
+	{SHA256WithRSA, oidSignatureSHA256WithRSA, RSA, crypto.SHA256},
+	{SHA384WithRSA, oidSignatureSHA384WithRSA, RSA, crypto.SHA384},
+	{SHA512WithRSA, oidSignatureSHA512WithRSA, RSA, crypto.SHA512},
+	{DSAWithSHA1, oidSignatureDSAWithSHA1, DSA, crypto.SHA1},
+	{DSAWithSHA256, oidSignatureDSAWithSHA256, DSA, crypto.SHA256},
+	{ECDSAWithSHA1, oidSignatureECDSAWithSHA1, ECDSA, crypto.SHA1},
+	{ECDSAWithSHA256, oidSignatureECDSAWithSHA256, ECDSA, crypto.SHA256},
+	{ECDSAWithSHA384, oidSignatureECDSAWithSHA384, ECDSA, crypto.SHA384},
+	{ECDSAWithSHA512, oidSignatureECDSAWithSHA512, ECDSA, crypto.SHA512},
+}
+
 func getSignatureAlgorithmFromOID(oid asn1.ObjectIdentifier) SignatureAlgorithm {
-	switch {
-	case oid.Equal(oidSignatureMD2WithRSA):
-		return MD2WithRSA
-	case oid.Equal(oidSignatureMD5WithRSA):
-		return MD5WithRSA
-	case oid.Equal(oidSignatureSHA1WithRSA):
-		return SHA1WithRSA
-	case oid.Equal(oidSignatureSHA256WithRSA):
-		return SHA256WithRSA
-	case oid.Equal(oidSignatureSHA384WithRSA):
-		return SHA384WithRSA
-	case oid.Equal(oidSignatureSHA512WithRSA):
-		return SHA512WithRSA
-	case oid.Equal(oidSignatureDSAWithSHA1):
-		return DSAWithSHA1
-	case oid.Equal(oidSignatureDSAWithSHA256):
-		return DSAWithSHA256
-	case oid.Equal(oidSignatureECDSAWithSHA1):
-		return ECDSAWithSHA1
-	case oid.Equal(oidSignatureECDSAWithSHA256):
-		return ECDSAWithSHA256
-	case oid.Equal(oidSignatureECDSAWithSHA384):
-		return ECDSAWithSHA384
-	case oid.Equal(oidSignatureECDSAWithSHA512):
-		return ECDSAWithSHA512
+	for _, details := range signatureAlgorithmDetails {
+		if oid.Equal(details.oid) {
+			return details.algo
+		}
 	}
 	return UnknownSignatureAlgorithm
 }
@@ -1346,7 +1346,7 @@ func subjectBytes(cert *Certificate) ([]byte, error) {
 // following members of template are used: SerialNumber, Subject, NotBefore,
 // NotAfter, KeyUsage, ExtKeyUsage, UnknownExtKeyUsage, BasicConstraintsValid,
 // IsCA, MaxPathLen, SubjectKeyId, DNSNames, PermittedDNSDomainsCritical,
-// PermittedDNSDomains.
+// PermittedDNSDomains, SignatureAlgorithm.
 //
 // The certificate is signed by parent. If parent is equal to template then the
 // certificate is self-signed. The parameter pub is the public key of the
@@ -1355,7 +1355,7 @@ func subjectBytes(cert *Certificate) ([]byte, error) {
 // The returned slice is the certificate in DER encoding.
 //
 // The only supported key types are RSA and ECDSA (*rsa.PublicKey or
-// *ecdsa.PublicKey for pub, *rsa.PrivateKey or *ecdsa.PublicKey for priv).
+// *ecdsa.PublicKey for pub, *rsa.PrivateKey or *ecdsa.PrivateKey for priv).
 func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interface{}, priv interface{}) (cert []byte, err error) {
 	var publicKeyBytes []byte
 	var publicKeyAlgorithm pkix.AlgorithmIdentifier
@@ -1366,12 +1366,16 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interf
 
 	var signatureAlgorithm pkix.AlgorithmIdentifier
 	var hashFunc crypto.Hash
+	var privType PublicKeyAlgorithm
 
 	switch priv := priv.(type) {
 	case *rsa.PrivateKey:
-		signatureAlgorithm.Algorithm = oidSignatureSHA1WithRSA
-		hashFunc = crypto.SHA1
+		privType = RSA
+		signatureAlgorithm.Algorithm = oidSignatureSHA256WithRSA
+		hashFunc = crypto.SHA256
 	case *ecdsa.PrivateKey:
+		privType = ECDSA
+
 		switch priv.Curve {
 		case elliptic.P224(), elliptic.P256():
 			hashFunc = crypto.SHA256
@@ -1387,6 +1391,26 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interf
 		}
 	default:
 		return nil, errors.New("x509: only RSA and ECDSA private keys supported")
+	}
+
+	if template.SignatureAlgorithm != 0 {
+		found := false
+		for _, details := range signatureAlgorithmDetails {
+			if details.algo == template.SignatureAlgorithm {
+				if details.pubKeyAlgo != privType {
+					return nil, errors.New("x509: requested SignatureAlgorithm does not match private key type")
+				}
+				signatureAlgorithm.Algorithm, hashFunc = details.oid, details.hash
+				if hashFunc == 0 {
+					return nil, errors.New("x509: cannot sign with hash function requested")
+				}
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, errors.New("x509: unknown SignatureAlgorithm")
+		}
 	}
 
 	if err != nil {

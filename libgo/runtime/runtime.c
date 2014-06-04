@@ -282,9 +282,11 @@ static struct {
 	const char* name;
 	int32*	value;
 } dbgvar[] = {
+	{"allocfreetrace", &runtime_debug.allocfreetrace},
+	{"efence", &runtime_debug.efence},
 	{"gctrace", &runtime_debug.gctrace},
-	{"schedtrace", &runtime_debug.schedtrace},
 	{"scheddetail", &runtime_debug.scheddetail},
+	{"schedtrace", &runtime_debug.schedtrace},
 };
 
 void

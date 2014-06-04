@@ -544,16 +544,24 @@ class Backend
 		     bool address_is_taken, Location location,
 		     Bstatement** pstatement) = 0;
 
-  // Create an implicit variable that is compiler-defined.  This is used when
-  // generating GC root variables and storing the values of a slice constructor.
-  // NAME is the name of the variable, either gc# for GC roots or C# for slice
-  // initializers.  TYPE is the type of the implicit variable with an initial
-  // value INIT.  IS_CONSTANT is true if the implicit variable should be treated
-  // like it is immutable.  For slice initializers, if the values must be copied
-  // to the heap, the variable IS_CONSTANT.
+  // Create an implicit variable that is compiler-defined.  This is
+  // used when generating GC root variables, when storing the values
+  // of a slice constructor, and for the zero value of types.  NAME is
+  // the name of the variable, either gc# for GC roots or C# for slice
+  // initializers.  TYPE is the type of the implicit variable with an
+  // initial value INIT.  IS_CONSTANT is true if the implicit variable
+  // should be treated like it is immutable.  For slice initializers,
+  // if the values must be copied to the heap, the variable
+  // IS_CONSTANT.  IS_COMMON is true if the implicit variable should
+  // be treated as a common variable (multiple definitions with
+  // different sizes permitted in different object files, all merged
+  // into the largest definition at link time); this will be true for
+  // the zero value.  If IS_COMMON is true, INIT will be NULL, and the
+  // variable should be initialized to all zeros.  If ALIGNMENT is not
+  // zero, it is the desired alignment of the variable.
   virtual Bvariable*
   implicit_variable(const std::string& name, Btype* type, Bexpression* init,
-		    bool is_constant) = 0;
+		    bool is_constant, bool is_common, size_t alignment) = 0;
 
   // Create a named immutable initialized data structure.  This is
   // used for type descriptors, map descriptors, and function

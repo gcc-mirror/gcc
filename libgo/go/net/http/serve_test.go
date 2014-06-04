@@ -1934,6 +1934,31 @@ func TestWriteAfterHijack(t *testing.T) {
 	}
 }
 
+func TestDoubleHijack(t *testing.T) {
+	req := reqBytes("GET / HTTP/1.1\nHost: golang.org")
+	var buf bytes.Buffer
+	conn := &rwTestConn{
+		Reader: bytes.NewReader(req),
+		Writer: &buf,
+		closec: make(chan bool, 1),
+	}
+	handler := HandlerFunc(func(rw ResponseWriter, r *Request) {
+		conn, _, err := rw.(Hijacker).Hijack()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		_, _, err = rw.(Hijacker).Hijack()
+		if err == nil {
+			t.Errorf("got err = nil;  want err != nil")
+		}
+		conn.Close()
+	})
+	ln := &oneConnListener{conn: conn}
+	go Serve(ln, handler)
+	<-conn.closec
+}
+
 // http://code.google.com/p/go/issues/detail?id=5955
 // Note that this does not test the "request too large"
 // exit path from the http server. This is intentional;
@@ -2063,6 +2088,64 @@ func TestNoContentTypeOnNotModified(t *testing.T) {
 			t.Errorf("Got a Content-Length from %q: %s", req, got)
 		}
 	}
+}
+
+// Issue 6995
+// A server Handler can receive a Request, and then turn around and
+// give a copy of that Request.Body out to the Transport (e.g. any
+// proxy).  So then two people own that Request.Body (both the server
+// and the http client), and both think they can close it on failure.
+// Therefore, all incoming server requests Bodies need to be thread-safe.
+func TestTransportAndServerSharedBodyRace(t *testing.T) {
+	defer afterTest(t)
+
+	const bodySize = 1 << 20
+
+	unblockBackend := make(chan bool)
+	backend := httptest.NewServer(HandlerFunc(func(rw ResponseWriter, req *Request) {
+		io.CopyN(rw, req.Body, bodySize/2)
+		<-unblockBackend
+	}))
+	defer backend.Close()
+
+	backendRespc := make(chan *Response, 1)
+	proxy := httptest.NewServer(HandlerFunc(func(rw ResponseWriter, req *Request) {
+		if req.RequestURI == "/foo" {
+			rw.Write([]byte("bar"))
+			return
+		}
+		req2, _ := NewRequest("POST", backend.URL, req.Body)
+		req2.ContentLength = bodySize
+
+		bresp, err := DefaultClient.Do(req2)
+		if err != nil {
+			t.Errorf("Proxy outbound request: %v", err)
+			return
+		}
+		_, err = io.CopyN(ioutil.Discard, bresp.Body, bodySize/4)
+		if err != nil {
+			t.Errorf("Proxy copy error: %v", err)
+			return
+		}
+		backendRespc <- bresp // to close later
+
+		// Try to cause a race: Both the DefaultTransport and the proxy handler's Server
+		// will try to read/close req.Body (aka req2.Body)
+		DefaultTransport.(*Transport).CancelRequest(req2)
+		rw.Write([]byte("OK"))
+	}))
+	defer proxy.Close()
+
+	req, _ := NewRequest("POST", proxy.URL, io.LimitReader(neverEnding('a'), bodySize))
+	res, err := DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Original request: %v", err)
+	}
+
+	// Cleanup, so we don't leak goroutines.
+	res.Body.Close()
+	close(unblockBackend)
+	(<-backendRespc).Body.Close()
 }
 
 func TestResponseWriterWriteStringAllocs(t *testing.T) {
@@ -2389,5 +2472,30 @@ Host: golang.org
 	<-conn.closec
 	if b.N != handled {
 		b.Errorf("b.N=%d but handled %d", b.N, handled)
+	}
+}
+
+func BenchmarkServerHijack(b *testing.B) {
+	b.ReportAllocs()
+	req := reqBytes(`GET / HTTP/1.1
+Host: golang.org
+`)
+	h := HandlerFunc(func(w ResponseWriter, r *Request) {
+		conn, _, err := w.(Hijacker).Hijack()
+		if err != nil {
+			panic(err)
+		}
+		conn.Close()
+	})
+	conn := &rwTestConn{
+		Writer: ioutil.Discard,
+		closec: make(chan bool, 1),
+	}
+	ln := &oneConnListener{conn: conn}
+	for i := 0; i < b.N; i++ {
+		conn.Reader = bytes.NewReader(req)
+		ln.conn = conn
+		Serve(ln, h)
+		<-conn.closec
 	}
 }

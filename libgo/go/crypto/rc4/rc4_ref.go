@@ -14,7 +14,7 @@ func (c *Cipher) XORKeyStream(dst, src []byte) {
 		i += 1
 		j += uint8(c.s[i])
 		c.s[i], c.s[j] = c.s[j], c.s[i]
-		dst[k] = v ^ byte(c.s[byte(c.s[i]+c.s[j])])
+		dst[k] = v ^ uint8(c.s[uint8(c.s[i]+c.s[j])])
 	}
 	c.i, c.j = i, j
 }

@@ -678,6 +678,7 @@ var deepEqualTests = []DeepEqualTest{
 	{1, nil, false},
 	{fn1, fn3, false},
 	{fn3, fn3, false},
+	{[][]int{[]int{1}}, [][]int{[]int{2}}, false},
 
 	// Nil vs empty: not the same.
 	{[]int{}, []int(nil), false},
@@ -1456,21 +1457,21 @@ func takesNonEmpty(n nonEmptyStruct) int {
 }
 
 func TestCallWithStruct(t *testing.T) {
-	r := ValueOf(returnEmpty).Call([]Value{})
+	r := ValueOf(returnEmpty).Call(nil)
 	if len(r) != 1 || r[0].Type() != TypeOf(emptyStruct{}) {
-		t.Errorf("returning empty struct returned %s instead", r)
+		t.Errorf("returning empty struct returned %#v instead", r)
 	}
 	r = ValueOf(takesEmpty).Call([]Value{ValueOf(emptyStruct{})})
 	if len(r) != 0 {
-		t.Errorf("takesEmpty returned values: %s", r)
+		t.Errorf("takesEmpty returned values: %#v", r)
 	}
 	r = ValueOf(returnNonEmpty).Call([]Value{ValueOf(42)})
 	if len(r) != 1 || r[0].Type() != TypeOf(nonEmptyStruct{}) || r[0].Field(0).Int() != 42 {
-		t.Errorf("returnNonEmpty returned %s", r)
+		t.Errorf("returnNonEmpty returned %#v", r)
 	}
 	r = ValueOf(takesNonEmpty).Call([]Value{ValueOf(nonEmptyStruct{member: 42})})
 	if len(r) != 1 || r[0].Type() != TypeOf(1) || r[0].Int() != 42 {
-		t.Errorf("takesNonEmpty returned %s", r)
+		t.Errorf("takesNonEmpty returned %#v", r)
 	}
 }
 
@@ -3686,4 +3687,39 @@ func (x *exhaustive) Choose(max int) int {
 
 func (x *exhaustive) Maybe() bool {
 	return x.Choose(2) == 1
+}
+
+func GCFunc(args []Value) []Value {
+	runtime.GC()
+	return []Value{}
+}
+
+func TestReflectFuncTraceback(t *testing.T) {
+	f := MakeFunc(TypeOf(func() {}), GCFunc)
+	f.Call([]Value{})
+}
+
+func (p Point) GCMethod(k int) int {
+	runtime.GC()
+	return k + p.x
+}
+
+func TestReflectMethodTraceback(t *testing.T) {
+	p := Point{3, 4}
+	m := ValueOf(p).MethodByName("GCMethod")
+	i := ValueOf(m.Interface()).Call([]Value{ValueOf(5)})[0].Int()
+	if i != 8 {
+		t.Errorf("Call returned %d; want 8", i)
+	}
+}
+
+func TestBigZero(t *testing.T) {
+	const size = 1 << 10
+	var v [size]byte
+	z := Zero(ValueOf(v).Type()).Interface().([size]byte)
+	for i := 0; i < size; i++ {
+		if z[i] != 0 {
+			t.Fatalf("Zero object not all zero, index %d", i)
+		}
+	}
 }

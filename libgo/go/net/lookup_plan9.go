@@ -69,10 +69,31 @@ func queryDNS(addr string, typ string) (res []string, err error) {
 	return query("/net/dns", addr+" "+typ, 1024)
 }
 
+// toLower returns a lower-case version of in. Restricting us to
+// ASCII is sufficient to handle the IP protocol names and allow
+// us to not depend on the strings and unicode packages.
+func toLower(in string) string {
+	for _, c := range in {
+		if 'A' <= c && c <= 'Z' {
+			// Has upper case; need to fix.
+			out := []byte(in)
+			for i := 0; i < len(in); i++ {
+				c := in[i]
+				if 'A' <= c && c <= 'Z' {
+					c += 'a' - 'A'
+				}
+				out[i] = c
+			}
+			return string(out)
+		}
+	}
+	return in
+}
+
 // lookupProtocol looks up IP protocol name and returns
 // the corresponding protocol number.
 func lookupProtocol(name string) (proto int, err error) {
-	lines, err := query("/net/cs", "!protocol="+name, 128)
+	lines, err := query("/net/cs", "!protocol="+toLower(name), 128)
 	if err != nil {
 		return 0, err
 	}
@@ -94,7 +115,7 @@ func lookupProtocol(name string) (proto int, err error) {
 func lookupHost(host string) (addrs []string, err error) {
 	// Use /net/cs instead of /net/dns because cs knows about
 	// host names in local network (e.g. from /lib/ndb/local)
-	lines, err := queryCS("tcp", host, "1")
+	lines, err := queryCS("net", host, "1")
 	if err != nil {
 		return
 	}

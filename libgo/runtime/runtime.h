@@ -427,9 +427,11 @@ struct CgoMal
 // Holds variables parsed from GODEBUG env var.
 struct DebugVars
 {
+	int32	allocfreetrace;
+	int32	efence;
 	int32	gctrace;
-	int32	schedtrace;
 	int32	scheddetail;
+	int32	schedtrace;
 };
 
 extern bool runtime_precisestack;
@@ -741,6 +743,9 @@ void	runtime_lockOSThread(void);
 void	runtime_unlockOSThread(void);
 
 bool	runtime_showframe(String, bool);
+Hchan*	runtime_makechan_c(ChanType*, int64);
+void	runtime_chansend(ChanType*, Hchan*, byte*, bool*, void*);
+void	runtime_chanrecv(ChanType*, Hchan*, byte*, bool*, bool*);
 void	runtime_printcreatedby(G*);
 
 uintptr	runtime_memlimit(void);

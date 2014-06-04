@@ -1073,6 +1073,8 @@ var TitleTests = []TitleTest{
 	{"123a456", "123a456"},
 	{"double-blind", "Double-Blind"},
 	{"ÿøû", "Ÿøû"},
+	{"with_underscore", "With_underscore"},
+	{"unicode \xe2\x80\xa8 line separator", "Unicode \xe2\x80\xa8 Line Separator"},
 }
 
 func TestTitle(t *testing.T) {
@@ -1158,6 +1160,24 @@ func TestBufferTruncateOutOfRange(t *testing.T) {
 	var b Buffer
 	b.Write(make([]byte, 10))
 	b.Truncate(20)
+}
+
+var containsTests = []struct {
+	b, subslice []byte
+	want        bool
+}{
+	{[]byte("hello"), []byte("hel"), true},
+	{[]byte("日本語"), []byte("日本"), true},
+	{[]byte("hello"), []byte("Hello, world"), false},
+	{[]byte("東京"), []byte("京東"), false},
+}
+
+func TestContains(t *testing.T) {
+	for _, tt := range containsTests {
+		if got := Contains(tt.b, tt.subslice); got != tt.want {
+			t.Errorf("Contains(%q, %q) = %v, want %v", tt.b, tt.subslice, got, tt.want)
+		}
+	}
 }
 
 var makeFieldsInput = func() []byte {

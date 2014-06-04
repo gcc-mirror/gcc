@@ -1519,7 +1519,7 @@ Type::make_type_descriptor_type()
       // The type descriptor type.
 
       Struct_type* type_descriptor_type =
-	Type::make_builtin_struct_type(10,
+	Type::make_builtin_struct_type(11,
 				       "Kind", uint8_type,
 				       "align", uint8_type,
 				       "fieldAlign", uint8_type,
@@ -1530,7 +1530,8 @@ Type::make_type_descriptor_type()
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
-				       pointer_type_descriptor_type);
+				       pointer_type_descriptor_type,
+				       "zero", unsafe_pointer_type);
 
       Named_type* named = Type::make_builtin_named_type("commonType",
 							type_descriptor_type);
@@ -2050,6 +2051,15 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
     }
 
   ++p;
+  go_assert(p->is_field_name("zero"));
+  Expression* z = Expression::make_var_reference(gogo->zero_value(this), bloc);
+  z = Expression::make_unary(OPERATOR_AND, z, bloc);
+  Type* void_type = Type::make_void_type();
+  Type* unsafe_pointer_type = Type::make_pointer_type(void_type);
+  z = Expression::make_cast(unsafe_pointer_type, z, bloc);
+  vals->push_back(z);
+
+  ++p;
   go_assert(p == fields->end());
 
   mpz_clear(iv);
@@ -2382,13 +2392,13 @@ Type::is_backend_type_size_known(Gogo* gogo)
 // the backend.
 
 bool
-Type::backend_type_size(Gogo* gogo, unsigned int *psize)
+Type::backend_type_size(Gogo* gogo, unsigned long *psize)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
   size_t size = gogo->backend()->type_size(bt);
-  *psize = static_cast<unsigned int>(size);
+  *psize = static_cast<unsigned long>(size);
   if (*psize != size)
     return false;
   return true;
@@ -2398,13 +2408,13 @@ Type::backend_type_size(Gogo* gogo, unsigned int *psize)
 // the alignment in bytes and return true.  Otherwise, return false.
 
 bool
-Type::backend_type_align(Gogo* gogo, unsigned int *palign)
+Type::backend_type_align(Gogo* gogo, unsigned long *palign)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
   size_t align = gogo->backend()->type_alignment(bt);
-  *palign = static_cast<unsigned int>(align);
+  *palign = static_cast<unsigned long>(align);
   if (*palign != align)
     return false;
   return true;
@@ -2414,13 +2424,13 @@ Type::backend_type_align(Gogo* gogo, unsigned int *palign)
 // field.
 
 bool
-Type::backend_type_field_align(Gogo* gogo, unsigned int *palign)
+Type::backend_type_field_align(Gogo* gogo, unsigned long *palign)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
   size_t a = gogo->backend()->type_field_alignment(bt);
-  *palign = static_cast<unsigned int>(a);
+  *palign = static_cast<unsigned long>(a);
   if (*palign != a)
     return false;
   return true;
@@ -4595,7 +4605,7 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
     return true;
-  unsigned int offset = 0;
+  unsigned long offset = 0;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf)
@@ -4606,7 +4616,7 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
       if (!pf->type()->compare_is_identity(gogo))
 	return false;
 
-      unsigned int field_align;
+      unsigned long field_align;
       if (!pf->type()->backend_type_align(gogo, &field_align))
 	return false;
       if ((offset & (field_align - 1)) != 0)
@@ -4617,13 +4627,13 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
 	  return false;
 	}
 
-      unsigned int field_size;
+      unsigned long field_size;
       if (!pf->type()->backend_type_size(gogo, &field_size))
 	return false;
       offset += field_size;
     }
 
-  unsigned int struct_size;
+  unsigned long struct_size;
   if (!this->backend_type_size(gogo, &struct_size))
     return false;
   if (offset != struct_size)
@@ -5620,8 +5630,8 @@ Array_type::do_compare_is_identity(Gogo* gogo)
     return false;
 
   // If there is any padding, then we can't use memcmp.
-  unsigned int size;
-  unsigned int align;
+  unsigned long size;
+  unsigned long align;
   if (!this->element_type_->backend_type_size(gogo, &size)
       || !this->element_type_->backend_type_align(gogo, &align))
     return false;

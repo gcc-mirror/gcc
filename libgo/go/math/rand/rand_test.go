@@ -322,6 +322,17 @@ func TestExpTables(t *testing.T) {
 	}
 }
 
+// For issue 6721, the problem came after 7533753 calls, so check 10e6.
+func TestFloat32(t *testing.T) {
+	r := New(NewSource(1))
+	for ct := 0; ct < 10e6; ct++ {
+		f := r.Float32()
+		if f >= 1 {
+			t.Fatal("Float32() should be in range [0,1). ct:", ct, "f:", f)
+		}
+	}
+}
+
 // Benchmarks
 
 func BenchmarkInt63Threadsafe(b *testing.B) {
@@ -355,5 +366,26 @@ func BenchmarkInt31n1000(b *testing.B) {
 	r := New(NewSource(1))
 	for n := b.N; n > 0; n-- {
 		r.Int31n(1000)
+	}
+}
+
+func BenchmarkFloat32(b *testing.B) {
+	r := New(NewSource(1))
+	for n := b.N; n > 0; n-- {
+		r.Float32()
+	}
+}
+
+func BenchmarkPerm3(b *testing.B) {
+	r := New(NewSource(1))
+	for n := b.N; n > 0; n-- {
+		r.Perm(3)
+	}
+}
+
+func BenchmarkPerm30(b *testing.B) {
+	r := New(NewSource(1))
+	for n := b.N; n > 0; n-- {
+		r.Perm(30)
 	}
 }
