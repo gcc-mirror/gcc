@@ -115,7 +115,7 @@ cgraph_local_node_p (struct cgraph_node *node)
 }
 
 /* Return true when there is a reference to node and it is not vtable.  */
-static bool
+bool
 address_taken_from_non_vtable_p (symtab_node *node)
 {
   int i;
