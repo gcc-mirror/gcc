@@ -7511,6 +7511,18 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	    return error_mark_node;
 	}
 
+      /* C++11 8.5/17: "If the destination type is an array of characters,
+	 an array of char16_t, an array of char32_t, or an array of wchar_t,
+	 and the initializer is a string literal...".  */
+      else if (TREE_CODE (newrhs) == STRING_CST
+	       && char_type_p (TREE_TYPE (TYPE_MAIN_VARIANT (lhstype)))
+	       && modifycode == INIT_EXPR)
+	{
+	  newrhs = digest_init (lhstype, newrhs, complain);
+	  if (newrhs == error_mark_node)
+	    return error_mark_node;
+	}
+
       else if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
 				     TYPE_MAIN_VARIANT (TREE_TYPE (newrhs))))
 	{

@@ -1,3 +1,12 @@
+2014-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43453
+	* typeck.c (cp_build_modify_expr): Handle array of characters
+	initialized by a string literal.
+	* decl.c (check_initializer): Handle parenthesized string literal
+	as initializer.
+	* typeck2.c (store_init_value): Remove redundant check.
+
 2014-06-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51253

@@ -785,16 +785,9 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     {
       gcc_assert (TREE_CODE (decl) != RESULT_DECL);
 
-      if (TREE_CODE (init) == TREE_LIST
-	       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	{
-	  error ("cannot initialize arrays using this syntax");
-	  return NULL_TREE;
-	}
-      else
-	/* We get here with code like `int a (2);' */
-	init = build_x_compound_expr_from_list (init, ELK_INIT,
-						tf_warning_or_error);
+      /* We get here with code like `int a (2);' */
+      init = build_x_compound_expr_from_list (init, ELK_INIT,
+					      tf_warning_or_error);
     }
 
   /* End of special C++ code.  */
