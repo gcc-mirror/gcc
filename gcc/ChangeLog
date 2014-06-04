@@ -1,3 +1,9 @@
+2014-06-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* lto-wrapper.c (fatal, fatal_perror): Remove functions.  All callers
+	changed to use fatal_error.
+	(main): Ensure lto_wrapper_cleanup is run atexit.
+
 2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* lra-constraints.c (valid_address_p): Move earlier in file.
