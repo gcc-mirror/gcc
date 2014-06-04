@@ -1,5 +1,19 @@
 2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* recog.h (alternative_class): New function.
+	(which_op_alt): Return a const recog_op_alt.
+	* reg-stack.c (check_asm_stack_operands): Update type accordingly.
+	(subst_asm_stack_regs): Likewise.
+	* config/arm/arm.c (note_invalid_constants): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Likewise.  Don't modify
+	the operand_alternative; use alternative class instead.
+	* sel-sched.c (get_reg_class): Likewise.
+	* regrename.c (build_def_use): Likewise.
+	(hide_operands, restore_operands, record_out_operands): Update type
+	accordingly.
+
+2014-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* recog.h (recog_op_alt): Convert to a flat array.
 	(which_op_alt): New function.
 	* recog.c (recog_op_alt): Convert to a flat array.

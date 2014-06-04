@@ -775,20 +775,17 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       if (! constrain_operands (1))
 	fatal_insn_not_found (insn);
       preprocess_constraints ();
-      operand_alternative *op_alt = which_op_alt ();
+      const operand_alternative *op_alt = which_op_alt ();
       n_ops = recog_data.n_operands;
       is_asm = asm_noperands (PATTERN (insn)) >= 0;
 
-      /* Simplify the code below by rewriting things to reflect
-	 matching constraints.  Also promote OP_OUT to OP_INOUT
+      /* Simplify the code below by promoting OP_OUT to OP_INOUT
 	 in predicated instructions.  */
 
       predicated = GET_CODE (PATTERN (insn)) == COND_EXEC;
       for (i = 0; i < n_ops; ++i)
 	{
 	  int matches = op_alt[i].matches;
-	  if (matches >= 0)
-	    op_alt[i].cl = op_alt[matches].cl;
 	  if (matches >= 0 || op_alt[i].matched >= 0
 	      || (predicated && recog_data.operand_type[i] == OP_OUT))
 	    recog_data.operand_type[i] = OP_INOUT;
@@ -939,12 +936,14 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      if (op_alt[i].is_address)
 		replaced[i]
 		  = replace_oldest_value_addr (recog_data.operand_loc[i],
-					       op_alt[i].cl, VOIDmode,
-					       ADDR_SPACE_GENERIC, insn, vd);
+					       alternative_class (op_alt, i),
+					       VOIDmode, ADDR_SPACE_GENERIC,
+					       insn, vd);
 	      else if (REG_P (recog_data.operand[i]))
 		replaced[i]
 		  = replace_oldest_value_reg (recog_data.operand_loc[i],
-					      op_alt[i].cl, insn, vd);
+					      alternative_class (op_alt, i),
+					      insn, vd);
 	      else if (MEM_P (recog_data.operand[i]))
 		replaced[i] = replace_oldest_value_mem (recog_data.operand[i],
 							insn, vd);

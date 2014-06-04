@@ -16878,7 +16878,7 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
      this insn.  */
   preprocess_constraints ();
 
-  operand_alternative *op_alt = which_op_alt ();
+  const operand_alternative *op_alt = which_op_alt ();
   for (opno = 0; opno < recog_data.n_operands; opno++)
     {
       /* Things we need to fix can only occur in inputs.  */

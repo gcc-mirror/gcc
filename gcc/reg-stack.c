@@ -482,7 +482,7 @@ check_asm_stack_operands (rtx insn)
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
       return 0;
     }
-  operand_alternative *op_alt = which_op_alt ();
+  const operand_alternative *op_alt = which_op_alt ();
 
   /* Strip SUBREGs here to make the following code simpler.  */
   for (i = 0; i < recog_data.n_operands; i++)
@@ -2030,7 +2030,7 @@ subst_asm_stack_regs (rtx insn, stack_ptr regstack)
   constrain_operands (1);
 
   preprocess_constraints ();
-  operand_alternative *op_alt = which_op_alt ();
+  const operand_alternative *op_alt = which_op_alt ();
 
   get_asm_operands_in_out (body, &n_outputs, &n_inputs);
 

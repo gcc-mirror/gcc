@@ -79,6 +79,14 @@ struct operand_alternative
   unsigned int anything_ok:1;
 };
 
+/* Return the class for operand I of alternative ALT, taking matching
+   constraints into account.  */
+
+static inline enum reg_class
+alternative_class (const operand_alternative *alt, int i)
+{
+  return alt[i].matches >= 0 ? alt[alt[i].matches].cl : alt[i].cl;
+}
 
 extern void init_recog (void);
 extern void init_recog_no_volatile (void);
@@ -263,7 +271,7 @@ extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS
    on operand OP of the current instruction alternative (which_alternative).
    Only valid after calling preprocess_constraints and constrain_operands.  */
 
-inline static operand_alternative *
+inline static const operand_alternative *
 which_op_alt ()
 {
   gcc_checking_assert (IN_RANGE (which_alternative, 0,
