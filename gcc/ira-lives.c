@@ -641,8 +641,11 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
       /* If there's any alternative that allows USE to match DEF, do not
 	 record a conflict.  If that causes us to create an invalid
 	 instruction due to the earlyclobber, reload must fix it up.  */
+      alternative_mask enabled = recog_data.enabled_alternatives;
       for (alt1 = 0; alt1 < recog_data.n_alternatives; alt1++)
 	{
+	  if (!TEST_BIT (enabled, alt1))
+	    continue;
 	  operand_alternative *op_alt1 = &recog_op_alt[alt1 * n_operands];
 	  if (op_alt1[use].matches == def
 	      || (use < n_operands - 1
@@ -688,30 +691,32 @@ make_early_clobber_and_input_conflicts (void)
 
   int n_alternatives = recog_data.n_alternatives;
   int n_operands = recog_data.n_operands;
+  alternative_mask enabled = recog_data.enabled_alternatives;
   operand_alternative *op_alt = recog_op_alt;
   for (alt = 0; alt < n_alternatives; alt++, op_alt += n_operands)
-    for (def = 0; def < n_operands; def++)
-      {
-	def_cl = NO_REGS;
-	if (op_alt[def].earlyclobber)
-	  {
-	    if (op_alt[def].anything_ok)
-	      def_cl = ALL_REGS;
-	    else
-	      def_cl = op_alt[def].cl;
-	    check_and_make_def_conflict (alt, def, def_cl);
-	  }
-	if ((def_match = op_alt[def].matches) >= 0
-	    && (op_alt[def_match].earlyclobber
-		|| op_alt[def].earlyclobber))
-	  {
-	    if (op_alt[def_match].anything_ok)
-	      def_cl = ALL_REGS;
-	    else
-	      def_cl = op_alt[def_match].cl;
-	    check_and_make_def_conflict (alt, def, def_cl);
-	  }
-      }
+    if (TEST_BIT (enabled, alt))
+      for (def = 0; def < n_operands; def++)
+	{
+	  def_cl = NO_REGS;
+	  if (op_alt[def].earlyclobber)
+	    {
+	      if (op_alt[def].anything_ok)
+		def_cl = ALL_REGS;
+	      else
+		def_cl = op_alt[def].cl;
+	      check_and_make_def_conflict (alt, def, def_cl);
+	    }
+	  if ((def_match = op_alt[def].matches) >= 0
+	      && (op_alt[def_match].earlyclobber
+		  || op_alt[def].earlyclobber))
+	    {
+	      if (op_alt[def_match].anything_ok)
+		def_cl = ALL_REGS;
+	      else
+		def_cl = op_alt[def_match].cl;
+	      check_and_make_def_conflict (alt, def, def_cl);
+	    }
+	}
 }
 
 /* Mark early clobber hard registers of the current INSN as live (if
