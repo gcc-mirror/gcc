@@ -1,3 +1,8 @@
+2014-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43453
+	* g++.dg/init/pr43453.C: New.
+
 2014-06-04  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/61385

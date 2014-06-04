@@ -5758,6 +5758,13 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 		check_narrowing (type, init);
 	    }
 	}
+      else if (TREE_CODE (type) == ARRAY_TYPE
+	       && TREE_CODE (init) == TREE_LIST
+	       && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	       && list_length (init) == 1
+	       && TREE_CODE (TREE_VALUE (init)) == STRING_CST)
+	/* We get here with code like `char s[] ("abc");' */
+	init = TREE_VALUE (init);
 
       /* If DECL has an array type without a specific bound, deduce the
 	 array size from the initializer.  */
