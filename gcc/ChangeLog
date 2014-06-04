@@ -1,5 +1,15 @@
 2014-06-04  Martin Liska  <mliska@suse.cz>
 
+	* cgraph.h (expand_thunk): New argument added.
+	(address_taken_from_non_vtable_p): New global function.
+	* ipa-visibility.c (address_taken_from_non_vtable_p): Likewise.
+	* cgraphclones.c (duplicate_thunk_for_node): Argument added to call.
+	* cgraphunit.c (analyze_function): Likewise.
+	(assemble_thunks_and_aliases): Argument added to call.
+	(expand_thunk): New argument forces to produce GIMPLE thunk.
+
+2014-06-04  Martin Liska  <mliska@suse.cz>
+
 	* coverage.h (coverage_compute_cfg_checksum): Argument added.
 	* coverage.c (coverage_compute_cfg_checksum): Likewise.
 	* profile.c (branch_prob): Likewise.

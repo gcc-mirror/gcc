@@ -911,7 +911,7 @@ void fixup_same_cpp_alias_visibility (symtab_node *, symtab_node *target, tree);
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool);
 void cgraph_reset_node (struct cgraph_node *);
-bool expand_thunk (struct cgraph_node *, bool);
+bool expand_thunk (struct cgraph_node *, bool, bool);
 
 /* In cgraphclones.c  */
 
@@ -979,6 +979,7 @@ bool varpool_externally_visible_p (varpool_node *);
 
 /* In ipa-visibility.c */
 bool cgraph_local_node_p (struct cgraph_node *);
+bool address_taken_from_non_vtable_p (symtab_node *node);
 
 
 /* In predict.c  */

@@ -353,7 +353,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node,
 					      CGRAPH_FREQ_BASE);
   e->call_stmt_cannot_inline_p = true;
   cgraph_call_edge_duplication_hooks (thunk->callees, e);
-  if (!expand_thunk (new_thunk, false))
+  if (!expand_thunk (new_thunk, false, false))
     new_thunk->analyzed = true;
   cgraph_call_node_duplication_hooks (thunk, new_thunk);
   return new_thunk;
