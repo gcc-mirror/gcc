@@ -1,3 +1,8 @@
+2014-06-04  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* regcprop.c (copyprop_hardreg_forward_1): Account for 
+	HARD_REGNO_CALL_PART_CLOBBERED.
+
 2014-06-04  Richard Biener  <rguenther@suse.de>
 
 	* configure.ac: Check whether the underlying type of int64_t
