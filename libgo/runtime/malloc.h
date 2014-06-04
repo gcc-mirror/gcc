@@ -449,7 +449,8 @@ void*	runtime_mallocgc(uintptr size, uintptr typ, uint32 flag);
 void*	runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat);
 int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s);
 void	runtime_gc(int32 force);
-void	runtime_markallocated(void *v, uintptr n, bool noptr);
+void	runtime_markscan(void *v);
+void	runtime_marknogc(void *v);
 void	runtime_checkallocated(void *v, uintptr n);
 void	runtime_markfreed(void *v, uintptr n);
 void	runtime_checkfreed(void *v, uintptr n);
@@ -484,7 +485,7 @@ struct Obj
 	uintptr	ti;	// type info
 };
 
-void	runtime_MProf_Malloc(void*, uintptr);
+void	runtime_MProf_Malloc(void*, uintptr, uintptr);
 void	runtime_MProf_Free(void*, uintptr);
 void	runtime_MProf_GC(void);
 void	runtime_MProf_Mark(void (*addroot)(Obj));

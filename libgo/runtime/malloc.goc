@@ -118,7 +118,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		size += sizeof(uintptr);
 
 	c = m->mcache;
-	if(size <= MaxSmallSize) {
+	if(!runtime_debug.efence && size <= MaxSmallSize) {
 		// Allocate from mcache free lists.
 		// Inlined version of SizeToClass().
 		if(size <= 1024-8)
@@ -157,8 +157,10 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		runtime_markspan(v, 0, 0, true);
 	}
 
-	if(!(flag & FlagNoGC))
-		runtime_markallocated(v, size, (flag&FlagNoScan) != 0);
+	if(flag & FlagNoGC)
+		runtime_marknogc(v);
+	else if(!(flag & FlagNoScan))
+		runtime_markscan(v);
 
 	if(DebugTypeAtBlockEnd)
 		*(uintptr*)((uintptr)v+size-sizeof(uintptr)) = typ;
@@ -180,6 +182,9 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		runtime_settype_flush(m);
 	m->locks--;
 
+	if(runtime_debug.allocfreetrace)
+		goto profile;
+
 	if(!(flag & FlagNoProfiling) && (rate = runtime_MemProfileRate) > 0) {
 		if(size >= (uint32) rate)
 			goto profile;
@@ -193,7 +198,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 			m->mcache->next_sample = runtime_fastrand1() % (2*rate);
 		profile:
 			runtime_setblockspecial(v, true);
-			runtime_MProf_Malloc(v, size);
+			runtime_MProf_Malloc(v, size, typ);
 		}
 	}
 
@@ -257,7 +262,10 @@ __go_free(void *v)
 		// they might coalesce v into other spans and change the bitmap further.
 		runtime_markfreed(v, size);
 		runtime_unmarkspan(v, 1<<PageShift);
-		runtime_MHeap_Free(&runtime_mheap, s, 1);
+		if(runtime_debug.efence)
+			runtime_SysFree((void*)(s->start<<PageShift), size, &mstats.heap_sys);
+		else
+			runtime_MHeap_Free(&runtime_mheap, s, 1);
 		c->local_nlargefree++;
 		c->local_largefree += size;
 	} else {
@@ -818,6 +826,10 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	if(obj.__type_descriptor->__code != GO_PTR) {
 		runtime_printf("runtime.SetFinalizer: first argument is %S, not pointer\n", *obj.__type_descriptor->__reflection);
 		goto throw;
+	}
+	ot = (const PtrType*)obj.type;
+	if(ot->__element_type != nil && ot->__element_type->__size == 0) {
+		return;
 	}
 	if(!runtime_mlookup(obj.__object, &base, &size, nil) || obj.__object != base) {
 		runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block\n");

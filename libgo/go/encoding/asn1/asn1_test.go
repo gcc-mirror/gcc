@@ -6,6 +6,7 @@ package asn1
 
 import (
 	"bytes"
+	"fmt"
 	"math/big"
 	"reflect"
 	"testing"
@@ -171,6 +172,12 @@ func TestBitStringAt(t *testing.T) {
 	if bs.At(9) != 1 {
 		t.Error("#4: Failed")
 	}
+	if bs.At(-1) != 0 {
+		t.Error("#5: Failed")
+	}
+	if bs.At(17) != 0 {
+		t.Error("#6: Failed")
+	}
 }
 
 type bitStringRightAlignTest struct {
@@ -238,6 +245,7 @@ var utcTestData = []timeTest{
 	{"910506164540+0730", true, time.Date(1991, 05, 06, 16, 45, 40, 0, time.FixedZone("", 7*60*60+30*60))},
 	{"910506234540Z", true, time.Date(1991, 05, 06, 23, 45, 40, 0, time.UTC)},
 	{"9105062345Z", true, time.Date(1991, 05, 06, 23, 45, 0, 0, time.UTC)},
+	{"5105062345Z", true, time.Date(1951, 05, 06, 23, 45, 0, 0, time.UTC)},
 	{"a10506234540Z", false, time.Time{}},
 	{"91a506234540Z", false, time.Time{}},
 	{"9105a6234540Z", false, time.Time{}},
@@ -509,6 +517,38 @@ func TestRawStructs(t *testing.T) {
 	}
 }
 
+type oiEqualTest struct {
+	first  ObjectIdentifier
+	second ObjectIdentifier
+	same   bool
+}
+
+var oiEqualTests = []oiEqualTest{
+	{
+		ObjectIdentifier{1, 2, 3},
+		ObjectIdentifier{1, 2, 3},
+		true,
+	},
+	{
+		ObjectIdentifier{1},
+		ObjectIdentifier{1, 2, 3},
+		false,
+	},
+	{
+		ObjectIdentifier{1, 2, 3},
+		ObjectIdentifier{10, 11, 12},
+		false,
+	},
+}
+
+func TestObjectIdentifierEqual(t *testing.T) {
+	for _, o := range oiEqualTests {
+		if s := o.first.Equal(o.second); s != o.same {
+			t.Errorf("ObjectIdentifier.Equal: got: %t want: %t", s, o.same)
+		}
+	}
+}
+
 var derEncodedSelfSignedCert = Certificate{
 	TBSCertificate: TBSCertificate{
 		Version:            0,
@@ -736,4 +776,30 @@ var derEncodedPaypalNULCertBytes = []byte{
 	0x63, 0x21, 0xab, 0x46, 0x9b, 0x9c, 0x78, 0xd5, 0x54, 0x5b, 0x3d, 0x0c, 0x1e,
 	0xc8, 0x64, 0x8c, 0xb5, 0x50, 0x23, 0x82, 0x6f, 0xdb, 0xb8, 0x22, 0x1c, 0x43,
 	0x96, 0x07, 0xa8, 0xbb,
+}
+
+var stringSliceTestData = [][]string{
+	{"foo", "bar"},
+	{"foo", "\\bar"},
+	{"foo", "\"bar\""},
+	{"foo", "åäö"},
+}
+
+func TestStringSlice(t *testing.T) {
+	for _, test := range stringSliceTestData {
+		bs, err := Marshal(test)
+		if err != nil {
+			t.Error(err)
+		}
+
+		var res []string
+		_, err = Unmarshal(bs, &res)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if fmt.Sprintf("%v", res) != fmt.Sprintf("%v", test) {
+			t.Errorf("incorrect marshal/unmarshal; %v != %v", res, test)
+		}
+	}
 }

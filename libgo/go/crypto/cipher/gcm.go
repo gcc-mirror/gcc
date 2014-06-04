@@ -258,11 +258,11 @@ func (g *gcm) update(y *gcmFieldElement, data []byte) {
 // gcmInc32 treats the final four bytes of counterBlock as a big-endian value
 // and increments it.
 func gcmInc32(counterBlock *[16]byte) {
-	c := 1
 	for i := gcmBlockSize - 1; i >= gcmBlockSize-4; i-- {
-		c += int(counterBlock[i])
-		counterBlock[i] = byte(c)
-		c >>= 8
+		counterBlock[i]++
+		if counterBlock[i] != 0 {
+			break
+		}
 	}
 }
 
@@ -289,9 +289,7 @@ func (g *gcm) counterCrypt(out, in []byte, counter *[gcmBlockSize]byte) {
 		g.cipher.Encrypt(mask[:], counter[:])
 		gcmInc32(counter)
 
-		for i := range mask {
-			out[i] = in[i] ^ mask[i]
-		}
+		xorWords(out, in, mask[:])
 		out = out[gcmBlockSize:]
 		in = in[gcmBlockSize:]
 	}
@@ -299,10 +297,7 @@ func (g *gcm) counterCrypt(out, in []byte, counter *[gcmBlockSize]byte) {
 	if len(in) > 0 {
 		g.cipher.Encrypt(mask[:], counter[:])
 		gcmInc32(counter)
-
-		for i := range in {
-			out[i] = in[i] ^ mask[i]
-		}
+		xorBytes(out, in, mask[:])
 	}
 }
 
@@ -321,9 +316,7 @@ func (g *gcm) auth(out, ciphertext, additionalData []byte, tagMask *[gcmTagSize]
 	putUint64(out, y.low)
 	putUint64(out[8:], y.high)
 
-	for i := range tagMask {
-		out[i] ^= tagMask[i]
-	}
+	xorWords(out, out, tagMask[:])
 }
 
 func getUint64(data []byte) uint64 {

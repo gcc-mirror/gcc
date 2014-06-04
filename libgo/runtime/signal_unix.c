@@ -122,6 +122,14 @@ os_sigpipe(void)
 }
 
 void
+runtime_unblocksignals(void)
+{
+	sigset_t sigset_none;
+	sigemptyset(&sigset_none);
+	pthread_sigmask(SIG_SETMASK, &sigset_none, nil);
+}
+
+void
 runtime_crash(void)
 {
 	int32 i;
@@ -137,6 +145,7 @@ runtime_crash(void)
 		return;
 #endif
 
+	runtime_unblocksignals();
 	for(i = 0; runtime_sigtab[i].sig != -1; i++)
 		if(runtime_sigtab[i].sig == SIGABRT)
 			break;

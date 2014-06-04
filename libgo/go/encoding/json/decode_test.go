@@ -1060,6 +1060,21 @@ func TestEmptyString(t *testing.T) {
 	}
 }
 
+// Test that the returned error is non-nil when trying to unmarshal null string into int, for successive ,string option
+// Issue 7046
+func TestNullString(t *testing.T) {
+	type T struct {
+		A int `json:",string"`
+		B int `json:",string"`
+	}
+	data := []byte(`{"A": "1", "B": null}`)
+	var s T
+	err := Unmarshal(data, &s)
+	if err == nil {
+		t.Fatalf("expected error; got %v", s)
+	}
+}
+
 func intp(x int) *int {
 	p := new(int)
 	*p = x
@@ -1110,8 +1125,8 @@ func TestInterfaceSet(t *testing.T) {
 // Issue 2540
 func TestUnmarshalNulls(t *testing.T) {
 	jsonData := []byte(`{
-		"Bool"    : null, 
-		"Int"     : null, 
+		"Bool"    : null,
+		"Int"     : null,
 		"Int8"    : null,
 		"Int16"   : null,
 		"Int32"   : null,
@@ -1313,6 +1328,29 @@ func TestPrefilled(t *testing.T) {
 		}
 		if !reflect.DeepEqual(tt.ptr, tt.out) {
 			t.Errorf("Unmarshal(%#q, %s): have %v, want %v", tt.in, ptrstr, tt.ptr, tt.out)
+		}
+	}
+}
+
+var invalidUnmarshalTests = []struct {
+	v    interface{}
+	want string
+}{
+	{nil, "json: Unmarshal(nil)"},
+	{struct{}{}, "json: Unmarshal(non-pointer struct {})"},
+	{(*int)(nil), "json: Unmarshal(nil *int)"},
+}
+
+func TestInvalidUnmarshal(t *testing.T) {
+	buf := []byte(`{"a":"1"}`)
+	for _, tt := range invalidUnmarshalTests {
+		err := Unmarshal(buf, tt.v)
+		if err == nil {
+			t.Errorf("Unmarshal expecting error, got nil")
+			continue
+		}
+		if got := err.Error(); got != tt.want {
+			t.Errorf("Unmarshal = %q; want %q", got, tt.want)
 		}
 	}
 }

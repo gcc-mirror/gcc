@@ -48,8 +48,7 @@ func Readlink(name string) (string, error) {
 	}
 }
 
-// Rename renames a file.
-func Rename(oldname, newname string) error {
+func rename(oldname, newname string) error {
 	e := syscall.Rename(oldname, newname)
 	if e != nil {
 		return &LinkError{"rename", oldname, newname, e}
@@ -145,7 +144,7 @@ func (f *File) Truncate(size int64) error {
 // of recently written data to disk.
 func (f *File) Sync() (err error) {
 	if f == nil {
-		return syscall.EINVAL
+		return ErrInvalid
 	}
 	if e := syscall.Fsync(f.fd); e != nil {
 		return NewSyscallError("fsync", e)

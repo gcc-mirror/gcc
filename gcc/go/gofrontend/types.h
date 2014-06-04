@@ -925,18 +925,18 @@ class Type
   // in bytes and return true.  Otherwise, return false.  This queries
   // the backend.
   bool
-  backend_type_size(Gogo*, unsigned int* psize);
+  backend_type_size(Gogo*, unsigned long* psize);
 
   // If the alignment of the type can be determined, set *PALIGN to
   // the alignment in bytes and return true.  Otherwise, return false.
   bool
-  backend_type_align(Gogo*, unsigned int* palign);
+  backend_type_align(Gogo*, unsigned long* palign);
 
   // If the alignment of a struct field of this type can be
   // determined, set *PALIGN to the alignment in bytes and return
   // true.  Otherwise, return false.
   bool
-  backend_type_field_align(Gogo*, unsigned int* palign);
+  backend_type_field_align(Gogo*, unsigned long* palign);
 
   // Whether the backend size is known.
   bool

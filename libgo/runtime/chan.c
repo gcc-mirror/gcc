@@ -123,19 +123,16 @@ runtime_makechan_c(ChanType *t, int64 hint)
 
 // For reflect
 //	func makechan(typ *ChanType, size uint64) (chan)
-uintptr reflect_makechan(ChanType *, uint64)
+Hchan *reflect_makechan(ChanType *, uint64)
   __asm__ (GOSYM_PREFIX "reflect.makechan");
 
-uintptr
+Hchan *
 reflect_makechan(ChanType *t, uint64 size)
 {
-	void *ret;
 	Hchan *c;
 
 	c = runtime_makechan_c(t, size);
-	ret = runtime_mal(sizeof(void*));
-	__builtin_memcpy(ret, &c, sizeof(void*));
-	return (uintptr)ret;
+	return c;
 }
 
 // makechan(t *ChanType, hint int64) (hchan *chan any);
@@ -1308,12 +1305,12 @@ runtime_closechan(Hchan *c)
 // For reflect
 //	func chanclose(c chan)
 
-void reflect_chanclose(uintptr) __asm__ (GOSYM_PREFIX "reflect.chanclose");
+void reflect_chanclose(Hchan *) __asm__ (GOSYM_PREFIX "reflect.chanclose");
 
 void
-reflect_chanclose(uintptr c)
+reflect_chanclose(Hchan *c)
 {
-	closechan((Hchan*)c, runtime_getcallerpc(&c));
+	closechan(c, runtime_getcallerpc(&c));
 }
 
 static void
@@ -1377,15 +1374,13 @@ __go_builtin_close(Hchan *c)
 // For reflect
 //	func chanlen(c chan) (len int)
 
-intgo reflect_chanlen(uintptr) __asm__ (GOSYM_PREFIX "reflect.chanlen");
+intgo reflect_chanlen(Hchan *) __asm__ (GOSYM_PREFIX "reflect.chanlen");
 
 intgo
-reflect_chanlen(uintptr ca)
+reflect_chanlen(Hchan *c)
 {
-	Hchan *c;
 	intgo len;
 
-	c = (Hchan*)ca;
 	if(c == nil)
 		len = 0;
 	else
@@ -1396,21 +1391,19 @@ reflect_chanlen(uintptr ca)
 intgo
 __go_chan_len(Hchan *c)
 {
-	return reflect_chanlen((uintptr)c);
+	return reflect_chanlen(c);
 }
 
 // For reflect
-//	func chancap(c chan) (cap intgo)
+//	func chancap(c chan) int
 
-intgo reflect_chancap(uintptr) __asm__ (GOSYM_PREFIX "reflect.chancap");
+intgo reflect_chancap(Hchan *) __asm__ (GOSYM_PREFIX "reflect.chancap");
 
 intgo
-reflect_chancap(uintptr ca)
+reflect_chancap(Hchan *c)
 {
-	Hchan *c;
 	intgo cap;
 
-	c = (Hchan*)ca;
 	if(c == nil)
 		cap = 0;
 	else
@@ -1421,7 +1414,7 @@ reflect_chancap(uintptr ca)
 intgo
 __go_chan_cap(Hchan *c)
 {
-	return reflect_chancap((uintptr)c);
+	return reflect_chancap(c);
 }
 
 static SudoG*

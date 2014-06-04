@@ -1,3 +1,8 @@
+2014-06-04  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::implicit_variable): Add is_common and
+	alignment parameters.  Permit init parameter to be NULL.
+
 2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-gcc.cc: Include builtins.h.

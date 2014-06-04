@@ -24,17 +24,24 @@ percentage at run time. See http://golang.org/pkg/runtime/debug/#SetGCPercent.
 The GODEBUG variable controls debug output from the runtime. GODEBUG value is
 a comma-separated list of name=val pairs. Supported names are:
 
+	allocfreetrace: setting allocfreetrace=1 causes every allocation to be
+	profiled and a stack trace printed on each object's allocation and free.
+
+	efence: setting efence=1 causes the allocator to run in a mode
+	where each object is allocated on a unique page and addresses are
+	never recycled.
+
 	gctrace: setting gctrace=1 causes the garbage collector to emit a single line to standard
 	error at each collection, summarizing the amount of memory collected and the
 	length of the pause. Setting gctrace=2 emits the same summary but also
 	repeats each collection.
 
-	schedtrace: setting schedtrace=X causes the scheduler to emit a single line to standard
-	error every X milliseconds, summarizing the scheduler state.
-
 	scheddetail: setting schedtrace=X and scheddetail=1 causes the scheduler to emit
 	detailed multiline info every X milliseconds, describing state of the scheduler,
 	processors, threads and goroutines.
+
+	schedtrace: setting schedtrace=X causes the scheduler to emit a single line to standard
+	error every X milliseconds, summarizing the scheduler state.
 
 The GOMAXPROCS variable limits the number of operating system threads that
 can execute user-level Go code simultaneously. There is no limit to the number of threads
@@ -152,6 +159,9 @@ func funcentry_go(*Func) uintptr
 // an os.File without calling Close, but it would be a mistake
 // to depend on a finalizer to flush an in-memory I/O buffer such as a
 // bufio.Writer, because the buffer would not be flushed at program exit.
+//
+// It is not guaranteed that a finalizer will run if the size of *x is
+// zero bytes.
 //
 // A single goroutine runs all finalizers for a program, sequentially.
 // If a finalizer must run for a long time, it should do so by starting

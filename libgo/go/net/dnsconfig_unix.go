@@ -20,14 +20,13 @@ type dnsConfig struct {
 // See resolv.conf(5) on a Linux machine.
 // TODO(rsc): Supposed to call uname() and chop the beginning
 // of the host name to get the default search domain.
-// We assume it's in resolv.conf anyway.
-func dnsReadConfig() (*dnsConfig, error) {
-	file, err := open("/etc/resolv.conf")
+func dnsReadConfig(filename string) (*dnsConfig, error) {
+	file, err := open(filename)
 	if err != nil {
 		return nil, &DNSConfigError{err}
 	}
 	conf := new(dnsConfig)
-	conf.servers = make([]string, 3)[0:0] // small, but the standard limit
+	conf.servers = make([]string, 0, 3) // small, but the standard limit
 	conf.search = make([]string, 0)
 	conf.ndots = 1
 	conf.timeout = 5

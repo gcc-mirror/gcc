@@ -196,6 +196,7 @@ toolexeclibgodebugdir = $(toolexeclibgodir)/debug
 toolexeclibgodebug_DATA = \
 	debug/dwarf.gox \
 	debug/elf.gox \
+	debug/goobj.gox \
 	debug/gosym.gox \
 	debug/macho.gox \
 	debug/pe.gox
@@ -998,6 +999,7 @@ go_sync_files = \
 	go/sync/cond.go \
 	go/sync/mutex.go \
 	go/sync/once.go \
+	go/sync/pool.go \
 	go/sync/race0.go \
 	go/sync/runtime.go \
 	go/sync/rwmutex.go \
@@ -1124,7 +1126,8 @@ go_crypto_cipher_files = \
 	go/crypto/cipher/ctr.go \
 	go/crypto/cipher/gcm.go \
 	go/crypto/cipher/io.go \
-	go/crypto/cipher/ofb.go
+	go/crypto/cipher/ofb.go \
+	go/crypto/cipher/xor.go
 go_crypto_des_files = \
 	go/crypto/des/block.go \
 	go/crypto/des/cipher.go \
@@ -1209,6 +1212,8 @@ go_debug_dwarf_files = \
 go_debug_elf_files = \
 	go/debug/elf/elf.go \
 	go/debug/elf/file.go
+go_debug_goobj_files = \
+	go/debug/goobj/read.go
 go_debug_gosym_files = \
 	go/debug/gosym/pclntab.go \
 	go/debug/gosym/symtab.go
@@ -1248,6 +1253,7 @@ go_encoding_hex_files = \
 go_encoding_json_files = \
 	go/encoding/json/decode.go \
 	go/encoding/json/encode.go \
+	go/encoding/json/fold.go \
 	go/encoding/json/indent.go \
 	go/encoding/json/scanner.go \
 	go/encoding/json/stream.go \
@@ -1363,7 +1369,6 @@ go_index_suffixarray_files = \
 	go/index/suffixarray/suffixarray.go
 
 go_io_ioutil_files = \
-	go/io/ioutil/blackhole.go \
 	go/io/ioutil/ioutil.go \
 	go/io/ioutil/tempfile.go
 
@@ -1867,6 +1872,7 @@ libgo_go_objs = \
 	database/sql/driver.lo \
 	debug/dwarf.lo \
 	debug/elf.lo \
+	debug/goobj.lo \
 	debug/gosym.lo \
 	debug/macho.lo \
 	debug/pe.lo \
@@ -2593,6 +2599,15 @@ debug/elf.lo: $(go_debug_elf_files)
 debug/elf/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: debug/elf/check
+
+@go_include@ debug/goobj.lo.dep
+debug/goobj.lo.dep: $(go_debug_goobj_files)
+	$(BUILDDEPS)
+debug/goobj.lo: $(go_debug_goobj_files)
+	$(BUILDPACKAGE)
+debug/goobj/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: debug/goobj/check
 
 @go_include@ debug/gosym.lo.dep
 debug/gosym.lo.dep: $(go_debug_gosym_files)
@@ -3411,6 +3426,8 @@ database/sql/driver.gox: database/sql/driver.lo
 debug/dwarf.gox: debug/dwarf.lo
 	$(BUILDGOX)
 debug/elf.gox: debug/elf.lo
+	$(BUILDGOX)
+debug/goobj.gox: debug/goobj.lo
 	$(BUILDGOX)
 debug/gosym.gox: debug/gosym.lo
 	$(BUILDGOX)

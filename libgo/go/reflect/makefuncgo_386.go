@@ -112,9 +112,9 @@ func MakeFuncStubGo(regs *i386Regs, c *makeFuncImpl) {
 			off = align(off, uintptr(typ.fieldAlign))
 			addr := unsafe.Pointer(uintptr(retPtr) + off)
 			if v.flag&flagIndir == 0 && (v.kind() == Ptr || v.kind() == UnsafePointer) {
-				storeIword(addr, iword(v.val), typ.size)
+				*(*unsafe.Pointer)(addr) = v.ptr
 			} else {
-				memmove(addr, v.val, typ.size)
+				memmove(addr, v.ptr, typ.size)
 			}
 			off += typ.size
 		}
@@ -138,6 +138,6 @@ func MakeFuncStubGo(regs *i386Regs, c *makeFuncImpl) {
 		regs.st0 = *(*float64)(unsafe.Pointer(w))
 		regs.sf = true
 	default:
-		regs.eax = uint32(uintptr(loadIword(unsafe.Pointer(w), v.typ.size)))
+		regs.eax = uint32(loadScalar(unsafe.Pointer(w), v.typ.size))
 	}
 }
