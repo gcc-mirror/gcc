@@ -1,3 +1,8 @@
+2014-06-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/61385
+	* tree-ssa-phiopt.c (value_replacement): Punt if there are PHI nodes.
+
 2014-06-04  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* lto-wrapper.c (fatal, fatal_perror): Remove functions.  All callers

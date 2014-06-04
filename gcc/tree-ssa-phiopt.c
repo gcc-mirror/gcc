@@ -849,6 +849,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	  && !POINTER_TYPE_P (TREE_TYPE (arg0))))
     return 0;
 
+  /* Punt if there are (degenerate) PHIs in middle_bb, there should not be.  */
+  if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
+    return 0;
+
   /* Only transform if it removes the condition.  */
   if (!single_non_singleton_phi_for_edges (phi_nodes (gimple_bb (phi)), e0, e1))
     return 0;
