@@ -5827,7 +5827,7 @@ ix86_legitimate_combined_insn (rtx insn)
       int i;
 
       extract_insn (insn);
-      preprocess_constraints ();
+      preprocess_constraints (insn);
 
       int n_operands = recog_data.n_operands;
       int n_alternatives = recog_data.n_alternatives;
@@ -5835,7 +5835,7 @@ ix86_legitimate_combined_insn (rtx insn)
 	{
 	  rtx op = recog_data.operand[i];
 	  enum machine_mode mode = GET_MODE (op);
-	  operand_alternative *op_alt;
+	  const operand_alternative *op_alt;
 	  int offset = 0;
 	  bool win;
 	  int j;

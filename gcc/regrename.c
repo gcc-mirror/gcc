@@ -1570,7 +1570,7 @@ build_def_use (basic_block bb)
 	  extract_insn (insn);
 	  if (! constrain_operands (1))
 	    fatal_insn_not_found (insn);
-	  preprocess_constraints ();
+	  preprocess_constraints (insn);
 	  const operand_alternative *op_alt = which_op_alt ();
 	  n_ops = recog_data.n_operands;
 	  untracked_operands = 0;

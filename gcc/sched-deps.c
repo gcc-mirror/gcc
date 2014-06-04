@@ -2865,7 +2865,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
       HARD_REG_SET temp;
 
       extract_insn (insn);
-      preprocess_constraints ();
+      preprocess_constraints (insn);
       ira_implicitly_set_insn_hard_regs (&temp);
       AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
       IOR_HARD_REG_SET (implicit_reg_pending_clobbers, temp);
