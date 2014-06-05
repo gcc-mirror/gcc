@@ -1,5 +1,10 @@
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
+	PR c/56724
+	* c-typeck.c (convert_for_assignment): Use expr_loc for ic_argpass.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
 	PR c/49706
 	* c-typeck.c (parser_build_binary_op): Warn when logical not is used
 	on the left hand side operand of a comparison. 

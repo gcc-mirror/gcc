@@ -6025,8 +6025,9 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
 	 where NULL is typically defined in C to be '(void *) 0'.  */
       if (VOID_TYPE_P (ttr) && rhs != null_pointer_node && !VOID_TYPE_P (ttl))
-	warning_at (location, OPT_Wc___compat,
-	    	    "request for implicit conversion "
+	warning_at (errtype == ic_argpass ? expr_loc : location,
+		    OPT_Wc___compat,
+		    "request for implicit conversion "
 		    "from %qT to %qT not permitted in C++", rhstype, type);
 
       /* See if the pointers point to incompatible address spaces.  */
@@ -6038,7 +6039,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  switch (errtype)
 	    {
 	    case ic_argpass:
-	      error_at (location, "passing argument %d of %qE from pointer to "
+	      error_at (expr_loc, "passing argument %d of %qE from pointer to "
 			"non-enclosed address space", parmnum, rname);
 	      break;
 	    case ic_assign:
@@ -6067,7 +6068,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  switch (errtype)
 	  {
 	  case ic_argpass:
-	    warning_at (location, OPT_Wsuggest_attribute_format,
+	    warning_at (expr_loc, OPT_Wsuggest_attribute_format,
 			"argument %d of %qE might be "
 			"a candidate for a format attribute",
 			parmnum, rname);
@@ -6246,9 +6247,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   switch (errtype)
     {
     case ic_argpass:
-      error_at (location, "incompatible type for argument %d of %qE", parmnum, rname);
+      error_at (expr_loc, "incompatible type for argument %d of %qE", parmnum,
+		rname);
       inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-	      ? DECL_SOURCE_LOCATION (fundecl) : input_location,
+	      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
 	      "expected %qT but argument is of type %qT", type, rhstype);
       break;
     case ic_assign:
@@ -6257,12 +6259,12 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       break;
     case ic_init:
       error_at (location,
-	  	"incompatible types when initializing type %qT using type %qT",
+		"incompatible types when initializing type %qT using type %qT",
 		type, rhstype);
       break;
     case ic_return:
       error_at (location,
-	  	"incompatible types when returning type %qT but %qT was "
+		"incompatible types when returning type %qT but %qT was "
 		"expected", rhstype, type);
       break;
     default:

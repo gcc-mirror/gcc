@@ -1,3 +1,8 @@
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56724
+	* gcc.dg/pr56724-3.c: New test.
+
 2014-06-05  Andreas Schwab  <schwab@suse.de>
 
 	* g++.dg/cpp0x/initlist86.C (main): Initialize i.
