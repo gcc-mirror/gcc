@@ -1,3 +1,7 @@
+2014-06-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.md (enabled): Disable opt_enabled attribute.
+
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/49706

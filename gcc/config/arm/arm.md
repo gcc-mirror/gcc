@@ -201,6 +201,17 @@
 	 (const_string "no")))
 
 ; Enable all alternatives that are both arch_enabled and insn_enabled.
+; FIXME:: opt_enabled has been temporarily removed till the time we have
+; an attribute that allows the use of such alternatives.
+; This depends on caching of speed_p, size_p on a per
+; alternative basis. The problem is that the enabled attribute
+; cannot depend on any state that is not cached or is not constant
+; for a compilation unit. We probably need a generic "hot/cold"
+; alternative which if implemented can help with this. We disable this
+; until such a time as this is implemented and / or the improvements or
+; regressions with removing this attribute are double checked.
+; See ashldi3_neon and <shift>di3_neon in neon.md.
+
  (define_attr "enabled" "no,yes"
    (cond [(and (eq_attr "predicable_short_it" "no")
 	       (and (eq_attr "predicated" "yes")
@@ -216,9 +227,6 @@
 	  (const_string "no")
 
 	  (eq_attr "arch_enabled" "no")
-	  (const_string "no")
-
-	  (eq_attr "opt_enabled" "no")
 	  (const_string "no")]
 	 (const_string "yes")))
 
