@@ -2130,9 +2130,9 @@ aarch64_expand_prologue (void)
   rtx insn;
 
   aarch64_layout_frame ();
-  original_frame_size = get_frame_size () + cfun->machine->saved_varargs_size;
-  gcc_assert ((!cfun->machine->saved_varargs_size || cfun->stdarg)
-	      && (cfun->stdarg || !cfun->machine->saved_varargs_size));
+  original_frame_size = get_frame_size () + cfun->machine->frame.saved_varargs_size;
+  gcc_assert ((!cfun->machine->frame.saved_varargs_size || cfun->stdarg)
+	      && (cfun->stdarg || !cfun->machine->frame.saved_varargs_size));
   frame_size = (original_frame_size + cfun->machine->frame.saved_regs_size
 		+ crtl->outgoing_args_size);
   offset = frame_size = AARCH64_ROUND_UP (frame_size,
@@ -2296,7 +2296,7 @@ aarch64_expand_epilogue (bool for_sibcall)
   rtx cfa_reg;
 
   aarch64_layout_frame ();
-  original_frame_size = get_frame_size () + cfun->machine->saved_varargs_size;
+  original_frame_size = get_frame_size () + cfun->machine->frame.saved_varargs_size;
   frame_size = (original_frame_size + cfun->machine->frame.saved_regs_size
 		+ crtl->outgoing_args_size);
   offset = frame_size = AARCH64_ROUND_UP (frame_size,
@@ -2495,7 +2495,7 @@ aarch64_final_eh_return_addr (void)
 {
   HOST_WIDE_INT original_frame_size, frame_size, offset, fp_offset;
   aarch64_layout_frame ();
-  original_frame_size = get_frame_size () + cfun->machine->saved_varargs_size;
+  original_frame_size = get_frame_size () + cfun->machine->frame.saved_varargs_size;
   frame_size = (original_frame_size + cfun->machine->frame.saved_regs_size
 		+ crtl->outgoing_args_size);
   offset = frame_size = AARCH64_ROUND_UP (frame_size,
@@ -4258,7 +4258,7 @@ aarch64_initial_elimination_offset (unsigned from, unsigned to)
   aarch64_layout_frame ();
   frame_size = (get_frame_size () + cfun->machine->frame.saved_regs_size
 		+ crtl->outgoing_args_size
-		+ cfun->machine->saved_varargs_size);
+		+ cfun->machine->frame.saved_varargs_size);
 
   frame_size = AARCH64_ROUND_UP (frame_size, STACK_BOUNDARY / BITS_PER_UNIT);
   offset = frame_size;
@@ -6959,7 +6959,7 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, enum machine_mode mode,
 
   /* We don't save the size into *PRETEND_SIZE because we want to avoid
      any complication of having crtl->args.pretend_args_size changed.  */
-  cfun->machine->saved_varargs_size
+  cfun->machine->frame.saved_varargs_size
     = (AARCH64_ROUND_UP (gr_saved * UNITS_PER_WORD,
 		      STACK_BOUNDARY / BITS_PER_UNIT)
        + vr_saved * UNITS_PER_VREG);
