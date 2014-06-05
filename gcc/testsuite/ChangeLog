@@ -1,3 +1,7 @@
+2014-06-05  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* gcc.dg/torture/pr61319.c: New test.
+
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/56724
