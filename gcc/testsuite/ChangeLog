@@ -1,3 +1,8 @@
+2014-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR c++/61004
+	* g++.dg/diagnostic/pr61004.C: New testcase.
+
 2014-06-05  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* gcc.dg/torture/pr61319.c: New test.
