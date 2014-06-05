@@ -2078,37 +2078,35 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT offset,
 	|                               |
 	|  incoming stack arguments     |
 	|                               |
-	+-------------------------------+ <-- arg_pointer_rtx
-	|                               |
+	+-------------------------------+
+	|                               | <-- incoming stack pointer (aligned)
 	|  callee-allocated save area   |
 	|  for register varargs         |
 	|                               |
-	+-------------------------------+ <-- frame_pointer_rtx
-	|                               |
-	|  local variables              |
+	+-------------------------------+
+	|  local variables              | <-- frame_pointer_rtx
 	|                               |
 	+-------------------------------+
 	|  padding0                     | \
 	+-------------------------------+  |
-	|                               |  |
-	|                               |  |
 	|  callee-saved registers       |  | frame.saved_regs_size
-	|                               |  |
 	+-------------------------------+  |
 	|  LR'                          |  |
 	+-------------------------------+  |
-	|  FP'                          | /
-      P +-------------------------------+ <-- hard_frame_pointer_rtx
+	|  FP'                          | / <- hard_frame_pointer_rtx (aligned)
+        +-------------------------------+
 	|  dynamic allocation           |
 	+-------------------------------+
-	|                               |
-	|  outgoing stack arguments     |
-	|                               |
-	+-------------------------------+ <-- stack_pointer_rtx
+	|  padding                      |
+	+-------------------------------+
+	|  outgoing stack arguments     | <-- arg_pointer
+        |                               |
+	+-------------------------------+
+	|                               | <-- stack_pointer_rtx (aligned)
 
-   Dynamic stack allocations such as alloca insert data at point P.
-   They decrease stack_pointer_rtx but leave frame_pointer_rtx and
-   hard_frame_pointer_rtx unchanged.  */
+   Dynamic stack allocations via alloca() decrease stack_pointer_rtx
+   but leave frame_pointer_rtx and hard_frame_pointer_rtx
+   unchanged.  */
 
 /* Generate the prologue instructions for entry into a function.
    Establish the stack frame by decreasing the stack pointer with a
