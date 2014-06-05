@@ -1,4 +1,11 @@
 2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (SLOT_NOT_REQUIRED, SLOT_REQUIRED): Define.
+	(aarch64_layout_frame): Use SLOT_NOT_REQUIRED and SLOT_REQUIRED.
+	(aarch64_register_saved_on_entry): Adjust test.
+
+2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.h (machine_function): Move
 	saved_varargs_size from here...

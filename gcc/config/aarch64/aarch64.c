@@ -1812,28 +1812,32 @@ aarch64_layout_frame (void)
   if (reload_completed && cfun->machine->frame.laid_out)
     return;
 
+#define SLOT_NOT_REQUIRED (-2)
+#define SLOT_REQUIRED     (-1)
+
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
-    cfun->machine->frame.reg_offset[regno] = -1;
+    cfun->machine->frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-    cfun->machine->frame.reg_offset[regno] = -1;
+    cfun->machine->frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
 
   /* ... that includes the eh data registers (if needed)...  */
   if (crtl->calls_eh_return)
     for (regno = 0; EH_RETURN_DATA_REGNO (regno) != INVALID_REGNUM; regno++)
-      cfun->machine->frame.reg_offset[EH_RETURN_DATA_REGNO (regno)] = 0;
+      cfun->machine->frame.reg_offset[EH_RETURN_DATA_REGNO (regno)]
+	= SLOT_REQUIRED;
 
   /* ... and any callee saved register that dataflow says is live.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
 	&& !call_used_regs[regno])
-      cfun->machine->frame.reg_offset[regno] = 0;
+      cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
 	&& !call_used_regs[regno])
-      cfun->machine->frame.reg_offset[regno] = 0;
+      cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 
   if (frame_pointer_needed)
     {
@@ -1844,14 +1848,14 @@ aarch64_layout_frame (void)
 
   /* Now assign stack slots for them.  */
   for (regno = R0_REGNUM; regno <= R28_REGNUM; regno++)
-    if (cfun->machine->frame.reg_offset[regno] != -1)
+    if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	cfun->machine->frame.reg_offset[regno] = offset;
 	offset += UNITS_PER_WORD;
       }
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-    if (cfun->machine->frame.reg_offset[regno] != -1)
+    if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	cfun->machine->frame.reg_offset[regno] = offset;
 	offset += UNITS_PER_WORD;
@@ -1863,7 +1867,7 @@ aarch64_layout_frame (void)
       offset += UNITS_PER_WORD;
     }
 
-  if (cfun->machine->frame.reg_offset[R30_REGNUM] != -1)
+  if (cfun->machine->frame.reg_offset[R30_REGNUM] == SLOT_REQUIRED)
     {
       cfun->machine->frame.reg_offset[R30_REGNUM] = offset;
       offset += UNITS_PER_WORD;
@@ -1896,7 +1900,7 @@ aarch64_set_frame_expr (rtx frame_pattern)
 static bool
 aarch64_register_saved_on_entry (int regno)
 {
-  return cfun->machine->frame.reg_offset[regno] != -1;
+  return cfun->machine->frame.reg_offset[regno] >= 0;
 }
 
 
