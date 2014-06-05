@@ -629,19 +629,12 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
 	       Also drop volatile variables on the RHS to avoid infinite
 	       recursion from gimplify_expr trying to load the value.  */
-	    if (!TREE_SIDE_EFFECTS (op1)
-		|| (DECL_P (op1) && TREE_THIS_VOLATILE (op1)))
+	    if (!TREE_SIDE_EFFECTS (op1))
 	      *expr_p = op0;
-	    else if (TREE_CODE (op1) == MEM_REF
-		     && TREE_THIS_VOLATILE (op1))
-	      {
-		/* Similarly for volatile MEM_REFs on the RHS.  */
-		if (!TREE_SIDE_EFFECTS (TREE_OPERAND (op1, 0)))
-		  *expr_p = op0;
-		else
-		  *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
-				    TREE_OPERAND (op1, 0), op0);
-	      }
+	    else if (TREE_THIS_VOLATILE (op1)
+		     && (REFERENCE_CLASS_P (op1) || DECL_P (op1)))
+	      *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
+				build_fold_addr_expr (op1), op0);
 	    else
 	      *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
 				op0, op1);
