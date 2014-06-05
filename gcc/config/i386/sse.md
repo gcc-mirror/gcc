@@ -14551,6 +14551,35 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "*ssse3_palignr<mode>_perm"
+  [(set (match_operand:V_128 0 "register_operand" "=x,x")
+      (vec_select:V_128
+	(match_operand:V_128 1 "register_operand" "0,x")
+	(match_parallel 2 "palignr_operand"
+	  [(match_operand 3 "const_int_operand" "n, n")])))]
+  "TARGET_SSSE3"
+{
+  enum machine_mode imode = GET_MODE_INNER (GET_MODE (operands[0]));
+  operands[2] = GEN_INT (INTVAL (operands[3]) * GET_MODE_SIZE (imode));
+
+  switch (which_alternative)
+    {
+    case 0:
+      return "palignr\t{%2, %1, %0|%0, %1, %2}";
+    case 1:
+      return "vpalignr\t{%2, %1, %1, %0|%0, %1, %1, %2}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseishft")
+   (set_attr "atom_unit" "sishuf")
+   (set_attr "prefix_data16" "1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,vex")])
+
 (define_expand "avx_vinsertf128<mode>"
   [(match_operand:V_256 0 "register_operand")
    (match_operand:V_256 1 "register_operand")

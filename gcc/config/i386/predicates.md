@@ -1425,6 +1425,22 @@
   return true;
 })
 
+;; Return true if OP is a parallel for a palignr permute.
+(define_predicate "palignr_operand"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int elt = INTVAL (XVECEXP (op, 0, 0));
+  int i, nelt = XVECLEN (op, 0);
+
+  /* Check that an order in the permutation is suitable for palignr.
+     For example, {5 6 7 0 1 2 3 4} is "palignr 5, xmm, xmm".  */
+  for (i = 1; i < nelt; ++i)
+    if (INTVAL (XVECEXP (op, 0, i)) != ((elt + i) % nelt))
+      return false;
+  return true;
+})
+
 ;; Return true if OP is a proper third operand to vpblendw256.
 (define_predicate "avx2_pblendw_operand"
   (match_code "const_int")
