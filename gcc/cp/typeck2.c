@@ -780,15 +780,6 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	  init = build_constructor_from_list (init_list_type_node, nreverse (init));
 	}
     }
-  else if (TREE_CODE (init) == TREE_LIST
-	   && TREE_TYPE (init) != unknown_type_node)
-    {
-      gcc_assert (TREE_CODE (decl) != RESULT_DECL);
-
-      /* We get here with code like `int a (2);' */
-      init = build_x_compound_expr_from_list (init, ELK_INIT,
-					      tf_warning_or_error);
-    }
 
   /* End of special C++ code.  */
 
