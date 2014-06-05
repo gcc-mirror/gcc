@@ -1,3 +1,9 @@
+2014-06-05  Richard Biener  <rguenther@suse.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56961
+	* g++.dg/parse/pr56961.C: New.
+
 2014-06-05  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/46219
