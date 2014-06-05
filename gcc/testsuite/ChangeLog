@@ -1,3 +1,7 @@
+2014-06-05  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/cpp0x/initlist86.C (main): Initialize i.
+
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/49706
