@@ -1,5 +1,10 @@
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
+	PR c/49706
+	* c-c++-common/pr49706.c: New test.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
 	PR c/48062
 	* gcc.dg/Wshadow-1.c: Use dg-message for "shadowed declaration".
 	* gcc.dg/Wshadow-3.c: Likewise.

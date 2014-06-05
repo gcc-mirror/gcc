@@ -1,3 +1,8 @@
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49706
+	* doc/invoke.texi: Document -Wlogical-not-parentheses.
+
 2014-06-04  Tom de Vries  <tom@codesourcery.com>
 
 	* config/s390/s390.md ("addptrdi3", "addptrsi3"): Use INTVAL only on

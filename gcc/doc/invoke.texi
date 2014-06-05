@@ -256,7 +256,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winit-self  -Winline -Wmaybe-uninitialized @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
--Wlogical-op -Wlong-long @gol
+-Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow -Wopenmp-simd @gol
@@ -3856,7 +3856,7 @@ expression to a type other than @code{bool}.  For example:
 @group
 switch ((int) (a == 4))
   @{
-  ...
+  @dots{}
   @}
 @end group
 @end smallexample
@@ -4703,6 +4703,24 @@ programmer intended to use @code{strcmp}.  This warning is enabled by
 Warn about suspicious uses of logical operators in expressions.
 This includes using logical operators in contexts where a
 bit-wise operator is likely to be expected.
+
+@item -Wlogical-not-parentheses
+@opindex Wlogical-not-parentheses
+@opindex Wno-logical-not-parentheses
+Warn about logical not used on the left hand side operand of a comparison.
+This option does not warn if the LHS or RHS operand is of a boolean or
+a vector type.  Its purpose is to detect suspicious code like the following:
+@smallexample
+int a;
+@dots{}
+if (!a > 1) @{ @dots{} @}
+@end smallexample
+
+It is possible to suppress the warning by wrapping the LHS into
+parentheses:
+@smallexample
+if ((!a) > 1) @{ @dots{} @}
+@end smallexample
 
 @item -Waggregate-return
 @opindex Waggregate-return
