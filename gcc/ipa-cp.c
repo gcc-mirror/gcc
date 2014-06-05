@@ -433,6 +433,8 @@ determine_versionability (struct cgraph_node *node)
   else if (!opt_for_fn (node->decl, optimize)
 	   || !opt_for_fn (node->decl, flag_ipa_cp))
     reason = "non-optimized function";
+  else if (node->tm_clone)
+    reason = "transactional memory clone";
   else if (lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (node->decl)))
     {
       /* Ideally we should clone the SIMD clones themselves and create
