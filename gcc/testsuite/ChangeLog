@@ -1,3 +1,8 @@
+2014-06-05  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/46219
+	* gcc.target/i386/sibcall-4.c: Remove xfail.
+
 2014-06-05  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 

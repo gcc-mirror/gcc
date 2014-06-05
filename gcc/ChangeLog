@@ -1,3 +1,15 @@
+2014-06-05  Kai Tietz  <ktietz@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR target/46219
+	* config/i386/predicates.md (memory_nox32_operand): Add memory_operand
+	checking for !TARGET_X32.
+	* config/i386/i386.md (UNSPEC_PEEPSIB): New unspec constant.
+	(sibcall_intern): New define_insn, plus required peepholes.
+	(sibcall_pop_intern): Likewise.
+	(sibcall_value_intern): Likewise.
+	(sibcall_value_pop_intern): Likewise.
+
 2014-06-05  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-inline.c (tree_function_versioning): Check DF info existence
