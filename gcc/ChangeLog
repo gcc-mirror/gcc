@@ -4,6 +4,18 @@
 	before accessing it.
 
 2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.h (aarch64_frame): Add hard_fp_offset and
+	frame_size.
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Initialize
+	aarch64_frame hard_fp_offset and frame_size.
+	(aarch64_expand_prologue): Use aarch64_frame hard_fp_offset and
+	frame_size; remove original_frame_size.
+	(aarch64_expand_epilogue, aarch64_final_eh_return_addr): Likewise.
+	(aarch64_initial_elimination_offset): Remove frame_size and
+	offset.  Use aarch64_frame frame_size.
+
+2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_layout_frame): Correct
