@@ -1,3 +1,9 @@
+2014-06-05  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/52472
+	* cfgexpand.c (expand_debug_expr): Use address space of nested
+	TREE_TYPE for ADDR_EXPR and MEM_REF.
+
 2014-06-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/61289
