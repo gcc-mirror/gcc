@@ -1,3 +1,8 @@
+2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Update stack
+	layout comment.
+
 2014-06-05  Jaydeep Patil  <Jaydeep.Patil@imgtec.com>
 	    Prachi Godbole  <Prachi.Godbole@imgtec.com>
 
