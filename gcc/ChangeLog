@@ -1,3 +1,9 @@
+2014-06-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61393
+	* ipa-cp.c (determine_versionability): Pretend that tm_clones are
+	not versionable.
+
 2014-06-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61383

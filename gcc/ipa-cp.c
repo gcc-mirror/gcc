@@ -447,6 +447,8 @@ determine_versionability (struct cgraph_node *node)
   else if (!opt_for_fn (node->symbol.decl, optimize)
 	   || !opt_for_fn (node->symbol.decl, flag_ipa_cp))
     reason = "non-optimized function";
+  else if (node->tm_clone)
+    reason = "transactional memory clone";
 
   if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
     fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",
