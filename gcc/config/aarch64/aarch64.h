@@ -527,6 +527,17 @@ struct GTY (()) aarch64_frame
   HOST_WIDE_INT padding0;
   HOST_WIDE_INT hardfp_offset;	/* HARD_FRAME_POINTER_REGNUM */
 
+  /* Offset from the base of the frame (incomming SP) to the
+     hard_frame_pointer.  This value is always a multiple of
+     STACK_BOUNDARY.  */
+  HOST_WIDE_INT hard_fp_offset;
+
+  /* The size of the frame.  This value is the offset from base of the
+   * frame (incomming SP) to the stack_pointer.  This value is always
+   * a multiple of STACK_BOUNDARY.  */
+
+  HOST_WIDE_INT frame_size;
+
   bool laid_out;
 };
 

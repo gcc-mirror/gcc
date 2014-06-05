@@ -1868,6 +1868,18 @@ aarch64_layout_frame (void)
   offset = AARCH64_ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT);
 
   cfun->machine->frame.saved_regs_size = offset;
+
+  cfun->machine->frame.hard_fp_offset
+    = AARCH64_ROUND_UP (cfun->machine->frame.saved_varargs_size
+			+ get_frame_size ()
+			+ cfun->machine->frame.saved_regs_size,
+			STACK_BOUNDARY / BITS_PER_UNIT);
+
+  cfun->machine->frame.frame_size
+    = AARCH64_ROUND_UP (cfun->machine->frame.hard_fp_offset
+			+ crtl->outgoing_args_size,
+			STACK_BOUNDARY / BITS_PER_UNIT);
+
   cfun->machine->frame.laid_out = true;
 }
 
@@ -2118,26 +2130,20 @@ aarch64_expand_prologue (void)
 
      sub sp, sp, <final_adjustment_if_any>
   */
-  HOST_WIDE_INT original_frame_size;	/* local variables + vararg save */
   HOST_WIDE_INT frame_size, offset;
-  HOST_WIDE_INT fp_offset;		/* FP offset from SP */
+  HOST_WIDE_INT fp_offset;		/* Offset from hard FP to SP.  */
   rtx insn;
 
   aarch64_layout_frame ();
-  original_frame_size = get_frame_size () + cfun->machine->frame.saved_varargs_size;
-  gcc_assert ((!cfun->machine->frame.saved_varargs_size || cfun->stdarg)
-	      && (cfun->stdarg || !cfun->machine->frame.saved_varargs_size));
-  frame_size = (original_frame_size + cfun->machine->frame.saved_regs_size
-		+ crtl->outgoing_args_size);
-  offset = frame_size = AARCH64_ROUND_UP (frame_size,
-					  STACK_BOUNDARY / BITS_PER_UNIT);
 
   if (flag_stack_usage_info)
-    current_function_static_stack_size = frame_size;
+    current_function_static_stack_size = cfun->machine->frame.frame_size;
 
-  fp_offset = (offset
-	       - original_frame_size
-	       - cfun->machine->frame.saved_regs_size);
+  frame_size = cfun->machine->frame.frame_size;
+  offset = cfun->machine->frame.frame_size;
+
+  fp_offset = cfun->machine->frame.frame_size
+	      - cfun->machine->frame.hard_fp_offset;
 
   /* Store pairs and load pairs have a range only -512 to 504.  */
   if (offset >= 512)
@@ -2148,7 +2154,7 @@ aarch64_expand_prologue (void)
 	 register area.  This will allow the pre-index write-back
 	 store pair instructions to be used for setting up the stack frame
 	 efficiently.  */
-      offset = original_frame_size + cfun->machine->frame.saved_regs_size;
+      offset = cfun->machine->frame.hard_fp_offset;
       if (offset >= 512)
 	offset = cfun->machine->frame.saved_regs_size;
 
@@ -2284,28 +2290,23 @@ aarch64_expand_prologue (void)
 void
 aarch64_expand_epilogue (bool for_sibcall)
 {
-  HOST_WIDE_INT original_frame_size, frame_size, offset;
+  HOST_WIDE_INT frame_size, offset;
   HOST_WIDE_INT fp_offset;
   rtx insn;
   rtx cfa_reg;
 
   aarch64_layout_frame ();
-  original_frame_size = get_frame_size () + cfun->machine->frame.saved_varargs_size;
-  frame_size = (original_frame_size + cfun->machine->frame.saved_regs_size
-		+ crtl->outgoing_args_size);
-  offset = frame_size = AARCH64_ROUND_UP (frame_size,
-					  STACK_BOUNDARY / BITS_PER_UNIT);
 
-  fp_offset = (offset
-	       - original_frame_size
-	       - cfun->machine->frame.saved_regs_size);
+  offset = frame_size = cfun->machine->frame.frame_size;
+  fp_offset = cfun->machine->frame.frame_size
+	      - cfun->machine->frame.hard_fp_offset;
 
   cfa_reg = frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx;
 
   /* Store pairs and load pairs have a range only -512 to 504.  */
   if (offset >= 512)
     {
-      offset = original_frame_size + cfun->machine->frame.saved_regs_size;
+      offset = cfun->machine->frame.hard_fp_offset;
       if (offset >= 512)
 	offset = cfun->machine->frame.saved_regs_size;
 
@@ -2487,16 +2488,12 @@ aarch64_expand_epilogue (bool for_sibcall)
 rtx
 aarch64_final_eh_return_addr (void)
 {
-  HOST_WIDE_INT original_frame_size, frame_size, offset, fp_offset;
+  HOST_WIDE_INT fp_offset;
+
   aarch64_layout_frame ();
-  original_frame_size = get_frame_size () + cfun->machine->frame.saved_varargs_size;
-  frame_size = (original_frame_size + cfun->machine->frame.saved_regs_size
-		+ crtl->outgoing_args_size);
-  offset = frame_size = AARCH64_ROUND_UP (frame_size,
-					  STACK_BOUNDARY / BITS_PER_UNIT);
-  fp_offset = offset
-    - original_frame_size
-    - cfun->machine->frame.saved_regs_size;
+
+  fp_offset = cfun->machine->frame.frame_size
+	      - cfun->machine->frame.hard_fp_offset;
 
   if (cfun->machine->frame.reg_offset[LR_REGNUM] < 0)
     return gen_rtx_REG (DImode, LR_REGNUM);
@@ -4246,41 +4243,27 @@ aarch64_can_eliminate (const int from, const int to)
 HOST_WIDE_INT
 aarch64_initial_elimination_offset (unsigned from, unsigned to)
 {
-  HOST_WIDE_INT frame_size;
-  HOST_WIDE_INT offset;
-
   aarch64_layout_frame ();
-  frame_size = (get_frame_size () + cfun->machine->frame.saved_regs_size
-		+ crtl->outgoing_args_size
-		+ cfun->machine->frame.saved_varargs_size);
-
-  frame_size = AARCH64_ROUND_UP (frame_size, STACK_BOUNDARY / BITS_PER_UNIT);
-  offset = frame_size;
 
   if (to == HARD_FRAME_POINTER_REGNUM)
     {
       if (from == ARG_POINTER_REGNUM)
-	return offset - crtl->outgoing_args_size;
+	return cfun->machine->frame.frame_size - crtl->outgoing_args_size;
 
       if (from == FRAME_POINTER_REGNUM)
-	return cfun->machine->frame.saved_regs_size + get_frame_size ();
+	return (cfun->machine->frame.hard_fp_offset
+		- cfun->machine->frame.saved_varargs_size);
     }
 
   if (to == STACK_POINTER_REGNUM)
     {
       if (from == FRAME_POINTER_REGNUM)
-	{
-	  HOST_WIDE_INT elim = crtl->outgoing_args_size
-	    + cfun->machine->frame.saved_regs_size
-	    + get_frame_size ();
-	  elim = AARCH64_ROUND_UP (elim, STACK_BOUNDARY / BITS_PER_UNIT);
-	  return elim;
-	}
+	  return (cfun->machine->frame.frame_size
+		  - cfun->machine->frame.saved_varargs_size);
     }
 
-  return offset;
+  return cfun->machine->frame.frame_size;
 }
-
 
 /* Implement RETURN_ADDR_RTX.  We do not support moving back to a
    previous frame.  */
