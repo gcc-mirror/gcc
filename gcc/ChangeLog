@@ -1,3 +1,9 @@
+2014-06-05  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/sse.md (*ssse3_palignr<mode>_perm): New.
+	* config/i386/predicates.md (palignr_operand): New.
+	Indicates if permutation is suitable for palignr instruction.
+
 2014-06-05  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/61319
