@@ -2935,8 +2935,9 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
 	 of  the  result  is  "T."  */
       tree t = TREE_TYPE (type);
 
-      if (CONVERT_EXPR_P (ptr)
-          || TREE_CODE (ptr) == VIEW_CONVERT_EXPR)
+      if ((CONVERT_EXPR_P (ptr)
+	   || TREE_CODE (ptr) == VIEW_CONVERT_EXPR)
+	  && (!CLASS_TYPE_P (t) || !CLASSTYPE_EMPTY_P (t)))
 	{
 	  /* If a warning is issued, mark it to avoid duplicates from
 	     the backend.  This only needs to be done at

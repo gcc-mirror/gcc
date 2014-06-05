@@ -1,3 +1,9 @@
+2014-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR c++/61004
+	* typeck.c (cp_build_indirect_ref): Do not emit strict-aliasing
+	warnings for accessing empty classes.
+
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/49706
