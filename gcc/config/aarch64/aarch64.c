@@ -1841,13 +1841,15 @@ aarch64_layout_frame (void)
 
   if (frame_pointer_needed)
     {
-      cfun->machine->frame.reg_offset[R30_REGNUM] = 0;
+      /* FP and LR are placed in the linkage record.  */
       cfun->machine->frame.reg_offset[R29_REGNUM] = 0;
+      cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
       cfun->machine->frame.hardfp_offset = 2 * UNITS_PER_WORD;
+      offset += 2 * UNITS_PER_WORD;
     }
 
   /* Now assign stack slots for them.  */
-  for (regno = R0_REGNUM; regno <= R28_REGNUM; regno++)
+  for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	cfun->machine->frame.reg_offset[regno] = offset;
@@ -1860,18 +1862,6 @@ aarch64_layout_frame (void)
 	cfun->machine->frame.reg_offset[regno] = offset;
 	offset += UNITS_PER_WORD;
       }
-
-  if (frame_pointer_needed)
-    {
-      cfun->machine->frame.reg_offset[R29_REGNUM] = offset;
-      offset += UNITS_PER_WORD;
-    }
-
-  if (cfun->machine->frame.reg_offset[R30_REGNUM] == SLOT_REQUIRED)
-    {
-      cfun->machine->frame.reg_offset[R30_REGNUM] = offset;
-      offset += UNITS_PER_WORD;
-    }
 
   cfun->machine->frame.padding0 =
     (AARCH64_ROUND_UP (offset, STACK_BOUNDARY / BITS_PER_UNIT) - offset);
