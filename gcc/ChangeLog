@@ -1,6 +1,13 @@
 2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Correct
+	initialization of R30 offset.  Update offset.  Iterate core
+	regisers upto X30.  Remove X29, X30 specific code.
+
+2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (SLOT_NOT_REQUIRED, SLOT_REQUIRED): Define.
 	(aarch64_layout_frame): Use SLOT_NOT_REQUIRED and SLOT_REQUIRED.
 	(aarch64_register_saved_on_entry): Adjust test.
