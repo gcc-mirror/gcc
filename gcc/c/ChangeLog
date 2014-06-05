@@ -1,3 +1,9 @@
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/48062
+	* c-decl.c (warn_if_shadowing): Call inform instead of warning_at.
+	Print note only if the warning was printed.
+
 2014-06-04  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c/58942
