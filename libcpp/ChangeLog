@@ -1,3 +1,9 @@
+2014-06-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/61038
+	* macro.c (stringify_arg (cpp_reader *, macro_arg *)):
+	Combine user-defined escape logic with the other string and char logic.
+
 2014-05-26  Richard Biener  <rguenther@suse.de>
 
 	* configure.ac: Remove long long and __int64 type checks,
