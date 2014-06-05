@@ -11,7 +11,7 @@ extern "C" int printf (const char *, ...);
 
 int main()
 {
-  int i;
+  int i = 0;
   A a{i++,i++};
   if (a.i != 0 || a.j != 1)
     __builtin_abort();
