@@ -1,3 +1,10 @@
+2014-06-05  S. Gilles  <sgilles@terpmail.umd.edu>
+
+	PR c/53119
+	* c-typeck.c (push_init_level, process_init_element,
+	pop_init_level): Correct check for zero initialization, move
+	missing brace warning to respect zero initialization.
+
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/56724

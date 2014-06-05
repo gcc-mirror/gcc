@@ -1,3 +1,8 @@
+2014-06-05  S. Gilles  <sgilles@terpmail.umd.edu>
+
+	PR c/53119
+	* gcc.dg/pr53119.c: New testcase.
+
 2014-06-05  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/52472

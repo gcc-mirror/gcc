@@ -74,9 +74,9 @@ int in_typeof;
    if expr.original_code == SIZEOF_EXPR.  */
 tree c_last_sizeof_arg;
 
-/* Nonzero if we've already printed a "missing braces around initializer"
-   message within this initializer.  */
-static int missing_braces_mentioned;
+/* Nonzero if we might need to print a "missing braces around
+   initializer" message within this initializer.  */
+static int found_missing_braces;
 
 static int require_constant_value;
 static int require_constant_elements;
@@ -6864,6 +6864,9 @@ static int constructor_nonconst;
 /* 1 if this constructor is erroneous so far.  */
 static int constructor_erroneous;
 
+/* 1 if this constructor is the universal zero initializer { 0 }.  */
+static int constructor_zeroinit;
+
 /* Structure for managing pending initializer elements, organized as an
    AVL tree.  */
 
@@ -7025,7 +7028,7 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
   constructor_stack = 0;
   constructor_range_stack = 0;
 
-  missing_braces_mentioned = 0;
+  found_missing_braces = 0;
 
   spelling_base = 0;
   spelling_size = 0;
@@ -7120,6 +7123,7 @@ really_start_incremental_init (tree type)
   constructor_type = type;
   constructor_incremental = 1;
   constructor_designated = 0;
+  constructor_zeroinit = 1;
   designator_depth = 0;
   designator_erroneous = 0;
 
@@ -7323,12 +7327,8 @@ push_init_level (location_t loc, int implicit,
 	set_nonincremental_init (braced_init_obstack);
     }
 
-  if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned)
-    {
-      missing_braces_mentioned = 1;
-      warning_init (input_location, OPT_Wmissing_braces,
-		    "missing braces around initializer");
-    }
+  if (implicit == 1)
+    found_missing_braces = 1;
 
   if (TREE_CODE (constructor_type) == RECORD_TYPE
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
@@ -7461,16 +7461,23 @@ pop_init_level (location_t loc, int implicit,
 	}
     }
 
+  if (vec_safe_length (constructor_elements) != 1)
+    constructor_zeroinit = 0;
+
+  /* Warn when some structs are initialized with direct aggregation.  */
+  if (!implicit && found_missing_braces && warn_missing_braces
+      && !constructor_zeroinit)
+    {
+      warning_init (loc, OPT_Wmissing_braces,
+		    "missing braces around initializer");
+    }
+
   /* Warn when some struct elements are implicitly initialized to zero.  */
   if (warn_missing_field_initializers
       && constructor_type
       && TREE_CODE (constructor_type) == RECORD_TYPE
       && constructor_unfilled_fields)
     {
-	bool constructor_zeroinit =
-	 (vec_safe_length (constructor_elements) == 1
-	  && integer_zerop ((*constructor_elements)[0].value));
-
 	/* Do not warn for flexible array members or zero-length arrays.  */
 	while (constructor_unfilled_fields
 	       && (!DECL_SIZE (constructor_unfilled_fields)
@@ -8599,6 +8606,9 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 
   designator_depth = 0;
   designator_erroneous = 0;
+
+  if (!implicit && value.value && !integer_zerop (value.value))
+    constructor_zeroinit = 0;
 
   /* Handle superfluous braces around string cst as in
      char x[] = {"foo"}; */
