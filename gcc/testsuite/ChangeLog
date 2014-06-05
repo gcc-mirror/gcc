@@ -1,3 +1,9 @@
+2014-06-05  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/arm/pr45094.c: Remove -mcpu=cortex-a8, dg-skip-if
+	options.
+
 2014-06-05  Richard Biener  <rguenther@suse.de>
 
 	PR c++/61004
