@@ -2601,6 +2601,7 @@ warn_if_shadowing (tree new_decl)
 					     DECL_SOURCE_LOCATION (b->decl))))
       {
 	tree old_decl = b->decl;
+	bool warned = false;
 
 	if (old_decl == error_mark_node)
 	  {
@@ -2609,8 +2610,9 @@ warn_if_shadowing (tree new_decl)
 	    break;
 	  }
 	else if (TREE_CODE (old_decl) == PARM_DECL)
-	  warning (OPT_Wshadow, "declaration of %q+D shadows a parameter",
-		   new_decl);
+	  warned = warning (OPT_Wshadow,
+			    "declaration of %q+D shadows a parameter",
+			    new_decl);
 	else if (DECL_FILE_SCOPE_P (old_decl))
 	  {
 	    /* Do not warn if a variable shadows a function, unless
@@ -2620,9 +2622,10 @@ warn_if_shadowing (tree new_decl)
 		&& !FUNCTION_POINTER_TYPE_P (TREE_TYPE (new_decl)))
 		continue;
 
-	    warning_at (DECL_SOURCE_LOCATION (new_decl), OPT_Wshadow, 
-			"declaration of %qD shadows a global declaration",
-			new_decl);
+	    warned = warning_at (DECL_SOURCE_LOCATION (new_decl), OPT_Wshadow,
+				 "declaration of %qD shadows a global "
+				 "declaration",
+				 new_decl);
 	  }
 	else if (TREE_CODE (old_decl) == FUNCTION_DECL
 		 && DECL_BUILT_IN (old_decl))
@@ -2632,11 +2635,12 @@ warn_if_shadowing (tree new_decl)
 	    break;
 	  }
 	else
-	  warning (OPT_Wshadow, "declaration of %q+D shadows a previous local",
-		   new_decl);
+	  warned = warning (OPT_Wshadow, "declaration of %q+D shadows a "
+			    "previous local", new_decl);
 
-	warning_at (DECL_SOURCE_LOCATION (old_decl), OPT_Wshadow,
-		    "shadowed declaration is here");
+	if (warned)
+	  inform (DECL_SOURCE_LOCATION (old_decl),
+		  "shadowed declaration is here");
 
 	break;
       }
