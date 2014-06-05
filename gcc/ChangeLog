@@ -1,3 +1,9 @@
+2014-06-05  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61319
+	* tree-if-conv.c (is_cond_scalar_reduction): Add missed check that
+	stmt belongs to loop.
+
 2014-06-05  Richard Biener  <rguenther@suse.de>
 
 	* gimplify.c (create_tmp_from_val): Remove is_formal parameter

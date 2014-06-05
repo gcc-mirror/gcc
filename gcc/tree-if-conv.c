@@ -1439,6 +1439,9 @@ is_cond_scalar_reduction (gimple phi, gimple *reduc,
       || gimple_has_volatile_ops (stmt))
     return false;
 
+  if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+    return false;
+
   if (!is_predicated (gimple_bb (stmt)))
     return false;
 
