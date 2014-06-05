@@ -1,3 +1,12 @@
+2014-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/61418
+	* gfortranspec.c (spec_file): Remove.
+	(find_spec_file): Likewise.
+	(lang_specific_driver): Do not look for specs file in -L
+	or append -specs command line argument.
+	(lang_specific_pre_link): Always %:include libgfortran.spec.
+
 2014-05-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60834
