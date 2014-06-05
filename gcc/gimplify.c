@@ -451,14 +451,13 @@ is_gimple_mem_rhs_or_call (tree t)
    lookup_tmp_var; nobody else should call this function.  */
 
 static inline tree
-create_tmp_from_val (tree val, bool is_formal)
+create_tmp_from_val (tree val)
 {
   /* Drop all qualifiers and address-space information from the value type.  */
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (val));
   tree var = create_tmp_var (type, get_name (val));
-  if (is_formal
-      && (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
-	  || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE))
+  if (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE)
     DECL_GIMPLE_REG_P (var) = 1;
   return var;
 }
@@ -477,7 +476,7 @@ lookup_tmp_var (tree val, bool is_formal)
      work in reload and final and poorer code generation, outweighing
      the extra memory allocation here.  */
   if (!optimize || !is_formal || TREE_SIDE_EFFECTS (val))
-    ret = create_tmp_from_val (val, is_formal);
+    ret = create_tmp_from_val (val);
   else
     {
       elt_t elt, *elt_p;
@@ -491,7 +490,7 @@ lookup_tmp_var (tree val, bool is_formal)
 	{
 	  elt_p = XNEW (elt_t);
 	  elt_p->val = val;
-	  elt_p->temp = ret = create_tmp_from_val (val, is_formal);
+	  elt_p->temp = ret = create_tmp_from_val (val);
 	  *slot = elt_p;
 	}
       else
@@ -3154,7 +3153,11 @@ prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
   while (handled_component_p (*expr_p))
     expr_p = &TREE_OPERAND (*expr_p, 0);
   if (is_gimple_reg (*expr_p))
-    *expr_p = get_initialized_tmp_var (*expr_p, seq_p, NULL);
+    {
+      tree var = get_initialized_tmp_var (*expr_p, seq_p, NULL);
+      DECL_GIMPLE_REG_P (var) = 0;
+      *expr_p = var;
+    }
 }
 
 /* A subroutine of gimplify_modify_expr.  Replace a MODIFY_EXPR with
