@@ -5758,13 +5758,16 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 		check_narrowing (type, init);
 	    }
 	}
-      else if (TREE_CODE (type) == ARRAY_TYPE
-	       && TREE_CODE (init) == TREE_LIST
-	       && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
-	       && list_length (init) == 1
-	       && TREE_CODE (TREE_VALUE (init)) == STRING_CST)
-	/* We get here with code like `char s[] ("abc");' */
-	init = TREE_VALUE (init);
+      else if (TREE_CODE (init) == TREE_LIST
+	       && TREE_TYPE (init) != unknown_type_node
+	       && !MAYBE_CLASS_TYPE_P (type))
+	{
+	  gcc_assert (TREE_CODE (decl) != RESULT_DECL);
+
+	  /* We get here with code like `int a (2);' */
+	  init = build_x_compound_expr_from_list (init, ELK_INIT,
+						  tf_warning_or_error);
+	}
 
       /* If DECL has an array type without a specific bound, deduce the
 	 array size from the initializer.  */

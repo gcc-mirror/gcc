@@ -1,3 +1,9 @@
+2014-06-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43453
+	* decl.c (check_initializer): Collapse a TREE_LIST here.
+	* typeck2.c (store_init_value): Not here.
+
 2014-06-05  Richard Biener  <rguenther@suse.de>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
