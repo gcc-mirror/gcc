@@ -1,3 +1,21 @@
+2014-06-05  Jaydeep Patil  <Jaydeep.Patil@imgtec.com>
+	    Prachi Godbole  <Prachi.Godbole@imgtec.com>
+
+	* config/mips/mips-cpus.def: Add definition for p5600.  Updated
+	mips32r5 entry to use PROCESSOR_P5600.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips-protos.h (mips_fmadd_bypass): Add prototype.
+	* config/mips/mips.c (mips_fmadd_bypass): New function.
+	(mips_rtx_cost_data): Add costs for p5600.
+	(mips_issue_rate): Add support for p5600.
+	(mips_multipass_dfa_lookahead): Likewise.
+	* config/mips/mips.h (TUNE_P5600): New define.
+	(TUNE_MACC_CHAINS): Add TUNE_P5600.
+	(MIPS_ISA_LEVEL_SPEC): Map -march=p5600 to -mips32r5.
+	* config/mips/mips.md: Include p5600.md.
+	(processor): Add p5600.
+	* config/mips/p5600.md: New file.
+
 2014-06-05  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/sse.md (*ssse3_palignr<mode>_perm): New.
