@@ -1,3 +1,9 @@
+2014-06-05  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/52472
+	* gcc.target/avr/pr52472.c: New test.
+
+
 2014-06-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/61289

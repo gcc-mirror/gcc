@@ -3941,10 +3941,7 @@ expand_debug_expr (tree exp)
 	  op0 = plus_constant (inner_mode, op0, INTVAL (op1));
 	}
 
-      if (POINTER_TYPE_P (TREE_TYPE (exp)))
-	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
-      else
-	as = ADDR_SPACE_GENERIC;
+      as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
 
       op0 = convert_debug_memory_address (targetm.addr_space.address_mode (as),
 					  op0, as);
@@ -4467,7 +4464,7 @@ expand_debug_expr (tree exp)
 	  return NULL;
 	}
 
-      as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+      as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
       op0 = convert_debug_memory_address (mode, XEXP (op0, 0), as);
 
       return op0;
