@@ -587,6 +587,11 @@
   (ior (match_operand 0 "register_no_elim_operand")
        (match_operand 0 "immediate_operand")))
 
+;; Test for a valid memory operand.
+(define_predicate "memory_nox32_operand"
+  (and (not (match_test "TARGET_X32"))
+       (match_operand 0 "memory_operand")))
+
 ;; Test for a valid operand for indirect branch.
 (define_predicate "indirect_branch_operand"
   (ior (match_operand 0 "register_operand")
