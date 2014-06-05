@@ -1722,6 +1722,29 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
     }
 }
 
+/* Warn about logical not used on the left hand side operand of a comparison.
+   This function assumes that the LHS is inside of TRUTH_NOT_EXPR.
+   Do not warn if the LHS or RHS is of a boolean or a vector type.  */
+
+void
+warn_logical_not_parentheses (location_t location, enum tree_code code,
+			      tree lhs, tree rhs)
+{
+  if (TREE_CODE_CLASS (code) != tcc_comparison)
+    return;
+  if (TREE_TYPE (lhs) == NULL_TREE
+      || TREE_TYPE (rhs) == NULL_TREE)
+    ;
+  else if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
+	   || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE
+	   || VECTOR_TYPE_P (TREE_TYPE (lhs))
+	   || VECTOR_TYPE_P (TREE_TYPE (rhs)))
+    return;
+
+  warning_at (location, OPT_Wlogical_not_parentheses,
+	      "logical not is only applied to the left hand side of "
+	      "comparison");
+}
 
 /* Warn if EXP contains any computations whose results are not used.
    Return true if a warning is printed; false otherwise.  LOCUS is the

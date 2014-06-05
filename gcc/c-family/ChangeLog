@@ -1,3 +1,10 @@
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49706
+	* c-common.c (warn_logical_not_parentheses): New function.
+	* c-common.h (warn_logical_not_parentheses): Declare.
+	* c.opt (Wlogical-not-parentheses): New option.
+
 2014-06-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/30020

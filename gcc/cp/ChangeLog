@@ -1,3 +1,9 @@
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49706
+	* parser.c (cp_parser_binary_expression): Warn when logical not is
+	used on the left hand side operand of a comparison.
+
 2014-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/43453

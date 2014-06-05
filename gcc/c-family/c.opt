@@ -490,6 +490,10 @@ Wlogical-op
 C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning 
 Warn when a logical operator is suspiciously always evaluating to true or false
 
+Wlogical-not-parentheses
+C ObjC C++ ObjC++ Var(warn_logical_not_paren) Warning
+Warn when logical not is used on the left hand side operand of a comparison
+
 Wlong-long
 C ObjC C++ ObjC++ Var(warn_long_long) Init(-1) Warning
 Do not warn about using \"long long\" when -pedantic

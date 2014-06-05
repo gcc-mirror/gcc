@@ -7883,6 +7883,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
   enum tree_code rhs_type;
   enum cp_parser_prec new_prec, lookahead_prec;
   tree overload;
+  bool parenthesized_not_lhs_warn
+    = cp_lexer_next_token_is (parser->lexer, CPP_NOT);
 
   /* Parse the first expression.  */
   current.lhs = cp_parser_cast_expression (parser, /*address_p=*/false,
@@ -7984,6 +7986,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_false_node;
       else if (current.tree_type == TRUTH_ORIF_EXPR)
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
+
+      if (warn_logical_not_paren
+	  && parenthesized_not_lhs_warn)
+	warn_logical_not_parentheses (current.loc, current.tree_type,
+				      TREE_OPERAND (current.lhs, 0), rhs);
 
       overload = NULL;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==
