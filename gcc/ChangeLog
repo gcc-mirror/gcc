@@ -1,3 +1,8 @@
+2014-06-05  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* tree-inline.c (tree_function_versioning): Check DF info existence
+	before accessing it.
+
 2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
