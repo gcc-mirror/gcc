@@ -2920,6 +2920,13 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
       if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_CONSTEXPR])
 	inform (location, "C++11 %<constexpr%> only available with "
 		"-std=c++11 or -std=gnu++11");
+      else if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_NOEXCEPT])
+	inform (location, "C++11 %<noexcept%> only available with "
+		"-std=c++11 or -std=gnu++11");
+      else if (cxx_dialect < cxx11
+	       && !strcmp (IDENTIFIER_POINTER (id), "thread_local"))
+	inform (location, "C++11 %<thread_local%> only available with "
+		"-std=c++11 or -std=gnu++11");
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{

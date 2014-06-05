@@ -1,5 +1,8 @@
 2014-06-04  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_diagnose_invalid_type_name): Give helpful note
+	for noexcept and thread_local, too.
+
 	PR c++/61343
 	* decl.c (check_initializer): Maybe clear
 	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
