@@ -1,3 +1,10 @@
+2014-06-07  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18343
+	* gcc.dg/torture/stackalign/builtin-return-1.c (STACK_ARGUMENTS_SIZE):
+	New macro, 0 for __MMIX__, default 64.
+	(bar): Pass it to __builtin_apply instead of literal 64.
+
 2014-06-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/io_constraints_11.f90: New file.

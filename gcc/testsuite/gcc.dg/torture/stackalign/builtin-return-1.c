@@ -5,6 +5,13 @@
 /* This used to fail on SPARC because the (undefined) return
    value of 'bar' was overwriting that of 'foo'.  */
 
+#ifdef __MMIX__
+/* No parameters on stack for bar.  */
+#define STACK_ARGUMENTS_SIZE 0
+#else
+#define STACK_ARGUMENTS_SIZE 64
+#endif
+
 extern void abort(void);
 
 int foo(int n)
@@ -14,7 +21,8 @@ int foo(int n)
 
 int bar(int n)
 {
-  __builtin_return(__builtin_apply((void (*)(void))foo, __builtin_apply_args(), 64));
+  __builtin_return(__builtin_apply((void (*)(void))foo, __builtin_apply_args(),
+				   STACK_ARGUMENTS_SIZE));
 }
 
 char *g;
