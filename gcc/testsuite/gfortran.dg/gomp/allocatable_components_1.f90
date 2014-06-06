@@ -49,7 +49,7 @@ CONTAINS
     TYPE(t) :: a(10)
     INTEGER :: i
 
-    !$omp parallel do reduction(+: a)   ! { dg-error "must be of numeric type" }
+    !$omp parallel do reduction(+: a)   ! { dg-error "OMP DECLARE REDUCTION\[^\n\r\]*not found for type" }
     DO i = 1, SIZE(a)
     END DO
     !$omp end parallel do

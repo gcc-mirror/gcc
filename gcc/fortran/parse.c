@@ -575,6 +575,8 @@ decode_omp_directive (void)
       match ("critical", gfc_match_omp_critical, ST_OMP_CRITICAL);
       break;
     case 'd':
+      match ("declare reduction", gfc_match_omp_declare_reduction,
+	     ST_OMP_DECLARE_REDUCTION);
       match ("declare simd", gfc_match_omp_declare_simd,
 	     ST_OMP_DECLARE_SIMD);
       match ("do simd", gfc_match_omp_do_simd, ST_OMP_DO_SIMD);
@@ -1050,7 +1052,7 @@ next_statement (void)
 #define case_decl case ST_ATTR_DECL: case ST_COMMON: case ST_DATA_DECL: \
   case ST_EQUIVALENCE: case ST_NAMELIST: case ST_STATEMENT_FUNCTION: \
   case ST_TYPE: case ST_INTERFACE: case ST_OMP_THREADPRIVATE: \
-  case ST_PROCEDURE: case ST_OMP_DECLARE_SIMD
+  case ST_PROCEDURE: case ST_OMP_DECLARE_SIMD: case ST_OMP_DECLARE_REDUCTION
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -1549,6 +1551,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_CRITICAL:
       p = "!$OMP CRITICAL";
+      break;
+    case ST_OMP_DECLARE_REDUCTION:
+      p = "!$OMP DECLARE REDUCTION";
       break;
     case ST_OMP_DECLARE_SIMD:
       p = "!$OMP DECLARE SIMD";

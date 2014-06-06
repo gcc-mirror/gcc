@@ -129,6 +129,7 @@ match gfc_match_omp_barrier (void);
 match gfc_match_omp_cancel (void);
 match gfc_match_omp_cancellation_point (void);
 match gfc_match_omp_critical (void);
+match gfc_match_omp_declare_reduction (void);
 match gfc_match_omp_declare_simd (void);
 match gfc_match_omp_do (void);
 match gfc_match_omp_do_simd (void);
