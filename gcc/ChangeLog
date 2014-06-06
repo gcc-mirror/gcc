@@ -1,3 +1,18 @@
+2014-06-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/61300
+	* doc/tm.texi.in (INCOMING_REG_PARM_STACK_SPACE): Document.
+	* doc/tm.texi: Regenerate.
+	* function.c (INCOMING_REG_PARM_STACK_SPACE): Provide default.
+	Use throughout in place of REG_PARM_STACK_SPACE.
+	* config/rs6000/rs6000.c (rs6000_reg_parm_stack_space): Add
+	"incoming" param.  Pass to rs6000_function_parms_need_stack.
+	(rs6000_function_parms_need_stack): Add "incoming" param, ignore
+	prototype_p when incoming.  Use function decl when incoming
+	to handle K&R style functions.
+	* config/rs6000/rs6000.h (REG_PARM_STACK_SPACE): Adjust.
+	(INCOMING_REG_PARM_STACK_SPACE): Define.
+
 2014-06-05  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/52472
