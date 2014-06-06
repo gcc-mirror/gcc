@@ -1,7 +1,12 @@
+2014-06-06  Richard Biener  <rguenther@suse.de>
+
+	* passes.def: Move 2nd VRP pass before phi-only-cprop.
+
 2014-06-06  Christian Bruel  <christian.bruel@st.com>
 
 	PR tree-optimization/43934
-	* tree-ssa-loop-im.c (determine_max_movement): Add PHI def constant cost.
+	* tree-ssa-loop-im.c (determine_max_movement): Add PHI def constant
+	cost.
 
 2014-06-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
