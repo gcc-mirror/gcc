@@ -1,3 +1,10 @@
+2014-06-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira-lives.c (single_reg_class): Add missing break.  Explicitly
+	return NO_REGS for extra address and memory constraints.  Handle
+	operands that match (or are equivalent to something that matches)
+	extra constant constraints.  Ignore other non-register operands.
+
 2014-06-06  Alan Modra  <amodra@gmail.com>
 
 	PR target/61300

@@ -839,7 +839,8 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 		  && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (equiv_const,
 						       c, constraints)))
 	    return NO_REGS;
-	  /* ??? what about memory */
+	  break;
+
 	case 'r':
 	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
 	case 'h': case 'j': case 'k': case 'l':
@@ -848,9 +849,22 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	case 'A': case 'B': case 'C': case 'D':
 	case 'Q': case 'R': case 'S': case 'T': case 'U':
 	case 'W': case 'Y': case 'Z':
+#ifdef EXTRA_CONSTRAINT_STR
+	  /* ??? Is this the best way to handle memory constraints?  */
+	  if (EXTRA_MEMORY_CONSTRAINT (c, constraints)
+	      || EXTRA_ADDRESS_CONSTRAINT (c, constraints))
+	    return NO_REGS;
+	  if (EXTRA_CONSTRAINT_STR (op, c, constraints)
+	      || (equiv_const != NULL_RTX
+		  && CONSTANT_P (equiv_const)
+		  && EXTRA_CONSTRAINT_STR (equiv_const, c, constraints)))
+	    return NO_REGS;
+#endif
 	  next_cl = (c == 'r'
 		     ? GENERAL_REGS
 		     : REG_CLASS_FROM_CONSTRAINT (c, constraints));
+	  if (next_cl == NO_REGS)
+	    break;
 	  if (cl == NO_REGS
 	      ? ira_class_singleton[next_cl][GET_MODE (op)] < 0
 	      : (ira_class_singleton[cl][GET_MODE (op)]
