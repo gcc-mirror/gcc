@@ -1,3 +1,13 @@
+2014-06-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_movmem): New.
+	* config/aarch64/aarch64.c (aarch64_move_pointer): New.
+	(aarch64_progress_pointer): Likewise.
+	(aarch64_copy_one_part_and_move_pointers): Likewise.
+	(aarch64_expand_movmen): Likewise.
+	* config/aarch64/aarch64.h (MOVE_RATIO): Set low.
+	* config/aarch64/aarch64.md (movmem<mode>): New.
+
 2014-06-06  Bingfeng Mei  <bmei@broadcom.com>
 
 	* targhooks.c (default_add_stmt_cost): Call target specific

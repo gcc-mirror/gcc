@@ -672,12 +672,14 @@ do {									     \
 /* The base cost overhead of a memcpy call, for MOVE_RATIO and friends.  */
 #define AARCH64_CALL_RATIO 8
 
-/* When optimizing for size, give a better estimate of the length of a memcpy
-   call, but use the default otherwise.  But move_by_pieces_ninsns() counts
-   memory-to-memory moves, and we'll have to generate a load & store for each,
-   so halve the value to take that into account.  */
+/* MOVE_RATIO dictates when we will use the move_by_pieces infrastructure.
+   move_by_pieces will continually copy the largest safe chunks.  So a
+   7-byte copy is a 4-byte + 2-byte + byte copy.  This proves inefficient
+   for both size and speed of copy, so we will instead use the "movmem"
+   standard name to implement the copy.  This logic does not apply when
+   targeting -mstrict-align, so keep a sensible default in that case.  */
 #define MOVE_RATIO(speed) \
-  (((speed) ? 15 : AARCH64_CALL_RATIO) / 2)
+  (!STRICT_ALIGNMENT ? 2 : (((speed) ? 15 : AARCH64_CALL_RATIO) / 2))
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */
