@@ -1,5 +1,14 @@
 2014-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR debug/53927
+	* function.c (instantiate_decls): Process the saved static chain.
+	(expand_function_start): If not optimizing, save the static chain
+	onto the stack.
+	* tree-nested.c (convert_all_function_calls): Always create the static
+	chain for nested functions if not optimizing.
+
+2014-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-cfg.c (make_edges) <GIMPLE_RETURN>: Put a location on the edge.
 
 2014-06-06  Richard Biener  <rguenther@suse.de>

@@ -2220,11 +2220,21 @@ convert_all_function_calls (struct nesting_info *root)
   struct nesting_info *n;
 
   /* First, optimistically clear static_chain for all decls that haven't
-     used the static chain already for variable access.  */
+     used the static chain already for variable access.  But always create
+     it if not optimizing.  This makes it possible to reconstruct the static
+     nesting tree at run time and thus to resolve up-level references from
+     within the debugger.  */
   FOR_EACH_NEST_INFO (n, root)
     {
       tree decl = n->context;
-      if (!n->outer || (!n->chain_decl && !n->chain_field))
+      if (!optimize)
+	{
+	  if (n->inner)
+	    (void) get_frame_type (n);
+	  if (n->outer)
+	    (void) get_chain_decl (n);
+	}
+      else if (!n->outer || (!n->chain_decl && !n->chain_field))
 	{
 	  DECL_STATIC_CHAIN (decl) = 0;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
