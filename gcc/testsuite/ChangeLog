@@ -1,3 +1,8 @@
+2014-06-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/tree-ssa/pr42585.c: Skip for AArch64.
+	* gcc.dg/tree-ssa/sra-12.c: Likewise.
+
 2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.c-torture/execute/bswap-2.c: Add alignment constraints to

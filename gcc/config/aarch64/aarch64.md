@@ -883,6 +883,24 @@
   }
 )
 
+;; 0 is dst
+;; 1 is src
+;; 2 is size of move in bytes
+;; 3 is alignment
+
+(define_expand "movmemdi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:BLK 1 "memory_operand")
+   (match_operand:DI 2 "immediate_operand")
+   (match_operand:DI 3 "immediate_operand")]
+   "!STRICT_ALIGNMENT"
+{
+  if (aarch64_expand_movmem (operands))
+    DONE;
+  FAIL;
+}
+)
+
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "load_pair<mode>"

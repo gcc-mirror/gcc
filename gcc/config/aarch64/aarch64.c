@@ -9409,6 +9409,164 @@ aarch64_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
   return false;
 }
 
+/* Return a new RTX holding the result of moving POINTER forward by
+   AMOUNT bytes.  */
+
+static rtx
+aarch64_move_pointer (rtx pointer, int amount)
+{
+  rtx next = plus_constant (Pmode, XEXP (pointer, 0), amount);
+
+  return adjust_automodify_address (pointer, GET_MODE (pointer),
+				    next, amount);
+}
+
+/* Return a new RTX holding the result of moving POINTER forward by the
+   size of the mode it points to.  */
+
+static rtx
+aarch64_progress_pointer (rtx pointer)
+{
+  HOST_WIDE_INT amount = GET_MODE_SIZE (GET_MODE (pointer));
+
+  return aarch64_move_pointer (pointer, amount);
+}
+
+/* Copy one MODE sized block from SRC to DST, then progress SRC and DST by
+   MODE bytes.  */
+
+static void
+aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
+					      enum machine_mode mode)
+{
+  rtx reg = gen_reg_rtx (mode);
+
+  /* "Cast" the pointers to the correct mode.  */
+  *src = adjust_address (*src, mode, 0);
+  *dst = adjust_address (*dst, mode, 0);
+  /* Emit the memcpy.  */
+  emit_move_insn (reg, *src);
+  emit_move_insn (*dst, reg);
+  /* Move the pointers forward.  */
+  *src = aarch64_progress_pointer (*src);
+  *dst = aarch64_progress_pointer (*dst);
+}
+
+/* Expand movmem, as if from a __builtin_memcpy.  Return true if
+   we succeed, otherwise return false.  */
+
+bool
+aarch64_expand_movmem (rtx *operands)
+{
+  unsigned int n;
+  rtx dst = operands[0];
+  rtx src = operands[1];
+  rtx base;
+  bool speed_p = !optimize_function_for_size_p (cfun);
+
+  /* When optimizing for size, give a better estimate of the length of a
+     memcpy call, but use the default otherwise.  */
+  unsigned int max_instructions = (speed_p ? 15 : AARCH64_CALL_RATIO) / 2;
+
+  /* We can't do anything smart if the amount to copy is not constant.  */
+  if (!CONST_INT_P (operands[2]))
+    return false;
+
+  n = UINTVAL (operands[2]);
+
+  /* Try to keep the number of instructions low.  For cases below 16 bytes we
+     need to make at most two moves.  For cases above 16 bytes it will be one
+     move for each 16 byte chunk, then at most two additional moves.  */
+  if (((n / 16) + (n % 16 ? 2 : 0)) > max_instructions)
+    return false;
+
+  base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
+  dst = adjust_automodify_address (dst, VOIDmode, base, 0);
+
+  base = copy_to_mode_reg (Pmode, XEXP (src, 0));
+  src = adjust_automodify_address (src, VOIDmode, base, 0);
+
+  /* Simple cases.  Copy 0-3 bytes, as (if applicable) a 2-byte, then a
+     1-byte chunk.  */
+  if (n < 4)
+    {
+      if (n >= 2)
+	{
+	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
+	  n -= 2;
+	}
+
+      if (n == 1)
+	aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
+
+      return true;
+    }
+
+  /* Copy 4-8 bytes.  First a 4-byte chunk, then (if applicable) a second
+     4-byte chunk, partially overlapping with the previously copied chunk.  */
+  if (n < 8)
+    {
+      aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
+      n -= 4;
+      if (n > 0)
+	{
+	  int move = n - 4;
+
+	  src = aarch64_move_pointer (src, move);
+	  dst = aarch64_move_pointer (dst, move);
+	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
+	}
+      return true;
+    }
+
+  /* Copy more than 8 bytes.  Copy chunks of 16 bytes until we run out of
+     them, then (if applicable) an 8-byte chunk.  */
+  while (n >= 8)
+    {
+      if (n / 16)
+	{
+	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, TImode);
+	  n -= 16;
+	}
+      else
+	{
+	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
+	  n -= 8;
+	}
+    }
+
+  /* Finish the final bytes of the copy.  We can always do this in one
+     instruction.  We either copy the exact amount we need, or partially
+     overlap with the previous chunk we copied and copy 8-bytes.  */
+  if (n == 0)
+    return true;
+  else if (n == 1)
+    aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
+  else if (n == 2)
+    aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
+  else if (n == 4)
+    aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
+  else
+    {
+      if (n == 3)
+	{
+	  src = aarch64_move_pointer (src, -1);
+	  dst = aarch64_move_pointer (dst, -1);
+	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
+	}
+      else
+	{
+	  int move = n - 8;
+
+	  src = aarch64_move_pointer (src, move);
+	  dst = aarch64_move_pointer (dst, move);
+	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
+	}
+    }
+
+  return true;
+}
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
