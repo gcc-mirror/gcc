@@ -71,6 +71,7 @@
 
 2014-06-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
+	    Renlin  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_layout_frame): Correct
 	initialization of R30 offset.  Update offset.  Iterate core
@@ -87,7 +88,7 @@
 
 	* config/aarch64/aarch64.h (machine_function): Move
 	saved_varargs_size from here...
-	(aarch64_frameGTY): ... to here.
+	(aarch64_frame): ... to here.
 
 	* config/aarch64/aarch64.c (aarch64_expand_prologue)
 	(aarch64_expand_epilogue, aarch64_final_eh_return_addr)
