@@ -1,3 +1,8 @@
+2014-06-06  Christian Bruel  <christian.bruel@st.com>
+
+	PR tree-optimization/43934
+	* gcc.dg/tree-ssa/ssa-lim-8.c: New testcase.
+
 2014-06-05  S. Gilles  <sgilles@terpmail.umd.edu>
 
 	PR c/53119
