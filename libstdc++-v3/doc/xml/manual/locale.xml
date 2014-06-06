@@ -111,7 +111,7 @@ portability is an issue.
 <itemizedlist>
    <listitem>
      <para>
-       <code>`locale -a`</code> displays available locales.
+       <code>locale -a</code> displays available locales.
      </para>
 <blockquote>
 <programlisting>

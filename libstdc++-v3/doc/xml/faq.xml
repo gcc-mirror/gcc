@@ -801,12 +801,12 @@
     <literallayout class="normal">
     #include &lt;fstream&gt;
     ...
-    std::fstream  fs(<quote>a_file</quote>);
+    std::fstream  fs("a_file");
     // .
     // . do things with fs...
     // .
     fs.close();
-    fs.open(<quote>a_new_file</quote>);
+    fs.open("a_new_file");
     </literallayout>
     
     <para>
