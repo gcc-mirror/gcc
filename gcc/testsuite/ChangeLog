@@ -1,3 +1,9 @@
+2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.c-torture/execute/bswap-2.c: Add alignment constraints to
+	bitfield and test wrong results instead of correct results to make the
+	test more portable.
+
 2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60432
