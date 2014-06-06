@@ -2977,6 +2977,13 @@ process_address_1 (int nop, rtx *before, rtx *after)
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       new_reg, *ad.index);
     }
+  else if (get_index_scale (&ad) == 1)
+    {
+      /* The last transformation to one reg will be made in
+	 curr_insn_transform function.  */
+      end_sequence ();
+      return false;
+    }
   else
     {
       /* base + scale * index => base + new_reg,
