@@ -1,3 +1,8 @@
+2014-06-06  Bingfeng Mei  <bmei@broadcom.com>
+
+	* targhooks.c (default_add_stmt_cost): Call target specific
+	hook instead of default one.
+
 2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* ChangeLog (2014-05-23): Fix ChangeLog entry to refer to target
