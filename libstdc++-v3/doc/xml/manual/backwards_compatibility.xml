@@ -412,7 +412,7 @@ erase(size_type __pos = 0, size_type __n = npos)
   std::ostrstream oss;
 #endif
 
-oss &lt;&lt; <quote>Name=</quote> &lt;&lt; m_name &lt;&lt; <quote>, number=</quote> &lt;&lt; m_number &lt;&lt; std::endl;
+oss &lt;&lt; "Name=" &lt;&lt; m_name &lt;&lt; ", number=" &lt;&lt; m_number &lt;&lt; std::endl;
 ...
 #ifndef HAVE_SSTREAM
   oss &lt;&lt; std::ends; // terminate the char*-string

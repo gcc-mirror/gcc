@@ -1,3 +1,22 @@
+2014-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml (faq.stream_reopening_fails): Replace <quote> in
+	code example.
+	* doc/xml/manual/backwards_compatibility.xml
+	(backwards.second.stringstreams): Likewise.
+	* doc/xml/manual/configure.xml (--enable-libstdcxx-time): Document
+	change of default.
+	* doc/xml/manual/containers.xml (associative.bitset.type_string):
+	Replace <quote> in code example.
+	* doc/xml/manual/debug.xml: Clarify reference to ThreadSanitizer.
+	* doc/xml/manual/documentation_hacking.xml: Improve debugging tips,
+	fix typos, improve markup.
+	* doc/xml/manual/intro.xml (manual.intro.status.bugs.iso): Replace
+	<emphasis> with <replaceable>.
+	* doc/xml/manual/locale.xml (locale.impl.c): Remove backticks.
+	* doc/xml/manual/support.xml (std.support.memory): Replace <quote>
+	and remove newlines in string literal.
+
 2014-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1423
