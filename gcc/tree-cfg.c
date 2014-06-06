@@ -763,8 +763,11 @@ make_edges (void)
 	      fallthru = false;
 	      break;
 	    case GIMPLE_RETURN:
-	      make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-	      fallthru = false;
+	      {
+		edge e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+		e->goto_locus = gimple_location (last);
+		fallthru = false;
+	      }
 	      break;
 	    case GIMPLE_COND:
 	      make_cond_expr_edges (bb);

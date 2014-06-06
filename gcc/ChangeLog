@@ -1,3 +1,7 @@
+2014-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-cfg.c (make_edges) <GIMPLE_RETURN>: Put a location on the edge.
+
 2014-06-06  Richard Biener  <rguenther@suse.de>
 
 	* cfgexpand.c (expand_gimple_cond): Remove check for current_loops.
