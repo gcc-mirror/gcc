@@ -1,3 +1,11 @@
+2014-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59299
+	* tree-ssa-sink.c (all_immediate_uses_same_place): Work on
+	a def operand.
+	(nearest_common_dominator_of_uses): Likewise.
+	(statement_sink_location): Adjust.  Support sinking loads.
+
 2014-06-06  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (get_place_in_agg_contents_list): New function.

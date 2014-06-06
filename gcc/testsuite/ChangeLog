@@ -1,3 +1,8 @@
+2014-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59299
+	* gcc.dg/tree-ssa/ssa-sink-10.c: New testcase.
+
 2014-06-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/tree-ssa/pr42585.c: Skip for AArch64.
