@@ -7,7 +7,7 @@ int i;
 void
 p(void)
 {
-  int c[2] = { 0 };
+  int c[3] = { 0 };
   for (h = 0; h < 2; ++h) {
     static int *l = &h;
     int t;
