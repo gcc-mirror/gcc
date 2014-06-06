@@ -148,21 +148,21 @@ am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	crypto/sha512.lo crypto/subtle.lo crypto/tls.lo crypto/x509.lo \
 	crypto/x509/pkix.lo database/sql.lo database/sql/driver.lo \
 	debug/dwarf.lo debug/elf.lo debug/goobj.lo debug/gosym.lo \
-	debug/macho.lo debug/pe.lo encoding/ascii85.lo \
-	encoding/asn1.lo encoding/base32.lo encoding/base64.lo \
-	encoding/binary.lo encoding/csv.lo encoding/gob.lo \
-	encoding/hex.lo encoding/json.lo encoding/pem.lo \
-	encoding/xml.lo exp/proxy.lo exp/terminal.lo html/template.lo \
-	go/ast.lo go/build.lo go/doc.lo go/format.lo go/parser.lo \
-	go/printer.lo go/scanner.lo go/token.lo hash/adler32.lo \
-	hash/crc32.lo hash/crc64.lo hash/fnv.lo net/http/cgi.lo \
-	net/http/cookiejar.lo net/http/fcgi.lo net/http/httptest.lo \
-	net/http/httputil.lo net/http/pprof.lo image/color.lo \
-	image/color/palette.lo image/draw.lo image/gif.lo \
-	image/jpeg.lo image/png.lo index/suffixarray.lo io/ioutil.lo \
-	log/syslog.lo log/syslog/syslog_c.lo math/big.lo math/cmplx.lo \
-	math/rand.lo mime/multipart.lo net/http.lo net/mail.lo \
-	net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
+	debug/macho.lo debug/pe.lo debug/plan9obj.lo \
+	encoding/ascii85.lo encoding/asn1.lo encoding/base32.lo \
+	encoding/base64.lo encoding/binary.lo encoding/csv.lo \
+	encoding/gob.lo encoding/hex.lo encoding/json.lo \
+	encoding/pem.lo encoding/xml.lo exp/proxy.lo exp/terminal.lo \
+	html/template.lo go/ast.lo go/build.lo go/doc.lo go/format.lo \
+	go/parser.lo go/printer.lo go/scanner.lo go/token.lo \
+	hash/adler32.lo hash/crc32.lo hash/crc64.lo hash/fnv.lo \
+	net/http/cgi.lo net/http/cookiejar.lo net/http/fcgi.lo \
+	net/http/httptest.lo net/http/httputil.lo net/http/pprof.lo \
+	image/color.lo image/color/palette.lo image/draw.lo \
+	image/gif.lo image/jpeg.lo image/png.lo index/suffixarray.lo \
+	io/ioutil.lo log/syslog.lo log/syslog/syslog_c.lo math/big.lo \
+	math/cmplx.lo math/rand.lo mime/multipart.lo net/http.lo \
+	net/mail.lo net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
 	old/regexp.lo old/template.lo os/exec.lo $(am__DEPENDENCIES_1) \
 	os/signal.lo os/user.lo path/filepath.lo regexp/syntax.lo \
 	net/rpc/jsonrpc.lo runtime/debug.lo runtime/pprof.lo \
@@ -213,8 +213,8 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
 	go-unwind.lo go-varargs.lo chan.lo cpuprof.lo env_posix.lo \
 	lfstack.lo $(am__objects_1) mcache.lo mcentral.lo \
-	$(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo mheap.lo \
-	msize.lo $(am__objects_3) panic.lo parfor.lo print.lo proc.lo \
+	$(am__objects_2) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
+	$(am__objects_3) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_4) \
 	iface.lo malloc.lo map.lo mprof.lo netpoll.lo reflect.lo \
 	runtime1.lo sema.lo sigqueue.lo string.lo time.lo \
@@ -591,7 +591,8 @@ toolexeclibgodebug_DATA = \
 	debug/goobj.gox \
 	debug/gosym.gox \
 	debug/macho.gox \
-	debug/pe.gox
+	debug/pe.gox \
+	debug/plan9obj.gox
 
 toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 toolexeclibgoencoding_DATA = \
@@ -829,7 +830,6 @@ runtime_files = \
 	runtime/mcache.c \
 	runtime/mcentral.c \
 	$(runtime_mem_file) \
-	runtime/mfinal.c \
 	runtime/mfixalloc.c \
 	runtime/mgc0.c \
 	runtime/mheap.c \
@@ -1302,7 +1302,8 @@ go_crypto_hmac_files = \
 
 go_crypto_md5_files = \
 	go/crypto/md5/md5.go \
-	go/crypto/md5/md5block.go
+	go/crypto/md5/md5block.go \
+	go/crypto/md5/md5block_generic.go
 
 go_crypto_rand_files = \
 	go/crypto/rand/rand.go \
@@ -1320,7 +1321,8 @@ go_crypto_rsa_files = \
 
 go_crypto_sha1_files = \
 	go/crypto/sha1/sha1.go \
-	go/crypto/sha1/sha1block.go
+	go/crypto/sha1/sha1block.go \
+	go/crypto/sha1/sha1block_generic.go
 
 go_crypto_sha256_files = \
 	go/crypto/sha256/sha256.go \
@@ -1375,6 +1377,7 @@ go_debug_dwarf_files = \
 	go/debug/dwarf/line.go \
 	go/debug/dwarf/open.go \
 	go/debug/dwarf/type.go \
+	go/debug/dwarf/typeunit.go \
 	go/debug/dwarf/unit.go
 
 go_debug_elf_files = \
@@ -1389,12 +1392,17 @@ go_debug_gosym_files = \
 	go/debug/gosym/symtab.go
 
 go_debug_macho_files = \
+	go/debug/macho/fat.go \
 	go/debug/macho/file.go \
 	go/debug/macho/macho.go
 
 go_debug_pe_files = \
 	go/debug/pe/file.go \
 	go/debug/pe/pe.go
+
+go_debug_plan9obj_files = \
+	go/debug/plan9obj/file.go \
+	go/debug/plan9obj/plan9obj.go
 
 go_encoding_ascii85_files = \
 	go/encoding/ascii85/ascii85.go
@@ -1656,6 +1664,7 @@ go_net_http_pprof_files = \
 go_net_http_httputil_files = \
 	go/net/http/httputil/chunked.go \
 	go/net/http/httputil/dump.go \
+	go/net/http/httputil/httputil.go \
 	go/net/http/httputil/persist.go \
 	go/net/http/httputil/reverseproxy.go
 
@@ -1947,6 +1956,7 @@ libgo_go_objs = \
 	debug/gosym.lo \
 	debug/macho.lo \
 	debug/pe.lo \
+	debug/plan9obj.lo \
 	encoding/ascii85.lo \
 	encoding/asn1.lo \
 	encoding/base32.lo \
@@ -2187,6 +2197,7 @@ TEST_PACKAGES = \
 	debug/elf/check \
 	debug/macho/check \
 	debug/pe/check \
+	debug/plan9obj/check \
 	encoding/ascii85/check \
 	encoding/asn1/check \
 	encoding/base32/check \
@@ -2472,7 +2483,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcentral.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mem_posix_memalign.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mfinal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mfixalloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgc0.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mheap.Plo@am__quote@
@@ -3080,13 +3090,6 @@ mem.lo: runtime/mem.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/mem.c' object='mem.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mem.lo `test -f 'runtime/mem.c' || echo '$(srcdir)/'`runtime/mem.c
-
-mfinal.lo: runtime/mfinal.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mfinal.lo -MD -MP -MF $(DEPDIR)/mfinal.Tpo -c -o mfinal.lo `test -f 'runtime/mfinal.c' || echo '$(srcdir)/'`runtime/mfinal.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mfinal.Tpo $(DEPDIR)/mfinal.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/mfinal.c' object='mfinal.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mfinal.lo `test -f 'runtime/mfinal.c' || echo '$(srcdir)/'`runtime/mfinal.c
 
 mfixalloc.lo: runtime/mfixalloc.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mfixalloc.lo -MD -MP -MF $(DEPDIR)/mfixalloc.Tpo -c -o mfixalloc.lo `test -f 'runtime/mfixalloc.c' || echo '$(srcdir)/'`runtime/mfixalloc.c
@@ -5014,6 +5017,15 @@ debug/pe/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: debug/pe/check
 
+@go_include@ debug/plan9obj.lo.dep
+debug/plan9obj.lo.dep: $(go_debug_plan9obj_files)
+	$(BUILDDEPS)
+debug/plan9obj.lo: $(go_debug_plan9obj_files)
+	$(BUILDPACKAGE)
+debug/plan9obj/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: debug/plan9obj/check
+
 @go_include@ encoding/asn1.lo.dep
 encoding/asn1.lo.dep: $(go_encoding_asn1_files)
 	$(BUILDDEPS)
@@ -5804,6 +5816,8 @@ debug/gosym.gox: debug/gosym.lo
 debug/macho.gox: debug/macho.lo
 	$(BUILDGOX)
 debug/pe.gox: debug/pe.lo
+	$(BUILDGOX)
+debug/plan9obj.gox: debug/plan9obj.lo
 	$(BUILDGOX)
 
 encoding/ascii85.gox: encoding/ascii85.lo

@@ -363,9 +363,11 @@ argloop:
 
 	if len(out) == 1 && ret2 == amd64NoClass {
 		v := out[0]
-		w := v.iword()
-		if v.Kind() != Ptr && v.Kind() != UnsafePointer {
-			w = iword(loadScalar(unsafe.Pointer(w), v.typ.size))
+		var w unsafe.Pointer
+		if v.Kind() == Ptr || v.Kind() == UnsafePointer {
+			w = v.pointer()
+		} else {
+			w = unsafe.Pointer(loadScalar(v.ptr, v.typ.size))
 		}
 		switch ret1 {
 		case amd64Integer:

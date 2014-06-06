@@ -419,7 +419,7 @@ func TestServeMuxHandlerRedirects(t *testing.T) {
 func TestMuxRedirectLeadingSlashes(t *testing.T) {
 	paths := []string{"//foo.txt", "///foo.txt", "/../../foo.txt"}
 	for _, path := range paths {
-		req, err := ReadRequest(bufio.NewReader(bytes.NewBufferString("GET " + path + " HTTP/1.1\r\nHost: test\r\n\r\n")))
+		req, err := ReadRequest(bufio.NewReader(strings.NewReader("GET " + path + " HTTP/1.1\r\nHost: test\r\n\r\n")))
 		if err != nil {
 			t.Errorf("%s", err)
 		}
@@ -441,6 +441,9 @@ func TestMuxRedirectLeadingSlashes(t *testing.T) {
 }
 
 func TestServerTimeouts(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	reqNum := 0
 	ts := httptest.NewUnstartedServer(HandlerFunc(func(res ResponseWriter, req *Request) {
@@ -517,6 +520,9 @@ func TestServerTimeouts(t *testing.T) {
 // shouldn't cause a handler to block forever on reads (next HTTP
 // request) that will never happen.
 func TestOnlyWriteTimeout(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	var conn net.Conn
 	var afterTimeoutErrc = make(chan error, 1)
@@ -840,6 +846,9 @@ func TestHeadResponses(t *testing.T) {
 }
 
 func TestTLSHandshakeTimeout(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	ts := httptest.NewUnstartedServer(HandlerFunc(func(w ResponseWriter, r *Request) {}))
 	ts.Config.ReadTimeout = 250 * time.Millisecond
@@ -1414,6 +1423,9 @@ func TestRequestBodyLimit(t *testing.T) {
 // TestClientWriteShutdown tests that if the client shuts down the write
 // side of their TCP connection, the server doesn't send a 400 Bad Request.
 func TestClientWriteShutdown(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {}))
 	defer ts.Close()
@@ -2062,30 +2074,35 @@ func TestServerReaderFromOrder(t *testing.T) {
 	}
 }
 
-// Issue 6157
-func TestNoContentTypeOnNotModified(t *testing.T) {
-	ht := newHandlerTest(HandlerFunc(func(w ResponseWriter, r *Request) {
-		if r.URL.Path == "/header" {
-			w.Header().Set("Content-Length", "123")
-		}
-		w.WriteHeader(StatusNotModified)
-		if r.URL.Path == "/more" {
-			w.Write([]byte("stuff"))
-		}
-	}))
-	for _, req := range []string{
-		"GET / HTTP/1.0",
-		"GET /header HTTP/1.0",
-		"GET /more HTTP/1.0",
-		"GET / HTTP/1.1",
-		"GET /header HTTP/1.1",
-		"GET /more HTTP/1.1",
-	} {
-		got := ht.rawResponse(req)
-		if !strings.Contains(got, "304 Not Modified") {
-			t.Errorf("Non-304 Not Modified for %q: %s", req, got)
-		} else if strings.Contains(got, "Content-Length") {
-			t.Errorf("Got a Content-Length from %q: %s", req, got)
+// Issue 6157, Issue 6685
+func TestCodesPreventingContentTypeAndBody(t *testing.T) {
+	for _, code := range []int{StatusNotModified, StatusNoContent, StatusContinue} {
+		ht := newHandlerTest(HandlerFunc(func(w ResponseWriter, r *Request) {
+			if r.URL.Path == "/header" {
+				w.Header().Set("Content-Length", "123")
+			}
+			w.WriteHeader(code)
+			if r.URL.Path == "/more" {
+				w.Write([]byte("stuff"))
+			}
+		}))
+		for _, req := range []string{
+			"GET / HTTP/1.0",
+			"GET /header HTTP/1.0",
+			"GET /more HTTP/1.0",
+			"GET / HTTP/1.1",
+			"GET /header HTTP/1.1",
+			"GET /more HTTP/1.1",
+		} {
+			got := ht.rawResponse(req)
+			wantStatus := fmt.Sprintf("%d %s", code, StatusText(code))
+			if !strings.Contains(got, wantStatus) {
+				t.Errorf("Code %d: Wanted %q Modified for %q: %s", code, req, got)
+			} else if strings.Contains(got, "Content-Length") {
+				t.Errorf("Code %d: Got a Content-Length from %q: %s", code, req, got)
+			} else if strings.Contains(got, "stuff") {
+				t.Errorf("Code %d: Response contains a body from %q: %s", code, req, got)
+			}
 		}
 	}
 }
@@ -2148,6 +2165,57 @@ func TestTransportAndServerSharedBodyRace(t *testing.T) {
 	(<-backendRespc).Body.Close()
 }
 
+// Test that a hanging Request.Body.Read from another goroutine can't
+// cause the Handler goroutine's Request.Body.Close to block.
+func TestRequestBodyCloseDoesntBlock(t *testing.T) {
+	t.Skipf("Skipping known issue; see golang.org/issue/7121")
+	if testing.Short() {
+		t.Skip("skipping in -short mode")
+	}
+	defer afterTest(t)
+
+	readErrCh := make(chan error, 1)
+	errCh := make(chan error, 2)
+
+	server := httptest.NewServer(HandlerFunc(func(rw ResponseWriter, req *Request) {
+		go func(body io.Reader) {
+			_, err := body.Read(make([]byte, 100))
+			readErrCh <- err
+		}(req.Body)
+		time.Sleep(500 * time.Millisecond)
+	}))
+	defer server.Close()
+
+	closeConn := make(chan bool)
+	defer close(closeConn)
+	go func() {
+		conn, err := net.Dial("tcp", server.Listener.Addr().String())
+		if err != nil {
+			errCh <- err
+			return
+		}
+		defer conn.Close()
+		_, err = conn.Write([]byte("POST / HTTP/1.1\r\nConnection: close\r\nHost: foo\r\nContent-Length: 100000\r\n\r\n"))
+		if err != nil {
+			errCh <- err
+			return
+		}
+		// And now just block, making the server block on our
+		// 100000 bytes of body that will never arrive.
+		<-closeConn
+	}()
+	select {
+	case err := <-readErrCh:
+		if err == nil {
+			t.Error("Read was nil. Expected error.")
+		}
+	case err := <-errCh:
+		t.Error(err)
+	case <-time.After(5 * time.Second):
+		t.Error("timeout")
+	}
+}
+
 func TestResponseWriterWriteStringAllocs(t *testing.T) {
 	t.Skip("allocs test unreliable with gccgo")
 	ht := newHandlerTest(HandlerFunc(func(w ResponseWriter, r *Request) {
@@ -2191,7 +2259,9 @@ func BenchmarkClientServer(b *testing.B) {
 		if err != nil {
 			b.Fatal("Get:", err)
 		}
+		defer res.Body.Close()
 		all, err := ioutil.ReadAll(res.Body)
+		res.Body.Close()
 		if err != nil {
 			b.Fatal("ReadAll:", err)
 		}
@@ -2234,6 +2304,7 @@ func benchmarkClientServerParallel(b *testing.B, conc int) {
 					continue
 				}
 				all, err := ioutil.ReadAll(res.Body)
+				res.Body.Close()
 				if err != nil {
 					b.Logf("ReadAll: %v", err)
 					continue
@@ -2271,6 +2342,7 @@ func BenchmarkServer(b *testing.B) {
 				log.Panicf("Get: %v", err)
 			}
 			all, err := ioutil.ReadAll(res.Body)
+			res.Body.Close()
 			if err != nil {
 				log.Panicf("ReadAll: %v", err)
 			}

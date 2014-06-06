@@ -44,8 +44,8 @@ int32 runtime_class_to_allocnpages[NumSizeClasses];
 int8 runtime_size_to_class8[1024/8 + 1];
 int8 runtime_size_to_class128[(MaxSmallSize-1024)/128 + 1];
 
-static int32
-SizeToClass(int32 size)
+int32
+runtime_SizeToClass(int32 size)
 {
 	if(size > MaxSmallSize)
 		runtime_throw("SizeToClass - invalid size");
@@ -90,9 +90,9 @@ runtime_InitSizes(void)
 		// objects into the page, we might as well
 		// use just this size instead of having two
 		// different sizes.
-		if(sizeclass > 1
-		&& (int32)npages == runtime_class_to_allocnpages[sizeclass-1]
-		&& allocsize/size == allocsize/runtime_class_to_size[sizeclass-1]) {
+		if(sizeclass > 1 &&
+			(int32)npages == runtime_class_to_allocnpages[sizeclass-1] &&
+			allocsize/size == allocsize/runtime_class_to_size[sizeclass-1]) {
 			runtime_class_to_size[sizeclass-1] = size;
 			continue;
 		}
@@ -119,7 +119,7 @@ runtime_InitSizes(void)
 	// Double-check SizeToClass.
 	if(0) {
 		for(n=0; n < MaxSmallSize; n++) {
-			sizeclass = SizeToClass(n);
+			sizeclass = runtime_SizeToClass(n);
 			if(sizeclass < 1 || sizeclass >= NumSizeClasses || runtime_class_to_size[sizeclass] < n) {
 				runtime_printf("size=%d sizeclass=%d runtime_class_to_size=%d\n", n, sizeclass, runtime_class_to_size[sizeclass]);
 				runtime_printf("incorrect SizeToClass");
@@ -157,4 +157,19 @@ dump:
 		runtime_printf("\n");
 	}
 	runtime_throw("InitSizes failed");
+}
+
+// Returns size of the memory block that mallocgc will allocate if you ask for the size.
+uintptr
+runtime_roundupsize(uintptr size)
+{
+	if(size < MaxSmallSize) {
+		if(size <= 1024-8)
+			return runtime_class_to_size[runtime_size_to_class8[(size+7)>>3]];
+		else
+			return runtime_class_to_size[runtime_size_to_class128[(size-1024+127) >> 7]];
+	}
+	if(size + PageSize < size)
+		return size;
+	return ROUND(size, PageSize);
 }

@@ -205,12 +205,12 @@ struct	G
 	void*	gcinitial_sp;
 	ucontext_t gcregs;
 	byte*	entry;		// initial function
-	G*	alllink;	// on allg
 	void*	param;		// passed parameter on wakeup
 	bool	fromgogo;	// reached from gogo
 	int16	status;
 	uint32	selgen;		// valid sudog pointer
 	int64	goid;
+	int64	waitsince;	// approx time when the G become blocked
 	const char*	waitreason;	// if status==Gwaiting
 	G*	schedlink;
 	bool	ispanic;
@@ -221,8 +221,6 @@ struct	G
 	int32	sig;
 	int32	writenbuf;
 	byte*	writebuf;
-	// DeferChunk*	dchunk;
-	// DeferChunk*	dchunknext;
 	uintptr	sigcode0;
 	uintptr	sigcode1;
 	// uintptr	sigpc;
@@ -256,7 +254,8 @@ struct	M
 	int32	dying;
 	int32	profilehz;
 	int32	helpgc;
-	bool	spinning;
+	bool	spinning;	// M is out of work and is actively looking for work
+	bool	blocked;	// M is blocked on a Note
 	uint32	fastrand;
 	uint64	ncgocall;	// number of cgo calls in total
 	int32	ncgo;		// number of cgo calls currently in progress
@@ -276,8 +275,7 @@ struct	M
 	bool	racecall;
 	bool	needextram;
 	bool	dropextram;	// for gccgo: drop after call is done.
-	void*	racepc;
-	void	(*waitunlockf)(Lock*);
+	bool	(*waitunlockf)(G*, void*);
 	void*	waitlock;
 
 	uintptr	settype_buf[1024];
@@ -297,12 +295,16 @@ struct P
 	uint32	syscalltick;	// incremented on every system call
 	M*	m;		// back-link to associated M (nil if idle)
 	MCache*	mcache;
+	Defer*	deferpool;	// pool of available Defer structs (see panic.c)
+
+	// Cache of goroutine ids, amortizes accesses to runtime_sched.goidgen.
+	uint64	goidcache;
+	uint64	goidcacheend;
 
 	// Queue of runnable goroutines.
-	G**	runq;
-	int32	runqhead;
-	int32	runqtail;
-	int32	runqsize;
+	uint32	runqhead;
+	uint32	runqtail;
+	G*	runq[256];
 
 	// Available G's (status == Gdead)
 	G*	gfree;
@@ -357,6 +359,15 @@ enum {
 #else
 enum {
    Windows = 0
+};
+#endif
+#ifdef GOOS_solaris
+enum {
+   Solaris = 1
+};
+#else
+enum {
+   Solaris = 0
 };
 #endif
 
@@ -458,12 +469,18 @@ void	runtime_hashinit(void);
 
 void	runtime_traceback(void);
 void	runtime_tracebackothers(G*);
+enum
+{
+	// The maximum number of frames we print for a traceback
+	TracebackMaxFrames = 100,
+};
 
 /*
  * external data
  */
 extern	uintptr runtime_zerobase;
-extern	G*	runtime_allg;
+extern	G**	runtime_allg;
+extern	uintptr runtime_allglen;
 extern	G*	runtime_lastg;
 extern	M*	runtime_allm;
 extern	P**	runtime_allp;
@@ -514,21 +531,6 @@ void	runtime_printtrace(Location*, int32, bool);
 #define runtime_read(d, v, n) read((d), (v), (n))
 #define runtime_write(d, v, n) write((d), (v), (n))
 #define runtime_close(d) close(d)
-#define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_cas64(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-// Don't confuse with XADD x86 instruction,
-// this one is actually 'addx', that is, add-and-fetch.
-#define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
-#define runtime_xadd64(p, v) __sync_add_and_fetch (p, v)
-#define runtime_xchg(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_xchg64(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_atomicload(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicstore(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_atomicstore64(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
-#define runtime_atomicload64(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
-#define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 void	runtime_ready(G*);
 const byte*	runtime_getenv(const char*);
 int32	runtime_atoi(const byte*);
@@ -546,13 +548,30 @@ void	runtime_mallocinit(void);
 void	runtime_mprofinit(void);
 #define runtime_malloc(s) __go_alloc(s)
 #define runtime_free(p) __go_free(p)
-bool	runtime_addfinalizer(void*, FuncVal *fn, const struct __go_func_type *, const struct __go_ptr_type *);
 #define runtime_getcallersp(p) __builtin_frame_address(1)
 int32	runtime_mcount(void);
 int32	runtime_gcount(void);
 void	runtime_mcall(void(*)(G*));
 uint32	runtime_fastrand1(void);
 int32	runtime_timediv(int64, int32, int32*);
+
+// atomic operations
+#define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
+#define runtime_cas64(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
+#define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
+// Don't confuse with XADD x86 instruction,
+// this one is actually 'addx', that is, add-and-fetch.
+#define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
+#define runtime_xadd64(p, v) __sync_add_and_fetch (p, v)
+#define runtime_xchg(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_xchg64(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_xchgp(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_atomicload(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
+#define runtime_atomicstore(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_atomicstore64(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
+#define runtime_atomicload64(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
+#define runtime_atomicloadp(p) __atomic_load_n (p, __ATOMIC_SEQ_CST)
+#define runtime_atomicstorep(p, v) __atomic_store_n (p, v, __ATOMIC_SEQ_CST)
 
 void runtime_setmg(M*, G*);
 void runtime_newextram(void);
@@ -561,7 +580,8 @@ void runtime_newextram(void);
 void	runtime_gosched(void);
 void	runtime_gosched0(G*);
 void	runtime_schedtrace(bool);
-void	runtime_park(void(*)(Lock*), Lock*, const char*);
+void	runtime_park(bool(*)(G*, void*), void*, const char*);
+void	runtime_parkunlock(Lock*, const char*);
 void	runtime_tsleep(int64, const char*);
 M*	runtime_newm(void);
 void	runtime_goexit(void);
@@ -593,6 +613,7 @@ int32	runtime_netpollopen(uintptr, PollDesc*);
 int32   runtime_netpollclose(uintptr);
 void	runtime_netpollready(G**, PollDesc*, int32);
 uintptr	runtime_netpollfd(PollDesc*);
+void	runtime_netpollarm(uintptr, int32);
 void	runtime_crash(void);
 void	runtime_parsedebugvars(void);
 void	_rt0_go(void);
@@ -743,9 +764,6 @@ void	runtime_lockOSThread(void);
 void	runtime_unlockOSThread(void);
 
 bool	runtime_showframe(String, bool);
-Hchan*	runtime_makechan_c(ChanType*, int64);
-void	runtime_chansend(ChanType*, Hchan*, byte*, bool*, void*);
-void	runtime_chanrecv(ChanType*, Hchan*, byte*, bool*, bool*);
 void	runtime_printcreatedby(G*);
 
 uintptr	runtime_memlimit(void);
@@ -793,3 +811,5 @@ void*	__go_get_closure(void);
 
 bool	runtime_gcwaiting(void);
 void	runtime_badsignal(int);
+Defer*	runtime_newdefer(void);
+void	runtime_freedefer(Defer*);

@@ -13,6 +13,7 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/textproto"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -52,12 +53,14 @@ type FileSystem interface {
 
 // A File is returned by a FileSystem's Open method and can be
 // served by the FileServer implementation.
+//
+// The methods should behave the same as those on an *os.File.
 type File interface {
-	Close() error
-	Stat() (os.FileInfo, error)
+	io.Closer
+	io.Reader
 	Readdir(count int) ([]os.FileInfo, error)
-	Read([]byte) (int, error)
 	Seek(offset int64, whence int) (int64, error)
+	Stat() (os.FileInfo, error)
 }
 
 func dirList(w ResponseWriter, f File) {
@@ -73,8 +76,11 @@ func dirList(w ResponseWriter, f File) {
 			if d.IsDir() {
 				name += "/"
 			}
-			// TODO htmlescape
-			fmt.Fprintf(w, "<a href=\"%s\">%s</a>\n", name, name)
+			// name may contain '?' or '#', which must be escaped to remain
+			// part of the URL path, and not indicate the start of a query
+			// string or fragment.
+			url := url.URL{Path: name}
+			fmt.Fprintf(w, "<a href=\"%s\">%s</a>\n", url.String(), htmlReplacer.Replace(name))
 		}
 	}
 	fmt.Fprintf(w, "</pre>\n")

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin dragonfly freebsd linux netbsd openbsd
+
 package syscall_test
 
 import (
+	"runtime"
 	"syscall"
 	"testing"
 )
@@ -32,7 +35,14 @@ func TestRlimit(t *testing.T) {
 	set = rlimit
 	set.Cur = set.Max - 1
 	if set != get {
-		t.Fatalf("Rlimit: change failed: wanted %#v got %#v", set, get)
+		// Seems like Darwin requires some privilege to
+		// increase the soft limit of rlimit sandbox, though
+		// Setrlimit never reports an error.
+		switch runtime.GOOS {
+		case "darwin":
+		default:
+			t.Fatalf("Rlimit: change failed: wanted %#v got %#v", set, get)
+		}
 	}
 	err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rlimit)
 	if err != nil {

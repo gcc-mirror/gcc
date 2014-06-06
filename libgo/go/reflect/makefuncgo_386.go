@@ -127,17 +127,16 @@ func MakeFuncStubGo(regs *i386Regs, c *makeFuncImpl) {
 	}
 
 	v := out[0]
-	w := v.iword()
 	switch v.Kind() {
 	case Ptr, UnsafePointer:
-		regs.eax = uint32(uintptr(w))
+		regs.eax = uint32(uintptr(v.pointer()))
 	case Float32:
-		regs.st0 = float64(*(*float32)(unsafe.Pointer(w)))
+		regs.st0 = float64(*(*float32)(v.ptr))
 		regs.sf = true
 	case Float64:
-		regs.st0 = *(*float64)(unsafe.Pointer(w))
+		regs.st0 = *(*float64)(v.ptr)
 		regs.sf = true
 	default:
-		regs.eax = uint32(loadScalar(unsafe.Pointer(w), v.typ.size))
+		regs.eax = uint32(loadScalar(v.ptr, v.typ.size))
 	}
 }

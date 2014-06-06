@@ -735,7 +735,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	// response header and this is our first (and last) write, set
 	// it, even to zero. This helps HTTP/1.0 clients keep their
 	// "keep-alive" connections alive.
-	// Exceptions: 304 responses never get Content-Length, and if
+	// Exceptions: 304/204/1xx responses never get Content-Length, and if
 	// it was a HEAD request, we don't know the difference between
 	// 0 actual bytes and 0 bytes because the handler noticed it
 	// was a HEAD request and chose not to write anything.  So for
@@ -743,7 +743,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	// write non-zero bytes.  If it's actually 0 bytes and the
 	// handler never looked at the Request.Method, we just don't
 	// send a Content-Length header.
-	if w.handlerDone && w.status != StatusNotModified && header.get("Content-Length") == "" && (!isHEAD || len(p) > 0) {
+	if w.handlerDone && bodyAllowedForStatus(w.status) && header.get("Content-Length") == "" && (!isHEAD || len(p) > 0) {
 		w.contentLength = int64(len(p))
 		setHeader.contentLength = strconv.AppendInt(cw.res.clenBuf[:0], int64(len(p)), 10)
 	}
@@ -792,7 +792,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	}
 
 	code := w.status
-	if code == StatusNotModified {
+	if !bodyAllowedForStatus(code) {
 		// Must not have body.
 		// RFC 2616 section 10.3.5: "the response MUST NOT include other entity-headers"
 		for _, k := range []string{"Content-Type", "Content-Length", "Transfer-Encoding"} {
@@ -821,7 +821,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 		hasCL = false
 	}
 
-	if w.req.Method == "HEAD" || code == StatusNotModified {
+	if w.req.Method == "HEAD" || !bodyAllowedForStatus(code) {
 		// do nothing
 	} else if code == StatusNoContent {
 		delHeader("Transfer-Encoding")
@@ -915,7 +915,7 @@ func (w *response) bodyAllowed() bool {
 	if !w.wroteHeader {
 		panic("")
 	}
-	return w.status != StatusNotModified
+	return bodyAllowedForStatus(w.status)
 }
 
 // The Life Of A Write is like this:
@@ -997,11 +997,10 @@ func (w *response) finishRequest() {
 	w.cw.close()
 	w.conn.buf.Flush()
 
-	// Close the body, unless we're about to close the whole TCP connection
-	// anyway.
-	if !w.closeAfterReply {
-		w.req.Body.Close()
-	}
+	// Close the body (regardless of w.closeAfterReply) so we can
+	// re-use its bufio.Reader later safely.
+	w.req.Body.Close()
+
 	if w.req.MultipartForm != nil {
 		w.req.MultipartForm.RemoveAll()
 	}
@@ -1084,7 +1083,7 @@ func validNPN(proto string) bool {
 func (c *conn) serve() {
 	defer func() {
 		if err := recover(); err != nil {
-			const size = 4096
+			const size = 64 << 10
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)]
 			log.Printf("http: panic serving %v: %v\n%s", c.remoteAddr, err, buf)
@@ -1608,11 +1607,11 @@ func (srv *Server) ListenAndServe() error {
 	if addr == "" {
 		addr = ":http"
 	}
-	l, e := net.Listen("tcp", addr)
-	if e != nil {
-		return e
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
 	}
-	return srv.Serve(l)
+	return srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
 }
 
 // Serve accepts incoming connections on the Listener l, creating a
@@ -1742,12 +1741,12 @@ func (srv *Server) ListenAndServeTLS(certFile, keyFile string) error {
 		return err
 	}
 
-	conn, err := net.Listen("tcp", addr)
+	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 
-	tlsListener := tls.NewListener(conn, config)
+	tlsListener := tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, config)
 	return srv.Serve(tlsListener)
 }
 
@@ -1835,6 +1834,24 @@ func (tw *timeoutWriter) WriteHeader(code int) {
 	tw.wroteHeader = true
 	tw.mu.Unlock()
 	tw.w.WriteHeader(code)
+}
+
+// tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
+// connections. It's used by ListenAndServe and ListenAndServeTLS so
+// dead TCP connections (e.g. closing laptop mid-download) eventually
+// go away.
+type tcpKeepAliveListener struct {
+	*net.TCPListener
+}
+
+func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
+	tc, err := ln.AcceptTCP()
+	if err != nil {
+		return
+	}
+	tc.SetKeepAlive(true)
+	tc.SetKeepAlivePeriod(3 * time.Minute)
+	return tc, nil
 }
 
 // globalOptionsHandler responds to "OPTIONS *" requests.

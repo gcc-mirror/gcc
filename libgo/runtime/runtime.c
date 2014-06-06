@@ -353,3 +353,12 @@ runtime_debug_setMaxStack(intgo in)
 	runtime_maxstacksize = in;
 	return out;
 }
+
+void memclrBytes(Slice)
+     __asm__ (GOSYM_PREFIX "runtime.memclrBytes");
+
+void
+memclrBytes(Slice s)
+{
+	runtime_memclr(s.__values, s.__count);
+}

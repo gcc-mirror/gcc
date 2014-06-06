@@ -129,6 +129,8 @@ func TestBadData(t *testing.T) {
 	corruptDataCheck("", io.EOF, t)
 	corruptDataCheck("\x7Fhi", io.ErrUnexpectedEOF, t)
 	corruptDataCheck("\x03now is the time for all good men", errBadType, t)
+	// issue 6323.
+	corruptDataCheck("\x04\x24foo", errRange, t)
 }
 
 // Types not supported at top level by the Encoder.
@@ -630,7 +632,7 @@ func TestSliceReusesMemory(t *testing.T) {
 // Used to crash: negative count in recvMessage.
 func TestBadCount(t *testing.T) {
 	b := []byte{0xfb, 0xa5, 0x82, 0x2f, 0xca, 0x1}
-	if err := NewDecoder(bytes.NewBuffer(b)).Decode(nil); err == nil {
+	if err := NewDecoder(bytes.NewReader(b)).Decode(nil); err == nil {
 		t.Error("expected error from bad count")
 	} else if err.Error() != errBadCount.Error() {
 		t.Error("expected bad count error; got", err)

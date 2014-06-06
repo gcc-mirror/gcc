@@ -60,7 +60,7 @@ func newTransferWriter(r interface{}) (t *transferWriter, err error) {
 					// Stich the Body back together again, re-attaching our
 					// consumed byte.
 					t.ContentLength = -1
-					t.Body = io.MultiReader(bytes.NewBuffer(buf[:]), t.Body)
+					t.Body = io.MultiReader(bytes.NewReader(buf[:]), t.Body)
 				} else {
 					// Body is actually empty.
 					t.Body = nil
@@ -556,6 +556,17 @@ func (b *body) readLocked(p []byte) (n int, err error) {
 			if lr, ok := b.src.(*io.LimitedReader); ok && lr.N > 0 {
 				err = io.ErrUnexpectedEOF
 			}
+		}
+	}
+
+	// If we can return an EOF here along with the read data, do
+	// so. This is optional per the io.Reader contract, but doing
+	// so helps the HTTP transport code recycle its connection
+	// earlier (since it will see this EOF itself), even if the
+	// client doesn't do future reads or Close.
+	if err == nil && n > 0 {
+		if lr, ok := b.src.(*io.LimitedReader); ok && lr.N == 0 {
+			err = io.EOF
 		}
 	}
 

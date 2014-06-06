@@ -422,8 +422,7 @@ func TestMapIterOrder(t *testing.T) {
 		t.Skip("skipping for gccgo")
 	}
 
-	// TODO: For issue 6719, add 3 and 7 to this list.
-	for _, n := range [...]int{9, 15} {
+	for _, n := range [...]int{3, 7, 9, 15} {
 		// Make m be {0: true, 1: true, ..., n-1: true}.
 		m := make(map[int]bool)
 		for i := 0; i < n; i++ {

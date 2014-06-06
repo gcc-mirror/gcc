@@ -29,7 +29,7 @@ var pkgDeps = map[string][]string{
 	"errors":      {},
 	"io":          {"errors", "sync"},
 	"runtime":     {"unsafe"},
-	"sync":        {"sync/atomic", "unsafe"},
+	"sync":        {"runtime", "sync/atomic", "unsafe"},
 	"sync/atomic": {"unsafe"},
 	"unsafe":      {},
 
@@ -125,7 +125,7 @@ var pkgDeps = map[string][]string{
 	"os":            {"L1", "os", "syscall", "time"},
 	"path/filepath": {"L2", "os", "syscall"},
 	"io/ioutil":     {"L2", "os", "path/filepath", "time"},
-	"os/exec":       {"L2", "os", "syscall"},
+	"os/exec":       {"L2", "os", "path/filepath", "syscall"},
 	"os/signal":     {"L2", "os", "syscall"},
 
 	// OS enables basic operating system functionality,
@@ -301,7 +301,7 @@ var pkgDeps = map[string][]string{
 	// SSL/TLS.
 	"crypto/tls": {
 		"L4", "CRYPTO-MATH", "CGO", "OS",
-		"crypto/x509", "encoding/pem", "net", "syscall",
+		"container/list", "crypto/x509", "encoding/pem", "net", "syscall",
 	},
 	"crypto/x509": {
 		"L4", "CRYPTO-MATH", "OS", "CGO",

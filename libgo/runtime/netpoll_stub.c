@@ -19,7 +19,8 @@ runtime_netpoll(bool block)
 }
 
 void
-runtime_netpoll_scan(void (*addroot)(Obj))
+runtime_netpoll_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
 {
+	USED(wbufp);
 	USED(addroot);
 }

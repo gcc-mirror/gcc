@@ -26,6 +26,12 @@ __go_fcntl (int fd, int cmd, int arg)
   return fcntl (fd, cmd, arg);
 }
 
+int
+__go_fcntl_flock (int fd, int cmd, struct flock *arg)
+{
+  return fcntl (fd, cmd, arg);
+}
+
 #ifdef HAVE_OPEN64
 
 int
