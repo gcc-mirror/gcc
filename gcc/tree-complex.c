@@ -1162,11 +1162,8 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       make_edge (bb_cond, bb_false, EDGE_FALSE_VALUE);
       make_edge (bb_true, bb_join, EDGE_FALLTHRU);
       make_edge (bb_false, bb_join, EDGE_FALLTHRU);
-      if (current_loops)
-	{
-	  add_bb_to_loop (bb_true, bb_cond->loop_father);
-	  add_bb_to_loop (bb_false, bb_cond->loop_father);
-	}
+      add_bb_to_loop (bb_true, bb_cond->loop_father);
+      add_bb_to_loop (bb_false, bb_cond->loop_father);
 
       /* Update dominance info.  Note that bb_join's data was
          updated by split_block.  */

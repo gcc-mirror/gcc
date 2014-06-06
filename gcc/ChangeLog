@@ -1,3 +1,39 @@
+2014-06-06  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.c (expand_gimple_cond): Remove check for current_loops.
+	(construct_init_block): Likewise.
+	(construct_exit_block): Likewise.
+	(pass_expand::execute): Likewise.
+	* graphite.c (graphite_transforms): Replace check for current_loops
+	with a check for > 1 loops.
+	(pass_graphite_transforms::execute): Adjust.
+	* ipa-split.c (split_function): Remove check for current_loops.
+	* omp-low.c (expand_parallel_call): Likewise.
+	(expand_omp_for_init_counts): Likewise.
+	(extract_omp_for_update_vars): Likewise.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_sections): Likewise.
+	(expand_omp_target): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	(pass_tracer::execute): Likewise.
+	* trans-mem.c (expand_transaction): Likewise.
+	* tree-complex.c (expand_complex_div_wide): Likewise.
+	* tree-eh.c (lower_resx): Likewise.
+	(cleanup_empty_eh_merge_phis): Likewise.
+	* tree-predcom.c (run_tree_predictive_commoning): Replace check for
+	current_loops with a check for > 1 loops.
+	(pass_predcom::execute): Adjust.
+	* tree-scalar-evolution.c (scev_reset): Remove check for current_loops.
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Likewise.
+	* tree-ssa-dom.c (pass_phi_only_cprop::execute): Likewise.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Likewise.
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Likewise.
+	* tree-switch-conversion.c (process_switch): Likewise.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Likewise.
+	* tree-vrp.c (vrp_visit_phi_node): Likewise.
+	(execute_vrp): Likewise.
+	* ubsan.c (ubsan_expand_null_ifn): Likewise.
+
 2014-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* rtl.h (insn_location): Declare.

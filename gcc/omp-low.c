@@ -4297,11 +4297,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 
 	  make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
 	  make_edge (cond_bb, else_bb, EDGE_FALSE_VALUE);
-	  if (current_loops)
-	    {
-	      add_bb_to_loop (then_bb, cond_bb->loop_father);
-	      add_bb_to_loop (else_bb, cond_bb->loop_father);
-	    }
+	  add_bb_to_loop (then_bb, cond_bb->loop_father);
+	  add_bb_to_loop (else_bb, cond_bb->loop_father);
 	  e_then = make_edge (then_bb, bb, EDGE_FALLTHRU);
 	  e_else = make_edge (else_bb, bb, EDGE_FALLTHRU);
 
@@ -5021,8 +5018,7 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	    {
 	      first_zero_iter = i;
 	      zero_iter_bb = create_empty_bb (entry_bb);
-	      if (current_loops)
-		add_bb_to_loop (zero_iter_bb, entry_bb->loop_father);
+	      add_bb_to_loop (zero_iter_bb, entry_bb->loop_father);
 	      *gsi = gsi_after_labels (zero_iter_bb);
 	      stmt = gimple_build_assign (fd->loop.n2,
 					  build_zero_cst (type));
@@ -5205,8 +5201,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, basic_block cont_bb,
       tree vtype = TREE_TYPE (fd->loops[i].v);
 
       bb = create_empty_bb (last_bb);
-      if (current_loops)
-	add_bb_to_loop (bb, last_bb->loop_father);
+      add_bb_to_loop (bb, last_bb->loop_father);
       gsi = gsi_start_bb (bb);
 
       if (i < fd->collapse - 1)
@@ -5693,8 +5688,7 @@ expand_omp_for_generic (struct omp_region *region,
       remove_edge (e);
 
       make_edge (cont_bb, l2_bb, EDGE_FALSE_VALUE);
-      if (current_loops)
-	add_bb_to_loop (l2_bb, cont_bb->loop_father);
+      add_bb_to_loop (l2_bb, cont_bb->loop_father);
       e = find_edge (cont_bb, l1_bb);
       if (gimple_omp_for_combined_p (fd->for_stmt))
 	{
@@ -7139,8 +7133,7 @@ expand_omp_sections (struct omp_region *region)
   t = gimple_block_label (default_bb);
   u = build_case_label (NULL, NULL, t);
   make_edge (l0_bb, default_bb, 0);
-  if (current_loops)
-    add_bb_to_loop (default_bb, current_loops->tree_root);
+  add_bb_to_loop (default_bb, current_loops->tree_root);
 
   stmt = gimple_build_switch (vmain, u, label_vec);
   gsi_insert_after (&switch_si, stmt, GSI_SAME_STMT);
@@ -8084,11 +8077,8 @@ expand_omp_target (struct omp_region *region)
 
       make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
       make_edge (cond_bb, else_bb, EDGE_FALSE_VALUE);
-      if (current_loops)
-	{
-	  add_bb_to_loop (then_bb, cond_bb->loop_father);
-	  add_bb_to_loop (else_bb, cond_bb->loop_father);
-	}
+      add_bb_to_loop (then_bb, cond_bb->loop_father);
+      add_bb_to_loop (else_bb, cond_bb->loop_father);
       make_edge (then_bb, new_bb, EDGE_FALLTHRU);
       make_edge (else_bb, new_bb, EDGE_FALLTHRU);
 

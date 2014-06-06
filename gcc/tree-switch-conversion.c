@@ -1370,8 +1370,7 @@ process_switch (gimple swtch)
 	    fputs ("  expanding as bit test is preferable\n", dump_file);
 	  emit_case_bit_tests (swtch, info.index_expr,
 			       info.range_min, info.range_size);
-	  if (current_loops)
-	    loops_state_set (LOOPS_NEED_FIXUP);
+	  loops_state_set (LOOPS_NEED_FIXUP);
 	  return NULL;
 	}
 

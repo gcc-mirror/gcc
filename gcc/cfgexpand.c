@@ -2170,8 +2170,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count;
   new_bb->frequency = EDGE_FREQUENCY (false_edge);
-  if (current_loops && bb->loop_father)
-    add_bb_to_loop (new_bb, bb->loop_father);
+  add_bb_to_loop (new_bb, bb->loop_father);
   new_edge = make_edge (new_bb, dest, 0);
   new_edge->probability = REG_BR_PROB_BASE;
   new_edge->count = new_bb->count;
@@ -5273,8 +5272,7 @@ construct_init_block (void)
 				   ENTRY_BLOCK_PTR_FOR_FN (cfun));
   init_block->frequency = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
   init_block->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-  if (current_loops && ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father)
-    add_bb_to_loop (init_block, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
+  add_bb_to_loop (init_block, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
   if (e)
     {
       first_block = e->dest;
@@ -5352,8 +5350,7 @@ construct_exit_block (void)
   exit_block = create_basic_block (NEXT_INSN (head), end, prev_bb);
   exit_block->frequency = EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency;
   exit_block->count = EXIT_BLOCK_PTR_FOR_FN (cfun)->count;
-  if (current_loops && EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father)
-    add_bb_to_loop (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father);
+  add_bb_to_loop (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
   ix = 0;
   while (ix < EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds))
@@ -5815,8 +5812,7 @@ pass_expand::execute (function *fun)
   timevar_push (TV_POST_EXPAND);
   /* We are no longer in SSA form.  */
   fun->gimple_df->in_ssa_p = false;
-  if (current_loops)
-    loops_state_clear (LOOP_CLOSED_SSA);
+  loops_state_clear (LOOP_CLOSED_SSA);
 
   /* Expansion is used by optimization passes too, set maybe_hot_insn_p
      conservatively to true until they are all profile aware.  */
