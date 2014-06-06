@@ -1073,8 +1073,8 @@ default_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   unsigned retval = 0;
 
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
-  int stmt_cost = default_builtin_vectorization_cost (kind, vectype,
-							  misalign);
+  int stmt_cost = targetm.vectorize.builtin_vectorization_cost (kind, vectype,
+								misalign);
    /* Statements in an inner loop relative to the loop being
       vectorized are weighted more heavily.  The value here is
       arbitrary and could potentially be improved with analysis.  */
