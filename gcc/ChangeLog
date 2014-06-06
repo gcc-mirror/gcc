@@ -1,3 +1,9 @@
+2014-06-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61325
+	* lra-constraints.c (process_address_1): Check scale equal to one
+	to prevent transformation: base + scale * index => base + new_reg.
+
 2014-06-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59299
