@@ -1,3 +1,11 @@
+2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/optimize-bswaphi-1.c: Adapt test to change of dump output.
+	Specify -march=z900 as an additional option.
+	* gcc.dg/optimize-bswapsi-1.c: Likewise for s390 options.
+	* gcc.dg/optimize-bswapsi-2.c: Likewise.
+	* gcc.dg/optimize-bswapdi-3.c: Likewise for adaptation to dump change.
+
 2014-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/gomp/allocatable_components_1.f90: Adjust for

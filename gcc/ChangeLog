@@ -1,3 +1,10 @@
+2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* ChangeLog (2014-05-23): Fix ChangeLog entry to refer to target
+	endianness instead of host endianness.
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Likewise in dumps and
+	comments.
+
 2014-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/53927
@@ -2011,7 +2018,8 @@
 	(find_bswap_or_nop_1): This. Also add support for memory source.
 	(find_bswap): Renamed to ...
 	(find_bswap_or_nop): This. Also add support for memory source and
-	detection of bitwise operations equivalent to load in host endianness.
+	detection of bitwise operations equivalent to load in target
+	endianness.
 	(execute_optimize_bswap): Likewise. Also move its leading comment back
 	in place and split statement transformation into ...
 	(bswap_replace): This.

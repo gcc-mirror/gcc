@@ -1971,7 +1971,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	      n->range = n2.range + off_sub;
 
 	      /* Reinterpret byte marks in symbolic number holding the value of
-		 bigger weight according to host endianness.  */
+		 bigger weight according to target endianness.  */
 	      inc = BYTES_BIG_ENDIAN ? off_sub + n2.range - n1.range : off_sub;
 	      mask = 0xFF;
 	      if (BYTES_BIG_ENDIAN)
@@ -2074,7 +2074,7 @@ find_bswap_or_nop (gimple stmt, struct symbolic_number *n, bool *bswap)
 
   /* A complete byte swap should make the symbolic number to start with
      the largest digit in the highest order byte. Unchanged symbolic
-     number indicates a read with same endianness as host architecture.  */
+     number indicates a read with same endianness as target architecture.  */
   if (n->n == cmpnop)
     *bswap = false;
   else if (n->n == cmpxchg)
@@ -2204,7 +2204,7 @@ bswap_replace (gimple stmt, gimple_stmt_iterator *gsi, tree src, tree fndecl,
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
-		       "%d bit load in host endianness found at: ",
+		       "%d bit load in target endianness found at: ",
 		       (int)n->range);
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
@@ -2271,7 +2271,7 @@ bswap_replace (gimple stmt, gimple_stmt_iterator *gsi, tree src, tree fndecl,
 /* Find manual byte swap implementations as well as load in a given
    endianness. Byte swaps are turned into a bswap builtin invokation
    while endian loads are converted to bswap builtin invokation or
-   simple load according to the host endianness.  */
+   simple load according to the target endianness.  */
 
 unsigned int
 pass_optimize_bswap::execute (function *fun)
