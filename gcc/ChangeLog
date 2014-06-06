@@ -1,3 +1,11 @@
+2014-06-06  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (get_place_in_agg_contents_list): New function.
+	(build_agg_jump_func_from_list): Likewise.
+	(determine_known_aggregate_parts): Renamed to
+	determine_locally_known_aggregate_parts.  Moved some functionality
+	to the two functions above, removed bound checks.
+
 2014-06-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_expand_movmem): New.
