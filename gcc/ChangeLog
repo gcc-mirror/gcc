@@ -1,3 +1,19 @@
+2014-06-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/61431
+	* config/rs6000/vsx.md (VSX_LE): Split VSX_D into 2 separate
+	iterators, VSX_D that handles 64-bit types, and VSX_LE that
+	handles swapping the two 64-bit double words on little endian
+	systems.  Include V1TImode and optionally TImode in VSX_LE so that
+	these types are properly swapped.  Change all of the insns and
+	splits that do the 64-bit swaps to use VSX_LE.
+	(vsx_le_perm_load_<mode>): Likewise.
+	(vsx_le_perm_store_<mode>): Likewise.
+	(splitters for little endian memory operations): Likewise.
+	(vsx_xxpermdi2_le_<mode>): Likewise.
+	(vsx_lxvd2x2_le_<mode>): Likewise.
+	(vsx_stxvd2x2_le_<mode>): Likewise.
+
 2014-06-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61423
