@@ -20,7 +20,7 @@ __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
   struct __go_defer_stack *n;
 
   g = runtime_g ();
-  n = (struct __go_defer_stack *) __go_alloc (sizeof (struct __go_defer_stack));
+  n = runtime_newdefer ();
   n->__next = g->defer;
   n->__frame = frame;
   n->__panic = g->panic;
@@ -28,7 +28,7 @@ __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
   n->__arg = arg;
   n->__retaddr = NULL;
   n->__makefunc_can_recover = 0;
-  n->__free = 1;
+  n->__special = 0;
   g->defer = n;
 }
 
@@ -44,7 +44,6 @@ __go_undefer (_Bool *frame)
     {
       struct __go_defer_stack *d;
       void (*pfn) (void *);
-      M *m;
 
       d = g->defer;
       pfn = d->__pfn;
@@ -59,9 +58,8 @@ __go_undefer (_Bool *frame)
 	 call to syscall.CgocallBackDone, in which case we will not
 	 have a memory context.  Don't try to free anything in that
 	 case--the GC will release it later.  */
-      m = runtime_m ();
-      if (m != NULL && m->mcache != NULL && d->__free)
-	__go_free (d);
+      if (runtime_m () != NULL)
+	runtime_freedefer (d);
 
       /* Since we are executing a defer function here, we know we are
 	 returning from the calling function.  If the calling

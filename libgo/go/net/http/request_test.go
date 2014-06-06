@@ -80,7 +80,7 @@ func TestParseFormUnknownContentType(t *testing.T) {
 		req := &Request{
 			Method: "POST",
 			Header: Header(test.contentType),
-			Body:   ioutil.NopCloser(bytes.NewBufferString("body")),
+			Body:   ioutil.NopCloser(strings.NewReader("body")),
 		}
 		err := req.ParseForm()
 		switch {
@@ -218,6 +218,7 @@ func TestMultipartReaderOrder(t *testing.T) {
 	if err := req.ParseMultipartForm(25); err != nil {
 		t.Fatalf("ParseMultipartForm: %v", err)
 	}
+	defer req.MultipartForm.RemoveAll()
 	if _, err := req.MultipartReader(); err == nil {
 		t.Fatal("expected an error from MultipartReader after call to ParseMultipartForm")
 	}
@@ -368,7 +369,7 @@ func testMissingFile(t *testing.T, req *Request) {
 }
 
 func newTestMultipartRequest(t *testing.T) *Request {
-	b := bytes.NewBufferString(strings.Replace(message, "\n", "\r\n", -1))
+	b := strings.NewReader(strings.Replace(message, "\n", "\r\n", -1))
 	req, err := NewRequest("POST", "/", b)
 	if err != nil {
 		t.Fatal("NewRequest:", err)

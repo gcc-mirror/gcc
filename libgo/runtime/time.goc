@@ -78,7 +78,7 @@ runtime_tsleep(int64 ns, const char *reason)
 	t.arg.__object = g;
 	runtime_lock(&timers);
 	addtimer(&t);
-	runtime_park(runtime_unlock, &timers, reason);
+	runtime_parkunlock(&timers, reason);
 }
 
 void
@@ -221,12 +221,20 @@ timerproc(void* dummy __attribute__ ((unused)))
 				runtime_raceacquire(t);
 			__go_set_closure(t->fv);
 			f(now, arg);
+
+			// clear f and arg to avoid leak while sleeping for next timer
+			f = nil;
+			USED(f);
+			arg.__type_descriptor = nil;
+			arg.__object = nil;
+			USED(&arg);
+
 			runtime_lock(&timers);
 		}
 		if(delta < 0) {
 			// No timers left - put goroutine to sleep.
 			timers.rescheduling = true;
-			runtime_park(runtime_unlock, &timers, "timer goroutine (idle)");
+			runtime_parkunlock(&timers, "timer goroutine (idle)");
 			continue;
 		}
 		// At least one timer pending.  Sleep until then.
@@ -320,7 +328,7 @@ dumptimers(const char *msg)
 }
 
 void
-runtime_time_scan(void (*addroot)(Obj))
+runtime_time_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
 {
-	addroot((Obj){(byte*)&timers, sizeof timers, 0});
+	enqueue1(wbufp, (Obj){(byte*)&timers, sizeof timers, 0});
 }

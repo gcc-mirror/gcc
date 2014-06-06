@@ -1168,16 +1168,19 @@ func (p *parser) parseIndexOrSlice(x ast.Expr) ast.Expr {
 		defer un(trace(p, "IndexOrSlice"))
 	}
 
+	const N = 3 // change the 3 to 2 to disable 3-index slices
 	lbrack := p.expect(token.LBRACK)
 	p.exprLev++
-	var index [3]ast.Expr // change the 3 to 2 to disable slice expressions w/ cap
+	var index [N]ast.Expr
+	var colons [N - 1]token.Pos
 	if p.tok != token.COLON {
 		index[0] = p.parseRhs()
 	}
 	ncolons := 0
-	for p.tok == token.COLON && ncolons < len(index)-1 {
-		p.next()
+	for p.tok == token.COLON && ncolons < len(colons) {
+		colons[ncolons] = p.pos
 		ncolons++
+		p.next()
 		if p.tok != token.COLON && p.tok != token.RBRACK && p.tok != token.EOF {
 			index[ncolons] = p.parseRhs()
 		}
@@ -1187,7 +1190,21 @@ func (p *parser) parseIndexOrSlice(x ast.Expr) ast.Expr {
 
 	if ncolons > 0 {
 		// slice expression
-		return &ast.SliceExpr{X: x, Lbrack: lbrack, Low: index[0], High: index[1], Max: index[2], Slice3: ncolons == 2, Rbrack: rbrack}
+		slice3 := false
+		if ncolons == 2 {
+			slice3 = true
+			// Check presence of 2nd and 3rd index here rather than during type-checking
+			// to prevent erroneous programs from passing through gofmt (was issue 7305).
+			if index[1] == nil {
+				p.error(colons[0], "2nd index required in 3-index slice")
+				index[1] = &ast.BadExpr{From: colons[0] + 1, To: colons[1]}
+			}
+			if index[2] == nil {
+				p.error(colons[1], "3rd index required in 3-index slice")
+				index[2] = &ast.BadExpr{From: colons[1] + 1, To: rbrack}
+			}
+		}
+		return &ast.SliceExpr{X: x, Lbrack: lbrack, Low: index[0], High: index[1], Max: index[2], Slice3: slice3, Rbrack: rbrack}
 	}
 
 	return &ast.IndexExpr{X: x, Lbrack: lbrack, Index: index[0], Rbrack: rbrack}
@@ -1745,14 +1762,14 @@ func (p *parser) parseBranchStmt(tok token.Token) *ast.BranchStmt {
 	return &ast.BranchStmt{TokPos: pos, Tok: tok, Label: label}
 }
 
-func (p *parser) makeExpr(s ast.Stmt) ast.Expr {
+func (p *parser) makeExpr(s ast.Stmt, kind string) ast.Expr {
 	if s == nil {
 		return nil
 	}
 	if es, isExpr := s.(*ast.ExprStmt); isExpr {
 		return p.checkExpr(es.X)
 	}
-	p.error(s.Pos(), "expected condition, found simple statement")
+	p.error(s.Pos(), fmt.Sprintf("expected %s, found simple statement (missing parentheses around composite literal?)", kind))
 	return &ast.BadExpr{From: s.Pos(), To: s.End()}
 }
 
@@ -1779,7 +1796,7 @@ func (p *parser) parseIfStmt() *ast.IfStmt {
 				p.next()
 				x = p.parseRhs()
 			} else {
-				x = p.makeExpr(s)
+				x = p.makeExpr(s, "boolean expression")
 				s = nil
 			}
 		}
@@ -1910,7 +1927,7 @@ func (p *parser) parseSwitchStmt() ast.Stmt {
 		return &ast.TypeSwitchStmt{Switch: pos, Init: s1, Assign: s2, Body: body}
 	}
 
-	return &ast.SwitchStmt{Switch: pos, Init: s1, Tag: p.makeExpr(s2), Body: body}
+	return &ast.SwitchStmt{Switch: pos, Init: s1, Tag: p.makeExpr(s2, "switch expression"), Body: body}
 }
 
 func (p *parser) parseCommClause() *ast.CommClause {
@@ -2055,7 +2072,7 @@ func (p *parser) parseForStmt() ast.Stmt {
 	return &ast.ForStmt{
 		For:  pos,
 		Init: s1,
-		Cond: p.makeExpr(s2),
+		Cond: p.makeExpr(s2, "boolean or range expression"),
 		Post: s3,
 		Body: body,
 	}

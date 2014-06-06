@@ -39,17 +39,58 @@ runtime_MCentral_AllocList(MCentral *c, MLink **pfirst)
 {
 	MSpan *s;
 	int32 cap, n;
+	uint32 sg;
 
 	runtime_lock(c);
-	// Replenish central list if empty.
-	if(runtime_MSpanList_IsEmpty(&c->nonempty)) {
-		if(!MCentral_Grow(c)) {
+	sg = runtime_mheap.sweepgen;
+retry:
+	for(s = c->nonempty.next; s != &c->nonempty; s = s->next) {
+		if(s->sweepgen == sg-2 && runtime_cas(&s->sweepgen, sg-2, sg-1)) {
 			runtime_unlock(c);
-			*pfirst = nil;
-			return 0;
+			runtime_MSpan_Sweep(s);
+			runtime_lock(c);
+			// the span could have been moved to heap, retry
+			goto retry;
 		}
+		if(s->sweepgen == sg-1) {
+			// the span is being swept by background sweeper, skip
+			continue;
+		}
+		// we have a nonempty span that does not require sweeping, allocate from it
+		goto havespan;
+	}
+
+	for(s = c->empty.next; s != &c->empty; s = s->next) {
+		if(s->sweepgen == sg-2 && runtime_cas(&s->sweepgen, sg-2, sg-1)) {
+			// we have an empty span that requires sweeping,
+			// sweep it and see if we can free some space in it
+			runtime_MSpanList_Remove(s);
+			// swept spans are at the end of the list
+			runtime_MSpanList_InsertBack(&c->empty, s);
+			runtime_unlock(c);
+			runtime_MSpan_Sweep(s);
+			runtime_lock(c);
+			// the span could be moved to nonempty or heap, retry
+			goto retry;
+		}
+		if(s->sweepgen == sg-1) {
+			// the span is being swept by background sweeper, skip
+			continue;
+		}
+		// already swept empty span,
+		// all subsequent ones must also be either swept or in process of sweeping
+		break;
+	}
+
+	// Replenish central list if empty.
+	if(!MCentral_Grow(c)) {
+		runtime_unlock(c);
+		*pfirst = nil;
+		return 0;
 	}
 	s = c->nonempty.next;
+
+havespan:
 	cap = (s->npages << PageShift) / s->elemsize;
 	n = cap - s->ref;
 	*pfirst = s->freelist;
@@ -57,7 +98,7 @@ runtime_MCentral_AllocList(MCentral *c, MLink **pfirst)
 	s->ref += n;
 	c->nfree -= n;
 	runtime_MSpanList_Remove(s);
-	runtime_MSpanList_Insert(&c->empty, s);
+	runtime_MSpanList_InsertBack(&c->empty, s);
 	runtime_unlock(c);
 	return n;
 }
@@ -106,7 +147,7 @@ MCentral_Free(MCentral *c, void *v)
 		size = runtime_class_to_size[c->sizeclass];
 		runtime_MSpanList_Remove(s);
 		runtime_unmarkspan((byte*)(s->start<<PageShift), s->npages<<PageShift);
-		*(uintptr*)(s->start<<PageShift) = 1;  // needs zeroing
+		s->needzero = 1;
 		s->freelist = nil;
 		c->nfree -= (s->npages << PageShift) / size;
 		runtime_unlock(c);
@@ -116,8 +157,9 @@ MCentral_Free(MCentral *c, void *v)
 }
 
 // Free n objects from a span s back into the central free list c.
-// Called from GC.
-void
+// Called during sweep.
+// Returns true if the span was returned to heap.
+bool
 runtime_MCentral_FreeSpan(MCentral *c, MSpan *s, int32 n, MLink *start, MLink *end)
 {
 	int32 size;
@@ -136,19 +178,21 @@ runtime_MCentral_FreeSpan(MCentral *c, MSpan *s, int32 n, MLink *start, MLink *e
 	s->ref -= n;
 	c->nfree += n;
 
-	// If s is completely freed, return it to the heap.
-	if(s->ref == 0) {
-		size = runtime_class_to_size[c->sizeclass];
-		runtime_MSpanList_Remove(s);
-		*(uintptr*)(s->start<<PageShift) = 1;  // needs zeroing
-		s->freelist = nil;
-		c->nfree -= (s->npages << PageShift) / size;
+	if(s->ref != 0) {
 		runtime_unlock(c);
-		runtime_unmarkspan((byte*)(s->start<<PageShift), s->npages<<PageShift);
-		runtime_MHeap_Free(&runtime_mheap, s, 0);
-	} else {
-		runtime_unlock(c);
+		return false;
 	}
+
+	// s is completely freed, return it to the heap.
+	size = runtime_class_to_size[c->sizeclass];
+	runtime_MSpanList_Remove(s);
+	s->needzero = 1;
+	s->freelist = nil;
+	c->nfree -= (s->npages << PageShift) / size;
+	runtime_unlock(c);
+	runtime_unmarkspan((byte*)(s->start<<PageShift), s->npages<<PageShift);
+	runtime_MHeap_Free(&runtime_mheap, s, 0);
+	return true;
 }
 
 void

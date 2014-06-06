@@ -124,26 +124,36 @@ runtime_notewakeup(Note *n)
 void
 runtime_notesleep(Note *n)
 {
+	M *m = runtime_m();
+
   /* For gccgo it's OK to sleep in non-g0, and it happens in
      stoptheworld because we have not implemented preemption.
 
 	if(runtime_g() != runtime_m()->g0)
 		runtime_throw("notesleep not on g0");
   */
-	while(runtime_atomicload((uint32*)&n->key) == 0)
+	while(runtime_atomicload((uint32*)&n->key) == 0) {
+		m->blocked = true;
 		runtime_futexsleep((uint32*)&n->key, 0, -1);
+		m->blocked = false;
+	}
 }
 
 static bool
 notetsleep(Note *n, int64 ns, int64 deadline, int64 now)
 {
+	M *m = runtime_m();
+
 	// Conceptually, deadline and now are local variables.
 	// They are passed as arguments so that the space for them
 	// does not count against our nosplit stack sequence.
 
 	if(ns < 0) {
-		while(runtime_atomicload((uint32*)&n->key) == 0)
+		while(runtime_atomicload((uint32*)&n->key) == 0) {
+			m->blocked = true;
 			runtime_futexsleep((uint32*)&n->key, 0, -1);
+			m->blocked = false;
+		}
 		return true;
 	}
 
@@ -152,7 +162,9 @@ notetsleep(Note *n, int64 ns, int64 deadline, int64 now)
 
 	deadline = runtime_nanotime() + ns;
 	for(;;) {
+		m->blocked = true;
 		runtime_futexsleep((uint32*)&n->key, 0, ns);
+		m->blocked = false;
 		if(runtime_atomicload((uint32*)&n->key) != 0)
 			break;
 		now = runtime_nanotime();

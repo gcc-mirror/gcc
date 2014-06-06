@@ -216,51 +216,10 @@ func methodName() string {
 // bigger than a pointer, its word is a pointer to v's data.
 // Otherwise, its word holds the data stored
 // in its leading bytes (so is not a pointer).
-// Because the value sometimes holds a pointer, we use
-// unsafe.Pointer to represent it, so that if iword appears
-// in a struct, the garbage collector knows that might be
-// a pointer.
-// TODO: get rid of all occurrences of iword (except in the interface decls below?)
-// We want to get rid of the "feature" that an unsafe.Pointer is sometimes a pointer
-// and sometimes a uintptr.
+// This type is very dangerous for the garbage collector because
+// it must be treated conservatively.  We try to never expose it
+// to the GC here so that GC remains precise.
 type iword unsafe.Pointer
-
-// Get an iword that represents this value.
-// TODO: this function goes away at some point
-func (v Value) iword() iword {
-	t := v.typ
-	if t == nil {
-		return iword(nil)
-	}
-	if v.flag&flagIndir != 0 {
-		if v.kind() != Ptr && v.kind() != UnsafePointer {
-			return iword(v.ptr)
-		}
-		// Have indirect but want direct word.
-		if t.pointers() {
-			return iword(*(*unsafe.Pointer)(v.ptr))
-		}
-		return iword(loadScalar(v.ptr, v.typ.size))
-	}
-	if t.pointers() {
-		return iword(v.ptr)
-	}
-	// return iword(v.scalar)
-	panic("reflect: missing flagIndir")
-}
-
-// Build a Value from a type/iword pair, plus any extra flags.
-// TODO: this function goes away at some point
-func fromIword(t *rtype, w iword, fl flag) Value {
-	fl |= flag(t.Kind()) << flagKindShift
-	if t.Kind() != Ptr && t.Kind() != UnsafePointer {
-		return Value{t, unsafe.Pointer(w) /* 0, */, fl | flagIndir}
-	} else if t.pointers() {
-		return Value{t, unsafe.Pointer(w) /* 0, */, fl}
-	} else {
-		panic("reflect: can't reach")
-	}
-}
 
 // loadScalar loads n bytes at p from memory into a uintptr
 // that forms the second word of an interface.  The data
@@ -473,11 +432,14 @@ func (v Value) call(op string, in []Value) []Value {
 	// Get function pointer, type.
 	t := v.typ
 	var (
-		fn   unsafe.Pointer
-		rcvr iword
+		fn       unsafe.Pointer
+		rcvr     Value
+		rcvrtype *rtype
 	)
 	if v.flag&flagMethod != 0 {
-		t, fn, rcvr = methodReceiver(op, v, int(v.flag)>>flagMethodShift)
+		rcvrtype = t
+		rcvr = v
+		t, fn = methodReceiver(op, v, int(v.flag)>>flagMethodShift)
 	} else if v.flag&flagIndir != 0 {
 		fn = *(*unsafe.Pointer)(v.ptr)
 	} else {
@@ -564,8 +526,14 @@ func (v Value) call(op string, in []Value) []Value {
 	off := 0
 	if v.flag&flagMethod != 0 {
 		// Hard-wired first argument.
-		p := new(iword)
-		*p = rcvr
+		p := new(unsafe.Pointer)
+		if rcvr.typ.Kind() == Interface {
+			*p = unsafe.Pointer((*nonEmptyInterface)(v.ptr).word)
+		} else if rcvr.typ.Kind() == Ptr || rcvr.typ.Kind() == UnsafePointer {
+			*p = rcvr.pointer()
+		} else {
+			*p = rcvr.ptr
+		}
 		params[0] = unsafe.Pointer(p)
 		off = 1
 	}
@@ -614,7 +582,9 @@ func (v Value) call(op string, in []Value) []Value {
 // described by v. The Value v may or may not have the
 // flagMethod bit set, so the kind cached in v.flag should
 // not be used.
-func methodReceiver(op string, v Value, methodIndex int) (t *rtype, fn unsafe.Pointer, rcvr iword) {
+// The return value t gives the method type signature (without the receiver).
+// The return value fn is a pointer to the method code.
+func methodReceiver(op string, v Value, methodIndex int) (t *rtype, fn unsafe.Pointer) {
 	i := methodIndex
 	if v.typ.Kind() == Interface {
 		tt := (*interfaceType)(unsafe.Pointer(v.typ))
@@ -625,13 +595,12 @@ func methodReceiver(op string, v Value, methodIndex int) (t *rtype, fn unsafe.Po
 		if m.pkgPath != nil {
 			panic("reflect: " + op + " of unexported method")
 		}
-		t = m.typ
 		iface := (*nonEmptyInterface)(v.ptr)
 		if iface.itab == nil {
 			panic("reflect: " + op + " of method on nil interface value")
 		}
 		fn = unsafe.Pointer(&iface.itab.fun[i])
-		rcvr = iface.word
+		t = m.typ
 	} else {
 		ut := v.typ.uncommon()
 		if ut == nil || i < 0 || i >= len(ut.methods) {
@@ -643,15 +612,34 @@ func methodReceiver(op string, v Value, methodIndex int) (t *rtype, fn unsafe.Po
 		}
 		fn = unsafe.Pointer(&m.tfn)
 		t = m.mtyp
-		// Can't call iword here, because it checks v.kind,
-		// and that is always Func.
-		if v.flag&flagIndir != 0 && (v.typ.Kind() == Ptr || v.typ.Kind() == UnsafePointer) {
-			rcvr = iword(loadScalar(v.ptr, v.typ.size))
-		} else {
-			rcvr = iword(v.ptr)
-		}
 	}
 	return
+}
+
+// v is a method receiver.  Store at p the word which is used to
+// encode that receiver at the start of the argument list.
+// Reflect uses the "interface" calling convention for
+// methods, which always uses one word to record the receiver.
+func storeRcvr(v Value, p unsafe.Pointer) {
+	t := v.typ
+	if t.Kind() == Interface {
+		// the interface data word becomes the receiver word
+		iface := (*nonEmptyInterface)(v.ptr)
+		*(*unsafe.Pointer)(p) = unsafe.Pointer(iface.word)
+	} else if v.flag&flagIndir != 0 {
+		if t.size > ptrSize {
+			*(*unsafe.Pointer)(p) = v.ptr
+		} else if t.pointers() {
+			*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(v.ptr)
+		} else {
+			*(*uintptr)(p) = loadScalar(v.ptr, t.size)
+		}
+	} else if t.pointers() {
+		*(*unsafe.Pointer)(p) = v.ptr
+	} else {
+		// *(*uintptr)(p) = v.scalar
+		panic("reflect: missing flagIndir")
+	}
 }
 
 // align returns the result of rounding x up to a multiple of n.
@@ -1000,24 +988,6 @@ func valueInterface(v Value, safe bool) interface{} {
 		})(v.ptr)
 	}
 
-	// Non-interface value.
-	var eface emptyInterface
-	eface.typ = toType(v.typ).common()
-	eface.word = v.iword()
-
-	// Don't need to allocate if v is not addressable or fits in one word.
-	if v.flag&flagAddr != 0 && v.kind() != Ptr && v.kind() != UnsafePointer {
-		// eface.word is a pointer to the actual data,
-		// which might be changed.  We need to return
-		// a pointer to unchanging data, so make a copy.
-		ptr := unsafe_New(v.typ)
-		memmove(ptr, unsafe.Pointer(eface.word), v.typ.size)
-		eface.word = iword(ptr)
-	}
-
-	if v.flag&flagIndir == 0 && v.kind() != Ptr && v.kind() != UnsafePointer {
-		panic("missing flagIndir")
-	}
 	// TODO: pass safe to packEface so we don't need to copy if safe==true?
 	return packEface(v)
 }
@@ -1035,8 +1005,13 @@ func (v Value) InterfaceData() [2]uintptr {
 	return *(*[2]uintptr)(v.ptr)
 }
 
-// IsNil returns true if v is a nil value.
-// It panics if v's Kind is not Chan, Func, Interface, Map, Ptr, or Slice.
+// IsNil reports whether its argument v is nil. The argument must be
+// a chan, func, interface, map, pointer, or slice value; if it is
+// not, IsNil panics. Note that IsNil is not always equivalent to a
+// regular comparison with nil in Go. For example, if v was created
+// by calling ValueOf with an uninitialized interface variable i,
+// i==nil will be true but v.IsNil will panic as v will be the zero
+// Value.
 func (v Value) IsNil() bool {
 	k := v.kind()
 	switch k {
@@ -1366,9 +1341,19 @@ func (v Value) recv(nb bool) (val Value, ok bool) {
 	if ChanDir(tt.dir)&RecvDir == 0 {
 		panic("reflect: recv on send-only channel")
 	}
-	word, selected, ok := chanrecv(v.typ, v.pointer(), nb)
-	if selected {
-		val = fromIword(tt.elem, word, 0)
+	t := tt.elem
+	val = Value{t, nil /* 0, */, flag(t.Kind()) << flagKindShift}
+	var p unsafe.Pointer
+	if t.Kind() != Ptr && t.Kind() != UnsafePointer {
+		p = unsafe_New(t)
+		val.ptr = p
+		val.flag |= flagIndir
+	} else {
+		p = unsafe.Pointer(&val.ptr)
+	}
+	selected, ok := chanrecv(v.typ, v.pointer(), nb, p)
+	if !selected {
+		val = Value{}
 	}
 	return
 }
@@ -1391,7 +1376,16 @@ func (v Value) send(x Value, nb bool) (selected bool) {
 	}
 	x.mustBeExported()
 	x = x.assignTo("reflect.Value.Send", tt.elem, nil)
-	return chansend(v.typ, v.pointer(), x.iword(), nb)
+	var p unsafe.Pointer
+	if x.flag&flagIndir != 0 {
+		p = x.ptr
+	} else if x.typ.pointers() {
+		p = unsafe.Pointer(&x.ptr)
+	} else {
+		// p = unsafe.Pointer(&x.scalar)
+		panic("reflect: missing flagIndir")
+	}
+	return chansend(v.typ, v.pointer(), p, nb)
 }
 
 // Set assigns x to the value v.
@@ -1714,9 +1708,9 @@ func (v Value) String() string {
 
 // TryRecv attempts to receive a value from the channel v but will not block.
 // It panics if v's Kind is not Chan.
-// If the receive cannot finish without blocking, x is the zero Value.
-// The boolean ok is true if the value x corresponds to a send
-// on the channel, false if it is a zero value received because the channel is closed.
+// If the receive delivers a value, x is the transferred value and ok is true.
+// If the receive cannot finish without blocking, x is the zero Value and ok is false.
+// If the channel is closed, x is the zero value for the channel's element type and ok is false.
 func (v Value) TryRecv() (x Value, ok bool) {
 	v.mustBe(Chan)
 	v.mustBeExported()
@@ -1964,17 +1958,18 @@ func Copy(dst, src Value) int {
 // A runtimeSelect is a single case passed to rselect.
 // This must match ../runtime/chan.c:/runtimeSelect
 type runtimeSelect struct {
-	dir uintptr // 0, SendDir, or RecvDir
-	typ *rtype  // channel type
-	ch  iword   // interface word for channel
-	val iword   // interface word for value (for SendDir)
+	dir uintptr        // 0, SendDir, or RecvDir
+	typ *rtype         // channel type
+	ch  unsafe.Pointer // channel
+	val unsafe.Pointer // ptr to data (SendDir) or ptr to receive buffer (RecvDir)
 }
 
-// rselect runs a select. It returns the index of the chosen case,
-// and if the case was a receive, the interface word of the received
-// value and the conventional OK bool to indicate whether the receive
-// corresponds to a sent value.
-func rselect([]runtimeSelect) (chosen int, recv iword, recvOK bool)
+// rselect runs a select.  It returns the index of the chosen case.
+// If the case was a receive, val is filled in with the received value.
+// The conventional OK bool indicates whether the receive corresponds
+// to a sent value.
+//go:noescape
+func rselect([]runtimeSelect) (chosen int, recvOK bool)
 
 // A SelectDir describes the communication direction of a select case.
 type SelectDir int
@@ -2054,7 +2049,7 @@ func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool) {
 			if ChanDir(tt.dir)&SendDir == 0 {
 				panic("reflect.Select: SendDir case using recv-only channel")
 			}
-			rc.ch = *(*iword)(ch.iword())
+			rc.ch = ch.pointer()
 			rc.typ = &tt.rtype
 			v := c.Send
 			if !v.IsValid() {
@@ -2062,7 +2057,14 @@ func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool) {
 			}
 			v.mustBeExported()
 			v = v.assignTo("reflect.Select", tt.elem, nil)
-			rc.val = v.iword()
+			if v.flag&flagIndir != 0 {
+				rc.val = v.ptr
+			} else if v.typ.pointers() {
+				rc.val = unsafe.Pointer(&v.ptr)
+			} else {
+				// rc.val = unsafe.Pointer(&v.scalar)
+				panic("reflect: missing flagIndir")
+			}
 
 		case SelectRecv:
 			if c.Send.IsValid() {
@@ -2075,18 +2077,26 @@ func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool) {
 			ch.mustBe(Chan)
 			ch.mustBeExported()
 			tt := (*chanType)(unsafe.Pointer(ch.typ))
-			rc.typ = &tt.rtype
 			if ChanDir(tt.dir)&RecvDir == 0 {
 				panic("reflect.Select: RecvDir case using send-only channel")
 			}
-			rc.ch = *(*iword)(ch.iword())
+			rc.ch = ch.pointer()
+			rc.typ = &tt.rtype
+			rc.val = unsafe_New(tt.elem)
 		}
 	}
 
-	chosen, word, recvOK := rselect(runcases)
+	chosen, recvOK = rselect(runcases)
 	if runcases[chosen].dir == uintptr(SelectRecv) {
 		tt := (*chanType)(unsafe.Pointer(runcases[chosen].typ))
-		recv = fromIword(tt.elem, word, 0)
+		t := tt.elem
+		p := runcases[chosen].val
+		fl := flag(t.Kind()) << flagKindShift
+		if t.Kind() != Ptr && t.Kind() != UnsafePointer {
+			recv = Value{t, p /* 0, */, fl | flagIndir}
+		} else {
+			recv = Value{t, *(*unsafe.Pointer)(p) /* 0, */, fl}
+		}
 	}
 	return chosen, recv, recvOK
 }
@@ -2539,8 +2549,12 @@ func cvtI2I(v Value, typ Type) Value {
 func chancap(ch unsafe.Pointer) int
 func chanclose(ch unsafe.Pointer)
 func chanlen(ch unsafe.Pointer) int
-func chanrecv(t *rtype, ch unsafe.Pointer, nb bool) (val iword, selected, received bool)
-func chansend(t *rtype, ch unsafe.Pointer, val iword, nb bool) bool
+
+//go:noescape
+func chanrecv(t *rtype, ch unsafe.Pointer, nb bool, val unsafe.Pointer) (selected, received bool)
+
+//go:noescape
+func chansend(t *rtype, ch unsafe.Pointer, val unsafe.Pointer, nb bool) bool
 
 func makechan(typ *rtype, size uint64) (ch unsafe.Pointer)
 func makemap(t *rtype) (m unsafe.Pointer)

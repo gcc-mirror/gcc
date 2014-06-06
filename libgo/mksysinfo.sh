@@ -250,6 +250,16 @@ for flag in F_GETLK F_SETLK F_SETLKW; do
   fi
 done
 
+# The Flock_t struct for fcntl.
+grep '^type _flock ' gen-sysinfo.go | \
+    sed -e 's/type _flock/type Flock_t/' \
+      -e 's/l_type/Type/' \
+      -e 's/l_whence/Whence/' \
+      -e 's/l_start/Start/' \
+      -e 's/l_len/Len/' \
+      -e 's/l_pid/Pid/' \
+    >> ${OUT}
+
 # The signal numbers.
 grep '^const _SIG[^_]' gen-sysinfo.go | \
   grep -v '^const _SIGEV_' | \

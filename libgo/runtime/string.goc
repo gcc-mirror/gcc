@@ -43,11 +43,9 @@ gostringsize(intgo l, byte** pmem)
 		*pmem = nil;
 		return runtime_emptystring;
 	}
-	// leave room for NUL for C runtime (e.g., callers of getenv)
-	mem = runtime_mallocgc(l+1, 0, FlagNoScan|FlagNoZero);
+	mem = runtime_mallocgc(l, 0, FlagNoScan|FlagNoZero);
 	s.str = mem;
 	s.len = l;
-	mem[l] = 0;
 	*pmem = mem;
 	return s;
 }

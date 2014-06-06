@@ -17,6 +17,7 @@ __go_string_to_int_array (String str)
   size_t c;
   const unsigned char *p;
   const unsigned char *pend;
+  uintptr mem;
   uint32_t *data;
   uint32_t *pd;
   struct __go_open_array ret;
@@ -32,8 +33,11 @@ __go_string_to_int_array (String str)
       p += __go_get_rune (p, pend - p, &rune);
     }
 
-  data = (uint32_t *) runtime_mallocgc (c * sizeof (uint32_t), 0,
-					FlagNoScan | FlagNoZero);
+  if (c > MaxMem / sizeof (uint32_t))
+    runtime_throw ("out of memory");
+
+  mem = runtime_roundupsize (c * sizeof (uint32_t));
+  data = (uint32_t *) runtime_mallocgc (mem, 0, FlagNoScan | FlagNoZero);
   p = str.str;
   pd = data;
   while (p < pend)
@@ -43,9 +47,10 @@ __go_string_to_int_array (String str)
       p += __go_get_rune (p, pend - p, &rune);
       *pd++ = rune;
     }
-
+  if (mem > (uintptr) c * sizeof (uint32_t))
+    __builtin_memset (data + c, 0, mem - (uintptr) c * sizeof (uint32_t));
   ret.__values = (void *) data;
   ret.__count = c;
-  ret.__capacity = c;
+  ret.__capacity = (intgo) (mem / sizeof (uint32_t));
   return ret;
 }

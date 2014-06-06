@@ -16,6 +16,10 @@ func query(filename, query string, bufSize int) (res []string, err error) {
 	}
 	defer file.Close()
 
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return
+	}
 	_, err = file.WriteString(query)
 	if err != nil {
 		return
@@ -45,7 +49,7 @@ func queryCS(net, host, service string) (res []string, err error) {
 	if host == "" {
 		host = "*"
 	}
-	return query("/net/cs", net+"!"+host+"!"+service, 128)
+	return query(netdir+"/cs", net+"!"+host+"!"+service, 128)
 }
 
 func queryCS1(net string, ip IP, port int) (clone, dest string, err error) {
@@ -66,7 +70,7 @@ func queryCS1(net string, ip IP, port int) (clone, dest string, err error) {
 }
 
 func queryDNS(addr string, typ string) (res []string, err error) {
-	return query("/net/dns", addr+" "+typ, 1024)
+	return query(netdir+"/dns", addr+" "+typ, 1024)
 }
 
 // toLower returns a lower-case version of in. Restricting us to
@@ -93,7 +97,7 @@ func toLower(in string) string {
 // lookupProtocol looks up IP protocol name and returns
 // the corresponding protocol number.
 func lookupProtocol(name string) (proto int, err error) {
-	lines, err := query("/net/cs", "!protocol="+toLower(name), 128)
+	lines, err := query(netdir+"/cs", "!protocol="+toLower(name), 128)
 	if err != nil {
 		return 0, err
 	}
@@ -113,12 +117,13 @@ func lookupProtocol(name string) (proto int, err error) {
 }
 
 func lookupHost(host string) (addrs []string, err error) {
-	// Use /net/cs instead of /net/dns because cs knows about
+	// Use netdir/cs instead of netdir/dns because cs knows about
 	// host names in local network (e.g. from /lib/ndb/local)
 	lines, err := queryCS("net", host, "1")
 	if err != nil {
 		return
 	}
+loop:
 	for _, line := range lines {
 		f := getFields(line)
 		if len(f) < 2 {
@@ -130,6 +135,12 @@ func lookupHost(host string) (addrs []string, err error) {
 		}
 		if ParseIP(addr) == nil {
 			continue
+		}
+		// only return unique addresses
+		for _, a := range addrs {
+			if a == addr {
+				continue loop
+			}
 		}
 		addrs = append(addrs, addr)
 	}
