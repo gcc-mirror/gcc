@@ -1,3 +1,13 @@
+2014-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61423
+	* config/i386/i386.md (*floatunssi<mode>2_i387_with_xmm): New
+	define_insn_and_split pattern, merged from *floatunssi<mode>2_1
+	and corresponding splitters.  Zero extend general register
+	or memory input operand to XMM temporary.  Enable for
+	TARGET_SSE2 and TARGET_INTER_UNIT_MOVES_TO_VEC only.
+	(floatunssi<mode>2): Update expander predicate.
+
 2014-06-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61325
@@ -608,7 +618,7 @@
 	vrev64q_s16, vrev64q_s32, vrev64q_u8, vrev64q_u16, vrev64q_u32):
 	Replace temporary __asm__ with __builtin_shuffle.
 
-2014-06-03  Andrew Bennett  <andrew.bennett@imgtec.com> 
+2014-06-03  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* config/mips/mips-cpus.def: Add mips32r3, mips32r5, mips64r3 and
 	mips64r5.
@@ -619,8 +629,8 @@
 	(ISA_MIPS32R5): New define.
 	(ISA_MIPS64R3): New define.
 	(ISA_MIPS64R5): New define.
-	(TARGET_CPU_CPP_BUILTINS): Added support for ISA_MIPS32R3, ISA_MIPS32R5,
-	ISA_MIPS64R3 and ISA_MIPS64R5.
+	(TARGET_CPU_CPP_BUILTINS): Added support for ISA_MIPS32R3,
+	ISA_MIPS32R5, ISA_MIPS64R3 and ISA_MIPS64R5.
 	(MIPS_ISA_LEVEL_SPEC): Added support for mips32r3, mips32r5, mips64r3
 	and mips64r5.
 	(MIPS_ISA_SYNCI_SPEC): Likewise.
@@ -639,7 +649,7 @@
 	* doc/invoke.texi: Document -mxpa and -mno-xpa MIPS command line
 	options.
 	* config/mips/mips.opt (mxpa): New option.
-	* config/mips/mips.h (ASM_SPEC): Pass mxpa and mno-xpa to the 
+	* config/mips/mips.h (ASM_SPEC): Pass mxpa and mno-xpa to the
 	assembler.
 
 2014-06-03  Martin Jambor  <mjambor@suse.cz>
@@ -688,7 +698,7 @@
 	* config/sh/constraints.md: Likewise EXTRA_CONSTRAINT.
 
 2014-06-02  Andrew Pinski  <apinski@cavium.com>
-    
+
 	* config/aarch64/aarch64-linux.h (GLIBC_DYNAMIC_LINKER):
 	/lib/ld-linux32-aarch64.so.1 is used for ILP32.
 	(LINUX_TARGET_LINK_SPEC): Update linker script for ILP32.
