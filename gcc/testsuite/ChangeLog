@@ -1,3 +1,18 @@
+2014-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/allocatable_components_1.f90: Adjust for
+	reduction clause diagnostic changes.
+	* gfortran.dg/gomp/appendix-a/a.31.3.f90: Likewise.
+	* gfortran.dg/gomp/reduction1.f90: Likewise.
+	* gfortran.dg/gomp/reduction3.f90: Likewise.
+	* gfortran.dg/gomp/udr1.f90: New test.
+	* gfortran.dg/gomp/udr2.f90: New test.
+	* gfortran.dg/gomp/udr3.f90: New test.
+	* gfortran.dg/gomp/udr4.f90: New test.
+	* gfortran.dg/gomp/udr5.f90: New test.
+	* gfortran.dg/gomp/udr6.f90: New test.
+	* gfortran.dg/gomp/udr7.f90: New test.
+
 2014-06-06  Christian Bruel  <christian.bruel@st.com>
 
 	PR tree-optimization/43934

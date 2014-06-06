@@ -10866,7 +10866,10 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     }
 
   /* Constraints on deferred type parameter.  */
-  if (sym->ts.deferred && !(sym->attr.pointer || sym->attr.allocatable))
+  if (sym->ts.deferred
+      && !(sym->attr.pointer
+	   || sym->attr.allocatable
+	   || sym->attr.omp_udr_artificial_var))
     {
       gfc_error ("Entity '%s' at %L has a deferred type parameter and "
 		 "requires either the pointer or allocatable attribute",
@@ -10881,7 +10884,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	 dummy arguments.  */
       e = sym->ts.u.cl->length;
       if (e == NULL && !sym->attr.dummy && !sym->attr.result
-	  && !sym->ts.deferred && !sym->attr.select_type_temporary)
+	  && !sym->ts.deferred && !sym->attr.select_type_temporary
+	  && !sym->attr.omp_udr_artificial_var)
 	{
 	  gfc_error ("Entity with assumed character length at %L must be a "
 		     "dummy argument or a PARAMETER", &sym->declared_at);
@@ -14695,6 +14699,8 @@ resolve_types (gfc_namespace *ns)
   gfc_resolve_uops (ns->uop_root);
 
   gfc_resolve_omp_declare_simd (ns);
+
+  gfc_resolve_omp_udrs (ns->omp_udr_root);
 
   gfc_current_ns = old_ns;
 }

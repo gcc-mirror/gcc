@@ -1,3 +1,18 @@
+2014-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/simd1.f90: New test.
+	* testsuite/libgomp.fortran/udr1.f90: New test.
+	* testsuite/libgomp.fortran/udr2.f90: New test.
+	* testsuite/libgomp.fortran/udr3.f90: New test.
+	* testsuite/libgomp.fortran/udr4.f90: New test.
+	* testsuite/libgomp.fortran/udr5.f90: New test.
+	* testsuite/libgomp.fortran/udr6.f90: New test.
+	* testsuite/libgomp.fortran/udr7.f90: New test.
+	* testsuite/libgomp.fortran/udr8.f90: New test.
+	* testsuite/libgomp.fortran/udr9.f90: New test.
+	* testsuite/libgomp.fortran/udr10.f90: New test.
+	* testsuite/libgomp.fortran/udr11.f90: New test.
+
 2014-05-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libgomp.fortran/declare-simd-1.f90: Require

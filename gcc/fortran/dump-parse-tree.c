@@ -1020,6 +1020,28 @@ show_omp_namelist (gfc_omp_namelist *n)
 {
   for (; n; n = n->next)
     {
+      switch (n->rop)
+	{
+	case OMP_REDUCTION_PLUS:
+	case OMP_REDUCTION_TIMES:
+	case OMP_REDUCTION_MINUS:
+	case OMP_REDUCTION_AND:
+	case OMP_REDUCTION_OR:
+	case OMP_REDUCTION_EQV:
+	case OMP_REDUCTION_NEQV:
+	  fprintf (dumpfile, "%s:", gfc_op2string ((gfc_intrinsic_op) n->rop));
+	  break;
+	case OMP_REDUCTION_MAX: fputs ("max:", dumpfile); break;
+	case OMP_REDUCTION_MIN: fputs ("min:", dumpfile); break;
+	case OMP_REDUCTION_IAND: fputs ("iand:", dumpfile); break;
+	case OMP_REDUCTION_IOR: fputs ("ior:", dumpfile); break;
+	case OMP_REDUCTION_IEOR: fputs ("ieor:", dumpfile); break;
+	case OMP_REDUCTION_USER:
+	  if (n->udr)
+	    fprintf (dumpfile, "%s:", n->udr->name);
+	  break;
+	default: break;
+	}
       fprintf (dumpfile, "%s", n->sym->name);
       if (n->expr)
 	{
@@ -1193,51 +1215,28 @@ show_omp_node (int level, gfc_code *c)
 	    && list_type != OMP_LIST_COPYPRIVATE)
 	  {
 	    const char *type = NULL;
-	    if (list_type >= OMP_LIST_REDUCTION_FIRST)
+	    switch (list_type)
 	      {
-		switch (list_type)
-		  {
-		  case OMP_LIST_PLUS: type = "+"; break;
-		  case OMP_LIST_MULT: type = "*"; break;
-		  case OMP_LIST_SUB: type = "-"; break;
-		  case OMP_LIST_AND: type = ".AND."; break;
-		  case OMP_LIST_OR: type = ".OR."; break;
-		  case OMP_LIST_EQV: type = ".EQV."; break;
-		  case OMP_LIST_NEQV: type = ".NEQV."; break;
-		  case OMP_LIST_MAX: type = "MAX"; break;
-		  case OMP_LIST_MIN: type = "MIN"; break;
-		  case OMP_LIST_IAND: type = "IAND"; break;
-		  case OMP_LIST_IOR: type = "IOR"; break;
-		  case OMP_LIST_IEOR: type = "IEOR"; break;
-		  default:
-		    gcc_unreachable ();
-		  }
-		fprintf (dumpfile, " REDUCTION(%s:", type);
+	      case OMP_LIST_PRIVATE: type = "PRIVATE"; break;
+	      case OMP_LIST_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
+	      case OMP_LIST_LASTPRIVATE: type = "LASTPRIVATE"; break;
+	      case OMP_LIST_SHARED: type = "SHARED"; break;
+	      case OMP_LIST_COPYIN: type = "COPYIN"; break;
+	      case OMP_LIST_UNIFORM: type = "UNIFORM"; break;
+	      case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
+	      case OMP_LIST_LINEAR: type = "LINEAR"; break;
+	      case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
+	      case OMP_LIST_DEPEND_IN:
+		fprintf (dumpfile, " DEPEND(IN:");
+		break;
+	      case OMP_LIST_DEPEND_OUT:
+		fprintf (dumpfile, " DEPEND(OUT:");
+		break;
+	      default:
+		gcc_unreachable ();
 	      }
-	    else
-	      {
-		switch (list_type)
-		  {
-		  case OMP_LIST_PRIVATE: type = "PRIVATE"; break;
-		  case OMP_LIST_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
-		  case OMP_LIST_LASTPRIVATE: type = "LASTPRIVATE"; break;
-		  case OMP_LIST_SHARED: type = "SHARED"; break;
-		  case OMP_LIST_COPYIN: type = "COPYIN"; break;
-		  case OMP_LIST_UNIFORM: type = "UNIFORM"; break;
-		  case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
-		  case OMP_LIST_LINEAR: type = "LINEAR"; break;
-		  case OMP_LIST_DEPEND_IN:
-		    fprintf (dumpfile, " DEPEND(IN:");
-		    break;
-		  case OMP_LIST_DEPEND_OUT:
-		    fprintf (dumpfile, " DEPEND(OUT:");
-		    break;
-		  default:
-		    gcc_unreachable ();
-		  }
-		if (type)
-		  fprintf (dumpfile, " %s(", type);
-	      }
+	    if (type)
+	      fprintf (dumpfile, " %s(", type);
 	    show_omp_namelist (omp_clauses->lists[list_type]);
 	    fputc (')', dumpfile);
 	  }

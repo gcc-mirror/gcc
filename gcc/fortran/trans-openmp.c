@@ -525,12 +525,104 @@ gfc_trans_omp_variable_list (enum omp_clause_code code,
   return list;
 }
 
-static void
-gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
+struct omp_udr_find_orig_data
 {
+  gfc_omp_udr *omp_udr;
+  bool omp_orig_seen;
+};
+
+static int
+omp_udr_find_orig (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+		   void *data)
+{
+  struct omp_udr_find_orig_data *cd = (struct omp_udr_find_orig_data *) data;
+  if ((*e)->expr_type == EXPR_VARIABLE
+      && (*e)->symtree->n.sym == cd->omp_udr->omp_orig)
+    cd->omp_orig_seen = true;
+
+  return 0;
+}
+
+static tree
+gfc_trans_omp_udr_expr (gfc_omp_namelist *n, bool is_initializer,
+			gfc_expr *syme, gfc_expr *outere)
+{
+  gfc_se symse, outerse;
+  gfc_ss *symss, *outerss;
+  gfc_loopinfo loop;
+  stmtblock_t block, body;
+  tree tem;
+  int i;
+  gfc_namespace *ns = (is_initializer
+		       ? n->udr->initializer_ns : n->udr->combiner_ns);
+
+  syme = gfc_copy_expr (syme);
+  outere = gfc_copy_expr (outere);
+  gfc_init_se (&symse, NULL);
+  gfc_init_se (&outerse, NULL);
+  gfc_start_block (&block);
+  gfc_init_loopinfo (&loop);
+  symss = gfc_walk_expr (syme);
+  outerss = gfc_walk_expr (outere);
+  gfc_add_ss_to_loop (&loop, symss);
+  gfc_add_ss_to_loop (&loop, outerss);
+  gfc_conv_ss_startstride (&loop);
+  /* Enable loop reversal.  */
+  for (i = 0; i < GFC_MAX_DIMENSIONS; i++)
+    loop.reverse[i] = GFC_ENABLE_REVERSE;
+  gfc_conv_loop_setup (&loop, &ns->code->loc);
+  gfc_copy_loopinfo_to_se (&symse, &loop);
+  gfc_copy_loopinfo_to_se (&outerse, &loop);
+  symse.ss = symss;
+  outerse.ss = outerss;
+  gfc_mark_ss_chain_used (symss, 1);
+  gfc_mark_ss_chain_used (outerss, 1);
+  gfc_start_scalarized_body (&loop, &body);
+  gfc_conv_expr (&symse, syme);
+  gfc_conv_expr (&outerse, outere);
+
+  if (is_initializer)
+    {
+      n->udr->omp_priv->backend_decl = symse.expr;
+      n->udr->omp_orig->backend_decl = outerse.expr;
+    }
+  else
+    {
+      n->udr->omp_out->backend_decl = outerse.expr;
+      n->udr->omp_in->backend_decl = symse.expr;
+    }
+
+  if (ns->code->op == EXEC_ASSIGN)
+    tem = gfc_trans_assignment (ns->code->expr1, ns->code->expr2,
+				false, false);
+  else
+    tem = gfc_trans_call (ns->code, false, NULL_TREE, NULL_TREE, false);
+  gfc_add_expr_to_block (&body, tem);
+
+  gcc_assert (symse.ss == gfc_ss_terminator
+	      && outerse.ss == gfc_ss_terminator);
+  /* Generate the copying loops.  */
+  gfc_trans_scalarizing_loops (&loop, &body);
+
+  /* Wrap the whole thing up.  */
+  gfc_add_block_to_block (&block, &loop.pre);
+  gfc_add_block_to_block (&block, &loop.post);
+
+  gfc_cleanup_loop (&loop);
+  gfc_free_expr (syme);
+  gfc_free_expr (outere);
+
+  return gfc_finish_block (&block);
+}
+
+static void
+gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
+{
+  gfc_symbol *sym = n->sym;
   gfc_symtree *root1 = NULL, *root2 = NULL, *root3 = NULL, *root4 = NULL;
   gfc_symtree *symtree1, *symtree2, *symtree3, *symtree4 = NULL;
   gfc_symbol init_val_sym, outer_sym, intrinsic_sym;
+  gfc_symbol omp_var_copy[4];
   gfc_expr *e1, *e2, *e3, *e4;
   gfc_ref *ref;
   tree decl, backend_decl, stmt, type, outer_decl;
@@ -559,12 +651,29 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   init_val_sym.attr.referenced = 1;
   init_val_sym.declared_at = where;
   init_val_sym.attr.flavor = FL_VARIABLE;
-  backend_decl = omp_reduction_init (c, gfc_sym_type (&init_val_sym));
+  if (OMP_CLAUSE_REDUCTION_CODE (c) != ERROR_MARK)
+    backend_decl = omp_reduction_init (c, gfc_sym_type (&init_val_sym));
+  else if (n->udr->initializer_ns)
+    backend_decl = NULL;
+  else
+    switch (sym->ts.type)
+      {
+      case BT_LOGICAL:
+      case BT_INTEGER:
+      case BT_REAL:
+      case BT_COMPLEX:
+	backend_decl = build_zero_cst (gfc_sym_type (&init_val_sym));
+	break;
+      default:
+	backend_decl = NULL_TREE;
+	break;
+      }
   init_val_sym.backend_decl = backend_decl;
 
   /* Create a fake symbol for the outer array reference.  */
   outer_sym = *sym;
-  outer_sym.as = gfc_copy_array_spec (sym->as);
+  if (sym->as)
+    outer_sym.as = gfc_copy_array_spec (sym->as);
   outer_sym.attr.dummy = 0;
   outer_sym.attr.result = 0;
   outer_sym.attr.flavor = FL_VARIABLE;
@@ -585,28 +694,94 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   symtree3->n.sym = &outer_sym;
   gcc_assert (symtree3 == root3);
 
+  memset (omp_var_copy, 0, sizeof omp_var_copy);
+  if (n->udr)
+    {
+      omp_var_copy[0] = *n->udr->omp_out;
+      omp_var_copy[1] = *n->udr->omp_in;
+      if (sym->attr.dimension)
+	{
+	  n->udr->omp_out->ts = sym->ts;
+	  n->udr->omp_in->ts = sym->ts;
+	}
+      else
+	{
+	  *n->udr->omp_out = outer_sym;
+	  *n->udr->omp_in = *sym;
+	}
+      if (n->udr->initializer_ns)
+	{
+	  omp_var_copy[2] = *n->udr->omp_priv;
+	  omp_var_copy[3] = *n->udr->omp_orig;
+	  if (sym->attr.dimension)
+	    {
+	      n->udr->omp_priv->ts = sym->ts;
+	      n->udr->omp_orig->ts = sym->ts;
+	    }
+	  else
+	    {
+	      *n->udr->omp_priv = *sym;
+	      *n->udr->omp_orig = outer_sym;
+	    }
+	}
+    }
+
   /* Create expressions.  */
   e1 = gfc_get_expr ();
   e1->expr_type = EXPR_VARIABLE;
   e1->where = where;
   e1->symtree = symtree1;
   e1->ts = sym->ts;
-  e1->ref = ref = gfc_get_ref ();
-  ref->type = REF_ARRAY;
-  ref->u.ar.where = where;
-  ref->u.ar.as = sym->as;
-  ref->u.ar.type = AR_FULL;
-  ref->u.ar.dimen = 0;
+  if (sym->attr.dimension)
+    {
+      e1->ref = ref = gfc_get_ref ();
+      ref->type = REF_ARRAY;
+      ref->u.ar.where = where;
+      ref->u.ar.as = sym->as;
+      ref->u.ar.type = AR_FULL;
+      ref->u.ar.dimen = 0;
+    }
   t = gfc_resolve_expr (e1);
   gcc_assert (t);
 
-  e2 = gfc_get_expr ();
-  e2->expr_type = EXPR_VARIABLE;
-  e2->where = where;
-  e2->symtree = symtree2;
-  e2->ts = sym->ts;
-  t = gfc_resolve_expr (e2);
-  gcc_assert (t);
+  e2 = NULL;
+  if (backend_decl != NULL_TREE)
+    {
+      e2 = gfc_get_expr ();
+      e2->expr_type = EXPR_VARIABLE;
+      e2->where = where;
+      e2->symtree = symtree2;
+      e2->ts = sym->ts;
+      t = gfc_resolve_expr (e2);
+      gcc_assert (t);
+    }
+  else if (n->udr->initializer_ns == NULL)
+    {
+      gcc_assert (sym->ts.type == BT_DERIVED);
+      e2 = gfc_default_initializer (&sym->ts);
+      gcc_assert (e2);
+      t = gfc_resolve_expr (e2);
+      gcc_assert (t);
+    }
+  else if (n->udr->initializer_ns->code->op == EXEC_ASSIGN)
+    {
+      if (!sym->attr.dimension)
+	{
+	  e2 = gfc_copy_expr (n->udr->initializer_ns->code->expr2);
+	  t = gfc_resolve_expr (e2);
+	  gcc_assert (t);
+	}
+    }
+  if (n->udr && n->udr->initializer_ns)
+    {
+      struct omp_udr_find_orig_data cd;
+      cd.omp_udr = n->udr;
+      cd.omp_orig_seen = false;
+      gfc_code_walker (&n->udr->initializer_ns->code,
+		       gfc_dummy_code_callback, omp_udr_find_orig, &cd);
+      if (cd.omp_orig_seen)
+	OMP_CLAUSE_REDUCTION_OMP_ORIG_REF (c) = 1;
+    }
 
   e3 = gfc_copy_expr (e1);
   e3->symtree = symtree3;
@@ -614,6 +789,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   gcc_assert (t);
 
   iname = NULL;
+  e4 = NULL;
   switch (OMP_CLAUSE_REDUCTION_CODE (c))
     {
     case PLUS_EXPR:
@@ -650,6 +826,21 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
     case BIT_XOR_EXPR:
       iname = "ieor";
       break;
+    case ERROR_MARK:
+      if (n->udr->combiner_ns->code->op == EXEC_ASSIGN)
+	{
+	  if (!sym->attr.dimension)
+	    {
+	      gfc_free_expr (e3);
+	      e3 = gfc_copy_expr (n->udr->combiner_ns->code->expr1);
+	      e4 = gfc_copy_expr (n->udr->combiner_ns->code->expr2);
+	      t = gfc_resolve_expr (e3);
+	      gcc_assert (t);
+	      t = gfc_resolve_expr (e4);
+	      gcc_assert (t);
+	    }
+	}
+      break;
     default:
       gcc_unreachable ();
     }
@@ -679,15 +870,19 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       e4->value.function.actual->next = gfc_get_actual_arglist ();
       e4->value.function.actual->next->expr = e1;
     }
-  /* e1 and e3 have been stored as arguments of e4, avoid sharing.  */
-  e1 = gfc_copy_expr (e1);
-  e3 = gfc_copy_expr (e3);
-  t = gfc_resolve_expr (e4);
-  gcc_assert (t);
+  if (OMP_CLAUSE_REDUCTION_CODE (c) != ERROR_MARK)
+    {
+      /* e1 and e3 have been stored as arguments of e4, avoid sharing.  */
+      e1 = gfc_copy_expr (e1);
+      e3 = gfc_copy_expr (e3);
+      t = gfc_resolve_expr (e4);
+      gcc_assert (t);
+    }
 
   /* Create the init statement list.  */
   pushlevel ();
-  if (GFC_DESCRIPTOR_TYPE_P (type)
+  if (sym->attr.dimension
+      && GFC_DESCRIPTOR_TYPE_P (type)
       && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
     {
       /* If decl is an allocatable array, it needs to be allocated
@@ -719,12 +914,20 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       gfc_allocate_using_malloc (&block, ptr, size, NULL_TREE);
       gfc_conv_descriptor_data_set (&block, decl, ptr);
 
-      gfc_add_expr_to_block (&block, gfc_trans_assignment (e1, e2, false,
-			     false));
+      if (e2)
+	stmt = gfc_trans_assignment (e1, e2, false, false);
+      else
+	stmt = gfc_trans_omp_udr_expr (n, true, e1, e3);
+      gfc_add_expr_to_block (&block, stmt);
       stmt = gfc_finish_block (&block);
     }
-  else
+  else if (e2)
     stmt = gfc_trans_assignment (e1, e2, false, false);
+  else if (sym->attr.dimension)
+    stmt = gfc_trans_omp_udr_expr (n, true, e1, e3);
+  else
+    stmt = gfc_trans_call (n->udr->initializer_ns->code, false,
+			   NULL_TREE, NULL_TREE, false);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
@@ -733,7 +936,8 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
 
   /* Create the merge statement list.  */
   pushlevel ();
-  if (GFC_DESCRIPTOR_TYPE_P (type)
+  if (sym->attr.dimension
+      && GFC_DESCRIPTOR_TYPE_P (type)
       && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
     {
       /* If decl is an allocatable array, it needs to be deallocated
@@ -741,14 +945,22 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       stmtblock_t block;
 
       gfc_start_block (&block);
-      gfc_add_expr_to_block (&block, gfc_trans_assignment (e3, e4, false,
-			     true));
+      if (e4)
+	stmt = gfc_trans_assignment (e3, e4, false, true);
+      else
+	stmt = gfc_trans_omp_udr_expr (n, false, e1, e3);
+      gfc_add_expr_to_block (&block, stmt);
       gfc_add_expr_to_block (&block, gfc_trans_dealloc_allocated (decl, false,
 								  NULL));
       stmt = gfc_finish_block (&block);
     }
-  else
+  else if (e4)
     stmt = gfc_trans_assignment (e3, e4, false, true);
+  else if (sym->attr.dimension)
+    stmt = gfc_trans_omp_udr_expr (n, false, e1, e3);
+  else
+    stmt = gfc_trans_call (n->udr->combiner_ns->code, false,
+			   NULL_TREE, NULL_TREE, false);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
@@ -761,19 +973,33 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   gfc_current_locus = old_loc;
 
   gfc_free_expr (e1);
-  gfc_free_expr (e2);
+  if (e2)
+    gfc_free_expr (e2);
   gfc_free_expr (e3);
-  gfc_free_expr (e4);
+  if (e4)
+    gfc_free_expr (e4);
   free (symtree1);
   free (symtree2);
   free (symtree3);
   free (symtree4);
-  gfc_free_array_spec (outer_sym.as);
+  if (outer_sym.as)
+    gfc_free_array_spec (outer_sym.as);
+
+  if (n->udr)
+    {
+      *n->udr->omp_out = omp_var_copy[0];
+      *n->udr->omp_in = omp_var_copy[1];
+      if (n->udr->initializer_ns)
+	{
+	  *n->udr->omp_priv = omp_var_copy[2];
+	  *n->udr->omp_orig = omp_var_copy[3];
+	}
+    }
 }
 
 static tree
 gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
-			      enum tree_code reduction_code, locus where)
+			      locus where)
 {
   for (; namelist != NULL; namelist = namelist->next)
     if (namelist->sym->attr.referenced)
@@ -784,9 +1010,53 @@ gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
 	    tree node = build_omp_clause (where.lb->location,
 					  OMP_CLAUSE_REDUCTION);
 	    OMP_CLAUSE_DECL (node) = t;
-	    OMP_CLAUSE_REDUCTION_CODE (node) = reduction_code;
-	    if (namelist->sym->attr.dimension)
-	      gfc_trans_omp_array_reduction (node, namelist->sym, where);
+	    switch (namelist->rop)
+	      {
+	      case OMP_REDUCTION_PLUS:
+		OMP_CLAUSE_REDUCTION_CODE (node) = PLUS_EXPR;
+		break;
+	      case OMP_REDUCTION_MINUS:
+		OMP_CLAUSE_REDUCTION_CODE (node) = MINUS_EXPR;
+		break;
+	      case OMP_REDUCTION_TIMES:
+		OMP_CLAUSE_REDUCTION_CODE (node) = MULT_EXPR;
+		break;
+	      case OMP_REDUCTION_AND:
+		OMP_CLAUSE_REDUCTION_CODE (node) = TRUTH_ANDIF_EXPR;
+		break;
+	      case OMP_REDUCTION_OR:
+		OMP_CLAUSE_REDUCTION_CODE (node) = TRUTH_ORIF_EXPR;
+		break;
+	      case OMP_REDUCTION_EQV:
+		OMP_CLAUSE_REDUCTION_CODE (node) = EQ_EXPR;
+		break;
+	      case OMP_REDUCTION_NEQV:
+		OMP_CLAUSE_REDUCTION_CODE (node) = NE_EXPR;
+		break;
+	      case OMP_REDUCTION_MAX:
+		OMP_CLAUSE_REDUCTION_CODE (node) = MAX_EXPR;
+		break;
+	      case OMP_REDUCTION_MIN:
+		OMP_CLAUSE_REDUCTION_CODE (node) = MIN_EXPR;
+		break;
+ 	      case OMP_REDUCTION_IAND:
+		OMP_CLAUSE_REDUCTION_CODE (node) = BIT_AND_EXPR;
+		break;
+ 	      case OMP_REDUCTION_IOR:
+		OMP_CLAUSE_REDUCTION_CODE (node) = BIT_IOR_EXPR;
+		break;
+ 	      case OMP_REDUCTION_IEOR:
+		OMP_CLAUSE_REDUCTION_CODE (node) = BIT_XOR_EXPR;
+		break;
+	      case OMP_REDUCTION_USER:
+		OMP_CLAUSE_REDUCTION_CODE (node) = ERROR_MARK;
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+	    if (namelist->sym->attr.dimension
+		|| namelist->rop == OMP_REDUCTION_USER)
+	      gfc_trans_omp_array_reduction_or_udr (node, namelist, where);
 	    list = gfc_trans_add_clause (node, list);
 	  }
       }
@@ -811,58 +1081,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
       if (n == NULL)
 	continue;
-      if (list >= OMP_LIST_REDUCTION_FIRST
-	  && list <= OMP_LIST_REDUCTION_LAST)
-	{
-	  enum tree_code reduction_code;
-	  switch (list)
-	    {
-	    case OMP_LIST_PLUS:
-	      reduction_code = PLUS_EXPR;
-	      break;
-	    case OMP_LIST_MULT:
-	      reduction_code = MULT_EXPR;
-	      break;
-	    case OMP_LIST_SUB:
-	      reduction_code = MINUS_EXPR;
-	      break;
-	    case OMP_LIST_AND:
-	      reduction_code = TRUTH_ANDIF_EXPR;
-	      break;
-	    case OMP_LIST_OR:
-	      reduction_code = TRUTH_ORIF_EXPR;
-	      break;
-	    case OMP_LIST_EQV:
-	      reduction_code = EQ_EXPR;
-	      break;
-	    case OMP_LIST_NEQV:
-	      reduction_code = NE_EXPR;
-	      break;
-	    case OMP_LIST_MAX:
-	      reduction_code = MAX_EXPR;
-	      break;
-	    case OMP_LIST_MIN:
-	      reduction_code = MIN_EXPR;
-	      break;
-	    case OMP_LIST_IAND:
-	      reduction_code = BIT_AND_EXPR;
-	      break;
-	    case OMP_LIST_IOR:
-	      reduction_code = BIT_IOR_EXPR;
-	      break;
-	    case OMP_LIST_IEOR:
-	      reduction_code = BIT_XOR_EXPR;
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	  omp_clauses
-	    = gfc_trans_omp_reduction_list (n, omp_clauses, reduction_code,
-					    where);
-	  continue;
-	}
       switch (list)
 	{
+	case OMP_LIST_REDUCTION:
+	  omp_clauses = gfc_trans_omp_reduction_list (n, omp_clauses, where);
+	  break;
 	case OMP_LIST_PRIVATE:
 	  clause_code = OMP_CLAUSE_PRIVATE;
 	  goto add_clause;
@@ -1923,7 +2146,7 @@ static void
 gfc_split_omp_clauses (gfc_code *code,
 		       gfc_omp_clauses clausesa[GFC_OMP_SPLIT_NUM])
 {
-  int mask = 0, innermost = 0, i;
+  int mask = 0, innermost = 0;
   memset (clausesa, 0, GFC_OMP_SPLIT_NUM * sizeof (gfc_omp_clauses));
   switch (code->op)
     {
@@ -2021,18 +2244,15 @@ gfc_split_omp_clauses (gfc_code *code,
       /* Reduction is allowed on simd, do, parallel and teams.
 	 Duplicate it on all of them, but omit on do if
 	 parallel is present.  */
-      for (i = OMP_LIST_REDUCTION_FIRST; i <= OMP_LIST_REDUCTION_LAST; i++)
-	{
-	  if (mask & GFC_OMP_MASK_PARALLEL)
-	    clausesa[GFC_OMP_SPLIT_PARALLEL].lists[i]
-	      = code->ext.omp_clauses->lists[i];
-	  else if (mask & GFC_OMP_MASK_DO)
-	    clausesa[GFC_OMP_SPLIT_DO].lists[i]
-	      = code->ext.omp_clauses->lists[i];
-	  if (mask & GFC_OMP_MASK_SIMD)
-	    clausesa[GFC_OMP_SPLIT_SIMD].lists[i]
-	      = code->ext.omp_clauses->lists[i];
-	}
+      if (mask & GFC_OMP_MASK_PARALLEL)
+	clausesa[GFC_OMP_SPLIT_PARALLEL].lists[OMP_LIST_REDUCTION]
+	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
+      else if (mask & GFC_OMP_MASK_DO)
+	clausesa[GFC_OMP_SPLIT_DO].lists[OMP_LIST_REDUCTION]
+	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
+      if (mask & GFC_OMP_MASK_SIMD)
+	clausesa[GFC_OMP_SPLIT_SIMD].lists[OMP_LIST_REDUCTION]
+	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
     }
   if ((mask & (GFC_OMP_MASK_PARALLEL | GFC_OMP_MASK_DO))
       == (GFC_OMP_MASK_PARALLEL | GFC_OMP_MASK_DO))

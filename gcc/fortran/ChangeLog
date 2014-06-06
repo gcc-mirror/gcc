@@ -1,3 +1,72 @@
+2014-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* dump-parse-tree.c (show_omp_namelist): Dump reduction
+	id in each list item.
+	(show_omp_node): Only handle OMP_LIST_REDUCTION, not
+	OMP_LIST_REDUCTION_FIRST .. OMP_LIST_REDUCTION_LAST.  Don't
+	dump reduction id here.
+	* frontend-passes.c (dummy_code_callback): Renamed to...
+	(gfc_dummy_code_callback): ... this.  No longer static.
+	(optimize_reduction): Use gfc_dummy_code_callback instead of
+	dummy_code_callback.
+	* gfortran.h (gfc_statement): Add ST_OMP_DECLARE_REDUCTION.
+	(symbol_attribute): Add omp_udr_artificial_var bitfield.
+	(gfc_omp_reduction_op): New enum.
+	(gfc_omp_namelist): Add rop and udr fields.
+	(OMP_LIST_PLUS, OMP_LIST_REDUCTION_FIRST, OMP_LIST_MULT,
+	OMP_LIST_SUB, OMP_LIST_AND, OMP_LIST_OR, OMP_LIST_EQV,
+	OMP_LIST_NEQV, OMP_LIST_MAX, OMP_LIST_MIN, OMP_LIST_IAND,
+	OMP_LIST_IOR, OMP_LIST_IEOR, OMP_LIST_REDUCTION_LAST): Removed.
+	(OMP_LIST_REDUCTION): New.
+	(gfc_omp_udr): New type.
+	(gfc_get_omp_udr): Define.
+	(gfc_symtree): Add n.omp_udr field.
+	(gfc_namespace): Add omp_udr_root field, add omp_udr_ns bitfield.
+	(gfc_free_omp_udr, gfc_omp_udr_find, gfc_resolve_omp_udrs,
+	gfc_dummy_code_callback): New prototypes.
+	* match.h (gfc_match_omp_declare_reduction): New prototype.
+	* module.c (MOD_VERSION): Increase to 13.
+	(omp_declare_reduction_stmt): New array.
+	(mio_omp_udr_expr, write_omp_udr, write_omp_udrs, load_omp_udrs):
+	New functions.
+	(read_module): Read OpenMP user defined reductions.
+	(write_module): Write OpenMP user defined reductions.
+	* openmp.c: Include arith.h.
+	(gfc_free_omp_udr, gfc_find_omp_udr): New functions.
+	(gfc_match_omp_clauses): Handle user defined reductions.
+	Store reduction kind into gfc_omp_namelist instead of using
+	several OMP_LIST_* entries.
+	(match_udr_expr, gfc_omp_udr_predef, gfc_omp_udr_find,
+	gfc_match_omp_declare_reduction): New functions.
+	(resolve_omp_clauses): Adjust for reduction clauses being only
+	in OMP_LIST_REDUCTION list.  Diagnose missing UDRs.
+	(struct omp_udr_callback_data): New type.
+	(omp_udr_callback, gfc_resolve_omp_udr, gfc_resolve_omp_udrs): New
+	functions.
+	* parse.c (decode_omp_directive): Handle !$omp declare reduction.
+	(case_decl): Add ST_OMP_DECLARE_REDUCTION.
+	(gfc_ascii_statement): Print ST_OMP_DECLARE_REDUCTION.
+	* resolve.c (resolve_fl_variable): Allow len=: or len=* on
+	sym->attr.omp_udr_artificial_var symbols.
+	(resolve_types): Call gfc_resolve_omp_udrs.
+	* symbol.c (gfc_get_uop): If gfc_current_ns->omp_udr_ns,
+	use parent ns instead of gfc_current_ns.
+	(gfc_get_sym_tree): Don't insert symbols into
+	namespaces with omp_udr_ns set.
+	(free_omp_udr_tree): New function.
+	(gfc_free_namespace): Call it.
+	* trans-openmp.c (struct omp_udr_find_orig_data): New type.
+	(omp_udr_find_orig, gfc_trans_omp_udr_expr): New functions.
+	(gfc_trans_omp_array_reduction): Renamed to...
+	(gfc_trans_omp_array_reduction_or_udr): ... this.  Remove SYM
+	argument, instead pass gfc_omp_namelist pointer N.  Handle
+	user defined reductions.
+	(gfc_trans_omp_reduction_list): Remove REDUCTION_CODE argument.
+	Handle user defined reductions and reduction ops in gfc_omp_namelist.
+	(gfc_trans_omp_clauses): Adjust for just a single OMP_LIST_REDUCTION
+	list.
+	(gfc_split_omp_clauses): Likewise.
+
 2014-06-05  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/61418
