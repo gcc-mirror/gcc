@@ -1244,11 +1244,10 @@ loop_single_full_bb_p (struct loop *loop)
 static void
 dump_insn_location (rtx insn)
 {
-  if (dump_file && INSN_LOCATION (insn))
+  if (dump_file && INSN_HAS_LOCATION (insn))
     {
-      const char *file = insn_file (insn);
-      if (file)
-	fprintf (dump_file, " %s:%i", file, insn_line (insn));
+      expanded_location xloc = insn_location (insn);
+      fprintf (dump_file, " %s:%i", xloc.file, xloc.line);
     }
 }
 

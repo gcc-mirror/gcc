@@ -6174,6 +6174,13 @@ insn_file (const_rtx insn)
   return LOCATION_FILE (INSN_LOCATION (insn));
 }
 
+/* Return expanded location of the statement that produced this insn.  */
+expanded_location
+insn_location (const_rtx insn)
+{
+  return expand_location (INSN_LOCATION (insn));
+}
+
 /* Return true if memory model MODEL requires a pre-operation (release-style)
    barrier or a post-operation (acquire-style) barrier.  While not universal,
    this function matches behavior of several targets.  */
