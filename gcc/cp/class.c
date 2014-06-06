@@ -3480,22 +3480,25 @@ check_field_decls (tree t, tree *access_decls,
       /* When this goes into scope, it will be a non-local reference.  */
       DECL_NONLOCAL (x) = 1;
 
-      if (TREE_CODE (t) == UNION_TYPE)
+      if (TREE_CODE (t) == UNION_TYPE
+	  && cxx_dialect < cxx11)
 	{
-	  /* [class.union]
+	  /* [class.union] (C++98)
 
 	     If a union contains a static data member, or a member of
-	     reference type, the program is ill-formed.  */
+	     reference type, the program is ill-formed.
+
+	     In C++11 this limitation doesn't exist anymore.  */
 	  if (VAR_P (x))
 	    {
-	      error ("%q+D may not be static because it is a member of a union", x);
+	      error ("in C++98 %q+D may not be static because it is "
+		     "a member of a union", x);
 	      continue;
 	    }
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
-	      error ("%q+D may not have reference type %qT because"
-		     " it is a member of a union",
-		     x, type);
+	      error ("in C++98 %q+D may not have reference type %qT "
+		     "because it is a member of a union", x, type);
 	      continue;
 	    }
 	}

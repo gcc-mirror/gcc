@@ -1,3 +1,11 @@
+2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60184
+	* g++.dg/cpp0x/constexpr-union6.C: New.
+	* g++.dg/cpp0x/union6.C: Likewise.
+	* g++.dg/init/ref14.C: Adjust.
+	* g++.dg/init/union1.C: Likewise.
+
 2014-06-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59299

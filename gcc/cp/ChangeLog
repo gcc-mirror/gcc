@@ -1,3 +1,9 @@
+2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60184
+	* class.c (check_field_decls): In C++11 mode do not reject
+	static data members and reference-type members in unions.
+
 2014-06-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43453
