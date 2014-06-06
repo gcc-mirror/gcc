@@ -324,9 +324,9 @@ graphite_transform_loops (void)
 
 
 static unsigned int
-graphite_transforms (void)
+graphite_transforms (struct function *fun)
 {
-  if (!current_loops)
+  if (number_of_loops (fun) <= 1)
     return 0;
 
   graphite_transform_loops ();
@@ -411,7 +411,7 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_graphite_transforms (); }
-  virtual unsigned int execute (function *) { return graphite_transforms (); }
+  virtual unsigned int execute (function *fun) { return graphite_transforms (fun); }
 
 }; // class pass_graphite_transforms
 

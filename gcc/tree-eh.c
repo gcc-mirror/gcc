@@ -3212,8 +3212,7 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	      gimple_stmt_iterator gsi2;
 
 	      new_bb = create_empty_bb (bb);
-	      if (current_loops)
-		add_bb_to_loop (new_bb, bb->loop_father);
+	      add_bb_to_loop (new_bb, bb->loop_father);
 	      lab = gimple_block_label (new_bb);
 	      gsi2 = gsi_start_bb (new_bb);
 
@@ -4210,8 +4209,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	   we may have created a loop with multiple latches.
 	   All of this isn't easily fixed thus cancel the affected loop
 	   and mark the other loop as possibly having multiple latches.  */
-	if (current_loops
-	    && e->dest == e->dest->loop_father->header)
+	if (e->dest == e->dest->loop_father->header)
 	  {
 	    e->dest->loop_father->header = NULL;
 	    e->dest->loop_father->latch = NULL;

@@ -1656,18 +1656,7 @@ tail_merge_optimize (unsigned int todo)
   int max_iterations = PARAM_VALUE (PARAM_MAX_TAIL_MERGE_ITERATIONS);
 
   if (!flag_tree_tail_merge
-      || max_iterations == 0
-      /* We try to be conservative with respect to loop structure, since:
-	 - the cases where tail-merging could both affect loop structure and be
-	   beneficial are rare,
-	 - it prevents us from having to fixup the loops using
-	   loops_state_set (LOOPS_NEED_FIXUP), and
-	 - keeping loop structure may allow us to simplify the pass.
-	 In order to be conservative, we need loop information.	 In rare cases
-	 (about 7 test-cases in the g++ testsuite) there is none (because
-	 loop_optimizer_finalize has been called before tail-merge, and
-	 PROP_loops is not set), so we bail out.  */
-      || current_loops == NULL)
+      || max_iterations == 0)
     return 0;
 
   timevar_push (TV_TREE_TAIL_MERGE);

@@ -1059,8 +1059,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   if (changed)
     {
       /* We may have created new loops.  Make them magically appear.  */
-      if (current_loops)
-	loops_state_set (LOOPS_NEED_FIXUP);
+      loops_state_set (LOOPS_NEED_FIXUP);
       free_dominance_info (CDI_DOMINATORS);
     }
 
