@@ -395,9 +395,11 @@ print_rtx (const_rtx in_rtx)
 	    /*  Pretty-print insn locations.  Ignore scoping as it is mostly
 		redundant with line number information and do not print anything
 		when there is no location information available.  */
-	    if (INSN_LOCATION (in_rtx) && insn_file (in_rtx))
-	      fprintf (outfile, " %s:%i", insn_file (in_rtx),
-		       insn_line (in_rtx));
+	    if (INSN_HAS_LOCATION (in_rtx))
+	      {
+		expanded_location xloc = insn_location (in_rtx);
+		fprintf (outfile, " %s:%i", xloc.file, xloc.line);
+	      }
 #endif
 	  }
 	else if (i == 6 && GET_CODE (in_rtx) == ASM_OPERANDS)

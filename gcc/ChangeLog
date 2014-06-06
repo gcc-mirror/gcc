@@ -1,3 +1,14 @@
+2014-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtl.h (insn_location): Declare.
+	* cfgcleanup.c (try_forward_edges): Compare the locus of locations
+	with UNKNOWN_LOCATION.
+	* emit-rtl.c (insn_location): New function.
+	* final.c (notice_source_line): Check that the instruction has a
+	location before retrieving it and use insn_location.
+	* modulo-sched.c (loop_single_full_bb_p): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+
 2014-06-06  Richard Biener  <rguenther@suse.de>
 
 	* passes.def: Move 2nd VRP pass before phi-only-cprop.
