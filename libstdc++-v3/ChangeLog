@@ -1,3 +1,7 @@
+2014-06-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/map/operators/1.cc: Simplify test.
+
 2014-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml (faq.stream_reopening_fails): Replace <quote> in
