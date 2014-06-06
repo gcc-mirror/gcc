@@ -1495,14 +1495,72 @@ struct ipa_known_agg_contents_list
   struct ipa_known_agg_contents_list *next;
 };
 
-/* Traverse statements from CALL backwards, scanning whether an aggregate given
-   in ARG is filled in with constant values.  ARG can either be an aggregate
-   expression or a pointer to an aggregate.  ARG_TYPE is the type of the aggregate.
-   JFUNC is the jump function into which the constants are subsequently stored.  */
+/* Find the proper place in linked list of ipa_known_agg_contents_list
+   structures where to put a new one with the given LHS_OFFSET and LHS_SIZE,
+   unless there is a partial overlap, in which case return NULL, or such
+   element is already there, in which case set *ALREADY_THERE to true.  */
+
+static struct ipa_known_agg_contents_list **
+get_place_in_agg_contents_list (struct ipa_known_agg_contents_list **list,
+				HOST_WIDE_INT lhs_offset,
+				HOST_WIDE_INT lhs_size,
+				bool *already_there)
+{
+  struct ipa_known_agg_contents_list **p = list;
+  while (*p && (*p)->offset < lhs_offset)
+    {
+      if ((*p)->offset + (*p)->size > lhs_offset)
+	return NULL;
+      p = &(*p)->next;
+    }
+
+  if (*p && (*p)->offset < lhs_offset + lhs_size)
+    {
+      if ((*p)->offset == lhs_offset && (*p)->size == lhs_size)
+	/* We already know this value is subsequently overwritten with
+	   something else.  */
+	*already_there = true;
+      else
+	/* Otherwise this is a partial overlap which we cannot
+	   represent.  */
+	return NULL;
+    }
+  return p;
+}
+
+/* Build aggregate jump function from LIST, assuming there are exactly
+   CONST_COUNT constant entries there and that th offset of the passed argument
+   is ARG_OFFSET and store it into JFUNC.  */
 
 static void
-determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
-				 struct ipa_jump_func *jfunc)
+build_agg_jump_func_from_list (struct ipa_known_agg_contents_list *list,
+			       int const_count, HOST_WIDE_INT arg_offset,
+			       struct ipa_jump_func *jfunc)
+{
+  vec_alloc (jfunc->agg.items, const_count);
+  while (list)
+    {
+      if (list->constant)
+	{
+	  struct ipa_agg_jf_item item;
+	  item.offset = list->offset - arg_offset;
+	  gcc_assert ((item.offset % BITS_PER_UNIT) == 0);
+	  item.value = unshare_expr_without_location (list->constant);
+	  jfunc->agg.items->quick_push (item);
+	}
+      list = list->next;
+    }
+}
+
+/* Traverse statements from CALL backwards, scanning whether an aggregate given
+   in ARG is filled in with constant values.  ARG can either be an aggregate
+   expression or a pointer to an aggregate.  ARG_TYPE is the type of the
+   aggregate.  JFUNC is the jump function into which the constants are
+   subsequently stored.  */
+
+static void
+determine_locally_known_aggregate_parts (gimple call, tree arg, tree arg_type,
+					 struct ipa_jump_func *jfunc)
 {
   struct ipa_known_agg_contents_list *list = NULL;
   int item_count = 0, const_count = 0;
@@ -1544,10 +1602,8 @@ determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
 	    return;
 	  if (DECL_P (arg_base))
 	    {
-	      tree size;
 	      check_ref = false;
-	      size = build_int_cst (integer_type_node, arg_size);
-	      ao_ref_init_from_ptr_and_size (&r, arg_base, size);
+	      ao_ref_init (&r, arg_base);
 	    }
 	  else
 	    return;
@@ -1585,7 +1641,6 @@ determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
       gimple stmt = gsi_stmt (gsi);
       HOST_WIDE_INT lhs_offset, lhs_size, lhs_max_size;
       tree lhs, rhs, lhs_base;
-      bool partial_overlap;
 
       if (!stmt_may_clobber_ref_p_1 (stmt, &r))
 	continue;
@@ -1602,11 +1657,7 @@ determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
       lhs_base = get_ref_base_and_extent (lhs, &lhs_offset, &lhs_size,
 					  &lhs_max_size);
       if (lhs_max_size == -1
-	  || lhs_max_size != lhs_size
-	  || (lhs_offset < arg_offset
-	      && lhs_offset + lhs_size > arg_offset)
-	  || (lhs_offset < arg_offset + arg_size
-	      && lhs_offset + lhs_size > arg_offset + arg_size))
+	  || lhs_max_size != lhs_size)
 	break;
 
       if (check_ref)
@@ -1624,34 +1675,13 @@ determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
 	    break;
 	}
 
-      if (lhs_offset + lhs_size < arg_offset
-	  || lhs_offset >= (arg_offset + arg_size))
-	continue;
-
-      partial_overlap = false;
-      p = &list;
-      while (*p && (*p)->offset < lhs_offset)
-	{
-	  if ((*p)->offset + (*p)->size > lhs_offset)
-	    {
-	      partial_overlap = true;
-	      break;
-	    }
-	  p = &(*p)->next;
-	}
-      if (partial_overlap)
+      bool already_there = false;
+      p = get_place_in_agg_contents_list (&list, lhs_offset, lhs_size,
+					  &already_there);
+      if (!p)
 	break;
-      if (*p && (*p)->offset < lhs_offset + lhs_size)
-	{
-	  if ((*p)->offset == lhs_offset && (*p)->size == lhs_size)
-	    /* We already know this value is subsequently overwritten with
-	       something else.  */
-	    continue;
-	  else
-	    /* Otherwise this is a partial overlap which we cannot
-	       represent.  */
-	    break;
-	}
+      if (already_there)
+	continue;
 
       rhs = get_ssa_def_if_simple_copy (rhs);
       n = XALLOCA (struct ipa_known_agg_contents_list);
@@ -1680,19 +1710,7 @@ determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
   if (const_count)
     {
       jfunc->agg.by_ref = by_ref;
-      vec_alloc (jfunc->agg.items, const_count);
-      while (list)
-	{
-	  if (list->constant)
-	    {
-	      struct ipa_agg_jf_item item;
-	      item.offset = list->offset - arg_offset;
-	      gcc_assert ((item.offset % BITS_PER_UNIT) == 0);
-	      item.value = unshare_expr_without_location (list->constant);
-	      jfunc->agg.items->quick_push (item);
-	    }
-	  list = list->next;
-	}
+      build_agg_jump_func_from_list (list, const_count, arg_offset, jfunc);
     }
 }
 
@@ -1824,7 +1842,7 @@ ipa_compute_jump_functions_for_edge (struct func_body_info *fbi,
 	      || !ipa_get_jf_ancestor_agg_preserved (jfunc))
 	  && (AGGREGATE_TYPE_P (TREE_TYPE (arg))
 	      || POINTER_TYPE_P (param_type)))
-	determine_known_aggregate_parts (call, arg, param_type, jfunc);
+	determine_locally_known_aggregate_parts (call, arg, param_type, jfunc);
     }
 }
 
