@@ -1,3 +1,8 @@
+2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60199
+	* g++.dg/cpp0x/constexpr-60199.C: New.
+
 2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/optimize-bswaphi-1.c: Adapt test to change of dump output.
