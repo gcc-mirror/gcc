@@ -238,9 +238,9 @@ tree-ssa		Diego Novillo		dnovillo@google.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
 PRE			Daniel Berlin		dberlin@dberlin.org
 code sinking		Daniel Berlin		dberlin@dberlin.org
-tree browser/unparser	Sebastian Pop		sebastian.pop@amd.com
+tree browser/unparser	Sebastian Pop		sebpop@gmail.com
 scev, data dependence	Daniel Berlin		dberlin@dberlin.org
-scev, data dependence	Sebastian Pop		sebastian.pop@amd.com
+scev, data dependence	Sebastian Pop		sebpop@gmail.com
 profile feedback	Jan Hubicka		hubicka@ucw.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 alias analysis		Daniel Berlin		dberlin@dberlin.org
@@ -283,7 +283,7 @@ Fortran			Paul Thomas		pault@gcc.gnu.org
 Fortran			Janus Weil		janus@gcc.gnu.org
 Graphite		Daniel Berlin		dberlin@dberlin.org
 Graphite 		Tobias Grosser		grosser@fim.uni-passau.de
-Graphite		Sebastian Pop		sebastian.pop@amd.com
+Graphite		Sebastian Pop		sebpop@gmail.com
 libcpp			Tom Tromey		tromey@redhat.com
 libsanitizer, asan.c	Jakub Jelinek		jakub@redhat.com
 libsanitizer, asan.c	Dodji Seketeli		dodji@redhat.com
