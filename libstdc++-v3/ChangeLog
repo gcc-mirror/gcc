@@ -1,3 +1,11 @@
+2014-06-07  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Backport from mainline
+	DR 2344 - std::quoted doesn't respect padding
+	* include/std/iomanip: Allow for padding in quoted inserters.
+	* testsuite/27_io/manipulators/standard/char/dr2344.cc: New.
+	* testsuite/27_io/manipulators/standard/wchar_t/dr2344.cc: New.
+
 2014-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex_executor.tcc (_Executor<>::_M_main): Move instead
