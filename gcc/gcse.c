@@ -849,6 +849,7 @@ can_assign_to_reg_without_clobbers_p (rtx x)
 {
   int num_clobbers = 0;
   int icode;
+  bool can_assign = false;
 
   /* If this is a valid operand, we are OK.  If it's VOIDmode, we aren't.  */
   if (general_operand (x, GET_MODE (x)))
@@ -866,6 +867,7 @@ can_assign_to_reg_without_clobbers_p (rtx x)
 						   FIRST_PSEUDO_REGISTER * 2),
 				      const0_rtx));
       NEXT_INSN (test_insn) = PREV_INSN (test_insn) = 0;
+      INSN_LOCATION (test_insn) = UNKNOWN_LOCATION;
     }
 
   /* Now make an insn like the one we would make when GCSE'ing and see if
@@ -874,16 +876,19 @@ can_assign_to_reg_without_clobbers_p (rtx x)
   SET_SRC (PATTERN (test_insn)) = x;
 
   icode = recog (PATTERN (test_insn), test_insn, &num_clobbers);
-  if (icode < 0)
-    return false;
 
-  if (num_clobbers > 0 && added_clobbers_hard_reg_p (icode))
-    return false;
+  /* If the test insn is valid and doesn't need clobbers, and the target also
+     has no objections, we're good.  */
+  if (icode >= 0
+      && (num_clobbers == 0 || !added_clobbers_hard_reg_p (icode))
+      && ! (targetm.cannot_copy_insn_p
+	    && targetm.cannot_copy_insn_p (test_insn)))
+    can_assign = true;
 
-  if (targetm.cannot_copy_insn_p && targetm.cannot_copy_insn_p (test_insn))
-    return false;
+  /* Make sure test_insn doesn't have any pointers into GC space.  */
+  SET_SRC (PATTERN (test_insn)) = NULL_RTX;
 
-  return true;
+  return can_assign;
 }
 
 /* Return nonzero if the operands of expression X are unchanged from the
