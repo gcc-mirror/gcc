@@ -1,3 +1,10 @@
+2014-06-06  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	DR 2344 - std::quoted doesn't respect padding
+	* include/std/iomanip: Allow for padding in quoted inserters.
+	* testsuite/27_io/manipulators/standard/char/dr2344.cc: New.
+	* testsuite/27_io/manipulators/standard/wchar_t/dr2344.cc: New.
+
 2014-06-06  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/map/operators/1.cc: Simplify test.
