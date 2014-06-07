@@ -481,7 +481,11 @@ same_succ_hash (const_same_succ e)
 	hashval = iterative_hash_hashval_t
 	  ((hashval_t) gimple_call_internal_fn (stmt), hashval);
       else
-	hashval = iterative_hash_expr (gimple_call_fn (stmt), hashval);
+	{
+	  hashval = iterative_hash_expr (gimple_call_fn (stmt), hashval);
+	  if (gimple_call_chain (stmt))
+	    hashval = iterative_hash_expr (gimple_call_chain (stmt), hashval);
+	}
       for (i = 0; i < gimple_call_num_args (stmt); i++)
 	{
 	  arg = gimple_call_arg (stmt, i);
@@ -1121,18 +1125,23 @@ gimple_equal_p (same_succ same_succ, gimple s1, gimple s2)
   switch (gimple_code (s1))
     {
     case GIMPLE_CALL:
-      if (gimple_call_num_args (s1) != gimple_call_num_args (s2))
-	return false;
       if (!gimple_call_same_target_p (s1, s2))
         return false;
+
+      t1 = gimple_call_chain (s1);
+      t2 = gimple_call_chain (s2);
+      if (!gimple_operand_equal_value_p (t1, t2))
+	return false;
+
+      if (gimple_call_num_args (s1) != gimple_call_num_args (s2))
+	return false;
 
       for (i = 0; i < gimple_call_num_args (s1); ++i)
 	{
 	  t1 = gimple_call_arg (s1, i);
 	  t2 = gimple_call_arg (s2, i);
-	  if (gimple_operand_equal_value_p (t1, t2))
-	    continue;
-	  return false;
+	  if (!gimple_operand_equal_value_p (t1, t2))
+	    return false;
 	}
 
       lhs1 = gimple_get_lhs (s1);
