@@ -271,7 +271,7 @@ eat_spaces (st_parameter_dt *dtp)
   if (is_array_io (dtp))
     {
       gfc_offset offset = stell (dtp->u.p.current_unit->s);
-      gfc_offset limit = dtp->u.p.current_unit->bytes_left;
+      gfc_offset limit = offset + dtp->u.p.current_unit->bytes_left;
 
       if (dtp->common.unit) /* kind=4 */
 	{
@@ -283,13 +283,15 @@ eat_spaces (st_parameter_dt *dtp)
 	      offset += (sizeof (gfc_char4_t));
 	      dtp->u.p.current_unit->bytes_left--;
 	    }
-	  while (offset < limit && (cc == (gfc_char4_t)' '
-		  || cc == (gfc_char4_t)'\t'));
+	  while (offset < limit && cc == (gfc_char4_t)' ');
 	  /* Back up, seek ahead, and fall through to complete the
 	     process so that END conditions are handled correctly.  */
 	  dtp->u.p.current_unit->bytes_left++;
-	  sseek (dtp->u.p.current_unit->s,
-		  offset-(sizeof (gfc_char4_t)), SEEK_SET);
+
+	  cc = dtp->internal_unit[offset];
+	  if (cc != (gfc_char4_t)' ')
+	    sseek (dtp->u.p.current_unit->s,
+		   offset-(sizeof (gfc_char4_t)), SEEK_SET);
 	}
       else
 	{
@@ -298,11 +300,13 @@ eat_spaces (st_parameter_dt *dtp)
 	      c = dtp->internal_unit[offset++];
 	      dtp->u.p.current_unit->bytes_left--;
 	    }
-	  while (offset < limit && (c == ' ' || c == '\t'));
+	  while (offset < limit && c == ' ');
 	  /* Back up, seek ahead, and fall through to complete the
 	     process so that END conditions are handled correctly.  */
 	  dtp->u.p.current_unit->bytes_left++;
-	  sseek (dtp->u.p.current_unit->s, offset-1, SEEK_SET);
+
+	  if (dtp->internal_unit[offset] != ' ')
+	    sseek (dtp->u.p.current_unit->s, offset - 1, SEEK_SET);
 	}
     }
   /* Now skip spaces, EOF and EOL are handled in next_char.  */

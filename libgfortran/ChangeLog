@@ -1,3 +1,10 @@
+2014-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	Backport from trunk.
+	PR libfortran/61173
+	* io/list_read.c (eat_spaces): If the next character pointed to
+	is a space, don't seek, must be at the end.
+
 2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from mainline
