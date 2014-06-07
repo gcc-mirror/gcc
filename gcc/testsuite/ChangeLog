@@ -1,3 +1,8 @@
+2014-06-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt38.adb: New test.
+	* gnat.dg/opt38_pkg.ad[sb]: New helper.
+
 2014-06-07  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18343
