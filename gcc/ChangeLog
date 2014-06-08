@@ -1,5 +1,10 @@
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* symtab.c (symtab_nonoverwritable_alias): Copy VIRTUAL flag;
+	remove static initializer.
+
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* varasm.c (use_blocks_for_decl_p): Check symbol table instead of alias
 	attribute.
 	(place_block_symbol): Recurse on aliases.

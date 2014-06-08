@@ -1154,7 +1154,9 @@ symtab_nonoverwritable_alias (symtab_node *node)
   TREE_PUBLIC (new_decl) = 0;
   DECL_COMDAT (new_decl) = 0;
   DECL_WEAK (new_decl) = 0;
-  DECL_VIRTUAL_P (new_decl) = 0;
+
+  /* Since the aliases can be added to vtables, keep DECL_VIRTUAL flag.  */
+  DECL_VIRTUAL_P (new_decl) = DECL_VIRTUAL_P (node->decl);
   if (TREE_CODE (new_decl) == FUNCTION_DECL)
     {
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
@@ -1165,6 +1167,7 @@ symtab_nonoverwritable_alias (symtab_node *node)
   else
     {
       TREE_READONLY (new_decl) = TREE_READONLY (node->decl);
+      DECL_INITIAL (new_decl) = error_mark_node;
       new_node = varpool_create_variable_alias (new_decl, node->decl);
     }
   symtab_resolve_alias (new_node, node);  
