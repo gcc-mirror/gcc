@@ -1184,6 +1184,8 @@ change_symbol_block (rtx symbol, struct object_block *block)
 static bool
 use_blocks_for_decl_p (tree decl)
 {
+  struct symtab_node *snode;
+
   /* Only data DECLs can be placed into object blocks.  */
   if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != CONST_DECL)
     return false;
@@ -1197,7 +1199,9 @@ use_blocks_for_decl_p (tree decl)
 
   /* If this decl is an alias, then we don't want to emit a
      definition.  */
-  if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
+  if (TREE_CODE (decl) == VAR_DECL
+      && (snode = symtab_get_node (decl)) != NULL
+      && snode->alias)
     return false;
 
   return targetm.use_blocks_for_decl_p (decl);
@@ -7028,6 +7032,8 @@ place_block_symbol (rtx symbol)
       if (snode->alias)
 	{
 	  rtx target = DECL_RTL (symtab_alias_ultimate_target (snode)->decl);
+
+	  place_block_symbol (target);
 	  SYMBOL_REF_BLOCK_OFFSET (symbol) = SYMBOL_REF_BLOCK_OFFSET (target);
 	  return;
 	}
