@@ -3512,7 +3512,7 @@ next_record (st_parameter_dt *dtp, int done)
     pre_position (dtp);
 
   fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
-  flush_if_unbuffered (dtp->u.p.current_unit->s);
+  smarkeor (dtp->u.p.current_unit->s);
 }
 
 

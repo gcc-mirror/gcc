@@ -1,3 +1,20 @@
+2014-06-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/56981
+	* io/unix.h (struct stream_vtable): Add new member function,
+	markeor.
+	(smarkeor): New inline function.
+	(flush_if_unbuffered): Remove prototype.
+	* io/unix.c (raw_markeor): New function.
+	(raw_vtable): Initialize markeor member.
+	(buf_markeor): New function.
+	(buf_vtable): Initialize markeor member.
+	(mem_vtable): Likewise.
+	(mem4_vtable): Likewise.
+	(flush_if_unbuffered): Remove function.
+	* io/transfer.c (next_record): Call smarkeor instead of
+	flush_if_unbuffered.
+
 2014-05-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* intrinsics/getcwd.c: Include stdlib.h.

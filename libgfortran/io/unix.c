@@ -421,6 +421,12 @@ raw_close (unix_stream * s)
   return retval;
 }
 
+static int
+raw_markeor (unix_stream * s __attribute__ ((unused)))
+{
+  return 0;
+}
+
 static const struct stream_vtable raw_vtable = {
   .read = (void *) raw_read,
   .write = (void *) raw_write,
@@ -429,7 +435,8 @@ static const struct stream_vtable raw_vtable = {
   .size = (void *) raw_size,
   .trunc = (void *) raw_truncate,
   .close = (void *) raw_close,
-  .flush = (void *) raw_flush 
+  .flush = (void *) raw_flush,
+  .markeor = (void *) raw_markeor
 };
 
 static int
@@ -584,6 +591,23 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
   return nbyte;
 }
 
+
+/* "Unbuffered" really means I/O statement buffering. For formatted
+   I/O, the fbuf manages this, and then uses raw I/O. For unformatted
+   I/O, buffered I/O is used, and the buffer is flushed at the end of
+   each I/O statement, where this function is called.  Alternatively,
+   the buffer is flushed at the end of the record if the buffer is
+   more than half full; this prevents needless seeking back and forth
+   when writing sequential unformatted.  */
+
+static int
+buf_markeor (unix_stream * s)
+{
+  if (s->unbuffered || s->ndirty >= BUFFER_SIZE / 2)
+    return buf_flush (s);
+  return 0;
+}
+
 static gfc_offset
 buf_seek (unix_stream * s, gfc_offset offset, int whence)
 {
@@ -651,7 +675,8 @@ static const struct stream_vtable buf_vtable = {
   .size = (void *) buf_size,
   .trunc = (void *) buf_truncate,
   .close = (void *) buf_close,
-  .flush = (void *) buf_flush 
+  .flush = (void *) buf_flush,
+  .markeor = (void *) buf_markeor
 };
 
 static int
@@ -910,7 +935,8 @@ static const struct stream_vtable mem_vtable = {
   .size = (void *) buf_size,
   .trunc = (void *) mem_truncate,
   .close = (void *) mem_close,
-  .flush = (void *) mem_flush 
+  .flush = (void *) mem_flush,
+  .markeor = (void *) raw_markeor
 };
 
 static const struct stream_vtable mem4_vtable = {
@@ -923,7 +949,8 @@ static const struct stream_vtable mem4_vtable = {
   .size = (void *) buf_size,
   .trunc = (void *) mem_truncate,
   .close = (void *) mem_close,
-  .flush = (void *) mem_flush 
+  .flush = (void *) mem_flush,
+  .markeor = (void *) raw_markeor
 };
 
 /*********************************************************************
@@ -969,21 +996,6 @@ open_internal4 (char *base, int length, gfc_offset offset)
   s->st.vptr = &mem4_vtable;
 
   return (stream *) s;
-}
-
-
-/* "Unbuffered" really means I/O statement buffering. For formatted
-   I/O, the fbuf manages this, and then uses raw I/O. For unformatted
-   I/O, buffered I/O is used, and the buffer is flushed at the end of
-   each I/O statement, where this function is called.  */
-
-int
-flush_if_unbuffered (stream* s)
-{
-  unix_stream* us = (unix_stream*) s;
-  if (us->unbuffered)
-    return sflush (s);
-  return 0;
 }
 
 
