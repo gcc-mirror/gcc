@@ -1,3 +1,8 @@
+2014-06-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38829
+	* gfortran.dg/bind_c_usage_29.f90: New file.
+
 2014-06-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt38.adb: New test.
