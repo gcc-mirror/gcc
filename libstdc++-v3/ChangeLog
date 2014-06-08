@@ -1,3 +1,7 @@
+2014-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/abi/pre/gnu.ver: Tighten some patterns; tidy.
+
 2014-06-06  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	DR 2344 - std::quoted doesn't respect padding
