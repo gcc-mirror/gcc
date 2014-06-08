@@ -1720,8 +1720,8 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 	struct cgraph_node *thunk = e->caller;
 
 	e = e->next_caller;
-	assemble_thunks_and_aliases (thunk);
         expand_thunk (thunk, true, false);
+	assemble_thunks_and_aliases (thunk);
       }
     else
       e = e->next_caller;
