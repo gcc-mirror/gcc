@@ -1,3 +1,8 @@
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (assemble_thunks_and_aliases): Expand thunks before
+	outputting aliases.
+
 2014-06-07  Steven Bosscher  <steven@gcc.gnu.org>
 
         * gcse.c (can_assign_to_reg_without_clobbers_p): Do not let pointers
