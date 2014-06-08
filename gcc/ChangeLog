@@ -1,5 +1,10 @@
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-visibility.c: Include varasm.h
+	(can_replace_by_local_alias): Ceck decl_binds_to_current_def_p.
+
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphunit.c (assemble_thunks_and_aliases): Expand thunks before
 	outputting aliases.
 
