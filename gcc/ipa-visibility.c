@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "calls.h"
 #include "gimple-expr.h"
+#include "varasm.h"
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
@@ -340,6 +341,7 @@ bool
 can_replace_by_local_alias (symtab_node *node)
 {
   return (symtab_node_availability (node) > AVAIL_OVERWRITABLE
+	  && !decl_binds_to_current_def_p (node->decl)
 	  && !symtab_can_be_discarded (node));
 }
 
