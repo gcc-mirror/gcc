@@ -24,11 +24,9 @@ GLIBCXX_3.4 {
     # Names inside the 'extern' block are demangled names.
     extern "C++"
     {
-      std::[A-Z]*;
-      std::a[a-c]*;
-      std::ad[a-n]*;
-      std::ad[p-z]*;
-      std::a[e-z]*;
+#     std::[A-Z]*;
+#     std::a[e-z]*;
+      std::ad[a-np-z]*;
 #     std::ba[a-r]*;
       std::basic_[a-e]*;
       std::basic_f[a-h]*;
@@ -45,12 +43,10 @@ GLIBCXX_3.4 {
       std::basic_istr[f-z]*;
       std::basic_i[t-z]*;
       std::basic_[j-n]*;
-      std::basic_o[a-e]*;
 #     std::basic_ofstream;
 #     std::basic_o[g-z]*;
-      std::basic_o[g-r]*;
-      std::basic_ostr[a-d]*;
-      std::basic_ostr[f-z]*;
+      std::basic_o[a-eg-r]*;
+      std::basic_ostr[a-df-z]*;
       std::basic_[p-r]*;
 #     std::basic_streambuf
 #     std::basic_string
@@ -64,29 +60,44 @@ GLIBCXX_3.4 {
 #     std::c[i-z]*;
       std::c[i-n]*;
 #     std::condition_variable;
-      std::co[^n]*;
-      std::c[p-s]*;
+#     std::co[^n]*;
+      std::cout;
+#     std::codecvt*;
+      std::collate*;
+      std::c[p-sv-z]*;
       std::cu[^r]*;
 #     std::current_exception
-      std::c[v-z]*;
 #     std::[d-g]*;
-      std::d[a-d]*;
-      std::d[f-n]*;
+      std::d[a-df-np-z]*;
       std::domain_error::d*;
 #     std::domain_error::~d*;
-      std::d[p-z]*;
-      std::e[a-q]*;
+      std::e[a-m]*;
       std::error[^_]*;
-      std::e[s-z]*;
+#     std::e[s-z];
       std::gslice*;
       std::h[^a]*;
       std::i[a-m]*;
       std::invalid_argument::i*;
 #     std::invalid_argument::~i*;
 #     std::ios_base::[A-Ha-z]*;
-      std::ios_base::[A-Ha-f]*;
+      std::ios_base::[A-Ha-e]*;
+      std::ios_base::failbit;
+      std::ios_base::failure*;
+      std::ios_base::fixed;
+      std::ios_base::float;
+      std::ios_base::floatfield;
       std::ios_base::goodbit;
-      std::ios_base::[h-z]*;
+#     std::ios_base::[h-z]*;
+      std::ios_base::[h-otu]*;
+      std::ios_base::register_callback*;
+      std::ios_base::right;
+      std::ios_base::scientific;
+      std::ios_base::showbase;
+      std::ios_base::showpoint;
+      std::ios_base::showpos;
+      std::ios_base::skipws;
+      std::ios_base::sync_with_stdio*;
+      std::ios_base::xalloc*;
       std::ios_base::_M_grow_words*;
       std::ios_base::_M_init*;
       std::ios_base::Init::[A-Za-z]*;
@@ -96,19 +107,19 @@ GLIBCXX_3.4 {
 #     std::istreambuf_iterator
       std::istringstream*;
       std::istrstream*;
-      std::i[t-z]*;
+#     std::i[t-z]*;
       std::[A-Zj-k]*;
       std::length_error::l*;
 #     std::length_error::~l*;
       std::logic_error*;
       std::locale::[A-Za-e]*;
-      std::locale::facet::[A-Za-z]*;
+      std::locale::facet::[A-Zg-z]*;
       std::locale::facet::_S_get_c_locale*;
       std::locale::facet::_S_clone_c_locale*;
       std::locale::facet::_S_create_c_locale*;
       std::locale::facet::_S_destroy_c_locale*;
       std::locale::[A-Zg-h]*;
-      std::locale::id::[A-Za-z]*;
+#     std::locale::id::[A-Za-z]*;
       std::locale::id::_M_id*;
       std::locale::[A-Zj-z]*;
       std::locale::_[A-Ha-z]*;
@@ -117,15 +128,13 @@ GLIBCXX_3.4 {
       std::locale::_[J-Ra-z]*;
       std::locale::_S_normalize_category*;
       std::locale::_[T-Za-z]*;
-#     std::[A-Zm-r]*;
-#     std::[A-Zm]*;
-      std::[A-Z]*;
-      std::messages*;
-      std::money*;
-#     std::n[^u]*;
-      std::n[^aue]*;
-      std::nu[^m]*;
-      std::num[^e]*;
+#     std::messages*;
+#     std::money*;
+#     std::n[^aue]*;
+      std::nothrow;
+#     std::nu[^m]*;
+#     std::num[^e]*;
+      std::numpunct*;
       std::ostrstream*;
       std::out_of_range::o*;
 #     std::out_of_range::~o*;
@@ -145,18 +154,16 @@ GLIBCXX_3.4 {
       std::strstreambuf*;
 #     std::t[a-q]*;
       std::t[a-g]*;
-      std::th[a-h]*;
-      std::th[j-q]*;
-      std::th[s-z]*;
+      std::th[a-hj-qs-z]*;
 #     std::t[i-n]*;
       std::tr1::h[^a]*;
-      std::t[s-z]*;
+#     std::t[s-z]*;
 #     std::[A-Zu-z]*;
       std::underflow_error::u*;
 #     std::underflow_error::~u*;
       std::uncaught_exception*;
       std::unexpected*;
-      std::[A-Zv-z]*;
+      std::[A-Zw-z]*;
       std::_List_node_base::hook*;
       std::_List_node_base::swap*;
       std::_List_node_base::unhook*;
@@ -179,6 +186,11 @@ GLIBCXX_3.4 {
     # among the standard integer types and sizes on different platforms and
     # under different modes of 64-bit architecture (ILP64, LLP64, etc.)
 
+    # std::allocator
+    _ZNSaI[cw]EC[12]Ev;
+    _ZNSaI[cw]ED*;
+    _ZNSaI[cw]EC[12]ERKS_;
+
     # std::string
     # 'y' here and below represents 'unsigned long long'
     # where it is used for size_type on LLP64 platforms.
@@ -196,7 +208,7 @@ GLIBCXX_3.4 {
     _ZNSs[67][j-z]*E[PRcjmvy]*;
     _ZNSs7[a-z]*EES2_[NPRjmy]*;
     _ZNSs7[a-z]*EES2_S[12]*;
-    _ZNSs12_Alloc_hiderC*;
+    _ZNSs12_Alloc_hiderC[12]EP*;
     _ZNSs12_M_leak_hardEv;
     _ZNSs12_S_constructE[jmy]cRKSaIcE;
     _ZNSs12_S_empty_repEv;
@@ -236,7 +248,10 @@ GLIBCXX_3.4 {
     _ZNKSs8_M_check*;
     _ZNKSs8_M_limit*;
     _ZNKSs9_M_ibeginEv;
-    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_E*;
+#   _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_E*;
+    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ES*;
+    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_EPKS*;
+    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_S8_;
     _ZNKSs7compare*;
     _ZNKSs5c_strEv;
     _ZNKSs8capacityEv;
@@ -257,7 +272,8 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE[67][j-z]*E[PRwjmvy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_[NPRjmy]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_S[56]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC*;
+#   _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC*;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC[12]EP*;
     _ZNSbIwSt11char_traitsIwESaIwEE12_M_leak_hardEv;
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructE[jmy]wRKS1_;
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_empty_repEv;
@@ -452,30 +468,50 @@ GLIBCXX_3.4 {
     # std::use_facet
     _ZSt9use_facetIS*;
 
+    # std::codecvt
+    _ZNSt14codecvt_byname*;
+    _ZNKSt7codecvtI[cw]c11*;
+    _ZNSt7codecvtI[cw]c11*;
+
+    # std::ctype_base
+    _ZNSt10ctype_base[56]*;
+
     # std::ctype
-    _ZNKSt5ctypeIcE8*;
+    _ZNKSt5ctypeIcE8do_widen*;
     _ZNKSt5ctypeIcE9*;
     _ZNKSt5ctypeIcE10*;
     _ZNKSt5ctypeIw*;
     _ZNSt5ctypeI[cw]*;
 
-    # std::ctype_base
-    _ZNSt10ctype_base*;
-
     # std::ctype_byname
     _ZNSt12ctype_bynameI[cw]*;
 
     # std::num_get
-    _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
+    _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1[46]*;
+    _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[236CD]*;
+    _ZNSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
 
     # std::num_put
     _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
+    _ZNSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
+
+    # std::money_base
+    _ZNSt10money_base8*;
+    _ZNSt10money_base18*;
+    _ZNSt10money_base20*;
 
     # std::money_get
+    _ZNSt9money_get*;
     _ZNKSt9money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
 
     # std::money_put
+    _ZNSt9money_put*;
     _ZNKSt9money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
+
+    # std::moneypunct
+    _ZNKSt10moneypunct*;
+    _ZNSt10moneypunct*;
+    _ZNSt17moneypunct*;
 
     # std::time_get
     _ZNSt8time_get*;
@@ -493,13 +529,19 @@ GLIBCXX_3.4 {
     # std::time_put_byname
     _ZNSt15time_put_byname*;
 
+    # std::messages
+    _ZNKSt8messages*;
+    _ZNSt8messages*;
+    _ZNSt15messages_byname*;
+
     # std::numeric_limits
     _ZNSt21__numeric_limits_base[5-9]*;
     _ZNSt21__numeric_limits_base1[0-7][hirt]*;
     _ZNSt21__numeric_limits_base1[0-7]mi*;
     _ZNSt21__numeric_limits_base1[0-7]max_e*;
 
-    _ZNSt14numeric_limitsI[a-m]E[5-9]*;
+    _ZNSt14numeric_limitsI[a-m]E[5-9][a-hj-z]*;
+    _ZNSt14numeric_limitsI[a-m]E[5-9]is_*;
     _ZNSt14numeric_limitsI[p-z]E[5-9]*;
     _ZNSt14numeric_limitsI[a-m]E1[0-7][hirt]*;
     _ZNSt14numeric_limitsI[p-z]E1[0-7][hirt]*;
@@ -507,6 +549,12 @@ GLIBCXX_3.4 {
     _ZNSt14numeric_limitsI[p-z]E1[0-7]mi*;
     _ZNSt14numeric_limitsI[a-m]E1[0-7]max_e*;
     _ZNSt14numeric_limitsI[p-z]E1[0-7]max_e*;
+
+    # std::valarray
+    _ZNSt8valarrayI[jmy]ED*;
+    _ZNSt8valarrayI[jmy]EC*;
+    _ZNSt8valarrayI[jmy]EixE[jmy];
+    _ZNKSt8valarrayI[jmy]E4sizeEv;
 
     # std::_Rb_tree
     _ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base;
@@ -563,7 +611,7 @@ GLIBCXX_3.4 {
     _ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_;
 
     # __gnu_debug::_Error_formatter
-    _ZNK11__gnu_debug16_Error_formatter10_M_message*;
+    _ZNK11__gnu_debug16_Error_formatter10_M_messageENS*;
     _ZNK11__gnu_debug16_Error_formatter10_Parameter*;
     _ZNK11__gnu_debug16_Error_formatter13_M_print_word*;
     _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
@@ -667,9 +715,9 @@ GLIBCXX_3.4 {
     _ZTISt10__num_base;
     _ZTISt21__ctype_abstract_baseI[cw]E;
     _ZTISt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
-#    _ZTISt16__numpunct_cacheI[cw]E;
-#    _ZTISt17__timepunct_cacheI[cw]E;
-#    _ZTISt18__moneypunct_cacheI[cw]Lb?EE;
+#   _ZTISt16__numpunct_cacheI[cw]E;
+#   _ZTISt17__timepunct_cacheI[cw]E;
+#   _ZTISt18__moneypunct_cacheI[cw]Lb?EE;
     _ZTINSt8ios_base7failureE;
     _ZTINSt6locale5facetE;
     _ZTIN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
@@ -708,6 +756,14 @@ GLIBCXX_3.4 {
     _ZTSN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
     _ZTSN9__gnu_cxx13stdio_filebufI[cw]St11char_traitsI[cw]EEE;
 
+    # std::type_info
+    _ZNKSt9type_info1*;
+    _ZNSt9type_infoD*;
+
+    # std::exception
+    _ZNKSt9exception4whatEv;
+    _ZNSt9exceptionD*;
+
     # std::bad_alloc::~bad_alloc, std::bad_cast::~bad_cast,
     # std::bad_typeid::~bad_typeid, std::bad_exception::~bad_exception
     _ZNSt9bad_allocD*;
@@ -715,7 +771,7 @@ GLIBCXX_3.4 {
     _ZNSt10bad_typeidD*;
     _ZNSt13bad_exceptionD*;
 
-    # function-scope static objects requires a guard variable.
+    # function-scope static objects require a guard variable.
     _ZGVNSt[^1]*;
     _ZGVNSt1[^7]*;
 
@@ -989,7 +1045,9 @@ GLIBCXX_3.4.10 {
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE6stosscEv;
 
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4syncEv;
-    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9C]*;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5679]*;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE8overflow*;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEC[12]*;
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EED[^2]*;
 
 } GLIBCXX_3.4.9;
@@ -1150,8 +1208,14 @@ GLIBCXX_3.4.14 {
     _ZNKSbIwSt11char_traitsIwESaIwEE5crendEv;
 
     # string|wstring ::_S_construct<> and ::_S_construct_aux_2 helpers
-    _ZNSs12_S_constructI*;
-    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructI*;
+    # _ZNSs12_S_constructI*;
+    _ZNSs12_S_constructIPcEES0_T_S1_RKSaIcESt20forward_iterator_tag;
+    _ZNSs12_S_constructIPKcEEPcT_S3_RKSaIcESt20forward_iterator_tag;
+    _ZNSs12_S_constructIN9__gnu_cxx17__normal_iteratorIPcSsEEEES2_T_S4_RKSaIcESt*;
+    # _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructI*;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructIPKwEEPwT_S7_RKS1_St*;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructIPwEES4_T_S5_RKS1_St*;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructIN9__gnu_cxx17__normal_iteratorIPwS2_EEEES6_T_S8_RKS1_St*;
     _ZNSs18_S_construct_aux_2*;
     _ZNSbIwSt11char_traitsIwESaIwEE18_S_construct_aux_2*;
 
@@ -1414,20 +1478,21 @@ CXXABI_1.3 {
     __gxx_personality_seh0;
     __dynamic_cast;
 
-    # *_type_info classes, ctor and dtor
-    _ZN10__cxxabiv117__array_type_info*;
-    _ZN10__cxxabiv117__class_type_info*;
-    _ZN10__cxxabiv116__enum_type_info*;
-    _ZN10__cxxabiv120__function_type_info*;
-    _ZN10__cxxabiv123__fundamental_type_info*;
-    _ZN10__cxxabiv117__pbase_type_info*;
-    _ZN10__cxxabiv129__pointer_to_member_type_info*;
-    _ZN10__cxxabiv119__pointer_type_info*;
-    _ZN10__cxxabiv120__si_class_type_info*;
-    _ZN10__cxxabiv121__vmi_class_type_info*;
+    # *_type_info classes, destructors
+    _ZN10__cxxabiv117__array_type_infoD*;
+    _ZN10__cxxabiv117__class_type_infoD*;
+    _ZN10__cxxabiv116__enum_type_infoD*;
+    _ZN10__cxxabiv120__function_type_infoD*;
+    _ZN10__cxxabiv123__fundamental_type_infoD*;
+    _ZN10__cxxabiv117__pbase_type_infoD*;
+    _ZN10__cxxabiv129__pointer_to_member_type_infoD*;
+    _ZN10__cxxabiv119__pointer_type_infoD*;
+    _ZN10__cxxabiv120__si_class_type_infoD*;
+    _ZN10__cxxabiv121__vmi_class_type_infoD*;
 
     # *_type_info classes, member functions
-    _ZNK10__cxxabiv117__class_type_info*;
+    _ZNK10__cxxabiv117__class_type_info1[012]*;
+    _ZNK10__cxxabiv117__class_type_info2*;
     _ZNK10__cxxabiv120__function_type_info*;
     _ZNK10__cxxabiv117__pbase_type_info*;
     _ZNK10__cxxabiv129__pointer_to_member_type_info*;
@@ -1576,10 +1641,14 @@ CXXABI_1.3.7 {
 
 CXXABI_1.3.8 {
     __cxa_throw_bad_array_new_length;
-    _Z*St20bad_array_new_length*;
+    _ZT[VSI]St20bad_array_new_length;
+    _ZNSt20bad_array_new_lengthD*;
+    _ZNKSt20bad_array_new_length4whatEv;
 
     __cxa_throw_bad_array_length;
-    _Z*St16bad_array_length*;
+    _ZT[VSI]St16bad_array_length;
+    _ZNSt16bad_array_lengthD*;
+    _ZNKSt16bad_array_length4whatEv;
 
     # Virtual table verification stub functions.
     _Z17__VLTRegisterPair*;
