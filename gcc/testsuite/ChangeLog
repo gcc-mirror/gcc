@@ -1,3 +1,8 @@
+2014-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61406
+	* gfortran.dg/associate_17.f90 : New test
+
 2014-06-09  Petr Murzin  <petr.murzin@intel.com>
 
 	* gcc.target/i386/avx512f-vaddpd-2.c:  Add static void for CALC,
