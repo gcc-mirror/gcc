@@ -2719,7 +2719,11 @@ reset_all_used_flags (void)
 	  {
 	    gcc_assert (REG_NOTES (p) == NULL);
 	    for (int i = 0; i < XVECLEN (pat, 0); i++)
-	      reset_insn_used_flags (XVECEXP (pat, 0, i));
+	      {
+		rtx insn = XVECEXP (pat, 0, i);
+		if (INSN_P (insn))
+		  reset_insn_used_flags (insn);
+	      }
 	  }
       }
 }
@@ -2756,7 +2760,11 @@ verify_rtl_sharing (void)
 	  verify_insn_sharing (p);
 	else
 	  for (int i = 0; i < XVECLEN (pat, 0); i++)
-	    verify_insn_sharing (XVECEXP (pat, 0, i));
+	      {
+		rtx insn = XVECEXP (pat, 0, i);
+		if (INSN_P (insn))
+		  verify_insn_sharing (insn);
+	      }
       }
 
   reset_all_used_flags ();

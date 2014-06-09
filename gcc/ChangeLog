@@ -1,3 +1,10 @@
+2014-05-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/61141
+	* emit-rtl.c (reset_all_used_flags): In a sequence, check that
+	XVECEXP (pat, 0, i) is an INSN before calling reset_insn_used_flags.
+	(verify_rtl_sharing): Likewise.  
+
 2014-06-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54442
