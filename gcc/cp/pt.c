@@ -14934,7 +14934,7 @@ pack_deducible_p (tree parm, tree fn)
 	continue;
       for (packs = PACK_EXPANSION_PARAMETER_PACKS (type);
 	   packs; packs = TREE_CHAIN (packs))
-	if (TREE_VALUE (packs) == parm)
+	if (template_args_equal (TREE_VALUE (packs), parm))
 	  {
 	    /* The template parameter pack is used in a function parameter
 	       pack.  If this is the end of the parameter list, the
