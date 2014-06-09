@@ -1,3 +1,10 @@
+2014-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/61406
+	* trans-stmt.c (trans_associate_var): Check that array
+	constructors are constant for direct reference.
+
 2014-06-05  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/61418
