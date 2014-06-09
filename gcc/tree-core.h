@@ -1441,7 +1441,6 @@ struct GTY(()) tree_parm_decl {
 struct GTY(()) tree_decl_with_vis {
  struct tree_decl_with_rtl common;
  tree assembler_name;
- tree section_name;
  struct symtab_node *symtab_node;
 
  /* Belong to VAR_DECL exclusively.  */
