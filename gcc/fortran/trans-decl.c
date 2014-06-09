@@ -4278,8 +4278,8 @@ gfc_create_module_variable (gfc_symbol * sym)
     }
 
   /* Don't generate variables from other modules. Variables from
-     COMMONs will already have been generated.  */
-  if (sym->attr.use_assoc || sym->attr.in_common)
+     COMMONs and Cray pointees will already have been generated.  */
+  if (sym->attr.use_assoc || sym->attr.in_common || sym->attr.cray_pointee)
     return;
 
   /* Equivalenced variables arrive here after creation.  */
