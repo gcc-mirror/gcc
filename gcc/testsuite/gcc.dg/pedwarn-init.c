@@ -12,6 +12,7 @@ int a1 = { 1, 2 }; /* { dg-warning "15:excess elements in scalar initializer" } 
 int a2[2] = { 1, 2, 3 }; /* { dg-warning "21:excess elements in array initializer" } */
 int a3[] = { [1 ? 1 : i] = 0 }; /* { dg-warning "15:array index in initializer is not an integer constant expression" } */
 int a4[] = { [1 ... 1 ? 2 : i] = 0 }; /* { dg-warning "15:array index in initializer is not an integer constant expression" } */
+/* { dg-warning "ISO C forbids" "ISO C" { target *-*-* } 14 } */
 char a5[] = ("lol"); /* { dg-warning "13:array initialized from parenthesized string constant" } */
 char a6[] = { ("foo") }; /* { dg-warning "13:array initialized from parenthesized string constant" } */
 char *a7 = (char []) { ("bar") }; /* { dg-warning "12:array initialized from parenthesized string constant" } */

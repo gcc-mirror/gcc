@@ -1,3 +1,10 @@
+2014-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/36446
+	* c-typeck.c (error_init): Call inform instead of error_at.
+	(pedwarn_init): Call inform instead of pedwarn.
+	(warning_init): Call inform instead of warning_at.
+
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-decl.c (merge_decls): Use set_decl_section_name.

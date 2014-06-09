@@ -5567,7 +5567,7 @@ error_init (location_t loc, const char *gmsgid)
   error_at (loc, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
-    error_at (loc, "(near initialization for %qs)", ofwhat);
+    inform (loc, "(near initialization for %qs)", ofwhat);
 }
 
 /* Issue a pedantic warning for a bad initializer component.  OPT is
@@ -5579,12 +5579,13 @@ static void
 pedwarn_init (location_t location, int opt, const char *gmsgid)
 {
   char *ofwhat;
+  bool warned;
 
   /* The gmsgid may be a format string with %< and %>. */
-  pedwarn (location, opt, gmsgid);
+  warned = pedwarn (location, opt, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    pedwarn (location, opt, "(near initialization for %qs)", ofwhat);
+  if (*ofwhat && warned)
+    inform (location, "(near initialization for %qs)", ofwhat);
 }
 
 /* Issue a warning for a bad initializer component.
@@ -5597,12 +5598,13 @@ static void
 warning_init (location_t loc, int opt, const char *gmsgid)
 {
   char *ofwhat;
+  bool warned;
 
   /* The gmsgid may be a format string with %< and %>. */
-  warning_at (loc, opt, gmsgid);
+  warned = warning_at (loc, opt, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    warning_at (loc, opt, "(near initialization for %qs)", ofwhat);
+  if (*ofwhat && warned)
+    inform (loc, "(near initialization for %qs)", ofwhat);
 }
 
 /* If TYPE is an array type and EXPR is a parenthesized string

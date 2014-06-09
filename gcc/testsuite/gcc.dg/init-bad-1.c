@@ -19,27 +19,27 @@ char s1[1] = { "x" };
 char t[1] = "xy"; /* { dg-warning "initializer-string for array of chars is too long" } */
 char t1[1] = { "xy" }; /* { dg-warning "initializer-string for array of chars is too long" } */
 char u[1] = { "x", "x" }; /* { dg-error "excess elements in char array initializer" } */
-/* { dg-error "near init" "near" { target *-*-* } 21 } */
+/* { dg-message "near init" "near" { target *-*-* } 21 } */
 
 int i = { }; /* { dg-error "empty scalar initializer" } */
-/* { dg-error "near init" "near" { target *-*-* } 24 } */
+/* { dg-message "near init" "near" { target *-*-* } 24 } */
 
 int j = { 1 };
 
 int k = { 1, 2 }; /* { dg-warning "excess elements in scalar initializer" } */
-/* { dg-warning "near init" "near" { target *-*-* } 29 } */
+/* { dg-message "near init" "near" { target *-*-* } 29 } */
 
 int a1[1] = { [1] = 0 }; /* { dg-error "array index in initializer exceeds array bounds" } */
-/* { dg-error "near init" "near" { target *-*-* } 32 } */
+/* { dg-message "near init" "near" { target *-*-* } 32 } */
 int a2[1] = { [-1] = 0 }; /* { dg-error "array index in initializer exceeds array bounds" } */
-/* { dg-error "near init" "near" { target *-*-* } 34 } */
+/* { dg-message "near init" "near" { target *-*-* } 34 } */
 int a3[1] = { [0 ... 1] = 0 }; /* { dg-error "array index range in initializer exceeds array bounds" } */
-/* { dg-error "near init" "near" { target *-*-* } 36 } */
+/* { dg-message "near init" "near" { target *-*-* } 36 } */
 int a4[2] = { [1 ... 0] = 0 }; /* { dg-error "empty index range in initializer" } */
-/* { dg-error "near init" "near" { target *-*-* } 38 } */
+/* { dg-message "near init" "near" { target *-*-* } 38 } */
 int a5[2] = { [0 ... 2] = 0 }; /* { dg-error "array index range in initializer exceeds array bounds" } */
-/* { dg-error "near init" "near" { target *-*-* } 40 } */
+/* { dg-message "near init" "near" { target *-*-* } 40 } */
 int a6[2] = { [-1 ... 1] = 0 }; /* { dg-error "array index in initializer exceeds array bounds" } */
-/* { dg-error "near init" "near" { target *-*-* } 42 } */
+/* { dg-message "near init" "near" { target *-*-* } 42 } */
 int a7[] = { [-1 ... 1] = 0 }; /* { dg-error "array index in initializer exceeds array bounds" } */
-/* { dg-error "near init" "near" { target *-*-* } 44 } */
+/* { dg-message "near init" "near" { target *-*-* } 44 } */

@@ -1,3 +1,19 @@
+2014-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/36446
+	* gcc.dg/Wcxx-compat-6.c: Change dg-warning to dg-message.
+	* gcc.dg/array-2.c: Likewise.
+	* gcc.dg/array-const-2.c: Likewise.
+	* gcc.dg/ucnid-8.c: Likewise.
+	* gcc.dg/vla-init-1.c: Likewise.
+	* gcc.dg/array-const-3.c: Change dg-error to dg-message.
+	* gcc.dg/c99-flex-array-7.c: Likewise.
+	* gcc.dg/init-bad-1.c: Likewise.
+	* gcc.dg/init-bad-3.c: Likewise.
+	* gcc.dg/init-bad-2.c: Change dg-error and dg-warning to dg-message.
+	* gcc.dg/pedwarn-init.c: Add dg-warning.
+	* gcc.dg/pr53119.c: Remove dg-excess-errors.
+
 2014-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/22556
