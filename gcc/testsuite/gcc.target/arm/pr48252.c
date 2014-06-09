@@ -15,7 +15,6 @@ int main(void)
     uint8x8x2_t vd1, vd2;
     union {uint8x8_t v; uint8_t buf[8];} d1, d2, d3, d4;
     int i;
-    uint8_t odd, even;
 
     vd1 = vzip_u8(v1, vdup_n_u8(0));
     vd2 = vzip_u8(v2, vdup_n_u8(0));
@@ -25,17 +24,9 @@ int main(void)
     vst1_u8(d3.buf, vd2.val[0]);
     vst1_u8(d4.buf, vd2.val[1]);
 
-#ifdef __ARMEL__
-    odd = 1;
-    even = 0;
-#else
-    odd = 0;
-    even = 1;
-#endif
-
     for (i = 0; i < 8; i++)
-      if ((i % 2 == even && d4.buf[i] != 2)
-          || (i % 2 == odd && d4.buf[i] != 0))
+      if ((i % 2 == 0 && d4.buf[i] != 2)
+          || (i % 2 == 1 && d4.buf[i] != 0))
          abort ();
 
     return 0;
