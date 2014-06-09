@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-
 /* { dg-options "-Wmissing-braces -Wmissing-field-initializers" } */
 
 struct a {
@@ -21,5 +20,3 @@ int main (void)
 
   return 0;
 }
-
-/* { dg-excess-errors "note" } */

@@ -13,4 +13,4 @@ void f (int b) { int \u00e9[b]; } /* { dg-warning "variable length array '\\\\U0
 void g (static int \u00e9); /* { dg-error "storage class specified for parameter '\\\\U000000e9'" } */
 
 struct s2 { int \u00e1; } \u00e9 = { { 0 } }; /* { dg-warning "braces around scalar initializer" } */
-/* { dg-warning "near initialization for '\\\\U000000e9\\.\\\\U000000e1'" "UCN diag" { target *-*-* } 15 } */
+/* { dg-message "near initialization for '\\\\U000000e9\\.\\\\U000000e1'" "UCN diag" { target *-*-* } 15 } */
