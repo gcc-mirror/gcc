@@ -14,7 +14,7 @@
 <section xml:id="facet.ctype.impl"><info><title>Implementation</title></info>
 
 
-  <section><info><title>Specializations</title></info>
+  <section xml:id="facet.ctype.impl.spec"><info><title>Specializations</title></info>
     
 
 <para>

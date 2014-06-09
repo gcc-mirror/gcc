@@ -49,9 +49,9 @@
    void my_new_handler ()
    {
        delete[] safety;
-       popup_window ("Dude, you are running low on heap memory.  You
-		      should, like, close some windows, or something.
-		      The next time you run out, we're gonna burn!");
+       popup_window ("Dude, you are running low on heap memory.  You"
+		     " should, like, close some windows, or something."
+		     " The next time you run out, we're gonna burn!");
        set_new_handler (old_handler);
        return;
    }

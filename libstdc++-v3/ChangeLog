@@ -1,5 +1,36 @@
 2014-06-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/Makefile.am: Add missing file. Use generate.consistent.ids
+	parameter for DocBook HTML generation.
+	* doc/Makefile.in: Regenerate.
+	* doc/doxygen/user.cfg.in: Unset DOT_FONTNAME.
+	* doc/xml/faq.xml: Update content and improve formatting.
+	* doc/xml/manual/abi.xml: Add stable ID attribute and fix links.
+	* doc/xml/manual/allocator.xml: Add stable ID attribute.
+	* doc/xml/manual/bitmap_allocator.xml: Likewise.
+	* doc/xml/manual/build_hacking.xml: Likewise.
+	* doc/xml/manual/codecvt.xml: Change URL.
+	* doc/xml/manual/ctype.xml: Add stable ID attribute.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/documentation_hacking.xml: Likewise.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/locale.xml: Likewise.
+	* doc/xml/manual/messages.xml: Make section id consistent, improve
+	markup, change URL.
+	* doc/xml/manual/parallel_mode.xml: Add stable ID attributes.
+	* doc/xml/manual/profile_mode.xml: Likewise.
+	* doc/xml/manual/shared_ptr.xml: Likewise. Also remove old info.
+	* doc/xml/manual/status_cxx1998.xml: Add stable ID attributes.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+2014-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/tr1/beta_function.tcc: Fix spelling of include guard in
 	comment.
 

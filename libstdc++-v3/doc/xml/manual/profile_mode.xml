@@ -215,7 +215,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
 
 <para>
 </para>
-<table frame="all">
+<table frame="all" xml:id="table.profile_code_loc">
 <title>Profile Code Location</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -690,7 +690,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   specific needs or time budgets.
   </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.profile_diagnostics">
 <title>Profile Diagnostics</title>
 
 <tgroup cols="7" align="left" colsep="1" rowsep="1">

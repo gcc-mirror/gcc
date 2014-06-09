@@ -31,7 +31,7 @@ particular release.
    Broken/Partial
       <?dbhtml bgcolor="#B0B0B0" ?>
 -->
-<table frame="all">
+<table frame="all" xml:id="table.cxx98_status">
   <title>C++ 1998/2003 Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">

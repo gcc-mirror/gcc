@@ -76,7 +76,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
 <section xml:id="build_hacking.overview.map"><info><title>What Comes from Where</title></info>
 
 
-  <figure>
+  <figure xml:id="fig.build_hacking.deps">
     <title>Configure and Build File Dependencies</title>
   <mediaobject>
     <imageobject>
