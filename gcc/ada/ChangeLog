@@ -1,6 +1,7 @@
-2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+2014-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
-	* gcc-interface/utils.c (process_attributes): Use it.
+	* gcc-interface/utils.c (process_attributes) <ATTR_LINK_SECTION>: Use
+	set_decl_section_name accessor.
 
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
