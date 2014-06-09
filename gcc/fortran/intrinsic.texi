@@ -1701,7 +1701,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -1750,11 +1750,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL} and it lies in the
+The return value is of type @code{REAL} and lies in the
 range @math{ - 0.5818... \leq Bessel (0,x) \leq 0.5818 }. It has the same
 kind as @var{X}.
 
@@ -1865,12 +1865,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL}. It has the same
-kind as @var{X}.
+The return value is of type @code{REAL}. It has the same kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1913,12 +1912,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL}. It has the same
-kind as @var{X}.
+The return value is of type @code{REAL}. It has the same kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
