@@ -1,3 +1,9 @@
+2014-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61343
+	* decl.c (check_initializer): Maybe clear
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+
 2014-06-04  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c/58942
