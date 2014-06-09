@@ -13611,7 +13611,9 @@ secname_for_decl (const_tree decl)
 {
   const char *secname;
 
-  if (VAR_OR_FUNCTION_DECL_P (decl) && DECL_SECTION_NAME (decl))
+  if (VAR_OR_FUNCTION_DECL_P (decl)
+      && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl) || TREE_STATIC (decl))
+      && DECL_SECTION_NAME (decl))
     {
       tree sectree = DECL_SECTION_NAME (decl);
       secname = TREE_STRING_POINTER (sectree);

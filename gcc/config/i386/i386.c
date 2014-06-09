@@ -5193,7 +5193,7 @@ x86_64_elf_unique_section (tree decl, int reloc)
 
 	  string = ACONCAT ((linkonce, prefix, ".", name, NULL));
 
-	  DECL_SECTION_NAME (decl) = build_string (strlen (string), string);
+	  set_decl_section_name (decl, build_string (strlen (string), string));
 	  return;
 	}
     }

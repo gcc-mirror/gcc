@@ -608,7 +608,7 @@ decl_assembler_name (tree decl)
    DECL is associated with.  This can be either an IDENTIFIER_NODE or a
    decl, in which case its DECL_ASSEMBLER_NAME identifies the group.  */
 tree
-decl_comdat_group (tree node)
+decl_comdat_group (const_tree node)
 {
   struct symtab_node *snode = symtab_get_node (node);
   if (!snode)
@@ -618,12 +618,43 @@ decl_comdat_group (tree node)
 
 /* Likewise, but make sure it's been reduced to an IDENTIFIER_NODE.  */
 tree
-decl_comdat_group_id (tree node)
+decl_comdat_group_id (const_tree node)
 {
   struct symtab_node *snode = symtab_get_node (node);
   if (!snode)
     return NULL;
   return snode->get_comdat_group_id ();
+}
+
+/* When the target supports named section, return its name as IDENTIFIER_NODE
+   or NULL if it is in no section.  */
+tree
+decl_section_name (const_tree node)
+{
+  struct symtab_node *snode = symtab_get_node (node);
+  if (!snode)
+    return NULL;
+  return snode->get_section ();
+}
+
+/* Set section section name of NODE to VALUE (that is expected to
+   be identifier node)  */
+void
+set_decl_section_name (tree node, tree value)
+{
+  struct symtab_node *snode;
+
+  if (value == NULL)
+    {
+      snode = symtab_get_node (node);
+      if (!snode)
+	return;
+    }
+  else if (TREE_CODE (node) == VAR_DECL)
+    snode = varpool_node_for_decl (node);
+  else
+    snode = cgraph_get_create_node (node);
+  snode->set_section (value);
 }
 
 /* Compute the number of bytes occupied by a tree with code CODE.
@@ -5263,10 +5294,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  fld_worklist_push (DECL_BIT_FIELD_TYPE (t), fld);
 	  fld_worklist_push (DECL_FIELD_BIT_OFFSET (t), fld);
 	  fld_worklist_push (DECL_FCONTEXT (t), fld);
-	}
-      else if (TREE_CODE (t) == VAR_DECL)
-	{
-	  fld_worklist_push (DECL_SECTION_NAME (t), fld);
 	}
 
       if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)

@@ -476,7 +476,6 @@ maybe_clone_body (tree fn)
 	 to it. By doing so, it also corrupted the comdat group. */
       if (DECL_ONE_ONLY (fn))
 	cgraph_get_create_node (clone)->set_comdat_group (cxx_comdat_group (clone));
-      DECL_SECTION_NAME (clone) = DECL_SECTION_NAME (fn);
       DECL_USE_TEMPLATE (clone) = DECL_USE_TEMPLATE (fn);
       DECL_EXTERNAL (clone) = DECL_EXTERNAL (fn);
       DECL_INTERFACE_KNOWN (clone) = DECL_INTERFACE_KNOWN (fn);
@@ -487,6 +486,7 @@ maybe_clone_body (tree fn)
       DECL_DLLIMPORT_P (clone) = DECL_DLLIMPORT_P (fn);
       DECL_ATTRIBUTES (clone) = copy_list (DECL_ATTRIBUTES (fn));
       DECL_DISREGARD_INLINE_LIMITS (clone) = DECL_DISREGARD_INLINE_LIMITS (fn);
+      set_decl_section_name (clone, DECL_SECTION_NAME (fn));
 
       /* Adjust the parameter names and locations.  */
       parm = DECL_ARGUMENTS (fn);

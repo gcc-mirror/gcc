@@ -512,6 +512,7 @@ function_and_variable_visibility (bool whole_program)
 		     next = next->same_comdat_group)
 		{
 		  next->set_comdat_group (NULL);
+		  next->set_section (NULL);
 		  symtab_make_decl_local (next->decl);
 		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
 					|| next->unique_name
@@ -526,6 +527,8 @@ function_and_variable_visibility (bool whole_program)
 	    }
 	  if (TREE_PUBLIC (node->decl))
 	    node->set_comdat_group (NULL);
+	  if (DECL_COMDAT (node->decl))
+	    node->set_section (NULL);
 	  symtab_make_decl_local (node->decl);
 	}
 
@@ -643,6 +646,7 @@ function_and_variable_visibility (bool whole_program)
 		     next = next->same_comdat_group)
 		{
 		  next->set_comdat_group (NULL);
+		  next->set_section (NULL);
 		  symtab_make_decl_local (next->decl);
 		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
 					|| next->unique_name
@@ -653,6 +657,8 @@ function_and_variable_visibility (bool whole_program)
 	    }
 	  if (TREE_PUBLIC (vnode->decl))
 	    vnode->set_comdat_group (NULL);
+	  if (DECL_COMDAT (vnode->decl))
+	    vnode->set_section (NULL);
 	  symtab_make_decl_local (vnode->decl);
 	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}

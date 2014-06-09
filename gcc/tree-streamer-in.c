@@ -759,8 +759,6 @@ lto_input_ts_decl_with_vis_tree_pointers (struct lto_input_block *ib,
       gcc_assert (TREE_CODE (id) == IDENTIFIER_NODE);
       SET_DECL_ASSEMBLER_NAME (expr, id);
     }
-
-  DECL_SECTION_NAME (expr) = stream_read_tree (ib, data_in);
 }
 
 

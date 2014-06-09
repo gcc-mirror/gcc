@@ -1,3 +1,8 @@
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (mentions_vars_p_decl_with_vis, compare_tree_sccs_1,
+	lto_fixup_prevailing_decls): Skip section names.
+
 2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-symtab.c: Include builtins.h.

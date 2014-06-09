@@ -1,3 +1,7 @@
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc-interface/utils.c (process_attributes): Use it.
+
 2014-05-22  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_0, DEF_FUNCTION_TYPE_6)

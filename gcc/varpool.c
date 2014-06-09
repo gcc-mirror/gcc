@@ -582,7 +582,7 @@ varpool_finalize_named_section_flags (varpool_node *node)
       && !DECL_EXTERNAL (node->decl)
       && TREE_CODE (node->decl) == VAR_DECL
       && !DECL_HAS_VALUE_EXPR_P (node->decl)
-      && DECL_SECTION_NAME (node->decl))
+      && node->get_section ())
     get_variable_section (node->decl, false);
 }
 

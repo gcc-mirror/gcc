@@ -245,7 +245,6 @@ get_emutls_init_templ_addr (tree decl)
   TREE_READONLY (to) = 1;
   DECL_IGNORED_P (to) = 1;
   DECL_CONTEXT (to) = DECL_CONTEXT (decl);
-  DECL_SECTION_NAME (to) = DECL_SECTION_NAME (decl);
   DECL_PRESERVE_P (to) = DECL_PRESERVE_P (decl);
 
   DECL_WEAK (to) = DECL_WEAK (decl);
@@ -265,10 +264,13 @@ get_emutls_init_templ_addr (tree decl)
 
   if (targetm.emutls.tmpl_section)
     {
-      DECL_SECTION_NAME (to)
-        = build_string (strlen (targetm.emutls.tmpl_section),
-			targetm.emutls.tmpl_section);
+      set_decl_section_name
+	(to,
+         build_string (strlen (targetm.emutls.tmpl_section),
+		       targetm.emutls.tmpl_section));
     }
+  else
+    set_decl_section_name (to, DECL_SECTION_NAME (decl));
 
   /* Create varpool node for the new variable and finalize it if it is
      not external one.  */
@@ -323,9 +325,10 @@ new_emutls_decl (tree decl, tree alias_of)
   /* If the target wants the control variables grouped, do so.  */
   if (!DECL_COMMON (to) && targetm.emutls.var_section)
     {
-      DECL_SECTION_NAME (to)
-        = build_string (strlen (targetm.emutls.var_section),
-			targetm.emutls.var_section);
+      set_decl_section_name 
+        (to,
+         build_string (strlen (targetm.emutls.var_section),
+		       targetm.emutls.var_section));
     }
 
   /* If this variable is defined locally, then we need to initialize the

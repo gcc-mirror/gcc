@@ -2368,8 +2368,7 @@ extern void decl_value_expr_insert (tree, tree);
 
 /* Records the section name in a section attribute.  Used to pass
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */
-#define DECL_SECTION_NAME(NODE) \
-  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.section_name)
+#define DECL_SECTION_NAME(NODE) decl_section_name (NODE)
 
 /* Nonzero in a decl means that the gimplifier has seen (or placed)
    this variable in a BIND_EXPR.  */
@@ -3431,8 +3430,10 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
    || ((NODE) && TREE_TYPE ((NODE)) == error_mark_node))
 
 extern tree decl_assembler_name (tree);
-extern tree decl_comdat_group (tree);
-extern tree decl_comdat_group_id (tree);
+extern tree decl_comdat_group (const_tree);
+extern tree decl_comdat_group_id (const_tree);
+extern tree decl_section_name (const_tree);
+extern void set_decl_section_name (tree, tree);
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
    looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */

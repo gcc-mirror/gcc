@@ -1,3 +1,8 @@
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-decl.c (merge_decls): Use set_decl_section_name.
+	(duplicate_decls): Remove node if it exists.
+
 2014-06-05  S. Gilles  <sgilles@terpmail.umd.edu>
 
 	PR c/53119

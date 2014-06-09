@@ -4769,7 +4769,7 @@ bfin_handle_l1_text_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       *no_add_attrs = true;
     }
   else
-    DECL_SECTION_NAME (decl) = build_string (9, ".l1.text");
+    set_decl_section_name (decl, build_string (9, ".l1.text"));
 
   return NULL_TREE;
 }
@@ -4847,7 +4847,7 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 	  *no_add_attrs = true;
 	}
       else
-	DECL_SECTION_NAME (decl) = build_string (9, ".l2.text");
+	set_decl_section_name (decl, build_string (9, ".l2.text"));
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
@@ -4860,7 +4860,7 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 	  *no_add_attrs = true;
 	}
       else
-	DECL_SECTION_NAME (decl) = build_string (9, ".l2.data");
+	set_decl_section_name (decl, build_string (9, ".l2.data"));
     }
 
   return NULL_TREE;
