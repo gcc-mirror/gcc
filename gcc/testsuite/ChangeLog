@@ -1,3 +1,8 @@
+2014-06-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54442
+	* g++.dg/pr54442.C: New file.
+
 2014-06-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/61406
