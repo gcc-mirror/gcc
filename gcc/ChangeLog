@@ -1,3 +1,7 @@
+2014-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-core.h (tree_decl_with_vis): Remove section_name.
+
 2014-06-09  Kito Cheng  <kito@0xlab.org>
 
 	* ira.c (ira): Don't call init_caller_save if LRA enabled
