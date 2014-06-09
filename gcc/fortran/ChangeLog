@@ -1,5 +1,11 @@
 2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/36096
+	* intrinsic.texi: Fix documentation of BESSEL_J0, BESSEL_J1,
+	BESSEL_Y0, and BESSEL_Y1.
+
+2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/45187
 	* trans-decl.c (gfc_create_module_variable): Don't create
 	Cray-pointee decls twice.
