@@ -18,13 +18,12 @@ CALC (double *s, double *r)
     r[i] = floor (log (s[i]) / log (2));
 }
 
-void static
+void
 TEST (void)
 {
   int j;
   UNION_TYPE (AVX512F_LEN, d) res1, res2, res3, s;
   double res_ref[SIZE];
-  double res_ref_mask[SIZE];
 
   MASK_TYPE mask = MASK_VALUE;
 

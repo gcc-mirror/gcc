@@ -9,6 +9,7 @@
 
 #define SIZE (AVX512F_LEN / 32)
 
+static void
 CALC (int *res, __mmask16 src)
 {
   int i;
@@ -17,13 +18,13 @@ CALC (int *res, __mmask16 src)
     res[i] = src;
 }
 
-static void
+void
 TEST (void)
 {
   int i;
   UNION_TYPE (AVX512F_LEN, i_d) res;
   int res_ref[SIZE];
-  __mmask16 src;
+  __mmask16 src = 0;
 
   for (i = 0; i < SIZE; i++)
     {

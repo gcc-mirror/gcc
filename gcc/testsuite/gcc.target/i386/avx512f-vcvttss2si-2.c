@@ -4,7 +4,6 @@
 
 #include "avx512f-check.h"
 #include "avx512f-mask-type.h"
-#include "avx512f-helper.h"
 
 static int
 __attribute__ ((noinline, unused))

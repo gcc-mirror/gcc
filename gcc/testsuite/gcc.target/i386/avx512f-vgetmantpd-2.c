@@ -83,7 +83,7 @@ CALC (double *r, double *s, int interv, int signctrl)
     }
 }
 
-void static
+void
 TEST (void)
 {
   int i, sign;

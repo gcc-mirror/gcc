@@ -31,13 +31,12 @@ CALC (double *s, double *r, int imm)
       }
 }
 
-void static
+void
 TEST (void)
 {
   int imm, i, j;
   UNION_TYPE (AVX512F_LEN, d) res1,res2,res3,s;
   double res_ref[SIZE];
-  double res_ref_mask[SIZE];
 
   MASK_TYPE mask = 6 ^ (0xff >> SIZE);
 

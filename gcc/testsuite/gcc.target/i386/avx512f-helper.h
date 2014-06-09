@@ -40,6 +40,10 @@ MAKE_MASK_MERGE(i_d, int)
 MAKE_MASK_MERGE(i_q, long long)
 MAKE_MASK_MERGE(, float)
 MAKE_MASK_MERGE(d, double)
+MAKE_MASK_MERGE(i_ub, unsigned char)
+MAKE_MASK_MERGE(i_uw, unsigned short)
+MAKE_MASK_MERGE(i_ud, unsigned int)
+MAKE_MASK_MERGE(i_uq, unsigned long long)
 
 #define MASK_MERGE(TYPE) merge_masking_##TYPE
 
@@ -61,6 +65,11 @@ MAKE_MASK_ZERO(i_d, int)
 MAKE_MASK_ZERO(i_q, long long)
 MAKE_MASK_ZERO(, float)
 MAKE_MASK_ZERO(d, double)
+MAKE_MASK_ZERO(i_ub, unsigned char)
+MAKE_MASK_ZERO(i_uw, unsigned short)
+MAKE_MASK_ZERO(i_ud, unsigned int)
+MAKE_MASK_ZERO(i_uq, unsigned long long)
+
 
 #define MASK_ZERO(TYPE) zero_masking_##TYPE
 
@@ -82,7 +91,8 @@ MAKE_MASK_ZERO(d, double)
 
 #define AVX512F_LEN 512
 #define AVX512F_LEN_HALF 256
-static void test_512 ();
+
+void test_512 ();
 
 #if defined (AVX512F)
 void

@@ -37,8 +37,21 @@ typedef union
 typedef union
 {
   __m128i x;
+  unsigned int a[4];
+} union128i_ud;
+
+typedef union
+{
+  __m128i x;
   long long a[2];
 } union128i_q;
+
+typedef union
+{
+  __m128i x;
+  unsigned long long a[2];
+} union128i_uq;
+
 
 typedef union
 {
@@ -87,7 +100,9 @@ CHECK_EXP (union128i_ub, unsigned char, "%d")
 CHECK_EXP (union128i_w, short, "%d")
 CHECK_EXP (union128i_uw, unsigned short, "%d")
 CHECK_EXP (union128i_d, int, "0x%x")
+CHECK_EXP (union128i_ud, unsigned int, "0x%x")
 CHECK_EXP (union128i_q, long long, "0x%llx")
+CHECK_EXP (union128i_uq, unsigned long long, "0x%llx")
 CHECK_EXP (union128d, double, "%f")
 #endif
 
@@ -117,6 +132,12 @@ CHECK_ARRAY(c, char, "0x%hhx")
 CHECK_ARRAY(s, short, "0x%hx")
 CHECK_ARRAY(i, int, "0x%x")
 CHECK_ARRAY(l, long long, "0x%llx")
+CHECK_ARRAY(uc, unsigned char, "0x%hhx")
+CHECK_ARRAY(us, unsigned short, "0x%hx")
+CHECK_ARRAY(ui, unsigned int, "0x%x")
+CHECK_ARRAY(ul, unsigned long long, "0x%llx")
+
+
 
 #define CHECK_FP_ARRAY(ARRAY, TYPE, ESP, FMT)                   \
 static int                                              \

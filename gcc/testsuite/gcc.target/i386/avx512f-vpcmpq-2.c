@@ -25,7 +25,7 @@ __mmask8 dst_ref;
     if (dst_ref != dst1) abort();			\
     if ((mask & dst_ref) != dst2) abort();
 
-static void
+void
 TEST ()
 {
     UNION_TYPE (AVX512F_LEN, i_d) source1, source2;

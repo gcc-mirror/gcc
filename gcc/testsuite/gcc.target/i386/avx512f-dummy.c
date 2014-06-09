@@ -7,7 +7,7 @@
 void static
 avx512f_test (void)
 {
-  union512i_q u, s1, s2;
+  union512i_q u;
   long long e[8];
-  volatile int tst = check_union512i_q (u, e);
+  volatile int tst __attribute__((unused)) = check_union512i_q (u, e);
 }

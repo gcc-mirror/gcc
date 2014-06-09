@@ -17,10 +17,10 @@ CALC (int *s1, int count, int *r)
   unsigned int i;
 
   for (i = 0; i < SIZE; i++)
-    r[i] = (s1[i] >> count) | (s1[i] << sizeof (s1[i]) * 8 - count);
+    r[i] = (s1[i] >> count) | (s1[i] << (sizeof (s1[i]) * 8 - count));
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_d) s1, res1, res2, res3;

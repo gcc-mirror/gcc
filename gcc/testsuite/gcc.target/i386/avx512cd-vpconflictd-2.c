@@ -25,7 +25,7 @@ CALC (int *s, int *r)
     }
 }
 
-static void
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_d) s, res1, res2, res3;

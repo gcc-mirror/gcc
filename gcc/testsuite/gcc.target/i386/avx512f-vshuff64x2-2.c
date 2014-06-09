@@ -10,7 +10,7 @@
 #include "avx512f-mask-type.h"
 #include "string.h"
 
-void
+static void
 CALC (double *e, UNION_TYPE (AVX512F_LEN, d) s1,
       UNION_TYPE (AVX512F_LEN, d) s2, int imm)
 {
@@ -31,7 +31,7 @@ CALC (double *e, UNION_TYPE (AVX512F_LEN, d) s1,
     }
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, d) u1, u2, u3, s1, s2;

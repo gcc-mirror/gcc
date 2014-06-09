@@ -10,6 +10,7 @@
 #include "avx512f-mask-type.h"
 #define SIZE_HALF (AVX512F_LEN_HALF / 32)
 
+void static
 CALC (int *r, long long *s)
 {
   int i;
@@ -19,11 +20,11 @@ CALC (int *r, long long *s)
     }
 }
 
-void static
+void
 TEST (void)
 {
   int i, sign;
-  UNION_TYPE (AVX512F_LEN_HALF, i_d) res1, res2, res3, res5;
+  UNION_TYPE (AVX512F_LEN_HALF, i_d) res1, res2, res3;
   int res4[SIZE_HALF];
   UNION_TYPE (AVX512F_LEN, i_q) src;
   MASK_TYPE mask = MASK_VALUE;

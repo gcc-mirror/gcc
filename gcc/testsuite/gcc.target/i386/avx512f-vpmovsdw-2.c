@@ -11,6 +11,7 @@
 #define SIZE_HALF (AVX512F_LEN_HALF / 16)
 #include <limits.h>
 
+static void
 CALC (short *r, int *s)
 {
   int i;
@@ -26,7 +27,7 @@ CALC (short *r, int *s)
     }
 }
 
-void static
+void
 TEST (void)
 {
   int i, sign;
