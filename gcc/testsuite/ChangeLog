@@ -1,3 +1,8 @@
+2014-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/22556
+	* g++.dg/other/redecl3.C: New.
+
 2014-06-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54442
