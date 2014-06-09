@@ -1,3 +1,8 @@
+2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/61062
+	* gcc.target/arm/pr48252.c (main): Expect same result as endian-neutral.
+
 2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/45187

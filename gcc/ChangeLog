@@ -1,3 +1,16 @@
+2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/61062
+	* config/arm/arm_neon.h (vtrn_s8, vtrn_s16, vtrn_u8, vtrn_u16, vtrn_p8,
+	vtrn_p16, vtrn_s32, vtrn_f32, vtrn_u32, vtrnq_s8, vtrnq_s16, vtrnq_s32,
+	vtrnq_f32, vtrnq_u8, vtrnq_u16, vtrnq_u32, vtrnq_p8, vtrnq_p16, vzip_s8,
+	vzip_s16, vzip_u8, vzip_u16, vzip_p8, vzip_p16, vzip_s32, vzip_f32,
+	vzip_u32, vzipq_s8, vzipq_s16, vzipq_s32, vzipq_f32, vzipq_u8,
+	vzipq_u16, vzipq_u32, vzipq_p8, vzipq_p16, vuzp_s8, vuzp_s16, vuzp_s32,
+	vuzp_f32, vuzp_u8, vuzp_u16, vuzp_u32, vuzp_p8, vuzp_p16, vuzpq_s8,
+	vuzpq_s16, vuzpq_s32, vuzpq_f32, vuzpq_u8, vuzpq_u16, vuzpq_u32,
+	vuzpq_p8, vuzpq_p16): Correct mask for bigendian.
+
 2014-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-core.h (tree_decl_with_vis): Remove section_name.
