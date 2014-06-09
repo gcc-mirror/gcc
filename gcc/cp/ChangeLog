@@ -1,3 +1,8 @@
+2014-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/22556
+	* name-lookup.c (pushdecl_maybe_friend_1): Use comptypes.
+
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* method.c (use_thunk): Use set_decl_section_name.
