@@ -44,12 +44,40 @@ typedef union
   double a[4];
 } union256d;
 
+typedef union
+{
+  __m256i x;
+  unsigned char a[32];
+} union256i_ub;
+         
+typedef union
+{
+  __m256i x;
+  unsigned short a[16];
+} union256i_uw;
+                 
+typedef union
+{
+  __m256i x;
+  unsigned int a[8];
+} union256i_ud;
+  
+typedef union
+{
+  __m256i x;
+  unsigned long long a[4];
+} union256i_uq;
+                          
 CHECK_EXP (union256i_b, char, "%d")
 CHECK_EXP (union256i_w, short, "%d")
 CHECK_EXP (union256i_d, int, "0x%x")
 CHECK_EXP (union256i_q, long long, "0x%llx")
 CHECK_EXP (union256, float, "%f")
 CHECK_EXP (union256d, double, "%f")
+CHECK_EXP (union256i_ub, unsigned char, "%d")
+CHECK_EXP (union256i_uw, unsigned short, "%d")
+CHECK_EXP (union256i_ud, unsigned int, "0x%x")
+CHECK_EXP (union256i_uq, unsigned long long, "0x%llx")
 
 #define CHECK_FP_EXP(UINON_TYPE, VALUE_TYPE, ESP, FMT)		\
 static int							\

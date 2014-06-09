@@ -1,3 +1,317 @@
+2014-06-09  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/avx512f-vaddpd-2.c:  Add static void for CALC,
+	void for TEST instead of static void.
+	* gcc.target/i386/avx512f-vaddps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf32x4-2.c:Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf64x4-2.c:Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttps2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextractf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextracti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslldi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrad-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsradi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestnmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestnmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhqdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckldq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpcklqdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff64x2-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi64x2-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrldi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshufd-2.c: Delete variables, void for TEST
+	instead of static void.
+	* gcc.target/i386/avx512f-vpcmpged-2.c: Add static void for CALC,
+	delete unused variables.
+	* gcc.target/i386/avx512f-vpcmpgeq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-2.c: Add static void for CALC,
+	delete unused variables, void for TEST instead of static void.
+	* gcc.target/i386/avx512f-vpcmpleq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxsd-2.c: Add static void for CALC,
+	initialize variables.
+	* gcc.target/i386/avx512f-vpmaxsq-2.c:Ditto.
+	* gcc.target/i386/avx512f-vpminsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminsq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2si-1.c: Add missed type.
+	* gcc.target/i386/avx512f-vcvttss2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpsd-2.c: Delete unused variables.
+	* gcc.target/i386/avx512f-vcmpss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuldq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-2.c: Ditto.
+	* gcc.target/i386/i386.exp: Ditto.
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Add static void for CALC,
+	void for TEST instead of static void, initialize variables.
+	* gcc.target/i386/avx512cd-vpbroadcastmw2d-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vpconflictd-2.c: Void for TEST instead of
+	static void.
+	* gcc.target/i386/avx512cd-vpconflictq-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntd-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntq-2.c: Ditto.
+	* gcc.target/i386/avx512f-valignd-2.c: Ditto.
+	* gcc.target/i386/avx512f-valignq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmppd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcompresspd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcompressps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtph2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2ph-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttpd2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinsertf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinserti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovapd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovaps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovddup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa32-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovshdup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovsldup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovupd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovups-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpdi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpsi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpdi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-imm-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmulld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vporq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpxord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpxorq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprold-2.c: Put parentheses, void for TEST
+	instead of static void.
+	* gcc.target/i386/avx512f-vprolq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Void for TEST instead of
+	static void, delete unused variables.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexppd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuludq-2.c: Void for TEST instead of
+	static void, delete unused variables, Change parameters for
+	UNION_CHECK, MASK_MERGE and MASK_ZERO.
+	* gcc.target/i386/avx512f-vcvtpd2dq-2.c: Change type of parameter in
+	CALC,  void for TEST instead of static void.
+	* gcc.target/i386/avx512f-vcvtpd2udq-2.c: Change parameters for
+	UNION_CHECK, MASK_MERGE and MASK_ZERO, void for TEST instead of static
+	void.
+	* gcc.target/i386/avx512f-vcvttpd2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtudq2pd-2.c: Void for TEST instead of
+	static void, change type  of parameter for UNION_TYPE.
+	* gcc.target/i386/avx512f-vcvtudq2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2udq-2.c: Add static void for CALC,
+	void for TEST instead of static void, delete unused variables, change
+	parameters for UNION_CHECK, MASK_MERGE and MASK_ZERO.
+	* gcc.target/i386/avx512f-vcvttps2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxud-2.c: Add static void for CALC,
+	void for TEST instead of static void, change parameters for UNION_CHECK,
+	UNION_TYPE, MASK_MERGE and MASK_ZERO.
+	* gcc.target/i386/avx512f-vpmaxuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-additional-reg-names.c: Add
+	__attribute__((unused)).
+	* gcc.target/i386/avx512f-dummy.c: Delete unused variables, add
+	__attribute__((unused)).
+	* gcc.target/i386/avx512f-kandnw-1.c: Initialize variables.
+	* gcc.target/i386/avx512f-kandw-1.c: Ditto.
+	* gcc.target/i386/avx512f-klogic-2.c: Ditto.
+	* gcc.target/i386/avx512f-knotw-1.c: Ditto.
+	* gcc.target/i386/avx512f-korw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kunpckbw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kxnorw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kxorw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kortestw-1.c: Initialize variables,
+	add __attribute__((unused)).
+	* gcc.target/i386/avx512f-vcvttsd2si-2.c: Exclude "avx512f-helper.h"
+	* gcc.target/i386/avx512f-vcvttss2si-2.c:Ditto.
+	* gcc.target/i386/avx512f-vgetexpsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalesd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaless-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-2.c: Exclude "avx512f-helper.h",
+	delete unused variables.
+	* gcc.target/i386/avx512f-vgetmantss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Void for test_512() instead of
+	static void, mask_merging and zero_masking for unsigned types.
+	* gcc.target/i386/m128-check.h: Add new unions, CHECK_EXP and
+	CHECK_ARRAY for unsigned types.
+	* gcc.target/i386/m256-check.h: Ditto.
+	* gcc.target/i386/m512-check.h: Ditto.
+
 2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/61062

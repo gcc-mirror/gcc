@@ -6,7 +6,6 @@
 
 #include <math.h>
 #include "avx512f-check.h"
-#include "avx512f-helper.h"
 
 static void
 compute_rndscaless (float *s1, float *s2, float *r, int imm)

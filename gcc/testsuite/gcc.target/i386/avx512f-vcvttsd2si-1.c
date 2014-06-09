@@ -5,7 +5,7 @@
 #include <immintrin.h>
 
 volatile __m128d x;
-volatile y;
+volatile int y;
 
 void extern
 avx512f_test (void)

@@ -15,7 +15,7 @@ typedef struct
   long long a[SIZE];
 } __attribute__ ((packed)) EVAL(unaligned_array, AVX512F_LEN,);
 
-static void
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_q) s2, res1, res2;

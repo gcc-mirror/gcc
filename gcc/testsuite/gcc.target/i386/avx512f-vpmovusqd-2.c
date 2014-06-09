@@ -11,6 +11,7 @@
 #define SIZE_HALF (AVX512F_LEN_HALF / 32)
 #include <limits.h>
 
+static void
 CALC (unsigned int *r, unsigned long long *s)
 {
   int i;
@@ -21,13 +22,13 @@ CALC (unsigned int *r, unsigned long long *s)
     }
 }
 
-void static
+void
 TEST (void)
 {
-  int i, sign;
-  UNION_TYPE (AVX512F_LEN_HALF, i_d) res1, res2, res3;
+  int i;
+  UNION_TYPE (AVX512F_LEN_HALF, i_ud) res1, res2, res3;
   unsigned int res4[SIZE_HALF];
-  UNION_TYPE (AVX512F_LEN, i_q) src;
+  UNION_TYPE (AVX512F_LEN, i_uq) src;
   MASK_TYPE mask = MASK_VALUE;
   unsigned int res_ref[SIZE_HALF];
 
@@ -45,17 +46,17 @@ TEST (void)
 
   CALC (res_ref, src.a);
 
-  if (UNION_CHECK (AVX512F_LEN_HALF, i_d) (res1, res_ref))
+  if (UNION_CHECK (AVX512F_LEN_HALF, i_ud) (res1, res_ref))
     abort ();
 
-  MASK_MERGE (i_d) (res_ref, mask, SIZE);
-  if (UNION_CHECK (AVX512F_LEN_HALF, i_d) (res2, res_ref))
+  MASK_MERGE (i_ud) (res_ref, mask, SIZE);
+  if (UNION_CHECK (AVX512F_LEN_HALF, i_ud) (res2, res_ref))
     abort ();
 
-  if (checkVi (res4, res_ref, SIZE_HALF))
+  if (checkVui (res4, res_ref, SIZE_HALF))
     abort ();
 
-  MASK_ZERO (i_d) (res_ref, mask, SIZE);
-  if (UNION_CHECK (AVX512F_LEN_HALF, i_d) (res3, res_ref))
+  MASK_ZERO (i_ud) (res_ref, mask, SIZE);
+  if (UNION_CHECK (AVX512F_LEN_HALF, i_ud) (res3, res_ref))
     abort ();
 }

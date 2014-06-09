@@ -70,10 +70,10 @@ CALC (double *r, double src, long long tbl)
     }
 }
 
-void static
+void
 TEST (void)
 {
-  int i, j, k;
+  int i, j;
   UNION_TYPE (AVX512F_LEN, d) res1, res2, res3, s1;
   UNION_TYPE (AVX512F_LEN, i_q) s2;
   double res_ref[SIZE];

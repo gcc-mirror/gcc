@@ -25,7 +25,7 @@ CALC (double *s1, long long *s2, double *r)
     r[i] = s1[(2 * (i / 2)) + ((s2[i] & 0x02) >> 1)];
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, d) s1, res1, res2, res3;

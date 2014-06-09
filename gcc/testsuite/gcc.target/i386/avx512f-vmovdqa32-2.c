@@ -10,7 +10,7 @@
 #include "avx512f-mask-type.h"
 #define ALIGN ((AVX512F_LEN) / 8)
 
-static void
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_d) s2, s3, res1, res2, res5, res6, res7, res8;

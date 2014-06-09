@@ -19,7 +19,7 @@ CALC (int *src1, int *src2, int *dst)
     dst[i] = src1[i] * src2[i];
 }
 
-static void
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_d) src1, src2, res1, res2, res3;

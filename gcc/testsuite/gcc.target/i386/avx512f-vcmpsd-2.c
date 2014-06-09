@@ -27,7 +27,6 @@ avx512f_test ()
     __m128d source1, source2;
     __mmask8 dst, dst2, mask;
     mask = 1;
-    int i;
 
     CMP(_CMP_EQ_OQ, !isunordered(s1[0], s2[0]) && s1[0] == s2[0]);
     CMP(_CMP_LT_OS, !isunordered(s1[0], s2[0]) && s1[0] < s2[0]);

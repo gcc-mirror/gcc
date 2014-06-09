@@ -23,17 +23,17 @@ CALC (int *s1, unsigned char imm, int *r)
     }
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_d) s1, res1, res2, res3;
   int res_ref[SIZE];
-  int i, j, sign = 1;
+  int j, sign = 1;
   MASK_TYPE mask = MASK_VALUE;
 
   for (j = 0; j < SIZE; j++)
     {
-      s1.a[j] = j * i * sign;
+      s1.a[j] = j * sign;
       res1.a[j] = DEFAULT_VALUE;
       res2.a[j] = DEFAULT_VALUE;
       res3.a[j] = DEFAULT_VALUE;

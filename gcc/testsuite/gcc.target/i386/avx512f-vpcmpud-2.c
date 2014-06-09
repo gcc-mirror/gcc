@@ -25,7 +25,7 @@
     if ((mask & dst_ref) != dst2) abort();
 #endif
 
-static void
+void
 TEST ()
 {
     unsigned int s1[16] = {2134,  6678,  453, 54646,

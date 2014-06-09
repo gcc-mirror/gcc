@@ -21,7 +21,7 @@ CALC (float *s, double *r)
     }
 }
 
-static void
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN_HALF, ) s;

@@ -35,7 +35,7 @@ CALC (float *e, UNION_TYPE (AVX512F_LEN,) s1, UNION_TYPE (AVX512F_LEN,) s2,
 #endif
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN,) u1, u2, u3, s1, s2;

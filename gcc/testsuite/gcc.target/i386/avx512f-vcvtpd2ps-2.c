@@ -17,7 +17,7 @@ CALC (float *e, UNION_TYPE (AVX512F_LEN, d) s1)
     e[i] = (float) s1.a[i];
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, d) s1;

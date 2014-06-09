@@ -17,7 +17,7 @@ CALC (UNION_TYPE (AVX512F_LEN, i_d) s1, union128i_d s2, int *res_ref, int imm)
   memcpy (res_ref + imm * 4, s2.a, 16);
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_d) s1, res1, res2, res3;

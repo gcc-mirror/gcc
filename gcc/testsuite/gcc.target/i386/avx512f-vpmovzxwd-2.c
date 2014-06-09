@@ -20,10 +20,10 @@ CALC (unsigned short *s, int *r)
     }
 }
 
-static void
+void
 TEST (void)
 {
-  UNION_TYPE (AVX512F_LEN_HALF, i_w) s;
+  UNION_TYPE (AVX512F_LEN_HALF, i_uw) s;
   UNION_TYPE (AVX512F_LEN, i_d) res1, res2, res3;
   MASK_TYPE mask = MASK_VALUE;
   int res_ref[SIZE];
