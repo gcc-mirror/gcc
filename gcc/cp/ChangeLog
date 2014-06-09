@@ -1,3 +1,10 @@
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* method.c (use_thunk): Use set_decl_section_name.
+	* optimize.c (maybe_clone_body): Use set_decl_section_name.
+	* decl.c (duplicate_decls): Likewise.
+	* vtable-class-hierarchy.c: Likewise.
+
 2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60184

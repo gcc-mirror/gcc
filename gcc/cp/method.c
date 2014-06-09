@@ -363,7 +363,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	  resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
 
 	  /* Output the thunk into the same section as function.  */
-	  DECL_SECTION_NAME (thunk_fndecl) = DECL_SECTION_NAME (function);
+	  set_decl_section_name (thunk_fndecl, DECL_SECTION_NAME (function));
 	}
     }
 

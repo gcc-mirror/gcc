@@ -2019,8 +2019,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	 We want to issue an error if the sections conflict but that must be
 	 done later in decl_attributes since we are called before attributes
 	 are assigned.  */
-      if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
-	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
+      if ((DECL_EXTERNAL (olddecl) || TREE_PUBLIC (olddecl) || TREE_STATIC (olddecl))
+	  && DECL_SECTION_NAME (newdecl) == NULL_TREE
+	  && DECL_SECTION_NAME (olddecl) != NULL_TREE)
+	set_decl_section_name (newdecl, DECL_SECTION_NAME (olddecl));
 
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{

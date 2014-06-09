@@ -1,3 +1,9 @@
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (build_utf8_ref): Use set_decl_section_name.
+	(emit_register_classes_in_jcr_section): Likewise.
+	(emit_register_classes_in_jcr_section): Likewise.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* class.c (add_method_1): Adjust.

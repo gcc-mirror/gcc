@@ -1369,6 +1369,7 @@ make_decl_rtl (tree decl)
      is called early and it needs to make DECL_RTL to get the name.
      we take care of recomputing the DECL_RTL after visibility is changed.  */
   if (TREE_CODE (decl) == VAR_DECL
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
       && DECL_SECTION_NAME (decl) != NULL_TREE
       && DECL_INITIAL (decl) == NULL_TREE
       && DECL_COMMON (decl))
@@ -6460,7 +6461,7 @@ default_unique_section (tree decl, int reloc)
 
   string = ACONCAT ((linkonce, prefix, ".", name, NULL));
 
-  DECL_SECTION_NAME (decl) = build_string (strlen (string), string);
+  set_decl_section_name (decl, build_string (strlen (string), string));
 }
 
 /* Like compute_reloc_for_constant, except for an RTX.  The return value

@@ -340,7 +340,6 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node,
 
   DECL_NAME (new_decl) = clone_function_name (thunk->decl, "artificial_thunk");
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
-  DECL_SECTION_NAME (new_decl) = NULL;
 
   new_thunk = cgraph_create_node (new_decl);
   set_new_clone_decl_and_node_flags (new_thunk);
@@ -557,8 +556,6 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
      that is not weak also.
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
-  if (old_node->get_comdat_group ())
-    DECL_SECTION_NAME (new_node->decl) = NULL;
   set_new_clone_decl_and_node_flags (new_node);
   new_node->clone.tree_map = tree_map;
   new_node->clone.args_to_skip = args_to_skip;

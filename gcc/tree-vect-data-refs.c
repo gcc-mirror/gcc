@@ -5213,7 +5213,8 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   /* Do not override explicit alignment set by the user when an explicit
      section name is also used.  This is a common idiom used by many
      software projects.  */
-  if (DECL_SECTION_NAME (decl) != NULL_TREE
+  if (TREE_STATIC (decl) 
+      && DECL_SECTION_NAME (decl) != NULL_TREE
       && !DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
     return false;
 

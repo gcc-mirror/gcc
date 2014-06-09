@@ -157,7 +157,22 @@ public:
   /* Set comdat group.  */
   void set_comdat_group (tree group)
     {
+      gcc_checking_assert (!group || TREE_CODE (group) == IDENTIFIER_NODE
+			   || DECL_P (group));
       comdat_group_ = group;
+    }
+
+  /* Return section.  */
+  tree get_section ()
+    {
+      return section_;
+    }
+
+  /* Set section.  */
+  void set_section (tree section)
+    {
+      gcc_checking_assert (!section || TREE_CODE (section) == STRING_CST);
+      section_ = section;
     }
 
   /* Vectors of referring and referenced entities.  */
@@ -175,6 +190,9 @@ public:
 
   /* Comdat group the symbol is in.  Can be private if GGC allowed that.  */
   tree comdat_group_;
+
+  /* Section name. Again can be private, if allowed.  */
+  tree section_;
 };
 
 enum availability

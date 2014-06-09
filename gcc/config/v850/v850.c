@@ -2644,7 +2644,7 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
 	  /* Only set the section name if specified by a pragma, because
 	     otherwise it will force those variables to get allocated storage
 	     in this module, rather than by the linker.  */
-	  DECL_SECTION_NAME (decl) = chosen_section;
+	  set_decl_section_name (decl, chosen_section);
 	}
     }
 }

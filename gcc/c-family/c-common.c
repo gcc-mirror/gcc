@@ -7442,7 +7442,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	      *no_add_attrs = true;
 	    }
 	  else
-	    DECL_SECTION_NAME (decl) = TREE_VALUE (args);
+	    set_decl_section_name (decl, TREE_VALUE (args));
 	}
       else
 	{

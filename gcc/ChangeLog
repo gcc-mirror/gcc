@@ -1,5 +1,55 @@
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* symtab.c (dump_symtab_base): Update dumping.
+	(symtab_make_decl_local): Clear only DECL_COMDAT.
+	* tree-vect-data-refs.c (Check that variable is static before
+	tampering with sections.
+	* cgraphclones.c (duplicate_thunk_for_node): Do not clear section name.
+	(cgraph_create_virtual_clone): Likewise.
+	* tree.c (decl_comdat_group, decl_comdat_group_id): Constify argument.
+	(decl_section_name, set_decl_section_name): New accessors.
+	(find_decls_types_r): Do not walk section name
+	* tree.h (DECL_SECTION_NAME): Implement using
+	decl_section_name.
+	(decl_comdat_group, decl_comdat_group_id): Constify.
+	(decl_section_name, set_decl_section_name): Update.
+	* varpool.c (varpool_finalize_named_section_flags): Use
+	get_section.
+	* cgraph.c (cgraph_add_thunk): Reset node instead of rebuilding.
+	(cgraph_make_node_local_1): Clear section and comdat group.
+	* cgraph.h (set_comdat_group): Sanity check.
+	(get_section, set_section): New.
+	* ipa-comdats.c (ipa_comdats): Use get_section.
+	* ipa.c (ipa_discover_readonly_nonaddressable_var): Likewise.
+	* lto-streamer-out.c: Do not follow section names.
+	* c-family/c-common.c (handle_section_attribute):
+	Update.
+	* lto-cgraph.c (lto_output_node): Output section.
+	(lto_output_varpool_node): Likewise.
+	(read_comdat_group): Rename to ...
+	(read_identifier): ... this one.
+	(read_string_cst): New function.
+	(input_node, input_varpool_node): Input section names.
+	* tree-emutls.c (get_emutls_init_templ_addr): Update.
+	(new_emutls_decl): Update.
+	(secname_for_decl): Check section names only of static
+	vars.
+	* config/mep/mep.c (mep_unique_section): Use set_decl_section_name.
+	* config/i386/winnt.c (i386_pe_unique_section): Likewise.
+	* config/i386/i386.c (x86_64_elf_unique_section): Likewise.
+	* config/c6x/c6x.c (c6x_elf_unique_section): Likewise.
+	* config/rs6000/rs6000.c (rs6000_xcoff_unique_section): Likewise.
+	* config/mcore/mcore.c (mcore_unique_section): Likewise.
+	* config/mips/mips.c (mips16_build_function_stub): Likewise.
+	* config/v850/v850.c (v850_insert_attributes): Likewise.
+	* config/h8300/h8300.c: (h8300_handle_eightbit_data_attribute):
+	Likewise.
+	(h8300_handle_tiny_data_attribute): Likewise.
+	* config/bfin/bfin.c (bfin_handle_l1_text_attribute): Likewise.
+	(bfin_handle_l2_attribute): Likewise.
+
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* symtab.c (symtab_nonoverwritable_alias): Copy VIRTUAL flag;
 	remove static initializer.
 

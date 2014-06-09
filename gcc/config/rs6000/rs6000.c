@@ -29342,7 +29342,7 @@ rs6000_xcoff_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   name = (*targetm.strip_name_encoding) (name);
-  DECL_SECTION_NAME (decl) = build_string (strlen (name), name);
+  set_decl_section_name (decl, build_string (strlen (name), name));
 }
 
 /* Select section for constant in constant pool.

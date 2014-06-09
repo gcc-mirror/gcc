@@ -563,9 +563,9 @@ dump_symtab_base (FILE *f, symtab_node *node)
 	     IDENTIFIER_POINTER (node->get_comdat_group_id ()));
   if (DECL_ONE_ONLY (node->decl))
     fprintf (f, " one_only");
-  if (DECL_SECTION_NAME (node->decl))
-    fprintf (f, " section_name:%s",
-	     TREE_STRING_POINTER (DECL_SECTION_NAME (node->decl)));
+  if (node->get_section ())
+    fprintf (f, " section:%s",
+	     TREE_STRING_POINTER (node->get_section ()));
   if (DECL_VISIBILITY_SPECIFIED (node->decl))
     fprintf (f, " visibility_specified");
   if (DECL_VISIBILITY (node->decl))
@@ -877,11 +877,7 @@ symtab_make_decl_local (tree decl)
     DECL_COMMON (decl) = 0;
   else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
-  if (DECL_COMDAT (decl))
-    {
-      DECL_SECTION_NAME (decl) = 0;
-      DECL_COMDAT (decl) = 0;
-    }
+  DECL_COMDAT (decl) = 0;
   DECL_WEAK (decl) = 0;
   DECL_EXTERNAL (decl) = 0;
   DECL_VISIBILITY_SPECIFIED (decl) = 0;

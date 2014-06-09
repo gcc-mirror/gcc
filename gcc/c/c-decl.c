@@ -2304,8 +2304,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	 We want to issue an error if the sections conflict but that
 	 must be done later in decl_attributes since we are called
 	 before attributes are assigned.  */
-      if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
-	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
+      if ((DECL_EXTERNAL (olddecl) || TREE_PUBLIC (olddecl) || TREE_STATIC (olddecl))
+	  && DECL_SECTION_NAME (newdecl) == NULL_TREE
+	  && DECL_SECTION_NAME (olddecl))
+	set_decl_section_name (newdecl, DECL_SECTION_NAME (olddecl));
 
       /* Copy the assembler name.
 	 Currently, it can only be defined in the prototype.  */
@@ -2574,6 +2576,13 @@ duplicate_decls (tree newdecl, tree olddecl)
   merge_decls (newdecl, olddecl, newtype, oldtype);
 
   /* The NEWDECL will no longer be needed.  */
+  if (TREE_CODE (newdecl) == FUNCTION_DECL
+      || TREE_CODE (newdecl) == VAR_DECL)
+    {
+      struct symtab_node *snode = symtab_get_node (newdecl);
+      if (snode)
+	symtab_remove_node (snode);
+    }
   ggc_free (newdecl);
   return true;
 }

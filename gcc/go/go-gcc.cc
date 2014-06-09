@@ -2376,7 +2376,7 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
   // a different one now that DECL_INITIAL is set.
   if (DECL_HAS_IMPLICIT_SECTION_NAME_P (var_decl))
     {
-      DECL_SECTION_NAME (var_decl) = NULL_TREE;
+      set_decl_section_name (var_decl, NULL);
       resolve_unique_section (var_decl,
 			      compute_reloc_for_constant (expr_tree),
 			      1);
