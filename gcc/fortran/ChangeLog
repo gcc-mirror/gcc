@@ -1,3 +1,9 @@
+2014-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61406
+	* trans-stmt.c (trans_associate_var): Check that array
+	constructors are constant for direct reference.
+
 2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36096
@@ -333,7 +339,7 @@
 	* trans.c (trans_code): Handle EXEC_OMP_CANCEL,
 	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,
 	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
-	* resolve.c (gfc_resolve_blocks): Handle EXEC_OMP_DO_SIMD,  
+	* resolve.c (gfc_resolve_blocks): Handle EXEC_OMP_DO_SIMD,
 	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
 	(resolve_code): Handle EXEC_OMP_CANCEL,
 	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,
