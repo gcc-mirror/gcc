@@ -75,7 +75,7 @@ else return false.</p></li></ol></div><p>
   </p><p>
     Consider a block of size 64 ints. In memory, it would look like this:
     (assume a 32-bit system where, size_t is a 32-bit entity).
-  </p><div class="table"><a id="idm269889767120"></a><p class="title"><strong>Table 21.1. Bitmap Allocator Memory Map</strong></p><div class="table-contents"><table summary="Bitmap Allocator Memory Map" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><tbody><tr><td align="left">268</td><td align="left">0</td><td align="left">4294967295</td><td align="left">4294967295</td><td align="left">Data -&gt; Space for 64 ints</td></tr></tbody></table></div></div><br class="table-break" /><p>
+  </p><div class="table"><a id="table.bitmap_alloc"></a><p class="title"><strong>Table 21.1. Bitmap Allocator Memory Map</strong></p><div class="table-contents"><table summary="Bitmap Allocator Memory Map" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><tbody><tr><td align="left">268</td><td align="left">0</td><td align="left">4294967295</td><td align="left">4294967295</td><td align="left">Data -&gt; Space for 64 ints</td></tr></tbody></table></div></div><br class="table-break" /><p>
     The first Column(268) represents the size of the Block in bytes as
     seen by the Bitmap Allocator. Internally, a global free list is
     used to keep track of the free blocks used and given back by the

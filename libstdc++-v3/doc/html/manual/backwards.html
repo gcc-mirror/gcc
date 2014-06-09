@@ -242,7 +242,7 @@ erase(size_type __pos = 0, size_type __n = npos)
   std::ostrstream oss;
 #endif
 
-oss &lt;&lt; <span class="quote">“<span class="quote">Name=</span>”</span> &lt;&lt; m_name &lt;&lt; <span class="quote">“<span class="quote">, number=</span>”</span> &lt;&lt; m_number &lt;&lt; std::endl;
+oss &lt;&lt; "Name=" &lt;&lt; m_name &lt;&lt; ", number=" &lt;&lt; m_number &lt;&lt; std::endl;
 ...
 #ifndef HAVE_SSTREAM
   oss &lt;&lt; std::ends; // terminate the char*-string
@@ -947,15 +947,15 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
   This is a change in behavior from older versions. Now, most
   <span class="type">iterator_type</span> typedefs in container classes are POD
   objects, not <span class="type">value_type</span> pointers.
-</p></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="idm269883851680"></a><p><span class="title"><em>
+</p></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id-1.3.6.3.8.5.2"></a><p><span class="title"><em>
 	<a class="link" href="http://www.kegel.com/gcc/gcc4.html" target="_top">
       Migrating to GCC 4.1
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Dan</span> <span class="surname">Kegel</span>. </span></p></div><div class="biblioentry"><a id="idm269883848896"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Dan</span> <span class="surname">Kegel</span>. </span></p></div><div class="biblioentry"><a id="id-1.3.6.3.8.5.3"></a><p><span class="title"><em>
 	<a class="link" href="http://lists.debian.org/debian-gcc/2006/03/msg00405.html" target="_top">
       Building the Whole Debian Archive with GCC 4.1: A Summary
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Martin</span> <span class="surname">Michlmayr</span>. </span></p></div><div class="biblioentry"><a id="idm269883846048"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Martin</span> <span class="surname">Michlmayr</span>. </span></p></div><div class="biblioentry"><a id="id-1.3.6.3.8.5.4"></a><p><span class="title"><em>
 	<a class="link" href="http://annwm.lbl.gov/~leggett/Atlas/gcc-3.2.html" target="_top">
       Migration guide for GCC-3.2
 	</a>

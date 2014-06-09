@@ -206,7 +206,7 @@
     
     <section xml:id="doxygen.prereq"><info><title>Prerequisites</title></info>
       
- <table frame="all">
+ <table frame="all" xml:id="table.doxygen_prereq">
 <title>Doxygen Prerequisites</title>
 
 <tgroup cols="3" align="center" colsep="1" rowsep="1">
@@ -582,7 +582,7 @@
 	doubt, consult the following table.
       </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.doxygen_cmp">
 <title>HTML to Doxygen Markup Comparison</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -652,7 +652,7 @@
     <section xml:id="docbook.prereq"><info><title>Prerequisites</title></info>
       
       
- <table frame="all">
+ <table frame="all" xml:id="table.docbook_prereq">
 <title>Docbook Prerequisites</title>
 
 <tgroup cols="3" align="center" colsep="1" rowsep="1">
@@ -1029,7 +1029,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 	detailed in the table below.
       </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.docbook_cmp">
 <title>HTML to Docbook XML Markup Comparison</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -1107,7 +1107,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
   equivalents are listed in the table below.
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.docbook_elem">
 <title>Docbook XML Element Use</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">

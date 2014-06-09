@@ -175,7 +175,7 @@ which always works correctly.
   containers:
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.debug_mode_containers">
 <title>Debugging Containers</title>
 
 <tgroup cols="4" align="left" colsep="1" rowsep="1">
@@ -267,7 +267,7 @@ which always works correctly.
 containers have additional debug capability.
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.debug_mode_containers_cxx11">
 <title>Debugging Containers C++11</title>
 
 <tgroup cols="4" align="left" colsep="1" rowsep="1">

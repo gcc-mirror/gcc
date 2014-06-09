@@ -24,7 +24,7 @@ This page describes the C++14 and library TS support in mainline GCC SVN,
 not in any particular release.
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.cxx14_status">
 <title>C++ 2014 Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">
@@ -251,7 +251,7 @@ not in any particular release.
 </table>
 
 
-<table frame="all">
+<table frame="all" xml:id="table.ts_status">
 <title>C++ Technical Specifications Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">

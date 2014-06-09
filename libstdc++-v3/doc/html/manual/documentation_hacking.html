@@ -112,7 +112,7 @@
       supported, and are always aliased to dummy rules. These
       unsupported formats are: <span class="emphasis"><em>info</em></span>,
       <span class="emphasis"><em>ps</em></span>, and <span class="emphasis"><em>dvi</em></span>.
-    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.doxygen"></a>Doxygen</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="idm269885108336"></a><p class="title"><strong>Table B.1. Doxygen Prerequisites</strong></p><div class="table-contents"><table summary="Doxygen Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">coreutils</td><td align="center">8.5</td><td align="center">all</td></tr><tr><td align="center">bash</td><td align="center">4.1</td><td align="center">all</td></tr><tr><td align="center">doxygen</td><td align="center">1.7.6.1</td><td align="center">all</td></tr><tr><td align="center">graphviz</td><td align="center">2.26</td><td align="center">graphical hierarchies</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr></tbody></table></div></div><br class="table-break" /><p>
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.doxygen"></a>Doxygen</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="table.doxygen_prereq"></a><p class="title"><strong>Table B.1. Doxygen Prerequisites</strong></p><div class="table-contents"><table summary="Doxygen Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">coreutils</td><td align="center">8.5</td><td align="center">all</td></tr><tr><td align="center">bash</td><td align="center">4.1</td><td align="center">all</td></tr><tr><td align="center">doxygen</td><td align="center">1.7.6.1</td><td align="center">all</td></tr><tr><td align="center">graphviz</td><td align="center">2.26</td><td align="center">graphical hierarchies</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr></tbody></table></div></div><br class="table-break" /><p>
 	Prerequisite tools are Bash 2.0 or later,
 	<a class="link" href="http://www.doxygen.org/" target="_top">Doxygen</a>, and
 	the <a class="link" href="http://www.gnu.org/software/coreutils/" target="_top">GNU
@@ -125,7 +125,9 @@
 	<a class="link" href="http://www.graphviz.org" target="_top">Graphviz</a> package
 	will need to be installed. For PDF
 	output, <a class="link" href="http://www.tug.org/applications/pdftex/" target="_top">
-	pdflatex</a> is required.
+	pdflatex</a> is required as well as a number of TeX packages
+	such as <span class="package">texlive-xtab</span> and
+	<span class="package">texlive-tocloft</span>.
       </p><p>
 	Be warned the PDF file generated via doxygen is extremely
 	large. At last count, the PDF file is over three thousand
@@ -178,8 +180,7 @@
 	  doc-pdf-doxygen</code>).
 	</p><p>
 	  Working on the doxygen path only, closely examine the
-	  contents of the following build directory:
-	  <code class="filename">build/target/libstdc++-v3/doc/doxygen/latex</code>.
+	  contents of the following build directory: <code class="filename">build/target/libstdc++-v3/doc/doxygen/latex</code>.
 	  Pay attention to three files enclosed within, annotated as follows.
 	</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
    <span class="emphasis"><em>refman.tex</em></span>
@@ -187,12 +188,24 @@
     The actual latex file, or partial latex file. This is generated
     via <span class="command"><strong>doxygen</strong></span>, and is the LaTeX version of the
     Doxygen XML file <code class="filename">libstdc++-api.xml</code>. Go to a specific
-    line, and look at the genrated LaTeX, and try to deduce what
+    line, and look at the generated LaTeX, and try to deduce what
     markup in <code class="filename">libstdc++-api.xml</code> is causing it.
+  </p></li><li class="listitem"><p>
+   <span class="emphasis"><em>refman.log</em></span>
+  </p><p>
+    A log created by <span class="command"><strong>latex</strong></span> as it processes the
+    <code class="filename">refman.tex</code> file. If generating the PDF fails
+    look at the end of this file for errors such as:
+    </p><pre class="screen">
+    ! LaTeX Error: File `xtab.sty' not found.
+    </pre><p>
+    This indicates a required TeX package is missing. For the example
+    above the <span class="package">texlive-xtab</span> package needs to be
+    installed.
   </p></li><li class="listitem"><p>
    <span class="emphasis"><em>refman.out</em></span>
   </p><p>
-    A log of the compilation of the converted LaTeX form to pdf. This
+    A log of the compilation of the converted LaTeX form to PDF. This
     is a linear list, from the beginning of the
     <code class="filename">refman.tex</code> file: the last entry of this file
     should be the end of the LaTeX file. If it is truncated, then you
@@ -227,9 +240,9 @@
 	<code class="classname">deque</code>/<code class="classname">vector</code>/<code class="classname">list</code>
 	and <code class="classname">std::pair</code> as examples.  For
 	functions, see their member functions, and the free functions
-	in <code class="filename">stl_algobase.h</code>. Member functions of
-	other container-like types should read similarly to these
-	member functions.
+	in <code class="filename">stl_algobase.h</code>. Member
+	functions of other container-like types should read similarly to
+	these member functions.
       </p><p>
 	Some commentary to accompany
 	the first list in the <a class="link" href="http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html" target="_top">Special
@@ -253,16 +266,16 @@
       </p><p>
 	Use either kind of grouping, as
 	appropriate. <code class="filename">doxygroups.cc</code> exists for this
-	purpose. See <code class="filename">stl_iterator.h</code> for a good example
-	of the <span class="quote">“<span class="quote">other</span>”</span> kind of grouping.
+	purpose. See <code class="filename">stl_iterator.h</code>
+	for a good example of the <span class="quote">“<span class="quote">other</span>”</span> kind of grouping.
       </p><p>
 	Please use markup tags like @p and @a when referring to things
 	such as the names of function parameters. Use @e for emphasis
 	when necessary. Use @c to refer to other standard names.
 	(Examples of all these abound in the present code.)
       </p><p>
-	Complicated math functions should use the multi-line
-	format. An example from <code class="filename">random.h</code>:
+	Complicated math functions should use the multi-line format.
+	An example from <code class="filename">random.h</code>:
       </p><p>
 </p><div class="literallayout"><p><br />
 /**<br />
@@ -309,7 +322,7 @@
 	writing Doxygen comments. Single and double quotes, and
 	separators in filenames are two common trouble spots. When in
 	doubt, consult the following table.
-      </p><div class="table"><a id="idm269885032656"></a><p class="title"><strong>Table B.2. HTML to Doxygen Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Doxygen Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Doxygen</th></tr></thead><tbody><tr><td align="left">\</td><td align="left">\\</td></tr><tr><td align="left">"</td><td align="left">\"</td></tr><tr><td align="left">'</td><td align="left">\'</td></tr><tr><td align="left">&lt;i&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;b&gt;</td><td align="left">@b word</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">@c word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;em&gt;two words or more&lt;/em&gt;</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.docbook"></a>Docbook</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="idm269885013280"></a><p class="title"><strong>Table B.3. Docbook Prerequisites</strong></p><div class="table-contents"><table summary="Docbook Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">docbook5-style-xsl</td><td align="center">1.76.1</td><td align="center">all</td></tr><tr><td align="center">xsltproc</td><td align="center">1.1.26</td><td align="center">all</td></tr><tr><td align="center">xmllint</td><td align="center">2.7.7</td><td align="center">validation</td></tr><tr><td align="center">dblatex</td><td align="center">0.3</td><td align="center">pdf output</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr><tr><td align="center">docbook2X</td><td align="center">0.8.8</td><td align="center">info output</td></tr><tr><td align="center">epub3 stylesheets</td><td align="center">b3</td><td align="center">epub output</td></tr></tbody></table></div></div><br class="table-break" /><p>
+      </p><div class="table"><a id="table.doxygen_cmp"></a><p class="title"><strong>Table B.2. HTML to Doxygen Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Doxygen Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Doxygen</th></tr></thead><tbody><tr><td align="left">\</td><td align="left">\\</td></tr><tr><td align="left">"</td><td align="left">\"</td></tr><tr><td align="left">'</td><td align="left">\'</td></tr><tr><td align="left">&lt;i&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;b&gt;</td><td align="left">@b word</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">@c word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;em&gt;two words or more&lt;/em&gt;</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.docbook"></a>Docbook</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="table.docbook_prereq"></a><p class="title"><strong>Table B.3. Docbook Prerequisites</strong></p><div class="table-contents"><table summary="Docbook Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">docbook5-style-xsl</td><td align="center">1.76.1</td><td align="center">all</td></tr><tr><td align="center">xsltproc</td><td align="center">1.1.26</td><td align="center">all</td></tr><tr><td align="center">xmllint</td><td align="center">2.7.7</td><td align="center">validation</td></tr><tr><td align="center">dblatex</td><td align="center">0.3</td><td align="center">pdf output</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr><tr><td align="center">docbook2X</td><td align="center">0.8.8</td><td align="center">info output</td></tr><tr><td align="center">epub3 stylesheets</td><td align="center">b3</td><td align="center">epub output</td></tr></tbody></table></div></div><br class="table-break" /><p>
 	Editing the DocBook sources requires an XML editor. Many
 	exist: some notable options
 	include <span class="command"><strong>emacs</strong></span>, <span class="application">Kate</span>,
@@ -402,7 +415,7 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
     The actual latex file, or partial latex file. This is generated
     via <span class="command"><strong>dblatex</strong></span>, and is the LaTeX version of the
     DocBook XML file <code class="filename">spine.xml</code>. Go to a specific
-    line, and look at the genrated LaTeX, and try to deduce what
+    line, and look at the generated LaTeX, and try to deduce what
     markup in <code class="filename">spine.xml</code> is causing it.
   </p></li><li class="listitem"><p>
    <span class="emphasis"><em>spine.out</em></span>
@@ -519,11 +532,11 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
 	<a class="link" href="http://www.docbook.org/tdg/en/html/part2.html" target="_top">online</a>.
 	An incomplete reference for HTML to Docbook conversion is
 	detailed in the table below.
-      </p><div class="table"><a id="idm269884935712"></a><p class="title"><strong>Table B.4. HTML to Docbook XML Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Docbook XML Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Docbook</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;,
+      </p><div class="table"><a id="table.docbook_cmp"></a><p class="title"><strong>Table B.4. HTML to Docbook XML Markup Comparison</strong></p><div class="table-contents"><table summary="HTML to Docbook XML Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Docbook</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;,
 	&lt;literallayout&gt;</td></tr><tr><td align="left">&lt;ul&gt;</td><td align="left">&lt;itemizedlist&gt;</td></tr><tr><td align="left">&lt;ol&gt;</td><td align="left">&lt;orderedlist&gt;</td></tr><tr><td align="left">&lt;il&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;dl&gt;</td><td align="left">&lt;variablelist&gt;</td></tr><tr><td align="left">&lt;dt&gt;</td><td align="left">&lt;term&gt;</td></tr><tr><td align="left">&lt;dd&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;a href=""&gt;</td><td align="left">&lt;ulink url=""&gt;</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">&lt;literal&gt;, &lt;programlisting&gt;</td></tr><tr><td align="left">&lt;strong&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">"</td><td align="left">&lt;quote&gt;</td></tr></tbody></table></div></div><br class="table-break" /><p>
   And examples of detailed markup for which there are no real HTML
   equivalents are listed in the table below.
-</p><div class="table"><a id="idm269884911568"></a><p class="title"><strong>Table B.5. Docbook XML Element Use</strong></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">Element</th><th align="left">Use</th></tr></thead><tbody><tr><td align="left">&lt;structname&gt;</td><td align="left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td align="left">&lt;classname&gt;</td><td align="left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td align="left">&lt;function&gt;</td><td align="left">
+</p><div class="table"><a id="table.docbook_elem"></a><p class="title"><strong>Table B.5. Docbook XML Element Use</strong></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">Element</th><th align="left">Use</th></tr></thead><tbody><tr><td align="left">&lt;structname&gt;</td><td align="left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td align="left">&lt;classname&gt;</td><td align="left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td align="left">&lt;function&gt;</td><td align="left">
 	<p>&lt;function&gt;clear()&lt;/function&gt;</p>
 	<p>&lt;function&gt;fs.clear()&lt;/function&gt;</p>
       </td></tr><tr><td align="left">&lt;type&gt;</td><td align="left">&lt;type&gt;long long&lt;/type&gt;</td></tr><tr><td align="left">&lt;varname&gt;</td><td align="left">&lt;varname&gt;fs&lt;/varname&gt;</td></tr><tr><td align="left">&lt;literal&gt;</td><td align="left">

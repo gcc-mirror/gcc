@@ -137,7 +137,7 @@
 <section xml:id="allocator.impl"><info><title>Implementation</title></info>
 
 
-  <section><info><title>Interface Design</title></info>
+  <section xml:id="allocator.interface"><info><title>Interface Design</title></info>
     
 
    <para>
@@ -161,7 +161,7 @@
 
   </section>
 
-  <section><info><title>Selecting Default Allocation Policy</title></info>
+  <section xml:id="allocator.default"><info><title>Selecting Default Allocation Policy</title></info>
     
 
    <para>
@@ -227,7 +227,7 @@
 
   </section>
 
-  <section><info><title>Disabling Memory Caching</title></info>
+  <section xml:id="allocator.caching"><info><title>Disabling Memory Caching</title></info>
     
 
     <para>

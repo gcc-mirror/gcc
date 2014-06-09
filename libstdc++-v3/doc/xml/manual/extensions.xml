@@ -13,7 +13,7 @@
 </info>
 
 
-<preface><info><title/></info>
+<preface xml:id="manual.ext.preface"><info><title/></info>
 <?dbhtml filename="ext_preface.html"?>
 <para>
   Here we will make an attempt at describing the non-Standard

@@ -29,7 +29,7 @@ particular release.
    Broken/Partial
       <?dbhtml bgcolor="#B0B0B0" ?>
 -->
-<table frame="all">
+<table frame="all" xml:id="table.decfp_status">
 <title>C++ TR 24733 Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">

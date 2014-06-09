@@ -165,7 +165,7 @@ _Alloc_traits</code> have been removed.
    underlying allocator was not user-configurable.
    </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.extension_allocators">
 <title>Extension Allocators</title>
 
 <tgroup cols="4" align="left" colsep="1" rowsep="1">
@@ -230,7 +230,7 @@ _Alloc_traits</code> have been removed.
    the first released version of GCC that included the extension allocator.
    </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.extension_allocators2">
 <title>Extension Allocators Continued</title>
 
 <tgroup cols="3" align="left" colsep="1" rowsep="1">

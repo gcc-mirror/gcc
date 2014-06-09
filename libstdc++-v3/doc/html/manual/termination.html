@@ -82,7 +82,7 @@ int main(int argc)
 {
   std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
   if (argc &gt; 5)
-    throw argument_error(<span class="quote">“<span class="quote">argc is greater than 5!</span>”</span>);
+    throw argument_error("argc is greater than 5!");
   else
     throw argc;
 }
