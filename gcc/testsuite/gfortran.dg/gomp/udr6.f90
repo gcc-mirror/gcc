@@ -14,7 +14,7 @@ subroutine f1
 !$omp declare reduction (+:integer(kind=8),integer(kind=1) & ! { dg-error "Redefinition of predefined" }
 !$omp & :omp_out = omp_out + omp_in)
 !$omp declare reduction (+:complex:omp_out = omp_out + omp_in) ! { dg-error "Redefinition of predefined" }
-!$omp declare reduction (+:complex(kind=16):omp_out = omp_out + omp_in) ! { dg-error "Redefinition of predefined" }
+!$omp declare reduction (+:complex(kind=8):omp_out = omp_out + omp_in) ! { dg-error "Redefinition of predefined" }
   interface operator(+)
     function addf1 (x, y)
       use udr6, only : dt
@@ -38,7 +38,7 @@ subroutine f2
 !$omp declare reduction (-:integer(kind=8),integer(kind=1) & ! { dg-error "Redefinition of predefined" }
 !$omp & :omp_out = omp_out + omp_in)
 !$omp declare reduction (-:complex:omp_out = omp_out + omp_in) ! { dg-error "Redefinition of predefined" }
-!$omp declare reduction (-:complex(kind=16):omp_out = omp_out + omp_in) ! { dg-error "Redefinition of predefined" }
+!$omp declare reduction (-:complex(kind=8):omp_out = omp_out + omp_in) ! { dg-error "Redefinition of predefined" }
 end subroutine f2
 subroutine f3
   use udr6, only : dt
@@ -55,7 +55,7 @@ subroutine f3
 !$omp declare reduction (*:integer(kind=8),integer(kind=1) & ! { dg-error "Redefinition of predefined" }
 !$omp & :omp_out = omp_out * omp_in)
 !$omp declare reduction (*:complex:omp_out = omp_out * omp_in) ! { dg-error "Redefinition of predefined" }
-!$omp declare reduction (*:complex(kind=16):omp_out = omp_out * omp_in) ! { dg-error "Redefinition of predefined" }
+!$omp declare reduction (*:complex(kind=8):omp_out = omp_out * omp_in) ! { dg-error "Redefinition of predefined" }
 end subroutine f3
 subroutine f4
   use udr6, only : dt
