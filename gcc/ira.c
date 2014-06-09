@@ -5166,7 +5166,8 @@ ira (FILE *f)
 #endif
   bitmap_obstack_initialize (&ira_bitmap_obstack);
 
-  if (flag_caller_saves)
+  /* LRA uses its own infrastructure to handle caller save registers.  */
+  if (flag_caller_saves && !ira_use_lra_p)
     init_caller_save ();
 
   if (flag_ira_verbose < 10)
