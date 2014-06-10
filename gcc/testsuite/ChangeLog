@@ -1,3 +1,10 @@
+2014-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57186
+	PR tree-optimization/59299
+	* gcc.dg/tree-ssa/ssa-sink-11.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-sink-12.c: Likewise.
+
 2014-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/60928
