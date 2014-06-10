@@ -1,3 +1,11 @@
+2014-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61456
+	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p):
+	Do not use the main variant for the type comparison.
+	(ncr_compar): Likewise.
+	(nonoverlapping_component_refs_p): Likewise.
+
 2014-06-10  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Fix

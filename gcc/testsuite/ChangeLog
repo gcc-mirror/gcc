@@ -1,3 +1,8 @@
+2014-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61456
+	* g++.dg/opt/pr61456.C: New testcase.
+
 2014-06-10  Dominique d'Humieres <dominiq@lps.ens.fr>
 	    Mikael Morin <mikael@gcc.gnu.org>
 
