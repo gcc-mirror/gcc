@@ -1,3 +1,8 @@
+2014-06-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60988
+	* doc/extend.texi: Add cindex for transparent_union.
+
 2014-06-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* tree-ssa-math-opts.c (find_bswap_or_nop_load): Check return value of
