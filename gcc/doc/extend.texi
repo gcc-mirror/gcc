@@ -10516,9 +10516,6 @@ when the @option{-mfpu=neon} switch is used:
 @node ARM ACLE Intrinsics
 @subsection ARM ACLE Intrinsics
 
-These built-in intrinsics for the ARMv8-A CRC32 extension are available when
-the @option{-march=armv8-a+crc} switch is used:
-
 @include arm-acle-intrinsics.texi
 
 @node ARM Floating Point Status and Control Intrinsics
