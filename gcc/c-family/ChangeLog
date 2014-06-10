@@ -1,3 +1,9 @@
+2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* c-pragma.c (omp_pragmas_simd): Move PRAGMA_OMP_TASK...
+	(omp_pragmas): ... back here.
+
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/49706

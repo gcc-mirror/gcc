@@ -14,7 +14,7 @@ CONTAINS
     TYPE(t), SAVE :: a
 
     !$omp threadprivate(a)
-    !$omp parallel copyin(a)        ! { dg-error "has ALLOCATABLE components" }
+    !$omp parallel copyin(a)
       ! do something
     !$omp end parallel
   END SUBROUTINE
@@ -22,7 +22,7 @@ CONTAINS
   SUBROUTINE test_copyprivate()
     TYPE(t) :: a
 
-    !$omp single                    ! { dg-error "has ALLOCATABLE components" }
+    !$omp single
       ! do something
     !$omp end single copyprivate (a)
   END SUBROUTINE
@@ -30,7 +30,7 @@ CONTAINS
   SUBROUTINE test_firstprivate
     TYPE(t) :: a
 
-    !$omp parallel firstprivate(a)  ! { dg-error "has ALLOCATABLE components" }
+    !$omp parallel firstprivate(a)
       ! do something
     !$omp end parallel
   END SUBROUTINE
@@ -39,7 +39,7 @@ CONTAINS
     TYPE(t) :: a
     INTEGER :: i
 
-    !$omp parallel do lastprivate(a)  ! { dg-error "has ALLOCATABLE components" }
+    !$omp parallel do lastprivate(a)
       DO i = 1, 1
       END DO
     !$omp end parallel do

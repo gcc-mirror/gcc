@@ -496,6 +496,29 @@ gfc_finish_decl (tree decl)
 }
 
 
+/* Handle setting of GFC_DECL_SCALAR* on DECL.  */
+
+void
+gfc_finish_decl_attrs (tree decl, symbol_attribute *attr)
+{
+  if (!attr->dimension && !attr->codimension)
+    {
+      /* Handle scalar allocatable variables.  */
+      if (attr->allocatable)
+	{
+	  gfc_allocate_lang_decl (decl);
+	  GFC_DECL_SCALAR_ALLOCATABLE (decl) = 1;
+	}
+      /* Handle scalar pointer variables.  */
+      if (attr->pointer)
+	{
+	  gfc_allocate_lang_decl (decl);
+	  GFC_DECL_SCALAR_POINTER (decl) = 1;
+	}
+    }
+}
+
+
 /* Apply symbol attributes to a variable, and add it to the function scope.  */
 
 static void
@@ -607,6 +630,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if (sym->attr.threadprivate
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+
+  gfc_finish_decl_attrs (decl, &sym->attr);
 }
 
 
@@ -615,7 +640,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 void
 gfc_allocate_lang_decl (tree decl)
 {
-  DECL_LANG_SPECIFIC (decl) = ggc_cleared_alloc<struct lang_decl> ();
+  if (DECL_LANG_SPECIFIC (decl) == NULL)
+    DECL_LANG_SPECIFIC (decl) = ggc_cleared_alloc<struct lang_decl> ();
 }
 
 /* Remember a symbol to generate initialization/cleanup code at function
@@ -1517,6 +1543,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && !sym->attr.select_type_temporary)
     DECL_BY_REFERENCE (decl) = 1;
 
+  if (sym->attr.associate_var)
+    GFC_DECL_ASSOCIATE_VAR_P (decl) = 1;
+
   if (sym->attr.vtab
       || (sym->name[0] == '_' && strncmp ("__def_init", sym->name, 10) == 0))
     TREE_READONLY (decl) = 1;
@@ -2236,6 +2265,7 @@ create_function_arglist (gfc_symbol * sym)
 	DECL_BY_REFERENCE (parm) = 1;
 
       gfc_finish_decl (parm);
+      gfc_finish_decl_attrs (parm, &f->sym->attr);
 
       f->sym->backend_decl = parm;
 
@@ -2690,6 +2720,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
       TREE_ADDRESSABLE (decl) = 1;
 
       layout_decl (decl, 0);
+      gfc_finish_decl_attrs (decl, &sym->attr);
 
       if (parent_flag)
 	gfc_add_decl_to_parent_function (decl);

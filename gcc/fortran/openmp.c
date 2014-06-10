@@ -1763,9 +1763,6 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		if (!n->sym->attr.threadprivate)
 		  gfc_error ("Non-THREADPRIVATE object '%s' in COPYIN clause"
 			     " at %L", n->sym->name, where);
-		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.u.derived->attr.alloc_comp)
-		  gfc_error ("COPYIN clause object '%s' at %L has ALLOCATABLE components",
-			     n->sym->name, where);
 	      }
 	    break;
 	  case OMP_LIST_COPYPRIVATE:
@@ -1774,9 +1771,9 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array '%s' in COPYPRIVATE clause "
 			     "at %L", n->sym->name, where);
-		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.u.derived->attr.alloc_comp)
-		  gfc_error ("COPYPRIVATE clause object '%s' at %L has ALLOCATABLE components",
-			     n->sym->name, where);
+		if (n->sym->attr.pointer && n->sym->attr.intent == INTENT_IN)
+		  gfc_error ("INTENT(IN) POINTER '%s' in COPYPRIVATE clause "
+			     "at %L", n->sym->name, where);
 	      }
 	    break;
 	  case OMP_LIST_SHARED:
@@ -1788,6 +1785,9 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		if (n->sym->attr.cray_pointee)
 		  gfc_error ("Cray pointee '%s' in SHARED clause at %L",
 			    n->sym->name, where);
+		if (n->sym->attr.associate_var)
+		  gfc_error ("ASSOCIATE name '%s' in SHARED clause at %L",
+			     n->sym->name, where);
 	      }
 	    break;
 	  case OMP_LIST_ALIGNED:
@@ -1879,17 +1879,17 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		if (n->sym->attr.cray_pointee)
 		  gfc_error ("Cray pointee '%s' in %s clause at %L",
 			    n->sym->name, name, where);
+		if (n->sym->attr.associate_var)
+		  gfc_error ("ASSOCIATE name '%s' in %s clause at %L",
+			     n->sym->name, name, where);
 		if (list != OMP_LIST_PRIVATE)
 		  {
+		    if (n->sym->attr.proc_pointer && list == OMP_LIST_REDUCTION)
+		      gfc_error ("Procedure pointer '%s' in %s clause at %L",
+				 n->sym->name, name, where);
 		    if (n->sym->attr.pointer && list == OMP_LIST_REDUCTION)
 		      gfc_error ("POINTER object '%s' in %s clause at %L",
 				 n->sym->name, name, where);
-		    /* Variables in REDUCTION-clauses must be of intrinsic type (flagged below).  */
-		    if (list != OMP_LIST_REDUCTION
-			 && n->sym->ts.type == BT_DERIVED
-			 && n->sym->ts.u.derived->attr.alloc_comp)
-		      gfc_error ("%s clause object '%s' has ALLOCATABLE components at %L",
-				 name, n->sym->name, where);
 		    if (n->sym->attr.cray_pointer && list == OMP_LIST_REDUCTION)
 		      gfc_error ("Cray pointer '%s' in %s clause at %L",
 				 n->sym->name, name, where);
@@ -1901,6 +1901,19 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		  gfc_error ("Variable '%s' in %s clause is used in "
 			     "NAMELIST statement at %L",
 			     n->sym->name, name, where);
+		if (n->sym->attr.pointer && n->sym->attr.intent == INTENT_IN)
+		  switch (list)
+		    {
+		    case OMP_LIST_PRIVATE:
+		    case OMP_LIST_LASTPRIVATE:
+		    case OMP_LIST_LINEAR:
+		    /* case OMP_LIST_REDUCTION: */
+		      gfc_error ("INTENT(IN) POINTER '%s' in %s clause at %L",
+				 n->sym->name, name, where);
+		      break;
+		    default:
+		      break;
+		    }
 		switch (list)
 		  {
 		  case OMP_LIST_REDUCTION:
