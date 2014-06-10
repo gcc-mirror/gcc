@@ -1,8 +1,3 @@
-2014-06-10  Jiong Wang  <jiong.wang@arm.com>
-
-	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs)
-	(aarch64_save_or_restore_callee_save_registers): Fix layout.
-
 2014-06-10  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Fix
