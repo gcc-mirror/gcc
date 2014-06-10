@@ -36,7 +36,7 @@ extern UINT8 packed_10000_zeros[];
 BID128_FUNCTION_ARG2 (bid128_div, x, y)
 
      UINT256 CA4, CA4r, P256;
-     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, Ql, res;
+     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, res;
      UINT64 sign_x, sign_y, T, carry64, D, Q_high, Q_low, QX, PD,
        valid_y;
      int_float fx, fy, f64;
@@ -239,7 +239,7 @@ if (!CA4.w[0] && !CA4.w[1])
     if (d5 < nzeros)
       nzeros = d5;
     // get P*(2^M[extra_digits])/10^extra_digits
-    __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+    __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
     // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
     amount = recip_scale[nzeros];
@@ -365,7 +365,7 @@ if (!CA4.w[0] && !CA4.w[1])
 
       if (nzeros) {
 	// get P*(2^M[extra_digits])/10^extra_digits
-	__mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+	__mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
 	//now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 	amount = recip_scale[nzeros];
@@ -487,7 +487,7 @@ TYPE0_FUNCTION_ARGTYPE1_ARGTYPE2 (UINT128, bid128dd_div, UINT64, x,
 				  UINT64, y)
 
      UINT256 CA4, CA4r, P256;
-     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, Ql, res;
+     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, res;
      UINT64 sign_x, sign_y, T, carry64, D, Q_high, Q_low, QX, PD,
        valid_y;
      int_float fx, fy, f64;
@@ -701,7 +701,7 @@ __div_256_by_128 (&CQ, &CA4, CY);
       if (d5 < nzeros)
 	nzeros = d5;
       // get P*(2^M[extra_digits])/10^extra_digits
-      __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+      __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
       //__mul_128x128_to_256(P256, CQ, reciprocals10_128[nzeros]);Qh.w[1]=P256.w[3];Qh.w[0]=P256.w[2];
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
@@ -829,7 +829,7 @@ __div_256_by_128 (&CQ, &CA4, CY);
 
 	if (nzeros) {
 	  // get P*(2^M[extra_digits])/10^extra_digits
-	  __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+	  __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
 	  // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 	  amount = recip_scale[nzeros];
@@ -946,7 +946,7 @@ BID_RETURN (res);
 
 BID128_FUNCTION_ARGTYPE1_ARG128 (bid128dq_div, UINT64, x, y)
      UINT256 CA4, CA4r, P256;
-     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, Ql, res;
+     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, res;
      UINT64 sign_x, sign_y, T, carry64, D, Q_high, Q_low, QX, valid_y,
        PD;
      int_float fx, fy, f64;
@@ -1155,7 +1155,7 @@ __div_256_by_128 (&CQ, &CA4, CY);
       if (d5 < nzeros)
 	nzeros = d5;
       // get P*(2^M[extra_digits])/10^extra_digits
-      __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+      __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
       //__mul_128x128_to_256(P256, CQ, reciprocals10_128[nzeros]);Qh.w[1]=P256.w[3];Qh.w[0]=P256.w[2];
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
@@ -1285,7 +1285,7 @@ __div_256_by_128 (&CQ, &CA4, CY);
 
 	if (nzeros) {
 	  // get P*(2^M[extra_digits])/10^extra_digits
-	  __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+	  __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
 	  // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 	  amount = recip_scale[nzeros];
@@ -1403,7 +1403,7 @@ BID_RETURN (res);
 
 BID128_FUNCTION_ARG128_ARGTYPE2 (bid128qd_div, x, UINT64, y)
      UINT256 CA4, CA4r, P256;
-     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, Ql, res;
+     UINT128 CX, CY, T128, CQ, CR, CA, TP128, Qh, res;
      UINT64 sign_x, sign_y, T, carry64, D, Q_high, Q_low, QX, PD,
        valid_y;
      int_float fx, fy, f64;
@@ -1607,7 +1607,7 @@ __div_256_by_128 (&CQ, &CA4, CY);
       if (d5 < nzeros)
 	nzeros = d5;
       // get P*(2^M[extra_digits])/10^extra_digits
-      __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+      __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
       //__mul_128x128_to_256(P256, CQ, reciprocals10_128[nzeros]);Qh.w[1]=P256.w[3];Qh.w[0]=P256.w[2];
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
@@ -1735,7 +1735,7 @@ __div_256_by_128 (&CQ, &CA4, CY);
 
 	if (nzeros) {
 	  // get P*(2^M[extra_digits])/10^extra_digits
-	  __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+	  __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
 	  // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 	  amount = recip_scale[nzeros];

@@ -1,3 +1,14 @@
+2014-06-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* bid128_div.c (BID128_FUNCTION_ARG2): Remove unused variable 'Ql'.
+	Call __mul_128x128_high instead of __mul_128x128_full.
+	(TYPE0_FUNCTION_ARGTYPE1_ARGTYPE2): Ditto.
+	(BID128_FUNCTION_ARGTYPE1_ARG128): Ditto.
+	(BID128_FUNCTION_ARG128_ARGTYPE2): Ditto.
+	* bid64_div.c (TYPE0_FUNCTION_ARGTYPE1_ARG128): Ditto.
+	(TYPE0_FUNCTION_ARG128_ARGTYPE2): Ditto.
+	(TYPE0_FUNCTION_ARG128_ARG128): Ditto.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
