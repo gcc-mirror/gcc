@@ -518,7 +518,7 @@ namespace __gnu_test
    * It takes two pointers representing a range and presents them as 
    * a container of iterators.
    */
-  template <class T, template<class T> class ItType>
+  template <class T, template<class TT> class ItType>
   struct test_container
   {
     typename ItType<T>::ContainerType bounds;
