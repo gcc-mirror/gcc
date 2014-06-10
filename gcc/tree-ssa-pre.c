@@ -3992,10 +3992,13 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
 class eliminate_dom_walker : public dom_walker
 {
 public:
-  eliminate_dom_walker (cdi_direction direction) : dom_walker (direction) {}
+  eliminate_dom_walker (cdi_direction direction, bool do_pre_)
+      : dom_walker (direction), do_pre (do_pre_) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
+
+  bool do_pre;
 };
 
 /* Perform elimination for the basic-block B during the domwalk.  */
@@ -4192,7 +4195,8 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		 variable.  In other cases the vectorizer won't do anything
 		 anyway (either it's loop invariant or a complicated
 		 expression).  */
-	      if (flag_tree_loop_vectorize
+	      if (do_pre
+		  && flag_tree_loop_vectorize
 		  && gimple_assign_single_p (stmt)
 		  && TREE_CODE (sprime) == SSA_NAME
 		  && loop_outer (b->loop_father))
@@ -4434,7 +4438,7 @@ eliminate_dom_walker::after_dom_children (basic_block)
 /* Eliminate fully redundant computations.  */
 
 static unsigned int
-eliminate (void)
+eliminate (bool do_pre)
 {
   gimple_stmt_iterator gsi;
   gimple stmt;
@@ -4448,7 +4452,8 @@ eliminate (void)
   el_avail.create (0);
   el_avail_stack.create (0);
 
-  eliminate_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
+  eliminate_dom_walker (CDI_DOMINATORS,
+			do_pre).walk (cfun->cfg->x_entry_block_ptr);
 
   el_avail.release ();
   el_avail_stack.release ();
@@ -4779,7 +4784,7 @@ pass_pre::execute (function *fun)
   gsi_commit_edge_inserts ();
 
   /* Remove all the redundant expressions.  */
-  todo |= eliminate ();
+  todo |= eliminate (true);
 
   statistics_counter_event (fun, "Insertions", pre_stats.insertions);
   statistics_counter_event (fun, "PA inserted", pre_stats.pa_insert);
@@ -4864,7 +4869,7 @@ pass_fre::execute (function *fun)
   memset (&pre_stats, 0, sizeof (pre_stats));
 
   /* Remove all the redundant expressions.  */
-  todo |= eliminate ();
+  todo |= eliminate (false);
 
   todo |= fini_eliminate ();
 

@@ -1,5 +1,15 @@
 2014-06-10  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/61438
+	* tree-ssa-pre.c (eliminate_dom_walker): Add do_pre member.
+	(eliminate_dom_walker::before_dom_children): Only try to inhibit
+	insertion of IVs if running PRE.
+	(eliminate): Adjust.
+	(pass_pre::execute): Likewise.
+	(pass_fre::execute): Likewise.
+
+2014-06-10  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/61456
 	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p):
 	Do not use the main variant for the type comparison.
