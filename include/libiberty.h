@@ -636,6 +636,10 @@ extern int snprintf (char *, size_t, const char *, ...) ATTRIBUTE_PRINTF_3;
 extern int vsnprintf (char *, size_t, const char *, va_list) ATTRIBUTE_PRINTF(3,0);
 #endif
 
+#if defined (HAVE_DECL_STRNLEN) && !HAVE_DECL_STRNLEN
+extern size_t strnlen (const char *, size_t);
+#endif
+
 #if defined(HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP
 /* Compare version strings.  */
 extern int strverscmp (const char *, const char *);
