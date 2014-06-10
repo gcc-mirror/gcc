@@ -1,3 +1,9 @@
+2014-06-10  Dominique d'Humieres <dominiq@lps.ens.fr>
+	    Mikael Morin <mikael@gcc.gnu.org>
+
+	PR fortran/41936
+	* gfortran.dg/class_array_15.f03: Check memory leaks.
+
 2014-06-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57186
