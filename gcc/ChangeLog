@@ -1,3 +1,11 @@
+2014-06-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/arm-acle-intrinsics.texi: Specify when CRC32 intrinsics are
+	available.
+	Simplify description of __crc32d and __crc32cd intrinsics.
+	* doc/extend.texi (ARM ACLE Intrinsics): Remove comment about CRC32
+	availability.
+
 2014-06-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-tail-merge.c (same_succ_hash): Hash the static chain of a
