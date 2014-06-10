@@ -835,8 +835,8 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       /* ??? We cannot simply use the type of operand #0 of the refs here
 	 as the Fortran compiler smuggles type punning into COMPONENT_REFs
 	 for common blocks instead of using unions like everyone else.  */
-      tree type1 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field1));
-      tree type2 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field2));
+      tree type1 = DECL_CONTEXT (field1);
+      tree type2 = DECL_CONTEXT (field2);
 
       /* We cannot disambiguate fields in a union or qualified union.  */
       if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
@@ -866,10 +866,8 @@ ncr_compar (const void *field1_, const void *field2_)
 {
   const_tree field1 = *(const_tree *) const_cast <void *>(field1_);
   const_tree field2 = *(const_tree *) const_cast <void *>(field2_);
-  unsigned int uid1
-    = TYPE_UID (TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field1)));
-  unsigned int uid2
-    = TYPE_UID (TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field2)));
+  unsigned int uid1 = TYPE_UID (DECL_FIELD_CONTEXT (field1));
+  unsigned int uid2 = TYPE_UID (DECL_FIELD_CONTEXT (field2));
   if (uid1 < uid2)
     return -1;
   else if (uid1 > uid2)
@@ -893,7 +891,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   while (TREE_CODE (x) == COMPONENT_REF)
     {
       tree field = TREE_OPERAND (x, 1);
-      tree type = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field));
+      tree type = DECL_FIELD_CONTEXT (field);
       if (TREE_CODE (type) == RECORD_TYPE)
 	fieldsx.safe_push (field);
       x = TREE_OPERAND (x, 0);
@@ -904,7 +902,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   while (TREE_CODE (y) == COMPONENT_REF)
     {
       tree field = TREE_OPERAND (y, 1);
-      tree type = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field));
+      tree type = DECL_FIELD_CONTEXT (field);
       if (TREE_CODE (type) == RECORD_TYPE)
 	fieldsy.safe_push (TREE_OPERAND (y, 1));
       y = TREE_OPERAND (y, 0);
@@ -915,8 +913,8 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   /* Most common case first.  */
   if (fieldsx.length () == 1
       && fieldsy.length () == 1)
-    return ((TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldsx[0]))
-	     == TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldsy[0])))
+    return ((DECL_FIELD_CONTEXT (fieldsx[0])
+	     == DECL_FIELD_CONTEXT (fieldsy[0]))
 	    && fieldsx[0] != fieldsy[0]
 	    && !(DECL_BIT_FIELD (fieldsx[0]) && DECL_BIT_FIELD (fieldsy[0])));
 
@@ -949,8 +947,8 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
     {
       const_tree fieldx = fieldsx[i];
       const_tree fieldy = fieldsy[j];
-      tree typex = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldx));
-      tree typey = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldy));
+      tree typex = DECL_FIELD_CONTEXT (fieldx);
+      tree typey = DECL_FIELD_CONTEXT (fieldy);
       if (typex == typey)
 	{
 	  /* We're left with accessing different fields of a structure,
