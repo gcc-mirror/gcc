@@ -4,6 +4,10 @@
 
 @subsubsection CRC32 intrinsics
 
+These intrinsics are available when the CRC32 architecture extension is
+specified, e.g. when the @option{-march=armv8-a+crc} switch is used, or when
+the target processor specified with @option{-mcpu} supports it.
+
 @itemize @bullet
 @item uint32_t __crc32b (uint32_t, uint8_t)
 @*@emph{Form of expected instruction(s):} @code{crc32b @var{r0}, @var{r0}, @var{r0}}
@@ -25,8 +29,7 @@
 @itemize @bullet
 @item uint32_t __crc32d (uint32_t, uint64_t)
 @*@emph{Form of expected instruction(s):} Two @code{crc32w @var{r0}, @var{r0}, @var{r0}}
-instructions for AArch32. One @code{crc32w @var{w0}, @var{w0}, @var{x0}} instruction for
-AArch64.
+instructions.
 @end itemize
 
 @itemize @bullet
@@ -50,6 +53,5 @@ AArch64.
 @itemize @bullet
 @item uint32_t __crc32cd (uint32_t, uint64_t)
 @*@emph{Form of expected instruction(s):} Two @code{crc32cw @var{r0}, @var{r0}, @var{r0}}
-instructions for AArch32. One @code{crc32cw @var{w0}, @var{w0}, @var{x0}} instruction for
-AArch64.
+instructions.
 @end itemize
