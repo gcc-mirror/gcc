@@ -1,3 +1,9 @@
+2014-06-10  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/i386.c (expand_vec_perm_pblendv): New.
+	* config/i386/i386.c (ix86_expand_vec_perm_const_1): Use
+	expand_vec_perm_pblendv.
+
 2014-06-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/arm-acle-intrinsics.texi: Specify when CRC32 intrinsics are

@@ -43201,6 +43201,80 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d)
   return ok;
 }
 
+/* A subroutine of ix86_expand_vec_perm_const_1.  Try to simplify
+   the permutation using the SSE4_1 pblendv instruction.  Potentially
+   reduces permutaion from 2 pshufb and or to 1 pshufb and pblendv.  */
+
+static bool
+expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
+{
+  unsigned i, which, nelt = d->nelt;
+  struct expand_vec_perm_d dcopy, dcopy1;
+  enum machine_mode vmode = d->vmode;
+  bool ok;
+
+  /* Use the same checks as in expand_vec_perm_blend, but skipping
+     AVX2 as it requires more than 2 instructions for general case.  */
+  if (d->one_operand_p)
+    return false;
+  if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
+    ;
+  else if (TARGET_SSE4_1 && GET_MODE_SIZE (vmode) == 16)
+    ;
+  else
+    return false;
+
+  /* Figure out where permutation elements stay not in their
+     respective lanes.  */
+  for (i = 0, which = 0; i < nelt; ++i)
+    {
+      unsigned e = d->perm[i];
+      if (e != i)
+	which |= (e < nelt ? 1 : 2);
+    }
+  /* We can pblend the part where elements stay not in their
+     respective lanes only when these elements are all in one
+     half of a permutation.
+     {0 1 8 3 4 5 9 7} is ok as 8, 9 are at not at their respective
+     lanes, but both 8 and 9 >= 8
+     {0 1 8 3 4 5 2 7} is not ok as 2 and 8 are not at their
+     respective lanes and 8 >= 8, but 2 not.  */
+  if (which != 1 && which != 2)
+    return false;
+  if (d->testing_p)
+    return true;
+
+  /* First we apply one operand permutation to the part where
+     elements stay not in their respective lanes.  */
+  dcopy = *d;
+  if (which == 2)
+    dcopy.op0 = dcopy.op1 = d->op1;
+  else
+    dcopy.op0 = dcopy.op1 = d->op0;
+  dcopy.one_operand_p = true;
+
+  for (i = 0; i < nelt; ++i)
+    dcopy.perm[i] = d->perm[i] & (nelt - 1);
+
+  ok = expand_vec_perm_1 (&dcopy);
+  gcc_assert (ok);
+
+  /* Next we put permuted elements into their positions.  */
+  dcopy1 = *d;
+  if (which == 2)
+    dcopy1.op1 = dcopy.target;
+  else
+    dcopy1.op0 = dcopy.target;
+
+  for (i = 0; i < nelt; ++i)
+    dcopy1.perm[i] = ((d->perm[i] >= nelt) ? (nelt + i) : i);
+
+  ok = expand_vec_perm_blend (&dcopy1);
+  gcc_assert (ok);
+
+  return true;
+}
+
 static bool expand_vec_perm_interleave3 (struct expand_vec_perm_d *d);
 
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to simplify
@@ -44571,6 +44645,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_vperm2f128 (d))
+    return true;
+
+  if (expand_vec_perm_pblendv (d))
     return true;
 
   /* Try sequences of three instructions.  */
