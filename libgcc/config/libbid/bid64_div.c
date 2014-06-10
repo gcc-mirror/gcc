@@ -520,7 +520,7 @@ bid64_div (UINT64 x,
 TYPE0_FUNCTION_ARGTYPE1_ARG128 (UINT64, bid64dq_div, UINT64, x, y)
      UINT256 CA4 =
        { {0x0ull, 0x0ull, 0x0ull, 0x0ull} }, CA4r, P256, QB256;
-UINT128 CX, CY, T128, CQ, CQ2, CR, CA, TP128, Qh, Ql, Tmp;
+UINT128 CX, CY, T128, CQ, CQ2, CR, CA, TP128, Qh, Tmp;
 UINT64 sign_x, sign_y, T, carry64, D, Q_low, QX, valid_y, PD, res;
 int_float fx, fy, f64;
 UINT32 QX32, tdigit[3], digit, digit_h, digit_low;
@@ -600,7 +600,7 @@ if (!valid_y) {
     Tmp.w[1] = (CY.w[1] & 0x00003fffffffffffull);
     Tmp.w[0] = CY.w[0];
     TP128 = reciprocals10_128[18];
-    __mul_128x128_full (Qh, Ql, Tmp, TP128);
+    __mul_128x128_high (Qh, Tmp, TP128);
     amount = recip_scale[18];
     __shr_128 (Tmp, Qh, amount);
     res = (CY.w[1] & 0xfc00000000000000ull) | Tmp.w[0];
@@ -746,7 +746,7 @@ if (!done) {
       if (d5 < nzeros)
 	nzeros = d5;
       // get P*(2^M[extra_digits])/10^extra_digits
-      __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+      __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
       amount = recip_scale[nzeros];
@@ -806,7 +806,7 @@ if (!done) {
 
 	if (nzeros) {
 	  // get P*(2^M[extra_digits])/10^extra_digits
-	  __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+	  __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
 	  // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 	  amount = recip_scale[nzeros];
@@ -934,7 +934,7 @@ TYPE0_FUNCTION_ARG128_ARGTYPE2 (UINT64, bid64qd_div, x, UINT64, y)
 
      UINT256 CA4 =
        { {0x0ull, 0x0ull, 0x0ull, 0x0ull} }, CA4r, P256, QB256;
-UINT128 CX, CY, T128, CQ, CQ2, CR, CA, TP128, Qh, Ql, Tmp;
+UINT128 CX, CY, T128, CQ, CQ2, CR, CA, TP128, Qh, Tmp;
 UINT64 sign_x, sign_y, T, carry64, D, Q_low, QX, PD, res, valid_y;
 int_float fx, fy, f64;
 UINT32 QX32, tdigit[3], digit, digit_h, digit_low;
@@ -960,7 +960,7 @@ if (!unpack_BID128_value (&sign_x, &exponent_x, &CX, x)) {
       Tmp.w[1] = (CX.w[1] & 0x00003fffffffffffull);
       Tmp.w[0] = CX.w[0];
       TP128 = reciprocals10_128[18];
-      __mul_128x128_full (Qh, Ql, Tmp, TP128);
+      __mul_128x128_high (Qh, Tmp, TP128);
       amount = recip_scale[18];
       __shr_128 (Tmp, Qh, amount);
       res = (CX.w[1] & 0xfc00000000000000ull) | Tmp.w[0];
@@ -1172,7 +1172,7 @@ if (!done) {
       if (d5 < nzeros)
 		nzeros = d5;
       // get P*(2^M[extra_digits])/10^extra_digits
-      __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+      __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
       //__mul_128x128_to_256(P256, CQ, reciprocals10_128[nzeros]);Qh.w[1]=P256.w[3];Qh.w[0]=P256.w[2];
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
@@ -1234,7 +1234,7 @@ if (!done) {
 
 	if (nzeros) {
 	  // get P*(2^M[extra_digits])/10^extra_digits
-	  __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+	  __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
 	  // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 	  amount = recip_scale[nzeros];
@@ -1371,7 +1371,7 @@ extern UINT8 packed_10000_zeros[];
 TYPE0_FUNCTION_ARG128_ARG128 (UINT64, bid64qq_div, x, y)
      UINT256 CA4 =
        { {0x0ull, 0x0ull, 0x0ull, 0x0ull} }, CA4r, P256, QB256;
-UINT128 CX, CY, T128, CQ, CQ2, CR, CA, TP128, Qh, Ql, Tmp;
+UINT128 CX, CY, T128, CQ, CQ2, CR, CA, TP128, Qh, Tmp;
 UINT64 sign_x, sign_y, T, carry64, D, Q_low, QX, valid_y, PD, res;
 int_float fx, fy, f64;
 UINT32 QX32, tdigit[3], digit, digit_h, digit_low;
@@ -1397,7 +1397,7 @@ if (!unpack_BID128_value (&sign_x, &exponent_x, &CX, x)) {
       Tmp.w[1] = (CX.w[1] & 0x00003fffffffffffull);
       Tmp.w[0] = CX.w[0];
       TP128 = reciprocals10_128[18];
-      __mul_128x128_full (Qh, Ql, Tmp, TP128);
+      __mul_128x128_high (Qh, Tmp, TP128);
       amount = recip_scale[18];
       __shr_128 (Tmp, Qh, amount);
       res = (CX.w[1] & 0xfc00000000000000ull) | Tmp.w[0];
@@ -1456,7 +1456,7 @@ if (!valid_y) {
       Tmp.w[1] = (CY.w[1] & 0x00003fffffffffffull);
       Tmp.w[0] = CY.w[0];
       TP128 = reciprocals10_128[18];
-      __mul_128x128_full (Qh, Ql, Tmp, TP128);
+      __mul_128x128_high (Qh, Tmp, TP128);
       amount = recip_scale[18];
       __shr_128 (Tmp, Qh, amount);
       res = (CY.w[1] & 0xfc00000000000000ull) | Tmp.w[0];
@@ -1606,7 +1606,7 @@ if (!done) {
       if (d5 < nzeros)
 	nzeros = d5;
       // get P*(2^M[extra_digits])/10^extra_digits
-      __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+      __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
       //__mul_128x128_to_256(P256, CQ, reciprocals10_128[nzeros]);Qh.w[1]=P256.w[3];Qh.w[0]=P256.w[2];
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
@@ -1668,7 +1668,7 @@ if (!done) {
 
 	if (nzeros) {
 	  // get P*(2^M[extra_digits])/10^extra_digits
-	  __mul_128x128_full (Qh, Ql, CQ, reciprocals10_128[nzeros]);
+	  __mul_128x128_high (Qh, CQ, reciprocals10_128[nzeros]);
 
 	  // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
 	  amount = recip_scale[nzeros];
