@@ -1,3 +1,10 @@
+2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.c (is_proper_for_analysis): Exclude addressable and public
+	vars.
+	(intersect_static_var_sets): Remove.
+	(propagate): Do not prune local statics.
+
 2014-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/60928
