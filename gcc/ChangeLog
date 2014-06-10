@@ -1,3 +1,8 @@
+2014-06-10  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs)
+	(aarch64_save_or_restore_callee_save_registers): Fix layout.
+
 2014-06-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_sqdmulh_lane<mode>):
