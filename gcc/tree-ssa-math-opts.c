@@ -1784,7 +1784,8 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   if (bitsize % BITS_PER_UNIT)
     return false;
 
-  init_symbolic_number (n, ref);
+  if (!init_symbolic_number (n, ref))
+    return false;
   n->base_addr = base_addr;
   n->offset = offset;
   n->bytepos = bitpos / BITS_PER_UNIT;
