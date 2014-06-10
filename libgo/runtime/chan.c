@@ -481,7 +481,7 @@ _Bool runtime_chanrecv2(ChanType *t, Hchan* c, byte* v)
 _Bool
 runtime_chanrecv2(ChanType *t, Hchan* c, byte* v)
 {
-	bool received;
+	bool received = false;
 
 	chanrecv(t, c, v, true, &received);
 	return received;
