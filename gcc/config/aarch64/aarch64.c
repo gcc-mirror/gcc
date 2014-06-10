@@ -1980,7 +1980,7 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
 		{
 		  insn = emit_move_insn (gen_rtx_REG (DFmode, regno), mem);
 		  add_reg_note (insn, REG_CFA_RESTORE,
-				gen_rtx_REG (DImode, regno));
+				gen_rtx_REG (DFmode, regno));
 		}
 	      start_offset += increment;
 	    }
