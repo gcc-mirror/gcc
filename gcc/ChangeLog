@@ -1,3 +1,31 @@
+2014-06-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sqdmulh_lane<mode>):
+	New expander.
+	(aarch64_sqrdmulh_lane<mode>): Likewise.
+	(aarch64_sq<r>dmulh_lane<mode>): Rename to...
+	(aarch64_sq<r>dmulh_lane<mode>_internal): ...this.
+	(aarch64_sqdmulh_laneq<mode>): New expander.
+	(aarch64_sqrdmulh_laneq<mode>): Likewise.
+	(aarch64_sq<r>dmulh_laneq<mode>): Rename to...
+	(aarch64_sq<r>dmulh_laneq<mode>_internal): ...this.
+	(aarch64_sqdmulh_lane<mode>): New expander.
+	(aarch64_sqrdmulh_lane<mode>): Likewise.
+	(aarch64_sq<r>dmulh_lane<mode>): Rename to...
+	(aarch64_sq<r>dmulh_lane<mode>_internal): ...this.
+	(aarch64_sqdmlal_lane<mode>): Add lane flip for big-endian.
+	(aarch64_sqdmlal_laneq<mode>): Likewise.
+	(aarch64_sqdmlsl_lane<mode>): Likewise.
+	(aarch64_sqdmlsl_laneq<mode>): Likewise.
+	(aarch64_sqdmlal2_lane<mode>): Likewise.
+	(aarch64_sqdmlal2_laneq<mode>): Likewise.
+	(aarch64_sqdmlsl2_lane<mode>): Likewise.
+	(aarch64_sqdmlsl2_laneq<mode>): Likewise.
+	(aarch64_sqdmull_lane<mode>): Likewise.
+	(aarch64_sqdmull_laneq<mode>): Likewise.
+	(aarch64_sqdmull2_lane<mode>): Likewise.
+	(aarch64_sqdmull2_laneq<mode>): Likewise.
+
 2014-06-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61438
