@@ -1,3 +1,10 @@
+2014-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61390
+	* include/ext/pb_ds/detail/bin_search_tree_/traits.hpp
+	(bin_search_tree_traits): Do not redeclare template-parameters.
+	* testsuite/util/testsuite_iterators.h (test_container): Likewise.
+
 2014-06-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/Makefile.am: Add missing file. Use generate.consistent.ids
