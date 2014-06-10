@@ -1,3 +1,8 @@
+2014-06-10  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Fix
+	REG_CFA_RESTORE mode.
+
 2014-06-10  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/i386.c (expand_vec_perm_pblendv): New.
