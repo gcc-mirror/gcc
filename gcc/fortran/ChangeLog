@@ -1,3 +1,67 @@
+2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* f95-lang.c (gfc_init_builtin_functions): Handle -fopenmp-simd
+	like -fopenmp.
+	* openmp.c (resolve_omp_clauses): Remove allocatable components
+	diagnostics.  Add associate-name and intent(in) pointer
+	diagnostics for various clauses, diagnose procedure pointers in
+	reduction clause.
+	* parse.c (match_word_omp_simd): New function.
+	(matchs, matcho): New macros.
+	(decode_omp_directive): Change match macros to either matchs
+	or matcho.  Handle -fopenmp-simd.
+	(next_free, next_fixed): Handle -fopenmp-simd like -fopenmp.
+	* scanner.c (skip_free_comments, skip_fixed_comments, include_line):
+	Likewise.
+	* trans-array.c (get_full_array_size): Rename to...
+	(gfc_full_array_size): ... this.  No longer static.
+	(duplicate_allocatable): Adjust caller.  Add NO_MEMCPY argument
+	and handle it.
+	(gfc_duplicate_allocatable, gfc_copy_allocatable_data): Adjust
+	duplicate_allocatable callers.
+	(gfc_duplicate_allocatable_nocopy): New function.
+	(structure_alloc_comps): Adjust g*_full_array_size and
+	duplicate_allocatable caller.
+	* trans-array.h (gfc_full_array_size,
+	gfc_duplicate_allocatable_nocopy): New prototypes.
+	* trans-common.c (create_common): Call gfc_finish_decl_attrs.
+	* trans-decl.c (gfc_finish_decl_attrs): New function.
+	(gfc_finish_var_decl, create_function_arglist,
+	gfc_get_fake_result_decl): Call it.
+	(gfc_allocate_lang_decl): If DECL_LANG_SPECIFIC is already allocated,
+	don't allocate it again.
+	(gfc_get_symbol_decl): Set GFC_DECL_ASSOCIATE_VAR_P on
+	associate-names.
+	* trans.h (gfc_finish_decl_attrs): New prototype.
+	(struct lang_decl): Add scalar_allocatable and scalar_pointer
+	bitfields.
+	(GFC_DECL_SCALAR_ALLOCATABLE, GFC_DECL_SCALAR_POINTER,
+	GFC_DECL_GET_SCALAR_ALLOCATABLE, GFC_DECL_GET_SCALAR_POINTER,
+	GFC_DECL_ASSOCIATE_VAR_P): Define.
+	(GFC_POINTER_TYPE_P): Remove.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Don't check
+	GFC_POINTER_TYPE_P, instead test GFC_DECL_GET_SCALAR_ALLOCATABLE,
+	GFC_DECL_GET_SCALAR_POINTER or GFC_DECL_CRAY_POINTEE on decl.
+	(gfc_omp_predetermined_sharing): Associate-names are predetermined.
+	(enum walk_alloc_comps): New.
+	(gfc_has_alloc_comps, gfc_omp_unshare_expr_r, gfc_omp_unshare_expr,
+	gfc_walk_alloc_comps): New functions.
+	(gfc_omp_private_outer_ref): Return true for scalar allocatables or
+	decls with allocatable components.
+	(gfc_omp_clause_default_ctor, gfc_omp_clause_copy_ctor,
+	gfc_omp_clause_assign_op, gfc_omp_clause_dtor): Fix up handling of
+	allocatables, handle also OMP_CLAUSE_REDUCTION, handle scalar
+	allocatables and decls with allocatable components.
+	(gfc_trans_omp_array_reduction_or_udr): Don't handle allocatable
+	arrays here.
+	(gfc_trans_omp_reduction_list): Call
+	gfc_trans_omp_array_reduction_or_udr even for allocatable scalars.
+	(gfc_trans_omp_do_simd): If -fno-openmp, just expand it as OMP_SIMD.
+	(gfc_trans_omp_parallel_do_simd): Likewise.
+	* trans-types.c (gfc_sym_type): Don't set GFC_POINTER_TYPE_P.
+	(gfc_get_derived_type): Call gfc_finish_decl_attrs.
+
 2014-06-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/61406

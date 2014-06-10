@@ -1185,6 +1185,7 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "section", PRAGMA_OMP_SECTION },
   { "sections", PRAGMA_OMP_SECTIONS },
   { "single", PRAGMA_OMP_SINGLE },
+  { "task", PRAGMA_OMP_TASK },
   { "taskgroup", PRAGMA_OMP_TASKGROUP },
   { "taskwait", PRAGMA_OMP_TASKWAIT },
   { "taskyield", PRAGMA_OMP_TASKYIELD },
@@ -1197,7 +1198,6 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "parallel", PRAGMA_OMP_PARALLEL },
   { "simd", PRAGMA_OMP_SIMD },
   { "target", PRAGMA_OMP_TARGET },
-  { "task", PRAGMA_OMP_TASK },
   { "teams", PRAGMA_OMP_TEAMS },
 };
 

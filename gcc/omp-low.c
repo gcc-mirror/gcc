@@ -3110,6 +3110,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (pass != 0)
 		    continue;
 		}
+	      /* Even without corresponding firstprivate, if
+		 decl is Fortran allocatable, it needs outer var
+		 reference.  */
+	      else if (pass == 0
+		       && lang_hooks.decls.omp_private_outer_ref
+							(OMP_CLAUSE_DECL (c)))
+		lastprivate_firstprivate = true;
 	      break;
 	    case OMP_CLAUSE_ALIGNED:
 	      if (pass == 0)
@@ -3545,7 +3552,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  else if (is_reference (var) && is_simd)
 		    handle_simd_reference (clause_loc, new_vard, ilist);
 		  x = lang_hooks.decls.omp_clause_default_ctor
-				(c, new_var, unshare_expr (x));
+				(c, unshare_expr (new_var),
+				 build_outer_var_ref (var, ctx));
 		  if (x)
 		    gimplify_and_add (x, ilist);
 		  if (OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c))

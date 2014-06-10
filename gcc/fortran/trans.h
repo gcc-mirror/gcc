@@ -547,6 +547,9 @@ void gfc_set_decl_assembler_name (tree, tree);
 /* Returns true if a variable of specified size should go on the stack.  */
 int gfc_can_put_var_on_stack (tree);
 
+/* Set GFC_DECL_SCALAR_* on decl from sym if needed.  */
+void gfc_finish_decl_attrs (tree, symbol_attribute *);
+
 /* Allocate the lang-specific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
 
@@ -822,6 +825,8 @@ struct GTY(()) lang_decl {
   tree span;
   /* For assumed-shape coarrays.  */
   tree token, caf_offset;
+  unsigned int scalar_allocatable : 1;
+  unsigned int scalar_pointer : 1;
 };
 
 
@@ -832,6 +837,14 @@ struct GTY(()) lang_decl {
 #define GFC_DECL_CAF_OFFSET(node) DECL_LANG_SPECIFIC(node)->caf_offset
 #define GFC_DECL_SAVED_DESCRIPTOR(node) \
   (DECL_LANG_SPECIFIC(node)->saved_descriptor)
+#define GFC_DECL_SCALAR_ALLOCATABLE(node) \
+  (DECL_LANG_SPECIFIC (node)->scalar_allocatable)
+#define GFC_DECL_SCALAR_POINTER(node) \
+  (DECL_LANG_SPECIFIC (node)->scalar_pointer)
+#define GFC_DECL_GET_SCALAR_ALLOCATABLE(node) \
+  (DECL_LANG_SPECIFIC (node) ? GFC_DECL_SCALAR_ALLOCATABLE (node) : 0)
+#define GFC_DECL_GET_SCALAR_POINTER(node) \
+  (DECL_LANG_SPECIFIC (node) ? GFC_DECL_SCALAR_POINTER (node) : 0)
 #define GFC_DECL_PACKED_ARRAY(node) DECL_LANG_FLAG_0(node)
 #define GFC_DECL_PARTIAL_PACKED_ARRAY(node) DECL_LANG_FLAG_1(node)
 #define GFC_DECL_ASSIGN(node) DECL_LANG_FLAG_2(node)
@@ -839,14 +852,13 @@ struct GTY(()) lang_decl {
 #define GFC_DECL_CRAY_POINTEE(node) DECL_LANG_FLAG_4(node)
 #define GFC_DECL_RESULT(node) DECL_LANG_FLAG_5(node)
 #define GFC_DECL_SUBREF_ARRAY_P(node) DECL_LANG_FLAG_6(node)
+#define GFC_DECL_ASSOCIATE_VAR_P(node) DECL_LANG_FLAG_7(node)
 #define GFC_DECL_CLASS(node) DECL_LANG_FLAG_8(node)
 
 /* An array descriptor.  */
 #define GFC_DESCRIPTOR_TYPE_P(node) TYPE_LANG_FLAG_1(node)
 /* An array without a descriptor.  */
 #define GFC_ARRAY_TYPE_P(node) TYPE_LANG_FLAG_2(node)
-/* Fortran POINTER type.  */
-#define GFC_POINTER_TYPE_P(node) TYPE_LANG_FLAG_3(node)
 /* Fortran CLASS type.  */
 #define GFC_CLASS_TYPE_P(node) TYPE_LANG_FLAG_4(node)
 /* The GFC_TYPE_ARRAY_* members are present in both descriptor and

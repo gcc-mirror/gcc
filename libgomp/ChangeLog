@@ -1,3 +1,17 @@
+2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* testsuite/libgomp.fortran/allocatable9.f90: New test.
+	* testsuite/libgomp.fortran/allocatable10.f90: New test.
+	* testsuite/libgomp.fortran/allocatable11.f90: New test.
+	* testsuite/libgomp.fortran/allocatable12.f90: New test.
+	* testsuite/libgomp.fortran/alloc-comp-1.f90: New test.
+	* testsuite/libgomp.fortran/alloc-comp-2.f90: New test.
+	* testsuite/libgomp.fortran/alloc-comp-3.f90: New test.
+	* testsuite/libgomp.fortran/associate1.f90: New test.
+	* testsuite/libgomp.fortran/associate2.f90: New test.
+	* testsuite/libgomp.fortran/procptr1.f90: New test.
+
 2014-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.fortran/simd1.f90: New test.
