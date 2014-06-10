@@ -888,6 +888,13 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'strnlen', otherwise define to 0.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_STRNLEN
+#endif
+
+
 /* Define to 1 if we found a declaration for 'strsignal', otherwise define to
    0. */
 #ifndef USED_FOR_TARGET
