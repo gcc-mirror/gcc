@@ -954,7 +954,7 @@
    dup\\t%d0, %1.d[0]
    fmov\\t%d0, %1
    dup\\t%d0, %1"
-  [(set_attr "type" "neon_dup<q>,fmov,neon_dup<q>")
+  [(set_attr "type" "neon_dup<q>,f_mcr,neon_dup<q>")
    (set_attr "simd" "yes,*,yes")
    (set_attr "fp" "*,yes,*")
    (set_attr "length" "4")]

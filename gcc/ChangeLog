@@ -1,3 +1,13 @@
+2014-06-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (move_lo_quad_<mode>):
+	Change second alternative type to f_mcr.
+	* config/aarch64/aarch64.md (*movsi_aarch64): Change 11th
+	and 12th alternatives' types to f_mcr and f_mrc.
+	(*movdi_aarch64): Same for 12th and 13th alternatives.
+	(*movsf_aarch64): Change 9th alternatives' type to mov_reg.
+	(aarch64_movtilow_tilow): Change type to fmov.
+
 2014-06-10  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs)

@@ -689,7 +689,7 @@
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1"
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
-                     adr,adr,fmov,fmov,fmov")
+                     adr,adr,f_mcr,f_mrc,fmov")
    (set_attr "fp" "*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes")]
 )
 
@@ -714,7 +714,7 @@
    fmov\\t%d0, %d1
    movi\\t%d0, %1"
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
-                     adr,adr,fmov,fmov,fmov,fmov")
+                     adr,adr,f_mcr,f_mrc,fmov,fmov")
    (set_attr "fp" "*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,*")
    (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,*,*,yes")]
 )
@@ -809,7 +809,7 @@
    str\\t%w1, %0
    mov\\t%w0, %w1"
   [(set_attr "type" "f_mcr,f_mrc,fmov,fconsts,\
-                     f_loads,f_stores,f_loads,f_stores,fmov")]
+                     f_loads,f_stores,f_loads,f_stores,mov_reg")]
 )
 
 (define_insn "*movdf_aarch64"
@@ -3679,7 +3679,7 @@
 	  (truncate:DI (match_operand:TI 1 "register_operand" "w"))))]
   "reload_completed || reload_in_progress"
   "fmov\\t%d0, %d1"
-  [(set_attr "type" "f_mcr")
+  [(set_attr "type" "fmov")
    (set_attr "length" "4")
   ])
 
