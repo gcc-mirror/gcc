@@ -1,3 +1,8 @@
+2014-06-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* tree-ssa-math-opts.c (find_bswap_or_nop_load): Check return value of
+	init_symbolic_number ().
+
 2014-05-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/61141
