@@ -14539,7 +14539,7 @@ is made; this is the default.
 @cindex @option{^--par_threshold^/MAX_PAR^} (@command{gnatpp})
 If the number of parameter specifications is greater than @var{nnn}
 (or equal to @var{nnn} in case of a function), start each specification from
-a new line. The default for @var{nnn} is 3.
+a new line. This feature is disabled by default.
 @end table
 
 @node Setting the Source Search Path
@@ -19519,6 +19519,32 @@ the GNAT file naming
 conventions. If this switch is omitted the default name for the body will be
 obtained
 from the argument file name according to the GNAT file naming conventions.
+
+@item ^-W^/RESULT_ENCODING=^@var{e}
+@cindex @option{^-W^/RESULT_ENCODING=^} (@command{gnatstub})
+Specify the wide character encoding method for the output body file.
+@var{e} is one of the following:
+
+@itemize @bullet
+
+@item ^h^HEX^
+Hex encoding
+
+@item ^u^UPPER^
+Upper half encoding
+
+@item ^s^SHIFT_JIS^
+Shift/JIS encoding
+
+@item ^e^EUC^
+EUC encoding
+
+@item ^8^UTF8^
+UTF-8 encoding
+
+@item ^b^BRACKETS^
+Brackets encoding (default value)
+@end itemize
 
 @item ^-q^/QUIET^
 @cindex @option{^-q^/QUIET^} (@command{gnatstub})

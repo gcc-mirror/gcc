@@ -274,72 +274,6 @@ package body Restrict is
       Check_Restriction (No_Implicit_Heap_Allocations, N);
    end Check_No_Implicit_Heap_Alloc;
 
-   -------------------------------------------
-   -- Check_Restriction_No_Use_Of_Attribute --
-   --------------------------------------------
-
-   procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id) is
-      Id   : constant Name_Id      := Chars (N);
-      A_Id : constant Attribute_Id := Get_Attribute_Id (Id);
-
-   begin
-      --  Ignore call if node N is not in the main source unit, since we only
-      --  give messages for the main unit. This avoids giving messages for
-      --  aspects that are specified in withed units.
-
-      if not In_Extended_Main_Source_Unit (N) then
-         return;
-      end if;
-
-      --  If nothing set, nothing to check
-
-      if not No_Use_Of_Attribute_Set then
-         return;
-      end if;
-
-      Error_Msg_Sloc := No_Use_Of_Attribute (A_Id);
-
-      if Error_Msg_Sloc /= No_Location then
-         Error_Msg_Node_1 := N;
-         Error_Msg_Warn := No_Use_Of_Attribute_Warning (A_Id);
-         Error_Msg_N
-           ("<*<violation of restriction `No_Use_Of_Attribute '='> &`#", N);
-      end if;
-   end Check_Restriction_No_Use_Of_Attribute;
-
-   ----------------------------------------
-   -- Check_Restriction_No_Use_Of_Pragma --
-   ----------------------------------------
-
-   procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id) is
-      Id   : constant Node_Id   := Pragma_Identifier (N);
-      P_Id : constant Pragma_Id := Get_Pragma_Id (Chars (Id));
-
-   begin
-      --  Ignore call if node N is not in the main source unit, since we only
-      --  give messages for the main unit. This avoids giving messages for
-      --  aspects that are specified in withed units.
-
-      if not In_Extended_Main_Source_Unit (N) then
-         return;
-      end if;
-
-      --  If nothing set, nothing to check
-
-      if not No_Use_Of_Pragma_Set then
-         return;
-      end if;
-
-      Error_Msg_Sloc := No_Use_Of_Pragma (P_Id);
-
-      if Error_Msg_Sloc /= No_Location then
-         Error_Msg_Node_1 := Id;
-         Error_Msg_Warn := No_Use_Of_Pragma_Warning (P_Id);
-         Error_Msg_N
-           ("<*<violation of restriction `No_Use_Of_Pragma '='> &`#", Id);
-      end if;
-   end Check_Restriction_No_Use_Of_Pragma;
-
    -----------------------------------
    -- Check_Obsolescent_2005_Entity --
    -----------------------------------
@@ -695,6 +629,72 @@ package body Restrict is
             Id);
       end if;
    end Check_Restriction_No_Specification_Of_Aspect;
+
+   -------------------------------------------
+   -- Check_Restriction_No_Use_Of_Attribute --
+   --------------------------------------------
+
+   procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id) is
+      Id   : constant Name_Id      := Chars (N);
+      A_Id : constant Attribute_Id := Get_Attribute_Id (Id);
+
+   begin
+      --  Ignore call if node N is not in the main source unit, since we only
+      --  give messages for the main unit. This avoids giving messages for
+      --  aspects that are specified in withed units.
+
+      if not In_Extended_Main_Source_Unit (N) then
+         return;
+      end if;
+
+      --  If nothing set, nothing to check
+
+      if not No_Use_Of_Attribute_Set then
+         return;
+      end if;
+
+      Error_Msg_Sloc := No_Use_Of_Attribute (A_Id);
+
+      if Error_Msg_Sloc /= No_Location then
+         Error_Msg_Node_1 := N;
+         Error_Msg_Warn := No_Use_Of_Attribute_Warning (A_Id);
+         Error_Msg_N
+           ("<*<violation of restriction `No_Use_Of_Attribute '='> &`#", N);
+      end if;
+   end Check_Restriction_No_Use_Of_Attribute;
+
+   ----------------------------------------
+   -- Check_Restriction_No_Use_Of_Pragma --
+   ----------------------------------------
+
+   procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id) is
+      Id   : constant Node_Id   := Pragma_Identifier (N);
+      P_Id : constant Pragma_Id := Get_Pragma_Id (Chars (Id));
+
+   begin
+      --  Ignore call if node N is not in the main source unit, since we only
+      --  give messages for the main unit. This avoids giving messages for
+      --  aspects that are specified in withed units.
+
+      if not In_Extended_Main_Source_Unit (N) then
+         return;
+      end if;
+
+      --  If nothing set, nothing to check
+
+      if not No_Use_Of_Pragma_Set then
+         return;
+      end if;
+
+      Error_Msg_Sloc := No_Use_Of_Pragma (P_Id);
+
+      if Error_Msg_Sloc /= No_Location then
+         Error_Msg_Node_1 := Id;
+         Error_Msg_Warn := No_Use_Of_Pragma_Warning (P_Id);
+         Error_Msg_N
+           ("<*<violation of restriction `No_Use_Of_Pragma '='> &`#", Id);
+      end if;
+   end Check_Restriction_No_Use_Of_Pragma;
 
    --------------------------------------
    -- Check_Wide_Character_Restriction --
