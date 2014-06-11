@@ -1920,6 +1920,13 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 		goto reg;
 	      break;
 
+	    case CT_CONST_INT:
+	      if (!result
+		  && CONST_INT_P (op)
+		  && insn_const_int_ok_for_constraint (INTVAL (op), cn))
+		result = 1;
+	      break;
+
 	    case CT_MEMORY:
 	      /* Every memory operand can be reloaded to fit.  */
 	      result = result || memory_operand (op, VOIDmode);
@@ -2441,6 +2448,9 @@ preprocess_constraints (int n_operands, int n_alternatives,
 		      cl = reg_class_for_constraint (cn);
 		      if (cl != NO_REGS)
 			op_alt[i].cl = reg_class_subunion[op_alt[i].cl][cl];
+		      break;
+
+		    case CT_CONST_INT:
 		      break;
 
 		    case CT_MEMORY:

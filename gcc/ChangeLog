@@ -1,5 +1,18 @@
 2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* genpreds.c (const_int_start, const_int_end): New variables.
+	(choose_enum_order): Output CONST_INT constraints before memory
+	constraints.
+	(write_tm_preds_h): Always define insn_const_int_ok_for_constraint.
+	Add CT_CONST_INT.
+	* ira-costs.c (record_reg_classes): Handle CT_CONST_INT.
+	* ira.c (ira_setup_alts): Likewise.
+	* lra-constraints.c (process_alt_operands): Likewise.
+	* recog.c (asm_operand_ok, preprocess_constraints): Likewise.
+	* reload.c (find_reloads): Likewise.
+
+2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* recog.h (operand_alternative): Remove offmem_ok, nonffmem_ok,
 	decmem_ok and incmem_ok.  Reformat other bitfields for consistency.
 	* recog.c (preprocess_constraints): Update accordingly.

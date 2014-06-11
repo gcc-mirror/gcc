@@ -1936,6 +1936,13 @@ ira_setup_alts (rtx insn, HARD_REG_SET &alts)
 			    goto op_success;
 			  break;
 
+			case CT_CONST_INT:
+			  if (CONST_INT_P (op)
+			      && (insn_const_int_ok_for_constraint
+				  (INTVAL (op), cn)))
+			    goto op_success;
+			  break;
+
 			case CT_ADDRESS:
 			case CT_MEMORY:
 			  goto op_success;

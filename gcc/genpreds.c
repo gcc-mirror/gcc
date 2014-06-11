@@ -690,6 +690,7 @@ static unsigned int num_constraints;
 static const constraint_data **enum_order;
 static unsigned int register_start, register_end;
 static unsigned int satisfied_start;
+static unsigned int const_int_start, const_int_end;
 static unsigned int memory_start, memory_end;
 static unsigned int address_start, address_end;
 
@@ -931,6 +932,12 @@ choose_enum_order (void)
 
   satisfied_start = next;
 
+  const_int_start = next;
+  FOR_ALL_CONSTRAINTS (c)
+    if (c->is_const_int)
+      enum_order[next++] = c;
+  const_int_end = next;
+
   memory_start = next;
   FOR_ALL_CONSTRAINTS (c)
     if (c->is_memory)
@@ -944,7 +951,7 @@ choose_enum_order (void)
   address_end = next;
 
   FOR_ALL_CONSTRAINTS (c)
-    if (!c->is_register && !c->is_memory && !c->is_address)
+    if (!c->is_register && !c->is_const_int && !c->is_memory && !c->is_address)
       enum_order[next++] = c;
   gcc_assert (next == num_constraints);
 }
@@ -1361,6 +1368,13 @@ write_tm_preds_h (void)
 	      "#define CONST_OK_FOR_CONSTRAINT_P(v_,c_,s_) \\\n"
 	      "    insn_const_int_ok_for_constraint (v_, "
 	      "lookup_constraint (s_))\n");
+      else
+	puts ("static inline bool\n"
+	      "insn_const_int_ok_for_constraint (HOST_WIDE_INT,"
+	      " enum constraint_num)\n"
+	      "{\n"
+	      "  return false;\n"
+	      "}\n");
       if (have_const_dbl_constraints)
 	puts ("#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(v_,c_,s_) \\\n"
 	      "    constraint_satisfied_p (v_, lookup_constraint (s_))\n");
@@ -1370,6 +1384,7 @@ write_tm_preds_h (void)
       puts ("enum constraint_type\n"
 	    "{\n"
 	    "  CT_REGISTER,\n"
+	    "  CT_CONST_INT,\n"
 	    "  CT_MEMORY,\n"
 	    "  CT_ADDRESS,\n"
 	    "  CT_FIXED_FORM\n"
@@ -1378,7 +1393,9 @@ write_tm_preds_h (void)
 	    "static inline enum constraint_type\n"
 	    "get_constraint_type (enum constraint_num c)\n"
 	    "{");
-      auto_vec <std::pair <unsigned int, const char *>, 3> values;
+      auto_vec <std::pair <unsigned int, const char *>, 4> values;
+      if (const_int_start != const_int_end)
+	values.safe_push (std::make_pair (const_int_start, "CT_CONST_INT"));
       if (memory_start != memory_end)
 	values.safe_push (std::make_pair (memory_start, "CT_MEMORY"));
       if (address_start != address_end)
