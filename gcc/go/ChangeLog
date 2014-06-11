@@ -1,3 +1,8 @@
+2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* go/go-gcc.cc (Gcc_backend::global_variable_set_init): Use
+	symtab_get_node(var_decl)->implicit_section.
+
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* go-gcc.cc (global_variable_set_init): Use

@@ -2264,7 +2264,7 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
       node->externally_visible = false;
       node->forced_by_abi = false;
       node->local.local = true;
-      node->set_comdat_group (NULL);
+      node->set_section (NULL);
       node->unique_name = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
 				  || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
       node->resolution = LDPR_PREVAILING_DEF_IRONLY;

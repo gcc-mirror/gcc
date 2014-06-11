@@ -2399,11 +2399,6 @@ extern void decl_value_expr_insert (tree, tree);
 #define DECL_HAS_INIT_PRIORITY_P(NODE) \
   (VAR_DECL_CHECK (NODE)->decl_with_vis.init_priority_p)
 
-/* Specify whether the section name was set by user or by
-   compiler via -ffunction-sections.  */
-#define DECL_HAS_IMPLICIT_SECTION_NAME_P(NODE) \
-  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.implicit_section_name_p)
-
 extern tree decl_debug_expr_lookup (tree);
 extern void decl_debug_expr_insert (tree, tree);
 

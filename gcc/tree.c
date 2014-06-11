@@ -634,7 +634,7 @@ decl_section_name (const_tree node)
   struct symtab_node *snode = symtab_get_node (node);
   if (!snode)
     return NULL;
-  return snode->get_section ();
+  return snode->get_section_name ();
 }
 
 /* Set section section name of NODE to VALUE (that is expected to

@@ -1,3 +1,10 @@
+2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* vtable-class-hierarchy.c: Use symtab_get_node (var_decl)->implicit_section.
+	* optimize.c (cdtor_comdat_group): Fix handling of aliases.
+	(maybe_clone_body): Move symbol across comdat groups.
+	* method.c (use_thunk): Copy implicit section flag.
+
 2014-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/22556

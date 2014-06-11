@@ -418,6 +418,15 @@ get_named_section (tree decl, const char *name, int reloc)
   return get_section (name, flags, decl);
 }
 
+/* Worker for resolve_unique_section.  */
+
+static bool
+set_implicit_section (struct symtab_node *n, void *data ATTRIBUTE_UNUSED)
+{
+  n->implicit_section = true;
+  return false;
+}
+
 /* If required, set DECL_SECTION_NAME to a unique name.  */
 
 void
@@ -430,7 +439,9 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 	  || DECL_COMDAT_GROUP (decl)))
     {
       targetm.asm_out.unique_section (decl, reloc);
-      DECL_HAS_IMPLICIT_SECTION_NAME_P (decl) = true;
+      if (DECL_SECTION_NAME (decl))
+        symtab_for_node_and_aliases (symtab_get_node (decl),
+				     set_implicit_section, NULL, true);
     }
 }
 
@@ -510,7 +521,7 @@ get_named_text_section (tree decl,
 	  buffer = ACONCAT ((stripped_name, named_section_suffix, NULL));
 	  return get_named_section (decl, buffer, 0);
 	}
-      else if (DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+      else if (symtab_get_node (decl)->implicit_section)
 	{
 	  const char *name;
 
@@ -539,8 +550,7 @@ default_function_section (tree decl, enum node_frequency freq,
   /* Old GNU linkers have buggy --gc-section support, which sometimes
      results in .gcc_except_table* sections being garbage collected.  */
   if (decl
-      && DECL_SECTION_NAME (decl)
-      && DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+      && symtab_get_node (decl)->implicit_section)
     return NULL;
 #endif
 
@@ -6764,7 +6774,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
    definition from different object file) and when resolution info is available
    we simply use the knowledge passed to us by linker plugin.  */
 bool
-decl_binds_to_current_def_p (tree decl)
+decl_binds_to_current_def_p (const_tree decl)
 {
   gcc_assert (DECL_P (decl));
   if (!targetm.binds_local_p (decl))

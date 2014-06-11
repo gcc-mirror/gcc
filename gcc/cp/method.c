@@ -356,14 +356,27 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   if (TARGET_USE_LOCAL_THUNK_ALIAS_P (function)
       && targetm_common.have_named_sections)
     {
-      resolve_unique_section (function, 0, flag_function_sections);
+      tree fn = function;
+      struct symtab_node *symbol;
 
-      if (DECL_SECTION_NAME (function) != NULL && DECL_ONE_ONLY (function))
+      if ((symbol = symtab_get_node (function))
+	  && symbol->alias)
+	{
+	  if (symbol->analyzed)
+	    fn = symtab_alias_ultimate_target (symtab_get_node (function))->decl;
+	  else
+	    fn = symtab_get_node (function)->alias_target;
+	}
+      resolve_unique_section (fn, 0, flag_function_sections);
+
+      if (DECL_SECTION_NAME (fn) != NULL && DECL_ONE_ONLY (fn))
 	{
 	  resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
 
 	  /* Output the thunk into the same section as function.  */
-	  set_decl_section_name (thunk_fndecl, DECL_SECTION_NAME (function));
+	  set_decl_section_name (thunk_fndecl, DECL_SECTION_NAME (fn));
+	  symtab_get_node (thunk_fndecl)->implicit_section
+	    = symtab_get_node (fn)->implicit_section;
 	}
     }
 

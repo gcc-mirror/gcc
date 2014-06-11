@@ -1,3 +1,8 @@
+2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (read_cgraph_and_symbols): Remove unreachable symbols.
+	(do_whole_program_analysis): Use verify_symtab.
+
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (mentions_vars_p_decl_with_vis, compare_tree_sccs_1,

@@ -93,6 +93,9 @@ public:
   unsigned forced_by_abi : 1;
   /* True when the name is known to be unique and thus it does not need mangling.  */
   unsigned unique_name : 1;
+  /* Specify whether the section was set by user or by
+     compiler via -ffunction-sections.  */
+  unsigned implicit_section : 1;
   /* True when body and other characteristics have been removed by
      symtab_remove_unreachable_nodes. */
   unsigned body_removed : 1;
@@ -162,17 +165,29 @@ public:
       comdat_group_ = group;
     }
 
-  /* Return section.  */
-  tree get_section ()
+  /* Return section as STRING_CST.  */
+  tree get_section_name ()
     {
       return section_;
     }
 
-  /* Set section.  */
-  void set_section (tree section)
+  /* Return section as string.  */
+  const char * get_section ()
+    {
+      if (!section_)
+	return NULL;
+      return TREE_STRING_POINTER (section_);
+    }
+
+  /* Set section, do not recurse into aliases.
+     When one wants to change section of symbol and its aliases,
+     use set_section  */
+  void set_section_for_node (tree section)
     {
       gcc_checking_assert (!section || TREE_CODE (section) == STRING_CST);
       section_ = section;
+      if (!section)
+	implicit_section = false;
     }
 
   /* Vectors of referring and referenced entities.  */
@@ -193,6 +208,9 @@ public:
 
   /* Section name. Again can be private, if allowed.  */
   tree section_;
+
+  /* Set section for symbol and its aliases.  */
+  void set_section (tree section);
 };
 
 enum availability

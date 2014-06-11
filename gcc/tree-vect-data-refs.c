@@ -5215,7 +5215,7 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
      software projects.  */
   if (TREE_STATIC (decl) 
       && DECL_SECTION_NAME (decl) != NULL_TREE
-      && !DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+      && !symtab_get_node (decl)->implicit_section)
     return false;
 
   if (TREE_STATIC (decl))
