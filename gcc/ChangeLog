@@ -1,5 +1,11 @@
 2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* recog.h (operand_alternative): Remove offmem_ok, nonffmem_ok,
+	decmem_ok and incmem_ok.  Reformat other bitfields for consistency.
+	* recog.c (preprocess_constraints): Update accordingly.
+
+2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* system.h (REG_CLASS_FROM_CONSTRAINT): Poison.
 	(REG_CLASS_FOR_CONSTRAINT, EXTRA_CONSTRAINT_STR): Likewise.
 	(EXTRA_MEMORY_CONSTRAINT, EXTRA_ADDRESS_CONSTRAINT): Likewise.

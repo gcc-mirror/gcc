@@ -60,25 +60,17 @@ struct operand_alternative
   int matched : 8;
 
   /* Nonzero if '&' was found in the constraint string.  */
-  unsigned int earlyclobber:1;
+  unsigned int earlyclobber : 1;
   /* Nonzero if TARGET_MEM_CONSTRAINT was found in the constraint
      string.  */
-  unsigned int memory_ok:1;
-  /* Nonzero if 'o' was found in the constraint string.  */
-  unsigned int offmem_ok:1;
-  /* Nonzero if 'V' was found in the constraint string.  */
-  unsigned int nonoffmem_ok:1;
-  /* Nonzero if '<' was found in the constraint string.  */
-  unsigned int decmem_ok:1;
-  /* Nonzero if '>' was found in the constraint string.  */
-  unsigned int incmem_ok:1;
+  unsigned int memory_ok : 1;
   /* Nonzero if 'p' was found in the constraint string.  */
-  unsigned int is_address:1;
+  unsigned int is_address : 1;
   /* Nonzero if 'X' was found in the constraint string, or if the constraint
      string for this alternative was empty.  */
-  unsigned int anything_ok:1;
+  unsigned int anything_ok : 1;
 
-  unsigned int unused : 8;
+  unsigned int unused : 12;
 };
 
 /* Return the class for operand I of alternative ALT, taking matching
