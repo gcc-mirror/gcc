@@ -1,3 +1,8 @@
+2014-06-11  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc
+	(test02) [TEST_NUMPUT_VERBOSE]: Use `wcout' rather than `cout'.
+
 2014-06-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61390
