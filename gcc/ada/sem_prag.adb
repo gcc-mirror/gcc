@@ -24486,17 +24486,33 @@ package body Sem_Prag is
       -------------------------
 
       procedure Check_Clause_Syntax (Clause : Node_Id) is
-         Input  : Node_Id;
-         Inputs : Node_Id;
-         Output : Node_Id;
+         Input   : Node_Id;
+         Inputs  : Node_Id;
+         Output  : Node_Id;
+         Outputs : Node_Id;
 
       begin
          --  Output items
 
-         Output := First (Choices (Clause));
-         while Present (Output) loop
-            Check_Item_Syntax (Output);
-            Next (Output);
+         Outputs := First (Choices (Clause));
+         while Present (Outputs) loop
+
+            --  Multiple output items
+
+            if Nkind (Outputs) = N_Aggregate then
+               Output := First (Expressions (Outputs));
+               while Present (Output) loop
+                  Check_Item_Syntax (Output);
+                  Next (Output);
+               end loop;
+
+            --  Single output item
+
+            else
+               Check_Item_Syntax (Outputs);
+            end if;
+
+            Next (Outputs);
          end loop;
 
          Inputs := Expression (Clause);

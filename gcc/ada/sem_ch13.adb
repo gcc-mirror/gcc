@@ -3214,7 +3214,7 @@ package body Sem_Ch13 is
                Error_Msg_N ("stream subprogram must not be abstract", Expr);
                return;
 
-            --  Disable the following for now, until Polyorb issue is fixed.
+            --  Test for stream subprogram for interface type being non-null
 
             elsif Is_Interface (U_Ent)
               and then not Inside_A_Generic
@@ -3223,6 +3223,9 @@ package body Sem_Ch13 is
                 not Null_Present
                   (Specification
                      (Unit_Declaration_Node (Ultimate_Alias (Subp))))
+
+              --  Disable this test for now till Polyorb issue is fixed???
+
               and then False
             then
                Error_Msg_N

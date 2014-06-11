@@ -2474,10 +2474,6 @@ package body Layout is
                                N_Function_Specification,
                                N_Procedure_Specification)
                       or else Ekind (Scope (E))  = E_Return_Statement)
-
-           --  For now, debug flag -gnatd.1 must be set to enable this fix
-
-           and then Debug_Flag_Dot_1
          then
             Init_Size (E, System_Address_Size);
 

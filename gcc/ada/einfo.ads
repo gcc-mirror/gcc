@@ -4408,8 +4408,9 @@ package Einfo is
       --  A special internal type used to label allocators and references to
       --  objects using 'Reference. This is needed because special resolution
       --  rules apply to these constructs. On the resolution pass, this type
-      --  is always replaced by the actual access type, so Gigi should never
-      --  see types with this Ekind.
+      --  is almost always replaced by the actual access type, but if the
+      --  context does not provide one Gigi can handle the Allocator_Type
+      --  itself as long as it has been frozen.
 
       E_General_Access_Type,
       --  An access type created by an access type declaration with the all

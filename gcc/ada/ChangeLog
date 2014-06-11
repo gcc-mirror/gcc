@@ -1,3 +1,63 @@
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
+2014-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Clause_Syntax): Add new
+	local variable Outputs. Account for the case where multiple
+	output items appear as an aggregate.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Output_Obsolescent_Entity_Warnings): Tag warning
+	with ?j? not ??.
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2014-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cbdlli.adb, a-cdlili.adb, a-cidlli.adb, a-crdlli.adb (Insert): Add
+	new variable First_Node. Update the position after all insertions have
+	taken place to First_Node.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Remove debug flag -gnatd.1, no longer needed.
+	* layout.adb (Layout_Type): Remove test of -gnatd.1.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
+2014-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Clause_Syntax): Add new
+	local variable Outputs. Account for the case where multiple
+	output items appear as an aggregate.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Output_Obsolescent_Entity_Warnings): Tag warning
+	with ?j? not ??.
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2014-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cbdlli.adb, a-cdlili.adb, a-cidlli.adb, a-crdlli.adb (Insert): Add
+	new variable First_Node. Update the position after all insertions have
+	taken place to First_Node.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Remove debug flag -gnatd.1, no longer needed.
+	* layout.adb (Layout_Type): Remove test of -gnatd.1.
+
 2014-06-11  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.ads: Minor reformatting.
