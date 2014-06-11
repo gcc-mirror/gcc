@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1993-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -60,6 +60,8 @@ package Interfaces.C.Strings is
    function New_String (Str : String) return chars_ptr;
 
    procedure Free (Item : in out chars_ptr);
+   --  When deallocation is prohibited (eg: cert runtimes) this routine
+   --  will raise Program_Error
 
    Dereference_Error : exception;
 

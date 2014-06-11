@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -254,6 +254,10 @@ package Sem_Aux is
    function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
    --  True if T has discriminants and is unconstrained, or is an array type
    --  whose element type Has_Unconstrained_Elements.
+
+   function Has_Variant_Part (Typ : Entity_Id) return Boolean;
+   --  Return True if the first subtype of Typ is a discriminated record type
+   --  which has a variant part. False otherwise.
 
    function In_Generic_Body (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id appears inside a generic body

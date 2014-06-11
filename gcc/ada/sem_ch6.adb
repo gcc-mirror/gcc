@@ -2040,9 +2040,9 @@ package body Sem_Ch6 is
    begin
       --  When a subprogram body declaration is illegal, its defining entity is
       --  left unanalyzed. There is nothing left to do in this case because the
-      --  body lacks a contract.
+      --  body lacks a contract, or even a proper Ekind.
 
-      if No (Contract (Body_Id)) then
+      if Ekind (Body_Id) = E_Void then
          return;
       end if;
 

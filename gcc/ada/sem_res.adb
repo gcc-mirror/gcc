@@ -9159,7 +9159,7 @@ package body Sem_Res is
                Comp := First_Entity (T);
                while Present (Comp) loop
                   if Chars (Comp) = Chars (S)
-                    and then Covers (Etype (Comp), Typ)
+                    and then Covers (Typ, Etype (Comp))
                   then
                      if not Found then
                         Found := True;
@@ -9213,6 +9213,9 @@ package body Sem_Res is
             Get_Next_Interp (I, It);
          end loop Search;
 
+         --  There must be a legal interpreations at this point.
+
+         pragma Assert (Found);
          Resolve (P, It1.Typ);
          Set_Etype (N, Typ);
          Set_Entity_With_Checks (S, Comp1);
@@ -9240,6 +9243,7 @@ package body Sem_Res is
       if Is_Access_Type (Etype (P)) then
          T := Designated_Type (Etype (P));
          Check_Fully_Declared_Prefix (T, P);
+
       else
          T := Etype (P);
       end if;
