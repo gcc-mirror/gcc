@@ -1,5 +1,14 @@
 2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* genpreds.c (write_lookup_constraint): Rename to...
+	(write_lookup_constraint_1): ...this.
+	(write_lookup_constraint_array): New function.
+	(write_tm_preds_h): Define lookup_constraint as an inline function
+	that uses write_lookup_constraint_array where possible.
+	(write_insn_preds_c): Update for the changes above.
+
+2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/md.texi (regclass_for_constraint): Rename to...
 	(reg_class_for_constraint): ...this.
 	* genpreds.c (num_constraints, enum_order, register_start)

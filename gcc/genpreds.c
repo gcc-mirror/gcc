@@ -966,11 +966,11 @@ write_enum_constraint_num (void)
 /* Write out a function which looks at a string and determines what
    constraint name, if any, it begins with.  */
 static void
-write_lookup_constraint (void)
+write_lookup_constraint_1 (void)
 {
   unsigned int i;
   puts ("enum constraint_num\n"
-	"lookup_constraint (const char *str)\n"
+	"lookup_constraint_1 (const char *str)\n"
 	"{\n"
 	"  switch (str[0])\n"
 	"    {");
@@ -1003,6 +1003,29 @@ write_lookup_constraint (void)
 	"    }\n"
 	"  return CONSTRAINT__UNKNOWN;\n"
 	"}\n");
+}
+
+/* Write out an array that maps single-letter characters to their
+   constraints (if that fits in a character) or 255 if lookup_constraint_1
+   must be called.  */
+static void
+write_lookup_constraint_array (void)
+{
+  unsigned int i;
+  printf ("const unsigned char lookup_constraint_array[] = {\n  ");
+  for (i = 0; i < ARRAY_SIZE (constraints_by_letter_table); i++)
+    {
+      if (i != 0)
+	printf (",\n  ");
+      struct constraint_data *c = constraints_by_letter_table[i];
+      if (!c)
+	printf ("CONSTRAINT__UNKNOWN");
+      else if (c->namelen == 1)
+	printf ("MIN ((int) CONSTRAINT_%s, (int) UCHAR_MAX)", c->c_name);
+      else
+	printf ("UCHAR_MAX");
+    }
+  printf ("\n};\n\n");
 }
 
 /* Write out a function which looks at a string and determines what
@@ -1245,7 +1268,22 @@ write_tm_preds_h (void)
   if (constraint_max_namelen > 0)
     {
       write_enum_constraint_num ();
-      puts ("extern enum constraint_num lookup_constraint (const char *);");
+      puts ("extern enum constraint_num lookup_constraint_1 (const char *);\n"
+	    "extern const unsigned char lookup_constraint_array[];\n"
+	    "\n"
+	    "/* Return the constraint at the beginning of P, or"
+	    " CONSTRAINT__UNKNOWN if it\n"
+	    "   isn't recognized.  */\n"
+	    "\n"
+	    "static inline enum constraint_num\n"
+	    "lookup_constraint (const char *p)\n"
+	    "{\n"
+	    "  unsigned int index = lookup_constraint_array"
+	    "[(unsigned char) *p];\n"
+	    "  return (index == UCHAR_MAX\n"
+	    "          ? lookup_constraint_1 (p)\n"
+	    "          : (enum constraint_num) index);\n"
+	    "}\n");
       if (satisfied_start == num_constraints)
 	puts ("/* Return true if X satisfies constraint C.  */\n"
 	      "\n"
@@ -1383,7 +1421,8 @@ write_insn_preds_c (void)
 
   if (constraint_max_namelen > 0)
     {
-      write_lookup_constraint ();
+      write_lookup_constraint_1 ();
+      write_lookup_constraint_array ();
       if (have_register_constraints)
 	write_reg_class_for_constraint_1 ();
       write_constraint_satisfied_p_1 ();
