@@ -1,3 +1,43 @@
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Do not attempt
+	analysis if error has been posted on subprogram body.
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Stream_TSS_Definition): Apply legality
+	rule given in RM 13.1 (8/1) for operational attributes to stream
+	attributes: the attribute must apply to a first subtype. Fixes
+	missing errors in ACATS test bdd2004.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc): Don't build for variant
+	record type if restriction No_Implicit_Conditionals is active.
+	(Expand_N_Object_Declaration): Don't allow default initialization
+	for variant record type if restriction No_Implicit_Condition is active.
+	(Build_Variant_Record_Equality): Don't build for variant
+	record type if restriction No_Implicit_Conditionals is active.
+	* exp_ch4.adb (Expand_N_Op_Eq): Error if variant records with
+	No_Implicit_Conditionals.
+	* sem_aux.ads, sem_aux.adb (Has_Variant_Part): New function.
+
+2014-06-11  Ramon Fernandez  <fernandez@adacore.com>
+
+	* i-cstrin.ads: Update comments.
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Selected_Component): Handle properly a
+	selected component whose prefix is overloaded, when none of the
+	interpretations matches the expected type.
+
+2014-06-11  Bob Duff  <duff@adacore.com>
+
+	* make.adb (Wait_For_Available_Slot): Give a more
+	informative error message; if the ALI file is not found, print
+	the full path of what it's looking for.
+
 2014-06-11  Sergey Rybin  <rybin@adacore.com frybin>
 
 	* gnat_ugn.texi, vms_data.ads: add description of gnatstub -W<par>

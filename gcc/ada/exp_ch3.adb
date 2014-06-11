@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3484,6 +3484,18 @@ package body Exp_Ch3 is
          Rec_Type := Underlying_Type (Rec_Type);
       end if;
 
+      --  If we have a variant record with restriction No_Implicit_Conditionals
+      --  in effect, then we skip building the procedure. This is safe because
+      --  if we can see the restriction, so can any caller, calls to initialize
+      --  such records are not allowed for variant records if this restriction
+      --  is active.
+
+      if Has_Variant_Part (Rec_Type)
+        and then Restriction_Active (No_Implicit_Conditionals)
+      then
+         return;
+      end if;
+
       --  If there are discriminants, build the discriminant map to replace
       --  discriminants by their discriminals in complex bound expressions.
       --  These only arise for the corresponding records of synchronized types.
@@ -4316,6 +4328,16 @@ package body Exp_Ch3 is
       Pspecs : constant List_Id := New_List;
 
    begin
+      --  If we have a variant record with restriction No_Implicit_Conditionals
+      --  in effect, then we skip building the procedure. This is safe because
+      --  if we can see the restriction, so can any caller, calls to equality
+      --  test routines are not allowed for variant records if this restriction
+      --  is active.
+
+      if Restriction_Active (No_Implicit_Conditionals) then
+         return;
+      end if;
+
       --  Derived Unchecked_Union types no longer inherit the equality function
       --  of their parent.
 
@@ -4431,11 +4453,8 @@ package body Exp_Ch3 is
 
       else
          Append_To (Stmts,
-           Make_Eq_If (Typ,
-             Discriminant_Specifications (Def)));
-
-         Append_List_To (Stmts,
-           Make_Eq_Case (Typ, Comps));
+           Make_Eq_If (Typ, Discriminant_Specifications (Def)));
+         Append_List_To (Stmts, Make_Eq_Case (Typ, Comps));
       end if;
 
       Append_To (Stmts,
@@ -4838,6 +4857,7 @@ package body Exp_Ch3 is
       Def_Id   : constant Entity_Id  := Defining_Identifier (N);
       Expr     : constant Node_Id    := Expression (N);
       Loc      : constant Source_Ptr := Sloc (N);
+      Obj_Def  : constant Node_Id    := Object_Definition (N);
       Typ      : constant Entity_Id  := Etype (Def_Id);
       Base_Typ : constant Entity_Id  := Base_Type (Typ);
       Expr_Q   : Node_Id;
@@ -4999,7 +5019,7 @@ package body Exp_Ch3 is
            and then Is_Entity_Name (Expr_Q)
            and then Ekind (Entity (Expr_Q)) = E_Variable
            and then OK_To_Rename (Entity (Expr_Q))
-           and then Is_Entity_Name (Object_Definition (N));
+           and then Is_Entity_Name (Obj_Def);
       end Rewrite_As_Renaming;
 
    --  Start of processing for Expand_N_Object_Declaration
@@ -5064,6 +5084,26 @@ package body Exp_Ch3 is
       --  Default initialization required, and no expression present
 
       if No (Expr) then
+
+         --  If we have a type with a variant part, the initialization proc
+         --  will contain implicit tests of the discriminant values, which
+         --  counts as a violation of the restriction No_Implicit_Conditionals.
+
+         if Has_Variant_Part (Typ) then
+            declare
+               Msg : Boolean;
+
+            begin
+               Check_Restriction (Msg, No_Implicit_Conditionals, Obj_Def);
+
+               if Msg then
+                  Error_Msg_N
+                    ("\initialization of variant record tests discriminants",
+                     Obj_Def);
+                  return;
+               end if;
+            end;
+         end if;
 
          --  For the default initialization case, if we have a private type
          --  with invariants, and invariant checks are enabled, then insert an
@@ -5305,9 +5345,9 @@ package body Exp_Ch3 is
            --  then we've done it already and must not do it again.
 
            and then not
-             (Nkind (Object_Definition (N)) = N_Identifier
+             (Nkind (Obj_Def) = N_Identifier
                and then
-                 Present (Equivalent_Type (Entity (Object_Definition (N)))))
+                 Present (Equivalent_Type (Entity (Obj_Def))))
          then
             pragma Assert (Is_Class_Wide_Type (Typ));
 
@@ -5416,7 +5456,7 @@ package body Exp_Ch3 is
                      Expand_Subtype_From_Expr
                        (N             => N,
                         Unc_Type      => Typ,
-                        Subtype_Indic => Object_Definition (N),
+                        Subtype_Indic => Obj_Def,
                         Exp           => Expr_N);
 
                      if not Is_Interface (Etype (Expr_N)) then
@@ -5427,7 +5467,7 @@ package body Exp_Ch3 is
 
                      else
                         New_Expr :=
-                          Unchecked_Convert_To (Etype (Object_Definition (N)),
+                          Unchecked_Convert_To (Etype (Obj_Def),
                             Make_Explicit_Dereference (Loc,
                               Unchecked_Convert_To (RTE (RE_Tag_Ptr),
                                 Make_Attribute_Reference (Loc,
@@ -5442,8 +5482,7 @@ package body Exp_Ch3 is
                           Make_Object_Declaration (Loc,
                             Defining_Identifier => Obj_Id,
                             Object_Definition   =>
-                              New_Occurrence_Of
-                                (Etype (Object_Definition (N)), Loc),
+                              New_Occurrence_Of (Etype (Obj_Def), Loc),
                             Expression => New_Expr));
 
                      --  Rename limited type object since they cannot be copied
@@ -5455,11 +5494,10 @@ package body Exp_Ch3 is
                           Make_Object_Renaming_Declaration (Loc,
                             Defining_Identifier => Obj_Id,
                             Subtype_Mark        =>
-                              New_Occurrence_Of
-                                (Etype (Object_Definition (N)), Loc),
+                              New_Occurrence_Of (Etype (Obj_Def), Loc),
                             Name                =>
                               Unchecked_Convert_To
-                                (Etype (Object_Definition (N)), New_Expr)));
+                                (Etype (Obj_Def), New_Expr)));
                      end if;
 
                      --  Dynamically reference the tag associated with the
@@ -5744,7 +5782,7 @@ package body Exp_Ch3 is
             Rewrite (N,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Defining_Identifier (N),
-                Subtype_Mark        => Object_Definition (N),
+                Subtype_Mark        => Obj_Def,
                 Name                => Expr_Q));
 
             --  We do not analyze this renaming declaration, because all its
@@ -5778,7 +5816,7 @@ package body Exp_Ch3 is
       end if;
 
       if Nkind (N) = N_Object_Declaration
-        and then Nkind (Object_Definition (N)) = N_Access_Definition
+        and then Nkind (Obj_Def) = N_Access_Definition
         and then not Is_Local_Anonymous_Access (Etype (Def_Id))
       then
          --  An Ada 2012 stand-alone object of an anonymous access type
@@ -5810,12 +5848,14 @@ package body Exp_Ch3 is
                Level_Expr := Dynamic_Accessibility_Level (Expr);
             end if;
 
-            Level_Decl := Make_Object_Declaration (Loc,
-             Defining_Identifier => Level,
-             Object_Definition => New_Occurrence_Of (Standard_Natural, Loc),
-             Expression => Level_Expr,
-             Constant_Present => Constant_Present (N),
-             Has_Init_Expression => True);
+            Level_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Level,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Natural, Loc),
+                Expression          => Level_Expr,
+                Constant_Present    => Constant_Present (N),
+                Has_Init_Expression => True);
 
             Insert_Action_After (Init_After, Level_Decl);
 
@@ -8641,6 +8681,7 @@ package body Exp_Ch3 is
             if Chars (Discr) = External_Name (Node (Elm)) then
                return Node (Elm);
             end if;
+
             Next_Elmt (Elm);
          end loop;
 
@@ -8676,14 +8717,12 @@ package body Exp_Ch3 is
       end if;
 
       Alt_List := New_List;
-
       while Present (Variant) loop
          Append_To (Alt_List,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_Copy_List (Discrete_Choices (Variant)),
              Statements =>
                Make_Eq_Case (E, Component_List (Variant), Discrs)));
-
          Next_Non_Pragma (Variant);
       end loop;
 
@@ -8785,7 +8824,7 @@ package body Exp_Ch3 is
          else
             return
               Make_Implicit_If_Statement (E,
-                Condition => Cond,
+                Condition       => Cond,
                 Then_Statements => New_List (
                   Make_Simple_Return_Statement (Loc,
                     Expression => New_Occurrence_Of (Standard_False, Loc))));
@@ -8793,9 +8832,9 @@ package body Exp_Ch3 is
       end if;
    end Make_Eq_If;
 
-   --------------------
-   --  Make_Neq_Body --
-   --------------------
+   -------------------
+   -- Make_Neq_Body --
+   -------------------
 
    function Make_Neq_Body (Tag_Typ : Entity_Id) return Node_Id is
 

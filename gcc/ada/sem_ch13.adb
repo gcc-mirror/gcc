@@ -3132,8 +3132,23 @@ package body Sem_Ch13 is
                Typ := Etype (Subp);
             end if;
 
-            return Base_Type (Typ) = Base_Type (Ent)
-              and then No (Next_Formal (F));
+            --  Verify that the prefix of the attribute and the local name
+            --  for the type of the formal match.
+
+            if Base_Type (Typ) /= Base_Type (Ent)
+              or else Present ((Next_Formal (F)))
+            then
+               return False;
+
+            elsif not Is_Scalar_Type (Typ)
+              and then not Is_First_Subtype (Typ)
+              and then not Is_Class_Wide_Type (Typ)
+            then
+               return False;
+
+            else
+               return True;
+            end if;
          end Has_Good_Profile;
 
       --  Start of processing for Analyze_Stream_TSS_Definition
@@ -3143,6 +3158,10 @@ package body Sem_Ch13 is
 
          if not Is_Type (U_Ent) then
             Error_Msg_N ("local name must be a subtype", Nam);
+            return;
+
+         elsif not Is_First_Subtype (U_Ent) then
+            Error_Msg_N ("local name must be a first subtype", Nam);
             return;
          end if;
 
