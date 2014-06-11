@@ -660,7 +660,6 @@ package body Lib.Xref is
              (GNATprove_Mode
                and then In_Extended_Main_Code_Unit (N)
                and then (Typ = 'm' or else Typ = 'r' or else Typ = 's'))
-
          then
             null;
 

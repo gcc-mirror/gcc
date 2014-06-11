@@ -1,3 +1,16 @@
+2014-06-11  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads: add description of gnatstub -W<par>
+	option to specify the result file encoding.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads, sem_ch12.adb: Minor reformatting.
+	* debug.adb, erroutc.adb: Remove -gnatd.q debug switch.
+	* lib-xref.adb: Minor reformatting.
+	* restrict.adb: Minor code reorganization (put routines in
+	alpha order).
+
 2014-06-11  Yannick Moy  <moy@adacore.com>
 
 	* einfo.ads: Minor typo in comment

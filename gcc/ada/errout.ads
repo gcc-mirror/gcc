@@ -282,7 +282,8 @@ package Errout is
    --      status of continuations is determined only by the parent message
    --      which is being continued. It is allowable to put ? in continuation
    --      messages, and the usual style is to include it, since it makes it
-   --      clear that the continuation is part of a warning message.
+   --      clear that the continuation is part of a warning message, but it is
+   --      not necessary to go through any computational effort to include it.
    --
    --      Note: this usage is obsolete, use ?? ?*? ?$? ?x? ?X? to specify
    --      the string to be added when Warn_Doc_Switch is set to True. If this

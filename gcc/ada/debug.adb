@@ -107,7 +107,7 @@ package body Debug is
    --  d.n  Print source file names
    --  d.o  Generate .NET listing of CIL code
    --  d.p  Enable the .NET CIL verifier
-   --  d.q  Quit on badly tagged warning message
+   --  d.q
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
    --  d.s  Disable expansion of slice move, use memmove
    --  d.t  Disable static allocation of library level dispatch tables
@@ -560,12 +560,6 @@ package body Debug is
    --  d.p  Enable the .NET CIL verifier. During development the verifier is
    --       disabled by default and this flag is used to enable it. In the
    --       future we will reverse this functionality.
-
-   --  d.q  All warning and info messages are supposed to be tagged with one
-   --       of the extended warning sequences such as ?? or <x<. The use of a
-   --       single ? or < is allowed for transitional purposes, but these are
-   --       intended to disappear. This debug switch makes it fatal to have a
-   --       warning presented which is not tagged (Program Error is raised).
 
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.

@@ -9965,11 +9965,11 @@ package body Sem_Ch12 is
                Uninit_Var := Uninitialized_Variable (Decl);
 
             elsif Nkind (Decl) = N_Formal_Type_Declaration
-                    and then Nkind (Formal_Type_Definition (Decl))
-                      = N_Formal_Private_Type_Definition
+                    and then Nkind (Formal_Type_Definition (Decl)) =
+                                          N_Formal_Private_Type_Definition
             then
-               Uninit_Var := Uninitialized_Variable
-                                (Formal_Type_Definition (Decl));
+               Uninit_Var :=
+                 Uninitialized_Variable (Formal_Type_Definition (Decl));
             end if;
 
             if Present (Uninit_Var) then
@@ -9979,8 +9979,8 @@ package body Sem_Ch12 is
                --  For each formal there is a subtype declaration that renames
                --  the actual and has the same name as the formal. Locate the
                --  formal for warning message about uninitialized variables
-               --  in the generic, for which the actual type should be a
-               --  fully initialized type.
+               --  in the generic, for which the actual type should be a fully
+               --  initialized type.
 
                while Present (Actual) loop
                   exit when Ekind (Actual) = E_Package
@@ -9993,10 +9993,11 @@ package body Sem_Ch12 is
                   then
                      Error_Msg_Node_2 := Formal;
                      Error_Msg_NE
-                       ("generic unit has uninitialzed variable& of "
-                          & " formal private type &?v?", Actual, Uninit_Var);
-                     Error_Msg_NE ("actual type for& should be "
-                        & "fully initialized type?v?", Actual, Formal);
+                       ("generic unit has uninitialized variable& of "
+                        & "formal private type &?v?", Actual, Uninit_Var);
+                     Error_Msg_NE
+                       ("actual type for& should be fully initialized type?v?",
+                        Actual, Formal);
                      exit;
                   end if;
 

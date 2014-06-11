@@ -756,14 +756,12 @@ package body Erroutc is
                end;
             end if;
 
-            --  Bomb if untagged warning message and -gnatd.q set
+            --  Bomb if untagged warning message. This code can be uncommented
+            --  for debugging when looking for untagged warning messages.
 
-            if Debug_Flag_Dot_Q
-              and then Is_Warning_Msg
-              and then Warning_Msg_Char = ' '
-            then
-               raise Program_Error;
-            end if;
+            --  if Is_Warning_Msg and then Warning_Msg_Char = ' ' then
+            --     raise Program_Error;
+            --  end if;
 
          --  Unconditional message (! insertion)
 
