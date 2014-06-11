@@ -1,3 +1,12 @@
+2014-06-11  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* tree-vect-data-refs.c (vect_grouped_store_supported): New
+	check for stores group of length 3.
+	(vect_permute_store_chain): New permutations for stores group of
+	length 3.
+	* tree-vect-stmts.c (vect_model_store_cost): Change cost
+	of vec_perm_shuffle for the new permutations.
+
 2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-visibility.c (function_and_variable_visibility): Disable

@@ -1,3 +1,8 @@
+2014-06-11  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR tree-optimization/52252
+	* gcc.dg/vect/pr52252-st.c: Test on stores group of size 3.
+
 2014-06-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61437
