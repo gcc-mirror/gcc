@@ -1,5 +1,19 @@
 2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* system.h (CONST_DOUBLE_OK_FOR_CONSTRAINT_P): Poison.
+	* genpreds.c (have_const_dbl_constraints): Delete.
+	(add_constraint): Don't set it.
+	(write_tm_preds_h): Don't call CONST_DOUBLE_OK_FOR_CONSTRAINT_P.
+	* ira-costs.c (record_reg_classes): Handle CONST_INT and CONST_DOUBLE
+	constraints using the lookup_constraint logic.
+	* ira-lives.c (single_reg_class): Likewise.
+	* ira.c (ira_setup_alts): Likewise.
+	* lra-constraints.c (process_alt_operands): Likewise.
+	* recog.c (asm_operand_ok, constrain_operands): Likewise.
+	* reload.c (find_reloads): Likewise.
+
+2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* genpreds.c (const_int_start, const_int_end): New variables.
 	(choose_enum_order): Output CONST_INT constraints before memory
 	constraints.

@@ -1827,17 +1827,6 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	    result = 1;
 	  break;
 
-	case 'G':
-	  if (CONST_DOUBLE_AS_FLOAT_P (op)
-	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'G', constraint))
-	    result = 1;
-	  break;
-	case 'H':
-	  if (CONST_DOUBLE_AS_FLOAT_P (op)
-	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'H', constraint))
-	    result = 1;
-	  break;
-
 	case 's':
 	  if (CONST_SCALAR_INT_P (op))
 	    break;
@@ -1850,47 +1839,6 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
 	case 'n':
 	  if (CONST_SCALAR_INT_P (op))
-	    result = 1;
-	  break;
-
-	case 'I':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'I', constraint))
-	    result = 1;
-	  break;
-	case 'J':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'J', constraint))
-	    result = 1;
-	  break;
-	case 'K':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'K', constraint))
-	    result = 1;
-	  break;
-	case 'L':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'L', constraint))
-	    result = 1;
-	  break;
-	case 'M':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'M', constraint))
-	    result = 1;
-	  break;
-	case 'N':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'N', constraint))
-	    result = 1;
-	  break;
-	case 'O':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'O', constraint))
-	    result = 1;
-	  break;
-	case 'P':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'P', constraint))
 	    result = 1;
 	  break;
 
@@ -2802,13 +2750,6 @@ constrain_operands (int strict)
 		  win = 1;
 		break;
 
-	      case 'G':
-	      case 'H':
-		if (CONST_DOUBLE_AS_FLOAT_P (op)
-		    && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
-		  win = 1;
-		break;
-
 	      case 's':
 		if (CONST_SCALAR_INT_P (op))
 		  break;
@@ -2819,19 +2760,6 @@ constrain_operands (int strict)
 
 	      case 'n':
 		if (CONST_SCALAR_INT_P (op))
-		  win = 1;
-		break;
-
-	      case 'I':
-	      case 'J':
-	      case 'K':
-	      case 'L':
-	      case 'M':
-	      case 'N':
-	      case 'O':
-	      case 'P':
-		if (CONST_INT_P (op)
-		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
 		  win = 1;
 		break;
 

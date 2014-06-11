@@ -1883,13 +1883,6 @@ ira_setup_alts (rtx insn, HARD_REG_SET &alts)
 		      goto op_success;
 		    break;
 		    
-		  case 'G':
-		  case 'H':
-		    if (CONST_DOUBLE_AS_FLOAT_P (op)
-			&& CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
-		      goto op_success;
-		    break;
-		    
 		  case 's':
 		    if (CONST_SCALAR_INT_P (op))
 		      break;
@@ -1900,19 +1893,6 @@ ira_setup_alts (rtx insn, HARD_REG_SET &alts)
 		    
 		  case 'n':
 		    if (CONST_SCALAR_INT_P (op))
-		      goto op_success;
-		    break;
-		    
-		  case 'I':
-		  case 'J':
-		  case 'K':
-		  case 'L':
-		  case 'M':
-		  case 'N':
-		  case 'O':
-		  case 'P':
-		    if (CONST_INT_P (op)
-			&& CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
 		      goto op_success;
 		    break;
 		    
