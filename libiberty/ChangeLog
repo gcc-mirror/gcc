@@ -1,3 +1,8 @@
+2014-06-11  Andrew Burgess  <aburgess@broadcom.com>
+
+	* cplus-dem.c (do_type): Call string_delete even if the call to
+	demangle_template fails.
+
 2014-06-01  Ray Donnelly  <mingw.android@gmail.com>
 
 	* pex-win32.c (argv_to_cmdline): Don't quote

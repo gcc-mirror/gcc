@@ -3663,7 +3663,10 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 		    string_delete (&temp);
 		  }
 		else
-		  break;
+		  {
+		    string_delete (&temp);
+		    break;
+		  }
 	      }
 	    else if (**mangled == 'Q')
 	      {
