@@ -1,5 +1,10 @@
 2014-06-11  DJ Delorie  <dj@redhat.com>
 
+	* config/rx/rx.h (FUNCTION_BOUNDARY): Adjust for RX100/200 4-byte
+	cache lines.
+	* config/rx/rx.c (rx_option_override): Likewise.
+	(rx_align_for_label): Likewise.
+
 	* config/rx/rx.c (rx_max_skip_for_label): Don't skip anything if -Os.
 
 2014-06-11  Maciej W. Rozycki  <macro@codesourcery.com>
