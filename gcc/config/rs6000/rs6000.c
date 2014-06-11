@@ -10478,35 +10478,65 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
    list, or passes any parameter in memory.  */
 
 static bool
-rs6000_function_parms_need_stack (tree fun)
+rs6000_function_parms_need_stack (tree fun, bool incoming)
 {
-  function_args_iterator args_iter;
-  tree arg_type;
+  tree fntype, result;
   CUMULATIVE_ARGS args_so_far_v;
   cumulative_args_t args_so_far;
 
   if (!fun)
     /* Must be a libcall, all of which only use reg parms.  */
     return false;
+
+  fntype = fun;
   if (!TYPE_P (fun))
-    fun = TREE_TYPE (fun);
+    fntype = TREE_TYPE (fun);
 
   /* Varargs functions need the parameter save area.  */
-  if (!prototype_p (fun) || stdarg_p (fun))
+  if ((!incoming && !prototype_p (fntype)) || stdarg_p (fntype))
     return true;
 
-  INIT_CUMULATIVE_INCOMING_ARGS (args_so_far_v, fun, NULL_RTX);
+  INIT_CUMULATIVE_INCOMING_ARGS (args_so_far_v, fntype, NULL_RTX);
   args_so_far = pack_cumulative_args (&args_so_far_v);
 
-  if (aggregate_value_p (TREE_TYPE (fun), fun))
+  /* When incoming, we will have been passed the function decl.
+     It is necessary to use the decl to handle K&R style functions,
+     where TYPE_ARG_TYPES may not be available.  */
+  if (incoming)
     {
-      tree type = build_pointer_type (TREE_TYPE (fun));
-      rs6000_parm_needs_stack (args_so_far, type);
+      gcc_assert (DECL_P (fun));
+      result = DECL_RESULT (fun);
+    }
+  else
+    result = TREE_TYPE (fntype);
+
+  if (result && aggregate_value_p (result, fntype))
+    {
+      if (!TYPE_P (result))
+	result = TREE_TYPE (result);
+      result = build_pointer_type (result);
+      rs6000_parm_needs_stack (args_so_far, result);
     }
 
-  FOREACH_FUNCTION_ARGS (fun, arg_type, args_iter)
-    if (rs6000_parm_needs_stack (args_so_far, arg_type))
-      return true;
+  if (incoming)
+    {
+      tree parm;
+
+      for (parm = DECL_ARGUMENTS (fun);
+	   parm && parm != void_list_node;
+	   parm = TREE_CHAIN (parm))
+	if (rs6000_parm_needs_stack (args_so_far, TREE_TYPE (parm)))
+	  return true;
+    }
+  else
+    {
+      function_args_iterator args_iter;
+      tree arg_type;
+
+      FOREACH_FUNCTION_ARGS (fntype, arg_type, args_iter)
+	if (rs6000_parm_needs_stack (args_so_far, arg_type))
+	  return true;
+    }
 
   return false;
 }
@@ -10518,7 +10548,7 @@ rs6000_function_parms_need_stack (tree fun)
    all parameters in registers.  */
 
 int
-rs6000_reg_parm_stack_space (tree fun)
+rs6000_reg_parm_stack_space (tree fun, bool incoming)
 {
   int reg_parm_stack_space;
 
@@ -10536,7 +10566,7 @@ rs6000_reg_parm_stack_space (tree fun)
     case ABI_ELFv2:
       /* ??? Recomputing this every time is a bit expensive.  Is there
 	 a place to cache this information?  */
-      if (rs6000_function_parms_need_stack (fun))
+      if (rs6000_function_parms_need_stack (fun, incoming))
 	reg_parm_stack_space = TARGET_64BIT ? 64 : 32;
       else
 	reg_parm_stack_space = 0;
