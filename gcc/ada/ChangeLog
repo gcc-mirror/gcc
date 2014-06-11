@@ -1,3 +1,13 @@
+2014-06-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb: Minor typo fix.
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_References): Do not emit spurious warnings
+	on uninitialzed variable of a formal private type if variable
+	is not read.
+
 2014-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc-interface/utils.c (process_attributes) <ATTR_LINK_SECTION>: Use
