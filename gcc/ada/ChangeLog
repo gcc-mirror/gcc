@@ -1,3 +1,40 @@
+2014-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Input_Item): Allow formal
+	parameters to appear as input_items in an initialization_list
+	of pragma Initializes. Encapsulation now applies to states and
+	variables only (as it should). Add RM references to key errors.
+	* sem_prag.adb (Set_Imported): Suppress errors
+	about preceding Imports when the pragma does not come from source,
+	which can happen through use of pragma Provide_Shift_Operators.
+
+2014-06-11  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+	* einfo.ads (Full_View): Minor comment update.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (Is_Independent): New flag.
+	* einfo.ads (Is_Independent): New flag.
+	(Has_Independent_Components): Clean up and fix comments.
+	* sem_prag.adb (Fix_Error): Deal with changing argument
+	[of] to entity [for].
+	(Analyze_Pragma, case Independent): Set Is_Independent flag
+	(Analyze_Pragma, case Independent_Components): Set Is_Independent flag
+	in all components of specified record.
+
+2014-06-11  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Decimal_Fixed_Point_Type):
+	Set proper Etype on bounds of dummy type created for analysis
+	of the generic.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Minor comment fix (add missing section of dot
+	numeric flags).
+
 2014-06-11  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi, switch-c.adb, sem_prag.adb, a-tgdico.ads, par-prag.adb,

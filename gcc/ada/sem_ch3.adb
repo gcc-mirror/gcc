@@ -15508,7 +15508,6 @@ package body Sem_Ch3 is
                       or else No (Full_View (Prev))
                       or else not Is_Private_Type (Full_View (Prev)))
          then
-
             --  Indicate that the incomplete declaration has a matching full
             --  declaration. The defining occurrence of the incomplete
             --  declaration remains the visible one, and the procedure
