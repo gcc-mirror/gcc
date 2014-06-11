@@ -687,9 +687,9 @@ package body Sem_Util is
       end if;
    end Bad_Predicated_Subtype_Use;
 
-   ----------------------------------------
+   -----------------------------------------
    -- Bad_Unordered_Enumeration_Reference --
-   ----------------------------------------
+   -----------------------------------------
 
    function Bad_Unordered_Enumeration_Reference
      (N : Node_Id;
@@ -15908,7 +15908,7 @@ package body Sem_Util is
       --  Remaining checks are only done on source nodes. Note that we test
       --  for violation of No_Fixed_IO even on non-source nodes, because the
       --  cases for checking violations of this restriction are instantiations
-      --  where the refernece in the instance has Comes_From_Source False.
+      --  where the reference in the instance has Comes_From_Source False.
 
       if not Comes_From_Source (N) then
          return;
