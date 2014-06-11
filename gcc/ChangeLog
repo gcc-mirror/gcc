@@ -1,3 +1,12 @@
+2014-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61437
+	Revert
+	2014-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (may_be_aliased): Trust TREE_ADDRESSABLE from
+	TREE_PUBLIC and DECL_EXTERNAL decls.
+
 2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varasm.c (set_implicit_section): New function.
@@ -7,7 +16,8 @@
 	(default_function_section): Likewise.
 	(decl_binds_to_current_def_p): Constify argument.
 	* varasm.h (decl_binds_to_current_def_p): Update prototype.
-	* asan.c (asan_protect_global): Use symtab_get_node (decl)->implicit_section.
+	* asan.c (asan_protect_global): Use
+	symtab_get_node (decl)->implicit_section.
 	* symtab.c (dump_symtab_base): Dump implicit sections.
 	(verify_symtab_base): Verify sanity of sectoins and comdats.
 	(symtab_resolve_alias): Alias share the section of its target.
