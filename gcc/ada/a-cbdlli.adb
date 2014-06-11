@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1067,7 +1067,8 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       Position  : out Cursor;
       Count     : Count_Type := 1)
    is
-      New_Node : Count_Type;
+      First_Node : Count_Type;
+      New_Node   : Count_Type;
 
    begin
       if Before.Container /= null then
@@ -1094,13 +1095,15 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       end if;
 
       Allocate (Container, New_Item, New_Node);
-      Insert_Internal (Container, Before.Node, New_Node => New_Node);
-      Position := Cursor'(Container'Unchecked_Access, Node => New_Node);
+      First_Node := New_Node;
+      Insert_Internal (Container, Before.Node, New_Node);
 
       for Index in Count_Type'(2) .. Count loop
-         Allocate (Container, New_Item, New_Node => New_Node);
-         Insert_Internal (Container, Before.Node, New_Node => New_Node);
+         Allocate (Container, New_Item, New_Node);
+         Insert_Internal (Container, Before.Node, New_Node);
       end loop;
+
+      Position := Cursor'(Container'Unchecked_Access, First_Node);
    end Insert;
 
    procedure Insert

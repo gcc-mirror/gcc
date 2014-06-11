@@ -2924,10 +2924,10 @@ package body Sem_Warn is
       if Nkind (P) = N_With_Clause then
          if Ekind (E) = E_Package then
             Error_Msg_NE
-              ("??with of obsolescent package& declared#", N, E);
+              ("?j?with of obsolescent package& declared#", N, E);
          elsif Ekind (E) = E_Procedure then
             Error_Msg_NE
-              ("??with of obsolescent procedure& declared#", N, E);
+              ("?j?with of obsolescent procedure& declared#", N, E);
          else
             Error_Msg_NE
               ("??with of obsolescent function& declared#", N, E);

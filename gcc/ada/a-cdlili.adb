@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -942,7 +942,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position  : out Cursor;
       Count     : Count_Type := 1)
    is
-      New_Node : Node_Access;
+      First_Node : Node_Access;
+      New_Node   : Node_Access;
 
    begin
       if Before.Container /= null then
@@ -966,15 +967,16 @@ package body Ada.Containers.Doubly_Linked_Lists is
            "attempt to tamper with cursors (list is busy)";
 
       else
-         New_Node := new Node_Type'(New_Item, null, null);
+         New_Node   := new Node_Type'(New_Item, null, null);
+         First_Node := New_Node;
          Insert_Internal (Container, Before.Node, New_Node);
-
-         Position := Cursor'(Container'Unchecked_Access, New_Node);
 
          for J in 2 .. Count loop
             New_Node := new Node_Type'(New_Item, null, null);
             Insert_Internal (Container, Before.Node, New_Node);
          end loop;
+
+         Position := Cursor'(Container'Unchecked_Access, First_Node);
       end if;
    end Insert;
 
@@ -996,7 +998,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position  : out Cursor;
       Count     : Count_Type := 1)
    is
-      New_Node : Node_Access;
+      First_Node : Node_Access;
+      New_Node   : Node_Access;
 
    begin
       if Before.Container /= null then
@@ -1021,15 +1024,16 @@ package body Ada.Containers.Doubly_Linked_Lists is
            "attempt to tamper with cursors (list is busy)";
 
       else
-         New_Node := new Node_Type;
+         New_Node   := new Node_Type;
+         First_Node := New_Node;
          Insert_Internal (Container, Before.Node, New_Node);
-
-         Position := Cursor'(Container'Unchecked_Access, New_Node);
 
          for J in 2 .. Count loop
             New_Node := new Node_Type;
             Insert_Internal (Container, Before.Node, New_Node);
          end loop;
+
+         Position := Cursor'(Container'Unchecked_Access, First_Node);
       end if;
    end Insert;
 
