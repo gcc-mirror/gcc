@@ -703,13 +703,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		    win = 1;
 		  break;
 
-		case 'G':
-		case 'H':
-		  if (CONST_DOUBLE_AS_FLOAT_P (op) 
-		      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
-		    win = 1;
-		  break;
-
 		case 's':
 		  if (CONST_SCALAR_INT_P (op)) 
 		    break;
@@ -722,19 +715,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
 		case 'n':
 		  if (CONST_SCALAR_INT_P (op)) 
-		    win = 1;
-		  break;
-
-		case 'I':
-		case 'J':
-		case 'K':
-		case 'L':
-		case 'M':
-		case 'N':
-		case 'O':
-		case 'P':
-		  if (CONST_INT_P (op)
-		      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
 		    win = 1;
 		  break;
 

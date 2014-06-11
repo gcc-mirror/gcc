@@ -801,23 +801,6 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	    return NO_REGS;
 	  break;
 
-	case 'I':
-	case 'J':
-	case 'K':
-	case 'L':
-	case 'M':
-	case 'N':
-	case 'O':
-	case 'P':
-	  if ((CONST_INT_P (op)
-	       && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, constraints))
-	      || (equiv_const != NULL_RTX
-		  && CONST_INT_P (equiv_const)
-		  && CONST_OK_FOR_CONSTRAINT_P (INTVAL (equiv_const),
-						c, constraints)))
-	    return NO_REGS;
-	  break;
-
 	case 'E':
 	case 'F':
 	  if (CONST_DOUBLE_AS_FLOAT_P (op) 
@@ -831,17 +814,9 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	    return NO_REGS;
 	  break;
 
-	case 'G':
-	case 'H':
-	  if ((CONST_DOUBLE_AS_FLOAT_P (op) 
-	       && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, constraints))
-	      || (equiv_const != NULL_RTX
-		  && CONST_DOUBLE_AS_FLOAT_P (equiv_const) 
-		  && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (equiv_const,
-						       c, constraints)))
-	    return NO_REGS;
-	  break;
-
+	case 'I': case 'J': case 'K': case 'L': case 'M': case 'N':
+	case 'O': case 'P':
+	case 'G': case 'H':
 	case 'r':
 	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
 	case 'h': case 'j': case 'k': case 'l':

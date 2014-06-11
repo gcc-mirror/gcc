@@ -684,7 +684,6 @@ static bool have_memory_constraints;
 static bool have_address_constraints;
 static bool have_extra_constraints;
 static bool have_const_int_constraints;
-static bool have_const_dbl_constraints;
 static unsigned int num_constraints;
 
 static const constraint_data **enum_order;
@@ -888,7 +887,6 @@ add_constraint (const char *name, const char *regclass,
   constraint_max_namelen = MAX (constraint_max_namelen, strlen (name));
   have_register_constraints |= c->is_register;
   have_const_int_constraints |= c->is_const_int;
-  have_const_dbl_constraints |= c->is_const_dbl;
   have_extra_constraints |= c->is_extra;
   have_memory_constraints |= c->is_memory;
   have_address_constraints |= c->is_address;
@@ -1375,11 +1373,6 @@ write_tm_preds_h (void)
 	      "{\n"
 	      "  return false;\n"
 	      "}\n");
-      if (have_const_dbl_constraints)
-	puts ("#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(v_,c_,s_) \\\n"
-	      "    constraint_satisfied_p (v_, lookup_constraint (s_))\n");
-      else
-	puts ("#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(v_,c_,s_) 0\n");
 
       puts ("enum constraint_type\n"
 	    "{\n"

@@ -3434,13 +3434,6 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		      win = 1;
 		    break;
 
-		  case 'G':
-		  case 'H':
-		    if (CONST_DOUBLE_AS_FLOAT_P (operand)
-			&& CONST_DOUBLE_OK_FOR_CONSTRAINT_P (operand, c, p))
-		      win = 1;
-		    break;
-
 		  case 's':
 		    if (CONST_SCALAR_INT_P (operand))
 		      break;
@@ -3452,19 +3445,6 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 		  case 'n':
 		    if (CONST_SCALAR_INT_P (operand))
-		      win = 1;
-		    break;
-
-		  case 'I':
-		  case 'J':
-		  case 'K':
-		  case 'L':
-		  case 'M':
-		  case 'N':
-		  case 'O':
-		  case 'P':
-		    if (CONST_INT_P (operand)
-			&& CONST_OK_FOR_CONSTRAINT_P (INTVAL (operand), c, p))
 		      win = 1;
 		    break;
 

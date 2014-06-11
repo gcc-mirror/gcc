@@ -1980,13 +1980,6 @@ process_alt_operands (int only_alternative)
 		    win = true;
 		  break;
 
-		case 'G':
-		case 'H':
-		  if (CONST_DOUBLE_AS_FLOAT_P (op)
-		      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
-		    win = true;
-		  break;
-
 		case 's':
 		  if (CONST_SCALAR_INT_P (op))
 		    break;
@@ -1998,19 +1991,6 @@ process_alt_operands (int only_alternative)
 
 		case 'n':
 		  if (CONST_SCALAR_INT_P (op))
-		    win = true;
-		  break;
-
-		case 'I':
-		case 'J':
-		case 'K':
-		case 'L':
-		case 'M':
-		case 'N':
-		case 'O':
-		case 'P':
-		  if (CONST_INT_P (op)
-		      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
 		    win = true;
 		  break;
 
