@@ -910,6 +910,10 @@
 
 (define_int_iterator FRECP [UNSPEC_FRECPE UNSPEC_FRECPX])
 
+(define_int_iterator CRC [UNSPEC_CRC32B UNSPEC_CRC32H UNSPEC_CRC32W
+                          UNSPEC_CRC32X UNSPEC_CRC32CB UNSPEC_CRC32CH
+                          UNSPEC_CRC32CW UNSPEC_CRC32CX])
+
 (define_int_iterator CRYPTO_AES [UNSPEC_AESE UNSPEC_AESD])
 (define_int_iterator CRYPTO_AESMC [UNSPEC_AESMC UNSPEC_AESIMC])
 
@@ -1037,6 +1041,16 @@
 			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")])
 
 (define_int_attr frecp_suffix  [(UNSPEC_FRECPE "e") (UNSPEC_FRECPX "x")])
+
+(define_int_attr crc_variant [(UNSPEC_CRC32B "crc32b") (UNSPEC_CRC32H "crc32h")
+                        (UNSPEC_CRC32W "crc32w") (UNSPEC_CRC32X "crc32x")
+                        (UNSPEC_CRC32CB "crc32cb") (UNSPEC_CRC32CH "crc32ch")
+                        (UNSPEC_CRC32CW "crc32cw") (UNSPEC_CRC32CX "crc32cx")])
+
+(define_int_attr crc_mode [(UNSPEC_CRC32B "QI") (UNSPEC_CRC32H "HI")
+                        (UNSPEC_CRC32W "SI") (UNSPEC_CRC32X "DI")
+                        (UNSPEC_CRC32CB "QI") (UNSPEC_CRC32CH "HI")
+                        (UNSPEC_CRC32CW "SI") (UNSPEC_CRC32CX "DI")])
 
 (define_int_attr aes_op [(UNSPEC_AESE "e") (UNSPEC_AESD "d")])
 (define_int_attr aesmc_op [(UNSPEC_AESMC "mc") (UNSPEC_AESIMC "imc")])

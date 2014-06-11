@@ -1,3 +1,29 @@
+2014-06-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config.gcc (aarch64*-*-*): Add arm_acle.h to extra headers.
+	* Makefile.in (TEXI_GCC_FILES): Add aarch64-acle-intrinsics.texi to
+	dependencies.
+	* config/aarch64/aarch64-builtins.c (AARCH64_CRC32_BUILTINS): Define.
+	(aarch64_crc_builtin_datum): New struct.
+	(aarch64_crc_builtin_data): New.
+	(aarch64_init_crc32_builtins): New function.
+	(aarch64_init_builtins): Initialise CRC32 builtins when appropriate.
+	(aarch64_crc32_expand_builtin): New.
+	(aarch64_expand_builtin): Add CRC32 builtin expansion case.
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define
+	__ARM_FEATURE_CRC32 when appropriate.
+	(TARGET_CRC32): Define.
+	* config/aarch64/aarch64.md (UNSPEC_CRC32B, UNSPEC_CRC32H,
+	UNSPEC_CRC32W, UNSPEC_CRC32X, UNSPEC_CRC32CB, UNSPEC_CRC32CH,
+	UNSPEC_CRC32CW, UNSPEC_CRC32CX): New unspec values.
+	(aarch64_<crc_variant>): New pattern.
+	* config/aarch64/arm_acle.h: New file.
+	* config/aarch64/iterators.md (CRC): New int iterator.
+	(crc_variant, crc_mode): New int attributes.
+	* doc/aarch64-acle-intrinsics.texi: New file.
+	* doc/extend.texi (aarch64): Document aarch64 ACLE intrinsics.
+	Include aarch64-acle-intrinsics.texi.
+
 2014-06-11  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* tree-vect-data-refs.c (vect_grouped_store_supported): New

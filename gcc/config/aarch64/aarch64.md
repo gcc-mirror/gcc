@@ -68,6 +68,14 @@
 (define_c_enum "unspec" [
     UNSPEC_CASESI
     UNSPEC_CLS
+    UNSPEC_CRC32B
+    UNSPEC_CRC32CB
+    UNSPEC_CRC32CH
+    UNSPEC_CRC32CW
+    UNSPEC_CRC32CX
+    UNSPEC_CRC32H
+    UNSPEC_CRC32W
+    UNSPEC_CRC32X
     UNSPEC_FRECPE
     UNSPEC_FRECPS
     UNSPEC_FRECPX
@@ -2479,6 +2487,23 @@
 				  XEXP (operands[1], 1));
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }
+)
+
+
+;; CRC32 instructions.
+(define_insn "aarch64_<crc_variant>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
+                    (match_operand:<crc_mode> 2 "register_operand" "r")]
+         CRC))]
+  "TARGET_CRC32"
+  {
+    if (GET_MODE_BITSIZE (GET_MODE (operands[2])) >= 64)
+      return "<crc_variant>\\t%w0, %w1, %x2";
+    else
+      return "<crc_variant>\\t%w0, %w1, %w2";
+  }
+  [(set_attr "type" "crc")]
 )
 
 (define_insn "*csinc2<mode>_insn"

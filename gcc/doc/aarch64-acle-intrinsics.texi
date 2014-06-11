@@ -1,0 +1,55 @@
+@c Copyright (C) 2014 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@subsubsection CRC32 intrinsics
+
+These intrinsics are available when the CRC32 architecture extension is
+specified, e.g. when the @option{-march=armv8-a+crc} switch is used, or when
+the target processor specified with @option{-mcpu} supports it.
+
+@itemize @bullet
+@item uint32_t __crc32b (uint32_t, uint8_t)
+@*@emph{Form of expected instruction(s):} @code{crc32b @var{w0}, @var{w1}, @var{w2}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32h (uint32_t, uint16_t)
+@*@emph{Form of expected instruction(s):} @code{crc32h @var{w0}, @var{w1}, @var{w2}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32w (uint32_t, uint32_t)
+@*@emph{Form of expected instruction(s):} @code{crc32w @var{w0}, @var{w1}, @var{w2}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32d (uint32_t, uint64_t)
+@*@emph{Form of expected instruction(s):} @code{crc32x @var{w0}, @var{w1}, @var{x2}}
+@end itemize
+
+@itemize @bullet
+@item uint32_t __crc32cb (uint32_t, uint8_t)
+@*@emph{Form of expected instruction(s):} @code{crc32cb @var{w0}, @var{w1}, @var{w2}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32ch (uint32_t, uint16_t)
+@*@emph{Form of expected instruction(s):} @code{crc32ch @var{w0}, @var{w1}, @var{w2}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32cw (uint32_t, uint32_t)
+@*@emph{Form of expected instruction(s):} @code{crc32cw @var{w0}, @var{w1}, @var{w2}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32cd (uint32_t, uint64_t)
+@*@emph{Form of expected instruction(s):} @code{crc32cx @var{w0}, @var{w1}, @var{x2}}
+@end itemize

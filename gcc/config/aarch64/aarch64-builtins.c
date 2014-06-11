@@ -411,6 +411,28 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 #include "aarch64-simd-builtins.def"
 };
 
+/* There's only 8 CRC32 builtins.  Probably not worth their own .def file.  */
+#define AARCH64_CRC32_BUILTINS \
+  CRC32_BUILTIN (crc32b, QI) \
+  CRC32_BUILTIN (crc32h, HI) \
+  CRC32_BUILTIN (crc32w, SI) \
+  CRC32_BUILTIN (crc32x, DI) \
+  CRC32_BUILTIN (crc32cb, QI) \
+  CRC32_BUILTIN (crc32ch, HI) \
+  CRC32_BUILTIN (crc32cw, SI) \
+  CRC32_BUILTIN (crc32cx, DI)
+
+typedef struct
+{
+  const char *name;
+  enum machine_mode mode;
+  const enum insn_code icode;
+  unsigned int fcode;
+} aarch64_crc_builtin_datum;
+
+#define CRC32_BUILTIN(N, M) \
+  AARCH64_BUILTIN_##N,
+
 #undef VAR1
 #define VAR1(T, N, MAP, A) \
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
@@ -428,8 +450,21 @@ enum aarch64_builtins
 #include "aarch64-simd-builtins.def"
   AARCH64_SIMD_BUILTIN_MAX = AARCH64_SIMD_BUILTIN_BASE
 			      + ARRAY_SIZE (aarch64_simd_builtin_data),
+  AARCH64_CRC32_BUILTIN_BASE,
+  AARCH64_CRC32_BUILTINS
+  AARCH64_CRC32_BUILTIN_MAX,
   AARCH64_BUILTIN_MAX
 };
+
+#undef CRC32_BUILTIN
+#define CRC32_BUILTIN(N, M) \
+  {"__builtin_aarch64_"#N, M##mode, CODE_FOR_aarch64_##N, AARCH64_BUILTIN_##N},
+
+static aarch64_crc_builtin_datum aarch64_crc_builtin_data[] = {
+  AARCH64_CRC32_BUILTINS
+};
+
+#undef CRC32_BUILTIN
 
 static GTY(()) tree aarch64_builtin_decls[AARCH64_BUILTIN_MAX];
 
@@ -802,6 +837,24 @@ aarch64_init_simd_builtins (void)
     }
 }
 
+static void
+aarch64_init_crc32_builtins ()
+{
+  tree usi_type = aarch64_build_unsigned_type (SImode);
+  unsigned int i = 0;
+
+  for (i = 0; i < ARRAY_SIZE (aarch64_crc_builtin_data); ++i)
+    {
+      aarch64_crc_builtin_datum* d = &aarch64_crc_builtin_data[i];
+      tree argtype = aarch64_build_unsigned_type (d->mode);
+      tree ftype = build_function_type_list (usi_type, usi_type, argtype, NULL_TREE);
+      tree fndecl = add_builtin_function (d->name, ftype, d->fcode,
+                                          BUILT_IN_MD, NULL, NULL_TREE);
+
+      aarch64_builtin_decls[d->fcode] = fndecl;
+    }
+}
+
 void
 aarch64_init_builtins (void)
 {
@@ -825,6 +878,8 @@ aarch64_init_builtins (void)
 
   if (TARGET_SIMD)
     aarch64_init_simd_builtins ();
+  if (TARGET_CRC32)
+    aarch64_init_crc32_builtins ();
 }
 
 tree
@@ -1024,6 +1079,41 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 	   SIMD_ARG_STOP);
 }
 
+rtx
+aarch64_crc32_expand_builtin (int fcode, tree exp, rtx target)
+{
+  rtx pat;
+  aarch64_crc_builtin_datum *d
+    = &aarch64_crc_builtin_data[fcode - (AARCH64_CRC32_BUILTIN_BASE + 1)];
+  enum insn_code icode = d->icode;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+
+  if (! target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  gcc_assert ((GET_MODE (op0) == mode0 || GET_MODE (op0) == VOIDmode)
+	      && (GET_MODE (op1) == mode1 || GET_MODE (op1) == VOIDmode));
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
+  pat = GEN_FCN (icode) (target, op0, op1);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient.  */
 rtx
@@ -1066,8 +1156,10 @@ aarch64_expand_builtin (tree exp,
       return target;
     }
 
-  if (fcode >= AARCH64_SIMD_BUILTIN_BASE)
+  if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)
     return aarch64_simd_expand_builtin (fcode, exp, target);
+  else if (fcode >= AARCH64_CRC32_BUILTIN_BASE && fcode <= AARCH64_CRC32_BUILTIN_MAX)
+    return aarch64_crc32_expand_builtin (fcode, exp, target);
 
   return NULL_RTX;
 }

@@ -9697,6 +9697,7 @@ instructions, but allow the compiler to schedule those calls.
 
 @menu
 * AArch64 Built-in Functions::
+* AArch64 intrinsics::
 * Alpha Built-in Functions::
 * Altera Nios II Built-in Functions::
 * ARC Built-in Functions::
@@ -9741,6 +9742,11 @@ void __builtin_aarch64_set_fpcr (unsigned int)
 unsigned int __builtin_aarch64_get_fpsr ()
 void __builtin_aarch64_set_fpsr (unsigned int)
 @end smallexample
+
+@node AArch64 intrinsics
+@subsection ACLE Intrinsics for AArch64
+
+@include aarch64-acle-intrinsics.texi
 
 @node Alpha Built-in Functions
 @subsection Alpha Built-in Functions
