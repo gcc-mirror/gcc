@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1003,9 +1003,9 @@ package body Styleg is
    -- Check_Then --
    ----------------
 
-   --  In check if then layout mode (-gnatyi), we expect a THEN keyword
-   --  to appear either on the same line as the IF, or on a separate line
-   --  if the IF statement extends for more than one line.
+   --  In check if then layout mode (-gnatyi), we expect a THEN keyword to
+   --  appear either on the same line as the IF, or on a separate line if
+   --  the IF statement extends for more than one line.
 
    procedure Check_Then (If_Loc : Source_Ptr) is
    begin
@@ -1061,7 +1061,7 @@ package body Styleg is
    begin
       if Style_Check_Xtra_Parens then
          Error_Msg -- CODEFIX
-           ("redundant parentheses?", Loc);
+           ("(style) redundant parentheses", Loc);
       end if;
    end Check_Xtra_Parens;
 

@@ -1425,20 +1425,20 @@ package body Sem_Warn is
                         if not Is_Trivial_Subprogram (Scope (E1)) then
                            if not Warnings_Off_E1 then
                               if Is_Access_Type (Etype (Parent (UR))) then
-                                 Error_Msg_N ("?`&.&` may be null!", UR);
+                                 Error_Msg_N ("??`&.&` may be null!", UR);
                               else
                                  Error_Msg_N
-                                   ("?`&.&` may be referenced before "
+                                   ("??`&.&` may be referenced before "
                                     & "it has a value!", UR);
                               end if;
                            end if;
                         end if;
-                        --  All other cases of unset reference active
+
+                     --  All other cases of unset reference active
 
                      elsif not Warnings_Off_E1 then
                         Error_Msg_N
-                          ("?& may be referenced before it has a value!",
-                           UR);
+                          ("??& may be referenced before it has a value!", UR);
                      end if;
                   end if;
 
@@ -3194,15 +3194,15 @@ package body Sem_Warn is
                   Error_Msg_Sloc := Sloc (CV);
 
                   if Nkind (CV) not in N_Subexpr then
-                     Error_Msg_N ("\\?(see test #)", Loc);
+                     Error_Msg_N ("\\??(see test #)", Loc);
 
                   elsif Nkind (Parent (CV)) =
                           N_Case_Statement_Alternative
                   then
-                     Error_Msg_N ("\\?(see case alternative #)", Loc);
+                     Error_Msg_N ("\\??(see case alternative #)", Loc);
 
                   else
-                     Error_Msg_N ("\\?(see assignment #)", Loc);
+                     Error_Msg_N ("\\??(see assignment #)", Loc);
                   end if;
                end if;
             end;
@@ -3520,7 +3520,7 @@ package body Sem_Warn is
                         then
                            if Act1 = First_Actual (N) then
                               Error_Msg_FE
-                                ("<`IN OUT` prefix overlaps with "
+                                ("<<`IN OUT` prefix overlaps with "
                                  & "actual for&", Act1, Form);
 
                            else
@@ -3528,7 +3528,7 @@ package body Sem_Warn is
 
                               Error_Msg_Node_2 := Form;
                               Error_Msg_FE
-                                ("<writable actual for & overlaps with "
+                                ("<<writable actual for & overlaps with "
                                  & "actual for&", Act1, Form);
                            end if;
 
@@ -3540,7 +3540,7 @@ package body Sem_Warn is
                            --  This is one of the messages
 
                            Error_Msg_FE
-                             ("<writable actual for & overlaps with "
+                             ("<<writable actual for & overlaps with "
                               & "actual for&", Act1, Form1);
                         end if;
                      end;

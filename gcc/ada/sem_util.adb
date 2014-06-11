@@ -638,7 +638,7 @@ package body Sem_Util is
    is
    begin
       Error_Msg_Warn := Warn;
-      Error_Msg_N ("unrecognized attribute&<", N);
+      Error_Msg_N ("unrecognized attribute&<<", N);
 
       --  Check for possible misspelling
 
@@ -646,7 +646,7 @@ package body Sem_Util is
       while Error_Msg_Name_1 <= Last_Attribute_Name loop
          if Is_Bad_Spelling_Of (Nam, Error_Msg_Name_1) then
             Error_Msg_N -- CODEFIX
-              ("\possible misspelling of %<", N);
+              ("\possible misspelling of %<<", N);
             exit;
          end if;
 
@@ -1555,7 +1555,7 @@ package body Sem_Util is
 
          else
             Error_Msg_NE
-              ("?static expression fails static predicate check on &",
+              ("??static expression fails static predicate check on &",
                Expr, Typ);
          end if;
       end if;
@@ -2087,7 +2087,7 @@ package body Sem_Util is
                               Error_Msg_N
                                 ("writable function parameter may affect "
                                  & "value in other component because order "
-                                 & "of evaluation is unspecified?",
+                                 & "of evaluation is unspecified??",
                                  Node (First_Elmt (Writable_Actuals_List)));
                            end if;
                         end if;

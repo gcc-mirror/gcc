@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4749,7 +4749,7 @@ package body Sem_Aggr is
          Error_Msg_N
            ("(Ada 2005) null not allowed in null-excluding component??", Expr);
          Error_Msg_N
-           ("\Constraint_Error will be raised at run time?", Expr);
+           ("\Constraint_Error will be raised at run time??", Expr);
 
          Rewrite (Expr,
            Make_Raise_Constraint_Error

@@ -1,3 +1,20 @@
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Add debug flag -gnatd.q.
+	* erroutc.adb (Prescan_Message): Bomb if untagged warning with
+	-gnatd.q set.
+	* styleg.adb (Check_Xtra_Parens): Message should be a style
+	message.
+	* sem_aggr.adb, sem_ch3.adb, exp_ch9.adb, checks.adb, sem_prag.adb,
+	par-endh.adb, eval_fat.adb, freeze.adb, sem_util.adb, sem_attr.adb,
+	sem_elab.adb, sem_ch6.adb, sem_warn.adb, sem_cat.adb,
+	sem_ch13.adb, lib-xref.adb: Add remaining warning tags.
+
+2014-06-11  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Revised chapter on Implementation Defined
+	Characteristics.
+
 2014-06-11  Geert Bosch  <bosch@adacore.com>
 
 	* s-exctab.adb: avoid race conditions in exception registration.

@@ -4492,7 +4492,7 @@ package body Sem_Attr is
                if Is_Potentially_Unevaluated (P) then
                   Error_Msg_Name_1 := Aname;
                   Error_Msg_N
-                    ("?prefix of attribute % is always evaluated when "
+                    ("??prefix of attribute % is always evaluated when "
                      & "related consequence is selected", P);
                end if;
 

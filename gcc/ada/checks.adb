@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3128,7 +3128,7 @@ package body Checks is
                else
                   Apply_Compile_Time_Constraint_Error
                     (Ck_Node,
-                     "static value out of range of}?",
+                     "static value out of range of}??",
                      CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
@@ -3913,7 +3913,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding objects?",
+                               & "in null-excluding objects??",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Parameter_Specification =>

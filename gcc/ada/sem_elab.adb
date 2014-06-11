@@ -1317,7 +1317,7 @@ package body Sem_Elab is
 
                Error_Msg_Warn := GNAT_Mode;
                Error_Msg_N
-                 ("<non-static call not allowed in preelaborated unit", N);
+                 ("<<non-static call not allowed in preelaborated unit", N);
                return;
             end if;
 
