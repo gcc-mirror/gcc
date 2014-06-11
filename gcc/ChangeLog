@@ -1,5 +1,13 @@
 2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* genpreds.c (write_constraint_satisfied_p_1): Replace with...
+	(write_constraint_satisfied_p_array): ...this new function.
+	(write_tm_preds_h): Replace write_constraint_satisfied_p_1 with
+	an array.
+	(write_insn_preds_c): Update accordingly.
+
+2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* genpreds.c (write_lookup_constraint): Rename to...
 	(write_lookup_constraint_1): ...this.
 	(write_lookup_constraint_array): New function.
