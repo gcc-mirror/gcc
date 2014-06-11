@@ -1,3 +1,31 @@
+2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/md.texi (regclass_for_constraint): Rename to...
+	(reg_class_for_constraint): ...this.
+	* genpreds.c (num_constraints, enum_order, register_start)
+	(register_end, satisfied_start, memory_start, memory_end)
+	(address_start, address_end): New variables.
+	(add_constraint): Count the number of constraints.
+	(choose_enum_order): New function.
+	(write_enum_constraint_num): Iterate over enum_order.
+	(write_regclass_for_constraint): Rename to...
+	(write_reg_class_for_constraint_1): ...this and update output
+	accordingly.
+	(write_constraint_satisfied_p): Rename to...
+	(write_constraint_satisfied_p_1): ...this and update output
+	accordingly.  Do nothing if all extra constraints are register
+	constraints.
+	(write_insn_extra_memory_constraint): Delete.
+	(write_insn_extra_address_constraint): Delete.
+	(write_range_function): New function.
+	(write_tm_preds_h): Define constraint_satisfied_p and
+	reg_class_for_constraint as inline functions that do a range check
+	before calling the out-of-line function.  Use write_range_function
+	to implement insn_extra_{register,memory,address}_constraint,
+	the first of which is new.
+	(write_insn_preds_c): Update after above changes to write_* functions.
+	(main): Call choose_enum_order.
+
 2014-06-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/61306
