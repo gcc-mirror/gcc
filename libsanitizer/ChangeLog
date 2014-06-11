@@ -1,3 +1,7 @@
+2014-06-11  Richard Biener  <rguenther@suse.de>
+
+	* asan/asan_linux.cc: Cherry pick upstream r210012.
+
 2014-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/sanitizer_stacktrace.cc: Cherry pick upstream
