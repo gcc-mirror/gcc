@@ -3930,6 +3930,13 @@ which.
 @c above is overfull.  not sure what to do.  --mew 5feb93  did
 @c something, not sure if it looks good.  --mew 10feb93
 
+@defmac INCOMING_REG_PARM_STACK_SPACE (@var{fndecl})
+Like @code{REG_PARM_STACK_SPACE}, but for incoming register arguments.
+Define this macro if space guaranteed when compiling a function body
+is different to space required when making a call, a situation that
+can arise with K&R style function definitions.
+@end defmac
+
 @defmac OUTGOING_REG_PARM_STACK_SPACE (@var{fntype})
 Define this to a nonzero value if it is the responsibility of the
 caller to allocate the area reserved for arguments passed in registers
