@@ -685,6 +685,13 @@ static bool have_address_constraints;
 static bool have_extra_constraints;
 static bool have_const_int_constraints;
 static bool have_const_dbl_constraints;
+static unsigned int num_constraints;
+
+static const constraint_data **enum_order;
+static unsigned int register_start, register_end;
+static unsigned int satisfied_start;
+static unsigned int memory_start, memory_end;
+static unsigned int address_start, address_end;
 
 /* Convert NAME, which contains angle brackets and/or underscores, to
    a string that can be used as part of a C identifier.  The string
@@ -884,6 +891,7 @@ add_constraint (const char *name, const char *regclass,
   have_extra_constraints |= c->is_extra;
   have_memory_constraints |= c->is_memory;
   have_address_constraints |= c->is_address;
+  num_constraints += 1;
 }
 
 /* Process a DEFINE_CONSTRAINT, DEFINE_MEMORY_CONSTRAINT, or
@@ -904,19 +912,54 @@ process_define_register_constraint (rtx c, int lineno)
   add_constraint (XSTR (c, 0), XSTR (c, 1), 0, false, false, lineno);
 }
 
+/* Put the constraints into enum order.  We want to keep constraints
+   of the same type together so that query functions can be simple
+   range checks.  */
+static void
+choose_enum_order (void)
+{
+  struct constraint_data *c;
+
+  enum_order = XNEWVEC (const constraint_data *, num_constraints);
+  unsigned int next = 0;
+
+  register_start = next;
+  FOR_ALL_CONSTRAINTS (c)
+    if (c->is_register)
+      enum_order[next++] = c;
+  register_end = next;
+
+  satisfied_start = next;
+
+  memory_start = next;
+  FOR_ALL_CONSTRAINTS (c)
+    if (c->is_memory)
+      enum_order[next++] = c;
+  memory_end = next;
+
+  address_start = next;
+  FOR_ALL_CONSTRAINTS (c)
+    if (c->is_address)
+      enum_order[next++] = c;
+  address_end = next;
+
+  FOR_ALL_CONSTRAINTS (c)
+    if (!c->is_register && !c->is_memory && !c->is_address)
+      enum_order[next++] = c;
+  gcc_assert (next == num_constraints);
+}
+
 /* Write out an enumeration with one entry per machine-specific
    constraint.  */
 static void
 write_enum_constraint_num (void)
 {
-  struct constraint_data *c;
-
   fputs ("#define CONSTRAINT_NUM_DEFINED_P 1\n", stdout);
   fputs ("enum constraint_num\n"
 	 "{\n"
 	 "  CONSTRAINT__UNKNOWN = 0", stdout);
-  FOR_ALL_CONSTRAINTS (c)
-    printf (",\n  CONSTRAINT_%s", c->c_name);
+  for (unsigned int i = 0; i < num_constraints; ++i)
+    printf (",\n  CONSTRAINT_%s", enum_order[i]->c_name);
   puts (",\n  CONSTRAINT__LIMIT\n};\n");
 }
 
@@ -1010,12 +1053,12 @@ write_insn_constraint_len (void)
 /* Write out the function which computes the register class corresponding
    to a register constraint.  */
 static void
-write_regclass_for_constraint (void)
+write_reg_class_for_constraint_1 (void)
 {
   struct constraint_data *c;
 
   puts ("enum reg_class\n"
-	"regclass_for_constraint (enum constraint_num c)\n"
+	"reg_class_for_constraint_1 (enum constraint_num c)\n"
 	"{\n"
 	"  switch (c)\n"
 	"    {");
@@ -1100,12 +1143,15 @@ write_tm_constrs_h (void)
    a CONSTRAINT_xxx constant to one of the predicate functions generated
    above.  */
 static void
-write_constraint_satisfied_p (void)
+write_constraint_satisfied_p_1 (void)
 {
   struct constraint_data *c;
 
+  if (satisfied_start == num_constraints)
+    return;
+
   puts ("bool\n"
-	"constraint_satisfied_p (rtx op, enum constraint_num c)\n"
+	"constraint_satisfied_p_1 (rtx op, enum constraint_num c)\n"
 	"{\n"
 	"  switch (c)\n"
 	"    {");
@@ -1153,55 +1199,26 @@ write_insn_const_int_ok_for_constraint (void)
 	"  return false;\n"
 	"}\n");
 }
-
-
-/* Write out the function which computes whether a given constraint is
-   a memory constraint.  */
-static void
-write_insn_extra_memory_constraint (void)
-{
-  struct constraint_data *c;
-
-  puts ("bool\n"
-	"insn_extra_memory_constraint (enum constraint_num c)\n"
-	"{\n"
-	"  switch (c)\n"
-	"    {");
-
-  FOR_ALL_CONSTRAINTS (c)
-    if (c->is_memory)
-      printf ("    case CONSTRAINT_%s:\n      return true;\n\n", c->c_name);
-
-  puts ("    default: break;\n"
-	"    }\n"
-	"  return false;\n"
-	"}\n");
-}
-
-/* Write out the function which computes whether a given constraint is
-   an address constraint.  */
-static void
-write_insn_extra_address_constraint (void)
-{
-  struct constraint_data *c;
-
-  puts ("bool\n"
-	"insn_extra_address_constraint (enum constraint_num c)\n"
-	"{\n"
-	"  switch (c)\n"
-	"    {");
-
-  FOR_ALL_CONSTRAINTS (c)
-    if (c->is_address)
-      printf ("    case CONSTRAINT_%s:\n      return true;\n\n", c->c_name);
-
-  puts ("    default: break;\n"
-	"    }\n"
-	"  return false;\n"
-	"}\n");
-}
-
 
+/* Write a definition for a function NAME that returns true if a given
+   constraint_num is in the range [START, END).  */
+static void
+write_range_function (const char *name, unsigned int start, unsigned int end)
+{
+  printf ("static inline bool\n");
+  if (start != end)
+    printf ("%s (enum constraint_num c)\n"
+	    "{\n"
+	    "  return c >= CONSTRAINT_%s && c <= CONSTRAINT_%s;\n"
+	    "}\n\n",
+	    name, enum_order[start]->c_name, enum_order[end - 1]->c_name);
+  else
+    printf ("%s (enum constraint_num)\n"
+	    "{\n"
+	    "  return false;\n"
+	    "}\n\n", name);
+}
+
 /* Write tm-preds.h.  Unfortunately, it is impossible to forward-declare
    an enumeration in portable C, so we have to condition all these
    prototypes on HAVE_MACHINE_MODES.  */
@@ -1228,8 +1245,36 @@ write_tm_preds_h (void)
   if (constraint_max_namelen > 0)
     {
       write_enum_constraint_num ();
-      puts ("extern enum constraint_num lookup_constraint (const char *);\n"
-	    "extern bool constraint_satisfied_p (rtx, enum constraint_num);\n");
+      puts ("extern enum constraint_num lookup_constraint (const char *);");
+      if (satisfied_start == num_constraints)
+	puts ("/* Return true if X satisfies constraint C.  */\n"
+	      "\n"
+	      "static inline bool\n"
+	      "constraint_satisfied_p (rtx, enum constraint_num)\n"
+	      "{\n"
+	      "  return false;\n"
+	      "}\n");
+      else
+	printf ("extern bool constraint_satisfied_p_1 (rtx,"
+		" enum constraint_num);\n"
+		"\n"
+		"/* Return true if X satisfies constraint C.  */\n"
+		"\n"
+		"static inline bool\n"
+		"constraint_satisfied_p (rtx x, enum constraint_num c)\n"
+		"{\n"
+		"  return c >= CONSTRAINT_%s"
+		" && constraint_satisfied_p_1 (x, c);\n"
+		"}\n"
+		"\n",
+		enum_order[satisfied_start]->name);
+
+      write_range_function ("insn_extra_register_constraint",
+			    register_start, register_end);
+      write_range_function ("insn_extra_memory_constraint",
+			    memory_start, memory_end);
+      write_range_function ("insn_extra_address_constraint",
+			    address_start, address_end);
 
       if (constraint_max_namelen > 1)
         {
@@ -1240,14 +1285,28 @@ write_tm_preds_h (void)
       else
 	puts ("#define CONSTRAINT_LEN(c_,s_) 1\n");
       if (have_register_constraints)
-	puts ("extern enum reg_class regclass_for_constraint "
+	puts ("extern enum reg_class reg_class_for_constraint_1 "
 	      "(enum constraint_num);\n"
+	      "\n"
+	      "static inline enum reg_class\n"
+	      "reg_class_for_constraint (enum constraint_num c)\n"
+	      "{\n"
+	      "  if (insn_extra_register_constraint (c))\n"
+	      "    return reg_class_for_constraint_1 (c);\n"
+	      "  return NO_REGS;\n"
+	      "}\n"
+	      "\n"
 	      "#define REG_CLASS_FROM_CONSTRAINT(c_,s_) \\\n"
-	      "    regclass_for_constraint (lookup_constraint (s_))\n"
+	      "    reg_class_for_constraint (lookup_constraint (s_))\n"
 	      "#define REG_CLASS_FOR_CONSTRAINT(x_) \\\n"
-	      "    regclass_for_constraint (x_)\n");
+	      "    reg_class_for_constraint (x_)\n");
       else
-	puts ("#define REG_CLASS_FROM_CONSTRAINT(c_,s_) NO_REGS\n"
+	puts ("static inline enum reg_class\n"
+	      "reg_class_for_constraint (enum constraint_num)\n"
+	      "{\n"
+	      "  return NO_REGS;\n"
+	      "}\n\n"
+	      "#define REG_CLASS_FROM_CONSTRAINT(c_,s_) NO_REGS\n"
 	      "#define REG_CLASS_FOR_CONSTRAINT(x_) \\\n"
 	      "    NO_REGS\n");
       if (have_const_int_constraints)
@@ -1265,16 +1324,12 @@ write_tm_preds_h (void)
 	puts ("#define EXTRA_CONSTRAINT_STR(v_,c_,s_) \\\n"
 	      "    constraint_satisfied_p (v_, lookup_constraint (s_))\n");
       if (have_memory_constraints)
-	puts ("extern bool "
-	      "insn_extra_memory_constraint (enum constraint_num);\n"
-	      "#define EXTRA_MEMORY_CONSTRAINT(c_,s_) "
+	puts ("#define EXTRA_MEMORY_CONSTRAINT(c_,s_) "
 	      "insn_extra_memory_constraint (lookup_constraint (s_))\n");
       else
 	puts ("#define EXTRA_MEMORY_CONSTRAINT(c_,s_) false\n");
       if (have_address_constraints)
-	puts ("extern bool "
-	      "insn_extra_address_constraint (enum constraint_num);\n"
-	      "#define EXTRA_ADDRESS_CONSTRAINT(c_,s_) "
+	puts ("#define EXTRA_ADDRESS_CONSTRAINT(c_,s_) "
 	      "insn_extra_address_constraint (lookup_constraint (s_))\n");
       else
 	puts ("#define EXTRA_ADDRESS_CONSTRAINT(c_,s_) false\n");
@@ -1330,16 +1385,11 @@ write_insn_preds_c (void)
     {
       write_lookup_constraint ();
       if (have_register_constraints)
-	write_regclass_for_constraint ();
-      write_constraint_satisfied_p ();
+	write_reg_class_for_constraint_1 ();
+      write_constraint_satisfied_p_1 ();
 
       if (have_const_int_constraints)
 	write_insn_const_int_ok_for_constraint ();
-
-      if (have_memory_constraints)
-	write_insn_extra_memory_constraint ();
-      if (have_address_constraints)
-	write_insn_extra_address_constraint ();
     }
 }
 
@@ -1398,6 +1448,8 @@ main (int argc, char **argv)
       default:
 	break;
       }
+
+  choose_enum_order ();
 
   if (gen_header)
     write_tm_preds_h ();
