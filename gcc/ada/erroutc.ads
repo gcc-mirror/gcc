@@ -60,15 +60,24 @@ package Erroutc is
    --  character ! and is thus to be treated as an unconditional message.
 
    Is_Warning_Msg : Boolean := False;
-   --  Set True to indicate if current message is warning message (contains ?)
+   --  Set True to indicate if current message is warning message (contains ?
+   --  or contains < and Error_Msg_Warn is True.
+
+   Is_Info_Msg : Boolean := False;
+   --  Set True to indicate that the current message starts with the characters
+   --  "info: " and is to be treated as an information message. This string
+   --  will be prepended to the message and all its continuations.
 
    Warning_Msg_Char : Character;
    --  Warning character, valid only if Is_Warning_Msg is True
-   --    ' '      -- ?   appeared on its own in message
-   --    '?'      -- ??  appeared in message
-   --    'x'      -- ?x? appeared in message (x = a .. z)
-   --    'X'      -- ?X? appeared in message (X = A .. Z)
-   --    '*'      -- ?*? appeared in message
+   --    ' '      -- ?   or <   appeared on its own in message
+   --    '?'      -- ??  or <<  appeared in message
+   --    'x'      -- ?x? or <x< appeared in message (x = a .. z)
+   --    'X'      -- ?X? or <X< appeared in message (X = A .. Z)
+   --    '*'      -- ?*? or <*< appeared in message
+   --    '$'      -- ?$? or <$< appeared in message
+   --  In the case of the < sequences, this is set only if the message is
+   --  actually a warning, i.e. if Error_Msg_Warn is True
 
    Is_Style_Msg : Boolean := False;
    --  Set True to indicate if the current message is a style message
@@ -194,7 +203,10 @@ package Erroutc is
       --  Column number for error message
 
       Warn : Boolean;
-      --  True if warning message (i.e. insertion character ? appeared)
+      --  True if warning message
+
+      Info : Boolean;
+      --  True if info message
 
       Warn_Err : Boolean;
       --  True if this is a warning message which is to be treated as an error
@@ -202,11 +214,14 @@ package Erroutc is
 
       Warn_Chr : Character;
       --  Warning character (note: set even if Warning_Doc_Switch is False)
-      --    ' '      -- ?   appeared on its own in message
-      --    '?'      -- ??  appeared in message
-      --    'x'      -- ?x? appeared in message (x = a .. z)
-      --    'X'      -- ?X? appeared in message (X = A .. Z)
-      --    '*'      -- ?*? appeared in message
+      --    ' '      -- ?   or <   appeared on its own in message
+      --    '?'      -- ??  or <<  appeared in message
+      --    'x'      -- ?x? or <x< appeared in message (x = a .. z)
+      --    'X'      -- ?X? or <X< appeared in message (X = A .. Z)
+      --    '*'      -- ?*? or <*< appeared in message
+      --    '$'      -- ?$? or <$< appeared in message
+      --  In the case of the < sequences, this is set only if the message is
+      --  actually a warning, i.e. if Error_Msg_Warn is True
 
       Style : Boolean;
       --  True if style message (starts with "(style)")
@@ -404,6 +419,34 @@ package Erroutc is
    --  splits the line generating multiple lines of output, and in this case
    --  the last line has no terminating end of line character.
 
+   procedure Prescan_Message (Msg : String);
+   --  Scans message text and sets the following variables:
+   --
+   --    Is_Warning_Msg is set True if Msg is a warning message (contains a
+   --    question mark character), and False otherwise.
+   --
+   --    Is_Style_Msg is set True if Msg is a style message (starts with
+   --    "(style)") and False otherwise.
+   --
+   --    Is_Info_Msg is set True if Msg is an information message (starts
+   --    with "info: ". Such messages must contain a ? sequence since they
+   --    are also considered to be warning messages, and get a tag.
+   --
+   --    Is_Serious_Error is set to True unless the message is a warning or
+   --    style message or contains the character | (non-serious error).
+   --
+   --    Is_Unconditional_Msg is set True if the message contains the character
+   --    ! and is otherwise set False.
+   --
+   --    Has_Double_Exclam is set True if the message contains the sequence !!
+   --    and is otherwise set False.
+   --
+   --  We need to know right away these aspects of a message, since we will
+   --  test these values before doing the full error scan.
+   --
+   --  Note that the call has no effect for continuation messages (those whose
+   --  first character is '\'), and all variables are left unchanged.
+
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr);
    --  All error messages whose location is in the range From .. To (not
    --  including the end points) will be deleted from the error listing.
@@ -522,27 +565,6 @@ package Erroutc is
    procedure Set_Warnings_Mode_On (Loc : Source_Ptr);
    --  Called in response to a pragma Warnings (On) to record the source
    --  location from which warnings are to be turned back on.
-
-   procedure Test_Style_Warning_Serious_Unconditional_Msg (Msg : String);
-   --  Scans message text and sets the following variables:
-   --
-   --    Is_Warning_Msg is set True if Msg is a warning message (contains a
-   --    question mark character), and False otherwise.
-   --
-   --    Is_Style_Msg is set True if Msg is a style message (starts with
-   --    "(style)") and False otherwise.
-   --
-   --    Is_Serious_Error is set to True unless the message is a warning or
-   --    style message or contains the character | (non-serious error).
-   --
-   --    Is_Unconditional_Msg is set True if the message contains the character
-   --    ! and is otherwise set False.
-   --
-   --    Has_Double_Exclam is set True if the message contains the sequence !!
-   --    and is otherwise set False.
-   --
-   --  Note that the call has no effect for continuation messages (those whose
-   --  first character is '\'), and all variables are left unchanged.
 
    function Warnings_Suppressed (Loc : Source_Ptr) return String_Id;
    --  Determines if given location is covered by a warnings off suppression
