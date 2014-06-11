@@ -1870,7 +1870,7 @@ package Einfo is
 --       include only the components corresponding to these discriminants.
 
 --    Has_Static_Predicate_Aspect (Flag259)
---       Defined in all types and subtypes. Set if a Dynamic_Predicate aspect
+--       Defined in all types and subtypes. Set if a Static_Predicate aspect
 --       applies to the type. Note that we can tell if a static predicate is
 --       present by looking at Has_Predicates and Static_Predicate, but that
 --       could have come from a Predicate aspect or pragma, and we need to

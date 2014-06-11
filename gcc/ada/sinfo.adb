@@ -2224,15 +2224,6 @@ package body Sinfo is
       return List2 (N);
    end Names;
 
-   function Needs_Initialized_Actual
-     (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Formal_Private_Type_Definition
-        or else NT (N).Nkind = N_Private_Extension_Declaration);
-      return Flag18 (N);
-   end Needs_Initialized_Actual;
-
    function Next_Entity
       (N : Node_Id) return Node_Id is
    begin
@@ -3183,6 +3174,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Definition);
       return List2 (N);
    end Visible_Declarations;
+
+   function Uninitialized_Variable
+     (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Private_Extension_Declaration);
+      return Node3 (N);
+   end Uninitialized_Variable;
 
    function Used_Operations
      (N : Node_Id) return Elist_Id is
@@ -5373,15 +5373,6 @@ package body Sinfo is
       Set_List2_With_Parent (N, Val);
    end Set_Names;
 
-   procedure Set_Needs_Initialized_Actual
-     (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Formal_Private_Type_Definition
-        or else NT (N).Nkind = N_Private_Extension_Declaration);
-      Set_Flag18 (N, Val);
-   end Set_Needs_Initialized_Actual;
-
    procedure Set_Next_Entity
       (N : Node_Id; Val : Node_Id) is
    begin
@@ -6332,6 +6323,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Definition);
       Set_List2_With_Parent (N, Val);
    end Set_Visible_Declarations;
+
+   procedure Set_Uninitialized_Variable
+     (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Private_Extension_Declaration);
+      Set_Node3 (N, Val);
+   end Set_Uninitialized_Variable;
 
    procedure Set_Used_Operations
      (N : Node_Id; Val :  Elist_Id) is
