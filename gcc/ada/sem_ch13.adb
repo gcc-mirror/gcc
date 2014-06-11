@@ -3213,6 +3213,21 @@ package body Sem_Ch13 is
             if Is_Abstract_Subprogram (Subp) then
                Error_Msg_N ("stream subprogram must not be abstract", Expr);
                return;
+
+            --  Disable the following for now, until Polyorb issue is fixed.
+
+            elsif Is_Interface (U_Ent)
+              and then not Inside_A_Generic
+              and then Ekind (Subp) = E_Procedure
+              and then
+                not Null_Present
+                  (Specification
+                     (Unit_Declaration_Node (Ultimate_Alias (Subp))))
+              and then False
+            then
+               Error_Msg_N
+                 ("stream subprogram for interface type "
+                  & "must be null procedure", Expr);
             end if;
 
             Set_Entity (Expr, Subp);

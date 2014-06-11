@@ -4118,26 +4118,37 @@ package body Checks is
    --  Start of processing for Determine_Range
 
    begin
-      --  For temporary constants internally generated to remove side effects
-      --  we must use the corresponding expression to determine the range of
-      --  the expression.
-
-      if Is_Entity_Name (N)
-        and then Nkind (Parent (Entity (N))) = N_Object_Declaration
-        and then Ekind (Entity (N)) = E_Constant
-        and then Is_Internal_Name (Chars (Entity (N)))
-      then
-         Determine_Range
-           (Expression (Parent (Entity (N))), OK, Lo, Hi, Assume_Valid);
-         return;
-      end if;
-
       --  Prevent junk warnings by initializing range variables
 
       Lo  := No_Uint;
       Hi  := No_Uint;
       Lor := No_Uint;
       Hir := No_Uint;
+
+      --  For temporary constants internally generated to remove side effects
+      --  we must use the corresponding expression to determine the range of
+      --  the expression. But note that the expander can also generate
+      --  constants in other cases, including deferred constants.
+
+      if Is_Entity_Name (N)
+        and then Nkind (Parent (Entity (N))) = N_Object_Declaration
+        and then Ekind (Entity (N)) = E_Constant
+        and then Is_Internal_Name (Chars (Entity (N)))
+      then
+         if Present (Expression (Parent (Entity (N)))) then
+            Determine_Range
+              (Expression (Parent (Entity (N))), OK, Lo, Hi, Assume_Valid);
+
+         elsif Present (Full_View (Entity (N))) then
+            Determine_Range
+              (Expression (Parent (Full_View (Entity (N)))),
+               OK, Lo, Hi, Assume_Valid);
+
+         else
+            OK := False;
+         end if;
+         return;
+      end if;
 
       --  If type is not defined, we can't determine its range
 
