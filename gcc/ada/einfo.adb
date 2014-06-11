@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -558,12 +558,12 @@ package body Einfo is
    --    SPARK_Pragma_Inherited          Flag265
    --    SPARK_Aux_Pragma_Inherited      Flag266
    --    Has_Shift_Operator              Flag267
+   --    Is_Independent                  Flag268
 
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag268
    --    (unused)                        Flag269
    --    (unused)                        Flag270
 
@@ -1476,8 +1476,8 @@ package body Einfo is
 
    function Has_Independent_Components (Id : E) return B is
    begin
-      pragma Assert (Is_Object (Id) or else Is_Type (Id));
-      return Flag34 (Id);
+      pragma Assert (Is_Array_Type (Id) or else Is_Record_Type (Id));
+      return Flag34 (Base_Type (Id));
    end Has_Independent_Components;
 
    function Has_Inheritable_Invariants (Id : E) return B is
@@ -2076,6 +2076,12 @@ package body Einfo is
    begin
       return Flag24 (Id);
    end Is_Imported;
+
+   function Is_Independent (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Component);
+      return Flag268 (Id);
+   end Is_Independent;
 
    function Is_Inlined (Id : E) return B is
    begin
@@ -4177,7 +4183,8 @@ package body Einfo is
 
    procedure Set_Has_Independent_Components (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Object (Id) or else Is_Type (Id));
+      pragma Assert ((Is_Array_Type (Id) or else Is_Record_Type (Id))
+        and then Is_Base_Type (Id));
       Set_Flag34 (Id, V);
    end Set_Has_Independent_Components;
 
@@ -4810,6 +4817,12 @@ package body Einfo is
    begin
       Set_Flag24 (Id, V);
    end Set_Is_Imported;
+
+   procedure Set_Is_Independent (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Component, E_Void));
+      Set_Flag268 (Id, V);
+   end Set_Is_Independent;
 
    procedure Set_Is_Inlined (Id : E; V : B := True) is
    begin
@@ -8181,6 +8194,7 @@ package body Einfo is
       W ("Has_Gigi_Rep_Item",               Flag82  (Id));
       W ("Has_Homonym",                     Flag56  (Id));
       W ("Has_Implicit_Dereference",        Flag251 (Id));
+      W ("Has_Independent_Components",      Flag34  (Id));
       W ("Has_Inheritable_Invariants",      Flag248 (Id));
       W ("Has_Initial_Value",               Flag219 (Id));
       W ("Has_Invariants",                  Flag232 (Id));
@@ -8283,6 +8297,7 @@ package body Einfo is
       W ("Is_Immediately_Visible",          Flag7   (Id));
       W ("Is_Implementation_Defined",       Flag254 (Id));
       W ("Is_Imported",                     Flag24  (Id));
+      W ("Is_Independent",                  Flag268 (Id));
       W ("Is_Inlined",                      Flag11  (Id));
       W ("Is_Instantiated",                 Flag126 (Id));
       W ("Is_Interface",                    Flag186 (Id));
