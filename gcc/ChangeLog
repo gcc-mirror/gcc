@@ -1,3 +1,81 @@
+2014-06-11  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.md (*thumb1_adddi3): Move into new file thumb1.md.
+	(*thumb1_addsi3): Ditto.
+	(*thumb_subdi3): Ditto.
+	(thumb1_subsi3_insn): Ditto.
+	(*thumb_mulsi3): Ditto.
+	(*thumb_mulsi3_v6): Ditto.
+	(*thumb1_andsi3_insn): Ditto.
+	(thumb1_bicsi3): Ditto.
+	(*thumb1_iorsi3_insn): Ditto.
+	(*thumb1_xorsi3_insn): Ditto.
+	(*thumb1_ashlsi3): Ditto.
+	(*thumb1_ashrsi3): Ditto.
+	(*thumb1_lshrsi3): Ditto.
+	(*thumb1_rotrsi3): Ditto.
+	(*thumb1_negdi2): Ditto.
+	(*thumb1_negsi2): Ditto.
+	(*thumb1_abssi2): Ditto.
+	(*thumb1_neg_abssi2): Ditto.
+	(*thumb1_one_cmplsi2): Ditto.
+	(*thumb1_zero_extendhisi2): Ditto.
+	(*thumb1_zero_extendqisi2): Ditto.
+	(*thumb1_zero_extendqisi2_v6): Ditto.
+	(thumb1_extendhisi2): Ditto.
+	(thumb1_extendqisi2): Ditto.
+	(*thumb1_movdi_insn): Ditto.
+	(*thumb1_movsi_insn): Ditto.
+	(*thumb1_movhi_insn): Ditto.
+	(thumb_movhi_clobber): Ditto.
+	(*thumb1_movqi_insn): Ditto.
+	(*thumb1_movhf): Ditto.
+	(*thumb1_movsf_insn): Ditto.
+	(*thumb_movdf_insn): Ditto.
+	(movmem12b): Ditto.
+	(movmem8b): Ditto.
+	(cbranchqi4): Ditto.
+	(cbranchsi4_insn): Ditto.
+	(cbranchsi4_scratch): Ditto.
+	(*negated_cbranchsi4): Ditto.
+	(*tbit_cbranch): Ditto.
+	(*tlobits_cbranch): Ditto.
+	(*tstsi3_cbranch): Ditto.
+	(*cbranchne_decr1): Ditto.
+	(*addsi3_cbranch): Ditto.
+	(*addsi3_cbranch_scratch): Ditto.
+	(*thumb_cmpdi_zero): Ditto.
+	(cstoresi_eq0_thumb1): Ditto.
+	(cstoresi_ne0_thumb1): Ditto.
+	(*cstoresi_eq0_thumb1_insn): Ditto.
+	(*cstoresi_ne0_thumb1_insn): Ditto.
+	(cstoresi_nltu_thumb1): Ditto.
+	(cstoresi_ltu_thumb1): Ditto.
+	(thumb1_addsi3_addgeu): Ditto.
+	(*thumb_jump): Ditto.
+	(*call_reg_thumb1_v5): Ditto.
+	(*call_reg_thumb1): Ditto.
+	(*call_value_reg_thumb1_v5): Ditto.
+	(*call_value_reg_thumb1): Ditto.
+	(*call_insn): Ditto.
+	(*call_value_insn): Ditto.
+	(thumb1_casesi_internal_pic): Ditto.
+	(thumb1_casesi_dispatch): Ditto.
+	(*thumb1_indirect_jump): Ditto.
+	(prologue_thumb1_interwork): Ditto.
+	(*epilogue_insns): Ditto.
+	(consttable_1): Ditto.
+	(consttable_2): Ditto.
+	(tablejump): Ditto.
+	(*thumb1_tablejump): Ditto.
+	(thumb_eh_return): Ditto.
+	(define_peephole2): Two of them are thumb1 only and got moved into
+	new file thumb1.md.
+	(define_split): Six of them are thumb1 only and got moved into new
+	file thumb1.md.
+	* config/arm/thumb1.md: New file comprised of above thumb1 only
+	patterns.
+
 2014-06-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config.gcc (aarch64*-*-*): Add arm_acle.h to extra headers.
