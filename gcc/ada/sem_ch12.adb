@@ -9951,27 +9951,36 @@ package body Sem_Ch12 is
       -----------------------------
 
       procedure Check_Initialized_Types is
-         Decl   : Node_Id;
-         Formal : Entity_Id;
-         Actual : Entity_Id;
+         Decl       : Node_Id;
+         Formal     : Entity_Id;
+         Actual     : Entity_Id;
+         Uninit_Var : Entity_Id;
 
       begin
          Decl := First (Generic_Formal_Declarations (Gen_Decl));
          while Present (Decl) loop
-            if (Nkind (Decl) = N_Private_Extension_Declaration
-                 and then Needs_Initialized_Actual (Decl))
+            Uninit_Var := Empty;
 
-              or else (Nkind (Decl) = N_Formal_Type_Declaration
-                        and then Nkind (Formal_Type_Definition (Decl)) =
-                                       N_Formal_Private_Type_Definition
-                        and then Needs_Initialized_Actual
-                                   (Formal_Type_Definition (Decl)))
+            if Nkind (Decl) = N_Private_Extension_Declaration then
+               Uninit_Var := Uninitialized_Variable (Decl);
+
+            elsif Nkind (Decl) = N_Formal_Type_Declaration
+                    and then Nkind (Formal_Type_Definition (Decl))
+                      = N_Formal_Private_Type_Definition
             then
+               Uninit_Var := Uninitialized_Variable
+                                (Formal_Type_Definition (Decl));
+            end if;
+
+            if Present (Uninit_Var) then
                Formal := Defining_Identifier (Decl);
                Actual := First_Entity (Act_Decl_Id);
 
                --  For each formal there is a subtype declaration that renames
-               --  the actual and has the same name as the formal.
+               --  the actual and has the same name as the formal. Locate the
+               --  formal for warning message about uninitialized variables
+               --  in the generic, for which the actual type should be a
+               --  fully initialized type.
 
                while Present (Actual) loop
                   exit when Ekind (Actual) = E_Package
@@ -9982,9 +9991,12 @@ package body Sem_Ch12 is
                     and then not Is_Fully_Initialized_Type (Actual)
                     and then Warn_On_No_Value_Assigned
                   then
+                     Error_Msg_Node_2 := Formal;
                      Error_Msg_NE
-                       ("from its use in generic unit, actual for& should "
-                        & "be fully initialized type??", Actual, Formal);
+                       ("generic unit has uninitialzed variable& of "
+                          & " formal private type &?v?", Actual, Uninit_Var);
+                     Error_Msg_NE ("actual type for& should be "
+                        & "fully initialized type?v?", Actual, Formal);
                      exit;
                   end if;
 

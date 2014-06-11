@@ -57,6 +57,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
@@ -2371,13 +2372,16 @@ package body Sem_Ch3 is
          if Nkind (Decl) = N_Object_Declaration then
             Analyze_Object_Contract (Defining_Entity (Decl));
 
+         elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                               N_Subprogram_Declaration)
+         then
+            Analyze_Subprogram_Contract (Defining_Entity (Decl));
+
          elsif Nkind (Decl) = N_Subprogram_Body then
             Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
 
-         elsif Nkind_In (Decl, N_Subprogram_Declaration,
-                               N_Abstract_Subprogram_Declaration)
-         then
-            Analyze_Subprogram_Contract (Defining_Entity (Decl));
+         elsif Nkind (Decl) = N_Subprogram_Body_Stub then
+            Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
          end if;
 
          Next (Decl);

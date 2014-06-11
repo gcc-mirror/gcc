@@ -1700,11 +1700,13 @@ package body Sem_Prag is
       --  Refined_Depends.
 
       if Nkind (Subp_Decl) = N_Subprogram_Body
-        and then not Acts_As_Spec (Subp_Decl)
+        and then Present (Corresponding_Spec (Subp_Decl))
       then
          Spec_Id := Corresponding_Spec (Subp_Decl);
 
-      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
+      then
          Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
 
       else
@@ -2327,11 +2329,13 @@ package body Sem_Prag is
       --  Refined_Global.
 
       if Nkind (Subp_Decl) = N_Subprogram_Body
-        and then not Acts_As_Spec (Subp_Decl)
+        and then Present (Corresponding_Spec (Subp_Decl))
       then
          Spec_Id := Corresponding_Spec (Subp_Decl);
 
-      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
+      then
          Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
 
       else
@@ -22623,7 +22627,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Body_Decl : constant Node_Id := Parent (N);
+      Body_Decl : constant Node_Id := Find_Related_Subprogram_Or_Body (N);
       Errors    : constant Nat     := Serious_Errors_Detected;
       Refs      : constant Node_Id :=
                     Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
@@ -22641,7 +22645,12 @@ package body Sem_Prag is
          return;
       end if;
 
-      Spec_Id := Corresponding_Spec (Body_Decl);
+      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+      else
+         Spec_Id := Corresponding_Spec (Body_Decl);
+      end if;
+
       Depends := Get_Pragma (Spec_Id, Pragma_Depends);
 
       --  Subprogram declarations lacks pragma Depends. Refined_Depends is
@@ -23390,11 +23399,11 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Body_Decl : constant Node_Id := Parent (N);
+      Body_Decl : constant Node_Id := Find_Related_Subprogram_Or_Body (N);
       Errors    : constant Nat     := Serious_Errors_Detected;
       Items     : constant Node_Id :=
                     Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
-      Spec_Id   : constant Entity_Id := Corresponding_Spec (Body_Decl);
+      Spec_Id   : Entity_Id;
 
    --  Start of processing for Analyze_Refined_Global_In_Decl_Part
 
@@ -23405,6 +23414,12 @@ package body Sem_Prag is
       if SPARK_Mode = Off then
          Check_Global_List_Syntax (Items);
          return;
+      end if;
+
+      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+      else
+         Spec_Id := Corresponding_Spec (Body_Decl);
       end if;
 
       Global := Get_Pragma (Spec_Id, Pragma_Global);
@@ -25323,10 +25338,11 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Formal  : Entity_Id;
-      Global  : Node_Id;
-      List    : Node_Id;
-      Spec_Id : Entity_Id;
+      Subp_Decl : constant Node_Id := Parent (Parent (Subp_Id));
+      Formal    : Entity_Id;
+      Global    : Node_Id;
+      List      : Node_Id;
+      Spec_Id   : Entity_Id;
 
    --  Start of processing for Collect_Subprogram_Inputs_Outputs
 
@@ -25335,8 +25351,16 @@ package body Sem_Prag is
 
       --  Find the entity of the corresponding spec when processing a body
 
-      if Ekind (Subp_Id) = E_Subprogram_Body then
-         Spec_Id := Corresponding_Spec (Parent (Parent (Subp_Id)));
+      if Nkind (Subp_Decl) = N_Subprogram_Body
+        and then Present (Corresponding_Spec (Subp_Decl))
+      then
+         Spec_Id := Corresponding_Spec (Subp_Decl);
+
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
+      then
+         Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
+
       else
          Spec_Id := Subp_Id;
       end if;

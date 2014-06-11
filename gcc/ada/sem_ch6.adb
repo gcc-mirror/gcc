@@ -2031,19 +2031,25 @@ package body Sem_Ch6 is
    --------------------------------------
 
    procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
-      Body_Decl   : constant Node_Id   := Parent (Parent (Body_Id));
-      Spec_Id     : constant Entity_Id := Corresponding_Spec (Body_Decl);
+      Body_Decl   : constant Node_Id := Parent (Parent (Body_Id));
       Prag        : Node_Id;
       Ref_Depends : Node_Id := Empty;
       Ref_Global  : Node_Id := Empty;
+      Spec_Id     : Entity_Id;
 
    begin
       --  When a subprogram body declaration is illegal, its defining entity is
       --  left unanalyzed. There is nothing left to do in this case because the
       --  body lacks a contract.
 
-      if not Analyzed (Body_Id) then
+      if No (Contract (Body_Id)) then
          return;
+      end if;
+
+      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+      else
+         Spec_Id := Corresponding_Spec (Body_Decl);
       end if;
 
       --  Locate and store pragmas Refined_Depends and Refined_Global since

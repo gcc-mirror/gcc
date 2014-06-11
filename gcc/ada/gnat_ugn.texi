@@ -11613,9 +11613,9 @@ the @option{-Wl,--gc-sections} option to gcc command or in the
 @option{-largs} section of @command{gnatmake}. This will perform a
 garbage collection of code and data never referenced.
 
-If the linker performs a partial link (@option{-r} ld linker option), then you
-will need to provide one or several entry point using the
-@option{-e} / @option{--entry} ld option.
+If the linker performs a partial link (@option{-r} linker option), then you
+will need to provide the entry point using the @option{-e} / @option{--entry}
+linker option.
 
 Note that objects compiled without the @option{-ffunction-sections} and
 @option{-fdata-sections} options can still be linked with the executable.

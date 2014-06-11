@@ -1,3 +1,63 @@
+2014-06-11  Yannick Moy  <moy@adacore.com>
+
+	* einfo.ads: Minor typo in comment
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New attribute Uninitialized_Variable, for
+	formal private types and private type extensions, to indicate
+	variable in a generic unit whose uninitialized use suggest that
+	actual type should be fully initialized.
+	Needs_Initialized_Actual:  removed, functionaity replaced by
+	the above.
+	* lib-xref.adb (Generate_Reference): Generate a reference for
+	variables of a formal type when the unit is not the main unit,
+	to enable appropriate warnings in an instance.
+	* sem_ch12.adb (Check_Ininialized_Type): Improve warning on use
+	of variable in a generic unit that suggests that actual type
+	should be full initialized.
+	* sem_warn.adb; (May_Need_Initialized_Actual): Make into procedure
+	and do not emot warning, which now only appears in an instance.
+
+2014-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Fix minor typo.
+
+2014-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb Add with and use clause for Sem_Ch10.
+	(Analyze_Declarations): Code reformatting. Analyze the contract
+	of a subprogram body stub at the end of the declarative region.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Spec_Id is
+	now a variable. Do not process the body if its contract is not
+	available. Account for subprogram body stubs when extracting
+	the corresponding spec.
+	* sem_ch6.ads (Analyze_Subprogram_Contract): Update the comment
+	on usage.
+	* sem_ch10.ads, sem_ch10.adb (Analyze_Subprogram_Body_Stub_Contract):
+	New routine.
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part):
+	Account for subprogram body stubs when extracting the
+	corresponding spec.
+	(Analyze_Global_In_Decl_List):
+	Account for subprogram body stubs when extracting the
+	corresponding spec.
+	(Analyze_Refined_Depends_In_Decl_Part):
+	Use Find_Related_Subprogram_Or_Body to retrieve the declaration
+	of the related body. Spec_Is now a variable. Account for
+	subprogram body stubs when extracting the corresponding spec.
+	(Analyze_Refined_Global_In_Decl_Part): Use
+	Find_Related_Subprogram_Or_Body to retrieve the declaration
+	of the related body. Spec_Is now a variable. Account for
+	subprogram body stubs when extracting the corresponding spec.
+	(Collect_Subprogram_Inputs_Output): Account for subprogram body
+	stubs when extracting the corresponding spec.
+
+2014-06-11  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Process_Link): Do not invoke gnatlink with
+	-lgnarl or -lgnat.
+
 2014-06-11  Robert Dewar  <dewar@adacore.com>
 
 	* debug.adb: Add debug flag -gnatd.q.
