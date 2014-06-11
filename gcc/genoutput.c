@@ -98,6 +98,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define MAX_MAX_OPERANDS 40
 
+static char general_mem[] = { TARGET_MEM_CONSTRAINT, 0 };
+
 static int n_occurrences		(int, const char *);
 static const char *strip_whitespace	(const char *);
 
@@ -205,10 +207,9 @@ struct constraint_data
   const char name[1];
 };
 
-/* This is a complete list (unlike the one in genpreds.c) of constraint
-   letters and modifiers with machine-independent meaning.  The only
-   omission is digits, as these are handled specially.  */
-static const char indep_constraints[] = ",=+%*?!#&<>EFVXgimnoprs";
+/* All machine-independent constraint characters (except digits) that
+   are handled outside the define*_constraint mechanism.  */
+static const char indep_constraints[] = ",=+%*?!#&g";
 
 static struct constraint_data *
 constraints_by_letter_table[1 << CHAR_BIT];
@@ -1151,13 +1152,13 @@ static void
 note_constraint (rtx exp, int lineno)
 {
   const char *name = XSTR (exp, 0);
-  unsigned int namelen = strlen (name);
   struct constraint_data **iter, **slot, *new_cdata;
 
-  /* The 'm' constraint is special here since that constraint letter
-     can be overridden by the back end by defining the
-     TARGET_MEM_CONSTRAINT macro.  */
-  if (strchr (indep_constraints, name[0]) && name[0] != 'm')
+  if (strcmp (name, "TARGET_MEM_CONSTRAINT") == 0)
+    name = general_mem;
+  unsigned int namelen = strlen (name);
+
+  if (strchr (indep_constraints, name[0]))
     {
       if (name[1] == '\0')
 	error_with_line (lineno, "constraint letter '%s' cannot be "

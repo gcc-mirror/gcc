@@ -1,5 +1,40 @@
 2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* common.md: New file.
+	* doc/md.texi: Update description of generic, machine-independent
+	constraints.
+	* config/s390/constraints.md (e): Delete.
+	* Makefile.in (md_file): Include common.md.
+	* config/m32c/t-m32c (md_file): Likewise.
+	* genpreds.c (general_mem): New array.
+	(generic_constraint_letters): Remove constraints now defined by
+	common.md.
+	(add_constraint): Map TARGET_MEM_CONSTRAINT to general_mem.
+	Allow the first character to be '<' or '>' as well.
+	* genoutput.c (general_mem): New array.
+	(indep_constraints): Remove constraints now defined by common.md.
+	(note_constraint): Map TARGET_MEM_CONSTRAINT to general_mem.
+	Remove special handling of 'm'.
+	* ira-costs.c (record_reg_classes): Remove special handling of
+	constraints now defined by common.md.
+	* ira.c (ira_setup_alts, ira_get_dup_out_num): Likewise.
+	* ira-lives.c (single_reg_class): Likewise.
+	(ira_implicitly_set_insn_hard_regs): Likewise.
+	* lra-constraints.c (reg_class_from_constraints): Likewise.
+	(process_alt_operands, process_address, curr_insn_transform): Likewise.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* reload.c (push_secondary_reload, scratch_reload_class)
+	(find_reloads, alternative_allows_const_pool_ref): Likewise.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+	* targhooks.c (default_secondary_reload): Likewise.
+	* stmt.c (parse_output_constraint): Likewise.
+	* recog.c (preprocess_constraints): Likewise.
+	(constrain_operands, peep2_find_free_register): Likewise.
+	(asm_operand_ok): Likewise, but add a comment saying why 'o'
+	must be handled specially.
+
+2014-06-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* system.h (CONST_DOUBLE_OK_FOR_CONSTRAINT_P): Poison.
 	* genpreds.c (have_const_dbl_constraints): Delete.
 	(add_constraint): Don't set it.

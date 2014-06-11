@@ -286,10 +286,6 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	  }
 	break;
 
-      case 'V':  case TARGET_MEM_CONSTRAINT:  case 'o':
-	*allows_mem = true;
-	break;
-
       case '?':  case '!':  case '*':  case '&':  case '#':
       case 'E':  case 'F':  case 'G':  case 'H':
       case 's':  case 'i':  case 'n':
@@ -313,10 +309,6 @@ parse_output_constraint (const char **constraint_p, int operand_num,
       case 'g':  case 'X':
 	*allows_reg = true;
 	*allows_mem = true;
-	break;
-
-      case 'p': case 'r':
-	*allows_reg = true;
 	break;
 
       default:
@@ -383,10 +375,6 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	  }
 	break;
 
-      case 'V':  case TARGET_MEM_CONSTRAINT:  case 'o':
-	*allows_mem = true;
-	break;
-
       case '<':  case '>':
       case '?':  case '!':  case '*':  case '#':
       case 'E':  case 'F':  case 'G':  case 'H':
@@ -436,10 +424,6 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	  j--;
 	}
 	/* Fall through.  */
-
-      case 'p':  case 'r':
-	*allows_reg = true;
-	break;
 
       case 'g':  case 'X':
 	*allows_reg = true;

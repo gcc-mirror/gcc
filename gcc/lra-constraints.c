@@ -968,14 +968,7 @@ reg_class_from_constraints (const char *p)
       case ',':
 	return op_class;
 
-      case 'p':
-	op_class = (reg_class_subunion
-		    [op_class][base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-					       ADDRESS, SCRATCH)]);
-	break;
-
       case 'g':
-      case 'r':
 	op_class = reg_class_subunion[op_class][GENERAL_REGS];
 	break;
 
@@ -1768,15 +1761,6 @@ process_alt_operands (int only_alternative)
 		  c = '\0';
 		  break;
 
-		case '=':  case '+': case '?': case '*': case '!':
-		case ' ': case '\t':
-		  break;
-
-		case '%':
-		  /* We only support one commutative marker, the first
-		     one.  We already set commutative above.  */
-		  break;
-
 		case '&':
 		  early_clobber_p = true;
 		  break;
@@ -1909,105 +1893,11 @@ process_alt_operands (int only_alternative)
 		    break;
 		  }
 
-		case 'p':
-		  cl = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-				       ADDRESS, SCRATCH);
-		  this_alternative = reg_class_subunion[this_alternative][cl];
-		  IOR_HARD_REG_SET (this_alternative_set,
-				    reg_class_contents[cl]);
-		  if (costly_p)
-		    {
-		      this_costly_alternative
-			= reg_class_subunion[this_costly_alternative][cl];
-		      IOR_HARD_REG_SET (this_costly_alternative_set,
-					reg_class_contents[cl]);
-		    }
-		  win = true;
-		  badop = false;
-		  break;
-
-		case TARGET_MEM_CONSTRAINT:
-		  if (MEM_P (op) || spilled_pseudo_p (op))
-		    win = true;
-		  /* We can put constant or pseudo value into memory
-		     to satisfy the constraint.  */
-		  if (CONST_POOL_OK_P (mode, op) || REG_P (op))
-		    badop = false;
-		  constmemok = true;
-		  break;
-
-		case '<':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
-			  || GET_CODE (XEXP (op, 0)) == POST_DEC))
-		    win = true;
-		  break;
-
-		case '>':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
-			  || GET_CODE (XEXP (op, 0)) == POST_INC))
-		    win = true;
-		  break;
-
-		  /* Memory op whose address is not offsettable.  */
-		case 'V':
-		  if (MEM_P (op)
-		      && ! offsettable_nonstrict_memref_p (op))
-		    win = true;
-		  break;
-
-		  /* Memory operand whose address is offsettable.  */
-		case 'o':
-		  if ((MEM_P (op)
-		       && offsettable_nonstrict_memref_p (op))
-		      || spilled_pseudo_p (op))
-		    win = true;
-		  /* We can put constant or pseudo value into memory
-		     or make memory address offsetable to satisfy the
-		     constraint.  */
-		  if (CONST_POOL_OK_P (mode, op) || MEM_P (op) || REG_P (op))
-		    badop = false;
-		  constmemok = true;
-		  offmemok = true;
-		  break;
-
-		case 'E':
-		case 'F':
-		  if (GET_CODE (op) == CONST_DOUBLE
-		      || (GET_CODE (op) == CONST_VECTOR
-			  && (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)))
-		    win = true;
-		  break;
-
-		case 's':
-		  if (CONST_SCALAR_INT_P (op))
-		    break;
-
-		case 'i':
-		  if (general_constant_p (op))
-		    win = true;
-		  break;
-
-		case 'n':
-		  if (CONST_SCALAR_INT_P (op))
-		    win = true;
-		  break;
-
-		case 'X':
-		  /* This constraint should be excluded by the fast
-		     track.  */
-		  gcc_unreachable ();
-		  break;
-
 		case 'g':
 		  if (MEM_P (op)
 		      || general_constant_p (op)
 		      || spilled_pseudo_p (op))
 		    win = true;
-		  /* Drop through into 'r' case.  */
-
-		case 'r':
 		  cl = GENERAL_REGS;
 		  goto reg;
 
@@ -2821,8 +2711,7 @@ process_address_1 (int nop, rtx *before, rtx *after)
   enum constraint_num cn = lookup_constraint (constraint);
   bool change_p;
 
-  if (constraint[0] == 'p'
-      || insn_extra_address_constraint (cn))
+  if (insn_extra_address_constraint (cn))
     decompose_lea_address (&ad, curr_id->operand_loc[nop]);
   else if (MEM_P (op))
     decompose_mem_address (&ad, op);
@@ -2853,8 +2742,7 @@ process_address_1 (int nop, rtx *before, rtx *after)
 
   /* Target hooks sometimes don't treat extra-constraint addresses as
      legitimate address_operands, so handle them specially.  */
-  if (constraint[0] != 'p'
-      && insn_extra_address_constraint (cn)
+  if (insn_extra_address_constraint (cn)
       && satisfies_address_constraint_p (&ad, cn))
     return change_p;
 
@@ -3576,8 +3464,6 @@ curr_insn_transform (void)
 		 (c = *constraint) && c != ',' && c != '#';
 		 constraint += CONSTRAINT_LEN (c, constraint))
 	      {
-		if (c == TARGET_MEM_CONSTRAINT || c == 'o')
-		  break;
 		enum constraint_num cn = lookup_constraint (constraint);
 		if (insn_extra_memory_constraint (cn)
 		    && satisfies_memory_constraint_p (tem, cn))

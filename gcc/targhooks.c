@@ -919,7 +919,6 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
       else if (icode != CODE_FOR_nothing)
 	{
 	  const char *insn_constraint, *scratch_constraint;
-	  char insn_letter, scratch_letter;
 	  enum reg_class insn_class, scratch_class;
 
 	  gcc_assert (insn_data[(int) icode].n_operands == 3);
@@ -933,11 +932,8 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 		  gcc_assert (*insn_constraint == '=');
 		  insn_constraint++;
 		}
-	      insn_letter = *insn_constraint;
-	      insn_class
-		= (insn_letter == 'r' ? GENERAL_REGS
-		   : (reg_class_for_constraint
-		      (lookup_constraint (insn_constraint))));
+	      insn_class = (reg_class_for_constraint
+			    (lookup_constraint (insn_constraint)));
 	      gcc_assert (insn_class != NO_REGS);
 	    }
 
@@ -951,11 +947,8 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 	  scratch_constraint++;
 	  if (*scratch_constraint == '&')
 	    scratch_constraint++;
-	  scratch_letter = *scratch_constraint;
-	  scratch_class
-	    = (scratch_letter == 'r' ? GENERAL_REGS
-	       : (reg_class_for_constraint
-		  (lookup_constraint (scratch_constraint))));
+	  scratch_class = (reg_class_for_constraint
+			   (lookup_constraint (scratch_constraint)));
 
 	  if (reg_class_subset_p (reload_class, insn_class))
 	    {

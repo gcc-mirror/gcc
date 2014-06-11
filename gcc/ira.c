@@ -1835,9 +1835,6 @@ ira_setup_alts (rtx insn, HARD_REG_SET &alts)
 		    len = 0;
 		    break;
 		  
-		  case '?':  case '!': case '*':  case '=':  case '+':
-		    break;
-		    
 		  case '%':
 		    /* We only support one commutative marker, the
 		       first one.  We already set commutative
@@ -1846,63 +1843,12 @@ ira_setup_alts (rtx insn, HARD_REG_SET &alts)
 		      commutative = nop;
 		    break;
 
-		  case '&':
-		    break;
-		    
 		  case '0':  case '1':  case '2':  case '3':  case '4':
 		  case '5':  case '6':  case '7':  case '8':  case '9':
 		    goto op_success;
 		    break;
 		    
-		  case 'p':
 		  case 'g':
-		  case 'X':
-		  case TARGET_MEM_CONSTRAINT:
-		    goto op_success;
-		    break;
-		    
-		  case '<':
-		    if (MEM_P (op)
-			&& (GET_CODE (XEXP (op, 0)) == PRE_DEC
-			    || GET_CODE (XEXP (op, 0)) == POST_DEC))
-		    goto op_success;
-		    break;
-		    
-		  case '>':
-		    if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
-			  || GET_CODE (XEXP (op, 0)) == POST_INC))
-		      goto op_success;
-		    break;
-		    
-		  case 'E':
-		  case 'F':
-		    if (CONST_DOUBLE_AS_FLOAT_P (op)
-			|| (GET_CODE (op) == CONST_VECTOR
-			    && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT))
-		      goto op_success;
-		    break;
-		    
-		  case 's':
-		    if (CONST_SCALAR_INT_P (op))
-		      break;
-		  case 'i':
-		    if (CONSTANT_P (op))
-		      goto op_success;
-		    break;
-		    
-		  case 'n':
-		    if (CONST_SCALAR_INT_P (op))
-		      goto op_success;
-		    break;
-		    
-		  case 'V':
-		    if (MEM_P (op) && ! offsettable_memref_p (op))
-		      goto op_success;
-		    break;
-		    
-		  case 'o':
-		  case 'r':
 		    goto op_success;
 		    break;
 		    
@@ -1992,21 +1938,9 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
 	  else if (! ignore_p)
 	    switch (c)
 	      {
-	      case 'X':
-	      case 'p':
 	      case 'g':
 		goto fail;
-	      case 'r':
-		if (!targetm.class_likely_spilled_p (GENERAL_REGS))
-		  goto fail;
-		break;
-	      case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-	      case 'h': case 'j': case 'k': case 'l':
-	      case 'q': case 't': case 'u':
-	      case 'v': case 'w': case 'x': case 'y': case 'z':
-	      case 'A': case 'B': case 'C': case 'D':
-	      case 'Q': case 'R': case 'S': case 'T': case 'U':
-	      case 'W': case 'Y': case 'Z':
+	      default:
 		{
 		  enum constraint_num cn = lookup_constraint (str);
 		  enum reg_class cl = reg_class_for_constraint (cn);
