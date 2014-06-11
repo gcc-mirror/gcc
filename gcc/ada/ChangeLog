@@ -1,5 +1,25 @@
 2014-06-11  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi, switch-c.adb, sem_prag.adb, a-tgdico.ads, par-prag.adb,
+	opt.ads, a-finali.ads, snames.ads-tmpl: Remove all traces of
+	pragma/aspects Pure_05 Pure_12 Preelaborate_05.
+	* errout.adb (Output_Messages): Avoid duplicate output for
+	library level instance.
+	* sem_elab.adb (Is_Call_Of_Generic_Formal): Moved to outer level
+	(Check_Elab_Call): Add call to Is_Call_Of_Generic_Formal
+	* exp_ch4.adb (Expand_N_Op_Expon): New interface for Exp_Modular.
+	* s-expmod.ads, s-expmod.adb (Exp_Modular): Change interface to
+	accomodate largest modulus value.
+	* gnat_ugn.texi: Minor updates.
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): Do not attempt to
+	load body of generic package or its parent, if body is optional
+	and the unit does not require a body.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document System.Unsigned_Types.
 	* impunit.adb: System.Unsigned_Types (s-unstyp.ads) is user accessible.
 	* s-unstyp.ads: Update comments (this is now user available unit).

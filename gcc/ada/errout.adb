@@ -1851,8 +1851,14 @@ package body Errout is
 
               and then
                 (No (Cunit_Entity (U))
-                   or else Comes_From_Source (Cunit_Entity (U))
-                   or else not Is_Subprogram (Cunit_Entity (U)))
+                  or else Comes_From_Source (Cunit_Entity (U))
+                  or else not Is_Subprogram (Cunit_Entity (U)))
+
+              --  If the compilation unit associated with this unit does not
+              --  come from source, it means it is an instantiation that should
+              --  not be included in the source listing.
+
+              and then Comes_From_Source (Cunit (U))
             then
                declare
                   Sfile : constant Source_File_Index := Source_Index (U);

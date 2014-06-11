@@ -18185,44 +18185,6 @@ package body Sem_Prag is
             end if;
          end Preelaborate;
 
-         ---------------------
-         -- Preelaborate_05 --
-         ---------------------
-
-         --  pragma Preelaborate_05 [(library_unit_NAME)];
-
-         --  This pragma is useable only in GNAT_Mode, where it is used like
-         --  pragma Preelaborate but it is only effective in Ada 2005 mode
-         --  (otherwise it is ignored). This is used to implement AI-362 which
-         --  recategorizes some run-time packages in Ada 2005 mode.
-
-         when Pragma_Preelaborate_05 => Preelaborate_05 : declare
-            Ent : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Valid_Library_Unit_Pragma;
-
-            if not GNAT_Mode then
-               Error_Pragma ("pragma% only available in GNAT mode");
-            end if;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
-            --  This is one of the few cases where we need to test the value of
-            --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_2012 in a predefined unit), we need to know the
-            --  explicit version set to know if this pragma is active.
-
-            if Ada_Version_Explicit >= Ada_2005 then
-               Ent := Find_Lib_Unit_Name;
-               Set_Is_Preelaborated (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
-            end if;
-         end Preelaborate_05;
-
          --------------
          -- Priority --
          --------------
@@ -18833,88 +18795,6 @@ package body Sem_Prag is
             Set_Has_Pragma_Pure (Ent);
             Set_Suppress_Elaboration_Warnings (Ent);
          end Pure;
-
-         -------------
-         -- Pure_05 --
-         -------------
-
-         --  pragma Pure_05 [(library_unit_NAME)];
-
-         --  This pragma is useable only in GNAT_Mode, where it is used like
-         --  pragma Pure but it is only effective in Ada 2005 mode (otherwise
-         --  it is ignored). It may be used after a pragma Preelaborate, in
-         --  which case it overrides the effect of the pragma Preelaborate.
-         --  This is used to implement AI-362 which recategorizes some run-time
-         --  packages in Ada 2005 mode.
-
-         when Pragma_Pure_05 => Pure_05 : declare
-            Ent : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Valid_Library_Unit_Pragma;
-
-            if not GNAT_Mode then
-               Error_Pragma ("pragma% only available in GNAT mode");
-            end if;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
-            --  This is one of the few cases where we need to test the value of
-            --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_2012 in a predefined unit), we need to know the
-            --  explicit version set to know if this pragma is active.
-
-            if Ada_Version_Explicit >= Ada_2005 then
-               Ent := Find_Lib_Unit_Name;
-               Set_Is_Preelaborated (Ent, False);
-               Set_Is_Pure (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
-            end if;
-         end Pure_05;
-
-         -------------
-         -- Pure_12 --
-         -------------
-
-         --  pragma Pure_12 [(library_unit_NAME)];
-
-         --  This pragma is useable only in GNAT_Mode, where it is used like
-         --  pragma Pure but it is only effective in Ada 2012 mode (otherwise
-         --  it is ignored). It may be used after a pragma Preelaborate, in
-         --  which case it overrides the effect of the pragma Preelaborate.
-         --  This is used to implement AI05-0212 which recategorizes some
-         --  run-time packages in Ada 2012 mode.
-
-         when Pragma_Pure_12 => Pure_12 : declare
-            Ent : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Valid_Library_Unit_Pragma;
-
-            if not GNAT_Mode then
-               Error_Pragma ("pragma% only available in GNAT mode");
-            end if;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
-            --  This is one of the few cases where we need to test the value of
-            --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_2012 in a predefined unit), we need to know the
-            --  explicit version set to know if this pragma is active.
-
-            if Ada_Version_Explicit >= Ada_2012 then
-               Ent := Find_Lib_Unit_Name;
-               Set_Is_Preelaborated (Ent, False);
-               Set_Is_Pure (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
-            end if;
-         end Pure_12;
 
          -------------------
          -- Pure_Function --
@@ -25917,7 +25797,6 @@ package body Sem_Prag is
       Pragma_Predicate                      => -1,
       Pragma_Preelaborable_Initialization   => -1,
       Pragma_Preelaborate                   => -1,
-      Pragma_Preelaborate_05                => -1,
       Pragma_Pre_Class                      => -1,
       Pragma_Priority                       => -1,
       Pragma_Priority_Specific_Dispatching  => -1,
@@ -25927,8 +25806,6 @@ package body Sem_Prag is
       Pragma_Provide_Shift_Operators        => -1,
       Pragma_Psect_Object                   => -1,
       Pragma_Pure                           => -1,
-      Pragma_Pure_05                        => -1,
-      Pragma_Pure_12                        => -1,
       Pragma_Pure_Function                  => -1,
       Pragma_Queuing_Policy                 => -1,
       Pragma_Rational                       => -1,

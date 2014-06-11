@@ -257,6 +257,9 @@ package body Sem_Elab is
    --  or instantiation node for which the check code is required. C is the
    --  test whose failure triggers the raise.
 
+   function Is_Call_Of_Generic_Formal (N : Node_Id) return Boolean;
+   --  Returns True if node N is a call to a generic formal subprogram
+
    function Is_Finalization_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes a [Deep_]Finalize procedure
 
@@ -312,9 +315,9 @@ package body Sem_Elab is
    procedure Supply_Bodies (N : Node_Id);
    --  Given a node, N, that is either a subprogram declaration or a package
    --  declaration, this procedure supplies dummy bodies for the subprogram
-   --  or for all subprograms in the package. If the given node is not one
-   --  of these two possibilities, then Supply_Bodies does nothing. The
-   --  dummy body contains a single Raise statement.
+   --  or for all subprograms in the package. If the given node is not one of
+   --  these two possibilities, then Supply_Bodies does nothing. The dummy body
+   --  contains a single Raise statement.
 
    procedure Supply_Bodies (L : List_Id);
    --  Calls Supply_Bodies for all elements of the given list L
@@ -541,31 +544,6 @@ package body Sem_Elab is
       --  warnings on the scope are also suppressed. For the internal case,
       --  we ignore this flag.
 
-      function Is_Call_Of_Generic_Formal return Boolean;
-      --  Returns True if node N is a call to a generic formal subprogram
-
-      -------------------------------
-      -- Is_Call_Of_Generic_Formal --
-      -------------------------------
-
-      function Is_Call_Of_Generic_Formal return Boolean is
-      begin
-         return Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
-
-           --  Always return False if debug flag -gnatd.G is set
-
-           and then not Debug_Flag_Dot_GG
-
-           --  For now, we detect this by looking for the strange identifier
-           --  node, whose Chars reflect the name of the generic formal, but
-           --  the Chars of the Entity references the generic actual.
-
-           and then Nkind (Name (N)) = N_Identifier
-           and then Chars (Name (N)) /= Chars (Entity (Name (N)));
-      end Is_Call_Of_Generic_Formal;
-
-   --  Start of processing for Check_A_Call
-
    begin
       --  If the call is known to be within a local Suppress Elaboration
       --  pragma, nothing to check. This can happen in task bodies. But
@@ -573,7 +551,7 @@ package body Sem_Elab is
 
       if Nkind (N) in N_Subprogram_Call
         and then No_Elaboration_Check (N)
-        and then not Is_Call_Of_Generic_Formal
+        and then not Is_Call_Of_Generic_Formal (N)
       then
          return;
       end if;
@@ -801,7 +779,7 @@ package body Sem_Elab is
          if Unit_Caller /= No_Unit
            and then Unit_Callee /= Unit_Caller
            and then not Dynamic_Elaboration_Checks
-           and then not Is_Call_Of_Generic_Formal
+           and then not Is_Call_Of_Generic_Formal (N)
          then
             E_Scope := Spec_Entity (Cunit_Entity (Unit_Caller));
 
@@ -1302,6 +1280,7 @@ package body Sem_Elab is
          --  First case, we are in elaboration code
 
          From_Elab_Code := not In_Subprogram_Or_Concurrent_Unit;
+
          if From_Elab_Code then
 
             --  Complain if call that comes from source in preelaborated unit
@@ -1482,7 +1461,15 @@ package body Sem_Elab is
             Inter_Unit_Only => False,
             In_Init_Proc    => In_Init_Proc);
 
-      elsif Elaboration_Checks_Suppressed (Current_Scope) then
+      --  Nothing to do if elaboration checks suppressed for this scope.
+      --  However, an interesting exception, the fact that elaboration checks
+      --  are suppressed within an instance (because we can trace the body when
+      --  we process the template) does not extend to calls to generic formal
+      --  subprograms.
+
+      elsif Elaboration_Checks_Suppressed (Current_Scope)
+        and then not Is_Call_Of_Generic_Formal (N)
+      then
          null;
 
       elsif From_Elab_Code then
@@ -2593,6 +2580,26 @@ package body Sem_Elab is
 
       In_Task_Activation := False;
    end Check_Task_Activation;
+
+   -------------------------------
+   -- Is_Call_Of_Generic_Formal --
+   -------------------------------
+
+   function Is_Call_Of_Generic_Formal (N : Node_Id) return Boolean is
+   begin
+      return Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+
+        --  Always return False if debug flag -gnatd.G is set
+
+        and then not Debug_Flag_Dot_GG
+
+      --  For now, we detect this by looking for the strange identifier
+      --  node, whose Chars reflect the name of the generic formal, but
+      --  the Chars of the Entity references the generic actual.
+
+        and then Nkind (Name (N)) = N_Identifier
+        and then Chars (Name (N)) /= Chars (Entity (Name (N)));
+   end Is_Call_Of_Generic_Formal;
 
    --------------------------------
    -- Set_Elaboration_Constraint --

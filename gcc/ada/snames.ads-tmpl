@@ -578,7 +578,6 @@ package Snames is
    Name_Predicate                      : constant Name_Id := N + $; -- GNAT
    Name_Preelaborable_Initialization   : constant Name_Id := N + $; -- Ada 05
    Name_Preelaborate                   : constant Name_Id := N + $;
-   Name_Preelaborate_05                : constant Name_Id := N + $; -- GNAT
    Name_Pre_Class                      : constant Name_Id := N + $; -- GNAT
 
    --  Note: Priority is not in this list because its name matches the name of
@@ -590,8 +589,6 @@ package Snames is
    Name_Provide_Shift_Operators        : constant Name_Id := N + $; -- GNAT
    Name_Psect_Object                   : constant Name_Id := N + $; -- VMS
    Name_Pure                           : constant Name_Id := N + $;
-   Name_Pure_05                        : constant Name_Id := N + $; -- GNAT
-   Name_Pure_12                        : constant Name_Id := N + $; -- GNAT
    Name_Pure_Function                  : constant Name_Id := N + $; -- GNAT
    Name_Refined_Depends                : constant Name_Id := N + $; -- GNAT
    Name_Refined_Global                 : constant Name_Id := N + $; -- GNAT
@@ -1893,13 +1890,10 @@ package Snames is
       Pragma_Predicate,
       Pragma_Preelaborable_Initialization,
       Pragma_Preelaborate,
-      Pragma_Preelaborate_05,
       Pragma_Pre_Class,
       Pragma_Provide_Shift_Operators,
       Pragma_Psect_Object,
       Pragma_Pure,
-      Pragma_Pure_05,
-      Pragma_Pure_12,
       Pragma_Pure_Function,
       Pragma_Refined_Depends,
       Pragma_Refined_Global,
