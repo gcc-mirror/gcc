@@ -2041,6 +2041,12 @@ process_alt_operands (int only_alternative)
 			goto reg;
 		      break;
 
+		    case CT_CONST_INT:
+		      if (CONST_INT_P (op)
+			  && insn_const_int_ok_for_constraint (INTVAL (op), cn))
+			win = true;
+		      break;
+
 		    case CT_MEMORY:
 		      if (MEM_P (op)
 			  && satisfies_memory_constraint_p (op, cn))

@@ -3504,6 +3504,13 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			  goto reg;
 			break;
 
+		      case CT_CONST_INT:
+			if (CONST_INT_P (operand)
+			    && (insn_const_int_ok_for_constraint
+				(INTVAL (operand), cn)))
+			  win = true;
+			break;
+
 		      case CT_MEMORY:
 			if (force_reload)
 			  break;

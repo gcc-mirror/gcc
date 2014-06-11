@@ -763,6 +763,12 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			classes[i] = ira_reg_class_subunion[classes[i]][cl];
 		      break;
 
+		    case CT_CONST_INT:
+		      if (CONST_INT_P (op)
+			  && insn_const_int_ok_for_constraint (INTVAL (op), cn))
+			win = 1;
+		      break;
+
 		    case CT_MEMORY:
 		      /* Every MEM can be reloaded to fit.  */
 		      insn_allows_mem[i] = allows_mem[i] = 1;
