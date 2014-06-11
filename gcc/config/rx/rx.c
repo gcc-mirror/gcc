@@ -2792,11 +2792,11 @@ rx_option_override (void)
   rx_override_options_after_change ();
 
   if (align_jumps == 0 && ! optimize_size)
-    align_jumps = 3;
+    align_jumps = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 2 : 3);
   if (align_loops == 0 && ! optimize_size)
-    align_loops = 3;
+    align_loops = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 2 : 3);
   if (align_labels == 0 && ! optimize_size)
-    align_labels = 3;
+    align_labels = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 2 : 3);
 }
 
 
@@ -3201,7 +3201,11 @@ rx_align_for_label (rtx lab, int uses_threshold)
   if (LABEL_P (lab) && LABEL_NUSES (lab) < uses_threshold)
     return 0;
 
-  return optimize_size ? 1 : 3;
+  if (optimize_size)
+    return 0;
+  if (rx_cpu_type == RX100 || rx_cpu_type == RX200)
+    return 2;
+  return 2;
 }
 
 static int
