@@ -1,3 +1,35 @@
+2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varasm.c (set_implicit_section): New function.
+	(resolve_unique_section): Use it to set implicit section
+	for aliases, too.
+	(get_named_text_section): Use symtab_get_node (decl)->implicit_section
+	(default_function_section): Likewise.
+	(decl_binds_to_current_def_p): Constify argument.
+	* varasm.h (decl_binds_to_current_def_p): Update prototype.
+	* asan.c (asan_protect_global): Use symtab_get_node (decl)->implicit_section.
+	* symtab.c (dump_symtab_base): Dump implicit sections.
+	(verify_symtab_base): Verify sanity of sectoins and comdats.
+	(symtab_resolve_alias): Alias share the section of its target.
+	(set_section_1): New function.
+	(symtab_node::set_section): Move here, recurse to aliases.
+	(verify_symtab): Check for duplicated symtab lists.
+	* tree-core.h (implicit_section_name_p): Remove.
+	* tree-vect-data-refs.c: Include varasm.h.
+	(vect_can_force_dr_alignment_p): Fix conditional on when
+	decl bints to current definition; use
+	symtab_get_node (decl)->implicit_section.
+	* cgraph.c (cgraph_make_node_local_1): Fix section set.
+	* cgraph.h (struct symtab_node): Add implicit_section.
+	(set_section): Rename to ...
+	(set_section_for_node): ... this one.
+	(set_section): Declare.
+	* tree.h (DECL_HAS_IMPLICIT_SECTION_NAME_P): Remove.
+	* lto-cgraph.c (lto_output_node, lto_output_varpool_node,
+	input_overwrite_node, input_varpool_node): Stream implicit_section.
+	* ipa.c (symtab_remove_unreachable_nodes): Do not check symtab before
+	removal; it will fail in LTO.
+
 2014-06-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (move_lo_quad_<mode>):

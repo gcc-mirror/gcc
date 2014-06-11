@@ -501,10 +501,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       streamer_write_hwi_stream (ob->main_stream, ref);
     }
 
-  group = node->get_section ();
-  if (group)
-    section = TREE_STRING_POINTER (group);
-  else
+  section = node->get_section ();
+  if (!section)
     section = "";
   lto_output_data_stream (ob->main_stream, section, strlen (section) + 1);
 
@@ -521,6 +519,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->forced_by_abi, 1);
   bp_pack_value (&bp, node->unique_name, 1);
   bp_pack_value (&bp, node->body_removed, 1);
+  bp_pack_value (&bp, node->implicit_section, 1);
   bp_pack_value (&bp, node->address_taken, 1);
   bp_pack_value (&bp, tag == LTO_symtab_analyzed_node
 		 && symtab_get_symbol_partitioning_class (node) == SYMBOL_PARTITION
@@ -585,6 +584,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->forced_by_abi, 1);
   bp_pack_value (&bp, node->unique_name, 1);
   bp_pack_value (&bp, node->body_removed, 1);
+  bp_pack_value (&bp, node->implicit_section, 1);
   bp_pack_value (&bp, node->writeonly, 1);
   bp_pack_value (&bp, node->definition, 1);
   alias_p = node->alias && (!boundary_p || node->weakref);
@@ -631,10 +631,8 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
       streamer_write_hwi_stream (ob->main_stream, ref);
     }
 
-  group = node->get_section ();
-  if (group)
-    section = TREE_STRING_POINTER (group);
-  else
+  section = node->get_section ();
+  if (!section)
     section = "";
   lto_output_data_stream (ob->main_stream, section, strlen (section) + 1);
 
@@ -1054,6 +1052,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->forced_by_abi = bp_unpack_value (bp, 1);
   node->unique_name = bp_unpack_value (bp, 1);
   node->body_removed = bp_unpack_value (bp, 1);
+  node->implicit_section = bp_unpack_value (bp, 1);
   node->address_taken = bp_unpack_value (bp, 1);
   node->used_from_other_partition = bp_unpack_value (bp, 1);
   node->lowered = bp_unpack_value (bp, 1);
@@ -1194,7 +1193,7 @@ input_node (struct lto_file_decl_data *file_data,
   else
     node->same_comdat_group = (symtab_node *) (intptr_t) LCC_NOT_FOUND;
   if (section)
-    node->set_section (section);
+    node->set_section_for_node (section);
 
   if (node->thunk.thunk_p)
     {
@@ -1251,6 +1250,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->forced_by_abi = bp_unpack_value (&bp, 1);
   node->unique_name = bp_unpack_value (&bp, 1);
   node->body_removed = bp_unpack_value (&bp, 1);
+  node->implicit_section = bp_unpack_value (&bp, 1);
   node->writeonly = bp_unpack_value (&bp, 1);
   node->definition = bp_unpack_value (&bp, 1);
   node->alias = bp_unpack_value (&bp, 1);
@@ -1277,7 +1277,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     node->same_comdat_group = (symtab_node *) (intptr_t) LCC_NOT_FOUND;
   section = read_string_cst (ib);
   if (section)
-    node->set_section (section);
+    node->set_section_for_node (section);
   node->resolution = streamer_read_enum (ib, ld_plugin_symbol_resolution,
 					        LDPR_NUM_KNOWN);
   gcc_assert (flag_ltrans

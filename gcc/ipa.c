@@ -281,9 +281,6 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   struct pointer_set_t *reachable_call_targets = pointer_set_create ();
 
   timevar_push (TV_IPA_UNREACHABLE);
-#ifdef ENABLE_CHECKING
-  verify_symtab ();
-#endif
   if (optimize && flag_devirtualize)
     build_type_inheritance_graph ();
   if (file)

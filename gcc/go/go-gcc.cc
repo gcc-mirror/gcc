@@ -2374,7 +2374,8 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 
   // If this variable goes in a unique section, it may need to go into
   // a different one now that DECL_INITIAL is set.
-  if (DECL_HAS_IMPLICIT_SECTION_NAME_P (var_decl))
+  if (symtab_get_node(var_decl)
+      && symtab_get_node(var_decl)->implicit_section)
     {
       set_decl_section_name (var_decl, NULL);
       resolve_unique_section (var_decl,
