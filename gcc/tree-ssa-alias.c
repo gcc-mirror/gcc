@@ -835,8 +835,8 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       /* ??? We cannot simply use the type of operand #0 of the refs here
 	 as the Fortran compiler smuggles type punning into COMPONENT_REFs
 	 for common blocks instead of using unions like everyone else.  */
-      tree type1 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field1));
-      tree type2 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field2));
+      tree type1 = DECL_CONTEXT (field1);
+      tree type2 = DECL_CONTEXT (field2);
 
       /* We cannot disambiguate fields in a union or qualified union.  */
       if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
