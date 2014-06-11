@@ -1,3 +1,15 @@
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, sem_res.adb: Minor reformatting.
+
+2014-06-11  Thomas Quinot  <quinot@adacore.com>
+
+	* a-astaco.ads, a-tags.ads, s-excdeb.ads, a-tgdico.ads, a-stmaco.ads,
+	a-except-2005.ads, s-except.ads, a-taside.ads, a-dynpri.ads,
+	a-chahan.ads, a-sytaco.ads, s-stalib.ads, a-strmap.ads: Change pragmas
+	Preelaborate_05 to just Preelaborate in runtime units, and similarly
+	change Pure_05 to just Pure.
+
 2014-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Do not attempt

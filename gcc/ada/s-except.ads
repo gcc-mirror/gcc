@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@ pragma Compiler_Unit_Warning;
 
 package System.Exceptions is
 
-   pragma Preelaborate_05;
+   pragma Preelaborate;
    --  To let Ada.Exceptions "with" us and let us "with" Standard_Library
 
    ZCX_By_Default : constant Boolean;

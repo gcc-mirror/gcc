@@ -25,7 +25,7 @@ generic
 function Ada.Tags.Generic_Dispatching_Constructor
   (The_Tag : Tag;
    Params  : not null access Parameters) return T'Class;
-pragma Preelaborate_05 (Generic_Dispatching_Constructor);
+pragma Preelaborate (Generic_Dispatching_Constructor);
 pragma Import (Intrinsic, Generic_Dispatching_Constructor);
 --  Note: the reason that we use Preelaborate_05 here is so that this will
 --  compile fine during the normal build procedures. In Ada 2005 mode (which
