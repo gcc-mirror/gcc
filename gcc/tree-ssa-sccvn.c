@@ -3140,35 +3140,12 @@ visit_phi (gimple phi)
   /* If all value numbered to the same value, the phi node has that
      value.  */
   if (allsame)
-    {
-      if (is_gimple_min_invariant (sameval))
-	{
-	  VN_INFO (PHI_RESULT (phi))->has_constants = true;
-	  if (sameval != VN_TOP)
-	    VN_INFO (PHI_RESULT (phi))->expr = sameval;
-	}
-      else
-	{
-	  VN_INFO (PHI_RESULT (phi))->has_constants = false;
-	  if (sameval != VN_TOP)
-	    VN_INFO (PHI_RESULT (phi))->expr = sameval;
-	}
-
-      if (TREE_CODE (sameval) == SSA_NAME)
-	return visit_copy (PHI_RESULT (phi), sameval);
-
-      return set_ssa_val_to (PHI_RESULT (phi), sameval);
-    }
+    return set_ssa_val_to (PHI_RESULT (phi), sameval);
 
   /* Otherwise, see if it is equivalent to a phi node in this block.  */
   result = vn_phi_lookup (phi);
   if (result)
-    {
-      if (TREE_CODE (result) == SSA_NAME)
-	changed = visit_copy (PHI_RESULT (phi), result);
-      else
-	changed = set_ssa_val_to (PHI_RESULT (phi), result);
-    }
+    changed = set_ssa_val_to (PHI_RESULT (phi), result);
   else
     {
       vn_phi_insert (phi, PHI_RESULT (phi));
@@ -3262,24 +3239,18 @@ simplify_binary_expression (gimple stmt)
      catch those with constants.  The goal here is to simultaneously
      combine constants between expressions, but avoid infinite
      expansion of expressions during simplification.  */
-  if (TREE_CODE (op0) == SSA_NAME)
-    {
-      if (VN_INFO (op0)->has_constants
+  op0 = vn_valueize (op0);
+  if (TREE_CODE (op0) == SSA_NAME
+      && (VN_INFO (op0)->has_constants
 	  || TREE_CODE_CLASS (code) == tcc_comparison
-	  || code == COMPLEX_EXPR)
-	op0 = vn_get_expr_for (op0);
-      else
-	op0 = vn_valueize (op0);
-    }
+	  || code == COMPLEX_EXPR))
+    op0 = vn_get_expr_for (op0);
 
-  if (TREE_CODE (op1) == SSA_NAME)
-    {
-      if (VN_INFO (op1)->has_constants
-	  || code == COMPLEX_EXPR)
-	op1 = vn_get_expr_for (op1);
-      else
-	op1 = vn_valueize (op1);
-    }
+  op1 = vn_valueize (op1);
+  if (TREE_CODE (op1) == SSA_NAME
+      && (VN_INFO (op1)->has_constants
+	  || code == COMPLEX_EXPR))
+    op1 = vn_get_expr_for (op1);
 
   /* Pointer plus constant can be represented as invariant address.
      Do so to allow further propatation, see also tree forwprop.  */
@@ -3333,28 +3304,29 @@ simplify_unary_expression (gimple stmt)
       || code == BIT_FIELD_REF)
     op0 = TREE_OPERAND (op0, 0);
 
-  if (TREE_CODE (op0) != SSA_NAME)
-    return NULL_TREE;
-
   orig_op0 = op0;
-  if (VN_INFO (op0)->has_constants)
-    op0 = vn_get_expr_for (op0);
-  else if (CONVERT_EXPR_CODE_P (code)
-	   || code == REALPART_EXPR
-	   || code == IMAGPART_EXPR
-	   || code == VIEW_CONVERT_EXPR
-	   || code == BIT_FIELD_REF)
+  op0 = vn_valueize (op0);
+  if (TREE_CODE (op0) == SSA_NAME)
     {
-      /* We want to do tree-combining on conversion-like expressions.
-         Make sure we feed only SSA_NAMEs or constants to fold though.  */
-      tree tem = vn_get_expr_for (op0);
-      if (UNARY_CLASS_P (tem)
-	  || BINARY_CLASS_P (tem)
-	  || TREE_CODE (tem) == VIEW_CONVERT_EXPR
-	  || TREE_CODE (tem) == SSA_NAME
-	  || TREE_CODE (tem) == CONSTRUCTOR
-	  || is_gimple_min_invariant (tem))
-	op0 = tem;
+      if (VN_INFO (op0)->has_constants)
+	op0 = vn_get_expr_for (op0);
+      else if (CONVERT_EXPR_CODE_P (code)
+	       || code == REALPART_EXPR
+	       || code == IMAGPART_EXPR
+	       || code == VIEW_CONVERT_EXPR
+	       || code == BIT_FIELD_REF)
+	{
+	  /* We want to do tree-combining on conversion-like expressions.
+	     Make sure we feed only SSA_NAMEs or constants to fold though.  */
+	  tree tem = vn_get_expr_for (op0);
+	  if (UNARY_CLASS_P (tem)
+	      || BINARY_CLASS_P (tem)
+	      || TREE_CODE (tem) == VIEW_CONVERT_EXPR
+	      || TREE_CODE (tem) == SSA_NAME
+	      || TREE_CODE (tem) == CONSTRUCTOR
+	      || is_gimple_min_invariant (tem))
+	    op0 = tem;
+	}
     }
 
   /* Avoid folding if nothing changed, but remember the expression.  */
