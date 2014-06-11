@@ -9686,7 +9686,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
 		&& funcdecl_p
-		&& (friendp == 0 || dname == current_class_name))
+		&& friendp == 0)
 	      ctype = current_class_type;
 
 	    if (ctype && (sfk == sfk_constructor

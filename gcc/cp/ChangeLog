@@ -1,6 +1,22 @@
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19200
+	* parser.c (cp_parser_declarator): Add bool parameter.
+	(cp_parser_direct_declarator): Likewise, use it.
+	(cp_parser_member_declaration): Pass friend_p to cp_parser_declarator.
+	(cp_parser_condition, cp_parser_explicit_instantiation,
+	cp_parser_init_declarator, cp_parser_type_id_1,
+	cp_parser_parameter_declaration, cp_parser_exception_declaration,
+	cp_parser_cache_defarg, cp_parser_objc_class_ivars,
+	cp_parser_objc_struct_declaration, cp_parser_omp_for_loop_init):
+	Adjust.
+	* decl.c (grokdeclarator): Fix handling of friend declared in
+	namespace scope (g++.dg/parse/friend10.C).
+
 2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
-	* vtable-class-hierarchy.c: Use symtab_get_node (var_decl)->implicit_section.
+	* vtable-class-hierarchy.c: Use symtab_get_node (var_decl)
+	->implicit_section.
 	* optimize.c (cdtor_comdat_group): Fix handling of aliases.
 	(maybe_clone_body): Move symbol across comdat groups.
 	* method.c (use_thunk): Copy implicit section flag.
