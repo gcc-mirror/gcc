@@ -1166,29 +1166,19 @@ write_tm_constrs_h (void)
    a CONSTRAINT_xxx constant to one of the predicate functions generated
    above.  */
 static void
-write_constraint_satisfied_p_1 (void)
+write_constraint_satisfied_p_array (void)
 {
-  struct constraint_data *c;
-
   if (satisfied_start == num_constraints)
     return;
 
-  puts ("bool\n"
-	"constraint_satisfied_p_1 (rtx op, enum constraint_num c)\n"
-	"{\n"
-	"  switch (c)\n"
-	"    {");
-
-  FOR_ALL_CONSTRAINTS (c)
-    if (!c->is_register)
-      printf ("    case CONSTRAINT_%s: "
-	      "return satisfies_constraint_%s (op);\n",
-	      c->c_name, c->c_name);
-
-  puts ("    default: break;\n"
-	"    }\n"
-	"  return false;\n"
-	"}\n");
+  printf ("bool (*constraint_satisfied_p_array[]) (rtx) = {\n  ");
+  for (unsigned int i = satisfied_start; i < num_constraints; ++i)
+    {
+      if (i != satisfied_start)
+	printf (",\n  ");
+      printf ("satisfies_constraint_%s", enum_order[i]->c_name);
+    }
+  printf ("\n};\n\n");
 }
 
 /* Write out the function which computes whether a given value matches
@@ -1293,16 +1283,15 @@ write_tm_preds_h (void)
 	      "  return false;\n"
 	      "}\n");
       else
-	printf ("extern bool constraint_satisfied_p_1 (rtx,"
-		" enum constraint_num);\n"
+	printf ("extern bool (*constraint_satisfied_p_array[]) (rtx);\n"
 		"\n"
 		"/* Return true if X satisfies constraint C.  */\n"
 		"\n"
 		"static inline bool\n"
 		"constraint_satisfied_p (rtx x, enum constraint_num c)\n"
 		"{\n"
-		"  return c >= CONSTRAINT_%s"
-		" && constraint_satisfied_p_1 (x, c);\n"
+		"  int i = (int) c - (int) CONSTRAINT_%s;\n"
+		"  return i >= 0 && constraint_satisfied_p_array[i] (x);\n"
 		"}\n"
 		"\n",
 		enum_order[satisfied_start]->name);
@@ -1425,7 +1414,7 @@ write_insn_preds_c (void)
       write_lookup_constraint_array ();
       if (have_register_constraints)
 	write_reg_class_for_constraint_1 ();
-      write_constraint_satisfied_p_1 ();
+      write_constraint_satisfied_p_array ();
 
       if (have_const_int_constraints)
 	write_insn_const_int_ok_for_constraint ();
