@@ -868,7 +868,7 @@ package body Lib.Xref is
 
             else
                Error_Msg_NE -- CODEFIX
-                 ("?pragma Unreferenced given for&!", N, E);
+                 ("??pragma Unreferenced given for&!", N, E);
             end if;
          end if;
 

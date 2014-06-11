@@ -4301,7 +4301,7 @@ package body Freeze is
                   Error_Msg_N
                     ("??convention C enumeration object has size less than ^",
                      E);
-                  Error_Msg_N ("\?use explicit size clause to set size", E);
+                  Error_Msg_N ("\??use explicit size clause to set size", E);
                end if;
             end if;
 

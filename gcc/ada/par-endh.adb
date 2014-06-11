@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -412,7 +412,7 @@ package body Endh is
                      Error_Msg_SC
                        ("misplaced aspects for package declaration");
                      Error_Msg
-                       ("info: aspect specifications belong here", Is_Loc);
+                       ("info: aspect specifications belong here??", Is_Loc);
                      P_Aspect_Specifications (Empty);
 
                   --  Other cases where aspect specifications are not allowed

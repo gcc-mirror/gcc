@@ -6482,10 +6482,10 @@ package body Sem_Prag is
 
                      if Force then
                         if Cont = False then
-                           Error_Msg_N ("<~!!", Arg1);
+                           Error_Msg_N ("<<~!!", Arg1);
                            Cont := True;
                         else
-                           Error_Msg_N ("\<~!!", Arg1);
+                           Error_Msg_N ("\<<~!!", Arg1);
                         end if;
 
                      --  Error, rather than warning, or in a body, so we do not
@@ -6496,10 +6496,10 @@ package body Sem_Prag is
 
                      else
                         if Cont = False then
-                           Error_Msg_N ("<~", Arg1);
+                           Error_Msg_N ("<<~", Arg1);
                            Cont := True;
                         else
-                           Error_Msg_N ("\<~", Arg1);
+                           Error_Msg_N ("\<<~", Arg1);
                         end if;
                      end if;
 
@@ -9068,7 +9068,7 @@ package body Sem_Prag is
                if Nkind (Expr) /= N_Identifier
                  or else not Is_Attribute_Name (Chars (Expr))
                then
-                  Error_Msg_N ("unknown attribute name?", Expr);
+                  Error_Msg_N ("unknown attribute name??", Expr);
 
                else
                   Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
@@ -9078,7 +9078,7 @@ package body Sem_Prag is
                if Nkind (Expr) /= N_Identifier
                  or else not Is_Pragma_Name (Chars (Expr))
                then
-                  Error_Msg_N ("unknown pragma name?", Expr);
+                  Error_Msg_N ("unknown pragma name??", Expr);
 
                else
                   Set_Restriction_No_Use_Of_Pragma (Expr, Warn);

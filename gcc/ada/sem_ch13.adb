@@ -11285,7 +11285,7 @@ package body Sem_Ch13 is
                  and then X_Size > Y_Size
                then
                   Error_Msg_NE
-                    ("?& overlays smaller object", ACCR.N, ACCR.X);
+                    ("??& overlays smaller object", ACCR.N, ACCR.X);
                   Error_Msg_N
                     ("\??program execution may be erroneous", ACCR.N);
                   Error_Msg_Uint_1 := X_Size;
@@ -11926,7 +11926,7 @@ package body Sem_Ch13 is
                         elsif Is_Unsigned_Type (Source) then
                            Error_Msg
                              ("\?z?source will be extended with ^ high order "
-                              & "zero bits?!", Eloc);
+                              & "zero bits!", Eloc);
 
                         else
                            Error_Msg

@@ -933,8 +933,8 @@ package body Sem_Ch6 is
                   --  Can it really happen (extended return???)
 
                   Error_Msg_N
-                    ("aliased only allowed for limited"
-                     & " return objects in Ada 2012?", N);
+                    ("aliased only allowed for limited return objects "
+                     & "in Ada 2012??", N);
 
                elsif not Is_Limited_View (R_Type) then
                   Error_Msg_N ("aliased only allowed for limited"
@@ -2817,7 +2817,7 @@ package body Sem_Ch6 is
             elsif Ekind (Scope (Spec_Id)) = E_Protected_Type then
                Error_Msg_Warn := Error_To_Warning;
                Error_Msg_N
-                 ("<overriding indicator not allowed for protected "
+                 ("<<overriding indicator not allowed for protected "
                   & "subprogram body", Body_Spec);
             end if;
 
@@ -2842,7 +2842,7 @@ package body Sem_Ch6 is
                Error_Msg_Warn := Error_To_Warning;
 
                Error_Msg_N
-                 ("<overriding indicator not allowed " &
+                 ("<<overriding indicator not allowed " &
                   "for protected subprogram body",
                   Body_Spec);
 
@@ -11609,7 +11609,7 @@ package body Sem_Ch6 is
 
             if Convention (Formal_Type) = Convention_Ada_Pass_By_Copy then
                Error_Msg_N
-                 ("cannot pass aliased parameter & by copy?", Formal);
+                 ("cannot pass aliased parameter & by copy??", Formal);
             end if;
 
          --  Force mechanism if type has Convention Ada_Pass_By_Ref/Copy

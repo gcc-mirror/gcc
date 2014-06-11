@@ -10227,7 +10227,7 @@ package body Sem_Ch3 is
 
             if GNAT_Mode then
                Error_Msg_N
-                 ("?cannot initialize entities of limited type!", Exp);
+                 ("??cannot initialize entities of limited type!", Exp);
 
             elsif Ada_Version < Ada_2005 then
 
@@ -19458,7 +19458,7 @@ package body Sem_Ch3 is
                if Is_Class_Wide_Type (Designated_Type (Subtype_Mark_Id)) then
                   if Comes_From_Source (S) then
                      Error_Msg_N
-                       ("constraint on class-wide type ignored?",
+                       ("constraint on class-wide type ignored??",
                         Constraint (S));
                   end if;
 
