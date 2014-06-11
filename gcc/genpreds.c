@@ -1232,6 +1232,33 @@ write_range_function (const char *name, unsigned int start, unsigned int end)
 	    "}\n\n", name);
 }
 
+/* VEC is a list of key/value pairs, with the keys being lower bounds
+   of a range.  Output a decision tree that handles the keys covered by
+   [VEC[START], VEC[END]), returning FALLBACK for keys lower then VEC[START]'s.
+   INDENT is the number of spaces to indent the code.  */
+static void
+print_type_tree (const vec <std::pair <unsigned int, const char *> > &vec,
+		 unsigned int start, unsigned int end, const char *fallback,
+		 unsigned int indent)
+{
+  while (start < end)
+    {
+      unsigned int mid = (start + end) / 2;
+      printf ("%*sif (c >= CONSTRAINT_%s)\n",
+	      indent, "", enum_order[vec[mid].first]->c_name);
+      if (mid + 1 == end)
+	print_type_tree (vec, mid + 1, end, vec[mid].second, indent + 2);
+      else
+	{
+	  printf ("%*s{\n", indent + 2, "");
+	  print_type_tree (vec, mid + 1, end, vec[mid].second, indent + 4);
+	  printf ("%*s}\n", indent + 2, "");
+	}
+      end = mid;
+    }
+  printf ("%*sreturn %s;\n", indent, "", fallback);
+}
+
 /* Write tm-preds.h.  Unfortunately, it is impossible to forward-declare
    an enumeration in portable C, so we have to condition all these
    prototypes on HAVE_MACHINE_MODES.  */
@@ -1321,21 +1348,13 @@ write_tm_preds_h (void)
 	      "  if (insn_extra_register_constraint (c))\n"
 	      "    return reg_class_for_constraint_1 (c);\n"
 	      "  return NO_REGS;\n"
-	      "}\n"
-	      "\n"
-	      "#define REG_CLASS_FROM_CONSTRAINT(c_,s_) \\\n"
-	      "    reg_class_for_constraint (lookup_constraint (s_))\n"
-	      "#define REG_CLASS_FOR_CONSTRAINT(x_) \\\n"
-	      "    reg_class_for_constraint (x_)\n");
+	      "}\n");
       else
 	puts ("static inline enum reg_class\n"
 	      "reg_class_for_constraint (enum constraint_num)\n"
 	      "{\n"
 	      "  return NO_REGS;\n"
-	      "}\n\n"
-	      "#define REG_CLASS_FROM_CONSTRAINT(c_,s_) NO_REGS\n"
-	      "#define REG_CLASS_FOR_CONSTRAINT(x_) \\\n"
-	      "    NO_REGS\n");
+	      "}\n");
       if (have_const_int_constraints)
 	puts ("extern bool insn_const_int_ok_for_constraint "
 	      "(HOST_WIDE_INT, enum constraint_num);\n"
@@ -1347,19 +1366,27 @@ write_tm_preds_h (void)
 	      "    constraint_satisfied_p (v_, lookup_constraint (s_))\n");
       else
 	puts ("#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(v_,c_,s_) 0\n");
-      if (have_extra_constraints)
-	puts ("#define EXTRA_CONSTRAINT_STR(v_,c_,s_) \\\n"
-	      "    constraint_satisfied_p (v_, lookup_constraint (s_))\n");
-      if (have_memory_constraints)
-	puts ("#define EXTRA_MEMORY_CONSTRAINT(c_,s_) "
-	      "insn_extra_memory_constraint (lookup_constraint (s_))\n");
-      else
-	puts ("#define EXTRA_MEMORY_CONSTRAINT(c_,s_) false\n");
-      if (have_address_constraints)
-	puts ("#define EXTRA_ADDRESS_CONSTRAINT(c_,s_) "
-	      "insn_extra_address_constraint (lookup_constraint (s_))\n");
-      else
-	puts ("#define EXTRA_ADDRESS_CONSTRAINT(c_,s_) false\n");
+
+      puts ("enum constraint_type\n"
+	    "{\n"
+	    "  CT_REGISTER,\n"
+	    "  CT_MEMORY,\n"
+	    "  CT_ADDRESS,\n"
+	    "  CT_FIXED_FORM\n"
+	    "};\n"
+	    "\n"
+	    "static inline enum constraint_type\n"
+	    "get_constraint_type (enum constraint_num c)\n"
+	    "{");
+      auto_vec <std::pair <unsigned int, const char *>, 3> values;
+      if (memory_start != memory_end)
+	values.safe_push (std::make_pair (memory_start, "CT_MEMORY"));
+      if (address_start != address_end)
+	values.safe_push (std::make_pair (address_start, "CT_ADDRESS"));
+      if (address_end != num_constraints)
+	values.safe_push (std::make_pair (address_end, "CT_FIXED_FORM"));
+      print_type_tree (values, 0, values.length (), "CT_REGISTER", 2);
+      puts ("}");
     }
 
   puts ("#endif /* tm-preds.h */");

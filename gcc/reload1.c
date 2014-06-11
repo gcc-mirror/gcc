@@ -1437,13 +1437,15 @@ maybe_fix_stack_asms (void)
 		  break;
 
 		default:
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
+		  enum constraint_num cn = lookup_constraint (p);
+		  if (insn_extra_address_constraint (cn))
 		    cls = (int) reg_class_subunion[cls]
 		      [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 					     ADDRESS, SCRATCH)];
 		  else
 		    cls = (int) reg_class_subunion[cls]
-		      [(int) REG_CLASS_FROM_CONSTRAINT (c, p)];
+		      [reg_class_for_constraint (cn)];
+		  break;
 		}
 	      p += CONSTRAINT_LEN (c, p);
 	    }

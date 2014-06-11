@@ -1729,6 +1729,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
   while (*constraint)
     {
+      enum constraint_num cn;
       char c = *constraint;
       int len;
       switch (c)
@@ -1902,27 +1903,37 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	    result = 1;
 	  break;
 
-	default:
-	  /* For all other letters, we first check for a register class,
-	     otherwise it is an EXTRA_CONSTRAINT.  */
-	  if (REG_CLASS_FROM_CONSTRAINT (c, constraint) != NO_REGS)
-	    {
-	    case 'r':
-	      if (GET_MODE (op) == BLKmode)
-		break;
-	      if (register_operand (op, VOIDmode))
-		result = 1;
-	    }
-#ifdef EXTRA_CONSTRAINT_STR
-	  else if (EXTRA_MEMORY_CONSTRAINT (c, constraint))
-	    /* Every memory operand can be reloaded to fit.  */
-	    result = result || memory_operand (op, VOIDmode);
-	  else if (EXTRA_ADDRESS_CONSTRAINT (c, constraint))
-	    /* Every address operand can be reloaded to fit.  */
-	    result = result || address_operand (op, VOIDmode);
-	  else if (EXTRA_CONSTRAINT_STR (op, c, constraint))
+	case 'r':
+	reg:
+	  if (!result
+	      && GET_MODE (op) != BLKmode
+	      && register_operand (op, VOIDmode))
 	    result = 1;
-#endif
+	  break;
+
+	default:
+	  cn = lookup_constraint (constraint);
+	  switch (get_constraint_type (cn))
+	    {
+	    case CT_REGISTER:
+	      if (reg_class_for_constraint (cn) != NO_REGS)
+		goto reg;
+	      break;
+
+	    case CT_MEMORY:
+	      /* Every memory operand can be reloaded to fit.  */
+	      result = result || memory_operand (op, VOIDmode);
+	      break;
+
+	    case CT_ADDRESS:
+	      /* Every address operand can be reloaded to fit.  */
+	      result = result || address_operand (op, VOIDmode);
+	      break;
+
+	    case CT_FIXED_FORM:
+	      result = result || constraint_satisfied_p (op, cn);
+	      break;
+	    }
 	  break;
 	}
       len = CONSTRAINT_LEN (c, constraint);
@@ -2434,13 +2445,21 @@ preprocess_constraints (int n_operands, int n_alternatives,
 		  break;
 
 		default:
-		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
+		  enum constraint_num cn = lookup_constraint (p);
+		  enum reg_class cl;
+		  switch (get_constraint_type (cn))
 		    {
+		    case CT_REGISTER:
+		      cl = reg_class_for_constraint (cn);
+		      if (cl != NO_REGS)
+			op_alt[i].cl = reg_class_subunion[op_alt[i].cl][cl];
+		      break;
+
+		    case CT_MEMORY:
 		      op_alt[i].memory_ok = 1;
 		      break;
-		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-		    {
+
+		    case CT_ADDRESS:
 		      op_alt[i].is_address = 1;
 		      op_alt[i].cl
 			= (reg_class_subunion
@@ -2448,12 +2467,10 @@ preprocess_constraints (int n_operands, int n_alternatives,
 			   [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 						  ADDRESS, SCRATCH)]);
 		      break;
-		    }
 
-		  op_alt[i].cl
-		    = (reg_class_subunion
-		       [(int) op_alt[i].cl]
-		       [(int) REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)]);
+		    case CT_FIXED_FORM:
+		      break;
+		    }
 		  break;
 		}
 	      p += CONSTRAINT_LEN (c, p);
@@ -2846,9 +2863,12 @@ constrain_operands (int strict)
 	      default:
 		{
 		  enum reg_class cl;
+		  enum constraint_num cn = (c == 'r'
+					    ? CONSTRAINT__UNKNOWN
+					    : lookup_constraint (p));
 
 		  cl = (c == 'r'
-			   ? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, p));
+			? GENERAL_REGS : reg_class_for_constraint (cn));
 		  if (cl != NO_REGS)
 		    {
 		      if (strict < 0
@@ -2860,11 +2880,11 @@ constrain_operands (int strict)
 			      && reg_fits_class_p (op, cl, offset, mode)))
 		        win = 1;
 		    }
-#ifdef EXTRA_CONSTRAINT_STR
-		  else if (EXTRA_CONSTRAINT_STR (op, c, p))
+
+		  else if (constraint_satisfied_p (op, cn))
 		    win = 1;
 
-		  else if (EXTRA_MEMORY_CONSTRAINT (c, p)
+		  else if (insn_extra_memory_constraint (cn)
 			   /* Every memory operand can be reloaded to fit.  */
 			   && ((strict < 0 && MEM_P (op))
 			       /* Before reload, accept what reload can turn
@@ -2874,7 +2894,7 @@ constrain_operands (int strict)
 			       || (reload_in_progress && REG_P (op)
 				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)))
 		    win = 1;
-		  else if (EXTRA_ADDRESS_CONSTRAINT (c, p)
+		  else if (insn_extra_address_constraint (cn)
 			   /* Every address operand can be reloaded to fit.  */
 			   && strict < 0)
 		    win = 1;
@@ -2885,10 +2905,9 @@ constrain_operands (int strict)
 			   && REGNO (op) >= FIRST_PSEUDO_REGISTER
 			   && reg_renumber[REGNO (op)] < 0
 			   && reg_equiv_mem (REGNO (op)) != 0
-			   && EXTRA_CONSTRAINT_STR
-			      (reg_equiv_mem (REGNO (op)), c, p))
+			   && constraint_satisfied_p
+			      (reg_equiv_mem (REGNO (op)), cn))
 		    win = 1;
-#endif
 		  break;
 		}
 	      }
@@ -3283,7 +3302,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
     }
 
   cl = (class_str[0] == 'r' ? GENERAL_REGS
-	   : REG_CLASS_FROM_CONSTRAINT (class_str[0], class_str));
+	: reg_class_for_constraint (lookup_constraint (class_str)));
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {

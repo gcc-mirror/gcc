@@ -574,8 +574,8 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 		default:
 		  rclass
 		    = (reg_class_subunion
-		       [(int) rclass]
-		       [(int) REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)]);
+		       [rclass]
+		       [reg_class_for_constraint (lookup_constraint (p))]);
 		  break;
 
 		case ',': case '\0':
