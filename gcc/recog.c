@@ -2415,18 +2415,6 @@ preprocess_constraints (int n_operands, int n_alternatives,
 		case TARGET_MEM_CONSTRAINT:
 		  op_alt[i].memory_ok = 1;
 		  break;
-		case '<':
-		  op_alt[i].decmem_ok = 1;
-		  break;
-		case '>':
-		  op_alt[i].incmem_ok = 1;
-		  break;
-		case 'V':
-		  op_alt[i].nonoffmem_ok = 1;
-		  break;
-		case 'o':
-		  op_alt[i].offmem_ok = 1;
-		  break;
 		case 'X':
 		  op_alt[i].anything_ok = 1;
 		  break;
