@@ -759,6 +759,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 {
   int c;
   enum reg_class cl, next_cl;
+  enum constraint_num cn;
 
   cl = NO_REGS;
   alternative_mask enabled = recog_data.enabled_alternatives;
@@ -849,20 +850,19 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	case 'A': case 'B': case 'C': case 'D':
 	case 'Q': case 'R': case 'S': case 'T': case 'U':
 	case 'W': case 'Y': case 'Z':
-#ifdef EXTRA_CONSTRAINT_STR
 	  /* ??? Is this the best way to handle memory constraints?  */
-	  if (EXTRA_MEMORY_CONSTRAINT (c, constraints)
-	      || EXTRA_ADDRESS_CONSTRAINT (c, constraints))
+	  cn = lookup_constraint (constraints);
+	  if (insn_extra_memory_constraint (cn)
+	      || insn_extra_address_constraint (cn))
 	    return NO_REGS;
-	  if (EXTRA_CONSTRAINT_STR (op, c, constraints)
+	  if (constraint_satisfied_p (op, cn)
 	      || (equiv_const != NULL_RTX
 		  && CONSTANT_P (equiv_const)
-		  && EXTRA_CONSTRAINT_STR (equiv_const, c, constraints)))
+		  && constraint_satisfied_p (equiv_const, cn)))
 	    return NO_REGS;
-#endif
 	  next_cl = (c == 'r'
 		     ? GENERAL_REGS
-		     : REG_CLASS_FROM_CONSTRAINT (c, constraints));
+		     : reg_class_for_constraint (cn));
 	  if (next_cl == NO_REGS)
 	    break;
 	  if (cl == NO_REGS
@@ -950,7 +950,7 @@ ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 		case 'W': case 'Y': case 'Z':
 		  cl = (c == 'r'
 			? GENERAL_REGS
-			: REG_CLASS_FROM_CONSTRAINT (c, p));
+			: reg_class_for_constraint (lookup_constraint (p)));
 		  if (cl != NO_REGS)
 		    {
 		      /* There is no register pressure problem if all of the

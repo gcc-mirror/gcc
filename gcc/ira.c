@@ -1922,24 +1922,29 @@ ira_setup_alts (rtx insn, HARD_REG_SET &alts)
 		    break;
 		    
 		  case 'o':
+		  case 'r':
 		    goto op_success;
 		    break;
 		    
 		  default:
 		    {
-		      enum reg_class cl;
-		      
-		      cl = (c == 'r' ? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, p));
-		      if (cl != NO_REGS)
-			goto op_success;
-#ifdef EXTRA_CONSTRAINT_STR
-		      else if (EXTRA_CONSTRAINT_STR (op, c, p))
-			goto op_success;
-		      else if (EXTRA_MEMORY_CONSTRAINT (c, p))
-			goto op_success;
-		      else if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-			goto op_success;
-#endif
+		      enum constraint_num cn = lookup_constraint (p);
+		      switch (get_constraint_type (cn))
+			{
+			case CT_REGISTER:
+			  if (reg_class_for_constraint (cn) != NO_REGS)
+			    goto op_success;
+			  break;
+
+			case CT_ADDRESS:
+			case CT_MEMORY:
+			  goto op_success;
+
+			case CT_FIXED_FORM:
+			  if (constraint_satisfied_p (op, cn))
+			    goto op_success;
+			  break;
+			}
 		      break;
 		    }
 		  }
@@ -1972,9 +1977,6 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
   int curr_alt, c, original, dup;
   bool ignore_p, use_commut_op_p;
   const char *str;
-#ifdef EXTRA_CONSTRAINT_STR
-  rtx op;
-#endif
 
   if (op_num < 0 || recog_data.n_alternatives == 0)
     return -1;
@@ -1985,9 +1987,7 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
   use_commut_op_p = false;
   for (;;)
     {
-#ifdef EXTRA_CONSTRAINT_STR
-      op = recog_data.operand[op_num];
-#endif
+      rtx op = recog_data.operand[op_num];
       
       for (curr_alt = 0, ignore_p = !TEST_HARD_REG_BIT (alts, curr_alt),
 	   original = -1;;)
@@ -2010,6 +2010,9 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
 	      case 'g':
 		goto fail;
 	      case 'r':
+		if (!targetm.class_likely_spilled_p (GENERAL_REGS))
+		  goto fail;
+		break;
 	      case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
 	      case 'h': case 'j': case 'k': case 'l':
 	      case 'q': case 't': case 'u':
@@ -2018,19 +2021,13 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
 	      case 'Q': case 'R': case 'S': case 'T': case 'U':
 	      case 'W': case 'Y': case 'Z':
 		{
-		  enum reg_class cl;
-		  
-		  cl = (c == 'r'
-			? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, str));
-		  if (cl != NO_REGS)
-		    {
-		      if (! targetm.class_likely_spilled_p (cl))
-			goto fail;
-		    }
-#ifdef EXTRA_CONSTRAINT_STR
-		  else if (EXTRA_CONSTRAINT_STR (op, c, str))
+		  enum constraint_num cn = lookup_constraint (str);
+		  enum reg_class cl = reg_class_for_constraint (cn);
+		  if (cl != NO_REGS
+		      && !targetm.class_likely_spilled_p (cl))
 		    goto fail;
-#endif
+		  if (constraint_satisfied_p (op, cn))
+		    goto fail;
 		  break;
 		}
 		

@@ -753,25 +753,28 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  break;
 
 		default:
-		  if (REG_CLASS_FROM_CONSTRAINT (c, p) != NO_REGS)
-		    classes[i] = ira_reg_class_subunion[classes[i]]
-		                 [REG_CLASS_FROM_CONSTRAINT (c, p)];
-#ifdef EXTRA_CONSTRAINT_STR
-		  else if (EXTRA_CONSTRAINT_STR (op, c, p))
-		    win = 1;
-
-		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
+		  enum constraint_num cn = lookup_constraint (p);
+		  enum reg_class cl;
+		  switch (get_constraint_type (cn))
 		    {
+		    case CT_REGISTER:
+		      cl = reg_class_for_constraint (cn);
+		      if (cl != NO_REGS)
+			classes[i] = ira_reg_class_subunion[classes[i]][cl];
+		      break;
+
+		    case CT_MEMORY:
 		      /* Every MEM can be reloaded to fit.  */
 		      insn_allows_mem[i] = allows_mem[i] = 1;
 		      if (MEM_P (op))
 			win = 1;
-		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-		    {
+		      break;
+
+		    case CT_ADDRESS:
 		      /* Every address can be reloaded to fit.  */
 		      allows_addr = 1;
-		      if (address_operand (op, GET_MODE (op)))
+		      if (address_operand (op, GET_MODE (op))
+			  || constraint_satisfied_p (op, cn))
 			win = 1;
 		      /* We know this operand is an address, so we
 			 want it to be allocated to a hard register
@@ -781,8 +784,13 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			= ira_reg_class_subunion[classes[i]]
 			  [base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 					   ADDRESS, SCRATCH)];
+		      break;
+
+		    case CT_FIXED_FORM:
+		      if (constraint_satisfied_p (op, cn))
+			win = 1;
+		      break;
 		    }
-#endif
 		  break;
 		}
 	      p += CONSTRAINT_LEN (c, p);
@@ -1275,8 +1283,8 @@ record_operand_costs (rtx insn, enum reg_class *pref)
 			     XEXP (recog_data.operand[i], 0),
 			     0, MEM, SCRATCH, frequency * 2);
       else if (constraints[i][0] == 'p'
-	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0],
-					    constraints[i]))
+	       || (insn_extra_address_constraint
+		   (lookup_constraint (constraints[i]))))
 	record_address_regs (VOIDmode, ADDR_SPACE_GENERIC,
 			     recog_data.operand[i], 0, ADDRESS, SCRATCH,
 			     frequency * 2);
