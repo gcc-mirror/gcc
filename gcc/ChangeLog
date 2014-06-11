@@ -1,3 +1,9 @@
+2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (function_and_variable_visibility): Disable
+	virtual table rewriting temporarily on targets not supporting
+	ONE_ONLY.
+
 2014-06-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61437
