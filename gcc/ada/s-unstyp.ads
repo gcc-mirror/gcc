@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,7 +200,7 @@ package System.Unsigned_Types is
    --  previous version of the compiler and runtime, but are not needed
    --  by the current version. We retain them to help with bootstrap path
    --  problems. Also they seem harmless, and if any user programs have
-   --  been (rather improperly) using these types, why discombobulate them?
+   --  been using these types, why discombobulate them?
 
    subtype Packed_Bytes           is Packed_Bytes4;
    subtype Packed_Bytes_Unaligned is Packed_Bytes1;

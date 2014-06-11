@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2013, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2014, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -380,6 +380,7 @@ package body Impunit is
     ("s-rident", F),  -- System.Rident
     ("s-ststop", F),  -- System.Strings.Stream_Ops
     ("s-tasinf", F),  -- System.Task_Info
+    ("s-unstyp", F),  -- System.Unsigned_Types
     ("s-wchcnv", F),  -- System.Wch_Cnv
     ("s-wchcon", F),  -- System.Wch_Con
 
