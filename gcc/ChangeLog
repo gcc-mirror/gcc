@@ -1,3 +1,16 @@
+2014-06-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61306
+	* tree-ssa-math-opts.c (struct symbolic_number): Store type of
+	expression instead of its size.
+	(do_shift_rotate): Adapt to change in struct symbolic_number. Return
+	false to prevent optimization when the result is unpredictable due to
+	arithmetic right shift of signed type with highest byte is set.
+	(verify_symbolic_number_p): Adapt to change in struct symbolic_number.
+	(init_symbolic_number): Likewise.
+	(find_bswap_or_nop_1): Likewise. Return NULL to prevent optimization
+	when the result is unpredictable due to sign extension.
+
 2014-06-11  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.md (*thumb1_adddi3): Move into new file thumb1.md.
