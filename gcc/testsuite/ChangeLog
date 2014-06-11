@@ -1,5 +1,11 @@
 2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/60265
+	* g++.dg/cpp0x/using-enum-1.C: New.
+	* g++.dg/cpp0x/using-enum-2.C: Likewise.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/19200
 	* g++.dg/parse/friend9.C: New.
 	* g++.dg/parse/friend10.C: Likewise.

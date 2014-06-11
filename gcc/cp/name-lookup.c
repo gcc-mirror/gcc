@@ -2487,7 +2487,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
        member-declaration.  */
   if (TYPE_P (scope))
     {
-      error ("%qT is not a namespace", scope);
+      error ("%qT is not a namespace or unscoped enum", scope);
       return NULL_TREE;
     }
   else if (scope == error_mark_node)
