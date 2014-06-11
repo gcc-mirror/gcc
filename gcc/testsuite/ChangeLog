@@ -1,3 +1,8 @@
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34049
+	* g++.dg/parse/pr34049.C: New.
+
 2014-06-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.c-torture/execute/pr61306-1.c: New test.
