@@ -328,7 +328,6 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
   enum reload_type secondary_type;
   int s_reload, t_reload = -1;
   const char *scratch_constraint;
-  char letter;
   secondary_reload_info sri;
 
   if (type == RELOAD_FOR_INPUT_ADDRESS
@@ -399,10 +398,8 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
       scratch_constraint++;
       if (*scratch_constraint == '&')
 	scratch_constraint++;
-      letter = *scratch_constraint;
-      scratch_class = (letter == 'r' ? GENERAL_REGS
-		       : (reg_class_for_constraint
-			  (lookup_constraint (scratch_constraint))));
+      scratch_class = (reg_class_for_constraint
+		       (lookup_constraint (scratch_constraint)));
 
       rclass = scratch_class;
       mode = insn_data[(int) icode].operand[2].mode;
@@ -548,7 +545,6 @@ enum reg_class
 scratch_reload_class (enum insn_code icode)
 {
   const char *scratch_constraint;
-  char scratch_letter;
   enum reg_class rclass;
 
   gcc_assert (insn_data[(int) icode].n_operands == 3);
@@ -557,9 +553,6 @@ scratch_reload_class (enum insn_code icode)
   scratch_constraint++;
   if (*scratch_constraint == '&')
     scratch_constraint++;
-  scratch_letter = *scratch_constraint;
-  if (scratch_letter == 'r')
-    return GENERAL_REGS;
   rclass = reg_class_for_constraint (lookup_constraint (scratch_constraint));
   gcc_assert (rclass != NO_REGS);
   return rclass;
@@ -2850,9 +2843,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
       if (*constraints[i] == 0)
 	/* Ignore things like match_operator operands.  */
 	;
-      else if (constraints[i][0] == 'p'
-	       || (insn_extra_address_constraint
-		   (lookup_constraint (constraints[i]))))
+      else if (insn_extra_address_constraint
+	       (lookup_constraint (constraints[i])))
 	{
 	  address_operand_reloaded[i]
 	    = find_reloads_address (recog_data.operand_mode[i], (rtx*) 0,
@@ -3209,14 +3201,6 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		    c = '\0';
 		    break;
 
-		  case '=':  case '+':  case '*':
-		    break;
-
-		  case '%':
-		    /* We only support one commutative marker, the first
-		       one.  We already set commutative above.  */
-		    break;
-
 		  case '?':
 		    reject += 6;
 		    break;
@@ -3425,29 +3409,6 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		    earlyclobber = 1, this_earlyclobber = 1;
 		    break;
 
-		  case 'E':
-		  case 'F':
-		    if (CONST_DOUBLE_AS_FLOAT_P (operand)
-			|| (GET_CODE (operand) == CONST_VECTOR
-			    && (GET_MODE_CLASS (GET_MODE (operand))
-				== MODE_VECTOR_FLOAT)))
-		      win = 1;
-		    break;
-
-		  case 's':
-		    if (CONST_SCALAR_INT_P (operand))
-		      break;
-		  case 'i':
-		    if (CONSTANT_P (operand)
-			&& (! flag_pic || LEGITIMATE_PIC_OPERAND_P (operand)))
-		      win = 1;
-		    break;
-
-		  case 'n':
-		    if (CONST_SCALAR_INT_P (operand))
-		      win = 1;
-		    break;
-
 		  case 'X':
 		    force_reload = 0;
 		    win = 1;
@@ -3468,9 +3429,6 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			    || (REGNO (operand) >= FIRST_PSEUDO_REGISTER
 				&& reg_renumber[REGNO (operand)] < 0)))
 		      win = 1;
-		    /* Drop through into 'r' case.  */
-
-		  case 'r':
 		    cl = GENERAL_REGS;
 		    goto reg;
 
@@ -4677,8 +4635,6 @@ alternative_allows_const_pool_ref (rtx mem ATTRIBUTE_UNUSED,
   for (; (c = *constraint) && c != ',' && c != '#';
        constraint += CONSTRAINT_LEN (c, constraint))
     {
-      if (c == TARGET_MEM_CONSTRAINT || c == 'o')
-	return true;
       enum constraint_num cn = lookup_constraint (constraint);
       if (insn_extra_memory_constraint (cn)
 	  && (mem == NULL || constraint_satisfied_p (mem, cn)))

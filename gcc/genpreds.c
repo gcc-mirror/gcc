@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-md.h"
 #include "gensupport.h"
 
+static char general_mem[] = { TARGET_MEM_CONSTRAINT, 0 };
+
 /* Given a predicate expression EXP, from form NAME at line LINENO,
    verify that it does not contain any RTL constructs which are not
    valid in predicate definitions.  Returns true if EXP is
@@ -659,12 +661,9 @@ static struct constraint_data **last_constraint_ptr = &first_constraint;
 #define FOR_ALL_CONSTRAINTS(iter_) \
   for (iter_ = first_constraint; iter_; iter_ = iter_->next_textual)
 
-/* These letters, and all names beginning with them, are reserved for
-   generic constraints.
-   The 'm' constraint is not mentioned here since that constraint
-   letter can be overridden by the back end by defining the
-   TARGET_MEM_CONSTRAINT macro.  */
-static const char generic_constraint_letters[] = "EFVXginoprs";
+/* Contraint letters that have a special meaning and that cannot be used
+   in define*_constraints.  */
+static const char generic_constraint_letters[] = "g";
 
 /* Machine-independent code expects that constraints with these
    (initial) letters will allow only (a subset of all) CONST_INTs.  */
@@ -735,19 +734,12 @@ add_constraint (const char *name, const char *regclass,
   bool is_const_dbl;
   size_t namelen;
 
+  if (strcmp (name, "TARGET_MEM_CONSTRAINT") == 0)
+    name = general_mem;
+
   if (exp && validate_exp (exp, name, lineno))
     return;
 
-  if (!ISALPHA (name[0]) && name[0] != '_')
-    {
-      if (name[1] == '\0')
-	error_with_line (lineno, "constraint name '%s' is not "
-			 "a letter or underscore", name);
-      else
-	error_with_line (lineno, "constraint name '%s' does not begin "
-			 "with a letter or underscore", name);
-      return;
-    }
   for (p = name; *p; p++)
     if (!ISALNUM (*p))
       {

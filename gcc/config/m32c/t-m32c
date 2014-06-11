@@ -20,7 +20,7 @@
 
 # target-specific files
 
-md_file = md
+md_file = $(srcdir)/common.md md
 
 MD_FILES = m32c constraints predicates addsub bitops blkmov cond jump minmax mov muldiv prologue shift
 

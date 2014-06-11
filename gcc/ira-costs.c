@@ -645,8 +645,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	    {
 	      switch (c)
 		{
-		case ',':
-		  break;
 		case '*':
 		  /* Ignore the next letter for this pass.  */
 		  c = *++p;
@@ -654,72 +652,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
 		case '?':
 		  alt_cost += 2;
-		case '!':  case '#':  case '&':
-		case '0':  case '1':  case '2':  case '3':  case '4':
-		case '5':  case '6':  case '7':  case '8':  case '9':
-		  break;
-
-		case 'p':
-		  allows_addr = 1;
-		  win = address_operand (op, GET_MODE (op));
-		  /* We know this operand is an address, so we want it
-		     to be allocated to a register that can be the
-		     base of an address, i.e. BASE_REG_CLASS.  */
-		  classes[i]
-		    = ira_reg_class_subunion[classes[i]]
-		      [base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-				       ADDRESS, SCRATCH)];
-		  break;
-
-		case 'm':  case 'o':  case 'V':
-		  /* It doesn't seem worth distinguishing between
-		     offsettable and non-offsettable addresses
-		     here.  */
-		  insn_allows_mem[i] = allows_mem[i] = 1;
-		  if (MEM_P (op))
-		    win = 1;
-		  break;
-
-		case '<':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
-			  || GET_CODE (XEXP (op, 0)) == POST_DEC))
-		    win = 1;
-		  break;
-
-		case '>':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
-			  || GET_CODE (XEXP (op, 0)) == POST_INC))
-		    win = 1;
-		  break;
-
-		case 'E':
-		case 'F':
-		  if (CONST_DOUBLE_AS_FLOAT_P (op) 
-		      || (GET_CODE (op) == CONST_VECTOR
-			  && (GET_MODE_CLASS (GET_MODE (op))
-			      == MODE_VECTOR_FLOAT)))
-		    win = 1;
-		  break;
-
-		case 's':
-		  if (CONST_SCALAR_INT_P (op)) 
-		    break;
-
-		case 'i':
-		  if (CONSTANT_P (op)
-		      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op)))
-		    win = 1;
-		  break;
-
-		case 'n':
-		  if (CONST_SCALAR_INT_P (op)) 
-		    win = 1;
-		  break;
-
-		case 'X':
-		  win = 1;
 		  break;
 
 		case 'g':
@@ -728,7 +660,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			  && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))))
 		    win = 1;
 		  insn_allows_mem[i] = allows_mem[i] = 1;
-		case 'r':
 		  classes[i] = ira_reg_class_subunion[classes[i]][GENERAL_REGS];
 		  break;
 
