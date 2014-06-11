@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1271,7 +1271,6 @@ begin
            Pragma_Precondition                   |
            Pragma_Predicate                      |
            Pragma_Preelaborate                   |
-           Pragma_Preelaborate_05                |
            Pragma_Pre_Class                      |
            Pragma_Priority                       |
            Pragma_Priority_Specific_Dispatching  |
@@ -1281,8 +1280,6 @@ begin
            Pragma_Provide_Shift_Operators        |
            Pragma_Psect_Object                   |
            Pragma_Pure                           |
-           Pragma_Pure_05                        |
-           Pragma_Pure_12                        |
            Pragma_Pure_Function                  |
            Pragma_Queuing_Policy                 |
            Pragma_Refined_Depends                |

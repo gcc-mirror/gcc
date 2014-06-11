@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2013, Free Software Foundation, Inc.        --
+--           Copyright (C) 1992-2014, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,13 +33,14 @@
 --  modulus values. Arithmetic is done in Long_Long_Unsigned, with explicit
 --  accounting for the modulus value which is passed as the second argument.
 
+with System.Unsigned_Types;
+
 package System.Exp_Mod is
    pragma Pure;
 
    function Exp_Modular
-     (Left    : Integer;
-      Modulus : Integer;
-      Right   : Natural)
-      return    Integer;
+     (Left    : System.Unsigned_Types.Unsigned;
+      Modulus : System.Unsigned_Types.Unsigned;
+      Right   : Natural) return System.Unsigned_Types.Unsigned;
 
 end System.Exp_Mod;

@@ -218,7 +218,6 @@ Implementation Defined Pragmas
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
-* Pragma Preelaborate_05::
 * Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
@@ -226,8 +225,6 @@ Implementation Defined Pragmas
 * Pragma Propagate_Exceptions::
 * Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
-* Pragma Pure_05::
-* Pragma Pure_12::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
 * Pragma Refined_State::
@@ -297,9 +294,6 @@ Implementation Defined Aspects
 * Aspect Object_Size::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
-* Aspect Preelaborate_05::
-* Aspect Pure_05::
-* Aspect Pure_12::
 * Aspect Pure_Function::
 * Aspect Refined_State::
 * Aspect Remote_Access_Type::
@@ -1054,7 +1048,6 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Precondition::
 * Pragma Predicate::
 * Pragma Preelaborable_Initialization::
-* Pragma Preelaborate_05::
 * Pragma Pre_Class::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
@@ -1062,8 +1055,6 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Propagate_Exceptions::
 * Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
-* Pragma Pure_05::
-* Pragma Pure_12::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
 * Pragma Refined_State::
@@ -5598,24 +5589,6 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
-@node Pragma Preelaborate_05
-@unnumberedsec Pragma Preelaborate_05
-@findex Preelaborate_05
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Preelaborate_05 [(library_unit_NAME)];
-@end smallexample
-
-@noindent
-This pragma is only available in GNAT mode (@option{-gnatg} switch set)
-and is intended for use in the standard run-time library only. It has
-no effect in Ada 83 or Ada 95 mode, but is
-equivalent to @code{pragma Prelaborate} when operating in later
-Ada versions. This is used to handle some cases where packages
-not previously preelaborable became so in Ada 2005.
-
 @node Pragma Pre_Class
 @unnumberedsec Pragma Pre_Class
 @cindex Pre_Class
@@ -5902,42 +5875,6 @@ EXTERNAL_SYMBOL ::=
 
 @noindent
 This pragma is identical in effect to pragma @code{Common_Object}.
-
-@node Pragma Pure_05
-@unnumberedsec Pragma Pure_05
-@findex Pure_05
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Pure_05 [(library_unit_NAME)];
-@end smallexample
-
-@noindent
-This pragma is only available in GNAT mode (@option{-gnatg} switch set)
-and is intended for use in the standard run-time library only. It has
-no effect in Ada 83 or Ada 95 mode, but is
-equivalent to @code{pragma Pure} when operating in later
-Ada versions. This is used to handle some cases where packages
-not previously pure became so in Ada 2005.
-
-@node Pragma Pure_12
-@unnumberedsec Pragma Pure_12
-@findex Pure_12
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Pure_12 [(library_unit_NAME)];
-@end smallexample
-
-@noindent
-This pragma is only available in GNAT mode (@option{-gnatg} switch set)
-and is intended for use in the standard run-time library only. It has
-no effect in Ada 83, Ada 95, or Ada 2005 modes, but is
-equivalent to @code{pragma Pure} when operating in later
-Ada versions. This is used to handle some cases where packages
-not previously pure became so in Ada 2012.
 
 @node Pragma Pure_Function
 @unnumberedsec Pragma Pure_Function
@@ -7920,9 +7857,6 @@ clause.
 * Aspect Object_Size::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
-* Aspect Preelaborate_05::
-* Aspect Pure_05::
-* Aspect Pure_12::
 * Aspect Pure_Function::
 * Aspect Refined_State::
 * Aspect Remote_Access_Type::
@@ -8125,24 +8059,6 @@ and @code{Static_Predicate} except that whether the resulting
 predicate is static or dynamic is controlled by the form of the
 expression. It is also separately controllable using pragma
 @code{Assertion_Policy}.
-
-@node Aspect Preelaborate_05
-@unnumberedsec Aspect Preelaborate_05
-@findex Preelaborate_05
-@noindent
-This aspect is equivalent to pragma @code{Preelaborate_05}.
-
-@node Aspect Pure_05
-@unnumberedsec Aspect Pure_05
-@findex Pure_05
-@noindent
-This aspect is equivalent to pragma @code{Pure_05}.
-
-@node Aspect Pure_12
-@unnumberedsec Aspect Pure_12
-@findex Pure_12
-@noindent
-This aspect is equivalent to pragma @code{Pure_12}.
 
 @node Aspect Pure_Function
 @unnumberedsec Aspect Pure_Function

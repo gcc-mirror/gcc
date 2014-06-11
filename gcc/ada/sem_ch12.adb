@@ -10037,9 +10037,21 @@ package body Sem_Ch12 is
       Opt.SPARK_Mode_Pragma    := Body_Info.SPARK_Mode_Pragma;
 
       if No (Gen_Body_Id) then
-         Load_Parent_Of_Generic
-           (Inst_Node, Specification (Gen_Decl), Body_Optional);
-         Gen_Body_Id := Corresponding_Body (Gen_Decl);
+
+         --  Do not look for parent of generic body if none is required.
+         --  This may happen when the routine is called as part of the
+         --  Pending_Instantiations processing, when nested instances
+         --  may precede the one generated from the main unit.
+
+         if not Unit_Requires_Body (Defining_Entity (Gen_Decl))
+           and then Body_Optional
+         then
+            return;
+         else
+            Load_Parent_Of_Generic
+              (Inst_Node, Specification (Gen_Decl), Body_Optional);
+            Gen_Body_Id := Corresponding_Body (Gen_Decl);
+         end if;
       end if;
 
       --  Establish global variable for sloc adjustment and for error recovery

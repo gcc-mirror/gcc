@@ -7593,7 +7593,7 @@ package body Exp_Ch4 is
                 Make_Function_Call (Loc,
                   Name => New_Occurrence_Of (RTE (RE_Exp_Modular), Loc),
                   Parameter_Associations => New_List (
-                    Convert_To (Standard_Integer, Base),
+                    Convert_To (RTE (RE_Unsigned), Base),
                     Make_Integer_Literal (Loc, Modulus (Rtyp)),
                     Exp))));
 
