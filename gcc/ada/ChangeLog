@@ -1,3 +1,26 @@
+2014-06-11  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.ads: Minor reformatting.
+	* checks.adb (Determine_Range): Do not attempt to determine
+	the range of a deferred constant whose full view has not been
+	seen yet.
+	* sem_res.adb (Resolve): Remove undesirable guard against
+	resolving expressions from expression functions.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb (Debug_Flag_Dot_1): Set to enable fix for anonymous
+	access types.
+	* layout.adb (Layout_Type): Make anonymous access types for
+	subprogram formal types and return types always thin. For now
+	only enabled if -gnatd.1 set.
+
+2014-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Stream_TSS_Definition): Apply legality
+	rule for stream attributes of interface types (RM 13.13.2 (38/3)):
+	subprogram must be a null procedure.
+
 2014-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Input_Item): Allow formal

@@ -155,7 +155,7 @@ package body Debug is
    --  d8   Force opposite endianness in packed stuff
    --  d9   Allow lock free implementation
 
-   --  d.1
+   --  d.1  Activate thin-as-default for subprogram anonymous access types
    --  d.2
    --  d.3
    --  d.4
@@ -732,6 +732,15 @@ package body Debug is
 
    --  d9   This allows lock free implementation for protected objects
    --       (see Exp_Ch9).
+
+   --  d.1  Right now, we have a problem with anonymous access types in the
+   --       context of subprogram formal parameter types and return types. The
+   --       problem occurs when in one place (e.g. the subprogram spec), the
+   --       designated type is unknown (e.g. private) and we choose to use a
+   --       thin pointer representation. Then in another place, we can see the
+   --       full declaration of the type, and choose a fat pointer. The fix is
+   --       to always use thin pointers, but this is causing some other issues,
+   --       so for now, this fix is under control of this debug flag.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --
