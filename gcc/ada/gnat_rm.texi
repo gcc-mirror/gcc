@@ -636,6 +636,7 @@ The GNAT Library
 * System.Rident (s-rident.ads)::
 * System.Strings.Stream_Ops (s-ststop.ads)::
 * System.Task_Info (s-tasinf.ads)::
+* System.Unsigned_Types (s-unstyp.ads)::
 * System.Wch_Cnv (s-wchcnv.ads)::
 * System.Wch_Con (s-wchcon.ads)::
 
@@ -18254,6 +18255,7 @@ of GNAT, and will generate a warning message.
 * System.Rident (s-rident.ads)::
 * System.Strings.Stream_Ops (s-ststop.ads)::
 * System.Task_Info (s-tasinf.ads)::
+* System.Unsigned_Types (s-unstyp.ads)::
 * System.Wch_Cnv (s-wchcnv.ads)::
 * System.Wch_Con (s-wchcon.ads)::
 @end menu
@@ -19841,6 +19843,17 @@ package can be used directly by application programs.
 @noindent
 This package provides target dependent functionality that is used
 to support the @code{Task_Info} pragma
+
+@node System.Unsigned_Types (s-unstyp.ads)
+@section @code{System.Unsigned_Types} (@file{s-unstyp.ads})
+@cindex @code{System.Unsigned_Types} (@file{s-unstyp.ads})
+
+@noindent
+This package contains definitions of standard unsigned types that
+correspond in size to the standard signed types declared in Standard,
+and (unlike the types in Interfaces) have corresponding names. It
+also contains some related definitions for other specialized types
+used by the compiler in connection with packed array types.
 
 @node System.Wch_Cnv (s-wchcnv.ads)
 @section @code{System.Wch_Cnv} (@file{s-wchcnv.ads})

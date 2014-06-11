@@ -1,5 +1,11 @@
 2014-06-11  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document System.Unsigned_Types.
+	* impunit.adb: System.Unsigned_Types (s-unstyp.ads) is user accessible.
+	* s-unstyp.ads: Update comments (this is now user available unit).
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
 	* make.adb, sem_res.adb: Minor reformatting.
 
 2014-06-11  Thomas Quinot  <quinot@adacore.com>
