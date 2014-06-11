@@ -1,3 +1,7 @@
+2014-06-11  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (rx_max_skip_for_label): Don't skip anything if -Os.
+
 2014-06-11  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mmix/mmix-protos.h (mmix_asm_output_source_line): Remove

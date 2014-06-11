@@ -3210,6 +3210,9 @@ rx_max_skip_for_label (rtx lab)
   int opsize;
   rtx op;
 
+  if (optimize_size)
+    return 0;
+
   if (lab == NULL_RTX)
     return 0;
 
