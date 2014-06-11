@@ -1,3 +1,15 @@
+2014-06-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/acle/acle.exp: New.
+	* gcc.target/aarch64/acle/crc32b.c: New test.
+	* gcc.target/aarch64/acle/crc32cb.c: Likewise.
+	* gcc.target/aarch64/acle/crc32cd.c: Likewise.
+	* gcc.target/aarch64/acle/crc32ch.c: Likewise.
+	* gcc.target/aarch64/acle/crc32cw.c: Likewise.
+	* gcc.target/aarch64/acle/crc32d.c: Likewise.
+	* gcc.target/aarch64/acle/crc32h.c: Likewise.
+	* gcc.target/aarch64/acle/crc32w.c: Likewise.
+
 2014-06-11  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR tree-optimization/52252
