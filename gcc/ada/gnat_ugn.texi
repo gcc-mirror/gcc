@@ -5096,19 +5096,46 @@ This switch suppresses warnings for implicit dereferences in
 indexed components, slices, and selected components.
 
 @item -gnatw.d
-@emph{Activate tagging of warning messages.}
+@emph{Activate tagging of warning and info messages.}
 @cindex @option{-gnatw.d} (@command{gcc})
-If this switch is set, then warning messages are tagged, either with
-the string ``@option{-gnatw?}'' showing which switch controls the warning,
-or with ``[enabled by default]'' if the warning is not under control of a
-specific @option{-gnatw?} switch. This mode is off by default, and is not
-affected by the use of @code{-gnatwa}.
+If this switch is set, then warning messages are tagged, with one of the
+following strings:
+
+@table @option
+
+@item [-gnatw?]
+Used to tag warnings controlled by the switch @option{-gnatwx} where x
+is a letter a-z.
+
+@item [-gnatw.?]
+Used to tag warnings controlled by the switch @option{-gnatw.x} where x
+is a letter a-z.
+
+@item [-gnatel]
+Used to tag elaboration information (info) messages generated when the
+static model of elaboration is used and the @option{-gnatel} switch is set.
+
+@item [restriction warning]
+Used to tag warning messages for restriction violations, activated by use
+of the pragma @option{Restriction_Warnings}.
+
+@item [warning-as-error]
+Used to tag warning messages that have been converted to error messages by
+use of the pragma Warning_As_Error. Note that such warnings are prefixed by
+the string "error: " rather than "warning: ".
+
+@item [enabled by default]
+Used to tag all other warnings that are always given by default, unless
+warnings are completely suppressed using pragma @option{Warnings(Off)} or
+the switch @option{-gnatws}.
+
+@end table
 
 @item -gnatw.D
-@emph{Deactivate tagging of warning messages.}
+@emph{Deactivate tagging of warning and info messages messages.}
 @cindex @option{-gnatw.d} (@command{gcc})
 If this switch is set, then warning messages return to the default
-mode in which warnings are not tagged as described above for
+mode in which warnings and info messages are not tagged as described above for
 @code{-gnatw.d}.
 
 @item -gnatwe

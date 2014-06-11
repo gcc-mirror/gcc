@@ -661,12 +661,12 @@ package body Sem_Ch13 is
 
                            if Bytes_Big_Endian then
                               Error_Msg_NE
-                                ("\info: big-endian range for "
+                                ("\big-endian range for "
                                  & "component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            else
                               Error_Msg_NE
-                                ("\info: little-endian range "
+                                ("\little-endian range "
                                  & "for component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            end if;
@@ -6324,7 +6324,7 @@ package body Sem_Ch13 is
                if Inherit and Opt.List_Inherited_Aspects then
                   Error_Msg_Sloc := Sloc (Ritem);
                   Error_Msg_N
-                    ("?L?info: & inherits `Invariant''Class` aspect from #",
+                    ("info: & inherits `Invariant''Class` aspect from #?L?",
                      Typ);
                end if;
             end if;

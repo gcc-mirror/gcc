@@ -1,3 +1,30 @@
+2014-06-11  Geert Bosch  <bosch@adacore.com>
+
+	* s-exctab.adb: avoid race conditions in exception registration.
+
+2014-06-11  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Warn_Insertion): New function.
+	(Error_Msg): Use Warn_Insertion and Prescan_Message.
+	(Error_Msg_Internal): Set Info field of error object.
+	(Error_Msg_NEL): Use Prescan_Message.
+	(Set_Msg_Text): Don't store info: at start of message.
+	(Skip_Msg_Insertion_Warning): New name for Set_Msg_Insertion_Warning.
+	(Skip_Msg_Insertion_Warning): Now just skips warning insertion.
+	* errout.ads: Document new ?$? and >$> insertion sequences
+	Document use of "(style)" and "info: "
+	* erroutc.adb (dmsg): Print several missing fields
+	(Get_Warning_Tag): Handle -gnatel case (?$?)  (Output_Msg_Text):
+	Deal with new tagging of info messages
+	* erroutc.ads: Is_Info_Msg: New global (Error_Msg_Object):
+	Add field Info (Prescan_Message): New procedure, this procedure
+	replaces the old Test_Style_Warning_Serious_Unconditional_Msg
+	* errutil.adb, exp_util.adb, par-ch7.adb, sem_ch13.adb, sem_ch7.adb,
+	sem_elab.adb: Follow new rules for info message (info belongs
+	only at the start of a message, and only in the first message,
+	not in any of the continuations).
+	* gnat_ugn.texi: Document full set of warning tags.
+
 2014-06-11  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_util.adb: Minor typo fix.

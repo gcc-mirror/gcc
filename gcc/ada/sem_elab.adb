@@ -942,7 +942,7 @@ package body Sem_Elab is
                if Inst_Case then
                   Elab_Warning
                     ("instantiation of& may raise Program_Error?l?",
-                     "info: instantiation of& during elaboration?", Ent);
+                     "info: instantiation of& during elaboration?$?", Ent);
 
                --  Indirect call case, info message only in static elaboration
                --  case, because the attribute reference itself cannot raise
@@ -950,7 +950,7 @@ package body Sem_Elab is
 
                elsif Access_Case then
                   Elab_Warning
-                    ("", "info: access to& during elaboration?", Ent);
+                    ("", "info: access to& during elaboration?$?", Ent);
 
                --  Subprogram call case
 
@@ -961,13 +961,13 @@ package body Sem_Elab is
                   then
                      Elab_Warning
                        ("implicit call to & may raise Program_Error?l?",
-                        "info: implicit call to & during elaboration?",
+                        "info: implicit call to & during elaboration?$?",
                         Ent);
 
                   else
                      Elab_Warning
                        ("call to & may raise Program_Error?l?",
-                        "info: call to & during elaboration?",
+                        "info: call to & during elaboration?$?",
                         Ent);
                   end if;
                end if;
@@ -977,13 +977,13 @@ package body Sem_Elab is
                if Nkind (N) in N_Subprogram_Instantiation then
                   Elab_Warning
                     ("\missing pragma Elaborate for&?l?",
-                     "\info: implicit pragma Elaborate for& generated?",
+                     "\implicit pragma Elaborate for& generated?$?",
                      W_Scope);
 
                else
                   Elab_Warning
                     ("\missing pragma Elaborate_All for&?l?",
-                     "\info: implicit pragma Elaborate_All for & generated?",
+                     "\implicit pragma Elaborate_All for & generated?$?",
                      W_Scope);
                end if;
             end Generate_Elab_Warnings;
@@ -1063,7 +1063,7 @@ package body Sem_Elab is
                   Error_Msg_Node_2 := W_Scope;
                   Error_Msg_NE
                     ("info: call to& in elaboration code " &
-                     "requires pragma Elaborate_All on&?", N, E);
+                     "requires pragma Elaborate_All on&?$?", N, E);
                end if;
 
                --  Set indication for binder to generate Elaborate_All
@@ -2320,15 +2320,14 @@ package body Sem_Elab is
 
             if Inst_Case then
                Error_Msg_NE
-                 ("instantiation of& may occur before body is seen<<",
+                 ("instantiation of& may occur before body is seen<l<",
                   N, Orig_Ent);
             else
                Error_Msg_NE
-                 ("call to& may occur before body is seen<<", N, Orig_Ent);
+                 ("call to& may occur before body is seen<l<", N, Orig_Ent);
             end if;
 
-            Error_Msg_N
-              ("\Program_Error ]<<", N);
+            Error_Msg_N ("\Program_Error ]<l<", N);
 
             Output_Calls (N);
          end if;
@@ -2570,7 +2569,7 @@ package body Sem_Elab is
                Error_Msg_Node_2 := Task_Scope;
                Error_Msg_NE
                  ("info: activation of an instance of task type&" &
-                  " requires pragma Elaborate_All on &?", N, Ent);
+                  " requires pragma Elaborate_All on &?$?", N, Ent);
             end if;
 
             Activate_Elaborate_All_Desirable (N, Task_Scope);
@@ -3056,6 +3055,10 @@ package body Sem_Elab is
       --  by the error message circuits (i.e. it has a single upper
       --  case letter at the end).
 
+      -----------------------------
+      -- Is_Printable_Error_Name --
+      -----------------------------
+
       function Is_Printable_Error_Name (Nm : Name_Id) return Boolean is
       begin
          if not Is_Internal_Name (Nm) then
@@ -3078,17 +3081,31 @@ package body Sem_Elab is
 
          Ent := Elab_Call.Table (J).Ent;
 
-         if Is_Generic_Unit (Ent) then
-            Error_Msg_NE ("\??& instantiated #", N, Ent);
+         --  Dynamic elaboration model, warnings controlled by -gnatwl
 
-         elsif Is_Init_Proc (Ent) then
-            Error_Msg_N ("\??initialization procedure called #", N);
+         if Dynamic_Elaboration_Checks then
+            if Is_Generic_Unit (Ent) then
+               Error_Msg_NE ("\\?l?& instantiated #", N, Ent);
+            elsif Is_Init_Proc (Ent) then
+               Error_Msg_N ("\\?l?initialization procedure called #", N);
+            elsif Is_Printable_Error_Name (Chars (Ent)) then
+               Error_Msg_NE ("\\?l?& called #", N, Ent);
+            else
+               Error_Msg_N ("\\?l?called #", N);
+            end if;
 
-         elsif Is_Printable_Error_Name (Chars (Ent)) then
-            Error_Msg_NE ("\??& called #", N, Ent);
+         --  Static elaboration model, info messages controlled by -gnatel
 
          else
-            Error_Msg_N ("\?? called #", N);
+            if Is_Generic_Unit (Ent) then
+               Error_Msg_NE ("\\?$?& instantiated #", N, Ent);
+            elsif Is_Init_Proc (Ent) then
+               Error_Msg_N ("\\?$?initialization procedure called #", N);
+            elsif Is_Printable_Error_Name (Chars (Ent)) then
+               Error_Msg_NE ("\\?$?& called #", N, Ent);
+            else
+               Error_Msg_N ("\\?$?called #", N);
+            end if;
          end if;
       end loop;
    end Output_Calls;
