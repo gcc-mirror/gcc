@@ -9213,7 +9213,7 @@ package body Sem_Res is
             Get_Next_Interp (I, It);
          end loop Search;
 
-         --  There must be a legal interpreations at this point.
+         --  There must be a legal interpretation at this point
 
          pragma Assert (Found);
          Resolve (P, It1.Typ);
@@ -9243,7 +9243,6 @@ package body Sem_Res is
       if Is_Access_Type (Etype (P)) then
          T := Designated_Type (Etype (P));
          Check_Fully_Declared_Prefix (T, P);
-
       else
          T := Etype (P);
       end if;

@@ -17,7 +17,7 @@ with System;
 with Ada.Task_Identification;
 
 package Ada.Dynamic_Priorities is
-   pragma Preelaborate_05;
+   pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
    procedure Set_Priority

@@ -3730,7 +3730,7 @@ package body Make is
                         "WARNING: ALI or object file not found after compile");
 
                      if not Is_Regular_File
-                       (Get_Name_String (Name_Id (Data.Full_Lib_File)))
+                              (Get_Name_String (Name_Id (Data.Full_Lib_File)))
                      then
                         Inform (Data.Full_Lib_File, "not found");
                      end if;
