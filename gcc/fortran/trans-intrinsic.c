@@ -2371,7 +2371,7 @@ gfc_conv_intrinsic_minmax_char (gfc_se * se, gfc_expr * expr, int op)
    has the generic name.  */
 
 static gfc_symbol *
-gfc_get_symbol_for_expr (gfc_expr * expr)
+gfc_get_symbol_for_expr (gfc_expr * expr, bool ignore_optional)
 {
   gfc_symbol *sym;
 
@@ -2394,7 +2394,9 @@ gfc_get_symbol_for_expr (gfc_expr * expr)
       sym->as->rank = expr->rank;
     }
 
-  gfc_copy_formal_args_intr (sym, expr->value.function.isym);
+  gfc_copy_formal_args_intr (sym, expr->value.function.isym,
+			     ignore_optional ? expr->value.function.actual
+					     : NULL);
 
   return sym;
 }
@@ -2413,7 +2415,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
   else
     gcc_assert (expr->rank == 0);
 
-  sym = gfc_get_symbol_for_expr (expr);
+  sym = gfc_get_symbol_for_expr (expr, se->ignore_optional);
 
   /* Calls to libgfortran_matmul need to be appended special arguments,
      to be able to call the BLAS ?gemm functions if required and possible.  */
@@ -4584,7 +4586,8 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
     }
 
   /* Build the call itself.  */
-  sym = gfc_get_symbol_for_expr (expr);
+  gcc_assert (!se->ignore_optional);
+  sym = gfc_get_symbol_for_expr (expr, false);
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			  append_args);
   gfc_free_symbol (sym);
