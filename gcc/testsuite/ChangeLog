@@ -1,3 +1,9 @@
+2014-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61486
+	* c-c++-common/gomp/pr61486-1.c: New test.
+	* c-c++-common/gomp/pr61486-2.c: New test.
+
 2014-06-10  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/59843
