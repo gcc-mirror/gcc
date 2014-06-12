@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "optabs.h"
 #include "builtins.h"
+#include "varasm.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */
@@ -5316,19 +5317,26 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
 
-  /* We cannot change alignment of common or external symbols as another
-     translation unit may contain a definition with lower alignment.  
-     The rules of common symbol linking mean that the definition
-     will override the common symbol.  The same is true for constant
-     pool entries which may be shared and are not properly merged
-     by LTO.  */
-  if (DECL_EXTERNAL (decl)
-      || DECL_COMMON (decl)
-      || DECL_IN_CONSTANT_POOL (decl))
-    return false;
+  gcc_assert (!TREE_ASM_WRITTEN (decl));
 
-  if (TREE_ASM_WRITTEN (decl))
-    return false;
+  if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
+    {
+      symtab_node *snode;
+
+      /* We cannot change alignment of symbols that may bind to symbols
+	 in other translation unit that may contain a definition with lower
+	 alignment.  */
+      if (!decl_binds_to_current_def_p (decl))
+	return false;
+
+      /* When compiling partition, be sure the symbol is not output by other
+	 partition.  */
+      snode = symtab_get_node (decl);
+      if (flag_ltrans
+	  && (snode->in_other_partition
+	      || symtab_get_symbol_partitioning_class (snode) == SYMBOL_DUPLICATE))
+	return false;
+    }
 
   /* Do not override the alignment as specified by the ABI when the used
      attribute is set.  */
@@ -5342,6 +5350,18 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
       && DECL_SECTION_NAME (decl) != NULL
       && !symtab_get_node (decl)->implicit_section)
     return false;
+
+  /* If symbol is an alias, we need to check that target is OK.  */
+  if (TREE_STATIC (decl))
+    {
+      tree target = symtab_alias_ultimate_target (symtab_get_node (decl))->decl;
+      if (target != decl)
+	{
+	  if (DECL_PRESERVE_P (target))
+	    return false;
+	  decl = target;
+	}
+    }
 
   if (TREE_STATIC (decl))
     return (alignment <= MAX_OFILE_ALIGNMENT);
