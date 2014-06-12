@@ -208,6 +208,7 @@ public:
   /* Set section for symbol and its aliases.  */
   void set_section (const char *section);
   void set_section_for_node (const char *section);
+  void reset_section ();
 };
 
 enum availability
