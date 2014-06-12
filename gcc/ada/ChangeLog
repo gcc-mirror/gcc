@@ -1,7 +1,7 @@
-2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
+2014-06-12  Jan Hubicka  <hubicka@ucw.cz>
 
-	* gcc-interface/utils.c:  Update handling for section names
-	that are no longer trees.
+	* gcc-interface/utils.c (process_attributes) <ATTR_LINK_SECTION>: Pass
+	string pointer directly to set_decl_section_name.
 
 2014-06-11  Robert Dewar  <dewar@adacore.com>
 
