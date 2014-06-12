@@ -31,6 +31,7 @@ VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI.  */
 VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI.  */
 VECTOR_MODES (FLOAT, 8);      /*                 V2SF.  */
 VECTOR_MODES (FLOAT, 16);     /*            V4SF V2DF.  */
+VECTOR_MODE (FLOAT, DF, 1);   /*                 V1DF.  */
 
 /* Oct Int: 256-bit integer mode needed for 32-byte vector arguments.  */
 INT_MODE (OI, 32);
