@@ -1,5 +1,9 @@
 2014-06-12  Jason Merrill  <jason@redhat.com>
 
+	* common.opt (fabi-version): Change default to 0.
+
+2014-06-12  Jason Merrill  <jason@redhat.com>
+
 	* toplev.c (process_options): Reject -fabi-version=1.
 
 2014-06-12  Jeff Law  <law@redhat.com>
