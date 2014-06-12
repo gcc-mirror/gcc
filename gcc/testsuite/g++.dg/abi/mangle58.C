@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-fabi-version=0" }
+// { dg-options "-fabi-version=0 -Wabi=2" }
 
 template<typename T, int (*cmp)(T, T)> struct A { };
 struct B {
@@ -10,9 +10,9 @@ struct B {
   // { dg-final { scan-assembler "_ZN1B1gIcEEvR1AIT_XsrS_4cmp1EE" } }
   template <typename T> static void g (A<T,B::cmp1> &);
   // { dg-final { scan-assembler "_ZN1B1fIcEEvR1AIT_L_ZNS_4cmp2EccEE" } }
-  template <typename T> static void f (A<T,cmp2> &);
+  template <typename T> static void f (A<T,cmp2> &); // { dg-warning "mangle" }
   // { dg-final { scan-assembler "_ZN1B1gIcEEvR1AIT_L_ZNS_4cmp2EccEE" } }
-  template <typename T> static void g (A<T,B::cmp2> &);
+  template <typename T> static void g (A<T,B::cmp2> &); // { dg-warning "mangle" }
 };
 
 void g()

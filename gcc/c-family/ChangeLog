@@ -1,3 +1,11 @@
+2014-06-12  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wabi=, fabi-compat-version): New.
+	* c-opts.c (c_common_handle_option): Handle -Wabi=.
+	(c_common_post_options): Handle flag_abi_compat_version default.
+	Disallow -fabi-compat-version=1.
+	* c-common.h (abi_version_crosses): New.
+
 2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-family/c-common.c (handle_section_attribute): Update handling for

@@ -1701,13 +1701,9 @@ type_promotes_to (tree type)
   if (TREE_CODE (type) == BOOLEAN_TYPE)
     type = integer_type_node;
 
-  /* Scoped enums don't promote, but pretend they do for backward ABI bug
-     compatibility wrt varargs.  */
-  else if (SCOPED_ENUM_P (type) && abi_version_at_least (6))
-    ;
-
   /* Normally convert enums to int, but convert wide enums to something
-     wider.  */
+     wider.  Scoped enums don't promote, but pretend they do for backward
+     ABI bug compatibility wrt varargs.  */
   else if (TREE_CODE (type) == ENUMERAL_TYPE
 	   || type == char16_type_node
 	   || type == char32_type_node
@@ -1716,16 +1712,26 @@ type_promotes_to (tree type)
       int precision = MAX (TYPE_PRECISION (type),
 			   TYPE_PRECISION (integer_type_node));
       tree totype = c_common_type_for_size (precision, 0);
-      if (SCOPED_ENUM_P (type))
-	warning (OPT_Wabi, "scoped enum %qT will not promote to an integral "
-		 "type in a future version of GCC", type);
-      if (TREE_CODE (type) == ENUMERAL_TYPE)
-	type = ENUM_UNDERLYING_TYPE (type);
-      if (TYPE_UNSIGNED (type)
-	  && ! int_fits_type_p (TYPE_MAX_VALUE (type), totype))
-	type = c_common_type_for_size (precision, 1);
+      tree prom = type;
+      if (TREE_CODE (prom) == ENUMERAL_TYPE)
+	prom = ENUM_UNDERLYING_TYPE (prom);
+      if (TYPE_UNSIGNED (prom)
+	  && ! int_fits_type_p (TYPE_MAX_VALUE (prom), totype))
+	prom = c_common_type_for_size (precision, 1);
       else
-	type = totype;
+	prom = totype;
+      if (SCOPED_ENUM_P (type))
+	{
+	  if (abi_version_crosses (6)
+	      && TYPE_MODE (prom) != TYPE_MODE (type))
+	    warning (OPT_Wabi, "scoped enum %qT passed through ... as "
+		     "%qT before -fabi-version=6, %qT after",
+		     type, prom, ENUM_UNDERLYING_TYPE (type));
+	  if (!abi_version_at_least (6))
+	    type = prom;
+	}
+      else
+	type = prom;
     }
   else if (c_promoting_integer_type_p (type))
     {

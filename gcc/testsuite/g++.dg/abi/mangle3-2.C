@@ -1,12 +1,12 @@
 // Test mangling of type casts
-// { dg-options "-fabi-version=0" }
+// { dg-options "-fabi-version=0 -Wabi=5" }
 // { dg-do compile }
 
 template<int i> class A {};
 template<bool b> class B {};
 
 template<int i> void f(A<i> &, B<bool(i)> &) {}
-template<int i> void g(A<i> &, B<static_cast<bool>(i)> &) {}
+template<int i> void g(A<i> &, B<static_cast<bool>(i)> &) {} // { dg-warning "mangle" }
 
 int main()
 {
