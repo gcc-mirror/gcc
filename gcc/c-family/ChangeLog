@@ -1,3 +1,10 @@
+2014-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61486
+	* c-omp.c (c_omp_split_clauses): Don't crash on firstprivate in
+	#pragma omp target teams or
+	#pragma omp {,target }teams distribute simd.
+
 2014-06-04  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

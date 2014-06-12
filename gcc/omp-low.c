@@ -1509,11 +1509,19 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  break;
 
 	case OMP_CLAUSE_SHARED:
+	  decl = OMP_CLAUSE_DECL (c);
 	  /* Ignore shared directives in teams construct.  */
 	  if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
-	    break;
+	    {
+	      /* Global variables don't need to be copied,
+		 the receiver side will use them directly.  */
+	      tree odecl = maybe_lookup_decl_in_outer_ctx (decl, ctx);
+	      if (is_global_var (odecl))
+		break;
+	      insert_decl_map (&ctx->cb, decl, odecl);
+	      break;
+	    }
 	  gcc_assert (is_taskreg_ctx (ctx));
-	  decl = OMP_CLAUSE_DECL (c);
 	  gcc_assert (!COMPLETE_TYPE_P (TREE_TYPE (decl))
 		      || !is_variable_sized (decl));
 	  /* Global variables don't need to be copied,
