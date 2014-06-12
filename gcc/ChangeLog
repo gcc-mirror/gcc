@@ -1,3 +1,10 @@
+2014-06-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Reorg
+	to use symtab and decl_binds_to_current_def_p
+	* tree-vectorizer.c (increase_alignment): Increase alignment
+	of alias target, too.
+
 2014-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61486

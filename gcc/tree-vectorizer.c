@@ -686,6 +686,12 @@ increase_alignment (void)
         {
           DECL_ALIGN (decl) = TYPE_ALIGN (vectype);
           DECL_USER_ALIGN (decl) = 1;
+	  if (TREE_STATIC (decl))
+	    {
+	      tree target = symtab_alias_ultimate_target (symtab_get_node (decl))->decl;
+              DECL_ALIGN (target) = TYPE_ALIGN (vectype);
+              DECL_USER_ALIGN (target) = 1;
+	    }
           dump_printf (MSG_NOTE, "Increasing alignment of decl: ");
           dump_generic_expr (MSG_NOTE, TDF_SLIM, decl);
           dump_printf (MSG_NOTE, "\n");
