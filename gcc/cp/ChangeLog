@@ -1,5 +1,11 @@
 2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/19200
+	* parser.c (cp_parser_init_declarator): Actually pass friend_p
+	to cp_parser_declarator.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/60265
 	* parser.c (cp_parser_using_declaration): Handle unscoped enums.
 	* name-lookup.c (validate_nonmember_using_decl): Adjust error
