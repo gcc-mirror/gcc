@@ -948,9 +948,12 @@ thread_through_normal_block (edge e,
   if (*backedge_seen_p)
     simplify = dummy_simplify;
 
-  /* PHIs create temporary equivalences.  */
+  /* PHIs create temporary equivalences.
+     Note that if we found a PHI that made the block non-threadable, then
+     we need to bubble that up to our caller in the same manner we do
+     when we prematurely stop processing statements below.  */
   if (!record_temporary_equivalences_from_phis (e, stack))
-    return 0;
+    return -1;
 
   /* Now walk each statement recording any context sensitive
      temporary equivalences we can detect.  */
