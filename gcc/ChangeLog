@@ -1,3 +1,15 @@
+2014-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61486
+	* gimplify.c (struct gimplify_omp_ctx): Add distribute field.
+	(gimplify_adjust_omp_clauses): Don't or in GOVD_LASTPRIVATE
+	if outer combined construct is distribute.
+	(gimplify_omp_for): For OMP_DISTRIBUTE set
+	gimplify_omp_ctxp->distribute.
+	* omp-low.c (scan_sharing_clauses) <case OMP_CLAUSE_SHARED>: For
+	GIMPLE_OMP_TEAMS, if decl isn't global in outer context, record
+	mapping into decl map.
+
 2014-06-12  Jason Merrill  <jason@redhat.com>
 
 	* common.opt (fabi-version): Change default to 0.
