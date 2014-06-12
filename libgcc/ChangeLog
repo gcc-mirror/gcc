@@ -1,3 +1,7 @@
+2014-06-12  Release Manager
+
+	* GCC 4.7.4 released.
+
 2014-03-20  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.host (v850*-*-*): Add to tmake_file instead of resetting it.
