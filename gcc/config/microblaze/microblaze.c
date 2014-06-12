@@ -3067,7 +3067,7 @@ microblaze_elf_in_small_data_p (const_tree decl)
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl))
     {
-      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      const char *section = DECL_SECTION_NAME (decl);
       if (strcmp (section, ".sdata") == 0
 	  || strcmp (section, ".sdata2") == 0
 	  || strcmp (section, ".sbss") == 0

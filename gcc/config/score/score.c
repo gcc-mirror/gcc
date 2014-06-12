@@ -668,7 +668,7 @@ score_in_small_data_p (const_tree decl)
   if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl) != 0)
     {
       const char *name;
-      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      name = DECL_SECTION_NAME (decl);
       if (strcmp (name, ".sdata") != 0
           && strcmp (name, ".sbss") != 0)
         return true;

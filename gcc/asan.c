@@ -1288,7 +1288,7 @@ asan_protect_global (tree decl)
 	 into user section from multiple TUs are then assumed
 	 to be an array of such vars, putting padding in there
 	 breaks this assumption.  */
-      || (DECL_SECTION_NAME (decl) != NULL_TREE
+      || (DECL_SECTION_NAME (decl) != NULL
 	  && !symtab_get_node (decl)->implicit_section)
       || DECL_SIZE (decl) == 0
       || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT

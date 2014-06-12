@@ -1,3 +1,8 @@
+2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-family/c-common.c (handle_section_attribute): Update handling for
+	section names that are no longer trees.
+
 2014-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/60928

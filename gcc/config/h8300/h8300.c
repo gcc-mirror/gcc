@@ -5461,7 +5461,7 @@ h8300_handle_eightbit_data_attribute (tree *node, tree name,
 
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     {
-      set_decl_section_name (decl, build_string (7, ".eight"));
+      set_decl_section_name (decl, ".eight");
     }
   else
     {
@@ -5485,7 +5485,7 @@ h8300_handle_tiny_data_attribute (tree *node, tree name,
 
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     {
-      set_decl_section_name (decl, build_string (6, ".tiny"));
+      set_decl_section_name (decl, ".tiny");
     }
   else
     {

@@ -1,3 +1,71 @@
+2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c (section_hash): New hash.
+	(symtab_unregister_node): Clear section before freeing.
+	(hash_section_hash_entry): New haser.
+	(eq_sections): New function.
+	(symtab_node::set_section_for_node): New method.
+	(set_section_1): Update.
+	(symtab_node::set_section): Take string instead of tree as parameter.
+	(symtab_resolve_alias): Update.
+	* cgraph.h (section_hash_entry_d): New structure.
+	(section_hash_entry): New typedef.
+	(cgraph_node): Change comdat_group_ to x_comdat_group,
+	change section_ to x_section and turn into section_hash_entry;
+	update accestors; put set_section_for_node offline.
+	* tree.c (decl_section_name): Turn into string.
+	(set_decl_section_name): Change parameter to be string.
+	* tree.h (decl_section_name, set_decl_section_name): Update prototypes.
+	* sdbout.c (sdbout_one_type): Update.
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Update.
+	* varasm.c (IN_NAMED_SECTION, get_named_section, resolve_unique_section,
+	hot_function_section, get_named_text_section, USE_SELECT_SECTION_FOR_FUNCTIONS,
+	default_function_rodata_section, make_decl_rtl, default_unique_section):
+	Update.
+	* config/c6x/c6x.c (c6x_in_small_data_p): Update.
+	(c6x_elf_unique_section): Update.
+	* config/nios2/nios2.c (nios2_in_small_data_p): Update.
+	* config/pa/pa.c (pa_function_section): Update.
+	* config/pa/pa.h (IN_NAMED_SECTION_P): Update.
+	* config/ia64/ia64.c (ia64_in_small_data_p): Update.
+	* config/arc/arc.c (arc_in_small_data_p): Update.
+	* config/arm/unknown-elf.h (IN_NAMED_SECTION_P): Update.
+	* config/mcore/mcore.c (mcore_unique_section): Update.
+	* config/mips/mips.c (mips16_build_function_stub): Update.
+	(mips16_build_call_stub): Update.
+	(mips_function_rodata_section): Update.
+	(mips_in_small_data_p): Update.
+	* config/score/score.c (score_in_small_data_p): Update.
+	* config/rx/rx.c (rx_in_small_data): Update.
+	* config/rs6000/rs6000.c (rs6000_elf_in_small_data_p): Update.
+	(rs6000_xcoff_asm_named_section): Update.
+	(rs6000_xcoff_unique_section): Update.
+	* config/frv/frv.c (frv_string_begins_with): Update.
+	(frv_in_small_data_p): Update.
+	* config/v850/v850.c (v850_encode_data_area): Update.
+	* config/bfin/bfin.c (DECL_SECTION_NAME): Update.
+	(bfin_handle_l1_data_attribute): Update.
+	(bfin_handle_l2_attribute): Update.
+	* config/mep/mep.c (mep_unique_section): Update.
+	* config/microblaze/microblaze.c (microblaze_elf_in_small_data_p): Update.
+	* config/h8300/h8300.c (h8300_handle_eightbit_data_attribute): Update.
+	(h8300_handle_tiny_data_attribute): Update.
+	* config/m32r/m32r.c (m32r_in_small_data_p): Update.
+	(m32r_in_small_data_p): Update.
+	* config/alpha/alpha.c (alpha_in_small_data_p): Update.
+	* config/i386/i386.c (ix86_in_large_data_p): Update.
+	* config/i386/winnt.c (i386_pe_unique_section): Update.
+	* config/darwin.c (darwin_function_section): Update.
+	* config/lm32/lm32.c (lm32_in_small_data_p): Update.
+	* tree-emutls.c (get_emutls_init_templ_addr): Update.
+	(new_emutls_decl): Update.
+	* lto-cgraph.c (lto_output_node, input_node, input_varpool_node,
+	input_varpool_node): Update.
+	(ead_string_cst): Turn to ...
+	(read_string): ... this one.
+	* dwarf2out.c (secname_for_decl): Update.
+	* asan.c (asan_protect_global): Update.
+
 2014-06-11  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.h (FUNCTION_BOUNDARY): Adjust for RX100/200 4-byte

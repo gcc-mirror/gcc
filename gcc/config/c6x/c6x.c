@@ -868,7 +868,7 @@ c6x_in_small_data_p (const_tree exp)
 
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
-      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+      const char *section = DECL_SECTION_NAME (exp);
 
       if (strcmp (section, ".neardata") == 0
 	  || strncmp (section, ".neardata.", 10) == 0
@@ -1060,7 +1060,7 @@ c6x_elf_unique_section (tree decl, int reloc)
 
       string = ACONCAT ((linkonce, prefix, ".", name, NULL));
 
-      set_decl_section_name (decl, build_string (strlen (string), string));
+      set_decl_section_name (decl, string);
       return;
     }
   default_unique_section (decl, reloc);

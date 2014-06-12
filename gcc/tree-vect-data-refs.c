@@ -5339,7 +5339,7 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
      section name is also used.  This is a common idiom used by many
      software projects.  */
   if (TREE_STATIC (decl) 
-      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL
       && !symtab_get_node (decl)->implicit_section)
     return false;
 

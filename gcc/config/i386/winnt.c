@@ -438,7 +438,7 @@ i386_pe_unique_section (tree decl, int reloc)
   string = XALLOCAVEC (char, len + 1);
   sprintf (string, "%s%s", prefix, name);
 
-  set_decl_section_name (decl, build_string (len, string));
+  set_decl_section_name (decl, string);
 }
 
 /* Local and global relocs can be placed always into readonly memory for

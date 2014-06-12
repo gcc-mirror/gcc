@@ -3604,7 +3604,7 @@ darwin_function_section (tree decl, enum node_frequency freq,
 
   /* If there is a specified section name, we should not be trying to
      override.  */
-  if (decl && DECL_SECTION_NAME (decl) != NULL_TREE)
+  if (decl && DECL_SECTION_NAME (decl) != NULL)
     return get_named_section (decl, NULL, 0);
 
   /* We always put unlikely executed stuff in the cold section.  */

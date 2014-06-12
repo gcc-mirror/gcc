@@ -57,6 +57,10 @@ const char * const ld_plugin_symbol_resolution_names[]=
   "prevailing_def_ironly_exp"
 };
 
+
+/* Hash table used to hold sectoons.  */
+static GTY((param_is (section_hash_entry))) htab_t section_hash;
+
 /* Hash table used to convert assembler names into nodes.  */
 static GTY((param_is (symtab_node))) htab_t assembler_name_hash;
 
@@ -306,6 +310,9 @@ symtab_unregister_node (symtab_node *node)
 {
   ipa_remove_all_references (&node->ref_list);
   ipa_remove_all_referring (&node->ref_list);
+
+  /* Remove reference to section.  */
+  node->set_section_for_node (NULL);
 
   symtab_remove_from_same_comdat_group (node);
 
@@ -1081,22 +1088,92 @@ fixup_same_cpp_alias_visibility (symtab_node *node, symtab_node *target)
   node->externally_visible = target->externally_visible;
 }
 
+/* Hash sections by their names.  */
+
+static hashval_t
+hash_section_hash_entry (const void *p)
+{
+  const section_hash_entry *n = (const section_hash_entry *) p;
+  return htab_hash_string (n->name);
+}
+
+/* Return true if section P1 name equals to P2.  */
+
+static int
+eq_sections (const void *p1, const void *p2)
+{
+  const section_hash_entry *n1 = (const section_hash_entry *) p1;
+  const char *name = (const char *)p2;
+  return n1->name == name || !strcmp (n1->name, name);
+}
+
+/* Set section, do not recurse into aliases.
+   When one wants to change section of symbol and its aliases,
+   use set_section  */
+
+void
+symtab_node::set_section_for_node (const char *section)
+{
+  const char *current = get_section ();
+  void **slot;
+
+  if (current == section
+      || (current && section
+	  && !strcmp (current, section)))
+    return;
+
+  if (current)
+    {
+      x_section->ref_count--;
+      if (!x_section->ref_count)
+	{
+	  slot = htab_find_slot_with_hash (section_hash, x_section->name,
+					   htab_hash_string (x_section->name),
+					   INSERT);
+	  ggc_free (x_section);
+	  htab_clear_slot (section_hash, slot);
+	}
+      x_section = NULL;
+    }
+  if (!section)
+    {
+      implicit_section = false;
+      return;
+    }
+  if (!section_hash)
+    section_hash = htab_create_ggc (10, hash_section_hash_entry,
+				    eq_sections, NULL);
+  slot = htab_find_slot_with_hash (section_hash, section,
+				   htab_hash_string (section),
+				   INSERT);
+  if (*slot)
+    x_section = (section_hash_entry *)*slot;
+  else
+    {
+      int len = strlen (section);
+      *slot = x_section = ggc_cleared_alloc<section_hash_entry> ();
+      x_section->name = ggc_vec_alloc<char> (len + 1);
+      memcpy (x_section->name, section, len + 1);
+    }
+  x_section->ref_count++;
+}
+
 /* Worker for set_section.  */
 
 static bool
 set_section_1 (struct symtab_node *n, void *s)
 {
-  n->set_section_for_node ((tree)s);
+  n->set_section_for_node ((char *)s);
   return false;
 }
 
 /* Set section of symbol and its aliases.  */
 
 void
-symtab_node::set_section (tree section)
+symtab_node::set_section (const char *section)
 {
   gcc_assert (!this->alias);
-  symtab_for_node_and_aliases (this, set_section_1, section, true);
+  symtab_for_node_and_aliases (this, set_section_1, const_cast<char *>(section), true);
 }
 
 /* Worker for symtab_resolve_alias.  */
@@ -1156,7 +1233,8 @@ symtab_resolve_alias (symtab_node *node, symtab_node *target)
       error ("section of alias %q+D must match section of its target",
 	     node->decl);
     }
-  symtab_for_node_and_aliases (node, set_section_1, target->get_section_name (), true);
+  symtab_for_node_and_aliases (node, set_section_1,
+			       const_cast<char *>(target->get_section ()), true);
   if (target->implicit_section)
     symtab_for_node_and_aliases (node,
 				 set_implicit_section, NULL, true);

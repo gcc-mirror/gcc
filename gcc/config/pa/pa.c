@@ -10262,10 +10262,10 @@ pa_function_section (tree decl, enum node_frequency freq,
   /* Force nested functions into the same section as the containing
      function.  */
   if (decl
-      && DECL_SECTION_NAME (decl) == NULL_TREE
+      && DECL_SECTION_NAME (decl) == NULL
       && DECL_CONTEXT (decl) != NULL_TREE
       && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL
-      && DECL_SECTION_NAME (DECL_CONTEXT (decl)) == NULL_TREE)
+      && DECL_SECTION_NAME (DECL_CONTEXT (decl)) == NULL)
     return function_section (DECL_CONTEXT (decl));
 
   /* Otherwise, use the default function section.  */

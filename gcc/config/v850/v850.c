@@ -2190,7 +2190,7 @@ v850_encode_data_area (tree decl, rtx symbol)
     {
       if (DECL_SECTION_NAME (decl))
 	{
-	  const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+	  const char *name = DECL_SECTION_NAME (decl);
 	  
 	  if (streq (name, ".zdata") || streq (name, ".zbss"))
 	    v850_set_data_area (decl, DATA_AREA_ZDA);

@@ -2219,7 +2219,7 @@ static bool
 rx_in_small_data (const_tree decl)
 {
   int size;
-  const_tree section;
+  const char * section;
 
   if (rx_small_data_limit == 0)
     return false;
@@ -2238,11 +2238,7 @@ rx_in_small_data (const_tree decl)
 
   section = DECL_SECTION_NAME (decl);
   if (section)
-    {
-      const char * const name = TREE_STRING_POINTER (section);
-
-      return (strcmp (name, "D_2") == 0) || (strcmp (name, "B_2") == 0);
-    }
+    return (strcmp (section, "D_2") == 0) || (strcmp (section, "B_2") == 0);
 
   size = int_size_in_bytes (TREE_TYPE (decl));
 

@@ -173,7 +173,7 @@ static GTY(()) section *unnamed_sections;
 /* Return a nonzero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION(DECL) \
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
-   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+   && DECL_SECTION_NAME (DECL) != NULL)
 
 /* Hash table of named sections.  */
 static GTY((param_is (section))) htab_t section_htab;
@@ -411,7 +411,7 @@ get_named_section (tree decl, const char *name, int reloc)
   if (name == NULL)
     {
       gcc_assert (decl && DECL_P (decl) && DECL_SECTION_NAME (decl));
-      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      name = DECL_SECTION_NAME (decl);
     }
 
   flags = targetm.section_type_flags (decl, name, reloc);
@@ -433,7 +433,7 @@ void
 resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 			int flag_function_or_data_sections)
 {
-  if (DECL_SECTION_NAME (decl) == NULL_TREE
+  if (DECL_SECTION_NAME (decl) == NULL
       && targetm_common.have_named_sections
       && (flag_function_or_data_sections
 	  || DECL_COMDAT_GROUP (decl)))
@@ -483,7 +483,7 @@ static section *
 hot_function_section (tree decl)
 {
   if (decl != NULL_TREE
-      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL
       && targetm_common.have_named_sections)
     return get_named_section (decl, NULL, 0);
   else
@@ -508,13 +508,13 @@ get_named_text_section (tree decl,
     {
       if (named_section_suffix)
 	{
-	  tree dsn = DECL_SECTION_NAME (decl);
+	  const char *dsn = DECL_SECTION_NAME (decl);
 	  const char *stripped_name;
 	  char *name, *buffer;
 
-	  name = (char *) alloca (TREE_STRING_LENGTH (dsn) + 1);
-	  memcpy (name, TREE_STRING_POINTER (dsn),
-		  TREE_STRING_LENGTH (dsn) + 1);
+	  name = (char *) alloca (strlen (dsn) + 1);
+	  memcpy (name, dsn,
+		  strlen (dsn) + 1);
 
 	  stripped_name = targetm.strip_name_encoding (name);
 
@@ -620,7 +620,7 @@ function_section_1 (tree decl, bool force_cold)
 
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
   if (decl != NULL_TREE
-      && DECL_SECTION_NAME (decl) != NULL_TREE)
+      && DECL_SECTION_NAME (decl) != NULL)
     {
       if (targetm.asm_out.function_section)
 	section = targetm.asm_out.function_section (decl, freq,
@@ -694,7 +694,7 @@ default_function_rodata_section (tree decl)
 {
   if (decl != NULL_TREE && DECL_SECTION_NAME (decl))
     {
-      const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      const char *name = DECL_SECTION_NAME (decl);
 
       if (DECL_COMDAT_GROUP (decl) && HAVE_COMDAT_GROUP)
         {
@@ -1380,7 +1380,7 @@ make_decl_rtl (tree decl)
      we take care of recomputing the DECL_RTL after visibility is changed.  */
   if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
-      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL
       && DECL_INITIAL (decl) == NULL_TREE
       && DECL_COMMON (decl))
     DECL_COMMON (decl) = 0;
@@ -6471,7 +6471,7 @@ default_unique_section (tree decl, int reloc)
 
   string = ACONCAT ((linkonce, prefix, ".", name, NULL));
 
-  set_decl_section_name (decl, build_string (strlen (string), string));
+  set_decl_section_name (decl, string);
 }
 
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
