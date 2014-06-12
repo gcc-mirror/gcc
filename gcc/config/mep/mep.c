@@ -4658,7 +4658,7 @@ mep_unique_section (tree decl, int reloc)
 
   sprintf (string, "%s%s", prefix, name);
 
-  set_decl_section_name (decl, build_string (len, string));
+  set_decl_section_name (decl, string);
 }
 
 /* Given a decl, a section name, and whether the decl initializer

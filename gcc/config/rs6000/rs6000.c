@@ -28508,7 +28508,7 @@ rs6000_elf_in_small_data_p (const_tree decl)
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl))
     {
-      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      const char *section = DECL_SECTION_NAME (decl);
       if (compare_section_name (section, ".sdata")
 	  || compare_section_name (section, ".sdata2")
 	  || compare_section_name (section, ".gnu.linkonce.s")
@@ -29277,7 +29277,7 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 
 #define IN_NAMED_SECTION(DECL) \
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
-   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+   && DECL_SECTION_NAME (DECL) != NULL)
 
 static section *
 rs6000_xcoff_select_section (tree decl, int reloc,
@@ -29342,7 +29342,7 @@ rs6000_xcoff_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   name = (*targetm.strip_name_encoding) (name);
-  set_decl_section_name (decl, build_string (strlen (name), name));
+  set_decl_section_name (decl, name);
 }
 
 /* Select section for constant in constant pool.

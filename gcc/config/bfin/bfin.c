@@ -4760,8 +4760,8 @@ bfin_handle_l1_text_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
   /* The decl may have already been given a section attribute
      from a previous declaration. Ensure they match.  */
-  else if (DECL_SECTION_NAME (decl) != NULL_TREE
-	   && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+  else if (DECL_SECTION_NAME (decl) != NULL
+	   && strcmp (DECL_SECTION_NAME (decl),
 		      ".l1.text") != 0)
     {
       error ("section of %q+D conflicts with previous declaration",
@@ -4769,7 +4769,7 @@ bfin_handle_l1_text_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       *no_add_attrs = true;
     }
   else
-    set_decl_section_name (decl, build_string (9, ".l1.text"));
+    set_decl_section_name (decl, ".l1.text");
 
   return NULL_TREE;
 }
@@ -4811,8 +4811,8 @@ bfin_handle_l1_data_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
       /* The decl may have already been given a section attribute
 	 from a previous declaration. Ensure they match.  */
-      if (DECL_SECTION_NAME (decl) != NULL_TREE
-	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+      if (DECL_SECTION_NAME (decl) != NULL
+	  && strcmp (DECL_SECTION_NAME (decl),
 		     section_name) != 0)
 	{
 	  error ("section of %q+D conflicts with previous declaration",
@@ -4820,8 +4820,7 @@ bfin_handle_l1_data_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	  *no_add_attrs = true;
 	}
       else
-	DECL_SECTION_NAME (decl)
-	  = build_string (strlen (section_name) + 1, section_name);
+	set_decl_section_name (decl, section_name);
     }
 
  return NULL_TREE;
@@ -4838,8 +4837,8 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (DECL_SECTION_NAME (decl) != NULL_TREE
-	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+      if (DECL_SECTION_NAME (decl) != NULL
+	  && strcmp (DECL_SECTION_NAME (decl),
 		     ".l2.text") != 0)
 	{
 	  error ("section of %q+D conflicts with previous declaration",
@@ -4847,12 +4846,12 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 	  *no_add_attrs = true;
 	}
       else
-	set_decl_section_name (decl, build_string (9, ".l2.text"));
+	set_decl_section_name (decl, ".l2.text");
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      if (DECL_SECTION_NAME (decl) != NULL_TREE
-	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+      if (DECL_SECTION_NAME (decl) != NULL
+	  && strcmp (DECL_SECTION_NAME (decl),
 		     ".l2.data") != 0)
 	{
 	  error ("section of %q+D conflicts with previous declaration",
@@ -4860,7 +4859,7 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 	  *no_add_attrs = true;
 	}
       else
-	set_decl_section_name (decl, build_string (9, ".l2.data"));
+	set_decl_section_name (decl, ".l2.data");
     }
 
   return NULL_TREE;

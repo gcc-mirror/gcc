@@ -263,7 +263,7 @@ static frv_stack_t *frv_stack_cache = (frv_stack_t *)0;
 static void frv_option_override			(void);
 static bool frv_legitimate_address_p		(enum machine_mode, rtx, bool);
 static int frv_default_flags_for_cpu		(void);
-static int frv_string_begins_with		(const_tree, const char *);
+static int frv_string_begins_with		(const char *, const char *);
 static FRV_INLINE bool frv_small_data_reloc_p	(rtx, int);
 static void frv_print_operand			(FILE *, rtx, int);
 static void frv_print_operand_address		(FILE *, rtx);
@@ -773,13 +773,12 @@ frv_option_override (void)
 /* Return true if NAME (a STRING_CST node) begins with PREFIX.  */
 
 static int
-frv_string_begins_with (const_tree name, const char *prefix)
+frv_string_begins_with (const char *name, const char *prefix)
 {
   const int prefix_len = strlen (prefix);
 
   /* Remember: NAME's length includes the null terminator.  */
-  return (TREE_STRING_LENGTH (name) > prefix_len
-	  && strncmp (TREE_STRING_POINTER (name), prefix, prefix_len) == 0);
+  return (strncmp (name, prefix, prefix_len) == 0);
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -9475,7 +9474,7 @@ static bool
 frv_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
-  const_tree section_name;
+  const char *section_name;
 
   /* Don't apply the -G flag to internal compiler structures.  We
      should leave such structures in the main data section, partly

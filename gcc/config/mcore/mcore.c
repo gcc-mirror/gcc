@@ -3089,7 +3089,7 @@ mcore_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
   
   sprintf (string, "%s%s", prefix, name);
 
-  set_decl_section_name (decl, build_string (len, string));
+  set_decl_section_name (decl, string);
 }
 
 int

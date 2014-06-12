@@ -1,3 +1,9 @@
+2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* java/class.c (build_utf8_ref): Update handling for section names
+	that are no longer trees.
+	(emit_register_classes_in_jcr_section): Update.
+
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* class.c (build_utf8_ref): Use set_decl_section_name.

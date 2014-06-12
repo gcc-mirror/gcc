@@ -463,7 +463,7 @@ m32r_encode_section_info (tree decl, rtx rtl, int first)
 static bool
 m32r_in_small_data_p (const_tree decl)
 {
-  const_tree section;
+  const char *section;
 
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
@@ -474,8 +474,7 @@ m32r_in_small_data_p (const_tree decl)
   section = DECL_SECTION_NAME (decl);
   if (section)
     {
-      const char *const name = TREE_STRING_POINTER (section);
-      if (strcmp (name, ".sdata") == 0 || strcmp (name, ".sbss") == 0)
+      if (strcmp (section, ".sdata") == 0 || strcmp (section, ".sbss") == 0)
 	return true;
     }
   else

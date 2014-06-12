@@ -6618,7 +6618,7 @@ mips16_build_function_stub (void)
   stubdecl = build_decl (BUILTINS_LOCATION,
 			 FUNCTION_DECL, get_identifier (stubname),
 			 build_function_type_list (void_type_node, NULL_TREE));
-  set_decl_section_name (stubdecl, build_string (strlen (secname), secname));
+  set_decl_section_name (stubdecl, secname);
   DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 				       RESULT_DECL, NULL_TREE, void_type_node);
 
@@ -6872,7 +6872,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 			     FUNCTION_DECL, stubid,
 			     build_function_type_list (void_type_node,
 						       NULL_TREE));
-      set_decl_section_name (stubdecl, build_string (strlen (secname), secname));
+      set_decl_section_name (stubdecl, secname);
       DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 					   RESULT_DECL, NULL_TREE,
 					   void_type_node);
@@ -8490,7 +8490,7 @@ mips_function_rodata_section (tree decl)
 
   if (decl && DECL_SECTION_NAME (decl))
     {
-      const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      const char *name = DECL_SECTION_NAME (decl);
       if (DECL_COMDAT_GROUP (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
 	{
 	  char *rname = ASTRDUP (name);
@@ -8530,7 +8530,7 @@ mips_in_small_data_p (const_tree decl)
       const char *name;
 
       /* Reject anything that isn't in a known small-data section.  */
-      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      name = DECL_SECTION_NAME (decl);
       if (strcmp (name, ".sdata") != 0 && strcmp (name, ".sbss") != 0)
 	return false;
 

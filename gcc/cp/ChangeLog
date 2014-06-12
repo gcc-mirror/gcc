@@ -1,3 +1,9 @@
+2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* vtable-class-hierarchy.c: Update handling for section names
+	that are no longer trees.
+	* decl.c (duplicate_decls): Likewise.
+
 2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/19200

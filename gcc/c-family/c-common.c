@@ -7426,8 +7426,8 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 
 	  /* The decl may have already been given a section attribute
 	     from a previous declaration.  Ensure they match.  */
-	  else if (DECL_SECTION_NAME (decl) != NULL_TREE
-		   && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+	  else if (DECL_SECTION_NAME (decl) != NULL
+		   && strcmp (DECL_SECTION_NAME (decl),
 			      TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
 	    {
 	      error ("section of %q+D conflicts with previous declaration",
@@ -7442,7 +7442,8 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	      *no_add_attrs = true;
 	    }
 	  else
-	    set_decl_section_name (decl, TREE_VALUE (args));
+	    set_decl_section_name (decl,
+				   TREE_STRING_POINTER (TREE_VALUE (args)));
 	}
       else
 	{
