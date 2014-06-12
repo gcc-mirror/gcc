@@ -776,7 +776,7 @@ Driver Undocumented
 ;    Therefore, 0 will not necessarily indicate the same ABI in different
 ;    versions of G++.
 ;
-; 1: The version of the ABI first used in G++ 3.2.
+; 1: The version of the ABI first used in G++ 3.2.  No longer selectable.
 ;
 ; 2: The version of the ABI first used in G++ 3.4 (and current default).
 ;

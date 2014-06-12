@@ -1,3 +1,19 @@
+2014-06-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_operator_new_call): Remove -fabi-version=1 support.
+	* class.c (walk_subobject_offsets, include_empty_classes): Likewise.
+	(layout_nonempty_base_or_field, end_of_class): Likewise.
+	(layout_empty_base, build_base_field, layout_class_type): Likewise.
+	(is_empty_class, add_vcall_offset_vtbl_entries_1): Likewise.
+	(layout_virtual_bases): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	* mangle.c (write_mangled_name, write_prefix): Likewise.
+	(write_template_prefix, write_integer_cst, write_expression): Likewise.
+	(write_template_arg, write_array_type): Likewise.
+	* method.c (lazily_declare_fn): Likewise.
+	* rtti.c (get_pseudo_ti_index): Likewise.
+	* typeck.c (comp_array_types): Likewise.
+
 2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* vtable-class-hierarchy.c: Update handling for section names
