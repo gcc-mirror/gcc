@@ -1,7 +1,13 @@
-		
 2014-06-12  Jeff Law  <law@redhat.com>
 
 	Backports from mainline:
+
+	2014-06-12  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/61009
+	* tree-ssa-threadedge.c (thread_through_normal_block): Correct return
+	value when we stop processing a block due to problematic PHIs.
+
 
 	2014-06-05  Jeff Law  <law@redhat.com>
 
