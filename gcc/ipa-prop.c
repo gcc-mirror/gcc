@@ -2673,13 +2673,19 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 
           if (dump_enabled_p ())
 	    {
-	      location_t loc = gimple_location (ie->call_stmt);
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			       "discovered direct call to non-function in %s/%i, "
-			       "making it __builtin_unreachable\n",
-                               ie->caller->name (),
-                               ie->caller->order);
+	      const char *fmt = "discovered direct call to non-function in %s/%i, "
+				"making it __builtin_unreachable\n";
+
+	      if (ie->call_stmt)
+		{
+		  location_t loc = gimple_location (ie->call_stmt);
+		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, fmt,
+				   ie->caller->name (), ie->caller->order);
+		}
+	      else if (dump_file)
+		fprintf (dump_file, fmt, ie->caller->name (), ie->caller->order);
 	    }
+
 	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 	  callee = cgraph_get_create_node (target);
 	  unreachable = true;
@@ -2739,10 +2745,18 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
      }
   if (dump_enabled_p ())
     {
-      location_t loc = gimple_location (ie->call_stmt);
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-		       "converting indirect call in %s to direct call to %s\n",
-		       ie->caller->name (), callee->name ());
+      const char *fmt = "converting indirect call in %s to direct call to %s\n";
+
+      if (ie->call_stmt)
+	{
+	  location_t loc = gimple_location (ie->call_stmt);
+
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, fmt,
+			   ie->caller->name (), callee->name ());
+
+	}
+      else if (dump_file)
+	fprintf (dump_file, fmt, ie->caller->name (), callee->name ());
     }
   ie = cgraph_make_edge_direct (ie, callee);
   es = inline_edge_summary (ie);
