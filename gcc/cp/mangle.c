@@ -663,10 +663,7 @@ write_mangled_name (const tree decl, bool top_level)
 	     <source-name> without a type."  We cannot write
 	     overloaded operators that way though, because it contains
 	     characters invalid in assembler.  */
-	  if (abi_version_at_least (2))
-	    write_string ("_Z");
-	  else
-	    G.need_abi_warning = true;
+	  write_string ("_Z");
 	  write_source_name (DECL_NAME (decl));
 	}
     }
@@ -677,17 +674,10 @@ write_mangled_name (const tree decl, bool top_level)
 	       /* And neither are `extern "C"' variables.  */
 	       || DECL_EXTERN_C_P (decl)))
     {
-      if (top_level || abi_version_at_least (2))
-	goto unmangled_name;
-      else
-	{
-	  G.need_abi_warning = true;
-	  goto mangled_name;
-	}
+      goto unmangled_name;
     }
   else
     {
-    mangled_name:;
       write_string ("_Z");
       write_encoding (decl);
     }
@@ -1020,13 +1010,7 @@ write_prefix (const tree node)
 	template_info = TYPE_TEMPLATE_INFO (node);
     }
 
-  /* In G++ 3.2, the name of the template parameter was used.  */
-  if (TREE_CODE (node) == TEMPLATE_TYPE_PARM
-      && !abi_version_at_least (2))
-    G.need_abi_warning = true;
-
-  if (TREE_CODE (node) == TEMPLATE_TYPE_PARM
-      && abi_version_at_least (2))
+  if (TREE_CODE (node) == TEMPLATE_TYPE_PARM)
     write_template_param (node);
   else if (template_info != NULL)
     /* Templated.  */
@@ -1124,15 +1108,8 @@ write_template_prefix (const tree node)
   if (find_substitution (substitution))
     return;
 
-  /* In G++ 3.2, the name of the template template parameter was used.  */
   if (TREE_TYPE (templ)
-      && TREE_CODE (TREE_TYPE (templ)) == TEMPLATE_TEMPLATE_PARM
-      && !abi_version_at_least (2))
-    G.need_abi_warning = true;
-
-  if (TREE_TYPE (templ)
-      && TREE_CODE (TREE_TYPE (templ)) == TEMPLATE_TEMPLATE_PARM
-      && abi_version_at_least (2))
+      && TREE_CODE (TREE_TYPE (templ)) == TEMPLATE_TEMPLATE_PARM)
     write_template_param (TREE_TYPE (templ));
   else
     {
@@ -1597,45 +1574,29 @@ write_integer_cst (const tree cst)
 static void
 write_real_cst (const tree value)
 {
-  if (abi_version_at_least (2))
-    {
-      long target_real[4];  /* largest supported float */
-      char buffer[9];       /* eight hex digits in a 32-bit number */
-      int i, limit, dir;
+  long target_real[4];  /* largest supported float */
+  char buffer[9];       /* eight hex digits in a 32-bit number */
+  int i, limit, dir;
 
-      tree type = TREE_TYPE (value);
-      int words = GET_MODE_BITSIZE (TYPE_MODE (type)) / 32;
+  tree type = TREE_TYPE (value);
+  int words = GET_MODE_BITSIZE (TYPE_MODE (type)) / 32;
 
-      real_to_target (target_real, &TREE_REAL_CST (value),
-		      TYPE_MODE (type));
+  real_to_target (target_real, &TREE_REAL_CST (value),
+		  TYPE_MODE (type));
 
-      /* The value in target_real is in the target word order,
-	 so we must write it out backward if that happens to be
-	 little-endian.  write_number cannot be used, it will
-	 produce uppercase.  */
-      if (FLOAT_WORDS_BIG_ENDIAN)
-	i = 0, limit = words, dir = 1;
-      else
-	i = words - 1, limit = -1, dir = -1;
-
-      for (; i != limit; i += dir)
-	{
-	  sprintf (buffer, "%08lx", (unsigned long) target_real[i]);
-	  write_chars (buffer, 8);
-	}
-    }
+  /* The value in target_real is in the target word order,
+     so we must write it out backward if that happens to be
+     little-endian.  write_number cannot be used, it will
+     produce uppercase.  */
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    i = 0, limit = words, dir = 1;
   else
+    i = words - 1, limit = -1, dir = -1;
+
+  for (; i != limit; i += dir)
     {
-      /* In G++ 3.3 and before the REAL_VALUE_TYPE was written out
-	 literally.  Note that compatibility with 3.2 is impossible,
-	 because the old floating-point emulator used a different
-	 format for REAL_VALUE_TYPE.  */
-      size_t i;
-      for (i = 0; i < sizeof (TREE_REAL_CST (value)); ++i)
-	write_number (((unsigned char *) &TREE_REAL_CST (value))[i],
-		      /*unsigned_p*/ 1,
-		      /*base*/ 16);
-      G.need_abi_warning = 1;
+      sprintf (buffer, "%08lx", (unsigned long) target_real[i]);
+      write_chars (buffer, 8);
     }
 }
 
@@ -2631,7 +2592,7 @@ write_expression (tree expr)
     write_template_param (expr);
   /* Handle literals.  */
   else if (TREE_CODE_CLASS (code) == tcc_constant
-	   || (abi_version_at_least (2) && code == CONST_DECL))
+	   || code == CONST_DECL)
     write_template_arg_literal (expr);
   else if (code == PARM_DECL && DECL_ARTIFICIAL (expr))
     {
@@ -2668,10 +2629,6 @@ write_expression (tree expr)
     }
   else if (DECL_P (expr))
     {
-      /* G++ 3.2 incorrectly mangled non-type template arguments of
-	 enumeration type using their names.  */
-      if (code == CONST_DECL)
-	G.need_abi_warning = 1;
       write_char ('L');
       write_mangled_name (expr, false);
       write_char ('E');
@@ -2709,22 +2666,12 @@ write_expression (tree expr)
 	  member = BASELINK_FUNCTIONS (expr);
 	}
 
-      if (!abi_version_at_least (2) && DECL_P (member))
-	{
-	  write_string ("sr");
-	  write_type (scope);
-	  /* G++ 3.2 incorrectly put out both the "sr" code and
-	     the nested name of the qualified name.  */
-	  G.need_abi_warning = 1;
-	  write_encoding (member);
-	}
-
       /* If the MEMBER is a real declaration, then the qualifying
 	 scope was not dependent.  Ideally, we would not have a
 	 SCOPE_REF in those cases, but sometimes we do.  If the second
 	 argument is a DECL, then the name must not have been
 	 dependent.  */
-      else if (DECL_P (member))
+      if (DECL_P (member))
 	write_expression (member);
       else
 	{
@@ -3109,10 +3056,7 @@ write_template_arg (tree node)
 	 internal consistency, such arguments use a conversion from
 	 address of object to reference type.  */
       gcc_assert (TREE_CODE (TREE_OPERAND (node, 0)) == ADDR_EXPR);
-      if (abi_version_at_least (2))
-	node = TREE_OPERAND (TREE_OPERAND (node, 0), 0);
-      else
-	G.need_abi_warning = 1;
+      node = TREE_OPERAND (TREE_OPERAND (node, 0), 0);
     }
 
   if (TREE_CODE (node) == BASELINK
@@ -3147,15 +3091,11 @@ write_template_arg (tree node)
     /* A template appearing as a template arg is a template template arg.  */
     write_template_template_arg (node);
   else if ((TREE_CODE_CLASS (code) == tcc_constant && code != PTRMEM_CST)
-	   || (abi_version_at_least (2) && code == CONST_DECL)
+	   || code == CONST_DECL
 	   || null_member_pointer_value_p (node))
     write_template_arg_literal (node);
   else if (DECL_P (node))
     {
-      /* Until ABI version 2, non-type template arguments of
-	 enumeration type were mangled using their names.  */
-      if (code == CONST_DECL && !abi_version_at_least (2))
-	G.need_abi_warning = 1;
       write_char ('L');
       /* Until ABI version 3, the underscore before the mangled name
 	 was incorrectly omitted.  */
@@ -3230,15 +3170,6 @@ write_array_type (const tree type)
       else
 	{
 	  max = TREE_OPERAND (max, 0);
-	  if (!abi_version_at_least (2))
-	    {
-	      /* value_dependent_expression_p presumes nothing is
-		 dependent when PROCESSING_TEMPLATE_DECL is zero.  */
-	      ++processing_template_decl;
-	      if (!value_dependent_expression_p (max))
-		G.need_abi_warning = 1;
-	      --processing_template_decl;
-	    }
 	  write_expression (max);
 	}
 

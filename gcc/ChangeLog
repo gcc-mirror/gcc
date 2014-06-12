@@ -1,3 +1,7 @@
+2014-06-12  Jason Merrill  <jason@redhat.com>
+
+	* toplev.c (process_options): Reject -fabi-version=1.
+
 2014-06-12  Jeff Law  <law@redhat.com>
 
         PR tree-optimization/61009

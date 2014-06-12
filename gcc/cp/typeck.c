@@ -1114,17 +1114,6 @@ comp_array_types (const_tree t1, const_tree t2, bool allow_redeclaration)
     return false;
   max1 = TYPE_MAX_VALUE (d1);
   max2 = TYPE_MAX_VALUE (d2);
-  if (processing_template_decl && !abi_version_at_least (2)
-      && !value_dependent_expression_p (max1)
-      && !value_dependent_expression_p (max2))
-    {
-      /* With abi-1 we do not fold non-dependent array bounds, (and
-	 consequently mangle them incorrectly).  We must therefore
-	 fold them here, to verify the domains have the same
-	 value.  */
-      max1 = fold (max1);
-      max2 = fold (max2);
-    }
 
   if (!cp_tree_equal (max1, max2))
     return false;

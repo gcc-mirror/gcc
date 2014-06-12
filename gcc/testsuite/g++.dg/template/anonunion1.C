@@ -1,6 +1,6 @@
 // PR c++/47303
 // { dg-do compile }
-// { dg-options "-fabi-version=1" }
+
 
 struct Z
 {
