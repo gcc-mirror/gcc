@@ -1,3 +1,20 @@
+2014-06-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2014-05-09 trunk r210272
+
+	* config/avr/avr-fixed.md (round<mode>3): Use -1U instead of -1 in
+	unsigned int initializers for regno_in, regno_out.
+
+	Backport from 2014-05-14 trunk r210418
+	* config/avr/avr.h (REG_CLASS_CONTENTS): Use unsigned suffix for
+	shifted values to avoid build warning.
+
+	Backport from 2014-06-12 trunk r211491
+
+	PR target/61443
+	* config/avr/avr.md (push<mode>1): Avoid (subreg(mem)) when
+	loading from address spaces.
+
 2014-06-12  Alan Modra  <amodra@gmail.com>
 
 	PR target/61300

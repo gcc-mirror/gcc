@@ -367,6 +367,15 @@
   ""
   {
     int i;
+
+    // Avoid (subreg (mem)) for non-generic address spaces below.  Because
+    // of the poor addressing capabilities of these spaces it's better to
+    // load them in one chunk.  And it avoids PR61443.
+
+    if (MEM_P (operands[0])
+        && !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (operands[0])))
+      operands[0] = copy_to_mode_reg (<MODE>mode, operands[0]);
+
     for (i = GET_MODE_SIZE (<MODE>mode) - 1; i >= 0; --i)
       {
         rtx part = simplify_gen_subreg (QImode, operands[0], <MODE>mode, i);
