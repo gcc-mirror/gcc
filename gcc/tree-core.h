@@ -987,7 +987,7 @@ struct GTY(()) tree_base {
        SSA_NAME_IN_FREELIST in
           SSA_NAME
 
-       VAR_DECL_NONALIASED in
+       DECL_NONALIASED in
 	  VAR_DECL
 
    deprecated_flag:
