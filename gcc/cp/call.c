@@ -6508,14 +6508,22 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
     arg = null_pointer_node;
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (arg_type))
     {
-      if (SCOPED_ENUM_P (arg_type) && !abi_version_at_least (6))
+      if (SCOPED_ENUM_P (arg_type))
 	{
-	  if (complain & tf_warning)
-	    warning_at (loc, OPT_Wabi, "scoped enum %qT will not promote to an "
-			"integral type in a future version of GCC", arg_type);
-	  arg = cp_convert (ENUM_UNDERLYING_TYPE (arg_type), arg, complain);
+	  tree prom = cp_convert (ENUM_UNDERLYING_TYPE (arg_type), arg,
+				  complain);
+	  prom = cp_perform_integral_promotions (prom, complain);
+	  if (abi_version_crosses (6)
+	      && TYPE_MODE (TREE_TYPE (prom)) != TYPE_MODE (arg_type)
+	      && (complain & tf_warning))
+	    warning_at (loc, OPT_Wabi, "scoped enum %qT passed through ... as "
+			"%qT before -fabi-version=6, %qT after", arg_type,
+			TREE_TYPE (prom), ENUM_UNDERLYING_TYPE (arg_type));
+	  if (!abi_version_at_least (6))
+	    arg = prom;
 	}
-      arg = cp_perform_integral_promotions (arg, complain);
+      else
+	arg = cp_perform_integral_promotions (arg, complain);
     }
 
   arg = require_complete_type_sfinae (arg, complain);

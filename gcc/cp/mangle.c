@@ -225,7 +225,6 @@ static int local_class_index (tree);
 /* Control functions.  */
 
 static inline void start_mangling (const tree);
-static inline const char *finish_mangling (const bool);
 static tree mangle_special_for_type (const tree, const char *);
 
 /* Foreign language functions.  */
@@ -785,6 +784,11 @@ write_name (tree decl, const int ignore_local_scope)
   context = decl_mangling_context (decl);
 
   gcc_assert (context != NULL_TREE);
+
+  if (abi_version_crosses (7)
+      && ignore_local_scope
+      && TREE_CODE (context) == PARM_DECL)
+    G.need_abi_warning = 1;
 
   /* A decl in :: or ::std scope is treated specially.  The former is
      mangled using <unscoped-name> or <unscoped-template-name>, the
@@ -1865,6 +1869,8 @@ write_type (tree type)
 	    write_function_type (t);
 	  else
 	    write_type (t);
+	  if (abi_version_crosses (8))
+	    G.need_abi_warning = 1;
 	}
       else
 	write_type (t);
@@ -1970,9 +1976,14 @@ write_type (tree type)
 		   a typedef or template argument can have function type
 		   with function-cv-quals (that use the same representation),
 		   but you can't have a pointer/reference to such a type.  */
-		if (abi_version_at_least (5)
-		    && TREE_CODE (target) == FUNCTION_TYPE)
-		  target = build_qualified_type (target, TYPE_UNQUALIFIED);
+		if (TREE_CODE (target) == FUNCTION_TYPE)
+		  {
+		    if (abi_version_crosses (5)
+			&& TYPE_QUALS (target) != TYPE_UNQUALIFIED)
+		      G.need_abi_warning = 1;
+		    if (abi_version_at_least (5))
+		      target = build_qualified_type (target, TYPE_UNQUALIFIED);
+		  }
 		write_type (target);
 	      }
 	      break;
@@ -2012,10 +2023,9 @@ write_type (tree type)
 		  write_char ('_');
 		}
 	      else
-		{
-		  G.need_abi_warning = 1;
-		  write_string ("U8__vector");
-		}
+		write_string ("U8__vector");
+	      if (abi_version_crosses (4))
+		G.need_abi_warning = 1;
 	      write_type (TREE_TYPE (type));
 	      break;
 
@@ -2030,8 +2040,7 @@ write_type (tree type)
 			  && !DECLTYPE_FOR_LAMBDA_PROXY (type));
 
 	      /* In ABI <5, we stripped decltype of a plain decl.  */
-	      if (!abi_version_at_least (5)
-		  && DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type))
+	      if (DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type))
 		{
 		  tree expr = DECLTYPE_TYPE_EXPR (type);
 		  tree etype = NULL_TREE;
@@ -2052,9 +2061,13 @@ write_type (tree type)
 
 		  if (etype && !type_uses_auto (etype))
 		    {
-		      G.need_abi_warning = 1;
-		      write_type (etype);
-		      return;
+		      if (abi_version_crosses (5))
+			G.need_abi_warning = 1;
+		      if (!abi_version_at_least (5))
+			{
+			  write_type (etype);
+			  return;
+			}
 		    }
 		}
 
@@ -2073,6 +2086,8 @@ write_type (tree type)
 	      write_string ("Dn");
 	      if (abi_version_at_least (7))
 		++is_builtin_type;
+	      if (abi_version_crosses (7))
+		G.need_abi_warning = 1;
 	      break;
 
 	    case TYPEOF_TYPE:
@@ -2621,7 +2636,7 @@ write_expression (tree expr)
 	      write_char ('L');
 	      write_unsigned_number (delta - 1);
 	    }
-	  else
+	  if (abi_version_crosses (5))
 	    G.need_abi_warning = true;
 	}
       write_char ('p');
@@ -2853,12 +2868,13 @@ write_expression (tree expr)
       name = operator_name_info[(int) code].mangled_name;
 
       /* We used to mangle const_cast and static_cast like a C cast.  */
-      if (!abi_version_at_least (6)
-	  && (code == CONST_CAST_EXPR
-	      || code == STATIC_CAST_EXPR))
+      if (code == CONST_CAST_EXPR
+	  || code == STATIC_CAST_EXPR)
 	{
-	  name = operator_name_info[CAST_EXPR].mangled_name;
-	  G.need_abi_warning = 1;
+	  if (abi_version_crosses (6))
+	    G.need_abi_warning = 1;
+	  if (!abi_version_at_least (6))
+	    name = operator_name_info[CAST_EXPR].mangled_name;
 	}
 
       if (name == NULL)
@@ -2929,7 +2945,7 @@ write_expression (tree expr)
 	case PREDECREMENT_EXPR:
 	  if (abi_version_at_least (6))
 	    write_char ('_');
-	  else
+	  if (abi_version_crosses (6))
 	    G.need_abi_warning = 1;
 	  /* Fall through.  */
 
@@ -3064,7 +3080,7 @@ write_template_arg (tree node)
     {
       if (abi_version_at_least (6))
 	node = BASELINK_FUNCTIONS (node);
-      else
+      if (abi_version_crosses (6))
 	/* We wrongly wrapped a class-scope function in X/E.  */
 	G.need_abi_warning = 1;
     }
@@ -3077,10 +3093,9 @@ write_template_arg (tree node)
       if (abi_version_at_least (6))
 	write_char ('J');
       else
-	{
-	  write_char ('I');
-	  G.need_abi_warning = 1;
-	}
+	write_char ('I');
+      if (abi_version_crosses (6))
+	G.need_abi_warning = 1;
       for (i = 0; i < length; ++i)
         write_template_arg (TREE_VEC_ELT (args, i));
       write_char ('E');
@@ -3100,12 +3115,11 @@ write_template_arg (tree node)
       /* Until ABI version 3, the underscore before the mangled name
 	 was incorrectly omitted.  */
       if (!abi_version_at_least (3))
-	{
-	  G.need_abi_warning = 1;
-	  write_char ('Z');
-	}
+	write_char ('Z');
       else
 	write_string ("_Z");
+      if (abi_version_crosses (3))
+	G.need_abi_warning = 1;
       write_encoding (node);
       write_char ('E');
     }
@@ -3286,13 +3300,8 @@ start_mangling (const tree entity)
    warning.  */
 
 static void
-finish_mangling_internal (const bool warn)
+finish_mangling_internal (void)
 {
-  if (warn_abi && warn && G.need_abi_warning)
-    warning (OPT_Wabi, "the mangled name of %qD will change in a future "
-	     "version of GCC",
-	     G.entity);
-
   /* Clear all the substitutions.  */
   vec_safe_truncate (G.substitutions, 0);
 
@@ -3304,18 +3313,18 @@ finish_mangling_internal (const bool warn)
 /* Like finish_mangling_internal, but return the mangled string.  */
 
 static inline const char *
-finish_mangling (const bool warn)
+finish_mangling (void)
 {
-  finish_mangling_internal (warn);
+  finish_mangling_internal ();
   return (const char *) obstack_finish (mangle_obstack);
 }
 
 /* Like finish_mangling_internal, but return an identifier.  */
 
 static tree
-finish_mangling_get_identifier (const bool warn)
+finish_mangling_get_identifier (void)
 {
-  finish_mangling_internal (warn);
+  finish_mangling_internal ();
   /* Don't obstack_finish here, and the next start_mangling will
      remove the identifier.  */
   return get_identifier ((const char *) obstack_base (mangle_obstack));
@@ -3373,7 +3382,7 @@ mangle_decl_string (const tree decl)
   else
     write_mangled_name (decl, true);
 
-  result = finish_mangling_get_identifier (/*warn=*/true);
+  result = finish_mangling_get_identifier ();
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_decl_string = '%s'\n\n",
 	     IDENTIFIER_POINTER (result));
@@ -3425,26 +3434,47 @@ mangle_decl (const tree decl)
       && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
       && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
     {
-#ifdef ASM_OUTPUT_DEF
       /* If the mangling will change in the future, emit an alias with the
 	 future mangled name for forward-compatibility.  */
       int save_ver;
-      tree id2, alias;
-#endif
+      tree id2;
 
       SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
       if (IDENTIFIER_GLOBAL_VALUE (id) != decl)
-	inform (DECL_SOURCE_LOCATION (decl), "-fabi-version=6 (or =0) "
+	inform (DECL_SOURCE_LOCATION (decl), "a later -fabi-version= (or =0) "
 		"avoids this error with a change in mangling");
 
-#ifdef ASM_OUTPUT_DEF
       save_ver = flag_abi_version;
-      flag_abi_version = 0;
+      flag_abi_version = flag_abi_compat_version;
       id2 = mangle_decl_string (decl);
       id2 = targetm.mangle_decl_assembler_name (decl, id2);
       flag_abi_version = save_ver;
 
-      alias = make_alias_for (decl, id2);
+      if (id2 == id)
+	return;
+
+      if (warn_abi)
+	{
+	  if (flag_abi_compat_version != 0
+	      && abi_version_at_least (flag_abi_compat_version))
+	    warning (OPT_Wabi, "the mangled name of %q+D changed between "
+		     "-fabi-version=%d (%D) and -fabi-version=%d (%D)",
+		     G.entity, flag_abi_compat_version, id2,
+		     flag_abi_version, id);
+	  else
+	    warning (OPT_Wabi, "the mangled name of %q+D changes between "
+		     "-fabi-version=%d (%D) and -fabi-version=%d (%D)",
+		     G.entity, flag_abi_version, id,
+		     flag_abi_compat_version, id2);
+	}
+
+#ifdef ASM_OUTPUT_DEF
+      if (flag_abi_compat_version != 0
+	  && IDENTIFIER_GLOBAL_VALUE (id2))
+	return;
+
+      tree alias = make_alias_for (decl, id2);
+      SET_IDENTIFIER_GLOBAL_VALUE (id2, alias);
       DECL_IGNORED_P (alias) = 1;
       TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
       DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
@@ -3471,7 +3501,7 @@ mangle_type_string (const tree type)
 
   start_mangling (type);
   write_type (type);
-  result = finish_mangling (/*warn=*/false);
+  result = finish_mangling ();
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_type_string = '%s'\n\n", result);
   return result;
@@ -3496,7 +3526,7 @@ mangle_special_for_type (const tree type, const char *code)
 
   /* Add the type.  */
   write_type (type);
-  result = finish_mangling_get_identifier (/*warn=*/false);
+  result = finish_mangling_get_identifier ();
 
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_special_for_type = %s\n\n",
@@ -3567,7 +3597,7 @@ mangle_ctor_vtbl_for_type (const tree type, const tree binfo)
   write_char ('_');
   write_type (BINFO_TYPE (binfo));
 
-  result = finish_mangling_get_identifier (/*warn=*/false);
+  result = finish_mangling_get_identifier ();
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_ctor_vtbl_for_type = %s\n\n",
 	     IDENTIFIER_POINTER (result));
@@ -3646,7 +3676,7 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
   /* Scoped name.  */
   write_encoding (fn_decl);
 
-  result = finish_mangling_get_identifier (/*warn=*/false);
+  result = finish_mangling_get_identifier ();
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_thunk = %s\n\n", IDENTIFIER_POINTER (result));
   return result;
@@ -3739,7 +3769,7 @@ mangle_guard_variable (const tree variable)
   start_mangling (variable);
   write_string ("_ZGV");
   write_guarded_var_name (variable);
-  return finish_mangling_get_identifier (/*warn=*/false);
+  return finish_mangling_get_identifier ();
 }
 
 /* Return an identifier for the name of a thread_local initialization
@@ -3751,7 +3781,7 @@ mangle_tls_init_fn (const tree variable)
   start_mangling (variable);
   write_string ("_ZTH");
   write_guarded_var_name (variable);
-  return finish_mangling_get_identifier (/*warn=*/false);
+  return finish_mangling_get_identifier ();
 }
 
 /* Return an identifier for the name of a thread_local wrapper
@@ -3765,7 +3795,7 @@ mangle_tls_wrapper_fn (const tree variable)
   start_mangling (variable);
   write_string (TLS_WRAPPER_PREFIX);
   write_guarded_var_name (variable);
-  return finish_mangling_get_identifier (/*warn=*/false);
+  return finish_mangling_get_identifier ();
 }
 
 /* Return true iff FN is a thread_local wrapper function.  */
@@ -3795,7 +3825,7 @@ mangle_ref_init_variable (const tree variable)
   /* Avoid name clashes with aggregate initialization of multiple
      references at once.  */
   write_unsigned_number (temp_count++);
-  return finish_mangling_get_identifier (/*warn=*/false);
+  return finish_mangling_get_identifier ();
 }
 
 

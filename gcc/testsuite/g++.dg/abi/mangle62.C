@@ -2,10 +2,10 @@
 // as a substitution candidate for a function type with function-cv-quals.
 // Test for the conformant behavior.
 
-// { dg-options -fabi-version=0 }
+// { dg-options "-fabi-version=0 -Wabi=7" }
 
 template <class T, class U> struct A { };
-// { dg-final { scan-assembler "_Z1fP1AIKFvvEFvvEE" } }
-void f (A<void()const, void()> *){}
-// { dg-final { scan-assembler "_Z1gP1AIFvvEKFvvEE" } }
-void g (A<void(), void()const> *){}
+// { dg-final { scan-assembler "\n_?_Z1fP1AIKFvvEFvvEE\[: \t\n\]" } }
+void f (A<void()const, void()> *){} // { dg-warning "mangled name" }
+// { dg-final { scan-assembler "\n_?_Z1gP1AIFvvEKFvvEE\[: \t\n\]" } }
+void g (A<void(), void()const> *){} // { dg-warning "mangled name" }

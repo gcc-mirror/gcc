@@ -456,6 +456,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       handle_OPT_d (arg);
       break;
 
+    case OPT_Wabi_:
+      warn_abi = true;
+      if (value == 1)
+	{
+	  warning (0, "%<-Wabi=1%> is not supported, using =2");
+	  value = 2;
+	}
+      flag_abi_compat_version = value;
+      break;
+
     case OPT_fcanonical_system_headers:
       cpp_opts->canonical_system_headers = value;
       break;
@@ -909,6 +919,22 @@ c_common_post_options (const char **pfilename)
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
+
+  if (flag_abi_compat_version == 1)
+    {
+      warning (0, "%<-fabi-compat-version=1%> is not supported, using =2");
+      flag_abi_compat_version = 2;
+    }
+  else if (flag_abi_compat_version == -1)
+    {
+      /* Generate compatibility aliases for ABI v2 (3.4-4.9) by default. */
+      flag_abi_compat_version = (flag_abi_version == 0 ? 2 : 0);
+
+      /* But don't warn about backward compatibility unless explicitly
+	 requested with -Wabi=n.  */
+      if (flag_abi_version == 0)
+	warn_abi = false;
+    }
 
   if (cxx_dialect >= cxx11)
     {
