@@ -1176,6 +1176,21 @@ symtab_node::set_section (const char *section)
   symtab_for_node_and_aliases (this, set_section_1, const_cast<char *>(section), true);
 }
 
+/* Reset section of NODE.  That is when NODE is being brought local
+   we may want to clear section produced for comdat group and depending
+   on function-sections produce now, local, unique section for it.  */
+
+void
+symtab_node::reset_section ()
+{
+  if (!this->implicit_section)
+    return;
+  this->set_section (NULL);
+  resolve_unique_section (this->decl, 0,
+			  is_a <cgraph_node *> (this)
+			  ? flag_function_sections : flag_data_sections);
+}
+
 /* Worker for symtab_resolve_alias.  */
 
 static bool
