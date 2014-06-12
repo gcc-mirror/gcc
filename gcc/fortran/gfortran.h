@@ -2785,7 +2785,8 @@ gfc_symbol* gfc_get_ultimate_derived_super_type (gfc_symbol*);
 bool gfc_type_is_extension_of (gfc_symbol *, gfc_symbol *);
 bool gfc_type_compatible (gfc_typespec *, gfc_typespec *);
 
-void gfc_copy_formal_args_intr (gfc_symbol *, gfc_intrinsic_sym *);
+void gfc_copy_formal_args_intr (gfc_symbol *, gfc_intrinsic_sym *,
+				gfc_actual_arglist *);
 
 void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 

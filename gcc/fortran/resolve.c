@@ -1674,7 +1674,7 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
       return false;
     }
 
-  gfc_copy_formal_args_intr (sym, isym);
+  gfc_copy_formal_args_intr (sym, isym, NULL);
 
   sym->attr.pure = isym->pure;
   sym->attr.elemental = isym->elemental;

@@ -1,3 +1,13 @@
+2014-06-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_copy_formal_args_intr): Update prototype.
+	* symbol.c (gfc_copy_formal_args_intr): Handle the case
+	that absent optional arguments should be ignored.
+	* trans-intrinsic.c (gfc_get_symbol_for_expr): Ditto.
+	(gfc_conv_intrinsic_funcall,
+	conv_generic_with_optional_char_arg): Update call.
+	* resolve.c (gfc_resolve_intrinsic): Ditto.
+
 2014-06-10  Dominique d'Humieres <dominiq@lps.ens.fr>
 	    Mikael Morin <mikael@gcc.gnu.org>
 
