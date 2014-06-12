@@ -1,3 +1,9 @@
+2014-06-12  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/61462
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Check that gimple call
+	statement is reachable. 
+
 2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c (section_hash): New hash.
