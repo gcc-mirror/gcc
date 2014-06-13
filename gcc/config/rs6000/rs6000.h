@@ -2490,8 +2490,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_SAT		RS6000_BTC_MISC	/* saturate sets VSCR.  */
 
 /* Builtin targets.  For now, we reuse the masks for those options that are in
-   target flags, and pick two random bits for SPE and paired which aren't in
-   target_flags.  */
+   target flags, and pick three random bits for SPE, paired and ldbl128 which
+   aren't in target_flags.  */
 #define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
 #define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
 #define RS6000_BTM_VSX		MASK_VSX	/* VSX (vector/scalar).  */
@@ -2508,6 +2508,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_CELL		MASK_FPRND	/* Target is cell powerpc.  */
 #define RS6000_BTM_DFP		MASK_DFP	/* Decimal floating point.  */
 #define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
+#define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2521,7 +2522,8 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_POPCNTD			\
 				 | RS6000_BTM_CELL			\
 				 | RS6000_BTM_DFP			\
-				 | RS6000_BTM_HARD_FLOAT)
+				 | RS6000_BTM_HARD_FLOAT		\
+				 | RS6000_BTM_LDBL128)
 
 /* Define builtin enum index.  */
 

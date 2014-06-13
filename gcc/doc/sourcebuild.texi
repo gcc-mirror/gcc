@@ -1299,6 +1299,9 @@ Target has 64-bit @code{double}.
 @item double64plus
 Target has @code{double} that is 64 bits or longer.
 
+@item longdouble128
+Target has 128-bit @code{long double}.
+
 @item int32plus
 Target has @code{int} that is at 32 bits or longer.
 

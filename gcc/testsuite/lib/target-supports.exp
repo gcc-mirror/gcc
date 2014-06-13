@@ -1790,6 +1790,15 @@ proc check_effective_target_large_double { } {
     }]
 }
 
+# Return 1 if the target supports long double of 128 bits,
+# 0 otherwise.
+
+proc check_effective_target_longdouble128 { } {
+    return [check_no_compiler_messages longdouble128 object {
+	int dummy[sizeof(long double) == 16 ? 1 : -1];
+    }]
+}
+
 # Return 1 if the target supports double of 64 bits,
 # 0 otherwise.
 

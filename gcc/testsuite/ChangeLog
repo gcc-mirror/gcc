@@ -1,3 +1,13 @@
+2014-06-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+
+	2014-06-13  Peter Bergner  <bergner@vnet.ibm.com>
+	PR target/61415
+	* lib/target-supports.exp (check_effective_target_longdouble128): New.
+	* gcc.target/powerpc/pack02.c: Use it.
+	* gcc.target/powerpc/tfmode_off.c: Likewise.
+
 2014-06-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2014-06-12 trunk r211491

@@ -11857,8 +11857,6 @@ double __builtin_rsqrt (double);
 uint64_t __builtin_ppc_get_timebase ();
 unsigned long __builtin_ppc_mftb ();
 double __builtin_unpack_longdouble (long double, int);
-double __builtin_longdouble_dw0 (long double);
-double __builtin_longdouble_dw1 (long double);
 long double __builtin_pack_longdouble (double, double);
 @end smallexample
 
