@@ -1,3 +1,10 @@
+2014-06-13  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/61094
+	PR rtl-optimization/61446
+	* ree.c (combine_reaching_defs): Get the mode for the copy from
+	the extension insn rather than the defining insn.
+
 2014-06-13  Dehao Chen  <dehao@google.com>
 
 	* dwarf2out.c (add_linkage_name): Emit more linkage name.
