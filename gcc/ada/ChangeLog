@@ -1,3 +1,11 @@
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Remove the check concerning volatile
+	types in SPARK as it is poorly placed and poorly formulated. The
+	check was flagging ALL volatile entities as illegal in SPARK.
+	* sem_prag.adb (Process_Atomic_Shared_Volatile): Flag volatile
+	types as illegal in SPARK.
+
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
 	* sem_cat.adb: Minor reformatting.
