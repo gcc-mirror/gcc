@@ -1,3 +1,18 @@
+2014-06-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Check_Unset_References): Take
+	case of Refined_Post into account in Within_Postcondition check.
+
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Volatile types are not allowed in
+	SPARK.
+
+2014-06-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications/Aspect_Import,
+	Aspect_Export): Consider that variables may be set outside the program.
+
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
 	* back_end.adb (Make_Id): New function.
