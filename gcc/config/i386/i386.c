@@ -46502,7 +46502,7 @@ ix86_spill_class (reg_class_t rclass, enum machine_mode mode)
 {
   if (TARGET_SSE && TARGET_GENERAL_REGS_SSE_SPILL && ! TARGET_MMX
       && (mode == SImode || (TARGET_64BIT && mode == DImode))
-      && INTEGER_CLASS_P (rclass))
+      && rclass != NO_REGS && INTEGER_CLASS_P (rclass))
     return ALL_SSE_REGS;
   return NO_REGS;
 }
