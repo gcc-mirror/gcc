@@ -1,3 +1,8 @@
+2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/install.texi (--enable-linker-plugin-configure-flags)
+	(--enable-linker-plugin-flags): Document new flags.
+
 2014-06-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61186

@@ -911,6 +911,7 @@ configure-host:  \
     maybe-configure-libdecnumber \
     maybe-configure-libgui \
     maybe-configure-libiberty \
+    maybe-configure-libiberty-linker-plugin \
     maybe-configure-libiconv \
     maybe-configure-m4 \
     maybe-configure-readline \
@@ -1056,6 +1057,9 @@ all-host: maybe-all-libgui
 @if libiberty-no-bootstrap
 all-host: maybe-all-libiberty
 @endif libiberty-no-bootstrap
+@if libiberty-linker-plugin-no-bootstrap
+all-host: maybe-all-libiberty-linker-plugin
+@endif libiberty-linker-plugin-no-bootstrap
 all-host: maybe-all-libiconv
 all-host: maybe-all-m4
 all-host: maybe-all-readline
@@ -1158,6 +1162,7 @@ info-host: maybe-info-libcpp
 info-host: maybe-info-libdecnumber
 info-host: maybe-info-libgui
 info-host: maybe-info-libiberty
+info-host: maybe-info-libiberty-linker-plugin
 info-host: maybe-info-libiconv
 info-host: maybe-info-m4
 info-host: maybe-info-readline
@@ -1241,6 +1246,7 @@ dvi-host: maybe-dvi-libcpp
 dvi-host: maybe-dvi-libdecnumber
 dvi-host: maybe-dvi-libgui
 dvi-host: maybe-dvi-libiberty
+dvi-host: maybe-dvi-libiberty-linker-plugin
 dvi-host: maybe-dvi-libiconv
 dvi-host: maybe-dvi-m4
 dvi-host: maybe-dvi-readline
@@ -1324,6 +1330,7 @@ pdf-host: maybe-pdf-libcpp
 pdf-host: maybe-pdf-libdecnumber
 pdf-host: maybe-pdf-libgui
 pdf-host: maybe-pdf-libiberty
+pdf-host: maybe-pdf-libiberty-linker-plugin
 pdf-host: maybe-pdf-libiconv
 pdf-host: maybe-pdf-m4
 pdf-host: maybe-pdf-readline
@@ -1407,6 +1414,7 @@ html-host: maybe-html-libcpp
 html-host: maybe-html-libdecnumber
 html-host: maybe-html-libgui
 html-host: maybe-html-libiberty
+html-host: maybe-html-libiberty-linker-plugin
 html-host: maybe-html-libiconv
 html-host: maybe-html-m4
 html-host: maybe-html-readline
@@ -1490,6 +1498,7 @@ TAGS-host: maybe-TAGS-libcpp
 TAGS-host: maybe-TAGS-libdecnumber
 TAGS-host: maybe-TAGS-libgui
 TAGS-host: maybe-TAGS-libiberty
+TAGS-host: maybe-TAGS-libiberty-linker-plugin
 TAGS-host: maybe-TAGS-libiconv
 TAGS-host: maybe-TAGS-m4
 TAGS-host: maybe-TAGS-readline
@@ -1573,6 +1582,7 @@ install-info-host: maybe-install-info-libcpp
 install-info-host: maybe-install-info-libdecnumber
 install-info-host: maybe-install-info-libgui
 install-info-host: maybe-install-info-libiberty
+install-info-host: maybe-install-info-libiberty-linker-plugin
 install-info-host: maybe-install-info-libiconv
 install-info-host: maybe-install-info-m4
 install-info-host: maybe-install-info-readline
@@ -1656,6 +1666,7 @@ install-pdf-host: maybe-install-pdf-libcpp
 install-pdf-host: maybe-install-pdf-libdecnumber
 install-pdf-host: maybe-install-pdf-libgui
 install-pdf-host: maybe-install-pdf-libiberty
+install-pdf-host: maybe-install-pdf-libiberty-linker-plugin
 install-pdf-host: maybe-install-pdf-libiconv
 install-pdf-host: maybe-install-pdf-m4
 install-pdf-host: maybe-install-pdf-readline
@@ -1739,6 +1750,7 @@ install-html-host: maybe-install-html-libcpp
 install-html-host: maybe-install-html-libdecnumber
 install-html-host: maybe-install-html-libgui
 install-html-host: maybe-install-html-libiberty
+install-html-host: maybe-install-html-libiberty-linker-plugin
 install-html-host: maybe-install-html-libiconv
 install-html-host: maybe-install-html-m4
 install-html-host: maybe-install-html-readline
@@ -1822,6 +1834,7 @@ installcheck-host: maybe-installcheck-libcpp
 installcheck-host: maybe-installcheck-libdecnumber
 installcheck-host: maybe-installcheck-libgui
 installcheck-host: maybe-installcheck-libiberty
+installcheck-host: maybe-installcheck-libiberty-linker-plugin
 installcheck-host: maybe-installcheck-libiconv
 installcheck-host: maybe-installcheck-m4
 installcheck-host: maybe-installcheck-readline
@@ -1905,6 +1918,7 @@ mostlyclean-host: maybe-mostlyclean-libcpp
 mostlyclean-host: maybe-mostlyclean-libdecnumber
 mostlyclean-host: maybe-mostlyclean-libgui
 mostlyclean-host: maybe-mostlyclean-libiberty
+mostlyclean-host: maybe-mostlyclean-libiberty-linker-plugin
 mostlyclean-host: maybe-mostlyclean-libiconv
 mostlyclean-host: maybe-mostlyclean-m4
 mostlyclean-host: maybe-mostlyclean-readline
@@ -1988,6 +2002,7 @@ clean-host: maybe-clean-libcpp
 clean-host: maybe-clean-libdecnumber
 clean-host: maybe-clean-libgui
 clean-host: maybe-clean-libiberty
+clean-host: maybe-clean-libiberty-linker-plugin
 clean-host: maybe-clean-libiconv
 clean-host: maybe-clean-m4
 clean-host: maybe-clean-readline
@@ -2071,6 +2086,7 @@ distclean-host: maybe-distclean-libcpp
 distclean-host: maybe-distclean-libdecnumber
 distclean-host: maybe-distclean-libgui
 distclean-host: maybe-distclean-libiberty
+distclean-host: maybe-distclean-libiberty-linker-plugin
 distclean-host: maybe-distclean-libiconv
 distclean-host: maybe-distclean-m4
 distclean-host: maybe-distclean-readline
@@ -2154,6 +2170,7 @@ maintainer-clean-host: maybe-maintainer-clean-libcpp
 maintainer-clean-host: maybe-maintainer-clean-libdecnumber
 maintainer-clean-host: maybe-maintainer-clean-libgui
 maintainer-clean-host: maybe-maintainer-clean-libiberty
+maintainer-clean-host: maybe-maintainer-clean-libiberty-linker-plugin
 maintainer-clean-host: maybe-maintainer-clean-libiconv
 maintainer-clean-host: maybe-maintainer-clean-m4
 maintainer-clean-host: maybe-maintainer-clean-readline
@@ -2292,6 +2309,7 @@ check-host:  \
     maybe-check-libdecnumber \
     maybe-check-libgui \
     maybe-check-libiberty \
+    maybe-check-libiberty-linker-plugin \
     maybe-check-libiconv \
     maybe-check-m4 \
     maybe-check-readline \
@@ -2401,6 +2419,7 @@ install-host-nogcc:  \
     maybe-install-libdecnumber \
     maybe-install-libgui \
     maybe-install-libiberty \
+    maybe-install-libiberty-linker-plugin \
     maybe-install-libiconv \
     maybe-install-m4 \
     maybe-install-readline \
@@ -2448,6 +2467,7 @@ install-host:  \
     maybe-install-libdecnumber \
     maybe-install-libgui \
     maybe-install-libiberty \
+    maybe-install-libiberty-linker-plugin \
     maybe-install-libiconv \
     maybe-install-m4 \
     maybe-install-readline \
@@ -2551,6 +2571,7 @@ install-strip-host:  \
     maybe-install-strip-libdecnumber \
     maybe-install-strip-libgui \
     maybe-install-strip-libiberty \
+    maybe-install-strip-libiberty-linker-plugin \
     maybe-install-strip-libiconv \
     maybe-install-strip-m4 \
     maybe-install-strip-readline \
@@ -23950,6 +23971,886 @@ maintainer-clean-libiberty:
 
 
 
+.PHONY: configure-libiberty-linker-plugin maybe-configure-libiberty-linker-plugin
+maybe-configure-libiberty-linker-plugin:
+@if gcc-bootstrap
+configure-libiberty-linker-plugin: stage_current
+@endif gcc-bootstrap
+@if libiberty-linker-plugin
+maybe-configure-libiberty-linker-plugin: configure-libiberty-linker-plugin
+configure-libiberty-linker-plugin: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/libiberty-linker-plugin; \
+	cd "$(HOST_SUBDIR)/libiberty-linker-plugin" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty-linker-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiberty; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} @extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@ \
+	  || exit 1
+@endif libiberty-linker-plugin
+
+
+
+.PHONY: configure-stage1-libiberty-linker-plugin maybe-configure-stage1-libiberty-linker-plugin
+maybe-configure-stage1-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-configure-stage1-libiberty-linker-plugin: configure-stage1-libiberty-linker-plugin
+configure-stage1-libiberty-linker-plugin:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty-linker-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   \
+	  $(STAGE1_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
+@endif libiberty-linker-plugin-bootstrap
+
+.PHONY: configure-stage2-libiberty-linker-plugin maybe-configure-stage2-libiberty-linker-plugin
+maybe-configure-stage2-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-configure-stage2-libiberty-linker-plugin: configure-stage2-libiberty-linker-plugin
+configure-stage2-libiberty-linker-plugin:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty-linker-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
+	  $(STAGE2_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
+@endif libiberty-linker-plugin-bootstrap
+
+.PHONY: configure-stage3-libiberty-linker-plugin maybe-configure-stage3-libiberty-linker-plugin
+maybe-configure-stage3-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-configure-stage3-libiberty-linker-plugin: configure-stage3-libiberty-linker-plugin
+configure-stage3-libiberty-linker-plugin:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty-linker-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
+	  $(STAGE3_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
+@endif libiberty-linker-plugin-bootstrap
+
+.PHONY: configure-stage4-libiberty-linker-plugin maybe-configure-stage4-libiberty-linker-plugin
+maybe-configure-stage4-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-configure-stage4-libiberty-linker-plugin: configure-stage4-libiberty-linker-plugin
+configure-stage4-libiberty-linker-plugin:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty-linker-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
+	  $(STAGE4_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
+@endif libiberty-linker-plugin-bootstrap
+
+.PHONY: configure-stageprofile-libiberty-linker-plugin maybe-configure-stageprofile-libiberty-linker-plugin
+maybe-configure-stageprofile-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-configure-stageprofile-libiberty-linker-plugin: configure-stageprofile-libiberty-linker-plugin
+configure-stageprofile-libiberty-linker-plugin:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty-linker-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
+	  $(STAGEprofile_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
+@endif libiberty-linker-plugin-bootstrap
+
+.PHONY: configure-stagefeedback-libiberty-linker-plugin maybe-configure-stagefeedback-libiberty-linker-plugin
+maybe-configure-stagefeedback-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-configure-stagefeedback-libiberty-linker-plugin: configure-stagefeedback-libiberty-linker-plugin
+configure-stagefeedback-libiberty-linker-plugin:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty-linker-plugin ; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty-linker-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
+	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
+@endif libiberty-linker-plugin-bootstrap
+
+
+
+
+
+.PHONY: all-libiberty-linker-plugin maybe-all-libiberty-linker-plugin
+maybe-all-libiberty-linker-plugin:
+@if gcc-bootstrap
+all-libiberty-linker-plugin: stage_current
+@endif gcc-bootstrap
+@if libiberty-linker-plugin
+TARGET-libiberty-linker-plugin=all
+maybe-all-libiberty-linker-plugin: all-libiberty-linker-plugin
+all-libiberty-linker-plugin: configure-libiberty-linker-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
+		$(TARGET-libiberty-linker-plugin))
+@endif libiberty-linker-plugin
+
+
+
+.PHONY: all-stage1-libiberty-linker-plugin maybe-all-stage1-libiberty-linker-plugin
+.PHONY: clean-stage1-libiberty-linker-plugin maybe-clean-stage1-libiberty-linker-plugin
+maybe-all-stage1-libiberty-linker-plugin:
+maybe-clean-stage1-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-all-stage1-libiberty-linker-plugin: all-stage1-libiberty-linker-plugin
+all-stage1: all-stage1-libiberty-linker-plugin
+TARGET-stage1-libiberty-linker-plugin = $(TARGET-libiberty-linker-plugin)
+all-stage1-libiberty-linker-plugin: configure-stage1-libiberty-linker-plugin
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" \
+		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
+		LIBCFLAGS="$(LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
+		TFLAGS="$(STAGE1_TFLAGS)" \
+		$(TARGET-stage1-libiberty-linker-plugin)
+
+maybe-clean-stage1-libiberty-linker-plugin: clean-stage1-libiberty-linker-plugin
+clean-stage1: clean-stage1-libiberty-linker-plugin
+clean-stage1-libiberty-linker-plugin:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libiberty-linker-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+	$(STAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
+@endif libiberty-linker-plugin-bootstrap
+
+
+.PHONY: all-stage2-libiberty-linker-plugin maybe-all-stage2-libiberty-linker-plugin
+.PHONY: clean-stage2-libiberty-linker-plugin maybe-clean-stage2-libiberty-linker-plugin
+maybe-all-stage2-libiberty-linker-plugin:
+maybe-clean-stage2-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-all-stage2-libiberty-linker-plugin: all-stage2-libiberty-linker-plugin
+all-stage2: all-stage2-libiberty-linker-plugin
+TARGET-stage2-libiberty-linker-plugin = $(TARGET-libiberty-linker-plugin)
+all-stage2-libiberty-linker-plugin: configure-stage2-libiberty-linker-plugin
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" \
+		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE2_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
+		TFLAGS="$(STAGE2_TFLAGS)" \
+		$(TARGET-stage2-libiberty-linker-plugin)
+
+maybe-clean-stage2-libiberty-linker-plugin: clean-stage2-libiberty-linker-plugin
+clean-stage2: clean-stage2-libiberty-linker-plugin
+clean-stage2-libiberty-linker-plugin:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libiberty-linker-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
+@endif libiberty-linker-plugin-bootstrap
+
+
+.PHONY: all-stage3-libiberty-linker-plugin maybe-all-stage3-libiberty-linker-plugin
+.PHONY: clean-stage3-libiberty-linker-plugin maybe-clean-stage3-libiberty-linker-plugin
+maybe-all-stage3-libiberty-linker-plugin:
+maybe-clean-stage3-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-all-stage3-libiberty-linker-plugin: all-stage3-libiberty-linker-plugin
+all-stage3: all-stage3-libiberty-linker-plugin
+TARGET-stage3-libiberty-linker-plugin = $(TARGET-libiberty-linker-plugin)
+all-stage3-libiberty-linker-plugin: configure-stage3-libiberty-linker-plugin
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" \
+		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE3_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
+		TFLAGS="$(STAGE3_TFLAGS)" \
+		$(TARGET-stage3-libiberty-linker-plugin)
+
+maybe-clean-stage3-libiberty-linker-plugin: clean-stage3-libiberty-linker-plugin
+clean-stage3: clean-stage3-libiberty-linker-plugin
+clean-stage3-libiberty-linker-plugin:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libiberty-linker-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
+@endif libiberty-linker-plugin-bootstrap
+
+
+.PHONY: all-stage4-libiberty-linker-plugin maybe-all-stage4-libiberty-linker-plugin
+.PHONY: clean-stage4-libiberty-linker-plugin maybe-clean-stage4-libiberty-linker-plugin
+maybe-all-stage4-libiberty-linker-plugin:
+maybe-clean-stage4-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-all-stage4-libiberty-linker-plugin: all-stage4-libiberty-linker-plugin
+all-stage4: all-stage4-libiberty-linker-plugin
+TARGET-stage4-libiberty-linker-plugin = $(TARGET-libiberty-linker-plugin)
+all-stage4-libiberty-linker-plugin: configure-stage4-libiberty-linker-plugin
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" \
+		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
+		TFLAGS="$(STAGE4_TFLAGS)" \
+		$(TARGET-stage4-libiberty-linker-plugin)
+
+maybe-clean-stage4-libiberty-linker-plugin: clean-stage4-libiberty-linker-plugin
+clean-stage4: clean-stage4-libiberty-linker-plugin
+clean-stage4-libiberty-linker-plugin:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libiberty-linker-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
+@endif libiberty-linker-plugin-bootstrap
+
+
+.PHONY: all-stageprofile-libiberty-linker-plugin maybe-all-stageprofile-libiberty-linker-plugin
+.PHONY: clean-stageprofile-libiberty-linker-plugin maybe-clean-stageprofile-libiberty-linker-plugin
+maybe-all-stageprofile-libiberty-linker-plugin:
+maybe-clean-stageprofile-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-all-stageprofile-libiberty-linker-plugin: all-stageprofile-libiberty-linker-plugin
+all-stageprofile: all-stageprofile-libiberty-linker-plugin
+TARGET-stageprofile-libiberty-linker-plugin = $(TARGET-libiberty-linker-plugin)
+all-stageprofile-libiberty-linker-plugin: configure-stageprofile-libiberty-linker-plugin
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
+		TFLAGS="$(STAGEprofile_TFLAGS)" \
+		$(TARGET-stageprofile-libiberty-linker-plugin)
+
+maybe-clean-stageprofile-libiberty-linker-plugin: clean-stageprofile-libiberty-linker-plugin
+clean-stageprofile: clean-stageprofile-libiberty-linker-plugin
+clean-stageprofile-libiberty-linker-plugin:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libiberty-linker-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
+@endif libiberty-linker-plugin-bootstrap
+
+
+.PHONY: all-stagefeedback-libiberty-linker-plugin maybe-all-stagefeedback-libiberty-linker-plugin
+.PHONY: clean-stagefeedback-libiberty-linker-plugin maybe-clean-stagefeedback-libiberty-linker-plugin
+maybe-all-stagefeedback-libiberty-linker-plugin:
+maybe-clean-stagefeedback-libiberty-linker-plugin:
+@if libiberty-linker-plugin-bootstrap
+maybe-all-stagefeedback-libiberty-linker-plugin: all-stagefeedback-libiberty-linker-plugin
+all-stagefeedback: all-stagefeedback-libiberty-linker-plugin
+TARGET-stagefeedback-libiberty-linker-plugin = $(TARGET-libiberty-linker-plugin)
+all-stagefeedback-libiberty-linker-plugin: configure-stagefeedback-libiberty-linker-plugin
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
+		TFLAGS="$(STAGEfeedback_TFLAGS)" \
+		$(TARGET-stagefeedback-libiberty-linker-plugin)
+
+maybe-clean-stagefeedback-libiberty-linker-plugin: clean-stagefeedback-libiberty-linker-plugin
+clean-stagefeedback: clean-stagefeedback-libiberty-linker-plugin
+clean-stagefeedback-libiberty-linker-plugin:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty-linker-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libiberty-linker-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
+@endif libiberty-linker-plugin-bootstrap
+
+
+
+
+
+.PHONY: check-libiberty-linker-plugin maybe-check-libiberty-linker-plugin
+maybe-check-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-check-libiberty-linker-plugin: check-libiberty-linker-plugin
+
+check-libiberty-linker-plugin:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(FLAGS_TO_PASS) @extra_linker_plugin_flags@ check)
+
+@endif libiberty-linker-plugin
+
+.PHONY: install-libiberty-linker-plugin maybe-install-libiberty-linker-plugin
+maybe-install-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-install-libiberty-linker-plugin: install-libiberty-linker-plugin
+
+install-libiberty-linker-plugin: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(FLAGS_TO_PASS) @extra_linker_plugin_flags@ install)
+
+@endif libiberty-linker-plugin
+
+.PHONY: install-strip-libiberty-linker-plugin maybe-install-strip-libiberty-linker-plugin
+maybe-install-strip-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-install-strip-libiberty-linker-plugin: install-strip-libiberty-linker-plugin
+
+install-strip-libiberty-linker-plugin: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(FLAGS_TO_PASS) @extra_linker_plugin_flags@ install-strip)
+
+@endif libiberty-linker-plugin
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-libiberty-linker-plugin info-libiberty-linker-plugin
+maybe-info-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-info-libiberty-linker-plugin: info-libiberty-linker-plugin
+
+info-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-dvi-libiberty-linker-plugin dvi-libiberty-linker-plugin
+maybe-dvi-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-dvi-libiberty-linker-plugin: dvi-libiberty-linker-plugin
+
+dvi-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-pdf-libiberty-linker-plugin pdf-libiberty-linker-plugin
+maybe-pdf-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-pdf-libiberty-linker-plugin: pdf-libiberty-linker-plugin
+
+pdf-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-html-libiberty-linker-plugin html-libiberty-linker-plugin
+maybe-html-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-html-libiberty-linker-plugin: html-libiberty-linker-plugin
+
+html-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-TAGS-libiberty-linker-plugin TAGS-libiberty-linker-plugin
+maybe-TAGS-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-TAGS-libiberty-linker-plugin: TAGS-libiberty-linker-plugin
+
+TAGS-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-install-info-libiberty-linker-plugin install-info-libiberty-linker-plugin
+maybe-install-info-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-install-info-libiberty-linker-plugin: install-info-libiberty-linker-plugin
+
+install-info-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin \
+    info-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-install-pdf-libiberty-linker-plugin install-pdf-libiberty-linker-plugin
+maybe-install-pdf-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-install-pdf-libiberty-linker-plugin: install-pdf-libiberty-linker-plugin
+
+install-pdf-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin \
+    pdf-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-install-html-libiberty-linker-plugin install-html-libiberty-linker-plugin
+maybe-install-html-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-install-html-libiberty-linker-plugin: install-html-libiberty-linker-plugin
+
+install-html-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin \
+    html-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-installcheck-libiberty-linker-plugin installcheck-libiberty-linker-plugin
+maybe-installcheck-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-installcheck-libiberty-linker-plugin: installcheck-libiberty-linker-plugin
+
+installcheck-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-mostlyclean-libiberty-linker-plugin mostlyclean-libiberty-linker-plugin
+maybe-mostlyclean-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-mostlyclean-libiberty-linker-plugin: mostlyclean-libiberty-linker-plugin
+
+mostlyclean-libiberty-linker-plugin: 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-clean-libiberty-linker-plugin clean-libiberty-linker-plugin
+maybe-clean-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-clean-libiberty-linker-plugin: clean-libiberty-linker-plugin
+
+clean-libiberty-linker-plugin: 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-distclean-libiberty-linker-plugin distclean-libiberty-linker-plugin
+maybe-distclean-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-distclean-libiberty-linker-plugin: distclean-libiberty-linker-plugin
+
+distclean-libiberty-linker-plugin: 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+.PHONY: maybe-maintainer-clean-libiberty-linker-plugin maintainer-clean-libiberty-linker-plugin
+maybe-maintainer-clean-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-maintainer-clean-libiberty-linker-plugin: maintainer-clean-libiberty-linker-plugin
+
+maintainer-clean-libiberty-linker-plugin: 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libiberty-linker-plugin" ; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
+
+
 .PHONY: configure-libiconv maybe-configure-libiconv
 maybe-configure-libiconv:
 @if gcc-bootstrap
@@ -30417,7 +31318,7 @@ configure-lto-plugin:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --enable-shared \
+	  --target=${target_alias} --enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@ \
 	  || exit 1
 @endif lto-plugin
 
@@ -30453,7 +31354,7 @@ configure-stage1-lto-plugin:
 	  --target=${target_alias} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --enable-shared
+	  --enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage2-lto-plugin maybe-configure-stage2-lto-plugin
@@ -30487,7 +31388,7 @@ configure-stage2-lto-plugin:
 	  --target=${target_alias} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --enable-shared
+	  --enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage3-lto-plugin maybe-configure-stage3-lto-plugin
@@ -30521,7 +31422,7 @@ configure-stage3-lto-plugin:
 	  --target=${target_alias} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --enable-shared
+	  --enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage4-lto-plugin maybe-configure-stage4-lto-plugin
@@ -30555,7 +31456,7 @@ configure-stage4-lto-plugin:
 	  --target=${target_alias} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --enable-shared
+	  --enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stageprofile-lto-plugin maybe-configure-stageprofile-lto-plugin
@@ -30589,7 +31490,7 @@ configure-stageprofile-lto-plugin:
 	  --target=${target_alias} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --enable-shared
+	  --enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stagefeedback-lto-plugin maybe-configure-stagefeedback-lto-plugin
@@ -30623,7 +31524,7 @@ configure-stagefeedback-lto-plugin:
 	  --target=${target_alias} \
 	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --enable-shared
+	  --enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@
 @endif lto-plugin-bootstrap
 
 
@@ -30643,7 +31544,7 @@ all-lto-plugin: configure-lto-plugin
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/lto-plugin && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
 		$(TARGET-lto-plugin))
 @endif lto-plugin
 
@@ -30672,7 +31573,7 @@ all-stage1-lto-plugin: configure-stage1-lto-plugin
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS)  \
-		$(STAGE1_FLAGS_TO_PASS)  \
+		$(STAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-lto-plugin)
 
@@ -30687,7 +31588,7 @@ clean-stage1-lto-plugin:
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-	$(STAGE1_FLAGS_TO_PASS)  clean
+	$(STAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
 @endif lto-plugin-bootstrap
 
 
@@ -30714,7 +31615,7 @@ all-stage2-lto-plugin: configure-stage2-lto-plugin
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
 		TFLAGS="$(STAGE2_TFLAGS)" \
 		$(TARGET-stage2-lto-plugin)
 
@@ -30728,7 +31629,7 @@ clean-stage2-lto-plugin:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
 @endif lto-plugin-bootstrap
 
 
@@ -30755,7 +31656,7 @@ all-stage3-lto-plugin: configure-stage3-lto-plugin
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
 		TFLAGS="$(STAGE3_TFLAGS)" \
 		$(TARGET-stage3-lto-plugin)
 
@@ -30769,7 +31670,7 @@ clean-stage3-lto-plugin:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
 @endif lto-plugin-bootstrap
 
 
@@ -30796,7 +31697,7 @@ all-stage4-lto-plugin: configure-stage4-lto-plugin
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
 		TFLAGS="$(STAGE4_TFLAGS)" \
 		$(TARGET-stage4-lto-plugin)
 
@@ -30810,7 +31711,7 @@ clean-stage4-lto-plugin:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
 @endif lto-plugin-bootstrap
 
 
@@ -30837,7 +31738,7 @@ all-stageprofile-lto-plugin: configure-stageprofile-lto-plugin
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
 		TFLAGS="$(STAGEprofile_TFLAGS)" \
 		$(TARGET-stageprofile-lto-plugin)
 
@@ -30851,7 +31752,7 @@ clean-stageprofile-lto-plugin:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
 @endif lto-plugin-bootstrap
 
 
@@ -30878,7 +31779,7 @@ all-stagefeedback-lto-plugin: configure-stagefeedback-lto-plugin
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ \
 		TFLAGS="$(STAGEfeedback_TFLAGS)" \
 		$(TARGET-stagefeedback-lto-plugin)
 
@@ -30892,7 +31793,7 @@ clean-stagefeedback-lto-plugin:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) @extra_linker_plugin_flags@ clean
 @endif lto-plugin-bootstrap
 
 
@@ -30910,7 +31811,7 @@ check-lto-plugin:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/lto-plugin && \
-	  $(MAKE) $(FLAGS_TO_PASS)  check)
+	  $(MAKE) $(FLAGS_TO_PASS) @extra_linker_plugin_flags@ check)
 
 @endif lto-plugin
 
@@ -30925,7 +31826,7 @@ install-lto-plugin: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/lto-plugin && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install)
+	  $(MAKE) $(FLAGS_TO_PASS) @extra_linker_plugin_flags@ install)
 
 @endif lto-plugin
 
@@ -30940,7 +31841,7 @@ install-strip-lto-plugin: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/lto-plugin && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+	  $(MAKE) $(FLAGS_TO_PASS) @extra_linker_plugin_flags@ install-strip)
 
 @endif lto-plugin
 
@@ -30957,7 +31858,7 @@ info-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing info in lto-plugin" ; \
@@ -30982,7 +31883,7 @@ dvi-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing dvi in lto-plugin" ; \
@@ -31007,7 +31908,7 @@ pdf-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing pdf in lto-plugin" ; \
@@ -31032,7 +31933,7 @@ html-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing html in lto-plugin" ; \
@@ -31057,7 +31958,7 @@ TAGS-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing TAGS in lto-plugin" ; \
@@ -31083,7 +31984,7 @@ install-info-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-info in lto-plugin" ; \
@@ -31109,7 +32010,7 @@ install-pdf-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-pdf in lto-plugin" ; \
@@ -31135,7 +32036,7 @@ install-html-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-html in lto-plugin" ; \
@@ -31160,7 +32061,7 @@ installcheck-lto-plugin: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing installcheck in lto-plugin" ; \
@@ -31184,7 +32085,7 @@ mostlyclean-lto-plugin:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing mostlyclean in lto-plugin" ; \
@@ -31208,7 +32109,7 @@ clean-lto-plugin:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing clean in lto-plugin" ; \
@@ -31232,7 +32133,7 @@ distclean-lto-plugin:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing distclean in lto-plugin" ; \
@@ -31256,7 +32157,7 @@ maintainer-clean-lto-plugin:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing maintainer-clean in lto-plugin" ; \
@@ -45039,6 +45940,11 @@ stage1-start::
 	  mkdir stage1-libiberty; \
 	mv stage1-libiberty libiberty 
 @endif libiberty
+@if libiberty-linker-plugin
+	@cd $(HOST_SUBDIR); [ -d stage1-libiberty-linker-plugin ] || \
+	  mkdir stage1-libiberty-linker-plugin; \
+	mv stage1-libiberty-linker-plugin libiberty-linker-plugin 
+@endif libiberty-linker-plugin
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage1-zlib ] || \
 	  mkdir stage1-zlib; \
@@ -45149,6 +46055,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv libiberty stage1-libiberty  ; \
 	fi
 @endif libiberty
+@if libiberty-linker-plugin
+	@if test -d $(HOST_SUBDIR)/libiberty-linker-plugin ; then \
+	  cd $(HOST_SUBDIR); mv libiberty-linker-plugin stage1-libiberty-linker-plugin  ; \
+	fi
+@endif libiberty-linker-plugin
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib ; then \
 	  cd $(HOST_SUBDIR); mv zlib stage1-zlib  ; \
@@ -45321,6 +46232,12 @@ stage2-start::
 	mv stage2-libiberty libiberty  ; \
 	mv stage1-libiberty prev-libiberty || test -f stage1-lean 
 @endif libiberty
+@if libiberty-linker-plugin
+	@cd $(HOST_SUBDIR); [ -d stage2-libiberty-linker-plugin ] || \
+	  mkdir stage2-libiberty-linker-plugin; \
+	mv stage2-libiberty-linker-plugin libiberty-linker-plugin  ; \
+	mv stage1-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage1-lean 
+@endif libiberty-linker-plugin
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage2-zlib ] || \
 	  mkdir stage2-zlib; \
@@ -45453,6 +46370,12 @@ stage2-end::
 	  mv prev-libiberty stage1-libiberty ; :  ; \
 	fi
 @endif libiberty
+@if libiberty-linker-plugin
+	@if test -d $(HOST_SUBDIR)/libiberty-linker-plugin ; then \
+	  cd $(HOST_SUBDIR); mv libiberty-linker-plugin stage2-libiberty-linker-plugin ; \
+	  mv prev-libiberty-linker-plugin stage1-libiberty-linker-plugin ; :  ; \
+	fi
+@endif libiberty-linker-plugin
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib ; then \
 	  cd $(HOST_SUBDIR); mv zlib stage2-zlib ; \
@@ -45651,6 +46574,12 @@ stage3-start::
 	mv stage3-libiberty libiberty  ; \
 	mv stage2-libiberty prev-libiberty || test -f stage2-lean 
 @endif libiberty
+@if libiberty-linker-plugin
+	@cd $(HOST_SUBDIR); [ -d stage3-libiberty-linker-plugin ] || \
+	  mkdir stage3-libiberty-linker-plugin; \
+	mv stage3-libiberty-linker-plugin libiberty-linker-plugin  ; \
+	mv stage2-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage2-lean 
+@endif libiberty-linker-plugin
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage3-zlib ] || \
 	  mkdir stage3-zlib; \
@@ -45783,6 +46712,12 @@ stage3-end::
 	  mv prev-libiberty stage2-libiberty ; :  ; \
 	fi
 @endif libiberty
+@if libiberty-linker-plugin
+	@if test -d $(HOST_SUBDIR)/libiberty-linker-plugin ; then \
+	  cd $(HOST_SUBDIR); mv libiberty-linker-plugin stage3-libiberty-linker-plugin ; \
+	  mv prev-libiberty-linker-plugin stage2-libiberty-linker-plugin ; :  ; \
+	fi
+@endif libiberty-linker-plugin
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib ; then \
 	  cd $(HOST_SUBDIR); mv zlib stage3-zlib ; \
@@ -46037,6 +46972,12 @@ stage4-start::
 	mv stage4-libiberty libiberty  ; \
 	mv stage3-libiberty prev-libiberty || test -f stage3-lean 
 @endif libiberty
+@if libiberty-linker-plugin
+	@cd $(HOST_SUBDIR); [ -d stage4-libiberty-linker-plugin ] || \
+	  mkdir stage4-libiberty-linker-plugin; \
+	mv stage4-libiberty-linker-plugin libiberty-linker-plugin  ; \
+	mv stage3-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage3-lean 
+@endif libiberty-linker-plugin
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage4-zlib ] || \
 	  mkdir stage4-zlib; \
@@ -46169,6 +47110,12 @@ stage4-end::
 	  mv prev-libiberty stage3-libiberty ; :  ; \
 	fi
 @endif libiberty
+@if libiberty-linker-plugin
+	@if test -d $(HOST_SUBDIR)/libiberty-linker-plugin ; then \
+	  cd $(HOST_SUBDIR); mv libiberty-linker-plugin stage4-libiberty-linker-plugin ; \
+	  mv prev-libiberty-linker-plugin stage3-libiberty-linker-plugin ; :  ; \
+	fi
+@endif libiberty-linker-plugin
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib ; then \
 	  cd $(HOST_SUBDIR); mv zlib stage4-zlib ; \
@@ -46411,6 +47358,12 @@ stageprofile-start::
 	mv stageprofile-libiberty libiberty  ; \
 	mv stage1-libiberty prev-libiberty || test -f stage1-lean 
 @endif libiberty
+@if libiberty-linker-plugin
+	@cd $(HOST_SUBDIR); [ -d stageprofile-libiberty-linker-plugin ] || \
+	  mkdir stageprofile-libiberty-linker-plugin; \
+	mv stageprofile-libiberty-linker-plugin libiberty-linker-plugin  ; \
+	mv stage1-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stage1-lean 
+@endif libiberty-linker-plugin
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stageprofile-zlib ] || \
 	  mkdir stageprofile-zlib; \
@@ -46543,6 +47496,12 @@ stageprofile-end::
 	  mv prev-libiberty stage1-libiberty ; :  ; \
 	fi
 @endif libiberty
+@if libiberty-linker-plugin
+	@if test -d $(HOST_SUBDIR)/libiberty-linker-plugin ; then \
+	  cd $(HOST_SUBDIR); mv libiberty-linker-plugin stageprofile-libiberty-linker-plugin ; \
+	  mv prev-libiberty-linker-plugin stage1-libiberty-linker-plugin ; :  ; \
+	fi
+@endif libiberty-linker-plugin
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib ; then \
 	  cd $(HOST_SUBDIR); mv zlib stageprofile-zlib ; \
@@ -46718,6 +47677,12 @@ stagefeedback-start::
 	mv stagefeedback-libiberty libiberty  ; \
 	mv stageprofile-libiberty prev-libiberty || test -f stageprofile-lean 
 @endif libiberty
+@if libiberty-linker-plugin
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-libiberty-linker-plugin ] || \
+	  mkdir stagefeedback-libiberty-linker-plugin; \
+	mv stagefeedback-libiberty-linker-plugin libiberty-linker-plugin  ; \
+	mv stageprofile-libiberty-linker-plugin prev-libiberty-linker-plugin || test -f stageprofile-lean 
+@endif libiberty-linker-plugin
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-zlib ] || \
 	  mkdir stagefeedback-zlib; \
@@ -46850,6 +47815,12 @@ stagefeedback-end::
 	  mv prev-libiberty stageprofile-libiberty ; :  ; \
 	fi
 @endif libiberty
+@if libiberty-linker-plugin
+	@if test -d $(HOST_SUBDIR)/libiberty-linker-plugin ; then \
+	  cd $(HOST_SUBDIR); mv libiberty-linker-plugin stagefeedback-libiberty-linker-plugin ; \
+	  mv prev-libiberty-linker-plugin stageprofile-libiberty-linker-plugin ; :  ; \
+	fi
+@endif libiberty-linker-plugin
 @if zlib
 	@if test -d $(HOST_SUBDIR)/zlib ; then \
 	  cd $(HOST_SUBDIR); mv zlib stagefeedback-zlib ; \
@@ -47358,6 +48329,14 @@ all-stage3-lto-plugin: maybe-all-stage3-libiberty
 all-stage4-lto-plugin: maybe-all-stage4-libiberty
 all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty
 all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty
+all-lto-plugin: maybe-all-libiberty-linker-plugin
+
+all-stage1-lto-plugin: maybe-all-stage1-libiberty-linker-plugin
+all-stage2-lto-plugin: maybe-all-stage2-libiberty-linker-plugin
+all-stage3-lto-plugin: maybe-all-stage3-libiberty-linker-plugin
+all-stage4-lto-plugin: maybe-all-stage4-libiberty-linker-plugin
+all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty-linker-plugin
+all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty-linker-plugin
 all-utils: maybe-all-libiberty
 configure-mpfr: maybe-all-gmp
 
