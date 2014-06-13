@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Back_End; use Back_End;
+with Checks;
 with Comperr;
 with Csets;    use Csets;
 with Debug;    use Debug;
@@ -109,6 +110,13 @@ procedure Gnat1drv is
    procedure Check_Rep_Info;
    --  Called when we are not generating code, to check if -gnatR was requested
    --  and if so, explain that we will not be honoring the request.
+
+   procedure Post_Compilation_Validation_Checks;
+   --  This procedure performs various validation checks that have to be left
+   --  to the end of the compilation process, after generating code but before
+   --  issuing error messages. In particular, these checks generally require
+   --  the information provided by the back end in back annotation of declared
+   --  entities (e.g. actual size and alignment values chosen by the back end).
 
    ----------------------------
    -- Adjust_Global_Switches --
@@ -746,6 +754,35 @@ procedure Gnat1drv is
       end if;
    end Check_Rep_Info;
 
+   ----------------------------------------
+   -- Post_Compilation_Validation_Checks --
+   ----------------------------------------
+
+   procedure Post_Compilation_Validation_Checks is
+   begin
+      --  Validate alignment check warnings. In some cases we generate warnings
+      --  about possible alignment errors because we don't know the alignment
+      --  that will be chosen by the back end. This routine is in charge of
+      --  getting rid of those warnings if we can tell they are not needed.
+
+      Checks.Validate_Alignment_Check_Warnings;
+
+      --  Validate unchecked conversions (using the values for size and
+      --  alignment annotated by the backend where possible).
+
+      Sem_Ch13.Validate_Unchecked_Conversions;
+
+      --  Validate address clauses (again using alignment values annotated
+      --  by the backend where possible).
+
+      Sem_Ch13.Validate_Address_Clauses;
+
+      --  Validate independence pragmas (again using values annotated by
+      --  the back end for component layout etc.)
+
+      Sem_Ch13.Validate_Independence;
+   end Post_Compilation_Validation_Checks;
+
 --  Start of processing for Gnat1drv
 
 begin
@@ -897,9 +934,7 @@ begin
 
       if Compilation_Errors then
          Treepr.Tree_Dump;
-         Sem_Ch13.Validate_Unchecked_Conversions;
-         Sem_Ch13.Validate_Address_Clauses;
-         Sem_Ch13.Validate_Independence;
+         Post_Compilation_Validation_Checks;
          Errout.Output_Messages;
          Namet.Finalize;
 
@@ -1095,9 +1130,7 @@ begin
 
          Set_Standard_Output;
 
-         Sem_Ch13.Validate_Unchecked_Conversions;
-         Sem_Ch13.Validate_Address_Clauses;
-         Sem_Ch13.Validate_Independence;
+         Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Treepr.Tree_Dump;
@@ -1137,9 +1170,7 @@ begin
             or else Targparm.Frontend_Layout_On_Target
             or else Targparm.VM_Target /= No_VM)
       then
-         Sem_Ch13.Validate_Unchecked_Conversions;
-         Sem_Ch13.Validate_Address_Clauses;
-         Sem_Ch13.Validate_Independence;
+         Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Write_ALI (Object => False);
@@ -1189,20 +1220,9 @@ begin
 
       Exp_CG.Generate_CG_Output;
 
-      --  Validate unchecked conversions (using the values for size and
-      --  alignment annotated by the backend where possible).
+      --  Perform post compilation validation checks
 
-      Sem_Ch13.Validate_Unchecked_Conversions;
-
-      --  Validate address clauses (again using alignment values annotated
-      --  by the backend where possible).
-
-      Sem_Ch13.Validate_Address_Clauses;
-
-      --  Validate independence pragmas (again using values annotated by
-      --  the back end for component layout etc.)
-
-      Sem_Ch13.Validate_Independence;
+      Post_Compilation_Validation_Checks;
 
       --  Now we complete output of errors, rep info and the tree info. These
       --  are delayed till now, since it is perfectly possible for gigi to

@@ -615,6 +615,16 @@ package Errout is
    --  A constant which is different from any value returned by Get_Error_Id.
    --  Typically used by a client to indicate absense of a saved Id value.
 
+   Warning_Msg : Error_Msg_Id := No_Error_Msg;
+   --  This is set if a warning message is generated to the ID of the resulting
+   --  message. Continuation messages have no effect. It is legitimate for the
+   --  client to set this to No_Error_Msg and then test it to see if a warning
+   --  message has been issued.
+
+   procedure Delete_Warning_And_Continuations (Msg : Error_Msg_Id);
+   --  Deletes the given warning message and all its continuations. This is
+   --  typically used in conjunction with reading the value of Warning_Msg.
+
    function Get_Msg_Id return Error_Msg_Id renames Erroutc.Get_Msg_Id;
    --  Returns the Id of the message most recently posted using one of the
    --  Error_Msg routines.

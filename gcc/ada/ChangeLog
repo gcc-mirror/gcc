@@ -1,5 +1,33 @@
 2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma): Add local
+	variable Missing_Parentheses. Emit an error when a state
+	declaration with options appears without parentheses. Add a
+	guard to prevent a bogus error when a state declaration may be
+	interpreted as an option if a previous declaration with options
+	was not parenthesized.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Validate_Alignment_Check_Warnings: New procedure
+	(Apply_Address_Clause_Check): Make Aligment_Warnings table entry.
+	* checks.ads (Alignment_Warnings_Record): New type.
+	(Alignment_Warnings): New table
+	(Validate_Alignment_Check_Warnings): New procedure.
+	* errout.adb (Delete_Warning_And_Continuations): New procedure
+	(Error_Msg_Internal): Set Warning_Msg (Delete_Warning): Handle
+	Warnings_Treated_As_Errors (Finalize): Minor reformatting
+	* errout.ads (Warning_Msg): New variable
+	(Delete_Warning_And_Continuations): New procedure
+	* erroutc.adb (Delete_Msg): Handle Warnings_Treated_As_Errors count.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): New procedure.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-coinho.adb, a-coinho.ads: Add Reference machinery.
+
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* errout.adb (SPARK_Msg_N): New routine.
 	(SPARK_Msg_NE): New routine.
 	* errout.ads Add a section on SPARK-related error routines.
