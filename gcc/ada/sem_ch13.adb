@@ -1603,7 +1603,7 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-                  --  For case of address aspect, we don't consider that we
+                  --  For the case of aspect Address, we don't consider that we
                   --  know the entity is never set in the source, since it is
                   --  is likely aliasing is occurring.
 
@@ -2690,6 +2690,19 @@ package body Sem_Ch13 is
                      goto Continue;
 
                   elsif A_Id = Aspect_Import or else A_Id = Aspect_Export then
+
+                     --  For the case of aspects Import and Export, we don't
+                     --  consider that we know the entity is never set in the
+                     --  source, since it is is likely modified outside the
+                     --  program.
+
+                     --  Note: one might think that the analysis of the
+                     --  resulting pragma would take care of that, but
+                     --  that's not the case since it won't be from source.
+
+                     if Ekind (E) = E_Variable then
+                        Set_Never_Set_In_Source (E, False);
+                     end if;
 
                      --  Verify that there is an aspect Convention that will
                      --  incorporate the Import/Export aspect, and eventual

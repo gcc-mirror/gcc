@@ -3359,18 +3359,11 @@ package body Freeze is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
+
+            --  Volatile types are not allowed in SPARK (SPARK RM C.6(1))
+
             if Is_SPARK_Volatile (Rec) then
-
-               --  A discriminated type cannot be volatile (SPARK RM C.6(4))
-
-               if Has_Discriminants (Rec) then
-                  Error_Msg_N ("discriminated type & cannot be volatile", Rec);
-
-               --  A tagged type cannot be volatile (SPARK RM C.6(5))
-
-               elsif Is_Tagged_Type (Rec) then
-                  Error_Msg_N ("tagged type & cannot be volatile", Rec);
-               end if;
+               Error_Msg_N ("volatile type not allowed", Rec);
 
             --  A non-volatile record type cannot contain volatile components
             --  (SPARK RM C.6(2)). The check is performed at freeze point
