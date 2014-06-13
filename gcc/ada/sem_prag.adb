@@ -10133,6 +10133,9 @@ package body Sem_Prag is
          --  ABSTRACT_STATE ::= name
 
          when Pragma_Abstract_State => Abstract_State : declare
+            Missing_Parentheses : Boolean := False;
+            --  Flag set when a state declaration with options is not properly
+            --  parenthesized.
 
             --  Flags used to verify the consistency of states
 
@@ -10569,25 +10572,63 @@ package body Sem_Prag is
 
                   Opt := First (Expressions (State));
                   while Present (Opt) loop
-                     if Nkind (Opt) = N_Identifier
-                       and then Chars (Opt) = Name_External
-                     then
-                        Analyze_External_Option (Opt);
+                     if Nkind (Opt) = N_Identifier then
+                        if Chars (Opt) = Name_External then
+                           Analyze_External_Option (Opt);
 
-                     --  When an illegal option Part_Of is without a parent
-                     --  state, it appears in the list of expression of the
-                     --  aggregate rather than the component associations
-                     --  (SPARK RM 7.1.4(9)).
+                        --  Option Part_Of without an encapsulating state is
+                        --  illegal. (SPARK RM 7.1.4(9)).
 
-                     elsif Chars (Opt) = Name_Part_Of then
+                        elsif Chars (Opt) = Name_Part_Of then
+                           SPARK_Msg_N
+                             ("indicator Part_Of must denote an abstract "
+                              & "state", Opt);
+
+                        --  Do not emit an error message when a previous state
+                        --  declaration with options was not parenthesized as
+                        --  the option is actually another state declaration.
+                        --
+                        --    with Abstract_State
+                        --      (State_1 with ...,   --  missing parentheses
+                        --      (State_2 with ...),
+                        --       State_3)            --  ok state declaration
+
+                        elsif Missing_Parentheses then
+                           null;
+
+                        --  Otherwise the option is not allowed. Note that it
+                        --  is not possible to distinguish between an option
+                        --  and a state declaration when a previous state with
+                        --  options not properly parentheses.
+                        --
+                        --    with Abstract_State
+                        --      (State_1 with ...,  --  missing parentheses
+                        --       State_2);          --  could be an option
+
+                        else
+                           SPARK_Msg_N
+                             ("simple option not allowed in state declaration",
+                              Opt);
+                        end if;
+
+                     --  Catch a case where missing parentheses around a state
+                     --  declaration with options cause a subsequent state
+                     --  declaration with options to be treated as an option.
+                     --
+                     --    with Abstract_State
+                     --      (State_1 with ...,   --  missing parentheses
+                     --      (State_2 with ...))
+
+                     elsif Nkind (Opt) = N_Extension_Aggregate then
+                        Missing_Parentheses := True;
                         SPARK_Msg_N
-                          ("indicator Part_Of must denote an abstract state",
-                           Opt);
+                          ("state declaration must be parenthesized",
+                           Ancestor_Part (State));
+
+                     --  Otherwise the option is malformed
 
                      else
-                        SPARK_Msg_N
-                          ("simple option not allowed in state declaration",
-                           Opt);
+                        SPARK_Msg_N ("malformed option", Opt);
                      end if;
 
                      Next (Opt);

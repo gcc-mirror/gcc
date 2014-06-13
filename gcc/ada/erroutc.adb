@@ -140,6 +140,11 @@ package body Erroutc is
             if Errors.Table (D).Warn or else Errors.Table (D).Style then
                Warnings_Detected := Warnings_Detected - 1;
 
+               if Errors.Table (D).Warn_Err then
+                  Warnings_Treated_As_Errors :=
+                    Warnings_Treated_As_Errors + 1;
+               end if;
+
             else
                Total_Errors_Detected := Total_Errors_Detected - 1;
 

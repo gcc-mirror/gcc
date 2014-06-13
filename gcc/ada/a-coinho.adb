@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2012, Free Software Foundation, Inc.           --
+--             Copyright (C) 2014, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,6 +62,13 @@ package body Ada.Containers.Indefinite_Holders is
       Container.Busy := 0;
    end Adjust;
 
+   overriding procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         Control.Container.Busy := Control.Container.Busy + 1;
+      end if;
+   end Adjust;
+
    ------------
    -- Assign --
    ------------
@@ -94,6 +101,20 @@ package body Ada.Containers.Indefinite_Holders is
       Free (Container.Element);
    end Clear;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Holder) return Constant_Reference_Type
+   is
+      Ref : constant Constant_Reference_Type :=
+              (Element => Container.Element,
+               Control => (Controlled with Container'Unrestricted_Access));
+   begin
+      return Ref;
+   end Constant_Reference;
+
    ----------
    -- Copy --
    ----------
@@ -101,9 +122,9 @@ package body Ada.Containers.Indefinite_Holders is
    function Copy (Source : Holder) return Holder is
    begin
       if Source.Element = null then
-         return (AF.Controlled with null, 0);
+         return (Controlled with null, 0);
       else
-         return (AF.Controlled with new Element_Type'(Source.Element.all), 0);
+         return (Controlled with new Element_Type'(Source.Element.all), 0);
       end if;
    end Copy;
 
@@ -131,6 +152,16 @@ package body Ada.Containers.Indefinite_Holders is
       end if;
 
       Free (Container.Element);
+   end Finalize;
+
+   overriding procedure Finalize (Control : in out Reference_Control_Type)
+   is
+   begin
+      if Control.Container /= null then
+         Control.Container.Busy := Control.Container.Busy - 1;
+
+      end if;
+      Control.Container := null;
    end Finalize;
 
    --------------
@@ -207,6 +238,36 @@ package body Ada.Containers.Indefinite_Holders is
       end if;
    end Read;
 
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Read;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Reference
+     (Container : aliased in out Holder) return Reference_Type
+   is
+      Ref : constant Reference_Type :=
+              (Element => Container.Element,
+               Control => (Controlled with Container'Unrestricted_Access));
+   begin
+      return Ref;
+   end Reference;
+
    ---------------------
    -- Replace_Element --
    ---------------------
@@ -247,7 +308,7 @@ package body Ada.Containers.Indefinite_Holders is
       pragma Unsuppress (Accessibility_Check);
 
    begin
-      return (AF.Controlled with new Element_Type'(New_Item), 0);
+      return (Controlled with new Element_Type'(New_Item), 0);
    end To_Holder;
 
    --------------------
@@ -292,6 +353,21 @@ package body Ada.Containers.Indefinite_Holders is
       if Container.Element /= null then
          Element_Type'Output (Stream, Container.Element.all);
       end if;
+   end Write;
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
+   end Write;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type)
+   is
+   begin
+      raise Program_Error with "attempt to stream reference";
    end Write;
 
 end Ada.Containers.Indefinite_Holders;

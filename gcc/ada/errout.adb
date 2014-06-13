@@ -249,6 +249,38 @@ package body Errout is
       end if;
    end Compilation_Errors;
 
+   --------------------------------------
+   -- Delete_Warning_And_Continuations --
+   --------------------------------------
+
+   procedure Delete_Warning_And_Continuations (Msg : Error_Msg_Id) is
+      Id : Error_Msg_Id;
+
+   begin
+      pragma Assert (not Errors.Table (Msg).Msg_Cont);
+
+      Id := Msg;
+      loop
+         declare
+            M : Error_Msg_Object renames Errors.Table (Id);
+
+         begin
+            if not M.Deleted then
+               M.Deleted := True;
+               Warnings_Detected := Warnings_Detected - 1;
+
+               if M.Warn_Err then
+                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+               end if;
+            end if;
+
+            Id := M.Next;
+            exit when Id = No_Error_Msg;
+            exit when not Errors.Table (Id).Msg_Cont;
+         end;
+      end loop;
+   end Delete_Warning_And_Continuations;
+
    ---------------
    -- Error_Msg --
    ---------------
@@ -1117,6 +1149,14 @@ package body Errout is
          end if;
       end if;
 
+      --  Record warning message issued
+
+      if Errors.Table (Cur_Msg).Warn
+        and then not Errors.Table (Cur_Msg).Msg_Cont
+      then
+         Warning_Msg := Cur_Msg;
+      end if;
+
       --  If too many warnings turn off warnings
 
       if Maximum_Messages /= 0 then
@@ -1296,7 +1336,7 @@ package body Errout is
       F   : Error_Msg_Id;
 
       procedure Delete_Warning (E : Error_Msg_Id);
-      --  Delete a message if not already deleted and adjust warning count
+      --  Delete a warning msg if not already deleted and adjust warning count
 
       --------------------
       -- Delete_Warning --
@@ -1307,10 +1347,14 @@ package body Errout is
          if not Errors.Table (E).Deleted then
             Errors.Table (E).Deleted := True;
             Warnings_Detected := Warnings_Detected - 1;
+
+            if Errors.Table (E).Warn_Err then
+               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+            end if;
          end if;
       end Delete_Warning;
 
-   --  Start of message for Finalize
+   --  Start of processing for Finalize
 
    begin
       --  Set Prev pointers
@@ -1360,11 +1404,12 @@ package body Errout is
             then
                Delete_Warning (Cur);
 
-               --  If this is a continuation, delete previous messages
+               --  If this is a continuation, delete previous parts of message
 
                F := Cur;
                while Errors.Table (F).Msg_Cont loop
                   F := Errors.Table (F).Prev;
+                  exit when F = No_Error_Msg;
                   Delete_Warning (F);
                end loop;
 
