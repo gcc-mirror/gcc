@@ -13562,21 +13562,23 @@ package body Sem_Ch3 is
                   --  interface primitives.
 
                  or else (Is_Interface (Desig_Typ)
-                          and then not Is_Class_Wide_Type (Desig_Typ))
+                           and then not Is_Class_Wide_Type (Desig_Typ))
                then
                   Acc_Type := New_Copy (Etype (Id));
                   Set_Etype (Acc_Type, Acc_Type);
                   Set_Scope (Acc_Type, New_Subp);
 
-                  --  Compute size of anonymous access type
+                  --  Set size of anonymous access type. Note that anonymous
+                  --  access to Unconstrained always uses thin pointers. This
+                  --  avoids confusion for the case where two types that should
+                  --  conform but end up differning, because in one case we can
+                  --  see the unconstrained designated type, and in the other
+                  --  case we can't see it yet (full type declaration not seen
+                  --  yet), so we default to thin in that case anyway.
 
-                  if Is_Array_Type (Desig_Typ)
-                    and then not Is_Constrained (Desig_Typ)
-                  then
-                     Init_Size (Acc_Type, 2 * System_Address_Size);
-                  else
-                     Init_Size (Acc_Type, System_Address_Size);
-                  end if;
+                  Init_Size (Acc_Type, System_Address_Size);
+
+                  --  Set remaining characterstics of anonymous access type
 
                   Init_Alignment (Acc_Type);
                   Set_Directly_Designated_Type (Acc_Type, Derived_Type);
@@ -13585,6 +13587,7 @@ package body Sem_Ch3 is
                   Set_Scope (New_Id, New_Subp);
 
                   --  Create a reference to it
+
                   Build_Itype_Reference (Acc_Type, Parent (Derived_Type));
 
                else

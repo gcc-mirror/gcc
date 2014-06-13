@@ -2462,19 +2462,11 @@ package body Layout is
             Set_Size_Info (E, Base_Type (E));
             Set_RM_Size   (E, RM_Size (Base_Type (E)));
 
-         --  Anonymous access types in subprogram specifications are always
-         --  thin. In the unconstrained case we always use thin pointers for
-         --  anonymous access types, because otherwise we get into strange
-         --  conformance problems between two types, one of which can see
-         --  that something is unconstrained and one of which cannot. The
-         --  object of an extended return is treated similarly.
+         --  Anonymous access types are always thin, because otherwise we get
+         --  into strange conformance problems between two types, one of which
+         --  can see that something is unconstrained and one of which cannot.
 
-         elsif Ekind (E) = E_Anonymous_Access_Type
-           and then (Nkind_In (Associated_Node_For_Itype (E),
-                               N_Function_Specification,
-                               N_Procedure_Specification)
-                      or else Ekind (Scope (E))  = E_Return_Statement)
-         then
+         elsif Ekind (E) = E_Anonymous_Access_Type then
             Init_Size (E, System_Address_Size);
 
          --  For other access types, we use either address size, or, if a fat
