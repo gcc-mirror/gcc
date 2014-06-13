@@ -1,3 +1,8 @@
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch9.adb, a-coinho.adb, a-coinho.ads: Minor
+	reformatting.
+
 2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Add local
