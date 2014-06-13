@@ -2704,50 +2704,12 @@ package body Sem_Ch13 is
                         Set_Never_Set_In_Source (E, False);
                      end if;
 
-                     --  Verify that there is an aspect Convention that will
-                     --  incorporate the Import/Export aspect, and eventual
-                     --  Link/External names.
-
-                     declare
-                        A : Node_Id;
-
-                     begin
-                        A := First (L);
-                        while Present (A) loop
-                           exit when Chars (Identifier (A)) = Name_Convention;
-                           Next (A);
-                        end loop;
-
-                        --  It is legal to specify Import for a variable, in
-                        --  order to suppress initialization for it, without
-                        --  specifying explicitly its convention. However this
-                        --  is only legal if the convention of the object type
-                        --  is Ada or similar.
-
-                        if No (A) then
-                           if Ekind (E) = E_Variable
-                             and then A_Id = Aspect_Import
-                           then
-                              declare
-                                 C : constant Convention_Id :=
-                                       Convention (Etype (E));
-                              begin
-                                 if C = Convention_Ada              or else
-                                    C = Convention_Ada_Pass_By_Copy or else
-                                    C = Convention_Ada_Pass_By_Reference
-                                 then
-                                    goto Continue;
-                                 end if;
-                              end;
-                           end if;
-
-                           --  Otherwise, Convention must be specified
-
-                           Error_Msg_N
-                             ("missing Convention aspect for Export/Import",
-                              Aspect);
-                        end if;
-                     end;
+                     --  In older versions of Ada the corresponding pragmas
+                     --  specified a Convention. In Ada 2012 the convention
+                     --  is specified as a separate aspect, and it is optional,
+                     --  given that it defaults to Convention_Ada. The code
+                     --  that verifed that there was a matching convention
+                     --  is now obsolete.
 
                      goto Continue;
                   end if;
