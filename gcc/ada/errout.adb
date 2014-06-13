@@ -3065,6 +3065,32 @@ package body Errout is
       return False;
    end Special_Msg_Delete;
 
+   -----------------
+   -- SPARK_Msg_N --
+   -----------------
+
+   procedure SPARK_Msg_N (Msg : String; N : Node_Or_Entity_Id) is
+   begin
+      if SPARK_Mode = On then
+         Error_Msg_N (Msg, N);
+      end if;
+   end SPARK_Msg_N;
+
+   ------------------
+   -- SPARK_Msg_NE --
+   ------------------
+
+   procedure SPARK_Msg_NE
+     (Msg : String;
+      N   : Node_Or_Entity_Id;
+      E   : Node_Or_Entity_Id)
+   is
+   begin
+      if SPARK_Mode = On then
+         Error_Msg_NE (Msg, N, E);
+      end if;
+   end SPARK_Msg_NE;
+
    --------------------------
    -- Unwind_Internal_Type --
    --------------------------
