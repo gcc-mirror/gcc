@@ -3355,38 +3355,6 @@ package body Freeze is
             end if;
          end if;
 
-         --  The following checks are only relevant when SPARK_Mode is on as
-         --  they are not standard Ada legality rules.
-
-         if SPARK_Mode = On then
-
-            --  Volatile types are not allowed in SPARK (SPARK RM C.6(1))
-
-            if Is_SPARK_Volatile (Rec) then
-               Error_Msg_N ("volatile type not allowed", Rec);
-
-            --  A non-volatile record type cannot contain volatile components
-            --  (SPARK RM C.6(2)). The check is performed at freeze point
-            --  because the volatility status of the record type and its
-            --  components is clearly known.
-
-            else
-               Comp := First_Component (Rec);
-               while Present (Comp) loop
-                  if Comes_From_Source (Comp)
-                    and then Is_SPARK_Volatile (Comp)
-                  then
-                     Error_Msg_Name_1 := Chars (Rec);
-                     Error_Msg_N
-                       ("component & of non-volatile record type % cannot be "
-                        & "volatile", Comp);
-                  end if;
-
-                  Next_Component (Comp);
-               end loop;
-            end if;
-         end if;
-
          --  All done if not a full record definition
 
          if Ekind (Rec) /= E_Record_Type then
@@ -3716,6 +3684,14 @@ package body Freeze is
 
       if Has_Delayed_Aspects (E) then
          Analyze_Aspects_At_Freeze_Point (E);
+      end if;
+
+      --  The following check is only relevant when SPARK_Mode is on as this
+      --  is not a standard Ada legality rule. Volatile types are not allowed
+      --  (SPARK RM C.6(1)).
+
+      if SPARK_Mode = On and then Is_SPARK_Volatile (E) then
+         Error_Msg_N ("volatile type not allowed", E);
       end if;
 
       --  Here to freeze the entity

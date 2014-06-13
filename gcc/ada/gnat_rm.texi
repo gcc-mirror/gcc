@@ -304,6 +304,7 @@ Implementation Defined Aspects
 * Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
 * Aspect Test_Case::
+* Aspect Thread_Local_Storage::
 * Aspect Universal_Aliasing::
 * Aspect Universal_Data::
 * Aspect Unmodified::
@@ -7867,6 +7868,7 @@ clause.
 * Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
 * Aspect Test_Case::
+* Aspect Thread_Local_Storage::
 * Aspect Universal_Aliasing::
 * Aspect Universal_Data::
 * Aspect Unmodified::
@@ -8124,6 +8126,12 @@ This aspect is equivalent to pragma @code{Suppress_Debug_Info}.
 @findex Test_Case
 @noindent
 This aspect is equivalent to pragma @code{Test_Case}.
+
+@node Aspect Thread_Local_Storage
+@unnumberedsec Aspect Thread_Local_Storage
+@findex Thread_Local_Storage
+@noindent
+This aspect is equivalent to pragma @code{Thread_Local_Storage}.
 
 @node Aspect Universal_Aliasing
 @unnumberedsec Aspect Universal_Aliasing
@@ -20834,6 +20842,7 @@ A complete description of the AIs may be found in
 @item @code{Suppress} @tab
 @item @code{Suppress_Debug_Info} @tab           -- GNAT
 @item @code{Test_Case} @tab                     -- GNAT
+@item @code{Thread_Local_Storage} @tab          -- GNAT
 @item @code{Type_Invariant} @tab
 @item @code{Unchecked_Union} @tab
 @item @code{Universal_Aliasing} @tab            -- GNAT
