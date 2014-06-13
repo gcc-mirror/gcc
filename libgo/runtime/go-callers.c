@@ -93,6 +93,32 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 
   loc->lineno = lineno;
   ++arg->index;
+
+  /* There is no point to tracing past certain runtime functions.
+     Stopping the backtrace here can avoid problems on systems that
+     don't provide proper unwind information for makecontext, such as
+     Solaris (http://gcc.gnu.org/PR52583 comment #21).  */
+  if (function != NULL)
+    {
+      if (__builtin_strcmp (function, "makecontext") == 0)
+	return 1;
+      if (filename != NULL)
+	{
+	  const char *p;
+
+	  p = strrchr (filename, '/');
+	  if (p == NULL)
+	    p = filename;
+	  if (__builtin_strcmp (p, "/proc.c") == 0)
+	    {
+	      if (__builtin_strcmp (function, "kickoff") == 0
+		  || __builtin_strcmp (function, "runtime_mstart") == 0
+		  || __builtin_strcmp (function, "runtime_main") == 0)
+		return 1;
+	    }
+	}
+    }
+
   return arg->index >= arg->max;
 }
 
