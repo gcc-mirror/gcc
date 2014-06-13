@@ -1,3 +1,21 @@
+2014-06-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/61415
+	* config/rs6000/rs6000-builtin.def (BU_MISC_1): Delete.
+	(BU_MISC_2): Rename to ...
+	(BU_LDBL128_2): ... this.
+	* config/rs6000/rs6000.h (RS6000_BTM_LDBL128): New define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_LDBL128.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Handle
+	RS6000_BTM_LDBL128.
+	(rs6000_invalid_builtin): Add long double 128-bit builtin support.
+	(rs6000_builtin_mask_names): Add RS6000_BTM_LDBL128.
+	* config/rs6000/rs6000.md (unpacktf_0): Remove define)expand.
+	(unpacktf_1): Likewise.
+	* doc/extend.texi (__builtin_longdouble_dw0): Remove documentation.
+	(__builtin_longdouble_dw1): Likewise.
+	* doc/sourcebuild.texi (longdouble128): Document.
+
 2014-06-13  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/61094
