@@ -1603,6 +1603,8 @@ possible_polymorphic_call_targets (tree otr_type,
     {
       if (completep)
 	*completep = false;
+      if (cache_token)
+	*cache_token = NULL;
       if (nonconstruction_targetsp)
 	*nonconstruction_targetsp = 0;
       return nodes;
@@ -1613,6 +1615,8 @@ possible_polymorphic_call_targets (tree otr_type,
     {
       if (completep)
 	*completep = true;
+      if (cache_token)
+	*cache_token = NULL;
       if (nonconstruction_targetsp)
 	*nonconstruction_targetsp = 0;
       return nodes;
@@ -1626,6 +1630,8 @@ possible_polymorphic_call_targets (tree otr_type,
     {
       if (completep)
 	*completep = false;
+      if (cache_token)
+	*cache_token = NULL;
       if (nonconstruction_targetsp)
 	*nonconstruction_targetsp = 0;
       return nodes;

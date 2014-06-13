@@ -1,3 +1,9 @@
+2014-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61186
+	* ipa-devirt.c (possible_polymorphic_call_targets): Store NULL to
+	cache_token if returning early.
+
 2014-06-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.h (JUMP_ALIGN): Return the log value if user
