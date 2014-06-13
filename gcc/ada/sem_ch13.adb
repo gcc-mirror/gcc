@@ -3236,10 +3236,6 @@ package body Sem_Ch13 is
                 not Null_Present
                   (Specification
                      (Unit_Declaration_Node (Ultimate_Alias (Subp))))
-
-              --  Disable this test for now till Polyorb issue is fixed???
-
-              and then False
             then
                Error_Msg_N
                  ("stream subprogram for interface type "

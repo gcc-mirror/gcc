@@ -2164,10 +2164,10 @@ package body Sem_Cat is
                                    and then Is_Entity_Name (Renamed_Object (E))
                                    and then
                                      (Is_Preelaborated
-                                       (Scope (Renamed_Object (E)))
-                                         or else
-                                           Is_Pure (Scope
-                                             (Renamed_Object (E))))))
+                                        (Scope (Renamed_Object (E)))
+                                       or else
+                                         Is_Pure
+                                           (Scope (Renamed_Object (E))))))
             then
                null;
 
@@ -2182,7 +2182,7 @@ package body Sem_Cat is
               and then Is_Entity_Name (Val)
               and then Is_Array_Type (Etype (Val))
               and then not Comes_From_Source (Val)
-             and then Nkind (Original_Node (Val)) = N_Aggregate
+              and then Nkind (Original_Node (Val)) = N_Aggregate
             then
                null;
 

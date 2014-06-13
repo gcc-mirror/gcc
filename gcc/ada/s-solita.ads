@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ package System.Soft_Links.Tasking is
 
    procedure Init_Tasking_Soft_Links;
    --  Set the tasking soft links that are common to the full and the
-   --  restricted run times.
+   --  restricted run times. Clients need to make sure the body of
+   --  System.Secondary_Stack is elaborated before calling this.
 
 end System.Soft_Links.Tasking;
