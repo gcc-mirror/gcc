@@ -10463,8 +10463,8 @@ violation of restriction "SPARK" at <file>
 @end smallexample
 
 This is not a replacement for the semantic checks performed by the
-SPARK Examiner tool, as the compiler only deals currently with code,
-not at all with SPARK 2005 annotations and does not guarantee catching all
+SPARK Examiner tool, as the compiler currently only deals with code,
+not SPARK 2005 annotations, and does not guarantee catching all
 cases of constructs forbidden by SPARK 2005.
 
 Thus it may well be the case that code which passes the compiler with
@@ -10476,7 +10476,120 @@ This restriction can be useful in providing an initial filter for code
 developed using SPARK 2005, or in examining legacy code to see how far
 it is from meeting SPARK restrictions.
 
-Note that if a unit is compiled in Ada 95 mode with SPARK restriction,
+The list below summarises the checks that are performed when this
+restriction is in force:
+@itemize @bullet
+@item No block statements
+@item No case statements with only an others clause
+@item Exit statements in loops must respect the SPARK 2005 language restrictions
+@item No goto statements
+@item Return can only appear as last statement in function
+@item Function must have return statement
+@item Loop parameter specification must include subtype mark
+@item Prefix of expanded name cannot be a loop statement
+@item Abstract subprogram not allowed
+@item User-defined operators not allowed
+@item Access type parameters not allowed
+@item Default expressions for parameters not allowed
+@item Default expressions for record fields not allowed
+@item No tasking constructs allowed
+@item Label needed at end of subprograms and packages
+@item No mixing of positional and named parameter association
+@item No access types as result type
+@item No unconstrained arrays as result types
+@item No null procedures
+@item Initial and later declarations must be in correct order (declaration can't come after body)
+@item No attributes on private types if full declaration not visible
+@item No package declaration within package specification
+@item No controlled types
+@item No discriminant types
+@item No overloading
+@item Selector name cannot be operator symbol (i.e. operator symbol cannot be prefixed)
+@item Access attribute not allowed
+@item Allocator not allowed
+@item Result of catenation must be String
+@item Operands of catenation must be string literal, static char or another catenation
+@item No conditional expressions
+@item No explicit dereference
+@item Quantified expression not allowed
+@item Slicing not allowed
+@item No exception renaming
+@item No generic renaming
+@item No object renaming
+@item No use clause
+@item Aggregates must be qualified
+@item Non-static choice in array aggregates not allowed
+@item The only view conversions which are allowed as in-out parameters are conversions of a tagged type to an ancestor type
+@item No mixing of positional and named association in aggregate, no multi choice
+@item AND, OR and XOR for arrays only allowed when operands have same static bounds
+@item Fixed point operands to * or / must be qualified or converted
+@item Comparison operators not allowed for Booleans or arrays (except strings)
+@item Equality not allowed for arrays with non-matching static bounds (except strings)
+@item Conversion / qualification not allowed for arrays with non-matching static bounds
+@item Subprogram declaration only allowed in package spec (unless followed by import)
+@item Access types not allowed
+@item Incomplete type declaration not allowed
+@item Object and subtype declarations must respect SPARK restrictions
+@item Digits or delta constraint not allowed
+@item Decimal fixed point type not allowed
+@item Aliasing of objects not allowed
+@item Modular type modulus must be power of 2
+@item Base not allowed on subtype mark
+@item Unary operators not allowed on modular types (except not)
+@item Non-tagged record cannot be null
+@item No class-wide operations
+@item Initialization expressions must respect SPARK restrictions
+@item Non-static ranges not allowed except in iteration schemes
+@item String subtypes must have lower bound of 1
+@item Subtype of Boolean cannot have constraint
+@item At most one tagged type or extension per package
+@item Interface is not allowed
+@item Character literal cannot be prefixed (selector name cannot be character literal)
+@item Record aggregate cannot contain 'others'
+@item Component association in record aggregate must contain a single choice
+@item Ancestor part cannot be a type mark
+@item Attributes 'Image, 'Width and 'Value not allowed
+@item Functions may not update globals
+@end itemize
+
+The following restrictions are enforced, but note that they are actually more
+strict that the latest SPARK 2005 language definition:
+
+@itemize @bullet
+@item No derived types other than tagged type extensions
+@item Subtype of unconstrained array must have constraint
+@end itemize
+
+This list summarises the main SPARK 2005 language rules that are not
+currently checked by the SPARK_05 restriction:
+
+@itemize @bullet
+@item SPARK annotations are treated as comments so are not checked at all
+@item Based real literals not allowed
+@item Objects cannot be initialized at declaration by calls to user-defined functions
+@item Objects cannot be initialized at declaration by assignments from variables
+@item Objects cannot be initialized at declaration by assignments from indexed/selected components
+@item Ranges shall not be null
+@item A fixed point delta expression must be a simple expression
+@item Restrictions on where renaming declarations may be placed
+@item Externals of mode 'out' cannot be referenced
+@item Externals of mode 'in' cannot be updated
+@item Loop with no iteration scheme or exits only allowed as last statement in main program or task
+@item Subprogram cannot have parent unit name
+@item SPARK 2005 inherited subprogram must be prefixed with overriding
+@item External variables (or functions that reference them) may not be passed as actual parameters
+@item Globals must be explicitly mentioned in contract
+@item Deferred constants cannot be completed by pragma Import
+@item Package initialization cannot read/write variables from other packages
+@item Prefix not allowed for entities that are directly visible
+@item Identifier declaration can't override inherited package name
+@item Cannot use Standard or other predefined packages as identifiers
+@item After renaming, cannot use the original name
+@item Subprograms can only be renamed to remove package prefix
+@item Pragma import must be immediately after entity it names
+@end itemize
+
+Note that if a unit is compiled in Ada 95 mode with the SPARK restriction,
 violations will be reported for constructs forbidden in SPARK 95,
 instead of SPARK 2005.
 

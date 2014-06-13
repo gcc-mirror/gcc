@@ -18032,10 +18032,10 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Pre_Post;
 
-            --  Rewrite Post[_Class] pragma as Precondition pragma setting the
+            --  Rewrite Post[_Class] pragma as Postcondition pragma setting the
             --  flag Class_Present to True for the Post_Class case.
 
-            Set_Class_Present (N, Prag_Id = Pragma_Pre_Class);
+            Set_Class_Present (N, Prag_Id = Pragma_Post_Class);
             PC_Pragma := New_Copy (N);
             Set_Pragma_Identifier
               (PC_Pragma, Make_Identifier (Loc, Name_Postcondition));

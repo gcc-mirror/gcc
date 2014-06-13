@@ -1,3 +1,29 @@
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* sem_cat.adb: Minor reformatting.
+
+2014-06-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma/Post_Class): Fix typo.
+
+2014-06-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi: Add detail on SPARK_05 restriction.
+
+2014-06-13  Bob Duff  <duff@adacore.com>
+
+	* s-solita.adb (Get_Sec_Stack_Addr, Init_Tasking_Soft_Links):
+	Add assertions requiring the secondary stack to be initialized.
+	* s-solita.ads (Init_Tasking_Soft_Links): Comment.
+	* s-taprob.adb, s-tarest.adb, s-tasini.adb (elab code): Make sure the
+	secondary stack is initialized before calling Init_Tasking_Soft_Links,
+	by adding pragmas Elaborate_Body.
+
+2014-06-13  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Analyze_Stream_TSS_Definition): Remove temporary
+	kludge disabling new legality check.
+
 2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Remove checks related to SPARK
