@@ -1,3 +1,10 @@
+2014-06-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61375
+	* tree-ssa-math-opts.c (init_symbolic_number): Cancel optimization if
+	symbolic number cannot be represented in an uint64_t.
+	(find_bswap_or_nop_1): Likewise.
+
 2014-06-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c (symtab_node::reset_section): New method.
