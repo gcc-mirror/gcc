@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "streamer-hooks.h"
 #include "cfgloop.h"
+#include "builtins.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -534,7 +535,6 @@ DFS_write_tree_body (struct output_block *ob,
       /* Make sure we don't inadvertently set the assembler name.  */
       if (DECL_ASSEMBLER_NAME_SET_P (expr))
 	DFS_follow_tree_edge (DECL_ASSEMBLER_NAME (expr));
-      DFS_follow_tree_edge (DECL_SECTION_NAME (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
@@ -972,7 +972,6 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
     {
       if (DECL_ASSEMBLER_NAME_SET_P (t))
 	visit (DECL_ASSEMBLER_NAME (t));
-      visit (DECL_SECTION_NAME (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))

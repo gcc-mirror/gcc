@@ -59,7 +59,7 @@ technique known as type erasure.
 <section xml:id="shared_ptr.impl"><info><title>Implementation</title></info>
 
 
-  <section><info><title>Class Hierarchy</title></info>
+  <section xml:id="shared_ptr.hier"><info><title>Class Hierarchy</title></info>
     
 
     <para>
@@ -155,7 +155,7 @@ deprecated in C++11 mode.
 
   </section>
 
-  <section><info><title>Thread Safety</title></info>
+  <section xml:id="shared_ptr.thread"><info><title>Thread Safety</title></info>
     
 <para>
 The
@@ -213,7 +213,7 @@ Policy below for details.
 
   </section>
 
-  <section><info><title>Selecting Lock Policy</title></info>
+  <section xml:id="shared_ptr.policy"><info><title>Selecting Lock Policy</title></info>
     
 
     <para>
@@ -282,7 +282,7 @@ used when libstdc++ is built without <literal>--enable-threads</literal>.
   </section>
 
 
-<section><info><title>Related functions and classes</title></info>
+<section xml:id="shared_ptr.rel"><info><title>Related functions and classes</title></info>
 
 
 <variablelist>
@@ -350,7 +350,7 @@ be private.
 <section xml:id="shared_ptr.using"><info><title>Use</title></info>
 
 
-  <section><info><title>Examples</title></info>
+  <section xml:id="shared_ptr.examples"><info><title>Examples</title></info>
     
     <para>
       Examples of use can be found in the testsuite, under
@@ -361,19 +361,11 @@ be private.
     </para>
   </section>
 
-  <section><info><title>Unresolved Issues</title></info>
+  <section xml:id="shared_ptr.issues"><info><title>Unresolved Issues</title></info>
     
     <para>
       The <emphasis><classname>shared_ptr</classname> atomic access</emphasis>
       clause in the C++11 standard is not implemented in GCC.
-    </para>
-
-    <para>
-      The <type>_S_single</type> policy uses atomics when used in MT
-      code, because it uses the same dispatcher functions that check
-      <function>__gthread_active_p()</function>. This could be
-      addressed by providing template specialisations for some members
-      of <classname>_Sp_counted_base&lt;_S_single&gt;</classname>.
     </para>
 
     <para>

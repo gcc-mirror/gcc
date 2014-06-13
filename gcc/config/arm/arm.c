@@ -61,6 +61,7 @@
 #include "opts.h"
 #include "dumpfile.h"
 #include "gimple-expr.h"
+#include "builtins.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -11340,7 +11341,7 @@ xscale_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 	     that overlaps with SHIFTED_OPERAND, then we have increase the
 	     cost of this dependency.  */
 	  extract_insn (dep);
-	  preprocess_constraints ();
+	  preprocess_constraints (dep);
 	  for (opno = 0; opno < recog_data.n_operands; opno++)
 	    {
 	      /* We can ignore strict inputs.  */
@@ -16875,8 +16876,9 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
 
   /* Fill in recog_op_alt with information about the constraints of
      this insn.  */
-  preprocess_constraints ();
+  preprocess_constraints (insn);
 
+  const operand_alternative *op_alt = which_op_alt ();
   for (opno = 0; opno < recog_data.n_operands; opno++)
     {
       /* Things we need to fix can only occur in inputs.  */
@@ -16887,7 +16889,7 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
 	 of constants in this alternative is really to fool reload
 	 into allowing us to accept one there.  We need to fix them up
 	 now so that we output the right code.  */
-      if (recog_op_alt[opno][which_alternative].memory_ok)
+      if (op_alt[opno].memory_ok)
 	{
 	  rtx op = recog_data.operand[opno];
 

@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "target.h"
 #include "cfgloop.h"
+#include "builtins.h"
 
 #include "rtl.h"	/* FIXME: For asm_str_count.  */
 
@@ -5344,8 +5345,9 @@ tree_function_versioning (tree old_decl, tree new_decl,
   DECL_ARGUMENTS (new_decl) = DECL_ARGUMENTS (old_decl);
   initialize_cfun (new_decl, old_decl,
 		   old_entry_block->count);
-  DECL_STRUCT_FUNCTION (new_decl)->gimple_df->ipa_pta
-    = id.src_cfun->gimple_df->ipa_pta;
+  if (DECL_STRUCT_FUNCTION (new_decl)->gimple_df)
+    DECL_STRUCT_FUNCTION (new_decl)->gimple_df->ipa_pta
+      = id.src_cfun->gimple_df->ipa_pta;
 
   /* Copy the function's static chain.  */
   p = DECL_STRUCT_FUNCTION (old_decl)->static_chain_decl;

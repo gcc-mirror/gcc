@@ -32,7 +32,7 @@
 // If _GLIBCXX_REGEX_USE_THOMPSON_NFA is defined, the thompson NFA
 // algorithm will be used. This algorithm is not enabled by default,
 // and cannot be used if the regex contains back-references, but has better
-// (polynomial instead of exponential) worst case performace.
+// (polynomial instead of exponential) worst case performance.
 // See __regex_algo_impl below.
 
 namespace std _GLIBCXX_VISIBILITY(default)

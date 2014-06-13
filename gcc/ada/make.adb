@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3728,6 +3728,13 @@ package body Make is
                      Inform
                        (Data.Lib_File,
                         "WARNING: ALI or object file not found after compile");
+
+                     if not Is_Regular_File
+                              (Get_Name_String (Name_Id (Data.Full_Lib_File)))
+                     then
+                        Inform (Data.Full_Lib_File, "not found");
+                     end if;
+
                      Record_Failure (Data.Full_Source_File, Data.Source_Unit);
                   end if;
                end if;

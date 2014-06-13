@@ -3019,10 +3019,16 @@ notice_source_line (rtx insn, bool *is_stmt)
       filename = override_filename;
       linenum = override_linenum;
     }
+  else if (INSN_HAS_LOCATION (insn))
+    {
+      expanded_location xloc = insn_location (insn);
+      filename = xloc.file;
+      linenum = xloc.line;
+    }
   else
     {
-      filename = insn_file (insn);
-      linenum = insn_line (insn);
+      filename = NULL;
+      linenum = 0;
     }
 
   if (filename == NULL)

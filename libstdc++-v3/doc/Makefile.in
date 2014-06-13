@@ -405,6 +405,7 @@ xml_sources_manual = \
 	${xml_dir}/manual/spine.xml \
 	${xml_dir}/manual/status_cxx1998.xml \
 	${xml_dir}/manual/status_cxx2011.xml \
+	${xml_dir}/manual/status_cxx2014.xml \
 	${xml_dir}/manual/status_cxxtr1.xml \
 	${xml_dir}/manual/status_cxxtr24733.xml \
 	${xml_dir}/manual/strings.xml \
@@ -526,7 +527,7 @@ xml_noinst = \
 	${xml_image_dir}/confdeps.pdf
 
 XSLT_FLAGS = --nonet --xinclude
-XSLT_PARAM = --param toc.section.depth 4
+XSLT_PARAM = --param toc.section.depth 4 --param generate.consistent.ids 1
 #XSL_STYLE_DIR = /usr/share/xml/docbook/stylesheet/docbook-xsl-ns
 #XSL_STYLE_DIR = /usr/share/sgml/docbook/xsl-ns-stylesheets
 XSL_FO_STYLE = $(XSL_STYLE_DIR)/fo/docbook.xsl

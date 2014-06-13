@@ -1,3 +1,202 @@
+2014-06-12  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_arg_to_ellipsis): Use abi_version_crosses.
+	* cvt.c (type_promotes_to): Likewise.
+	* mangle.c (write_type, write_expression): Likewise.
+	(write_name, write_template_arg): Likewise.
+	(mangle_decl): Make alias based on flag_abi_compat_version.
+	Emit -Wabi warning here.
+	(finish_mangling_internal): Not here.  Drop warn parm.
+	(finish_mangling_get_identifier, finish_mangling): Adjust.
+	(mangle_type_string, mangle_special_for_type): Adjust.
+	(mangle_ctor_vtbl_for_type, mangle_thunk): Adjust.
+	(mangle_guard_variable, mangle_tls_init_fn): Adjust.
+	(mangle_tls_wrapper_fn, mangle_ref_init_variable): Adjust.
+
+	* call.c (build_operator_new_call): Remove -fabi-version=1 support.
+	* class.c (walk_subobject_offsets, include_empty_classes): Likewise.
+	(layout_nonempty_base_or_field, end_of_class): Likewise.
+	(layout_empty_base, build_base_field, layout_class_type): Likewise.
+	(is_empty_class, add_vcall_offset_vtbl_entries_1): Likewise.
+	(layout_virtual_bases): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	* mangle.c (write_mangled_name, write_prefix): Likewise.
+	(write_template_prefix, write_integer_cst, write_expression): Likewise.
+	(write_template_arg, write_array_type): Likewise.
+	* method.c (lazily_declare_fn): Likewise.
+	* rtti.c (get_pseudo_ti_index): Likewise.
+	* typeck.c (comp_array_types): Likewise.
+
+2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* vtable-class-hierarchy.c: Update handling for section names
+	that are no longer trees.
+	* decl.c (duplicate_decls): Likewise.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19200
+	* parser.c (cp_parser_init_declarator): Actually pass friend_p
+	to cp_parser_declarator.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60265
+	* parser.c (cp_parser_using_declaration): Handle unscoped enums.
+	* name-lookup.c (validate_nonmember_using_decl): Adjust error
+	message.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19200
+	* parser.c (cp_parser_declarator): Add bool parameter.
+	(cp_parser_direct_declarator): Likewise, use it.
+	(cp_parser_member_declaration): Pass friend_p to cp_parser_declarator.
+	(cp_parser_condition, cp_parser_explicit_instantiation,
+	cp_parser_init_declarator, cp_parser_type_id_1,
+	cp_parser_parameter_declaration, cp_parser_exception_declaration,
+	cp_parser_cache_defarg, cp_parser_objc_class_ivars,
+	cp_parser_objc_struct_declaration, cp_parser_omp_for_loop_init):
+	Adjust.
+	* decl.c (grokdeclarator): Fix handling of friend declared in
+	namespace scope (g++.dg/parse/friend10.C).
+
+2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* vtable-class-hierarchy.c: Use symtab_get_node (var_decl)
+	->implicit_section.
+	* optimize.c (cdtor_comdat_group): Fix handling of aliases.
+	(maybe_clone_body): Move symbol across comdat groups.
+	* method.c (use_thunk): Copy implicit section flag.
+
+2014-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/22556
+	* name-lookup.c (pushdecl_maybe_friend_1): Use comptypes.
+
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* method.c (use_thunk): Use set_decl_section_name.
+	* optimize.c (maybe_clone_body): Use set_decl_section_name.
+	* decl.c (duplicate_decls): Likewise.
+	* vtable-class-hierarchy.c: Likewise.
+
+2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60184
+	* class.c (check_field_decls): In C++11 mode do not reject
+	static data members and reference-type members in unions.
+
+2014-06-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43453
+	* decl.c (check_initializer): Collapse a TREE_LIST here.
+	* typeck2.c (store_init_value): Not here.
+
+2014-06-05  Richard Biener  <rguenther@suse.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56961
+	* cp-gimplify.c (cp_gimplify_expr, [MODIFY_EXPR]): Rework
+	handling of empty classes.
+
+2014-06-04  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_diagnose_invalid_type_name): Give helpful note
+	for noexcept and thread_local, too.
+
+	PR c++/61343
+	* decl.c (check_initializer): Maybe clear
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+
+2014-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR c++/61004
+	* typeck.c (cp_build_indirect_ref): Do not emit strict-aliasing
+	warnings for accessing empty classes.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49706
+	* parser.c (cp_parser_binary_expression): Warn when logical not is
+	used on the left hand side operand of a comparison.
+
+2014-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43453
+	* typeck.c (cp_build_modify_expr): Handle array of characters
+	initialized by a string literal.
+	* decl.c (check_initializer): Handle parenthesized string literal
+	as initializer.
+	* typeck2.c (store_init_value): Remove redundant check.
+
+2014-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51253
+	PR c++/61382
+	* cp-gimplify.c (cp_gimplify_expr): Handle CALL_EXPR_LIST_INIT_P here.
+	* semantics.c (simplify_aggr_init_expr): Not here, just copy it.
+
+2014-06-04  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/58942
+	* cp-array-notation.c (expand_sec_reduce_builtin): Handle the case
+	with a pointer.
+
+2014-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1423
+	PR c++/52174
+	* call.c (standard_conversion): Convert nullptr to bool only
+	in case of direct-initialization.
+	(convert_like_real): Provide informative error message.
+
+2014-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60439
+	* semantics.c (finish_switch_cond): Warn if switch condition has
+	boolean value.
+
+2014-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60992
+	* pt.c (tsubst_copy) [VAR_DECL]: Try lookup first.  Add a new
+	variable to local_specializations.
+
+	PR c++/60848
+	* call.c (is_std_init_list): Check CLASSTYPE_TEMPLATE_INFO.
+
+2014-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61046
+	* decl.c (reshape_init_class): Handle un-folded
+	constant-expressions.
+
+	PR c++/61134
+	* pt.c (pack_deducible_p): Handle canonicalization.
+
+2014-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (tsubst_function_type): Initialize arg_types.
+
+2014-06-02  Siva Chandra Reddy  <sivachandra@google.com>
+
+        PR debug/57519
+        * class.c (handle_using_decl): Pass the correct scope to
+        cp_emit_debug_info_for_using.
+
+2014-06-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/59483
+	PR c++/61148
+	* search.c (accessible_p): Use current_nonlambda_class_type.
+	* semantics.c (check_accessibility_of_qualified_id): Likewise.
+
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* decl.c: Include builtins.h.
+	* semantics.c: Likewise.
+
 2014-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 1227

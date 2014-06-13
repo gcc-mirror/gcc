@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package exec
+// Use an external test to avoid os/exec -> net/http -> crypto/x509 -> os/exec
+// circular dependency on non-cgo darwin.
+
+package exec_test
 
 import (
 	"bufio"
@@ -14,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -22,10 +26,10 @@ import (
 	"time"
 )
 
-func helperCommand(s ...string) *Cmd {
+func helperCommand(s ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestHelperProcess", "--"}
 	cs = append(cs, s...)
-	cmd := Command(os.Args[0], cs...)
+	cmd := exec.Command(os.Args[0], cs...)
 	cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1"}
 	path := os.Getenv("LD_LIBRARY_PATH")
 	if path != "" {
@@ -40,6 +44,33 @@ func TestEcho(t *testing.T) {
 		t.Errorf("echo: %v", err)
 	}
 	if g, e := string(bs), "foo bar baz\n"; g != e {
+		t.Errorf("echo: want %q, got %q", e, g)
+	}
+}
+
+func TestCommandRelativeName(t *testing.T) {
+	// Run our own binary as a relative path
+	// (e.g. "_test/exec.test") our parent directory.
+	base := filepath.Base(os.Args[0]) // "exec.test"
+	dir := filepath.Dir(os.Args[0])   // "/tmp/go-buildNNNN/os/exec/_test"
+	if dir == "." {
+		t.Skip("skipping; running test at root somehow")
+	}
+	parentDir := filepath.Dir(dir) // "/tmp/go-buildNNNN/os/exec"
+	dirBase := filepath.Base(dir)  // "_test"
+	if dirBase == "." {
+		t.Skipf("skipping; unexpected shallow dir of %q", dir)
+	}
+
+	cmd := exec.Command(filepath.Join(dirBase, base), "-test.run=TestHelperProcess", "--", "echo", "foo")
+	cmd.Dir = parentDir
+	cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1"}
+
+	out, err := cmd.Output()
+	if err != nil {
+		t.Errorf("echo: %v", err)
+	}
+	if g, e := string(out), "foo\n"; g != e {
 		t.Errorf("echo: want %q, got %q", e, g)
 	}
 }
@@ -62,8 +93,8 @@ func TestCatStdin(t *testing.T) {
 func TestCatGoodAndBadFile(t *testing.T) {
 	// Testing combined output and error values.
 	bs, err := helperCommand("cat", "/bogus/file.foo", "exec_test.go").CombinedOutput()
-	if _, ok := err.(*ExitError); !ok {
-		t.Errorf("expected *ExitError from cat combined; got %T: %v", err, err)
+	if _, ok := err.(*exec.ExitError); !ok {
+		t.Errorf("expected *exec.ExitError from cat combined; got %T: %v", err, err)
 	}
 	s := string(bs)
 	sp := strings.SplitN(s, "\n", 2)
@@ -81,7 +112,7 @@ func TestCatGoodAndBadFile(t *testing.T) {
 
 func TestNoExistBinary(t *testing.T) {
 	// Can't run a non-existent binary
-	err := Command("/no-exist-binary").Run()
+	err := exec.Command("/no-exist-binary").Run()
 	if err == nil {
 		t.Error("expected error from /no-exist-binary")
 	}
@@ -96,12 +127,12 @@ func TestExitStatus(t *testing.T) {
 	case "plan9":
 		want = fmt.Sprintf("exit status: '%s %d: 42'", filepath.Base(cmd.Path), cmd.ProcessState.Pid())
 	}
-	if werr, ok := err.(*ExitError); ok {
+	if werr, ok := err.(*exec.ExitError); ok {
 		if s := werr.Error(); s != want {
 			t.Errorf("from exit 42 got exit %q, want %q", s, want)
 		}
 	} else {
-		t.Fatalf("expected *ExitError from exit 42; got %T: %v", err, err)
+		t.Fatalf("expected *exec.ExitError from exit 42; got %T: %v", err, err)
 	}
 }
 
@@ -188,7 +219,7 @@ func TestStdinClose(t *testing.T) {
 func TestPipeLookPathLeak(t *testing.T) {
 	fd0 := numOpenFDS(t)
 	for i := 0; i < 4; i++ {
-		cmd := Command("something-that-does-not-exist-binary")
+		cmd := exec.Command("something-that-does-not-exist-binary")
 		cmd.StdoutPipe()
 		cmd.StderrPipe()
 		cmd.StdinPipe()
@@ -203,7 +234,7 @@ func TestPipeLookPathLeak(t *testing.T) {
 }
 
 func numOpenFDS(t *testing.T) int {
-	lsof, err := Command("lsof", "-n", "-p", strconv.Itoa(os.Getpid())).Output()
+	lsof, err := exec.Command("lsof", "-n", "-p", strconv.Itoa(os.Getpid())).Output()
 	if err != nil {
 		t.Skip("skipping test; error finding or running lsof")
 		return 0
@@ -429,7 +460,7 @@ func TestExtraFilesRace(t *testing.T) {
 		}
 		return f
 	}
-	runCommand := func(c *Cmd, out chan<- string) {
+	runCommand := func(c *exec.Cmd, out chan<- string) {
 		bout, err := c.CombinedOutput()
 		if err != nil {
 			out <- "ERROR:" + err.Error()
@@ -480,6 +511,8 @@ func TestHelperProcess(*testing.T) {
 	switch runtime.GOOS {
 	case "dragonfly", "freebsd", "netbsd", "openbsd":
 		ofcmd = "fstat"
+	case "plan9":
+		ofcmd = "/bin/cat"
 	}
 
 	args := os.Args
@@ -570,6 +603,14 @@ func TestHelperProcess(*testing.T) {
 			// the cloned file descriptors that result from opening
 			// /dev/urandom.
 			// http://golang.org/issue/3955
+		case "plan9":
+			// TODO(0intro): Determine why Plan 9 is leaking
+			// file descriptors.
+			// http://golang.org/issue/7118
+		case "solaris":
+			// TODO(aram): This fails on Solaris because libc opens
+			// its own files, as it sees fit. Darwin does the same,
+			// see: http://golang.org/issue/2603
 		default:
 			// Now verify that there are no other open fds.
 			var files []*os.File
@@ -581,7 +622,14 @@ func TestHelperProcess(*testing.T) {
 				}
 				if got := f.Fd(); got != wantfd {
 					fmt.Printf("leaked parent file. fd = %d; want %d\n", got, wantfd)
-					out, _ := Command(ofcmd, "-p", fmt.Sprint(os.Getpid())).CombinedOutput()
+					var args []string
+					switch runtime.GOOS {
+					case "plan9":
+						args = []string{fmt.Sprintf("/proc/%d/fd", os.Getpid())}
+					default:
+						args = []string{"-p", fmt.Sprint(os.Getpid())}
+					}
+					out, _ := exec.Command(ofcmd, args...).CombinedOutput()
 					fmt.Print(string(out))
 					os.Exit(1)
 				}

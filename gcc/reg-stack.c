@@ -462,7 +462,6 @@ check_asm_stack_operands (rtx insn)
 
   char reg_used_as_output[FIRST_PSEUDO_REGISTER];
   char implicitly_dies[FIRST_PSEUDO_REGISTER];
-  int alt;
 
   rtx *clobber_reg = 0;
   int n_inputs, n_outputs;
@@ -471,19 +470,19 @@ check_asm_stack_operands (rtx insn)
      alternative matches, this asm is malformed.  */
   extract_insn (insn);
   constrain_operands (1);
-  alt = which_alternative;
 
-  preprocess_constraints ();
+  preprocess_constraints (insn);
 
   get_asm_operands_in_out (body, &n_outputs, &n_inputs);
 
-  if (alt < 0)
+  if (which_alternative < 0)
     {
       malformed_asm = 1;
       /* Avoid further trouble with this insn.  */
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
       return 0;
     }
+  const operand_alternative *op_alt = which_op_alt ();
 
   /* Strip SUBREGs here to make the following code simpler.  */
   for (i = 0; i < recog_data.n_operands; i++)
@@ -527,7 +526,7 @@ check_asm_stack_operands (rtx insn)
   for (i = 0; i < n_outputs; i++)
     if (STACK_REG_P (recog_data.operand[i]))
       {
-	if (reg_class_size[(int) recog_op_alt[i][alt].cl] != 1)
+	if (reg_class_size[(int) op_alt[i].cl] != 1)
 	  {
 	    error_for_asm (insn, "output constraint %d must specify a single register", i);
 	    malformed_asm = 1;
@@ -582,7 +581,7 @@ check_asm_stack_operands (rtx insn)
 	  if (operands_match_p (clobber_reg[j], recog_data.operand[i]))
 	    break;
 
-	if (j < n_clobbers || recog_op_alt[i][alt].matches >= 0)
+	if (j < n_clobbers || op_alt[i].matches >= 0)
 	  implicitly_dies[REGNO (recog_data.operand[i])] = 1;
       }
 
@@ -610,7 +609,7 @@ check_asm_stack_operands (rtx insn)
      record any earlyclobber.  */
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
-    if (recog_op_alt[i][alt].matches == -1)
+    if (op_alt[i].matches == -1)
       {
 	int j;
 
@@ -2006,7 +2005,6 @@ static void
 subst_asm_stack_regs (rtx insn, stack_ptr regstack)
 {
   rtx body = PATTERN (insn);
-  int alt;
 
   rtx *note_reg;		/* Array of note contents */
   rtx **note_loc;		/* Address of REG field of each note */
@@ -2030,13 +2028,11 @@ subst_asm_stack_regs (rtx insn, stack_ptr regstack)
      such an insn in check_asm_stack_operands.  */
   extract_insn (insn);
   constrain_operands (1);
-  alt = which_alternative;
 
-  preprocess_constraints ();
+  preprocess_constraints (insn);
+  const operand_alternative *op_alt = which_op_alt ();
 
   get_asm_operands_in_out (body, &n_outputs, &n_inputs);
-
-  gcc_assert (alt >= 0);
 
   /* Strip SUBREGs here to make the following code simpler.  */
   for (i = 0; i < recog_data.n_operands; i++)
@@ -2118,9 +2114,8 @@ subst_asm_stack_regs (rtx insn, stack_ptr regstack)
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
     if (STACK_REG_P (recog_data.operand[i])
-	&& reg_class_subset_p (recog_op_alt[i][alt].cl,
-			       FLOAT_REGS)
-	&& recog_op_alt[i][alt].cl != FLOAT_REGS)
+	&& reg_class_subset_p (op_alt[i].cl, FLOAT_REGS)
+	&& op_alt[i].cl != FLOAT_REGS)
       {
 	/* If an operand needs to be in a particular reg in
 	   FLOAT_REGS, the constraint was either 't' or 'u'.  Since
@@ -2208,7 +2203,7 @@ subst_asm_stack_regs (rtx insn, stack_ptr regstack)
 	  if (operands_match_p (clobber_reg[j], recog_data.operand[i]))
 	    break;
 
-	if (j < n_clobbers || recog_op_alt[i][alt].matches >= 0)
+	if (j < n_clobbers || op_alt[i].matches >= 0)
 	  {
 	    /* recog_data.operand[i] might not be at the top of stack.
 	       But that's OK, because all we need to do is pop the

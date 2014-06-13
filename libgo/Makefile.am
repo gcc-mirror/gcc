@@ -196,9 +196,11 @@ toolexeclibgodebugdir = $(toolexeclibgodir)/debug
 toolexeclibgodebug_DATA = \
 	debug/dwarf.gox \
 	debug/elf.gox \
+	debug/goobj.gox \
 	debug/gosym.gox \
 	debug/macho.gox \
-	debug/pe.gox
+	debug/pe.gox \
+	debug/plan9obj.gox
 
 toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 
@@ -499,7 +501,6 @@ runtime_files = \
 	runtime/mcache.c \
 	runtime/mcentral.c \
 	$(runtime_mem_file) \
-	runtime/mfinal.c \
 	runtime/mfixalloc.c \
 	runtime/mgc0.c \
 	runtime/mheap.c \
@@ -998,6 +999,7 @@ go_sync_files = \
 	go/sync/cond.go \
 	go/sync/mutex.go \
 	go/sync/once.go \
+	go/sync/pool.go \
 	go/sync/race0.go \
 	go/sync/runtime.go \
 	go/sync/rwmutex.go \
@@ -1124,7 +1126,8 @@ go_crypto_cipher_files = \
 	go/crypto/cipher/ctr.go \
 	go/crypto/cipher/gcm.go \
 	go/crypto/cipher/io.go \
-	go/crypto/cipher/ofb.go
+	go/crypto/cipher/ofb.go \
+	go/crypto/cipher/xor.go
 go_crypto_des_files = \
 	go/crypto/des/block.go \
 	go/crypto/des/cipher.go \
@@ -1141,7 +1144,8 @@ go_crypto_hmac_files = \
 	go/crypto/hmac/hmac.go
 go_crypto_md5_files = \
 	go/crypto/md5/md5.go \
-	go/crypto/md5/md5block.go
+	go/crypto/md5/md5block.go \
+	go/crypto/md5/md5block_generic.go
 go_crypto_rand_files = \
 	go/crypto/rand/rand.go \
 	go/crypto/rand/rand_unix.go \
@@ -1155,7 +1159,8 @@ go_crypto_rsa_files = \
 	go/crypto/rsa/rsa.go
 go_crypto_sha1_files = \
 	go/crypto/sha1/sha1.go \
-	go/crypto/sha1/sha1block.go
+	go/crypto/sha1/sha1block.go \
+	go/crypto/sha1/sha1block_generic.go
 go_crypto_sha256_files = \
 	go/crypto/sha256/sha256.go \
 	go/crypto/sha256/sha256block.go
@@ -1205,19 +1210,26 @@ go_debug_dwarf_files = \
 	go/debug/dwarf/line.go \
 	go/debug/dwarf/open.go \
 	go/debug/dwarf/type.go \
+	go/debug/dwarf/typeunit.go \
 	go/debug/dwarf/unit.go
 go_debug_elf_files = \
 	go/debug/elf/elf.go \
 	go/debug/elf/file.go
+go_debug_goobj_files = \
+	go/debug/goobj/read.go
 go_debug_gosym_files = \
 	go/debug/gosym/pclntab.go \
 	go/debug/gosym/symtab.go
 go_debug_macho_files = \
+	go/debug/macho/fat.go \
 	go/debug/macho/file.go \
 	go/debug/macho/macho.go
 go_debug_pe_files = \
 	go/debug/pe/file.go \
 	go/debug/pe/pe.go
+go_debug_plan9obj_files = \
+	go/debug/plan9obj/file.go \
+	go/debug/plan9obj/plan9obj.go
 
 go_encoding_ascii85_files = \
 	go/encoding/ascii85/ascii85.go
@@ -1248,6 +1260,7 @@ go_encoding_hex_files = \
 go_encoding_json_files = \
 	go/encoding/json/decode.go \
 	go/encoding/json/encode.go \
+	go/encoding/json/fold.go \
 	go/encoding/json/indent.go \
 	go/encoding/json/scanner.go \
 	go/encoding/json/stream.go \
@@ -1363,7 +1376,6 @@ go_index_suffixarray_files = \
 	go/index/suffixarray/suffixarray.go
 
 go_io_ioutil_files = \
-	go/io/ioutil/blackhole.go \
 	go/io/ioutil/ioutil.go \
 	go/io/ioutil/tempfile.go
 
@@ -1447,6 +1459,7 @@ go_net_http_pprof_files = \
 go_net_http_httputil_files = \
 	go/net/http/httputil/chunked.go \
 	go/net/http/httputil/dump.go \
+	go/net/http/httputil/httputil.go \
 	go/net/http/httputil/persist.go \
 	go/net/http/httputil/reverseproxy.go
 
@@ -1867,9 +1880,11 @@ libgo_go_objs = \
 	database/sql/driver.lo \
 	debug/dwarf.lo \
 	debug/elf.lo \
+	debug/goobj.lo \
 	debug/gosym.lo \
 	debug/macho.lo \
 	debug/pe.lo \
+	debug/plan9obj.lo \
 	encoding/ascii85.lo \
 	encoding/asn1.lo \
 	encoding/base32.lo \
@@ -2594,6 +2609,15 @@ debug/elf/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: debug/elf/check
 
+@go_include@ debug/goobj.lo.dep
+debug/goobj.lo.dep: $(go_debug_goobj_files)
+	$(BUILDDEPS)
+debug/goobj.lo: $(go_debug_goobj_files)
+	$(BUILDPACKAGE)
+debug/goobj/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: debug/goobj/check
+
 @go_include@ debug/gosym.lo.dep
 debug/gosym.lo.dep: $(go_debug_gosym_files)
 	$(BUILDDEPS)
@@ -2620,6 +2644,15 @@ debug/pe.lo: $(go_debug_pe_files)
 debug/pe/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: debug/pe/check
+
+@go_include@ debug/plan9obj.lo.dep
+debug/plan9obj.lo.dep: $(go_debug_plan9obj_files)
+	$(BUILDDEPS)
+debug/plan9obj.lo: $(go_debug_plan9obj_files)
+	$(BUILDPACKAGE)
+debug/plan9obj/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: debug/plan9obj/check
 
 @go_include@ encoding/asn1.lo.dep
 encoding/asn1.lo.dep: $(go_encoding_asn1_files)
@@ -3412,11 +3445,15 @@ debug/dwarf.gox: debug/dwarf.lo
 	$(BUILDGOX)
 debug/elf.gox: debug/elf.lo
 	$(BUILDGOX)
+debug/goobj.gox: debug/goobj.lo
+	$(BUILDGOX)
 debug/gosym.gox: debug/gosym.lo
 	$(BUILDGOX)
 debug/macho.gox: debug/macho.lo
 	$(BUILDGOX)
 debug/pe.gox: debug/pe.lo
+	$(BUILDGOX)
+debug/plan9obj.gox: debug/plan9obj.lo
 	$(BUILDGOX)
 
 encoding/ascii85.gox: encoding/ascii85.lo
@@ -3642,6 +3679,7 @@ TEST_PACKAGES = \
 	debug/elf/check \
 	debug/macho/check \
 	debug/pe/check \
+	debug/plan9obj/check \
 	encoding/ascii85/check \
 	encoding/asn1/check \
 	encoding/base32/check \

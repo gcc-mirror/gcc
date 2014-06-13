@@ -46,13 +46,11 @@ extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
 #endif
 
 /* Set HOST_WIDE_INT, this should be always 64 bits.
-
-   With a sane ABI, 'long' is the largest efficient host integer type.
-   Thus, we use that unless we have to use 'long long'
-   because we're on a 32-bit host.  */
+   The underlying type is matched to that of int64_t and assumed
+   to be either long or long long.  */
 
 #define HOST_BITS_PER_WIDE_INT 64
-#if HOST_BITS_PER_LONG == 64
+#if INT64_T_IS_LONG   
 #   define HOST_WIDE_INT long
 #   define HOST_WIDE_INT_C(X) X ## L
 #else
@@ -75,47 +73,44 @@ extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
    typedef before using the __asm_fprintf__ format attribute.  */
 typedef HOST_WIDE_INT __gcc_host_wide_int__;
 
+/* Provide C99 <inttypes.h> style format definitions for 64bits.  */
+#ifndef HAVE_INTTYPES_H
+#if INT64_T_IS_LONG
+# define GCC_PRI64 HOST_LONG_FORMAT
+#else
+# define GCC_PRI64 HOST_LONG_LONG_FORMAT
+#endif
+#undef PRId64
+#define PRId64 GCC_PRI64 "d"
+#undef PRIi64
+#define PRIi64 GCC_PRI64 "i"
+#undef PRIo64
+#define PRIo64 GCC_PRI64 "o"
+#undef PRIu64
+#define PRIu64 GCC_PRI64 "u"
+#undef PRIx64
+#define PRIx64 GCC_PRI64 "x"
+#undef PRIX64
+#define PRIX64 GCC_PRI64 "X"
+#endif
+
 /* Various printf format strings for HOST_WIDE_INT.  */
 
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+#if INT64_T_IS_LONG
 # define HOST_WIDE_INT_PRINT HOST_LONG_FORMAT
 # define HOST_WIDE_INT_PRINT_C "L"
-  /* HOST_BITS_PER_WIDE_INT is 64 bits.  */
-# define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-    "0x%" HOST_LONG_FORMAT "x%016" HOST_LONG_FORMAT "x"
-# define HOST_WIDE_INT_PRINT_PADDED_HEX \
-    "%016" HOST_LONG_FORMAT "x"
 #else
 # define HOST_WIDE_INT_PRINT HOST_LONG_LONG_FORMAT
 # define HOST_WIDE_INT_PRINT_C "LL"
-  /* HOST_BITS_PER_WIDE_INT is 64 bits.  */
-# define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-    "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
-# define HOST_WIDE_INT_PRINT_PADDED_HEX \
-    "%016" HOST_LONG_LONG_FORMAT "x"
-#endif /* HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG */
-
-#define HOST_WIDE_INT_PRINT_DEC "%" HOST_WIDE_INT_PRINT "d"
-#define HOST_WIDE_INT_PRINT_DEC_C HOST_WIDE_INT_PRINT_DEC HOST_WIDE_INT_PRINT_C
-#define HOST_WIDE_INT_PRINT_UNSIGNED "%" HOST_WIDE_INT_PRINT "u"
-#define HOST_WIDE_INT_PRINT_HEX "%#" HOST_WIDE_INT_PRINT "x"
-#define HOST_WIDE_INT_PRINT_HEX_PURE "%" HOST_WIDE_INT_PRINT "x"
-
-/* Provide C99 <inttypes.h> style format definitions for 64bits.  */
-#ifndef HAVE_INTTYPES_H
-#undef PRId64
-#define PRId64 HOST_WIDE_INT_PRINT "d"
-#undef PRIi64
-#define PRIi64 HOST_WIDE_INT_PRINT "i"
-#undef PRIo64
-#define PRIo64 HOST_WIDE_INT_PRINT "o"
-#undef PRIu64
-#define PRIu64 HOST_WIDE_INT_PRINT "u"
-#undef PRIx64
-#define PRIx64 HOST_WIDE_INT_PRINT "x"
-#undef PRIX64
-#define PRIX64 HOST_WIDE_INT_PRINT "X"
 #endif
+
+#define HOST_WIDE_INT_PRINT_DEC "%" PRId64
+#define HOST_WIDE_INT_PRINT_DEC_C "%" PRId64 HOST_WIDE_INT_PRINT_C
+#define HOST_WIDE_INT_PRINT_UNSIGNED "%" PRIu64
+#define HOST_WIDE_INT_PRINT_HEX "%#" PRIx64
+#define HOST_WIDE_INT_PRINT_HEX_PURE "%" PRIx64
+#define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%" PRIx64 "%016" PRIx64
+#define HOST_WIDE_INT_PRINT_PADDED_HEX "%016" PRIx64
 
 /* Define HOST_WIDEST_FAST_INT to the widest integer type supported
    efficiently in hardware.  (That is, the widest integer type that fits

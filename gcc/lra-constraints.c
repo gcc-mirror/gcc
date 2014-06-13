@@ -317,6 +317,116 @@ in_mem_p (int regno)
   return get_reg_class (regno) == NO_REGS;
 }
 
+/* Return 1 if ADDR is a valid memory address for mode MODE in address
+   space AS, and check that each pseudo has the proper kind of hard
+   reg.	 */
+static int
+valid_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+		 rtx addr, addr_space_t as)
+{
+#ifdef GO_IF_LEGITIMATE_ADDRESS
+  lra_assert (ADDR_SPACE_GENERIC_P (as));
+  GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
+  return 0;
+
+ win:
+  return 1;
+#else
+  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as);
+#endif
+}
+
+namespace {
+  /* Temporarily eliminates registers in an address (for the lifetime of
+     the object).  */
+  class address_eliminator {
+  public:
+    address_eliminator (struct address_info *ad);
+    ~address_eliminator ();
+
+  private:
+    struct address_info *m_ad;
+    rtx *m_base_loc;
+    rtx m_base_reg;
+    rtx *m_index_loc;
+    rtx m_index_reg;
+  };
+}
+
+address_eliminator::address_eliminator (struct address_info *ad)
+  : m_ad (ad),
+    m_base_loc (strip_subreg (ad->base_term)),
+    m_base_reg (NULL_RTX),
+    m_index_loc (strip_subreg (ad->index_term)),
+    m_index_reg (NULL_RTX)
+{
+  if (m_base_loc != NULL)
+    {
+      m_base_reg = *m_base_loc;
+      lra_eliminate_reg_if_possible (m_base_loc);
+      if (m_ad->base_term2 != NULL)
+	*m_ad->base_term2 = *m_ad->base_term;
+    }
+  if (m_index_loc != NULL)
+    {
+      m_index_reg = *m_index_loc;
+      lra_eliminate_reg_if_possible (m_index_loc);
+    }
+}
+
+address_eliminator::~address_eliminator ()
+{
+  if (m_base_loc && *m_base_loc != m_base_reg)
+    {
+      *m_base_loc = m_base_reg;
+      if (m_ad->base_term2 != NULL)
+	*m_ad->base_term2 = *m_ad->base_term;
+    }
+  if (m_index_loc && *m_index_loc != m_index_reg)
+    *m_index_loc = m_index_reg;
+}
+
+/* Return true if the eliminated form of AD is a legitimate target address.  */
+static bool
+valid_address_p (struct address_info *ad)
+{
+  address_eliminator eliminator (ad);
+  return valid_address_p (ad->mode, *ad->outer, ad->as);
+}
+
+/* Return true if the eliminated form of memory reference OP satisfies
+   extra memory constraint CONSTRAINT.  */
+static bool
+satisfies_memory_constraint_p (rtx op, enum constraint_num constraint)
+{
+  struct address_info ad;
+
+  decompose_mem_address (&ad, op);
+  address_eliminator eliminator (&ad);
+  return constraint_satisfied_p (op, constraint);
+}
+
+/* Return true if the eliminated form of address AD satisfies extra
+   address constraint CONSTRAINT.  */
+static bool
+satisfies_address_constraint_p (struct address_info *ad,
+				enum constraint_num constraint)
+{
+  address_eliminator eliminator (ad);
+  return constraint_satisfied_p (*ad->outer, constraint);
+}
+
+/* Return true if the eliminated form of address OP satisfies extra
+   address constraint CONSTRAINT.  */
+static bool
+satisfies_address_constraint_p (rtx op, enum constraint_num constraint)
+{
+  struct address_info ad;
+
+  decompose_lea_address (&ad, &op);
+  return satisfies_address_constraint_p (&ad, constraint);
+}
+
 /* Initiate equivalences for LRA.  As we keep original equivalences
    before any elimination, we need to make copies otherwise any change
    in insns might change the equivalences.  */
@@ -858,33 +968,25 @@ reg_class_from_constraints (const char *p)
       case ',':
 	return op_class;
 
-      case 'p':
-	op_class = (reg_class_subunion
-		    [op_class][base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-					       ADDRESS, SCRATCH)]);
-	break;
-
       case 'g':
-      case 'r':
 	op_class = reg_class_subunion[op_class][GENERAL_REGS];
 	break;
 
       default:
-	if (REG_CLASS_FROM_CONSTRAINT (c, p) == NO_REGS)
+	enum constraint_num cn = lookup_constraint (p);
+	enum reg_class cl = reg_class_for_constraint (cn);
+	if (cl == NO_REGS)
 	  {
-#ifdef EXTRA_CONSTRAINT_STR
-	    if (EXTRA_ADDRESS_CONSTRAINT (c, p))
+	    if (insn_extra_address_constraint (cn))
 	      op_class
 		= (reg_class_subunion
 		   [op_class][base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 					      ADDRESS, SCRATCH)]);
-#endif
 	    break;
 	  }
 
-	op_class
-	  = reg_class_subunion[op_class][REG_CLASS_FROM_CONSTRAINT (c, p)];
-	break;
+	op_class = reg_class_subunion[op_class][cl];
+ 	break;
       }
   while ((p += len), c);
   return op_class;
@@ -1600,6 +1702,7 @@ process_alt_operands (int only_alternative)
 	  bool this_alternative_offmemok;
 	  bool scratch_p;
 	  enum machine_mode mode;
+	  enum constraint_num cn;
 
 	  opalt_num = nalt * n_operands + nop;
 	  if (curr_static_id->operand_alternative[opalt_num].anything_ok)
@@ -1656,15 +1759,6 @@ process_alt_operands (int only_alternative)
 		  break;
 		case ',':
 		  c = '\0';
-		  break;
-
-		case '=':  case '+': case '?': case '*': case '!':
-		case ' ': case '\t':
-		  break;
-
-		case '%':
-		  /* We only support one commutative marker, the first
-		     one.  We already set commutative above.  */
 		  break;
 
 		case '&':
@@ -1799,194 +1893,66 @@ process_alt_operands (int only_alternative)
 		    break;
 		  }
 
-		case 'p':
-		  cl = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-				       ADDRESS, SCRATCH);
-		  this_alternative = reg_class_subunion[this_alternative][cl];
-		  IOR_HARD_REG_SET (this_alternative_set,
-				    reg_class_contents[cl]);
-		  if (costly_p)
-		    {
-		      this_costly_alternative
-			= reg_class_subunion[this_costly_alternative][cl];
-		      IOR_HARD_REG_SET (this_costly_alternative_set,
-					reg_class_contents[cl]);
-		    }
-		  win = true;
-		  badop = false;
-		  break;
-
-		case TARGET_MEM_CONSTRAINT:
-		  if (MEM_P (op) || spilled_pseudo_p (op))
-		    win = true;
-		  /* We can put constant or pseudo value into memory
-		     to satisfy the constraint.  */
-		  if (CONST_POOL_OK_P (mode, op) || REG_P (op))
-		    badop = false;
-		  constmemok = true;
-		  break;
-
-		case '<':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
-			  || GET_CODE (XEXP (op, 0)) == POST_DEC))
-		    win = true;
-		  break;
-
-		case '>':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
-			  || GET_CODE (XEXP (op, 0)) == POST_INC))
-		    win = true;
-		  break;
-
-		  /* Memory op whose address is not offsettable.  */
-		case 'V':
-		  if (MEM_P (op)
-		      && ! offsettable_nonstrict_memref_p (op))
-		    win = true;
-		  break;
-
-		  /* Memory operand whose address is offsettable.  */
-		case 'o':
-		  if ((MEM_P (op)
-		       && offsettable_nonstrict_memref_p (op))
-		      || spilled_pseudo_p (op))
-		    win = true;
-		  /* We can put constant or pseudo value into memory
-		     or make memory address offsetable to satisfy the
-		     constraint.  */
-		  if (CONST_POOL_OK_P (mode, op) || MEM_P (op) || REG_P (op))
-		    badop = false;
-		  constmemok = true;
-		  offmemok = true;
-		  break;
-
-		case 'E':
-		case 'F':
-		  if (GET_CODE (op) == CONST_DOUBLE
-		      || (GET_CODE (op) == CONST_VECTOR
-			  && (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)))
-		    win = true;
-		  break;
-
-		case 'G':
-		case 'H':
-		  if (CONST_DOUBLE_AS_FLOAT_P (op)
-		      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
-		    win = true;
-		  break;
-
-		case 's':
-		  if (CONST_SCALAR_INT_P (op))
-		    break;
-
-		case 'i':
-		  if (general_constant_p (op))
-		    win = true;
-		  break;
-
-		case 'n':
-		  if (CONST_SCALAR_INT_P (op))
-		    win = true;
-		  break;
-
-		case 'I':
-		case 'J':
-		case 'K':
-		case 'L':
-		case 'M':
-		case 'N':
-		case 'O':
-		case 'P':
-		  if (CONST_INT_P (op)
-		      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
-		    win = true;
-		  break;
-
-		case 'X':
-		  /* This constraint should be excluded by the fast
-		     track.  */
-		  gcc_unreachable ();
-		  break;
-
 		case 'g':
 		  if (MEM_P (op)
 		      || general_constant_p (op)
 		      || spilled_pseudo_p (op))
 		    win = true;
-		  /* Drop through into 'r' case.  */
-
-		case 'r':
-		  this_alternative
-		    = reg_class_subunion[this_alternative][GENERAL_REGS];
-		  IOR_HARD_REG_SET (this_alternative_set,
-				    reg_class_contents[GENERAL_REGS]);
-		  if (costly_p)
-		    {
-		      this_costly_alternative
-			= (reg_class_subunion
-			   [this_costly_alternative][GENERAL_REGS]);
-		      IOR_HARD_REG_SET (this_costly_alternative_set,
-					reg_class_contents[GENERAL_REGS]);
-		    }
+		  cl = GENERAL_REGS;
 		  goto reg;
 
 		default:
-		  if (REG_CLASS_FROM_CONSTRAINT (c, p) == NO_REGS)
+		  cn = lookup_constraint (p);
+		  switch (get_constraint_type (cn))
 		    {
-#ifdef EXTRA_CONSTRAINT_STR
-		      if (EXTRA_MEMORY_CONSTRAINT (c, p))
-			{
-			  if (EXTRA_CONSTRAINT_STR (op, c, p))
-			    win = true;
-			  else if (spilled_pseudo_p (op))
-			    win = true;
+		    case CT_REGISTER:
+		      cl = reg_class_for_constraint (cn);
+		      if (cl != NO_REGS)
+			goto reg;
+		      break;
 
-			  /* If we didn't already win, we can reload
-			     constants via force_const_mem or put the
-			     pseudo value into memory, or make other
-			     memory by reloading the address like for
-			     'o'.  */
-			  if (CONST_POOL_OK_P (mode, op)
-			      || MEM_P (op) || REG_P (op))
-			    badop = false;
-			  constmemok = true;
-			  offmemok = true;
-			  break;
-			}
-		      if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-			{
-			  if (EXTRA_CONSTRAINT_STR (op, c, p))
-			    win = true;
-
-			  /* If we didn't already win, we can reload
-			     the address into a base register.	*/
-			  cl = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-					       ADDRESS, SCRATCH);
-			  this_alternative
-			    = reg_class_subunion[this_alternative][cl];
-			  IOR_HARD_REG_SET (this_alternative_set,
-					    reg_class_contents[cl]);
-			  if (costly_p)
-			    {
-			      this_costly_alternative
-				= (reg_class_subunion
-				   [this_costly_alternative][cl]);
-			      IOR_HARD_REG_SET (this_costly_alternative_set,
-						reg_class_contents[cl]);
-			    }
-			  badop = false;
-			  break;
-			}
-
-		      if (EXTRA_CONSTRAINT_STR (op, c, p))
+		    case CT_CONST_INT:
+		      if (CONST_INT_P (op)
+			  && insn_const_int_ok_for_constraint (INTVAL (op), cn))
 			win = true;
-#endif
+		      break;
+
+		    case CT_MEMORY:
+		      if (MEM_P (op)
+			  && satisfies_memory_constraint_p (op, cn))
+			win = true;
+		      else if (spilled_pseudo_p (op))
+			win = true;
+
+		      /* If we didn't already win, we can reload constants
+			 via force_const_mem or put the pseudo value into
+			 memory, or make other memory by reloading the
+			 address like for 'o'.  */
+		      if (CONST_POOL_OK_P (mode, op)
+			  || MEM_P (op) || REG_P (op))
+			badop = false;
+		      constmemok = true;
+		      offmemok = true;
+		      break;
+
+		    case CT_ADDRESS:
+		      /* If we didn't already win, we can reload the address
+			 into a base register.  */
+		      if (satisfies_address_constraint_p (op, cn))
+			win = true;
+		      cl = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
+					   ADDRESS, SCRATCH);
+		      badop = false;
+		      goto reg;
+
+		    case CT_FIXED_FORM:
+		      if (constraint_satisfied_p (op, cn))
+			win = true;
 		      break;
 		    }
+		  break;
 
-		  cl = REG_CLASS_FROM_CONSTRAINT (c, p);
+		reg:
 		  this_alternative = reg_class_subunion[this_alternative][cl];
 		  IOR_HARD_REG_SET (this_alternative_set,
 				    reg_class_contents[cl]);
@@ -1997,7 +1963,6 @@ process_alt_operands (int only_alternative)
 		      IOR_HARD_REG_SET (this_costly_alternative_set,
 					reg_class_contents[cl]);
 		    }
-		reg:
 		  if (mode == BLKmode)
 		    break;
 		  winreg = true;
@@ -2573,60 +2538,6 @@ process_alt_operands (int only_alternative)
   return ok_p;
 }
 
-/* Return 1 if ADDR is a valid memory address for mode MODE in address
-   space AS, and check that each pseudo has the proper kind of hard
-   reg.	 */
-static int
-valid_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-		 rtx addr, addr_space_t as)
-{
-#ifdef GO_IF_LEGITIMATE_ADDRESS
-  lra_assert (ADDR_SPACE_GENERIC_P (as));
-  GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
-  return 0;
-
- win:
-  return 1;
-#else
-  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as);
-#endif
-}
-
-/* Return whether address AD is valid.  */
-
-static bool
-valid_address_p (struct address_info *ad)
-{
-  /* Some ports do not check displacements for eliminable registers,
-     so we replace them temporarily with the elimination target.  */
-  rtx saved_base_reg = NULL_RTX;
-  rtx saved_index_reg = NULL_RTX;
-  rtx *base_term = strip_subreg (ad->base_term);
-  rtx *index_term = strip_subreg (ad->index_term);
-  if (base_term != NULL)
-    {
-      saved_base_reg = *base_term;
-      lra_eliminate_reg_if_possible (base_term);
-      if (ad->base_term2 != NULL)
-	*ad->base_term2 = *ad->base_term;
-    }
-  if (index_term != NULL)
-    {
-      saved_index_reg = *index_term;
-      lra_eliminate_reg_if_possible (index_term);
-    }
-  bool ok_p = valid_address_p (ad->mode, *ad->outer, ad->as);
-  if (saved_base_reg != NULL_RTX)
-    {
-      *base_term = saved_base_reg;
-      if (ad->base_term2 != NULL)
-	*ad->base_term2 = *ad->base_term;
-    }
-  if (saved_index_reg != NULL_RTX)
-    *index_term = saved_index_reg;
-  return ok_p;
-}
-
 /* Make reload base reg + disp from address AD.  Return the new pseudo.  */
 static rtx
 base_plus_disp_to_reg (struct address_info *ad)
@@ -2797,10 +2708,10 @@ process_address_1 (int nop, rtx *before, rtx *after)
   rtx new_reg;
   rtx op = *curr_id->operand_loc[nop];
   const char *constraint = curr_static_id->operand[nop].constraint;
+  enum constraint_num cn = lookup_constraint (constraint);
   bool change_p;
 
-  if (constraint[0] == 'p'
-      || EXTRA_ADDRESS_CONSTRAINT (constraint[0], constraint))
+  if (insn_extra_address_constraint (cn))
     decompose_lea_address (&ad, curr_id->operand_loc[nop]);
   else if (MEM_P (op))
     decompose_mem_address (&ad, op);
@@ -2829,14 +2740,11 @@ process_address_1 (int nop, rtx *before, rtx *after)
       && process_addr_reg (ad.index_term, before, NULL, INDEX_REG_CLASS))
     change_p = true;
 
-#ifdef EXTRA_CONSTRAINT_STR
-  /* Target hooks sometimes reject extra constraint addresses -- use
-     EXTRA_CONSTRAINT_STR for the validation.  */
-  if (constraint[0] != 'p'
-      && EXTRA_ADDRESS_CONSTRAINT (constraint[0], constraint)
-      && EXTRA_CONSTRAINT_STR (op, constraint[0], constraint))
+  /* Target hooks sometimes don't treat extra-constraint addresses as
+     legitimate address_operands, so handle them specially.  */
+  if (insn_extra_address_constraint (cn)
+      && satisfies_address_constraint_p (&ad, cn))
     return change_p;
-#endif
 
   /* There are three cases where the shape of *AD.INNER may now be invalid:
 
@@ -2973,6 +2881,13 @@ process_address_1 (int nop, rtx *before, rtx *after)
       new_reg = base_plus_disp_to_reg (&ad);
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       new_reg, *ad.index);
+    }
+  else if (get_index_scale (&ad) == 1)
+    {
+      /* The last transformation to one reg will be made in
+	 curr_insn_transform function.  */
+      end_sequence ();
+      return false;
     }
   else
     {
@@ -3549,13 +3464,10 @@ curr_insn_transform (void)
 		 (c = *constraint) && c != ',' && c != '#';
 		 constraint += CONSTRAINT_LEN (c, constraint))
 	      {
-		if (c == TARGET_MEM_CONSTRAINT || c == 'o')
+		enum constraint_num cn = lookup_constraint (constraint);
+		if (insn_extra_memory_constraint (cn)
+		    && satisfies_memory_constraint_p (tem, cn))
 		  break;
-#ifdef EXTRA_CONSTRAINT_STR
-		if (EXTRA_MEMORY_CONSTRAINT (c, constraint)
-		    && EXTRA_CONSTRAINT_STR (tem, c, constraint))
-		  break;
-#endif
 	      }
 	    if (c == '\0' || c == ',' || c == '#')
 	      continue;

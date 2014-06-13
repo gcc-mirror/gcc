@@ -328,7 +328,6 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
   enum reload_type secondary_type;
   int s_reload, t_reload = -1;
   const char *scratch_constraint;
-  char letter;
   secondary_reload_info sri;
 
   if (type == RELOAD_FOR_INPUT_ADDRESS
@@ -399,10 +398,8 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
       scratch_constraint++;
       if (*scratch_constraint == '&')
 	scratch_constraint++;
-      letter = *scratch_constraint;
-      scratch_class = (letter == 'r' ? GENERAL_REGS
-		       : REG_CLASS_FROM_CONSTRAINT ((unsigned char) letter,
-						   scratch_constraint));
+      scratch_class = (reg_class_for_constraint
+		       (lookup_constraint (scratch_constraint)));
 
       rclass = scratch_class;
       mode = insn_data[(int) icode].operand[2].mode;
@@ -548,7 +545,6 @@ enum reg_class
 scratch_reload_class (enum insn_code icode)
 {
   const char *scratch_constraint;
-  char scratch_letter;
   enum reg_class rclass;
 
   gcc_assert (insn_data[(int) icode].n_operands == 3);
@@ -557,11 +553,7 @@ scratch_reload_class (enum insn_code icode)
   scratch_constraint++;
   if (*scratch_constraint == '&')
     scratch_constraint++;
-  scratch_letter = *scratch_constraint;
-  if (scratch_letter == 'r')
-    return GENERAL_REGS;
-  rclass = REG_CLASS_FROM_CONSTRAINT ((unsigned char) scratch_letter,
-				     scratch_constraint);
+  rclass = reg_class_for_constraint (lookup_constraint (scratch_constraint));
   gcc_assert (rclass != NO_REGS);
   return rclass;
 }
@@ -2851,8 +2843,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
       if (*constraints[i] == 0)
 	/* Ignore things like match_operator operands.  */
 	;
-      else if (constraints[i][0] == 'p'
-	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0], constraints[i]))
+      else if (insn_extra_address_constraint
+	       (lookup_constraint (constraints[i])))
 	{
 	  address_operand_reloaded[i]
 	    = find_reloads_address (recog_data.operand_mode[i], (rtx*) 0,
@@ -3094,6 +3086,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		 operand.  */
 	      int constmemok = 0;
 	      int earlyclobber = 0;
+	      enum constraint_num cn;
+	      enum reg_class cl;
 
 	      /* If the predicate accepts a unary operator, it means that
 		 we need to reload the operand, but do not do this for
@@ -3205,14 +3199,6 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		    break;
 		  case ',':
 		    c = '\0';
-		    break;
-
-		  case '=':  case '+':  case '*':
-		    break;
-
-		  case '%':
-		    /* We only support one commutative marker, the first
-		       one.  We already set commutative above.  */
 		    break;
 
 		  case '?':
@@ -3423,49 +3409,6 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		    earlyclobber = 1, this_earlyclobber = 1;
 		    break;
 
-		  case 'E':
-		  case 'F':
-		    if (CONST_DOUBLE_AS_FLOAT_P (operand)
-			|| (GET_CODE (operand) == CONST_VECTOR
-			    && (GET_MODE_CLASS (GET_MODE (operand))
-				== MODE_VECTOR_FLOAT)))
-		      win = 1;
-		    break;
-
-		  case 'G':
-		  case 'H':
-		    if (CONST_DOUBLE_AS_FLOAT_P (operand)
-			&& CONST_DOUBLE_OK_FOR_CONSTRAINT_P (operand, c, p))
-		      win = 1;
-		    break;
-
-		  case 's':
-		    if (CONST_SCALAR_INT_P (operand))
-		      break;
-		  case 'i':
-		    if (CONSTANT_P (operand)
-			&& (! flag_pic || LEGITIMATE_PIC_OPERAND_P (operand)))
-		      win = 1;
-		    break;
-
-		  case 'n':
-		    if (CONST_SCALAR_INT_P (operand))
-		      win = 1;
-		    break;
-
-		  case 'I':
-		  case 'J':
-		  case 'K':
-		  case 'L':
-		  case 'M':
-		  case 'N':
-		  case 'O':
-		  case 'P':
-		    if (CONST_INT_P (operand)
-			&& CONST_OK_FOR_CONSTRAINT_P (INTVAL (operand), c, p))
-		      win = 1;
-		    break;
-
 		  case 'X':
 		    force_reload = 0;
 		    win = 1;
@@ -3486,74 +3429,81 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			    || (REGNO (operand) >= FIRST_PSEUDO_REGISTER
 				&& reg_renumber[REGNO (operand)] < 0)))
 		      win = 1;
-		    /* Drop through into 'r' case.  */
-
-		  case 'r':
-		    this_alternative[i]
-		      = reg_class_subunion[this_alternative[i]][(int) GENERAL_REGS];
+		    cl = GENERAL_REGS;
 		    goto reg;
 
 		  default:
-		    if (REG_CLASS_FROM_CONSTRAINT (c, p) == NO_REGS)
+		    cn = lookup_constraint (p);
+		    switch (get_constraint_type (cn))
 		      {
-#ifdef EXTRA_CONSTRAINT_STR
-			if (EXTRA_MEMORY_CONSTRAINT (c, p))
-			  {
-			    if (force_reload)
-			      break;
-			    if (EXTRA_CONSTRAINT_STR (operand, c, p))
-			      win = 1;
-			    /* If the address was already reloaded,
-			       we win as well.  */
-			    else if (MEM_P (operand)
-				     && address_reloaded[i] == 1)
-			      win = 1;
-			    /* Likewise if the address will be reloaded because
-			       reg_equiv_address is nonzero.  For reg_equiv_mem
-			       we have to check.  */
-			    else if (REG_P (operand)
-				     && REGNO (operand) >= FIRST_PSEUDO_REGISTER
-				     && reg_renumber[REGNO (operand)] < 0
-				     && ((reg_equiv_mem (REGNO (operand)) != 0
-					  && EXTRA_CONSTRAINT_STR (reg_equiv_mem (REGNO (operand)), c, p))
-					 || (reg_equiv_address (REGNO (operand)) != 0)))
-			      win = 1;
+		      case CT_REGISTER:
+			cl = reg_class_for_constraint (cn);
+			if (cl != NO_REGS)
+			  goto reg;
+			break;
 
-			    /* If we didn't already win, we can reload
-			       constants via force_const_mem, and other
-			       MEMs by reloading the address like for 'o'.  */
-			    if (CONST_POOL_OK_P (operand_mode[i], operand)
-				|| MEM_P (operand))
-			      badop = 0;
-			    constmemok = 1;
-			    offmemok = 1;
-			    break;
-			  }
-			if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-			  {
-			    if (EXTRA_CONSTRAINT_STR (operand, c, p))
-			      win = 1;
+		      case CT_CONST_INT:
+			if (CONST_INT_P (operand)
+			    && (insn_const_int_ok_for_constraint
+				(INTVAL (operand), cn)))
+			  win = true;
+			break;
 
-			    /* If we didn't already win, we can reload
-			       the address into a base register.  */
-			    this_alternative[i]
-			      = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-						ADDRESS, SCRATCH);
-			    badop = 0;
-			    break;
-			  }
-
-			if (EXTRA_CONSTRAINT_STR (operand, c, p))
+		      case CT_MEMORY:
+			if (force_reload)
+			  break;
+			if (constraint_satisfied_p (operand, cn))
 			  win = 1;
-#endif
+			/* If the address was already reloaded,
+			   we win as well.  */
+			else if (MEM_P (operand) && address_reloaded[i] == 1)
+			  win = 1;
+			/* Likewise if the address will be reloaded because
+			   reg_equiv_address is nonzero.  For reg_equiv_mem
+			   we have to check.  */
+			else if (REG_P (operand)
+				 && REGNO (operand) >= FIRST_PSEUDO_REGISTER
+				 && reg_renumber[REGNO (operand)] < 0
+				 && ((reg_equiv_mem (REGNO (operand)) != 0
+				      && (constraint_satisfied_p
+					  (reg_equiv_mem (REGNO (operand)),
+					   cn)))
+				     || (reg_equiv_address (REGNO (operand))
+					 != 0)))
+			  win = 1;
+
+			/* If we didn't already win, we can reload
+			   constants via force_const_mem, and other
+			   MEMs by reloading the address like for 'o'.  */
+			if (CONST_POOL_OK_P (operand_mode[i], operand)
+			    || MEM_P (operand))
+			  badop = 0;
+			constmemok = 1;
+			offmemok = 1;
+			break;
+
+		      case CT_ADDRESS:
+			if (constraint_satisfied_p (operand, cn))
+			  win = 1;
+
+			/* If we didn't already win, we can reload
+			   the address into a base register.  */
+			this_alternative[i]
+			  = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
+					    ADDRESS, SCRATCH);
+			badop = 0;
+			break;
+
+		      case CT_FIXED_FORM:
+			if (constraint_satisfied_p (operand, cn))
+			  win = 1;
 			break;
 		      }
+		    break;
 
-		    this_alternative[i]
-		      = (reg_class_subunion
-			 [this_alternative[i]]
-			 [(int) REG_CLASS_FROM_CONSTRAINT (c, p)]);
 		  reg:
+		    this_alternative[i]
+		      = reg_class_subunion[this_alternative[i]][cl];
 		    if (GET_MODE (operand) == BLKmode)
 		      break;
 		    winreg = 1;
@@ -4685,13 +4635,10 @@ alternative_allows_const_pool_ref (rtx mem ATTRIBUTE_UNUSED,
   for (; (c = *constraint) && c != ',' && c != '#';
        constraint += CONSTRAINT_LEN (c, constraint))
     {
-      if (c == TARGET_MEM_CONSTRAINT || c == 'o')
+      enum constraint_num cn = lookup_constraint (constraint);
+      if (insn_extra_memory_constraint (cn)
+	  && (mem == NULL || constraint_satisfied_p (mem, cn)))
 	return true;
-#ifdef EXTRA_CONSTRAINT_STR
-      if (EXTRA_MEMORY_CONSTRAINT (c, constraint)
-	  && (mem == NULL || EXTRA_CONSTRAINT_STR (mem, c, constraint)))
-	return true;
-#endif
     }
   return false;
 }

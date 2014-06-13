@@ -464,7 +464,7 @@ create_unshared_var (location_t loc, const tree var)
   DECL_ARTIFICIAL (u) = 1;
   DECL_IGNORED_P (u) = 1;
   DECL_EXTERNAL (u) = DECL_EXTERNAL (var);
-  DECL_SECTION_NAME (u) = DECL_SECTION_NAME (var);
+  set_decl_section_name (u, DECL_SECTION_NAME (var));
   DECL_CONTEXT (u) = DECL_CONTEXT (var);
 
   /* Alias the unshared variable to the shared variable.  */

@@ -12,14 +12,17 @@
 struct __go_open_array
 __go_string_to_byte_array (String str)
 {
+  uintptr cap;
   unsigned char *data;
   struct __go_open_array ret;
 
-  data = (unsigned char *) runtime_mallocgc (str.len, 0,
-					     FlagNoScan | FlagNoZero);
+  cap = runtime_roundupsize (str.len);
+  data = (unsigned char *) runtime_mallocgc (cap, 0, FlagNoScan | FlagNoZero);
   __builtin_memcpy (data, str.str, str.len);
+  if (cap != (uintptr) str.len)
+    __builtin_memset (data + str.len, 0, cap - (uintptr) str.len);
   ret.__values = (void *) data;
   ret.__count = str.len;
-  ret.__capacity = str.len;
+  ret.__capacity = (intgo) cap;
   return ret;
 }

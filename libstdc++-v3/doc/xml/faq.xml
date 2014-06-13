@@ -7,7 +7,7 @@
   
   <copyright>
     <year>
-      2008, 2010
+      2008-2014
     </year>
     <holder>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org">FSF</link>
@@ -16,11 +16,10 @@
 </info>
 
 <!-- FAQ starts here -->
-<qandaset>
+<qandaset xml:id="faq.faq">
 
 <!-- General Information -->
 <qandadiv xml:id="faq.info" xreflabel="General Information">
-
 
 <qandaentry xml:id="faq.what">
   <question xml:id="faq.what.q">
@@ -32,11 +31,11 @@
     <para>
      The GNU Standard C++ Library v3 is an ongoing project to
      implement the ISO 14882 Standard C++ library as described in
-     clauses 17 through 27 and annex D.  For those who want to see
+     clauses 17 through 30 and annex D.  For those who want to see
      exactly how far the project has come, or just want the latest
      bleeding-edge code, the up-to-date source is available over
-     anonymous SVN, and can even be browsed over
-     the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/svn.html">web</link>.
+     anonymous SVN, and can be browsed over
+     the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/svn.html">web</link>.
     </para> 
   </answer>
 </qandaentry>
@@ -49,32 +48,31 @@
   </question>
   <answer xml:id="a-why">
     <para>
-    The completion of the ISO C++ standardization gave the C++
+    The completion of the initial ISO C++ standardization effort gave the C++
     community a powerful set of reuseable tools in the form of the C++
-    Standard Library.  However, all existing C++ implementations are
+    Standard Library.  However, for several years C++ implementations were
     (as the Draft Standard used to say) <quote>incomplet and
-    incorrekt</quote>, and many suffer from limitations of the compilers
-    that use them.
+    incorrekt</quote>, and many suffered from limitations of the compilers
+    that used them.
     </para> 
     <para>
     The GNU compiler collection
     (<command>gcc</command>, <command>g++</command>, etc) is widely
     considered to be one of the leading compilers in the world.  Its
     development is overseen by the
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/">GCC team</link>.  All of
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/">GCC team</link>.  All of
     the rapid development and near-legendary
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/buildstat.html">portability</link>
-    that are the hallmarks of an open-source project are being
-    applied to libstdc++.
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/buildstat.html">portability</link>
+    that are the hallmarks of an open-source project are applied to libstdc++.
     </para> 
     <para>
-    That means that all of the Standard classes and functions will be
-    freely available and fully compliant. (Such as
-    <classname>string</classname>,
-    <classname>vector&lt;&gt;</classname>, iostreams, and algorithms.)
-    Programmers will no longer need to <quote>roll their own</quote>
-    nor be worried about platform-specific incompatibilities.
-    </para> 
+    All of the standard classes and functions from C++98/C++03
+    (such as <classname>string</classname>,
+    <classname>vector&lt;&gt;</classname>, iostreams, algorithms etc.)
+    are freely available and atempt to be fully compliant.
+    Work is ongoing to complete support for the current revision of the
+    ISO C++ Standard.
+    </para>
   </answer>
 </qandaentry>
 
@@ -88,15 +86,15 @@
     <para>
      The libstdc++ project is contributed to by several developers
      all over the world, in the same way as GCC or the Linux kernel.
-     Benjamin Kosnik, Gabriel Dos Reis, Phil Edwards, Ulrich Drepper,
-     Loren James Rittle, and Paolo Carlini are the lead maintainers of
-     the SVN archive.
+     The current maintainers are listed in the
+     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/viewcvs/gcc/trunk/MAINTAINERS?view=co"><filename>MAINTAINERS</filename></link>
+     file (look for "c++ runtime libs").
     </para>
     <para>
     Development and discussion is held on the libstdc++ mailing
     list.  Subscribing to the list, or searching the list
     archives, is open to everyone.  You can read instructions for
-    doing so on the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/libstdc++/">homepage</link>.
+    doing so on the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/lists.html">GCC mailing lists</link> page.
     If you have questions, ideas, code, or are just curious, sign up!
     </para> 
   </answer>
@@ -125,8 +123,8 @@
   </question>
   <answer xml:id="a-how">
     <para>
-    Here is <link linkend="appendix.contrib">a page devoted to
-    this topic</link>. Subscribing to the mailing list (see above, or
+    See the <link linkend="appendix.contrib">Contributing</link> section in
+    the manual. Subscribing to the mailing list (see above, or
     the homepage) is a very good idea if you have something to
     contribute, or if you have spare time and want to
     help. Contributions don't have to be in the form of source code;
@@ -145,12 +143,16 @@
   </question>
   <answer xml:id="a-whereis_old">
     <para>
-    The most recent libg++ README states that libg++ is no longer
-    being actively maintained.  It should not be used for new
-    projects, and is only being kicked along to support older code.
+    The last libg++ README states
+    <quote>This package is considered obsolete and is no longer
+    being developed.</quote>
+    It should not be used for new projects, and won't even compile with
+    recent releases of GCC (or most other C++ compilers).
     </para> 
     <para>
-    More information in the <link linkend="manual.appendix.porting.backwards">backwards compatibility documentation</link>
+    More information can be found in the
+    <link linkend="manual.appendix.porting.backwards">Backwards
+    Compatibility</link> section of the libstdc++ manual.
     </para>
   </answer>
 </qandaentry>
@@ -163,7 +165,7 @@
   </question>
   <answer xml:id="a-more_questions">
     <para>
-    If you have read the README file, and your question remains
+    If you have read the documentation, and your question remains
     unanswered, then just ask the mailing list. At present, you do not
     need to be subscribed to the list to send a message to it.  More
     information is available on the homepage (including how to browse
@@ -285,7 +287,7 @@
     <para>
     Libstdc++ sources for all official releases can be obtained as
     part of the GCC sources, available from various sites and
-    mirrors. A full <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/mirrors.html">list of 
+    mirrors. A full <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/mirrors.html">list of
     download sites</link> is provided on the main GCC site.
     </para>
     <para>
@@ -308,7 +310,7 @@
     </para> 
     <para>
     For more information
-    see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/svn.html"><acronym>SVN</acronym>
+    see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/svn.html"><acronym>SVN</acronym>
     details</link>.
     </para>
   </answer>
@@ -325,7 +327,9 @@
     conformance testing, regression testing, ABI testing, and
     performance testing. Please consult the 
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/test.html">testing
-    documentation</link> for more details.
+    documentation</link> for GCC and
+    <link linkend="manual.intro.setup.test">Test</link> in the libstdc++
+    manual for more details.
     </para> 
     <para>
     If you find bugs in the testsuite programs themselves, or if you
@@ -382,26 +386,26 @@
 
     <para>
     The simplest way to fix this is
-    to use the <literal>LD_LIBRARY_PATH</literal> environment variable,
+    to use the <envar>LD_LIBRARY_PATH</envar> environment variable,
     which is a colon-separated list of directories in which the linker
     will search for shared libraries:
     </para>
 
-    <screen>
-    LD_LIBRARY_PATH=${prefix}/lib:$LD_LIBRARY_PATH
-    export LD_LIBRARY_PATH
-    </screen>
+    <screen><command>
+    export LD_LIBRARY_PATH=${prefix}/lib:$LD_LIBRARY_PATH
+    </command></screen>
 
     <para>
-    Here the shell variable <command>${prefix}</command> is assumed to contain
+    Here the shell variable <varname>${prefix}</varname> is assumed to contain
     the directory prefix where GCC was installed to. The directory containing
     the library might depend on whether you want the 32-bit or 64-bit copy
     of the library, so for example would be
-    <filename>${prefix}/lib64</filename> on some systems.
+    <filename class="directory">${prefix}/lib64</filename> on some systems.
     The exact environment variable to use will depend on your
-    platform, e.g. DYLD_LIBRARY_PATH for Darwin,
-    LD_LIBRARY_PATH_32/LD_LIBRARY_PATH_64 for Solaris 32-/64-bit
-    and SHLIB_PATH for HP-UX.
+    platform, e.g. <envar>DYLD_LIBRARY_PATH</envar> for Darwin,
+    <envar>LD_LIBRARY_PATH_32</envar>/<envar>LD_LIBRARY_PATH_64</envar>
+    for Solaris 32-/64-bit,
+    and <envar>SHLIB_PATH</envar> for HP-UX.
     </para>
     <para>
     See the man pages for <command>ld</command>, <command>ldd</command>
@@ -411,7 +415,8 @@
     <filename>rtld</filename> or <filename>dld.so</filename>.
     </para>
     <para>
-    Using LD_LIBRARY_PATH is not always the best solution, <link linkend="manual.intro.using.linkage.dynamic">Finding Dynamic or Shared
+    Using <envar>LD_LIBRARY_PATH</envar> is not always the best solution,
+    <link linkend="manual.intro.using.linkage.dynamic">Finding Dynamic or Shared
     Libraries</link> in the manual gives some alternatives.
     </para>
   </answer>
@@ -425,20 +430,20 @@
   </question>
   <answer xml:id="a-what_is_libsupcxx">
     <para>
-      If the only functions from <filename>libstdc++.a</filename>
+      If the only functions from <filename class="libraryfile">libstdc++.a</filename>
       which you need are language support functions (those listed in
       <link linkend="std.support">clause 18</link> of the
       standard, e.g., <function>new</function> and
       <function>delete</function>), then try linking against
-      <filename>libsupc++.a</filename>, which is a subset of
-      <filename>libstdc++.a</filename>.  (Using <command>gcc</command>
+      <filename class="libraryfile">libsupc++.a</filename>, which is a subset of
+      <filename class="libraryfile">libstdc++.a</filename>.  (Using <command>gcc</command>
       instead of <command>g++</command> and explicitly linking in
-      <filename>libsupc++.a</filename> via <literal>-lsupc++</literal>
+      <filename class="libraryfile">libsupc++.a</filename> via <option>-lsupc++</option>
       for the final link step will do it).  This library contains only
       those support routines, one per object file.  But if you are
       using anything from the rest of the library, such as IOStreams
       or vectors, then you'll still need pieces from
-      <filename>libstdc++.a</filename>.
+      <filename class="libraryfile">libstdc++.a</filename>.
     </para> 
   </answer>
 </qandaentry>
@@ -461,14 +466,15 @@
     for background reasons.)
     </para>
     <para>
-    Some of the object files which make up libstdc++.a are rather large.
+    Some of the object files which make up
+    <filename class="libraryfile">libstdc++.a</filename> are rather large.
     If you create a statically-linked executable with
-    <literal>-static</literal>, those large object files are suddenly part
+    <option>-static</option>, those large object files are suddenly part
     of your executable.  Historically the best way around this was to
     only place a very few functions (often only a single one) in each
     source/object file; then extracting a single function is the same
-    as extracting a single .o file.  For libstdc++ this is only
-    possible to a certain extent; the object files in question contain
+    as extracting a single <filename>.o</filename> file.  For libstdc++ this
+    is only possible to a certain extent; the object files in question contain
     template classes and template functions, pre-instantiated, and
     splitting those up causes severe maintenance headaches.
     </para> 
@@ -477,8 +483,8 @@
     collection in the GNU linker to get a result similar to separating
     each symbol into a separate source and object files. On these platforms,
     GNU ld can place each function and variable into its own
-    section in a .o file.  The GNU linker can then perform garbage
-    collection on unused sections; this reduces the situation to only
+    section in a <filename>.o</filename> file.  The GNU linker can then perform
+    garbage collection on unused sections; this reduces the situation to only
     copying needed functions into the executable, as before, but all
     happens automatically.
     </para>
@@ -509,13 +515,14 @@
     </para> 
     <para>
     However, the reality is that libstdc++ is targeted and optimized
-    for GCC/g++. This means that often libstdc++ uses specific,
-    non-standard features of g++ that are not present in older
+    for GCC/G++. This means that often libstdc++ uses specific,
+    non-standard features of G++ that are not present in older
     versions of proprietary compilers. It may take as much as a year or two
     after an official release of GCC that contains these features for
     proprietary tools to support these constructs.
     </para>
     <para>
+    Recent versions of libstdc++ are known to work with the Clang compiler.
     In the near past, specific released versions of libstdc++ have
     been known to work with versions of the EDG C++ compiler, and
     vendor-specific proprietary C++ compilers such as the Intel ICC
@@ -528,7 +535,7 @@
 <qandaentry xml:id="faq.solaris_long_long">
   <question xml:id="q-solaris_long_long">
     <para>
-      No 'long long' type on Solaris?
+      No '<type>long long</type>' type on Solaris?
     </para>
   </question>
   <answer xml:id="a-solaris_long_long">
@@ -555,13 +562,14 @@
     </para>
   </question>
   <answer xml:id="a-predefined">
-      <para>On Solaris, g++ (but not gcc) always defines the preprocessor
-         macro <constant>_XOPEN_SOURCE</constant>.  On GNU/Linux, the same happens
+      <para>On Solaris, <command>g++</command> (but not <command>gcc</command>)
+         always defines the preprocessor macro
+	 <constant>_XOPEN_SOURCE</constant>.  On GNU/Linux, the same happens
          with <constant>_GNU_SOURCE</constant>.  (This is not an exhaustive list;
          other macros and other platforms are also affected.)
       </para>
       <para>These macros are typically used in C library headers, guarding new
-         versions of functions from their older versions.  The C++ standard
+         versions of functions from their older versions.  The C++98 standard
          library includes the C standard library, but it requires the C90
          version, which for backwards-compatibility reasons is often not the
          default for many vendors.
@@ -571,13 +579,14 @@
          Usually the issue involves I/O-related typedefs.  In order to
          ensure correctness, the compiler simply predefines those symbols.
       </para>
-      <para>Note that it's not enough to #define them only when the library is
+      <para>Note that it's not enough to <literal>#define</literal> them only when the library is
          being built (during installation).  Since we don't have an 'export'
          keyword, much of the library exists as headers, which means that
          the symbols must also be defined as your programs are parsed and
          compiled.
       </para>
-      <para>To see which symbols are defined, look for CPLUSPLUS_CPP_SPEC in
+      <para>To see which symbols are defined, look for
+         <varname>CPLUSPLUS_CPP_SPEC</varname> in
          the gcc config headers for your target (and try changing them to
          see what happens when building complicated code).  You can also run
          <command>g++ -E -dM - &lt; /dev/null"</command> to display
@@ -600,10 +609,13 @@
     </para>
   </question>
   <answer xml:id="a-darwin_ctype">
-      <para>This is a long-standing bug in the OS X support.  Fortunately,
-         the patch is quite simple, and well-known.
-         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/gcc/2002-03/msg00817.html"> Here's a
-         link to the solution</link>.
+      <note>
+         <para>This answer is old and probably no longer be relevant.</para>
+      </note>
+      <para>
+         This was a long-standing bug in the OS X support.  Fortunately, the
+         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/gcc/2002-03/msg00817.html">patch</link>
+	 was quite simple, and well-known.
       </para>
 
   </answer>
@@ -616,9 +628,10 @@
     </para>
   </question>
   <answer xml:id="a-threads_i386">
-    <para>
-    </para> 
-      <para>Support for atomic integer operations is/was broken on i386
+      <note>
+         <para>This answer is old and probably no longer be relevant.</para>
+      </note>
+      <para>Support for atomic integer operations was broken on i386
          platforms.  The assembly code accidentally used opcodes that are
          only available on the i486 and later.  So if you configured GCC
          to target, for example, i386-linux, but actually used the programs
@@ -638,6 +651,9 @@
     </para>
   </question>
   <answer xml:id="a-atomic_mips">
+    <note>
+      <para>This answer is old and probably no longer be relevant.</para>
+    </note>
     <para>
     The atomic locking routines for MIPS targets requires MIPS II
     and later.  A patch went in just after the 3.3 release to
@@ -661,7 +677,7 @@
       <para>When running on GNU/Linux, libstdc++ 3.2.1 (shared library version
          5.0.1) and later uses localization and formatting code from the system
          C library (glibc) version 2.2.5 which contains necessary bugfixes.
-         Most GNU/Linux distros make more recent versions available now.
+         All GNU/Linux distros make more recent versions available now.
          libstdc++ 4.6.0 and later require glibc 2.3 or later for this
          localization and formatting code.
       </para>
@@ -680,10 +696,13 @@
     </para>
   </question>
   <answer xml:id="a-freebsd_wchar">
+    <note>
+      <para>This answer is old and probably no longer be relevant.</para>
+    </note>
     <para>
     Older versions of FreeBSD's C library do not have sufficient
     support for wide character functions, and as a result the
-    libstdc++ configury decides that wchar_t support should be
+    libstdc++ configury decides that <type>wchar_t</type> support should be
     disabled. In addition, the libstdc++ platform checks that
     enabled <type>wchar_t</type> were quite strict, and not granular
     enough to detect when the minimal support to
@@ -713,7 +732,7 @@
     <para>
     Short answer: Pretty much everything <emphasis>works</emphasis>
     except for some corner cases.  Support for localization
-    in <classname>locale</classname> may be incomplete on non-GNU
+    in <classname>locale</classname> may be incomplete on some non-GNU
     platforms. Also dependent on the underlying platform is support
     for <type>wchar_t</type> and <type>long
     long</type> specializations, and details of thread support.
@@ -745,12 +764,12 @@
     published on <link xmlns:xlink="http://www.w3.org/1999/xlink"
     xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">the WG21
     website</link>.
-    Some of these issues have resulted in code changes in libstdc++.
+    Many of these issues have resulted in code changes in libstdc++.
     </para> 
     <para>
     If you think you've discovered a new bug that is not listed,
     please post a message describing your problem to the author of
-    the library issues list or the Usenet group comp.lang.c++.moderated.
+    the library issues list.
     </para>
   </answer>
 </qandaentry>
@@ -798,16 +817,16 @@
     One of the most-reported non-bug reports. Executing a sequence like:
     </para>
 
-    <literallayout class="normal">
+    <programlisting>
     #include &lt;fstream&gt;
     ...
-    std::fstream  fs(<quote>a_file</quote>);
+    std::fstream  fs("a_file");
     // .
     // . do things with fs...
     // .
     fs.close();
-    fs.open(<quote>a_new_file</quote>);
-    </literallayout>
+    fs.open("a_new_file");
+    </programlisting>
     
     <para>
     All operations on the re-opened <varname>fs</varname> will fail, or at
@@ -835,15 +854,15 @@
   </question>
   <answer xml:id="a-wefcxx_verbose">
     <para>
-    Many warnings are emitted when <literal>-Weffc++</literal> is used.  Making
-    libstdc++ <literal>-Weffc++</literal>-clean is not a goal of the project,
+    Many warnings are emitted when <option>-Weffc++</option> is used.  Making
+    libstdc++ <option>-Weffc++</option>-clean is not a goal of the project,
     for a few reasons.  Mainly, that option tries to enforce
     object-oriented programming, while the Standard Library isn't
     necessarily trying to be OO.
     </para> 
     <para>
     We do, however, try to have libstdc++ sources as clean as possible. If
-    you see some simple changes that pacify <literal>-Weffc++</literal>
+    you see some simple changes that pacify <option>-Weffc++</option>
     without other drawbacks, send us a patch.
     </para>
   </answer>
@@ -879,19 +898,20 @@
   <answer xml:id="a-v2_headers">
       <para>
 	If you are using headers in
-	<filename>${prefix}/include/g++-3</filename>, or if the installed
-	library's name looks like <filename>libstdc++-2.10.a</filename> or
-	<filename>libstdc++-libc6-2.10.so</filename>, then you are using the
-	old libstdc++-v2 library, which is nonstandard and
+	<filename class="directory">${prefix}/include/g++-3</filename>, or if
+	the installed library's name looks like
+	<filename class="libraryfile">libstdc++-2.10.a</filename> or
+	<filename class="libraryfile">libstdc++-libc6-2.10.so</filename>, then
+	you are using the old libstdc++-v2 library, which is non-standard and
 	unmaintained.  Do not report problems with -v2 to the -v3
 	mailing list.
       </para>
       <para>
-	For GCC versions 3.0 and 3.1 the libstdc++ header files are
-	installed in <filename>${prefix}/include/g++-v3</filename> (see the
-	'v'?).  Starting with version 3.2 the headers are installed in
-	<filename>${prefix}/include/c++/${version}</filename> as this prevents
-	headers from previous versions being found by mistake.
+	For GCC versions 3.0 and 3.1 the libstdc++ header files are installed in
+	<filename class="directory">${prefix}/include/g++-v3</filename>
+	(see the 'v'?).  Starting with version 3.2 the headers are installed in
+	<filename class="directory">${prefix}/include/c++/${version}</filename>
+	as this prevents headers from previous versions being found by mistake.
       </para>
 
   </answer>
@@ -907,7 +927,7 @@
   <answer xml:id="a-boost_concept_checks">
     <para>
     If you see compilation errors containing messages about
-    <errortext>foo Concept </errortext>and something to do with a
+    <errortext>foo Concept</errortext> and something to do with a
     <errortext>constraints</errortext> member function, then most
     likely you have violated one of the requirements for types used
     during instantiation of template containers and functions.  For
@@ -939,17 +959,17 @@
     </para>
 
     <literallayout class="normal">
-    // compile your library components
-    g++ -fPIC -c a.cc
-    g++ -fPIC -c b.cc
+    Compile your library components:
+    <command>g++ -fPIC -c a.cc</command>
+    <command>g++ -fPIC -c b.cc</command>
     ...
-    g++ -fPIC -c z.cc
+    <command>g++ -fPIC -c z.cc</command>
 
-    // create your library
-    g++ -fPIC -shared -rdynamic -o libfoo.so a.o b.o ... z.o
+    Create your library:
+    <command>g++ -fPIC -shared -rdynamic -o libfoo.so a.o b.o ... z.o</command>
 
-    // link the executable
-    g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl
+    Link the executable:
+    <command>g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl</command>
     </literallayout>
   </answer>
 </qandaentry>
@@ -964,7 +984,7 @@
     <para>
     A few people have reported that the standard containers appear
     to leak memory when tested with memory checkers such as
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/">valgrind</link>.
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/"><command>valgrind</command></link>.
     Under some configurations the library's allocators keep free memory in a
     pool for later reuse, rather than returning it to the OS.  Although
     this memory is always reachable by the library and is never
@@ -1108,8 +1128,8 @@
     compatibility</link> documentation.
     </para>
     <para>
-    The FAQ for SGI's STL (one jump off of their main page) is
-    still recommended reading.
+    The <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/FAQ.html">FAQ</link>
+    for SGI's STL is still recommended reading.
     </para> 
   </answer>
 </qandaentry>
@@ -1189,7 +1209,7 @@
   <answer xml:id="a-what_is_abi">
     <para>
     <acronym>ABI</acronym> stands for <quote>Application Binary
-     Interface</quote>.  Conventionally, it refers to a great
+    Interface</quote>.  Conventionally, it refers to a great
     mass of details about how arguments are arranged on the call
     stack and/or in registers, and how various types are arranged
     and padded in structs.  A single CPU design may suffer
@@ -1207,18 +1227,24 @@
     Users usually want an ABI to encompass more detail, allowing libraries
     built with different compilers (or different releases of the same
     compiler!) to be linked together.  For C++, this includes many more
-    details than for C, and CPU designers (for good reasons elaborated
-    below) have not stepped up to publish C++ ABIs.  The details include
-    virtual function implementation, struct inheritance layout, name
-    mangling, and exception handling.  Such an ABI has been defined for
-    GNU C++, and is immediately useful for embedded work relying only on
-    a <quote>free-standing implementation</quote> that doesn't include (much
-    of) the standard library.  It is a good basis for the work to come.
-    </para>
+    details than for C, and most CPU designers (for good reasons elaborated
+    below) have not stepped up to publish C++ ABIs.  Such an ABI has been
+    defined for the Itanium architecture (see
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.codesourcery.com/cxx-abi/">C++
+    ABI for Itanium</link>) and that is used by G++ and other compilers
+    as the de facto standard ABI on many common architectures (including x86).
+    G++ can also use the ARM architecture's EABI, for embedded
+    systems relying only on a <quote>free-standing implementation</quote> that
+    doesn't include (much of) the standard library, and the GNU EABI for
+    hosted implementations on ARM.  Those ABIs cover low-level details
+    such as virtual function implementation, struct inheritance layout,
+    name mangling, and exception handling.
+   </para>
     <para>
     A useful C++ ABI must also incorporate many details of the standard
     library implementation.  For a C ABI, the layouts of a few structs
-    (such as FILE, stat, jmpbuf, and the like) and a few macros suffice.
+    (such as <type>FILE</type>, <type>stat</type>, <type>jmpbuf</type>,
+    and the like) and a few macros suffice.
     For C++, the details include the complete set of names of functions
     and types used, the offsets of class members and virtual functions,
     and the actual definitions of all inlines.  C++ exposes many more
@@ -1230,9 +1256,9 @@
     </para>
     <para>
     There are ways to help isolate library implementation details from the
-    ABI, but they trade off against speed.  Library details used in
-    inner loops (e.g., getchar) must be exposed and frozen for all
-    time, but many others may reasonably be kept hidden from user code,
+    ABI, but they trade off against speed.  Library details used in inner
+    loops (e.g., <function>getchar</function>) must be exposed and frozen for
+    all time, but many others may reasonably be kept hidden from user code,
     so they may later be changed.  Deciding which, and implementing
     the decisions, must happen before you can reasonably document a
     candidate C++ ABI that encompasses the standard library.

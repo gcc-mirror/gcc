@@ -1,5 +1,5 @@
 <section xmlns="http://docbook.org/ns/docbook" version="5.0" 
-	 xml:id="manual.localization.facet.messages" xreflabel="Messages">
+	 xml:id="std.localization.facet.messages" xreflabel="Messages">
 <?dbhtml filename="messages.html"?>
 
 <info><title>messages</title>
@@ -12,8 +12,8 @@
 
 
 <para>
-The std::messages facet implements message retrieval functionality
-equivalent to Java's java.text.MessageFormat .using either GNU gettext
+The <classname>std::messages</classname> facet implements message retrieval functionality
+equivalent to Java's <classname>java.text.MessageFormat</classname> using either GNU <function>gettext</function>
 or IEEE 1003.1-200 functions.
 </para>
 
@@ -21,7 +21,7 @@ or IEEE 1003.1-200 functions.
 
 
 <para>
-The std::messages facet is probably the most vaguely defined facet in
+The <classname>std::messages</classname> facet is probably the most vaguely defined facet in
 the standard library. It's assumed that this facility was built into
 the standard library in order to convert string literals from one
 locale to the other. For instance, converting the "C" locale's
@@ -61,42 +61,42 @@ While the virtual functions are:
 </para>
 
 <para>
-<code>catalog do_open(const string&amp;, const locale&amp;) const</code>
+<code>catalog do_open(const string&amp; name, const locale&amp; loc) const</code>
 </para>
 <blockquote>
 <para>
 <emphasis>
--1- Returns: A value that may be passed to get() to retrieve a
-message, from the message catalog identified by the string name
+-1- Returns: A value that may be passed to <code>get()</code> to retrieve a
+message, from the message catalog identified by the string <code>name</code>
 according to an implementation-defined mapping. The result can be used
-until it is passed to close().  Returns a value less than 0 if no such
+until it is passed to <code>close()</code>.  Returns a value less than 0 if no such
 catalog can be opened.
 </emphasis>
 </para>
 </blockquote>
 
 <para>
-<code>string_type do_get(catalog, int, int, const string_type&amp;) const</code>
+<code>string_type do_get(catalog cat, int set , int msgid, const string_type&amp; dfault) const</code>
 </para>
 <blockquote>
 <para>
 <emphasis>
--3- Requires: A catalog cat obtained from open() and not yet closed.
--4- Returns: A message identified by arguments set, msgid, and dfault,
+-3- Requires: A catalog <code>cat</code> obtained from <code>open()</code> and not yet closed.
+-4- Returns: A message identified by arguments <code>set</code>, <code>msgid</code>, and <code>dfault</code>,
 according to an implementation-defined mapping. If no such message can
-be found, returns dfault.
+be found, returns <code>dfault</code>.
 </emphasis>
 </para>
 </blockquote>
 
 <para>
-<code>void do_close(catalog) const</code>
+<code>void do_close(catalog cat) const</code>
 </para>
 <blockquote>
 <para>
 <emphasis>
--5- Requires: A catalog cat obtained from open() and not yet closed.
--6- Effects: Releases unspecified resources associated with cat.
+-5- Requires: A catalog cat obtained from <code>open()</code> and not yet closed.
+-6- Effects: Releases unspecified resources associated with <code>cat</code>.
 -7- Notes: The limit on such resources, if any, is implementation-defined.
 </emphasis>
 </para>
@@ -488,7 +488,7 @@ void test01()
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.opengroup.org/austin/">
+	      xlink:href="http://pubs.opengroup.org/onlinepubs/9699919799/">
       System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
 	</link>
       </title>

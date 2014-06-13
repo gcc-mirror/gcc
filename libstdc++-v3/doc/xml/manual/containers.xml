@@ -334,7 +334,7 @@
      constructor expression:
    </para>
    <programlisting>
-      std::bitset&lt;5&gt; b ( std::string(<quote>10110</quote>) );
+      std::bitset&lt;5&gt; b ( std::string("10110") );
    </programlisting>
 
    <para>
@@ -342,7 +342,7 @@
    </para>
 
     <programlisting>
-      std::bitset&lt;5&gt; b ( <quote>10110</quote> );    // invalid
+      std::bitset&lt;5&gt; b ( "10110" );    // invalid
     </programlisting>
     </section>
   </section>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3128,7 +3128,7 @@ package body Checks is
                else
                   Apply_Compile_Time_Constraint_Error
                     (Ck_Node,
-                     "static value out of range of}?",
+                     "static value out of range of}??",
                      CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
@@ -3913,7 +3913,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    => "(Ada 2005) null not allowed "
-                               & "in null-excluding objects?",
+                               & "in null-excluding objects??",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Parameter_Specification =>
@@ -4118,26 +4118,37 @@ package body Checks is
    --  Start of processing for Determine_Range
 
    begin
-      --  For temporary constants internally generated to remove side effects
-      --  we must use the corresponding expression to determine the range of
-      --  the expression.
-
-      if Is_Entity_Name (N)
-        and then Nkind (Parent (Entity (N))) = N_Object_Declaration
-        and then Ekind (Entity (N)) = E_Constant
-        and then Is_Internal_Name (Chars (Entity (N)))
-      then
-         Determine_Range
-           (Expression (Parent (Entity (N))), OK, Lo, Hi, Assume_Valid);
-         return;
-      end if;
-
       --  Prevent junk warnings by initializing range variables
 
       Lo  := No_Uint;
       Hi  := No_Uint;
       Lor := No_Uint;
       Hir := No_Uint;
+
+      --  For temporary constants internally generated to remove side effects
+      --  we must use the corresponding expression to determine the range of
+      --  the expression. But note that the expander can also generate
+      --  constants in other cases, including deferred constants.
+
+      if Is_Entity_Name (N)
+        and then Nkind (Parent (Entity (N))) = N_Object_Declaration
+        and then Ekind (Entity (N)) = E_Constant
+        and then Is_Internal_Name (Chars (Entity (N)))
+      then
+         if Present (Expression (Parent (Entity (N)))) then
+            Determine_Range
+              (Expression (Parent (Entity (N))), OK, Lo, Hi, Assume_Valid);
+
+         elsif Present (Full_View (Entity (N))) then
+            Determine_Range
+              (Expression (Parent (Full_View (Entity (N)))),
+               OK, Lo, Hi, Assume_Valid);
+
+         else
+            OK := False;
+         end if;
+         return;
+      end if;
 
       --  If type is not defined, we can't determine its range
 

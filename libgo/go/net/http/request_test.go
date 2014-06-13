@@ -68,8 +68,9 @@ type parseContentTypeTest struct {
 
 var parseContentTypeTests = []parseContentTypeTest{
 	{false, stringMap{"Content-Type": {"text/plain"}}},
-	// Non-existent keys are not placed. The value nil is illegal.
-	{true, stringMap{}},
+	// Empty content type is legal - shoult be treated as
+	// application/octet-stream (RFC 2616, section 7.2.1)
+	{false, stringMap{}},
 	{true, stringMap{"Content-Type": {"text/plain; boundary="}}},
 	{false, stringMap{"Content-Type": {"application/unknown"}}},
 }
@@ -79,7 +80,7 @@ func TestParseFormUnknownContentType(t *testing.T) {
 		req := &Request{
 			Method: "POST",
 			Header: Header(test.contentType),
-			Body:   ioutil.NopCloser(bytes.NewBufferString("body")),
+			Body:   ioutil.NopCloser(strings.NewReader("body")),
 		}
 		err := req.ParseForm()
 		switch {
@@ -198,15 +199,40 @@ func TestEmptyMultipartRequest(t *testing.T) {
 	testMissingFile(t, req)
 }
 
-func TestRequestMultipartCallOrder(t *testing.T) {
+// Test that ParseMultipartForm errors if called
+// after MultipartReader on the same request.
+func TestParseMultipartFormOrder(t *testing.T) {
 	req := newTestMultipartRequest(t)
-	_, err := req.MultipartReader()
-	if err != nil {
+	if _, err := req.MultipartReader(); err != nil {
 		t.Fatalf("MultipartReader: %v", err)
 	}
-	err = req.ParseMultipartForm(1024)
-	if err == nil {
-		t.Errorf("expected an error from ParseMultipartForm after call to MultipartReader")
+	if err := req.ParseMultipartForm(1024); err == nil {
+		t.Fatal("expected an error from ParseMultipartForm after call to MultipartReader")
+	}
+}
+
+// Test that MultipartReader errors if called
+// after ParseMultipartForm on the same request.
+func TestMultipartReaderOrder(t *testing.T) {
+	req := newTestMultipartRequest(t)
+	if err := req.ParseMultipartForm(25); err != nil {
+		t.Fatalf("ParseMultipartForm: %v", err)
+	}
+	defer req.MultipartForm.RemoveAll()
+	if _, err := req.MultipartReader(); err == nil {
+		t.Fatal("expected an error from MultipartReader after call to ParseMultipartForm")
+	}
+}
+
+// Test that FormFile errors if called after
+// MultipartReader on the same request.
+func TestFormFileOrder(t *testing.T) {
+	req := newTestMultipartRequest(t)
+	if _, err := req.MultipartReader(); err != nil {
+		t.Fatalf("MultipartReader: %v", err)
+	}
+	if _, _, err := req.FormFile(""); err == nil {
+		t.Fatal("expected an error from FormFile after call to MultipartReader")
 	}
 }
 
@@ -343,7 +369,7 @@ func testMissingFile(t *testing.T, req *Request) {
 }
 
 func newTestMultipartRequest(t *testing.T) *Request {
-	b := bytes.NewBufferString(strings.Replace(message, "\n", "\r\n", -1))
+	b := strings.NewReader(strings.Replace(message, "\n", "\r\n", -1))
 	req, err := NewRequest("POST", "/", b)
 	if err != nil {
 		t.Fatal("NewRequest:", err)

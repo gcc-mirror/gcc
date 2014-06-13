@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,12 +38,7 @@ with System.Finalization_Root;
 pragma Warnings (On);
 
 package Ada.Finalization is
-   pragma Pure_12;
-   --  Ada.Finalization is declared pure in Ada 2012 (AI05-0212)
-
-   pragma Preelaborate;
-   pragma Remote_Types;
-   --  The above apply in versions of Ada before Ada 2012
+   pragma Pure;
 
    type Controlled is abstract tagged private;
    pragma Preelaborable_Initialization (Controlled);

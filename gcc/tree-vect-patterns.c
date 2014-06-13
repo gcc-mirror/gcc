@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"		/* FIXME: for insn_data */
 #include "diagnostic-core.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 /* Pattern recognition functions  */
 static gimple vect_recog_widen_sum_pattern (vec<gimple> *, tree *,

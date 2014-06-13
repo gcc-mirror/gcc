@@ -31,7 +31,7 @@ CALC (float *s, float *r, int imm)
       }
 }
 
-void static
+void
 TEST (void)
 {
   int imm, i, j;

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "df.h"
 #include "opts.h"
+#include "builtins.h"
 
 /* Return nonzero if there is a bypass for the output of 
    OUT_INSN and the fp store IN_INSN.  */
@@ -10261,10 +10262,10 @@ pa_function_section (tree decl, enum node_frequency freq,
   /* Force nested functions into the same section as the containing
      function.  */
   if (decl
-      && DECL_SECTION_NAME (decl) == NULL_TREE
+      && DECL_SECTION_NAME (decl) == NULL
       && DECL_CONTEXT (decl) != NULL_TREE
       && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL
-      && DECL_SECTION_NAME (DECL_CONTEXT (decl)) == NULL_TREE)
+      && DECL_SECTION_NAME (DECL_CONTEXT (decl)) == NULL)
     return function_section (DECL_CONTEXT (decl));
 
   /* Otherwise, use the default function section.  */

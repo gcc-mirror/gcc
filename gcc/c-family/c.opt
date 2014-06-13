@@ -256,6 +256,10 @@ Wabi
 C ObjC C++ ObjC++ LTO Var(warn_abi) Warning
 Warn about things that will change when compiling with an ABI-compliant compiler
 
+Wabi=
+C ObjC C++ ObjC++ LTO Joined RejectNegative UInteger Warning
+Warn about things that change between the current -fabi-version and the specified version
+
 Wabi-tag
 C++ ObjC++ Var(warn_abi_tag) Warning
 Warn if a subobject has an abi_tag attribute that the complete object type does not have
@@ -490,6 +494,10 @@ Wlogical-op
 C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning 
 Warn when a logical operator is suspiciously always evaluating to true or false
 
+Wlogical-not-parentheses
+C ObjC C++ ObjC++ Var(warn_logical_not_paren) Warning
+Warn when logical not is used on the left hand side operand of a comparison
+
 Wlong-long
 C ObjC C++ ObjC++ Var(warn_long_long) Init(-1) Warning
 Do not warn about using \"long long\" when -pedantic
@@ -533,6 +541,10 @@ Warn about enumerated switches missing a \"default:\" statement
 Wswitch-enum
 C ObjC C++ ObjC++ Var(warn_switch_enum) Warning
 Warn about all enumerated switches missing a specific case
+
+Wswitch-bool
+C ObjC C++ ObjC++ Warning Init(1)
+Warn about switches with boolean controlling expression
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
@@ -840,6 +852,10 @@ C ObjC C++ ObjC++ Joined
 dwarf-2-upc
 C LTO Report Var(use_upc_dwarf2_extensions) Init(0)
 Generate DWARF-2 debug info with UPC extensions
+
+fabi-compat-version=
+C++ ObjC++ Joined RejectNegative UInteger Var(flag_abi_compat_version) Init(-1)
+The version of the C++ ABI used for -Wabi warnings and link compatibility aliases
 
 faccess-control
 C++ ObjC++ Var(flag_access_control) Init(1)

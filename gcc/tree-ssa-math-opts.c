@@ -114,6 +114,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "target.h"
 #include "gimple-pretty-print.h"
+#include "builtins.h"
 
 /* FIXME: RTL headers have to be included here for optabs.  */
 #include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */
@@ -1621,7 +1622,7 @@ make_pass_cse_sincos (gcc::context *ctxt)
 
 struct symbolic_number {
   uint64_t n;
-  int size;
+  tree type;
   tree base_addr;
   tree offset;
   HOST_WIDE_INT bytepos;
@@ -1651,13 +1652,15 @@ do_shift_rotate (enum tree_code code,
 		 struct symbolic_number *n,
 		 int count)
 {
+  int bitsize = TYPE_PRECISION (n->type);
+
   if (count % 8 != 0)
     return false;
 
   /* Zero out the extra bits of N in order to avoid them being shifted
      into the significant bits.  */
-  if (n->size < (int)sizeof (int64_t))
-    n->n &= ((uint64_t)1 << (n->size * BITS_PER_UNIT)) - 1;
+  if (bitsize < 8 * (int)sizeof (int64_t))
+    n->n &= ((uint64_t)1 << bitsize) - 1;
 
   switch (code)
     {
@@ -1665,20 +1668,23 @@ do_shift_rotate (enum tree_code code,
       n->n <<= count;
       break;
     case RSHIFT_EXPR:
+      /* Arithmetic shift of signed type: result is dependent on the value.  */
+      if (!TYPE_UNSIGNED (n->type) && (n->n & (0xff << (bitsize - 8))))
+	return false;
       n->n >>= count;
       break;
     case LROTATE_EXPR:
-      n->n = (n->n << count) | (n->n >> ((n->size * BITS_PER_UNIT) - count));
+      n->n = (n->n << count) | (n->n >> (bitsize - count));
       break;
     case RROTATE_EXPR:
-      n->n = (n->n >> count) | (n->n << ((n->size * BITS_PER_UNIT) - count));
+      n->n = (n->n >> count) | (n->n << (bitsize - count));
       break;
     default:
       return false;
     }
   /* Zero unused bits for size.  */
-  if (n->size < (int)sizeof (int64_t))
-    n->n &= ((uint64_t)1 << (n->size * BITS_PER_UNIT)) - 1;
+  if (bitsize < 8 * (int)sizeof (int64_t))
+    n->n &= ((uint64_t)1 << bitsize) - 1;
   return true;
 }
 
@@ -1695,8 +1701,37 @@ verify_symbolic_number_p (struct symbolic_number *n, gimple stmt)
   if (TREE_CODE (lhs_type) != INTEGER_TYPE)
     return false;
 
-  if (TYPE_PRECISION (lhs_type) != n->size * BITS_PER_UNIT)
+  if (TYPE_PRECISION (lhs_type) != TYPE_PRECISION (n->type))
     return false;
+
+  return true;
+}
+
+/* Initialize the symbolic number N for the bswap pass from the base element
+   SRC manipulated by the bitwise OR expression.  */
+
+static bool
+init_symbolic_number (struct symbolic_number *n, tree src)
+{
+  int size;
+
+  n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
+
+  /* Set up the symbolic number N by setting each byte to a value between 1 and
+     the byte size of rhs1.  The highest order byte is set to n->size and the
+     lowest order byte to 1.  */
+  n->type = TREE_TYPE (src);
+  size = TYPE_PRECISION (n->type);
+  if (size % BITS_PER_UNIT != 0)
+    return false;
+  size /= BITS_PER_UNIT;
+  if (size > (int)sizeof (uint64_t))
+    return false;
+  n->range = size;
+  n->n = CMPNOP;
+
+  if (size < (int)sizeof (int64_t))
+    n->n &= ((uint64_t)1 << (size * BITS_PER_UNIT)) - 1;
 
   return true;
 }
@@ -1713,26 +1748,27 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   HOST_WIDE_INT bitsize, bitpos;
   enum machine_mode mode;
   int unsignedp, volatilep;
+  tree offset, base_addr;
 
   if (!gimple_assign_load_p (stmt) || gimple_has_volatile_ops (stmt))
     return false;
 
-  n->base_addr = get_inner_reference (ref, &bitsize, &bitpos, &n->offset,
-				      &mode, &unsignedp, &volatilep, false);
+  base_addr = get_inner_reference (ref, &bitsize, &bitpos, &offset, &mode,
+				   &unsignedp, &volatilep, false);
 
-  if (TREE_CODE (n->base_addr) == MEM_REF)
+  if (TREE_CODE (base_addr) == MEM_REF)
     {
       offset_int bit_offset = 0;
-      tree off = TREE_OPERAND (n->base_addr, 1);
+      tree off = TREE_OPERAND (base_addr, 1);
 
       if (!integer_zerop (off))
 	{
-	  offset_int boff, coff = mem_ref_offset (n->base_addr);
+	  offset_int boff, coff = mem_ref_offset (base_addr);
 	  boff = wi::lshift (coff, LOG2_BITS_PER_UNIT);
 	  bit_offset += boff;
 	}
 
-      n->base_addr = TREE_OPERAND (n->base_addr, 0);
+      base_addr = TREE_OPERAND (base_addr, 0);
 
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
       if (wi::neg_p (bit_offset))
@@ -1743,11 +1779,11 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;
 	  tem = wi::arshift (tem, LOG2_BITS_PER_UNIT);
-	  if (n->offset)
-	    n->offset = size_binop (PLUS_EXPR, n->offset,
+	  if (offset)
+	    offset = size_binop (PLUS_EXPR, offset,
 				    wide_int_to_tree (sizetype, tem));
 	  else
-	    n->offset = wide_int_to_tree (sizetype, tem);
+	    offset = wide_int_to_tree (sizetype, tem);
 	}
 
       bitpos += bit_offset.to_shwi ();
@@ -1758,6 +1794,10 @@ find_bswap_or_nop_load (gimple stmt, tree ref, struct symbolic_number *n)
   if (bitsize % BITS_PER_UNIT)
     return false;
 
+  if (!init_symbolic_number (n, ref))
+    return false;
+  n->base_addr = base_addr;
+  n->offset = offset;
   n->bytepos = bitpos / BITS_PER_UNIT;
   n->alias_set = reference_alias_ptr_type (ref);
   n->vuse = gimple_vuse (stmt);
@@ -1816,40 +1856,24 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
       /* If find_bswap_or_nop_1 returned NULL, STMT is a leaf node and
 	 we have to initialize the symbolic number.  */
-      if (!source_expr1 || gimple_assign_load_p (rhs1_stmt))
+      if (!source_expr1)
 	{
-	  /* Set up the symbolic number N by setting each byte to a
-	     value between 1 and the byte size of rhs1.  The highest
-	     order byte is set to n->size and the lowest order
-	     byte to 1.  */
-	  n->size = TYPE_PRECISION (TREE_TYPE (rhs1));
-	  if (n->size % BITS_PER_UNIT != 0)
+	  if (gimple_assign_load_p (stmt)
+	      || !init_symbolic_number (n, rhs1))
 	    return NULL_TREE;
-	  n->size /= BITS_PER_UNIT;
-	  n->range = n->size;
-	  n->n = CMPNOP;
-
-	  if (n->size < (int)sizeof (int64_t))
-	    n->n &= ((uint64_t)1 <<
-		     (n->size * BITS_PER_UNIT)) - 1;
-
-	  if (!source_expr1)
-	    {
-	      n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
-	      source_expr1 = rhs1;
-	    }
+	  source_expr1 = rhs1;
 	}
 
       switch (code)
 	{
 	case BIT_AND_EXPR:
 	  {
-	    int i;
+	    int i, size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
 	    uint64_t val = int_cst_value (rhs2);
 	    uint64_t tmp = val;
 
 	    /* Only constants masking full bytes are allowed.  */
-	    for (i = 0; i < n->size; i++, tmp >>= BITS_PER_UNIT)
+	    for (i = 0; i < size; i++, tmp >>= BITS_PER_UNIT)
 	      if ((tmp & 0xff) != 0 && (tmp & 0xff) != 0xff)
 		return NULL_TREE;
 
@@ -1865,10 +1889,21 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  break;
 	CASE_CONVERT:
 	  {
-	    int type_size;
+	    int type_size, old_type_size;
+	    tree type;
 
-	    type_size = TYPE_PRECISION (gimple_expr_type (stmt));
+	    type = gimple_expr_type (stmt);
+	    type_size = TYPE_PRECISION (type);
 	    if (type_size % BITS_PER_UNIT != 0)
+	      return NULL_TREE;
+	    if (type_size > (int)sizeof (uint64_t) * 8)
+	      return NULL_TREE;
+
+	    /* Sign extension: result is dependent on the value.  */
+	    old_type_size = TYPE_PRECISION (n->type);
+	    if (!TYPE_UNSIGNED (n->type)
+		&& type_size > old_type_size
+		&& n->n & (0xff << (old_type_size - 8)))
 	      return NULL_TREE;
 
 	    if (type_size / BITS_PER_UNIT < (int)(sizeof (int64_t)))
@@ -1877,9 +1912,9 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 		   belonging to the target type.  */
 		n->n &= ((uint64_t)1 << type_size) - 1;
 	      }
-	    n->size = type_size / BITS_PER_UNIT;
+	    n->type = type;
 	    if (!n->base_addr)
-	      n->range = n->size;
+	      n->range = type_size / BITS_PER_UNIT;
 	  }
 	  break;
 	default:
@@ -1892,7 +1927,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
   if (rhs_class == GIMPLE_BINARY_RHS)
     {
-      int i;
+      int i, size;
       struct symbolic_number n1, n2;
       uint64_t mask;
       tree source_expr2;
@@ -1915,7 +1950,10 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 
 	  source_expr2 = find_bswap_or_nop_1 (rhs2_stmt, &n2, limit - 1);
 
-	  if (n1.size != n2.size || !source_expr2)
+	  if (!source_expr2)
+	    return NULL_TREE;
+
+	  if (TYPE_PRECISION (n1.type) != TYPE_PRECISION (n2.type))
 	    return NULL_TREE;
 
 	  if (!n1.vuse != !n2.vuse ||
@@ -1955,7 +1993,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	      n->range = n2.range + off_sub;
 
 	      /* Reinterpret byte marks in symbolic number holding the value of
-		 bigger weight according to host endianness.  */
+		 bigger weight according to target endianness.  */
 	      inc = BYTES_BIG_ENDIAN ? off_sub + n2.range - n1.range : off_sub;
 	      mask = 0xFF;
 	      if (BYTES_BIG_ENDIAN)
@@ -1981,8 +2019,9 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  n->base_addr = n1.base_addr;
 	  n->offset = n1.offset;
 	  n->bytepos = n1.bytepos;
-	  n->size = n1.size;
-	  for (i = 0, mask = 0xff; i < n->size; i++, mask <<= BITS_PER_UNIT)
+	  n->type = n1.type;
+	  size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
+	  for (i = 0, mask = 0xff; i < size; i++, mask <<= BITS_PER_UNIT)
 	    {
 	      uint64_t masked1, masked2;
 
@@ -2058,7 +2097,7 @@ find_bswap_or_nop (gimple stmt, struct symbolic_number *n, bool *bswap)
 
   /* A complete byte swap should make the symbolic number to start with
      the largest digit in the highest order byte. Unchanged symbolic
-     number indicates a read with same endianness as host architecture.  */
+     number indicates a read with same endianness as target architecture.  */
   if (n->n == cmpnop)
     *bswap = false;
   else if (n->n == cmpxchg)
@@ -2188,7 +2227,7 @@ bswap_replace (gimple stmt, gimple_stmt_iterator *gsi, tree src, tree fndecl,
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
-		       "%d bit load in host endianness found at: ",
+		       "%d bit load in target endianness found at: ",
 		       (int)n->range);
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
@@ -2255,7 +2294,7 @@ bswap_replace (gimple stmt, gimple_stmt_iterator *gsi, tree src, tree fndecl,
 /* Find manual byte swap implementations as well as load in a given
    endianness. Byte swaps are turned into a bswap builtin invokation
    while endian loads are converted to bswap builtin invokation or
-   simple load according to the host endianness.  */
+   simple load according to the target endianness.  */
 
 unsigned int
 pass_optimize_bswap::execute (function *fun)

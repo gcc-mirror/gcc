@@ -24,8 +24,10 @@ func fileInfoFromStat(st *syscall.Stat_t, name string) FileInfo {
 	}
 	fs.mode = FileMode(st.Mode & 0777)
 	switch st.Mode & syscall.S_IFMT {
-	case syscall.S_IFBLK, syscall.S_IFCHR:
+	case syscall.S_IFBLK:
 		fs.mode |= ModeDevice
+	case syscall.S_IFCHR:
+		fs.mode |= ModeDevice | ModeCharDevice
 	case syscall.S_IFDIR:
 		fs.mode |= ModeDir
 	case syscall.S_IFIFO:
@@ -42,6 +44,9 @@ func fileInfoFromStat(st *syscall.Stat_t, name string) FileInfo {
 	}
 	if st.Mode&syscall.S_ISUID != 0 {
 		fs.mode |= ModeSetuid
+	}
+	if st.Mode&syscall.S_ISVTX != 0 {
+		fs.mode |= ModeSticky
 	}
 	return fs
 }

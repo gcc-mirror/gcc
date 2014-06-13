@@ -141,6 +141,9 @@ func ReadResponse(r *bufio.Reader, req *Request) (*Response, error) {
 	// Parse the response headers.
 	mimeHeader, err := tp.ReadMIMEHeader()
 	if err != nil {
+		if err == io.EOF {
+			err = io.ErrUnexpectedEOF
+		}
 		return nil, err
 	}
 	resp.Header = Header(mimeHeader)
@@ -187,6 +190,7 @@ func (r *Response) ProtoAtLeast(major, minor int) bool {
 //  ContentLength
 //  Header, values for non-canonical keys will have unpredictable behavior
 //
+// Body is closed after it is sent.
 func (r *Response) Write(w io.Writer) error {
 
 	// Status line

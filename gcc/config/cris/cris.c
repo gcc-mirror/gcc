@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "opts.h"
 #include "cgraph.h"
+#include "builtins.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */

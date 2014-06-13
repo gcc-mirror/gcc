@@ -358,73 +358,94 @@ exit:
 	return tok, string(s.src[offs:s.offset])
 }
 
-func (s *Scanner) scanEscape(quote rune) {
+// scanEscape parses an escape sequence where rune is the accepted
+// escaped quote. In case of a syntax error, it stops at the offending
+// character (without consuming it) and returns false. Otherwise
+// it returns true.
+func (s *Scanner) scanEscape(quote rune) bool {
 	offs := s.offset
 
-	var i, base, max uint32
+	var n int
+	var base, max uint32
 	switch s.ch {
 	case 'a', 'b', 'f', 'n', 'r', 't', 'v', '\\', quote:
 		s.next()
-		return
+		return true
 	case '0', '1', '2', '3', '4', '5', '6', '7':
-		i, base, max = 3, 8, 255
+		n, base, max = 3, 8, 255
 	case 'x':
 		s.next()
-		i, base, max = 2, 16, 255
+		n, base, max = 2, 16, 255
 	case 'u':
 		s.next()
-		i, base, max = 4, 16, unicode.MaxRune
+		n, base, max = 4, 16, unicode.MaxRune
 	case 'U':
 		s.next()
-		i, base, max = 8, 16, unicode.MaxRune
+		n, base, max = 8, 16, unicode.MaxRune
 	default:
-		s.next() // always make progress
-		s.error(offs, "unknown escape sequence")
-		return
+		msg := "unknown escape sequence"
+		if s.ch < 0 {
+			msg = "escape sequence not terminated"
+		}
+		s.error(offs, msg)
+		return false
 	}
 
 	var x uint32
-	for ; i > 0 && s.ch != quote && s.ch >= 0; i-- {
+	for n > 0 {
 		d := uint32(digitVal(s.ch))
 		if d >= base {
-			s.error(s.offset, "illegal character in escape sequence")
-			break
+			msg := fmt.Sprintf("illegal character %#U in escape sequence", s.ch)
+			if s.ch < 0 {
+				msg = "escape sequence not terminated"
+			}
+			s.error(s.offset, msg)
+			return false
 		}
 		x = x*base + d
 		s.next()
+		n--
 	}
-	// in case of an error, consume remaining chars
-	for ; i > 0 && s.ch != quote && s.ch >= 0; i-- {
-		s.next()
-	}
+
 	if x > max || 0xD800 <= x && x < 0xE000 {
 		s.error(offs, "escape sequence is invalid Unicode code point")
+		return false
 	}
+
+	return true
 }
 
-func (s *Scanner) scanChar() string {
+func (s *Scanner) scanRune() string {
 	// '\'' opening already consumed
 	offs := s.offset - 1
 
+	valid := true
 	n := 0
-	for s.ch != '\'' {
+	for {
 		ch := s.ch
-		n++
-		s.next()
 		if ch == '\n' || ch < 0 {
-			s.error(offs, "character literal not terminated")
-			n = 1
+			// only report error if we don't have one already
+			if valid {
+				s.error(offs, "rune literal not terminated")
+				valid = false
+			}
 			break
 		}
+		s.next()
+		if ch == '\'' {
+			break
+		}
+		n++
 		if ch == '\\' {
-			s.scanEscape('\'')
+			if !s.scanEscape('\'') {
+				valid = false
+			}
+			// continue to read to closing quote
 		}
 	}
 
-	s.next()
-
-	if n != 1 {
-		s.error(offs, "illegal character literal")
+	if valid && n != 1 {
+		s.error(offs, "illegal rune literal")
 	}
 
 	return string(s.src[offs:s.offset])
@@ -434,19 +455,20 @@ func (s *Scanner) scanString() string {
 	// '"' opening already consumed
 	offs := s.offset - 1
 
-	for s.ch != '"' {
+	for {
 		ch := s.ch
-		s.next()
 		if ch == '\n' || ch < 0 {
-			s.error(offs, "string not terminated")
+			s.error(offs, "string literal not terminated")
+			break
+		}
+		s.next()
+		if ch == '"' {
 			break
 		}
 		if ch == '\\' {
 			s.scanEscape('"')
 		}
 	}
-
-	s.next()
 
 	return string(s.src[offs:s.offset])
 }
@@ -468,19 +490,20 @@ func (s *Scanner) scanRawString() string {
 	offs := s.offset - 1
 
 	hasCR := false
-	for s.ch != '`' {
+	for {
 		ch := s.ch
+		if ch < 0 {
+			s.error(offs, "raw string literal not terminated")
+			break
+		}
 		s.next()
+		if ch == '`' {
+			break
+		}
 		if ch == '\r' {
 			hasCR = true
 		}
-		if ch < 0 {
-			s.error(offs, "string not terminated")
-			break
-		}
 	}
-
-	s.next()
 
 	lit := s.src[offs:s.offset]
 	if hasCR {
@@ -617,7 +640,7 @@ scanAgain:
 		case '\'':
 			insertSemi = true
 			tok = token.CHAR
-			lit = s.scanChar()
+			lit = s.scanRune()
 		case '`':
 			insertSemi = true
 			tok = token.STRING

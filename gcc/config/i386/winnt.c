@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
+#include "builtins.h"
 
 /* i386/PE specific attribute support.
 
@@ -437,7 +438,7 @@ i386_pe_unique_section (tree decl, int reloc)
   string = XALLOCAVEC (char, len + 1);
   sprintf (string, "%s%s", prefix, name);
 
-  DECL_SECTION_NAME (decl) = build_string (len, string);
+  set_decl_section_name (decl, string);
 }
 
 /* Local and global relocs can be placed always into readonly memory for

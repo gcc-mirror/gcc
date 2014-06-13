@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "calls.h"
 #include "gimple-expr.h"
+#include "varasm.h"
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
@@ -115,7 +116,7 @@ cgraph_local_node_p (struct cgraph_node *node)
 }
 
 /* Return true when there is a reference to node and it is not vtable.  */
-static bool
+bool
 address_taken_from_non_vtable_p (symtab_node *node)
 {
   int i;
@@ -235,7 +236,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
     return true;
   if (node->resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
-  /* When doing LTO or whole program, we can bring COMDAT functoins static.
+  /* When doing LTO or whole program, we can bring COMDAT functions static.
      This improves code quality and we know we will duplicate them at most twice
      (in the case that we are not using plugin and link with object file
       implementing same COMDAT)  */
@@ -294,8 +295,6 @@ varpool_externally_visible_p (varpool_node *vnode)
      Even if the linker clams the symbol is unused, never bring internal
      symbols that are declared by user as used or externally visible.
      This is needed for i.e. references from asm statements.   */
-  if (symtab_used_from_object_file_p (vnode))
-    return true;
   if (vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
 
@@ -340,6 +339,7 @@ bool
 can_replace_by_local_alias (symtab_node *node)
 {
   return (symtab_node_availability (node) > AVAIL_OVERWRITABLE
+	  && !decl_binds_to_current_def_p (node->decl)
 	  && !symtab_can_be_discarded (node));
 }
 
@@ -384,7 +384,8 @@ update_visibility_by_resolution_info (symtab_node * node)
 
   if (!node->externally_visible
       || (!DECL_WEAK (node->decl) && !DECL_ONE_ONLY (node->decl))
-      || node->resolution == LDPR_UNKNOWN)
+      || node->resolution == LDPR_UNKNOWN
+      || node->resolution == LDPR_UNDEF)
     return;
 
   define = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
@@ -395,7 +396,7 @@ update_visibility_by_resolution_info (symtab_node * node)
   if (node->same_comdat_group)
     for (symtab_node *next = node->same_comdat_group;
 	 next != node; next = next->same_comdat_group)
-      gcc_assert (!node->externally_visible
+      gcc_assert (!next->externally_visible
 		  || define == (next->resolution == LDPR_PREVAILING_DEF_IRONLY
 			        || next->resolution == LDPR_PREVAILING_DEF
 			        || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP));
@@ -409,11 +410,15 @@ update_visibility_by_resolution_info (symtab_node * node)
 	if (next->externally_visible
 	    && !define)
 	  DECL_EXTERNAL (next->decl) = true;
+	if (!next->alias)
+	  next->reset_section ();
       }
   node->set_comdat_group (NULL);
   DECL_WEAK (node->decl) = false;
   if (!define)
     DECL_EXTERNAL (node->decl) = true;
+  if (!node->alias)
+    node->reset_section ();
   symtab_dissolve_same_comdat_group_list (node);
 }
 
@@ -474,7 +479,7 @@ function_and_variable_visibility (bool whole_program)
 	  symtab_dissolve_same_comdat_group_list (node);
 	}
       gcc_assert ((!DECL_WEAK (node->decl)
-		  && !DECL_COMDAT (node->decl))
+		   && !DECL_COMDAT (node->decl))
       	          || TREE_PUBLIC (node->decl)
 		  || node->weakref
 		  || DECL_EXTERNAL (node->decl));
@@ -492,6 +497,7 @@ function_and_variable_visibility (bool whole_program)
 	  && node->definition && !node->weakref
 	  && !DECL_EXTERNAL (node->decl))
 	{
+	  bool reset = TREE_PUBLIC (node->decl);
 	  gcc_assert (whole_program || in_lto_p
 		      || !TREE_PUBLIC (node->decl));
 	  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
@@ -511,6 +517,8 @@ function_and_variable_visibility (bool whole_program)
 		{
 		  next->set_comdat_group (NULL);
 		  symtab_make_decl_local (next->decl);
+		  if (!node->alias)
+		    node->reset_section ();
 		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
 					|| next->unique_name
 					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
@@ -525,6 +533,8 @@ function_and_variable_visibility (bool whole_program)
 	  if (TREE_PUBLIC (node->decl))
 	    node->set_comdat_group (NULL);
 	  symtab_make_decl_local (node->decl);
+	  if (reset && !node->alias)
+	    node->reset_section ();
 	}
 
       if (node->thunk.thunk_p
@@ -626,6 +636,7 @@ function_and_variable_visibility (bool whole_program)
       if (!vnode->externally_visible
 	  && !vnode->weakref)
 	{
+	  bool reset = TREE_PUBLIC (vnode->decl);
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->decl));
 	  vnode->unique_name = ((vnode->resolution == LDPR_PREVAILING_DEF_IRONLY
 				       || vnode->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
@@ -642,6 +653,8 @@ function_and_variable_visibility (bool whole_program)
 		{
 		  next->set_comdat_group (NULL);
 		  symtab_make_decl_local (next->decl);
+		  if (!next->alias)
+		    next->reset_section ();
 		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
 					|| next->unique_name
 					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
@@ -652,13 +665,18 @@ function_and_variable_visibility (bool whole_program)
 	  if (TREE_PUBLIC (vnode->decl))
 	    vnode->set_comdat_group (NULL);
 	  symtab_make_decl_local (vnode->decl);
+	  if (reset && !vnode->alias)
+	    vnode->reset_section ();
 	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
       update_visibility_by_resolution_info (vnode);
 
-      /* Update virutal tables to point to local aliases where possible.  */
+      /* Update virtual tables to point to local aliases where possible.  */
       if (DECL_VIRTUAL_P (vnode->decl)
-	  && !DECL_EXTERNAL (vnode->decl))
+	  && !DECL_EXTERNAL (vnode->decl)
+	  /* FIXME: currently this optimization breaks on AIX.  Disable it for targets
+	     without comdat support for now.  */
+	  && SUPPORTS_ONE_ONLY)
 	{
 	  int i;
 	  struct ipa_ref *ref;

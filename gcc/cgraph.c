@@ -641,14 +641,9 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
 
   node = cgraph_get_node (alias);
   if (node)
-    {
-      gcc_assert (node->definition);
-      gcc_assert (!node->alias);
-      gcc_assert (!node->thunk.thunk_p);
-      cgraph_remove_node (node);
-    }
-  
-  node = cgraph_create_node (alias);
+    cgraph_reset_node (node);
+  else
+    node = cgraph_create_node (alias);
   gcc_checking_assert (!virtual_offset
 		       || wi::eq_p (virtual_offset, virtual_value));
   node->thunk.fixed_offset = fixed_offset;
@@ -2174,6 +2169,7 @@ cgraph_node_cannot_be_local_p_1 (struct cgraph_node *node,
 		&& !node->forced_by_abi
 	        && !symtab_used_from_object_file_p (node)
 		&& !node->same_comdat_group)
+	       || DECL_EXTERNAL (node->decl)
 	       || !node->externally_visible));
 }
 
@@ -2264,12 +2260,14 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
     {
       symtab_make_decl_local (node->decl);
 
+      node->set_comdat_group (NULL);
       node->externally_visible = false;
       node->forced_by_abi = false;
       node->local.local = true;
-      node->set_comdat_group (NULL);
+      node->reset_section ();
       node->unique_name = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
-				  || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
+			   || node->unique_name
+			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
       node->resolution = LDPR_PREVAILING_DEF_IRONLY;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
     }

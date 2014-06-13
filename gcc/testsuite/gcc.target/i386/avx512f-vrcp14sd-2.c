@@ -3,7 +3,6 @@
 /* { dg-require-effective-target avx512f } */
 
 #include "avx512f-check.h"
-#include "avx512f-helper.h"
 
 static void
 compute_vrcp14sd (double *s1, double *s2, double *r)
@@ -15,12 +14,11 @@ compute_vrcp14sd (double *s1, double *s2, double *r)
 static void
 avx512f_test (void)
 {
-  union128d s1, s2, res1, res2, res3;
+  union128d s1, s2, res1;
   double res_ref[2];
 
   s1.x = _mm_set_pd (-3.0, 111.111);
   s2.x = _mm_set_pd (222.222, -2.0);
-  res2.a[0] = DEFAULT_VALUE;
 
   res1.x = _mm_rcp14_sd (s1.x, s2.x);
 

@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "context.h"
 #include "cgraph.h"
+#include "builtins.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -1179,6 +1180,19 @@ static const struct mips_rtx_cost_data
     COSTS_N_INSNS (68),           /* int_div_di */
 		     1,           /* branch_cost */
 		     4            /* memory_latency */
+  },
+  { /* P5600 */
+    COSTS_N_INSNS (4),            /* fp_add */
+    COSTS_N_INSNS (5),            /* fp_mult_sf */
+    COSTS_N_INSNS (5),            /* fp_mult_df */
+    COSTS_N_INSNS (17),           /* fp_div_sf */
+    COSTS_N_INSNS (17),           /* fp_div_df */
+    COSTS_N_INSNS (5),            /* int_mult_si */
+    COSTS_N_INSNS (5),            /* int_mult_di */
+    COSTS_N_INSNS (8),            /* int_div_si */
+    COSTS_N_INSNS (8),            /* int_div_di */
+		    2,            /* branch_cost */
+		   10             /* memory_latency */
   }
 };
 
@@ -6604,7 +6618,7 @@ mips16_build_function_stub (void)
   stubdecl = build_decl (BUILTINS_LOCATION,
 			 FUNCTION_DECL, get_identifier (stubname),
 			 build_function_type_list (void_type_node, NULL_TREE));
-  DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
+  set_decl_section_name (stubdecl, secname);
   DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 				       RESULT_DECL, NULL_TREE, void_type_node);
 
@@ -6858,7 +6872,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 			     FUNCTION_DECL, stubid,
 			     build_function_type_list (void_type_node,
 						       NULL_TREE));
-      DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
+      set_decl_section_name (stubdecl, secname);
       DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 					   RESULT_DECL, NULL_TREE,
 					   void_type_node);
@@ -8476,7 +8490,7 @@ mips_function_rodata_section (tree decl)
 
   if (decl && DECL_SECTION_NAME (decl))
     {
-      const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      const char *name = DECL_SECTION_NAME (decl);
       if (DECL_COMDAT_GROUP (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
 	{
 	  char *rname = ASTRDUP (name);
@@ -8516,7 +8530,7 @@ mips_in_small_data_p (const_tree decl)
       const char *name;
 
       /* Reject anything that isn't in a known small-data section.  */
-      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      name = DECL_SECTION_NAME (decl);
       if (strcmp (name, ".sdata") != 0 && strcmp (name, ".sbss") != 0)
 	return false;
 
@@ -10029,8 +10043,8 @@ mips_compute_frame_info (void)
   /* Set this function's interrupt properties.  */
   if (mips_interrupt_type_p (TREE_TYPE (current_function_decl)))
     {
-      if (!ISA_MIPS32R2)
-	error ("the %<interrupt%> attribute requires a MIPS32r2 processor");
+      if (mips_isa_rev < 2)
+	error ("the %<interrupt%> attribute requires a MIPS32r2 processor or greater");
       else if (TARGET_HARD_FLOAT)
 	error ("the %<interrupt%> attribute requires %<-msoft-float%>");
       else if (TARGET_MIPS16)
@@ -13072,6 +13086,31 @@ mips_output_division (const char *division, rtx *operands)
   return s;
 }
 
+/* Return true if destination of IN_INSN is used as add source in
+   OUT_INSN. Both IN_INSN and OUT_INSN are of type fmadd. Example:
+   madd.s dst, x, y, z
+   madd.s a, dst, b, c  */
+
+bool
+mips_fmadd_bypass (rtx out_insn, rtx in_insn)
+{
+  int dst_reg, src_reg;
+  
+  gcc_assert (get_attr_type (in_insn) == TYPE_FMADD);
+  gcc_assert (get_attr_type (out_insn) == TYPE_FMADD);
+
+  extract_insn (in_insn);
+  dst_reg = REG_P (recog_data.operand[0]);
+
+  extract_insn (out_insn);
+  src_reg = REG_P (recog_data.operand[1]);
+
+  if (dst_reg == src_reg)
+    return true;
+
+  return false;
+}
+
 /* Return true if IN_INSN is a multiply-add or multiply-subtract
    instruction and if OUT_INSN assigns to the accumulator operand.  */
 
@@ -13207,6 +13246,7 @@ mips_issue_rate (void)
     case PROCESSOR_LOONGSON_2E:
     case PROCESSOR_LOONGSON_2F:
     case PROCESSOR_LOONGSON_3A:
+    case PROCESSOR_P5600:
       return 4;
 
     case PROCESSOR_XLP:
@@ -13341,6 +13381,9 @@ mips_multipass_dfa_lookahead (void)
 
   if (TUNE_OCTEON)
     return 2;
+
+  if (TUNE_P5600)
+    return 4;
 
   return 0;
 }

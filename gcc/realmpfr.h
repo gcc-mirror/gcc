@@ -25,9 +25,6 @@
 #include <mpc.h>
 #include "real.h"
 
-/* In builtins.c.  */
-extern tree do_mpc_arg2 (tree, tree, tree, int, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
-
 /* Convert between MPFR and REAL_VALUE_TYPE.  The caller is
    responsible for initializing and clearing the MPFR parameter.  */
 

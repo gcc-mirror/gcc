@@ -587,6 +587,11 @@
   (ior (match_operand 0 "register_no_elim_operand")
        (match_operand 0 "immediate_operand")))
 
+;; Test for a valid memory operand.
+(define_predicate "memory_nox32_operand"
+  (and (not (match_test "TARGET_X32"))
+       (match_operand 0 "memory_operand")))
+
 ;; Test for a valid operand for indirect branch.
 (define_predicate "indirect_branch_operand"
   (ior (match_operand 0 "register_operand")
@@ -1421,6 +1426,22 @@
      merely that they're all identical.  */
   for (i = 1; i < nelt; ++i)
     if (XVECEXP (op, 0, i) != elt)
+      return false;
+  return true;
+})
+
+;; Return true if OP is a parallel for a palignr permute.
+(define_predicate "palignr_operand"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int elt = INTVAL (XVECEXP (op, 0, 0));
+  int i, nelt = XVECLEN (op, 0);
+
+  /* Check that an order in the permutation is suitable for palignr.
+     For example, {5 6 7 0 1 2 3 4} is "palignr 5, xmm, xmm".  */
+  for (i = 1; i < nelt; ++i)
+    if (INTVAL (XVECEXP (op, 0, i)) != ((elt + i) % nelt))
       return false;
   return true;
 })

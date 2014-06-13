@@ -1,3 +1,9 @@
+2014-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR lto/61334
+	* libiberty.h [defined (HAVE_DECL_STRNLEN) &&
+	!HAVE_DECL_STRNLEN] (strnlen): New prototype.
+
 2014-05-21  John Marino  <gnugcc@marino.st>
 
 	* liberty.h: Use basename function on DragonFly.

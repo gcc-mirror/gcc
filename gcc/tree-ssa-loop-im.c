@@ -719,8 +719,14 @@ determine_max_movement (gimple stmt, bool must_preserve_exec)
       FOR_EACH_PHI_ARG (use_p, stmt, iter, SSA_OP_USE)
 	{
 	  val = USE_FROM_PTR (use_p);
+
 	  if (TREE_CODE (val) != SSA_NAME)
-	    continue;
+	    {
+	      /* Assign const 1 to constants.  */
+	      min_cost = MIN (min_cost, 1);
+	      total_cost += 1;
+	      continue;
+	    }
 	  if (!add_dependency (val, lim_data, loop, false))
 	    return false;
 	  def_data = get_lim_data (SSA_NAME_DEF_STMT (val));

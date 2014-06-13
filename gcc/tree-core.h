@@ -1035,7 +1035,7 @@ struct GTY(()) tree_base {
        SSA_NAME_IN_FREELIST in
           SSA_NAME
 
-       VAR_DECL_NONALIASED in
+       DECL_NONALIASED in
 	  VAR_DECL
 
    deprecated_flag:
@@ -1469,7 +1469,6 @@ struct GTY(()) tree_parm_decl {
 struct GTY(()) tree_decl_with_vis {
  struct tree_decl_with_rtl common;
  tree assembler_name;
- tree section_name;
  struct symtab_node *symtab_node;
 
  /* Belong to VAR_DECL exclusively.  */
@@ -1481,8 +1480,6 @@ struct GTY(()) tree_decl_with_vis {
  unsigned dllimport_flag : 1;
  /* Don't belong to VAR_DECL exclusively.  */
  unsigned weak_flag : 1;
- /* When SECTION_NAME is implied by -ffunction-section.  */
- unsigned implicit_section_name_p : 1;
 
  unsigned seen_in_bind_expr : 1;
  unsigned comdat_flag : 1;
@@ -1501,7 +1498,7 @@ struct GTY(()) tree_decl_with_vis {
  unsigned cxx_destructor : 1;
  /* Belong to FUNCTION_DECL exclusively.  */
  unsigned final : 1;
- /* 11 unused bits. */
+ /* 12 unused bits. */
 };
 
 struct GTY(()) tree_var_decl {

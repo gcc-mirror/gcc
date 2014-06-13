@@ -40,7 +40,7 @@ particular release.
    Broken/Partial
       <?dbhtml bgcolor="#B0B0B0" ?>
 -->
-<table frame="all">
+<table frame="all" xml:id="table.cxx11_status">
 <title>C++ 2011 Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">
@@ -871,11 +871,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.9.7.6</entry>
       <entry>Other transformations</entry>
-      <entry>Partial</entry>
-      <entry>Missing <code>aligned_union</code>.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.10</entry>

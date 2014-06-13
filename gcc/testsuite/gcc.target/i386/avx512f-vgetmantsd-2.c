@@ -4,7 +4,6 @@
 /* { dg-require-effective-target c99_runtime } */
 
 #include "avx512f-check.h"
-#include "avx512f-helper.h"
 #include <math.h>
 
 union fp_int_t
@@ -77,7 +76,6 @@ compute_vgetmantsd (double *r, double *s1, double *s2, int interv,
 static void
 avx512f_test (void)
 {
-  int i, sign;
   union128d res1, src1, src2;
   double res_ref[2];
   int interv = _MM_MANT_NORM_p5_1;

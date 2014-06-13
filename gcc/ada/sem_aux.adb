@@ -666,6 +666,51 @@ package body Sem_Aux is
       end if;
    end Has_Unconstrained_Elements;
 
+   ----------------------
+   -- Has_Variant_Part --
+   ----------------------
+
+   function Has_Variant_Part (Typ : Entity_Id) return Boolean is
+      FSTyp : Entity_Id;
+      Decl  : Node_Id;
+      TDef  : Node_Id;
+      CList : Node_Id;
+
+   begin
+      if not Is_Type (Typ) then
+         return False;
+      end if;
+
+      FSTyp := First_Subtype (Typ);
+
+      if not Has_Discriminants (FSTyp) then
+         return False;
+      end if;
+
+      --  Proceed with cautious checks here, return False if tree is not
+      --  as expected (may be caused by prior errors).
+
+      Decl := Declaration_Node (FSTyp);
+
+      if Nkind (Decl) /= N_Full_Type_Declaration then
+         return False;
+      end if;
+
+      TDef := Type_Definition (Decl);
+
+      if Nkind (TDef) /= N_Record_Definition then
+         return False;
+      end if;
+
+      CList := Component_List (TDef);
+
+      if Nkind (CList) /= N_Component_List then
+         return False;
+      else
+         return Present (Variant_Part (CList));
+      end if;
+   end Has_Variant_Part;
+
    ---------------------
    -- In_Generic_Body --
    ---------------------

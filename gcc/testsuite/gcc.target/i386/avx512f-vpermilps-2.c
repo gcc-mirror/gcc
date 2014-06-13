@@ -25,7 +25,7 @@ CALC (float *s1, int *s2, float *r)
     r[i] = s1[(4 * (i / 4)) + (s2[i] & 0x03)];
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN,) s1, res1, res2, res3;

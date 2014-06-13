@@ -35,6 +35,9 @@
       if (TARGET_SIMD)					\
 	builtin_define ("__ARM_NEON");			\
 							\
+      if (TARGET_CRC32)				\
+	builtin_define ("__ARM_FEATURE_CRC32");		\
+							\
       switch (aarch64_cmodel)				\
 	{						\
 	  case AARCH64_CMODEL_TINY:			\
@@ -187,6 +190,9 @@ extern unsigned long aarch64_tune_flags;
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
+
+/* CRC instructions that can be enabled through +crc arch extension.  */
+#define TARGET_CRC32 (AARCH64_ISA_CRC)
 
 /* Standard register usage.  */
 
@@ -514,11 +520,29 @@ extern enum aarch64_processor aarch64_tune;
 struct GTY (()) aarch64_frame
 {
   HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
+
+  /* The number of extra stack bytes taken up by register varargs.
+     This area is allocated by the callee at the very top of the
+     frame.  This value is rounded up to a multiple of
+     STACK_BOUNDARY.  */
+  HOST_WIDE_INT saved_varargs_size;
+
   HOST_WIDE_INT saved_regs_size;
   /* Padding if needed after the all the callee save registers have
      been saved.  */
   HOST_WIDE_INT padding0;
   HOST_WIDE_INT hardfp_offset;	/* HARD_FRAME_POINTER_REGNUM */
+
+  /* Offset from the base of the frame (incomming SP) to the
+     hard_frame_pointer.  This value is always a multiple of
+     STACK_BOUNDARY.  */
+  HOST_WIDE_INT hard_fp_offset;
+
+  /* The size of the frame.  This value is the offset from base of the
+   * frame (incomming SP) to the stack_pointer.  This value is always
+   * a multiple of STACK_BOUNDARY.  */
+
+  HOST_WIDE_INT frame_size;
 
   bool laid_out;
 };
@@ -526,11 +550,6 @@ struct GTY (()) aarch64_frame
 typedef struct GTY (()) machine_function
 {
   struct aarch64_frame frame;
-
-  /* The number of extra stack bytes taken up by register varargs.
-     This area is allocated by the callee at the very top of the frame.  */
-  HOST_WIDE_INT saved_varargs_size;
-
 } machine_function;
 #endif
 
@@ -659,12 +678,14 @@ do {									     \
 /* The base cost overhead of a memcpy call, for MOVE_RATIO and friends.  */
 #define AARCH64_CALL_RATIO 8
 
-/* When optimizing for size, give a better estimate of the length of a memcpy
-   call, but use the default otherwise.  But move_by_pieces_ninsns() counts
-   memory-to-memory moves, and we'll have to generate a load & store for each,
-   so halve the value to take that into account.  */
+/* MOVE_RATIO dictates when we will use the move_by_pieces infrastructure.
+   move_by_pieces will continually copy the largest safe chunks.  So a
+   7-byte copy is a 4-byte + 2-byte + byte copy.  This proves inefficient
+   for both size and speed of copy, so we will instead use the "movmem"
+   standard name to implement the copy.  This logic does not apply when
+   targeting -mstrict-align, so keep a sensible default in that case.  */
 #define MOVE_RATIO(speed) \
-  (((speed) ? 15 : AARCH64_CALL_RATIO) / 2)
+  (!STRICT_ALIGNMENT ? 2 : (((speed) ? 15 : AARCH64_CALL_RATIO) / 2))
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */

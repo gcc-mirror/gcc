@@ -142,7 +142,7 @@
 
 /* RX load/store instructions can handle unaligned addresses.  */
 #define STRICT_ALIGNMENT 		0
-#define FUNCTION_BOUNDARY 		8
+#define FUNCTION_BOUNDARY 		((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 4 : 8)
 #define BIGGEST_ALIGNMENT 		32
 #define STACK_BOUNDARY 			32
 #define PARM_BOUNDARY 			8

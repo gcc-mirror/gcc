@@ -1790,10 +1790,6 @@ package body Sem_Res is
       --  Try and fix up a literal so that it matches its expected type. New
       --  literals are manufactured if necessary to avoid cascaded errors.
 
-      function Proper_Current_Scope return Entity_Id;
-      --  Return the current scope. Skip loop scopes created for the purpose of
-      --  quantified expression analysis since those do not appear in the tree.
-
       procedure Report_Ambiguous_Argument;
       --  Additional diagnostics when an ambiguous call has an ambiguous
       --  argument (typically a controlling actual).
@@ -1855,30 +1851,6 @@ package body Sem_Res is
             Patch_Up_Value (High_Bound (N), Typ);
          end if;
       end Patch_Up_Value;
-
-      --------------------------
-      -- Proper_Current_Scope --
-      --------------------------
-
-      function Proper_Current_Scope return Entity_Id is
-         S : Entity_Id := Current_Scope;
-
-      begin
-         while Present (S) loop
-
-            --  Skip a loop scope created for quantified expression analysis
-
-            if Ekind (S) = E_Loop
-              and then Nkind (Parent (S)) = N_Quantified_Expression
-            then
-               S := Scope (S);
-            else
-               exit;
-            end if;
-         end loop;
-
-         return S;
-      end Proper_Current_Scope;
 
       -------------------------------
       -- Report_Ambiguous_Argument --
@@ -2933,15 +2905,12 @@ package body Sem_Res is
          --  default expression mode (the Freeze_Expression routine tests this
          --  flag and only freezes static types if it is set).
 
-         --  Ada 2012 (AI05-177): Expression functions do not freeze. Only
-         --  their use (in an expanded call) freezes.
+         --  Ada 2012 (AI05-177): The declaration of an expression function
+         --  does not cause freezing, but we never reach here in that case.
+         --  Here we are resolving the corresponding expanded body, so we do
+         --  need to perform normal freezing.
 
-         if Ekind (Proper_Current_Scope) /= E_Function
-           or else Nkind (Original_Node (Unit_Declaration_Node
-                     (Proper_Current_Scope))) /= N_Expression_Function
-         then
-            Freeze_Expression (N);
-         end if;
+         Freeze_Expression (N);
 
          --  Now we can do the expansion
 
@@ -9159,7 +9128,7 @@ package body Sem_Res is
                Comp := First_Entity (T);
                while Present (Comp) loop
                   if Chars (Comp) = Chars (S)
-                    and then Covers (Etype (Comp), Typ)
+                    and then Covers (Typ, Etype (Comp))
                   then
                      if not Found then
                         Found := True;
@@ -9213,6 +9182,9 @@ package body Sem_Res is
             Get_Next_Interp (I, It);
          end loop Search;
 
+         --  There must be a legal interpretation at this point
+
+         pragma Assert (Found);
          Resolve (P, It1.Typ);
          Set_Etype (N, Typ);
          Set_Entity_With_Checks (S, Comp1);

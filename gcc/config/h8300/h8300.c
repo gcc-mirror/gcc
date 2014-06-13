@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
+#include "builtins.h"
 
 /* Classifies a h8300_src_operand or h8300_dst_operand.
 
@@ -5460,7 +5461,7 @@ h8300_handle_eightbit_data_attribute (tree *node, tree name,
 
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     {
-      DECL_SECTION_NAME (decl) = build_string (7, ".eight");
+      set_decl_section_name (decl, ".eight");
     }
   else
     {
@@ -5484,7 +5485,7 @@ h8300_handle_tiny_data_attribute (tree *node, tree name,
 
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     {
-      DECL_SECTION_NAME (decl) = build_string (6, ".tiny");
+      set_decl_section_name (decl, ".tiny");
     }
   else
     {

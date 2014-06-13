@@ -67,7 +67,7 @@ compute_fixupimmps (float *r, float src, int tbl)
     }
 }
 
-void static
+void
 avx512f_test (void)
 {
   union128 s1, res1, res2, res3;

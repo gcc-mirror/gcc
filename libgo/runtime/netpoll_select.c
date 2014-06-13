@@ -246,7 +246,7 @@ runtime_netpoll(bool block)
 }
 
 void
-runtime_netpoll_scan(void (*addroot)(Obj))
+runtime_netpoll_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
 {
-	addroot((Obj){(byte*)&data, sizeof data, 0});
+	enqueue1(wbufp, (Obj){(byte*)&data, sizeof data, 0});
 }

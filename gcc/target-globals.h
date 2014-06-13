@@ -33,7 +33,6 @@ extern struct target_libfuncs *this_target_libfuncs;
 extern struct target_cfgloop *this_target_cfgloop;
 extern struct target_ira *this_target_ira;
 extern struct target_ira_int *this_target_ira_int;
-extern struct target_lra_int *this_target_lra_int;
 extern struct target_builtins *this_target_builtins;
 extern struct target_gcse *this_target_gcse;
 extern struct target_bb_reorder *this_target_bb_reorder;
@@ -53,7 +52,6 @@ struct GTY(()) target_globals {
   struct target_cfgloop *GTY((skip)) cfgloop;
   void *GTY((atomic)) ira;
   void *GTY((atomic)) ira_int;
-  void *GTY((atomic)) lra_int;
   struct target_builtins *GTY((skip)) builtins;
   struct target_gcse *GTY((skip)) gcse;
   struct target_bb_reorder *GTY((skip)) bb_reorder;
@@ -81,7 +79,6 @@ restore_target_globals (struct target_globals *g)
   this_target_cfgloop = g->cfgloop;
   this_target_ira = (struct target_ira *) g->ira;
   this_target_ira_int = (struct target_ira_int *) g->ira_int;
-  this_target_lra_int = (struct target_lra_int *) g->lra_int;
   this_target_builtins = g->builtins;
   this_target_gcse = g->gcse;
   this_target_bb_reorder = g->bb_reorder;

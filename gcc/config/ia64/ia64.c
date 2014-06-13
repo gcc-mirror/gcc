@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "opts.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -9892,7 +9893,7 @@ ia64_in_small_data_p (const_tree exp)
 
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
-      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+      const char *section = DECL_SECTION_NAME (exp);
 
       if (strcmp (section, ".sdata") == 0
 	  || strncmp (section, ".sdata.", 7) == 0

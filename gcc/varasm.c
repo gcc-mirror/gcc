@@ -114,7 +114,6 @@ static hashval_t const_desc_hash (const void *);
 static int const_desc_eq (const void *, const void *);
 static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
-static tree copy_constant (tree);
 static void output_constant_def_contents (rtx);
 static void output_addressed_constants (tree);
 static unsigned HOST_WIDE_INT output_constant (tree, unsigned HOST_WIDE_INT,
@@ -174,7 +173,7 @@ static GTY(()) section *unnamed_sections;
 /* Return a nonzero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION(DECL) \
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
-   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+   && DECL_SECTION_NAME (DECL) != NULL)
 
 /* Hash table of named sections.  */
 static GTY((param_is (section))) htab_t section_htab;
@@ -412,11 +411,20 @@ get_named_section (tree decl, const char *name, int reloc)
   if (name == NULL)
     {
       gcc_assert (decl && DECL_P (decl) && DECL_SECTION_NAME (decl));
-      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      name = DECL_SECTION_NAME (decl);
     }
 
   flags = targetm.section_type_flags (decl, name, reloc);
   return get_section (name, flags, decl);
+}
+
+/* Worker for resolve_unique_section.  */
+
+static bool
+set_implicit_section (struct symtab_node *n, void *data ATTRIBUTE_UNUSED)
+{
+  n->implicit_section = true;
+  return false;
 }
 
 /* If required, set DECL_SECTION_NAME to a unique name.  */
@@ -425,13 +433,15 @@ void
 resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 			int flag_function_or_data_sections)
 {
-  if (DECL_SECTION_NAME (decl) == NULL_TREE
+  if (DECL_SECTION_NAME (decl) == NULL
       && targetm_common.have_named_sections
       && (flag_function_or_data_sections
 	  || DECL_COMDAT_GROUP (decl)))
     {
       targetm.asm_out.unique_section (decl, reloc);
-      DECL_HAS_IMPLICIT_SECTION_NAME_P (decl) = true;
+      if (DECL_SECTION_NAME (decl))
+        symtab_for_node_and_aliases (symtab_get_node (decl),
+				     set_implicit_section, NULL, true);
     }
 }
 
@@ -473,7 +483,7 @@ static section *
 hot_function_section (tree decl)
 {
   if (decl != NULL_TREE
-      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL
       && targetm_common.have_named_sections)
     return get_named_section (decl, NULL, 0);
   else
@@ -498,20 +508,20 @@ get_named_text_section (tree decl,
     {
       if (named_section_suffix)
 	{
-	  tree dsn = DECL_SECTION_NAME (decl);
+	  const char *dsn = DECL_SECTION_NAME (decl);
 	  const char *stripped_name;
 	  char *name, *buffer;
 
-	  name = (char *) alloca (TREE_STRING_LENGTH (dsn) + 1);
-	  memcpy (name, TREE_STRING_POINTER (dsn),
-		  TREE_STRING_LENGTH (dsn) + 1);
+	  name = (char *) alloca (strlen (dsn) + 1);
+	  memcpy (name, dsn,
+		  strlen (dsn) + 1);
 
 	  stripped_name = targetm.strip_name_encoding (name);
 
 	  buffer = ACONCAT ((stripped_name, named_section_suffix, NULL));
 	  return get_named_section (decl, buffer, 0);
 	}
-      else if (DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+      else if (symtab_get_node (decl)->implicit_section)
 	{
 	  const char *name;
 
@@ -540,8 +550,7 @@ default_function_section (tree decl, enum node_frequency freq,
   /* Old GNU linkers have buggy --gc-section support, which sometimes
      results in .gcc_except_table* sections being garbage collected.  */
   if (decl
-      && DECL_SECTION_NAME (decl)
-      && DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+      && symtab_get_node (decl)->implicit_section)
     return NULL;
 #endif
 
@@ -611,7 +620,7 @@ function_section_1 (tree decl, bool force_cold)
 
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
   if (decl != NULL_TREE
-      && DECL_SECTION_NAME (decl) != NULL_TREE)
+      && DECL_SECTION_NAME (decl) != NULL)
     {
       if (targetm.asm_out.function_section)
 	section = targetm.asm_out.function_section (decl, freq,
@@ -685,7 +694,7 @@ default_function_rodata_section (tree decl)
 {
   if (decl != NULL_TREE && DECL_SECTION_NAME (decl))
     {
-      const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      const char *name = DECL_SECTION_NAME (decl);
 
       if (DECL_COMDAT_GROUP (decl) && HAVE_COMDAT_GROUP)
         {
@@ -1185,6 +1194,8 @@ change_symbol_block (rtx symbol, struct object_block *block)
 static bool
 use_blocks_for_decl_p (tree decl)
 {
+  struct symtab_node *snode;
+
   /* Only data DECLs can be placed into object blocks.  */
   if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != CONST_DECL)
     return false;
@@ -1198,7 +1209,9 @@ use_blocks_for_decl_p (tree decl)
 
   /* If this decl is an alias, then we don't want to emit a
      definition.  */
-  if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
+  if (TREE_CODE (decl) == VAR_DECL
+      && (snode = symtab_get_node (decl)) != NULL
+      && snode->alias)
     return false;
 
   return targetm.use_blocks_for_decl_p (decl);
@@ -1366,7 +1379,8 @@ make_decl_rtl (tree decl)
      is called early and it needs to make DECL_RTL to get the name.
      we take care of recomputing the DECL_RTL after visibility is changed.  */
   if (TREE_CODE (decl) == VAR_DECL
-      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+      && DECL_SECTION_NAME (decl) != NULL
       && DECL_INITIAL (decl) == NULL_TREE
       && DECL_COMMON (decl))
     DECL_COMMON (decl) = 0;
@@ -3103,71 +3117,6 @@ compare_constant (const tree t1, const tree t2)
   gcc_unreachable ();
 }
 
-/* Make a copy of the whole tree structure for a constant.  This
-   handles the same types of nodes that compare_constant handles.  */
-
-static tree
-copy_constant (tree exp)
-{
-  switch (TREE_CODE (exp))
-    {
-    case ADDR_EXPR:
-      /* For ADDR_EXPR, we do not want to copy the decl whose address
-	 is requested.  We do want to copy constants though.  */
-      if (CONSTANT_CLASS_P (TREE_OPERAND (exp, 0)))
-	return build1 (TREE_CODE (exp), TREE_TYPE (exp),
-		       copy_constant (TREE_OPERAND (exp, 0)));
-      else
-	return copy_node (exp);
-
-    case INTEGER_CST:
-    case REAL_CST:
-    case FIXED_CST:
-    case STRING_CST:
-      return copy_node (exp);
-
-    case COMPLEX_CST:
-      return build_complex (TREE_TYPE (exp),
-			    copy_constant (TREE_REALPART (exp)),
-			    copy_constant (TREE_IMAGPART (exp)));
-
-    case PLUS_EXPR:
-    case POINTER_PLUS_EXPR:
-    case MINUS_EXPR:
-      return build2 (TREE_CODE (exp), TREE_TYPE (exp),
-		     copy_constant (TREE_OPERAND (exp, 0)),
-		     copy_constant (TREE_OPERAND (exp, 1)));
-
-    CASE_CONVERT:
-    case VIEW_CONVERT_EXPR:
-      return build1 (TREE_CODE (exp), TREE_TYPE (exp),
-		     copy_constant (TREE_OPERAND (exp, 0)));
-
-    case VECTOR_CST:
-      return build_vector (TREE_TYPE (exp), VECTOR_CST_ELTS (exp));
-
-    case CONSTRUCTOR:
-      {
-	tree copy = copy_node (exp);
-	vec<constructor_elt, va_gc> *v;
-	unsigned HOST_WIDE_INT idx;
-	tree purpose, value;
-
-	vec_alloc (v, vec_safe_length (CONSTRUCTOR_ELTS (exp)));
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (exp), idx, purpose, value)
-	  {
-	    constructor_elt ce = {purpose, copy_constant (value)};
-	    v->quick_push (ce);
-	  }
-	CONSTRUCTOR_ELTS (copy) = v;
-	return copy;
-      }
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /* Return the section into which constant EXP should be placed.  */
 
 static section *
@@ -3208,7 +3157,7 @@ build_constant_desc (tree exp)
   tree decl;
 
   desc = ggc_alloc<constant_descriptor_tree> ();
-  desc->value = copy_constant (exp);
+  desc->value = exp;
 
   /* Create a string containing the label name, in LABEL.  */
   labelno = const_labelno++;
@@ -6535,7 +6484,7 @@ default_unique_section (tree decl, int reloc)
 
   string = ACONCAT ((linkonce, prefix, ".", name, NULL));
 
-  DECL_SECTION_NAME (decl) = build_string (strlen (string), string);
+  set_decl_section_name (decl, string);
 }
 
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
@@ -6838,7 +6787,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
    definition from different object file) and when resolution info is available
    we simply use the knowledge passed to us by linker plugin.  */
 bool
-decl_binds_to_current_def_p (tree decl)
+decl_binds_to_current_def_p (const_tree decl)
 {
   gcc_assert (DECL_P (decl));
   if (!targetm.binds_local_p (decl))
@@ -7107,6 +7056,8 @@ place_block_symbol (rtx symbol)
       if (snode->alias)
 	{
 	  rtx target = DECL_RTL (symtab_alias_ultimate_target (snode)->decl);
+
+	  place_block_symbol (target);
 	  SYMBOL_REF_BLOCK_OFFSET (symbol) = SYMBOL_REF_BLOCK_OFFSET (target);
 	  return;
 	}

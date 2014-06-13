@@ -313,8 +313,33 @@ func Remove(name string) error {
 	return nil
 }
 
-// Rename renames a file.
-func Rename(oldname, newname string) error {
+// HasPrefix from the strings package.
+func hasPrefix(s, prefix string) bool {
+	return len(s) >= len(prefix) && s[0:len(prefix)] == prefix
+}
+
+// Variant of LastIndex from the strings package.
+func lastIndex(s string, sep byte) int {
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == sep {
+			return i
+		}
+	}
+	return -1
+}
+
+func rename(oldname, newname string) error {
+	dirname := oldname[:lastIndex(oldname, '/')+1]
+	if hasPrefix(newname, dirname) {
+		newname = newname[len(dirname):]
+	} else {
+		return &LinkError{"rename", oldname, newname, ErrInvalid}
+	}
+
+	// If newname still contains slashes after removing the oldname
+	// prefix, the rename is cross-directory and must be rejected.
+	// This case is caught by d.Marshal below.
+
 	var d syscall.Dir
 
 	d.Null()
@@ -323,10 +348,10 @@ func Rename(oldname, newname string) error {
 	buf := make([]byte, syscall.STATFIXLEN+len(d.Name))
 	n, err := d.Marshal(buf[:])
 	if err != nil {
-		return &PathError{"rename", oldname, err}
+		return &LinkError{"rename", oldname, newname, err}
 	}
 	if err = syscall.Wstat(oldname, buf[:n]); err != nil {
-		return &PathError{"rename", oldname, err}
+		return &LinkError{"rename", oldname, newname, err}
 	}
 	return nil
 }

@@ -88,8 +88,7 @@
 	configuration instructions</a>. This option can change the
 	library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-threads</code></span></dt><dd><p>Enable C++11 threads support.  If not explicitly specified,
-        the  configure process enables it if possible.  It defaults to 'off'
-	on Solaris 9, where it would break symbol versioning.   This
+        the  configure process enables it if possible.  This
 	option can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-time</code></span></dt><dd><p>This is an abbreviated form of
 	<code class="code">'--enable-libstdcxx-time=yes'</code>(described next).
@@ -104,7 +103,8 @@
 	desirable because, in glibc, for example, in turn it triggers the
 	linking of libpthread too, which activates locking, a large overhead
 	for single-thread programs.  OPTION=no skips the tests completely.
-	The default is OPTION=no.
+	The default is OPTION=auto, which skips the checks and enables the
+	features only for targets known to support them.
     </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-debug</code></span></dt><dd><p>Build separate debug libraries in addition to what is normally built.
 	By default, the debug libraries are compiled with
 	<code class="code"> CXXFLAGS='-g3 -O0 -fno-inline'</code>

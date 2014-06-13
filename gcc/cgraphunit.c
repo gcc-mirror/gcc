@@ -610,7 +610,7 @@ analyze_function (struct cgraph_node *node)
     {
       cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
 		          NULL, 0, CGRAPH_FREQ_BASE);
-      if (!expand_thunk (node, false))
+      if (!expand_thunk (node, false, false))
 	{
 	  node->thunk.alias = NULL;
 	  node->analyzed = true;
@@ -1466,11 +1466,13 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 }
 
 /* Expand thunk NODE to gimple if possible.
+   When FORCE_GIMPLE_THUNK is true, gimple thunk is created and
+   no assembler is produced.
    When OUTPUT_ASM_THUNK is true, also produce assembler for
    thunks that are not lowered.  */
 
 bool
-expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
+expand_thunk (struct cgraph_node *node, bool output_asm_thunks, bool force_gimple_thunk)
 {
   bool this_adjusting = node->thunk.this_adjusting;
   HOST_WIDE_INT fixed_offset = node->thunk.fixed_offset;
@@ -1481,7 +1483,7 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
   tree a;
 
 
-  if (this_adjusting
+  if (!force_gimple_thunk && this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
 					      virtual_value, alias))
     {
@@ -1718,8 +1720,8 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 	struct cgraph_node *thunk = e->caller;
 
 	e = e->next_caller;
+        expand_thunk (thunk, true, false);
 	assemble_thunks_and_aliases (thunk);
-        expand_thunk (thunk, true);
       }
     else
       e = e->next_caller;
@@ -2342,5 +2344,41 @@ finalize_compilation_unit (void)
   timevar_pop (TV_CGRAPH);
 }
 
+/* Creates a wrapper from SOURCE node to TARGET node. Thunk is used for this
+   kind of wrapper method.  */
+
+void
+cgraph_make_wrapper (struct cgraph_node *source, struct cgraph_node *target)
+{
+    /* Preserve DECL_RESULT so we get right by reference flag.  */
+    tree decl_result = DECL_RESULT (source->decl);
+
+    /* Remove the function's body.  */
+    cgraph_release_function_body (source);
+    cgraph_reset_node (source);
+
+    DECL_RESULT (source->decl) = decl_result;
+    DECL_INITIAL (source->decl) = NULL;
+    allocate_struct_function (source->decl, false);
+    set_cfun (NULL);
+
+    /* Turn alias into thunk and expand it into GIMPLE representation.  */
+    source->definition = true;
+    source->thunk.thunk_p = true;
+    source->thunk.this_adjusting = false;
+
+    struct cgraph_edge *e = cgraph_create_edge (source, target, NULL, 0,
+						CGRAPH_FREQ_BASE);
+
+    if (!expand_thunk (source, false, true))
+      source->analyzed = true;
+
+    e->call_stmt_cannot_inline_p = true;
+
+    /* Inline summary set-up.  */
+
+    analyze_function (source);
+    inline_analyze_function (source);
+}
 
 #include "gt-cgraphunit.h"

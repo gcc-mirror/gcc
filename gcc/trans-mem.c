@@ -2745,12 +2745,9 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       basic_block test_bb = create_empty_bb (transaction_bb);
       basic_block code_bb = create_empty_bb (test_bb);
       basic_block join_bb = create_empty_bb (code_bb);
-      if (current_loops && transaction_bb->loop_father)
-	{
-	  add_bb_to_loop (test_bb, transaction_bb->loop_father);
-	  add_bb_to_loop (code_bb, transaction_bb->loop_father);
-	  add_bb_to_loop (join_bb, transaction_bb->loop_father);
-	}
+      add_bb_to_loop (test_bb, transaction_bb->loop_father);
+      add_bb_to_loop (code_bb, transaction_bb->loop_father);
+      add_bb_to_loop (join_bb, transaction_bb->loop_father);
       if (region->restart_block == region->entry_block)
 	region->restart_block = test_bb;
 
@@ -2791,8 +2788,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
   if (abort_edge)
     {
       basic_block test_bb = create_empty_bb (transaction_bb);
-      if (current_loops && transaction_bb->loop_father)
-	add_bb_to_loop (test_bb, transaction_bb->loop_father);
+      add_bb_to_loop (test_bb, transaction_bb->loop_father);
       if (region->restart_block == region->entry_block)
 	region->restart_block = test_bb;
 
@@ -2834,8 +2830,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
   if (inst_edge && uninst_edge)
     {
       basic_block test_bb = create_empty_bb (transaction_bb);
-      if (current_loops && transaction_bb->loop_father)
-	add_bb_to_loop (test_bb, transaction_bb->loop_father);
+      add_bb_to_loop (test_bb, transaction_bb->loop_father);
       if (region->restart_block == region->entry_block)
 	region->restart_block = test_bb;
 
@@ -2886,8 +2881,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
     {
       basic_block empty_bb = create_empty_bb (transaction_bb);
       region->restart_block = empty_bb;
-      if (current_loops && transaction_bb->loop_father)
-	add_bb_to_loop (empty_bb, transaction_bb->loop_father);
+      add_bb_to_loop (empty_bb, transaction_bb->loop_father);
 
       redirect_edge_pred (fallthru_edge, empty_bb);
       make_edge (transaction_bb, empty_bb, EDGE_FALLTHRU);

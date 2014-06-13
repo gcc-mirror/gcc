@@ -17,7 +17,7 @@
       By default, <command>g++</command> is equivalent to  <command>g++ -std=gnu++98</command>. The standard library also defaults to this dialect.
     </para>
 
- <table frame="all">
+ <table frame="all" xml:id="table.cmd_options">
 <title>C++ Command Options</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -115,7 +115,7 @@
      C++98/03 include files. These are available in the default compilation mode, i.e. <code>-std=c++98</code> or <code>-std=gnu++98</code>.
    </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.cxx98_headers">
 <title>C++ 1998 Library Headers</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -176,7 +176,7 @@
 </table>
 
 <para/>
-<table frame="all">
+<table frame="all" xml:id="table.cxx98_cheaders">
 <title>C++ 1998 Library Headers for C Library Facilities</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -222,7 +222,7 @@ mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
 </para>
 
 <para/>
-<table frame="all">
+<table frame="all" xml:id="table.cxx11_headers">
 <title>C++ 2011 Library Headers</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -308,7 +308,7 @@ mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
 
 <para/>
 
-<table frame="all">
+<table frame="all" xml:id="table.cxx11_cheaders">
 <title>C++ 2011 Library Headers for C Library Facilities</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -362,7 +362,7 @@ mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
   In addition, TR1 includes as:
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.tr1_headers">
 <title>C++ TR 1 Library Headers</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -398,7 +398,7 @@ mode, i.e. <literal>-std=c++11</literal> or <literal>-std=gnu++11</literal>.
 <para/>
 
 
-<table frame="all">
+<table frame="all" xml:id="table.tr1_cheaders">
 <title>C++ TR 1 Library Headers for C Library Facilities</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -441,7 +441,7 @@ compiler supports scalar decimal floating-point types defined via
 <code>__attribute__((mode(SD|DD|LD)))</code>.
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.decfp_headers">
 <title>C++ TR 24733 Decimal Floating-Point Header</title>
 
 <tgroup cols="1" align="left" colsep="1" rowsep="1">
@@ -458,7 +458,7 @@ compiler supports scalar decimal floating-point types defined via
   Also included are files for the C++ ABI interface:
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.abi_headers">
 <title>C++ ABI Headers</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -474,7 +474,7 @@ compiler supports scalar decimal floating-point types defined via
   And a large variety of extensions.
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.ext_headers">
 <title>Extension Headers</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -537,7 +537,7 @@ compiler supports scalar decimal floating-point types defined via
 
 <para/>
 
-<table frame="all">
+<table frame="all" xml:id="table.debug_headers">
 <title>Extension Debug Headers</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -569,7 +569,7 @@ compiler supports scalar decimal floating-point types defined via
 
 <para/>
 
-<table frame="all">
+<table frame="all" xml:id="table.profile_headers">
 <title>Extension Profile Headers</title>
 
 <tgroup cols="4" align="left" colsep="1" rowsep="1">
@@ -599,7 +599,7 @@ compiler supports scalar decimal floating-point types defined via
 
 <para/>
 
-<table frame="all">
+<table frame="all" xml:id="table.parallel_headers">
 <title>Extension Parallel Headers</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">

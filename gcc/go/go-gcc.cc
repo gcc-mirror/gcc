@@ -39,6 +39,7 @@
 #include "output.h"
 #include "real.h"
 #include "realmpfr.h"
+#include "builtins.h"
 
 #include "go-c.h"
 
@@ -388,7 +389,8 @@ class Gcc_backend : public Backend
 		     Location, Bstatement**);
 
   Bvariable*
-  implicit_variable(const std::string&, Btype*, Bexpression*, bool);
+  implicit_variable(const std::string&, Btype*, Bexpression*, bool, bool,
+		    size_t);
 
   Bvariable*
   immutable_struct(const std::string&, bool, bool, Btype*, Location);
@@ -2372,9 +2374,10 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 
   // If this variable goes in a unique section, it may need to go into
   // a different one now that DECL_INITIAL is set.
-  if (DECL_HAS_IMPLICIT_SECTION_NAME_P (var_decl))
+  if (symtab_get_node(var_decl)
+      && symtab_get_node(var_decl)->implicit_section)
     {
-      DECL_SECTION_NAME (var_decl) = NULL_TREE;
+      set_decl_section_name (var_decl, NULL);
       resolve_unique_section (var_decl,
 			      compute_reloc_for_constant (expr_tree),
 			      1);
@@ -2496,10 +2499,15 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 
 Bvariable*
 Gcc_backend::implicit_variable(const std::string& name, Btype* type,
-			       Bexpression* init, bool is_constant)
+			       Bexpression* init, bool is_constant,
+			       bool is_common, size_t alignment)
 {
   tree type_tree = type->get_tree();
-  tree init_tree = init->get_tree();
+  tree init_tree;
+  if (init == NULL)
+    init_tree = NULL_TREE;
+  else
+    init_tree = init->get_tree();
   if (type_tree == error_mark_node || init_tree == error_mark_node)
     return this->error_variable();
 
@@ -2509,12 +2517,25 @@ Gcc_backend::implicit_variable(const std::string& name, Btype* type,
   TREE_PUBLIC(decl) = 0;
   TREE_STATIC(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
-  if (is_constant)
+  if (is_common)
+    {
+      DECL_COMMON(decl) = 1;
+      TREE_PUBLIC(decl) = 1;
+      gcc_assert(init_tree == NULL_TREE);
+    }
+  else if (is_constant)
     {
       TREE_READONLY(decl) = 1;
       TREE_CONSTANT(decl) = 1;
     }
   DECL_INITIAL(decl) = init_tree;
+
+  if (alignment != 0)
+    {
+      DECL_ALIGN(decl) = alignment * BITS_PER_UNIT;
+      DECL_USER_ALIGN(decl) = 1;
+    }
+
   rest_of_decl_compilation(decl, 1, 0);
 
   return new Bvariable(decl);

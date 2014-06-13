@@ -161,6 +161,46 @@ var untarTests = []*untarTest{
 			},
 		},
 	},
+	{
+		file: "testdata/xattrs.tar",
+		headers: []*Header{
+			{
+				Name:       "small.txt",
+				Mode:       0644,
+				Uid:        1000,
+				Gid:        10,
+				Size:       5,
+				ModTime:    time.Unix(1386065770, 448252320),
+				Typeflag:   '0',
+				Uname:      "alex",
+				Gname:      "wheel",
+				AccessTime: time.Unix(1389782991, 419875220),
+				ChangeTime: time.Unix(1389782956, 794414986),
+				Xattrs: map[string]string{
+					"user.key":  "value",
+					"user.key2": "value2",
+					// Interestingly, selinux encodes the terminating null inside the xattr
+					"security.selinux": "unconfined_u:object_r:default_t:s0\x00",
+				},
+			},
+			{
+				Name:       "small2.txt",
+				Mode:       0644,
+				Uid:        1000,
+				Gid:        10,
+				Size:       11,
+				ModTime:    time.Unix(1386065770, 449252304),
+				Typeflag:   '0',
+				Uname:      "alex",
+				Gname:      "wheel",
+				AccessTime: time.Unix(1389782991, 419875220),
+				ChangeTime: time.Unix(1386065770, 449252304),
+				Xattrs: map[string]string{
+					"security.selinux": "unconfined_u:object_r:default_t:s0\x00",
+				},
+			},
+		},
+	},
 }
 
 func TestReader(t *testing.T) {
@@ -180,7 +220,7 @@ testLoop:
 				f.Close()
 				continue testLoop
 			}
-			if *hdr != *header {
+			if !reflect.DeepEqual(*hdr, *header) {
 				t.Errorf("test %d, entry %d: Incorrect header:\nhave %+v\nwant %+v",
 					i, j, *hdr, *header)
 			}
@@ -253,7 +293,7 @@ func TestIncrementalRead(t *testing.T) {
 		}
 
 		// check the header
-		if *hdr != *headers[nread] {
+		if !reflect.DeepEqual(*hdr, *headers[nread]) {
 			t.Errorf("Incorrect header:\nhave %+v\nwant %+v",
 				*hdr, headers[nread])
 		}
@@ -321,7 +361,7 @@ func TestParsePAXHeader(t *testing.T) {
 		{"mtime", "mtime=1350244992.023960108", "30 mtime=1350244992.023960108\n"}}
 	for _, test := range paxTests {
 		key, expected, raw := test[0], test[1], test[2]
-		reader := bytes.NewBuffer([]byte(raw))
+		reader := bytes.NewReader([]byte(raw))
 		headers, err := parsePAX(reader)
 		if err != nil {
 			t.Errorf("Couldn't parse correctly formatted headers: %v", err)
@@ -337,7 +377,7 @@ func TestParsePAXHeader(t *testing.T) {
 			t.Error("Buffer wasn't consumed")
 		}
 	}
-	badHeader := bytes.NewBuffer([]byte("3 somelongkey="))
+	badHeader := bytes.NewReader([]byte("3 somelongkey="))
 	if _, err := parsePAX(badHeader); err != ErrHeader {
 		t.Fatal("Unexpected success when parsing bad header")
 	}

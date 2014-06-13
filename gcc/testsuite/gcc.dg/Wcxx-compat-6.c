@@ -109,4 +109,4 @@ f(enum E1 e1, enum E2 e2, struct s1 vs1, struct s1 *vp1)
 }
 
 /* Match all extra informative notes.  */
-/* { dg-warning "near initialization for" "expected" { target *-*-* } 0 } */
+/* { dg-message "near initialization for" "expected" { target *-*-* } 0 } */

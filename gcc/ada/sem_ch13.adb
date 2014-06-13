@@ -661,12 +661,12 @@ package body Sem_Ch13 is
 
                            if Bytes_Big_Endian then
                               Error_Msg_NE
-                                ("\info: big-endian range for "
+                                ("\big-endian range for "
                                  & "component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            else
                               Error_Msg_NE
-                                ("\info: little-endian range "
+                                ("\little-endian range "
                                  & "for component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            end if;
@@ -3132,8 +3132,23 @@ package body Sem_Ch13 is
                Typ := Etype (Subp);
             end if;
 
-            return Base_Type (Typ) = Base_Type (Ent)
-              and then No (Next_Formal (F));
+            --  Verify that the prefix of the attribute and the local name
+            --  for the type of the formal match.
+
+            if Base_Type (Typ) /= Base_Type (Ent)
+              or else Present ((Next_Formal (F)))
+            then
+               return False;
+
+            elsif not Is_Scalar_Type (Typ)
+              and then not Is_First_Subtype (Typ)
+              and then not Is_Class_Wide_Type (Typ)
+            then
+               return False;
+
+            else
+               return True;
+            end if;
          end Has_Good_Profile;
 
       --  Start of processing for Analyze_Stream_TSS_Definition
@@ -3143,6 +3158,10 @@ package body Sem_Ch13 is
 
          if not Is_Type (U_Ent) then
             Error_Msg_N ("local name must be a subtype", Nam);
+            return;
+
+         elsif not Is_First_Subtype (U_Ent) then
+            Error_Msg_N ("local name must be a first subtype", Nam);
             return;
          end if;
 
@@ -3194,6 +3213,24 @@ package body Sem_Ch13 is
             if Is_Abstract_Subprogram (Subp) then
                Error_Msg_N ("stream subprogram must not be abstract", Expr);
                return;
+
+            --  Test for stream subprogram for interface type being non-null
+
+            elsif Is_Interface (U_Ent)
+              and then not Inside_A_Generic
+              and then Ekind (Subp) = E_Procedure
+              and then
+                not Null_Present
+                  (Specification
+                     (Unit_Declaration_Node (Ultimate_Alias (Subp))))
+
+              --  Disable this test for now till Polyorb issue is fixed???
+
+              and then False
+            then
+               Error_Msg_N
+                 ("stream subprogram for interface type "
+                  & "must be null procedure", Expr);
             end if;
 
             Set_Entity (Expr, Subp);
@@ -6324,7 +6361,7 @@ package body Sem_Ch13 is
                if Inherit and Opt.List_Inherited_Aspects then
                   Error_Msg_Sloc := Sloc (Ritem);
                   Error_Msg_N
-                    ("?L?info: & inherits `Invariant''Class` aspect from #",
+                    ("info: & inherits `Invariant''Class` aspect from #?L?",
                      Typ);
                end if;
             end if;
@@ -11285,7 +11322,7 @@ package body Sem_Ch13 is
                  and then X_Size > Y_Size
                then
                   Error_Msg_NE
-                    ("?& overlays smaller object", ACCR.N, ACCR.X);
+                    ("??& overlays smaller object", ACCR.N, ACCR.X);
                   Error_Msg_N
                     ("\??program execution may be erroneous", ACCR.N);
                   Error_Msg_Uint_1 := X_Size;
@@ -11926,7 +11963,7 @@ package body Sem_Ch13 is
                         elsif Is_Unsigned_Type (Source) then
                            Error_Msg
                              ("\?z?source will be extended with ^ high order "
-                              & "zero bits?!", Eloc);
+                              & "zero bits!", Eloc);
 
                         else
                            Error_Msg

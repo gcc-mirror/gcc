@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "params.h"
 #include "target.h"
+#include "builtins.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -2718,7 +2719,11 @@ reset_all_used_flags (void)
 	  {
 	    gcc_assert (REG_NOTES (p) == NULL);
 	    for (int i = 0; i < XVECLEN (pat, 0); i++)
-	      reset_insn_used_flags (XVECEXP (pat, 0, i));
+	      {
+		rtx insn = XVECEXP (pat, 0, i);
+		if (INSN_P (insn))
+		  reset_insn_used_flags (insn);
+	      }
 	  }
       }
 }
@@ -2755,7 +2760,11 @@ verify_rtl_sharing (void)
 	  verify_insn_sharing (p);
 	else
 	  for (int i = 0; i < XVECLEN (pat, 0); i++)
-	    verify_insn_sharing (XVECEXP (pat, 0, i));
+	      {
+		rtx insn = XVECEXP (pat, 0, i);
+		if (INSN_P (insn))
+		  verify_insn_sharing (insn);
+	      }
       }
 
   reset_all_used_flags ();
@@ -6171,6 +6180,13 @@ const char *
 insn_file (const_rtx insn)
 {
   return LOCATION_FILE (INSN_LOCATION (insn));
+}
+
+/* Return expanded location of the statement that produced this insn.  */
+expanded_location
+insn_location (const_rtx insn)
+{
+  return expand_location (INSN_LOCATION (insn));
 }
 
 /* Return true if memory model MODEL requires a pre-operation (release-style)

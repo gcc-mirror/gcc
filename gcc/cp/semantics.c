@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "bitmap.h"
 #include "omp-low.h"
+#include "builtins.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -1129,6 +1130,11 @@ finish_switch_cond (tree cond, tree switch_stmt)
       orig_type = TREE_TYPE (cond);
       if (cond != error_mark_node)
 	{
+	  /* Warn if the condition has boolean value.  */
+	  if (TREE_CODE (orig_type) == BOOLEAN_TYPE)
+	    warning_at (input_location, OPT_Wswitch_bool,
+			"switch condition has type bool");
+
 	  /* [stmt.switch]
 
 	     Integral promotions are performed.  */
@@ -1835,10 +1841,11 @@ check_accessibility_of_qualified_id (tree decl,
       /* If the reference is to a non-static member of the
 	 current class, treat it as if it were referenced through
 	 `this'.  */
+      tree ct;
       if (DECL_NONSTATIC_MEMBER_P (decl)
 	  && current_class_ptr
-	  && DERIVED_FROM_P (scope, current_class_type))
-	qualifying_type = current_class_type;
+	  && DERIVED_FROM_P (scope, ct = current_nonlambda_class_type ()))
+	qualifying_type = ct;
       /* Otherwise, use the type indicated by the
 	 nested-name-specifier.  */
       else
@@ -3862,6 +3869,7 @@ simplify_aggr_init_expr (tree *tp)
 				    aggr_init_expr_nargs (aggr_init_expr),
 				    AGGR_INIT_EXPR_ARGP (aggr_init_expr));
   TREE_NOTHROW (call_expr) = TREE_NOTHROW (aggr_init_expr);
+  CALL_EXPR_LIST_INIT_P (call_expr) = CALL_EXPR_LIST_INIT_P (aggr_init_expr);
   tree ret = call_expr;
 
   if (style == ctor)
@@ -3891,20 +3899,6 @@ simplify_aggr_init_expr (tree *tp)
 			     tf_warning_or_error);
       pop_deferring_access_checks ();
       ret = build2 (COMPOUND_EXPR, TREE_TYPE (slot), ret, slot);
-    }
-
-  /* DR 1030 says that we need to evaluate the elements of an
-     initializer-list in forward order even when it's used as arguments to
-     a constructor.  So if the target wants to evaluate them in reverse
-     order and there's more than one argument other than 'this', force
-     pre-evaluation.  */
-  if (PUSH_ARGS_REVERSED && CALL_EXPR_LIST_INIT_P (aggr_init_expr)
-      && aggr_init_expr_nargs (aggr_init_expr) > 2)
-    {
-      tree preinit;
-      stabilize_call (call_expr, &preinit);
-      if (preinit)
-	ret = build2 (COMPOUND_EXPR, TREE_TYPE (ret), preinit, ret);
     }
 
   if (AGGR_INIT_ZERO_FIRST (aggr_init_expr))

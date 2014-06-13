@@ -124,7 +124,7 @@ func (m *mmapper) Mmap(fd int, offset int64, length int, prot int, flags int) (d
 		cap  int
 	}{addr, length, length}
 
-	// Use unsafe to turn sl into a []byte.
+	// Use unsafeto turn sl into a []byte.
 	b := *(*[]byte)(unsafe.Pointer(&sl))
 
 	// Register mapping in m and return it.

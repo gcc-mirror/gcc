@@ -67,13 +67,13 @@ compute_fixupimmpd (double *r, double src, long long tbl)
     }
 }
 
-void static
+void
 avx512f_test (void)
 {
   union128d s1, res1, res2, res3;
   union128i_q s2;
   double res_ref[2];
-  int i, j, k;
+  int i, j;
 
   float vals[2] = { -10, 10 };
   int controls[10] = { 0x11111111,

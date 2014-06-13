@@ -4105,7 +4105,8 @@ Unary_expression::do_get_backend(Translate_context* context)
 			      && !context->is_const());
 	    }
 	  Bvariable* implicit =
-	    gogo->backend()->implicit_variable(buf, btype, bexpr, copy_to_heap);
+	    gogo->backend()->implicit_variable(buf, btype, bexpr, copy_to_heap,
+					       false, 0);
 	  bexpr = gogo->backend()->var_expression(implicit, loc);
 	}
       else if ((this->expr_->is_composite_literal()
@@ -7598,7 +7599,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       if (this->seen_)
         return false;
 
-      unsigned int ret;
+      unsigned long ret;
       if (this->code_ == BUILTIN_SIZEOF)
 	{
           this->seen_ = true;
@@ -7626,8 +7627,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       else
 	go_unreachable();
 
-      nc->set_unsigned_long(Type::lookup_integer_type("uintptr"),
-			    static_cast<unsigned long>(ret));
+      nc->set_unsigned_long(Type::lookup_integer_type("uintptr"), ret);
       return true;
     }
   else if (this->code_ == BUILTIN_OFFSETOF)

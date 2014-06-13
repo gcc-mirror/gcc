@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -195,6 +196,19 @@ func (oi ObjectIdentifier) Equal(other ObjectIdentifier) bool {
 	}
 
 	return true
+}
+
+func (oi ObjectIdentifier) String() string {
+	var s string
+
+	for i, v := range oi {
+		if i > 0 {
+			s += "."
+		}
+		s += strconv.Itoa(v)
+	}
+
+	return s
 }
 
 // parseObjectIdentifier parses an OBJECT IDENTIFIER from the given bytes and
@@ -451,11 +465,13 @@ func parseSequenceOf(bytes []byte, sliceType reflect.Type, elemType reflect.Type
 		if err != nil {
 			return
 		}
-		// We pretend that GENERAL STRINGs are PRINTABLE STRINGs so
-		// that a sequence of them can be parsed into a []string.
-		if t.tag == tagGeneralString {
+		// We pretend that various other string types are PRINTABLE STRINGs
+		// so that a sequence of them can be parsed into a []string.
+		switch t.tag {
+		case tagIA5String, tagGeneralString, tagT61String, tagUTF8String:
 			t.tag = tagPrintableString
 		}
+
 		if t.class != classUniversal || t.isCompound != compoundType || t.tag != expectedTag {
 			err = StructuralError{"sequence tag mismatch"}
 			return
@@ -630,6 +646,10 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 	// Go type time.Time.
 	if universalTag == tagUTCTime && t.tag == tagGeneralizedTime {
 		universalTag = tagGeneralizedTime
+	}
+
+	if params.set {
+		universalTag = tagSet
 	}
 
 	expectedClass := classUniversal
@@ -852,12 +872,19 @@ func setDefaultValue(v reflect.Value, params fieldParameters) (ok bool) {
 //
 // The following tags on struct fields have special meaning to Unmarshal:
 //
-//	optional		marks the field as ASN.1 OPTIONAL
-//	[explicit] tag:x	specifies the ASN.1 tag number; implies ASN.1 CONTEXT SPECIFIC
-//	default:x		sets the default value for optional integer fields
+//	application	specifies that a APPLICATION tag is used
+//	default:x	sets the default value for optional integer fields
+//	explicit	specifies that an additional, explicit tag wraps the implicit one
+//	optional	marks the field as ASN.1 OPTIONAL
+//	set		causes a SET, rather than a SEQUENCE type to be expected
+//	tag:x		specifies the ASN.1 tag number; implies ASN.1 CONTEXT SPECIFIC
 //
 // If the type of the first field of a structure is RawContent then the raw
 // ASN1 contents of the struct will be stored in it.
+//
+// If the type name of a slice element ends with "SET" then it's treated as if
+// the "set" tag was set on it. This can be used with nested slices where a
+// struct tag cannot be given.
 //
 // Other ASN.1 types are not supported; if it encounters them,
 // Unmarshal returns a parse error.

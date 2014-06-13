@@ -1,3 +1,22 @@
+2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* go/go-gcc.cc (Gcc_backend::global_variable_set_init): Use
+	symtab_get_node(var_decl)->implicit_section.
+
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* go-gcc.cc (global_variable_set_init): Use
+	set_decl_section_name.
+
+2014-06-04  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::implicit_variable): Add is_common and
+	alignment parameters.  Permit init parameter to be NULL.
+
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-gcc.cc: Include builtins.h.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* go-lang.c (struct GTY): Don't use variable_size gty attribute.

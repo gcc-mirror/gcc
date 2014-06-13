@@ -6,7 +6,6 @@
 
 #include <math.h>
 #include "avx512f-check.h"
-#include "avx512f-helper.h"
 
 static void
 compute_rndscalesd (double *s1, double *s2, double *r, int imm)

@@ -252,20 +252,6 @@ extern unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
 						 int, unsigned HOST_WIDE_INT *,
 						 int *, int *);
 
-/* Functions from builtins.c:  */
-extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-extern tree std_build_builtin_va_list (void);
-extern tree std_fn_abi_va_list (tree);
-extern tree std_canonical_va_list_type (tree);
-
-extern void std_expand_builtin_va_start (tree, rtx);
-extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-extern void expand_builtin_setjmp_setup (rtx, rtx);
-extern void expand_builtin_setjmp_receiver (rtx);
-extern rtx expand_builtin_saveregs (void);
-extern void expand_builtin_trap (void);
-extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
-
 /* Functions from expr.c:  */
 
 /* This is run during target initialization to set up which modes can be

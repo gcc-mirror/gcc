@@ -1,3 +1,59 @@
+2014-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/36446
+	* c-typeck.c (error_init): Call inform instead of error_at.
+	(pedwarn_init): Call inform instead of pedwarn.
+	(warning_init): Call inform instead of warning_at.
+
+2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-decl.c (merge_decls): Use set_decl_section_name.
+	(duplicate_decls): Remove node if it exists.
+
+2014-06-05  S. Gilles  <sgilles@terpmail.umd.edu>
+
+	PR c/53119
+	* c-typeck.c (push_init_level, process_init_element,
+	pop_init_level): Correct check for zero initialization, move
+	missing brace warning to respect zero initialization.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56724
+	* c-typeck.c (convert_for_assignment): Use expr_loc for ic_argpass.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49706
+	* c-typeck.c (parser_build_binary_op): Warn when logical not is used
+	on the left hand side operand of a comparison. 
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/48062
+	* c-decl.c (warn_if_shadowing): Call inform instead of warning_at.
+	Print note only if the warning was printed.
+
+2014-06-04  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/58942
+	* c-array-notation.c (fix_builtin_array_notation_fn): Handle the case
+	with a pointer.
+
+2014-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60439
+	* c-parser.c (c_parser_switch_statement): Pass explicit_cast_p to
+	c_start_case.
+	* c-tree.h (c_start_case): Update.
+	* c-typeck.c (c_start_case): Add new boolean parameter.  Warn if
+	switch condition has boolean value.
+
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-decl.c: Include builtins.h.
+	* c-parser.c: Likewise.
+
 2014-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/56724

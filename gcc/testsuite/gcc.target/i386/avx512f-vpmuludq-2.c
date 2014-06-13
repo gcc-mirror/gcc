@@ -19,14 +19,14 @@ CALC (unsigned int *s1, unsigned int *s2, unsigned long long *r)
     r[i] = s1[i * 2] * s2[i * 2];
 }
 
-static void
+void
 TEST (void)
 {
-  UNION_TYPE (AVX512F_LEN, i_d) s1, s2;
-  UNION_TYPE (AVX512F_LEN, i_q) res1, res2, res3;
+  UNION_TYPE (AVX512F_LEN, i_ud) s1, s2;
+  UNION_TYPE (AVX512F_LEN, i_uq) res1, res2, res3;
   MASK_TYPE mask = MASK_VALUE;
   unsigned long long res_ref[DST_SIZE];
-  int i, sign = 1;
+  int i;
 
   for (i = 0; i < SRC_SIZE; i++)
     {
@@ -42,14 +42,14 @@ TEST (void)
   res2.x = INTRINSIC (_mask_mul_epu32) (res2.x, mask, s1.x, s2.x);
   res3.x = INTRINSIC (_maskz_mul_epu32) (mask, s1.x, s2.x);
 
-  if (UNION_CHECK (AVX512F_LEN, i_q) (res1, res_ref))
+  if (UNION_CHECK (AVX512F_LEN, i_uq) (res1, res_ref))
     abort ();
 
-  MASK_MERGE (i_q) (res_ref, mask, DST_SIZE);
-  if (UNION_CHECK (AVX512F_LEN, i_q) (res2, res_ref))
+  MASK_MERGE (i_uq) (res_ref, mask, DST_SIZE);
+  if (UNION_CHECK (AVX512F_LEN, i_uq) (res2, res_ref))
     abort ();
 
-  MASK_ZERO (i_q) (res_ref, mask, DST_SIZE);
-  if (UNION_CHECK (AVX512F_LEN, i_q) (res3, res_ref))
+  MASK_ZERO (i_uq) (res_ref, mask, DST_SIZE);
+  if (UNION_CHECK (AVX512F_LEN, i_uq) (res3, res_ref))
     abort ();
 }

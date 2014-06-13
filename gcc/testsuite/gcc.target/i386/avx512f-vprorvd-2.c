@@ -15,10 +15,10 @@ CALC (int *s1, int *s2, int *r)
   unsigned int i;
 
   for (i = 0; i < SIZE; i++)
-    r[i] = (s1[i] >> s2[i]) | (s1[i] << sizeof (s1[i]) * 8 - s2[i]);
+    r[i] = (s1[i] >> s2[i]) | (s1[i] << (sizeof (s1[i]) * 8 - s2[i]));
 }
 
-void static
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_d) s1, s2, res1, res2, res3;

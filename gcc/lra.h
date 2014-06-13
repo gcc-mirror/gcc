@@ -36,5 +36,4 @@ extern rtx lra_create_new_reg (enum machine_mode, rtx, enum reg_class,
 extern rtx lra_eliminate_regs (rtx, enum machine_mode, rtx);
 extern void lra (FILE *);
 extern void lra_init_once (void);
-extern void lra_init (void);
 extern void lra_finish_once (void);

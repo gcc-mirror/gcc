@@ -55,6 +55,7 @@
 #include "langhooks.h"
 #include "opts.h"
 #include "cgraph.h"
+#include "builtins.h"
 
 static unsigned int rx_gp_base_regnum_val = INVALID_REGNUM;
 static unsigned int rx_pid_base_regnum_val = INVALID_REGNUM;
@@ -2218,7 +2219,7 @@ static bool
 rx_in_small_data (const_tree decl)
 {
   int size;
-  const_tree section;
+  const char * section;
 
   if (rx_small_data_limit == 0)
     return false;
@@ -2237,11 +2238,7 @@ rx_in_small_data (const_tree decl)
 
   section = DECL_SECTION_NAME (decl);
   if (section)
-    {
-      const char * const name = TREE_STRING_POINTER (section);
-
-      return (strcmp (name, "D_2") == 0) || (strcmp (name, "B_2") == 0);
-    }
+    return (strcmp (section, "D_2") == 0) || (strcmp (section, "B_2") == 0);
 
   size = int_size_in_bytes (TREE_TYPE (decl));
 
@@ -2791,11 +2788,11 @@ rx_option_override (void)
   rx_override_options_after_change ();
 
   if (align_jumps == 0 && ! optimize_size)
-    align_jumps = 3;
+    align_jumps = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 2 : 3);
   if (align_loops == 0 && ! optimize_size)
-    align_loops = 3;
+    align_loops = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 2 : 3);
   if (align_labels == 0 && ! optimize_size)
-    align_labels = 3;
+    align_labels = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 2 : 3);
 }
 
 
@@ -3200,7 +3197,11 @@ rx_align_for_label (rtx lab, int uses_threshold)
   if (LABEL_P (lab) && LABEL_NUSES (lab) < uses_threshold)
     return 0;
 
-  return optimize_size ? 1 : 3;
+  if (optimize_size)
+    return 0;
+  if (rx_cpu_type == RX100 || rx_cpu_type == RX200)
+    return 2;
+  return 2;
 }
 
 static int
@@ -3208,6 +3209,9 @@ rx_max_skip_for_label (rtx lab)
 {
   int opsize;
   rtx op;
+
+  if (optimize_size)
+    return 0;
 
   if (lab == NULL_RTX)
     return 0;

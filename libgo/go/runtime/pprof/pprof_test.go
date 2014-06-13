@@ -138,7 +138,11 @@ func testCPUProfile(t *testing.T, need []string, f func()) {
 		t.Logf("no CPU profile samples collected")
 		ok = false
 	}
-	min := total / uintptr(len(have)) / 3
+	// We'd like to check a reasonable minimum, like
+	// total / len(have) / smallconstant, but this test is
+	// pretty flaky (see bug 7095).  So we'll just test to
+	// make sure we got at least one sample.
+	min := uintptr(1)
 	for i, name := range need {
 		if have[i] < min {
 			t.Logf("%s has %d samples out of %d, want at least %d, ideally %d", name, have[i], total, min, total/uintptr(len(have)))
@@ -189,9 +193,6 @@ func TestCPUProfileWithFork(t *testing.T) {
 // If it did, it would see inconsistent state and would either record an incorrect stack
 // or crash because the stack was malformed.
 func TestGoroutineSwitch(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("flaky test; see http://golang.org/issue/6417")
-	}
 	// How much to try. These defaults take about 1 seconds
 	// on a 2012 MacBook Pro. The ones in short mode take
 	// about 0.1 seconds.
@@ -217,7 +218,7 @@ func TestGoroutineSwitch(t *testing.T) {
 			// exists to record a PC without a traceback. Those are okay.
 			if len(stk) == 2 {
 				f := runtime.FuncForPC(stk[1])
-				if f != nil && f.Name() == "System" {
+				if f != nil && (f.Name() == "System" || f.Name() == "ExternalCode") {
 					return
 				}
 			}
@@ -264,9 +265,9 @@ func TestMathBigDivide(t *testing.T) {
 
 // Operating systems that are expected to fail the tests. See issue 6047.
 var badOS = map[string]bool{
-	"darwin":  true,
-	"netbsd":  true,
-	"openbsd": true,
+	"darwin": true,
+	"netbsd": true,
+	"plan9":  true,
 }
 
 func TestBlockProfile(t *testing.T) {

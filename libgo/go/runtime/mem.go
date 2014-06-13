@@ -60,11 +60,10 @@ type MemStats struct {
 
 var Sizeof_C_MStats uintptr // filled in by malloc.goc
 
-var VmemStats MemStats
-
 func init() {
-	if Sizeof_C_MStats != unsafe.Sizeof(VmemStats) {
-		println(Sizeof_C_MStats, unsafe.Sizeof(VmemStats))
+	var memStats MemStats
+	if Sizeof_C_MStats != unsafe.Sizeof(memStats) {
+		println(Sizeof_C_MStats, unsafe.Sizeof(memStats))
 		panic("MStats vs MemStatsType size mismatch")
 	}
 }

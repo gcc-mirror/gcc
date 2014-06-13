@@ -3197,9 +3197,6 @@ scev_reset (void)
 
   scev_reset_htab ();
 
-  if (!current_loops)
-    return;
-
   FOR_EACH_LOOP (loop, 0)
     {
       loop->nb_iterations = NULL_TREE;

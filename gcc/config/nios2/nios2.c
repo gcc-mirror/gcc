@@ -1628,7 +1628,7 @@ nios2_in_small_data_p (const_tree exp)
     {
       if (DECL_SECTION_NAME (exp))
 	{
-	  const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+	  const char *section = DECL_SECTION_NAME (exp);
 	  if (nios2_section_threshold > 0
 	      && nios2_small_section_name_p (section))
 	    return true;

@@ -74,6 +74,34 @@ match_word (const char *str, match (*subr) (void), locus *old_locus)
 }
 
 
+/* Like match_word, but if str is matched, set a flag that it
+   was matched.  */
+static match
+match_word_omp_simd (const char *str, match (*subr) (void), locus *old_locus,
+		     bool *simd_matched)
+{
+  match m;
+
+  if (str != NULL)
+    {
+      m = gfc_match (str);
+      if (m != MATCH_YES)
+	return m;
+      *simd_matched = true;
+    }
+
+  m = (*subr) ();
+
+  if (m != MATCH_YES)
+    {
+      gfc_current_locus = *old_locus;
+      reject_statement ();
+    }
+
+  return m;
+}
+
+
 /* Load symbols from all USE statements encountered in this scoping unit.  */
 
 static void
@@ -103,7 +131,7 @@ use_modules (void)
       if (match_word (keyword, subr, &old_locus) == MATCH_YES)	\
 	return st;						\
       else							\
-	undo_new_statement ();				  \
+	undo_new_statement ();				  	\
     } while (0);
 
 
@@ -531,11 +559,34 @@ decode_statement (void)
   return ST_NONE;
 }
 
+/* Like match, but set a flag simd_matched if keyword matched.  */
+#define matchs(keyword, subr, st)				\
+    do {							\
+      if (match_word_omp_simd (keyword, subr, &old_locus,	\
+			       &simd_matched) == MATCH_YES)	\
+	return st;						\
+      else							\
+	undo_new_statement ();				  	\
+    } while (0);
+
+/* Like match, but don't match anything if not -fopenmp.  */
+#define matcho(keyword, subr, st)				\
+    do {							\
+      if (!gfc_option.gfc_flag_openmp)				\
+	;							\
+      else if (match_word (keyword, subr, &old_locus)		\
+	       == MATCH_YES)					\
+	return st;						\
+      else							\
+	undo_new_statement ();				  	\
+    } while (0);
+
 static gfc_statement
 decode_omp_directive (void)
 {
   locus old_locus;
   char c;
+  bool simd_matched = false;
 
   gfc_enforce_clean_symbol_state ();
 
@@ -560,92 +611,102 @@ decode_omp_directive (void)
 
   c = gfc_peek_ascii_char ();
 
+  /* match is for directives that should be recognized only if
+     -fopenmp, matchs for directives that should be recognized
+     if either -fopenmp or -fopenmp-simd.  */
   switch (c)
     {
     case 'a':
-      match ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
+      matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
       break;
     case 'b':
-      match ("barrier", gfc_match_omp_barrier, ST_OMP_BARRIER);
+      matcho ("barrier", gfc_match_omp_barrier, ST_OMP_BARRIER);
       break;
     case 'c':
-      match ("cancellation% point", gfc_match_omp_cancellation_point,
-	     ST_OMP_CANCELLATION_POINT);
-      match ("cancel", gfc_match_omp_cancel, ST_OMP_CANCEL);
-      match ("critical", gfc_match_omp_critical, ST_OMP_CRITICAL);
+      matcho ("cancellation% point", gfc_match_omp_cancellation_point,
+	      ST_OMP_CANCELLATION_POINT);
+      matcho ("cancel", gfc_match_omp_cancel, ST_OMP_CANCEL);
+      matcho ("critical", gfc_match_omp_critical, ST_OMP_CRITICAL);
       break;
     case 'd':
-      match ("declare simd", gfc_match_omp_declare_simd,
-	     ST_OMP_DECLARE_SIMD);
-      match ("do simd", gfc_match_omp_do_simd, ST_OMP_DO_SIMD);
-      match ("do", gfc_match_omp_do, ST_OMP_DO);
+      matchs ("declare reduction", gfc_match_omp_declare_reduction,
+	      ST_OMP_DECLARE_REDUCTION);
+      matchs ("declare simd", gfc_match_omp_declare_simd,
+	      ST_OMP_DECLARE_SIMD);
+      matchs ("do simd", gfc_match_omp_do_simd, ST_OMP_DO_SIMD);
+      matcho ("do", gfc_match_omp_do, ST_OMP_DO);
       break;
     case 'e':
-      match ("end atomic", gfc_match_omp_eos, ST_OMP_END_ATOMIC);
-      match ("end critical", gfc_match_omp_critical, ST_OMP_END_CRITICAL);
-      match ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
-      match ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
-      match ("end simd", gfc_match_omp_eos, ST_OMP_END_SIMD);
-      match ("end master", gfc_match_omp_eos, ST_OMP_END_MASTER);
-      match ("end ordered", gfc_match_omp_eos, ST_OMP_END_ORDERED);
-      match ("end parallel do simd", gfc_match_omp_eos,
-	     ST_OMP_END_PARALLEL_DO_SIMD);
-      match ("end parallel do", gfc_match_omp_eos, ST_OMP_END_PARALLEL_DO);
-      match ("end parallel sections", gfc_match_omp_eos,
-	     ST_OMP_END_PARALLEL_SECTIONS);
-      match ("end parallel workshare", gfc_match_omp_eos,
-	     ST_OMP_END_PARALLEL_WORKSHARE);
-      match ("end parallel", gfc_match_omp_eos, ST_OMP_END_PARALLEL);
-      match ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
-      match ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
-      match ("end taskgroup", gfc_match_omp_eos, ST_OMP_END_TASKGROUP);
-      match ("end task", gfc_match_omp_eos, ST_OMP_END_TASK);
-      match ("end workshare", gfc_match_omp_end_nowait,
-	     ST_OMP_END_WORKSHARE);
+      matcho ("end atomic", gfc_match_omp_eos, ST_OMP_END_ATOMIC);
+      matcho ("end critical", gfc_match_omp_critical, ST_OMP_END_CRITICAL);
+      matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
+      matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
+      matchs ("end simd", gfc_match_omp_eos, ST_OMP_END_SIMD);
+      matcho ("end master", gfc_match_omp_eos, ST_OMP_END_MASTER);
+      matcho ("end ordered", gfc_match_omp_eos, ST_OMP_END_ORDERED);
+      matchs ("end parallel do simd", gfc_match_omp_eos,
+	      ST_OMP_END_PARALLEL_DO_SIMD);
+      matcho ("end parallel do", gfc_match_omp_eos, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel sections", gfc_match_omp_eos,
+	      ST_OMP_END_PARALLEL_SECTIONS);
+      matcho ("end parallel workshare", gfc_match_omp_eos,
+	      ST_OMP_END_PARALLEL_WORKSHARE);
+      matcho ("end parallel", gfc_match_omp_eos, ST_OMP_END_PARALLEL);
+      matcho ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
+      matcho ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
+      matcho ("end taskgroup", gfc_match_omp_eos, ST_OMP_END_TASKGROUP);
+      matcho ("end task", gfc_match_omp_eos, ST_OMP_END_TASK);
+      matcho ("end workshare", gfc_match_omp_end_nowait,
+	      ST_OMP_END_WORKSHARE);
       break;
     case 'f':
-      match ("flush", gfc_match_omp_flush, ST_OMP_FLUSH);
+      matcho ("flush", gfc_match_omp_flush, ST_OMP_FLUSH);
       break;
     case 'm':
-      match ("master", gfc_match_omp_master, ST_OMP_MASTER);
+      matcho ("master", gfc_match_omp_master, ST_OMP_MASTER);
       break;
     case 'o':
-      match ("ordered", gfc_match_omp_ordered, ST_OMP_ORDERED);
+      matcho ("ordered", gfc_match_omp_ordered, ST_OMP_ORDERED);
       break;
     case 'p':
-      match ("parallel do simd", gfc_match_omp_parallel_do_simd,
-	     ST_OMP_PARALLEL_DO_SIMD);
-      match ("parallel do", gfc_match_omp_parallel_do, ST_OMP_PARALLEL_DO);
-      match ("parallel sections", gfc_match_omp_parallel_sections,
-	     ST_OMP_PARALLEL_SECTIONS);
-      match ("parallel workshare", gfc_match_omp_parallel_workshare,
-	     ST_OMP_PARALLEL_WORKSHARE);
-      match ("parallel", gfc_match_omp_parallel, ST_OMP_PARALLEL);
+      matchs ("parallel do simd", gfc_match_omp_parallel_do_simd,
+	      ST_OMP_PARALLEL_DO_SIMD);
+      matcho ("parallel do", gfc_match_omp_parallel_do, ST_OMP_PARALLEL_DO);
+      matcho ("parallel sections", gfc_match_omp_parallel_sections,
+	      ST_OMP_PARALLEL_SECTIONS);
+      matcho ("parallel workshare", gfc_match_omp_parallel_workshare,
+	      ST_OMP_PARALLEL_WORKSHARE);
+      matcho ("parallel", gfc_match_omp_parallel, ST_OMP_PARALLEL);
       break;
     case 's':
-      match ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
-      match ("section", gfc_match_omp_eos, ST_OMP_SECTION);
-      match ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
-      match ("single", gfc_match_omp_single, ST_OMP_SINGLE);
+      matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
+      matcho ("section", gfc_match_omp_eos, ST_OMP_SECTION);
+      matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
+      matcho ("single", gfc_match_omp_single, ST_OMP_SINGLE);
       break;
     case 't':
-      match ("taskgroup", gfc_match_omp_taskgroup, ST_OMP_TASKGROUP);
-      match ("taskwait", gfc_match_omp_taskwait, ST_OMP_TASKWAIT);
-      match ("taskyield", gfc_match_omp_taskyield, ST_OMP_TASKYIELD);
-      match ("task", gfc_match_omp_task, ST_OMP_TASK);
-      match ("threadprivate", gfc_match_omp_threadprivate,
-	     ST_OMP_THREADPRIVATE);
+      matcho ("taskgroup", gfc_match_omp_taskgroup, ST_OMP_TASKGROUP);
+      matcho ("taskwait", gfc_match_omp_taskwait, ST_OMP_TASKWAIT);
+      matcho ("taskyield", gfc_match_omp_taskyield, ST_OMP_TASKYIELD);
+      matcho ("task", gfc_match_omp_task, ST_OMP_TASK);
+      matcho ("threadprivate", gfc_match_omp_threadprivate,
+	      ST_OMP_THREADPRIVATE);
       break;
     case 'w':
-      match ("workshare", gfc_match_omp_workshare, ST_OMP_WORKSHARE);
+      matcho ("workshare", gfc_match_omp_workshare, ST_OMP_WORKSHARE);
       break;
     }
 
   /* All else has failed, so give up.  See if any of the matchers has
-     stored an error message of some sort.  */
+     stored an error message of some sort.  Don't error out if
+     not -fopenmp and simd_matched is false, i.e. if a directive other
+     than one marked with match has been seen.  */
 
-  if (gfc_error_check () == 0)
-    gfc_error_now ("Unclassifiable OpenMP directive at %C");
+  if (gfc_option.gfc_flag_openmp || simd_matched)
+    {
+      if (gfc_error_check () == 0)
+	gfc_error_now ("Unclassifiable OpenMP directive at %C");
+    }
 
   reject_statement ();
 
@@ -768,7 +829,9 @@ next_free (void)
 	  return decode_gcc_attribute ();
 
 	}
-      else if (c == '$' && gfc_option.gfc_flag_openmp)
+      else if (c == '$'
+	       && (gfc_option.gfc_flag_openmp
+		   || gfc_option.gfc_flag_openmp_simd))
 	{
 	  int i;
 
@@ -857,7 +920,9 @@ next_fixed (void)
 
 	      return decode_gcc_attribute ();
 	    }
-	  else if (c == '$' && gfc_option.gfc_flag_openmp)
+	  else if (c == '$'
+		   && (gfc_option.gfc_flag_openmp
+		       || gfc_option.gfc_flag_openmp_simd))
 	    {
 	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (NONSTRING))
 		gcc_assert ((char) gfc_wide_tolower (c) == "$omp"[i]);
@@ -1050,7 +1115,7 @@ next_statement (void)
 #define case_decl case ST_ATTR_DECL: case ST_COMMON: case ST_DATA_DECL: \
   case ST_EQUIVALENCE: case ST_NAMELIST: case ST_STATEMENT_FUNCTION: \
   case ST_TYPE: case ST_INTERFACE: case ST_OMP_THREADPRIVATE: \
-  case ST_PROCEDURE: case ST_OMP_DECLARE_SIMD
+  case ST_PROCEDURE: case ST_OMP_DECLARE_SIMD: case ST_OMP_DECLARE_REDUCTION
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -1549,6 +1614,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_CRITICAL:
       p = "!$OMP CRITICAL";
+      break;
+    case ST_OMP_DECLARE_REDUCTION:
+      p = "!$OMP DECLARE REDUCTION";
       break;
     case ST_OMP_DECLARE_SIMD:
       p = "!$OMP DECLARE SIMD";

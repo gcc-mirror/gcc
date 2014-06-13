@@ -199,6 +199,8 @@ BEGIN {
 	    args = sprintf("%s_p%d, %s(len(%s))", args, goarg, cparam[2], goname)
 	} else if (gotype == "uintptr" && ctype ~ /^\*/) {
 	    args = sprintf("%s(%s)(unsafe.Pointer(%s))", args, ctype, goname)
+	} else if (gotype == "unsafe.Pointer" && ctype ~ /^\*/) {
+	    args = sprintf("%s(%s)(%s)", args, ctype, goname)
 	} else {
 	    args = sprintf("%s%s(%s)", args, ctype, goname)
 	}

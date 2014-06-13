@@ -327,9 +327,7 @@ package body Sem_Warn is
             begin
                --  One argument, so check the argument
 
-               if Present (PA)
-                 and then List_Length (PA) = 1
-               then
+               if Present (PA) and then List_Length (PA) = 1 then
                   if Nkind (First (PA)) = N_Parameter_Association then
                      Find_Var (Explicit_Actual_Parameter (First (PA)));
                   else
@@ -415,9 +413,7 @@ package body Sem_Warn is
          begin
             for J in 1 .. Name_Len - (Len - 1) loop
                if Name_Buffer (J .. J + (Len - 1)) = S
-                 and then
-                   (J = 1
-                     or else Name_Buffer (J - 1) not in 'a' .. 'z')
+                 and then (J = 1 or else Name_Buffer (J - 1) not in 'a' .. 'z')
                  and then
                    (J + Len > Name_Len
                      or else Name_Buffer (J + Len) not in 'a' .. 'z')
@@ -766,13 +762,14 @@ package body Sem_Warn is
       --  For an entry formal entity from an entry declaration, find the
       --  corresponding body formal from the given accept statement.
 
-      function May_Need_Initialized_Actual (Ent : Entity_Id) return Boolean;
+      procedure May_Need_Initialized_Actual (Ent : Entity_Id);
       --  If an entity of a generic type has default initialization, then the
       --  corresponding actual type should be fully initialized, or else there
       --  will be uninitialized components in the instantiation, that might go
-      --  unreported. This predicate allows the compiler to emit an appropriate
-      --  warning in the generic itself. In a sense, the use of a type that
-      --  requires full initialization is a weak part of the generic contract.
+      --  unreported. This routine marks the type of the uninitialized variable
+      --  appropriately to allow the compiler to emit an appropriate warning
+      --  in the instance. In a sense, the use of a type that requires full
+      --  initialization is a weak part of the generic contract.
 
       function Missing_Subunits return Boolean;
       --  We suppress warnings when there are missing subunits, because this
@@ -827,38 +824,30 @@ package body Sem_Warn is
       --   May_Need_Initialized_Actual --
       -----------------------------------
 
-      function May_Need_Initialized_Actual (Ent : Entity_Id) return Boolean is
+      procedure May_Need_Initialized_Actual (Ent : Entity_Id) is
          T   : constant Entity_Id := Etype (Ent);
          Par : constant Node_Id   := Parent (T);
-         Res : Boolean;
 
       begin
          if not Is_Generic_Type (T) then
-            Res := False;
+            null;
 
          elsif (Nkind (Par)) = N_Private_Extension_Declaration then
-            Set_Needs_Initialized_Actual (Par);
-            Res := True;
+
+            --  We only indicate the first such variable in the generic.
+
+            if No (Uninitialized_Variable (Par)) then
+               Set_Uninitialized_Variable (Par, Ent);
+            end if;
 
          elsif (Nkind (Par)) = N_Formal_Type_Declaration
-           and then Nkind (Formal_Type_Definition (Par))
-              = N_Formal_Private_Type_Definition
+           and then Nkind (Formal_Type_Definition (Par)) =
+                                         N_Formal_Private_Type_Definition
          then
-            Set_Needs_Initialized_Actual (Formal_Type_Definition (Par));
-            Res := True;
-
-         else
-            Res := False;
+            if No (Uninitialized_Variable (Formal_Type_Definition (Par))) then
+               Set_Uninitialized_Variable (Formal_Type_Definition (Par), Ent);
+            end if;
          end if;
-
-         if Res then
-            Error_Msg_N ("??!variable& of a generic type is potentially "
-                         & "uninitialized", Ent);
-            Error_Msg_NE ("\??instantiations must provide fully initialized "
-                          & "type for&", Ent, T);
-         end if;
-
-         return Res;
       end May_Need_Initialized_Actual;
 
       ----------------------
@@ -984,8 +973,8 @@ package body Sem_Warn is
                when N_Generic_Package_Declaration =>
                   return
                     not Is_List_Member (Prev)
-                      or else List_Containing (Prev)
-                        /= Generic_Formal_Declarations (P);
+                      or else List_Containing (Prev) /=
+                                            Generic_Formal_Declarations (P);
 
                --  Similarly, the generic formals of a generic subprogram are
                --  not accessible.
@@ -1051,9 +1040,7 @@ package body Sem_Warn is
       --  real errors so far (this last check avoids junk messages resulting
       --  from errors, e.g. a subunit that is not loaded).
 
-      if Warning_Mode = Suppress
-        or else Serious_Errors_Detected /= 0
-      then
+      if Warning_Mode = Suppress or else Serious_Errors_Detected /= 0 then
          return;
       end if;
 
@@ -1101,9 +1088,8 @@ package body Sem_Warn is
 
                --  Special processing for access types
 
-               if Present (UR)
-                 and then Is_Access_Type (E1T)
-               then
+               if Present (UR) and then Is_Access_Type (E1T) then
+
                   --  For access types, the only time we made a UR entry was
                   --  for a dereference, and so we post the appropriate warning
                   --  here (note that the dereference may not be explicit in
@@ -1125,7 +1111,7 @@ package body Sem_Warn is
 
                elsif Warn_On_Constant
                  and then (Ekind (E1) = E_Variable
-                             and then Has_Initial_Value (E1))
+                            and then Has_Initial_Value (E1))
                  and then Never_Set_In_Source_Check_Spec (E1)
                  and then not Address_Taken (E1)
                  and then not Generic_Package_Spec_Entity (E1)
@@ -1173,35 +1159,35 @@ package body Sem_Warn is
 
                elsif Never_Set_In_Source_Check_Spec (E1)
 
-                  --  No warning if warning for this case turned off
+                 --  No warning if warning for this case turned off
 
-                  and then Warn_On_No_Value_Assigned
+                 and then Warn_On_No_Value_Assigned
 
-                  --  No warning if address taken somewhere
+                 --  No warning if address taken somewhere
 
-                  and then not Address_Taken (E1)
+                 and then not Address_Taken (E1)
 
-                  --  No warning if explicit initial value
+                 --  No warning if explicit initial value
 
-                  and then not Has_Initial_Value (E1)
+                 and then not Has_Initial_Value (E1)
 
-                  --  No warning for generic package spec entities, since we
-                  --  might set them in a child unit or something like that
+                 --  No warning for generic package spec entities, since we
+                 --  might set them in a child unit or something like that
 
-                  and then not Generic_Package_Spec_Entity (E1)
+                 and then not Generic_Package_Spec_Entity (E1)
 
-                  --  No warning if fully initialized type, except that for
-                  --  this purpose we do not consider access types to qualify
-                  --  as fully initialized types (relying on an access type
-                  --  variable being null when it is never set is a bit odd).
+                 --  No warning if fully initialized type, except that for
+                 --  this purpose we do not consider access types to qualify
+                 --  as fully initialized types (relying on an access type
+                 --  variable being null when it is never set is a bit odd).
 
-                  --  Also we generate warning for an out parameter that is
-                  --  never referenced, since again it seems odd to rely on
-                  --  default initialization to set an out parameter value.
+                 --  Also we generate warning for an out parameter that is
+                 --  never referenced, since again it seems odd to rely on
+                 --  default initialization to set an out parameter value.
 
-                 and then (Is_Access_Type (E1T)
-                            or else Ekind (E1) = E_Out_Parameter
-                            or else not Is_Fully_Initialized_Type (E1T))
+                and then (Is_Access_Type (E1T)
+                           or else Ekind (E1) = E_Out_Parameter
+                           or else not Is_Fully_Initialized_Type (E1T))
                then
                   --  Do not output complaint about never being assigned a
                   --  value if a pragma Unmodified applies to the variable
@@ -1312,16 +1298,15 @@ package body Sem_Warn is
                         if not Has_Unmodified (E1)
                           and then not Warnings_Off_E1
                           and then not Is_Junk_Name (Chars (E1))
-                          and then not May_Need_Initialized_Actual (E1)
                         then
                            Output_Reference_Error
                              ("?v?variable& is read but never assigned!");
+                           May_Need_Initialized_Actual (E1);
                         end if;
 
                      elsif not Has_Unreferenced (E1)
                        and then not Warnings_Off_E1
                        and then not Is_Junk_Name (Chars (E1))
-                       and then not May_Need_Initialized_Actual (E1)
                      then
                         Output_Reference_Error -- CODEFIX
                           ("?v?variable& is never read and never assigned!");
@@ -1433,20 +1418,20 @@ package body Sem_Warn is
                         if not Is_Trivial_Subprogram (Scope (E1)) then
                            if not Warnings_Off_E1 then
                               if Is_Access_Type (Etype (Parent (UR))) then
-                                 Error_Msg_N ("?`&.&` may be null!", UR);
+                                 Error_Msg_N ("??`&.&` may be null!", UR);
                               else
                                  Error_Msg_N
-                                   ("?`&.&` may be referenced before "
+                                   ("??`&.&` may be referenced before "
                                     & "it has a value!", UR);
                               end if;
                            end if;
                         end if;
-                        --  All other cases of unset reference active
+
+                     --  All other cases of unset reference active
 
                      elsif not Warnings_Off_E1 then
                         Error_Msg_N
-                          ("?& may be referenced before it has a value!",
-                           UR);
+                          ("??& may be referenced before it has a value!", UR);
                      end if;
                   end if;
 
@@ -1460,134 +1445,125 @@ package body Sem_Warn is
 
             if not Referenced_Check_Spec (E1)
 
-               --  If Referenced_As_LHS is set, then that's still interesting
-               --  (potential "assigned but never read" case), but not if we
-               --  have pragma Unreferenced, which cancels this warning.
+              --  If Referenced_As_LHS is set, then that's still interesting
+              --  (potential "assigned but never read" case), but not if we
+              --  have pragma Unreferenced, which cancels this warning.
 
               and then (not Referenced_As_LHS_Check_Spec (E1)
-                          or else not Has_Unreferenced (E1))
+                         or else not Has_Unreferenced (E1))
 
-               --  Check that warnings on unreferenced entities are enabled
+              --  Check that warnings on unreferenced entities are enabled
 
               and then
                 ((Check_Unreferenced and then not Is_Formal (E1))
 
-                     --  Case of warning on unreferenced formal
+                  --  Case of warning on unreferenced formal
 
-                     or else
-                      (Check_Unreferenced_Formals and then Is_Formal (E1))
+                  or else (Check_Unreferenced_Formals and then Is_Formal (E1))
 
-                     --  Case of warning on unread variables modified by an
-                     --  assignment, or an OUT parameter if it is the only one.
+                  --  Case of warning on unread variables modified by an
+                  --  assignment, or an OUT parameter if it is the only one.
 
-                     or else
-                       (Warn_On_Modified_Unread
-                          and then Referenced_As_LHS_Check_Spec (E1))
+                  or else (Warn_On_Modified_Unread
+                            and then Referenced_As_LHS_Check_Spec (E1))
 
-                     --  Case of warning on any unread OUT parameter (note
-                     --  such indications are only set if the appropriate
-                     --  warning options were set, so no need to recheck here.)
+                  --  Case of warning on any unread OUT parameter (note such
+                  --  indications are only set if the appropriate warning
+                  --  options were set, so no need to recheck here.)
 
-                     or else
-                       Referenced_As_Out_Parameter_Check_Spec (E1))
+                  or else Referenced_As_Out_Parameter_Check_Spec (E1))
 
-               --  All other entities, including local packages that cannot be
-               --  referenced from elsewhere, including those declared within a
-               --  package body.
+              --  All other entities, including local packages that cannot be
+              --  referenced from elsewhere, including those declared within a
+              --  package body.
 
-               and then (Is_Object (E1)
-                           or else
-                         Is_Type (E1)
-                           or else
-                         Ekind (E1) = E_Label
-                           or else
-                         Ekind (E1) = E_Exception
-                           or else
-                         Ekind (E1) = E_Named_Integer
-                           or else
-                         Ekind (E1) = E_Named_Real
-                           or else
-                         Is_Overloadable (E1)
+              and then (Is_Object (E1)
+                         or else Is_Type (E1)
+                         or else Ekind (E1) = E_Label
+                         or else Ekind_In (E1, E_Exception,
+                                               E_Named_Integer,
+                                               E_Named_Real)
+                         or else Is_Overloadable (E1)
 
-                           --  Package case, if the main unit is a package spec
-                           --  or generic package spec, then there may be a
-                           --  corresponding body that references this package
-                           --  in some other file. Otherwise we can be sure
-                           --  that there is no other reference.
+                         --  Package case, if the main unit is a package spec
+                         --  or generic package spec, then there may be a
+                         --  corresponding body that references this package
+                         --  in some other file. Otherwise we can be sure
+                         --  that there is no other reference.
 
-                           or else
-                             (Ekind (E1) = E_Package
-                                and then
-                                  not Is_Package_Or_Generic_Package
-                                        (Cunit_Entity (Current_Sem_Unit))))
+                         or else
+                           (Ekind (E1) = E_Package
+                             and then
+                               not Is_Package_Or_Generic_Package
+                                     (Cunit_Entity (Current_Sem_Unit))))
 
-               --  Exclude instantiations, since there is no reason why every
-               --  entity in an instantiation should be referenced.
+              --  Exclude instantiations, since there is no reason why every
+              --  entity in an instantiation should be referenced.
 
-               and then Instantiation_Location (Sloc (E1)) = No_Location
+              and then Instantiation_Location (Sloc (E1)) = No_Location
 
-               --  Exclude formal parameters from bodies if the corresponding
-               --  spec entity has been referenced in the case where there is
-               --  a separate spec.
+              --  Exclude formal parameters from bodies if the corresponding
+              --  spec entity has been referenced in the case where there is
+              --  a separate spec.
 
-               and then not (Is_Formal (E1)
-                              and then Ekind (Scope (E1)) = E_Subprogram_Body
-                              and then Present (Spec_Entity (E1))
-                              and then Referenced (Spec_Entity (E1)))
+              and then not (Is_Formal (E1)
+                             and then Ekind (Scope (E1)) = E_Subprogram_Body
+                             and then Present (Spec_Entity (E1))
+                             and then Referenced (Spec_Entity (E1)))
 
-               --  Consider private type referenced if full view is referenced.
-               --  If there is not full view, this is a generic type on which
-               --  warnings are also useful.
+              --  Consider private type referenced if full view is referenced.
+              --  If there is not full view, this is a generic type on which
+              --  warnings are also useful.
 
-               and then
-                 not (Is_Private_Type (E1)
-                       and then Present (Full_View (E1))
-                       and then Referenced (Full_View (E1)))
+              and then
+                not (Is_Private_Type (E1)
+                      and then Present (Full_View (E1))
+                      and then Referenced (Full_View (E1)))
 
-               --  Don't worry about full view, only about private type
+              --  Don't worry about full view, only about private type
 
-               and then not Has_Private_Declaration (E1)
+              and then not Has_Private_Declaration (E1)
 
-               --  Eliminate dispatching operations from consideration, we
-               --  cannot tell if these are referenced or not in any easy
-               --  manner (note this also catches Adjust/Finalize/Initialize).
+              --  Eliminate dispatching operations from consideration, we
+              --  cannot tell if these are referenced or not in any easy
+              --  manner (note this also catches Adjust/Finalize/Initialize).
 
-               and then not Is_Dispatching_Operation (E1)
+              and then not Is_Dispatching_Operation (E1)
 
-               --  Check entity that can be publicly referenced (we do not give
-               --  messages for such entities, since there could be other
-               --  units, not involved in this compilation, that contain
-               --  relevant references.
+              --  Check entity that can be publicly referenced (we do not give
+              --  messages for such entities, since there could be other
+              --  units, not involved in this compilation, that contain
+              --  relevant references.
 
-               and then not Publicly_Referenceable (E1)
+              and then not Publicly_Referenceable (E1)
 
-               --  Class wide types are marked as source entities, but they are
-               --  not really source entities, and are always created, so we do
-               --  not care if they are not referenced.
+              --  Class wide types are marked as source entities, but they are
+              --  not really source entities, and are always created, so we do
+              --  not care if they are not referenced.
 
-               and then Ekind (E1) /= E_Class_Wide_Type
+              and then Ekind (E1) /= E_Class_Wide_Type
 
-               --  Objects other than parameters of task types are allowed to
-               --  be non-referenced, since they start up tasks.
+              --  Objects other than parameters of task types are allowed to
+              --  be non-referenced, since they start up tasks.
 
-               and then ((Ekind (E1) /= E_Variable
-                           and then Ekind (E1) /= E_Constant
-                           and then Ekind (E1) /= E_Component)
-                          or else not Is_Task_Type (E1T))
+              and then ((Ekind (E1) /= E_Variable
+                          and then Ekind (E1) /= E_Constant
+                          and then Ekind (E1) /= E_Component)
+                         or else not Is_Task_Type (E1T))
 
-               --  For subunits, only place warnings on the main unit itself,
-               --  since parent units are not completely compiled.
+              --  For subunits, only place warnings on the main unit itself,
+              --  since parent units are not completely compiled.
 
-               and then (Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit
-                          or else Get_Source_Unit (E1) = Main_Unit)
+              and then (Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit
+                         or else Get_Source_Unit (E1) = Main_Unit)
 
-               --  No warning on a return object, because these are often
-               --  created with a single expression and an implicit return.
-               --  If the object is a variable there will be a warning
-               --  indicating that it could be declared constant.
+              --  No warning on a return object, because these are often
+              --  created with a single expression and an implicit return.
+              --  If the object is a variable there will be a warning
+              --  indicating that it could be declared constant.
 
-               and then not
-                 (Ekind (E1) = E_Constant and then Is_Return_Object (E1))
+              and then not
+                (Ekind (E1) = E_Constant and then Is_Return_Object (E1))
             then
                --  Suppress warnings in internal units if not in -gnatg mode
                --  (these would be junk warnings for an applications program,
@@ -1648,10 +1624,10 @@ package body Sem_Warn is
 
          <<Continue>>
             if (Is_Package_Or_Generic_Package (E1)
-                  and then Nkind (Parent (E1)) = N_Package_Specification
-                  and then
-                    Nkind (Original_Node (Unit_Declaration_Node (E1)))
-                      /= N_Formal_Package_Declaration)
+                 and then Nkind (Parent (E1)) = N_Package_Specification
+                 and then
+                   Nkind (Original_Node (Unit_Declaration_Node (E1))) /=
+                                                N_Formal_Package_Declaration)
 
               or else Ekind (E1) = E_Block
             then
@@ -1770,9 +1746,7 @@ package body Sem_Warn is
                E : constant Entity_Id := Entity (N);
 
             begin
-               if (Ekind (E) = E_Variable
-                     or else
-                   Ekind (E) = E_Out_Parameter)
+               if Ekind_In (E, E_Variable, E_Out_Parameter)
                  and then Never_Set_In_Source_Check_Spec (E)
                  and then not Has_Initial_Value (E)
                  and then (No (Unset_Reference (E))
@@ -1860,10 +1834,8 @@ package body Sem_Warn is
                               P := Parent (Nod);
 
                               if Nkind (P) = N_Pragma
-                                and then
-                                  Pragma_Name (P) = Name_Test_Case
-                                and then
-                                  Nod = Get_Ensures_From_CTC_Pragma (P)
+                                and then Pragma_Name (P) = Name_Test_Case
+                                and then Nod = Get_Ensures_From_CTC_Pragma (P)
                               then
                                  return True;
                               end if;
@@ -1977,10 +1949,8 @@ package body Sem_Warn is
                               P := Parent (P);
                               exit when No (P);
 
-                              if (Nkind (P) = N_If_Statement
-                                     or else
-                                   Nkind (P) = N_Elsif_Part)
-                                 and then Ref_In (Condition (P))
+                              if Nkind_In (P, N_If_Statement, N_Elsif_Part)
+                                and then Ref_In (Condition (P))
                               then
                                  return;
 
@@ -2272,9 +2242,7 @@ package body Sem_Warn is
 
             E1 := First_Entity (P);
             while Present (E1) loop
-               if Ekind (E1) = E_Package
-                  and then Renamed_Object (E1) = L
-               then
+               if Ekind (E1) = E_Package and then Renamed_Object (E1) = L then
                   Is_Visible_Renaming := not Is_Hidden (E1);
                   return E1;
 
@@ -2321,12 +2289,8 @@ package body Sem_Warn is
                E := First_Entity (P);
             end if;
 
-            while Present (E)
-              and then E /= First_Private_Entity (P)
-            loop
-               if Comes_From_Source (E)
-                 or else Present (Limited_View (P))
-               then
+            while Present (E) and then E /= First_Private_Entity (P) loop
+               if Comes_From_Source (E) or else Present (Limited_View (P)) then
                   return True;
                end if;
 
@@ -2364,16 +2328,15 @@ package body Sem_Warn is
          Item := First (Context_Items (Cnode));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
-               and then not Implicit_With (Item)
-               and then In_Extended_Main_Source_Unit (Item)
+              and then not Implicit_With (Item)
+              and then In_Extended_Main_Source_Unit (Item)
             then
                Lunit := Entity (Name (Item));
 
                --  Check if this unit is referenced (skip the check if this
                --  is explicitly marked by a pragma Unreferenced).
 
-               if not Referenced (Lunit)
-                 and then not Has_Unreferenced (Lunit)
+               if not Referenced (Lunit) and then not Has_Unreferenced (Lunit)
                then
                   --  Suppress warnings in internal units if not in -gnatg mode
                   --  (these would be junk warnings for an application program,
@@ -2688,9 +2651,7 @@ package body Sem_Warn is
 
    function Goto_Spec_Entity (E : Entity_Id) return Entity_Id is
    begin
-      if Is_Formal (E)
-        and then Present (Spec_Entity (E))
-      then
+      if Is_Formal (E) and then Present (Spec_Entity (E)) then
          return Spec_Entity (E);
       else
          return E;
@@ -2963,10 +2924,10 @@ package body Sem_Warn is
       if Nkind (P) = N_With_Clause then
          if Ekind (E) = E_Package then
             Error_Msg_NE
-              ("??with of obsolescent package& declared#", N, E);
+              ("?j?with of obsolescent package& declared#", N, E);
          elsif Ekind (E) = E_Procedure then
             Error_Msg_NE
-              ("??with of obsolescent procedure& declared#", N, E);
+              ("?j?with of obsolescent procedure& declared#", N, E);
          else
             Error_Msg_NE
               ("??with of obsolescent function& declared#", N, E);
@@ -3217,9 +3178,7 @@ package body Sem_Warn is
             Track (Left_Opnd (Nod), Loc);
             Track (Right_Opnd (Nod), Loc);
 
-         elsif Is_Entity_Name (Nod)
-           and then Is_Object (Entity (Nod))
-         then
+         elsif Is_Entity_Name (Nod) and then Is_Object (Entity (Nod)) then
             declare
                CV : constant Node_Id := Current_Value (Entity (Nod));
 
@@ -3228,15 +3187,15 @@ package body Sem_Warn is
                   Error_Msg_Sloc := Sloc (CV);
 
                   if Nkind (CV) not in N_Subexpr then
-                     Error_Msg_N ("\\?(see test #)", Loc);
+                     Error_Msg_N ("\\??(see test #)", Loc);
 
                   elsif Nkind (Parent (CV)) =
                           N_Case_Statement_Alternative
                   then
-                     Error_Msg_N ("\\?(see case alternative #)", Loc);
+                     Error_Msg_N ("\\??(see case alternative #)", Loc);
 
                   else
-                     Error_Msg_N ("\\?(see assignment #)", Loc);
+                     Error_Msg_N ("\\??(see assignment #)", Loc);
                   end if;
                end if;
             end;
@@ -3343,8 +3302,7 @@ package body Sem_Warn is
                Cond        : Node_Id := C;
 
             begin
-               if Present (Parent (C))
-                 and then Nkind (Parent (C)) = N_Op_Not
+               if Present (Parent (C)) and then Nkind (Parent (C)) = N_Op_Not
                then
                   True_Branch := not True_Branch;
                   Cond        := Parent (C);
@@ -3479,9 +3437,9 @@ package body Sem_Warn is
                     Present (Underlying_Type (Etype (Form1)))
                       and then
                         (Is_By_Reference_Type (Underlying_Type (Etype (Form1)))
-                           or else
-                             Convention (Underlying_Type (Etype (Form1))) =
-                               Convention_Ada_Pass_By_Reference)
+                          or else
+                            Convention (Underlying_Type (Etype (Form1))) =
+                                              Convention_Ada_Pass_By_Reference)
                   then
                      null;
 
@@ -3555,7 +3513,7 @@ package body Sem_Warn is
                         then
                            if Act1 = First_Actual (N) then
                               Error_Msg_FE
-                                ("<`IN OUT` prefix overlaps with "
+                                ("<<`IN OUT` prefix overlaps with "
                                  & "actual for&", Act1, Form);
 
                            else
@@ -3563,7 +3521,7 @@ package body Sem_Warn is
 
                               Error_Msg_Node_2 := Form;
                               Error_Msg_FE
-                                ("<writable actual for & overlaps with "
+                                ("<<writable actual for & overlaps with "
                                  & "actual for&", Act1, Form);
                            end if;
 
@@ -3575,7 +3533,7 @@ package body Sem_Warn is
                            --  This is one of the messages
 
                            Error_Msg_FE
-                             ("<writable actual for & overlaps with "
+                             ("<<writable actual for & overlaps with "
                               & "actual for&", Act1, Form1);
                         end if;
                      end;
@@ -3673,9 +3631,9 @@ package body Sem_Warn is
          begin
             return
               Nkind (R) = N_Attribute_Reference
-               and then Attribute_Name (R) = Name_Length
-               and then Is_Entity_Name (Prefix (R))
-               and then Entity (Prefix (R)) = Ent;
+                and then Attribute_Name (R) = Name_Length
+                and then Is_Entity_Name (Prefix (R))
+                and then Entity (Prefix (R)) = Ent;
          end Length_Reference;
 
          -----------
@@ -3777,7 +3735,7 @@ package body Sem_Warn is
 
                      exit when Pctr = 0
                        and then (Tref (Sref .. Sref + 1) = ".."
-                                  or else
+                                   or else
                                  Tref (Sref .. Sref + 2) = " ..");
 
                      --  Quit if we have hit EOF character, something wrong
@@ -4132,9 +4090,7 @@ package body Sem_Warn is
          --  is not quite right, but it really does not matter that we fail
          --  to output the warning in some obscure cases of name clashes.
 
-         if Nkind (N) = N_Identifier
-           and then Chars (N) = Chars (Ent)
-         then
+         if Nkind (N) = N_Identifier and then Chars (N) = Chars (Ent) then
             return Abandon;
          else
             return OK;

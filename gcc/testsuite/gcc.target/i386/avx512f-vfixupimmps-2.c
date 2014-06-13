@@ -71,10 +71,10 @@ CALC (float *r, float src, int tbl)
 }
 
 
-void static
+void
 TEST (void)
 {
-  int i, j, k;
+  int i, j;
   UNION_TYPE (AVX512F_LEN,) res1, res2, res3, s1;
   UNION_TYPE (AVX512F_LEN, i_d) s2;
   float res_ref[SIZE];

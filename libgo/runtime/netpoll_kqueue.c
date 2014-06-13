@@ -59,6 +59,13 @@ runtime_netpollclose(uintptr fd)
 	return 0;
 }
 
+void
+runtime_netpollarm(uintptr fd, int32 mode)
+{
+	USED(fd, mode);
+	runtime_throw("unused");
+}
+
 // Polls for ready network connections.
 // Returns list of goroutines that become runnable.
 G*
@@ -104,7 +111,8 @@ retry:
 }
 
 void
-runtime_netpoll_scan(void (*addroot)(Obj))
+runtime_netpoll_scan(struct Workbuf** wbufp, void (*enqueue1)(struct Workbuf**, Obj))
 {
-	USED(addroot);
+	USED(wbufp);
+	USED(enqueue1);
 }

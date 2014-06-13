@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7155,6 +7155,40 @@ package VMS_Data is
    --
    --   Look for source, library or object files in the default directory.
 
+   S_Stub_Encoding : aliased constant S := "/RESULT_ENCODING="             &
+                                            "BRACKETS "                    &
+                                               "-Wb "                      &
+                                            "HEX "                         &
+                                               "-Wh "                      &
+                                            "UPPER "                       &
+                                               "-Wu "                      &
+                                            "SHIFT_JIS "                   &
+                                               "-Ws "                      &
+                                            "EUC "                         &
+                                               "-We "                      &
+                                            "UTF8 "                        &
+                                               "-W8";
+   --        /RESULT_ENCODING[=encoding-type]
+   --
+   --   Specify the wide character encoding method used when writing the
+   --   generated body in the result file. 'encoding-type' is one of the
+   --   following:
+   --
+   --      BRACKETS (D)      Brackets encoding.
+   --
+   --      HEX               Hex ESC encoding.
+   --
+   --      UPPER             Upper half encoding.
+   --
+   --      SHIFT_JIS         Shift-JIS encoding.
+   --
+   --      EUC               EUC Encoding.
+   --
+   --      UTF8              UTF-8 encoding.
+   --
+   --   See 'HELP GNAT COMPILE /WIDE_CHARACTER_ENCODING' for an explanation
+   --   about the different character encoding methods.
+
    S_Stub_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'     &
                                             "-X" & '"';
    --        /EXTERNAL_REFERENCE="name=val"
@@ -7349,6 +7383,7 @@ package VMS_Data is
                      (S_Stub_Add        'Access,
                       S_Stub_Config     'Access,
                       S_Stub_Current    'Access,
+                      S_Stub_Encoding   'Access,
                       S_Stub_Ext        'Access,
                       S_Stub_Follow     'Access,
                       S_Stub_Full       'Access,

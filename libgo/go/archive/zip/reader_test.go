@@ -235,6 +235,18 @@ var tests = []ZipTest{
 			},
 		},
 	},
+	// Another zip64 file with different Extras fields. (golang.org/issue/7069)
+	{
+		Name: "zip64-2.zip",
+		File: []ZipTestFile{
+			{
+				Name:    "README",
+				Content: []byte("This small file is in ZIP64 format.\n"),
+				Mtime:   "08-10-12 14:33:32",
+				Mode:    0644,
+			},
+		},
+	},
 }
 
 var crossPlatform = []ZipTestFile{
@@ -343,17 +355,11 @@ func readTestFile(t *testing.T, zt ZipTest, ft ZipTestFile, f *File) {
 
 	testFileMode(t, zt.Name, f, ft.Mode)
 
-	size0 := f.UncompressedSize
-
 	var b bytes.Buffer
 	r, err := f.Open()
 	if err != nil {
-		t.Error(err)
+		t.Errorf("%s: %v", zt.Name, err)
 		return
-	}
-
-	if size1 := f.UncompressedSize; size0 != size1 {
-		t.Errorf("file %q changed f.UncompressedSize from %d to %d", f.Name, size0, size1)
 	}
 
 	_, err = io.Copy(&b, r)
@@ -364,6 +370,14 @@ func readTestFile(t *testing.T, zt ZipTest, ft ZipTestFile, f *File) {
 		return
 	}
 	r.Close()
+
+	size := uint64(f.UncompressedSize)
+	if size == uint32max {
+		size = f.UncompressedSize64
+	}
+	if g := uint64(b.Len()); g != size {
+		t.Errorf("%v: read %v bytes but f.UncompressedSize == %v", f.Name, g, size)
+	}
 
 	var c []byte
 	if ft.Content != nil {

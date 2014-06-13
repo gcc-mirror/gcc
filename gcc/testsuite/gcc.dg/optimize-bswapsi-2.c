@@ -2,7 +2,7 @@
 /* { dg-require-effective-target bswap32 } */
 /* { dg-require-effective-target stdint_types } */
 /* { dg-options "-O2 -fdump-tree-bswap" } */
-/* { dg-options "-O2 -fdump-tree-bswap -march=z900" { target s390-*-* } } */
+/* { dg-additional-options "-march=z900" { target s390-*-* } } */
 
 #include <stdint.h>
 
@@ -44,6 +44,6 @@ uint32_t read_be32_3 (unsigned char *data)
 	 | (*data << 24);
 }
 
-/* { dg-final { scan-tree-dump-times "32 bit load in host endianness found at" 3 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "32 bit load in target endianness found at" 3 "bswap" } } */
 /* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 3 "bswap" { xfail alpha*-*-* arm*-*-* } } } */
 /* { dg-final { cleanup-tree-dump "bswap" } } */

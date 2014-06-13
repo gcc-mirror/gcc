@@ -13646,16 +13646,12 @@ secname_for_decl (const_tree decl)
 {
   const char *secname;
 
-  if (VAR_OR_FUNCTION_DECL_P (decl) && DECL_SECTION_NAME (decl))
-    {
-      tree sectree = DECL_SECTION_NAME (decl);
-      secname = TREE_STRING_POINTER (sectree);
-    }
+  if (VAR_OR_FUNCTION_DECL_P (decl)
+      && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl) || TREE_STATIC (decl))
+      && DECL_SECTION_NAME (decl))
+    secname = DECL_SECTION_NAME (decl);
   else if (current_function_decl && DECL_SECTION_NAME (current_function_decl))
-    {
-      tree sectree = DECL_SECTION_NAME (current_function_decl);
-      secname = TREE_STRING_POINTER (sectree);
-    }
+    secname = DECL_SECTION_NAME (current_function_decl);
   else if (cfun && in_cold_section_p)
     secname = crtl->subsections.cold_section_label;
   else

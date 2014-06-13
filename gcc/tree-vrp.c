@@ -8383,7 +8383,6 @@ vrp_visit_phi_node (gimple phi)
 	 PHI node SCEV may known more about its value-range.  */
       if ((cmp_min > 0 || cmp_min < 0
 	   || cmp_max < 0 || cmp_max > 0)
-	  && current_loops
 	  && (l = loop_containing_stmt (phi))
 	  && l->header == gimple_bb (phi))
 	adjust_range_with_scev (&vr_result, l, phi, lhs);
@@ -9784,8 +9783,7 @@ execute_vrp (void)
   if (to_remove_edges.length () > 0)
     {
       free_dominance_info (CDI_DOMINATORS);
-      if (current_loops)
-	loops_state_set (LOOPS_NEED_FIXUP);
+      loops_state_set (LOOPS_NEED_FIXUP);
     }
 
   to_remove_edges.release ();

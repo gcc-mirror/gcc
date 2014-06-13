@@ -6233,8 +6233,8 @@ package body Exp_Ch9 is
                   null;
 
                else
-                  Error_Msg_N ("potentially unsynchronized barrier?", N);
-                  Error_Msg_N ("\& should be private component of type?", N);
+                  Error_Msg_N ("potentially unsynchronized barrier??", N);
+                  Error_Msg_N ("\& should be private component of type??", N);
                end if;
             end if;
          end if;

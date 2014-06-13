@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "pass_manager.h"
 #include "context.h"
+#include "builtins.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 

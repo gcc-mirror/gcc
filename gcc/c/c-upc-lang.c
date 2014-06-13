@@ -319,9 +319,7 @@ upc_build_init_func (tree stmt_list)
                                           "__upc_init_func_addr");
   DECL_INITIAL (init_func_addr) = build_unary_op (loc, ADDR_EXPR,
                                                   init_func, 0);
-  DECL_SECTION_NAME (init_func_addr) = build_string (
-                                    strlen (UPC_INIT_ARRAY_SECTION_NAME),
-                                    UPC_INIT_ARRAY_SECTION_NAME);
+  set_decl_section_name (init_func_addr, UPC_INIT_ARRAY_SECTION_NAME);
 }
 
 /* Enable/Disable UPC keywords.

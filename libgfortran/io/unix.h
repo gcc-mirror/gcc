@@ -38,6 +38,7 @@ struct stream_vtable
   int (* const trunc) (struct stream *, gfc_offset);
   int (* const flush) (struct stream *);
   int (* const close) (struct stream *);
+  int (* const markeor) (struct stream *);
 };
 
 struct stream
@@ -92,6 +93,12 @@ static inline int
 sclose (stream * s)
 {
   return s->vptr->close (s);
+}
+
+static inline int
+smarkeor (stream * s)
+{
+  return s->vptr->markeor (s);
 }
 
 
@@ -166,9 +173,6 @@ internal_proto(inquire_readwrite);
 
 extern void flush_if_preconnected (stream *);
 internal_proto(flush_if_preconnected);
-
-extern int flush_if_unbuffered (stream*);
-internal_proto(flush_if_unbuffered);
 
 extern int stream_isatty (stream *);
 internal_proto(stream_isatty);

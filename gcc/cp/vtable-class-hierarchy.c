@@ -1247,9 +1247,8 @@ vtable_find_or_create_map_decl (tree base_type)
       /* Put these mmap variables in thr .vtable_map_vars section, so
          we can find and protect them.  */
 
-      DECL_SECTION_NAME (var_decl) = build_string (strlen (".vtable_map_vars"),
-                                                   ".vtable_map_vars");
-      DECL_HAS_IMPLICIT_SECTION_NAME_P (var_decl) = true;
+      set_decl_section_name (var_decl, ".vtable_map_vars");
+      symtab_get_node (var_decl)->implicit_section = true;
       DECL_INITIAL (var_decl) = initial_value;
 
       comdat_linkage (var_decl);

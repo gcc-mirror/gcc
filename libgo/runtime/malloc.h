@@ -66,14 +66,14 @@
 //
 // The small objects on the MCache and MCentral free lists
 // may or may not be zeroed.  They are zeroed if and only if
-// the second word of the object is zero.  The spans in the
-// page heap are always zeroed.  When a span full of objects
-// is returned to the page heap, the objects that need to be
-// are zeroed first.  There are two main benefits to delaying the
+// the second word of the object is zero.  A span in the
+// page heap is zeroed unless s->needzero is set. When a span
+// is allocated to break into small objects, it is zeroed if needed
+// and s->needzero is set. There are two main benefits to delaying the
 // zeroing this way:
 //
 //	1. stack frames allocated from the small object lists
-//	   can avoid zeroing altogether.
+//	   or the page heap can avoid zeroing altogether.
 //	2. the cost of zeroing when reusing a small object is
 //	   charged to the mutator, not the garbage collector.
 //
@@ -90,7 +90,7 @@ typedef struct GCStats	GCStats;
 
 enum
 {
-	PageShift	= 12,
+	PageShift	= 13,
 	PageSize	= 1<<PageShift,
 	PageMask	= PageSize - 1,
 };
@@ -103,10 +103,14 @@ enum
 	// size classes.  NumSizeClasses is that number.  It's needed here
 	// because there are static arrays of this length; when msize runs its
 	// size choosing algorithm it double-checks that NumSizeClasses agrees.
-	NumSizeClasses = 61,
+	NumSizeClasses = 67,
 
 	// Tunable constants.
 	MaxSmallSize = 32<<10,
+
+	// Tiny allocator parameters, see "Tiny allocator" comment in malloc.goc.
+	TinySize = 16,
+	TinySizeClass = 2,
 
 	FixAllocChunk = 16<<10,		// Chunk size for FixAlloc
 	MaxMHeapList = 1<<(20 - PageShift),	// Maximum page length for fixed-size list in MHeap.
@@ -256,7 +260,7 @@ struct MStats
 };
 
 extern MStats mstats
-  __asm__ (GOSYM_PREFIX "runtime.VmemStats");
+  __asm__ (GOSYM_PREFIX "runtime.memStats");
 
 // Size classes.  Computed and initialized by InitSizes.
 //
@@ -269,6 +273,7 @@ extern MStats mstats
 //	making new objects in class i
 
 int32	runtime_SizeToClass(int32);
+uintptr	runtime_roundupsize(uintptr);
 extern	int32	runtime_class_to_size[NumSizeClasses];
 extern	int32	runtime_class_to_allocnpages[NumSizeClasses];
 extern	int8	runtime_size_to_class8[1024/8 + 1];
@@ -291,6 +296,10 @@ struct MCache
 	// so they are grouped here for better caching.
 	int32 next_sample;		// trigger heap sample after allocating this many bytes
 	intptr local_cachealloc;	// bytes allocated (or freed) from cache since last lock of heap
+	// Allocator cache for tiny objects w/o pointers.
+	// See "Tiny allocator" comment in malloc.goc.
+	byte*	tiny;
+	uintptr	tinysize;
 	// The rest is not accessed on every malloc.
 	MCacheList list[NumSizeClasses];
 	// Local allocator stats, flushed during GC.
@@ -341,6 +350,43 @@ struct MTypes
 	uintptr	data;
 };
 
+enum
+{
+	KindSpecialFinalizer = 1,
+	KindSpecialProfile = 2,
+	// Note: The finalizer special must be first because if we're freeing
+	// an object, a finalizer special will cause the freeing operation
+	// to abort, and we want to keep the other special records around
+	// if that happens.
+};
+
+typedef struct Special Special;
+struct Special
+{
+	Special*	next;	// linked list in span
+	uint16		offset;	// span offset of object
+	byte		kind;	// kind of Special
+};
+
+// The described object has a finalizer set for it.
+typedef struct SpecialFinalizer SpecialFinalizer;
+struct SpecialFinalizer
+{
+	Special;
+	FuncVal*	fn;
+	const FuncType*	ft;
+	const PtrType*	ot;
+};
+
+// The described object is being heap profiled.
+typedef struct Bucket Bucket; // from mprof.goc
+typedef struct SpecialProfile SpecialProfile;
+struct SpecialProfile
+{
+	Special;
+	Bucket*	b;
+};
+
 // An MSpan is a run of pages.
 enum
 {
@@ -356,17 +402,28 @@ struct MSpan
 	PageID	start;		// starting page number
 	uintptr	npages;		// number of pages in span
 	MLink	*freelist;	// list of free objects
-	uint32	ref;		// number of allocated objects in this span
-	int32	sizeclass;	// size class
+	// sweep generation:
+	// if sweepgen == h->sweepgen - 2, the span needs sweeping
+	// if sweepgen == h->sweepgen - 1, the span is currently being swept
+	// if sweepgen == h->sweepgen, the span is swept and ready to use
+	// h->sweepgen is incremented by 2 after every GC
+	uint32	sweepgen;
+	uint16	ref;		// number of allocated objects in this span
+	uint8	sizeclass;	// size class
+	uint8	state;		// MSpanInUse etc
+	uint8	needzero;	// needs to be zeroed before allocation
 	uintptr	elemsize;	// computed from sizeclass or from npages
-	uint32	state;		// MSpanInUse etc
 	int64   unusedsince;	// First time spotted by GC in MSpanFree state
 	uintptr npreleased;	// number of pages released to the OS
 	byte	*limit;		// end of data in span
 	MTypes	types;		// types of allocated objects in this span
+	Lock	specialLock;	// TODO: use to protect types also (instead of settype_lock)
+	Special	*specials;	// linked list of special records sorted by offset.
 };
 
 void	runtime_MSpan_Init(MSpan *span, PageID start, uintptr npages);
+void	runtime_MSpan_EnsureSwept(MSpan *span);
+bool	runtime_MSpan_Sweep(MSpan *span);
 
 // Every MSpan is in one doubly-linked list,
 // either one of the MHeap's free lists or one of the
@@ -374,6 +431,7 @@ void	runtime_MSpan_Init(MSpan *span, PageID start, uintptr npages);
 void	runtime_MSpanList_Init(MSpan *list);
 bool	runtime_MSpanList_IsEmpty(MSpan *list);
 void	runtime_MSpanList_Insert(MSpan *list, MSpan *span);
+void	runtime_MSpanList_InsertBack(MSpan *list, MSpan *span);
 void	runtime_MSpanList_Remove(MSpan *span);	// from whatever list it is in
 
 
@@ -390,7 +448,7 @@ struct MCentral
 void	runtime_MCentral_Init(MCentral *c, int32 sizeclass);
 int32	runtime_MCentral_AllocList(MCentral *c, MLink **first);
 void	runtime_MCentral_FreeList(MCentral *c, MLink *first);
-void	runtime_MCentral_FreeSpan(MCentral *c, MSpan *s, int32 n, MLink *start, MLink *end);
+bool	runtime_MCentral_FreeSpan(MCentral *c, MSpan *s, int32 n, MLink *start, MLink *end);
 
 // Main malloc heap.
 // The heap itself is the "free[]" and "large" arrays,
@@ -399,10 +457,15 @@ struct MHeap
 {
 	Lock;
 	MSpan free[MaxMHeapList];	// free lists of given length
-	MSpan large;			// free lists length >= MaxMHeapList
-	MSpan **allspans;
+	MSpan freelarge;		// free lists length >= MaxMHeapList
+	MSpan busy[MaxMHeapList];	// busy lists of large objects of given length
+	MSpan busylarge;		// busy lists of large objects length >= MaxMHeapList
+	MSpan **allspans;		// all spans out there
+	MSpan **sweepspans;		// copy of allspans referenced by sweeper
 	uint32	nspan;
 	uint32	nspancap;
+	uint32	sweepgen;		// sweep generation, see comment in MSpan
+	uint32	sweepdone;		// all spans are swept
 
 	// span lookup
 	MSpan**	spans;
@@ -426,6 +489,9 @@ struct MHeap
 
 	FixAlloc spanalloc;	// allocator for Span*
 	FixAlloc cachealloc;	// allocator for MCache*
+	FixAlloc specialfinalizeralloc;	// allocator for SpecialFinalizer*
+	FixAlloc specialprofilealloc;	// allocator for SpecialProfile*
+	Lock speciallock; // lock for sepcial record allocators.
 
 	// Malloc stats.
 	uint64 largefree;	// bytes freed for large objects (>MaxSmallSize)
@@ -435,7 +501,7 @@ struct MHeap
 extern MHeap runtime_mheap;
 
 void	runtime_MHeap_Init(MHeap *h);
-MSpan*	runtime_MHeap_Alloc(MHeap *h, uintptr npage, int32 sizeclass, int32 acct, int32 zeroed);
+MSpan*	runtime_MHeap_Alloc(MHeap *h, uintptr npage, int32 sizeclass, bool large, bool needzero);
 void	runtime_MHeap_Free(MHeap *h, MSpan *s, int32 acct);
 MSpan*	runtime_MHeap_Lookup(MHeap *h, void *v);
 MSpan*	runtime_MHeap_LookupMaybe(MHeap *h, void *v);
@@ -449,15 +515,15 @@ void*	runtime_mallocgc(uintptr size, uintptr typ, uint32 flag);
 void*	runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat);
 int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s);
 void	runtime_gc(int32 force);
-void	runtime_markallocated(void *v, uintptr n, bool noptr);
+uintptr	runtime_sweepone(void);
+void	runtime_markscan(void *v);
+void	runtime_marknogc(void *v);
 void	runtime_checkallocated(void *v, uintptr n);
 void	runtime_markfreed(void *v, uintptr n);
 void	runtime_checkfreed(void *v, uintptr n);
 extern	int32	runtime_checking;
 void	runtime_markspan(void *v, uintptr size, uintptr n, bool leftover);
 void	runtime_unmarkspan(void *v, uintptr size);
-bool	runtime_blockspecial(void*);
-void	runtime_setblockspecial(void*, bool);
 void	runtime_purgecachedstats(MCache*);
 void*	runtime_cnew(const Type*);
 void*	runtime_cnewarray(const Type*, intgo);
@@ -484,18 +550,26 @@ struct Obj
 	uintptr	ti;	// type info
 };
 
-void	runtime_MProf_Malloc(void*, uintptr);
-void	runtime_MProf_Free(void*, uintptr);
+void	runtime_MProf_Malloc(void*, uintptr, uintptr);
+void	runtime_MProf_Free(Bucket*, void*, uintptr, bool);
 void	runtime_MProf_GC(void);
-void	runtime_MProf_Mark(void (*addroot)(Obj));
+void	runtime_MProf_TraceGC(void);
+struct Workbuf;
+void	runtime_MProf_Mark(struct Workbuf**, void (*)(struct Workbuf**, Obj));
 int32	runtime_gcprocs(void);
 void	runtime_helpgc(int32 nproc);
 void	runtime_gchelper(void);
 
+void	runtime_setprofilebucket(void *p, Bucket *b);
+
 struct __go_func_type;
 struct __go_ptr_type;
-bool	runtime_getfinalizer(void *p, bool del, FuncVal **fn, const struct __go_func_type **ft, const struct __go_ptr_type **ot);
-void	runtime_walkfintab(void (*fn)(void*), void (*scan)(Obj));
+bool	runtime_addfinalizer(void *p, FuncVal *fn, const struct __go_func_type*, const struct __go_ptr_type*);
+void	runtime_removefinalizer(void*);
+void	runtime_queuefinalizer(void *p, FuncVal *fn, const struct __go_func_type *ft, const struct __go_ptr_type *ot);
+
+void	runtime_freeallspecials(MSpan *span, void *p, uintptr size);
+bool	runtime_freespecial(Special *s, void *p, uintptr size, bool freed);
 
 enum
 {
@@ -513,6 +587,6 @@ void	runtime_gc_itab_ptr(Eface*);
 
 void	runtime_memorydump(void);
 
-void	runtime_proc_scan(void (*)(Obj));
-void	runtime_time_scan(void (*)(Obj));
-void	runtime_netpoll_scan(void (*)(Obj));
+void	runtime_proc_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
+void	runtime_time_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
+void	runtime_netpoll_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));

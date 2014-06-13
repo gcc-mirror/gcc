@@ -571,11 +571,8 @@ ubsan_expand_null_ifn (gimple_stmt_iterator gsi)
   basic_block cond_bb = e->src;
   basic_block fallthru_bb = e->dest;
   basic_block then_bb = create_empty_bb (cond_bb);
-  if (current_loops)
-    {
-      add_bb_to_loop (then_bb, cond_bb->loop_father);
-      loops_state_set (LOOPS_NEED_FIXUP);
-    }
+  add_bb_to_loop (then_bb, cond_bb->loop_father);
+  loops_state_set (LOOPS_NEED_FIXUP);
 
   /* Make an edge coming from the 'cond block' into the 'then block';
      this edge is unlikely taken, so set up the probability accordingly.  */

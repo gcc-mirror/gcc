@@ -776,7 +776,7 @@ Driver Undocumented
 ;    Therefore, 0 will not necessarily indicate the same ABI in different
 ;    versions of G++.
 ;
-; 1: The version of the ABI first used in G++ 3.2.
+; 1: The version of the ABI first used in G++ 3.2.  No longer selectable.
 ;
 ; 2: The version of the ABI first used in G++ 3.4 (and current default).
 ;
@@ -808,7 +808,8 @@ Driver Undocumented
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
-Common Joined RejectNegative UInteger Var(flag_abi_version) Init(2)
+Common Joined RejectNegative UInteger Var(flag_abi_version) Init(0)
+The version of the C++ ABI in use
 
 faggressive-loop-optimizations
 Common Report Var(flag_aggressive_loop_optimizations) Optimization Init(1) 

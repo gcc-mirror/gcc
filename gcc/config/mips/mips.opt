@@ -392,6 +392,10 @@ mvirt
 Target Report Var(TARGET_VIRT)
 Use Virtualization Application Specific instructions
 
+mxpa
+Target Report Var(TARGET_XPA)
+Use eXtended Physical Address (XPA) instructions
+
 mvr4130-align
 Target Report Mask(VR4130_ALIGN)
 Perform VR4130-specific alignment optimizations

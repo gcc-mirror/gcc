@@ -1336,12 +1336,12 @@ package Einfo is
 
 --    Full_View (Node11)
 --       Defined in all type and subtype entities and in deferred constants.
---       References the entity for the corresponding full type declaration.
---       For all types other than private and incomplete types, this field
---       always contains Empty. If an incomplete type E1 is completed by a
---       private type E2 whose full type declaration entity is E3 then the
---       full view of E1 is E2, and the full view of E2 is E3. See also
---       Underlying_Type.
+--       References the entity for the corresponding full type or constant
+--       declaration. For all types other than private and incomplete types,
+--       this field always contains Empty. If an incomplete type E1 is
+--       completed by a private type E2 whose full type declaration entity is
+--       E3 then the full view of E1 is E2, and the full view of E2 is E3. See
+--       also Underlying_Type.
 
 --    Generic_Homonym (Node11)
 --       Defined in generic packages. The generic homonym is the entity of
@@ -1581,9 +1581,11 @@ package Einfo is
 --       Implicit_Dereference. Set also on the discriminant named in the aspect
 --       clause, to simplify type resolution.
 
---    Has_Independent_Components (Flag34)
---       Defined in objects and types. Set if the aspect Independent_Components
---       applies (as set by coresponding pragma or aspect specification).
+--    Has_Independent_Components (Flag34) [base type only]
+--       Defined in types. Set if the aspect Independent_Components applies
+--       (in the base type only), if corresponding pragma or aspect applies.
+--       In the case of an object of anonymous array type, the flag is set on
+--       the created array type.
 
 --    Has_Inheritable_Invariants (Flag248)
 --       Defined in all type entities. Set in private types from which one
@@ -1870,7 +1872,7 @@ package Einfo is
 --       include only the components corresponding to these discriminants.
 
 --    Has_Static_Predicate_Aspect (Flag259)
---       Defined in all types and subtypes. Set if a Dynamic_Predicate aspect
+--       Defined in all types and subtypes. Set if a Static_Predicate aspect
 --       applies to the type. Note that we can tell if a static predicate is
 --       present by looking at Has_Predicates and Static_Predicate, but that
 --       could have come from a Predicate aspect or pragma, and we need to
@@ -2414,6 +2416,11 @@ package Einfo is
 
 --    Is_Incomplete_Type (synthesized)
 --       Applies to all entities, true for incomplete types and subtypes
+
+--    Is_Independent (Flag268)
+--       Defined in record components. Set if a valid pragma or aspect
+--       Independent applies to the component, or if a valid pragma or aspect
+--       Independent_Components applies to the enclosing record type.
 
 --    Is_Inlined (Flag11)
 --       Defined in all entities. Set for functions and procedures which are
@@ -4215,7 +4222,7 @@ package Einfo is
 --  In addition, we define the kind E_Allocator_Type to label allocators.
 --  This is because special resolution rules apply to this construct.
 --  Eventually the constructs are labeled with the access type imposed by
---  the context. Gigi should never see the type E_Allocator.
+--  the context. Gigi should never see types with this Ekind.
 
 --  Similarly, the type E_Access_Attribute_Type is used as the initial kind
 --  associated with an access attribute. After resolution a specific access
@@ -4398,11 +4405,12 @@ package Einfo is
       --  'Unrestricted_Access and Unchecked_Access)
 
       E_Allocator_Type,
-      --  A special internal type used to label allocators and attribute
-      --  references using 'Access. This is needed because special resolution
+      --  A special internal type used to label allocators and references to
+      --  objects using 'Reference. This is needed because special resolution
       --  rules apply to these constructs. On the resolution pass, this type
-      --  is always replaced by the actual access type, so Gigi should never
-      --  see types with this Ekind.
+      --  is almost always replaced by the actual access type, but if the
+      --  context does not provide one Gigi can handle the Allocator_Type
+      --  itself as long as it has been frozen.
 
       E_General_Access_Type,
       --  An access type created by an access type declaration with the all
@@ -5350,6 +5358,7 @@ package Einfo is
    --    Has_Biased_Representation           (Flag139)
    --    Has_Per_Object_Constraint           (Flag154)
    --    Is_Atomic                           (Flag85)
+   --    Is_Independent                      (Flag268)
    --    Is_Tag                              (Flag78)
    --    Is_Volatile                         (Flag16)
    --    Treat_As_Volatile                   (Flag41)
@@ -5379,7 +5388,6 @@ package Einfo is
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Completion                      (Flag26)   (constants only)
-   --    Has_Independent_Components          (Flag34)   (base type only)
    --    Has_Thunks                          (Flag228)  (constants only)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Up_Level_Access                 (Flag215)
@@ -6089,7 +6097,6 @@ package Einfo is
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
-   --    Has_Independent_Components          (Flag34)   (base type only)
    --    Has_Initial_Value                   (Flag219)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Up_Level_Access                 (Flag215)
@@ -6589,6 +6596,7 @@ package Einfo is
    function Is_Immediately_Visible              (Id : E) return B;
    function Is_Implementation_Defined           (Id : E) return B;
    function Is_Imported                         (Id : E) return B;
+   function Is_Independent                      (Id : E) return B;
    function Is_Inlined                          (Id : E) return B;
    function Is_Instantiated                     (Id : E) return B;
    function Is_Interface                        (Id : E) return B;
@@ -7217,6 +7225,7 @@ package Einfo is
    procedure Set_Is_Immediately_Visible          (Id : E; V : B := True);
    procedure Set_Is_Implementation_Defined       (Id : E; V : B := True);
    procedure Set_Is_Imported                     (Id : E; V : B := True);
+   procedure Set_Is_Independent                  (Id : E; V : B := True);
    procedure Set_Is_Inlined                      (Id : E; V : B := True);
    procedure Set_Is_Instantiated                 (Id : E; V : B := True);
    procedure Set_Is_Interface                    (Id : E; V : B := True);
@@ -7979,6 +7988,7 @@ package Einfo is
    pragma Inline (Is_Imported);
    pragma Inline (Is_Incomplete_Or_Private_Type);
    pragma Inline (Is_Incomplete_Type);
+   pragma Inline (Is_Independent);
    pragma Inline (Is_Inlined);
    pragma Inline (Is_Instantiated);
    pragma Inline (Is_Integer_Type);
@@ -8426,6 +8436,7 @@ package Einfo is
    pragma Inline (Set_Is_Immediately_Visible);
    pragma Inline (Set_Is_Implementation_Defined);
    pragma Inline (Set_Is_Imported);
+   pragma Inline (Set_Is_Independent);
    pragma Inline (Set_Is_Inlined);
    pragma Inline (Set_Is_Instantiated);
    pragma Inline (Set_Is_Interface);

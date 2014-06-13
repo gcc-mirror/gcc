@@ -1,3 +1,717 @@
+2014-06-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61375
+	* gcc.c-torture/execute/pr61375-1.c: New test.
+
+2014-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61486
+	* c-c++-common/gomp/pr61486-1.c: New test.
+	* c-c++-common/gomp/pr61486-2.c: New test.
+
+2014-06-10  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/59843
+	* gcc.dg/vect/vect-singleton_1.c: New file.
+
+2014-06-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/61443
+	* gcc.target/avr/torture/pr61443.c: New test.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19200
+	* g++.dg/parse/friend11.C: New.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60265
+	* g++.dg/cpp0x/using-enum-1.C: New.
+	* g++.dg/cpp0x/using-enum-2.C: Likewise.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19200
+	* g++.dg/parse/friend9.C: New.
+	* g++.dg/parse/friend10.C: Likewise.
+	* g++.dg/parse/friend7.C: Adjust.
+
+2014-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61452
+	* gcc.dg/torture/pr61452.c: New testcase.
+
+2014-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34049
+	* g++.dg/parse/pr34049.C: New.
+
+2014-06-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.c-torture/execute/pr61306-1.c: New test.
+	* gcc.c-torture/execute/pr61306-2.c: Likewise.
+	* gcc.c-torture/execute/pr61306-3.c: Likewise.
+
+2014-06-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/acle/acle.exp: New.
+	* gcc.target/aarch64/acle/crc32b.c: New test.
+	* gcc.target/aarch64/acle/crc32cb.c: Likewise.
+	* gcc.target/aarch64/acle/crc32cd.c: Likewise.
+	* gcc.target/aarch64/acle/crc32ch.c: Likewise.
+	* gcc.target/aarch64/acle/crc32cw.c: Likewise.
+	* gcc.target/aarch64/acle/crc32d.c: Likewise.
+	* gcc.target/aarch64/acle/crc32h.c: Likewise.
+	* gcc.target/aarch64/acle/crc32w.c: Likewise.
+
+2014-06-11  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR tree-optimization/52252
+	* gcc.dg/vect/pr52252-st.c: Test on stores group of size 3.
+
+2014-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61437
+	* gcc.dg/torture/20140610-1.c: New testcase.
+	* gcc.dg/torture/20140610-2.c: Likewise.
+
+2014-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61438
+	* gcc.dg/torture/pr61438.c: New testcase.
+
+2014-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61456
+	* g++.dg/opt/pr61456.C: New testcase.
+
+2014-06-10  Dominique d'Humieres <dominiq@lps.ens.fr>
+	    Mikael Morin <mikael@gcc.gnu.org>
+
+	PR fortran/41936
+	* gfortran.dg/class_array_15.f03: Check memory leaks.
+
+2014-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57186
+	PR tree-optimization/59299
+	* gcc.dg/tree-ssa/ssa-sink-11.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-sink-12.c: Likewise.
+
+2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* gfortran.dg/gomp/allocatable_components_1.f90: Remove dg-error
+	directives.
+	* gfortran.dg/gomp/associate1.f90: New test.
+	* gfortran.dg/gomp/intentin1.f90: New test.
+	* gfortran.dg/gomp/openmp-simd-1.f90: New test.
+	* gfortran.dg/gomp/openmp-simd-2.f90: New test.
+	* gfortran.dg/gomp/openmp-simd-3.f90: New test.
+	* gfortran.dg/gomp/proc_ptr_2.f90: New test.
+
+2014-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/36446
+	* gcc.dg/Wcxx-compat-6.c: Change dg-warning to dg-message.
+	* gcc.dg/array-2.c: Likewise.
+	* gcc.dg/array-const-2.c: Likewise.
+	* gcc.dg/ucnid-8.c: Likewise.
+	* gcc.dg/vla-init-1.c: Likewise.
+	* gcc.dg/array-const-3.c: Change dg-error to dg-message.
+	* gcc.dg/c99-flex-array-7.c: Likewise.
+	* gcc.dg/init-bad-1.c: Likewise.
+	* gcc.dg/init-bad-3.c: Likewise.
+	* gcc.dg/init-bad-2.c: Change dg-error and dg-warning to dg-message.
+	* gcc.dg/pedwarn-init.c: Add dg-warning.
+	* gcc.dg/pr53119.c: Remove dg-excess-errors.
+
+2014-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/22556
+	* g++.dg/other/redecl3.C: New.
+
+2014-06-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54442
+	* g++.dg/pr54442.C: New file.
+
+2014-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61406
+	* gfortran.dg/associate_17.f90 : New test
+
+2014-06-09  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/avx512f-vaddpd-2.c:  Add static void for CALC,
+	void for TEST instead of static void.
+	* gcc.target/i386/avx512f-vaddps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf32x4-2.c:Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf64x4-2.c:Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttps2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextractf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextracti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslldi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrad-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsradi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestnmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestnmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhqdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckldq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpcklqdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff64x2-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi64x2-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrldi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshufd-2.c: Delete variables, void for TEST
+	instead of static void.
+	* gcc.target/i386/avx512f-vpcmpged-2.c: Add static void for CALC,
+	delete unused variables.
+	* gcc.target/i386/avx512f-vpcmpgeq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-2.c: Add static void for CALC,
+	delete unused variables, void for TEST instead of static void.
+	* gcc.target/i386/avx512f-vpcmpleq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxsd-2.c: Add static void for CALC,
+	initialize variables.
+	* gcc.target/i386/avx512f-vpmaxsq-2.c:Ditto.
+	* gcc.target/i386/avx512f-vpminsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminsq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2si-1.c: Add missed type.
+	* gcc.target/i386/avx512f-vcvttss2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpsd-2.c: Delete unused variables.
+	* gcc.target/i386/avx512f-vcmpss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuldq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-2.c: Ditto.
+	* gcc.target/i386/i386.exp: Ditto.
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Add static void for CALC,
+	void for TEST instead of static void, initialize variables.
+	* gcc.target/i386/avx512cd-vpbroadcastmw2d-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vpconflictd-2.c: Void for TEST instead of
+	static void.
+	* gcc.target/i386/avx512cd-vpconflictq-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntd-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntq-2.c: Ditto.
+	* gcc.target/i386/avx512f-valignd-2.c: Ditto.
+	* gcc.target/i386/avx512f-valignq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmppd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcompresspd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcompressps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtph2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2ph-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttpd2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinsertf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinserti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovapd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovaps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovddup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa32-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovshdup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovsldup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovupd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovups-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpdi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpsi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpdi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-imm-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmulld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vporq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpxord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpxorq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprold-2.c: Put parentheses, void for TEST
+	instead of static void.
+	* gcc.target/i386/avx512f-vprolq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Void for TEST instead of
+	static void, delete unused variables.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexppd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuludq-2.c: Void for TEST instead of
+	static void, delete unused variables, Change parameters for
+	UNION_CHECK, MASK_MERGE and MASK_ZERO.
+	* gcc.target/i386/avx512f-vcvtpd2dq-2.c: Change type of parameter in
+	CALC,  void for TEST instead of static void.
+	* gcc.target/i386/avx512f-vcvtpd2udq-2.c: Change parameters for
+	UNION_CHECK, MASK_MERGE and MASK_ZERO, void for TEST instead of static
+	void.
+	* gcc.target/i386/avx512f-vcvttpd2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtudq2pd-2.c: Void for TEST instead of
+	static void, change type  of parameter for UNION_TYPE.
+	* gcc.target/i386/avx512f-vcvtudq2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2udq-2.c: Add static void for CALC,
+	void for TEST instead of static void, delete unused variables, change
+	parameters for UNION_CHECK, MASK_MERGE and MASK_ZERO.
+	* gcc.target/i386/avx512f-vcvttps2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxud-2.c: Add static void for CALC,
+	void for TEST instead of static void, change parameters for UNION_CHECK,
+	UNION_TYPE, MASK_MERGE and MASK_ZERO.
+	* gcc.target/i386/avx512f-vpmaxuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-additional-reg-names.c: Add
+	__attribute__((unused)).
+	* gcc.target/i386/avx512f-dummy.c: Delete unused variables, add
+	__attribute__((unused)).
+	* gcc.target/i386/avx512f-kandnw-1.c: Initialize variables.
+	* gcc.target/i386/avx512f-kandw-1.c: Ditto.
+	* gcc.target/i386/avx512f-klogic-2.c: Ditto.
+	* gcc.target/i386/avx512f-knotw-1.c: Ditto.
+	* gcc.target/i386/avx512f-korw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kunpckbw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kxnorw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kxorw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kortestw-1.c: Initialize variables,
+	add __attribute__((unused)).
+	* gcc.target/i386/avx512f-vcvttsd2si-2.c: Exclude "avx512f-helper.h"
+	* gcc.target/i386/avx512f-vcvttss2si-2.c:Ditto.
+	* gcc.target/i386/avx512f-vgetexpsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalesd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaless-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-2.c: Exclude "avx512f-helper.h",
+	delete unused variables.
+	* gcc.target/i386/avx512f-vgetmantss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Void for test_512() instead of
+	static void, mask_merging and zero_masking for unsigned types.
+	* gcc.target/i386/m128-check.h: Add new unions, CHECK_EXP and
+	CHECK_ARRAY for unsigned types.
+	* gcc.target/i386/m256-check.h: Ditto.
+	* gcc.target/i386/m512-check.h: Ditto.
+
+2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/61062
+	* gcc.target/arm/pr48252.c (main): Expect same result as endian-neutral.
+
+2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/45187
+	* gfortran.dg/cray_pointers_10.f90: New file.
+
+2014-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/udr6.f90 (f1, f2, f3): Use complex(kind=8)
+	instead of complex(kind=16).
+
+2014-06-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38829
+	* gfortran.dg/bind_c_usage_29.f90: New file.
+
+2014-06-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt38.adb: New test.
+	* gnat.dg/opt38_pkg.ad[sb]: New helper.
+
+2014-06-07  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18343
+	* gcc.dg/torture/stackalign/builtin-return-1.c (STACK_ARGUMENTS_SIZE):
+	New macro, 0 for __MMIX__, default 64.
+	(bar): Pass it to __builtin_apply instead of literal 64.
+
+2014-06-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/io_constraints_11.f90: New file.
+	* gfortran.dg/io_constraints_12.f90: New file.
+	* gfortran.dg/io_constraints_13.f90: New file.
+
+2014-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61423
+	* gcc.target/i386/pr61423.c: New test.
+
+2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60184
+	* g++.dg/cpp0x/constexpr-union6.C: New.
+	* g++.dg/cpp0x/union6.C: Likewise.
+	* g++.dg/init/ref14.C: Adjust.
+	* g++.dg/init/union1.C: Likewise.
+
+2014-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59299
+	* gcc.dg/tree-ssa/ssa-sink-10.c: New testcase.
+
+2014-06-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/tree-ssa/pr42585.c: Skip for AArch64.
+	* gcc.dg/tree-ssa/sra-12.c: Likewise.
+
+2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.c-torture/execute/bswap-2.c: Add alignment constraints to
+	bitfield and test wrong results instead of correct results to make the
+	test more portable.
+
+2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60432
+	* g++.dg/cpp0x/constexpr-60432.C: New.
+
+2014-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60199
+	* g++.dg/cpp0x/constexpr-60199.C: New.
+
+2014-06-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/optimize-bswaphi-1.c: Adapt test to change of dump output.
+	Specify -march=z900 as an additional option.
+	* gcc.dg/optimize-bswapsi-1.c: Likewise for s390 options.
+	* gcc.dg/optimize-bswapsi-2.c: Likewise.
+	* gcc.dg/optimize-bswapdi-3.c: Likewise for adaptation to dump change.
+
+2014-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/allocatable_components_1.f90: Adjust for
+	reduction clause diagnostic changes.
+	* gfortran.dg/gomp/appendix-a/a.31.3.f90: Likewise.
+	* gfortran.dg/gomp/reduction1.f90: Likewise.
+	* gfortran.dg/gomp/reduction3.f90: Likewise.
+	* gfortran.dg/gomp/udr1.f90: New test.
+	* gfortran.dg/gomp/udr2.f90: New test.
+	* gfortran.dg/gomp/udr3.f90: New test.
+	* gfortran.dg/gomp/udr4.f90: New test.
+	* gfortran.dg/gomp/udr5.f90: New test.
+	* gfortran.dg/gomp/udr6.f90: New test.
+	* gfortran.dg/gomp/udr7.f90: New test.
+
+2014-06-06  Christian Bruel  <christian.bruel@st.com>
+
+	PR tree-optimization/43934
+	* gcc.dg/tree-ssa/ssa-lim-8.c: New testcase.
+
+2014-06-05  S. Gilles  <sgilles@terpmail.umd.edu>
+
+	PR c/53119
+	* gcc.dg/pr53119.c: New testcase.
+
+2014-06-05  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	PR target/52472
+	* gcc.target/avr/pr52472.c: New test.
+
+
+2014-06-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61289
+	* g++.dg/pr61289.C: New test.
+	* g++.dg/pr61289-2.C: New test.
+
+2014-06-05  Richard Biener  <rguenther@suse.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56961
+	* g++.dg/parse/pr56961.C: New.
+
+2014-06-05  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/46219
+	* gcc.target/i386/sibcall-4.c: Remove xfail.
+
+2014-06-05  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/arm/pr45094.c: Remove -mcpu=cortex-a8, dg-skip-if
+	options.
+
+2014-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR c++/61004
+	* g++.dg/diagnostic/pr61004.C: New testcase.
+
+2014-06-05  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* gcc.dg/torture/pr61319.c: New test.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/56724
+	* gcc.dg/pr56724-3.c: New test.
+
+2014-06-05  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/cpp0x/initlist86.C (main): Initialize i.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/49706
+	* c-c++-common/pr49706.c: New test.
+
+2014-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/48062
+	* gcc.dg/Wshadow-1.c: Use dg-message for "shadowed declaration".
+	* gcc.dg/Wshadow-3.c: Likewise.
+	* gcc.dg/pr48062.c: New test.
+
+2014-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43453
+	* g++.dg/init/pr43453.C: New.
+
+2014-06-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/61385
+	* gcc.dg/tree-ssa/pr61385.c: New file.
+
+2014-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60098
+	* gcc.dg/tree-ssa/ssa-dse-15.c: New testcase.
+
+2014-06-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dse-16.c: New testcase.
+
+2014-06-04  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/58942
+	* c-c++-common/cilk-plus/AN/pr58942.c: Check for correct handling of
+	the case with a pointer.
+
+2014-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/30020
+	* c-c++-common/pr30020.c: New test.
+
+2014-06-03  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/20140528-1.c: New testcase.
+
+2014-06-03  Dehao Chen  <dehao@google.com>
+
+	* gcc.dg/tree-prof/merge_block.c: New test.
+
+2014-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ext/mv14.C (dg-options): Add -march=x86-64.
+	* g++.dg/ext/mv15.C (dg-options): Ditto.
+
+2014-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1423
+	PR c++/52174
+	* g++.dg/cpp0x/nullptr31.C: New.
+	* g++.dg/cpp0x/sfinae-nullptr1.C: Likewise.
+	* g++.dg/cpp0x/nullptr17.C: Update.
+
+2014-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60439
+	* c-c++-common/pr60439.c: New test.
+	* g++.dg/eh/scope1.C (f4): Add dg-warning.
+
+2014-06-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* g++.dg/ipa/pr61160-1.C: New test.
+
+2014-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61383
+	* gcc.dg/torture/pr61383-1.c: New testcase.
+
+2014-06-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.target/powerpc/vsxcopy.c (dg-options): Add -mvsx.
+
+2014-06-02  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/61094
+	* g++.dg/pr61094: New test.
+
+2014-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/xop-rotate1-vector.c (dg-options): Add -mno-avx2.
+	* gcc.target/i386/xop-rotate2-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-rotate3-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-imul32widen-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-imul64-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-shift1-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-shift2-vector.c (dg-options): Ditto.
+	* gcc.target/i386/xop-shift3-vector.c (dg-options): Ditto.
+
 2014-06-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61346
@@ -326,7 +1040,7 @@
 	* g++.dg/ubsan/float-cast-overflow-bf.C: New test.
 	* gcc.dg/ubsan/float-cast-overflow-bf.c: New test.
 
-2014-05-23  Jiong Wang   <jiong.wang@arm.com>
+2014-05-23  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/tail_indirect_call_1.c: New.
 
@@ -563,7 +1277,7 @@
 
 	PR target/58066
 	* gcc.target/i386/pr58066.c: Replace pattern matching of .cfi
-	directive with rtl insns. Add effective-target of fpic and
+	directive with rtl insns. Add effective-target fpic and
 	tls_native.
 
 2014-05-17  Xinliang David Li  <davidxl@google.com>

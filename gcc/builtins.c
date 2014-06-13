@@ -259,31 +259,6 @@ is_builtin_fn (tree decl)
   return TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl);
 }
 
-/* By default we assume that c99 functions are present at the runtime,
-   but sincos is not.  */
-bool
-default_libc_has_function (enum function_class fn_class)
-{
-  if (fn_class == function_c94
-      || fn_class == function_c99_misc
-      || fn_class == function_c99_math_complex)
-    return true;
-
-  return false;
-}
-
-bool
-gnu_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
-bool
-no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
    its "internal" name, which normally contains the prefix "__builtin".  */
@@ -4688,29 +4663,6 @@ expand_builtin_copysign (tree exp, rtx target, rtx subtarget)
   op1 = expand_normal (arg);
 
   return expand_copysign (op0, op1, target);
-}
-
-/* Create a new constant string literal and return a char* pointer to it.
-   The STRING_CST value is the LEN characters at STR.  */
-tree
-build_string_literal (int len, const char *str)
-{
-  tree t, elem, index, type;
-
-  t = build_string (len, str);
-  elem = build_type_variant (char_type_node, 1, 0);
-  index = build_index_type (size_int (len - 1));
-  type = build_array_type (elem, index);
-  TREE_TYPE (t) = type;
-  TREE_CONSTANT (t) = 1;
-  TREE_READONLY (t) = 1;
-  TREE_STATIC (t) = 1;
-
-  type = build_pointer_type (elem);
-  t = build1 (ADDR_EXPR, type,
-	      build4 (ARRAY_REF, elem,
-		      t, integer_zero_node, NULL_TREE, NULL_TREE));
-  return t;
 }
 
 /* Expand a call to __builtin___clear_cache.  */
@@ -11159,66 +11111,6 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
   return NULL_TREE;
 }
 
-/* Conveniently construct a function call expression.  FNDECL names the
-   function to be called and N arguments are passed in the array
-   ARGARRAY.  */
-
-tree
-build_call_expr_loc_array (location_t loc, tree fndecl, int n, tree *argarray)
-{
-  tree fntype = TREE_TYPE (fndecl);
-  tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
- 
-  return fold_builtin_call_array (loc, TREE_TYPE (fntype), fn, n, argarray);
-}
-
-/* Conveniently construct a function call expression.  FNDECL names the
-   function to be called and the arguments are passed in the vector
-   VEC.  */
-
-tree
-build_call_expr_loc_vec (location_t loc, tree fndecl, vec<tree, va_gc> *vec)
-{
-  return build_call_expr_loc_array (loc, fndecl, vec_safe_length (vec),
-				    vec_safe_address (vec));
-}
-
-
-/* Conveniently construct a function call expression.  FNDECL names the
-   function to be called, N is the number of arguments, and the "..."
-   parameters are the argument expressions.  */
-
-tree
-build_call_expr_loc (location_t loc, tree fndecl, int n, ...)
-{
-  va_list ap;
-  tree *argarray = XALLOCAVEC (tree, n);
-  int i;
-
-  va_start (ap, n);
-  for (i = 0; i < n; i++)
-    argarray[i] = va_arg (ap, tree);
-  va_end (ap);
-  return build_call_expr_loc_array (loc, fndecl, n, argarray);
-}
-
-/* Like build_call_expr_loc (UNKNOWN_LOCATION, ...).  Duplicated because
-   varargs macros aren't supported by all bootstrap compilers.  */
-
-tree
-build_call_expr (tree fndecl, int n, ...)
-{
-  va_list ap;
-  tree *argarray = XALLOCAVEC (tree, n);
-  int i;
-
-  va_start (ap, n);
-  for (i = 0; i < n; i++)
-    argarray[i] = va_arg (ap, tree);
-  va_end (ap);
-  return build_call_expr_loc_array (UNKNOWN_LOCATION, fndecl, n, argarray);
-}
-
 /* Construct a CALL_EXPR with type TYPE with FN as the function expression.
    N arguments are passed in the array ARGARRAY.  */
 
@@ -12281,7 +12173,7 @@ fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
 
 /* Expand a call EXP to __builtin_object_size.  */
 
-rtx
+static rtx
 expand_builtin_object_size (tree exp)
 {
   tree ost;
@@ -12586,7 +12478,7 @@ maybe_emit_free_warning (tree exp)
 /* Fold a call to __builtin_object_size with arguments PTR and OST,
    if possible.  */
 
-tree
+static tree
 fold_builtin_object_size (tree ptr, tree ost)
 {
   unsigned HOST_WIDE_INT bytes;

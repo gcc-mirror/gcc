@@ -835,8 +835,8 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       /* ??? We cannot simply use the type of operand #0 of the refs here
 	 as the Fortran compiler smuggles type punning into COMPONENT_REFs
 	 for common blocks instead of using unions like everyone else.  */
-      tree type1 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field1));
-      tree type2 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field2));
+      tree type1 = DECL_CONTEXT (field1);
+      tree type2 = DECL_CONTEXT (field2);
 
       /* We cannot disambiguate fields in a union or qualified union.  */
       if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
@@ -866,10 +866,8 @@ ncr_compar (const void *field1_, const void *field2_)
 {
   const_tree field1 = *(const_tree *) const_cast <void *>(field1_);
   const_tree field2 = *(const_tree *) const_cast <void *>(field2_);
-  unsigned int uid1
-    = TYPE_UID (TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field1)));
-  unsigned int uid2
-    = TYPE_UID (TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field2)));
+  unsigned int uid1 = TYPE_UID (DECL_FIELD_CONTEXT (field1));
+  unsigned int uid2 = TYPE_UID (DECL_FIELD_CONTEXT (field2));
   if (uid1 < uid2)
     return -1;
   else if (uid1 > uid2)
@@ -893,7 +891,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   while (TREE_CODE (x) == COMPONENT_REF)
     {
       tree field = TREE_OPERAND (x, 1);
-      tree type = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field));
+      tree type = DECL_FIELD_CONTEXT (field);
       if (TREE_CODE (type) == RECORD_TYPE)
 	fieldsx.safe_push (field);
       x = TREE_OPERAND (x, 0);
@@ -904,7 +902,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   while (TREE_CODE (y) == COMPONENT_REF)
     {
       tree field = TREE_OPERAND (y, 1);
-      tree type = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (field));
+      tree type = DECL_FIELD_CONTEXT (field);
       if (TREE_CODE (type) == RECORD_TYPE)
 	fieldsy.safe_push (TREE_OPERAND (y, 1));
       y = TREE_OPERAND (y, 0);
@@ -915,8 +913,8 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   /* Most common case first.  */
   if (fieldsx.length () == 1
       && fieldsy.length () == 1)
-    return ((TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldsx[0]))
-	     == TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldsy[0])))
+    return ((DECL_FIELD_CONTEXT (fieldsx[0])
+	     == DECL_FIELD_CONTEXT (fieldsy[0]))
 	    && fieldsx[0] != fieldsy[0]
 	    && !(DECL_BIT_FIELD (fieldsx[0]) && DECL_BIT_FIELD (fieldsy[0])));
 
@@ -949,8 +947,8 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
     {
       const_tree fieldx = fieldsx[i];
       const_tree fieldy = fieldsy[j];
-      tree typex = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldx));
-      tree typey = TYPE_MAIN_VARIANT (DECL_FIELD_CONTEXT (fieldy));
+      tree typex = DECL_FIELD_CONTEXT (fieldx);
+      tree typey = DECL_FIELD_CONTEXT (fieldy);
       if (typex == typey)
 	{
 	  /* We're left with accessing different fields of a structure,
@@ -2174,11 +2172,7 @@ stmt_may_clobber_ref_p (gimple stmt, tree ref)
 static bool
 stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 {
-  /* For a must-alias check we need to be able to constrain
-     the access properly.
-     FIXME: except for BUILTIN_FREE.  */
-  if (!ao_ref_base (ref)
-      || ref->max_size == -1)
+  if (!ao_ref_base (ref))
     return false;
 
   if (gimple_has_lhs (stmt)
@@ -2191,9 +2185,51 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	 might throw as well.  */
       && !stmt_can_throw_internal (stmt))
     {
-      tree base, lhs = gimple_get_lhs (stmt);
+      tree lhs = gimple_get_lhs (stmt);
+      /* If LHS is literally a base of the access we are done.  */
+      if (ref->ref)
+	{
+	  tree base = ref->ref;
+	  if (handled_component_p (base))
+	    {
+	      tree saved_lhs0 = NULL_TREE;
+	      if (handled_component_p (lhs))
+		{
+		  saved_lhs0 = TREE_OPERAND (lhs, 0);
+		  TREE_OPERAND (lhs, 0) = integer_zero_node;
+		}
+	      do
+		{
+		  /* Just compare the outermost handled component, if
+		     they are equal we have found a possible common
+		     base.  */
+		  tree saved_base0 = TREE_OPERAND (base, 0);
+		  TREE_OPERAND (base, 0) = integer_zero_node;
+		  bool res = operand_equal_p (lhs, base, 0);
+		  TREE_OPERAND (base, 0) = saved_base0;
+		  if (res)
+		    break;
+		  /* Otherwise drop handled components of the access.  */
+		  base = saved_base0;
+		}
+	      while (handled_component_p (base));
+	      if (saved_lhs0)
+		TREE_OPERAND (lhs, 0) = saved_lhs0;
+	    }
+	  /* Finally check if lhs is equal or equal to the base candidate
+	     of the access.  */
+	  if (operand_equal_p (lhs, base, 0))
+	    return true;
+	}
+
+      /* Now look for non-literal equal bases with the restriction of
+         handling constant offset and size.  */
+      /* For a must-alias check we need to be able to constrain
+	 the access properly.  */
+      if (ref->max_size == -1)
+	return false;
       HOST_WIDE_INT size, offset, max_size, ref_offset = ref->offset;
-      base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
+      tree base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == ref->base does not always hold.  */
       if (base != ref->base)
@@ -2261,6 +2297,10 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	  case BUILT_IN_MEMMOVE_CHK:
 	  case BUILT_IN_MEMSET_CHK:
 	    {
+	      /* For a must-alias check we need to be able to constrain
+		 the access properly.  */
+	      if (ref->max_size == -1)
+		return false;
 	      tree dest = gimple_call_arg (stmt, 0);
 	      tree len = gimple_call_arg (stmt, 2);
 	      if (!tree_fits_shwi_p (len))

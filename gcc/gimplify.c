@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
+#include "builtins.h"
 
 enum gimplify_omp_var_data
 {
@@ -138,6 +139,7 @@ struct gimplify_omp_ctx
   enum omp_clause_default_kind default_kind;
   enum omp_region_type region_type;
   bool combined_loop;
+  bool distribute;
 };
 
 static struct gimplify_ctx *gimplify_ctxp;
@@ -450,14 +452,13 @@ is_gimple_mem_rhs_or_call (tree t)
    lookup_tmp_var; nobody else should call this function.  */
 
 static inline tree
-create_tmp_from_val (tree val, bool is_formal)
+create_tmp_from_val (tree val)
 {
   /* Drop all qualifiers and address-space information from the value type.  */
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (val));
   tree var = create_tmp_var (type, get_name (val));
-  if (is_formal
-      && (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
-	  || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE))
+  if (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE)
     DECL_GIMPLE_REG_P (var) = 1;
   return var;
 }
@@ -476,7 +477,7 @@ lookup_tmp_var (tree val, bool is_formal)
      work in reload and final and poorer code generation, outweighing
      the extra memory allocation here.  */
   if (!optimize || !is_formal || TREE_SIDE_EFFECTS (val))
-    ret = create_tmp_from_val (val, is_formal);
+    ret = create_tmp_from_val (val);
   else
     {
       elt_t elt, *elt_p;
@@ -490,7 +491,7 @@ lookup_tmp_var (tree val, bool is_formal)
 	{
 	  elt_p = XNEW (elt_t);
 	  elt_p->val = val;
-	  elt_p->temp = ret = create_tmp_from_val (val, is_formal);
+	  elt_p->temp = ret = create_tmp_from_val (val);
 	  *slot = elt_p;
 	}
       else
@@ -2169,7 +2170,7 @@ maybe_with_size_expr (tree *expr_p)
    Store any side-effects in PRE_P.  CALL_LOCATION is the location of
    the CALL_EXPR.  */
 
-static enum gimplify_status
+enum gimplify_status
 gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
 {
   bool (*test) (tree);
@@ -3153,7 +3154,11 @@ prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
   while (handled_component_p (*expr_p))
     expr_p = &TREE_OPERAND (*expr_p, 0);
   if (is_gimple_reg (*expr_p))
-    *expr_p = get_initialized_tmp_var (*expr_p, seq_p, NULL);
+    {
+      tree var = get_initialized_tmp_var (*expr_p, seq_p, NULL);
+      DECL_GIMPLE_REG_P (var) = 0;
+      *expr_p = var;
+    }
 }
 
 /* A subroutine of gimplify_modify_expr.  Replace a MODIFY_EXPR with
@@ -6355,7 +6360,11 @@ gimplify_adjust_omp_clauses (tree *list_p)
 		      if (n == NULL
 			  || (n->value & GOVD_DATA_SHARE_CLASS) == 0)
 			{
-			  int flags = GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE;
+			  int flags = GOVD_FIRSTPRIVATE;
+			  /* #pragma omp distribute does not allow
+			     lastprivate clause.  */
+			  if (!ctx->outer_context->distribute)
+			    flags |= GOVD_LASTPRIVATE;
 			  if (n == NULL)
 			    omp_add_variable (ctx->outer_context, decl,
 					      flags | GOVD_SEEN);
@@ -6636,6 +6645,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  || TREE_CODE (for_stmt) == CILK_SIMD);
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p,
 			     simd ? ORT_SIMD : ORT_WORKSHARE);
+  if (TREE_CODE (for_stmt) == OMP_DISTRIBUTE)
+    gimplify_omp_ctxp->distribute = true;
 
   /* Handle OMP_FOR_INIT.  */
   for_pre_body = NULL;

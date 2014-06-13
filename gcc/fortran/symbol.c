@@ -2450,17 +2450,20 @@ gfc_get_uop (const char *name)
 {
   gfc_user_op *uop;
   gfc_symtree *st;
+  gfc_namespace *ns = gfc_current_ns;
 
-  st = gfc_find_symtree (gfc_current_ns->uop_root, name);
+  if (ns->omp_udr_ns)
+    ns = ns->parent;
+  st = gfc_find_symtree (ns->uop_root, name);
   if (st != NULL)
     return st->n.uop;
 
-  st = gfc_new_symtree (&gfc_current_ns->uop_root, name);
+  st = gfc_new_symtree (&ns->uop_root, name);
 
   uop = st->n.uop = XCNEW (gfc_user_op);
   uop->name = gfc_get_string (name);
   uop->access = ACCESS_UNKNOWN;
-  uop->ns = gfc_current_ns;
+  uop->ns = ns;
 
   return uop;
 }
@@ -2770,6 +2773,12 @@ gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result,
 
   /* Try to find the symbol in ns.  */
   st = gfc_find_symtree (ns->sym_root, name);
+
+  if (st == NULL && ns->omp_udr_ns)
+    {
+      ns = ns->parent;
+      st = gfc_find_symtree (ns->sym_root, name);
+    }
 
   if (st == NULL)
     {
@@ -3269,6 +3278,23 @@ free_common_tree (gfc_symtree * common_tree)
 }  
 
 
+/* Recursive function that deletes an entire tree and all the common
+   head structures it points to.  */
+
+static void
+free_omp_udr_tree (gfc_symtree * omp_udr_tree)
+{
+  if (omp_udr_tree == NULL)
+    return;
+
+  free_omp_udr_tree (omp_udr_tree->left);
+  free_omp_udr_tree (omp_udr_tree->right);
+
+  gfc_free_omp_udr (omp_udr_tree->n.omp_udr);
+  free (omp_udr_tree);
+}
+
+
 /* Recursive function that deletes an entire tree and all the user
    operator nodes that it contains.  */
 
@@ -3465,6 +3491,7 @@ gfc_free_namespace (gfc_namespace *ns)
   free_sym_tree (ns->sym_root);
   free_uop_tree (ns->uop_root);
   free_common_tree (ns->common_root);
+  free_omp_udr_tree (ns->omp_udr_root);
   free_tb_tree (ns->tb_sym_root);
   free_tb_tree (ns->tb_uop_root);
   gfc_free_finalizer_list (ns->finalizers);
@@ -4015,16 +4042,21 @@ add_proc_interface (gfc_symbol *sym, ifsrc source, gfc_formal_arglist *formal)
    each arg is set according to the existing ones.  This function is
    used when creating procedure declaration variables from a procedure
    declaration statement (see match_proc_decl()) to create the formal
-   args based on the args of a given named interface.  */
+   args based on the args of a given named interface.
+
+   When an actual argument list is provided, skip the absent arguments.
+   To be used together with gfc_se->ignore_optional.  */
 
 void
-gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
+gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src,
+			   gfc_actual_arglist *actual)
 {
   gfc_formal_arglist *head = NULL;
   gfc_formal_arglist *tail = NULL;
   gfc_formal_arglist *formal_arg = NULL;
   gfc_intrinsic_arg *curr_arg = NULL;
   gfc_formal_arglist *formal_prev = NULL;
+  gfc_actual_arglist *act_arg = actual;
   /* Save current namespace so we can change it for formal args.  */
   gfc_namespace *parent_ns = gfc_current_ns;
 
@@ -4035,6 +4067,17 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
 
   for (curr_arg = src->formal; curr_arg; curr_arg = curr_arg->next)
     {
+      /* Skip absent arguments.  */
+      if (actual)
+	{
+	  gcc_assert (act_arg != NULL);
+	  if (act_arg->expr == NULL)
+	    {
+	      act_arg = act_arg->next;
+	      continue;
+	    }
+	  act_arg = act_arg->next;
+	}
       formal_arg = gfc_get_formal_arglist ();
       gfc_get_symbol (curr_arg->name, gfc_current_ns, &(formal_arg->sym));
 

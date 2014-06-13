@@ -98,6 +98,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define MAX_MAX_OPERANDS 40
 
+static char general_mem[] = { TARGET_MEM_CONSTRAINT, 0 };
+
 static int n_occurrences		(int, const char *);
 static const char *strip_whitespace	(const char *);
 
@@ -197,8 +199,6 @@ static void gen_peephole (rtx, int);
 static void gen_expand (rtx, int);
 static void gen_split (rtx, int);
 
-#ifdef USE_MD_CONSTRAINTS
-
 struct constraint_data
 {
   struct constraint_data *next_this_letter;
@@ -207,24 +207,15 @@ struct constraint_data
   const char name[1];
 };
 
-/* This is a complete list (unlike the one in genpreds.c) of constraint
-   letters and modifiers with machine-independent meaning.  The only
-   omission is digits, as these are handled specially.  */
-static const char indep_constraints[] = ",=+%*?!#&<>EFVXgimnoprs";
+/* All machine-independent constraint characters (except digits) that
+   are handled outside the define*_constraint mechanism.  */
+static const char indep_constraints[] = ",=+%*?!#&g";
 
 static struct constraint_data *
 constraints_by_letter_table[1 << CHAR_BIT];
 
 static int mdep_constraint_len (const char *, int, int);
 static void note_constraint (rtx, int);
-
-#else  /* !USE_MD_CONSTRAINTS */
-
-static void check_constraint_len (void);
-static int constraint_len (const char *, int);
-
-#endif /* !USE_MD_CONSTRAINTS */
-
 
 static void
 output_prologue (void)
@@ -786,7 +777,6 @@ validate_insn_alternatives (struct data *d)
 	      error_with_line (d->lineno,
 			       "character '%c' can only be used at the"
 			       " beginning of a constraint string", c);
-#ifdef USE_MD_CONSTRAINTS
 	    if (ISSPACE (c) || strchr (indep_constraints, c))
 	      len = 1;
 	    else if (ISDIGIT (c))
@@ -799,18 +789,6 @@ validate_insn_alternatives (struct data *d)
 	      }
 	    else
 	      len = mdep_constraint_len (p, d->lineno, start);
-#else
-	    len = CONSTRAINT_LEN (c, p);
-
-	    if (len < 1 || (len > 1 && strchr (",#*+=&%!0123456789", c)))
-	      {
-		error_with_line (d->lineno,
-				 "invalid length %d for char '%c' in"
-				 " alternative %d of operand %d",
-				 len, c, which_alternative, start);
-		len = 1;
-	      }
-#endif
 
 	    if (c == ',')
 	      {
@@ -914,9 +892,6 @@ gen_insn (rtx insn, int lineno)
   d->n_operands = stats.num_insn_operands;
   d->n_dups = stats.num_dups;
 
-#ifndef USE_MD_CONSTRAINTS
-  check_constraint_len ();
-#endif
   validate_insn_operands (d);
   validate_insn_alternatives (d);
   validate_optab_operands (d);
@@ -1106,14 +1081,12 @@ main (int argc, char **argv)
 	  gen_split (desc, line_no);
 	  break;
 
-#ifdef USE_MD_CONSTRAINTS
 	case DEFINE_CONSTRAINT:
 	case DEFINE_REGISTER_CONSTRAINT:
 	case DEFINE_ADDRESS_CONSTRAINT:
 	case DEFINE_MEMORY_CONSTRAINT:
 	  note_constraint (desc, line_no);
 	  break;
-#endif
 
 	default:
 	  break;
@@ -1169,8 +1142,6 @@ strip_whitespace (const char *s)
   return q;
 }
 
-#ifdef USE_MD_CONSTRAINTS
-
 /* Record just enough information about a constraint to allow checking
    of operand constraint strings above, in validate_insn_alternatives.
    Does not validate most properties of the constraint itself; does
@@ -1181,13 +1152,13 @@ static void
 note_constraint (rtx exp, int lineno)
 {
   const char *name = XSTR (exp, 0);
-  unsigned int namelen = strlen (name);
   struct constraint_data **iter, **slot, *new_cdata;
 
-  /* The 'm' constraint is special here since that constraint letter
-     can be overridden by the back end by defining the
-     TARGET_MEM_CONSTRAINT macro.  */
-  if (strchr (indep_constraints, name[0]) && name[0] != 'm')
+  if (strcmp (name, "TARGET_MEM_CONSTRAINT") == 0)
+    name = general_mem;
+  unsigned int namelen = strlen (name);
+
+  if (strchr (indep_constraints, name[0]))
     {
       if (name[1] == '\0')
 	error_with_line (lineno, "constraint letter '%s' cannot be "
@@ -1261,39 +1232,3 @@ mdep_constraint_len (const char *s, int lineno, int opno)
   message_with_line (lineno, "note:  in operand %d", opno);
   return 1; /* safe */
 }
-
-#else
-/* Verify that DEFAULT_CONSTRAINT_LEN is used properly and not
-   tampered with.  This isn't bullet-proof, but it should catch
-   most genuine mistakes.  */
-static void
-check_constraint_len (void)
-{
-  const char *p;
-  int d;
-
-  for (p = ",#*+=&%!1234567890"; *p; p++)
-    for (d = -9; d < 9; d++)
-      gcc_assert (constraint_len (p, d) == d);
-}
-
-static int
-constraint_len (const char *p, int genoutput_default_constraint_len)
-{
-  /* Check that we still match defaults.h .  First we do a generation-time
-     check that fails if the value is not the expected one...  */
-  gcc_assert (DEFAULT_CONSTRAINT_LEN (*p, p) == 1);
-  /* And now a compile-time check that should give a diagnostic if the
-     definition doesn't exactly match.  */
-#define DEFAULT_CONSTRAINT_LEN(C,STR) 1
-  /* Now re-define DEFAULT_CONSTRAINT_LEN so that we can verify it is
-     being used.  */
-#undef DEFAULT_CONSTRAINT_LEN
-#define DEFAULT_CONSTRAINT_LEN(C,STR) \
-  ((C) != *p || STR != p ? -1 : genoutput_default_constraint_len)
-  return CONSTRAINT_LEN (*p, p);
-  /* And set it back.  */
-#undef DEFAULT_CONSTRAINT_LEN
-#define DEFAULT_CONSTRAINT_LEN(C,STR) 1
-}
-#endif

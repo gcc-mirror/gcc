@@ -1017,7 +1017,7 @@ static void
 sdbout_one_type (tree type)
 {
   if (current_function_decl != NULL_TREE
-      && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
+      && DECL_SECTION_NAME (current_function_decl) != NULL)
     ; /* Don't change section amid function.  */
   else
     switch_to_section (current_function_section ());

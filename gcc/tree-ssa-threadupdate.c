@@ -1707,9 +1707,6 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   bitmap threaded_blocks;
   struct loop *loop;
 
-  /* We must know about loops in order to preserve them.  */
-  gcc_assert (current_loops != NULL);
-
   if (!paths.exists ())
     return false;
 

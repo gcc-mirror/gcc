@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "flags.h"
 #include "gfortran.h"
+#include "arith.h"
 #include "match.h"
 #include "parse.h"
 #include "pointer-set.h"
@@ -97,6 +98,66 @@ gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *list)
       list = list->next;
       gfc_free_omp_declare_simd (current);
     }
+}
+
+/* Free an !$omp declare reduction.  */
+
+void
+gfc_free_omp_udr (gfc_omp_udr *omp_udr)
+{
+  if (omp_udr)
+    {
+      gfc_free_omp_udr (omp_udr->next);
+      gfc_free_namespace (omp_udr->combiner_ns);
+      if (omp_udr->initializer_ns)
+	gfc_free_namespace (omp_udr->initializer_ns);
+      free (omp_udr);
+    }
+}
+
+
+static gfc_omp_udr *
+gfc_find_omp_udr (gfc_namespace *ns, const char *name, gfc_typespec *ts)
+{
+  gfc_symtree *st;
+
+  if (ns == NULL)
+    ns = gfc_current_ns;
+  do
+    {
+      gfc_omp_udr *omp_udr;
+
+      st = gfc_find_symtree (ns->omp_udr_root, name);
+      if (st != NULL)
+	for (omp_udr = st->n.omp_udr; omp_udr; omp_udr = omp_udr->next)
+	  if (ts == NULL)
+	    return omp_udr;
+	  else if (gfc_compare_types (&omp_udr->ts, ts))
+	    {
+	      if (ts->type == BT_CHARACTER)
+		{
+		  if (omp_udr->ts.u.cl->length == NULL)
+		    return omp_udr;
+		  if (ts->u.cl->length == NULL)
+		    continue;
+		  if (gfc_compare_expr (omp_udr->ts.u.cl->length,
+					ts->u.cl->length,
+					INTRINSIC_EQ) != 0)
+		    continue;
+		}
+	      return omp_udr;
+	    }
+
+      /* Don't escape an interface block.  */
+      if (ns && !ns->has_import_set
+	  && ns->proc_name && ns->proc_name->attr.if_source == IFSRC_IFBODY)
+	break;
+
+      ns = ns->parent;
+    }
+  while (ns != NULL);
+
+  return NULL;
 }
 
 
@@ -313,22 +374,30 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, int mask, bool first = true,
       if ((mask & OMP_CLAUSE_REDUCTION)
 	  && gfc_match ("reduction ( ") == MATCH_YES)
 	{
-	  int reduction = OMP_LIST_NUM;
-	  char buffer[GFC_MAX_SYMBOL_LEN + 1];
+	  gfc_omp_reduction_op rop = OMP_REDUCTION_NONE;
+	  char buffer[GFC_MAX_SYMBOL_LEN + 3];
 	  if (gfc_match_char ('+') == MATCH_YES)
-	    reduction = OMP_LIST_PLUS;
+	    rop = OMP_REDUCTION_PLUS;
 	  else if (gfc_match_char ('*') == MATCH_YES)
-	    reduction = OMP_LIST_MULT;
+	    rop = OMP_REDUCTION_TIMES;
 	  else if (gfc_match_char ('-') == MATCH_YES)
-	    reduction = OMP_LIST_SUB;
+	    rop = OMP_REDUCTION_MINUS;
 	  else if (gfc_match (".and.") == MATCH_YES)
-	    reduction = OMP_LIST_AND;
+	    rop = OMP_REDUCTION_AND;
 	  else if (gfc_match (".or.") == MATCH_YES)
-	    reduction = OMP_LIST_OR;
+	    rop = OMP_REDUCTION_OR;
 	  else if (gfc_match (".eqv.") == MATCH_YES)
-	    reduction = OMP_LIST_EQV;
+	    rop = OMP_REDUCTION_EQV;
 	  else if (gfc_match (".neqv.") == MATCH_YES)
-	    reduction = OMP_LIST_NEQV;
+	    rop = OMP_REDUCTION_NEQV;
+	  if (rop != OMP_REDUCTION_NONE)
+	    snprintf (buffer, sizeof buffer,
+		      "operator %s", gfc_op2string ((gfc_intrinsic_op) rop));
+	  else if (gfc_match_defined_op_name (buffer + 1, 1) == MATCH_YES)
+	    {
+	      buffer[0] = '.';
+	      strcat (buffer, ".");
+	    }
 	  else if (gfc_match_name (buffer) == MATCH_YES)
 	    {
 	      gfc_symbol *sym;
@@ -356,40 +425,60 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, int mask, bool first = true,
 			   || sym->attr.if_source != IFSRC_UNKNOWN
 			   || sym == sym->ns->proc_name)
 		    {
-		      gfc_error_now ("%s is not INTRINSIC procedure name "
-				     "at %C", buffer);
 		      sym = NULL;
+		      n = NULL;
 		    }
 		  else
 		    n = sym->name;
 		}
-	      if (strcmp (n, "max") == 0)
-		reduction = OMP_LIST_MAX;
+	      if (n == NULL)
+		rop = OMP_REDUCTION_NONE;
+	      else if (strcmp (n, "max") == 0)
+		rop = OMP_REDUCTION_MAX;
 	      else if (strcmp (n, "min") == 0)
-		reduction = OMP_LIST_MIN;
+		rop = OMP_REDUCTION_MIN;
 	      else if (strcmp (n, "iand") == 0)
-		reduction = OMP_LIST_IAND;
+		rop = OMP_REDUCTION_IAND;
 	      else if (strcmp (n, "ior") == 0)
-		reduction = OMP_LIST_IOR;
+		rop = OMP_REDUCTION_IOR;
 	      else if (strcmp (n, "ieor") == 0)
-		reduction = OMP_LIST_IEOR;
-	      if (reduction != OMP_LIST_NUM
+		rop = OMP_REDUCTION_IEOR;
+	      if (rop != OMP_REDUCTION_NONE
 		  && sym != NULL
 		  && ! sym->attr.intrinsic
 		  && ! sym->attr.use_assoc
 		  && ((sym->attr.flavor == FL_UNKNOWN
-		       && !gfc_add_flavor (&sym->attr, FL_PROCEDURE, sym->name, NULL))
+		       && !gfc_add_flavor (&sym->attr, FL_PROCEDURE,
+					   sym->name, NULL))
 		      || !gfc_add_intrinsic (&sym->attr, NULL)))
-		{
-		  gfc_free_omp_clauses (c);
-		  return MATCH_ERROR;
-		}
+		rop = OMP_REDUCTION_NONE;
 	    }
-	  if (reduction != OMP_LIST_NUM
-	      && gfc_match_omp_variable_list (" :", &c->lists[reduction],
-					      false)
-		 == MATCH_YES)
-	    continue;
+	  gfc_omp_udr *udr = gfc_find_omp_udr (gfc_current_ns, buffer, NULL);
+	  gfc_omp_namelist **head = NULL;
+	  if (rop == OMP_REDUCTION_NONE && udr)
+	    rop = OMP_REDUCTION_USER;
+
+	  if (gfc_match_omp_variable_list (" :",
+					   &c->lists[OMP_LIST_REDUCTION],
+					   false, NULL, &head) == MATCH_YES)
+	    {
+	      gfc_omp_namelist *n;
+	      if (rop == OMP_REDUCTION_NONE)
+		{
+		  n = *head;
+		  *head = NULL;
+		  gfc_error_now ("!$OMP DECLARE REDUCTION %s not found "
+				 "at %L", buffer, &old_loc);
+		  gfc_free_omp_namelist (n);
+		}
+	      else
+		for (n = *head; n; n = n->next)
+		  {
+		    n->rop = rop;
+		    n->udr = udr;
+		  }
+	      continue;
+	    }
 	  else
 	    gfc_current_locus = old_loc;
 	}
@@ -774,6 +863,382 @@ gfc_match_omp_declare_simd (void)
   ods->next = gfc_current_ns->omp_declare_simd;
   gfc_current_ns->omp_declare_simd = ods;
   return MATCH_YES;
+}
+
+
+static bool
+match_udr_expr (gfc_symtree *omp_sym1, gfc_symtree *omp_sym2)
+{
+  match m;
+  locus old_loc = gfc_current_locus;
+  char sname[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symbol *sym;
+  gfc_namespace *ns = gfc_current_ns;
+  gfc_expr *lvalue = NULL, *rvalue = NULL;
+  gfc_symtree *st;
+  gfc_actual_arglist *arglist;
+
+  m = gfc_match (" %v =", &lvalue);
+  if (m != MATCH_YES)
+    gfc_current_locus = old_loc;
+  else
+    {
+      m = gfc_match (" %e )", &rvalue);
+      if (m == MATCH_YES)
+	{
+	  ns->code = gfc_get_code (EXEC_ASSIGN);
+	  ns->code->expr1 = lvalue;
+	  ns->code->expr2 = rvalue;
+	  ns->code->loc = old_loc;
+	  return true;
+	}
+
+      gfc_current_locus = old_loc;
+      gfc_free_expr (lvalue);
+    }
+
+  m = gfc_match (" %n", sname);
+  if (m != MATCH_YES)
+    return false;
+
+  if (strcmp (sname, omp_sym1->name) == 0
+      || strcmp (sname, omp_sym2->name) == 0)
+    return false;
+
+  gfc_current_ns = ns->parent;
+  if (gfc_get_ha_sym_tree (sname, &st))
+    return false;
+
+  sym = st->n.sym;
+  if (sym->attr.flavor != FL_PROCEDURE
+      && sym->attr.flavor != FL_UNKNOWN)
+    return false;
+
+  if (!sym->attr.generic
+      && !sym->attr.subroutine
+      && !sym->attr.function)
+    {
+      if (!(sym->attr.external && !sym->attr.referenced))
+	{
+	  /* ...create a symbol in this scope...  */
+	  if (sym->ns != gfc_current_ns
+	      && gfc_get_sym_tree (sname, NULL, &st, false) == 1)
+	    return false;
+
+	  if (sym != st->n.sym)
+	    sym = st->n.sym;
+	}
+
+      /* ...and then to try to make the symbol into a subroutine.  */
+      if (!gfc_add_subroutine (&sym->attr, sym->name, NULL))
+	return false;
+    }
+
+  gfc_set_sym_referenced (sym);
+  gfc_gobble_whitespace ();
+  if (gfc_peek_ascii_char () != '(')
+    return false;
+
+  gfc_current_ns = ns;
+  m = gfc_match_actual_arglist (1, &arglist);
+  if (m != MATCH_YES)
+    return false;
+
+  if (gfc_match_char (')') != MATCH_YES)
+    return false;
+
+  ns->code = gfc_get_code (EXEC_CALL);
+  ns->code->symtree = st;
+  ns->code->ext.actual = arglist;
+  ns->code->loc = old_loc;
+  return true;
+}
+
+static bool
+gfc_omp_udr_predef (gfc_omp_reduction_op rop, const char *name,
+		    gfc_typespec *ts, const char **n)
+{
+  if (!gfc_numeric_ts (ts) && ts->type != BT_LOGICAL)
+    return false;
+
+  switch (rop)
+    {
+    case OMP_REDUCTION_PLUS:
+    case OMP_REDUCTION_MINUS:
+    case OMP_REDUCTION_TIMES:
+      return ts->type != BT_LOGICAL;
+    case OMP_REDUCTION_AND:
+    case OMP_REDUCTION_OR:
+    case OMP_REDUCTION_EQV:
+    case OMP_REDUCTION_NEQV:
+      return ts->type == BT_LOGICAL;
+    case OMP_REDUCTION_USER:
+      if (name[0] != '.' && (ts->type == BT_INTEGER || ts->type == BT_REAL))
+	{
+	  gfc_symbol *sym;
+
+	  gfc_find_symbol (name, NULL, 1, &sym);
+	  if (sym != NULL)
+	    {
+	      if (sym->attr.intrinsic)
+		*n = sym->name;
+	      else if ((sym->attr.flavor != FL_UNKNOWN
+			&& sym->attr.flavor != FL_PROCEDURE)
+		       || sym->attr.external
+		       || sym->attr.generic
+		       || sym->attr.entry
+		       || sym->attr.result
+		       || sym->attr.dummy
+		       || sym->attr.subroutine
+		       || sym->attr.pointer
+		       || sym->attr.target
+		       || sym->attr.cray_pointer
+		       || sym->attr.cray_pointee
+		       || (sym->attr.proc != PROC_UNKNOWN
+			   && sym->attr.proc != PROC_INTRINSIC)
+		       || sym->attr.if_source != IFSRC_UNKNOWN
+		       || sym == sym->ns->proc_name)
+		*n = NULL;
+	      else
+		*n = sym->name;
+	    }
+	  else
+	    *n = name;
+	  if (*n
+	      && (strcmp (*n, "max") == 0 || strcmp (*n, "min") == 0))
+	    return true;
+	  else if (*n
+		   && ts->type == BT_INTEGER
+		   && (strcmp (*n, "iand") == 0
+		       || strcmp (*n, "ior") == 0
+		       || strcmp (*n, "ieor") == 0))
+	    return true;
+	}
+      break;
+    default:
+      break;
+    }
+  return false;
+}
+
+gfc_omp_udr *
+gfc_omp_udr_find (gfc_symtree *st, gfc_typespec *ts)
+{
+  gfc_omp_udr *omp_udr;
+
+  if (st == NULL)
+    return NULL;
+
+  for (omp_udr = st->n.omp_udr; omp_udr; omp_udr = omp_udr->next)
+    if (omp_udr->ts.type == ts->type
+	|| ((omp_udr->ts.type == BT_DERIVED || omp_udr->ts.type == BT_CLASS)
+	    && (ts->type == BT_DERIVED && ts->type == BT_CLASS)))
+      {
+	if (omp_udr->ts.type == BT_DERIVED || omp_udr->ts.type == BT_CLASS)
+	  {
+	    if (strcmp (omp_udr->ts.u.derived->name, ts->u.derived->name) == 0)
+	      return omp_udr;
+	  }
+	else if (omp_udr->ts.kind == ts->kind)
+	  {
+	    if (omp_udr->ts.type == BT_CHARACTER)
+	      {
+		if (omp_udr->ts.u.cl->length == NULL
+		    || ts->u.cl->length == NULL)
+		  return omp_udr;
+		if (omp_udr->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+		  return omp_udr;
+		if (ts->u.cl->length->expr_type != EXPR_CONSTANT)
+		  return omp_udr;
+		if (omp_udr->ts.u.cl->length->ts.type != BT_INTEGER)
+		  return omp_udr;
+		if (ts->u.cl->length->ts.type != BT_INTEGER)
+		  return omp_udr;
+		if (gfc_compare_expr (omp_udr->ts.u.cl->length,
+				      ts->u.cl->length, INTRINSIC_EQ) != 0)
+		  continue;
+	      }
+	    return omp_udr;
+	  }
+      }
+  return NULL;
+}
+
+match
+gfc_match_omp_declare_reduction (void)
+{
+  match m;
+  gfc_intrinsic_op op;
+  char name[GFC_MAX_SYMBOL_LEN + 3];
+  auto_vec<gfc_typespec, 5> tss;
+  gfc_typespec ts;
+  unsigned int i;
+  gfc_symtree *st;
+  locus where = gfc_current_locus;
+  locus end_loc = gfc_current_locus;
+  bool end_loc_set = false;
+  gfc_omp_reduction_op rop = OMP_REDUCTION_NONE;
+
+  if (gfc_match_char ('(') != MATCH_YES)
+    return MATCH_ERROR;
+
+  m = gfc_match (" %o : ", &op);
+  if (m == MATCH_ERROR)
+    return MATCH_ERROR;
+  if (m == MATCH_YES)
+    {
+      snprintf (name, sizeof name, "operator %s", gfc_op2string (op));
+      rop = (gfc_omp_reduction_op) op;
+    }
+  else
+    {
+      m = gfc_match_defined_op_name (name + 1, 1);
+      if (m == MATCH_ERROR)
+	return MATCH_ERROR;
+      if (m == MATCH_YES)
+	{
+	  name[0] = '.';
+	  strcat (name, ".");
+	  if (gfc_match (" : ") != MATCH_YES)
+	    return MATCH_ERROR;
+	}
+      else
+	{
+	  if (gfc_match (" %n : ", name) != MATCH_YES)
+	    return MATCH_ERROR;
+	}
+      rop = OMP_REDUCTION_USER;
+    }
+
+  m = gfc_match_type_spec (&ts);
+  if (m != MATCH_YES)
+    return MATCH_ERROR;
+  tss.safe_push (ts);
+
+  while (gfc_match_char (',') == MATCH_YES)
+    {
+      m = gfc_match_type_spec (&ts);
+      if (m != MATCH_YES)
+	return MATCH_ERROR;
+      tss.safe_push (ts);
+    }
+  if (gfc_match_char (':') != MATCH_YES)
+    return MATCH_ERROR;
+
+  st = gfc_find_symtree (gfc_current_ns->omp_udr_root, name);
+  for (i = 0; i < tss.length (); i++)
+    {
+      gfc_symtree *omp_out, *omp_in;
+      gfc_symtree *omp_priv = NULL, *omp_orig = NULL;
+      gfc_namespace *combiner_ns, *initializer_ns = NULL;
+      gfc_omp_udr *prev_udr, *omp_udr;
+      const char *predef_name = NULL;
+
+      omp_udr = gfc_get_omp_udr ();
+      omp_udr->name = gfc_get_string (name);
+      omp_udr->rop = rop;
+      omp_udr->ts = tss[i];
+      omp_udr->where = where;
+
+      gfc_current_ns = combiner_ns = gfc_get_namespace (gfc_current_ns, 1);
+      combiner_ns->proc_name = combiner_ns->parent->proc_name;
+
+      gfc_get_sym_tree ("omp_out", combiner_ns, &omp_out, false);
+      gfc_get_sym_tree ("omp_in", combiner_ns, &omp_in, false);
+      combiner_ns->omp_udr_ns = 1;
+      omp_out->n.sym->ts = tss[i];
+      omp_in->n.sym->ts = tss[i];
+      omp_out->n.sym->attr.omp_udr_artificial_var = 1;
+      omp_in->n.sym->attr.omp_udr_artificial_var = 1;
+      gfc_commit_symbols ();
+      omp_udr->combiner_ns = combiner_ns;
+      omp_udr->omp_out = omp_out->n.sym;
+      omp_udr->omp_in = omp_in->n.sym;
+
+      locus old_loc = gfc_current_locus;
+
+      if (!match_udr_expr (omp_out, omp_in))
+	{
+	 syntax:
+	  gfc_current_locus = old_loc;
+	  gfc_current_ns = combiner_ns->parent;
+	  gfc_free_omp_udr (omp_udr);
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_match (" initializer ( ") == MATCH_YES)
+	{
+	  gfc_current_ns = combiner_ns->parent;
+	  initializer_ns = gfc_get_namespace (gfc_current_ns, 1);
+	  gfc_current_ns = initializer_ns;
+	  initializer_ns->proc_name = initializer_ns->parent->proc_name;
+
+	  gfc_get_sym_tree ("omp_priv", initializer_ns, &omp_priv, false);
+	  gfc_get_sym_tree ("omp_orig", initializer_ns, &omp_orig, false);
+	  initializer_ns->omp_udr_ns = 1;
+	  omp_priv->n.sym->ts = tss[i];
+	  omp_orig->n.sym->ts = tss[i];
+	  omp_priv->n.sym->attr.omp_udr_artificial_var = 1;
+	  omp_orig->n.sym->attr.omp_udr_artificial_var = 1;
+	  gfc_commit_symbols ();
+	  omp_udr->initializer_ns = initializer_ns;
+	  omp_udr->omp_priv = omp_priv->n.sym;
+	  omp_udr->omp_orig = omp_orig->n.sym;
+
+	  if (!match_udr_expr (omp_priv, omp_orig))
+	    goto syntax;
+	}
+
+      gfc_current_ns = combiner_ns->parent;
+      if (!end_loc_set)
+	{
+	  end_loc_set = true;
+	  end_loc = gfc_current_locus;
+	}
+      gfc_current_locus = old_loc;
+
+      prev_udr = gfc_omp_udr_find (st, &tss[i]);
+      if (gfc_omp_udr_predef (rop, name, &tss[i], &predef_name)
+	  /* Don't error on !$omp declare reduction (min : integer : ...)
+	     just yet, there could be integer :: min afterwards,
+	     making it valid.  When the UDR is resolved, we'll get
+	     to it again.  */
+	  && (rop != OMP_REDUCTION_USER || name[0] == '.'))
+	{
+	  if (predef_name)
+	    gfc_error_now ("Redefinition of predefined %s "
+			   "!$OMP DECLARE REDUCTION at %L",
+			   predef_name, &where);
+	  else
+	    gfc_error_now ("Redefinition of predefined "
+			   "!$OMP DECLARE REDUCTION at %L", &where);
+	}
+      else if (prev_udr)
+	{
+	  gfc_error_now ("Redefinition of !$OMP DECLARE REDUCTION at %L",
+			 &where);
+	  gfc_error_now ("Previous !$OMP DECLARE REDUCTION at %L",
+			 &prev_udr->where);
+	}
+      else if (st)
+	{
+	  omp_udr->next = st->n.omp_udr;
+	  st->n.omp_udr = omp_udr;
+	}
+      else
+	{
+	  st = gfc_new_symtree (&gfc_current_ns->omp_udr_root, name);
+	  st->n.omp_udr = omp_udr;
+	}
+    }
+
+  if (end_loc_set)
+    {
+      gfc_current_locus = end_loc;
+      return MATCH_YES;
+    }
+  gfc_clear_error ();
+  return MATCH_ERROR;
 }
 
 
@@ -1285,10 +1750,8 @@ resolve_omp_clauses (gfc_code *code, locus *where,
       {
 	const char *name;
 
-	if (list < OMP_LIST_REDUCTION_FIRST)
+	if (list < OMP_LIST_NUM)
 	  name = clause_names[list];
-	else if (list <= OMP_LIST_REDUCTION_LAST)
-	  name = clause_names[OMP_LIST_REDUCTION_FIRST];
 	else
 	  gcc_unreachable ();
 
@@ -1300,9 +1763,6 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		if (!n->sym->attr.threadprivate)
 		  gfc_error ("Non-THREADPRIVATE object '%s' in COPYIN clause"
 			     " at %L", n->sym->name, where);
-		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.u.derived->attr.alloc_comp)
-		  gfc_error ("COPYIN clause object '%s' at %L has ALLOCATABLE components",
-			     n->sym->name, where);
 	      }
 	    break;
 	  case OMP_LIST_COPYPRIVATE:
@@ -1311,9 +1771,9 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array '%s' in COPYPRIVATE clause "
 			     "at %L", n->sym->name, where);
-		if (n->sym->ts.type == BT_DERIVED && n->sym->ts.u.derived->attr.alloc_comp)
-		  gfc_error ("COPYPRIVATE clause object '%s' at %L has ALLOCATABLE components",
-			     n->sym->name, where);
+		if (n->sym->attr.pointer && n->sym->attr.intent == INTENT_IN)
+		  gfc_error ("INTENT(IN) POINTER '%s' in COPYPRIVATE clause "
+			     "at %L", n->sym->name, where);
 	      }
 	    break;
 	  case OMP_LIST_SHARED:
@@ -1325,6 +1785,9 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 		if (n->sym->attr.cray_pointee)
 		  gfc_error ("Cray pointee '%s' in SHARED clause at %L",
 			    n->sym->name, where);
+		if (n->sym->attr.associate_var)
+		  gfc_error ("ASSOCIATE name '%s' in SHARED clause at %L",
+			     n->sym->name, where);
 	      }
 	    break;
 	  case OMP_LIST_ALIGNED:
@@ -1409,82 +1872,135 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 	  default:
 	    for (; n != NULL; n = n->next)
 	      {
+		bool bad = false;
 		if (n->sym->attr.threadprivate)
 		  gfc_error ("THREADPRIVATE object '%s' in %s clause at %L",
 			     n->sym->name, name, where);
 		if (n->sym->attr.cray_pointee)
 		  gfc_error ("Cray pointee '%s' in %s clause at %L",
 			    n->sym->name, name, where);
+		if (n->sym->attr.associate_var)
+		  gfc_error ("ASSOCIATE name '%s' in %s clause at %L",
+			     n->sym->name, name, where);
 		if (list != OMP_LIST_PRIVATE)
 		  {
-		    if (n->sym->attr.pointer
-			&& list >= OMP_LIST_REDUCTION_FIRST
-			&& list <= OMP_LIST_REDUCTION_LAST)
+		    if (n->sym->attr.proc_pointer && list == OMP_LIST_REDUCTION)
+		      gfc_error ("Procedure pointer '%s' in %s clause at %L",
+				 n->sym->name, name, where);
+		    if (n->sym->attr.pointer && list == OMP_LIST_REDUCTION)
 		      gfc_error ("POINTER object '%s' in %s clause at %L",
 				 n->sym->name, name, where);
-		    /* Variables in REDUCTION-clauses must be of intrinsic type (flagged below).  */
-		    if ((list < OMP_LIST_REDUCTION_FIRST || list > OMP_LIST_REDUCTION_LAST)
-			 && n->sym->ts.type == BT_DERIVED
-			 && n->sym->ts.u.derived->attr.alloc_comp)
-		      gfc_error ("%s clause object '%s' has ALLOCATABLE components at %L",
-				 name, n->sym->name, where);
-		    if (n->sym->attr.cray_pointer
-			&& list >= OMP_LIST_REDUCTION_FIRST
-			&& list <= OMP_LIST_REDUCTION_LAST)
+		    if (n->sym->attr.cray_pointer && list == OMP_LIST_REDUCTION)
 		      gfc_error ("Cray pointer '%s' in %s clause at %L",
 				 n->sym->name, name, where);
 		  }
 		if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array '%s' in %s clause at %L",
 			     n->sym->name, name, where);
-		if (n->sym->attr.in_namelist
-		    && (list < OMP_LIST_REDUCTION_FIRST
-			|| list > OMP_LIST_REDUCTION_LAST))
+		if (n->sym->attr.in_namelist && list != OMP_LIST_REDUCTION)
 		  gfc_error ("Variable '%s' in %s clause is used in "
 			     "NAMELIST statement at %L",
 			     n->sym->name, name, where);
+		if (n->sym->attr.pointer && n->sym->attr.intent == INTENT_IN)
+		  switch (list)
+		    {
+		    case OMP_LIST_PRIVATE:
+		    case OMP_LIST_LASTPRIVATE:
+		    case OMP_LIST_LINEAR:
+		    /* case OMP_LIST_REDUCTION: */
+		      gfc_error ("INTENT(IN) POINTER '%s' in %s clause at %L",
+				 n->sym->name, name, where);
+		      break;
+		    default:
+		      break;
+		    }
 		switch (list)
 		  {
-		  case OMP_LIST_PLUS:
-		  case OMP_LIST_MULT:
-		  case OMP_LIST_SUB:
-		    if (!gfc_numeric_ts (&n->sym->ts))
-		      gfc_error ("%c REDUCTION variable '%s' at %L must be of numeric type, got %s",
-				 list == OMP_LIST_PLUS ? '+'
-				 : list == OMP_LIST_MULT ? '*' : '-',
-				 n->sym->name, where,
-				 gfc_typename (&n->sym->ts));
-		    break;
-		  case OMP_LIST_AND:
-		  case OMP_LIST_OR:
-		  case OMP_LIST_EQV:
-		  case OMP_LIST_NEQV:
-		    if (n->sym->ts.type != BT_LOGICAL)
-		      gfc_error ("%s REDUCTION variable '%s' must be LOGICAL "
-				 "at %L",
-				 list == OMP_LIST_AND ? ".AND."
-				 : list == OMP_LIST_OR ? ".OR."
-				 : list == OMP_LIST_EQV ? ".EQV." : ".NEQV.",
-				 n->sym->name, where);
-		    break;
-		  case OMP_LIST_MAX:
-		  case OMP_LIST_MIN:
-		    if (n->sym->ts.type != BT_INTEGER
-			&& n->sym->ts.type != BT_REAL)
-		      gfc_error ("%s REDUCTION variable '%s' must be "
-				 "INTEGER or REAL at %L",
-				 list == OMP_LIST_MAX ? "MAX" : "MIN",
-				 n->sym->name, where);
-		    break;
-		  case OMP_LIST_IAND:
-		  case OMP_LIST_IOR:
-		  case OMP_LIST_IEOR:
-		    if (n->sym->ts.type != BT_INTEGER)
-		      gfc_error ("%s REDUCTION variable '%s' must be INTEGER "
-				 "at %L",
-				 list == OMP_LIST_IAND ? "IAND"
-				 : list == OMP_LIST_MULT ? "IOR" : "IEOR",
-				 n->sym->name, where);
+		  case OMP_LIST_REDUCTION:
+		    switch (n->rop)
+		      {
+		      case OMP_REDUCTION_PLUS:
+		      case OMP_REDUCTION_TIMES:
+		      case OMP_REDUCTION_MINUS:
+			if (!gfc_numeric_ts (&n->sym->ts))
+			  bad = true;
+			break;
+		      case OMP_REDUCTION_AND:
+		      case OMP_REDUCTION_OR:
+		      case OMP_REDUCTION_EQV:
+		      case OMP_REDUCTION_NEQV:
+			if (n->sym->ts.type != BT_LOGICAL)
+			  bad = true;
+			break;
+		      case OMP_REDUCTION_MAX:
+		      case OMP_REDUCTION_MIN:
+			if (n->sym->ts.type != BT_INTEGER
+			    && n->sym->ts.type != BT_REAL)
+			  bad = true;
+			break;
+		      case OMP_REDUCTION_IAND:
+		      case OMP_REDUCTION_IOR:
+		      case OMP_REDUCTION_IEOR:
+			if (n->sym->ts.type != BT_INTEGER)
+			  bad = true;
+			break;
+		      case OMP_REDUCTION_USER:
+			bad = true;
+			break;
+		      default:
+			break;
+		      }
+		    if (!bad)
+		      n->udr = NULL;
+		    else
+		      {
+			const char *udr_name = NULL;
+			if (n->udr)
+			  {
+			    udr_name = n->udr->name;
+			    n->udr = gfc_find_omp_udr (NULL, udr_name,
+						       &n->sym->ts);
+			  }
+			if (n->udr == NULL)
+			  {
+			    if (udr_name == NULL)
+			      switch (n->rop)
+				{
+				case OMP_REDUCTION_PLUS:
+				case OMP_REDUCTION_TIMES:
+				case OMP_REDUCTION_MINUS:
+				case OMP_REDUCTION_AND:
+				case OMP_REDUCTION_OR:
+				case OMP_REDUCTION_EQV:
+				case OMP_REDUCTION_NEQV:
+				  udr_name = gfc_op2string ((gfc_intrinsic_op)
+							    n->rop);
+				  break;
+				case OMP_REDUCTION_MAX:
+				  udr_name = "max";
+				  break;
+				case OMP_REDUCTION_MIN:
+				  udr_name = "min";
+				  break;
+				case OMP_REDUCTION_IAND:
+				  udr_name = "iand";
+				  break;
+				case OMP_REDUCTION_IOR:
+				  udr_name = "ior";
+				  break;
+				case OMP_REDUCTION_IEOR:
+				  udr_name = "ieor";
+				  break;
+				default:
+				  gcc_unreachable ();
+				}
+			    gfc_error ("!$OMP DECLARE REDUCTION %s not found "
+				       "for type %s at %L", udr_name,
+				       gfc_typename (&n->sym->ts), where);
+			  }
+			else
+			  n->rop = OMP_REDUCTION_USER;
+		      }
 		    break;
 		  case OMP_LIST_LINEAR:
 		    if (n->sym->ts.type != BT_INTEGER)
@@ -2311,4 +2827,181 @@ gfc_resolve_omp_declare_simd (gfc_namespace *ns)
       if (ods->clauses)
 	resolve_omp_clauses (NULL, &ods->where, ods->clauses, ns);
     }
+}
+
+struct omp_udr_callback_data
+{
+  gfc_omp_udr *omp_udr;
+  bool is_initializer;
+};
+
+static int
+omp_udr_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data)
+{
+  struct omp_udr_callback_data *cd = (struct omp_udr_callback_data *) data;
+  if ((*e)->expr_type == EXPR_VARIABLE)
+    {
+      if (cd->is_initializer)
+	{
+	  if ((*e)->symtree->n.sym != cd->omp_udr->omp_priv
+	      && (*e)->symtree->n.sym != cd->omp_udr->omp_orig)
+	    gfc_error ("Variable other than OMP_PRIV or OMP_ORIG used in "
+		       "INITIALIZER clause of !$OMP DECLARE REDUCTION at %L",
+		       &(*e)->where);
+	}
+      else
+	{
+	  if ((*e)->symtree->n.sym != cd->omp_udr->omp_out
+	      && (*e)->symtree->n.sym != cd->omp_udr->omp_in)
+	    gfc_error ("Variable other than OMP_OUT or OMP_IN used in "
+		       "combiner of !$OMP DECLARE REDUCTION at %L",
+		       &(*e)->where);
+	}
+    }
+  else if ((*e)->expr_type == EXPR_FUNCTION
+	   && (*e)->value.function.isym == NULL)
+    {
+      gfc_symbol *sym = (*e)->symtree->n.sym;
+      if (!sym->attr.intrinsic
+	  && sym->attr.if_source == IFSRC_UNKNOWN)
+	gfc_error ("Implicitly declared function %s used in "
+		   "!$OMP DECLARE REDUCTION at %L ", sym->name, &(*e)->where);
+    }
+  return 0;
+}
+
+/* Resolve !$omp declare reduction constructs.  */
+
+static void
+gfc_resolve_omp_udr (gfc_omp_udr *omp_udr)
+{
+  gfc_actual_arglist *a;
+  const char *predef_name = NULL;
+
+  gfc_resolve (omp_udr->combiner_ns);
+  if (omp_udr->initializer_ns)
+    gfc_resolve (omp_udr->initializer_ns);
+  switch (omp_udr->rop)
+    {
+    case OMP_REDUCTION_PLUS:
+    case OMP_REDUCTION_TIMES:
+    case OMP_REDUCTION_MINUS:
+    case OMP_REDUCTION_AND:
+    case OMP_REDUCTION_OR:
+    case OMP_REDUCTION_EQV:
+    case OMP_REDUCTION_NEQV:
+    case OMP_REDUCTION_MAX:
+    case OMP_REDUCTION_USER:
+      break;
+    default:
+      gfc_error ("Invalid operator for !$OMP DECLARE REDUCTION %s at %L",
+		 omp_udr->name, &omp_udr->where);
+      return;
+    }
+
+  if (gfc_omp_udr_predef (omp_udr->rop, omp_udr->name,
+			  &omp_udr->ts, &predef_name))
+    {
+      if (predef_name)
+	gfc_error_now ("Redefinition of predefined %s "
+		       "!$OMP DECLARE REDUCTION at %L",
+		       predef_name, &omp_udr->where);
+      else
+	gfc_error_now ("Redefinition of predefined "
+		       "!$OMP DECLARE REDUCTION at %L", &omp_udr->where);
+      return;
+    }
+
+  if (omp_udr->ts.type == BT_CHARACTER
+      && omp_udr->ts.u.cl->length
+      && omp_udr->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error ("CHARACTER length in !$OMP DECLARE REDUCTION %s not "
+		 "constant at %L", omp_udr->name, &omp_udr->where);
+      return;
+    }
+
+  struct omp_udr_callback_data cd;
+  cd.omp_udr = omp_udr;
+  cd.is_initializer = false;
+  gfc_code_walker (&omp_udr->combiner_ns->code, gfc_dummy_code_callback,
+		   omp_udr_callback, &cd);
+  if (omp_udr->combiner_ns->code->op == EXEC_CALL)
+    {
+      for (a = omp_udr->combiner_ns->code->ext.actual; a; a = a->next)
+	if (a->expr == NULL)
+	  break;
+      if (a)
+	gfc_error ("Subroutine call with alternate returns in combiner "
+		   "of !$OMP DECLARE REDUCTION at %L",
+		   &omp_udr->combiner_ns->code->loc);
+      if (omp_udr->combiner_ns->code->resolved_isym == NULL)
+	{
+	  gfc_symbol *sym = omp_udr->combiner_ns->code->resolved_sym;
+	  if (sym
+	      && !sym->attr.intrinsic
+	      && sym->attr.if_source == IFSRC_UNKNOWN)
+	    gfc_error ("Implicitly declared subroutine %s used in "
+		       "!$OMP DECLARE REDUCTION at %L ", sym->name,
+		       &omp_udr->combiner_ns->code->loc);
+	}
+    }
+  if (omp_udr->initializer_ns)
+    {
+      cd.is_initializer = true;
+      gfc_code_walker (&omp_udr->initializer_ns->code, gfc_dummy_code_callback,
+		       omp_udr_callback, &cd);
+      if (omp_udr->initializer_ns->code->op == EXEC_CALL)
+	{
+	  for (a = omp_udr->initializer_ns->code->ext.actual; a; a = a->next)
+	    if (a->expr == NULL)
+	      break;
+	  if (a)
+	    gfc_error ("Subroutine call with alternate returns in "
+		       "INITIALIZER clause of !$OMP DECLARE REDUCTION "
+		       "at %L", &omp_udr->initializer_ns->code->loc);
+	  for (a = omp_udr->initializer_ns->code->ext.actual; a; a = a->next)
+	    if (a->expr
+		&& a->expr->expr_type == EXPR_VARIABLE
+		&& a->expr->symtree->n.sym == omp_udr->omp_priv
+		&& a->expr->ref == NULL)
+	      break;
+	  if (a == NULL)
+	    gfc_error ("One of actual subroutine arguments in INITIALIZER "
+		       "clause of !$OMP DECLARE REDUCTION must be OMP_PRIV "
+		       "at %L", &omp_udr->initializer_ns->code->loc);
+	  if (omp_udr->initializer_ns->code->resolved_isym == NULL)
+	    {
+	      gfc_symbol *sym = omp_udr->initializer_ns->code->resolved_sym;
+	      if (sym
+		  && !sym->attr.intrinsic
+		  && sym->attr.if_source == IFSRC_UNKNOWN)
+		gfc_error ("Implicitly declared subroutine %s used in "
+			   "!$OMP DECLARE REDUCTION at %L ", sym->name,
+			   &omp_udr->initializer_ns->code->loc);
+	    }
+	}
+    }
+  else if (omp_udr->ts.type == BT_DERIVED
+	   && !gfc_has_default_initializer (omp_udr->ts.u.derived))
+    {
+      gfc_error ("Missing INITIALIZER clause for !$OMP DECLARE REDUCTION "
+		 "of derived type without default initializer at %L",
+		 &omp_udr->where);
+      return;
+    }
+}
+
+void
+gfc_resolve_omp_udrs (gfc_symtree *st)
+{
+  gfc_omp_udr *omp_udr;
+
+  if (st == NULL)
+    return;
+  gfc_resolve_omp_udrs (st->left);
+  gfc_resolve_omp_udrs (st->right);
+  for (omp_udr = st->n.omp_udr; omp_udr; omp_udr = omp_udr->next)
+    gfc_resolve_omp_udr (omp_udr);
 }

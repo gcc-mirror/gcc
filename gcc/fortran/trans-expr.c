@@ -6506,6 +6506,20 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 
   /* Take the address of that value.  */
   se->expr = gfc_build_addr_expr (NULL_TREE, var);
+  if (expr->ts.type == BT_DERIVED && expr->rank
+      && !gfc_is_finalizable (expr->ts.u.derived, NULL)
+      && expr->ts.u.derived->attr.alloc_comp
+      && expr->expr_type != EXPR_VARIABLE)
+    {
+      tree tmp;
+
+      tmp = build_fold_indirect_ref_loc (input_location, se->expr);
+      tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, tmp, expr->rank);
+      
+      /* The components shall be deallocated before
+         their containing entity.  */
+      gfc_prepend_expr_to_block (&se->post, tmp);
+    }
 }
 
 

@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree-pass.h"
 #include "context.h"
+#include "builtins.h"
 
 /* Define the specific costs for a given cpu.  */
 

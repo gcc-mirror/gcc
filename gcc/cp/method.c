@@ -356,14 +356,27 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   if (TARGET_USE_LOCAL_THUNK_ALIAS_P (function)
       && targetm_common.have_named_sections)
     {
-      resolve_unique_section (function, 0, flag_function_sections);
+      tree fn = function;
+      struct symtab_node *symbol;
 
-      if (DECL_SECTION_NAME (function) != NULL && DECL_ONE_ONLY (function))
+      if ((symbol = symtab_get_node (function))
+	  && symbol->alias)
+	{
+	  if (symbol->analyzed)
+	    fn = symtab_alias_ultimate_target (symtab_get_node (function))->decl;
+	  else
+	    fn = symtab_get_node (function)->alias_target;
+	}
+      resolve_unique_section (fn, 0, flag_function_sections);
+
+      if (DECL_SECTION_NAME (fn) != NULL && DECL_ONE_ONLY (fn))
 	{
 	  resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
 
 	  /* Output the thunk into the same section as function.  */
-	  DECL_SECTION_NAME (thunk_fndecl) = DECL_SECTION_NAME (function);
+	  set_decl_section_name (thunk_fndecl, DECL_SECTION_NAME (fn));
+	  symtab_get_node (thunk_fndecl)->implicit_section
+	    = symtab_get_node (fn)->implicit_section;
 	}
     }
 
@@ -2054,21 +2067,12 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   add_method (type, fn, NULL_TREE);
   /* Add it to TYPE_METHODS.  */
   if (sfk == sfk_destructor
-      && DECL_VIRTUAL_P (fn)
-      && abi_version_at_least (2))
+      && DECL_VIRTUAL_P (fn))
     /* The ABI requires that a virtual destructor go at the end of the
        vtable.  */
     TYPE_METHODS (type) = chainon (TYPE_METHODS (type), fn);
   else
     {
-      /* G++ 3.2 put the implicit destructor at the *beginning* of the
-	 TYPE_METHODS list, which cause the destructor to be emitted
-	 in an incorrect location in the vtable.  */
-      if (warn_abi && sfk == sfk_destructor && DECL_VIRTUAL_P (fn))
-	warning (OPT_Wabi, "vtable layout for class %qT may not be ABI-compliant"
-		 "and may change in a future version of GCC due to "
-		 "implicit virtual destructor",
-		 type);
       DECL_CHAIN (fn) = TYPE_METHODS (type);
       TYPE_METHODS (type) = fn;
     }

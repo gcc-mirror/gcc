@@ -78,9 +78,14 @@ int volatile_ok;
 
 struct recog_data_d recog_data;
 
-/* Contains a vector of operand_alternative structures for every operand.
+/* Contains a vector of operand_alternative structures, such that
+   operand OP of alternative A is at index A * n_operands + OP.
    Set up by preprocess_constraints.  */
-struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
+const operand_alternative *recog_op_alt;
+
+/* Used to provide recog_op_alt for asms.  */
+static operand_alternative asm_op_alt[MAX_RECOG_OPERANDS
+				      * MAX_RECOG_ALTERNATIVES];
 
 /* On return from `constrain_operands', indicate which alternative
    was satisfied.  */
@@ -1724,6 +1729,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
   while (*constraint)
     {
+      enum constraint_num cn;
       char c = *constraint;
       int len;
       switch (c)
@@ -1731,15 +1737,6 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	case ',':
 	  constraint++;
 	  continue;
-	case '=':
-	case '+':
-	case '*':
-	case '%':
-	case '!':
-	case '#':
-	case '&':
-	case '?':
-	  break;
 
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
@@ -1768,128 +1765,19 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	    }
 	  continue;
 
-	case 'p':
-	  if (address_operand (op, VOIDmode))
-	    result = 1;
-	  break;
+	  /* The rest of the compiler assumes that reloading the address
+	     of a MEM into a register will make it fit an 'o' constraint.
+	     That is, if it sees a MEM operand for an 'o' constraint,
+	     it assumes that (mem (base-reg)) will fit.
 
-	case TARGET_MEM_CONSTRAINT:
-	case 'V': /* non-offsettable */
-	  if (memory_operand (op, VOIDmode))
-	    result = 1;
-	  break;
-
+	     That assumption fails on targets that don't have offsettable
+	     addresses at all.  We therefore need to treat 'o' asm
+	     constraints as a special case and only accept operands that
+	     are already offsettable, thus proving that at least one
+	     offsettable address exists.  */
 	case 'o': /* offsettable */
 	  if (offsettable_nonstrict_memref_p (op))
 	    result = 1;
-	  break;
-
-	case '<':
-	  /* ??? Before auto-inc-dec, auto inc/dec insns are not supposed to exist,
-	     excepting those that expand_call created.  Further, on some
-	     machines which do not have generalized auto inc/dec, an inc/dec
-	     is not a memory_operand.
-
-	     Match any memory and hope things are resolved after reload.  */
-
-	  if (MEM_P (op)
-	      && (1
-		  || GET_CODE (XEXP (op, 0)) == PRE_DEC
-		  || GET_CODE (XEXP (op, 0)) == POST_DEC))
-	    result = 1;
-#ifdef AUTO_INC_DEC
-	  incdec_ok = true;
-#endif
-	  break;
-
-	case '>':
-	  if (MEM_P (op)
-	      && (1
-		  || GET_CODE (XEXP (op, 0)) == PRE_INC
-		  || GET_CODE (XEXP (op, 0)) == POST_INC))
-	    result = 1;
-#ifdef AUTO_INC_DEC
-	  incdec_ok = true;
-#endif
-	  break;
-
-	case 'E':
-	case 'F':
-	  if (CONST_DOUBLE_AS_FLOAT_P (op) 
-	      || (GET_CODE (op) == CONST_VECTOR
-		  && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT))
-	    result = 1;
-	  break;
-
-	case 'G':
-	  if (CONST_DOUBLE_AS_FLOAT_P (op)
-	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'G', constraint))
-	    result = 1;
-	  break;
-	case 'H':
-	  if (CONST_DOUBLE_AS_FLOAT_P (op)
-	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'H', constraint))
-	    result = 1;
-	  break;
-
-	case 's':
-	  if (CONST_SCALAR_INT_P (op))
-	    break;
-	  /* Fall through.  */
-
-	case 'i':
-	  if (CONSTANT_P (op) && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op)))
-	    result = 1;
-	  break;
-
-	case 'n':
-	  if (CONST_SCALAR_INT_P (op))
-	    result = 1;
-	  break;
-
-	case 'I':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'I', constraint))
-	    result = 1;
-	  break;
-	case 'J':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'J', constraint))
-	    result = 1;
-	  break;
-	case 'K':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'K', constraint))
-	    result = 1;
-	  break;
-	case 'L':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'L', constraint))
-	    result = 1;
-	  break;
-	case 'M':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'M', constraint))
-	    result = 1;
-	  break;
-	case 'N':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'N', constraint))
-	    result = 1;
-	  break;
-	case 'O':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'O', constraint))
-	    result = 1;
-	  break;
-	case 'P':
-	  if (CONST_INT_P (op)
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'P', constraint))
-	    result = 1;
-	  break;
-
-	case 'X':
-	  result = 1;
 	  break;
 
 	case 'g':
@@ -1897,27 +1785,50 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	    result = 1;
 	  break;
 
-	default:
-	  /* For all other letters, we first check for a register class,
-	     otherwise it is an EXTRA_CONSTRAINT.  */
-	  if (REG_CLASS_FROM_CONSTRAINT (c, constraint) != NO_REGS)
-	    {
-	    case 'r':
-	      if (GET_MODE (op) == BLKmode)
-		break;
-	      if (register_operand (op, VOIDmode))
-		result = 1;
-	    }
-#ifdef EXTRA_CONSTRAINT_STR
-	  else if (EXTRA_MEMORY_CONSTRAINT (c, constraint))
-	    /* Every memory operand can be reloaded to fit.  */
-	    result = result || memory_operand (op, VOIDmode);
-	  else if (EXTRA_ADDRESS_CONSTRAINT (c, constraint))
-	    /* Every address operand can be reloaded to fit.  */
-	    result = result || address_operand (op, VOIDmode);
-	  else if (EXTRA_CONSTRAINT_STR (op, c, constraint))
-	    result = 1;
+#ifdef AUTO_INC_DEC
+	case '<':
+	case '>':
+	  /* ??? Before auto-inc-dec, auto inc/dec insns are not supposed
+	     to exist, excepting those that expand_call created.  Further,
+	     on some machines which do not have generalized auto inc/dec,
+	     an inc/dec is not a memory_operand.
+
+	     Match any memory and hope things are resolved after reload.  */
+	  incdec_ok = true;
 #endif
+	default:
+	  cn = lookup_constraint (constraint);
+	  switch (get_constraint_type (cn))
+	    {
+	    case CT_REGISTER:
+	      if (!result
+		  && reg_class_for_constraint (cn) != NO_REGS
+		  && GET_MODE (op) != BLKmode
+		  && register_operand (op, VOIDmode))
+		result = 1;
+	      break;
+
+	    case CT_CONST_INT:
+	      if (!result
+		  && CONST_INT_P (op)
+		  && insn_const_int_ok_for_constraint (INTVAL (op), cn))
+		result = 1;
+	      break;
+
+	    case CT_MEMORY:
+	      /* Every memory operand can be reloaded to fit.  */
+	      result = result || memory_operand (op, VOIDmode);
+	      break;
+
+	    case CT_ADDRESS:
+	      /* Every address operand can be reloaded to fit.  */
+	      result = result || address_operand (op, VOIDmode);
+	      break;
+
+	    case CT_FIXED_FORM:
+	      result = result || constraint_satisfied_p (op, cn);
+	      break;
+	    }
 	  break;
 	}
       len = CONSTRAINT_LEN (c, constraint);
@@ -2322,42 +2233,34 @@ extract_insn (rtx insn)
   which_alternative = -1;
 }
 
-/* After calling extract_insn, you can use this function to extract some
-   information from the constraint strings into a more usable form.
-   The collected data is stored in recog_op_alt.  */
+/* Fill in OP_ALT_BASE for an instruction that has N_OPERANDS operands,
+   N_ALTERNATIVES alternatives and constraint strings CONSTRAINTS.
+   OP_ALT_BASE has N_ALTERNATIVES * N_OPERANDS entries and CONSTRAINTS
+   has N_OPERANDS entries.  */
+
 void
-preprocess_constraints (void)
+preprocess_constraints (int n_operands, int n_alternatives,
+			const char **constraints,
+			operand_alternative *op_alt_base)
 {
-  int i;
-
-  for (i = 0; i < recog_data.n_operands; i++)
-    memset (recog_op_alt[i], 0, (recog_data.n_alternatives
-				 * sizeof (struct operand_alternative)));
-
-  for (i = 0; i < recog_data.n_operands; i++)
+  for (int i = 0; i < n_operands; i++)
     {
       int j;
       struct operand_alternative *op_alt;
-      const char *p = recog_data.constraints[i];
+      const char *p = constraints[i];
 
-      op_alt = recog_op_alt[i];
+      op_alt = op_alt_base;
 
-      for (j = 0; j < recog_data.n_alternatives; j++)
+      for (j = 0; j < n_alternatives; j++, op_alt += n_operands)
 	{
-	  op_alt[j].cl = NO_REGS;
-	  op_alt[j].constraint = p;
-	  op_alt[j].matches = -1;
-	  op_alt[j].matched = -1;
-
-	  if (!TEST_BIT (recog_data.enabled_alternatives, j))
-	    {
-	      p = skip_alternative (p);
-	      continue;
-	    }
+	  op_alt[i].cl = NO_REGS;
+	  op_alt[i].constraint = p;
+	  op_alt[i].matches = -1;
+	  op_alt[i].matched = -1;
 
 	  if (*p == '\0' || *p == ',')
 	    {
-	      op_alt[j].anything_ok = 1;
+	      op_alt[i].anything_ok = 1;
 	      continue;
 	    }
 
@@ -2376,92 +2279,123 @@ preprocess_constraints (void)
 
 	      switch (c)
 		{
-		case '=': case '+': case '*': case '%':
-		case 'E': case 'F': case 'G': case 'H':
-		case 's': case 'i': case 'n':
-		case 'I': case 'J': case 'K': case 'L':
-		case 'M': case 'N': case 'O': case 'P':
-		  /* These don't say anything we care about.  */
-		  break;
-
 		case '?':
-		  op_alt[j].reject += 6;
+		  op_alt[i].reject += 6;
 		  break;
 		case '!':
-		  op_alt[j].reject += 600;
+		  op_alt[i].reject += 600;
 		  break;
 		case '&':
-		  op_alt[j].earlyclobber = 1;
+		  op_alt[i].earlyclobber = 1;
 		  break;
 
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 		  {
 		    char *end;
-		    op_alt[j].matches = strtoul (p, &end, 10);
-		    recog_op_alt[op_alt[j].matches][j].matched = i;
+		    op_alt[i].matches = strtoul (p, &end, 10);
+		    op_alt[op_alt[i].matches].matched = i;
 		    p = end;
 		  }
 		  continue;
 
-		case TARGET_MEM_CONSTRAINT:
-		  op_alt[j].memory_ok = 1;
-		  break;
-		case '<':
-		  op_alt[j].decmem_ok = 1;
-		  break;
-		case '>':
-		  op_alt[j].incmem_ok = 1;
-		  break;
-		case 'V':
-		  op_alt[j].nonoffmem_ok = 1;
-		  break;
-		case 'o':
-		  op_alt[j].offmem_ok = 1;
-		  break;
 		case 'X':
-		  op_alt[j].anything_ok = 1;
-		  break;
-
-		case 'p':
-		  op_alt[j].is_address = 1;
-		  op_alt[j].cl = reg_class_subunion[(int) op_alt[j].cl]
-		      [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-					     ADDRESS, SCRATCH)];
+		  op_alt[i].anything_ok = 1;
 		  break;
 
 		case 'g':
-		case 'r':
-		  op_alt[j].cl =
-		   reg_class_subunion[(int) op_alt[j].cl][(int) GENERAL_REGS];
+		  op_alt[i].cl =
+		   reg_class_subunion[(int) op_alt[i].cl][(int) GENERAL_REGS];
 		  break;
 
 		default:
-		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
+		  enum constraint_num cn = lookup_constraint (p);
+		  enum reg_class cl;
+		  switch (get_constraint_type (cn))
 		    {
-		      op_alt[j].memory_ok = 1;
+		    case CT_REGISTER:
+		      cl = reg_class_for_constraint (cn);
+		      if (cl != NO_REGS)
+			op_alt[i].cl = reg_class_subunion[op_alt[i].cl][cl];
 		      break;
-		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-		    {
-		      op_alt[j].is_address = 1;
-		      op_alt[j].cl
+
+		    case CT_CONST_INT:
+		      break;
+
+		    case CT_MEMORY:
+		      op_alt[i].memory_ok = 1;
+		      break;
+
+		    case CT_ADDRESS:
+		      op_alt[i].is_address = 1;
+		      op_alt[i].cl
 			= (reg_class_subunion
-			   [(int) op_alt[j].cl]
+			   [(int) op_alt[i].cl]
 			   [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 						  ADDRESS, SCRATCH)]);
 		      break;
-		    }
 
-		  op_alt[j].cl
-		    = (reg_class_subunion
-		       [(int) op_alt[j].cl]
-		       [(int) REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)]);
+		    case CT_FIXED_FORM:
+		      break;
+		    }
 		  break;
 		}
 	      p += CONSTRAINT_LEN (c, p);
 	    }
 	}
+    }
+}
+
+/* Return an array of operand_alternative instructions for
+   instruction ICODE.  */
+
+const operand_alternative *
+preprocess_insn_constraints (int icode)
+{
+  gcc_checking_assert (IN_RANGE (icode, 0, LAST_INSN_CODE));
+  if (this_target_recog->x_op_alt[icode])
+    return this_target_recog->x_op_alt[icode];
+
+  int n_operands = insn_data[icode].n_operands;
+  if (n_operands == 0)
+    return 0;
+  /* Always provide at least one alternative so that which_op_alt ()
+     works correctly.  If the instruction has 0 alternatives (i.e. all
+     constraint strings are empty) then each operand in this alternative
+     will have anything_ok set.  */
+  int n_alternatives = MAX (insn_data[icode].n_alternatives, 1);
+  int n_entries = n_operands * n_alternatives;
+
+  operand_alternative *op_alt = XCNEWVEC (operand_alternative, n_entries);
+  const char **constraints = XALLOCAVEC (const char *, n_operands);
+
+  for (int i = 0; i < n_operands; ++i)
+    constraints[i] = insn_data[icode].operand[i].constraint;
+  preprocess_constraints (n_operands, n_alternatives, constraints, op_alt);
+
+  this_target_recog->x_op_alt[icode] = op_alt;
+  return op_alt;
+}
+
+/* After calling extract_insn, you can use this function to extract some
+   information from the constraint strings into a more usable form.
+   The collected data is stored in recog_op_alt.  */
+
+void
+preprocess_constraints (rtx insn)
+{
+  int icode = INSN_CODE (insn);
+  if (icode >= 0)
+    recog_op_alt = preprocess_insn_constraints (icode);
+  else
+    {
+      int n_operands = recog_data.n_operands;
+      int n_alternatives = recog_data.n_alternatives;
+      int n_entries = n_operands * n_alternatives;
+      memset (asm_op_alt, 0, n_entries * sizeof (operand_alternative));
+      preprocess_constraints (n_operands, n_alternatives,
+			      recog_data.constraints, asm_op_alt);
+      recog_op_alt = asm_op_alt;
     }
 }
 
@@ -2579,10 +2513,6 @@ constrain_operands (int strict)
 		c = '\0';
 		break;
 
-	      case '?':  case '!': case '*':  case '%':
-	      case '=':  case '+':
-		break;
-
 	      case '#':
 		/* Ignore rest of this alternative as far as
 		   constraint checking is concerned.  */
@@ -2682,123 +2612,10 @@ constrain_operands (int strict)
 		  win = 1;
 		break;
 
-	      case 'X':
-		/* This is used for a MATCH_SCRATCH in the cases when
-		   we don't actually need anything.  So anything goes
-		   any time.  */
-		win = 1;
-		break;
-
-	      case TARGET_MEM_CONSTRAINT:
-		/* Memory operands must be valid, to the extent
-		   required by STRICT.  */
-		if (MEM_P (op))
-		  {
-		    if (strict > 0
-			&& !strict_memory_address_addr_space_p
-			     (GET_MODE (op), XEXP (op, 0),
-			      MEM_ADDR_SPACE (op)))
-		      break;
-		    if (strict == 0
-			&& !memory_address_addr_space_p
-			     (GET_MODE (op), XEXP (op, 0),
-			      MEM_ADDR_SPACE (op)))
-		      break;
-		    win = 1;
-		  }
-		/* Before reload, accept what reload can turn into mem.  */
-		else if (strict < 0 && CONSTANT_P (op))
-		  win = 1;
-		/* During reload, accept a pseudo  */
-		else if (reload_in_progress && REG_P (op)
-			 && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-		  win = 1;
-		break;
-
-	      case '<':
-		if (MEM_P (op)
-		    && (GET_CODE (XEXP (op, 0)) == PRE_DEC
-			|| GET_CODE (XEXP (op, 0)) == POST_DEC))
-		  win = 1;
-		break;
-
-	      case '>':
-		if (MEM_P (op)
-		    && (GET_CODE (XEXP (op, 0)) == PRE_INC
-			|| GET_CODE (XEXP (op, 0)) == POST_INC))
-		  win = 1;
-		break;
-
-	      case 'E':
-	      case 'F':
-		if (CONST_DOUBLE_AS_FLOAT_P (op)
-		    || (GET_CODE (op) == CONST_VECTOR
-			&& GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT))
-		  win = 1;
-		break;
-
-	      case 'G':
-	      case 'H':
-		if (CONST_DOUBLE_AS_FLOAT_P (op)
-		    && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
-		  win = 1;
-		break;
-
-	      case 's':
-		if (CONST_SCALAR_INT_P (op))
-		  break;
-	      case 'i':
-		if (CONSTANT_P (op))
-		  win = 1;
-		break;
-
-	      case 'n':
-		if (CONST_SCALAR_INT_P (op))
-		  win = 1;
-		break;
-
-	      case 'I':
-	      case 'J':
-	      case 'K':
-	      case 'L':
-	      case 'M':
-	      case 'N':
-	      case 'O':
-	      case 'P':
-		if (CONST_INT_P (op)
-		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
-		  win = 1;
-		break;
-
-	      case 'V':
-		if (MEM_P (op)
-		    && ((strict > 0 && ! offsettable_memref_p (op))
-			|| (strict < 0
-			    && !(CONSTANT_P (op) || MEM_P (op)))
-			|| (reload_in_progress
-			    && !(REG_P (op)
-				 && REGNO (op) >= FIRST_PSEUDO_REGISTER))))
-		  win = 1;
-		break;
-
-	      case 'o':
-		if ((strict > 0 && offsettable_memref_p (op))
-		    || (strict == 0 && offsettable_nonstrict_memref_p (op))
-		    /* Before reload, accept what reload can handle.  */
-		    || (strict < 0
-			&& (CONSTANT_P (op) || MEM_P (op)))
-		    /* During reload, accept a pseudo  */
-		    || (reload_in_progress && REG_P (op)
-			&& REGNO (op) >= FIRST_PSEUDO_REGISTER))
-		  win = 1;
-		break;
-
 	      default:
 		{
-		  enum reg_class cl;
-
-		  cl = (c == 'r'
-			   ? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, p));
+		  enum constraint_num cn = lookup_constraint (p);
+		  enum reg_class cl = reg_class_for_constraint (cn);
 		  if (cl != NO_REGS)
 		    {
 		      if (strict < 0
@@ -2810,11 +2627,11 @@ constrain_operands (int strict)
 			      && reg_fits_class_p (op, cl, offset, mode)))
 		        win = 1;
 		    }
-#ifdef EXTRA_CONSTRAINT_STR
-		  else if (EXTRA_CONSTRAINT_STR (op, c, p))
+
+		  else if (constraint_satisfied_p (op, cn))
 		    win = 1;
 
-		  else if (EXTRA_MEMORY_CONSTRAINT (c, p)
+		  else if (insn_extra_memory_constraint (cn)
 			   /* Every memory operand can be reloaded to fit.  */
 			   && ((strict < 0 && MEM_P (op))
 			       /* Before reload, accept what reload can turn
@@ -2824,7 +2641,7 @@ constrain_operands (int strict)
 			       || (reload_in_progress && REG_P (op)
 				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)))
 		    win = 1;
-		  else if (EXTRA_ADDRESS_CONSTRAINT (c, p)
+		  else if (insn_extra_address_constraint (cn)
 			   /* Every address operand can be reloaded to fit.  */
 			   && strict < 0)
 		    win = 1;
@@ -2835,10 +2652,9 @@ constrain_operands (int strict)
 			   && REGNO (op) >= FIRST_PSEUDO_REGISTER
 			   && reg_renumber[REGNO (op)] < 0
 			   && reg_equiv_mem (REGNO (op)) != 0
-			   && EXTRA_CONSTRAINT_STR
-			      (reg_equiv_mem (REGNO (op)), c, p))
+			   && constraint_satisfied_p
+			      (reg_equiv_mem (REGNO (op)), cn))
 		    win = 1;
-#endif
 		  break;
 		}
 	      }
@@ -3232,8 +3048,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
       from = peep2_buf_position (from + 1);
     }
 
-  cl = (class_str[0] == 'r' ? GENERAL_REGS
-	   : REG_CLASS_FROM_CONSTRAINT (class_str[0], class_str));
+  cl = reg_class_for_constraint (lookup_constraint (class_str));
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -3461,6 +3276,7 @@ peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
 
       CALL_INSN_FUNCTION_USAGE (new_insn)
 	= CALL_INSN_FUNCTION_USAGE (old_insn);
+      SIBLING_CALL_P (new_insn) = SIBLING_CALL_P (old_insn);
 
       for (note = REG_NOTES (old_insn);
 	   note;
@@ -4214,4 +4030,10 @@ recog_init ()
     }
   memset (this_target_recog->x_enabled_alternatives, 0,
 	  sizeof (this_target_recog->x_enabled_alternatives));
+  for (int i = 0; i < LAST_INSN_CODE; ++i)
+    if (this_target_recog->x_op_alt[i])
+      {
+	free (this_target_recog->x_op_alt[i]);
+	this_target_recog->x_op_alt[i] = 0;
+      }
 }

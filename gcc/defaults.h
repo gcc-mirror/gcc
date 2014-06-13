@@ -976,73 +976,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEFAULT_USE_CXA_ATEXIT 0
 #endif
 
-/* If none of these macros are defined, the port must use the new
-   technique of defining constraints in the machine description.
-   tm_p.h will define those macros that machine-independent code
-   still uses.  */
-#if  !defined CONSTRAINT_LEN			\
-  && !defined REG_CLASS_FROM_LETTER		\
-  && !defined REG_CLASS_FROM_CONSTRAINT		\
-  && !defined CONST_OK_FOR_LETTER_P		\
-  && !defined CONST_OK_FOR_CONSTRAINT_P		\
-  && !defined CONST_DOUBLE_OK_FOR_LETTER_P	\
-  && !defined CONST_DOUBLE_OK_FOR_CONSTRAINT_P  \
-  && !defined EXTRA_CONSTRAINT			\
-  && !defined EXTRA_CONSTRAINT_STR		\
-  && !defined EXTRA_MEMORY_CONSTRAINT		\
-  && !defined EXTRA_ADDRESS_CONSTRAINT
-
-#define USE_MD_CONSTRAINTS
-
 #if GCC_VERSION >= 3000 && defined IN_GCC
 /* These old constraint macros shouldn't appear anywhere in a
    configuration using MD constraint definitions.  */
-#pragma GCC poison REG_CLASS_FROM_LETTER CONST_OK_FOR_LETTER_P \
-                   CONST_DOUBLE_OK_FOR_LETTER_P EXTRA_CONSTRAINT
 #endif
-
-#else /* old constraint mechanism in use */
-
-/* Determine whether extra constraint letter should be handled
-   via address reload (like 'o').  */
-#ifndef EXTRA_MEMORY_CONSTRAINT
-#define EXTRA_MEMORY_CONSTRAINT(C,STR) 0
-#endif
-
-/* Determine whether extra constraint letter should be handled
-   as an address (like 'p').  */
-#ifndef EXTRA_ADDRESS_CONSTRAINT
-#define EXTRA_ADDRESS_CONSTRAINT(C,STR) 0
-#endif
-
-/* When a port defines CONSTRAINT_LEN, it should use DEFAULT_CONSTRAINT_LEN
-   for all the characters that it does not want to change, so things like the
-  'length' of a digit in a matching constraint is an implementation detail,
-   and not part of the interface.  */
-#define DEFAULT_CONSTRAINT_LEN(C,STR) 1
-
-#ifndef CONSTRAINT_LEN
-#define CONSTRAINT_LEN(C,STR) DEFAULT_CONSTRAINT_LEN (C, STR)
-#endif
-
-#if defined (CONST_OK_FOR_LETTER_P) && ! defined (CONST_OK_FOR_CONSTRAINT_P)
-#define CONST_OK_FOR_CONSTRAINT_P(VAL,C,STR) CONST_OK_FOR_LETTER_P (VAL, C)
-#endif
-
-#if defined (CONST_DOUBLE_OK_FOR_LETTER_P) && ! defined (CONST_DOUBLE_OK_FOR_CONSTRAINT_P)
-#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(OP,C,STR) \
-  CONST_DOUBLE_OK_FOR_LETTER_P (OP, C)
-#endif
-
-#ifndef REG_CLASS_FROM_CONSTRAINT
-#define REG_CLASS_FROM_CONSTRAINT(C,STR) REG_CLASS_FROM_LETTER (C)
-#endif
-
-#if defined (EXTRA_CONSTRAINT) && ! defined (EXTRA_CONSTRAINT_STR)
-#define EXTRA_CONSTRAINT_STR(OP, C,STR) EXTRA_CONSTRAINT (OP, C)
-#endif
-
-#endif /* old constraint mechanism in use */
 
 /* Determin whether the target runtime library is Bionic */
 #ifndef TARGET_HAS_BIONIC

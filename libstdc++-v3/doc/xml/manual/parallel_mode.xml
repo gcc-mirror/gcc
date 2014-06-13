@@ -191,7 +191,7 @@ flags for atomic operations.)
   parallel algorithms that can be used in a similar manner:
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.parallel_algos">
 <title>Parallel Algorithms</title>
 
 <tgroup cols="4" align="left" colsep="1" rowsep="1">

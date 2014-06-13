@@ -20,7 +20,7 @@ CALC (short *s, long long int *r)
     }
 }
 
-static void
+void
 TEST (void)
 {
   union128i_w s;

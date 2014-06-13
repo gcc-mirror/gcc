@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,71 +31,167 @@
 
 pragma Compiler_Unit_Warning;
 
-with System.HTable;
-with System.Soft_Links;   use System.Soft_Links;
+with System.Soft_Links; use System.Soft_Links;
 
 package body System.Exception_Table is
 
    use System.Standard_Library;
 
-   type HTable_Headers is range 1 .. 37;
+   type Hash_Val is mod 2 ** 8;
+   subtype Hash_Idx is Hash_Val range 1 .. 37;
 
-   procedure Set_HT_Link (T : Exception_Data_Ptr; Next : Exception_Data_Ptr);
-   function  Get_HT_Link (T : Exception_Data_Ptr) return Exception_Data_Ptr;
+   HTable : array (Hash_Idx) of aliased Exception_Data_Ptr;
+   --  Actual hash table containing all registered exceptions
+   --
+   --  The table is very small and the hash function weak, as looking up
+   --  registered exceptions is rare and minimizing space and time overhead
+   --  of registration is more important. In addition, it is expected that the
+   --  exceptions that need to be looked up are registered dynamically, and
+   --  therefore will be at the begin of the hash chains.
+   --
+   --  The table differs from System.HTable.Static_HTable in that the final
+   --  element of each chain is not marked by null, but by a pointer to self.
+   --  This way it is possible to defend against the same entry being inserted
+   --  twice, without having to do a lookup which is relatively expensive for
+   --  programs with large number
+   --
+   --  All non-local subprograms use the global Task_Lock to protect against
+   --  concurrent use of the exception table. This is needed as local
+   --  exceptions may be declared concurrently with those declared at the
+   --  library level.
 
-   function Hash (F : System.Address) return HTable_Headers;
-   function Equal (A, B : System.Address) return Boolean;
-   function Get_Key (T : Exception_Data_Ptr) return System.Address;
+   --  Local Subprograms
 
-   package Exception_HTable is new System.HTable.Static_HTable (
-     Header_Num => HTable_Headers,
-     Element    => Exception_Data,
-     Elmt_Ptr   => Exception_Data_Ptr,
-     Null_Ptr   => null,
-     Set_Next   => Set_HT_Link,
-     Next       => Get_HT_Link,
-     Key        => System.Address,
-     Get_Key    => Get_Key,
-     Hash       => Hash,
-     Equal      => Equal);
+   generic
+      with procedure Process (T : Exception_Data_Ptr; More : out Boolean);
+   procedure Iterate;
+   --  Iterate over all
 
-   -----------
-   -- Equal --
-   -----------
+   function Lookup  (Name : String) return Exception_Data_Ptr;
+   --  Find and return the Exception_Data of the exception with the given Name
+   --  (which must be in all uppercase), or null if none was registered.
 
-   function Equal (A, B : System.Address) return Boolean is
-      S1 : constant Big_String_Ptr := To_Ptr (A);
-      S2 : constant Big_String_Ptr := To_Ptr (B);
-      J : Integer := 1;
+   procedure Register (Item : Exception_Data_Ptr);
+   --  Register an exception with the given Exception_Data in the table.
+
+   function Has_Name (Item : Exception_Data_Ptr; Name : String) return Boolean;
+   --  Return True iff Item.Full_Name and Name are equal. Both names are
+   --  assumed to be in all uppercase and end with ASCII.NUL.
+
+   function Hash (S : String) return Hash_Idx;
+   --  Return the index in the hash table for S, which is assumed to be all
+   --  uppercase and end with ASCII.NUL.
+
+   --------------
+   -- Has_Name --
+   --------------
+
+   function Has_Name (Item : Exception_Data_Ptr; Name : String) return Boolean
+   is
+      S : constant Big_String_Ptr := To_Ptr (Item.Full_Name);
+      J : Integer := S'First;
+
    begin
-      loop
-         if S1 (J) /= S2 (J) then
+      for K in Name'Range loop
+
+         --  Note that as both items are terminated with ASCII.NUL, the
+         --  comparison below must fail for strings of different lengths.
+
+         if S (J) /= Name (K) then
             return False;
-         elsif S1 (J) = ASCII.NUL then
-            return True;
-         else
-            J := J + 1;
          end if;
+
+         J := J + 1;
       end loop;
-   end Equal;
 
-   -----------------
-   -- Get_HT_Link --
-   -----------------
+      return True;
+   end Has_Name;
 
-   function  Get_HT_Link (T : Exception_Data_Ptr) return Exception_Data_Ptr is
+   ------------
+   -- Lookup --
+   ------------
+
+   function Lookup (Name : String) return Exception_Data_Ptr is
+      Prev   : Exception_Data_Ptr;
+      Curr   : Exception_Data_Ptr;
+
    begin
-      return T.HTable_Ptr;
-   end Get_HT_Link;
+      Curr := HTable (Hash (Name));
+      Prev := null;
+      while Curr /= Prev loop
+         if Has_Name (Curr, Name) then
+            return Curr;
+         end if;
+
+         Prev := Curr;
+         Curr := Curr.HTable_Ptr;
+      end loop;
+
+      return null;
+   end Lookup;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (S : String) return Hash_Idx is
+      Hash : Hash_Val := 0;
+
+   begin
+      for J in S'Range loop
+         exit when S (J) = ASCII.NUL;
+         Hash := Hash xor Character'Pos (S (J));
+      end loop;
+
+      return Hash_Idx'First + Hash mod (Hash_Idx'Last - Hash_Idx'First + 1);
+   end Hash;
 
    -------------
-   -- Get_Key --
+   -- Iterate --
    -------------
 
-   function Get_Key (T : Exception_Data_Ptr) return System.Address is
+   procedure Iterate is
+      More : Boolean;
+      Prev, Curr : Exception_Data_Ptr;
+
    begin
-      return T.Full_Name;
-   end Get_Key;
+      Outer : for Idx in HTable'Range loop
+         Prev   := null;
+         Curr   := HTable (Idx);
+
+         while Curr /= Prev loop
+               Process (Curr, More);
+
+               exit Outer when not More;
+
+               Prev := Curr;
+               Curr := Curr.HTable_Ptr;
+         end loop;
+      end loop Outer;
+   end Iterate;
+
+   --------------
+   -- Register --
+   --------------
+
+   procedure Register (Item : Exception_Data_Ptr) is
+   begin
+      if Item.HTable_Ptr = null then
+         Prepend_To_Chain : declare
+            Chain : Exception_Data_Ptr
+                      renames HTable (Hash (To_Ptr (Item.Full_Name).all));
+
+         begin
+            if Chain = null then
+               Item.HTable_Ptr := Item;
+            else
+               Item.HTable_Ptr := Chain;
+            end if;
+
+            Chain := Item;
+         end Prepend_To_Chain;
+      end if;
+   end Register;
 
    -------------------------------
    -- Get_Registered_Exceptions --
@@ -105,44 +201,40 @@ package body System.Exception_Table is
      (List : out Exception_Data_Array;
       Last : out Integer)
    is
-      Data : Exception_Data_Ptr := Exception_HTable.Get_First;
+      procedure Get_One (Item : Exception_Data_Ptr; More : out Boolean);
+      --  Add Item to List (List'First .. Last) by first incrementing Last
+      --  and storing Item in List (Last). Last should be in List'First - 1
+      --  and List'Last.
+
+      procedure Get_All is new Iterate (Get_One);
+      --  Store all registered exceptions in List, updating Last
+
+      -------------
+      -- Get_One --
+      -------------
+
+      procedure Get_One (Item : Exception_Data_Ptr; More : out Boolean) is
+      begin
+         if Last < List'Last then
+            Last := Last + 1;
+            List (Last) := Item;
+            More := True;
+
+         else
+            More := False;
+         end if;
+      end Get_One;
 
    begin
-      Lock_Task.all;
+      --  In this routine the invariant is that List (List'First .. Last)
+      --  contains the registered exceptions retrieved so far.
+
       Last := List'First - 1;
 
-      while Last < List'Last and then Data /= null loop
-         Last := Last + 1;
-         List (Last) := Data;
-         Data := Exception_HTable.Get_Next;
-      end loop;
-
+      Lock_Task.all;
+      Get_All;
       Unlock_Task.all;
    end Get_Registered_Exceptions;
-
-   ----------
-   -- Hash --
-   ----------
-
-   function Hash (F : System.Address) return HTable_Headers is
-      type S is mod 2**8;
-
-      Str  : constant Big_String_Ptr := To_Ptr (F);
-      Size : constant S := S (HTable_Headers'Last - HTable_Headers'First + 1);
-      Tmp  : S := 0;
-      J    : Positive;
-
-   begin
-      J := 1;
-      loop
-         if Str (J) = ASCII.NUL then
-            return HTable_Headers'First + HTable_Headers'Base (Tmp mod Size);
-         else
-            Tmp := Tmp xor S (Character'Pos (Str (J)));
-         end if;
-         J := J + 1;
-      end loop;
-   end Hash;
 
    ------------------------
    -- Internal_Exception --
@@ -152,25 +244,30 @@ package body System.Exception_Table is
      (X                   : String;
       Create_If_Not_Exist : Boolean := True) return Exception_Data_Ptr
    is
+      --  If X was not yet registered and Create_if_Not_Exist is True,
+      --  dynamically allocate and register a new exception.
+
       type String_Ptr is access all String;
 
-      Copy     : aliased String (X'First .. X'Last + 1);
-      Res      : Exception_Data_Ptr;
       Dyn_Copy : String_Ptr;
+      Copy     : aliased String (X'First .. X'Last + 1);
+      Result   : Exception_Data_Ptr;
 
    begin
+      Lock_Task.all;
+
       Copy (X'Range) := X;
       Copy (Copy'Last) := ASCII.NUL;
-      Res := Exception_HTable.Get (Copy'Address);
+      Result := Lookup (Copy);
 
       --  If unknown exception, create it on the heap. This is a legitimate
-      --  situation in the distributed case when an exception is defined only
-      --  in a partition
+      --  situation in the distributed case when an exception is defined
+      --  only in a partition
 
-      if Res = null and then Create_If_Not_Exist then
+      if Result = null and then Create_If_Not_Exist then
          Dyn_Copy := new String'(Copy);
 
-         Res :=
+         Result :=
            new Exception_Data'
              (Not_Handled_By_Others => False,
               Lang                  => 'A',
@@ -180,10 +277,12 @@ package body System.Exception_Table is
               Foreign_Data          => Null_Address,
               Raise_Hook            => null);
 
-         Register_Exception (Res);
+         Register (Result);
       end if;
 
-      return Res;
+      Unlock_Task.all;
+
+      return Result;
    end Internal_Exception;
 
    ------------------------
@@ -192,7 +291,9 @@ package body System.Exception_Table is
 
    procedure Register_Exception (X : Exception_Data_Ptr) is
    begin
-      Exception_HTable.Set (X);
+      Lock_Task.all;
+      Register (X);
+      Unlock_Task.all;
    end Register_Exception;
 
    ---------------------------------
@@ -201,43 +302,38 @@ package body System.Exception_Table is
 
    function Registered_Exceptions_Count return Natural is
       Count : Natural := 0;
-      Data  : Exception_Data_Ptr := Exception_HTable.Get_First;
+
+      procedure Count_Item (Item : Exception_Data_Ptr; More : out Boolean);
+      --  Update Count for given Item
+
+      procedure Count_Item (Item : Exception_Data_Ptr; More : out Boolean) is
+         pragma Unreferenced (Item);
+      begin
+         Count := Count + 1;
+         More := Count < Natural'Last;
+      end Count_Item;
+
+      procedure Count_All is new Iterate (Count_Item);
 
    begin
-      --  We need to lock the runtime in the meantime, to avoid concurrent
-      --  access since we have only one iterator.
-
       Lock_Task.all;
-
-      while Data /= null loop
-         Count := Count + 1;
-         Data := Exception_HTable.Get_Next;
-      end loop;
-
+      Count_All;
       Unlock_Task.all;
+
       return Count;
    end Registered_Exceptions_Count;
 
-   -----------------
-   -- Set_HT_Link --
-   -----------------
-
-   procedure Set_HT_Link
-     (T    : Exception_Data_Ptr;
-      Next : Exception_Data_Ptr)
-   is
-   begin
-      T.HTable_Ptr := Next;
-   end Set_HT_Link;
-
---  Register the standard exceptions at elaboration time
-
 begin
-   Register_Exception (Abort_Signal_Def'Access);
-   Register_Exception (Tasking_Error_Def'Access);
-   Register_Exception (Storage_Error_Def'Access);
-   Register_Exception (Program_Error_Def'Access);
-   Register_Exception (Numeric_Error_Def'Access);
-   Register_Exception (Constraint_Error_Def'Access);
+   --  Register the standard exceptions at elaboration time
 
+   --  We don't need to use the locking version here as the elaboration
+   --  will not be concurrent and no tasks can call any subprograms of this
+   --  unit before it has been elaborated.
+
+   Register (Abort_Signal_Def'Access);
+   Register (Tasking_Error_Def'Access);
+   Register (Storage_Error_Def'Access);
+   Register (Program_Error_Def'Access);
+   Register (Numeric_Error_Def'Access);
+   Register (Constraint_Error_Def'Access);
 end System.Exception_Table;

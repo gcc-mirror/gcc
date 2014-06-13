@@ -640,6 +640,11 @@ package body Lib.Xref is
       --  For the same reason we accept an implicit reference generated for
       --  a default in an instance.
 
+      --  We also set the referenced flag in a generic package that is not in
+      --  then main source unit, when the variable is of a formal private type,
+      --  to warn in the instance if the corresponding type is not a fully
+      --  initialized type.
+
       if not In_Extended_Main_Source_Unit (N) then
          if Typ = 'e'
            or else Typ = 'I'
@@ -657,6 +662,20 @@ package body Lib.Xref is
                and then (Typ = 'm' or else Typ = 'r' or else Typ = 's'))
          then
             null;
+
+         elsif In_Instance_Body
+           and then In_Extended_Main_Code_Unit (N)
+           and then Is_Generic_Type (Etype (E))
+         then
+            Set_Referenced (E);
+            return;
+
+         elsif Inside_A_Generic
+           and then Is_Generic_Type (Etype (E))
+         then
+            Set_Referenced (E);
+            return;
+
          else
             return;
          end if;
@@ -868,7 +887,7 @@ package body Lib.Xref is
 
             else
                Error_Msg_NE -- CODEFIX
-                 ("?pragma Unreferenced given for&!", N, E);
+                 ("??pragma Unreferenced given for&!", N, E);
             end if;
          end if;
 

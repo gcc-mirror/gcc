@@ -5,7 +5,7 @@
         !$OMP PARALLEL DO REDUCTION(MAX: M) ! MAX is no longer the
                                             ! intrinsic so this
                                             ! is non-conforming
-! { dg-error "is not INTRINSIC procedure name" "" { target *-*-* } 5 } */
+! { dg-error "OMP DECLARE REDUCTION max not found" "" { target *-*-* } 5 } */
         DO I = 1, 100
         CALL SUB(M,I)
         END DO

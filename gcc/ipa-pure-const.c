@@ -1286,6 +1286,8 @@ propagate_pure_const (void)
 		  break;
 		case IPA_REF_ADDR:
 		  break;
+		default:
+		  gcc_unreachable ();
 		}
 	      better_state (&ref_state, &ref_looping,
 			    w_l->state_previously_known,

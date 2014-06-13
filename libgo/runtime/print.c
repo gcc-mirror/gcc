@@ -208,7 +208,10 @@ runtime_printfloat(double v)
 	n = 7;	// digits printed
 	e = 0;	// exp
 	s = 0;	// sign
-	if(v != 0) {
+	if(v == 0) {
+		if(isinf(1/v) && 1/v < 0)
+			s = 1;
+	} else {
 		// sign
 		if(v < 0) {
 			v = -v;

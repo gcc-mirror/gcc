@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include "wide-int.h"
+#include "builtins.h"
 
 /* Which cpu we're compiling for (A5, ARC600, ARC601, ARC700).  */
 static const char *arc_cpu_string = "";
@@ -6276,7 +6277,7 @@ arc_in_small_data_p (const_tree decl)
       const char *name;
 
       /* Reject anything that isn't in a known small-data section.  */
-      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      name = DECL_SECTION_NAME (decl);
       if (strcmp (name, ".sdata") != 0 && strcmp (name, ".sbss") != 0)
 	return false;
 

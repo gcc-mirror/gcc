@@ -72,6 +72,9 @@ type ImportDirectory struct {
 func (s *Section) Data() ([]byte, error) {
 	dat := make([]byte, s.sr.Size())
 	n, err := s.sr.ReadAt(dat, 0)
+	if n == len(dat) {
+		err = nil
+	}
 	return dat[0:n], err
 }
 
@@ -213,15 +216,15 @@ func NewFile(r io.ReaderAt) (*File, error) {
 		s := new(Section)
 		s.SectionHeader = SectionHeader{
 			Name:                 name,
-			VirtualSize:          uint32(sh.VirtualSize),
-			VirtualAddress:       uint32(sh.VirtualAddress),
-			Size:                 uint32(sh.SizeOfRawData),
-			Offset:               uint32(sh.PointerToRawData),
-			PointerToRelocations: uint32(sh.PointerToRelocations),
-			PointerToLineNumbers: uint32(sh.PointerToLineNumbers),
-			NumberOfRelocations:  uint16(sh.NumberOfRelocations),
-			NumberOfLineNumbers:  uint16(sh.NumberOfLineNumbers),
-			Characteristics:      uint32(sh.Characteristics),
+			VirtualSize:          sh.VirtualSize,
+			VirtualAddress:       sh.VirtualAddress,
+			Size:                 sh.SizeOfRawData,
+			Offset:               sh.PointerToRawData,
+			PointerToRelocations: sh.PointerToRelocations,
+			PointerToLineNumbers: sh.PointerToLineNumbers,
+			NumberOfRelocations:  sh.NumberOfRelocations,
+			NumberOfLineNumbers:  sh.NumberOfLineNumbers,
+			Characteristics:      sh.Characteristics,
 		}
 		s.sr = io.NewSectionReader(r, int64(s.SectionHeader.Offset), int64(s.SectionHeader.Size))
 		s.ReaderAt = s.sr

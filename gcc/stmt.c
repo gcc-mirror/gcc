@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "params.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 
 /* Functions and data structures for expanding case statements.  */
@@ -285,10 +286,6 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	  }
 	break;
 
-      case 'V':  case TARGET_MEM_CONSTRAINT:  case 'o':
-	*allows_mem = true;
-	break;
-
       case '?':  case '!':  case '*':  case '&':  case '#':
       case 'E':  case 'F':  case 'G':  case 'H':
       case 's':  case 'i':  case 'n':
@@ -314,19 +311,14 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	*allows_mem = true;
 	break;
 
-      case 'p': case 'r':
-	*allows_reg = true;
-	break;
-
       default:
 	if (!ISALPHA (*p))
 	  break;
-	if (REG_CLASS_FROM_CONSTRAINT (*p, p) != NO_REGS)
+	enum constraint_num cn = lookup_constraint (p);
+	if (reg_class_for_constraint (cn) != NO_REGS
+	    || insn_extra_address_constraint (cn))
 	  *allows_reg = true;
-#ifdef EXTRA_CONSTRAINT_STR
-	else if (EXTRA_ADDRESS_CONSTRAINT (*p, p))
-	  *allows_reg = true;
-	else if (EXTRA_MEMORY_CONSTRAINT (*p, p))
+	else if (insn_extra_memory_constraint (cn))
 	  *allows_mem = true;
 	else
 	  {
@@ -336,7 +328,6 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	    *allows_reg = true;
 	    *allows_mem = true;
 	  }
-#endif
 	break;
       }
 
@@ -382,10 +373,6 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	    error ("%<%%%> constraint used with last operand");
 	    return false;
 	  }
-	break;
-
-      case 'V':  case TARGET_MEM_CONSTRAINT:  case 'o':
-	*allows_mem = true;
 	break;
 
       case '<':  case '>':
@@ -438,10 +425,6 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	}
 	/* Fall through.  */
 
-      case 'p':  case 'r':
-	*allows_reg = true;
-	break;
-
       case 'g':  case 'X':
 	*allows_reg = true;
 	*allows_mem = true;
@@ -453,13 +436,11 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	    error ("invalid punctuation %qc in constraint", constraint[j]);
 	    return false;
 	  }
-	if (REG_CLASS_FROM_CONSTRAINT (constraint[j], constraint + j)
-	    != NO_REGS)
+	enum constraint_num cn = lookup_constraint (constraint + j);
+	if (reg_class_for_constraint (cn) != NO_REGS
+	    || insn_extra_address_constraint (cn))
 	  *allows_reg = true;
-#ifdef EXTRA_CONSTRAINT_STR
-	else if (EXTRA_ADDRESS_CONSTRAINT (constraint[j], constraint + j))
-	  *allows_reg = true;
-	else if (EXTRA_MEMORY_CONSTRAINT (constraint[j], constraint + j))
+	else if (insn_extra_memory_constraint (cn))
 	  *allows_mem = true;
 	else
 	  {
@@ -469,7 +450,6 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	    *allows_reg = true;
 	    *allows_mem = true;
 	  }
-#endif
 	break;
       }
 

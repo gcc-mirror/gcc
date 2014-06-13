@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,10 +228,10 @@ package body Exp_Util is
 
          if Present (Msg_Node) then
             Error_Msg_N
-              ("?N?info: atomic synchronization set for &", Msg_Node);
+              ("info: atomic synchronization set for &?N?", Msg_Node);
          else
             Error_Msg_N
-              ("?N?info: atomic synchronization set", N);
+              ("info: atomic synchronization set?N?", N);
          end if;
       end if;
    end Activate_Atomic_Synchronization;

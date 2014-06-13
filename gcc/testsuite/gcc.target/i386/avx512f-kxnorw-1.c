@@ -8,7 +8,7 @@ void
 avx512f_test ()
 {
   __mmask16 k1, k2, k3;
-  volatile __m512 x;
+  volatile __m512 x = _mm512_setzero_ps(); 
 
   __asm__( "kmovw %1, %0" : "=k" (k1) : "r" (1) );
   __asm__( "kmovw %1, %0" : "=k" (k2) : "r" (2) );

@@ -62,6 +62,7 @@
 #include "gimplify.h"
 #include "df.h"
 #include "reload.h"
+#include "builtins.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);
 static void xstormy16_asm_out_constructor (rtx, int);

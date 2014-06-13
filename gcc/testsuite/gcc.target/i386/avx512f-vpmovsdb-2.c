@@ -10,6 +10,7 @@
 #include "avx512f-mask-type.h"
 #include <limits.h>
 
+static void
 CALC (char *r, int *s)
 {
   int i;
@@ -25,7 +26,7 @@ CALC (char *r, int *s)
     }
 }
 
-void static
+void
 TEST (void)
 {
   int i, sign;

@@ -658,6 +658,13 @@ extern const char *constant_string_class_name;
 /* C++ language option variables.  */
 
 
+/* Return TRUE if one of {flag_abi_version,flag_abi_compat_version} is
+   less than N and the other is at least N, for use by -Wabi.  */
+#define abi_version_crosses(N)			\
+  (abi_version_at_least(N)			\
+   != (flag_abi_compat_version == 0		\
+       || flag_abi_compat_version >= (N)))
+
 /* Nonzero means generate separate instantiation control files and
    juggle them at link time.  */
 
@@ -811,6 +818,8 @@ extern void overflow_warning (location_t, tree);
 extern bool warn_if_unused_value (const_tree, location_t);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
+extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
+					  tree);
 extern void check_main_parameter_types (tree decl);
 extern bool c_determine_visibility (tree);
 extern bool vector_types_compatible_elements_p (tree, tree);

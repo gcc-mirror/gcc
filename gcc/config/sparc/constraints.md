@@ -171,7 +171,7 @@
 ;; define_register_constraint would.  This currently means that we cannot
 ;; use LRA on Sparc, since the constraint processing of LRA really depends
 ;; upon whether an extra constraint is for registers or not.  It uses
-;; REG_CLASS_FROM_CONSTRAINT, and checks it against NO_REGS.
+;; reg_class_for_constraint, and checks it against NO_REGS.
 (define_constraint "U"
  "Pseudo-register or hard even-numbered integer register"
  (and (match_test "TARGET_ARCH32")

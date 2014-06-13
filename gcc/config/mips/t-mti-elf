@@ -21,7 +21,7 @@
 
 MULTILIB_OPTIONS = mips32/mips64/mips64r2 mips16/mmicromips mabi=64 EL msoft-float/mfp64 mnan=2008
 MULTILIB_DIRNAMES = mips32 mips64 mips64r2 mips16 micromips 64 el sof fp64 nan2008
-MULTILIB_MATCHES = EL=mel EB=meb
+MULTILIB_MATCHES = EL=mel EB=meb mips32r2=mips32r3 mips32r2=mips32r5 mips64r2=mips64r3 mips64r2=mips64r5
 
 # The 64 bit ABI is not supported on the mips32 architecture.
 MULTILIB_EXCEPTIONS += *mips32*/*mabi=64*

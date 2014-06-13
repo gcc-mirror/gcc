@@ -51,6 +51,7 @@
 #include "target-def.h"
 #include "params.h"
 #include "df.h"
+#include "builtins.h"
 
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))

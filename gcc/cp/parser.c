@@ -2078,9 +2078,9 @@ static tree cp_parser_decltype
 static tree cp_parser_init_declarator
   (cp_parser *, cp_decl_specifier_seq *, vec<deferred_access_check, va_gc> *, bool, bool, int, bool *, tree *);
 static cp_declarator *cp_parser_declarator
-  (cp_parser *, cp_parser_declarator_kind, int *, bool *, bool);
+  (cp_parser *, cp_parser_declarator_kind, int *, bool *, bool, bool);
 static cp_declarator *cp_parser_direct_declarator
-  (cp_parser *, cp_parser_declarator_kind, int *, bool);
+  (cp_parser *, cp_parser_declarator_kind, int *, bool, bool);
 static enum tree_code cp_parser_ptr_operator
   (cp_parser *, tree *, cp_cv_quals *, tree *);
 static cp_cv_quals cp_parser_cv_qualifier_seq_opt
@@ -2919,6 +2919,13 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 	 The user should have said "typename A<T>::X".  */
       if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_CONSTEXPR])
 	inform (location, "C++11 %<constexpr%> only available with "
+		"-std=c++11 or -std=gnu++11");
+      else if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_NOEXCEPT])
+	inform (location, "C++11 %<noexcept%> only available with "
+		"-std=c++11 or -std=gnu++11");
+      else if (cxx_dialect < cxx11
+	       && !strcmp (IDENTIFIER_POINTER (id), "thread_local"))
+	inform (location, "C++11 %<thread_local%> only available with "
 		"-std=c++11 or -std=gnu++11");
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
@@ -7883,6 +7890,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
   enum tree_code rhs_type;
   enum cp_parser_prec new_prec, lookahead_prec;
   tree overload;
+  bool parenthesized_not_lhs_warn
+    = cp_lexer_next_token_is (parser->lexer, CPP_NOT);
 
   /* Parse the first expression.  */
   current.lhs = cp_parser_cast_expression (parser, /*address_p=*/false,
@@ -7984,6 +7993,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_false_node;
       else if (current.tree_type == TRUTH_ORIF_EXPR)
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
+
+      if (warn_logical_not_paren
+	  && parenthesized_not_lhs_warn)
+	warn_logical_not_parentheses (current.loc, current.tree_type,
+				      TREE_OPERAND (current.lhs, 0), rhs);
 
       overload = NULL;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==
@@ -10000,7 +10014,8 @@ cp_parser_condition (cp_parser* parser)
       declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 /*parenthesized_p=*/NULL,
-					 /*member_p=*/false);
+					 /*member_p=*/false,
+					 /*friend_p=*/false);
       /* Parse the attributes.  */
       attributes = cp_parser_attributes_opt (parser);
       /* Parse the asm-specification.  */
@@ -14146,7 +14161,8 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 	= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 				/*ctor_dtor_or_conv_p=*/NULL,
 				/*parenthesized_p=*/NULL,
-				/*member_p=*/false);
+				/*member_p=*/false,
+				/*friend_p=*/false);
       if (declares_class_or_enum & 2)
 	cp_parser_check_for_definition_in_return_type (declarator,
 						       decl_specifiers.type,
@@ -16006,6 +16022,8 @@ cp_parser_using_declaration (cp_parser* parser,
 						  /*is_declaration=*/true);
   if (!qscope)
     qscope = global_namespace;
+  else if (UNSCOPED_ENUM_P (qscope))
+    qscope = CP_TYPE_CONTEXT (qscope);
 
   if (access_declaration_p && cp_parser_error_occurred (parser))
     /* Something has already gone wrong; there's no need to parse
@@ -16527,7 +16545,7 @@ cp_parser_init_declarator (cp_parser* parser,
   bool is_direct_init = false;
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
-  bool friend_p;
+  bool friend_p = cp_parser_friend_p (decl_specifiers);
   tree pushed_scope = NULL_TREE;
   bool range_for_decl_p = false;
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
@@ -16556,7 +16574,7 @@ cp_parser_init_declarator (cp_parser* parser,
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    &ctor_dtor_or_conv_p,
 			    /*parenthesized_p=*/NULL,
-			    member_p);
+			    member_p, friend_p);
   /* Gather up the deferred checks.  */
   stop_deferring_access_checks ();
 
@@ -16727,9 +16745,6 @@ cp_parser_init_declarator (cp_parser* parser,
       cp_parser_error (parser, "invalid type in declaration");
       decl_specifiers->type = integer_type_node;
     }
-
-  /* Check to see whether or not this declaration is a friend.  */
-  friend_p = cp_parser_friend_p (decl_specifiers);
 
   /* Enter the newly declared entry in the symbol table.  If we're
      processing a declaration in a class-specifier, we wait until
@@ -16944,14 +16959,16 @@ cp_parser_init_declarator (cp_parser* parser,
    If PARENTHESIZED_P is non-NULL, *PARENTHESIZED_P is set to true iff
    the declarator is a direct-declarator of the form "(...)".
 
-   MEMBER_P is true iff this declarator is a member-declarator.  */
+   MEMBER_P is true iff this declarator is a member-declarator.
+
+   FRIEND_P is true iff this declarator is a friend.  */
 
 static cp_declarator *
 cp_parser_declarator (cp_parser* parser,
 		      cp_parser_declarator_kind dcl_kind,
 		      int* ctor_dtor_or_conv_p,
 		      bool* parenthesized_p,
-		      bool member_p)
+		      bool member_p, bool friend_p)
 {
   cp_declarator *declarator;
   enum tree_code code;
@@ -16991,7 +17008,8 @@ cp_parser_declarator (cp_parser* parser,
       declarator = cp_parser_declarator (parser, dcl_kind,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 /*parenthesized_p=*/NULL,
-					 /*member_p=*/false);
+					 /*member_p=*/false,
+					 friend_p);
 
       /* If we are parsing an abstract-declarator, we must handle the
 	 case where the dependent declarator is absent.  */
@@ -17010,7 +17028,7 @@ cp_parser_declarator (cp_parser* parser,
 						   CPP_OPEN_PAREN);
       declarator = cp_parser_direct_declarator (parser, dcl_kind,
 						ctor_dtor_or_conv_p,
-						member_p);
+						member_p, friend_p);
     }
 
   if (gnu_attributes && declarator && declarator != cp_error_declarator)
@@ -17044,14 +17062,14 @@ cp_parser_declarator (cp_parser* parser,
    we are parsing a direct-declarator.  It is
    CP_PARSER_DECLARATOR_EITHER, if we can accept either - in the case
    of ambiguity we prefer an abstract declarator, as per
-   [dcl.ambig.res].  CTOR_DTOR_OR_CONV_P and MEMBER_P are as for
-   cp_parser_declarator.  */
+   [dcl.ambig.res].  CTOR_DTOR_OR_CONV_P, MEMBER_P, and FRIEND_P are
+   as for cp_parser_declarator.  */
 
 static cp_declarator *
 cp_parser_direct_declarator (cp_parser* parser,
 			     cp_parser_declarator_kind dcl_kind,
 			     int* ctor_dtor_or_conv_p,
-			     bool member_p)
+			     bool member_p, bool friend_p)
 {
   cp_token *token;
   cp_declarator *declarator = NULL;
@@ -17232,7 +17250,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      declarator
 		= cp_parser_declarator (parser, dcl_kind, ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
-					member_p);
+					member_p, friend_p);
 	      parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	      first = false;
 	      /* Expect a `)'.  */
@@ -17478,6 +17496,24 @@ cp_parser_direct_declarator (cp_parser* parser,
 				for an anonymous type, even if the type
 				got a name for linkage purposes.  */
 			     !TYPE_WAS_ANONYMOUS (class_type)
+			     /* Handle correctly (c++/19200):
+
+				struct S {
+				  struct T{};
+				  friend void S(T);
+				};
+
+				and also:
+
+				namespace N {
+				  void S();
+				}
+
+				struct S {
+				  friend void N::S();
+				};  */
+			     && !(friend_p
+				  && class_type != qualifying_scope)
 			     && constructor_name_p (unqualified_name,
 						    class_type))
 		      {
@@ -18021,7 +18057,8 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
   abstract_declarator
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_ABSTRACT, NULL,
 			    /*parenthesized_p=*/NULL,
-			    /*member_p=*/false);
+			    /*member_p=*/false,
+			    /*friend_p=*/false);
   /* Check to see if there really was a declarator.  */
   if (!cp_parser_parse_definitely (parser))
     abstract_declarator = NULL;
@@ -18596,7 +18633,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
 					 CP_PARSER_DECLARATOR_EITHER,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 parenthesized_p,
-					 /*member_p=*/false);
+					 /*member_p=*/false,
+					 /*friend_p=*/false);
       parser->default_arg_ok_p = saved_default_arg_ok_p;
       /* After the declarator, allow more attributes.  */
       decl_specifiers.attributes
@@ -20432,7 +20470,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					&ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
-					/*member_p=*/true);
+					/*member_p=*/true,
+					friend_p);
 
 	      /* If something went wrong parsing the declarator, make sure
 		 that we at least consume some tokens.  */
@@ -21260,7 +21299,8 @@ cp_parser_exception_declaration (cp_parser* parser)
     declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_EITHER,
 				       /*ctor_dtor_or_conv_p=*/NULL,
 				       /*parenthesized_p=*/NULL,
-				       /*member_p=*/false);
+				       /*member_p=*/false,
+				       /*friend_p=*/false);
 
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
@@ -24806,7 +24846,8 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 		  cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					&ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
-					/*member_p=*/true);
+					/*member_p=*/true,
+					/*friend_p=*/false);
 		}
 	      else
 		{
@@ -26092,7 +26133,8 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 		= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					&ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
-					/*member_p=*/false);
+					/*member_p=*/false,
+					/*friend_p=*/false);
 	    }
 
 	  /* Look for attributes that apply to the ivar.  */
@@ -26643,7 +26685,7 @@ cp_parser_objc_struct_declaration (cp_parser *parser)
 
       /* Parse the declarator.  */
       declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
-					 NULL, NULL, false);
+					 NULL, NULL, false, false);
 
       /* Look for attributes that apply to the ivar.  */
       attributes = cp_parser_attributes_opt (parser);
@@ -29156,7 +29198,8 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 					 CP_PARSER_DECLARATOR_NAMED,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 /*parenthesized_p=*/NULL,
-					 /*member_p=*/false);
+					 /*member_p=*/false,
+					 /*friend_p=*/false);
       attributes = cp_parser_attributes_opt (parser);
       asm_specification = cp_parser_asm_specification_opt (parser);
 

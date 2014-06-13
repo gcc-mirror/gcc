@@ -57,6 +57,10 @@ const char * const ld_plugin_symbol_resolution_names[]=
   "prevailing_def_ironly_exp"
 };
 
+
+/* Hash table used to hold sectoons.  */
+static GTY((param_is (section_hash_entry))) htab_t section_hash;
+
 /* Hash table used to convert assembler names into nodes.  */
 static GTY((param_is (symtab_node))) htab_t assembler_name_hash;
 
@@ -306,6 +310,9 @@ symtab_unregister_node (symtab_node *node)
 {
   ipa_remove_all_references (&node->ref_list);
   ipa_remove_all_referring (&node->ref_list);
+
+  /* Remove reference to section.  */
+  node->set_section_for_node (NULL);
 
   symtab_remove_from_same_comdat_group (node);
 
@@ -563,9 +570,11 @@ dump_symtab_base (FILE *f, symtab_node *node)
 	     IDENTIFIER_POINTER (node->get_comdat_group_id ()));
   if (DECL_ONE_ONLY (node->decl))
     fprintf (f, " one_only");
-  if (DECL_SECTION_NAME (node->decl))
-    fprintf (f, " section_name:%s",
-	     TREE_STRING_POINTER (DECL_SECTION_NAME (node->decl)));
+  if (node->get_section ())
+    fprintf (f, " section:%s",
+	     node->get_section ());
+  if (node->implicit_section)
+    fprintf (f," (implicit_section)");
   if (DECL_VISIBILITY_SPECIFIED (node->decl))
     fprintf (f, " visibility_specified");
   if (DECL_VISIBILITY (node->decl))
@@ -791,6 +800,7 @@ verify_symtab_base (symtab_node *node)
 	{
 	  struct ipa_ref_list *refs = &node->ref_list;
 	  struct ipa_ref *ref;
+
 	  for (int i = 0; ipa_ref_list_referring_iterate (refs, i, ref); ++i)
 	    {
 	      if (!symtab_in_same_comdat_p (ref->referring, node))
@@ -803,6 +813,38 @@ verify_symtab_base (symtab_node *node)
 	    }
 	}
     }
+  if (node->implicit_section && !node->get_section ())
+    {
+      error ("implicit_section flag is set but section isn't");
+      error_found = true;
+    }
+  if (node->get_section () && node->get_comdat_group ()
+      && !node->implicit_section)
+    {
+      error ("Both section and comdat group is set");
+      error_found = true;
+    }
+  /* TODO: Add string table for sections, so we do not keep holding duplicated
+     strings.  */
+  if (node->alias && node->definition
+      && node->get_section () != symtab_alias_target (node)->get_section ()
+      && (!node->get_section()
+	  || !symtab_alias_target (node)->get_section ()
+	  || strcmp (node->get_section(),
+		     symtab_alias_target (node)->get_section ())))
+    {
+      error ("Alias and target's section differs");
+      dump_symtab_node (stderr, symtab_alias_target (node));
+      error_found = true;
+    }
+  if (node->alias && node->definition
+      && node->get_comdat_group () != symtab_alias_target (node)->get_comdat_group ())
+    {
+      error ("Alias and target's comdat groups differs");
+      dump_symtab_node (stderr, symtab_alias_target (node));
+      error_found = true;
+    }
+
   return error_found;
 }
 
@@ -832,8 +874,30 @@ DEBUG_FUNCTION void
 verify_symtab (void)
 {
   symtab_node *node;
+  pointer_map<symtab_node *> comdat_head_map;
+
   FOR_EACH_SYMBOL (node)
-   verify_symtab_node (node);
+    {
+      verify_symtab_node (node);
+      if (node->get_comdat_group ())
+	{
+	  symtab_node **entry, *s;
+	  bool existed;
+
+	  entry = comdat_head_map.insert (node->get_comdat_group (), &existed);
+	  if (!existed)
+	    *entry = node;
+	  else
+	    for (s = (*entry)->same_comdat_group; s != NULL && s != node; s = s->same_comdat_group)
+	      if (!s || s == *entry)
+		{
+		  error ("Two symbols with same comdat_group are not linked by the same_comdat_group list.");
+		  dump_symtab_node (stderr, *entry);
+		  dump_symtab_node (stderr, s);
+		  internal_error ("verify_symtab failed");
+		}
+	}
+    }
 }
 
 /* Return true when RESOLUTION indicate that linker will use
@@ -877,11 +941,7 @@ symtab_make_decl_local (tree decl)
     DECL_COMMON (decl) = 0;
   else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
-  if (DECL_COMDAT (decl))
-    {
-      DECL_SECTION_NAME (decl) = 0;
-      DECL_COMDAT (decl) = 0;
-    }
+  DECL_COMDAT (decl) = 0;
   DECL_WEAK (decl) = 0;
   DECL_EXTERNAL (decl) = 0;
   DECL_VISIBILITY_SPECIFIED (decl) = 0;
@@ -1028,6 +1088,118 @@ fixup_same_cpp_alias_visibility (symtab_node *node, symtab_node *target)
   node->externally_visible = target->externally_visible;
 }
 
+/* Hash sections by their names.  */
+
+static hashval_t
+hash_section_hash_entry (const void *p)
+{
+  const section_hash_entry *n = (const section_hash_entry *) p;
+  return htab_hash_string (n->name);
+}
+
+/* Return true if section P1 name equals to P2.  */
+
+static int
+eq_sections (const void *p1, const void *p2)
+{
+  const section_hash_entry *n1 = (const section_hash_entry *) p1;
+  const char *name = (const char *)p2;
+  return n1->name == name || !strcmp (n1->name, name);
+}
+
+/* Set section, do not recurse into aliases.
+   When one wants to change section of symbol and its aliases,
+   use set_section  */
+
+void
+symtab_node::set_section_for_node (const char *section)
+{
+  const char *current = get_section ();
+  void **slot;
+
+  if (current == section
+      || (current && section
+	  && !strcmp (current, section)))
+    return;
+
+  if (current)
+    {
+      x_section->ref_count--;
+      if (!x_section->ref_count)
+	{
+	  slot = htab_find_slot_with_hash (section_hash, x_section->name,
+					   htab_hash_string (x_section->name),
+					   INSERT);
+	  ggc_free (x_section);
+	  htab_clear_slot (section_hash, slot);
+	}
+      x_section = NULL;
+    }
+  if (!section)
+    {
+      implicit_section = false;
+      return;
+    }
+  if (!section_hash)
+    section_hash = htab_create_ggc (10, hash_section_hash_entry,
+				    eq_sections, NULL);
+  slot = htab_find_slot_with_hash (section_hash, section,
+				   htab_hash_string (section),
+				   INSERT);
+  if (*slot)
+    x_section = (section_hash_entry *)*slot;
+  else
+    {
+      int len = strlen (section);
+      *slot = x_section = ggc_cleared_alloc<section_hash_entry> ();
+      x_section->name = ggc_vec_alloc<char> (len + 1);
+      memcpy (x_section->name, section, len + 1);
+    }
+  x_section->ref_count++;
+}
+
+/* Worker for set_section.  */
+
+static bool
+set_section_1 (struct symtab_node *n, void *s)
+{
+  n->set_section_for_node ((char *)s);
+  return false;
+}
+
+/* Set section of symbol and its aliases.  */
+
+void
+symtab_node::set_section (const char *section)
+{
+  gcc_assert (!this->alias);
+  symtab_for_node_and_aliases (this, set_section_1, const_cast<char *>(section), true);
+}
+
+/* Reset section of NODE.  That is when NODE is being brought local
+   we may want to clear section produced for comdat group and depending
+   on function-sections produce now, local, unique section for it.  */
+
+void
+symtab_node::reset_section ()
+{
+  if (!this->implicit_section)
+    return;
+  this->set_section (NULL);
+  resolve_unique_section (this->decl, 0,
+			  is_a <cgraph_node *> (this)
+			  ? flag_function_sections : flag_data_sections);
+}
+
+/* Worker for symtab_resolve_alias.  */
+
+static bool
+set_implicit_section (struct symtab_node *n, void *data ATTRIBUTE_UNUSED)
+{
+  n->implicit_section = true;
+  return false;
+}
+
 /* Add reference recording that NODE is alias of TARGET.
    The function can fail in the case of aliasing cycles; in this case
    it returns false.  */
@@ -1061,6 +1233,26 @@ symtab_resolve_alias (symtab_node *node, symtab_node *target)
   node->alias = true;
   node->analyzed = true;
   ipa_record_reference (node, target, IPA_REF_ALIAS, NULL);
+
+  /* Add alias into the comdat group of its target unless it is already there.  */
+  if (node->same_comdat_group)
+    symtab_remove_from_same_comdat_group (node);
+  node->set_comdat_group (NULL);
+  if (target->get_comdat_group ())
+    symtab_add_to_same_comdat_group (node, target);
+
+  if ((node->get_section () != target->get_section ()
+       || target->get_comdat_group ())
+      && node->get_section () && !node->implicit_section)
+    {
+      error ("section of alias %q+D must match section of its target",
+	     node->decl);
+    }
+  symtab_for_node_and_aliases (node, set_section_1,
+			       const_cast<char *>(target->get_section ()), true);
+  if (target->implicit_section)
+    symtab_for_node_and_aliases (node,
+				 set_implicit_section, NULL, true);
 
   /* Alias targets become redundant after alias is resolved into an reference.
      We do not want to keep it around or we would have to mind updating them
@@ -1154,7 +1346,9 @@ symtab_nonoverwritable_alias (symtab_node *node)
   TREE_PUBLIC (new_decl) = 0;
   DECL_COMDAT (new_decl) = 0;
   DECL_WEAK (new_decl) = 0;
-  DECL_VIRTUAL_P (new_decl) = 0;
+
+  /* Since the aliases can be added to vtables, keep DECL_VIRTUAL flag.  */
+  DECL_VIRTUAL_P (new_decl) = DECL_VIRTUAL_P (node->decl);
   if (TREE_CODE (new_decl) == FUNCTION_DECL)
     {
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
@@ -1165,6 +1359,7 @@ symtab_nonoverwritable_alias (symtab_node *node)
   else
     {
       TREE_READONLY (new_decl) = TREE_READONLY (node->decl);
+      DECL_INITIAL (new_decl) = error_mark_node;
       new_node = varpool_create_variable_alias (new_decl, node->decl);
     }
   symtab_resolve_alias (new_node, node);  

@@ -185,7 +185,8 @@
 	desirable because, in glibc, for example, in turn it triggers the
 	linking of libpthread too, which activates locking, a large overhead
 	for single-thread programs.  OPTION=no skips the tests completely.
-	The default is OPTION=no.
+	The default is OPTION=auto, which skips the checks and enables the
+	features only for targets known to support them.
     </para>
  </listitem></varlistentry>
 

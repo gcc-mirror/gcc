@@ -95,20 +95,18 @@ func (r *Rand) Intn(n int) int {
 }
 
 // Float64 returns, as a float64, a pseudo-random number in [0.0,1.0).
-func (r *Rand) Float64() float64 { return float64(r.Int63()) / (1 << 63) }
+func (r *Rand) Float64() float64 { return float64(r.Int63n(1<<53)) / (1 << 53) }
 
 // Float32 returns, as a float32, a pseudo-random number in [0.0,1.0).
-func (r *Rand) Float32() float32 { return float32(r.Float64()) }
+func (r *Rand) Float32() float32 { return float32(r.Int31n(1<<24)) / (1 << 24) }
 
 // Perm returns, as a slice of n ints, a pseudo-random permutation of the integers [0,n).
 func (r *Rand) Perm(n int) []int {
 	m := make([]int, n)
 	for i := 0; i < n; i++ {
-		m[i] = i
-	}
-	for i := 0; i < n; i++ {
 		j := r.Intn(i + 1)
-		m[i], m[j] = m[j], m[i]
+		m[i] = m[j]
+		m[j] = i
 	}
 	return m
 }

@@ -44,6 +44,7 @@
 #include <bits/functexcept.h>
 #include <bits/gthr.h>
 #include <bits/move.h> // for std::swap
+#include <bits/cxxabi_forced.h>
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
@@ -631,6 +632,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __locks = std::tie(__l1, __l2, __l3...);
       __try
       { __try_lock_impl<0>::__do_try_lock(__locks, __idx); }
+      __catch(const __cxxabiv1::__forced_unwind&)
+      { __throw_exception_again; }
       __catch(...)
       { }
       return __idx;

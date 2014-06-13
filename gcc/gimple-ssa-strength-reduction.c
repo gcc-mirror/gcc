@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "tree-affine.h"
 #include "wide-int-print.h"
+#include "builtins.h"
 
 /* Information about a strength reduction candidate.  Each statement
    in the candidate table represents an expression of one of the

@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "df.h"
 #include "dumpfile.h"
+#include "builtins.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline
@@ -262,7 +263,7 @@ static frv_stack_t *frv_stack_cache = (frv_stack_t *)0;
 static void frv_option_override			(void);
 static bool frv_legitimate_address_p		(enum machine_mode, rtx, bool);
 static int frv_default_flags_for_cpu		(void);
-static int frv_string_begins_with		(const_tree, const char *);
+static int frv_string_begins_with		(const char *, const char *);
 static FRV_INLINE bool frv_small_data_reloc_p	(rtx, int);
 static void frv_print_operand			(FILE *, rtx, int);
 static void frv_print_operand_address		(FILE *, rtx);
@@ -772,34 +773,15 @@ frv_option_override (void)
 /* Return true if NAME (a STRING_CST node) begins with PREFIX.  */
 
 static int
-frv_string_begins_with (const_tree name, const char *prefix)
+frv_string_begins_with (const char *name, const char *prefix)
 {
   const int prefix_len = strlen (prefix);
 
   /* Remember: NAME's length includes the null terminator.  */
-  return (TREE_STRING_LENGTH (name) > prefix_len
-	  && strncmp (TREE_STRING_POINTER (name), prefix, prefix_len) == 0);
+  return (strncmp (name, prefix, prefix_len) == 0);
 }
 
-/* Zero or more C statements that may conditionally modify two variables
-   `fixed_regs' and `call_used_regs' (both of type `char []') after they have
-   been initialized from the two preceding macros.
-
-   This is necessary in case the fixed or call-clobbered registers depend on
-   target flags.
-
-   You need not define this macro if it has no work to do.
-
-   If the usage of an entire class of registers depends on the target flags,
-   you may indicate this to GCC by using this macro to modify `fixed_regs' and
-   `call_used_regs' to 1 for each of the registers in the classes which should
-   not be used by GCC.  Also define the macro `REG_CLASS_FROM_LETTER' to return
-   `NO_REGS' if it is called with a letter for a class that shouldn't be used.
-
-   (However, if this class is not included in `GENERAL_REGS' and all of the
-   insn patterns whose constraints permit this class are controlled by target
-   switches, then GCC will automatically avoid using these registers when the
-   target switches are opposed to them.)  */
+/* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
 static void
 frv_conditional_register_usage (void)
@@ -9492,7 +9474,7 @@ static bool
 frv_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
-  const_tree section_name;
+  const char *section_name;
 
   /* Don't apply the -G flag to internal compiler structures.  We
      should leave such structures in the main data section, partly

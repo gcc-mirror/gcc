@@ -235,7 +235,8 @@
   Helgrind</link>, and
   <link xmlns:xlink="http://www.w3.org/1999/xlink" 
   xlink:href="http://code.google.com/p/data-race-test/"> 
-  ThreadSanitizer</link>.
+  ThreadSanitizer</link> (this refers to ThreadSanitizer v1, not the
+  new "tsan" feature built-in to GCC itself).
 </para>
 
 <para>

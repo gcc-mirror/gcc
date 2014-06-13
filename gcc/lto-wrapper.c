@@ -111,43 +111,6 @@ fatal_signal (int signum)
   kill (getpid (), signum);
 }
 
-/* Just die. CMSGID is the error message. */
-
-static void __attribute__ ((format (printf, 1, 2)))
-fatal (const char * cmsgid, ...)
-{
-  va_list ap;
-
-  va_start (ap, cmsgid);
-  fprintf (stderr, "lto-wrapper: ");
-  vfprintf (stderr, _(cmsgid), ap);
-  fprintf (stderr, "\n");
-  va_end (ap);
-
-  lto_wrapper_cleanup ();
-  exit (FATAL_EXIT_CODE);
-}
-
-
-/* Die when sys call fails. CMSGID is the error message.  */
-
-static void __attribute__ ((format (printf, 1, 2)))
-fatal_perror (const char *cmsgid, ...)
-{
-  int e = errno;
-  va_list ap;
-
-  va_start (ap, cmsgid);
-  fprintf (stderr, "lto-wrapper: ");
-  vfprintf (stderr, _(cmsgid), ap);
-  fprintf (stderr, ": %s\n", xstrerror (e));
-  va_end (ap);
-
-  lto_wrapper_cleanup ();
-  exit (FATAL_EXIT_CODE);
-}
-
-
 /* Execute a program, and wait for the reply. ARGV are the arguments. The
    last one must be NULL. */
 
@@ -174,7 +137,7 @@ collect_execute (char **argv)
 
   pex = pex_init (0, "lto-wrapper", NULL);
   if (pex == NULL)
-    fatal_perror ("pex_init failed");
+    fatal_error ("pex_init failed: %m");
 
   /* Do not use PEX_LAST here, we use our stdout for communicating with
      collect2 or the linker-plugin.  Any output from the sub-process
@@ -186,10 +149,10 @@ collect_execute (char **argv)
       if (err != 0)
 	{
 	  errno = err;
-	  fatal_perror (errmsg);
+	  fatal_error ("%s: %m", _(errmsg));
 	}
       else
-	fatal (errmsg);
+	fatal_error (errmsg);
     }
 
   return pex;
@@ -205,7 +168,7 @@ collect_wait (const char *prog, struct pex_obj *pex)
   int status;
 
   if (!pex_get_status (pex, 1, &status))
-    fatal_perror ("can't get program status");
+    fatal_error ("can't get program status: %m");
   pex_free (pex);
 
   if (status)
@@ -214,15 +177,15 @@ collect_wait (const char *prog, struct pex_obj *pex)
 	{
 	  int sig = WTERMSIG (status);
 	  if (WCOREDUMP (status))
-	    fatal ("%s terminated with signal %d [%s], core dumped",
+	    fatal_error ("%s terminated with signal %d [%s], core dumped",
 		   prog, sig, strsignal (sig));
 	  else
-	    fatal ("%s terminated with signal %d [%s]",
+	    fatal_error ("%s terminated with signal %d [%s]",
 		   prog, sig, strsignal (sig));
 	}
 
       if (WIFEXITED (status))
-	fatal ("%s returned %d exit status", prog, WEXITSTATUS (status));
+	fatal_error ("%s returned %d exit status", prog, WEXITSTATUS (status));
     }
 
   return 0;
@@ -238,7 +201,7 @@ maybe_unlink_file (const char *file)
     {
       if (unlink_if_ordinary (file)
 	  && errno != ENOENT)
-	fatal_perror ("deleting LTRANS file %s", file);
+	fatal_error ("deleting LTRANS file %s: %m", file);
     }
   else if (verbose)
     fprintf (stderr, "[Leaving LTRANS %s]\n", file);
@@ -260,12 +223,12 @@ fork_execute (char **argv)
   at_args = concat ("@", args_name, NULL);
   args = fopen (args_name, "w");
   if (args == NULL)
-    fatal ("failed to open %s", args_name);
+    fatal_error ("failed to open %s", args_name);
 
   status = writeargv (&argv[1], args);
 
   if (status)
-    fatal ("could not write to temporary file %s",  args_name);
+    fatal_error ("could not write to temporary file %s",  args_name);
 
   fclose (args);
 
@@ -312,7 +275,7 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
 	  do
 	    {
 	      if (argv_storage[j] == '\0')
-		fatal ("malformed COLLECT_GCC_OPTIONS");
+		fatal_error ("malformed COLLECT_GCC_OPTIONS");
 	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
 		{
 		  argv_storage[k++] = '\'';
@@ -452,8 +415,8 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    if ((*decoded_options)[j].opt_index == foption->opt_index)
 	      break;
 	  if (j == *decoded_options_count)
-	    fatal ("Option %s not used consistently in all LTO input files",
-		   foption->orig_option_with_args_text);
+	    fatal_error ("Option %s not used consistently in all LTO input"
+			 " files", foption->orig_option_with_args_text);
 	  break;
 
 	case OPT_O:
@@ -554,10 +517,10 @@ run_gcc (unsigned argc, char *argv[])
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
   if (!collect_gcc)
-    fatal ("environment variable COLLECT_GCC must be set");
+    fatal_error ("environment variable COLLECT_GCC must be set");
   collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
-    fatal ("environment variable COLLECT_GCC_OPTIONS must be set");
+    fatal_error ("environment variable COLLECT_GCC_OPTIONS must be set");
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
 					CL_LANG_ALL,
 					&decoded_options,
@@ -871,7 +834,7 @@ run_gcc (unsigned argc, char *argv[])
       struct obstack env_obstack;
 
       if (!stream)
-	fatal_perror ("fopen: %s", ltrans_output_file);
+	fatal_error ("fopen: %s: %m", ltrans_output_file);
 
       /* Parse the list of LTRANS inputs from the WPA stage.  */
       obstack_init (&env_obstack);
@@ -1039,6 +1002,9 @@ main (int argc, char *argv[])
   progname = p;
 
   xmalloc_set_program_name (progname);
+
+  if (atexit (lto_wrapper_cleanup) != 0)
+    fatal_error ("atexit failed");
 
   gcc_init_libintl ();
 

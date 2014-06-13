@@ -1417,33 +1417,20 @@ maybe_fix_stack_asms (void)
 
 	      switch (c)
 		{
-		case '=': case '+': case '*': case '%': case '?': case '!':
-		case '0': case '1': case '2': case '3': case '4': case '<':
-		case '>': case 'V': case 'o': case '&': case 'E': case 'F':
-		case 's': case 'i': case 'n': case 'X': case 'I': case 'J':
-		case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
-		case TARGET_MEM_CONSTRAINT:
-		  break;
-
-		case 'p':
-		  cls = (int) reg_class_subunion[cls]
-		      [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-					     ADDRESS, SCRATCH)];
-		  break;
-
 		case 'g':
-		case 'r':
 		  cls = (int) reg_class_subunion[cls][(int) GENERAL_REGS];
 		  break;
 
 		default:
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
+		  enum constraint_num cn = lookup_constraint (p);
+		  if (insn_extra_address_constraint (cn))
 		    cls = (int) reg_class_subunion[cls]
 		      [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 					     ADDRESS, SCRATCH)];
 		  else
 		    cls = (int) reg_class_subunion[cls]
-		      [(int) REG_CLASS_FROM_CONSTRAINT (c, p)];
+		      [reg_class_for_constraint (cn)];
+		  break;
 		}
 	      p += CONSTRAINT_LEN (c, p);
 	    }

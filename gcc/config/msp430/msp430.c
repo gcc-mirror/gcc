@@ -51,6 +51,7 @@
 #include "msp430-protos.h"
 #include "dumpfile.h"
 #include "opts.h"
+#include "builtins.h"
 
 
 static void msp430_compute_frame_info (void);

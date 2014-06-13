@@ -264,7 +264,6 @@ var cgoEnabled = map[string]bool{
 	"dragonfly/amd64": true,
 	"freebsd/386":     true,
 	"freebsd/amd64":   true,
-	"freebsd/arm":     true,
 	"linux/386":       true,
 	"linux/amd64":     true,
 	"linux/arm":       true,
@@ -303,8 +302,7 @@ func defaultContext() Context {
 	case "0":
 		c.CgoEnabled = false
 	default:
-		// golang.org/issue/5141
-		// cgo should be disabled for cross compilation builds
+		// cgo must be explicitly enabled for cross compilation builds
 		if runtime.GOARCH == c.GOARCH && runtime.GOOS == c.GOOS {
 			c.CgoEnabled = cgoEnabled[c.GOOS+"/"+c.GOARCH]
 			break
@@ -358,6 +356,7 @@ type Package struct {
 	IgnoredGoFiles []string // .go source files ignored for this build
 	CFiles         []string // .c source files
 	CXXFiles       []string // .cc, .cpp and .cxx source files
+	MFiles         []string // .m (Objective-C) source files
 	HFiles         []string // .h, .hh, .hpp and .hxx source files
 	SFiles         []string // .s source files
 	SwigFiles      []string // .swig files
@@ -622,6 +621,9 @@ Found:
 		case ".cc", ".cpp", ".cxx":
 			p.CXXFiles = append(p.CXXFiles, name)
 			continue
+		case ".m":
+			p.MFiles = append(p.MFiles, name)
+			continue
 		case ".h", ".hh", ".hpp", ".hxx":
 			p.HFiles = append(p.HFiles, name)
 			continue
@@ -789,7 +791,7 @@ func (ctxt *Context) matchFile(dir, name string, returnImports bool, allTags map
 	}
 
 	switch ext {
-	case ".go", ".c", ".cc", ".cxx", ".cpp", ".s", ".h", ".hh", ".hpp", ".hxx", ".S", ".swig", ".swigcxx":
+	case ".go", ".c", ".cc", ".cxx", ".cpp", ".m", ".s", ".h", ".hh", ".hpp", ".hxx", ".S", ".swig", ".swigcxx":
 		// tentatively okay - read to make sure
 	case ".syso":
 		// binary, no reading

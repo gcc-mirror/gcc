@@ -21,9 +21,6 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* Extended precision floating point.
-   FIXME What format is this?  */
-FLOAT_MODE (XF, 12, 0);
 
 /* Half-precision floating point */
 FLOAT_MODE (HF, 2, 0);

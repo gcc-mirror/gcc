@@ -1014,22 +1014,15 @@ vinsn_writes_one_of_regs_p (vinsn_t vi, regset used_regs,
 static enum reg_class
 get_reg_class (rtx insn)
 {
-  int alt, i, n_ops;
+  int i, n_ops;
 
   extract_insn (insn);
   if (! constrain_operands (1))
     fatal_insn_not_found (insn);
-  preprocess_constraints ();
-  alt = which_alternative;
+  preprocess_constraints (insn);
   n_ops = recog_data.n_operands;
 
-  for (i = 0; i < n_ops; ++i)
-    {
-      int matches = recog_op_alt[i][alt].matches;
-      if (matches >= 0)
-	recog_op_alt[i][alt].cl = recog_op_alt[matches][alt].cl;
-    }
-
+  const operand_alternative *op_alt = which_op_alt ();
   if (asm_noperands (PATTERN (insn)) > 0)
     {
       for (i = 0; i < n_ops; i++)
@@ -1037,7 +1030,7 @@ get_reg_class (rtx insn)
 	  {
 	    rtx *loc = recog_data.operand_loc[i];
 	    rtx op = *loc;
-	    enum reg_class cl = recog_op_alt[i][alt].cl;
+	    enum reg_class cl = alternative_class (op_alt, i);
 
 	    if (REG_P (op)
 		&& REGNO (op) == ORIGINAL_REGNO (op))
@@ -1051,7 +1044,7 @@ get_reg_class (rtx insn)
       for (i = 0; i < n_ops + recog_data.n_dups; i++)
        {
 	 int opn = i < n_ops ? i : recog_data.dup_num[i - n_ops];
-	 enum reg_class cl = recog_op_alt[opn][alt].cl;
+	 enum reg_class cl = alternative_class (op_alt, opn);
 
 	 if (recog_data.operand_type[opn] == OP_OUT ||
 	     recog_data.operand_type[opn] == OP_INOUT)
@@ -2141,7 +2134,7 @@ implicit_clobber_conflict_p (insn_t through_insn, expr_t expr)
 
   /* Calculate implicit clobbers.  */
   extract_insn (insn);
-  preprocess_constraints ();
+  preprocess_constraints (insn);
   ira_implicitly_set_insn_hard_regs (&temp);
   AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
 

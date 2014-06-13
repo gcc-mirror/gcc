@@ -6,4 +6,4 @@
 
 extern int i;
 int a[] = { [1 ? 1 : i] = 0 }; /* { dg-warning "array index in initializer is not an integer constant expression" } */
-/* { dg-warning "near initialization" "near init" { target *-*-* } 8 } */
+/* { dg-message "near initialization" "near init" { target *-*-* } 8 } */

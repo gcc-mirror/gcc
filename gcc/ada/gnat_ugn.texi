@@ -5096,19 +5096,46 @@ This switch suppresses warnings for implicit dereferences in
 indexed components, slices, and selected components.
 
 @item -gnatw.d
-@emph{Activate tagging of warning messages.}
+@emph{Activate tagging of warning and info messages.}
 @cindex @option{-gnatw.d} (@command{gcc})
-If this switch is set, then warning messages are tagged, either with
-the string ``@option{-gnatw?}'' showing which switch controls the warning,
-or with ``[enabled by default]'' if the warning is not under control of a
-specific @option{-gnatw?} switch. This mode is off by default, and is not
-affected by the use of @code{-gnatwa}.
+If this switch is set, then warning messages are tagged, with one of the
+following strings:
+
+@table @option
+
+@item [-gnatw?]
+Used to tag warnings controlled by the switch @option{-gnatwx} where x
+is a letter a-z.
+
+@item [-gnatw.?]
+Used to tag warnings controlled by the switch @option{-gnatw.x} where x
+is a letter a-z.
+
+@item [-gnatel]
+Used to tag elaboration information (info) messages generated when the
+static model of elaboration is used and the @option{-gnatel} switch is set.
+
+@item [restriction warning]
+Used to tag warning messages for restriction violations, activated by use
+of the pragma @option{Restriction_Warnings}.
+
+@item [warning-as-error]
+Used to tag warning messages that have been converted to error messages by
+use of the pragma Warning_As_Error. Note that such warnings are prefixed by
+the string "error: " rather than "warning: ".
+
+@item [enabled by default]
+Used to tag all other warnings that are always given by default, unless
+warnings are completely suppressed using pragma @option{Warnings(Off)} or
+the switch @option{-gnatws}.
+
+@end table
 
 @item -gnatw.D
-@emph{Deactivate tagging of warning messages.}
+@emph{Deactivate tagging of warning and info messages messages.}
 @cindex @option{-gnatw.d} (@command{gcc})
 If this switch is set, then warning messages return to the default
-mode in which warnings are not tagged as described above for
+mode in which warnings and info messages are not tagged as described above for
 @code{-gnatw.d}.
 
 @item -gnatwe
@@ -11586,9 +11613,9 @@ the @option{-Wl,--gc-sections} option to gcc command or in the
 @option{-largs} section of @command{gnatmake}. This will perform a
 garbage collection of code and data never referenced.
 
-If the linker performs a partial link (@option{-r} ld linker option), then you
-will need to provide one or several entry point using the
-@option{-e} / @option{--entry} ld option.
+If the linker performs a partial link (@option{-r} linker option), then you
+will need to provide the entry point using the @option{-e} / @option{--entry}
+linker option.
 
 Note that objects compiled without the @option{-ffunction-sections} and
 @option{-fdata-sections} options can still be linked with the executable.
@@ -14512,7 +14539,7 @@ is made; this is the default.
 @cindex @option{^--par_threshold^/MAX_PAR^} (@command{gnatpp})
 If the number of parameter specifications is greater than @var{nnn}
 (or equal to @var{nnn} in case of a function), start each specification from
-a new line. The default for @var{nnn} is 3.
+a new line. This feature is disabled by default.
 @end table
 
 @node Setting the Source Search Path
@@ -15071,7 +15098,7 @@ Ada source code into XML.
 
 @menu
 * Switches for gnat2xml::
-* Driving gnat2xml with gnatmake or gprbuild::
+* Driving gnat2xml with gnatmake::
 * Other Programs::
 * Structure of the XML::
 @end menu
@@ -15130,8 +15157,6 @@ Options:
 -v -- verbose (print out the command line options, and the names of
       output files as they are generated).
 
--t -- do not delete tree files when done (they are deleted by default).
-
 -cargs ... -- options to pass to gcc
 @end smallexample
 
@@ -15140,21 +15165,9 @@ If a project file is specified and no argument source is explicitly
 specified, and no @option{-U} is specified, then the set of processed
 sources is all the immediate units of the argument project.
 
-
-You can generate the ``tree files'' ahead of time using the -gnatct switch:
-
-@smallexample
-gnatmake -gnat2012 -gnatct *.ad[sb]
-@end smallexample
-
-@noindent
-If tree files do not exist, @command{gnat2xml} will create them by running gcc.
-See the ASIS documentation for more information on tree files.
-
 Example:
 
 @smallexample
-mkdir xml-files
 gnat2xml -v -mxml-files *.ad[sb] -cargs -gnat2012
 @end smallexample
 
@@ -15165,74 +15178,37 @@ body source code lives in mumble-dumble.ads and mumble-dumble.adb,
 the above will produce xml-files/mumble-dumble.ads.xml and
 xml-files/mumble-dumble.adb.xml.
 
-@node Driving gnat2xml with gnatmake or gprbuild
-@section Driving @command{gnat2xml} with @command{gnatmake} or @command{gprbuild}
+@node Driving gnat2xml with gnatmake
+@section Driving @command{gnat2xml} with @command{gnatmake}
 
 @noindent
-You can use gnatmake or gprbuild to drive @command{gnat2xml} to get
-incremental updates of the XML files on a per-source-file basis. For
-example, if you already have a bunch of XML files, and then you change
-one source file, it will regenerate XML files only for that source
-file, and other source files that depend on it. Gnatmake and gprbuild
-take care of tracking inter-file dependencies. For example, if
-this.adb says @code{with That;}, then this.adb depends on that.ads.
+You can use gnatmake to drive @command{gnat2xml} to get incremental
+updates of the XML files on a per-source-file basis. For example, if
+you already have a bunch of XML files, and then you change one source
+file, it will regenerate XML files only for that source file, and
+other related source files. Gnatmake takes care of tracking inter-file
+dependencies.
 
-To do this, you tell gnatmake/gprbuild to pretend that
-@command{gnat2xml} is the Ada compiler (instead of using gcc as the
-Ada compiler, as is normal).
+To do this, you tell gnatmake to pretend that @command{gnat2xml} is
+the Ada compiler (instead of using gcc as the Ada compiler, as is
+normal).
 
 To tell gnatmake to use @command{gnat2xml} instead of gcc as the
 ``compiler'', for example:
 
 @smallexample
-gnatmake -gnatc *.adb --GCC="gnat2xml -t -mxml"
+gnatmake -gnatc main.adb --GCC="gnat2xml -mxml"
 @end smallexample
 
 @noindent
 The @option{--GCC=} switch tells gnatmake that the ``compiler'' to run
-is @command{gnat2xml -t -mxml}. The @option{-t} switch means to keep the tree
-files, so they can be reused on the next run. (@command{gnat2xml}
-deletes them by default.) As usual, @option{-mxml} means to put the
+is @command{gnat2xml -mxml}. As usual, @option{-mxml} means to put the
 XML files in the @file{xml} subdirectory.
 
 You must give the @option{-gnatc} switch to gnatmake, which means
 ``compile only; do not generate object code''. Otherwise, gnatmake will
 complain about missing object (*.o) files; @command{gnat2xml} of
 course does not generate *.o files.
-
-Using gprbuild is similar: you tell it to use @command{gnat2xml}
-instead of gcc. First write a project file, such as my_project.gpr:
-
-@smallexample @c projectfile
-project My_Project is
-
-   package Compiler is
-      for Driver ("ada") use "gnat2xml";
-      --  Use gnat2xml instead of the usual gcc.
-
-      for Default_Switches ("ada") use ("-t", "-mxml");
-      --  Same switches as in the gnatmake case.
-   end Compiler;
-
-end My_Project;
-@end smallexample
-
-@noindent
-Then:
-
-@smallexample @c projectfile
-gprbuild --no-object-check -P my_project.gpr
-@end smallexample
-
-@noindent
-The @option{--no-object-check} switch serves the same purpose as
-@option{-gnatc} in the gnatmake case --- it tells gprbuild not to
-expect that the ``compiler'' (really @command{gnat2xml}) will produce
-*.o files.
-
-See the gprbuild documentation for information on many other things
-you can put in the project file, such as telling it where to find
-the source files.
 
 @node Other Programs
 @section Other Programs
@@ -19492,6 +19468,32 @@ the GNAT file naming
 conventions. If this switch is omitted the default name for the body will be
 obtained
 from the argument file name according to the GNAT file naming conventions.
+
+@item ^-W^/RESULT_ENCODING=^@var{e}
+@cindex @option{^-W^/RESULT_ENCODING=^} (@command{gnatstub})
+Specify the wide character encoding method for the output body file.
+@var{e} is one of the following:
+
+@itemize @bullet
+
+@item ^h^HEX^
+Hex encoding
+
+@item ^u^UPPER^
+Upper half encoding
+
+@item ^s^SHIFT_JIS^
+Shift/JIS encoding
+
+@item ^e^EUC^
+EUC encoding
+
+@item ^8^UTF8^
+UTF-8 encoding
+
+@item ^b^BRACKETS^
+Brackets encoding (default value)
+@end itemize
 
 @item ^-q^/QUIET^
 @cindex @option{^-q^/QUIET^} (@command{gnatstub})

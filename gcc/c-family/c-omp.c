@@ -789,8 +789,13 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS))
 		   != 0)
 	    {
-	      /* This must be #pragma omp {,target }teams distribute.  */
-	      gcc_assert (code == OMP_DISTRIBUTE);
+	      /* This must be one of
+		 #pragma omp {,target }teams distribute
+		 #pragma omp target teams
+		 #pragma omp {,target }teams distribute simd.  */
+	      gcc_assert (code == OMP_DISTRIBUTE
+			  || code == OMP_TEAMS
+			  || code == OMP_SIMD);
 	      s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	    }
 	  else if ((mask & (OMP_CLAUSE_MASK_1

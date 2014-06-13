@@ -933,8 +933,8 @@ package body Sem_Ch6 is
                   --  Can it really happen (extended return???)
 
                   Error_Msg_N
-                    ("aliased only allowed for limited"
-                     & " return objects in Ada 2012?", N);
+                    ("aliased only allowed for limited return objects "
+                     & "in Ada 2012??", N);
 
                elsif not Is_Limited_View (R_Type) then
                   Error_Msg_N ("aliased only allowed for limited"
@@ -2031,19 +2031,25 @@ package body Sem_Ch6 is
    --------------------------------------
 
    procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
-      Body_Decl   : constant Node_Id   := Parent (Parent (Body_Id));
-      Spec_Id     : constant Entity_Id := Corresponding_Spec (Body_Decl);
+      Body_Decl   : constant Node_Id := Parent (Parent (Body_Id));
       Prag        : Node_Id;
       Ref_Depends : Node_Id := Empty;
       Ref_Global  : Node_Id := Empty;
+      Spec_Id     : Entity_Id;
 
    begin
       --  When a subprogram body declaration is illegal, its defining entity is
       --  left unanalyzed. There is nothing left to do in this case because the
-      --  body lacks a contract.
+      --  body lacks a contract, or even a proper Ekind.
 
-      if not Analyzed (Body_Id) then
+      if Ekind (Body_Id) = E_Void then
          return;
+      end if;
+
+      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+      else
+         Spec_Id := Corresponding_Spec (Body_Decl);
       end if;
 
       --  Locate and store pragmas Refined_Depends and Refined_Global since
@@ -2817,7 +2823,7 @@ package body Sem_Ch6 is
             elsif Ekind (Scope (Spec_Id)) = E_Protected_Type then
                Error_Msg_Warn := Error_To_Warning;
                Error_Msg_N
-                 ("<overriding indicator not allowed for protected "
+                 ("<<overriding indicator not allowed for protected "
                   & "subprogram body", Body_Spec);
             end if;
 
@@ -2842,7 +2848,7 @@ package body Sem_Ch6 is
                Error_Msg_Warn := Error_To_Warning;
 
                Error_Msg_N
-                 ("<overriding indicator not allowed " &
+                 ("<<overriding indicator not allowed " &
                   "for protected subprogram body",
                   Body_Spec);
 
@@ -11609,7 +11615,7 @@ package body Sem_Ch6 is
 
             if Convention (Formal_Type) = Convention_Ada_Pass_By_Copy then
                Error_Msg_N
-                 ("cannot pass aliased parameter & by copy?", Formal);
+                 ("cannot pass aliased parameter & by copy??", Formal);
             end if;
 
          --  Force mechanism if type has Convention Ada_Pass_By_Ref/Copy

@@ -160,11 +160,12 @@ var data = Data{
 	},
 }
 
-var program = `
+var program = `// Copyright 2013 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // DO NOT EDIT.
 // Generate with: go run gen.go{{if .Full}} -full{{end}} | gofmt >md5block.go
-
-// +build !amd64,!386,!arm
 
 package md5
 
@@ -201,7 +202,7 @@ func init() {
 	littleEndian = *(*[4]byte)(unsafe.Pointer(&x)) == y
 }
 
-func block(dig *digest, p []byte) {
+func blockGeneric(dig *digest, p []byte) {
 	a := dig.s[0]
 	b := dig.s[1]
 	c := dig.s[2]

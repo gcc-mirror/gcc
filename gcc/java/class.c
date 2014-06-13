@@ -991,7 +991,7 @@ build_utf8_ref (tree name)
 		       | SECTION_MERGE | (SECTION_ENTSIZE & decl_size));
 	  sprintf (buf, ".rodata.jutf8.%d", decl_size);
 	  switch_to_section (get_section (buf, flags, NULL));
-	  DECL_SECTION_NAME (decl) = build_string (strlen (buf), buf);
+	  set_decl_section_name (decl, buf);
 	}
     }
 
@@ -2805,8 +2805,6 @@ emit_register_classes_in_jcr_section (void)
   cdecl = build_decl (UNKNOWN_LOCATION,
 		      VAR_DECL, get_identifier ("_Jv_JCR_SECTION_data"),
 		      class_array_type);
-  DECL_SECTION_NAME (cdecl) = build_string (strlen (JCR_SECTION_NAME),
-					    JCR_SECTION_NAME);
   DECL_ALIGN (cdecl) = POINTER_SIZE;
   DECL_USER_ALIGN (cdecl) = 1;
   DECL_INITIAL (cdecl) = build_constructor (class_array_type, init);
@@ -2817,6 +2815,7 @@ emit_register_classes_in_jcr_section (void)
   DECL_ARTIFICIAL (cdecl) = 1;
   DECL_IGNORED_P (cdecl) = 1;
   DECL_PRESERVE_P (cdecl) = 1;
+  set_decl_section_name (cdecl, JCR_SECTION_NAME);
   pushdecl_top_level (cdecl);
   relayout_decl (cdecl);
   rest_of_decl_compilation (cdecl, 1, 0);

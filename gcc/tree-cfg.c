@@ -763,8 +763,11 @@ make_edges (void)
 	      fallthru = false;
 	      break;
 	    case GIMPLE_RETURN:
-	      make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-	      fallthru = false;
+	      {
+		edge e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+		e->goto_locus = gimple_location (last);
+		fallthru = false;
+	      }
 	      break;
 	    case GIMPLE_COND:
 	      make_cond_expr_edges (bb);
@@ -1880,8 +1883,11 @@ gimple_merge_blocks (basic_block a, basic_block b)
   /* When merging two BBs, if their counts are different, the larger count
      is selected as the new bb count. This is to handle inconsistent
      profiles.  */
-  a->count = MAX (a->count, b->count);
-  a->frequency = MAX (a->frequency, b->frequency);
+  if (a->loop_father == b->loop_father)
+    {
+      a->count = MAX (a->count, b->count);
+      a->frequency = MAX (a->frequency, b->frequency);
+    }
 
   /* Merge the sequences.  */
   last = gsi_last_bb (a);

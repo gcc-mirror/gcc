@@ -26,7 +26,7 @@
     if ((dst_ref & mask) != dst2) abort();
 #endif
 
-static void
+void
 TEST ()
 {
     UNION_TYPE (AVX512F_LEN, d) source1, source2;

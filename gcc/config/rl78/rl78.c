@@ -55,6 +55,7 @@
 #include "context.h"
 #include "tm-constrs.h" /* for satisfies_constraint_*().  */
 #include "insn-flags.h" /* for gen_*().  */
+#include "builtins.h"
 
 static inline bool is_interrupt_func (const_tree decl);
 static inline bool is_brk_interrupt_func (const_tree decl);

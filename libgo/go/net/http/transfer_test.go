@@ -6,15 +6,16 @@ package http
 
 import (
 	"bufio"
+	"io"
 	"strings"
 	"testing"
 )
 
 func TestBodyReadBadTrailer(t *testing.T) {
 	b := &body{
-		Reader: strings.NewReader("foobar"),
-		hdr:    true, // force reading the trailer
-		r:      bufio.NewReader(strings.NewReader("")),
+		src: strings.NewReader("foobar"),
+		hdr: true, // force reading the trailer
+		r:   bufio.NewReader(strings.NewReader("")),
 	}
 	buf := make([]byte, 7)
 	n, err := b.Read(buf[:3])
@@ -33,5 +34,31 @@ func TestBodyReadBadTrailer(t *testing.T) {
 	got = string(buf[:n])
 	if err == nil {
 		t.Errorf("final Read was successful (%q), expected error from trailer read", got)
+	}
+}
+
+func TestFinalChunkedBodyReadEOF(t *testing.T) {
+	res, err := ReadResponse(bufio.NewReader(strings.NewReader(
+		"HTTP/1.1 200 OK\r\n"+
+			"Transfer-Encoding: chunked\r\n"+
+			"\r\n"+
+			"0a\r\n"+
+			"Body here\n\r\n"+
+			"09\r\n"+
+			"continued\r\n"+
+			"0\r\n"+
+			"\r\n")), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "Body here\ncontinued"
+	buf := make([]byte, len(want))
+	n, err := res.Body.Read(buf)
+	if n != len(want) || err != io.EOF {
+		t.Logf("body = %#v", res.Body)
+		t.Errorf("Read = %v, %v; want %d, EOF", n, err, len(want))
+	}
+	if string(buf) != want {
+		t.Errorf("buf = %q; want %q", buf, want)
 	}
 }

@@ -1200,8 +1200,7 @@ package body Layout is
 
                   Len := Convert_To (Standard_Unsigned, Len);
 
-                  --  If range definitely flat or superflat,
-                  --  result size is zero
+                  --  If range definitely flat or superflat, result size is 0
 
                   if OK and then LHi <= 0 then
                      Set_Esize (E, Uint_0);
@@ -2432,7 +2431,6 @@ package body Layout is
       --  represents them the same way.
 
       if Is_Access_Type (E) then
-
          Desig_Type :=  Underlying_Type (Designated_Type (E));
 
          --  If we only have a limited view of the type, see whether the
@@ -2464,15 +2462,30 @@ package body Layout is
             Set_Size_Info (E, Base_Type (E));
             Set_RM_Size   (E, RM_Size (Base_Type (E)));
 
+         --  Anonymous access types in subprogram specifications are always
+         --  thin. In the unconstrained case we always use thin pointers for
+         --  anonymous access types, because otherwise we get into strange
+         --  conformance problems between two types, one of which can see
+         --  that something is unconstrained and one of which cannot. The
+         --  object of an extended return is treated similarly.
+
+         elsif Ekind (E) = E_Anonymous_Access_Type
+           and then (Nkind_In (Associated_Node_For_Itype (E),
+                               N_Function_Specification,
+                               N_Procedure_Specification)
+                      or else Ekind (Scope (E))  = E_Return_Statement)
+         then
+            Init_Size (E, System_Address_Size);
+
          --  For other access types, we use either address size, or, if a fat
          --  pointer is used (pointer-to-unconstrained array case), twice the
          --  address size to accommodate a fat pointer.
 
          elsif Present (Desig_Type)
-            and then Is_Array_Type (Desig_Type)
-            and then not Is_Constrained (Desig_Type)
-            and then not Has_Completion_In_Body (Desig_Type)
-            and then not Debug_Flag_6
+           and then Is_Array_Type (Desig_Type)
+           and then not Is_Constrained (Desig_Type)
+           and then not Has_Completion_In_Body (Desig_Type)
+           and then not Debug_Flag_6
          then
             Init_Size (E, 2 * System_Address_Size);
 
@@ -2493,12 +2506,11 @@ package body Layout is
          --  fat pointer.
 
          elsif Present (Desig_Type)
-            and then Present (Parent (Desig_Type))
-            and then Nkind (Parent (Desig_Type)) = N_Full_Type_Declaration
-            and then
-              Nkind (Type_Definition (Parent (Desig_Type)))
-                 = N_Unconstrained_Array_Definition
-            and then not Debug_Flag_6
+           and then Present (Parent (Desig_Type))
+           and then Nkind (Parent (Desig_Type)) = N_Full_Type_Declaration
+           and then Nkind (Type_Definition (Parent (Desig_Type))) =
+                                             N_Unconstrained_Array_Definition
+           and then not Debug_Flag_6
          then
             Init_Size (E, 2 * System_Address_Size);
 
@@ -2519,6 +2531,9 @@ package body Layout is
                        or else Present (Enclosing_Subprogram (E)))))
          then
             Init_Size (E, 2 * System_Address_Size);
+
+         --  Normal case of thin pointer
+
          else
             Init_Size (E, System_Address_Size);
          end if;

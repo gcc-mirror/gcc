@@ -195,7 +195,7 @@ in the following sections.
 -fvtv-counts -fvtv-debug @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
--Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
+-Wabi=@var{n}  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor -Wliteral-suffix -Wnarrowing @gol
 -Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wstrict-null-sentinel @gol
@@ -256,7 +256,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winit-self  -Winline -Wmaybe-uninitialized @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
--Wlogical-op -Wlong-long @gol
+-Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow -Wopenmp-simd @gol
@@ -271,7 +271,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
 -Wmissing-format-attribute @gol
--Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
+-Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
 -Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
@@ -771,8 +771,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
--mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2 @gol
--mips64  -mips64r2 @gol
+-mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5 @gol
+-mips64  -mips64r2  -mips64r3  -mips64r5 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
 -minterlink-compressed -mno-interlink-compressed @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
@@ -785,6 +785,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmcu -mmno-mcu @gol
 -meva -mno-eva @gol
 -mvirt -mno-virt @gol
+-mxpa -mno-xpa @gol
 -mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
@@ -2022,7 +2023,7 @@ Here is a list of options that are @emph{only} for compiling C++ programs:
 
 @item -fabi-version=@var{n}
 @opindex fabi-version
-Use version @var{n} of the C++ ABI@.  The default is version 2.
+Use version @var{n} of the C++ ABI@.  The default is version 0.
 
 Version 0 refers to the version conforming most closely to
 the C++ ABI specification.  Therefore, the ABI obtained using version 0
@@ -2030,7 +2031,8 @@ will change in different versions of G++ as ABI bugs are fixed.
 
 Version 1 is the version of the C++ ABI that first appeared in G++ 3.2.  
 
-Version 2 is the version of the C++ ABI that first appeared in G++ 3.4.  
+Version 2 is the version of the C++ ABI that first appeared in G++
+3.4, and was the default through G++ 4.9.
 
 Version 3 corrects an error in mangling a constant address as a
 template argument.
@@ -2048,7 +2050,26 @@ behavior of C++11 scoped enums and the mangling of template argument
 packs, const/static_cast, prefix ++ and --, and a class scope function
 used as a template argument.
 
+Version 7, which first appeared in G++ 4.8, that treats nullptr_t as a
+builtin type and corrects the mangling of lambdas in default argument
+scope.
+
+Version 8, which first appeared in G++ 4.9, corrects the substitution
+behavior of function types with function-cv-qualifiers.
+
 See also @option{-Wabi}.
+
+@item -fabi-compat-version=@var{n}
+@opindex fabi-compat-version
+Starting with GCC 4.5, on targets that support strong aliases, G++
+works around mangling changes by creating an alias with the correct
+mangled name when defining a symbol with an incorrect mangled name.
+This switch specifies which ABI version to use for the alias.
+
+With @option{-fabi-version=0} (the default), this defaults to 2.  If
+another ABI version is explicitly selected, this defaults to 0.
+
+The compatibility version is also set by @option{-Wabi=@var{n}}.
 
 @item -fno-access-control
 @opindex fno-access-control
@@ -2444,8 +2465,15 @@ have meanings only for C++ programs:
 @item -Wabi @r{(C, Objective-C, C++ and Objective-C++ only)}
 @opindex Wabi
 @opindex Wno-abi
-Warn when G++ generates code that is probably not compatible with the
-vendor-neutral C++ ABI@.  Although an effort has been made to warn about
+When an explicit @option{-fabi-version=@var{n}} option is used, causes
+G++ to warn when it generates code that is probably not compatible with the
+vendor-neutral C++ ABI@.  Since G++ now defaults to
+@option{-fabi-version=0}, @option{-Wabi} has no effect unless either
+an older ABI version is selected (with @option{-fabi-version=@var{n}})
+or an older compatibility version is selected (with
+@option{-Wabi=@var{n}} or @option{-fabi-compat-version=@var{n}}).
+
+Although an effort has been made to warn about
 all such cases, there are probably some cases that are not warned about,
 even though G++ is generating incompatible code.  There may also be
 cases where warnings are emitted even though the code that is generated
@@ -2455,12 +2483,19 @@ You should rewrite your code to avoid these warnings if you are
 concerned about the fact that code generated by G++ may not be binary
 compatible with code generated by other compilers.
 
-The known incompatibilities in @option{-fabi-version=2} (the default) include:
+@option{-Wabi} can also be used with an explicit version number to
+warn about compatibility with a particular @option{-fabi-version}
+level, e.g. @option{-Wabi=2} to warn about changes relative to
+@option{-fabi-version=2}.  Specifying a version number also sets
+@option{-fabi-compat-version=@var{n}}.
+
+The known incompatibilities in @option{-fabi-version=2} (which was the
+default from GCC 3.4 to 4.9) include:
 
 @itemize @bullet
 
 @item
-A template with a non-type template parameter of reference type is
+A template with a non-type template parameter of reference type was
 mangled incorrectly:
 @smallexample
 extern int N;
@@ -2468,100 +2503,45 @@ template <int &> struct S @{@};
 void n (S<N>) @{2@}
 @end smallexample
 
-This is fixed in @option{-fabi-version=3}.
+This was fixed in @option{-fabi-version=3}.
 
 @item
-SIMD vector types declared using @code{__attribute ((vector_size))} are
+SIMD vector types declared using @code{__attribute ((vector_size))} were
 mangled in a non-standard way that does not allow for overloading of
 functions taking vectors of different sizes.
 
-The mangling is changed in @option{-fabi-version=4}.
-@end itemize
-
-The known incompatibilities in @option{-fabi-version=1} include:
-
-@itemize @bullet
+The mangling was changed in @option{-fabi-version=4}.
 
 @item
-Incorrect handling of tail-padding for bit-fields.  G++ may attempt to
-pack data into the same byte as a base class.  For example:
+@code{__attribute ((const))} and @code{noreturn} were mangled as type
+qualifiers, and @code{decltype} of a plain declaration was folded away.
 
-@smallexample
-struct A @{ virtual void f(); int f1 : 1; @};
-struct B : public A @{ int f2 : 1; @};
-@end smallexample
-
-@noindent
-In this case, G++ places @code{B::f2} into the same byte
-as @code{A::f1}; other compilers do not.  You can avoid this problem
-by explicitly padding @code{A} so that its size is a multiple of the
-byte size on your platform; that causes G++ and other compilers to
-lay out @code{B} identically.
+These mangling issues were fixed in @option{-fabi-version=5}.
 
 @item
-Incorrect handling of tail-padding for virtual bases.  G++ does not use
-tail padding when laying out virtual bases.  For example:
+Scoped enumerators passed as arguments to a variadic function are
+promoted like unscoped enumerators, causing @samp{va_arg} to complain.
+On most targets this does not actually affect the parameter passing
+ABI, as there is no way to pass an argument smaller than @samp{int}.
 
-@smallexample
-struct A @{ virtual void f(); char c1; @};
-struct B @{ B(); char c2; @};
-struct C : public A, public virtual B @{@};
-@end smallexample
+Also, the ABI changed the mangling of template argument packs,
+@code{const_cast}, @code{static_cast}, prefix increment/decrement, and
+a class scope function used as a template argument.
 
-@noindent
-In this case, G++ does not place @code{B} into the tail-padding for
-@code{A}; other compilers do.  You can avoid this problem by
-explicitly padding @code{A} so that its size is a multiple of its
-alignment (ignoring virtual base classes); that causes G++ and other
-compilers to lay out @code{C} identically.
+These issues were corrected in @option{-fabi-version=6}.
 
 @item
-Incorrect handling of bit-fields with declared widths greater than that
-of their underlying types, when the bit-fields appear in a union.  For
-example:
+Lambdas in default argument scope were mangled incorrectly, and the
+ABI changed the mangling of nullptr_t.
 
-@smallexample
-union U @{ int i : 4096; @};
-@end smallexample
-
-@noindent
-Assuming that an @code{int} does not have 4096 bits, G++ makes the
-union too small by the number of bits in an @code{int}.
+These issues were corrected in @option{-fabi-version=7}.
 
 @item
-Empty classes can be placed at incorrect offsets.  For example:
+When mangling a function type with function-cv-qualifiers, the
+un-qualified function type was incorrectly treated as a substitution
+candidate.
 
-@smallexample
-struct A @{@};
-
-struct B @{
-  A a;
-  virtual void f ();
-@};
-
-struct C : public B, public A @{@};
-@end smallexample
-
-@noindent
-G++ places the @code{A} base class of @code{C} at a nonzero offset;
-it should be placed at offset zero.  G++ mistakenly believes that the
-@code{A} data member of @code{B} is already at offset zero.
-
-@item
-Names of template functions whose types involve @code{typename} or
-template template parameters can be mangled incorrectly.
-
-@smallexample
-template <typename Q>
-void f(typename Q::X) @{@}
-
-template <template <typename> class Q>
-void f(typename Q<int>::X) @{@}
-@end smallexample
-
-@noindent
-Instantiations of these templates may be mangled incorrectly.
-
+This was fixed in @option{-fabi-version=8}.
 @end itemize
 
 It also warns about psABI-related changes.  The known psABI changes at this
@@ -3845,6 +3825,22 @@ between @option{-Wswitch} and this option is that this option gives a
 warning about an omitted enumeration code even if there is a
 @code{default} label.
 
+@item -Wswitch-bool
+@opindex Wswitch-bool
+@opindex Wno-switch-bool
+Warn whenever a @code{switch} statement has an index of boolean type.
+It is possible to suppress this warning by casting the controlling
+expression to a type other than @code{bool}.  For example:
+@smallexample
+@group
+switch ((int) (a == 4))
+  @{
+  @dots{}
+  @}
+@end group
+@end smallexample
+This warning is enabled by default for C and C++ programs.
+
 @item -Wsync-nand @r{(C and C++ only)}
 @opindex Wsync-nand
 @opindex Wno-sync-nand
@@ -4686,6 +4682,24 @@ programmer intended to use @code{strcmp}.  This warning is enabled by
 Warn about suspicious uses of logical operators in expressions.
 This includes using logical operators in contexts where a
 bit-wise operator is likely to be expected.
+
+@item -Wlogical-not-parentheses
+@opindex Wlogical-not-parentheses
+@opindex Wno-logical-not-parentheses
+Warn about logical not used on the left hand side operand of a comparison.
+This option does not warn if the LHS or RHS operand is of a boolean or
+a vector type.  Its purpose is to detect suspicious code like the following:
+@smallexample
+int a;
+@dots{}
+if (!a > 1) @{ @dots{} @}
+@end smallexample
+
+It is possible to suppress the warning by wrapping the LHS into
+parentheses:
+@smallexample
+if ((!a) > 1) @{ @dots{} @}
+@end smallexample
 
 @item -Waggregate-return
 @opindex Waggregate-return
@@ -17157,7 +17171,8 @@ Generate code that runs on @var{arch}, which can be the name of a
 generic MIPS ISA, or the name of a particular processor.
 The ISA names are:
 @samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4},
-@samp{mips32}, @samp{mips32r2}, @samp{mips64} and @samp{mips64r2}.
+@samp{mips32}, @samp{mips32r2}, @samp{mips32r3}, @samp{mips32r5}, 
+@samp{mips64}, @samp{mips64r2}, @samp{mips64r3} and @samp{mips64r5}.
 The processor names are:
 @samp{4kc}, @samp{4km}, @samp{4kp}, @samp{4ksc},
 @samp{4kec}, @samp{4kem}, @samp{4kep}, @samp{4ksd},
@@ -17173,6 +17188,7 @@ The processor names are:
 @samp{m14k}, @samp{m14kc}, @samp{m14ke}, @samp{m14kec},
 @samp{octeon}, @samp{octeon+}, @samp{octeon2},
 @samp{orion},
+@samp{p5600},
 @samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},
 @samp{r4600}, @samp{r4650}, @samp{r4700}, @samp{r6000}, @samp{r8000},
 @samp{rm7000}, @samp{rm9000},
@@ -17255,9 +17271,13 @@ Equivalent to @option{-march=mips4}.
 @opindex mips32
 Equivalent to @option{-march=mips32}.
 
-@item -mips32r2
-@opindex mips32r2
-Equivalent to @option{-march=mips32r2}.
+@item -mips32r3
+@opindex mips32r3
+Equivalent to @option{-march=mips32r3}.
+
+@item -mips32r5
+@opindex mips32r5
+Equivalent to @option{-march=mips32r5}.
 
 @item -mips64
 @opindex mips64
@@ -17266,6 +17286,14 @@ Equivalent to @option{-march=mips64}.
 @item -mips64r2
 @opindex mips64r2
 Equivalent to @option{-march=mips64r2}.
+
+@item -mips64r3
+@opindex mips64r3
+Equivalent to @option{-march=mips64r3}.
+
+@item -mips64r5
+@opindex mips64r5
+Equivalent to @option{-march=mips64r5}.
 
 @item -mips16
 @itemx -mno-mips16
@@ -17327,7 +17355,7 @@ GCC supports a variant of the o32 ABI in which floating-point registers
 are 64 rather than 32 bits wide.  You can select this combination with
 @option{-mabi=32} @option{-mfp64}.  This ABI relies on the @code{mthc1}
 and @code{mfhc1} instructions and is therefore only supported for
-MIPS32R2 processors.
+MIPS32R2, MIPS32R3 and MIPS32R5 processors.
 
 The register assignments for arguments and return values remain the
 same, but each scalar value is passed in a single 64-bit register
@@ -17592,6 +17620,12 @@ Use (do not use) the MIPS Enhanced Virtual Addressing instructions.
 @opindex mvirt
 @opindex mno-virt
 Use (do not use) the MIPS Virtualization Application Specific instructions.
+
+@item -mxpa
+@itemx -mno-xpa
+@opindex mxpa
+@opindex mno-xpa
+Use (do not use) the MIPS eXtended Physical Address (XPA) instructions.
 
 @item -mlong64
 @opindex mlong64

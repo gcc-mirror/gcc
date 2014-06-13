@@ -1,3 +1,195 @@
+2014-06-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_copy_formal_args_intr): Update prototype.
+	* symbol.c (gfc_copy_formal_args_intr): Handle the case
+	that absent optional arguments should be ignored.
+	* trans-intrinsic.c (gfc_get_symbol_for_expr): Ditto.
+	(gfc_conv_intrinsic_funcall,
+	conv_generic_with_optional_char_arg): Update call.
+	* resolve.c (gfc_resolve_intrinsic): Ditto.
+
+2014-06-10  Dominique d'Humieres <dominiq@lps.ens.fr>
+	    Mikael Morin <mikael@gcc.gnu.org>
+
+	PR fortran/41936
+	* trans-expr.c (gfc_conv_expr_reference): Deallocate array
+	components.
+
+2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* f95-lang.c (gfc_init_builtin_functions): Handle -fopenmp-simd
+	like -fopenmp.
+	* openmp.c (resolve_omp_clauses): Remove allocatable components
+	diagnostics.  Add associate-name and intent(in) pointer
+	diagnostics for various clauses, diagnose procedure pointers in
+	reduction clause.
+	* parse.c (match_word_omp_simd): New function.
+	(matchs, matcho): New macros.
+	(decode_omp_directive): Change match macros to either matchs
+	or matcho.  Handle -fopenmp-simd.
+	(next_free, next_fixed): Handle -fopenmp-simd like -fopenmp.
+	* scanner.c (skip_free_comments, skip_fixed_comments, include_line):
+	Likewise.
+	* trans-array.c (get_full_array_size): Rename to...
+	(gfc_full_array_size): ... this.  No longer static.
+	(duplicate_allocatable): Adjust caller.  Add NO_MEMCPY argument
+	and handle it.
+	(gfc_duplicate_allocatable, gfc_copy_allocatable_data): Adjust
+	duplicate_allocatable callers.
+	(gfc_duplicate_allocatable_nocopy): New function.
+	(structure_alloc_comps): Adjust g*_full_array_size and
+	duplicate_allocatable caller.
+	* trans-array.h (gfc_full_array_size,
+	gfc_duplicate_allocatable_nocopy): New prototypes.
+	* trans-common.c (create_common): Call gfc_finish_decl_attrs.
+	* trans-decl.c (gfc_finish_decl_attrs): New function.
+	(gfc_finish_var_decl, create_function_arglist,
+	gfc_get_fake_result_decl): Call it.
+	(gfc_allocate_lang_decl): If DECL_LANG_SPECIFIC is already allocated,
+	don't allocate it again.
+	(gfc_get_symbol_decl): Set GFC_DECL_ASSOCIATE_VAR_P on
+	associate-names.
+	* trans.h (gfc_finish_decl_attrs): New prototype.
+	(struct lang_decl): Add scalar_allocatable and scalar_pointer
+	bitfields.
+	(GFC_DECL_SCALAR_ALLOCATABLE, GFC_DECL_SCALAR_POINTER,
+	GFC_DECL_GET_SCALAR_ALLOCATABLE, GFC_DECL_GET_SCALAR_POINTER,
+	GFC_DECL_ASSOCIATE_VAR_P): Define.
+	(GFC_POINTER_TYPE_P): Remove.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Don't check
+	GFC_POINTER_TYPE_P, instead test GFC_DECL_GET_SCALAR_ALLOCATABLE,
+	GFC_DECL_GET_SCALAR_POINTER or GFC_DECL_CRAY_POINTEE on decl.
+	(gfc_omp_predetermined_sharing): Associate-names are predetermined.
+	(enum walk_alloc_comps): New.
+	(gfc_has_alloc_comps, gfc_omp_unshare_expr_r, gfc_omp_unshare_expr,
+	gfc_walk_alloc_comps): New functions.
+	(gfc_omp_private_outer_ref): Return true for scalar allocatables or
+	decls with allocatable components.
+	(gfc_omp_clause_default_ctor, gfc_omp_clause_copy_ctor,
+	gfc_omp_clause_assign_op, gfc_omp_clause_dtor): Fix up handling of
+	allocatables, handle also OMP_CLAUSE_REDUCTION, handle scalar
+	allocatables and decls with allocatable components.
+	(gfc_trans_omp_array_reduction_or_udr): Don't handle allocatable
+	arrays here.
+	(gfc_trans_omp_reduction_list): Call
+	gfc_trans_omp_array_reduction_or_udr even for allocatable scalars.
+	(gfc_trans_omp_do_simd): If -fno-openmp, just expand it as OMP_SIMD.
+	(gfc_trans_omp_parallel_do_simd): Likewise.
+	* trans-types.c (gfc_sym_type): Don't set GFC_POINTER_TYPE_P.
+	(gfc_get_derived_type): Call gfc_finish_decl_attrs.
+
+2014-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61406
+	* trans-stmt.c (trans_associate_var): Check that array
+	constructors are constant for direct reference.
+
+2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36096
+	* intrinsic.texi: Fix documentation of BESSEL_J0, BESSEL_J1,
+	BESSEL_Y0, and BESSEL_Y1.
+
+2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/45187
+	* trans-decl.c (gfc_create_module_variable): Don't create
+	Cray-pointee decls twice.
+
+2014-06-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* io.c (resolve_tag): Warn on non-default kind for NUMBER,
+	NEXTREC, RECL, NAMED, OPENED and PENDING I/O specifiers.
+
+2014-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* dump-parse-tree.c (show_omp_namelist): Dump reduction
+	id in each list item.
+	(show_omp_node): Only handle OMP_LIST_REDUCTION, not
+	OMP_LIST_REDUCTION_FIRST .. OMP_LIST_REDUCTION_LAST.  Don't
+	dump reduction id here.
+	* frontend-passes.c (dummy_code_callback): Renamed to...
+	(gfc_dummy_code_callback): ... this.  No longer static.
+	(optimize_reduction): Use gfc_dummy_code_callback instead of
+	dummy_code_callback.
+	* gfortran.h (gfc_statement): Add ST_OMP_DECLARE_REDUCTION.
+	(symbol_attribute): Add omp_udr_artificial_var bitfield.
+	(gfc_omp_reduction_op): New enum.
+	(gfc_omp_namelist): Add rop and udr fields.
+	(OMP_LIST_PLUS, OMP_LIST_REDUCTION_FIRST, OMP_LIST_MULT,
+	OMP_LIST_SUB, OMP_LIST_AND, OMP_LIST_OR, OMP_LIST_EQV,
+	OMP_LIST_NEQV, OMP_LIST_MAX, OMP_LIST_MIN, OMP_LIST_IAND,
+	OMP_LIST_IOR, OMP_LIST_IEOR, OMP_LIST_REDUCTION_LAST): Removed.
+	(OMP_LIST_REDUCTION): New.
+	(gfc_omp_udr): New type.
+	(gfc_get_omp_udr): Define.
+	(gfc_symtree): Add n.omp_udr field.
+	(gfc_namespace): Add omp_udr_root field, add omp_udr_ns bitfield.
+	(gfc_free_omp_udr, gfc_omp_udr_find, gfc_resolve_omp_udrs,
+	gfc_dummy_code_callback): New prototypes.
+	* match.h (gfc_match_omp_declare_reduction): New prototype.
+	* module.c (MOD_VERSION): Increase to 13.
+	(omp_declare_reduction_stmt): New array.
+	(mio_omp_udr_expr, write_omp_udr, write_omp_udrs, load_omp_udrs):
+	New functions.
+	(read_module): Read OpenMP user defined reductions.
+	(write_module): Write OpenMP user defined reductions.
+	* openmp.c: Include arith.h.
+	(gfc_free_omp_udr, gfc_find_omp_udr): New functions.
+	(gfc_match_omp_clauses): Handle user defined reductions.
+	Store reduction kind into gfc_omp_namelist instead of using
+	several OMP_LIST_* entries.
+	(match_udr_expr, gfc_omp_udr_predef, gfc_omp_udr_find,
+	gfc_match_omp_declare_reduction): New functions.
+	(resolve_omp_clauses): Adjust for reduction clauses being only
+	in OMP_LIST_REDUCTION list.  Diagnose missing UDRs.
+	(struct omp_udr_callback_data): New type.
+	(omp_udr_callback, gfc_resolve_omp_udr, gfc_resolve_omp_udrs): New
+	functions.
+	* parse.c (decode_omp_directive): Handle !$omp declare reduction.
+	(case_decl): Add ST_OMP_DECLARE_REDUCTION.
+	(gfc_ascii_statement): Print ST_OMP_DECLARE_REDUCTION.
+	* resolve.c (resolve_fl_variable): Allow len=: or len=* on
+	sym->attr.omp_udr_artificial_var symbols.
+	(resolve_types): Call gfc_resolve_omp_udrs.
+	* symbol.c (gfc_get_uop): If gfc_current_ns->omp_udr_ns,
+	use parent ns instead of gfc_current_ns.
+	(gfc_get_sym_tree): Don't insert symbols into
+	namespaces with omp_udr_ns set.
+	(free_omp_udr_tree): New function.
+	(gfc_free_namespace): Call it.
+	* trans-openmp.c (struct omp_udr_find_orig_data): New type.
+	(omp_udr_find_orig, gfc_trans_omp_udr_expr): New functions.
+	(gfc_trans_omp_array_reduction): Renamed to...
+	(gfc_trans_omp_array_reduction_or_udr): ... this.  Remove SYM
+	argument, instead pass gfc_omp_namelist pointer N.  Handle
+	user defined reductions.
+	(gfc_trans_omp_reduction_list): Remove REDUCTION_CODE argument.
+	Handle user defined reductions and reduction ops in gfc_omp_namelist.
+	(gfc_trans_omp_clauses): Adjust for just a single OMP_LIST_REDUCTION
+	list.
+	(gfc_split_omp_clauses): Likewise.
+
+2014-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/61418
+	* gfortranspec.c (spec_file): Remove.
+	(find_spec_file): Likewise.
+	(lang_specific_driver): Do not look for specs file in -L
+	or append -specs command line argument.
+	(lang_specific_pre_link): Always %:include libgfortran.spec.
+
+2014-06-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* fortran/trans.c (trans_runtime_error_vararg): Call
+	fold_build_call_array_loc instead of fold_builtin_call_array.
+
+2014-06-02  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* trans-decl.c (gfc_build_builtin_function_decls): Correct number of
+	arguments to caf_init.
+
 2014-05-26  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (Project Status): Fix broken link.
@@ -228,7 +420,7 @@
 	* trans.c (trans_code): Handle EXEC_OMP_CANCEL,
 	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,
 	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
-	* resolve.c (gfc_resolve_blocks): Handle EXEC_OMP_DO_SIMD,  
+	* resolve.c (gfc_resolve_blocks): Handle EXEC_OMP_DO_SIMD,
 	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
 	(resolve_code): Handle EXEC_OMP_CANCEL,
 	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,

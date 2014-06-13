@@ -46,6 +46,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
+#include "builtins.h"
 
 /* For dumping information about frame sizes.  */
 char * mcore_current_function_name = 0;
@@ -3088,7 +3089,7 @@ mcore_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
   
   sprintf (string, "%s%s", prefix, name);
 
-  DECL_SECTION_NAME (decl) = build_string (len, string);
+  set_decl_section_name (decl, string);
 }
 
 int

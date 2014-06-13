@@ -216,6 +216,7 @@ void inline_generate_summary (void);
 void inline_read_summary (void);
 void inline_write_summary (void);
 void inline_free_summary (void);
+void inline_analyze_function (struct cgraph_node *node);
 void initialize_inline_failed (struct cgraph_edge *);
 int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);

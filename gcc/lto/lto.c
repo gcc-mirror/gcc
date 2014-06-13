@@ -767,7 +767,6 @@ mentions_vars_p_decl_with_vis (tree t)
 
   /* Accessor macro has side-effects, use field-name here. */
   CHECK_NO_VAR (t->decl_with_vis.assembler_name);
-  CHECK_NO_VAR (DECL_SECTION_NAME (t));
   return false;
 }
 
@@ -1529,7 +1528,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       if (DECL_ASSEMBLER_NAME_SET_P (t1))
 	compare_tree_edges (DECL_ASSEMBLER_NAME (t1),
 			    DECL_ASSEMBLER_NAME (t2));
-      compare_tree_edges (DECL_SECTION_NAME (t1), DECL_SECTION_NAME (t2));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
@@ -2718,7 +2716,6 @@ lto_fixup_prevailing_decls (tree t)
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
 	{
 	  LTO_NO_PREVAIL (t->decl_with_vis.assembler_name);
-	  LTO_NO_PREVAIL (DECL_SECTION_NAME (t));
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
 	{
@@ -3093,6 +3090,10 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       dump_symtab (cgraph_dump_file);
     }
   lto_symtab_merge_symbols ();
+  /* Removal of unreacable symbols is needed to make verify_symtab to pass;
+     we are still having duplicated comdat groups containing local statics.
+     We could also just remove them while merging.  */
+  symtab_remove_unreachable_nodes (false, dump_file);
   ggc_collect ();
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
@@ -3264,7 +3265,7 @@ do_whole_program_analysis (void)
       dump_symtab (cgraph_dump_file);
     }
 #ifdef ENABLE_CHECKING
-  verify_cgraph ();
+  verify_symtab ();
 #endif
   bitmap_obstack_release (NULL);
 

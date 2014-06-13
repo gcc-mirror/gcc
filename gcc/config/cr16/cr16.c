@@ -45,6 +45,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
+#include "builtins.h"
 
 /* Definitions.  */
 

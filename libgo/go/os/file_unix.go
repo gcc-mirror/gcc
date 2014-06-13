@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package os
 
@@ -171,16 +171,19 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 	if dirname == "" {
 		dirname = "."
 	}
-	dirname += "/"
 	names, err := f.Readdirnames(n)
-	fi = make([]FileInfo, len(names))
-	for i, filename := range names {
-		fip, lerr := lstat(dirname + filename)
-		if lerr != nil {
-			fi[i] = &fileStat{name: filename}
+	fi = make([]FileInfo, 0, len(names))
+	for _, filename := range names {
+		fip, lerr := lstat(dirname + "/" + filename)
+		if IsNotExist(lerr) {
+			// File disappeared between readdir + stat.
+			// Just treat it as if it didn't exist.
 			continue
 		}
-		fi[i] = fip
+		if lerr != nil {
+			return fi, lerr
+		}
+		fi = append(fi, fip)
 	}
 	return fi, err
 }

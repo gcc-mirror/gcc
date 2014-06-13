@@ -4355,16 +4355,8 @@ Use this for constraints that should not appear in @code{asm} statements.
 It is occasionally useful to test a constraint from C code rather than
 implicitly via the constraint string in a @code{match_operand}.  The
 generated file @file{tm_p.h} declares a few interfaces for working
-with machine-specific constraints.  None of these interfaces work with
-the generic constraints described in @ref{Simple Constraints}.  This
-may change in the future.
-
-@strong{Warning:} @file{tm_p.h} may declare other functions that
-operate on constraints, besides the ones documented here.  Do not use
-those functions from machine-dependent code.  They exist to implement
-the old constraint interface that machine-independent components of
-the compiler still expect.  They will change or disappear in the
-future.
+with constraints.  At present these are defined for all constraints
+except @code{g} (which is equivalent to @code{general_operand}).
 
 Some valid constraint names are not valid C identifiers, so there is a
 mangling scheme for referring to them from C@.  Constraint names that
@@ -4391,17 +4383,14 @@ the variable @var{m} is a mangled constraint name (usually as part of
 a larger identifier).
 
 @deftp Enum constraint_num
-For each machine-specific constraint, there is a corresponding
+For each constraint except @code{g}, there is a corresponding
 enumeration constant: @samp{CONSTRAINT_} plus the mangled name of the
 constraint.  Functions that take an @code{enum constraint_num} as an
 argument expect one of these constants.
-
-Machine-independent constraints do not have associated constants.
-This may change in the future.
 @end deftp
 
 @deftypefun {inline bool} satisfies_constraint_@var{m} (rtx @var{exp})
-For each machine-specific, non-register constraint @var{m}, there is
+For each non-register constraint @var{m} except @code{g}, there is
 one of these functions; it returns @code{true} if @var{exp} satisfies the
 constraint.  These functions are only visible if @file{rtl.h} was included
 before @file{tm_p.h}.
@@ -4414,7 +4403,7 @@ specifies a register constraint, this function will always return
 @code{false}.
 @end deftypefun
 
-@deftypefun {enum reg_class} regclass_for_constraint (enum constraint_num @var{c})
+@deftypefun {enum reg_class} reg_class_for_constraint (enum constraint_num @var{c})
 Returns the register class associated with @var{c}.  If @var{c} is not
 a register constraint, or those registers are not available for the
 currently selected subtarget, returns @code{NO_REGS}.

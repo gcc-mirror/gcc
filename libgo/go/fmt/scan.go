@@ -11,6 +11,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -283,7 +284,6 @@ var space = [][2]uint16{
 	{0x0085, 0x0085},
 	{0x00a0, 0x00a0},
 	{0x1680, 0x1680},
-	{0x180e, 0x180e},
 	{0x2000, 0x200a},
 	{0x2028, 0x2029},
 	{0x202f, 0x202f},
@@ -380,7 +380,9 @@ func (r *readRune) ReadRune() (rr rune, size int, err error) {
 	return
 }
 
-var ssFree = newCache(func() interface{} { return new(ss) })
+var ssFree = sync.Pool{
+	New: func() interface{} { return new(ss) },
+}
 
 // newScanState allocates a new ss struct or grab a cached one.
 func newScanState(r io.Reader, nlIsSpace, nlIsEnd bool) (s *ss, old ssave) {
@@ -395,7 +397,7 @@ func newScanState(r io.Reader, nlIsSpace, nlIsEnd bool) (s *ss, old ssave) {
 		return
 	}
 
-	s = ssFree.get().(*ss)
+	s = ssFree.Get().(*ss)
 	if rr, ok := r.(io.RuneReader); ok {
 		s.rr = rr
 	} else {
@@ -427,7 +429,7 @@ func (s *ss) free(old ssave) {
 	}
 	s.buf = s.buf[:0]
 	s.rr = nil
-	ssFree.put(s)
+	ssFree.Put(s)
 }
 
 // skipSpace skips spaces and maybe newlines.

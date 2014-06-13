@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -815,11 +815,6 @@ package body Switch.C is
                System_Extend_Unit := Empty;
                Warning_Mode := Treat_As_Error;
                Style_Check_Main := True;
-
-               --  Set Ada 2012 mode explicitly. We don't want to rely on the
-               --  implicit setting here, since for example, we want
-               --  Preelaborate_05 treated as Preelaborate
-
                Ada_Version          := Ada_2012;
                Ada_Version_Explicit := Ada_2012;
                Ada_Version_Pragma   := Empty;

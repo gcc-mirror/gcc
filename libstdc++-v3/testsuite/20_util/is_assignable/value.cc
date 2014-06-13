@@ -174,7 +174,7 @@ static_assert(!std::is_assignable<bool&, SE>::value, "Error");
 static_assert(std::is_assignable<bool&, void*>::value, "Error");
 static_assert(std::is_assignable<bool&, int B::*>::value, "Error");
 static_assert(std::is_assignable<bool&, void*>::value, "Error");
-static_assert(std::is_assignable<bool&, std::nullptr_t>::value, "Error");
+static_assert(!std::is_assignable<bool&, std::nullptr_t>::value, "Error");
 
 static_assert(std::is_assignable<std::nullptr_t&,
 std::nullptr_t>::value, "Error");

@@ -574,13 +574,13 @@ upc_set_decl_section (tree decl)
     {
 #ifdef UPC_SHARED_SECTION_NAME
       /* UPC shared variables are placed in their own shared section */
-      int slen = strlen (UPC_SHARED_SECTION_NAME);
-      DECL_SECTION_NAME (decl) = build_string (slen, UPC_SHARED_SECTION_NAME);
+      set_decl_section_name (decl, UPC_SHARED_SECTION_NAME);
 #endif
     }
   else if (flag_upc_pthreads
-	   && ((TREE_STATIC (decl) && (DECL_SECTION_NAME (decl) == NULL_TREE))
-	       || DECL_EXTERNAL (decl)))
+	   && ((TREE_STATIC (decl)
+	        && (DECL_SECTION_NAME (decl) == NULL))
+	            || DECL_EXTERNAL (decl)))
     {
       /* If we're compiling with -fupc-pthreads-model-tls asserted
          and this is a regular "C" static scoped object which

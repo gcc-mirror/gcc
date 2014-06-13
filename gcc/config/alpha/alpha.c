@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "opts.h"
 #include "params.h"
+#include "builtins.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;
@@ -681,7 +682,7 @@ alpha_in_small_data_p (const_tree exp)
 
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
-      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+      const char *section = DECL_SECTION_NAME (exp);
       if (strcmp (section, ".sdata") == 0
 	  || strcmp (section, ".sbss") == 0)
 	return true;
@@ -5450,22 +5451,23 @@ print_operand_address (FILE *file, rtx addr)
       offset = INTVAL (addr);
       break;
 
-#if TARGET_ABI_OPEN_VMS
     case SYMBOL_REF:
+      gcc_assert(TARGET_ABI_OPEN_VMS || this_is_asm_operands);
       fprintf (file, "%s", XSTR (addr, 0));
       return;
 
     case CONST:
+      gcc_assert(TARGET_ABI_OPEN_VMS || this_is_asm_operands);
       gcc_assert (GET_CODE (XEXP (addr, 0)) == PLUS
 		  && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF);
       fprintf (file, "%s+" HOST_WIDE_INT_PRINT_DEC,
 	       XSTR (XEXP (XEXP (addr, 0), 0), 0),
 	       INTVAL (XEXP (XEXP (addr, 0), 1)));
       return;
-    
-#endif
+
     default:
-      gcc_unreachable ();
+      output_operand_lossage ("invalid operand address");
+      return;
     }
 
   fprintf (file, HOST_WIDE_INT_PRINT_DEC "($%d)", offset, basereg);

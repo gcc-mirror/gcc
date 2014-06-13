@@ -30,4 +30,4 @@ else
 MULTILIB_EXCLUSIONS = !mips32r2/mfp64
 endif
 endif
-MULTILIB_MATCHES = EL=mel EB=meb
+MULTILIB_MATCHES = EL=mel EB=meb mips32r2=mips32r3 mips32r2=mips32r5 mips64r2=mips64r3 mips64r2=mips64r5

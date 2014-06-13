@@ -243,6 +243,17 @@ is_proper_for_analysis (tree t)
   if (TREE_READONLY (t))
     return false;
 
+  /* We can not track variables with address taken.  */
+  if (TREE_ADDRESSABLE (t))
+    return false;
+
+  /* TODO: We could track public variables that are not addressable, but currently
+     frontends don't give us those.  */
+  if (TREE_PUBLIC (t))
+    return false;
+
+  /* TODO: Check aliases.  */
+
   /* This is a variable we care about.  Check if we have seen it
      before, and if not add it the set of variables we care about.  */
   if (all_module_statics
@@ -307,26 +318,6 @@ union_static_var_sets (bitmap &x, bitmap y)
 	      BITMAP_FREE (x);
 	      x = all_module_statics;
 	    }
-	}
-    }
-  return x == all_module_statics;
-}
-
-/* Compute X &= Y, taking into account the possibility that
-   X may become the maximum set.  */
-
-static bool
-intersect_static_var_sets (bitmap &x, bitmap y)
-{
-  if (x != all_module_statics)
-    {
-      bitmap_and_into (x, y);
-      /* As with union_static_var_sets, reducing to the maximum
-	 set as early as possible is an overall win.  */
-      if (bitmap_equal_p (x, all_module_statics))
-	{
-	  BITMAP_FREE (x);
-	  x = all_module_statics;
 	}
     }
   return x == all_module_statics;
@@ -483,6 +474,8 @@ analyze_function (struct cgraph_node *fn)
 	  break;
 	case IPA_REF_ADDR:
 	  break;
+	default:
+	  gcc_unreachable ();
 	}
     }
 
@@ -667,7 +660,6 @@ static unsigned int
 propagate (void)
 {
   struct cgraph_node *node;
-  varpool_node *vnode;
   struct cgraph_node **order =
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int order_pos;
@@ -678,25 +670,6 @@ propagate (void)
 
   ipa_discover_readonly_nonaddressable_vars ();
   generate_summary ();
-
-  /* Now we know what vars are really statics; prune out those that aren't.  */
-  FOR_EACH_VARIABLE (vnode)
-    if (vnode->externally_visible
-	|| TREE_ADDRESSABLE (vnode->decl)
-	|| TREE_READONLY (vnode->decl)
-	|| !is_proper_for_analysis (vnode->decl)
-	|| !vnode->definition)
-      bitmap_clear_bit (all_module_statics, DECL_UID (vnode->decl));
-
-  /* Forget info we collected "just for fun" on variables that turned out to be
-     non-local.  */
-  FOR_EACH_DEFINED_FUNCTION (node)
-    {
-      ipa_reference_local_vars_info_t node_l;
-      node_l = &get_reference_vars_info (node)->local;
-      intersect_static_var_sets (node_l->statics_read, all_module_statics);
-      intersect_static_var_sets (node_l->statics_written, all_module_statics);
-    }
 
   /* Propagate the local information through the call graph to produce
      the global information.  All the nodes within a cycle will have

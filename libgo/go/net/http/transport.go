@@ -41,8 +41,8 @@ const DefaultMaxIdleConnsPerHost = 2
 // Transport can also cache connections for future re-use.
 type Transport struct {
 	idleMu     sync.Mutex
-	idleConn   map[string][]*persistConn
-	idleConnCh map[string]chan *persistConn
+	idleConn   map[connectMethodKey][]*persistConn
+	idleConnCh map[connectMethodKey]chan *persistConn
 	reqMu      sync.Mutex
 	reqConn    map[*Request]*persistConn
 	altMu      sync.RWMutex
@@ -99,7 +99,7 @@ type Transport struct {
 // A nil URL and nil error are returned if no proxy is defined in the
 // environment, or a proxy should not be used for the given request.
 func ProxyFromEnvironment(req *Request) (*url.URL, error) {
-	proxy := getenvEitherCase("HTTP_PROXY")
+	proxy := httpProxyEnv.Get()
 	if proxy == "" {
 		return nil, nil
 	}
@@ -243,24 +243,49 @@ func (t *Transport) CancelRequest(req *Request) {
 // Private implementation past this point.
 //
 
-func getenvEitherCase(k string) string {
-	if v := os.Getenv(strings.ToUpper(k)); v != "" {
-		return v
+var (
+	httpProxyEnv = &envOnce{
+		names: []string{"HTTP_PROXY", "http_proxy"},
 	}
-	return os.Getenv(strings.ToLower(k))
+	noProxyEnv = &envOnce{
+		names: []string{"NO_PROXY", "no_proxy"},
+	}
+)
+
+// envOnce looks up an environment variable (optionally by multiple
+// names) once. It mitigates expensive lookups on some platforms
+// (e.g. Windows).
+type envOnce struct {
+	names []string
+	once  sync.Once
+	val   string
 }
 
-func (t *Transport) connectMethodForRequest(treq *transportRequest) (*connectMethod, error) {
-	cm := &connectMethod{
-		targetScheme: treq.URL.Scheme,
-		targetAddr:   canonicalAddr(treq.URL),
-	}
-	if t.Proxy != nil {
-		var err error
-		cm.proxyURL, err = t.Proxy(treq.Request)
-		if err != nil {
-			return nil, err
+func (e *envOnce) Get() string {
+	e.once.Do(e.init)
+	return e.val
+}
+
+func (e *envOnce) init() {
+	for _, n := range e.names {
+		e.val = os.Getenv(n)
+		if e.val != "" {
+			return
 		}
+	}
+}
+
+// reset is used by tests
+func (e *envOnce) reset() {
+	e.once = sync.Once{}
+	e.val = ""
+}
+
+func (t *Transport) connectMethodForRequest(treq *transportRequest) (cm connectMethod, err error) {
+	cm.targetScheme = treq.URL.Scheme
+	cm.targetAddr = canonicalAddr(treq.URL)
+	if t.Proxy != nil {
+		cm.proxyURL, err = t.Proxy(treq.Request)
 	}
 	return cm, nil
 }
@@ -316,7 +341,7 @@ func (t *Transport) putIdleConn(pconn *persistConn) bool {
 		}
 	}
 	if t.idleConn == nil {
-		t.idleConn = make(map[string][]*persistConn)
+		t.idleConn = make(map[connectMethodKey][]*persistConn)
 	}
 	if len(t.idleConn[key]) >= max {
 		t.idleMu.Unlock()
@@ -336,7 +361,7 @@ func (t *Transport) putIdleConn(pconn *persistConn) bool {
 // getIdleConnCh returns a channel to receive and return idle
 // persistent connection for the given connectMethod.
 // It may return nil, if persistent connections are not being used.
-func (t *Transport) getIdleConnCh(cm *connectMethod) chan *persistConn {
+func (t *Transport) getIdleConnCh(cm connectMethod) chan *persistConn {
 	if t.DisableKeepAlives {
 		return nil
 	}
@@ -344,7 +369,7 @@ func (t *Transport) getIdleConnCh(cm *connectMethod) chan *persistConn {
 	t.idleMu.Lock()
 	defer t.idleMu.Unlock()
 	if t.idleConnCh == nil {
-		t.idleConnCh = make(map[string]chan *persistConn)
+		t.idleConnCh = make(map[connectMethodKey]chan *persistConn)
 	}
 	ch, ok := t.idleConnCh[key]
 	if !ok {
@@ -354,7 +379,7 @@ func (t *Transport) getIdleConnCh(cm *connectMethod) chan *persistConn {
 	return ch
 }
 
-func (t *Transport) getIdleConn(cm *connectMethod) (pconn *persistConn) {
+func (t *Transport) getIdleConn(cm connectMethod) (pconn *persistConn) {
 	key := cm.key()
 	t.idleMu.Lock()
 	defer t.idleMu.Unlock()
@@ -373,7 +398,7 @@ func (t *Transport) getIdleConn(cm *connectMethod) (pconn *persistConn) {
 			// 2 or more cached connections; pop last
 			// TODO: queue?
 			pconn = pconns[len(pconns)-1]
-			t.idleConn[key] = pconns[0 : len(pconns)-1]
+			t.idleConn[key] = pconns[:len(pconns)-1]
 		}
 		if !pconn.isBroken() {
 			return
@@ -405,7 +430,7 @@ func (t *Transport) dial(network, addr string) (c net.Conn, err error) {
 // specified in the connectMethod.  This includes doing a proxy CONNECT
 // and/or setting up TLS.  If this doesn't return an error, the persistConn
 // is ready to write requests to.
-func (t *Transport) getConn(cm *connectMethod) (*persistConn, error) {
+func (t *Transport) getConn(cm connectMethod) (*persistConn, error) {
 	if pc := t.getIdleConn(cm); pc != nil {
 		return pc, nil
 	}
@@ -440,7 +465,7 @@ func (t *Transport) getConn(cm *connectMethod) (*persistConn, error) {
 	}
 }
 
-func (t *Transport) dialConn(cm *connectMethod) (*persistConn, error) {
+func (t *Transport) dialConn(cm connectMethod) (*persistConn, error) {
 	conn, err := t.dial("tcp", cm.addr())
 	if err != nil {
 		if cm.proxyURL != nil {
@@ -550,7 +575,7 @@ func useProxy(addr string) bool {
 		}
 	}
 
-	no_proxy := getenvEitherCase("NO_PROXY")
+	no_proxy := noProxyEnv.Get()
 	if no_proxy == "*" {
 		return false
 	}
@@ -603,20 +628,20 @@ type connectMethod struct {
 	targetAddr   string   // Not used if proxy + http targetScheme (4th example in table)
 }
 
-func (ck *connectMethod) key() string {
-	return ck.String() // TODO: use a struct type instead
-}
-
-func (ck *connectMethod) String() string {
+func (cm *connectMethod) key() connectMethodKey {
 	proxyStr := ""
-	targetAddr := ck.targetAddr
-	if ck.proxyURL != nil {
-		proxyStr = ck.proxyURL.String()
-		if ck.targetScheme == "http" {
+	targetAddr := cm.targetAddr
+	if cm.proxyURL != nil {
+		proxyStr = cm.proxyURL.String()
+		if cm.targetScheme == "http" {
 			targetAddr = ""
 		}
 	}
-	return strings.Join([]string{proxyStr, ck.targetScheme, targetAddr}, "|")
+	return connectMethodKey{
+		proxy:  proxyStr,
+		scheme: cm.targetScheme,
+		addr:   targetAddr,
+	}
 }
 
 // addr returns the first hop "host:port" to which we need to TCP connect.
@@ -637,11 +662,23 @@ func (cm *connectMethod) tlsHost() string {
 	return h
 }
 
+// connectMethodKey is the map key version of connectMethod, with a
+// stringified proxy URL (or the empty string) instead of a pointer to
+// a URL.
+type connectMethodKey struct {
+	proxy, scheme, addr string
+}
+
+func (k connectMethodKey) String() string {
+	// Only used by tests.
+	return fmt.Sprintf("%s|%s|%s", k.proxy, k.scheme, k.addr)
+}
+
 // persistConn wraps a connection, usually a persistent one
 // (but may be used for non-keep-alive requests as well)
 type persistConn struct {
 	t        *Transport
-	cacheKey string // its connectMethod.String()
+	cacheKey connectMethodKey
 	conn     net.Conn
 	closed   bool                // whether conn has been closed
 	br       *bufio.Reader       // from conn
@@ -832,6 +869,18 @@ type writeRequest struct {
 	ch  chan<- error
 }
 
+type httpError struct {
+	err     string
+	timeout bool
+}
+
+func (e *httpError) Error() string   { return e.err }
+func (e *httpError) Timeout() bool   { return e.timeout }
+func (e *httpError) Temporary() bool { return true }
+
+var errTimeout error = &httpError{err: "net/http: timeout awaiting response headers", timeout: true}
+var errClosed error = &httpError{err: "net/http: transport closed before response was received"}
+
 func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err error) {
 	pc.t.setReqConn(req.Request, pc)
 	pc.lk.Lock()
@@ -902,11 +951,11 @@ WaitResponse:
 			pconnDeadCh = nil                               // avoid spinning
 			failTicker = time.After(100 * time.Millisecond) // arbitrary time to wait for resc
 		case <-failTicker:
-			re = responseAndError{err: errors.New("net/http: transport closed before response was received")}
+			re = responseAndError{err: errClosed}
 			break WaitResponse
 		case <-respHeaderTimer:
 			pc.close()
-			re = responseAndError{err: errors.New("net/http: timeout awaiting response headers")}
+			re = responseAndError{err: errTimeout}
 			break WaitResponse
 		case re = <-resc:
 			break WaitResponse

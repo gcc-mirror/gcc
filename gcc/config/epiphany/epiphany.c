@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"	/* for current_pass */
 #include "context.h"
 #include "pass_manager.h"
+#include "builtins.h"
 
 /* Which cpu we're compiling for.  */
 int epiphany_cpu_type;

@@ -974,7 +974,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
 	      /* If different sort of thing, we already gave an error.  */
 	      && TREE_CODE (decl) == TREE_CODE (x)
-	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
+	      && !comptypes (TREE_TYPE (x), TREE_TYPE (decl),
+			     COMPARE_REDECLARATION))
 	    {
 	      if (permerror (input_location, "type mismatch with previous "
 			     "external decl of %q#D", x))
@@ -2486,7 +2487,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
        member-declaration.  */
   if (TYPE_P (scope))
     {
-      error ("%qT is not a namespace", scope);
+      error ("%qT is not a namespace or unscoped enum", scope);
       return NULL_TREE;
     }
   else if (scope == error_mark_node)

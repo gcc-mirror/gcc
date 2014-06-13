@@ -11,6 +11,7 @@ import (
 	"math"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 	"unicode"
@@ -220,6 +221,8 @@ var fmtTests = []struct {
 	{"%+.3e", 0.0, "+0.000e+00"},
 	{"%+.3e", 1.0, "+1.000e+00"},
 	{"%+.3f", -1.0, "-1.000"},
+	{"%+07.2f", 1.0, "+001.00"},
+	{"%+07.2f", -1.0, "-001.00"},
 	{"% .3E", -1.0, "-1.000E+00"},
 	{"% .3e", 1.0, " 1.000e+00"},
 	{"%+.3g", 0.0, "+0"},
@@ -495,18 +498,18 @@ var fmtTests = []struct {
 	{"%v", map[float64]int{math.NaN(): 1, math.NaN(): 2}, "map[NaN:<nil> NaN:<nil>]"},
 
 	// Used to crash because nByte didn't allow for a sign.
-	{"%b", int64(-1 << 63), "-1000000000000000000000000000000000000000000000000000000000000000"},
+	{"%b", int64(-1 << 63), zeroFill("-1", 63, "")},
 
 	// Used to panic.
-	{"%0100d", 1, "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"},
-	{"%0100d", -1, "-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"},
-	{"%0.100f", 1.0, "1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"},
-	{"%0.100f", -1.0, "-1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"},
+	{"%0100d", 1, zeroFill("", 100, "1")},
+	{"%0100d", -1, zeroFill("-", 99, "1")},
+	{"%0.100f", 1.0, zeroFill("1.", 100, "")},
+	{"%0.100f", -1.0, zeroFill("-1.", 100, "")},
 
 	// Zero padding floats used to put the minus sign in the middle.
 	{"%020f", -1.0, "-000000000001.000000"},
 	{"%20f", -1.0, "           -1.000000"},
-	{"%0100f", -1.0, "-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001.000000"},
+	{"%0100f", -1.0, zeroFill("-", 99, "1.000000")},
 
 	// Complex fmt used to leave the plus flag set for future entries in the array
 	// causing +2+0i and +3+0i instead of 2+0i and 3+0i.
@@ -515,6 +518,33 @@ var fmtTests = []struct {
 
 	// Incomplete format specification caused crash.
 	{"%.", 3, "%!.(int=3)"},
+
+	// Used to panic with out-of-bounds for very large numeric representations.
+	// nByte is set to handle one bit per uint64 in %b format, with a negative number.
+	// See issue 6777.
+	{"%#064x", 1, zeroFill("0x", 64, "1")},
+	{"%#064x", -1, zeroFill("-0x", 63, "1")},
+	{"%#064b", 1, zeroFill("", 64, "1")},
+	{"%#064b", -1, zeroFill("-", 63, "1")},
+	{"%#064o", 1, zeroFill("", 64, "1")},
+	{"%#064o", -1, zeroFill("-", 63, "1")},
+	{"%#064d", 1, zeroFill("", 64, "1")},
+	{"%#064d", -1, zeroFill("-", 63, "1")},
+	// Test that we handle the crossover above the size of uint64
+	{"%#072x", 1, zeroFill("0x", 72, "1")},
+	{"%#072x", -1, zeroFill("-0x", 71, "1")},
+	{"%#072b", 1, zeroFill("", 72, "1")},
+	{"%#072b", -1, zeroFill("-", 71, "1")},
+	{"%#072o", 1, zeroFill("", 72, "1")},
+	{"%#072o", -1, zeroFill("-", 71, "1")},
+	{"%#072d", 1, zeroFill("", 72, "1")},
+	{"%#072d", -1, zeroFill("-", 71, "1")},
+}
+
+// zeroFill generates zero-filled strings of the specified width. The length
+// of the suffix (but not the prefix) is compensated for in the width calculation.
+func zeroFill(prefix string, width int, suffix string) string {
+	return prefix + strings.Repeat("0", width-len(suffix)) + suffix
 }
 
 func TestSprintf(t *testing.T) {
@@ -604,46 +634,66 @@ func TestReorder(t *testing.T) {
 }
 
 func BenchmarkSprintfEmpty(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	benchmarkSprintf(b, func(buf *bytes.Buffer) {
 		Sprintf("")
-	}
+	})
 }
 
 func BenchmarkSprintfString(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	benchmarkSprintf(b, func(buf *bytes.Buffer) {
 		Sprintf("%s", "hello")
-	}
+	})
 }
 
 func BenchmarkSprintfInt(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	benchmarkSprintf(b, func(buf *bytes.Buffer) {
 		Sprintf("%d", 5)
-	}
+	})
 }
 
 func BenchmarkSprintfIntInt(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	benchmarkSprintf(b, func(buf *bytes.Buffer) {
 		Sprintf("%d %d", 5, 6)
-	}
+	})
 }
 
 func BenchmarkSprintfPrefixedInt(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	benchmarkSprintf(b, func(buf *bytes.Buffer) {
 		Sprintf("This is some meaningless prefix text that needs to be scanned %d", 6)
-	}
+	})
 }
 
 func BenchmarkSprintfFloat(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	benchmarkSprintf(b, func(buf *bytes.Buffer) {
 		Sprintf("%g", 5.23184)
-	}
+	})
 }
 
 func BenchmarkManyArgs(b *testing.B) {
-	var buf bytes.Buffer
-	for i := 0; i < b.N; i++ {
+	benchmarkSprintf(b, func(buf *bytes.Buffer) {
 		buf.Reset()
-		Fprintf(&buf, "%2d/%2d/%2d %d:%d:%d %s %s\n", 3, 4, 5, 11, 12, 13, "hello", "world")
+		Fprintf(buf, "%2d/%2d/%2d %d:%d:%d %s %s\n", 3, 4, 5, 11, 12, 13, "hello", "world")
+	})
+}
+
+func benchmarkSprintf(b *testing.B, f func(buf *bytes.Buffer)) {
+	const CallsPerSched = 1000
+	procs := runtime.GOMAXPROCS(-1)
+	N := int32(b.N / CallsPerSched)
+	c := make(chan bool, procs)
+	for p := 0; p < procs; p++ {
+		go func() {
+			var buf bytes.Buffer
+			for atomic.AddInt32(&N, -1) >= 0 {
+				for g := 0; g < CallsPerSched; g++ {
+					f(&buf)
+				}
+			}
+			c <- true
+		}()
+	}
+	for p := 0; p < procs; p++ {
+		<-c
 	}
 }
 

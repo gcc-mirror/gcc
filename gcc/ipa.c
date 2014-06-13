@@ -281,9 +281,6 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   struct pointer_set_t *reachable_call_targets = pointer_set_create ();
 
   timevar_push (TV_IPA_UNREACHABLE);
-#ifdef ENABLE_CHECKING
-  verify_symtab ();
-#endif
   if (optimize && flag_devirtualize)
     build_type_inheritance_graph ();
   if (file)
@@ -714,7 +711,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	    /* Making variable in explicit section readonly can cause section
 	       type conflict. 
 	       See e.g. gcc.c-torture/compile/pr23237.c */
-	    && DECL_SECTION_NAME (vnode->decl) == NULL)
+	    && vnode->get_section () == NULL)
 	  {
 	    if (!TREE_READONLY (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (read-only)", vnode->name ());

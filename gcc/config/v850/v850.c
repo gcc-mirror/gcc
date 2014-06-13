@@ -45,6 +45,7 @@
 #include "target-def.h"
 #include "df.h"
 #include "opts.h"
+#include "builtins.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
@@ -2189,7 +2190,7 @@ v850_encode_data_area (tree decl, rtx symbol)
     {
       if (DECL_SECTION_NAME (decl))
 	{
-	  const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+	  const char *name = DECL_SECTION_NAME (decl);
 	  
 	  if (streq (name, ".zdata") || streq (name, ".zbss"))
 	    v850_set_data_area (decl, DATA_AREA_ZDA);
@@ -2643,7 +2644,7 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
 	  /* Only set the section name if specified by a pragma, because
 	     otherwise it will force those variables to get allocated storage
 	     in this module, rather than by the linker.  */
-	  DECL_SECTION_NAME (decl) = chosen_section;
+	  set_decl_section_name (decl, chosen_section);
 	}
     }
 }

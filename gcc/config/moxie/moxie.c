@@ -49,6 +49,7 @@
 #include "tm_p.h"
 #include "langhooks.h"
 #include "df.h"
+#include "builtins.h"
 
 #define LOSE_AND_RETURN(msgid, x)		\
   do						\

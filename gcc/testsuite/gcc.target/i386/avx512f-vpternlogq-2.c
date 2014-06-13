@@ -34,7 +34,7 @@ CALC (long long *src1, long long *src2, long long *src3,
     }
 }
 
-static void
+void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_q) src2, src3, res1, res2, res3;

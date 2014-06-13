@@ -206,7 +206,7 @@
     
     <section xml:id="doxygen.prereq"><info><title>Prerequisites</title></info>
       
- <table frame="all">
+ <table frame="all" xml:id="table.doxygen_prereq">
 <title>Doxygen Prerequisites</title>
 
 <tgroup cols="3" align="center" colsep="1" rowsep="1">
@@ -274,7 +274,9 @@
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.graphviz.org">Graphviz</link> package
 	will need to be installed. For PDF
 	output, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.tug.org/applications/pdftex/">
-	pdflatex</link> is required.
+	pdflatex</link> is required as well as a number of TeX packages
+	such as <package>texlive-xtab</package> and
+	<package>texlive-tocloft</package>.
       </para>
 
       <para>
@@ -360,8 +362,8 @@
 	</para>
 	<para>
 	  Working on the doxygen path only, closely examine the
-	  contents of the following build directory:
-	  <filename>build/target/libstdc++-v3/doc/doxygen/latex</filename>.
+	  contents of the following build directory: <filename
+	  class="directory">build/target/libstdc++-v3/doc/doxygen/latex</filename>.
 	  Pay attention to three files enclosed within, annotated as follows.
 	</para>
 <itemizedlist>
@@ -375,8 +377,26 @@
     The actual latex file, or partial latex file. This is generated
     via <command>doxygen</command>, and is the LaTeX version of the
     Doxygen XML file <filename>libstdc++-api.xml</filename>. Go to a specific
-    line, and look at the genrated LaTeX, and try to deduce what
+    line, and look at the generated LaTeX, and try to deduce what
     markup in <filename>libstdc++-api.xml</filename> is causing it.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+   <emphasis>refman.log</emphasis>
+  </para>
+
+  <para>
+    A log created by <command>latex</command> as it processes the
+    <filename>refman.tex</filename> file. If generating the PDF fails
+    look at the end of this file for errors such as:
+    <screen>
+    ! LaTeX Error: File `xtab.sty' not found.
+    </screen>
+    This indicates a required TeX package is missing. For the example
+    above the <package>texlive-xtab</package> package needs to be
+    installed.
   </para>
 </listitem>
 
@@ -386,7 +406,7 @@
   </para>
 
   <para>
-    A log of the compilation of the converted LaTeX form to pdf. This
+    A log of the compilation of the converted LaTeX form to PDF. This
     is a linear list, from the beginning of the
     <filename>refman.tex</filename> file: the last entry of this file
     should be the end of the LaTeX file. If it is truncated, then you
@@ -436,9 +456,9 @@
 	<classname>deque</classname>/<classname>vector</classname>/<classname>list</classname>
 	and <classname>std::pair</classname> as examples.  For
 	functions, see their member functions, and the free functions
-	in <filename>stl_algobase.h</filename>. Member functions of
-	other container-like types should read similarly to these
-	member functions.
+	in <filename class="headerfile">stl_algobase.h</filename>. Member
+	functions of other container-like types should read similarly to
+	these member functions.
       </para>
 
       <para>
@@ -488,8 +508,8 @@
       <para>
 	Use either kind of grouping, as
 	appropriate. <filename>doxygroups.cc</filename> exists for this
-	purpose. See <filename>stl_iterator.h</filename> for a good example
-	of the <quote>other</quote> kind of grouping.
+	purpose. See <filename class="headerfile">stl_iterator.h</filename>
+	for a good example of the <quote>other</quote> kind of grouping.
       </para>
 
       <para>
@@ -500,8 +520,8 @@
       </para>
 
       <para>
-	Complicated math functions should use the multi-line
-	format. An example from <filename>random.h</filename>:
+	Complicated math functions should use the multi-line format.
+	An example from <filename class="headerfile">random.h</filename>:
       </para>
 
       <para>
@@ -535,9 +555,9 @@
       <para>
 	The other relevant detail for header files is the use of a
 	libstdc++-specific doxygen alias that helps distinguish
-	between public header files (like <filename>random</filename>)
+	between public header files (like <filename class="headerfile">random</filename>)
 	from implementation or private header files (like
-	<filename>bits/c++config.h</filename>.) This alias is spelled
+	<filename class="headerfile">bits/c++config.h</filename>.) This alias is spelled
 	<literal>@headername</literal> and can take one or two
 	arguments that detail the public header file or files that
 	should be included to use the contents of the file. All header
@@ -562,7 +582,7 @@
 	doubt, consult the following table.
       </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.doxygen_cmp">
 <title>HTML to Doxygen Markup Comparison</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -632,7 +652,7 @@
     <section xml:id="docbook.prereq"><info><title>Prerequisites</title></info>
       
       
- <table frame="all">
+ <table frame="all" xml:id="table.docbook_prereq">
 <title>Docbook Prerequisites</title>
 
 <tgroup cols="3" align="center" colsep="1" rowsep="1">
@@ -827,7 +847,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 	<para>
 	  Working on the docbook path only, closely examine the
 	  contents of the following build directory:
-	  <filename>build/target/libstdc++-v3/doc/docbook/latex</filename>.
+	  <filename class="directory">build/target/libstdc++-v3/doc/docbook/latex</filename>.
 	  Pay attention to three files enclosed within, annotated as follows.
 	</para>
 
@@ -842,7 +862,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
     The actual latex file, or partial latex file. This is generated
     via <command>dblatex</command>, and is the LaTeX version of the
     DocBook XML file <filename>spine.xml</filename>. Go to a specific
-    line, and look at the genrated LaTeX, and try to deduce what
+    line, and look at the generated LaTeX, and try to deduce what
     markup in <filename>spine.xml</filename> is causing it.
   </para>
 </listitem>
@@ -1009,7 +1029,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 	detailed in the table below.
       </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.docbook_cmp">
 <title>HTML to Docbook XML Markup Comparison</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -1087,7 +1107,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
   equivalents are listed in the table below.
 </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.docbook_elem">
 <title>Docbook XML Element Use</title>
 
 <tgroup cols="2" align="left" colsep="1" rowsep="1">

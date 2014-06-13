@@ -59,6 +59,6 @@ uint64_t read_be64_3 (unsigned char *data)
 	 | ((uint64_t) *(data + 1) << 48) | ((uint64_t) *data << 56);
 }
 
-/* { dg-final { scan-tree-dump-times "64 bit load in host endianness found at" 3 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "64 bit load in target endianness found at" 3 "bswap" } } */
 /* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 3 "bswap" { xfail alpha*-*-* arm*-*-* } } } */
 /* { dg-final { cleanup-tree-dump "bswap" } } */

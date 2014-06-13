@@ -9,6 +9,7 @@
 #define SIZE (AVX512F_LEN / 32)
 #include "avx512f-mask-type.h"
 
+static void
 CALC (MASK_TYPE *r, int *s1, int *s2)
 {
   int i;
@@ -20,13 +21,12 @@ CALC (MASK_TYPE *r, int *s1, int *s2)
       *r = *r | (one << i);
 }
 
-void static
+void
 TEST (void)
 {
   int i;
   UNION_TYPE (AVX512F_LEN, i_d) src1, src2;
   MASK_TYPE res_ref, res1;
-  MASK_TYPE mask = MASK_VALUE;
   res1 = 0;
 
   for (i = 0; i < SIZE / 2; i++)

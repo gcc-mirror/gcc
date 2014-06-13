@@ -87,7 +87,7 @@ func makeFuncStub()
 // by code like Convert and Interface and Assign.
 func makeMethodValue(op string, v Value) Value {
 	if v.flag&flagMethod == 0 {
-		panic("reflect: internal error: invalid use of makePartialFunc")
+		panic("reflect: internal error: invalid use of makeMethodValue")
 	}
 
 	switch runtime.GOARCH {
@@ -99,7 +99,7 @@ func makeMethodValue(op string, v Value) Value {
 	// Ignoring the flagMethod bit, v describes the receiver, not the method type.
 	fl := v.flag & (flagRO | flagAddr | flagIndir)
 	fl |= flag(v.typ.Kind()) << flagKindShift
-	rcvr := Value{v.typ, v.val, fl}
+	rcvr := Value{v.typ, v.ptr /* v.scalar, */, fl}
 
 	// v.Type returns the actual type of the method value.
 	ft := v.Type().(*rtype)
@@ -113,7 +113,7 @@ func makeMethodValue(op string, v Value) Value {
 	// Cause panic if method is not appropriate.
 	// The panic would still happen during the call if we omit this,
 	// but we want Interface() and other operations to fail early.
-	t, _, _ := methodReceiver(op, rcvr, int(v.flag)>>flagMethodShift)
+	t, _ := methodReceiver(op, rcvr, int(v.flag)>>flagMethodShift)
 
 	fv := &makeFuncImpl{
 		code:   code,

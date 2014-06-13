@@ -1,7 +1,7 @@
 /* Test case to check if Multiversioning works.  */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-ifunc "" }  */
-/* { dg-options "-O2 -fPIC" } */
+/* { dg-options "-O2 -fPIC -march=x86-64" } */
 
 #include <assert.h>
 

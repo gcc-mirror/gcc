@@ -14,6 +14,7 @@ import (
 	"net/textproto"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // transferWriter inspects the fields of a user-supplied Request or Response,
@@ -59,7 +60,7 @@ func newTransferWriter(r interface{}) (t *transferWriter, err error) {
 					// Stich the Body back together again, re-attaching our
 					// consumed byte.
 					t.ContentLength = -1
-					t.Body = io.MultiReader(bytes.NewBuffer(buf[:]), t.Body)
+					t.Body = io.MultiReader(bytes.NewReader(buf[:]), t.Body)
 				} else {
 					// Body is actually empty.
 					t.Body = nil
@@ -331,17 +332,17 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 		if noBodyExpected(t.RequestMethod) {
 			t.Body = eofReader
 		} else {
-			t.Body = &body{Reader: newChunkedReader(r), hdr: msg, r: r, closing: t.Close}
+			t.Body = &body{src: newChunkedReader(r), hdr: msg, r: r, closing: t.Close}
 		}
 	case realLength == 0:
 		t.Body = eofReader
 	case realLength > 0:
-		t.Body = &body{Reader: io.LimitReader(r, realLength), closing: t.Close}
+		t.Body = &body{src: io.LimitReader(r, realLength), closing: t.Close}
 	default:
 		// realLength < 0, i.e. "Content-Length" not mentioned in header
 		if t.Close {
 			// Close semantics (i.e. HTTP/1.0)
-			t.Body = &body{Reader: r, closing: t.Close}
+			t.Body = &body{src: r, closing: t.Close}
 		} else {
 			// Persistent connection (i.e. HTTP/1.1)
 			t.Body = eofReader
@@ -514,11 +515,13 @@ func fixTrailer(header Header, te []string) (Header, error) {
 // Close ensures that the body has been fully read
 // and then reads the trailer if necessary.
 type body struct {
-	io.Reader
+	src     io.Reader
 	hdr     interface{}   // non-nil (Response or Request) value means read trailer
 	r       *bufio.Reader // underlying wire-format reader for the trailer
 	closing bool          // is the connection to be closed after reading body?
-	closed  bool
+
+	mu     sync.Mutex // guards closed, and calls to Read and Close
+	closed bool
 }
 
 // ErrBodyReadAfterClose is returned when reading a Request or Response
@@ -528,10 +531,17 @@ type body struct {
 var ErrBodyReadAfterClose = errors.New("http: invalid Read on closed Body")
 
 func (b *body) Read(p []byte) (n int, err error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	if b.closed {
 		return 0, ErrBodyReadAfterClose
 	}
-	n, err = b.Reader.Read(p)
+	return b.readLocked(p)
+}
+
+// Must hold b.mu.
+func (b *body) readLocked(p []byte) (n int, err error) {
+	n, err = b.src.Read(p)
 
 	if err == io.EOF {
 		// Chunked case. Read the trailer.
@@ -543,9 +553,20 @@ func (b *body) Read(p []byte) (n int, err error) {
 		} else {
 			// If the server declared the Content-Length, our body is a LimitedReader
 			// and we need to check whether this EOF arrived early.
-			if lr, ok := b.Reader.(*io.LimitedReader); ok && lr.N > 0 {
+			if lr, ok := b.src.(*io.LimitedReader); ok && lr.N > 0 {
 				err = io.ErrUnexpectedEOF
 			}
+		}
+	}
+
+	// If we can return an EOF here along with the read data, do
+	// so. This is optional per the io.Reader contract, but doing
+	// so helps the HTTP transport code recycle its connection
+	// earlier (since it will see this EOF itself), even if the
+	// client doesn't do future reads or Close.
+	if err == nil && n > 0 {
+		if lr, ok := b.src.(*io.LimitedReader); ok && lr.N == 0 {
+			err = io.EOF
 		}
 	}
 
@@ -618,6 +639,8 @@ func (b *body) readTrailer() error {
 }
 
 func (b *body) Close() error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	if b.closed {
 		return nil
 	}
@@ -629,10 +652,23 @@ func (b *body) Close() error {
 	default:
 		// Fully consume the body, which will also lead to us reading
 		// the trailer headers after the body, if present.
-		_, err = io.Copy(ioutil.Discard, b)
+		_, err = io.Copy(ioutil.Discard, bodyLocked{b})
 	}
 	b.closed = true
 	return err
+}
+
+// bodyLocked is a io.Reader reading from a *body when its mutex is
+// already held.
+type bodyLocked struct {
+	b *body
+}
+
+func (bl bodyLocked) Read(p []byte) (n int, err error) {
+	if bl.b.closed {
+		return 0, ErrBodyReadAfterClose
+	}
+	return bl.b.readLocked(p)
 }
 
 // parseContentLength trims whitespace from s and returns -1 if no value

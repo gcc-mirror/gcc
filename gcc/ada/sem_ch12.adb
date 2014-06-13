@@ -1776,6 +1776,22 @@ package body Sem_Ch12 is
       Delta_Val : constant Ureal := Ureal_1;
       Digs_Val  : constant Uint  := Uint_6;
 
+      function Make_Dummy_Bound return Node_Id;
+      --  Return a properly typed universal real literal to use as a bound
+
+      ----------------------
+      -- Make_Dummy_Bound --
+      ----------------------
+
+      function Make_Dummy_Bound return Node_Id is
+         Bound : constant Node_Id := Make_Real_Literal (Loc, Ureal_1);
+      begin
+         Set_Etype (Bound, Universal_Real);
+         return Bound;
+      end Make_Dummy_Bound;
+
+   --  Start of processing for Analyze_Formal_Decimal_Fixed_Point_Type
+
    begin
       Enter_Name (T);
 
@@ -1788,8 +1804,8 @@ package body Sem_Ch12 is
       Set_Small_Value    (Base, Delta_Val);
       Set_Scalar_Range   (Base,
         Make_Range (Loc,
-          Low_Bound  => Make_Real_Literal (Loc, Ureal_1),
-          High_Bound => Make_Real_Literal (Loc, Ureal_1)));
+          Low_Bound  => Make_Dummy_Bound,
+          High_Bound => Make_Dummy_Bound));
 
       Set_Is_Generic_Type (Base);
       Set_Parent          (Base, Parent (Def));
@@ -9951,27 +9967,36 @@ package body Sem_Ch12 is
       -----------------------------
 
       procedure Check_Initialized_Types is
-         Decl   : Node_Id;
-         Formal : Entity_Id;
-         Actual : Entity_Id;
+         Decl       : Node_Id;
+         Formal     : Entity_Id;
+         Actual     : Entity_Id;
+         Uninit_Var : Entity_Id;
 
       begin
          Decl := First (Generic_Formal_Declarations (Gen_Decl));
          while Present (Decl) loop
-            if (Nkind (Decl) = N_Private_Extension_Declaration
-                 and then Needs_Initialized_Actual (Decl))
+            Uninit_Var := Empty;
 
-              or else (Nkind (Decl) = N_Formal_Type_Declaration
-                        and then Nkind (Formal_Type_Definition (Decl)) =
-                                       N_Formal_Private_Type_Definition
-                        and then Needs_Initialized_Actual
-                                   (Formal_Type_Definition (Decl)))
+            if Nkind (Decl) = N_Private_Extension_Declaration then
+               Uninit_Var := Uninitialized_Variable (Decl);
+
+            elsif Nkind (Decl) = N_Formal_Type_Declaration
+                    and then Nkind (Formal_Type_Definition (Decl)) =
+                                          N_Formal_Private_Type_Definition
             then
+               Uninit_Var :=
+                 Uninitialized_Variable (Formal_Type_Definition (Decl));
+            end if;
+
+            if Present (Uninit_Var) then
                Formal := Defining_Identifier (Decl);
                Actual := First_Entity (Act_Decl_Id);
 
                --  For each formal there is a subtype declaration that renames
-               --  the actual and has the same name as the formal.
+               --  the actual and has the same name as the formal. Locate the
+               --  formal for warning message about uninitialized variables
+               --  in the generic, for which the actual type should be a fully
+               --  initialized type.
 
                while Present (Actual) loop
                   exit when Ekind (Actual) = E_Package
@@ -9982,9 +10007,13 @@ package body Sem_Ch12 is
                     and then not Is_Fully_Initialized_Type (Actual)
                     and then Warn_On_No_Value_Assigned
                   then
+                     Error_Msg_Node_2 := Formal;
                      Error_Msg_NE
-                       ("from its use in generic unit, actual for& should "
-                        & "be fully initialized type??", Actual, Formal);
+                       ("generic unit has uninitialized variable& of "
+                        & "formal private type &?v?", Actual, Uninit_Var);
+                     Error_Msg_NE
+                       ("actual type for& should be fully initialized type?v?",
+                        Actual, Formal);
                      exit;
                   end if;
 
@@ -10024,9 +10053,21 @@ package body Sem_Ch12 is
       Opt.SPARK_Mode_Pragma    := Body_Info.SPARK_Mode_Pragma;
 
       if No (Gen_Body_Id) then
-         Load_Parent_Of_Generic
-           (Inst_Node, Specification (Gen_Decl), Body_Optional);
-         Gen_Body_Id := Corresponding_Body (Gen_Decl);
+
+         --  Do not look for parent of generic body if none is required.
+         --  This may happen when the routine is called as part of the
+         --  Pending_Instantiations processing, when nested instances
+         --  may precede the one generated from the main unit.
+
+         if not Unit_Requires_Body (Defining_Entity (Gen_Decl))
+           and then Body_Optional
+         then
+            return;
+         else
+            Load_Parent_Of_Generic
+              (Inst_Node, Specification (Gen_Decl), Body_Optional);
+            Gen_Body_Id := Corresponding_Body (Gen_Decl);
+         end if;
       end if;
 
       --  Establish global variable for sloc adjustment and for error recovery

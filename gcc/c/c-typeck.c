@@ -77,9 +77,9 @@ int in_typeof;
    if expr.original_code == SIZEOF_EXPR.  */
 tree c_last_sizeof_arg;
 
-/* Nonzero if we've already printed a "missing braces around initializer"
-   message within this initializer.  */
-static int missing_braces_mentioned;
+/* Nonzero if we might need to print a "missing braces around
+   initializer" message within this initializer.  */
+static int found_missing_braces;
 
 static int require_constant_value;
 static int require_constant_elements;
@@ -3461,6 +3461,10 @@ parser_build_binary_op (location_t location, enum tree_code code,
     warn_logical_operator (location, code, TREE_TYPE (result.value),
 			   code1, arg1.value, code2, arg2.value);
 
+  if (warn_logical_not_paren
+      && code1 == TRUTH_NOT_EXPR)
+    warn_logical_not_parentheses (location, code, arg1.value, arg2.value);
+
   /* Warn about comparisons against string literals, with the exception
      of testing for equality or inequality of a string literal with NULL.  */
   if (code == EQ_EXPR || code == NE_EXPR)
@@ -5729,7 +5733,7 @@ error_init (location_t loc, const char *gmsgid)
   error_at (loc, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
-    error_at (loc, "(near initialization for %qs)", ofwhat);
+    inform (loc, "(near initialization for %qs)", ofwhat);
 }
 
 /* Issue a pedantic warning for a bad initializer component.  OPT is
@@ -5741,12 +5745,13 @@ static void
 pedwarn_init (location_t location, int opt, const char *gmsgid)
 {
   char *ofwhat;
+  bool warned;
 
   /* The gmsgid may be a format string with %< and %>. */
-  pedwarn (location, opt, gmsgid);
+  warned = pedwarn (location, opt, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    pedwarn (location, opt, "(near initialization for %qs)", ofwhat);
+  if (*ofwhat && warned)
+    inform (location, "(near initialization for %qs)", ofwhat);
 }
 
 /* Issue a warning for a bad initializer component.
@@ -5759,12 +5764,13 @@ static void
 warning_init (location_t loc, int opt, const char *gmsgid)
 {
   char *ofwhat;
+  bool warned;
 
   /* The gmsgid may be a format string with %< and %>. */
-  warning_at (loc, opt, gmsgid);
+  warned = warning_at (loc, opt, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
-  if (*ofwhat)
-    warning_at (loc, opt, "(near initialization for %qs)", ofwhat);
+  if (*ofwhat && warned)
+    inform (loc, "(near initialization for %qs)", ofwhat);
 }
 
 /* If TYPE is an array type and EXPR is a parenthesized string
@@ -6254,8 +6260,9 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
 	 where NULL is typically defined in C to be '(void *) 0'.  */
       if (VOID_TYPE_P (ttr) && rhs != null_pointer_node && !VOID_TYPE_P (ttl))
-	warning_at (location, OPT_Wc___compat,
-	    	    "request for implicit conversion "
+	warning_at (errtype == ic_argpass ? expr_loc : location,
+		    OPT_Wc___compat,
+		    "request for implicit conversion "
 		    "from %qT to %qT not permitted in C++", rhstype, type);
 
       /* See if the pointers point to incompatible address spaces.  */
@@ -6267,7 +6274,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  switch (errtype)
 	    {
 	    case ic_argpass:
-	      error_at (location, "passing argument %d of %qE from pointer to "
+	      error_at (expr_loc, "passing argument %d of %qE from pointer to "
 			"non-enclosed address space", parmnum, rname);
 	      break;
 	    case ic_assign:
@@ -6296,7 +6303,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  switch (errtype)
 	  {
 	  case ic_argpass:
-	    warning_at (location, OPT_Wsuggest_attribute_format,
+	    warning_at (expr_loc, OPT_Wsuggest_attribute_format,
 			"argument %d of %qE might be "
 			"a candidate for a format attribute",
 			parmnum, rname);
@@ -6488,9 +6495,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   switch (errtype)
     {
     case ic_argpass:
-      error_at (location, "incompatible type for argument %d of %qE", parmnum, rname);
+      error_at (expr_loc, "incompatible type for argument %d of %qE", parmnum,
+		rname);
       inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-	      ? DECL_SOURCE_LOCATION (fundecl) : input_location,
+	      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
 	      "expected %qT but argument is of type %qT", type, rhstype);
       break;
     case ic_assign:
@@ -6499,12 +6507,12 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       break;
     case ic_init:
       error_at (location,
-	  	"incompatible types when initializing type %qT using type %qT",
+		"incompatible types when initializing type %qT using type %qT",
 		type, rhstype);
       break;
     case ic_return:
       error_at (location,
-	  	"incompatible types when returning type %qT but %qT was "
+		"incompatible types when returning type %qT but %qT was "
 		"expected", rhstype, type);
       break;
     default:
@@ -7114,6 +7122,9 @@ static int constructor_nonconst;
 /* 1 if this constructor is erroneous so far.  */
 static int constructor_erroneous;
 
+/* 1 if this constructor is the universal zero initializer { 0 }.  */
+static int constructor_zeroinit;
+
 /* Structure for managing pending initializer elements, organized as an
    AVL tree.  */
 
@@ -7275,7 +7286,7 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
   constructor_stack = 0;
   constructor_range_stack = 0;
 
-  missing_braces_mentioned = 0;
+  found_missing_braces = 0;
 
   spelling_base = 0;
   spelling_size = 0;
@@ -7370,6 +7381,7 @@ really_start_incremental_init (tree type)
   constructor_type = type;
   constructor_incremental = 1;
   constructor_designated = 0;
+  constructor_zeroinit = 1;
   designator_depth = 0;
   designator_erroneous = 0;
 
@@ -7576,12 +7588,8 @@ push_init_level (location_t loc, int implicit,
 	set_nonincremental_init (braced_init_obstack);
     }
 
-  if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned)
-    {
-      missing_braces_mentioned = 1;
-      warning_init (input_location, OPT_Wmissing_braces,
-		    "missing braces around initializer");
-    }
+  if (implicit == 1)
+    found_missing_braces = 1;
 
   if (TREE_CODE (constructor_type) == RECORD_TYPE
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
@@ -7714,16 +7722,23 @@ pop_init_level (location_t loc, int implicit,
 	}
     }
 
+  if (vec_safe_length (constructor_elements) != 1)
+    constructor_zeroinit = 0;
+
+  /* Warn when some structs are initialized with direct aggregation.  */
+  if (!implicit && found_missing_braces && warn_missing_braces
+      && !constructor_zeroinit)
+    {
+      warning_init (loc, OPT_Wmissing_braces,
+		    "missing braces around initializer");
+    }
+
   /* Warn when some struct elements are implicitly initialized to zero.  */
   if (warn_missing_field_initializers
       && constructor_type
       && TREE_CODE (constructor_type) == RECORD_TYPE
       && constructor_unfilled_fields)
     {
-	bool constructor_zeroinit =
-	 (vec_safe_length (constructor_elements) == 1
-	  && integer_zerop ((*constructor_elements)[0].value));
-
 	/* Do not warn for flexible array members or zero-length arrays.  */
 	while (constructor_unfilled_fields
 	       && (!DECL_SIZE (constructor_unfilled_fields)
@@ -8853,6 +8868,9 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
   designator_depth = 0;
   designator_erroneous = 0;
 
+  if (!implicit && value.value && !integer_zerop (value.value))
+    constructor_zeroinit = 0;
+
   /* Handle superfluous braces around string cst as in
      char x[] = {"foo"}; */
   if (string_flag
@@ -9634,12 +9652,13 @@ struct c_switch *c_switch_stack;
 
 /* Start a C switch statement, testing expression EXP.  Return the new
    SWITCH_EXPR.  SWITCH_LOC is the location of the `switch'.
-   SWITCH_COND_LOC is the location of the switch's condition.  */
+   SWITCH_COND_LOC is the location of the switch's condition.
+   EXPLICIT_CAST_P is true if the expression EXP has explicit cast.  */
 
 tree
 c_start_case (location_t switch_loc,
 	      location_t switch_cond_loc,
-	      tree exp)
+	      tree exp, bool explicit_cast_p)
 {
   tree orig_type = error_mark_node;
   struct c_switch *cs;
@@ -9660,6 +9679,19 @@ c_start_case (location_t switch_loc,
       else
 	{
 	  tree type = TYPE_MAIN_VARIANT (orig_type);
+	  tree e = exp;
+
+	  /* Warn if the condition has boolean value.  */
+	  while (TREE_CODE (e) == COMPOUND_EXPR)
+	    e = TREE_OPERAND (e, 1);
+
+	  if ((TREE_CODE (type) == BOOLEAN_TYPE
+	       || truth_value_p (TREE_CODE (e)))
+	      /* Explicit cast to int suppresses this warning.  */
+	      && !(TREE_CODE (type) == INTEGER_TYPE
+		   && explicit_cast_p))
+	    warning_at (switch_cond_loc, OPT_Wswitch_bool,
+			"switch condition has boolean value");
 
 	  if (!in_system_header_at (input_location)
 	      && (type == long_integer_type_node

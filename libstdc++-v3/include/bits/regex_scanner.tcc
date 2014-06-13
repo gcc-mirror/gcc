@@ -227,14 +227,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
       // In POSIX, when encountering "[]" or "[^]", the ']' is interpreted
-      // literally. So "[]]" or "[^]]" is valid regex. See the testcases
+      // literally. So "[]]" and "[^]]" are valid regexes. See the testcases
       // `*/empty_range.cc`.
       else if (__c == ']' && (_M_is_ecma() || !_M_at_bracket_start))
 	{
 	  _M_token = _S_token_bracket_end;
 	  _M_state = _S_state_normal;
 	}
-      // ECMAScirpt and awk permmits escaping in bracket.
+      // ECMAScript and awk permits escaping in bracket.
       else if (__c == '\\' && (_M_is_ecma() || _M_is_awk()))
 	(this->*_M_eat_escape)();
       else
@@ -344,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  _M_token = _S_token_hex_num;
 	}
-      // ECMAScript recongnizes multi-digit back-references.
+      // ECMAScript recognizes multi-digit back-references.
       else if (_M_ctype.is(_CtypeT::digit, __c))
 	{
 	  _M_value.assign(1, __c);
@@ -392,6 +392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	{
 #ifdef __STRICT_ANSI__
+	  // POSIX says it is undefined to escape ordinary characters
 	  __throw_regex_error(regex_constants::error_escape);
 #else
 	  _M_token = _S_token_ord_char;
@@ -435,8 +436,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_regex_error(regex_constants::error_escape);
     }
 
-  // Eats a character class or throwns an exception.
-  // __ch cound be ':', '.' or '=', _M_current is the char after ']' when
+  // Eats a character class or throws an exception.
+  // __ch could be ':', '.' or '=', _M_current is the char after ']' when
   // returning.
   template<typename _CharT>
     void

@@ -3099,9 +3099,9 @@ walk_type (type_p t, struct walk_type_data *d)
 			       t->u.s.tag);
 		desc = "1";
 	      }
-	    oprintf (d->of, "%*sswitch (", d->indent, "");
+	    oprintf (d->of, "%*sswitch ((int) (", d->indent, "");
 	    output_escaped_param (d, desc, "desc");
-	    oprintf (d->of, ")\n");
+	    oprintf (d->of, "))\n");
 	    d->indent += 2;
 	    oprintf (d->of, "%*s{\n", d->indent, "");
 	  }
@@ -3121,9 +3121,9 @@ walk_type (type_p t, struct walk_type_data *d)
 			       "missing `tag' option for type `%s'",
 			       t->u.s.tag);
 	      }
-	    oprintf (d->of, "%*sswitch (", d->indent, "");
+	    oprintf (d->of, "%*sswitch ((int) (", d->indent, "");
 	    output_escaped_param (d, desc, "desc");
-	    oprintf (d->of, ")\n");
+	    oprintf (d->of, "))\n");
 	    d->indent += 2;
 	    oprintf (d->of, "%*s{\n", d->indent, "");
 	    oprintf (d->of, "%*scase %s:\n", d->indent, "", type_tag);

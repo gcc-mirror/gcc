@@ -163,7 +163,7 @@ else return false.</para></listitem>
     (assume a 32-bit system where, size_t is a 32-bit entity).
   </para>
 
-<table frame="all">
+<table frame="all" xml:id="table.bitmap_alloc">
 <title>Bitmap Allocator Memory Map</title>
 
 <tgroup cols="5" align="left" colsep="1" rowsep="1">

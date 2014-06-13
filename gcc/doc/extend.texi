@@ -5732,6 +5732,8 @@ You may only specify this attribute on the definition of an @code{enum},
 also define the enumerated type, structure or union.
 
 @item transparent_union
+@cindex @code{transparent_union} attribute
+
 This attribute, attached to a @code{union} type definition, indicates
 that any function parameter having that union type causes calls to that
 function to be treated in a special way.
@@ -9695,6 +9697,7 @@ instructions, but allow the compiler to schedule those calls.
 
 @menu
 * AArch64 Built-in Functions::
+* AArch64 intrinsics::
 * Alpha Built-in Functions::
 * Altera Nios II Built-in Functions::
 * ARC Built-in Functions::
@@ -9739,6 +9742,11 @@ void __builtin_aarch64_set_fpcr (unsigned int)
 unsigned int __builtin_aarch64_get_fpsr ()
 void __builtin_aarch64_set_fpsr (unsigned int)
 @end smallexample
+
+@node AArch64 intrinsics
+@subsection ACLE Intrinsics for AArch64
+
+@include aarch64-acle-intrinsics.texi
 
 @node Alpha Built-in Functions
 @subsection Alpha Built-in Functions
@@ -10513,9 +10521,6 @@ when the @option{-mfpu=neon} switch is used:
 
 @node ARM ACLE Intrinsics
 @subsection ARM ACLE Intrinsics
-
-These built-in intrinsics for the ARMv8-A CRC32 extension are available when
-the @option{-march=armv8-a+crc} switch is used:
 
 @include arm-acle-intrinsics.texi
 

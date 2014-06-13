@@ -285,3 +285,59 @@ func TestMove(t *testing.T) {
 	checkListPointers(t, l, []*Element{e1, e3, e2, e4})
 	e1, e2, e3, e4 = e1, e3, e2, e4
 }
+
+// Test PushFront, PushBack, PushFrontList, PushBackList with uninitialized List
+func TestZeroList(t *testing.T) {
+	var l1 = new(List)
+	l1.PushFront(1)
+	checkList(t, l1, []interface{}{1})
+
+	var l2 = new(List)
+	l2.PushBack(1)
+	checkList(t, l2, []interface{}{1})
+
+	var l3 = new(List)
+	l3.PushFrontList(l1)
+	checkList(t, l3, []interface{}{1})
+
+	var l4 = new(List)
+	l4.PushBackList(l2)
+	checkList(t, l4, []interface{}{1})
+}
+
+// Test that a list l is not modified when calling InsertBefore with a mark that is not an element of l.
+func TestInsertBeforeUnknownMark(t *testing.T) {
+	var l List
+	l.PushBack(1)
+	l.PushBack(2)
+	l.PushBack(3)
+	l.InsertBefore(1, new(Element))
+	checkList(t, &l, []interface{}{1, 2, 3})
+}
+
+// Test that a list l is not modified when calling InsertAfter with a mark that is not an element of l.
+func TestInsertAfterUnknownMark(t *testing.T) {
+	var l List
+	l.PushBack(1)
+	l.PushBack(2)
+	l.PushBack(3)
+	l.InsertAfter(1, new(Element))
+	checkList(t, &l, []interface{}{1, 2, 3})
+}
+
+// Test that a list l is not modified when calling MoveAfter or MoveBefore with a mark that is not an element of l.
+func TestMoveUnkownMark(t *testing.T) {
+	var l1 List
+	e1 := l1.PushBack(1)
+
+	var l2 List
+	e2 := l2.PushBack(2)
+
+	l1.MoveAfter(e1, e2)
+	checkList(t, &l1, []interface{}{1})
+	checkList(t, &l2, []interface{}{2})
+
+	l1.MoveBefore(e1, e2)
+	checkList(t, &l1, []interface{}{1})
+	checkList(t, &l2, []interface{}{2})
+}

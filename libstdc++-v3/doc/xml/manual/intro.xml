@@ -825,11 +825,11 @@ requirements of the license of GCC.
    </para>
 
    <programlisting>
-   <emphasis>get gcc sources</emphasis>
-   <emphasis>extract into gccsrcdir</emphasis>
-   mkdir <emphasis>gccbuilddir</emphasis>
-   cd <emphasis>gccbuilddir</emphasis>
-   <emphasis>gccsrcdir</emphasis>/configure --prefix=<emphasis>destdir</emphasis> --other-opts...
+   <replaceable>get gcc sources</replaceable>
+   <replaceable>extract into gccsrcdir</replaceable>
+   mkdir <replaceable>gccbuilddir</replaceable>
+   cd <replaceable>gccbuilddir</replaceable>
+   <replaceable>gccsrcdir</replaceable>/configure --prefix=<replaceable>destdir</replaceable> --other-opts...
    make
    make check
    make install

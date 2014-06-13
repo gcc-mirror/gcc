@@ -25,7 +25,7 @@ CALC (long long *dst, long long *src1, long long *ind, long long *src2)
     }
 }
 
-void static
+void
 TEST (void)
 {
   int i;

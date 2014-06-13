@@ -1700,11 +1700,13 @@ package body Sem_Prag is
       --  Refined_Depends.
 
       if Nkind (Subp_Decl) = N_Subprogram_Body
-        and then not Acts_As_Spec (Subp_Decl)
+        and then Present (Corresponding_Spec (Subp_Decl))
       then
          Spec_Id := Corresponding_Spec (Subp_Decl);
 
-      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
+      then
          Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
 
       else
@@ -2327,11 +2329,13 @@ package body Sem_Prag is
       --  Refined_Global.
 
       if Nkind (Subp_Decl) = N_Subprogram_Body
-        and then not Acts_As_Spec (Subp_Decl)
+        and then Present (Corresponding_Spec (Subp_Decl))
       then
          Spec_Id := Corresponding_Spec (Subp_Decl);
 
-      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
+      then
          Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
 
       else
@@ -2579,8 +2583,12 @@ package body Sem_Prag is
                if Is_Entity_Name (Input) then
                   Input_Id := Entity_Of (Input);
 
-                  if Ekind_In (Input_Id, E_Abstract_State, E_Variable) then
-
+                  if Ekind_In (Input_Id, E_Abstract_State,
+                                         E_In_Parameter,
+                                         E_In_Out_Parameter,
+                                         E_Out_Parameter,
+                                         E_Variable)
+                  then
                      --  The input cannot denote states or variables declared
                      --  within the related package.
 
@@ -2606,13 +2614,15 @@ package body Sem_Prag is
                            Add_Item (Input_Id, States_Seen);
                         end if;
 
-                        if Present (Encapsulating_State (Input_Id)) then
+                        if Ekind_In (Input_Id, E_Abstract_State, E_Variable)
+                          and then Present (Encapsulating_State (Input_Id))
+                        then
                            Add_Item (Input_Id, Constits_Seen);
                         end if;
                      end if;
 
                   --  The input references something that is not a state or a
-                  --  variable.
+                  --  variable (SPARK RM 7.1.5(3)).
 
                   else
                      Error_Msg_N
@@ -2620,6 +2630,7 @@ package body Sem_Prag is
                   end if;
 
                --  Some form of illegal construct masquerading as a name
+               --  (SPARK RM 7.1.5(3)).
 
                else
                   Error_Msg_N
@@ -3215,14 +3226,27 @@ package body Sem_Prag is
       --  procedure identified by Name, returns it if it exists, otherwise
       --  errors out and uses Arg as the pragma argument for the message.
 
-      procedure Fix_Error (Msg : in out String);
-      --  This is called prior to issuing an error message. Msg is a string
-      --  that typically contains the substring "pragma". If the pragma comes
-      --  from an aspect, each such "pragma" substring is replaced with the
-      --  characters "aspect", and Error_Msg_Name_1 is set to the name of the
-      --  aspect (which may be different from the pragma name). If the current
-      --  pragma results from rewriting another pragma, then Error_Msg_Name_1
-      --  is set to the original pragma name.
+      function Fix_Error (Msg : String) return String;
+      --  This is called prior to issuing an error message. Msg is the normal
+      --  error message issued in the pragma case. This routine checks for the
+      --  case of a pragma coming from an aspect in the source, and returns a
+      --  message suitable for the aspect case as follows:
+      --
+      --    Each substring "pragma" is replaced by "aspect"
+      --
+      --    If "argument of" is at the start of the error message text, it is
+      --    replaced by "entity for".
+      --
+      --    If "argument" is at the start of the error message text, it is
+      --    replaced by "entity".
+      --
+      --  So for example, "argument of pragma X must be discrete type"
+      --  returns "entity for aspect X must be a discrete type".
+
+      --  Finally Error_Msg_Name_1 is set to the name of the aspect (which may
+      --  be different from the pragma name). If the current pragma results
+      --  from rewriting another pragma, then Error_Msg_Name_1 is set to the
+      --  original pragma name.
 
       procedure Gather_Associations
         (Names : Name_List;
@@ -3742,12 +3766,11 @@ package body Sem_Prag is
                Error_Msg_Name_1 := Pname;
 
                declare
-                  Msg : String :=
+                  Msg : constant String :=
                           "argument for pragma% must be a identifier or "
                           & "static string expression!";
                begin
-                  Fix_Error (Msg);
-                  Flag_Non_Static_Expr (Msg, Argx);
+                  Flag_Non_Static_Expr (Fix_Error (Msg), Argx);
                   raise Pragma_Exit;
                end;
             end if;
@@ -4415,15 +4438,9 @@ package body Sem_Prag is
 
          else
             Error_Msg_Name_1 := Pname;
-
-            declare
-               Msg : String :=
-                       "argument for pragma% must be a static expression!";
-            begin
-               Fix_Error (Msg);
-               Flag_Non_Static_Expr (Msg, Expr);
-            end;
-
+            Flag_Non_Static_Expr
+              (Fix_Error ("argument for pragma% must be a static expression!"),
+               Expr);
             raise Pragma_Exit;
          end if;
       end Check_Expr_Is_Static_Expression;
@@ -5818,11 +5835,9 @@ package body Sem_Prag is
       ------------------
 
       procedure Error_Pragma (Msg : String) is
-         MsgF : String := Msg;
       begin
          Error_Msg_Name_1 := Pname;
-         Fix_Error (MsgF);
-         Error_Msg_N (MsgF, N);
+         Error_Msg_N (Fix_Error (Msg), N);
          raise Pragma_Exit;
       end Error_Pragma;
 
@@ -5831,20 +5846,16 @@ package body Sem_Prag is
       ----------------------
 
       procedure Error_Pragma_Arg (Msg : String; Arg : Node_Id) is
-         MsgF : String := Msg;
       begin
          Error_Msg_Name_1 := Pname;
-         Fix_Error (MsgF);
-         Error_Msg_N (MsgF, Get_Pragma_Arg (Arg));
+         Error_Msg_N (Fix_Error (Msg), Get_Pragma_Arg (Arg));
          raise Pragma_Exit;
       end Error_Pragma_Arg;
 
       procedure Error_Pragma_Arg (Msg1, Msg2 : String; Arg : Node_Id) is
-         MsgF : String := Msg1;
       begin
          Error_Msg_Name_1 := Pname;
-         Fix_Error (MsgF);
-         Error_Msg_N (MsgF, Get_Pragma_Arg (Arg));
+         Error_Msg_N (Fix_Error (Msg1), Get_Pragma_Arg (Arg));
          Error_Pragma_Arg (Msg2, Arg);
       end Error_Pragma_Arg;
 
@@ -5853,11 +5864,9 @@ package body Sem_Prag is
       ----------------------------
 
       procedure Error_Pragma_Arg_Ident (Msg : String; Arg : Node_Id) is
-         MsgF : String := Msg;
       begin
          Error_Msg_Name_1 := Pname;
-         Fix_Error (MsgF);
-         Error_Msg_N (MsgF, Arg);
+         Error_Msg_N (Fix_Error (Msg), Arg);
          raise Pragma_Exit;
       end Error_Pragma_Arg_Ident;
 
@@ -5866,12 +5875,10 @@ package body Sem_Prag is
       ----------------------
 
       procedure Error_Pragma_Ref (Msg : String; Ref : Entity_Id) is
-         MsgF : String := Msg;
       begin
          Error_Msg_Name_1 := Pname;
-         Fix_Error (MsgF);
-         Error_Msg_Sloc   := Sloc (Ref);
-         Error_Msg_NE (MsgF, N, Ref);
+         Error_Msg_Sloc := Sloc (Ref);
+         Error_Msg_NE (Fix_Error (Msg), N, Ref);
          raise Pragma_Exit;
       end Error_Pragma_Ref;
 
@@ -6002,7 +6009,11 @@ package body Sem_Prag is
       -- Fix_Error --
       ---------------
 
-      procedure Fix_Error (Msg : in out String) is
+      function Fix_Error (Msg : String) return String is
+         Res      : String (Msg'Range) := Msg;
+         Res_Last : Natural            := Msg'Last;
+         J        : Natural;
+
       begin
          --  If we have a rewriting of another pragma, go to that pragma
 
@@ -6018,16 +6029,47 @@ package body Sem_Prag is
 
             --  Change appearence of "pragma" in message to "aspect"
 
-            for J in Msg'First .. Msg'Last - 5 loop
-               if Msg (J .. J + 5) = "pragma" then
-                  Msg (J .. J + 5) := "aspect";
+            J := Res'First;
+            while J <= Res_Last - 5 loop
+               if Res (J .. J + 5) = "pragma" then
+                  Res (J .. J + 5) := "aspect";
+                  J := J + 6;
+
+               else
+                  J := J + 1;
                end if;
             end loop;
+
+            --  Change "argument of" at start of message to "entity for"
+
+            if Res'Length > 11
+              and then Res (Res'First .. Res'First + 10) = "argument of"
+            then
+               Res (Res'First .. Res'First + 9) := "entity for";
+               Res (Res'First + 10 .. Res_Last - 1) :=
+                 Res (Res'First + 11 .. Res_Last);
+               Res_Last := Res_Last - 1;
+            end if;
+
+            --  Change "argument" at start of message to "entity"
+
+            if Res'Length > 8
+              and then Res (Res'First .. Res'First + 7) = "argument"
+            then
+               Res (Res'First .. Res'First + 5) := "entity";
+               Res (Res'First + 6 .. Res_Last - 2) :=
+                 Res (Res'First + 8 .. Res_Last);
+               Res_Last := Res_Last - 2;
+            end if;
 
             --  Get name from corresponding aspect
 
             Error_Msg_Name_1 := Original_Aspect_Name (N);
          end if;
+
+         --  Return possibly modified message
+
+         return Res (Res'First .. Res_Last);
       end Fix_Error;
 
       -------------------------
@@ -6482,10 +6524,10 @@ package body Sem_Prag is
 
                      if Force then
                         if Cont = False then
-                           Error_Msg_N ("<~!!", Arg1);
+                           Error_Msg_N ("<<~!!", Arg1);
                            Cont := True;
                         else
-                           Error_Msg_N ("\<~!!", Arg1);
+                           Error_Msg_N ("\<<~!!", Arg1);
                         end if;
 
                      --  Error, rather than warning, or in a body, so we do not
@@ -6496,10 +6538,10 @@ package body Sem_Prag is
 
                      else
                         if Cont = False then
-                           Error_Msg_N ("<~", Arg1);
+                           Error_Msg_N ("<<~", Arg1);
                            Cont := True;
                         else
-                           Error_Msg_N ("\<~", Arg1);
+                           Error_Msg_N ("\<<~", Arg1);
                         end if;
                      end if;
 
@@ -9068,7 +9110,7 @@ package body Sem_Prag is
                if Nkind (Expr) /= N_Identifier
                  or else not Is_Attribute_Name (Chars (Expr))
                then
-                  Error_Msg_N ("unknown attribute name?", Expr);
+                  Error_Msg_N ("unknown attribute name??", Expr);
 
                else
                   Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
@@ -9078,7 +9120,7 @@ package body Sem_Prag is
                if Nkind (Expr) /= N_Identifier
                  or else not Is_Pragma_Name (Chars (Expr))
                then
-                  Error_Msg_N ("unknown pragma name?", Expr);
+                  Error_Msg_N ("unknown pragma name??", Expr);
 
                else
                   Set_Restriction_No_Use_Of_Pragma (Expr, Warn);
@@ -9532,6 +9574,12 @@ package body Sem_Prag is
             --  OK if Import/Interface case
 
             elsif Import_Interface_Present (N) then
+               goto OK;
+
+            --  OK if the pragma was expanded by the compiler. Can occur when
+            --  using pragma Provide_Shift_Operators on multiple types.
+
+            elsif not Comes_From_Source (N) then
                goto OK;
 
             --  Error if being set Imported twice
@@ -14970,13 +15018,11 @@ package body Sem_Prag is
          -- Independent --
          -----------------
 
-         --  pragma Independent (LOCAL_NAME);
+         --  pragma Independent (record_component_LOCAL_NAME);
 
          when Pragma_Independent => Independent : declare
             E_Id : Node_Id;
             E    : Entity_Id;
-            D    : Node_Id;
-            K    : Node_Kind;
 
          begin
             Check_Ada_83_Warning;
@@ -14991,37 +15037,31 @@ package body Sem_Prag is
             end if;
 
             E := Entity (E_Id);
-            D := Declaration_Node (E);
-            K := Nkind (D);
+
+            --  Check we have a record component. We have not yet setup
+            --  components fully, so identify by syntactic structure.
+
+            if Nkind (Declaration_Node (E)) /= N_Component_Declaration then
+               Error_Pragma_Arg
+                 ("argument for pragma% must be record component", Arg1);
+            end if;
 
             --  Check duplicate before we chain ourselves
 
             Check_Duplicate_Pragma (E);
 
-            --  Check appropriate entity
+            --  Chain pragma
 
-            if Is_Type (E) then
-               if Rep_Item_Too_Early (E, N)
-                    or else
-                  Rep_Item_Too_Late (E, N)
-               then
-                  return;
-               else
-                  Check_First_Subtype (Arg1);
-               end if;
-
-            elsif K = N_Object_Declaration
-              or else (K = N_Component_Declaration
-                        and then Original_Record_Component (E) = E)
+            if Rep_Item_Too_Early (E, N)
+                 or else
+               Rep_Item_Too_Late (E, N)
             then
-               if Rep_Item_Too_Late (E, N) then
-                  return;
-               end if;
-
-            else
-               Error_Pragma_Arg
-                 ("inappropriate entity for pragma%", Arg1);
+               return;
             end if;
+
+            --  Set flag in component
+
+            Set_Is_Independent (E);
 
             Independence_Checks.Append ((N, E));
          end Independent;
@@ -15039,6 +15079,7 @@ package body Sem_Prag is
             E    : Entity_Id;
             D    : Node_Id;
             K    : Node_Kind;
+            C    : Node_Id;
 
          begin
             Check_Ada_83_Warning;
@@ -15073,16 +15114,26 @@ package body Sem_Prag is
             if K = N_Full_Type_Declaration
               and then (Is_Array_Type (E) or else Is_Record_Type (E))
             then
-               Independence_Checks.Append ((N, E));
+               Independence_Checks.Append ((N, Base_Type (E)));
                Set_Has_Independent_Components (Base_Type (E));
+
+               --  For record type, set all components independent
+
+               if Is_Record_Type (E) then
+                  C := First_Component (E);
+                  while Present (C) loop
+                     Set_Is_Independent (C);
+                     Next_Component (C);
+                  end loop;
+               end if;
 
             elsif (Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
               and then Nkind (D) = N_Object_Declaration
               and then Nkind (Object_Definition (D)) =
                                            N_Constrained_Array_Definition
             then
-               Independence_Checks.Append ((N, E));
-               Set_Has_Independent_Components (E);
+               Independence_Checks.Append ((N, Base_Type (Etype (E))));
+               Set_Has_Independent_Components (Base_Type (Etype (E)));
 
             else
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
@@ -17422,8 +17473,15 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Count (1);
             Check_Arg_Is_Local_Name (Arg1);
-
             Type_Id := Get_Pragma_Arg (Assoc);
+
+            if not Is_Entity_Name (Type_Id)
+              or else not Is_Type (Entity (Type_Id))
+            then
+               Error_Pragma_Arg
+                 ("argument for pragma% must be type or subtype", Arg1);
+            end if;
+
             Find_Type (Type_Id);
             Typ := Entity (Type_Id);
 
@@ -18181,44 +18239,6 @@ package body Sem_Prag is
             end if;
          end Preelaborate;
 
-         ---------------------
-         -- Preelaborate_05 --
-         ---------------------
-
-         --  pragma Preelaborate_05 [(library_unit_NAME)];
-
-         --  This pragma is useable only in GNAT_Mode, where it is used like
-         --  pragma Preelaborate but it is only effective in Ada 2005 mode
-         --  (otherwise it is ignored). This is used to implement AI-362 which
-         --  recategorizes some run-time packages in Ada 2005 mode.
-
-         when Pragma_Preelaborate_05 => Preelaborate_05 : declare
-            Ent : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Valid_Library_Unit_Pragma;
-
-            if not GNAT_Mode then
-               Error_Pragma ("pragma% only available in GNAT mode");
-            end if;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
-            --  This is one of the few cases where we need to test the value of
-            --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_2012 in a predefined unit), we need to know the
-            --  explicit version set to know if this pragma is active.
-
-            if Ada_Version_Explicit >= Ada_2005 then
-               Ent := Find_Lib_Unit_Name;
-               Set_Is_Preelaborated (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
-            end if;
-         end Preelaborate_05;
-
          --------------
          -- Priority --
          --------------
@@ -18829,88 +18849,6 @@ package body Sem_Prag is
             Set_Has_Pragma_Pure (Ent);
             Set_Suppress_Elaboration_Warnings (Ent);
          end Pure;
-
-         -------------
-         -- Pure_05 --
-         -------------
-
-         --  pragma Pure_05 [(library_unit_NAME)];
-
-         --  This pragma is useable only in GNAT_Mode, where it is used like
-         --  pragma Pure but it is only effective in Ada 2005 mode (otherwise
-         --  it is ignored). It may be used after a pragma Preelaborate, in
-         --  which case it overrides the effect of the pragma Preelaborate.
-         --  This is used to implement AI-362 which recategorizes some run-time
-         --  packages in Ada 2005 mode.
-
-         when Pragma_Pure_05 => Pure_05 : declare
-            Ent : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Valid_Library_Unit_Pragma;
-
-            if not GNAT_Mode then
-               Error_Pragma ("pragma% only available in GNAT mode");
-            end if;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
-            --  This is one of the few cases where we need to test the value of
-            --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_2012 in a predefined unit), we need to know the
-            --  explicit version set to know if this pragma is active.
-
-            if Ada_Version_Explicit >= Ada_2005 then
-               Ent := Find_Lib_Unit_Name;
-               Set_Is_Preelaborated (Ent, False);
-               Set_Is_Pure (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
-            end if;
-         end Pure_05;
-
-         -------------
-         -- Pure_12 --
-         -------------
-
-         --  pragma Pure_12 [(library_unit_NAME)];
-
-         --  This pragma is useable only in GNAT_Mode, where it is used like
-         --  pragma Pure but it is only effective in Ada 2012 mode (otherwise
-         --  it is ignored). It may be used after a pragma Preelaborate, in
-         --  which case it overrides the effect of the pragma Preelaborate.
-         --  This is used to implement AI05-0212 which recategorizes some
-         --  run-time packages in Ada 2012 mode.
-
-         when Pragma_Pure_12 => Pure_12 : declare
-            Ent : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            Check_Valid_Library_Unit_Pragma;
-
-            if not GNAT_Mode then
-               Error_Pragma ("pragma% only available in GNAT mode");
-            end if;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
-            --  This is one of the few cases where we need to test the value of
-            --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_2012 in a predefined unit), we need to know the
-            --  explicit version set to know if this pragma is active.
-
-            if Ada_Version_Explicit >= Ada_2012 then
-               Ent := Find_Lib_Unit_Name;
-               Set_Is_Preelaborated (Ent, False);
-               Set_Is_Pure (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
-            end if;
-         end Pure_12;
 
          -------------------
          -- Pure_Function --
@@ -19766,13 +19704,12 @@ package body Sem_Prag is
             --------------------------------
 
             procedure Check_Library_Level_Entity (E : Entity_Id) is
-               MsgF : String := "incorrect placement of pragma%";
+               MsgF : constant String := "incorrect placement of pragma%";
 
             begin
                if not Is_Library_Level_Entity (E) then
                   Error_Msg_Name_1 := Pname;
-                  Fix_Error (MsgF);
-                  Error_Msg_N (MsgF, N);
+                  Error_Msg_N (Fix_Error (MsgF), N);
 
                   if Ekind_In (E, E_Generic_Package,
                                   E_Package,
@@ -22623,7 +22560,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Body_Decl : constant Node_Id := Parent (N);
+      Body_Decl : constant Node_Id := Find_Related_Subprogram_Or_Body (N);
       Errors    : constant Nat     := Serious_Errors_Detected;
       Refs      : constant Node_Id :=
                     Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
@@ -22641,7 +22578,12 @@ package body Sem_Prag is
          return;
       end if;
 
-      Spec_Id := Corresponding_Spec (Body_Decl);
+      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+      else
+         Spec_Id := Corresponding_Spec (Body_Decl);
+      end if;
+
       Depends := Get_Pragma (Spec_Id, Pragma_Depends);
 
       --  Subprogram declarations lacks pragma Depends. Refined_Depends is
@@ -23390,11 +23332,11 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Body_Decl : constant Node_Id := Parent (N);
+      Body_Decl : constant Node_Id := Find_Related_Subprogram_Or_Body (N);
       Errors    : constant Nat     := Serious_Errors_Detected;
       Items     : constant Node_Id :=
                     Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
-      Spec_Id   : constant Entity_Id := Corresponding_Spec (Body_Decl);
+      Spec_Id   : Entity_Id;
 
    --  Start of processing for Analyze_Refined_Global_In_Decl_Part
 
@@ -23405,6 +23347,12 @@ package body Sem_Prag is
       if SPARK_Mode = Off then
          Check_Global_List_Syntax (Items);
          return;
+      end if;
+
+      if Nkind (Body_Decl) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+      else
+         Spec_Id := Corresponding_Spec (Body_Decl);
       end if;
 
       Global := Get_Pragma (Spec_Id, Pragma_Global);
@@ -24538,17 +24486,33 @@ package body Sem_Prag is
       -------------------------
 
       procedure Check_Clause_Syntax (Clause : Node_Id) is
-         Input  : Node_Id;
-         Inputs : Node_Id;
-         Output : Node_Id;
+         Input   : Node_Id;
+         Inputs  : Node_Id;
+         Output  : Node_Id;
+         Outputs : Node_Id;
 
       begin
          --  Output items
 
-         Output := First (Choices (Clause));
-         while Present (Output) loop
-            Check_Item_Syntax (Output);
-            Next (Output);
+         Outputs := First (Choices (Clause));
+         while Present (Outputs) loop
+
+            --  Multiple output items
+
+            if Nkind (Outputs) = N_Aggregate then
+               Output := First (Expressions (Outputs));
+               while Present (Output) loop
+                  Check_Item_Syntax (Output);
+                  Next (Output);
+               end loop;
+
+            --  Single output item
+
+            else
+               Check_Item_Syntax (Outputs);
+            end if;
+
+            Next (Outputs);
          end loop;
 
          Inputs := Expression (Clause);
@@ -25323,10 +25287,11 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Formal  : Entity_Id;
-      Global  : Node_Id;
-      List    : Node_Id;
-      Spec_Id : Entity_Id;
+      Subp_Decl : constant Node_Id := Parent (Parent (Subp_Id));
+      Formal    : Entity_Id;
+      Global    : Node_Id;
+      List      : Node_Id;
+      Spec_Id   : Entity_Id;
 
    --  Start of processing for Collect_Subprogram_Inputs_Outputs
 
@@ -25335,8 +25300,16 @@ package body Sem_Prag is
 
       --  Find the entity of the corresponding spec when processing a body
 
-      if Ekind (Subp_Id) = E_Subprogram_Body then
-         Spec_Id := Corresponding_Spec (Parent (Parent (Subp_Id)));
+      if Nkind (Subp_Decl) = N_Subprogram_Body
+        and then Present (Corresponding_Spec (Subp_Decl))
+      then
+         Spec_Id := Corresponding_Spec (Subp_Decl);
+
+      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
+      then
+         Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
+
       else
          Spec_Id := Subp_Id;
       end if;
@@ -25893,7 +25866,6 @@ package body Sem_Prag is
       Pragma_Predicate                      => -1,
       Pragma_Preelaborable_Initialization   => -1,
       Pragma_Preelaborate                   => -1,
-      Pragma_Preelaborate_05                => -1,
       Pragma_Pre_Class                      => -1,
       Pragma_Priority                       => -1,
       Pragma_Priority_Specific_Dispatching  => -1,
@@ -25903,8 +25875,6 @@ package body Sem_Prag is
       Pragma_Provide_Shift_Operators        => -1,
       Pragma_Psect_Object                   => -1,
       Pragma_Pure                           => -1,
-      Pragma_Pure_05                        => -1,
-      Pragma_Pure_12                        => -1,
       Pragma_Pure_Function                  => -1,
       Pragma_Queuing_Policy                 => -1,
       Pragma_Rational                       => -1,

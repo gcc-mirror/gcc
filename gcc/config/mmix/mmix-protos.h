@@ -28,7 +28,6 @@ extern int mmix_reversible_cc_mode (enum machine_mode);
 extern const char *mmix_text_section_asm_op (void);
 extern const char *mmix_data_section_asm_op (void);
 extern void mmix_output_quoted_string (FILE *, const char *, int);
-extern void mmix_asm_output_source_line  (FILE *, int);
 extern void mmix_asm_output_ascii (FILE *, const char *, int);
 extern void mmix_asm_output_label (FILE *, const char *);
 extern void mmix_asm_output_internal_label (FILE *, const char *);

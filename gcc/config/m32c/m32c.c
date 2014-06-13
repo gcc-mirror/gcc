@@ -61,6 +61,7 @@
 #include "gimple.h"
 #include "df.h"
 #include "tm-constrs.h"
+#include "builtins.h"
 
 /* Prototypes */
 
@@ -853,7 +854,7 @@ m32c_cannot_change_mode_class (enum machine_mode from,
 
 #define A0_OR_PSEUDO(x) (IS_REG(x, A0_REGNO) || REGNO (x) >= FIRST_PSEUDO_REGISTER)
 
-/* Implements EXTRA_CONSTRAINT_STR (see next function too).  'S' is
+/* Implements matching for constraints (see next function too).  'S' is
    for memory constraints, plus "Rpa" for PARALLEL rtx's we use for
    call return values.  */
 bool

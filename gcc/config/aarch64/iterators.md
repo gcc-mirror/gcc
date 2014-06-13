@@ -271,6 +271,9 @@
     UNSPEC_TRN1		; Used in vector permute patterns.
     UNSPEC_TRN2		; Used in vector permute patterns.
     UNSPEC_EXT		; Used in aarch64-simd.md.
+    UNSPEC_REV64	; Used in vector reverse patterns (permute).
+    UNSPEC_REV32	; Used in vector reverse patterns (permute).
+    UNSPEC_REV16	; Used in vector reverse patterns (permute).
     UNSPEC_AESE		; Used in aarch64-simd.md.
     UNSPEC_AESD         ; Used in aarch64-simd.md.
     UNSPEC_AESMC        ; Used in aarch64-simd.md.
@@ -896,6 +899,8 @@
 			      UNSPEC_TRN1 UNSPEC_TRN2
 			      UNSPEC_UZP1 UNSPEC_UZP2])
 
+(define_int_iterator REVERSE [UNSPEC_REV64 UNSPEC_REV32 UNSPEC_REV16])
+
 (define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
 			     UNSPEC_FRINTN UNSPEC_FRINTI UNSPEC_FRINTX
 			     UNSPEC_FRINTA])
@@ -904,6 +909,10 @@
 			    UNSPEC_FRINTA UNSPEC_FRINTN])
 
 (define_int_iterator FRECP [UNSPEC_FRECPE UNSPEC_FRECPX])
+
+(define_int_iterator CRC [UNSPEC_CRC32B UNSPEC_CRC32H UNSPEC_CRC32W
+                          UNSPEC_CRC32X UNSPEC_CRC32CB UNSPEC_CRC32CH
+                          UNSPEC_CRC32CW UNSPEC_CRC32CX])
 
 (define_int_iterator CRYPTO_AES [UNSPEC_AESE UNSPEC_AESD])
 (define_int_iterator CRYPTO_AESMC [UNSPEC_AESMC UNSPEC_AESIMC])
@@ -1023,11 +1032,25 @@
 			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")
 			    (UNSPEC_UZP1 "uzp") (UNSPEC_UZP2 "uzp")])
 
+; op code for REV instructions (size within which elements are reversed).
+(define_int_attr rev_op [(UNSPEC_REV64 "64") (UNSPEC_REV32 "32")
+			 (UNSPEC_REV16 "16")])
+
 (define_int_attr perm_hilo [(UNSPEC_ZIP1 "1") (UNSPEC_ZIP2 "2")
 			    (UNSPEC_TRN1 "1") (UNSPEC_TRN2 "2")
 			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")])
 
 (define_int_attr frecp_suffix  [(UNSPEC_FRECPE "e") (UNSPEC_FRECPX "x")])
+
+(define_int_attr crc_variant [(UNSPEC_CRC32B "crc32b") (UNSPEC_CRC32H "crc32h")
+                        (UNSPEC_CRC32W "crc32w") (UNSPEC_CRC32X "crc32x")
+                        (UNSPEC_CRC32CB "crc32cb") (UNSPEC_CRC32CH "crc32ch")
+                        (UNSPEC_CRC32CW "crc32cw") (UNSPEC_CRC32CX "crc32cx")])
+
+(define_int_attr crc_mode [(UNSPEC_CRC32B "QI") (UNSPEC_CRC32H "HI")
+                        (UNSPEC_CRC32W "SI") (UNSPEC_CRC32X "DI")
+                        (UNSPEC_CRC32CB "QI") (UNSPEC_CRC32CH "HI")
+                        (UNSPEC_CRC32CW "SI") (UNSPEC_CRC32CX "DI")])
 
 (define_int_attr aes_op [(UNSPEC_AESE "e") (UNSPEC_AESD "d")])
 (define_int_attr aesmc_op [(UNSPEC_AESMC "mc") (UNSPEC_AESIMC "imc")])

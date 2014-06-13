@@ -3128,8 +3128,7 @@ pass_phi_only_cprop::execute (function *fun)
     {
       free_dominance_info (CDI_DOMINATORS);
       /* If we changed the CFG schedule loops for fixup by cfgcleanup.  */
-      if (current_loops)
-	loops_state_set (LOOPS_NEED_FIXUP);
+      loops_state_set (LOOPS_NEED_FIXUP);
     }
 
   /* Propagation of const and copies may make some EH edges dead.  Purge

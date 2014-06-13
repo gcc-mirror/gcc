@@ -676,10 +676,10 @@ dummy_expr_callback (gfc_expr **e ATTRIBUTE_UNUSED, int *walk_subtrees,
 
 /* Dummy function for code callback, for use when we really
    don't want to do anything.  */
-static int
-dummy_code_callback (gfc_code **e ATTRIBUTE_UNUSED,
-		     int *walk_subtrees ATTRIBUTE_UNUSED,
-		     void *data ATTRIBUTE_UNUSED)
+int
+gfc_dummy_code_callback (gfc_code **e ATTRIBUTE_UNUSED,
+			 int *walk_subtrees ATTRIBUTE_UNUSED,
+			 void *data ATTRIBUTE_UNUSED)
 {
   return 0;
 }
@@ -844,7 +844,8 @@ static void
 optimize_reduction (gfc_namespace *ns)
 {
   current_ns = ns;
-  gfc_code_walker (&ns->code, dummy_code_callback, callback_reduction, NULL);
+  gfc_code_walker (&ns->code, gfc_dummy_code_callback,
+		   callback_reduction, NULL);
 
 /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)

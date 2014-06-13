@@ -18,7 +18,7 @@
 
 MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64/mips64r2 mips16/mmicromips msoft-float/mfp64 mcode-readable=no
 MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips64r2 mips16 micromips sof f64 spram
-MULTILIB_MATCHES = EL=mel EB=meb
+MULTILIB_MATCHES = EL=mel EB=meb mips32r2=mips32r3 mips32r2=mips32r5 mips64r2=mips64r3 mips64r2=mips64r5
 
 # The -mfp64 option is only valid in conjunction with -mips32r2.
 ifneq ($(filter MIPS_ISA_DEFAULT=33,$(tm_defines)),)

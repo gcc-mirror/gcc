@@ -27,7 +27,7 @@
 with Ada.Task_Identification;
 
 package Ada.Asynchronous_Task_Control is
-   pragma Preelaborate_05;
+   pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
    pragma Unimplemented_Unit;

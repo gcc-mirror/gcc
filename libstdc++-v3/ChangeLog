@@ -1,3 +1,140 @@
+2014-06-11  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc
+	(test02) [TEST_NUMPUT_VERBOSE]: Use `wcout' rather than `cout'.
+
+2014-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61390
+	* include/ext/pb_ds/detail/bin_search_tree_/traits.hpp
+	(bin_search_tree_traits): Do not redeclare template-parameters.
+	* testsuite/util/testsuite_iterators.h (test_container): Likewise.
+
+2014-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.am: Add missing file. Use generate.consistent.ids
+	parameter for DocBook HTML generation.
+	* doc/Makefile.in: Regenerate.
+	* doc/doxygen/user.cfg.in: Unset DOT_FONTNAME.
+	* doc/xml/faq.xml: Update content and improve formatting.
+	* doc/xml/manual/abi.xml: Add stable ID attribute and fix links.
+	* doc/xml/manual/allocator.xml: Add stable ID attribute.
+	* doc/xml/manual/bitmap_allocator.xml: Likewise.
+	* doc/xml/manual/build_hacking.xml: Likewise.
+	* doc/xml/manual/codecvt.xml: Change URL.
+	* doc/xml/manual/ctype.xml: Add stable ID attribute.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/documentation_hacking.xml: Likewise.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/locale.xml: Likewise.
+	* doc/xml/manual/messages.xml: Make section id consistent, improve
+	markup, change URL.
+	* doc/xml/manual/parallel_mode.xml: Add stable ID attributes.
+	* doc/xml/manual/profile_mode.xml: Likewise.
+	* doc/xml/manual/shared_ptr.xml: Likewise. Also remove old info.
+	* doc/xml/manual/status_cxx1998.xml: Add stable ID attributes.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+2014-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr1/beta_function.tcc: Fix spelling of include guard in
+	comment.
+
+2014-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/abi/pre/gnu.ver: Tighten some patterns; tidy.
+
+2014-06-06  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	DR 2344 - std::quoted doesn't respect padding
+	* include/std/iomanip: Allow for padding in quoted inserters.
+	* testsuite/27_io/manipulators/standard/char/dr2344.cc: New.
+	* testsuite/27_io/manipulators/standard/wchar_t/dr2344.cc: New.
+
+2014-06-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/map/operators/1.cc: Simplify test.
+
+2014-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml (faq.stream_reopening_fails): Replace <quote> in
+	code example.
+	* doc/xml/manual/backwards_compatibility.xml
+	(backwards.second.stringstreams): Likewise.
+	* doc/xml/manual/configure.xml (--enable-libstdcxx-time): Document
+	change of default.
+	* doc/xml/manual/containers.xml (associative.bitset.type_string):
+	Replace <quote> in code example.
+	* doc/xml/manual/debug.xml: Clarify reference to ThreadSanitizer.
+	* doc/xml/manual/documentation_hacking.xml: Improve debugging tips,
+	fix typos, improve markup.
+	* doc/xml/manual/intro.xml (manual.intro.status.bugs.iso): Replace
+	<emphasis> with <replaceable>.
+	* doc/xml/manual/locale.xml (locale.impl.c): Remove backticks.
+	* doc/xml/manual/support.xml (std.support.memory): Replace <quote>
+	and remove newlines in string literal.
+
+2014-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1423
+	PR c++/52174
+	* testsuite/20_util/is_assignable/value.cc: Update.
+
+2014-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/condition_variable (condition_variable_any::_Unlock): Do
+	not swallow __forced_unwind.
+	* include/std/future (__future_base::_Task_setter): Likewise.
+	(__future_base::_Async_state_impl): Turn __forced_unwind into broken
+	promise and rethrow.
+	* include/std/mutex (try_lock): Likewise.
+	* testsuite/30_threads/async/forced_unwind.cc: New.
+	* testsuite/30_threads/packaged_task/forced_unwind.cc: New.
+
+	* include/bits/regex_compiler.h (__detail::_BracketMatcher): Reorder
+	members to avoid wasted space when not using a cache.
+	(__detail::_BracketMatcher::_M_ready()): Sort and deduplicate set.
+	* include/bits/regex_compiler.tcc
+	(__detail::_BracketMatcher::_M_apply(_CharT, false_type)): Use binary
+	search on set.
+	* include/bits/regex_executor.h (__detail::_Executor::_Match_mode):
+	New enumeration type to indicate match mode.
+	(__detail::_Executor::_State_info): New type holding members only
+	needed in BFS-mode. Replace unique_ptr<vector<bool>> with
+	unique_ptr<bool[]>.
+	(__detail::_Executor::_M_rep_once_more, __detail::_Executor::_M_dfs):
+	Replace template parameter with run-time function parameter.
+	(__detail::_Executor::_M_main): Likewise. Dispatch to ...
+	(__detail::_Executor::_M_main_dispatch): New overloaded functions to
+	implement DFS and BFS mode.
+	* include/bits/regex_executor.tcc (__detail::_Executor::_M_main):
+	Split implementation into ...
+	(__detail::_Executor::_M_main_dispatch): New overloaded functions.
+	(__detail::_Executor::_M_lookahead): Create nested executor on stack.
+	(__detail::_Executor::_M_rep_once_more): Pass match mode as function
+	argument instead of template argument.
+	(__detail::_Executor::_M_dfs): Likewise.
+	* include/bits/regex_scanner.tcc: Fix typos in comments.
+	* testsuite/performance/28_regex/range.cc: New.
+
+2014-06-02  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* libstdc++-v3/include/std/type_traits (__strictest_alignment): New
+	helper struct.
+	(aligned_union): New struct (C++11).
+	(aligned_union_t): New type alias (C++14).
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* libstdc++-v3/testsuite/20_util/aligned_union/1.cc: New file.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+
 2014-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61374

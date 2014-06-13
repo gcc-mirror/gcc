@@ -271,6 +271,58 @@ func TestTransportIdleCacheKeys(t *testing.T) {
 	}
 }
 
+// Tests that the HTTP transport re-uses connections when a client
+// reads to the end of a response Body without closing it.
+func TestTransportReadToEndReusesConn(t *testing.T) {
+	defer afterTest(t)
+	const msg = "foobar"
+
+	var addrSeen map[string]int
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		addrSeen[r.RemoteAddr]++
+		if r.URL.Path == "/chunked/" {
+			w.WriteHeader(200)
+			w.(http.Flusher).Flush()
+		} else {
+			w.Header().Set("Content-Type", strconv.Itoa(len(msg)))
+			w.WriteHeader(200)
+		}
+		w.Write([]byte(msg))
+	}))
+	defer ts.Close()
+
+	buf := make([]byte, len(msg))
+
+	for pi, path := range []string{"/content-length/", "/chunked/"} {
+		wantLen := []int{len(msg), -1}[pi]
+		addrSeen = make(map[string]int)
+		for i := 0; i < 3; i++ {
+			res, err := http.Get(ts.URL + path)
+			if err != nil {
+				t.Errorf("Get %s: %v", path, err)
+				continue
+			}
+			// We want to close this body eventually (before the
+			// defer afterTest at top runs), but not before the
+			// len(addrSeen) check at the bottom of this test,
+			// since Closing this early in the loop would risk
+			// making connections be re-used for the wrong reason.
+			defer res.Body.Close()
+
+			if res.ContentLength != int64(wantLen) {
+				t.Errorf("%s res.ContentLength = %d; want %d", path, res.ContentLength, wantLen)
+			}
+			n, err := res.Body.Read(buf)
+			if n != len(msg) || err != io.EOF {
+				t.Errorf("%s Read = %v, %v; want %d, EOF", path, n, err, len(msg))
+			}
+		}
+		if len(addrSeen) != 1 {
+			t.Errorf("for %s, server saw %d distinct client addresses; want 1", path, len(addrSeen))
+		}
+	}
+}
+
 func TestTransportMaxPerHostIdleConns(t *testing.T) {
 	defer afterTest(t)
 	resch := make(chan string)
@@ -741,6 +793,9 @@ func TestTransportGzipRecursive(t *testing.T) {
 
 // tests that persistent goroutine connections shut down when no longer desired.
 func TestTransportPersistConnLeak(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	gotReqCh := make(chan bool)
 	unblockCh := make(chan bool)
@@ -798,8 +853,8 @@ func TestTransportPersistConnLeak(t *testing.T) {
 
 	// We expect 0 or 1 extra goroutine, empirically.  Allow up to 5.
 	// Previously we were leaking one per numReq.
-	t.Logf("goroutine growth: %d -> %d -> %d (delta: %d)", n0, nhigh, nfinal, growth)
 	if int(growth) > 5 {
+		t.Logf("goroutine growth: %d -> %d -> %d (delta: %d)", n0, nhigh, nfinal, growth)
 		t.Error("too many new goroutines")
 	}
 }
@@ -807,6 +862,9 @@ func TestTransportPersistConnLeak(t *testing.T) {
 // golang.org/issue/4531: Transport leaks goroutines when
 // request.ContentLength is explicitly short
 func TestTransportPersistConnLeakShortBody(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 	}))
@@ -1014,6 +1072,9 @@ func TestTransportConcurrency(t *testing.T) {
 }
 
 func TestIssue4191_InfiniteGetTimeout(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	const debug = false
 	mux := NewServeMux()
@@ -1075,6 +1136,9 @@ func TestIssue4191_InfiniteGetTimeout(t *testing.T) {
 }
 
 func TestIssue4191_InfiniteGetToPutTimeout(t *testing.T) {
+	if runtime.GOOS == "plan9" {
+		t.Skip("skipping test; see http://golang.org/issue/7237")
+	}
 	defer afterTest(t)
 	const debug = false
 	mux := NewServeMux()
@@ -1173,6 +1237,20 @@ func TestTransportResponseHeaderTimeout(t *testing.T) {
 	for i, tt := range tests {
 		res, err := c.Get(ts.URL + tt.path)
 		if err != nil {
+			uerr, ok := err.(*url.Error)
+			if !ok {
+				t.Errorf("error is not an url.Error; got: %#v", err)
+				continue
+			}
+			nerr, ok := uerr.Err.(net.Error)
+			if !ok {
+				t.Errorf("error does not satisfy net.Error interface; got: %#v", err)
+				continue
+			}
+			if !nerr.Timeout() {
+				t.Errorf("want timeout error; got: %q", nerr)
+				continue
+			}
 			if strings.Contains(err.Error(), tt.wantErr) {
 				continue
 			}
@@ -1283,7 +1361,7 @@ func TestTransportCloseResponseBody(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !bytes.Equal(buf, want) {
-		t.Errorf("read %q; want %q", buf, want)
+		t.Fatalf("read %q; want %q", buf, want)
 	}
 	didClose := make(chan error, 1)
 	go func() {
@@ -1566,6 +1644,7 @@ func TestProxyFromEnvironment(t *testing.T) {
 	for _, tt := range proxyFromEnvTests {
 		os.Setenv("HTTP_PROXY", tt.env)
 		os.Setenv("NO_PROXY", tt.noenv)
+		ResetCachedEnvironment()
 		reqURL := tt.req
 		if reqURL == "" {
 			reqURL = "http://example.com"

@@ -46,39 +46,41 @@ struct operand_alternative
   const char *constraint;
 
   /* The register class valid for this alternative (possibly NO_REGS).  */
-  enum reg_class cl;
+  ENUM_BITFIELD (reg_class) cl : 16;
 
   /* "Badness" of this alternative, computed from number of '?' and '!'
      characters in the constraint string.  */
-  unsigned int reject;
+  unsigned int reject : 16;
 
   /* -1 if no matching constraint was found, or an operand number.  */
-  int matches;
+  int matches : 8;
   /* The same information, but reversed: -1 if this operand is not
      matched by any other, or the operand number of the operand that
      matches this one.  */
-  int matched;
+  int matched : 8;
 
   /* Nonzero if '&' was found in the constraint string.  */
-  unsigned int earlyclobber:1;
+  unsigned int earlyclobber : 1;
   /* Nonzero if TARGET_MEM_CONSTRAINT was found in the constraint
      string.  */
-  unsigned int memory_ok:1;
-  /* Nonzero if 'o' was found in the constraint string.  */
-  unsigned int offmem_ok:1;
-  /* Nonzero if 'V' was found in the constraint string.  */
-  unsigned int nonoffmem_ok:1;
-  /* Nonzero if '<' was found in the constraint string.  */
-  unsigned int decmem_ok:1;
-  /* Nonzero if '>' was found in the constraint string.  */
-  unsigned int incmem_ok:1;
+  unsigned int memory_ok : 1;
   /* Nonzero if 'p' was found in the constraint string.  */
-  unsigned int is_address:1;
+  unsigned int is_address : 1;
   /* Nonzero if 'X' was found in the constraint string, or if the constraint
      string for this alternative was empty.  */
-  unsigned int anything_ok:1;
+  unsigned int anything_ok : 1;
+
+  unsigned int unused : 12;
 };
 
+/* Return the class for operand I of alternative ALT, taking matching
+   constraints into account.  */
+
+static inline enum reg_class
+alternative_class (const operand_alternative *alt, int i)
+{
+  return alt[i].matches >= 0 ? alt[alt[i].matches].cl : alt[i].cl;
+}
 
 extern void init_recog (void);
 extern void init_recog_no_volatile (void);
@@ -134,7 +136,10 @@ extern void insn_extract (rtx);
 extern void extract_insn (rtx);
 extern void extract_constrain_insn_cached (rtx);
 extern void extract_insn_cached (rtx);
-extern void preprocess_constraints (void);
+extern void preprocess_constraints (int, int, const char **,
+				    operand_alternative *);
+extern const operand_alternative *preprocess_insn_constraints (int);
+extern void preprocess_constraints (rtx);
 extern rtx peep2_next_insn (int);
 extern int peep2_regno_dead_p (int, int);
 extern int peep2_reg_dead_p (int, rtx);
@@ -256,9 +261,19 @@ struct recog_data_d
 
 extern struct recog_data_d recog_data;
 
-/* Contains a vector of operand_alternative structures for every operand.
-   Set up by preprocess_constraints.  */
-extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
+extern const operand_alternative *recog_op_alt;
+
+/* Return a pointer to an array in which index OP describes the constraints
+   on operand OP of the current instruction alternative (which_alternative).
+   Only valid after calling preprocess_constraints and constrain_operands.  */
+
+inline static const operand_alternative *
+which_op_alt ()
+{
+  gcc_checking_assert (IN_RANGE (which_alternative, 0,
+				 recog_data.n_alternatives - 1));
+  return &recog_op_alt[which_alternative * recog_data.n_operands];
+}
 
 /* A table defined in insn-output.c that give information about
    each insn-code value.  */
@@ -377,6 +392,7 @@ extern int peep2_current_count;
 struct target_recog {
   bool x_initialized;
   alternative_mask x_enabled_alternatives[LAST_INSN_CODE];
+  operand_alternative *x_op_alt[LAST_INSN_CODE];
 };
 
 extern struct target_recog default_target_recog;

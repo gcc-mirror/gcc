@@ -645,8 +645,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	    {
 	      switch (c)
 		{
-		case ',':
-		  break;
 		case '*':
 		  /* Ignore the next letter for this pass.  */
 		  c = *++p;
@@ -654,92 +652,6 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
 		case '?':
 		  alt_cost += 2;
-		case '!':  case '#':  case '&':
-		case '0':  case '1':  case '2':  case '3':  case '4':
-		case '5':  case '6':  case '7':  case '8':  case '9':
-		  break;
-
-		case 'p':
-		  allows_addr = 1;
-		  win = address_operand (op, GET_MODE (op));
-		  /* We know this operand is an address, so we want it
-		     to be allocated to a register that can be the
-		     base of an address, i.e. BASE_REG_CLASS.  */
-		  classes[i]
-		    = ira_reg_class_subunion[classes[i]]
-		      [base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-				       ADDRESS, SCRATCH)];
-		  break;
-
-		case 'm':  case 'o':  case 'V':
-		  /* It doesn't seem worth distinguishing between
-		     offsettable and non-offsettable addresses
-		     here.  */
-		  insn_allows_mem[i] = allows_mem[i] = 1;
-		  if (MEM_P (op))
-		    win = 1;
-		  break;
-
-		case '<':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
-			  || GET_CODE (XEXP (op, 0)) == POST_DEC))
-		    win = 1;
-		  break;
-
-		case '>':
-		  if (MEM_P (op)
-		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
-			  || GET_CODE (XEXP (op, 0)) == POST_INC))
-		    win = 1;
-		  break;
-
-		case 'E':
-		case 'F':
-		  if (CONST_DOUBLE_AS_FLOAT_P (op) 
-		      || (GET_CODE (op) == CONST_VECTOR
-			  && (GET_MODE_CLASS (GET_MODE (op))
-			      == MODE_VECTOR_FLOAT)))
-		    win = 1;
-		  break;
-
-		case 'G':
-		case 'H':
-		  if (CONST_DOUBLE_AS_FLOAT_P (op) 
-		      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
-		    win = 1;
-		  break;
-
-		case 's':
-		  if (CONST_SCALAR_INT_P (op)) 
-		    break;
-
-		case 'i':
-		  if (CONSTANT_P (op)
-		      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op)))
-		    win = 1;
-		  break;
-
-		case 'n':
-		  if (CONST_SCALAR_INT_P (op)) 
-		    win = 1;
-		  break;
-
-		case 'I':
-		case 'J':
-		case 'K':
-		case 'L':
-		case 'M':
-		case 'N':
-		case 'O':
-		case 'P':
-		  if (CONST_INT_P (op)
-		      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
-		    win = 1;
-		  break;
-
-		case 'X':
-		  win = 1;
 		  break;
 
 		case 'g':
@@ -748,30 +660,38 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			  && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))))
 		    win = 1;
 		  insn_allows_mem[i] = allows_mem[i] = 1;
-		case 'r':
 		  classes[i] = ira_reg_class_subunion[classes[i]][GENERAL_REGS];
 		  break;
 
 		default:
-		  if (REG_CLASS_FROM_CONSTRAINT (c, p) != NO_REGS)
-		    classes[i] = ira_reg_class_subunion[classes[i]]
-		                 [REG_CLASS_FROM_CONSTRAINT (c, p)];
-#ifdef EXTRA_CONSTRAINT_STR
-		  else if (EXTRA_CONSTRAINT_STR (op, c, p))
-		    win = 1;
-
-		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
+		  enum constraint_num cn = lookup_constraint (p);
+		  enum reg_class cl;
+		  switch (get_constraint_type (cn))
 		    {
+		    case CT_REGISTER:
+		      cl = reg_class_for_constraint (cn);
+		      if (cl != NO_REGS)
+			classes[i] = ira_reg_class_subunion[classes[i]][cl];
+		      break;
+
+		    case CT_CONST_INT:
+		      if (CONST_INT_P (op)
+			  && insn_const_int_ok_for_constraint (INTVAL (op), cn))
+			win = 1;
+		      break;
+
+		    case CT_MEMORY:
 		      /* Every MEM can be reloaded to fit.  */
 		      insn_allows_mem[i] = allows_mem[i] = 1;
 		      if (MEM_P (op))
 			win = 1;
-		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-		    {
+		      break;
+
+		    case CT_ADDRESS:
 		      /* Every address can be reloaded to fit.  */
 		      allows_addr = 1;
-		      if (address_operand (op, GET_MODE (op)))
+		      if (address_operand (op, GET_MODE (op))
+			  || constraint_satisfied_p (op, cn))
 			win = 1;
 		      /* We know this operand is an address, so we
 			 want it to be allocated to a hard register
@@ -781,8 +701,13 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			= ira_reg_class_subunion[classes[i]]
 			  [base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
 					   ADDRESS, SCRATCH)];
+		      break;
+
+		    case CT_FIXED_FORM:
+		      if (constraint_satisfied_p (op, cn))
+			win = 1;
+		      break;
 		    }
-#endif
 		  break;
 		}
 	      p += CONSTRAINT_LEN (c, p);
@@ -1275,8 +1200,8 @@ record_operand_costs (rtx insn, enum reg_class *pref)
 			     XEXP (recog_data.operand[i], 0),
 			     0, MEM, SCRATCH, frequency * 2);
       else if (constraints[i][0] == 'p'
-	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0],
-					    constraints[i]))
+	       || (insn_extra_address_constraint
+		   (lookup_constraint (constraints[i]))))
 	record_address_regs (VOIDmode, ADDR_SPACE_GENERIC,
 			     recog_data.operand[i], 0, ADDRESS, SCRATCH,
 			     frequency * 2);

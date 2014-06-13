@@ -591,6 +591,20 @@ class Gogo
   named_types_are_converted() const
   { return this->named_types_are_converted_; }
 
+  // Return the variable to use for the zero value of TYPE.  All types
+  // shared the same zero value, and we make sure that it is large
+  // enough.
+  Named_object*
+  zero_value(Type *type);
+
+  // Return whether a variable is the zero value variable.
+  bool
+  is_zero_value(Variable* v) const;
+
+  // Create the zero value variable.
+  Bvariable*
+  backend_zero_value();
+
   // Write out the global values.
   void
   write_globals();
@@ -727,6 +741,12 @@ class Gogo
   std::string pkgpath_symbol_;
   // The prefix to use for symbols, from the -fgo-prefix option.
   std::string prefix_;
+  // The special zero value variable.
+  Named_object* zero_value_;
+  // The size of the zero value variable.
+  unsigned long zero_value_size_;
+  // The alignment of the zero value variable, in bytes.
+  unsigned long zero_value_align_;
   // Whether pkgpath_ has been set.
   bool pkgpath_set_;
   // Whether an explicit package path was set by -fgo-pkgpath.

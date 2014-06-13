@@ -745,7 +745,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
   for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
-      int n_ops, i, alt, predicated;
+      int n_ops, i, predicated;
       bool is_asm, any_replacements;
       rtx set;
       rtx link;
@@ -774,22 +774,19 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       extract_insn (insn);
       if (! constrain_operands (1))
 	fatal_insn_not_found (insn);
-      preprocess_constraints ();
-      alt = which_alternative;
+      preprocess_constraints (insn);
+      const operand_alternative *op_alt = which_op_alt ();
       n_ops = recog_data.n_operands;
       is_asm = asm_noperands (PATTERN (insn)) >= 0;
 
-      /* Simplify the code below by rewriting things to reflect
-	 matching constraints.  Also promote OP_OUT to OP_INOUT
+      /* Simplify the code below by promoting OP_OUT to OP_INOUT
 	 in predicated instructions.  */
 
       predicated = GET_CODE (PATTERN (insn)) == COND_EXEC;
       for (i = 0; i < n_ops; ++i)
 	{
-	  int matches = recog_op_alt[i][alt].matches;
-	  if (matches >= 0)
-	    recog_op_alt[i][alt].cl = recog_op_alt[matches][alt].cl;
-	  if (matches >= 0 || recog_op_alt[i][alt].matched >= 0
+	  int matches = op_alt[i].matches;
+	  if (matches >= 0 || op_alt[i].matched >= 0
 	      || (predicated && recog_data.operand_type[i] == OP_OUT))
 	    recog_data.operand_type[i] = OP_INOUT;
 	}
@@ -800,7 +797,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       /* For each earlyclobber operand, zap the value data.  */
       for (i = 0; i < n_ops; i++)
-	if (recog_op_alt[i][alt].earlyclobber)
+	if (op_alt[i].earlyclobber)
 	  kill_value (recog_data.operand[i], vd);
 
       /* Within asms, a clobber cannot overlap inputs or outputs.
@@ -814,7 +811,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       /* Kill all early-clobbered operands.  */
       for (i = 0; i < n_ops; i++)
-	if (recog_op_alt[i][alt].earlyclobber)
+	if (op_alt[i].earlyclobber)
 	  kill_value (recog_data.operand[i], vd);
 
       /* If we have dead sets in the insn, then we need to note these as we
@@ -880,7 +877,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      extract_insn (insn);
 	      if (! constrain_operands (1))
 		fatal_insn_not_found (insn);
-	      preprocess_constraints ();
+	      preprocess_constraints (insn);
 	    }
 
 	  /* Otherwise, try all valid registers and see if its valid.  */
@@ -908,7 +905,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  extract_insn (insn);
 		  if (! constrain_operands (1))
 		    fatal_insn_not_found (insn);
-		  preprocess_constraints ();
+		  preprocess_constraints (insn);
 		}
 	    }
 	}
@@ -936,16 +933,16 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 	  if (recog_data.operand_type[i] == OP_IN)
 	    {
-	      if (recog_op_alt[i][alt].is_address)
+	      if (op_alt[i].is_address)
 		replaced[i]
 		  = replace_oldest_value_addr (recog_data.operand_loc[i],
-					       recog_op_alt[i][alt].cl,
+					       alternative_class (op_alt, i),
 					       VOIDmode, ADDR_SPACE_GENERIC,
 					       insn, vd);
 	      else if (REG_P (recog_data.operand[i]))
 		replaced[i]
 		  = replace_oldest_value_reg (recog_data.operand_loc[i],
-					      recog_op_alt[i][alt].cl,
+					      alternative_class (op_alt, i),
 					      insn, vd);
 	      else if (MEM_P (recog_data.operand[i]))
 		replaced[i] = replace_oldest_value_mem (recog_data.operand[i],
@@ -1012,7 +1009,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  unsigned int set_nregs = 0;
 	  unsigned int regno;
 	  rtx exp;
-	  hard_reg_set_iterator hrsi;
 
 	  for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
 	    {
@@ -1031,8 +1027,10 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		}
 	    }
 
-	  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
-	    if (regno < set_regno || regno >= set_regno + set_nregs)
+	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_call, regno)
+		 || HARD_REGNO_CALL_PART_CLOBBERED (regno, vd->e[regno].mode))
+		&& (regno < set_regno || regno >= set_regno + set_nregs))
 	      kill_value_regno (regno, 1, vd);
 
 	  /* If SET was seen in CALL_INSN_FUNCTION_USAGE, and SET_SRC

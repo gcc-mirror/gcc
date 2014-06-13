@@ -57,6 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
 #include "optabs.h"
+#include "builtins.h"
+#include "varasm.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */
@@ -4363,13 +4365,14 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
   enum machine_mode mode = TYPE_MODE (vectype);
 
-  /* vect_permute_store_chain requires the group size to be a power of two.  */
-  if (exact_log2 (count) == -1)
+  /* vect_permute_store_chain requires the group size to be equal to 3 or
+     be a power of two.  */
+  if (count != 3 && exact_log2 (count) == -1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "the size of the group of accesses"
-                         " is not a power of 2\n");
+			 "the size of the group of accesses"
+			 " is not a power of 2 or not eqaul to 3\n");
       return false;
     }
 
@@ -4378,23 +4381,76 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
     {
       unsigned int i, nelt = GET_MODE_NUNITS (mode);
       unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
-      for (i = 0; i < nelt / 2; i++)
+
+      if (count == 3)
 	{
-	  sel[i * 2] = i;
-	  sel[i * 2 + 1] = i + nelt;
+	  unsigned int j0 = 0, j1 = 0, j2 = 0;
+	  unsigned int i, j;
+
+	  for (j = 0; j < 3; j++)
+	    {
+	      int nelt0 = ((3 - j) * nelt) % 3;
+	      int nelt1 = ((3 - j) * nelt + 1) % 3;
+	      int nelt2 = ((3 - j) * nelt + 2) % 3;
+	      for (i = 0; i < nelt; i++)
+		{
+		  if (3 * i + nelt0 < nelt)
+		    sel[3 * i + nelt0] = j0++;
+		  if (3 * i + nelt1 < nelt)
+		    sel[3 * i + nelt1] = nelt + j1++;
+		  if (3 * i + nelt2 < nelt)
+		    sel[3 * i + nelt2] = 0;
+		}
+	      if (!can_vec_perm_p (mode, false, sel))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf (MSG_MISSED_OPTIMIZATION,
+				 "permutaion op not supported by target.\n");
+		  return false;
+		}
+
+	      for (i = 0; i < nelt; i++)
+		{
+		  if (3 * i + nelt0 < nelt)
+		    sel[3 * i + nelt0] = 3 * i + nelt0;
+		  if (3 * i + nelt1 < nelt)
+		    sel[3 * i + nelt1] = 3 * i + nelt1;
+		  if (3 * i + nelt2 < nelt)
+		    sel[3 * i + nelt2] = nelt + j2++;
+		}
+	      if (!can_vec_perm_p (mode, false, sel))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf (MSG_MISSED_OPTIMIZATION,
+				 "permutaion op not supported by target.\n");
+		  return false;
+		}
+	    }
+	  return true;
 	}
-      if (can_vec_perm_p (mode, false, sel))
+      else
 	{
-	  for (i = 0; i < nelt; i++)
-	    sel[i] += nelt / 2;
-	  if (can_vec_perm_p (mode, false, sel))
-	    return true;
+	  /* If length is not equal to 3 then only power of 2 is supported.  */
+	  gcc_assert (exact_log2 (count) != -1);
+
+	  for (i = 0; i < nelt / 2; i++)
+	    {
+	      sel[i * 2] = i;
+	      sel[i * 2 + 1] = i + nelt;
+	    }
+	    if (can_vec_perm_p (mode, false, sel))
+	      {
+		for (i = 0; i < nelt; i++)
+		  sel[i] += nelt / 2;
+		if (can_vec_perm_p (mode, false, sel))
+		  return true;
+	      }
 	}
     }
 
   if (dump_enabled_p ())
     dump_printf (MSG_MISSED_OPTIMIZATION,
-                 "interleave op not supported by target.\n");
+		 "permutaion op not supported by target.\n");
   return false;
 }
 
@@ -4414,9 +4470,9 @@ vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
 /* Function vect_permute_store_chain.
 
    Given a chain of interleaved stores in DR_CHAIN of LENGTH that must be
-   a power of 2, generate interleave_high/low stmts to reorder the data
-   correctly for the stores.  Return the final references for stores in
-   RESULT_CHAIN.
+   a power of 2 or equal to 3, generate interleave_high/low stmts to reorder
+   the data correctly for the stores.  Return the final references for stores
+   in RESULT_CHAIN.
 
    E.g., LENGTH is 4 and the scalar type is short, i.e., VF is 8.
    The input is 4 vectors each containing 8 elements.  We assign a number to
@@ -4483,7 +4539,9 @@ vect_permute_store_chain (vec<tree> dr_chain,
   gimple perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   tree perm_mask_low, perm_mask_high;
-  unsigned int i, n;
+  tree data_ref;
+  tree perm3_mask_low, perm3_mask_high;
+  unsigned int i, n, log_length = exact_log2 (length);
   unsigned int j, nelt = TYPE_VECTOR_SUBPARTS (vectype);
   unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
 
@@ -4491,47 +4549,116 @@ vect_permute_store_chain (vec<tree> dr_chain,
   memcpy (result_chain->address (), dr_chain.address (),
 	  length * sizeof (tree));
 
-  for (i = 0, n = nelt / 2; i < n; i++)
+  if (length == 3)
     {
-      sel[i * 2] = i;
-      sel[i * 2 + 1] = i + nelt;
-    }
-  perm_mask_high = vect_gen_perm_mask (vectype, sel);
-  gcc_assert (perm_mask_high != NULL);
+      unsigned int j0 = 0, j1 = 0, j2 = 0;
 
-  for (i = 0; i < nelt; i++)
-    sel[i] += nelt / 2;
-  perm_mask_low = vect_gen_perm_mask (vectype, sel);
-  gcc_assert (perm_mask_low != NULL);
+      for (j = 0; j < 3; j++)
+        {
+	  int nelt0 = ((3 - j) * nelt) % 3;
+	  int nelt1 = ((3 - j) * nelt + 1) % 3;
+	  int nelt2 = ((3 - j) * nelt + 2) % 3;
 
-  for (i = 0, n = exact_log2 (length); i < n; i++)
-    {
-      for (j = 0; j < length/2; j++)
-	{
-	  vect1 = dr_chain[j];
-	  vect2 = dr_chain[j+length/2];
+	  for (i = 0; i < nelt; i++)
+	    {
+	      if (3 * i + nelt0 < nelt)
+		sel[3 * i + nelt0] = j0++;
+	      if (3 * i + nelt1 < nelt)
+		sel[3 * i + nelt1] = nelt + j1++;
+	      if (3 * i + nelt2 < nelt)
+		sel[3 * i + nelt2] = 0;
+	    }
+	  perm3_mask_low = vect_gen_perm_mask (vectype, sel);
+	  gcc_assert (perm3_mask_low != NULL);
+
+	  for (i = 0; i < nelt; i++)
+	    {
+	      if (3 * i + nelt0 < nelt)
+		sel[3 * i + nelt0] = 3 * i + nelt0;
+	      if (3 * i + nelt1 < nelt)
+		sel[3 * i + nelt1] = 3 * i + nelt1;
+	      if (3 * i + nelt2 < nelt)
+		sel[3 * i + nelt2] = nelt + j2++;
+	    }
+	  perm3_mask_high = vect_gen_perm_mask (vectype, sel);
+	  gcc_assert (perm3_mask_high != NULL);
+
+	  vect1 = dr_chain[0];
+	  vect2 = dr_chain[1];
 
 	  /* Create interleaving stmt:
-	     high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1, ...}>  */
-	  high = make_temp_ssa_name (vectype, NULL, "vect_inter_high");
-	  perm_stmt
-	    = gimple_build_assign_with_ops (VEC_PERM_EXPR, high,
-					    vect1, vect2, perm_mask_high);
+	     low = VEC_PERM_EXPR <vect1, vect2,
+				  {j, nelt, *, j + 1, nelt + j + 1, *,
+				   j + 2, nelt + j + 2, *, ...}>  */
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_low");
+	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						    vect1, vect2,
+						    perm3_mask_low);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	  (*result_chain)[2*j] = high;
 
+	  vect1 = data_ref;
+	  vect2 = dr_chain[2];
 	  /* Create interleaving stmt:
-	     low = VEC_PERM_EXPR <vect1, vect2, {nelt/2, nelt*3/2, nelt/2+1,
-						 nelt*3/2+1, ...}>  */
-	  low = make_temp_ssa_name (vectype, NULL, "vect_inter_low");
-	  perm_stmt
-	    = gimple_build_assign_with_ops (VEC_PERM_EXPR, low,
-					    vect1, vect2, perm_mask_low);
+	     low = VEC_PERM_EXPR <vect1, vect2,
+				  {0, 1, nelt + j, 3, 4, nelt + j + 1,
+				   6, 7, nelt + j + 2, ...}>  */
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle3_high");
+	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						    vect1, vect2,
+						    perm3_mask_high);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	  (*result_chain)[2*j+1] = low;
+	  (*result_chain)[j] = data_ref;
 	}
-      memcpy (dr_chain.address (), result_chain->address (),
-	      length * sizeof (tree));
+    }
+  else
+    {
+      /* If length is not equal to 3 then only power of 2 is supported.  */
+      gcc_assert (exact_log2 (length) != -1);
+
+      for (i = 0, n = nelt / 2; i < n; i++)
+	{
+	  sel[i * 2] = i;
+	  sel[i * 2 + 1] = i + nelt;
+	}
+	perm_mask_high = vect_gen_perm_mask (vectype, sel);
+	gcc_assert (perm_mask_high != NULL);
+
+	for (i = 0; i < nelt; i++)
+	  sel[i] += nelt / 2;
+	perm_mask_low = vect_gen_perm_mask (vectype, sel);
+	gcc_assert (perm_mask_low != NULL);
+
+	for (i = 0, n = log_length; i < n; i++)
+	  {
+	    for (j = 0; j < length/2; j++)
+	      {
+		vect1 = dr_chain[j];
+		vect2 = dr_chain[j+length/2];
+
+		/* Create interleaving stmt:
+		   high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1,
+							...}>  */
+		high = make_temp_ssa_name (vectype, NULL, "vect_inter_high");
+		perm_stmt
+		  = gimple_build_assign_with_ops (VEC_PERM_EXPR, high,
+						  vect1, vect2, perm_mask_high);
+		vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+		(*result_chain)[2*j] = high;
+
+		/* Create interleaving stmt:
+		   low = VEC_PERM_EXPR <vect1, vect2,
+					{nelt/2, nelt*3/2, nelt/2+1, nelt*3/2+1,
+					 ...}>  */
+		low = make_temp_ssa_name (vectype, NULL, "vect_inter_low");
+		perm_stmt
+		  = gimple_build_assign_with_ops (VEC_PERM_EXPR, low,
+						  vect1, vect2, perm_mask_low);
+		vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+		(*result_chain)[2*j+1] = low;
+	      }
+	    memcpy (dr_chain.address (), result_chain->address (),
+		    length * sizeof (tree));
+	  }
     }
 }
 
@@ -5190,19 +5317,26 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
 
-  /* We cannot change alignment of common or external symbols as another
-     translation unit may contain a definition with lower alignment.  
-     The rules of common symbol linking mean that the definition
-     will override the common symbol.  The same is true for constant
-     pool entries which may be shared and are not properly merged
-     by LTO.  */
-  if (DECL_EXTERNAL (decl)
-      || DECL_COMMON (decl)
-      || DECL_IN_CONSTANT_POOL (decl))
-    return false;
+  gcc_assert (!TREE_ASM_WRITTEN (decl));
 
-  if (TREE_ASM_WRITTEN (decl))
-    return false;
+  if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
+    {
+      symtab_node *snode;
+
+      /* We cannot change alignment of symbols that may bind to symbols
+	 in other translation unit that may contain a definition with lower
+	 alignment.  */
+      if (!decl_binds_to_current_def_p (decl))
+	return false;
+
+      /* When compiling partition, be sure the symbol is not output by other
+	 partition.  */
+      snode = symtab_get_node (decl);
+      if (flag_ltrans
+	  && (snode->in_other_partition
+	      || symtab_get_symbol_partitioning_class (snode) == SYMBOL_DUPLICATE))
+	return false;
+    }
 
   /* Do not override the alignment as specified by the ABI when the used
      attribute is set.  */
@@ -5212,9 +5346,22 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   /* Do not override explicit alignment set by the user when an explicit
      section name is also used.  This is a common idiom used by many
      software projects.  */
-  if (DECL_SECTION_NAME (decl) != NULL_TREE
-      && !DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+  if (TREE_STATIC (decl) 
+      && DECL_SECTION_NAME (decl) != NULL
+      && !symtab_get_node (decl)->implicit_section)
     return false;
+
+  /* If symbol is an alias, we need to check that target is OK.  */
+  if (TREE_STATIC (decl))
+    {
+      tree target = symtab_alias_ultimate_target (symtab_get_node (decl))->decl;
+      if (target != decl)
+	{
+	  if (DECL_PRESERVE_P (target))
+	    return false;
+	  decl = target;
+	}
+    }
 
   if (TREE_STATIC (decl))
     return (alignment <= MAX_OFILE_ALIGNMENT);

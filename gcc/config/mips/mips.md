@@ -65,6 +65,7 @@
   sr71000
   xlr
   xlp
+  p5600
 ])
 
 (define_c_enum "unspec" [
@@ -1050,6 +1051,7 @@
   (eq_attr "type" "ghost")
   "nothing")
 
+(include "p5600.md")
 (include "4k.md")
 (include "5k.md")
 (include "20kc.md")
