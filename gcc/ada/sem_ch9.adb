@@ -3328,7 +3328,7 @@ package body Sem_Ch9 is
                if Present (Iface) then
                   Error_Msg_NE
                     ("interface in partial view& not implemented by full "
-                      & "type (RM-2005 7.3 (7.3/2))", T, Iface);
+                     & "type (RM-2005 7.3 (7.3/2))", T, Iface);
                end if;
 
                Iface := Find_Hidden_Interface (Full_T_Ifaces, Priv_T_Ifaces);

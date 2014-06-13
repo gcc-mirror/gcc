@@ -15598,11 +15598,10 @@ package body Sem_Ch3 is
                   end if;
 
                elsif Nkind (N) = N_Full_Type_Declaration
-                 and then
-                   (Nkind (Type_Definition (N)) = N_Record_Definition
-                     or else Nkind (Type_Definition (N))
-                                 = N_Derived_Type_Definition)
-                      and then Interface_Present (Type_Definition (N))
+                 and then Nkind_In
+                            (Type_Definition (N), N_Record_Definition,
+                                                  N_Derived_Type_Definition)
+                 and then Interface_Present (Type_Definition (N))
                then
                   Error_Msg_N
                     ("completion of private type cannot be an interface", N);
@@ -18309,16 +18308,16 @@ package body Sem_Ch3 is
 
             if Present (Iface) then
                Error_Msg_NE
-                 ("interface in partial view& not implemented by full type " &
-                  "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
+                 ("interface in partial view& not implemented by full type "
+                  & "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
             end if;
 
             Iface := Find_Hidden_Interface (Full_T_Ifaces, Priv_T_Ifaces);
 
             if Present (Iface) then
                Error_Msg_NE
-                 ("interface & not implemented by partial view " &
-                  "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
+                 ("interface & not implemented by partial view "
+                  & "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
             end if;
          end;
       end if;
@@ -18349,7 +18348,7 @@ package body Sem_Ch3 is
          if Priv_Parent = Any_Type or else Full_Parent = Any_Type then
             return;
 
-         --  Ada 2005 (AI-251): Interfaces in the full-typ can be given in
+         --  Ada 2005 (AI-251): Interfaces in the full type can be given in
          --  any order. Therefore we don't have to check that its parent must
          --  be a descendant of the parent of the private type declaration.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -131,8 +131,8 @@ private
    pragma Inline (Finalize);
 
    type Constant_Reference_Type
-      (Element : not null access constant Element_Type)
-   is record
+      (Element : not null access constant Element_Type) is
+   record
       Control : Reference_Control_Type;
    end record;
 
@@ -148,9 +148,7 @@ private
 
    for Constant_Reference_Type'Read use Read;
 
-   type Reference_Type
-     (Element : not null access Element_Type)
-   is record
+   type Reference_Type (Element : not null access Element_Type) is record
       Control : Reference_Control_Type;
    end record;
 
