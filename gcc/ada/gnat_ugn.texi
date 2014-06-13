@@ -22875,12 +22875,14 @@ a default guard area is created.
 
 GNAT supplies the following task-related pragma:
 
+@itemize
 @item  @code{TASK_STORAGE}
 
 GNAT implements pragma @code{TASK_STORAGE} in the same way as HP Ada.
 Both HP Ada and GNAT supply the pragmas @code{PASSIVE},
 @code{SUPPRESS}, and @code{VOLATILE}.
 @end itemize
+
 @node Scheduling and Task Priority
 @subsection Scheduling and Task Priority
 

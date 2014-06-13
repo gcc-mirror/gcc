@@ -13568,30 +13568,16 @@ package body Sem_Ch3 is
                   Set_Etype (Acc_Type, Acc_Type);
                   Set_Scope (Acc_Type, New_Subp);
 
-                  --  Set size of anonymous access type. Note that anonymous
-                  --  access to Unconstrained always uses thin pointers. This
-                  --  avoids confusion for the case where two types that should
-                  --  conform but end up differning, because in one case we can
-                  --  see the unconstrained designated type, and in the other
-                  --  case we can't see it yet (full type declaration not seen
-                  --  yet), so we default to thin in that case anyway.
-
-                  --  For now, for the access to unconstrained array scase, we
-                  --  are making the above change only if debug flag -gnatd.1
-                  --  is set. That's because the change, though almost
-                  --  certainly correct, is causing gnatcoll regressions
-                  --  which we have to sort out ???
+                  --  Set size of anonymous access type. If we have an access
+                  --  to an unconstrained array, this is a fat pointer, so it
+                  --  is sizes at twice addtress size.
 
                   if Is_Array_Type (Desig_Typ)
                     and then not Is_Constrained (Desig_Typ)
-                    and then not Debug_Flag_Dot_1
                   then
                      Init_Size (Acc_Type, 2 * System_Address_Size);
 
-                  --  Normal case. This is what we intend to do always when we
-                  --  finally install the change discussed above. In the case
-                  --  of access to unconstrained array, then we take this path
-                  --  for now only if -gnatd.1 debug flag is set.
+                  --  Other cases use a thin pointer
 
                   else
                      Init_Size (Acc_Type, System_Address_Size);

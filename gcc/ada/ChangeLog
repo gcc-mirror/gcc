@@ -1,3 +1,16 @@
+2014-06-13  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Minor fixes.
+	* gnat_ugn.texi: Added a missing "@itemize".
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Remove -gnatd.1 flag documentation.
+	* layout.adb (Layout_Type): Remove special handling of size
+	for anonymous access type.
+	* sem_ch3.adb (Replace_Type): Remove special handling of size
+	for anonymous access type.
+
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
 	* debug.adb: Document debug flag -gnatd.1.

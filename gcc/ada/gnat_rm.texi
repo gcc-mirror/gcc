@@ -251,7 +251,6 @@ Implementation Defined Pragmas
 * Pragma Suppress_Debug_Info::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
-* Pragma Task_Info::
 * Pragma Task_Name::
 * Pragma Task_Storage::
 * Pragma Test_Case::
@@ -10527,6 +10526,8 @@ restriction is in force:
 @item Ancestor part cannot be a type mark
 @item Attributes 'Image, 'Width and 'Value not allowed
 @item Functions may not update globals
+@item Subprograms may not contain direct calls to themselves (prevents recursion within unit)
+@item Call to subprogram not allowed in same unit before body has been seen (prevents recursion within unit)
 @end itemize
 
 The following restrictions are enforced, but note that they are actually more
@@ -10564,6 +10565,7 @@ currently checked by the SPARK_05 restriction:
 @item After renaming, cannot use the original name
 @item Subprograms can only be renamed to remove package prefix
 @item Pragma import must be immediately after entity it names
+@item No mutual recursion between multiple units (this can be checked with gnatcheck)
 @end itemize
 
 Note that if a unit is compiled in Ada 95 mode with the SPARK restriction,
@@ -22454,7 +22456,7 @@ for the version of GNAT that you are using, see the documentation
 in the spec of package System.Task_Info in the runtime
 library.
 
-@node package System.Task_Info (s-tasinf.ads)
+@node System.Task_Info (s-tasinf.ads)
 @section package System.Task_Info (@file{s-tasinf.ads})
 
 @noindent
