@@ -16792,10 +16792,9 @@ add_src_coords_attributes (dw_die_ref die, tree decl)
 static void
 add_linkage_name (dw_die_ref die, tree decl)
 {
-  if (debug_info_level > DINFO_LEVEL_TERSE
+  if (debug_info_level > DINFO_LEVEL_NONE
       && (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
       && TREE_PUBLIC (decl)
-      && !DECL_ABSTRACT (decl)
       && !(TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
       && die->die_tag != DW_TAG_member)
     {

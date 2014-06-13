@@ -1,3 +1,7 @@
+2014-06-13  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/debug/dwarf2/cdtor-1.C: Update test result.
+
 2014-06-13  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.dg/vect/vect-singleton_1.c: Remove duplicate of test body.
