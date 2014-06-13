@@ -155,7 +155,7 @@ package body Debug is
    --  d8   Force opposite endianness in packed stuff
    --  d9   Allow lock free implementation
 
-   --  d.1
+   --  d.1  Disable fix to make anonymous access types thin
    --  d.2
    --  d.3
    --  d.4
@@ -732,6 +732,12 @@ package body Debug is
 
    --  d9   This allows lock free implementation for protected objects
    --       (see Exp_Ch9).
+
+   --  d.1  There is a problem with making anonymous access types which refer
+   --       to an unconstrained array thick. And we have a fix, which is to
+   --       make them thin always. Search for Debug_Flag_Dot_1 in layout.adb
+   --       and sem_ch3.adb to see the explanation for why we don't enable this
+   --       fix for now unless this debug flag is set.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

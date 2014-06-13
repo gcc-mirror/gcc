@@ -13576,7 +13576,26 @@ package body Sem_Ch3 is
                   --  case we can't see it yet (full type declaration not seen
                   --  yet), so we default to thin in that case anyway.
 
-                  Init_Size (Acc_Type, System_Address_Size);
+                  --  For now, for the access to unconstrained array scase, we
+                  --  are making the above change only if debug flag -gnatd.1
+                  --  is set. That's because the change, though almost
+                  --  certainly correct, is causing gnatcoll regressions
+                  --  which we have to sort out ???
+
+                  if Is_Array_Type (Desig_Typ)
+                    and then not Is_Constrained (Desig_Typ)
+                    and then not Debug_Flag_Dot_1
+                  then
+                     Init_Size (Acc_Type, 2 * System_Address_Size);
+
+                  --  Normal case. This is what we intend to do always when we
+                  --  finally install the change discussed above. In the case
+                  --  of access to unconstrained array, then we take this path
+                  --  for now only if -gnatd.1 debug flag is set.
+
+                  else
+                     Init_Size (Acc_Type, System_Address_Size);
+                  end if;
 
                   --  Set remaining characterstics of anonymous access type
 

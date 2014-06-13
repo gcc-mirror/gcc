@@ -1,5 +1,13 @@
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
+	* debug.adb: Document debug flag -gnatd.1.
+	* layout.adb (Layout_Type): Size change for anonymous access
+	types under -gnatd.1.
+	* sem_ch3.adb (Replace_Type): Size change for anonymous access
+	types under -gnatd.1.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
 	* layout.adb (Layout_Type): Anonymous access types designating
 	unconstrained arrays are always thin pointers.
 	* sem_ch3.adb (Replace_Type): Anonymous access types designating

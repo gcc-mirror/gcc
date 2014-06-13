@@ -2466,7 +2466,13 @@ package body Layout is
          --  into strange conformance problems between two types, one of which
          --  can see that something is unconstrained and one of which cannot.
 
-         elsif Ekind (E) = E_Anonymous_Access_Type then
+         elsif Ekind (E) = E_Anonymous_Access_Type
+
+           --  For now eneable this only if debug flag -gnatd.1 is set, since
+           --  we have some regressions in gnatcoll that need sorting out???
+
+           and then Debug_Flag_Dot_1
+         then
             Init_Size (E, System_Address_Size);
 
          --  For other access types, we use either address size, or, if a fat
