@@ -1,3 +1,9 @@
+2014-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61186
+	* ipa-devirt.c (possible_polymorphic_call_targets): Store NULL to
+	cache_token if returning early.
+
 2014-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61486
