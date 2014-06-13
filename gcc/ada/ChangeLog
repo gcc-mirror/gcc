@@ -1,3 +1,22 @@
+2014-06-13  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Get_Argument): fix expansion
+	of command line arguments (e.g. "*.adb") when using a custom
+	parser. The parser was not passed to the recursive call, and
+	thus we were trying to do the expansion on the default command
+	line parser.
+
+2014-06-13  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Old):
+	To determine whether the attribute should be expanded, examine
+	whether the enclosing postcondition pragma is to be checked,
+	rather than using the internal flag Assertions_Enabled.
+
 2014-06-13  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_rm.texi: Minor fixes.

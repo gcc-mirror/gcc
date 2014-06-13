@@ -1206,11 +1206,10 @@ package body Exp_Ch9 is
       end if;
 
       Master_Id :=
-        Make_Defining_Identifier (Loc,
-          New_External_Name (Chars (Typ), 'M'));
+        Make_Defining_Identifier (Loc, New_External_Name (Chars (Typ), 'M'));
 
       --  Generate:
-      --    Mnn renames _master;
+      --    typeMnn renames _master;
 
       Ren_Decl :=
         Make_Object_Renaming_Declaration (Loc,

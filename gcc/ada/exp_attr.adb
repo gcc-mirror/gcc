@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3962,13 +3962,6 @@ package body Exp_Attr is
          Temp    : Entity_Id;
 
       begin
-         --  If assertions are disabled, no need to create the declaration
-         --  that preserves the value.
-
-         if not Assertions_Enabled then
-            return;
-         end if;
-
          Temp := Make_Temporary (Loc, 'T', Pref);
 
          --  Climb the parent chain looking for subprogram _Postconditions
@@ -3977,6 +3970,17 @@ package body Exp_Attr is
          while Present (Subp) loop
             exit when Nkind (Subp) = N_Subprogram_Body
               and then Chars (Defining_Entity (Subp)) = Name_uPostconditions;
+
+            --  If assertions are disabled, no need to create the declaration
+            --  that preserves the value. The postcondition pragma in which
+            --  'Old appears will be checked or disabled according to the
+            --  current policy in effect.
+
+            if Nkind (Subp) = N_Pragma
+              and then not Is_Checked (Subp)
+            then
+               return;
+            end if;
 
             Subp := Parent (Subp);
          end loop;

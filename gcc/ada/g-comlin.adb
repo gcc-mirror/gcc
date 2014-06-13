@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -402,7 +402,6 @@ package body GNAT.Command_Line is
       end if;
 
       if Parser.Current_Argument > Parser.Arg_Count then
-
          --  If this is the first time this function is called
 
          if Parser.Current_Index = 1 then
@@ -449,21 +448,16 @@ package body GNAT.Command_Line is
          declare
             Arg   : constant String :=
                       Argument (Parser, Parser.Current_Argument - 1);
-            Index : Positive;
-
          begin
-            Index := Arg'First;
-            while Index <= Arg'Last loop
+            for Index in Arg'Range loop
                if Arg (Index) = '*'
                  or else Arg (Index) = '?'
                  or else Arg (Index) = '['
                then
                   Parser.In_Expansion := True;
                   Start_Expansion (Parser.Expansion_It, Arg);
-                  return Get_Argument (Do_Expansion);
+                  return Get_Argument (Do_Expansion, Parser);
                end if;
-
-               Index := Index + 1;
             end loop;
          end;
       end if;
