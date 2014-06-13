@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -216,7 +216,7 @@ package body Lib.Load is
         Generate_Code     => False,
         Has_Allocator     => False,
         Has_RACW          => False,
-        Is_Compiler_Unit  => False,
+        Filler            => False,
         Ident_String      => Empty,
         Loading           => False,
         Main_Priority     => Default_Main_Priority,
@@ -323,7 +323,7 @@ package body Lib.Load is
            Generate_Code     => False,
            Has_Allocator     => False,
            Has_RACW          => False,
-           Is_Compiler_Unit  => False,
+           Filler            => False,
            Ident_String      => Empty,
            Loading           => True,
            Main_Priority     => Default_Main_Priority,
@@ -687,7 +687,7 @@ package body Lib.Load is
               Generate_Code     => False,
               Has_Allocator     => False,
               Has_RACW          => False,
-              Is_Compiler_Unit  => False,
+              Filler            => False,
               Ident_String      => Empty,
               Loading           => True,
               Main_Priority     => Default_Main_Priority,

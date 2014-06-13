@@ -12409,7 +12409,12 @@ package body Sem_Prag is
          when Pragma_Compiler_Unit | Pragma_Compiler_Unit_Warning =>
             GNAT_Pragma;
             Check_Arg_Count (0);
-            Set_Is_Compiler_Unit (Get_Source_Unit (N));
+
+            --  Only recognized in main unit
+
+            if Current_Sem_Unit = Main_Unit then
+               Compiler_Unit := True;
+            end if;
 
          -----------------------------
          -- Complete_Representation --
@@ -21346,7 +21351,7 @@ package body Sem_Prag is
 
                   --  Not allowed in compiler units (bootstrap issues)
 
-                  Check_Compiler_Unit (N);
+                     Check_Compiler_Unit ("Reason for pragma Warnings", N);
 
                --  No REASON string, set null string as reason
 
