@@ -364,6 +364,12 @@ procedure Gnat1drv is
 
          Dynamic_Elaboration_Checks := False;
 
+         --  Detect overflow on unconstrained floating-point types, such as
+         --  the predefined types Float, Long_Float and Long_Long_Float from
+         --  package Standard.
+
+         Check_Float_Overflow := True;
+
          --  Set STRICT mode for overflow checks if not set explicitly. This
          --  prevents suppressing of overflow checks by default, in code down
          --  below.
