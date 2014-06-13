@@ -1,5 +1,7 @@
 2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config-ml.in: Robustify ac_configure_args parsing.
+
 	* configure.ac (--enable-linker-plugin-configure-flags)
 	(--enable-linker-plugin-flags): New flags.
 	(configdirs): Conditionally add libiberty-linker-plugin.
