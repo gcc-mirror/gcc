@@ -1,3 +1,7 @@
+2014-06-13  Dehao Chen  <dehao@google.com>
+
+	* dwarf2out.c (add_linkage_name): Emit more linkage name.
+
 2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/install.texi (--enable-linker-plugin-configure-flags)

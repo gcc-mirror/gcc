@@ -14,4 +14,4 @@ main()
   K k;
 }
 
-// { dg-final {scan-assembler-times " DW_AT_\[MIPS_\]*linkage_name" 2 } }
+// { dg-final {scan-assembler-times " DW_AT_\[MIPS_\]*linkage_name" 4 } }
