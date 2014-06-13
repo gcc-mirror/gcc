@@ -24,6 +24,10 @@
 	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
 	Likewise.
 
+	* include/std/tuple (tuple_size<cv _Tp>): Implement LWG 2313.
+	(get<_Tp>(tuple<_Types...>&&)): Use forward instead of move.
+	* testsuite/20_util/tuple/element_access/get_by_type.cc: Test rvalues.
+
 2014-06-07  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Backport from mainline
