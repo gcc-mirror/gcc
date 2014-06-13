@@ -5852,7 +5852,7 @@ pragma Provide_Shift_Operators (integer_first_subtype_LOCAL_NAME);
 This pragma can be applied to a first subtype local name that specifies
 either an unsigned or signed type. It has the effect of providing the
 five shift operators (Shift_Left, Shift_Right, Shift_Right_Arithmetic,
-Rotate_Left and Rotate_Right) for the given type. It is equivalent to
+Rotate_Left and Rotate_Right) for the given type. It is similar to
 including the function declarations for these five operators, together
 with the pragma Import (Intrinsic, ...) statements.
 

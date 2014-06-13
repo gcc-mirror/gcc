@@ -1,3 +1,33 @@
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.adb (Make_Id): New function.
+	(Make_SC): New function.
+	(Set_RND): New procedure.
+	* back_end.ads (Make_Id): New function.
+	(Make_SC): New function.
+	(Set_RND): New procedure.
+	* einfo.ads: Minor comment updates.
+	* frontend.adb: Move Atree.Initialize call to Gnat1drv.
+	* gnat1drv.adb (Gnat1drv): New calling sequence for
+	Get_Target_Parameters.
+	(Gnat1drv): Move Atree.Initialize here from Frontend.
+	* targparm.adb (Get_Target_Parameters): New calling
+	sequence (Get_Target_Parameters): Handle pragma Restriction
+	(No_Dependence,..)
+	* targparm.ads (Get_Target_Parameters): New calling sequence.
+
+2014-06-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Exit the homonym
+	loop if the pragma does not come from source, so that an implicit
+	pragma Import only applies to the first declaration, avoiding
+	possible conflicts with earlier explicit and implicit declarations
+	due to multiple Provide_Shift_Operators pragmas.
+	(Set_Imported): Remove previous fix that bypassed pragma duplication
+	error.
+	* gnat_rm.texi: Change 'equivalent' to 'similar' in description
+	of Provide_Shift_Operators.
+
 2014-06-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc-interface/utils.c (process_attributes) <ATTR_LINK_SECTION>: Pass

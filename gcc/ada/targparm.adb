@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -160,7 +160,11 @@ package body Targparm is
 
    --  Version which reads in system.ads
 
-   procedure Get_Target_Parameters is
+   procedure Get_Target_Parameters
+     (Make_Id : Make_Id_Type := null;
+      Make_SC : Make_SC_Type := null;
+      Set_RND : Set_RND_Type := null)
+   is
       Text : Source_Buffer_Ptr;
       Hi   : Source_Ptr;
 
@@ -183,7 +187,10 @@ package body Targparm is
       Get_Target_Parameters
         (System_Text  => Text,
          Source_First => 0,
-         Source_Last  => Hi);
+         Source_Last  => Hi,
+         Make_Id      => Make_Id,
+         Make_SC      => Make_SC,
+         Set_RND      => Set_RND);
    end Get_Target_Parameters;
 
    --  Version where caller supplies system.ads text
@@ -191,7 +198,10 @@ package body Targparm is
    procedure Get_Target_Parameters
      (System_Text  : Source_Buffer_Ptr;
       Source_First : Source_Ptr;
-      Source_Last  : Source_Ptr)
+      Source_Last  : Source_Ptr;
+      Make_Id      : Make_Id_Type := null;
+      Make_SC      : Make_SC_Type := null;
+      Set_RND      : Set_RND_Type := null)
    is
       P : Source_Ptr;
       --  Scans source buffer containing source of system.ads
@@ -340,6 +350,61 @@ package body Targparm is
             <<Ploop_Continue>>
                null;
             end loop Ploop;
+
+            --  No_Dependence case
+
+            if System_Text (P .. P + 16) = "No_Dependence => " then
+               P := P + 17;
+
+               --  Skip this processing (and simply ignore No_Dependence lines)
+               --  if caller did not supply the three subprograms we need to
+               --  process these lines.
+
+               if Make_Id = null then
+                  goto Line_Loop_Continue;
+               end if;
+
+               --  We have scanned out "pragma Restrictions (No_Dependence =>"
+
+               declare
+                  Unit  : Node_Id;
+                  Id    : Node_Id;
+                  Start : Source_Ptr;
+
+               begin
+                  Unit := Empty;
+
+                  --  Loop through components of name, building up Unit
+
+                  loop
+                     Start := P;
+                     while System_Text (P) /= '.'
+                             and then
+                           System_Text (P) /= ')'
+                     loop
+                        P := P + 1;
+                     end loop;
+
+                     Id := Make_Id (System_Text (Start .. P - 1));
+
+                     --  If first name, just capture the identifier
+
+                     if Unit = Empty then
+                        Unit := Id;
+                     else
+                        Unit := Make_SC (Unit, Id);
+                     end if;
+
+                     exit when System_Text (P) = ')';
+                     P := P + 1;
+                  end loop;
+
+                  Set_RND (Unit);
+                  goto Line_Loop_Continue;
+               end;
+            end if;
+
+            --  Here if unrecognizable restrictions pragma form
 
             Set_Standard_Error;
             Write_Line
