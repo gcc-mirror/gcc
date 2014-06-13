@@ -402,6 +402,7 @@ package body GNAT.Command_Line is
       end if;
 
       if Parser.Current_Argument > Parser.Arg_Count then
+
          --  If this is the first time this function is called
 
          if Parser.Current_Index = 1 then

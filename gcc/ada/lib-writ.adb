@@ -1445,7 +1445,7 @@ package body Lib.Writ is
                   Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
                end if;
 
-               --  If Source_Reference pragma used output information
+               --  If Source_Reference pragma used, output information
 
                if Num_SRef_Pragmas (Sind) > 0 then
                   Write_Info_Char (' ');
