@@ -4,6 +4,11 @@ AC_CANONICAL_SYSTEM
 GCC_TOPLEV_SUBDIRS
 AM_INIT_AUTOMAKE([foreign no-dist])
 AM_MAINTAINER_MODE
+AC_ARG_WITH(libiberty,
+  [AS_HELP_STRING([--with-libiberty=PATH],
+    [specify the directory where to find libiberty [../libiberty]])],
+  [], with_libiberty=../libiberty)
+AC_SUBST(with_libiberty)
 AC_PROG_CC
 AC_SYS_LARGEFILE
 ACX_PROG_CC_WARNING_OPTS([-Wall], [ac_lto_plugin_warn_cflags])
