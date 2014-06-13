@@ -27,8 +27,6 @@
 --  Note: there are multiple bodies/variants of this package, so do not
 --  modify this spec without coordination.
 
-with Types; use Types;
-
 package Back_End is
 
    type Back_End_Mode_Type is (
@@ -85,14 +83,5 @@ package Back_End is
    --  generate the final object file (such as the .NET backend) so that the
    --  object file's timestamp is correct when compared with the corresponding
    --  ali file by gnatmake.
-
-   function  Make_Id (Str : Text_Buffer) return Node_Id;
-   function  Make_SC (Pre, Sel : Node_Id) return Node_Id;
-   procedure Set_RND (Unit : Node_Id);
-   --  Subprograms for call to Get_Target_Parameters, see spec of package
-   --  Targparm for full description of these three subprograms. These are
-   --  parked in this package because they are have to be at the top level
-   --  because of accessibility issues, and Gnat1drv, which is where they
-   --  are used, is a subprogram.
 
 end Back_End;

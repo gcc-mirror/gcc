@@ -69,6 +69,7 @@ with Sprint;   use Sprint;
 with Stringt;
 with Stylesw;  use Stylesw;
 with Targparm; use Targparm;
+with Tbuild;
 with Tree_Gen;
 with Treepr;   use Treepr;
 with Ttypes;
@@ -818,9 +819,9 @@ begin
            (System_Text  => Source_Text  (S),
             Source_First => Source_First (S),
             Source_Last  => Source_Last  (S),
-            Make_Id      => Back_End.Make_Id'Unrestricted_Access,
-            Make_SC      => Back_End.Make_SC'Unrestricted_Access,
-            Set_RND      => Back_End.Set_RND'Unrestricted_Access);
+            Make_Id      => Tbuild.Make_Id'Access,
+            Make_SC      => Tbuild.Make_SC'Access,
+            Set_RND      => Tbuild.Set_RND'Access);
 
          --  Acquire configuration pragma information from Targparm
 

@@ -1810,7 +1810,7 @@ package body Sem_Warn is
                      SE : constant Entity_Id := Scope (E);
 
                      function Within_Postcondition return Boolean;
-                     --  Returns True iff N is within a Postcondition, a
+                     --  Returns True if N is within a Postcondition, a
                      --  Refined_Post, an Ensures component in a Test_Case,
                      --  or a Contract_Cases.
 

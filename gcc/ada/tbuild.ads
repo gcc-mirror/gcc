@@ -321,4 +321,16 @@ package Tbuild is
    --  Like Convert_To, but if a conversion is actually needed, constructs an
    --  N_Unchecked_Type_Conversion node to do the required conversion.
 
+   -------------------------------------
+   -- Subprograms for Use by Gnat1drv --
+   -------------------------------------
+
+   function  Make_Id (Str : Text_Buffer) return Node_Id;
+   function  Make_SC (Pre, Sel : Node_Id) return Node_Id;
+   procedure Set_RND (Unit : Node_Id);
+   --  Subprograms for call to Get_Target_Parameters in Gnat1drv, see spec
+   --  of package Targparm for full description of these three subprograms.
+   --  These have to be declared at the top level of a package (accessibility
+   --  issues), and Gnat1drv is a procedure, so they can't go there.
+
 end Tbuild;
