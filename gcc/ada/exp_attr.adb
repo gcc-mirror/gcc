@@ -4536,7 +4536,7 @@ package body Exp_Attr is
                               Attribute_Name => Name_First,
                               Prefix         =>
                                 New_Occurrence_Of (Base_Type (Ptyp), Loc))),
-                      Reason => CE_Range_Check_Failed),
+                      Reason => CE_Overflow_Check_Failed),
                   Suppress => All_Checks);
                end if;
             end;
@@ -5611,7 +5611,7 @@ package body Exp_Attr is
                               Attribute_Name => Name_Last,
                               Prefix         =>
                                 New_Occurrence_Of (Base_Type (Ptyp), Loc))),
-                      Reason    => CE_Range_Check_Failed),
+                      Reason    => CE_Overflow_Check_Failed),
                     Suppress => All_Checks);
                end if;
             end;

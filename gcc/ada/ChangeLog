@@ -1,3 +1,24 @@
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Pred/Succ): Change
+	reason to Overflow.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* makeutl.adb: Minor reformatting.
+
+2014-06-13  Gail Schenker  <schenker@adacore.com>
+
+	* debug.adb, sem_eval.adb (Why_Not_Static): Remove temporary code and
+	associated flag (d.z), no longer needed.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For Import and
+	Export aspects, do not check whether a corresponding Convention
+	aspect has been specified. Convention is optional in Ada2012,
+	and defaults to Convention_Ada.
+
 2014-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* checks.adb (Apply_Address_Clause_Check): Only issue the new
