@@ -1,3 +1,25 @@
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Remove checks related to SPARK
+	volatile types.
+	(Freeze_Type): Volatile types are now illegal in SPARK.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add aspect Thread_Local_Storage.
+	* gnat_rm.texi: Document aspect Thread_Local_Storage.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_cat.adb (Validate_Static_Object_Name): A constant whose
+	value is a temporary that renames an aggregate is legal in a
+	preelaborated unit. Illegalities, if any will be detected in
+	the aggregate components.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Minor reformatting an comment expansion.
+
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
 	* back_end.ads, back_end.adb: Make_Id, Make_SC, Set_RND are moved to

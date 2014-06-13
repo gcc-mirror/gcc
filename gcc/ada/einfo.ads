@@ -4057,6 +4057,11 @@ package Einfo is
 --       types, is to legitimize code where Underlying_Type is applied to an
 --       entity which may or may not be a type, with the intent that if it is a
 --       type, its underlying type is taken.
+--
+--       Note also that the value of this attribute is interesting only after
+--       the full view of the parent type has been processed. If the parent
+--       type is declared in an enclosing package, the attribute will be non-
+--       trivial only after the full view of the type has been analyzed.
 
 --    Universal_Aliasing (Flag216) [implementation base type only]
 --       Defined in all type entities. Set to direct the back-end to avoid
