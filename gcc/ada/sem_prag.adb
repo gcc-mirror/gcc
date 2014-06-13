@@ -20519,6 +20519,12 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
 
+            if Warn_On_Obsolescent_Feature then
+               Error_Msg_N
+                 ("'G'N'A'T pragma Task_Info is now obsolete, use 'C'P'U "
+                  & "instead?j?", N);
+            end if;
+
             if Nkind (P) /= N_Task_Definition then
                Error_Pragma ("pragma% must appear in task definition");
             end if;

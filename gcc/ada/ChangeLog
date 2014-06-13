@@ -1,3 +1,13 @@
+2014-06-13  Geert Bosch  <bosch@adacore.com>
+
+	* gnat_rm.texi, s-tasinf-solaris.ads, sem_prag.adb, gnat_ugn.texi,
+	s-tasinf-mingw.ads, s-tasinf.ads, s-tasinf-linux.ads,
+	s-tasinf-vxworks.ads: Make Task_Info pragma and package obsolescent.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* s-tasini.adb, s-tarest.adb, s-taprob.adb: Minor reformatting.
+
 2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Remove the check concerning volatile

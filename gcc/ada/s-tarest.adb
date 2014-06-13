@@ -49,9 +49,10 @@ with System.Task_Primitives.Operations;
 with System.Soft_Links.Tasking;
 with System.Storage_Elements;
 
-with System.Secondary_Stack; pragma Elaborate_All (System.Secondary_Stack);
+with System.Secondary_Stack;
+pragma Elaborate_All (System.Secondary_Stack);
 --  Make sure the body of Secondary_Stack is elaborated before calling
---  Init_Tasking_Soft_Links.
+--  Init_Tasking_Soft_Links. See comments for this routine for explanation.
 
 with System.Soft_Links;
 --  Used for the non-tasking routines (*_NT) that refer to global data. They

@@ -22873,14 +22873,7 @@ stack overflow.) On OpenVMS Alpha systems, if the pragma
 area is created. In the absence of a pragma @code{TASK_STORAGE},
 a default guard area is created.
 
-GNAT supplies the following task-related pragmas:
-
-@itemize @bullet
-@item  @code{TASK_INFO}
-
-This pragma appears within a task definition and
-applies to the task in which it appears. The argument
-must be of type @code{SYSTEM.TASK_INFO.TASK_INFO_TYPE}.
+GNAT supplies the following task-related pragma:
 
 @item  @code{TASK_STORAGE}
 
@@ -23074,8 +23067,6 @@ following:
 @item  @code{SOURCE_FILE_NAME}
 
 @item  @code{SOURCE_REFERENCE}
-
-@item  @code{TASK_INFO}
 
 @item  @code{UNCHECKED_UNION}
 

@@ -630,7 +630,6 @@ The GNAT Library
 * System.Restrictions (s-restri.ads)::
 * System.Rident (s-rident.ads)::
 * System.Strings.Stream_Ops (s-ststop.ads)::
-* System.Task_Info (s-tasinf.ads)::
 * System.Unsigned_Types (s-unstyp.ads)::
 * System.Wch_Cnv (s-wchcnv.ads)::
 * System.Wch_Con (s-wchcon.ads)::
@@ -1082,7 +1081,6 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Suppress_Debug_Info::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
-* Pragma Task_Info::
 * Pragma Task_Name::
 * Pragma Task_Storage::
 * Pragma Test_Case::
@@ -6869,27 +6867,6 @@ If the pragma is given for the first subtype, then it is considered
 to apply to the base type and all its subtypes. If the pragma is given
 for other than a first subtype, then it applies only to the given subtype.
 The pragma may not be given after the type is frozen.
-
-@node Pragma Task_Info
-@unnumberedsec Pragma Task_Info
-@findex Task_Info
-@noindent
-Syntax
-
-@smallexample @c ada
-pragma Task_Info (EXPRESSION);
-@end smallexample
-
-@noindent
-This pragma appears within a task definition (like pragma
-@code{Priority}) and applies to the task in which it appears.  The
-argument must be of type @code{System.Task_Info.Task_Info_Type}.
-The @code{Task_Info} pragma provides system dependent control over
-aspects of tasking implementation, for example, the ability to map
-tasks to specific processors.  For details on the facilities available
-for the version of GNAT that you are using, see the documentation
-in the spec of package System.Task_Info in the runtime
-library.
 
 @node Pragma Task_Name
 @unnumberedsec Pragma Task_Name
@@ -19872,15 +19849,6 @@ It is intended primarily to support implicit use of such subprograms when
 stream attributes are applied to string types, but the subprograms in this
 package can be used directly by application programs.
 
-@node System.Task_Info (s-tasinf.ads)
-@section @code{System.Task_Info} (@file{s-tasinf.ads})
-@cindex @code{System.Task_Info} (@file{s-tasinf.ads})
-@cindex Task_Info pragma
-
-@noindent
-This package provides target dependent functionality that is used
-to support the @code{Task_Info} pragma
-
 @node System.Unsigned_Types (s-unstyp.ads)
 @section @code{System.Unsigned_Types} (@file{s-unstyp.ads})
 @cindex @code{System.Unsigned_Types} (@file{s-unstyp.ads})
@@ -22431,6 +22399,7 @@ compatibility purposes.
 * pragma No_Run_Time::
 * pragma Ravenscar::
 * pragma Restricted_Run_Time::
+* pragma Task_Info::
 @end menu
 
 @node pragma No_Run_Time
@@ -22458,6 +22427,41 @@ The pragma @code{Restricted_Run_Time} has exactly the same effect as
 pragma @code{Profile (Restricted)}. The latter usage is
 preferred since the Ada 2005 pragma @code{Profile} is intended for
 this kind of implementation dependent addition.
+
+@node pragma Task_Info
+@section pragma Task_Info
+
+The functionality provided by pragma @code{Task_Info} is now part of the
+Ada language. The @code{CPU} aspect and the package
+@code{System.Multiprocessors} offer a less system-dependent way to specify
+task affinity or to query the number of processsors.
+
+@noindent
+Syntax
+
+@smallexample @c ada
+pragma Task_Info (EXPRESSION);
+@end smallexample
+
+@noindent
+This pragma appears within a task definition (like pragma
+@code{Priority}) and applies to the task in which it appears.  The
+argument must be of type @code{System.Task_Info.Task_Info_Type}.
+The @code{Task_Info} pragma provides system dependent control over
+aspects of tasking implementation, for example, the ability to map
+tasks to specific processors.  For details on the facilities available
+for the version of GNAT that you are using, see the documentation
+in the spec of package System.Task_Info in the runtime
+library.
+
+@node package System.Task_Info (s-tasinf.ads)
+@section package System.Task_Info (@file{s-tasinf.ads})
+
+@noindent
+This package provides target dependent functionality that is used
+to support the @code{Task_Info} pragma. The predefined Ada package
+ @code{System.Multiprocessors} and the @code{CPU} aspect now provide a
+standard replacement for GNAT's @code{Task_Info} functionality.
 
 @include fdl.texi
 @c GNU Free Documentation License
