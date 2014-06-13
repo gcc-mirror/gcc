@@ -1,3 +1,14 @@
+2014-06-13  Jeff Law  <law@redhat.com>
+
+	Backports from mainline:
+
+	2014-06-02  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/61094
+	* ree.c (combine_reaching_defs): Do not reextend an insn if it
+	was marked as do_no_reextend.  If a copy is needed to eliminate
+	an extension, then mark it as do_not_reextend.
+
 2014-06-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61186
