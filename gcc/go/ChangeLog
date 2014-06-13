@@ -1,3 +1,10 @@
+2014-06-13  Ian Lance Taylor  <iant@google.com>
+
+	PR go/61496
+	* gospec.c (lang_specific_driver): On Solaris, when not using GNU
+	ld, add -t option to avoid warning about common symbol changing
+	size.
+
 2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* go/go-gcc.cc (Gcc_backend::global_variable_set_init): Use

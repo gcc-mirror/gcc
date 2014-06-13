@@ -395,6 +395,15 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     }
 #endif
 
+#if defined(TARGET_SOLARIS) && !defined(USE_GLD)
+  /* We use a common symbol for go$zerovalue.  On Solaris, when not
+     using the GNU linker, the Solaris linker needs an option to not
+     warn about this.  Everything works without this option, but you
+     get unsightly warnings at link time.  */
+  generate_option (OPT_Wl_, "-t", 1, CL_DRIVER, &new_decoded_options[j]);
+  j++;
+#endif
+
   *in_decoded_options_count = j;
   *in_decoded_options = new_decoded_options;
   *in_added_libraries = added_libraries;
