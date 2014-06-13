@@ -1,3 +1,17 @@
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.ads, back_end.adb: Make_Id, Make_SC, Set_RND are moved to
+	Tbuild.
+	* tbuild.ads, tbuild.adb: Make_Id, Make_SC, Set_RND are moved here from
+	Back_End.
+	* gnat1drv.adb: Make_Id, Make_SC, Set_RND are moved to Tbuild
+	* sem_warn.adb: Minor reformatting.
+
+2014-06-13  Doug Rupp  <rupp@adacore.com>
+
+	* adaint.c (__gnat_open_new_temp) [VMS]: Open binary
+	files with rfm=udf.
+
 2014-06-13  Yannick Moy  <moy@adacore.com>
 
 	* sem_warn.adb (Check_Unset_References): Take

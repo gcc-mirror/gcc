@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;     use Atree;
-with Csets;     use Csets;
 with Debug;     use Debug;
 with Elists;    use Elists;
 with Errout;    use Errout;
@@ -34,14 +33,13 @@ with Opt;       use Opt;
 with Osint.C;   use Osint.C;
 with Namet;     use Namet;
 with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Restrict;  use Restrict;
 with Stand;     use Stand;
 with Sinput;    use Sinput;
 with Stringt;   use Stringt;
 with Switch;    use Switch;
 with Switch.C;  use Switch.C;
 with System;    use System;
+with Types;     use Types;
 
 with System.OS_Lib; use System.OS_Lib;
 
@@ -188,36 +186,6 @@ package body Back_End is
 
       raise Program_Error;
    end Len_Arg;
-
-   -------------
-   -- Make_Id --
-   -------------
-
-   function Make_Id (Str : Text_Buffer) return Node_Id is
-   begin
-      Name_Len := 0;
-
-      for J in Str'Range loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Fold_Lower (Str (J));
-      end loop;
-
-      return
-        Make_Identifier (System_Location,
-          Chars => Name_Find);
-   end Make_Id;
-
-   -------------
-   -- Make_SC --
-   -------------
-
-   function  Make_SC (Pre, Sel : Node_Id) return Node_Id is
-   begin
-      return
-        Make_Selected_Component (System_Location,
-          Prefix        => Pre,
-          Selector_Name => Sel);
-   end Make_SC;
 
    -----------------------------
    -- Scan_Compiler_Arguments --
@@ -382,14 +350,5 @@ package body Back_End is
          Next_Arg := Next_Arg + 1;
       end loop;
    end Scan_Compiler_Arguments;
-
-   -------------
-   -- Set_RND --
-   -------------
-
-   procedure Set_RND (Unit : Node_Id) is
-   begin
-      Restrict.Set_Restriction_No_Dependence (Unit, Warn => False);
-   end Set_RND;
 
 end Back_End;

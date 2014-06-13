@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1159,9 +1159,12 @@ __gnat_open_new_temp (char *path, int fmode)
     o_fmode = O_TEXT;
 
 #if defined (VMS)
+  /* Passing rfm=stmlf for binary files seems questionable since it results
+     in having an extraneous line feed added after every call to CRTL write,
+     so pass rfm=udf (aka undefined) instead.  */
   fd = open (path, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM,
-             "rfm=stmlf", "ctx=rec", "rat=none", "shr=del,get,put,upd",
-             "mbc=16", "deq=64", "fop=tef");
+             fmode ? "rfm=stmlf" : "rfm=udf", "ctx=rec", "rat=none",
+             "shr=del,get,put,upd", "mbc=16", "deq=64", "fop=tef");
 #else
   fd = open (path, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM);
 #endif
