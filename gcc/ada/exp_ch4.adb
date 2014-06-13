@@ -12559,7 +12559,7 @@ package body Exp_Ch4 is
       --  hook pointer is null.
 
       procedure Find_Enclosing_Contexts (N : Node_Id);
-      --  Find the logical context where N appears, and initializae
+      --  Find the logical context where N appears, and initialize
       --  Hook_Context and Finalization_Context accordingly. Also
       --  sets Finalize_Always.
 

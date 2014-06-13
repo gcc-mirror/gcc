@@ -1,3 +1,35 @@
+2014-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Address_Clause_Check): Only issue the new
+	warning if the propagation warning is issued.
+
+2014-06-13  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Pred):
+	Handle float range check case (Expand_N_Attribute_Reference,
+	case Succ): Handle float range check case.
+	* sem_attr.adb (Analyze_Attribute, case Pred/Succ): Handle float
+	range check case.
+
+2014-06-13  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.ads (Compute_Builder_Switches): Change name of
+	parameter Root_Environment to Env.
+	* prj-conf.adb (Check_Switches): Call Locate_Runtime with the
+	Env parameter of procedure Get_Or_Create_Configuration_File.
+	(Locate_Runtime): Call Find_Rts_In_Path with the Project_Path
+	of new parameter Env.
+	* prj-conf.ads (Locate_Runtime): New parameter Env of type
+	Prj.Tree.Environment.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor comment clarification for Check_Float_Overflow.
+
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb, exp_ch9.adb, lib-writ.adb, g-comlin.adb: Minor

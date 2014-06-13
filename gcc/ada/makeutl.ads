@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -323,7 +323,7 @@ package Makeutl is
 
    procedure Compute_Builder_Switches
      (Project_Tree     : Project_Tree_Ref;
-      Root_Environment : in out Prj.Tree.Environment;
+      Env              : in out Prj.Tree.Environment;
       Main_Project     : Project_Id;
       Only_For_Lang    : Name_Id := No_Name);
    --  Compute the builder switches and global compilation switches. Every time

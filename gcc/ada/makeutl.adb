@@ -3173,7 +3173,7 @@ package body Makeutl is
 
    procedure Compute_Builder_Switches
      (Project_Tree        : Project_Tree_Ref;
-      Root_Environment    : in out Prj.Tree.Environment;
+      Env                 : in out Prj.Tree.Environment;
       Main_Project        : Project_Id;
       Only_For_Lang       : Name_Id := No_Name)
    is
@@ -3312,7 +3312,7 @@ package body Makeutl is
            and then Default_Switches_Array /= No_Array
          then
             Prj.Err.Error_Msg
-              (Root_Environment.Flags,
+              (Env.Flags,
                "Default_Switches forbidden in presence of " &
                "Global_Compilation_Switches. Use Switches instead.",
                Project_Tree.Shared.Arrays.Table
@@ -3432,7 +3432,7 @@ package body Makeutl is
                      Name_Len := Name_Len + Name_Len;
 
                      Prj.Err.Error_Msg
-                       (Root_Environment.Flags,
+                       (Env.Flags,
                         '"' & Name_Buffer (1 .. Name_Len) &
                         """ is not a builder switch. Consider moving " &
                         "it to Global_Compilation_Switches.",

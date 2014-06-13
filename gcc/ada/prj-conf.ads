@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2006-2013, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2014, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,7 +218,8 @@ package Prj.Conf is
 
    procedure Locate_Runtime
      (Language     : Name_Id;
-      Project_Tree : Prj.Project_Tree_Ref);
+      Project_Tree : Prj.Project_Tree_Ref;
+      Env          : Prj.Tree.Environment);
    --  If RTS_Name is a base name (a name without path separator), then
    --  do nothing. Otherwise, convert it to an absolute path (possibly by
    --  searching it in the project path) and call Set_Runtime_For with the
