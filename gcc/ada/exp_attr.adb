@@ -4441,7 +4441,7 @@ package body Exp_Attr is
 
       --  1. Deal with enumeration types with holes
       --  2. For floating-point, generate call to attribute function and deal
-      --       with range checking if Check_Float_Overflow modde.
+      --       with range checking if Check_Float_Overflow mode is set.
       --  3. For other cases, deal with constraint checking
 
       when Attribute_Pred => Pred :

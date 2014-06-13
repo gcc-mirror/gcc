@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2013, Free Software Foundation, Inc.           --
+--          Copyright (C) 2013-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -67,6 +67,24 @@ package Ada.Containers.Indefinite_Holders is
      (Container : Holder;
       Process   : not null access procedure (Element : in out Element_Type));
 
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   type Reference_Type
+     (Element : not null access Element_Type) is private
+   with
+      Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Holder) return Constant_Reference_Type;
+   pragma Inline (Constant_Reference);
+
+   function Reference
+     (Container : aliased in out Holder) return Reference_Type;
+   pragma Inline (Reference);
+
    procedure Assign (Target : in out Holder; Source : Holder);
 
    function Copy (Source : Holder) return Holder;
@@ -75,7 +93,8 @@ package Ada.Containers.Indefinite_Holders is
 
 private
 
-   package AF renames Ada.Finalization;
+   use Ada.Finalization;
+   use Ada.Streams;
 
    type Element_Access is access all Element_Type;
 
@@ -110,6 +129,51 @@ private
    overriding procedure Adjust (Container : in out Holder);
    overriding procedure Finalize (Container : in out Holder);
 
-   Empty_Holder : constant Holder := (AF.Controlled with null, 0);
+   type Reference_Control_Type is new Controlled with
+   record
+      Container : Shared_Holder_Access;
+   end record;
+
+   overriding procedure Adjust (Control : in out Reference_Control_Type);
+   pragma Inline (Adjust);
+
+   overriding procedure Finalize (Control : in out Reference_Control_Type);
+   pragma Inline (Finalize);
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is
+   record
+      Control : Reference_Control_Type;
+   end record;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+
+   type Reference_Type (Element : not null access Element_Type) is record
+      Control : Reference_Control_Type;
+   end record;
+
+   procedure Write
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : Reference_Type);
+
+   for Reference_Type'Write use Write;
+
+   procedure Read
+     (Stream : not null access Root_Stream_Type'Class;
+      Item   : out Reference_Type);
+
+   for Reference_Type'Read use Read;
+
+   Empty_Holder : constant Holder := (Controlled with null, 0);
 
 end Ada.Containers.Indefinite_Holders;
