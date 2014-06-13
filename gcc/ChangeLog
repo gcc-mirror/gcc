@@ -1,3 +1,9 @@
+2014-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60731
+	* common.opt (-fno-gnu-unique): Add.
+	* config/elfos.h (USE_GNU_UNIQUE_OBJECT): Check it.
+
 2014-06-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2014-05-09 trunk r210272

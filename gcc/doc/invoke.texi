@@ -1009,6 +1009,7 @@ See S/390 and zSeries Options.
 -ffixed-@var{reg}  -fexceptions @gol
 -fnon-call-exceptions  -fdelete-dead-exceptions  -funwind-tables @gol
 -fasynchronous-unwind-tables @gol
+-fno-gnu-unique @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{} @gol
 -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{} @gol
@@ -20356,6 +20357,20 @@ that needs this handling enables it on your behalf.
 Generate unwind table in DWARF 2 format, if supported by target machine.  The
 table is exact at each instruction boundary, so it can be used for stack
 unwinding from asynchronous events (such as debugger or garbage collector).
+
+@item -fno-gnu-unique
+@opindex fno-gnu-unique
+On systems with recent GNU assembler and C library, the C++ compiler
+uses the @code{STB_GNU_UNIQUE} binding to make sure that definitions
+of template static data members and static local variables in inline
+functions are unique even in the presence of @code{RTLD_LOCAL}; this
+is necessary to avoid problems with a library used by two different
+@code{RTLD_LOCAL} plugins depending on a definition in one of them and
+therefore disagreeing with the other one about the binding of the
+symbol.  But this causes @code{dlclose} to be ignored for affected
+DSOs; if your program relies on reinitialization of a DSO via
+@code{dlclose} and @code{dlopen}, you can use
+@option{-fno-gnu-unique}.
 
 @item -fpcc-struct-return
 @opindex fpcc-struct-return
