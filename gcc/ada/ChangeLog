@@ -1,5 +1,18 @@
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
+	* layout.adb (Layout_Type): Anonymous access types designating
+	unconstrained arrays are always thin pointers.
+	* sem_ch3.adb (Replace_Type): Anonymous access types designating
+	unconstrained arrays are always thin pointers.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Use Check_Parameterless_Call
+	to resolve the prefix of an attribute that is an entity name
+	and may be a parameterless call.  Minor code reorganization.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
 	* lib.ads, lib.adb, lib-writ.adb, lib-load.adb (Is_Compiler_Unit):
 	Removed.
 	* opt.ads (Compiler_Unit): New flag.

@@ -2412,57 +2412,64 @@ package body Sem_Attr is
       --  Ada 2005 (AI-345): Ensure that the compiler gives exactly the current
       --  output compiling in Ada 95 mode for the case of ambiguous prefixes.
 
-      if Ada_Version < Ada_2005
-        and then Is_Overloaded (P)
-        and then Aname /= Name_Access
-        and then Aname /= Name_Address
-        and then Aname /= Name_Code_Address
-        and then Aname /= Name_Count
-        and then Aname /= Name_Result
-        and then Aname /= Name_Unchecked_Access
-      then
-         Error_Attr ("ambiguous prefix for % attribute", P);
+      --  Is this comment right??? What is "the current output"??? If this
+      --  is only about Ada 95 mode, why no test for Ada 95 at this point???
 
-      elsif Ada_Version >= Ada_2005
-        and then Is_Overloaded (P)
+      if Is_Overloaded (P)
         and then Aname /= Name_Access
         and then Aname /= Name_Address
         and then Aname /= Name_Code_Address
         and then Aname /= Name_Result
         and then Aname /= Name_Unchecked_Access
       then
-         --  Ada 2005 (AI-345): Since protected and task types have primitive
-         --  entry wrappers, the attributes Count, Caller and AST_Entry require
-         --  a context check
+         --  The prefix must be resolvble by itself, without reference to the
+         --  attribute. One case that requires special handling is a prefix
+         --  that is a function name, where one interpretation may be a
+         --  parameterless call. Entry attributes are handled specially below.
 
-         if Ada_Version >= Ada_2005
-           and then Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry)
+         if Is_Entity_Name (P)
+           and then not Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry)
          then
-            declare
-               Count : Natural := 0;
-               I     : Interp_Index;
-               It    : Interp;
+            Check_Parameterless_Call (P);
+         end if;
 
-            begin
-               Get_First_Interp (P, I, It);
-               while Present (It.Nam) loop
-                  if Comes_From_Source (It.Nam) then
-                     Count := Count + 1;
-                  else
-                     Remove_Interp (I);
-                  end if;
+         if Ada_Version < Ada_2005 then
+            if Is_Overloaded (P) then
 
-                  Get_Next_Interp (I, It);
-               end loop;
+               --  Ada 2005 (AI-345): Since protected and task types have
+               --  primitive entry wrappers, the attributes Count, Caller and
+               --  AST_Entry require a context check
 
-               if Count > 1 then
-                  Error_Attr ("ambiguous prefix for % attribute", P);
+               if Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry) then
+                  declare
+                     Count : Natural := 0;
+                     I     : Interp_Index;
+                     It    : Interp;
+
+                  begin
+                     Get_First_Interp (P, I, It);
+                     while Present (It.Nam) loop
+                        if Comes_From_Source (It.Nam) then
+                           Count := Count + 1;
+                        else
+                           Remove_Interp (I);
+                        end if;
+
+                        Get_Next_Interp (I, It);
+                     end loop;
+
+                     if Count > 1 then
+                        Error_Attr ("ambiguous prefix for % attribute", P);
+                     else
+                        Set_Is_Overloaded (P, False);
+                     end if;
+                  end;
                else
-                  Set_Is_Overloaded (P, False);
+                  Error_Attr ("ambiguous prefix for % attribute", P);
                end if;
-            end;
+            end if;
 
-         else
+         elsif Is_Overloaded (P) then
             Error_Attr ("ambiguous prefix for % attribute", P);
          end if;
       end if;
@@ -2470,8 +2477,10 @@ package body Sem_Attr is
       --  In SPARK, attributes of private types are only allowed if the full
       --  type declaration is visible.
 
-      if Is_Entity_Name (P)
-        and then Present (Entity (P))  --  needed in some cases
+      --  Note: the check for Present (Entity (P)) defends against some error
+      --  conditions where the Entity field is not set.
+
+      if Is_Entity_Name (P) and then Present (Entity (P))
         and then Is_Type (Entity (P))
         and then Is_Private_Type (P_Type)
         and then not In_Open_Scopes (Scope (P_Type))
