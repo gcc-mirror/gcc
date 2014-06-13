@@ -3686,14 +3686,6 @@ package body Freeze is
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
-      --  The following check is only relevant when SPARK_Mode is on as this
-      --  is not a standard Ada legality rule. Volatile types are not allowed
-      --  (SPARK RM C.6(1)).
-
-      if SPARK_Mode = On and then Is_SPARK_Volatile (E) then
-         Error_Msg_N ("volatile type not allowed", E);
-      end if;
-
       --  Here to freeze the entity
 
       Set_Is_Frozen (E);
