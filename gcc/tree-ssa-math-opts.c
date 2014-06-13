@@ -1725,6 +1725,8 @@ init_symbolic_number (struct symbolic_number *n, tree src)
   if (size % BITS_PER_UNIT != 0)
     return false;
   size /= BITS_PER_UNIT;
+  if (size > (int)sizeof (uint64_t))
+    return false;
   n->range = size;
   n->n = CMPNOP;
 
@@ -1893,6 +1895,8 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    type = gimple_expr_type (stmt);
 	    type_size = TYPE_PRECISION (type);
 	    if (type_size % BITS_PER_UNIT != 0)
+	      return NULL_TREE;
+	    if (type_size > (int)sizeof (uint64_t) * 8)
 	      return NULL_TREE;
 
 	    /* Sign extension: result is dependent on the value.  */
