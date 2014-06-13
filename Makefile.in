@@ -2659,12 +2659,13 @@ configure-build-libiberty:
 	  *) topdir=`echo $(BUILD_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
+	module_srcdir=libiberty; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif build-libiberty
 
@@ -2715,12 +2716,13 @@ configure-build-bison:
 	  *) topdir=`echo $(BUILD_SUBDIR)/bison/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bison"; \
-	libsrcdir="$$s/bison"; \
+	module_srcdir=bison; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif build-bison
 
@@ -2771,12 +2773,13 @@ configure-build-flex:
 	  *) topdir=`echo $(BUILD_SUBDIR)/flex/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/flex"; \
-	libsrcdir="$$s/flex"; \
+	module_srcdir=flex; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif build-flex
 
@@ -2827,12 +2830,13 @@ configure-build-m4:
 	  *) topdir=`echo $(BUILD_SUBDIR)/m4/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/m4"; \
-	libsrcdir="$$s/m4"; \
+	module_srcdir=m4; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif build-m4
 
@@ -2883,12 +2887,13 @@ configure-build-texinfo:
 	  *) topdir=`echo $(BUILD_SUBDIR)/texinfo/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/texinfo"; \
-	libsrcdir="$$s/texinfo"; \
+	module_srcdir=texinfo; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif build-texinfo
 
@@ -2939,12 +2944,13 @@ configure-build-fixincludes:
 	  *) topdir=`echo $(BUILD_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
+	module_srcdir=fixincludes; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif build-fixincludes
 
@@ -2999,11 +3005,12 @@ configure-bfd:
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bfd"; \
-	libsrcdir="$$s/bfd"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bfd; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif bfd
 
@@ -3032,11 +3039,12 @@ configure-stage1-bfd:
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bfd"; \
-	libsrcdir="$$s/bfd"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bfd; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif bfd-bootstrap
 
@@ -3064,12 +3072,12 @@ configure-stage2-bfd:
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bfd"; \
-	libsrcdir="$$s/bfd"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bfd; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif bfd-bootstrap
 
@@ -3097,12 +3105,12 @@ configure-stage3-bfd:
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bfd"; \
-	libsrcdir="$$s/bfd"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bfd; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif bfd-bootstrap
 
@@ -3130,12 +3138,12 @@ configure-stage4-bfd:
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bfd"; \
-	libsrcdir="$$s/bfd"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bfd; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif bfd-bootstrap
 
@@ -3163,12 +3171,12 @@ configure-stageprofile-bfd:
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bfd"; \
-	libsrcdir="$$s/bfd"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bfd; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif bfd-bootstrap
 
@@ -3196,12 +3204,12 @@ configure-stagefeedback-bfd:
 	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bfd"; \
-	libsrcdir="$$s/bfd"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bfd; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif bfd-bootstrap
 
@@ -3871,11 +3879,12 @@ configure-opcodes:
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/opcodes"; \
-	libsrcdir="$$s/opcodes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=opcodes; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif opcodes
 
@@ -3904,11 +3913,12 @@ configure-stage1-opcodes:
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/opcodes"; \
-	libsrcdir="$$s/opcodes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=opcodes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif opcodes-bootstrap
 
@@ -3936,12 +3946,12 @@ configure-stage2-opcodes:
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/opcodes"; \
-	libsrcdir="$$s/opcodes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=opcodes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif opcodes-bootstrap
 
@@ -3969,12 +3979,12 @@ configure-stage3-opcodes:
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/opcodes"; \
-	libsrcdir="$$s/opcodes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=opcodes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif opcodes-bootstrap
 
@@ -4002,12 +4012,12 @@ configure-stage4-opcodes:
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/opcodes"; \
-	libsrcdir="$$s/opcodes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=opcodes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif opcodes-bootstrap
 
@@ -4035,12 +4045,12 @@ configure-stageprofile-opcodes:
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/opcodes"; \
-	libsrcdir="$$s/opcodes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=opcodes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif opcodes-bootstrap
 
@@ -4068,12 +4078,12 @@ configure-stagefeedback-opcodes:
 	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/opcodes"; \
-	libsrcdir="$$s/opcodes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=opcodes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif opcodes-bootstrap
 
@@ -4743,11 +4753,12 @@ configure-binutils:
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/binutils"; \
-	libsrcdir="$$s/binutils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=binutils; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif binutils
 
@@ -4776,11 +4787,12 @@ configure-stage1-binutils:
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/binutils"; \
-	libsrcdir="$$s/binutils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=binutils; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif binutils-bootstrap
 
@@ -4808,12 +4820,12 @@ configure-stage2-binutils:
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/binutils"; \
-	libsrcdir="$$s/binutils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=binutils; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif binutils-bootstrap
 
@@ -4841,12 +4853,12 @@ configure-stage3-binutils:
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/binutils"; \
-	libsrcdir="$$s/binutils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=binutils; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif binutils-bootstrap
 
@@ -4874,12 +4886,12 @@ configure-stage4-binutils:
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/binutils"; \
-	libsrcdir="$$s/binutils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=binutils; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif binutils-bootstrap
 
@@ -4907,12 +4919,12 @@ configure-stageprofile-binutils:
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/binutils"; \
-	libsrcdir="$$s/binutils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=binutils; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif binutils-bootstrap
 
@@ -4940,12 +4952,12 @@ configure-stagefeedback-binutils:
 	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/binutils"; \
-	libsrcdir="$$s/binutils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=binutils; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif binutils-bootstrap
 
@@ -5616,11 +5628,12 @@ configure-bison:
 	  *) topdir=`echo $(HOST_SUBDIR)/bison/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/bison"; \
-	libsrcdir="$$s/bison"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=bison; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif bison
 
@@ -6059,11 +6072,12 @@ configure-cgen:
 	  *) topdir=`echo $(HOST_SUBDIR)/cgen/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cgen"; \
-	libsrcdir="$$s/cgen"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cgen; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif cgen
 
@@ -6499,11 +6513,12 @@ configure-dejagnu:
 	  *) topdir=`echo $(HOST_SUBDIR)/dejagnu/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/dejagnu"; \
-	libsrcdir="$$s/dejagnu"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=dejagnu; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif dejagnu
 
@@ -6939,11 +6954,12 @@ configure-etc:
 	  *) topdir=`echo $(HOST_SUBDIR)/etc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/etc"; \
-	libsrcdir="$$s/etc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=etc; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif etc
 
@@ -7379,11 +7395,12 @@ configure-fastjar:
 	  *) topdir=`echo $(HOST_SUBDIR)/fastjar/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fastjar"; \
-	libsrcdir="$$s/fastjar"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fastjar; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif fastjar
 
@@ -7821,11 +7838,12 @@ configure-fixincludes:
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fixincludes; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif fixincludes
 
@@ -7854,11 +7872,12 @@ configure-stage1-fixincludes:
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fixincludes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif fixincludes-bootstrap
 
@@ -7886,12 +7905,12 @@ configure-stage2-fixincludes:
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fixincludes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif fixincludes-bootstrap
 
@@ -7919,12 +7938,12 @@ configure-stage3-fixincludes:
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fixincludes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif fixincludes-bootstrap
 
@@ -7952,12 +7971,12 @@ configure-stage4-fixincludes:
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fixincludes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif fixincludes-bootstrap
 
@@ -7985,12 +8004,12 @@ configure-stageprofile-fixincludes:
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fixincludes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif fixincludes-bootstrap
 
@@ -8018,12 +8037,12 @@ configure-stagefeedback-fixincludes:
 	  *) topdir=`echo $(HOST_SUBDIR)/fixincludes/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
-	libsrcdir="$$s/fixincludes"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=fixincludes; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif fixincludes-bootstrap
 
@@ -8679,11 +8698,12 @@ configure-flex:
 	  *) topdir=`echo $(HOST_SUBDIR)/flex/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/flex"; \
-	libsrcdir="$$s/flex"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=flex; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif flex
 
@@ -9121,11 +9141,12 @@ configure-gas:
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gas"; \
-	libsrcdir="$$s/gas"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gas; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif gas
 
@@ -9154,11 +9175,12 @@ configure-stage1-gas:
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gas"; \
-	libsrcdir="$$s/gas"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gas; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif gas-bootstrap
 
@@ -9186,12 +9208,12 @@ configure-stage2-gas:
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gas"; \
-	libsrcdir="$$s/gas"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gas; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif gas-bootstrap
 
@@ -9219,12 +9241,12 @@ configure-stage3-gas:
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gas"; \
-	libsrcdir="$$s/gas"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gas; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif gas-bootstrap
 
@@ -9252,12 +9274,12 @@ configure-stage4-gas:
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gas"; \
-	libsrcdir="$$s/gas"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gas; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif gas-bootstrap
 
@@ -9285,12 +9307,12 @@ configure-stageprofile-gas:
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gas"; \
-	libsrcdir="$$s/gas"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gas; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif gas-bootstrap
 
@@ -9318,12 +9340,12 @@ configure-stagefeedback-gas:
 	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gas"; \
-	libsrcdir="$$s/gas"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gas; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif gas-bootstrap
 
@@ -9993,11 +10015,12 @@ configure-gcc:
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gcc"; \
-	libsrcdir="$$s/gcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gcc; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif gcc
 
@@ -10026,11 +10049,12 @@ configure-stage1-gcc:
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gcc"; \
-	libsrcdir="$$s/gcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif gcc-bootstrap
 
@@ -10058,12 +10082,12 @@ configure-stage2-gcc:
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gcc"; \
-	libsrcdir="$$s/gcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif gcc-bootstrap
 
@@ -10091,12 +10115,12 @@ configure-stage3-gcc:
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gcc"; \
-	libsrcdir="$$s/gcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif gcc-bootstrap
 
@@ -10124,12 +10148,12 @@ configure-stage4-gcc:
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gcc"; \
-	libsrcdir="$$s/gcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif gcc-bootstrap
 
@@ -10157,12 +10181,12 @@ configure-stageprofile-gcc:
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gcc"; \
-	libsrcdir="$$s/gcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif gcc-bootstrap
 
@@ -10190,12 +10214,12 @@ configure-stagefeedback-gcc:
 	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gcc"; \
-	libsrcdir="$$s/gcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif gcc-bootstrap
 
@@ -10865,11 +10889,12 @@ configure-gmp:
 	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gmp"; \
-	libsrcdir="$$s/gmp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gmp; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} --disable-shared \
+	  --target=none-${host_vendor}-${host_os} --disable-shared \
 	  || exit 1
 @endif gmp
 
@@ -10898,11 +10923,12 @@ configure-stage1-gmp:
 	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gmp"; \
-	libsrcdir="$$s/gmp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gmp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --target=none-${host_vendor}-${host_os} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif gmp-bootstrap
@@ -10931,12 +10957,12 @@ configure-stage2-gmp:
 	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gmp"; \
-	libsrcdir="$$s/gmp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gmp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=none-${host_vendor}-${host_os} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif gmp-bootstrap
@@ -10965,12 +10991,12 @@ configure-stage3-gmp:
 	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gmp"; \
-	libsrcdir="$$s/gmp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gmp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=none-${host_vendor}-${host_os} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif gmp-bootstrap
@@ -10999,12 +11025,12 @@ configure-stage4-gmp:
 	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gmp"; \
-	libsrcdir="$$s/gmp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gmp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=none-${host_vendor}-${host_os} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif gmp-bootstrap
@@ -11033,12 +11059,12 @@ configure-stageprofile-gmp:
 	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gmp"; \
-	libsrcdir="$$s/gmp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gmp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=none-${host_vendor}-${host_os} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif gmp-bootstrap
@@ -11067,12 +11093,12 @@ configure-stagefeedback-gmp:
 	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gmp"; \
-	libsrcdir="$$s/gmp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gmp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=none-${host_vendor}-${host_os} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif gmp-bootstrap
@@ -11731,11 +11757,12 @@ configure-mpfr:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpfr"; \
-	libsrcdir="$$s/mpfr"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpfr; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared @extra_mpfr_configure_flags@ \
+	  --target=${target_alias} --disable-shared @extra_mpfr_configure_flags@ \
 	  || exit 1
 @endif mpfr
 
@@ -11764,11 +11791,12 @@ configure-stage1-mpfr:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpfr"; \
-	libsrcdir="$$s/mpfr"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpfr; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
@@ -11797,12 +11825,12 @@ configure-stage2-mpfr:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpfr"; \
-	libsrcdir="$$s/mpfr"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpfr; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
@@ -11831,12 +11859,12 @@ configure-stage3-mpfr:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpfr"; \
-	libsrcdir="$$s/mpfr"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpfr; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
@@ -11865,12 +11893,12 @@ configure-stage4-mpfr:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpfr"; \
-	libsrcdir="$$s/mpfr"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpfr; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
@@ -11899,12 +11927,12 @@ configure-stageprofile-mpfr:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpfr"; \
-	libsrcdir="$$s/mpfr"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpfr; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
@@ -11933,12 +11961,12 @@ configure-stagefeedback-mpfr:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpfr"; \
-	libsrcdir="$$s/mpfr"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpfr; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
@@ -12597,11 +12625,12 @@ configure-mpc:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpc"; \
-	libsrcdir="$$s/mpc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpc; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ \
+	  --target=${target_alias} --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ \
 	  || exit 1
 @endif mpc
 
@@ -12630,11 +12659,12 @@ configure-stage1-mpc:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpc"; \
-	libsrcdir="$$s/mpc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
 @endif mpc-bootstrap
@@ -12663,12 +12693,12 @@ configure-stage2-mpc:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpc"; \
-	libsrcdir="$$s/mpc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
 @endif mpc-bootstrap
@@ -12697,12 +12727,12 @@ configure-stage3-mpc:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpc"; \
-	libsrcdir="$$s/mpc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
 @endif mpc-bootstrap
@@ -12731,12 +12761,12 @@ configure-stage4-mpc:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpc"; \
-	libsrcdir="$$s/mpc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
 @endif mpc-bootstrap
@@ -12765,12 +12795,12 @@ configure-stageprofile-mpc:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpc"; \
-	libsrcdir="$$s/mpc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
 @endif mpc-bootstrap
@@ -12799,12 +12829,12 @@ configure-stagefeedback-mpc:
 	  *) topdir=`echo $(HOST_SUBDIR)/mpc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/mpc"; \
-	libsrcdir="$$s/mpc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=mpc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
 @endif mpc-bootstrap
@@ -13463,11 +13493,12 @@ configure-isl:
 	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/isl"; \
-	libsrcdir="$$s/isl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=isl; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared @extra_isl_gmp_configure_flags@ \
+	  --target=${target_alias} --disable-shared @extra_isl_gmp_configure_flags@ \
 	  || exit 1
 @endif isl
 
@@ -13496,11 +13527,12 @@ configure-stage1-isl:
 	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/isl"; \
-	libsrcdir="$$s/isl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=isl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
@@ -13529,12 +13561,12 @@ configure-stage2-isl:
 	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/isl"; \
-	libsrcdir="$$s/isl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=isl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
@@ -13563,12 +13595,12 @@ configure-stage3-isl:
 	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/isl"; \
-	libsrcdir="$$s/isl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=isl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
@@ -13597,12 +13629,12 @@ configure-stage4-isl:
 	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/isl"; \
-	libsrcdir="$$s/isl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=isl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
@@ -13631,12 +13663,12 @@ configure-stageprofile-isl:
 	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/isl"; \
-	libsrcdir="$$s/isl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=isl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
@@ -13665,12 +13697,12 @@ configure-stagefeedback-isl:
 	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/isl"; \
-	libsrcdir="$$s/isl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=isl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
@@ -14329,11 +14361,12 @@ configure-cloog:
 	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cloog"; \
-	libsrcdir="$$s/cloog"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cloog; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system \
+	  --target=${target_alias} --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system \
 	  || exit 1
 @endif cloog
 
@@ -14362,11 +14395,12 @@ configure-stage1-cloog:
 	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cloog"; \
-	libsrcdir="$$s/cloog"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cloog; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
@@ -14395,12 +14429,12 @@ configure-stage2-cloog:
 	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cloog"; \
-	libsrcdir="$$s/cloog"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cloog; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
@@ -14429,12 +14463,12 @@ configure-stage3-cloog:
 	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cloog"; \
-	libsrcdir="$$s/cloog"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cloog; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
@@ -14463,12 +14497,12 @@ configure-stage4-cloog:
 	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cloog"; \
-	libsrcdir="$$s/cloog"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cloog; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
@@ -14497,12 +14531,12 @@ configure-stageprofile-cloog:
 	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cloog"; \
-	libsrcdir="$$s/cloog"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cloog; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
@@ -14531,12 +14565,12 @@ configure-stagefeedback-cloog:
 	  *) topdir=`echo $(HOST_SUBDIR)/cloog/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/cloog"; \
-	libsrcdir="$$s/cloog"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=cloog; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
@@ -15195,11 +15229,12 @@ configure-libelf:
 	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libelf"; \
-	libsrcdir="$$s/libelf"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libelf; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared \
+	  --target=${target_alias} --disable-shared \
 	  || exit 1
 @endif libelf
 
@@ -15228,11 +15263,12 @@ configure-stage1-libelf:
 	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libelf"; \
-	libsrcdir="$$s/libelf"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libelf; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif libelf-bootstrap
@@ -15261,12 +15297,12 @@ configure-stage2-libelf:
 	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libelf"; \
-	libsrcdir="$$s/libelf"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libelf; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif libelf-bootstrap
@@ -15295,12 +15331,12 @@ configure-stage3-libelf:
 	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libelf"; \
-	libsrcdir="$$s/libelf"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libelf; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif libelf-bootstrap
@@ -15329,12 +15365,12 @@ configure-stage4-libelf:
 	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libelf"; \
-	libsrcdir="$$s/libelf"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libelf; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif libelf-bootstrap
@@ -15363,12 +15399,12 @@ configure-stageprofile-libelf:
 	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libelf"; \
-	libsrcdir="$$s/libelf"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libelf; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif libelf-bootstrap
@@ -15397,12 +15433,12 @@ configure-stagefeedback-libelf:
 	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libelf"; \
-	libsrcdir="$$s/libelf"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libelf; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif libelf-bootstrap
@@ -16061,11 +16097,12 @@ configure-gold:
 	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gold"; \
-	libsrcdir="$$s/gold"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gold; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif gold
 
@@ -16094,11 +16131,12 @@ configure-stage1-gold:
 	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gold"; \
-	libsrcdir="$$s/gold"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gold; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif gold-bootstrap
 
@@ -16126,12 +16164,12 @@ configure-stage2-gold:
 	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gold"; \
-	libsrcdir="$$s/gold"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gold; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif gold-bootstrap
 
@@ -16159,12 +16197,12 @@ configure-stage3-gold:
 	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gold"; \
-	libsrcdir="$$s/gold"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gold; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif gold-bootstrap
 
@@ -16192,12 +16230,12 @@ configure-stage4-gold:
 	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gold"; \
-	libsrcdir="$$s/gold"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gold; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif gold-bootstrap
 
@@ -16225,12 +16263,12 @@ configure-stageprofile-gold:
 	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gold"; \
-	libsrcdir="$$s/gold"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gold; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif gold-bootstrap
 
@@ -16258,12 +16296,12 @@ configure-stagefeedback-gold:
 	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gold"; \
-	libsrcdir="$$s/gold"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gold; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif gold-bootstrap
 
@@ -16934,11 +16972,12 @@ configure-gprof:
 	  *) topdir=`echo $(HOST_SUBDIR)/gprof/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gprof"; \
-	libsrcdir="$$s/gprof"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gprof; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif gprof
 
@@ -17373,11 +17412,12 @@ configure-intl:
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/intl"; \
-	libsrcdir="$$s/intl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=intl; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif intl
 
@@ -17406,11 +17446,12 @@ configure-stage1-intl:
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/intl"; \
-	libsrcdir="$$s/intl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=intl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif intl-bootstrap
 
@@ -17438,12 +17479,12 @@ configure-stage2-intl:
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/intl"; \
-	libsrcdir="$$s/intl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=intl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif intl-bootstrap
 
@@ -17471,12 +17512,12 @@ configure-stage3-intl:
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/intl"; \
-	libsrcdir="$$s/intl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=intl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif intl-bootstrap
 
@@ -17504,12 +17545,12 @@ configure-stage4-intl:
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/intl"; \
-	libsrcdir="$$s/intl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=intl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif intl-bootstrap
 
@@ -17537,12 +17578,12 @@ configure-stageprofile-intl:
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/intl"; \
-	libsrcdir="$$s/intl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=intl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif intl-bootstrap
 
@@ -17570,12 +17611,12 @@ configure-stagefeedback-intl:
 	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/intl"; \
-	libsrcdir="$$s/intl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=intl; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif intl-bootstrap
 
@@ -18246,11 +18287,12 @@ configure-tcl:
 	  *) topdir=`echo $(HOST_SUBDIR)/tcl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/tcl"; \
-	libsrcdir="$$s/tcl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=tcl; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif tcl
 
@@ -18671,11 +18713,12 @@ configure-itcl:
 	  *) topdir=`echo $(HOST_SUBDIR)/itcl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/itcl"; \
-	libsrcdir="$$s/itcl"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=itcl; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif itcl
 
@@ -19110,11 +19153,12 @@ configure-ld:
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ld"; \
-	libsrcdir="$$s/ld"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=ld; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif ld
 
@@ -19143,11 +19187,12 @@ configure-stage1-ld:
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ld"; \
-	libsrcdir="$$s/ld"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=ld; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif ld-bootstrap
 
@@ -19175,12 +19220,12 @@ configure-stage2-ld:
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ld"; \
-	libsrcdir="$$s/ld"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=ld; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif ld-bootstrap
 
@@ -19208,12 +19253,12 @@ configure-stage3-ld:
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ld"; \
-	libsrcdir="$$s/ld"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=ld; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif ld-bootstrap
 
@@ -19241,12 +19286,12 @@ configure-stage4-ld:
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ld"; \
-	libsrcdir="$$s/ld"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=ld; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif ld-bootstrap
 
@@ -19274,12 +19319,12 @@ configure-stageprofile-ld:
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ld"; \
-	libsrcdir="$$s/ld"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=ld; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif ld-bootstrap
 
@@ -19307,12 +19352,12 @@ configure-stagefeedback-ld:
 	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ld"; \
-	libsrcdir="$$s/ld"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=ld; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif ld-bootstrap
 
@@ -19982,11 +20027,12 @@ configure-libbacktrace:
 	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libbacktrace; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif libbacktrace
 
@@ -20015,11 +20061,12 @@ configure-stage1-libbacktrace:
 	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libbacktrace; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif libbacktrace-bootstrap
 
@@ -20047,12 +20094,12 @@ configure-stage2-libbacktrace:
 	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libbacktrace; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif libbacktrace-bootstrap
 
@@ -20080,12 +20127,12 @@ configure-stage3-libbacktrace:
 	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libbacktrace; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif libbacktrace-bootstrap
 
@@ -20113,12 +20160,12 @@ configure-stage4-libbacktrace:
 	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libbacktrace; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif libbacktrace-bootstrap
 
@@ -20146,12 +20193,12 @@ configure-stageprofile-libbacktrace:
 	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libbacktrace; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif libbacktrace-bootstrap
 
@@ -20179,12 +20226,12 @@ configure-stagefeedback-libbacktrace:
 	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libbacktrace; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif libbacktrace-bootstrap
 
@@ -20854,11 +20901,12 @@ configure-libcpp:
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcpp"; \
-	libsrcdir="$$s/libcpp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libcpp; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif libcpp
 
@@ -20887,11 +20935,12 @@ configure-stage1-libcpp:
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcpp"; \
-	libsrcdir="$$s/libcpp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libcpp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif libcpp-bootstrap
 
@@ -20919,12 +20968,12 @@ configure-stage2-libcpp:
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcpp"; \
-	libsrcdir="$$s/libcpp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libcpp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif libcpp-bootstrap
 
@@ -20952,12 +21001,12 @@ configure-stage3-libcpp:
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcpp"; \
-	libsrcdir="$$s/libcpp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libcpp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif libcpp-bootstrap
 
@@ -20985,12 +21034,12 @@ configure-stage4-libcpp:
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcpp"; \
-	libsrcdir="$$s/libcpp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libcpp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif libcpp-bootstrap
 
@@ -21018,12 +21067,12 @@ configure-stageprofile-libcpp:
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcpp"; \
-	libsrcdir="$$s/libcpp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libcpp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif libcpp-bootstrap
 
@@ -21051,12 +21100,12 @@ configure-stagefeedback-libcpp:
 	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcpp"; \
-	libsrcdir="$$s/libcpp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libcpp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif libcpp-bootstrap
 
@@ -21726,11 +21775,12 @@ configure-libdecnumber:
 	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
-	libsrcdir="$$s/libdecnumber"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libdecnumber; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif libdecnumber
 
@@ -21759,11 +21809,12 @@ configure-stage1-libdecnumber:
 	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
-	libsrcdir="$$s/libdecnumber"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libdecnumber; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif libdecnumber-bootstrap
 
@@ -21791,12 +21842,12 @@ configure-stage2-libdecnumber:
 	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
-	libsrcdir="$$s/libdecnumber"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libdecnumber; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif libdecnumber-bootstrap
 
@@ -21824,12 +21875,12 @@ configure-stage3-libdecnumber:
 	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
-	libsrcdir="$$s/libdecnumber"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libdecnumber; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif libdecnumber-bootstrap
 
@@ -21857,12 +21908,12 @@ configure-stage4-libdecnumber:
 	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
-	libsrcdir="$$s/libdecnumber"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libdecnumber; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif libdecnumber-bootstrap
 
@@ -21890,12 +21941,12 @@ configure-stageprofile-libdecnumber:
 	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
-	libsrcdir="$$s/libdecnumber"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libdecnumber; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif libdecnumber-bootstrap
 
@@ -21923,12 +21974,12 @@ configure-stagefeedback-libdecnumber:
 	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
-	libsrcdir="$$s/libdecnumber"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libdecnumber; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif libdecnumber-bootstrap
 
@@ -22599,11 +22650,12 @@ configure-libgui:
 	  *) topdir=`echo $(HOST_SUBDIR)/libgui/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgui"; \
-	libsrcdir="$$s/libgui"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgui; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif libgui
 
@@ -23038,11 +23090,12 @@ configure-libiberty:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiberty; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} @extra_host_libiberty_configure_flags@ \
+	  --target=${target_alias} @extra_host_libiberty_configure_flags@ \
 	  || exit 1
 @endif libiberty
 
@@ -23071,11 +23124,12 @@ configure-stage1-libiberty:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
@@ -23104,12 +23158,12 @@ configure-stage2-libiberty:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
@@ -23138,12 +23192,12 @@ configure-stage3-libiberty:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
@@ -23172,12 +23226,12 @@ configure-stage4-libiberty:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
@@ -23206,12 +23260,12 @@ configure-stageprofile-libiberty:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
@@ -23240,12 +23294,12 @@ configure-stagefeedback-libiberty:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiberty; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
@@ -23917,11 +23971,12 @@ configure-libiconv:
 	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiconv"; \
-	libsrcdir="$$s/libiconv"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libiconv; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared \
+	  --target=${target_alias} --disable-shared \
 	  || exit 1
 @endif libiconv
 
@@ -24294,11 +24349,12 @@ configure-m4:
 	  *) topdir=`echo $(HOST_SUBDIR)/m4/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/m4"; \
-	libsrcdir="$$s/m4"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=m4; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif m4
 
@@ -24734,11 +24790,12 @@ configure-readline:
 	  *) topdir=`echo $(HOST_SUBDIR)/readline/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/readline"; \
-	libsrcdir="$$s/readline"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=readline; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif readline
 
@@ -25174,11 +25231,12 @@ configure-sid:
 	  *) topdir=`echo $(HOST_SUBDIR)/sid/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/sid"; \
-	libsrcdir="$$s/sid"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=sid; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif sid
 
@@ -25614,11 +25672,12 @@ configure-sim:
 	  *) topdir=`echo $(HOST_SUBDIR)/sim/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/sim"; \
-	libsrcdir="$$s/sim"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=sim; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif sim
 
@@ -26054,11 +26113,12 @@ configure-texinfo:
 	  *) topdir=`echo $(HOST_SUBDIR)/texinfo/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/texinfo"; \
-	libsrcdir="$$s/texinfo"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=texinfo; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif texinfo
 
@@ -26481,11 +26541,12 @@ configure-zlib:
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=zlib; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif zlib
 
@@ -26514,11 +26575,12 @@ configure-stage1-zlib:
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=zlib; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif zlib-bootstrap
 
@@ -26546,12 +26608,12 @@ configure-stage2-zlib:
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=zlib; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif zlib-bootstrap
 
@@ -26579,12 +26641,12 @@ configure-stage3-zlib:
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=zlib; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif zlib-bootstrap
 
@@ -26612,12 +26674,12 @@ configure-stage4-zlib:
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=zlib; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif zlib-bootstrap
 
@@ -26645,12 +26707,12 @@ configure-stageprofile-zlib:
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=zlib; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif zlib-bootstrap
 
@@ -26678,12 +26740,12 @@ configure-stagefeedback-zlib:
 	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=zlib; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif zlib-bootstrap
 
@@ -27336,11 +27398,12 @@ configure-gdb:
 	  *) topdir=`echo $(HOST_SUBDIR)/gdb/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gdb"; \
-	libsrcdir="$$s/gdb"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gdb; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif gdb
 
@@ -27776,11 +27839,12 @@ configure-expect:
 	  *) topdir=`echo $(HOST_SUBDIR)/expect/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/expect"; \
-	libsrcdir="$$s/expect"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=expect; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif expect
 
@@ -28216,11 +28280,12 @@ configure-guile:
 	  *) topdir=`echo $(HOST_SUBDIR)/guile/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/guile"; \
-	libsrcdir="$$s/guile"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=guile; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif guile
 
@@ -28656,11 +28721,12 @@ configure-tk:
 	  *) topdir=`echo $(HOST_SUBDIR)/tk/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/tk"; \
-	libsrcdir="$$s/tk"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=tk; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif tk
 
@@ -29096,11 +29162,12 @@ configure-libtermcap:
 	  *) topdir=`echo $(HOST_SUBDIR)/libtermcap/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libtermcap"; \
-	libsrcdir="$$s/libtermcap"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libtermcap; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif libtermcap
 
@@ -29470,11 +29537,12 @@ configure-utils:
 	  *) topdir=`echo $(HOST_SUBDIR)/utils/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/utils"; \
-	libsrcdir="$$s/utils"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=utils; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif utils
 
@@ -29904,11 +29972,12 @@ configure-gnattools:
 	  *) topdir=`echo $(HOST_SUBDIR)/gnattools/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/gnattools"; \
-	libsrcdir="$$s/gnattools"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=gnattools; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif gnattools
 
@@ -30343,11 +30412,12 @@ configure-lto-plugin:
 	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
-	libsrcdir="$$s/lto-plugin"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=lto-plugin; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --enable-shared \
+	  --target=${target_alias} --enable-shared \
 	  || exit 1
 @endif lto-plugin
 
@@ -30376,11 +30446,12 @@ configure-stage1-lto-plugin:
 	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
-	libsrcdir="$$s/lto-plugin"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=lto-plugin; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --enable-shared
 @endif lto-plugin-bootstrap
@@ -30409,12 +30480,12 @@ configure-stage2-lto-plugin:
 	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
-	libsrcdir="$$s/lto-plugin"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=lto-plugin; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --enable-shared
 @endif lto-plugin-bootstrap
@@ -30443,12 +30514,12 @@ configure-stage3-lto-plugin:
 	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
-	libsrcdir="$$s/lto-plugin"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=lto-plugin; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --enable-shared
 @endif lto-plugin-bootstrap
@@ -30477,12 +30548,12 @@ configure-stage4-lto-plugin:
 	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
-	libsrcdir="$$s/lto-plugin"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=lto-plugin; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --enable-shared
 @endif lto-plugin-bootstrap
@@ -30511,12 +30582,12 @@ configure-stageprofile-lto-plugin:
 	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
-	libsrcdir="$$s/lto-plugin"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=lto-plugin; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --enable-shared
 @endif lto-plugin-bootstrap
@@ -30545,12 +30616,12 @@ configure-stagefeedback-lto-plugin:
 	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
-	libsrcdir="$$s/lto-plugin"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=lto-plugin; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --enable-shared
 @endif lto-plugin-bootstrap
@@ -31241,12 +31312,13 @@ configure-target-libstdc++-v3:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libstdc++-v3/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
-	libsrcdir="$$s/libstdc++-v3"; \
+	module_srcdir=libstdc++-v3; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libstdc++-v3
 
@@ -31287,11 +31359,12 @@ configure-stage1-target-libstdc++-v3:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libstdc++-v3/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
-	libsrcdir="$$s/libstdc++-v3"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libstdc++-v3; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif target-libstdc++-v3-bootstrap
 
@@ -31331,12 +31404,12 @@ configure-stage2-target-libstdc++-v3:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libstdc++-v3/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
-	libsrcdir="$$s/libstdc++-v3"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libstdc++-v3; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif target-libstdc++-v3-bootstrap
 
@@ -31376,12 +31449,12 @@ configure-stage3-target-libstdc++-v3:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libstdc++-v3/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
-	libsrcdir="$$s/libstdc++-v3"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libstdc++-v3; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif target-libstdc++-v3-bootstrap
 
@@ -31421,12 +31494,12 @@ configure-stage4-target-libstdc++-v3:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libstdc++-v3/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
-	libsrcdir="$$s/libstdc++-v3"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libstdc++-v3; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif target-libstdc++-v3-bootstrap
 
@@ -31466,12 +31539,12 @@ configure-stageprofile-target-libstdc++-v3:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libstdc++-v3/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
-	libsrcdir="$$s/libstdc++-v3"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libstdc++-v3; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif target-libstdc++-v3-bootstrap
 
@@ -31511,12 +31584,12 @@ configure-stagefeedback-target-libstdc++-v3:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libstdc++-v3/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
-	libsrcdir="$$s/libstdc++-v3"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libstdc++-v3; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif target-libstdc++-v3-bootstrap
 
@@ -32215,12 +32288,13 @@ configure-target-libsanitizer:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libsanitizer/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libsanitizer"; \
-	libsrcdir="$$s/libsanitizer"; \
+	module_srcdir=libsanitizer; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libsanitizer
 
@@ -32261,11 +32335,12 @@ configure-stage1-target-libsanitizer:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libsanitizer/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libsanitizer"; \
-	libsrcdir="$$s/libsanitizer"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libsanitizer; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif target-libsanitizer-bootstrap
 
@@ -32305,12 +32380,12 @@ configure-stage2-target-libsanitizer:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libsanitizer/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libsanitizer"; \
-	libsrcdir="$$s/libsanitizer"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libsanitizer; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif target-libsanitizer-bootstrap
 
@@ -32350,12 +32425,12 @@ configure-stage3-target-libsanitizer:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libsanitizer/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libsanitizer"; \
-	libsrcdir="$$s/libsanitizer"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libsanitizer; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif target-libsanitizer-bootstrap
 
@@ -32395,12 +32470,12 @@ configure-stage4-target-libsanitizer:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libsanitizer/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libsanitizer"; \
-	libsrcdir="$$s/libsanitizer"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libsanitizer; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif target-libsanitizer-bootstrap
 
@@ -32440,12 +32515,12 @@ configure-stageprofile-target-libsanitizer:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libsanitizer/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libsanitizer"; \
-	libsrcdir="$$s/libsanitizer"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libsanitizer; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif target-libsanitizer-bootstrap
 
@@ -32485,12 +32560,12 @@ configure-stagefeedback-target-libsanitizer:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libsanitizer/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libsanitizer"; \
-	libsrcdir="$$s/libsanitizer"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libsanitizer; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif target-libsanitizer-bootstrap
 
@@ -33189,12 +33264,13 @@ configure-target-libvtv:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libvtv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libvtv"; \
-	libsrcdir="$$s/libvtv"; \
+	module_srcdir=libvtv; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libvtv
 
@@ -33235,11 +33311,12 @@ configure-stage1-target-libvtv:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libvtv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libvtv"; \
-	libsrcdir="$$s/libvtv"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libvtv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif target-libvtv-bootstrap
 
@@ -33279,12 +33356,12 @@ configure-stage2-target-libvtv:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libvtv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libvtv"; \
-	libsrcdir="$$s/libvtv"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libvtv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif target-libvtv-bootstrap
 
@@ -33324,12 +33401,12 @@ configure-stage3-target-libvtv:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libvtv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libvtv"; \
-	libsrcdir="$$s/libvtv"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libvtv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif target-libvtv-bootstrap
 
@@ -33369,12 +33446,12 @@ configure-stage4-target-libvtv:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libvtv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libvtv"; \
-	libsrcdir="$$s/libvtv"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libvtv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif target-libvtv-bootstrap
 
@@ -33414,12 +33491,12 @@ configure-stageprofile-target-libvtv:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libvtv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libvtv"; \
-	libsrcdir="$$s/libvtv"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libvtv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif target-libvtv-bootstrap
 
@@ -33459,12 +33536,12 @@ configure-stagefeedback-target-libvtv:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libvtv/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libvtv"; \
-	libsrcdir="$$s/libvtv"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libvtv; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif target-libvtv-bootstrap
 
@@ -34164,12 +34241,13 @@ configure-target-libcilkrts:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libcilkrts/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libcilkrts"; \
-	libsrcdir="$$s/libcilkrts"; \
+	module_srcdir=libcilkrts; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libcilkrts
 
@@ -34621,12 +34699,13 @@ configure-target-libssp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libssp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libssp"; \
-	libsrcdir="$$s/libssp"; \
+	module_srcdir=libssp; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libssp
 
@@ -35078,12 +35157,13 @@ configure-target-newlib:
 	  *) topdir=`echo $(TARGET_SUBDIR)/newlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/newlib"; \
-	libsrcdir="$$s/newlib"; \
+	module_srcdir=newlib; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-newlib
 
@@ -35534,12 +35614,13 @@ configure-target-libgcc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc"; \
-	libsrcdir="$$s/libgcc"; \
+	module_srcdir=libgcc; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libgcc
 
@@ -35580,11 +35661,12 @@ configure-stage1-target-libgcc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc"; \
-	libsrcdir="$$s/libgcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif target-libgcc-bootstrap
 
@@ -35624,12 +35706,12 @@ configure-stage2-target-libgcc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc"; \
-	libsrcdir="$$s/libgcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif target-libgcc-bootstrap
 
@@ -35669,12 +35751,12 @@ configure-stage3-target-libgcc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc"; \
-	libsrcdir="$$s/libgcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif target-libgcc-bootstrap
 
@@ -35714,12 +35796,12 @@ configure-stage4-target-libgcc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc"; \
-	libsrcdir="$$s/libgcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif target-libgcc-bootstrap
 
@@ -35759,12 +35841,12 @@ configure-stageprofile-target-libgcc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc"; \
-	libsrcdir="$$s/libgcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif target-libgcc-bootstrap
 
@@ -35804,12 +35886,12 @@ configure-stagefeedback-target-libgcc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgcc"; \
-	libsrcdir="$$s/libgcc"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgcc; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif target-libgcc-bootstrap
 
@@ -36504,12 +36586,13 @@ configure-target-libbacktrace:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libbacktrace/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
-	libsrcdir="$$s/libbacktrace"; \
+	module_srcdir=libbacktrace; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libbacktrace
 
@@ -36961,12 +37044,13 @@ configure-target-libquadmath:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libquadmath/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libquadmath"; \
-	libsrcdir="$$s/libquadmath"; \
+	module_srcdir=libquadmath; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libquadmath
 
@@ -37418,12 +37502,13 @@ configure-target-libgfortran:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgfortran/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgfortran"; \
-	libsrcdir="$$s/libgfortran"; \
+	module_srcdir=libgfortran; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libgfortran
 
@@ -37875,12 +37960,13 @@ configure-target-libobjc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libobjc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libobjc"; \
-	libsrcdir="$$s/libobjc"; \
+	module_srcdir=libobjc; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libobjc
 
@@ -38332,12 +38418,13 @@ configure-target-libgo:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgo/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgo"; \
-	libsrcdir="$$s/libgo"; \
+	module_srcdir=libgo; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libgo
 
@@ -38789,12 +38876,13 @@ configure-target-libtermcap:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libtermcap/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libtermcap"; \
-	libsrcdir="$$s/libtermcap"; \
+	module_srcdir=libtermcap; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libtermcap
 
@@ -39181,12 +39269,13 @@ configure-target-winsup:
 	  *) topdir=`echo $(TARGET_SUBDIR)/winsup/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/winsup"; \
-	libsrcdir="$$s/winsup"; \
+	module_srcdir=winsup; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-winsup
 
@@ -39638,12 +39727,13 @@ configure-target-libgloss:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgloss/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgloss"; \
-	libsrcdir="$$s/libgloss"; \
+	module_srcdir=libgloss; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libgloss
 
@@ -40090,12 +40180,13 @@ configure-target-libffi:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libffi"; \
-	libsrcdir="$$s/libffi"; \
+	module_srcdir=libffi; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libffi
 
@@ -40537,12 +40628,13 @@ configure-target-libjava:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libjava/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libjava"; \
-	libsrcdir="$$s/libjava"; \
+	module_srcdir=libjava; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} $(EXTRA_CONFIGARGS_LIBJAVA) \
+	  --target=${target_alias} $(EXTRA_CONFIGARGS_LIBJAVA) \
 	  || exit 1
 @endif target-libjava
 
@@ -40994,12 +41086,13 @@ configure-target-zlib:
 	  *) topdir=`echo $(TARGET_SUBDIR)/zlib/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/zlib"; \
-	libsrcdir="$$s/zlib"; \
+	module_srcdir=zlib; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-zlib
 
@@ -41451,12 +41544,13 @@ configure-target-boehm-gc:
 	  *) topdir=`echo $(TARGET_SUBDIR)/boehm-gc/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/boehm-gc"; \
-	libsrcdir="$$s/boehm-gc"; \
+	module_srcdir=boehm-gc; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-boehm-gc
 
@@ -41908,12 +42002,13 @@ configure-target-rda:
 	  *) topdir=`echo $(TARGET_SUBDIR)/rda/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/rda"; \
-	libsrcdir="$$s/rda"; \
+	module_srcdir=rda; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-rda
 
@@ -42365,12 +42460,13 @@ configure-target-libada:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libada/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libada"; \
-	libsrcdir="$$s/libada"; \
+	module_srcdir=libada; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libada
 
@@ -42821,12 +42917,13 @@ configure-target-libgomp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgomp"; \
-	libsrcdir="$$s/libgomp"; \
+	module_srcdir=libgomp; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libgomp
 
@@ -42867,11 +42964,12 @@ configure-stage1-target-libgomp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgomp"; \
-	libsrcdir="$$s/libgomp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgomp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  --target=${target_alias} \
+	   \
 	  $(STAGE1_CONFIGURE_FLAGS)
 @endif target-libgomp-bootstrap
 
@@ -42911,12 +43009,12 @@ configure-stage2-target-libgomp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgomp"; \
-	libsrcdir="$$s/libgomp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgomp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE2_CONFIGURE_FLAGS)
 @endif target-libgomp-bootstrap
 
@@ -42956,12 +43054,12 @@ configure-stage3-target-libgomp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgomp"; \
-	libsrcdir="$$s/libgomp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgomp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE3_CONFIGURE_FLAGS)
 @endif target-libgomp-bootstrap
 
@@ -43001,12 +43099,12 @@ configure-stage4-target-libgomp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgomp"; \
-	libsrcdir="$$s/libgomp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgomp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGE4_CONFIGURE_FLAGS)
 @endif target-libgomp-bootstrap
 
@@ -43046,12 +43144,12 @@ configure-stageprofile-target-libgomp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgomp"; \
-	libsrcdir="$$s/libgomp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgomp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEprofile_CONFIGURE_FLAGS)
 @endif target-libgomp-bootstrap
 
@@ -43091,12 +43189,12 @@ configure-stagefeedback-target-libgomp:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libgomp"; \
-	libsrcdir="$$s/libgomp"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=libgomp; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  --target=${target_alias} \
+	   --with-build-libsubdir=$(HOST_SUBDIR)  \
 	  $(STAGEfeedback_CONFIGURE_FLAGS)
 @endif target-libgomp-bootstrap
 
@@ -43796,12 +43894,13 @@ configure-target-libitm:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libitm/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libitm"; \
-	libsrcdir="$$s/libitm"; \
+	module_srcdir=libitm; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libitm
 
@@ -44253,12 +44352,13 @@ configure-target-libatomic:
 	  *) topdir=`echo $(TARGET_SUBDIR)/libatomic/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/libatomic"; \
-	libsrcdir="$$s/libatomic"; \
+	module_srcdir=libatomic; \
 	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias}  \
 	  || exit 1
 @endif target-libatomic
 

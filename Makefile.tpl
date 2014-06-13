@@ -1002,12 +1002,13 @@ configure-[+prefix+][+module+]: [+ IF bootstrap +][+ ELSE +]
 	  *) topdir=`echo [+subdir+]/[+module+]/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	libsrcdir="$$s/[+module+]"; \
+	module_srcdir=[+? module_srcdir (get "module_srcdir") (get "module")+]; \
 	[+ IF no-config-site +]rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file [+ ENDIF +]$(SHELL) $${libsrcdir}/configure \
+	CONFIG_SITE=no-such-file [+ ENDIF +]$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  [+args+] --build=${build_alias} --host=[+host_alias+] \
-	  --target=[+target_alias+] $${srcdiroption} [+extra_configure_flags+] \
+	  --target=[+target_alias+] [+extra_configure_flags+] \
 	  || exit 1
 @endif [+prefix+][+module+]
 
@@ -1055,12 +1056,12 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	  *) topdir=`echo [+subdir+]/[+module+]/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	libsrcdir="$$s/[+module+]"; \
-	$(SHELL) $${libsrcdir}/configure \
+	module_srcdir=[+? module_srcdir (get "module_srcdir") (get "module")+]; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
 	  [+args+] --build=${build_alias} --host=[+host_alias+] \
-	  --target=[+target_alias+] $${srcdiroption} [+ IF prev +]\
-	  --with-build-libsubdir=$(HOST_SUBDIR) [+ ENDIF prev +]\
+	  --target=[+target_alias+] \
+	  [+ IF prev +] --with-build-libsubdir=$(HOST_SUBDIR) [+ ENDIF prev +] \
 	  $(STAGE[+id+]_CONFIGURE_FLAGS)[+ IF extra_configure_flags +] \
 	  [+extra_configure_flags+][+ ENDIF extra_configure_flags +]
 @endif [+prefix+][+module+]-bootstrap
