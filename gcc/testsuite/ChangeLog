@@ -1,3 +1,13 @@
+2014-06-13  Richard Biener  <rguenther@suse.de>
+
+	* c-c++-common/pr46562-2.c: Adjust.
+	* g++.dg/tree-ssa/pr8781.C: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-24.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-25.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-32.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-39.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-16.c: Likewise.
+
 2014-06-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/61375
