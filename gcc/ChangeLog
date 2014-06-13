@@ -1,6 +1,12 @@
 2014-06-13  Jeff Law  <law@redhat.com>
 
 	Backports from mainline:
+	2014-06-13  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/61094
+	PR rtl-optimization/61446
+	* ree.c (combine_reaching_defs): Get the mode for the copy from
+	the extension insn rather than the defining insn.
 
 	2014-06-02  Jeff Law  <law@redhat.com>
 

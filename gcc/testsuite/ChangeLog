@@ -1,5 +1,12 @@
 2014-06-13  Jeff Law  <law@redhat.com>
+
 	Backports from mainline:
+
+	2014-06-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR rtl-optimization/61094
+	PR rtl-optimization/61446
+	* gcc.target/i386/pr61446.c : New.
 
 	2014-06-02  Jeff Law  <law@redhat.com>
 
