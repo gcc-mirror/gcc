@@ -1,3 +1,10 @@
+2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.tpl (configure-[+prefix+][+module+])
+	(configure-stage[+id+]-[+prefix+][+module+]): If specified, use
+	"module_srcdir" instead of "module" for locating a module's srcdir.
+	* Makefile.in: Regenerate.
+
 2014-06-10  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
