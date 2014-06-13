@@ -1,3 +1,79 @@
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* errout.adb (SPARK_Msg_N): New routine.
+	(SPARK_Msg_NE): New routine.
+	* errout.ads Add a section on SPARK-related error routines.
+	(SPARK_Msg_N): New routine.
+	(SPARK_Msg_NE): New routine.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Ensure that
+	pragma Abstract_State is always inserted after SPARK_Mode.
+	(Insert_After_SPARK_Mode): New routine.
+	* sem_prag.adb (Analyze_Abstract_State,
+	Analyze_Constituent, Analyze_External_Property,
+	Analyze_External_Property_In_Decl_Part, Analyze_Global_Item,
+	Analyze_Global_List, Analyze_Initialization_Item,
+	Analyze_Initialization_Item_With_Inputs, Analyze_Input_Item,
+	Analyze_Input_List, Analyze_Input_Output, Analyze_Part_Of,
+	Analyze_Pragma, Analyze_Refined_Depends_In_Decl_Part,
+	Analyze_Refined_Global_In_Decl_Part,
+	Analyze_Refined_State_In_Decl_Part, Analyze_Refinement_Clause,
+	Check_Aspect_Specification_Order, Check_Constituent_Usage,
+	Check_Declaration_Order, Check_Dependency_Clause,
+	Check_Duplicate_Mode, Check_Duplicate_Option,
+	Check_Duplicate_Property, Check_External_Properties,
+	Check_External_Property, Check_Function_Return,
+	Check_Matching_Constituent, Check_Matching_State,
+	Check_Mode_Restriction_In_Enclosing_Context,
+	Check_Mode_Restriction_In_Function, Check_Refined_Global_Item,
+	Check_State_And_Constituent_Use, Create_Or_Modify_Clause,
+	Has_Extra_Parentheses, Inconsistent_Mode_Error,
+	Match_Error, Propagate_Part_Of, Report_Extra_Clauses,
+	Report_Extra_Constituents_In_List, Report_Extra_Inputs,
+	Report_Unrefined_States, Report_Unused_Constituents,
+	Report_Unused_States, Role_Error, Usage_Error):
+	Convert Error_Msg_XXX calls to SPARK_Msg_XXX calls
+	to report semantic errors only when SPARK_Mode is on.
+	(Analyze_Depends_In_Decl_Part): Do not check the syntax of
+	pragma Depends explicitly, this is now done by the analysis.
+	(Analyze_Global_In_Decl_List): Do not check the syntax of
+	pragma Global explicitly, this is now done by the analysis.
+	(Analyze_Initializes_In_Decl_Part): Do not check the syntax of
+	pragma Initializes explicitly, this is now done by the analysis.
+	(Analyze_Part_Of): Do not check the syntax of the encapsulating
+	state, this is now done by the analysis.
+	(Analyze_Pragma): Do
+	not check the syntax of a state declaration, this is now done
+	by the analysis.
+	(Analyze_Refined_Depends_In_Decl_Part): Do not
+	check the syntax of pragma Refined_Depends explicitly, this is now
+	done by the analysis.
+	(Analyze_Refined_Global_In_Decl_Part): Do
+	not check the syntax of pragma Refined_Global explicitly, this is
+	now done by the analysis.
+	(Analyze_Refined_State_In_Decl_Part):
+	Do not check the syntax of pragma Refined_State explicitly, this
+	is now done by the analysis.
+	(Check_Dependence_List_Syntax): Removed.
+	(Check_Global_List_Syntax): Removed.
+	(Check_Initialization_List_Syntax): Removed.
+	(Check_Item_Syntax): Removed.
+	(Check_Missing_Part_Of): Do not consider items from an instance.
+	(Check_Refinement_List_Syntax): Removed.
+	(Check_State_Declaration_Syntax): Removed.
+	(Collect_Global_List): Do not raise Program_Error when the input is
+	malformed.
+	(Process_Global_List): Do not raise Program_Error when the input
+	is malformed.
+	* sem_ch13.adb: Minor reformatting.
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): Diagnose a private type completion
+	that is an interface definition with an interface list.
+	(Process_Full_View): Move error message on missmatched interfaces
+	between views to the declaration of full view, for clarity.
+	* sem_ch9.adb (Check_Interfaces): Move error message to full view,
+	for clarity.
+
 2014-06-13  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference, case Pred/Succ): Change

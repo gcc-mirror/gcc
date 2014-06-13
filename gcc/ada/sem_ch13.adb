@@ -2007,9 +2007,50 @@ package body Sem_Ch13 is
                --  immediately.
 
                when Aspect_Abstract_State => Abstract_State : declare
+                  procedure Insert_After_SPARK_Mode
+                    (Ins_Nod : Node_Id;
+                     Decls   : List_Id);
+                  --  Insert Aitem before node Ins_Nod. If Ins_Nod denotes
+                  --  pragma SPARK_Mode, then SPARK_Mode is skipped. Decls is
+                  --  the associated declarative list where Aitem is to reside.
+
+                  -----------------------------
+                  -- Insert_After_SPARK_Mode --
+                  -----------------------------
+
+                  procedure Insert_After_SPARK_Mode
+                    (Ins_Nod : Node_Id;
+                     Decls   : List_Id)
+                  is
+                     Decl : Node_Id := Ins_Nod;
+
+                  begin
+                     --  Skip SPARK_Mode
+
+                     if Present (Decl)
+                       and then Nkind (Decl) = N_Pragma
+                       and then Pragma_Name (Decl) = Name_SPARK_Mode
+                     then
+                        Decl := Next (Decl);
+                     end if;
+
+                     if Present (Decl) then
+                        Insert_Before (Decl, Aitem);
+
+                     --  Aitem acts as the last declaration
+
+                     else
+                        Append_To (Decls, Aitem);
+                     end if;
+                  end Insert_After_SPARK_Mode;
+
+                  --  Local variables
+
                   Context : Node_Id := N;
                   Decl    : Node_Id;
                   Decls   : List_Id;
+
+               --  Start of processing for Abstract_State
 
                begin
                   --  When aspect Abstract_State appears on a generic package,
@@ -2061,17 +2102,20 @@ package body Sem_Ch13 is
                               Decl := Next (Decl);
                            end loop;
 
-                           if Present (Decl) then
-                              Insert_Before (Decl, Aitem);
-                           else
-                              Append_To (Decls, Aitem);
-                           end if;
+                           --  Pragma Abstract_State must be inserted after
+                           --  pragma SPARK_Mode in the tree. This ensures that
+                           --  any error messages dependent on SPARK_Mode will
+                           --  be properly enabled/suppressed.
+
+                           Insert_After_SPARK_Mode (Decl, Decls);
 
                         --  The related package is not a generic instance, the
-                        --  corresponding pragma must be the first declaration.
+                        --  corresponding pragma must be the first declaration
+                        --  except when SPARK_Mode is already in the list. In
+                        --  that case pragma Abstract_State is placed second.
 
                         else
-                           Prepend_To (Decls, Aitem);
+                           Insert_After_SPARK_Mode (First (Decls), Decls);
                         end if;
 
                      --  Otherwise the pragma forms a new declarative list

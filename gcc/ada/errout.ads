@@ -909,6 +909,29 @@ package Errout is
    --  Debugging routine to dump an error message
 
    ------------------------------------
+   -- SPARK Error Output Subprograms --
+   ------------------------------------
+
+   --  The following routines are intended to report semantic errors in SPARK
+   --  constructs subject to aspect/pragma SPARK_Mode. Note that syntax errors
+   --  must be reported using the Error_Msg_XXX routines. This allows for the
+   --  partial analysis of SPARK features when they are disabled via SPARK_Mode
+   --  set to "off".
+
+   procedure SPARK_Msg_N (Msg : String; N : Node_Or_Entity_Id);
+   pragma Inline (SPARK_Msg_N);
+   --  Same as Error_Msg_N, but the error is reported only when SPARK_Mode is
+   --  "on". The routine is inlined because it acts as a simple wrapper.
+
+   procedure SPARK_Msg_NE
+     (Msg : String;
+      N   : Node_Or_Entity_Id;
+      E   : Node_Or_Entity_Id);
+   pragma Inline (SPARK_Msg_NE);
+   --  Same as Error_Msg_NE, but the error is reported only when SPARK_Mode is
+   --  "on". The routine is inlined because it acts as a simple wrapper.
+
+   ------------------------------------
    -- Utility Interface for Back End --
    ------------------------------------
 
