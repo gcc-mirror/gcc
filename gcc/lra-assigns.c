@@ -1420,6 +1420,31 @@ assign_by_spills (void)
 		 alternatives of insns containing the pseudo.  */
 	      bitmap_set_bit (&changed_pseudo_bitmap, regno);
 	    }
+	  else
+	    {
+	      enum reg_class rclass = lra_get_allocno_class (regno);
+	      enum reg_class spill_class;
+	      
+	      if (lra_reg_info[regno].restore_regno < 0
+		  || ! bitmap_bit_p (&lra_inheritance_pseudos, regno)
+		  || (spill_class
+		      = ((enum reg_class)
+			 targetm.spill_class
+			 ((reg_class_t) rclass,
+			  PSEUDO_REGNO_MODE (regno)))) == NO_REGS)
+		continue;
+	      regno_allocno_class_array[regno] = spill_class;
+	      hard_regno = find_hard_regno_for (regno, &cost, -1, false);
+	      if (hard_regno < 0)
+		regno_allocno_class_array[regno] = rclass;
+	      else
+		{
+		  setup_reg_classes
+		    (regno, spill_class, spill_class, spill_class);
+		  assign_hard_regno (hard_regno, regno);
+		  bitmap_set_bit (&changed_pseudo_bitmap, regno);
+		}
+	    }
 	}
     }
   free (update_hard_regno_preference_check);

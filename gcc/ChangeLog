@@ -1,3 +1,9 @@
+2014-06-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-assign.c (assign_by_spills): Add code to assign vector regs
+	to inheritance pseudos.
+	* config/i386/i386.c (ix86_spill_class): Add check on NO_REGS.
+
 2014-06-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/61415
