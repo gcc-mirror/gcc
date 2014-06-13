@@ -11,5 +11,5 @@ int foo(int k, int *x)
   }  while (++j<k);
   return res;
 }
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

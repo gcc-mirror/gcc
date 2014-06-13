@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1" } */
 
 int f();
 
@@ -24,5 +24,5 @@ int x()
 
 /* We should optimize this to a direct call.  */
 
-/* { dg-final { scan-tree-dump "converting indirect call to function int f()" "fre1" } } */
+/* { dg-final { scan-tree-dump-times "= f \\(\\);" 1 "fre1" } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

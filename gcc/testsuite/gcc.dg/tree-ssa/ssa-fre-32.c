@@ -23,6 +23,6 @@ bar (_Complex float x)
   return z;
 } 
 
-/* We should CSE all the way to replace the final assignment to z with x.  */
-/* { dg-final { scan-tree-dump-times "with x_1\\\(D\\\) in z" 3 "fre1" } } */
+/* We should CSE all the way to replace the return value with x.  */
+/* { dg-final { scan-tree-dump-times "return x_\\d\+\\(D\\);" 2 "fre1" } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -15,5 +15,5 @@ int foo (int i)
 
 /* We should be able to value-number the final assignment to k to 1.  */
 
-/* { dg-final { scan-tree-dump "k_. = 1;" "fre1" } } */
+/* { dg-final { scan-tree-dump "return 1;" "fre1" } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

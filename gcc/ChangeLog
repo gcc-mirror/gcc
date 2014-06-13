@@ -1,3 +1,14 @@
+2014-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Rewrite to propagate the VN result into all uses where
+	possible and to remove stmts becoming dead because of that.
+	(eliminate): Generalize stmt removal handling, remove in
+	reverse dominator order to support proper debug stmt
+	generation.  Update stmts before removing stmts.
+	* tree-ssa-propagate.c (propagate_tree_value): Remove
+	bogus assert.
+
 2014-06-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/61375
