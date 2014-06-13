@@ -255,9 +255,6 @@ runtime_mcall(void (*pfn)(G*))
 {
 	M *mp;
 	G *gp;
-#ifndef USING_SPLIT_STACK
-	int i;
-#endif
 
 	// Ensure that all registers are on the stack for the garbage
 	// collector.
@@ -273,7 +270,7 @@ runtime_mcall(void (*pfn)(G*))
 #ifdef USING_SPLIT_STACK
 		__splitstack_getcontext(&g->stack_context[0]);
 #else
-		gp->gcnext_sp = &i;
+		gp->gcnext_sp = &pfn;
 #endif
 		gp->fromgogo = false;
 		getcontext(&gp->context);
@@ -1933,7 +1930,7 @@ doentersyscall()
 				       &g->gcinitial_sp);
 #else
 	{
-		uint32 v;
+		void *v;
 
 		g->gcnext_sp = (byte *) &v;
 	}
