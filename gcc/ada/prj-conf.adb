@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2013, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2014, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -721,7 +721,7 @@ package body Prj.Conf is
                               Set_Runtime_For
                                 (Name_Ada,
                                  Name_Buffer (7 .. Name_Len));
-                              Locate_Runtime (Name_Ada, Project_Tree);
+                              Locate_Runtime (Name_Ada, Project_Tree, Env);
                            end if;
 
                         elsif Name_Len > 7
@@ -748,7 +748,7 @@ package body Prj.Conf is
 
                                  if not Runtime_Name_Set_For (Lang) then
                                     Set_Runtime_For (Lang, RTS);
-                                    Locate_Runtime (Lang, Project_Tree);
+                                    Locate_Runtime (Lang, Project_Tree, Env);
                                  end if;
                               end;
                            end if;
@@ -1518,7 +1518,8 @@ package body Prj.Conf is
 
    procedure Locate_Runtime
      (Language     : Name_Id;
-      Project_Tree : Prj.Project_Tree_Ref)
+      Project_Tree : Prj.Project_Tree_Ref;
+      Env          : Prj.Tree.Environment)
    is
       function Is_Base_Name (Path : String) return Boolean;
       --  Returns True if Path has no directory separator
@@ -1551,7 +1552,7 @@ package body Prj.Conf is
    begin
       if not Is_Base_Name (RTS_Name) then
          Full_Path :=
-           Find_Rts_In_Path (Root_Environment.Project_Path, RTS_Name);
+           Find_Rts_In_Path (Env.Project_Path, RTS_Name);
 
          if Full_Path = null then
             Fail_Program (Project_Tree, "cannot find RTS " & RTS_Name);

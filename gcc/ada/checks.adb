@@ -767,6 +767,7 @@ package body Checks is
 
          if Nkind (First (Actions (N))) = N_Raise_Program_Error
            and then not Warnings_Off (E)
+           and then Warn_On_Non_Local_Exception
            and then Restriction_Active (No_Exception_Propagation)
          then
             Error_Msg_N

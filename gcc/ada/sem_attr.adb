@@ -2409,6 +2409,8 @@ package body Sem_Attr is
          end if;
       end if;
 
+      --  Cases where prefix must be resolvable by itself
+
       if Is_Overloaded (P)
         and then Aname /= Name_Access
         and then Aname /= Name_Address
@@ -4835,17 +4837,20 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction
-              ("attribute% is not allowed for type%", P);
+            Check_SPARK_Restriction ("attribute% is not allowed for type%", P);
          end if;
 
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  Nothing to do for real type case
+         --  For real types, enable range check in Check_Overflow_Mode only
 
          if Is_Real_Type (P_Type) then
-            null;
+            if Check_Float_Overflow
+              and then not Range_Checks_Suppressed (P_Base_Type)
+            then
+               Enable_Range_Check (E1);
+            end if;
 
          --  If not modular type, test for overflow check required
 
@@ -5739,17 +5744,20 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction
-              ("attribute% is not allowed for type%", P);
+            Check_SPARK_Restriction ("attribute% is not allowed for type%", P);
          end if;
 
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  Nothing to do for real type case
+         --  For real types, enable range check in Check_Overflow_Mode only
 
          if Is_Real_Type (P_Type) then
-            null;
+            if Check_Float_Overflow
+              and then not Range_Checks_Suppressed (P_Base_Type)
+            then
+               Enable_Range_Check (E1);
+            end if;
 
          --  If not modular type, test for overflow check required
 
