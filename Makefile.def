@@ -85,6 +85,14 @@ host_modules= { module= libdecnumber; bootstrap=true; };
 host_modules= { module= libgui; };
 host_modules= { module= libiberty; bootstrap=true;
 	        extra_configure_flags='@extra_host_libiberty_configure_flags@';};
+// Linker plugins may need their own build of libiberty; see
+// gcc/doc/install.texi.  We take care that this build of libiberty doesn't get
+// installed.  It's a helper library for linker plugins, so we pay attention to
+// @extra_linker_plugin_flags@ and @extra_linker_plugin_configure_flags@.
+host_modules= { module= libiberty-linker-plugin; bootstrap=true;
+		module_srcdir=libiberty;
+	        extra_configure_flags='@extra_host_libiberty_configure_flags@ --disable-install-libiberty @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
+		extra_make_flags='@extra_linker_plugin_flags@'; };
 // We abuse missing to avoid installing anything for libiconv.
 host_modules= { module= libiconv;
 		extra_configure_flags='--disable-shared';
@@ -111,7 +119,8 @@ host_modules= { module= libtermcap; no_check=true;
 host_modules= { module= utils; no_check=true; };
 host_modules= { module= gnattools; };
 host_modules= { module= lto-plugin; bootstrap=true;
-		extra_configure_flags=--enable-shared; };
+		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
+		extra_make_flags='@extra_linker_plugin_flags@'; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -338,7 +347,10 @@ dependencies = { module=all-fixincludes; on=all-libiberty; };
 dependencies = { module=all-gnattools; on=all-target-libada; };
 dependencies = { module=all-gnattools; on=all-target-libstdc++-v3; };
 
+// Depending on the specific configuration, the LTO plugin will either use the
+// generic libiberty build or the specific build for linker plugins.
 dependencies = { module=all-lto-plugin; on=all-libiberty; };
+dependencies = { module=all-lto-plugin; on=all-libiberty-linker-plugin; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
 

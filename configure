@@ -644,6 +644,8 @@ DEBUG_PREFIX_CFLAGS_FOR_TARGET
 SYSROOT_CFLAGS_FOR_TARGET
 stage1_languages
 extra_host_libiberty_configure_flags
+extra_linker_plugin_flags
+extra_linker_plugin_configure_flags
 clooginc
 clooglibs
 islinc
@@ -778,6 +780,8 @@ with_cloog_include
 with_cloog_lib
 enable_cloog_version_check
 enable_lto
+enable_linker_plugin_configure_flags
+enable_linker_plugin_flags
 enable_stage1_languages
 enable_objc_gc
 with_build_sysroot
@@ -1477,6 +1481,12 @@ Optional Features:
   --disable-cloog-version-check
                           disable check for CLooG version
   --enable-lto            enable link time optimization support
+  --enable-linker-plugin-configure-flags=FLAGS
+                          additional flags for configuring linker plugins
+                          [none]
+  --enable-linker-plugin-flags=FLAGS
+                          additional flags for configuring and building linker
+                          plugins [none]
   --enable-stage1-languages[=all]
                           choose additional languages to build during stage1.
                           Mostly useful for compiler development
@@ -6302,6 +6312,23 @@ else
 fi
 
 
+# Check whether --enable-linker-plugin-configure-flags was given.
+if test "${enable_linker_plugin_configure_flags+set}" = set; then :
+  enableval=$enable_linker_plugin_configure_flags; extra_linker_plugin_configure_flags=$enableval
+else
+  extra_linker_plugin_configure_flags=
+fi
+
+
+# Check whether --enable-linker-plugin-flags was given.
+if test "${enable_linker_plugin_flags+set}" = set; then :
+  enableval=$enable_linker_plugin_flags; extra_linker_plugin_flags=$enableval
+else
+  extra_linker_plugin_flags=
+fi
+
+
+
 
 # By default, C and C++ are the only stage 1 languages.
 stage1_languages=,c,
@@ -6711,6 +6738,21 @@ for i in ${target_configdirs_all} ; do
     target_configdirs="${target_configdirs} $i"
   fi
 done
+
+# libiberty-linker-plugin is special: it doesn't have its own source directory,
+# so we have to add it after the preceding checks.
+if test x"$extra_linker_plugin_flags$extra_linker_plugin_configure_flags" != x
+then
+  case " $configdirs " in
+    *" libiberty "*)
+      # If we can build libiberty, we can also build libiberty-linker-plugin.
+      configdirs="$configdirs libiberty-linker-plugin"
+      extra_linker_plugin_configure_flags="$extra_linker_plugin_configure_flags \
+        --with-libiberty=../libiberty-linker-plugin";;
+    *)
+      as_fn_error "libiberty missing" "$LINENO" 5;;
+  esac
+fi
 
 # Produce a warning message for the subdirs we can't configure.
 # This isn't especially interesting in the Cygnus tree, but in the individual
