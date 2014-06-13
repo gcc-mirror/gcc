@@ -81,6 +81,10 @@ with Validsw;  use Validsw;
 
 with System.Assertions;
 
+--------------
+-- Gnat1drv --
+--------------
+
 procedure Gnat1drv is
    Main_Unit_Node : Node_Id;
    --  Compilation unit node for main unit
@@ -763,6 +767,7 @@ begin
       Scan_Compiler_Arguments;
       Osint.Add_Default_Search_Dirs;
 
+      Atree.Initialize;
       Nlists.Initialize;
       Sinput.Initialize;
       Sem.Initialize;
@@ -785,7 +790,7 @@ begin
 
       --  Acquire target parameters from system.ads (source of package System)
 
-      declare
+      Targparm_Acquire : declare
          use Sinput;
 
          S : Source_File_Index;
@@ -812,12 +817,17 @@ begin
          Targparm.Get_Target_Parameters
            (System_Text  => Source_Text  (S),
             Source_First => Source_First (S),
-            Source_Last  => Source_Last  (S));
+            Source_Last  => Source_Last  (S),
+            Make_Id      => Back_End.Make_Id'Unrestricted_Access,
+            Make_SC      => Back_End.Make_SC'Unrestricted_Access,
+            Set_RND      => Back_End.Set_RND'Unrestricted_Access);
 
          --  Acquire configuration pragma information from Targparm
 
          Restrict.Restrictions := Targparm.Restrictions_On_Target;
-      end;
+      end Targparm_Acquire;
+
+      --  Perform various adjustments and settings of global switches
 
       Adjust_Global_Switches;
 

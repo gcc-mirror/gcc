@@ -101,9 +101,9 @@ package Einfo is
 --     pragma Inline declarations
 
 --  This order must be observed. There are no restrictions on the procedures,
---  since the C header file only includes functions (Gigi is not allowed to
---  modify the generated tree). However, functions are required to have headers
---  that fit on a single line.
+--  since the C header file only includes functions (The back end is not
+--  allowed to modify the generated tree). However, functions are required to
+--  have headers that fit on a single line.
 
 --  XEINFO reads and processes the function specs and the pragma Inlines. For
 --  functions that are declared as inlined, XEINFO reads the corresponding body
@@ -121,7 +121,7 @@ package Einfo is
 
 --  For functions that are not inlined, there is no restriction on the body,
 --  and XEINFO generates a direct reference in the C header file which allows
---  the C code in Gigi to directly call the corresponding Ada body.
+--  the C code in the  backend to directly call the corresponding Ada body.
 
 ----------------------------------
 -- Handling of Type'Size Values --
@@ -378,16 +378,16 @@ package Einfo is
 --       the N_Attribute_Definition_Clause node. Empty if no Address clause.
 --       The expression in the address clause is always a constant that is
 --       defined before the entity to which the address clause applies.
---       Note: Gigi references this field in E_Task_Type entities???
+--       Note: The backend references this field in E_Task_Type entities???
 
 --    Address_Taken (Flag104)
 --       Defined in all entities. Set if the Address or Unrestricted_Access
 --       attribute is applied directly to the entity, i.e. the entity is the
 --       entity of the prefix of the attribute reference. Also set if the
 --       entity is the second argument of an Asm_Input or Asm_Output attribute,
---       as the construct may entail taking its address. Used by Gigi to make
---       sure that the address can be meaningfully taken, and also in the case
---       of subprograms to control output of certain warnings.
+--       as the construct may entail taking its address. Used by the backend to
+--       make sure that the address can be meaningfully taken, and also in the
+--       case of subprograms to control output of certain warnings.
 
 --    Aft_Value (synthesized)
 --       Applies to fixed and decimal types. Computes a universal integer
@@ -415,7 +415,7 @@ package Einfo is
 --       object. A value of zero (Uint_0) indicates that the alignment has not
 --       been set yet. The alignment can be set by an explicit alignment
 --       clause, or set by the front-end in package Layout, or set by the
---       back-end as part of the back end back-annotation process. The
+--       back-end as part of the back-end back-annotation process. The
 --       alignment field is also defined in E_Exception entities, but there it
 --       is used only by the back-end for back annotation.
 
@@ -534,13 +534,13 @@ package Einfo is
 
 --    Can_Use_Internal_Rep (Flag229) [base type only]
 --       Defined in Access_Subprogram_Kind nodes. This flag is set by the
---       front end and used by the back end. False means that the back end
+--       front end and used by the backend. False means that the backend
 --       must represent the type in the same way as Convention-C types (and
 --       other foreign-convention types). On many targets, this means that
---       the back end will use dynamically generated trampolines for nested
---       subprograms. True means that the back end can represent the type in
+--       the backend will use dynamically generated trampolines for nested
+--       subprograms. True means that the backend can represent the type in
 --       some internal way. On the aforementioned targets, this means that the
---       back end will not use dynamically generated trampolines. This flag
+--       backend will not use dynamically generated trampolines. This flag
 --       must be False if Has_Foreign_Convention is True; otherwise, the front
 --       end is free to set the policy.
 --
@@ -568,11 +568,11 @@ package Einfo is
 --       table that has the character string of the identifier, character
 --       literal or operator symbol. See Namet for further details. Note that
 --       throughout the processing of the front end, this name is the simple
---       unqualified name. However, just before gigi is called, a call is made
---       to Qualify_All_Entity_Names. This causes entity names to be qualified
---       using the encoding described in exp_dbug.ads, and from that point on
---       (including post gigi steps such as cross-reference generation), the
---       entities will contain the encoded qualified names.
+--       unqualified name. However, just before the backend is called, a call
+--       is made to Qualify_All_Entity_Names. This causes entity names to be
+--       qualified using the encoding described in exp_dbug.ads, and from that
+--       point (including post backend steps, e.g. cross-reference generation),
+--       the entities will contain the encoded qualified names.
 
 --    Checks_May_Be_Suppressed (Flag31)
 --       Defined in all entities. Set if a pragma Suppress or Unsuppress
@@ -639,7 +639,7 @@ package Einfo is
 --       Note: Component_Bit_Offset is redundant with respect to the fields
 --       Normalized_First_Bit and Normalized_Position, and could in principle
 --       be eliminated, but it is convenient in several situations, including
---       use in Gigi, to have this redundant field.
+--       use in the backend, to have this redundant field.
 
 --    Component_Clause (Node13)
 --       Defined in record components and discriminants. If a record
@@ -733,7 +733,7 @@ package Einfo is
 --       to the entity, or if internal processing in the compiler determines
 --       that suppression of debug information is desirable. Note that this
 --       flag is only for use by the front end as part of the processing for
---       determining if Needs_Debug_Info should be set. The back end should
+--       determining if Needs_Debug_Info should be set. The backend should
 --       always test Needs_Debug_Info, it should never test Debug_Info_Off.
 
 --    Debug_Renaming_Link (Node25)
@@ -1088,7 +1088,7 @@ package Einfo is
 --       Defined in class wide types and subtypes, access to protected
 --       subprogram types, and in exception types. For a classwide type, it
 --       is always Empty. For a class wide subtype, it points to an entity
---       created by the expander which gives Gigi an easily understandable
+--       created by the expander which gives the backend an understandable
 --       equivalent of the class subtype with a known size (given by an
 --       initial value). See Exp_Util.Expand_Class_Wide_Subtype for further
 --       details. For E_Exception_Type, this points to the record containing
@@ -1111,8 +1111,8 @@ package Einfo is
 --       of a component to be set without a component clause defined, which
 --       means that the component size is specified, but not the position.
 --       See also RM_Size and the section on "Handling of Type'Size Values".
---       During gigi processing, the value is back annotated for all zero
---       values, so that after the call to gigi, the value is properly set.
+--       During backend processing, the value is back annotated for all zero
+--       values, so that after the call to the backend, the value is set.
 
 --    Etype (Node5)
 --       Defined in all entities. Represents the type of the entity, which
@@ -1309,7 +1309,7 @@ package Einfo is
 --          Thread_Local_Storage pragma
 --
 --       If any of these items are present, then the flag Has_Gigi_Rep_Item is
---       set, indicating that Gigi should search the chain.
+--       set, indicating that the backend should search the chain.
 --
 --       Other representation items are included in the chain so that error
 --       messages can easily locate the relevant nodes for posting errors.
@@ -1558,8 +1558,8 @@ package Einfo is
 --    Has_Gigi_Rep_Item (Flag82)
 --       Defined in all entities. Set if the rep item chain (referenced by
 --       First_Rep_Item and linked through the Next_Rep_Item chain) contains a
---       representation item that needs to be specially processed by Gigi, i.e.
---       one of the following items:
+--       representation item that needs to be specially processed by the back
+--       end, i.e. one of the following items:
 --
 --          Machine_Attribute pragma
 --          Linker_Alias pragma
@@ -1568,13 +1568,13 @@ package Einfo is
 --          Weak_External pragma
 --          Thread_Local_Storage pragma
 --
---       If this flag is set, then Gigi should scan the rep item chain to
---       process any of these items that appear. At least one such item will
+--       If this flag is set, then the backend should scan the rep item chain
+--       to process any of these items that appear. At least one such item will
 --       be present.
 --
 --    Has_Homonym (Flag56)
 --       Defined in all entities. Set if an entity has a homonym in the same
---       scope. Used by Gigi to generate unique names for such entities.
+--       scope. Used by the backend to generate unique names for all entities.
 
 --    Has_Implicit_Dereference (Flag251)
 --       Defined in types and discriminants. Set if the type has an aspect
@@ -1646,7 +1646,7 @@ package Einfo is
 --       scope that has an exception handler and the two scopes are in the
 --       same procedure. This is used by the backend for controlling certain
 --       optimizations to ensure that they are consistent with exceptions.
---       See documentation in Gigi for further details.
+--       See documentation in backend for further details.
 
 --    Has_Non_Null_Refinement (synth)
 --       Defined in E_Abstract_State entities. True if the state has at least
@@ -2185,9 +2185,9 @@ package Einfo is
 --       by the expander to represent a task or protected type. For every
 --       concurrent type, such as record type is constructed, and task and
 --       protected objects are instances of this record type at runtime
---       (Gigi will replace declarations of the concurrent type using the
---       declarations of the corresponding record type). See package Exp_Ch9
---       for further details.
+--       (The backend will replace declarations of the concurrent type using
+--       the declarations of the corresponding record type). See Exp_Ch9 for
+--       further details.
 
 --    Is_Concurrent_Type (synthesized)
 --       Applies to all entities, true for task types and subtypes and for
@@ -2212,7 +2212,7 @@ package Einfo is
 --       Defined in all types and subtypes. This flag can be set only if
 --       Is_Constr_Subt_For_U_Nominal is also set. It indicates that in
 --       addition the object concerned is aliased. This flag is used by
---       Gigi to determine whether a template must be constructed.
+--       the backend to determine whether a template must be constructed.
 
 --    Is_Constructor (Flag76)
 --       Defined in function and procedure entities. Set if a pragma
@@ -2497,9 +2497,9 @@ package Einfo is
 --    Is_Itype (Flag91)
 --       Defined in all entities. Set to indicate that a type is an Itype,
 --       which means that the declaration for the type does not appear
---       explicitly in the tree. Instead gigi will elaborate the type when it
---       is first used. Has_Delayed_Freeze can be set for Itypes, and the
---       meaning is that the first use (the one which causes the type to be
+--       explicitly in the tree. Instead the backend will elaborate the type
+--       when it is first used. Has_Delayed_Freeze can be set for Itypes, and
+--       the meaning is that the first use (the one which causes the type to be
 --       defined) will be the freeze node. Note that an important restriction
 --       on Itypes is that the first use of such a type (the one that causes it
 --       to be defined) must be in the same scope as the type.
@@ -2523,7 +2523,7 @@ package Einfo is
 --       The flag is dynamically set and reset as semantic analysis and
 --       expansion proceeds. Its value is meaningless once the tree is
 --       fully constructed, since it simply indicates the last state.
---       Thus this flag has no meaning to the back end.
+--       Thus this flag has no meaning to the backend.
 
 --    Is_Known_Null (Flag204)
 --       Defined in all entities. Relevant (and can be set ) only for
@@ -2552,7 +2552,7 @@ package Einfo is
 --
 --       For objects, the flag indicates the state of knowledge about the
 --       current value of the object. This may be modified during expansion,
---       and thus the final value is not relevant to gigi.
+--       and thus the final value is not relevant to the backend.
 --
 --       For types and subtypes, the flag is set if all possible bit patterns
 --       of length Object_Size (i.e. Esize of the type) represent valid values
@@ -2567,7 +2567,7 @@ package Einfo is
 --       The flag is dynamically set and reset as semantic analysis and
 --       expansion proceeds. Its value is meaningless once the tree is
 --       fully constructed, since it simply indicates the last state.
---       Thus this flag has no meaning to the back end.
+--       Thus this flag has no meaning to the backend.
 
 --    Is_Limited_Composite (Flag106)
 --       Defined in all entities. Set for composite types that have a limited
@@ -2709,11 +2709,11 @@ package Einfo is
 --       used to implement a packed array (either a modular type, or a subtype
 --       of Packed_Bytes{1,2,4} as appropriate). The flag is set if and only
 --       if the type appears in the Packed_Array_Type field of some other type
---       entity. It is used by Gigi to activate the special processing for such
---       types (unchecked conversions that would not otherwise be allowed are
---       allowed for such types). If the Is_Packed_Array_Type flag is set in
---       an entity, then the Original_Array_Type field of this entity points
---       to the original array type for which this is the packed array type.
+--       entity. It is used by the backend to activate the special processing
+--       for such types (unchecked conversions that would not otherwise be
+--       allowed are allowed for such types). If the Is_Packed_Array_Type flag
+--       is set in an entity, then the Original_Array_Type field of this entity
+--       points to the array type for which this is the packed array type.
 
 --    Is_Potentially_Use_Visible (Flag9)
 --       Defined in all entities. Set if entity is potentially use visible,
@@ -2797,8 +2797,8 @@ package Einfo is
 --       Defined in all entities. Set to indicate that an entity defined in
 --       one compilation unit can be referenced from other compilation units.
 --       If this reference causes a reference in the generated variable, for
---       example in the case of a variable name, then Gigi will generate an
---       appropriate external name for use by the linker.
+--       example in the case of a variable name, then the backend will generate
+--       an appropriate external name for use by the linker.
 
 --    Is_Protected_Record_Type (synthesized)
 --       Applies to all entities, true if Is_Concurrent_Record_Type is true and
@@ -3011,7 +3011,7 @@ package Einfo is
 --       and full view. The flag is not set reliably on private subtypes,
 --       and is always retrieved from the base type (but this is not a base-
 --       type-only attribute because it applies to other entities). Note that
---       the back end should use Treat_As_Volatile, rather than Is_Volatile
+--       the backend should use Treat_As_Volatile, rather than Is_Volatile
 --       to indicate code generation requirements for volatile variables.
 --       Similarly, any front end test which is concerned with suppressing
 --       optimizations on volatile objects should test Treat_As_Volatile
@@ -3158,7 +3158,7 @@ package Einfo is
 --       Defined in entities for types and subtypes. Set if objects of the type
 --       must always be allocated on a byte boundary (more accurately a storage
 --       unit boundary). The front end checks that component clauses respect
---       this rule, and the back end ensures that record packing does not
+--       this rule, and the backend ensures that record packing does not
 --       violate this rule. Currently the flag is set only for packed arrays
 --       longer than 64 bits where the component size is not a power of 2.
 
@@ -3175,7 +3175,7 @@ package Einfo is
 --       Comes_From_Source set, and also transitively for entities associated
 --       with such components (e.g. their types). It is true for all entities
 --       in Debug_Generated_Code mode (-gnatD switch). This is the flag that
---       the back end should check to determine whether or not to generate
+--       the backend should check to determine whether or not to generate
 --       debugging information for an entity. Note that callers should always
 --       use Sem_Util.Set_Debug_Info_Needed, rather than Set_Needs_Debug_Info,
 --       so that the flag is set properly on subsidiary entities.
@@ -3283,7 +3283,7 @@ package Einfo is
 --    Next_Inlined_Subprogram (Node12)
 --       Defined in subprograms. Used to chain inlined subprograms used in
 --       the current compilation, in the order in which they must be compiled
---       by Gigi to insure that all inlinings are performed.
+--       by the backend to insure that all inlinings are performed.
 
 --    Next_Literal (synthesized)
 --       Applies to enumeration literals, returns the next literal, or
@@ -3339,10 +3339,10 @@ package Einfo is
 --       there are default discriminants, and also for the 'Size value).
 
 --    No_Strict_Aliasing (Flag136) [base type only]
---       Defined in access types. Set to direct the back end to avoid any
+--       Defined in access types. Set to direct the backend to avoid any
 --       optimizations based on an assumption about the aliasing status of
 --       objects designated by the access type. For the case of the gcc
---       back end, the effect is as though all references to objects of
+--       backend, the effect is as though all references to objects of
 --       the type were compiled with -fno-strict-aliasing. This flag is
 --       set if an unchecked conversion with the access type as a target
 --       type occurs in the same source unit as the declaration of the
@@ -3372,7 +3372,7 @@ package Einfo is
 --       types, it is cheaper to do the copy.
 
 --    OK_To_Reorder_Components (Flag239) [base type only]
---       Defined in record types. Set if the back end is permitted to reorder
+--       Defined in record types. Set if the backend is permitted to reorder
 --       the components. If not set, the record must be layed out in the order
 --       in which the components are declared textually. Currently this flag
 --       can only be set by debug switches.
@@ -3413,9 +3413,9 @@ package Einfo is
 --       In base tagged types:
 --         When the component is inherited in a record extension, it points
 --         to the original component (the entity of the ancestor component
---         which is not itself inherited) otherwise it points to itself.
---         Gigi uses this attribute to implement the automatic dereference in
---         the extension and to apply the transformation:
+--         which is not itself inherited) otherwise it points to itself. The
+--         backend uses this attribute to implement the automatic dereference
+--         in the extension and to apply the transformation:
 --
 --            Rec_Ext.Comp -> Rec_Ext.Parent. ... .Parent.Comp
 --
@@ -3999,7 +3999,7 @@ package Einfo is
 --       be set as a result of situations (such as address overlays) where
 --       the front end wishes to force volatile handling to inhibit aliasing
 --       optimization which might be legally ok, but is undesirable. Note
---       that the back end always tests this flag rather than Is_Volatile.
+--       that the backend always tests this flag rather than Is_Volatile.
 --       The front end tests Is_Volatile if it is concerned with legality
 --       checks associated with declared volatile variables, but if the test
 --       is for the purposes of suppressing optimizations, then the front
@@ -4029,7 +4029,7 @@ package Einfo is
 --       the full view of a private type T is derived from another private type
 --       with discriminants Td, the full view of T is also private, and there
 --       is no way to attach to it a further full view that would convey the
---       structure of T to the back end. The Underlying_Full_ View is an
+--       structure of T to the backend. The Underlying_Full_ View is an
 --       attribute of the full view that is a subtype of Td with the same
 --       constraint as the declaration for T. The declaration for this subtype
 --       is built at the point of the declaration of T, either as completion,
@@ -4222,7 +4222,7 @@ package Einfo is
 --  In addition, we define the kind E_Allocator_Type to label allocators.
 --  This is because special resolution rules apply to this construct.
 --  Eventually the constructs are labeled with the access type imposed by
---  the context. Gigi should never see types with this Ekind.
+--  the context. The backend should never see types with this Ekind.
 
 --  Similarly, the type E_Access_Attribute_Type is used as the initial kind
 --  associated with an access attribute. After resolution a specific access
@@ -4409,8 +4409,8 @@ package Einfo is
       --  objects using 'Reference. This is needed because special resolution
       --  rules apply to these constructs. On the resolution pass, this type
       --  is almost always replaced by the actual access type, but if the
-      --  context does not provide one Gigi can handle the Allocator_Type
-      --  itself as long as it has been frozen.
+      --  context does not provide one, the backend will see Allocator_Type
+      --  itself (which will already have been frozen).
 
       E_General_Access_Type,
       --  An access type created by an access type declaration with the all
