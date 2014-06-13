@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009-2014 Free Software Foundation, Inc.
+// { dg-require-cstdint "" }
+
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +19,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 2036 }
+#include <type_traits>
 
-#include <utility>
+// libstdc++/60326
 
-void test01()
-{
-  std::declval<int>();		// { dg-error "required from here" }
-}
+using namespace std;
+#ifdef _GLIBCXX_USE_WCHAR_T
+using wchar_signed = make_signed<wchar_t>::type;
+using wchar_unsigned = make_unsigned<wchar_t>::type;
+static_assert( !is_same<wchar_signed, wchar_unsigned>::value, "wchar_t" );
+#endif
+static_assert( is_signed<make_signed<char16_t>::type>::value, "char16_t");
+static_assert( is_signed<make_signed<char32_t>::type>::value, "char32_t");
