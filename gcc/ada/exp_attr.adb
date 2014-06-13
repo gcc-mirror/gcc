@@ -3976,9 +3976,7 @@ package body Exp_Attr is
             --  'Old appears will be checked or disabled according to the
             --  current policy in effect.
 
-            if Nkind (Subp) = N_Pragma
-              and then not Is_Checked (Subp)
-            then
+            if Nkind (Subp) = N_Pragma and then not Is_Checked (Subp) then
                return;
             end if;
 
@@ -4183,10 +4181,9 @@ package body Exp_Attr is
                Analyze (N);
                return;
 
-            --  For elementary types, we call the W_xxx routine directly.
-            --  Note that the effect of Write and Output is identical for
-            --  the case of an elementary type, since there are no
-            --  discriminants or bounds.
+            --  For elementary types, we call the W_xxx routine directly. Note
+            --  that the effect of Write and Output is identical for the case
+            --  of an elementary type (there are no discriminants or bounds).
 
             elsif Is_Elementary_Type (U_Type) then
 

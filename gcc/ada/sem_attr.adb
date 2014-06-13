@@ -2409,12 +2409,6 @@ package body Sem_Attr is
          end if;
       end if;
 
-      --  Ada 2005 (AI-345): Ensure that the compiler gives exactly the current
-      --  output compiling in Ada 95 mode for the case of ambiguous prefixes.
-
-      --  Is this comment right??? What is "the current output"??? If this
-      --  is only about Ada 95 mode, why no test for Ada 95 at this point???
-
       if Is_Overloaded (P)
         and then Aname /= Name_Access
         and then Aname /= Name_Address
@@ -2422,7 +2416,7 @@ package body Sem_Attr is
         and then Aname /= Name_Result
         and then Aname /= Name_Unchecked_Access
       then
-         --  The prefix must be resolvble by itself, without reference to the
+         --  The prefix must be resolvable by itself, without reference to the
          --  attribute. One case that requires special handling is a prefix
          --  that is a function name, where one interpretation may be a
          --  parameterless call. Entry attributes are handled specially below.
@@ -2433,44 +2427,40 @@ package body Sem_Attr is
             Check_Parameterless_Call (P);
          end if;
 
-         if Ada_Version < Ada_2005 then
-            if Is_Overloaded (P) then
+         if Is_Overloaded (P) then
 
-               --  Ada 2005 (AI-345): Since protected and task types have
-               --  primitive entry wrappers, the attributes Count, Caller and
-               --  AST_Entry require a context check
+            --  Ada 2005 (AI-345): Since protected and task types have
+            --  primitive entry wrappers, the attributes Count, Caller and
+            --  AST_Entry require a context check
 
-               if Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry) then
-                  declare
-                     Count : Natural := 0;
-                     I     : Interp_Index;
-                     It    : Interp;
+            if Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry) then
+               declare
+                  Count : Natural := 0;
+                  I     : Interp_Index;
+                  It    : Interp;
 
-                  begin
-                     Get_First_Interp (P, I, It);
-                     while Present (It.Nam) loop
-                        if Comes_From_Source (It.Nam) then
-                           Count := Count + 1;
-                        else
-                           Remove_Interp (I);
-                        end if;
-
-                        Get_Next_Interp (I, It);
-                     end loop;
-
-                     if Count > 1 then
-                        Error_Attr ("ambiguous prefix for % attribute", P);
+               begin
+                  Get_First_Interp (P, I, It);
+                  while Present (It.Nam) loop
+                     if Comes_From_Source (It.Nam) then
+                        Count := Count + 1;
                      else
-                        Set_Is_Overloaded (P, False);
+                        Remove_Interp (I);
                      end if;
-                  end;
-               else
-                  Error_Attr ("ambiguous prefix for % attribute", P);
-               end if;
-            end if;
 
-         elsif Is_Overloaded (P) then
-            Error_Attr ("ambiguous prefix for % attribute", P);
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+                  if Count > 1 then
+                     Error_Attr ("ambiguous prefix for % attribute", P);
+                  else
+                     Set_Is_Overloaded (P, False);
+                  end if;
+               end;
+
+            else
+               Error_Attr ("ambiguous prefix for % attribute", P);
+            end if;
          end if;
       end if;
 
