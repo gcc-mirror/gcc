@@ -836,7 +836,7 @@ package body Sem_Ch3 is
          --  the runtime library but must also be compilable in Ada 95 mode
          --  (when bootstrapping the compiler).
 
-         Check_Compiler_Unit (N);
+         Check_Compiler_Unit ("anonymous access to subprogram", N);
 
          Access_Subprogram_Declaration
            (T_Name => Anon_Type,

@@ -1392,7 +1392,7 @@ package body Sem_Ch4 is
 
    begin
       if Comes_From_Source (N) then
-         Check_Compiler_Unit (N);
+         Check_Compiler_Unit ("case expression", N);
       end if;
 
       Analyze_And_Resolve (Expr, Any_Discrete);
@@ -2077,7 +2077,7 @@ package body Sem_Ch4 is
       Else_Expr := Next (Then_Expr);
 
       if Comes_From_Source (N) then
-         Check_Compiler_Unit (N);
+         Check_Compiler_Unit ("if expression", N);
       end if;
 
       Analyze_Expression (Condition);
@@ -2669,7 +2669,7 @@ package body Sem_Ch4 is
 
       begin
          if Comes_From_Source (N) then
-            Check_Compiler_Unit (N);
+            Check_Compiler_Unit ("set membership", N);
          end if;
 
          Analyze (L);
@@ -7038,7 +7038,7 @@ package body Sem_Ch4 is
       --  a dereference operation.
 
       if Comes_From_Source (N) then
-         Check_Compiler_Unit (N);
+         Check_Compiler_Unit ("generalized indexing", N);
       end if;
 
       declare

@@ -1,3 +1,22 @@
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* lib.ads, lib.adb, lib-writ.adb, lib-load.adb (Is_Compiler_Unit):
+	Removed.
+	* opt.ads (Compiler_Unit): New flag.
+	* par-ch5.adb (Test_Statement_Required): Call Check_Compiler_Unit
+	for null statement sequence (not allowed in compiler unit).
+	* par-prag.adb (Prag): Handle Compiler_Unit[_Warning] during
+	parsing.
+	* restrict.ads, restrict.adb (Check_Compiler_Unit): New version and new
+	calling sequence.
+	* sem_ch11.adb, sem_ch3.adb, sem_ch4.adb: New calling sequence for
+	Check_Compiler_Unit.
+	* sem_ch6.adb (Analyze_Extended_Return_Statement): Call
+	Check_Compiler_Unit (this construct is not allowed in compiler
+	units).
+	* sem_prag.adb (Analyze_Pragma, case Compiler_Unit[_Warning]):
+	Set Opt.Compiler_Unit.
+
 2014-06-13  Geert Bosch  <bosch@adacore.com>
 
 	* gnat_rm.texi, s-tasinf-solaris.ads, sem_prag.adb, gnat_ugn.texi,

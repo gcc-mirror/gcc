@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,11 +126,6 @@ package body Lib is
       return Units.Table (U).Has_RACW;
    end Has_RACW;
 
-   function Is_Compiler_Unit (U : Unit_Number_Type) return Boolean is
-   begin
-      return Units.Table (U).Is_Compiler_Unit;
-   end Is_Compiler_Unit;
-
    function Ident_String (U : Unit_Number_Type) return Node_Id is
    begin
       return Units.Table (U).Ident_String;
@@ -220,14 +215,6 @@ package body Lib is
    begin
       Units.Table (U).Has_RACW := B;
    end Set_Has_RACW;
-
-   procedure Set_Is_Compiler_Unit
-     (U : Unit_Number_Type;
-      B : Boolean := True)
-   is
-   begin
-      Units.Table (U).Is_Compiler_Unit := B;
-   end Set_Is_Compiler_Unit;
 
    procedure Set_Ident_String (U : Unit_Number_Type; N : Node_Id) is
    begin
