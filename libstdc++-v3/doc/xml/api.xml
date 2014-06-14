@@ -13,6 +13,9 @@
     <year>
       2010
     </year>
+    <year>
+      2014
+    </year>
     <holder>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org/">FSF
       </link>
@@ -85,6 +88,24 @@
   </listitem>
   <listitem>
     <para>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.7.4/libstdc++/api/">for the 4.7.4 release
+      </link>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.8.3/libstdc++/api/">for the 4.8.3 release
+      </link>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.9.0/libstdc++/api/">for the 4.9.0 release
+      </link>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">"the latest collection"
       </link>
       (For the main development tree; see the date on the first page.)
@@ -94,7 +115,7 @@
 
 <para>
   The rendered HTML, as above, is also available for download on the
-  gcc.org site in a directory located at
+  gcc.gnu.org site in a directory located at
    <literal>&lt;URL:ftp://gcc.gnu.org/pub/gcc/libstdc++/doxygen/&gt;</literal>.
    You will almost certainly need to use one of the
    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/mirrors.html">mirror sites</link> to download

@@ -582,7 +582,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Each derived class provides its own appropriate behavior.  See
        *  the next-to-last paragraph of
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/streambufs.html#io.streambuf.buffering
        *  for more on this function.
        *
        *  @note  Base class version does nothing, returns @c this.
@@ -679,7 +679,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  A functioning input streambuf can be created by overriding only
        *  this function (no buffer area will be used).  For an example, see
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25.html
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/streambufs.html
        *
        *  @note  Base class version does nothing, returns eof().
       */
