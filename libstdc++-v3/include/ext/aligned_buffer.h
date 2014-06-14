@@ -47,6 +47,11 @@ namespace __gnu_cxx
 	std::aligned_storage<sizeof(_Tp), std::alignment_of<_Tp>::value>::type
 	_M_storage;
 
+      __aligned_buffer() = default;
+
+      // Can be used to avoid value-initialization
+      __aligned_buffer(std::nullptr_t) { }
+
       void*
       _M_addr() noexcept
       {
