@@ -1,3 +1,9 @@
+2014-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33101
+	* decl.c (grokparms): Improve error message about void parameters.
+	* error.c (type_to_string): Fix aka cut off code.
+
 2014-06-12  Jason Merrill  <jason@redhat.com>
 
 	* call.c (convert_arg_to_ellipsis): Use abi_version_crosses.

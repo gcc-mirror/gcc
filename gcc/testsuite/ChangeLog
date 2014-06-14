@@ -1,3 +1,9 @@
+2014-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33101
+	* g++.dg/other/void3.C: New.
+	* g++.dg/conversion/err-recover1.C: Update.
+
 2014-06-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/61415
