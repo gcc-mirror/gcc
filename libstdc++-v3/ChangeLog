@@ -49,6 +49,16 @@
 	* include/std/streambuf: Likewise.
 	* doc/html/*: Regenerate.
 
+	* include/experimental/any (any_cast): Combine duplicate doxygen
+	comments.
+	* include/experimental/string_view (basic_string_view): Update
+	doxygen comment.
+	* include/std/bitset (bitset): Move to Doxygen 'utilities' group.
+	* include/tr2/dynamic_bitset (_Bool2UChar): Remove unused templates.
+	(dynamic_bitset): Improve Doxygen comments.
+	* include/tr2/dynamic_bitset.tcc (operator>>): Improve Doxygen
+	comment.
+
 2014-06-11  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc
