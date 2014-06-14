@@ -783,6 +783,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/regex \
                          include/scoped_allocator \
                          include/set \
+                         include/shared_mutex \
                          include/sstream \
                          include/stack \
                          include/stdexcept \
@@ -885,6 +886,9 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/tr2/ratio \
                          include/tr2/type_traits \
                          include/decimal/decimal \
+                         include/experimental/any \
+                         include/experimental/optional \
+                         include/experimental/string_view \
                          include/ext \
                          include/ext/pb_ds \
                          include/ext/pb_ds/detail \
