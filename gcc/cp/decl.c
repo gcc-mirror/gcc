@@ -11137,12 +11137,24 @@ grokparms (tree parmlist, tree *parms)
       type = TREE_TYPE (decl);
       if (VOID_TYPE_P (type))
 	{
-	  if (same_type_p (type, void_type_node)
-	      && DECL_SELF_REFERENCE_P (type)
-	      && !DECL_NAME (decl) && !result && TREE_CHAIN (parm) == void_list_node)
+	  if (type == void_type_node
+	      && !init
+	      && !DECL_NAME (decl) && !result
+	      && TREE_CHAIN (parm) == void_list_node)
 	    /* this is a parmlist of `(void)', which is ok.  */
 	    break;
-	  cxx_incomplete_type_error (decl, type);
+	  else if (typedef_variant_p (type))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "invalid use of typedef-name %qT in "
+		      "parameter declaration", type);
+	  else if (cv_qualified_p (type))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "invalid use of cv-qualified type %qT in "
+		      "parameter declaration", type);
+	  else
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "invalid use of type %<void%> in parameter "
+		      "declaration");
 	  /* It's not a good idea to actually create parameters of
 	     type `void'; other parts of the compiler assume that a
 	     void type terminates the parameter list.  */
