@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * @brief  The @a standard allocator, as per [20.4].
    *
-   *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt04ch11.html
+   *  See https://gcc.gnu.org/onlinedocs/libstdc++/manual/memory.html#std.util.memory.allocator
    *  for further details.
    *
    *  @tparam  _Tp  Type of allocated object.
