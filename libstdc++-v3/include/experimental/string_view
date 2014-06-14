@@ -49,11 +49,12 @@ namespace experimental
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   *  @class basic_string_view <string_view>
+   *  @class basic_string_view <experimental/string_view>
    *  @brief  A non-owning reference to a string.
    *
    *  @ingroup strings
    *  @ingroup sequences
+   *  @ingroup experimental
    *
    *  @tparam _CharT  Type of character
    *  @tparam _Traits  Traits for character type, defaults to
