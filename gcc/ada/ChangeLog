@@ -1,3 +1,8 @@
+2014-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/61505
+	* gnat_rm.texi: Attempt to fix error with makeinfo 5.1
+
 2014-06-13  Yannick Moy  <moy@adacore.com>
 
 	* exp_attr.adb Typo in comment.

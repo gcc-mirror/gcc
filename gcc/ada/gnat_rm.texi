@@ -4104,8 +4104,6 @@ Normally a unit with no @code{License} pragma is considered to have an
 unknown license, and no checking is done.  However, standard GNAT headers
 are recognized, and license information is derived from them as follows.
 
-@itemize @bullet
-
 A GNAT license header starts with a line containing 78 hyphens.  The following
 comment text is searched for the appearance of any of the following strings.
 
@@ -4117,7 +4115,6 @@ If one of the strings
 ``This specification is adapted from the Ada Semantic Interface'' or
 ``This specification is derived from the Ada Reference Manual'' is found
 then the unit is assumed to be unrestricted.
-@end itemize
 
 @noindent
 These default actions means that a program with a restricted license pragma
