@@ -12049,9 +12049,9 @@ Reference Manual.
 
 @itemize @bullet
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Whether or not each recommendation given in Implementation
 Advice is followed.  See 1.1.2(37).
 @end cartouche
@@ -12060,9 +12060,9 @@ Advice is followed.  See 1.1.2(37).
 
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Capacity limitations of the implementation.  See 1.1.3(3).
 @end cartouche
 @noindent
@@ -12072,9 +12072,9 @@ generated object files.
 
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Variations from the standard that are impractical to avoid
 given the implementation's execution environment.  See 1.1.3(6).
 @end cartouche
@@ -12083,9 +12083,9 @@ There are no variations from the standard.
 
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Which @code{code_statement}s cause external
 interactions.  See 1.1.3(10).
 @end cartouche
@@ -12093,9 +12093,9 @@ interactions.  See 1.1.3(10).
 Any @code{code_statement} can potentially cause external interactions.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The coded representation for the text of an Ada
 program.  See 2.1(4).
 @end cartouche
@@ -12104,27 +12104,27 @@ See separate section on source representation.
 
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The control functions allowed in comments.  See 2.1(14).
 @end cartouche
 @noindent
 See separate section on source representation.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The representation for an end of line.  See 2.2(2).
 @end cartouche
 @noindent
 See separate section on source representation.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Maximum supported line length and lexical element
 length.  See 2.2(15).
 @end cartouche
@@ -12137,9 +12137,9 @@ line length to be specified to be any value up to 32767. The maximum
 length of a lexical element is the same as the maximum line length.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation defined pragmas.  See 2.8(14).
 @end cartouche
 @noindent
@@ -12147,9 +12147,9 @@ Implementation defined pragmas.  See 2.8(14).
 @xref{Implementation Defined Pragmas}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Effect of pragma @code{Optimize}.  See 2.8(27).
 @end cartouche
 @noindent
@@ -12158,9 +12158,9 @@ parameter, checks that the optimization flag is set, and aborts if it is
 not.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The sequence of characters of the value returned by
 @code{@var{S}'Image} when some of the graphic characters of
 @code{@var{S}'Wide_Image} are not defined in @code{Character}.  See
@@ -12172,9 +12172,9 @@ method used for the source.  See section on source representation for
 further details.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The predefined integer types declared in
 @code{Standard}.  See 3.5.4(25).
 @end cartouche
@@ -12194,9 +12194,9 @@ The predefined integer types declared in
 @end table
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any nonstandard integer types and the operators defined
 for them.  See 3.5.4(26).
 @end cartouche
@@ -12204,9 +12204,9 @@ for them.  See 3.5.4(26).
 There are no nonstandard integer types.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any nonstandard real types and the operators defined for
 them.  See 3.5.6(8).
 @end cartouche
@@ -12214,9 +12214,9 @@ them.  See 3.5.6(8).
 There are no nonstandard real types.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 What combinations of requested decimal precision and range
 are supported for floating point types.  See 3.5.7(7).
 @end cartouche
@@ -12224,9 +12224,9 @@ are supported for floating point types.  See 3.5.7(7).
 The precision and range is as defined by the IEEE standard.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The predefined floating point types declared in
 @code{Standard}.  See 3.5.7(16).
 @end cartouche
@@ -12243,18 +12243,18 @@ The predefined floating point types declared in
 @end table
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The small of an ordinary fixed point type.  See 3.5.9(8).
 @end cartouche
 @noindent
 @code{Fine_Delta} is 2**(@minus{}63)
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 What combinations of small, range, and digits are
 supported for fixed point types.  See 3.5.9(10).
 @end cartouche
@@ -12267,9 +12267,9 @@ Text_IO is accurate to only 53 bits, rather than the full mantissa.  This
 is because floating-point conversions are used to convert fixed point.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result of @code{Tags.Expanded_Name} for types declared
 within an unnamed @code{block_statement}.  See 3.9(10).
 @end cartouche
@@ -12278,27 +12278,27 @@ Block numbers of the form @code{B@var{nnn}}, where @var{nnn} is a
 decimal integer are allocated.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined attributes.  See 4.1.4(12).
 @end cartouche
 @noindent
 @xref{Implementation Defined Attributes}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any implementation-defined time types.  See 9.6(6).
 @end cartouche
 @noindent
 There are no implementation-defined time types.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The time base associated with relative delays.
 @end cartouche
 @noindent
@@ -12306,9 +12306,9 @@ See 9.6(20).  The time base used is that provided by the C library
 function @code{gettimeofday}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The time base of the type @code{Calendar.Time}.  See
 9.6(23).
 @end cartouche
@@ -12317,9 +12317,9 @@ The time base used is that provided by the C library function
 @code{gettimeofday}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The time zone used for package @code{Calendar}
 operations.  See 9.6(24).
 @end cartouche
@@ -12329,9 +12329,9 @@ setting for local time, as accessed by the C library function
 @code{localtime}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any limit on @code{delay_until_statements} of
 @code{select_statements}.  See 9.6(29).
 @end cartouche
@@ -12339,9 +12339,9 @@ Any limit on @code{delay_until_statements} of
 There are no such limits.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Whether or not two non-overlapping parts of a composite
 object are independently addressable, in the case where packing, record
 layout, or @code{Component_Size} is specified for the object.  See
@@ -12352,9 +12352,9 @@ Separate components are independently addressable if they do not share
 overlapping storage units.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The representation for a compilation.  See 10.1(2).
 @end cartouche
 @noindent
@@ -12362,9 +12362,9 @@ A compilation is represented by a sequence of files presented to the
 compiler in a single invocation of the @command{gcc} command.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any restrictions on compilations that contain multiple
 compilation_units.  See 10.1(4).
 @end cartouche
@@ -12374,9 +12374,9 @@ sequence of files can be presented to the compiler as a single
 compilation.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The mechanisms for creating an environment and for adding
 and replacing compilation units.  See 10.1.4(3).
 @end cartouche
@@ -12384,9 +12384,9 @@ and replacing compilation units.  See 10.1.4(3).
 See separate section on compilation model.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The manner of explicitly assigning library units to a
 partition.  See 10.2(2).
 @end cartouche
@@ -12411,9 +12411,9 @@ options, refer to @ref{The GNAT Make Program gnatmake,,, gnat_ugn,
 @value{EDITION} User's Guide}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The implementation-defined means, if any, of specifying
 which compilation units are needed by a given compilation unit.  See
 10.2(2).
@@ -12425,9 +12425,9 @@ implementation-defined pragmas or other implementation-defined
 means for specifying needed units.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The manner of designating the main subprogram of a
 partition.  See 10.2(7).
 @end cartouche
@@ -12436,9 +12436,9 @@ The main program is designated by providing the name of the
 corresponding @file{ALI} file as the input parameter to the binder.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The order of elaboration of @code{library_items}.  See
 10.2(18).
 @end cartouche
@@ -12453,9 +12453,9 @@ third by elaborating in alphabetical order of unit names
 where a choice still remains.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Parameter passing and function return for the main
 subprogram.  See 10.2(21).
 @end cartouche
@@ -12466,9 +12466,9 @@ value is the return code of the program (overriding any value that
 may have been set by a call to @code{Ada.Command_Line.Set_Exit_Status}).
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The mechanisms for building and running partitions.  See
 10.2(24).
 @end cartouche
@@ -12480,9 +12480,9 @@ programs consisting of multiple partitions.  See the separate GLADE manual
 for details.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The details of program execution, including program
 termination.  See 10.2(25).
 @end cartouche
@@ -12490,9 +12490,9 @@ termination.  See 10.2(25).
 See separate section on compilation model.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The semantics of any non-active partitions supported by the
 implementation.  See 10.2(28).
 @end cartouche
@@ -12502,9 +12502,9 @@ provided by the operating system.  See the GLADE reference manual for
 further details.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The information returned by @code{Exception_Message}.  See
 11.4.1(10).
 @end cartouche
@@ -12513,9 +12513,9 @@ Exception message returns the null string unless a specific message has
 been passed by the program.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result of @code{Exceptions.Exception_Name} for types
 declared within an unnamed @code{block_statement}.  See 11.4.1(12).
 @end cartouche
@@ -12524,9 +12524,9 @@ Blocks have implementation defined names of the form @code{B@var{nnn}}
 where @var{nnn} is an integer.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The information returned by
 @code{Exception_Information}.  See 11.4.1(13).
 @end cartouche
@@ -12572,9 +12572,9 @@ The line terminator sequence at the end of each line, including
 the last line is a single @code{LF} character (@code{16#0A#}).
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined check names.  See 11.5(27).
 @end cartouche
 @noindent
@@ -12592,9 +12592,9 @@ In addition, a user program can add implementation-defined check names
 by means of the pragma Check_Name.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The interpretation of each aspect of representation.  See
 13.1(20).
 @end cartouche
@@ -12602,9 +12602,9 @@ The interpretation of each aspect of representation.  See
 See separate section on data representations.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any restrictions placed upon representation items.  See
 13.1(20).
 @end cartouche
@@ -12612,9 +12612,9 @@ Any restrictions placed upon representation items.  See
 See separate section on data representations.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The meaning of @code{Size} for indefinite subtypes.  See
 13.3(48).
 @end cartouche
@@ -12624,9 +12624,9 @@ for the case of a subprogram parameter, the size of the parameter object
 is the actual size.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The default external representation for a type tag.  See
 13.3(75).
 @end cartouche
@@ -12635,9 +12635,9 @@ The default external representation for a type tag is the fully expanded
 name of the type in upper case letters.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 What determines whether a compilation unit is the same in
 two different partitions.  See 13.3(76).
 @end cartouche
@@ -12646,9 +12646,9 @@ A compilation unit is the same in two different partitions if and only
 if it derives from the same source file.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined components.  See 13.5.1(15).
 @end cartouche
 @noindent
@@ -12656,9 +12656,9 @@ The only implementation defined component is the tag for a tagged type,
 which contains a pointer to the dispatching table.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 If @code{Word_Size} = @code{Storage_Unit}, the default bit
 ordering.  See 13.5.3(5).
 @end cartouche
@@ -12668,9 +12668,9 @@ implementation, so no non-default bit ordering is supported.  The default
 bit ordering corresponds to the natural endianness of the target architecture.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The contents of the visible part of package @code{System}
 and its language-defined children.  See 13.7(2).
 @end cartouche
@@ -12679,9 +12679,9 @@ See the definition of these packages in files @file{system.ads} and
 @file{s-stoele.ads}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The contents of the visible part of package
 @code{System.Machine_Code}, and the meaning of
 @code{code_statements}.  See 13.8(7).
@@ -12690,9 +12690,9 @@ The contents of the visible part of package
 See the definition and documentation in file @file{s-maccod.ads}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The effect of unchecked conversion.  See 13.9(11).
 @end cartouche
 @noindent
@@ -12711,9 +12711,10 @@ greater than the source alignment, then a copy of the result is
 made with appropriate alignment
 
 @sp 1
+@item
 @cartouche
 @noindent
-@strong{53}. The semantics of operations on invalid representations.
+The semantics of operations on invalid representations.
 See 13.9.2(10-11).
 @end cartouche
 @noindent
@@ -12740,9 +12741,9 @@ As indicated, an exception is raised on the array assignment, but not
 on the simple assignment of the invalid negative value from Y to Z.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The manner of choosing a storage pool for an access type
 when @code{Storage_Pool} is not specified for the type.  See 13.11(17).
 @end cartouche
@@ -12757,22 +12758,22 @@ library units @code{System.Pool_Global}, @code{System.Pool_Size} and
 default pools used.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Whether or not the implementation provides user-accessible
 names for the standard pool type(s).  See 13.11(17).
 @end cartouche
 @noindent
 
-See documentation in the sources of the run time mentioned in paragraph
-@strong{53} .  All these pools are accessible by means of @code{with}'ing
+See documentation in the sources of the run time mentioned in the previous
+paragraph.  All these pools are accessible by means of @code{with}'ing
 these units.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The meaning of @code{Storage_Size}.  See 13.11(18).
 @end cartouche
 @noindent
@@ -12781,20 +12782,21 @@ total space available for an access type collection, or to the primary
 stack space for a task.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of storage pools.  See
 13.11(22).
 @end cartouche
 @noindent
-See documentation in the sources of the run time mentioned in paragraph
-@strong{53} for details on GNAT-defined aspects of storage pools.
+See documentation in the sources of the run time mentioned in the
+paragraph about standard storage pools above
+for details on GNAT-defined aspects of storage pools.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The set of restrictions allowed in a pragma
 @code{Restrictions}.  See 13.12(7).
 @end cartouche
@@ -12802,9 +12804,9 @@ The set of restrictions allowed in a pragma
 @xref{Standard and Implementation Defined Restrictions}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The consequences of violating limitations on
 @code{Restrictions} pragmas.  See 13.12(9).
 @end cartouche
@@ -12814,9 +12816,9 @@ if violated.  Currently there are no other consequences of violating
 restrictions.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The representation used by the @code{Read} and
 @code{Write} attributes of elementary types in terms of stream
 elements.  See 13.13.2(9).
@@ -12827,9 +12829,9 @@ the type, using the number of bits corresponding to the
 @code{@var{type}'Size} value, and the natural ordering of the machine.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The names and characteristics of the numeric subtypes
 declared in the visible part of package @code{Standard}.  See A.1(3).
 @end cartouche
@@ -12837,9 +12839,10 @@ declared in the visible part of package @code{Standard}.  See A.1(3).
 See items describing the integer and floating-point types supported.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@strong{61}. The string returned by @code{Character_Set_Version}.
+The string returned by @code{Character_Set_Version}.
 See A.3.5(3).
 @end cartouche
 @noindent
@@ -12848,9 +12851,9 @@ the string "Unicode 4.0", referring to version 4.0 of the
 Unicode specification.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The accuracy actually achieved by the elementary
 functions.  See A.5.1(1).
 @end cartouche
@@ -12859,9 +12862,9 @@ The elementary functions correspond to the functions available in the C
 library.  Only fast math mode is implemented.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The sign of a zero result from some of the operators or
 functions in @code{Numerics.Generic_Elementary_Functions}, when
 @code{Float_Type'Signed_Zeros} is @code{True}.  See A.5.1(46).
@@ -12871,9 +12874,9 @@ The sign of zeroes follows the requirements of the IEEE 754 standard on
 floating-point.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The value of
 @code{Numerics.Float_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
@@ -12881,9 +12884,9 @@ The value of
 Maximum image width is 6864, see library file @file{s-rannum.ads}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The value of
 @code{Numerics.Discrete_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
@@ -12891,9 +12894,9 @@ The value of
 Maximum image width is 6864, see library file @file{s-rannum.ads}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The algorithms for random number generation.  See
 A.5.2(32).
 @end cartouche
@@ -12903,9 +12906,9 @@ The algorithm is the Mersenne Twister, as documented in the source file
 2**19937-1.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The string representation of a random number generator's
 state.  See A.5.2(38).
 @end cartouche
@@ -12915,9 +12918,9 @@ the fixed-width decimal representations of the 624 32-bit integers
 of the state vector.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The minimum time interval between calls to the
 time-dependent Reset procedure that are guaranteed to initiate different
 random number sequences.  See A.5.2(45).
@@ -12927,9 +12930,9 @@ The minimum period between reset calls to guarantee distinct series of
 random numbers is one microsecond.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The values of the @code{Model_Mantissa},
 @code{Model_Emin}, @code{Model_Epsilon}, @code{Model},
 @code{Safe_First}, and @code{Safe_Last} attributes, if the Numerics
@@ -12940,9 +12943,9 @@ Run the compiler with @option{-gnatS} to produce a listing of package
 @code{Standard}, has the values of all numeric attributes.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any implementation-defined characteristics of the
 input-output packages.  See A.7(14).
 @end cartouche
@@ -12951,9 +12954,9 @@ There are no special implementation defined characteristics for these
 packages.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The value of @code{Buffer_Size} in @code{Storage_IO}.  See
 A.9(10).
 @end cartouche
@@ -12963,9 +12966,9 @@ the value of @code{@var{type}'Size} rounded up to the next storage unit
 boundary.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 External files for standard input, standard output, and
 standard error See A.10(5).
 @end cartouche
@@ -12974,9 +12977,9 @@ These files are mapped onto the files provided by the C streams
 libraries.  See source file @file{i-cstrea.ads} for further details.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The accuracy of the value produced by @code{Put}.  See
 A.10.9(36).
 @end cartouche
@@ -12986,9 +12989,9 @@ precision of the value, zeroes are output in the corresponding least
 significant digit positions.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The meaning of @code{Argument_Count}, @code{Argument}, and
 @code{Command_Name}.  See A.15(1).
 @end cartouche
@@ -12997,9 +13000,9 @@ These are mapped onto the @code{argv} and @code{argc} parameters of the
 main program in the natural manner.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The interpretation of the @code{Form} parameter in procedure
 @code{Create_Directory}.  See A.16(56).
 @end cartouche
@@ -13007,9 +13010,9 @@ The interpretation of the @code{Form} parameter in procedure
 The @code{Form} parameter is not used.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The interpretation of the @code{Form} parameter in procedure
 @code{Create_Path}.  See A.16(60).
 @end cartouche
@@ -13017,9 +13020,9 @@ The interpretation of the @code{Form} parameter in procedure
 The @code{Form} parameter is not used.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The interpretation of the @code{Form} parameter in procedure
 @code{Copy_File}.  See A.16(68).
 @end cartouche
@@ -13097,9 +13100,9 @@ Form => "mode=internal, preserve=timestamps"
 @end smallexample
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The interpretation of the @code{Pattern} parameter, when not the null string,
 in the @code{Start_Search} and @code{Search} procedures.
 See A.16(104) and A.16(112).
@@ -13111,9 +13114,9 @@ according to the syntax of regular expressions as defined in the
 @xref{GNAT.Regexp (g-regexp.ads)}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined convention names.  See B.1(11).
 @end cartouche
 @noindent
@@ -13179,18 +13182,18 @@ except for VMS, use of such other names results in a warning.  In VMS
 implementations, these names are accepted silently.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The meaning of link names.  See B.1(36).
 @end cartouche
 @noindent
 Link names are the actual names used by the linker.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The manner of choosing link names when neither the link
 name nor the address of an imported or exported entity is specified.  See
 B.1(36).
@@ -13201,9 +13204,9 @@ external language, interpreting the Ada name as being in all lower case
 letters.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The effect of pragma @code{Linker_Options}.  See B.1(37).
 @end cartouche
 @noindent
@@ -13223,9 +13226,9 @@ order. For example, linker options for a body always appear before the options
 from the corresponding package spec.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The contents of the visible part of package
 @code{Interfaces} and its language-defined descendants.  See B.2(1).
 @end cartouche
@@ -13233,9 +13236,9 @@ The contents of the visible part of package
 See files with prefix @file{i-} in the distributed library.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined children of package
 @code{Interfaces}.  The contents of the visible part of package
 @code{Interfaces}.  See B.2(11).
@@ -13244,9 +13247,9 @@ Implementation-defined children of package
 See files with prefix @file{i-} in the distributed library.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The types @code{Floating}, @code{Long_Floating},
 @code{Binary}, @code{Long_Binary}, @code{Decimal_ Element}, and
 @code{COBOL_Character}; and the initialization of the variables
@@ -13273,18 +13276,18 @@ Character
 For initialization, see the file @file{i-cobol.ads} in the distributed library.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Support for access to machine instructions.  See C.1(1).
 @end cartouche
 @noindent
 See documentation in file @file{s-maccod.ads} in the distributed library.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of access to machine
 operations.  See C.1(9).
 @end cartouche
@@ -13292,9 +13295,9 @@ operations.  See C.1(9).
 See documentation in file @file{s-maccod.ads} in the distributed library.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of interrupts.  See C.3(2).
 @end cartouche
 @noindent
@@ -13304,9 +13307,9 @@ definition of unit
 on the interrupts supported on a particular target.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of pre-elaboration.  See
 C.4(13).
 @end cartouche
@@ -13315,9 +13318,9 @@ GNAT does not permit a partition to be restarted without reloading,
 except under control of the debugger.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The semantics of pragma @code{Discard_Names}.  See C.5(7).
 @end cartouche
 @noindent
@@ -13327,9 +13330,9 @@ provides the image of the Pos of the literal, and Value accepts
 Pos values.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result of the @code{Task_Identification.Image}
 attribute.  See C.7.1(7).
 @end cartouche
@@ -13358,9 +13361,9 @@ No_Implicit_Heap_Allocation is in effect,  the image reduces to
 the numeric suffix, that is to say the hexadecimal representation of the
 virtual address of the control block of the task.
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The value of @code{Current_Task} when in a protected entry
 or interrupt handler.  See C.7.1(17).
 @end cartouche
@@ -13369,9 +13372,9 @@ Protected entries or interrupt handlers can be executed by any
 convenient thread, so the value of @code{Current_Task} is undefined.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The effect of calling @code{Current_Task} from an entry
 body or interrupt handler.  See C.7.1(19).
 @end cartouche
@@ -13381,9 +13384,9 @@ interrupt handler is to return the identification of the task currently
 executing the code.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of
 @code{Task_Attributes}.  See C.7.2(19).
 @end cartouche
@@ -13391,9 +13394,9 @@ Implementation-defined aspects of
 There are no implementation-defined aspects of @code{Task_Attributes}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Values of all @code{Metrics}.  See D(2).
 @end cartouche
 @noindent
@@ -13407,9 +13410,9 @@ on the exact target in use, this information can be used to determine
 the required metrics.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The declarations of @code{Any_Priority} and
 @code{Priority}.  See D.1(11).
 @end cartouche
@@ -13417,18 +13420,18 @@ The declarations of @code{Any_Priority} and
 See declarations in file @file{system.ads}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined execution resources.  See D.1(15).
 @end cartouche
 @noindent
 There are no implementation-defined execution resources.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Whether, on a multiprocessor, a task that is waiting for
 access to a protected object keeps its processor busy.  See D.2.1(3).
 @end cartouche
@@ -13437,9 +13440,9 @@ On a multi-processor, a task that is waiting for access to a protected
 object does not keep its processor busy.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The affect of implementation defined execution resources
 on task dispatching.  See D.2.1(9).
 @end cartouche
@@ -13449,9 +13452,9 @@ and appropriate, these threads correspond to native threads of the
 underlying operating system.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Task_Dispatching_Policy}.  See D.2.2(3).
 @end cartouche
@@ -13460,9 +13463,9 @@ There are no implementation-defined policy-identifiers allowed in this
 pragma.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of priority inversion.  See
 D.2.2(16).
 @end cartouche
@@ -13471,18 +13474,18 @@ Execution of a task cannot be preempted by the implementation processing
 of delay expirations for lower priority tasks.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined task dispatching.  See D.2.2(18).
 @end cartouche
 @noindent
 The policy is the same as that of the underlying threads implementation.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Locking_Policy}.  See D.3(4).
 @end cartouche
@@ -13498,9 +13501,9 @@ read/write lock allowing multiple propected object functions to enter
 concurrently.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Default ceiling priorities.  See D.3(10).
 @end cartouche
 @noindent
@@ -13509,9 +13512,9 @@ The ceiling priority of protected objects of the type
 Reference Manual D.3(10),
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The ceiling of any protected object used internally by
 the implementation.  See D.3(16).
 @end cartouche
@@ -13520,18 +13523,18 @@ The ceiling priority of internal protected objects is
 @code{System.Priority'Last}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined queuing policies.  See D.4(1).
 @end cartouche
 @noindent
 There are no implementation-defined queuing policies.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 On a multiprocessor, any conditions that cause the
 completion of an aborted construct to be delayed later than what is
 specified for a single processor.  See D.6(3).
@@ -13541,9 +13544,9 @@ The semantics for abort on a multi-processor is the same as on a single
 processor, there are no further delays.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any operations that implicitly require heap storage
 allocation.  See D.7(8).
 @end cartouche
@@ -13552,9 +13555,9 @@ The only operation that implicitly requires heap storage allocation is
 task creation.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of pragma
 @code{Restrictions}.  See D.7(20).
 @end cartouche
@@ -13562,9 +13565,9 @@ Implementation-defined aspects of pragma
 There are no such implementation-defined aspects.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of package
 @code{Real_Time}.  See D.8(17).
 @end cartouche
@@ -13572,9 +13575,9 @@ Implementation-defined aspects of package
 There are no implementation defined aspects of package @code{Real_Time}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of
 @code{delay_statements}.  See D.9(8).
 @end cartouche
@@ -13583,9 +13586,9 @@ Any difference greater than one microsecond will cause the task to be
 delayed (see D.9(7)).
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The upper bound on the duration of interrupt blocking
 caused by the implementation.  See D.12(5).
 @end cartouche
@@ -13594,9 +13597,9 @@ The upper bound is determined by the underlying operating system.  In
 no cases is it more than 10 milliseconds.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The means for creating and executing distributed
 programs.  See E(5).
 @end cartouche
@@ -13605,9 +13608,9 @@ The GLADE package provides a utility GNATDIST for creating and executing
 distributed programs.  See the GLADE reference manual for further details.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any events that can result in a partition becoming
 inaccessible.  See E.1(7).
 @end cartouche
@@ -13615,9 +13618,9 @@ inaccessible.  See E.1(7).
 See the GLADE reference manual for full details on such events.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The scheduling policies, treatment of priorities, and
 management of shared resources between partitions in certain cases.  See
 E.1(11).
@@ -13627,9 +13630,9 @@ See the GLADE reference manual for full details on these aspects of
 multi-partition execution.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Events that cause the version of a compilation unit to
 change.  See E.3(5).
 @end cartouche
@@ -13641,9 +13644,9 @@ are significant except those which affect only layout, capitalization or
 comments.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Whether the execution of the remote subprogram is
 immediately aborted as a result of cancellation.  See E.4(13).
 @end cartouche
@@ -13652,9 +13655,9 @@ See the GLADE reference manual for details on the effect of abort in
 a distributed application.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of the PCS@.  See E.5(25).
 @end cartouche
 @noindent
@@ -13662,9 +13665,9 @@ See the GLADE reference manual for a full description of all implementation
 defined aspects of the PCS@.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined interfaces in the PCS@.  See
 E.5(26).
 @end cartouche
@@ -13673,9 +13676,9 @@ See the GLADE reference manual for a full description of all
 implementation defined interfaces.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The values of named numbers in the package
 @code{Decimal}.  See F.2(7).
 @end cartouche
@@ -13694,9 +13697,9 @@ The values of named numbers in the package
 @end table
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The value of @code{Max_Picture_Length} in the package
 @code{Text_IO.Editing}.  See F.3.3(16).
 @end cartouche
@@ -13704,9 +13707,9 @@ The value of @code{Max_Picture_Length} in the package
 64
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The value of @code{Max_Picture_Length} in the package
 @code{Wide_Text_IO.Editing}.  See F.3.4(5).
 @end cartouche
@@ -13714,9 +13717,9 @@ The value of @code{Max_Picture_Length} in the package
 64
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The accuracy actually achieved by the complex elementary
 functions and by other complex arithmetic operations.  See G.1(1).
 @end cartouche
@@ -13725,9 +13728,9 @@ Standard library functions are used for the complex arithmetic
 operations.  Only fast math mode is currently supported.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The sign of a zero result (or a component thereof) from
 any operator or function in @code{Numerics.Generic_Complex_Types}, when
 @code{Real'Signed_Zeros} is True.  See G.1.1(53).
@@ -13737,9 +13740,9 @@ The signs of zero values are as recommended by the relevant
 implementation advice.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The sign of a zero result (or a component thereof) from
 any operator or function in
 @code{Numerics.Generic_Complex_Elementary_Functions}, when
@@ -13750,9 +13753,9 @@ The signs of zero values are as recommended by the relevant
 implementation advice.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Whether the strict mode or the relaxed mode is the
 default.  See G.2(2).
 @end cartouche
@@ -13761,9 +13764,9 @@ The strict mode is the default.  There is no separate relaxed mode.  GNAT
 provides a highly efficient implementation of strict mode.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result interval in certain cases of fixed-to-float
 conversion.  See G.2.1(10).
 @end cartouche
@@ -13773,9 +13776,9 @@ accuracy is that provided by performing all operations in 64-bit IEEE
 floating-point format.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result of a floating point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.1(13).
@@ -13791,9 +13794,9 @@ of a significant performance penalty), so infinite and NaN values are
 properly generated.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result interval for division (or exponentiation by a
 negative exponent), when the floating point hardware implements division
 as multiplication by a reciprocal.  See G.2.1(16).
@@ -13802,9 +13805,9 @@ as multiplication by a reciprocal.  See G.2.1(16).
 Not relevant, division is IEEE exact.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The definition of close result set, which determines the
 accuracy of certain fixed point multiplications and divisions.  See
 G.2.3(5).
@@ -13816,9 +13819,9 @@ floating-point, the operation is done in floating-point, and the result
 is converted to the target type.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Conditions on a @code{universal_real} operand of a fixed
 point multiplication or division for which the result shall be in the
 perfect result set.  See G.2.3(22).
@@ -13829,9 +13832,9 @@ can be computed by a single scaling operation involving a scale factor
 representable in 64-bits.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result of a fixed point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.3(27).
@@ -13841,9 +13844,9 @@ Not relevant, @code{Machine_Overflows} is @code{True} for fixed-point
 types.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result of an elementary function reference in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.4(4).
@@ -13852,9 +13855,9 @@ result type is @code{False}.  See G.2.4(4).
 IEEE infinite and Nan values are produced as appropriate.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The value of the angle threshold, within which certain
 elementary functions, complex arithmetic operations, and complex
 elementary functions yield results conforming to a maximum relative
@@ -13864,9 +13867,9 @@ error bound.  See G.2.4(10).
 Information on this subject is not yet available.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The accuracy of certain elementary functions for
 parameters beyond the angle threshold.  See G.2.4(10).
 @end cartouche
@@ -13874,9 +13877,9 @@ parameters beyond the angle threshold.  See G.2.4(10).
 Information on this subject is not yet available.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The result of a complex arithmetic operation or complex
 elementary function reference in overflow situations, when the
 @code{Machine_Overflows} attribute of the corresponding real type is
@@ -13886,9 +13889,9 @@ elementary function reference in overflow situations, when the
 IEEE infinite and Nan values are produced as appropriate.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 The accuracy of certain complex arithmetic operations and
 certain complex elementary functions for parameters (or components
 thereof) beyond the angle threshold.  See G.2.6(8).
@@ -13897,9 +13900,9 @@ thereof) beyond the angle threshold.  See G.2.6(8).
 Information on those subjects is not yet available.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Information regarding bounded errors and erroneous
 execution.  See H.2(1).
 @end cartouche
@@ -13907,9 +13910,9 @@ execution.  See H.2(1).
 Information on this subject is not yet available.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of pragma
 @code{Inspection_Point}.  See H.3.2(8).
 @end cartouche
@@ -13918,9 +13921,9 @@ Pragma @code{Inspection_Point} ensures that the variable is live and can
 be examined by the debugger at the inspection point.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Implementation-defined aspects of pragma
 @code{Restrictions}.  See H.4(25).
 @end cartouche
@@ -13930,9 +13933,9 @@ use of pragma @code{Restrictions [No_Exceptions]} has no effect on the
 generated code.  Checks must suppressed by use of pragma @code{Suppress}.
 
 @sp 1
+@item
 @cartouche
 @noindent
-@item
 Any restrictions on pragma @code{Restrictions}.  See
 H.4(27).
 @end cartouche
@@ -18268,7 +18271,6 @@ of GNAT, and will generate a warning message.
 * System.Restrictions (s-restri.ads)::
 * System.Rident (s-rident.ads)::
 * System.Strings.Stream_Ops (s-ststop.ads)::
-* System.Task_Info (s-tasinf.ads)::
 * System.Unsigned_Types (s-unstyp.ads)::
 * System.Wch_Cnv (s-wchcnv.ads)::
 * System.Wch_Con (s-wchcon.ads)::
@@ -22400,6 +22402,7 @@ compatibility purposes.
 * pragma Ravenscar::
 * pragma Restricted_Run_Time::
 * pragma Task_Info::
+* System.Task_Info (s-tasinf.ads)::
 @end menu
 
 @node pragma No_Run_Time
