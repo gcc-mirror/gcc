@@ -150,12 +150,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  distance(__first,__last)).
        */
       template<typename _InputIterator>
-	unordered_set(_InputIterator __f, _InputIterator __l,
+	unordered_set(_InputIterator __first, _InputIterator __last,
 		      size_type __n = 0,
 		      const hasher& __hf = hasher(),
 		      const key_equal& __eql = key_equal(),
 		      const allocator_type& __a = allocator_type())
-	: _M_h(__f, __l, __n, __hf, __eql, __a)
+	: _M_h(__first, __last, __n, __hf, __eql, __a)
 	{ }
 
       /// Copy constructor.
@@ -452,8 +452,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // LWG 2059.
       iterator
-      erase(iterator __it)
-      { return _M_h.erase(__it); }
+      erase(iterator __position)
+      { return _M_h.erase(__position); }
       //@}
 
       /**
@@ -774,23 +774,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Builds an %unordered_multiset from a range.
        *  @param  __first  An input iterator.
-       *  @param  __last  An input iterator.
-       *  @param __n  Minimal initial number of buckets.
-       *  @param __hf  A hash functor.
-       *  @param __eql  A key equality functor.
-       *  @param __a  An allocator object.
+       *  @param  __last   An input iterator.
+       *  @param __n       Minimal initial number of buckets.
+       *  @param __hf      A hash functor.
+       *  @param __eql     A key equality functor.
+       *  @param __a       An allocator object.
        *
        *  Create an %unordered_multiset consisting of copies of the elements
        *  from [__first,__last).  This is linear in N (where N is
        *  distance(__first,__last)).
        */
       template<typename _InputIterator>
-	unordered_multiset(_InputIterator __f, _InputIterator __l,
+	unordered_multiset(_InputIterator __first, _InputIterator __last,
 			   size_type __n = 0,
 			   const hasher& __hf = hasher(),
 			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
-	: _M_h(__f, __l, __n, __hf, __eql, __a)
+	: _M_h(__first, __last, __n, __hf, __eql, __a)
 	{ }
 
       /// Copy constructor.
@@ -1066,8 +1066,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // LWG 2059.
       iterator
-      erase(iterator __it)
-      { return _M_h.erase(__it); }
+      erase(iterator __position)
+      { return _M_h.erase(__position); }
       //@}
 
 

@@ -18,6 +18,19 @@
 	* testsuite/experimental/any/modifiers/1.cc: New.
 	* testsuite/experimental/any/observers/type.cc: New.
 
+	* doc/doxygen/user.cfg.in (INPUT): Add C++14 headers.
+	* include/bits/random.h (subtract_with_carry_engine): Fix Doxygen
+	warnings.
+	* include/bits/shared_ptr.h (shared_ptr): Likewise.
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	Likewise.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* include/parallel/list_partition.h (__parallel::list_partition):
+	Likewise.
+	* include/std/iomanip (quoted): Likewise.
+	* include/tr2/dynamic_bitset (dynamic_bitset): Likewise.
+
 2014-06-11  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc
