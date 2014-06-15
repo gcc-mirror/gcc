@@ -339,6 +339,7 @@ struct dataflow
    REG_UNUSED notes.  */
 struct df_mw_hardreg
 {
+  df_mw_hardreg *next;		/* Next entry for this instruction.  */
   rtx mw_reg;                   /* The multiword hardreg.  */
   /* These two bitfields are intentionally oversized, in the hope that
      accesses to 16-bit fields will usually be quicker.  */
@@ -365,6 +366,7 @@ struct df_base_ref
   int flags : 16;		/* Various df_ref_flags.  */
   unsigned int regno;		/* The register number referenced.  */
   rtx reg;			/* The register referenced.  */
+  union df_ref_d *next_loc;	/* Next ref for same insn or bb.  */
   struct df_link *chain;	/* Head of def-use, use-def.  */
   /* Pointer to the insn info of the containing instruction.  FIXME!
      Currently this is NULL for artificial refs but this will be used
@@ -420,11 +422,11 @@ typedef union df_ref_d *df_ref;
 struct df_insn_info
 {
   rtx insn;                     /* The insn this info comes from.  */
-  df_ref *defs;	                /* Head of insn-def chain.  */
-  df_ref *uses;	                /* Head of insn-use chain.  */
+  df_ref defs;	                /* Head of insn-def chain.  */
+  df_ref uses;	                /* Head of insn-use chain.  */
   /* Head of insn-use chain for uses in REG_EQUAL/EQUIV notes.  */
-  df_ref *eq_uses;
-  struct df_mw_hardreg **mw_hardregs;
+  df_ref eq_uses;
+  struct df_mw_hardreg *mw_hardregs;
   /* The logical uid of the insn in the basic block.  This is valid
      after any call to df_analyze but may rot after insns are added,
      deleted or moved. */
@@ -665,6 +667,7 @@ struct df_d
 #define DF_REF_REG_MARK(REF) (DF_REF_FLAGS_SET ((REF),DF_REF_REG_MARKER))
 #define DF_REF_REG_UNMARK(REF) (DF_REF_FLAGS_CLEAR ((REF),DF_REF_REG_MARKER))
 #define DF_REF_IS_REG_MARKED(REF) (DF_REF_FLAGS_IS_SET ((REF),DF_REF_REG_MARKER))
+#define DF_REF_NEXT_LOC(REF) ((REF)->base.next_loc)
 #define DF_REF_NEXT_REG(REF) ((REF)->base.next_reg)
 #define DF_REF_PREV_REG(REF) ((REF)->base.prev_reg)
 /* The following two macros may only be applied if one of
@@ -683,6 +686,7 @@ struct df_d
 
 #define DF_MWS_REG_DEF_P(MREF) (DF_MWS_TYPE (MREF) == DF_REF_REG_DEF)
 #define DF_MWS_REG_USE_P(MREF) ((MREF) && !DF_MWS_REG_DEF_P (MREF))
+#define DF_MWS_NEXT(MREF) ((MREF)->next)
 #define DF_MWS_TYPE(MREF) ((MREF)->type)
 
 /* Macros to get the refs out of def_info or use_info refs table.  If
@@ -755,20 +759,16 @@ struct df_d
 #define DF_INSN_UID_MWS(INSN) (DF_INSN_UID_GET (INSN)->mw_hardregs)
 
 #define FOR_EACH_INSN_INFO_DEF(ITER, INSN) \
-  for (df_ref *ITER##_ = DF_INSN_INFO_DEFS (INSN); (ITER = *ITER##_); \
-       ++ITER##_)
+  for (ITER = DF_INSN_INFO_DEFS (INSN); ITER; ITER = DF_REF_NEXT_LOC (ITER))
 
 #define FOR_EACH_INSN_INFO_USE(ITER, INSN) \
-  for (df_ref *ITER##_ = DF_INSN_INFO_USES (INSN); (ITER = *ITER##_); \
-       ++ITER##_)
+  for (ITER = DF_INSN_INFO_USES (INSN); ITER; ITER = DF_REF_NEXT_LOC (ITER))
 
 #define FOR_EACH_INSN_INFO_EQ_USE(ITER, INSN) \
-  for (df_ref *ITER##_ = DF_INSN_INFO_EQ_USES (INSN); (ITER = *ITER##_); \
-       ++ITER##_)
+  for (ITER = DF_INSN_INFO_EQ_USES (INSN); ITER; ITER = DF_REF_NEXT_LOC (ITER))
 
 #define FOR_EACH_INSN_INFO_MW(ITER, INSN) \
-  for (df_mw_hardreg **ITER##_ = DF_INSN_INFO_MWS (INSN); (ITER = *ITER##_); \
-       ++ITER##_)
+  for (ITER = DF_INSN_INFO_MWS (INSN); ITER; ITER = DF_MWS_NEXT (ITER))
 
 #define FOR_EACH_INSN_DEF(ITER, INSN) \
   FOR_EACH_INSN_INFO_DEF(ITER, DF_INSN_INFO_GET (INSN))
@@ -780,12 +780,12 @@ struct df_d
   FOR_EACH_INSN_INFO_EQ_USE(ITER, DF_INSN_INFO_GET (INSN))
 
 #define FOR_EACH_ARTIFICIAL_USE(ITER, BB_INDEX) \
-  for (df_ref *ITER##_ = df_get_artificial_uses (BB_INDEX); \
-       (ITER = *ITER##_); ++ITER##_)
+  for (ITER = df_get_artificial_uses (BB_INDEX); ITER; \
+       ITER = DF_REF_NEXT_LOC (ITER))
 
 #define FOR_EACH_ARTIFICIAL_DEF(ITER, BB_INDEX) \
-  for (df_ref *ITER##_ = df_get_artificial_defs (BB_INDEX); \
-       (ITER = *ITER##_); ++ITER##_)
+  for (ITER = df_get_artificial_defs (BB_INDEX); ITER; \
+       ITER = DF_REF_NEXT_LOC (ITER))
 
 /* An obstack for bitmap not related to specific dataflow problems.
    This obstack should e.g. be used for bitmaps with a short life time
@@ -806,13 +806,13 @@ struct df_scan_bb_info
 
      Blocks that are the targets of non-local goto's have the hard
      frame pointer defined at the top of the block.  */
-  df_ref *artificial_defs;
+  df_ref artificial_defs;
 
   /* Blocks that are targets of exception edges may have some
      artificial uses.  These are logically at the top of the block.
 
      Most blocks have artificial uses at the bottom of the block.  */
-  df_ref *artificial_uses;
+  df_ref artificial_uses;
 };
 
 
@@ -967,7 +967,7 @@ extern void df_dump_top (basic_block, FILE *);
 extern void df_dump_bottom (basic_block, FILE *);
 extern void df_dump_insn_top (const_rtx, FILE *);
 extern void df_dump_insn_bottom (const_rtx, FILE *);
-extern void df_refs_chain_dump (df_ref *, bool, FILE *);
+extern void df_refs_chain_dump (df_ref, bool, FILE *);
 extern void df_regs_chain_dump (df_ref,  FILE *);
 extern void df_insn_debug (rtx, bool, FILE *);
 extern void df_insn_debug_regno (rtx, FILE *);
@@ -1147,7 +1147,7 @@ df_get_live_in (basic_block bb)
 /* Get basic block info.  */
 /* Get the artificial defs for a basic block.  */
 
-static inline df_ref *
+static inline df_ref
 df_get_artificial_defs (unsigned int bb_index)
 {
   return df_scan_get_bb_info (bb_index)->artificial_defs;
@@ -1156,7 +1156,7 @@ df_get_artificial_defs (unsigned int bb_index)
 
 /* Get the artificial uses for a basic block.  */
 
-static inline df_ref *
+static inline df_ref
 df_get_artificial_uses (unsigned int bb_index)
 {
   return df_scan_get_bb_info (bb_index)->artificial_uses;
@@ -1168,8 +1168,8 @@ df_get_artificial_uses (unsigned int bb_index)
 static inline df_ref
 df_single_def (const df_insn_info *info)
 {
-  df_ref *defs = DF_INSN_INFO_DEFS (info);
-  return defs[0] && !defs[1] ? defs[0] : NULL;
+  df_ref defs = DF_INSN_INFO_DEFS (info);
+  return defs && !DF_REF_NEXT_LOC (defs) ? defs : NULL;
 }
 
 /* If INSN uses exactly one register, return the associated reference,
@@ -1178,8 +1178,8 @@ df_single_def (const df_insn_info *info)
 static inline df_ref
 df_single_use (const df_insn_info *info)
 {
-  df_ref *uses = DF_INSN_INFO_USES (info);
-  return uses[0] && !uses[1] ? uses[0] : NULL;
+  df_ref uses = DF_INSN_INFO_USES (info);
+  return uses && !DF_REF_NEXT_LOC (uses) ? uses : NULL;
 }
 
 /* web */

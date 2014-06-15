@@ -146,10 +146,9 @@ get_def_for_use (df_ref use)
 	(DF_REF_PARTIAL | DF_REF_CONDITIONAL | DF_REF_MAY_CLOBBER)
 
 static void
-process_defs (df_ref *def_rec, int top_flag)
+process_defs (df_ref def, int top_flag)
 {
-  df_ref def;
-  while ((def = *def_rec++) != NULL)
+  for (; def; def = DF_REF_NEXT_LOC (def))
     {
       df_ref curr_def = reg_defs[DF_REF_REGNO (def)];
       unsigned int dregno;
@@ -191,10 +190,9 @@ process_defs (df_ref *def_rec, int top_flag)
    is an artificial use vector.  */
 
 static void
-process_uses (df_ref *use_rec, int top_flag)
+process_uses (df_ref use, int top_flag)
 {
-  df_ref use;
-  while ((use = *use_rec++) != NULL)
+  for (; use; use = DF_REF_NEXT_LOC (use))
     if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == top_flag)
       {
         unsigned int uregno = DF_REF_REGNO (use);
@@ -849,11 +847,10 @@ static sparseset active_defs_check;
    too, for checking purposes.  */
 
 static void
-register_active_defs (df_ref *use_rec)
+register_active_defs (df_ref use)
 {
-  while (*use_rec)
+  for (; use; use = DF_REF_NEXT_LOC (use))
     {
-      df_ref use = *use_rec++;
       df_ref def = get_def_for_use (use);
       int regno = DF_REF_REGNO (use);
 
@@ -887,11 +884,10 @@ update_df_init (rtx def_insn, rtx insn)
    in the ACTIVE_DEFS array to match pseudos to their def. */
 
 static inline void
-update_uses (df_ref *use_rec)
+update_uses (df_ref use)
 {
-  while (*use_rec)
+  for (; use; use = DF_REF_NEXT_LOC (use))
     {
-      df_ref use = *use_rec++;
       int regno = DF_REF_REGNO (use);
 
       /* Set up the use-def chain.  */
@@ -1135,7 +1131,7 @@ forward_propagate_asm (df_ref use, rtx def_insn, rtx def_set, rtx reg)
 {
   rtx use_insn = DF_REF_INSN (use), src, use_pat, asm_operands, new_rtx, *loc;
   int speed_p, i;
-  df_ref *use_vec;
+  df_ref uses;
 
   gcc_assert ((DF_REF_FLAGS (use) & DF_REF_IN_NOTE) == 0);
 
@@ -1144,8 +1140,8 @@ forward_propagate_asm (df_ref use, rtx def_insn, rtx def_set, rtx reg)
 
   /* In __asm don't replace if src might need more registers than
      reg, as that could increase register pressure on the __asm.  */
-  use_vec = DF_INSN_USES (def_insn);
-  if (use_vec[0] && use_vec[1])
+  uses = DF_INSN_USES (def_insn);
+  if (uses && DF_REF_NEXT_LOC (uses))
     return false;
 
   update_df_init (def_insn, use_insn);

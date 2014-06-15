@@ -93,8 +93,8 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
 		  bool (*fun) (struct web_entry *, struct web_entry *))
 {
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-  df_ref *use_link = DF_INSN_INFO_USES (insn_info);
-  df_ref *def_link = DF_INSN_INFO_DEFS (insn_info);
+  df_ref use_link = DF_INSN_INFO_USES (insn_info);
+  df_ref def_link = DF_INSN_INFO_DEFS (insn_info);
   struct web_entry *dup_entry;
   int i;
 
@@ -104,18 +104,19 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
     {
       int op = recog_data.dup_num[i];
       enum op_type type = recog_data.operand_type[op];
-      df_ref *ref, *dupref;
+      df_ref ref, dupref;
       struct web_entry *entry;
 
-      for (dup_entry = use_entry, dupref = use_link; *dupref; dupref++)
-	if (DF_REF_LOC (*dupref) == recog_data.dup_loc[i])
+      dup_entry = use_entry;
+      for (dupref = use_link; dupref; dupref = DF_REF_NEXT_LOC (dupref))
+	if (DF_REF_LOC (dupref) == recog_data.dup_loc[i])
 	  break;
 
-      if (*dupref == NULL && type == OP_INOUT)
+      if (dupref == NULL && type == OP_INOUT)
 	{
-
-	  for (dup_entry = def_entry, dupref = def_link; *dupref; dupref++)
-	    if (DF_REF_LOC (*dupref) == recog_data.dup_loc[i])
+	  dup_entry = def_entry;
+	  for (dupref = def_link; dupref; dupref = DF_REF_NEXT_LOC (dupref))
+	    if (DF_REF_LOC (dupref) == recog_data.dup_loc[i])
 	      break;
 	}
       /* ??? *DUPREF can still be zero, because when an operand matches
@@ -125,35 +126,36 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
          even though it is there.
          Example: i686-pc-linux-gnu gcc.c-torture/compile/950607-1.c
 		  -O3 -fomit-frame-pointer -funroll-loops  */
-      if (*dupref == NULL
-	  || DF_REF_REGNO (*dupref) < FIRST_PSEUDO_REGISTER)
+      if (dupref == NULL
+	  || DF_REF_REGNO (dupref) < FIRST_PSEUDO_REGISTER)
 	continue;
 
       ref = type == OP_IN ? use_link : def_link;
       entry = type == OP_IN ? use_entry : def_entry;
-      for (; *ref; ref++)
+      for (; ref; ref = DF_REF_NEXT_LOC (ref))
 	{
-	  rtx *l = DF_REF_LOC (*ref);
+	  rtx *l = DF_REF_LOC (ref);
 	  if (l == recog_data.operand_loc[op])
 	    break;
-	  if (l && DF_REF_REAL_LOC (*ref) == recog_data.operand_loc[op])
+	  if (l && DF_REF_REAL_LOC (ref) == recog_data.operand_loc[op])
 	    break;
 	}
 
-      if (!*ref && type == OP_INOUT)
+      if (!ref && type == OP_INOUT)
 	{
-	  for (ref = use_link, entry = use_entry; *ref; ref++)
+	  entry = use_entry;
+	  for (ref = use_link; ref; ref = DF_REF_NEXT_LOC (ref))
 	    {
-	      rtx *l = DF_REF_LOC (*ref);
+	      rtx *l = DF_REF_LOC (ref);
 	      if (l == recog_data.operand_loc[op])
 		break;
-	      if (l && DF_REF_REAL_LOC (*ref) == recog_data.operand_loc[op])
+	      if (l && DF_REF_REAL_LOC (ref) == recog_data.operand_loc[op])
 		break;
 	    }
 	}
 
-      gcc_assert (*ref);
-      (*fun) (dup_entry + DF_REF_ID (*dupref), entry + DF_REF_ID (*ref));
+      gcc_assert (ref);
+      (*fun) (dup_entry + DF_REF_ID (dupref), entry + DF_REF_ID (ref));
     }
 }
 

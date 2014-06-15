@@ -2319,16 +2319,14 @@ df_ref_dump (df_ref ref, FILE *file)
 }
 
 void
-df_refs_chain_dump (df_ref *ref_rec, bool follow_chain, FILE *file)
+df_refs_chain_dump (df_ref ref, bool follow_chain, FILE *file)
 {
   fprintf (file, "{ ");
-  while (*ref_rec)
+  for (; ref; ref = DF_REF_NEXT_LOC (ref))
     {
-      df_ref ref = *ref_rec;
       df_ref_dump (ref, file);
       if (follow_chain)
 	df_chain_dump (DF_REF_CHAIN (ref), file);
-      ref_rec++;
     }
   fprintf (file, "}");
 }
@@ -2350,15 +2348,12 @@ df_regs_chain_dump (df_ref ref,  FILE *file)
 
 
 static void
-df_mws_dump (struct df_mw_hardreg **mws, FILE *file)
+df_mws_dump (struct df_mw_hardreg *mws, FILE *file)
 {
-  while (*mws)
-    {
-      fprintf (file, "mw %c r[%d..%d]\n",
-	       (DF_MWS_REG_DEF_P (*mws)) ? 'd' : 'u',
-	       (*mws)->start_regno, (*mws)->end_regno);
-      mws++;
-    }
+  for (; mws; mws = DF_MWS_NEXT (mws))
+    fprintf (file, "mw %c r[%d..%d]\n",
+	     DF_MWS_REG_DEF_P (mws) ? 'd' : 'u',
+	     mws->start_regno, mws->end_regno);
 }
 
 
