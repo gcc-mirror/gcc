@@ -5206,8 +5206,10 @@ gfc_check_second_sub (gfc_expr *time)
 }
 
 
-/* The arguments of SYSTEM_CLOCK are scalar, integer variables.  Note,
-   count, count_rate, and count_max are all optional arguments */
+/* COUNT and COUNT_MAX of SYSTEM_CLOCK are scalar, default-kind integer
+   variables in Fortran 95.  In Fortran 2003 and later, they can be of any
+   kind, and COUNT_RATE can be of type real.  Note, count, count_rate, and
+   count_max are all optional arguments */
 
 bool
 gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
@@ -5221,6 +5223,12 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
       if (!type_check (count, 0, BT_INTEGER))
 	return false;
 
+      if (count->ts.kind != gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2003, "COUNT argument to "
+			      "SYSTEM_CLOCK at %L has non-default kind",
+			      &count->where))
+	return false;
+
       if (!variable_check (count, 0, false))
 	return false;
     }
@@ -5230,15 +5238,26 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
       if (!scalar_check (count_rate, 1))
 	return false;
 
-      if (!type_check (count_rate, 1, BT_INTEGER))
-	return false;
-
       if (!variable_check (count_rate, 1, false))
 	return false;
 
-      if (count != NULL
-	  && !same_type_check (count, 0, count_rate, 1))
-	return false;
+      if (count_rate->ts.type == BT_REAL)
+	{
+	  if (!gfc_notify_std (GFC_STD_F2003, "Real COUNT_RATE argument to "
+			       "SYSTEM_CLOCK at %L", &count_rate->where))
+	    return false;
+	}
+      else
+	{
+	  if (!type_check (count_rate, 1, BT_INTEGER))
+	    return false;
+
+	  if (count_rate->ts.kind != gfc_default_integer_kind
+	      && !gfc_notify_std (GFC_STD_F2003, "COUNT_RATE argument to "
+				  "SYSTEM_CLOCK at %L has non-default kind",
+				  &count_rate->where))
+	    return false;
+	}
 
     }
 
@@ -5250,15 +5269,13 @@ gfc_check_system_clock (gfc_expr *count, gfc_expr *count_rate,
       if (!type_check (count_max, 2, BT_INTEGER))
 	return false;
 
+      if (count_max->ts.kind != gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2003, "COUNT_MAX argument to "
+			      "SYSTEM_CLOCK at %L has non-default kind",
+			      &count_max->where))
+	return false;
+
       if (!variable_check (count_max, 2, false))
-	return false;
-
-      if (count != NULL
-	  && !same_type_check (count, 0, count_max, 2))
-	return false;
-
-      if (count_rate != NULL
-	  && !same_type_check (count_rate, 1, count_max, 2))
 	return false;
     }
 

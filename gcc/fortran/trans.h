@@ -697,6 +697,8 @@ extern GTY(()) tree gfor_fndecl_fdate;
 extern GTY(()) tree gfor_fndecl_in_pack;
 extern GTY(()) tree gfor_fndecl_in_unpack;
 extern GTY(()) tree gfor_fndecl_associated;
+extern GTY(()) tree gfor_fndecl_system_clock4;
+extern GTY(()) tree gfor_fndecl_system_clock8;
 
 
 /* Coarray run-time library function decls.  */

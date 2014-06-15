@@ -1,3 +1,18 @@
+2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/28484
+	PR fortran/61429
+	* check.c (gfc_check_system_clock): Improve checking of arguments.
+	* intrinsic.texi: Update doc of SYSTEM_CLOCK.
+	* iresolve.c (gfc_resolve_system_clock): Choose library function
+	used depending on argument kinds.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Build
+	decls for system_clock_4 and system_clock_8.
+	* trans-intrinsic.c (conv_intrinsic_system_clock): New function.
+	(gfc_conv_intrinsic_subroutine): Call conv_intrinsic_system_clock.
+	* trans.h (gfor_fndecl_system_clock4, gfor_fndecl_system_clock8):
+	New variables.
+
 2014-06-12  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.h (gfc_copy_formal_args_intr): Update prototype.

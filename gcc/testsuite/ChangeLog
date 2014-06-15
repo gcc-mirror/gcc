@@ -1,3 +1,10 @@
+2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/28484
+	PR fortran/61429
+	* gfortran.dg/system_clock_1.f90: New file.
+	* gfortran.dg/system_clock_2.f90: New file.
+
 2014-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33101
