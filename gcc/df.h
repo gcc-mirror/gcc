@@ -766,6 +766,10 @@ struct df_d
   for (df_ref *ITER##_ = DF_INSN_INFO_EQ_USES (INSN); (ITER = *ITER##_); \
        ++ITER##_)
 
+#define FOR_EACH_INSN_INFO_MW(ITER, INSN) \
+  for (df_mw_hardreg **ITER##_ = DF_INSN_INFO_MWS (INSN); (ITER = *ITER##_); \
+       ++ITER##_)
+
 #define FOR_EACH_INSN_DEF(ITER, INSN) \
   FOR_EACH_INSN_INFO_DEF(ITER, DF_INSN_INFO_GET (INSN))
 
