@@ -1,3 +1,10 @@
+2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/60468
+	* configure.ac: Include <math.h> when checking for fp_except_t
+	and fp_rnd_t types.
+	* configure: Regenerate.
+
 2014-06-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/56981
