@@ -2,7 +2,7 @@
 # wanting multilib support.
 #
 # Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007, 2008, 2010, 2011  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008, 2010, 2011, 2014 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -105,31 +105,34 @@ ml_realsrcdir=${srcdir}
 
 # Scan all the arguments and set all the ones we need.
 
-ml_verbose=--verbose
-for option in ${ac_configure_args}
-do
-  # strip single quotes surrounding individual options
-  case $option in
-  \'*\') eval option=$option ;;
-  esac
+scan_arguments ()
+{
+  ml_verbose=--verbose
+  for option
+  do
+    # Strip single quotes surrounding individual options, that is, remove one
+    # level of shell quoting for these.
+    case $option in
+      \'*\') eval option=$option ;;
+    esac
 
-  case $option in
-  --*) ;;
-  -*) option=-$option ;;
-  esac
+    case $option in
+      --*) ;;
+      -*) option=-$option ;;
+    esac
 
-  case $option in
-  --*=*)
+    case $option in
+      --*=*)
 	optarg=`echo $option | sed -e 's/^[^=]*=//'`
 	;;
-  esac
+    esac
 
-  case $option in
-  --disable-*)
+    case $option in
+      --disable-*)
 	enableopt=`echo ${option} | sed 's:^--disable-:enable_:;s:-:_:g'`
 	eval $enableopt=no
 	;;
-  --enable-*)
+      --enable-*)
 	case "$option" in
 	*=*)	;;
 	*)	optarg=yes ;;
@@ -139,32 +142,37 @@ do
 	# Don't undo its work.
 	case $enableopt in
 	enable_shared | enable_static) ;;
-	*) eval $enableopt="$optarg" ;;
+	*) eval $enableopt='$optarg' ;;
 	esac
 	;;
-  --norecursion | --no-recursion)
+      --norecursion | --no-recursion)
 	ml_norecursion=yes
 	;;
-  --silent | --sil* | --quiet | --q*)
+      --silent | --sil* | --quiet | --q*)
 	ml_verbose=--silent
 	;;
-  --verbose | --v | --verb*)
+      --verbose | --v | --verb*)
 	ml_verbose=--verbose
 	;;
-  --with-*)
+      --with-*)
 	case "$option" in
 	*=*)	;;
 	*)	optarg=yes ;;
 	esac
 	withopt=`echo ${option} | sed 's:^--::;s:=.*$::;s:-:_:g'`
-	eval $withopt="$optarg"
+	eval $withopt='$optarg'
 	;;
-  --without-*)
+      --without-*)
 	withopt=`echo ${option} | sed 's:^--::;s:out::;s:-:_:g'`
 	eval $withopt=no
 	;;
-  esac
-done
+    esac
+  done
+}
+# Use eval to properly handle configure arguments such as
+# --enable-foo='--enable-a=1 --enable-b=2 --enable-c=3'.
+eval scan_arguments "${ac_configure_args}"
+unset scan_arguments
 
 # Only do this if --enable-multilib.
 if [ "${enable_multilib}" = yes ]; then
@@ -860,7 +868,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 
     if eval ${ml_config_env} ${ml_config_shell} ${ml_recprog} \
 	--with-multisubdir=${ml_dir} --with-multisrctop=${multisrctop} \
-	${ac_configure_args} ${ml_config_env} ${ml_srcdiroption} ; then
+	"${ac_configure_args}" ${ml_config_env} ${ml_srcdiroption} ; then
       true
     else
       exit 1

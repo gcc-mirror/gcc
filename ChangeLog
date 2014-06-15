@@ -1,3 +1,23 @@
+2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config-ml.in: Robustify ac_configure_args parsing.
+
+	* configure.ac (--enable-linker-plugin-configure-flags)
+	(--enable-linker-plugin-flags): New flags.
+	(configdirs): Conditionally add libiberty-linker-plugin.
+	* configure: Regenerate.
+	* Makefile.def (host_modules): Add libiberty-linker-plugin.
+	(host_modules) <lto-plugin>: Pay attention to
+	@extra_linker_plugin_flags@ and
+	@extra_linker_plugin_configure_flags@.
+	(all-lto-plugin): Also depend on all-libiberty-linker-plugin.
+	* Makefile.in: Regenerate.
+
+	* Makefile.tpl (configure-[+prefix+][+module+])
+	(configure-stage[+id+]-[+prefix+][+module+]): If specified, use
+	"module_srcdir" instead of "module" for locating a module's srcdir.
+	* Makefile.in: Regenerate.
+
 2014-06-10  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

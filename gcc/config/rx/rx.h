@@ -433,9 +433,9 @@ typedef unsigned int CUMULATIVE_ARGS;
 /* Compute the alignment needed for label X in various situations.
    If the user has specified an alignment then honour that, otherwise
    use rx_align_for_label.  */
-#define JUMP_ALIGN(x)				(align_jumps ? align_jumps : rx_align_for_label (x, 0))
-#define LABEL_ALIGN(x)				(align_labels ? align_labels : rx_align_for_label (x, 3))
-#define LOOP_ALIGN(x)				(align_loops ? align_loops : rx_align_for_label (x, 2))
+#define JUMP_ALIGN(x)				(align_jumps > 1 ? align_jumps_log : rx_align_for_label (x, 0))
+#define LABEL_ALIGN(x)				(align_labels > 1 ? align_labels_log : rx_align_for_label (x, 3))
+#define LOOP_ALIGN(x)				(align_loops > 1 ? align_loops_log : rx_align_for_label (x, 2))
 #define LABEL_ALIGN_AFTER_BARRIER(x)		rx_align_for_label (x, 0)
 
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM, LOG, MAX_SKIP)	\

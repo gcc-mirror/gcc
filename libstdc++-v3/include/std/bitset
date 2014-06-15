@@ -681,9 +681,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
   /**
-   *  The %bitset class represents a @e fixed-size sequence of bits.
+   *  @class bitset <bitset>
    *
-   *  @ingroup containers
+   *  @brief The %bitset class represents a @e fixed-size sequence of bits.
+   *  @ingroup utilities
    *
    *  (Note that %bitset does @e not meet the formal requirements of a
    *  <a href="tables.html#65">container</a>.  Mainly, it lacks iterators.)
@@ -732,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  @endcode
    *
    *  Also see:
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch33s02.html
+   *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/ext_containers.html
    *  for a description of extensions.
    *
    *  Most of the actual code isn't contained in %bitset<> itself, but in the

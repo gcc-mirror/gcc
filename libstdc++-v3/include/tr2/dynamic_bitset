@@ -47,28 +47,11 @@ namespace tr2
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   *  Dynamic Bitset.
+   *  @defgroup dynamic_bitset Dynamic Bitset.
+   *  @ingroup extensions
    *
-   *  See N2050,
-   *  Proposal to Add a Dynamically Sizeable Bitset to the Standard Library.
+   *  @{
    */
-namespace __detail
-{
-
-template<typename T>
-class _Bool2UChar
-{
-  typedef T type;
-};
-
-template<>
-class _Bool2UChar<bool>
-{
-public:
-  typedef unsigned char type;
-};
-
-}
 
   /**
    *  Base class, general case.
@@ -372,14 +355,8 @@ public:
   /**
    *  @brief  The %dynamic_bitset class represents a sequence of bits.
    *
-   *  @ingroup containers
-   *
-   *  (Note that %dynamic_bitset does @e not meet the formal
-   *  requirements of a <a href="tables.html#65">container</a>.
-   *  Mainly, it lacks iterators.)
-   *
-   *  The template argument, @a Nb, may be any non-negative number,
-   *  specifying the number of bits (e.g., "0", "12", "1024*1024").
+   *  See N2050,
+   *  Proposal to Add a Dynamically Sizeable Bitset to the Standard Library.
    *
    *  In the general unoptimized case, storage is allocated in
    *  word-sized blocks.  Let B be the number of bits in a word, then
@@ -409,7 +386,7 @@ public:
    *     int main()
    *     {
    *         long         a = 'a';
-   *         dynamic_bitset   b(a);
+   *         dynamic_bitset<> b(a);
    *
    *         cout << "b('a') is " << b << endl;
    *
@@ -420,10 +397,6 @@ public:
    *              << "index 3 in the bitset is " << b[3] << endl;
    *     }
    *  @endcode
-   *
-   *  Also see:
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch33s02.html
-   *  for a description of extensions.
    *
    *  Most of the actual code isn't contained in %dynamic_bitset<>
    *  itself, but in the base class __dynamic_bitset_base.  The base
@@ -650,6 +623,7 @@ public:
       /**
        *  @brief  Construct from a string.
        *  @param  __str  A string of '0' and '1' characters.
+       *  @param  __alloc An allocator.
        *  @throw  std::invalid_argument  If a character appears in the string
        *                                 which is neither '0' nor '1'.
        */
@@ -1227,16 +1201,7 @@ public:
     }
   //@}
 
-  /**
-   *  @defgroup Global I/O operators for bitsets.
-   *  @{
-   *  @brief Global I/O operators for bitsets.
-   *
-   *  Direct I/O between streams and bitsets is supported.  Output is
-   *  straightforward.  Input will skip whitespace and only accept '0'
-   *  and '1' characters.  The %dynamic_bitset will grow as necessary
-   *  to hold the string of bits.
-   */
+  /// Stream output operator for dynamic_bitset.
   template <typename _CharT, typename _Traits,
 	    typename _WordT, typename _Alloc>
     inline std::basic_ostream<_CharT, _Traits>&

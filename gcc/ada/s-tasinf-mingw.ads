@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2007-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 2007-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,14 +36,15 @@
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes.
 
---  This unit may be used directly from an application program by providing
---  an appropriate WITH, and the interface can be expected to remain stable.
+--  The functionality in this unit is now provided by the predefined package
+--  System.Multiprocessors and the CPU aspect. This package is obsolescent.
 
 --  This is the Windows (native) version of this module
 
 with System.Win32;
 
 package System.Task_Info is
+   pragma Obsolescent (Task_Info, "use System.Multiprocessors and CPU aspect");
    pragma Preelaborate;
    pragma Elaborate_Body;
    --  To ensure that a body is allowed

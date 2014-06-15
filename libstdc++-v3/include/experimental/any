@@ -1,0 +1,613 @@
+// <experimental/any> -*- C++ -*-
+
+// Copyright (C) 2014 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file experimental/any
+ *  This is a TS C++ Library header.
+ */
+
+#ifndef _GLIBCXX_EXPERIMENTAL_ANY
+#define _GLIBCXX_EXPERIMENTAL_ANY 1
+
+#pragma GCC system_header
+
+#if __cplusplus <= 201103L
+# include <bits/c++14_warning.h>
+#else
+
+#include <typeinfo>
+#include <memory>
+#include <utility>
+#include <type_traits>
+#include <bits/alloc_traits.h>
+#include <bits/uses_allocator.h>
+#include <bits/functexcept.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+namespace experimental
+{
+inline namespace any_v1
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /**
+   * @defgroup any Type-safe container of any type
+   * @ingroup experimental
+   *
+   * A type-safe container for single values of value types, as
+   * described in n3804 "Any Library Proposal (Revision 3)".
+   *
+   * @{
+   */
+
+  /**
+   *  @brief Exception class thrown by a failed @c any_cast
+   *  @ingroup exceptions
+   */
+  class bad_any_cast : public bad_cast
+  {
+  public:
+    virtual const char* what() const noexcept { return "bad_any_cast"; }
+  };
+
+  [[gnu::noreturn]] inline void __throw_bad_any_cast()
+  {
+#ifdef __EXCEPTIONS
+    throw bad_any_cast{};
+#else
+    __builtin_abort();
+#endif
+  }
+
+  /**
+   *  @brief A type-safe container of any type.
+   * 
+   *  An @c any object's state is either empty or it stores a contained object
+   *  of CopyConstructible type.
+   */
+  class any
+  {
+    // Holds either pointer to a heap object or the contained object itself.
+    union _Storage
+    {
+      void* _M_ptr;
+      std::aligned_storage<sizeof(_M_ptr), sizeof(_M_ptr)>::type _M_buffer;
+    };
+
+    template<typename _Tp, typename _Safe = is_nothrow_copy_constructible<_Tp>,
+	     bool _Fits = (sizeof(_Tp) <= sizeof(_Storage))>
+      using _Internal = std::integral_constant<bool, _Safe::value && _Fits>;
+
+    template<typename _Tp>
+      struct _Manager_internal; // uses small-object optimization
+
+    template<typename _Tp>
+      struct _Manager_external; // creates contained object on the heap
+
+    template<typename _Tp>
+      using _Manager = conditional_t<_Internal<_Tp>::value,
+				     _Manager_internal<_Tp>,
+				     _Manager_external<_Tp>>;
+
+#ifdef __GXX_RTTI
+    // When RTTI is disabled __any_caster assumes the manager is either
+    // _Manager_internal or _Manager_external, so this type must not be used.
+    template<typename _Tp, typename _Alloc>
+      struct _Manager_alloc; // creates contained object using an allocator
+
+    template<typename _Tp, typename _Alloc, typename _TpAlloc
+	     = typename allocator_traits<_Alloc>::template rebind_alloc<_Tp>>
+      using _ManagerAlloc = conditional_t<_Internal<_Tp>::value,
+					  _Manager_internal<_Tp>,
+					  _Manager_alloc<_Tp, _TpAlloc>>;
+#endif
+
+    template<typename _Tp, typename _Decayed = decay_t<_Tp>>
+      using _Decay = enable_if_t<!is_same<_Decayed, any>::value, _Decayed>;
+
+  public:
+    // construct/destruct
+
+    /// Default constructor, creates an empty object.
+    any() noexcept : _M_manager(nullptr) { }
+
+    /// Copy constructor, copies the state of @p __other
+    any(const any& __other) : _M_manager(__other._M_manager)
+    {
+      if (!__other.empty())
+	{
+	  _Arg __arg;
+	  __arg._M_any = this;
+	  _M_manager(_Op_clone, &__other, &__arg);
+	}
+    }
+
+    /**
+     * @brief Move constructor, transfer the state from @p __other
+     *
+     * @post @c __other.empty() (not guaranteed for other implementations)
+     */
+    any(any&& __other) noexcept
+    : _M_manager(__other._M_manager),
+      _M_storage(__other._M_storage)
+    { __other._M_manager = nullptr; }
+
+    /// Construct with a copy of @p __value as the contained object.
+    template <typename _ValueType, typename _Tp = _Decay<_ValueType>,
+	      typename _Mgr = _Manager<_Tp>>
+      any(_ValueType&& __value)
+      : _M_manager(&_Mgr::_S_manage),
+        _M_storage(_Mgr::_S_create(std::forward<_ValueType>(__value)))
+      {
+	static_assert(is_copy_constructible<_Tp>::value,
+		      "The contained object must be CopyConstructible");
+      }
+
+    /// Allocator-extended default constructor (the allocator is ignored).
+    template <typename _Allocator>
+      any(allocator_arg_t, const _Allocator&) noexcept : any() { }
+
+#ifdef __GXX_RTTI
+    /// Construct with a copy of @p __value as the contained object.
+    template <typename _Allocator, typename _ValueType,
+	      typename _Tp = _Decay<_ValueType>,
+	      typename _Mgr = _ManagerAlloc<_Tp, _Allocator>>
+      any(allocator_arg_t, const _Allocator& __a, _ValueType&& __value)
+      : _M_manager(&_Mgr::_S_manage),
+        _M_storage(_Mgr::_S_alloc(__a, std::forward<_ValueType>(__value)))
+      {
+	static_assert(is_copy_constructible<_Tp>::value,
+		      "The contained object must be CopyConstructible");
+      }
+#endif
+
+    /* TODO: implement this somehow
+    /// Allocator-extended copy constructor.
+    template <class _Allocator>
+      any(allocator_arg_t, const _Allocator& __a, const any& __other);
+    */
+
+    /// Allocator-extended move constructor (the allocator is ignored).
+    template <typename _Allocator>
+      any(allocator_arg_t, const _Allocator&, any&& __other) noexcept
+      : any(std::move(__other)) { }
+
+    /// Destructor, calls @c clear()
+    ~any() { clear(); }
+
+    // assignments
+
+    /// Copy the state of 
+    any& operator=(const any& __rhs)
+    {
+      any(__rhs).swap(*this);
+      return *this;
+    }
+
+    /**
+     * @brief Move assignment operator
+     *
+     * @post @c __rhs.empty() (not guaranteed for other implementations)
+     */
+    any& operator=(any&& __rhs) noexcept
+    {
+      any(std::move(__rhs)).swap(*this);
+      return *this;
+    }
+
+    /// Store a copy of @p __rhs as the contained object.
+    template<typename _ValueType>
+      any& operator=(_ValueType&& __rhs)
+      {
+	any(std::forward<_ValueType>(__rhs)).swap(*this);
+	return *this;
+      }
+
+    // modifiers
+
+    /// If not empty, destroy the contained object.
+    void clear() noexcept
+    {
+      if (!empty())
+      {
+	_M_manager(_Op_destroy, this, nullptr);
+	_M_manager = nullptr;
+      }
+    }
+
+    /// Exchange state with another object.
+    void swap(any& __rhs) noexcept
+    {
+      std::swap(_M_manager, __rhs._M_manager);
+      std::swap(_M_storage, __rhs._M_storage);
+    }
+
+    // observers
+
+    /// Reports whether there is a contained object or not.
+    bool empty() const noexcept { return _M_manager == nullptr; }
+
+#ifdef __GXX_RTTI
+    /// The @c typeid of the contained object, or @c typeid(void) if empty.
+    const type_info& type() const noexcept
+    {
+      if (empty())
+	return typeid(void);
+      _Arg __arg;
+      _M_manager(_Op_get_type_info, this, &__arg);
+      return *__arg._M_typeinfo;
+    }
+#endif
+
+    template<typename _Tp>
+      static constexpr bool __is_valid_cast()
+      { return __or_<is_reference<_Tp>, is_copy_constructible<_Tp>>::value; }
+
+  private:
+    enum _Op { _Op_access, _Op_get_type_info, _Op_clone, _Op_destroy };
+
+    union _Arg
+    {
+	void* _M_obj;
+	const std::type_info* _M_typeinfo;
+	any* _M_any;
+    };
+
+    void (*_M_manager)(_Op, const any*, _Arg*);
+    _Storage _M_storage;
+
+    template<typename _Tp>
+      friend void* __any_caster(const any* __any)
+      {
+#ifdef __GXX_RTTI
+	if (__any->type() != typeid(_Tp))
+	  return nullptr;
+#else
+	if (__any->_M_manager != &_Manager<decay_t<_Tp>>::_S_manage)
+	  return nullptr;
+#endif
+	_Arg __arg;
+	__any->_M_manager(_Op_access, __any, &__arg);
+	return __arg._M_obj;
+      }
+
+    // Manage in-place contained object.
+    template<typename _Tp>
+      struct _Manager_internal
+      {
+	static void
+	_S_manage(_Op __which, const any* __anyp, _Arg* __arg);
+
+	template<typename _Up>
+	  static _Storage
+	  _S_create(_Up&& __value)
+	  {
+	    _Storage __storage;
+	    void* __addr = &__storage._M_buffer;
+	    ::new (__addr) _Tp(std::forward<_Up>(__value));
+	    return __storage;
+	  }
+
+	template<typename _Alloc, typename _Up>
+	  static _Storage
+	  _S_alloc(const _Alloc&, _Up&& __value)
+	  {
+	    return _S_create(std::forward<_Up>(__value));
+	  }
+      };
+
+    // Manage external contained object.
+    template<typename _Tp>
+      struct _Manager_external
+      {
+	static void
+	_S_manage(_Op __which, const any* __anyp, _Arg* __arg);
+
+	template<typename _Up>
+	  static _Storage
+	  _S_create(_Up&& __value)
+	  {
+	    _Storage __storage;
+	    __storage._M_ptr = new _Tp(std::forward<_Up>(__value));
+	    return __storage;
+	  }
+      };
+
+#ifdef __GXX_RTTI
+    // Manage external contained object using an allocator
+    template<typename _Tp, typename _Alloc>
+      struct _Manager_alloc
+      {
+	static_assert(std::is_same<_Tp, typename _Alloc::value_type>::value,
+		      "Allocator's value_type is correct");
+
+	// Type that holds contained object and allocator
+	struct _Data;
+
+	using _Traits = typename std::allocator_traits<_Alloc>::template
+	  rebind_traits<_Data>;
+
+	static void
+	_S_manage(_Op __which, const any* __anyp, _Arg* __arg);
+
+	template<typename _Up>
+	  static _Storage
+	  _S_alloc(const _Alloc& __a, _Up&& __value);
+      };
+#endif
+  };
+
+  /// Exchange the states of two @c any objects.
+  inline void swap(any& __x, any& __y) noexcept { __x.swap(__y); }
+
+  /**
+   * @brief Access the contained object.
+   *
+   * @tparam  _ValueType  A const-reference or CopyConstructible type.
+   * @param   __any       The object to access.
+   * @return  The contained object.
+   * @throw   bad_any_cast If <code>
+   *          __any.type() != typeid(remove_reference_t<_ValueType>)
+   *          </code>
+   */
+  template<typename _ValueType>
+    inline _ValueType any_cast(const any& __any)
+    {
+      static_assert(any::__is_valid_cast<_ValueType>(),
+	  "Template argument must be a reference or CopyConstructible type");
+      auto __p = any_cast<add_const_t<remove_reference_t<_ValueType>>>(&__any);
+      if (__p)
+	return *__p;
+      __throw_bad_any_cast();
+    }
+
+  /**
+   * @brief Access the contained object.
+   *
+   * @tparam  _ValueType  A reference or CopyConstructible type.
+   * @param   __any       The object to access.
+   * @return  The contained object.
+   * @throw   bad_any_cast If <code>
+   *          __any.type() != typeid(remove_reference_t<_ValueType>)
+   *          </code>
+   *
+   * @{
+   */
+  template<typename _ValueType>
+    inline _ValueType any_cast(any& __any)
+    {
+      static_assert(any::__is_valid_cast<_ValueType>(),
+	  "Template argument must be a reference or CopyConstructible type");
+      auto __p = any_cast<remove_reference_t<_ValueType>>(&__any);
+      if (__p)
+	return *__p;
+      __throw_bad_any_cast();
+    }
+
+  template<typename _ValueType>
+    inline _ValueType any_cast(any&& __any)
+    {
+      static_assert(any::__is_valid_cast<_ValueType>(),
+	  "Template argument must be a reference or CopyConstructible type");
+      auto __p = any_cast<remove_reference_t<_ValueType>>(&__any);
+      if (__p)
+	return *__p;
+      __throw_bad_any_cast();
+    }
+  // @}
+
+  /**
+   * @brief Access the contained object.
+   *
+   * @tparam  _ValueType  The type of the contained object.
+   * @param   __any       A pointer to the object to access.
+   * @return  The address of the contained object if <code>
+   *          __any != nullptr && __any.type() == typeid(_ValueType)
+   *          </code>, otherwise a null pointer.
+   *
+   * @{
+   */
+  template<typename _ValueType>
+    inline const _ValueType* any_cast(const any* __any) noexcept
+    {
+      if (__any)
+	return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
+      return nullptr;
+    }
+
+  template<typename _ValueType>
+    inline _ValueType* any_cast(any* __any) noexcept
+    {
+      if (__any)
+	return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
+      return nullptr;
+    }
+  // @}
+
+#ifdef __GXX_RTTI
+  template<typename _Tp, typename _Alloc>
+    struct any::_Manager_alloc<_Tp, _Alloc>::_Data
+    {
+      using _Traits = std::allocator_traits<_Alloc>;
+
+      std::tuple<_Alloc, __gnu_cxx::__aligned_buffer<_Tp>> _M_data;
+
+      _Alloc&       _M_alloc()       { return std::get<0>(_M_data); }
+      const _Alloc& _M_alloc() const { return std::get<0>(_M_data); }
+
+      _Tp*       _M_obj()       { return std::get<1>(_M_data)._M_ptr(); }
+      const _Tp* _M_obj() const { return std::get<1>(_M_data)._M_ptr(); }
+
+      template<typename _Up>
+	_Data(const _Alloc& __a, _Up&& __val) : _M_data(__a, nullptr)
+	{
+	  this->_M_construct(std::__use_alloc<_Tp>(_M_alloc()),
+			     std::forward<_Up>(__val));
+	}
+
+      ~_Data() { _Traits::destroy(_M_alloc(), _M_obj()); }
+
+      template<typename _Up>
+	void
+	_M_construct(__uses_alloc0, _Up&& __val)
+	{
+	  _Traits::construct(_M_alloc(), _M_obj(),
+			     std::forward<_Up>(__val));
+	}
+
+      template<typename _Up>
+	void
+	_M_construct(__uses_alloc1<_Alloc> __a, _Up&& __val)
+	{
+	  _Traits::construct(__a._M_a, _M_obj(),
+			     std::allocator_arg, __a._M_a,
+			     std::forward<_Up>(__val));
+	}
+
+      template<typename _Up>
+	void
+	_M_construct(__uses_alloc2<_Alloc> __a, _Up&& __val)
+	{
+	  _Traits::construct(__a._M_a, _M_obj(),
+			     std::forward<_Up>(__val), __a._M_a);
+	}
+    };
+
+  template<typename _Tp, typename _Alloc>
+  template<typename _Up>
+    any::_Storage
+    any::_Manager_alloc<_Tp, _Alloc>::
+    _S_alloc(const _Alloc& __a, _Up&& __value)
+    {
+      typename _Traits::allocator_type __a2(__a);
+      auto __ptr = _Traits::allocate(__a2, 1);
+      __try
+	{
+	  any::_Storage __storage;
+	  __storage._M_ptr = std::__addressof(*__ptr);
+	  ::new(__storage._M_ptr) _Data{__a, std::forward<_Up>(__value)};
+	  return __storage;
+	}
+      __catch(...)
+	{
+	  _Traits::deallocate(__a2, __ptr, 1);
+	  __throw_exception_again;
+	}
+    }
+#endif
+
+  template<typename _Tp>
+    void
+    any::_Manager_internal<_Tp>::
+    _S_manage(_Op __which, const any* __any, _Arg* __arg)
+    {
+      // The contained object is in _M_storage._M_buffer
+      auto __ptr = reinterpret_cast<const _Tp*>(&__any->_M_storage._M_buffer);
+      switch (__which)
+      {
+      case _Op_access:
+	__arg->_M_obj = const_cast<_Tp*>(__ptr);
+	break;
+      case _Op_get_type_info:
+#ifdef __GXX_RTTI
+	__arg->_M_typeinfo = &typeid(_Tp);
+#endif
+	break;
+      case _Op_clone:
+	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp(*__ptr);
+	break;
+      case _Op_destroy:
+	__ptr->~_Tp();
+	break;
+      }
+    }
+
+  template<typename _Tp>
+    void
+    any::_Manager_external<_Tp>::
+    _S_manage(_Op __which, const any* __any, _Arg* __arg)
+    {
+      // The contained object is *_M_storage._M_ptr
+      auto __ptr = static_cast<const _Tp*>(__any->_M_storage._M_ptr);
+      switch (__which)
+      {
+      case _Op_access:
+	__arg->_M_obj = const_cast<_Tp*>(__ptr);
+	break;
+      case _Op_get_type_info:
+#ifdef __GXX_RTTI
+	__arg->_M_typeinfo = &typeid(_Tp);
+#endif
+	break;
+      case _Op_clone:
+	__arg->_M_any->_M_storage._M_ptr = new _Tp(*__ptr);
+	break;
+      case _Op_destroy:
+	delete __ptr;
+	break;
+      }
+    }
+
+#ifdef __GXX_RTTI
+  template<typename _Tp, typename _Alloc>
+    void
+    any::_Manager_alloc<_Tp, _Alloc>::
+    _S_manage(_Op __which, const any* __any, _Arg* __arg)
+    {
+      // The contained object is at _M_storage._M_ptr->_M_obj()
+      auto __ptr = static_cast<const _Data*>(__any->_M_storage._M_ptr);
+      switch (__which)
+      {
+      case _Op_access:
+	__arg->_M_obj = const_cast<_Tp*>(__ptr->_M_obj());
+	break;
+      case _Op_get_type_info:
+	__arg->_M_typeinfo = &typeid(_Tp);
+	break;
+      case _Op_clone:
+	__arg->_M_any->_M_storage
+	  = _S_alloc(__ptr->_M_alloc(), *__ptr->_M_obj());
+	break;
+      case _Op_destroy:
+	{
+	  using _PtrTr = pointer_traits<typename _Traits::pointer>;
+	  typename _Traits::allocator_type __a(__ptr->_M_alloc());
+	  auto __alloc_ptr = _PtrTr::pointer_to(*const_cast<_Data*>(__ptr));
+	  __ptr->~_Data();
+	  _Traits::deallocate(__a, __alloc_ptr, 1);
+	}
+	break;
+      }
+    }
+#endif
+
+  // @} group any
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace any_v1
+} // namespace experimental
+} // namespace std
+
+#endif // C++14
+
+#endif // _GLIBCXX_EXPERIMENTAL_ANY

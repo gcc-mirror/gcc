@@ -632,7 +632,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup allocators
    *
    *  Further details:
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch32.html
+   *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/mt_allocator.html
    */
   template<typename _Tp, 
 	   typename _Poolp = __common_pool_policy<__pool, __thread_default> >

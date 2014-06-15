@@ -1810,8 +1810,9 @@ package body Sem_Warn is
                      SE : constant Entity_Id := Scope (E);
 
                      function Within_Postcondition return Boolean;
-                     --  Returns True iff N is within a Postcondition, an
-                     --  Ensures component in a Test_Case, or a Contract_Cases.
+                     --  Returns True if N is within a Postcondition, a
+                     --  Refined_Post, an Ensures component in a Test_Case,
+                     --  or a Contract_Cases.
 
                      --------------------------
                      -- Within_Postcondition --
@@ -1826,6 +1827,7 @@ package body Sem_Warn is
                            if Nkind (Nod) = N_Pragma
                              and then Nam_In (Pragma_Name (Nod),
                                               Name_Postcondition,
+                                              Name_Refined_Post,
                                               Name_Contract_Cases)
                            then
                               return True;

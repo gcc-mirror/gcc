@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,8 @@
 ------------------------------------------------------------------------------
 
 --  Call the back end with all the information needed
+--  Note: there are multiple bodies/variants of this package, so do not
+--  modify this spec without coordination.
 
 package Back_End is
 

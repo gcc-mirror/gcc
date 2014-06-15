@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,6 +162,15 @@ package body Back_End is
          gigi_standard_exception_type  => Standard_Exception_Type,
          gigi_operating_mode           => Mode);
    end Call_Back_End;
+
+   -------------------------------
+   -- Gen_Or_Update_Object_File --
+   -------------------------------
+
+   procedure Gen_Or_Update_Object_File is
+   begin
+      null;
+   end Gen_Or_Update_Object_File;
 
    -------------
    -- Len_Arg --
@@ -341,14 +350,5 @@ package body Back_End is
          Next_Arg := Next_Arg + 1;
       end loop;
    end Scan_Compiler_Arguments;
-
-   -------------------------------
-   -- Gen_Or_Update_Object_File --
-   -------------------------------
-
-   procedure Gen_Or_Update_Object_File is
-   begin
-      null;
-   end Gen_Or_Update_Object_File;
 
 end Back_End;

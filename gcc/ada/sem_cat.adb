@@ -2048,7 +2048,8 @@ package body Sem_Cat is
    ---------------------------------
 
    procedure Validate_Static_Object_Name (N : Node_Id) is
-      E : Entity_Id;
+      E   : Entity_Id;
+      Val : Node_Id;
 
       function Is_Primary (N : Node_Id) return Boolean;
       --  Determine whether node is syntactically a primary in an expression
@@ -2151,7 +2152,8 @@ package body Sem_Cat is
          elsif Ekind (Entity (N)) = E_Constant
            and then not Is_Static_Expression (N)
          then
-            E := Entity (N);
+            E   := Entity (N);
+            Val := Constant_Value (E);
 
             if Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (N)))
               and then
@@ -2162,10 +2164,25 @@ package body Sem_Cat is
                                    and then Is_Entity_Name (Renamed_Object (E))
                                    and then
                                      (Is_Preelaborated
-                                       (Scope (Renamed_Object (E)))
-                                         or else
-                                           Is_Pure (Scope
-                                             (Renamed_Object (E))))))
+                                        (Scope (Renamed_Object (E)))
+                                       or else
+                                         Is_Pure
+                                           (Scope (Renamed_Object (E))))))
+            then
+               null;
+
+            --  If the value of the constant is a local variable that renames
+            --  an aggregate, this is in itself legal. The aggregate may be
+            --  expanded into a loop, but this does not affect preelaborability
+            --  in itself. If some aggregate components are non-static, that is
+            --  to say if they involve non static primaries, they will be
+            --  flagged when analyzed.
+
+            elsif Present (Val)
+              and then Is_Entity_Name (Val)
+              and then Is_Array_Type (Etype (Val))
+              and then not Comes_From_Source (Val)
+              and then Nkind (Original_Node (Val)) = N_Aggregate
             then
                null;
 

@@ -195,7 +195,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  If no buffer has already been created, and both @a __s and @a __n are
        *  non-zero, then @c __s is used as a buffer; see
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/streambufs.html#io.streambuf.buffering
        *  for more.
       */
       virtual __streambuf_type*

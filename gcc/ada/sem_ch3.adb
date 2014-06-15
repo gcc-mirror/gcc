@@ -836,7 +836,7 @@ package body Sem_Ch3 is
          --  the runtime library but must also be compilable in Ada 95 mode
          --  (when bootstrapping the compiler).
 
-         Check_Compiler_Unit (N);
+         Check_Compiler_Unit ("anonymous access to subprogram", N);
 
          Access_Subprogram_Declaration
            (T_Name => Anon_Type,
@@ -13562,21 +13562,28 @@ package body Sem_Ch3 is
                   --  interface primitives.
 
                  or else (Is_Interface (Desig_Typ)
-                          and then not Is_Class_Wide_Type (Desig_Typ))
+                           and then not Is_Class_Wide_Type (Desig_Typ))
                then
                   Acc_Type := New_Copy (Etype (Id));
                   Set_Etype (Acc_Type, Acc_Type);
                   Set_Scope (Acc_Type, New_Subp);
 
-                  --  Compute size of anonymous access type
+                  --  Set size of anonymous access type. If we have an access
+                  --  to an unconstrained array, this is a fat pointer, so it
+                  --  is sizes at twice addtress size.
 
                   if Is_Array_Type (Desig_Typ)
                     and then not Is_Constrained (Desig_Typ)
                   then
                      Init_Size (Acc_Type, 2 * System_Address_Size);
+
+                  --  Other cases use a thin pointer
+
                   else
                      Init_Size (Acc_Type, System_Address_Size);
                   end if;
+
+                  --  Set remaining characterstics of anonymous access type
 
                   Init_Alignment (Acc_Type);
                   Set_Directly_Designated_Type (Acc_Type, Derived_Type);
@@ -13585,6 +13592,7 @@ package body Sem_Ch3 is
                   Set_Scope (New_Id, New_Subp);
 
                   --  Create a reference to it
+
                   Build_Itype_Reference (Acc_Type, Parent (Derived_Type));
 
                else
@@ -15590,8 +15598,9 @@ package body Sem_Ch3 is
                   end if;
 
                elsif Nkind (N) = N_Full_Type_Declaration
-                 and then
-                   Nkind (Type_Definition (N)) = N_Record_Definition
+                 and then Nkind_In
+                            (Type_Definition (N), N_Record_Definition,
+                                                  N_Derived_Type_Definition)
                  and then Interface_Present (Type_Definition (N))
                then
                   Error_Msg_N
@@ -18299,16 +18308,16 @@ package body Sem_Ch3 is
 
             if Present (Iface) then
                Error_Msg_NE
-                 ("interface & not implemented by full type " &
-                  "(RM-2005 7.3 (7.3/2))", Priv_T, Iface);
+                 ("interface in partial view& not implemented by full type "
+                  & "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
             end if;
 
             Iface := Find_Hidden_Interface (Full_T_Ifaces, Priv_T_Ifaces);
 
             if Present (Iface) then
                Error_Msg_NE
-                 ("interface & not implemented by partial view " &
-                  "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
+                 ("interface & not implemented by partial view "
+                  & "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
             end if;
          end;
       end if;
@@ -18339,7 +18348,7 @@ package body Sem_Ch3 is
          if Priv_Parent = Any_Type or else Full_Parent = Any_Type then
             return;
 
-         --  Ada 2005 (AI-251): Interfaces in the full-typ can be given in
+         --  Ada 2005 (AI-251): Interfaces in the full type can be given in
          --  any order. Therefore we don't have to check that its parent must
          --  be a descendant of the parent of the private type declaration.
 

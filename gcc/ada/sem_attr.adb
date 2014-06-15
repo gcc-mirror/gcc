@@ -2409,69 +2409,70 @@ package body Sem_Attr is
          end if;
       end if;
 
-      --  Ada 2005 (AI-345): Ensure that the compiler gives exactly the current
-      --  output compiling in Ada 95 mode for the case of ambiguous prefixes.
+      --  Cases where prefix must be resolvable by itself
 
-      if Ada_Version < Ada_2005
-        and then Is_Overloaded (P)
-        and then Aname /= Name_Access
-        and then Aname /= Name_Address
-        and then Aname /= Name_Code_Address
-        and then Aname /= Name_Count
-        and then Aname /= Name_Result
-        and then Aname /= Name_Unchecked_Access
-      then
-         Error_Attr ("ambiguous prefix for % attribute", P);
-
-      elsif Ada_Version >= Ada_2005
-        and then Is_Overloaded (P)
+      if Is_Overloaded (P)
         and then Aname /= Name_Access
         and then Aname /= Name_Address
         and then Aname /= Name_Code_Address
         and then Aname /= Name_Result
         and then Aname /= Name_Unchecked_Access
       then
-         --  Ada 2005 (AI-345): Since protected and task types have primitive
-         --  entry wrappers, the attributes Count, Caller and AST_Entry require
-         --  a context check
+         --  The prefix must be resolvable by itself, without reference to the
+         --  attribute. One case that requires special handling is a prefix
+         --  that is a function name, where one interpretation may be a
+         --  parameterless call. Entry attributes are handled specially below.
 
-         if Ada_Version >= Ada_2005
-           and then Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry)
+         if Is_Entity_Name (P)
+           and then not Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry)
          then
-            declare
-               Count : Natural := 0;
-               I     : Interp_Index;
-               It    : Interp;
+            Check_Parameterless_Call (P);
+         end if;
 
-            begin
-               Get_First_Interp (P, I, It);
-               while Present (It.Nam) loop
-                  if Comes_From_Source (It.Nam) then
-                     Count := Count + 1;
+         if Is_Overloaded (P) then
+
+            --  Ada 2005 (AI-345): Since protected and task types have
+            --  primitive entry wrappers, the attributes Count, Caller and
+            --  AST_Entry require a context check
+
+            if Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry) then
+               declare
+                  Count : Natural := 0;
+                  I     : Interp_Index;
+                  It    : Interp;
+
+               begin
+                  Get_First_Interp (P, I, It);
+                  while Present (It.Nam) loop
+                     if Comes_From_Source (It.Nam) then
+                        Count := Count + 1;
+                     else
+                        Remove_Interp (I);
+                     end if;
+
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+                  if Count > 1 then
+                     Error_Attr ("ambiguous prefix for % attribute", P);
                   else
-                     Remove_Interp (I);
+                     Set_Is_Overloaded (P, False);
                   end if;
+               end;
 
-                  Get_Next_Interp (I, It);
-               end loop;
-
-               if Count > 1 then
-                  Error_Attr ("ambiguous prefix for % attribute", P);
-               else
-                  Set_Is_Overloaded (P, False);
-               end if;
-            end;
-
-         else
-            Error_Attr ("ambiguous prefix for % attribute", P);
+            else
+               Error_Attr ("ambiguous prefix for % attribute", P);
+            end if;
          end if;
       end if;
 
       --  In SPARK, attributes of private types are only allowed if the full
       --  type declaration is visible.
 
-      if Is_Entity_Name (P)
-        and then Present (Entity (P))  --  needed in some cases
+      --  Note: the check for Present (Entity (P)) defends against some error
+      --  conditions where the Entity field is not set.
+
+      if Is_Entity_Name (P) and then Present (Entity (P))
         and then Is_Type (Entity (P))
         and then Is_Private_Type (P_Type)
         and then not In_Open_Scopes (Scope (P_Type))
@@ -4836,17 +4837,20 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction
-              ("attribute% is not allowed for type%", P);
+            Check_SPARK_Restriction ("attribute% is not allowed for type%", P);
          end if;
 
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  Nothing to do for real type case
+         --  For real types, enable range check in Check_Overflow_Mode only
 
          if Is_Real_Type (P_Type) then
-            null;
+            if Check_Float_Overflow
+              and then not Range_Checks_Suppressed (P_Base_Type)
+            then
+               Enable_Range_Check (E1);
+            end if;
 
          --  If not modular type, test for overflow check required
 
@@ -5740,17 +5744,20 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction
-              ("attribute% is not allowed for type%", P);
+            Check_SPARK_Restriction ("attribute% is not allowed for type%", P);
          end if;
 
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  Nothing to do for real type case
+         --  For real types, enable range check in Check_Overflow_Mode only
 
          if Is_Real_Type (P_Type) then
-            null;
+            if Check_Float_Overflow
+              and then not Range_Checks_Suppressed (P_Base_Type)
+            then
+               Enable_Range_Check (E1);
+            end if;
 
          --  If not modular type, test for overflow check required
 

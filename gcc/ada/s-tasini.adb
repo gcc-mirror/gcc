@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2013, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,12 @@ with System.Soft_Links;
 with System.Soft_Links.Tasking;
 with System.Tasking.Debug;
 with System.Parameters;
+
+with System.Secondary_Stack;
+pragma Elaborate_All (System.Secondary_Stack);
+pragma Unreferenced (System.Secondary_Stack);
+--  Make sure the body of Secondary_Stack is elaborated before calling
+--  Init_Tasking_Soft_Links. See comments for this routine for explanation.
 
 package body System.Tasking.Initialization is
 

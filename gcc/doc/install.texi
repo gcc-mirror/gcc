@@ -1780,6 +1780,25 @@ GLIBC 2.11 or above, otherwise disabled.
 Enable support for link-time optimization (LTO).  This is enabled by
 default, and may be disabled using @option{--disable-lto}.
 
+@item --enable-linker-plugin-configure-flags=FLAGS
+@itemx --enable-linker-plugin-flags=FLAGS
+By default, linker plugins (such as the LTO plugin) are built for the
+host system architecture.  For the case that the linker has a
+different (but run-time compatible) architecture, these flags can be
+specified to build plugins that are compatible to the linker.  For
+example, if you are building GCC for a 64-bit x86_64
+(@samp{x86_64-unknown-linux-gnu}) host system, but have a 32-bit x86
+GNU/Linux (@samp{i686-pc-linux-gnu}) linker executable (which is
+executable on the former system), you can configure GCC as follows for
+getting compatible linker plugins:
+
+@smallexample
+% @var{srcdir}/configure \
+    --host=x86_64-unknown-linux-gnu \
+    --enable-linker-plugin-configure-flags=--host=i686-pc-linux-gnu \
+    --enable-linker-plugin-flags='CC=gcc\ -m32\ -Wl,-rpath,[...]/i686-pc-linux-gnu/lib'
+@end smallexample
+
 @item --with-plugin-ld=@var{pathname}
 Enable an alternate linker to be used at link-time optimization (LTO)
 link time when @option{-fuse-linker-plugin} is enabled.

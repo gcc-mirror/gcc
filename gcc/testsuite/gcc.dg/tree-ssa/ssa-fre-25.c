@@ -14,5 +14,5 @@ int foo (struct X *p)
 
 /* We should optimize this to return 0.  */
 
-/* { dg-final { scan-tree-dump "= 0;" "fre1" } } */
+/* { dg-final { scan-tree-dump "return 0;" "fre1" } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

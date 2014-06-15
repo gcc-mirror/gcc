@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,7 +84,7 @@ package body Lib.Writ is
          Generate_Code     => False,
          Has_Allocator     => False,
          Has_RACW          => False,
-         Is_Compiler_Unit  => False,
+         Filler            => False,
          Ident_String      => Empty,
          Loading           => False,
          Main_Priority     => -1,
@@ -142,7 +142,7 @@ package body Lib.Writ is
         Generate_Code     => False,
         Has_Allocator     => False,
         Has_RACW          => False,
-        Is_Compiler_Unit  => False,
+        Filler            => False,
         Ident_String      => Empty,
         Loading           => False,
         Main_Priority     => -1,
@@ -1445,7 +1445,7 @@ package body Lib.Writ is
                   Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
                end if;
 
-               --  If Source_Reference pragma used output information
+               --  If Source_Reference pragma used, output information
 
                if Num_SRef_Pragmas (Sind) > 0 then
                   Write_Info_Char (' ');

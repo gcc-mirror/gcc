@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@
 --  This always occurs whether checks are suppressed or not. Dynamic range
 --  checks are, of course, not inserted if checks are suppressed.
 
+with Errout; use Errout;
 with Namet;  use Namet;
 with Table;
 with Types;  use Types;
@@ -78,6 +79,53 @@ package Checks is
    function Overflow_Check_Mode return Overflow_Mode_Type;
    --  Returns current overflow checking mode, taking into account whether
    --  we are inside an assertion expression.
+
+   ------------------------------------------
+   --  Control of Alignment Check Warnings --
+   ------------------------------------------
+
+   --  When we have address clauses, there is an issue of whether the address
+   --  specified is appropriate to the alignment. In the general case where the
+   --  address is dynamic, we generate a check and a possible warning (this
+   --  warning occurs for example if we have a restricted run time with the
+   --  restriction No_Exception_Propagation). We also issue this warning in
+   --  the case where the address is static, but we don't know the alignment
+   --  at the time we process the address clause. In such a case, we issue the
+   --  warning, but we may be able to find out later (after the back end has
+   --  annotated the actual alignment chosen) that the warning was not needed.
+
+   --  To deal with deleting these potentially annoying warnings, we save the
+   --  warning information in a table, and then delete the waranings in the
+   --  post compilation validation stage if we can tell that the check would
+   --  never fail (in general the back end will also optimize away the check
+   --  in such cases).
+
+   --  Table used to record information
+
+   type Alignment_Warnings_Record is record
+      E : Entity_Id;
+      --  Entity whose alignment possibly warrants a warning
+
+      A : Uint;
+      --  Compile time known value of address clause for which the alignment
+      --  is to be checked once we know the alignment.
+
+      W : Error_Msg_Id;
+      --  Id of warning message we might delete
+   end record;
+
+   package Alignment_Warnings is new Table.Table (
+     Table_Component_Type => Alignment_Warnings_Record,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 10,
+     Table_Increment      => 200,
+     Table_Name           => "Alignment_Warnings");
+
+   procedure Validate_Alignment_Check_Warnings;
+   --  This routine is called after back annotation of type data to delete any
+   --  alignment warnings that turn out to be false alarms, based on knowing
+   --  the actual alignment, and a compile-time known alignment value.
 
    -------------------------------------------
    -- Procedures to Activate Checking Flags --

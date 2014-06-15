@@ -787,13 +787,16 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	 generated more than one insn.
 
          This generates garbage since we throw away the insn when we're
-	 done, only to recreate it later if this test was successful.  */
+	 done, only to recreate it later if this test was successful. 
+
+	 Make sure to get the mode from the extension (cand->insn).  This
+	 is different than in the code to emit the copy as we have not
+	 modified the defining insn yet.  */
       start_sequence ();
-      rtx sub_rtx = *get_sub_rtx (def_insn);
       rtx pat = PATTERN (cand->insn);
-      rtx new_dst = gen_rtx_REG (GET_MODE (SET_DEST (sub_rtx)),
+      rtx new_dst = gen_rtx_REG (GET_MODE (SET_DEST (pat)),
                                  REGNO (XEXP (SET_SRC (pat), 0)));
-      rtx new_src = gen_rtx_REG (GET_MODE (SET_DEST (sub_rtx)),
+      rtx new_src = gen_rtx_REG (GET_MODE (SET_DEST (pat)),
                                  REGNO (SET_DEST (pat)));
       emit_move_insn (new_dst, new_src);
 

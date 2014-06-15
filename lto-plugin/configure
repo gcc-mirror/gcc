@@ -640,6 +640,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+with_libiberty
 MAINT
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
@@ -725,6 +726,7 @@ ac_user_opts='
 enable_option_checking
 with_build_libsubdir
 enable_maintainer_mode
+with_libiberty
 enable_dependency_tracking
 enable_largefile
 enable_shared
@@ -1378,6 +1380,8 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
+  --with-libiberty=PATH   specify the directory where to find libiberty
+                          [../libiberty]
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
@@ -2887,6 +2891,15 @@ else
 fi
 
   MAINT=$MAINTAINER_MODE_TRUE
+
+
+
+# Check whether --with-libiberty was given.
+if test "${with_libiberty+set}" = set; then :
+  withval=$with_libiberty;
+else
+  with_libiberty=../libiberty
+fi
 
 
 ac_ext=c
@@ -10586,7 +10599,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10589 "configure"
+#line 10602 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10692,7 +10705,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10695 "configure"
+#line 10708 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -1,3 +1,67 @@
+2014-06-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-assign.c (assign_by_spills): Add code to assign vector regs
+	to inheritance pseudos.
+	* config/i386/i386.c (ix86_spill_class): Add check on NO_REGS.
+
+2014-06-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/61415
+	* config/rs6000/rs6000-builtin.def (BU_MISC_1): Delete.
+	(BU_MISC_2): Rename to ...
+	(BU_LDBL128_2): ... this.
+	* config/rs6000/rs6000.h (RS6000_BTM_LDBL128): New define.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_LDBL128.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Handle
+	RS6000_BTM_LDBL128.
+	(rs6000_invalid_builtin): Add long double 128-bit builtin support.
+	(rs6000_builtin_mask_names): Add RS6000_BTM_LDBL128.
+	* config/rs6000/rs6000.md (unpacktf_0): Remove define)expand.
+	(unpacktf_1): Likewise.
+	* doc/extend.texi (__builtin_longdouble_dw0): Remove documentation.
+	(__builtin_longdouble_dw1): Likewise.
+	* doc/sourcebuild.texi (longdouble128): Document.
+
+2014-06-13  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/61094
+	PR rtl-optimization/61446
+	* ree.c (combine_reaching_defs): Get the mode for the copy from
+	the extension insn rather than the defining insn.
+
+2014-06-13  Dehao Chen  <dehao@google.com>
+
+	* dwarf2out.c (add_linkage_name): Emit more linkage name.
+
+2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/install.texi (--enable-linker-plugin-configure-flags)
+	(--enable-linker-plugin-flags): Document new flags.
+
+2014-06-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61186
+	* ipa-devirt.c (possible_polymorphic_call_targets): Store NULL to
+	cache_token if returning early.
+
+2014-06-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (JUMP_ALIGN): Return the log value if user
+	requested alignment is active.
+	(LABEL_ALIGN): Likewise.
+	(LOOP_ALIGN): Likewise.
+
+2014-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Rewrite to propagate the VN result into all uses where
+	possible and to remove stmts becoming dead because of that.
+	(eliminate): Generalize stmt removal handling, remove in
+	reverse dominator order to support proper debug stmt
+	generation.  Update stmts before removing stmts.
+	* tree-ssa-propagate.c (propagate_tree_value): Remove
+	bogus assert.
+
 2014-06-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/61375

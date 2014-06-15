@@ -1,3 +1,64 @@
+2014-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Update Fundamentals TS status.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/any: New.
+	* include/ext/aligned_buffer.h (__aligned_buffer(nullptr_t)): New
+	constructor.
+	* testsuite/experimental/any/assign/1.cc: New.
+	* testsuite/experimental/any/assign/2.cc: New.
+	* testsuite/experimental/any/cons/1.cc: New.
+	* testsuite/experimental/any/cons/2.cc: New.
+	* testsuite/experimental/any/cons/3.cc: New.
+	* testsuite/experimental/any/misc/any_cast.cc: New.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: New.
+	* testsuite/experimental/any/misc/any_cast_no_rtti.cc: New.
+	* testsuite/experimental/any/misc/swap.cc: New.
+	* testsuite/experimental/any/modifiers/1.cc: New.
+	* testsuite/experimental/any/observers/type.cc: New.
+
+	* doc/doxygen/user.cfg.in (INPUT): Add C++14 headers.
+	* include/bits/random.h (subtract_with_carry_engine): Fix Doxygen
+	warnings.
+	* include/bits/shared_ptr.h (shared_ptr): Likewise.
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	Likewise.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* include/parallel/list_partition.h (__parallel::list_partition):
+	Likewise.
+	* include/std/iomanip (quoted): Likewise.
+	* include/tr2/dynamic_bitset (dynamic_bitset): Likewise.
+
+	* doc/xml/api.xml: Link to more recent API docs.
+	* include/bits/allocator.h: Fix link in doxygen comment.
+	* include/bits/char_traits.h: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/std/fstream: Likewise.
+	* include/std/iosfwd: Likewise.
+	* include/std/ostream: Likewise.
+	* include/std/sstream: Likewise.
+	* include/std/streambuf: Likewise.
+	* doc/html/*: Regenerate.
+
+	* include/experimental/any (any_cast): Combine duplicate doxygen
+	comments.
+	* include/experimental/string_view (basic_string_view): Update
+	doxygen comment.
+	* include/std/bitset (bitset): Move to Doxygen 'utilities' group.
+	* include/tr2/dynamic_bitset (_Bool2UChar): Remove unused templates.
+	(dynamic_bitset): Improve Doxygen comments.
+	* include/tr2/dynamic_bitset.tcc (operator>>): Improve Doxygen
+	comment.
+
 2014-06-11  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/4402.cc

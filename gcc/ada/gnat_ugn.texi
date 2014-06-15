@@ -22873,21 +22873,16 @@ stack overflow.) On OpenVMS Alpha systems, if the pragma
 area is created. In the absence of a pragma @code{TASK_STORAGE},
 a default guard area is created.
 
-GNAT supplies the following task-related pragmas:
+GNAT supplies the following task-related pragma:
 
-@itemize @bullet
-@item  @code{TASK_INFO}
-
-This pragma appears within a task definition and
-applies to the task in which it appears. The argument
-must be of type @code{SYSTEM.TASK_INFO.TASK_INFO_TYPE}.
-
+@itemize
 @item  @code{TASK_STORAGE}
 
 GNAT implements pragma @code{TASK_STORAGE} in the same way as HP Ada.
 Both HP Ada and GNAT supply the pragmas @code{PASSIVE},
 @code{SUPPRESS}, and @code{VOLATILE}.
 @end itemize
+
 @node Scheduling and Task Priority
 @subsection Scheduling and Task Priority
 
@@ -23074,8 +23069,6 @@ following:
 @item  @code{SOURCE_FILE_NAME}
 
 @item  @code{SOURCE_REFERENCE}
-
-@item  @code{TASK_INFO}
 
 @item  @code{UNCHECKED_UNION}
 

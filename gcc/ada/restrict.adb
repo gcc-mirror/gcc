@@ -168,10 +168,17 @@ package body Restrict is
    -- Check_Compiler_Unit --
    -------------------------
 
-   procedure Check_Compiler_Unit (N : Node_Id) is
+   procedure Check_Compiler_Unit (Feature : String; N : Node_Id) is
    begin
-      if Is_Compiler_Unit (Get_Source_Unit (N)) then
-         Error_Msg_N ("use of construct not allowed in compiler!!??", N);
+      if Compiler_Unit then
+         Error_Msg_N (Feature & " not allowed in compiler unit!!??", N);
+      end if;
+   end Check_Compiler_Unit;
+
+   procedure Check_Compiler_Unit (Feature : String; Loc : Source_Ptr) is
+   begin
+      if Compiler_Unit then
+         Error_Msg (Feature & " not allowed in compiler unit!!??", Loc);
       end if;
    end Check_Compiler_Unit;
 

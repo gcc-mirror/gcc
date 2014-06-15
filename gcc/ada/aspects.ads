@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,6 +183,7 @@ package Aspects is
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Simple_Storage_Pool_Type,      -- GNAT
       Aspect_Suppress_Debug_Info,           -- GNAT
+      Aspect_Thread_Local_Storage,          -- GNAT
       Aspect_Unchecked_Union,
       Aspect_Universal_Aliasing,            -- GNAT
       Aspect_Unmodified,                    -- GNAT
@@ -237,6 +238,7 @@ package Aspects is
       Aspect_Simple_Storage_Pool      => True,
       Aspect_Simple_Storage_Pool_Type => True,
       Aspect_Suppress_Debug_Info      => True,
+      Aspect_Thread_Local_Storage     => True,
       Aspect_Test_Case                => True,
       Aspect_Universal_Aliasing       => True,
       Aspect_Universal_Data           => True,
@@ -454,6 +456,7 @@ package Aspects is
       Aspect_Stream_Size                  => Name_Stream_Size,
       Aspect_Suppress                     => Name_Suppress,
       Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
+      Aspect_Thread_Local_Storage         => Name_Thread_Local_Storage,
       Aspect_Synchronization              => Name_Synchronization,
       Aspect_Test_Case                    => Name_Test_Case,
       Aspect_Type_Invariant               => Name_Type_Invariant,
@@ -647,6 +650,7 @@ package Aspects is
       Aspect_Stream_Size                  => Always_Delay,
       Aspect_Suppress                     => Always_Delay,
       Aspect_Suppress_Debug_Info          => Always_Delay,
+      Aspect_Thread_Local_Storage         => Always_Delay,
       Aspect_Type_Invariant               => Always_Delay,
       Aspect_Unchecked_Union              => Always_Delay,
       Aspect_Universal_Aliasing           => Always_Delay,

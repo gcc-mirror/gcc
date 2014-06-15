@@ -10,6 +10,7 @@
 import sys
 import getopt
 import re
+import io
 from datetime import datetime
 from operator import attrgetter
 
@@ -20,6 +21,18 @@ strict = False
 # True if the order of .log segments should match the .sum file, false if
 # they should keep the original order.
 sort_logs = True
+
+# A version of open() that is safe against whatever binary output
+# might be added to the log.
+def safe_open (filename):
+    if sys.version_info >= (3, 0):
+        return open (filename, 'r', errors = 'surrogateescape')
+    return open (filename, 'r')
+
+# Force stdout to handle escape sequences from a safe_open file.
+if sys.version_info >= (3, 0):
+    sys.stdout = io.TextIOWrapper (sys.stdout.buffer,
+                                   errors = 'surrogateescape')
 
 class Named:
     def __init__ (self, name):
@@ -457,7 +470,7 @@ class Prog:
 
     # Output a segment of text.
     def output_segment (self, segment):
-        with open (segment.filename, 'r') as file:
+        with safe_open (segment.filename) as file:
             file.seek (segment.start)
             for i in range (segment.lines):
                 sys.stdout.write (file.readline())
@@ -540,7 +553,7 @@ class Prog:
         try:
             # Parse the input files.
             for filename in self.files:
-                with open (filename, 'r') as file:
+                with safe_open (filename) as file:
                     self.parse_file (filename, file)
 
             # Decide what to output.

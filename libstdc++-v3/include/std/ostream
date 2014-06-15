@@ -556,7 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  This manipulator is often mistakenly used when a simple newline is
    *  desired, leading to poor buffering performance.  See
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
+   *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/streambufs.html#io.streambuf.buffering
    *  for more on this subject.
   */
   template<typename _CharT, typename _Traits>

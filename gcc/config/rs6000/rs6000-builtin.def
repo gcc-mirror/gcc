@@ -622,19 +622,12 @@
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
-/* Miscellaneous builtins.  */
-#define BU_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+/* 128-bit long double floating point builtins.  */
+#define BU_LDBL128_2(ENUM, NAME, ATTR, ICODE)				\
   RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
 		    "__builtin_" NAME,			/* NAME */	\
-		    RS6000_BTM_HARD_FLOAT,		/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_UNARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_MISC_2(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_" NAME,			/* NAME */	\
-		    RS6000_BTM_HARD_FLOAT,		/* MASK */	\
+		    (RS6000_BTM_HARD_FLOAT		/* MASK */	\
+		     | RS6000_BTM_LDBL128),				\
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
@@ -1593,10 +1586,8 @@ BU_P8V_MISC_3 (BCDSUB_OV,	"bcdsub_ov",	CONST,	bcdsub_unordered)
 BU_DFP_MISC_2 (PACK_TD,		"pack_dec128",		CONST,	packtd)
 BU_DFP_MISC_2 (UNPACK_TD,	"unpack_dec128",	CONST,	unpacktd)
 
-BU_MISC_2 (PACK_TF,		"pack_longdouble",	CONST,	packtf)
-BU_MISC_2 (UNPACK_TF,		"unpack_longdouble",	CONST,	unpacktf)
-BU_MISC_1 (UNPACK_TF_0,		"longdouble_dw0",	CONST,	unpacktf_0)
-BU_MISC_1 (UNPACK_TF_1,		"longdouble_dw1",	CONST,	unpacktf_1)
+BU_LDBL128_2 (PACK_TF,		"pack_longdouble",	CONST,	packtf)
+BU_LDBL128_2 (UNPACK_TF,	"unpack_longdouble",	CONST,	unpacktf)
 
 BU_P7_MISC_2 (PACK_V1TI,	"pack_vector_int128",	CONST,	packv1ti)
 BU_P7_MISC_2 (UNPACK_V1TI,	"unpack_vector_int128",	CONST,	unpackv1ti)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -612,17 +612,42 @@ package Targparm is
    --  These subprograms are used to initialize the target parameter values
    --  from the system.ads file. Note that this is only done once, so if more
    --  than one call is made to either routine, the second and subsequent
-   --  calls are ignored.
+   --  calls are ignored. It also reads restriction pragmas from system.ads
+   --  and records them, though as further detailed below, the caller has some
+   --  control over the handling of No_Dependence restrictions.
+
+   type Make_Id_Type is access function (Str : Text_Buffer) return Node_Id;
+   --  Parameter type for Get_Target_Parameters for function that creates an
+   --  identifier node with Sloc value System_Location and given string as the
+   --  Chars value.
+
+   type Make_SC_Type is access function (Pre, Sel : Node_Id) return Node_Id;
+   --  Parameter type for Get_Target_Parameters for function that creates a
+   --  selected component with Sloc value System_Location and given Prefix
+   --  (Pre) and Selector (Sel) values.
+
+   type Set_RND_Type is access procedure (Unit : Node_Id);
+   --  Parameter type for Get_Target_Parameters that records a Restriction
+   --  No_Dependence for the given unit (identifier or selected component).
 
    procedure Get_Target_Parameters
      (System_Text  : Source_Buffer_Ptr;
       Source_First : Source_Ptr;
-      Source_Last  : Source_Ptr);
+      Source_Last  : Source_Ptr;
+      Make_Id      : Make_Id_Type := null;
+      Make_SC      : Make_SC_Type := null;
+      Set_RND      : Set_RND_Type := null);
    --  Called at the start of execution to obtain target parameters from
    --  the source of package System. The parameters provide the source
    --  text to be scanned (in System_Text (Source_First .. Source_Last)).
+   --  if the three subprograms are left at their default value of null,
+   --  Get_Target_Parameters will ignore pragma Restrictions No_Dependence
+   --  lines, otherwise it will use these three subprograms to record them.
 
-   procedure Get_Target_Parameters;
+   procedure Get_Target_Parameters
+     (Make_Id : Make_Id_Type := null;
+      Make_SC : Make_SC_Type := null;
+      Set_RND : Set_RND_Type := null);
    --  This version reads in system.ads using Osint. The idea is that the
    --  caller uses the first version if they have to read system.ads anyway
    --  (e.g. the compiler) and uses this simpler interface if system.ads is

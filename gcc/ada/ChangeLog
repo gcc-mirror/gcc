@@ -1,3 +1,389 @@
+2014-06-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ada/61505
+	* gnat_rm.texi: Fix errors with makeinfo 5.1.
+
+2014-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/61505
+	* gnat_rm.texi: Attempt to fix error with makeinfo 5.1
+
+2014-06-13  Yannick Moy  <moy@adacore.com>
+
+	* exp_attr.adb Typo in comment.
+	* gnat1drv.adb (Adjust_Global_Switches): Force float overflow
+	checking in GNATprove_Mode.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-coinho-shared.adb, a-coinho-shared.ads: Update shared version.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch9.adb, a-coinho.adb, a-coinho.ads: Minor
+	reformatting.
+
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add local
+	variable Missing_Parentheses. Emit an error when a state
+	declaration with options appears without parentheses. Add a
+	guard to prevent a bogus error when a state declaration may be
+	interpreted as an option if a previous declaration with options
+	was not parenthesized.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Validate_Alignment_Check_Warnings: New procedure
+	(Apply_Address_Clause_Check): Make Aligment_Warnings table entry.
+	* checks.ads (Alignment_Warnings_Record): New type.
+	(Alignment_Warnings): New table
+	(Validate_Alignment_Check_Warnings): New procedure.
+	* errout.adb (Delete_Warning_And_Continuations): New procedure
+	(Error_Msg_Internal): Set Warning_Msg (Delete_Warning): Handle
+	Warnings_Treated_As_Errors (Finalize): Minor reformatting
+	* errout.ads (Warning_Msg): New variable
+	(Delete_Warning_And_Continuations): New procedure
+	* erroutc.adb (Delete_Msg): Handle Warnings_Treated_As_Errors count.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): New procedure.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-coinho.adb, a-coinho.ads: Add Reference machinery.
+
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* errout.adb (SPARK_Msg_N): New routine.
+	(SPARK_Msg_NE): New routine.
+	* errout.ads Add a section on SPARK-related error routines.
+	(SPARK_Msg_N): New routine.
+	(SPARK_Msg_NE): New routine.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Ensure that
+	pragma Abstract_State is always inserted after SPARK_Mode.
+	(Insert_After_SPARK_Mode): New routine.
+	* sem_prag.adb (Analyze_Abstract_State,
+	Analyze_Constituent, Analyze_External_Property,
+	Analyze_External_Property_In_Decl_Part, Analyze_Global_Item,
+	Analyze_Global_List, Analyze_Initialization_Item,
+	Analyze_Initialization_Item_With_Inputs, Analyze_Input_Item,
+	Analyze_Input_List, Analyze_Input_Output, Analyze_Part_Of,
+	Analyze_Pragma, Analyze_Refined_Depends_In_Decl_Part,
+	Analyze_Refined_Global_In_Decl_Part,
+	Analyze_Refined_State_In_Decl_Part, Analyze_Refinement_Clause,
+	Check_Aspect_Specification_Order, Check_Constituent_Usage,
+	Check_Declaration_Order, Check_Dependency_Clause,
+	Check_Duplicate_Mode, Check_Duplicate_Option,
+	Check_Duplicate_Property, Check_External_Properties,
+	Check_External_Property, Check_Function_Return,
+	Check_Matching_Constituent, Check_Matching_State,
+	Check_Mode_Restriction_In_Enclosing_Context,
+	Check_Mode_Restriction_In_Function, Check_Refined_Global_Item,
+	Check_State_And_Constituent_Use, Create_Or_Modify_Clause,
+	Has_Extra_Parentheses, Inconsistent_Mode_Error,
+	Match_Error, Propagate_Part_Of, Report_Extra_Clauses,
+	Report_Extra_Constituents_In_List, Report_Extra_Inputs,
+	Report_Unrefined_States, Report_Unused_Constituents,
+	Report_Unused_States, Role_Error, Usage_Error):
+	Convert Error_Msg_XXX calls to SPARK_Msg_XXX calls
+	to report semantic errors only when SPARK_Mode is on.
+	(Analyze_Depends_In_Decl_Part): Do not check the syntax of
+	pragma Depends explicitly, this is now done by the analysis.
+	(Analyze_Global_In_Decl_List): Do not check the syntax of
+	pragma Global explicitly, this is now done by the analysis.
+	(Analyze_Initializes_In_Decl_Part): Do not check the syntax of
+	pragma Initializes explicitly, this is now done by the analysis.
+	(Analyze_Part_Of): Do not check the syntax of the encapsulating
+	state, this is now done by the analysis.
+	(Analyze_Pragma): Do
+	not check the syntax of a state declaration, this is now done
+	by the analysis.
+	(Analyze_Refined_Depends_In_Decl_Part): Do not
+	check the syntax of pragma Refined_Depends explicitly, this is now
+	done by the analysis.
+	(Analyze_Refined_Global_In_Decl_Part): Do
+	not check the syntax of pragma Refined_Global explicitly, this is
+	now done by the analysis.
+	(Analyze_Refined_State_In_Decl_Part):
+	Do not check the syntax of pragma Refined_State explicitly, this
+	is now done by the analysis.
+	(Check_Dependence_List_Syntax): Removed.
+	(Check_Global_List_Syntax): Removed.
+	(Check_Initialization_List_Syntax): Removed.
+	(Check_Item_Syntax): Removed.
+	(Check_Missing_Part_Of): Do not consider items from an instance.
+	(Check_Refinement_List_Syntax): Removed.
+	(Check_State_Declaration_Syntax): Removed.
+	(Collect_Global_List): Do not raise Program_Error when the input is
+	malformed.
+	(Process_Global_List): Do not raise Program_Error when the input
+	is malformed.
+	* sem_ch13.adb: Minor reformatting.
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): Diagnose a private type completion
+	that is an interface definition with an interface list.
+	(Process_Full_View): Move error message on missmatched interfaces
+	between views to the declaration of full view, for clarity.
+	* sem_ch9.adb (Check_Interfaces): Move error message to full view,
+	for clarity.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Pred/Succ): Change
+	reason to Overflow.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* makeutl.adb: Minor reformatting.
+
+2014-06-13  Gail Schenker  <schenker@adacore.com>
+
+	* debug.adb, sem_eval.adb (Why_Not_Static): Remove temporary code and
+	associated flag (d.z), no longer needed.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For Import and
+	Export aspects, do not check whether a corresponding Convention
+	aspect has been specified. Convention is optional in Ada2012,
+	and defaults to Convention_Ada.
+
+2014-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Address_Clause_Check): Only issue the new
+	warning if the propagation warning is issued.
+
+2014-06-13  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Pred):
+	Handle float range check case (Expand_N_Attribute_Reference,
+	case Succ): Handle float range check case.
+	* sem_attr.adb (Analyze_Attribute, case Pred/Succ): Handle float
+	range check case.
+
+2014-06-13  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.ads (Compute_Builder_Switches): Change name of
+	parameter Root_Environment to Env.
+	* prj-conf.adb (Check_Switches): Call Locate_Runtime with the
+	Env parameter of procedure Get_Or_Create_Configuration_File.
+	(Locate_Runtime): Call Find_Rts_In_Path with the Project_Path
+	of new parameter Env.
+	* prj-conf.ads (Locate_Runtime): New parameter Env of type
+	Prj.Tree.Environment.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor comment clarification for Check_Float_Overflow.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, exp_ch9.adb, lib-writ.adb, g-comlin.adb: Minor
+	reformatting.
+	* sem_attr.adb: Minor code reformatting and simplification.
+	* checks.adb: Fix minor typo.
+
+2014-06-13  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Get_Argument): fix expansion
+	of command line arguments (e.g. "*.adb") when using a custom
+	parser. The parser was not passed to the recursive call, and
+	thus we were trying to do the expansion on the default command
+	line parser.
+
+2014-06-13  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Old):
+	To determine whether the attribute should be expanded, examine
+	whether the enclosing postcondition pragma is to be checked,
+	rather than using the internal flag Assertions_Enabled.
+
+2014-06-13  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Minor fixes.
+	* gnat_ugn.texi: Added a missing "@itemize".
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Remove -gnatd.1 flag documentation.
+	* layout.adb (Layout_Type): Remove special handling of size
+	for anonymous access type.
+	* sem_ch3.adb (Replace_Type): Remove special handling of size
+	for anonymous access type.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document debug flag -gnatd.1.
+	* layout.adb (Layout_Type): Size change for anonymous access
+	types under -gnatd.1.
+	* sem_ch3.adb (Replace_Type): Size change for anonymous access
+	types under -gnatd.1.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb (Layout_Type): Anonymous access types designating
+	unconstrained arrays are always thin pointers.
+	* sem_ch3.adb (Replace_Type): Anonymous access types designating
+	unconstrained arrays are always thin pointers.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Use Check_Parameterless_Call
+	to resolve the prefix of an attribute that is an entity name
+	and may be a parameterless call.  Minor code reorganization.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* lib.ads, lib.adb, lib-writ.adb, lib-load.adb (Is_Compiler_Unit):
+	Removed.
+	* opt.ads (Compiler_Unit): New flag.
+	* par-ch5.adb (Test_Statement_Required): Call Check_Compiler_Unit
+	for null statement sequence (not allowed in compiler unit).
+	* par-prag.adb (Prag): Handle Compiler_Unit[_Warning] during
+	parsing.
+	* restrict.ads, restrict.adb (Check_Compiler_Unit): New version and new
+	calling sequence.
+	* sem_ch11.adb, sem_ch3.adb, sem_ch4.adb: New calling sequence for
+	Check_Compiler_Unit.
+	* sem_ch6.adb (Analyze_Extended_Return_Statement): Call
+	Check_Compiler_Unit (this construct is not allowed in compiler
+	units).
+	* sem_prag.adb (Analyze_Pragma, case Compiler_Unit[_Warning]):
+	Set Opt.Compiler_Unit.
+
+2014-06-13  Geert Bosch  <bosch@adacore.com>
+
+	* gnat_rm.texi, s-tasinf-solaris.ads, sem_prag.adb, gnat_ugn.texi,
+	s-tasinf-mingw.ads, s-tasinf.ads, s-tasinf-linux.ads,
+	s-tasinf-vxworks.ads: Make Task_Info pragma and package obsolescent.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* s-tasini.adb, s-tarest.adb, s-taprob.adb: Minor reformatting.
+
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Remove the check concerning volatile
+	types in SPARK as it is poorly placed and poorly formulated. The
+	check was flagging ALL volatile entities as illegal in SPARK.
+	* sem_prag.adb (Process_Atomic_Shared_Volatile): Flag volatile
+	types as illegal in SPARK.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* sem_cat.adb: Minor reformatting.
+
+2014-06-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma/Post_Class): Fix typo.
+
+2014-06-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi: Add detail on SPARK_05 restriction.
+
+2014-06-13  Bob Duff  <duff@adacore.com>
+
+	* s-solita.adb (Get_Sec_Stack_Addr, Init_Tasking_Soft_Links):
+	Add assertions requiring the secondary stack to be initialized.
+	* s-solita.ads (Init_Tasking_Soft_Links): Comment.
+	* s-taprob.adb, s-tarest.adb, s-tasini.adb (elab code): Make sure the
+	secondary stack is initialized before calling Init_Tasking_Soft_Links,
+	by adding pragmas Elaborate_Body.
+
+2014-06-13  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Analyze_Stream_TSS_Definition): Remove temporary
+	kludge disabling new legality check.
+
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Remove checks related to SPARK
+	volatile types.
+	(Freeze_Type): Volatile types are now illegal in SPARK.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add aspect Thread_Local_Storage.
+	* gnat_rm.texi: Document aspect Thread_Local_Storage.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_cat.adb (Validate_Static_Object_Name): A constant whose
+	value is a temporary that renames an aggregate is legal in a
+	preelaborated unit. Illegalities, if any will be detected in
+	the aggregate components.
+
+2014-06-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Minor reformatting an comment expansion.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.ads, back_end.adb: Make_Id, Make_SC, Set_RND are moved to
+	Tbuild.
+	* tbuild.ads, tbuild.adb: Make_Id, Make_SC, Set_RND are moved here from
+	Back_End.
+	* gnat1drv.adb: Make_Id, Make_SC, Set_RND are moved to Tbuild
+	* sem_warn.adb: Minor reformatting.
+
+2014-06-13  Doug Rupp  <rupp@adacore.com>
+
+	* adaint.c (__gnat_open_new_temp) [VMS]: Open binary
+	files with rfm=udf.
+
+2014-06-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Check_Unset_References): Take
+	case of Refined_Post into account in Within_Postcondition check.
+
+2014-06-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Volatile types are not allowed in
+	SPARK.
+
+2014-06-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications/Aspect_Import,
+	Aspect_Export): Consider that variables may be set outside the program.
+
+2014-06-13  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.adb (Make_Id): New function.
+	(Make_SC): New function.
+	(Set_RND): New procedure.
+	* back_end.ads (Make_Id): New function.
+	(Make_SC): New function.
+	(Set_RND): New procedure.
+	* einfo.ads: Minor comment updates.
+	* frontend.adb: Move Atree.Initialize call to Gnat1drv.
+	* gnat1drv.adb (Gnat1drv): New calling sequence for
+	Get_Target_Parameters.
+	(Gnat1drv): Move Atree.Initialize here from Frontend.
+	* targparm.adb (Get_Target_Parameters): New calling
+	sequence (Get_Target_Parameters): Handle pragma Restriction
+	(No_Dependence,..)
+	* targparm.ads (Get_Target_Parameters): New calling sequence.
+
+2014-06-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Exit the homonym
+	loop if the pragma does not come from source, so that an implicit
+	pragma Import only applies to the first declaration, avoiding
+	possible conflicts with earlier explicit and implicit declarations
+	due to multiple Provide_Shift_Operators pragmas.
+	(Set_Imported): Remove previous fix that bypassed pragma duplication
+	error.
+	* gnat_rm.texi: Change 'equivalent' to 'similar' in description
+	of Provide_Shift_Operators.
+
 2014-06-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc-interface/utils.c (process_attributes) <ATTR_LINK_SECTION>: Pass

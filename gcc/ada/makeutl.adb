@@ -309,10 +309,10 @@ package body Makeutl is
                      if Replacement /= No_File then
                         if Verbose_Mode then
                            Write_Line
-                             ("source file" &
-                              Get_Name_String (SD.Sfile) &
-                              " has been replaced by " &
-                              Get_Name_String (Replacement));
+                             ("source file"
+                              & Get_Name_String (SD.Sfile)
+                              & " has been replaced by "
+                              & Get_Name_String (Replacement));
                         end if;
 
                         return No_Name;
@@ -648,10 +648,10 @@ package body Makeutl is
                         if Sw (J) = Directory_Separator then
                            Switch :=
                              new String'
-                               (Sw (1 .. Start - 1) &
-                                Parent &
-                                Directory_Separator &
-                                Sw (Start .. Sw'Last));
+                               (Sw (1 .. Start - 1)
+                                & Parent
+                                & Directory_Separator
+                                & Sw (Start .. Sw'Last));
                            return;
                         end if;
                      end loop;
@@ -659,10 +659,10 @@ package body Makeutl is
                   else
                      Switch :=
                        new String'
-                         (Sw (1 .. Start - 1) &
-                          Parent &
-                          Directory_Separator &
-                          Sw (Start .. Sw'Last));
+                         (Sw (1 .. Start - 1)
+                          & Parent
+                          & Directory_Separator
+                          & Sw (Start .. Sw'Last));
                   end if;
                end if;
 
@@ -1999,8 +1999,8 @@ package body Makeutl is
                      if Project.Library then
                         Fail_Program
                           (Tree,
-                           "cannot specify a main program " &
-                           "for a library project file");
+                           "cannot specify a main program "
+                           & "for a library project file");
                      end if;
 
                      Add_Main (Name     => Get_Name_String (Element.Value),
@@ -2118,8 +2118,8 @@ package body Makeutl is
             if Names.Last = 0 then
                Fail_Program
                  (Project_Tree,
-                  "cannot specify a multi-unit index but no main " &
-                  "on the command line");
+                  "cannot specify a multi-unit index but no main "
+                  & "on the command line");
 
             elsif Names.Last > 1 then
                Fail_Program
@@ -3153,10 +3153,10 @@ package body Makeutl is
          if Current_Verbosity = High then
             Debug_Output ("compilation phases: "
                           & " compile=" & Data.Need_Compilation'Img
-                          & " bind=" & Data.Need_Binding'Img
-                          & " link=" & Data.Need_Linking'Img
+                          & " bind="    & Data.Need_Binding'Img
+                          & " link="    & Data.Need_Linking'Img
                           & " closure=" & Data.Closure_Needed'Img
-                          & " mains=" & Data.Number_Of_Mains'Img,
+                          & " mains="   & Data.Number_Of_Mains'Img,
                           Project.Name);
          end if;
       end Do_Compute;
@@ -3173,7 +3173,7 @@ package body Makeutl is
 
    procedure Compute_Builder_Switches
      (Project_Tree        : Project_Tree_Ref;
-      Root_Environment    : in out Prj.Tree.Environment;
+      Env                 : in out Prj.Tree.Environment;
       Main_Project        : Project_Id;
       Only_For_Lang       : Name_Id := No_Name)
    is
@@ -3312,14 +3312,13 @@ package body Makeutl is
            and then Default_Switches_Array /= No_Array
          then
             Prj.Err.Error_Msg
-              (Root_Environment.Flags,
-               "Default_Switches forbidden in presence of " &
-               "Global_Compilation_Switches. Use Switches instead.",
+              (Env.Flags,
+               "Default_Switches forbidden in presence of "
+               & "Global_Compilation_Switches. Use Switches instead.",
                Project_Tree.Shared.Arrays.Table
                  (Default_Switches_Array).Location);
             Fail_Program
-              (Project_Tree,
-               "*** illegal combination of Builder attributes");
+              (Project_Tree, "*** illegal combination of Builder attributes");
          end if;
 
          if Lang /= No_Name then
@@ -3432,15 +3431,15 @@ package body Makeutl is
                      Name_Len := Name_Len + Name_Len;
 
                      Prj.Err.Error_Msg
-                       (Root_Environment.Flags,
-                        '"' & Name_Buffer (1 .. Name_Len) &
-                        """ is not a builder switch. Consider moving " &
-                        "it to Global_Compilation_Switches.",
+                       (Env.Flags,
+                        '"' & Name_Buffer (1 .. Name_Len)
+                        & """ is not a builder switch. Consider moving "
+                        & "it to Global_Compilation_Switches.",
                         Element.Location);
                      Fail_Program
                        (Project_Tree,
-                        "*** illegal switch """ &
-                        Get_Name_String (Element.Value) & '"');
+                        "*** illegal switch """
+                        & Get_Name_String (Element.Value) & '"');
                   end if;
                end if;
 

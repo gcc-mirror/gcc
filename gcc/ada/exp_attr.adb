@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3962,13 +3962,6 @@ package body Exp_Attr is
          Temp    : Entity_Id;
 
       begin
-         --  If assertions are disabled, no need to create the declaration
-         --  that preserves the value.
-
-         if not Assertions_Enabled then
-            return;
-         end if;
-
          Temp := Make_Temporary (Loc, 'T', Pref);
 
          --  Climb the parent chain looking for subprogram _Postconditions
@@ -3977,6 +3970,15 @@ package body Exp_Attr is
          while Present (Subp) loop
             exit when Nkind (Subp) = N_Subprogram_Body
               and then Chars (Defining_Entity (Subp)) = Name_uPostconditions;
+
+            --  If assertions are disabled, no need to create the declaration
+            --  that preserves the value. The postcondition pragma in which
+            --  'Old appears will be checked or disabled according to the
+            --  current policy in effect.
+
+            if Nkind (Subp) = N_Pragma and then not Is_Checked (Subp) then
+               return;
+            end if;
 
             Subp := Parent (Subp);
          end loop;
@@ -4179,10 +4181,9 @@ package body Exp_Attr is
                Analyze (N);
                return;
 
-            --  For elementary types, we call the W_xxx routine directly.
-            --  Note that the effect of Write and Output is identical for
-            --  the case of an elementary type, since there are no
-            --  discriminants or bounds.
+            --  For elementary types, we call the W_xxx routine directly. Note
+            --  that the effect of Write and Output is identical for the case
+            --  of an elementary type (there are no discriminants or bounds).
 
             elsif Is_Elementary_Type (U_Type) then
 
@@ -4439,7 +4440,8 @@ package body Exp_Attr is
       ----------
 
       --  1. Deal with enumeration types with holes
-      --  2. For floating-point, generate call to attribute function
+      --  2. For floating-point, generate call to attribute function and deal
+      --       with range checking if Check_Float_Overflow mode is set.
       --  3. For other cases, deal with constraint checking
 
       when Attribute_Pred => Pred :
@@ -4511,9 +4513,36 @@ package body Exp_Attr is
             Analyze_And_Resolve (N, Typ);
 
          --  For floating-point, we transform 'Pred into a call to the Pred
-         --  floating-point attribute function in Fat_xxx (xxx is root type)
+         --  floating-point attribute function in Fat_xxx (xxx is root type).
 
          elsif Is_Floating_Point_Type (Ptyp) then
+
+            --  Handle case of range check. The Do_Range_Check flag is set only
+            --  in Check_Float_Overflow mode, and what we need is a specific
+            --  check against typ'First, since that is the only overflow case.
+
+            declare
+               Expr : constant Node_Id := First (Exprs);
+            begin
+               if Do_Range_Check (Expr) then
+                  Set_Do_Range_Check (Expr, False);
+                  Insert_Action (N,
+                    Make_Raise_Constraint_Error (Loc,
+                      Condition =>
+                        Make_Op_Eq (Loc,
+                          Left_Opnd  => Duplicate_Subexpr (Expr),
+                          Right_Opnd =>
+                            Make_Attribute_Reference (Loc,
+                              Attribute_Name => Name_First,
+                              Prefix         =>
+                                New_Occurrence_Of (Base_Type (Ptyp), Loc))),
+                      Reason => CE_Overflow_Check_Failed),
+                  Suppress => All_Checks);
+               end if;
+            end;
+
+            --  Transform into call to attribute function
+
             Expand_Fpt_Attribute_R (N);
             Analyze_And_Resolve (N, Typ);
 
@@ -5562,6 +5591,33 @@ package body Exp_Attr is
          --  floating-point attribute function in Fat_xxx (xxx is root type)
 
          elsif Is_Floating_Point_Type (Ptyp) then
+
+            --  Handle case of range check. The Do_Range_Check flag is set only
+            --  in Check_Float_Overflow mode, and what we need is a specific
+            --  check against typ'Last, since that is the only overflow case.
+
+            declare
+               Expr : constant Node_Id := First (Exprs);
+            begin
+               if Do_Range_Check (Expr) then
+                  Set_Do_Range_Check (Expr, False);
+                  Insert_Action (N,
+                    Make_Raise_Constraint_Error (Loc,
+                      Condition =>
+                        Make_Op_Eq (Loc,
+                          Left_Opnd  => Duplicate_Subexpr (Expr),
+                          Right_Opnd =>
+                            Make_Attribute_Reference (Loc,
+                              Attribute_Name => Name_Last,
+                              Prefix         =>
+                                New_Occurrence_Of (Base_Type (Ptyp), Loc))),
+                      Reason    => CE_Overflow_Check_Failed),
+                    Suppress => All_Checks);
+               end if;
+            end;
+
+            --  Transform into call to attribute function
+
             Expand_Fpt_Attribute_R (N);
             Analyze_And_Resolve (N, Typ);
 

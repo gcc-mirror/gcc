@@ -1603,7 +1603,7 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-                  --  For case of address aspect, we don't consider that we
+                  --  For the case of aspect Address, we don't consider that we
                   --  know the entity is never set in the source, since it is
                   --  is likely aliasing is occurring.
 
@@ -2007,9 +2007,50 @@ package body Sem_Ch13 is
                --  immediately.
 
                when Aspect_Abstract_State => Abstract_State : declare
+                  procedure Insert_After_SPARK_Mode
+                    (Ins_Nod : Node_Id;
+                     Decls   : List_Id);
+                  --  Insert Aitem before node Ins_Nod. If Ins_Nod denotes
+                  --  pragma SPARK_Mode, then SPARK_Mode is skipped. Decls is
+                  --  the associated declarative list where Aitem is to reside.
+
+                  -----------------------------
+                  -- Insert_After_SPARK_Mode --
+                  -----------------------------
+
+                  procedure Insert_After_SPARK_Mode
+                    (Ins_Nod : Node_Id;
+                     Decls   : List_Id)
+                  is
+                     Decl : Node_Id := Ins_Nod;
+
+                  begin
+                     --  Skip SPARK_Mode
+
+                     if Present (Decl)
+                       and then Nkind (Decl) = N_Pragma
+                       and then Pragma_Name (Decl) = Name_SPARK_Mode
+                     then
+                        Decl := Next (Decl);
+                     end if;
+
+                     if Present (Decl) then
+                        Insert_Before (Decl, Aitem);
+
+                     --  Aitem acts as the last declaration
+
+                     else
+                        Append_To (Decls, Aitem);
+                     end if;
+                  end Insert_After_SPARK_Mode;
+
+                  --  Local variables
+
                   Context : Node_Id := N;
                   Decl    : Node_Id;
                   Decls   : List_Id;
+
+               --  Start of processing for Abstract_State
 
                begin
                   --  When aspect Abstract_State appears on a generic package,
@@ -2061,17 +2102,20 @@ package body Sem_Ch13 is
                               Decl := Next (Decl);
                            end loop;
 
-                           if Present (Decl) then
-                              Insert_Before (Decl, Aitem);
-                           else
-                              Append_To (Decls, Aitem);
-                           end if;
+                           --  Pragma Abstract_State must be inserted after
+                           --  pragma SPARK_Mode in the tree. This ensures that
+                           --  any error messages dependent on SPARK_Mode will
+                           --  be properly enabled/suppressed.
+
+                           Insert_After_SPARK_Mode (Decl, Decls);
 
                         --  The related package is not a generic instance, the
-                        --  corresponding pragma must be the first declaration.
+                        --  corresponding pragma must be the first declaration
+                        --  except when SPARK_Mode is already in the list. In
+                        --  that case pragma Abstract_State is placed second.
 
                         else
-                           Prepend_To (Decls, Aitem);
+                           Insert_After_SPARK_Mode (First (Decls), Decls);
                         end if;
 
                      --  Otherwise the pragma forms a new declarative list
@@ -2691,50 +2735,25 @@ package body Sem_Ch13 is
 
                   elsif A_Id = Aspect_Import or else A_Id = Aspect_Export then
 
-                     --  Verify that there is an aspect Convention that will
-                     --  incorporate the Import/Export aspect, and eventual
-                     --  Link/External names.
+                     --  For the case of aspects Import and Export, we don't
+                     --  consider that we know the entity is never set in the
+                     --  source, since it is is likely modified outside the
+                     --  program.
 
-                     declare
-                        A : Node_Id;
+                     --  Note: one might think that the analysis of the
+                     --  resulting pragma would take care of that, but
+                     --  that's not the case since it won't be from source.
 
-                     begin
-                        A := First (L);
-                        while Present (A) loop
-                           exit when Chars (Identifier (A)) = Name_Convention;
-                           Next (A);
-                        end loop;
+                     if Ekind (E) = E_Variable then
+                        Set_Never_Set_In_Source (E, False);
+                     end if;
 
-                        --  It is legal to specify Import for a variable, in
-                        --  order to suppress initialization for it, without
-                        --  specifying explicitly its convention. However this
-                        --  is only legal if the convention of the object type
-                        --  is Ada or similar.
-
-                        if No (A) then
-                           if Ekind (E) = E_Variable
-                             and then A_Id = Aspect_Import
-                           then
-                              declare
-                                 C : constant Convention_Id :=
-                                       Convention (Etype (E));
-                              begin
-                                 if C = Convention_Ada              or else
-                                    C = Convention_Ada_Pass_By_Copy or else
-                                    C = Convention_Ada_Pass_By_Reference
-                                 then
-                                    goto Continue;
-                                 end if;
-                              end;
-                           end if;
-
-                           --  Otherwise, Convention must be specified
-
-                           Error_Msg_N
-                             ("missing Convention aspect for Export/Import",
-                              Aspect);
-                        end if;
-                     end;
+                     --  In older versions of Ada the corresponding pragmas
+                     --  specified a Convention. In Ada 2012 the convention
+                     --  is specified as a separate aspect, and it is optional,
+                     --  given that it defaults to Convention_Ada. The code
+                     --  that verifed that there was a matching convention
+                     --  is now obsolete.
 
                      goto Continue;
                   end if;
@@ -3223,10 +3242,6 @@ package body Sem_Ch13 is
                 not Null_Present
                   (Specification
                      (Unit_Declaration_Node (Ultimate_Alias (Subp))))
-
-              --  Disable this test for now till Polyorb issue is fixed???
-
-              and then False
             then
                Error_Msg_N
                  ("stream subprogram for interface type "
