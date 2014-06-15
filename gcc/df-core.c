@@ -1947,21 +1947,16 @@ df_ref
 df_bb_regno_first_def_find (basic_block bb, unsigned int regno)
 {
   rtx insn;
-  df_ref *def_rec;
-  unsigned int uid;
+  df_ref def;
 
   FOR_BB_INSNS (bb, insn)
     {
       if (!INSN_P (insn))
 	continue;
 
-      uid = INSN_UID (insn);
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	{
-	  df_ref def = *def_rec;
-	  if (DF_REF_REGNO (def) == regno)
-	    return def;
-	}
+      FOR_EACH_INSN_DEF (def, insn)
+	if (DF_REF_REGNO (def) == regno)
+	  return def;
     }
   return NULL;
 }
@@ -1973,21 +1968,16 @@ df_ref
 df_bb_regno_last_def_find (basic_block bb, unsigned int regno)
 {
   rtx insn;
-  df_ref *def_rec;
-  unsigned int uid;
+  df_ref def;
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
       if (!INSN_P (insn))
 	continue;
 
-      uid = INSN_UID (insn);
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	{
-	  df_ref def = *def_rec;
-	  if (DF_REF_REGNO (def) == regno)
-	    return def;
-	}
+      FOR_EACH_INSN_DEF (def, insn)
+	if (DF_REF_REGNO (def) == regno)
+	  return def;
     }
 
   return NULL;
@@ -1999,20 +1989,15 @@ df_bb_regno_last_def_find (basic_block bb, unsigned int regno)
 df_ref
 df_find_def (rtx insn, rtx reg)
 {
-  unsigned int uid;
-  df_ref *def_rec;
+  df_ref def;
 
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
   gcc_assert (REG_P (reg));
 
-  uid = INSN_UID (insn);
-  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-    {
-      df_ref def = *def_rec;
-      if (DF_REF_REGNO (def) == REGNO (reg))
-	return def;
-    }
+  FOR_EACH_INSN_DEF (def, insn)
+    if (DF_REF_REGNO (def) == REGNO (reg))
+      return def;
 
   return NULL;
 }
@@ -2033,27 +2018,20 @@ df_reg_defined (rtx insn, rtx reg)
 df_ref
 df_find_use (rtx insn, rtx reg)
 {
-  unsigned int uid;
-  df_ref *use_rec;
+  df_ref use;
 
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
   gcc_assert (REG_P (reg));
 
-  uid = INSN_UID (insn);
-  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
-    {
-      df_ref use = *use_rec;
+  df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    if (DF_REF_REGNO (use) == REGNO (reg))
+      return use;
+  if (df->changeable_flags & DF_EQ_NOTES)
+    FOR_EACH_INSN_INFO_EQ_USE (use, insn_info)
       if (DF_REF_REGNO (use) == REGNO (reg))
 	return use;
-    }
-  if (df->changeable_flags & DF_EQ_NOTES)
-    for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
-      {
-	df_ref use = *use_rec;
-	if (DF_REF_REGNO (use) == REGNO (reg))
-	  return use;
-      }
   return NULL;
 }
 

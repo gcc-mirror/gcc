@@ -2613,8 +2613,7 @@ static void
 maybe_downgrade_id_to_use (idata_t id, insn_t insn)
 {
   bool must_be_use = false;
-  unsigned uid = INSN_UID (insn);
-  df_ref *rec;
+  df_ref def;
   rtx lhs = IDATA_LHS (id);
   rtx rhs = IDATA_RHS (id);
 
@@ -2628,10 +2627,8 @@ maybe_downgrade_id_to_use (idata_t id, insn_t insn)
       return;
     }
 
-  for (rec = DF_INSN_UID_DEFS (uid); *rec; rec++)
+  FOR_EACH_INSN_DEF (def, insn)
     {
-      df_ref def = *rec;
-
       if (DF_REF_INSN (def)
           && DF_REF_FLAGS_IS_SET (def, DF_REF_PRE_POST_MODIFY)
           && loc_mentioned_in_p (DF_REF_LOC (def), IDATA_RHS (id)))
@@ -2659,13 +2656,12 @@ maybe_downgrade_id_to_use (idata_t id, insn_t insn)
 static void
 setup_id_reg_sets (idata_t id, insn_t insn)
 {
-  unsigned uid = INSN_UID (insn);
-  df_ref *rec;
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref def, use;
   regset tmp = get_clear_regset_from_pool ();
 
-  for (rec = DF_INSN_UID_DEFS (uid); *rec; rec++)
+  FOR_EACH_INSN_INFO_DEF (def, insn_info)
     {
-      df_ref def = *rec;
       unsigned int regno = DF_REF_REGNO (def);
 
       /* Post modifies are treated like clobbers by sched-deps.c.  */
@@ -2689,9 +2685,8 @@ setup_id_reg_sets (idata_t id, insn_t insn)
         bitmap_set_bit (tmp, regno);
     }
 
-  for (rec = DF_INSN_UID_USES (uid); *rec; rec++)
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
     {
-      df_ref use = *rec;
       unsigned int regno = DF_REF_REGNO (use);
 
       /* When these refs are met for the first time, skip them, as

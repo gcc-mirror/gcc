@@ -64,7 +64,7 @@ bool
 requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
 			HARD_REG_SET set_up_by_prologue)
 {
-  df_ref *df_rec;
+  df_ref def, use;
   HARD_REG_SET hardregs;
   unsigned regno;
 
@@ -76,9 +76,9 @@ requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
     return true;
 
   CLEAR_HARD_REG_SET (hardregs);
-  for (df_rec = DF_INSN_DEFS (insn); *df_rec; df_rec++)
+  FOR_EACH_INSN_DEF (def, insn)
     {
-      rtx dreg = DF_REF_REG (*df_rec);
+      rtx dreg = DF_REF_REG (def);
 
       if (!REG_P (dreg))
 	continue;
@@ -94,9 +94,9 @@ requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
 	&& df_regs_ever_live_p (regno))
       return true;
 
-  for (df_rec = DF_INSN_USES (insn); *df_rec; df_rec++)
+  FOR_EACH_INSN_USE (use, insn)
     {
-      rtx reg = DF_REF_REG (*df_rec);
+      rtx reg = DF_REF_REG (use);
 
       if (!REG_P (reg))
 	continue;
@@ -333,7 +333,7 @@ prepare_shrink_wrap (basic_block entry_block)
 {
   rtx insn, curr, x;
   HARD_REG_SET uses, defs;
-  df_ref *ref;
+  df_ref def, use;
   bool split_p = false;
 
   if (JUMP_P (BB_END (entry_block)))
@@ -353,17 +353,17 @@ prepare_shrink_wrap (basic_block entry_block)
 				       &split_p))
       {
 	/* Add all defined registers to DEFs.  */
-	for (ref = DF_INSN_DEFS (insn); *ref; ref++)
+	FOR_EACH_INSN_DEF (def, insn)
 	  {
-	    x = DF_REF_REG (*ref);
+	    x = DF_REF_REG (def);
 	    if (REG_P (x) && HARD_REGISTER_P (x))
 	      SET_HARD_REG_BIT (defs, REGNO (x));
 	  }
 
 	/* Add all used registers to USESs.  */
-	for (ref = DF_INSN_USES (insn); *ref; ref++)
+	FOR_EACH_INSN_USE (use, insn)
 	  {
-	    x = DF_REF_REG (*ref);
+	    x = DF_REF_REG (use);
 	    if (REG_P (x) && HARD_REGISTER_P (x))
 	      SET_HARD_REG_BIT (uses, REGNO (x));
 	  }

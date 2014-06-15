@@ -736,6 +736,7 @@ struct df_d
 #define DF_INSN_INFO_DEFS(II) ((II)->defs)
 #define DF_INSN_INFO_USES(II) ((II)->uses)
 #define DF_INSN_INFO_EQ_USES(II) ((II)->eq_uses)
+#define DF_INSN_INFO_MWS(II) ((II)->mw_hardregs)
 
 #define DF_INSN_LUID(INSN) (DF_INSN_INFO_LUID (DF_INSN_INFO_GET (INSN)))
 #define DF_INSN_DEFS(INSN) (DF_INSN_INFO_DEFS (DF_INSN_INFO_GET (INSN)))
@@ -752,6 +753,27 @@ struct df_d
 #define DF_INSN_UID_USES(INSN) (DF_INSN_UID_GET (INSN)->uses)
 #define DF_INSN_UID_EQ_USES(INSN) (DF_INSN_UID_GET (INSN)->eq_uses)
 #define DF_INSN_UID_MWS(INSN) (DF_INSN_UID_GET (INSN)->mw_hardregs)
+
+#define FOR_EACH_INSN_INFO_DEF(ITER, INSN) \
+  for (df_ref *ITER##_ = DF_INSN_INFO_DEFS (INSN); (ITER = *ITER##_); \
+       ++ITER##_)
+
+#define FOR_EACH_INSN_INFO_USE(ITER, INSN) \
+  for (df_ref *ITER##_ = DF_INSN_INFO_USES (INSN); (ITER = *ITER##_); \
+       ++ITER##_)
+
+#define FOR_EACH_INSN_INFO_EQ_USE(ITER, INSN) \
+  for (df_ref *ITER##_ = DF_INSN_INFO_EQ_USES (INSN); (ITER = *ITER##_); \
+       ++ITER##_)
+
+#define FOR_EACH_INSN_DEF(ITER, INSN) \
+  FOR_EACH_INSN_INFO_DEF(ITER, DF_INSN_INFO_GET (INSN))
+
+#define FOR_EACH_INSN_USE(ITER, INSN) \
+  FOR_EACH_INSN_INFO_USE(ITER, DF_INSN_INFO_GET (INSN))
+
+#define FOR_EACH_INSN_EQ_USE(ITER, INSN) \
+  FOR_EACH_INSN_INFO_EQ_USE(ITER, DF_INSN_INFO_GET (INSN))
 
 /* An obstack for bitmap not related to specific dataflow problems.
    This obstack should e.g. be used for bitmaps with a short life time

@@ -431,23 +431,20 @@ transform_ifelse (ext_cand *cand, rtx def_insn)
 static struct df_link *
 get_defs (rtx insn, rtx reg, vec<rtx> *dest)
 {
-  df_ref reg_info, *uses;
+  df_ref use;
   struct df_link *ref_chain, *ref_link;
 
-  reg_info = NULL;
-
-  for (uses = DF_INSN_USES (insn); *uses; uses++)
+  FOR_EACH_INSN_USE (use, insn)
     {
-      reg_info = *uses;
-      if (GET_CODE (DF_REF_REG (reg_info)) == SUBREG)
+      if (GET_CODE (DF_REF_REG (use)) == SUBREG)
         return NULL;
-      if (REGNO (DF_REF_REG (reg_info)) == REGNO (reg))
-        break;
+      if (REGNO (DF_REF_REG (use)) == REGNO (reg))
+	break;
     }
 
-  gcc_assert (reg_info != NULL && uses != NULL);
+  gcc_assert (use != NULL);
 
-  ref_chain = DF_REF_CHAIN (reg_info);
+  ref_chain = DF_REF_CHAIN (use);
 
   for (ref_link = ref_chain; ref_link; ref_link = ref_link->next)
     {

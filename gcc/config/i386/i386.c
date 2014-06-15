@@ -17764,8 +17764,7 @@ ix86_emit_cfi ()
 static unsigned int
 increase_distance (rtx prev, rtx next, unsigned int distance)
 {
-  df_ref *use_rec;
-  df_ref *def_rec;
+  df_ref def, use;
 
   if (!prev || !next)
     return distance + (distance & 1) + 2;
@@ -17773,10 +17772,10 @@ increase_distance (rtx prev, rtx next, unsigned int distance)
   if (!DF_INSN_USES (next) || !DF_INSN_DEFS (prev))
     return distance + 1;
 
-  for (use_rec = DF_INSN_USES (next); *use_rec; use_rec++)
-    for (def_rec = DF_INSN_DEFS (prev); *def_rec; def_rec++)
-      if (!DF_REF_IS_ARTIFICIAL (*def_rec)
-	  && DF_REF_REGNO (*use_rec) == DF_REF_REGNO (*def_rec))
+  FOR_EACH_INSN_USE (use, next)
+    FOR_EACH_INSN_DEF (def, prev)
+      if (!DF_REF_IS_ARTIFICIAL (def)
+	  && DF_REF_REGNO (use) == DF_REF_REGNO (def))
 	return distance + (distance & 1) + 2;
 
   return distance + 1;
@@ -17789,16 +17788,14 @@ static bool
 insn_defines_reg (unsigned int regno1, unsigned int regno2,
 		  rtx insn)
 {
-  df_ref *def_rec;
+  df_ref def;
 
-  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-    if (DF_REF_REG_DEF_P (*def_rec)
-	&& !DF_REF_IS_ARTIFICIAL (*def_rec)
-	&& (regno1 == DF_REF_REGNO (*def_rec)
-	    || regno2 == DF_REF_REGNO (*def_rec)))
-      {
-	return true;
-      }
+  FOR_EACH_INSN_DEF (def, insn)
+    if (DF_REF_REG_DEF_P (def)
+	&& !DF_REF_IS_ARTIFICIAL (def)
+	&& (regno1 == DF_REF_REGNO (def)
+	    || regno2 == DF_REF_REGNO (def)))
+      return true;
 
   return false;
 }
@@ -17809,10 +17806,10 @@ insn_defines_reg (unsigned int regno1, unsigned int regno2,
 static bool
 insn_uses_reg_mem (unsigned int regno, rtx insn)
 {
-  df_ref *use_rec;
+  df_ref use;
 
-  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
-    if (DF_REF_REG_MEM_P (*use_rec) && regno == DF_REF_REGNO (*use_rec))
+  FOR_EACH_INSN_USE (use, insn)
+    if (DF_REF_REG_MEM_P (use) && regno == DF_REF_REGNO (use))
       return true;
 
   return false;
@@ -18144,15 +18141,15 @@ static bool
 ix86_ok_to_clobber_flags (rtx insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
-  df_ref *use;
+  df_ref use;
   bitmap live;
 
   while (insn)
     {
       if (NONDEBUG_INSN_P (insn))
 	{
-	  for (use = DF_INSN_USES (insn); *use; use++)
-	    if (DF_REF_REG_USE_P (*use) && DF_REF_REGNO (*use) == FLAGS_REG)
+	  FOR_EACH_INSN_USE (use, insn)
+	    if (DF_REF_REG_USE_P (use) && DF_REF_REGNO (use) == FLAGS_REG)
 	      return false;
 
 	  if (insn_defines_reg (FLAGS_REG, INVALID_REGNUM, insn))

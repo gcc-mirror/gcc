@@ -124,6 +124,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
   rtx insn;
   df_ref *def_rec;
   df_ref *use_rec;
+  df_ref def, use;
   int luid = 0;
   bitmap_iterator bi;
   unsigned int regno;
@@ -158,7 +159,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
-      unsigned int uid = INSN_UID (insn);
+      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       bitmap_iterator bi;
       struct df_mw_hardreg **mws_rec;
       rtx link;
@@ -209,7 +210,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
       /* We only care about real sets for calls.  Clobbers cannot
 	 be depended on.
 	 Only do this if the value is totally dead.  */
-      for (mws_rec = DF_INSN_UID_MWS (uid); *mws_rec; mws_rec++)
+      for (mws_rec = DF_INSN_INFO_MWS (insn_info); *mws_rec; mws_rec++)
 	{
 	  struct df_mw_hardreg *mws = *mws_rec;
 	  if (DF_MWS_REG_DEF_P (mws))
@@ -235,9 +236,8 @@ regstat_bb_compute_ri (unsigned int bb_index,
 
       /* All of the defs except the return value are some sort of
 	 clobber.  This code is for the return.  */
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+      FOR_EACH_INSN_INFO_DEF (def, insn_info)
 	{
-	  df_ref def = *def_rec;
 	  if ((!CALL_P (insn))
 	      || (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))))
 	    {
@@ -301,9 +301,8 @@ regstat_bb_compute_ri (unsigned int bb_index,
 	    }
 	}
 
-      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
 	{
-	  df_ref use = *use_rec;
 	  unsigned int uregno = DF_REF_REGNO (use);
 
 	  if (uregno >= FIRST_PSEUDO_REGISTER)
@@ -444,6 +443,7 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
   rtx insn;
   df_ref *def_rec;
   df_ref *use_rec;
+  df_ref def, use;
 
   bitmap_copy (live, df_get_live_out (bb));
 
@@ -465,7 +465,7 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
-      unsigned int uid = INSN_UID (insn);
+      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       unsigned int regno;
 
       if (!INSN_P (insn))
@@ -486,9 +486,8 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 
       /* All of the defs except the return value are some sort of
 	 clobber.  This code is for the return.  */
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+      FOR_EACH_INSN_INFO_DEF (def, insn_info)
 	{
-	  df_ref def = *def_rec;
 	  if ((!CALL_P (insn))
 	      || (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))))
 	    {
@@ -498,11 +497,8 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 	    }
 	}
 
-      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
-	{
-	  df_ref use = *use_rec;
-	  bitmap_set_bit (live, DF_REF_REGNO (use));
-	}
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
+	bitmap_set_bit (live, DF_REF_REGNO (use));
     }
 }
 

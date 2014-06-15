@@ -826,14 +826,14 @@ static bool
 check_dependencies (rtx insn, bitmap depends_on)
 {
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-  df_ref *use_rec;
+  df_ref use;
   basic_block bb = BLOCK_FOR_INSN (insn);
 
-  for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
-    if (!check_dependency (bb, *use_rec, depends_on))
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    if (!check_dependency (bb, use, depends_on))
       return false;
-  for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
-    if (!check_dependency (bb, *use_rec, depends_on))
+  FOR_EACH_INSN_INFO_EQ_USE (use, insn_info)
+    if (!check_dependency (bb, use, depends_on))
       return false;
 
   return true;
@@ -909,19 +909,17 @@ static void
 record_uses (rtx insn)
 {
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-  df_ref *use_rec;
+  df_ref use;
   struct invariant *inv;
 
-  for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
     {
-      df_ref use = *use_rec;
       inv = invariant_for_use (use);
       if (inv)
 	record_use (inv->def, use);
     }
-  for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
+  FOR_EACH_INSN_INFO_EQ_USE (use, insn_info)
     {
-      df_ref use = *use_rec;
       inv = invariant_for_use (use);
       if (inv)
 	record_use (inv->def, use);

@@ -645,7 +645,7 @@ compute_store_table (void)
   unsigned regno;
 #endif
   rtx insn, tmp;
-  df_ref *def_rec;
+  df_ref def;
   int *last_set_in, *already_set;
   struct st_expr * ptr, **prev_next_ptr_ptr;
   unsigned int max_gcse_regno = max_reg_num ();
@@ -665,8 +665,8 @@ compute_store_table (void)
 	  if (! NONDEBUG_INSN_P (insn))
 	    continue;
 
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    last_set_in[DF_REF_REGNO (*def_rec)] = INSN_UID (insn);
+	  FOR_EACH_INSN_DEF (def, insn)
+	    last_set_in[DF_REF_REGNO (def)] = INSN_UID (insn);
 	}
 
       /* Now find the stores.  */
@@ -676,16 +676,16 @@ compute_store_table (void)
 	  if (! NONDEBUG_INSN_P (insn))
 	    continue;
 
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    already_set[DF_REF_REGNO (*def_rec)] = INSN_UID (insn);
+	  FOR_EACH_INSN_DEF (def, insn)
+	    already_set[DF_REF_REGNO (def)] = INSN_UID (insn);
 
 	  /* Now that we've marked regs, look for stores.  */
 	  find_moveable_store (insn, already_set, last_set_in);
 
 	  /* Unmark regs that are no longer set.  */
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    if (last_set_in[DF_REF_REGNO (*def_rec)] == INSN_UID (insn))
-	      last_set_in[DF_REF_REGNO (*def_rec)] = 0;
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (last_set_in[DF_REF_REGNO (def)] == INSN_UID (insn))
+	      last_set_in[DF_REF_REGNO (def)] = 0;
 	}
 
 #ifdef ENABLE_CHECKING
@@ -1068,12 +1068,12 @@ build_store_vectors (void)
       FOR_BB_INSNS (bb, insn)
 	if (NONDEBUG_INSN_P (insn))
 	  {
-	    df_ref *def_rec;
-	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    df_ref def;
+	    FOR_EACH_INSN_DEF (def, insn)
 	      {
-		unsigned int ref_regno = DF_REF_REGNO (*def_rec);
+		unsigned int ref_regno = DF_REF_REGNO (def);
 		if (ref_regno < max_gcse_regno)
-		  regs_set_in_block[DF_REF_REGNO (*def_rec)] = 1;
+		  regs_set_in_block[DF_REF_REGNO (def)] = 1;
 	      }
 	  }
 
