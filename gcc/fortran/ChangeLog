@@ -1,3 +1,10 @@
+2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/45187
+	* trans-decl.c (gfc_create_module_variable): Don't create
+	Cray-pointee decls twice.
+
 2014-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from mainline
