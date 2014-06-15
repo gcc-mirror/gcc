@@ -708,6 +708,8 @@ public:
   /* Set if the variable is dynamically initialized, except for
      function local statics.   */
   unsigned dynamically_initialized : 1;
+
+  ENUM_BITFIELD(tls_model) tls_model : 3;
 };
 
 /* Every top level asm statement is put into a asm_node.  */

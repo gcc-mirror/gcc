@@ -1299,7 +1299,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	  compare_values (DECL_HARD_REGISTER);
           /* DECL_IN_TEXT_SECTION is set during final asm output only.  */
 	  compare_values (DECL_IN_CONSTANT_POOL);
-	  compare_values (DECL_TLS_MODEL);
 	}
       if (VAR_OR_FUNCTION_DECL_P (t1))
 	compare_values (DECL_INIT_PRIORITY);

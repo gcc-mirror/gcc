@@ -821,7 +821,6 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 	  v = iterative_hash_host_wide_int (DECL_HARD_REGISTER (t)
 					    | (DECL_IN_CONSTANT_POOL (t) << 1),
 					    v);
-	  v = iterative_hash_host_wide_int (DECL_TLS_MODEL (t), v);
 	}
       if (TREE_CODE (t) == FUNCTION_DECL)
 	v = iterative_hash_host_wide_int (DECL_FINAL_P (t)

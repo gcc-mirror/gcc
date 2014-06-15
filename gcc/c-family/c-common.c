@@ -8036,7 +8036,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
   else
     error ("tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\"");
 
-  DECL_TLS_MODEL (decl) = kind;
+  set_decl_tls_model (decl, kind);
   return NULL_TREE;
 }
 

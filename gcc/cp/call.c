@@ -9387,7 +9387,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       tree name;
 
       TREE_STATIC (var) = TREE_STATIC (decl);
-      DECL_TLS_MODEL (var) = DECL_TLS_MODEL (decl);
+      set_decl_tls_model (var, DECL_TLS_MODEL (decl));
       name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;
       SET_DECL_ASSEMBLER_NAME (var, name);

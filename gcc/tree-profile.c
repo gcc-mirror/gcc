@@ -110,8 +110,7 @@ init_ic_make_global_vars (void)
   DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
   DECL_INITIAL (ic_void_ptr_var) = NULL;
   if (targetm.have_tls)
-    DECL_TLS_MODEL (ic_void_ptr_var) =
-      decl_default_tls_model (ic_void_ptr_var);
+    set_decl_tls_model (ic_void_ptr_var, decl_default_tls_model (ic_void_ptr_var));
 
   varpool_finalize_decl (ic_void_ptr_var);
 
@@ -141,8 +140,7 @@ init_ic_make_global_vars (void)
   DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
   if (targetm.have_tls)
-    DECL_TLS_MODEL (ic_gcov_type_ptr_var) =
-      decl_default_tls_model (ic_gcov_type_ptr_var);
+    set_decl_tls_model (ic_gcov_type_ptr_var, decl_default_tls_model (ic_gcov_type_ptr_var));
 
   varpool_finalize_decl (ic_gcov_type_ptr_var);
 }
