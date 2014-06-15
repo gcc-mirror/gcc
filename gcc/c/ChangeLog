@@ -1,3 +1,8 @@
+2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-parser.c (c_parser_omp_threadprivate): Likewise.
+	* c-decl.c (merge_decls): Likewise.
+
 2014-06-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/36446

@@ -1,3 +1,13 @@
+2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl.c (duplicate_decls): Use set_decl_tls_model.
+	(grokdeclarator): Likewise.
+	* semantics.c (finish_id_expression): Check TLS only for
+	static variables.
+	(finish_omp_threadprivate): Use decl_default_tls_model.
+	* decl2.c (get_guard): Likewise.
+	* call.c (make_temporary_var_for_ref_to_temp): Likewise.
+
 2014-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33101

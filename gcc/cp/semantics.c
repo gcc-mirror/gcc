@@ -3493,6 +3493,7 @@ finish_id_expression (tree id_expression,
       tree wrap;
       if (VAR_P (decl)
 	  && !cp_unevaluated_operand
+	  && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
 	  && DECL_THREAD_LOCAL_P (decl)
 	  && (wrap = get_tls_wrapper_fn (decl)))
 	{
@@ -5956,7 +5957,7 @@ finish_omp_threadprivate (tree vars)
 
 	  if (! DECL_THREAD_LOCAL_P (v))
 	    {
-	      DECL_TLS_MODEL (v) = decl_default_tls_model (v);
+	      set_decl_tls_model (v, decl_default_tls_model (v));
 	      /* If rtl has been already set for this var, call
 		 make_decl_rtl once again, so that encode_section_info
 		 has a chance to look at the new decl flags.  */

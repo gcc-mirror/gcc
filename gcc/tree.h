@@ -2386,12 +2386,12 @@ extern void decl_value_expr_insert (tree, tree);
 
 /* In a VAR_DECL, the model to use if the data should be allocated from
    thread-local storage.  */
-#define DECL_TLS_MODEL(NODE) (VAR_DECL_CHECK (NODE)->decl_with_vis.tls_model)
+#define DECL_TLS_MODEL(NODE) decl_tls_model (NODE)
 
 /* In a VAR_DECL, nonzero if the data should be allocated from
    thread-local storage.  */
 #define DECL_THREAD_LOCAL_P(NODE) \
-  (VAR_DECL_CHECK (NODE)->decl_with_vis.tls_model >= TLS_MODEL_REAL)
+  ((TREE_STATIC (NODE) || DECL_EXTERNAL (NODE)) && decl_tls_model (NODE) >= TLS_MODEL_REAL)
 
 /* In a non-local VAR_DECL with static storage duration, true if the
    variable has an initialization priority.  If false, the variable
@@ -3429,6 +3429,8 @@ extern tree decl_comdat_group (const_tree);
 extern tree decl_comdat_group_id (const_tree);
 extern const char *decl_section_name (const_tree);
 extern void set_decl_section_name (tree, const char *);
+extern enum tls_model decl_tls_model (const_tree);
+extern void set_decl_tls_model (tree, enum tls_model);
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
    looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */

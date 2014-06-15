@@ -631,7 +631,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   /* Handle threadprivate variables.  */
   if (sym->attr.threadprivate
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
-    DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
 
   gfc_finish_decl_attrs (decl, &sym->attr);
 }
@@ -1645,7 +1645,7 @@ get_proc_pointer_decl (gfc_symbol *sym)
   /* Handle threadprivate procedure pointers.  */
   if (sym->attr.threadprivate
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
-    DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
 
   attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
   decl_attributes (&decl, attributes, 0);

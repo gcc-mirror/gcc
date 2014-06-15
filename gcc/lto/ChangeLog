@@ -1,3 +1,7 @@
+2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (compare_tree_sccs_1): Do not compare DECL_TLS_MODEL.
+
 2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (read_cgraph_and_symbols): Remove unreachable symbols.

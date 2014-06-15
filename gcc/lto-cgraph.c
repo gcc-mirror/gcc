@@ -609,6 +609,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
 		     && boundary_p && !DECL_EXTERNAL (node->decl), 1);
 	  /* in_other_partition.  */
     }
+  bp_pack_value (&bp, node->tls_model, 3);
   streamer_write_bitpack (&bp);
 
   group = node->get_comdat_group ();
@@ -1265,6 +1266,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
     }
   if (node->alias && !node->analyzed && node->weakref)
     node->alias_target = get_alias_symbol (node->decl);
+  node->tls_model = (enum tls_model)bp_unpack_value (&bp, 3);
   group = read_identifier (ib);
   if (group)
     {

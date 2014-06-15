@@ -1,3 +1,10 @@
+2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* trans-common.c (build_common_decl): Use
+	set_decl_tls_model.
+	* trans-decl.c (gfc_finish_var_decl): Likewise.
+	(get_proc_pointer_decl): Likewise.
+
 2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/28484
