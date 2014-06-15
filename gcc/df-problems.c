@@ -291,12 +291,11 @@ df_rd_simulate_one_insn (basic_block bb ATTRIBUTE_UNUSED, rtx insn,
 
 static void
 df_rd_bb_local_compute_process_def (struct df_rd_bb_info *bb_info,
-				    df_ref *def_rec,
+				    df_ref def,
 				    int top_flag)
 {
-  while (*def_rec)
+  for (; def; def = DF_REF_NEXT_LOC (def))
     {
-      df_ref def = *def_rec;
       if (top_flag == (DF_REF_FLAGS (def) & DF_REF_AT_TOP))
 	{
 	  unsigned int regno = DF_REF_REGNO (def);
@@ -339,7 +338,6 @@ df_rd_bb_local_compute_process_def (struct df_rd_bb_info *bb_info,
 		}
 	    }
 	}
-      def_rec++;
     }
 }
 
@@ -2022,15 +2020,14 @@ df_chain_reset (bitmap blocks_to_clear ATTRIBUTE_UNUSED)
 
 static void
 df_chain_create_bb_process_use (bitmap local_rd,
-				df_ref *use_rec,
+				df_ref use,
 				int top_flag)
 {
   bitmap_iterator bi;
   unsigned int def_index;
 
-  while (*use_rec)
+  for (; use; use = DF_REF_NEXT_LOC (use))
     {
-      df_ref use = *use_rec;
       unsigned int uregno = DF_REF_REGNO (use);
       if ((!(df->changeable_flags & DF_NO_HARD_REGS))
 	  || (uregno >= FIRST_PSEUDO_REGISTER))
@@ -2059,8 +2056,6 @@ df_chain_create_bb_process_use (bitmap local_rd,
 		}
 	    }
 	}
-
-      use_rec++;
     }
 }
 
@@ -4077,13 +4072,12 @@ df_md_simulate_one_insn (basic_block bb ATTRIBUTE_UNUSED, rtx insn,
 
 static void
 df_md_bb_local_compute_process_def (struct df_md_bb_info *bb_info,
-                                    df_ref *def_rec,
+                                    df_ref def,
                                     int top_flag)
 {
-  df_ref def;
   bitmap_clear (&seen_in_insn);
 
-  while ((def = *def_rec++) != NULL)
+  for (; def; def = DF_REF_NEXT_LOC (def))
     {
       unsigned int dregno = DF_REF_REGNO (def);
       if (((!(df->changeable_flags & DF_NO_HARD_REGS))

@@ -1,5 +1,66 @@
 2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* df.h (df_mw_hardreg, df_base_ref): Add a link pointer.
+	(df_insn_info): Turn defs, uses, eq_uses and mw_hardregs into linked
+	lists.
+	(df_scan_bb_info): Likewise artificial_defs and artificial_uses.
+	(DF_REF_NEXT_LOC, DF_MWS_NEXT): New macros.
+	(FOR_EACH_INSN_INFO_DEF, FOR_EACH_INSN_INFO_USE)
+	(FOR_EACH_INSN_INFO_EQ_USE, FOR_EACH_INSN_INFO_MW)
+	(FOR_EACH_ARTIFICIAL_USE, FOR_EACH_ARTIFICIAL_DEF)
+	(df_get_artificial_defs, df_get_artificial_uses)
+	(df_single_def, df_single_use): Update accordingly.
+	(df_refs_chain_dump): Take the first element in a linked list as
+	parameter, rather than a pointer to an array of pointers.
+	* df-core.c (df_refs_chain_dump, df_mws_dump): Likewise.
+	* df-problems.c (df_rd_bb_local_compute_process_def): Likewise.
+	(df_chain_create_bb_process_use): Likewise.
+	(df_md_bb_local_compute_process_def): Likewise.
+	* fwprop.c (process_defs, process_uses): Likewise.
+	(register_active_defs, update_uses): Likewise.
+	(forward_propagate_asm): Update for new df_ref linking.
+	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): Delete.
+	(df_null_ref_rec, df_null_mw_rec): Likewise.
+	(df_scan_free_internal): Don't free df_ref and df_mw_hardreg lists
+	explicitly.
+	(df_scan_free_bb_info): Remove check for null artificial_defs.
+	(df_install_ref_incremental): Adjust for new df_ref linking.
+	Use a single-element insertion rather than a full sort.
+	(df_ref_chain_delete_du_chain): Take the first element
+	in a linked list as parameter, rather than a pointer to an array of
+	pointers.
+	(df_ref_chain_delete, df_mw_hardreg_chain_delete): Likewise.
+	(df_add_refs_to_table, df_refs_verify, df_mws_verify): Likewise.
+	(df_insn_info_delete): Remove check for null defs and call to
+	df_scan_free_mws_vec.
+	(df_insn_rescan): Initialize df_ref and df_mw_hardreg lists to
+	null rather than df_null_*_rec.
+	(df_insn_rescan_debug_internal): Likewise, and update null
+	checks in the same way.  Remove check for null defs.
+	(df_ref_change_reg_with_loc_1): Fix choice of list for defs.
+	Move a single element rather doing a full sort.
+	(df_mw_hardreg_chain_delete_eq_uses): Adjust for new df_mw_hardreg
+	linking.
+	(df_notes_rescan): Likewise.  Use a merge rather than a full sort.
+	Initialize df_ref and df_mw_hardreg lists to null rather than
+	df_null_*_rec.
+	(df_ref_compare): Take df_refs as parameter, transferring the
+	old interface to...
+	(df_ref_ptr_compare): ...this new function.
+	(df_sort_and_compress_refs): Update accordingly.
+	(df_mw_compare): Take df_mw_hardregs as parameter, transferring the
+	old interface to...
+	(df_mw_ptr_compare): ...this new function.
+	(df_sort_and_compress_mws): Update accordingly.
+	(df_install_refs, df_install_mws): Return a linked list rather than
+	an array of pointers.
+	(df_refs_add_to_chains): Assert that old lists are empty rather
+	than freeing them.
+	(df_insn_refs_verify): Don't handle null defs speciailly.
+	* web.c (union_match_dups): Update for new df_ref linking.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* df.h (df_ref_create, df_ref_remove): Delete.
 	* df-scan.c (df_ref_create, df_ref_compress_rec): Likewise.
 	(df_ref_remove): Likewise.
