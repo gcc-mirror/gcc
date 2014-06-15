@@ -3114,7 +3114,7 @@ df_note_bb_compute (unsigned int bb_index,
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
       df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-      struct df_mw_hardreg **mws_rec;
+      df_mw_hardreg *mw;
       int debug_insn;
 
       if (!INSN_P (insn))
@@ -3137,17 +3137,11 @@ df_note_bb_compute (unsigned int bb_index,
 
 	  /* We only care about real sets for calls.  Clobbers cannot
 	     be depended on to really die.  */
-	  mws_rec = DF_INSN_INFO_MWS (insn_info);
-	  while (*mws_rec)
-	    {
-	      struct df_mw_hardreg *mws = *mws_rec;
-	      if ((DF_MWS_REG_DEF_P (mws))
-		  && !df_ignore_stack_reg (mws->start_regno))
-	      df_set_unused_notes_for_mw (insn,
-					  mws, live, do_not_gen,
+	  FOR_EACH_INSN_INFO_MW (mw, insn_info)
+	    if ((DF_MWS_REG_DEF_P (mw))
+		&& !df_ignore_stack_reg (mw->start_regno))
+	      df_set_unused_notes_for_mw (insn, mw, live, do_not_gen,
 					  artificial_uses, &debug);
-	      mws_rec++;
-	    }
 
 	  /* All of the defs except the return value are some sort of
 	     clobber.  This code is for the return.  */
@@ -3168,16 +3162,10 @@ df_note_bb_compute (unsigned int bb_index,
       else
 	{
 	  /* Regular insn.  */
-	  mws_rec = DF_INSN_INFO_MWS (insn_info);
-	  while (*mws_rec)
-	    {
-	      struct df_mw_hardreg *mws = *mws_rec;
-	      if (DF_MWS_REG_DEF_P (mws))
-		df_set_unused_notes_for_mw (insn,
-					    mws, live, do_not_gen,
-					    artificial_uses, &debug);
-	      mws_rec++;
-	    }
+	  FOR_EACH_INSN_INFO_MW (mw, insn_info)
+	    if (DF_MWS_REG_DEF_P (mw))
+	      df_set_unused_notes_for_mw (insn, mw, live, do_not_gen,
+					  artificial_uses, &debug);
 
 	  FOR_EACH_INSN_INFO_DEF (def, insn_info)
 	    {
@@ -3194,25 +3182,19 @@ df_note_bb_compute (unsigned int bb_index,
 	}
 
       /* Process the uses.  */
-      mws_rec = DF_INSN_INFO_MWS (insn_info);
-      while (*mws_rec)
-	{
-	  struct df_mw_hardreg *mws = *mws_rec;
-	  if (DF_MWS_REG_USE_P (mws)
-	      && !df_ignore_stack_reg (mws->start_regno))
-	    {
-	      bool really_add_notes = debug_insn != 0;
+      FOR_EACH_INSN_INFO_MW (mw, insn_info)
+	if (DF_MWS_REG_USE_P (mw)
+	    && !df_ignore_stack_reg (mw->start_regno))
+	  {
+	    bool really_add_notes = debug_insn != 0;
 
-	      df_set_dead_notes_for_mw (insn,
-					mws, live, do_not_gen,
-					artificial_uses,
-					&really_add_notes);
+	    df_set_dead_notes_for_mw (insn, mw, live, do_not_gen,
+				      artificial_uses,
+				      &really_add_notes);
 
-	      if (really_add_notes)
-		debug_insn = -1;
-	    }
-	  mws_rec++;
-	}
+	    if (really_add_notes)
+	      debug_insn = -1;
+	  }
 
       FOR_EACH_INSN_INFO_USE (use, insn_info)
 	{
