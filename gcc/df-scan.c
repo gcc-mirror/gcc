@@ -1639,19 +1639,18 @@ df_reorganize_refs_by_reg_by_insn (struct df_ref_info *ref_info,
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
       rtx insn;
-      df_ref *ref_rec;
       df_ref def, use;
 
       if (include_defs)
-	for (ref_rec = df_get_artificial_defs (bb_index); *ref_rec; ref_rec++)
+	FOR_EACH_ARTIFICIAL_DEF (def, bb_index)
 	  {
-	    unsigned int regno = DF_REF_REGNO (*ref_rec);
+	    unsigned int regno = DF_REF_REGNO (def);
 	    ref_info->count[regno]++;
 	  }
       if (include_uses)
-	for (ref_rec = df_get_artificial_uses (bb_index); *ref_rec; ref_rec++)
+	FOR_EACH_ARTIFICIAL_USE (use, bb_index)
 	  {
-	    unsigned int regno = DF_REF_REGNO (*ref_rec);
+	    unsigned int regno = DF_REF_REGNO (use);
 	    ref_info->count[regno]++;
 	  }
 
@@ -1694,33 +1693,30 @@ df_reorganize_refs_by_reg_by_insn (struct df_ref_info *ref_info,
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
       rtx insn;
-      df_ref *ref_rec;
       df_ref def, use;
 
       if (include_defs)
-	for (ref_rec = df_get_artificial_defs (bb_index); *ref_rec; ref_rec++)
+	FOR_EACH_ARTIFICIAL_DEF (def, bb_index)
 	  {
-	    df_ref ref = *ref_rec;
-	    unsigned int regno = DF_REF_REGNO (ref);
+	    unsigned int regno = DF_REF_REGNO (def);
 	    if (regno >= start)
 	      {
 		unsigned int id
 		  = ref_info->begin[regno] + ref_info->count[regno]++;
-		DF_REF_ID (ref) = id;
-		ref_info->refs[id] = ref;
+		DF_REF_ID (def) = id;
+		ref_info->refs[id] = def;
 	      }
 	  }
       if (include_uses)
-	for (ref_rec = df_get_artificial_uses (bb_index); *ref_rec; ref_rec++)
+	FOR_EACH_ARTIFICIAL_USE (use, bb_index)
 	  {
-	    df_ref ref = *ref_rec;
-	    unsigned int regno = DF_REF_REGNO (ref);
+	    unsigned int regno = DF_REF_REGNO (def);
 	    if (regno >= start)
 	      {
 		unsigned int id
 		  = ref_info->begin[regno] + ref_info->count[regno]++;
-		DF_REF_ID (ref) = id;
-		ref_info->refs[id] = ref;
+		DF_REF_ID (use) = id;
+		ref_info->refs[id] = use;
 	      }
 	  }
 

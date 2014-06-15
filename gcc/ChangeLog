@@ -1,5 +1,23 @@
 2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* df.h (FOR_EACH_ARTIFICIAL_USE, FOR_EACH_ARTIFICIAL_DEF): New macros.
+	* cse.c (cse_extended_basic_block): Use them.
+	* dce.c (mark_artificial_use): Likewise.
+	* df-problems.c (df_rd_simulate_artificial_defs_at_top): Likewise.
+	(df_lr_bb_local_compute, df_live_bb_local_compute): Likewise.
+	(df_chain_remove_problem, df_chain_bb_dump): Likewise.
+	(df_word_lr_bb_local_compute, df_note_bb_compute): Likewise.
+	(df_simulate_initialize_backwards): Likewise.
+	(df_simulate_finalize_backwards): Likewise.
+	(df_simulate_initialize_forwards): Likewise.
+	(df_md_simulate_artificial_defs_at_top): Likewise.
+	* df-scan.c (df_reorganize_refs_by_reg_by_insn): Likewise.
+	* regrename.c (init_rename_info): Likewise.
+	* regstat.c (regstat_bb_compute_ri): Likewise.
+	(regstat_bb_compute_calls_crossed): Likewise.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* df.h (DF_INSN_INFO_MWS, FOR_EACH_INSN_INFO_DEF): New macros.
 	(FOR_EACH_INSN_INFO_USE, FOR_EACH_INSN_INFO_EQ_USE): Likewise.
 	(FOR_EACH_INSN_DEF, FOR_EACH_INSN_USE, FOR_EACH_INSN_EQ_USE): Likewise.

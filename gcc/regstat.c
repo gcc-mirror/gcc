@@ -122,8 +122,6 @@ regstat_bb_compute_ri (unsigned int bb_index,
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   rtx insn;
-  df_ref *def_rec;
-  df_ref *use_rec;
   df_ref def, use;
   int luid = 0;
   bitmap_iterator bi;
@@ -139,23 +137,17 @@ regstat_bb_compute_ri (unsigned int bb_index,
 
   /* Process the artificial defs and uses at the bottom of the block
      to begin processing.  */
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      df_ref def = *def_rec;
-      if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
-	bitmap_clear_bit (live, DF_REF_REGNO (def));
-    }
+  FOR_EACH_ARTIFICIAL_DEF (def, bb_index)
+    if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
+      bitmap_clear_bit (live, DF_REF_REGNO (def));
 
-  for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
-    {
-      df_ref use = *use_rec;
-      if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
-	{
-	  regno = DF_REF_REGNO (use);
-	  bitmap_set_bit (live, regno);
-	  bitmap_set_bit (artificial_uses, regno);
-	}
-    }
+  FOR_EACH_ARTIFICIAL_USE (use, bb_index)
+    if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
+      {
+	regno = DF_REF_REGNO (use);
+	bitmap_set_bit (live, regno);
+	bitmap_set_bit (artificial_uses, regno);
+      }
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
@@ -441,27 +433,19 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   rtx insn;
-  df_ref *def_rec;
-  df_ref *use_rec;
   df_ref def, use;
 
   bitmap_copy (live, df_get_live_out (bb));
 
   /* Process the artificial defs and uses at the bottom of the block
      to begin processing.  */
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      df_ref def = *def_rec;
-      if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
-	bitmap_clear_bit (live, DF_REF_REGNO (def));
-    }
+  FOR_EACH_ARTIFICIAL_DEF (def, bb_index)
+    if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
+      bitmap_clear_bit (live, DF_REF_REGNO (def));
 
-  for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
-    {
-      df_ref use = *use_rec;
-      if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
-	bitmap_set_bit (live, DF_REF_REGNO (use));
-    }
+  FOR_EACH_ARTIFICIAL_USE (use, bb_index)
+    if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
+      bitmap_set_bit (live, DF_REF_REGNO (use));
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     {
