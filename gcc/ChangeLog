@@ -1,5 +1,9 @@
 2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* df.h (DF_REF_REG_USE_P, DF_MWS_REG_USE_P): Remove null checks.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* df.h (df_mw_hardreg, df_base_ref): Add a link pointer.
 	(df_insn_info): Turn defs, uses, eq_uses and mw_hardregs into linked
 	lists.

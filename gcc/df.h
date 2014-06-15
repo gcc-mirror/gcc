@@ -678,14 +678,14 @@ struct df_d
 
 /* Macros to determine the reference type.  */
 #define DF_REF_REG_DEF_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_DEF)
-#define DF_REF_REG_USE_P(REF) ((REF) && !DF_REF_REG_DEF_P (REF))
+#define DF_REF_REG_USE_P(REF) (!DF_REF_REG_DEF_P (REF))
 #define DF_REF_REG_MEM_STORE_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_MEM_STORE)
 #define DF_REF_REG_MEM_LOAD_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_MEM_LOAD)
 #define DF_REF_REG_MEM_P(REF) (DF_REF_REG_MEM_STORE_P (REF) \
                                || DF_REF_REG_MEM_LOAD_P (REF))
 
 #define DF_MWS_REG_DEF_P(MREF) (DF_MWS_TYPE (MREF) == DF_REF_REG_DEF)
-#define DF_MWS_REG_USE_P(MREF) ((MREF) && !DF_MWS_REG_DEF_P (MREF))
+#define DF_MWS_REG_USE_P(MREF) (!DF_MWS_REG_DEF_P (MREF))
 #define DF_MWS_NEXT(MREF) ((MREF)->next)
 #define DF_MWS_TYPE(MREF) ((MREF)->type)
 
