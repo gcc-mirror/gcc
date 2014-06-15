@@ -116,6 +116,8 @@ tree gfor_fndecl_ttynam;
 tree gfor_fndecl_in_pack;
 tree gfor_fndecl_in_unpack;
 tree gfor_fndecl_associated;
+tree gfor_fndecl_system_clock4;
+tree gfor_fndecl_system_clock8;
 
 
 /* Coarray run-time library function decls.  */
@@ -2822,7 +2824,9 @@ static void
 gfc_build_intrinsic_function_decls (void)
 {
   tree gfc_int4_type_node = gfc_get_int_type (4);
+  tree gfc_pint4_type_node = build_pointer_type (gfc_int4_type_node);
   tree gfc_int8_type_node = gfc_get_int_type (8);
+  tree gfc_pint8_type_node = build_pointer_type (gfc_int8_type_node);
   tree gfc_int16_type_node = gfc_get_int_type (16);
   tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree pchar1_type_node = gfc_get_pchar_type (1);
@@ -3020,6 +3024,16 @@ gfc_build_intrinsic_function_decls (void)
 	pvoid_type_node);
   DECL_PURE_P (gfor_fndecl_sr_kind) = 1;
   TREE_NOTHROW (gfor_fndecl_sr_kind) = 1;
+
+  gfor_fndecl_system_clock4 = gfc_build_library_function_decl (
+	get_identifier (PREFIX("system_clock_4")),
+	void_type_node, 3, gfc_pint4_type_node, gfc_pint4_type_node,
+	gfc_pint4_type_node);
+
+  gfor_fndecl_system_clock8 = gfc_build_library_function_decl (
+	get_identifier (PREFIX("system_clock_8")),
+	void_type_node, 3, gfc_pint8_type_node, gfc_pint8_type_node,
+	gfc_pint8_type_node);
 
   /* Power functions.  */
   {
