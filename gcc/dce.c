@@ -661,16 +661,13 @@ mark_artificial_uses (void)
 {
   basic_block bb;
   struct df_link *defs;
-  df_ref *use_rec;
+  df_ref use;
 
   FOR_ALL_BB_FN (bb, cfun)
-    {
-      for (use_rec = df_get_artificial_uses (bb->index);
-	   *use_rec; use_rec++)
-	for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
-	  if (! DF_REF_IS_ARTIFICIAL (defs->ref))
-	    mark_insn (DF_REF_INSN (defs->ref), false);
-    }
+    FOR_EACH_ARTIFICIAL_USE (use, bb->index)
+      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
+	if (!DF_REF_IS_ARTIFICIAL (defs->ref))
+	  mark_insn (DF_REF_INSN (defs->ref), false);
 }
 
 

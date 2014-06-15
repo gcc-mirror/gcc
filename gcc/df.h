@@ -775,6 +775,14 @@ struct df_d
 #define FOR_EACH_INSN_EQ_USE(ITER, INSN) \
   FOR_EACH_INSN_INFO_EQ_USE(ITER, DF_INSN_INFO_GET (INSN))
 
+#define FOR_EACH_ARTIFICIAL_USE(ITER, BB_INDEX) \
+  for (df_ref *ITER##_ = df_get_artificial_uses (BB_INDEX); \
+       (ITER = *ITER##_); ++ITER##_)
+
+#define FOR_EACH_ARTIFICIAL_DEF(ITER, BB_INDEX) \
+  for (df_ref *ITER##_ = df_get_artificial_defs (BB_INDEX); \
+       (ITER = *ITER##_); ++ITER##_)
+
 /* An obstack for bitmap not related to specific dataflow problems.
    This obstack should e.g. be used for bitmaps with a short life time
    such as temporary bitmaps.  This obstack is declared in df-core.c.  */
