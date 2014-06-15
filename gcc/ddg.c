@@ -169,11 +169,11 @@ autoinc_var_is_used_p (rtx def_insn, rtx use_insn)
 static bool
 def_has_ccmode_p (rtx insn)
 {
-  df_ref *def;
+  df_ref def;
 
-  for (def = DF_INSN_DEFS (insn); *def; def++)
+  FOR_EACH_INSN_DEF (def, insn)
     {
-      enum machine_mode mode = GET_MODE (DF_REF_REG (*def));
+      enum machine_mode mode = GET_MODE (DF_REF_REG (def));
 
       if (GET_MODE_CLASS (mode) == MODE_CC)
 	return true;

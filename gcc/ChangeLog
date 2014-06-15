@@ -1,3 +1,55 @@
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (DF_INSN_INFO_MWS, FOR_EACH_INSN_INFO_DEF): New macros.
+	(FOR_EACH_INSN_INFO_USE, FOR_EACH_INSN_INFO_EQ_USE): Likewise.
+	(FOR_EACH_INSN_DEF, FOR_EACH_INSN_USE, FOR_EACH_INSN_EQ_USE): Likewise.
+	* auto-inc-dec.c (find_inc, merge_in_block): Use them.
+	* combine.c (create_log_links): Likewise.
+	* compare-elim.c (find_flags_uses_in_insn): Likewise.
+	(try_eliminate_compare): Likewise.
+	* cprop.c (make_set_regs_unavailable, mark_oprs_set): Likewise.
+	* dce.c (deletable_insn_p, find_call_stack_args): Likewise.
+	(remove_reg_equal_equiv_notes_for_defs): Likewise.
+	(reset_unmarked_insns_debug_uses, mark_reg_dependencies): Likewise.
+	(word_dce_process_block, dce_process_block): Likewise.
+	* ddg.c (def_has_ccmode_p): Likewise.
+	* df-core.c (df_bb_regno_first_def_find): Likewise.
+	(df_bb_regno_last_def_find, df_find_def, df_find_use): Likewise.
+	* df-problems.c (df_rd_simulate_one_insn): Likewise.
+	(df_lr_bb_local_compute, df_live_bb_local_compute): Likewise.
+	(df_chain_remove_problem, df_chain_insn_top_dump): Likewise.
+	(df_chain_insn_bottom_dump, df_word_lr_bb_local_compute): Likewise.
+	(df_word_lr_simulate_defs, df_word_lr_simulate_uses): Likewise.
+	(df_remove_dead_eq_notes, df_note_bb_compute): Likewise.
+	(df_simulate_find_defs, df_simulate_find_uses): Likewise.
+	(df_simulate_find_noclobber_defs, df_simulate_defs): Likewise.
+	(df_simulate_uses, df_md_simulate_one_insn): Likewise.
+	* df-scan.c (df_reorganize_refs_by_reg_by_insn): Likewise.
+	* fwprop.c (local_ref_killed_between_p): Likewise.
+	(all_uses_available_at, free_load_extend): Likewise.
+	* gcse.c (update_bb_reg_pressure, calculate_bb_reg_pressure): Likewise.
+	* hw-doloop.c (scan_loop): Likewise.
+	* ifcvt.c (dead_or_predicable): Likewise.
+	* init-regs.c (initialize_uninitialized_regs): Likewise.
+	* ira-lives.c (mark_hard_reg_early_clobbers): Likewise.
+	(process_bb_node_lives): Likewise.
+	* ira.c (compute_regs_asm_clobbered, build_insn_chain): Likewise.
+	(find_moveable_pseudos): Likewise.
+	* loop-invariant.c (check_dependencies, record_uses): Likewise.
+	* recog.c (peep2_find_free_register): Likewise.
+	* ree.c (get_defs): Likewise.
+	* regstat.c (regstat_bb_compute_ri): Likewise.
+	(regstat_bb_compute_calls_crossed): Likewise.
+	* sched-deps.c (find_inc, find_mem): Likewise.
+	* sel-sched-ir.c (maybe_downgrade_id_to_use): Likewise.
+	(maybe_downgrade_id_to_use, setup_id_reg_sets): Likewise.
+	* shrink-wrap.c (requires_stack_frame_p): Likewise.
+	(prepare_shrink_wrap): Likewise.
+	* store-motion.c (compute_store_table, build_store_vectors): Likewise.
+	* web.c (union_defs, pass_web::execute): Likewise.
+	* config/i386/i386.c (increase_distance, insn_defines_reg): Likewise.
+	(insn_uses_reg_mem, ix86_ok_to_clobber_flags): Likewise.
+
 2014-06-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-assign.c (assign_by_spills): Add code to assign vector regs

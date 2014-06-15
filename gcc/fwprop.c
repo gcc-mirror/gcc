@@ -700,16 +700,13 @@ local_ref_killed_between_p (df_ref ref, rtx from, rtx to)
 
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
-      df_ref *def_rec;
+      df_ref def;
       if (!INSN_P (insn))
 	continue;
 
-      for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	{
-	  df_ref def = *def_rec;
-	  if (DF_REF_REGNO (ref) == DF_REF_REGNO (def))
-	    return true;
-	}
+      FOR_EACH_INSN_DEF (def, insn)
+	if (DF_REF_REGNO (ref) == DF_REF_REGNO (def))
+	  return true;
     }
   return false;
 }
@@ -790,7 +787,7 @@ use_killed_between (df_ref use, rtx def_insn, rtx target_insn)
 static bool
 all_uses_available_at (rtx def_insn, rtx target_insn)
 {
-  df_ref *use_rec;
+  df_ref use;
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (def_insn);
   rtx def_set = single_set (def_insn);
   rtx next;
@@ -809,18 +806,12 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
 
       /* If the insn uses the reg that it defines, the substitution is
          invalid.  */
-      for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
-	{
-	  df_ref use = *use_rec;
-	  if (rtx_equal_p (DF_REF_REG (use), def_reg))
-	    return false;
-	}
-      for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
-	{
-	  df_ref use = *use_rec;
-	  if (rtx_equal_p (DF_REF_REG (use), def_reg))
-	    return false;
-	}
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
+	if (rtx_equal_p (DF_REF_REG (use), def_reg))
+	  return false;
+      FOR_EACH_INSN_INFO_EQ_USE (use, insn_info)
+	if (rtx_equal_p (DF_REF_REG (use), def_reg))
+	  return false;
     }
   else
     {
@@ -828,17 +819,15 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
 
       /* Look at all the uses of DEF_INSN, and see if they are not
 	 killed between DEF_INSN and TARGET_INSN.  */
-      for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
 	{
-	  df_ref use = *use_rec;
 	  if (def_reg && rtx_equal_p (DF_REF_REG (use), def_reg))
 	    return false;
 	  if (use_killed_between (use, def_insn, target_insn))
 	    return false;
 	}
-      for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
+      FOR_EACH_INSN_INFO_EQ_USE (use, insn_info)
 	{
-	  df_ref use = *use_rec;
 	  if (def_reg && rtx_equal_p (DF_REF_REG (use), def_reg))
 	    return false;
 	  if (use_killed_between (use, def_insn, target_insn))
@@ -1034,8 +1023,7 @@ static bool
 free_load_extend (rtx src, rtx insn)
 {
   rtx reg;
-  df_ref *use_vec;
-  df_ref use = 0, def;
+  df_ref def, use;
 
   reg = XEXP (src, 0);
 #ifdef LOAD_EXTEND_OP
@@ -1043,15 +1031,11 @@ free_load_extend (rtx src, rtx insn)
 #endif
     return false;
 
-  for (use_vec = DF_INSN_USES (insn); *use_vec; use_vec++)
-    {
-      use = *use_vec;
-
-      if (!DF_REF_IS_ARTIFICIAL (use)
-	  && DF_REF_TYPE (use) == DF_REF_REG_USE
-	  && DF_REF_REG (use) == reg)
-	break;
-    }
+  FOR_EACH_INSN_USE (use, insn)
+    if (!DF_REF_IS_ARTIFICIAL (use)
+	&& DF_REF_TYPE (use) == DF_REF_REG_USE
+	&& DF_REF_REG (use) == reg)
+      break;
   if (!use)
     return false;
 

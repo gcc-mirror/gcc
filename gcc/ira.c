@@ -2251,12 +2251,11 @@ compute_regs_asm_clobbered (void)
       rtx insn;
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
-	  df_ref *def_rec;
+	  df_ref def;
 
 	  if (insn_contains_asm (insn))
-	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    FOR_EACH_INSN_DEF (def, insn)
 	      {
-		df_ref def = *def_rec;
 		unsigned int dregno = DF_REF_REGNO (def);
 		if (HARD_REGISTER_NUM_P (dregno))
 		  add_to_hard_reg_set (&crtl->asm_clobbers,
@@ -4041,9 +4040,8 @@ build_insn_chain (void)
 	{
 	  if (!NOTE_P (insn) && !BARRIER_P (insn))
 	    {
-	      unsigned int uid = INSN_UID (insn);
-	      df_ref *def_rec;
-	      df_ref *use_rec;
+	      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+	      df_ref def, use;
 
 	      c = new_insn_chain ();
 	      c->next = next;
@@ -4055,9 +4053,8 @@ build_insn_chain (void)
 	      c->block = bb->index;
 
 	      if (NONDEBUG_INSN_P (insn))
-		for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+		FOR_EACH_INSN_INFO_DEF (def, insn_info)
 		  {
-		    df_ref def = *def_rec;
 		    unsigned int regno = DF_REF_REGNO (def);
 
 		    /* Ignore may clobbers because these are generated
@@ -4146,9 +4143,8 @@ build_insn_chain (void)
 	      bitmap_copy (&c->live_throughout, live_relevant_regs);
 
 	      if (NONDEBUG_INSN_P (insn))
-		for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
+		FOR_EACH_INSN_INFO_USE (use, insn_info)
 		  {
-		    df_ref use = *use_rec;
 		    unsigned int regno = DF_REF_REGNO (use);
 		    rtx reg = DF_REF_REG (use);
 
@@ -4440,12 +4436,14 @@ find_moveable_pseudos (void)
       FOR_BB_INSNS (bb, insn)
 	if (NONDEBUG_INSN_P (insn))
 	  {
+	    df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 	    df_ref *u_rec, *d_rec;
+	    df_ref def, use;
 
 	    uid_luid[INSN_UID (insn)] = i++;
 	    
-	    u_rec = DF_INSN_USES (insn);
-	    d_rec = DF_INSN_DEFS (insn);
+	    u_rec = DF_INSN_INFO_USES (insn_info);
+	    d_rec = DF_INSN_INFO_DEFS (insn_info);
 	    if (d_rec[0] != NULL && d_rec[1] == NULL
 		&& u_rec[0] != NULL && u_rec[1] == NULL
 		&& DF_REF_REGNO (*u_rec) == DF_REF_REGNO (*d_rec)
@@ -4459,22 +4457,20 @@ find_moveable_pseudos (void)
 		bitmap_clear_bit (transp, regno);
 		continue;
 	      }
-	    while (*u_rec)
+	    FOR_EACH_INSN_INFO_USE (use, insn_info)
 	      {
-		unsigned regno = DF_REF_REGNO (*u_rec);
+		unsigned regno = DF_REF_REGNO (use);
 		bitmap_set_bit (&used, regno);
 		if (bitmap_clear_bit (moveable, regno))
 		  bitmap_clear_bit (transp, regno);
-		u_rec++;
 	      }
 
-	    while (*d_rec)
+	    FOR_EACH_INSN_INFO_DEF (def, insn_info)
 	      {
-		unsigned regno = DF_REF_REGNO (*d_rec);
+		unsigned regno = DF_REF_REGNO (def);
 		bitmap_set_bit (&set, regno);
 		bitmap_clear_bit (transp, regno);
 		bitmap_clear_bit (moveable, regno);
-		d_rec++;
 	      }
 	  }
     }
@@ -4612,7 +4608,7 @@ find_moveable_pseudos (void)
       bitmap def_bb_transp = bb_transp_live + def_block->index;
       bool local_to_bb_p = bitmap_bit_p (def_bb_local, i);
       rtx use_insn = closest_uses[i];
-      df_ref *def_insn_use_rec = DF_INSN_USES (def_insn);
+      df_ref use;
       bool all_ok = true;
       bool all_transp = true;
 
@@ -4643,9 +4639,8 @@ find_moveable_pseudos (void)
       if (dump_file)
 	fprintf (dump_file, "Examining insn %d, def for %d\n",
 		 INSN_UID (def_insn), i);
-      while (*def_insn_use_rec != NULL)
+      FOR_EACH_INSN_USE (use, def_insn)
 	{
-	  df_ref use = *def_insn_use_rec;
 	  unsigned regno = DF_REF_REGNO (use);
 	  if (bitmap_bit_p (&unusable_as_input, regno))
 	    {
@@ -4688,8 +4683,6 @@ find_moveable_pseudos (void)
 	      else
 		all_transp = false;
 	    }
-
-	  def_insn_use_rec++;
 	}
       if (!all_ok)
 	continue;

@@ -4279,22 +4279,16 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	      FOR_BB_INSNS_REVERSE (new_dest, insn)
 		if (NONDEBUG_INSN_P (insn))
 		  {
-		    df_ref *def_rec;
-		    unsigned int uid = INSN_UID (insn);
+		    df_ref def;
 
-		    /* If this insn sets any reg in return_regs..  */
-		    for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-		      {
-			df_ref def = *def_rec;
-			unsigned r = DF_REF_REGNO (def);
-
-			if (bitmap_bit_p (return_regs, r))
+		    /* If this insn sets any reg in return_regs, add all
+		       reg uses to the set of regs we're interested in.  */
+		    FOR_EACH_INSN_DEF (def, insn)
+		      if (bitmap_bit_p (return_regs, DF_REF_REGNO (def)))
+			{
+			  df_simulate_uses (insn, return_regs);
 			  break;
-		      }
-		    /* ..then add all reg uses to the set of regs
-		       we're interested in.  */
-		    if (*def_rec)
-		      df_simulate_uses (insn, return_regs);
+			}
 		  }
 	      if (bitmap_intersect_p (merge_set, return_regs))
 		{
