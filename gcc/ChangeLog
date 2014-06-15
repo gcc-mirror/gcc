@@ -1,5 +1,11 @@
 2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* df.h (df_ref_create, df_ref_remove): Delete.
+	* df-scan.c (df_ref_create, df_ref_compress_rec): Likewise.
+	(df_ref_remove): Likewise.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* df.h (df_single_def, df_single_use): New functions.
 	* ira.c (find_moveable_pseudos): Use them.
 

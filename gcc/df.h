@@ -1027,10 +1027,7 @@ extern void df_scan_add_problem (void);
 extern void df_grow_reg_info (void);
 extern void df_grow_insn_info (void);
 extern void df_scan_blocks (void);
-extern df_ref df_ref_create (rtx, rtx *, rtx,basic_block,
-			     enum df_ref_type, int ref_flags);
 extern void df_uses_create (rtx *, rtx, int);
-extern void df_ref_remove (df_ref);
 extern struct df_insn_info * df_insn_create_insn_record (rtx);
 extern void df_insn_delete (rtx);
 extern void df_bb_refs_record (int, bool);

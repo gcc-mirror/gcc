@@ -111,10 +111,6 @@ static void df_uses_record (struct df_collection_rec *,
 			    int ref_flags);
 
 static void df_install_ref_incremental (df_ref);
-static df_ref df_ref_create_structure (enum df_ref_class,
-				       struct df_collection_rec *, rtx, rtx *,
-				       basic_block, struct df_insn_info *,
-				       enum df_ref_type, int ref_flags);
 static void df_insn_refs_collect (struct df_collection_rec*,
 				  basic_block, struct df_insn_info *);
 static void df_canonize_collection_rec (struct df_collection_rec *);
@@ -694,32 +690,6 @@ df_uses_create (rtx *loc, rtx insn, int ref_flags)
                   ref_flags);
 }
 
-/* Create a new ref of type DF_REF_TYPE for register REG at address
-   LOC within INSN of BB.  This function is only used externally.  */
-
-df_ref
-df_ref_create (rtx reg, rtx *loc, rtx insn,
-	       basic_block bb,
-	       enum df_ref_type ref_type,
-	       int ref_flags)
-{
-  enum df_ref_class cl;
-
-  df_grow_reg_info ();
-
-  /* You cannot hack artificial refs.  */
-  gcc_assert (insn);
-
-  if (loc)
-    cl = DF_REF_REGULAR;
-  else
-    cl = DF_REF_BASE;
-
-  return df_ref_create_structure (cl, NULL, reg, loc, bb,
-                                  DF_INSN_INFO_GET (insn),
-                                  ref_type, ref_flags);
-}
-
 static void
 df_install_ref_incremental (df_ref ref)
 {
@@ -931,89 +901,6 @@ df_reg_chain_unlink (df_ref ref)
     DF_REF_PREV_REG (next) = prev;
 
   df_free_ref (ref);
-}
-
-
-/* Remove REF from VEC.  */
-
-static void
-df_ref_compress_rec (df_ref **vec_ptr, df_ref ref)
-{
-  df_ref *vec = *vec_ptr;
-
-  if (vec[1])
-    {
-      while (*vec && *vec != ref)
-	vec++;
-
-      while (*vec)
-	{
-	  *vec = *(vec+1);
-	  vec++;
-	}
-    }
-  else
-    {
-      free (vec);
-      *vec_ptr = df_null_ref_rec;
-    }
-}
-
-
-/* Unlink REF from all def-use/use-def chains, etc.  */
-
-void
-df_ref_remove (df_ref ref)
-{
-#if 0
-  if (dump_file)
-    {
-      fprintf (dump_file, "removing ref ");
-      df_ref_debug (ref, dump_file);
-    }
-#endif
-
-  if (DF_REF_REG_DEF_P (ref))
-    {
-      if (DF_REF_IS_ARTIFICIAL (ref))
-	{
-	  struct df_scan_bb_info *bb_info
-	    = df_scan_get_bb_info (DF_REF_BBNO (ref));
-	  df_ref_compress_rec (&bb_info->artificial_defs, ref);
-	}
-      else
-	{
-	  unsigned int uid = DF_REF_INSN_UID (ref);
-	  struct df_insn_info *insn_rec = DF_INSN_UID_GET (uid);
-	  df_ref_compress_rec (&insn_rec->defs, ref);
-	}
-    }
-  else
-    {
-      if (DF_REF_IS_ARTIFICIAL (ref))
-	{
-	  struct df_scan_bb_info *bb_info
-	    = df_scan_get_bb_info (DF_REF_BBNO (ref));
-	  df_ref_compress_rec (&bb_info->artificial_uses, ref);
-	}
-      else
-	{
-	  unsigned int uid = DF_REF_INSN_UID (ref);
-	  struct df_insn_info *insn_rec = DF_INSN_UID_GET (uid);
-
-	  if (DF_REF_FLAGS (ref) & DF_REF_IN_NOTE)
-	    df_ref_compress_rec (&insn_rec->eq_uses, ref);
-	  else
-	    df_ref_compress_rec (&insn_rec->uses, ref);
-	}
-    }
-
-  /* By deleting the ref directly, df_insn_rescan my not find any
-     differences even though the block will have changed.  So we need
-     to mark the block dirty ourselves.  */
-  if (!DEBUG_INSN_P (DF_REF_INSN (ref)))
-    df_set_bb_dirty (DF_REF_BB (ref));
-  df_reg_chain_unlink (ref);
 }
 
 
