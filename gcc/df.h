@@ -1165,6 +1165,25 @@ df_get_artificial_uses (unsigned int bb_index)
   return df_scan_get_bb_info (bb_index)->artificial_uses;
 }
 
+/* If INSN defines exactly one register, return the associated reference,
+   otherwise return null.  */
+
+static inline df_ref
+df_single_def (const df_insn_info *info)
+{
+  df_ref *defs = DF_INSN_INFO_DEFS (info);
+  return defs[0] && !defs[1] ? defs[0] : NULL;
+}
+
+/* If INSN uses exactly one register, return the associated reference,
+   otherwise return null.  */
+
+static inline df_ref
+df_single_use (const df_insn_info *info)
+{
+  df_ref *uses = DF_INSN_INFO_USES (info);
+  return uses[0] && !uses[1] ? uses[0] : NULL;
+}
 
 /* web */
 

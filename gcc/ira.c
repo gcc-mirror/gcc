@@ -4437,20 +4437,19 @@ find_moveable_pseudos (void)
 	if (NONDEBUG_INSN_P (insn))
 	  {
 	    df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-	    df_ref *u_rec, *d_rec;
 	    df_ref def, use;
 
 	    uid_luid[INSN_UID (insn)] = i++;
 	    
-	    u_rec = DF_INSN_INFO_USES (insn_info);
-	    d_rec = DF_INSN_INFO_DEFS (insn_info);
-	    if (d_rec[0] != NULL && d_rec[1] == NULL
-		&& u_rec[0] != NULL && u_rec[1] == NULL
-		&& DF_REF_REGNO (*u_rec) == DF_REF_REGNO (*d_rec)
-		&& !bitmap_bit_p (&set, DF_REF_REGNO (*u_rec))
+	    def = df_single_def (insn_info);
+	    use = df_single_use (insn_info);
+	    if (use
+		&& def
+		&& DF_REF_REGNO (use) == DF_REF_REGNO (def)
+		&& !bitmap_bit_p (&set, DF_REF_REGNO (use))
 		&& rtx_moveable_p (&PATTERN (insn), OP_IN))
 	      {
-		unsigned regno = DF_REF_REGNO (*u_rec);
+		unsigned regno = DF_REF_REGNO (use);
 		bitmap_set_bit (moveable, regno);
 		bitmap_set_bit (&set, regno);
 		bitmap_set_bit (&used, regno);
@@ -4487,16 +4486,16 @@ find_moveable_pseudos (void)
       FOR_BB_INSNS (bb, insn)
 	if (NONDEBUG_INSN_P (insn))
 	  {
+	    df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 	    rtx def_insn, closest_use, note;
-	    df_ref *def_rec, def, use;
+	    df_ref def, use;
 	    unsigned regno;
 	    bool all_dominated, all_local;
 	    enum machine_mode mode;
 
-	    def_rec = DF_INSN_DEFS (insn);
+	    def = df_single_def (insn_info);
 	    /* There must be exactly one def in this insn.  */
-	    def = *def_rec;
-	    if (!def || def_rec[1] || !single_set (insn))
+	    if (!def || !single_set (insn))
 	      continue;
 	    /* This must be the only definition of the reg.  We also limit
 	       which modes we deal with so that we can assume we can generate

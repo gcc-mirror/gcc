@@ -1,5 +1,10 @@
 2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* df.h (df_single_def, df_single_use): New functions.
+	* ira.c (find_moveable_pseudos): Use them.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* df.h (FOR_EACH_INSN_INFO_MW): New macro.
 	* df-problems.c (df_note_bb_compute): Use it.
 	* regstat.c (regstat_bb_compute_ri): Likewise.
