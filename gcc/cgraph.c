@@ -2169,7 +2169,6 @@ cgraph_node_cannot_be_local_p_1 (struct cgraph_node *node,
 		&& !node->forced_by_abi
 	        && !symtab_used_from_object_file_p (node)
 		&& !node->same_comdat_group)
-	       || DECL_EXTERNAL (node->decl)
 	       || !node->externally_visible));
 }
 
@@ -2260,14 +2259,14 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
     {
       symtab_make_decl_local (node->decl);
 
+      node->set_section (NULL);
       node->set_comdat_group (NULL);
       node->externally_visible = false;
       node->forced_by_abi = false;
       node->local.local = true;
-      node->reset_section ();
+      node->set_section (NULL);
       node->unique_name = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
-			   || node->unique_name
-			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
+				  || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
       node->resolution = LDPR_PREVAILING_DEF_IRONLY;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
     }
