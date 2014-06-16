@@ -1636,6 +1636,13 @@ build_check_stmt (location_t location, tree base, tree len,
 
   gcc_assert (!(size_in_bytes > 0 && !non_zero_len_p));
 
+  if (start_instrumented && end_instrumented)
+    {
+      if (!before_p)
+        gsi_next (iter);
+      return;
+    }
+
   if (len)
     len = unshare_expr (len);
   else
@@ -1735,7 +1742,7 @@ build_check_stmt (location_t location, tree base, tree len,
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
   tree base_addr = gimple_assign_lhs (g);
 
-  tree t;
+  tree t = NULL_TREE;
   if (real_size_in_bytes >= 8)
     {
       tree shadow = build_shadow_mem_access (&gsi, location, base_addr,
