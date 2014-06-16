@@ -1,5 +1,9 @@
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
+	* decl.c (grokvardecl): Fix pasto in previous patch.
+
+2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
 	* decl.c (duplicate_decls): Use set_decl_tls_model.
 	(grokdeclarator): Likewise.
 	* semantics.c (finish_id_expression): Check TLS only for
