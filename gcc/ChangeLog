@@ -1,3 +1,7 @@
+2014-06-16  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (build_check_stmt): Fix maybe-uninitialized warning.
+
 2014-06-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61522
