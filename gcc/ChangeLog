@@ -1,3 +1,9 @@
+2014-06-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Make all defs available at the end.
+	(eliminate): If we remove a PHI node schedule cfg-cleanup.
+
 2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR plugins/45078
@@ -11,7 +17,8 @@
 
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
-	* c-family/c-common.c (handle_tls_model_attribute): Use set_decl_tls_model.
+	* c-family/c-common.c (handle_tls_model_attribute): Use
+	set_decl_tls_model.
 	* cgraph.h (struct varpool_node): Add tls_model.
 	* tree.c (decl_tls_model, set_decl_tls_model): New functions.
 	* tree.h (DECL_TLS_MODEL): Update.

@@ -4188,7 +4188,6 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 				   b->loop_father->num);
 			}
 		      /* Don't keep sprime available.  */
-		      eliminate_push_avail (lhs);
 		      sprime = NULL_TREE;
 		    }
 		}
@@ -4433,10 +4432,11 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	    VN_INFO (vdef)->valnum = vuse;
 	}
 
-      /* Make the new value available - for fully redundant LHS we
-         continue with the next stmt above.  */
-      if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	eliminate_push_avail (lhs);
+      /* Make new values available - for fully redundant LHS we
+         continue with the next stmt above and skip this.  */
+      def_operand_p defp;
+      FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_DEF)
+	eliminate_push_avail (DEF_FROM_PTR (defp));
     }
 
   /* Replace destination PHI arguments.  */
@@ -4521,7 +4521,11 @@ eliminate (bool do_pre)
 
       gsi = gsi_for_stmt (stmt);
       if (gimple_code (stmt) == GIMPLE_PHI)
-	remove_phi_node (&gsi, true);
+	{
+	  remove_phi_node (&gsi, true);
+	  /* Removing a PHI node in a block may expose a forwarder block.  */
+	  el_todo |= TODO_cleanup_cfg;
+	}
       else
 	{
 	  basic_block bb = gimple_bb (stmt);
