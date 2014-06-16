@@ -8016,7 +8016,7 @@ grokvardecl (tree type,
 
   if (decl_spec_seq_has_spec_p (declspecs, ds_thread))
     {
-      if (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
+      if (DECL_EXTERNAL (decl) || TREE_STATIC (decl))
         set_decl_tls_model (decl, decl_default_tls_model (decl));
       if (declspecs->gnu_thread_keyword_p)
 	DECL_GNU_TLS_P (decl) = true;
