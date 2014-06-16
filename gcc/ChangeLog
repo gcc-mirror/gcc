@@ -1,7 +1,7 @@
 2014-06-16  Ganesh Gopalasubramanian <Ganesh.Gopalasubramanian@amd.com>
 
-	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): Issue 
-	instructions "vpmuludq" and "vpaddq" instead of "vpmacsdql" for 
+	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): Issue
+	instructions "vpmuludq" and "vpaddq" instead of "vpmacsdql" for
 	handling 32-bit multiplication.
 
 2014-06-16  Chung-Lin Tang  <cltang@codesourcery.com>
@@ -58,7 +58,6 @@
 	* c-family/c-common.c (handle_tls_model_attribute): Use set_decl_tls_model.
 	* c-family/c-common.c (handle_tls_model_attribute): Use
 	set_decl_tls_model.
->>>>>>> .r211699
 	* cgraph.h (struct varpool_node): Add tls_model.
 	* tree.c (decl_tls_model, set_decl_tls_model): New functions.
 	* tree.h (DECL_TLS_MODEL): Update.
@@ -346,7 +345,7 @@
 
 2014-06-12  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/61009
+	PR tree-optimization/61009
 	* tree-ssa-threadedge.c (thread_through_normal_block): Correct return
 	value when we stop processing a block due to problematic PHIs.
 
@@ -382,7 +381,7 @@
 
 	PR ipa/61462
 	* ipa-prop.c (ipa_make_edge_direct_to_target): Check that gimple call
-	statement is reachable. 
+	statement is reachable.
 
 2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -906,7 +905,7 @@
 	PR middle-end/61141
 	* emit-rtl.c (reset_all_used_flags): In a sequence, check that
 	XVECEXP (pat, 0, i) is an INSN before calling reset_insn_used_flags.
-	(verify_rtl_sharing): Likewise.  
+	(verify_rtl_sharing): Likewise.
 
 2014-06-09  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -1013,7 +1012,7 @@
 
 2014-06-07  Steven Bosscher  <steven@gcc.gnu.org>
 
-        * gcse.c (can_assign_to_reg_without_clobbers_p): Do not let pointers
+	* gcse.c (can_assign_to_reg_without_clobbers_p): Do not let pointers
 	from test_insn into GGC space escape via SET_SRC.
 
 2014-06-07  Eric Botcazou  <ebotcazou@adacore.com>
@@ -1449,7 +1448,7 @@
 
 2014-06-04  Matthew Fortune  <matthew.fortune@imgtec.com>
 
-	* regcprop.c (copyprop_hardreg_forward_1): Account for 
+	* regcprop.c (copyprop_hardreg_forward_1): Account for
 	HARD_REGNO_CALL_PART_CLOBBERED.
 
 2014-06-04  Richard Biener  <rguenther@suse.de>
