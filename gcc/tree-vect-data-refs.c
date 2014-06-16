@@ -5317,7 +5317,13 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
 
-  gcc_assert (!TREE_ASM_WRITTEN (decl));
+  /* With -fno-toplevel-reorder we may have already output the constant.  */
+  if (TREE_ASM_WRITTEN (decl))
+    return false;
+
+  /* Constant pool entries may be shared and not properly merged by LTO.  */
+  if (DECL_IN_CONSTANT_POOL (decl))
+    return false;
 
   if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
     {

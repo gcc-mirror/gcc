@@ -1,3 +1,8 @@
+2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Check again
+	DECL_IN_CONSTANT_POOL and TREE_ASM_WRITTEN.
+
 2014-06-16  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (check_func): New function.
@@ -38,8 +43,10 @@
 
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
+	* c-family/c-common.c (handle_tls_model_attribute): Use set_decl_tls_model.
 	* c-family/c-common.c (handle_tls_model_attribute): Use
 	set_decl_tls_model.
+>>>>>>> .r211699
 	* cgraph.h (struct varpool_node): Add tls_model.
 	* tree.c (decl_tls_model, set_decl_tls_model): New functions.
 	* tree.h (DECL_TLS_MODEL): Update.
