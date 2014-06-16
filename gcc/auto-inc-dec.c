@@ -1341,7 +1341,6 @@ merge_in_block (int max_reg, basic_block bb)
 
   FOR_BB_INSNS_REVERSE_SAFE (bb, insn, curr)
     {
-      df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       bool insn_is_add_or_inc = true;
 
       if (!NONDEBUG_INSN_P (insn))
@@ -1417,7 +1416,7 @@ merge_in_block (int max_reg, basic_block bb)
 
       /* If the inc insn was merged with a mem, the inc insn is gone
 	 and there is noting to update.  */
-      if (insn_info)
+      if (df_insn_info *insn_info = DF_INSN_INFO_GET (insn))
 	{
 	  df_ref def, use;
 
@@ -1439,7 +1438,8 @@ merge_in_block (int max_reg, basic_block bb)
 	    }
 	}
       else if (dump_file)
-	fprintf (dump_file, "skipping update of deleted insn %d\n", uid);
+	fprintf (dump_file, "skipping update of deleted insn %d\n",
+		 INSN_UID (insn));
     }
 
   /* If we were successful, try again.  There may have been several
