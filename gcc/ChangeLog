@@ -1,3 +1,8 @@
+2014-06-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (decide_alg): Correctly handle
+	maximum size of stringop algorithm.
+
 2014-06-16  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (build_check_stmt): Fix maybe-uninitialized warning.
@@ -5,8 +10,7 @@
 2014-06-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/61522
-	* lra-assigns.c (assign_by_spills): Check null
-	targetm.spill_class.
+	* lra-assigns.c (assign_by_spills): Check null targetm.spill_class.
 
 2014-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -57,12 +61,10 @@
 	(build_check_stmt): Allow non-integer lengths; add support
 	for new parameter.
 	(asan_instrument): Likewise.
-	(instrument_mem_region_access): Moved code to
-	build_check_stmt.
+	(instrument_mem_region_access): Moved code to build_check_stmt.
 	(instrument_derefs): Likewise.
 	(instrument_strlen_call): Likewise.
-	* cfgcleanup.c (old_insns_match_p): Add support for new
-	functions.
+	* cfgcleanup.c (old_insns_match_p): Add support for new functions.
 	* doc/invoke.texi: Describe new parameter.
 	* params.def: Define new parameter.
 	* params.h: Likewise.
@@ -87,7 +89,8 @@
 
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
-	* c-family/c-common.c (handle_tls_model_attribute): Use set_decl_tls_model.
+	* c-family/c-common.c (handle_tls_model_attribute): Use
+	set_decl_tls_model.
 	* c-family/c-common.c (handle_tls_model_attribute): Use
 	set_decl_tls_model.
 	* cgraph.h (struct varpool_node): Add tls_model.
@@ -323,8 +326,7 @@
 	(eliminate): Generalize stmt removal handling, remove in
 	reverse dominator order to support proper debug stmt
 	generation.  Update stmts before removing stmts.
-	* tree-ssa-propagate.c (propagate_tree_value): Remove
-	bogus assert.
+	* tree-ssa-propagate.c (propagate_tree_value): Remove bogus assert.
 
 2014-06-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
@@ -346,7 +348,8 @@
 	* ipa-visiblity.c (cgraph_externally_visible_p): Cleanup.
 	(update_visibility_by_resolution_info): Consider UNDEF; fix checking;
 	reset sections of symbols dragged out of the comdats.
-	(function_and_variable_visibility): Reset sections of localized symbols.
+	(function_and_variable_visibility): Reset sections of
+	localized symbols.
 
 2014-06-12  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -389,8 +392,8 @@
 	vcgt_p8, vcgtq_p8, vcgtz_p8, vcgtz_u8, vcgtz_u16, vcgtz_u32, vcgtz_u64,
 	vcgtzq_p8, vcgtzq_u8, vcgtzq_u16, vcgtzq_u32, vcgtzq_u64, vcgtzd_u64,
 	vcle_p8, vcleq_p8, vclez_p8, vclez_u64, vclezq_p8, vclezd_u64, vclt_p8,
-	vcltq_p8, vcltz_p8, vcltzq_p8, vcltzd_u64): Remove functions as they are
-	not in the spec.
+	vcltq_p8, vcltz_p8, vcltzq_p8, vcltzd_u64): Remove functions as they
+	are not in the spec.
 
 2014-06-10  Alan Lawrence  <alan.lawrence@arm.com>
 
@@ -436,9 +439,9 @@
 	* sdbout.c (sdbout_one_type): Update.
 	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Update.
 	* varasm.c (IN_NAMED_SECTION, get_named_section, resolve_unique_section,
-	hot_function_section, get_named_text_section, USE_SELECT_SECTION_FOR_FUNCTIONS,
-	default_function_rodata_section, make_decl_rtl, default_unique_section):
-	Update.
+	hot_function_section, get_named_text_section,
+	USE_SELECT_SECTION_FOR_FUNCTIONS, default_function_rodata_section,
+	make_decl_rtl, default_unique_section): Update.
 	* config/c6x/c6x.c (c6x_in_small_data_p): Update.
 	(c6x_elf_unique_section): Update.
 	* config/nios2/nios2.c (nios2_in_small_data_p): Update.
@@ -464,7 +467,8 @@
 	(bfin_handle_l1_data_attribute): Update.
 	(bfin_handle_l2_attribute): Update.
 	* config/mep/mep.c (mep_unique_section): Update.
-	* config/microblaze/microblaze.c (microblaze_elf_in_small_data_p): Update.
+	* config/microblaze/microblaze.c (microblaze_elf_in_small_data_p):
+	Update.
 	* config/h8300/h8300.c (h8300_handle_eightbit_data_attribute): Update.
 	(h8300_handle_tiny_data_attribute): Update.
 	* config/m32r/m32r.c (m32r_in_small_data_p): Update.
@@ -771,9 +775,8 @@
 
 2014-06-11  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-visibility.c (function_and_variable_visibility): Disable
-	virtual table rewriting temporarily on targets not supporting
-	ONE_ONLY.
+	* ipa-visibility.c (function_and_variable_visibility): Disable virtual
+	table rewriting temporarily on targets not supporting ONE_ONLY.
 
 2014-06-11  Richard Biener  <rguenther@suse.de>
 
@@ -907,8 +910,8 @@
 
 2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-reference.c (is_proper_for_analysis): Exclude addressable and public
-	vars.
+	* ipa-reference.c (is_proper_for_analysis): Exclude addressable
+	and public vars.
 	(intersect_static_var_sets): Remove.
 	(propagate): Do not prune local statics.
 
@@ -954,13 +957,13 @@
 	PR target/61062
 	* config/arm/arm_neon.h (vtrn_s8, vtrn_s16, vtrn_u8, vtrn_u16, vtrn_p8,
 	vtrn_p16, vtrn_s32, vtrn_f32, vtrn_u32, vtrnq_s8, vtrnq_s16, vtrnq_s32,
-	vtrnq_f32, vtrnq_u8, vtrnq_u16, vtrnq_u32, vtrnq_p8, vtrnq_p16, vzip_s8,
-	vzip_s16, vzip_u8, vzip_u16, vzip_p8, vzip_p16, vzip_s32, vzip_f32,
-	vzip_u32, vzipq_s8, vzipq_s16, vzipq_s32, vzipq_f32, vzipq_u8,
-	vzipq_u16, vzipq_u32, vzipq_p8, vzipq_p16, vuzp_s8, vuzp_s16, vuzp_s32,
-	vuzp_f32, vuzp_u8, vuzp_u16, vuzp_u32, vuzp_p8, vuzp_p16, vuzpq_s8,
-	vuzpq_s16, vuzpq_s32, vuzpq_f32, vuzpq_u8, vuzpq_u16, vuzpq_u32,
-	vuzpq_p8, vuzpq_p16): Correct mask for bigendian.
+	vtrnq_f32, vtrnq_u8, vtrnq_u16, vtrnq_u32, vtrnq_p8, vtrnq_p16,
+	vzip_s8, vzip_s16, vzip_u8, vzip_u16, vzip_p8, vzip_p16, vzip_s32,
+	vzip_f32, vzip_u32, vzipq_s8, vzipq_s16, vzipq_s32, vzipq_f32,
+	vzipq_u8, vzipq_u16, vzipq_u32, vzipq_p8, vzipq_p16, vuzp_s8, vuzp_s16,
+	vuzp_s32, vuzp_f32, vuzp_u8, vuzp_u16, vuzp_u32, vuzp_p8, vuzp_p16,
+	vuzpq_s8, vuzpq_s16, vuzpq_s32, vuzpq_f32, vuzpq_u8, vuzpq_u16,
+	vuzpq_u32, vuzpq_p8, vuzpq_p16): Correct mask for bigendian.
 
 2014-06-09  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -982,12 +985,10 @@
 	* tree.c (decl_comdat_group, decl_comdat_group_id): Constify argument.
 	(decl_section_name, set_decl_section_name): New accessors.
 	(find_decls_types_r): Do not walk section name
-	* tree.h (DECL_SECTION_NAME): Implement using
-	decl_section_name.
+	* tree.h (DECL_SECTION_NAME): Implement using decl_section_name.
 	(decl_comdat_group, decl_comdat_group_id): Constify.
 	(decl_section_name, set_decl_section_name): Update.
-	* varpool.c (varpool_finalize_named_section_flags): Use
-	get_section.
+	* varpool.c (varpool_finalize_named_section_flags): Use get_section.
 	* cgraph.c (cgraph_add_thunk): Reset node instead of rebuilding.
 	(cgraph_make_node_local_1): Clear section and comdat group.
 	* cgraph.h (set_comdat_group): Sanity check.
@@ -995,8 +996,7 @@
 	* ipa-comdats.c (ipa_comdats): Use get_section.
 	* ipa.c (ipa_discover_readonly_nonaddressable_var): Likewise.
 	* lto-streamer-out.c: Do not follow section names.
-	* c-family/c-common.c (handle_section_attribute):
-	Update.
+	* c-family/c-common.c (handle_section_attribute): Update.
 	* lto-cgraph.c (lto_output_node): Output section.
 	(lto_output_varpool_node): Likewise.
 	(read_comdat_group): Rename to ...
@@ -1005,8 +1005,7 @@
 	(input_node, input_varpool_node): Input section names.
 	* tree-emutls.c (get_emutls_init_templ_addr): Update.
 	(new_emutls_decl): Update.
-	(secname_for_decl): Check section names only of static
-	vars.
+	(secname_for_decl): Check section names only of static vars.
 	* config/mep/mep.c (mep_unique_section): Use set_decl_section_name.
 	* config/i386/winnt.c (i386_pe_unique_section): Likewise.
 	* config/i386/i386.c (x86_64_elf_unique_section): Likewise.
@@ -1015,7 +1014,7 @@
 	* config/mcore/mcore.c (mcore_unique_section): Likewise.
 	* config/mips/mips.c (mips16_build_function_stub): Likewise.
 	* config/v850/v850.c (v850_insert_attributes): Likewise.
-	* config/h8300/h8300.c: (h8300_handle_eightbit_data_attribute):
+	* config/h8300/h8300.c (h8300_handle_eightbit_data_attribute):
 	Likewise.
 	(h8300_handle_tiny_data_attribute): Likewise.
 	* config/bfin/bfin.c (bfin_handle_l1_text_attribute): Likewise.
@@ -1028,8 +1027,8 @@
 
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
-	* varasm.c (use_blocks_for_decl_p): Check symbol table instead of alias
-	attribute.
+	* varasm.c (use_blocks_for_decl_p): Check symbol table
+	instead of alias attribute.
 	(place_block_symbol): Recurse on aliases.
 
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
