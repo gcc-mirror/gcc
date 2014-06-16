@@ -26042,7 +26042,10 @@ $as_echo "#define HAVE_FPSETMASK 1" >>confdefs.h
 
   fi
 
-ac_fn_c_check_type "$LINENO" "fp_except" "ac_cv_type_fp_except" "#include <ieeefp.h>
+ac_fn_c_check_type "$LINENO" "fp_except" "ac_cv_type_fp_except" "
+#include <ieeefp.h>
+#include <math.h>
+
 "
 if test "x$ac_cv_type_fp_except" = x""yes; then :
 
@@ -26052,7 +26055,10 @@ _ACEOF
 
 
 fi
-ac_fn_c_check_type "$LINENO" "fp_except_t" "ac_cv_type_fp_except_t" "#include <ieeefp.h>
+ac_fn_c_check_type "$LINENO" "fp_except_t" "ac_cv_type_fp_except_t" "
+#include <ieeefp.h>
+#include <math.h>
+
 "
 if test "x$ac_cv_type_fp_except_t" = x""yes; then :
 
@@ -26063,7 +26069,10 @@ _ACEOF
 
 fi
 
-ac_fn_c_check_type "$LINENO" "fp_rnd" "ac_cv_type_fp_rnd" "#include <ieeefp.h>
+ac_fn_c_check_type "$LINENO" "fp_rnd" "ac_cv_type_fp_rnd" "
+#include <ieeefp.h>
+#include <math.h>
+
 "
 if test "x$ac_cv_type_fp_rnd" = x""yes; then :
 
@@ -26073,7 +26082,10 @@ _ACEOF
 
 
 fi
-ac_fn_c_check_type "$LINENO" "fp_rnd_t" "ac_cv_type_fp_rnd_t" "#include <ieeefp.h>
+ac_fn_c_check_type "$LINENO" "fp_rnd_t" "ac_cv_type_fp_rnd_t" "
+#include <ieeefp.h>
+#include <math.h>
+
 "
 if test "x$ac_cv_type_fp_rnd_t" = x""yes; then :
 

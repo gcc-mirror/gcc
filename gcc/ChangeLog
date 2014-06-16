@@ -1,3 +1,217 @@
+2014-06-16  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (check_func): New function.
+	(maybe_create_ssa_name): Likewise.
+	(build_check_stmt_with_calls): Likewise.
+	(use_calls_p): Likewise.
+	(report_error_func): Change interface.
+	(build_check_stmt): Allow non-integer lengths; add support
+	for new parameter.
+	(asan_instrument): Likewise.
+	(instrument_mem_region_access): Moved code to
+	build_check_stmt.
+	(instrument_derefs): Likewise.
+	(instrument_strlen_call): Likewise.
+	* cfgcleanup.c (old_insns_match_p): Add support for new
+	functions.
+	* doc/invoke.texi: Describe new parameter.
+	* params.def: Define new parameter.
+	* params.h: Likewise.
+	* sanitizer.def: Describe new builtins.
+
+2014-06-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Make all defs available at the end.
+	(eliminate): If we remove a PHI node schedule cfg-cleanup.
+
+2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/45078
+	* config.gcc (arm*-*-linux-*): Include vxworks-dummy.h in tm_file.
+
+2014-06-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR bootstrap/61516
+	* auto-inc-dec.c (merge_in_block): Fix location of insn_info
+	initialization.  Replace remaining use of uid.
+
+2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-family/c-common.c (handle_tls_model_attribute): Use
+	set_decl_tls_model.
+	* cgraph.h (struct varpool_node): Add tls_model.
+	* tree.c (decl_tls_model, set_decl_tls_model): New functions.
+	* tree.h (DECL_TLS_MODEL): Update.
+	(DECL_THREAD_LOCAL_P): Check that variable is static.
+	(decl_tls_model): Declare.
+	(set_decl_tls_model): Declare.
+	* tree-emutls.c (get_emutls_init_templ_addr): First build decl and then
+	set symbol prorperties.
+	(get_emutls_init_templ_addr): Cleanup.
+	(new_emutls_decl): Update.
+	* lto-cgraph.c (lto_output_varpool_node): Stream TLS model
+	(lto_input_varpool_node): Likewise.
+	* lto-streamer-out.c (hash_tree): Likewise.
+	* tree-streamer-in.c (unpack_ts_decl_with_vis_value_fields): Do
+	not stream DECL_TLS_MODEL.
+	* tree-profile.c (init_ic_make_global_vars): Use
+	set_decl_tls_model.
+	* tree-core.h (tree_decl_with_vis): Remove tls_model;
+	update comments.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (DF_REF_REG_USE_P, DF_MWS_REG_USE_P): Remove null checks.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (df_mw_hardreg, df_base_ref): Add a link pointer.
+	(df_insn_info): Turn defs, uses, eq_uses and mw_hardregs into linked
+	lists.
+	(df_scan_bb_info): Likewise artificial_defs and artificial_uses.
+	(DF_REF_NEXT_LOC, DF_MWS_NEXT): New macros.
+	(FOR_EACH_INSN_INFO_DEF, FOR_EACH_INSN_INFO_USE)
+	(FOR_EACH_INSN_INFO_EQ_USE, FOR_EACH_INSN_INFO_MW)
+	(FOR_EACH_ARTIFICIAL_USE, FOR_EACH_ARTIFICIAL_DEF)
+	(df_get_artificial_defs, df_get_artificial_uses)
+	(df_single_def, df_single_use): Update accordingly.
+	(df_refs_chain_dump): Take the first element in a linked list as
+	parameter, rather than a pointer to an array of pointers.
+	* df-core.c (df_refs_chain_dump, df_mws_dump): Likewise.
+	* df-problems.c (df_rd_bb_local_compute_process_def): Likewise.
+	(df_chain_create_bb_process_use): Likewise.
+	(df_md_bb_local_compute_process_def): Likewise.
+	* fwprop.c (process_defs, process_uses): Likewise.
+	(register_active_defs, update_uses): Likewise.
+	(forward_propagate_asm): Update for new df_ref linking.
+	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): Delete.
+	(df_null_ref_rec, df_null_mw_rec): Likewise.
+	(df_scan_free_internal): Don't free df_ref and df_mw_hardreg lists
+	explicitly.
+	(df_scan_free_bb_info): Remove check for null artificial_defs.
+	(df_install_ref_incremental): Adjust for new df_ref linking.
+	Use a single-element insertion rather than a full sort.
+	(df_ref_chain_delete_du_chain): Take the first element
+	in a linked list as parameter, rather than a pointer to an array of
+	pointers.
+	(df_ref_chain_delete, df_mw_hardreg_chain_delete): Likewise.
+	(df_add_refs_to_table, df_refs_verify, df_mws_verify): Likewise.
+	(df_insn_info_delete): Remove check for null defs and call to
+	df_scan_free_mws_vec.
+	(df_insn_rescan): Initialize df_ref and df_mw_hardreg lists to
+	null rather than df_null_*_rec.
+	(df_insn_rescan_debug_internal): Likewise, and update null
+	checks in the same way.  Remove check for null defs.
+	(df_ref_change_reg_with_loc_1): Fix choice of list for defs.
+	Move a single element rather doing a full sort.
+	(df_mw_hardreg_chain_delete_eq_uses): Adjust for new df_mw_hardreg
+	linking.
+	(df_notes_rescan): Likewise.  Use a merge rather than a full sort.
+	Initialize df_ref and df_mw_hardreg lists to null rather than
+	df_null_*_rec.
+	(df_ref_compare): Take df_refs as parameter, transferring the
+	old interface to...
+	(df_ref_ptr_compare): ...this new function.
+	(df_sort_and_compress_refs): Update accordingly.
+	(df_mw_compare): Take df_mw_hardregs as parameter, transferring the
+	old interface to...
+	(df_mw_ptr_compare): ...this new function.
+	(df_sort_and_compress_mws): Update accordingly.
+	(df_install_refs, df_install_mws): Return a linked list rather than
+	an array of pointers.
+	(df_refs_add_to_chains): Assert that old lists are empty rather
+	than freeing them.
+	(df_insn_refs_verify): Don't handle null defs speciailly.
+	* web.c (union_match_dups): Update for new df_ref linking.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (df_ref_create, df_ref_remove): Delete.
+	* df-scan.c (df_ref_create, df_ref_compress_rec): Likewise.
+	(df_ref_remove): Likewise.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (df_single_def, df_single_use): New functions.
+	* ira.c (find_moveable_pseudos): Use them.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (FOR_EACH_INSN_INFO_MW): New macro.
+	* df-problems.c (df_note_bb_compute): Use it.
+	* regstat.c (regstat_bb_compute_ri): Likewise.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (FOR_EACH_ARTIFICIAL_USE, FOR_EACH_ARTIFICIAL_DEF): New macros.
+	* cse.c (cse_extended_basic_block): Use them.
+	* dce.c (mark_artificial_use): Likewise.
+	* df-problems.c (df_rd_simulate_artificial_defs_at_top): Likewise.
+	(df_lr_bb_local_compute, df_live_bb_local_compute): Likewise.
+	(df_chain_remove_problem, df_chain_bb_dump): Likewise.
+	(df_word_lr_bb_local_compute, df_note_bb_compute): Likewise.
+	(df_simulate_initialize_backwards): Likewise.
+	(df_simulate_finalize_backwards): Likewise.
+	(df_simulate_initialize_forwards): Likewise.
+	(df_md_simulate_artificial_defs_at_top): Likewise.
+	* df-scan.c (df_reorganize_refs_by_reg_by_insn): Likewise.
+	* regrename.c (init_rename_info): Likewise.
+	* regstat.c (regstat_bb_compute_ri): Likewise.
+	(regstat_bb_compute_calls_crossed): Likewise.
+
+2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* df.h (DF_INSN_INFO_MWS, FOR_EACH_INSN_INFO_DEF): New macros.
+	(FOR_EACH_INSN_INFO_USE, FOR_EACH_INSN_INFO_EQ_USE): Likewise.
+	(FOR_EACH_INSN_DEF, FOR_EACH_INSN_USE, FOR_EACH_INSN_EQ_USE): Likewise.
+	* auto-inc-dec.c (find_inc, merge_in_block): Use them.
+	* combine.c (create_log_links): Likewise.
+	* compare-elim.c (find_flags_uses_in_insn): Likewise.
+	(try_eliminate_compare): Likewise.
+	* cprop.c (make_set_regs_unavailable, mark_oprs_set): Likewise.
+	* dce.c (deletable_insn_p, find_call_stack_args): Likewise.
+	(remove_reg_equal_equiv_notes_for_defs): Likewise.
+	(reset_unmarked_insns_debug_uses, mark_reg_dependencies): Likewise.
+	(word_dce_process_block, dce_process_block): Likewise.
+	* ddg.c (def_has_ccmode_p): Likewise.
+	* df-core.c (df_bb_regno_first_def_find): Likewise.
+	(df_bb_regno_last_def_find, df_find_def, df_find_use): Likewise.
+	* df-problems.c (df_rd_simulate_one_insn): Likewise.
+	(df_lr_bb_local_compute, df_live_bb_local_compute): Likewise.
+	(df_chain_remove_problem, df_chain_insn_top_dump): Likewise.
+	(df_chain_insn_bottom_dump, df_word_lr_bb_local_compute): Likewise.
+	(df_word_lr_simulate_defs, df_word_lr_simulate_uses): Likewise.
+	(df_remove_dead_eq_notes, df_note_bb_compute): Likewise.
+	(df_simulate_find_defs, df_simulate_find_uses): Likewise.
+	(df_simulate_find_noclobber_defs, df_simulate_defs): Likewise.
+	(df_simulate_uses, df_md_simulate_one_insn): Likewise.
+	* df-scan.c (df_reorganize_refs_by_reg_by_insn): Likewise.
+	* fwprop.c (local_ref_killed_between_p): Likewise.
+	(all_uses_available_at, free_load_extend): Likewise.
+	* gcse.c (update_bb_reg_pressure, calculate_bb_reg_pressure): Likewise.
+	* hw-doloop.c (scan_loop): Likewise.
+	* ifcvt.c (dead_or_predicable): Likewise.
+	* init-regs.c (initialize_uninitialized_regs): Likewise.
+	* ira-lives.c (mark_hard_reg_early_clobbers): Likewise.
+	(process_bb_node_lives): Likewise.
+	* ira.c (compute_regs_asm_clobbered, build_insn_chain): Likewise.
+	(find_moveable_pseudos): Likewise.
+	* loop-invariant.c (check_dependencies, record_uses): Likewise.
+	* recog.c (peep2_find_free_register): Likewise.
+	* ree.c (get_defs): Likewise.
+	* regstat.c (regstat_bb_compute_ri): Likewise.
+	(regstat_bb_compute_calls_crossed): Likewise.
+	* sched-deps.c (find_inc, find_mem): Likewise.
+	* sel-sched-ir.c (maybe_downgrade_id_to_use): Likewise.
+	(maybe_downgrade_id_to_use, setup_id_reg_sets): Likewise.
+	* shrink-wrap.c (requires_stack_frame_p): Likewise.
+	(prepare_shrink_wrap): Likewise.
+	* store-motion.c (compute_store_table, build_store_vectors): Likewise.
+	* web.c (union_defs, pass_web::execute): Likewise.
+	* config/i386/i386.c (increase_distance, insn_defines_reg): Likewise.
+	(insn_uses_reg_mem, ix86_ok_to_clobber_flags): Likewise.
+
 2014-06-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-assign.c (assign_by_spills): Add code to assign vector regs

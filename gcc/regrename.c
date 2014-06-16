@@ -533,7 +533,7 @@ static void
 init_rename_info (struct bb_rename_info *p, basic_block bb)
 {
   int i;
-  df_ref *def_rec;
+  df_ref def;
   HARD_REG_SET start_chains_set;
 
   p->bb = bb;
@@ -545,12 +545,9 @@ init_rename_info (struct bb_rename_info *p, basic_block bb)
 
   CLEAR_HARD_REG_SET (live_in_chains);
   REG_SET_TO_HARD_REG_SET (live_hard_regs, df_get_live_in (bb));
-  for (def_rec = df_get_artificial_defs (bb->index); *def_rec; def_rec++)
-    {
-      df_ref def = *def_rec;
-      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	SET_HARD_REG_BIT (live_hard_regs, DF_REF_REGNO (def));
-    }
+  FOR_EACH_ARTIFICIAL_DEF (def, bb->index)
+    if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+      SET_HARD_REG_BIT (live_hard_regs, DF_REF_REGNO (def));
 
   /* Open chains based on information from (at least one) predecessor
      block.  This gives us a chance later on to combine chains across

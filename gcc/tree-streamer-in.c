@@ -280,7 +280,6 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
     {
       DECL_HARD_REGISTER (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_IN_CONSTANT_POOL (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_TLS_MODEL (expr) = (enum tls_model) bp_unpack_value (bp,  3);
     }
 
   if (TREE_CODE (expr) == FUNCTION_DECL)

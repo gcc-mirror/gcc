@@ -1483,10 +1483,9 @@ struct GTY(()) tree_decl_with_vis {
 
  unsigned seen_in_bind_expr : 1;
  unsigned comdat_flag : 1;
+ /* Used for FUNCTION_DECL, VAR_DECL and in C++ for TYPE_DECL.  */
  ENUM_BITFIELD(symbol_visibility) visibility : 2;
  unsigned visibility_specified : 1;
- /* Belongs to VAR_DECL exclusively.  */
- ENUM_BITFIELD(tls_model) tls_model : 3;
 
  /* Belong to FUNCTION_DECL exclusively.  */
  unsigned init_priority_p : 1;
@@ -1498,7 +1497,7 @@ struct GTY(()) tree_decl_with_vis {
  unsigned cxx_destructor : 1;
  /* Belong to FUNCTION_DECL exclusively.  */
  unsigned final : 1;
- /* 12 unused bits. */
+ /* 15 unused bits. */
 };
 
 struct GTY(()) tree_var_decl {

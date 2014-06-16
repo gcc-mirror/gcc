@@ -119,7 +119,7 @@ scan_loop (hwloop_info loop)
 	   insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
-	  df_ref *def_rec;
+	  df_ref def;
 	  HARD_REG_SET set_this_insn;
 
 	  if (!NONDEBUG_INSN_P (insn))
@@ -131,9 +131,9 @@ scan_loop (hwloop_info loop)
 	    loop->has_asm = true;
 
 	  CLEAR_HARD_REG_SET (set_this_insn);
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	  FOR_EACH_INSN_DEF (def, insn)
 	    {
-	      rtx dreg = DF_REF_REG (*def_rec);
+	      rtx dreg = DF_REF_REG (def);
 
 	      if (!REG_P (dreg))
 		continue;

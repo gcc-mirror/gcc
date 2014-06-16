@@ -146,10 +146,9 @@ get_def_for_use (df_ref use)
 	(DF_REF_PARTIAL | DF_REF_CONDITIONAL | DF_REF_MAY_CLOBBER)
 
 static void
-process_defs (df_ref *def_rec, int top_flag)
+process_defs (df_ref def, int top_flag)
 {
-  df_ref def;
-  while ((def = *def_rec++) != NULL)
+  for (; def; def = DF_REF_NEXT_LOC (def))
     {
       df_ref curr_def = reg_defs[DF_REF_REGNO (def)];
       unsigned int dregno;
@@ -191,10 +190,9 @@ process_defs (df_ref *def_rec, int top_flag)
    is an artificial use vector.  */
 
 static void
-process_uses (df_ref *use_rec, int top_flag)
+process_uses (df_ref use, int top_flag)
 {
-  df_ref use;
-  while ((use = *use_rec++) != NULL)
+  for (; use; use = DF_REF_NEXT_LOC (use))
     if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == top_flag)
       {
         unsigned int uregno = DF_REF_REGNO (use);
@@ -700,16 +698,13 @@ local_ref_killed_between_p (df_ref ref, rtx from, rtx to)
 
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
-      df_ref *def_rec;
+      df_ref def;
       if (!INSN_P (insn))
 	continue;
 
-      for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	{
-	  df_ref def = *def_rec;
-	  if (DF_REF_REGNO (ref) == DF_REF_REGNO (def))
-	    return true;
-	}
+      FOR_EACH_INSN_DEF (def, insn)
+	if (DF_REF_REGNO (ref) == DF_REF_REGNO (def))
+	  return true;
     }
   return false;
 }
@@ -790,7 +785,7 @@ use_killed_between (df_ref use, rtx def_insn, rtx target_insn)
 static bool
 all_uses_available_at (rtx def_insn, rtx target_insn)
 {
-  df_ref *use_rec;
+  df_ref use;
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (def_insn);
   rtx def_set = single_set (def_insn);
   rtx next;
@@ -809,18 +804,12 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
 
       /* If the insn uses the reg that it defines, the substitution is
          invalid.  */
-      for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
-	{
-	  df_ref use = *use_rec;
-	  if (rtx_equal_p (DF_REF_REG (use), def_reg))
-	    return false;
-	}
-      for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
-	{
-	  df_ref use = *use_rec;
-	  if (rtx_equal_p (DF_REF_REG (use), def_reg))
-	    return false;
-	}
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
+	if (rtx_equal_p (DF_REF_REG (use), def_reg))
+	  return false;
+      FOR_EACH_INSN_INFO_EQ_USE (use, insn_info)
+	if (rtx_equal_p (DF_REF_REG (use), def_reg))
+	  return false;
     }
   else
     {
@@ -828,17 +817,15 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
 
       /* Look at all the uses of DEF_INSN, and see if they are not
 	 killed between DEF_INSN and TARGET_INSN.  */
-      for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
+      FOR_EACH_INSN_INFO_USE (use, insn_info)
 	{
-	  df_ref use = *use_rec;
 	  if (def_reg && rtx_equal_p (DF_REF_REG (use), def_reg))
 	    return false;
 	  if (use_killed_between (use, def_insn, target_insn))
 	    return false;
 	}
-      for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
+      FOR_EACH_INSN_INFO_EQ_USE (use, insn_info)
 	{
-	  df_ref use = *use_rec;
 	  if (def_reg && rtx_equal_p (DF_REF_REG (use), def_reg))
 	    return false;
 	  if (use_killed_between (use, def_insn, target_insn))
@@ -860,11 +847,10 @@ static sparseset active_defs_check;
    too, for checking purposes.  */
 
 static void
-register_active_defs (df_ref *use_rec)
+register_active_defs (df_ref use)
 {
-  while (*use_rec)
+  for (; use; use = DF_REF_NEXT_LOC (use))
     {
-      df_ref use = *use_rec++;
       df_ref def = get_def_for_use (use);
       int regno = DF_REF_REGNO (use);
 
@@ -898,11 +884,10 @@ update_df_init (rtx def_insn, rtx insn)
    in the ACTIVE_DEFS array to match pseudos to their def. */
 
 static inline void
-update_uses (df_ref *use_rec)
+update_uses (df_ref use)
 {
-  while (*use_rec)
+  for (; use; use = DF_REF_NEXT_LOC (use))
     {
-      df_ref use = *use_rec++;
       int regno = DF_REF_REGNO (use);
 
       /* Set up the use-def chain.  */
@@ -1034,8 +1019,7 @@ static bool
 free_load_extend (rtx src, rtx insn)
 {
   rtx reg;
-  df_ref *use_vec;
-  df_ref use = 0, def;
+  df_ref def, use;
 
   reg = XEXP (src, 0);
 #ifdef LOAD_EXTEND_OP
@@ -1043,15 +1027,11 @@ free_load_extend (rtx src, rtx insn)
 #endif
     return false;
 
-  for (use_vec = DF_INSN_USES (insn); *use_vec; use_vec++)
-    {
-      use = *use_vec;
-
-      if (!DF_REF_IS_ARTIFICIAL (use)
-	  && DF_REF_TYPE (use) == DF_REF_REG_USE
-	  && DF_REF_REG (use) == reg)
-	break;
-    }
+  FOR_EACH_INSN_USE (use, insn)
+    if (!DF_REF_IS_ARTIFICIAL (use)
+	&& DF_REF_TYPE (use) == DF_REF_REG_USE
+	&& DF_REF_REG (use) == reg)
+      break;
   if (!use)
     return false;
 
@@ -1151,7 +1131,7 @@ forward_propagate_asm (df_ref use, rtx def_insn, rtx def_set, rtx reg)
 {
   rtx use_insn = DF_REF_INSN (use), src, use_pat, asm_operands, new_rtx, *loc;
   int speed_p, i;
-  df_ref *use_vec;
+  df_ref uses;
 
   gcc_assert ((DF_REF_FLAGS (use) & DF_REF_IN_NOTE) == 0);
 
@@ -1160,8 +1140,8 @@ forward_propagate_asm (df_ref use, rtx def_insn, rtx def_set, rtx reg)
 
   /* In __asm don't replace if src might need more registers than
      reg, as that could increase register pressure on the __asm.  */
-  use_vec = DF_INSN_USES (def_insn);
-  if (use_vec[0] && use_vec[1])
+  uses = DF_INSN_USES (def_insn);
+  if (uses && DF_REF_NEXT_LOC (uses))
     return false;
 
   update_df_init (def_insn, use_insn);

@@ -1952,7 +1952,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      if (!DECL_LANG_SPECIFIC (newdecl))
 		retrofit_lang_decl (newdecl);
 
-	      DECL_TLS_MODEL (newdecl) = DECL_TLS_MODEL (olddecl);
+	      set_decl_tls_model (newdecl, DECL_TLS_MODEL (olddecl));
 	      CP_DECL_THREADPRIVATE_P (newdecl) = 1;
 	    }
 	}
@@ -8016,7 +8016,8 @@ grokvardecl (tree type,
 
   if (decl_spec_seq_has_spec_p (declspecs, ds_thread))
     {
-      DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+      if (DECL_EXTERNAL (decl) || TREE_STATIC (decl))
+        set_decl_tls_model (decl, decl_default_tls_model (decl));
       if (declspecs->gnu_thread_keyword_p)
 	DECL_GNU_TLS_P (decl) = true;
     }
@@ -10699,7 +10700,7 @@ grokdeclarator (const cp_declarator *declarator,
 
 		if (thread_p)
 		  {
-		    DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+		    set_decl_tls_model (decl, decl_default_tls_model (decl));
 		    if (declspecs->gnu_thread_keyword_p)
 		      DECL_GNU_TLS_P (decl) = true;
 		  }
@@ -11137,12 +11138,24 @@ grokparms (tree parmlist, tree *parms)
       type = TREE_TYPE (decl);
       if (VOID_TYPE_P (type))
 	{
-	  if (same_type_p (type, void_type_node)
-	      && DECL_SELF_REFERENCE_P (type)
-	      && !DECL_NAME (decl) && !result && TREE_CHAIN (parm) == void_list_node)
+	  if (type == void_type_node
+	      && !init
+	      && !DECL_NAME (decl) && !result
+	      && TREE_CHAIN (parm) == void_list_node)
 	    /* this is a parmlist of `(void)', which is ok.  */
 	    break;
-	  cxx_incomplete_type_error (decl, type);
+	  else if (typedef_variant_p (type))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "invalid use of typedef-name %qT in "
+		      "parameter declaration", type);
+	  else if (cv_qualified_p (type))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "invalid use of cv-qualified type %qT in "
+		      "parameter declaration", type);
+	  else
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "invalid use of type %<void%> in parameter "
+		      "declaration");
 	  /* It's not a good idea to actually create parameters of
 	     type `void'; other parts of the compiler assume that a
 	     void type terminates the parameter list.  */

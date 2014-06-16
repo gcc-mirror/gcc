@@ -68,14 +68,12 @@ initialize_uninitialized_regs (void)
 
       FOR_BB_INSNS (bb, insn)
 	{
-	  unsigned int uid = INSN_UID (insn);
-	  df_ref *use_rec;
+	  df_ref use;
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
 
-	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
+	  FOR_EACH_INSN_USE (use, insn)
 	    {
-	      df_ref use = *use_rec;
 	      unsigned int regno = DF_REF_REGNO (use);
 
 	      /* Only do this for the pseudos.  */
@@ -109,7 +107,8 @@ initialize_uninitialized_regs (void)
 		  if (dump_file)
 		    fprintf (dump_file,
 			     "adding initialization in %s of reg %d at in block %d for insn %d.\n",
-			     current_function_name (), regno, bb->index, uid);
+			     current_function_name (), regno, bb->index,
+			     INSN_UID (insn));
 		}
 	    }
 	}

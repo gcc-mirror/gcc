@@ -1,3 +1,36 @@
+2014-06-16  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/instrument-with-calls-1.c: New test.
+	* c-c++-common/asan/instrument-with-calls-2.c: Likewise.
+	* c-c++-common/asan/instrument-with-calls-3.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Update
+	test patterns.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-4.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-5.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-6.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-7.c:
+	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-8.c:
+	Likewise.
+
+2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/28484
+	PR fortran/61429
+	* gfortran.dg/system_clock_1.f90: New file.
+	* gfortran.dg/system_clock_2.f90: New file.
+
+2014-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33101
+	* g++.dg/other/void3.C: New.
+	* g++.dg/conversion/err-recover1.C: Update.
+
 2014-06-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/61415

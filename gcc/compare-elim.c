@@ -193,14 +193,14 @@ arithmetic_flags_clobber_p (rtx insn)
 static void
 find_flags_uses_in_insn (struct comparison *cmp, rtx insn)
 {
-  df_ref *use_rec, use;
+  df_ref use;
 
   /* If we've already lost track of uses, don't bother collecting more.  */
   if (cmp->missing_uses)
     return;
 
   /* Find a USE of the flags register.  */
-  for (use_rec = DF_INSN_USES (insn); (use = *use_rec) != NULL; use_rec++)
+  FOR_EACH_INSN_USE (use, insn)
     if (DF_REF_REGNO (use) == targetm.flags_regnum)
       {
 	rtx x, *loc;
@@ -522,7 +522,7 @@ try_eliminate_compare (struct comparison *cmp)
 	   | DF_REF_MUST_CLOBBER | DF_REF_SIGN_EXTRACT
 	   | DF_REF_ZERO_EXTRACT | DF_REF_STRICT_LOW_PART
 	   | DF_REF_PRE_POST_MODIFY);
-      df_ref *def_rec, def;
+      df_ref def;
 
       /* Note that the BB_HEAD is always either a note or a label, but in
 	 any case it means that IN_A is defined outside the block.  */
@@ -532,7 +532,7 @@ try_eliminate_compare (struct comparison *cmp)
 	continue;
 
       /* Find a possible def of IN_A in INSN.  */
-      for (def_rec = DF_INSN_DEFS (insn); (def = *def_rec) != NULL; def_rec++)
+      FOR_EACH_INSN_DEF (def, insn)
 	if (DF_REF_REGNO (def) == REGNO (in_a))
 	  break;
 

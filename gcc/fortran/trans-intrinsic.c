@@ -2183,6 +2183,96 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Call the SYSTEM_CLOCK library functions, handling the type and kind
+   conversions.  */
+
+static tree
+conv_intrinsic_system_clock (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se count_se, count_rate_se, count_max_se;
+  tree arg1 = NULL_TREE, arg2 = NULL_TREE, arg3 = NULL_TREE;
+  tree type, tmp;
+  int kind;
+
+  gfc_expr *count = code->ext.actual->expr;
+  gfc_expr *count_rate = code->ext.actual->next->expr;
+  gfc_expr *count_max = code->ext.actual->next->next->expr;
+
+  /* The INTEGER(8) version has higher precision, it is used if both COUNT
+     and COUNT_MAX can hold 64-bit values, or are absent.  */
+  if ((!count || count->ts.kind >= 8)
+      && (!count_max || count_max->ts.kind >= 8))
+    kind = 8;
+  else
+    kind = gfc_default_integer_kind;
+  type = gfc_get_int_type (kind);
+
+  /* Evaluate our arguments.  */
+  if (count)
+    {
+      gfc_init_se (&count_se, NULL);
+      gfc_conv_expr (&count_se, count);
+    }
+
+  if (count_rate)
+    {
+      gfc_init_se (&count_rate_se, NULL);
+      gfc_conv_expr (&count_rate_se, count_rate);
+    }
+
+  if (count_max)
+    {
+      gfc_init_se (&count_max_se, NULL);
+      gfc_conv_expr (&count_max_se, count_max);
+    }
+
+  /* Prepare temporary variables if we need them.  */
+  if (count && count->ts.kind != kind)
+    arg1 = gfc_create_var (type, "count");
+  else if (count)
+    arg1 = count_se.expr;
+
+  if (count_rate && (count_rate->ts.kind != kind
+		     || count_rate->ts.type != BT_INTEGER))
+    arg2 = gfc_create_var (type, "count_rate");
+  else if (count_rate)
+    arg2 = count_rate_se.expr;
+
+  if (count_max && count_max->ts.kind != kind)
+    arg3 = gfc_create_var (type, "count_max");
+  else if (count_max)
+    arg3 = count_max_se.expr;
+
+  /* Make the function call. */
+  gfc_init_block (&block);
+  tmp = build_call_expr_loc (input_location,
+			     kind == 4 ? gfor_fndecl_system_clock4
+				       : gfor_fndecl_system_clock8,
+                             3,
+			     arg1 ? gfc_build_addr_expr (NULL_TREE, arg1)
+				  : null_pointer_node,
+			     arg2 ? gfc_build_addr_expr (NULL_TREE, arg2)
+				  : null_pointer_node,
+			     arg3 ? gfc_build_addr_expr (NULL_TREE, arg3)
+				  : null_pointer_node);
+  gfc_add_expr_to_block (&block, tmp);
+
+  /* And store values back if needed.  */
+  if (arg1 && arg1 != count_se.expr)
+    gfc_add_modify (&block, count_se.expr,
+		    fold_convert (TREE_TYPE (count_se.expr), arg1));
+  if (arg2 && arg2 != count_rate_se.expr)
+    gfc_add_modify (&block, count_rate_se.expr,
+		    fold_convert (TREE_TYPE (count_rate_se.expr), arg2));
+  if (arg3 && arg3 != count_max_se.expr)
+    gfc_add_modify (&block, count_max_se.expr,
+		    fold_convert (TREE_TYPE (count_max_se.expr), arg3));
+
+  return gfc_finish_block (&block);
+}
+
+
 /* Return a character string containing the tty name.  */
 
 static void
@@ -7966,6 +8056,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
     case GFC_ISYM_CO_MAX:
     case GFC_ISYM_CO_SUM:
       res = conv_co_minmaxsum (code);
+      break;
+
+    case GFC_ISYM_SYSTEM_CLOCK:
+      res = conv_intrinsic_system_clock (code);
       break;
 
     default:

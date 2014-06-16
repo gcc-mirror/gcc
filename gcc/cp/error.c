@@ -2922,7 +2922,7 @@ type_to_string (tree typ, int verbose)
   if (typ && TYPE_P (typ) && typ != TYPE_CANONICAL (typ)
       && !uses_template_parms (typ))
     {
-      int aka_start; char *p;
+      int aka_start, aka_len; char *p;
       struct obstack *ob = pp_buffer (cxx_pp)->obstack;
       /* Remember the end of the initial dump.  */
       int len = obstack_object_size (ob);
@@ -2932,10 +2932,11 @@ type_to_string (tree typ, int verbose)
       /* And remember the start of the aka dump.  */
       aka_start = obstack_object_size (ob);
       dump_type (cxx_pp, aka, flags);
+      aka_len = obstack_object_size (ob) - aka_start;
       pp_right_brace (cxx_pp);
       p = (char*)obstack_base (ob);
       /* If they are identical, cut off the aka with a NUL.  */
-      if (memcmp (p, p+aka_start, len) == 0)
+      if (len == aka_len && memcmp (p, p+aka_start, len) == 0)
 	p[len] = '\0';
     }
   return pp_ggc_formatted_text (cxx_pp);

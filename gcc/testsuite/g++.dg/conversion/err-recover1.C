@@ -1,6 +1,6 @@
 // PR c++/42219
 
-void foo(const void);		// { dg-error "incomplete|const" }
+void foo(const void);		// { dg-error "invalid use of cv-qualified" }
 
 void bar()
 {

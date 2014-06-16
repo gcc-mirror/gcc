@@ -374,11 +374,10 @@ dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
 static void
 make_set_regs_unavailable (rtx insn)
 {
-  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-  df_ref *def_rec;
+  df_ref def;
 
-  for (def_rec = DF_INSN_INFO_DEFS (insn_info); *def_rec; def_rec++)
-    SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (*def_rec));
+  FOR_EACH_INSN_DEF (def, insn)
+    SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (def));
 }
 
 /* Top level function to create an assignment hash table.
@@ -533,11 +532,10 @@ reg_not_set_p (const_rtx x, const_rtx insn ATTRIBUTE_UNUSED)
 static void
 mark_oprs_set (rtx insn)
 {
-  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-  df_ref *def_rec;
+  df_ref def;
 
-  for (def_rec = DF_INSN_INFO_DEFS (insn_info); *def_rec; def_rec++)
-    SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (*def_rec));
+  FOR_EACH_INSN_DEF (def, insn)
+    SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (def));
 }
 
 /* Compute copy/constant propagation working variables.  */

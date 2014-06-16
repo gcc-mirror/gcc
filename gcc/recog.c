@@ -3024,7 +3024,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 {
   enum reg_class cl;
   HARD_REG_SET live;
-  df_ref *def_rec;
+  df_ref def;
   int i;
 
   gcc_assert (from < MAX_INSNS_PER_PEEP2 + 1);
@@ -3041,9 +3041,8 @@ peep2_find_free_register (int from, int to, const char *class_str,
       gcc_assert (peep2_insn_data[from].insn != NULL_RTX);
 
       /* Don't use registers set or clobbered by the insn.  */
-      for (def_rec = DF_INSN_DEFS (peep2_insn_data[from].insn);
-	   *def_rec; def_rec++)
-	SET_HARD_REG_BIT (live, DF_REF_REGNO (*def_rec));
+      FOR_EACH_INSN_DEF (def, peep2_insn_data[from].insn)
+	SET_HARD_REG_BIT (live, DF_REF_REGNO (def));
 
       from = peep2_buf_position (from + 1);
     }

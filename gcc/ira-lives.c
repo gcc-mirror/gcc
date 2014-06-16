@@ -725,13 +725,13 @@ make_early_clobber_and_input_conflicts (void)
 static bool
 mark_hard_reg_early_clobbers (rtx insn, bool live_p)
 {
-  df_ref *def_rec;
+  df_ref def;
   bool set_p = false;
 
-  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-    if (DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MUST_CLOBBER))
+  FOR_EACH_INSN_DEF (def, insn)
+    if (DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER))
       {
-	rtx dreg = DF_REF_REG (*def_rec);
+	rtx dreg = DF_REF_REG (def);
 
 	if (GET_CODE (dreg) == SUBREG)
 	  dreg = SUBREG_REG (dreg);
@@ -742,9 +742,9 @@ mark_hard_reg_early_clobbers (rtx insn, bool live_p)
 	   because there is no way to say that non-operand hard
 	   register clobbers are not early ones.  */
 	if (live_p)
-	  mark_ref_live (*def_rec);
+	  mark_ref_live (def);
 	else
-	  mark_ref_dead (*def_rec);
+	  mark_ref_dead (def);
 	set_p = true;
       }
 
@@ -1114,7 +1114,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	 pessimistic, but it probably doesn't matter much in practice.  */
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
-	  df_ref *def_rec, *use_rec;
+	  df_ref def, use;
 	  bool call_p;
 
 	  if (!NONDEBUG_INSN_P (insn))
@@ -1135,9 +1135,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	     live would stop us from allocating it to a call-crossing
 	     allocno.  */
 	  call_p = CALL_P (insn);
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    if (!call_p || !DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MAY_CLOBBER))
-	      mark_ref_live (*def_rec);
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (!call_p || !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
+	      mark_ref_live (def);
 
 	  /* If INSN has multiple outputs, then any value used in one
 	     of the outputs conflicts with the other outputs.  Model this
@@ -1151,12 +1151,12 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	     to the same hard register as an unused output we could
 	     set the hard register before the output reload insn.  */
 	  if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
-	    for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	    FOR_EACH_INSN_USE (use, insn)
 	      {
 		int i;
 		rtx reg;
 
-		reg = DF_REF_REG (*use_rec);
+		reg = DF_REF_REG (use);
 		for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
 		  {
 		    rtx set;
@@ -1167,7 +1167,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      {
 			/* After the previous loop, this is a no-op if
 			   REG is contained within SET_DEST (SET).  */
-			mark_ref_live (*use_rec);
+			mark_ref_live (use);
 			break;
 		      }
 		  }
@@ -1178,9 +1178,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  process_single_reg_class_operands (false, freq);
 
 	  /* See which defined values die here.  */
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    if (!call_p || !DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MAY_CLOBBER))
-	      mark_ref_dead (*def_rec);
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (!call_p || !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER))
+	      mark_ref_dead (def);
 
 	  if (call_p)
 	    {
@@ -1249,8 +1249,8 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  curr_point++;
 
 	  /* Mark each used value as live.  */
-	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
-	    mark_ref_live (*use_rec);
+	  FOR_EACH_INSN_USE (use, insn)
+	    mark_ref_live (use);
 
 	  process_single_reg_class_operands (true, freq);
 
@@ -1263,16 +1263,16 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      /* Mark each hard reg as live again.  For example, a
 		 hard register can be in clobber and in an insn
 		 input.  */
-	      for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	      FOR_EACH_INSN_USE (use, insn)
 		{
-		  rtx ureg = DF_REF_REG (*use_rec);
+		  rtx ureg = DF_REF_REG (use);
 
 		  if (GET_CODE (ureg) == SUBREG)
 		    ureg = SUBREG_REG (ureg);
 		  if (! REG_P (ureg) || REGNO (ureg) >= FIRST_PSEUDO_REGISTER)
 		    continue;
 
-		  mark_ref_live (*use_rec);
+		  mark_ref_live (use);
 		}
 	    }
 

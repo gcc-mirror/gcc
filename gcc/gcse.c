@@ -2961,16 +2961,16 @@ update_bb_reg_pressure (basic_block bb, rtx from)
 {
   rtx dreg, insn;
   basic_block succ_bb;
-  df_ref *op, op_ref;
+  df_ref use, op_ref;
   edge succ;
   edge_iterator ei;
   int decreased_pressure = 0;
   int nregs;
   enum reg_class pressure_class;
-  
-  for (op = DF_INSN_USES (from); *op; op++)
+
+  FOR_EACH_INSN_USE (use, from)
     {
-      dreg = DF_REF_REAL_REG (*op);
+      dreg = DF_REF_REAL_REG (use);
       /* The live range of register is shrunk only if it isn't:
 	 1. referred on any path from the end of this block to EXIT, or
 	 2. referred by insns other than FROM in this block.  */
@@ -3593,17 +3593,17 @@ calculate_bb_reg_pressure (void)
 	{
 	  rtx dreg;
 	  int regno;
-	  df_ref *def_rec, *use_rec;
+	  df_ref def, use;
 
 	  if (! NONDEBUG_INSN_P (insn))
 	    continue;
 
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	  FOR_EACH_INSN_DEF (def, insn)
 	    {
-	      dreg = DF_REF_REAL_REG (*def_rec);
+	      dreg = DF_REF_REAL_REG (def);
 	      gcc_assert (REG_P (dreg));
 	      regno = REGNO (dreg);
-	      if (!(DF_REF_FLAGS (*def_rec) 
+	      if (!(DF_REF_FLAGS (def)
 		    & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
 		{
 		  if (bitmap_clear_bit (curr_regs_live, regno))
@@ -3611,9 +3611,9 @@ calculate_bb_reg_pressure (void)
 		}
 	    }
 
-	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	  FOR_EACH_INSN_USE (use, insn)
 	    {
-	      dreg = DF_REF_REAL_REG (*use_rec);
+	      dreg = DF_REF_REAL_REG (use);
 	      gcc_assert (REG_P (dreg));
 	      regno = REGNO (dreg);
 	      if (bitmap_set_bit (curr_regs_live, regno))

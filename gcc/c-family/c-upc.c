@@ -593,7 +593,7 @@ upc_set_decl_section (tree decl)
 	{
 	  if (upc_pthreads_model == upc_pthreads_tls_model)
 	    {
-	      DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+	      set_decl_tls_model (decl, decl_default_tls_model (decl));
 	      DECL_COMMON (decl) = 0;
 	    }
 	  else

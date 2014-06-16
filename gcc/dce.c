@@ -96,6 +96,7 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
 {
   rtx body, x;
   int i;
+  df_ref def;
 
   if (CALL_P (insn)
       /* We cannot delete calls inside of the recursive dce because
@@ -121,9 +122,9 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
     return false;
 
   /* If INSN sets a global_reg, leave it untouched.  */
-  for (df_ref *def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-    if (HARD_REGISTER_NUM_P (DF_REF_REGNO (*def_rec))
-	&& global_regs[DF_REF_REGNO (*def_rec)])
+  FOR_EACH_INSN_DEF (def, insn)
+    if (HARD_REGISTER_NUM_P (DF_REF_REGNO (def))
+	&& global_regs[DF_REF_REGNO (def)])
       return false;
 
   body = PATTERN (insn);
@@ -305,18 +306,18 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 	       sp + offset.  */
 	    if (!fast)
 	      {
-		df_ref *use_rec;
+		df_ref use;
 		struct df_link *defs;
 		rtx set;
 
-		for (use_rec = DF_INSN_USES (call_insn); *use_rec; use_rec++)
-		  if (rtx_equal_p (addr, DF_REF_REG (*use_rec)))
+		FOR_EACH_INSN_USE (use, call_insn)
+		  if (rtx_equal_p (addr, DF_REF_REG (use)))
 		    break;
 
-		if (*use_rec == NULL)
+		if (use == NULL)
 		  return false;
 
-		for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
+		for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
 		  if (! DF_REF_IS_ARTIFICIAL (defs->ref))
 		    break;
 
@@ -364,15 +365,15 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 	  }
 	if (addr != stack_pointer_rtx)
 	  {
-	    df_ref *use_rec;
+	    df_ref use;
 	    struct df_link *defs;
 	    rtx set;
 
-	    for (use_rec = DF_INSN_USES (call_insn); *use_rec; use_rec++)
-	      if (rtx_equal_p (addr, DF_REF_REG (*use_rec)))
+	    FOR_EACH_INSN_USE (use, call_insn)
+	      if (rtx_equal_p (addr, DF_REF_REG (use)))
 		break;
 
-	    for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
+	    for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
 	      if (! DF_REF_IS_ARTIFICIAL (defs->ref))
 		break;
 
@@ -429,18 +430,18 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 	    break;
 	  if (!fast)
 	    {
-	      df_ref *use_rec;
+	      df_ref use;
 	      struct df_link *defs;
 	      rtx set;
 
-	      for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
-		if (rtx_equal_p (addr, DF_REF_REG (*use_rec)))
+	      FOR_EACH_INSN_USE (use, insn)
+		if (rtx_equal_p (addr, DF_REF_REG (use)))
 		  break;
 
-	      if (*use_rec == NULL)
+	      if (use == NULL)
 		break;
 
-	      for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
+	      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
 		if (! DF_REF_IS_ARTIFICIAL (defs->ref))
 		  break;
 
@@ -496,10 +497,10 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 static void
 remove_reg_equal_equiv_notes_for_defs (rtx insn)
 {
-  df_ref *def_rec;
+  df_ref def;
 
-  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-    remove_reg_equal_equiv_notes_for_regno (DF_REF_REGNO (*def_rec));
+  FOR_EACH_INSN_DEF (def, insn)
+    remove_reg_equal_equiv_notes_for_regno (DF_REF_REGNO (def));
 }
 
 /* Scan all BBs for debug insns and reset those that reference values
@@ -515,11 +516,10 @@ reset_unmarked_insns_debug_uses (void)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
       if (DEBUG_INSN_P (insn))
 	{
-	  df_ref *use_rec;
+	  df_ref use;
 
-	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	  FOR_EACH_INSN_USE (use, insn)
 	    {
-	      df_ref use = *use_rec;
 	      struct df_link *defs;
 	      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
 		{
@@ -661,16 +661,13 @@ mark_artificial_uses (void)
 {
   basic_block bb;
   struct df_link *defs;
-  df_ref *use_rec;
+  df_ref use;
 
   FOR_ALL_BB_FN (bb, cfun)
-    {
-      for (use_rec = df_get_artificial_uses (bb->index);
-	   *use_rec; use_rec++)
-	for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
-	  if (! DF_REF_IS_ARTIFICIAL (defs->ref))
-	    mark_insn (DF_REF_INSN (defs->ref), false);
-    }
+    FOR_EACH_ARTIFICIAL_USE (use, bb->index)
+      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
+	if (!DF_REF_IS_ARTIFICIAL (defs->ref))
+	  mark_insn (DF_REF_INSN (defs->ref), false);
 }
 
 
@@ -680,14 +677,13 @@ static void
 mark_reg_dependencies (rtx insn)
 {
   struct df_link *defs;
-  df_ref *use_rec;
+  df_ref use;
 
   if (DEBUG_INSN_P (insn))
     return;
 
-  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+  FOR_EACH_INSN_USE (use, insn)
     {
-      df_ref use = *use_rec;
       if (dump_file)
 	{
 	  fprintf (dump_file, "Processing use of ");
@@ -868,14 +864,14 @@ word_dce_process_block (basic_block bb, bool redo_out,
   FOR_BB_INSNS_REVERSE (bb, insn)
     if (DEBUG_INSN_P (insn))
       {
-	df_ref *use_rec;
-	for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
-	  if (DF_REF_REGNO (*use_rec) >= FIRST_PSEUDO_REGISTER
-	      && (GET_MODE_SIZE (GET_MODE (DF_REF_REAL_REG (*use_rec)))
+	df_ref use;
+	FOR_EACH_INSN_USE (use, insn)
+	  if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER
+	      && (GET_MODE_SIZE (GET_MODE (DF_REF_REAL_REG (use)))
 		  == 2 * UNITS_PER_WORD)
-	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (*use_rec))
-	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (*use_rec) + 1))
-	    dead_debug_add (&debug, *use_rec, DF_REF_REGNO (*use_rec));
+	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (use))
+	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (use) + 1))
+	    dead_debug_add (&debug, use, DF_REF_REGNO (use));
       }
     else if (INSN_P (insn))
       {
@@ -898,10 +894,10 @@ word_dce_process_block (basic_block bb, bool redo_out,
 	   death.  */
 	if (debug.used && !bitmap_empty_p (debug.used))
 	  {
-	    df_ref *def_rec;
+	    df_ref def;
 
-	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	      dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
+	    FOR_EACH_INSN_DEF (def, insn)
+	      dead_debug_insert_temp (&debug, DF_REF_REGNO (def), insn,
 				      marked_insn_p (insn)
 				      && !control_flow_insn_p (insn)
 				      ? DEBUG_TEMP_AFTER_WITH_REG_FORCE
@@ -939,7 +935,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au,
   bitmap local_live = BITMAP_ALLOC (&dce_tmp_bitmap_obstack);
   rtx insn;
   bool block_changed;
-  df_ref *def_rec;
+  df_ref def;
   struct dead_debug_local debug;
 
   if (redo_out)
@@ -969,11 +965,11 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au,
   FOR_BB_INSNS_REVERSE (bb, insn)
     if (DEBUG_INSN_P (insn))
       {
-	df_ref *use_rec;
-	for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
-	  if (!bitmap_bit_p (local_live, DF_REF_REGNO (*use_rec))
-	      && !bitmap_bit_p (au, DF_REF_REGNO (*use_rec)))
-	    dead_debug_add (&debug, *use_rec, DF_REF_REGNO (*use_rec));
+	df_ref use;
+	FOR_EACH_INSN_USE (use, insn)
+	  if (!bitmap_bit_p (local_live, DF_REF_REGNO (use))
+	      && !bitmap_bit_p (au, DF_REF_REGNO (use)))
+	    dead_debug_add (&debug, use, DF_REF_REGNO (use));
       }
     else if (INSN_P (insn))
       {
@@ -981,9 +977,9 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au,
 
 	/* The insn is needed if there is someone who uses the output.  */
 	if (!needed)
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
-		|| bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (bitmap_bit_p (local_live, DF_REF_REGNO (def))
+		|| bitmap_bit_p (au, DF_REF_REGNO (def)))
 	      {
 		needed = true;
 		mark_insn (insn, true);
@@ -1004,8 +1000,8 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au,
 	   was marked, in case the debug use was after the point of
 	   death.  */
 	if (debug.used && !bitmap_empty_p (debug.used))
-	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	    dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
+	  FOR_EACH_INSN_DEF (def, insn)
+	    dead_debug_insert_temp (&debug, DF_REF_REGNO (def), insn,
 				    needed && !control_flow_insn_p (insn)
 				    ? DEBUG_TEMP_AFTER_WITH_REG_FORCE
 				    : DEBUG_TEMP_BEFORE_WITH_VALUE);
