@@ -1,3 +1,10 @@
+2014-06-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61325
+	* lra-constraints.c (valid_address_p): Add forward declaration.
+	(simplify_operand_subreg): Check address validity before and after
+	alter_reg of memory subreg.
+
 2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR plugins/45078

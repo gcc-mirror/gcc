@@ -1231,6 +1231,8 @@ insert_move_for_subreg (rtx *before, rtx *after, rtx origreg, rtx newreg)
     }
 }
 
+static int valid_address_p (enum machine_mode mode, rtx addr, addr_space_t as);
+
 /* Make reloads for subreg in operand NOP with internal subreg mode
    REG_MODE, add new reloads for further processing.  Return true if
    any reload was generated.  */
@@ -1261,10 +1263,26 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
      equivalences in function lra_constraints) and because for spilled
      pseudos we allocate stack memory enough for the biggest
      corresponding paradoxical subreg.  */
-  if ((MEM_P (reg)
-       && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg))
-	   || MEM_ALIGN (reg) >= GET_MODE_ALIGNMENT (mode)))
-      || (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER))
+  if (MEM_P (reg)
+      && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg))
+	  || MEM_ALIGN (reg) >= GET_MODE_ALIGNMENT (mode)))
+    {
+      rtx subst, old = *curr_id->operand_loc[nop];
+
+      alter_subreg (curr_id->operand_loc[nop], false);
+      subst = *curr_id->operand_loc[nop];
+      lra_assert (MEM_P (subst));
+      if (! valid_address_p (GET_MODE (reg), XEXP (reg, 0),
+			     MEM_ADDR_SPACE (reg))
+	  || valid_address_p (GET_MODE (subst), XEXP (subst, 0),
+			      MEM_ADDR_SPACE (subst)))
+	return true;
+      /* If the address was valid and became invalid, prefer to reload
+	 the memory.  Typical case is when the index scale should
+	 correspond the memory.  */
+      *curr_id->operand_loc[nop] = old;
+    }
+  else if (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER)
     {
       alter_subreg (curr_id->operand_loc[nop], false);
       return true;
