@@ -1,7 +1,6 @@
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
-	* gcc-interface/utils.c (process_attributes): Use
-	set_decl_tls_model.
+	* gcc-interface/utils.c (process_attributes): Use set_decl_tls_model.
 
 2014-06-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
@@ -11,11 +10,11 @@
 2014-06-14  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/61505
-	* gnat_rm.texi: Attempt to fix error with makeinfo 5.1
+	* gnat_rm.texi: Attempt to fix error with makeinfo 5.1.
 
 2014-06-13  Yannick Moy  <moy@adacore.com>
 
-	* exp_attr.adb Typo in comment.
+	* exp_attr.adb: Fix typo in comment.
 	* gnat1drv.adb (Adjust_Global_Switches): Force float overflow
 	checking in GNATprove_Mode.
 
@@ -123,6 +122,7 @@
 	(Process_Global_List): Do not raise Program_Error when the input
 	is malformed.
 	* sem_ch13.adb: Minor reformatting.
+
 2014-06-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Find_Type_Name): Diagnose a private type completion
