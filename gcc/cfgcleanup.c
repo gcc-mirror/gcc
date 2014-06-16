@@ -1174,7 +1174,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 		      && DECL_FUNCTION_CODE (SYMBOL_REF_DECL (symbol))
 			 >= BUILT_IN_ASAN_REPORT_LOAD1
 		      && DECL_FUNCTION_CODE (SYMBOL_REF_DECL (symbol))
-			 <= BUILT_IN_ASAN_REPORT_STORE16)
+			 <= BUILT_IN_ASAN_STOREN)
 		    return dir_none;
 		}
 	    }
