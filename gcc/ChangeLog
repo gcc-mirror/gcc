@@ -1,3 +1,9 @@
+2014-06-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/61522
+	* lra-assigns.c (assign_by_spills): Check null
+	targetm.spill_class.
+
 2014-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	Revert:
