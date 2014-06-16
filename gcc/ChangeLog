@@ -1,3 +1,9 @@
+2014-06-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/61430
+	* lra-lives.c (process_bb_lives): Skip creating copy during
+	insn scan when src/dest has constrained to same regno.
+
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Check again
