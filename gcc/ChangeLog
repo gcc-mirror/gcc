@@ -1,3 +1,19 @@
+2014-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	Revert:
+	* symtab.c (symtab_node::reset_section): New method.
+	* cgraph.c (cgraph_node_cannot_be_local_p_1): Accept non-local
+	for localization.
+	* cgraph.h (reset_section): Declare.
+	* ipa-inline-analysis.c (do_estimate_growth): Check for comdat groups;
+	do not consider comdat locals.
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Get section
+	for new symbol.
+	* ipa-visiblity.c (cgraph_externally_visible_p): Cleanup.
+	(update_visibility_by_resolution_info): Consider UNDEF; fix checking;
+	reset sections of symbols dragged out of the comdats.
+	(function_and_variable_visibility): Reset sections of localized symbols.
+
 2014-06-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61482
