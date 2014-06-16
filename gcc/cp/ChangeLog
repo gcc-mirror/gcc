@@ -1,3 +1,8 @@
+2014-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61500
+	* tree.c (lvalue_kind): Handle MEMBER_REF and DOTSTAR_EXPR.
+
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* decl.c (grokvardecl): Fix pasto in previous patch.
