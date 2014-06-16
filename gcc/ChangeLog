@@ -1,3 +1,9 @@
+2014-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61482
+	* tree-vrp.c (adjust_range_with_scev): Avoid setting of
+	[-INF(OVF), +INF(OVF)] range.
+
 2014-06-16  Ganesh Gopalasubramanian <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): Issue

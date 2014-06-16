@@ -1,3 +1,8 @@
+2014-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61482
+	* g++.dg/torture/pr61482.C: New testcase.
+
 2014-06-16 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* gcc.target/i386/xop-imul64-vector.c: Remove the check for
