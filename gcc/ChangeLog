@@ -1,3 +1,9 @@
+2014-06-16  Ganesh Gopalasubramanian <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): Issue 
+	instructions "vpmuludq" and "vpaddq" instead of "vpmacsdql" for 
+	handling 32-bit multiplication.
+
 2014-06-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR middle-end/61430

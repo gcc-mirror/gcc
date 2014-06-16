@@ -1,3 +1,8 @@
+2014-06-16 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* gcc.target/i386/xop-imul64-vector.c: Remove the check for
+	vpmacsdql instruction.
+
 2014-06-16  Yury Gribov  <y.gribov@samsung.com>
 
 	* c-c++-common/asan/instrument-with-calls-1.c: New test.
