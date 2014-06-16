@@ -1,3 +1,24 @@
+2014-06-16  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (check_func): New function.
+	(maybe_create_ssa_name): Likewise.
+	(build_check_stmt_with_calls): Likewise.
+	(use_calls_p): Likewise.
+	(report_error_func): Change interface.
+	(build_check_stmt): Allow non-integer lengths; add support
+	for new parameter.
+	(asan_instrument): Likewise.
+	(instrument_mem_region_access): Moved code to
+	build_check_stmt.
+	(instrument_derefs): Likewise.
+	(instrument_strlen_call): Likewise.
+	* cfgcleanup.c (old_insns_match_p): Add support for new
+	functions.
+	* doc/invoke.texi: Describe new parameter.
+	* params.def: Define new parameter.
+	* params.h: Likewise.
+	* sanitizer.def: Describe new builtins.
+
 2014-06-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
