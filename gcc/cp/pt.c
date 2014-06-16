@@ -5350,6 +5350,10 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
     return true;
   if (cxx_dialect >= cxx11 && null_member_pointer_value_p (expr))
     return true;
+  if (processing_template_decl
+      && TREE_CODE (expr) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (expr, 0)) == OFFSET_REF)
+    return true;
   if (complain & tf_error)
     {
       error ("%qE is not a valid template argument for type %qT",
