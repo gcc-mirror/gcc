@@ -1,4 +1,4 @@
-2014-06-13  Jason Merrill  <jason@redhat.com>
+2014-06-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61488
 	* pt.c (check_valid_ptrmem_cst_expr): Fix for template context.
