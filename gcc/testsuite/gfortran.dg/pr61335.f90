@@ -45,8 +45,8 @@ CONTAINS
     LOGICAL                                  :: failure
 
     failure=.FALSE.
-    unit_id=cp_units_none
-    kind_id=cp_ukind_none
+    unit_id=0
+    kind_id=0
     power=0
     i_low=1
     i_high=1

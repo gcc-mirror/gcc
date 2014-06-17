@@ -1,3 +1,8 @@
+2014-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/pr61335.f90 (cp_unit_create): Initialize
+	unit_id and kind_id to zero.
+
 2014-06-17  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	PR target/61483
@@ -29,7 +34,7 @@
 	PR tree-optimization/61482
 	* g++.dg/torture/pr61482.C: New testcase.
 
-2014-06-16 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+2014-06-16  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* gcc.target/i386/xop-imul64-vector.c: Remove the check for
 	vpmacsdql instruction.
@@ -41,18 +46,12 @@
 	* c-c++-common/asan/instrument-with-calls-3.c: Likewise.
 	* c-c++-common/asan/no-redundant-instrumentation-1.c: Update
 	test patterns.
-	* c-c++-common/asan/no-redundant-instrumentation-2.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-4.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-5.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-6.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-7.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-8.c:
-	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-4.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-5.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-6.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-8.c: Likewise.
 
 2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -364,8 +363,8 @@
 	* gcc.target/i386/avx512f-vpmuldq-2.c: Ditto.
 	* gcc.target/i386/avx512f-vrndscalepd-2.c: Ditto.
 	* gcc.target/i386/i386.exp: Ditto.
-	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Add static void for CALC,
-	void for TEST instead of static void, initialize variables.
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Add static void for
+	CALC, void for TEST instead of static void, initialize variables.
 	* gcc.target/i386/avx512cd-vpbroadcastmw2d-2.c: Ditto.
 	* gcc.target/i386/avx512cd-vpconflictd-2.c: Void for TEST instead of
 	static void.
@@ -515,8 +514,8 @@
 	* gcc.target/i386/avx512f-vpmovusqd-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpmovusqw-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpmaxud-2.c: Add static void for CALC,
-	void for TEST instead of static void, change parameters for UNION_CHECK,
-	UNION_TYPE, MASK_MERGE and MASK_ZERO.
+	void for TEST instead of static void, change parameters for
+	UNION_CHECK, UNION_TYPE, MASK_MERGE and MASK_ZERO.
 	* gcc.target/i386/avx512f-vpmaxuq-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpminud-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpminuq-2.c: Ditto.
@@ -559,7 +558,8 @@
 2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/61062
-	* gcc.target/arm/pr48252.c (main): Expect same result as endian-neutral.
+	* gcc.target/arm/pr48252.c (main): Expect same result
+	as endian-neutral.
 
 2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -692,8 +692,7 @@
 2014-06-05  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
-	* gcc.target/arm/pr45094.c: Remove -mcpu=cortex-a8, dg-skip-if
-	options.
+	* gcc.target/arm/pr45094.c: Remove -mcpu=cortex-a8, dg-skip-if options.
 
 2014-06-05  Richard Biener  <rguenther@suse.de>
 
@@ -2465,7 +2464,7 @@
 2014-04-24  Dinar Temirbulatov  <dtemirbulatov@gmail.com>
 
 	PR c++/57958
-	* testsuite/g++.dg/cpp0x/pr57958.C: New test.
+	* g++.dg/cpp0x/pr57958.C: New test.
 
 2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
@@ -3155,7 +3154,7 @@
 2014-04-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60659
-	* testsuite/g++.dg/torture/pr60659.C: New testcase.
+	* g++.dg/torture/pr60659.C: New testcase.
 
 2014-04-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -4060,7 +4059,7 @@
 2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60306
-	* testsuite/g++.dg/ipa/devirt-29.C: New testcase
+	* g++.dg/ipa/devirt-29.C: New testcase
 
 2014-03-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
