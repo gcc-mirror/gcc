@@ -2508,8 +2508,7 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
      linear.  Don't modify the original vector's order, it is needed for
      determining what dependencies are reversed.  */
   vec<data_reference_p> datarefs_copy = datarefs.copy ();
-  qsort (datarefs_copy.address (), datarefs_copy.length (),
-	 sizeof (data_reference_p), dr_group_sort_cmp);
+  datarefs_copy.qsort (dr_group_sort_cmp);
 
   /* Build the interleaving chains.  */
   for (i = 0; i < datarefs_copy.length () - 1;)
