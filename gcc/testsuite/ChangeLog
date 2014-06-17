@@ -1,5 +1,13 @@
 2014-06-17  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/20041122-1.c: Adjust.
+	* gcc.dg/tree-ssa/forwprop-21.c: Likewise.
+	* gcc.dg/tree-ssa/vrp35.c: Revert previous adjustments.
+	* gcc.dg/tree-ssa/vrp36.c: Likewise.
+	* gcc.dg/vect/nodump-forwprop-22.c: Adjust.
+
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/ssa-lim-12.c: New testcase.
 
 2014-06-16  Richard Biener  <rguenther@suse.de>
