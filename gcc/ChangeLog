@@ -1,3 +1,9 @@
+2014-06-17  Xinliang David Li  <davidxl@google.com>
+
+	* tree-pretty-print.c (dump_function_header): Print cgraph uid.
+	* passes.c (pass_init_dump_file): Do not set initialize
+	flag to false unconditionally.
+
 2014-06-17  Richard Biener  <rguenther@suse.de>
 
 	* genopinit.c (main): Use vec<>::qsort method.
