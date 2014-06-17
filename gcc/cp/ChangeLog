@@ -1,3 +1,8 @@
+2014-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60605
+	* pt.c (check_default_tmpl_args): Check DECL_LOCAL_FUNCTION_P.
+
 2014-06-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61488
