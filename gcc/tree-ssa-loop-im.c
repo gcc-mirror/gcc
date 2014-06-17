@@ -729,14 +729,21 @@ determine_max_movement (gimple stmt, bool must_preserve_exec)
 	    }
 	  if (!add_dependency (val, lim_data, loop, false))
 	    return false;
-	  def_data = get_lim_data (SSA_NAME_DEF_STMT (val));
-	  if (def_data)
+
+	  gimple def_stmt = SSA_NAME_DEF_STMT (val);
+	  if (gimple_bb (def_stmt)
+	      && gimple_bb (def_stmt)->loop_father == loop)
 	    {
-	      min_cost = MIN (min_cost, def_data->cost);
-	      total_cost += def_data->cost;
+	      def_data = get_lim_data (def_stmt);
+	      if (def_data)
+		{
+		  min_cost = MIN (min_cost, def_data->cost);
+		  total_cost += def_data->cost;
+		}
 	    }
 	}
 
+      min_cost = MIN (min_cost, total_cost);
       lim_data->cost += min_cost;
 
       if (gimple_phi_num_args (stmt) > 1)
