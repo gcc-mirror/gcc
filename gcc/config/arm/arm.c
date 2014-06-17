@@ -24762,7 +24762,7 @@ arm_init_builtins (void)
   if (TARGET_CRC32)
     arm_init_crc32_builtins ();
 
-  if (TARGET_VFP)
+  if (TARGET_VFP && TARGET_HARD_FLOAT)
     {
       tree ftype_set_fpscr
 	= build_function_type_list (void_type_node, unsigned_type_node, NULL);
@@ -31454,8 +31454,8 @@ arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree new_fenv_var, reload_fenv, restore_fnenv;
   tree update_call, atomic_feraiseexcept, hold_fnclex;
 
-  if (!TARGET_VFP)
-    return;
+  if (!TARGET_VFP || !TARGET_HARD_FLOAT)
+    return default_atomic_assign_expand_fenv (hold, clear, update);
 
   /* Generate the equivalent of :
        unsigned int fenv_var;
