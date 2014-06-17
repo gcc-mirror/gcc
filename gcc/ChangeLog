@@ -1,3 +1,12 @@
+2014-06-17  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips-protos.h (mips_expand_fcc_reload): Remove.
+	* config/mips/mips.c (mips_expand_fcc_reload): Remove.
+	(mips_move_to_gpr_cost): Remove ST_REGS case.
+	(mips_move_from_gpr_cost): Likewise.
+	(mips_register_move_cost): Likewise.
+	(mips_secondary_reload_class): Likewise.
+
 2014-06-17  Richard Biener  <rguenther@suse.de>
 
 	* passes.def (pass_all_early_optimizations): Remove copy-prop pass.

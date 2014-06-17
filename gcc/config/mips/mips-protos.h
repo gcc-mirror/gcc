@@ -232,7 +232,6 @@ extern bool mips_use_pic_fn_addr_reg_p (const_rtx);
 extern rtx mips_expand_call (enum mips_call_type, rtx, rtx, rtx, rtx, bool);
 extern void mips_split_call (rtx, rtx);
 extern bool mips_get_pic_call_symbol (rtx *, int);
-extern void mips_expand_fcc_reload (rtx, rtx, rtx);
 extern void mips_set_return_address (rtx, rtx);
 extern bool mips_move_by_pieces_p (unsigned HOST_WIDE_INT, unsigned int);
 extern bool mips_store_by_pieces_p (unsigned HOST_WIDE_INT, unsigned int);
