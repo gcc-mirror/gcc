@@ -1,5 +1,11 @@
 2014-06-17  Richard Biener  <rguenther@suse.de>
 
+	* passes.def (pass_all_early_optimizations): Remove copy-prop pass.
+	(pass_all_optimizations): Move 3rd copy-prop pass from after
+	fre to before ifcombine/phiopt.
+
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
 	* tree-switch-conversion.c (collect_switch_conv_info): Simplify
 	and allow all blocks to be forwarders.
 
