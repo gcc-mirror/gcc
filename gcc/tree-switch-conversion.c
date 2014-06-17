@@ -640,15 +640,16 @@ collect_switch_conv_info (gimple swtch, struct switch_conv_info *info)
       info->other_count += e->count;
 
   /* See if there is one common successor block for all branch
-     targets.  If it exists, record it in FINAL_BB.  */
-  FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
-    {
-      if (! single_pred_p (e->dest))
-	{
-	  info->final_bb = e->dest;
-	  break;
-	}
-    }
+     targets.  If it exists, record it in FINAL_BB.
+     Start with the destination of the default case as guess
+     or its destination in case it is a forwarder block.  */
+  if (! single_pred_p (e_default->dest))
+    info->final_bb = e_default->dest;
+  else if (single_succ_p (e_default->dest)
+	   && ! single_pred_p (single_succ (e_default->dest)))
+    info->final_bb = single_succ (e_default->dest);
+  /* Require that all switch destinations are either that common
+     FINAL_BB or a forwarder to it.  */
   if (info->final_bb)
     FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
       {
