@@ -1,3 +1,9 @@
+2014-06-17  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
+
+	Revert on gcc-4_8-branch.
+	* config/microblaze/microblaze.md: Add movsi4_rev insn pattern.
+	* config/microblaze/predicates.md: Add reg_or_mem_operand predicate.
+
 2014-06-17  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	Backport from mainline
