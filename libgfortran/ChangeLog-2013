@@ -1,0 +1,404 @@
+2013-12-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* io/read.c (read_f): Convert assert to runtime error.
+
+2013-12-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* io/unix.c (tempfile_open): Only use the needed flag O_CLOEXEC.
+
+2013-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/59419
+	* io/file_pos.c (st_rewind): Do proper return after
+	generate_error.
+	* io/open.c (edit_modes): Move action code inside block that
+	checks for library ok. (new_unit): Do cleanup after error.
+	(st_open): Do proper return after error.
+	* io/transfer.c (data_transfer_init): Likewise.
+
+2013-12-11  Tobias Burnus  <burnus@net-b.de>
+
+	* config/fpu-387.h (sigill_hdlr, get_fpu_rounding_mode): Emit SSE
+	instructions when __SSE_MATH__ is defined.
+
+2013-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* intrinsics/erfc_scaled.c (_M_2_SQRTPI): Define if missing.
+
+2013-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libfortran/59313
+	* intrinsics/erfc_scaled.c (erfc_scaled_r16): Also provide for
+	quadruple precision long double variant.
+
+2013-11-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/erfc_scaled.c (erfc_scaled_r16): Don't define if
+	__float128 is not available.
+
+2013-11-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/49024
+	* intrinsics/erfc_scaled.c (erfc_scaled_r16): New function.
+	* intrinsics/erfc_scaled_inc.c: Do not provide quadruple
+	precision variant.
+
+2013-11-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/51828
+	* intrinsics/unpack_generic.c (unpack_internal): Let the compiler
+	know that dim > 0 to avoid warnings.
+
+2013-11-15  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/59108
+	* io/unix.c (regular_file): Don't set O_CREAT when opening a file
+	read-only with unknown status. Mask out O_CREAT when falling back
+	to opening read-only if ACTION= is not set and read-write fails.
+
+2013-11-15  Steve Ellcey  <sellcey@mips.com>
+
+	* configure.ac: Do not define HAVE_STRTOLD.
+	* configure: Regenerate.
+
+2013-11-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Check presence of mkostemp.
+	* io/unix.c (set_close_on_exec): New function.
+	(tempfile_open): Use mkostemp and O_CLOEXEC if available, fallback
+	to calling set_close_on_exec.
+	(regular_file): Add O_CLOEXEC to flags if defined.
+	(open_external): Call set_close_on_exec if O_CLOEXEC is not
+	defined.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+
+2013-10-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55469
+	* io/list_read (parse_repeat, read_integer, read_character,
+	parse_real, read_real, check_type, list_formatted_read_scalar,
+	finish_list_read): Call list_free.
+
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2013-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (get_fpu_rounding_mode): Read rounding mode
+	from SSE mxcsr register on x86_64.
+
+2013-07-21  Ondřej Bílka  <neleai@seznam.cz>
+
+	* io/transfer.c: Fix comment typos.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35862
+	* config/fpu-387.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Add missing _ to fix build.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/35862
+	* libgfortran.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): New prototypes.
+	* config/fpu-387.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): New functions.
+	* config/fpu-aix.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* config/fpu-generic.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* config/fpu-glibc.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* config/fpu-sysv.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* configure.ac: Check for fp_rnd and fp_rnd_t.
+	* io/io.h (enum unit_round): Use GFC_FPE_* for the value.
+	* io/read.c (convert_real): Set FP ronding mode.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2013-06-24  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Check for fp_except and fp_except_t.
+	* config/fpu-sysv.h: Conditionally use either type.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2013-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/fpu-sysv.h (get_fpu_except_flags): Fix typo.
+
+2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (_FPU_MASK_ALL): New.
+	(_FPU_EX_ALL): Ditto.
+	(set_fpu): Use fstcw to store x87 FPU control word. Use fnclex to
+	clear stalled exception flags.  Correctly clear stalled SSE
+	exception flags.  Simplify code.
+	(get_fpu_except_flags): Simplify code.
+
+2013-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57633
+	* io/list_read.c (next_char, eat_separator): Don't set EOL for \r.
+
+2013-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h: Use __asm__ and __volatile__ consistently.
+	(get_fpu_except_flags): Initialize result.
+
+2013-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	* libgfortran.h (compile_options_t) Add fpe_summary.
+	(get_fpu_except_flags): New prototype.
+	* runtime/compile_options.c (set_options, init_compile_options):
+	Handle fpe_summary.
+	* runtime/stop.c (report_exception): New function.
+	(stop_numeric, stop_numeric_f08, stop_string, error_stop_string,
+	error_stop_numeric): Call it.
+	* config/fpu-387.h (get_fpu_except_flags): New function.
+	* config/fpu-aix.h (get_fpu_except_flags): New function.
+	* config/fpu-generic.h (get_fpu_except_flags): New function.
+	* config/fpu-glibc.h (get_fpu_except_flags): New function.
+	* config/fpu-sysv.h (get_fpu_except_flags): New function.
+	* configure.ac: Check for fpxcp.h.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2013-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57496
+	* io/write_float.def (ISFINITE2Q, ISFINITE2, ISFINITE2L, ISFINITE,
+	SIGNBIT2Q, SIGNBIT2, SIGNBIT2L, SIGNBIT, ISNAN2Q, ISNAN2, ISNAN2L,
+	ISNAN): New macros.
+	(output_float_FMT_G_,WRITE_FLOAT): Use them.
+
+2013-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (libgfor_cv_have_as_needed): Check for -z ignore, too.
+	* configure: Regenerate.
+
+2013-05-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* caf/libcaf.h (_gfortran_caf_critical): Add a prototype.
+	(_gfortran_caf_end_critical): Same.
+
+2013-05-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* runtime/environ.c: Include unistd.h.
+	* runtime/pause.c: Test HAVE_UNISTD_H.
+	* runtime/stop.c: Same.
+	* io/open.c: Same.
+	* io/unix.c: Same.
+	* io/read.c (si_max): Protect declaration of value.
+
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/system_clock (gf_gettime_mono): Use variable
+	resolution for fractional seconds argument.
+	(system_clock_4): Simplify, update for gf_gettime_mono change.
+	(system_clock_8): Likewise.
+
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/56981
+	* io/transfer.c (next_record_w_unf): First fix head marker, then
+	write tail.
+	(next_record): Call flush_if_unbuffered.
+	* io/unix.c (struct unix_stream): Add field unbuffered.
+	(flush_if_unbuffered): New function.
+	(fd_to_stream): New argument.
+	(open_external): Fix fd_to_stream call.
+	(input_stream): Likewise.
+	(output_stream): Likewise.
+	(error_stream): Likewise.
+	* io/unix.h (flush_if_unbuffered): New prototype.
+
+2013-04-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/system_clock.c (system_clock_4): Fix sign error in
+	Windows version.
+
+2013-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	* list_read.c (finish_separator): Initialize variable.
+
+2013-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/56919
+	* intrinsics/time_1.h: Check __CYGWIN__ in addition to
+	__MINGW32__.
+	* intrinsics/system_clock.c (GF_CLOCK_MONOTONIC): Check
+	_POSIX_MONOTONIC_CLOCK as well.
+	(system_clock_4): Use GetTickCount on Windows.
+	(system_clock_8): Use QueryPerformanceCounter and
+	QueryPerformanceCounterFrequency on Windows.
+
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56810
+	* io/list_read.c (check_type): Fix kind checking for COMPLEX.
+
+2013-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56660
+	* io/list_read.c (nml_read_obj): Do not reset the read error flag
+	inside nml_read_obj. If the read error flag is found set just exit.
+	Fix some whitespace on comments.
+	(nml_read_obj_data): Reset the read error flag before the first call
+	to nml_read_object.
+
+2013-03-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56786
+	* io/list_read.c (nml_parse_qualifier): Remove spurious next_char call
+	when checking for EOF. Use error return mechanism when EOF detected.
+	Do not return false unless parse_err_msg and parse_err_msg_size have
+	been set. Use hit_eof.
+	(nml_get_obj_data): Likewise use the correct error mechanism.
+	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
+	mode.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format_list): Also cache FMT_STRING.
+	(parse_format): Update call.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format): With caching, copy
+	dtp->format string.
+	(save_parsed_format): Use dtp->format directy without
+	copying.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* io/list_read.c (nml_query): Only abort when
+	an error occured.
+	(namelist_read): Add goto instead of falling through.
+
+2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/52512
+	* io/list_read.c (nml_parse_qualifier): To check for a derived type
+	don't use the namelist head element type but the current element type.
+	(nml_get_obj_data): Add current namelist element type to
+	nml_parse_qualifier call.
+
+2013-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56696
+	* io/list_read.c (read_real): Fix EOF diagnostic.
+
+2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/51825
+	* io/list_read.c (nml_read_obj): Don't end the component loop on a
+	nested derived type, but continue with the next loop iteration.
+	(nml_get_obj_data): Don't move the first_nl pointer further in the
+	list if a qualifier was found.
+
+2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/48618
+	* io/open.c (st_open): Raise error for unit number < 0 only if
+	unit number does not exist already.
+
+2013-03-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h: Include stdbool.h.
+	(enum try): Remove.
+	(notify_std): Change return type to bool.
+	* intrinsics/chmod.c: Don't include stdbool.h.
+	* intrinsics/execute_command_line.c: Likewise.
+	* io/format.c: Likewise.
+	* io/list_read.c (nml_parse_qualifier): Change return type to bool.
+	(nml_read_obj): Likewise.
+	(nml_get_obj_data): Likewise.
+	* io/transfer.c (read_block_form): Fix comment.
+	(write_buf): Change return type to bool.
+	* io/write.c: Don't include stdbool.h.
+	* io/write_float.def (output_float): Change return type to bool.
+	(output_float_FMT_G_ ## x): Change type of result variable.
+	* runtime/error.c (notify_std): Change return type to bool.
+
+2013-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	* io/transfer.c (read_block_direct): Correct condition.
+	* intrinsics/execute_command_line.c (execute_command_line):
+	Remove dead code for the HAVE_FORK case.
+
+2013-02-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/30162
+	* io/open.c (test_endfile): Call stell only if size != 0.
+	* io/unix.c (raw_tell): Revert r194679.
+	(raw_size): Return size field only for regular files, otherwise 0.
+
+2013-02-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/56347
+	* acinclude.m4 (LIBGFOR_CHECK_FOR_BROKEN_POWF): Remove check for
+	broken powf.
+	* configure.ac (LIBGFOR_CHECK_FOR_BROKEN_POWF): Likewise.
+	* intrinsics/c99_functions.c: Likewise.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+
+2013-02-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55978
+	* runtime/in_pack_generic.c (internal_pack): Return if base_addr is
+	NULL.
+
+2013-01-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/file_pos.c (unformatted_backspace): Use __builtin_bswapXX
+	instead of reverse_memcpy.
+	* io/io.h (reverse_memcpy): Remove prototype.
+	* io/transfer.c (reverse_memcpy): Make static, move towards
+	beginning of file.
+	(bswap_array): New function.
+	(unformatted_read): Use bswap_array to byte swap the data
+	in-place.
+	(unformatted_write): Use a larger temp buffer and bswap_array.
+	(us_read): Use __builtin_bswapXX instead of reverse_memcpy.
+	(write_us_marker): Likewise.
+
+2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years.
+
+2013-01-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54678
+	* intrinsics/env.c (get_environment_variable_i8): Don't use
+	uninitialized variable.
+
+2013-01-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/55818
+	* io/list_read.c (read_real): Do not call hit_eof when EOF can be
+	treated as a value separator.
+	(parse_real): Likewise.
+	(read_logical): Likewise.
+	(read_character): Likewise.
+	(read_complex): Likewise.
+
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
