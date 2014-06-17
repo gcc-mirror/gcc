@@ -1,3 +1,8 @@
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-switch-conversion.c (collect_switch_conv_info): Simplify
+	and allow all blocks to be forwarders.
+
 2014-06-17  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	PR target/61483
