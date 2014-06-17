@@ -164,7 +164,7 @@ string_trim (gfc_charlen_type *len, CHARTYPE **dest, gfc_charlen_type slen,
   else
     {
       /* Allocate space for result string.  */
-      *dest = xmalloc (*len * sizeof (CHARTYPE));
+      *dest = xmallocarray (*len, sizeof (CHARTYPE));
 
       /* Copy string if necessary.  */
       memcpy (*dest, src, *len * sizeof (CHARTYPE));
@@ -442,7 +442,7 @@ string_minmax (gfc_charlen_type *rlen, CHARTYPE **dest, int op, int nargs, ...)
     *dest = &zero_length_string;
   else
     {
-      CHARTYPE *tmp = xmalloc (*rlen * sizeof (CHARTYPE));
+      CHARTYPE *tmp = xmallocarray (*rlen, sizeof (CHARTYPE));
       memcpy (tmp, res, reslen * sizeof (CHARTYPE));
       MEMSET (&tmp[reslen], ' ', *rlen - reslen);
       *dest = tmp;

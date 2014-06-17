@@ -167,8 +167,8 @@ pack_r16 (gfc_array_r16 *ret, const gfc_array_r16 *array,
 
 	  ret->offset = 0;
 
-	  /* xmalloc allocates a single byte for zero size.  */
-	  ret->base_addr = xmalloc (sizeof (GFC_REAL_16) * total);
+	  /* xmallocarray allocates a single byte for zero size.  */
+	  ret->base_addr = xmallocarray (total, sizeof (GFC_REAL_16));
 
 	  if (total == 0)
 	    return;

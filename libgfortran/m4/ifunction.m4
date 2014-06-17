@@ -85,10 +85,9 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
 
-      alloc_size = sizeof (rtype_name) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
-    		   * extent[rank-1];
+      alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
-      retarray->base_addr = xmalloc (alloc_size);
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -260,8 +259,7 @@ void
 
 	}
 
-      alloc_size = sizeof (rtype_name) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
-    		   * extent[rank-1];
+      alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
@@ -273,7 +271,7 @@ void
 	  return;
 	}
       else
-	retarray->base_addr = xmalloc (alloc_size);
+	retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
 
     }
   else
@@ -417,8 +415,7 @@ void
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
 
-      alloc_size = sizeof (rtype_name) * GFC_DESCRIPTOR_STRIDE(retarray,rank-1)
-    		   * extent[rank-1];
+      alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       if (alloc_size == 0)
 	{
@@ -427,7 +424,7 @@ void
 	  return;
 	}
       else
-	retarray->base_addr = xmalloc (alloc_size);
+	retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
     }
   else
     {

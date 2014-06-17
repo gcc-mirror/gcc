@@ -124,7 +124,7 @@ matmul_r10 (gfc_array_r10 * const restrict retarray,
         }
 
       retarray->base_addr
-	= xmalloc (sizeof (GFC_REAL_10) * size0 ((array_t *) retarray));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_REAL_10));
       retarray->offset = 0;
     }
     else if (unlikely (compile_options.bounds_check))

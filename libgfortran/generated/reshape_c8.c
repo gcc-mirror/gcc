@@ -111,11 +111,11 @@ reshape_c8 (gfc_array_c8 * const restrict ret,
       ret->offset = 0;
 
       if (unlikely (rs < 1))
-        alloc_size = 1;
+        alloc_size = 0;
       else
-        alloc_size = rs * sizeof (GFC_COMPLEX_8);
+        alloc_size = rs;
 
-      ret->base_addr = xmalloc (alloc_size);
+      ret->base_addr = xmallocarray (alloc_size, sizeof (GFC_COMPLEX_8));
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
 

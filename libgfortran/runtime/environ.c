@@ -837,7 +837,7 @@ void init_unformatted (variable * v)
     }
   else
     {
-      elist = xmalloc (unit_count * sizeof (exception_t));
+      elist = xmallocarray (unit_count, sizeof (exception_t));
       do_count = 0;
       p = val;
       do_parse ();
