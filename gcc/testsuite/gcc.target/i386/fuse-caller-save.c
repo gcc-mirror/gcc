@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fuse-caller-save" } */
+/* { dg-options "-O2 -fuse-caller-save -fomit-frame-pointer" } */
 /* { dg-additional-options "-mregparm=1" { target ia32 } } */
 
 /* Testing -fuse-caller-save optimization option.  */

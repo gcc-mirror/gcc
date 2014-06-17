@@ -1,3 +1,9 @@
+2014-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/61533
+	* gcc.target/i386/fuse-caller-save.c: Add -fomit-frame-pointer to
+	dg-options.
+
 2014-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/pr61335.f90 (cp_unit_create): Initialize
