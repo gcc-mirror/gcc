@@ -1,3 +1,8 @@
+2014-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-dfa.h (get_addr_base_and_unit_offset_1): Move from here.
+	* tree-dfa.c (get_addr_base_and_unit_offset_1): To here.
+
 2014-06-17  Xinliang David Li  <davidxl@google.com>
 
 	* tree-pretty-print.c (dump_function_header): Print cgraph uid.
