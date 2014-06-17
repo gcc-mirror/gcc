@@ -627,6 +627,7 @@ MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
 enable_static
 enable_shared
+lt_host_flags
 CPP
 OTOOL64
 OTOOL
@@ -655,6 +656,7 @@ CCAS
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
+am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
@@ -3131,11 +3133,11 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
-# Always define AMTAR for backward compatibility.
+# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AMTAR='$${TAR-tar}'
 
-AMTAR=${AMTAR-"${am_missing_run}tar"}
-
-am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
+am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
@@ -4033,6 +4035,7 @@ fi
 if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
   AMDEPBACKSLASH='\'
+  am__nodep='_no'
 fi
  if test "x$enable_dependency_tracking" != xno; then
   AMDEP_TRUE=
@@ -4057,6 +4060,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -4116,7 +4120,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -4191,6 +4195,7 @@ else
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -4248,7 +4253,7 @@ else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -11106,7 +11111,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11109 "configure"
+#line 11114 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11212,7 +11217,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11215 "configure"
+#line 11220 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11452,6 +11457,28 @@ CC="$lt_save_CC"
 
 
 
+case $host in
+  *-cygwin* | *-mingw*)
+    # 'host' will be top-level target in the case of a target lib,
+    # we must compare to with_cross_host to decide if this is a native
+    # or cross-compiler and select where to install dlls appropriately.
+    if test -n "$with_cross_host" &&
+	test x"$with_cross_host" != x"no"; then
+      lt_host_flags='-no-undefined -bindir "$(toolexeclibdir)"';
+    else
+      lt_host_flags='-no-undefined -bindir "$(bindir)"';
+    fi
+    ;;
+  *)
+    lt_host_flags=
+    ;;
+esac
+
+
+
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable maintainer-specific portions of Makefiles" >&5
 $as_echo_n "checking whether to enable maintainer-specific portions of Makefiles... " >&6; }
     # Check whether --enable-maintainer-mode was given.
@@ -11478,6 +11505,13 @@ fi
 # For libtool versioning info, format is CURRENT:REVISION:AGE
 libtool_VERSION=2:0:1
 
+
+# Check for used threading-model
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for thread model used by GCC" >&5
+$as_echo_n "checking for thread model used by GCC... " >&6; }
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
+$as_echo "$target_thread_file" >&6; }
 
 # Get target configury.
 . ${srcdir}/configure.tgt

@@ -108,6 +108,17 @@ case "${target}" in
 	config_path="${config_path} posix"
 	;;
 
+  *-*-mingw*)
+	# OS support for atomic primitives.
+        case ${target_thread_file} in
+          win32)
+            config_path="${config_path} mingw"
+            ;;
+          posix)
+            config_path="${config_path} posix"
+            ;;
+        esac
+	;;
   *-*-elf*)
 	# ??? No target OS.  We could be targeting bare-metal kernel-mode,
 	# or user-mode for some custom OS.  If the target supports TAS,
