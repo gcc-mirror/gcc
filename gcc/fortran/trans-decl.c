@@ -127,6 +127,9 @@ tree gfor_fndecl_caf_this_image;
 tree gfor_fndecl_caf_num_images;
 tree gfor_fndecl_caf_register;
 tree gfor_fndecl_caf_deregister;
+tree gfor_fndecl_caf_get;
+tree gfor_fndecl_caf_send;
+tree gfor_fndecl_caf_sendget;
 tree gfor_fndecl_caf_critical;
 tree gfor_fndecl_caf_end_critical;
 tree gfor_fndecl_caf_sync_all;
@@ -3327,6 +3330,22 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("caf_deregister")), ".WWW", void_type_node, 4,
         ppvoid_type_node, pint_type, pchar_type_node, integer_type_node);
 
+      gfor_fndecl_caf_get = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_get")), ".R.RRRW", void_type_node, 8,
+        pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
+	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node);
+
+      gfor_fndecl_caf_send = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_send")), ".R.RRRR", void_type_node, 8,
+        pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
+	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node);
+
+      gfor_fndecl_caf_sendget = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_sendget")), ".R.RRRR.RRR", void_type_node,
+	12, pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
+	pvoid_type_node, pvoid_type_node, size_type_node, integer_type_node,
+	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node);
+
       gfor_fndecl_caf_critical = gfc_build_library_function_decl (
 	get_identifier (PREFIX("caf_critical")), void_type_node, 0);
 
@@ -3355,18 +3374,18 @@ gfc_build_builtin_function_decls (void)
       TREE_THIS_VOLATILE (gfor_fndecl_caf_error_stop_str) = 1;
 
       gfor_fndecl_co_max = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_co_max")), "WR.WW",
-	void_type_node, 7, pvoid_type_node, pvoid_type_node, integer_type_node,
+	get_identifier (PREFIX("caf_co_max")), "W.WW",
+	void_type_node, 6, pvoid_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node, integer_type_node);
 
       gfor_fndecl_co_min = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_co_min")), "WR.WW",
-	void_type_node, 7, pvoid_type_node, pvoid_type_node, integer_type_node,
+	get_identifier (PREFIX("caf_co_min")), "W.WW",
+	void_type_node, 6, pvoid_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node, integer_type_node);
 
       gfor_fndecl_co_sum = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_co_sum")), "WR.WW",
-	void_type_node, 6, pvoid_type_node, pvoid_type_node, integer_type_node,
+	get_identifier (PREFIX("caf_co_sum")), "W.WW",
+	void_type_node, 5, pvoid_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node);
     }
 

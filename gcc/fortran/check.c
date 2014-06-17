@@ -1008,6 +1008,11 @@ gfc_check_atan2 (gfc_expr *y, gfc_expr *x)
 static bool
 gfc_check_atomic (gfc_expr *atom, gfc_expr *value)
 {
+  if (atom->expr_type == EXPR_FUNCTION
+      && atom->value.function.isym
+      && atom->value.function.isym->id == GFC_ISYM_CAF_GET)
+    atom = atom->value.function.actual->expr;
+
   if (!(atom->ts.type == BT_INTEGER && atom->ts.kind == gfc_atomic_int_kind)
       && !(atom->ts.type == BT_LOGICAL
 	   && atom->ts.kind == gfc_atomic_logical_kind))
@@ -1040,6 +1045,11 @@ gfc_check_atomic (gfc_expr *atom, gfc_expr *value)
 bool
 gfc_check_atomic_def (gfc_expr *atom, gfc_expr *value)
 {
+  if (atom->expr_type == EXPR_FUNCTION
+      && atom->value.function.isym
+      && atom->value.function.isym->id == GFC_ISYM_CAF_GET)
+    atom = atom->value.function.actual->expr;
+
   if (!scalar_check (atom, 0) || !scalar_check (value, 1))
     return false;
 

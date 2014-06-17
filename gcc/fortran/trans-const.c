@@ -81,6 +81,7 @@ gfc_build_string_const (int length, const char *s)
     build_array_type (gfc_character1_type_node,
 		      build_range_type (gfc_charlen_type_node,
 					size_one_node, len));
+  TYPE_STRING_FLAG (TREE_TYPE (str)) = 1;
   return str;
 }
 
@@ -110,6 +111,7 @@ gfc_build_wide_string_const (int kind, int length, const gfc_char_t *string)
     build_array_type (gfc_get_char_type (kind),
 		      build_range_type (gfc_charlen_type_node,
 					size_one_node, len));
+  TYPE_STRING_FLAG (TREE_TYPE (str)) = 1;
   return str;
 }
 

@@ -1,3 +1,13 @@
+2014-06-17  Tobias Burnus  <burnus@net-b.de>
+	    Alessandro Fanfarillo <alessandro.fanfarillo@gmail.com>
+
+	* gfortran.dg/coarray/send_array.f90: New.
+	* gfortran.dg/coarray/get_array.f90: New.
+	* gfortran.dg/coarray/sendget_array.f90: New.
+	* gfortran.dg/coarray/collectives_1.f90: Correct subroutine
+	names.
+	* gfortran.dg/coarray/collectives_2.f90: New.
+
 2014-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/61533

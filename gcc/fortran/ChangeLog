@@ -1,3 +1,35 @@
+2014-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_atomic, gfc_check_atomic_def):
+	Use argument for GFC_ISYM_CAF_GET.
+	* resolve.c (resolve_variable): Enable CAF_GET insertion.
+	(resolve_lock_unlock): Remove GFC_ISYM_CAF_GET.
+	(resolve_ordinary_assign): Enable CAF_SEND insertion.
+	* trans-const.c (gfc_build_string_const,
+	gfc_build_wide_string_const): Set TYPE_STRING_FLAG.
+	* trans-decl.c (gfor_fndecl_caf_get, gfor_fndecl_caf_send,
+	gfor_fndecl_caf_sendget): New global variables.
+	(gfc_build_builtin_function_decls): Initialize them;
+	update co_min/max/sum initialization.
+	* trans-expr.c (gfc_get_tree_for_caf_expr): Renamed from
+	get_tree_for_caf_expr and removed static.
+	(gfc_conv_procedure_call): Update call.
+	* trans-intrinsic.c (caf_get_image_index,
+	conv_caf_vector_subscript_elem, conv_caf_vector_subscript,
+	get_caf_token_offset, gfc_conv_intrinsic_caf_get,
+	conv_caf_send): New.
+	(gfc_conv_intrinsic_function, gfc_conv_intrinsic_subroutine,
+	gfc_walk_intrinsic_function): Handle CAF_GET and CAF_SEND.
+	(conv_co_minmaxsum): Update call for remove unused vector
+	subscript.
+	(conv_intrinsic_atomic_def, conv_intrinsic_atomic_ref):
+	Skip a CAF_GET of the argument.
+	* trans-types.c (gfc_get_caf_vector_type): New.
+	* trans-types.h (gfc_get_caf_vector_type): New.
+	* trans.h (gfor_fndecl_caf_get, gfor_fndecl_caf_send,
+	gfor_fndecl_caf_sendget): New global variables.
+	(gfc_get_tree_for_caf_expr): New prototypes.
+
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* trans-common.c (build_common_decl): Use
