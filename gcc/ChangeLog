@@ -1,3 +1,10 @@
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
+	* genopinit.c (main): Use vec<>::qsort method.
+	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk):
+	Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Likewise.
+
 2014-06-17  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips-protos.h (mips_expand_fcc_reload): Remove.

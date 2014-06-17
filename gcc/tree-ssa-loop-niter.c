@@ -3144,8 +3144,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
     fprintf (dump_file, " Trying to walk loop body to reduce the bound.\n");
 
   /* Sort the bounds in decreasing order.  */
-  qsort (bounds.address (), bounds.length (),
-	 sizeof (widest_int), wide_int_cmp);
+  bounds.qsort (wide_int_cmp);
 
   /* For every basic block record the lowest bound that is guaranteed to
      terminate the loop.  */
