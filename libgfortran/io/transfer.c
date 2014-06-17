@@ -3786,9 +3786,9 @@ st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
   if (nml->var_rank > 0)
     {
       nml->dim = (descriptor_dimension*)
-		   xmalloc (nml->var_rank * sizeof (descriptor_dimension));
+	xmallocarray (nml->var_rank, sizeof (descriptor_dimension));
       nml->ls = (array_loop_spec*)
-		  xmalloc (nml->var_rank * sizeof (array_loop_spec));
+	xmallocarray (nml->var_rank, sizeof (array_loop_spec));
     }
   else
     {

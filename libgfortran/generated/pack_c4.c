@@ -167,8 +167,8 @@ pack_c4 (gfc_array_c4 *ret, const gfc_array_c4 *array,
 
 	  ret->offset = 0;
 
-	  /* xmalloc allocates a single byte for zero size.  */
-	  ret->base_addr = xmalloc (sizeof (GFC_COMPLEX_4) * total);
+	  /* xmallocarray allocates a single byte for zero size.  */
+	  ret->base_addr = xmallocarray (total, sizeof (GFC_COMPLEX_4));
 
 	  if (total == 0)
 	    return;

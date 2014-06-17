@@ -30,7 +30,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
-      retarray->base_addr = xmalloc (sizeof (rtype_name) * rank);
+      retarray->base_addr = xmallocarray (rank, sizeof (rtype_name));
     }
   else
     {
@@ -133,7 +133,7 @@ void
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
-      retarray->base_addr = xmalloc (sizeof (rtype_name) * rank);
+      retarray->base_addr = xmallocarray (rank, sizeof (rtype_name));
     }
   else
     {
@@ -264,7 +264,7 @@ void
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
       retarray->offset = 0;
-      retarray->base_addr = xmalloc (sizeof (rtype_name) * rank);
+      retarray->base_addr = xmallocarray (rank, sizeof (rtype_name));
     }
   else if (unlikely (compile_options.bounds_check))
     {
