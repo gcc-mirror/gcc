@@ -49,6 +49,7 @@
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
 #include "value-prof.h"
+#include "domwalk.h"
 
 /* This file implements a generic value propagation engine based on
    the same propagation used by the SSA-CCP algorithm [1].
@@ -1017,6 +1018,164 @@ replace_phi_args_in (gimple phi, ssa_prop_get_value_fn get_value)
 }
 
 
+class substitute_and_fold_dom_walker : public dom_walker
+{
+public:
+    substitute_and_fold_dom_walker (cdi_direction direction,
+				    ssa_prop_get_value_fn get_value_fn_,
+				    ssa_prop_fold_stmt_fn fold_fn_,
+				    bool do_dce_)
+	: dom_walker (direction), get_value_fn (get_value_fn_),
+      fold_fn (fold_fn_), do_dce (do_dce_), something_changed (false)
+    {
+      stmts_to_remove.create (0);
+    }
+    ~substitute_and_fold_dom_walker () { stmts_to_remove.release (); }
+
+    virtual void before_dom_children (basic_block);
+    virtual void after_dom_children (basic_block) {}
+
+    ssa_prop_get_value_fn get_value_fn;
+    ssa_prop_fold_stmt_fn fold_fn;
+    bool do_dce;
+    bool something_changed;
+    vec<gimple> stmts_to_remove;
+};
+
+void
+substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
+{
+  gimple_stmt_iterator i;
+
+  /* Propagate known values into PHI nodes.  */
+  for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
+    {
+      gimple phi = gsi_stmt (i);
+      tree res = gimple_phi_result (phi);
+      if (virtual_operand_p (res))
+	continue;
+      if (do_dce
+	  && res && TREE_CODE (res) == SSA_NAME)
+	{
+	  tree sprime = get_value_fn (res);
+	  if (sprime
+	      && sprime != res
+	      && may_propagate_copy (res, sprime))
+	    {
+	      stmts_to_remove.safe_push (phi);
+	      continue;
+	    }
+	}
+      replace_phi_args_in (phi, get_value_fn);
+    }
+
+  /* Propagate known values into stmts.  In some case it exposes
+     more trivially deletable stmts to walk backward.  */
+  for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+    {
+      bool did_replace;
+      gimple stmt = gsi_stmt (i);
+      gimple old_stmt;
+      enum gimple_code code = gimple_code (stmt);
+
+      /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
+	 range information for names and they are discarded
+	 afterwards.  */
+
+      if (code == GIMPLE_ASSIGN
+	  && TREE_CODE (gimple_assign_rhs1 (stmt)) == ASSERT_EXPR)
+	continue;
+
+      /* No point propagating into a stmt we have a value for we
+         can propagate into all uses.  Mark it for removal instead.  */
+      tree lhs = gimple_get_lhs (stmt);
+      if (do_dce
+	  && lhs && TREE_CODE (lhs) == SSA_NAME)
+	{
+	  tree sprime = get_value_fn (lhs);
+	  if (sprime
+	      && sprime != lhs
+	      && may_propagate_copy (lhs, sprime)
+	      && !stmt_could_throw_p (stmt)
+	      && !gimple_has_side_effects (stmt))
+	    {
+	      stmts_to_remove.safe_push (stmt);
+	      continue;
+	    }
+	}
+
+      /* Replace the statement with its folded version and mark it
+	 folded.  */
+      did_replace = false;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Folding statement: ");
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+
+      old_stmt = stmt;
+
+      /* Some statements may be simplified using propagator
+	 specific information.  Do this before propagating
+	 into the stmt to not disturb pass specific information.  */
+      if (fold_fn
+	  && (*fold_fn)(&i))
+	{
+	  did_replace = true;
+	  prop_stats.num_stmts_folded++;
+	  stmt = gsi_stmt (i);
+	  update_stmt (stmt);
+	}
+
+      /* Replace real uses in the statement.  */
+      did_replace |= replace_uses_in (stmt, get_value_fn);
+
+      /* If we made a replacement, fold the statement.  */
+      if (did_replace)
+	fold_stmt (&i);
+
+      /* Now cleanup.  */
+      if (did_replace)
+	{
+	  stmt = gsi_stmt (i);
+
+	  /* If we cleaned up EH information from the statement,
+	     remove EH edges.  */
+	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
+	    gimple_purge_dead_eh_edges (bb);
+
+	  if (is_gimple_assign (stmt)
+	      && (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
+		  == GIMPLE_SINGLE_RHS))
+	    {
+	      tree rhs = gimple_assign_rhs1 (stmt);
+
+	      if (TREE_CODE (rhs) == ADDR_EXPR)
+		recompute_tree_invariant_for_addr_expr (rhs);
+	    }
+
+	  /* Determine what needs to be done to update the SSA form.  */
+	  update_stmt (stmt);
+	  if (!is_gimple_debug (stmt))
+	    something_changed = true;
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  if (did_replace)
+	    {
+	      fprintf (dump_file, "Folded into: ");
+	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	  else
+	    fprintf (dump_file, "Not folded\n");
+	}
+    }
+}
+
+
+
 /* Perform final substitution and folding of propagated values.
 
    PROP_VALUE[I] contains the single value that should be substituted
@@ -1038,204 +1197,39 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 		     ssa_prop_fold_stmt_fn fold_fn,
 		     bool do_dce)
 {
-  basic_block bb;
-  bool something_changed = false;
-  unsigned i;
-
-  if (!get_value_fn && !fold_fn)
-    return false;
+  gcc_assert (get_value_fn);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nSubstituting values and folding statements\n\n");
 
   memset (&prop_stats, 0, sizeof (prop_stats));
 
-  /* Substitute lattice values at definition sites.  */
-  if (get_value_fn)
-    for (i = 1; i < num_ssa_names; ++i)
-      {
-	tree name = ssa_name (i);
-	tree val;
-	gimple def_stmt;
-	gimple_stmt_iterator gsi;
+  calculate_dominance_info (CDI_DOMINATORS);
+  substitute_and_fold_dom_walker walker(CDI_DOMINATORS,
+					get_value_fn, fold_fn, do_dce);
+  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
-	if (!name
-	    || virtual_operand_p (name))
-	  continue;
-
-	def_stmt = SSA_NAME_DEF_STMT (name);
-	if (gimple_nop_p (def_stmt)
-	    /* Do not substitute ASSERT_EXPR rhs, this will confuse VRP.  */
-	    || (gimple_assign_single_p (def_stmt)
-		&& gimple_assign_rhs_code (def_stmt) == ASSERT_EXPR)
-	    || !(val = (*get_value_fn) (name))
-	    || !may_propagate_copy (name, val))
-	  continue;
-
-	gsi = gsi_for_stmt (def_stmt);
-	if (is_gimple_assign (def_stmt))
-	  {
-	    gimple_assign_set_rhs_with_ops (&gsi, TREE_CODE (val),
-					    val, NULL_TREE);
-	    gcc_assert (gsi_stmt (gsi) == def_stmt);
-	    if (maybe_clean_eh_stmt (def_stmt))
-	      gimple_purge_dead_eh_edges (gimple_bb (def_stmt));
-	    update_stmt (def_stmt);
-	  }
-	else if (is_gimple_call (def_stmt))
-	  {
-	    int flags = gimple_call_flags (def_stmt);
-
-	    /* Don't optimize away calls that have side-effects.  */
-	    if ((flags & (ECF_CONST|ECF_PURE)) == 0
-		|| (flags & ECF_LOOPING_CONST_OR_PURE))
-	      continue;
-	    if (update_call_from_tree (&gsi, val)
-		&& maybe_clean_or_replace_eh_stmt (def_stmt, gsi_stmt (gsi)))
-	      gimple_purge_dead_eh_edges (gimple_bb (gsi_stmt (gsi)));
-	  }
-	else if (gimple_code (def_stmt) == GIMPLE_PHI)
-	  {
-	    gimple new_stmt = gimple_build_assign (name, val);
-	    gimple_stmt_iterator gsi2;
-	    gsi2 = gsi_after_labels (gimple_bb (def_stmt));
-	    gsi_insert_before (&gsi2, new_stmt, GSI_SAME_STMT);
-	    remove_phi_node (&gsi, false);
-	  }
-
-	something_changed = true;
-      }
-
-  /* Propagate into all uses and fold.  */
-  FOR_EACH_BB_FN (bb, cfun)
+  /* We cannot remove stmts during the BB walk, especially not release
+     SSA names there as that destroys the lattice of our callers.
+     Remove stmts in reverse order to make debug stmt creation possible.  */
+  while (!walker.stmts_to_remove.is_empty ())
     {
-      gimple_stmt_iterator i;
-
-      /* Propagate known values into PHI nodes.  */
-      if (get_value_fn)
-	for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
-	  replace_phi_args_in (gsi_stmt (i), get_value_fn);
-
-      /* Propagate known values into stmts.  Do a backward walk if
-         do_dce is true. In some case it exposes
-	 more trivially deletable stmts to walk backward.  */
-      for (i = (do_dce ? gsi_last_bb (bb) : gsi_start_bb (bb)); !gsi_end_p (i);)
+      gimple stmt = walker.stmts_to_remove.pop ();
+      if (dump_file && dump_flags & TDF_DETAILS)
 	{
-          bool did_replace;
-	  gimple stmt = gsi_stmt (i);
-	  gimple old_stmt;
-	  enum gimple_code code = gimple_code (stmt);
-	  gimple_stmt_iterator oldi;
-
-	  oldi = i;
-	  if (do_dce)
-	    gsi_prev (&i);
-	  else
-	    gsi_next (&i);
-
-	  /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
-	     range information for names and they are discarded
-	     afterwards.  */
-
-	  if (code == GIMPLE_ASSIGN
-	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ASSERT_EXPR)
-	    continue;
-
-	  /* No point propagating into a stmt whose result is not used,
-	     but instead we might be able to remove a trivially dead stmt.
-	     Don't do this when called from VRP, since the SSA_NAME which
-	     is going to be released could be still referenced in VRP
-	     ranges.  */
-	  if (do_dce
-	      && gimple_get_lhs (stmt)
-	      && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME
-	      && has_zero_uses (gimple_get_lhs (stmt))
-	      && !stmt_could_throw_p (stmt)
-	      && !gimple_has_side_effects (stmt))
-	    {
-	      gimple_stmt_iterator i2;
-
-	      if (dump_file && dump_flags & TDF_DETAILS)
-		{
-		  fprintf (dump_file, "Removing dead stmt ");
-		  print_gimple_stmt (dump_file, stmt, 0, 0);
-		  fprintf (dump_file, "\n");
-		}
-	      prop_stats.num_dce++;
-	      i2 = gsi_for_stmt (stmt);
-	      gsi_remove (&i2, true);
-	      release_defs (stmt);
-	      continue;
-	    }
-
-	  /* Replace the statement with its folded version and mark it
-	     folded.  */
-	  did_replace = false;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Folding statement: ");
-	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-	    }
-
-	  old_stmt = stmt;
-
-	  /* Some statements may be simplified using propagator
-	     specific information.  Do this before propagating
-	     into the stmt to not disturb pass specific information.  */
-	  if (fold_fn
-	      && (*fold_fn)(&oldi))
-	    {
-	      did_replace = true;
-	      prop_stats.num_stmts_folded++;
-	      stmt = gsi_stmt (oldi);
-	      update_stmt (stmt);
-	    }
-
-	  /* Replace real uses in the statement.  */
-	  if (get_value_fn)
-	    did_replace |= replace_uses_in (stmt, get_value_fn);
-
-	  /* If we made a replacement, fold the statement.  */
-	  if (did_replace)
-	    fold_stmt (&oldi);
-
-	  /* Now cleanup.  */
-	  if (did_replace)
-	    {
-	      stmt = gsi_stmt (oldi);
-
-              /* If we cleaned up EH information from the statement,
-                 remove EH edges.  */
-	      if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-		gimple_purge_dead_eh_edges (bb);
-
-              if (is_gimple_assign (stmt)
-                  && (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
-                      == GIMPLE_SINGLE_RHS))
-              {
-                tree rhs = gimple_assign_rhs1 (stmt);
-
-                if (TREE_CODE (rhs) == ADDR_EXPR)
-                  recompute_tree_invariant_for_addr_expr (rhs);
-              }
-
-	      /* Determine what needs to be done to update the SSA form.  */
-	      update_stmt (stmt);
-	      if (!is_gimple_debug (stmt))
-		something_changed = true;
-	    }
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      if (did_replace)
-		{
-		  fprintf (dump_file, "Folded into: ");
-		  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-		  fprintf (dump_file, "\n");
-		}
-	      else
-		fprintf (dump_file, "Not folded\n");
-	    }
+	  fprintf (dump_file, "Removing dead stmt ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  fprintf (dump_file, "\n");
+	}
+      prop_stats.num_dce++;
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	remove_phi_node (&gsi, true);
+      else
+	{
+	  unlink_stmt_vdef (stmt);
+	  gsi_remove (&gsi, true);
+	  release_defs (stmt);
 	}
     }
 
@@ -1247,7 +1241,8 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 			    prop_stats.num_stmts_folded);
   statistics_counter_event (cfun, "Statements deleted",
 			    prop_stats.num_dce);
-  return something_changed;
+
+  return walker.something_changed;
 }
 
 

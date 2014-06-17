@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-copyprop1" } */
+/* { dg-options "-O -fdump-tree-cddce1 -fno-tree-fre" } */
 typedef int v4si __attribute__ ((vector_size (4 * sizeof(int))));
 
 int
@@ -10,7 +10,7 @@ test (v4si *x, v4si *y)
   return z[2];
 }
 
-/* Optimization in forwprop1, cleanup in copyprop1.  */
+/* Optimization in forwprop1, cleanup in cddce1.  */
 
-/* { dg-final { scan-tree-dump-not "VEC_PERM_EXPR" "copyprop1" } } */
-/* { dg-final { cleanup-tree-dump "copyprop1" } } */
+/* { dg-final { scan-tree-dump-not "VEC_PERM_EXPR" "cddce1" } } */
+/* { dg-final { cleanup-tree-dump "cddce1" } } */

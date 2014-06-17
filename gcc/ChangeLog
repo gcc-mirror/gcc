@@ -1,5 +1,15 @@
 2014-06-17  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-propagate.c: Include domwalk.h.
+	(substitute_and_fold): Outline main worker into a domwalker ...
+	(substitute_and_fold_dom_walker::before_dom_children): ... here.
+	Schedule stmts we can fully propagate for removal.  Remove
+	poor-mans DCE.
+	(substitute_and_fold): Apply a dominator walk to perform
+	substitution.  Process stmts scheduled for removal here.
+
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (determine_max_movement): Adjust cost
 	of PHI node moving.
 
