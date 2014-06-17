@@ -1,3 +1,9 @@
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/61012
+	* gcc.dg/lto/pr61526_0.c: New testcase.
+	* gcc.dg/lto/pr61526_1.c: Likewise.
+
 2014-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
