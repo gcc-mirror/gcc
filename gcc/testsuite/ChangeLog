@@ -1,5 +1,11 @@
 2014-06-17  Richard Biener  <rguenther@suse.de>
 
+	PR lto/61012
+	* gcc.dg/lto/pr61526_0.c: New testcase.
+	* gcc.dg/lto/pr61526_1.c: Likewise.
+
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/20041122-1.c: Adjust.
 	* gcc.dg/tree-ssa/forwprop-21.c: Likewise.
 	* gcc.dg/tree-ssa/vrp35.c: Revert previous adjustments.
