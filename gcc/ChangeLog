@@ -1,3 +1,8 @@
+2014-06-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.md (mulhisi3): Add a NOP after the DINT.
+	(umulhi3, mulsidi3, umulsidi3): Likewise.
+
 2014-06-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/61508
