@@ -205,8 +205,7 @@ _gfortran_caf_error_stop (int32_t error)
 
 
 void
-_gfortran_caf_co_sum (void *a __attribute__ ((unused)),
-		      caf_vector_t vector[] __attribute__ ((unused)),
+_gfortran_caf_co_sum (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
 		      int errmsg_len __attribute__ ((unused)))
@@ -216,8 +215,7 @@ _gfortran_caf_co_sum (void *a __attribute__ ((unused)),
 }
 
 void
-_gfortran_caf_co_min (void *a __attribute__ ((unused)),
-		      caf_vector_t vector[] __attribute__ ((unused)),
+_gfortran_caf_co_min (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
 		      int src_len __attribute__ ((unused)),
@@ -228,8 +226,7 @@ _gfortran_caf_co_min (void *a __attribute__ ((unused)),
 }
 
 void
-_gfortran_caf_co_max (void *a __attribute__ ((unused)),
-		      caf_vector_t vector[] __attribute__ ((unused)),
+_gfortran_caf_co_max (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
 		      int src_len __attribute__ ((unused)),
@@ -237,4 +234,235 @@ _gfortran_caf_co_max (void *a __attribute__ ((unused)),
 {
   if (stat)
     stat = 0;
+}
+
+void
+_gfortran_caf_get (caf_token_t token, size_t offset,
+		   int image_index __attribute__ ((unused)),
+		   gfc_descriptor_t *src ,
+		   caf_vector_t *src_vector __attribute__ ((unused)),
+		   gfc_descriptor_t *dest, int src_kind, int dst_kind)
+{
+  /* FIXME: Handle vector subscript, type conversion and assignment "array = scalar".
+     check in particular whether strings of different kinds are permitted and
+     whether it makes sense to handle array = scalar.  */
+  size_t i, k, size;
+  int j;
+  int rank = GFC_DESCRIPTOR_RANK (dest);
+  size_t src_size = GFC_DESCRIPTOR_SIZE (src);
+  size_t dst_size = GFC_DESCRIPTOR_SIZE (dest);
+
+  if (rank == 0)
+    {
+      void *sr = (void *) ((char *) TOKEN (token) + offset);
+      if (dst_kind == src_kind)
+	memmove (GFC_DESCRIPTOR_DATA (dest), sr,
+		 dst_size > src_size ? src_size : dst_size);
+      /* else: FIXME: type conversion.  */
+      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	{
+	  if (dst_kind == 1)
+	    memset ((void*)(char*) GFC_DESCRIPTOR_DATA (dest) + src_size, ' ',
+		    dst_size-src_size);
+	  else /* dst_kind == 4.  */
+	    for (i = src_size/4; i < dst_size/4; i++)
+	      ((int32_t*) GFC_DESCRIPTOR_DATA (dest))[i] = (int32_t)' ';
+	}
+      return;
+    }
+
+  size = 1;
+  for (j = 0; j < rank; j++)
+    {
+      ptrdiff_t dimextent = dest->dim[j]._ubound - dest->dim[j].lower_bound + 1;
+      if (dimextent < 0)
+	dimextent = 0;
+      size *= dimextent;
+    }
+
+  if (size == 0)
+    return;
+
+  for (i = 0; i < size; i++)
+    {
+      ptrdiff_t array_offset_dst = 0;
+      ptrdiff_t stride = 1;
+      ptrdiff_t extent = 1;
+      for (j = 0; j < rank-1; j++)
+	{
+	  array_offset_dst += ((i / (extent*stride))
+			       % (dest->dim[j]._ubound
+				  - dest->dim[j].lower_bound + 1))
+			      * dest->dim[j]._stride;
+	  extent = (dest->dim[j]._ubound - dest->dim[j].lower_bound + 1);
+          stride = dest->dim[j]._stride;
+	}
+      array_offset_dst += (i / extent) * dest->dim[rank-1]._stride;
+      void *dst = dest->base_addr + array_offset_dst*GFC_DESCRIPTOR_SIZE (dest);
+
+      void *sr;
+      if (GFC_DESCRIPTOR_RANK (src) != 0)
+	{
+	  ptrdiff_t array_offset_sr = 0;
+	  stride = 1;
+	  extent = 1;
+	  for (j = 0; j < GFC_DESCRIPTOR_RANK (src)-1; j++)
+	    {
+	      array_offset_sr += ((i / (extent*stride))
+				  % (src->dim[j]._ubound
+				     - src->dim[j].lower_bound + 1))
+				 * src->dim[j]._stride;
+	      extent = (src->dim[j]._ubound - src->dim[j].lower_bound + 1);
+	      stride = src->dim[j]._stride;
+	    }
+	  array_offset_sr += (i / extent) * src->dim[rank-1]._stride;
+	  sr = (void *)((char *) TOKEN (token) + offset
+			+ array_offset_sr*GFC_DESCRIPTOR_SIZE (src));
+	}
+      else
+	sr = (void *)((char *) TOKEN (token) + offset);
+
+      if (dst_kind == src_kind)
+	memmove (dst, sr, dst_size > src_size ? src_size : dst_size);
+      /* else: FIXME: type conversion.  */
+      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	{
+	  if (dst_kind == 1)
+	    memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
+	  else /* dst_kind == 4.  */
+	    for (k = src_size/4; k < dst_size/4; i++)
+	      ((int32_t*) dst)[i] = (int32_t)' ';
+	}
+    }
+}
+
+
+void
+_gfortran_caf_send (caf_token_t token, size_t offset,
+		    int image_index __attribute__ ((unused)),
+		    gfc_descriptor_t *dest,
+		    caf_vector_t *dst_vector __attribute__ ((unused)),
+		    gfc_descriptor_t *src, int dst_kind,
+		    int src_kind __attribute__ ((unused)))
+{
+  /* FIXME: Handle vector subscript, type conversion and assignment "array = scalar".
+     check in particular whether strings of different kinds are permitted.  */
+  size_t i, k, size;
+  int j;
+  int rank = GFC_DESCRIPTOR_RANK (dest);
+  size_t src_size = GFC_DESCRIPTOR_SIZE (src);
+  size_t dst_size = GFC_DESCRIPTOR_SIZE (dest);
+
+  if (rank == 0)
+    {
+      void *dst = (void *) ((char *) TOKEN (token) + offset);
+      if (dst_kind == src_kind)
+	memmove (dst, GFC_DESCRIPTOR_DATA (src),
+		 dst_size > src_size ? src_size : dst_size);
+      /* else: FIXME: type conversion.  */
+      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	{
+	  if (dst_kind == 1)
+	    memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
+	  else /* dst_kind == 4.  */
+	    for (i = src_size/4; i < dst_size/4; i++)
+	      ((int32_t*) dst)[i] = (int32_t)' ';
+	}
+      return;
+    }
+
+  size = 1;
+  for (j = 0; j < rank; j++)
+    {
+      ptrdiff_t dimextent = dest->dim[j]._ubound - dest->dim[j].lower_bound + 1;
+      if (dimextent < 0)
+	dimextent = 0;
+      size *= dimextent;
+    }
+
+  if (size == 0)
+    return;
+
+#if 0
+  if (dst_len == src_len && PREFIX (is_contiguous) (dest)
+      && PREFIX (is_contiguous) (src))
+    {
+      void *dst = (void *)((char *) TOKEN (token) + offset);
+      memmove (dst, src->base_addr, GFC_DESCRIPTOR_SIZE (dest)*size);
+      return;
+    }
+#endif
+
+  for (i = 0; i < size; i++)
+    {
+      ptrdiff_t array_offset_dst = 0;
+      ptrdiff_t stride = 1;
+      ptrdiff_t extent = 1;
+      for (j = 0; j < rank-1; j++)
+	{
+	  array_offset_dst += ((i / (extent*stride))
+			       % (dest->dim[j]._ubound
+				  - dest->dim[j].lower_bound + 1))
+			      * dest->dim[j]._stride;
+	  extent = (dest->dim[j]._ubound - dest->dim[j].lower_bound + 1);
+          stride = dest->dim[j]._stride;
+	}
+      array_offset_dst += (i / extent) * dest->dim[rank-1]._stride;
+      void *dst = (void *)((char *) TOKEN (token) + offset
+			   + array_offset_dst*GFC_DESCRIPTOR_SIZE (dest));
+      void *sr;
+      if (GFC_DESCRIPTOR_RANK (src) != 0)
+	{
+	  ptrdiff_t array_offset_sr = 0;
+	  stride = 1;
+	  extent = 1;
+	  for (j = 0; j < GFC_DESCRIPTOR_RANK (src)-1; j++)
+	    {
+	      array_offset_sr += ((i / (extent*stride))
+				  % (src->dim[j]._ubound
+				     - src->dim[j].lower_bound + 1))
+				 * src->dim[j]._stride;
+	      extent = (src->dim[j]._ubound - src->dim[j].lower_bound + 1);
+	      stride = src->dim[j]._stride;
+	    }
+	  array_offset_sr += (i / extent) * src->dim[rank-1]._stride;
+	  sr = (void *)((char *) src->base_addr
+			+ array_offset_sr*GFC_DESCRIPTOR_SIZE (src));
+	}
+      else
+	sr = src->base_addr;
+
+      if (dst_kind == src_kind)
+	memmove (dst, sr, dst_size > src_size ? src_size : dst_size);
+      /* else: FIXME: type conversion.  */
+      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	{
+	  if (dst_kind == 1)
+	    memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
+	  else /* dst_kind == 4.  */
+	    for (k = src_size/4; k < dst_size/4; i++)
+	      ((int32_t*) dst)[i] = (int32_t)' ';
+	}
+    }
+}
+
+
+void
+_gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
+		       int dst_image_index, gfc_descriptor_t *dest,
+		       caf_vector_t *dst_vector, caf_token_t src_token,
+		       size_t src_offset,
+		       int src_image_index __attribute__ ((unused)),
+		       gfc_descriptor_t *src,
+		       caf_vector_t *src_vector __attribute__ ((unused)),
+		       int dst_len, int src_len)
+{
+  /* FIXME: Handle vector subscript of 'src_vector'.  */
+  /* For a single image, src->base_addr should be the same as src_token + offset
+     but to play save, we do it properly.  */
+  void *src_base = GFC_DESCRIPTOR_DATA (src);
+  GFC_DESCRIPTOR_DATA (src) = (void *) ((char *) TOKEN (src_token) + src_offset);
+  _gfortran_caf_send (dst_token, dst_offset, dst_image_index, dest, dst_vector,
+		      src, dst_len, src_len);
+  GFC_DESCRIPTOR_DATA (src) = src_base;
 }

@@ -4766,7 +4766,7 @@ remove_caf_get_intrinsic (gfc_expr *e)
   gcc_assert (e->expr_type == EXPR_FUNCTION && e->value.function.isym
 	      && e->value.function.isym->id == GFC_ISYM_CAF_GET);
   gfc_expr *e2 = e->value.function.actual->expr;
-  e->value.function.actual->expr =NULL;
+  e->value.function.actual->expr = NULL;
   gfc_free_actual_arglist (e->value.function.actual);
   gfc_free_shape (&e->shape, e->rank);
   *e = *e2;
@@ -5056,7 +5056,7 @@ resolve_procedure:
   if (t)
     expression_rank (e);
 
-  if (0 && t && gfc_option.coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
+  if (t && gfc_option.coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
     add_caf_get_intrinsic (e);
 
   return t;
@@ -8424,6 +8424,11 @@ find_reachable_labels (gfc_code *block)
 static void
 resolve_lock_unlock (gfc_code *code)
 {
+  if (code->expr1->expr_type == EXPR_FUNCTION
+      && code->expr1->value.function.isym
+      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
+    remove_caf_get_intrinsic (code->expr1);
+
   if (code->expr1->ts.type != BT_DERIVED
       || code->expr1->expr_type != EXPR_VARIABLE
       || code->expr1->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
@@ -9276,8 +9281,22 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   gfc_check_assign (lhs, rhs, 1);
 
-  if (0 && lhs_coindexed && gfc_option.coarray == GFC_FCOARRAY_LIB)
+  /* Insert a GFC_ISYM_CAF_SEND intrinsic, when the LHS is a coindexed variable.
+     Additionally, insert this code when the RHS is a CAF as we then use the
+     GFC_ISYM_CAF_SEND intrinsic just to avoid a temporary; but do not do so if
+     the LHS is (re)allocatable or has a vector subscript.  */
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+      && (lhs_coindexed
+	  || (code->expr2->expr_type == EXPR_FUNCTION
+	      && code->expr2->value.function.isym
+	      && code->expr2->value.function.isym->id == GFC_ISYM_CAF_GET
+	      && !gfc_expr_attr (rhs).allocatable
+              && !gfc_has_vector_subscript (rhs))))
     {
+      if (code->expr2->expr_type == EXPR_FUNCTION
+	  && code->expr2->value.function.isym
+	  && code->expr2->value.function.isym->id == GFC_ISYM_CAF_GET)
+	remove_caf_get_intrinsic (code->expr2);
       code->op = EXEC_CALL;
       gfc_get_sym_tree (GFC_PREFIX ("caf_send"), ns, &code->symtree, true);
       code->resolved_sym = code->symtree->n.sym;
@@ -9919,6 +9938,8 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (!t)
 	    break;
 
+	  /* Remove a GFC_ISYM_CAF_GET inserted for a coindexed variable on
+	     the LHS. */
 	  if (code->expr1->expr_type == EXPR_FUNCTION
 	      && code->expr1->value.function.isym
 	      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)

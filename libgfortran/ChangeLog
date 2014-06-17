@@ -1,3 +1,16 @@
+2014-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (gfc_descriptor_t): New typedef.
+	(caf_vector_t): Update.
+	(_gfortran_caf_co_sum, _gfortran_caf_co_max, _gfortran_caf_co_min):
+	Remove vector-subscript argument.
+	(_gfortran_caf_co_send, _gfortran_caf_co_get,
+	_gfortran_caf_co_sendget): New.
+	* caf/single.c (_gfortran_caf_co_sum, _gfortran_caf_co_max,
+	_gfortran_caf_co_min): Remove vector-subscript argument.
+	(_gfortran_caf_co_send, _gfortran_caf_co_get,
+	_gfortran_caf_co_sendget): New.
+
 2014-06-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* libgfortran.h (xmallocarray): New prototype.
