@@ -14859,8 +14859,6 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  fold_checksum_tree (DECL_ABSTRACT_ORIGIN (expr), ctx, ht);
 	  fold_checksum_tree (DECL_ATTRIBUTES (expr), ctx, ht);
 	}
-      if (CODE_CONTAINS_STRUCT (TREE_CODE (expr), TS_DECL_WITH_VIS))
-	fold_checksum_tree (DECL_SECTION_NAME (expr), ctx, ht);
 
       if (CODE_CONTAINS_STRUCT (TREE_CODE (expr), TS_DECL_NON_COMMON))
 	{

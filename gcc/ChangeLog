@@ -1,3 +1,9 @@
+2014-06-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/61508
+	* fold-const.c (fold_checksum_tree) <TS_DECL_WITH_VIS>: Remove
+	check for section name.
+
 2014-06-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-propagate.c: Include domwalk.h.
