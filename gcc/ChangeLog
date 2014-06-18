@@ -1,3 +1,8 @@
+2014-06-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/61545
+	* config/aarch64/aarch64.md (tlsdesc_small): Clobber CC_REGNUM.
+
 2014-06-17  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	PR target/61483
