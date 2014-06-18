@@ -1,3 +1,9 @@
+2014-06-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/61550
+	* config/sh/sh.c (prepare_move_operands): Don't process TLS
+	addresses here if reload in progress or completed.
+
 2014-06-18  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/constraints.md ("d"): BASE_REG_CLASS replaced by
