@@ -1,3 +1,8 @@
+2014-06-18  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* lra-constraints.c (base_to_reg): New function.       
+	(process_address): Use new function.                   
+
 2014-06-18  Tom de Vries  <tom@codesourcery.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_emit_call_insn): Declare.
