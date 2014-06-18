@@ -390,6 +390,11 @@ DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts", m_AMDFAM10)
 DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
           m_BONNELL | m_SILVERMONT | m_INTEL)
 
+/* X86_TUNE_VECTOR_PARALLEL_EXECUTION: Indicates tunings with ability to
+   execute 2 or more vector instructions in parallel.  */
+DEF_TUNE (X86_TUNE_VECTOR_PARALLEL_EXECUTION, "vec_parallel",
+          m_NEHALEM | m_SANDYBRIDGE | m_HASWELL)
+
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/
