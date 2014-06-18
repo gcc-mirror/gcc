@@ -1,3 +1,8 @@
+2014-06-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/61545
+	* config/aarch64/aarch64.md (tlsdesc_small_<PTR>): Clobber CC_REGNUM.
+
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
 	* config/arm/arm.c (neon_vector_mem_operand): Allow register
