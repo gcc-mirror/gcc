@@ -1,3 +1,19 @@
+2014-06-18  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_emit_call_insn): Add bool parameter.
+	* config/arm/arm.c (TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS):
+	Redefine to true.
+	(arm_emit_call_insn): Add and use sibcall parameter.  Add IP and CC
+	clobbers to CALL_INSN_FUNCTION_USAGE.
+	(define_expand "sibcall_internal")
+	(define_expand "sibcall_value_internal"): New.
+	(define_expand "call", define_expand "call_value"): Add argument to
+	arm_emit_call_insn.
+	(define_expand "sibcall"): Use sibcall_internal and arm_emit_call_insn.
+	(define_expand "sibcall_value"): Use sibcall_value_internal and
+	arm_emit_call_insn.
+
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
 	* config/arm/bpabi.c (__gnu_uldivmod_helper): Remove.
