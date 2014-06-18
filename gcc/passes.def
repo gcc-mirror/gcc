@@ -203,7 +203,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_copy_prop);
-	  NEXT_PASS (pass_dce_loop);
+	  NEXT_PASS (pass_dce);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_record_bounds);
@@ -215,7 +215,7 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_graphite_transforms);
 	      NEXT_PASS (pass_lim);
 	      NEXT_PASS (pass_copy_prop);
-	      NEXT_PASS (pass_dce_loop);
+	      NEXT_PASS (pass_dce);
 	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_parallelize_loops);
@@ -224,7 +224,7 @@ along with GCC; see the file COPYING3.  If not see
 	     Please do not add any other passes in between.  */
 	  NEXT_PASS (pass_vectorize);
           PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
-	      NEXT_PASS (pass_dce_loop);
+	      NEXT_PASS (pass_dce);
           POP_INSERT_PASSES ()
           NEXT_PASS (pass_predcom);
 	  NEXT_PASS (pass_complete_unroll);

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-dce5-details" } */
 
 int a[256], b[256], c[256];
 
@@ -11,6 +12,6 @@ foo () {
   }
 }
 
-/* { dg-final { scan-tree-dump-times "Deleting : vect_" 0 "dceloop3" } } */
-/* { dg-final { cleanup-tree-dump "dceloop\[1-3\]" } } */
+/* { dg-final { scan-tree-dump-times "Deleting : vect_" 0 "dce5" } } */
+/* { dg-final { cleanup-tree-dump "dce" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

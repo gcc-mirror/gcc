@@ -1,3 +1,19 @@
+2014-06-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (make_pass_dce_loop): Remove.
+	* passes.def: Replace pass_dce_loop with pass_dce.
+	* tree-ssa-dce.c (perform_tree_ssa_dce): If something
+	changed free niter estimates and reset the scev cache.
+	(tree_ssa_dce_loop, pass_data_dce_loop, pass_dce_loop,
+	make_pass_dce_loop): Remove.
+	* tree-ssa-copy.c: Include tree-ssa-loop-niter.h.
+	(fini_copy_prop): Return whether something changed.  Always
+	let substitute_and_fold perform DCE and free niter estimates
+	and reset the scev cache if so.
+	(execute_copy_prop): If sth changed schedule cleanup-cfg.
+	(pass_data_copy_prop): Do not unconditionally schedule
+	cleanup-cfg or update-ssa.
+
 2014-06-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/61518
