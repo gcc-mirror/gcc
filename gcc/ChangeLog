@@ -1,5 +1,9 @@
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
+	* config/arm/bpabi.c (__gnu_uldivmod_helper): Remove.
+
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/arm/bpabi-v6m.S (__aeabi_uldivmod): Perform division using
 	__udivmoddi4.
 
