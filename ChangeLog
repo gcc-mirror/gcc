@@ -1,3 +1,12 @@
+2014-06-18  Olivier Hainque  <hainque@adacore.com>
+
+	* tree-core.h (tree_block): Add an "end_locus" field, allowing
+	memorization of the end of block source location.
+	* tree.h (BLOCK_SOURCE_END_LOCATION): New accessor.
+	* gimplify.c (gimplify_bind_expr): Propagate the block start and
+	end source location info we have on the block entry/exit code we
+	generate.
+
 2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config-ml.in: Robustify ac_configure_args parsing.

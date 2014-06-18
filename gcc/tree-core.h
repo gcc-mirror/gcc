@@ -1253,6 +1253,7 @@ struct GTY(()) tree_block {
   unsigned block_num : 31;
 
   location_t locus;
+  location_t end_locus;
 
   tree vars;
   vec<tree, va_gc> *nonlocalized_vars;
