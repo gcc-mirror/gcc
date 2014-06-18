@@ -175,10 +175,49 @@ ARM_FUNC_START aeabi_ldivmod
 	test_div_by_zero	signed
 
 	push_for_divide	__aeabi_ldivmod
+	cmp	xxh, #0
+	blt	1f
+	cmp	yyh, #0
+	blt	2f
 	/* arguments in (r0:r1), (r2:r3) and *sp */
-	bl	SYM(__gnu_ldivmod_helper) __PLT__
+	bl	SYM(__udivmoddi4) __PLT__
 	pop_for_divide
 	RET
+
+1: /* xxh:xxl is negative */
+	negs	xxl, xxl
+	sbc	xxh, xxh, xxh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
+	cmp	yyh, #0
+	blt	3f
+	/* arguments in (r0:r1), (r2:r3) and *sp */
+	bl	SYM(__udivmoddi4) __PLT__
+	pop_for_divide
+	negs	xxl, xxl
+	sbc	xxh, xxh, xxh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
+	negs	yyl, yyl
+	sbc	yyh, yyh, yyh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
+	RET
+
+2: /* only yyh:yyl is negative */
+	negs	yyl, yyl
+	sbc	yyh, yyh, yyh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
+	/* arguments in (r0:r1), (r2:r3) and *sp */
+	bl	SYM(__udivmoddi4) __PLT__
+	pop_for_divide
+	negs	xxl, xxl
+	sbc	xxh, xxh, xxh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
+	RET
+
+3: /* both xxh:xxl and yyh:yyl are negative */
+	negs	yyl, yyl
+	sbc	yyh, yyh, yyh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
+	/* arguments in (r0:r1), (r2:r3) and *sp */
+	bl	SYM(__udivmoddi4) __PLT__
+	pop_for_divide
+	negs	yyl, yyl
+	sbc	yyh, yyh, yyh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
+	RET
+
 	cfi_end	LSYM(Lend_aeabi_ldivmod)
 	
 #endif /* L_aeabi_ldivmod */
