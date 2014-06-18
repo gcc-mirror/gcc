@@ -230,7 +230,7 @@ struct lang_hooks_for_decls
   tree (*omp_clause_dtor) (tree clause, tree decl);
 
   /* Do language specific checking on an implicitly determined clause.  */
-  void (*omp_finish_clause) (tree clause);
+  void (*omp_finish_clause) (tree clause, gimple_seq *pre_p);
 };
 
 /* Language hooks related to LTO serialization.  */

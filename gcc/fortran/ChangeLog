@@ -1,3 +1,177 @@
+2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpp.c (cpp_define_builtins): Change _OPENMP macro to
+	201307.
+	* dump-parse-tree.c (show_omp_namelist): Add list_type
+	argument.  Adjust for rop being u.reduction_op now,
+	handle depend_op or map_op.
+	(show_omp_node): Adjust callers.  Print some new
+	OpenMP 4.0 clauses, adjust for OMP_LIST_DEPEND_{IN,OUT}
+	becoming a single OMP_LIST_DEPEND.
+	* f95-lang.c (gfc_handle_omp_declare_target_attribute): New
+	function.
+	(gfc_attribute_table): New variable.
+	(LANG_HOOKS_OMP_FINISH_CLAUSE, LANG_HOOKS_ATTRIBUTE_TABLE): Redefine.
+	* frontend-passes.c (gfc_code_walker): Handle new OpenMP target
+	EXEC_OMP_* codes and new clauses.
+	* gfortran.h (gfc_statement): Add ST_OMP_TARGET, ST_OMP_END_TARGET,
+	ST_OMP_TARGET_DATA, ST_OMP_END_TARGET_DATA, ST_OMP_TARGET_UPDATE,
+	ST_OMP_DECLARE_TARGET, ST_OMP_TEAMS, ST_OMP_END_TEAMS,
+	ST_OMP_DISTRIBUTE, ST_OMP_END_DISTRIBUTE, ST_OMP_DISTRIBUTE_SIMD,
+	ST_OMP_END_DISTRIBUTE_SIMD, ST_OMP_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_END_DISTRIBUTE_PARALLEL_DO, ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD,
+	ST_OMP_END_DISTRIBUTE_PARALLEL_DO_SIMD, ST_OMP_TARGET_TEAMS,
+	ST_OMP_END_TARGET_TEAMS, ST_OMP_TEAMS_DISTRIBUTE,
+	ST_OMP_END_TEAMS_DISTRIBUTE, ST_OMP_TEAMS_DISTRIBUTE_SIMD,
+	ST_OMP_END_TEAMS_DISTRIBUTE_SIMD, ST_OMP_TARGET_TEAMS_DISTRIBUTE,
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE,
+	ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD,
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD,
+	ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
+	ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
+	ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD and
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD.
+	(symbol_attribute): Add omp_declare_target field.
+	(gfc_omp_depend_op, gfc_omp_map_op): New enums.
+	(gfc_omp_namelist): Replace rop field with union
+	containing reduction_op, depend_op and map_op.
+	(OMP_LIST_DEPEND_IN, OMP_LIST_DEPEND_OUT): Remove.
+	(OMP_LIST_DEPEND, OMP_LIST_MAP, OMP_LIST_TO, OMP_LIST_FROM): New.
+	(gfc_omp_clauses): Add num_teams, device, thread_limit,
+	dist_sched_kind, dist_chunk_size fields.
+	(gfc_common_head): Add omp_declare_target field.
+	(gfc_exec_op): Add EXEC_OMP_TARGET, EXEC_OMP_TARGET_DATA,
+	EXEC_OMP_TEAMS, EXEC_OMP_DISTRIBUTE, EXEC_OMP_DISTRIBUTE_SIMD,
+	EXEC_OMP_DISTRIBUTE_PARALLEL_DO, EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD,
+	EXEC_OMP_TARGET_TEAMS, EXEC_OMP_TEAMS_DISTRIBUTE,
+	EXEC_OMP_TEAMS_DISTRIBUTE_SIMD, EXEC_OMP_TARGET_TEAMS_DISTRIBUTE,
+	EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD,
+	EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
+	EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD and
+	EXEC_OMP_TARGET_UPDATE.
+	(gfc_add_omp_declare_target): New prototype.
+	* match.h (gfc_match_omp_declare_target, gfc_match_omp_distribute,
+	gfc_match_omp_distribute_parallel_do,
+	gfc_match_omp_distribute_parallel_do_simd,
+	gfc_match_omp_distribute_simd, gfc_match_omp_target,
+	gfc_match_omp_target_data, gfc_match_omp_target_teams,
+	gfc_match_omp_target_teams_distribute,
+	gfc_match_omp_target_teams_distribute_parallel_do,
+	gfc_match_omp_target_teams_distribute_parallel_do_simd,
+	gfc_match_omp_target_teams_distribute_simd,
+	gfc_match_omp_target_update, gfc_match_omp_teams,
+	gfc_match_omp_teams_distribute,
+	gfc_match_omp_teams_distribute_parallel_do,
+	gfc_match_omp_teams_distribute_parallel_do_simd,
+	gfc_match_omp_teams_distribute_simd): New prototypes.
+	* module.c (ab_attribute): Add AB_OMP_DECLARE_TARGET.
+	(attr_bits): Likewise.
+	(mio_symbol_attribute): Handle omp_declare_target attribute.
+	(gfc_free_omp_clauses): Free num_teams, device, thread_limit
+	and dist_chunk_size expressions.
+	(OMP_CLAUSE_PRIVATE, OMP_CLAUSE_FIRSTPRIVATE, OMP_CLAUSE_LASTPRIVATE,
+	OMP_CLAUSE_COPYPRIVATE, OMP_CLAUSE_SHARED, OMP_CLAUSE_COPYIN,
+	OMP_CLAUSE_REDUCTION, OMP_CLAUSE_IF, OMP_CLAUSE_NUM_THREADS,
+	OMP_CLAUSE_SCHEDULE, OMP_CLAUSE_DEFAULT, OMP_CLAUSE_ORDERED,
+	OMP_CLAUSE_COLLAPSE, OMP_CLAUSE_UNTIED, OMP_CLAUSE_FINAL,
+	OMP_CLAUSE_MERGEABLE, OMP_CLAUSE_ALIGNED, OMP_CLAUSE_DEPEND,
+	OMP_CLAUSE_INBRANCH, OMP_CLAUSE_LINEAR, OMP_CLAUSE_NOTINBRANCH,
+	OMP_CLAUSE_PROC_BIND, OMP_CLAUSE_SAFELEN, OMP_CLAUSE_SIMDLEN,
+	OMP_CLAUSE_UNIFORM): Use 1U instead of 1.
+	(OMP_CLAUSE_DEVICE, OMP_CLAUSE_MAP, OMP_CLAUSE_TO, OMP_CLAUSE_FROM,
+	OMP_CLAUSE_NUM_TEAMS, OMP_CLAUSE_THREAD_LIMIT,
+	OMP_CLAUSE_DIST_SCHEDULE): Define.
+	(gfc_match_omp_clauses): Change mask parameter to unsigned int.
+	Adjust for rop becoming u.reduction_op.  Disallow inbranch with
+	notinbranch.  For depend clause, always create OMP_LIST_DEPEND
+	and fill in u.depend_op.  Handle num_teams, device, map,
+	to, from, thread_limit and dist_schedule clauses.
+	(OMP_DECLARE_SIMD_CLAUSES): Or in OMP_CLAUSE_INBRANCH and
+	OMP_CLAUSE_NOTINBRANCH.
+	(OMP_TARGET_CLAUSES, OMP_TARGET_DATA_CLAUSES,
+	OMP_TARGET_UPDATE_CLAUSES, OMP_TEAMS_CLAUSES,
+	OMP_DISTRIBUTE_CLAUSES): Define.
+	(match_omp): New function.
+	(gfc_match_omp_do, gfc_match_omp_do_simd, gfc_match_omp_parallel,
+	gfc_match_omp_parallel_do, gfc_match_omp_parallel_do_simd,
+	gfc_match_omp_parallel_sections, gfc_match_omp_parallel_workshare,
+	gfc_match_omp_sections, gfc_match_omp_simd, gfc_match_omp_single,
+	gfc_match_omp_task): Rewritten using match_omp.
+	(gfc_match_omp_threadprivate, gfc_match_omp_declare_reduction):
+	Diagnose if the directives are followed by unexpected junk.
+	(gfc_match_omp_distribute, gfc_match_omp_distribute_parallel_do,
+	gfc_match_omp_distribute_parallel_do_simd,
+	gfc_match_omp_distrbute_simd, gfc_match_omp_declare_target,
+	gfc_match_omp_target, gfc_match_omp_target_data,
+	gfc_match_omp_target_teams, gfc_match_omp_target_teams_distribute,
+	gfc_match_omp_target_teams_distribute_parallel_do,
+	gfc_match_omp_target_teams_distribute_parallel_do_simd,
+	gfc_match_omp_target_teams_distrbute_simd, gfc_match_omp_target_update,
+	gfc_match_omp_teams, gfc_match_omp_teams_distribute,
+	gfc_match_omp_teams_distribute_parallel_do,
+	gfc_match_omp_teams_distribute_parallel_do_simd,
+	gfc_match_omp_teams_distrbute_simd): New functions.
+	* openmp.c (resolve_omp_clauses): Adjust for
+	OMP_LIST_DEPEND_{IN,OUT} being changed to OMP_LIST_DEPEND.  Handle
+	OMP_LIST_MAP, OMP_LIST_FROM, OMP_LIST_TO, num_teams, device,
+	dist_chunk_size and thread_limit.
+	(gfc_resolve_omp_parallel_blocks): Only put sharing clauses into
+	ctx.sharing_clauses.  Call gfc_resolve_omp_do_blocks for various
+	new EXEC_OMP_* codes.
+	(resolve_omp_do): Handle various new EXEC_OMP_* codes.
+	(gfc_resolve_omp_directive): Likewise.
+	(gfc_resolve_omp_declare_simd): Add missing space to diagnostics.
+	* parse.c (decode_omp_directive): Handle parsing of OpenMP 4.0
+	offloading related directives.
+	(case_executable): Add ST_OMP_TARGET_UPDATE.
+	(case_exec_markers): Add ST_OMP_TARGET*, ST_OMP_TEAMS*,
+	ST_OMP_DISTRIBUTE*.
+	(case_decl): Add ST_OMP_DECLARE_TARGET.
+	(gfc_ascii_statement): Handle new ST_OMP_* codes.
+	(parse_omp_do): Handle various new ST_OMP_* codes.
+	(parse_executable): Likewise.
+	* resolve.c (gfc_resolve_blocks): Handle various new EXEC_OMP_*
+	codes.
+	(resolve_code): Likewise.
+	(resolve_symbol): Change that !$OMP DECLARE TARGET variables
+	are saved.
+	* st.c (gfc_free_statement): Handle various new EXEC_OMP_* codes.
+	* symbol.c (check_conflict): Check omp_declare_target conflicts.
+	(gfc_add_omp_declare_target): New function.
+	(gfc_copy_attr): Copy omp_declare_target.
+	* trans.c (trans_code): Handle various new EXEC_OMP_* codes.
+	* trans-common.c (build_common_decl): Add "omp declare target"
+	attribute if needed.
+	* trans-decl.c (add_attributes_to_decl): Likewise.
+	* trans.h (gfc_omp_finish_clause): New prototype.
+	* trans-openmp.c (gfc_omp_finish_clause): New function.
+	(gfc_trans_omp_reduction_list): Adjust for rop being renamed
+	to u.reduction_op.
+	(gfc_trans_omp_clauses): Adjust for OMP_LIST_DEPEND_{IN,OUT}
+	change to OMP_LIST_DEPEND and fix up depend handling.
+	Handle OMP_LIST_MAP, OMP_LIST_TO, OMP_LIST_FROM, num_teams,
+	thread_limit, device, dist_chunk_size and dist_sched_kind.
+	(gfc_trans_omp_do): Handle EXEC_OMP_DISTRIBUTE.
+	(GFC_OMP_SPLIT_DISTRIBUTE, GFC_OMP_SPLIT_TEAMS,
+	GFC_OMP_SPLIT_TARGET, GFC_OMP_SPLIT_NUM, GFC_OMP_MASK_DISTRIBUTE,
+	GFC_OMP_MASK_TEAMS, GFC_OMP_MASK_TARGET, GFC_OMP_MASK_NUM): New.
+	(gfc_split_omp_clauses): Handle splitting of clauses for new
+	EXEC_OMP_* codes.
+	(gfc_trans_omp_do_simd): Add pblock argument, adjust for being
+	callable for combined constructs.
+	(gfc_trans_omp_parallel_do, gfc_trans_omp_parallel_do_simd): Likewise.
+	(gfc_trans_omp_distribute, gfc_trans_omp_teams,
+	gfc_trans_omp_target, gfc_trans_omp_target_data,
+	gfc_trans_omp_target_update): New functions.
+	(gfc_trans_omp_directive): Adjust gfc_trans_omp_* callers, handle
+	new EXEC_OMP_* codes.
+
 2014-06-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/61126
