@@ -207,7 +207,7 @@ ARM_FUNC_START aeabi_uldivmod
 
 	push_for_divide	__aeabi_uldivmod
 	/* arguments in (r0:r1), (r2:r3) and *sp */
-	bl	SYM(__gnu_uldivmod_helper) __PLT__
+	bl	SYM(__udivmoddi4) __PLT__
 	pop_for_divide
 	RET
 	cfi_end	LSYM(Lend_aeabi_uldivmod)
