@@ -4835,7 +4835,7 @@ and the scalar result is stored in the least significant bits of operand 0
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern
-@item @samp{udot_prod@var{m}}
+@itemx @samp{udot_prod@var{m}}
 Compute the sum of the products of two signed/unsigned elements.
 Operand 1 and operand 2 are of the same mode. Their product, which is of a
 wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or
@@ -4845,7 +4845,7 @@ is of the same mode as operand 3.
 @cindex @code{ssum_widen@var{m3}} instruction pattern
 @item @samp{ssum_widen@var{m3}}
 @cindex @code{usum_widen@var{m3}} instruction pattern
-@item @samp{usum_widen@var{m3}}
+@itemx @samp{usum_widen@var{m3}}
 Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
@@ -6218,7 +6218,6 @@ A typical @code{ctrap} pattern looks like
 
 @cindex @code{prefetch} instruction pattern
 @item @samp{prefetch}
-
 This pattern, if defined, emits code for a non-faulting data prefetch
 instruction.  Operand 0 is the address of the memory to prefetch.  Operand 1
 is a constant 1 if the prefetch is preparing for a write to the memory
@@ -6234,7 +6233,6 @@ the values of operands 1 and 2.
 
 @cindex @code{blockage} instruction pattern
 @item @samp{blockage}
-
 This pattern defines a pseudo insn that prevents the instruction
 scheduler and other passes from moving instructions and using register
 equivalences across the boundary defined by the blockage insn.
@@ -6242,7 +6240,6 @@ This needs to be an UNSPEC_VOLATILE pattern or a volatile ASM.
 
 @cindex @code{memory_barrier} instruction pattern
 @item @samp{memory_barrier}
-
 If the target memory model is not fully synchronous, then this pattern
 should be defined to an instruction that orders both loads and stores
 before the instruction with respect to loads and stores after the instruction.
@@ -6250,7 +6247,6 @@ This pattern has no operands.
 
 @cindex @code{sync_compare_and_swap@var{mode}} instruction pattern
 @item @samp{sync_compare_and_swap@var{mode}}
-
 This pattern, if defined, emits code for an atomic compare-and-swap
 operation.  Operand 1 is the memory on which the atomic operation is
 performed.  Operand 2 is the ``old'' value to be compared against the
@@ -6299,7 +6295,6 @@ interruptable locking.
 @item @samp{sync_add@var{mode}}, @samp{sync_sub@var{mode}}
 @itemx @samp{sync_ior@var{mode}}, @samp{sync_and@var{mode}}
 @itemx @samp{sync_xor@var{mode}}, @samp{sync_nand@var{mode}}
-
 These patterns emit code for an atomic operation on memory.
 Operand 0 is the memory on which the atomic operation is performed.
 Operand 1 is the second operand to the binary operator.
@@ -6321,7 +6316,6 @@ from a compare-and-swap operation, if defined.
 @item @samp{sync_old_add@var{mode}}, @samp{sync_old_sub@var{mode}}
 @itemx @samp{sync_old_ior@var{mode}}, @samp{sync_old_and@var{mode}}
 @itemx @samp{sync_old_xor@var{mode}}, @samp{sync_old_nand@var{mode}}
-
 These patterns emit code for an atomic operation on memory,
 and return the value that the memory contained before the operation.
 Operand 0 is the result value, operand 1 is the memory on which the
@@ -6345,14 +6339,12 @@ from a compare-and-swap operation, if defined.
 @item @samp{sync_new_add@var{mode}}, @samp{sync_new_sub@var{mode}}
 @itemx @samp{sync_new_ior@var{mode}}, @samp{sync_new_and@var{mode}}
 @itemx @samp{sync_new_xor@var{mode}}, @samp{sync_new_nand@var{mode}}
-
 These patterns are like their @code{sync_old_@var{op}} counterparts,
 except that they return the value that exists in the memory location
 after the operation, rather than before the operation.
 
 @cindex @code{sync_lock_test_and_set@var{mode}} instruction pattern
 @item @samp{sync_lock_test_and_set@var{mode}}
-
 This pattern takes two forms, based on the capabilities of the target.
 In either case, operand 0 is the result of the operand, operand 1 is
 the memory on which the atomic operation is performed, and operand 2
@@ -6377,7 +6369,6 @@ a compare-and-swap operation, if defined.
 
 @cindex @code{sync_lock_release@var{mode}} instruction pattern
 @item @samp{sync_lock_release@var{mode}}
-
 This pattern, if defined, releases a lock set by
 @code{sync_lock_test_and_set@var{mode}}.  Operand 0 is the memory
 that contains the lock; operand 1 is the value to store in the lock.
@@ -6467,7 +6458,6 @@ compare and swap loop.
 @item @samp{atomic_add@var{mode}}, @samp{atomic_sub@var{mode}}
 @itemx @samp{atomic_or@var{mode}}, @samp{atomic_and@var{mode}}
 @itemx @samp{atomic_xor@var{mode}}, @samp{atomic_nand@var{mode}}
-
 These patterns emit code for an atomic operation on memory with memory
 model semantics. Operand 0 is the memory on which the atomic operation is
 performed.  Operand 1 is the second operand to the binary operator.
@@ -6486,7 +6476,6 @@ none of these are available a compare-and-swap loop will be used.
 @item @samp{atomic_fetch_add@var{mode}}, @samp{atomic_fetch_sub@var{mode}}
 @itemx @samp{atomic_fetch_or@var{mode}}, @samp{atomic_fetch_and@var{mode}}
 @itemx @samp{atomic_fetch_xor@var{mode}}, @samp{atomic_fetch_nand@var{mode}}
-
 These patterns emit code for an atomic operation on memory with memory
 model semantics, and return the original value. Operand 0 is an output 
 operand which contains the value of the memory location before the 
@@ -6507,7 +6496,6 @@ loop will be used.
 @item @samp{atomic_add_fetch@var{mode}}, @samp{atomic_sub_fetch@var{mode}}
 @itemx @samp{atomic_or_fetch@var{mode}}, @samp{atomic_and_fetch@var{mode}}
 @itemx @samp{atomic_xor_fetch@var{mode}}, @samp{atomic_nand_fetch@var{mode}}
-
 These patterns emit code for an atomic operation on memory with memory
 model semantics and return the result after the operation is performed.
 Operand 0 is an output operand which contains the value after the
@@ -6523,7 +6511,6 @@ used.
 
 @cindex @code{atomic_test_and_set} instruction pattern
 @item @samp{atomic_test_and_set}
-
 This pattern emits code for @code{__builtin_atomic_test_and_set}.
 Operand 0 is an output operand which is set to true if the previous
 previous contents of the byte was "set", and false otherwise.  Operand 1
@@ -6570,7 +6557,6 @@ with @var{mode} intended to be @code{Pmode}.
 
 @cindex @code{stack_protect_set} instruction pattern
 @item @samp{stack_protect_set}
-
 This pattern, if defined, moves a @code{ptr_mode} value from the memory
 in operand 1 to the memory in operand 0 without leaving the value in
 a register afterward.  This is to avoid leaking the value some place
@@ -6581,7 +6567,6 @@ If this pattern is not defined, then a plain move pattern is generated.
 
 @cindex @code{stack_protect_test} instruction pattern
 @item @samp{stack_protect_test}
-
 This pattern, if defined, compares a @code{ptr_mode} value from the
 memory in operand 1 with the memory in operand 0 without leaving the
 value in a register afterward and branches to operand 2 if the values
@@ -6592,7 +6577,6 @@ conditional branch pattern is used.
 
 @cindex @code{clear_cache} instruction pattern
 @item @samp{clear_cache}
-
 This pattern, if defined, flushes the instruction cache for a region of
 memory.  The region is bounded to by the Pmode pointers in operand 0
 inclusive and operand 1 exclusive.

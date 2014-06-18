@@ -1,3 +1,8 @@
+2014-06-18  Andreas Schwab  <schwab@suse.de>
+
+	* doc/md.texi (Standard Names): Use @itemx for grouped items.
+	Remove blank line after @item.
+
 2014-06-18  Richard Henderson  <rth@redhat.com>
 
 	PR target/61545
