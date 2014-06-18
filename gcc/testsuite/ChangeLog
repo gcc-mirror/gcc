@@ -1,3 +1,7 @@
+2014-06-18  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/blocklocs.adb: New test.
+
 2014-06-18  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	PR tree-optimization/52252

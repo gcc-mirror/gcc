@@ -1047,6 +1047,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   gimple gimple_bind;
   gimple_seq body, cleanup;
   gimple stack_save;
+  location_t start_locus = 0, end_locus = 0;
 
   tree temp = voidify_wrapper_expr (bind_expr, NULL);
 
@@ -1099,6 +1100,19 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
   gimplify_stmt (&BIND_EXPR_BODY (bind_expr), &body);
   gimple_bind_set_body (gimple_bind, body);
 
+  /* Source location wise, the cleanup code (stack_restore and clobbers)
+     belongs to the end of the block, so propagate what we have.  The
+     stack_save operation belongs to the beginning of block, which we can
+     infer from the bind_expr directly if the block has no explicit
+     assignment.  */
+  if (BIND_EXPR_BLOCK (bind_expr))
+    {
+      end_locus = BLOCK_SOURCE_END_LOCATION (BIND_EXPR_BLOCK (bind_expr));
+      start_locus = BLOCK_SOURCE_LOCATION (BIND_EXPR_BLOCK (bind_expr));
+    }
+  if (start_locus == 0)
+    start_locus = EXPR_LOCATION (bind_expr);
+
   cleanup = NULL;
   stack_save = NULL;
   if (gimplify_ctxp->save_stack)
@@ -1108,6 +1122,9 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
       /* Save stack on entry and restore it on exit.  Add a try_finally
 	 block to achieve this.  */
       build_stack_save_restore (&stack_save, &stack_restore);
+
+      gimple_set_location (stack_save, start_locus);
+      gimple_set_location (stack_restore, end_locus);
 
       gimplify_seq_add_stmt (&cleanup, stack_restore);
     }
@@ -1126,10 +1143,12 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  && !is_gimple_reg (t)
 	  && flag_stack_reuse != SR_NONE)
 	{
-	  tree clobber = build_constructor (TREE_TYPE (t),
-					    NULL);
+	  tree clobber = build_constructor (TREE_TYPE (t), NULL);
+	  gimple clobber_stmt;
 	  TREE_THIS_VOLATILE (clobber) = 1;
-	  gimplify_seq_add_stmt (&cleanup, gimple_build_assign (t, clobber));
+	  clobber_stmt = gimple_build_assign (t, clobber);
+	  gimple_set_location (clobber_stmt, end_locus);
+	  gimplify_seq_add_stmt (&cleanup, clobber_stmt);
 	}
     }
 

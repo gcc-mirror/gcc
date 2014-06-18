@@ -1500,6 +1500,11 @@ extern void protected_set_expr_location (tree, location_t);
 
 #define BLOCK_SOURCE_LOCATION(NODE) (BLOCK_CHECK (NODE)->block.locus)
 
+/* This gives the location of the end of the block, useful to attach
+   code implicitly generated for outgoing paths.  */
+
+#define BLOCK_SOURCE_END_LOCATION(NODE) (BLOCK_CHECK (NODE)->block.end_locus)
+
 /* Define fields and accessors for nodes representing data types.  */
 
 /* See tree.def for documentation of the use of these fields.
