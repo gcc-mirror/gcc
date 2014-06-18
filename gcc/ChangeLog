@@ -1,3 +1,8 @@
+2014-06-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/61545
+	* config/aarch64/aarch64.md (tlsdesc_small): Clobber CC_REGNUM.
+
 2014-06-17  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
 
 	Revert on gcc-4_8-branch.
