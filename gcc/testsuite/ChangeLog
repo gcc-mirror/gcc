@@ -1,3 +1,8 @@
+2014-06-18  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/61126
+	* gfortran.dg/wextra_1.f: Add -Wall to dg-options.
+
 2014-06-17  Tobias Burnus  <burnus@net-b.de>
 	    Alessandro Fanfarillo <alessandro.fanfarillo@gmail.com>
 
