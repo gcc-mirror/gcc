@@ -1,7 +1,7 @@
 2014-06-18  Robert Suchanek  <robert.suchanek@imgtec.com>
 
-	* lra-constraints.c (base_to_reg): New function.       
-	(process_address): Use new function.                   
+	* lra-constraints.c (base_to_reg): New function.
+	(process_address): Use new function.
 
 2014-06-18  Tom de Vries  <tom@codesourcery.com>
 
@@ -435,10 +435,8 @@
 	* lto-streamer-out.c (hash_tree): Likewise.
 	* tree-streamer-in.c (unpack_ts_decl_with_vis_value_fields): Do
 	not stream DECL_TLS_MODEL.
-	* tree-profile.c (init_ic_make_global_vars): Use
-	set_decl_tls_model.
-	* tree-core.h (tree_decl_with_vis): Remove tls_model;
-	update comments.
+	* tree-profile.c (init_ic_make_global_vars): Use set_decl_tls_model.
+	* tree-core.h (tree_decl_with_vis): Remove tls_model; update comments.
 
 2014-06-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
