@@ -456,6 +456,11 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       if (com->threadprivate)
 	set_decl_tls_model (decl, decl_default_tls_model (decl));
 
+      if (com->omp_declare_target)
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp declare target"),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
+
       /* Place the back end declaration for this common block in
          GLOBAL_BINDING_LEVEL.  */
       gfc_map_of_all_commons[identifier] = pushdecl_top_level (decl);

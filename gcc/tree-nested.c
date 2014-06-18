@@ -1085,6 +1085,10 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_LINEAR:
 	  if (OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause))
 	    need_stmts = true;
+	  wi->val_only = true;
+	  wi->is_lhs = false;
+	  convert_nonlocal_reference_op (&OMP_CLAUSE_LINEAR_STEP (clause),
+					 &dummy, wi);
 	  goto do_decl_clause;
 
 	case OMP_CLAUSE_PRIVATE:
@@ -1113,10 +1117,42 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DEVICE:
+	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_THREAD_LIMIT:
+	case OMP_CLAUSE_SAFELEN:
 	  wi->val_only = true;
 	  wi->is_lhs = false;
 	  convert_nonlocal_reference_op (&OMP_CLAUSE_OPERAND (clause, 0),
-	                                 &dummy, wi);
+					 &dummy, wi);
+	  break;
+
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	  if (OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR (clause) != NULL)
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_nonlocal_reference_op (&OMP_CLAUSE_OPERAND (clause, 0),
+					     &dummy, wi);
+	    }
+	  break;
+
+	case OMP_CLAUSE_MAP:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_FROM:
+	  if (OMP_CLAUSE_SIZE (clause))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_nonlocal_reference_op (&OMP_CLAUSE_SIZE (clause),
+					     &dummy, wi);
+	    }
+	  if (DECL_P (OMP_CLAUSE_DECL (clause)))
+	    goto do_decl_clause;
+	  wi->val_only = true;
+	  wi->is_lhs = false;
+	  convert_nonlocal_reference_op (&OMP_CLAUSE_DECL (clause),
+					 &dummy, wi);
 	  break;
 
 	case OMP_CLAUSE_NOWAIT:
@@ -1126,6 +1162,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_PROC_BIND:
 	  break;
 
 	default:
@@ -1620,6 +1657,10 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_LINEAR:
 	  if (OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause))
 	    need_stmts = true;
+	  wi->val_only = true;
+	  wi->is_lhs = false;
+	  convert_local_reference_op (&OMP_CLAUSE_LINEAR_STEP (clause), &dummy,
+				      wi);
 	  goto do_decl_clause;
 
 	case OMP_CLAUSE_PRIVATE:
@@ -1653,11 +1694,44 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DEVICE:
+	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_THREAD_LIMIT:
+	case OMP_CLAUSE_SAFELEN:
 	  wi->val_only = true;
 	  wi->is_lhs = false;
 	  convert_local_reference_op (&OMP_CLAUSE_OPERAND (clause, 0), &dummy,
 				      wi);
 	  break;
+
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	  if (OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR (clause) != NULL)
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_local_reference_op (&OMP_CLAUSE_OPERAND (clause, 0),
+					  &dummy, wi);
+	    }
+	  break;
+
+	case OMP_CLAUSE_MAP:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_FROM:
+	  if (OMP_CLAUSE_SIZE (clause))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_local_reference_op (&OMP_CLAUSE_SIZE (clause),
+					  &dummy, wi);
+	    }
+	  if (DECL_P (OMP_CLAUSE_DECL (clause)))
+	    goto do_decl_clause;
+	  wi->val_only = true;
+	  wi->is_lhs = false;
+	  convert_local_reference_op (&OMP_CLAUSE_DECL (clause),
+				      &dummy, wi);
+	  break;
+
 
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
@@ -1666,6 +1740,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_PROC_BIND:
 	  break;
 
 	default:

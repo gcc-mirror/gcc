@@ -4,6 +4,6 @@
       implicit none
       include "omp_lib.h"
 
-      if (openmp_version .ne. 201107) call abort;
+      if (openmp_version .ne. 201307) call abort;
 
       end program main

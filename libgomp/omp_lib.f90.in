@@ -42,7 +42,7 @@
       module omp_lib
         use omp_lib_kinds
         implicit none
-        integer, parameter :: openmp_version = 201107
+        integer, parameter :: openmp_version = 201307
 
         interface
           subroutine omp_init_lock (svar)

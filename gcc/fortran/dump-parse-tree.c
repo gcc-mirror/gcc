@@ -1016,32 +1016,51 @@ show_code (int level, gfc_code *c)
 }
 
 static void
-show_omp_namelist (gfc_omp_namelist *n)
+show_omp_namelist (int list_type, gfc_omp_namelist *n)
 {
   for (; n; n = n->next)
     {
-      switch (n->rop)
-	{
-	case OMP_REDUCTION_PLUS:
-	case OMP_REDUCTION_TIMES:
-	case OMP_REDUCTION_MINUS:
-	case OMP_REDUCTION_AND:
-	case OMP_REDUCTION_OR:
-	case OMP_REDUCTION_EQV:
-	case OMP_REDUCTION_NEQV:
-	  fprintf (dumpfile, "%s:", gfc_op2string ((gfc_intrinsic_op) n->rop));
-	  break;
-	case OMP_REDUCTION_MAX: fputs ("max:", dumpfile); break;
-	case OMP_REDUCTION_MIN: fputs ("min:", dumpfile); break;
-	case OMP_REDUCTION_IAND: fputs ("iand:", dumpfile); break;
-	case OMP_REDUCTION_IOR: fputs ("ior:", dumpfile); break;
-	case OMP_REDUCTION_IEOR: fputs ("ieor:", dumpfile); break;
-	case OMP_REDUCTION_USER:
-	  if (n->udr)
-	    fprintf (dumpfile, "%s:", n->udr->name);
-	  break;
-	default: break;
-	}
+      if (list_type == OMP_LIST_REDUCTION)
+	switch (n->u.reduction_op)
+	  {
+	  case OMP_REDUCTION_PLUS:
+	  case OMP_REDUCTION_TIMES:
+	  case OMP_REDUCTION_MINUS:
+	  case OMP_REDUCTION_AND:
+	  case OMP_REDUCTION_OR:
+	  case OMP_REDUCTION_EQV:
+	  case OMP_REDUCTION_NEQV:
+	    fprintf (dumpfile, "%s:",
+		     gfc_op2string ((gfc_intrinsic_op) n->u.reduction_op));
+	    break;
+	  case OMP_REDUCTION_MAX: fputs ("max:", dumpfile); break;
+	  case OMP_REDUCTION_MIN: fputs ("min:", dumpfile); break;
+	  case OMP_REDUCTION_IAND: fputs ("iand:", dumpfile); break;
+	  case OMP_REDUCTION_IOR: fputs ("ior:", dumpfile); break;
+	  case OMP_REDUCTION_IEOR: fputs ("ieor:", dumpfile); break;
+	  case OMP_REDUCTION_USER:
+	    if (n->udr)
+	      fprintf (dumpfile, "%s:", n->udr->name);
+	    break;
+	  default: break;
+	  }
+      else if (list_type == OMP_LIST_DEPEND)
+	switch (n->u.depend_op)
+	  {
+	  case OMP_DEPEND_IN: fputs ("in:", dumpfile); break;
+	  case OMP_DEPEND_OUT: fputs ("out:", dumpfile); break;
+	  case OMP_DEPEND_INOUT: fputs ("inout:", dumpfile); break;
+	  default: break;
+	  }
+      else if (list_type == OMP_LIST_MAP)
+	switch (n->u.map_op)
+	  {
+	  case OMP_MAP_ALLOC: fputs ("alloc:", dumpfile); break;
+	  case OMP_MAP_TO: fputs ("to:", dumpfile); break;
+	  case OMP_MAP_FROM: fputs ("from:", dumpfile); break;
+	  case OMP_MAP_TOFROM: fputs ("tofrom:", dumpfile); break;
+	  default: break;
+	  }
       fprintf (dumpfile, "%s", n->sym->name);
       if (n->expr)
 	{
@@ -1117,7 +1136,7 @@ show_omp_node (int level, gfc_code *c)
       if (c->ext.omp_namelist)
 	{
 	  fputs (" (", dumpfile);
-	  show_omp_namelist (c->ext.omp_namelist);
+	  show_omp_namelist (OMP_LIST_NUM, c->ext.omp_namelist);
 	  fputc (')', dumpfile);
 	}
       return;
@@ -1226,18 +1245,12 @@ show_omp_node (int level, gfc_code *c)
 	      case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
 	      case OMP_LIST_LINEAR: type = "LINEAR"; break;
 	      case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
-	      case OMP_LIST_DEPEND_IN:
-		fprintf (dumpfile, " DEPEND(IN:");
-		break;
-	      case OMP_LIST_DEPEND_OUT:
-		fprintf (dumpfile, " DEPEND(OUT:");
-		break;
+	      case OMP_LIST_DEPEND: type = "DEPEND"; break;
 	      default:
 		gcc_unreachable ();
 	      }
-	    if (type)
-	      fprintf (dumpfile, " %s(", type);
-	    show_omp_namelist (omp_clauses->lists[list_type]);
+	    fprintf (dumpfile, " %s(", type);
+	    show_omp_namelist (list_type, omp_clauses->lists[list_type]);
 	    fputc (')', dumpfile);
 	  }
       if (omp_clauses->safelen_expr)
@@ -1269,6 +1282,34 @@ show_omp_node (int level, gfc_code *c)
 	    }
 	  fprintf (dumpfile, " PROC_BIND(%s)", type);
 	}
+      if (omp_clauses->num_teams)
+	{
+	  fputs (" NUM_TEAMS(", dumpfile);
+	  show_expr (omp_clauses->num_teams);
+	  fputc (')', dumpfile);
+	}
+      if (omp_clauses->device)
+	{
+	  fputs (" DEVICE(", dumpfile);
+	  show_expr (omp_clauses->device);
+	  fputc (')', dumpfile);
+	}
+      if (omp_clauses->thread_limit)
+	{
+	  fputs (" THREAD_LIMIT(", dumpfile);
+	  show_expr (omp_clauses->thread_limit);
+	  fputc (')', dumpfile);
+	}
+      if (omp_clauses->dist_sched_kind != OMP_SCHED_NONE)
+	{
+	  fprintf (dumpfile, " DIST_SCHEDULE (static");
+	  if (omp_clauses->dist_chunk_size)
+	    {
+	      fputc (',', dumpfile);
+	      show_expr (omp_clauses->dist_chunk_size);
+	    }
+	  fputc (')', dumpfile);
+	}
     }
   fputc ('\n', dumpfile);
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
@@ -1296,7 +1337,8 @@ show_omp_node (int level, gfc_code *c)
       if (omp_clauses->lists[OMP_LIST_COPYPRIVATE])
 	{
 	  fputs (" COPYPRIVATE(", dumpfile);
-	  show_omp_namelist (omp_clauses->lists[OMP_LIST_COPYPRIVATE]);
+	  show_omp_namelist (OMP_LIST_COPYPRIVATE,
+			     omp_clauses->lists[OMP_LIST_COPYPRIVATE]);
 	  fputc (')', dumpfile);
 	}
       else if (omp_clauses->nowait)
