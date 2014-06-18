@@ -1,7 +1,32 @@
 2014-06-18  Robert Suchanek  <robert.suchanek@imgtec.com>
 
-	* lra-constraints.c (base_to_reg): New function.
-	(process_address): Use new function.
+	* config/mips/constraints.md ("d"): BASE_REG_CLASS replaced by
+	"TARGET_MIPS16 ? M16_REGS : GR_REGS".
+	* config/mips/mips.c (mips_regno_to_class): Update for M16_SP_REGS.
+	(mips_regno_mode_ok_for_base_p): Remove use of !strict_p for MIPS16.
+	(mips_register_priority): New function that implements the target
+	hook TARGET_REGISTER_PRIORITY.
+	(mips_spill_class): Likewise for TARGET_SPILL_CLASS.
+	(mips_lra_p): Likewise for TARGET_LRA_P.
+	(TARGET_REGISTER_PRIORITY): Define macro.
+	(TARGET_SPILL_CLASS): Likewise.
+	(TARGET_LRA_P): Likewise.
+	* config/mips/mips.h (reg_class): Add M16_SP_REGS and SPILL_REGS
+	classes.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(BASE_REG_CLASS): Use M16_SP_REGS.
+	* config/mips/mips.md (*mul_acc_si): Add alternative tuned for LRA.
+	New set attribute to enable alternatives depending on the register
+	allocator used.
+	(*mul_acc_si_r3900, *mul_sub_si): Likewise.
+	(*lea64): Disable pattern for MIPS16.
+	* config/mips/mips.opt (mlra): New option.
+
+2014-06-18  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* lra-constraints.c (base_to_reg): New function.       
+	(process_address): Use new function.                   
 
 2014-06-18  Tom de Vries  <tom@codesourcery.com>
 

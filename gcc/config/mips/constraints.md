@@ -19,7 +19,7 @@
 
 ;; Register constraints
 
-(define_register_constraint "d" "BASE_REG_CLASS"
+(define_register_constraint "d" "TARGET_MIPS16 ? M16_REGS : GR_REGS"
   "An address register.  This is equivalent to @code{r} unless
    generating MIPS16 code.")
 
