@@ -1,3 +1,9 @@
+2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR libstdc++/61536
+	* config/abi/pre/gnu.ver: Adjust for out of line comparisons.
+
 2014-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2014.xml: Update Fundamentals TS status.
