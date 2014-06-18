@@ -380,6 +380,10 @@ msynci
 Target Report Mask(SYNCI)
 Use synci instruction to invalidate i-cache
 
+mlra
+Target Report Var(mips_lra_flag) Init(1) Save
+Use LRA instead of reload
+
 mtune=
 Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR

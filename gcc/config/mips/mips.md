@@ -1624,40 +1624,66 @@
 ;; copy instructions.  Reload therefore thinks that the second alternative
 ;; is two reloads more costly than the first.  We add "*?*?" to the first
 ;; alternative as a counterweight.
+;;
+;; LRA simulates reload but the cost of reloading scratches is lower
+;; than of the classic reload. For the time being, removing the counterweight
+;; for LRA is more profitable.
 (define_insn "*mul_acc_si"
-  [(set (match_operand:SI 0 "register_operand" "=l*?*?,d?")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d")
-			  (match_operand:SI 2 "register_operand" "d,d"))
-		 (match_operand:SI 3 "register_operand" "0,d")))
-   (clobber (match_scratch:SI 4 "=X,l"))
-   (clobber (match_scratch:SI 5 "=X,&d"))]
+  [(set (match_operand:SI 0 "register_operand" "=l*?*?,l,d?")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d")
+			  (match_operand:SI 2 "register_operand" "d,d,d"))
+		 (match_operand:SI 3 "register_operand" "0,0,d")))
+   (clobber (match_scratch:SI 4 "=X,X,l"))
+   (clobber (match_scratch:SI 5 "=X,X,&d"))]
   "GENERATE_MADD_MSUB && !TARGET_MIPS16"
   "@
+    madd\t%1,%2
     madd\t%1,%2
     #"
   [(set_attr "type"	"imadd")
    (set_attr "accum_in"	"3")
    (set_attr "mode"	"SI")
-   (set_attr "insn_count" "1,2")])
+   (set_attr "insn_count" "1,1,2")
+   (set (attr "enabled")
+        (cond [(and (eq_attr "alternative" "0")
+                    (match_test "!mips_lra_flag"))
+                  (const_string "yes")
+               (and (eq_attr "alternative" "1")
+                    (match_test "mips_lra_flag"))
+                  (const_string "yes")
+               (eq_attr "alternative" "2")
+                  (const_string "yes")]
+              (const_string "no")))])
 
 ;; The same idea applies here.  The middle alternative needs one less
 ;; clobber than the final alternative, so we add "*?" as a counterweight.
 (define_insn "*mul_acc_si_r3900"
-  [(set (match_operand:SI 0 "register_operand" "=l*?*?,d*?,d?")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d")
-			  (match_operand:SI 2 "register_operand" "d,d,d"))
-		 (match_operand:SI 3 "register_operand" "0,l,d")))
-   (clobber (match_scratch:SI 4 "=X,3,l"))
-   (clobber (match_scratch:SI 5 "=X,X,&d"))]
+  [(set (match_operand:SI 0 "register_operand" "=l*?*?,l,d*?,d?")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d,d")
+			  (match_operand:SI 2 "register_operand" "d,d,d,d"))
+		 (match_operand:SI 3 "register_operand" "0,0,l,d")))
+   (clobber (match_scratch:SI 4 "=X,X,3,l"))
+   (clobber (match_scratch:SI 5 "=X,X,X,&d"))]
   "TARGET_MIPS3900 && !TARGET_MIPS16"
   "@
+    madd\t%1,%2
     madd\t%1,%2
     madd\t%0,%1,%2
     #"
   [(set_attr "type"	"imadd")
    (set_attr "accum_in"	"3")
    (set_attr "mode"	"SI")
-   (set_attr "insn_count" "1,1,2")])
+   (set_attr "insn_count" "1,1,1,2")
+   (set (attr "enabled")
+        (cond [(and (eq_attr "alternative" "0")
+                    (match_test "!mips_lra_flag"))
+                  (const_string "yes")
+               (and (eq_attr "alternative" "1")
+                    (match_test "mips_lra_flag"))
+                  (const_string "yes")
+               (eq_attr "alternative" "2,3")
+                  (const_string "yes")]
+              (const_string "no")))])
 
 ;; Split *mul_acc_si if both the source and destination accumulator
 ;; values are GPRs.
@@ -1861,20 +1887,31 @@
 
 ;; See the comment above *mul_add_si for details.
 (define_insn "*mul_sub_si"
-  [(set (match_operand:SI 0 "register_operand" "=l*?*?,d?")
-        (minus:SI (match_operand:SI 1 "register_operand" "0,d")
-                  (mult:SI (match_operand:SI 2 "register_operand" "d,d")
-                           (match_operand:SI 3 "register_operand" "d,d"))))
-   (clobber (match_scratch:SI 4 "=X,l"))
-   (clobber (match_scratch:SI 5 "=X,&d"))]
+  [(set (match_operand:SI 0 "register_operand" "=l*?*?,l,d?")
+        (minus:SI (match_operand:SI 1 "register_operand" "0,0,d")
+                  (mult:SI (match_operand:SI 2 "register_operand" "d,d,d")
+                           (match_operand:SI 3 "register_operand" "d,d,d"))))
+   (clobber (match_scratch:SI 4 "=X,X,l"))
+   (clobber (match_scratch:SI 5 "=X,X,&d"))]
   "GENERATE_MADD_MSUB"
   "@
+   msub\t%2,%3
    msub\t%2,%3
    #"
   [(set_attr "type"     "imadd")
    (set_attr "accum_in"	"1")
    (set_attr "mode"     "SI")
-   (set_attr "insn_count" "1,2")])
+   (set_attr "insn_count" "1,1,2")
+   (set (attr "enabled")
+        (cond [(and (eq_attr "alternative" "0")
+                    (match_test "!mips_lra_flag"))
+                  (const_string "yes")
+               (and (eq_attr "alternative" "1")
+                    (match_test "mips_lra_flag"))
+                  (const_string "yes")
+               (eq_attr "alternative" "2")
+                  (const_string "yes")]
+              (const_string "no")))])
 
 ;; Split *mul_sub_si if both the source and destination accumulator
 ;; values are GPRs.
@@ -4141,7 +4178,10 @@
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(match_operand:DI 1 "absolute_symbolic_operand" ""))
    (clobber (match_scratch:DI 2 "=&d"))]
-  "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS && cse_not_expected"
+  "!TARGET_MIPS16
+   && TARGET_EXPLICIT_RELOCS
+   && ABI_HAS_64BIT_SYMBOLS
+   && cse_not_expected"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (high:DI (match_dup 3)))

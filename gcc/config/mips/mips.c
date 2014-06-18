@@ -661,7 +661,7 @@ const enum reg_class mips_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   M16_REGS,        M16_STORE_REGS,  LEA_REGS,        LEA_REGS,
   LEA_REGS,        LEA_REGS,        LEA_REGS,        LEA_REGS,
   T_REG,           PIC_FN_ADDR_REG, LEA_REGS,        LEA_REGS,
-  LEA_REGS,        LEA_REGS,        LEA_REGS,        LEA_REGS,
+  LEA_REGS,        M16_SP_REGS,     LEA_REGS,        LEA_REGS,
 
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
@@ -2260,22 +2260,9 @@ mips_regno_mode_ok_for_base_p (int regno, enum machine_mode mode,
     return true;
 
   /* In MIPS16 mode, the stack pointer can only address word and doubleword
-     values, nothing smaller.  There are two problems here:
-
-       (a) Instantiating virtual registers can introduce new uses of the
-	   stack pointer.  If these virtual registers are valid addresses,
-	   the stack pointer should be too.
-
-       (b) Most uses of the stack pointer are not made explicit until
-	   FRAME_POINTER_REGNUM and ARG_POINTER_REGNUM have been eliminated.
-	   We don't know until that stage whether we'll be eliminating to the
-	   stack pointer (which needs the restriction) or the hard frame
-	   pointer (which doesn't).
-
-     All in all, it seems more consistent to only enforce this restriction
-     during and after reload.  */
+     values, nothing smaller.  */
   if (TARGET_MIPS16 && regno == STACK_POINTER_REGNUM)
-    return !strict_p || GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;
+    return GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;
 
   return TARGET_MIPS16 ? M16_REG_P (regno) : GP_REG_P (regno);
 }
@@ -12100,6 +12087,18 @@ mips_register_move_cost (enum machine_mode mode,
   return 0;
 }
 
+/* Implement TARGET_REGISTER_PRIORITY.  */
+
+static int
+mips_register_priority (int hard_regno)
+{
+  /* Treat MIPS16 registers with higher priority than other regs.  */
+  if (TARGET_MIPS16
+      && TEST_HARD_REG_BIT (reg_class_contents[M16_REGS], hard_regno))
+    return 1;
+  return 0;
+}
+
 /* Implement TARGET_MEMORY_MOVE_COST.  */
 
 static int
@@ -18898,6 +18897,25 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   *update = build2 (COMPOUND_EXPR, void_type_node, *update,
 		    atomic_feraiseexcept_call);
 }
+
+/* Implement TARGET_SPILL_CLASS.  */
+
+static reg_class_t
+mips_spill_class (reg_class_t rclass ATTRIBUTE_UNUSED,
+		  enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  if (TARGET_MIPS16)
+    return SPILL_REGS;
+  return NO_REGS;
+}
+
+/* Implement TARGET_LRA_P.  */
+
+static bool
+mips_lra_p (void)
+{
+  return mips_lra_flag;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -18961,6 +18979,8 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #define TARGET_VALID_POINTER_MODE mips_valid_pointer_mode
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST mips_register_move_cost
+#undef TARGET_REGISTER_PRIORITY
+#define TARGET_REGISTER_PRIORITY mips_register_priority
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST mips_memory_move_cost
 #undef TARGET_RTX_COSTS
@@ -19137,6 +19157,11 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
+
+#undef TARGET_SPILL_CLASS
+#define TARGET_SPILL_CLASS mips_spill_class
+#undef TARGET_LRA_P
+#define TARGET_LRA_P mips_lra_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
