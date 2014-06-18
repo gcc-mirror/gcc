@@ -1,3 +1,11 @@
+2014-06-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* genattrtab.c (n_bypassed): New variable.
+	(process_bypasses): Initialise n_bypassed.
+	Count number of bypassed reservations.
+	(make_automaton_attrs): Allocate space for bypassed reservations
+	rather than number of bypasses.
+
 2014-06-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-propagate.c (replace_phi_args_in): Return whether
