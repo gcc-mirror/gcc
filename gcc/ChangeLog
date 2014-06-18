@@ -1,3 +1,23 @@
+2014-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*sibcall_memory): Rename from *sibcall_intern.
+	Do not use unspec as call operand.  Use memory_operand instead of
+	memory_nox32_operand and add "m" operand constraint.  Disable
+	pattern for TARGET_X32.
+	(*sibcall_pop_memory): Ditto.
+	(*sibcall_value_memory): Ditto.
+	(*sibcall_value_pop_memory): Ditto.
+	(sibcall peepholes): Merge SImode and DImode patterns using
+	W mode iterator.  Use memory_operand instead of memory_nox32_operand.
+	Disable pattern for TARGET_X32.  Check if eliminated register is
+	really dead after call insn.  Generate call RTX without unspec operand.
+	(sibcall_value peepholes): Ditto.
+	(sibcall_pop peepholes): Fix call insn RTXes.  Use memory_operand
+	instead of memory_nox32_operand.  Check if eliminated register is
+	really dead after call insn. Generate call RTX without unspec operand.
+	(sibcall_value_pop peepholes): Ditto.
+	* config/i386/predicates.md (memory_nox32_operand): Remove predicate.
+
 2014-06-18  Terry Guo  <terry.guo@arm.com>
 
 	PR target/61544
@@ -41,9 +61,8 @@
 
 2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
-	* gimplify.c (omp_notice_variable): If n is non-NULL
-	and no flags change in ORT_TARGET region, don't jump to
-	do_outer.
+	* gimplify.c (omp_notice_variable): If n is non-NULL and no flags
+	changed in ORT_TARGET region, don't jump to do_outer.
 	(struct gimplify_adjust_omp_clauses_data): New type.
 	(gimplify_adjust_omp_clauses_1): Adjust for data being
 	a struct gimplify_adjust_omp_clauses_data pointer instead
@@ -62,13 +81,11 @@
 	* omp-low.c (scan_sharing_clauses): Call scan_omp_op on
 	non-DECL_P OMP_CLAUSE_DECL if ctx->outer.
 	(scan_omp_parallel, lower_omp_for): When adding
-	_LOOPTEMP_ clause var, add it to outer ctx's decl_map
-	as identity.
+	_LOOPTEMP_ clause var, add it to outer ctx's decl_map as identity.
 	* tree-core.h (OMP_CLAUSE_MAP_TO_PSET): New map kind.
 	* tree-nested.c (convert_nonlocal_omp_clauses,
 	convert_local_omp_clauses): Handle various OpenMP 4.0 clauses.
-	* tree-pretty-print.c (dump_omp_clause): Handle
-	OMP_CLAUSE_MAP_TO_PSET.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_MAP_TO_PSET.
 
 2014-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -187,7 +204,8 @@
 	* ipa-visiblity.c (cgraph_externally_visible_p): Cleanup.
 	(update_visibility_by_resolution_info): Consider UNDEF; fix checking;
 	reset sections of symbols dragged out of the comdats.
-	(function_and_variable_visibility): Reset sections of localized symbols.
+	(function_and_variable_visibility): Reset sections of
+	localized symbols.
 
 2014-06-16  Richard Biener  <rguenther@suse.de>
 
@@ -599,8 +617,8 @@
 	* tree.h (decl_section_name, set_decl_section_name): Update prototypes.
 	* sdbout.c (sdbout_one_type): Update.
 	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Update.
-	* varasm.c (IN_NAMED_SECTION, get_named_section, resolve_unique_section,
-	hot_function_section, get_named_text_section,
+	* varasm.c (IN_NAMED_SECTION, get_named_section,
+	resolve_unique_section, hot_function_section, get_named_text_section,
 	USE_SELECT_SECTION_FOR_FUNCTIONS, default_function_rodata_section,
 	make_decl_rtl, default_unique_section): Update.
 	* config/c6x/c6x.c (c6x_in_small_data_p): Update.
@@ -1064,8 +1082,7 @@
 2014-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR lto/61334
-	* configure.ac: Use gcc_AC_CHECK_DECLS to check for strnlen
-	prototype.
+	* configure.ac: Use gcc_AC_CHECK_DECLS to check for strnlen prototype.
 	* config.in: Regenerate.
 	* configure: Likewise.
 

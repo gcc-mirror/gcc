@@ -71,11 +71,10 @@
   return ANY_QI_REG_P (op);
 })
 
+;; Return true if OP is a memory operands that can be used in sibcalls.
 (define_predicate "sibcall_memory_operand"
-  (match_operand 0 "memory_operand")
-{
-  return CONSTANT_P (XEXP (op, 0));
-})
+  (and (match_operand 0 "memory_operand")
+       (match_test "CONSTANT_P (XEXP (op, 0))")))
 
 ;; Match an SI or HImode register for a zero_extract.
 (define_special_predicate "ext_register_operand"
@@ -586,11 +585,6 @@
 (define_predicate "nonmemory_no_elim_operand"
   (ior (match_operand 0 "register_no_elim_operand")
        (match_operand 0 "immediate_operand")))
-
-;; Test for a valid memory operand.
-(define_predicate "memory_nox32_operand"
-  (and (not (match_test "TARGET_X32"))
-       (match_operand 0 "memory_operand")))
 
 ;; Test for a valid operand for indirect branch.
 (define_predicate "indirect_branch_operand"
