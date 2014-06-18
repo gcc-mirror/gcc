@@ -1,3 +1,12 @@
+2014-06-18  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR tree-optimization/52252
+	* gcc.target/i386/pr52252-atom.c: Test on loads group of size 3.
+	* gcc.target/i386/pr52252-core.c: Ditto.
+
+	PR tree-optimization/61403
+	* gcc.target/i386/pr61403.c: Test on loads and stores group of size 3.
+
 2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/gomp/declare-simd-1.f90: New test.

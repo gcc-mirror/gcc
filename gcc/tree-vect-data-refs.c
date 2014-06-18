@@ -5209,6 +5209,346 @@ vect_permute_load_chain (vec<tree> dr_chain,
     }
 }
 
+/* Function vect_shift_permute_load_chain.
+
+   Given a chain of loads in DR_CHAIN of LENGTH 2 or 3, generate
+   sequence of stmts to reorder the input data accordingly.
+   Return the final references for loads in RESULT_CHAIN.
+   Return true if successed, false otherwise.
+
+   E.g., LENGTH is 3 and the scalar type is short, i.e., VF is 8.
+   The input is 3 vectors each containing 8 elements.  We assign a
+   number to each element, the input sequence is:
+
+   1st vec:   0  1  2  3  4  5  6  7
+   2nd vec:   8  9 10 11 12 13 14 15
+   3rd vec:  16 17 18 19 20 21 22 23
+
+   The output sequence should be:
+
+   1st vec:  0 3 6  9 12 15 18 21
+   2nd vec:  1 4 7 10 13 16 19 22
+   3rd vec:  2 5 8 11 14 17 20 23
+
+   We use 3 shuffle instructions and 3 * 3 - 1 shifts to create such output.
+
+   First we shuffle all 3 vectors to get correct elements order:
+
+   1st vec:  ( 0  3  6) ( 1  4  7) ( 2  5)
+   2nd vec:  ( 8 11 14) ( 9 12 15) (10 13)
+   3rd vec:  (16 19 22) (17 20 23) (18 21)
+
+   Next we unite and shift vector 3 times:
+
+   1st step:
+     shift right by 6 the concatenation of:
+     "1st vec" and  "2nd vec"
+       ( 0  3  6) ( 1  4  7) |( 2  5) _ ( 8 11 14) ( 9 12 15)| (10 13)
+     "2nd vec" and  "3rd vec"
+       ( 8 11 14) ( 9 12 15) |(10 13) _ (16 19 22) (17 20 23)| (18 21)
+     "3rd vec" and  "1st vec"
+       (16 19 22) (17 20 23) |(18 21) _ ( 0  3  6) ( 1  4  7)| ( 2  5)
+			     | New vectors                   |
+
+     So that now new vectors are:
+
+     1st vec:  ( 2  5) ( 8 11 14) ( 9 12 15)
+     2nd vec:  (10 13) (16 19 22) (17 20 23)
+     3rd vec:  (18 21) ( 0  3  6) ( 1  4  7)
+
+   2nd step:
+     shift right by 5 the concatenation of:
+     "1st vec" and  "3rd vec"
+       ( 2  5) ( 8 11 14) |( 9 12 15) _ (18 21) ( 0  3  6)| ( 1  4  7)
+     "2nd vec" and  "1st vec"
+       (10 13) (16 19 22) |(17 20 23) _ ( 2  5) ( 8 11 14)| ( 9 12 15)
+     "3rd vec" and  "2nd vec"
+       (18 21) ( 0  3  6) |( 1  4  7) _ (10 13) (16 19 22)| (17 20 23)
+			  | New vectors                   |
+
+     So that now new vectors are:
+
+     1st vec:  ( 9 12 15) (18 21) ( 0  3  6)
+     2nd vec:  (17 20 23) ( 2  5) ( 8 11 14)
+     3rd vec:  ( 1  4  7) (10 13) (16 19 22) READY
+
+   3rd step:
+     shift right by 5 the concatenation of:
+     "1st vec" and  "1st vec"
+       ( 9 12 15) (18 21) |( 0  3  6) _ ( 9 12 15) (18 21)| ( 0  3  6)
+     shift right by 3 the concatenation of:
+     "2nd vec" and  "2nd vec"
+               (17 20 23) |( 2  5) ( 8 11 14) _ (17 20 23)| ( 2  5) ( 8 11 14)
+			  | New vectors                   |
+
+     So that now all vectors are READY:
+     1st vec:  ( 0  3  6) ( 9 12 15) (18 21)
+     2nd vec:  ( 2  5) ( 8 11 14) (17 20 23)
+     3rd vec:  ( 1  4  7) (10 13) (16 19 22)
+
+   This algorithm is faster than one in vect_permute_load_chain if:
+     1.  "shift of a concatination" is faster than general permutation.
+	 This is usually so.
+     2.  The TARGET machine can't execute vector instructions in parallel.
+	 This is because each step of the algorithm depends on previous.
+	 The algorithm in vect_permute_load_chain is much more parallel.
+
+   The algorithm is applicable only for LOAD CHAIN LENGTH less than VF.
+*/
+
+static bool
+vect_shift_permute_load_chain (vec<tree> dr_chain,
+			       unsigned int length,
+			       gimple stmt,
+			       gimple_stmt_iterator *gsi,
+			       vec<tree> *result_chain)
+{
+  tree vect[3], vect_shift[3], data_ref, first_vect, second_vect;
+  tree perm2_mask1, perm2_mask2, perm3_mask;
+  tree select_mask, shift1_mask, shift2_mask, shift3_mask, shift4_mask;
+  gimple perm_stmt;
+
+  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
+  unsigned int i;
+  unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+
+  result_chain->quick_grow (length);
+  memcpy (result_chain->address (), dr_chain.address (),
+	  length * sizeof (tree));
+
+  if (length == 2 && LOOP_VINFO_VECT_FACTOR (loop_vinfo) > 4)
+    {
+      for (i = 0; i < nelt / 2; ++i)
+	sel[i] = i * 2;
+      for (i = 0; i < nelt / 2; ++i)
+	sel[nelt / 2 + i] = i * 2 + 1;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shuffle of 2 fields structure is not \
+			      supported by target\n");
+	  return false;
+	}
+      perm2_mask1 = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (perm2_mask1 != NULL);
+
+      for (i = 0; i < nelt / 2; ++i)
+	sel[i] = i * 2 + 1;
+      for (i = 0; i < nelt / 2; ++i)
+	sel[nelt / 2 + i] = i * 2;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shuffle of 2 fields structure is not \
+			      supported by target\n");
+	  return false;
+	}
+      perm2_mask2 = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (perm2_mask2 != NULL);
+
+      /* Generating permutation constant to shift all elements.
+	 For vector length 8 it is {4 5 6 7 8 9 10 11}.  */
+      for (i = 0; i < nelt; i++)
+	sel[i] = nelt / 2 + i;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shift permutation is not supported by target\n");
+	  return false;
+	}
+      shift1_mask = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (shift1_mask != NULL);
+
+      /* Generating permutation constant to select vector from 2.
+	 For vector length 8 it is {0 1 2 3 12 13 14 15}.  */
+      for (i = 0; i < nelt / 2; i++)
+	sel[i] = i;
+      for (i = nelt / 2; i < nelt; i++)
+	sel[i] = nelt + i;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "select is not supported by target\n");
+	  return false;
+	}
+      select_mask = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (select_mask != NULL);
+
+      first_vect = dr_chain[0];
+      second_vect = dr_chain[1];
+
+      data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle2");
+      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						first_vect, first_vect,
+						perm2_mask1);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      vect[0] = data_ref;
+
+      data_ref = make_temp_ssa_name (vectype, NULL, "vect_shuffle2");
+      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						second_vect, second_vect,
+						perm2_mask2);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      vect[1] = data_ref;
+
+      data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift");
+      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						vect[0], vect[1],
+						shift1_mask);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      (*result_chain)[1] = data_ref;
+
+      data_ref = make_temp_ssa_name (vectype, NULL, "vect_select");
+      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						vect[0], vect[1],
+						select_mask);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      (*result_chain)[0] = data_ref;
+
+      return true;
+    }
+  if (length == 3 && LOOP_VINFO_VECT_FACTOR (loop_vinfo) > 2)
+    {
+      unsigned int k = 0, l = 0;
+
+      /* Generating permutation constant to get all elements in rigth order.
+	 For vector length 8 it is {0 3 6 1 4 7 2 5}.  */
+      for (i = 0; i < nelt; i++)
+	{
+	  if (3 * k + (l % 3) >= nelt)
+	    {
+	      k = 0;
+	      l += (3 - (nelt % 3));
+	    }
+	  sel[i] = 3 * k + (l % 3);
+	  k++;
+	}
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shuffle of 3 fields structure is not \
+			      supported by target\n");
+	  return false;
+	}
+      perm3_mask = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (perm3_mask != NULL);
+
+      /* Generating permutation constant to shift all elements.
+	 For vector length 8 it is {6 7 8 9 10 11 12 13}.  */
+      for (i = 0; i < nelt; i++)
+	sel[i] = 2 * (nelt / 3) + (nelt % 3) + i;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shift permutation is not supported by target\n");
+	  return false;
+	}
+      shift1_mask = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (shift1_mask != NULL);
+
+      /* Generating permutation constant to shift all elements.
+	 For vector length 8 it is {5 6 7 8 9 10 11 12}.  */
+      for (i = 0; i < nelt; i++)
+	sel[i] = 2 * (nelt / 3) + 1 + i;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shift permutation is not supported by target\n");
+	  return false;
+	}
+      shift2_mask = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (shift2_mask != NULL);
+
+      /* Generating permutation constant to shift all elements.
+	 For vector length 8 it is {3 4 5 6 7 8 9 10}.  */
+      for (i = 0; i < nelt; i++)
+	sel[i] = (nelt / 3) + (nelt % 3) / 2 + i;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shift permutation is not supported by target\n");
+	  return false;
+	}
+      shift3_mask = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (shift3_mask != NULL);
+
+      /* Generating permutation constant to shift all elements.
+	 For vector length 8 it is {5 6 7 8 9 10 11 12}.  */
+      for (i = 0; i < nelt; i++)
+	sel[i] = 2 * (nelt / 3) + (nelt % 3) / 2 + i;
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "shift permutation is not supported by target\n");
+	  return false;
+	}
+      shift4_mask = vect_gen_perm_mask (vectype, sel);
+      gcc_assert (shift4_mask != NULL);
+
+      for (k = 0; k < 3; k++)
+	{
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_suffle3");
+	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						    dr_chain[k], dr_chain[k],
+						    perm3_mask);
+	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect[k] = data_ref;
+	}
+
+      for (k = 0; k < 3; k++)
+	{
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift1");
+	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						    vect[k % 3],
+						    vect[(k + 1) % 3],
+						    shift1_mask);
+	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect_shift[k] = data_ref;
+	}
+
+      for (k = 0; k < 3; k++)
+	{
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift2");
+	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						    vect_shift[(4 - k) % 3],
+						    vect_shift[(3 - k) % 3],
+						    shift2_mask);
+	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	  vect[k] = data_ref;
+	}
+
+      (*result_chain)[3 - (nelt % 3)] = vect[2];
+
+      data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift3");
+      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						vect[0], vect[0],
+						shift3_mask);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      (*result_chain)[nelt % 3] = data_ref;
+
+      data_ref = make_temp_ssa_name (vectype, NULL, "vect_shift4");
+      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						vect[1], vect[1],
+						shift4_mask);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      (*result_chain)[0] = data_ref;
+      return true;
+    }
+  return false;
+}
+
 /* Function vect_transform_grouped_load.
 
    Given a chain of input interleaved data-refs (in DR_CHAIN), build statements
@@ -5220,13 +5560,22 @@ void
 vect_transform_grouped_load (gimple stmt, vec<tree> dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
+  enum machine_mode mode;
   vec<tree> result_chain = vNULL;
 
   /* DR_CHAIN contains input data-refs that are a part of the interleaving.
      RESULT_CHAIN is the output of vect_permute_load_chain, it contains permuted
      vectors, that are ready for vector computation.  */
   result_chain.create (size);
-  vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);
+
+  /* If reassociation width for vector type is 2 or greater target machine can
+     execute 2 or more vector instructions in parallel.  Otherwise try to
+     get chain for loads group using vect_shift_permute_load_chain.  */
+  mode = TYPE_MODE (STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt)));
+  if (targetm.sched.reassociation_width (VEC_PERM_EXPR, mode) > 1
+      || !vect_shift_permute_load_chain (dr_chain, size, stmt,
+					 gsi, &result_chain))
+    vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);
   vect_record_grouped_load_vectors (stmt, result_chain);
   result_chain.release ();
 }

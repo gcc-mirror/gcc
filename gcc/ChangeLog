@@ -1,3 +1,13 @@
+2014-06-18  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/i386.c (ix86_reassociation_width): Add alternative for
+	vector case.
+	* config/i386/i386.h (TARGET_VECTOR_PARALLEL_EXECUTION): New.
+	* config/i386/x86-tune.def (X86_TUNE_VECTOR_PARALLEL_EXECUTION): New.
+	* tree-vect-data-refs.c (vect_shift_permute_load_chain): New.
+	Introduces alternative way of loads group permutaions.
+	(vect_transform_grouped_load): Try alternative way of permutations.
+
 2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (omp_notice_variable): If n is non-NULL
