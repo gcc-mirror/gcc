@@ -1,3 +1,9 @@
+2014-06-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61518
+	* tree-if-conv.c (is_cond_scalar_reduction): Add missed check that
+	reduction var is used in reduction stmt or phi-function only.
+
 2014-06-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm_neon.h (vadd_f32): Change #ifdef to __FAST_MATH.

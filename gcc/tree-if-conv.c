@@ -1409,6 +1409,8 @@ is_cond_scalar_reduction (gimple phi, gimple *reduc,
   enum tree_code reduction_op;
   struct loop *loop = gimple_bb (phi)->loop_father;
   edge latch_e = loop_latch_edge (loop);
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
 
   arg_0 = PHI_ARG_DEF (phi, 0);
   arg_1 = PHI_ARG_DEF (phi, 1);
@@ -1464,6 +1466,18 @@ is_cond_scalar_reduction (gimple phi, gimple *reduc,
     }
   else if (r_op1 != PHI_RESULT (header_phi))
     return false;
+
+  /* Check that R_OP1 is used in reduction stmt or in PHI only.  */
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, r_op1)
+    {
+      gimple use_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (use_stmt))
+	continue;
+      if (use_stmt == stmt)
+	continue;
+      if (gimple_code (use_stmt) != GIMPLE_PHI)
+	return false;
+    }
 
   *op0 = r_op1; *op1 = r_op2;
   *reduc = stmt;
