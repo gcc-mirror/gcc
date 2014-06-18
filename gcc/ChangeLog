@@ -1,5 +1,10 @@
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
+	* config/arm/bpabi.S (__aeabi_ldivmod): Perform division using
+	__udivmoddi4, and fixups for negative operands.
+
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/arm/bpabi.S (__aeabi_ldivmod): Optimise stack manipulation.
 
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
