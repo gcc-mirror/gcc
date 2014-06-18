@@ -1,3 +1,18 @@
+2014-06-18  Tom de Vries  <tom@codesourcery.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_emit_call_insn): Declare.
+	* config/aarch64/aarch64.c
+	(TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS): Redefine as true.
+	(aarch64_emit_call_insn): New function.
+	(aarch64_load_symref_appropriately): Use aarch64_emit_call_insn instead
+	of emit_call_insn.
+	* config/aarch64/aarch64.md (define_expand "call_internal")
+	(define_expand "call_value_internal", define_expand "sibcall_internal")
+	(define_expand "sibcall_value_internal"): New.
+	(define_expand "call", define_expand "call_value")
+	(define_expand "sibcall", define_expand "sibcall_value"): Use internal
+	expand variant and aarch64_emit_call_insn.
+
 2014-06-18  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 

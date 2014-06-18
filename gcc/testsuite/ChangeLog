@@ -1,3 +1,7 @@
+2014-06-18  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/aarch64/fuse-caller-save.c: New test.
+
 2014-06-18  Radovan Obradovic  <robradovic@mips.com>
             Tom de Vries  <tom@codesourcery.com>
 
