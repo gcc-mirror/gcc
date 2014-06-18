@@ -1,3 +1,9 @@
+2014-06-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (FIXED_REGISTERS): Update comment.
+	Remove cr5.
+	(REG_ALLOC_ORDER): Update comment.  Move cr5 earlier.
+
 2014-06-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/61550
