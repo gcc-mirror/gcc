@@ -1,3 +1,8 @@
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
+	* config/arm/bpabi.S (__aeabi_uldivmod): Fix whitespace.
+	(__aeabi_ldivmod): Fix whitespace.
+
 2014-06-18  Andreas Schwab  <schwab@suse.de>
 
 	* doc/md.texi (Standard Names): Use @itemx for grouped items.
