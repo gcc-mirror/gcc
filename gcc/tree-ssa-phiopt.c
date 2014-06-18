@@ -2332,6 +2332,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_phiopt (m_ctxt); }
+  virtual bool gate (function *) { return flag_ssa_phiopt; }
   virtual unsigned int execute (function *)
     {
       return tree_ssa_phiopt_worker (false, gate_hoist_loads ());

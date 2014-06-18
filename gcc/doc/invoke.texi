@@ -412,7 +412,7 @@ Objective-C and Objective-C++ Dialects}.
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
--fsplit-ivs-in-unroller -fsplit-wide-types -fstack-protector @gol
+-fsplit-ivs-in-unroller -fsplit-wide-types -fssa-phiopt -fstack-protector @gol
 -fstack-protector-all -fstack-protector-strong -fstrict-aliasing @gol
 -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
@@ -6907,6 +6907,7 @@ compilation time.
 -ftree-bit-ccp @gol
 -ftree-builtin-call-dce @gol
 -ftree-ccp @gol
+-fssa-phiopt @gol
 -ftree-ch @gol
 -ftree-copyrename @gol
 -ftree-dce @gol
@@ -7891,6 +7892,11 @@ at @option{-O} and higher.  It requires that @option{-ftree-ccp} is enabled.
 Perform sparse conditional constant propagation (CCP) on trees.  This
 pass only operates on local scalar variables and is enabled by default
 at @option{-O} and higher.
+
+@item -fssa-phiopt
+@opindex fssa-phiopt
+Perform pattern matching on SSA PHI nodes to optimize conditional
+code.  This pass is enabled by default at @option{-O} and higher.
 
 @item -ftree-switch-conversion
 Perform conversion of simple initializations in a switch to

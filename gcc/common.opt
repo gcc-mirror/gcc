@@ -1950,6 +1950,10 @@ fsplit-wide-types
 Common Report Var(flag_split_wide_types) Optimization
 Split wide types into independent registers
 
+fssa-phiopt
+Common Report Var(flag_ssa_phiopt) Optimization
+Optimize conditional patterns using SSA PHI nodes
+
 fvariable-expansion-in-unroller
 Common Report Var(flag_variable_expansion_in_unroller) Optimization
 Apply variable expansion when loops are unrolled
