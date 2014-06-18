@@ -1,5 +1,10 @@
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
+	* config/arm/bpabi.S (__aeabi_uldivmod, __aeabi_ldivmod): Add comment
+	describing register usage on function entry and exit.
+
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/arm/bpabi.S (__aeabi_uldivmod): Fix whitespace.
 	(__aeabi_ldivmod): Fix whitespace.
 
