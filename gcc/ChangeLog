@@ -1,3 +1,10 @@
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
+	* config/arm/arm.c (neon_vector_mem_operand): Allow register
+	POST_MODIFY for neon loads and stores.
+	(arm_print_operand): Output post-index register for neon loads and
+	stores.
+
 2014-06-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-dce.c (perform_tree_ssa_dce): Fixup bogus commit.
