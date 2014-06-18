@@ -1,3 +1,9 @@
+2014-06-18  Terry Guo  <terry.guo@arm.com>
+
+	PR target/61544
+	* config/arm/arm.c (thumb1_reorg): Move to next basic block if we
+	reach the head.
+
 2014-06-18  Richard Biener  <rguenther@suse.de>
 
 	* common.opt (fssa-phiopt): New option.

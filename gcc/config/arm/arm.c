@@ -16946,7 +16946,8 @@ thumb1_reorg (void)
 	insn = PREV_INSN (insn);
 
       /* Find the last cbranchsi4_insn in basic block BB.  */
-      if (INSN_CODE (insn) != CODE_FOR_cbranchsi4_insn)
+      if (insn == BB_HEAD (bb)
+	  || INSN_CODE (insn) != CODE_FOR_cbranchsi4_insn)
 	continue;
 
       /* Get the register with which we are comparing.  */
