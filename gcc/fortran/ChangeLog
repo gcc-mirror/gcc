@@ -1,3 +1,9 @@
+2014-06-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/61126
+	* invoke.texi (-Wunused-parameter): Make clearer when
+	-Wextra implies this option.
+
 2014-06-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/61126
