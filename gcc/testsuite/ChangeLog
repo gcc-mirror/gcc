@@ -1,3 +1,12 @@
+2014-06-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61517
+	* gcc.c-torture/execute/bswap-2.c (incorrect_read_le32): New.
+	(incorrect_read_be32): Likewise.
+	(main): Call incorrect_read_* to test stmt replacement is made by
+	bswap at the right place.
+	* gcc.c-torture/execute/pr61517.c: New test.
+
 2014-06-18  Andreas Schwab  <schwab@suse.de>
 
 	PR rtl-optimization/54555
