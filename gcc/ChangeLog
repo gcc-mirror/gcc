@@ -1,3 +1,18 @@
+2014-06-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61517
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Adapt to return a stmt
+	whose rhs's first tree is the source expression instead of the
+	expression itself.
+	(find_bswap_or_nop): Likewise.
+	(bsap_replace): Rename stmt in cur_stmt. Pass gsi by value and src as a
+	gimple stmt whose rhs's first tree is the source. In the memory source
+	case, move the stmt to be replaced close to one of the original load to
+	avoid the problem of a store between the load and the stmt's original
+	location.
+	(pass_optimize_bswap::execute): Adapt to change in bswap_replace's
+	signature.
+
 2014-06-18  Andreas Schwab  <schwab@suse.de>
 
 	PR rtl-optimization/54555
