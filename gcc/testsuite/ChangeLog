@@ -1,3 +1,8 @@
+2014-06-18  Andreas Schwab  <schwab@suse.de>
+
+	PR rtl-optimization/54555
+	* gcc.target/m68k/pr54555.c: New test.
+
 2014-06-18  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/blocklocs.adb: New test.

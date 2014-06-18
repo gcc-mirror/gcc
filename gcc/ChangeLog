@@ -1,3 +1,9 @@
+2014-06-18  Andreas Schwab  <schwab@suse.de>
+
+	PR rtl-optimization/54555
+	* postreload.c (move2add_use_add2_insn): Substitute
+	STRICT_LOW_PART only if it is cheaper.
+
 2014-06-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*sibcall_memory): Rename from *sibcall_intern.
