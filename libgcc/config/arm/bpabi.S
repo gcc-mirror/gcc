@@ -120,6 +120,46 @@ ARM_FUNC_START aeabi_ulcmp
 #endif
 .endm
 
+/* we can use STRD/LDRD on v5TE and later, and any Thumb-2 architecture. */
+#if (defined(__ARM_EABI__)                                            \
+     && (defined(__thumb2__)                                          \
+         || (__ARM_ARCH >= 5 && defined(__TARGET_FEATURE_DSP))))
+#define CAN_USE_LDRD 1
+#else
+#define CAN_USE_LDRD 0
+#endif
+
+/* set up stack from for call to __udivmoddi4. At the end of the macro the
+   stack is arranged as follows:
+		sp+12	/ space for remainder
+		sp+8	\ (written by __udivmoddi4)
+		sp+4	lr
+		sp+0	sp+8 [rp (remainder pointer) argument for __udivmoddi4]
+
+ */
+.macro push_for_divide fname
+#if defined(__thumb2__) && CAN_USE_LDRD
+	sub	ip, sp, #8
+	strd	ip, lr, [sp, #-16]!
+#else
+	sub	sp, sp, #8
+	do_push	{sp, lr}
+#endif
+98:	cfi_push	98b - \fname, 0xe, -0xc, 0x10
+.endm
+
+/* restore stack */
+.macro pop_for_divide
+	ldr	lr, [sp, #4]
+#if CAN_USE_LDRD
+	ldrd	r2, r3, [sp, #8]
+	add	sp, sp, #16
+#else
+	add	sp, sp, #8
+	do_pop	{r2, r3}
+#endif
+.endm
+
 #ifdef L_aeabi_ldivmod
 
 /* Perform 64 bit signed division.
@@ -165,18 +205,10 @@ ARM_FUNC_START aeabi_uldivmod
 	cfi_start	__aeabi_uldivmod, LSYM(Lend_aeabi_uldivmod)
 	test_div_by_zero	unsigned
 
-	sub	sp, sp, #8
-#if defined(__thumb2__)
-	mov	ip, sp
-	push	{ip, lr}
-#else
-	do_push	{sp, lr}
-#endif
-98:	cfi_push 98b - __aeabi_uldivmod, 0xe, -0xc, 0x10
+	push_for_divide	__aeabi_uldivmod
+	/* arguments in (r0:r1), (r2:r3) and *sp */
 	bl	SYM(__gnu_uldivmod_helper) __PLT__
-	ldr	lr, [sp, #4]
-	add	sp, sp, #8
-	do_pop	{r2, r3}
+	pop_for_divide
 	RET
 	cfi_end	LSYM(Lend_aeabi_uldivmod)
 
