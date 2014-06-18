@@ -674,12 +674,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wextra:
-      handle_generated_option (&global_options, &global_options_set,
-			       OPT_Wunused_parameter, NULL, value,
-			       gfc_option_lang_mask (), kind, loc,
-			       handlers, global_dc);
       set_Wextra (value);
-
       break;
 
     case OPT_Wfunction_elimination:
