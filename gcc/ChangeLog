@@ -1,3 +1,7 @@
+2014-06-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm_neon.h (vadd_f32): Change #ifdef to __FAST_MATH.
+
 2014-06-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/61517

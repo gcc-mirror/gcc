@@ -474,7 +474,7 @@ vadd_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vadd_f32 (float32x2_t __a, float32x2_t __b)
 {
-#ifdef __FAST_MATH__
+#ifdef __FAST_MATH
   return __a + __b;
 #else
   return (float32x2_t) __builtin_neon_vaddv2sf (__a, __b, 3);
