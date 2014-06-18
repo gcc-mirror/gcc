@@ -22,6 +22,8 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+	.cfi_sections .debug_frame
+
 #ifdef __ARM_EABI__
 /* Some attributes that are common to all routines in this file.  */
 	/* Tag_ABI_align_needed: This code does not require 8-byte
@@ -145,7 +147,8 @@ ARM_FUNC_START aeabi_ulcmp
 	sub	sp, sp, #8
 	do_push	{sp, lr}
 #endif
-98:	cfi_push	98b - \fname, 0xe, -0xc, 0x10
+	.cfi_adjust_cfa_offset 16
+	.cfi_offset 14, -12
 .endm
 
 /* restore stack */
@@ -158,6 +161,8 @@ ARM_FUNC_START aeabi_ulcmp
 	add	sp, sp, #8
 	do_pop	{r2, r3}
 #endif
+	.cfi_restore 14
+	.cfi_adjust_cfa_offset 0
 .endm
 
 #ifdef L_aeabi_ldivmod
@@ -171,7 +176,7 @@ ARM_FUNC_START aeabi_ulcmp
 	r2:r3	remainder
  */
 ARM_FUNC_START aeabi_ldivmod
-	cfi_start	__aeabi_ldivmod, LSYM(Lend_aeabi_ldivmod)
+	.cfi_startproc
 	test_div_by_zero	signed
 
 	push_for_divide	__aeabi_ldivmod
@@ -181,16 +186,19 @@ ARM_FUNC_START aeabi_ldivmod
 	blt	2f
 	/* arguments in (r0:r1), (r2:r3) and *sp */
 	bl	SYM(__udivmoddi4) __PLT__
+	.cfi_remember_state
 	pop_for_divide
 	RET
 
 1: /* xxh:xxl is negative */
+	.cfi_restore_state
 	negs	xxl, xxl
 	sbc	xxh, xxh, xxh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
 	cmp	yyh, #0
 	blt	3f
 	/* arguments in (r0:r1), (r2:r3) and *sp */
 	bl	SYM(__udivmoddi4) __PLT__
+	.cfi_remember_state
 	pop_for_divide
 	negs	xxl, xxl
 	sbc	xxh, xxh, xxh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
@@ -199,16 +207,19 @@ ARM_FUNC_START aeabi_ldivmod
 	RET
 
 2: /* only yyh:yyl is negative */
+	.cfi_restore_state
 	negs	yyl, yyl
 	sbc	yyh, yyh, yyh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
 	/* arguments in (r0:r1), (r2:r3) and *sp */
 	bl	SYM(__udivmoddi4) __PLT__
+	.cfi_remember_state
 	pop_for_divide
 	negs	xxl, xxl
 	sbc	xxh, xxh, xxh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
 	RET
 
 3: /* both xxh:xxl and yyh:yyl are negative */
+	.cfi_restore_state
 	negs	yyl, yyl
 	sbc	yyh, yyh, yyh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
 	/* arguments in (r0:r1), (r2:r3) and *sp */
@@ -218,7 +229,7 @@ ARM_FUNC_START aeabi_ldivmod
 	sbc	yyh, yyh, yyh, lsl #1	/* Thumb-2 has no RSC, so use X - 2X */
 	RET
 
-	cfi_end	LSYM(Lend_aeabi_ldivmod)
+	.cfi_endproc
 	
 #endif /* L_aeabi_ldivmod */
 
@@ -233,7 +244,7 @@ ARM_FUNC_START aeabi_ldivmod
 	r2:r3	remainder
  */
 ARM_FUNC_START aeabi_uldivmod
-	cfi_start	__aeabi_uldivmod, LSYM(Lend_aeabi_uldivmod)
+	.cfi_startproc
 	test_div_by_zero	unsigned
 
 	push_for_divide	__aeabi_uldivmod
@@ -241,7 +252,7 @@ ARM_FUNC_START aeabi_uldivmod
 	bl	SYM(__udivmoddi4) __PLT__
 	pop_for_divide
 	RET
-	cfi_end	LSYM(Lend_aeabi_uldivmod)
+	.cfi_endproc
 
 #endif /* L_aeabi_divmod */
 	
