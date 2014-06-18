@@ -174,18 +174,10 @@ ARM_FUNC_START aeabi_ldivmod
 	cfi_start	__aeabi_ldivmod, LSYM(Lend_aeabi_ldivmod)
 	test_div_by_zero	signed
 
-	sub	sp, sp, #8
-#if defined(__thumb2__)
-	mov	ip, sp
-	push	{ip, lr}
-#else
-	do_push	{sp, lr}
-#endif
-98:	cfi_push 98b - __aeabi_ldivmod, 0xe, -0xc, 0x10
+	push_for_divide	__aeabi_ldivmod
+	/* arguments in (r0:r1), (r2:r3) and *sp */
 	bl	SYM(__gnu_ldivmod_helper) __PLT__
-	ldr	lr, [sp, #4]
-	add	sp, sp, #8
-	do_pop	{r2, r3}
+	pop_for_divide
 	RET
 	cfi_end	LSYM(Lend_aeabi_ldivmod)
 	
