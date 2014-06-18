@@ -1,5 +1,10 @@
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
+	* config/arm/bpabi.S (__aeabi_uldivmod): Optimise stack pointer
+	manipulation.
+
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/arm/bpabi.S (__aeabi_uldivmod, __aeabi_ldivmod): Add comment
 	describing register usage on function entry and exit.
 
