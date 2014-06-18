@@ -1,3 +1,8 @@
+2014-06-18  Radovan Obradovic  <robradovic@mips.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/arm/fuse-caller-save.c: New test.
+
 2014-06-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (make_pass_dce_loop): Remove.

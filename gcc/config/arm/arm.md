@@ -7561,7 +7561,7 @@
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
 
     pat = gen_call_internal (operands[0], operands[1], operands[2]);
-    arm_emit_call_insn (pat, XEXP (operands[0], 0));
+    arm_emit_call_insn (pat, XEXP (operands[0], 0), false);
     DONE;
   }"
 )
@@ -7640,7 +7640,7 @@
 
     pat = gen_call_value_internal (operands[0], operands[1],
 				   operands[2], operands[3]);
-    arm_emit_call_insn (pat, XEXP (operands[1], 0));
+    arm_emit_call_insn (pat, XEXP (operands[1], 0), false);
     DONE;
   }"
 )
@@ -7730,6 +7730,12 @@
   [(set_attr "type" "call")]
 )
 
+(define_expand "sibcall_internal"
+  [(parallel [(call (match_operand 0 "memory_operand" "")
+		    (match_operand 1 "general_operand" ""))
+	      (return)
+	      (use (match_operand 2 "" ""))])])
+
 ;; We may also be able to do sibcalls for Thumb, but it's much harder...
 (define_expand "sibcall"
   [(parallel [(call (match_operand 0 "memory_operand" "")
@@ -7739,6 +7745,8 @@
   "TARGET_32BIT"
   "
   {
+    rtx pat;
+
     if ((!REG_P (XEXP (operands[0], 0))
 	 && GET_CODE (XEXP (operands[0], 0)) != SYMBOL_REF)
 	|| (GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
@@ -7747,8 +7755,19 @@
 
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
+
+    pat = gen_sibcall_internal (operands[0], operands[1], operands[2]);
+    arm_emit_call_insn (pat, operands[0], true);
+    DONE;
   }"
 )
+
+(define_expand "sibcall_value_internal"
+  [(parallel [(set (match_operand 0 "" "")
+		   (call (match_operand 1 "memory_operand" "")
+			 (match_operand 2 "general_operand" "")))
+	      (return)
+	      (use (match_operand 3 "" ""))])])
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -7759,6 +7778,8 @@
   "TARGET_32BIT"
   "
   {
+    rtx pat;
+
     if ((!REG_P (XEXP (operands[1], 0))
 	 && GET_CODE (XEXP (operands[1], 0)) != SYMBOL_REF)
 	|| (GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
@@ -7767,6 +7788,11 @@
 
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
+
+    pat = gen_sibcall_value_internal (operands[0], operands[1],
+                                      operands[2], operands[3]);
+    arm_emit_call_insn (pat, operands[1], true);
+    DONE;
   }"
 )
 
