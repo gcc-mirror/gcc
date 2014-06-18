@@ -1,3 +1,8 @@
+2014-06-18  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (OpenMP): Update refs to OpenMP 4.0.
+	* intrinsic.texi (OpenMP Modules): Ditto.
+
 2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpp.c (cpp_define_builtins): Change _OPENMP macro to
