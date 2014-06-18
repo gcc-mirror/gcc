@@ -1,5 +1,9 @@
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
+	* config/arm/bpabi.S (__aeabi_ldivmod): Optimise stack manipulation.
+
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/arm/bpabi.S (__aeabi_uldivmod): Perform division using call
 	to __udivmoddi4.
 
