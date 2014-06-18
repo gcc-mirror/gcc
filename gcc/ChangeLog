@@ -1,5 +1,9 @@
 2014-06-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-dce.c (perform_tree_ssa_dce): Fixup bogus commit.
+
+2014-06-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-pass.h (make_pass_dce_loop): Remove.
 	* passes.def: Replace pass_dce_loop with pass_dce.
 	* tree-ssa-dce.c (perform_tree_ssa_dce): If something
