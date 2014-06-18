@@ -122,6 +122,14 @@ ARM_FUNC_START aeabi_ulcmp
 
 #ifdef L_aeabi_ldivmod
 
+/* Perform 64 bit signed division.
+   Inputs:
+	r0:r1	numerator
+	r2:r3	denominator
+   Outputs:
+	r0:r1	quotient
+	r2:r3	remainder
+ */
 ARM_FUNC_START aeabi_ldivmod
 	cfi_start	__aeabi_ldivmod, LSYM(Lend_aeabi_ldivmod)
 	test_div_by_zero	signed
@@ -145,6 +153,14 @@ ARM_FUNC_START aeabi_ldivmod
 
 #ifdef L_aeabi_uldivmod
 
+/* Perform 64 bit signed division.
+   Inputs:
+	r0:r1	numerator
+	r2:r3	denominator
+   Outputs:
+	r0:r1	quotient
+	r2:r3	remainder
+ */
 ARM_FUNC_START aeabi_uldivmod
 	cfi_start	__aeabi_uldivmod, LSYM(Lend_aeabi_uldivmod)
 	test_div_by_zero	unsigned
