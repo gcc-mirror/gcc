@@ -964,7 +964,7 @@ replace_uses_in (gimple stmt, ssa_prop_get_value_fn get_value)
 /* Replace propagated values into all the arguments for PHI using the
    values from PROP_VALUE.  */
 
-static void
+static bool
 replace_phi_args_in (gimple phi, ssa_prop_get_value_fn get_value)
 {
   size_t i;
@@ -1015,6 +1015,8 @@ replace_phi_args_in (gimple phi, ssa_prop_get_value_fn get_value)
 	  fprintf (dump_file, "\n");
 	}
     }
+
+  return replaced;
 }
 
 
@@ -1066,7 +1068,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	      continue;
 	    }
 	}
-      replace_phi_args_in (phi, get_value_fn);
+      something_changed |= replace_phi_args_in (phi, get_value_fn);
     }
 
   /* Propagate known values into stmts.  In some case it exposes

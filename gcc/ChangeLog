@@ -1,3 +1,12 @@
+2014-06-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-propagate.c (replace_phi_args_in): Return whether
+	we propagated anything.
+	(substitute_and_fold_dom_walker::before_dom_children): Something
+	changed if we propagated into PHI arguments.
+	* tree-ssa-pre.c (eliminate): Always schedule cfg-cleanup if
+	we removed a stmt.
+
 2014-06-18  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/i386.c (ix86_reassociation_width): Add alternative for
