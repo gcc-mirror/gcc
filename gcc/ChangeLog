@@ -1,5 +1,10 @@
 2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
 
+	* config/arm/bpabi-v6m.S (__aeabi_uldivmod): Perform division using
+	__udivmoddi4.
+
+2014-06-18  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/arm/bpabi.S (__aeabi_ldivmod, __aeabi_uldivmod,
 	push_for_divide, pop_for_divide): Use .cfi_* directives for DWARF
 	annotations. Fix DWARF information.
