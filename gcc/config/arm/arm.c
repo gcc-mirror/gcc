@@ -12792,7 +12792,11 @@ neon_vector_mem_operand (rtx op, int type, bool strict)
       || (type == 0 && GET_CODE (ind) == PRE_DEC))
     return arm_address_register_rtx_p (XEXP (ind, 0), 0);
 
-  /* FIXME: vld1 allows register post-modify.  */
+  /* Allow post-increment by register for VLDn */
+  if (type == 2 && GET_CODE (ind) == POST_MODIFY
+      && GET_CODE (XEXP (ind, 1)) == PLUS
+      && REG_P (XEXP (XEXP (ind, 1), 1)))
+     return true;
 
   /* Match:
      (plus (reg)
@@ -21824,6 +21828,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
       {
 	rtx addr;
 	bool postinc = FALSE;
+	rtx postinc_reg = NULL;
 	unsigned align, memsize, align_bits;
 
 	gcc_assert (MEM_P (x));
@@ -21831,6 +21836,11 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	if (GET_CODE (addr) == POST_INC)
 	  {
 	    postinc = 1;
+	    addr = XEXP (addr, 0);
+	  }
+	if (GET_CODE (addr) == POST_MODIFY)
+	  {
+	    postinc_reg = XEXP( XEXP (addr, 1), 1);
 	    addr = XEXP (addr, 0);
 	  }
 	asm_fprintf (stream, "[%r", REGNO (addr));
@@ -21858,6 +21868,8 @@ arm_print_operand (FILE *stream, rtx x, int code)
 
 	if (postinc)
 	  fputs("!", stream);
+	if (postinc_reg)
+	  asm_fprintf (stream, ", %r", REGNO (postinc_reg));
       }
       return;
 
