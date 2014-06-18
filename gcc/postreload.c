@@ -1805,10 +1805,14 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx insn)
 				   gen_rtx_STRICT_LOW_PART (VOIDmode,
 							    narrow_reg),
 				   narrow_src);
-		  changed = validate_change (insn, &PATTERN (insn),
-					     new_set, 0);
-		  if (changed)
-		    break;
+		  get_full_set_rtx_cost (new_set, &newcst);
+		  if (costs_lt_p (&newcst, &oldcst, speed))
+		    {
+		      changed = validate_change (insn, &PATTERN (insn),
+						 new_set, 0);
+		      if (changed)
+			break;
+		    }
 		}
 	    }
 	}
