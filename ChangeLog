@@ -1,3 +1,7 @@
+2014-06-18  Richard Henderson  <rth@redhat.com>
+
+	* .gitignore: Import gcc_update output.
+
 2014-06-18  Olivier Hainque  <hainque@adacore.com>
 
 	* tree-core.h (tree_block): Add an "end_locus" field, allowing
