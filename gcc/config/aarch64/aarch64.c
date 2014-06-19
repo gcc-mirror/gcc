@@ -3395,7 +3395,7 @@ aarch64_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
 
 /* Emit call insn with PAT and do aarch64-specific handling.  */
 
-bool
+void
 aarch64_emit_call_insn (rtx pat)
 {
   rtx insn = emit_call_insn (pat);

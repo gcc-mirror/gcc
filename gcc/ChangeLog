@@ -1,3 +1,9 @@
+2014-06-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_emit_call_insn): Change
+	return type to void.
+	* config/aarch64/aarch64.c (aarch64_emit_call_insn): Same.
+
 2014-06-19  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* loop-invariant.c (get_inv_cost): Skip invariants, which are marked
