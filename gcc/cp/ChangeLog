@@ -1,3 +1,8 @@
+2014-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59296
+	* call.c (add_function_candidate): Also set LOOKUP_NO_TEMP_BIND.
+
 2014-06-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59296
