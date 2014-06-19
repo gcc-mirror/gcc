@@ -1994,6 +1994,9 @@ add_function_candidate (struct z_candidate **candidates,
 		     object parameter has reference type.  */
 		  bool rv = FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (fn));
 		  parmtype = cp_build_reference_type (parmtype, rv);
+		  /* Don't bind an rvalue to a const lvalue ref-qualifier.  */
+		  if (!rv)
+		    lflags |= LOOKUP_NO_RVAL_BIND|LOOKUP_NO_TEMP_BIND;
 		}
 	      else
 		{
