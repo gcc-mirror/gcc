@@ -1,3 +1,9 @@
+2014-06-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/61454
+	* expr.c (scalarize_intrinsic_call): Take care of optional
+	arguments.
+
 2014-06-19  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-intrinsic.c (conv_co_minmaxsum): Fix argument
