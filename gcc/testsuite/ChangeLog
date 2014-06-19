@@ -1,3 +1,8 @@
+2014-06-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/61454
+	* gfortran.dg/pr61454.f90: New file.
+
 2014-06-19  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/thumb1-load-64bit-constant-1.c: New test.

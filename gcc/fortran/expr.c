@@ -1955,7 +1955,7 @@ scalarize_intrinsic_call (gfc_expr *e)
   for (; a; a = a->next)
     {
       n++;
-      if (a->expr->expr_type != EXPR_ARRAY)
+      if (!a->expr || a->expr->expr_type != EXPR_ARRAY)
 	continue;
       array_arg = n;
       expr = gfc_copy_expr (a->expr);
