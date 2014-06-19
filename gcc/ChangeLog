@@ -1,3 +1,8 @@
+2014-06-19  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/thumb1.md (define_split): Split 64bit constant in earlier
+	stage.
+
 2014-06-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.h (FIXED_REGISTERS): Update comment.
