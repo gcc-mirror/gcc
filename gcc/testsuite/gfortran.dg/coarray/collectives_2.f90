@@ -7,7 +7,7 @@ program test
   intrinsic co_max
   intrinsic co_min
   intrinsic co_sum
-  integer :: val(3)
+  integer :: val(3), tmp_val(3)
   integer :: vec(3)
   vec = [2,3,1]
   if (this_image() == 1) then
@@ -21,13 +21,24 @@ program test
   else
     val(3) = 101
   endif
+  tmp_val = val
   call test_min
+  val = tmp_val
   call test_max
+  val = tmp_val
   call test_sum
 contains
   subroutine test_max
-    call co_max (val(vec))
-    !write(*,*) "Maximal value", val
+    integer :: tmp
+    call co_max (val(::2))
+    if (num_images() > 1) then
+      if (any (val /= [42, this_image(), 101])) call abort()
+    else
+      if (any (val /= [42, this_image(), -55])) call abort()
+    endif
+
+    val = tmp_val
+    call co_max (val(:))
     if (num_images() > 1) then
       if (any (val /= [42, num_images(), 101])) call abort()
     else
@@ -40,20 +51,26 @@ contains
     if (this_image() == num_images()) then
       !write(*,*) "Minimal value", val
       if (num_images() > 1) then
-        if (any (val /= [-99, num_images(), -55])) call abort()
+        if (any (val /= [-99, 1, -55])) call abort()
       else
-        if (any (val /= [42, num_images(), -55])) call abort()
+        if (any (val /= [42, 1, -55])) call abort()
       endif
+    else
+      if (any (val /= tmp_val)) call abort()
     endif
   end subroutine test_min
 
   subroutine test_sum
     integer :: n
-    call co_sum (val, result_image=1)
+    n = 88
+    call co_sum (val, result_image=1, stat=n)
+    if (n /= 0) call abort()
     if (this_image() == 1) then
       n = num_images()
       !write(*,*) "The sum is ", val
       if (any (val /= [42 + (n-1)*(-99), (n**2 + n)/2, -55+(n-1)*101])) call abort()
+    else
+      if (any (val /= tmp_val)) call abort()
     end if
   end subroutine test_sum
 end program test

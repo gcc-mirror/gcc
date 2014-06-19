@@ -1,3 +1,8 @@
+2014-06-19  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/single.c (_gfortran_caf_co_sum, _gfortran_caf_co_max,
+	_gfortran_caf_co_min): Fix stat setting.
+
 2014-06-17  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/libcaf.h (gfc_descriptor_t): New typedef.

@@ -8300,13 +8300,11 @@ conv_co_minmaxsum (gfc_code *code)
     gcc_unreachable ();
 
   if (code->resolved_isym->id == GFC_ISYM_CO_SUM)
-    fndecl = build_call_expr_loc (input_location, fndecl, 6, array,
-				  null_pointer_node, image_index, stat, errmsg,
-				  errmsg_len);
+    fndecl = build_call_expr_loc (input_location, fndecl, 5, array,
+				  image_index, stat, errmsg, errmsg_len);
   else
-    fndecl = build_call_expr_loc (input_location, fndecl, 7, array,
-				  null_pointer_node, image_index, stat, errmsg,
-				  strlen, errmsg_len);
+    fndecl = build_call_expr_loc (input_location, fndecl, 6, array, image_index,
+				  stat, errmsg, strlen, errmsg_len);
   gfc_add_expr_to_block (&block, fndecl);
   gfc_add_block_to_block (&block, &post_block);
 

@@ -1,9 +1,14 @@
+2014-06-19  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/collectives_2.f90: Extend
+	and make valid.
+
 2014-06-18  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/aarch64/fuse-caller-save.c: New test.
 
 2014-06-18  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/arm/fuse-caller-save.c: New test.
 

@@ -211,7 +211,7 @@ _gfortran_caf_co_sum (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int errmsg_len __attribute__ ((unused)))
 {
   if (stat)
-    stat = 0;
+    *stat = 0;
 }
 
 void
@@ -222,7 +222,7 @@ _gfortran_caf_co_min (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int errmsg_len __attribute__ ((unused)))
 {
   if (stat)
-    stat = 0;
+    *stat = 0;
 }
 
 void
@@ -233,7 +233,7 @@ _gfortran_caf_co_max (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int errmsg_len __attribute__ ((unused)))
 {
   if (stat)
-    stat = 0;
+    *stat = 0;
 }
 
 void
