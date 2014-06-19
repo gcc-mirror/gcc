@@ -1136,6 +1136,10 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
 
       dep = invariants[depno];
 
+      /* If DEP is moved out of the loop, it is not a depends_on any more.  */
+      if (dep->move)
+	continue;
+
       get_inv_cost (dep, &acomp_cost, aregs_needed);
 
       if (! flag_ira_loop_pressure)

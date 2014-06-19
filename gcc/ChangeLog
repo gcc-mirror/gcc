@@ -1,3 +1,8 @@
+2014-06-19  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* loop-invariant.c (get_inv_cost): Skip invariants, which are marked
+	as "move", from depends_on.
+
 2014-06-19  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/thumb1.md (define_split): Split 64bit constant in earlier
