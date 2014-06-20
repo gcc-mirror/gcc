@@ -1,3 +1,9 @@
+2014-06-20 Hale Wang <hale.wang@arm.com>
+
+	PR lto/61123
+	* c.opt (fshort-enums): Add to LTO.
+	* c.opt (fshort-wchar): Likewise.
+
 2014-06-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60439
