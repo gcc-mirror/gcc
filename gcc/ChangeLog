@@ -1,3 +1,8 @@
+2014-06-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/rs6000/rs6000.md: Append `DONE' to preparation
+	statements of `bswap' pattern splitters.
+
 2014-06-20  Tom de Vries  <tom@codesourcery.com>
 
 	* target.def (call_fusage_contains_non_callee_clobbers): Update
