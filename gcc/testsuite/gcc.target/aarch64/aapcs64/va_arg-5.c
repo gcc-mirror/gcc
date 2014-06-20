@@ -33,7 +33,7 @@ void init_data ()
 
 #include "abitest.h"
 #else
-  ARG      (int, 1, X0, LAST_NAMED_ARG_ID)
+  ARG      (int, 1, W0, LAST_NAMED_ARG_ID)
   DOTS
   /* HFA passed in fp/simd registers or on stack.  */
   ANON     (struct hfa_dx4_t  , hfa_dx4  , D0      , 0)

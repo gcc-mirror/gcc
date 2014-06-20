@@ -67,7 +67,7 @@ void init_data ()
 
 #include "abitest.h"
 #else
-  ARG      (int   , 1, X0, LAST_NAMED_ARG_ID)
+  ARG      (int   , 1, W0, LAST_NAMED_ARG_ID)
   DOTS
   /* HFA or HVA passed in fp/simd registers or on stack.  */
   ANON     (struct hfa_fx1_t  , hfa_fx1 ,  S0      , 0)
@@ -89,5 +89,9 @@ void init_data ()
   PTR_ANON (struct non_hfa_ffs_t  , non_hfa_ffs  , STACK+120, 18)
   ANON     (struct non_hfa_ffs_2_t, non_hfa_ffs_2, STACK+128, 19)
   ANON     (union  non_hfa_union_t, non_hfa_union, STACK+144, 20)
+#ifndef __AAPCS64_BIG_ENDIAN__
   LAST_ANON(int                   , 2            , STACK+152, 30)
+#else
+  LAST_ANON(int                   , 2            , STACK+156, 30)
+#endif
 #endif

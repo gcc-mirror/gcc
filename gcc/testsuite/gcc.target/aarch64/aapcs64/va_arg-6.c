@@ -30,7 +30,7 @@ void init_data ()
 
 #include "abitest.h"
 #else
-  ARG      (int, 1, X0, LAST_NAMED_ARG_ID)
+  ARG      (int, 1, W0, LAST_NAMED_ARG_ID)
   DOTS
   ANON     (struct hfa_ffs_t  , hfa_ffs  , S0     , 0)
   ANON     (union  hfa_union_t, hfa_union, S4     , 1)

@@ -80,7 +80,15 @@ void init_data ()
   PTR_ANON (struct x2, y2, STACK+24,  9)
   ANON     (union  x3, y3, STACK+32, 10)
   PTR_ANON (union  x4, y4, STACK+40, 11)
+#ifndef __AAPCS64_BIG_ENDIAN__
   ANON     (int      ,  1, STACK+48, 12)
+#else
+  ANON     (int      ,  1, STACK+52, 12)
+#endif
   ANON     (struct x5, y5, STACK+64, 13)
+#ifndef __AAPCS64_BIG_ENDIAN__
   LAST_ANON(int      ,  2, STACK+80, 14)
+#else
+  LAST_ANON(int      ,  2, STACK+84, 14)
+#endif
 #endif

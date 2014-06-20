@@ -30,7 +30,7 @@ void init_data ()
 
 #include "abitest.h"
 #else
-  ARG          (         int      , 0xff  ,                            X0,        0)
+  ARG          (         int      , 0xff  ,                            W0,        0)
   ARG          (         float    , 1.0f  ,                            S0,        1)
   ARG          (         float    , 1.0f  ,                            S1,        2)
   ARG          (         float    , 1.0f  ,                            S2,        3)
@@ -43,17 +43,30 @@ void init_data ()
   ANON         (          __int128, qword.i              ,             X2,        8)
   ANON         (  signed long long, 0xa987654321012345LL ,             X4,        9)
   ANON         (          __int128, qword.i              ,             X6,       10)
+#ifndef __AAPCS64_BIG_ENDIAN__
   ANON_PROMOTED(unsigned char     , 0xfe  , unsigned int, 0xfe       , STACK,    11)
   ANON_PROMOTED(  signed char     , sc    ,   signed int, sc_promoted, STACK+8,  12)
   ANON_PROMOTED(unsigned short    , 0xdcba, unsigned int, 0xdcba     , STACK+16, 13)
   ANON_PROMOTED(  signed short    , ss    ,   signed int, ss_promoted, STACK+24, 14)
   ANON         (unsigned int      , 0xdeadbeef,                        STACK+32, 15)
   ANON         (  signed int      , 0xcafebabe,                        STACK+40, 16)
+#else
+  ANON_PROMOTED(unsigned char     , 0xfe  , unsigned int, 0xfe       , STACK+4,  11)
+  ANON_PROMOTED(  signed char     , sc    ,   signed int, sc_promoted, STACK+12, 12)
+  ANON_PROMOTED(unsigned short    , 0xdcba, unsigned int, 0xdcba     , STACK+20, 13)
+  ANON_PROMOTED(  signed short    , ss    ,   signed int, ss_promoted, STACK+28, 14)
+  ANON         (unsigned int      , 0xdeadbeef,                        STACK+36, 15)
+  ANON         (  signed int      , 0xcafebabe,                        STACK+44, 16)
+#endif
   ANON         (unsigned long long, 0xba98765432101234ULL,             STACK+48, 17)
   ANON_PROMOTED(         float    , fp    ,       double, fp_promoted, STACK+56, 18)
   ANON         (         double   , 9876543.212345,                    STACK+64, 19)
   ANON         (    long double   , 98765432123456789.987654321L,      STACK+80, 20)
   ANON         (             vf2_t, vf2   ,                            STACK+96, 21)
   ANON         (             vi4_t, vi4   ,                            STACK+112,22)
+#ifndef __AAPCS64_BIG_ENDIAN__
   LAST_ANON    (         int      , 0xeeee,                            STACK+128,23)
+#else
+  LAST_ANON    (         int      , 0xeeee,                            STACK+132,23)
+#endif
 #endif
