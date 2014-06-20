@@ -16,6 +16,10 @@
 #
 # Contributed by Diego Novillo <dnovillo@google.com>
 
+# Exit immediately if this isn't an ARM target.
+if ![istarget arm*-*-*] then {
+  return
+}
 
 # Test link-time optimization across multiple files.
 #

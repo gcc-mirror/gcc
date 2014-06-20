@@ -1,3 +1,7 @@
+2014-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/arm/lto/lto.exp: Exit immediately if not arm*-*-* target.
+
 2014-06-20  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/bounds-1.c: New test.
