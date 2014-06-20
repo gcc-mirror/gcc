@@ -1,3 +1,17 @@
+2014-06-20  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	Make the tests big-endian friendly.
+
+	* gcc.target/aarch64/aapcs64/test_25.c: Update.
+	* gcc.target/aarch64/aapcs64/va_arg-1.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-12.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-2.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-3.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-4.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-5.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-6.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-7.c: Ditto.
+
 2014-06-20  Yury Gribov  <y.gribov@samsung.com>
 	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
 

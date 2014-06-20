@@ -45,16 +45,20 @@ void init_data ()
 #include "abitest.h"
 #else
   PTR(struct z, a, X0, 0)
-  ARG(int, 0xdeadbeef, X1, 1)
-  ARG(int, 0xcafebabe, X2, 2)
-  ARG(int, 0xdeadbabe, X3, 3)
-  ARG(int, 0xcafebeef, X4, 4)
-  ARG(int, 0xbeefdead, X5, 5)
-  ARG(int, 0xbabecafe, X6, LAST_NAMED_ARG_ID)
+  ARG(int, 0xdeadbeef, W1, 1)
+  ARG(int, 0xcafebabe, W2, 2)
+  ARG(int, 0xdeadbabe, W3, 3)
+  ARG(int, 0xcafebeef, W4, 4)
+  ARG(int, 0xbeefdead, W5, 5)
+  ARG(int, 0xbabecafe, W6, LAST_NAMED_ARG_ID)
   DOTS
   PTR_ANON(struct z, b, X7, 7)
   PTR_ANON(struct z, c, STACK, 8)
+#ifndef __AAPCS64_BIG_ENDIAN__
   ANON(int, 0xbabedead, STACK+8, 9)
+#else
+  ANON(int, 0xbabedead, STACK+12, 9)
+#endif
   LAST_ANON(double, 123.45, D0, 10)
 
 #endif
