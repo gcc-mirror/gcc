@@ -2037,19 +2037,19 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
 
   build_check_stmt (loc, gimple_assign_lhs (str_arg_ssa), NULL_TREE, 1, iter,
 		    /*non_zero_len_p*/true, /*before_p=*/true,
-		    /*is_store=*/false, /*is_scalar_access*/false, /*align*/0);
+		    /*is_store=*/false, /*is_scalar_access*/true, /*align*/0);
 
-  gimple stmt =
-    gimple_build_assign_with_ops (PLUS_EXPR,
-				  make_ssa_name (TREE_TYPE (len), NULL),
-				  len,
-				  build_int_cst (TREE_TYPE (len), 1));
-  gimple_set_location (stmt, loc);
-  gsi_insert_after (iter, stmt, GSI_NEW_STMT);
+  gimple g =
+    gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
+				  make_ssa_name (cptr_type, NULL),
+				  gimple_assign_lhs (str_arg_ssa),
+				  len);
+  gimple_set_location (g, loc);
+  gsi_insert_after (iter, g, GSI_NEW_STMT);
 
-  build_check_stmt (loc, gimple_assign_lhs (stmt), len, 1, iter,
+  build_check_stmt (loc, gimple_assign_lhs (g), NULL_TREE, 1, iter,
 		    /*non_zero_len_p*/true, /*before_p=*/false,
-		    /*is_store=*/false, /*is_scalar_access*/false, /*align*/0);
+		    /*is_store=*/false, /*is_scalar_access*/true, /*align*/0);
 
   return true;
 }
