@@ -4884,14 +4884,14 @@ Whether this target supports splitting the stack when the options described in @
 @cindex miscellaneous register hooks
 
 @deftypevr {Target Hook} bool TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
-set to true if all the calls in the current function contain clobbers in
-CALL_INSN_FUNCTION_USAGE for the registers that are clobbered by the call
-rather than by the callee, and are not already set or clobbered in the call
-pattern.  Examples of such registers are registers used in PLTs and stubs,
-and temporary registers used in the call instruction but not present in the
-rtl pattern.  Another way to formulate it is the registers not present in the
-rtl pattern that are clobbered by the call assuming the callee does not
-clobber any register.  The default version of this hook is set to false.
+Set to true if each call that binds to a local definition explicitly
+clobbers or sets all non-fixed registers modified by performing the call.
+That is, by the call pattern itself, or by code that might be inserted by the
+linker (e.g. stubs, veneers, branch islands), but not including those
+modifiable by the callee.  The affected registers may be mentioned explicitly
+in the call pattern, or included as clobbers in CALL_INSN_FUNCTION_USAGE.
+The default version of this hook is set to false.  The purpose of this hook
+is to enable the fuse-caller-save optimization.
 @end deftypevr
 
 @node Varargs

@@ -1,3 +1,9 @@
+2014-06-20  Tom de Vries  <tom@codesourcery.com>
+
+	* target.def (call_fusage_contains_non_callee_clobbers): Update
+	definition.
+	* doc/tm.texi: Regenerate.
+
 2014-06-20  Yury Gribov  <y.gribov@samsung.com>
 	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
