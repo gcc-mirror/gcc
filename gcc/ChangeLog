@@ -1,5 +1,10 @@
 2014-06-20  Tom de Vries  <tom@codesourcery.com>
 
+	* final.c (collect_fn_hard_reg_usage): Add separate IOR_HARD_REG_SET for
+	get_call_reg_set_usage.
+
+2014-06-20  Tom de Vries  <tom@codesourcery.com>
+
 	* final.c (collect_fn_hard_reg_usage): Don't save function_used_regs if
 	it contains all call_used_regs.
 
