@@ -1,5 +1,10 @@
 2014-06-20  Tom de Vries  <tom@codesourcery.com>
 
+	* final.c (collect_fn_hard_reg_usage): Don't save function_used_regs if
+	it contains all call_used_regs.
+
+2014-06-20  Tom de Vries  <tom@codesourcery.com>
+
 	* final.c (collect_fn_hard_reg_usage): Add and use variable
 	function_used_regs.
 

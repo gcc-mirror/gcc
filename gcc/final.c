@@ -4795,6 +4795,11 @@ collect_fn_hard_reg_usage (void)
     SET_HARD_REG_BIT (function_used_regs, i);
 #endif
 
+  /* The information we have gathered is only interesting if it exposes a
+     register from the call_used_regs that is not used in this function.  */
+  if (hard_reg_set_subset_p (call_used_reg_set, function_used_regs))
+    return;
+
   node = cgraph_rtl_info (current_function_decl);
   gcc_assert (node != NULL);
 
