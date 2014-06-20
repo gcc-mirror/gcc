@@ -2025,9 +2025,9 @@ add_function_candidate (struct z_candidate **candidates,
 		     object parameter has reference type.  */
 		  bool rv = FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (fn));
 		  parmtype = cp_build_reference_type (parmtype, rv);
-		  /* Don't bind an rvalue to a const lvalue ref-qualifier.  */
-		  if (!rv)
-		    lflags |= LOOKUP_NO_RVAL_BIND|LOOKUP_NO_TEMP_BIND;
+		  /* The special handling of 'this' conversions in compare_ics
+		     does not apply if there is a ref-qualifier.  */
+		  is_this = false;
 		}
 	      else
 		{
@@ -8597,10 +8597,11 @@ compare_ics (conversion *ics1, conversion *ics2)
   /* [over.ics.rank]
 
      --S1 and S2 are reference bindings (_dcl.init.ref_) and neither refers
-     to an implicit object parameter, and either S1 binds an lvalue reference
-     to an lvalue and S2 binds an rvalue reference or S1 binds an rvalue
-     reference to an rvalue and S2 binds an lvalue reference
-     (C++0x draft standard, 13.3.3.2)
+     to an implicit object parameter of a non-static member function
+     declared without a ref-qualifier, and either S1 binds an lvalue
+     reference to an lvalue and S2 binds an rvalue reference or S1 binds an
+     rvalue reference to an rvalue and S2 binds an lvalue reference (C++0x
+     draft standard, 13.3.3.2)
 
      --S1 and S2 are reference bindings (_dcl.init.ref_), and the
      types to which the references refer are the same type except for
