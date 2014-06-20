@@ -28183,9 +28183,13 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       fputs (":\n", file);
       if (flag_pic)
 	{
-	  /* Output ".word .LTHUNKn-7-.LTHUNKPCn".  */
+	  /* Output ".word .LTHUNKn-[3,7]-.LTHUNKPCn".  */
 	  rtx tem = XEXP (DECL_RTL (function), 0);
-	  tem = plus_constant (GET_MODE (tem), tem, -7);
+	  /* For TARGET_THUMB1_ONLY the thunk is in Thumb mode, so the PC
+	     pipeline offset is four rather than eight.  Adjust the offset
+	     accordingly.  */
+	  tem = plus_constant (GET_MODE (tem), tem,
+			       TARGET_THUMB1_ONLY ? -3 : -7);
 	  tem = gen_rtx_MINUS (GET_MODE (tem),
 			       tem,
 			       gen_rtx_SYMBOL_REF (Pmode,
