@@ -1,3 +1,73 @@
+2014-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/iterators.md (VCOND): Handle SI and HI modes.
+	Update comments.
+	(VCONQ): Make comment more helpful.
+	(VCON): Delete.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sqdmulh_lane<mode>):
+	Use VCOND for operands 2.  Update lane checking and flipping logic.
+	(aarch64_sqrdmulh_lane<mode>): Likewise.
+	(aarch64_sq<r>dmulh_lane<mode>_internal): Likewise.
+	(aarch64_sqdmull2<mode>): Remove VCON, use VQ_HSI mode iterator.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>_internal, VD_HSI): Change mode
+	attribute of operand 3 to VCOND.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>_internal, SD_HSI): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>_internal): Likewise.
+	(aarch64_sqdmull_lane<mode>_internal, VD_HSI): Likewise.
+	(aarch64_sqdmull_lane<mode>_internal, SD_HSI): Likewise.
+	(aarch64_sqdmull2_lane<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_laneq<mode>_internal, VD_HSI: New
+	define_insn.
+	(aarch64_sqdml<SBINQOPS:as>l_laneq<mode>_internal, SD_HSI): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2_laneq<mode>_internal): Likewise.
+	(aarch64_sqdmull_laneq<mode>_internal, VD_HSI): Likewise.
+	(aarch64_sqdmull_laneq<mode>_internal, SD_HSI): Likewise.
+	(aarch64_sqdmull2_laneq<mode>_internal): Likewise.
+	(aarch64_sqdmlal_lane<mode>): Change mode attribute of penultimate
+	operand to VCOND.  Update lane flipping and bounds checking logic.
+	(aarch64_sqdmlal2_lane<mode>): Likewise.
+	(aarch64_sqdmlsl_lane<mode>): Likewise.
+	(aarch64_sqdmull_lane<mode>): Likewise.
+	(aarch64_sqdmull2_lane<mode>): Likewise.
+	(aarch64_sqdmlal_laneq<mode>):
+	Replace VCON usage with VCONQ.
+	Emit aarch64_sqdmlal_laneq<mode>_internal insn.
+	(aarch64_sqdmlal2_laneq<mode>): Emit
+	aarch64_sqdmlal2_laneq<mode>_internal insn.
+	Replace VCON with VCONQ.
+	(aarch64_sqdmlsl2_lane<mode>): Replace VCON with VCONQ.
+	(aarch64_sqdmlsl2_laneq<mode>): Likewise.
+	(aarch64_sqdmull_laneq<mode>): Emit
+	aarch64_sqdmull_laneq<mode>_internal insn.
+	Replace VCON with VCONQ.
+	(aarch64_sqdmull2_laneq<mode>): Emit
+	aarch64_sqdmull2_laneq<mode>_internal insn.
+	(aarch64_sqdmlsl_laneq<mode>): Replace VCON usage with VCONQ.
+	* config/aarch64/arm_neon.h (vqdmlal_high_lane_s16): Change type
+	of 3rd argument to int16x4_t.
+	(vqdmlalh_lane_s16): Likewise.
+	(vqdmlslh_lane_s16): Likewise.
+	(vqdmull_high_lane_s16): Likewise.
+	(vqdmullh_lane_s16): Change type of 2nd argument to int16x4_t.
+	(vqdmlal_lane_s16): Don't create temporary int16x8_t value.
+	(vqdmlsl_lane_s16): Likewise.
+	(vqdmull_lane_s16): Don't create temporary int16x8_t value.
+	(vqdmlal_high_lane_s32): Change type 3rd argument to int32x2_t.
+	(vqdmlals_lane_s32): Likewise.
+	(vqdmlsls_lane_s32): Likewise.
+	(vqdmull_high_lane_s32): Change type 2nd argument to int32x2_t.
+	(vqdmulls_lane_s32): Likewise.
+	(vqdmlal_lane_s32): Don't create temporary int32x4_t value.
+	(vqdmlsl_lane_s32): Likewise.
+	(vqdmull_lane_s32): Don't create temporary int32x4_t value.
+	(vqdmulhh_lane_s16): Change type of second argument to int16x4_t.
+	(vqrdmulhh_lane_s16): Likewise.
+	(vqdmlsl_high_lane_s16): Likewise.
+	(vqdmulhs_lane_s32): Change type of second argument to int32x2_t.
+	(vqdmlsl_high_lane_s32): Likewise.
+	(vqrdmulhs_lane_s32): Likewise.
+
 2014-06-20  Tom de Vries  <tom@codesourcery.com>
 
 	* final.c (collect_fn_hard_reg_usage): Add separate IOR_HARD_REG_SET for

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
-#include "../../../config/aarch64/arm_neon.h"
+#include "arm_neon.h"
 
 
 /* { dg-final { scan-assembler-times "\\tfmax\\tv\[0-9\]+\.2s, v\[0-9\].2s, v\[0-9\].2s" 1 } } */
@@ -305,7 +305,7 @@ test_vqdmlal_high_s16 (int32x4_t __a, int16x8_t __b, int16x8_t __c)
 /* { dg-final { scan-assembler-times "\\tsqdmlal2\\tv\[0-9\]+\.4s, v\[0-9\]+\.8h, v\[0-9\]+\.h" 3 } } */
 
 int32x4_t
-test_vqdmlal_high_lane_s16 (int32x4_t a, int16x8_t b, int16x8_t c)
+test_vqdmlal_high_lane_s16 (int32x4_t a, int16x8_t b, int16x4_t c)
 {
   return vqdmlal_high_lane_s16 (a, b, c, 3);
 }
@@ -361,7 +361,7 @@ test_vqdmlal_high_s32 (int64x2_t __a, int32x4_t __b, int32x4_t __c)
 /* { dg-final { scan-assembler-times "\\tsqdmlal2\\tv\[0-9\]+\.2d, v\[0-9\]+\.4s, v\[0-9\]+\.s" 3 } } */
 
 int64x2_t
-test_vqdmlal_high_lane_s32 (int64x2_t __a, int32x4_t __b, int32x4_t __c)
+test_vqdmlal_high_lane_s32 (int64x2_t __a, int32x4_t __b, int32x2_t __c)
 {
   return vqdmlal_high_lane_s32 (__a, __b, __c, 1);
 }
@@ -417,7 +417,7 @@ test_vqdmlsl_high_s16 (int32x4_t __a, int16x8_t __b, int16x8_t __c)
 /* { dg-final { scan-assembler-times "\\tsqdmlsl2\\tv\[0-9\]+\.4s, v\[0-9\]+\.8h, v\[0-9\]+\.h" 3 } } */
 
 int32x4_t
-test_vqdmlsl_high_lane_s16 (int32x4_t a, int16x8_t b, int16x8_t c)
+test_vqdmlsl_high_lane_s16 (int32x4_t a, int16x8_t b, int16x4_t c)
 {
   return vqdmlsl_high_lane_s16 (a, b, c, 3);
 }
@@ -473,7 +473,7 @@ test_vqdmlsl_high_s32 (int64x2_t __a, int32x4_t __b, int32x4_t __c)
 /* { dg-final { scan-assembler-times "\\tsqdmlsl2\\tv\[0-9\]+\.2d, v\[0-9\]+\.4s, v\[0-9\]+\.s" 3 } } */
 
 int64x2_t
-test_vqdmlsl_high_lane_s32 (int64x2_t __a, int32x4_t __b, int32x4_t __c)
+test_vqdmlsl_high_lane_s32 (int64x2_t __a, int32x4_t __b, int32x2_t __c)
 {
   return vqdmlsl_high_lane_s32 (__a, __b, __c, 1);
 }
@@ -529,7 +529,7 @@ test_vqdmull_high_s16 (int16x8_t __a, int16x8_t __b)
 /* { dg-final { scan-assembler-times "\\tsqdmull2\\tv\[0-9\]+\.4s, v\[0-9\]+\.8h, v\[0-9\]+\.h" 3 } } */
 
 int32x4_t
-test_vqdmull_high_lane_s16 (int16x8_t a, int16x8_t b)
+test_vqdmull_high_lane_s16 (int16x8_t a, int16x4_t b)
 {
   return vqdmull_high_lane_s16 (a, b, 3);
 }
@@ -585,7 +585,7 @@ test_vqdmull_high_s32 (int32x4_t __a, int32x4_t __b)
 /* { dg-final { scan-assembler-times "\\tsqdmull2\\tv\[0-9\]+\.2d, v\[0-9\]+\.4s, v\[0-9\]+\.s" 3 } } */
 
 int64x2_t
-test_vqdmull_high_lane_s32 (int32x4_t __a, int32x4_t __b)
+test_vqdmull_high_lane_s32 (int32x4_t __a, int32x2_t __b)
 {
   return vqdmull_high_lane_s32 (__a, __b, 1);
 }
