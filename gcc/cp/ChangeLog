@@ -1,3 +1,8 @@
+2014-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61556
+	* call.c (build_over_call): Call build_this in template path.
+
 2014-06-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59296
