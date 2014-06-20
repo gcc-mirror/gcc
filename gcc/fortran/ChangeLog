@@ -1,3 +1,8 @@
+2014-06-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33363
+	* invoke.texi: Don't mention nonexisting -fcase-lower option.
+
 2014-06-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/61454
