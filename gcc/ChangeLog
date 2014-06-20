@@ -1,3 +1,9 @@
+2014-06-20  Yury Gribov  <y.gribov@samsung.com>
+	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/61530
+	* asan.c (build_check_stmt): Add condition.
+
 2014-06-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61211

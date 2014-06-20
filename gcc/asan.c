@@ -1654,6 +1654,7 @@ build_check_stmt (location_t location, tree base, tree len,
   if (size_in_bytes > 1)
     {
       if ((size_in_bytes & (size_in_bytes - 1)) != 0
+	  || !is_scalar_access
 	  || size_in_bytes > 16)
 	size_in_bytes = -1;
       else if (align && align < size_in_bytes * BITS_PER_UNIT)

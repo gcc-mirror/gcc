@@ -1,3 +1,9 @@
+2014-06-20  Yury Gribov  <y.gribov@samsung.com>
+	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/61530
+	* c-c++-common/asan/pr61530.c: New test.
+
 2014-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vqdmulhh_lane_s16.c: New test.
