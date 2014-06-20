@@ -1669,7 +1669,8 @@ do_shift_rotate (enum tree_code code,
       break;
     case RSHIFT_EXPR:
       /* Arithmetic shift of signed type: result is dependent on the value.  */
-      if (!TYPE_UNSIGNED (n->type) && (n->n & (0xff << (bitsize - 8))))
+      if (!TYPE_UNSIGNED (n->type)
+	  && (n->n & ((uint64_t) 0xff << (bitsize - 8))))
 	return false;
       n->n >>= count;
       break;
@@ -1903,7 +1904,7 @@ find_bswap_or_nop_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    old_type_size = TYPE_PRECISION (n->type);
 	    if (!TYPE_UNSIGNED (n->type)
 		&& type_size > old_type_size
-		&& n->n & (0xff << (old_type_size - 8)))
+		&& n->n & ((uint64_t) 0xff << (old_type_size - 8)))
 	      return NULL;
 
 	    if (type_size / BITS_PER_UNIT < (int)(sizeof (int64_t)))

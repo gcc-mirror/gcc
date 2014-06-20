@@ -1,3 +1,8 @@
+2014-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-math-opts.c (do_shift_rotate, find_bswap_or_nop_1): Cast
+	0xff to uint64_t before shifting it up.
+
 2014-06-20  Julian Brown  <julian@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
