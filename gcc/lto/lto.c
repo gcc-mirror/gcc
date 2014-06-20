@@ -1300,8 +1300,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
           /* DECL_IN_TEXT_SECTION is set during final asm output only.  */
 	  compare_values (DECL_IN_CONSTANT_POOL);
 	}
-      if (VAR_OR_FUNCTION_DECL_P (t1))
-	compare_values (DECL_INIT_PRIORITY);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
@@ -1328,8 +1326,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_CXX_DESTRUCTOR_P);
       if (DECL_BUILT_IN_CLASS (t1) != NOT_BUILT_IN)
 	compare_values (DECL_FUNCTION_CODE);
-      if (DECL_STATIC_DESTRUCTOR (t1))
-	compare_values (DECL_FINI_PRIORITY);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))

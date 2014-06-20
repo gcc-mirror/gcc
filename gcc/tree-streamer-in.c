@@ -288,12 +288,6 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
       DECL_CXX_CONSTRUCTOR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_CXX_DESTRUCTOR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
-  if (VAR_OR_FUNCTION_DECL_P (expr))
-    {
-      priority_type p;
-      p = (priority_type) bp_unpack_var_len_unsigned (bp);
-      SET_DECL_INIT_PRIORITY (expr, p);
-    }
 }
 
 
@@ -335,12 +329,6 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 	  if (!result || result == error_mark_node)
 	    fatal_error ("target specific builtin not available");
 	}
-    }
-  if (DECL_STATIC_DESTRUCTOR (expr))
-    {
-      priority_type p;
-      p = (priority_type) bp_unpack_var_len_unsigned (bp);
-      SET_DECL_FINI_PRIORITY (expr, p);
     }
 }
 

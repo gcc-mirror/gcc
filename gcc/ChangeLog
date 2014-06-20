@@ -1,3 +1,35 @@
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (struct symtab_node): Add field in_init_priority_hash
+	(set_init_priority, get_init_priority, set_fini_priority,
+	get_fini_priority): New methods.
+	* tree.c (init_priority_for_decl): Remove.
+	(init_ttree): Do not initialize init priority.
+	(decl_init_priority_lookup, decl_fini_priority_lookup): Rewrite.
+	(decl_priority_info): Remove.
+	(decl_init_priority_insert): Rewrite.
+	(decl_fini_priority_insert): Rewrite.
+	* tree.h (tree_priority_map_eq, tree_priority_map_hash,
+	tree_priority_map_marked_p): Remove.
+	* lto-cgraph.c (lto_output_node, input_node): Stream init priorities.
+	* lto-streamer-out.c (hash_tree): Do not hash priorities.
+	* tree-streamer-out.c (pack_ts_decl_with_vis_value_fields): Do
+	not output priorities.
+	(pack_ts_function_decl_value_fields): Likewise.
+	* tree-streamer-in.c (unpack_ts_decl_with_vis_value_fields): Do
+	not input priorities.
+	(unpack_ts_function_decl_value_fields): Likewise.
+	* symtab.c (symbol_priority_map): Declare.
+	(init_priority_hash): Declare.
+	(symtab_unregister_node): Unregister from priority hash, too.
+	(symtab_node::get_init_priority, cgraph_node::get_fini_priority):
+	New methods.
+	(symbol_priority_map_eq, symbol_priority_map_hash): New functions.
+	(symbol_priority_info): New function.
+	(symtab_node::set_init_priority, cgraph_node::set_fini_priority):
+	New methods.
+	* tree-core.h (tree_priority_map): Remove.
+
 2014-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-math-opts.c (do_shift_rotate, find_bswap_or_nop_1): Cast

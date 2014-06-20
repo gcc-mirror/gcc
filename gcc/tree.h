@@ -4345,10 +4345,6 @@ extern unsigned int tree_decl_map_hash (const void *);
 #define tree_int_map_hash tree_map_base_hash
 #define tree_int_map_marked_p tree_map_base_marked_p
 
-#define tree_priority_map_eq tree_map_base_eq
-#define tree_priority_map_hash tree_map_base_hash
-#define tree_priority_map_marked_p tree_map_base_marked_p
-
 #define tree_vec_map_eq tree_map_base_eq
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p

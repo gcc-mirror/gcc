@@ -1761,13 +1761,6 @@ struct GTY(()) tree_int_map {
   unsigned int to;
 };
 
-/* Map from a tree to initialization/finalization priorities.  */
-struct GTY(()) tree_priority_map {
-  struct tree_map_base base;
-  priority_type init;
-  priority_type fini;
-};
-
 /* Map from a decl tree to a tree vector.  */
 struct GTY(()) tree_vec_map {
   struct tree_map_base base;
