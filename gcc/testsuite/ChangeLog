@@ -1,3 +1,11 @@
+2014-06-20 Hale Wang <hale.wang@arm.com>
+
+	* gcc.target/arm/lto/: New folder to verify the LTO option.
+	* gcc.target/arm/lto/pr61123-enum-size_0.c: New test case.
+	* gcc.target/arm/lto/pr61123-enum-size_1.c: Likewise.
+	* gcc.target/arm/lto/lto.exp: New exp file used to test LTO option.
+	* lib/lto.exp (object-readelf): New procedure.
+
 2014-06-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/61454

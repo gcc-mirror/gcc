@@ -1197,11 +1197,11 @@ C ObjC C++ ObjC++ LTO Optimization Var(flag_short_double)
 Use the same size for double as for float
 
 fshort-enums
-C ObjC C++ ObjC++ Optimization Var(flag_short_enums)
+C ObjC C++ ObjC++ LTO Optimization Var(flag_short_enums)
 Use the narrowest integer type possible for enumeration types
 
 fshort-wchar
-C ObjC C++ ObjC++ Optimization Var(flag_short_wchar)
+C ObjC C++ ObjC++ LTO Optimization Var(flag_short_wchar)
 Force the underlying type for \"wchar_t\" to be \"unsigned short\"
 
 fsigned-bitfields
