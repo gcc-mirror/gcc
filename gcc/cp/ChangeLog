@@ -1,5 +1,9 @@
 2014-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59296
+	* call.c (add_function_candidate): Avoid special 'this' handling
+	if we have a ref-qualifier.
+
 	PR c++/61556
 	* call.c (build_over_call): Call build_this in template path.
 
