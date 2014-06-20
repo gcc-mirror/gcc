@@ -1,3 +1,8 @@
+2014-06-20  Tom de Vries  <tom@codesourcery.com>
+
+	* final.c (collect_fn_hard_reg_usage): Add and use variable
+	function_used_regs.
+
 2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.h (struct symtab_node): Add field in_init_priority_hash
