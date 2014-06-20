@@ -2566,11 +2566,16 @@ clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
       skipped_thunk = true;
     }
 
-  if (skipped_thunk
-      && (!node2->clone_of
-	  || !node2->clone.args_to_skip
-	  || !bitmap_bit_p (node2->clone.args_to_skip, 0)))
-    return false;
+  if (skipped_thunk)
+    {
+      if (!node2->clone.args_to_skip
+	  || !bitmap_bit_p (node2->clone.args_to_skip, 0))
+	return false;
+      if (node2->former_clone_of == node->decl)
+	return true;
+      else if (!node2->clone_of)
+	return false;
+    }
 
   while (node != node2 && node2)
     node2 = node2->clone_of;
