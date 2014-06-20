@@ -6896,7 +6896,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
 	  ++nargs;
 	  alcarray = XALLOCAVEC (tree, nargs);
-	  alcarray[0] = first_arg;
+	  alcarray[0] = build_this (first_arg);
 	  FOR_EACH_VEC_SAFE_ELT (args, ix, arg)
 	    alcarray[ix + 1] = arg;
 	  argarray = alcarray;
