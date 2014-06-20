@@ -2264,6 +2264,24 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   if (! EXPR_HAS_LOCATION (*expr_p))
     SET_EXPR_LOCATION (*expr_p, input_location);
 
+  /* Gimplify internal functions created in the FEs.  */
+  if (CALL_EXPR_FN (*expr_p) == NULL_TREE)
+    {
+      nargs = call_expr_nargs (*expr_p);
+      enum internal_fn ifn = CALL_EXPR_IFN (*expr_p);
+      auto_vec<tree> vargs (nargs);
+
+      for (i = 0; i < nargs; i++)
+	{
+	  gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p,
+			EXPR_LOCATION (*expr_p));
+	  vargs.quick_push (CALL_EXPR_ARG (*expr_p, i));
+	}
+      gimple call = gimple_build_call_internal_vec (ifn, vargs);
+      gimplify_seq_add_stmt (pre_p, call);
+      return GS_ALL_DONE;
+    }
+
   /* This may be a call to a builtin function.
 
      Builtin function calls may be transformed into different

@@ -665,6 +665,13 @@ enum annot_expr_kind {
   annot_expr_kind_last
 };
 
+/* Internal functions.  */
+enum internal_fn {
+#define DEF_INTERNAL_FN(CODE, FLAGS) IFN_##CODE,
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+  IFN_LAST
+};
 
 /*---------------------------------------------------------------------------
                                 Type definitions
@@ -787,6 +794,9 @@ struct GTY(()) tree_base {
 
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
+
+    /* Internal function code.  */
+    enum internal_fn ifn;
   } GTY((skip(""))) u;
 };
 

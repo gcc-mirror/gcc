@@ -1,3 +1,12 @@
+2014-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/bounds-1.c: New test.
+	* c-c++-common/ubsan/bounds-2.c: New test.
+	* c-c++-common/ubsan/bounds-3.c: New test.
+	* c-c++-common/ubsan/bounds-4.c: New test.
+	* c-c++-common/ubsan/bounds-5.c: New test.
+	* c-c++-common/ubsan/bounds-6.c: New test.
+
 2014-06-20  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	Make the tests big-endian friendly.
