@@ -1,5 +1,12 @@
 2014-06-20  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/61540
+	* ipa-prop.c (impossible_devirt_target): New function.
+	(try_make_edge_direct_virtual_call): Use it, also instead of
+	asserting.
+
+2014-06-20  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/61211
 	* cgraph.c (clone_of_p): Allow skipped_branch to deal with
 	expanded clones.
