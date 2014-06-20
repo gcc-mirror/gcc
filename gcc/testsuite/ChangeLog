@@ -1,3 +1,8 @@
+2014-06-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61540
+        * g++.dg/ipa/pr61540.C: New test.
+
 2014-06-20  Yury Gribov  <y.gribov@samsung.com>
 	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
