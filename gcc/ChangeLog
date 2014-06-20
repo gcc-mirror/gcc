@@ -1,3 +1,9 @@
+2014-06-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61211
+	* cgraph.c (clone_of_p): Allow skipped_branch to deal with
+	expanded clones.
+
 2014-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/iterators.md (VCOND): Handle SI and HI modes.
