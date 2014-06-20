@@ -4775,12 +4775,16 @@ collect_fn_hard_reg_usage (void)
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
+      if (CALL_P (insn))
+	{
+	  if (!get_call_reg_set_usage (insn, &insn_used_regs,
+				       call_used_reg_set))
+	    return;
+
+	  IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
+	}
+
       find_all_hard_reg_sets (insn, &insn_used_regs, false);
-
-      if (CALL_P (insn)
-	  && !get_call_reg_set_usage (insn, &insn_used_regs, call_used_reg_set))
-	return;
-
       IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
     }
 
