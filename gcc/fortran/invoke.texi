@@ -1265,10 +1265,9 @@ experimenting with issues such as integration of GNU Fortran into
 existing system environments (vis-@`{a}-vis existing libraries, tools,
 and so on).
 
-For example, with @option{-funderscoring}, and assuming other defaults like
-@option{-fcase-lower} and that @code{j()} and @code{max_count()} are
-external functions while @code{my_var} and @code{lvar} are local variables,
-a statement like
+For example, with @option{-funderscoring}, and assuming that @code{j()} and
+@code{max_count()} are external functions while @code{my_var} and
+@code{lvar} are local variables, a statement like
 @smallexample
 I = J() + MAX_COUNT (MY_VAR, LVAR)
 @end smallexample
