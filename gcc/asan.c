@@ -2762,6 +2762,9 @@ pass_sanopt::execute (function *fun)
 	      case IFN_UBSAN_NULL:
 		ubsan_expand_null_ifn (gsi);
 		break;
+	      case IFN_UBSAN_BOUNDS:
+		ubsan_expand_bounds_ifn (&gsi);
+		break;
 	      default:
 		break;
 	      }
@@ -2772,6 +2775,10 @@ pass_sanopt::execute (function *fun)
 	      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
 	      fprintf (dump_file, "\n");
 	    }
+
+	  /* ubsan_expand_bounds_ifn might move us to the end of the BB.  */
+	  if (gsi_end_p (gsi))
+	    break;
 	}
     }
   return 0;

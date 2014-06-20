@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "predict.h"
 #include "wide-int-print.h"
+#include "internal-fn.h"
 
 #include <new>                           // For placement-new.
 
@@ -1753,7 +1754,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case CALL_EXPR:
-      print_call_name (buffer, CALL_EXPR_FN (node), flags);
+      if (CALL_EXPR_FN (node) != NULL_TREE)
+	print_call_name (buffer, CALL_EXPR_FN (node), flags);
+      else
+	pp_string (buffer, internal_fn_name (CALL_EXPR_IFN (node)));
 
       /* Print parameters.  */
       pp_space (buffer);

@@ -574,7 +574,7 @@ DEFTREECODE (BIND_EXPR, "bind_expr", tcc_expression, 3)
 /* Function call.  CALL_EXPRs are represented by variably-sized expression
    nodes.  There are at least three fixed operands.  Operand 0 is an
    INTEGER_CST node containing the total operand count, the number of
-   arguments plus 3.  Operand 1 is the function, while operand 2 is
+   arguments plus 3.  Operand 1 is the function or NULL, while operand 2 is
    is static chain argument, or NULL.  The remaining operands are the
    arguments to the call.  */
 DEFTREECODE (CALL_EXPR, "call_expr", tcc_vl_exp, 3)

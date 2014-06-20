@@ -20,13 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_INTERNAL_FN_H
 #define GCC_INTERNAL_FN_H
 
-enum internal_fn {
-#define DEF_INTERNAL_FN(CODE, FLAGS) IFN_##CODE,
-#include "internal-fn.def"
-#undef DEF_INTERNAL_FN
-  IFN_LAST
-};
-
 /* Return the name of internal function FN.  The name is only meaningful
    for dumps; it has no linkage.  */
 

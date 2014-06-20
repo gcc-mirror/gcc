@@ -1,4 +1,21 @@
-2014-06-20 Hale Wang <hale.wang@arm.com>
+2014-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* c-gimplify.c: Include "c-ubsan.h" and "pointer-set.h".
+	(ubsan_walk_array_refs_r): New function.
+	(c_genericize): Instrument array bounds.
+	* c-ubsan.c: Include "internal-fn.h".
+	(ubsan_instrument_division): Mark instrumented arrays as having
+	side effects.  Adjust ubsan_type_descriptor call.
+	(ubsan_instrument_shift): Likewise.
+	(ubsan_instrument_vla): Adjust ubsan_type_descriptor call.
+	(ubsan_instrument_bounds): New function.
+	(ubsan_array_ref_instrumented_p): New function.
+	(ubsan_maybe_instrument_array_ref): New function.
+	* c-ubsan.h (ubsan_instrument_bounds): Declare.
+	(ubsan_array_ref_instrumented_p): Declare.
+	(ubsan_maybe_instrument_array_ref): Declare.
+
+2014-06-20  Hale Wang  <hale.wang@arm.com>
 
 	PR lto/61123
 	* c.opt (fshort-enums): Add to LTO.

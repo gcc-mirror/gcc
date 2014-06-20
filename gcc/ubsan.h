@@ -30,17 +30,25 @@ enum ubsan_null_ckind {
   UBSAN_MEMBER_CALL
 };
 
+/* This controls how ubsan prints types.  Used in ubsan_type_descriptor.  */
+enum ubsan_print_style {
+  UBSAN_PRINT_NORMAL,
+  UBSAN_PRINT_POINTER,
+  UBSAN_PRINT_ARRAY
+};
+
 /* An extra data used by ubsan pointer checking.  */
 struct ubsan_mismatch_data {
   tree align;
   tree ckind;
 };
 
+extern void ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern void ubsan_expand_null_ifn (gimple_stmt_iterator);
 extern tree ubsan_instrument_unreachable (location_t);
 extern tree ubsan_create_data (const char *, const location_t *,
 			       const struct ubsan_mismatch_data *, ...);
-extern tree ubsan_type_descriptor (tree, bool);
+extern tree ubsan_type_descriptor (tree, enum ubsan_print_style = UBSAN_PRINT_NORMAL);
 extern tree ubsan_encode_value (tree, bool = false);
 extern bool is_ubsan_builtin_p (tree);
 extern tree ubsan_build_overflow_builtin (tree_code, location_t, tree, tree, tree);

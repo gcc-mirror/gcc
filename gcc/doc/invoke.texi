@@ -5448,6 +5448,13 @@ This option enables floating-point type to integer conversion checking.
 We check that the result of the conversion does not overflow.
 This option does not work well with @code{FE_INVALID} exceptions enabled.
 
+@item -fsanitize=bounds
+@opindex fsanitize=bounds
+
+This option enables instrumentation of array bounds.  Various out of bounds
+accesses are detected.  Flexible array members are not instrumented, as well
+as initializers of variables with static storage.
+
 @item -fsanitize-recover
 @opindex fsanitize-recover
 By default @option{-fsanitize=undefined} sanitization (and its suboptions

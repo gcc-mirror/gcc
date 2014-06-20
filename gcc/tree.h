@@ -1134,12 +1134,12 @@ extern void protected_set_expr_location (tree, location_t);
 #define ASSERT_EXPR_VAR(NODE)	TREE_OPERAND (ASSERT_EXPR_CHECK (NODE), 0)
 #define ASSERT_EXPR_COND(NODE)	TREE_OPERAND (ASSERT_EXPR_CHECK (NODE), 1)
 
-/* CALL_EXPR accessors.
- */
+/* CALL_EXPR accessors.  */
 #define CALL_EXPR_FN(NODE) TREE_OPERAND (CALL_EXPR_CHECK (NODE), 1)
 #define CALL_EXPR_STATIC_CHAIN(NODE) TREE_OPERAND (CALL_EXPR_CHECK (NODE), 2)
 #define CALL_EXPR_ARG(NODE, I) TREE_OPERAND (CALL_EXPR_CHECK (NODE), (I) + 3)
 #define call_expr_nargs(NODE) (VL_EXP_OPERAND_LENGTH (NODE) - 3)
+#define CALL_EXPR_IFN(NODE) (CALL_EXPR_CHECK (NODE)->base.u.ifn)
 
 /* CALL_EXPR_ARGP returns a pointer to the argument vector for NODE.
    We can't use &CALL_EXPR_ARG (NODE, 0) because that will complain if
@@ -3631,6 +3631,8 @@ extern tree build_call_expr_loc_array (location_t, tree, int, tree *);
 extern tree build_call_expr_loc_vec (location_t, tree, vec<tree, va_gc> *);
 extern tree build_call_expr_loc (location_t, tree, int, ...);
 extern tree build_call_expr (tree, int, ...);
+extern tree build_call_expr_internal_loc (location_t, enum internal_fn,
+					  tree, int, ...);
 extern tree build_string_literal (int, const char *);
 
 /* Construct various nodes representing data types.  */

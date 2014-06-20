@@ -1,3 +1,41 @@
+2014-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* asan.c (pass_sanopt::execute): Handle IFN_UBSAN_BOUNDS.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_BOUNDS and or it
+	into SANITIZE_UNDEFINED.
+	* doc/invoke.texi: Describe -fsanitize=bounds.
+	* gimplify.c (gimplify_call_expr): Add gimplification of internal
+	functions created in the FEs.
+	* internal-fn.c: Move "internal-fn.h" after "tree.h".
+	(expand_UBSAN_BOUNDS): New function.
+	* internal-fn.def (UBSAN_BOUNDS): New internal function.
+	* internal-fn.h: Don't define internal functions here.
+	* opts.c (common_handle_option): Add -fsanitize=bounds.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_OUT_OF_BOUNDS,
+	BUILT_IN_UBSAN_HANDLE_OUT_OF_BOUNDS_ABORT): Add.
+	* tree-core.h: Define internal functions here.
+	(struct tree_base): Add ifn field.
+	* tree-pretty-print.c: Include "internal-fn.h".
+	(dump_generic_node): Handle functions without CALL_EXPR_FN.
+	* tree.c (get_callee_fndecl): Likewise.
+	(build_call_expr_internal_loc): New function.
+	* tree.def (CALL_EXPR): Update description.
+	* tree.h (CALL_EXPR_IFN): Define.
+	(build_call_expr_internal_loc): Declare.
+	* ubsan.c (get_ubsan_type_info_for_type): Return 0 for non-arithmetic
+	types.
+	(ubsan_type_descriptor): Change bool parameter to enum
+	ubsan_print_style.  Adjust the code.  Add handling of
+	UBSAN_PRINT_ARRAY.
+	(ubsan_expand_bounds_ifn): New function.
+	(ubsan_expand_null_ifn): Adjust ubsan_type_descriptor call.
+	(ubsan_build_overflow_builtin): Likewise.
+	(instrument_bool_enum_load): Likewise.
+	(ubsan_instrument_float_cast): Likewise.
+	* ubsan.h (enum ubsan_print_style): New enum.
+	(ubsan_expand_bounds_ifn): Declare.
+	(ubsan_type_descriptor): Adjust declaration.  Use a default parameter.
+
 2014-06-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/rs6000/rs6000.md: Append `DONE' to preparation
