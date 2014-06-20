@@ -1,3 +1,9 @@
+2014-06-20  Julian Brown  <julian@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.c (arm_output_mi_thunk): Fix offset for
+	TARGET_THUMB1_ONLY. Add comments.
+
 2014-06-19  Tom de Vries  <tom@codesourcery.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_emit_call_insn): Change
