@@ -130,6 +130,8 @@ public:
 
   /* Set when symbol has address taken. */
   unsigned address_taken : 1;
+  /* Set when init priority is set.  */
+  unsigned in_init_priority_hash : 1;
 
 
   /* Ordering of all symtab entries.  */
@@ -163,6 +165,7 @@ public:
       return x_comdat_group;
     }
 
+  /* Return comdat group as identifier_node.  */
   tree get_comdat_group_id ()
     {
       if (x_comdat_group && TREE_CODE (x_comdat_group) != IDENTIFIER_NODE)
@@ -208,6 +211,9 @@ public:
   /* Set section for symbol and its aliases.  */
   void set_section (const char *section);
   void set_section_for_node (const char *section);
+
+  void set_init_priority (priority_type priority);
+  priority_type get_init_priority ();
 };
 
 enum availability
@@ -497,6 +503,9 @@ public:
   /* True if this decl calls a COMDAT-local function.  This is set up in
      compute_inline_parameters and inline_call.  */
   unsigned calls_comdat_local : 1;
+
+  void set_fini_priority (priority_type priority);
+  priority_type get_fini_priority ();
 };
 
 

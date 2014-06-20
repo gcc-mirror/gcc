@@ -64,6 +64,17 @@ static GTY((param_is (section_hash_entry))) htab_t section_hash;
 /* Hash table used to convert assembler names into nodes.  */
 static GTY((param_is (symtab_node))) htab_t assembler_name_hash;
 
+/* Map from a symbol to initialization/finalization priorities.  */
+struct GTY(()) symbol_priority_map {
+  symtab_node *symbol;
+  priority_type init;
+  priority_type fini;
+};
+
+/* Hash table used to hold init priorities.  */
+static GTY ((param_is (struct symbol_priority_map)))
+  htab_t init_priority_hash;
+
 /* Linked list of symbol table nodes.  */
 symtab_node *symtab_nodes;
 
@@ -337,6 +348,16 @@ symtab_unregister_node (symtab_node *node)
     }
   if (!is_a <varpool_node *> (node) || !DECL_HARD_REGISTER (node->decl))
     unlink_from_assembler_name_hash (node, false);
+  if (node->in_init_priority_hash)
+    {
+      struct symbol_priority_map in;
+      void **slot;
+      in.symbol = node;
+
+      slot = htab_find_slot (init_priority_hash, &in, NO_INSERT);
+      if (slot)
+	htab_clear_slot (init_priority_hash, slot);
+    }
 }
 
 
@@ -1174,6 +1195,122 @@ symtab_node::set_section (const char *section)
 {
   gcc_assert (!this->alias);
   symtab_for_node_and_aliases (this, set_section_1, const_cast<char *>(section), true);
+}
+
+/* Return the initialization priority.  */
+
+priority_type
+symtab_node::get_init_priority ()
+{
+  struct symbol_priority_map *h;
+  struct symbol_priority_map in;
+
+  if (!this->in_init_priority_hash)
+    return DEFAULT_INIT_PRIORITY;
+  in.symbol = this;
+  h = (struct symbol_priority_map *) htab_find (init_priority_hash, &in);
+  return h ? h->init : DEFAULT_INIT_PRIORITY;
+}
+
+/* Return the finalization priority.  */
+
+priority_type
+cgraph_node::get_fini_priority ()
+{
+  struct symbol_priority_map *h;
+  struct symbol_priority_map in;
+
+  if (!this->in_init_priority_hash)
+    return DEFAULT_INIT_PRIORITY;
+  in.symbol = this;
+  h = (struct symbol_priority_map *) htab_find (init_priority_hash, &in);
+  return h ? h->fini : DEFAULT_INIT_PRIORITY;
+}
+
+/* Return true if the from tree in both priority maps are equal.  */
+
+int
+symbol_priority_map_eq (const void *va, const void *vb)
+{
+  const struct symbol_priority_map *const a = (const struct symbol_priority_map *) va,
+    *const b = (const struct symbol_priority_map *) vb;
+  return (a->symbol == b->symbol);
+}
+
+/* Hash a from symbol in a symbol_priority_map.  */
+
+unsigned int
+symbol_priority_map_hash (const void *item)
+{
+  return htab_hash_pointer (((const struct symbol_priority_map *)item)->symbol);
+}
+
+/* Return the initialization and finalization priority information for
+   DECL.  If there is no previous priority information, a freshly
+   allocated structure is returned.  */
+
+static struct symbol_priority_map *
+symbol_priority_info (struct symtab_node *symbol)
+{
+  struct symbol_priority_map in;
+  struct symbol_priority_map *h;
+  void **loc;
+
+  in.symbol = symbol;
+  if (!init_priority_hash)
+    init_priority_hash = htab_create_ggc (512, symbol_priority_map_hash,
+                                          symbol_priority_map_eq, 0);
+
+  loc = htab_find_slot (init_priority_hash, &in, INSERT);
+  h = (struct symbol_priority_map *) *loc;
+  if (!h)
+    {
+      h = ggc_cleared_alloc<symbol_priority_map> ();
+      *loc = h;
+      h->symbol = symbol;
+      h->init = DEFAULT_INIT_PRIORITY;
+      h->fini = DEFAULT_INIT_PRIORITY;
+      symbol->in_init_priority_hash = true;
+    }
+
+  return h;
+}
+
+/* Set initialization priority to PRIORITY.  */
+
+void
+symtab_node::set_init_priority (priority_type priority)
+{
+  struct symbol_priority_map *h;
+
+  if (is_a <cgraph_node *> (this))
+    gcc_assert (DECL_STATIC_CONSTRUCTOR (this->decl));
+
+  if (priority == DEFAULT_INIT_PRIORITY)
+    {
+      gcc_assert (get_init_priority() == priority);
+      return;
+    }
+  h = symbol_priority_info (this);
+  h->init = priority;
+}
+
+/* Set fialization priority to PRIORITY.  */
+
+void
+cgraph_node::set_fini_priority (priority_type priority)
+{
+  struct symbol_priority_map *h;
+
+  gcc_assert (DECL_STATIC_DESTRUCTOR (this->decl));
+
+  if (priority == DEFAULT_INIT_PRIORITY)
+    {
+      gcc_assert (get_fini_priority() == priority);
+      return;
+    }
+  h = symbol_priority_info (this);
+  h->fini = priority;
 }
 
 /* Worker for symtab_resolve_alias.  */
