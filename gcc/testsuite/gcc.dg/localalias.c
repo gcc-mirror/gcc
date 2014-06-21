@@ -22,7 +22,7 @@ void test(void)
 __attribute ((alias("test")))
 static void test2(void);
 
-void main()
+int main()
 {
   test2();
   /* This call must bind locally.  */
@@ -38,5 +38,5 @@ void main()
   if ((testcount != 1 || test2count != 3)
       && (testcount != 3 || test2count != 1))
     abort ();
-  reutrn 0;
+  return 0;
 }

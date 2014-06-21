@@ -22,7 +22,7 @@ __attribute__ ((weak,noinline))
 __attribute ((alias("test")))
 void test2(void);
 
-void main()
+int main()
 {
   test();
   /* This call must bind locally.  */
