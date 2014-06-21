@@ -52,6 +52,7 @@
 #include "stor-layout.h"
 #include "varasm.h"
 #include "calls.h"
+#include "builtins.h"
 
 /* Forward function declarations.  */
 static bool prologue_saved_reg_p (unsigned);
