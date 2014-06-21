@@ -244,6 +244,7 @@ struct lto_file_decl_data;
 
 extern const char * const cgraph_availability_names[];
 extern const char * const ld_plugin_symbol_resolution_names[];
+extern const char * const tls_model_names[];
 
 /* Information about thunk, used only for same body aliases.  */
 
