@@ -1,3 +1,10 @@
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/localalias.c: New testcase.
+	* gcc.dg/localalias-2.c: New testcase.
+	* gcc.dg/globalalias.c: New testcase.
+	* gcc.dg/globalalias-2.c: New testcase.
+
 2014-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/arm/lto/lto.exp: Exit immediately if not arm*-*-* target.

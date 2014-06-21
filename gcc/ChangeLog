@@ -1,3 +1,8 @@
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (function_and_variable_visibility): Disable
+	temporarily local aliases for some targets.
+
 2014-06-20  Marek Polacek  <polacek@redhat.com>
 
 	* asan.c (pass_sanopt::execute): Handle IFN_UBSAN_BOUNDS.
