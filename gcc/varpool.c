@@ -36,6 +36,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "pointer-set.h"
 
+const char * const tls_model_names[]={"none", "tls-emulated", "tls-real",
+				      "tls-global-dynamic", "tls-local-dynamic",
+				      "tls-initial-exec", "tls-local-exec"};
+
 /* List of hooks triggered on varpool_node events.  */
 struct varpool_node_hook_list {
   varpool_node_hook hook;
@@ -213,6 +217,8 @@ dump_varpool_node (FILE *f, varpool_node *node)
     fprintf (f, " const-value-known");
   if (node->writeonly)
     fprintf (f, " write-only");
+  if (node->tls_model)
+    fprintf (f, " %s", tls_model_names [node->tls_model]);
   fprintf (f, "\n");
 }
 

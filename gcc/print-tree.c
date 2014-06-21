@@ -418,24 +418,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	fputs (" common", file);
       if (code == VAR_DECL && DECL_THREAD_LOCAL_P (node))
 	{
-	  enum tls_model kind = DECL_TLS_MODEL (node);
-	  switch (kind)
-	    {
-	      case TLS_MODEL_GLOBAL_DYNAMIC:
-		fputs (" tls-global-dynamic", file);
-		break;
-	      case TLS_MODEL_LOCAL_DYNAMIC:
-		fputs (" tls-local-dynamic", file);
-		break;
-	      case TLS_MODEL_INITIAL_EXEC:
-		fputs (" tls-initial-exec", file);
-		break;
-	      case TLS_MODEL_LOCAL_EXEC:
-		fputs (" tls-local-exec", file);
-		break;
-	      default:
-		gcc_unreachable ();
-	    }
+	  fputs (" ", file);
+	  fputs (tls_model_names[DECL_TLS_MODEL (node)], file);
 	}
 
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))

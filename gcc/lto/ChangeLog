@@ -1,5 +1,9 @@
 2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-symtab.c (lto_varpool_replace_node): Report TLS model conflicts.
+
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto.c (compare_tree_sccs_1): Do not compare priorities.
 
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>

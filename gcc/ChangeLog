@@ -1,5 +1,12 @@
 2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.h (tls_model_names): New variable.
+	* print-tree.c (print_node): Simplify.
+	* varpool.c (tls_model_names): New variable.
+	(dump_varpool_node): Output tls model.
+
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-visibility.c (function_and_variable_visibility): Disable
 	temporarily local aliases for some targets.
 
