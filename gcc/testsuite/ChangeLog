@@ -1,5 +1,10 @@
 2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gcc.dg/localalias.c: Fix broken commit.
+	* gcc.dg/globalalias.c: Likewise.
+
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gcc.dg/localalias.c: New testcase.
 	* gcc.dg/localalias-2.c: New testcase.
 	* gcc.dg/globalalias.c: New testcase.
