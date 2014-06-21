@@ -566,7 +566,11 @@ function_and_variable_visibility (bool whole_program)
 	 cheaper and enable more optimization.
 
 	 TODO: We can also update virtual tables.  */
-      if (node->callers && can_replace_by_local_alias (node))
+      if (node->callers 
+          /* FIXME: currently this optimization breaks on AIX.  Disable it for targets
+             without comdat support for now.  */
+	  && SUPPORTS_ONE_ONLY
+	  && can_replace_by_local_alias (node))
 	{
 	  struct cgraph_node *alias = cgraph (symtab_nonoverwritable_alias (node));
 
