@@ -1,3 +1,9 @@
+2014-06-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/61503
+	* config/i386/i386.md (x86_64_shrd, x86_shrd,
+	ix86_rotr<dwi>3_doubleword): Replace ashiftrt with lshiftrt.
+
 2014-06-21  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/nios2/nios2.c: Include "builtins.h".
