@@ -1,5 +1,27 @@
 2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (maybe_var_shift): New define_attr.
+	(var_shift): Use it.
+	(rotl<mode>3, *rotlsi3_64, *rotl<mode>3_dot, *rotl<mode>3_dot2,
+	*rotlsi3_internal4, *rotlsi3_internal5, *rotlsi3_internal6,
+	*rotlsi3_internal8le, *rotlsi3_internal8be, *rotlsi3_internal9le,
+	*rotlsi3_internal9be, *rotlsi3_internal10le, *rotlsi3_internal10be,
+	*rotlsi3_internal11le, *rotlsi3_internal11be, *rotlsi3_internal12le,
+	*rotlsi3_internal12be, ashl<mode>3, *ashlsi3_64, *ashl<mode>3_dot,
+	*ashl<mode>3_dot2, lshr<mode>3, *lshrsi3_64, *lshr<mode>3_dot,
+	*lshr<mode>3_dot2, *ashr<mode>3, *ashrsi3_64, *ashr<mode>3_dot,
+	*ashr<mode>3_dot2, *rotldi3_internal4, *rotldi3_internal5,
+	*rotldi3_internal6, *rotldi3_internal7le, *rotldi3_internal7be,
+	*rotldi3_internal8le, *rotldi3_internal8be, *rotldi3_internal9le,
+	*rotldi3_internal9be, *rotldi3_internal10le, *rotldi3_internal10be,
+	*rotldi3_internal11le, *rotldi3_internal11be, *rotldi3_internal12le,
+	*rotldi3_internal12be, *rotldi3_internal13le, *rotldi3_internal13be,
+	*rotldi3_internal14le, *rotldi3_internal14be, *rotldi3_internal15le,
+	*rotldi3_internal15be): Use the new attribute.  Merge register and
+	integer alternatives.
+
+2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (ashrsi3, two anonymous define_insns and
 	define_splits, ashrdi3, *ashrdi3_internal1, *ashrdi3_internal2 and
 	split, *ashrdi3_internal3 and split): Delete, merge into...
