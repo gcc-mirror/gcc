@@ -11979,13 +11979,12 @@ mips_canonicalize_move_class (reg_class_t rclass)
   return rclass;
 }
 
-/* Return the cost of moving a value of mode MODE from a register of
-   class FROM to a GPR.  Return 0 for classes that are unions of other
-   classes handled by this function.  */
+/* Return the cost of moving a value from a register of class FROM to a GPR.
+   Return 0 for classes that are unions of other classes handled by this
+   function.  */
 
 static int
-mips_move_to_gpr_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-		       reg_class_t from)
+mips_move_to_gpr_cost (reg_class_t from)
 {
   switch (from)
     {
@@ -12013,12 +12012,12 @@ mips_move_to_gpr_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
     }
 }
 
-/* Return the cost of moving a value of mode MODE from a GPR to a
-   register of class TO.  Return 0 for classes that are unions of
-   other classes handled by this function.  */
+/* Return the cost of moving a value from a GPR to a register of class TO.
+   Return 0 for classes that are unions of other classes handled by this
+   function.  */
 
 static int
-mips_move_from_gpr_cost (enum machine_mode mode, reg_class_t to)
+mips_move_from_gpr_cost (reg_class_t to)
 {
   switch (to)
     {
@@ -12071,15 +12070,15 @@ mips_register_move_cost (enum machine_mode mode,
   /* Handle cases in which only one class deviates from the ideal.  */
   dregs = TARGET_MIPS16 ? M16_REGS : GENERAL_REGS;
   if (from == dregs)
-    return mips_move_from_gpr_cost (mode, to);
+    return mips_move_from_gpr_cost (to);
   if (to == dregs)
-    return mips_move_to_gpr_cost (mode, from);
+    return mips_move_to_gpr_cost (from);
 
   /* Handles cases that require a GPR temporary.  */
-  cost1 = mips_move_to_gpr_cost (mode, from);
+  cost1 = mips_move_to_gpr_cost (from);
   if (cost1 != 0)
     {
-      cost2 = mips_move_from_gpr_cost (mode, to);
+      cost2 = mips_move_from_gpr_cost (to);
       if (cost2 != 0)
 	return cost1 + cost2;
     }
@@ -12116,7 +12115,7 @@ mips_memory_move_cost (enum machine_mode mode, reg_class_t rclass, bool in)
 
 enum reg_class
 mips_secondary_reload_class (enum reg_class rclass,
-			     enum machine_mode mode, rtx x, bool in_p)
+			     enum machine_mode mode, rtx x, bool)
 {
   int regno;
 
