@@ -1,5 +1,14 @@
 2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (rotlsi3, *rotlsi3_internal2 and split,
+	*rotlsi3_internal3 and split, rotldi3, *rotldi3_internal2 and split,
+	*rotldi3_internal3 and split): Delete, merge into...
+	(rotl<mode>3, rotl<mode>3_dot, rotl<mode>3_dot2): New.
+	(*rotlsi3_64): Fix formatting.  Fix condition.  Replace "i" by "n".
+	Use "rotlw" extended mnemonic.
+
+2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (ashlsi3, two anonymous define_insns
 	and define_splits, ashldi3, *ashldi3_internal1, *ashldi3_internal2
 	and split, *ashldi3_internal3 and split): Delete, merge into...
