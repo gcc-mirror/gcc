@@ -1,3 +1,11 @@
+2014-06-22  Richard Henderson  <rth@redhat.com>
+
+	PR target/61565
+	* compare-elim.c (struct comparison): Add eh_note.
+	(find_comparison_dom_walker::before_dom_children): Don't eliminate
+	a redundant comparison in a different EH region.  Purge EH edges if
+	necessary.
+
 2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (maybe_var_shift): New define_attr.
