@@ -1,5 +1,14 @@
 2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (ashrsi3, two anonymous define_insns and
+	define_splits, ashrdi3, *ashrdi3_internal1, *ashrdi3_internal2 and
+	split, *ashrdi3_internal3 and split): Delete, merge into...
+	(ashr<mode>3): New expander.
+	(*ashr<mode>3, ashr<mode>3_dot, ashr<mode>3_dot2): New.
+	(*ashrsi3_64): Fix formatting.  Replace "i" by "n".
+
+2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (rotlsi3, *rotlsi3_internal2 and split,
 	*rotlsi3_internal3 and split, rotldi3, *rotldi3_internal2 and split,
 	*rotldi3_internal3 and split): Delete, merge into...
