@@ -1,5 +1,14 @@
 2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md ("hH"): New define_mode_attr.
+	(lshrsi3, two anonymous define_insns and define_splits,
+	lshrdi3, *lshrdi3_internal1, *lshrdi3_internal2 and split,
+	*lshrdi3_internal3 and split): Delete, merge into...
+	(lshr<mode>3, lshr<mode>3_dot, lshr<mode>3_dot2): New.
+	(*lshrsi3_64): Fix formatting.  Replace "i" by "n".
+
+2014-06-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (lshrsi3, and its two dot patterns):
 	Remove "O" alternative.
 
