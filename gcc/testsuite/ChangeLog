@@ -1,3 +1,7 @@
+2014-06-23  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/20140723-1.c: New testcase.
+
 2014-06-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61553
