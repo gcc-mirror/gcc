@@ -1,3 +1,7 @@
+2014-06-23  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.target/i386/indjmp-1.c: New test.
+
 2014-06-23  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.c-torture/compile/20140723-1.c: New testcase.
