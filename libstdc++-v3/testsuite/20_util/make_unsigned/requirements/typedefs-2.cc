@@ -31,6 +31,7 @@ void test01()
   using std::make_unsigned;
   using std::is_same;
   using std::is_unsigned;
+  using std::is_volatile;
 
   // Positive tests.
   typedef make_unsigned<const unsigned int>::type  	test2_type;
@@ -51,7 +52,9 @@ void test01()
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_unsigned<volatile wchar_t>::type  	test23_type;
-  static_assert(is_unsigned<test23_type>::value, "");
+  static_assert(is_unsigned<test23_type>::value
+                && is_volatile<test23_type>::value
+                && sizeof(test23_type) == sizeof(volatile wchar_t), "");
 #endif
 
   typedef make_unsigned<test_enum>::type  	  test24_type;

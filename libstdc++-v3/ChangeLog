@@ -5,6 +5,15 @@
 	* testsuite/20_util/duration/literals/values.cc: Test non-positive
 	values and digit separators.
 
+	PR libstdc++/61532
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Do not
+	apply the signed specifier to wchar_t.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Check
+	cv-qualifier and size.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+
 2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
