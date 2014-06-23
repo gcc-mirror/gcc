@@ -1167,7 +1167,8 @@
   add\\t%w0, %w1, %w2
   add\\t%0.2s, %1.2s, %2.2s
   sub\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alu_imm,alu_reg,neon_add,alu_imm")]
+  [(set_attr "type" "alu_imm,alu_reg,neon_add,alu_imm")
+   (set_attr "simd" "*,*,yes,*")]
 )
 
 ;; zero_extend version of above
