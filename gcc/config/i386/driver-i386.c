@@ -415,6 +415,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   bool arch;
 
   unsigned int l2sizekb = 0;
+  unsigned int arch_64bit = 1;
 
   if (argc < 1)
     return NULL;
@@ -656,11 +657,14 @@ const char *host_detect_local_cpu (int argc, const char **argv)
     {
     case PROCESSOR_I386:
       /* Default.  */
+      arch_64bit = 0;
       break;
     case PROCESSOR_I486:
+      arch_64bit = 0;
       cpu = "i486";
       break;
     case PROCESSOR_PENTIUM:
+      arch_64bit = 0;
       if (arch && has_mmx)
 	cpu = "pentium-mmx";
       else
@@ -745,21 +749,25 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		    /* Assume Core 2.  */
 		    cpu = "core2";
 		}
-	      else if (has_sse3)
-		/* It is Core Duo.  */
-		cpu = "pentium-m";
-	      else if (has_sse2)
-		/* It is Pentium M.  */
-		cpu = "pentium-m";
-	      else if (has_sse)
-		/* It is Pentium III.  */
-		cpu = "pentium3";
-	      else if (has_mmx)
-		/* It is Pentium II.  */
-		cpu = "pentium2";
 	      else
-		/* Default to Pentium Pro.  */
-		cpu = "pentiumpro";
+		{
+		  arch_64bit = 0;
+		  if (has_sse3)
+		    /* It is Core Duo.  */
+		    cpu = "pentium-m";
+		  else if (has_sse2)
+		    /* It is Pentium M.  */
+		    cpu = "pentium-m";
+		  else if (has_sse)
+		    /* It is Pentium III.  */
+		    cpu = "pentium3";
+		  else if (has_mmx)
+		    /* It is Pentium II.  */
+		    cpu = "pentium2";
+		  else
+		    /* Default to Pentium Pro.  */
+		    cpu = "pentiumpro";
+		}
 	    }
 	  else
 	    /* For -mtune, we default to -mtune=generic.  */
@@ -773,21 +781,30 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  if (has_longmode)
 	    cpu = "nocona";
 	  else
-	    cpu = "prescott";
+	    {
+	      cpu = "prescott";
+	      arch_64bit = 0;
+	    }
 	}
       else
-	cpu = "pentium4";
+	{
+	  cpu = "pentium4";
+	  arch_64bit = 0;
+	}
       break;
     case PROCESSOR_GEODE:
+      arch_64bit = 0;
       cpu = "geode";
       break;
     case PROCESSOR_K6:
+      arch_64bit = 0;
       if (arch && has_3dnow)
 	cpu = "k6-3";
       else
 	cpu = "k6";
       break;
     case PROCESSOR_ATHLON:
+      arch_64bit = 0;
       if (arch && has_sse)
 	cpu = "athlon-4";
       else
@@ -895,6 +912,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *clflushopt = has_clflushopt ? " -mclflushopt" : " -mno-clflushopt";
       const char *xsavec = has_xsavec ? " -mxsavec" : " -mno-xsavec";
       const char *xsaves = has_xsaves ? " -mxsaves" : " -mno-xsaves";
+
+      /* Assume x86-64 if a 32-bit processor supports SSE2 and 64-bit.  */
+      if (arch_64bit == 0 && has_sse2 && has_longmode)
+	cpu = "x86-64";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,

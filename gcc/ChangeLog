@@ -1,3 +1,9 @@
+2014-06-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/61570
+	* config/i386/driver-i386.c (host_detect_local_cpu): Set arch
+	to x86-64 if a 32-bit processor supports SSE2 and 64-bit.
+
 2014-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md (addsi3_aarch64): Set "simd" attr to
