@@ -1,3 +1,8 @@
+2014-06-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61553
+	* c-c++-common/pr61553.c (foo): Add dg-error.
+
 2014-06-23  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_32.f90: New.
