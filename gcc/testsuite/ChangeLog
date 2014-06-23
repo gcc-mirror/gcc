@@ -1,3 +1,16 @@
+2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* g++.dg/abi/mangle-neon-aarch64.C: Also test mangling of float64x1_t.
+	* gcc.target/aarch64/aapcs/test_64x1_1.c: New test.
+	* gcc.target/aarch64/aapcs/func-ret-64x1_1.c: New test.
+	* gcc.target/aarch64/simd/ext_f64_1.c (main): Compare vector elements.
+	* gcc.target/aarch64/vadd_f64.c: Rewrite with macro to use vector types.
+	* gcc.target/aarch64/vsub_f64.c: Likewise.
+	* gcc.target/aarch64/vdiv_f.c (INDEX*, RUN_TEST): Remove indexing scheme
+	as now the same for all variants.
+	* gcc.target/aarch64/vrnd_f64_1.c (compare_f64): Return float64_t not
+	float64x1_t.
+
 2014-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/scalar_shift_1.c: Fix expected assembler.

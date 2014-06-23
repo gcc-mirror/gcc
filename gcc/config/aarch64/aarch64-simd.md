@@ -2134,7 +2134,7 @@
 ;; Patterns for AArch64 SIMD Intrinsics.
 
 (define_expand "aarch64_create<mode>"
-  [(match_operand:VD_RE 0 "register_operand" "")
+  [(match_operand:VD1 0 "register_operand" "")
    (match_operand:DI 1 "general_operand" "")]
   "TARGET_SIMD"
 {
@@ -2224,7 +2224,7 @@
 
 (define_expand "aarch64_reinterpretv8qi<mode>"
   [(match_operand:V8QI 0 "register_operand" "")
-   (match_operand:VDC 1 "register_operand" "")]
+   (match_operand:VD_RE 1 "register_operand" "")]
   "TARGET_SIMD"
 {
   aarch64_simd_reinterpret (operands[0], operands[1]);
@@ -2233,7 +2233,7 @@
 
 (define_expand "aarch64_reinterpretv4hi<mode>"
   [(match_operand:V4HI 0 "register_operand" "")
-   (match_operand:VDC 1 "register_operand" "")]
+   (match_operand:VD_RE 1 "register_operand" "")]
   "TARGET_SIMD"
 {
   aarch64_simd_reinterpret (operands[0], operands[1]);
@@ -2242,7 +2242,7 @@
 
 (define_expand "aarch64_reinterpretv2si<mode>"
   [(match_operand:V2SI 0 "register_operand" "")
-   (match_operand:VDC 1 "register_operand" "")]
+   (match_operand:VD_RE 1 "register_operand" "")]
   "TARGET_SIMD"
 {
   aarch64_simd_reinterpret (operands[0], operands[1]);
@@ -2251,7 +2251,7 @@
 
 (define_expand "aarch64_reinterpretv2sf<mode>"
   [(match_operand:V2SF 0 "register_operand" "")
-   (match_operand:VDC 1 "register_operand" "")]
+   (match_operand:VD_RE 1 "register_operand" "")]
   "TARGET_SIMD"
 {
   aarch64_simd_reinterpret (operands[0], operands[1]);
@@ -2267,8 +2267,8 @@
   DONE;
 })
 
-(define_expand "aarch64_reinterpretdf<mode>"
-  [(match_operand:DF 0 "register_operand" "")
+(define_expand "aarch64_reinterpretv1df<mode>"
+  [(match_operand:V1DF 0 "register_operand" "")
    (match_operand:VD_RE 1 "register_operand" "")]
   "TARGET_SIMD"
 {

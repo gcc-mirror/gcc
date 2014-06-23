@@ -1,3 +1,43 @@
+2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/60825
+	* config/aarch64/aarch64.c (aarch64_simd_mangle_map): Add entry for
+	V1DFmode.
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_builtin_type_mode):
+	add V1DFmode
+	(BUILTIN_VD1): New.
+	(BUILTIN_VD_RE): Remove.
+	(aarch64_init_simd_builtins): Add V1DF to modes/modenames.
+	(aarch64_fold_builtin): Update reinterpret patterns, df becomes v1df.
+	* config/aarch64/aarch64-simd-builtins.def (create): Make a v1df
+	variant but not df.
+	(vreinterpretv1df*, vreinterpret*v1df): New.
+	(vreinterpretdf*, vreinterpret*df): Remove.
+	* config/aarch64/aarch64-simd.md (aarch64_create, aarch64_reinterpret*):
+	Generate V1DFmode pattern not DFmode.
+	* config/aarch64/iterators.md (VD_RE): Include V1DF, remove DF.
+	(VD1): New.
+	* config/aarch64/arm_neon.h (float64x1_t): typedef with gcc extensions.
+	(vcreate_f64): Remove cast, use v1df builtin.
+	(vcombine_f64): Remove cast, get elements with gcc vector extensions.
+	(vget_low_f64, vabs_f64, vceq_f64, vceqz_f64, vcge_f64, vgfez_f64,
+	vcgt_f64, vcgtz_f64, vcle_f64, vclez_f64, vclt_f64, vcltz_f64,
+	vdup_n_f64, vdupq_lane_f64, vld1_f64, vld2_f64, vld3_f64, vld4_f64,
+	vmov_n_f64, vst1_f64): Use gcc vector extensions.
+	(vget_lane_f64, vdupd_lane_f64, vmulq_lane_f64, ): Use gcc extensions,
+	add range check using __builtin_aarch64_im_lane_boundsi.
+	(vfma_lane_f64, vfmad_lane_f64, vfma_laneq_f64, vfmaq_lane_f64,
+	vfms_lane_f64, vfmsd_lane_f64, vfms_laneq_f64, vfmsq_lane_f64): Fix
+	type signature, use gcc vector extensions.
+	(vreinterpret_p8_f64, vreinterpret_p16_f64, vreinterpret_f32_f64,
+	vreinterpret_f64_f32, vreinterpret_f64_p8, vreinterpret_f64_p16,
+	vreinterpret_f64_s8, vreinterpret_f64_s16, vreinterpret_f64_s32,
+	vreinterpret_f64_s64, vreinterpret_f64_u8, vreinterpret_f64_u16,
+	vreinterpret_f64_u32, vreinterpret_f64_u64, vreinterpret_s8_f64,
+	vreinterpret_s16_f64, vreinterpret_s32_f64, vreinterpret_s64_f64,
+	vreinterpret_u8_f64, vreinterpret_u16_f64, vreinterpret_u32_f64,
+	vreinterpret_u64_f64): Use v1df builtin not df.
+
 2014-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md (*addsi3_aarch64): Add alternative in
