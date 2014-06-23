@@ -1,3 +1,14 @@
+2014-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61532
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Do not
+	apply the signed specifier to wchar_t.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Do not
+	apply the unsigned specifier to wchar_t.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+
 2014-06-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
